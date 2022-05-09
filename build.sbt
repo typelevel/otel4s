@@ -21,12 +21,13 @@ ThisBuild / scalaVersion := Scala213 // the default Scala
 
 lazy val root = tlCrossRootProject.aggregate(core)
 
-lazy val core = crossProject(JVMPlatform, JSPlatform)
+lazy val core = crossProject(JVMPlatform /*, JSPlatform */)
   .crossType(CrossType.Pure)
   .in(file("core"))
   .settings(
     name := "otel4s",
     libraryDependencies ++= Seq(
+      "io.opentelemetry" % "opentelemetry-api" % "1.13.0",
       "org.typelevel" %%% "cats-core" % "2.7.0",
       "org.typelevel" %%% "cats-effect" % "3.3.11",
       "org.scalameta" %%% "munit" % "0.7.29" % Test,

@@ -1,9 +1,18 @@
 package com.rossabaker.otel4s
 
+trait Otel4s[F[_]] {
+  def meterProvider: MeterProvider[F]
+}
+
 trait Attributes {
   def isEmpty = true
   def size = 0
 }
+
+object Attributes {
+  def empty = new Attributes {}
+}
+
 
 trait MeterProvider[F[ _]] {
   def get(name: String): F[Meter[F]] =
@@ -47,7 +56,7 @@ trait ObservableInstrumentBuilder[F[_], A] {
 }
 
 trait Counter[F[_], A] {
-  def add(value: A, attributes: Attributes): F[Unit]
+  def add(value: A, attributes: Attributes = Attributes.empty): F[Unit]
 }
 
 trait ObservableCounter[F[_], A]

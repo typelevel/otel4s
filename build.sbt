@@ -28,6 +28,8 @@ lazy val core = crossProject(JVMPlatform /*, JSPlatform */)
     name := "otel4s",
     libraryDependencies ++= Seq(
       "io.opentelemetry" % "opentelemetry-api" % "1.13.0",
+      "io.opentelemetry" % "opentelemetry-exporter-logging" % "1.13.0" % Test,
+      "io.opentelemetry" % "opentelemetry-sdk-extension-autoconfigure" % "1.13.0-alpha" % Test,
       "org.typelevel" %%% "cats-core" % "2.7.0",
       "org.typelevel" %%% "cats-effect" % "3.3.11",
       "org.scalameta" %%% "munit" % "0.7.29" % Test,

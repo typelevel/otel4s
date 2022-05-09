@@ -11,9 +11,17 @@ import io.opentelemetry.api.metrics.{LongCounter => JLongCounter}
 
 import scala.jdk.CollectionConverters._
 
-class OtelJava[F[_]](jOtel: JOpenTelemetry)(implicit F: Sync[F]) {
+object OtelJava {
+  def forSync[F[_]](jOtel: JOpenTelemetry)(implicit F: Sync[F]): Otel4s[F] =
+    new Otel4s[F] {
+      def meterProvider: MeterProvider[F] = new MeterProviderImpl[F](jOtel)
+    }
 
-  private case class MeterBuilderImpl(name: String, version: Option[String] = None, schemaUrl: Option[String] = None) extends MeterBuilder[F] {
+  private class MeterProviderImpl[F[_]: Sync](jOtel: JOpenTelemetry) extends MeterProvider[F] {
+     def meter(name: String): MeterBuilder[F] = new MeterBuilderImpl(jOtel, name)
+  }
+
+  private case class MeterBuilderImpl[F[_]](jOtel: JOpenTelemetry, name: String, version: Option[String] = None, schemaUrl: Option[String] = None)(implicit F: Sync[F]) extends MeterBuilder[F] {
     def withVersion(version: String) = copy(version = Option(version))
     def withSchemaUrl(schemaUrl: String) = copy(schemaUrl = Option(schemaUrl))
 
@@ -25,13 +33,13 @@ class OtelJava[F[_]](jOtel: JOpenTelemetry)(implicit F: Sync[F]) {
     }
   }
 
-  private class MeterImpl(jMeter: JMeter) extends Meter[F] {
+  private class MeterImpl[F[_]: Sync](jMeter: JMeter) extends Meter[F] {
     def counter(name: String): SyncInstrumentBuilder[F, Counter[F, Long]] =
       new CounterBuilderImpl(jMeter, name)
   }
 
-  private case class CounterBuilderImpl(jMeter: JMeter, name: String, unit: Option[String] = None, description: Option[String] = None) extends SyncInstrumentBuilder[F, Counter[F, Long]] {
-    type Self = CounterBuilderImpl
+  private case class CounterBuilderImpl[F[_]](jMeter: JMeter, name: String, unit: Option[String] = None, description: Option[String] = None)(implicit F: Sync[F]) extends SyncInstrumentBuilder[F, Counter[F, Long]] {
+    type Self = CounterBuilderImpl[F]
 
     def withUnit(unit: String) = copy(unit = Option(unit))
     def withDescription(description: String) = copy(description = Option(description))
@@ -44,7 +52,7 @@ class OtelJava[F[_]](jOtel: JOpenTelemetry)(implicit F: Sync[F]) {
     }
   }
 
-  private class CounterImpl(longCounter: JLongCounter) extends Counter[F, Long] {
+  private class CounterImpl[F[_]](longCounter: JLongCounter)(implicit F: Sync[F]) extends Counter[F, Long] {
     def add(long: Long, attributes: Attributes) =
       F.delay(longCounter.add(long, toJAttributes(attributes)))
   }
@@ -56,9 +64,5 @@ class OtelJava[F[_]](jOtel: JOpenTelemetry)(implicit F: Sync[F]) {
     def isEmpty = attributes.isEmpty
     def size = attributes.size
     def toBuilder = JAttributes.builder()
-  }
-
-  def meterProvider: MeterProvider[F] = new MeterProvider[F] {
-    def meter(name: String): MeterBuilder[F] = MeterBuilderImpl(name)
   }
 }

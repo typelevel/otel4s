@@ -1,0 +1,25 @@
+# sbt
+target/
+project/plugins/project/
+boot/
+lib_managed/
+src_managed/
+
+# vim
+*.sw?
+
+# intellij
+.idea/
+
+# ignore [ce]tags files
+tags
+
+# metals
+.metals/
+.bsp/
+.bloop/
+metals.sbt
+.vscode
+
+# npm
+node_modules/

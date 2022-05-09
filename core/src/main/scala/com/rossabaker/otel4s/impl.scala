@@ -6,15 +6,55 @@ import cats.effect.Sync
 import io.opentelemetry.api.{OpenTelemetry => JOpenTelemetry}
 import io.opentelemetry.api.common.{Attributes => JAttributes}
 import io.opentelemetry.api.common.{AttributeKey => JAttributeKey}
+import io.opentelemetry.api.common.{AttributeType => JAttributeType}
 import io.opentelemetry.api.metrics.{Meter => JMeter}
 import io.opentelemetry.api.metrics.{LongCounter => JLongCounter}
 
-import scala.jdk.CollectionConverters._
+import java.util.{List => JList}
 
 object OtelJava {
   def forSync[F[_]](jOtel: JOpenTelemetry)(implicit F: Sync[F]): Otel4s[F] =
     new Otel4s[F] {
       def meterProvider: MeterProvider[F] = new MeterProviderImpl[F](jOtel)
+
+      def stringKey(name0: String): AttributeKey[String] =
+        new AttributeKey[String] with JAttributeKey[String] {
+          def name = name0
+          def getKey = name0
+          def `type` = AttributeType.String
+          def getType = JAttributeType.STRING
+        }
+      def booleanKey(name0: String): AttributeKey[Boolean] =
+        new AttributeKey[Boolean] with JAttributeKey[Boolean] {
+          def name = name0
+          def getKey = name0
+          def `type` = AttributeType.Boolean
+          def getType = JAttributeType.BOOLEAN
+        }
+      def longKey(name0: String): AttributeKey[Long] =
+        new AttributeKey[Long] with JAttributeKey[Long] {
+          def name = name0
+          def getKey = name0
+          def `type` = AttributeType.Long
+          def getType = JAttributeType.LONG
+        }
+      def doubleKey(name0: String): AttributeKey[Double] =
+        new AttributeKey[Double] with JAttributeKey[Double] {
+          def name = name0
+          def getKey = name0
+          def `type` = AttributeType.Double
+          def getType = JAttributeType.DOUBLE
+        }
+      def stringListKey(name0: String): AttributeKey[List[String]] =
+        new AttributeKey[List[String]] {
+          def name = name0
+          def `type` = AttributeType.StringList
+        }
+      def longListKey(name0: String): AttributeKey[List[Long]] =
+        new AttributeKey[List[Long]] {
+          def name = name0
+          def `type` = AttributeType.LongList
+        }
     }
 
   private class MeterProviderImpl[F[_]: Sync](jOtel: JOpenTelemetry) extends MeterProvider[F] {
@@ -53,16 +93,43 @@ object OtelJava {
   }
 
   private class CounterImpl[F[_]](longCounter: JLongCounter)(implicit F: Sync[F]) extends Counter[F, Long] {
-    def add(long: Long, attributes: Attributes) =
+    def add(long: Long, attributes: Attribute[_]*) =
       F.delay(longCounter.add(long, toJAttributes(attributes)))
   }
 
-  private def toJAttributes(attributes: Attributes): JAttributes = new JAttributes {
-    def asMap = Map.empty.asJava
-    def forEach(f: java.util.function.BiConsumer[_ >: io.opentelemetry.api.common.AttributeKey[_], _ >: Object]) = ()
-    def get[T](key: JAttributeKey[T]): T = null.asInstanceOf[T]
-    def isEmpty = attributes.isEmpty
-    def size = attributes.size
-    def toBuilder = JAttributes.builder()
+  private def toJAttributes(attributes: Seq[Attribute[_]]): JAttributes = {
+    val builder = JAttributes.builder
+    attributes.foreach {
+      // Handle preallocated keys as an optimal case
+      case Attribute(key: JAttributeKey[_], value) =>
+        val rawKey = key.asInstanceOf[JAttributeKey[Any]]
+        builder.put(rawKey, value)
+
+      // The primitives require no conversion
+      case Attribute(key, value: Boolean) =>
+        builder.put(key.name, value)
+      case Attribute(key, value: Long) =>
+        builder.put(key.name, value)
+      case Attribute(key, value: Double) =>
+        builder.put(key.name, value)
+      case Attribute(key, value: String) =>
+        builder.put(key.name, value)
+
+
+      // The lists need a conversion from Scala to Java
+      case Attribute(key, values: Seq[_]) if key.`type` == AttributeType.BooleanList =>
+        val jKey = JAttributeKey.booleanArrayKey(key.name).asInstanceOf[JAttributeKey[JList[Any]]]
+        builder.put(jKey, values: _*)
+      case Attribute(key, values: Seq[_]) if key.`type` == AttributeType.LongList =>
+        val jKey = JAttributeKey.longArrayKey(key.name).asInstanceOf[JAttributeKey[JList[Any]]]
+        builder.put(jKey, values: _*)
+      case Attribute(key, values: Seq[_]) if key.`type` == AttributeType.DoubleList =>
+        val jKey = JAttributeKey.doubleArrayKey(key.name).asInstanceOf[JAttributeKey[JList[Any]]]
+        builder.put(jKey, values: _*)
+      case Attribute(key, values: Seq[_]) if key.`type` == AttributeType.StringList =>
+        val jKey = JAttributeKey.stringArrayKey(key.name).asInstanceOf[JAttributeKey[JList[Any]]]
+        builder.put(jKey, values: _*)
+    }
+    builder.build()
   }
 }

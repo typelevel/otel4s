@@ -2,17 +2,37 @@ package com.rossabaker.otel4s
 
 trait Otel4s[F[_]] {
   def meterProvider: MeterProvider[F]
+
+  // Preallocated keys for efficiency
+  def stringKey(name: String): AttributeKey[String]
+  def longKey(name: String): AttributeKey[Long]
+  def doubleKey(name: String): AttributeKey[Double]
+  def booleanKey(name: String): AttributeKey[Boolean]
+  def stringListKey(name: String): AttributeKey[List[String]]
+  def longListKey(name: String): AttributeKey[List[Long]]
+  // def doubleListKey(name: String): AttributeKey[List[Double]]
+  // def booleanListKey(name: String): AttributeKey[List[Boolean]]
 }
 
-trait Attributes {
-  def isEmpty = true
-  def size = 0
+case class Attribute[A](key: AttributeKey[A], value: A)
+
+trait AttributeKey[A] {
+  def name: String
+  def `type`: AttributeType[A]
 }
 
-object Attributes {
-  def empty = new Attributes {}
-}
+sealed trait AttributeType[A]
+object AttributeType {
+  case object Boolean extends AttributeType[Boolean]
+  case object Double extends AttributeType[Double]
+  case object String extends AttributeType[String]
+  case object Long extends AttributeType[Long]
 
+  case object BooleanList extends AttributeType[List[Boolean]]
+  case object DoubleList extends AttributeType[List[Double]]
+  case object StringList extends AttributeType[List[String]]
+  case object LongList extends AttributeType[List[Long]]
+}
 
 trait MeterProvider[F[ _]] {
   def get(name: String): F[Meter[F]] =
@@ -56,19 +76,19 @@ trait ObservableInstrumentBuilder[F[_], A] {
 }
 
 trait Counter[F[_], A] {
-  def add(value: A, attributes: Attributes = Attributes.empty): F[Unit]
+  def add(value: A, attribute: Attribute[_]*): F[Unit]
 }
 
 trait ObservableCounter[F[_], A]
 
 trait Histogram[F[_], A] {
-  def record(value: A, attributes: Attributes): F[Unit]
+  def record(value: A, attributes: Attribute[_]*): F[Unit]
 }
 
 trait ObservableGauge[F[_], A]
 
 trait UpDownCounter[F[_], A] {
-  def add(value: A, attributes: Attributes): F[Unit]
+  def add(value: A, attributes: Attribute[_]*): F[Unit]
 }
 
 trait ObservableUpDownCounter[F, A]

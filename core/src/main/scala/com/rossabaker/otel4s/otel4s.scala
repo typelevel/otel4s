@@ -2,23 +2,26 @@ package com.rossabaker.otel4s
 
 trait Otel4s[F[_]] {
   def meterProvider: MeterProvider[F]
-
-  // Preallocated keys for efficiency
-  def stringKey(name: String): AttributeKey[String]
-  def longKey(name: String): AttributeKey[Long]
-  def doubleKey(name: String): AttributeKey[Double]
-  def booleanKey(name: String): AttributeKey[Boolean]
-  def stringListKey(name: String): AttributeKey[List[String]]
-  def longListKey(name: String): AttributeKey[List[Long]]
-  // def doubleListKey(name: String): AttributeKey[List[Double]]
-  // def booleanListKey(name: String): AttributeKey[List[Boolean]]
 }
 
 case class Attribute[A](key: AttributeKey[A], value: A)
 
-trait AttributeKey[A] {
+sealed trait AttributeKey[A] {
   def name: String
   def `type`: AttributeType[A]
+}
+object AttributeKey {
+  private class Impl[A](val name: String, val `type`: AttributeType[A]) extends AttributeKey[A]
+
+  def string(name: String): AttributeKey[String] = new Impl(name, AttributeType.String)
+  def boolean(name: String): AttributeKey[Boolean] = new Impl(name, AttributeType.Boolean)
+  def long(name: String): AttributeKey[Long] = new Impl(name, AttributeType.Long)
+  def double(name: String): AttributeKey[Double] = new Impl(name, AttributeType.Double)
+
+  def stringList(name: String): AttributeKey[List[String]] = new Impl(name, AttributeType.StringList)
+  def booleanList(name: String): AttributeKey[List[Boolean]] = new Impl(name, AttributeType.BooleanList)
+  def longList(name: String): AttributeKey[List[Long]] = new Impl(name, AttributeType.LongList)
+  def doubleList(name: String): AttributeKey[List[Double]] = new Impl(name, AttributeType.DoubleList)
 }
 
 sealed trait AttributeType[A]

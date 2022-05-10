@@ -2,6 +2,7 @@ package com.example
 
 import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk
 import com.rossabaker.otel4s.Attribute
+import com.rossabaker.otel4s.AttributeKey
 import com.rossabaker.otel4s.oteljava.OtelJava
 
 import cats.effect.IO
@@ -17,9 +18,9 @@ object Poc extends IOApp.Simple {
     meter <- otel4s.meterProvider.get("poc")
     counter <- meter.counter("test").create
     _ <- counter.add(1)
-    dog = otel4s.stringKey("dog")
-    fish = otel4s.stringListKey("fish")
-    numbers = otel4s.longListKey("numbers")
+    dog = AttributeKey.string("dog")
+    fish = AttributeKey.stringList("fish")
+    numbers = AttributeKey.longList("numbers")
     _ <- counter.add(2,
       Attribute(dog, "barking"),
       Attribute(fish, List("one", "two", "red", "blue")),

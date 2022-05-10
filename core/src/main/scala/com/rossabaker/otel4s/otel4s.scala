@@ -63,7 +63,7 @@ trait Meter[F[_]] {
 }
 
 trait SyncInstrumentBuilder[F[_], A] {
-  type Self
+  type Self <: SyncInstrumentBuilder[F, A]
 
   def withUnit(unit: String): Self
   def withDescription(description: String): Self
@@ -71,7 +71,7 @@ trait SyncInstrumentBuilder[F[_], A] {
 }
 
 trait ObservableInstrumentBuilder[F[_], A] {
-  type Self
+  type Self <: ObservableInstrumentBuilder[F, A]
 
   def withUnit(unit: String): Self
   def withDescription(description: String): Self

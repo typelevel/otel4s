@@ -54,7 +54,7 @@ trait Meter[F[_]] {
   def counter(name: String): SyncInstrumentBuilder[F, Counter[F, Long]]
   // def observableCounter(name: String): ObservableInstrumentBuilder[F, ObservableCounter[F, Long]]
 
-  // def histogram(name: String): SyncInstrumentBuilder[F, Histogram[F, Long]]
+  def histogram(name: String): SyncInstrumentBuilder[F, Histogram[F, Double]]
 
   // def observableGauge(name: String): ObservableInstrumentBuilder[F, ObservableGauge[F, Long]]
 

@@ -9,6 +9,7 @@ import io.opentelemetry.api.common.{AttributeKey => JAttributeKey}
 import io.opentelemetry.api.common.{AttributeType => JAttributeType}
 import io.opentelemetry.api.metrics.{Meter => JMeter}
 import io.opentelemetry.api.metrics.{LongCounter => JLongCounter}
+import io.opentelemetry.api.metrics.{DoubleHistogram => JDoubleHistogram}
 
 import scala.jdk.CollectionConverters._
 
@@ -37,6 +38,9 @@ object OtelJava {
   private class MeterImpl[F[_]: Sync](jMeter: JMeter) extends Meter[F] {
     def counter(name: String): SyncInstrumentBuilder[F, Counter[F, Long]] =
       new CounterBuilderImpl(jMeter, name)
+
+    def histogram(name: String): SyncInstrumentBuilder[F, Histogram[F, Double]] =
+      new HistogramBuilderImpl(jMeter, name)
   }
 
   private case class CounterBuilderImpl[F[_]](jMeter: JMeter, name: String, unit: Option[String] = None, description: Option[String] = None)(implicit F: Sync[F]) extends SyncInstrumentBuilder[F, Counter[F, Long]] {
@@ -56,6 +60,25 @@ object OtelJava {
   private class CounterImpl[F[_]](longCounter: JLongCounter)(implicit F: Sync[F]) extends Counter[F, Long] {
     def add(long: Long, attributes: Attribute[_]*) =
       F.delay(longCounter.add(long, toJAttributes(attributes)))
+  }
+
+  private case class HistogramBuilderImpl[F[_]](jMeter: JMeter, name: String, unit: Option[String] = None, description: Option[String] = None)(implicit F: Sync[F]) extends SyncInstrumentBuilder[F, Histogram[F, Double]] {
+    type Self = HistogramBuilderImpl[F]
+
+    def withUnit(unit: String) = copy(unit = Option(unit))
+    def withDescription(description: String) = copy(description = Option(description))
+
+    def create: F[Histogram[F, Double]] = F.delay {
+      val b = jMeter.histogramBuilder(name)
+      unit.foreach(b.setUnit)
+      description.foreach(b.setDescription)
+      new HistogramImpl(b.build)
+    }
+  }
+
+  private class HistogramImpl[F[_]](histogram: JDoubleHistogram)(implicit F: Sync[F]) extends Histogram[F, Double] {
+    def record(d: Double, attributes: Attribute[_]*) =
+      F.delay(histogram.record(d, toJAttributes(attributes)))
   }
 
   private def toJAttributes(attributes: Seq[Attribute[_]]): JAttributes = {

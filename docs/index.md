@@ -8,6 +8,6 @@ To use the latest version, include the following in your `build.sbt`:
 
 ```scala
 libraryDependencies ++= Seq(
-  "com.rossabaker" %% "otel4s" % "@VERSION@"
+  "org.typelevel" %% "otel4s" % "@VERSION@"
 )
 ```

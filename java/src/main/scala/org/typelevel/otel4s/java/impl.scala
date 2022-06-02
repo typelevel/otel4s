@@ -1,5 +1,5 @@
-package com.rossabaker.otel4s
-package oteljava
+package org.typelevel.otel4s
+package java
 
 import cats.effect.Sync
 

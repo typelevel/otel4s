@@ -1,4 +1,4 @@
-package com.rossabaker.otel4s
+package org.typelevel.otel4s
 
 import cats.Applicative
 

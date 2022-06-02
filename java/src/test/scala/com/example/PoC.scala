@@ -1,9 +1,9 @@
 package com.example
 
 import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk
-import com.rossabaker.otel4s.Attribute
-import com.rossabaker.otel4s.AttributeKey
-import com.rossabaker.otel4s.oteljava.OtelJava
+import org.typelevel.otel4s.Attribute
+import org.typelevel.otel4s.AttributeKey
+import org.typelevel.otel4s.java.OtelJava
 
 import cats.effect.IO
 import cats.effect.IOApp

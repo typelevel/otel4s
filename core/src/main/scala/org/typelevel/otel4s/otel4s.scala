@@ -29,17 +29,26 @@ sealed trait AttributeKey[A] {
   def `type`: AttributeType[A]
 }
 object AttributeKey {
-  private class Impl[A](val name: String, val `type`: AttributeType[A]) extends AttributeKey[A]
+  private class Impl[A](val name: String, val `type`: AttributeType[A])
+      extends AttributeKey[A]
 
-  def string(name: String): AttributeKey[String] = new Impl(name, AttributeType.String)
-  def boolean(name: String): AttributeKey[Boolean] = new Impl(name, AttributeType.Boolean)
-  def long(name: String): AttributeKey[Long] = new Impl(name, AttributeType.Long)
-  def double(name: String): AttributeKey[Double] = new Impl(name, AttributeType.Double)
+  def string(name: String): AttributeKey[String] =
+    new Impl(name, AttributeType.String)
+  def boolean(name: String): AttributeKey[Boolean] =
+    new Impl(name, AttributeType.Boolean)
+  def long(name: String): AttributeKey[Long] =
+    new Impl(name, AttributeType.Long)
+  def double(name: String): AttributeKey[Double] =
+    new Impl(name, AttributeType.Double)
 
-  def stringList(name: String): AttributeKey[List[String]] = new Impl(name, AttributeType.StringList)
-  def booleanList(name: String): AttributeKey[List[Boolean]] = new Impl(name, AttributeType.BooleanList)
-  def longList(name: String): AttributeKey[List[Long]] = new Impl(name, AttributeType.LongList)
-  def doubleList(name: String): AttributeKey[List[Double]] = new Impl(name, AttributeType.DoubleList)
+  def stringList(name: String): AttributeKey[List[String]] =
+    new Impl(name, AttributeType.StringList)
+  def booleanList(name: String): AttributeKey[List[Boolean]] =
+    new Impl(name, AttributeType.BooleanList)
+  def longList(name: String): AttributeKey[List[Long]] =
+    new Impl(name, AttributeType.LongList)
+  def doubleList(name: String): AttributeKey[List[Double]] =
+    new Impl(name, AttributeType.DoubleList)
 }
 
 sealed trait AttributeType[A]
@@ -55,7 +64,7 @@ object AttributeType {
   case object LongList extends AttributeType[List[Long]]
 }
 
-trait MeterProvider[F[ _]] {
+trait MeterProvider[F[_]] {
   def get(name: String): F[Meter[F]] =
     meter(name).get
 
@@ -100,19 +109,21 @@ trait Meter[F[_]] {
 object Meter {
   def noop[F[_]](implicit F: Applicative[F]): Meter[F] =
     new Meter[F] {
-      def counter(name: String) = new SyncInstrumentBuilder[F, Counter[F, Long]] {
-        type Self = this.type
-        def withUnit(unit: String) = this
-        def withDescription(description: String) = this
-        def create = F.pure(Counter.noop)
-      }
+      def counter(name: String) =
+        new SyncInstrumentBuilder[F, Counter[F, Long]] {
+          type Self = this.type
+          def withUnit(unit: String) = this
+          def withDescription(description: String) = this
+          def create = F.pure(Counter.noop)
+        }
 
-      def histogram(name: String) = new SyncInstrumentBuilder[F, Histogram[F, Double]] {
-        type Self = this.type
-        def withUnit(unit: String) = this
-        def withDescription(description: String) = this
-        def create = F.pure(Histogram.noop)
-      }
+      def histogram(name: String) =
+        new SyncInstrumentBuilder[F, Histogram[F, Double]] {
+          type Self = this.type
+          def withUnit(unit: String) = this
+          def withDescription(description: String) = this
+          def create = F.pure(Histogram.noop)
+        }
     }
 }
 

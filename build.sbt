@@ -1,8 +1,8 @@
 // https://typelevel.org/sbt-typelevel/faq.html#what-is-a-base-version-anyway
 ThisBuild / tlBaseVersion := "0.0" // your current series x.y
 
-ThisBuild / organization := "com.rossabaker"
-ThisBuild / organizationName := "Ross A. Baker"
+ThisBuild / organization := "org.typelevel"
+ThisBuild / organizationName := "Typelevel"
 ThisBuild / licenses := Seq(License.Apache2)
 ThisBuild / developers := List(
   // your GitHub handle and name

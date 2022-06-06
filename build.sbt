@@ -40,8 +40,8 @@ lazy val java = crossProject(JVMPlatform)
   .settings(
     name := "otel4s-java",
     libraryDependencies ++= Seq(
-      "io.opentelemetry" % "opentelemetry-api" % "1.13.0",
-      "io.opentelemetry" % "opentelemetry-exporter-logging" % "1.13.0" % Test,
+      "io.opentelemetry" % "opentelemetry-api" % "1.14.0",
+      "io.opentelemetry" % "opentelemetry-exporter-logging" % "1.14.0" % Test,
       "io.opentelemetry" % "opentelemetry-sdk-extension-autoconfigure" % "1.13.0-alpha" % Test
     )
   )

@@ -35,11 +35,18 @@ object OtelJava {
       def meterProvider: MeterProvider[F] = new MeterProviderImpl[F](jOtel)
     }
 
-  private class MeterProviderImpl[F[_]: Sync](jOtel: JOpenTelemetry) extends MeterProvider[F] {
-     def meter(name: String): MeterBuilder[F] = new MeterBuilderImpl(jOtel, name)
+  private class MeterProviderImpl[F[_]: Sync](jOtel: JOpenTelemetry)
+      extends MeterProvider[F] {
+    def meter(name: String): MeterBuilder[F] = new MeterBuilderImpl(jOtel, name)
   }
 
-  private case class MeterBuilderImpl[F[_]](jOtel: JOpenTelemetry, name: String, version: Option[String] = None, schemaUrl: Option[String] = None)(implicit F: Sync[F]) extends MeterBuilder[F] {
+  private case class MeterBuilderImpl[F[_]](
+      jOtel: JOpenTelemetry,
+      name: String,
+      version: Option[String] = None,
+      schemaUrl: Option[String] = None
+  )(implicit F: Sync[F])
+      extends MeterBuilder[F] {
     def withVersion(version: String) = copy(version = Option(version))
     def withSchemaUrl(schemaUrl: String) = copy(schemaUrl = Option(schemaUrl))
 
@@ -55,15 +62,24 @@ object OtelJava {
     def counter(name: String): SyncInstrumentBuilder[F, Counter[F, Long]] =
       new CounterBuilderImpl(jMeter, name)
 
-    def histogram(name: String): SyncInstrumentBuilder[F, Histogram[F, Double]] =
+    def histogram(
+        name: String
+    ): SyncInstrumentBuilder[F, Histogram[F, Double]] =
       new HistogramBuilderImpl(jMeter, name)
   }
 
-  private case class CounterBuilderImpl[F[_]](jMeter: JMeter, name: String, unit: Option[String] = None, description: Option[String] = None)(implicit F: Sync[F]) extends SyncInstrumentBuilder[F, Counter[F, Long]] {
+  private case class CounterBuilderImpl[F[_]](
+      jMeter: JMeter,
+      name: String,
+      unit: Option[String] = None,
+      description: Option[String] = None
+  )(implicit F: Sync[F])
+      extends SyncInstrumentBuilder[F, Counter[F, Long]] {
     type Self = CounterBuilderImpl[F]
 
     def withUnit(unit: String) = copy(unit = Option(unit))
-    def withDescription(description: String) = copy(description = Option(description))
+    def withDescription(description: String) =
+      copy(description = Option(description))
 
     def create: F[Counter[F, Long]] = F.delay {
       val b = jMeter.counterBuilder(name)
@@ -73,16 +89,25 @@ object OtelJava {
     }
   }
 
-  private class CounterImpl[F[_]](longCounter: JLongCounter)(implicit F: Sync[F]) extends Counter[F, Long] {
+  private class CounterImpl[F[_]](longCounter: JLongCounter)(implicit
+      F: Sync[F]
+  ) extends Counter[F, Long] {
     def add(long: Long, attributes: Attribute[_]*) =
       F.delay(longCounter.add(long, toJAttributes(attributes)))
   }
 
-  private case class HistogramBuilderImpl[F[_]](jMeter: JMeter, name: String, unit: Option[String] = None, description: Option[String] = None)(implicit F: Sync[F]) extends SyncInstrumentBuilder[F, Histogram[F, Double]] {
+  private case class HistogramBuilderImpl[F[_]](
+      jMeter: JMeter,
+      name: String,
+      unit: Option[String] = None,
+      description: Option[String] = None
+  )(implicit F: Sync[F])
+      extends SyncInstrumentBuilder[F, Histogram[F, Double]] {
     type Self = HistogramBuilderImpl[F]
 
     def withUnit(unit: String) = copy(unit = Option(unit))
-    def withDescription(description: String) = copy(description = Option(description))
+    def withDescription(description: String) =
+      copy(description = Option(description))
 
     def create: F[Histogram[F, Double]] = F.delay {
       val b = jMeter.histogramBuilder(name)
@@ -92,7 +117,9 @@ object OtelJava {
     }
   }
 
-  private class HistogramImpl[F[_]](histogram: JDoubleHistogram)(implicit F: Sync[F]) extends Histogram[F, Double] {
+  private class HistogramImpl[F[_]](histogram: JDoubleHistogram)(implicit
+      F: Sync[F]
+  ) extends Histogram[F, Double] {
     def record(d: Double, attributes: Attribute[_]*) =
       F.delay(histogram.record(d, toJAttributes(attributes)))
   }

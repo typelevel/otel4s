@@ -29,7 +29,9 @@ object Poc extends IOApp.Simple {
     _ <- IO(sys.props("otel.traces.exporter") = "none")
     _ <- IO(sys.props("otel.metrics.exporter") = "logging")
     _ <- IO(sys.props("otel.logs.exporter") = "none")
-    otel4j <- IO(AutoConfiguredOpenTelemetrySdk.initialize().getOpenTelemetrySdk)
+    otel4j <- IO(
+      AutoConfiguredOpenTelemetrySdk.initialize().getOpenTelemetrySdk
+    )
     otel4s = OtelJava.forSync[IO](otel4j)
     meter <- otel4s.meterProvider.get("poc")
     counter <- meter.counter("test").create
@@ -37,7 +39,8 @@ object Poc extends IOApp.Simple {
     dog = AttributeKey.string("dog")
     fish = AttributeKey.stringList("fish")
     numbers = AttributeKey.longList("numbers")
-    _ <- counter.add(2,
+    _ <- counter.add(
+      2,
       Attribute(dog, "barking"),
       Attribute(fish, List("one", "two", "red", "blue")),
       Attribute(numbers, List(1L, 2L, 3L, 4L))

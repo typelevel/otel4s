@@ -135,7 +135,9 @@ trait Meter[F[_]] {
 
   // def observableGauge(name: String): ObservableInstrumentBuilder[F, ObservableGauge[F, Long]]
 
-  // def upDownCounter(name: String): SyncInstrumentBuilder[F, UpDownCounter[F, Long]]
+  def upDownCounter(
+      name: String
+  ): SyncInstrumentBuilder[F, UpDownCounter[F, Long]]
   // def observableUpDownCounter(name: String): ObservableInstrumentBuilder[F, UpDownCounter[F, Long]]
 }
 
@@ -156,6 +158,17 @@ object Meter {
           def withUnit(unit: String) = this
           def withDescription(description: String) = this
           def create = F.pure(Histogram.noop)
+        }
+
+      def upDownCounter(
+          name: String
+      ): SyncInstrumentBuilder[F, UpDownCounter[F, Long]] =
+        new SyncInstrumentBuilder[F, UpDownCounter[F, Long]] {
+          type Self = this.type
+
+          def withUnit(unit: String) = this
+          def withDescription(description: String) = this
+          def create = F.pure(UpDownCounter.noop)
         }
     }
 }
@@ -338,6 +351,35 @@ trait ObservableGauge[F[_], A]
   */
 trait UpDownCounter[F[_], A] {
   def add(value: A, attributes: Attribute[_]*): F[Unit]
+  def inc(attributes: Attribute[_]*): F[Unit]
+  def dec(attributes: Attribute[_]*): F[Unit]
+}
+
+object UpDownCounter {
+
+  trait LongUpDownCounter[F[_]] extends UpDownCounter[F, Long] {
+    final def inc(attributes: Attribute[_]*): F[Unit] =
+      add(1L, attributes: _*)
+
+    final def dec(attributes: Attribute[_]*): F[Unit] =
+      add(-1L, attributes: _*)
+  }
+
+  trait DoubleUpDownCounter[F[_]] extends UpDownCounter[F, Double] {
+    final def inc(attributes: Attribute[_]*): F[Unit] =
+      add(1.0, attributes: _*)
+
+    final def dec(attributes: Attribute[_]*): F[Unit] =
+      add(-1.0, attributes: _*)
+  }
+
+  def noop[F[_], A](implicit F: Applicative[F]): UpDownCounter[F, A] =
+    new UpDownCounter[F, A] {
+      def add(value: A, attributes: Attribute[_]*): F[Unit] = F.unit
+      def inc(attributes: Attribute[_]*): F[Unit] = F.unit
+      def dec(attributes: Attribute[_]*): F[Unit] = F.unit
+    }
+
 }
 
 trait ObservableUpDownCounter[F, A]

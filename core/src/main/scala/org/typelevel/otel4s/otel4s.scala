@@ -17,6 +17,11 @@
 package org.typelevel.otel4s
 
 import cats.Applicative
+import cats.effect.{Resource, Temporal}
+import cats.syntax.flatMap._
+import cats.syntax.functor._
+
+import scala.concurrent.duration.TimeUnit
 
 trait Otel4s[F[_]] {
   def meterProvider: MeterProvider[F]
@@ -151,6 +156,15 @@ object Counter {
     new Counter[F, A] {
       def add(value: A, attribute: Attribute[_]*) = F.unit
     }
+
+  implicit final class CounterSyntax[F[_], A](
+      private val counter: Counter[F, A]
+  ) extends AnyVal {
+
+    def inc(attributes: Attribute[_]*)(implicit A: Numeric[A]): F[Unit] =
+      counter.add(A.one, attributes: _*)
+
+  }
 }
 
 trait ObservableCounter[F[_], A]
@@ -159,10 +173,46 @@ trait Histogram[F[_], A] {
   def record(value: A, attributes: Attribute[_]*): F[Unit]
 }
 object Histogram {
+
+  private val CauseKey: AttributeKey[String] = AttributeKey.string("cause")
+
   def noop[F[_], A](implicit F: Applicative[F]): Histogram[F, A] =
     new Histogram[F, A] {
       def record(value: A, attribute: Attribute[_]*) = F.unit
     }
+
+  implicit final class HistogramSyntax[F[_]](
+      private val histogram: Histogram[F, Double]
+  ) extends AnyVal {
+
+    def recordDuration(
+        timeUnit: TimeUnit,
+        attributes: Attribute[_]*
+    )(implicit F: Temporal[F]): Resource[F, Unit] =
+      Resource
+        .makeCase(F.monotonic) { case (start, ec) =>
+          for {
+            end <- F.monotonic
+            _ <- histogram.record(
+              (end - start).toUnit(timeUnit),
+              attributes ++ causeAttributes(ec): _*
+            )
+          } yield ()
+        }
+        .void
+
+  }
+
+  def causeAttributes(ec: Resource.ExitCase): List[Attribute[String]] =
+    ec match {
+      case Resource.ExitCase.Succeeded =>
+        Nil
+      case Resource.ExitCase.Errored(e) =>
+        List(Attribute(CauseKey, e.getClass.getName))
+      case Resource.ExitCase.Canceled =>
+        List(Attribute(CauseKey, "canceled"))
+    }
+
 }
 
 trait ObservableGauge[F[_], A]

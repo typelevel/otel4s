@@ -16,22 +16,33 @@
 
 package com.example
 
-import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk
-import org.typelevel.otel4s.Attribute
-import org.typelevel.otel4s.AttributeKey
+import cats.effect.{IO, IOApp}
+import cats.syntax.traverse._
+import io.opentelemetry.sdk.OpenTelemetrySdk
+import io.opentelemetry.sdk.metrics.SdkMeterProvider
+import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader
+import org.typelevel.otel4s.{Attribute, AttributeKey}
 import org.typelevel.otel4s.java.OtelJava
 
-import cats.effect.IO
-import cats.effect.IOApp
+import scala.jdk.CollectionConverters._
 
 object Poc extends IOApp.Simple {
+
   def run = for {
-    _ <- IO(sys.props("otel.traces.exporter") = "none")
-    _ <- IO(sys.props("otel.metrics.exporter") = "logging")
-    _ <- IO(sys.props("otel.logs.exporter") = "none")
-    otel4j <- IO(
-      AutoConfiguredOpenTelemetrySdk.initialize().getOpenTelemetrySdk
-    )
+    jMetricReader <- IO(InMemoryMetricReader.create())
+    otel4j <- IO {
+      val meterProvider = SdkMeterProvider
+        .builder()
+        .registerMetricReader(jMetricReader)
+        .build()
+
+      val sdk = OpenTelemetrySdk
+        .builder()
+        .setMeterProvider(meterProvider)
+        .build()
+
+      sdk
+    }
     otel4s = OtelJava.forSync[IO](otel4j)
     meter <- otel4s.meterProvider.get("poc")
     counter <- meter.counter("test").create
@@ -45,7 +56,6 @@ object Poc extends IOApp.Simple {
       Attribute(fish, List("one", "two", "red", "blue")),
       Attribute(numbers, List(1L, 2L, 3L, 4L))
     )
-    provider = otel4j.getSdkMeterProvider
-    _ <- IO.println(provider.forceFlush())
+    _ <- jMetricReader.collectAllMetrics().asScala.toList.traverse(IO.println)
   } yield ()
 }

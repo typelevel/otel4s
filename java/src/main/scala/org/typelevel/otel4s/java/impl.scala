@@ -91,8 +91,8 @@ object OtelJava {
 
   private class CounterImpl[F[_]](longCounter: JLongCounter)(implicit
       F: Sync[F]
-  ) extends Counter[F, Long] {
-    def add(long: Long, attributes: Attribute[_]*) =
+  ) extends Counter.LongCounter[F] {
+    def add(long: Long, attributes: Attribute[_]*): F[Unit] =
       F.delay(longCounter.add(long, toJAttributes(attributes)))
   }
 

@@ -150,21 +150,26 @@ trait ObservableInstrumentBuilder[F[_], A] {
 
 trait Counter[F[_], A] {
   def add(value: A, attribute: Attribute[_]*): F[Unit]
+  def inc(attributes: Attribute[_]*): F[Unit]
 }
 object Counter {
+
+  trait LongCounter[F[_]] extends Counter[F, Long] {
+    final def inc(attributes: Attribute[_]*): F[Unit] =
+      add(1L, attributes: _*)
+  }
+
+  trait DoubleCounter[F[_]] extends Counter[F, Double] {
+    final def inc(attributes: Attribute[_]*): F[Unit] =
+      add(1.0, attributes: _*)
+  }
+
   def noop[F[_], A](implicit F: Applicative[F]): Counter[F, A] =
     new Counter[F, A] {
-      def add(value: A, attribute: Attribute[_]*) = F.unit
+      def add(value: A, attribute: Attribute[_]*): F[Unit] = F.unit
+      def inc(attributes: Attribute[_]*): F[Unit] = F.unit
     }
 
-  implicit final class CounterSyntax[F[_], A](
-      private val counter: Counter[F, A]
-  ) extends AnyVal {
-
-    def inc(attributes: Attribute[_]*)(implicit A: Numeric[A]): F[Unit] =
-      counter.add(A.one, attributes: _*)
-
-  }
 }
 
 trait ObservableCounter[F[_], A]

@@ -17,7 +17,7 @@
 package com.example
 
 import cats.effect.{IO, IOApp}
-import cats.syntax.traverse._
+import cats.syntax.foldable._
 import io.opentelemetry.sdk.OpenTelemetrySdk
 import io.opentelemetry.sdk.metrics.SdkMeterProvider
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader

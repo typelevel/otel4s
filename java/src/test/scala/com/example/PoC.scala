@@ -56,6 +56,6 @@ object Poc extends IOApp.Simple {
       Attribute(fish, List("one", "two", "red", "blue")),
       Attribute(numbers, List(1L, 2L, 3L, 4L))
     )
-    _ <- jMetricReader.collectAllMetrics().asScala.toList.traverse(IO.println)
+    _ <- jMetricReader.collectAllMetrics().asScala.toList.traverse_(IO.println)
   } yield ()
 }

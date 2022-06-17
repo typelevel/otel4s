@@ -1,9 +1,8 @@
-package com.example
+package org.typelevel.otel4s.java
 
 import cats.effect.IO
 import io.opentelemetry.sdk.metrics._
 import munit.CatsEffectSuite
-import org.typelevel.otel4s.java.OtelJava
 import org.typelevel.otel4s.testkit._
 import org.typelevel.otel4s.{Attribute, AttributeKey}
 
@@ -12,7 +11,7 @@ import scala.jdk.CollectionConverters._
 class JavaOtelSuite extends CatsEffectSuite {
 
   test("Counter record a proper data") {
-    val expected = Metric(
+    val expected = new Metric(
       "counter",
       Some("description"),
       Some("unit"),

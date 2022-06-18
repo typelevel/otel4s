@@ -80,8 +80,23 @@ object MeterProvider {
 }
 
 trait MeterBuilder[F[_]] {
+
+  /** Assigns a version to the resulting Meter.
+    *
+    * @param version
+    *   the version of the instrumentation scope
+    */
   def withVersion(version: String): MeterBuilder[F]
+
+  /** Assigns an OpenTelemetry schema URL to the resulting Meter.
+    *
+    * @param schemaUrl
+    *   the URL of the OpenTelemetry schema
+    */
   def withSchemaUrl(schemaUrl: String): MeterBuilder[F]
+
+  /** Creates a [[Meter]] with the given `version` and `schemaUrl` (if any)
+    */
   def get: F[Meter[F]]
 }
 
@@ -95,9 +110,22 @@ object MeterBuilder {
 }
 
 trait Meter[F[_]] {
+
+  /** Creates a builder of [[Counter]] instrument that records [[scala.Long]]
+    * values.
+    *
+    * @param name
+    *   the name of the instrument
+    */
   def counter(name: String): SyncInstrumentBuilder[F, Counter[F, Long]]
   // def observableCounter(name: String): ObservableInstrumentBuilder[F, ObservableCounter[F, Long]]
 
+  /** Creates a builder of [[Histogram]] instrument that records
+    * [[scala.Double]] values.
+    *
+    * @param name
+    *   the name of the instrument
+    */
   def histogram(name: String): SyncInstrumentBuilder[F, Histogram[F, Double]]
 
   // def observableGauge(name: String): ObservableInstrumentBuilder[F, ObservableGauge[F, Long]]
@@ -130,19 +158,81 @@ object Meter {
 trait SyncInstrumentBuilder[F[_], A] {
   type Self <: SyncInstrumentBuilder[F, A]
 
+  /** Sets the unit of measure for this instrument.
+    *
+    * @see
+    *   <a
+    *   href="https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/api.md#instrument-unit">Instrument
+    *   Unit</a>
+    *
+    * @param unit
+    *   the measurement unit. Must be 63 or fewer ASCII characters.
+    */
   def withUnit(unit: String): Self
+
+  /** Sets the description for this instrument.
+    *
+    * @see
+    *   <a
+    *   href="https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/api.md#instrument-description">Instrument
+    *   Description</a>
+    *
+    * @param description
+    *   the description
+    */
   def withDescription(description: String): Self
+
+  /** Creates an instrument with the given `unit` and `description` (if any).
+    */
   def create: F[A]
 }
 
 trait ObservableInstrumentBuilder[F[_], A] {
   type Self <: ObservableInstrumentBuilder[F, A]
 
+  /** Sets the unit of measure for this instrument.
+    *
+    * @see
+    *   <a
+    *   href="https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/api.md#instrument-unit">Instrument
+    *   Unit</a>
+    *
+    * @param unit
+    *   the measurement unit. Must be 63 or fewer ASCII characters.
+    */
   def withUnit(unit: String): Self
+
+  /** Sets the description for this instrument.
+    *
+    * @see
+    *   <a
+    *   href="https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/api.md#instrument-description">Instrument
+    *   Description</a>
+    *
+    * @param description
+    *   the description
+    */
   def withDescription(description: String): Self
+
+  /** Creates an instrument with the given `unit` and `description` (if any).
+    */
   def create: F[A]
 }
 
+/** A `Counter` instrument that records values of type `A`.
+  *
+  * The [[Counter]] is monotonic. This means the aggregated value is nominally
+  * increasing.
+  *
+  * @see
+  *   See [[UpDownCounter]] for non-monotonic alternative
+  *
+  * @tparam F
+  *   the higher-kinded type of a polymorphic effect
+  * @tparam A
+  *   the type of the values to record. OpenTelemetry specification expects `A`
+  *   to be either [[scala.Long]] or [[scala.Double]]
+  */
 trait Counter[F[_], A] {
   def add(value: A, attribute: Attribute[_]*): F[Unit]
 }
@@ -155,6 +245,19 @@ object Counter {
 
 trait ObservableCounter[F[_], A]
 
+/** A `Histogram` instrument that records values of type `A`.
+  *
+  * [[Histogram]] metric data points convey a population of recorded
+  * measurements in a compressed format. A histogram bundles a set of events
+  * into divided populations with an overall event count and aggregate sum for
+  * all events.
+  *
+  * @tparam F
+  *   the higher-kinded type of a polymorphic effect
+  * @tparam A
+  *   the type of the values to record. OpenTelemetry specification expects `A`
+  *   to be either [[scala.Long]] or [[scala.Double]].
+  */
 trait Histogram[F[_], A] {
   def record(value: A, attributes: Attribute[_]*): F[Unit]
 }
@@ -167,6 +270,17 @@ object Histogram {
 
 trait ObservableGauge[F[_], A]
 
+/** A `Counter` instrument that records values of type `A`.
+  *
+  * The [[UpDownCounter]] is non-monotonic. This means the aggregated value can
+  * increase and decrease.
+  *
+  * @tparam F
+  *   the higher-kinded type of a polymorphic effect
+  * @tparam A
+  *   the type of the values to record. OpenTelemetry specification expects `A`
+  *   to be either [[scala.Long]] or [[scala.Double]]
+  */
 trait UpDownCounter[F[_], A] {
   def add(value: A, attributes: Attribute[_]*): F[Unit]
 }

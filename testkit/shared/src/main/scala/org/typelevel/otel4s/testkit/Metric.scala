@@ -16,9 +16,24 @@
 
 package org.typelevel.otel4s.testkit
 
+import org.typelevel.otel4s.Attribute
+
 final case class Metric(
     name: String,
     description: Option[String],
     unit: Option[String],
+    scope: InstrumentationScope,
+    resource: MetricResource,
     data: MetricData
+)
+
+final case class MetricResource(
+    schemaUrl: Option[String],
+    attributes: List[Attribute[_]]
+)
+
+final case class InstrumentationScope(
+    name: String,
+    version: Option[String],
+    schemaUrl: Option[String]
 )

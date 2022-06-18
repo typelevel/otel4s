@@ -11,17 +11,14 @@ import scala.jdk.CollectionConverters._
 class JavaOtelSuite extends CatsEffectSuite {
 
   test("Counter record a proper data") {
-    val expected = new Metric(
-      "counter",
-      Some("description"),
-      Some("unit"),
-      MetricData.LongSum(List(1))
-    )
-
     for {
       sdk <- IO.delay(makeSdk)
       otel4s <- IO.delay(OtelJava.forSync[IO](sdk.sdk))
-      meter <- otel4s.meterProvider.get("java.otel.suite")
+      meter <- otel4s.meterProvider
+        .meter("java.otel.suite")
+        .withVersion("1.0")
+        .withSchemaUrl("https://localhost:8080")
+        .get
 
       counter <- meter
         .counter("counter")
@@ -35,7 +32,33 @@ class JavaOtelSuite extends CatsEffectSuite {
       )
 
       metrics <- sdk.metrics
-    } yield assertEquals(metrics, List(expected))
+    } yield {
+      val resourceAttributes = List(
+        Attribute(AttributeKey.string("service.name"), "unknown_service:java"),
+        Attribute(AttributeKey.string("telemetry.sdk.language"), "java"),
+        Attribute(AttributeKey.string("telemetry.sdk.name"), "opentelemetry"),
+        Attribute(AttributeKey.string("telemetry.sdk.version"), "1.15.0")
+      )
+
+      val scope = InstrumentationScope(
+        name = "java.otel.suite",
+        version = Some("1.0"),
+        schemaUrl = Some("https://localhost:8080")
+      )
+
+      assertEquals(metrics.map(_.name), List("counter"))
+      assertEquals(metrics.map(_.description), List(Some("description")))
+      assertEquals(metrics.map(_.unit), List(Some("unit")))
+      assertEquals(
+        metrics.map(_.resource),
+        List(MetricResource(None, resourceAttributes))
+      )
+      assertEquals(metrics.map(_.scope), List(scope))
+      assertEquals[List[Any], List[Any]](
+        metrics.map(_.data.points.map(_.value)),
+        List(List(1L))
+      )
+    }
   }
 
   private def makeSdk: Sdk[IO] = {

@@ -17,7 +17,8 @@
 package org.typelevel.otel4s
 
 import cats.Applicative
-import cats.effect.{Resource, Temporal}
+import cats.effect.Resource
+import cats.effect.Temporal
 import cats.syntax.flatMap._
 import cats.syntax.functor._
 

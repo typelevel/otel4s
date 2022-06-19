@@ -17,6 +17,11 @@
 package org.typelevel.otel4s
 
 import cats.Applicative
+import cats.effect.{Resource, Temporal}
+import cats.syntax.flatMap._
+import cats.syntax.functor._
+
+import scala.concurrent.duration.TimeUnit
 
 trait Otel4s[F[_]] {
   def meterProvider: MeterProvider[F]
@@ -235,12 +240,26 @@ trait ObservableInstrumentBuilder[F[_], A] {
   */
 trait Counter[F[_], A] {
   def add(value: A, attribute: Attribute[_]*): F[Unit]
+  def inc(attributes: Attribute[_]*): F[Unit]
 }
 object Counter {
+
+  trait LongCounter[F[_]] extends Counter[F, Long] {
+    final def inc(attributes: Attribute[_]*): F[Unit] =
+      add(1L, attributes: _*)
+  }
+
+  trait DoubleCounter[F[_]] extends Counter[F, Double] {
+    final def inc(attributes: Attribute[_]*): F[Unit] =
+      add(1.0, attributes: _*)
+  }
+
   def noop[F[_], A](implicit F: Applicative[F]): Counter[F, A] =
     new Counter[F, A] {
-      def add(value: A, attribute: Attribute[_]*) = F.unit
+      def add(value: A, attribute: Attribute[_]*): F[Unit] = F.unit
+      def inc(attributes: Attribute[_]*): F[Unit] = F.unit
     }
+
 }
 
 trait ObservableCounter[F[_], A]
@@ -262,10 +281,46 @@ trait Histogram[F[_], A] {
   def record(value: A, attributes: Attribute[_]*): F[Unit]
 }
 object Histogram {
+
+  private val CauseKey: AttributeKey[String] = AttributeKey.string("cause")
+
   def noop[F[_], A](implicit F: Applicative[F]): Histogram[F, A] =
     new Histogram[F, A] {
       def record(value: A, attribute: Attribute[_]*) = F.unit
     }
+
+  implicit final class HistogramSyntax[F[_]](
+      private val histogram: Histogram[F, Double]
+  ) extends AnyVal {
+
+    def recordDuration(
+        timeUnit: TimeUnit,
+        attributes: Attribute[_]*
+    )(implicit F: Temporal[F]): Resource[F, Unit] =
+      Resource
+        .makeCase(F.monotonic) { case (start, ec) =>
+          for {
+            end <- F.monotonic
+            _ <- histogram.record(
+              (end - start).toUnit(timeUnit),
+              attributes ++ causeAttributes(ec): _*
+            )
+          } yield ()
+        }
+        .void
+
+  }
+
+  def causeAttributes(ec: Resource.ExitCase): List[Attribute[String]] =
+    ec match {
+      case Resource.ExitCase.Succeeded =>
+        Nil
+      case Resource.ExitCase.Errored(e) =>
+        List(Attribute(CauseKey, e.getClass.getName))
+      case Resource.ExitCase.Canceled =>
+        List(Attribute(CauseKey, "canceled"))
+    }
+
 }
 
 trait ObservableGauge[F[_], A]

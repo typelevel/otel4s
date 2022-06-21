@@ -26,6 +26,7 @@ import io.opentelemetry.api.common.{AttributeType => JAttributeType}
 import io.opentelemetry.api.metrics.{Meter => JMeter}
 import io.opentelemetry.api.metrics.{LongCounter => JLongCounter}
 import io.opentelemetry.api.metrics.{DoubleHistogram => JDoubleHistogram}
+import io.opentelemetry.api.metrics.{LongUpDownCounter => JLongUpDownCounter}
 
 import scala.jdk.CollectionConverters._
 
@@ -66,6 +67,11 @@ object OtelJava {
         name: String
     ): SyncInstrumentBuilder[F, Histogram[F, Double]] =
       new HistogramBuilderImpl(jMeter, name)
+
+    def upDownCounter(
+        name: String
+    ): SyncInstrumentBuilder[F, UpDownCounter[F, Long]] =
+      new UpDownCounterBuilderImpl(jMeter, name)
   }
 
   private case class CounterBuilderImpl[F[_]](
@@ -122,6 +128,36 @@ object OtelJava {
   ) extends Histogram[F, Double] {
     def record(d: Double, attributes: Attribute[_]*) =
       F.delay(histogram.record(d, toJAttributes(attributes)))
+  }
+
+  private case class UpDownCounterBuilderImpl[F[_]](
+      jMeter: JMeter,
+      name: String,
+      unit: Option[String] = None,
+      description: Option[String] = None
+  )(implicit F: Sync[F])
+      extends SyncInstrumentBuilder[F, UpDownCounter[F, Long]] {
+    type Self = UpDownCounterBuilderImpl[F]
+
+    def withUnit(unit: String) =
+      copy(unit = Option(unit))
+
+    def withDescription(description: String) =
+      copy(description = Option(description))
+
+    def create: F[UpDownCounter[F, Long]] = F.delay {
+      val b = jMeter.upDownCounterBuilder(name)
+      unit.foreach(b.setUnit)
+      description.foreach(b.setDescription)
+      new UpDownCounterImpl(b.build)
+    }
+  }
+
+  private class UpDownCounterImpl[F[_]](counter: JLongUpDownCounter)(implicit
+      F: Sync[F]
+  ) extends UpDownCounter.LongUpDownCounter[F] {
+    def add(value: Long, attributes: Attribute[_]*): F[Unit] =
+      F.delay(counter.add(value, toJAttributes(attributes)))
   }
 
   private def toJAttributes(attributes: Seq[Attribute[_]]): JAttributes = {

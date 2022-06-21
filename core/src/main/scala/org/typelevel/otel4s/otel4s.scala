@@ -135,7 +135,15 @@ trait Meter[F[_]] {
 
   // def observableGauge(name: String): ObservableInstrumentBuilder[F, ObservableGauge[F, Long]]
 
-  // def upDownCounter(name: String): SyncInstrumentBuilder[F, UpDownCounter[F, Long]]
+  /** Creates a builder of [[UpDownCounter]] instrument that records
+    * [[scala.Long]] values.
+    *
+    * @param name
+    *   the name of the instrument
+    */
+  def upDownCounter(
+      name: String
+  ): SyncInstrumentBuilder[F, UpDownCounter[F, Long]]
   // def observableUpDownCounter(name: String): ObservableInstrumentBuilder[F, UpDownCounter[F, Long]]
 }
 
@@ -156,6 +164,17 @@ object Meter {
           def withUnit(unit: String) = this
           def withDescription(description: String) = this
           def create = F.pure(Histogram.noop)
+        }
+
+      def upDownCounter(
+          name: String
+      ): SyncInstrumentBuilder[F, UpDownCounter[F, Long]] =
+        new SyncInstrumentBuilder[F, UpDownCounter[F, Long]] {
+          type Self = this.type
+
+          def withUnit(unit: String) = this
+          def withDescription(description: String) = this
+          def create = F.pure(UpDownCounter.noop)
         }
     }
 }
@@ -239,7 +258,22 @@ trait ObservableInstrumentBuilder[F[_], A] {
   *   to be either [[scala.Long]] or [[scala.Double]]
   */
 trait Counter[F[_], A] {
-  def add(value: A, attribute: Attribute[_]*): F[Unit]
+
+  /** Records a value with a set of attributes.
+    *
+    * @param value
+    *   the value to increment a counter with. Must be '''non-negative'''
+    *
+    * @param attributes
+    *   the set of attributes to associate with the value
+    */
+  def add(value: A, attributes: Attribute[_]*): F[Unit]
+
+  /** Increments a counter by one.
+    *
+    * @param attributes
+    *   the set of attributes to associate with the value
+    */
   def inc(attributes: Attribute[_]*): F[Unit]
 }
 object Counter {
@@ -256,7 +290,7 @@ object Counter {
 
   def noop[F[_], A](implicit F: Applicative[F]): Counter[F, A] =
     new Counter[F, A] {
-      def add(value: A, attribute: Attribute[_]*): F[Unit] = F.unit
+      def add(value: A, attributes: Attribute[_]*): F[Unit] = F.unit
       def inc(attributes: Attribute[_]*): F[Unit] = F.unit
     }
 
@@ -278,21 +312,47 @@ trait ObservableCounter[F[_], A]
   *   to be either [[scala.Long]] or [[scala.Double]].
   */
 trait Histogram[F[_], A] {
+
+  /** Records a value with a set of attributes.
+    *
+    * @param value
+    *   the value to increment a counter with. Must be '''non-negative'''
+    *
+    * @param attributes
+    *   the set of attributes to associate with the value
+    */
   def record(value: A, attributes: Attribute[_]*): F[Unit]
 }
+
 object Histogram {
 
   private val CauseKey: AttributeKey[String] = AttributeKey.string("cause")
 
   def noop[F[_], A](implicit F: Applicative[F]): Histogram[F, A] =
     new Histogram[F, A] {
-      def record(value: A, attribute: Attribute[_]*) = F.unit
+      def record(value: A, attributes: Attribute[_]*): F[Unit] = F.unit
     }
 
   implicit final class HistogramSyntax[F[_]](
       private val histogram: Histogram[F, Double]
   ) extends AnyVal {
 
+    /** Records duration of the given effect.
+      *
+      * @example {{{
+      * val histogram: Histogram[F] = ???
+      * val attributeKey = AttributeKey.string("query_name")
+      *
+      * def findUser(name: String) =
+      *  histogram.recordDuration(TimeUnit.MILLISECONDS, Attribute(attributeKey, "find_user")).use { _ =>
+      *    db.findUser(name)
+      *  }
+      * }}}
+      * @param timeUnit
+      *   the time unit. Must match
+      * @param attributes
+      *   the set of attributes to associate with the value
+      */
     def recordDuration(
         timeUnit: TimeUnit,
         attributes: Attribute[_]*
@@ -330,6 +390,9 @@ trait ObservableGauge[F[_], A]
   * The [[UpDownCounter]] is non-monotonic. This means the aggregated value can
   * increase and decrease.
   *
+  * @see
+  *   See [[Counter]] for monotonic alternative
+  *
   * @tparam F
   *   the higher-kinded type of a polymorphic effect
   * @tparam A
@@ -337,7 +400,56 @@ trait ObservableGauge[F[_], A]
   *   to be either [[scala.Long]] or [[scala.Double]]
   */
 trait UpDownCounter[F[_], A] {
+
+  /** Records a value with a set of attributes.
+    *
+    * @param value
+    *   the value to record
+    * @param attributes
+    *   the set of attributes to associate with the value
+    */
   def add(value: A, attributes: Attribute[_]*): F[Unit]
+
+  /** Increments a counter by one.
+    *
+    * @param attributes
+    *   the set of attributes to associate with the value
+    */
+  def inc(attributes: Attribute[_]*): F[Unit]
+
+  /** Decrements a counter by one.
+    *
+    * @param attributes
+    *   the set of attributes to associate with the value
+    */
+  def dec(attributes: Attribute[_]*): F[Unit]
+}
+
+object UpDownCounter {
+
+  trait LongUpDownCounter[F[_]] extends UpDownCounter[F, Long] {
+    final def inc(attributes: Attribute[_]*): F[Unit] =
+      add(1L, attributes: _*)
+
+    final def dec(attributes: Attribute[_]*): F[Unit] =
+      add(-1L, attributes: _*)
+  }
+
+  trait DoubleUpDownCounter[F[_]] extends UpDownCounter[F, Double] {
+    final def inc(attributes: Attribute[_]*): F[Unit] =
+      add(1.0, attributes: _*)
+
+    final def dec(attributes: Attribute[_]*): F[Unit] =
+      add(-1.0, attributes: _*)
+  }
+
+  def noop[F[_], A](implicit F: Applicative[F]): UpDownCounter[F, A] =
+    new UpDownCounter[F, A] {
+      def add(value: A, attributes: Attribute[_]*): F[Unit] = F.unit
+      def inc(attributes: Attribute[_]*): F[Unit] = F.unit
+      def dec(attributes: Attribute[_]*): F[Unit] = F.unit
+    }
+
 }
 
 trait ObservableUpDownCounter[F, A]

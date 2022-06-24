@@ -97,9 +97,17 @@ object OtelJava {
 
   private class CounterImpl[F[_]](longCounter: JLongCounter)(implicit
       F: Sync[F]
-  ) extends Counter.LongCounter[F] {
-    def add(long: Long, attributes: Attribute[_]*): F[Unit] =
-      F.delay(longCounter.add(long, toJAttributes(attributes)))
+  ) extends Counter[F, Long] {
+
+    val backend =
+      new Counter.LongCounterBackend[F] {
+        val isEnabled: Boolean = true
+        val unit: F[Unit] = F.unit
+
+        def add(value: Long, attributes: Attribute[_]*): F[Unit] =
+          F.delay(longCounter.add(value, toJAttributes(attributes)))
+      }
+
   }
 
   private case class HistogramBuilderImpl[F[_]](

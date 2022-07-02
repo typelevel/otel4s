@@ -33,7 +33,22 @@ sealed trait AttributeKey[A] {
 
 object AttributeKey {
   private class Impl[A](val name: String, val `type`: AttributeType[A])
-      extends AttributeKey[A]
+      extends AttributeKey[A] {
+
+    override final def toString: String =
+      Show[AttributeKey[A]].show(this)
+
+    override final def hashCode(): Int =
+      Hash[AttributeKey[A]].hash(this)
+
+    override final def equals(obj: Any): Boolean =
+      obj match {
+        case other: AttributeKey[A @unchecked] =>
+          Hash[AttributeKey[A]].eqv(this, other)
+        case _ =>
+          false
+      }
+  }
 
   def string(name: String): AttributeKey[String] =
     new Impl(name, AttributeType.String)

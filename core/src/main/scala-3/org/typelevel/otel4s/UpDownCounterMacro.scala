@@ -18,8 +18,8 @@ package org.typelevel.otel4s
 
 import scala.quoted.*
 
-private[otel4s] trait CounterMacro[F[_], A] {
-  def backend: Counter.Backend[F, A]
+private[otel4s] trait UpDownCounterMacro[F[_], A] {
+  def backend: UpDownCounter.Backend[F, A]
 
   /** Records a value with a set of attributes.
     *
@@ -30,7 +30,7 @@ private[otel4s] trait CounterMacro[F[_], A] {
     *   the set of attributes to associate with the value
     */
   inline def add(inline value: A, inline attributes: Attribute[_]*): F[Unit] =
-    ${ Macro.counter.add('backend, 'value, 'attributes) }
+    ${ Macro.upDownCounter.add('backend, 'value, 'attributes) }
 
   /** Increments a counter by one.
     *
@@ -38,5 +38,13 @@ private[otel4s] trait CounterMacro[F[_], A] {
     *   the set of attributes to associate with the value
     */
   inline def inc(inline attributes: Attribute[_]*): F[Unit] =
-    ${ Macro.counter.inc('backend, 'attributes) }
+    ${ Macro.upDownCounter.inc('backend, 'attributes) }
+
+  /** Decrements a counter by one.
+    *
+    * @param attributes
+    *   the set of attributes to associate with the value
+    */
+  inline def dec(inline attributes: Attribute[_]*): F[Unit] =
+    ${ Macro.upDownCounter.dec('backend, 'attributes) }
 }

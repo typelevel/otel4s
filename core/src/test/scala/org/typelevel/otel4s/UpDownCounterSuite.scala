@@ -19,11 +19,11 @@ package org.typelevel.otel4s
 import cats.effect.{IO, Ref}
 import munit.CatsEffectSuite
 
-class CounterSuite extends CatsEffectSuite {
-  import CounterSuite._
+class UpDownCounterSuite extends CatsEffectSuite {
+  import UpDownCounterSuite._
 
   test("do not allocate attributes when instrument is noop") {
-    val counter = Counter.noop[IO, Long]
+    val counter = UpDownCounter.noop[IO, Long]
 
     var allocated = false
 
@@ -35,6 +35,7 @@ class CounterSuite extends CatsEffectSuite {
     for {
       _ <- counter.add(1L, allocateAttribute: _*)
       _ <- counter.inc(allocateAttribute: _*)
+      _ <- counter.dec(allocateAttribute: _*)
     } yield assert(!allocated)
   }
 
@@ -49,7 +50,7 @@ class CounterSuite extends CatsEffectSuite {
       )
 
     for {
-      counter <- inMemoryCounter
+      counter <- inMemoryUpDownCounter
       _ <- counter.add(1L, attribute)
       _ <- counter.add(2L)
       _ <- counter.add(3L, attribute, attribute)
@@ -68,7 +69,7 @@ class CounterSuite extends CatsEffectSuite {
       )
 
     for {
-      counter <- inMemoryCounter
+      counter <- inMemoryUpDownCounter
       _ <- counter.inc(attribute)
       _ <- counter.inc()
       _ <- counter.inc(attribute, attribute)
@@ -76,20 +77,39 @@ class CounterSuite extends CatsEffectSuite {
     } yield assertEquals(records, expected)
   }
 
-  private def inMemoryCounter: IO[InMemoryCounter] =
-    IO.ref[List[Record[Long]]](Nil).map(ref => new InMemoryCounter(ref))
+  test("dec by one") {
+    val attribute = Attribute(AttributeKey.string("key"), "value")
+
+    val expected =
+      List(
+        Record(-1L, Seq(attribute)),
+        Record(-1L, Nil),
+        Record(-1L, Seq(attribute, attribute))
+      )
+
+    for {
+      counter <- inMemoryUpDownCounter
+      _ <- counter.dec(attribute)
+      _ <- counter.dec()
+      _ <- counter.dec(attribute, attribute)
+      records <- counter.records
+    } yield assertEquals(records, expected)
+  }
+
+  private def inMemoryUpDownCounter: IO[InMemoryUpDownCounter] =
+    IO.ref[List[Record[Long]]](Nil).map(ref => new InMemoryUpDownCounter(ref))
 
 }
 
-object CounterSuite {
+object UpDownCounterSuite {
 
   final case class Record[A](value: A, attributes: Seq[Attribute[_]])
 
-  class InMemoryCounter(ref: Ref[IO, List[Record[Long]]])
-      extends Counter[IO, Long] {
+  class InMemoryUpDownCounter(ref: Ref[IO, List[Record[Long]]])
+      extends UpDownCounter[IO, Long] {
 
-    val backend: Counter.Backend[IO, Long] =
-      new Counter.LongBackend[IO] {
+    val backend: UpDownCounter.Backend[IO, Long] =
+      new UpDownCounter.LongBackend[IO] {
         val isEnabled: Boolean = true
         def add(value: Long, attributes: Attribute[_]*): IO[Unit] =
           ref.update(_.appended(Record(value, attributes)))

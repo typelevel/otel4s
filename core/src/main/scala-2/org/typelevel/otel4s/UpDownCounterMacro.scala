@@ -16,27 +16,34 @@
 
 package org.typelevel.otel4s
 
-import scala.quoted.*
-
-private[otel4s] trait CounterMacro[F[_], A] {
-  def backend: Counter.Backend[F, A]
+private[otel4s] trait UpDownCounterMacro[F[_], A] {
+  def backend: UpDownCounter.Backend[F, A]
 
   /** Records a value with a set of attributes.
     *
     * @param value
-    *   the value to increment a counter with. Must be '''non-negative'''
+    *   the value to increment a counter with
     *
     * @param attributes
     *   the set of attributes to associate with the value
     */
-  inline def add(inline value: A, inline attributes: Attribute[_]*): F[Unit] =
-    ${ Macro.counter.add('backend, 'value, 'attributes) }
+  def add(value: A, attributes: Attribute[_]*): F[Unit] =
+    macro Macro.add[A]
 
   /** Increments a counter by one.
     *
     * @param attributes
     *   the set of attributes to associate with the value
     */
-  inline def inc(inline attributes: Attribute[_]*): F[Unit] =
-    ${ Macro.counter.inc('backend, 'attributes) }
+  def inc(attributes: Attribute[_]*): F[Unit] =
+    macro Macro.inc
+
+  /** Decrements a counter by one.
+    *
+    * @param attributes
+    *   the set of attributes to associate with the value
+    */
+  def dec(attributes: Attribute[_]*): F[Unit] =
+    macro Macro.dec
+
 }

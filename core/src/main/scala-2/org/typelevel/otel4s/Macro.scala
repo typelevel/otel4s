@@ -16,26 +16,57 @@
 
 package org.typelevel.otel4s
 
+import scala.concurrent.duration.TimeUnit
 import scala.reflect.macros.blackbox
 
 private[otel4s] object Macro {
 
-  def add[A](
-      c: blackbox.Context
-  )(value: c.Expr[A], attributes: c.Expr[Attribute[_]]*): c.universe.Tree = {
+  def add[A](c: blackbox.Context)(
+      value: c.Expr[A],
+      attributes: c.Expr[Attribute[_]]*
+  ): c.universe.Tree = {
     import c.universe._
     val backend = q"${c.prefix}.backend"
 
     q"if ($backend.isEnabled) $backend.add($value, ..$attributes) else $backend.unit"
   }
 
-  def inc(
-      c: blackbox.Context
-  )(attributes: c.Expr[Attribute[_]]*): c.universe.Tree = {
+  def inc(c: blackbox.Context)(
+      attributes: c.Expr[Attribute[_]]*
+  ): c.universe.Tree = {
     import c.universe._
     val backend = q"${c.prefix}.backend"
 
     q"if ($backend.isEnabled) $backend.inc(..$attributes) else $backend.unit"
+  }
+
+  def dec(c: blackbox.Context)(
+      attributes: c.Expr[Attribute[_]]*
+  ): c.universe.Tree = {
+    import c.universe._
+    val backend = q"${c.prefix}.backend"
+
+    q"if ($backend.isEnabled) $backend.dec(..$attributes) else $backend.unit"
+  }
+
+  def record[A](c: blackbox.Context)(
+      value: c.Expr[A],
+      attributes: c.Expr[Attribute[_]]*
+  ): c.universe.Tree = {
+    import c.universe._
+    val backend = q"${c.prefix}.backend"
+
+    q"if ($backend.isEnabled) $backend.record($value, ..$attributes) else $backend.unit"
+  }
+
+  def recordDuration(c: blackbox.Context)(
+      timeUnit: c.Expr[TimeUnit],
+      attributes: c.Expr[Attribute[_]]*
+  ): c.universe.Tree = {
+    import c.universe._
+    val backend = q"${c.prefix}.backend"
+
+    q"if ($backend.isEnabled) $backend.recordDuration($timeUnit, ..$attributes) else $backend.resourceUnit"
   }
 
 }

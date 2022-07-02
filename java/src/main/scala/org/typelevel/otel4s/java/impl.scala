@@ -99,10 +99,9 @@ object OtelJava {
       F: Sync[F]
   ) extends Counter[F, Long] {
 
-    val backend =
-      new Counter.LongCounterBackend[F] {
+    val backend: Counter.Backend[F, Long] =
+      new Counter.LongBackend[F] {
         val isEnabled: Boolean = true
-        val unit: F[Unit] = F.unit
 
         def add(value: Long, attributes: Attribute[_]*): F[Unit] =
           F.delay(longCounter.add(value, toJAttributes(attributes)))
@@ -134,8 +133,14 @@ object OtelJava {
   private class HistogramImpl[F[_]](histogram: JDoubleHistogram)(implicit
       F: Sync[F]
   ) extends Histogram[F, Double] {
-    def record(d: Double, attributes: Attribute[_]*) =
-      F.delay(histogram.record(d, toJAttributes(attributes)))
+
+    val backend: Histogram.Backend[F, Double] =
+      new Histogram.DoubleBackend[F] {
+        val isEnabled: Boolean = true
+        def record(value: Double, attributes: Attribute[_]*): F[Unit] =
+          F.delay(histogram.record(value, toJAttributes(attributes)))
+      }
+
   }
 
   private case class UpDownCounterBuilderImpl[F[_]](
@@ -163,9 +168,16 @@ object OtelJava {
 
   private class UpDownCounterImpl[F[_]](counter: JLongUpDownCounter)(implicit
       F: Sync[F]
-  ) extends UpDownCounter.LongUpDownCounter[F] {
-    def add(value: Long, attributes: Attribute[_]*): F[Unit] =
-      F.delay(counter.add(value, toJAttributes(attributes)))
+  ) extends UpDownCounter[F, Long] {
+
+    val backend: UpDownCounter.Backend[F, Long] =
+      new UpDownCounter.LongBackend[F] {
+        val isEnabled: Boolean = true
+
+        def add(value: Long, attributes: Attribute[_]*): F[Unit] =
+          F.delay(counter.add(value, toJAttributes(attributes)))
+
+      }
   }
 
   private def toJAttributes(attributes: Seq[Attribute[_]]): JAttributes = {

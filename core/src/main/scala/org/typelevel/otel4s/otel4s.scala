@@ -16,8 +16,8 @@
 
 package org.typelevel.otel4s
 
-import cats.Applicative
-import cats.effect.{Resource, Temporal}
+import cats.{Applicative, Monad}
+import cats.effect.{Clock, Resource}
 import cats.syntax.flatMap._
 import cats.syntax.functor._
 
@@ -261,9 +261,7 @@ trait Counter[F[_], A] extends CounterMacro[F, A]
 
 object Counter {
 
-  trait Backend[F[_], A] {
-    def isEnabled: Boolean
-    def unit: F[Unit]
+  trait Backend[F[_], A] extends InstrumentBackend[F] {
 
     /** Records a value with a set of attributes.
       *
@@ -283,12 +281,16 @@ object Counter {
     def inc(attributes: Attribute[_]*): F[Unit]
   }
 
-  trait LongCounterBackend[F[_]] extends Backend[F, Long] {
+  abstract class LongBackend[F[_]: Applicative] extends Backend[F, Long] {
+    final val unit: F[Unit] = Applicative[F].unit
+
     final def inc(attributes: Attribute[_]*): F[Unit] =
       add(1L, attributes: _*)
   }
 
-  trait DoubleCounterBackend[F[_]] extends Backend[F, Double] {
+  abstract class DoubleBackend[F[_]: Applicative] extends Backend[F, Double] {
+    final val unit: F[Unit] = Applicative[F].unit
+
     final def inc(attributes: Attribute[_]*): F[Unit] =
       add(1.0, attributes: _*)
   }
@@ -321,31 +323,22 @@ trait ObservableCounter[F[_], A]
   *   the type of the values to record. OpenTelemetry specification expects `A`
   *   to be either [[scala.Long]] or [[scala.Double]].
   */
-trait Histogram[F[_], A] {
-
-  /** Records a value with a set of attributes.
-    *
-    * @param value
-    *   the value to increment a counter with. Must be '''non-negative'''
-    *
-    * @param attributes
-    *   the set of attributes to associate with the value
-    */
-  def record(value: A, attributes: Attribute[_]*): F[Unit]
-}
+trait Histogram[F[_], A] extends HistogramMacro[F, A]
 
 object Histogram {
 
-  private val CauseKey: AttributeKey[String] = AttributeKey.string("cause")
+  trait Backend[F[_], A] extends InstrumentBackend[F] {
+    final val resourceUnit: Resource[F, Unit] = Resource.unit
 
-  def noop[F[_], A](implicit F: Applicative[F]): Histogram[F, A] =
-    new Histogram[F, A] {
-      def record(value: A, attributes: Attribute[_]*): F[Unit] = F.unit
-    }
-
-  implicit final class HistogramSyntax[F[_]](
-      private val histogram: Histogram[F, Double]
-  ) extends AnyVal {
+    /** Records a value with a set of attributes.
+      *
+      * @param value
+      *   the value to record
+      *
+      * @param attributes
+      *   the set of attributes to associate with the value
+      */
+    def record(value: A, attributes: Attribute[_]*): F[Unit]
 
     /** Records duration of the given effect.
       *
@@ -366,12 +359,23 @@ object Histogram {
     def recordDuration(
         timeUnit: TimeUnit,
         attributes: Attribute[_]*
-    )(implicit F: Temporal[F]): Resource[F, Unit] =
+    ): Resource[F, Unit]
+
+  }
+
+  abstract class DoubleBackend[F[_]: Monad: Clock] extends Backend[F, Double] {
+
+    final val unit: F[Unit] = Monad[F].unit
+
+    final def recordDuration(
+        timeUnit: TimeUnit,
+        attributes: Attribute[_]*
+    ): Resource[F, Unit] =
       Resource
-        .makeCase(F.monotonic) { case (start, ec) =>
+        .makeCase(Clock[F].monotonic) { case (start, ec) =>
           for {
-            end <- F.monotonic
-            _ <- histogram.record(
+            end <- Clock[F].monotonic
+            _ <- record(
               (end - start).toUnit(timeUnit),
               attributes ++ causeAttributes(ec): _*
             )
@@ -380,6 +384,22 @@ object Histogram {
         .void
 
   }
+
+  def noop[F[_], A](implicit F: Applicative[F]): Histogram[F, A] =
+    new Histogram[F, A] {
+      val backend: Backend[F, A] =
+        new Backend[F, A] {
+          val isEnabled: Boolean = false
+          val unit: F[Unit] = F.unit
+          def record(value: A, attributes: Attribute[_]*): F[Unit] = unit
+          def recordDuration(
+              timeUnit: TimeUnit,
+              attributes: Attribute[_]*
+          ): Resource[F, Unit] = resourceUnit
+        }
+    }
+
+  private val CauseKey: AttributeKey[String] = AttributeKey.string("cause")
 
   def causeAttributes(ec: Resource.ExitCase): List[Attribute[String]] =
     ec match {
@@ -409,35 +429,39 @@ trait ObservableGauge[F[_], A]
   *   the type of the values to record. OpenTelemetry specification expects `A`
   *   to be either [[scala.Long]] or [[scala.Double]]
   */
-trait UpDownCounter[F[_], A] {
-
-  /** Records a value with a set of attributes.
-    *
-    * @param value
-    *   the value to record
-    * @param attributes
-    *   the set of attributes to associate with the value
-    */
-  def add(value: A, attributes: Attribute[_]*): F[Unit]
-
-  /** Increments a counter by one.
-    *
-    * @param attributes
-    *   the set of attributes to associate with the value
-    */
-  def inc(attributes: Attribute[_]*): F[Unit]
-
-  /** Decrements a counter by one.
-    *
-    * @param attributes
-    *   the set of attributes to associate with the value
-    */
-  def dec(attributes: Attribute[_]*): F[Unit]
-}
+trait UpDownCounter[F[_], A] extends UpDownCounterMacro[F, A]
 
 object UpDownCounter {
 
-  trait LongUpDownCounter[F[_]] extends UpDownCounter[F, Long] {
+  trait Backend[F[_], A] extends InstrumentBackend[F] {
+
+    /** Records a value with a set of attributes.
+      *
+      * @param value
+      *   the value to record
+      * @param attributes
+      *   the set of attributes to associate with the value
+      */
+    def add(value: A, attributes: Attribute[_]*): F[Unit]
+
+    /** Increments a counter by one.
+      *
+      * @param attributes
+      *   the set of attributes to associate with the value
+      */
+    def inc(attributes: Attribute[_]*): F[Unit]
+
+    /** Decrements a counter by one.
+      *
+      * @param attributes
+      *   the set of attributes to associate with the value
+      */
+    def dec(attributes: Attribute[_]*): F[Unit]
+  }
+
+  abstract class LongBackend[F[_]: Applicative] extends Backend[F, Long] {
+    final val unit: F[Unit] = Applicative[F].unit
+
     final def inc(attributes: Attribute[_]*): F[Unit] =
       add(1L, attributes: _*)
 
@@ -445,19 +469,26 @@ object UpDownCounter {
       add(-1L, attributes: _*)
   }
 
-  trait DoubleUpDownCounter[F[_]] extends UpDownCounter[F, Double] {
+  abstract class DoubleBackend[F[_]: Applicative] extends Backend[F, Double] {
+    val unit: F[Unit] = Applicative[F].unit
+
     final def inc(attributes: Attribute[_]*): F[Unit] =
       add(1.0, attributes: _*)
 
     final def dec(attributes: Attribute[_]*): F[Unit] =
-      add(-1.0, attributes: _*)
+      add(1.0, attributes: _*)
   }
 
   def noop[F[_], A](implicit F: Applicative[F]): UpDownCounter[F, A] =
     new UpDownCounter[F, A] {
-      def add(value: A, attributes: Attribute[_]*): F[Unit] = F.unit
-      def inc(attributes: Attribute[_]*): F[Unit] = F.unit
-      def dec(attributes: Attribute[_]*): F[Unit] = F.unit
+      val backend: UpDownCounter.Backend[F, A] =
+        new UpDownCounter.Backend[F, A] {
+          val unit: F[Unit] = F.unit
+          val isEnabled: Boolean = false
+          def add(value: A, attributes: Attribute[_]*): F[Unit] = unit
+          def inc(attributes: Attribute[_]*): F[Unit] = unit
+          def dec(attributes: Attribute[_]*): F[Unit] = unit
+        }
     }
 
 }

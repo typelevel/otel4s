@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-package org.typelevel.otel4s
+package org.typelevel.otel4s.metrics
 
 import java.util.concurrent.TimeUnit
 
 import cats.effect.{IO, Ref}
 import munit.CatsEffectSuite
+import org.typelevel.otel4s.{Attribute, AttributeKey}
 
 import scala.concurrent.duration._
 

@@ -15,6 +15,7 @@
  */
 
 package org.typelevel.otel4s
+package metrics
 
 import cats.effect.{IO, Ref}
 import munit.CatsEffectSuite

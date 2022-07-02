@@ -24,8 +24,8 @@ import io.opentelemetry.api.common.{AttributeType => JAttributeType}
 import io.opentelemetry.api.common.{Attributes => JAttributes}
 import io.opentelemetry.api.metrics.{DoubleHistogram => JDoubleHistogram}
 import io.opentelemetry.api.metrics.{LongCounter => JLongCounter}
-import io.opentelemetry.api.metrics.{Meter => JMeter}
 import io.opentelemetry.api.metrics.{LongUpDownCounter => JLongUpDownCounter}
+import io.opentelemetry.api.metrics.{Meter => JMeter}
 
 import scala.jdk.CollectionConverters._
 

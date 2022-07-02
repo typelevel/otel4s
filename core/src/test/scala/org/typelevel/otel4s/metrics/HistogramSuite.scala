@@ -16,12 +16,13 @@
 
 package org.typelevel.otel4s.metrics
 
-import java.util.concurrent.TimeUnit
-
-import cats.effect.{IO, Ref}
+import cats.effect.IO
+import cats.effect.Ref
 import munit.CatsEffectSuite
-import org.typelevel.otel4s.{Attribute, AttributeKey}
+import org.typelevel.otel4s.Attribute
+import org.typelevel.otel4s.AttributeKey
 
+import java.util.concurrent.TimeUnit
 import scala.concurrent.duration._
 
 class HistogramSuite extends CatsEffectSuite {
@@ -48,17 +49,21 @@ class HistogramSuite extends CatsEffectSuite {
 
   test("record duration") {
     val attribute = Attribute(AttributeKey.string("key"), "value")
+    val sleepDuration = 500.millis
+    val unit = TimeUnit.MILLISECONDS
+    // the measured duration is affected by the context switches, that's why we need delta
+    val delta = 100.0
 
     for {
       histogram <- inMemoryHistogram
       _ <- histogram
-        .recordDuration(TimeUnit.MILLISECONDS, attribute)
-        .use(_ => IO.sleep(1.second))
+        .recordDuration(unit, attribute)
+        .use(_ => IO.sleep(sleepDuration))
       records <- histogram.records
     } yield {
       assertEquals(records.length, 1)
-      assertEqualsDouble(records.head.value, 1000, 100)
       assertEquals(records.head.attributes, Seq(attribute))
+      assertEqualsDouble(records.head.value, sleepDuration.toUnit(unit), delta)
     }
   }
 

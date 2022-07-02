@@ -16,9 +16,11 @@
 
 package org.typelevel.otel4s.metrics
 
-import cats.effect.{IO, Ref}
+import cats.effect.IO
+import cats.effect.Ref
 import munit.CatsEffectSuite
-import org.typelevel.otel4s.{Attribute, AttributeKey}
+import org.typelevel.otel4s.Attribute
+import org.typelevel.otel4s.AttributeKey
 
 class UpDownCounterSuite extends CatsEffectSuite {
   import UpDownCounterSuite._

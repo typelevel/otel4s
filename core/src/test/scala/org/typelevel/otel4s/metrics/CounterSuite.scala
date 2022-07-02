@@ -17,7 +17,8 @@
 package org.typelevel.otel4s
 package metrics
 
-import cats.effect.{IO, Ref}
+import cats.effect.IO
+import cats.effect.Ref
 import munit.CatsEffectSuite
 
 class CounterSuite extends CatsEffectSuite {

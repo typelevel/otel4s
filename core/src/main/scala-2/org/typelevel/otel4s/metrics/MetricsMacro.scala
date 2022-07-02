@@ -15,11 +15,12 @@
  */
 
 package org.typelevel.otel4s
+package metrics
 
 import scala.concurrent.duration.TimeUnit
 import scala.reflect.macros.blackbox
 
-private[otel4s] object Macro {
+private[otel4s] object MetricsMacro {
 
   def add[A](c: blackbox.Context)(
       value: c.Expr[A],

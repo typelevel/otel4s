@@ -15,13 +15,12 @@
  */
 
 package org.typelevel.otel4s
-
-import org.typelevel.otel4s
+package metrics
 
 import scala.concurrent.duration.TimeUnit
 import scala.quoted.*
 
-private[otel4s] object Macro {
+private[otel4s] object MetricsMacro {
 
   object counter {
 

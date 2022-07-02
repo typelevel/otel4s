@@ -15,10 +15,12 @@
  */
 
 package org.typelevel.otel4s
+package metrics
 
 import cats.effect.Resource
 
-import scala.concurrent.duration.TimeUnit
+import scala.concurrent.duration._
+import scala.quoted.*
 
 private[otel4s] trait HistogramMacro[F[_], A] {
   def backend: Histogram.Backend[F, A]
@@ -31,29 +33,29 @@ private[otel4s] trait HistogramMacro[F[_], A] {
     * @param attributes
     *   the set of attributes to associate with the value
     */
-  def record(value: A, attributes: Attribute[_]*): F[Unit] =
-    macro Macro.record[A]
+  inline def record(
+      inline value: A,
+      inline attributes: Attribute[_]*
+  ): F[Unit] =
+    ${ MetricsMacro.histogram.record('backend, 'value, 'attributes) }
 
   /** Records duration of the given effect.
     *
-    * @example {{{
-    * val histogram: Histogram[F] = ???
-    * val attributeKey = AttributeKey.string("query_name")
+    * @example
+    *   {{{ val histogram: Histogram[F] = ??? val attributeKey =
+    *   AttributeKey.string("query_name")
     *
     * def findUser(name: String) =
-    *  histogram.recordDuration(TimeUnit.MILLISECONDS, Attribute(attributeKey, "find_user")).use { _ =>
-    *    db.findUser(name)
-    *  }
-    * }}}
+    * histogram.recordDuration(TimeUnit.MILLISECONDS, Attribute(attributeKey,
+    * "find_user")).use { _ => db.findUser(name) } }}}
     * @param timeUnit
     *   the time unit. Must match
     * @param attributes
     *   the set of attributes to associate with the value
     */
-  def recordDuration(
-      timeUnit: TimeUnit,
-      attributes: Attribute[_]*
+  inline def recordDuration(
+      inline timeUnit: TimeUnit,
+      inline attributes: Attribute[_]*
   ): Resource[F, Unit] =
-    macro Macro.recordDuration
-
+    ${ MetricsMacro.histogram.recordDuration('backend, 'timeUnit, 'attributes) }
 }

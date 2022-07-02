@@ -15,6 +15,9 @@
  */
 
 package org.typelevel.otel4s
+package metrics
+
+import scala.quoted.*
 
 private[otel4s] trait CounterMacro[F[_], A] {
   def backend: Counter.Backend[F, A]
@@ -27,14 +30,14 @@ private[otel4s] trait CounterMacro[F[_], A] {
     * @param attributes
     *   the set of attributes to associate with the value
     */
-  def add(value: A, attributes: Attribute[_]*): F[Unit] =
-    macro Macro.add[A]
+  inline def add(inline value: A, inline attributes: Attribute[_]*): F[Unit] =
+    ${ MetricsMacro.counter.add('backend, 'value, 'attributes) }
 
   /** Increments a counter by one.
     *
     * @param attributes
     *   the set of attributes to associate with the value
     */
-  def inc(attributes: Attribute[_]*): F[Unit] =
-    macro Macro.inc
+  inline def inc(inline attributes: Attribute[_]*): F[Unit] =
+    ${ MetricsMacro.counter.inc('backend, 'attributes) }
 }

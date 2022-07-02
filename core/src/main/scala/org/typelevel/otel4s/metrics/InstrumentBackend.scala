@@ -14,13 +14,11 @@
  * limitations under the License.
  */
 
-package org.typelevel.otel4s
+package org.typelevel.otel4s.metrics
 
-/** An implementation backend for an instrument.
+/** A backend that implements instrument operations: add, record, etc.
   */
 trait InstrumentBackend[F[_]] {
   def isEnabled: Boolean
   def unit: F[Unit]
 }
-
-object InstrumentBackend {}

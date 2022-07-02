@@ -15,35 +15,47 @@
  */
 
 package org.typelevel.otel4s
+package metrics
 
-private[otel4s] trait UpDownCounterMacro[F[_], A] {
-  def backend: UpDownCounter.Backend[F, A]
+import cats.effect.Resource
+
+import scala.concurrent.duration.TimeUnit
+
+private[otel4s] trait HistogramMacro[F[_], A] {
+  def backend: Histogram.Backend[F, A]
 
   /** Records a value with a set of attributes.
     *
     * @param value
-    *   the value to increment a counter with
+    *   the value to record
     *
     * @param attributes
     *   the set of attributes to associate with the value
     */
-  def add(value: A, attributes: Attribute[_]*): F[Unit] =
-    macro Macro.add[A]
+  def record(value: A, attributes: Attribute[_]*): F[Unit] =
+    macro MetricsMacro.record[A]
 
-  /** Increments a counter by one.
+  /** Records duration of the given effect.
     *
+    * @example
+    *   {{{
+    * val histogram: Histogram[F] = ??? val attributeKey =
+    *   AttributeKey.string("query_name")
+    *
+    * def findUser(name: String) =
+    *   histogram.recordDuration(TimeUnit.MILLISECONDS, Attribute(attributeKey, "find_user")).use { _ =>
+    *     db.findUser(name)
+    *    }
+    *   }}}
+    * @param timeUnit
+    *   the time unit. Must match
     * @param attributes
     *   the set of attributes to associate with the value
     */
-  def inc(attributes: Attribute[_]*): F[Unit] =
-    macro Macro.inc
-
-  /** Decrements a counter by one.
-    *
-    * @param attributes
-    *   the set of attributes to associate with the value
-    */
-  def dec(attributes: Attribute[_]*): F[Unit] =
-    macro Macro.dec
+  def recordDuration(
+      timeUnit: TimeUnit,
+      attributes: Attribute[_]*
+  ): Resource[F, Unit] =
+    macro MetricsMacro.recordDuration
 
 }

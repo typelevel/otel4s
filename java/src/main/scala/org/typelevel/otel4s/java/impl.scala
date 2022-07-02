@@ -27,6 +27,7 @@ import io.opentelemetry.api.metrics.{Meter => JMeter}
 import io.opentelemetry.api.metrics.{LongCounter => JLongCounter}
 import io.opentelemetry.api.metrics.{DoubleHistogram => JDoubleHistogram}
 import io.opentelemetry.api.metrics.{LongUpDownCounter => JLongUpDownCounter}
+import org.typelevel.otel4s.metrics._
 
 import scala.jdk.CollectionConverters._
 

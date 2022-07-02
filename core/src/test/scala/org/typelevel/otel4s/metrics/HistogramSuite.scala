@@ -17,10 +17,10 @@
 package org.typelevel.otel4s
 package metrics
 
-import java.util.concurrent.TimeUnit
-
 import cats.effect.IO
 import munit.CatsEffectSuite
+
+import java.util.concurrent.TimeUnit
 
 class HistogramSuite extends CatsEffectSuite {
 

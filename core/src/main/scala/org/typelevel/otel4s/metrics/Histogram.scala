@@ -17,8 +17,10 @@
 package org.typelevel.otel4s
 package metrics
 
-import cats.{Applicative, Monad}
-import cats.effect.{Clock, Resource}
+import cats.Applicative
+import cats.Monad
+import cats.effect.Resource
+import cats.effect.Temporal
 import cats.syntax.flatMap._
 import cats.syntax.functor._
 

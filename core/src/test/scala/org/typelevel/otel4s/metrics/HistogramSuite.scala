@@ -18,6 +18,7 @@ package org.typelevel.otel4s.metrics
 
 import cats.effect.IO
 import cats.effect.Ref
+import cats.effect.testkit.TestControl
 import munit.CatsEffectSuite
 import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.AttributeKey
@@ -51,19 +52,20 @@ class HistogramSuite extends CatsEffectSuite {
     val attribute = Attribute(AttributeKey.string("key"), "value")
     val sleepDuration = 500.millis
     val unit = TimeUnit.MILLISECONDS
-    // the measured duration is affected by the context switches, that's why we need delta
-    val delta = 100.0
 
-    for {
-      histogram <- inMemoryHistogram
-      _ <- histogram
-        .recordDuration(unit, attribute)
-        .use(_ => IO.sleep(sleepDuration))
-      records <- histogram.records
-    } yield {
-      assertEquals(records.length, 1)
-      assertEquals(records.head.attributes, Seq(attribute))
-      assertEqualsDouble(records.head.value, sleepDuration.toUnit(unit), delta)
+    val expected =
+      List(
+        Record(sleepDuration.toUnit(unit), Seq(attribute))
+      )
+
+    TestControl.executeEmbed {
+      for {
+        histogram <- inMemoryHistogram
+        _ <- histogram
+          .recordDuration(unit, attribute)
+          .use(_ => IO.sleep(sleepDuration))
+        records <- histogram.records
+      } yield assertEquals(records, expected)
     }
   }
 

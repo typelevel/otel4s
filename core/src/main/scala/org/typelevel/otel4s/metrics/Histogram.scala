@@ -42,7 +42,7 @@ trait Histogram[F[_], A] {
   /** Records a value with a set of attributes.
     *
     * @param value
-    *   the value to increment a counter with. Must be '''non-negative'''
+    *   the value to record
     * @param attributes
     *   the set of attributes to associate with the value
     */
@@ -76,7 +76,7 @@ object Histogram {
       *   }}}
       *
       * @param timeUnit
-      *   the time unit. Must match
+      *   the time unit of the duration measurement
       * @param attributes
       *   the set of attributes to associate with the value
       */

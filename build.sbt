@@ -16,7 +16,7 @@ ThisBuild / tlSonatypeUseLegacyHost := false
 ThisBuild / tlSitePublishBranch := Some("main")
 
 val Scala213 = "2.13.8"
-ThisBuild / crossScalaVersions := Seq(Scala213, "3.1.2")
+ThisBuild / crossScalaVersions := Seq(Scala213, "3.1.3")
 ThisBuild / scalaVersion := Scala213 // the default Scala
 
 lazy val root = tlCrossRootProject.aggregate(core, java)
@@ -28,7 +28,7 @@ lazy val core = crossProject(JVMPlatform, JSPlatform)
     name := "otel4s-core",
     libraryDependencies ++= Seq(
       "org.typelevel" %%% "cats-core" % "2.8.0",
-      "org.typelevel" %%% "cats-effect" % "3.3.12",
+      "org.typelevel" %%% "cats-effect" % "3.3.13",
       "org.scalameta" %%% "munit" % "0.7.29" % Test,
       "org.typelevel" %%% "munit-cats-effect-3" % "1.0.7" % Test
     )

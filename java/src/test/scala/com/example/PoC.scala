@@ -16,16 +16,15 @@
 
 package com.example
 
+import cats.effect.IO
+import cats.effect.IOApp
 import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk
 import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.AttributeKey
 import org.typelevel.otel4s.java.OtelJava
 
-import cats.effect.IO
-import cats.effect.IOApp
-
 object Poc extends IOApp.Simple {
-  def run = for {
+  def run: IO[Unit] = for {
     _ <- IO(sys.props("otel.traces.exporter") = "none")
     _ <- IO(sys.props("otel.metrics.exporter") = "logging")
     _ <- IO(sys.props("otel.logs.exporter") = "none")

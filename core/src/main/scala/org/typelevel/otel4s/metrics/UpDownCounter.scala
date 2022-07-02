@@ -80,7 +80,7 @@ object UpDownCounter {
       add(1.0, attributes: _*)
 
     final def dec(attributes: Attribute[_]*): F[Unit] =
-      add(1.0, attributes: _*)
+      add(-1.0, attributes: _*)
   }
 
   def noop[F[_], A](implicit F: Applicative[F]): UpDownCounter[F, A] =

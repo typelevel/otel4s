@@ -39,8 +39,8 @@ private[otel4s] trait HistogramMacro[F[_], A] {
     *
     * @example
     *   {{{
-    * val histogram: Histogram[F] = ??? val attributeKey =
-    *   AttributeKey.string("query_name")
+    * val histogram: Histogram[F] = ???
+    * val attributeKey = AttributeKey.string("query_name")
     *
     * def findUser(name: String) =
     *   histogram.recordDuration(TimeUnit.MILLISECONDS, Attribute(attributeKey, "find_user")).use { _ =>
@@ -48,7 +48,7 @@ private[otel4s] trait HistogramMacro[F[_], A] {
     *    }
     *   }}}
     * @param timeUnit
-    *   the time unit. Must match
+    *   the time unit of the duration measurement
     * @param attributes
     *   the set of attributes to associate with the value
     */

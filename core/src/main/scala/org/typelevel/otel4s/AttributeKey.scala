@@ -16,6 +16,10 @@
 
 package org.typelevel.otel4s
 
+import cats.Hash
+import cats.Show
+import cats.syntax.show._
+
 /** The type of value that can be set with an implementation of this key is
   * denoted by the type parameter.
   *
@@ -54,4 +58,11 @@ object AttributeKey {
 
   def doubleList(name: String): AttributeKey[List[Double]] =
     new Impl(name, AttributeType.DoubleList)
+
+  implicit def attributeKeyHash[A]: Hash[AttributeKey[A]] =
+    Hash.by(key => (key.name, key.`type`))
+
+  implicit def attributeKeyShow[A]: Show[AttributeKey[A]] =
+    Show.show(key => show"${key.`type`}(${key.name})")
+
 }

@@ -16,15 +16,12 @@
 
 package com.example
 
-import cats.effect.{IO, IOApp}
+import cats.effect.IO
+import cats.effect.IOApp
 import cats.syntax.foldable._
 import io.opentelemetry.sdk.OpenTelemetrySdk
 import io.opentelemetry.sdk.metrics.SdkMeterProvider
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader
-import org.typelevel.otel4s.{Attribute, AttributeKey}
-import org.typelevel.otel4s.java.OtelJava
-import cats.effect.IOApp
-import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk
 import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.AttributeKey
 import org.typelevel.otel4s.java.OtelJava

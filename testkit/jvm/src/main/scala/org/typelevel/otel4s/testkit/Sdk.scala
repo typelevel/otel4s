@@ -16,26 +16,28 @@
 
 package org.typelevel.otel4s.testkit
 
-import java.{lang => jl, util => ju}
-
 import cats.effect.Sync
-import io.opentelemetry.sdk.OpenTelemetrySdk
-import io.opentelemetry.sdk.metrics.data.{
-  DoublePointData,
-  LongPointData,
-  MetricDataType,
-  Data => JData,
-  HistogramPointData => JHistogramPointData,
-  MetricData => JMetricData,
-  PointData => JPointData,
-  SummaryPointData => JSummaryPointData
-}
-import io.opentelemetry.api.common.{Attributes => JAttributes}
 import io.opentelemetry.api.common.{AttributeType => JAttributeType}
-import io.opentelemetry.sdk.metrics.{SdkMeterProvider, SdkMeterProviderBuilder}
+import io.opentelemetry.api.common.{Attributes => JAttributes}
+import io.opentelemetry.sdk.OpenTelemetrySdk
+import io.opentelemetry.sdk.metrics.SdkMeterProvider
+import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder
+import io.opentelemetry.sdk.metrics.data.{Data => JData}
+import io.opentelemetry.sdk.metrics.data.{
+  HistogramPointData => JHistogramPointData
+}
+import io.opentelemetry.sdk.metrics.data.{MetricData => JMetricData}
+import io.opentelemetry.sdk.metrics.data.{PointData => JPointData}
+import io.opentelemetry.sdk.metrics.data.{SummaryPointData => JSummaryPointData}
+import io.opentelemetry.sdk.metrics.data.DoublePointData
+import io.opentelemetry.sdk.metrics.data.LongPointData
+import io.opentelemetry.sdk.metrics.data.MetricDataType
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader
-import org.typelevel.otel4s.{Attribute, AttributeKey}
+import org.typelevel.otel4s.Attribute
+import org.typelevel.otel4s.AttributeKey
 
+import java.{lang => jl}
+import java.{util => ju}
 import scala.jdk.CollectionConverters._
 
 trait Sdk[F[_]] {

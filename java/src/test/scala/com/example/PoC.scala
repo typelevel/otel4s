@@ -23,12 +23,17 @@ import io.opentelemetry.sdk.metrics.SdkMeterProvider
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader
 import org.typelevel.otel4s.{Attribute, AttributeKey}
 import org.typelevel.otel4s.java.OtelJava
+import cats.effect.IOApp
+import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk
+import org.typelevel.otel4s.Attribute
+import org.typelevel.otel4s.AttributeKey
+import org.typelevel.otel4s.java.OtelJava
 
 import scala.jdk.CollectionConverters._
 
 object Poc extends IOApp.Simple {
 
-  def run = for {
+  def run: IO[Unit] = for {
     jMetricReader <- IO(InMemoryMetricReader.create())
     otel4j <- IO {
       val meterProvider = SdkMeterProvider

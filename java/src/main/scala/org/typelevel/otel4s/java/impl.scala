@@ -18,14 +18,15 @@ package org.typelevel.otel4s
 package java
 
 import cats.effect.Sync
-
 import io.opentelemetry.api.{OpenTelemetry => JOpenTelemetry}
-import io.opentelemetry.api.common.{Attributes => JAttributes}
 import io.opentelemetry.api.common.{AttributeKey => JAttributeKey}
 import io.opentelemetry.api.common.{AttributeType => JAttributeType}
-import io.opentelemetry.api.metrics.{Meter => JMeter}
-import io.opentelemetry.api.metrics.{LongCounter => JLongCounter}
+import io.opentelemetry.api.common.{Attributes => JAttributes}
 import io.opentelemetry.api.metrics.{DoubleHistogram => JDoubleHistogram}
+import io.opentelemetry.api.metrics.{LongCounter => JLongCounter}
+import io.opentelemetry.api.metrics.{LongUpDownCounter => JLongUpDownCounter}
+import io.opentelemetry.api.metrics.{Meter => JMeter}
+import org.typelevel.otel4s.metrics._
 
 import scala.jdk.CollectionConverters._
 
@@ -47,8 +48,10 @@ object OtelJava {
       schemaUrl: Option[String] = None
   )(implicit F: Sync[F])
       extends MeterBuilder[F] {
-    def withVersion(version: String) = copy(version = Option(version))
-    def withSchemaUrl(schemaUrl: String) = copy(schemaUrl = Option(schemaUrl))
+    def withVersion(version: String): MeterBuilder[F] =
+      copy(version = Option(version))
+    def withSchemaUrl(schemaUrl: String): MeterBuilder[F] =
+      copy(schemaUrl = Option(schemaUrl))
 
     def get: F[Meter[F]] = F.delay {
       val b = jOtel.meterBuilder(name)
@@ -66,6 +69,11 @@ object OtelJava {
         name: String
     ): SyncInstrumentBuilder[F, Histogram[F, Double]] =
       new HistogramBuilderImpl(jMeter, name)
+
+    def upDownCounter(
+        name: String
+    ): SyncInstrumentBuilder[F, UpDownCounter[F, Long]] =
+      new UpDownCounterBuilderImpl(jMeter, name)
   }
 
   private case class CounterBuilderImpl[F[_]](
@@ -77,8 +85,8 @@ object OtelJava {
       extends SyncInstrumentBuilder[F, Counter[F, Long]] {
     type Self = CounterBuilderImpl[F]
 
-    def withUnit(unit: String) = copy(unit = Option(unit))
-    def withDescription(description: String) =
+    def withUnit(unit: String): Self = copy(unit = Option(unit))
+    def withDescription(description: String): Self =
       copy(description = Option(description))
 
     def create: F[Counter[F, Long]] = F.delay {
@@ -91,8 +99,8 @@ object OtelJava {
 
   private class CounterImpl[F[_]](longCounter: JLongCounter)(implicit
       F: Sync[F]
-  ) extends Counter[F, Long] {
-    def add(long: Long, attributes: Attribute[_]*) =
+  ) extends Counter.LongCounter[F] {
+    def add(long: Long, attributes: Attribute[_]*): F[Unit] =
       F.delay(longCounter.add(long, toJAttributes(attributes)))
   }
 
@@ -105,8 +113,8 @@ object OtelJava {
       extends SyncInstrumentBuilder[F, Histogram[F, Double]] {
     type Self = HistogramBuilderImpl[F]
 
-    def withUnit(unit: String) = copy(unit = Option(unit))
-    def withDescription(description: String) =
+    def withUnit(unit: String): Self = copy(unit = Option(unit))
+    def withDescription(description: String): Self =
       copy(description = Option(description))
 
     def create: F[Histogram[F, Double]] = F.delay {
@@ -120,8 +128,38 @@ object OtelJava {
   private class HistogramImpl[F[_]](histogram: JDoubleHistogram)(implicit
       F: Sync[F]
   ) extends Histogram[F, Double] {
-    def record(d: Double, attributes: Attribute[_]*) =
+    def record(d: Double, attributes: Attribute[_]*): F[Unit] =
       F.delay(histogram.record(d, toJAttributes(attributes)))
+  }
+
+  private case class UpDownCounterBuilderImpl[F[_]](
+      jMeter: JMeter,
+      name: String,
+      unit: Option[String] = None,
+      description: Option[String] = None
+  )(implicit F: Sync[F])
+      extends SyncInstrumentBuilder[F, UpDownCounter[F, Long]] {
+    type Self = UpDownCounterBuilderImpl[F]
+
+    def withUnit(unit: String) =
+      copy(unit = Option(unit))
+
+    def withDescription(description: String) =
+      copy(description = Option(description))
+
+    def create: F[UpDownCounter[F, Long]] = F.delay {
+      val b = jMeter.upDownCounterBuilder(name)
+      unit.foreach(b.setUnit)
+      description.foreach(b.setDescription)
+      new UpDownCounterImpl(b.build)
+    }
+  }
+
+  private class UpDownCounterImpl[F[_]](counter: JLongUpDownCounter)(implicit
+      F: Sync[F]
+  ) extends UpDownCounter.LongUpDownCounter[F] {
+    def add(value: Long, attributes: Attribute[_]*): F[Unit] =
+      F.delay(counter.add(value, toJAttributes(attributes)))
   }
 
   private def toJAttributes(attributes: Seq[Attribute[_]]): JAttributes = {

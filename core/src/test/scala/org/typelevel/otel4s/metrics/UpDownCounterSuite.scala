@@ -14,16 +14,32 @@
  * limitations under the License.
  */
 
-package org.typelevel.otel4s.metrics
+package org.typelevel.otel4s
+package metrics
 
 import cats.effect.IO
 import cats.effect.Ref
 import munit.CatsEffectSuite
-import org.typelevel.otel4s.Attribute
-import org.typelevel.otel4s.AttributeKey
 
 class UpDownCounterSuite extends CatsEffectSuite {
   import UpDownCounterSuite._
+
+  test("do not allocate attributes when instrument is noop") {
+    val counter = UpDownCounter.noop[IO, Long]
+
+    var allocated = false
+
+    def allocateAttribute = {
+      allocated = true
+      List(Attribute(AttributeKey.string("key"), "value"))
+    }
+
+    for {
+      _ <- counter.add(1L, allocateAttribute: _*)
+      _ <- counter.inc(allocateAttribute: _*)
+      _ <- counter.dec(allocateAttribute: _*)
+    } yield assert(!allocated)
+  }
 
   test("record value and attributes") {
     val attribute = Attribute(AttributeKey.string("key"), "value")
@@ -92,10 +108,15 @@ object UpDownCounterSuite {
   final case class Record[A](value: A, attributes: Seq[Attribute[_]])
 
   class InMemoryUpDownCounter(ref: Ref[IO, List[Record[Long]]])
-      extends UpDownCounter.LongUpDownCounter[IO] {
+      extends UpDownCounter[IO, Long] {
 
-    def add(value: Long, attributes: Attribute[_]*): IO[Unit] =
-      ref.update(_.appended(Record(value, attributes)))
+    val backend: UpDownCounter.Backend[IO, Long] =
+      new UpDownCounter.LongBackend[IO] {
+        val isEnabled: Boolean = true
+
+        def add(value: Long, attributes: Attribute[_]*): IO[Unit] =
+          ref.update(_.appended(Record(value, attributes)))
+      }
 
     def records: IO[List[Record[Long]]] =
       ref.get

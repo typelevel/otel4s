@@ -33,35 +33,40 @@ import cats.Applicative
   *   the type of the values to record. OpenTelemetry specification expects `A`
   *   to be either [[scala.Long]] or [[scala.Double]]
   */
-trait UpDownCounter[F[_], A] {
-
-  /** Records a value with a set of attributes.
-    *
-    * @param value
-    *   the value to record
-    * @param attributes
-    *   the set of attributes to associate with the value
-    */
-  def add(value: A, attributes: Attribute[_]*): F[Unit]
-
-  /** Increments a counter by one.
-    *
-    * @param attributes
-    *   the set of attributes to associate with the value
-    */
-  def inc(attributes: Attribute[_]*): F[Unit]
-
-  /** Decrements a counter by one.
-    *
-    * @param attributes
-    *   the set of attributes to associate with the value
-    */
-  def dec(attributes: Attribute[_]*): F[Unit]
-}
+trait UpDownCounter[F[_], A] extends UpDownCounterMacro[F, A]
 
 object UpDownCounter {
 
-  trait LongUpDownCounter[F[_]] extends UpDownCounter[F, Long] {
+  trait Backend[F[_], A] extends InstrumentBackend[F] {
+
+    /** Records a value with a set of attributes.
+      *
+      * @param value
+      *   the value to add to the counter
+      *
+      * @param attributes
+      *   the set of attributes to associate with the value
+      */
+    def add(value: A, attributes: Attribute[_]*): F[Unit]
+
+    /** Increments a counter by one.
+      *
+      * @param attributes
+      *   the set of attributes to associate with the value
+      */
+    def inc(attributes: Attribute[_]*): F[Unit]
+
+    /** Decrements a counter by one.
+      *
+      * @param attributes
+      *   the set of attributes to associate with the value
+      */
+    def dec(attributes: Attribute[_]*): F[Unit]
+  }
+
+  abstract class LongBackend[F[_]: Applicative] extends Backend[F, Long] {
+    final val unit: F[Unit] = Applicative[F].unit
+
     final def inc(attributes: Attribute[_]*): F[Unit] =
       add(1L, attributes: _*)
 
@@ -69,7 +74,9 @@ object UpDownCounter {
       add(-1L, attributes: _*)
   }
 
-  trait DoubleUpDownCounter[F[_]] extends UpDownCounter[F, Double] {
+  abstract class DoubleBackend[F[_]: Applicative] extends Backend[F, Double] {
+    val unit: F[Unit] = Applicative[F].unit
+
     final def inc(attributes: Attribute[_]*): F[Unit] =
       add(1.0, attributes: _*)
 
@@ -79,9 +86,14 @@ object UpDownCounter {
 
   def noop[F[_], A](implicit F: Applicative[F]): UpDownCounter[F, A] =
     new UpDownCounter[F, A] {
-      def add(value: A, attributes: Attribute[_]*): F[Unit] = F.unit
-      def inc(attributes: Attribute[_]*): F[Unit] = F.unit
-      def dec(attributes: Attribute[_]*): F[Unit] = F.unit
+      val backend: UpDownCounter.Backend[F, A] =
+        new UpDownCounter.Backend[F, A] {
+          val unit: F[Unit] = F.unit
+          val isEnabled: Boolean = false
+          def add(value: A, attributes: Attribute[_]*): F[Unit] = unit
+          def inc(attributes: Attribute[_]*): F[Unit] = unit
+          def dec(attributes: Attribute[_]*): F[Unit] = unit
+        }
     }
 
 }

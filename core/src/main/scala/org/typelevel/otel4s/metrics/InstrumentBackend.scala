@@ -14,17 +14,11 @@
  * limitations under the License.
  */
 
-package org.typelevel.otel4s
+package org.typelevel.otel4s.metrics
 
-/** Represents the key-value attribute.
-  *
-  * @param key
-  *   the key of the attribute. Denotes the types of the `value`
-  *
-  * @param value
-  *   the value of the attribute
-  *
-  * @tparam A
-  *   the type of the attribute's value. One of [[AttributeType]]
+/** A backend that implements instrument operations: add, record, etc.
   */
-final case class Attribute[A](key: AttributeKey[A], value: A)
+trait InstrumentBackend[F[_]] {
+  def isEnabled: Boolean
+  def unit: F[Unit]
+}

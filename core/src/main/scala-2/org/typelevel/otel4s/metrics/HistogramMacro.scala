@@ -47,8 +47,10 @@ private[otel4s] trait HistogramMacro[F[_], A] {
     *     db.findUser(name)
     *    }
     *   }}}
+    *
     * @param timeUnit
     *   the time unit of the duration measurement
+    *
     * @param attributes
     *   the set of attributes to associate with the value
     */

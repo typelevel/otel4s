@@ -20,6 +20,7 @@ package org.typelevel.otel4s
   *
   * @param key
   *   the key of the attribute. Denotes the types of the `value`
+  *
   * @param value
   *   the value of the attribute
   *

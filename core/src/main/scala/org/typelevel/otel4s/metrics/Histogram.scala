@@ -68,6 +68,7 @@ object Histogram {
       *     db.findUser(name)
       *   }
       *   }}}
+      *
       * @param timeUnit
       *   the time unit of the duration measurement
       *

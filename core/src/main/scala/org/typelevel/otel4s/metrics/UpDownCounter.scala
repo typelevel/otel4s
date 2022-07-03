@@ -42,7 +42,8 @@ object UpDownCounter {
     /** Records a value with a set of attributes.
       *
       * @param value
-      *   the value to record
+      *   the value to add to the counter
+      *
       * @param attributes
       *   the set of attributes to associate with the value
       */

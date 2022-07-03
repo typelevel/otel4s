@@ -25,7 +25,7 @@ private[otel4s] trait UpDownCounterMacro[F[_], A] {
   /** Records a value with a set of attributes.
     *
     * @param value
-    *   the value to increment a counter with. Must be '''non-negative'''
+    *   the value to add to the counter
     *
     * @param attributes
     *   the set of attributes to associate with the value

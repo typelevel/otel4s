@@ -70,6 +70,7 @@ object Histogram {
       *   }}}
       * @param timeUnit
       *   the time unit of the duration measurement
+      *
       * @param attributes
       *   the set of attributes to associate with the value
       */

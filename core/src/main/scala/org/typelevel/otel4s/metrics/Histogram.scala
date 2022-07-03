@@ -18,8 +18,9 @@ package org.typelevel.otel4s
 package metrics
 
 import cats.Applicative
+import cats.Monad
+import cats.effect.Clock
 import cats.effect.Resource
-import cats.effect.Temporal
 import cats.syntax.flatMap._
 import cats.syntax.functor._
 
@@ -38,30 +39,22 @@ import scala.concurrent.duration.TimeUnit
   *   the type of the values to record. OpenTelemetry specification expects `A`
   *   to be either [[scala.Long]] or [[scala.Double]].
   */
-trait Histogram[F[_], A] {
-
-  /** Records a value with a set of attributes.
-    *
-    * @param value
-    *   the value to record
-    * @param attributes
-    *   the set of attributes to associate with the value
-    */
-  def record(value: A, attributes: Attribute[_]*): F[Unit]
-}
+trait Histogram[F[_], A] extends HistogramMacro[F, A]
 
 object Histogram {
 
-  private val CauseKey: AttributeKey[String] = AttributeKey.string("cause")
+  trait Backend[F[_], A] extends InstrumentBackend[F] {
+    final val resourceUnit: Resource[F, Unit] = Resource.unit
 
-  def noop[F[_], A](implicit F: Applicative[F]): Histogram[F, A] =
-    new Histogram[F, A] {
-      def record(value: A, attributes: Attribute[_]*): F[Unit] = F.unit
-    }
-
-  implicit final class HistogramSyntax[F[_]](
-      private val histogram: Histogram[F, Double]
-  ) extends AnyVal {
+    /** Records a value with a set of attributes.
+      *
+      * @param value
+      *   the value to record
+      *
+      * @param attributes
+      *   the set of attributes to associate with the value
+      */
+    def record(value: A, attributes: Attribute[_]*): F[Unit]
 
     /** Records duration of the given effect.
       *
@@ -78,18 +71,30 @@ object Histogram {
       *
       * @param timeUnit
       *   the time unit of the duration measurement
+      *
       * @param attributes
       *   the set of attributes to associate with the value
       */
     def recordDuration(
         timeUnit: TimeUnit,
         attributes: Attribute[_]*
-    )(implicit F: Temporal[F]): Resource[F, Unit] =
+    ): Resource[F, Unit]
+
+  }
+
+  abstract class DoubleBackend[F[_]: Monad: Clock] extends Backend[F, Double] {
+
+    final val unit: F[Unit] = Monad[F].unit
+
+    final def recordDuration(
+        timeUnit: TimeUnit,
+        attributes: Attribute[_]*
+    ): Resource[F, Unit] =
       Resource
-        .makeCase(F.monotonic) { case (start, ec) =>
+        .makeCase(Clock[F].monotonic) { case (start, ec) =>
           for {
-            end <- F.monotonic
-            _ <- histogram.record(
+            end <- Clock[F].monotonic
+            _ <- record(
               (end - start).toUnit(timeUnit),
               attributes ++ causeAttributes(ec): _*
             )
@@ -98,6 +103,22 @@ object Histogram {
         .void
 
   }
+
+  def noop[F[_], A](implicit F: Applicative[F]): Histogram[F, A] =
+    new Histogram[F, A] {
+      val backend: Backend[F, A] =
+        new Backend[F, A] {
+          val isEnabled: Boolean = false
+          val unit: F[Unit] = F.unit
+          def record(value: A, attributes: Attribute[_]*): F[Unit] = unit
+          def recordDuration(
+              timeUnit: TimeUnit,
+              attributes: Attribute[_]*
+          ): Resource[F, Unit] = resourceUnit
+        }
+    }
+
+  private val CauseKey: AttributeKey[String] = AttributeKey.string("cause")
 
   def causeAttributes(ec: Resource.ExitCase): List[Attribute[String]] =
     ec match {

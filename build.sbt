@@ -36,7 +36,12 @@ lazy val core = crossProject(JVMPlatform, JSPlatform)
       "org.scalameta" %%% "munit" % "0.7.29" % Test,
       "org.typelevel" %%% "munit-cats-effect-3" % "1.0.7" % Test,
       "org.typelevel" %%% "cats-effect-testkit" % "3.3.13" % Test
-    )
+    ),
+    libraryDependencies ++= {
+      if (tlIsScala3.value) Nil
+      else
+        Seq("org.scala-lang" % "scala-reflect" % scalaVersion.value % Provided)
+    }
   )
 
 lazy val java = crossProject(JVMPlatform)

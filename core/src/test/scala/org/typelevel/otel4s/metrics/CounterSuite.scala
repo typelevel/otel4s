@@ -24,6 +24,22 @@ import munit.CatsEffectSuite
 class CounterSuite extends CatsEffectSuite {
   import CounterSuite._
 
+  test("do not allocate attributes when instrument is noop") {
+    val counter = Counter.noop[IO, Long]
+
+    var allocated = false
+
+    def allocateAttribute = {
+      allocated = true
+      List(Attribute(AttributeKey.string("key"), "value"))
+    }
+
+    for {
+      _ <- counter.add(1L, allocateAttribute: _*)
+      _ <- counter.inc(allocateAttribute: _*)
+    } yield assert(!allocated)
+  }
+
   test("record value and attributes") {
     val attribute = Attribute(AttributeKey.string("key"), "value")
 
@@ -72,10 +88,15 @@ object CounterSuite {
   final case class Record[A](value: A, attributes: Seq[Attribute[_]])
 
   class InMemoryCounter(ref: Ref[IO, List[Record[Long]]])
-      extends Counter.LongCounter[IO] {
+      extends Counter[IO, Long] {
 
-    def add(value: Long, attributes: Attribute[_]*): IO[Unit] =
-      ref.update(_.appended(Record(value, attributes)))
+    val backend: Counter.Backend[IO, Long] =
+      new Counter.LongBackend[IO] {
+        val isEnabled: Boolean = true
+
+        def add(value: Long, attributes: Attribute[_]*): IO[Unit] =
+          ref.update(_.appended(Record(value, attributes)))
+      }
 
     def records: IO[List[Record[Long]]] =
       ref.get

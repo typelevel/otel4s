@@ -14,20 +14,37 @@
  * limitations under the License.
  */
 
-package org.typelevel.otel4s.metrics
+package org.typelevel.otel4s
+package metrics
 
 import cats.effect.IO
 import cats.effect.Ref
 import cats.effect.testkit.TestControl
 import munit.CatsEffectSuite
-import org.typelevel.otel4s.Attribute
-import org.typelevel.otel4s.AttributeKey
 
 import java.util.concurrent.TimeUnit
 import scala.concurrent.duration._
 
 class HistogramSuite extends CatsEffectSuite {
   import HistogramSuite._
+
+  test("do not allocate attributes when instrument is noop") {
+    val histogram = Histogram.noop[IO, Double]
+
+    var allocated = false
+
+    def allocateAttribute = {
+      allocated = true
+      List(Attribute(AttributeKey.string("key"), "value"))
+    }
+
+    for {
+      _ <- histogram.record(1.0, allocateAttribute: _*)
+      _ <- histogram
+        .recordDuration(TimeUnit.SECONDS, allocateAttribute: _*)
+        .use_
+    } yield assert(!allocated)
+  }
 
   test("record value and attributes") {
     val attribute = Attribute(AttributeKey.string("key"), "value")
@@ -81,8 +98,13 @@ object HistogramSuite {
   class InMemoryHistogram(ref: Ref[IO, List[Record[Double]]])
       extends Histogram[IO, Double] {
 
-    def record(value: Double, attributes: Attribute[_]*): IO[Unit] =
-      ref.update(_.appended(Record(value, attributes)))
+    val backend: Histogram.Backend[IO, Double] =
+      new Histogram.DoubleBackend[IO] {
+        val isEnabled: Boolean = true
+
+        def record(value: Double, attributes: Attribute[_]*): IO[Unit] =
+          ref.update(_.appended(Record(value, attributes)))
+      }
 
     def records: IO[List[Record[Double]]] =
       ref.get

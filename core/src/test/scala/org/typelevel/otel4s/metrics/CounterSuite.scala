@@ -88,10 +88,15 @@ object CounterSuite {
   final case class Record[A](value: A, attributes: Seq[Attribute[_]])
 
   class InMemoryCounter(ref: Ref[IO, List[Record[Long]]])
-      extends Counter.LongCounter[IO] {
+      extends Counter[IO, Long] {
 
-    def add(value: Long, attributes: Attribute[_]*): IO[Unit] =
-      ref.update(_.appended(Record(value, attributes)))
+    val backend: Counter.Backend[IO, Long] =
+      new Counter.LongBackend[IO] {
+        val isEnabled: Boolean = true
+
+        def add(value: Long, attributes: Attribute[_]*): IO[Unit] =
+          ref.update(_.appended(Record(value, attributes)))
+      }
 
     def records: IO[List[Record[Long]]] =
       ref.get

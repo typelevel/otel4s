@@ -108,10 +108,15 @@ object UpDownCounterSuite {
   final case class Record[A](value: A, attributes: Seq[Attribute[_]])
 
   class InMemoryUpDownCounter(ref: Ref[IO, List[Record[Long]]])
-      extends UpDownCounter.LongUpDownCounter[IO] {
+      extends UpDownCounter[IO, Long] {
 
-    def add(value: Long, attributes: Attribute[_]*): IO[Unit] =
-      ref.update(_.appended(Record(value, attributes)))
+    val backend: UpDownCounter.Backend[IO, Long] =
+      new UpDownCounter.LongBackend[IO] {
+        val isEnabled: Boolean = true
+
+        def add(value: Long, attributes: Attribute[_]*): IO[Unit] =
+          ref.update(_.appended(Record(value, attributes)))
+      }
 
     def records: IO[List[Record[Long]]] =
       ref.get

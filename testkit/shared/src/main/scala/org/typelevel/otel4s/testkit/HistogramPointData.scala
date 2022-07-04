@@ -20,39 +20,37 @@ import cats.Hash
 import cats.Show
 import cats.syntax.show._
 
-final class Metric(
-    val name: String,
-    val description: Option[String],
-    val unit: Option[String],
-    val scope: InstrumentationScope,
-    val resource: MetricResource,
-    val data: MetricData
+final class HistogramPointData(
+    val sum: Double,
+    val count: Long,
+    val boundaries: List[Double],
+    val counts: List[Long]
 ) {
 
   override def hashCode(): Int =
-    Hash[Metric].hash(this)
+    Hash[HistogramPointData].hash(this)
 
   override def toString: String =
-    Show[Metric].show(this)
+    Show[HistogramPointData].show(this)
 
   override def equals(obj: Any): Boolean =
     obj match {
-      case other: Metric =>
-        Hash[Metric].eqv(this, other)
+      case other: HistogramPointData =>
+        Hash[HistogramPointData].eqv(this, other)
       case _ =>
         false
     }
 
 }
 
-object Metric {
+object HistogramPointData {
 
-  implicit val metricHash: Hash[Metric] =
-    Hash.by(p => (p.name, p.description, p.unit, p.scope, p.resource, p.data))
+  implicit val histogramPointDataHash: Hash[HistogramPointData] =
+    Hash.by(p => (p.sum, p.count, p.boundaries, p.counts))
 
-  implicit val metricShow: Show[Metric] =
+  implicit val histogramPointDataShow: Show[HistogramPointData] =
     Show.show(p =>
-      show"Metric(${p.name}, ${p.description}, ${p.unit}, ${p.scope}, ${p.resource}, ${p.data})"
+      show"HistogramPointData(${p.sum}, ${p.count}, ${p.boundaries}, ${p.counts})"
     )
 
 }

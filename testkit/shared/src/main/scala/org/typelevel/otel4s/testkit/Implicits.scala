@@ -19,24 +19,13 @@ package testkit
 
 import cats.Hash
 import cats.Show
-import cats.syntax.show._
 
-final class PointData[A](
-    val startEpochNanos: Long,
-    val epochNanos: Long,
-    val attributes: List[Attribute[_]],
-    val value: A
-)
+object Implicits {
 
-object PointData {
-  import Implicits._
+  implicit val attributeListHash: Hash[List[Attribute[_]]] =
+    Hash.fromUniversalHashCode
 
-  implicit def pointDataHash[A: Hash]: Hash[PointData[A]] =
-    Hash.by(p => (p.startEpochNanos, p.epochNanos, p.attributes, p.value))
-
-  implicit def pointDataShow[A: Show]: Show[PointData[A]] =
-    Show.show(p =>
-      show"PointData(${p.startEpochNanos}, ${p.epochNanos}, ${p.attributes}, ${p.value})"
-    )
+  implicit val attributeListShow: Show[List[Attribute[_]]] =
+    Show.fromToString
 
 }

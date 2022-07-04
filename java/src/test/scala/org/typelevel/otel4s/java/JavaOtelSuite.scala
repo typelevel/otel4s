@@ -14,13 +14,12 @@
  * limitations under the License.
  */
 
-package org.typelevel.otel4s.java
+package org.typelevel.otel4s
+package java
 
 import cats.effect.IO
 import io.opentelemetry.sdk.metrics._
 import munit.CatsEffectSuite
-import org.typelevel.otel4s.Attribute
-import org.typelevel.otel4s.AttributeKey
 import org.typelevel.otel4s.testkit._
 
 import scala.jdk.CollectionConverters._
@@ -57,7 +56,7 @@ class JavaOtelSuite extends CatsEffectSuite {
         Attribute(AttributeKey.string("telemetry.sdk.version"), "1.15.0")
       )
 
-      val scope = InstrumentationScope(
+      val scope = new InstrumentationScope(
         name = "java.otel.suite",
         version = Some("1.0"),
         schemaUrl = Some("https://localhost:8080")
@@ -68,7 +67,7 @@ class JavaOtelSuite extends CatsEffectSuite {
       assertEquals(metrics.map(_.unit), List(Some("unit")))
       assertEquals(
         metrics.map(_.resource),
-        List(MetricResource(None, resourceAttributes))
+        List(new MetricResource(None, resourceAttributes))
       )
       assertEquals(metrics.map(_.scope), List(scope))
       assertEquals[List[Any], List[Any]](

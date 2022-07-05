@@ -20,39 +20,36 @@ import cats.Hash
 import cats.Show
 import cats.syntax.show._
 
-final class Metric(
+final class InstrumentationScope(
     val name: String,
-    val description: Option[String],
-    val unit: Option[String],
-    val scope: InstrumentationScope,
-    val resource: MetricResource,
-    val data: MetricData
+    val version: Option[String],
+    val schemaUrl: Option[String]
 ) {
 
   override def hashCode(): Int =
-    Hash[Metric].hash(this)
+    Hash[InstrumentationScope].hash(this)
 
   override def toString: String =
-    Show[Metric].show(this)
+    Show[InstrumentationScope].show(this)
 
   override def equals(obj: Any): Boolean =
     obj match {
-      case other: Metric =>
-        Hash[Metric].eqv(this, other)
+      case other: InstrumentationScope =>
+        Hash[InstrumentationScope].eqv(this, other)
       case _ =>
         false
     }
 
 }
 
-object Metric {
+object InstrumentationScope {
 
-  implicit val metricHash: Hash[Metric] =
-    Hash.by(p => (p.name, p.description, p.unit, p.scope, p.resource, p.data))
+  implicit val instrumentationScopeHash: Hash[InstrumentationScope] =
+    Hash.by(s => (s.name, s.version, s.schemaUrl))
 
-  implicit val metricShow: Show[Metric] =
-    Show.show(p =>
-      show"Metric(${p.name}, ${p.description}, ${p.unit}, ${p.scope}, ${p.resource}, ${p.data})"
+  implicit val instrumentationScopeShow: Show[InstrumentationScope] =
+    Show.show(s =>
+      show"InstrumentationScope(${s.name}, ${s.version}, ${s.schemaUrl})"
     )
 
 }

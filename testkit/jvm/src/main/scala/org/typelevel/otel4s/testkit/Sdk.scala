@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-package org.typelevel.otel4s.testkit
+package org.typelevel.otel4s
+package testkit
 
 import cats.effect.Sync
 import io.opentelemetry.api.common.{AttributeType => JAttributeType}
@@ -33,8 +34,6 @@ import io.opentelemetry.sdk.metrics.data.DoublePointData
 import io.opentelemetry.sdk.metrics.data.LongPointData
 import io.opentelemetry.sdk.metrics.data.MetricDataType
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader
-import org.typelevel.otel4s.Attribute
-import org.typelevel.otel4s.AttributeKey
 
 import java.{lang => jl}
 import java.{util => ju}
@@ -76,16 +75,16 @@ object Sdk {
   private def makeMetric(md: JMetricData): Metric = {
 
     def summaryPoint(data: JSummaryPointData): SummaryPointData =
-      SummaryPointData(
+      new SummaryPointData(
         sum = data.getSum,
         count = data.getCount,
         values = data.getValues.asScala.toList.map(v =>
-          QuantileData(v.getQuantile, v.getValue)
+          new QuantileData(v.getQuantile, v.getValue)
         )
       )
 
     def histogramPoint(data: JHistogramPointData): HistogramPointData =
-      HistogramPointData(
+      new HistogramPointData(
         sum = data.getSum,
         count = data.getCount,
         boundaries = data.getBoundaries.asScala.toList.map(_.doubleValue()),
@@ -93,7 +92,7 @@ object Sdk {
       )
 
     def pointData[A <: JPointData, B](point: A, f: A => B) =
-      PointData(
+      new PointData(
         point.getStartEpochNanos,
         point.getEpochNanos,
         collectAttributes(point.getAttributes),
@@ -165,16 +164,16 @@ object Sdk {
     val scope = md.getInstrumentationScopeInfo
     val resource = md.getResource
 
-    Metric(
+    new Metric(
       name = md.getName,
       description = Option(md.getDescription),
       unit = Option(md.getUnit),
-      scope = InstrumentationScope(
+      scope = new InstrumentationScope(
         name = scope.getName,
         version = Option(scope.getVersion),
         schemaUrl = Option(scope.getSchemaUrl)
       ),
-      resource = MetricResource(
+      resource = new MetricResource(
         schemaUrl = Option(resource.getSchemaUrl),
         attributes = collectAttributes(resource.getAttributes)
       ),

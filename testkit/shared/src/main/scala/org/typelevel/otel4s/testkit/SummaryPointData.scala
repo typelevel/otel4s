@@ -20,39 +20,34 @@ import cats.Hash
 import cats.Show
 import cats.syntax.show._
 
-final class Metric(
-    val name: String,
-    val description: Option[String],
-    val unit: Option[String],
-    val scope: InstrumentationScope,
-    val resource: MetricResource,
-    val data: MetricData
+final class SummaryPointData(
+    val sum: Double,
+    val count: Long,
+    val values: List[QuantileData]
 ) {
 
   override def hashCode(): Int =
-    Hash[Metric].hash(this)
+    Hash[SummaryPointData].hash(this)
 
   override def toString: String =
-    Show[Metric].show(this)
+    Show[SummaryPointData].show(this)
 
   override def equals(obj: Any): Boolean =
     obj match {
-      case other: Metric =>
-        Hash[Metric].eqv(this, other)
+      case other: SummaryPointData =>
+        Hash[SummaryPointData].eqv(this, other)
       case _ =>
         false
     }
 
 }
 
-object Metric {
+object SummaryPointData {
 
-  implicit val metricHash: Hash[Metric] =
-    Hash.by(p => (p.name, p.description, p.unit, p.scope, p.resource, p.data))
+  implicit val summaryPointDataHash: Hash[SummaryPointData] =
+    Hash.by(p => (p.sum, p.count, p.values))
 
-  implicit val metricShow: Show[Metric] =
-    Show.show(p =>
-      show"Metric(${p.name}, ${p.description}, ${p.unit}, ${p.scope}, ${p.resource}, ${p.data})"
-    )
+  implicit val summaryPointDataShow: Show[SummaryPointData] =
+    Show.show(p => show"SummaryPointData(${p.sum}, ${p.count}, ${p.values})")
 
 }

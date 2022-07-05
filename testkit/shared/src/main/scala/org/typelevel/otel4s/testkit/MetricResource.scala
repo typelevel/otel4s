@@ -21,22 +21,34 @@ import cats.Hash
 import cats.Show
 import cats.syntax.show._
 
-final class PointData[A](
-    val startEpochNanos: Long,
-    val epochNanos: Long,
-    val attributes: List[Attribute[_]],
-    val value: A
-)
+final class MetricResource(
+    val schemaUrl: Option[String],
+    val attributes: List[Attribute[_]]
+) {
 
-object PointData {
+  override def hashCode(): Int =
+    Hash[MetricResource].hash(this)
+
+  override def toString: String =
+    Show[MetricResource].show(this)
+
+  override def equals(obj: Any): Boolean =
+    obj match {
+      case other: MetricResource =>
+        Hash[MetricResource].eqv(this, other)
+      case _ =>
+        false
+    }
+
+}
+
+object MetricResource {
   import Implicits._
 
-  implicit def pointDataHash[A: Hash]: Hash[PointData[A]] =
-    Hash.by(p => (p.startEpochNanos, p.epochNanos, p.attributes, p.value))
+  implicit val metricResourceHash: Hash[MetricResource] =
+    Hash.by(p => (p.schemaUrl, p.attributes))
 
-  implicit def pointDataShow[A: Show]: Show[PointData[A]] =
-    Show.show(p =>
-      show"PointData(${p.startEpochNanos}, ${p.epochNanos}, ${p.attributes}, ${p.value})"
-    )
+  implicit val metricResourceShow: Show[MetricResource] =
+    Show.show(p => show"MetricResource(${p.schemaUrl}, ${p.attributes})")
 
 }

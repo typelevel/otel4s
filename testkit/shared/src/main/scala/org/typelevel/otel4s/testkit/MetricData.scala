@@ -16,8 +16,27 @@
 
 package org.typelevel.otel4s.testkit
 
-sealed trait MetricData extends Product with Serializable {
+import cats.Hash
+import cats.Show
+import cats.syntax.show._
+
+sealed trait MetricData {
   def points: List[PointData[_]]
+
+  override final def hashCode(): Int =
+    Hash[MetricData].hash(this)
+
+  override final def toString: String =
+    Show[MetricData].show(this)
+
+  override def equals(obj: Any): Boolean =
+    obj match {
+      case other: MetricData =>
+        Hash[MetricData].eqv(this, other)
+      case _ =>
+        false
+    }
+
 }
 
 object MetricData {
@@ -40,5 +59,32 @@ object MetricData {
   final case class ExponentialHistogram(
       points: List[PointData[HistogramPointData]]
   ) extends MetricData
+
+  implicit val metricDataHash: Hash[MetricData] = Hash.by {
+    case LongGauge(points) =>
+      Hash[List[PointData[Long]]].hash(points)
+    case DoubleGauge(points) =>
+      Hash[List[PointData[Double]]].hash(points)
+    case LongSum(points) =>
+      Hash[List[PointData[Long]]].hash(points)
+    case DoubleSum(points) =>
+      Hash[List[PointData[Double]]].hash(points)
+    case Summary(points) =>
+      Hash[List[PointData[SummaryPointData]]].hash(points)
+    case Histogram(points) =>
+      Hash[List[PointData[HistogramPointData]]].hash(points)
+    case ExponentialHistogram(points) =>
+      Hash[List[PointData[HistogramPointData]]].hash(points)
+  }
+
+  implicit val metricDataShow: Show[MetricData] = Show.show {
+    case LongGauge(points)            => show"LongGauge($points)"
+    case DoubleGauge(points)          => show"DoubleGauge($points)"
+    case LongSum(points)              => show"LongSum($points)"
+    case DoubleSum(points)            => show"DoubleSum($points)"
+    case Summary(points)              => show"Summary($points)"
+    case Histogram(points)            => show"Histogram($points)"
+    case ExponentialHistogram(points) => show"ExponentialHistogram($points)"
+  }
 
 }

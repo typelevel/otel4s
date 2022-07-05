@@ -16,6 +16,9 @@
 
 package org.typelevel.otel4s
 
+import cats.Hash
+import cats.Show
+
 /** Represents all possible value types for an [[AttributeKey]] and hence the
   * types of values that are allowed for [[Attribute]].
   */
@@ -31,4 +34,11 @@ object AttributeType {
   case object DoubleList extends AttributeType[List[Double]]
   case object StringList extends AttributeType[List[String]]
   case object LongList extends AttributeType[List[Long]]
+
+  implicit def attributeTypeHash[A]: Hash[AttributeType[A]] =
+    Hash.fromUniversalHashCode
+
+  implicit def attributeTypeShow[A]: Show[AttributeType[A]] =
+    Show.fromToString
+
 }

@@ -14,20 +14,23 @@
  * limitations under the License.
  */
 
-package org.typelevel.otel4s
+package org.typelevel.otel4s.trace
 
-import org.typelevel.otel4s.metrics.MeterProvider
-import org.typelevel.otel4s.trace.TraceProvider
+/** The set of canonical status codes
+  */
+sealed trait Status extends Product with Serializable
 
-trait Otel4s[F[_]] {
+object Status {
 
-  /** A registry for creating named
-    * [[org.typelevel.otel4s.metrics.Meter Meter]].
+  /** The default status. */
+  case object Unset extends Status
+
+  /** The operation has been validated by an Application developers or Operator
+    * to have completed successfully.
     */
-  def meterProvider: MeterProvider[F]
+  case object Ok extends Status
 
-  /** The entry point of the tracing API. It provides access to
-    * [[org.typelevel.otel4s.trace.Tracer Tracer]].
-    */
-  def traceProvider: TraceProvider[F]
+  /** The operation contains an error. */
+  case object Error extends Status
+
 }

@@ -15,19 +15,10 @@
  */
 
 package org.typelevel.otel4s
+package trace
 
-import org.typelevel.otel4s.metrics.MeterProvider
-import org.typelevel.otel4s.trace.TraceProvider
-
-trait Otel4s[F[_]] {
-
-  /** A registry for creating named
-    * [[org.typelevel.otel4s.metrics.Meter Meter]].
-    */
-  def meterProvider: MeterProvider[F]
-
-  /** The entry point of the tracing API. It provides access to
-    * [[org.typelevel.otel4s.trace.Tracer Tracer]].
-    */
-  def traceProvider: TraceProvider[F]
+/** The entry point of the tracing API. It provides access to [[Tracer]].
+  */
+trait TraceProvider[F[_]] {
+  def tracer(name: String): TracerBuilder[F]
 }

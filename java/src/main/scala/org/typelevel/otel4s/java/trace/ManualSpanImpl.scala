@@ -14,20 +14,12 @@
  * limitations under the License.
  */
 
-package org.typelevel.otel4s
+package org.typelevel.otel4s.java.trace
 
-import org.typelevel.otel4s.metrics.MeterProvider
-import org.typelevel.otel4s.trace.TraceProvider
+import org.typelevel.otel4s.trace._
 
-trait Otel4s[F[_]] {
+private[trace] class ManualSpanImpl[F[_]](val backend: SpanBackendImpl[F])
+    extends Span.Manual[F]
 
-  /** A registry for creating named
-    * [[org.typelevel.otel4s.metrics.Meter Meter]].
-    */
-  def meterProvider: MeterProvider[F]
-
-  /** The entry point of the tracing API. It provides access to
-    * [[org.typelevel.otel4s.trace.Tracer Tracer]].
-    */
-  def traceProvider: TraceProvider[F]
-}
+private[trace] class AutoSpanImpl[F[_]](val backend: SpanBackendImpl[F])
+    extends Span.Auto[F]

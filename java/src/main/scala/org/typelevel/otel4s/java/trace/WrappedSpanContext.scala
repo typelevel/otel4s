@@ -14,20 +14,15 @@
  * limitations under the License.
  */
 
-package org.typelevel.otel4s
+package org.typelevel.otel4s.java.trace
 
-import org.typelevel.otel4s.metrics.MeterProvider
-import org.typelevel.otel4s.trace.TraceProvider
+import io.opentelemetry.api.trace.{SpanContext => JSpanContext}
+import org.typelevel.otel4s.trace.SpanContext
 
-trait Otel4s[F[_]] {
+private[trace] class WrappedSpanContext(val jSpanContext: JSpanContext)
+    extends SpanContext {
 
-  /** A registry for creating named
-    * [[org.typelevel.otel4s.metrics.Meter Meter]].
-    */
-  def meterProvider: MeterProvider[F]
+  def traceId: String = jSpanContext.getTraceId
+  def spanId: String = jSpanContext.getSpanId
 
-  /** The entry point of the tracing API. It provides access to
-    * [[org.typelevel.otel4s.trace.Tracer Tracer]].
-    */
-  def traceProvider: TraceProvider[F]
 }

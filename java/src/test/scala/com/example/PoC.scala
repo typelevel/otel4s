@@ -25,13 +25,13 @@ import org.typelevel.otel4s.java.OtelJava
 
 object Poc extends IOApp.Simple {
   def run: IO[Unit] = for {
-    _ <- IO(sys.props("otel.traces.exporter") = "none")
+    _ <- IO(sys.props("otel.traces.exporter") = "logging")
     _ <- IO(sys.props("otel.metrics.exporter") = "logging")
     _ <- IO(sys.props("otel.logs.exporter") = "none")
     otel4j <- IO(
       AutoConfiguredOpenTelemetrySdk.initialize().getOpenTelemetrySdk
     )
-    otel4s = OtelJava.forSync[IO](otel4j)
+    otel4s <- OtelJava.forSync[IO](otel4j)
     meter <- otel4s.meterProvider.get("poc")
     counter <- meter.counter("test").create
     _ <- counter.add(1)
@@ -44,6 +44,12 @@ object Poc extends IOApp.Simple {
       Attribute(fish, List("one", "two", "red", "blue")),
       Attribute(numbers, List(1L, 2L, 3L, 4L))
     )
+    tracer <- otel4s.traceProvider.tracer("my-tracer").get
+    _ <- tracer.span("my-span").use { _ =>
+      tracer.span("span-2").use { _ =>
+        IO.println("my-span")
+      }
+    }
     provider = otel4j.getSdkMeterProvider
     _ <- IO.println(provider.forceFlush())
   } yield ()

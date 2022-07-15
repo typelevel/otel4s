@@ -15,19 +15,17 @@
  */
 
 package org.typelevel.otel4s
+package trace
 
-import org.typelevel.otel4s.metrics.MeterProvider
-import org.typelevel.otel4s.trace.TraceProvider
+trait SpanContext {
+  def traceId: String
+  def spanId: String
+}
 
-trait Otel4s[F[_]] {
+object SpanContext {
 
-  /** A registry for creating named
-    * [[org.typelevel.otel4s.metrics.Meter Meter]].
-    */
-  def meterProvider: MeterProvider[F]
+  trait Provider[F[_]] {
+    def current: F[SpanContext]
+  }
 
-  /** The entry point of the tracing API. It provides access to
-    * [[org.typelevel.otel4s.trace.Tracer Tracer]].
-    */
-  def traceProvider: TraceProvider[F]
 }

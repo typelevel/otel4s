@@ -19,27 +19,27 @@ package org.typelevel.otel4s.java.trace
 import cats.effect.LiftIO
 import cats.effect.Sync
 import cats.syntax.functor._
-import io.opentelemetry.api.{OpenTelemetry => JOpenTelemetry}
+import io.opentelemetry.api.trace.{TracerProvider => JTracerProvider}
 import io.opentelemetry.context.{Context => JContext}
 import org.typelevel.otel4s.trace.TraceProvider
 import org.typelevel.otel4s.trace.TracerBuilder
 
 private[otel4s] class TraceProviderImpl[F[_]: Sync](
-    jOtel: JOpenTelemetry,
+    jTracerProvider: JTracerProvider,
     scope: TraceScope[F]
 ) extends TraceProvider[F] {
   def tracer(name: String): TracerBuilder[F] =
-    TracerBuilderImpl(jOtel, scope, name)
+    TracerBuilderImpl(jTracerProvider, scope, name)
 }
 
 object TraceProviderImpl {
 
   def ioLocal[F[_]: LiftIO: Sync](
-      jOtel: JOpenTelemetry,
+      jTracerProvider: JTracerProvider,
       default: JContext = JContext.root()
   ): F[TraceProviderImpl[F]] =
     TraceScope
       .fromIOLocal[F](default)
-      .map(scope => new TraceProviderImpl(jOtel, scope))
+      .map(scope => new TraceProviderImpl(jTracerProvider, scope))
 
 }

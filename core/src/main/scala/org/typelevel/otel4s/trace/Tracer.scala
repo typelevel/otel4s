@@ -50,6 +50,14 @@ trait Tracer[F[_]] extends TracerMacro[F] { self =>
     */
   def childOf(span: Span[F]): Tracer[F]
 
+  /** Returns trace identifier of a span that is available in a scope.
+    */
+  def traceId: F[Option[String]]
+
+  /** Returns span identifier of a span that is available in a scope.
+    */
+  def spanId: F[Option[String]]
+
 }
 
 object Tracer {
@@ -80,5 +88,7 @@ object Tracer {
       val meta: Meta[F] = Meta.disabled
       def spanBuilder(name: String): SpanBuilder[F] = builder
       def childOf(span: Span[F]): Tracer[F] = this
+      val traceId: F[Option[String]] = F.pure(None)
+      val spanId: F[Option[String]] = F.pure(None)
     }
 }

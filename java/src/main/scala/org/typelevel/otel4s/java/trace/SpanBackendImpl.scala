@@ -69,6 +69,12 @@ private[otel4s] class SpanBackendImpl[F[_]](
 
   private[otel4s] def end(timestamp: FiniteDuration): F[Unit] =
     F.delay(jSpan.end(timestamp.length, timestamp.unit))
+
+  def traceId: String =
+    jSpan.getSpanContext.getTraceId
+
+  def spanId: String =
+    jSpan.getSpanContext.getSpanId
 }
 
 object SpanBackendImpl {

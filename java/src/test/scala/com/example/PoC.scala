@@ -52,5 +52,7 @@ object Poc extends IOApp.Simple {
     }
     provider = otel4j.getSdkMeterProvider
     _ <- IO.println(provider.forceFlush())
+    _ <- IO.delay(otel4j.getSdkMeterProvider.close())
+    _ <- IO.delay(otel4j.getSdkTracerProvider.close())
   } yield ()
 }

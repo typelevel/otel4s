@@ -73,6 +73,16 @@ trait Span[F[_]] extends SpanMacro[F] {
   final def setStatus(status: Status, description: String): F[Unit] =
     backend.setStatus(status, description)
 
+  /** Returns trace identifier of the current span.
+    */
+  final def traceId: String =
+    backend.traceId
+
+  /** Returns span identifier of the current span.
+    */
+  final def spanId: String =
+    backend.spanId
+
 }
 
 object Span {
@@ -88,6 +98,9 @@ object Span {
     def setAttributes(attributes: Attribute[_]*): F[Unit]
     def setStatus(status: Status): F[Unit]
     def setStatus(status: Status, description: String): F[Unit]
+
+    def traceId: String
+    def spanId: String
 
     private[otel4s] def child(name: String): SpanBuilder[F]
     private[otel4s] def end: F[Unit]
@@ -111,17 +124,15 @@ object Span {
       val backend: Backend[F] = noopBackend
     }
 
-  def noopManual[F[_]: Applicative]: Manual[F] =
-    new Manual[F] {
-      val backend: Backend[F] = noopBackend
-    }
-
   def noopBackend[F[_]: Applicative]: Backend[F] =
     new Backend[F] {
       private val unit = Applicative[F].unit
       private val noopBuilder = SpanBuilder.noop(this)
 
       val meta: InstrumentMeta[F] = InstrumentMeta.disabled
+
+      val traceId: String = "00000000000000000000000000000000"
+      val spanId: String = "0000000000000000"
 
       def recordException(
           exception: Throwable,

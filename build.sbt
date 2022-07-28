@@ -52,7 +52,11 @@ lazy val java = crossProject(JVMPlatform)
     libraryDependencies ++= Seq(
       "io.opentelemetry" % "opentelemetry-api" % "1.15.0",
       "io.opentelemetry" % "opentelemetry-exporter-logging" % "1.15.0" % Test,
-      "io.opentelemetry" % "opentelemetry-sdk-extension-autoconfigure" % "1.13.0-alpha" % Test
+      "io.opentelemetry" % "opentelemetry-sdk-extension-autoconfigure" % "1.13.0-alpha" % Test,
+      "io.opentelemetry" % "opentelemetry-sdk-testing" % "1.15.0" % Test,
+      "org.scalameta" %% "munit" % "0.7.29" % Test,
+      "org.typelevel" %% "munit-cats-effect-3" % "1.0.7" % Test,
+      "org.typelevel" %%% "cats-effect-testkit" % "3.3.13" % Test
     )
   )
   .dependsOn(core % "compile->compile,test->test")

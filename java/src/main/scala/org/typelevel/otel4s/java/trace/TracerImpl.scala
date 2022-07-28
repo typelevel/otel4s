@@ -17,6 +17,8 @@
 package org.typelevel.otel4s.java.trace
 
 import cats.effect.Sync
+import cats.syntax.functor._
+import io.opentelemetry.api.trace.{Span => JSpan}
 import io.opentelemetry.api.trace.{Tracer => JTracer}
 import org.typelevel.otel4s.trace.Span
 import org.typelevel.otel4s.trace.SpanBuilder
@@ -38,4 +40,20 @@ private[trace] class TracerImpl[F[_]: Sync](
       override def spanBuilder(name: String): SpanBuilder[F] =
         s.backend.child(name)
     }
+
+  /** Returns trace identifier of a span that is available in a scope.
+    */
+  def traceId: F[Option[String]] =
+    for {
+      context <- scope.current
+    } yield Option(JSpan.fromContextOrNull(context))
+      .map(_.getSpanContext.getTraceId)
+
+  /** Returns span identifier of a span that is available in a scope.
+    */
+  def spanId: F[Option[String]] =
+    for {
+      context <- scope.current
+    } yield Option(JSpan.fromContextOrNull(context))
+      .map(_.getSpanContext.getSpanId)
 }

@@ -30,10 +30,10 @@ private[otel4s] trait TracerMacro[F[_]] {
     * The lifecycle of the span is managed automatically. That means the span is
     * ended upon the finalization of a resource.
     *
-    * To attach span to a certain parent, use [[childOf]].
+    * To attach span to a specific parent, use [[childOf]].
     *
     * @example
-    *   attaching span to a certain parent
+    *   attaching span to a specific parent
     *   {{{
     * val tracer: Tracer[F] = ???
     * val span: Span[F] = ???
@@ -41,7 +41,7 @@ private[otel4s] trait TracerMacro[F[_]] {
     *   }}}
     *
     * @see
-    *   [[spanBuilder]] to make fully manual span (explicit end)
+    *   [[spanBuilder]] to make a fully manual span (explicit end)
     *
     * @param name
     *   the name of the span

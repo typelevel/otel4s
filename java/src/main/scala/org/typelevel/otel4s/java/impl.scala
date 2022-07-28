@@ -35,7 +35,7 @@ object OtelJava {
   def forSync[F[_]: LiftIO](
       jOtel: JOpenTelemetry
   )(implicit F: Sync[F]): F[Otel4s[F]] =
-    TraceProviderImpl.ioLocal(jOtel).map { provider =>
+    TraceProviderImpl.ioLocal(jOtel.getTracerProvider).map { provider =>
       new Otel4s[F] {
         val meterProvider: MeterProvider[F] = new MeterProviderImpl[F](jOtel)
         val traceProvider: TraceProvider[F] = provider

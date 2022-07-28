@@ -17,11 +17,11 @@
 package org.typelevel.otel4s.java.trace
 
 import cats.effect.Sync
-import io.opentelemetry.api.{OpenTelemetry => JOpenTelemetry}
+import io.opentelemetry.api.trace.{TracerProvider => JTracerProvider}
 import org.typelevel.otel4s.trace._
 
 private[trace] final case class TracerBuilderImpl[F[_]](
-    jOtel: JOpenTelemetry,
+    jTracerProvider: JTracerProvider,
     scope: TraceScope[F],
     name: String,
     version: Option[String] = None,
@@ -36,7 +36,7 @@ private[trace] final case class TracerBuilderImpl[F[_]](
     copy(schemaUrl = Option(schemaUrl))
 
   def get: F[Tracer[F]] = F.delay {
-    val b = jOtel.tracerBuilder(name)
+    val b = jTracerProvider.tracerBuilder(name)
     version.foreach(b.setInstrumentationVersion)
     schemaUrl.foreach(b.setSchemaUrl)
     new TracerImpl(b.build(), scope)

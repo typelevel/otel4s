@@ -17,7 +17,6 @@
 package org.typelevel.otel4s.java
 package trace
 
-import cats.effect.Clock
 import cats.effect.Resource
 import cats.effect.Sync
 import cats.syntax.flatMap._
@@ -39,7 +38,7 @@ import org.typelevel.otel4s.trace.Status
 
 import scala.concurrent.duration.FiniteDuration
 
-private[trace] final case class SpanBuilderImpl[F[_]](
+private[trace] final case class SpanBuilderImpl[F[_]: Sync](
     jTracer: JTracer,
     name: String,
     scope: TraceScope[F],
@@ -48,8 +47,7 @@ private[trace] final case class SpanBuilderImpl[F[_]](
     links: Seq[(SpanContext, Seq[Attribute[_]])] = Nil,
     attributes: Seq[Attribute[_]] = Nil,
     startTimestamp: Option[FiniteDuration] = None
-)(implicit F: Sync[F], C: Clock[F])
-    extends SpanBuilder[F] {
+) extends SpanBuilder[F] {
 
   import SpanBuilderImpl._
 
@@ -78,47 +76,33 @@ private[trace] final case class SpanBuilderImpl[F[_]](
     for {
       parent <- Resource.eval(parentContext)
       jBuilder <- Resource.pure(makeJBuilder(parent))
-      jSpan <- Resource.eval(F.delay(jBuilder.startSpan()))
+      jSpan <- Resource.eval(Sync[F].delay(jBuilder.startSpan()))
       _ <- scope.make(jSpan)
     } yield new ManualSpanImpl(new SpanBackendImpl(jTracer, jSpan, scope))
 
-  def createAuto: Resource[F, Span.Auto[F]] = {
-    def acquire: F[ManualSpanImpl[F]] =
-      for {
-        now <- C.monotonic
-        parent <- parentContext
-        jSpan <- F.delay {
-          makeJBuilder(parent)
-            .setStartTimestamp(now.length, now.unit)
-            .startSpan()
-        }
-      } yield new ManualSpanImpl(new SpanBackendImpl(jTracer, jSpan, scope))
+  def createAuto: Resource[F, Span.Auto[F]] =
+    for {
+      ctx <- Resource.eval(parentContext)
+      span <- createAutoSpan(jTracer, scope, makeJBuilder(ctx))
+    } yield span
 
-    def reportStatus(span: Span[F], ec: Resource.ExitCase): F[Unit] =
-      ec match {
-        case Resource.ExitCase.Succeeded =>
-          F.unit
-
-        case Resource.ExitCase.Errored(e) =>
-          span.recordException(e) >> span.setStatus(Status.Error)
-
-        case Resource.ExitCase.Canceled =>
-          span.setStatus(Status.Error, "canceled")
-      }
-
-    def release(span: Span.Manual[F], ec: Resource.ExitCase): F[Unit] =
-      for {
-        now <- C.monotonic
-        _ <- reportStatus(span, ec)
-        _ <- span.end(now)
-      } yield ()
+  def createRes[A](resource: Resource[F, A]): Resource[F, Span.Res[F, A]] = {
+    def child(name: String, ctx: JContext) =
+      createAutoSpan(jTracer, scope, jTracer.spanBuilder(name).setParent(ctx))
 
     for {
-      manual <- Resource.makeCase(acquire) { case (span, ec) =>
-        release(span, ec)
-      }
-      _ <- scope.make(manual.backend.jSpan)
-    } yield new AutoSpanImpl[F](manual.backend)
+      _ <- createAuto
+      ctx <- Resource.eval(scope.current)
+
+      result <- Resource.make(
+        child("acquire", ctx).surround(resource.allocated)
+      )(a => child("release", ctx).surround(a._2))
+
+      useSpan <- child("use", ctx)
+    } yield new Span.Res[F, A] {
+      def value: A = result._1
+      def backend: Span.Backend[F] = useSpan.backend
+    }
   }
 
   private def makeJBuilder(parent: JContext): JSpanBuilder = {
@@ -156,6 +140,49 @@ object SpanBuilderImpl {
     case object Auto extends Parent
     case object Root extends Parent
     final case class Explicit(parent: JSpan) extends Parent
+  }
+
+  private def createAutoSpan[F[_]: Sync](
+      jTracer: JTracer,
+      scope: TraceScope[F],
+      builder: JSpanBuilder
+  ): Resource[F, AutoSpanImpl[F]] = {
+
+    def acquire: F[SpanBackendImpl[F]] =
+      for {
+        now <- Sync[F].realTime
+        jSpan <- Sync[F].delay {
+          builder
+            .setStartTimestamp(now.length, now.unit)
+            .startSpan()
+        }
+      } yield new SpanBackendImpl(jTracer, jSpan, scope)
+
+    def reportStatus(backend: Span.Backend[F], ec: Resource.ExitCase): F[Unit] =
+      ec match {
+        case Resource.ExitCase.Succeeded =>
+          Sync[F].unit
+
+        case Resource.ExitCase.Errored(e) =>
+          backend.recordException(e) >> backend.setStatus(Status.Error)
+
+        case Resource.ExitCase.Canceled =>
+          backend.setStatus(Status.Error, "canceled")
+      }
+
+    def release(backend: Span.Backend[F], ec: Resource.ExitCase): F[Unit] =
+      for {
+        now <- Sync[F].realTime
+        _ <- reportStatus(backend, ec)
+        _ <- backend.end(now)
+      } yield ()
+
+    for {
+      backend <- Resource.makeCase(acquire) { case (backend, ec) =>
+        release(backend, ec)
+      }
+      _ <- scope.make(backend.jSpan)
+    } yield new AutoSpanImpl[F](backend)
   }
 
   private def toJSpanKind(spanKind: SpanKind): JSpanKind =

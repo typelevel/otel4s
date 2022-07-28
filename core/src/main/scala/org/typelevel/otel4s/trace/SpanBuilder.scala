@@ -35,7 +35,7 @@ trait SpanBuilder[F[_]] {
 
   def createManual: Resource[F, Span.Manual[F]]
   def createAuto: Resource[F, Span.Auto[F]]
-
+  def createRes[A](resource: Resource[F, A]): Resource[F, Span.Res[F, A]]
 }
 
 object SpanBuilder {
@@ -64,5 +64,8 @@ object SpanBuilder {
 
       val createAuto: Resource[F, Span.Auto[F]] =
         Resource.pure(auto)
+
+      def createRes[A](resource: Resource[F, A]): Resource[F, Span.Res[F, A]] =
+        Span.Res.fromResource(resource, back)
     }
 }

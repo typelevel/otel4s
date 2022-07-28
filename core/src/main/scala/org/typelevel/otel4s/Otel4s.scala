@@ -17,7 +17,7 @@
 package org.typelevel.otel4s
 
 import org.typelevel.otel4s.metrics.MeterProvider
-import org.typelevel.otel4s.trace.TraceProvider
+import org.typelevel.otel4s.trace.TracerProvider
 
 trait Otel4s[F[_]] {
 
@@ -29,5 +29,5 @@ trait Otel4s[F[_]] {
   /** The entry point of the tracing API. It provides access to
     * [[org.typelevel.otel4s.trace.Tracer Tracer]].
     */
-  def traceProvider: TraceProvider[F]
+  def tracerProvider: TracerProvider[F]
 }

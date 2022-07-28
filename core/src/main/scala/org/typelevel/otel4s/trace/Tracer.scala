@@ -23,7 +23,7 @@ import org.typelevel.otel4s.meta.InstrumentMeta
 
 /** The API is responsible for creating [[Span]]'s.
   */
-trait Tracer[F[_]] extends TracerMacro[F] { self =>
+trait Tracer[F[_]] extends TracerMacro[F] {
 
   /** Instrument metadata. Indicates whether instrumentation is enabled or not.
     */
@@ -71,7 +71,8 @@ trait Tracer[F[_]] extends TracerMacro[F] { self =>
 object Tracer {
 
   trait Meta[F[_]] extends InstrumentMeta[F] {
-    def resourceNoopSpan: Resource[F, Span.Auto[F]]
+    def noopAutoSpan: Resource[F, Span.Auto[F]]
+    def noopResSpan[A](resource: Resource[F, A]): Resource[F, Span.Res[F, A]]
   }
 
   object Meta {
@@ -81,18 +82,30 @@ object Tracer {
 
     private def make[F[_]: Applicative](enabled: Boolean): Meta[F] =
       new Meta[F] {
+        private val noopBackend = Span.noopBackend[F]
+
         val isEnabled: Boolean = enabled
         val unit: F[Unit] = Applicative[F].unit
         val resourceUnit: Resource[F, Unit] = Resource.unit
-        val resourceNoopSpan: Resource[F, Span.Auto[F]] =
-          Resource.pure(Span.noopAuto)
+        val noopAutoSpan: Resource[F, Span.Auto[F]] =
+          Resource.pure(
+            new Span.Auto[F] {
+              def backend: Span.Backend[F] = noopBackend
+            }
+          )
+
+        def noopResSpan[A](
+            resource: Resource[F, A]
+        ): Resource[F, Span.Res[F, A]] =
+          Span.Res.fromResource(resource, noopBackend)
       }
 
   }
 
   def noop[F[_]](implicit F: Applicative[F]): Tracer[F] =
     new Tracer[F] {
-      private val builder = SpanBuilder.noop(Span.noopBackend)
+      private val noopBackend = Span.noopBackend
+      private val builder = SpanBuilder.noop(noopBackend)
       val meta: Meta[F] = Meta.disabled
       val traceId: F[Option[String]] = F.pure(None)
       val spanId: F[Option[String]] = F.pure(None)

@@ -17,6 +17,8 @@
 package org.typelevel.otel4s
 package trace
 
+import cats.effect.Resource
+
 import scala.concurrent.duration.TimeUnit
 import scala.quoted.*
 
@@ -30,7 +32,7 @@ private[otel4s] object TracesMacro {
     '{
       if ($tracer.meta.isEnabled)
         $tracer.spanBuilder($name).withAttributes($attributes*).createAuto
-      else $tracer.meta.resourceNoopSpan
+      else $tracer.meta.noopAutoSpan
     }
 
   def rootSpan[F[_]](
@@ -41,7 +43,22 @@ private[otel4s] object TracesMacro {
     '{
       if ($tracer.meta.isEnabled)
         $tracer.spanBuilder($name).root.withAttributes($attributes*).createAuto
-      else $tracer.meta.resourceNoopSpan
+      else $tracer.meta.noopAutoSpan
+    }
+
+  def resourceSpan[F[_], A](
+      tracer: Expr[Tracer[F]],
+      name: Expr[String],
+      attributes: Expr[Seq[Attribute[_]]],
+      resource: Expr[Resource[F, A]]
+  )(using Quotes, Type[F], Type[A]) =
+    '{
+      if ($tracer.meta.isEnabled)
+        $tracer
+          .spanBuilder($name)
+          .withAttributes($attributes*)
+          .createRes($resource)
+      else $tracer.meta.noopResSpan($resource)
     }
 
   def recordException[F[_]](

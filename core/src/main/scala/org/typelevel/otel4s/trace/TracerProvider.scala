@@ -19,6 +19,6 @@ package trace
 
 /** The entry point of the tracing API. It provides access to [[Tracer]].
   */
-trait TraceProvider[F[_]] {
+trait TracerProvider[F[_]] {
   def tracer(name: String): TracerBuilder[F]
 }

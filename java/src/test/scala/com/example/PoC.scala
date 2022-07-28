@@ -44,12 +44,6 @@ object Poc extends IOApp.Simple {
       Attribute(fish, List("one", "two", "red", "blue")),
       Attribute(numbers, List(1L, 2L, 3L, 4L))
     )
-    tracer <- otel4s.traceProvider.tracer("my-tracer").get
-    _ <- tracer.span("my-span").use { _ =>
-      tracer.span("span-2").use { _ =>
-        IO.println("my-span")
-      }
-    }
     provider = otel4j.getSdkMeterProvider
     _ <- IO.println(provider.forceFlush())
     _ <- IO.delay(otel4j.getSdkMeterProvider.close())

@@ -21,25 +21,25 @@ import cats.effect.Sync
 import cats.syntax.functor._
 import io.opentelemetry.api.trace.{TracerProvider => JTracerProvider}
 import io.opentelemetry.context.{Context => JContext}
-import org.typelevel.otel4s.trace.TraceProvider
 import org.typelevel.otel4s.trace.TracerBuilder
+import org.typelevel.otel4s.trace.TracerProvider
 
-private[otel4s] class TraceProviderImpl[F[_]: Sync](
+private[otel4s] class TracerProviderImpl[F[_]: Sync](
     jTracerProvider: JTracerProvider,
     scope: TraceScope[F]
-) extends TraceProvider[F] {
+) extends TracerProvider[F] {
   def tracer(name: String): TracerBuilder[F] =
     TracerBuilderImpl(jTracerProvider, scope, name)
 }
 
-object TraceProviderImpl {
+object TracerProviderImpl {
 
   def ioLocal[F[_]: LiftIO: Sync](
       jTracerProvider: JTracerProvider,
       default: JContext = JContext.root()
-  ): F[TraceProviderImpl[F]] =
+  ): F[TracerProviderImpl[F]] =
     TraceScope
       .fromIOLocal[F](default)
-      .map(scope => new TraceProviderImpl(jTracerProvider, scope))
+      .map(scope => new TracerProviderImpl(jTracerProvider, scope))
 
 }

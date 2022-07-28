@@ -18,6 +18,7 @@ package org.typelevel.otel4s
 package trace
 
 import cats.Applicative
+import cats.effect.Resource
 import org.typelevel.otel4s.meta.InstrumentMeta
 
 import scala.concurrent.duration.FiniteDuration
@@ -125,10 +126,25 @@ object Span {
 
   }
 
-  def noopAuto[F[_]: Applicative]: Auto[F] =
-    new Auto[F] {
-      val backend: Backend[F] = noopBackend
-    }
+  trait Res[F[_], A] extends Auto[F] {
+    def value: A
+  }
+
+  object Res {
+    def unapply[F[_], A](span: Span.Res[F, A]): Option[A] =
+      Some(span.value)
+
+    private[otel4s] def fromResource[F[_], A](
+        resource: Resource[F, A],
+        back: Backend[F]
+    ): Resource[F, Span.Res[F, A]] =
+      resource.map { v =>
+        new Span.Res[F, A] {
+          def value: A = v
+          def backend: Span.Backend[F] = back
+        }
+      }
+  }
 
   def noopBackend[F[_]: Applicative]: Backend[F] =
     new Backend[F] {

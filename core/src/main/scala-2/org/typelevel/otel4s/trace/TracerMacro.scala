@@ -23,7 +23,7 @@ private[otel4s] trait TracerMacro[F[_]] {
   self: Tracer[F] =>
 
   /** Creates a new child span. The span is automatically attached to a parent
-    * span (based on the context).
+    * span (based on the scope).
     *
     * The lifecycle of the span is managed automatically. That means the span is
     * ended upon the finalization of a resource.
@@ -65,4 +65,25 @@ private[otel4s] trait TracerMacro[F[_]] {
   ): Resource[F, Span.Auto[F]] =
     macro TracesMacro.rootSpan
 
+  /** Creates a new child span. The span is automatically attached to a parent
+    * span (based on the scope).
+    *
+    * The structure of the inner spans:
+    * {{{
+    * > name
+    *   > acquire
+    *   > use
+    *   > release
+    * }}}
+    *
+    * @param name
+    *   the name of the span
+    *
+    * @param attributes
+    *   the set of attributes to associate with the span
+    */
+  def resourceSpan[A](name: String, attributes: Attribute[_]*)(
+      resource: Resource[F, A]
+  ): Resource[F, Span.Res[F, A]] =
+    macro TracesMacro.resourceSpan[F, A]
 }

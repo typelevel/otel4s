@@ -22,7 +22,7 @@ ThisBuild / crossScalaVersions := Seq(Scala213, "3.1.3")
 ThisBuild / scalaVersion := Scala213 // the default Scala
 
 lazy val root = tlCrossRootProject
-  .aggregate(core, java)
+  .aggregate(core, java, examples)
   .settings(name := "otel4s")
 
 lazy val core = crossProject(JVMPlatform, JSPlatform)
@@ -60,5 +60,16 @@ lazy val java = crossProject(JVMPlatform)
     )
   )
   .dependsOn(core % "compile->compile,test->test")
+
+lazy val examples = crossProject(JVMPlatform)
+  .crossType(CrossType.Pure)
+  .in(file("examples"))
+  .settings(
+    name := "otel4s-examples",
+    libraryDependencies ++= Seq(
+      "io.opentelemetry" % "opentelemetry-exporter-jaeger" % "1.15.0"
+    )
+  )
+  .dependsOn(core, java)
 
 lazy val docs = project.in(file("site")).enablePlugins(TypelevelSitePlugin)

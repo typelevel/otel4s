@@ -17,6 +17,8 @@
 package org.typelevel.otel4s
 package trace
 
+import cats.effect.Resource
+
 import scala.reflect.macros.blackbox
 
 private[otel4s] object TracesMacro {
@@ -28,7 +30,7 @@ private[otel4s] object TracesMacro {
     import c.universe._
     val meta = q"${c.prefix}.meta"
 
-    q"if ($meta.isEnabled) ${c.prefix}.spanBuilder($name).withAttributes(..$attributes).createAuto else $meta.resourceNoopSpan"
+    q"if ($meta.isEnabled) ${c.prefix}.spanBuilder($name).withAttributes(..$attributes).createAuto else $meta.noopAutoSpan"
   }
 
   def rootSpan(c: blackbox.Context)(
@@ -38,7 +40,17 @@ private[otel4s] object TracesMacro {
     import c.universe._
     val meta = q"${c.prefix}.meta"
 
-    q"if ($meta.isEnabled) ${c.prefix}.spanBuilder($name).root.withAttributes(..$attributes).createAuto else $meta.resourceNoopSpan"
+    q"if ($meta.isEnabled) ${c.prefix}.spanBuilder($name).root.withAttributes(..$attributes).createAuto else $meta.noopAutoSpan"
+  }
+
+  def resourceSpan[F[_], A](c: blackbox.Context)(
+      name: c.Expr[String],
+      attributes: c.Expr[Attribute[_]]*
+  )(resource: c.Expr[Resource[F, A]]): c.universe.Tree = {
+    import c.universe._
+    val meta = q"${c.prefix}.meta"
+
+    q"if ($meta.isEnabled) ${c.prefix}.spanBuilder($name).withAttributes(..$attributes).createRes($resource) else $meta.noopResSpan($resource)"
   }
 
   def recordException(c: blackbox.Context)(

@@ -1,3 +1,19 @@
+/*
+ * Copyright 2022 Typelevel
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.typelevel.otel4s.java.trace
 
 import cats.effect.IO
@@ -56,23 +72,30 @@ class TracerSuite extends CatsEffectSuite {
       tracer <- sdk.provider.tracer("java.otel.tracer").get
       _ <- tracer.traceId.assertEquals(None)
       _ <- tracer.spanId.assertEquals(None)
-      (span, span2) <- tracer.span("span").use { span =>
+      spanTuple <- tracer.span("span").use { span =>
         for {
-          _ <- tracer.traceId.assertEquals(Some(span.traceId))
-          _ <- tracer.spanId.assertEquals(Some(span.spanId))
+          _ <- tracer.traceId.assertEquals(span.traceId)
+          _ <- tracer.spanId.assertEquals(span.spanId)
           span2 <- tracer.span("span-2").use { span2 =>
             for {
-              _ <- tracer.traceId.assertEquals(Some(span2.traceId))
-              _ <- tracer.spanId.assertEquals(Some(span2.spanId))
+              _ <- tracer.traceId.assertEquals(span2.traceId)
+              _ <- tracer.spanId.assertEquals(span2.spanId)
             } yield span2
           }
         } yield (span, span2)
       }
       spans <- sdk.finishedSpans
     } yield {
+      val (span, span2) = spanTuple
       assertEquals(span.traceId, span2.traceId)
-      assertEquals(spans.map(_.getTraceId), List(span2.traceId, span.traceId))
-      assertEquals(spans.map(_.getSpanId), List(span2.spanId, span.spanId))
+      assertEquals(
+        spans.map(_.getTraceId),
+        List(span2.traceId, span.traceId).flatten
+      )
+      assertEquals(
+        spans.map(_.getSpanId),
+        List(span2.spanId, span.spanId).flatten
+      )
     }
   }
 
@@ -85,8 +108,8 @@ class TracerSuite extends CatsEffectSuite {
       span <- tracer.span("span", attribute).use(IO.pure)
       spans <- sdk.finishedSpans
     } yield {
-      assertEquals(spans.map(_.getTraceId), List(span.traceId))
-      assertEquals(spans.map(_.getSpanId), List(span.spanId))
+      assertEquals(spans.map(_.getTraceId), List(span.traceId).flatten)
+      assertEquals(spans.map(_.getSpanId), List(span.spanId).flatten)
     }
   }
 
@@ -166,8 +189,54 @@ class TracerSuite extends CatsEffectSuite {
       spans <- sdk.finishedSpans
     } yield {
       assertNotEquals(rootSpan.spanId, span.spanId)
-      assertEquals(spans.map(_.getTraceId), List(span.traceId, rootSpan.traceId))
-      assertEquals(spans.map(_.getSpanId), List(span.spanId, rootSpan.spanId))
+      assertEquals(
+        spans.map(_.getTraceId),
+        List(span.traceId, rootSpan.traceId).flatten
+      )
+      assertEquals(
+        spans.map(_.getSpanId),
+        List(span.spanId, rootSpan.spanId).flatten
+      )
+    }
+  }
+
+  test("run effect without tracing") {
+    for {
+      sdk <- makeSdk()
+      tracer <- sdk.provider.tracer("java.otel.tracer").get
+      _ <- tracer.traceId.assertEquals(None)
+      _ <- tracer.spanId.assertEquals(None)
+      spanTuple <- tracer.span("span").use { span =>
+        for {
+          _ <- tracer.traceId.assertEquals(span.traceId)
+          _ <- tracer.spanId.assertEquals(span.spanId)
+          span2 <- tracer.withoutTracing {
+            for {
+              _ <- tracer.traceId.assertEquals(None)
+              _ <- tracer.spanId.assertEquals(None)
+              // a new root span should be created
+              span2 <- tracer.span("span-2").use { span2 =>
+                for {
+                  _ <- tracer.traceId.assertEquals(span2.traceId)
+                  _ <- tracer.spanId.assertEquals(span2.spanId)
+                } yield span2
+              }
+            } yield span2
+          }
+        } yield (span, span2)
+      }
+      spans <- sdk.finishedSpans
+    } yield {
+      val (span, span2) = spanTuple
+      assertNotEquals(span.traceId, span2.traceId)
+      assertEquals(
+        spans.map(_.getTraceId),
+        List(span2.traceId, span.traceId).flatten
+      )
+      assertEquals(
+        spans.map(_.getSpanId),
+        List(span2.spanId, span.spanId).flatten
+      )
     }
   }
 

@@ -32,6 +32,18 @@ private[trace] class TracerImpl[F[_]: Sync](
   val meta: Tracer.Meta[F] =
     Tracer.Meta.enabled
 
+  def traceId: F[Option[String]] =
+    for {
+      context <- scope.current
+    } yield Option(JSpan.fromContextOrNull(context))
+      .map(_.getSpanContext.getTraceId)
+
+  def spanId: F[Option[String]] =
+    for {
+      context <- scope.current
+    } yield Option(JSpan.fromContextOrNull(context))
+      .map(_.getSpanContext.getSpanId)
+
   def spanBuilder(name: String): SpanBuilder[F] =
     new SpanBuilderImpl[F](jTracer, name, scope)
 
@@ -41,19 +53,6 @@ private[trace] class TracerImpl[F[_]: Sync](
         s.backend.child(name)
     }
 
-  /** Returns trace identifier of a span that is available in a scope.
-    */
-  def traceId: F[Option[String]] =
-    for {
-      context <- scope.current
-    } yield Option(JSpan.fromContextOrNull(context))
-      .map(_.getSpanContext.getTraceId)
-
-  /** Returns span identifier of a span that is available in a scope.
-    */
-  def spanId: F[Option[String]] =
-    for {
-      context <- scope.current
-    } yield Option(JSpan.fromContextOrNull(context))
-      .map(_.getSpanContext.getSpanId)
+  def withoutTracing[A](fa: F[A]): F[A] =
+    scope.rootScope.use(_ => fa)
 }

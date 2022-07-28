@@ -28,6 +28,7 @@ trait TraceScope[F[_]] {
   def root: F[JContext]
   def current: F[JContext]
   def make(span: JSpan): Resource[F, Unit]
+  def rootScope: Resource[F, Unit]
 }
 
 object TraceScope {
@@ -48,11 +49,19 @@ object TraceScope {
         def make(span: JSpan): Resource[F, Unit] =
           for {
             current <- Resource.eval(lift(local.get))
-            next <- Resource.pure(current.`with`(span))
-            _ <- Resource.make(lift(local.getAndSet(next)))(previous =>
-              lift(local.set(previous))
-            )
+            _ <- makeScope(current.`with`(span))
           } yield ()
+
+        def rootScope: Resource[F, Unit] =
+          makeScope(default)
+
+        private def makeScope(ctx: JContext): Resource[F, Unit] =
+          Resource
+            .make(lift(local.getAndSet(ctx))) { previous =>
+              lift(local.set(previous))
+            }
+            .void
+
       }
     }
   }

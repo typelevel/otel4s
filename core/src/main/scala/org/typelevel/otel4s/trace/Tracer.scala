@@ -29,6 +29,14 @@ trait Tracer[F[_]] extends TracerMacro[F] { self =>
     */
   def meta: Tracer.Meta[F]
 
+  /** Returns trace identifier of a span that is available in a scope.
+    */
+  def traceId: F[Option[String]]
+
+  /** Returns span identifier of a span that is available in a scope.
+    */
+  def spanId: F[Option[String]]
+
   /** Creates a new [[SpanBuilder]]. The builder can be used to make a fully
     * customized [[Span]].
     *
@@ -43,20 +51,20 @@ trait Tracer[F[_]] extends TracerMacro[F] { self =>
     *   {{{
     * val tracer: Tracer[F] = ???
     * val span: Span[F] = ???
-    * val customChild: Resource[F, Span[F]] = tracer.childOf(span).
+    * val customChild: Resource[F, Span[F]] = tracer.childOf(span).span("custom-parent")
     *   }}}
     * @param span
     *   the parent span
     */
   def childOf(span: Span[F]): Tracer[F]
 
-  /** Returns trace identifier of a span that is available in a scope.
+  /** Runs the given effect without propagation of the current scope. That
+    * means, that parent span will not be available inside of the `fa`.
+    *
+    * Can be useful, when an effect needs to be executed in the background and
+    * the parent tracing info is not needed.
     */
-  def traceId: F[Option[String]]
-
-  /** Returns span identifier of a span that is available in a scope.
-    */
-  def spanId: F[Option[String]]
+  def withoutTracing[A](fa: F[A]): F[A]
 
 }
 
@@ -86,9 +94,10 @@ object Tracer {
     new Tracer[F] {
       private val builder = SpanBuilder.noop(Span.noopBackend)
       val meta: Meta[F] = Meta.disabled
-      def spanBuilder(name: String): SpanBuilder[F] = builder
-      def childOf(span: Span[F]): Tracer[F] = this
       val traceId: F[Option[String]] = F.pure(None)
       val spanId: F[Option[String]] = F.pure(None)
+      def spanBuilder(name: String): SpanBuilder[F] = builder
+      def childOf(span: Span[F]): Tracer[F] = this
+      def withoutTracing[A](fa: F[A]): F[A] = fa
     }
 }

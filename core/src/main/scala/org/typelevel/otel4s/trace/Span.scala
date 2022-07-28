@@ -74,13 +74,19 @@ trait Span[F[_]] extends SpanMacro[F] {
     backend.setStatus(status, description)
 
   /** Returns trace identifier of the current span.
+    *
+    * @return
+    *   `Some` for a valid span and `None` for noop
     */
-  final def traceId: String =
+  final def traceId: Option[String] =
     backend.traceId
 
   /** Returns span identifier of the current span.
+    *
+    * @return
+    *   `Some` for a valid span and `None` for noop
     */
-  final def spanId: String =
+  final def spanId: Option[String] =
     backend.spanId
 
 }
@@ -99,8 +105,8 @@ object Span {
     def setStatus(status: Status): F[Unit]
     def setStatus(status: Status, description: String): F[Unit]
 
-    def traceId: String
-    def spanId: String
+    def traceId: Option[String]
+    def spanId: Option[String]
 
     private[otel4s] def child(name: String): SpanBuilder[F]
     private[otel4s] def end: F[Unit]
@@ -131,8 +137,8 @@ object Span {
 
       val meta: InstrumentMeta[F] = InstrumentMeta.disabled
 
-      val traceId: String = "00000000000000000000000000000000"
-      val spanId: String = "0000000000000000"
+      val traceId: Option[String] = None
+      val spanId: Option[String] = None
 
       def recordException(
           exception: Throwable,

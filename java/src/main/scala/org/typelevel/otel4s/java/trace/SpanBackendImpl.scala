@@ -70,11 +70,11 @@ private[otel4s] class SpanBackendImpl[F[_]](
   private[otel4s] def end(timestamp: FiniteDuration): F[Unit] =
     F.delay(jSpan.end(timestamp.length, timestamp.unit))
 
-  def traceId: String =
-    jSpan.getSpanContext.getTraceId
+  def traceId: Option[String] =
+    Option(jSpan.getSpanContext).filter(_.isValid).map(_.getTraceId)
 
-  def spanId: String =
-    jSpan.getSpanContext.getSpanId
+  def spanId: Option[String] =
+    Option(jSpan.getSpanContext).filter(_.isValid).map(_.getSpanId)
 }
 
 object SpanBackendImpl {

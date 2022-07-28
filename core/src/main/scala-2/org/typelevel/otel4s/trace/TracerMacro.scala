@@ -64,4 +64,5 @@ private[otel4s] trait TracerMacro[F[_]] {
       attributes: Attribute[_]*
   ): Resource[F, Span.Auto[F]] =
     macro TracesMacro.rootSpan
+
 }

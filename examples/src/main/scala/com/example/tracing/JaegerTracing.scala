@@ -19,6 +19,7 @@ package com.example.tracing
 import cats.effect.IO
 import cats.effect.IOApp
 import cats.effect.Resource
+import fs2.Stream
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.exporter.jaeger.JaegerGrpcSpanExporter
 import io.opentelemetry.sdk.OpenTelemetrySdk
@@ -64,6 +65,12 @@ object JaegerTracing extends IOApp.Simple {
           .use { case Span.Res(lookup) =>
             lookup.exists("my-image")
           }
+        _ <- Stream
+          .resource(tracer.resourceSpan("stream-span")(Resource.unit))
+          .flatMap(_ => Stream.emits(Seq(1, 2, 3)))
+          .evalMap(r => tracer.span(s"span-$r").surround(IO.unit))
+          .compile
+          .drain
       } yield ()
     }
 

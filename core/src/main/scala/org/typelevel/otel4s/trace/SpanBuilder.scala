@@ -1,0 +1,99 @@
+/*
+ * Copyright 2022 Typelevel
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.typelevel.otel4s
+package trace
+
+import cats.effect.Resource
+
+import scala.concurrent.duration.FiniteDuration
+
+trait SpanBuilder[F[_]] {
+
+  /** Sets the [[SpanKind]] for the newly created span. If not called, the
+    * implementation will provide a default value [[SpanKind.Internal]].
+    *
+    * @param spanKind
+    *   the kind of the newly created Span.
+    */
+  def withSpanKind(spanKind: SpanKind): SpanBuilder[F]
+
+  /** Sets an attribute to the newly created span. If [[SpanBuilder]] previously
+    * contained a mapping for the key, the old value is replaced by the
+    * specified value.
+    *
+    * @param attribute
+    *   the attribute to associate with the span
+    */
+  def withAttribute[A](attribute: Attribute[A]): SpanBuilder[F]
+
+  /** Sets attributes to the [[SpanBuilder]]. If the SpanBuilder previously
+    * contained a mapping for any of the keys, the old values are replaced by
+    * the specified values.
+    *
+    * @param attributes
+    *   the set of attributes to associate with the span
+    */
+  def withAttributes(attributes: Attribute[_]*): SpanBuilder[F]
+
+  /** Adds a link to the newly created span.
+    *
+    * Links are used to link spans in different traces. Used (for example) in
+    * batching operations, where a single batch handler processes multiple
+    * requests from different traces or the same trace.
+    *
+    * @param spanContext
+    *   the context of the linked span
+    *
+    * @param attributes
+    *   the set of attributes to associate with the link
+    */
+  def withLink(
+      spanContext: SpanContext,
+      attributes: Attribute[_]*
+  ): SpanBuilder[F]
+
+  /** Sets an explicit start timestamp for the newly created span.
+    *
+    * Use this method to specify an explicit start timestamp. If not called, the
+    * implementation will use the timestamp value at ([[createAuto]],
+    * [[createManual]], [[createRes]]) time, which should be the default case.
+    *
+    * '''Note''': the timestamp should be based on `Clock[F].realTime`. Using
+    * `Clock[F].monotonic` may lead to a missing span.
+    *
+    * @param timestamp
+    *   the explicit start timestamp from the epoch
+    */
+  def withStartTimestamp(timestamp: FiniteDuration): SpanBuilder[F]
+
+  /** Indicates that the span should be the root one and scope parent should be
+    * ignored.
+    */
+  def root: SpanBuilder[F]
+
+  /** Creates [[Span.Manual]].
+    */
+  def createManual: Resource[F, Span.Manual[F]]
+
+  /** Creates [[Span.Auto]]. The span the span is started upon resource
+    * allocation and ended upon finalization. Abnormal terminations (error,
+    * cancelation) are recorded as well.
+    */
+  def createAuto: Resource[F, Span.Auto[F]]
+
+  def createRes[A](resource: Resource[F, A]): Resource[F, Span.Res[F, A]]
+}

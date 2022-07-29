@@ -203,7 +203,7 @@ class TracerSuite extends CatsEffectSuite {
     }
   }
 
-  test("run effect without tracing") {
+  test("create a new root scope") {
     for {
       sdk <- makeSdk()
       tracer <- sdk.provider.tracer("tracer").get
@@ -213,7 +213,7 @@ class TracerSuite extends CatsEffectSuite {
         for {
           _ <- tracer.traceId.assertEquals(span.traceId)
           _ <- tracer.spanId.assertEquals(span.spanId)
-          span2 <- tracer.withoutTracing {
+          span2 <- tracer.rootScope.surround {
             for {
               _ <- tracer.traceId.assertEquals(None)
               _ <- tracer.spanId.assertEquals(None)
@@ -222,6 +222,46 @@ class TracerSuite extends CatsEffectSuite {
                 for {
                   _ <- tracer.traceId.assertEquals(span2.traceId)
                   _ <- tracer.spanId.assertEquals(span2.spanId)
+                } yield span2
+              }
+            } yield span2
+          }
+        } yield (span, span2)
+      }
+      spans <- sdk.finishedSpans
+    } yield {
+      val (span, span2) = result
+      assertNotEquals(span.traceId, span2.traceId)
+      assertEquals(
+        spans.map(_.getTraceId),
+        List(span2.traceId, span.traceId).flatten
+      )
+      assertEquals(
+        spans.map(_.getSpanId),
+        List(span2.spanId, span.spanId).flatten
+      )
+    }
+  }
+
+  test("create a no-op scope") {
+    for {
+      sdk <- makeSdk()
+      tracer <- sdk.provider.tracer("tracer").get
+      _ <- tracer.traceId.assertEquals(None)
+      _ <- tracer.spanId.assertEquals(None)
+      result <- tracer.span("span").use { span =>
+        for {
+          _ <- tracer.traceId.assertEquals(span.traceId)
+          _ <- tracer.spanId.assertEquals(span.spanId)
+          span2 <- tracer.noopScope.surround {
+            for {
+              _ <- tracer.traceId.assertEquals(None)
+              _ <- tracer.spanId.assertEquals(None)
+              // a new root span should be created
+              span2 <- tracer.span("span-2").use { span2 =>
+                for {
+                  _ <- tracer.traceId.assertEquals(None)
+                  _ <- tracer.spanId.assertEquals(None)
                 } yield span2
               }
             } yield span2

@@ -17,8 +17,8 @@
 package org.typelevel.otel4s.java.trace
 
 import cats.effect.Sync
+import cats.effect.kernel.Resource
 import cats.syntax.functor._
-import io.opentelemetry.api.trace.{Span => JSpan}
 import io.opentelemetry.api.trace.{Tracer => JTracer}
 import org.typelevel.otel4s.trace.Span
 import org.typelevel.otel4s.trace.SpanBuilder
@@ -33,16 +33,20 @@ private[trace] class TracerImpl[F[_]: Sync](
     Tracer.Meta.enabled
 
   def traceId: F[Option[String]] =
-    for {
-      context <- scope.current
-    } yield Option(JSpan.fromContextOrNull(context))
-      .map(_.getSpanContext.getTraceId)
+    scope.current.map {
+      case TraceScope.Scope.Span(_, span) if span.getSpanContext.isValid =>
+        Some(span.getSpanContext.getTraceId)
+      case _ =>
+        None
+    }
 
   def spanId: F[Option[String]] =
-    for {
-      context <- scope.current
-    } yield Option(JSpan.fromContextOrNull(context))
-      .map(_.getSpanContext.getSpanId)
+    scope.current.map {
+      case TraceScope.Scope.Span(_, span) if span.getSpanContext.isValid =>
+        Some(span.getSpanContext.getSpanId)
+      case _ =>
+        None
+    }
 
   def spanBuilder(name: String): SpanBuilder[F] =
     new SpanBuilderImpl[F](jTracer, name, scope)
@@ -53,6 +57,9 @@ private[trace] class TracerImpl[F[_]: Sync](
         s.backend.child(name)
     }
 
-  def withoutTracing[A](fa: F[A]): F[A] =
-    scope.rootScope.use(_ => fa)
+  def rootScope: Resource[F, Unit] =
+    scope.rootScope
+
+  def noopScope: Resource[F, Unit] =
+    scope.noopScope
 }

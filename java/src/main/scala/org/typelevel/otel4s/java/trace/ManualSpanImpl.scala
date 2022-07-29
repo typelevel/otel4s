@@ -16,10 +16,14 @@
 
 package org.typelevel.otel4s.java.trace
 
+import io.opentelemetry.context.{Context => JContext}
 import org.typelevel.otel4s.trace._
 
-private[trace] class ManualSpanImpl[F[_]](val backend: SpanBackendImpl[F])
-    extends Span.Manual[F]
+private[trace] class ManualSpanImpl[F[_]](
+    val backend: SpanBackendImpl[F]
+) extends Span.Manual[F]
 
-private[trace] class AutoSpanImpl[F[_]](val backend: SpanBackendImpl[F])
-    extends Span.Auto[F]
+private[trace] class AutoSpanImpl[F[_]](
+    val backend: SpanBackendImpl[F],
+    val ctx: JContext
+) extends Span.Auto[F]

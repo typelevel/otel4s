@@ -25,42 +25,62 @@ import io.opentelemetry.api.trace.{Span => JSpan}
 import io.opentelemetry.context.{Context => JContext}
 
 trait TraceScope[F[_]] {
-  def root: F[JContext]
-  def current: F[JContext]
+  import TraceScope.Scope
+  def root: F[Scope.Root]
+  def current: F[Scope]
   def make(span: JSpan): Resource[F, Unit]
   def rootScope: Resource[F, Unit]
+  def noopScope: Resource[F, Unit]
 }
 
 object TraceScope {
+
+  sealed trait Scope
+  object Scope {
+    final case class Root(ctx: JContext) extends Scope
+    final case class Span(ctx: JContext, span: JSpan) extends Scope
+    case object Noop extends Scope
+  }
 
   def fromIOLocal[F[_]: LiftIO: Sync](
       default: JContext
   ): F[TraceScope[F]] = {
     val lift = LiftIO.liftK
+    val scopeRoot = Scope.Root(default)
 
-    lift(IOLocal(default)).map { local =>
+    lift(IOLocal[Scope](scopeRoot)).map { local =>
       new TraceScope[F] {
-        val root: F[JContext] =
-          Sync[F].pure(default)
+        val root: F[Scope.Root] =
+          Sync[F].pure(scopeRoot)
 
-        def current: F[JContext] =
+        def current: F[Scope] =
           lift(local.get)
 
         def make(span: JSpan): Resource[F, Unit] =
           for {
             current <- Resource.eval(lift(local.get))
-            _ <- makeScope(current.`with`(span))
+            _ <- makeScope(nextScope(current, span))
           } yield ()
 
         def rootScope: Resource[F, Unit] =
-          makeScope(default)
+          makeScope(scopeRoot)
 
-        private def makeScope(ctx: JContext): Resource[F, Unit] =
+        def noopScope: Resource[F, Unit] =
+          makeScope(Scope.Noop)
+
+        private def makeScope(scope: Scope): Resource[F, Unit] =
           Resource
-            .make(lift(local.getAndSet(ctx))) { previous =>
+            .make(lift(local.getAndSet(scope))) { previous =>
               lift(local.set(previous))
             }
             .void
+
+        private def nextScope(scope: Scope, span: JSpan): Scope =
+          scope match {
+            case Scope.Root(ctx)    => Scope.Span(ctx.`with`(span), span)
+            case Scope.Span(ctx, _) => Scope.Span(ctx.`with`(span), span)
+            case Scope.Noop         => Scope.Noop
+          }
 
       }
     }

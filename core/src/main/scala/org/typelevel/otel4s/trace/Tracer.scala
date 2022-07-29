@@ -53,18 +53,52 @@ trait Tracer[F[_]] extends TracerMacro[F] {
     * val span: Span[F] = ???
     * val customChild: Resource[F, Span[F]] = tracer.childOf(span).span("custom-parent")
     *   }}}
+    *
     * @param span
     *   the parent span
     */
   def childOf(span: Span[F]): Tracer[F]
 
-  /** Runs the given effect without propagation of the current scope. That
-    * means, that parent span will not be available inside of the `fa`.
+  /** Creates a new root tracing scope. The parent span will not be available
+    * inside. Thus, a span created inside of the scope will be a root one.
     *
     * Can be useful, when an effect needs to be executed in the background and
     * the parent tracing info is not needed.
+    *
+    * @example
+    *   the parent is not propagated:
+    *   {{{
+    * val tracer: Tracer[F] = ???
+    * tracer.span("root-span").use { _ =>
+    *   for {
+    *     _ <- tracer.span("child-1").use(_ => ???) // a child of 'root-span'
+    *     _ <- tracer.rootScope.use { _ =>
+    *       tracer.span("child-2").use(_ => ???) // a root span that is not associated with 'root-span'
+    *     }
+    *   } yield ()
+    * }
+    *   }}}
     */
-  def withoutTracing[A](fa: F[A]): F[A]
+  def rootScope: Resource[F, Unit]
+
+  /** Creates a no-op tracing scope. The tracing operations inside of the scope
+    * or no-op.
+    *
+    * @example
+    *   the parent is not propagated:
+    *   {{{
+    * val tracer: Tracer[F] = ???
+    * tracer.span("root-span").use { _ =>
+    *   for {
+    *     _ <- tracer.span("child-1").use(_ => ???) // a child of 'root-span'
+    *     _ <- tracer.noopScope.use { _ =>
+    *       tracer.span("child-2").use(_ => ???) // 'child-2' is not created at all
+    *     }
+    *   } yield ()
+    * }
+    *   }}}
+    */
+  def noopScope: Resource[F, Unit]
 
 }
 
@@ -88,16 +122,12 @@ object Tracer {
         val unit: F[Unit] = Applicative[F].unit
         val resourceUnit: Resource[F, Unit] = Resource.unit
         val noopAutoSpan: Resource[F, Span.Auto[F]] =
-          Resource.pure(
-            new Span.Auto[F] {
-              def backend: Span.Backend[F] = noopBackend
-            }
-          )
+          Resource.pure(Span.Auto.fromBackend(noopBackend))
 
         def noopResSpan[A](
             resource: Resource[F, A]
         ): Resource[F, Span.Res[F, A]] =
-          Span.Res.fromResource(resource, noopBackend)
+          resource.map(a => Span.Res.fromBackend(a, Span.noopBackend))
       }
 
   }
@@ -109,8 +139,9 @@ object Tracer {
       val meta: Meta[F] = Meta.disabled
       val traceId: F[Option[String]] = F.pure(None)
       val spanId: F[Option[String]] = F.pure(None)
+      val rootScope: Resource[F, Unit] = Resource.unit
+      def noopScope: Resource[F, Unit] = Resource.unit
       def spanBuilder(name: String): SpanBuilder[F] = builder
       def childOf(span: Span[F]): Tracer[F] = this
-      def withoutTracing[A](fa: F[A]): F[A] = fa
     }
 }

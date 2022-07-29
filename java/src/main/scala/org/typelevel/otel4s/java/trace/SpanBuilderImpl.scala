@@ -73,35 +73,52 @@ private[trace] final case class SpanBuilderImpl[F[_]: Sync](
     copy(startTimestamp = Some(timestamp))
 
   def createManual: Resource[F, Span.Manual[F]] =
-    for {
-      parent <- Resource.eval(parentContext)
-      jBuilder <- Resource.pure(makeJBuilder(parent))
-      jSpan <- Resource.eval(Sync[F].delay(jBuilder.startSpan()))
-      _ <- scope.make(jSpan)
-    } yield new ManualSpanImpl(new SpanBackendImpl(jTracer, jSpan, scope))
+    Resource.eval(parentContext).flatMap {
+      case Some(parent) =>
+        for {
+          jBuilder <- Resource.pure(makeJBuilder(parent))
+          jSpan <- Resource.eval(Sync[F].delay(jBuilder.startSpan()))
+          _ <- scope.make(jSpan)
+        } yield new ManualSpanImpl(new SpanBackendImpl(jTracer, jSpan, scope))
+
+      case None =>
+        Resource.pure(Span.Manual.fromBackend(Span.noopBackend))
+    }
 
   def createAuto: Resource[F, Span.Auto[F]] =
-    for {
-      ctx <- Resource.eval(parentContext)
-      span <- createAutoSpan(jTracer, scope, makeJBuilder(ctx))
-    } yield span
+    Resource.eval(parentContext).flatMap {
+      case Some(parent) =>
+        createAutoSpan(jTracer, scope, parent, makeJBuilder(parent))
+
+      case None =>
+        Resource.pure(Span.Auto.fromBackend(Span.noopBackend))
+    }
 
   def createRes[A](resource: Resource[F, A]): Resource[F, Span.Res[F, A]] = {
     def child(name: String, ctx: JContext) =
-      createAutoSpan(jTracer, scope, jTracer.spanBuilder(name).setParent(ctx))
+      createAutoSpan(
+        jTracer,
+        scope,
+        ctx,
+        jTracer.spanBuilder(name).setParent(ctx)
+      )
 
-    for {
-      _ <- createAuto
-      ctx <- Resource.eval(scope.current)
+    Resource.eval(parentContext).flatMap {
+      case Some(parent) =>
+        for {
+          span <- createAutoSpan(jTracer, scope, parent, makeJBuilder(parent))
 
-      result <- Resource.make(
-        child("acquire", ctx).surround(resource.allocated)
-      )(a => child("release", ctx).surround(a._2))
+          result <- Resource.make(
+            child("acquire", span.ctx).surround(resource.allocated)
+          ) { case (_, release) =>
+            child("release", span.ctx).surround(release)
+          }
 
-      useSpan <- child("use", ctx)
-    } yield new Span.Res[F, A] {
-      def value: A = result._1
-      def backend: Span.Backend[F] = useSpan.backend
+          useSpan <- child("use", span.ctx)
+        } yield Span.Res.fromBackend(result._1, useSpan.backend)
+
+      case None =>
+        resource.map(a => Span.Res.fromBackend(a, Span.noopBackend))
     }
   }
 
@@ -121,14 +138,22 @@ private[trace] final case class SpanBuilderImpl[F[_]: Sync](
     b
   }
 
-  private def parentContext: F[JContext] =
+  private def parentContext: F[Option[JContext]] =
     parent match {
-      case Parent.Auto =>
-        scope.current
       case Parent.Root =>
-        scope.root
+        scope.root.map(s => Some(s.ctx))
+      case Parent.Auto =>
+        scope.current.map {
+          case TraceScope.Scope.Root(ctx)    => Some(ctx)
+          case TraceScope.Scope.Span(ctx, _) => Some(ctx)
+          case TraceScope.Scope.Noop         => None
+        }
       case Parent.Explicit(parent) =>
-        scope.current.map(ctx => ctx.`with`(parent))
+        scope.current.map {
+          case TraceScope.Scope.Root(ctx)    => Some(ctx.`with`(parent))
+          case TraceScope.Scope.Span(ctx, _) => Some(ctx.`with`(parent))
+          case TraceScope.Scope.Noop         => None
+        }
     }
 }
 
@@ -145,6 +170,7 @@ object SpanBuilderImpl {
   private def createAutoSpan[F[_]: Sync](
       jTracer: JTracer,
       scope: TraceScope[F],
+      parent: JContext,
       builder: JSpanBuilder
   ): Resource[F, AutoSpanImpl[F]] = {
 
@@ -182,7 +208,7 @@ object SpanBuilderImpl {
         release(backend, ec)
       }
       _ <- scope.make(backend.jSpan)
-    } yield new AutoSpanImpl[F](backend)
+    } yield new AutoSpanImpl[F](backend, parent.`with`(backend.jSpan))
   }
 
   private def toJSpanKind(spanKind: SpanKind): JSpanKind =

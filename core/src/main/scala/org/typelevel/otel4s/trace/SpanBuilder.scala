@@ -42,12 +42,8 @@ object SpanBuilder {
 
   def noop[F[_]](back: Span.Backend[F]): SpanBuilder[F] =
     new SpanBuilder[F] {
-      private val manual: Span.Manual[F] = new Span.Manual[F] {
-        def backend: Span.Backend[F] = back
-      }
-      private val auto: Span.Auto[F] = new Span.Auto[F] {
-        def backend: Span.Backend[F] = back
-      }
+      private val manual: Span.Manual[F] = Span.Manual.fromBackend(back)
+      private val auto: Span.Auto[F] = Span.Auto.fromBackend(back)
 
       def withSpanKind(spanKind: SpanKind): SpanBuilder[F] = this
       def withAttribute[A](attribute: Attribute[A]): SpanBuilder[F] = this
@@ -66,6 +62,6 @@ object SpanBuilder {
         Resource.pure(auto)
 
       def createRes[A](resource: Resource[F, A]): Resource[F, Span.Res[F, A]] =
-        Span.Res.fromResource(resource, back)
+        resource.map(a => Span.Res.fromBackend(a, back))
     }
 }

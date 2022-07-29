@@ -42,7 +42,7 @@ object SpanNode {
 
   def render(tree: SpanNode): String = {
     def loop(input: SpanNode, depth: Int): String = {
-      val prefix = " ".repeat(depth)
+      val prefix = " " * depth
       val next =
         if (input.children.isEmpty) ""
         else " =>\n" + input.children.map(loop(_, depth + 2)).mkString("\n")

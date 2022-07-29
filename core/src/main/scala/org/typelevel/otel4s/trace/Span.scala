@@ -18,7 +18,6 @@ package org.typelevel.otel4s
 package trace
 
 import cats.Applicative
-import cats.effect.Resource
 import org.typelevel.otel4s.meta.InstrumentMeta
 
 import scala.concurrent.duration.FiniteDuration
@@ -116,14 +115,26 @@ object Span {
 
   trait Auto[F[_]] extends Span[F]
 
-  trait Manual[F[_]] extends Span[F] {
+  object Auto {
+    def fromBackend[F[_]](back: Backend[F]): Auto[F] =
+      new Auto[F] {
+        def backend: Backend[F] = back
+      }
+  }
 
+  trait Manual[F[_]] extends Span[F] {
     final def end: F[Unit] =
       backend.end
 
     final def end(timestamp: FiniteDuration): F[Unit] =
       backend.end(timestamp)
+  }
 
+  object Manual {
+    def fromBackend[F[_]](back: Backend[F]): Manual[F] =
+      new Manual[F] {
+        def backend: Backend[F] = back
+      }
   }
 
   trait Res[F[_], A] extends Auto[F] {
@@ -134,15 +145,10 @@ object Span {
     def unapply[F[_], A](span: Span.Res[F, A]): Option[A] =
       Some(span.value)
 
-    private[otel4s] def fromResource[F[_], A](
-        resource: Resource[F, A],
-        back: Backend[F]
-    ): Resource[F, Span.Res[F, A]] =
-      resource.map { v =>
-        new Span.Res[F, A] {
-          def value: A = v
-          def backend: Span.Backend[F] = back
-        }
+    def fromBackend[F[_], A](a: A, back: Backend[F]): Res[F, A] =
+      new Res[F, A] {
+        def value: A = a
+        def backend: Backend[F] = back
       }
   }
 

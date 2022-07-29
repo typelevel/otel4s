@@ -22,7 +22,7 @@ ThisBuild / crossScalaVersions := Seq(Scala213, "3.1.3")
 ThisBuild / scalaVersion := Scala213 // the default Scala
 
 lazy val root = tlCrossRootProject
-  .aggregate(core, java)
+  .aggregate(core, java, examples)
   .settings(name := "otel4s")
 
 lazy val core = crossProject(JVMPlatform, JSPlatform)
@@ -52,9 +52,25 @@ lazy val java = crossProject(JVMPlatform)
     libraryDependencies ++= Seq(
       "io.opentelemetry" % "opentelemetry-api" % "1.15.0",
       "io.opentelemetry" % "opentelemetry-exporter-logging" % "1.15.0" % Test,
-      "io.opentelemetry" % "opentelemetry-sdk-extension-autoconfigure" % "1.13.0-alpha" % Test
+      "io.opentelemetry" % "opentelemetry-sdk-extension-autoconfigure" % "1.13.0-alpha" % Test,
+      "io.opentelemetry" % "opentelemetry-sdk-testing" % "1.15.0" % Test,
+      "org.scalameta" %% "munit" % "0.7.29" % Test,
+      "org.typelevel" %% "munit-cats-effect-3" % "1.0.7" % Test,
+      "org.typelevel" %%% "cats-effect-testkit" % "3.3.13" % Test
     )
   )
   .dependsOn(core % "compile->compile,test->test")
+
+lazy val examples = crossProject(JVMPlatform)
+  .crossType(CrossType.Pure)
+  .in(file("examples"))
+  .settings(
+    name := "otel4s-examples",
+    libraryDependencies ++= Seq(
+      "co.fs2" %% "fs2-core" % "3.2.11",
+      "io.opentelemetry" % "opentelemetry-exporter-jaeger" % "1.15.0"
+    )
+  )
+  .dependsOn(core, java)
 
 lazy val docs = project.in(file("site")).enablePlugins(TypelevelSitePlugin)

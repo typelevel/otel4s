@@ -15,19 +15,20 @@
  */
 
 package org.typelevel.otel4s
+package trace
 
-import org.typelevel.otel4s.metrics.MeterProvider
-import org.typelevel.otel4s.trace.TracerProvider
+import scala.quoted.*
 
-trait Otel4s[F[_]] {
+private[otel4s] trait SpanMacro[F[_]] {
+  self: Span[F] =>
 
-  /** A registry for creating named
-    * [[org.typelevel.otel4s.metrics.Meter Meter]].
-    */
-  def meterProvider: MeterProvider[F]
+  inline def recordException(
+      inline exception: Throwable,
+      inline attributes: Attribute[_]*
+  ): F[Unit] =
+    ${ TracesMacro.recordException('self, 'exception, 'attributes) }
 
-  /** The entry point of the tracing API. It provides access to
-    * [[org.typelevel.otel4s.trace.Tracer Tracer]].
-    */
-  def tracerProvider: TracerProvider[F]
+  inline def setAttributes(inline attributes: Attribute[_]*): F[Unit] =
+    ${ TracesMacro.setAttributes('self, 'attributes) }
+
 }

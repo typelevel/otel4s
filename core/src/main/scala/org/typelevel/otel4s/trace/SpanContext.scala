@@ -43,7 +43,7 @@ trait SpanContext {
   /** Returns the sampling strategy of this [[SpanContext]]. Indicates whether
     * the span in this context is sampled.
     */
-  def sampleStrategy: SampleStrategy
+  def samplingDecision: SamplingDecision
 
   /** Returns `true` if this [[SpanContext]] is valid.
     */

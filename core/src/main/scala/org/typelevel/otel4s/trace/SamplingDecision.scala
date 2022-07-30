@@ -16,11 +16,20 @@
 
 package org.typelevel.otel4s.trace
 
-sealed abstract class SampleStrategy(val isSampled: Boolean)
+/** A decision on whether a span should be recorded or dropped.
+  */
+sealed abstract class SamplingDecision(val isSampled: Boolean)
     extends Product
     with Serializable
 
-object SampleStrategy {
-  case object Drop extends SampleStrategy(false)
-  case object Include extends SampleStrategy(true)
+object SamplingDecision {
+
+  /** Span is dropped. The resulting span will be completely no-op.
+    */
+  case object Drop extends SamplingDecision(false)
+
+  /** Span is recorded and sampled. The resulting span will record all
+    * information like timings and attributes and will be exported.
+    */
+  case object Record extends SamplingDecision(true)
 }

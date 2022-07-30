@@ -26,7 +26,7 @@ trait Tracer[F[_]] {
     */
   def meta: Tracer.Meta[F]
 
-  /** Returns the context of a span that is available in the scope.
+  /** Returns the context of a span when it is available in the scope.
     */
   def currentSpanContext: F[Option[SpanContext]]
 

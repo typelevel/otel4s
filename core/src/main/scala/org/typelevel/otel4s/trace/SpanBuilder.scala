@@ -27,7 +27,7 @@ trait SpanBuilder[F[_]] {
     * implementation will provide a default value [[SpanKind.Internal]].
     *
     * @param spanKind
-    *   the kind of the newly created Span.
+    *   the kind of the newly created span
     */
   def withSpanKind(spanKind: SpanKind): SpanBuilder[F]
 
@@ -80,8 +80,19 @@ trait SpanBuilder[F[_]] {
     */
   def withStartTimestamp(timestamp: FiniteDuration): SpanBuilder[F]
 
-  /** Indicates that the span should be the root one and scope parent should be
-    * ignored.
+  /** Sets the finalization strategy for the newly created span.
+    *
+    * The span finalizers are executed upon resource finalization.
+    *
+    * The default strategy is [[SpanFinalizer.Strategy.reportAbnormal]].
+    *
+    * @param strategy
+    *   the strategy to apply upon span finalization
+    */
+  def withFinalizationStrategy(strategy: SpanFinalizer.Strategy): SpanBuilder[F]
+
+  /** Indicates that the span should be the root one and the scope parent should
+    * be ignored.
     */
   def root: SpanBuilder[F]
 

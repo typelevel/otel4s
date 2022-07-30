@@ -20,25 +20,25 @@ import scodec.bits.ByteVector
 
 trait SpanContext {
 
-  /** Returns the trace identifier associated with this [[SpanContext]] as 32
-    * character lowercase hex String.
-    */
-  def getTraceId: String
-
   /** Returns the trace identifier associated with this [[SpanContext]] as
     * 16-byte vector.
     */
-  def getTraceIdBytes: ByteVector
+  def traceId: ByteVector
 
-  /** Returns the span identifier associated with this [[SpanContext]] as 16
+  /** Returns the trace identifier associated with this [[SpanContext]] as 32
     * character lowercase hex String.
     */
-  def getSpanId: String
+  def traceIdHex: String
 
   /** Returns the span identifier associated with this [[SpanContext]] as 8-byte
     * vector.
     */
-  def getSpanIdBytes: ByteVector
+  def spanId: ByteVector
+
+  /** Returns the span identifier associated with this [[SpanContext]] as 16
+    * character lowercase hex String.
+    */
+  def spanIdHex: String
 
   /** Returns the sampling strategy of this [[SpanContext]]. Indicates whether
     * the span in this context is sampled.

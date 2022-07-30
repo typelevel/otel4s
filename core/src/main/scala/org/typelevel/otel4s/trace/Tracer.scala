@@ -30,6 +30,14 @@ trait Tracer[F[_]] {
     */
   def currentSpanContext: F[Option[SpanContext]]
 
+  /** Creates a new [[SpanBuilder]]. The builder can be used to make a fully
+    * customized [[Span]].
+    *
+    * @param name
+    *   the name of the span
+    */
+  def spanBuilder(name: String): SpanBuilder[F]
+
   /** Creates a new tracer as a child of the given span.
     *
     * @example

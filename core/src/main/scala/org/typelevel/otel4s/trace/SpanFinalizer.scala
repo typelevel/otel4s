@@ -17,8 +17,11 @@
 package org.typelevel.otel4s
 package trace
 
+import cats.Applicative
 import cats.data.NonEmptyList
 import cats.effect.Resource
+import cats.syntax.applicative._
+import cats.syntax.foldable._
 
 sealed trait SpanFinalizer extends Product with Serializable
 
@@ -54,5 +57,31 @@ object SpanFinalizer {
 
   def multiple(head: SpanFinalizer, tail: SpanFinalizer*): Multiple =
     Multiple(NonEmptyList.of(head, tail: _*))
+
+  private[otel4s] def run[F[_]: Applicative](
+      backend: Span.Backend[F],
+      finalizer: SpanFinalizer
+  ): F[Unit] = {
+
+    def loop(input: SpanFinalizer): F[Unit] =
+      input match {
+        case SpanFinalizer.RecordException(e) =>
+          backend.recordException(e)
+
+        case SpanFinalizer.SetStatus(status, description) =>
+          description match {
+            case Some(desc) => backend.setStatus(status, desc)
+            case None       => backend.setStatus(status)
+          }
+
+        case SpanFinalizer.SetAttributes(attributes) =>
+          backend.setAttributes(attributes: _*)
+
+        case SpanFinalizer.Multiple(finalizers) =>
+          finalizers.traverse_(strategy => loop(strategy))
+      }
+
+    loop(finalizer).whenA(backend.meta.isEnabled)
+  }
 
 }

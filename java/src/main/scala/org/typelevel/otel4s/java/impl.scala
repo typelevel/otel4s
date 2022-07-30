@@ -19,16 +19,12 @@ package java
 
 import cats.effect.Sync
 import io.opentelemetry.api.{OpenTelemetry => JOpenTelemetry}
-import io.opentelemetry.api.common.{AttributeKey => JAttributeKey}
-import io.opentelemetry.api.common.{AttributeType => JAttributeType}
 import io.opentelemetry.api.common.{Attributes => JAttributes}
 import io.opentelemetry.api.metrics.{DoubleHistogram => JDoubleHistogram}
 import io.opentelemetry.api.metrics.{LongCounter => JLongCounter}
 import io.opentelemetry.api.metrics.{LongUpDownCounter => JLongUpDownCounter}
 import io.opentelemetry.api.metrics.{Meter => JMeter}
 import org.typelevel.otel4s.metrics._
-
-import scala.jdk.CollectionConverters._
 
 object OtelJava {
   def forSync[F[_]](jOtel: JOpenTelemetry)(implicit F: Sync[F]): Otel4s[F] =
@@ -181,46 +177,6 @@ object OtelJava {
       }
   }
 
-  private def toJAttributes(attributes: Seq[Attribute[_]]): JAttributes = {
-    val builder = JAttributes.builder
-    def put(name: String, jType: JAttributeType, value: Any): Unit = {
-      val jKey = new JAttributeKey[Any] {
-        def getKey = name
-        def getType = jType
-        override def toString = name
-      }
-      builder.put[Any](jKey, value)
-      ()
-    }
-    def putList(name: String, jType: JAttributeType, values: Any): Unit = {
-      val jKey = new JAttributeKey[Any] {
-        def getKey = name
-        def getType = jType
-        override def toString = name
-      }
-      builder.put[Any](jKey, values.asInstanceOf[Seq[Any]].asJava)
-      ()
-    }
-    attributes.foreach { case Attribute(key, value) =>
-      key.`type` match {
-        case AttributeType.String =>
-          put(key.name, JAttributeType.STRING, value)
-        case AttributeType.Boolean =>
-          put(key.name, JAttributeType.BOOLEAN, value)
-        case AttributeType.Long =>
-          put(key.name, JAttributeType.LONG, value)
-        case AttributeType.Double =>
-          put(key.name, JAttributeType.DOUBLE, value)
-        case AttributeType.StringList =>
-          putList(key.name, JAttributeType.STRING_ARRAY, value)
-        case AttributeType.BooleanList =>
-          putList(key.name, JAttributeType.BOOLEAN_ARRAY, value)
-        case AttributeType.LongList =>
-          putList(key.name, JAttributeType.LONG_ARRAY, value)
-        case AttributeType.DoubleList =>
-          putList(key.name, JAttributeType.DOUBLE_ARRAY, value)
-      }
-    }
-    builder.build()
-  }
+  private def toJAttributes(attributes: Seq[Attribute[_]]): JAttributes =
+    Conversions.toJAttributes(attributes)
 }

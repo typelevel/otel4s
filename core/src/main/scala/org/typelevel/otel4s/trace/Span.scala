@@ -17,6 +17,9 @@
 package org.typelevel.otel4s
 package trace
 
+import cats.Applicative
+import org.typelevel.otel4s.meta.InstrumentMeta
+
 import scala.concurrent.duration.FiniteDuration
 
 /** The API to trace an operation.
@@ -61,96 +64,88 @@ import scala.concurrent.duration.FiniteDuration
   *   }
   * }}}
   */
-trait Span[F[_]] {
+trait Span[F[_]] extends SpanMacro[F] {
+  def backend: Span.Backend[F]
 
   /** Returns the [[SpanContext]] associated with this span.
     *
     * Returns `None` if the span is invalid or no-op.
     */
-  def context: Option[SpanContext]
-
-  /** Sets attributes to the span. If the span previously contained a mapping
-    * for any of the keys, the old values are replaced by the specified values.
-    *
-    * @param attributes
-    *   the set of attributes to add to the span
-    */
-  def setAttributes(attributes: Attribute[_]*): F[Unit]
-
-  /** Adds an event to the span with the given attributes. The timestamp of the
-    * event will be the current time.
-    *
-    * @param name
-    *   the name of the event
-    *
-    * @param attributes
-    *   the set of attributes to associate with the event
-    */
-  def addEvent(name: String, attributes: Attribute[_]*): F[Unit]
-
-  /** Adds an event to the span with the given attributes and timestamp.
-    *
-    * '''Note''': the timestamp should be based on `Clock[F].realTime`. Using
-    * `Clock[F].monotonic` may lead to an incorrect data.
-    *
-    * @param name
-    *   the name of the event
-    *
-    * @param timestamp
-    *   the explicit event timestamp since epoch
-    *
-    * @param attributes
-    *   the set of attributes to associate with the event
-    */
-  def addEvent(
-      name: String,
-      timestamp: FiniteDuration,
-      attributes: Attribute[_]*
-  ): F[Unit]
-
-  /** Sets the status to the span.
-    *
-    * Only the value of the last call will be recorded, and implementations are
-    * free to ignore previous calls.
-    *
-    * @param status
-    *   the [[Status]] to set
-    */
-  def setStatus(status: Status): F[Unit]
-
-  /** Sets the status to the span.
-    *
-    * Only the value of the last call will be recorded, and implementations are
-    * free to ignore previous calls.
-    *
-    * @param status
-    *   the [[Status]] to set
-    *
-    * @param description
-    *   the description of the [[Status]]
-    */
-  def setStatus(status: Status, description: String): F[Unit]
-
-  /** Records information about the `Throwable` to the span.
-    *
-    * @param exception
-    *   the `Throwable` to record
-    *
-    * @param attributes
-    *   the set of attributes to associate with the value
-    */
-  def recordException(
-      exception: Throwable,
-      attributes: Attribute[_]*
-  ): F[Unit]
+  final def context: Option[SpanContext] =
+    backend.context
 
 }
 
 object Span {
 
+  trait Backend[F[_]] {
+    def meta: InstrumentMeta[F]
+    def context: Option[SpanContext]
+
+    def addEvent(name: String, attributes: Attribute[_]*): F[Unit]
+
+    def addEvent(
+        name: String,
+        timestamp: FiniteDuration,
+        attributes: Attribute[_]*
+    ): F[Unit]
+
+    def setAttributes(attributes: Attribute[_]*): F[Unit]
+    def setStatus(status: Status): F[Unit]
+    def setStatus(status: Status, description: String): F[Unit]
+
+    def recordException(
+        exception: Throwable,
+        attributes: Attribute[_]*
+    ): F[Unit]
+
+    private[otel4s] def child(name: String): SpanBuilder[F]
+    private[otel4s] def end: F[Unit]
+    private[otel4s] def end(timestamp: FiniteDuration): F[Unit]
+  }
+
+  object Backend {
+    def noop[F[_]: Applicative]: Backend[F] =
+      new Backend[F] {
+        private val unit = Applicative[F].unit
+        private val noopBuilder = SpanBuilder.noop(this)
+
+        val meta: InstrumentMeta[F] = InstrumentMeta.disabled
+        val context: Option[SpanContext] = None
+
+        def addEvent(name: String, attributes: Attribute[_]*): F[Unit] = unit
+
+        def addEvent(
+            name: String,
+            timestamp: FiniteDuration,
+            attributes: Attribute[_]*
+        ): F[Unit] = unit
+
+        def setAttributes(attributes: Attribute[_]*): F[Unit] = unit
+        def setStatus(status: Status): F[Unit] = unit
+        def setStatus(status: Status, description: String): F[Unit] = unit
+
+        def recordException(
+            exception: Throwable,
+            attributes: Attribute[_]*
+        ): F[Unit] = unit
+
+        private[otel4s] def child(name: String) = noopBuilder
+        private[otel4s] def end: F[Unit] = unit
+        private[otel4s] def end(timestamp: FiniteDuration): F[Unit] = unit
+      }
+  }
+
   /** Automatically started and ended.
     */
   trait Auto[F[_]] extends Span[F]
+
+  object Auto {
+    def fromBackend[F[_]](back: Backend[F]): Auto[F] =
+      new Auto[F] {
+        def backend: Backend[F] = back
+      }
+  }
 
   /** Must be ended explicitly by calling `end`.
     */
@@ -161,7 +156,8 @@ object Span {
       * Only the timing of the first end call for a given span will be recorded,
       * and implementations are free to ignore all further calls.
       */
-    def end: F[Unit]
+    final def end: F[Unit] =
+      backend.end
 
     /** Marks the end of [[Span]] execution with the specified timestamp.
       *
@@ -171,13 +167,32 @@ object Span {
       * @param timestamp
       *   the explicit timestamp from the epoch
       */
-    def end(timestamp: FiniteDuration): F[Unit]
+    final def end(timestamp: FiniteDuration): F[Unit] =
+      backend.end(timestamp)
+  }
+
+  object Manual {
+    def fromBackend[F[_]](back: Backend[F]): Manual[F] =
+      new Manual[F] {
+        def backend: Backend[F] = back
+      }
   }
 
   /** Automatically started and ended. Carries a value of a wrapped resource.
     */
   trait Res[F[_], A] extends Auto[F] {
     def value: A
+  }
+
+  object Res {
+    def unapply[F[_], A](span: Span.Res[F, A]): Option[A] =
+      Some(span.value)
+
+    def fromBackend[F[_], A](a: A, back: Backend[F]): Res[F, A] =
+      new Res[F, A] {
+        def value: A = a
+        def backend: Backend[F] = back
+      }
   }
 
 }

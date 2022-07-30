@@ -108,3 +108,36 @@ trait SpanBuilder[F[_]] {
 
   def createRes[A](resource: Resource[F, A]): Resource[F, Span.Res[F, A]]
 }
+
+object SpanBuilder {
+
+  def noop[F[_]](back: Span.Backend[F]): SpanBuilder[F] =
+    new SpanBuilder[F] {
+      private val manual: Span.Manual[F] = Span.Manual.fromBackend(back)
+      private val auto: Span.Auto[F] = Span.Auto.fromBackend(back)
+
+      def withSpanKind(spanKind: SpanKind): SpanBuilder[F] = this
+      def withAttribute[A](attribute: Attribute[A]): SpanBuilder[F] = this
+      def withAttributes(attributes: Attribute[_]*): SpanBuilder[F] = this
+      def withStartTimestamp(timestamp: FiniteDuration): SpanBuilder[F] = this
+      def root: SpanBuilder[F] = this
+      def withLink(
+          spanContext: SpanContext,
+          attributes: Attribute[_]*
+      ): SpanBuilder[F] = this
+      def withFinalizationStrategy(
+          strategy: SpanFinalizer.Strategy
+      ): SpanBuilder[F] =
+        this
+
+      val createManual: Resource[F, Span.Manual[F]] =
+        Resource.pure(manual)
+
+      val createAuto: Resource[F, Span.Auto[F]] =
+        Resource.pure(auto)
+
+      def createRes[A](resource: Resource[F, A]): Resource[F, Span.Res[F, A]] =
+        resource.map(a => Span.Res.fromBackend(a, back))
+    }
+
+}

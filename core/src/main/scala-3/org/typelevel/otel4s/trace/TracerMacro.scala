@@ -30,6 +30,9 @@ private[otel4s] trait TracerMacro[F[_]] {
     * The lifecycle of the span is managed automatically. That means the span is
     * ended upon the finalization of a resource.
     *
+    * The abnormal termination (error, cancelation) is recorded by
+    * [[SpanFinalizer.Strategy.reportAbnormal default finalization strategy]].
+    *
     * To attach span to a specific parent, use [[childOf]].
     *
     * @example
@@ -58,6 +61,12 @@ private[otel4s] trait TracerMacro[F[_]] {
   /** Creates a new root span. Even if a parent span is available in the
     * context, the span is created without a parent.
     *
+    * The lifecycle of the span is managed automatically. That means the span is
+    * ended upon the finalization of a resource.
+    *
+    * The abnormal termination (error, cancelation) is recorded by
+    * [[SpanFinalizer.Strategy.reportAbnormal default finalization strategy]].
+    *
     * @param name
     *   the name of the span
     *
@@ -72,6 +81,12 @@ private[otel4s] trait TracerMacro[F[_]] {
 
   /** Creates a new child span. The span is automatically attached to a parent
     * span (based on the scope).
+    *
+    * The lifecycle of the span is managed automatically. That means the span is
+    * ended upon the finalization of a resource.
+    *
+    * The abnormal termination (error, cancelation) is recorded by
+    * [[SpanFinalizer.Strategy.reportAbnormal default finalization strategy]].
     *
     * The structure of the inner spans:
     * {{{

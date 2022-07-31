@@ -239,7 +239,7 @@ object SpanBuilderImpl {
   sealed trait TimestampSelect
   object TimestampSelect {
 
-    /** Relies `start` timestamp from `SpanBuilderImpl` if defined and
+    /** Relies on `start` timestamp from `SpanBuilder` if defined and
       * `Clock[F].realTime` otherwise.
       *
       * Relies on `Clock[F].realTime` for the `end` timestamp.
@@ -249,7 +249,7 @@ object SpanBuilderImpl {
     /** The `start` and `end` timestamps are delegated to `JSpan` and managed by
       * `startSpan()` and `end()` methods.
       *
-      * The explicitly configured `start` timestamp in the `SpanBuilderImpl` is
+      * The explicitly configured `start` timestamp in the `SpanBuilder` is
       * respected.
       */
     case object Delegate extends TimestampSelect

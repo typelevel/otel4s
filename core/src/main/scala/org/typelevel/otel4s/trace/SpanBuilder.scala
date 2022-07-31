@@ -96,16 +96,90 @@ trait SpanBuilder[F[_]] {
     */
   def root: SpanBuilder[F]
 
-  /** Creates [[Span.Manual]].
+  /** Creates [[Span.Manual]]. The manual span requires to be ended ''explicit''
+    * explicitly.
+    *
+    * The manual span can be used when it's necessary to end a span outside of
+    * the resource scope (i.e. async callback). Make sure the span is ended
+    * properly.
+    *
+    * Leaked span:
+    * {{{
+    * val tracer: Tracer[F] = ???
+    * val leaked: F[Unit] =
+    *   tracer.spanBuilder("manual-span").createManual.use { span =>
+    *     span.setStatus(Status.Ok, "all good")
+    *   }
+    * }}}
+    *
+    * Properly ended span:
+    * {{{
+    * val tracer: Tracer[F] = ???
+    * val ok: F[Unit] =
+    *   tracer.spanBuilder("manual-span").createManual.use { span =>
+    *     span.setStatus(Status.Ok, "all good") >> span.end
+    *   }
+    * }}}
+    *
+    * The finalization strategy is determined by [[SpanFinalizer.Strategy]]. By
+    * default, the abnormal terminations (error, cancelation) are recorded.
+    *
+    * @see
+    *   default finalization strategy [[SpanFinalizer.Strategy.reportAbnormal]]
     */
   def createManual: Resource[F, Span.Manual[F]]
 
-  /** Creates [[Span.Auto]]. The span the span is started upon resource
-    * allocation and ended upon finalization. Abnormal terminations (error,
-    * cancelation) are recorded as well.
+  /** Creates [[Span.Auto]]. The span is started upon resource allocation and
+    * ended upon finalization.
+    *
+    * The finalization strategy is determined by [[SpanFinalizer.Strategy]]. By
+    * default, the abnormal terminations (error, cancelation) are recorded.
+    *
+    * @see
+    *   default finalization strategy [[SpanFinalizer.Strategy.reportAbnormal]]
+    *
+    * @example
+    *   {{{
+    * val tracer: Tracer[F] = ???
+    * val ok: F[Unit] =
+    *   tracer.spanBuilder("manual-span").createAuto.use { span =>
+    *     span.setStatus(Status.Ok, "all good")
+    *   }
+    *   }}}
     */
   def createAuto: Resource[F, Span.Auto[F]]
 
+  /** Creates [[Span.Res]]. The span is started upon resource allocation and
+    * ended upon finalization. The allocation and release stages of the
+    * `resource` are traced by separate spans. Carries a value of the given
+    * `resource`.
+    *
+    * The structure of the inner spans:
+    * {{{
+    * > span-name
+    *   > acquire
+    *   > use
+    *   > release
+    * }}}
+    *
+    * The finalization strategy is determined by [[SpanFinalizer.Strategy]]. By
+    * default, the abnormal terminations (error, cancelation) are recorded.
+    *
+    * @see
+    *   default finalization strategy [[SpanFinalizer.Strategy.reportAbnormal]]
+    *
+    * @example
+    *   {{{
+    * val tracer: Tracer[F] = ???
+    * val resource: Resource[F, String] = Resource.eval(Sync[F].delay("string"))
+    * val ok: F[Unit] =
+    *   tracer.spanBuilder("manual-span").createRes(resource).use { case span @ Span.Res(value) =>
+    *     span.setStatus(Status.Ok, s"all good. resource value: $${value}")
+    *   }
+    *   }}}
+    * @param resource
+    *   the resource to trace
+    */
   def createRes[A](resource: Resource[F, A]): Resource[F, Span.Res[F, A]]
 }
 

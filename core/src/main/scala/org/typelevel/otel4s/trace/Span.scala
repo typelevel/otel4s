@@ -21,10 +21,10 @@ import scala.concurrent.duration.FiniteDuration
 
 /** The API to trace an operation.
   *
-  * There are two types of span: [[Span.Manual]] and [[Span.Auto]].
+  * There are three types of span: [[Span.Manual]], [[Span.Auto]], [[Span.Res]].
   *
   * ==[[Span.Manual]]==
-  * The manual span requires an ''explicit'' termination. Manual span can be
+  * The manual span requires to be ended '''explicitly'''. Manual span can be
   * used when it's necessary to end a span outside of the resource scope (i.e.
   * async callback). Make sure the span is ended properly.
   *
@@ -49,8 +49,7 @@ import scala.concurrent.duration.FiniteDuration
   * ==[[Span.Auto]]==
   * Unlike [[Span.Manual]] the auto span has a fully managed lifecycle. That
   * means the span is started upon resource allocation and ended upon
-  * finalization. Abnormal terminations (error, cancelation) are recorded as
-  * well.
+  * finalization.
   *
   * Automatically ended span:
   * {{{
@@ -58,6 +57,29 @@ import scala.concurrent.duration.FiniteDuration
   * val ok: F[Unit] =
   *   tracer.spanBuilder("manual-span").createAuto.use { span =>
   *     span.setStatus(Status.Ok, "all good")
+  *   }
+  * }}}
+  *
+  * ==[[Span.Res]]==
+  * The behaviour and lifecycle management are identical to [[Span.Auto]]. The
+  * allocation and release stages of a supplied resource are traced by separate
+  * spans. Carries a value of a wrapped resource.
+  *
+  * The structure of the inner spans:
+  * {{{
+  * > span-name
+  *   > acquire
+  *   > use
+  *   > release
+  * }}}
+  *
+  * Resource span:
+  * {{{
+  * val tracer: Tracer[F] = ???
+  * val resource: Resource[F, String] = Resource.eval(Sync[F].delay("string"))
+  * val ok: F[Unit] =
+  *   tracer.spanBuilder("manual-span").createRes(resource).use { case span @ Span.Res(value) =>
+  *     span.setStatus(Status.Ok, s"all good. resource value: $${value}")
   *   }
   * }}}
   */
@@ -148,11 +170,9 @@ trait Span[F[_]] {
 
 object Span {
 
-  /** Automatically started and ended.
-    */
-  trait Auto[F[_]] extends Span[F]
-
-  /** Must be ended explicitly by calling `end`.
+  /** The manual span requires to be ended '''explicitly''' by calling `end`.
+    * Manual span can be used when it's necessary to end a span outside of the
+    * resource scope (i.e. async callback).
     */
   trait Manual[F[_]] extends Span[F] {
 
@@ -168,16 +188,40 @@ object Span {
       * Only the timing of the first end call for a given span will be recorded,
       * and implementations are free to ignore all further calls.
       *
+      * '''Note''': the timestamp should be based on `Clock[F].realTime`. Using
+      * `Clock[F].monotonic` may lead to a missing span.
+      *
       * @param timestamp
       *   the explicit timestamp from the epoch
       */
     def end(timestamp: FiniteDuration): F[Unit]
   }
 
-  /** Automatically started and ended. Carries a value of a wrapped resource.
+  /** Unlike [[Span.Manual]] the auto span has a fully managed lifecycle. That
+    * means the span is started upon resource allocation and ended upon
+    * finalization.
+    */
+  trait Auto[F[_]] extends Span[F]
+
+  /** The behaviour and lifecycle management are identical to [[Span.Auto]]. The
+    * allocation and release stages of a supplied resource are traced by
+    * separate spans. Carries a value of a wrapped resource.
+    *
+    * The structure of the inner spans:
+    * {{{
+    * > span-name
+    *   > acquire
+    *   > use
+    *   > release
+    * }}}
     */
   trait Res[F[_], A] extends Auto[F] {
     def value: A
+  }
+
+  object Res {
+    def unapply[F[_], A](span: Span.Res[F, A]): Option[A] =
+      Some(span.value)
   }
 
 }

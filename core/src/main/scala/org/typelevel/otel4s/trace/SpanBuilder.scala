@@ -122,7 +122,7 @@ trait SpanBuilder[F[_]] {
     * }}}
     *
     * The finalization strategy is determined by [[SpanFinalizer.Strategy]]. By
-    * default, the abnormal terminations (error, cancelation) are recorded.
+    * default, the abnormal termination (error, cancelation) is recorded.
     *
     * @see
     *   default finalization strategy [[SpanFinalizer.Strategy.reportAbnormal]]
@@ -133,7 +133,7 @@ trait SpanBuilder[F[_]] {
     * ended upon finalization.
     *
     * The finalization strategy is determined by [[SpanFinalizer.Strategy]]. By
-    * default, the abnormal terminations (error, cancelation) are recorded.
+    * default, the abnormal termination (error, cancelation) is recorded.
     *
     * @see
     *   default finalization strategy [[SpanFinalizer.Strategy.reportAbnormal]]
@@ -163,7 +163,7 @@ trait SpanBuilder[F[_]] {
     * }}}
     *
     * The finalization strategy is determined by [[SpanFinalizer.Strategy]]. By
-    * default, the abnormal terminations (error, cancelation) are recorded.
+    * default, the abnormal termination (error, cancelation) is recorded.
     *
     * @see
     *   default finalization strategy [[SpanFinalizer.Strategy.reportAbnormal]]

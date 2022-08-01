@@ -17,10 +17,12 @@
 package org.typelevel.otel4s
 package trace
 
+import cats.Semigroup
 import cats.data.NonEmptyList
 import cats.effect.Resource
+import cats.syntax.semigroup._
 
-sealed trait SpanFinalizer extends Product with Serializable
+sealed trait SpanFinalizer
 
 object SpanFinalizer {
 
@@ -31,28 +33,60 @@ object SpanFinalizer {
 
     def reportAbnormal: Strategy = {
       case Resource.ExitCase.Errored(e) =>
-        SpanFinalizer.multiple(
-          SpanFinalizer.RecordException(e),
-          SpanFinalizer.SetStatus(Status.Error, None)
-        )
+        recordException(e) |+| setStatus(Status.Error)
 
       case Resource.ExitCase.Canceled =>
-        SpanFinalizer.SetStatus(Status.Error, Some("canceled"))
+        setStatus(Status.Error, "canceled")
     }
   }
 
-  final case class RecordException(throwable: Throwable) extends SpanFinalizer
+  final class RecordException private[SpanFinalizer] (
+      val throwable: Throwable
+  ) extends SpanFinalizer
 
-  final case class SetStatus(status: Status, description: Option[String])
-      extends SpanFinalizer
+  final class SetStatus private[SpanFinalizer] (
+      val status: Status,
+      val description: Option[String]
+  ) extends SpanFinalizer
 
-  final case class SetAttributes(attributes: Seq[Attribute[_]])
-      extends SpanFinalizer
+  final class SetAttributes private[SpanFinalizer] (
+      val attributes: Seq[Attribute[_]]
+  ) extends SpanFinalizer
 
-  final case class Multiple(finalizers: NonEmptyList[SpanFinalizer])
-      extends SpanFinalizer
+  final class Multiple private[SpanFinalizer] (
+      val finalizers: NonEmptyList[SpanFinalizer]
+  ) extends SpanFinalizer
+
+  def recordException(throwable: Throwable): SpanFinalizer =
+    new RecordException(throwable)
+
+  def setStatus(status: Status): SpanFinalizer =
+    new SetStatus(status, None)
+
+  def setStatus(status: Status, description: String): SpanFinalizer =
+    new SetStatus(status, Some(description))
+
+  def setAttribute[A](attribute: Attribute[A]): SpanFinalizer =
+    new SetAttributes(List(attribute))
+
+  def setAttributes(attributes: Attribute[_]*): SpanFinalizer =
+    new SetAttributes(attributes)
 
   def multiple(head: SpanFinalizer, tail: SpanFinalizer*): Multiple =
-    Multiple(NonEmptyList.of(head, tail: _*))
+    new Multiple(NonEmptyList.of(head, tail: _*))
+
+  implicit val spanFinalizerSemigroup: Semigroup[SpanFinalizer] = {
+    case (left: Multiple, right: Multiple) =>
+      new Multiple(left.finalizers.concatNel(right.finalizers))
+
+    case (left: Multiple, right: SpanFinalizer) =>
+      new Multiple(left.finalizers.append(right))
+
+    case (left: SpanFinalizer, right: Multiple) =>
+      new Multiple(right.finalizers.prepend(left))
+
+    case (left, right) =>
+      new Multiple(NonEmptyList.of(left, right))
+  }
 
 }

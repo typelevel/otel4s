@@ -43,7 +43,7 @@ private[trace] final case class SpanBuilderImpl[F[_]: Sync](
     jTracer: JTracer,
     name: String,
     scope: TraceScope[F],
-    parent: SpanBuilderImpl.Parent = SpanBuilderImpl.Parent.Auto,
+    parent: SpanBuilderImpl.Parent = SpanBuilderImpl.Parent.Propagate,
     finalizationStrategy: SpanFinalizer.Strategy =
       SpanFinalizer.Strategy.reportAbnormal,
     kind: Option[SpanKind] = None,
@@ -216,9 +216,18 @@ private[trace] final case class SpanBuilderImpl[F[_]: Sync](
   private def parentContext: F[Option[JContext]] =
     parent match {
       case Parent.Root =>
-        scope.root.map(s => Some(s.ctx))
+        scope.current.flatMap {
+          case TraceScope.Scope.Root(ctx) =>
+            Sync[F].pure(Some(ctx))
 
-      case Parent.Auto =>
+          case TraceScope.Scope.Span(_, _, _) =>
+            scope.root.map(s => Some(s.ctx))
+
+          case TraceScope.Scope.Noop =>
+            Sync[F].pure(None)
+        }
+
+      case Parent.Propagate =>
         scope.current.map {
           case TraceScope.Scope.Root(ctx)       => Some(ctx)
           case TraceScope.Scope.Span(ctx, _, _) => Some(ctx)
@@ -272,7 +281,7 @@ object SpanBuilderImpl {
 
   sealed trait Parent
   object Parent {
-    case object Auto extends Parent
+    case object Propagate extends Parent
     case object Root extends Parent
     final case class Explicit(parent: JSpan) extends Parent
   }

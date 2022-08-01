@@ -19,7 +19,6 @@ package org.typelevel.otel4s.java.trace
 import cats.effect.IO
 import cats.effect.Resource
 import cats.effect.testkit.TestControl
-import cats.syntax.functor._
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.trace.StatusCode
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo
@@ -35,6 +34,7 @@ import io.opentelemetry.sdk.trace.internal.data.ExceptionEventData
 import munit.CatsEffectSuite
 import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.AttributeKey
+import org.typelevel.otel4s.trace.Span
 import org.typelevel.otel4s.trace.Tracer
 
 import java.time.Instant
@@ -188,109 +188,106 @@ class TracerSuite extends CatsEffectSuite {
   }
 
   test("create root span explicitly") {
-    for {
-      sdk <- makeSdk()
-      tracer <- sdk.provider.tracer("tracer").get
-      result <- tracer.span("span").use { span =>
-        tracer.rootSpan("root-span").use(IO.pure).tupleRight(span)
-      }
-      spans <- sdk.finishedSpans
-    } yield {
-      val (rootSpan, span) = result
-      assertNotEquals(
-        rootSpan.context.map(_.spanIdHex),
-        span.context.map(_.spanIdHex)
+    def expected(now: FiniteDuration) =
+      List(
+        SpanNode("span-2", now, now, Nil),
+        SpanNode("span-1", now, now, Nil)
       )
-      assertEquals(
-        spans.map(_.getTraceId),
-        List(rootSpan.context, span.context).flatten.map(_.traceIdHex)
-      )
-      assertEquals(
-        spans.map(_.getSpanId),
-        List(rootSpan.context, span.context).flatten.map(_.spanIdHex)
-      )
+
+    TestControl.executeEmbed {
+      for {
+        now <- IO.monotonic.delayBy(1.second) // otherwise returns 0
+        sdk <- makeSdk()
+        tracer <- sdk.provider.tracer("tracer").get
+        _ <- tracer.span("span-1").use { span1 =>
+          tracer.rootSpan("span-2").use { span2 =>
+            for {
+              _ <- tracer.currentSpanContext.assertEquals(span2.context)
+              _ <- IO(assertIdsNotEqual(span1, span2))
+            } yield ()
+          }
+        }
+        spans <- sdk.finishedSpans
+        tree <- IO.pure(SpanNode.fromSpans(spans))
+        //  _ <- IO.println(tree.map(SpanNode.render).mkString("\n"))
+      } yield assertEquals(tree, expected(now))
     }
   }
 
   test("create a new root scope") {
-    for {
-      sdk <- makeSdk()
-      tracer <- sdk.provider.tracer("tracer").get
-      _ <- tracer.currentSpanContext.assertEquals(None)
-      result <- tracer.span("span").use { span =>
-        for {
-          _ <- tracer.currentSpanContext.assertEquals(span.context)
-          span2 <- tracer.rootScope.surround {
-            for {
-              _ <- tracer.currentSpanContext.assertEquals(None)
-              // a new root span should be created
-              span2 <- tracer.span("span-2").use { span2 =>
-                for {
-                  _ <- tracer.currentSpanContext.assertEquals(span2.context)
-                } yield span2
-              }
-            } yield span2
-          }
-        } yield (span, span2)
-      }
-      spans <- sdk.finishedSpans
-    } yield {
-      val (span, span2) = result
-      assertNotEquals(
-        span.context.map(_.traceIdHex),
-        span2.context.map(_.traceIdHex)
+    def expected(now: FiniteDuration) =
+      List(
+        SpanNode("span-2", now, now, Nil),
+        SpanNode("span-1", now, now, Nil)
       )
-      assertEquals(
-        spans.map(_.getTraceId),
-        List(span2.context, span.context).flatten.map(_.traceIdHex)
-      )
-      assertEquals(
-        spans.map(_.getSpanId),
-        List(span2.context, span.context).flatten.map(_.spanIdHex)
-      )
+
+    TestControl.executeEmbed {
+      for {
+        now <- IO.monotonic.delayBy(1.second) // otherwise returns 0
+        sdk <- makeSdk()
+        tracer <- sdk.provider.tracer("tracer").get
+        _ <- tracer.currentSpanContext.assertEquals(None)
+        _ <- tracer.span("span-1").use { span1 =>
+          for {
+            _ <- tracer.currentSpanContext.assertEquals(span1.context)
+            _ <- tracer.rootScope.surround {
+              for {
+                _ <- tracer.currentSpanContext.assertEquals(None)
+                // a new root span should be created
+                _ <- tracer.span("span-2").use { span2 =>
+                  for {
+                    _ <- IO(assertIdsNotEqual(span1, span2))
+                    _ <- tracer.currentSpanContext.assertEquals(span2.context)
+                  } yield ()
+                }
+              } yield ()
+            }
+          } yield ()
+        }
+        spans <- sdk.finishedSpans
+        tree <- IO.pure(SpanNode.fromSpans(spans))
+        //  _ <- IO.println(tree.map(SpanNode.render).mkString("\n"))
+      } yield assertEquals(tree, expected(now))
     }
   }
 
   test("create a no-op scope") {
-    for {
-      sdk <- makeSdk()
-      tracer <- sdk.provider.tracer("tracer").get
-      _ <- tracer.currentSpanContext.assertEquals(None)
-      result <- tracer.span("span").use { span =>
-        for {
-          _ <- tracer.currentSpanContext.assertEquals(span.context)
-          span2 <- tracer.noopScope.surround {
-            for {
-              _ <- tracer.currentSpanContext.assertEquals(None)
-              // a new root span should be created
-              span2 <- tracer.span("span-2").use { span2 =>
-                for {
-                  _ <- tracer.currentSpanContext.assertEquals(None)
-                } yield span2
-              }
-            } yield span2
-          }
-        } yield (span, span2)
-      }
-      spans <- sdk.finishedSpans
-    } yield {
-      val (span, span2) = result
-      assertNotEquals(
-        span.context.map(_.traceIdHex),
-        span2.context.map(_.traceIdHex)
-      )
-      assertEquals(
-        spans.map(_.getTraceId),
-        List(span2.context, span.context).flatten.map(_.traceIdHex)
-      )
-      assertEquals(
-        spans.map(_.getSpanId),
-        List(span2.context, span.context).flatten.map(_.spanIdHex)
-      )
+    TestControl.executeEmbed {
+      for {
+        now <- IO.monotonic.delayBy(1.second) // otherwise returns 0
+        sdk <- makeSdk()
+        tracer <- sdk.provider.tracer("tracer").get
+        _ <- tracer.currentSpanContext.assertEquals(None)
+        _ <- tracer.span("span-1").use { span =>
+          for {
+            _ <- tracer.currentSpanContext.assertEquals(span.context)
+            _ <- tracer.noopScope.surround {
+              for {
+                _ <- tracer.currentSpanContext.assertEquals(None)
+                // a new root span should not be created
+                _ <- tracer
+                  .span("span-2")
+                  .use(_ => tracer.currentSpanContext.assertEquals(None))
+                _ <- tracer
+                  .rootSpan("span-3")
+                  .use(_ => tracer.currentSpanContext.assertEquals(None))
+                _ <- tracer.rootScope.use { _ =>
+                  tracer
+                    .span("span-4")
+                    .use(_ => tracer.currentSpanContext.assertEquals(None))
+                }
+              } yield ()
+            }
+          } yield ()
+        }
+        spans <- sdk.finishedSpans
+        tree <- IO.pure(SpanNode.fromSpans(spans))
+        // _ <- IO.println(tree.map(SpanNode.render).mkString("\n"))
+      } yield assertEquals(tree, List(SpanNode("span-1", now, now, Nil)))
     }
   }
 
-  test("create a tracer with a custom child parent") {
+  test("create a tracer with a custom parent") {
 
     def expected(now: FiniteDuration) =
       SpanNode(
@@ -326,7 +323,7 @@ class TracerSuite extends CatsEffectSuite {
         }
         spans <- sdk.finishedSpans
         tree <- IO.pure(SpanNode.fromSpans(spans))
-        // _ <- IO.println(SpanNode.render(tree.head))
+        // _ <- IO.println(tree.map(SpanNode.render).mkString("\n"))
       } yield assertEquals(tree, List(expected(now)))
     }
   }
@@ -409,9 +406,14 @@ class TracerSuite extends CatsEffectSuite {
           }
         spans <- sdk.finishedSpans
         tree <- IO.pure(SpanNode.fromSpans(spans))
-        // _ <- IO.println(SpanNode.render(tree.head))
+        // _ <- IO.println(tree.map(SpanNode.render).mkString("\n"))
       } yield assertEquals(tree, List(expected(now)))
     }
+  }
+
+  private def assertIdsNotEqual(s1: Span[IO], s2: Span[IO]): Unit = {
+    assertNotEquals(s1.context.map(_.traceIdHex), s2.context.map(_.traceIdHex))
+    assertNotEquals(s1.context.map(_.spanIdHex), s2.context.map(_.spanIdHex))
   }
 
   private def makeSdk(

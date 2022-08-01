@@ -64,16 +64,25 @@ object TraceScope {
         def makeScope(span: JSpan): Resource[F, Unit] =
           for {
             current <- Resource.eval(lift(local.get))
-            _ <- makeScope(nextScope(current, span))
+            _ <- createScope(nextScope(current, span))
           } yield ()
 
         def rootScope: Resource[F, Unit] =
-          makeScope(scopeRoot)
+          Resource.eval(lift(local.get)).flatMap {
+            case Scope.Root(_) =>
+              createScope(scopeRoot)
+
+            case Scope.Span(_, _, _) =>
+              createScope(scopeRoot)
+
+            case Scope.Noop =>
+              createScope(Scope.Noop)
+          }
 
         def noopScope: Resource[F, Unit] =
-          makeScope(Scope.Noop)
+          createScope(Scope.Noop)
 
-        private def makeScope(scope: Scope): Resource[F, Unit] =
+        private def createScope(scope: Scope): Resource[F, Unit] =
           Resource
             .make(lift(local.getAndSet(scope))) { previous =>
               lift(local.set(previous))

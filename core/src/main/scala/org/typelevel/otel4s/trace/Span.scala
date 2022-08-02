@@ -121,7 +121,6 @@ object Span {
         attributes: Attribute[_]*
     ): F[Unit]
 
-    private[otel4s] def child(name: String): SpanBuilder[F]
     private[otel4s] def end: F[Unit]
     private[otel4s] def end(timestamp: FiniteDuration): F[Unit]
   }
@@ -130,7 +129,6 @@ object Span {
     def noop[F[_]: Applicative]: Backend[F] =
       new Backend[F] {
         private val unit = Applicative[F].unit
-        private val noopBuilder = SpanBuilder.noop(this)
 
         val meta: InstrumentMeta[F] = InstrumentMeta.disabled
         val context: Option[SpanContext] = None
@@ -152,7 +150,6 @@ object Span {
             attributes: Attribute[_]*
         ): F[Unit] = unit
 
-        private[otel4s] def child(name: String) = noopBuilder
         private[otel4s] def end: F[Unit] = unit
         private[otel4s] def end(timestamp: FiniteDuration): F[Unit] = unit
       }

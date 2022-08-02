@@ -54,3 +54,18 @@ trait SpanContext {
     */
   def isRemote: Boolean
 }
+
+object SpanContext {
+
+  def noop: SpanContext = ???
+
+  /*trait Valid extends SpanContext {
+    def isValid = true
+  }
+
+  private class Valid()
+  private class Remote()
+
+  def create(traceId: ByteVector, spanId: ByteVector): Either[Throwable, SpanContext] = ???*/
+
+}

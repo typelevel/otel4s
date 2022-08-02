@@ -22,19 +22,15 @@ import cats.effect.Sync
 import cats.syntax.functor._
 import io.opentelemetry.api.trace.{Span => JSpan}
 import io.opentelemetry.api.trace.{StatusCode => JStatusCode}
-import io.opentelemetry.api.trace.{Tracer => JTracer}
 import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.meta.InstrumentMeta
 import org.typelevel.otel4s.trace.Span
-import org.typelevel.otel4s.trace.SpanBuilder
 import org.typelevel.otel4s.trace.SpanContext
 import org.typelevel.otel4s.trace.Status
 
 import scala.concurrent.duration.FiniteDuration
 
 private[otel4s] class SpanBackendImpl[F[_]: Sync](
-    jTracer: JTracer,
-    scope: TraceScope[F],
     val jSpan: JSpan,
     spanContext: SpanContext
 ) extends Span.Backend[F] {
@@ -86,14 +82,6 @@ private[otel4s] class SpanBackendImpl[F[_]: Sync](
         jSpan.recordException(exception, Conversions.toJAttributes(attributes))
       )
       .void
-
-  private[otel4s] def child(name: String): SpanBuilder[F] =
-    new SpanBuilderImpl[F](
-      jTracer,
-      name,
-      scope,
-      parent = SpanBuilderImpl.Parent.Explicit(jSpan)
-    )
 
   private[otel4s] def end: F[Unit] =
     Sync[F].delay(jSpan.end())

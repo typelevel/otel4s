@@ -17,6 +17,8 @@
 package org.typelevel.otel4s.java.trace
 
 import io.opentelemetry.api.trace.{SpanContext => JSpanContext}
+import io.opentelemetry.api.trace.TraceFlags
+import io.opentelemetry.api.trace.TraceState
 import org.typelevel.otel4s.trace.SamplingDecision
 import org.typelevel.otel4s.trace.SpanContext
 import scodec.bits.ByteVector
@@ -45,4 +47,35 @@ private[trace] final case class WrappedSpanContext(
 
   def isRemote: Boolean =
     jSpanContext.isRemote
+}
+
+private[trace] object WrappedSpanContext {
+
+  def unwrap(context: SpanContext): JSpanContext = {
+    def flags =
+      if (context.samplingDecision.isSampled) TraceFlags.getSampled
+      else TraceFlags.getDefault
+
+    context match {
+      case ctx: WrappedSpanContext =>
+        ctx.jSpanContext
+
+      case other if other.isRemote =>
+        JSpanContext.createFromRemoteParent(
+          other.traceIdHex,
+          other.spanIdHex,
+          flags,
+          TraceState.getDefault
+        )
+
+      case other =>
+        JSpanContext.create(
+          other.traceIdHex,
+          other.spanIdHex,
+          flags,
+          TraceState.getDefault
+        )
+    }
+  }
+
 }

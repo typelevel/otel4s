@@ -24,11 +24,8 @@ import cats.syntax.foldable._
 import cats.syntax.functor._
 import io.opentelemetry.api.trace.{Span => JSpan}
 import io.opentelemetry.api.trace.{SpanBuilder => JSpanBuilder}
-import io.opentelemetry.api.trace.{SpanContext => JSpanContext}
 import io.opentelemetry.api.trace.{SpanKind => JSpanKind}
 import io.opentelemetry.api.trace.{Tracer => JTracer}
-import io.opentelemetry.api.trace.TraceFlags
-import io.opentelemetry.api.trace.TraceState
 import io.opentelemetry.context.{Context => JContext}
 import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.trace.Span
@@ -71,6 +68,9 @@ private[trace] final case class SpanBuilderImpl[F[_]: Sync](
 
   def root: SpanBuilder[F] =
     copy(parent = Parent.Root)
+
+  def withParent(parent: SpanContext): SpanBuilder[F] =
+    copy(parent = Parent.Explicit(parent))
 
   def withStartTimestamp(timestamp: FiniteDuration): SpanBuilder[F] =
     copy(startTimestamp = Some(timestamp))
@@ -159,8 +159,6 @@ private[trace] final case class SpanBuilderImpl[F[_]: Sync](
         }
         jSpan <- Sync[F].delay(builder.startSpan())
       } yield new SpanBackendImpl(
-        jTracer,
-        scope,
         jSpan,
         WrappedSpanContext(jSpan.getSpanContext)
       )
@@ -207,7 +205,10 @@ private[trace] final case class SpanBuilderImpl[F[_]: Sync](
     b.setAllAttributes(Conversions.toJAttributes(attributes))
     startTimestamp.foreach(d => b.setStartTimestamp(d.length, d.unit))
     links.foreach { case (ctx, attributes) =>
-      b.addLink(toJSpanContext(ctx), Conversions.toJAttributes(attributes))
+      b.addLink(
+        WrappedSpanContext.unwrap(ctx),
+        Conversions.toJAttributes(attributes)
+      )
     }
 
     b
@@ -235,9 +236,10 @@ private[trace] final case class SpanBuilderImpl[F[_]: Sync](
         }
 
       case Parent.Explicit(parent) =>
+        def parentSpan = JSpan.wrap(WrappedSpanContext.unwrap(parent))
         scope.current.map {
-          case TraceScope.Scope.Root(ctx)       => Some(ctx.`with`(parent))
-          case TraceScope.Scope.Span(ctx, _, _) => Some(ctx.`with`(parent))
+          case TraceScope.Scope.Root(ctx)       => Some(ctx.`with`(parentSpan))
+          case TraceScope.Scope.Span(ctx, _, _) => Some(ctx.`with`(parentSpan))
           case TraceScope.Scope.Noop            => None
         }
     }
@@ -283,7 +285,7 @@ object SpanBuilderImpl {
   object Parent {
     case object Propagate extends Parent
     case object Root extends Parent
-    final case class Explicit(parent: JSpan) extends Parent
+    final case class Explicit(parent: SpanContext) extends Parent
   }
 
   private def toJSpanKind(spanKind: SpanKind): JSpanKind =
@@ -294,32 +296,5 @@ object SpanBuilderImpl {
       case SpanKind.Producer => JSpanKind.PRODUCER
       case SpanKind.Consumer => JSpanKind.CONSUMER
     }
-
-  private def toJSpanContext(context: SpanContext): JSpanContext = {
-    def flags =
-      if (context.samplingDecision.isSampled) TraceFlags.getSampled
-      else TraceFlags.getDefault
-
-    context match {
-      case ctx: WrappedSpanContext =>
-        ctx.jSpanContext
-
-      case other if other.isRemote =>
-        JSpanContext.createFromRemoteParent(
-          other.traceIdHex,
-          other.spanIdHex,
-          flags,
-          TraceState.getDefault
-        )
-
-      case other =>
-        JSpanContext.create(
-          other.traceIdHex,
-          other.spanIdHex,
-          flags,
-          TraceState.getDefault
-        )
-    }
-  }
 
 }

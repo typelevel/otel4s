@@ -287,7 +287,7 @@ class TracerSuite extends CatsEffectSuite {
     }
   }
 
-  test("create a tracer with a custom parent") {
+  test("create a new scope with a custom parent") {
 
     def expected(now: FiniteDuration) =
       SpanNode(
@@ -312,11 +312,57 @@ class TracerSuite extends CatsEffectSuite {
             _ <- tracer.span("span-2").use { span2 =>
               for {
                 _ <- tracer.currentSpanContext.assertEquals(span2.context)
-                _ <- tracer.childOf(span).span("span-3").use { span3 =>
+                _ <- tracer.childScope(span.context.get).surround {
                   for {
-                    _ <- tracer.currentSpanContext.assertEquals(span3.context)
-                  } yield span3
+                    _ <- tracer.currentSpanContext.assertEquals(span.context)
+                    _ <- tracer.span("span-3").use { span3 =>
+                      tracer.currentSpanContext.assertEquals(span3.context)
+                    }
+                  } yield ()
+
                 }
+              } yield ()
+            }
+          } yield ()
+        }
+        spans <- sdk.finishedSpans
+        tree <- IO.pure(SpanNode.fromSpans(spans))
+        // _ <- IO.println(tree.map(SpanNode.render).mkString("\n"))
+      } yield assertEquals(tree, List(expected(now)))
+    }
+  }
+
+  test("create a span with a custom parent (via builder)") {
+    def expected(now: FiniteDuration) =
+      SpanNode(
+        "span",
+        now,
+        now,
+        List(
+          SpanNode("span-3", now, now, Nil),
+          SpanNode("span-2", now, now, Nil)
+        )
+      )
+
+    TestControl.executeEmbed {
+      for {
+        now <- IO.monotonic.delayBy(1.second) // otherwise returns 0
+        sdk <- makeSdk()
+        tracer <- sdk.provider.tracer("tracer").get
+        _ <- tracer.currentSpanContext.assertEquals(None)
+        _ <- tracer.span("span").use { span =>
+          for {
+            _ <- tracer.currentSpanContext.assertEquals(span.context)
+            _ <- tracer.span("span-2").use { span2 =>
+              for {
+                _ <- tracer.currentSpanContext.assertEquals(span2.context)
+                _ <- tracer
+                  .spanBuilder("span-3")
+                  .withParent(span.context.get)
+                  .createAuto
+                  .use { span3 =>
+                    tracer.currentSpanContext.assertEquals(span3.context)
+                  }
               } yield ()
             }
           } yield ()

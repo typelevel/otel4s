@@ -39,19 +39,23 @@ trait Tracer[F[_]] extends TracerMacro[F] {
     */
   def spanBuilder(name: String): SpanBuilder[F]
 
-  /** Creates a new tracer as a child of the given span.
+  /** Creates a new tracing scope with a custom parent. A newly created non-root
+    * span will be a child of the given `parent`.
     *
     * @example
     *   {{{
     * val tracer: Tracer[F] = ???
     * val span: Span[F] = ???
-    * val customChild: Resource[F, Span[F]] = tracer.childOf(span).span("custom-parent")
+    * val customChild: Resource[F, Span[F]] =
+    *   tracer.childScope(span.context).surround {
+    *     tracer.span("custom-parent").use { span => ??? }
+    *   }
     *   }}}
     *
-    * @param span
-    *   the parent span
+    * @param parent
+    *   the span context to use as a parent
     */
-  def childOf(span: Span[F]): Tracer[F]
+  def childScope(parent: SpanContext): Resource[F, Unit]
 
   /** Creates a new root tracing scope. The parent span will not be available
     * inside. Thus, a span created inside of the scope will be a root one.
@@ -76,7 +80,7 @@ trait Tracer[F[_]] extends TracerMacro[F] {
   def rootScope: Resource[F, Unit]
 
   /** Creates a no-op tracing scope. The tracing operations inside of the scope
-    * or no-op.
+    * are no-op.
     *
     * @example
     *   the parent is not propagated:
@@ -130,11 +134,12 @@ object Tracer {
     new Tracer[F] {
       private val noopBackend = Span.Backend.noop
       private val builder = SpanBuilder.noop(noopBackend)
+      private val resourceUnit = Resource.unit[F]
       val meta: Meta[F] = Meta.disabled
       val currentSpanContext: F[Option[SpanContext]] = Applicative[F].pure(None)
-      val rootScope: Resource[F, Unit] = Resource.unit
-      def noopScope: Resource[F, Unit] = Resource.unit
+      def rootScope: Resource[F, Unit] = resourceUnit
+      def noopScope: Resource[F, Unit] = resourceUnit
+      def childScope(parent: SpanContext): Resource[F, Unit] = resourceUnit
       def spanBuilder(name: String): SpanBuilder[F] = builder
-      def childOf(span: Span[F]): Tracer[F] = this
     }
 }

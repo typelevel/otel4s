@@ -33,14 +33,18 @@ private[otel4s] trait TracerMacro[F[_]] {
     * The abnormal termination (error, cancelation) is recorded by
     * [[SpanFinalizer.Strategy.reportAbnormal default finalization strategy]].
     *
-    * To attach span to a specific parent, use [[childOf]].
+    * To attach span to a specific parent, use [[childScope]] or
+    * [[SpanBuilder.withParent]].
     *
     * @example
     *   attaching span to a specific parent
     *   {{{
     * val tracer: Tracer[F] = ???
     * val span: Span[F] = ???
-    * val customParent: Resource[F, Span.Auto[F]] = tracer.childOf(span).span("custom-parent")
+    * val customParent: Resource[F, Span.Auto[F]] = tracer
+    *   .spanBuilder("custom-parent")
+    *   .withParent(span.context)
+    *   .createAuto
     *   }}}
     *
     * @see
@@ -58,8 +62,8 @@ private[otel4s] trait TracerMacro[F[_]] {
   ): Resource[F, Span[F]] =
     ${ TracerMacro.span('self, 'name, 'attributes) }
 
-  /** Creates a new root span. Even if a parent span is available in the
-    * context, the span is created without a parent.
+  /** Creates a new root span. Even if a parent span is available in the scope,
+    * the span is created without a parent.
     *
     * The lifecycle of the span is managed automatically. That means the span is
     * ended upon the finalization of a resource.

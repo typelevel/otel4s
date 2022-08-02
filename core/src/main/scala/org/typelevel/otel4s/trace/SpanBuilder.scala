@@ -96,6 +96,19 @@ trait SpanBuilder[F[_]] {
     */
   def root: SpanBuilder[F]
 
+  /** Sets the parent to use from the specified [[SpanContext]]. If not set, the
+    * span that is currently available in the scope will be used as parent.
+    *
+    * '''Note''': if called multiple times, only the last specified value will
+    * be used.
+    *
+    * '''Note''': the previous call of [[root]] will be ignored.
+    *
+    * @param parent
+    *   the span context to use as a parent
+    */
+  def withParent(parent: SpanContext): SpanBuilder[F]
+
   /** Creates [[Span.Manual]]. The manual span requires to be ended ''explicit''
     * explicitly.
     *

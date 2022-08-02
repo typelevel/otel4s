@@ -38,19 +38,23 @@ trait Tracer[F[_]] {
     */
   def spanBuilder(name: String): SpanBuilder[F]
 
-  /** Creates a new tracer as a child of the given span.
+  /** Creates a new tracing scope with a custom parent. A newly created non-root
+    * span will be a child of the given `parent`.
     *
     * @example
     *   {{{
     * val tracer: Tracer[F] = ???
     * val span: Span[F] = ???
-    * val customChild: Resource[F, Span[F]] = tracer.childOf(span).span("custom-parent")
+    * val customChild: Resource[F, Span[F]] =
+    *   tracer.childScope(span.context).surround {
+    *     tracer.span("custom-parent").use { span => ??? }
+    *   }
     *   }}}
     *
-    * @param span
-    *   the parent span
+    * @param parent
+    *   the span context to use as a parent
     */
-  def childOf(span: Span[F]): Tracer[F]
+  def childScope(parent: SpanContext): Resource[F, Unit]
 
   /** Creates a new root tracing scope. The parent span will not be available
     * inside. Thus, a span created inside of the scope will be a root one.

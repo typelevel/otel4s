@@ -75,7 +75,7 @@ trait Tracer[F[_]] {
   def rootScope: Resource[F, Unit]
 
   /** Creates a no-op tracing scope. The tracing operations inside of the scope
-    * or no-op.
+    * are no-op.
     *
     * @example
     *   the parent is not propagated:

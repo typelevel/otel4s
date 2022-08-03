@@ -90,10 +90,8 @@ trait Span[F[_]] extends SpanMacro[F] {
   def backend: Span.Backend[F]
 
   /** Returns the [[SpanContext]] associated with this span.
-    *
-    * Returns `None` if the span is invalid or no-op.
     */
-  final def context: Option[SpanContext] =
+  final def context: SpanContext =
     backend.context
 
 }
@@ -102,7 +100,7 @@ object Span {
 
   trait Backend[F[_]] {
     def meta: InstrumentMeta[F]
-    def context: Option[SpanContext]
+    def context: SpanContext
 
     def addEvent(name: String, attributes: Attribute[_]*): F[Unit]
 
@@ -131,7 +129,7 @@ object Span {
         private val unit = Applicative[F].unit
 
         val meta: InstrumentMeta[F] = InstrumentMeta.disabled
-        val context: Option[SpanContext] = None
+        val context: SpanContext = SpanContext.invalid
 
         def addEvent(name: String, attributes: Attribute[_]*): F[Unit] = unit
 

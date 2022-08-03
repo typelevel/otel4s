@@ -57,15 +57,27 @@ trait SpanContext {
 
 object SpanContext {
 
-  def noop: SpanContext = ???
-
-  /*trait Valid extends SpanContext {
-    def isValid = true
+  object TraceId {
+    val Bytes: Int = 16
+    val HexLength: Int = Bytes * 2
+    val InvalidHex: String = "0" * HexLength
   }
 
-  private class Valid()
-  private class Remote()
+  object SpanId {
+    val Bytes: Int = 8
+    val HexLength: Int = Bytes * 2
+    val InvalidHex: String = "0" * HexLength
+  }
 
-  def create(traceId: ByteVector, spanId: ByteVector): Either[Throwable, SpanContext] = ???*/
+  val invalid: SpanContext =
+    new SpanContext {
+      val traceIdHex: String = TraceId.InvalidHex
+      val traceId: ByteVector = ByteVector.fromValidHex(traceIdHex)
+      val spanIdHex: String = SpanId.InvalidHex
+      val spanId: ByteVector = ByteVector.fromValidHex(spanIdHex)
+      val samplingDecision: SamplingDecision = SamplingDecision.Drop
+      val isValid: Boolean = false
+      val isRemote: Boolean = false
+    }
 
 }

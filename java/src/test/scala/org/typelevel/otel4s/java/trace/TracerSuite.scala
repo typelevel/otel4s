@@ -75,10 +75,10 @@ class TracerSuite extends CatsEffectSuite {
       _ <- tracer.currentSpanContext.assertEquals(None)
       result <- tracer.span("span").use { span =>
         for {
-          _ <- tracer.currentSpanContext.assertEquals(span.context)
+          _ <- tracer.currentSpanContext.assertEquals(Some(span.context))
           span2 <- tracer.span("span-2").use { span2 =>
             for {
-              _ <- tracer.currentSpanContext.assertEquals(span2.context)
+              _ <- tracer.currentSpanContext.assertEquals(Some(span2.context))
             } yield span2
           }
         } yield (span, span2)
@@ -86,17 +86,14 @@ class TracerSuite extends CatsEffectSuite {
       spans <- sdk.finishedSpans
     } yield {
       val (span, span2) = result
-      assertEquals(
-        span.context.map(_.traceIdHex),
-        span2.context.map(_.traceIdHex)
-      )
+      assertEquals(span.context.traceIdHex, span2.context.traceIdHex)
       assertEquals(
         spans.map(_.getTraceId),
-        List(span2.context, span.context).flatten.map(_.traceIdHex)
+        List(span2.context, span.context).map(_.traceIdHex)
       )
       assertEquals(
         spans.map(_.getSpanId),
-        List(span2.context, span.context).flatten.map(_.spanIdHex)
+        List(span2.context, span.context).map(_.spanIdHex)
       )
     }
   }
@@ -110,14 +107,8 @@ class TracerSuite extends CatsEffectSuite {
       span <- tracer.span("span", attribute).use(IO.pure)
       spans <- sdk.finishedSpans
     } yield {
-      assertEquals(
-        spans.map(_.getTraceId),
-        List(span.context.map(_.traceIdHex)).flatten
-      )
-      assertEquals(
-        spans.map(_.getSpanId),
-        List(span.context.map(_.spanIdHex)).flatten
-      )
+      assertEquals(spans.map(_.getTraceId), List(span.context.traceIdHex))
+      assertEquals(spans.map(_.getSpanId), List(span.context.spanIdHex))
     }
   }
 
@@ -202,7 +193,7 @@ class TracerSuite extends CatsEffectSuite {
         _ <- tracer.span("span-1").use { span1 =>
           tracer.rootSpan("span-2").use { span2 =>
             for {
-              _ <- tracer.currentSpanContext.assertEquals(span2.context)
+              _ <- tracer.currentSpanContext.assertEquals(Some(span2.context))
               _ <- IO(assertIdsNotEqual(span1, span2))
             } yield ()
           }
@@ -229,7 +220,7 @@ class TracerSuite extends CatsEffectSuite {
         _ <- tracer.currentSpanContext.assertEquals(None)
         _ <- tracer.span("span-1").use { span1 =>
           for {
-            _ <- tracer.currentSpanContext.assertEquals(span1.context)
+            _ <- tracer.currentSpanContext.assertEquals(Some(span1.context))
             _ <- tracer.rootScope.surround {
               for {
                 _ <- tracer.currentSpanContext.assertEquals(None)
@@ -237,7 +228,8 @@ class TracerSuite extends CatsEffectSuite {
                 _ <- tracer.span("span-2").use { span2 =>
                   for {
                     _ <- IO(assertIdsNotEqual(span1, span2))
-                    _ <- tracer.currentSpanContext.assertEquals(span2.context)
+                    _ <- tracer.currentSpanContext
+                      .assertEquals(Some(span2.context))
                   } yield ()
                 }
               } yield ()
@@ -260,7 +252,7 @@ class TracerSuite extends CatsEffectSuite {
         _ <- tracer.currentSpanContext.assertEquals(None)
         _ <- tracer.span("span-1").use { span =>
           for {
-            _ <- tracer.currentSpanContext.assertEquals(span.context)
+            _ <- tracer.currentSpanContext.assertEquals(Some(span.context))
             _ <- tracer.noopScope.surround {
               for {
                 _ <- tracer.currentSpanContext.assertEquals(None)
@@ -308,15 +300,17 @@ class TracerSuite extends CatsEffectSuite {
         _ <- tracer.currentSpanContext.assertEquals(None)
         _ <- tracer.span("span").use { span =>
           for {
-            _ <- tracer.currentSpanContext.assertEquals(span.context)
+            _ <- tracer.currentSpanContext.assertEquals(Some(span.context))
             _ <- tracer.span("span-2").use { span2 =>
               for {
-                _ <- tracer.currentSpanContext.assertEquals(span2.context)
-                _ <- tracer.childScope(span.context.get).surround {
+                _ <- tracer.currentSpanContext.assertEquals(Some(span2.context))
+                _ <- tracer.childScope(span.context).surround {
                   for {
-                    _ <- tracer.currentSpanContext.assertEquals(span.context)
+                    _ <- tracer.currentSpanContext
+                      .assertEquals(Some(span.context))
                     _ <- tracer.span("span-3").use { span3 =>
-                      tracer.currentSpanContext.assertEquals(span3.context)
+                      tracer.currentSpanContext
+                        .assertEquals(Some(span3.context))
                     }
                   } yield ()
 
@@ -352,16 +346,16 @@ class TracerSuite extends CatsEffectSuite {
         _ <- tracer.currentSpanContext.assertEquals(None)
         _ <- tracer.span("span").use { span =>
           for {
-            _ <- tracer.currentSpanContext.assertEquals(span.context)
+            _ <- tracer.currentSpanContext.assertEquals(Some(span.context))
             _ <- tracer.span("span-2").use { span2 =>
               for {
-                _ <- tracer.currentSpanContext.assertEquals(span2.context)
+                _ <- tracer.currentSpanContext.assertEquals(Some(span2.context))
                 _ <- tracer
                   .spanBuilder("span-3")
-                  .withParent(span.context.get)
+                  .withParent(span.context)
                   .createAuto
                   .use { span3 =>
-                    tracer.currentSpanContext.assertEquals(span3.context)
+                    tracer.currentSpanContext.assertEquals(Some(span3.context))
                   }
               } yield ()
             }
@@ -458,8 +452,8 @@ class TracerSuite extends CatsEffectSuite {
   }
 
   private def assertIdsNotEqual(s1: Span[IO], s2: Span[IO]): Unit = {
-    assertNotEquals(s1.context.map(_.traceIdHex), s2.context.map(_.traceIdHex))
-    assertNotEquals(s1.context.map(_.spanIdHex), s2.context.map(_.spanIdHex))
+    assertNotEquals(s1.context.traceIdHex, s2.context.traceIdHex)
+    assertNotEquals(s1.context.spanIdHex, s2.context.spanIdHex)
   }
 
   private def makeSdk(

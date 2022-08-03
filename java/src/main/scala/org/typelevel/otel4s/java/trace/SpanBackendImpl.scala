@@ -38,8 +38,8 @@ private[otel4s] class SpanBackendImpl[F[_]: Sync](
 
   val meta: InstrumentMeta[F] = InstrumentMeta.enabled
 
-  def context: Option[SpanContext] =
-    Option(spanContext).filter(_.isValid)
+  def context: SpanContext =
+    spanContext
 
   def addEvent(name: String, attributes: Attribute[_]*): F[Unit] =
     Sync[F]

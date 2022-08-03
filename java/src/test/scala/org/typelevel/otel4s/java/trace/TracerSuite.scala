@@ -19,6 +19,7 @@ package org.typelevel.otel4s.java.trace
 import cats.effect.IO
 import cats.effect.Resource
 import cats.effect.testkit.TestControl
+import fs2.Stream
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.trace.StatusCode
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo
@@ -444,6 +445,51 @@ class TracerSuite extends CatsEffectSuite {
               _ <- tracer.span("body-3").surround(IO.sleep(50.millis))
             } yield ()
           }
+        spans <- sdk.finishedSpans
+        tree <- IO.pure(SpanNode.fromSpans(spans))
+        // _ <- IO.println(tree.map(SpanNode.render).mkString("\n"))
+      } yield assertEquals(tree, List(expected(now)))
+    }
+  }
+
+  test("propagate trace info over stream scopes") {
+    def expected(now: FiniteDuration) =
+      SpanNode(
+        "span",
+        now,
+        now,
+        List(
+          SpanNode("span-3", now, now, Nil),
+          SpanNode("span-2", now, now, Nil)
+        )
+      )
+
+    def flow(tracer: Tracer[IO]): Stream[IO, Unit] =
+      for {
+        span <- Stream.resource(tracer.span("span"))
+        _ <- Stream.eval(
+          tracer.currentSpanContext.assertEquals(Some(span.context))
+        )
+        span2 <- Stream.resource(tracer.span("span-2"))
+        _ <- Stream.eval(
+          tracer.currentSpanContext.assertEquals(Some(span2.context))
+        )
+        span3 <- Stream.resource(
+          tracer.spanBuilder("span-3").withParent(span.context).createAuto
+        )
+        _ <- Stream.eval(
+          tracer.currentSpanContext.assertEquals(Some(span3.context))
+        )
+      } yield ()
+
+    TestControl.executeEmbed {
+      for {
+        now <- IO.monotonic.delayBy(1.second) // otherwise returns 0
+        sdk <- makeSdk()
+        tracer <- sdk.provider.tracer("tracer").get
+        _ <- tracer.currentSpanContext.assertEquals(None)
+        _ <- flow(tracer).compile.drain
+        _ <- tracer.currentSpanContext.assertEquals(None)
         spans <- sdk.finishedSpans
         tree <- IO.pure(SpanNode.fromSpans(spans))
         // _ <- IO.println(tree.map(SpanNode.render).mkString("\n"))

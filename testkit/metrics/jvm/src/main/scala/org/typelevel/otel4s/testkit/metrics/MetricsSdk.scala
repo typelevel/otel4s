@@ -18,7 +18,7 @@ package org.typelevel.otel4s
 package testkit
 package metrics
 
-import cats.effect.Sync
+import cats.effect.kernel.Sync
 import io.opentelemetry.api.common.{AttributeType => JAttributeType}
 import io.opentelemetry.api.common.{Attributes => JAttributes}
 import io.opentelemetry.sdk.OpenTelemetrySdk

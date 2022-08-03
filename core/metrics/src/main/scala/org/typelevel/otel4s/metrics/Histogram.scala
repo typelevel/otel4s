@@ -19,8 +19,8 @@ package metrics
 
 import cats.Applicative
 import cats.Monad
-import cats.effect.Clock
-import cats.effect.Resource
+import cats.effect.kernel.Clock
+import cats.effect.kernel.Resource
 import cats.syntax.flatMap._
 import cats.syntax.functor._
 import org.typelevel.otel4s.meta.InstrumentMeta

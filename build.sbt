@@ -67,7 +67,7 @@ lazy val `core-metrics` = crossProject(JVMPlatform, JSPlatform)
   .settings(
     name := "otel4s-core-metrics",
     libraryDependencies ++= Seq(
-      "org.typelevel" %%% "cats-effect" % CatsEffectVersion,
+      "org.typelevel" %%% "cats-effect-kernel" % CatsEffectVersion,
       "org.scalameta" %%% "munit" % MUnitVersion % Test,
       "org.typelevel" %%% "munit-cats-effect-3" % MUnitCatsEffectVersion % Test,
       "org.typelevel" %%% "cats-effect-testkit" % CatsEffectVersion % Test

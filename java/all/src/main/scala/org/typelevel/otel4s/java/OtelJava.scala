@@ -16,7 +16,7 @@
 
 package org.typelevel.otel4s.java
 
-import cats.effect.Sync
+import cats.effect.kernel.Sync
 import io.opentelemetry.api.{OpenTelemetry => JOpenTelemetry}
 import org.typelevel.otel4s.Otel4s
 import org.typelevel.otel4s.metrics.MeterProvider

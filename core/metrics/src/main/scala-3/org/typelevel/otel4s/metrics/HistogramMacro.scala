@@ -17,7 +17,7 @@
 package org.typelevel.otel4s
 package metrics
 
-import cats.effect.Resource
+import cats.effect.kernel.Resource
 
 import scala.concurrent.duration._
 import scala.quoted.*

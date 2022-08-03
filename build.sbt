@@ -113,10 +113,9 @@ lazy val testkit = crossProject(JVMPlatform)
     name := "otel4s-testkit"
   )
 
-lazy val `java-common` = crossProject(JVMPlatform)
-  .crossType(CrossType.Pure)
+lazy val `java-common` = project
   .in(file("java/common"))
-  .dependsOn(`core-common`, `testkit-common`)
+  .dependsOn(`core-common`.jvm, `testkit-common`.jvm)
   .settings(
     name := "otel4s-java-common",
     libraryDependencies ++= Seq(
@@ -124,10 +123,9 @@ lazy val `java-common` = crossProject(JVMPlatform)
     )
   )
 
-lazy val `java-metrics` = crossProject(JVMPlatform)
-  .crossType(CrossType.Pure)
+lazy val `java-metrics` = project
   .in(file("java/metrics"))
-  .dependsOn(`java-common`, `core-metrics`, `testkit-metrics`)
+  .dependsOn(`java-common`, `core-metrics`.jvm, `testkit-metrics`.jvm)
   .settings(
     name := "otel4s-java-metrics",
     libraryDependencies ++= Seq(
@@ -139,10 +137,9 @@ lazy val `java-metrics` = crossProject(JVMPlatform)
     )
   )
 
-lazy val java = crossProject(JVMPlatform)
-  .crossType(CrossType.Pure)
+lazy val java = project
   .in(file("java/all"))
-  .dependsOn(core, `java-metrics`)
+  .dependsOn(core.jvm, `java-metrics`)
   .settings(
     name := "otel4s-java"
   )

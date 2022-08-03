@@ -1,0 +1,100 @@
+/*
+ * Copyright 2022 Typelevel
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.typelevel.otel4s
+package java
+
+import cats.effect.IO
+import io.opentelemetry.sdk.metrics._
+import munit.CatsEffectSuite
+import org.typelevel.otel4s.testkit._
+
+import scala.jdk.CollectionConverters._
+
+class JavaOtelSuite extends CatsEffectSuite {
+
+  test("Counter record a proper data") {
+    for {
+      sdk <- IO.delay(makeSdk)
+      otel4s <- IO.delay(OtelJava.forSync[IO](sdk.sdk))
+      meter <- otel4s.meterProvider
+        .meter("java.otel.suite")
+        .withVersion("1.0")
+        .withSchemaUrl("https://localhost:8080")
+        .get
+
+      counter <- meter
+        .counter("counter")
+        .withUnit("unit")
+        .withDescription("description")
+        .create
+
+      _ <- counter.add(
+        1L,
+        Attribute(AttributeKey.string("string-attribute"), "value")
+      )
+
+      metrics <- sdk.metrics
+    } yield {
+      val resourceAttributes = List(
+        Attribute(AttributeKey.string("service.name"), "unknown_service:java"),
+        Attribute(AttributeKey.string("telemetry.sdk.language"), "java"),
+        Attribute(AttributeKey.string("telemetry.sdk.name"), "opentelemetry"),
+        Attribute(AttributeKey.string("telemetry.sdk.version"), "1.15.0")
+      )
+
+      val scope = new InstrumentationScope(
+        name = "java.otel.suite",
+        version = Some("1.0"),
+        schemaUrl = Some("https://localhost:8080")
+      )
+
+      assertEquals(metrics.map(_.name), List("counter"))
+      assertEquals(metrics.map(_.description), List(Some("description")))
+      assertEquals(metrics.map(_.unit), List(Some("unit")))
+      assertEquals(
+        metrics.map(_.resource),
+        List(new MetricResource(None, resourceAttributes))
+      )
+      assertEquals(metrics.map(_.scope), List(scope))
+      assertEquals[List[Any], List[Any]](
+        metrics.map(_.data.points.map(_.value)),
+        List(List(1L))
+      )
+    }
+  }
+
+  private def makeSdk: Sdk[IO] = {
+    def customize(builder: SdkMeterProviderBuilder): SdkMeterProviderBuilder =
+      builder.registerView(
+        InstrumentSelector.builder().setType(InstrumentType.HISTOGRAM).build(),
+        View
+          .builder()
+          .setAggregation(
+            Aggregation.explicitBucketHistogram(
+              HistogramBuckets.map(Double.box).asJava
+            )
+          )
+          .build()
+      )
+
+    Sdk.create[IO](customize)
+  }
+
+  private val HistogramBuckets: List[Double] =
+    List(0.01, 1, 100)
+
+}

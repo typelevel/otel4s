@@ -86,10 +86,8 @@ import scala.concurrent.duration.FiniteDuration
 trait Span[F[_]] {
 
   /** Returns the [[SpanContext]] associated with this span.
-    *
-    * Returns `None` if the span is invalid or no-op.
     */
-  def context: Option[SpanContext]
+  def context: SpanContext
 
   /** Sets attributes to the span. If the span previously contained a mapping
     * for any of the keys, the old values are replaced by the specified values.

@@ -22,7 +22,7 @@ ThisBuild / crossScalaVersions := Seq(Scala213, "3.1.3")
 ThisBuild / scalaVersion := Scala213 // the default Scala
 
 lazy val root = tlCrossRootProject
-  .aggregate(core, java)
+  .aggregate(core, testkit, java)
   .settings(name := "otel4s")
 
 lazy val core = crossProject(JVMPlatform, JSPlatform)
@@ -31,12 +31,12 @@ lazy val core = crossProject(JVMPlatform, JSPlatform)
   .settings(
     name := "otel4s-core",
     libraryDependencies ++= Seq(
-      "org.typelevel" %%% "cats-core" % "2.7.0",
-      "org.typelevel" %%% "cats-effect" % "3.3.13",
-      "co.fs2" %%% "fs2-core" % "3.2.11",
+      "org.typelevel" %%% "cats-core" % "2.8.0",
+      "org.typelevel" %%% "cats-effect" % "3.3.14",
+      "org.scodec" %%% "scodec-bits" % "1.1.34",
       "org.scalameta" %%% "munit" % "0.7.29" % Test,
       "org.typelevel" %%% "munit-cats-effect-3" % "1.0.7" % Test,
-      "org.typelevel" %%% "cats-effect-testkit" % "3.3.13" % Test
+      "org.typelevel" %%% "cats-effect-testkit" % "3.3.14" % Test
     ),
     libraryDependencies ++= {
       if (tlIsScala3.value) Nil
@@ -45,6 +45,21 @@ lazy val core = crossProject(JVMPlatform, JSPlatform)
     }
   )
 
+lazy val testkit = crossProject(JVMPlatform)
+  .crossType(CrossType.Full)
+  .in(file("testkit"))
+  .settings(
+    name := "otel4s-testkit"
+  )
+  .jvmSettings(
+    libraryDependencies ++= Seq(
+      "io.opentelemetry" % "opentelemetry-api" % "1.15.0",
+      "io.opentelemetry" % "opentelemetry-sdk" % "1.15.0",
+      "io.opentelemetry" % "opentelemetry-sdk-testing" % "1.15.0"
+    )
+  )
+  .dependsOn(core)
+
 lazy val java = crossProject(JVMPlatform)
   .crossType(CrossType.Pure)
   .in(file("java"))
@@ -52,10 +67,12 @@ lazy val java = crossProject(JVMPlatform)
     name := "otel4s-java",
     libraryDependencies ++= Seq(
       "io.opentelemetry" % "opentelemetry-api" % "1.15.0",
-      "io.opentelemetry" % "opentelemetry-exporter-logging" % "1.15.0" % Test,
-      "io.opentelemetry" % "opentelemetry-sdk-extension-autoconfigure" % "1.13.0-alpha" % Test
+      "io.opentelemetry" % "opentelemetry-sdk" % "1.15.0" % Test,
+      "io.opentelemetry" % "opentelemetry-sdk-testing" % "1.15.0" % Test,
+      "org.scalameta" %% "munit" % "0.7.29" % Test,
+      "org.typelevel" %% "munit-cats-effect-3" % "1.0.7" % Test
     )
   )
-  .dependsOn(core % "compile->compile,test->test")
+  .dependsOn(core, testkit)
 
 lazy val docs = project.in(file("site")).enablePlugins(TypelevelSitePlugin)

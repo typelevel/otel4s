@@ -89,6 +89,14 @@ trait Span[F[_]] {
     */
   def context: SpanContext
 
+  /** Sets an attribute to the span. If the span previously contained a mapping
+    * for the key, the old value is replaced by the specified value.
+    *
+    * @param attribute
+    *   the attribute to add to the span
+    */
+  def setAttribute[A](attribute: Attribute[A]): F[Unit]
+
   /** Sets attributes to the span. If the span previously contained a mapping
     * for any of the keys, the old values are replaced by the specified values.
     *

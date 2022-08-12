@@ -52,9 +52,9 @@ lazy val testkit = crossProject(JVMPlatform)
   )
   .jvmSettings(
     libraryDependencies ++= Seq(
-      "io.opentelemetry" % "opentelemetry-api" % "1.15.0",
-      "io.opentelemetry" % "opentelemetry-sdk" % "1.15.0",
-      "io.opentelemetry" % "opentelemetry-sdk-testing" % "1.15.0"
+      "io.opentelemetry" % "opentelemetry-api" % "1.17.0",
+      "io.opentelemetry" % "opentelemetry-sdk" % "1.17.0",
+      "io.opentelemetry" % "opentelemetry-sdk-testing" % "1.17.0"
     )
   )
   .dependsOn(core)
@@ -65,9 +65,9 @@ lazy val java = crossProject(JVMPlatform)
   .settings(
     name := "otel4s-java",
     libraryDependencies ++= Seq(
-      "io.opentelemetry" % "opentelemetry-api" % "1.15.0",
-      "io.opentelemetry" % "opentelemetry-sdk" % "1.15.0" % Test,
-      "io.opentelemetry" % "opentelemetry-sdk-testing" % "1.15.0" % Test,
+      "io.opentelemetry" % "opentelemetry-api" % "1.17.0",
+      "io.opentelemetry" % "opentelemetry-sdk" % "1.17.0" % Test,
+      "io.opentelemetry" % "opentelemetry-sdk-testing" % "1.17.0" % Test,
       "org.scalameta" %% "munit" % "0.7.29" % Test,
       "org.typelevel" %% "munit-cats-effect-3" % "1.0.7" % Test
     )

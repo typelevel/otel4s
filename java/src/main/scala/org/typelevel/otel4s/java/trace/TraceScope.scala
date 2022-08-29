@@ -50,25 +50,24 @@ object TraceScope {
   def fromIOLocal[F[_]: LiftIO: Sync](
       default: JContext
   ): F[TraceScope[F]] = {
-    val lift = LiftIO.liftK
     val scopeRoot = Scope.Root(default)
 
-    lift(IOLocal[Scope](scopeRoot)).map { local =>
+    IOLocal[Scope](scopeRoot).to[F].map { local =>
       new TraceScope[F] {
         val root: F[Scope.Root] =
           Sync[F].pure(scopeRoot)
 
         def current: F[Scope] =
-          lift(local.get)
+          local.get.to[F]
 
         def makeScope(span: JSpan): Resource[F, Unit] =
           for {
-            current <- Resource.eval(lift(local.get))
+            current <- Resource.eval(current)
             _ <- createScope(nextScope(current, span))
           } yield ()
 
         def rootScope: Resource[F, Unit] =
-          Resource.eval(lift(local.get)).flatMap {
+          Resource.eval(current).flatMap {
             case Scope.Root(_) =>
               createScope(scopeRoot)
 
@@ -84,9 +83,7 @@ object TraceScope {
 
         private def createScope(scope: Scope): Resource[F, Unit] =
           Resource
-            .make(lift(local.getAndSet(scope))) { previous =>
-              lift(local.set(previous))
-            }
+            .make(local.getAndSet(scope).to[F])(p => local.set(p).to[F])
             .void
 
         private def nextScope(scope: Scope, span: JSpan): Scope =

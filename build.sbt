@@ -162,13 +162,15 @@ lazy val `java-metrics` = project
 
 lazy val `java-tracing` = project
   .in(file("java/tracing"))
-  .dependsOn(`java-common`, `core-metrics`.jvm, `testkit-metrics`.jvm)
+  .dependsOn(`java-common`, `core-tracing`.jvm)
   .settings(munitDependencies)
   .settings(
     name := "otel4s-java-tracing",
     libraryDependencies ++= Seq(
+      "org.typelevel" %%% "cats-effect" % CatsEffectVersion,
       "io.opentelemetry" % "opentelemetry-sdk" % OpenTelemetryVersion % Test,
       "io.opentelemetry" % "opentelemetry-sdk-testing" % OpenTelemetryVersion % Test,
+      "org.typelevel" %%% "cats-effect-testkit" % CatsEffectVersion % Test,
       "co.fs2" %% "fs2-core" % FS2Version % Test
     )
   )

@@ -101,7 +101,7 @@ trait Span[F[_]] extends SpanMacro[F] {
     *   the attribute to add to the span
     */
   final def setAttribute[A](attribute: Attribute[A]): F[Unit] =
-    backend.setAttribute(attribute)
+    backend.setAttributes(attribute)
 }
 
 object Span {
@@ -110,7 +110,6 @@ object Span {
     def meta: InstrumentMeta[F]
     def context: SpanContext
 
-    def setAttribute[A](attribute: Attribute[A]): F[Unit]
     def setAttributes(attributes: Attribute[_]*): F[Unit]
     def addEvent(name: String, attributes: Attribute[_]*): F[Unit]
 
@@ -148,7 +147,6 @@ object Span {
             attributes: Attribute[_]*
         ): F[Unit] = unit
 
-        def setAttribute[A](attribute: Attribute[A]): F[Unit] = unit
         def setAttributes(attributes: Attribute[_]*): F[Unit] = unit
         def setStatus(status: Status): F[Unit] = unit
         def setStatus(status: Status, description: String): F[Unit] = unit

@@ -16,25 +16,24 @@
 
 package org.typelevel.otel4s.java
 
+import cats.effect.kernel.Sync
 import cats.effect.LiftIO
-import cats.effect.Sync
 import cats.syntax.functor._
-import cats.syntax.flatMap._
 import io.opentelemetry.api.{OpenTelemetry => JOpenTelemetry}
-import org.typelevel.otel4s.Otel4s
-import org.typelevel.otel4s.metrics.MeterProvider
+import org.typelevel.otel4s.java.trace.TracerProviderImpl
 import org.typelevel.otel4s.trace.TracerProvider
 
-object OtelJava {
+trait Traces[F[_]] {
+  def tracerProvider: TracerProvider[F]
+}
 
-  def forSync[F[_]: LiftIO: Sync](jOtel: JOpenTelemetry): F[Otel4s[F]] = {
+object Traces {
+
+  def ioLocal[F[_]: LiftIO: Sync](jOtel: JOpenTelemetry): F[Traces[F]] =
     for {
-      metrics <- Sync[F].pure(Metrics.forSync(jOtel))
-      traces <- Traces.ioLocal(jOtel)
-    } yield new Otel4s[F] {
-      def meterProvider: MeterProvider[F] = metrics.meterProvider
-      def tracerProvider: TracerProvider[F] = traces.tracerProvider
+      provider <- TracerProviderImpl.ioLocal(jOtel.getTracerProvider)
+    } yield new Traces[F] {
+      def tracerProvider: TracerProvider[F] = provider
     }
-  }
 
 }

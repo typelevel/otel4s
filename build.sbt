@@ -39,6 +39,7 @@ lazy val root = tlCrossRootProject
   .aggregate(
     `core-common`,
     `core-metrics`,
+    `core-tracing`,
     core,
     `testkit-common`,
     `testkit-metrics`,
@@ -56,6 +57,7 @@ lazy val `core-common` = crossProject(JVMPlatform, JSPlatform)
     name := "otel4s-core-common",
     libraryDependencies ++= Seq(
       "org.typelevel" %%% "cats-core" % CatsVersion,
+      "org.typelevel" %%% "cats-effect-kernel" % CatsEffectVersion,
       "org.scalameta" %%% "munit" % MUnitVersion % Test
     )
   )
@@ -68,7 +70,6 @@ lazy val `core-metrics` = crossProject(JVMPlatform, JSPlatform)
   .settings(
     name := "otel4s-core-metrics",
     libraryDependencies ++= Seq(
-      "org.typelevel" %%% "cats-effect-kernel" % CatsEffectVersion,
       "org.scalameta" %%% "munit" % MUnitVersion % Test,
       "org.typelevel" %%% "munit-cats-effect-3" % MUnitCatsEffectVersion % Test,
       "org.typelevel" %%% "cats-effect-testkit" % CatsEffectVersion % Test
@@ -81,10 +82,9 @@ lazy val `core-tracing` = crossProject(JVMPlatform, JSPlatform)
   .dependsOn(`core-common`)
   .settings(scalaReflectDependency)
   .settings(
-    name := "otel4s-core-metrics",
+    name := "otel4s-core-tracing",
     libraryDependencies ++= Seq(
       "org.scodec" %%% "scodec-bits" % ScodecVersion,
-      "org.typelevel" %%% "cats-effect-kernel" % CatsEffectVersion,
       "org.scalameta" %%% "munit" % MUnitVersion % Test,
       "org.typelevel" %%% "munit-cats-effect-3" % MUnitCatsEffectVersion % Test,
       "org.typelevel" %%% "cats-effect-testkit" % CatsEffectVersion % Test

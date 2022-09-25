@@ -19,7 +19,7 @@ package trace
 
 import cats.Semigroup
 import cats.data.NonEmptyList
-import cats.effect.Resource
+import cats.effect.kernel.Resource
 import cats.syntax.semigroup._
 
 sealed trait SpanFinalizer

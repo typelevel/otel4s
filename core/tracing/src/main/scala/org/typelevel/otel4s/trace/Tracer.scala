@@ -17,7 +17,7 @@
 package org.typelevel.otel4s
 package trace
 
-import cats.effect.Resource
+import cats.effect.kernel.Resource
 import org.typelevel.otel4s.meta.InstrumentMeta
 
 trait Tracer[F[_]] {

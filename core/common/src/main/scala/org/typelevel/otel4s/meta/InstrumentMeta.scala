@@ -17,6 +17,7 @@
 package org.typelevel.otel4s.meta
 
 import cats.Applicative
+import cats.effect.kernel.Resource
 
 trait InstrumentMeta[F[_]] {
 
@@ -28,6 +29,9 @@ trait InstrumentMeta[F[_]] {
     */
   def unit: F[Unit]
 
+  /** A resource with a no-op allocation and a no-op release.
+   */
+  def resourceUnit: Resource[F, Unit]
 }
 
 object InstrumentMeta {
@@ -42,6 +46,7 @@ object InstrumentMeta {
     new InstrumentMeta[F] {
       val isEnabled: Boolean = enabled
       val unit: F[Unit] = Applicative[F].unit
+      val resourceUnit: Resource[F, Unit] = Resource.unit
     }
 
 }

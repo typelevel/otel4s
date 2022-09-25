@@ -17,7 +17,7 @@
 package org.typelevel.otel4s
 package trace
 
-import cats.effect.Resource
+import cats.effect.kernel.Resource
 
 private[otel4s] trait TracerMacro[F[_]] {
   self: Tracer[F] =>

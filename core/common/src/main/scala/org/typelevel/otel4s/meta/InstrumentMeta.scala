@@ -30,7 +30,7 @@ trait InstrumentMeta[F[_]] {
   def unit: F[Unit]
 
   /** A resource with a no-op allocation and a no-op release.
-   */
+    */
   def resourceUnit: Resource[F, Unit]
 }
 

@@ -23,7 +23,7 @@ ThisBuild / scalaVersion := Scala213 // the default Scala
 
 val CatsVersion = "2.8.0"
 val CatsEffectVersion = "3.3.14"
-val FS2Version = "3.2.11"
+val FS2Version = "3.3.0"
 val MUnitVersion = "0.7.29"
 val MUnitCatsEffectVersion = "1.0.7"
 val OpenTelemetryVersion = "1.15.0"
@@ -47,6 +47,7 @@ lazy val root = tlCrossRootProject
     testkit,
     `java-common`,
     `java-metrics`,
+    `java-tracing`,
     java
   )
   .settings(name := "otel4s")

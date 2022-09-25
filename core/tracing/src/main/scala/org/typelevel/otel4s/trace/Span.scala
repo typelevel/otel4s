@@ -94,6 +94,14 @@ trait Span[F[_]] extends SpanMacro[F] {
   final def context: SpanContext =
     backend.context
 
+  /** Sets an attribute to the span. If the span previously contained a mapping
+    * for the key, the old value is replaced by the specified value.
+    *
+    * @param attribute
+    *   the attribute to add to the span
+    */
+  final def setAttribute[A](attribute: Attribute[A]): F[Unit] =
+    backend.setAttribute(attribute)
 }
 
 object Span {
@@ -102,32 +110,9 @@ object Span {
     def meta: InstrumentMeta[F]
     def context: SpanContext
 
-  /** Sets an attribute to the span. If the span previously contained a mapping
-    * for the key, the old value is replaced by the specified value.
-    *
-    * @param attribute
-    *   the attribute to add to the span
-    */
-  def setAttribute[A](attribute: Attribute[A]): F[Unit]
-
-  /** Sets attributes to the span. If the span previously contained a mapping
-    * for any of the keys, the old values are replaced by the specified values.
-    *
-    * @param attributes
-    *   the set of attributes to add to the span
-    */
-  def setAttributes(attributes: Attribute[_]*): F[Unit]
-
-  /** Adds an event to the span with the given attributes. The timestamp of the
-    * event will be the current time.
-    *
-    * @param name
-    *   the name of the event
-    *
-    * @param attributes
-    *   the set of attributes to associate with the event
-    */
-  def addEvent(name: String, attributes: Attribute[_]*): F[Unit]
+    def setAttribute[A](attribute: Attribute[A]): F[Unit]
+    def setAttributes(attributes: Attribute[_]*): F[Unit]
+    def addEvent(name: String, attributes: Attribute[_]*): F[Unit]
 
     def addEvent(
         name: String,
@@ -135,7 +120,6 @@ object Span {
         attributes: Attribute[_]*
     ): F[Unit]
 
-    def setAttributes(attributes: Attribute[_]*): F[Unit]
     def setStatus(status: Status): F[Unit]
     def setStatus(status: Status, description: String): F[Unit]
 
@@ -164,6 +148,7 @@ object Span {
             attributes: Attribute[_]*
         ): F[Unit] = unit
 
+        def setAttribute[A](attribute: Attribute[A]): F[Unit] = unit
         def setAttributes(attributes: Attribute[_]*): F[Unit] = unit
         def setStatus(status: Status): F[Unit] = unit
         def setStatus(status: Status, description: String): F[Unit] = unit

@@ -16,8 +16,8 @@
 
 package org.typelevel.otel4s.java
 
-import cats.effect.kernel.Sync
 import cats.effect.LiftIO
+import cats.effect.Sync
 import cats.syntax.functor._
 import io.opentelemetry.api.{OpenTelemetry => JOpenTelemetry}
 import org.typelevel.otel4s.java.trace.TracerProviderImpl

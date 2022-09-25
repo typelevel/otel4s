@@ -69,6 +69,15 @@ private[otel4s] trait SpanMacro[F[_]] {
   ): F[Unit] =
     macro SpanMacro.recordException
 
+  /** Sets an attribute to the span. If the span previously contained a mapping
+    * for the key, the old value is replaced by the specified value.
+    *
+    * @param attribute
+    *   the attribute to add to the span
+    */
+  def setAttribute[A](attribute: Attribute[A]): F[Unit] =
+    macro SpanMacro.setAttribute[A]
+
   /** Sets attributes to the span. If the span previously contained a mapping
     * for any of the keys, the old values are replaced by the specified values.
     *
@@ -143,6 +152,17 @@ object SpanMacro {
     val meta = q"$backend.meta"
 
     q"if ($meta.isEnabled) $backend.recordException($exception, ..$attributes) else $meta.unit"
+  }
+
+  def setAttribute[A](c: blackbox.Context)(
+      attribute: c.Expr[Attribute[A]]
+  ): c.universe.Tree = {
+    import c.universe._
+
+    val backend = q"${c.prefix}.backend"
+    val meta = q"$backend.meta"
+
+    q"if ($meta.isEnabled) $backend.setAttributes($attribute) else $meta.unit"
   }
 
   def setAttributes(c: blackbox.Context)(

@@ -73,6 +73,15 @@ private[otel4s] trait SpanMacro[F[_]] {
   ): F[Unit] =
     ${ SpanMacro.recordException('self, 'exception, 'attributes) }
 
+  /** Sets an attribute to the span. If the span previously contained a mapping
+    * for the key, the old value is replaced by the specified value.
+    *
+    * @param attribute
+    *   the attribute to add to the span
+    */
+  inline def setAttributes[A](inline attribute: Attribute[A]): F[Unit] =
+    ${ SpanMacro.setAttribute('self, 'attribute) }
+
   /** Sets attributes to the span. If the span previously contained a mapping
     * for any of the keys, the old values are replaced by the specified values.
     *
@@ -145,6 +154,16 @@ object SpanMacro {
     '{
       if ($span.backend.meta.isEnabled)
         $span.backend.recordException($exception, $attributes*)
+      else $span.backend.meta.unit
+    }
+
+  def setAttribute[F[_], A](
+      span: Expr[Span[F]],
+      attribute: Expr[Attribute[A]]
+  )(using Quotes, Type[F], Type[A]) =
+    '{
+      if ($span.backend.meta.isEnabled)
+        $span.backend.setAttributes($attribute)
       else $span.backend.meta.unit
     }
 

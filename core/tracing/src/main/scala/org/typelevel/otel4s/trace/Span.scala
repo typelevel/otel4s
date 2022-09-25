@@ -94,14 +94,6 @@ trait Span[F[_]] extends SpanMacro[F] {
   final def context: SpanContext =
     backend.context
 
-  /** Sets an attribute to the span. If the span previously contained a mapping
-    * for the key, the old value is replaced by the specified value.
-    *
-    * @param attribute
-    *   the attribute to add to the span
-    */
-  final def setAttribute[A](attribute: Attribute[A]): F[Unit] =
-    backend.setAttributes(attribute)
 }
 
 object Span {

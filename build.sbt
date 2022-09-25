@@ -21,58 +21,144 @@ val Scala213 = "2.13.8"
 ThisBuild / crossScalaVersions := Seq(Scala213, "3.1.3")
 ThisBuild / scalaVersion := Scala213 // the default Scala
 
+val CatsVersion = "2.8.0"
+val CatsEffectVersion = "3.3.14"
+val MUnitVersion = "0.7.29"
+val MUnitCatsEffectVersion = "1.0.7"
+val OpenTelemetryVersion = "1.15.0"
+val ScodecVersion = "1.1.34"
+
+lazy val scalaReflectDependency = Def.settings(
+  libraryDependencies ++= {
+    if (tlIsScala3.value) Nil
+    else Seq("org.scala-lang" % "scala-reflect" % scalaVersion.value % Provided)
+  }
+)
+
 lazy val root = tlCrossRootProject
-  .aggregate(core, testkit, java)
+  .aggregate(
+    `core-common`,
+    `core-metrics`,
+    core,
+    `testkit-common`,
+    `testkit-metrics`,
+    testkit,
+    `java-common`,
+    `java-metrics`,
+    java
+  )
   .settings(name := "otel4s")
+
+lazy val `core-common` = crossProject(JVMPlatform, JSPlatform)
+  .crossType(CrossType.Pure)
+  .in(file("core/common"))
+  .settings(
+    name := "otel4s-core-common",
+    libraryDependencies ++= Seq(
+      "org.typelevel" %%% "cats-core" % CatsVersion,
+      "org.scalameta" %%% "munit" % MUnitVersion % Test
+    )
+  )
+
+lazy val `core-metrics` = crossProject(JVMPlatform, JSPlatform)
+  .crossType(CrossType.Pure)
+  .in(file("core/metrics"))
+  .dependsOn(`core-common`)
+  .settings(scalaReflectDependency)
+  .settings(
+    name := "otel4s-core-metrics",
+    libraryDependencies ++= Seq(
+      "org.typelevel" %%% "cats-effect-kernel" % CatsEffectVersion,
+      "org.scalameta" %%% "munit" % MUnitVersion % Test,
+      "org.typelevel" %%% "munit-cats-effect-3" % MUnitCatsEffectVersion % Test,
+      "org.typelevel" %%% "cats-effect-testkit" % CatsEffectVersion % Test
+    )
+  )
+
+lazy val `core-tracing` = crossProject(JVMPlatform, JSPlatform)
+  .crossType(CrossType.Pure)
+  .in(file("core/tracing"))
+  .dependsOn(`core-common`)
+  .settings(scalaReflectDependency)
+  .settings(
+    name := "otel4s-core-metrics",
+    libraryDependencies ++= Seq(
+      "org.scodec" %%% "scodec-bits" % ScodecVersion,
+      "org.typelevel" %%% "cats-effect-kernel" % CatsEffectVersion,
+      "org.scalameta" %%% "munit" % MUnitVersion % Test,
+      "org.typelevel" %%% "munit-cats-effect-3" % MUnitCatsEffectVersion % Test,
+      "org.typelevel" %%% "cats-effect-testkit" % CatsEffectVersion % Test
+    )
+  )
 
 lazy val core = crossProject(JVMPlatform, JSPlatform)
   .crossType(CrossType.Pure)
-  .in(file("core"))
+  .in(file("core/all"))
+  .dependsOn(`core-common`, `core-metrics`, `core-tracing`)
   .settings(
-    name := "otel4s-core",
+    name := "otel4s-core"
+  )
+
+lazy val `testkit-common` = crossProject(JVMPlatform)
+  .crossType(CrossType.Full)
+  .in(file("testkit/common"))
+  .dependsOn(`core-common`)
+  .settings(
+    name := "otel4s-testkit-common"
+  )
+
+lazy val `testkit-metrics` = crossProject(JVMPlatform)
+  .crossType(CrossType.Full)
+  .in(file("testkit/metrics"))
+  .dependsOn(`testkit-common`, `core-metrics`)
+  .settings(
+    name := "otel4s-testkit-metrics"
+  )
+  .jvmSettings(
     libraryDependencies ++= Seq(
-      "org.typelevel" %%% "cats-core" % "2.8.0",
-      "org.typelevel" %%% "cats-effect" % "3.3.14",
-      "org.scodec" %%% "scodec-bits" % "1.1.34",
-      "org.scalameta" %%% "munit" % "0.7.29" % Test,
-      "org.typelevel" %%% "munit-cats-effect-3" % "1.0.7" % Test,
-      "org.typelevel" %%% "cats-effect-testkit" % "3.3.14" % Test
-    ),
-    libraryDependencies ++= {
-      if (tlIsScala3.value) Nil
-      else
-        Seq("org.scala-lang" % "scala-reflect" % scalaVersion.value % Provided)
-    }
+      "io.opentelemetry" % "opentelemetry-api" % OpenTelemetryVersion,
+      "io.opentelemetry" % "opentelemetry-sdk" % OpenTelemetryVersion,
+      "io.opentelemetry" % "opentelemetry-sdk-testing" % OpenTelemetryVersion
+    )
   )
 
 lazy val testkit = crossProject(JVMPlatform)
   .crossType(CrossType.Full)
-  .in(file("testkit"))
+  .in(file("testkit/all"))
+  .dependsOn(`testkit-common`, `testkit-metrics`)
   .settings(
     name := "otel4s-testkit"
   )
-  .jvmSettings(
-    libraryDependencies ++= Seq(
-      "io.opentelemetry" % "opentelemetry-api" % "1.15.0",
-      "io.opentelemetry" % "opentelemetry-sdk" % "1.15.0",
-      "io.opentelemetry" % "opentelemetry-sdk-testing" % "1.15.0"
-    )
-  )
-  .dependsOn(core)
 
-lazy val java = crossProject(JVMPlatform)
-  .crossType(CrossType.Pure)
-  .in(file("java"))
+lazy val `java-common` = project
+  .in(file("java/common"))
+  .dependsOn(`core-common`.jvm, `testkit-common`.jvm)
   .settings(
-    name := "otel4s-java",
+    name := "otel4s-java-common",
     libraryDependencies ++= Seq(
-      "io.opentelemetry" % "opentelemetry-api" % "1.15.0",
-      "io.opentelemetry" % "opentelemetry-sdk" % "1.15.0" % Test,
-      "io.opentelemetry" % "opentelemetry-sdk-testing" % "1.15.0" % Test,
-      "org.scalameta" %% "munit" % "0.7.29" % Test,
-      "org.typelevel" %% "munit-cats-effect-3" % "1.0.7" % Test
+      "io.opentelemetry" % "opentelemetry-api" % OpenTelemetryVersion
     )
   )
-  .dependsOn(core, testkit)
+
+lazy val `java-metrics` = project
+  .in(file("java/metrics"))
+  .dependsOn(`java-common`, `core-metrics`.jvm, `testkit-metrics`.jvm)
+  .settings(
+    name := "otel4s-java-metrics",
+    libraryDependencies ++= Seq(
+      "io.opentelemetry" % "opentelemetry-api" % OpenTelemetryVersion,
+      "io.opentelemetry" % "opentelemetry-sdk" % OpenTelemetryVersion % Test,
+      "io.opentelemetry" % "opentelemetry-sdk-testing" % OpenTelemetryVersion % Test,
+      "org.scalameta" %% "munit" % MUnitVersion % Test,
+      "org.typelevel" %% "munit-cats-effect-3" % MUnitCatsEffectVersion % Test
+    )
+  )
+
+lazy val java = project
+  .in(file("java/all"))
+  .dependsOn(core.jvm, `java-metrics`)
+  .settings(
+    name := "otel4s-java"
+  )
 
 lazy val docs = project.in(file("site")).enablePlugins(TypelevelSitePlugin)

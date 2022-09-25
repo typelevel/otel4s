@@ -79,7 +79,7 @@ private[otel4s] trait SpanMacro[F[_]] {
     * @param attribute
     *   the attribute to add to the span
     */
-  inline def setAttributes[A](inline attribute: Attribute[A]): F[Unit] =
+  inline def setAttribute[A](inline attribute: Attribute[A]): F[Unit] =
     ${ SpanMacro.setAttribute('self, 'attribute) }
 
   /** Sets attributes to the span. If the span previously contained a mapping

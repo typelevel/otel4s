@@ -118,7 +118,6 @@ object Tracer {
 
         val isEnabled: Boolean = enabled
         val unit: F[Unit] = Applicative[F].unit
-        val resourceUnit: Resource[F, Unit] = Resource.unit
         val noopAutoSpan: Resource[F, Span.Auto[F]] =
           Resource.pure(Span.Auto.fromBackend(noopBackend))
 

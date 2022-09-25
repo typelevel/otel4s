@@ -36,6 +36,13 @@ lazy val scalaReflectDependency = Def.settings(
   }
 )
 
+lazy val munitDependencies = Def.settings(
+  libraryDependencies ++= Seq(
+    "org.scalameta" %%% "munit" % MUnitVersion % Test,
+    "org.typelevel" %%% "munit-cats-effect-3" % MUnitCatsEffectVersion % Test
+  )
+)
+
 lazy val root = tlCrossRootProject
   .aggregate(
     `core-common`,
@@ -68,12 +75,11 @@ lazy val `core-metrics` = crossProject(JVMPlatform, JSPlatform)
   .in(file("core/metrics"))
   .dependsOn(`core-common`)
   .settings(scalaReflectDependency)
+  .settings(munitDependencies)
   .settings(
     name := "otel4s-core-metrics",
     libraryDependencies ++= Seq(
       "org.typelevel" %%% "cats-effect-kernel" % CatsEffectVersion,
-      "org.scalameta" %%% "munit" % MUnitVersion % Test,
-      "org.typelevel" %%% "munit-cats-effect-3" % MUnitCatsEffectVersion % Test,
       "org.typelevel" %%% "cats-effect-testkit" % CatsEffectVersion % Test
     )
   )
@@ -83,13 +89,12 @@ lazy val `core-tracing` = crossProject(JVMPlatform, JSPlatform)
   .in(file("core/tracing"))
   .dependsOn(`core-common`)
   .settings(scalaReflectDependency)
+  .settings(munitDependencies)
   .settings(
     name := "otel4s-core-tracing",
     libraryDependencies ++= Seq(
       "org.typelevel" %%% "cats-effect-kernel" % CatsEffectVersion,
       "org.scodec" %%% "scodec-bits" % ScodecVersion,
-      "org.scalameta" %%% "munit" % MUnitVersion % Test,
-      "org.typelevel" %%% "munit-cats-effect-3" % MUnitCatsEffectVersion % Test,
       "org.typelevel" %%% "cats-effect-testkit" % CatsEffectVersion % Test
     )
   )
@@ -146,29 +151,25 @@ lazy val `java-common` = project
 lazy val `java-metrics` = project
   .in(file("java/metrics"))
   .dependsOn(`java-common`, `core-metrics`.jvm, `testkit-metrics`.jvm)
+  .settings(munitDependencies)
   .settings(
     name := "otel4s-java-metrics",
     libraryDependencies ++= Seq(
-      "io.opentelemetry" % "opentelemetry-api" % OpenTelemetryVersion,
       "io.opentelemetry" % "opentelemetry-sdk" % OpenTelemetryVersion % Test,
-      "io.opentelemetry" % "opentelemetry-sdk-testing" % OpenTelemetryVersion % Test,
-      "org.scalameta" %% "munit" % MUnitVersion % Test,
-      "org.typelevel" %% "munit-cats-effect-3" % MUnitCatsEffectVersion % Test
+      "io.opentelemetry" % "opentelemetry-sdk-testing" % OpenTelemetryVersion % Test
     )
   )
 
 lazy val `java-tracing` = project
   .in(file("java/tracing"))
   .dependsOn(`java-common`, `core-metrics`.jvm, `testkit-metrics`.jvm)
+  .settings(munitDependencies)
   .settings(
     name := "otel4s-java-tracing",
     libraryDependencies ++= Seq(
-      "io.opentelemetry" % "opentelemetry-api" % OpenTelemetryVersion,
       "io.opentelemetry" % "opentelemetry-sdk" % OpenTelemetryVersion % Test,
       "io.opentelemetry" % "opentelemetry-sdk-testing" % OpenTelemetryVersion % Test,
-      "co.fs2" %%% "fs2-core" % FS2Version % Test,
-      "org.scalameta" %% "munit" % MUnitVersion % Test,
-      "org.typelevel" %% "munit-cats-effect-3" % MUnitCatsEffectVersion % Test
+      "co.fs2" %% "fs2-core" % FS2Version % Test
     )
   )
 

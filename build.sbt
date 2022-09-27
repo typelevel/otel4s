@@ -18,7 +18,7 @@ ThisBuild / tlSitePublishBranch := Some("main")
 ThisBuild / scalafixDependencies += "com.github.liancheng" %% "organize-imports" % "0.6.0"
 
 val Scala213 = "2.13.8"
-ThisBuild / crossScalaVersions := Seq(Scala213, "3.1.3")
+ThisBuild / crossScalaVersions := Seq(Scala213, "3.2.0")
 ThisBuild / scalaVersion := Scala213 // the default Scala
 
 val CatsVersion = "2.8.0"

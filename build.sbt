@@ -25,7 +25,7 @@ val CatsVersion = "2.8.0"
 val CatsEffectVersion = "3.3.14"
 val MUnitVersion = "0.7.29"
 val MUnitCatsEffectVersion = "1.0.7"
-val OpenTelemetryVersion = "1.15.0"
+val OpenTelemetryVersion = "1.18.0"
 
 lazy val scalaReflectDependency = Def.settings(
   libraryDependencies ++= {
@@ -115,11 +115,17 @@ lazy val testkit = crossProject(JVMPlatform)
 
 lazy val `java-common` = project
   .in(file("java/common"))
+  .enablePlugins(BuildInfoPlugin)
   .dependsOn(`core-common`.jvm, `testkit-common`.jvm)
   .settings(
     name := "otel4s-java-common",
     libraryDependencies ++= Seq(
       "io.opentelemetry" % "opentelemetry-api" % OpenTelemetryVersion
+    ),
+    buildInfoPackage := "org.typelevel.otel4s.java",
+    buildInfoOptions += sbtbuildinfo.BuildInfoOption.PackagePrivate,
+    buildInfoKeys := Seq[BuildInfoKey](
+      "openTelemetrySdkVersion" -> OpenTelemetryVersion
     )
   )
 

@@ -17,7 +17,7 @@ ThisBuild / tlSitePublishBranch := Some("main")
 
 ThisBuild / scalafixDependencies += "com.github.liancheng" %% "organize-imports" % "0.6.0"
 
-val Scala213 = "2.13.9"
+val Scala213 = "2.13.10"
 ThisBuild / crossScalaVersions := Seq(Scala213, "3.2.0")
 ThisBuild / scalaVersion := Scala213 // the default Scala
 
@@ -25,7 +25,7 @@ val CatsVersion = "2.8.0"
 val CatsEffectVersion = "3.3.14"
 val MUnitVersion = "0.7.29"
 val MUnitCatsEffectVersion = "1.0.7"
-val OpenTelemetryVersion = "1.18.0"
+val OpenTelemetryVersion = "1.19.0"
 val ScodecVersion = "1.1.34"
 
 lazy val scalaReflectDependency = Def.settings(

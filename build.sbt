@@ -71,7 +71,7 @@ lazy val `core-metrics` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
     libraryDependencies ++= Seq(
       "org.typelevel" %%% "cats-effect-kernel" % CatsEffectVersion,
       "org.scalameta" %%% "munit" % MUnitVersion % Test,
-      "org.typelevel" %%% "munit-cats-effect-3" % MUnitCatsEffectVersion % Test,
+      "org.typelevel" %%% "munit-cats-effect" % MUnitCatsEffectVersion % Test,
       "org.typelevel" %%% "cats-effect-testkit" % CatsEffectVersion % Test
     )
   )
@@ -87,7 +87,7 @@ lazy val `core-tracing` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
       "org.typelevel" %%% "cats-effect-kernel" % CatsEffectVersion,
       "org.scodec" %%% "scodec-bits" % ScodecVersion,
       "org.scalameta" %%% "munit" % MUnitVersion % Test,
-      "org.typelevel" %%% "munit-cats-effect-3" % MUnitCatsEffectVersion % Test,
+      "org.typelevel" %%% "munit-cats-effect" % MUnitCatsEffectVersion % Test,
       "org.typelevel" %%% "cats-effect-testkit" % CatsEffectVersion % Test
     )
   )
@@ -157,7 +157,7 @@ lazy val `java-metrics` = project
       "io.opentelemetry" % "opentelemetry-sdk" % OpenTelemetryVersion % Test,
       "io.opentelemetry" % "opentelemetry-sdk-testing" % OpenTelemetryVersion % Test,
       "org.scalameta" %% "munit" % MUnitVersion % Test,
-      "org.typelevel" %% "munit-cats-effect-3" % MUnitCatsEffectVersion % Test
+      "org.typelevel" %% "munit-cats-effect" % MUnitCatsEffectVersion % Test
     )
   )
 

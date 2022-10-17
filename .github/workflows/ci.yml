@@ -30,7 +30,7 @@ jobs:
         os: [ubuntu-latest]
         scala: [2.13.10, 3.2.0]
         java: [temurin@8]
-        project: [rootJS, rootJVM]
+        project: [rootJS, rootJVM, rootNative]
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout current branch (full)
@@ -77,6 +77,10 @@ jobs:
         if: matrix.project == 'rootJS'
         run: sbt 'project ${{ matrix.project }}' '++${{ matrix.scala }}' Test/scalaJSLinkerResult
 
+      - name: nativeLink
+        if: matrix.project == 'rootNative'
+        run: sbt 'project ${{ matrix.project }}' '++${{ matrix.scala }}' Test/nativeLink
+
       - name: Test
         run: sbt 'project ${{ matrix.project }}' '++${{ matrix.scala }}' test
 
@@ -94,11 +98,11 @@ jobs:
 
       - name: Make target directories
         if: github.event_name != 'pull_request' && (startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/main')
-        run: mkdir -p testkit/metrics/jvm/target java/metrics/target testkit/common/jvm/target core/tracing/.jvm/target core/tracing/.js/target target core/common/.jvm/target .js/target site/target core/metrics/.jvm/target core/all/.js/target java/all/target java/common/target core/metrics/.js/target core/all/.jvm/target .jvm/target .native/target core/common/.js/target testkit/all/jvm/target project/target
+        run: mkdir -p testkit/metrics/jvm/target java/metrics/target testkit/common/jvm/target core/tracing/.jvm/target core/tracing/.js/target target core/common/.jvm/target .js/target core/metrics/.native/target core/all/.native/target site/target core/metrics/.jvm/target core/all/.js/target java/all/target java/common/target core/metrics/.js/target core/all/.jvm/target .jvm/target .native/target core/common/.native/target core/common/.js/target core/tracing/.native/target testkit/all/jvm/target project/target
 
       - name: Compress target directories
         if: github.event_name != 'pull_request' && (startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/main')
-        run: tar cf targets.tar testkit/metrics/jvm/target java/metrics/target testkit/common/jvm/target core/tracing/.jvm/target core/tracing/.js/target target core/common/.jvm/target .js/target site/target core/metrics/.jvm/target core/all/.js/target java/all/target java/common/target core/metrics/.js/target core/all/.jvm/target .jvm/target .native/target core/common/.js/target testkit/all/jvm/target project/target
+        run: tar cf targets.tar testkit/metrics/jvm/target java/metrics/target testkit/common/jvm/target core/tracing/.jvm/target core/tracing/.js/target target core/common/.jvm/target .js/target core/metrics/.native/target core/all/.native/target site/target core/metrics/.jvm/target core/all/.js/target java/all/target java/common/target core/metrics/.js/target core/all/.jvm/target .jvm/target .native/target core/common/.native/target core/common/.js/target core/tracing/.native/target testkit/all/jvm/target project/target
 
       - name: Upload target directories
         if: github.event_name != 'pull_request' && (startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/main')
@@ -171,6 +175,16 @@ jobs:
           tar xf targets.tar
           rm targets.tar
 
+      - name: Download target directories (2.13.10, rootNative)
+        uses: actions/download-artifact@v2
+        with:
+          name: target-${{ matrix.os }}-${{ matrix.java }}-2.13.10-rootNative
+
+      - name: Inflate target directories (2.13.10, rootNative)
+        run: |
+          tar xf targets.tar
+          rm targets.tar
+
       - name: Download target directories (3.2.0, rootJS)
         uses: actions/download-artifact@v2
         with:
@@ -187,6 +201,16 @@ jobs:
           name: target-${{ matrix.os }}-${{ matrix.java }}-3.2.0-rootJVM
 
       - name: Inflate target directories (3.2.0, rootJVM)
+        run: |
+          tar xf targets.tar
+          rm targets.tar
+
+      - name: Download target directories (3.2.0, rootNative)
+        uses: actions/download-artifact@v2
+        with:
+          name: target-${{ matrix.os }}-${{ matrix.java }}-3.2.0-rootNative
+
+      - name: Inflate target directories (3.2.0, rootNative)
         run: |
           tar xf targets.tar
           rm targets.tar

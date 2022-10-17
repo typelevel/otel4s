@@ -109,18 +109,17 @@ trait SpanBuilder[F[_]] {
     */
   def withParent(parent: SpanContext): SpanBuilder[F]
 
-  /** Creates [[Span.Manual]]. The manual span requires to be ended ''explicit''
-    * explicitly.
+  /** Creates a [[Span]]. The span requires to be ended ''explicitly'' by
+    * invoking `end`.
     *
-    * The manual span can be used when it's necessary to end a span outside of
-    * the resource scope (i.e. async callback). Make sure the span is ended
-    * properly.
+    * This strategy can be used when it's necessary to end a span outside of the
+    * scope (e.g. async callback). Make sure the span is ended properly.
     *
     * Leaked span:
     * {{{
     * val tracer: Tracer[F] = ???
     * val leaked: F[Unit] =
-    *   tracer.spanBuilder("manual-span").createManual.use { span =>
+    *   tracer.spanBuilder("manual-span").createManual.flatMap { span =>
     *     span.setStatus(Status.Ok, "all good")
     *   }
     * }}}
@@ -129,21 +128,19 @@ trait SpanBuilder[F[_]] {
     * {{{
     * val tracer: Tracer[F] = ???
     * val ok: F[Unit] =
-    *   tracer.spanBuilder("manual-span").createManual.use { span =>
+    *   tracer.spanBuilder("manual-span").createManual.flatMap { span =>
     *     span.setStatus(Status.Ok, "all good") >> span.end
     *   }
     * }}}
     *
-    * The finalization strategy is determined by [[SpanFinalizer.Strategy]]. By
-    * default, the abnormal termination (error, cancelation) is recorded.
-    *
     * @see
-    *   default finalization strategy [[SpanFinalizer.Strategy.reportAbnormal]]
+    *   [[createAuto]] for a managed lifecycle
     */
-  def createManual: Resource[F, Span.Manual[F]]
+  def createManual: F[Span[F]]
 
-  /** Creates [[Span.Auto]]. The span is started upon resource allocation and
-    * ended upon finalization.
+  /** Creates a [[Span]]. Unlike [[createManual]] the lifecycle of the span is
+    * managed by the [[cats.effect.kernel.Resource Resource]]. That means the
+    * span is started upon resource allocation and ended upon finalization.
     *
     * The finalization strategy is determined by [[SpanFinalizer.Strategy]]. By
     * default, the abnormal termination (error, cancelation) is recorded.
@@ -160,9 +157,9 @@ trait SpanBuilder[F[_]] {
     *   }
     *   }}}
     */
-  def createAuto: Resource[F, Span.Auto[F]]
+  def createAuto: Resource[F, Span[F]]
 
-  /** Creates [[Span.Res]]. The span is started upon resource allocation and
+  /** Creates a [[Span.Res]]. The span is started upon resource allocation and
     * ended upon finalization. The allocation and release stages of the
     * `resource` are traced by separate spans. Carries a value of the given
     * `resource`.

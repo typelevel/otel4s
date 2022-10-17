@@ -17,8 +17,8 @@ ThisBuild / tlSitePublishBranch := Some("main")
 
 ThisBuild / scalafixDependencies += "com.github.liancheng" %% "organize-imports" % "0.6.0"
 
-val Scala213 = "2.13.8"
-ThisBuild / crossScalaVersions := Seq(Scala213, "3.1.3")
+val Scala213 = "2.13.10"
+ThisBuild / crossScalaVersions := Seq(Scala213, "3.2.0")
 ThisBuild / scalaVersion := Scala213 // the default Scala
 
 val CatsVersion = "2.8.0"
@@ -26,7 +26,7 @@ val CatsEffectVersion = "3.3.14"
 val FS2Version = "3.3.0"
 val MUnitVersion = "0.7.29"
 val MUnitCatsEffectVersion = "1.0.7"
-val OpenTelemetryVersion = "1.15.0"
+val OpenTelemetryVersion = "1.19.0"
 val ScodecVersion = "1.1.34"
 
 lazy val scalaReflectDependency = Def.settings(
@@ -99,6 +99,22 @@ lazy val `core-tracing` = crossProject(JVMPlatform, JSPlatform)
     )
   )
 
+lazy val `core-tracing` = crossProject(JVMPlatform, JSPlatform)
+  .crossType(CrossType.Pure)
+  .in(file("core/tracing"))
+  .dependsOn(`core-common`)
+  .settings(scalaReflectDependency)
+  .settings(
+    name := "otel4s-core-tracing",
+    libraryDependencies ++= Seq(
+      "org.typelevel" %%% "cats-effect-kernel" % CatsEffectVersion,
+      "org.scodec" %%% "scodec-bits" % ScodecVersion,
+      "org.scalameta" %%% "munit" % MUnitVersion % Test,
+      "org.typelevel" %%% "munit-cats-effect-3" % MUnitCatsEffectVersion % Test,
+      "org.typelevel" %%% "cats-effect-testkit" % CatsEffectVersion % Test
+    )
+  )
+
 lazy val core = crossProject(JVMPlatform, JSPlatform)
   .crossType(CrossType.Pure)
   .in(file("core/all"))
@@ -140,11 +156,17 @@ lazy val testkit = crossProject(JVMPlatform)
 
 lazy val `java-common` = project
   .in(file("java/common"))
+  .enablePlugins(BuildInfoPlugin)
   .dependsOn(`core-common`.jvm, `testkit-common`.jvm)
   .settings(
     name := "otel4s-java-common",
     libraryDependencies ++= Seq(
       "io.opentelemetry" % "opentelemetry-api" % OpenTelemetryVersion
+    ),
+    buildInfoPackage := "org.typelevel.otel4s.java",
+    buildInfoOptions += sbtbuildinfo.BuildInfoOption.PackagePrivate,
+    buildInfoKeys := Seq[BuildInfoKey](
+      "openTelemetrySdkVersion" -> OpenTelemetryVersion
     )
   )
 

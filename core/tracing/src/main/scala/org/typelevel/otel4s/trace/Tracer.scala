@@ -103,7 +103,7 @@ trait Tracer[F[_]] extends TracerMacro[F] {
 object Tracer {
 
   trait Meta[F[_]] extends InstrumentMeta[F] {
-    def noopAutoSpan: Resource[F, Span.Auto[F]]
+    def noopAutoSpan: Resource[F, Span[F]]
     def noopResSpan[A](resource: Resource[F, A]): Resource[F, Span.Res[F, A]]
   }
 

@@ -56,7 +56,10 @@ class CounterSuite extends CatsEffectSuite {
         Attribute(AttributeKey.string("service.name"), "unknown_service:java"),
         Attribute(AttributeKey.string("telemetry.sdk.language"), "java"),
         Attribute(AttributeKey.string("telemetry.sdk.name"), "opentelemetry"),
-        Attribute(AttributeKey.string("telemetry.sdk.version"), "1.15.0")
+        Attribute(
+          AttributeKey.string("telemetry.sdk.version"),
+          BuildInfo.openTelemetrySdkVersion
+        )
       )
 
       val scope = new InstrumentationScope(

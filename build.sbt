@@ -26,6 +26,7 @@ val CatsEffectVersion = "3.3.14"
 val MUnitVersion = "0.7.29"
 val MUnitCatsEffectVersion = "1.0.7"
 val OpenTelemetryVersion = "1.19.0"
+val ScodecVersion = "1.1.34"
 
 lazy val scalaReflectDependency = Def.settings(
   libraryDependencies ++= {
@@ -38,6 +39,7 @@ lazy val root = tlCrossRootProject
   .aggregate(
     `core-common`,
     `core-metrics`,
+    `core-tracing`,
     core,
     `testkit-common`,
     `testkit-metrics`,
@@ -74,10 +76,26 @@ lazy val `core-metrics` = crossProject(JVMPlatform, JSPlatform)
     )
   )
 
+lazy val `core-tracing` = crossProject(JVMPlatform, JSPlatform)
+  .crossType(CrossType.Pure)
+  .in(file("core/tracing"))
+  .dependsOn(`core-common`)
+  .settings(scalaReflectDependency)
+  .settings(
+    name := "otel4s-core-tracing",
+    libraryDependencies ++= Seq(
+      "org.typelevel" %%% "cats-effect-kernel" % CatsEffectVersion,
+      "org.scodec" %%% "scodec-bits" % ScodecVersion,
+      "org.scalameta" %%% "munit" % MUnitVersion % Test,
+      "org.typelevel" %%% "munit-cats-effect-3" % MUnitCatsEffectVersion % Test,
+      "org.typelevel" %%% "cats-effect-testkit" % CatsEffectVersion % Test
+    )
+  )
+
 lazy val core = crossProject(JVMPlatform, JSPlatform)
   .crossType(CrossType.Pure)
   .in(file("core/all"))
-  .dependsOn(`core-common`, `core-metrics`)
+  .dependsOn(`core-common`, `core-metrics`, `core-tracing`)
   .settings(
     name := "otel4s-core"
   )

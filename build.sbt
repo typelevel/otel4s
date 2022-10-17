@@ -89,21 +89,6 @@ lazy val `core-tracing` = crossProject(JVMPlatform, JSPlatform)
   .in(file("core/tracing"))
   .dependsOn(`core-common`)
   .settings(scalaReflectDependency)
-  .settings(munitDependencies)
-  .settings(
-    name := "otel4s-core-tracing",
-    libraryDependencies ++= Seq(
-      "org.typelevel" %%% "cats-effect-kernel" % CatsEffectVersion,
-      "org.scodec" %%% "scodec-bits" % ScodecVersion,
-      "org.typelevel" %%% "cats-effect-testkit" % CatsEffectVersion % Test
-    )
-  )
-
-lazy val `core-tracing` = crossProject(JVMPlatform, JSPlatform)
-  .crossType(CrossType.Pure)
-  .in(file("core/tracing"))
-  .dependsOn(`core-common`)
-  .settings(scalaReflectDependency)
   .settings(
     name := "otel4s-core-tracing",
     libraryDependencies ++= Seq(

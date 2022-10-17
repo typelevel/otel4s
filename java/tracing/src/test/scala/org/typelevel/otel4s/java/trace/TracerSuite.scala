@@ -46,11 +46,11 @@ import scala.util.control.NoStackTrace
 class TracerSuite extends CatsEffectSuite {
 
   test("propagate instrumentation info") {
-    val expected = InstrumentationScopeInfo.create(
-      "tracer",
-      "1.0",
-      "https://localhost:8080"
-    )
+    val expected = InstrumentationScopeInfo
+      .builder("tracer")
+      .setVersion("1.0")
+      .setSchemaUrl("https://localhost:8080")
+      .build()
 
     for {
       sdk <- makeSdk()

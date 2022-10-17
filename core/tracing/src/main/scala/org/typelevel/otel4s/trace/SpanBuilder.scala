@@ -17,6 +17,7 @@
 package org.typelevel.otel4s
 package trace
 
+import cats.Applicative
 import cats.effect.kernel.Resource
 
 import scala.concurrent.duration.FiniteDuration
@@ -195,10 +196,9 @@ trait SpanBuilder[F[_]] {
 
 object SpanBuilder {
 
-  def noop[F[_]](back: Span.Backend[F]): SpanBuilder[F] =
+  def noop[F[_]: Applicative](back: Span.Backend[F]): SpanBuilder[F] =
     new SpanBuilder[F] {
-      private val manual: Span.Manual[F] = Span.Manual.fromBackend(back)
-      private val auto: Span.Auto[F] = Span.Auto.fromBackend(back)
+      private val span: Span[F] = Span.fromBackend(back)
 
       def withSpanKind(spanKind: SpanKind): SpanBuilder[F] = this
       def withAttribute[A](attribute: Attribute[A]): SpanBuilder[F] = this
@@ -217,11 +217,11 @@ object SpanBuilder {
       ): SpanBuilder[F] =
         this
 
-      val createManual: Resource[F, Span.Manual[F]] =
-        Resource.pure(manual)
+      val createManual: F[Span[F]] =
+        Applicative[F].pure(span)
 
-      val createAuto: Resource[F, Span.Auto[F]] =
-        Resource.pure(auto)
+      val createAuto: Resource[F, Span[F]] =
+        Resource.pure(span)
 
       def createRes[A](resource: Resource[F, A]): Resource[F, Span.Res[F, A]] =
         resource.map(a => Span.Res.fromBackend(a, back))

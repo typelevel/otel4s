@@ -103,7 +103,7 @@ trait Tracer[F[_]] extends TracerMacro[F] {
 object Tracer {
 
   trait Meta[F[_]] extends InstrumentMeta[F] {
-    def noopAutoSpan: Resource[F, Span[F]]
+    def noopSpan: Resource[F, Span[F]]
     def noopResSpan[A](resource: Resource[F, A]): Resource[F, Span.Res[F, A]]
   }
 
@@ -118,15 +118,14 @@ object Tracer {
 
         val isEnabled: Boolean = enabled
         val unit: F[Unit] = Applicative[F].unit
-        val noopAutoSpan: Resource[F, Span.Auto[F]] =
-          Resource.pure(Span.Auto.fromBackend(noopBackend))
+        val noopSpan: Resource[F, Span[F]] =
+          Resource.pure(Span.fromBackend(noopBackend))
 
         def noopResSpan[A](
             resource: Resource[F, A]
         ): Resource[F, Span.Res[F, A]] =
           resource.map(a => Span.Res.fromBackend(a, Span.Backend.noop))
       }
-
   }
 
   def noop[F[_]: Applicative]: Tracer[F] =

@@ -71,6 +71,27 @@ trait Span[F[_]] extends SpanMacro[F] {
   final def context: SpanContext =
     backend.context
 
+  /** Marks the end of [[Span]] execution.
+    *
+    * Only the timing of the first end call for a given span will be recorded,
+    * the subsequent calls will be ignored.
+    */
+  final def end: F[Unit] =
+    backend.end
+
+  /** Marks the end of [[Span]] execution with the specified timestamp.
+    *
+    * Only the timing of the first end call for a given span will be recorded,
+    * the subsequent calls will be ignored.
+    *
+    * '''Note''': the timestamp should be based on `Clock[F].realTime`. Using
+    * `Clock[F].monotonic` may lead to a missing span.
+    *
+    * @param timestamp
+    *   the explicit timestamp from the epoch
+    */
+  final def end(timestamp: FiniteDuration): F[Unit] =
+    backend.end(timestamp)
 }
 
 object Span {
@@ -130,7 +151,7 @@ object Span {
       }
   }
 
-  def fromBackend[F[_]](back: Backend[F]): Span[F] =
+  private[otel4s] def fromBackend[F[_]](back: Backend[F]): Span[F] =
     new Span[F] {
       def backend: Backend[F] = back
     }
@@ -154,7 +175,10 @@ object Span {
     def unapply[F[_], A](span: Span.Res[F, A]): Option[A] =
       Some(span.value)
 
-    def fromBackend[F[_], A](a: A, back: Backend[F]): Res[F, A] =
+    private[otel4s] def fromBackend[F[_], A](
+        a: A,
+        back: Backend[F]
+    ): Res[F, A] =
       new Res[F, A] {
         def value: A = a
         def backend: Backend[F] = back

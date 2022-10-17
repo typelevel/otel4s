@@ -124,7 +124,7 @@ object TracerMacro {
     '{
       if ($tracer.meta.isEnabled)
         $tracer.spanBuilder($name).withAttributes($attributes*).createAuto
-      else $tracer.meta.noopAutoSpan
+      else $tracer.meta.noopSpan
     }
 
   def rootSpan[F[_]](
@@ -135,7 +135,7 @@ object TracerMacro {
     '{
       if ($tracer.meta.isEnabled)
         $tracer.spanBuilder($name).root.withAttributes($attributes*).createAuto
-      else $tracer.meta.noopAutoSpan
+      else $tracer.meta.noopSpan
     }
 
   def resourceSpan[F[_], A](

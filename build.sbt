@@ -94,8 +94,7 @@ lazy val `core-tracing` = crossProject(JVMPlatform, JSPlatform)
     name := "otel4s-core-tracing",
     libraryDependencies ++= Seq(
       "org.typelevel" %%% "cats-effect-kernel" % CatsEffectVersion,
-      "org.scodec" %%% "scodec-bits" % ScodecVersion,
-      "org.scalameta" %%% "munit" % MUnitVersion % Test
+      "org.scodec" %%% "scodec-bits" % ScodecVersion
     )
   )
 

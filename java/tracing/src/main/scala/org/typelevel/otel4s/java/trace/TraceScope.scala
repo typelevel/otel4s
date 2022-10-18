@@ -25,7 +25,7 @@ import io.opentelemetry.api.trace.{Span => JSpan}
 import io.opentelemetry.context.{Context => JContext}
 import org.typelevel.otel4s.trace.SpanContext
 
-trait TraceScope[F[_]] {
+private[java] trait TraceScope[F[_]] {
   import TraceScope.Scope
   def root: F[Scope.Root]
   def current: F[Scope]
@@ -34,7 +34,7 @@ trait TraceScope[F[_]] {
   def noopScope: Resource[F, Unit]
 }
 
-object TraceScope {
+private[java] object TraceScope {
 
   sealed trait Scope
   object Scope {

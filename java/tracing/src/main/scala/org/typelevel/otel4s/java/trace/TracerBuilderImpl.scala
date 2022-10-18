@@ -20,7 +20,7 @@ import cats.effect.Sync
 import io.opentelemetry.api.trace.{TracerProvider => JTracerProvider}
 import org.typelevel.otel4s.trace._
 
-private[trace] final case class TracerBuilderImpl[F[_]: Sync](
+private[java] final case class TracerBuilderImpl[F[_]: Sync](
     jTracerProvider: JTracerProvider,
     scope: TraceScope[F],
     name: String,

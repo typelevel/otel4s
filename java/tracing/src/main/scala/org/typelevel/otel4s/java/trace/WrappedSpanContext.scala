@@ -23,7 +23,7 @@ import org.typelevel.otel4s.trace.SamplingDecision
 import org.typelevel.otel4s.trace.SpanContext
 import scodec.bits.ByteVector
 
-private[trace] final case class WrappedSpanContext(
+private[java] final case class WrappedSpanContext(
     jSpanContext: JSpanContext
 ) extends SpanContext {
 

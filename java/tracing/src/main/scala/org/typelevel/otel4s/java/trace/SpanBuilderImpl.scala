@@ -36,7 +36,7 @@ import org.typelevel.otel4s.trace.SpanKind
 
 import scala.concurrent.duration.FiniteDuration
 
-private[trace] final case class SpanBuilderImpl[F[_]: Sync](
+private[java] final case class SpanBuilderImpl[F[_]: Sync](
     jTracer: JTracer,
     name: String,
     scope: TraceScope[F],
@@ -239,7 +239,7 @@ private[trace] final case class SpanBuilderImpl[F[_]: Sync](
     }
 }
 
-object SpanBuilderImpl {
+private[java] object SpanBuilderImpl {
 
   sealed trait TimestampSelect
   object TimestampSelect {

@@ -30,7 +30,7 @@ import org.typelevel.otel4s.trace.Status
 
 import scala.concurrent.duration.FiniteDuration
 
-private[otel4s] class SpanBackendImpl[F[_]: Sync](
+private[java] class SpanBackendImpl[F[_]: Sync](
     val jSpan: JSpan,
     spanContext: SpanContext
 ) extends Span.Backend[F] {
@@ -97,7 +97,7 @@ private[otel4s] class SpanBackendImpl[F[_]: Sync](
 
 }
 
-object SpanBackendImpl {
+private[java] object SpanBackendImpl {
 
   private def toJStatus(status: Status): JStatusCode =
     status match {

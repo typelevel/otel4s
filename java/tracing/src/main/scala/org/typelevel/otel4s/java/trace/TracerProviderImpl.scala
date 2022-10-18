@@ -24,7 +24,7 @@ import io.opentelemetry.context.{Context => JContext}
 import org.typelevel.otel4s.trace.TracerBuilder
 import org.typelevel.otel4s.trace.TracerProvider
 
-private[otel4s] class TracerProviderImpl[F[_]: Sync](
+private[java] class TracerProviderImpl[F[_]: Sync](
     jTracerProvider: JTracerProvider,
     scope: TraceScope[F]
 ) extends TracerProvider[F] {
@@ -32,12 +32,12 @@ private[otel4s] class TracerProviderImpl[F[_]: Sync](
     TracerBuilderImpl(jTracerProvider, scope, name)
 }
 
-object TracerProviderImpl {
+private[java] object TracerProviderImpl {
 
   def ioLocal[F[_]: LiftIO: Sync](
       jTracerProvider: JTracerProvider,
       default: JContext = JContext.root()
-  ): F[TracerProviderImpl[F]] =
+  ): F[TracerProvider[F]] =
     TraceScope
       .fromIOLocal[F](default)
       .map(scope => new TracerProviderImpl(jTracerProvider, scope))

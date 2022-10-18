@@ -25,7 +25,7 @@ import org.typelevel.otel4s.trace.SpanBuilder
 import org.typelevel.otel4s.trace.SpanContext
 import org.typelevel.otel4s.trace.Tracer
 
-private[trace] class TracerImpl[F[_]: Sync](
+private[java] class TracerImpl[F[_]: Sync](
     jTracer: JTracer,
     scope: TraceScope[F]
 ) extends Tracer[F] {

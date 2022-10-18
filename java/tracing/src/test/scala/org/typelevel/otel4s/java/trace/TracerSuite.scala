@@ -37,6 +37,7 @@ import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.AttributeKey
 import org.typelevel.otel4s.trace.Span
 import org.typelevel.otel4s.trace.Tracer
+import org.typelevel.otel4s.trace.TracerProvider
 
 import java.time.Instant
 import scala.concurrent.duration._
@@ -524,7 +525,7 @@ class TracerSuite extends CatsEffectSuite {
 object TracerSuite {
 
   class Sdk(
-      val provider: TracerProviderImpl[IO],
+      val provider: TracerProvider[IO],
       exporter: InMemorySpanExporter
   ) {
 

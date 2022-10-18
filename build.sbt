@@ -24,8 +24,8 @@ ThisBuild / scalaVersion := Scala213 // the default Scala
 val CatsVersion = "2.8.0"
 val CatsEffectVersion = "3.3.14"
 val FS2Version = "3.3.0"
-val MUnitVersion = "0.7.29"
-val MUnitCatsEffectVersion = "1.0.7"
+val MUnitVersion = "1.0.0-M6"
+val MUnitCatsEffectVersion = "2.0.0-M3"
 val OpenTelemetryVersion = "1.19.0"
 val ScodecVersion = "1.1.34"
 
@@ -39,7 +39,7 @@ lazy val scalaReflectDependency = Def.settings(
 lazy val munitDependencies = Def.settings(
   libraryDependencies ++= Seq(
     "org.scalameta" %%% "munit" % MUnitVersion % Test,
-    "org.typelevel" %%% "munit-cats-effect-3" % MUnitCatsEffectVersion % Test
+    "org.typelevel" %%% "munit-cats-effect" % MUnitCatsEffectVersion % Test
   )
 )
 
@@ -59,7 +59,7 @@ lazy val root = tlCrossRootProject
   )
   .settings(name := "otel4s")
 
-lazy val `core-common` = crossProject(JVMPlatform, JSPlatform)
+lazy val `core-common` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .crossType(CrossType.Pure)
   .in(file("core/common"))
   .settings(
@@ -70,7 +70,7 @@ lazy val `core-common` = crossProject(JVMPlatform, JSPlatform)
     )
   )
 
-lazy val `core-metrics` = crossProject(JVMPlatform, JSPlatform)
+lazy val `core-metrics` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .crossType(CrossType.Pure)
   .in(file("core/metrics"))
   .dependsOn(`core-common`)
@@ -84,7 +84,7 @@ lazy val `core-metrics` = crossProject(JVMPlatform, JSPlatform)
     )
   )
 
-lazy val `core-tracing` = crossProject(JVMPlatform, JSPlatform)
+lazy val `core-tracing` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .crossType(CrossType.Pure)
   .in(file("core/tracing"))
   .dependsOn(`core-common`)
@@ -98,7 +98,7 @@ lazy val `core-tracing` = crossProject(JVMPlatform, JSPlatform)
     )
   )
 
-lazy val core = crossProject(JVMPlatform, JSPlatform)
+lazy val core = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .crossType(CrossType.Pure)
   .in(file("core/all"))
   .dependsOn(`core-common`, `core-metrics`, `core-tracing`)

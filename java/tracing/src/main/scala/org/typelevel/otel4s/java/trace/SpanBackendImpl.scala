@@ -42,46 +42,52 @@ private[otel4s] class SpanBackendImpl[F[_]: Sync](
     spanContext
 
   def addEvent(name: String, attributes: Attribute[_]*): F[Unit] =
-    Sync[F]
-      .delay(jSpan.addEvent(name, Conversions.toJAttributes(attributes)))
-      .void
+    Sync[F].delay {
+      jSpan.addEvent(name, Conversions.toJAttributes(attributes))
+      ()
+    }
 
   def addEvent(
       name: String,
       timestamp: FiniteDuration,
       attributes: Attribute[_]*
   ): F[Unit] =
-    Sync[F]
-      .delay(
-        jSpan.addEvent(
-          name,
-          Conversions.toJAttributes(attributes),
-          timestamp.length,
-          timestamp.unit
-        )
+    Sync[F].delay {
+      jSpan.addEvent(
+        name,
+        Conversions.toJAttributes(attributes),
+        timestamp.length,
+        timestamp.unit
       )
-      .void
+      ()
+    }
 
   def setAttributes(attributes: Attribute[_]*): F[Unit] =
-    Sync[F]
-      .delay(jSpan.setAllAttributes(Conversions.toJAttributes(attributes)))
-      .void
+    Sync[F].delay {
+      jSpan.setAllAttributes(Conversions.toJAttributes(attributes))
+      ()
+    }
 
   def setStatus(status: Status): F[Unit] =
-    Sync[F].delay(jSpan.setStatus(toJStatus(status))).void
+    Sync[F].delay {
+      jSpan.setStatus(toJStatus(status))
+      ()
+    }
 
   def setStatus(status: Status, description: String): F[Unit] =
-    Sync[F].delay(jSpan.setStatus(toJStatus(status), description)).void
+    Sync[F].delay {
+      jSpan.setStatus(toJStatus(status), description)
+      ()
+    }
 
   def recordException(
       exception: Throwable,
       attributes: Attribute[_]*
   ): F[Unit] =
-    Sync[F]
-      .delay(
-        jSpan.recordException(exception, Conversions.toJAttributes(attributes))
-      )
-      .void
+    Sync[F].delay {
+      jSpan.recordException(exception, Conversions.toJAttributes(attributes))
+      ()
+    }
 
   private[otel4s] def end: F[Unit] =
     Sync[F].delay(jSpan.end())

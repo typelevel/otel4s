@@ -19,7 +19,6 @@ package java
 package trace
 
 import cats.effect.Sync
-import cats.syntax.functor._
 import io.opentelemetry.api.trace.{Span => JSpan}
 import io.opentelemetry.api.trace.{StatusCode => JStatusCode}
 import org.typelevel.otel4s.Attribute

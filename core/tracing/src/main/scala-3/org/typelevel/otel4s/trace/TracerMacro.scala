@@ -123,7 +123,7 @@ object TracerMacro {
   )(using Quotes, Type[F]) =
     '{
       if ($tracer.meta.isEnabled)
-        $tracer.spanBuilder($name).withAttributes($attributes*).createAuto
+        $tracer.spanBuilder($name).addAttributes($attributes*).createAuto
       else $tracer.meta.noopSpan
     }
 
@@ -134,7 +134,7 @@ object TracerMacro {
   )(using Quotes, Type[F]) =
     '{
       if ($tracer.meta.isEnabled)
-        $tracer.spanBuilder($name).root.withAttributes($attributes*).createAuto
+        $tracer.spanBuilder($name).root.addAttributes($attributes*).createAuto
       else $tracer.meta.noopSpan
     }
 
@@ -148,7 +148,7 @@ object TracerMacro {
       if ($tracer.meta.isEnabled)
         $tracer
           .spanBuilder($name)
-          .withAttributes($attributes*)
+          .addAttributes($attributes*)
           .createRes($resource)
       else $tracer.meta.noopResSpan($resource)
     }

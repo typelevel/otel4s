@@ -117,7 +117,7 @@ object TracerMacro {
     import c.universe._
     val meta = q"${c.prefix}.meta"
 
-    q"if ($meta.isEnabled) ${c.prefix}.spanBuilder($name).withAttributes(..$attributes).createAuto else $meta.noopSpan"
+    q"if ($meta.isEnabled) ${c.prefix}.spanBuilder($name).addAttributes(..$attributes).createAuto else $meta.noopSpan"
   }
 
   def rootSpan(c: blackbox.Context)(
@@ -127,7 +127,7 @@ object TracerMacro {
     import c.universe._
     val meta = q"${c.prefix}.meta"
 
-    q"if ($meta.isEnabled) ${c.prefix}.spanBuilder($name).root.withAttributes(..$attributes).createAuto else $meta.noopSpan"
+    q"if ($meta.isEnabled) ${c.prefix}.spanBuilder($name).root.addAttributes(..$attributes).createAuto else $meta.noopSpan"
   }
 
   def resourceSpan[F[_], A](c: blackbox.Context)(
@@ -137,7 +137,7 @@ object TracerMacro {
     import c.universe._
     val meta = q"${c.prefix}.meta"
 
-    q"if ($meta.isEnabled) ${c.prefix}.spanBuilder($name).withAttributes(..$attributes).createRes($resource) else $meta.noopResSpan($resource)"
+    q"if ($meta.isEnabled) ${c.prefix}.spanBuilder($name).addAttributes(..$attributes).createRes($resource) else $meta.noopResSpan($resource)"
   }
 
 }

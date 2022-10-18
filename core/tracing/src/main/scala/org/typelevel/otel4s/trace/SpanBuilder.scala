@@ -24,31 +24,23 @@ import scala.concurrent.duration.FiniteDuration
 
 trait SpanBuilder[F[_]] {
 
-  /** Sets the [[SpanKind]] for the newly created span. If not called, the
-    * implementation will provide a default value [[SpanKind.Internal]].
-    *
-    * @param spanKind
-    *   the kind of the newly created span
-    */
-  def withSpanKind(spanKind: SpanKind): SpanBuilder[F]
-
-  /** Sets an attribute to the newly created span. If [[SpanBuilder]] previously
+  /** Adds an attribute to the newly created span. If [[SpanBuilder]] previously
     * contained a mapping for the key, the old value is replaced by the
     * specified value.
     *
     * @param attribute
     *   the attribute to associate with the span
     */
-  def withAttribute[A](attribute: Attribute[A]): SpanBuilder[F]
+  def addAttribute[A](attribute: Attribute[A]): SpanBuilder[F]
 
-  /** Sets attributes to the [[SpanBuilder]]. If the SpanBuilder previously
+  /** Adds attributes to the [[SpanBuilder]]. If the SpanBuilder previously
     * contained a mapping for any of the keys, the old values are replaced by
     * the specified values.
     *
     * @param attributes
     *   the set of attributes to associate with the span
     */
-  def withAttributes(attributes: Attribute[_]*): SpanBuilder[F]
+  def addAttributes(attributes: Attribute[_]*): SpanBuilder[F]
 
   /** Adds a link to the newly created span.
     *
@@ -62,10 +54,29 @@ trait SpanBuilder[F[_]] {
     * @param attributes
     *   the set of attributes to associate with the link
     */
-  def withLink(
+  def addLink(
       spanContext: SpanContext,
       attributes: Attribute[_]*
   ): SpanBuilder[F]
+
+  /** Sets the finalization strategy for the newly created span.
+    *
+    * The span finalizers are executed upon resource finalization.
+    *
+    * The default strategy is [[SpanFinalizer.Strategy.reportAbnormal]].
+    *
+    * @param strategy
+    *   the strategy to apply upon span finalization
+    */
+  def withFinalizationStrategy(strategy: SpanFinalizer.Strategy): SpanBuilder[F]
+
+  /** Sets the [[SpanKind]] for the newly created span. If not called, the
+    * implementation will provide a default value [[SpanKind.Internal]].
+    *
+    * @param spanKind
+    *   the kind of the newly created span
+    */
+  def withSpanKind(spanKind: SpanKind): SpanBuilder[F]
 
   /** Sets an explicit start timestamp for the newly created span.
     *
@@ -80,17 +91,6 @@ trait SpanBuilder[F[_]] {
     *   the explicit start timestamp from the epoch
     */
   def withStartTimestamp(timestamp: FiniteDuration): SpanBuilder[F]
-
-  /** Sets the finalization strategy for the newly created span.
-    *
-    * The span finalizers are executed upon resource finalization.
-    *
-    * The default strategy is [[SpanFinalizer.Strategy.reportAbnormal]].
-    *
-    * @param strategy
-    *   the strategy to apply upon span finalization
-    */
-  def withFinalizationStrategy(strategy: SpanFinalizer.Strategy): SpanBuilder[F]
 
   /** Indicates that the span should be the root one and the scope parent should
     * be ignored.
@@ -200,22 +200,23 @@ object SpanBuilder {
     new SpanBuilder[F] {
       private val span: Span[F] = Span.fromBackend(back)
 
-      def withSpanKind(spanKind: SpanKind): SpanBuilder[F] = this
-      def withAttribute[A](attribute: Attribute[A]): SpanBuilder[F] = this
-      def withAttributes(attributes: Attribute[_]*): SpanBuilder[F] = this
-      def withStartTimestamp(timestamp: FiniteDuration): SpanBuilder[F] = this
-      def root: SpanBuilder[F] = this
-      def withParent(parent: SpanContext): SpanBuilder[F] = this
+      def addAttribute[A](attribute: Attribute[A]): SpanBuilder[F] = this
+      def addAttributes(attributes: Attribute[_]*): SpanBuilder[F] = this
 
-      def withLink(
+      def addLink(
           spanContext: SpanContext,
           attributes: Attribute[_]*
       ): SpanBuilder[F] = this
 
+      def root: SpanBuilder[F] = this
+
       def withFinalizationStrategy(
           strategy: SpanFinalizer.Strategy
-      ): SpanBuilder[F] =
-        this
+      ): SpanBuilder[F] = this
+
+      def withParent(parent: SpanContext): SpanBuilder[F] = this
+      def withSpanKind(spanKind: SpanKind): SpanBuilder[F] = this
+      def withStartTimestamp(timestamp: FiniteDuration): SpanBuilder[F] = this
 
       val createManual: F[Span[F]] =
         Applicative[F].pure(span)

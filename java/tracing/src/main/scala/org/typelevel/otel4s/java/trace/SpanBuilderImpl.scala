@@ -54,13 +54,13 @@ private[java] final case class SpanBuilderImpl[F[_]: Sync](
   def withSpanKind(spanKind: SpanKind): SpanBuilder[F] =
     copy(kind = Some(spanKind))
 
-  def withAttribute[A](attribute: Attribute[A]): SpanBuilder[F] =
+  def addAttribute[A](attribute: Attribute[A]): SpanBuilder[F] =
     copy(attributes = attributes :+ attribute)
 
-  def withAttributes(attributes: Attribute[_]*): SpanBuilder[F] =
+  def addAttributes(attributes: Attribute[_]*): SpanBuilder[F] =
     copy(attributes = attributes ++ attributes)
 
-  def withLink(
+  def addLink(
       spanContext: SpanContext,
       attributes: Attribute[_]*
   ): SpanBuilder[F] =

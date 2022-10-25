@@ -17,9 +17,12 @@
 package org.typelevel.otel4s
 package trace
 
+import cats.Applicative
 import cats.Semigroup
 import cats.data.NonEmptyList
 import cats.effect.kernel.Resource
+import cats.syntax.applicative._
+import cats.syntax.foldable._
 import cats.syntax.semigroup._
 
 sealed trait SpanFinalizer
@@ -49,7 +52,7 @@ object SpanFinalizer {
       val description: Option[String]
   ) extends SpanFinalizer
 
-  final class SetAttributes private[SpanFinalizer] (
+  final class AddAttributes private[SpanFinalizer] (
       val attributes: Seq[Attribute[_]]
   ) extends SpanFinalizer
 
@@ -66,11 +69,11 @@ object SpanFinalizer {
   def setStatus(status: Status, description: String): SpanFinalizer =
     new SetStatus(status, Some(description))
 
-  def setAttribute[A](attribute: Attribute[A]): SpanFinalizer =
-    new SetAttributes(List(attribute))
+  def addAttribute[A](attribute: Attribute[A]): SpanFinalizer =
+    new AddAttributes(List(attribute))
 
-  def setAttributes(attributes: Attribute[_]*): SpanFinalizer =
-    new SetAttributes(attributes)
+  def addAttributes(attributes: Attribute[_]*): SpanFinalizer =
+    new AddAttributes(attributes)
 
   def multiple(head: SpanFinalizer, tail: SpanFinalizer*): Multiple =
     new Multiple(NonEmptyList.of(head, tail: _*))
@@ -87,6 +90,32 @@ object SpanFinalizer {
 
     case (left, right) =>
       new Multiple(NonEmptyList.of(left, right))
+  }
+
+  private[otel4s] def run[F[_]: Applicative](
+      backend: Span.Backend[F],
+      finalizer: SpanFinalizer
+  ): F[Unit] = {
+
+    def loop(input: SpanFinalizer): F[Unit] =
+      input match {
+        case r: RecordException =>
+          backend.recordException(r.throwable)
+
+        case s: SetStatus =>
+          s.description match {
+            case Some(desc) => backend.setStatus(s.status, desc)
+            case None       => backend.setStatus(s.status)
+          }
+
+        case s: AddAttributes =>
+          backend.addAttributes(s.attributes: _*)
+
+        case m: Multiple =>
+          m.finalizers.traverse_(strategy => loop(strategy))
+      }
+
+    loop(finalizer).whenA(backend.meta.isEnabled)
   }
 
 }

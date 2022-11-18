@@ -23,7 +23,7 @@ ThisBuild / scalaVersion := Scala213 // the default Scala
 
 val CatsVersion = "2.8.0"
 val CatsEffectVersion = "3.3.14"
-val MUnitVersion = "1.0.0-M6"
+val MUnitVersion = "1.0.0-M7"
 val MUnitCatsEffectVersion = "2.0.0-M3"
 val OpenTelemetryVersion = "1.19.0"
 val ScodecVersion = "1.1.34"

@@ -26,7 +26,7 @@ val CatsVersion = "2.9.0"
 val CatsEffectVersion = "3.4.4"
 val MUnitVersion = "1.0.0-M7"
 val MUnitCatsEffectVersion = "2.0.0-M3"
-val OpenTelemetryVersion = "1.21.0"
+val OpenTelemetryVersion = "1.22.0"
 val ScodecVersion = "1.1.34"
 
 lazy val scalaReflectDependency = Def.settings(

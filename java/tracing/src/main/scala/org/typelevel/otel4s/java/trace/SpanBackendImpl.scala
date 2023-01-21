@@ -40,6 +40,12 @@ private[java] class SpanBackendImpl[F[_]: Sync](
   def context: SpanContext =
     spanContext
 
+  def addAttributes(attributes: Attribute[_]*): F[Unit] =
+    Sync[F].delay {
+      jSpan.setAllAttributes(Conversions.toJAttributes(attributes))
+      ()
+    }
+
   def addEvent(name: String, attributes: Attribute[_]*): F[Unit] =
     Sync[F].delay {
       jSpan.addEvent(name, Conversions.toJAttributes(attributes))
@@ -58,12 +64,6 @@ private[java] class SpanBackendImpl[F[_]: Sync](
         timestamp.length,
         timestamp.unit
       )
-      ()
-    }
-
-  def setAttributes(attributes: Attribute[_]*): F[Unit] =
-    Sync[F].delay {
-      jSpan.setAllAttributes(Conversions.toJAttributes(attributes))
       ()
     }
 

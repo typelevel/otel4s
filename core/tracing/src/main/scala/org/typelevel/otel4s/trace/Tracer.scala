@@ -23,7 +23,8 @@ import org.typelevel.otel4s.meta.InstrumentMeta
 
 trait Tracer[F[_]] extends TracerMacro[F] {
 
-  /** Instrument metadata. Indicates whether instrumentation is enabled or not.
+  /** The instrument's metadata. Indicates whether instrumentation is enabled or
+    * not.
     */
   def meta: Tracer.Meta[F]
 

@@ -22,6 +22,24 @@ import scala.concurrent.duration.FiniteDuration
 private[otel4s] trait SpanMacro[F[_]] {
   self: Span[F] =>
 
+  /** Adds an attribute to the span. If the span previously contained a mapping
+    * for the key, the old value is replaced by the specified value.
+    *
+    * @param attribute
+    *   the attribute to add to the span
+    */
+  def addAttribute[A](attribute: Attribute[A]): F[Unit] =
+    macro SpanMacro.addAttribute[A]
+
+  /** Adds attributes to the span. If the span previously contained a mapping
+    * for any of the keys, the old values are replaced by the specified values.
+    *
+    * @param attributes
+    *   the set of attributes to add to the span
+    */
+  def addAttributes(attributes: Attribute[_]*): F[Unit] =
+    macro SpanMacro.addAttributes
+
   /** Adds an event to the span with the given attributes. The timestamp of the
     * event will be the current time.
     *
@@ -69,24 +87,6 @@ private[otel4s] trait SpanMacro[F[_]] {
   ): F[Unit] =
     macro SpanMacro.recordException
 
-  /** Sets an attribute to the span. If the span previously contained a mapping
-    * for the key, the old value is replaced by the specified value.
-    *
-    * @param attribute
-    *   the attribute to add to the span
-    */
-  def setAttribute[A](attribute: Attribute[A]): F[Unit] =
-    macro SpanMacro.setAttribute[A]
-
-  /** Sets attributes to the span. If the span previously contained a mapping
-    * for any of the keys, the old values are replaced by the specified values.
-    *
-    * @param attributes
-    *   the set of attributes to add to the span
-    */
-  def setAttributes(attributes: Attribute[_]*): F[Unit] =
-    macro SpanMacro.setAttributes
-
   /** Sets the status to the span.
     *
     * Only the value of the last call will be recorded, and implementations are
@@ -116,6 +116,28 @@ private[otel4s] trait SpanMacro[F[_]] {
 
 object SpanMacro {
   import scala.reflect.macros.blackbox
+
+  def addAttribute[A](c: blackbox.Context)(
+      attribute: c.Expr[Attribute[A]]
+  ): c.universe.Tree = {
+    import c.universe._
+
+    val backend = q"${c.prefix}.backend"
+    val meta = q"$backend.meta"
+
+    q"if ($meta.isEnabled) $backend.addAttributes($attribute) else $meta.unit"
+  }
+
+  def addAttributes(c: blackbox.Context)(
+      attributes: c.Expr[Attribute[_]]*
+  ): c.universe.Tree = {
+    import c.universe._
+
+    val backend = q"${c.prefix}.backend"
+    val meta = q"$backend.meta"
+
+    q"if ($meta.isEnabled) $backend.addAttributes(..$attributes) else $meta.unit"
+  }
 
   def addEvent(c: blackbox.Context)(
       name: c.Expr[String],
@@ -152,28 +174,6 @@ object SpanMacro {
     val meta = q"$backend.meta"
 
     q"if ($meta.isEnabled) $backend.recordException($exception, ..$attributes) else $meta.unit"
-  }
-
-  def setAttribute[A](c: blackbox.Context)(
-      attribute: c.Expr[Attribute[A]]
-  ): c.universe.Tree = {
-    import c.universe._
-
-    val backend = q"${c.prefix}.backend"
-    val meta = q"$backend.meta"
-
-    q"if ($meta.isEnabled) $backend.setAttributes($attribute) else $meta.unit"
-  }
-
-  def setAttributes(c: blackbox.Context)(
-      attributes: c.Expr[Attribute[_]]*
-  ): c.universe.Tree = {
-    import c.universe._
-
-    val backend = q"${c.prefix}.backend"
-    val meta = q"$backend.meta"
-
-    q"if ($meta.isEnabled) $backend.setAttributes(..$attributes) else $meta.unit"
   }
 
   def setStatus(c: blackbox.Context)(

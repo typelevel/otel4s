@@ -23,6 +23,24 @@ import scala.quoted.*
 private[otel4s] trait SpanMacro[F[_]] {
   self: Span[F] =>
 
+  /** Adds an attribute to the span. If the span previously contained a mapping
+    * for the key, the old value is replaced by the specified value.
+    *
+    * @param attribute
+    *   the attribute to add to the span
+    */
+  inline def addAttribute[A](inline attribute: Attribute[A]): F[Unit] =
+    ${ SpanMacro.addAttribute('self, 'attribute) }
+
+  /** Adds attributes to the span. If the span previously contained a mapping
+    * for any of the keys, the old values are replaced by the specified values.
+    *
+    * @param attributes
+    *   the set of attributes to add to the span
+    */
+  inline def addAttributes(inline attributes: Attribute[_]*): F[Unit] =
+    ${ SpanMacro.addAttributes('self, 'attributes) }
+
   /** Adds an event to the span with the given attributes. The timestamp of the
     * event will be the current time.
     *
@@ -73,24 +91,6 @@ private[otel4s] trait SpanMacro[F[_]] {
   ): F[Unit] =
     ${ SpanMacro.recordException('self, 'exception, 'attributes) }
 
-  /** Sets an attribute to the span. If the span previously contained a mapping
-    * for the key, the old value is replaced by the specified value.
-    *
-    * @param attribute
-    *   the attribute to add to the span
-    */
-  inline def setAttribute[A](inline attribute: Attribute[A]): F[Unit] =
-    ${ SpanMacro.setAttribute('self, 'attribute) }
-
-  /** Sets attributes to the span. If the span previously contained a mapping
-    * for any of the keys, the old values are replaced by the specified values.
-    *
-    * @param attributes
-    *   the set of attributes to add to the span
-    */
-  inline def setAttributes(inline attributes: Attribute[_]*): F[Unit] =
-    ${ SpanMacro.setAttributes('self, 'attributes) }
-
   /** Sets the status to the span.
     *
     * Only the value of the last call will be recorded, and implementations are
@@ -123,6 +123,26 @@ private[otel4s] trait SpanMacro[F[_]] {
 
 object SpanMacro {
 
+  def addAttribute[F[_], A](
+      span: Expr[Span[F]],
+      attribute: Expr[Attribute[A]]
+  )(using Quotes, Type[F], Type[A]) =
+    '{
+      if ($span.backend.meta.isEnabled)
+        $span.backend.addAttributes($attribute)
+      else $span.backend.meta.unit
+    }
+
+  def addAttributes[F[_]](
+      span: Expr[Span[F]],
+      attributes: Expr[Seq[Attribute[_]]]
+  )(using Quotes, Type[F]) =
+    '{
+      if ($span.backend.meta.isEnabled)
+        $span.backend.addAttributes($attributes*)
+      else $span.backend.meta.unit
+    }
+
   def addEvent[F[_]](
       span: Expr[Span[F]],
       name: Expr[String],
@@ -154,26 +174,6 @@ object SpanMacro {
     '{
       if ($span.backend.meta.isEnabled)
         $span.backend.recordException($exception, $attributes*)
-      else $span.backend.meta.unit
-    }
-
-  def setAttribute[F[_], A](
-      span: Expr[Span[F]],
-      attribute: Expr[Attribute[A]]
-  )(using Quotes, Type[F], Type[A]) =
-    '{
-      if ($span.backend.meta.isEnabled)
-        $span.backend.setAttributes($attribute)
-      else $span.backend.meta.unit
-    }
-
-  def setAttributes[F[_]](
-      span: Expr[Span[F]],
-      attributes: Expr[Seq[Attribute[_]]]
-  )(using Quotes, Type[F]) =
-    '{
-      if ($span.backend.meta.isEnabled)
-        $span.backend.setAttributes($attributes*)
       else $span.backend.meta.unit
     }
 

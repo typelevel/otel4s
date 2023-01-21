@@ -35,7 +35,7 @@ import scala.concurrent.duration.FiniteDuration
   * {{{
   * val tracer: Tracer[F] = ???
   * val leaked: F[Unit] =
-  *   tracer.spanBuilder("manual-span").createManual.flatMap { span =>
+  *   tracer.spanBuilder("manual-span").startUnmanaged.flatMap { span =>
   *     span.setStatus(Status.Ok, "all good")
   *   }
   * }}}
@@ -44,7 +44,7 @@ import scala.concurrent.duration.FiniteDuration
   * {{{
   * val tracer: Tracer[F] = ???
   * val ok: F[Unit] =
-  *   tracer.spanBuilder("manual-span").createManual.flatMap { span =>
+  *   tracer.spanBuilder("manual-span").startUnmanaged.flatMap { span =>
   *     span.setStatus(Status.Ok, "all good") >> span.end
   *   }
   * }}}
@@ -58,7 +58,7 @@ import scala.concurrent.duration.FiniteDuration
   * {{{
   * val tracer: Tracer[F] = ???
   * val ok: F[Unit] =
-  *   tracer.spanBuilder("manual-span").createAuto.use { span =>
+  *   tracer.spanBuilder("auto-span").start.use { span =>
   *     span.setStatus(Status.Ok, "all good")
   *   }
   * }}}
@@ -100,7 +100,7 @@ object Span {
     def meta: InstrumentMeta[F]
     def context: SpanContext
 
-    def setAttributes(attributes: Attribute[_]*): F[Unit]
+    def addAttributes(attributes: Attribute[_]*): F[Unit]
     def addEvent(name: String, attributes: Attribute[_]*): F[Unit]
 
     def addEvent(
@@ -109,13 +109,13 @@ object Span {
         attributes: Attribute[_]*
     ): F[Unit]
 
-    def setStatus(status: Status): F[Unit]
-    def setStatus(status: Status, description: String): F[Unit]
-
     def recordException(
         exception: Throwable,
         attributes: Attribute[_]*
     ): F[Unit]
+
+    def setStatus(status: Status): F[Unit]
+    def setStatus(status: Status, description: String): F[Unit]
 
     private[otel4s] def end: F[Unit]
     private[otel4s] def end(timestamp: FiniteDuration): F[Unit]
@@ -129,6 +129,7 @@ object Span {
         val meta: InstrumentMeta[F] = InstrumentMeta.disabled
         val context: SpanContext = SpanContext.invalid
 
+        def addAttributes(attributes: Attribute[_]*): F[Unit] = unit
         def addEvent(name: String, attributes: Attribute[_]*): F[Unit] = unit
 
         def addEvent(
@@ -137,14 +138,13 @@ object Span {
             attributes: Attribute[_]*
         ): F[Unit] = unit
 
-        def setAttributes(attributes: Attribute[_]*): F[Unit] = unit
-        def setStatus(status: Status): F[Unit] = unit
-        def setStatus(status: Status, description: String): F[Unit] = unit
-
         def recordException(
             exception: Throwable,
             attributes: Attribute[_]*
         ): F[Unit] = unit
+
+        def setStatus(status: Status): F[Unit] = unit
+        def setStatus(status: Status, description: String): F[Unit] = unit
 
         private[otel4s] def end: F[Unit] = unit
         private[otel4s] def end(timestamp: FiniteDuration): F[Unit] = unit

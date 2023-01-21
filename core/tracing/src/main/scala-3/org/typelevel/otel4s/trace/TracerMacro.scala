@@ -44,7 +44,7 @@ private[otel4s] trait TracerMacro[F[_]] {
     * val customParent: Resource[F, Span.Auto[F]] = tracer
     *   .spanBuilder("custom-parent")
     *   .withParent(span.context)
-    *   .createAuto
+    *   .start
     *   }}}
     *
     * @see
@@ -123,7 +123,7 @@ object TracerMacro {
   )(using Quotes, Type[F]) =
     '{
       if ($tracer.meta.isEnabled)
-        $tracer.spanBuilder($name).addAttributes($attributes*).createAuto
+        $tracer.spanBuilder($name).addAttributes($attributes*).start
       else $tracer.meta.noopSpan
     }
 
@@ -134,7 +134,7 @@ object TracerMacro {
   )(using Quotes, Type[F]) =
     '{
       if ($tracer.meta.isEnabled)
-        $tracer.spanBuilder($name).root.addAttributes($attributes*).createAuto
+        $tracer.spanBuilder($name).root.addAttributes($attributes*).start
       else $tracer.meta.noopSpan
     }
 
@@ -149,7 +149,7 @@ object TracerMacro {
         $tracer
           .spanBuilder($name)
           .addAttributes($attributes*)
-          .createRes($resource)
+          .startResource($resource)
       else $tracer.meta.noopResSpan($resource)
     }
 

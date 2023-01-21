@@ -57,20 +57,20 @@ class TracerSuite extends CatsEffectSuite {
     for {
       _ <- tracer.span("span", attribute: _*).use { span =>
         for {
+          _ <- span.addAttributes(attribute: _*)
           _ <- span.addEvent(text, attribute: _*)
           _ <- span.addEvent(text, timestamp, attribute: _*)
           _ <- span.recordException(exception, attribute: _*)
-          _ <- span.setAttributes(attribute: _*)
           _ <- span.setStatus(status)
           _ <- span.setStatus(status, text)
         } yield ()
       }
       _ <- tracer.rootSpan("span", attribute: _*).use { span =>
         for {
+          _ <- span.addAttributes(attribute: _*)
           _ <- span.addEvent(text, attribute: _*)
           _ <- span.addEvent(text, timestamp, attribute: _*)
           _ <- span.recordException(exception, attribute: _*)
-          _ <- span.setAttributes(attribute: _*)
           _ <- span.setStatus(status)
           _ <- span.setStatus(status, text)
         } yield ()

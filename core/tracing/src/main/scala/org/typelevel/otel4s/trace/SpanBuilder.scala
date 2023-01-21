@@ -81,8 +81,9 @@ trait SpanBuilder[F[_]] {
   /** Sets an explicit start timestamp for the newly created span.
     *
     * Use this method to specify an explicit start timestamp. If not called, the
-    * implementation will use the timestamp value at ([[createAuto]],
-    * [[createManual]], [[createRes]]) time, which should be the default case.
+    * implementation will use the timestamp value at ([[start]],
+    * [[startUnmanaged]], [[startResource]]) time, which should be the default
+    * case.
     *
     * '''Note''': the timestamp should be based on `Clock[F].realTime`. Using
     * `Clock[F].monotonic` may lead to a missing span.
@@ -120,7 +121,7 @@ trait SpanBuilder[F[_]] {
     * {{{
     * val tracer: Tracer[F] = ???
     * val leaked: F[Unit] =
-    *   tracer.spanBuilder("manual-span").createManual.flatMap { span =>
+    *   tracer.spanBuilder("manual-span").startUnmanaged.flatMap { span =>
     *     span.setStatus(Status.Ok, "all good")
     *   }
     * }}}
@@ -129,17 +130,17 @@ trait SpanBuilder[F[_]] {
     * {{{
     * val tracer: Tracer[F] = ???
     * val ok: F[Unit] =
-    *   tracer.spanBuilder("manual-span").createManual.flatMap { span =>
+    *   tracer.spanBuilder("manual-span").startUnmanaged.flatMap { span =>
     *     span.setStatus(Status.Ok, "all good") >> span.end
     *   }
     * }}}
     *
     * @see
-    *   [[createAuto]] for a managed lifecycle
+    *   [[start]] for a managed lifecycle
     */
-  def createManual: F[Span[F]]
+  def startUnmanaged: F[Span[F]]
 
-  /** Creates a [[Span]]. Unlike [[createManual]] the lifecycle of the span is
+  /** Creates a [[Span]]. Unlike [[startUnmanaged]] the lifecycle of the span is
     * managed by the [[cats.effect.kernel.Resource Resource]]. That means the
     * span is started upon resource allocation and ended upon finalization.
     *
@@ -153,12 +154,12 @@ trait SpanBuilder[F[_]] {
     *   {{{
     * val tracer: Tracer[F] = ???
     * val ok: F[Unit] =
-    *   tracer.spanBuilder("manual-span").createAuto.use { span =>
+    *   tracer.spanBuilder("auto-span").start.use { span =>
     *     span.setStatus(Status.Ok, "all good")
     *   }
     *   }}}
     */
-  def createAuto: Resource[F, Span[F]]
+  def start: Resource[F, Span[F]]
 
   /** Creates a [[Span.Res]]. The span is started upon resource allocation and
     * ended upon finalization. The allocation and release stages of the
@@ -184,14 +185,14 @@ trait SpanBuilder[F[_]] {
     * val tracer: Tracer[F] = ???
     * val resource: Resource[F, String] = Resource.eval(Sync[F].delay("string"))
     * val ok: F[Unit] =
-    *   tracer.spanBuilder("manual-span").createRes(resource).use { case span @ Span.Res(value) =>
+    *   tracer.spanBuilder("wrapped-resource").startResource(resource).use { case span @ Span.Res(value) =>
     *     span.setStatus(Status.Ok, s"all good. resource value: $${value}")
     *   }
     *   }}}
     * @param resource
     *   the resource to trace
     */
-  def createRes[A](resource: Resource[F, A]): Resource[F, Span.Res[F, A]]
+  def startResource[A](resource: Resource[F, A]): Resource[F, Span.Res[F, A]]
 }
 
 object SpanBuilder {
@@ -218,13 +219,15 @@ object SpanBuilder {
       def withSpanKind(spanKind: SpanKind): SpanBuilder[F] = this
       def withStartTimestamp(timestamp: FiniteDuration): SpanBuilder[F] = this
 
-      val createManual: F[Span[F]] =
+      val startUnmanaged: F[Span[F]] =
         Applicative[F].pure(span)
 
-      val createAuto: Resource[F, Span[F]] =
+      val start: Resource[F, Span[F]] =
         Resource.pure(span)
 
-      def createRes[A](resource: Resource[F, A]): Resource[F, Span.Res[F, A]] =
+      def startResource[A](
+          resource: Resource[F, A]
+      ): Resource[F, Span.Res[F, A]] =
         resource.map(a => Span.Res.fromBackend(a, back))
     }
 

@@ -355,7 +355,7 @@ class TracerSuite extends CatsEffectSuite {
                 _ <- tracer
                   .spanBuilder("span-3")
                   .withParent(span.context)
-                  .createAuto
+                  .start
                   .use { span3 =>
                     tracer.currentSpanContext.assertEquals(Some(span3.context))
                   }
@@ -476,7 +476,7 @@ class TracerSuite extends CatsEffectSuite {
           tracer.currentSpanContext.assertEquals(Some(span2.context))
         )
         span3 <- Stream.resource(
-          tracer.spanBuilder("span-3").withParent(span.context).createAuto
+          tracer.spanBuilder("span-3").withParent(span.context).start
         )
         _ <- Stream.eval(
           tracer.currentSpanContext.assertEquals(Some(span3.context))

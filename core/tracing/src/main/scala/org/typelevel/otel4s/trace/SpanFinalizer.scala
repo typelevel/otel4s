@@ -52,7 +52,7 @@ object SpanFinalizer {
       val description: Option[String]
   ) extends SpanFinalizer
 
-  final class SetAttributes private[SpanFinalizer] (
+  final class AddAttributes private[SpanFinalizer] (
       val attributes: Seq[Attribute[_]]
   ) extends SpanFinalizer
 
@@ -69,11 +69,11 @@ object SpanFinalizer {
   def setStatus(status: Status, description: String): SpanFinalizer =
     new SetStatus(status, Some(description))
 
-  def setAttribute[A](attribute: Attribute[A]): SpanFinalizer =
-    new SetAttributes(List(attribute))
+  def addAttribute[A](attribute: Attribute[A]): SpanFinalizer =
+    new AddAttributes(List(attribute))
 
-  def setAttributes(attributes: Attribute[_]*): SpanFinalizer =
-    new SetAttributes(attributes)
+  def addAttributes(attributes: Attribute[_]*): SpanFinalizer =
+    new AddAttributes(attributes)
 
   def multiple(head: SpanFinalizer, tail: SpanFinalizer*): Multiple =
     new Multiple(NonEmptyList.of(head, tail: _*))
@@ -108,8 +108,8 @@ object SpanFinalizer {
             case None       => backend.setStatus(s.status)
           }
 
-        case s: SetAttributes =>
-          backend.setAttributes(s.attributes: _*)
+        case s: AddAttributes =>
+          backend.addAttributes(s.attributes: _*)
 
         case m: Multiple =>
           m.finalizers.traverse_(strategy => loop(strategy))

@@ -80,7 +80,7 @@ private[java] final case class SpanBuilderImpl[F[_]: Sync](
   ): SpanBuilder[F] =
     copy(finalizationStrategy = strategy)
 
-  def createManual: F[Span[F]] = {
+  def startUnmanaged: F[Span[F]] = {
     parentContext.flatMap {
       case Some(parent) =>
         for {
@@ -92,7 +92,7 @@ private[java] final case class SpanBuilderImpl[F[_]: Sync](
     }
   }
 
-  def createAuto: Resource[F, Span[F]] =
+  def start: Resource[F, Span[F]] =
     Resource.eval(parentContext).flatMap {
       case Some(parent) =>
         for {
@@ -103,7 +103,9 @@ private[java] final case class SpanBuilderImpl[F[_]: Sync](
         Resource.pure(Span.fromBackend(Span.Backend.noop))
     }
 
-  def createRes[A](resource: Resource[F, A]): Resource[F, Span.Res[F, A]] = {
+  def startResource[A](
+      resource: Resource[F, A]
+  ): Resource[F, Span.Res[F, A]] = {
     def child(name: String, parent: JContext) =
       startManaged(
         jTracer.spanBuilder(name).setParent(parent),

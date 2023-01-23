@@ -20,8 +20,8 @@ import cats.effect.MonadCancelThrow
 import cats.effect.std.Console
 import cats.syntax.all._
 import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk
-import org.typelevel.otel4s.trace.Tracer
 import org.typelevel.otel4s.java.OtelJava
+import org.typelevel.otel4s.trace.Tracer
 
 trait Work[F[_]] {
   def doWork: F[Unit]

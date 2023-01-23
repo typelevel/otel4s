@@ -56,7 +56,8 @@ lazy val root = tlCrossRootProject
     `java-common`,
     `java-metrics`,
     `java-trace`,
-    java
+    java,
+    examples
   )
   .settings(name := "otel4s")
 
@@ -186,6 +187,18 @@ lazy val java = project
   .dependsOn(core.jvm, `java-metrics`, `java-trace`)
   .settings(
     name := "otel4s-java"
+  )
+
+lazy val examples = project
+  .enablePlugins(NoPublishPlugin)
+  .in(file("examples"))
+  .dependsOn(core.jvm, java)
+  .settings(
+    name := "otel4s-examples",
+    libraryDependencies ++= Seq(
+      "io.opentelemetry" % "opentelemetry-sdk" % OpenTelemetryVersion,
+      "io.opentelemetry" % "opentelemetry-sdk-extension-autoconfigure" % s"${OpenTelemetryVersion}-alpha"
+    )
   )
 
 lazy val docs = project.in(file("site")).enablePlugins(TypelevelSitePlugin)

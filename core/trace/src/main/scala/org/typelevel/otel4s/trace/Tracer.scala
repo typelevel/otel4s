@@ -103,6 +103,8 @@ trait Tracer[F[_]] extends TracerMacro[F] {
 
 object Tracer {
 
+  def apply[F[_]](implicit ev: Tracer[F]): Tracer[F] = ev
+
   trait Meta[F[_]] extends InstrumentMeta[F] {
     def noopSpan: Resource[F, Span[F]]
     def noopResSpan[A](resource: Resource[F, A]): Resource[F, Span.Res[F, A]]

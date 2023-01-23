@@ -149,7 +149,8 @@ object TracerMacro {
         $tracer
           .spanBuilder($name)
           .addAttributes($attributes*)
-          .startResource($resource)
+          .wrapResource($resource)
+          .start
       else $tracer.meta.noopResSpan($resource)
     }
 

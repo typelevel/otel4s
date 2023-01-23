@@ -23,6 +23,8 @@ import cats.effect.kernel.Resource
 import scala.concurrent.duration.FiniteDuration
 
 trait SpanBuilder[F[_]] {
+  type Result <: Span[F]
+  type Builder = SpanBuilder.Aux[F, Result]
 
   /** Adds an attribute to the newly created span. If [[SpanBuilder]] previously
     * contained a mapping for the key, the old value is replaced by the
@@ -31,7 +33,7 @@ trait SpanBuilder[F[_]] {
     * @param attribute
     *   the attribute to associate with the span
     */
-  def addAttribute[A](attribute: Attribute[A]): SpanBuilder[F]
+  def addAttribute[A](attribute: Attribute[A]): Builder
 
   /** Adds attributes to the [[SpanBuilder]]. If the SpanBuilder previously
     * contained a mapping for any of the keys, the old values are replaced by
@@ -40,7 +42,7 @@ trait SpanBuilder[F[_]] {
     * @param attributes
     *   the set of attributes to associate with the span
     */
-  def addAttributes(attributes: Attribute[_]*): SpanBuilder[F]
+  def addAttributes(attributes: Attribute[_]*): Builder
 
   /** Adds a link to the newly created span.
     *
@@ -54,10 +56,7 @@ trait SpanBuilder[F[_]] {
     * @param attributes
     *   the set of attributes to associate with the link
     */
-  def addLink(
-      spanContext: SpanContext,
-      attributes: Attribute[_]*
-  ): SpanBuilder[F]
+  def addLink(spanContext: SpanContext, attributes: Attribute[_]*): Builder
 
   /** Sets the finalization strategy for the newly created span.
     *
@@ -68,7 +67,7 @@ trait SpanBuilder[F[_]] {
     * @param strategy
     *   the strategy to apply upon span finalization
     */
-  def withFinalizationStrategy(strategy: SpanFinalizer.Strategy): SpanBuilder[F]
+  def withFinalizationStrategy(strategy: SpanFinalizer.Strategy): Builder
 
   /** Sets the [[SpanKind]] for the newly created span. If not called, the
     * implementation will provide a default value [[SpanKind.Internal]].
@@ -76,13 +75,13 @@ trait SpanBuilder[F[_]] {
     * @param spanKind
     *   the kind of the newly created span
     */
-  def withSpanKind(spanKind: SpanKind): SpanBuilder[F]
+  def withSpanKind(spanKind: SpanKind): Builder
 
   /** Sets an explicit start timestamp for the newly created span.
     *
     * Use this method to specify an explicit start timestamp. If not called, the
     * implementation will use the timestamp value at ([[start]],
-    * [[startUnmanaged]], [[startResource]]) time, which should be the default
+    * [[startUnmanaged]], [[wrapResource]]) time, which should be the default
     * case.
     *
     * '''Note''': the timestamp should be based on `Clock[F].realTime`. Using
@@ -91,12 +90,12 @@ trait SpanBuilder[F[_]] {
     * @param timestamp
     *   the explicit start timestamp from the epoch
     */
-  def withStartTimestamp(timestamp: FiniteDuration): SpanBuilder[F]
+  def withStartTimestamp(timestamp: FiniteDuration): Builder
 
   /** Indicates that the span should be the root one and the scope parent should
     * be ignored.
     */
-  def root: SpanBuilder[F]
+  def root: Builder
 
   /** Sets the parent to use from the specified [[SpanContext]]. If not set, the
     * span that is currently available in the scope will be used as parent.
@@ -109,7 +108,42 @@ trait SpanBuilder[F[_]] {
     * @param parent
     *   the span context to use as a parent
     */
-  def withParent(parent: SpanContext): SpanBuilder[F]
+  def withParent(parent: SpanContext): Builder
+
+  /** Wraps the given resource to trace it upon the start.
+    *
+    * The span is started upon resource allocation and ended upon finalization.
+    * The allocation and release stages of the `resource` are traced by separate
+    * spans. Carries a value of the given `resource`.
+    *
+    * The structure of the inner spans:
+    * {{{
+    * > span-name
+    *   > acquire
+    *   > use
+    *   > release
+    * }}}
+    *
+    * The finalization strategy is determined by [[SpanFinalizer.Strategy]]. By
+    * default, the abnormal termination (error, cancelation) is recorded.
+    *
+    * @see
+    *   default finalization strategy [[SpanFinalizer.Strategy.reportAbnormal]]
+    * @example
+    *   {{{
+    * val tracer: Tracer[F] = ???
+    * val resource: Resource[F, String] = Resource.eval(Sync[F].delay("string"))
+    * val ok: F[Unit] =
+    *   tracer.spanBuilder("wrapped-resource").wrapResource(resource).start.use { case span @ Span.Res(value) =>
+    *     span.setStatus(Status.Ok, s"all good. resource value: $${value}")
+    *   }
+    *   }}}
+    * @param resource
+    *   the resource to trace
+    */
+  def wrapResource[A](
+      resource: Resource[F, A]
+  )(implicit ev: Result =:= Span[F]): SpanBuilder.Aux[F, Span.Res[F, A]]
 
   /** Creates a [[Span]]. The span requires to be ended ''explicitly'' by
     * invoking `end`.
@@ -138,7 +172,7 @@ trait SpanBuilder[F[_]] {
     * @see
     *   [[start]] for a managed lifecycle
     */
-  def startUnmanaged: F[Span[F]]
+  def startUnmanaged(implicit ev: Result =:= Span[F]): F[Span[F]]
 
   /** Creates a [[Span]]. Unlike [[startUnmanaged]] the lifecycle of the span is
     * managed by the [[cats.effect.kernel.Resource Resource]]. That means the
@@ -159,76 +193,62 @@ trait SpanBuilder[F[_]] {
     *   }
     *   }}}
     */
-  def start: Resource[F, Span[F]]
-
-  /** Creates a [[Span.Res]]. The span is started upon resource allocation and
-    * ended upon finalization. The allocation and release stages of the
-    * `resource` are traced by separate spans. Carries a value of the given
-    * `resource`.
-    *
-    * The structure of the inner spans:
-    * {{{
-    * > span-name
-    *   > acquire
-    *   > use
-    *   > release
-    * }}}
-    *
-    * The finalization strategy is determined by [[SpanFinalizer.Strategy]]. By
-    * default, the abnormal termination (error, cancelation) is recorded.
-    *
-    * @see
-    *   default finalization strategy [[SpanFinalizer.Strategy.reportAbnormal]]
-    *
-    * @example
-    *   {{{
-    * val tracer: Tracer[F] = ???
-    * val resource: Resource[F, String] = Resource.eval(Sync[F].delay("string"))
-    * val ok: F[Unit] =
-    *   tracer.spanBuilder("wrapped-resource").startResource(resource).use { case span @ Span.Res(value) =>
-    *     span.setStatus(Status.Ok, s"all good. resource value: $${value}")
-    *   }
-    *   }}}
-    * @param resource
-    *   the resource to trace
-    */
-  def startResource[A](resource: Resource[F, A]): Resource[F, Span.Res[F, A]]
+  def start: Resource[F, Result]
 }
 
 object SpanBuilder {
 
-  def noop[F[_]: Applicative](back: Span.Backend[F]): SpanBuilder[F] =
+  type Aux[F[_], A] = SpanBuilder[F] {
+    type Result = A
+  }
+
+  def noop[F[_]: Applicative](
+      back: Span.Backend[F]
+  ): SpanBuilder.Aux[F, Span[F]] =
+    make(back, Resource.pure(Span.fromBackend(back)))
+
+  private def make[F[_]: Applicative, Res <: Span[F]](
+      back: Span.Backend[F],
+      startSpan: Resource[F, Res]
+  ): SpanBuilder.Aux[F, Res] =
     new SpanBuilder[F] {
+      type Result = Res
+
       private val span: Span[F] = Span.fromBackend(back)
 
-      def addAttribute[A](attribute: Attribute[A]): SpanBuilder[F] = this
-      def addAttributes(attributes: Attribute[_]*): SpanBuilder[F] = this
+      def wrapResource[A](
+          resource: Resource[F, A]
+      )(implicit ev: Result =:= Span[F]): SpanBuilder.Aux[F, Span.Res[F, A]] =
+        make(
+          back,
+          resource.map(r => Span.Res.fromBackend(r, back))
+        )
+
+      def addAttribute[A](attribute: Attribute[A]): Builder = this
+
+      def addAttributes(attributes: Attribute[_]*): Builder = this
 
       def addLink(
           spanContext: SpanContext,
           attributes: Attribute[_]*
-      ): SpanBuilder[F] = this
+      ): Builder = this
 
-      def root: SpanBuilder[F] = this
+      def root: Builder = this
 
-      def withFinalizationStrategy(
-          strategy: SpanFinalizer.Strategy
-      ): SpanBuilder[F] = this
+      def withFinalizationStrategy(strategy: SpanFinalizer.Strategy): Builder =
+        this
 
-      def withParent(parent: SpanContext): SpanBuilder[F] = this
-      def withSpanKind(spanKind: SpanKind): SpanBuilder[F] = this
-      def withStartTimestamp(timestamp: FiniteDuration): SpanBuilder[F] = this
+      def withParent(parent: SpanContext): Builder = this
 
-      val startUnmanaged: F[Span[F]] =
+      def withSpanKind(spanKind: SpanKind): Builder = this
+
+      def withStartTimestamp(timestamp: FiniteDuration): Builder = this
+
+      def startUnmanaged(implicit ev: Result =:= Span[F]): F[Span[F]] =
         Applicative[F].pure(span)
 
-      val start: Resource[F, Span[F]] =
-        Resource.pure(span)
-
-      def startResource[A](
-          resource: Resource[F, A]
-      ): Resource[F, Span.Res[F, A]] =
-        resource.map(a => Span.Res.fromBackend(a, back))
+      val start: Resource[F, Res] =
+        startSpan
     }
 
 }

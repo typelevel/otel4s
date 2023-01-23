@@ -24,6 +24,7 @@ ThisBuild / scalaVersion := Scala213 // the default Scala
 
 val CatsVersion = "2.9.0"
 val CatsEffectVersion = "3.4.5"
+val FS2Version = "3.5.0"
 val MUnitVersion = "1.0.0-M7"
 val MUnitCatsEffectVersion = "2.0.0-M3"
 val OpenTelemetryVersion = "1.22.0"
@@ -36,17 +37,25 @@ lazy val scalaReflectDependency = Def.settings(
   }
 )
 
+lazy val munitDependencies = Def.settings(
+  libraryDependencies ++= Seq(
+    "org.scalameta" %%% "munit" % MUnitVersion % Test,
+    "org.typelevel" %%% "munit-cats-effect" % MUnitCatsEffectVersion % Test
+  )
+)
+
 lazy val root = tlCrossRootProject
   .aggregate(
     `core-common`,
     `core-metrics`,
-    `core-tracing`,
+    `core-trace`,
     core,
     `testkit-common`,
     `testkit-metrics`,
     testkit,
     `java-common`,
     `java-metrics`,
+    `java-trace`,
     java
   )
   .settings(name := "otel4s")
@@ -67,36 +76,33 @@ lazy val `core-metrics` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .in(file("core/metrics"))
   .dependsOn(`core-common`)
   .settings(scalaReflectDependency)
+  .settings(munitDependencies)
   .settings(
     name := "otel4s-core-metrics",
     libraryDependencies ++= Seq(
       "org.typelevel" %%% "cats-effect-kernel" % CatsEffectVersion,
-      "org.scalameta" %%% "munit" % MUnitVersion % Test,
-      "org.typelevel" %%% "munit-cats-effect" % MUnitCatsEffectVersion % Test,
       "org.typelevel" %%% "cats-effect-testkit" % CatsEffectVersion % Test
     )
   )
 
-lazy val `core-tracing` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
+lazy val `core-trace` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .crossType(CrossType.Pure)
-  .in(file("core/tracing"))
+  .in(file("core/trace"))
   .dependsOn(`core-common`)
   .settings(scalaReflectDependency)
+  .settings(munitDependencies)
   .settings(
-    name := "otel4s-core-tracing",
+    name := "otel4s-core-trace",
     libraryDependencies ++= Seq(
       "org.typelevel" %%% "cats-effect-kernel" % CatsEffectVersion,
-      "org.scodec" %%% "scodec-bits" % ScodecVersion,
-      "org.scalameta" %%% "munit" % MUnitVersion % Test,
-      "org.typelevel" %%% "munit-cats-effect" % MUnitCatsEffectVersion % Test,
-      "org.typelevel" %%% "cats-effect-testkit" % CatsEffectVersion % Test
+      "org.scodec" %%% "scodec-bits" % ScodecVersion
     )
   )
 
 lazy val core = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .crossType(CrossType.Pure)
   .in(file("core/all"))
-  .dependsOn(`core-common`, `core-metrics`, `core-tracing`)
+  .dependsOn(`core-common`, `core-metrics`, `core-trace`)
   .settings(
     name := "otel4s-core"
   )
@@ -151,20 +157,33 @@ lazy val `java-common` = project
 lazy val `java-metrics` = project
   .in(file("java/metrics"))
   .dependsOn(`java-common`, `core-metrics`.jvm, `testkit-metrics`.jvm)
+  .settings(munitDependencies)
   .settings(
     name := "otel4s-java-metrics",
     libraryDependencies ++= Seq(
-      "io.opentelemetry" % "opentelemetry-api" % OpenTelemetryVersion,
+      "io.opentelemetry" % "opentelemetry-sdk" % OpenTelemetryVersion % Test,
+      "io.opentelemetry" % "opentelemetry-sdk-testing" % OpenTelemetryVersion % Test
+    )
+  )
+
+lazy val `java-trace` = project
+  .in(file("java/trace"))
+  .dependsOn(`java-common`, `core-trace`.jvm)
+  .settings(munitDependencies)
+  .settings(
+    name := "otel4s-java-trace",
+    libraryDependencies ++= Seq(
+      "org.typelevel" %%% "cats-effect" % CatsEffectVersion,
       "io.opentelemetry" % "opentelemetry-sdk" % OpenTelemetryVersion % Test,
       "io.opentelemetry" % "opentelemetry-sdk-testing" % OpenTelemetryVersion % Test,
-      "org.scalameta" %% "munit" % MUnitVersion % Test,
-      "org.typelevel" %% "munit-cats-effect" % MUnitCatsEffectVersion % Test
+      "org.typelevel" %%% "cats-effect-testkit" % CatsEffectVersion % Test,
+      "co.fs2" %% "fs2-core" % FS2Version % Test
     )
   )
 
 lazy val java = project
   .in(file("java/all"))
-  .dependsOn(core.jvm, `java-metrics`)
+  .dependsOn(core.jvm, `java-metrics`, `java-trace`)
   .settings(
     name := "otel4s-java"
   )

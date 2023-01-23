@@ -32,4 +32,7 @@ object SamplingDecision {
     * information like timings and attributes and will be exported.
     */
   case object Record extends SamplingDecision(true)
+
+  def fromBoolean(isSampled: Boolean): SamplingDecision =
+    if (isSampled) Record else Drop
 }

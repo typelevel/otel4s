@@ -54,3 +54,30 @@ trait SpanContext {
     */
   def isRemote: Boolean
 }
+
+object SpanContext {
+
+  object TraceId {
+    val Bytes: Int = 16
+    val HexLength: Int = Bytes * 2
+    val InvalidHex: String = "0" * HexLength
+  }
+
+  object SpanId {
+    val Bytes: Int = 8
+    val HexLength: Int = Bytes * 2
+    val InvalidHex: String = "0" * HexLength
+  }
+
+  val invalid: SpanContext =
+    new SpanContext {
+      val traceIdHex: String = TraceId.InvalidHex
+      val traceId: ByteVector = ByteVector.fromValidHex(traceIdHex)
+      val spanIdHex: String = SpanId.InvalidHex
+      val spanId: ByteVector = ByteVector.fromValidHex(spanIdHex)
+      val samplingDecision: SamplingDecision = SamplingDecision.Drop
+      val isValid: Boolean = false
+      val isRemote: Boolean = false
+    }
+
+}

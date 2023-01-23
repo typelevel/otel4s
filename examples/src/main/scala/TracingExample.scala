@@ -31,7 +31,7 @@ object Work {
   def apply[F[_]: MonadCancelThrow: Tracer: Console]: Work[F] =
     new Work[F] {
       def doWork: F[Unit] =
-        implicitly[Tracer[F]].span("Work.DoWork").use { span =>
+        Tracer[F].span("Work.DoWork").use { span =>
           span.addEvent("Starting the work.") *>
             doWorkInternal *>
             span.addEvent("Finished working.")

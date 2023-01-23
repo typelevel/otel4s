@@ -48,14 +48,14 @@ lazy val root = tlCrossRootProject
   .aggregate(
     `core-common`,
     `core-metrics`,
-    `core-tracing`,
+    `core-trace`,
     core,
     `testkit-common`,
     `testkit-metrics`,
     testkit,
     `java-common`,
     `java-metrics`,
-    `java-tracing`,
+    `java-trace`,
     java
   )
   .settings(name := "otel4s")
@@ -85,14 +85,14 @@ lazy val `core-metrics` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
     )
   )
 
-lazy val `core-tracing` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
+lazy val `core-trace` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .crossType(CrossType.Pure)
-  .in(file("core/tracing"))
+  .in(file("core/trace"))
   .dependsOn(`core-common`)
   .settings(scalaReflectDependency)
   .settings(munitDependencies)
   .settings(
-    name := "otel4s-core-tracing",
+    name := "otel4s-core-trace",
     libraryDependencies ++= Seq(
       "org.typelevel" %%% "cats-effect-kernel" % CatsEffectVersion,
       "org.scodec" %%% "scodec-bits" % ScodecVersion
@@ -102,7 +102,7 @@ lazy val `core-tracing` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
 lazy val core = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .crossType(CrossType.Pure)
   .in(file("core/all"))
-  .dependsOn(`core-common`, `core-metrics`, `core-tracing`)
+  .dependsOn(`core-common`, `core-metrics`, `core-trace`)
   .settings(
     name := "otel4s-core"
   )
@@ -166,12 +166,12 @@ lazy val `java-metrics` = project
     )
   )
 
-lazy val `java-tracing` = project
-  .in(file("java/tracing"))
-  .dependsOn(`java-common`, `core-tracing`.jvm)
+lazy val `java-trace` = project
+  .in(file("java/trace"))
+  .dependsOn(`java-common`, `core-trace`.jvm)
   .settings(munitDependencies)
   .settings(
-    name := "otel4s-java-tracing",
+    name := "otel4s-java-trace",
     libraryDependencies ++= Seq(
       "org.typelevel" %%% "cats-effect" % CatsEffectVersion,
       "io.opentelemetry" % "opentelemetry-sdk" % OpenTelemetryVersion % Test,
@@ -183,7 +183,7 @@ lazy val `java-tracing` = project
 
 lazy val java = project
   .in(file("java/all"))
-  .dependsOn(core.jvm, `java-metrics`, `java-tracing`)
+  .dependsOn(core.jvm, `java-metrics`, `java-trace`)
   .settings(
     name := "otel4s-java"
   )

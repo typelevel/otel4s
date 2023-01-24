@@ -16,19 +16,36 @@
 
 package org.typelevel.otel4s.java
 
+import cats.effect.Async
 import cats.effect.LiftIO
+import cats.effect.Resource
 import cats.effect.Sync
 import cats.syntax.flatMap._
 import cats.syntax.functor._
 import io.opentelemetry.api.{OpenTelemetry => JOpenTelemetry}
+import io.opentelemetry.sdk.{OpenTelemetrySdk => JOpenTelemetrySdk}
+import io.opentelemetry.sdk.common.CompletableResultCode
 import org.typelevel.otel4s.Otel4s
+import org.typelevel.otel4s.java.Conversions.asyncFromCompletableResultCode
 import org.typelevel.otel4s.java.metrics.Metrics
 import org.typelevel.otel4s.java.trace.Traces
 import org.typelevel.otel4s.metrics.MeterProvider
 import org.typelevel.otel4s.trace.TracerProvider
 
+import scala.jdk.CollectionConverters._
+
 object OtelJava {
 
+  /** Creates an [[org.typelevel.otel4s.Otel4s]] from a Java OpenTelemetry
+    * instance.
+    *
+    * @param jOtel
+    *   A Java OpenTelemetry instance. It is the caller's responsibility to shut
+    *   this down. Failure to do so may result in lost metrics and traces.
+    *
+    * @return
+    *   An effect of an [[org.typelevel.otel4s.Otel4s]] resource.
+    */
   def forSync[F[_]: LiftIO: Sync](jOtel: JOpenTelemetry): F[Otel4s[F]] = {
     for {
       metrics <- Sync[F].pure(Metrics.forSync(jOtel))
@@ -39,4 +56,32 @@ object OtelJava {
     }
   }
 
+  /** Lifts the acquisition of a Java OpenTelemetrySdk instance to a Resource.
+    *
+    * @param acquire
+    *   OpenTelemetrySdk resource
+    *
+    * @return
+    *   An [[org.typelevel.otel4s.Otel4s]] resource.
+    */
+  def resource[F[_]: LiftIO: Async](
+      acquire: F[JOpenTelemetrySdk]
+  ): Resource[F, Otel4s[F]] =
+    Resource
+      .make(acquire)(sdk =>
+        asyncFromCompletableResultCode(
+          Sync[F].delay(
+            // The answer could have been traverse...
+            // A proper shutdown will be in the next opentelemetry-java release.
+            CompletableResultCode.ofAll(
+              List(
+                sdk.getSdkTracerProvider.shutdown(),
+                sdk.getSdkMeterProvider.shutdown(),
+                sdk.getSdkLoggerProvider.shutdown()
+              ).asJava
+            )
+          )
+        )
+      )
+      .evalMap(forSync[F])
 }

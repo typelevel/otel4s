@@ -17,6 +17,7 @@
 import cats.effect.IO
 import cats.effect.IOApp
 import cats.effect.MonadCancelThrow
+import cats.effect.Resource
 import cats.effect.std.Console
 import cats.syntax.all._
 import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk
@@ -42,19 +43,24 @@ object Work {
     }
 }
 
-class TracingExample extends IOApp.Simple {
-  def getTracer: IO[Tracer[IO]] =
-    for {
-      otel4j <- IO(
-        AutoConfiguredOpenTelemetrySdk.builder.build().getOpenTelemetrySdk
-      )
-      otel4s <- OtelJava.forSync(otel4j)
-      tracerProvider = otel4s.tracerProvider
-      tracer <- tracerProvider.tracer("Example").get
-    } yield tracer
+object TracingExample extends IOApp.Simple {
+  def tracerResource: Resource[IO, Tracer[IO]] =
+    Resource
+      .make(
+        IO(
+          AutoConfiguredOpenTelemetrySdk.builder
+            .registerShutdownHook(false)
+            .setResultAsGlobal(false)
+            .build()
+            .getOpenTelemetrySdk
+        )
+      )(sdk => IO.unit /* TODO in 1.23, call shutdown() */ )
+      .evalMap(OtelJava.forSync[IO])
+      .map(_.tracerProvider)
+      .evalMap(_.tracer("Example").get)
 
   def run: IO[Unit] = {
-    getTracer.flatMap { implicit tracer: Tracer[IO] =>
+    tracerResource.use { implicit tracer: Tracer[IO] =>
       Work[IO].doWork
     }
   }

@@ -14,13 +14,17 @@
  * limitations under the License.
  */
 
+import cats.FlatMap
+import cats.effect.Async
 import cats.effect.IO
 import cats.effect.IOApp
 import cats.effect.MonadCancelThrow
 import cats.effect.Resource
+import cats.effect.Sync
 import cats.effect.std.Console
 import cats.syntax.all._
 import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk
+import io.opentelemetry.sdk.common.CompletableResultCode
 import org.typelevel.otel4s.java.OtelJava
 import org.typelevel.otel4s.trace.Tracer
 
@@ -44,6 +48,21 @@ object Work {
 }
 
 object TracingExample extends IOApp.Simple {
+  def asyncFromCompletableResultCode[F[_]: Async](codeF: F[CompletableResultCode]): F[Unit] =
+    FlatMap[F].flatMap(codeF)(code =>
+      Async[F].async[Unit](cb =>
+        Sync[F].delay {
+          code.whenComplete(() =>
+            if (code.isSuccess())
+              cb(Either.unit)
+            else
+              cb(Left(new RuntimeException("Asynchronous Opentelemetry operation failed")))
+          )
+          None
+        }
+      )
+    )
+
   def tracerResource: Resource[IO, Tracer[IO]] =
     Resource
       .make(
@@ -54,7 +73,7 @@ object TracingExample extends IOApp.Simple {
             .build()
             .getOpenTelemetrySdk
         )
-      )(sdk => IO.unit /* TODO in 1.23, call shutdown() */ )
+      )(sdk => asyncFromCompletableResultCode(IO(sdk.getSdkTracerProvider.shutdown())))
       .evalMap(OtelJava.forSync[IO])
       .map(_.tracerProvider)
       .evalMap(_.tracer("Example").get)

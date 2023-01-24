@@ -196,9 +196,12 @@ lazy val examples = project
   .settings(
     name := "otel4s-examples",
     libraryDependencies ++= Seq(
+      "io.opentelemetry" % "opentelemetry-exporter-otlp" % OpenTelemetryVersion,
       "io.opentelemetry" % "opentelemetry-sdk" % OpenTelemetryVersion,
-      "io.opentelemetry" % "opentelemetry-sdk-extension-autoconfigure" % s"${OpenTelemetryVersion}-alpha"
-    )
+      "io.opentelemetry" % "opentelemetry-sdk-extension-autoconfigure" % s"${OpenTelemetryVersion}-alpha",
+    ),
+    run / fork := true,
+    javaOptions += "-Dotel.java.global-autoconfigure.enabled=true",
   )
 
 lazy val docs = project.in(file("site")).enablePlugins(TypelevelSitePlugin)

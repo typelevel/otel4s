@@ -22,6 +22,8 @@ import cats.syntax.flatMap._
 import cats.syntax.functor._
 import io.opentelemetry.api.{OpenTelemetry => JOpenTelemetry}
 import org.typelevel.otel4s.Otel4s
+import org.typelevel.otel4s.java.metrics.Metrics
+import org.typelevel.otel4s.java.trace.Traces
 import org.typelevel.otel4s.metrics.MeterProvider
 import org.typelevel.otel4s.trace.TracerProvider
 

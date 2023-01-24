@@ -14,11 +14,10 @@
  * limitations under the License.
  */
 
-package org.typelevel.otel4s.java
+package org.typelevel.otel4s.java.metrics
 
 import cats.effect.kernel.Sync
 import io.opentelemetry.api.{OpenTelemetry => JOpenTelemetry}
-import org.typelevel.otel4s.java.metrics.MeterProviderImpl
 import org.typelevel.otel4s.metrics.MeterProvider
 
 trait Metrics[F[_]] {

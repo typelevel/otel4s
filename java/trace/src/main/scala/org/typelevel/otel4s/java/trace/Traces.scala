@@ -14,13 +14,12 @@
  * limitations under the License.
  */
 
-package org.typelevel.otel4s.java
+package org.typelevel.otel4s.java.trace
 
 import cats.effect.LiftIO
 import cats.effect.Sync
 import cats.syntax.functor._
 import io.opentelemetry.api.{OpenTelemetry => JOpenTelemetry}
-import org.typelevel.otel4s.java.trace.TracerProviderImpl
 import org.typelevel.otel4s.trace.TracerProvider
 
 trait Traces[F[_]] {

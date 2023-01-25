@@ -29,7 +29,7 @@ object OtelJavaAuto {
 
   /** Creates an auto-configured [[org.typelevel.otel4s.Otel4s]] resource.
     *
-    * All SKD configuration options can be passed as Java system
+    * All SDK configuration options can be passed as Java system
     * properties, e.g., `-Dotel.traces.exporter=zipkin` or environment
     * variables, e.g., `OTEL_TRACES_EXPORTER=zipkin`. You can find
     * more details in the

@@ -28,6 +28,24 @@ import org.typelevel.otel4s.java.OtelJava
 object OtelJavaAuto {
 
   /** Creates an auto-configured [[org.typelevel.otel4s.Otel4s]] resource.
+    *
+    * All SKD configuration options can be passed as Java system
+    * properties, e.g., `-Dotel.traces.exporter=zipkin` or environment
+    * variables, e.g., `OTEL_TRACES_EXPORTER=zipkin`. You can find
+    * more details in the
+    * [[https://opentelemetry.io/docs/instrumentation/java/automatic/agent-config/
+    * OpenTelemetry Agent Configuration]] and
+    * [[https://opentelemetry.io/docs/reference/specification/sdk-environment-variables/
+    * Environment Variable Specification]]
+    *
+    * '''Note:''' `otel4s-java-auto` does not provide a specific OpenTelemetry
+    * exporter.
+    *
+    * You may include a dependency with a required exporter explicitly in your
+    * build.sbt:
+    * {{{
+    *   libraryDependencies += "io.opentelemetry" % "opentelemetry-exporter-otlp" % "x.y.z"
+    * }}}
     */
   def resource[F[_]: LiftIO: Async]: Resource[F, Otel4s[F]] =
     OtelJava.resource(

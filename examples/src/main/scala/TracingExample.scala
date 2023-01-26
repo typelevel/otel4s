@@ -20,7 +20,8 @@ import cats.effect.MonadCancelThrow
 import cats.effect.Resource
 import cats.effect.std.Console
 import cats.syntax.all._
-import org.typelevel.otel4s.java.auto.OtelJavaAuto
+import io.opentelemetry.api.GlobalOpenTelemetry
+import org.typelevel.otel4s.java.OtelJava
 import org.typelevel.otel4s.trace.Tracer
 
 trait Work[F[_]] {
@@ -44,7 +45,9 @@ object Work {
 
 object TracingExample extends IOApp.Simple {
   def tracerResource: Resource[IO, Tracer[IO]] =
-    OtelJavaAuto.resource
+    Resource
+      .eval(IO(GlobalOpenTelemetry.get))
+      .evalMap(OtelJava.forSync[IO])
       .evalMap(_.tracerProvider.tracer("Example").get)
 
   def run: IO[Unit] = {

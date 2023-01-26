@@ -57,7 +57,6 @@ lazy val root = tlCrossRootProject
     `java-metrics`,
     `java-trace`,
     java,
-    `java-auto`,
     examples
   )
   .settings(name := "otel4s")
@@ -190,26 +189,16 @@ lazy val java = project
     name := "otel4s-java"
   )
 
-lazy val `java-auto` = project
-  .in(file("java/auto"))
-  .dependsOn(`java`)
-  .settings(munitDependencies)
-  .settings(
-    name := "otel4s-java-auto",
-    libraryDependencies ++= Seq(
-      "io.opentelemetry" % "opentelemetry-sdk-extension-autoconfigure" % s"${OpenTelemetryVersion}-alpha"
-    )
-  )
-
 lazy val examples = project
   .enablePlugins(NoPublishPlugin)
   .in(file("examples"))
-  .dependsOn(core.jvm, `java-auto`)
+  .dependsOn(core.jvm, java)
   .settings(
     name := "otel4s-examples",
     libraryDependencies ++= Seq(
       "io.opentelemetry" % "opentelemetry-exporter-otlp" % OpenTelemetryVersion,
-      "io.opentelemetry" % "opentelemetry-sdk" % OpenTelemetryVersion
+      "io.opentelemetry" % "opentelemetry-sdk" % OpenTelemetryVersion,
+      "io.opentelemetry" % "opentelemetry-sdk-extension-autoconfigure" % s"${OpenTelemetryVersion}-alpha"
     ),
     run / fork := true,
     javaOptions += "-Dotel.java.global-autoconfigure.enabled=true"

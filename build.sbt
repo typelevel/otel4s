@@ -56,7 +56,9 @@ lazy val root = tlCrossRootProject
     `java-common`,
     `java-metrics`,
     `java-trace`,
-    java
+    java,
+    `java-auto`,
+    examples
   )
   .settings(name := "otel4s")
 
@@ -145,7 +147,8 @@ lazy val `java-common` = project
   .settings(
     name := "otel4s-java-common",
     libraryDependencies ++= Seq(
-      "io.opentelemetry" % "opentelemetry-api" % OpenTelemetryVersion,
+      "org.typelevel" %%% "cats-effect-kernel" % CatsEffectVersion,
+      "io.opentelemetry" % "opentelemetry-sdk" % OpenTelemetryVersion,
       "org.scalameta" %%% "munit" % MUnitVersion % Test
     ),
     buildInfoPackage := "org.typelevel.otel4s.java",
@@ -162,7 +165,6 @@ lazy val `java-metrics` = project
   .settings(
     name := "otel4s-java-metrics",
     libraryDependencies ++= Seq(
-      "io.opentelemetry" % "opentelemetry-sdk" % OpenTelemetryVersion % Test,
       "io.opentelemetry" % "opentelemetry-sdk-testing" % OpenTelemetryVersion % Test
     )
   )
@@ -175,7 +177,6 @@ lazy val `java-trace` = project
     name := "otel4s-java-trace",
     libraryDependencies ++= Seq(
       "org.typelevel" %%% "cats-effect" % CatsEffectVersion,
-      "io.opentelemetry" % "opentelemetry-sdk" % OpenTelemetryVersion % Test,
       "io.opentelemetry" % "opentelemetry-sdk-testing" % OpenTelemetryVersion % Test,
       "org.typelevel" %%% "cats-effect-testkit" % CatsEffectVersion % Test,
       "co.fs2" %% "fs2-core" % FS2Version % Test
@@ -187,6 +188,31 @@ lazy val java = project
   .dependsOn(core.jvm, `java-metrics`, `java-trace`)
   .settings(
     name := "otel4s-java"
+  )
+
+lazy val `java-auto` = project
+  .in(file("java/auto"))
+  .dependsOn(`java`)
+  .settings(munitDependencies)
+  .settings(
+    name := "otel4s-java-auto",
+    libraryDependencies ++= Seq(
+      "io.opentelemetry" % "opentelemetry-sdk-extension-autoconfigure" % s"${OpenTelemetryVersion}-alpha"
+    )
+  )
+
+lazy val examples = project
+  .enablePlugins(NoPublishPlugin)
+  .in(file("examples"))
+  .dependsOn(core.jvm, `java-auto`)
+  .settings(
+    name := "otel4s-examples",
+    libraryDependencies ++= Seq(
+      "io.opentelemetry" % "opentelemetry-exporter-otlp" % OpenTelemetryVersion,
+      "io.opentelemetry" % "opentelemetry-sdk" % OpenTelemetryVersion
+    ),
+    run / fork := true,
+    javaOptions += "-Dotel.java.global-autoconfigure.enabled=true"
   )
 
 lazy val docs = project.in(file("site")).enablePlugins(TypelevelSitePlugin)

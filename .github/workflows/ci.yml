@@ -98,11 +98,11 @@ jobs:
 
       - name: Make target directories
         if: github.event_name != 'pull_request' && (startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/main')
-        run: mkdir -p testkit/metrics/jvm/target java/metrics/target testkit/common/jvm/target examples/target core/trace/.js/target target core/common/.jvm/target java/trace/target .js/target core/metrics/.native/target core/all/.native/target site/target core/metrics/.jvm/target core/all/.js/target java/all/target java/auto/target java/common/target core/metrics/.js/target core/all/.jvm/target .jvm/target core/trace/.native/target .native/target core/trace/.jvm/target core/common/.native/target core/common/.js/target testkit/all/jvm/target project/target
+        run: mkdir -p testkit/metrics/jvm/target java/metrics/target testkit/common/jvm/target examples/target core/trace/.js/target target core/common/.jvm/target java/trace/target .js/target core/metrics/.native/target core/all/.native/target site/target core/metrics/.jvm/target core/all/.js/target java/all/target java/common/target core/metrics/.js/target core/all/.jvm/target .jvm/target core/trace/.native/target .native/target core/trace/.jvm/target core/common/.native/target core/common/.js/target testkit/all/jvm/target project/target
 
       - name: Compress target directories
         if: github.event_name != 'pull_request' && (startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/main')
-        run: tar cf targets.tar testkit/metrics/jvm/target java/metrics/target testkit/common/jvm/target examples/target core/trace/.js/target target core/common/.jvm/target java/trace/target .js/target core/metrics/.native/target core/all/.native/target site/target core/metrics/.jvm/target core/all/.js/target java/all/target java/auto/target java/common/target core/metrics/.js/target core/all/.jvm/target .jvm/target core/trace/.native/target .native/target core/trace/.jvm/target core/common/.native/target core/common/.js/target testkit/all/jvm/target project/target
+        run: tar cf targets.tar testkit/metrics/jvm/target java/metrics/target testkit/common/jvm/target examples/target core/trace/.js/target target core/common/.jvm/target java/trace/target .js/target core/metrics/.native/target core/all/.native/target site/target core/metrics/.jvm/target core/all/.js/target java/all/target java/common/target core/metrics/.js/target core/all/.jvm/target .jvm/target core/trace/.native/target .native/target core/trace/.jvm/target core/common/.native/target core/common/.js/target testkit/all/jvm/target project/target
 
       - name: Upload target directories
         if: github.event_name != 'pull_request' && (startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/main')

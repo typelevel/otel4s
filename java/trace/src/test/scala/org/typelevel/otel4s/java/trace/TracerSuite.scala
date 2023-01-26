@@ -20,6 +20,7 @@ import cats.effect.IO
 import cats.effect.Resource
 import cats.effect.testkit.TestControl
 import fs2.Stream
+import io.opentelemetry.api.common.{AttributeKey => JAttributeKey}
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.trace.StatusCode
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo
@@ -68,6 +69,25 @@ class TracerSuite extends CatsEffectSuite {
       spans.map(_.getInstrumentationScopeInfo),
       List(expected)
     )
+  }
+
+  test("set attributes only once") {
+    val key = "string-attribute"
+    val value = "value"
+    val attribute = Attribute(AttributeKey.string(key), value)
+
+    for {
+      sdk <- makeSdk()
+      tracer <- sdk.provider.tracer("tracer").get
+      _ <- tracer.span("span", attribute).use_
+      spans <- sdk.finishedSpans
+    } yield {
+      assertEquals(spans.map(_.getAttributes.size), List(1))
+      assertEquals(
+        spans.map(_.getAttributes.get(JAttributeKey.stringKey(key))),
+        List(value)
+      )
+    }
   }
 
   test("propagate traceId and spanId") {

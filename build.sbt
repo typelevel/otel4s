@@ -148,7 +148,8 @@ lazy val `java-common` = project
     name := "otel4s-java-common",
     libraryDependencies ++= Seq(
       "org.typelevel" %%% "cats-effect-kernel" % CatsEffectVersion,
-      "io.opentelemetry" % "opentelemetry-sdk" % OpenTelemetryVersion
+      "io.opentelemetry" % "opentelemetry-sdk" % OpenTelemetryVersion,
+      "org.scalameta" %%% "munit" % MUnitVersion % Test
     ),
     buildInfoPackage := "org.typelevel.otel4s.java",
     buildInfoOptions += sbtbuildinfo.BuildInfoOption.PackagePrivate,

@@ -39,7 +39,13 @@ object Work {
         }
 
       def doWorkInternal =
-        Console[F].println("Doin' work")
+        Console[F].println("Doin' work") *>
+          summon
+
+      def summon =
+        Tracer[F].currentSpan.flatMap { span =>
+          span.addEvent("I've been summoned.")
+        }
     }
 }
 

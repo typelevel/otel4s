@@ -21,6 +21,7 @@ import cats.effect.Sync
 import cats.syntax.functor._
 import io.opentelemetry.api.trace.{Span => JSpan}
 import io.opentelemetry.api.trace.{Tracer => JTracer}
+import org.typelevel.otel4s.trace.Span
 import org.typelevel.otel4s.trace.SpanBuilder
 import org.typelevel.otel4s.trace.SpanContext
 import org.typelevel.otel4s.trace.Tracer
@@ -32,6 +33,14 @@ private[java] class TracerImpl[F[_]: Sync](
 
   val meta: Tracer.Meta[F] =
     Tracer.Meta.enabled
+
+  def currentSpan: F[Span[F]] =
+    scope.current.map {
+      case TraceScope.Scope.Span(_, jSpan, ctx) =>
+        Span.fromBackend(new SpanBackendImpl(jSpan, ctx))
+      case TraceScope.Scope.Noop | TraceScope.Scope.Root(_) =>
+        Span.fromBackend(Span.Backend.noop)
+    }
 
   def currentSpanContext: F[Option[SpanContext]] =
     scope.current.map {

@@ -28,6 +28,11 @@ trait Tracer[F[_]] extends TracerMacro[F] {
     */
   def meta: Tracer.Meta[F]
 
+  /** Returns the span from the scope, falling back to a noop if none is
+    * available.
+    */
+  def currentSpan: F[Span[F]]
+
   /** Returns the context of a span when it is available in the scope.
     */
   def currentSpanContext: F[Option[SpanContext]]
@@ -137,6 +142,7 @@ object Tracer {
       private val builder = SpanBuilder.noop(noopBackend)
       private val resourceUnit = Resource.unit[F]
       val meta: Meta[F] = Meta.disabled
+      val currentSpan: F[Span[F]] = builder.startUnmanaged
       val currentSpanContext: F[Option[SpanContext]] = Applicative[F].pure(None)
       def rootScope: Resource[F, Unit] = resourceUnit
       def noopScope: Resource[F, Unit] = resourceUnit

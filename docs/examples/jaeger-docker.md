@@ -7,8 +7,13 @@ otel4s library.
 
 ### Project setup
 
-Configure the project in the `build.sbt`:
+Configure the project using your favorite tool:
 
+@:select(build-tool)
+
+@:choice(sbt)
+
+Add settings to the `build.sbt`:
 ```scala
 libraryDependencies ++= Seq(
   "org.typelevel" %% "otel4s-java" % "@VERSION@", // <1>
@@ -20,6 +25,20 @@ javaOptions += "-Dotel.java.global-autoconfigure.enabled=true" // <4>
 javaOptions += "-Dotel.service.name=jaeger-example"            // <5>
 javaOptions += "-Dotel.metrics.exporter=none"                  // <6>
 ```
+
+@:choice(scala-cli)
+
+Add directives to the `tracing.scala`:
+```scala
+//> using lib "org.typelevel::otel4s-java:@VERSION@" // <1>
+//> using lib "io.opentelemetry:opentelemetry-exporter-otlp:@OPEN_TELEMETRY_VERSION@" // <2>
+//> using lib "io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:@OPEN_TELEMETRY_VERSION@-alpha" // <3>
+//> using `java-opt` "-Dotel.java.global-autoconfigure.enabled=true" // <4>
+//> using `java-opt` "-Dotel.service.name=jaeger-example"            // <5>
+//> using `java-opt` "-Dotel.metrics.exporter=none"                  // <6> 
+```
+
+@:@
 
 1) Add the `otel4s` library  
 2) Add an OpenTelemetry exporter. Without the exporter, the application will crash  
@@ -113,6 +132,24 @@ object TracingExample extends IOApp.Simple {
   }
 }
 ```
+
+### Run the application
+
+@:select(build-tool)
+
+@:choice(sbt)
+
+```shell
+$ sbt run
+```
+
+@:choice(scala-cli)
+
+```shell
+$ scala-cli run tracing.scala
+```
+
+@:@
 
 ### Review collected traces
 

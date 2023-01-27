@@ -24,6 +24,7 @@ ThisBuild / scalaVersion := Scala213 // the default Scala
 
 val CatsVersion = "2.9.0"
 val CatsEffectVersion = "3.4.5"
+val CatsMtlVersion = "1.3.0"
 val FS2Version = "3.5.0"
 val MUnitVersion = "1.0.0-M7"
 val MUnitCatsEffectVersion = "2.0.0-M3"
@@ -96,6 +97,7 @@ lazy val `core-trace` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
     name := "otel4s-core-trace",
     libraryDependencies ++= Seq(
       "org.typelevel" %%% "cats-effect-kernel" % CatsEffectVersion,
+      "org.typelevel" %%% "cats-mtl" % CatsMtlVersion,
       "org.scodec" %%% "scodec-bits" % ScodecVersion
     )
   )
@@ -175,7 +177,7 @@ lazy val `java-trace` = project
   .settings(
     name := "otel4s-java-trace",
     libraryDependencies ++= Seq(
-      "org.typelevel" %%% "cats-effect" % CatsEffectVersion,
+      "org.typelevel" %%% "cats-mtl" % CatsMtlVersion,
       "io.opentelemetry" % "opentelemetry-sdk-testing" % OpenTelemetryVersion % Test,
       "org.typelevel" %%% "cats-effect-testkit" % CatsEffectVersion % Test,
       "co.fs2" %% "fs2-core" % FS2Version % Test
@@ -196,6 +198,7 @@ lazy val examples = project
   .settings(
     name := "otel4s-examples",
     libraryDependencies ++= Seq(
+      "org.typelevel" %%% "cats-effect" % CatsEffectVersion,
       "io.opentelemetry" % "opentelemetry-exporter-otlp" % OpenTelemetryVersion,
       "io.opentelemetry" % "opentelemetry-sdk" % OpenTelemetryVersion,
       "io.opentelemetry" % "opentelemetry-sdk-extension-autoconfigure" % s"${OpenTelemetryVersion}-alpha"

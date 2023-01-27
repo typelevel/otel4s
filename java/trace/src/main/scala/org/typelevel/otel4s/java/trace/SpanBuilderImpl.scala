@@ -17,8 +17,8 @@
 package org.typelevel.otel4s.java
 package trace
 
-import cats.effect.Resource
-import cats.effect.Sync
+import cats.effect.kernel.Resource
+import cats.effect.kernel.Sync
 import cats.syntax.flatMap._
 import cats.syntax.foldable._
 import cats.syntax.functor._

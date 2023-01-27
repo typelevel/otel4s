@@ -16,11 +16,10 @@
 
 package org.typelevel.otel4s.java
 
-import cats.effect.Async
-import cats.effect.LiftIO
-import cats.effect.Resource
-import cats.effect.Sync
-import cats.syntax.flatMap._
+import cats.effect.kernel.Async
+import cats.effect.kernel.Resource
+import cats.effect.kernel.Sync
+import cats.mtl.Local
 import cats.syntax.functor._
 import io.opentelemetry.api.{OpenTelemetry => JOpenTelemetry}
 import io.opentelemetry.sdk.{OpenTelemetrySdk => JOpenTelemetrySdk}
@@ -28,6 +27,7 @@ import io.opentelemetry.sdk.common.CompletableResultCode
 import org.typelevel.otel4s.Otel4s
 import org.typelevel.otel4s.java.Conversions.asyncFromCompletableResultCode
 import org.typelevel.otel4s.java.metrics.Metrics
+import org.typelevel.otel4s.java.trace.TraceScope
 import org.typelevel.otel4s.java.trace.Traces
 import org.typelevel.otel4s.metrics.MeterProvider
 import org.typelevel.otel4s.trace.TracerProvider
@@ -46,10 +46,12 @@ object OtelJava {
     * @return
     *   An effect of an [[org.typelevel.otel4s.Otel4s]] resource.
     */
-  def forSync[F[_]: LiftIO: Sync](jOtel: JOpenTelemetry): F[Otel4s[F]] = {
+  def forSync[F[_]: Sync: Local[*[_], TraceScope.Scope]](
+      jOtel: JOpenTelemetry
+  ): F[Otel4s[F]] = {
     for {
       metrics <- Sync[F].pure(Metrics.forSync(jOtel))
-      traces <- Traces.ioLocal(jOtel)
+      traces = Traces.local(jOtel)
     } yield new Otel4s[F] {
       def meterProvider: MeterProvider[F] = metrics.meterProvider
       def tracerProvider: TracerProvider[F] = traces.tracerProvider
@@ -64,7 +66,7 @@ object OtelJava {
     * @return
     *   An [[org.typelevel.otel4s.Otel4s]] resource.
     */
-  def resource[F[_]: LiftIO: Async](
+  def resource[F[_]: Async: Local[*[_], TraceScope.Scope]](
       acquire: F[JOpenTelemetrySdk]
   ): Resource[F, Otel4s[F]] =
     Resource

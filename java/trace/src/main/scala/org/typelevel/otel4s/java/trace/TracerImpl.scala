@@ -16,8 +16,8 @@
 
 package org.typelevel.otel4s.java.trace
 
-import cats.effect.Resource
-import cats.effect.Sync
+import cats.effect.kernel.Resource
+import cats.effect.kernel.Sync
 import cats.syntax.functor._
 import io.opentelemetry.api.trace.{Span => JSpan}
 import io.opentelemetry.api.trace.{Tracer => JTracer}

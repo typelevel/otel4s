@@ -16,11 +16,9 @@
 
 package org.typelevel.otel4s.java.trace
 
-import cats.effect.IOLocal
-import cats.effect.LiftIO
-import cats.effect.Resource
-import cats.effect.Sync
-import cats.syntax.functor._
+import cats.effect.kernel.Resource
+import cats.effect.kernel.Sync
+import cats.mtl.Local
 import io.opentelemetry.api.trace.{Span => JSpan}
 import io.opentelemetry.context.{Context => JContext}
 import org.typelevel.otel4s.trace.SpanContext
@@ -34,7 +32,7 @@ private[java] trait TraceScope[F[_]] {
   def noopScope: Resource[F, Unit]
 }
 
-private[java] object TraceScope {
+object TraceScope {
 
   sealed trait Scope
   object Scope {
@@ -47,67 +45,70 @@ private[java] object TraceScope {
     case object Noop extends Scope
   }
 
-  def fromIOLocal[F[_]: LiftIO: Sync](
+  private[java] def fromLocal[F[_]: Sync: Local[*[_], Scope]](
       default: JContext
-  ): F[TraceScope[F]] = {
+  ): TraceScope[F] = {
     val scopeRoot = Scope.Root(default)
 
-    IOLocal[Scope](scopeRoot).to[F].map { local =>
-      new TraceScope[F] {
-        val root: F[Scope.Root] =
-          Sync[F].pure(scopeRoot)
+    new TraceScope[F] {
+      val root: F[Scope.Root] =
+        Sync[F].pure(scopeRoot)
 
-        def current: F[Scope] =
-          local.get.to[F]
+      def current: F[Scope] =
+        Local[F, Scope].ask[Scope]
 
-        def makeScope(span: JSpan): Resource[F, Unit] =
-          for {
-            current <- Resource.eval(current)
-            _ <- createScope(nextScope(current, span))
-          } yield ()
+      def makeScope(span: JSpan): Resource[F, Unit] =
+        for {
+          current <- Resource.eval(current)
+          _ <- createScope(nextScope(current, span))
+        } yield ()
 
-        def rootScope: Resource[F, Unit] =
-          Resource.eval(current).flatMap {
-            case Scope.Root(_) =>
-              createScope(scopeRoot)
+      def rootScope: Resource[F, Unit] =
+        Resource.eval(current).flatMap {
+          case Scope.Root(_) =>
+            createScope(scopeRoot)
 
-            case Scope.Span(_, _, _) =>
-              createScope(scopeRoot)
+          case Scope.Span(_, _, _) =>
+            createScope(scopeRoot)
 
-            case Scope.Noop =>
-              createScope(Scope.Noop)
-          }
+          case Scope.Noop =>
+            createScope(Scope.Noop)
+        }
 
-        def noopScope: Resource[F, Unit] =
-          createScope(Scope.Noop)
+      def noopScope: Resource[F, Unit] =
+        createScope(Scope.Noop)
 
-        private def createScope(scope: Scope): Resource[F, Unit] =
+      private def createScope(scope: Scope): Resource[F, Unit] = {
+        val _ = scope
+        // There's no getAndSet.  This is inherently stateful.
+        /*
           Resource
             .make(local.getAndSet(scope).to[F])(p => local.set(p).to[F])
             .void
-
-        private def nextScope(scope: Scope, span: JSpan): Scope =
-          scope match {
-            case Scope.Root(ctx) =>
-              Scope.Span(
-                ctx.`with`(span),
-                span,
-                WrappedSpanContext(span.getSpanContext)
-              )
-
-            case Scope.Span(ctx, _, _) =>
-              Scope.Span(
-                ctx.`with`(span),
-                span,
-                WrappedSpanContext(span.getSpanContext)
-              )
-
-            case Scope.Noop =>
-              Scope.Noop
-          }
-
+         */
+        Resource.unit[F]
       }
+
+      private def nextScope(scope: Scope, span: JSpan): Scope =
+        scope match {
+          case Scope.Root(ctx) =>
+            Scope.Span(
+              ctx.`with`(span),
+              span,
+              WrappedSpanContext(span.getSpanContext)
+            )
+
+          case Scope.Span(ctx, _, _) =>
+            Scope.Span(
+              ctx.`with`(span),
+              span,
+              WrappedSpanContext(span.getSpanContext)
+            )
+
+          case Scope.Noop =>
+            Scope.Noop
+        }
+
     }
   }
-
 }

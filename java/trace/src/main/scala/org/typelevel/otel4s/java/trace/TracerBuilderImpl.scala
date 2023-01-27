@@ -16,7 +16,7 @@
 
 package org.typelevel.otel4s.java.trace
 
-import cats.effect.Sync
+import cats.effect.kernel.Sync
 import io.opentelemetry.api.trace.{TracerProvider => JTracerProvider}
 import org.typelevel.otel4s.trace._
 

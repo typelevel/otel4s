@@ -204,4 +204,13 @@ lazy val examples = project
     javaOptions += "-Dotel.java.global-autoconfigure.enabled=true"
   )
 
-lazy val docs = project.in(file("site")).enablePlugins(TypelevelSitePlugin)
+lazy val docs = project
+  .in(file("site"))
+  .enablePlugins(TypelevelSitePlugin)
+  .dependsOn(java)
+  .settings(
+    mdocVariables := Map(
+      "VERSION" -> version.value,
+      "OPEN_TELEMETRY_VERSION" -> OpenTelemetryVersion
+    )
+  )

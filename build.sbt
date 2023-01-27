@@ -212,5 +212,18 @@ lazy val docs = project
     mdocVariables := Map(
       "VERSION" -> version.value,
       "OPEN_TELEMETRY_VERSION" -> OpenTelemetryVersion
-    )
+    ),
+    laikaConfig := {
+      import laika.rewrite.nav.{ChoiceConfig, Selections, SelectionConfig}
+
+      laikaConfig.value.withConfigValue(
+        Selections(
+          SelectionConfig(
+            "build-tool",
+            ChoiceConfig("sbt", "sbt"),
+            ChoiceConfig("scala-cli", "Scala CLI")
+          ).withSeparateEbooks
+        )
+      )
+    }
   )

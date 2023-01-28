@@ -85,6 +85,7 @@
           <li class="level1"><a href="#opentelemetry-sdk-configuration">OpenTelemetry SDK configuration</a></li>
           <li class="level1"><a href="#jaeger-configuration">Jaeger configuration</a></li>
           <li class="level1"><a href="#application-example">Application example</a></li>
+          <li class="level1"><a href="#run-the-application">Run the application</a></li>
           <li class="level1"><a href="#review-collected-traces">Review collected traces</a></li>
         </ul>
 
@@ -100,9 +101,16 @@
         otel4s library.</p>
         
         <h3 id="project-setup" class="section">Project setup<a class="anchor-link right" href="#project-setup"><i class="icofont-laika">&#xef71;</i></a></h3>
-        <p>Configure the project in the <code>build.sbt</code>:</p>
-        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">libraryDependencies</span><span> ++= </span><span class="type-name">Seq</span><span>(
-  </span><span class="string-literal">&quot;org.typelevel&quot;</span><span> %% </span><span class="string-literal">&quot;otel4s-java&quot;</span><span> % </span><span class="string-literal">&quot;0.0-1604b4b-SNAPSHOT&quot;</span><span>, </span><span class="comment">// &lt;1&gt;
+        <p>Configure the project using your favorite tool:</p>
+        <div class="tab-container" data-tab-group="build-tool">
+          <ul class="tab-group">
+            <li class="tab active" data-choice-name="sbt"><a href="#">sbt</a></li>
+            <li class="tab" data-choice-name="scala-cli"><a href="#">Scala CLI</a></li>
+          </ul>
+          <div class="tab-content active" data-choice-name="sbt">
+            <p>Add settings to the <code>build.sbt</code>:</p>
+            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">libraryDependencies</span><span> ++= </span><span class="type-name">Seq</span><span>(
+  </span><span class="string-literal">&quot;org.typelevel&quot;</span><span> %% </span><span class="string-literal">&quot;otel4s-java&quot;</span><span> % </span><span class="string-literal">&quot;0.0-af039c0-SNAPSHOT&quot;</span><span>, </span><span class="comment">// &lt;1&gt;
 </span><span>  </span><span class="string-literal">&quot;io.opentelemetry&quot;</span><span> % </span><span class="string-literal">&quot;opentelemetry-exporter-otlp&quot;</span><span> % </span><span class="string-literal">&quot;1.22.0&quot;</span><span> % </span><span class="type-name">Runtime</span><span>, </span><span class="comment">// &lt;2&gt;
 </span><span>  </span><span class="string-literal">&quot;io.opentelemetry&quot;</span><span> % </span><span class="string-literal">&quot;opentelemetry-sdk-extension-autoconfigure&quot;</span><span> % </span><span class="string-literal">&quot;1.22.0-alpha&quot;</span><span> % </span><span class="type-name">Runtime</span><span> </span><span class="comment">// &lt;3&gt;
 </span><span>)
@@ -110,6 +118,17 @@
 </span><span class="identifier">javaOptions</span><span> += </span><span class="string-literal">&quot;-Dotel.java.global-autoconfigure.enabled=true&quot;</span><span> </span><span class="comment">// &lt;4&gt;
 </span><span class="identifier">javaOptions</span><span> += </span><span class="string-literal">&quot;-Dotel.service.name=jaeger-example&quot;</span><span>            </span><span class="comment">// &lt;5&gt;
 </span><span class="identifier">javaOptions</span><span> += </span><span class="string-literal">&quot;-Dotel.metrics.exporter=none&quot;</span><span>                  </span><span class="comment">// &lt;6&gt;</span></code></pre>
+          </div>
+          <div class="tab-content" data-choice-name="scala-cli">
+            <p>Add directives to the <code>tracing.scala</code>:</p>
+            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="comment">//&gt; using lib &quot;org.typelevel::otel4s-java:0.0-af039c0-SNAPSHOT&quot; // &lt;1&gt;
+//&gt; using lib &quot;io.opentelemetry:opentelemetry-exporter-otlp:1.22.0&quot; // &lt;2&gt;
+//&gt; using lib &quot;io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:1.22.0-alpha&quot; // &lt;3&gt;
+//&gt; using `java-opt` &quot;-Dotel.java.global-autoconfigure.enabled=true&quot; // &lt;4&gt;
+//&gt; using `java-opt` &quot;-Dotel.service.name=jaeger-example&quot;            // &lt;5&gt;
+//&gt; using `java-opt` &quot;-Dotel.metrics.exporter=none&quot;                  // &lt;6&gt; </span></code></pre>
+          </div>
+        </div>
         <p>1) Add the <code>otel4s</code> library<br>
         2) Add an OpenTelemetry exporter. Without the exporter, the application will crash<br>
         3) Add an OpenTelemetry autoconfigure extension<br>
@@ -193,6 +212,20 @@
     }
   }
 }</span></code></pre>
+        
+        <h3 id="run-the-application" class="section">Run the application<a class="anchor-link right" href="#run-the-application"><i class="icofont-laika">&#xef71;</i></a></h3>
+        <div class="tab-container" data-tab-group="build-tool">
+          <ul class="tab-group">
+            <li class="tab active" data-choice-name="sbt"><a href="#">sbt</a></li>
+            <li class="tab" data-choice-name="scala-cli"><a href="#">Scala CLI</a></li>
+          </ul>
+          <div class="tab-content active" data-choice-name="sbt">
+            <pre class="keep-together pdf epub"><code class="shell">$ sbt run</code></pre>
+          </div>
+          <div class="tab-content" data-choice-name="scala-cli">
+            <pre class="keep-together pdf epub"><code class="shell">$ scala-cli run tracing.scala</code></pre>
+          </div>
+        </div>
         
         <h3 id="review-collected-traces" class="section">Review collected traces<a class="anchor-link right" href="#review-collected-traces"><i class="icofont-laika">&#xef71;</i></a></h3>
         <p>Jaeger UI is available at <a href="http://localhost:16686">http://localhost:16686</a>. You can find the collected traces there.</p>

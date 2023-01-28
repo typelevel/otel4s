@@ -18,7 +18,9 @@ package org.typelevel.otel4s.java.trace
 
 import cats.effect.kernel.Resource
 import cats.effect.kernel.Sync
-import cats.mtl.Local
+import cats.mtl.Stateful
+import cats.syntax.flatMap._
+import cats.syntax.functor._
 import io.opentelemetry.api.trace.{Span => JSpan}
 import io.opentelemetry.context.{Context => JContext}
 import org.typelevel.otel4s.trace.SpanContext
@@ -45,7 +47,7 @@ object TraceScope {
     case object Noop extends Scope
   }
 
-  private[java] def fromLocal[F[_]: Sync: Local[*[_], Scope]](
+  private[java] def fromStateful[F[_]: Sync: Stateful[*[_], Scope]](
       default: JContext
   ): TraceScope[F] = {
     val scopeRoot = Scope.Root(default)
@@ -55,7 +57,7 @@ object TraceScope {
         Sync[F].pure(scopeRoot)
 
       def current: F[Scope] =
-        Local[F, Scope].ask[Scope]
+        Stateful[F, Scope].get
 
       def makeScope(span: JSpan): Resource[F, Unit] =
         for {
@@ -78,16 +80,14 @@ object TraceScope {
       def noopScope: Resource[F, Unit] =
         createScope(Scope.Noop)
 
-      private def createScope(scope: Scope): Resource[F, Unit] = {
-        val _ = scope
-        // There's no getAndSet.  This is inherently stateful.
-        /*
-          Resource
-            .make(local.getAndSet(scope).to[F])(p => local.set(p).to[F])
-            .void
-         */
-        Resource.unit[F]
-      }
+      private def createScope(scope: Scope): Resource[F, Unit] =
+        Resource
+          .make(
+            Stateful[F, Scope].get.flatMap(p =>
+              Stateful[F, Scope].set(scope).as(p)
+            )
+          )(p => Stateful[F, Scope].set(p))
+          .void
 
       private def nextScope(scope: Scope, span: JSpan): Scope =
         scope match {

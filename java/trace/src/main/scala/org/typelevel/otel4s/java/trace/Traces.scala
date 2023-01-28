@@ -17,7 +17,7 @@
 package org.typelevel.otel4s.java.trace
 
 import cats.effect.kernel.Sync
-import cats.mtl.Local
+import cats.mtl.Stateful
 import io.opentelemetry.api.{OpenTelemetry => JOpenTelemetry}
 import org.typelevel.otel4s.trace.TracerProvider
 
@@ -27,10 +27,10 @@ trait Traces[F[_]] {
 
 object Traces {
 
-  def local[F[_]: Sync: Local[*[_], TraceScope.Scope]](
+  def stateful[F[_]: Sync: Stateful[*[_], TraceScope.Scope]](
       jOtel: JOpenTelemetry
   ): Traces[F] = {
-    val provider = TracerProviderImpl.local(jOtel.getTracerProvider)
+    val provider = TracerProviderImpl.stateful(jOtel.getTracerProvider)
     new Traces[F] {
       def tracerProvider: TracerProvider[F] = provider
     }

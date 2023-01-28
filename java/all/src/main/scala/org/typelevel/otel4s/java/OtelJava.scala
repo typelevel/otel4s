@@ -19,7 +19,7 @@ package org.typelevel.otel4s.java
 import cats.effect.kernel.Async
 import cats.effect.kernel.Resource
 import cats.effect.kernel.Sync
-import cats.mtl.Local
+import cats.mtl.Stateful
 import cats.syntax.functor._
 import io.opentelemetry.api.{OpenTelemetry => JOpenTelemetry}
 import io.opentelemetry.sdk.{OpenTelemetrySdk => JOpenTelemetrySdk}
@@ -46,12 +46,12 @@ object OtelJava {
     * @return
     *   An effect of an [[org.typelevel.otel4s.Otel4s]] resource.
     */
-  def forSync[F[_]: Sync: Local[*[_], TraceScope.Scope]](
+  def forSync[F[_]: Sync: Stateful[*[_], TraceScope.Scope]](
       jOtel: JOpenTelemetry
   ): F[Otel4s[F]] = {
     for {
       metrics <- Sync[F].pure(Metrics.forSync(jOtel))
-      traces = Traces.local(jOtel)
+      traces = Traces.stateful(jOtel)
     } yield new Otel4s[F] {
       def meterProvider: MeterProvider[F] = metrics.meterProvider
       def tracerProvider: TracerProvider[F] = traces.tracerProvider
@@ -66,7 +66,7 @@ object OtelJava {
     * @return
     *   An [[org.typelevel.otel4s.Otel4s]] resource.
     */
-  def resource[F[_]: Async: Local[*[_], TraceScope.Scope]](
+  def resource[F[_]: Async: Stateful[*[_], TraceScope.Scope]](
       acquire: F[JOpenTelemetrySdk]
   ): Resource[F, Otel4s[F]] =
     Resource

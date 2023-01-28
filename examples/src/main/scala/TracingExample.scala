@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-import cats.Applicative
+import cats.Monad
 import cats.effect.IO
 import cats.effect.IOApp
 import cats.effect.IOLocal
 import cats.effect.MonadCancelThrow
 import cats.effect.Resource
 import cats.effect.std.Console
-import cats.mtl.Local
+import cats.mtl.Stateful
 import cats.syntax.all._
 import io.opentelemetry.api.GlobalOpenTelemetry
 import org.typelevel.otel4s.java.OtelJava
@@ -49,27 +49,23 @@ object Work {
 object TracingExample extends IOApp.Simple {
 
   // This would be a library function
-  def local[E](a: E): IO[Local[IO, E]] =
+  def stateful[S](a: S): IO[Stateful[IO, S]] =
     IOLocal(a).map { ioLocal =>
-      new Local[IO, E] {
-        override def local[A](fa: IO[A])(f: E => E): IO[A] =
-          ioLocal.get.flatMap(prev =>
-            ioLocal
-              .set(f(prev))
-              .bracket(Function.const(fa))(Function.const(ioLocal.set(prev)))
-          )
-        override val applicative: Applicative[IO] =
-          Applicative[IO]
-        override def ask[E2 >: E]: IO[E2] =
+      new Stateful[IO, S] {
+        override def get: IO[S] =
           ioLocal.get
+        override def set(s: S): IO[Unit] =
+          ioLocal.set(s)
+        override def monad: Monad[IO] =
+          Monad[IO]
       }
     }
 
   def tracerResource: Resource[IO, Tracer[IO]] = {
     import io.opentelemetry.context.{Context => JContext}
     import org.typelevel.otel4s.java.trace.TraceScope.Scope
-    Resource.eval(local(Scope.Root(JContext.root()): Scope)).flatMap {
-      implicit local: Local[IO, Scope] =>
+    Resource.eval(stateful(Scope.Root(JContext.root()): Scope)).flatMap {
+      implicit stateful: Stateful[IO, Scope] =>
         Resource
           .eval(IO(GlobalOpenTelemetry.get))
           .evalMap(OtelJava.forSync[IO])

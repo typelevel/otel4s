@@ -110,7 +110,7 @@
           <div class="tab-content active" data-choice-name="sbt">
             <p>Add settings to the <code>build.sbt</code>:</p>
             <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">libraryDependencies</span><span> ++= </span><span class="type-name">Seq</span><span>(
-  </span><span class="string-literal">&quot;org.typelevel&quot;</span><span> %% </span><span class="string-literal">&quot;otel4s-java&quot;</span><span> % </span><span class="string-literal">&quot;0.0-af039c0-SNAPSHOT&quot;</span><span>, </span><span class="comment">// &lt;1&gt;
+  </span><span class="string-literal">&quot;org.typelevel&quot;</span><span> %% </span><span class="string-literal">&quot;otel4s-java&quot;</span><span> % </span><span class="string-literal">&quot;0.0-75e4466-SNAPSHOT&quot;</span><span>, </span><span class="comment">// &lt;1&gt;
 </span><span>  </span><span class="string-literal">&quot;io.opentelemetry&quot;</span><span> % </span><span class="string-literal">&quot;opentelemetry-exporter-otlp&quot;</span><span> % </span><span class="string-literal">&quot;1.22.0&quot;</span><span> % </span><span class="type-name">Runtime</span><span>, </span><span class="comment">// &lt;2&gt;
 </span><span>  </span><span class="string-literal">&quot;io.opentelemetry&quot;</span><span> % </span><span class="string-literal">&quot;opentelemetry-sdk-extension-autoconfigure&quot;</span><span> % </span><span class="string-literal">&quot;1.22.0-alpha&quot;</span><span> % </span><span class="type-name">Runtime</span><span> </span><span class="comment">// &lt;3&gt;
 </span><span>)
@@ -121,7 +121,7 @@
           </div>
           <div class="tab-content" data-choice-name="scala-cli">
             <p>Add directives to the <code>tracing.scala</code>:</p>
-            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="comment">//&gt; using lib &quot;org.typelevel::otel4s-java:0.0-af039c0-SNAPSHOT&quot; // &lt;1&gt;
+            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="comment">//&gt; using lib &quot;org.typelevel::otel4s-java:0.0-75e4466-SNAPSHOT&quot; // &lt;1&gt;
 //&gt; using lib &quot;io.opentelemetry:opentelemetry-exporter-otlp:1.22.0&quot; // &lt;2&gt;
 //&gt; using lib &quot;io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:1.22.0-alpha&quot; // &lt;3&gt;
 //&gt; using `java-opt` &quot;-Dotel.java.global-autoconfigure.enabled=true&quot; // &lt;4&gt;
@@ -162,7 +162,7 @@
 </span><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.</span><span class="identifier">std</span><span>.</span><span class="type-name">Random</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">syntax</span><span>.</span><span class="identifier">all</span><span>.</span><span class="identifier">_</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">io</span><span>.</span><span class="identifier">opentelemetry</span><span>.</span><span class="identifier">api</span><span>.</span><span class="type-name">GlobalOpenTelemetry</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.{</span><span class="type-name">Attribute</span><span>, </span><span class="type-name">AttributeKey</span><span>}
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="type-name">Attribute</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">java</span><span>.</span><span class="type-name">OtelJava</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">trace</span><span>.</span><span class="type-name">Tracer</span><span>
 
@@ -184,7 +184,7 @@
 
       </span><span class="keyword">def</span><span> </span><span class="declaration-name">doWorkInternal</span><span>(</span><span class="identifier">steps</span><span>: </span><span class="type-name">Int</span><span>): </span><span class="type-name">F</span><span>[</span><span class="type-name">Unit</span><span>] = {
         </span><span class="keyword">val</span><span> </span><span class="identifier">step</span><span> = </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">F</span><span>]
-          .</span><span class="identifier">span</span><span>(</span><span class="string-literal">&quot;internal&quot;</span><span>, </span><span class="type-name">Attribute</span><span>(</span><span class="type-name">AttributeKey</span><span>.</span><span class="identifier">long</span><span>(</span><span class="string-literal">&quot;steps&quot;</span><span>), </span><span class="identifier">steps</span><span>.</span><span class="identifier">toLong</span><span>))
+          .</span><span class="identifier">span</span><span>(</span><span class="string-literal">&quot;internal&quot;</span><span>, </span><span class="type-name">Attribute</span><span>(</span><span class="string-literal">&quot;steps&quot;</span><span>, </span><span class="identifier">steps</span><span>.</span><span class="identifier">toLong</span><span>))
           .</span><span class="identifier">surround</span><span> {
             </span><span class="keyword">for</span><span> {
               </span><span class="identifier">random</span><span> &lt;- </span><span class="type-name">Random</span><span>.</span><span class="identifier">scalaUtilRandom</span><span>

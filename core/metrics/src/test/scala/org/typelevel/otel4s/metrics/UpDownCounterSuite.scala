@@ -32,7 +32,7 @@ class UpDownCounterSuite extends CatsEffectSuite {
 
     def allocateAttribute = {
       allocated = true
-      List(Attribute(AttributeKey.string("key"), "value"))
+      List(Attribute("key", "value"))
     }
 
     for {
@@ -43,7 +43,7 @@ class UpDownCounterSuite extends CatsEffectSuite {
   }
 
   test("record value and attributes") {
-    val attribute = Attribute(AttributeKey.string("key"), "value")
+    val attribute = Attribute("key", "value")
 
     val expected =
       List(
@@ -62,7 +62,7 @@ class UpDownCounterSuite extends CatsEffectSuite {
   }
 
   test("inc by one") {
-    val attribute = Attribute(AttributeKey.string("key"), "value")
+    val attribute = Attribute("key", "value")
 
     val expected =
       List(
@@ -81,7 +81,7 @@ class UpDownCounterSuite extends CatsEffectSuite {
   }
 
   test("dec by one") {
-    val attribute = Attribute(AttributeKey.string("key"), "value")
+    val attribute = Attribute("key", "value")
 
     val expected =
       List(

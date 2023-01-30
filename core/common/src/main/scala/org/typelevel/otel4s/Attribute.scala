@@ -28,3 +28,44 @@ package org.typelevel.otel4s
   *   the type of the attribute's value. One of [[AttributeType]]
   */
 final case class Attribute[A](key: AttributeKey[A], value: A)
+
+object Attribute {
+
+  @annotation.implicitNotFound("""
+Could not find the `KeySelect` for ${A}. The `KeySelect` is defined for the following types:
+String, Boolean, Long, Double, List[String], List[Boolean], List[Long], List[Double].
+""")
+  sealed trait KeySelect[A] {
+    def make(name: String): AttributeKey[A]
+  }
+
+  object KeySelect {
+    def apply[A](implicit ev: KeySelect[A]): KeySelect[A] = ev
+
+    implicit val stringKey: KeySelect[String] = instance(AttributeKey.string)
+    implicit val booleanKey: KeySelect[Boolean] = instance(AttributeKey.boolean)
+    implicit val longKey: KeySelect[Long] = instance(AttributeKey.long)
+    implicit val doubleKey: KeySelect[Double] = instance(AttributeKey.double)
+
+    implicit val stringListKey: KeySelect[List[String]] =
+      instance(AttributeKey.stringList)
+
+    implicit val booleanListKey: KeySelect[List[Boolean]] =
+      instance(AttributeKey.booleanList)
+
+    implicit val longListKey: KeySelect[List[Long]] =
+      instance(AttributeKey.longList)
+
+    implicit val doubleListKey: KeySelect[List[Double]] =
+      instance(AttributeKey.doubleList)
+
+    private def instance[A](f: String => AttributeKey[A]): KeySelect[A] =
+      new KeySelect[A] {
+        def make(name: String): AttributeKey[A] = f(name)
+      }
+  }
+
+  def apply[A: KeySelect](name: String, value: A): Attribute[A] =
+    Attribute(KeySelect[A].make(name), value)
+
+}

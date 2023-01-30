@@ -81,7 +81,7 @@ import cats.effect.std.Console
 import cats.effect.std.Random
 import cats.syntax.all._
 import io.opentelemetry.api.GlobalOpenTelemetry
-import org.typelevel.otel4s.{Attribute, AttributeKey}
+import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.java.OtelJava
 import org.typelevel.otel4s.trace.Tracer
 
@@ -103,7 +103,7 @@ object Work {
 
       def doWorkInternal(steps: Int): F[Unit] = {
         val step = Tracer[F]
-          .span("internal", Attribute(AttributeKey.long("steps"), steps.toLong))
+          .span("internal", Attribute("steps", steps.toLong))
           .surround {
             for {
               random <- Random.scalaUtilRandom

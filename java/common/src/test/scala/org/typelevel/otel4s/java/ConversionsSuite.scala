@@ -24,26 +24,14 @@ class ConversionsSuite extends FunSuite {
 
   test("proper conversion to OpenTelemetry Attributes") {
     val attributes = List(
-      Attribute(AttributeKey.string("string"), "string"),
-      Attribute(AttributeKey.boolean("boolean"), false),
-      Attribute(AttributeKey.long("long"), 0L),
-      Attribute(AttributeKey.double("double"), 0.0),
-      Attribute(
-        AttributeKey.stringList("string"),
-        List("string 1", "string 2")
-      ),
-      Attribute(
-        AttributeKey.booleanList("boolean"),
-        List(false, true)
-      ),
-      Attribute(
-        AttributeKey.longList("long"),
-        List(Long.MinValue, Long.MaxValue)
-      ),
-      Attribute(
-        AttributeKey.doubleList("double"),
-        List(Double.MinValue, Double.MaxValue)
-      )
+      Attribute("string", "string"),
+      Attribute("boolean", false),
+      Attribute("long", 0L),
+      Attribute("double", 0.0),
+      Attribute("string", List("string 1", "string 2")),
+      Attribute("boolean", List(false, true)),
+      Attribute("long", List(Long.MinValue, Long.MaxValue)),
+      Attribute("double", List(Double.MinValue, Double.MaxValue))
     )
 
     val expected = JAttributes

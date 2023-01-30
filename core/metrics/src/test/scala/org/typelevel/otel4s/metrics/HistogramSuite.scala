@@ -35,7 +35,7 @@ class HistogramSuite extends CatsEffectSuite {
 
     def allocateAttribute = {
       allocated = true
-      List(Attribute(AttributeKey.string("key"), "value"))
+      List(Attribute("key", "value"))
     }
 
     for {
@@ -47,7 +47,7 @@ class HistogramSuite extends CatsEffectSuite {
   }
 
   test("record value and attributes") {
-    val attribute = Attribute(AttributeKey.string("key"), "value")
+    val attribute = Attribute("key", "value")
 
     val expected =
       List(
@@ -66,7 +66,7 @@ class HistogramSuite extends CatsEffectSuite {
   }
 
   test("record duration") {
-    val attribute = Attribute(AttributeKey.string("key"), "value")
+    val attribute = Attribute("key", "value")
     val sleepDuration = 500.millis
     val unit = TimeUnit.MILLISECONDS
 

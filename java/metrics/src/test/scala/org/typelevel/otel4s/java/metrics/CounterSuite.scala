@@ -45,21 +45,15 @@ class CounterSuite extends CatsEffectSuite {
         .withDescription("description")
         .create
 
-      _ <- counter.add(
-        1L,
-        Attribute(AttributeKey.string("string-attribute"), "value")
-      )
+      _ <- counter.add(1L, Attribute("string-attribute", "value"))
 
       metrics <- sdk.metrics
     } yield {
       val resourceAttributes = List(
-        Attribute(AttributeKey.string("service.name"), "unknown_service:java"),
-        Attribute(AttributeKey.string("telemetry.sdk.language"), "java"),
-        Attribute(AttributeKey.string("telemetry.sdk.name"), "opentelemetry"),
-        Attribute(
-          AttributeKey.string("telemetry.sdk.version"),
-          BuildInfo.openTelemetrySdkVersion
-        )
+        Attribute("service.name", "unknown_service:java"),
+        Attribute("telemetry.sdk.language", "java"),
+        Attribute("telemetry.sdk.name", "opentelemetry"),
+        Attribute("telemetry.sdk.version", BuildInfo.openTelemetrySdkVersion)
       )
 
       val scope = new InstrumentationScope(

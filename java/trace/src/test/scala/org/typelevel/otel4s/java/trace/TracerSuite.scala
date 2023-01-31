@@ -35,7 +35,6 @@ import io.opentelemetry.sdk.trace.`export`.SimpleSpanProcessor
 import io.opentelemetry.sdk.trace.internal.data.ExceptionEventData
 import munit.CatsEffectSuite
 import org.typelevel.otel4s.Attribute
-import org.typelevel.otel4s.AttributeKey
 import org.typelevel.otel4s.trace.Span
 import org.typelevel.otel4s.trace.Tracer
 import org.typelevel.otel4s.trace.TracerProvider
@@ -74,7 +73,7 @@ class TracerSuite extends CatsEffectSuite {
   test("set attributes only once") {
     val key = "string-attribute"
     val value = "value"
-    val attribute = Attribute(AttributeKey.string(key), value)
+    val attribute = Attribute(key, value)
 
     for {
       sdk <- makeSdk()
@@ -121,7 +120,7 @@ class TracerSuite extends CatsEffectSuite {
   }
 
   test("propagate attributes") {
-    val attribute = Attribute(AttributeKey.string("string-attribute"), "value")
+    val attribute = Attribute("string-attribute", "value")
 
     for {
       sdk <- makeSdk()
@@ -391,7 +390,7 @@ class TracerSuite extends CatsEffectSuite {
   }
 
   test("trace resource") {
-    val attribute = Attribute(AttributeKey.string("string-attribute"), "value")
+    val attribute = Attribute("string-attribute", "value")
 
     val acquireInnerDuration = 25.millis
     val body1Duration = 100.millis

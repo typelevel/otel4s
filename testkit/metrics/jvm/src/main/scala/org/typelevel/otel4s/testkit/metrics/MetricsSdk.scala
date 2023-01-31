@@ -188,47 +188,35 @@ object MetricsSdk {
     attributes.asMap().asScala.toList.collect {
       case (attribute, value: String)
           if attribute.getType == JAttributeType.STRING =>
-        Attribute(AttributeKey.string(attribute.getKey), value)
+        Attribute(attribute.getKey, value)
 
       case (attribute, value: jl.Boolean)
           if attribute.getType == JAttributeType.BOOLEAN =>
-        Attribute(AttributeKey.boolean(attribute.getKey), value.booleanValue())
+        Attribute(attribute.getKey, value.booleanValue())
 
       case (attribute, value: jl.Long)
           if attribute.getType == JAttributeType.LONG =>
-        Attribute(AttributeKey.long(attribute.getKey), value.longValue())
+        Attribute(attribute.getKey, value.longValue())
 
       case (attribute, value: jl.Double)
           if attribute.getType == JAttributeType.DOUBLE =>
-        Attribute(AttributeKey.double(attribute.getKey), value.doubleValue())
+        Attribute(attribute.getKey, value.doubleValue())
 
       case (attribute, value: ju.List[String] @unchecked)
           if attribute.getType == JAttributeType.STRING_ARRAY =>
-        Attribute(
-          AttributeKey.stringList(attribute.getKey),
-          value.asScala.toList
-        )
+        Attribute(attribute.getKey, value.asScala.toList)
 
       case (attribute, value: ju.List[jl.Boolean] @unchecked)
           if attribute.getType == JAttributeType.BOOLEAN_ARRAY =>
-        Attribute(
-          AttributeKey.booleanList(attribute.getKey),
-          value.asScala.toList.map(_.booleanValue())
-        )
+        Attribute(attribute.getKey, value.asScala.toList.map(_.booleanValue()))
 
       case (attribute, value: ju.List[jl.Long] @unchecked)
           if attribute.getType == JAttributeType.LONG_ARRAY =>
-        Attribute(
-          AttributeKey.longList(attribute.getKey),
-          value.asScala.toList.map(_.longValue())
-        )
+        Attribute(attribute.getKey, value.asScala.toList.map(_.longValue()))
 
       case (attribute, value: ju.List[jl.Double] @unchecked)
           if attribute.getType == JAttributeType.DOUBLE_ARRAY =>
-        Attribute(
-          AttributeKey.doubleList(attribute.getKey),
-          value.asScala.toList.map(_.doubleValue())
-        )
+        Attribute(attribute.getKey, value.asScala.toList.map(_.doubleValue()))
     }
 
 }

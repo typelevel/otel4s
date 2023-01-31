@@ -197,6 +197,8 @@ trait SpanBuilder[F[_]] {
    */
 
   def use[A](f: Span[F] => F[A]): F[A]
+
+  def surround[A](f: F[A]): F[A]
 }
 
 object SpanBuilder {
@@ -228,6 +230,9 @@ object SpanBuilder {
 
       def use[A](f: Span[F] => F[A]): F[A] =
         f(span)
+
+      def surround[A](fa: F[A]): F[A] =
+        fa
 
       /*
       val start: Resource[F, Span[F]] =

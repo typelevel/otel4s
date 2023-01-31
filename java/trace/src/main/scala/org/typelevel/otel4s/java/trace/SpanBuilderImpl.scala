@@ -97,6 +97,9 @@ private[java] final case class SpanBuilderImpl[F[_]: Sync](
   def use[A](f: Span[F] => F[A]): F[A] =
     start.use { case (span, nt) => nt(f(span)) }
 
+  def surround[A](fa: F[A]): F[A] =
+    start.surround(fa)
+
   private def start: Resource[F, (Span[F], F ~> F)] =
     Resource.eval(parentContext).flatMap {
       case Some(parent) =>

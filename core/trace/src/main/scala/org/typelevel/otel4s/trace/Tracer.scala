@@ -18,7 +18,6 @@ package org.typelevel.otel4s
 package trace
 
 import cats.Applicative
-import cats.effect.kernel.Resource
 import org.typelevel.otel4s.meta.InstrumentMeta
 
 trait Tracer[F[_]] extends TracerMacro[F] {
@@ -106,8 +105,8 @@ object Tracer {
   def apply[F[_]](implicit ev: Tracer[F]): Tracer[F] = ev
 
   trait Meta[F[_]] extends InstrumentMeta[F] {
-    def noopSpan: Resource[F, Span[F]]
-    def noopResSpan[A](resource: Resource[F, A]): Resource[F, Span.Res[F, A]]
+    def noopSpanBuilder: SpanBuilder[F]
+    // def noopResSpan[A](resource: Resource[F, A]): Resource[F, Span.Res[F, A]]
   }
 
   object Meta {
@@ -121,13 +120,15 @@ object Tracer {
 
         val isEnabled: Boolean = enabled
         val unit: F[Unit] = Applicative[F].unit
-        val noopSpan: Resource[F, Span[F]] =
-          Resource.pure(Span.fromBackend(noopBackend))
+        val noopSpanBuilder: SpanBuilder[F] =
+          SpanBuilder.noop(noopBackend)
 
+        /*
         def noopResSpan[A](
             resource: Resource[F, A]
         ): Resource[F, Span.Res[F, A]] =
-          resource.map(a => Span.Res.fromBackend(a, Span.Backend.noop))
+           resource.map(a => Span.Res.fromBackend(a, Span.Backend.noop))
+        */
       }
   }
 

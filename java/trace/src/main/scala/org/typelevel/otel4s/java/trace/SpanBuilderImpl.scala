@@ -17,6 +17,8 @@
 package org.typelevel.otel4s.java
 package trace
 
+import cats.~>
+import cats.arrow.FunctionK
 import cats.effect.Resource
 import cats.effect.Sync
 import cats.syntax.flatMap._
@@ -92,17 +94,24 @@ private[java] final case class SpanBuilderImpl[F[_]: Sync](
     }
   }
 
-  def start: Resource[F, Span[F]] =
+  def use[A](f: Span[F] => F[A]): F[A] =
+    start.use { case (span, nt) => nt(f(span)) }
+
+  private def start: Resource[F, (Span[F], F ~> F)] =
     Resource.eval(parentContext).flatMap {
       case Some(parent) =>
         for {
-          back <- startManaged(makeJBuilder(parent), TimestampSelect.Explicit)
-        } yield Span.fromBackend(back)
+          (back, nt) <- startManaged(
+            makeJBuilder(parent),
+            TimestampSelect.Explicit
+          )
+        } yield (Span.fromBackend(back), nt)
 
       case None =>
-        Resource.pure(Span.fromBackend(Span.Backend.noop))
+        Resource.pure((Span.fromBackend(Span.Backend.noop), FunctionK.id))
     }
 
+  /*
   def startResource[A](
       resource: Resource[F, A]
   ): Resource[F, Span.Res[F, A]] = {
@@ -135,11 +144,12 @@ private[java] final case class SpanBuilderImpl[F[_]: Sync](
         resource.map(a => Span.Res.fromBackend(a, Span.Backend.noop))
     }
   }
+   */
 
   private def startManaged(
       builder: JSpanBuilder,
       timestampSelect: TimestampSelect
-  ): Resource[F, SpanBackendImpl[F]] = {
+  ): Resource[F, (SpanBackendImpl[F], F ~> F)] = {
 
     def acquire: F[SpanBackendImpl[F]] =
       startSpan(builder, timestampSelect)
@@ -167,8 +177,8 @@ private[java] final case class SpanBuilderImpl[F[_]: Sync](
 
     for {
       backend <- Resource.makeCase(acquire) { case (b, ec) => release(b, ec) }
-      _ <- scope.makeScope(backend.jSpan)
-    } yield backend
+      nt <- Resource.eval(scope.makeScope(backend.jSpan))
+    } yield (backend, nt)
   }
 
   private def startSpan(

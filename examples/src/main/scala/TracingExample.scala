@@ -39,7 +39,9 @@ object Work {
         }
 
       def doWorkInternal =
-        Console[F].println("Doin' work")
+        Tracer[F].span("Work.InternalWork").use { _ =>
+          Console[F].println("Doin' work")
+        }
     }
 }
 

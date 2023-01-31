@@ -24,6 +24,7 @@ ThisBuild / scalaVersion := Scala213 // the default Scala
 
 val CatsVersion = "2.9.0"
 val CatsEffectVersion = "3.4.5"
+val CatsMtlVersion = "1.3.0"
 val FS2Version = "3.5.0"
 val MUnitVersion = "1.0.0-M7"
 val MUnitCatsEffectVersion = "2.0.0-M3"
@@ -176,6 +177,7 @@ lazy val `java-trace` = project
     name := "otel4s-java-trace",
     libraryDependencies ++= Seq(
       "org.typelevel" %%% "cats-effect" % CatsEffectVersion,
+      "org.typelevel" %%% "cats-mtl" % CatsMtlVersion,
       "io.opentelemetry" % "opentelemetry-sdk-testing" % OpenTelemetryVersion % Test,
       "org.typelevel" %%% "cats-effect-testkit" % CatsEffectVersion % Test,
       "co.fs2" %% "fs2-core" % FS2Version % Test

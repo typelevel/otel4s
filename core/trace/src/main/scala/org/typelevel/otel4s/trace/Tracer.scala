@@ -56,7 +56,7 @@ trait Tracer[F[_]] extends TracerMacro[F] {
     * @param parent
     *   the span context to use as a parent
     */
-  def childScope(parent: SpanContext): Resource[F, Unit]
+  def childScope[A](parent: SpanContext)(fa: F[A]): F[A]
 
   /** Creates a new root tracing scope. The parent span will not be available
     * inside. Thus, a span created inside of the scope will be a root one.
@@ -78,7 +78,7 @@ trait Tracer[F[_]] extends TracerMacro[F] {
     * }
     *   }}}
     */
-  def rootScope: Resource[F, Unit]
+  def rootScope[A](fa: F[A]): F[A]
 
   /** Creates a no-op tracing scope. The tracing operations inside of the scope
     * are no-op.
@@ -97,7 +97,7 @@ trait Tracer[F[_]] extends TracerMacro[F] {
     * }
     *   }}}
     */
-  def noopScope: Resource[F, Unit]
+  def noopScope[A](fa: F[A]): F[A]
 
 }
 
@@ -135,12 +135,11 @@ object Tracer {
     new Tracer[F] {
       private val noopBackend = Span.Backend.noop
       private val builder = SpanBuilder.noop(noopBackend)
-      private val resourceUnit = Resource.unit[F]
       val meta: Meta[F] = Meta.disabled
       val currentSpanContext: F[Option[SpanContext]] = Applicative[F].pure(None)
-      def rootScope: Resource[F, Unit] = resourceUnit
-      def noopScope: Resource[F, Unit] = resourceUnit
-      def childScope(parent: SpanContext): Resource[F, Unit] = resourceUnit
+      def rootScope[A](fa: F[A]): F[A] = fa
+      def noopScope[A](fa: F[A]): F[A] = fa
+      def childScope[A](parent: SpanContext)(fa: F[A]): F[A] = fa
       def spanBuilder(name: String): SpanBuilder[F] = builder
     }
 }

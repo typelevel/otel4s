@@ -18,7 +18,7 @@ package org.typelevel.otel4s
 package trace
 
 import cats.Applicative
-import cats.effect.kernel.Resource
+// import cats.effect.kernel.Resource
 
 import scala.concurrent.duration.FiniteDuration
 
@@ -140,6 +140,7 @@ trait SpanBuilder[F[_]] {
     */
   def startUnmanaged: F[Span[F]]
 
+  /*
   /** Creates a [[Span]]. Unlike [[startUnmanaged]] the lifecycle of the span is
     * managed by the [[cats.effect.kernel.Resource Resource]]. That means the
     * span is started upon resource allocation and ended upon finalization.
@@ -193,6 +194,9 @@ trait SpanBuilder[F[_]] {
     *   the resource to trace
     */
   def startResource[A](resource: Resource[F, A]): Resource[F, Span.Res[F, A]]
+   */
+
+  def use[A](f: Span[F] => F[A]): F[A]
 }
 
 object SpanBuilder {
@@ -222,6 +226,10 @@ object SpanBuilder {
       val startUnmanaged: F[Span[F]] =
         Applicative[F].pure(span)
 
+      def use[A](f: Span[F] => F[A]): F[A] =
+        f(span)
+
+      /*
       val start: Resource[F, Span[F]] =
         Resource.pure(span)
 
@@ -229,6 +237,7 @@ object SpanBuilder {
           resource: Resource[F, A]
       ): Resource[F, Span.Res[F, A]] =
         resource.map(a => Span.Res.fromBackend(a, back))
+       */
     }
 
 }

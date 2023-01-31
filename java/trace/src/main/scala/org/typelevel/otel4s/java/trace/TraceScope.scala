@@ -16,9 +16,11 @@
 
 package org.typelevel.otel4s.java.trace
 
+import cats.~>
 import cats.effect.IOLocal
 import cats.effect.LiftIO
-import cats.effect.Resource
+import cats.effect.MonadCancelThrow
+// import cats.effect.Resource
 import cats.effect.Sync
 import cats.syntax.functor._
 import io.opentelemetry.api.trace.{Span => JSpan}
@@ -29,9 +31,9 @@ private[java] trait TraceScope[F[_]] {
   import TraceScope.Scope
   def root: F[Scope.Root]
   def current: F[Scope]
-  def makeScope(span: JSpan): Resource[F, Unit]
-  def rootScope: Resource[F, Unit]
-  def noopScope: Resource[F, Unit]
+  def makeScope(span: JSpan): F[F ~> F]
+  def rootScope: F[F ~> F]
+  def noopScope: F ~> F
 }
 
 private[java] object TraceScope {
@@ -60,14 +62,11 @@ private[java] object TraceScope {
         def current: F[Scope] =
           local.get.to[F]
 
-        def makeScope(span: JSpan): Resource[F, Unit] =
-          for {
-            current <- Resource.eval(current)
-            _ <- createScope(nextScope(current, span))
-          } yield ()
+        def makeScope(span: JSpan): F[F ~> F] =
+          current.map(scope => createScope(nextScope(scope, span)))
 
-        def rootScope: Resource[F, Unit] =
-          Resource.eval(current).flatMap {
+        def rootScope: F[F ~> F] =
+          current.map {
             case Scope.Root(_) =>
               createScope(scopeRoot)
 
@@ -78,13 +77,16 @@ private[java] object TraceScope {
               createScope(Scope.Noop)
           }
 
-        def noopScope: Resource[F, Unit] =
+        def noopScope: F ~> F =
           createScope(Scope.Noop)
 
-        private def createScope(scope: Scope): Resource[F, Unit] =
-          Resource
-            .make(local.getAndSet(scope).to[F])(p => local.set(p).to[F])
-            .void
+        private def createScope(scope: Scope): F ~> F =
+          new (F ~> F) {
+            def apply[A](fa: F[A]): F[A] =
+              MonadCancelThrow[F].bracket(local.getAndSet(scope).to[F])(
+                Function.const(fa)
+              )(p => local.set(p).to[F])
+          }
 
         private def nextScope(scope: Scope, span: JSpan): Scope =
           scope match {

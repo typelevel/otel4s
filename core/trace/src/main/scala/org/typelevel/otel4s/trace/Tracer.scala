@@ -18,6 +18,7 @@ package org.typelevel.otel4s
 package trace
 
 import cats.Applicative
+import cats.effect.kernel.MonadCancelThrow
 import org.typelevel.otel4s.meta.InstrumentMeta
 
 trait Tracer[F[_]] extends TracerMacro[F] {
@@ -111,10 +112,10 @@ object Tracer {
 
   object Meta {
 
-    def enabled[F[_]: Applicative]: Meta[F] = make(true)
-    def disabled[F[_]: Applicative]: Meta[F] = make(false)
+    def enabled[F[_]: MonadCancelThrow]: Meta[F] = make(true)
+    def disabled[F[_]: MonadCancelThrow]: Meta[F] = make(false)
 
-    private def make[F[_]: Applicative](enabled: Boolean): Meta[F] =
+    private def make[F[_]: MonadCancelThrow](enabled: Boolean): Meta[F] =
       new Meta[F] {
         private val noopBackend = Span.Backend.noop[F]
 
@@ -132,7 +133,7 @@ object Tracer {
       }
   }
 
-  def noop[F[_]: Applicative]: Tracer[F] =
+  def noop[F[_]: MonadCancelThrow]: Tracer[F] =
     new Tracer[F] {
       private val noopBackend = Span.Backend.noop
       private val builder = SpanBuilder.noop(noopBackend)

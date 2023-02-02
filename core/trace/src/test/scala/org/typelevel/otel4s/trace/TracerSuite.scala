@@ -46,7 +46,7 @@ class TracerSuite extends CatsEffectSuite {
 
     def attribute = {
       allocated = true
-      List(Attribute(AttributeKey.string("key"), "value"))
+      List(Attribute("key", "value"))
     }
 
     def exception = {

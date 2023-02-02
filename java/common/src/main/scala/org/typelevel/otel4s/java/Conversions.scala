@@ -17,58 +17,63 @@
 package org.typelevel.otel4s
 package java
 
-import io.opentelemetry.api.common.{AttributeKey => JAttributeKey}
-import io.opentelemetry.api.common.{AttributeType => JAttributeType}
+import cats.effect.kernel.Async
+import cats.syntax.either._
 import io.opentelemetry.api.common.{Attributes => JAttributes}
-
-import scala.jdk.CollectionConverters._
+import io.opentelemetry.sdk.common.CompletableResultCode
 
 private[java] object Conversions {
 
   def toJAttributes(attributes: Seq[Attribute[_]]): JAttributes = {
     val builder = JAttributes.builder
 
-    def put(name: String, jType: JAttributeType, value: Any): Unit = {
-      val jKey = new JAttributeKey[Any] {
-        def getKey: String = name
-        def getType: JAttributeType = jType
-        override def toString: String = name
-      }
-      builder.put[Any](jKey, value)
-      ()
-    }
-
-    def putList(name: String, jType: JAttributeType, values: Any): Unit = {
-      val jKey = new JAttributeKey[Any] {
-        def getKey: String = name
-        def getType: JAttributeType = jType
-        override def toString: String = name
-      }
-      builder.put[Any](jKey, values.asInstanceOf[Seq[Any]].asJava)
-      ()
-    }
-
     attributes.foreach { case Attribute(key, value) =>
       key.`type` match {
         case AttributeType.String =>
-          put(key.name, JAttributeType.STRING, value)
+          builder.put(key.name, value.asInstanceOf[String])
         case AttributeType.Boolean =>
-          put(key.name, JAttributeType.BOOLEAN, value)
+          builder.put(key.name, value.asInstanceOf[Boolean])
         case AttributeType.Long =>
-          put(key.name, JAttributeType.LONG, value)
+          builder.put(key.name, value.asInstanceOf[Long])
         case AttributeType.Double =>
-          put(key.name, JAttributeType.DOUBLE, value)
+          builder.put(key.name, value.asInstanceOf[Double])
         case AttributeType.StringList =>
-          putList(key.name, JAttributeType.STRING_ARRAY, value)
+          builder.put(key.name, value.asInstanceOf[List[String]]: _*)
         case AttributeType.BooleanList =>
-          putList(key.name, JAttributeType.BOOLEAN_ARRAY, value)
+          builder.put(key.name, value.asInstanceOf[List[Boolean]]: _*)
         case AttributeType.LongList =>
-          putList(key.name, JAttributeType.LONG_ARRAY, value)
+          builder.put(key.name, value.asInstanceOf[List[Long]]: _*)
         case AttributeType.DoubleList =>
-          putList(key.name, JAttributeType.DOUBLE_ARRAY, value)
+          builder.put(key.name, value.asInstanceOf[List[Double]]: _*)
       }
     }
+
     builder.build()
   }
 
+  def asyncFromCompletableResultCode[F[_]](
+      codeF: F[CompletableResultCode],
+      msg: => Option[String] = None
+  )(implicit F: Async[F]): F[Unit] =
+    F.flatMap(codeF)(code =>
+      F.async[Unit](cb =>
+        F.delay {
+          code.whenComplete(() =>
+            if (code.isSuccess())
+              cb(Either.unit)
+            else
+              cb(
+                Left(
+                  new RuntimeException(
+                    msg.getOrElse(
+                      "OpenTelemetry SDK async operation failed"
+                    )
+                  )
+                )
+              )
+          )
+          None
+        }
+      )
+    )
 }

@@ -14,22 +14,24 @@
  * limitations under the License.
  */
 
+import cats.Monad
 import cats.effect.IO
 import cats.effect.IOApp
-import cats.effect.MonadCancelThrow
 import cats.effect.Resource
 import cats.effect.std.Console
 import cats.syntax.all._
 import io.opentelemetry.api.GlobalOpenTelemetry
 import org.typelevel.otel4s.java.OtelJava
-import org.typelevel.otel4s.trace.Tracer
+import org.typelevel.otel4s.trace.{Span, SpanBuilder, Tracer}
+
+import scala.concurrent.duration._
 
 trait Work[F[_]] {
   def doWork: F[Unit]
 }
 
 object Work {
-  def apply[F[_]: MonadCancelThrow: Tracer: Console]: Work[F] =
+  def apply[F[_]: Monad: Tracer: Console]: Work[F] =
     new Work[F] {
       def doWork: F[Unit] =
         Tracer[F].span("Work.DoWork").use { span =>
@@ -54,7 +56,13 @@ object TracingExample extends IOApp.Simple {
 
   def run: IO[Unit] = {
     tracerResource.use { implicit tracer: Tracer[IO] =>
-      Work[IO].doWork
+      val resource: Resource[IO, Unit] = Resource.make(IO.sleep(50.millis))(_ => IO.sleep(100.millis))
+      val builder: SpanBuilder.Aux[IO, Span.Res[IO, Unit]] = tracer.span("resource").wrapResource(resource)
+
+      builder.use { _ =>
+        Work[IO].doWork
+      }
+
     }
   }
 }

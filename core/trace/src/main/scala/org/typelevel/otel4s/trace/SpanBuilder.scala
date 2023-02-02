@@ -18,7 +18,7 @@ package org.typelevel.otel4s
 package trace
 
 import cats.Applicative
-import cats.effect.kernel.Resource
+import cats.effect.kernel.{MonadCancelThrow, Resource}
 
 import scala.concurrent.duration.FiniteDuration
 
@@ -233,10 +233,6 @@ trait SpanBuilder[F[_]] {
     */
   def startResource[A](resource: Resource[F, A]): Resource[F, Span.Res[F, A]]
    */
-
-  def use[A](f: Span[F] => F[A]): F[A]
-
-  def surround[A](f: F[A]): F[A]
 }
 
 object SpanBuilder {
@@ -245,12 +241,12 @@ object SpanBuilder {
     type Result = A
   }
 
-  def noop[F[_]: Applicative](
+  def noop[F[_]: MonadCancelThrow](
       back: Span.Backend[F]
   ): SpanBuilder.Aux[F, Span[F]] =
     make(back, Resource.pure(Span.fromBackend(back)))
 
-  private def make[F[_]: Applicative, Res <: Span[F]](
+  private def make[F[_]: MonadCancelThrow, Res <: Span[F]](
       back: Span.Backend[F],
       startSpan: Resource[F, Res]
   ): SpanBuilder.Aux[F, Res] =
@@ -290,8 +286,8 @@ object SpanBuilder {
       def startUnmanaged(implicit ev: Result =:= Span[F]): F[Span[F]] =
         Applicative[F].pure(span)
 
-      def use[A](f: Span[F] => F[A]): F[A] =
-        f(span)
+      def use[A](f: Res => F[A]): F[A] =
+        startSpan.use(res => f(res))
 
       def surround[A](fa: F[A]): F[A] =
         fa

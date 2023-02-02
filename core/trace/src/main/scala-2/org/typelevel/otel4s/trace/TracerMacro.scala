@@ -52,7 +52,7 @@ private[otel4s] trait TracerMacro[F[_]] {
     * @param attributes
     *   the set of attributes to associate with the span
     */
-  def span(name: String, attributes: Attribute[_]*): SpanBuilder[F] =
+  def span(name: String, attributes: Attribute[_]*): SpanBuilder.Aux[F, Span[F]] =
     macro TracerMacro.span
 
   /** Creates a new root span. Even if a parent span is available in the scope,
@@ -73,7 +73,7 @@ private[otel4s] trait TracerMacro[F[_]] {
   def rootSpan(
       name: String,
       attributes: Attribute[_]*
-  ): SpanBuilder[F] =
+  ): SpanBuilder.Aux[F, Span[F]] =
     macro TracerMacro.rootSpan
 
   /*

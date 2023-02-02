@@ -37,7 +37,7 @@ trait Tracer[F[_]] extends TracerMacro[F] {
     * @param name
     *   the name of the span
     */
-  def spanBuilder(name: String): SpanBuilder[F]
+  def spanBuilder(name: String): SpanBuilder.Aux[F, Span[F]]
 
   /** Creates a new tracing scope with a custom parent. A newly created non-root
     * span will be a child of the given `parent`.
@@ -141,6 +141,6 @@ object Tracer {
       def rootScope[A](fa: F[A]): F[A] = fa
       def noopScope[A](fa: F[A]): F[A] = fa
       def childScope[A](parent: SpanContext)(fa: F[A]): F[A] = fa
-      def spanBuilder(name: String): SpanBuilder[F] = builder
+      def spanBuilder(name: String): SpanBuilder.Aux[F, Span[F]] = builder
     }
 }

@@ -136,7 +136,7 @@ object TracerMacro {
     import c.universe._
     val meta = q"${c.prefix}.meta"
 
-    q"if ($meta.isEnabled) ${c.prefix}.spanBuilder($name).addAttributes(..$attributes).startResource($resource) else $meta.noopResSpan($resource)"
+    q"if ($meta.isEnabled) ${c.prefix}.spanBuilder($name).addAttributes(..$attributes).wrapResource($resource).start else $meta.noopResSpan($resource)"
   }
    */
 

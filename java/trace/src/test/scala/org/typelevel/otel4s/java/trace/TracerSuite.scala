@@ -20,6 +20,7 @@ import cats.effect.IO
 import cats.effect.Resource
 import cats.effect.testkit.TestControl
 import fs2.Stream
+import io.opentelemetry.api.common.{AttributeKey => JAttributeKey}
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.trace.StatusCode
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo
@@ -34,7 +35,6 @@ import io.opentelemetry.sdk.trace.`export`.SimpleSpanProcessor
 import io.opentelemetry.sdk.trace.internal.data.ExceptionEventData
 import munit.CatsEffectSuite
 import org.typelevel.otel4s.Attribute
-import org.typelevel.otel4s.AttributeKey
 import org.typelevel.otel4s.trace.Span
 import org.typelevel.otel4s.trace.Tracer
 import org.typelevel.otel4s.trace.TracerProvider
@@ -70,6 +70,25 @@ class TracerSuite extends CatsEffectSuite {
     )
   }
 
+  test("set attributes only once") {
+    val key = "string-attribute"
+    val value = "value"
+    val attribute = Attribute(key, value)
+
+    for {
+      sdk <- makeSdk()
+      tracer <- sdk.provider.tracer("tracer").get
+      _ <- tracer.span("span", attribute).use_
+      spans <- sdk.finishedSpans
+    } yield {
+      assertEquals(spans.map(_.getAttributes.size), List(1))
+      assertEquals(
+        spans.map(_.getAttributes.get(JAttributeKey.stringKey(key))),
+        List(value)
+      )
+    }
+  }
+
   test("propagate traceId and spanId") {
     for {
       sdk <- makeSdk()
@@ -101,7 +120,7 @@ class TracerSuite extends CatsEffectSuite {
   }
 
   test("propagate attributes") {
-    val attribute = Attribute(AttributeKey.string("string-attribute"), "value")
+    val attribute = Attribute("string-attribute", "value")
 
     for {
       sdk <- makeSdk()
@@ -371,7 +390,7 @@ class TracerSuite extends CatsEffectSuite {
   }
 
   test("trace resource") {
-    val attribute = Attribute(AttributeKey.string("string-attribute"), "value")
+    val attribute = Attribute("string-attribute", "value")
 
     val acquireInnerDuration = 25.millis
     val body1Duration = 100.millis

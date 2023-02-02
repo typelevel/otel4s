@@ -121,7 +121,6 @@ private[java] final case class SpanBuilderImpl[F[_]: Sync, Res <: Span[F]](
       .setParent(parent)
 
     kind.foreach(k => b.setSpanKind(toJSpanKind(k)))
-    b.setAllAttributes(Conversions.toJAttributes(attributes))
     startTimestamp.foreach(d => b.setStartTimestamp(d.length, d.unit))
     links.foreach { case (ctx, attributes) =>
       b.addLink(

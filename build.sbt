@@ -196,6 +196,7 @@ lazy val examples = project
   .settings(
     name := "otel4s-examples",
     libraryDependencies ++= Seq(
+      "co.fs2" %% "fs2-core" % FS2Version,
       "io.opentelemetry" % "opentelemetry-exporter-otlp" % OpenTelemetryVersion,
       "io.opentelemetry" % "opentelemetry-sdk" % OpenTelemetryVersion,
       "io.opentelemetry" % "opentelemetry-sdk-extension-autoconfigure" % s"${OpenTelemetryVersion}-alpha"

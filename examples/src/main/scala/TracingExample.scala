@@ -20,20 +20,25 @@ import cats.effect.MonadCancelThrow
 import cats.effect.Resource
 import cats.effect.std.Console
 import cats.syntax.all._
+import fs2.Stream
 import io.opentelemetry.api.GlobalOpenTelemetry
+import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.java.OtelJava
 import org.typelevel.otel4s.trace.Tracer
 
+import scala.concurrent.duration._
+
 trait Work[F[_]] {
-  def doWork: F[Unit]
+  def doWork(i: Int): F[Unit]
 }
 
 object Work {
   def apply[F[_]: MonadCancelThrow: Tracer: Console]: Work[F] =
     new Work[F] {
-      def doWork: F[Unit] =
+      def doWork(i: Int): F[Unit] =
         Tracer[F].span("Work.DoWork").use { span =>
-          span.addEvent("Starting the work.") *>
+          span.addAttribute(Attribute("number", i.toLong)) *>
+            span.addEvent("Starting the work.") *>
             doWorkInternal *>
             span.addEvent("Finished working.")
         }
@@ -52,7 +57,22 @@ object TracingExample extends IOApp.Simple {
 
   def run: IO[Unit] = {
     tracerResource.use { implicit tracer: Tracer[IO] =>
-      Work[IO].doWork
+      val resource: Resource[IO, Unit] =
+        Resource.make(IO.sleep(50.millis))(_ => IO.sleep(100.millis))
+
+      def stream(name: String) =
+        Stream
+          .resource(tracer.spanBuilder(name).start >> resource)
+          .flatMap(_ => Stream(1, 2, 3))
+          .evalMap(Work[IO].doWork)
+
+      tracer
+        .span("root")
+        .surround(
+          (stream("uninterrupted") ++ stream(
+            "interrupted"
+          ).interruptScope).compile.drain
+        )
     }
   }
 }

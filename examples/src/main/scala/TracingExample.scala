@@ -20,7 +20,6 @@ import cats.effect.MonadCancelThrow
 import cats.effect.Resource
 import cats.effect.std.Console
 import cats.syntax.all._
-import fs2.Stream
 import io.opentelemetry.api.GlobalOpenTelemetry
 import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.java.OtelJava
@@ -55,24 +54,23 @@ object TracingExample extends IOApp.Simple {
       .evalMap(OtelJava.forSync[IO])
       .evalMap(_.tracerProvider.tracer("Example").get)
 
-  def run: IO[Unit] = {
+  def run: IO[Unit] =
     tracerResource.use { implicit tracer: Tracer[IO] =>
-      val resource: Resource[IO, Unit] =
-        Resource.make(IO.sleep(50.millis))(_ => IO.sleep(100.millis))
-
-      def stream(name: String) =
-        Stream
-          .resource(tracer.spanBuilder(name).start >> resource)
-          .flatMap(_ => Stream(1, 2, 3))
-          .evalMap(Work[IO].doWork)
-
       tracer
-        .span("root")
+        .span("outer")
         .surround(
-          (stream("uninterrupted") ++ stream(
-            "interrupted"
-          ).interruptScope).compile.drain
+          IO.both(
+            tracer
+              .span("left")
+              .surround(
+                tracer.span("left-worker").use_.replicateA(10)
+              ),
+            tracer
+              .span("right")
+              .surround(
+                tracer.span("right-worker").use_.replicateA(10)
+              )
+          )
         )
-    }
-  }
+    }.void
 }

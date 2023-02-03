@@ -57,6 +57,7 @@ lazy val root = tlCrossRootProject
     `java-metrics`,
     `java-trace`,
     java,
+    benchmarks,
     examples
   )
   .settings(name := "otel4s")
@@ -187,6 +188,15 @@ lazy val java = project
   .dependsOn(core.jvm, `java-metrics`, `java-trace`)
   .settings(
     name := "otel4s-java"
+  )
+
+lazy val benchmarks = project
+  .enablePlugins(NoPublishPlugin)
+  .enablePlugins(JmhPlugin)
+  .in(file("benchmarks"))
+  .dependsOn(core.jvm, java)
+  .settings(
+    name := "otel4s-benchmarks"
   )
 
 lazy val examples = project

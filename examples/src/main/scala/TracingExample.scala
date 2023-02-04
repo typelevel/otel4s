@@ -48,7 +48,7 @@ object TracingExample extends IOApp.Simple {
     Resource
       .eval(IO(GlobalOpenTelemetry.get))
       .evalMap(OtelJava.forSync[IO])
-      .evalMap(_.tracerProvider.tracer("Example").get)
+      .evalMap(_.tracerProvider.get("Example"))
 
   def run: IO[Unit] = {
     tracerResource.use { implicit tracer: Tracer[IO] =>

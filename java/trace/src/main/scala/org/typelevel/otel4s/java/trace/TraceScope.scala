@@ -84,10 +84,14 @@ private[java] object TraceScope {
             createScope(Scope.Noop)
 
           private def createScope(scope: Scope): Resource[F, Unit] =
-            Resource(
-              local.modify(oldRef =>
-                (Ref.unsafe[F, Scope](scope), () -> local.set(oldRef).to[F])).to[F]
-            )
+            for {
+              oldRef <- Resource.eval(local.get.to[F])
+              newRef <- Resource.eval(oldRef.get.map(Ref.unsafe[F, Scope]))
+              _ <- Resource
+                .make(local.set(newRef).to[F])(_ => local.set(oldRef).to[F])
+              ref <- Resource.eval(local.get.to[F])
+              _ <- Resource.make(ref.getAndSet(scope))(ref.set)
+            } yield ()
 
           private def nextScope(scope: Scope, span: JSpan): Scope =
             scope match {

@@ -25,8 +25,6 @@ import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.java.OtelJava
 import org.typelevel.otel4s.trace.Tracer
 
-import scala.concurrent.duration._
-
 trait Work[F[_]] {
   def doWork(i: Int): F[Unit]
 }

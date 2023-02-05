@@ -83,21 +83,11 @@ private[java] object TraceScope {
           def noopScope: Resource[F, Unit] =
             createScope(Scope.Noop)
 
-          private def createScope(scope: Scope): Resource[F, Unit] = {
-            val acquire =
-              local.get.to[F].product(Ref.of[F, Scope](scopeRoot)).flatTap {
-                case (_, nextRef) =>
-                  local.set(nextRef).to[F]
-              }
-            def release(oldRef: (Ref[F, Scope], Any)): F[Unit] =
-              local.set(oldRef._1).to[F]
-            Resource.make(acquire)(release) >>
-              Resource
-                .make(local.get.to[F].flatMap(_.getAndSet(scope)))(p =>
-                  local.get.to[F].flatMap(_.set(p))
-                )
-                .void
-          }
+          private def createScope(scope: Scope): Resource[F, Unit] =
+            Resource(
+              local.modify(oldRef =>
+                (Ref.unsafe[F, Scope](scope), () -> local.set(oldRef).to[F])).to[F]
+            )
 
           private def nextScope(scope: Scope, span: JSpan): Scope =
             scope match {

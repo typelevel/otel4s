@@ -115,7 +115,8 @@ object TracerMacro {
       attributes: c.Expr[Attribute[_]]*
   ): c.universe.Tree = {
     import c.universe._
-    q"${c.prefix}.spanBuilder($name).addAttributes(..$attributes)"
+    val meta = q"${c.prefix}.meta"
+    q"if ($meta.isEnabled) ${c.prefix}.spanBuilder($name).addAttributes(..$attributes) else $meta.noopSpanBuilder"
   }
 
   def rootSpan(c: blackbox.Context)(
@@ -124,8 +125,7 @@ object TracerMacro {
   ): c.universe.Tree = {
     import c.universe._
     val meta = q"${c.prefix}.meta"
-
-    q"if ($meta.isEnabled) ${c.prefix}.spanBuilder($name).addAttributes(..$attributes) else $meta.noopSpan"
+    q"if ($meta.isEnabled) ${c.prefix}.spanBuilder($name).root.addAttributes(..$attributes) else $meta.noopSpanBuilder"
   }
 
   /*

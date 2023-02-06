@@ -106,8 +106,8 @@ object Tracer {
   def apply[F[_]](implicit ev: Tracer[F]): Tracer[F] = ev
 
   trait Meta[F[_]] extends InstrumentMeta[F] {
-    def noopSpanBuilder: SpanBuilder[F]
     // def noopResSpan[A](resource: Resource[F, A]): Resource[F, Span.Res[F, A]]
+    def noopSpanBuilder: SpanBuilder.Aux[F, Span[F]]
   }
 
   object Meta {
@@ -121,7 +121,7 @@ object Tracer {
 
         val isEnabled: Boolean = enabled
         val unit: F[Unit] = Applicative[F].unit
-        val noopSpanBuilder: SpanBuilder[F] =
+        val noopSpanBuilder: SpanBuilder.Aux[F, Span[F]] =
           SpanBuilder.noop(noopBackend)
 
         /*

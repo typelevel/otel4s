@@ -17,10 +17,11 @@
 package org.typelevel.otel4s.java.trace
 
 import cats.Applicative
+import cats.Functor
 import cats.effect.IOLocal
 import cats.effect.LiftIO
 import cats.effect.MonadCancelThrow
-import cats.syntax.functor._
+import cats.mtl.Local
 import cats.~>
 import io.opentelemetry.api.trace.{Span => JSpan}
 import io.opentelemetry.context.{Context => JContext}
@@ -48,67 +49,84 @@ private[java] object TraceScope {
     case object Noop extends Scope
   }
 
-  def fromIOLocal[F[_]: LiftIO: MonadCancelThrow](
+  def fromLocal[F[_]](
       default: JContext
-  ): F[TraceScope[F]] = {
+  )(implicit L: Local[F, Scope]): TraceScope[F] = {
     val scopeRoot = Scope.Root(default)
 
-    IOLocal[Scope](scopeRoot).to[F].map { local =>
-      new TraceScope[F] {
-        val root: F[Scope.Root] =
-          Applicative[F].pure(scopeRoot)
+    new TraceScope[F] {
+      val root: F[Scope.Root] =
+        L.applicative.pure(scopeRoot)
 
-        def current: F[Scope] =
-          local.get.to[F]
+      def current: F[Scope] =
+        L.ask[Scope]
 
-        def makeScope(span: JSpan): F[F ~> F] =
-          current.map(scope => createScope(nextScope(scope, span)))
+      def makeScope(span: JSpan): F[F ~> F] =
+        L.applicative.map(current)(scope => createScope(nextScope(scope, span)))
 
-        def rootScope: F[F ~> F] =
-          current.map {
-            case Scope.Root(_) =>
-              createScope(scopeRoot)
+      def rootScope: F[F ~> F] =
+        L.applicative.map(current) {
+          case Scope.Root(_) =>
+            createScope(scopeRoot)
 
-            case Scope.Span(_, _, _) =>
-              createScope(scopeRoot)
+          case Scope.Span(_, _, _) =>
+            createScope(scopeRoot)
 
-            case Scope.Noop =>
-              createScope(Scope.Noop)
-          }
+          case Scope.Noop =>
+            createScope(Scope.Noop)
+        }
 
-        def noopScope: F ~> F =
-          createScope(Scope.Noop)
+      def noopScope: F ~> F =
+        createScope(Scope.Noop)
 
-        private def createScope(scope: Scope): F ~> F =
-          new (F ~> F) {
-            def apply[A](fa: F[A]): F[A] =
-              MonadCancelThrow[F].bracket(local.getAndSet(scope).to[F])(
-                Function.const(fa)
-              )(p => local.set(p).to[F])
-          }
+      private def createScope(scope: Scope): F ~> F =
+        new (F ~> F) {
+          def apply[A](fa: F[A]): F[A] =
+            L.scope(fa)(scope)
+        }
 
-        private def nextScope(scope: Scope, span: JSpan): Scope =
-          scope match {
-            case Scope.Root(ctx) =>
-              Scope.Span(
-                ctx.`with`(span),
-                span,
-                WrappedSpanContext(span.getSpanContext)
-              )
+      private def nextScope(scope: Scope, span: JSpan): Scope =
+        scope match {
+          case Scope.Root(ctx) =>
+            Scope.Span(
+              ctx.`with`(span),
+              span,
+              WrappedSpanContext(span.getSpanContext)
+            )
 
-            case Scope.Span(ctx, _, _) =>
-              Scope.Span(
-                ctx.`with`(span),
-                span,
-                WrappedSpanContext(span.getSpanContext)
-              )
+          case Scope.Span(ctx, _, _) =>
+            Scope.Span(
+              ctx.`with`(span),
+              span,
+              WrappedSpanContext(span.getSpanContext)
+            )
 
-            case Scope.Noop =>
-              Scope.Noop
-          }
-
-      }
+          case Scope.Noop =>
+            Scope.Noop
+        }
     }
   }
 
+  private implicit def localForIoLocal[F[_]: MonadCancelThrow: LiftIO, E](
+      implicit ioLocal: IOLocal[E]
+  ) =
+    new Local[F, E] {
+      def applicative =
+        Applicative[F]
+      def ask[E2 >: E] =
+        Functor[F].widen[E, E2](ioLocal.get.to[F])
+      def local[A](fa: F[A])(f: E => E): F[A] =
+        MonadCancelThrow[F].bracket(ioLocal.modify(e => (f(e), e)).to[F])(_ =>
+          fa
+        )(ioLocal.set(_).to[F])
+    }
+
+  def fromIOLocal[F[_]: MonadCancelThrow: LiftIO](
+      default: JContext
+  ): F[TraceScope[F]] = {
+    val scopeRoot = Scope.Root(default)
+    IOLocal[Scope](scopeRoot)
+      .map(implicit ioLocal => fromLocal[F](default))
+      .to[F]
+  }
 }

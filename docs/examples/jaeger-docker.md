@@ -1,4 +1,4 @@
-# Collecting traces using Jaeger
+# Jaeger - collecting traces
 
 In this example, we are going to use [Jaeger](https://jaegertracing.io/) to collect and visualize traces produced by an
 application.
@@ -123,7 +123,7 @@ object TracingExample extends IOApp.Simple {
     Resource
       .eval(IO(GlobalOpenTelemetry.get))
       .evalMap(OtelJava.forSync[IO])
-      .evalMap(_.tracerProvider.tracer("Example").get)
+      .evalMap(_.tracerProvider.get("Example"))
 
   def run: IO[Unit] = {
     tracerResource.use { implicit tracer: Tracer[IO] =>

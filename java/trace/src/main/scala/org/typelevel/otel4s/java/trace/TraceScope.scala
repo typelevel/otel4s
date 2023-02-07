@@ -16,13 +16,12 @@
 
 package org.typelevel.otel4s.java.trace
 
-import cats.~>
 import cats.effect.IOLocal
 import cats.effect.LiftIO
 import cats.effect.MonadCancelThrow
-// import cats.effect.Resource
 import cats.effect.Sync
 import cats.syntax.functor._
+import cats.~>
 import io.opentelemetry.api.trace.{Span => JSpan}
 import io.opentelemetry.context.{Context => JContext}
 import org.typelevel.otel4s.trace.SpanContext

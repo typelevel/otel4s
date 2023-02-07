@@ -48,8 +48,8 @@ trait Tracer[F[_]] extends TracerMacro[F] {
     *   {{{
     * val tracer: Tracer[F] = ???
     * val span: Span[F] = ???
-    * val customChild: Resource[F, Span[F]] =
-    *   tracer.childScope(span.context).surround {
+    * val customChild: F[A] =
+    *   tracer.childScope(span.context) {
     *     tracer.span("custom-parent").use { span => ??? }
     *   }
     *   }}}
@@ -72,7 +72,7 @@ trait Tracer[F[_]] extends TracerMacro[F] {
     * tracer.span("root-span").use { _ =>
     *   for {
     *     _ <- tracer.span("child-1").use(_ => ???) // a child of 'root-span'
-    *     _ <- tracer.rootScope.use { _ =>
+    *     _ <- tracer.rootScope {
     *       tracer.span("child-2").use(_ => ???) // a root span that is not associated with 'root-span'
     *     }
     *   } yield ()
@@ -91,7 +91,7 @@ trait Tracer[F[_]] extends TracerMacro[F] {
     * tracer.span("root-span").use { _ =>
     *   for {
     *     _ <- tracer.span("child-1").use(_ => ???) // a child of 'root-span'
-    *     _ <- tracer.noopScope.use { _ =>
+    *     _ <- tracer.noopScope {
     *       tracer.span("child-2").use(_ => ???) // 'child-2' is not created at all
     *     }
     *   } yield ()

@@ -35,7 +35,7 @@ import scala.concurrent.duration.FiniteDuration
   * {{{
   * val tracer: Tracer[F] = ???
   * val leaked: F[Unit] =
-  *   tracer.spanBuilder("manual-span").startUnmanaged.flatMap { span =>
+  *   tracer.spanBuilder("manual-span").build.startUnmanaged.flatMap { span =>
   *     span.setStatus(Status.Ok, "all good")
   *   }
   * }}}
@@ -44,7 +44,7 @@ import scala.concurrent.duration.FiniteDuration
   * {{{
   * val tracer: Tracer[F] = ???
   * val ok: F[Unit] =
-  *   tracer.spanBuilder("manual-span").startUnmanaged.flatMap { span =>
+  *   tracer.spanBuilder("manual-span").build.startUnmanaged.flatMap { span =>
   *     span.setStatus(Status.Ok, "all good") >> span.end
   *   }
   * }}}
@@ -58,7 +58,7 @@ import scala.concurrent.duration.FiniteDuration
   * {{{
   * val tracer: Tracer[F] = ???
   * val ok: F[Unit] =
-  *   tracer.spanBuilder("auto-span").start.use { span =>
+  *   tracer.spanBuilder("auto-span").build.use { span =>
   *     span.setStatus(Status.Ok, "all good")
   *   }
   * }}}

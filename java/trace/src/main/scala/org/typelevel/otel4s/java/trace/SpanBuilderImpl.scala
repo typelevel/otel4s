@@ -108,6 +108,9 @@ private[java] final case class SpanBuilderImpl[F[_]: Sync, Res <: Span[F]](
   def use[A](f: Res => F[A]): F[A] =
     start.use { case (span, nt) => nt(f(span)) }
 
+  def use_ : F[Unit] =
+    start.use_
+
   def surround[A](fa: F[A]): F[A] =
     start.surround(fa)
 

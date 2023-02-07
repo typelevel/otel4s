@@ -32,6 +32,26 @@ trait SpanOps[F[_]] {
     */
   def startUnmanaged(implicit ev: Result =:= Span[F]): F[Span[F]]
 
+  /** Creates and uses a [[Span]]. Unlike [[startUnmanaged]], the
+    * lifecycle of the span is fully managed.  The span is started and
+    * passed to [[f]] to produce the effect, and ended when the effect
+    * completes.
+    *
+    * The finalization strategy is determined by [[SpanFinalizer.Strategy]]. By
+    * default, the abnormal termination (error, cancelation) is recorded.
+    *
+    * @see
+    *   default finalization strategy [[SpanFinalizer.Strategy.reportAbnormal]]
+    *
+    * @example
+    *   {{{
+    * val tracer: Tracer[F] = ???
+    * val ok: F[Unit] =
+    *   tracer.spanBuilder("auto-span").build.use { span =>
+    *     span.setStatus(Status.Ok, "all good")
+    *   }
+    *   }}}
+    */
   def use[A](f: Result => F[A]): F[A]
 
   def use_ : F[Unit]

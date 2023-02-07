@@ -211,16 +211,6 @@ object SpanBuilder {
         def surround[A](fa: F[A]): F[A] =
           fa
       }
-
-      /*
-      val start: Resource[F, Span[F]] =
-        Resource.pure(span)
-
-      def startResource[A](
-          resource: Resource[F, A]
-      ): Resource[F, Span.Res[F, A]] =
-        resource.map(a => Span.Res.fromBackend(a, back))
-       */
     }
 
 }

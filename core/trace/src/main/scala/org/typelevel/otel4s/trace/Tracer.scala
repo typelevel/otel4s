@@ -18,6 +18,7 @@ package org.typelevel.otel4s
 package trace
 
 import cats.Applicative
+import cats.effect.kernel.MonadCancelThrow
 import cats.effect.kernel.Resource
 import org.typelevel.otel4s.meta.InstrumentMeta
 
@@ -38,7 +39,7 @@ trait Tracer[F[_]] extends TracerMacro[F] {
     * @param name
     *   the name of the span
     */
-  def spanBuilder(name: String): SpanBuilder[F]
+  def spanBuilder(name: String): SpanBuilder.Aux[F, Span[F]]
 
   /** Creates a new tracing scope with a custom parent. A newly created non-root
     * span will be a child of the given `parent`.
@@ -47,8 +48,8 @@ trait Tracer[F[_]] extends TracerMacro[F] {
     *   {{{
     * val tracer: Tracer[F] = ???
     * val span: Span[F] = ???
-    * val customChild: Resource[F, Span[F]] =
-    *   tracer.childScope(span.context).surround {
+    * val customChild: F[A] =
+    *   tracer.childScope(span.context) {
     *     tracer.span("custom-parent").use { span => ??? }
     *   }
     *   }}}
@@ -56,7 +57,7 @@ trait Tracer[F[_]] extends TracerMacro[F] {
     * @param parent
     *   the span context to use as a parent
     */
-  def childScope(parent: SpanContext): Resource[F, Unit]
+  def childScope[A](parent: SpanContext)(fa: F[A]): F[A]
 
   /** Creates a new root tracing scope. The parent span will not be available
     * inside. Thus, a span created inside of the scope will be a root one.
@@ -71,14 +72,14 @@ trait Tracer[F[_]] extends TracerMacro[F] {
     * tracer.span("root-span").use { _ =>
     *   for {
     *     _ <- tracer.span("child-1").use(_ => ???) // a child of 'root-span'
-    *     _ <- tracer.rootScope.use { _ =>
+    *     _ <- tracer.rootScope {
     *       tracer.span("child-2").use(_ => ???) // a root span that is not associated with 'root-span'
     *     }
     *   } yield ()
     * }
     *   }}}
     */
-  def rootScope: Resource[F, Unit]
+  def rootScope[A](fa: F[A]): F[A]
 
   /** Creates a no-op tracing scope. The tracing operations inside of the scope
     * are no-op.
@@ -90,14 +91,14 @@ trait Tracer[F[_]] extends TracerMacro[F] {
     * tracer.span("root-span").use { _ =>
     *   for {
     *     _ <- tracer.span("child-1").use(_ => ???) // a child of 'root-span'
-    *     _ <- tracer.noopScope.use { _ =>
+    *     _ <- tracer.noopScope {
     *       tracer.span("child-2").use(_ => ???) // 'child-2' is not created at all
     *     }
     *   } yield ()
     * }
     *   }}}
     */
-  def noopScope: Resource[F, Unit]
+  def noopScope[A](fa: F[A]): F[A]
 
 }
 
@@ -106,41 +107,42 @@ object Tracer {
   def apply[F[_]](implicit ev: Tracer[F]): Tracer[F] = ev
 
   trait Meta[F[_]] extends InstrumentMeta[F] {
-    def noopSpan: Resource[F, Span[F]]
-    def noopResSpan[A](resource: Resource[F, A]): Resource[F, Span.Res[F, A]]
+    def noopSpanBuilder: SpanBuilder.Aux[F, Span[F]]
+    def noopResSpan[A](
+        resource: Resource[F, A]
+    ): SpanBuilder.Aux[F, Span.Res[F, A]]
   }
 
   object Meta {
 
-    def enabled[F[_]: Applicative]: Meta[F] = make(true)
-    def disabled[F[_]: Applicative]: Meta[F] = make(false)
+    def enabled[F[_]: MonadCancelThrow]: Meta[F] = make(true)
+    def disabled[F[_]: MonadCancelThrow]: Meta[F] = make(false)
 
-    private def make[F[_]: Applicative](enabled: Boolean): Meta[F] =
+    private def make[F[_]: MonadCancelThrow](enabled: Boolean): Meta[F] =
       new Meta[F] {
         private val noopBackend = Span.Backend.noop[F]
 
         val isEnabled: Boolean = enabled
         val unit: F[Unit] = Applicative[F].unit
-        val noopSpan: Resource[F, Span[F]] =
-          Resource.pure(Span.fromBackend(noopBackend))
+        val noopSpanBuilder: SpanBuilder.Aux[F, Span[F]] =
+          SpanBuilder.noop(noopBackend)
 
         def noopResSpan[A](
             resource: Resource[F, A]
-        ): Resource[F, Span.Res[F, A]] =
-          resource.map(a => Span.Res.fromBackend(a, Span.Backend.noop))
+        ): SpanBuilder.Aux[F, Span.Res[F, A]] =
+          SpanBuilder.noop(noopBackend).wrapResource(resource)
       }
   }
 
-  def noop[F[_]: Applicative]: Tracer[F] =
+  def noop[F[_]: MonadCancelThrow]: Tracer[F] =
     new Tracer[F] {
       private val noopBackend = Span.Backend.noop
       private val builder = SpanBuilder.noop(noopBackend)
-      private val resourceUnit = Resource.unit[F]
       val meta: Meta[F] = Meta.disabled
       val currentSpanContext: F[Option[SpanContext]] = Applicative[F].pure(None)
-      def rootScope: Resource[F, Unit] = resourceUnit
-      def noopScope: Resource[F, Unit] = resourceUnit
-      def childScope(parent: SpanContext): Resource[F, Unit] = resourceUnit
-      def spanBuilder(name: String): SpanBuilder[F] = builder
+      def rootScope[A](fa: F[A]): F[A] = fa
+      def noopScope[A](fa: F[A]): F[A] = fa
+      def childScope[A](parent: SpanContext)(fa: F[A]): F[A] = fa
+      def spanBuilder(name: String): SpanBuilder.Aux[F, Span[F]] = builder
     }
 }

@@ -20,5 +20,37 @@ package trace
 /** The entry point of the tracing API. Provides access to [[Tracer]].
   */
 trait TracerProvider[F[_]] {
+
+  /** Creates a named [[Tracer]].
+    *
+    * @example
+    *   {{{
+    * val tracerProvider: TracerProvider[IO] = ???
+    * val tracer: IO[Tracer[IO]] = tracerProvider.get("com.service.runtime")
+    *   }}}
+    *
+    * @param name
+    *   the name of the instrumentation scope, such as the instrumentation
+    *   library, package, or fully qualified class name
+    */
+  def get(name: String): F[Tracer[F]] =
+    tracer(name).get
+
+  /** Creates a [[TracerBuilder]] for a named [[Tracer]] instance.
+    *
+    * @example
+    *   {{{
+    * val tracerProvider: TracerProvider[IO] = ???
+    * val tracer: IO[Tracer[IO]] = tracerProvider
+    *   .tracer("com.service.runtime")
+    *   .withVersion("1.0.0")
+    *   .withSchemaUrl("https://opentelemetry.io/schema/v1.1.0")
+    *   .get
+    *   }}}
+    *
+    * @param name
+    *   the name of the instrumentation scope, such as the instrumentation
+    *   library, package, or fully qualified class name
+    */
   def tracer(name: String): TracerBuilder[F]
 }

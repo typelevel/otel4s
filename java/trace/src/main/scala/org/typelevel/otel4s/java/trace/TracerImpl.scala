@@ -16,11 +16,12 @@
 
 package org.typelevel.otel4s.java.trace
 
-import cats.effect.Resource
 import cats.effect.Sync
+import cats.syntax.flatMap._
 import cats.syntax.functor._
 import io.opentelemetry.api.trace.{Span => JSpan}
 import io.opentelemetry.api.trace.{Tracer => JTracer}
+import org.typelevel.otel4s.trace.Span
 import org.typelevel.otel4s.trace.SpanBuilder
 import org.typelevel.otel4s.trace.SpanContext
 import org.typelevel.otel4s.trace.Tracer
@@ -29,6 +30,8 @@ private[java] class TracerImpl[F[_]: Sync](
     jTracer: JTracer,
     scope: TraceScope[F]
 ) extends Tracer[F] {
+
+  private val simple = SpanBuilderImpl.Runner.span
 
   val meta: Tracer.Meta[F] =
     Tracer.Meta.enabled
@@ -42,15 +45,17 @@ private[java] class TracerImpl[F[_]: Sync](
         None
     }
 
-  def spanBuilder(name: String): SpanBuilder[F] =
-    new SpanBuilderImpl[F](jTracer, name, scope)
+  def spanBuilder(name: String): SpanBuilder.Aux[F, Span[F]] =
+    new SpanBuilderImpl[F, Span[F]](jTracer, name, scope, simple)
 
-  def childScope(parent: SpanContext): Resource[F, Unit] =
-    scope.makeScope(JSpan.wrap(WrappedSpanContext.unwrap(parent)))
+  def childScope[A](parent: SpanContext)(fa: F[A]): F[A] =
+    scope
+      .makeScope(JSpan.wrap(WrappedSpanContext.unwrap(parent)))
+      .flatMap(_(fa))
 
-  def rootScope: Resource[F, Unit] =
-    scope.rootScope
+  def rootScope[A](fa: F[A]): F[A] =
+    scope.rootScope.flatMap(_(fa))
 
-  def noopScope: Resource[F, Unit] =
-    scope.noopScope
+  def noopScope[A](fa: F[A]): F[A] =
+    scope.noopScope(fa)
 }

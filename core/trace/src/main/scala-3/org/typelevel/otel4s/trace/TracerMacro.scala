@@ -41,10 +41,10 @@ private[otel4s] trait TracerMacro[F[_]] {
     *   {{{
     * val tracer: Tracer[F] = ???
     * val span: Span[F] = ???
-    * val customParent: Resource[F, Span.Auto[F]] = tracer
+    * val customParent: SpanOps.Aux[F, Span[F]] = tracer
     *   .spanBuilder("custom-parent")
     *   .withParent(span.context)
-    *   .start
+    *   .build
     *   }}}
     *
     * @see
@@ -59,7 +59,7 @@ private[otel4s] trait TracerMacro[F[_]] {
   inline def span(
       inline name: String,
       inline attributes: Attribute[_]*
-  ): Resource[F, Span[F]] =
+  ): SpanOps.Aux[F, Span[F]] =
     ${ TracerMacro.span('self, 'name, 'attributes) }
 
   /** Creates a new root span. Even if a parent span is available in the scope,
@@ -80,7 +80,7 @@ private[otel4s] trait TracerMacro[F[_]] {
   inline def rootSpan(
       inline name: String,
       inline attributes: Attribute[_]*
-  ): Resource[F, Span[F]] =
+  ): SpanOps.Aux[F, Span[F]] =
     ${ TracerMacro.rootSpan('self, 'name, 'attributes) }
 
   /** Creates a new child span. The span is automatically attached to a parent
@@ -109,7 +109,7 @@ private[otel4s] trait TracerMacro[F[_]] {
   inline def resourceSpan[A](
       inline name: String,
       inline attributes: Attribute[_]*
-  )(inline resource: Resource[F, A]): Resource[F, Span.Res[F, A]] =
+  )(inline resource: Resource[F, A]): SpanOps.Aux[F, Span.Res[F, A]] =
     ${ TracerMacro.resourceSpan('self, 'name, 'attributes, 'resource) }
 
 }
@@ -123,8 +123,8 @@ object TracerMacro {
   )(using Quotes, Type[F]) =
     '{
       if ($tracer.meta.isEnabled)
-        $tracer.spanBuilder($name).addAttributes($attributes*).start
-      else $tracer.meta.noopSpan
+        $tracer.spanBuilder($name).addAttributes($attributes*).build
+      else $tracer.meta.noopSpanBuilder.build
     }
 
   def rootSpan[F[_]](
@@ -134,8 +134,8 @@ object TracerMacro {
   )(using Quotes, Type[F]) =
     '{
       if ($tracer.meta.isEnabled)
-        $tracer.spanBuilder($name).root.addAttributes($attributes*).start
-      else $tracer.meta.noopSpan
+        $tracer.spanBuilder($name).root.addAttributes($attributes*).build
+      else $tracer.meta.noopSpanBuilder.build
     }
 
   def resourceSpan[F[_], A](
@@ -149,8 +149,9 @@ object TracerMacro {
         $tracer
           .spanBuilder($name)
           .addAttributes($attributes*)
-          .startResource($resource)
-      else $tracer.meta.noopResSpan($resource)
+          .wrapResource($resource)
+          .build
+      else $tracer.meta.noopResSpan($resource).build
     }
 
 }

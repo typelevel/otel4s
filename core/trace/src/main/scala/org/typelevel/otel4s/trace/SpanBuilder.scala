@@ -176,6 +176,8 @@ trait SpanBuilder[F[_]] {
 
   def use[A](f: Result => F[A]): F[A]
 
+  def use_ : F[Unit]
+
   def surround[A](f: F[A]): F[A]
 
   /*
@@ -288,6 +290,9 @@ object SpanBuilder {
 
       def use[A](f: Res => F[A]): F[A] =
         startSpan.use(res => f(res))
+
+      def use_ : F[Unit] =
+        startSpan.use_
 
       def surround[A](fa: F[A]): F[A] =
         fa

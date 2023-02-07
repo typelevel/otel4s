@@ -14,14 +14,12 @@
  * limitations under the License.
  */
 
-/*
-
 package org.typelevel.otel4s.java.trace
 
 import cats.effect.IO
 import cats.effect.Resource
 import cats.effect.testkit.TestControl
-import fs2.Stream
+// import fs2.Stream
 import io.opentelemetry.api.common.{AttributeKey => JAttributeKey}
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.trace.StatusCode
@@ -244,7 +242,7 @@ class TracerSuite extends CatsEffectSuite {
         _ <- tracer.span("span-1").use { span1 =>
           for {
             _ <- tracer.currentSpanContext.assertEquals(Some(span1.context))
-            _ <- tracer.rootScope.surround {
+            _ <- tracer.rootScope {
               for {
                 _ <- tracer.currentSpanContext.assertEquals(None)
                 // a new root span should be created
@@ -276,7 +274,7 @@ class TracerSuite extends CatsEffectSuite {
         _ <- tracer.span("span-1").use { span =>
           for {
             _ <- tracer.currentSpanContext.assertEquals(Some(span.context))
-            _ <- tracer.noopScope.surround {
+            _ <- tracer.noopScope {
               for {
                 _ <- tracer.currentSpanContext.assertEquals(None)
                 // a new root span should not be created
@@ -286,7 +284,7 @@ class TracerSuite extends CatsEffectSuite {
                 _ <- tracer
                   .rootSpan("span-3")
                   .use(_ => tracer.currentSpanContext.assertEquals(None))
-                _ <- tracer.rootScope.use { _ =>
+                _ <- tracer.rootScope {
                   tracer
                     .span("span-4")
                     .use(_ => tracer.currentSpanContext.assertEquals(None))
@@ -327,7 +325,7 @@ class TracerSuite extends CatsEffectSuite {
             _ <- tracer.span("span-2").use { span2 =>
               for {
                 _ <- tracer.currentSpanContext.assertEquals(Some(span2.context))
-                _ <- tracer.childScope(span.context).surround {
+                _ <- tracer.childScope(span.context) {
                   for {
                     _ <- tracer.currentSpanContext
                       .assertEquals(Some(span.context))
@@ -376,7 +374,6 @@ class TracerSuite extends CatsEffectSuite {
                 _ <- tracer
                   .spanBuilder("span-3")
                   .withParent(span.context)
-                  .start
                   .use { span3 =>
                     tracer.currentSpanContext.assertEquals(Some(span3.context))
                   }
@@ -459,7 +456,8 @@ class TracerSuite extends CatsEffectSuite {
         sdk <- makeSdk()
         tracer <- sdk.provider.tracer("tracer").get
         _ <- tracer
-          .resourceSpan("resource-span", attribute)(mkRes(tracer))
+          .span("resource-span", attribute)
+          .wrapResource(mkRes(tracer))
           .use { _ =>
             for {
               _ <- tracer.span("body-1").surround(IO.sleep(100.millis))
@@ -474,6 +472,7 @@ class TracerSuite extends CatsEffectSuite {
     }
   }
 
+  /*
   test("propagate trace info over stream scopes") {
     def expected(now: FiniteDuration) =
       SpanNode(
@@ -517,7 +516,8 @@ class TracerSuite extends CatsEffectSuite {
         // _ <- IO.println(tree.map(SpanNode.render).mkString("\n"))
       } yield assertEquals(tree, List(expected(now)))
     }
-  }
+   }
+   */
 
   private def assertIdsNotEqual(s1: Span[IO], s2: Span[IO]): Unit = {
     assertNotEquals(s1.context.traceIdHex, s2.context.traceIdHex)
@@ -556,4 +556,3 @@ object TracerSuite {
   }
 
 }
-*/

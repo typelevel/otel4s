@@ -237,7 +237,10 @@ private[java] object SpanBuilderImpl {
             finalizationStrategy: Strategy,
             scope: TraceScope[F]
         ): Resource[F, (Span.Res[F, A], F ~> F)] = {
-          def child(name: String, parent: JContext): Resource[F, (SpanBackendImpl[F], F ~> F)] =
+          def child(
+              name: String,
+              parent: JContext
+          ): Resource[F, (SpanBackendImpl[F], F ~> F)] =
             startManaged(
               jTracer.spanBuilder(name).setParent(parent),
               TimestampSelect.Explicit,
@@ -269,70 +272,71 @@ private[java] object SpanBuilderImpl {
               } yield (Span.Res.fromBackend(value, useSpanBackend), nt)
 
             case None =>
-              resource.map(a => (Span.Res.fromBackend(a, Span.Backend.noop), FunctionK.id))
+              resource.map(a =>
+                (Span.Res.fromBackend(a, Span.Backend.noop), FunctionK.id)
+              )
           }
         }
       }
 
-  private def startManaged[F[_]: Sync](
-      builder: JSpanBuilder,
-      timestampSelect: TimestampSelect,
-      startTimestamp: Option[FiniteDuration],
-      finalizationStrategy: SpanFinalizer.Strategy,
-      scope: TraceScope[F]
-  ): Resource[F, (SpanBackendImpl[F], F ~> F)] = {
+    private def startManaged[F[_]: Sync](
+        builder: JSpanBuilder,
+        timestampSelect: TimestampSelect,
+        startTimestamp: Option[FiniteDuration],
+        finalizationStrategy: SpanFinalizer.Strategy,
+        scope: TraceScope[F]
+    ): Resource[F, (SpanBackendImpl[F], F ~> F)] = {
 
-    def acquire: F[SpanBackendImpl[F]] =
-      startSpan(builder, timestampSelect, startTimestamp)
+      def acquire: F[SpanBackendImpl[F]] =
+        startSpan(builder, timestampSelect, startTimestamp)
 
-    def release(backend: Span.Backend[F], ec: Resource.ExitCase): F[Unit] = {
-      def end: F[Unit] =
-        timestampSelect match {
-          case TimestampSelect.Explicit =>
-            for {
-              now <- Sync[F].realTime
-              _ <- backend.end(now)
-            } yield ()
+      def release(backend: Span.Backend[F], ec: Resource.ExitCase): F[Unit] = {
+        def end: F[Unit] =
+          timestampSelect match {
+            case TimestampSelect.Explicit =>
+              for {
+                now <- Sync[F].realTime
+                _ <- backend.end(now)
+              } yield ()
 
-          case TimestampSelect.Delegate =>
-            backend.end
-        }
+            case TimestampSelect.Delegate =>
+              backend.end
+          }
+
+        for {
+          _ <- finalizationStrategy
+            .lift(ec)
+            .foldMapM(SpanFinalizer.run(backend, _))
+          _ <- end
+        } yield ()
+      }
 
       for {
-        _ <- finalizationStrategy
-          .lift(ec)
-          .foldMapM(SpanFinalizer.run(backend, _))
-        _ <- end
-      } yield ()
+        backend <- Resource.makeCase(acquire) { case (b, ec) => release(b, ec) }
+        nt <- Resource.eval(scope.makeScope(backend.jSpan))
+      } yield (backend, nt)
     }
 
-    for {
-      backend <- Resource.makeCase(acquire) { case (b, ec) => release(b, ec) }
-      nt <- Resource.eval(scope.makeScope(backend.jSpan))
-    } yield (backend, nt)
-  }
+    def startSpan[F[_]: Sync](
+        builder: JSpanBuilder,
+        timestampSelect: TimestampSelect,
+        startTimestamp: Option[FiniteDuration]
+    ): F[SpanBackendImpl[F]] =
+      for {
+        builder <- timestampSelect match {
+          case TimestampSelect.Explicit if startTimestamp.isEmpty =>
+            for {
+              now <- Sync[F].realTime
+            } yield builder.setStartTimestamp(now.length, now.unit)
 
-  def startSpan[F[_]: Sync](
-      builder: JSpanBuilder,
-      timestampSelect: TimestampSelect,
-      startTimestamp: Option[FiniteDuration]
-  ): F[SpanBackendImpl[F]] =
-    for {
-      builder <- timestampSelect match {
-        case TimestampSelect.Explicit if startTimestamp.isEmpty =>
-          for {
-            now <- Sync[F].realTime
-          } yield builder.setStartTimestamp(now.length, now.unit)
-
-        case _ =>
-          Sync[F].pure(builder)
-      }
-      jSpan <- Sync[F].delay(builder.startSpan())
-    } yield new SpanBackendImpl(
-      jSpan,
-      WrappedSpanContext(jSpan.getSpanContext)
-    )
-
+          case _ =>
+            Sync[F].pure(builder)
+        }
+        jSpan <- Sync[F].delay(builder.startSpan())
+      } yield new SpanBackendImpl(
+        jSpan,
+        WrappedSpanContext(jSpan.getSpanContext)
+      )
 
   }
 

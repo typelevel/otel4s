@@ -41,9 +41,11 @@ object Work {
         }
 
       def doWorkInternal =
-        Tracer[F].span("Work.InternalWork").surround(
-          Console[F].println("Doin' work")
-        )
+        Tracer[F]
+          .span("Work.InternalWork")
+          .surround(
+            Console[F].println("Doin' work")
+          )
     }
 }
 
@@ -56,7 +58,8 @@ object TracingExample extends IOApp.Simple {
 
   def run: IO[Unit] = {
     tracerResource.use { implicit tracer: Tracer[IO] =>
-      val resource: Resource[IO, Unit] = Resource.make(IO.sleep(50.millis))(_ => IO.sleep(100.millis))
+      val resource: Resource[IO, Unit] =
+        Resource.make(IO.sleep(50.millis))(_ => IO.sleep(100.millis))
       tracer.resourceSpan("resource")(resource).surround(Work[IO].doWork)
     }
   }

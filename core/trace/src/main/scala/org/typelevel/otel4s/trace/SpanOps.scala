@@ -32,10 +32,9 @@ trait SpanOps[F[_]] {
     */
   def startUnmanaged(implicit ev: Result =:= Span[F]): F[Span[F]]
 
-  /** Creates and uses a [[Span]]. Unlike [[startUnmanaged]], the
-    * lifecycle of the span is fully managed.  The span is started and
-    * passed to [[f]] to produce the effect, and ended when the effect
-    * completes.
+  /** Creates and uses a [[Span]]. Unlike [[startUnmanaged]], the lifecycle of
+    * the span is fully managed. The span is started and passed to [[f]] to
+    * produce the effect, and ended when the effect completes.
     *
     * The finalization strategy is determined by [[SpanFinalizer.Strategy]]. By
     * default, the abnormal termination (error, cancelation) is recorded.

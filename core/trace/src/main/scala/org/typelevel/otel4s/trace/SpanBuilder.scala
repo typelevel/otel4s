@@ -18,7 +18,8 @@ package org.typelevel.otel4s
 package trace
 
 import cats.Applicative
-import cats.effect.kernel.{MonadCancelThrow, Resource}
+import cats.effect.kernel.MonadCancelThrow
+import cats.effect.kernel.Resource
 
 import scala.concurrent.duration.FiniteDuration
 

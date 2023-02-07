@@ -19,7 +19,6 @@ package org.typelevel.otel4s.java.trace
 import cats.effect.IO
 import cats.effect.Resource
 import cats.effect.testkit.TestControl
-// import fs2.Stream
 import io.opentelemetry.api.common.{AttributeKey => JAttributeKey}
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.trace.StatusCode

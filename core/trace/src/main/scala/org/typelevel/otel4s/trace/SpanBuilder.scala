@@ -134,7 +134,7 @@ trait SpanBuilder[F[_]] {
     * val tracer: Tracer[F] = ???
     * val resource: Resource[F, String] = Resource.eval(Sync[F].delay("string"))
     * val ok: F[Unit] =
-    *   tracer.spanBuilder("wrapped-resource").wrapResource(resource).start.use { case span @ Span.Res(value) =>
+    *   tracer.spanBuilder("wrapped-resource").wrapResource(resource).build.use { case span @ Span.Res(value) =>
     *     span.setStatus(Status.Ok, s"all good. resource value: $${value}")
     *   }
     *   }}}

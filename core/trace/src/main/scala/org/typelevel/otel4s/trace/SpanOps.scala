@@ -29,7 +29,7 @@ trait SpanOps[F[_]] {
     * {{{
     * val tracer: Tracer[F] = ???
     * val leaked: F[Unit] =
-    *   tracer.spanBuilder("manual-span").startUnmanaged.flatMap { span =>
+    *   tracer.spanBuilder("manual-span").build.startUnmanaged.flatMap { span =>
     *     span.setStatus(Status.Ok, "all good")
     *   }
     * }}}
@@ -38,7 +38,7 @@ trait SpanOps[F[_]] {
     * {{{
     * val tracer: Tracer[F] = ???
     * val ok: F[Unit] =
-    *   tracer.spanBuilder("manual-span").startUnmanaged.flatMap { span =>
+    *   tracer.spanBuilder("manual-span").build.startUnmanaged.flatMap { span =>
     *     span.setStatus(Status.Ok, "all good") >> span.end
     *   }
     * }}}

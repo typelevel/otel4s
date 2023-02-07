@@ -39,10 +39,10 @@ private[otel4s] trait TracerMacro[F[_]] {
     *   {{{
     * val tracer: Tracer[F] = ???
     * val span: Span[F] = ???
-    * val customParent: Resource[F, Span.Auto[F]] = tracer
+    * val customParent: SpanOps.Aux[F, Span[F]] = tracer
     *   .spanBuilder("custom-parent")
     *   .withParent(span.context)
-    *   .start
+    *   .build
     *   }}}
     *
     * @see

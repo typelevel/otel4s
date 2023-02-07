@@ -81,9 +81,8 @@ trait SpanBuilder[F[_]] {
   /** Sets an explicit start timestamp for the newly created span.
     *
     * Use this method to specify an explicit start timestamp. If not called, the
-    * implementation will use the timestamp value at ([[start]],
-    * [[startUnmanaged]], [[wrapResource]]) time, which should be the default
-    * case.
+    * implementation will use the timestamp value from the method called on
+    * [[build]], which should be the default case.
     *
     * '''Note''': the timestamp should be based on `Clock[F].realTime`. Using
     * `Clock[F].monotonic` may lead to a missing span.

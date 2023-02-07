@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="Laika 0.18.1 + Helium Theme" />
-    <title>Jaeger - collecting traces</title>
+    <title>Honeycomb - metrics and traces</title>
     
       <meta name="author" content="Ross A. Baker"/>
     
@@ -63,8 +63,8 @@
       <ul class="nav-list">
         <li class="level1"><a href="../index.html">otel4s</a></li>
         <li class="level1 nav-header">Examples</li>
-        <li class="level2 active"><a href="#">Jaeger - collecting traces</a></li>
-        <li class="level2"><a href="honeycomb.html">Honeycomb - metrics and traces</a></li>
+        <li class="level2"><a href="jaeger-docker.html">Jaeger - collecting traces</a></li>
+        <li class="level2 active"><a href="#">Honeycomb - metrics and traces</a></li>
       </ul>
 
       <ul class="nav-list">
@@ -79,15 +79,18 @@
     <div id="container">
 
       <nav id="page-nav">
-        <p class="header"><a href="#">Jaeger - collecting traces</a></p>
+        <p class="header"><a href="#">Honeycomb - metrics and traces</a></p>
 
         <ul class="nav-list">
           <li class="level1"><a href="#project-setup">Project setup</a></li>
           <li class="level1"><a href="#opentelemetry-sdk-configuration">OpenTelemetry SDK configuration</a></li>
-          <li class="level1"><a href="#jaeger-configuration">Jaeger configuration</a></li>
+          <li class="level1"><a href="#acquiring-a-honeycomb-api-key">Acquiring a Honeycomb API key</a></li>
+          <li class="level1"><a href="#honeycomb-configuration">Honeycomb configuration</a></li>
           <li class="level1"><a href="#application-example">Application example</a></li>
           <li class="level1"><a href="#run-the-application">Run the application</a></li>
-          <li class="level1"><a href="#review-collected-traces">Review collected traces</a></li>
+          <li class="level1"><a href="#query-collected-traces-and-metrics">Query collected traces and metrics</a></li>
+          <li class="level2"><a href="#traces">Traces</a></li>
+          <li class="level2"><a href="#metrics">Metrics</a></li>
         </ul>
 
         <p class="footer"></p>
@@ -95,11 +98,15 @@
 
       <main class="content">
 
-        <h1 id="jaeger-collecting-traces" class="title">Jaeger - collecting traces</h1>
-        <p>In this example, we are going to use <a href="https://jaegertracing.io/">Jaeger</a> to collect and visualize traces produced by an
+        <h1 id="honeycomb-metrics-and-traces" class="title">Honeycomb - metrics and traces</h1>
+        <p>In this example, we are going to use <a href="https://honeycomb.io">Honeycomb</a> to collect and visualize metrics and traces produced by an
         application.
-        We will cover the installation and configuration of Jaeger, as well as the instrumentation of the application using the
+        We will cover the configuration of OpenTelemetry exporter, as well as the instrumentation of the application using the
         otel4s library.</p>
+        <p>Unlike <a href="jaeger-docker.html">Jaeger example</a>, you do not need to set up a collector service locally. The metrics and traces
+        will be sent to a remote Honeycomb API.<br></p>
+        <p>At the time of writing, Honeycomb allows having up to 20 million spans per month for a free account.
+        It offers robust analysis and visualization tools that are handy for exploring the world of telemetry. </p>
         
         <h3 id="project-setup" class="section">Project setup<a class="anchor-link right" href="#project-setup"><i class="icofont-laika">&#xef71;</i></a></h3>
         <p>Configure the project using your favorite tool:</p>
@@ -116,18 +123,18 @@
 </span><span>  </span><span class="string-literal">&quot;io.opentelemetry&quot;</span><span> % </span><span class="string-literal">&quot;opentelemetry-sdk-extension-autoconfigure&quot;</span><span> % </span><span class="string-literal">&quot;1.22.0-alpha&quot;</span><span> % </span><span class="type-name">Runtime</span><span> </span><span class="comment">// &lt;3&gt;
 </span><span>)
 </span><span class="identifier">run</span><span> / </span><span class="identifier">fork</span><span> := </span><span class="boolean-literal">true</span><span>
-</span><span class="identifier">javaOptions</span><span> += </span><span class="string-literal">&quot;-Dotel.java.global-autoconfigure.enabled=true&quot;</span><span> </span><span class="comment">// &lt;4&gt;
-</span><span class="identifier">javaOptions</span><span> += </span><span class="string-literal">&quot;-Dotel.service.name=jaeger-example&quot;</span><span>            </span><span class="comment">// &lt;5&gt;
-</span><span class="identifier">javaOptions</span><span> += </span><span class="string-literal">&quot;-Dotel.metrics.exporter=none&quot;</span><span>                  </span><span class="comment">// &lt;6&gt;</span></code></pre>
+</span><span class="identifier">javaOptions</span><span> += </span><span class="string-literal">&quot;-Dotel.java.global-autoconfigure.enabled=true&quot;</span><span>            </span><span class="comment">// &lt;4&gt;
+</span><span class="identifier">javaOptions</span><span> += </span><span class="string-literal">&quot;-Dotel.service.name=honeycomb-example&quot;</span><span>                    </span><span class="comment">// &lt;5&gt;
+</span><span class="identifier">javaOptions</span><span> += </span><span class="string-literal">&quot;-Dotel.exporter.otlp.endpoint=https://api.honeycomb.io/&quot;</span><span>  </span><span class="comment">// &lt;6&gt;</span></code></pre>
           </div>
           <div class="tab-content" data-choice-name="scala-cli">
             <p>Add directives to the <code>tracing.scala</code>:</p>
             <pre class="keep-together pdf epub"><code class="nohighlight"><span class="comment">//&gt; using lib &quot;org.typelevel::otel4s-java:0.0-68e7287-SNAPSHOT&quot; // &lt;1&gt;
 //&gt; using lib &quot;io.opentelemetry:opentelemetry-exporter-otlp:1.22.0&quot; // &lt;2&gt;
 //&gt; using lib &quot;io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:1.22.0-alpha&quot; // &lt;3&gt;
-//&gt; using `java-opt` &quot;-Dotel.java.global-autoconfigure.enabled=true&quot; // &lt;4&gt;
-//&gt; using `java-opt` &quot;-Dotel.service.name=jaeger-example&quot;            // &lt;5&gt;
-//&gt; using `java-opt` &quot;-Dotel.metrics.exporter=none&quot;                  // &lt;6&gt; </span></code></pre>
+//&gt; using `java-opt` &quot;-Dotel.java.global-autoconfigure.enabled=true&quot;            // &lt;4&gt;
+//&gt; using `java-opt` &quot;-Dotel.service.name=honeycomb-example&quot;                    // &lt;5&gt;
+//&gt; using `java-opt` &quot;-Dotel.exporter.otlp.endpoint=https://api.honeycomb.io/&quot;  // &lt;6&gt;</span></code></pre>
           </div>
         </div>
         <p>1) Add the <code>otel4s</code> library<br>
@@ -135,36 +142,40 @@
         3) Add an OpenTelemetry autoconfigure extension<br>
         4) Enable OpenTelemetry SDK autoconfigure mode<br>
         5) Add the name of the application to use in the traces<br>
-        6) Disable metrics exporter since Jaeger is compatible only with traces<br></p>
+        6) Add the Honeycomb API endpoint<br></p>
         
         <h3 id="opentelemetry-sdk-configuration" class="section">OpenTelemetry SDK configuration<a class="anchor-link right" href="#opentelemetry-sdk-configuration"><i class="icofont-laika">&#xef71;</i></a></h3>
-        <p>As mentioned above, we use <code>otel.service.name</code> and <code>otel.metrics.exporter</code> system properties to configure the
+        <p>As mentioned above, we use <code>otel.java.global-autoconfigure.enabled</code> and <code>otel.service.name</code> system properties to configure the
         OpenTelemetry SDK.
         The SDK can be configured via environment variables too. Check the full list
         of <a href="https://github.com/open-telemetry/opentelemetry-java/blob/main/sdk-extensions/autoconfigure/README.md">environment variable configurations</a>
         for more options.</p>
         
-        <h3 id="jaeger-configuration" class="section">Jaeger configuration<a class="anchor-link right" href="#jaeger-configuration"><i class="icofont-laika">&#xef71;</i></a></h3>
-        <p>In order to collect and visualize traces, you can run <a href="https://jaegertracing.io/">Jaeger</a>
-        using <a href="https://www.docker.com/">Docker</a>.</p>
-        <pre class="keep-together pdf epub"><code class="shell">$ docker run --name jaeger \
-  -e COLLECTOR_OTLP_ENABLED=true \
-  -p 16686:16686 \
-  -p 4317:4317 \
-  -p 4318:4318 \
-  jaegertracing/all-in-one:1.35</code></pre>
-        <p>1) <code>-e COLLECTOR_OTLP_ENABLED=true</code> - enable OpenTelemetry receiver<br>
-        2) <code>-p 16686:16686</code> - forward Jaeger UI<br>
-        3) <code>-p 4317:4317</code> and <code>-p 4318:4318</code> - the OpenTelemetry receiver ports for HTTP and gRPC protocols<br></p>
+        <h3 id="acquiring-a-honeycomb-api-key" class="section">Acquiring a Honeycomb API key<a class="anchor-link right" href="#acquiring-a-honeycomb-api-key"><i class="icofont-laika">&#xef71;</i></a></h3>
+        <p>The Honeycomb <a href="https://docs.honeycomb.io/getting-data-in/api-keys/#find-api-keys">official guide</a>.</p>
+        <p>First, you must create an account on the <a href="https://ui.honeycomb.io/login">Honeycomb website</a>.
+        Once you have done this, log into your account and navigate to the environment settings page. There you can find a generated API key.</p>
+        
+        <h3 id="honeycomb-configuration" class="section">Honeycomb configuration<a class="anchor-link right" href="#honeycomb-configuration"><i class="icofont-laika">&#xef71;</i></a></h3>
+        <p>The Honeycomb <a href="https://docs.honeycomb.io/getting-data-in/opentelemetry-overview/">official configuration guide</a>.</p>
+        <p>In order to send metrics and traces to Honeycomb, the API key and dataset name need to be configured.<br>
+        Since the API key is sensitive data, we advise providing them via environment variables:</p>
+        <pre class="keep-together pdf epub"><code class="shell">$ export OTEL_EXPORTER_OTLP_HEADERS=&quot;x-honeycomb-team=your-api-key,x-honeycomb-dataset=honeycomb-example&quot;</code></pre>
+        <p>1) <code>x-honeycomb-team</code> - the API key<br>
+        2) <code>x-honeycomb-dataset</code> - the name of the dataset to send metrics to. We use <code>honeycomb-example</code> so both metrics and traces appear in the same dataset.</p>
+        <p><strong>Note:</strong> if the <code>x-honeycomb-dataset</code> header is not configured, the <strong>metrics</strong> will be sent to a dataset called <code>unknown_metrics</code>.</p>
         
         <h3 id="application-example" class="section">Application example<a class="anchor-link right" href="#application-example"><i class="icofont-laika">&#xef71;</i></a></h3>
-        <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.{</span><span class="type-name">Async</span><span>, </span><span class="type-name">IO</span><span>, </span><span class="type-name">IOApp</span><span>, </span><span class="type-name">Resource</span><span>}
+        <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">java</span><span>.</span><span class="identifier">util</span><span>.</span><span class="identifier">concurrent</span><span>.</span><span class="type-name">TimeUnit</span><span>
+
+</span><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.{</span><span class="type-name">Async</span><span>, </span><span class="type-name">IO</span><span>, </span><span class="type-name">IOApp</span><span>, </span><span class="type-name">Resource</span><span>}
 </span><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.</span><span class="identifier">std</span><span>.</span><span class="type-name">Console</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.</span><span class="identifier">std</span><span>.</span><span class="type-name">Random</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">syntax</span><span>.</span><span class="identifier">all</span><span>.</span><span class="identifier">_</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">io</span><span>.</span><span class="identifier">opentelemetry</span><span>.</span><span class="identifier">api</span><span>.</span><span class="type-name">GlobalOpenTelemetry</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="type-name">Attribute</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.{</span><span class="type-name">Attribute</span><span>, </span><span class="type-name">AttributeKey</span><span>, </span><span class="type-name">Otel4s</span><span>}
 </span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">java</span><span>.</span><span class="type-name">OtelJava</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">metrics</span><span>.</span><span class="type-name">Histogram</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">trace</span><span>.</span><span class="type-name">Tracer</span><span>
 
 </span><span class="keyword">import</span><span> </span><span class="identifier">scala</span><span>.</span><span class="identifier">concurrent</span><span>.</span><span class="identifier">duration</span><span>.</span><span class="identifier">_</span><span>
@@ -174,7 +185,7 @@
 }
 
 </span><span class="keyword">object</span><span> </span><span class="type-name">Work</span><span> {
-  </span><span class="keyword">def</span><span> </span><span class="declaration-name">apply</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>] : </span><span class="type-name">Async</span><span> : </span><span class="type-name">Tracer</span><span> : </span><span class="type-name">Console</span><span>]: </span><span class="type-name">Work</span><span>[</span><span class="type-name">F</span><span>] =
+  </span><span class="keyword">def</span><span> </span><span class="declaration-name">apply</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>] : </span><span class="type-name">Async</span><span> : </span><span class="type-name">Tracer</span><span> : </span><span class="type-name">Console</span><span>](</span><span class="identifier">histogram</span><span>: </span><span class="type-name">Histogram</span><span>[</span><span class="type-name">F</span><span>, </span><span class="type-name">Double</span><span>]): </span><span class="type-name">Work</span><span>[</span><span class="type-name">F</span><span>] =
     </span><span class="keyword">new</span><span> </span><span class="type-name">Work</span><span>[</span><span class="type-name">F</span><span>] {
       </span><span class="keyword">def</span><span> </span><span class="declaration-name">doWork</span><span>: </span><span class="type-name">F</span><span>[</span><span class="type-name">Unit</span><span>] =
         </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">span</span><span>(</span><span class="string-literal">&quot;Work.DoWork&quot;</span><span>).</span><span class="identifier">use</span><span> { </span><span class="identifier">span</span><span> =&gt;
@@ -185,7 +196,7 @@
 
       </span><span class="keyword">def</span><span> </span><span class="declaration-name">doWorkInternal</span><span>(</span><span class="identifier">steps</span><span>: </span><span class="type-name">Int</span><span>): </span><span class="type-name">F</span><span>[</span><span class="type-name">Unit</span><span>] = {
         </span><span class="keyword">val</span><span> </span><span class="identifier">step</span><span> = </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">F</span><span>]
-          .</span><span class="identifier">span</span><span>(</span><span class="string-literal">&quot;internal&quot;</span><span>, </span><span class="type-name">Attribute</span><span>(</span><span class="string-literal">&quot;steps&quot;</span><span>, </span><span class="identifier">steps</span><span>.</span><span class="identifier">toLong</span><span>))
+          .</span><span class="identifier">span</span><span>(</span><span class="string-literal">&quot;internal&quot;</span><span>, </span><span class="type-name">Attribute</span><span>(</span><span class="type-name">AttributeKey</span><span>.</span><span class="identifier">long</span><span>(</span><span class="string-literal">&quot;steps&quot;</span><span>), </span><span class="identifier">steps</span><span>.</span><span class="identifier">toLong</span><span>))
           .</span><span class="identifier">surround</span><span> {
             </span><span class="keyword">for</span><span> {
               </span><span class="identifier">random</span><span> &lt;- </span><span class="type-name">Random</span><span>.</span><span class="identifier">scalaUtilRandom</span><span>
@@ -195,21 +206,29 @@
             } </span><span class="keyword">yield</span><span> ()
           }
 
-        </span><span class="keyword">if</span><span> (</span><span class="identifier">steps</span><span> &gt; </span><span class="number-literal">0</span><span>) </span><span class="identifier">step</span><span> *&gt; </span><span class="identifier">doWorkInternal</span><span>(</span><span class="identifier">steps</span><span> - </span><span class="number-literal">1</span><span>) </span><span class="keyword">else</span><span> </span><span class="identifier">step</span><span>
+        </span><span class="keyword">val</span><span> </span><span class="identifier">metered</span><span> = </span><span class="identifier">histogram</span><span>.</span><span class="identifier">recordDuration</span><span>(</span><span class="type-name">TimeUnit</span><span>.</span><span class="type-name">MILLISECONDS</span><span>).</span><span class="identifier">surround</span><span>(</span><span class="identifier">step</span><span>)
+
+        </span><span class="keyword">if</span><span> (</span><span class="identifier">steps</span><span> &gt; </span><span class="number-literal">0</span><span>) </span><span class="identifier">metered</span><span> *&gt; </span><span class="identifier">doWorkInternal</span><span>(</span><span class="identifier">steps</span><span> - </span><span class="number-literal">1</span><span>) </span><span class="keyword">else</span><span> </span><span class="identifier">metered</span><span>
       }
     }
 }
 
 </span><span class="keyword">object</span><span> </span><span class="type-name">TracingExample</span><span> </span><span class="keyword">extends</span><span> </span><span class="type-name">IOApp</span><span>.</span><span class="type-name">Simple</span><span> {
-  </span><span class="keyword">def</span><span> </span><span class="declaration-name">tracerResource</span><span>: </span><span class="type-name">Resource</span><span>[</span><span class="type-name">IO</span><span>, </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">IO</span><span>]] =
+  </span><span class="keyword">def</span><span> </span><span class="declaration-name">otelResource</span><span>: </span><span class="type-name">Resource</span><span>[</span><span class="type-name">IO</span><span>, </span><span class="type-name">Otel4s</span><span>[</span><span class="type-name">IO</span><span>]] =
     </span><span class="type-name">Resource</span><span>
       .</span><span class="identifier">eval</span><span>(</span><span class="type-name">IO</span><span>(</span><span class="type-name">GlobalOpenTelemetry</span><span>.</span><span class="identifier">get</span><span>))
       .</span><span class="identifier">evalMap</span><span>(</span><span class="type-name">OtelJava</span><span>.</span><span class="identifier">forSync</span><span>[</span><span class="type-name">IO</span><span>])
-      .</span><span class="identifier">evalMap</span><span>(</span><span class="identifier">_</span><span>.</span><span class="identifier">tracerProvider</span><span>.</span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;Example&quot;</span><span>))
 
   </span><span class="keyword">def</span><span> </span><span class="declaration-name">run</span><span>: </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] = {
-    </span><span class="identifier">tracerResource</span><span>.</span><span class="identifier">use</span><span> { </span><span class="keyword">implicit</span><span> </span><span class="identifier">tracer</span><span>: </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">IO</span><span>] =&gt;
-      </span><span class="type-name">Work</span><span>[</span><span class="type-name">IO</span><span>].</span><span class="identifier">doWork</span><span>
+    </span><span class="identifier">otelResource</span><span>.</span><span class="identifier">use</span><span> { </span><span class="identifier">otel4s</span><span> =&gt;
+      </span><span class="identifier">otel4s</span><span>.</span><span class="identifier">tracerProvider</span><span>.</span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;com.service.runtime&quot;</span><span>)
+        .</span><span class="identifier">flatMap</span><span> { </span><span class="keyword">implicit</span><span> </span><span class="identifier">tracer</span><span>: </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">IO</span><span>] =&gt;
+          </span><span class="keyword">for</span><span> {
+            </span><span class="identifier">meter</span><span> &lt;- </span><span class="identifier">otel4s</span><span>.</span><span class="identifier">meterProvider</span><span>.</span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;com.service.runtime&quot;</span><span>)
+            </span><span class="identifier">histogram</span><span> &lt;- </span><span class="identifier">meter</span><span>.</span><span class="identifier">histogram</span><span>(</span><span class="string-literal">&quot;work.execution.duration&quot;</span><span>).</span><span class="identifier">create</span><span>
+            </span><span class="identifier">_</span><span> &lt;- </span><span class="type-name">Work</span><span>[</span><span class="type-name">IO</span><span>](</span><span class="identifier">histogram</span><span>).</span><span class="identifier">doWork</span><span>
+          } </span><span class="keyword">yield</span><span> ()
+        }
     }
   }
 }</span></code></pre>
@@ -221,17 +240,26 @@
             <li class="tab" data-choice-name="scala-cli"><a href="#">Scala CLI</a></li>
           </ul>
           <div class="tab-content active" data-choice-name="sbt">
-            <pre class="keep-together pdf epub"><code class="shell">$ sbt run</code></pre>
+            <pre class="keep-together pdf epub"><code class="shell">$ export OTEL_EXPORTER_OTLP_HEADERS=&quot;x-honeycomb-team=your-api-key,x-honeycomb-dataset=honeycomb-example&quot;
+$ sbt run</code></pre>
           </div>
           <div class="tab-content" data-choice-name="scala-cli">
-            <pre class="keep-together pdf epub"><code class="shell">$ scala-cli run tracing.scala</code></pre>
+            <pre class="keep-together pdf epub"><code class="shell">$ export OTEL_EXPORTER_OTLP_HEADERS=&quot;x-honeycomb-team=your-api-key,x-honeycomb-dataset=honeycomb-example&quot;
+$ scala-cli run tracing.scala</code></pre>
           </div>
         </div>
         
-        <h3 id="review-collected-traces" class="section">Review collected traces<a class="anchor-link right" href="#review-collected-traces"><i class="icofont-laika">&#xef71;</i></a></h3>
-        <p>Jaeger UI is available at <a href="http://localhost:16686">http://localhost:16686</a>. You can find the collected traces there.</p>
+        <h3 id="query-collected-traces-and-metrics" class="section">Query collected traces and metrics<a class="anchor-link right" href="#query-collected-traces-and-metrics"><i class="icofont-laika">&#xef71;</i></a></h3>
+        <p>You can query collected traces and metrics at <a href="https://ui.honeycomb.io/">https://ui.honeycomb.io/</a>.</p>
+        
+        <h4 id="traces" class="section">Traces<a class="anchor-link right" href="#traces"><i class="icofont-laika">&#xef71;</i></a></h4>
         <div class="default-image-block">
-          <img src="jaeger_traces_example.png" alt="Jaeger Traces Example">
+          <img src="honeycomb_traces_example.png" alt="Honeycomb Traces Example">
+        </div>
+        
+        <h4 id="metrics" class="section">Metrics<a class="anchor-link right" href="#metrics"><i class="icofont-laika">&#xef71;</i></a></h4>
+        <div class="default-image-block">
+          <img src="honeycomb_metrics_example.png" alt="Honeycomb Metrics Example">
         </div>
 
         <hr style="margin-top: 30px"/>

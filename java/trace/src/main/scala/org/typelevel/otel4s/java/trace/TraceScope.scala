@@ -109,7 +109,7 @@ private[java] object TraceScope {
 
   private implicit def localForIoLocal[F[_]: MonadCancelThrow: LiftIO, E](
       implicit ioLocal: IOLocal[E]
-  ) =
+  ): Local[F, E] =
     new Local[F, E] {
       def applicative =
         Applicative[F]

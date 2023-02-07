@@ -18,6 +18,7 @@ package org.typelevel.otel4s
 package trace
 
 import cats.Applicative
+import cats.effect.kernel.MonadCancelThrow
 import cats.effect.kernel.Resource
 
 import scala.concurrent.duration.FiniteDuration
@@ -80,9 +81,8 @@ trait SpanBuilder[F[_]] {
   /** Sets an explicit start timestamp for the newly created span.
     *
     * Use this method to specify an explicit start timestamp. If not called, the
-    * implementation will use the timestamp value at ([[start]],
-    * [[startUnmanaged]], [[wrapResource]]) time, which should be the default
-    * case.
+    * implementation will use the timestamp value from the method called on
+    * [[build]], which should be the default case.
     *
     * '''Note''': the timestamp should be based on `Clock[F].realTime`. Using
     * `Clock[F].monotonic` may lead to a missing span.
@@ -134,7 +134,7 @@ trait SpanBuilder[F[_]] {
     * val tracer: Tracer[F] = ???
     * val resource: Resource[F, String] = Resource.eval(Sync[F].delay("string"))
     * val ok: F[Unit] =
-    *   tracer.spanBuilder("wrapped-resource").wrapResource(resource).start.use { case span @ Span.Res(value) =>
+    *   tracer.spanBuilder("wrapped-resource").wrapResource(resource).build.use { case span @ Span.Res(value) =>
     *     span.setStatus(Status.Ok, s"all good. resource value: $${value}")
     *   }
     *   }}}
@@ -145,55 +145,7 @@ trait SpanBuilder[F[_]] {
       resource: Resource[F, A]
   )(implicit ev: Result =:= Span[F]): SpanBuilder.Aux[F, Span.Res[F, A]]
 
-  /** Creates a [[Span]]. The span requires to be ended ''explicitly'' by
-    * invoking `end`.
-    *
-    * This strategy can be used when it's necessary to end a span outside of the
-    * scope (e.g. async callback). Make sure the span is ended properly.
-    *
-    * Leaked span:
-    * {{{
-    * val tracer: Tracer[F] = ???
-    * val leaked: F[Unit] =
-    *   tracer.spanBuilder("manual-span").startUnmanaged.flatMap { span =>
-    *     span.setStatus(Status.Ok, "all good")
-    *   }
-    * }}}
-    *
-    * Properly ended span:
-    * {{{
-    * val tracer: Tracer[F] = ???
-    * val ok: F[Unit] =
-    *   tracer.spanBuilder("manual-span").startUnmanaged.flatMap { span =>
-    *     span.setStatus(Status.Ok, "all good") >> span.end
-    *   }
-    * }}}
-    *
-    * @see
-    *   [[start]] for a managed lifecycle
-    */
-  def startUnmanaged(implicit ev: Result =:= Span[F]): F[Span[F]]
-
-  /** Creates a [[Span]]. Unlike [[startUnmanaged]] the lifecycle of the span is
-    * managed by the [[cats.effect.kernel.Resource Resource]]. That means the
-    * span is started upon resource allocation and ended upon finalization.
-    *
-    * The finalization strategy is determined by [[SpanFinalizer.Strategy]]. By
-    * default, the abnormal termination (error, cancelation) is recorded.
-    *
-    * @see
-    *   default finalization strategy [[SpanFinalizer.Strategy.reportAbnormal]]
-    *
-    * @example
-    *   {{{
-    * val tracer: Tracer[F] = ???
-    * val ok: F[Unit] =
-    *   tracer.spanBuilder("auto-span").start.use { span =>
-    *     span.setStatus(Status.Ok, "all good")
-    *   }
-    *   }}}
-    */
-  def start: Resource[F, Result]
+  def build: SpanOps.Aux[F, Result]
 }
 
 object SpanBuilder {
@@ -202,12 +154,12 @@ object SpanBuilder {
     type Result = A
   }
 
-  def noop[F[_]: Applicative](
+  def noop[F[_]: MonadCancelThrow](
       back: Span.Backend[F]
   ): SpanBuilder.Aux[F, Span[F]] =
     make(back, Resource.pure(Span.fromBackend(back)))
 
-  private def make[F[_]: Applicative, Res <: Span[F]](
+  private def make[F[_]: MonadCancelThrow, Res <: Span[F]](
       back: Span.Backend[F],
       startSpan: Resource[F, Res]
   ): SpanBuilder.Aux[F, Res] =
@@ -244,11 +196,21 @@ object SpanBuilder {
 
       def withStartTimestamp(timestamp: FiniteDuration): Builder = this
 
-      def startUnmanaged(implicit ev: Result =:= Span[F]): F[Span[F]] =
-        Applicative[F].pure(span)
+      def build = new SpanOps[F] {
+        type Result = Res
 
-      val start: Resource[F, Res] =
-        startSpan
+        def startUnmanaged(implicit ev: Result =:= Span[F]): F[Span[F]] =
+          Applicative[F].pure(span)
+
+        def use[A](f: Res => F[A]): F[A] =
+          startSpan.use(res => f(res))
+
+        def use_ : F[Unit] =
+          startSpan.use_
+
+        def surround[A](fa: F[A]): F[A] =
+          fa
+      }
     }
 
 }

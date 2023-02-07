@@ -22,7 +22,7 @@ import cats.effect.std.Console
 import cats.syntax.all._
 import io.opentelemetry.api.GlobalOpenTelemetry
 import org.typelevel.otel4s.java.OtelJava
-import org.typelevel.otel4s.trace.{Span, SpanBuilder, Tracer}
+import org.typelevel.otel4s.trace.Tracer
 
 import scala.concurrent.duration._
 
@@ -57,12 +57,7 @@ object TracingExample extends IOApp.Simple {
   def run: IO[Unit] = {
     tracerResource.use { implicit tracer: Tracer[IO] =>
       val resource: Resource[IO, Unit] = Resource.make(IO.sleep(50.millis))(_ => IO.sleep(100.millis))
-      val builder: SpanBuilder.Aux[IO, Span.Res[IO, Unit]] = tracer.span("resource").wrapResource(resource)
-
-      builder.use { _ =>
-        Work[IO].doWork
-      }
-
+      tracer.resourceSpan("resource")(resource).surround(Work[IO].doWork)
     }
   }
 }

@@ -36,6 +36,7 @@ import org.typelevel.otel4s.trace.SpanContext
 import org.typelevel.otel4s.trace.SpanFinalizer
 import org.typelevel.otel4s.trace.SpanFinalizer.Strategy
 import org.typelevel.otel4s.trace.SpanKind
+import org.typelevel.otel4s.trace.SpanOps
 
 import scala.concurrent.duration.FiniteDuration
 
@@ -90,29 +91,33 @@ private[java] final case class SpanBuilderImpl[F[_]: Sync, Res <: Span[F]](
   )(implicit ev: Result =:= Span[F]): SpanBuilder.Aux[F, Span.Res[F, A]] =
     copy(runner = SpanBuilderImpl.Runner.resource(resource, jTracer))
 
-  def startUnmanaged(implicit ev: Result =:= Span[F]): F[Span[F]] =
-    parentContext.flatMap {
-      case Some(parent) =>
-        for {
-          back <- Runner.startSpan(
-            makeJBuilder(parent),
-            TimestampSelect.Delegate,
-            startTimestamp
-          )
-        } yield Span.fromBackend(back)
+  def build = new SpanOps[F] {
+    type Result = Res
 
-      case None =>
-        Sync[F].pure(Span.fromBackend(Span.Backend.noop))
-    }
+    def startUnmanaged(implicit ev: Result =:= Span[F]): F[Span[F]] =
+      parentContext.flatMap {
+        case Some(parent) =>
+          for {
+            back <- Runner.startSpan(
+              makeJBuilder(parent),
+              TimestampSelect.Delegate,
+              startTimestamp
+            )
+          } yield Span.fromBackend(back)
 
-  def use[A](f: Res => F[A]): F[A] =
-    start.use { case (span, nt) => nt(f(span)) }
+        case None =>
+          Sync[F].pure(Span.fromBackend(Span.Backend.noop))
+      }
 
-  def use_ : F[Unit] =
-    start.use_
+    def use[A](f: Res => F[A]): F[A] =
+      start.use { case (span, nt) => nt(f(span)) }
 
-  def surround[A](fa: F[A]): F[A] =
-    start.surround(fa)
+    def use_ : F[Unit] =
+      start.use_
+
+    def surround[A](fa: F[A]): F[A] =
+      start.surround(fa)
+  }
 
   /*  private def start: Resource[F, (Span[F], F ~> F)] =
     Resource.eval(parentContext).flatMap {

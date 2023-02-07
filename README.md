@@ -1,7 +1,7 @@
 # otel4s
 
 ![Typelevel Organization Project](https://img.shields.io/badge/typelevel-organization%20project-FF6169.svg)
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.typelevel/otel4s_2.13/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.typelevel/otel4s_2.13)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.typelevel/otel4s-core_2.13/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.typelevel/otel4s-core_2.13)
 
 ## Telemetry meets higher-kinded types
 

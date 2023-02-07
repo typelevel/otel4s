@@ -65,7 +65,7 @@ class TracerSuite extends CatsEffectSuite {
           _ <- span.setStatus(status, text)
         } yield ()
       }
-      /*_ <- tracer.rootSpan("span", attribute: _*).use { span =>
+      _ <- tracer.rootSpan("span", attribute: _*).use { span =>
         for {
           _ <- span.addAttributes(attribute: _*)
           _ <- span.addEvent(text, attribute: _*)
@@ -74,7 +74,7 @@ class TracerSuite extends CatsEffectSuite {
           _ <- span.setStatus(status)
           _ <- span.setStatus(status, text)
         } yield ()
-      }*/
+      }
     } yield assert(!allocated)
   }
 

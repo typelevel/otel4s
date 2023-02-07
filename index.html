@@ -82,7 +82,10 @@
         <p class="header"><a href="#">otel4s</a></p>
 
         <ul class="nav-list">
-          <li class="level1"><a href="#usage">Usage</a></li>
+          <li class="level1"><a href="#telemetry-meets-higher-kinded-types">Telemetry meets higher-kinded types</a></li>
+          <li class="level1"><a href="#features">Features</a></li>
+          <li class="level1"><a href="#status">Status</a></li>
+          <li class="level1"><a href="#getting-started">Getting started</a></li>
         </ul>
 
         <p class="footer"></p>
@@ -92,12 +95,38 @@
 
         <h1 id="otel4s" class="title">otel4s</h1>
         
-        <h3 id="usage" class="section">Usage<a class="anchor-link right" href="#usage"><i class="icofont-laika">&#xef71;</i></a></h3>
-        <p>This library is currently available for Scala binary versions 2.13 and 3.1.</p>
-        <p>To use the latest version, include the following in your <code>build.sbt</code>:</p>
-        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">libraryDependencies</span><span> ++= </span><span class="type-name">Seq</span><span>(
-  </span><span class="string-literal">&quot;org.typelevel&quot;</span><span> %% </span><span class="string-literal">&quot;otel4s&quot;</span><span> % </span><span class="string-literal">&quot;0.0-0ae1a76-SNAPSHOT&quot;</span><span>
-)</span></code></pre>
+        <h2 id="telemetry-meets-higher-kinded-types" class="section">Telemetry meets higher-kinded types<a class="anchor-link right" href="#telemetry-meets-higher-kinded-types"><i class="icofont-laika">&#xef71;</i></a></h2>
+        <p><em>otel4s</em> is an <a href="https://opentelemetry.io/">OpenTelemetry</a> implementation for Scala.  The
+        design goal is to fully and faithfully implement the <a href="https://opentelemetry.io/docs/reference/specification/">OpenTelemetry
+        Specification</a> atop <a href="https://typelevel.org/cats-effect/">Cats Effect</a>.</p>
+        
+        <h2 id="features" class="section">Features<a class="anchor-link right" href="#features"><i class="icofont-laika">&#xef71;</i></a></h2>
+        <ul>
+          <li>
+            <p>otel4s provides APIs and implementations for metrics and tracing.</p>
+          </li>
+          <li>
+            <p>Core modules for JVM, Scala.js, and Scala Native offer an API with
+            no-op implementations.  These are appropriate for library
+            instrumentation.</p>
+          </li>
+          <li>
+            <p><a href="https://github.com/open-telemetry/opentelemetry-java/tree/main/api/all">opentelemetry-java</a> backend provided for the
+            JVM.  This provides working telemetry for applications.</p>
+          </li>
+        </ul>
+        
+        <h2 id="status" class="section">Status<a class="anchor-link right" href="#status"><i class="icofont-laika">&#xef71;</i></a></h2>
+        <p>The API is still highly experimental, but we are actively
+        instrumenting various libraries and applications to check for fit.
+        Don&#39;t put it in a binary-stable library yet, but we invite you to try
+        it out and let us know what you think.</p>
+        
+        <h2 id="getting-started" class="section">Getting started<a class="anchor-link right" href="#getting-started"><i class="icofont-laika">&#xef71;</i></a></h2>
+        <ul>
+          <li>Start tracing your application with <a href="examples/jaeger-docker.html">Jaeger and Docker</a></li>
+          <li>Implement tracing and metrics with <a href="examples/honeycomb.html">Honeycomb</a></li>
+        </ul>
 
         <hr style="margin-top: 30px"/>
         <footer style="font-size: 90%; text-align: center">

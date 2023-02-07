@@ -374,6 +374,7 @@ class TracerSuite extends CatsEffectSuite {
                 _ <- tracer
                   .spanBuilder("span-3")
                   .withParent(span.context)
+                  .build
                   .use { span3 =>
                     tracer.currentSpanContext.assertEquals(Some(span3.context))
                   }
@@ -456,8 +457,7 @@ class TracerSuite extends CatsEffectSuite {
         sdk <- makeSdk()
         tracer <- sdk.provider.tracer("tracer").get
         _ <- tracer
-          .span("resource-span", attribute)
-          .wrapResource(mkRes(tracer))
+          .resourceSpan("resource-span", attribute)(mkRes(tracer))
           .use { _ =>
             for {
               _ <- tracer.span("body-1").surround(IO.sleep(100.millis))

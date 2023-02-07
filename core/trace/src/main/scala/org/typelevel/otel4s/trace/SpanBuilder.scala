@@ -145,40 +145,7 @@ trait SpanBuilder[F[_]] {
       resource: Resource[F, A]
   )(implicit ev: Result =:= Span[F]): SpanBuilder.Aux[F, Span.Res[F, A]]
 
-  /** Creates a [[Span]]. The span requires to be ended ''explicitly'' by
-    * invoking `end`.
-    *
-    * This strategy can be used when it's necessary to end a span outside of the
-    * scope (e.g. async callback). Make sure the span is ended properly.
-    *
-    * Leaked span:
-    * {{{
-    * val tracer: Tracer[F] = ???
-    * val leaked: F[Unit] =
-    *   tracer.spanBuilder("manual-span").startUnmanaged.flatMap { span =>
-    *     span.setStatus(Status.Ok, "all good")
-    *   }
-    * }}}
-    *
-    * Properly ended span:
-    * {{{
-    * val tracer: Tracer[F] = ???
-    * val ok: F[Unit] =
-    *   tracer.spanBuilder("manual-span").startUnmanaged.flatMap { span =>
-    *     span.setStatus(Status.Ok, "all good") >> span.end
-    *   }
-    * }}}
-    *
-    * @see
-    *   [[start]] for a managed lifecycle
-    */
-  def startUnmanaged(implicit ev: Result =:= Span[F]): F[Span[F]]
-
-  def use[A](f: Result => F[A]): F[A]
-
-  def use_ : F[Unit]
-
-  def surround[A](f: F[A]): F[A]
+  def build: SpanOps.Aux[F, Result]
 
   /*
   /** Creates a [[Span]]. Unlike [[startUnmanaged]] the lifecycle of the span is
@@ -285,17 +252,21 @@ object SpanBuilder {
 
       def withStartTimestamp(timestamp: FiniteDuration): Builder = this
 
-      def startUnmanaged(implicit ev: Result =:= Span[F]): F[Span[F]] =
-        Applicative[F].pure(span)
+      def build = new SpanOps[F] {
+        type Result = Res
 
-      def use[A](f: Res => F[A]): F[A] =
-        startSpan.use(res => f(res))
+        def startUnmanaged(implicit ev: Result =:= Span[F]): F[Span[F]] =
+          Applicative[F].pure(span)
 
-      def use_ : F[Unit] =
-        startSpan.use_
+        def use[A](f: Res => F[A]): F[A] =
+          startSpan.use(res => f(res))
 
-      def surround[A](fa: F[A]): F[A] =
-        fa
+        def use_ : F[Unit] =
+          startSpan.use_
+
+        def surround[A](fa: F[A]): F[A] =
+          fa
+      }
 
       /*
       val start: Resource[F, Span[F]] =

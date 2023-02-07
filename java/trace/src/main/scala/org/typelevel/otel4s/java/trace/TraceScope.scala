@@ -16,10 +16,10 @@
 
 package org.typelevel.otel4s.java.trace
 
+import cats.Applicative
 import cats.effect.IOLocal
 import cats.effect.LiftIO
 import cats.effect.MonadCancelThrow
-import cats.effect.Sync
 import cats.syntax.functor._
 import cats.~>
 import io.opentelemetry.api.trace.{Span => JSpan}
@@ -48,7 +48,7 @@ private[java] object TraceScope {
     case object Noop extends Scope
   }
 
-  def fromIOLocal[F[_]: LiftIO: Sync](
+  def fromIOLocal[F[_]: LiftIO: MonadCancelThrow](
       default: JContext
   ): F[TraceScope[F]] = {
     val scopeRoot = Scope.Root(default)
@@ -56,7 +56,7 @@ private[java] object TraceScope {
     IOLocal[Scope](scopeRoot).to[F].map { local =>
       new TraceScope[F] {
         val root: F[Scope.Root] =
-          Sync[F].pure(scopeRoot)
+          Applicative[F].pure(scopeRoot)
 
         def current: F[Scope] =
           local.get.to[F]

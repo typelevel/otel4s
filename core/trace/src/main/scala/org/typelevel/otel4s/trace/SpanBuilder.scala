@@ -146,62 +146,6 @@ trait SpanBuilder[F[_]] {
   )(implicit ev: Result =:= Span[F]): SpanBuilder.Aux[F, Span.Res[F, A]]
 
   def build: SpanOps.Aux[F, Result]
-
-  /*
-  /** Creates a [[Span]]. Unlike [[startUnmanaged]] the lifecycle of the span is
-    * managed by the [[cats.effect.kernel.Resource Resource]]. That means the
-    * span is started upon resource allocation and ended upon finalization.
-    *
-    * The finalization strategy is determined by [[SpanFinalizer.Strategy]]. By
-    * default, the abnormal termination (error, cancelation) is recorded.
-    *
-    * @see
-    *   default finalization strategy [[SpanFinalizer.Strategy.reportAbnormal]]
-    *
-    * @example
-    *   {{{
-    * val tracer: Tracer[F] = ???
-    * val ok: F[Unit] =
-    *   tracer.spanBuilder("auto-span").start.use { span =>
-    *     span.setStatus(Status.Ok, "all good")
-    *   }
-    *   }}}
-    */
-  def start: Resource[F, Span[F]]
-
-  /** Creates a [[Span.Res]]. The span is started upon resource allocation and
-    * ended upon finalization. The allocation and release stages of the
-    * `resource` are traced by separate spans. Carries a value of the given
-    * `resource`.
-    *
-    * The structure of the inner spans:
-    * {{{
-    * > span-name
-    *   > acquire
-    *   > use
-    *   > release
-    * }}}
-    *
-    * The finalization strategy is determined by [[SpanFinalizer.Strategy]]. By
-    * default, the abnormal termination (error, cancelation) is recorded.
-    *
-    * @see
-    *   default finalization strategy [[SpanFinalizer.Strategy.reportAbnormal]]
-    *
-    * @example
-    *   {{{
-    * val tracer: Tracer[F] = ???
-    * val resource: Resource[F, String] = Resource.eval(Sync[F].delay("string"))
-    * val ok: F[Unit] =
-    *   tracer.spanBuilder("wrapped-resource").startResource(resource).use { case span @ Span.Res(value) =>
-    *     span.setStatus(Status.Ok, s"all good. resource value: $${value}")
-    *   }
-    *   }}}
-    * @param resource
-    *   the resource to trace
-    */
-  def startResource[A](resource: Resource[F, A]): Resource[F, Span.Res[F, A]]
-   */
 }
 
 object SpanBuilder {

@@ -212,13 +212,14 @@ private[java] object SpanBuilderImpl {
           builder match {
             case Some((builder, _)) =>
               for {
-                (back, nt) <- startManaged(
+                pair <- startManaged(
                   builder,
                   TimestampSelect.Explicit,
                   startTimestamp,
                   finalizationStrategy,
                   scope
                 )
+                (back, nt) = pair
               } yield (Span.fromBackend(back), nt)
 
             case None =>
@@ -262,13 +263,15 @@ private[java] object SpanBuilderImpl {
 
                 rootCtx <- Resource.pure(parent.`with`(rootBackend._1.jSpan))
 
-                (value, _) <- Resource.make(
+                pair <- Resource.make(
                   child("acquire", rootCtx).use(b => b._2(resource.allocated))
                 ) { case (_, release) =>
                   child("release", rootCtx).use(b => b._2(release))
                 }
+                (value, _) = pair
 
-                (useSpanBackend, nt) <- child("use", rootCtx)
+                pair2 <- child("use", rootCtx)
+                (useSpanBackend, nt) = pair2
               } yield (Span.Res.fromBackend(value, useSpanBackend), nt)
 
             case None =>

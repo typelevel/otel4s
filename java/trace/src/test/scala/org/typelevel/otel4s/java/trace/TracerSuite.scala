@@ -17,11 +17,13 @@
 package org.typelevel.otel4s.java.trace
 
 import cats.effect.IO
+import cats.effect.IOLocal
 import cats.effect.Resource
 import cats.effect.testkit.TestControl
 import io.opentelemetry.api.common.{AttributeKey => JAttributeKey}
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.trace.StatusCode
+import io.opentelemetry.context.{Context => JContext}
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo
 import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter
 import io.opentelemetry.sdk.testing.time.TestClock
@@ -34,6 +36,7 @@ import io.opentelemetry.sdk.trace.`export`.SimpleSpanProcessor
 import io.opentelemetry.sdk.trace.internal.data.ExceptionEventData
 import munit.CatsEffectSuite
 import org.typelevel.otel4s.Attribute
+import org.typelevel.otel4s.java.trace.instances._
 import org.typelevel.otel4s.trace.Span
 import org.typelevel.otel4s.trace.Tracer
 import org.typelevel.otel4s.trace.TracerProvider
@@ -535,9 +538,11 @@ class TracerSuite extends CatsEffectSuite {
     val tracerProvider: SdkTracerProvider =
       customize(builder).build()
 
-    for {
-      provider <- TracerProviderImpl.ioLocal[IO](tracerProvider)
-    } yield new TracerSuite.Sdk(provider, exporter)
+    IOLocal[TraceScope.Scope](TraceScope.Scope.Root(JContext.root)).map {
+      implicit ioLocal =>
+        val provider = TracerProviderImpl.local[IO](tracerProvider)
+        new TracerSuite.Sdk(provider, exporter)
+    }
   }
 
 }

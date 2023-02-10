@@ -20,10 +20,8 @@ import cats.mtl.Local
 import cats.~>
 import io.opentelemetry.api.trace.{Span => JSpan}
 import io.opentelemetry.context.{Context => JContext}
-import org.typelevel.otel4s.trace.SpanContext
 
 private[java] trait TraceScope[F[_]] {
-  import TraceScope.Scope
   def root: F[Scope.Root]
   def current: F[Scope]
   def makeScope(span: JSpan): F[F ~> F]
@@ -32,17 +30,6 @@ private[java] trait TraceScope[F[_]] {
 }
 
 private[java] object TraceScope {
-
-  sealed trait Scope
-  object Scope {
-    final case class Root(ctx: JContext) extends Scope
-    final case class Span(
-        ctx: JContext,
-        span: JSpan,
-        spanContext: SpanContext
-    ) extends Scope
-    case object Noop extends Scope
-  }
 
   def fromLocal[F[_]](
       default: JContext

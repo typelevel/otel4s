@@ -161,29 +161,29 @@ private[java] final case class SpanBuilderImpl[F[_]: Sync, Res <: Span[F]](
     parent match {
       case Parent.Root =>
         scope.current.flatMap {
-          case TraceScope.Scope.Root(ctx) =>
+          case Scope.Root(ctx) =>
             Sync[F].pure(Some(ctx))
 
-          case TraceScope.Scope.Span(_, _, _) =>
+          case Scope.Span(_, _, _) =>
             scope.root.map(s => Some(s.ctx))
 
-          case TraceScope.Scope.Noop =>
+          case Scope.Noop =>
             Sync[F].pure(None)
         }
 
       case Parent.Propagate =>
         scope.current.map {
-          case TraceScope.Scope.Root(ctx)       => Some(ctx)
-          case TraceScope.Scope.Span(ctx, _, _) => Some(ctx)
-          case TraceScope.Scope.Noop            => None
+          case Scope.Root(ctx)       => Some(ctx)
+          case Scope.Span(ctx, _, _) => Some(ctx)
+          case Scope.Noop            => None
         }
 
       case Parent.Explicit(parent) =>
         def parentSpan = JSpan.wrap(WrappedSpanContext.unwrap(parent))
         scope.current.map {
-          case TraceScope.Scope.Root(ctx)       => Some(ctx.`with`(parentSpan))
-          case TraceScope.Scope.Span(ctx, _, _) => Some(ctx.`with`(parentSpan))
-          case TraceScope.Scope.Noop            => None
+          case Scope.Root(ctx)       => Some(ctx.`with`(parentSpan))
+          case Scope.Span(ctx, _, _) => Some(ctx.`with`(parentSpan))
+          case Scope.Noop            => None
         }
     }
 }

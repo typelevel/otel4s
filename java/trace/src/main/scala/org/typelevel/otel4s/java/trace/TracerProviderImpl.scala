@@ -33,7 +33,7 @@ private[java] class TracerProviderImpl[F[_]: Sync](
 
 private[java] object TracerProviderImpl {
 
-  def local[F[_]: Sync: Local[*[_], TraceScope.Scope]](
+  def local[F[_]: Sync: Local[*[_], Scope]](
       jTracerProvider: JTracerProvider,
       default: JContext = JContext.root()
   ): TracerProvider[F] = {

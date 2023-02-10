@@ -19,8 +19,8 @@ package org.typelevel.otel4s.java.trace
 import cats.effect.IOLocal
 import cats.effect.LiftIO
 import cats.effect.Sync
+import cats.mtl.Local
 import io.opentelemetry.api.{OpenTelemetry => JOpenTelemetry}
-import io.opentelemetry.context.{Context => JContext}
 import org.typelevel.otel4s.java.trace.instances._
 import org.typelevel.otel4s.trace.TracerProvider
 
@@ -30,13 +30,19 @@ trait Traces[F[_]] {
 
 object Traces {
 
+  def local[F[_]: Sync: Local[*[_], Scope]](
+      jOtel: JOpenTelemetry
+  ): Traces[F] = {
+    val provider = TracerProviderImpl.local(jOtel.getTracerProvider)
+    new Traces[F] {
+      def tracerProvider: TracerProvider[F] = provider
+    }
+  }
+
   def ioLocal[F[_]: LiftIO: Sync](jOtel: JOpenTelemetry): F[Traces[F]] =
-    IOLocal[TraceScope.Scope](TraceScope.Scope.Root(JContext.root))
-      .map { implicit ioLocal: IOLocal[TraceScope.Scope] =>
-        val provider = TracerProviderImpl.local(jOtel.getTracerProvider)
-        new Traces[F] {
-          def tracerProvider: TracerProvider[F] = provider
-        }
+    IOLocal(Scope.root)
+      .map { implicit ioLocal: IOLocal[Scope] =>
+        local(jOtel)
       }
       .to[F]
 

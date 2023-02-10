@@ -16,8 +16,6 @@
 
 package org.typelevel.otel4s.java.trace
 
-import cats.Applicative
-import cats.Functor
 import cats.effect.IOLocal
 import cats.effect.LiftIO
 import cats.effect.MonadCancelThrow
@@ -25,6 +23,7 @@ import cats.mtl.Local
 import cats.~>
 import io.opentelemetry.api.trace.{Span => JSpan}
 import io.opentelemetry.context.{Context => JContext}
+import org.typelevel.otel4s.java.trace.instances._
 import org.typelevel.otel4s.trace.SpanContext
 
 private[java] trait TraceScope[F[_]] {
@@ -106,20 +105,6 @@ private[java] object TraceScope {
         }
     }
   }
-
-  private implicit def localForIoLocal[F[_]: MonadCancelThrow: LiftIO, E](
-      implicit ioLocal: IOLocal[E]
-  ): Local[F, E] =
-    new Local[F, E] {
-      def applicative =
-        Applicative[F]
-      def ask[E2 >: E] =
-        Functor[F].widen[E, E2](ioLocal.get.to[F])
-      def local[A](fa: F[A])(f: E => E): F[A] =
-        MonadCancelThrow[F].bracket(ioLocal.modify(e => (f(e), e)).to[F])(_ =>
-          fa
-        )(ioLocal.set(_).to[F])
-    }
 
   def fromIOLocal[F[_]: MonadCancelThrow: LiftIO](
       default: JContext

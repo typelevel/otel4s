@@ -16,8 +16,8 @@
 
 package org.typelevel.otel4s.java.trace
 
-import io.opentelemetry.context.{Context => JContext}
 import io.opentelemetry.api.trace.{Span => JSpan}
+import io.opentelemetry.context.{Context => JContext}
 import org.typelevel.otel4s.trace.SpanContext
 
 sealed trait Scope

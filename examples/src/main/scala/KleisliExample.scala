@@ -29,7 +29,10 @@ object KleisliExample extends IOApp.Simple {
   def work[F[_]: Sync: Tracer] =
     Tracer[F].span("work").surround(Sync[F].delay(println("I'm working")))
 
-  def tracerResource[F[_]: Sync: Local[*[_], Scope]]: Resource[F, Tracer[F]] =
+  def tracerResource[F[_]](implicit
+      F: Sync[F],
+      L: Local[F, Scope]
+  ): Resource[F, Tracer[F]] =
     Resource
       .eval(Sync[F].delay(GlobalOpenTelemetry.get))
       .map(Traces.local[F])

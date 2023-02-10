@@ -33,10 +33,10 @@ private[java] class TracerProviderImpl[F[_]: Sync](
 
 private[java] object TracerProviderImpl {
 
-  def local[F[_]: Sync: Local[*[_], Scope]](
+  def local[F[_]](
       jTracerProvider: JTracerProvider,
       default: JContext = JContext.root()
-  ): TracerProvider[F] = {
+  )(implicit F: Sync[F], L: Local[F, Scope]): TracerProvider[F] = {
     val traceScope = TraceScope.fromLocal[F](default)
     new TracerProviderImpl(jTracerProvider, traceScope)
   }

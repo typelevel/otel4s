@@ -30,9 +30,9 @@ trait Traces[F[_]] {
 
 object Traces {
 
-  def local[F[_]: Sync: Local[*[_], Scope]](
+  def local[F[_]](
       jOtel: JOpenTelemetry
-  ): Traces[F] = {
+  )(implicit F: Sync[F], L: Local[F, Scope]): Traces[F] = {
     val provider = TracerProviderImpl.local(jOtel.getTracerProvider)
     new Traces[F] {
       def tracerProvider: TracerProvider[F] = provider

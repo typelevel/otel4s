@@ -23,7 +23,6 @@ import cats.effect.testkit.TestControl
 import io.opentelemetry.api.common.{AttributeKey => JAttributeKey}
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.trace.StatusCode
-import io.opentelemetry.context.{Context => JContext}
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo
 import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter
 import io.opentelemetry.sdk.testing.time.TestClock
@@ -538,10 +537,9 @@ class TracerSuite extends CatsEffectSuite {
     val tracerProvider: SdkTracerProvider =
       customize(builder).build()
 
-    IOLocal[TraceScope.Scope](TraceScope.Scope.Root(JContext.root)).map {
-      implicit ioLocal =>
-        val provider = TracerProviderImpl.local[IO](tracerProvider)
-        new TracerSuite.Sdk(provider, exporter)
+    IOLocal(Scope.root).map { implicit ioLocal =>
+      val provider = TracerProviderImpl.local[IO](tracerProvider)
+      new TracerSuite.Sdk(provider, exporter)
     }
   }
 

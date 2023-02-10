@@ -16,14 +16,10 @@
 
 package org.typelevel.otel4s.java.trace
 
-import cats.effect.IOLocal
-import cats.effect.LiftIO
-import cats.effect.MonadCancelThrow
 import cats.mtl.Local
 import cats.~>
 import io.opentelemetry.api.trace.{Span => JSpan}
 import io.opentelemetry.context.{Context => JContext}
-import org.typelevel.otel4s.java.trace.instances._
 import org.typelevel.otel4s.trace.SpanContext
 
 private[java] trait TraceScope[F[_]] {
@@ -104,14 +100,5 @@ private[java] object TraceScope {
             Scope.Noop
         }
     }
-  }
-
-  def fromIOLocal[F[_]: MonadCancelThrow: LiftIO](
-      default: JContext
-  ): F[TraceScope[F]] = {
-    val scopeRoot = Scope.Root(default)
-    IOLocal[Scope](scopeRoot)
-      .map(implicit ioLocal => fromLocal[F](default))
-      .to[F]
   }
 }

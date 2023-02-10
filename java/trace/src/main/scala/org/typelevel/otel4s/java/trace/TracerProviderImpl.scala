@@ -16,11 +16,12 @@
 
 package org.typelevel.otel4s.java.trace
 
+import cats.effect.IOLocal
 import cats.effect.LiftIO
 import cats.effect.Sync
-import cats.syntax.functor._
 import io.opentelemetry.api.trace.{TracerProvider => JTracerProvider}
 import io.opentelemetry.context.{Context => JContext}
+import org.typelevel.otel4s.java.trace.instances._
 import org.typelevel.otel4s.trace.TracerBuilder
 import org.typelevel.otel4s.trace.TracerProvider
 
@@ -38,8 +39,11 @@ private[java] object TracerProviderImpl {
       jTracerProvider: JTracerProvider,
       default: JContext = JContext.root()
   ): F[TracerProvider[F]] =
-    TraceScope
-      .fromIOLocal[F](default)
-      .map(scope => new TracerProviderImpl(jTracerProvider, scope))
+    IOLocal[TraceScope.Scope](TraceScope.Scope.Root(default))
+      .map { implicit ioLocal: IOLocal[TraceScope.Scope] =>
+        val traceScope = TraceScope.fromLocal[F](default)
+        new TracerProviderImpl(jTracerProvider, traceScope): TracerProvider[F]
+      }
+      .to[F]
 
 }

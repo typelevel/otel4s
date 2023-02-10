@@ -17,10 +17,23 @@
 package org.typelevel.otel4s
 package java
 
+import cats.Functor
 import cats.effect.kernel.Async
+import cats.effect.kernel.Sync
+import cats.effect.std.Dispatcher
 import cats.syntax.either._
 import io.opentelemetry.api.common.{Attributes => JAttributes}
+import io.opentelemetry.context.{Context => JContext}
+import io.opentelemetry.context.{ContextKey => JContextKey}
+import io.opentelemetry.context.propagation.{
+  TextMapPropagator => JTextMapPropagator
+}
+import io.opentelemetry.context.propagation.{TextMapGetter => JTextMapGetter}
+import io.opentelemetry.context.propagation.{TextMapSetter => JTextMapSetter}
 import io.opentelemetry.sdk.common.CompletableResultCode
+
+import scala.jdk.CollectionConverters._
+import _root_.java.lang.{Iterable => JIterable}
 
 private[java] object Conversions {
 
@@ -76,4 +89,75 @@ private[java] object Conversions {
         }
       )
     )
+
+  def fromJTextMapPropagator[F[_]: Sync](
+      jPropagator: JTextMapPropagator,
+      dispatcher: Dispatcher[F]
+  ): TextMapPropagator[F] =
+    new TextMapPropagator[F] {
+      type Key[A] = JContextKey[A]
+
+      def jGetter[A](implicit getter: TextMapGetter[A]) =
+        new JTextMapGetter[A] {
+          def get(carrier: A, key: String): String =
+            getter.get(carrier, key).fold(null: String)(_.toString)
+          def keys(carrier: A): JIterable[String] =
+            getter.keys(carrier).asJava
+        }
+
+      def jSetter[A](implicit setter: TextMapSetter[F, A]) =
+        new JTextMapSetter[A] {
+          def set(carrier: A, key: String, value: String) =
+            dispatcher.unsafeRunSync(
+              Functor[F].void(setter.set(carrier, key, value))
+            )
+        }
+
+      def extract[A](context: Context.Aux[JContextKey], carrier: A)(implicit
+          getter: TextMapGetter[A]
+      ) =
+        fromJContext(
+          jPropagator.extract(
+            toJContext(context),
+            carrier,
+            jGetter
+          )
+        )
+
+      def inject[A](context: Context.Aux[JContextKey], carrier: A)(implicit
+          setter: TextMapSetter[F, A]
+      ): F[A] =
+        Functor[F].as(
+          Sync[F].delay(
+            jPropagator.inject(
+              toJContext(context),
+              carrier,
+              jSetter
+            )
+          ),
+          carrier
+        )
+
+    }
+
+  def toJContext(context: Context.Aux[JContextKey]): JContext =
+    new JContext {
+      def get[A](key: JContextKey[A]): A =
+        context.get(key) match {
+          case Some(a) => a
+          case None    => null.asInstanceOf[A]
+        }
+
+      def `with`[A](key: JContextKey[A], a: A): JContext =
+        toJContext(context.set(key, a))
+    }
+
+  def fromJContext(context: JContext): Context.Aux[JContextKey] =
+    new Context {
+      type Key[A] = JContextKey[A]
+      def get[A](key: Key[A]): Option[A] =
+        Option(context.get(key))
+      def set[A](key: Key[A], a: A) =
+        fromJContext(context.`with`(key, a))
+    }
 }

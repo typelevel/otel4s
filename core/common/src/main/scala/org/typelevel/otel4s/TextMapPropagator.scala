@@ -16,16 +16,22 @@
 
 package org.typelevel.otel4s
 
-trait TextMapPropagator[F[_]] extends TextMapInjector[F] with TextMapExtractor
+trait TextMapPropagator[F[_]] extends TextMapInjector[F] with TextMapExtractor {
+  type Key[_]
+}
 
 trait TextMapInjector[F[_]] {
-  def inject[A](context: Context, carrier: A)(implicit
+  type Key[_]
+
+  def inject[A](context: Context.Aux[Key], carrier: A)(implicit
       setter: TextMapSetter[F, A]
   ): F[A]
 }
 
 trait TextMapExtractor {
-  def extract[A](context: Context, carrier: A)(implicit
+  type Key[_]
+
+  def extract[A](context: Context.Aux[Key], carrier: A)(implicit
       getter: TextMapGetter[A]
   ): Context
 }

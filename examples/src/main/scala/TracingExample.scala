@@ -68,7 +68,7 @@ object TracingExample extends IOApp.Simple {
   def run: IO[Unit] = {
     globalOtel4s.use { otel4s: Otel4s.Aux[IO, Context] =>
       implicit val textMapProp: TextMapPropagator.Aux[IO, Context] =
-        otel4s.contextPropagators.textMapPropagator
+        otel4s.propagators.textMapPropagator
       otel4s.tracerProvider.tracer("example").get.flatMap {
         implicit tracer: Tracer[IO] =>
           val resource: Resource[IO, Unit] =

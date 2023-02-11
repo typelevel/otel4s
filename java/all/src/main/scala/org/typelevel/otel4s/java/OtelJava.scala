@@ -58,7 +58,7 @@ object OtelJava {
       traces <- Traces.ioLocal(jOtel)
     } yield new Otel4s[F] {
       type Context = JContext
-      def contextPropagators: ContextPropagators.Aux[F, JContext] =
+      def propagators: ContextPropagators.Aux[F, JContext] =
         new ContextPropagators[F] {
           type Context = JContext
           def textMapPropagator: TextMapPropagator.Aux[F, JContext] =

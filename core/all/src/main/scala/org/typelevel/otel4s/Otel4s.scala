@@ -22,7 +22,7 @@ import org.typelevel.otel4s.trace.TracerProvider
 trait Otel4s[F[_]] {
   type Context
 
-  def contextPropagators: ContextPropagators.Aux[F, Context]
+  def propagators: ContextPropagators.Aux[F, Context]
 
   /** A registry for creating named meters.
     */

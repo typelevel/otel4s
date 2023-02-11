@@ -30,7 +30,6 @@ import io.opentelemetry.context.propagation.{
 import io.opentelemetry.context.propagation.{TextMapSetter => JTextMapSetter}
 import io.opentelemetry.sdk.common.CompletableResultCode
 
-import scala.collection.mutable
 import scala.jdk.CollectionConverters._
 
 private[java] object Conversions {
@@ -94,28 +93,29 @@ private[java] object Conversions {
     new TextMapPropagator[F] {
       type Context = JContext
 
-      def extract(ctx: Context, carrier: mutable.Map[String, String]): Context =
-        jPropagator.extract(ctx, carrier, textMapGetter)
+      def extract[A: TextMapGetter](ctx: Context, carrier: A): Context =
+        jPropagator.extract(ctx, carrier, fromTextMapGetter)
 
-      def inject(ctx: Context, carrier: mutable.Map[String, String]): F[Unit] =
-        Sync[F].delay(jPropagator.inject(ctx, carrier, textMapSetter))
+      def inject[A: TextMapSetter](ctx: Context, carrier: A): F[Unit] =
+        Sync[F].delay(jPropagator.inject(ctx, carrier, fromTextMapSetter))
     }
 
-  val textMapGetter: JTextMapGetter[mutable.Map[String, String]] =
-    new JTextMapGetter[mutable.Map[String, String]] {
-      def get(carrier: mutable.Map[String, String], key: String) =
-        carrier.get(key).orNull
-      def keys(carrier: mutable.Map[String, String]): JIterable[String] =
-        carrier.keys.asJava
+  implicit def fromTextMapGetter[A](implicit
+      getter: TextMapGetter[A]
+  ): JTextMapGetter[A] =
+    new JTextMapGetter[A] {
+      def get(carrier: A, key: String) =
+        getter.get(carrier, key).orNull
+
+      def keys(carrier: A): JIterable[String] =
+        getter.keys(carrier).asJava
     }
 
-  val textMapSetter: JTextMapSetter[mutable.Map[String, String]] =
-    new JTextMapSetter[mutable.Map[String, String]] {
-      def set(
-          carrier: mutable.Map[String, String],
-          key: String,
-          value: String
-      ) =
-        carrier.update(key, value)
+  implicit def fromTextMapSetter[A](implicit
+      setter: TextMapSetter[A]
+  ): JTextMapSetter[A] =
+    new JTextMapSetter[A] {
+      def set(carrier: A, key: String, value: String) =
+        setter.unsafeSet(carrier, key, value)
     }
 }

@@ -18,14 +18,12 @@ package org.typelevel.otel4s
 
 import cats.Applicative
 
-import scala.collection.mutable
-
 trait TextMapPropagator[F[_]] {
   type Context
 
-  def extract(ctx: Context, carrier: mutable.Map[String, String]): Context
+  def extract[A: TextMapGetter](ctx: Context, carrier: A): Context
 
-  def inject(ctx: Context, carrier: mutable.Map[String, String]): F[Unit]
+  def inject[A: TextMapSetter](ctx: Context, carrier: A): F[Unit]
 }
 
 object TextMapPropagator {
@@ -35,10 +33,10 @@ object TextMapPropagator {
     new TextMapPropagator[F] {
       type Context = C
 
-      def extract(ctx: Context, carrier: mutable.Map[String, String]): Context =
+      def extract[A: TextMapGetter](ctx: Context, carrier: A): Context =
         ctx
 
-      def inject(ctx: Context, carrier: mutable.Map[String, String]): F[Unit] =
+      def inject[A: TextMapSetter](ctx: Context, carrier: A): F[Unit] =
         Applicative[F].unit
     }
 }

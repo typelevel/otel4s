@@ -32,3 +32,7 @@ trait Otel4s[F[_]] {
     */
   def tracerProvider: TracerProvider[F]
 }
+
+object Otel4s {
+  type Aux[F[_], C] = Otel4s[F] { type Context = C }
+}

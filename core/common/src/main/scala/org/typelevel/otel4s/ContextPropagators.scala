@@ -21,7 +21,7 @@ import cats.Applicative
 trait ContextPropagators[F[_]] {
   type Context
 
-  def textMapPropagator: TextMapPropagator[F]
+  def textMapPropagator: TextMapPropagator.Aux[F, Context]
 }
 
 object ContextPropagators {

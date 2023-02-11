@@ -20,3 +20,13 @@ trait TextMapGetter[A] {
   def get(carrier: A, key: String): Option[String]
   def keys(carrier: A): List[String]
 }
+
+object TextMapGetter {
+  implicit val forMapStringString: TextMapGetter[Map[String, String]] =
+    new TextMapGetter[Map[String, String]] {
+      def get(carrier: Map[String, String], key: String): Option[String] =
+        carrier.get(key)
+      def keys(carrier: Map[String, String]): List[String] =
+        carrier.keys.toList
+    }
+}

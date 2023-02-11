@@ -28,7 +28,9 @@ import io.opentelemetry.sdk.{OpenTelemetrySdk => JOpenTelemetrySdk}
 import io.opentelemetry.sdk.common.CompletableResultCode
 import org.typelevel.otel4s.ContextPropagators
 import org.typelevel.otel4s.Otel4s
+import org.typelevel.otel4s.TextMapPropagator
 import org.typelevel.otel4s.java.Conversions.asyncFromCompletableResultCode
+import org.typelevel.otel4s.java.Conversions.fromJTextMapPropagator
 import org.typelevel.otel4s.java.metrics.Metrics
 import org.typelevel.otel4s.java.trace.Traces
 import org.typelevel.otel4s.metrics.MeterProvider
@@ -48,14 +50,20 @@ object OtelJava {
     * @return
     *   An effect of an [[org.typelevel.otel4s.Otel4s]] resource.
     */
-  def forSync[F[_]: LiftIO: Sync](jOtel: JOpenTelemetry): F[Otel4s[F]] = {
+  def forSync[F[_]: LiftIO: Sync](
+      jOtel: JOpenTelemetry
+  ): F[Otel4s.Aux[F, JContext]] = {
     for {
       metrics <- Sync[F].pure(Metrics.forSync(jOtel))
       traces <- Traces.ioLocal(jOtel)
     } yield new Otel4s[F] {
       type Context = JContext
       def contextPropagators: ContextPropagators.Aux[F, JContext] =
-        ContextPropagators.noop
+        new ContextPropagators[F] {
+          type Context = JContext
+          def textMapPropagator: TextMapPropagator.Aux[F, JContext] =
+            fromJTextMapPropagator[F](jOtel.getPropagators.getTextMapPropagator)
+        }
       def meterProvider: MeterProvider[F] = metrics.meterProvider
       def tracerProvider: TracerProvider[F] = traces.tracerProvider
     }
@@ -71,7 +79,7 @@ object OtelJava {
     */
   def resource[F[_]: LiftIO: Async](
       acquire: F[JOpenTelemetrySdk]
-  ): Resource[F, Otel4s[F]] =
+  ): Resource[F, Otel4s.Aux[F, JContext]] =
     Resource
       .make(acquire)(sdk =>
         asyncFromCompletableResultCode(

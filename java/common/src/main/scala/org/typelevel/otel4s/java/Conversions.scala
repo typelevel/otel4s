@@ -17,10 +17,21 @@
 package org.typelevel.otel4s
 package java
 
+import _root_.java.lang.{Iterable => JIterable}
 import cats.effect.kernel.Async
+import cats.effect.kernel.Sync
 import cats.syntax.either._
 import io.opentelemetry.api.common.{Attributes => JAttributes}
+import io.opentelemetry.context.{Context => JContext}
+import io.opentelemetry.context.propagation.{TextMapGetter => JTextMapGetter}
+import io.opentelemetry.context.propagation.{
+  TextMapPropagator => JTextMapPropagator
+}
+import io.opentelemetry.context.propagation.{TextMapSetter => JTextMapSetter}
 import io.opentelemetry.sdk.common.CompletableResultCode
+
+import scala.collection.mutable
+import scala.jdk.CollectionConverters._
 
 private[java] object Conversions {
 
@@ -76,4 +87,35 @@ private[java] object Conversions {
         }
       )
     )
+
+  def fromJTextMapPropagator[F[_]: Sync](
+      jPropagator: JTextMapPropagator
+  ): TextMapPropagator.Aux[F, JContext] =
+    new TextMapPropagator[F] {
+      type Context = JContext
+
+      def extract(ctx: Context, carrier: mutable.Map[String, String]): Context =
+        jPropagator.extract(ctx, carrier, textMapGetter)
+
+      def inject(ctx: Context, carrier: mutable.Map[String, String]): F[Unit] =
+        Sync[F].delay(jPropagator.inject(ctx, carrier, textMapSetter))
+    }
+
+  val textMapGetter: JTextMapGetter[mutable.Map[String, String]] =
+    new JTextMapGetter[mutable.Map[String, String]] {
+      def get(carrier: mutable.Map[String, String], key: String) =
+        carrier.get(key).orNull
+      def keys(carrier: mutable.Map[String, String]): JIterable[String] =
+        carrier.keys.asJava
+    }
+
+  val textMapSetter: JTextMapSetter[mutable.Map[String, String]] =
+    new JTextMapSetter[mutable.Map[String, String]] {
+      def set(
+          carrier: mutable.Map[String, String],
+          key: String,
+          value: String
+      ) =
+        carrier.update(key, value)
+    }
 }

@@ -23,8 +23,10 @@ import cats.effect.Sync
 import cats.syntax.flatMap._
 import cats.syntax.functor._
 import io.opentelemetry.api.{OpenTelemetry => JOpenTelemetry}
+import io.opentelemetry.context.{Context => JContext}
 import io.opentelemetry.sdk.{OpenTelemetrySdk => JOpenTelemetrySdk}
 import io.opentelemetry.sdk.common.CompletableResultCode
+import org.typelevel.otel4s.ContextPropagators
 import org.typelevel.otel4s.Otel4s
 import org.typelevel.otel4s.java.Conversions.asyncFromCompletableResultCode
 import org.typelevel.otel4s.java.metrics.Metrics
@@ -51,6 +53,9 @@ object OtelJava {
       metrics <- Sync[F].pure(Metrics.forSync(jOtel))
       traces <- Traces.ioLocal(jOtel)
     } yield new Otel4s[F] {
+      type Context = JContext
+      def contextPropagators: ContextPropagators.Aux[F, JContext] =
+        ContextPropagators.noop
       def meterProvider: MeterProvider[F] = metrics.meterProvider
       def tracerProvider: TracerProvider[F] = traces.tracerProvider
     }

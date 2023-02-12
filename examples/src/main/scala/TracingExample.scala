@@ -38,7 +38,7 @@ object Work {
   def apply[F[_]: Monad: Tracer: TextMapPropagator: Console]: Work[F] =
     new Work[F] {
       def request(headers: Map[String, String]): F[Unit] = {
-        val vault =
+        val context =
           implicitly[TextMapPropagator[F]].extract(Context.empty[F], headers)
         Tracer[F].childOrContinue(SpanContext.fromContext(vault)) {
           Tracer[F].span("Work.DoWork").use { span =>

@@ -78,7 +78,7 @@ class TracerSuite extends CatsEffectSuite {
 
     for {
       sdk <- makeSdk()
-      tracer <- sdk.provider.tracer("tracer").get
+      tracer <- sdk.provider.get("tracer")
       _ <- tracer.span("span", attribute).use_
       spans <- sdk.finishedSpans
     } yield {
@@ -93,7 +93,7 @@ class TracerSuite extends CatsEffectSuite {
   test("propagate traceId and spanId") {
     for {
       sdk <- makeSdk()
-      tracer <- sdk.provider.tracer("tracer").get
+      tracer <- sdk.provider.get("tracer")
       _ <- tracer.currentSpanContext.assertEquals(None)
       result <- tracer.span("span").use { span =>
         for {
@@ -125,7 +125,7 @@ class TracerSuite extends CatsEffectSuite {
 
     for {
       sdk <- makeSdk()
-      tracer <- sdk.provider.tracer("tracer").get
+      tracer <- sdk.provider.get("tracer")
       span <- tracer.span("span", attribute).use(IO.pure)
       spans <- sdk.finishedSpans
     } yield {
@@ -140,7 +140,7 @@ class TracerSuite extends CatsEffectSuite {
     TestControl.executeEmbed {
       for {
         sdk <- makeSdk()
-        tracer <- sdk.provider.tracer("tracer").get
+        tracer <- sdk.provider.get("tracer")
         now <- IO.monotonic.delayBy(1.millis) // otherwise returns 0
         _ <- tracer.span("span").surround(IO.sleep(sleepDuration))
         spans <- sdk.finishedSpans
@@ -157,7 +157,7 @@ class TracerSuite extends CatsEffectSuite {
   test("set error status on abnormal termination (canceled)") {
     for {
       sdk <- makeSdk()
-      tracer <- sdk.provider.tracer("tracer").get
+      tracer <- sdk.provider.get("tracer")
       fiber <- tracer.span("span").surround(IO.canceled).start
       _ <- fiber.joinWith(IO.unit)
       spans <- sdk.finishedSpans
@@ -187,7 +187,7 @@ class TracerSuite extends CatsEffectSuite {
         sdk <- makeSdk(
           _.setClock(TestClock.create(Instant.ofEpochMilli(now.toMillis)))
         )
-        tracer <- sdk.provider.tracer("tracer").get
+        tracer <- sdk.provider.get("tracer")
         _ <- tracer.span("span").surround(IO.raiseError(exception)).attempt
         spans <- sdk.finishedSpans
       } yield {
@@ -211,7 +211,7 @@ class TracerSuite extends CatsEffectSuite {
       for {
         now <- IO.monotonic.delayBy(1.second) // otherwise returns 0
         sdk <- makeSdk()
-        tracer <- sdk.provider.tracer("tracer").get
+        tracer <- sdk.provider.get("tracer")
         _ <- tracer.span("span-1").use { span1 =>
           tracer.rootSpan("span-2").use { span2 =>
             for {
@@ -238,7 +238,7 @@ class TracerSuite extends CatsEffectSuite {
       for {
         now <- IO.monotonic.delayBy(1.second) // otherwise returns 0
         sdk <- makeSdk()
-        tracer <- sdk.provider.tracer("tracer").get
+        tracer <- sdk.provider.get("tracer")
         _ <- tracer.currentSpanContext.assertEquals(None)
         _ <- tracer.span("span-1").use { span1 =>
           for {
@@ -270,7 +270,7 @@ class TracerSuite extends CatsEffectSuite {
       for {
         now <- IO.monotonic.delayBy(1.second) // otherwise returns 0
         sdk <- makeSdk()
-        tracer <- sdk.provider.tracer("tracer").get
+        tracer <- sdk.provider.get("tracer")
         _ <- tracer.currentSpanContext.assertEquals(None)
         _ <- tracer.span("span-1").use { span =>
           for {
@@ -318,7 +318,7 @@ class TracerSuite extends CatsEffectSuite {
       for {
         now <- IO.monotonic.delayBy(1.second) // otherwise returns 0
         sdk <- makeSdk()
-        tracer <- sdk.provider.tracer("tracer").get
+        tracer <- sdk.provider.get("tracer")
         _ <- tracer.currentSpanContext.assertEquals(None)
         _ <- tracer.span("span").use { span =>
           for {
@@ -364,7 +364,7 @@ class TracerSuite extends CatsEffectSuite {
       for {
         now <- IO.monotonic.delayBy(1.second) // otherwise returns 0
         sdk <- makeSdk()
-        tracer <- sdk.provider.tracer("tracer").get
+        tracer <- sdk.provider.get("tracer")
         _ <- tracer.currentSpanContext.assertEquals(None)
         _ <- tracer.span("span").use { span =>
           for {
@@ -456,7 +456,7 @@ class TracerSuite extends CatsEffectSuite {
       for {
         now <- IO.monotonic.delayBy(1.second) // otherwise returns 0
         sdk <- makeSdk()
-        tracer <- sdk.provider.tracer("tracer").get
+        tracer <- sdk.provider.get("tracer")
         _ <- tracer
           .resourceSpan("resource-span", attribute)(mkRes(tracer))
           .use { _ =>
@@ -466,6 +466,63 @@ class TracerSuite extends CatsEffectSuite {
               _ <- tracer.span("body-3").surround(IO.sleep(50.millis))
             } yield ()
           }
+        spans <- sdk.finishedSpans
+        tree <- IO.pure(SpanNode.fromSpans(spans))
+        // _ <- IO.println(tree.map(SpanNode.render).mkString("\n"))
+      } yield assertEquals(tree, List(expected(now)))
+    }
+  }
+
+  test("startUnmanaged: respect builder start time") {
+    val expected = SpanNode(
+      name = "span",
+      start = 100.millis,
+      end = 200.millis,
+      children = Nil
+    )
+
+    TestControl.executeEmbed {
+      for {
+        sdk <- makeSdk()
+        tracer <- sdk.provider.get("tracer")
+        span <- tracer
+          .spanBuilder("span")
+          .withStartTimestamp(100.millis)
+          .build
+          .startUnmanaged
+
+        // the sleep time should be ignored since the end timestamp is specified explicitly
+        _ <- IO.sleep(100.millis)
+
+        _ <- span.end(200.millis)
+        spans <- sdk.finishedSpans
+        tree <- IO.pure(SpanNode.fromSpans(spans))
+        // _ <- IO.println(tree.map(SpanNode.render).mkString("\n"))
+      } yield assertEquals(tree, List(expected))
+    }
+  }
+
+  test(
+    "startUnmanaged: use Clock[F].realTime to set start and end if builder's time is undefined"
+  ) {
+    def expected(now: FiniteDuration) =
+      SpanNode(
+        name = "span",
+        start = now,
+        end = now.plus(100.millis),
+        children = Nil
+      )
+
+    TestControl.executeEmbed {
+      for {
+        now <- IO.monotonic.delayBy(1.second) // otherwise returns 0
+        sdk <- makeSdk()
+        tracer <- sdk.provider.get("tracer")
+        span <- tracer.spanBuilder("span").build.startUnmanaged
+
+        _ <- IO.sleep(100.millis)
+
+        _ <- span.end
         spans <- sdk.finishedSpans
         tree <- IO.pure(SpanNode.fromSpans(spans))
         // _ <- IO.println(tree.map(SpanNode.render).mkString("\n"))
@@ -508,7 +565,7 @@ class TracerSuite extends CatsEffectSuite {
       for {
         now <- IO.monotonic.delayBy(1.second) // otherwise returns 0
         sdk <- makeSdk()
-        tracer <- sdk.provider.tracer("tracer").get
+        tracer <- sdk.provider.get("tracer")
         _ <- tracer.currentSpanContext.assertEquals(None)
         _ <- flow(tracer).compile.drain
         _ <- tracer.currentSpanContext.assertEquals(None)

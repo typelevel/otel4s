@@ -19,6 +19,7 @@ package java
 package trace
 
 import cats.effect.Sync
+import cats.syntax.flatMap._
 import io.opentelemetry.api.trace.{Span => JSpan}
 import io.opentelemetry.api.trace.{StatusCode => JStatusCode}
 import org.typelevel.otel4s.Attribute
@@ -89,7 +90,7 @@ private[java] class SpanBackendImpl[F[_]: Sync](
     }
 
   private[otel4s] def end: F[Unit] =
-    Sync[F].delay(jSpan.end())
+    Sync[F].realTime.flatMap(now => end(now))
 
   private[otel4s] def end(timestamp: FiniteDuration): F[Unit] =
     Sync[F].delay(jSpan.end(timestamp.length, timestamp.unit))

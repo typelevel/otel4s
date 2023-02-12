@@ -180,10 +180,7 @@ object SpanBuilder {
 
       def addAttributes(attributes: Attribute[_]*): Builder = this
 
-      def addLink(
-          spanContext: SpanContext,
-          attributes: Attribute[_]*
-      ): Builder = this
+      def addLink(ctx: SpanContext, attributes: Attribute[_]*): Builder = this
 
       def root: Builder = this
 
@@ -196,7 +193,7 @@ object SpanBuilder {
 
       def withStartTimestamp(timestamp: FiniteDuration): Builder = this
 
-      def build = new SpanOps[F] {
+      def build: SpanOps.Aux[F, Result] = new SpanOps[F] {
         type Result = Res
 
         def startUnmanaged(implicit ev: Result =:= Span[F]): F[Span[F]] =

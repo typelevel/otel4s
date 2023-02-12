@@ -105,5 +105,4 @@ private[java] object SpanBackendImpl {
       case Status.Error => JStatusCode.ERROR
     }
 
-
 }

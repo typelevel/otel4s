@@ -24,7 +24,7 @@ import io.opentelemetry.api.GlobalOpenTelemetry
 import org.typelevel.otel4s.Otel4s
 import org.typelevel.otel4s.TextMapPropagator
 import org.typelevel.otel4s.java.OtelJava
-import org.typelevel.otel4s.trace.Span
+import org.typelevel.otel4s.trace.SpanContext
 import org.typelevel.otel4s.trace.Tracer
 import org.typelevel.vault.Vault
 
@@ -38,19 +38,16 @@ object Work {
   def apply[F[_]: Monad: Tracer: TextMapPropagator: Console]: Work[F] =
     new Work[F] {
       def request(headers: Map[String, String]): F[Unit] = {
-        Tracer[F].span("Work.DoWork").use { span =>
-          val vault = implicitly[TextMapPropagator[F]].extract(
-            Vault.empty,
-            headers
-          )
-          Console[F].println(
-            "Extracted " + Span
-              .fromContext(vault)
-              .map((span: Span[F]) => span.context.spanIdHex)
-          ) >>
-            span.addEvent("Starting the work.") *>
-            doWorkInternal *>
-            span.addEvent("Finished working.")
+        val vault =
+          implicitly[TextMapPropagator[F]].extract(Vault.empty, headers)
+        Tracer[F].childOrContinue(SpanContext.fromContext(vault)) {
+          Tracer[F].span("Work.DoWork").use { span =>
+            Tracer[F].currentSpanContext
+              .flatMap(ctx => Console[F].println("Context is " + ctx)) *>
+              span.addEvent("Starting the work.") *>
+              doWorkInternal *>
+              span.addEvent("Finished working.")
+          }
         }
       }
 

@@ -15,23 +15,28 @@
  */
 
 package org.typelevel.otel4s
-package java
 
-import cats.effect.kernel.Sync
-import io.opentelemetry.context.{Context => JContext}
-import io.opentelemetry.context.propagation.{
-  ContextPropagators => JContextPropagators
+import org.typelevel.vault.Key
+import org.typelevel.vault.Vault
+
+sealed trait Context[F[_]] {
+  def get[A](key: Key[A]): Option[A]
+  def set[A](key: Key[A], value: A): Context[F]
 }
 
-private[java] class ContextPropagatorsImpl[F[_]: Sync](
-    propagators: JContextPropagators,
-    toJContext: Context[F] => JContext,
-    fromJContext: JContext => Context[F]
-) extends ContextPropagators[F] {
-  val textMapPropagator: TextMapPropagator[F] =
-    new TextMapPropagatorImpl(
-      propagators.getTextMapPropagator,
-      toJContext,
-      fromJContext
-    )
+object Context {
+  type Key[A] = org.typelevel.vault.Key[A]
+  val Key = org.typelevel.vault.Key
+
+  def empty[F[_]] =
+    fromVault[F](Vault.empty)
+
+  private def fromVault[F[_]](vault: Vault): Context[F] =
+    new Context[F] {
+      def get[A](key: Key[A]): Option[A] =
+        vault.lookup(key)
+      def set[A](key: Key[A], value: A): Context[F] =
+        fromVault(vault.insert(key, value))
+    }
+
 }

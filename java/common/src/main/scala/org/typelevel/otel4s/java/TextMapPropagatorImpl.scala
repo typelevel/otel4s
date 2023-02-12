@@ -23,19 +23,18 @@ import io.opentelemetry.context.propagation.{
   TextMapPropagator => JTextMapPropagator
 }
 import org.typelevel.otel4s.java.Conversions._
-import org.typelevel.vault.Vault
 
 private[java] class TextMapPropagatorImpl[F[_]: Sync](
     jPropagator: JTextMapPropagator,
-    toJContext: Vault => JContext,
-    fromJContext: JContext => Vault
+    toJContext: Context[F] => JContext,
+    fromJContext: JContext => Context[F]
 ) extends TextMapPropagator[F] {
-  def extract[A: TextMapGetter](ctx: Vault, carrier: A): Vault =
+  def extract[A: TextMapGetter](ctx: Context[F], carrier: A): Context[F] =
     fromJContext(
       jPropagator.extract(toJContext(ctx), carrier, fromTextMapGetter)
     )
 
-  def inject[A: TextMapSetter](ctx: Vault, carrier: A): F[Unit] =
+  def inject[A: TextMapSetter](ctx: Context[F], carrier: A): F[Unit] =
     Sync[F].delay(
       jPropagator.inject(toJContext(ctx), carrier, fromTextMapSetter)
     )

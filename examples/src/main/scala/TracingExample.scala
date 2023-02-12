@@ -67,7 +67,7 @@ object TracingExample extends IOApp.Simple {
       .evalMap(OtelJava.forSync[IO])
 
   def run: IO[Unit] = {
-    globalOtel4s.use { otel4s: Otel4s[IO] =>
+    globalOtel4s.use { (otel4s: Otel4s[IO]) =>
       implicit val textMapProp: TextMapPropagator[IO] =
         otel4s.propagators.textMapPropagator
       otel4s.tracerProvider.tracer("example").get.flatMap {

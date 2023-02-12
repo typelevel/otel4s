@@ -26,7 +26,7 @@ trait TextMapPropagator[F[_]] {
 }
 
 object TextMapPropagator {
-  def noop[F[_]: Applicative, C]: TextMapPropagator[F] =
+  def noop[F[_]: Applicative]: TextMapPropagator[F] =
     new TextMapPropagator[F] {
       def extract[A: TextMapGetter](ctx: Vault, carrier: A): Vault =
         ctx

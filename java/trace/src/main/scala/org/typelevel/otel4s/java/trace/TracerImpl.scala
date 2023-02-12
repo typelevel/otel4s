@@ -31,7 +31,7 @@ private[java] class TracerImpl[F[_]: Sync](
     scope: TraceScope[F]
 ) extends Tracer[F] {
 
-  private val simple = SpanBuilderImpl.Runner.span
+  private val runner: SpanRunner[F, Span[F]] = SpanRunner.span(scope)
 
   val meta: Tracer.Meta[F] =
     Tracer.Meta.enabled
@@ -46,7 +46,7 @@ private[java] class TracerImpl[F[_]: Sync](
     }
 
   def spanBuilder(name: String): SpanBuilder.Aux[F, Span[F]] =
-    new SpanBuilderImpl[F, Span[F]](jTracer, name, scope, simple)
+    new SpanBuilderImpl[F, Span[F]](jTracer, name, scope, runner)
 
   def childScope[A](parent: SpanContext)(fa: F[A]): F[A] =
     scope

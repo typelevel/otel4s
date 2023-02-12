@@ -16,27 +16,36 @@
 
 package org.typelevel.otel4s
 
-import org.typelevel.vault.Key
+import cats.Functor
+import cats.effect.Sync
+
+import org.typelevel.vault.{Key => VaultKey}
 import org.typelevel.vault.Vault
 
 sealed trait Context[F[_]] {
-  def get[A](key: Key[A]): Option[A]
-  def set[A](key: Key[A], value: A): Context[F]
+  def get[A](key: Context.Key[A]): Option[A]
+  def set[A](key: Context.Key[A], value: A): Context[F]
 }
 
 object Context {
-  type Key[A] = org.typelevel.vault.Key[A]
-  val Key = org.typelevel.vault.Key
+  sealed trait Key[A] {
+    protected[Context] def vaultKey: VaultKey[A]
+  }
 
   def empty[F[_]] =
     fromVault[F](Vault.empty)
 
+  def newKey[F[_]: Sync, A]: F[Key[A]] =
+    Functor[F].map(VaultKey.newKey[F, A])(vk =>
+      new Key[A] { val vaultKey = vk }
+    )
+
   private def fromVault[F[_]](vault: Vault): Context[F] =
     new Context[F] {
       def get[A](key: Key[A]): Option[A] =
-        vault.lookup(key)
+        vault.lookup(key.vaultKey)
       def set[A](key: Key[A], value: A): Context[F] =
-        fromVault(vault.insert(key, value))
+        fromVault(vault.insert(key.vaultKey, value))
     }
 
 }

@@ -190,7 +190,7 @@ object Span {
   }
 
   private[this] val spanKey_ : Context.Key[Any] =
-    Context.Key.newKey[SyncIO, Any].unsafeRunSync()
+    Context.newKey[SyncIO, Any].unsafeRunSync()
   private def spanKey[F[_]]: Context.Key[Span[F]] =
     spanKey_.asInstanceOf[Context.Key[Span[F]]]
 

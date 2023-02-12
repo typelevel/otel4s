@@ -19,14 +19,9 @@ package java
 
 import _root_.java.lang.{Iterable => JIterable}
 import cats.effect.kernel.Async
-import cats.effect.kernel.Sync
 import cats.syntax.either._
 import io.opentelemetry.api.common.{Attributes => JAttributes}
-import io.opentelemetry.context.{Context => JContext}
 import io.opentelemetry.context.propagation.{TextMapGetter => JTextMapGetter}
-import io.opentelemetry.context.propagation.{
-  TextMapPropagator => JTextMapPropagator
-}
 import io.opentelemetry.context.propagation.{TextMapSetter => JTextMapSetter}
 import io.opentelemetry.sdk.common.CompletableResultCode
 
@@ -86,19 +81,6 @@ private[java] object Conversions {
         }
       )
     )
-
-  def fromJTextMapPropagator[F[_]: Sync](
-      jPropagator: JTextMapPropagator
-  ): TextMapPropagator.Aux[F, JContext] =
-    new TextMapPropagator[F] {
-      type Context = JContext
-
-      def extract[A: TextMapGetter](ctx: Context, carrier: A): Context =
-        jPropagator.extract(ctx, carrier, fromTextMapGetter)
-
-      def inject[A: TextMapSetter](ctx: Context, carrier: A): F[Unit] =
-        Sync[F].delay(jPropagator.inject(ctx, carrier, fromTextMapSetter))
-    }
 
   implicit def fromTextMapGetter[A](implicit
       getter: TextMapGetter[A]

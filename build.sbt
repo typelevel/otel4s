@@ -28,6 +28,7 @@ val MUnitVersion = "1.0.0-M7"
 val MUnitCatsEffectVersion = "2.0.0-M3"
 val OpenTelemetryVersion = "1.22.0"
 val ScodecVersion = "1.1.34"
+val VaultVersion = "3.5.0"
 
 lazy val scalaReflectDependency = Def.settings(
   libraryDependencies ++= {
@@ -68,6 +69,7 @@ lazy val `core-common` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
     name := "otel4s-core-common",
     libraryDependencies ++= Seq(
       "org.typelevel" %%% "cats-core" % CatsVersion,
+      "org.typelevel" %%% "vault" % VaultVersion,
       "org.scalameta" %%% "munit" % MUnitVersion % Test
     )
   )

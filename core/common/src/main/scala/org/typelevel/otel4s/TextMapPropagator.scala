@@ -17,26 +17,21 @@
 package org.typelevel.otel4s
 
 import cats.Applicative
+import org.typelevel.vault.Vault
 
 trait TextMapPropagator[F[_]] {
-  type Context
+  def extract[A: TextMapGetter](ctx: Vault, carrier: A): Vault
 
-  def extract[A: TextMapGetter](ctx: Context, carrier: A): Context
-
-  def inject[A: TextMapSetter](ctx: Context, carrier: A): F[Unit]
+  def inject[A: TextMapSetter](ctx: Vault, carrier: A): F[Unit]
 }
 
 object TextMapPropagator {
-  type Aux[F[_], C] = TextMapPropagator[F] { type Context = C }
-
-  def noop[F[_]: Applicative, C]: TextMapPropagator.Aux[F, C] =
+  def noop[F[_]: Applicative, C]: TextMapPropagator[F] =
     new TextMapPropagator[F] {
-      type Context = C
-
-      def extract[A: TextMapGetter](ctx: Context, carrier: A): Context =
+      def extract[A: TextMapGetter](ctx: Vault, carrier: A): Vault =
         ctx
 
-      def inject[A: TextMapSetter](ctx: Context, carrier: A): F[Unit] =
+      def inject[A: TextMapSetter](ctx: Vault, carrier: A): F[Unit] =
         Applicative[F].unit
     }
 }

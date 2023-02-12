@@ -18,7 +18,10 @@ package org.typelevel.otel4s
 package trace
 
 import cats.Applicative
+import cats.effect.SyncIO
 import org.typelevel.otel4s.meta.InstrumentMeta
+import org.typelevel.vault.Key
+import org.typelevel.vault.Vault
 
 import scala.concurrent.duration.FiniteDuration
 
@@ -92,6 +95,9 @@ trait Span[F[_]] extends SpanMacro[F] {
     */
   final def end(timestamp: FiniteDuration): F[Unit] =
     backend.end(timestamp)
+
+  final def storeInContext(context: Vault): Vault =
+    context.insert(Span.spanKey[F], this)
 }
 
 object Span {
@@ -185,4 +191,11 @@ object Span {
       }
   }
 
+  private[this] val spanKey_ : Key[Any] =
+    Key.newKey[SyncIO, Any].unsafeRunSync()
+  private def spanKey[F[_]]: Key[Span[F]] =
+    spanKey_.asInstanceOf[Key[Span[F]]]
+
+  def fromContext[F[_]](context: Vault): Option[Span[F]] =
+    context.lookup(spanKey)
 }

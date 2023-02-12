@@ -23,7 +23,7 @@ trait ContextPropagators[F[_]] {
 }
 
 object ContextPropagators {
-  def noop[F[_]: Applicative, C]: ContextPropagators[F] =
+  def noop[F[_]: Applicative]: ContextPropagators[F] =
     new ContextPropagators[F] {
       def textMapPropagator: TextMapPropagator[F] =
         TextMapPropagator.noop

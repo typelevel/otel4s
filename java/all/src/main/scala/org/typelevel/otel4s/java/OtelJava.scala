@@ -23,14 +23,11 @@ import cats.effect.Sync
 import cats.syntax.flatMap._
 import cats.syntax.functor._
 import io.opentelemetry.api.{OpenTelemetry => JOpenTelemetry}
-import io.opentelemetry.context.{Context => JContext}
 import io.opentelemetry.sdk.{OpenTelemetrySdk => JOpenTelemetrySdk}
 import io.opentelemetry.sdk.common.CompletableResultCode
 import org.typelevel.otel4s.ContextPropagators
 import org.typelevel.otel4s.Otel4s
-import org.typelevel.otel4s.TextMapPropagator
 import org.typelevel.otel4s.java.Conversions.asyncFromCompletableResultCode
-import org.typelevel.otel4s.java.Conversions.fromJTextMapPropagator
 import org.typelevel.otel4s.java.metrics.Metrics
 import org.typelevel.otel4s.java.trace.Traces
 import org.typelevel.otel4s.metrics.MeterProvider
@@ -52,18 +49,17 @@ object OtelJava {
     */
   def forSync[F[_]: LiftIO: Sync](
       jOtel: JOpenTelemetry
-  ): F[Otel4s.Aux[F, JContext]] = {
+  ): F[Otel4s[F]] = {
     for {
       metrics <- Sync[F].pure(Metrics.forSync(jOtel))
       traces <- Traces.ioLocal(jOtel)
     } yield new Otel4s[F] {
-      type Context = JContext
-      def propagators: ContextPropagators.Aux[F, JContext] =
-        new ContextPropagators[F] {
-          type Context = JContext
-          def textMapPropagator: TextMapPropagator.Aux[F, JContext] =
-            fromJTextMapPropagator[F](jOtel.getPropagators.getTextMapPropagator)
-        }
+      def propagators: ContextPropagators[F] =
+        new ContextPropagatorsImpl[F](
+          jOtel.getPropagators,
+          ContextConversions.toJContext,
+          ContextConversions.fromJContext[F]
+        )
       def meterProvider: MeterProvider[F] = metrics.meterProvider
       def tracerProvider: TracerProvider[F] = traces.tracerProvider
     }
@@ -79,7 +75,7 @@ object OtelJava {
     */
   def resource[F[_]: LiftIO: Async](
       acquire: F[JOpenTelemetrySdk]
-  ): Resource[F, Otel4s.Aux[F, JContext]] =
+  ): Resource[F, Otel4s[F]] =
     Resource
       .make(acquire)(sdk =>
         asyncFromCompletableResultCode(

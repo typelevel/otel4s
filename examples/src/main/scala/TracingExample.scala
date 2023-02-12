@@ -21,11 +21,12 @@ import cats.effect.Resource
 import cats.effect.std.Console
 import cats.syntax.all._
 import io.opentelemetry.api.GlobalOpenTelemetry
-import io.opentelemetry.context.Context
 import org.typelevel.otel4s.Otel4s
 import org.typelevel.otel4s.TextMapPropagator
 import org.typelevel.otel4s.java.OtelJava
+import org.typelevel.otel4s.trace.Span
 import org.typelevel.otel4s.trace.Tracer
+import org.typelevel.vault.Vault
 
 import scala.concurrent.duration._
 
@@ -34,16 +35,19 @@ trait Work[F[_]] {
 }
 
 object Work {
-  def apply[F[_]: Monad: Tracer: TextMapPropagator.Aux[*[_], Context]: Console]
-      : Work[F] =
+  def apply[F[_]: Monad: Tracer: TextMapPropagator: Console]: Work[F] =
     new Work[F] {
       def request(headers: Map[String, String]): F[Unit] = {
         Tracer[F].span("Work.DoWork").use { span =>
-          val extracted = implicitly[TextMapPropagator.Aux[F, Context]].extract(
-            Context.root(),
+          val vault = implicitly[TextMapPropagator[F]].extract(
+            Vault.empty,
             headers
           )
-          Console[F].println("Extracted " + extracted) >>
+          Console[F].println(
+            "Extracted " + Span
+              .fromContext(vault)
+              .map((span: Span[F]) => span.context.spanIdHex)
+          ) >>
             span.addEvent("Starting the work.") *>
             doWorkInternal *>
             span.addEvent("Finished working.")
@@ -60,14 +64,14 @@ object Work {
 }
 
 object TracingExample extends IOApp.Simple {
-  def globalOtel4s: Resource[IO, Otel4s.Aux[IO, Context]] =
+  def globalOtel4s: Resource[IO, Otel4s[IO]] =
     Resource
       .eval(IO(GlobalOpenTelemetry.get))
       .evalMap(OtelJava.forSync[IO])
 
   def run: IO[Unit] = {
-    globalOtel4s.use { otel4s: Otel4s.Aux[IO, Context] =>
-      implicit val textMapProp: TextMapPropagator.Aux[IO, Context] =
+    globalOtel4s.use { otel4s: Otel4s[IO] =>
+      implicit val textMapProp: TextMapPropagator[IO] =
         otel4s.propagators.textMapPropagator
       otel4s.tracerProvider.tracer("example").get.flatMap {
         implicit tracer: Tracer[IO] =>

@@ -15,17 +15,24 @@
  */
 
 package org.typelevel.otel4s
+package java
 
-import cats.Applicative
-
-trait ContextPropagators[F[_]] {
-  def textMapPropagator: TextMapPropagator[F]
+import cats.effect.kernel.Sync
+import io.opentelemetry.context.{Context => JContext}
+import io.opentelemetry.context.propagation.{
+  ContextPropagators => JContextPropagators
 }
+import org.typelevel.vault.Vault
 
-object ContextPropagators {
-  def noop[F[_]: Applicative, C]: ContextPropagators[F] =
-    new ContextPropagators[F] {
-      def textMapPropagator: TextMapPropagator[F] =
-        TextMapPropagator.noop
-    }
+private[java] class ContextPropagatorsImpl[F[_]: Sync](
+    propagators: JContextPropagators,
+    toJContext: Vault => JContext,
+    fromJContext: JContext => Vault
+) extends ContextPropagators[F] {
+  val textMapPropagator: TextMapPropagator[F] =
+    new TextMapPropagatorImpl(
+      propagators.getTextMapPropagator,
+      toJContext,
+      fromJContext
+    )
 }

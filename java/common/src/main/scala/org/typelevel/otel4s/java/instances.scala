@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.typelevel.otel4s.java.trace
+package org.typelevel.otel4s.java
 
 import cats.Applicative
 import cats.Functor
@@ -23,7 +23,7 @@ import cats.effect.LiftIO
 import cats.effect.MonadCancelThrow
 import cats.mtl.Local
 
-private[trace] object instances {
+private[java] object instances {
   // We hope this instance is moved into Cats Effect.
   implicit def localForIoLocal[F[_]: MonadCancelThrow: LiftIO, E](implicit
       ioLocal: IOLocal[E]

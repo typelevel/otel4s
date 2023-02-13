@@ -20,6 +20,7 @@ import cats.mtl.Local
 import cats.~>
 import io.opentelemetry.api.trace.{Span => JSpan}
 import io.opentelemetry.context.{Context => JContext}
+import org.typelevel.vault.Vault
 
 private[java] trait TraceScope[F[_]] {
   def root: F[Scope.Root]
@@ -31,17 +32,15 @@ private[java] trait TraceScope[F[_]] {
 
 private[java] object TraceScope {
 
-  def fromLocal[F[_]](
-      default: JContext
-  )(implicit L: Local[F, Scope]): TraceScope[F] = {
-    val scopeRoot = Scope.Root(default)
+  def fromLocal[F[_]](implicit L: Local[F, Vault]): TraceScope[F] = {
+    val scopeRoot = Scope.Root(JContext.root())
 
     new TraceScope[F] {
       val root: F[Scope.Root] =
         L.applicative.pure(scopeRoot)
 
       def current: F[Scope] =
-        L.ask[Scope]
+        L.applicative.map(L.ask[Vault])(Scope.fromContext)
 
       def makeScope(span: JSpan): F[F ~> F] =
         L.applicative.map(current)(scope => createScope(nextScope(scope, span)))
@@ -64,7 +63,7 @@ private[java] object TraceScope {
       private def createScope(scope: Scope): F ~> F =
         new (F ~> F) {
           def apply[A](fa: F[A]): F[A] =
-            L.scope(fa)(scope)
+            L.local(fa)(scope.storeInContext)
         }
 
       private def nextScope(scope: Scope, span: JSpan): Scope =

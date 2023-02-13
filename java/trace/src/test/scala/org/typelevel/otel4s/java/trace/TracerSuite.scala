@@ -39,6 +39,7 @@ import org.typelevel.otel4s.java.trace.instances._
 import org.typelevel.otel4s.trace.Span
 import org.typelevel.otel4s.trace.Tracer
 import org.typelevel.otel4s.trace.TracerProvider
+import org.typelevel.vault.Vault
 
 import java.time.Instant
 import scala.concurrent.duration._
@@ -594,7 +595,7 @@ class TracerSuite extends CatsEffectSuite {
     val tracerProvider: SdkTracerProvider =
       customize(builder).build()
 
-    IOLocal(Scope.root).map { implicit ioLocal =>
+    IOLocal(Vault.empty).map { implicit ioLocal: IOLocal[Vault] =>
       val provider = TracerProviderImpl.local[IO](tracerProvider)
       new TracerSuite.Sdk(provider, exporter)
     }

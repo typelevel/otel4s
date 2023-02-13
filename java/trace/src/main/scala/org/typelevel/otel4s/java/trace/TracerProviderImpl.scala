@@ -19,9 +19,9 @@ package org.typelevel.otel4s.java.trace
 import cats.effect.Sync
 import cats.mtl.Local
 import io.opentelemetry.api.trace.{TracerProvider => JTracerProvider}
-import io.opentelemetry.context.{Context => JContext}
 import org.typelevel.otel4s.trace.TracerBuilder
 import org.typelevel.otel4s.trace.TracerProvider
+import org.typelevel.vault.Vault
 
 private[java] class TracerProviderImpl[F[_]: Sync](
     jTracerProvider: JTracerProvider,
@@ -34,10 +34,9 @@ private[java] class TracerProviderImpl[F[_]: Sync](
 private[java] object TracerProviderImpl {
 
   def local[F[_]](
-      jTracerProvider: JTracerProvider,
-      default: JContext = JContext.root()
-  )(implicit F: Sync[F], L: Local[F, Scope]): TracerProvider[F] = {
-    val traceScope = TraceScope.fromLocal[F](default)
+      jTracerProvider: JTracerProvider
+  )(implicit F: Sync[F], L: Local[F, Vault]): TracerProvider[F] = {
+    val traceScope = TraceScope.fromLocal[F]
     new TracerProviderImpl(jTracerProvider, traceScope)
   }
 

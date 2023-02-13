@@ -19,9 +19,9 @@ package org.typelevel.otel4s.java.trace
 import cats.effect.SyncIO
 import io.opentelemetry.api.trace.{Span => JSpan}
 import io.opentelemetry.context.{Context => JContext}
+import org.typelevel.otel4s.trace.SpanContext
 import org.typelevel.vault.Key
 import org.typelevel.vault.Vault
-import org.typelevel.otel4s.trace.SpanContext
 
 private[trace] sealed trait Scope {
   def storeInContext(context: Vault): Vault =

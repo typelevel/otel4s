@@ -116,7 +116,7 @@ private[java] final case class SpanBuilderImpl[F[_]: Sync, Res <: Span[F]](
       start.use_
 
     def surround[A](fa: F[A]): F[A] =
-      start.surround(fa)
+      use(_ => fa)
   }
 
   /*  private def start: Resource[F, (Span[F], F ~> F)] =

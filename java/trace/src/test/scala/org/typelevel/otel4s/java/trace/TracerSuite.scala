@@ -388,7 +388,7 @@ class TracerSuite extends CatsEffectSuite {
     }
   }
 
-  test("trace resource") {
+  test("trace resource with use") {
     val attribute = Attribute("string-attribute", "value")
 
     val acquireInnerDuration = 25.millis
@@ -467,6 +467,116 @@ class TracerSuite extends CatsEffectSuite {
         spans <- sdk.finishedSpans
         tree <- IO.pure(SpanNode.fromSpans(spans))
         // _ <- IO.println(tree.map(SpanNode.render).mkString("\n"))
+      } yield assertEquals(tree, List(expected(now)))
+    }
+  }
+
+  test("trace resource with surround") {
+    val acquireDuration = 25.millis
+    val bodyDuration = 100.millis
+    val releaseDuration = 300.millis
+
+    def mkRes: Resource[IO, Unit] =
+      Resource.make(IO.sleep(acquireDuration))(_ => IO.sleep(releaseDuration))
+
+    def expected(start: FiniteDuration) = {
+      val acquireEnd = start + acquireDuration
+      val (bodyStart, bodyEnd) = (acquireEnd, acquireEnd + bodyDuration)
+      val end = bodyEnd + releaseDuration
+
+      SpanNode(
+        "resource-span",
+        start,
+        end,
+        List(
+          SpanNode(
+            "acquire",
+            start,
+            acquireEnd,
+            Nil
+          ),
+          SpanNode(
+            "use",
+            bodyStart,
+            bodyEnd,
+            List(
+              SpanNode("body", bodyStart, bodyEnd, Nil)
+            )
+          ),
+          SpanNode(
+            "release",
+            bodyEnd,
+            end,
+            Nil
+          )
+        )
+      )
+    }
+
+    TestControl.executeEmbed {
+      for {
+        now <- IO.monotonic.delayBy(1.second) // otherwise returns 0
+        sdk <- makeSdk()
+        tracer <- sdk.provider.tracer("tracer").get
+        _ <- tracer
+          .resourceSpan("resource-span")(mkRes)
+          .surround(
+            tracer.span("body").surround(IO.sleep(100.millis))
+          )
+        spans <- sdk.finishedSpans
+        tree <- IO.pure(SpanNode.fromSpans(spans))
+      } yield assertEquals(tree, List(expected(now)))
+    }
+  }
+
+  test("trace resource with use_") {
+    val acquireDuration = 25.millis
+    val releaseDuration = 300.millis
+
+    def mkRes: Resource[IO, Unit] =
+      Resource.make(IO.sleep(acquireDuration))(_ => IO.sleep(releaseDuration))
+
+    def expected(start: FiniteDuration) = {
+      val acquireEnd = start + acquireDuration
+      val end = acquireEnd + releaseDuration
+
+      SpanNode(
+        "resource-span",
+        start,
+        end,
+        List(
+          SpanNode(
+            "acquire",
+            start,
+            acquireEnd,
+            Nil
+          ),
+          SpanNode(
+            "use",
+            acquireEnd,
+            acquireEnd,
+            Nil
+          ),
+          SpanNode(
+            "release",
+            acquireEnd,
+            end,
+            Nil
+          )
+        )
+      )
+    }
+
+    TestControl.executeEmbed {
+      for {
+        now <- IO.monotonic.delayBy(1.second) // otherwise returns 0
+        sdk <- makeSdk()
+        tracer <- sdk.provider.tracer("tracer").get
+        _ <- tracer
+          .resourceSpan("resource-span")(mkRes)
+          .use_
+        spans <- sdk.finishedSpans
+        tree <- IO.pure(SpanNode.fromSpans(spans))
       } yield assertEquals(tree, List(expected(now)))
     }
   }

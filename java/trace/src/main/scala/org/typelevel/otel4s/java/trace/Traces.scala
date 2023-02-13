@@ -21,7 +21,7 @@ import cats.effect.LiftIO
 import cats.effect.Sync
 import cats.mtl.Local
 import io.opentelemetry.api.{OpenTelemetry => JOpenTelemetry}
-import org.typelevel.otel4s.java.trace.instances._
+import org.typelevel.otel4s.java.instances._
 import org.typelevel.otel4s.trace.TracerProvider
 import org.typelevel.vault.Vault
 

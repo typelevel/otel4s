@@ -25,6 +25,9 @@ trait SpanOps[F[_]] {
     * This strategy can be used when it's necessary to end a span outside of the
     * scope (e.g. async callback). Make sure the span is ended properly.
     *
+    * If the start timestamp is not configured explicitly in a builder, the
+    * `Clock[F].realTime` is used to determine the timestamp.
+    *
     * Leaked span:
     * {{{
     * val tracer: Tracer[F] = ???
@@ -55,9 +58,13 @@ trait SpanOps[F[_]] {
     * The finalization strategy is determined by [[SpanFinalizer.Strategy]]. By
     * default, the abnormal termination (error, cancelation) is recorded.
     *
+    * If the start timestamp is not configured explicitly in a builder, the
+    * `Clock[F].realTime` is used to determine the timestamp.
+    *
+    * `Clock[F].realTime` is always used as the end timestamp.
+    *
     * @see
     *   default finalization strategy [[SpanFinalizer.Strategy.reportAbnormal]]
-    *
     * @example
     *   {{{
     * val tracer: Tracer[F] = ???
@@ -69,8 +76,33 @@ trait SpanOps[F[_]] {
     */
   def use[A](f: Result => F[A]): F[A]
 
+  /** Starts a span and ends it immediately.
+    *
+    * A shortcut for:
+    * {{{
+    * val tracer: Tracer[F] = ???
+    * val ops: SpanOps.Aux[F, Span[F]] = tracer.spanBuilder("auto-span").build
+    * ops.use(_ => F.unit) <-> ops.use_
+    * }}}
+    *
+    * @see
+    *   See [[use]] for more details regarding lifecycle strategy
+    */
   def use_ : F[Unit]
 
+  /** Starts a span, runs `fa` and ends the span once `fa` terminates, fails or
+    * gets interrupted.
+    *
+    * A shortcut for:
+    * {{{
+    * val tracer: Tracer[F] = ???
+    * val ops: SpanOps.Aux[F, Span[F]] = tracer.spanBuilder("auto-span").build
+    * ops.use(_ => fa) <-> ops.surround(fa)
+    * }}}
+    *
+    * @see
+    *   See [[use]] for more details regarding lifecycle strategy
+    */
   def surround[A](fa: F[A]): F[A]
 }
 

@@ -1,4 +1,6 @@
-ThisBuild / tlBaseVersion := "0.1"
+import com.typesafe.tools.mima.core._
+
+ThisBuild / tlBaseVersion := "0.2"
 
 ThisBuild / organization := "org.typelevel"
 ThisBuild / organizationName := "Typelevel"
@@ -179,6 +181,26 @@ lazy val `java-trace` = project
       "io.opentelemetry" % "opentelemetry-sdk-testing" % OpenTelemetryVersion % Test,
       "org.typelevel" %%% "cats-effect-testkit" % CatsEffectVersion % Test,
       "co.fs2" %% "fs2-core" % FS2Version % Test
+    ),
+    mimaBinaryIssueFilters ++= Seq(
+      ProblemFilters.exclude[MissingClassProblem](
+        "org.typelevel.otel4s.java.trace.SpanBuilderImpl$Runner"
+      ),
+      ProblemFilters.exclude[MissingClassProblem](
+        "org.typelevel.otel4s.java.trace.SpanBuilderImpl$Runner$"
+      ),
+      ProblemFilters.exclude[MissingClassProblem](
+        "org.typelevel.otel4s.java.trace.SpanBuilderImpl$TimestampSelect"
+      ),
+      ProblemFilters.exclude[MissingClassProblem](
+        "org.typelevel.otel4s.java.trace.SpanBuilderImpl$TimestampSelect$"
+      ),
+      ProblemFilters.exclude[MissingClassProblem](
+        "org.typelevel.otel4s.java.trace.SpanBuilderImpl$TimestampSelect$Delegate$"
+      ),
+      ProblemFilters.exclude[MissingClassProblem](
+        "org.typelevel.otel4s.java.trace.SpanBuilderImpl$TimestampSelect$Explicit$"
+      )
     )
   )
 

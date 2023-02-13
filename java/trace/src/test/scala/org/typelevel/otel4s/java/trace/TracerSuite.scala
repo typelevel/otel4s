@@ -529,6 +529,58 @@ class TracerSuite extends CatsEffectSuite {
     }
   }
 
+  test("trace resource with use_") {
+    val acquireDuration = 25.millis
+    val releaseDuration = 300.millis
+
+    def mkRes: Resource[IO, Unit] =
+      Resource.make(IO.sleep(acquireDuration))(_ => IO.sleep(releaseDuration))
+
+    def expected(start: FiniteDuration) = {
+      val acquireEnd = start + acquireDuration
+      val end = acquireEnd + releaseDuration
+
+      SpanNode(
+        "resource-span",
+        start,
+        end,
+        List(
+          SpanNode(
+            "acquire",
+            start,
+            acquireEnd,
+            Nil
+          ),
+          SpanNode(
+            "use",
+            acquireEnd,
+            acquireEnd,
+            Nil
+          ),
+          SpanNode(
+            "release",
+            acquireEnd,
+            end,
+            Nil
+          )
+        )
+      )
+    }
+
+    TestControl.executeEmbed {
+      for {
+        now <- IO.monotonic.delayBy(1.second) // otherwise returns 0
+        sdk <- makeSdk()
+        tracer <- sdk.provider.tracer("tracer").get
+        _ <- tracer
+          .resourceSpan("resource-span")(mkRes)
+          .use_
+        spans <- sdk.finishedSpans
+        tree <- IO.pure(SpanNode.fromSpans(spans))
+      } yield assertEquals(tree, List(expected(now)))
+    }
+  }
+
   /*
   test("propagate trace info over stream scopes") {
     def expected(now: FiniteDuration) =

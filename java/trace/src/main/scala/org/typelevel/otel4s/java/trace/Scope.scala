@@ -16,13 +16,19 @@
 
 package org.typelevel.otel4s.java.trace
 
+import cats.effect.SyncIO
 import io.opentelemetry.api.trace.{Span => JSpan}
 import io.opentelemetry.context.{Context => JContext}
+import org.typelevel.vault.Key
+import org.typelevel.vault.Vault
 import org.typelevel.otel4s.trace.SpanContext
 
-sealed trait Scope
+private[trace] sealed trait Scope {
+  def storeInContext(context: Vault): Vault =
+    context.insert(Scope.scopeKey, this)
+}
 
-object Scope {
+private[trace] object Scope {
   val root: Scope = Root(JContext.root)
 
   private[trace] final case class Root(ctx: JContext) extends Scope
@@ -32,4 +38,10 @@ object Scope {
       spanContext: SpanContext
   ) extends Scope
   private[trace] case object Noop extends Scope
+
+  private val scopeKey =
+    Key.newKey[SyncIO, Scope].unsafeRunSync()
+
+  def fromContext(context: Vault): Scope =
+    context.lookup(scopeKey).getOrElse(root)
 }

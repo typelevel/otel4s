@@ -21,9 +21,9 @@ import cats.effect.Resource
 import cats.effect.Sync
 import cats.mtl.Local
 import io.opentelemetry.api.GlobalOpenTelemetry
-import org.typelevel.otel4s.java.trace.Scope
 import org.typelevel.otel4s.java.trace.Traces
 import org.typelevel.otel4s.trace.Tracer
+import org.typelevel.vault.Vault
 
 object KleisliExample extends IOApp.Simple {
   def work[F[_]: Sync: Tracer] =
@@ -31,7 +31,7 @@ object KleisliExample extends IOApp.Simple {
 
   def tracerResource[F[_]](implicit
       F: Sync[F],
-      L: Local[F, Scope]
+      L: Local[F, Vault]
   ): Resource[F, Tracer[F]] =
     Resource
       .eval(Sync[F].delay(GlobalOpenTelemetry.get))
@@ -39,9 +39,9 @@ object KleisliExample extends IOApp.Simple {
       .evalMap(_.tracerProvider.get("kleisli-example"))
 
   def run: IO[Unit] =
-    tracerResource[Kleisli[IO, Scope, *]]
-      .use { implicit tracer: Tracer[Kleisli[IO, Scope, *]] =>
-        work[Kleisli[IO, Scope, *]]
+    tracerResource[Kleisli[IO, Vault, *]]
+      .use { implicit tracer: Tracer[Kleisli[IO, Vault, *]] =>
+        work[Kleisli[IO, Vault, *]]
       }
-      .run(Scope.root)
+      .run(Vault.empty)
 }

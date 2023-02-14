@@ -63,7 +63,7 @@ object OtelJava {
         new ContextPropagatorsImpl[F](
           jOtel.getPropagators,
           ContextConversions.toJContext,
-          ContextConversions.fromJContext[F]
+          ContextConversions.fromJContext
         )
       def meterProvider: MeterProvider[F] = metrics.meterProvider
       def tracerProvider: TracerProvider[F] = traces.tracerProvider

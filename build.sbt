@@ -1,4 +1,6 @@
-ThisBuild / tlBaseVersion := "0.1"
+import com.typesafe.tools.mima.core._
+
+ThisBuild / tlBaseVersion := "0.2"
 
 ThisBuild / organization := "org.typelevel"
 ThisBuild / organizationName := "Typelevel"
@@ -18,15 +20,15 @@ ThisBuild / tlSitePublishBranch := Some("main")
 ThisBuild / scalafixDependencies += "com.github.liancheng" %% "organize-imports" % "0.6.0"
 
 val Scala213 = "2.13.10"
-ThisBuild / crossScalaVersions := Seq(Scala213, "3.2.1")
+ThisBuild / crossScalaVersions := Seq(Scala213, "3.2.2")
 ThisBuild / scalaVersion := Scala213 // the default Scala
 
 val CatsVersion = "2.9.0"
 val CatsEffectVersion = "3.4.5"
-val FS2Version = "3.5.0"
+val FS2Version = "3.6.1"
 val MUnitVersion = "1.0.0-M7"
 val MUnitCatsEffectVersion = "2.0.0-M3"
-val OpenTelemetryVersion = "1.22.0"
+val OpenTelemetryVersion = "1.23.0"
 val ScodecVersion = "1.1.34"
 val VaultVersion = "3.5.0"
 
@@ -181,6 +183,26 @@ lazy val `java-trace` = project
       "io.opentelemetry" % "opentelemetry-sdk-testing" % OpenTelemetryVersion % Test,
       "org.typelevel" %%% "cats-effect-testkit" % CatsEffectVersion % Test,
       "co.fs2" %% "fs2-core" % FS2Version % Test
+    ),
+    mimaBinaryIssueFilters ++= Seq(
+      ProblemFilters.exclude[MissingClassProblem](
+        "org.typelevel.otel4s.java.trace.SpanBuilderImpl$Runner"
+      ),
+      ProblemFilters.exclude[MissingClassProblem](
+        "org.typelevel.otel4s.java.trace.SpanBuilderImpl$Runner$"
+      ),
+      ProblemFilters.exclude[MissingClassProblem](
+        "org.typelevel.otel4s.java.trace.SpanBuilderImpl$TimestampSelect"
+      ),
+      ProblemFilters.exclude[MissingClassProblem](
+        "org.typelevel.otel4s.java.trace.SpanBuilderImpl$TimestampSelect$"
+      ),
+      ProblemFilters.exclude[MissingClassProblem](
+        "org.typelevel.otel4s.java.trace.SpanBuilderImpl$TimestampSelect$Delegate$"
+      ),
+      ProblemFilters.exclude[MissingClassProblem](
+        "org.typelevel.otel4s.java.trace.SpanBuilderImpl$TimestampSelect$Explicit$"
+      )
     )
   )
 

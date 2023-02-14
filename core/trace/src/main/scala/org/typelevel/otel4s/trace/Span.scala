@@ -76,6 +76,8 @@ trait Span[F[_]] extends SpanMacro[F] {
     *
     * Only the timing of the first end call for a given span will be recorded,
     * the subsequent calls will be ignored.
+    *
+    * The end timestamp is based on the `Clock[F].realTime`.
     */
   final def end: F[Unit] =
     backend.end

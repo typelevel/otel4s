@@ -24,7 +24,6 @@ import cats.syntax.flatMap._
 import cats.syntax.functor._
 import io.opentelemetry.api.{OpenTelemetry => JOpenTelemetry}
 import io.opentelemetry.sdk.{OpenTelemetrySdk => JOpenTelemetrySdk}
-import io.opentelemetry.sdk.common.CompletableResultCode
 import org.typelevel.otel4s.ContextPropagators
 import org.typelevel.otel4s.Otel4s
 import org.typelevel.otel4s.java.Conversions.asyncFromCompletableResultCode
@@ -32,8 +31,6 @@ import org.typelevel.otel4s.java.metrics.Metrics
 import org.typelevel.otel4s.java.trace.Traces
 import org.typelevel.otel4s.metrics.MeterProvider
 import org.typelevel.otel4s.trace.TracerProvider
-
-import scala.jdk.CollectionConverters._
 
 object OtelJava {
 
@@ -78,19 +75,7 @@ object OtelJava {
   ): Resource[F, Otel4s[F]] =
     Resource
       .make(acquire)(sdk =>
-        asyncFromCompletableResultCode(
-          Sync[F].delay(
-            // The answer could have been traverse...
-            // A proper shutdown will be in the next opentelemetry-java release.
-            CompletableResultCode.ofAll(
-              List(
-                sdk.getSdkTracerProvider.shutdown(),
-                sdk.getSdkMeterProvider.shutdown(),
-                sdk.getSdkLoggerProvider.shutdown()
-              ).asJava
-            )
-          )
-        )
+        asyncFromCompletableResultCode(Sync[F].delay(sdk.shutdown()))
       )
       .evalMap(forSync[F])
 }

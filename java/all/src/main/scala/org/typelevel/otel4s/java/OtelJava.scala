@@ -17,22 +17,21 @@
 package org.typelevel.otel4s.java
 
 import cats.effect.Async
+import cats.effect.IOLocal
 import cats.effect.LiftIO
 import cats.effect.Resource
 import cats.effect.Sync
-import cats.syntax.flatMap._
-import cats.syntax.functor._
+import cats.mtl.Local
 import io.opentelemetry.api.{OpenTelemetry => JOpenTelemetry}
 import io.opentelemetry.sdk.{OpenTelemetrySdk => JOpenTelemetrySdk}
-import io.opentelemetry.sdk.common.CompletableResultCode
 import org.typelevel.otel4s.Otel4s
 import org.typelevel.otel4s.java.Conversions.asyncFromCompletableResultCode
+import org.typelevel.otel4s.java.instances._
 import org.typelevel.otel4s.java.metrics.Metrics
 import org.typelevel.otel4s.java.trace.Traces
 import org.typelevel.otel4s.metrics.MeterProvider
 import org.typelevel.otel4s.trace.TracerProvider
-
-import scala.jdk.CollectionConverters._
+import org.typelevel.vault.Vault
 
 object OtelJava {
 
@@ -46,11 +45,19 @@ object OtelJava {
     * @return
     *   An effect of an [[org.typelevel.otel4s.Otel4s]] resource.
     */
-  def forSync[F[_]: LiftIO: Sync](jOtel: JOpenTelemetry): F[Otel4s[F]] = {
-    for {
-      metrics <- Sync[F].pure(Metrics.forSync(jOtel))
-      traces <- Traces.ioLocal(jOtel)
-    } yield new Otel4s[F] {
+  def forSync[F[_]: LiftIO: Sync](jOtel: JOpenTelemetry): F[Otel4s[F]] =
+    IOLocal(Vault.empty)
+      .map { implicit ioLocal: IOLocal[Vault] =>
+        local[F](jOtel)
+      }
+      .to[F]
+
+  def local[F[_]](
+      jOtel: JOpenTelemetry
+  )(implicit F: Sync[F], L: Local[F, Vault]): Otel4s[F] = {
+    val metrics = Metrics.forSync(jOtel)
+    val traces = Traces.local(jOtel)
+    new Otel4s[F] {
       def meterProvider: MeterProvider[F] = metrics.meterProvider
       def tracerProvider: TracerProvider[F] = traces.tracerProvider
     }
@@ -69,19 +76,7 @@ object OtelJava {
   ): Resource[F, Otel4s[F]] =
     Resource
       .make(acquire)(sdk =>
-        asyncFromCompletableResultCode(
-          Sync[F].delay(
-            // The answer could have been traverse...
-            // A proper shutdown will be in the next opentelemetry-java release.
-            CompletableResultCode.ofAll(
-              List(
-                sdk.getSdkTracerProvider.shutdown(),
-                sdk.getSdkMeterProvider.shutdown(),
-                sdk.getSdkLoggerProvider.shutdown()
-              ).asJava
-            )
-          )
-        )
+        asyncFromCompletableResultCode(Sync[F].delay(sdk.shutdown()))
       )
       .evalMap(forSync[F])
 }

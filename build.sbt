@@ -20,16 +20,18 @@ ThisBuild / tlSitePublishBranch := Some("main")
 ThisBuild / scalafixDependencies += "com.github.liancheng" %% "organize-imports" % "0.6.0"
 
 val Scala213 = "2.13.10"
-ThisBuild / crossScalaVersions := Seq(Scala213, "3.2.1")
+ThisBuild / crossScalaVersions := Seq(Scala213, "3.2.2")
 ThisBuild / scalaVersion := Scala213 // the default Scala
 
 val CatsVersion = "2.9.0"
 val CatsEffectVersion = "3.4.5"
-val FS2Version = "3.5.0"
+val CatsMtlVersion = "1.3.0"
+val FS2Version = "3.6.1"
 val MUnitVersion = "1.0.0-M7"
 val MUnitCatsEffectVersion = "2.0.0-M3"
-val OpenTelemetryVersion = "1.22.0"
+val OpenTelemetryVersion = "1.23.0"
 val ScodecVersion = "1.1.34"
+val VaultVersion = "3.5.0"
 
 lazy val scalaReflectDependency = Def.settings(
   libraryDependencies ++= {
@@ -70,6 +72,7 @@ lazy val `core-common` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
     name := "otel4s-core-common",
     libraryDependencies ++= Seq(
       "org.typelevel" %%% "cats-core" % CatsVersion,
+      "org.typelevel" %%% "vault" % VaultVersion,
       "org.scalameta" %%% "munit" % MUnitVersion % Test
     )
   )
@@ -149,6 +152,7 @@ lazy val `java-common` = project
     name := "otel4s-java-common",
     libraryDependencies ++= Seq(
       "org.typelevel" %%% "cats-effect-kernel" % CatsEffectVersion,
+      "org.typelevel" %%% "cats-mtl" % CatsMtlVersion,
       "io.opentelemetry" % "opentelemetry-sdk" % OpenTelemetryVersion,
       "org.scalameta" %%% "munit" % MUnitVersion % Test
     ),

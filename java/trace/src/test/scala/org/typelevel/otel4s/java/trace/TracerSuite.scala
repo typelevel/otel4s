@@ -17,6 +17,7 @@
 package org.typelevel.otel4s.java.trace
 
 import cats.effect.IO
+import cats.effect.IOLocal
 import cats.effect.Resource
 import cats.effect.testkit.TestControl
 import io.opentelemetry.api.common.{AttributeKey => JAttributeKey}
@@ -34,9 +35,11 @@ import io.opentelemetry.sdk.trace.`export`.SimpleSpanProcessor
 import io.opentelemetry.sdk.trace.internal.data.ExceptionEventData
 import munit.CatsEffectSuite
 import org.typelevel.otel4s.Attribute
+import org.typelevel.otel4s.java.instances._
 import org.typelevel.otel4s.trace.Span
 import org.typelevel.otel4s.trace.Tracer
 import org.typelevel.otel4s.trace.TracerProvider
+import org.typelevel.vault.Vault
 
 import java.time.Instant
 import scala.concurrent.duration._
@@ -702,9 +705,10 @@ class TracerSuite extends CatsEffectSuite {
     val tracerProvider: SdkTracerProvider =
       customize(builder).build()
 
-    for {
-      provider <- TracerProviderImpl.ioLocal[IO](tracerProvider)
-    } yield new TracerSuite.Sdk(provider, exporter)
+    IOLocal(Vault.empty).map { implicit ioLocal: IOLocal[Vault] =>
+      val provider = TracerProviderImpl.local[IO](tracerProvider)
+      new TracerSuite.Sdk(provider, exporter)
+    }
   }
 
 }

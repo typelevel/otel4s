@@ -16,18 +16,13 @@
 
 package org.typelevel.otel4s.java.trace
 
-import cats.Applicative
-import cats.effect.IOLocal
-import cats.effect.LiftIO
-import cats.effect.MonadCancelThrow
-import cats.syntax.functor._
+import cats.mtl.Local
 import cats.~>
 import io.opentelemetry.api.trace.{Span => JSpan}
 import io.opentelemetry.context.{Context => JContext}
-import org.typelevel.otel4s.trace.SpanContext
+import org.typelevel.vault.Vault
 
 private[java] trait TraceScope[F[_]] {
-  import TraceScope.Scope
   def root: F[Scope.Root]
   def current: F[Scope]
   def makeScope(span: JSpan): F[F ~> F]
@@ -37,78 +32,59 @@ private[java] trait TraceScope[F[_]] {
 
 private[java] object TraceScope {
 
-  sealed trait Scope
-  object Scope {
-    final case class Root(ctx: JContext) extends Scope
-    final case class Span(
-        ctx: JContext,
-        span: JSpan,
-        spanContext: SpanContext
-    ) extends Scope
-    case object Noop extends Scope
-  }
+  def fromLocal[F[_]](implicit L: Local[F, Vault]): TraceScope[F] = {
+    val scopeRoot = Scope.Root(JContext.root())
 
-  def fromIOLocal[F[_]: LiftIO: MonadCancelThrow](
-      default: JContext
-  ): F[TraceScope[F]] = {
-    val scopeRoot = Scope.Root(default)
+    new TraceScope[F] {
+      val root: F[Scope.Root] =
+        L.applicative.pure(scopeRoot)
 
-    IOLocal[Scope](scopeRoot).to[F].map { local =>
-      new TraceScope[F] {
-        val root: F[Scope.Root] =
-          Applicative[F].pure(scopeRoot)
+      def current: F[Scope] =
+        L.applicative.map(L.ask[Vault])(Scope.fromContext)
 
-        def current: F[Scope] =
-          local.get.to[F]
+      def makeScope(span: JSpan): F[F ~> F] =
+        L.applicative.map(current)(scope => createScope(nextScope(scope, span)))
 
-        def makeScope(span: JSpan): F[F ~> F] =
-          current.map(scope => createScope(nextScope(scope, span)))
+      def rootScope: F[F ~> F] =
+        L.applicative.map(current) {
+          case Scope.Root(_) =>
+            createScope(scopeRoot)
 
-        def rootScope: F[F ~> F] =
-          current.map {
-            case Scope.Root(_) =>
-              createScope(scopeRoot)
+          case Scope.Span(_, _, _) =>
+            createScope(scopeRoot)
 
-            case Scope.Span(_, _, _) =>
-              createScope(scopeRoot)
+          case Scope.Noop =>
+            createScope(Scope.Noop)
+        }
 
-            case Scope.Noop =>
-              createScope(Scope.Noop)
-          }
+      def noopScope: F ~> F =
+        createScope(Scope.Noop)
 
-        def noopScope: F ~> F =
-          createScope(Scope.Noop)
+      private def createScope(scope: Scope): F ~> F =
+        new (F ~> F) {
+          def apply[A](fa: F[A]): F[A] =
+            L.local(fa)(scope.storeInContext)
+        }
 
-        private def createScope(scope: Scope): F ~> F =
-          new (F ~> F) {
-            def apply[A](fa: F[A]): F[A] =
-              MonadCancelThrow[F].bracket(local.getAndSet(scope).to[F])(
-                Function.const(fa)
-              )(p => local.set(p).to[F])
-          }
+      private def nextScope(scope: Scope, span: JSpan): Scope =
+        scope match {
+          case Scope.Root(ctx) =>
+            Scope.Span(
+              ctx.`with`(span),
+              span,
+              WrappedSpanContext(span.getSpanContext)
+            )
 
-        private def nextScope(scope: Scope, span: JSpan): Scope =
-          scope match {
-            case Scope.Root(ctx) =>
-              Scope.Span(
-                ctx.`with`(span),
-                span,
-                WrappedSpanContext(span.getSpanContext)
-              )
+          case Scope.Span(ctx, _, _) =>
+            Scope.Span(
+              ctx.`with`(span),
+              span,
+              WrappedSpanContext(span.getSpanContext)
+            )
 
-            case Scope.Span(ctx, _, _) =>
-              Scope.Span(
-                ctx.`with`(span),
-                span,
-                WrappedSpanContext(span.getSpanContext)
-              )
-
-            case Scope.Noop =>
-              Scope.Noop
-          }
-
-      }
+          case Scope.Noop =>
+            Scope.Noop
+        }
     }
   }
-
 }

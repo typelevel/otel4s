@@ -38,7 +38,7 @@ private[java] class TracerImpl[F[_]: Sync](
 
   def currentSpanContext: F[Option[SpanContext]] =
     scope.current.map {
-      case TraceScope.Scope.Span(_, _, spanCtx) if spanCtx.isValid =>
+      case Scope.Span(_, _, spanCtx) if spanCtx.isValid =>
         Some(spanCtx)
 
       case _ =>

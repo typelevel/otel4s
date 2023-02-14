@@ -22,11 +22,12 @@ import io.opentelemetry.context.{Context => JContext}
 import io.opentelemetry.context.propagation.{
   ContextPropagators => JContextPropagators
 }
+import org.typelevel.vault.Vault
 
 private[java] class ContextPropagatorsImpl[F[_]: Sync](
     propagators: JContextPropagators,
-    toJContext: Context[F] => JContext,
-    fromJContext: JContext => Context[F]
+    toJContext: Vault => JContext,
+    fromJContext: JContext => Vault
 ) extends ContextPropagators[F] {
   val textMapPropagator: TextMapPropagator[F] =
     new TextMapPropagatorImpl(

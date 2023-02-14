@@ -16,42 +16,42 @@
 
 package org.typelevel.otel4s.java
 
-import cats.effect.Sync
 import io.opentelemetry.api.trace.{Span => JSpan}
 import io.opentelemetry.context.{Context => JContext}
-import org.typelevel.otel4s.java.trace.SpanBackendImpl
+import org.typelevel.otel4s.java.trace.Scope
 import org.typelevel.otel4s.java.trace.WrappedSpanContext
-import org.typelevel.otel4s.trace.Span
 import org.typelevel.vault.Vault
 
 private[otel4s] object ContextConversions {
 
-  def toJContext[F[_]](context: Vault): JContext = {
+  def toJContext(context: Vault): JContext = {
     var jContext = JContext.root()
-    Span.fromContext(context).foreach { (span: Span[F]) =>
-      span.backend match {
-        case impl: SpanBackendImpl[F] =>
-          jContext = impl.jSpan.storeInContext(jContext)
-      }
+    jContext = Scope.fromContext(context) match {
+      case Scope.Root(_) =>
+        jContext
+      case Scope.Span(_, jSpan, _) =>
+        jSpan.storeInContext(jContext)
+      case Scope.Noop =>
+        JSpan.getInvalid.storeInContext(jContext)
     }
     jContext
   }
 
-  def fromJContext[F[_]: Sync](jContext: JContext): Vault = {
+  def fromJContext(jContext: JContext): Vault = {
     var context = Vault.empty
-    JSpan.fromContextOrNull(jContext) match {
+    context = (JSpan.fromContextOrNull(jContext) match {
       case null =>
-        ()
+        Scope.root
       case jSpan =>
-        context = Span
-          .fromBackend(
-            new SpanBackendImpl[F](
-              jSpan,
-              new WrappedSpanContext(jSpan.getSpanContext)
-            )
+        if (jSpan.getSpanContext.isValid)
+          Scope.Span(
+            jContext,
+            jSpan,
+            new WrappedSpanContext(jSpan.getSpanContext)
           )
-          .storeInContext(context)
-    }
+        else
+          Scope.Noop
+    }).storeInContext(context)
     context
   }
 }

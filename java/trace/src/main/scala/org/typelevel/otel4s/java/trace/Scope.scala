@@ -23,21 +23,21 @@ import org.typelevel.otel4s.trace.SpanContext
 import org.typelevel.vault.Key
 import org.typelevel.vault.Vault
 
-private[trace] sealed trait Scope {
+private[java] sealed trait Scope {
   def storeInContext(context: Vault): Vault =
     context.insert(Scope.scopeKey, this)
 }
 
-private[trace] object Scope {
+private[java] object Scope {
   val root: Scope = Root(JContext.root)
 
-  private[trace] final case class Root(ctx: JContext) extends Scope
-  private[trace] final case class Span(
+  final case class Root(ctx: JContext) extends Scope
+  final case class Span(
       ctx: JContext,
       span: JSpan,
       spanContext: SpanContext
   ) extends Scope
-  private[trace] case object Noop extends Scope
+  case object Noop extends Scope
 
   private val scopeKey =
     Key.newKey[SyncIO, Scope].unsafeRunSync()

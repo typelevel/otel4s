@@ -29,7 +29,7 @@ private[otel4s] object ContextConversions {
     jContext = Scope.fromContext(context) match {
       case Scope.Root(_) =>
         jContext
-      case Scope.Span(_, jSpan, _) =>
+      case Scope.Span(_, jSpan) =>
         jSpan.storeInContext(jContext)
       case Scope.Noop =>
         JSpan.getInvalid.storeInContext(jContext)
@@ -39,19 +39,18 @@ private[otel4s] object ContextConversions {
 
   def fromJContext(jContext: JContext): Vault = {
     var context = Vault.empty
-    context = (JSpan.fromContextOrNull(jContext) match {
+    JSpan.fromContextOrNull(jContext) match {
       case null =>
-        Scope.root
+        context = Scope.root.storeInContext(context)
       case jSpan =>
-        if (jSpan.getSpanContext.isValid)
-          Scope.Span(
-            jContext,
-            jSpan,
-            new WrappedSpanContext(jSpan.getSpanContext)
-          )
-        else
-          Scope.Noop
-    }).storeInContext(context)
+        if (jSpan.getSpanContext.isValid) {
+          context = Scope.Span(jContext, jSpan).storeInContext(context)
+          context =
+            new WrappedSpanContext(jSpan.getSpanContext).storeInContext(context)
+        } else {
+          context = Scope.Noop.storeInContext(context)
+        }
+    }
     context
   }
 }

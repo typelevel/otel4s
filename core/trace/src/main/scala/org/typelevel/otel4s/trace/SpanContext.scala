@@ -16,6 +16,9 @@
 
 package org.typelevel.otel4s.trace
 
+import cats.effect.SyncIO
+import org.typelevel.vault.Key
+import org.typelevel.vault.Vault
 import scodec.bits.ByteVector
 
 trait SpanContext {
@@ -53,6 +56,9 @@ trait SpanContext {
     * parent.
     */
   def isRemote: Boolean
+
+  def storeInContext(context: Vault): Vault =
+    context.insert(SpanContext.key, this)
 }
 
 object SpanContext {
@@ -79,4 +85,9 @@ object SpanContext {
       val isValid: Boolean = false
       val isRemote: Boolean = false
     }
+
+  private val key = Key.newKey[SyncIO, SpanContext].unsafeRunSync()
+
+  def fromContext[F[_]](context: Vault): Option[SpanContext] =
+    context.lookup(key)
 }

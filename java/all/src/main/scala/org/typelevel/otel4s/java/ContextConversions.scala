@@ -17,7 +17,6 @@
 package org.typelevel.otel4s.java
 
 import cats.effect.Sync
-
 import io.opentelemetry.api.trace.{Span => JSpan}
 import io.opentelemetry.context.{Context => JContext}
 import org.typelevel.otel4s.java.trace.SpanBackendImpl

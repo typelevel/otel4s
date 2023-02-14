@@ -19,7 +19,6 @@ package org.typelevel.otel4s.java.trace
 import cats.effect.SyncIO
 import io.opentelemetry.api.trace.{Span => JSpan}
 import io.opentelemetry.context.{Context => JContext}
-import org.typelevel.otel4s.trace.SpanContext
 import org.typelevel.vault.Key
 import org.typelevel.vault.Vault
 
@@ -34,8 +33,7 @@ private[java] object Scope {
   final case class Root(ctx: JContext) extends Scope
   final case class Span(
       ctx: JContext,
-      span: JSpan,
-      spanContext: SpanContext
+      span: JSpan
   ) extends Scope
   case object Noop extends Scope
 

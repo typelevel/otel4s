@@ -21,6 +21,7 @@ import cats.syntax.flatMap._
 import cats.syntax.functor._
 import io.opentelemetry.api.trace.{Span => JSpan}
 import io.opentelemetry.api.trace.{Tracer => JTracer}
+import org.typelevel.otel4s.java.trace.WrappedSpanContext
 import org.typelevel.otel4s.trace.Span
 import org.typelevel.otel4s.trace.SpanBuilder
 import org.typelevel.otel4s.trace.SpanContext
@@ -38,8 +39,8 @@ private[java] class TracerImpl[F[_]: Sync](
 
   def currentSpanContext: F[Option[SpanContext]] =
     scope.current.map {
-      case Scope.Span(_, _, spanCtx) if spanCtx.isValid =>
-        Some(spanCtx)
+      case Scope.Span(_, jSpan) if jSpan.getSpanContext.isValid =>
+        Some(new WrappedSpanContext(jSpan.getSpanContext))
 
       case _ =>
         None

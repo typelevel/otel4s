@@ -16,7 +16,7 @@
 
 package org.typelevel.otel4s.trace
 
-import org.typelevel.otel4s.Context
+import org.typelevel.vault.Vault
 import scodec.bits.ByteVector
 
 trait SpanContext {
@@ -81,6 +81,6 @@ object SpanContext {
       val isRemote: Boolean = false
     }
 
-  def fromContext[F[_]](context: Context[F]): Option[SpanContext] =
-    Span.fromContext[F](context).map(_.context)
+  def fromContext[F[_]](context: Vault): Option[SpanContext] =
+    Span.fromContext(context).map((_: Span[F]).context)
 }

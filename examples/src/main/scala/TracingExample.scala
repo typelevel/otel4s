@@ -21,12 +21,12 @@ import cats.effect.Resource
 import cats.effect.std.Console
 import cats.syntax.all._
 import io.opentelemetry.api.GlobalOpenTelemetry
-import org.typelevel.otel4s.Context
 import org.typelevel.otel4s.Otel4s
 import org.typelevel.otel4s.TextMapPropagator
 import org.typelevel.otel4s.java.OtelJava
 import org.typelevel.otel4s.trace.SpanContext
 import org.typelevel.otel4s.trace.Tracer
+import org.typelevel.vault.Vault
 
 import scala.concurrent.duration._
 
@@ -39,7 +39,7 @@ object Work {
     new Work[F] {
       def request(headers: Map[String, String]): F[Unit] = {
         val vault =
-          implicitly[TextMapPropagator[F]].extract(Context.empty[F], headers)
+          implicitly[TextMapPropagator[F]].extract(Vault.empty, headers)
         Tracer[F].childOrContinue(SpanContext.fromContext(vault)) {
           Tracer[F].span("Work.DoWork").use { span =>
             Tracer[F].currentSpanContext

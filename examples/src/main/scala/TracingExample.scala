@@ -40,13 +40,16 @@ object Work {
       def request(headers: Map[String, String]): F[Unit] = {
         val vault =
           implicitly[TextMapPropagator[F]].extract(Vault.empty, headers)
-        Tracer[F].childOrContinue(SpanContext.fromContext(vault)) {
-          Tracer[F].span("Work.DoWork").use { span =>
-            Tracer[F].currentSpanContext
-              .flatMap(ctx => Console[F].println("Context is " + ctx)) *>
-              span.addEvent("Starting the work.") *>
-              doWorkInternal *>
-              span.addEvent("Finished working.")
+        Tracer[F].currentSpanContext.flatMap { current =>
+          Tracer[F].childOrContinue(SpanContext.fromContext(vault)) {
+            val builder = Tracer[F].spanBuilder("Work.DoWork")
+            current.fold(builder)(builder.addLink(_)).build.use { span =>
+              Tracer[F].currentSpanContext
+                .flatMap(ctx => Console[F].println("Context is " + ctx)) *>
+                span.addEvent("Starting the work.") *>
+                doWorkInternal *>
+                span.addEvent("Finished working.")
+            }
           }
         }
       }

@@ -15,18 +15,24 @@
  */
 
 package org.typelevel.otel4s
+package java
 
-import org.typelevel.otel4s.metrics.MeterProvider
-import org.typelevel.otel4s.trace.TracerProvider
+import cats.effect.kernel.Sync
+import io.opentelemetry.context.{Context => JContext}
+import io.opentelemetry.context.propagation.{
+  ContextPropagators => JContextPropagators
+}
+import org.typelevel.vault.Vault
 
-trait Otel4s[F[_]] {
-  def propagators: ContextPropagators[F]
-
-  /** A registry for creating named meters.
-    */
-  def meterProvider: MeterProvider[F]
-
-  /** An entry point of the tracing API.
-    */
-  def tracerProvider: TracerProvider[F]
+private[java] class ContextPropagatorsImpl[F[_]: Sync](
+    propagators: JContextPropagators,
+    toJContext: Vault => JContext,
+    fromJContext: JContext => Vault
+) extends ContextPropagators[F] {
+  val textMapPropagator: TextMapPropagator[F] =
+    new TextMapPropagatorImpl(
+      propagators.getTextMapPropagator,
+      toJContext,
+      fromJContext
+    )
 }

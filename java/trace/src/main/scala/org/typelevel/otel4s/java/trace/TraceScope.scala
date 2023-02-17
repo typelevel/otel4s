@@ -50,7 +50,7 @@ private[java] object TraceScope {
           case Scope.Root(_) =>
             createScope(scopeRoot)
 
-          case Scope.Span(_, _, _) =>
+          case Scope.Span(_, _) =>
             createScope(scopeRoot)
 
           case Scope.Noop =>
@@ -71,15 +71,13 @@ private[java] object TraceScope {
           case Scope.Root(ctx) =>
             Scope.Span(
               ctx.`with`(span),
-              span,
-              WrappedSpanContext(span.getSpanContext)
+              span
             )
 
-          case Scope.Span(ctx, _, _) =>
+          case Scope.Span(ctx, _) =>
             Scope.Span(
               ctx.`with`(span),
-              span,
-              WrappedSpanContext(span.getSpanContext)
+              span
             )
 
           case Scope.Noop =>

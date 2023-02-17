@@ -17,10 +17,15 @@
 package org.typelevel.otel4s
 package java
 
+import _root_.java.lang.{Iterable => JIterable}
 import cats.effect.kernel.Async
 import cats.syntax.either._
 import io.opentelemetry.api.common.{Attributes => JAttributes}
+import io.opentelemetry.context.propagation.{TextMapGetter => JTextMapGetter}
+import io.opentelemetry.context.propagation.{TextMapSetter => JTextMapSetter}
 import io.opentelemetry.sdk.common.CompletableResultCode
+
+import scala.jdk.CollectionConverters._
 
 private[java] object Conversions {
 
@@ -76,4 +81,23 @@ private[java] object Conversions {
         }
       )
     )
+
+  implicit def fromTextMapGetter[A](implicit
+      getter: TextMapGetter[A]
+  ): JTextMapGetter[A] =
+    new JTextMapGetter[A] {
+      def get(carrier: A, key: String) =
+        getter.get(carrier, key).orNull
+
+      def keys(carrier: A): JIterable[String] =
+        getter.keys(carrier).asJava
+    }
+
+  implicit def fromTextMapSetter[A](implicit
+      setter: TextMapSetter[A]
+  ): JTextMapSetter[A] =
+    new JTextMapSetter[A] {
+      def set(carrier: A, key: String, value: String) =
+        setter.unsafeSet(carrier, key, value)
+    }
 }

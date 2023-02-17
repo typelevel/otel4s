@@ -21,24 +21,38 @@ import cats.effect.Resource
 import cats.effect.std.Console
 import cats.syntax.all._
 import io.opentelemetry.api.GlobalOpenTelemetry
+import org.typelevel.otel4s.Otel4s
+import org.typelevel.otel4s.TextMapPropagator
 import org.typelevel.otel4s.java.OtelJava
+import org.typelevel.otel4s.trace.SpanContext
 import org.typelevel.otel4s.trace.Tracer
+import org.typelevel.vault.Vault
 
 import scala.concurrent.duration._
 
 trait Work[F[_]] {
-  def doWork: F[Unit]
+  def request(headers: Map[String, String]): F[Unit]
 }
 
 object Work {
-  def apply[F[_]: Monad: Tracer: Console]: Work[F] =
+  def apply[F[_]: Monad: Tracer: TextMapPropagator: Console]: Work[F] =
     new Work[F] {
-      def doWork: F[Unit] =
-        Tracer[F].span("Work.DoWork").use { span =>
-          span.addEvent("Starting the work.") *>
-            doWorkInternal *>
-            span.addEvent("Finished working.")
+      def request(headers: Map[String, String]): F[Unit] = {
+        val vault =
+          implicitly[TextMapPropagator[F]].extract(Vault.empty, headers)
+        Tracer[F].currentSpanContext.flatMap { current =>
+          Tracer[F].childOrContinue(SpanContext.fromContext(vault)) {
+            val builder = Tracer[F].spanBuilder("Work.DoWork")
+            current.fold(builder)(builder.addLink(_)).build.use { span =>
+              Tracer[F].currentSpanContext
+                .flatMap(ctx => Console[F].println("Context is " + ctx)) *>
+                span.addEvent("Starting the work.") *>
+                doWorkInternal *>
+                span.addEvent("Finished working.")
+            }
+          }
         }
+      }
 
       def doWorkInternal =
         Tracer[F]
@@ -50,17 +64,32 @@ object Work {
 }
 
 object TracingExample extends IOApp.Simple {
-  def tracerResource: Resource[IO, Tracer[IO]] =
+  def globalOtel4s: Resource[IO, Otel4s[IO]] =
     Resource
       .eval(IO(GlobalOpenTelemetry.get))
       .evalMap(OtelJava.forSync[IO])
-      .evalMap(_.tracerProvider.get("Example"))
 
   def run: IO[Unit] = {
-    tracerResource.use { implicit tracer: Tracer[IO] =>
-      val resource: Resource[IO, Unit] =
-        Resource.make(IO.sleep(50.millis))(_ => IO.sleep(100.millis))
-      tracer.resourceSpan("resource")(resource).surround(Work[IO].doWork)
+    globalOtel4s.use { (otel4s: Otel4s[IO]) =>
+      implicit val textMapProp: TextMapPropagator[IO] =
+        otel4s.propagators.textMapPropagator
+      otel4s.tracerProvider.tracer("example").get.flatMap {
+        implicit tracer: Tracer[IO] =>
+          val resource: Resource[IO, Unit] =
+            Resource.make(IO.sleep(50.millis))(_ => IO.sleep(100.millis))
+          tracer
+            .resourceSpan("resource")(resource)
+            .surround(
+              Work[IO].request(
+                Map(
+                  "X-B3-TraceId" -> "80f198ee56343ba864fe8b2a57d3eff7",
+                  "X-B3-ParentSpanId" -> "05e3ac9a4f6e3b90",
+                  "X-B3-SpanId" -> "e457b5a2e4d86bd1",
+                  "X-B3-Sampled" -> "1"
+                )
+              )
+            )
+      }
     }
   }
 }

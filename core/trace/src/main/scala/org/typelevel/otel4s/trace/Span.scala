@@ -186,5 +186,4 @@ object Span {
         def backend: Backend[F] = back
       }
   }
-
 }

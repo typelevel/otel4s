@@ -233,10 +233,12 @@ lazy val examples = project
     libraryDependencies ++= Seq(
       "io.opentelemetry" % "opentelemetry-exporter-otlp" % OpenTelemetryVersion,
       "io.opentelemetry" % "opentelemetry-sdk" % OpenTelemetryVersion,
-      "io.opentelemetry" % "opentelemetry-sdk-extension-autoconfigure" % s"${OpenTelemetryVersion}-alpha"
+      "io.opentelemetry" % "opentelemetry-sdk-extension-autoconfigure" % s"${OpenTelemetryVersion}-alpha",
+      "io.opentelemetry" % "opentelemetry-extension-trace-propagators" % s"${OpenTelemetryVersion}" % Runtime
     ),
     run / fork := true,
-    javaOptions += "-Dotel.java.global-autoconfigure.enabled=true"
+    javaOptions += "-Dotel.java.global-autoconfigure.enabled=true",
+    envVars += "OTEL_PROPAGATORS" -> "b3multi"
   )
 
 lazy val docs = project

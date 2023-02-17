@@ -24,6 +24,7 @@ import cats.effect.Sync
 import cats.mtl.Local
 import io.opentelemetry.api.{OpenTelemetry => JOpenTelemetry}
 import io.opentelemetry.sdk.{OpenTelemetrySdk => JOpenTelemetrySdk}
+import org.typelevel.otel4s.ContextPropagators
 import org.typelevel.otel4s.Otel4s
 import org.typelevel.otel4s.java.Conversions.asyncFromCompletableResultCode
 import org.typelevel.otel4s.java.instances._
@@ -58,6 +59,12 @@ object OtelJava {
     val metrics = Metrics.forSync(jOtel)
     val traces = Traces.local(jOtel)
     new Otel4s[F] {
+      def propagators: ContextPropagators[F] =
+        new ContextPropagatorsImpl[F](
+          jOtel.getPropagators,
+          ContextConversions.toJContext,
+          ContextConversions.fromJContext
+        )
       def meterProvider: MeterProvider[F] = metrics.meterProvider
       def tracerProvider: TracerProvider[F] = traces.tracerProvider
     }

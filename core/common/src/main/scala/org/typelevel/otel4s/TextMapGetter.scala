@@ -16,17 +16,17 @@
 
 package org.typelevel.otel4s
 
-import org.typelevel.otel4s.metrics.MeterProvider
-import org.typelevel.otel4s.trace.TracerProvider
+trait TextMapGetter[A] {
+  def get(carrier: A, key: String): Option[String]
+  def keys(carrier: A): List[String]
+}
 
-trait Otel4s[F[_]] {
-  def propagators: ContextPropagators[F]
-
-  /** A registry for creating named meters.
-    */
-  def meterProvider: MeterProvider[F]
-
-  /** An entry point of the tracing API.
-    */
-  def tracerProvider: TracerProvider[F]
+object TextMapGetter {
+  implicit val forMapStringString: TextMapGetter[Map[String, String]] =
+    new TextMapGetter[Map[String, String]] {
+      def get(carrier: Map[String, String], key: String): Option[String] =
+        carrier.get(key)
+      def keys(carrier: Map[String, String]): List[String] =
+        carrier.keys.toList
+    }
 }

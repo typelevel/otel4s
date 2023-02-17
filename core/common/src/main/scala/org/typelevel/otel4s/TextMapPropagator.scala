@@ -16,17 +16,22 @@
 
 package org.typelevel.otel4s
 
-import org.typelevel.otel4s.metrics.MeterProvider
-import org.typelevel.otel4s.trace.TracerProvider
+import cats.Applicative
+import org.typelevel.vault.Vault
 
-trait Otel4s[F[_]] {
-  def propagators: ContextPropagators[F]
+trait TextMapPropagator[F[_]] {
+  def extract[A: TextMapGetter](ctx: Vault, carrier: A): Vault
 
-  /** A registry for creating named meters.
-    */
-  def meterProvider: MeterProvider[F]
+  def inject[A: TextMapSetter](ctx: Vault, carrier: A): F[Unit]
+}
 
-  /** An entry point of the tracing API.
-    */
-  def tracerProvider: TracerProvider[F]
+object TextMapPropagator {
+  def noop[F[_]: Applicative]: TextMapPropagator[F] =
+    new TextMapPropagator[F] {
+      def extract[A: TextMapGetter](ctx: Vault, carrier: A): Vault =
+        ctx
+
+      def inject[A: TextMapSetter](ctx: Vault, carrier: A): F[Unit] =
+        Applicative[F].unit
+    }
 }

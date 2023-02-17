@@ -16,17 +16,16 @@
 
 package org.typelevel.otel4s
 
-import org.typelevel.otel4s.metrics.MeterProvider
-import org.typelevel.otel4s.trace.TracerProvider
+import cats.Applicative
 
-trait Otel4s[F[_]] {
-  def propagators: ContextPropagators[F]
+trait ContextPropagators[F[_]] {
+  def textMapPropagator: TextMapPropagator[F]
+}
 
-  /** A registry for creating named meters.
-    */
-  def meterProvider: MeterProvider[F]
-
-  /** An entry point of the tracing API.
-    */
-  def tracerProvider: TracerProvider[F]
+object ContextPropagators {
+  def noop[F[_]: Applicative]: ContextPropagators[F] =
+    new ContextPropagators[F] {
+      def textMapPropagator: TextMapPropagator[F] =
+        TextMapPropagator.noop
+    }
 }

@@ -67,6 +67,18 @@ trait Tracer[F[_]] extends TracerMacro[F] {
         fa
     }
 
+  /** Creates a new tracing scope if a parent can be extracted from the given
+    * `carrier`. A newly created non-root span will be a child of the extracted
+    * parent.
+    *
+    * @param carrier
+    *   the carrier to extract the context from
+    *
+    * @tparam C
+    *   the type of the carrier
+    */
+  def joinOrContinue[A, C: TextMapGetter](carrier: C)(fa: F[A]): F[A]
+
   /** Creates a new root tracing scope. The parent span will not be available
     * inside. Thus, a span created inside of the scope will be a root one.
     *
@@ -152,5 +164,6 @@ object Tracer {
       def noopScope[A](fa: F[A]): F[A] = fa
       def childScope[A](parent: SpanContext)(fa: F[A]): F[A] = fa
       def spanBuilder(name: String): SpanBuilder.Aux[F, Span[F]] = builder
+      def joinOrContinue[A, C: TextMapGetter](carrier: C)(fa: F[A]): F[A] = fa
     }
 }

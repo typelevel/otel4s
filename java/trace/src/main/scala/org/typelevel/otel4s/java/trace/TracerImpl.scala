@@ -21,15 +21,18 @@ import cats.syntax.flatMap._
 import cats.syntax.functor._
 import io.opentelemetry.api.trace.{Span => JSpan}
 import io.opentelemetry.api.trace.{Tracer => JTracer}
-import org.typelevel.otel4s.java.trace.WrappedSpanContext
+import org.typelevel.otel4s.ContextPropagators
+import org.typelevel.otel4s.TextMapGetter
 import org.typelevel.otel4s.trace.Span
 import org.typelevel.otel4s.trace.SpanBuilder
 import org.typelevel.otel4s.trace.SpanContext
 import org.typelevel.otel4s.trace.Tracer
+import org.typelevel.vault.Vault
 
 private[java] class TracerImpl[F[_]: Sync](
     jTracer: JTracer,
-    scope: TraceScope[F]
+    scope: TraceScope[F],
+    propagators: ContextPropagators[F]
 ) extends Tracer[F] {
 
   private val runner: SpanRunner[F, Span[F]] = SpanRunner.span(scope)
@@ -59,4 +62,15 @@ private[java] class TracerImpl[F[_]: Sync](
 
   def noopScope[A](fa: F[A]): F[A] =
     scope.noopScope(fa)
+
+  def joinOrContinue[A, C: TextMapGetter](carrier: C)(fa: F[A]): F[A] = {
+    val context = propagators.textMapPropagator.extract(Vault.empty, carrier)
+
+    SpanContext.fromContext(context) match {
+      case Some(parent) =>
+        childScope(parent)(fa)
+      case None =>
+        fa
+    }
+  }
 }

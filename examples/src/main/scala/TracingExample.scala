@@ -22,11 +22,8 @@ import cats.effect.std.Console
 import cats.syntax.all._
 import io.opentelemetry.api.GlobalOpenTelemetry
 import org.typelevel.otel4s.Otel4s
-import org.typelevel.otel4s.TextMapPropagator
 import org.typelevel.otel4s.java.OtelJava
-import org.typelevel.otel4s.trace.SpanContext
 import org.typelevel.otel4s.trace.Tracer
-import org.typelevel.vault.Vault
 
 import scala.concurrent.duration._
 
@@ -35,13 +32,11 @@ trait Work[F[_]] {
 }
 
 object Work {
-  def apply[F[_]: Monad: Tracer: TextMapPropagator: Console]: Work[F] =
+  def apply[F[_]: Monad: Tracer: Console]: Work[F] =
     new Work[F] {
       def request(headers: Map[String, String]): F[Unit] = {
-        val vault =
-          implicitly[TextMapPropagator[F]].extract(Vault.empty, headers)
         Tracer[F].currentSpanContext.flatMap { current =>
-          Tracer[F].childOrContinue(SpanContext.fromContext(vault)) {
+          Tracer[F].joinOrContinue(headers) {
             val builder = Tracer[F].spanBuilder("Work.DoWork")
             current.fold(builder)(builder.addLink(_)).build.use { span =>
               Tracer[F].currentSpanContext
@@ -71,8 +66,6 @@ object TracingExample extends IOApp.Simple {
 
   def run: IO[Unit] = {
     globalOtel4s.use { (otel4s: Otel4s[IO]) =>
-      implicit val textMapProp: TextMapPropagator[IO] =
-        otel4s.propagators.textMapPropagator
       otel4s.tracerProvider.tracer("example").get.flatMap {
         implicit tracer: Tracer[IO] =>
           val resource: Resource[IO, Unit] =

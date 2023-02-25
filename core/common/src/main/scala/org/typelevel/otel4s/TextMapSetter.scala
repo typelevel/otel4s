@@ -16,6 +16,30 @@
 
 package org.typelevel.otel4s
 
+/** Offers a way to store a string value associated with a given key.
+  *
+  * A trait that defines a method to set a value in a key-value store.
+  *
+  * @see
+  *   See [[TextMapGetter]] to get a value from the carrier
+  *
+  * @tparam A
+  *   the type of the carrier
+  */
 trait TextMapSetter[A] {
+
+  /** Sets the `value` associated with the given `key` in the `carrier`.
+    *
+    * '''Important:''' the carrier must to be '''mutable'''.
+    *
+    * @param carrier
+    *   the carrier to store the key-value pair at
+    *
+    * @param key
+    *   the key to associated the value with
+    *
+    * @param value
+    *   the value to set
+    */
   def unsafeSet(carrier: A, key: String, value: String): Unit
 }

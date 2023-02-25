@@ -19,13 +19,59 @@ package org.typelevel.otel4s
 import cats.Applicative
 import org.typelevel.vault.Vault
 
+/** The process of propagating data across process boundaries involves injecting
+  * and extracting values in the form of text into carriers that travel in-band.
+  *
+  * The encoding used for this process is expected to conform to HTTP Header
+  * Field semantics, and values are commonly encoded as request headers for
+  * RPC/HTTP requests.
+  *
+  * The carriers used for propagating the data are typically HTTP requests, and
+  * the process is often implemented using library-specific request
+  * interceptors. On the client side, values are injected into the carriers,
+  * while on the server side, values are extracted from them.
+  *
+  * @tparam F
+  *   the higher-kinded type of a polymorphic effect
+  */
 trait TextMapPropagator[F[_]] {
+
+  /** Extracts key-value pairs from the given `carrier` and adds them to the
+    * given context.
+    *
+    * @param ctx
+    *   the context object to which the key-value pairs are added
+    *
+    * @param carrier
+    *   holds propagation fields
+    *
+    * @tparam A
+    *   the type of the carrier object
+    *
+    * @return
+    *   the new context with stored key-value pairs
+    */
   def extract[A: TextMapGetter](ctx: Vault, carrier: A): Vault
 
+  /** Injects data from the context into the given `carrier` for downstream
+    * consumers, for example as HTTP headers.
+    *
+    * @param ctx
+    *   the context containing the value to be injected
+    *
+    * @param carrier
+    *   holds propagation fields
+    *
+    * @tparam A
+    *   the type of the carrier
+    */
   def inject[A: TextMapSetter](ctx: Vault, carrier: A): F[Unit]
 }
 
 object TextMapPropagator {
+
+  def apply[F[_]](implicit ev: TextMapPropagator[F]): TextMapPropagator[F] = ev
+
   def noop[F[_]: Applicative]: TextMapPropagator[F] =
     new TextMapPropagator[F] {
       def extract[A: TextMapGetter](ctx: Vault, carrier: A): Vault =

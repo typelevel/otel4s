@@ -59,6 +59,15 @@ trait Tracer[F[_]] extends TracerMacro[F] {
     */
   def childScope[A](parent: SpanContext)(fa: F[A]): F[A]
 
+  /** Creates a new tracing scope if the given `parent` is defined. A newly
+    * created non-root span will be a child of the given `parent`.
+    *
+    * @see
+    *   [[childScope]]
+    *
+    * @param parent
+    *   the span context to use as a parent
+    */
   final def childOrContinue[A](parent: Option[SpanContext])(fa: F[A]): F[A] =
     parent match {
       case Some(ctx) =>

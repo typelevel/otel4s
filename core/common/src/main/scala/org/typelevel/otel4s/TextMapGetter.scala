@@ -16,8 +16,44 @@
 
 package org.typelevel.otel4s
 
+/** Offers a way to get a string value associated with a given key.
+  *
+  * A type class can be implemented for any data structure that stores key-value
+  * pairs.
+  *
+  * @see
+  *   See [[TextMapSetter]] to set a value into the carrier
+  *
+  * @tparam A
+  *   the type of the key-value carrier
+  */
+@annotation.implicitNotFound("""
+Could not find the `TextMapGetter` for ${A}. The `TextMapGetter` is available out-of-the-box for the `Map[String, String]` type.
+""")
 trait TextMapGetter[A] {
+
+  /** Gets a string value from the `carrier` associated with the given `key`.
+    *
+    * @param carrier
+    *   the carrier to get a value from
+    *
+    * @param key
+    *   the key to get the value at
+    *
+    * @return
+    *   a [[scala.Some]] if the `key` is present in `carrier` and [[scala.None]]
+    *   otherwise
+    */
   def get(carrier: A, key: String): Option[String]
+
+  /** Returns a list of all available keys in the given `carrier`.
+    *
+    * @param carrier
+    *   the carrier to get keys from
+    *
+    * @return
+    *   a [[scala.List]] of all the keys in the carrier
+    */
   def keys(carrier: A): List[String]
 }
 

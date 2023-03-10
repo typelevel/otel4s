@@ -71,6 +71,9 @@ trait Tracer[F[_]] extends TracerMacro[F] {
     * `carrier`. A newly created non-root span will be a child of the extracted
     * parent.
     *
+    * If the context cannot be extracted from the `carrier`, the given effect
+    * `fa` will be executed within the currently available span.
+    *
     * @param carrier
     *   the carrier to extract the context from
     *

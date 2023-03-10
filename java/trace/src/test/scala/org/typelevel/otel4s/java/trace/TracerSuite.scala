@@ -684,10 +684,17 @@ class TracerSuite extends CatsEffectSuite {
 
     def expected(now: FiniteDuration) =
       SpanNode(
-        name = "inner",
+        name = "external",
         start = now,
-        end = now,
-        children = Nil
+        end = now.plus(500.millis),
+        children = List(
+          SpanNode(
+            name = "inner",
+            start = now.plus(500.millis),
+            end = now.plus(500.millis),
+            children = Nil
+          )
+        )
       )
 
     TestControl.executeEmbed {
@@ -695,18 +702,17 @@ class TracerSuite extends CatsEffectSuite {
         now <- IO.monotonic.delayBy(1.second) // otherwise returns 0
         sdk <- makeSdk()
         tracer <- sdk.provider.get("tracer")
-        external <- tracer.joinOrContinue(headers) {
-          tracer.currentSpanContext.productL(
-            tracer.span("inner").use_
-          )
+        _ <- tracer.span("external").surround {
+          tracer
+            .joinOrContinue(headers) {
+              tracer.span("inner").use_
+            }
+            .delayBy(500.millis)
         }
         spans <- sdk.finishedSpans
         tree <- IO.pure(SpanNode.fromSpans(spans))
         // _ <- IO.println(tree.map(SpanNode.render).mkString("\n"))
-      } yield {
-        assertEquals(external, None)
-        assertEquals(tree, List(expected(now)))
-      }
+      } yield assertEquals(tree, List(expected(now)))
     }
   }
 

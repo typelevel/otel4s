@@ -43,7 +43,7 @@ object UserDatabase {
     def apply[F[_]: Tracer: Temporal]: UserDatabase[F] = new UserDatabase[F] {
         def readUser(userId: String): F[User] = 
           Tracer[F].span("Read User from DB", Attribute("userId", userId)).use { span => 
-            val returnedUser = User("Zach", "12345")
+            val returnedUser = User("Zach", "1")
               Temporal[F].sleep(30.millis) *>
                 span.addAttribute(Attribute("User", returnedUser.name)).map(_ => returnedUser)
           } 
@@ -54,7 +54,7 @@ object InstitutionServiceClient {
     def apply[F[_]: Tracer: Temporal]: InstitutionServiceClient[F] = new InstitutionServiceClient[F] { 
         def getUserIds(institutionId: String): F[List[String]] = 
           Tracer[F].span("Get User Ids from Institution Service", Attribute("institutionId", institutionId)).surround { 
-            Temporal[F].sleep(110.millis).map(_ => List("12345", "87987", "12345", "87987", "12345", "87987"))
+            Temporal[F].sleep(110.millis).map(_ => List("1", "2", "3"))
           }
     }
 }

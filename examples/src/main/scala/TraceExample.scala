@@ -73,7 +73,7 @@ The Tracer[F].span is used to span over the http client call.
 object InstitutionServiceClient { 
     def apply[F[_]: Tracer: Temporal]: InstitutionServiceClient[F] = new InstitutionServiceClient[F] { 
         def getUserIds(institutionId: String): F[List[String]] = 
-          Tracer[F].span("Get User Ids from Institution Service", Attribute("institutionId", institutionId)).surround { 
+          Tracer[F].span("Get User Ids from Institution Service", Attribute("institutionId", institutionId), Attribute("span.kind", "client")).surround { 
             Temporal[F].sleep(110.millis).map(_ => List("1", "2", "3"))
           }
     }

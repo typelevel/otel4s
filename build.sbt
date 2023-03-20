@@ -238,7 +238,10 @@ lazy val examples = project
     ),
     run / fork := true,
     javaOptions += "-Dotel.java.global-autoconfigure.enabled=true",
-    envVars ++= Map("OTEL_PROPAGATORS" -> "b3multi", "OTEL_SERVICE_NAME" -> "Trace Example")
+    envVars ++= Map(
+      "OTEL_PROPAGATORS" -> "b3multi",
+      "OTEL_SERVICE_NAME" -> "Trace Example"
+    )
   )
 
 lazy val docs = project

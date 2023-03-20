@@ -14,12 +14,15 @@
  * limitations under the License.
  */
 
-import cats.effect.{IO, IOApp, Resource, Temporal}
 import cats.Parallel
+import cats.effect.IO
+import cats.effect.IOApp
+import cats.effect.Resource
+import cats.effect.Temporal
 import cats.syntax.all._
 import io.opentelemetry.api.GlobalOpenTelemetry
-import org.typelevel.otel4s.Otel4s
 import org.typelevel.otel4s.Attribute
+import org.typelevel.otel4s.Otel4s
 import org.typelevel.otel4s.java.OtelJava
 import org.typelevel.otel4s.trace.Tracer
 

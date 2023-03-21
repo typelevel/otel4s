@@ -28,54 +28,59 @@ import org.typelevel.otel4s.trace.Tracer
 
 import scala.concurrent.duration._
 
-/*
-An interface for reading a user from a database
- */
+/** An interface for reading a user from a database */
 case class User(name: String, userId: String)
 trait UserDatabase[F[_]] {
   def readUser(userId: String): F[User]
 }
 
-/*
-An interface for reading a user from a database
- */
+/** An interface for reading a user from a database */
 trait InstitutionServiceClient[F[_]] {
   def getUserIds(institutionId: String): F[List[String]]
 }
 
-/*
-An interface to compose the getUserIds and readUser methods to get all Users from a single institution.
- */
-
+/** An interface to compose the getUserIds and readUser methods to get all Users
+  * from a single institution.
+  */
 trait UsersAlg[F[_]] {
   def getAllUsersForInstitution(institutionId: String): F[List[User]]
 }
 
-/*
-This database implementation returns a single user out while waiting 30 milliseconds to simulate some time passing.
-The Tracer[F].span is used to span over the simulated database call.
-Note that `span.addAttribute` is used inside of the `.use` to add another attribute to the span with a value that we only know at the time of running the database read.
- */
+/** User Database Mock
+  *
+  * This database implementation returns a single user out while waiting 30
+  * milliseconds to simulate some time passing. The Tracer[F].span is used to
+  * span over the simulated database call. Note that `span.addAttribute` is used
+  * inside of the `.use` to add another attribute to the span with a value that
+  * we only know at the time of running the database read.
+  */
 object UserDatabase {
+  def mockDBCall[F[_]: Temporal] =
+    Temporal[F].sleep(30.millis).as(User("Zach", "1"))
+
   def apply[F[_]: Tracer: Temporal]: UserDatabase[F] = new UserDatabase[F] {
     def readUser(userId: String): F[User] =
       Tracer[F].span("Read User from DB", Attribute("userId", userId)).use {
         span =>
-          val returnedUser = User("Zach", "1")
-          Temporal[F].sleep(30.millis) *>
+          mockDBCall[F].flatTap { user =>
             span
-              .addAttribute(Attribute("User", returnedUser.name))
-              .map(_ => returnedUser)
+              .addAttribute(Attribute("User", user.name))
+          }
       }
   }
 }
 
-/*
-This client implementation returns a list of ids out while waiting 110 milliseconds to simulate some time passing.
-The Tracer[F].span is used to span over the http client call.
- */
+/** Institution Service Client (Mock Http)
+  *
+  * This client implementation returns a list of ids out while waiting 110
+  * milliseconds to simulate some time passing. The Tracer[F].span is used to
+  * span over the http client call.
+  */
 
 object InstitutionServiceClient {
+  def mockHttpCall[F[_]: Temporal]: F[List[String]] =
+    Temporal[F].sleep(110.millis).as(List("1", "2", "3"))
+
   def apply[F[_]: Tracer: Temporal]: InstitutionServiceClient[F] =
     new InstitutionServiceClient[F] {
       def getUserIds(institutionId: String): F[List[String]] =
@@ -86,16 +91,19 @@ object InstitutionServiceClient {
             Attribute("span.kind", "client")
           )
           .surround {
-            Temporal[F].sleep(110.millis).map(_ => List("1", "2", "3"))
+            mockHttpCall[F]
           }
     }
 }
 
-/*
-This implementation composes our two methods from the separate traits into a method that gives us the list of users for an institution.
-Note that in this we will have a list of the same user repeated because of how the mocking above works.
-The end result of this is we have a span named "Get users for institution" that has 3 children spans (one for each id in getUserIds).
- */
+/** UserIds Algebra
+  *
+  * This implementation composes our two methods from the separate traits into a
+  * method that gives us the list of users for an institution. Note that in this
+  * we will have a list of the same user repeated because of how the mocking
+  * above works. The end result of this is we have a span named "Get users for
+  * institution" that has 3 children spans (one for each id in getUserIds).
+  */
 object UserIdsAlg {
   def apply[F[_]: Tracer: Temporal: Parallel](
       institutionService: InstitutionServiceClient[F],
@@ -116,9 +124,12 @@ object TraceExample extends IOApp.Simple {
       .eval(IO(GlobalOpenTelemetry.get))
       .evalMap(OtelJava.forSync[IO])
 
-  /*
-  This run methods creates a span over the resource taking 50 milliseconds to acquire and then 100 to shutdown, but in the middle are the child spans from our UserIdsAlg.
-   */
+  /** Run Method
+    *
+    * This run methods creates a span over the resource taking 50 milliseconds
+    * to acquire and then 100 to shutdown, but in the middle are the child spans
+    * from our UserIdsAlg.
+    */
   def run: IO[Unit] = {
     globalOtel4s.use { (otel4s: Otel4s[IO]) =>
       otel4s.tracerProvider.tracer("TraceExample").get.flatMap {

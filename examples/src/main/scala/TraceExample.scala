@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-import cats.Parallel
 import cats.effect.IO
 import cats.effect.IOApp
 import cats.effect.Resource
 import cats.effect.Temporal
-import cats.syntax.all._
+import cats.effect.implicits._
+import cats.implicits._
 import io.opentelemetry.api.GlobalOpenTelemetry
 import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.Otel4s
@@ -34,7 +34,7 @@ trait UserDatabase[F[_]] {
   def readUser(userId: String): F[User]
 }
 
-/** An interface for reading a user from a database */
+/** An interface for getting a list of user ids from another service */
 trait InstitutionServiceClient[F[_]] {
   def getUserIds(institutionId: String): F[List[String]]
 }
@@ -55,14 +55,14 @@ trait UsersAlg[F[_]] {
   * we only know at the time of running the database read.
   */
 object UserDatabase {
-  def mockDBCall[F[_]: Temporal] =
+  def mockDBQuery[F[_]: Temporal]: F[User] =
     Temporal[F].sleep(30.millis).as(User("Zach", "1"))
 
   def apply[F[_]: Tracer: Temporal]: UserDatabase[F] = new UserDatabase[F] {
     def readUser(userId: String): F[User] =
       Tracer[F].span("Read User from DB", Attribute("userId", userId)).use {
         span =>
-          mockDBCall[F].flatTap { user =>
+          mockDBQuery[F].flatTap { user =>
             span
               .addAttribute(Attribute("User", user.name))
           }
@@ -105,7 +105,7 @@ object InstitutionServiceClient {
   * institution" that has 3 children spans (one for each id in getUserIds).
   */
 object UserIdsAlg {
-  def apply[F[_]: Tracer: Temporal: Parallel](
+  def apply[F[_]: Tracer: Temporal](
       institutionService: InstitutionServiceClient[F],
       userDB: UserDatabase[F]
   ): UsersAlg[F] = new UsersAlg[F] {

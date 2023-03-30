@@ -16,4 +16,4 @@
 
 package org.typelevel.otel4s.metrics
 
-trait ObservableCounter[F[_], A]
+trait ObservableCounter

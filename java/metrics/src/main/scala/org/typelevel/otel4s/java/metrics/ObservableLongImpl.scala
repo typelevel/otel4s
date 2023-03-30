@@ -14,21 +14,21 @@
  * limitations under the License.
  */
 
-package org.typelevel.otel4s.java.metrics
+package org.typelevel.otel4s
+package java
+package metrics
 
-import cats.effect.kernel.Async
-import io.opentelemetry.api.{OpenTelemetry => JOpenTelemetry}
-import org.typelevel.otel4s.metrics.MeterProvider
+import cats.effect.Sync
+import io.opentelemetry.api.metrics.ObservableLongMeasurement
+import org.typelevel.otel4s.Attribute
+import org.typelevel.otel4s.metrics._
 
-trait Metrics[F[_]] {
-  def meterProvider: MeterProvider[F]
-}
+private[java] class ObservableLongImpl[F[_]](
+    private val olm: ObservableLongMeasurement
+)(implicit F: Sync[F])
+    extends ObservableMeasurement[F, Long] {
 
-object Metrics {
-
-  def forAsync[F[_]: Async](jOtel: JOpenTelemetry): Metrics[F] =
-    new Metrics[F] {
-      val meterProvider: MeterProvider[F] = new MeterProviderImpl[F](jOtel)
-    }
+  def record(value: Long, attributes: Attribute[_]*): F[Unit] =
+    F.delay(olm.record(value, Conversions.toJAttributes(attributes)))
 
 }

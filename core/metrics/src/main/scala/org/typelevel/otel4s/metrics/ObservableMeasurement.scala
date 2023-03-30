@@ -14,21 +14,10 @@
  * limitations under the License.
  */
 
-package org.typelevel.otel4s.java.metrics
+package org.typelevel.otel4s.metrics
 
-import cats.effect.kernel.Async
-import io.opentelemetry.api.{OpenTelemetry => JOpenTelemetry}
-import org.typelevel.otel4s.metrics.MeterProvider
+import org.typelevel.otel4s.Attribute
 
-trait Metrics[F[_]] {
-  def meterProvider: MeterProvider[F]
-}
-
-object Metrics {
-
-  def forAsync[F[_]: Async](jOtel: JOpenTelemetry): Metrics[F] =
-    new Metrics[F] {
-      val meterProvider: MeterProvider[F] = new MeterProviderImpl[F](jOtel)
-    }
-
+trait ObservableMeasurement[F[_], A] {
+  def record(value: A, attributes: Attribute[_]*): F[Unit]
 }

@@ -42,7 +42,7 @@ private[java] case class ObservableUpDownCounterBuilderImpl[F[_]](
   def createWithCallback(
       cb: ObservableMeasurement[F, Long] => F[Unit]
   ): Resource[F, ObservableUpDownCounter] =
-    Dispatcher.parallel.flatMap(dispatcher =>
+    Dispatcher.sequential.flatMap(dispatcher =>
       Resource
         .fromAutoCloseable(F.delay {
           val b = jMeter.upDownCounterBuilder(name)

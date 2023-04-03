@@ -45,7 +45,18 @@ trait ObservableInstrumentBuilder[F[_], A, Instrument] {
     */
   def withDescription(description: String): Self
 
-  /** Creates an instrument with the given `unit` and `description` (if any).
+  /** Creates an instrument with the given callback, using `unit` and
+    * `description` (if any).
+    *
+    * The callback will be called when the instrument is being observed.
+    *
+    * The callback is expected to abide by the following restrictions:
+    *   - Short-living and (ideally) non-blocking
+    *   - Run in a finite amount of time
+    *   - Safe to call repeatedly, across multiple threads
+    *
+    * @param cb
+    *   The callback which observes measurements when invoked
     */
   def createWithCallback(
       cb: ObservableMeasurement[F, A] => F[Unit]

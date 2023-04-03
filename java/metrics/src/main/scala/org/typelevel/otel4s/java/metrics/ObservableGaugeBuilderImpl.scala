@@ -42,7 +42,7 @@ private[java] case class ObservableGaugeBuilderImpl[F[_]](
   def createWithCallback(
       cb: ObservableMeasurement[F, Double] => F[Unit]
   ): Resource[F, ObservableGauge] =
-    Dispatcher.parallel.flatMap(dispatcher =>
+    Dispatcher.sequential.flatMap(dispatcher =>
       Resource
         .fromAutoCloseable(F.delay {
           val b = jMeter.gaugeBuilder(name)

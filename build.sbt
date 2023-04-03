@@ -24,7 +24,7 @@ ThisBuild / crossScalaVersions := Seq(Scala213, "3.2.2")
 ThisBuild / scalaVersion := Scala213 // the default Scala
 
 val CatsVersion = "2.9.0"
-val CatsEffectVersion = "3.4.8"
+val CatsEffectVersion = "3.5-4848d2e-20230329T044947Z-SNAPSHOT"
 val CatsMtlVersion = "1.3.0"
 val FS2Version = "3.6.1"
 val MUnitVersion = "1.0.0-M7"
@@ -86,7 +86,7 @@ lazy val `core-metrics` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .settings(
     name := "otel4s-core-metrics",
     libraryDependencies ++= Seq(
-      "org.typelevel" %%% "cats-effect-kernel" % CatsEffectVersion,
+      "org.typelevel" %%% "cats-effect" % CatsEffectVersion,
       "org.typelevel" %%% "cats-effect-testkit" % CatsEffectVersion % Test
     )
   )

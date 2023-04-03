@@ -63,6 +63,13 @@ trait Meter[F[_]] {
       name: String
   ): SyncInstrumentBuilder[F, UpDownCounter[F, Long]]
 
+  def observableGauge(
+      name: String
+  ): ObservableInstrumentBuilder[F, Double, ObservableGauge]
+
+  def observableUpDownCounter(
+                       name: String
+                     ): ObservableInstrumentBuilder[F, Long, ObservableUpDownCounter]
 }
 
 object Meter {

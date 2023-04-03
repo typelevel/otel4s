@@ -47,3 +47,11 @@ trait SyncInstrumentBuilder[F[_], A] {
     */
   def create: F[A]
 }
+
+trait AsyncInstrumentBuilder[F[_], Input, Instrument[_[_], _]] {
+  type Self <: AsyncInstrumentBuilder[F, Input, Instrument]
+
+  def withUnit(unit: String): Self
+  def withDescription(description: String): Self
+  def create(callback: F[Input]): F[Instrument[F, Input]]
+}

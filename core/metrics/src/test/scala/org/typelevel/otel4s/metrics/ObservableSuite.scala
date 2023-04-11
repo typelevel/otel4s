@@ -20,6 +20,7 @@ package metrics
 import cats.effect.IO
 import cats.effect.Ref
 import cats.effect.Resource
+import cats.syntax.all._
 import munit.CatsEffectSuite
 
 class ObservableSuite extends CatsEffectSuite {
@@ -106,6 +107,21 @@ object ObservableSuite {
     def withUnit(unit: String): Self = this
 
     def withDescription(description: String): Self = this
+
+    def create(
+        measurements: IO[List[Measurement[A]]]
+    ): Resource[IO, InMemoryObservable[A]] =
+      Resource
+        .eval(Ref.of[IO, List[Record[A]]](List.empty))
+        .map(obs =>
+          InMemoryObservable[A](
+            recorder =>
+              measurements.flatMap(
+                _.traverse_(x => recorder.record(x.value, x.attributes: _*))
+              ),
+            obs
+          )
+        )
 
     def createWithCallback(
         cb: ObservableMeasurement[IO, A] => IO[Unit]

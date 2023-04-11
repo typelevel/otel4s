@@ -232,6 +232,7 @@ lazy val examples = project
     name := "otel4s-examples",
     libraryDependencies ++= Seq(
       "io.opentelemetry" % "opentelemetry-exporter-otlp" % OpenTelemetryVersion,
+      "io.opentelemetry" % "opentelemetry-exporter-logging" % OpenTelemetryVersion,
       "io.opentelemetry" % "opentelemetry-sdk" % OpenTelemetryVersion,
       "io.opentelemetry" % "opentelemetry-sdk-extension-autoconfigure" % s"${OpenTelemetryVersion}-alpha",
       "io.opentelemetry" % "opentelemetry-extension-trace-propagators" % s"${OpenTelemetryVersion}" % Runtime

@@ -46,6 +46,40 @@ class ObservableSuite extends CatsEffectSuite {
 
   }
 
+  test("observable test with list") {
+
+    for {
+      counter <- Ref.of[IO, Int](0)
+      _ <- new InMemoryObservableInstrumentBuilder[Int]
+        .create(
+          counter
+            .getAndUpdate(_ + 1)
+            .map(x =>
+              List(
+                Measurement(x, Attribute("thing", "a")),
+                Measurement(x, Attribute("thing", "b"))
+              )
+            )
+        )
+        .use { r =>
+          for {
+            _ <- r.observations.get.assertEquals(List.empty)
+            _ <- r.run
+            _ <- r.run
+            _ <- r.observations.get.assertEquals(
+              List(
+                Record(1, Seq(Attribute("thing", "b"))),
+                Record(1, Seq(Attribute("thing", "a"))),
+                Record(0, Seq(Attribute("thing", "b"))),
+                Record(0, Seq(Attribute("thing", "a")))
+              )
+            )
+          } yield ()
+        }
+    } yield ()
+
+  }
+
 }
 
 object ObservableSuite {

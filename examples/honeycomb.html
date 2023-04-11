@@ -118,7 +118,7 @@
           <div class="tab-content active" data-choice-name="sbt">
             <p>Add settings to the <code>build.sbt</code>:</p>
             <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">libraryDependencies</span><span> ++= </span><span class="type-name">Seq</span><span>(
-  </span><span class="string-literal">&quot;org.typelevel&quot;</span><span> %% </span><span class="string-literal">&quot;otel4s-java&quot;</span><span> % </span><span class="string-literal">&quot;0.2-7a95c3d-SNAPSHOT&quot;</span><span>, </span><span class="comment">// &lt;1&gt;
+  </span><span class="string-literal">&quot;org.typelevel&quot;</span><span> %% </span><span class="string-literal">&quot;otel4s-java&quot;</span><span> % </span><span class="string-literal">&quot;0.2-f7042c3-SNAPSHOT&quot;</span><span>, </span><span class="comment">// &lt;1&gt;
 </span><span>  </span><span class="string-literal">&quot;io.opentelemetry&quot;</span><span> % </span><span class="string-literal">&quot;opentelemetry-exporter-otlp&quot;</span><span> % </span><span class="string-literal">&quot;1.25.0&quot;</span><span> % </span><span class="type-name">Runtime</span><span>, </span><span class="comment">// &lt;2&gt;
 </span><span>  </span><span class="string-literal">&quot;io.opentelemetry&quot;</span><span> % </span><span class="string-literal">&quot;opentelemetry-sdk-extension-autoconfigure&quot;</span><span> % </span><span class="string-literal">&quot;1.25.0-alpha&quot;</span><span> % </span><span class="type-name">Runtime</span><span> </span><span class="comment">// &lt;3&gt;
 </span><span>)
@@ -129,7 +129,7 @@
           </div>
           <div class="tab-content" data-choice-name="scala-cli">
             <p>Add directives to the <code>tracing.scala</code>:</p>
-            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="comment">//&gt; using lib &quot;org.typelevel::otel4s-java:0.2-7a95c3d-SNAPSHOT&quot; // &lt;1&gt;
+            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="comment">//&gt; using lib &quot;org.typelevel::otel4s-java:0.2-f7042c3-SNAPSHOT&quot; // &lt;1&gt;
 //&gt; using lib &quot;io.opentelemetry:opentelemetry-exporter-otlp:1.25.0&quot; // &lt;2&gt;
 //&gt; using lib &quot;io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:1.25.0-alpha&quot; // &lt;3&gt;
 //&gt; using `java-opt` &quot;-Dotel.java.global-autoconfigure.enabled=true&quot;            // &lt;4&gt;
@@ -137,12 +137,12 @@
 //&gt; using `java-opt` &quot;-Dotel.exporter.otlp.endpoint=https://api.honeycomb.io/&quot;  // &lt;6&gt;</span></code></pre>
           </div>
         </div>
-        <p>1) Add the <code>otel4s</code> library
-        2) Add an OpenTelemetry exporter. Without the exporter, the application will crash
-        3) Add an OpenTelemetry autoconfigure extension
-        4) Enable OpenTelemetry SDK autoconfigure mode
-        5) Add the name of the application to use in the traces
-        6) Add the Honeycomb API endpoint</p>
+        <p>1) Add the <code>otel4s</code> library<br>
+        2) Add an OpenTelemetry exporter. Without the exporter, the application will crash<br>
+        3) Add an OpenTelemetry autoconfigure extension<br>
+        4) Enable OpenTelemetry SDK autoconfigure mode<br>
+        5) Add the name of the application to use in the traces<br>
+        6) Add the Honeycomb API endpoint<br></p>
         
         <h3 id="opentelemetry-sdk-configuration" class="section">OpenTelemetry SDK configuration<a class="anchor-link right" href="#opentelemetry-sdk-configuration"><i class="icofont-laika">&#xef71;</i></a></h3>
         <p>As mentioned above, we use <code>otel.java.global-autoconfigure.enabled</code> and <code>otel.service.name</code> system properties to configure the
@@ -161,7 +161,7 @@
         <p>In order to send metrics and traces to Honeycomb, the API key and dataset name need to be configured.
         Since the API key is sensitive data, we advise providing them via environment variables:</p>
         <pre class="keep-together pdf epub"><code class="shell">$ export OTEL_EXPORTER_OTLP_HEADERS=&quot;x-honeycomb-team=your-api-key,x-honeycomb-dataset=honeycomb-example&quot;</code></pre>
-        <p>1) <code>x-honeycomb-team</code> - the API key
+        <p>1) <code>x-honeycomb-team</code> - the API key<br>
         2) <code>x-honeycomb-dataset</code> - the name of the dataset to send metrics to. We use <code>honeycomb-example</code> so both metrics and traces appear in the same dataset.</p>
         <p><strong>Note:</strong> if the <code>x-honeycomb-dataset</code> header is not configured, the <strong>metrics</strong> will be sent to a dataset called <code>unknown_metrics</code>.</p>
         

@@ -35,17 +35,17 @@ Add directives to the `tracing.scala`:
 //> using lib "io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:@OPEN_TELEMETRY_VERSION@-alpha" // <3>
 //> using `java-opt` "-Dotel.java.global-autoconfigure.enabled=true" // <4>
 //> using `java-opt` "-Dotel.service.name=jaeger-example"            // <5>
-//> using `java-opt` "-Dotel.metrics.exporter=none"                  // <6> 
+//> using `java-opt` "-Dotel.metrics.exporter=none"                  // <6>
 ```
 
 @:@
 
-1) Add the `otel4s` library  
-2) Add an OpenTelemetry exporter. Without the exporter, the application will crash  
-3) Add an OpenTelemetry autoconfigure extension  
-4) Enable OpenTelemetry SDK autoconfigure mode  
-5) Add the name of the application to use in the traces  
-6) Disable metrics exporter since Jaeger is compatible only with traces  
+1) Add the `otel4s` library
+2) Add an OpenTelemetry exporter. Without the exporter, the application will crash
+3) Add an OpenTelemetry autoconfigure extension
+4) Enable OpenTelemetry SDK autoconfigure mode
+5) Add the name of the application to use in the traces
+6) Disable metrics exporter since Jaeger is compatible only with traces
 
 ### OpenTelemetry SDK configuration
 
@@ -69,9 +69,9 @@ $ docker run --name jaeger \
   jaegertracing/all-in-one:1.35
 ```
 
-1) `-e COLLECTOR_OTLP_ENABLED=true` - enable OpenTelemetry receiver  
-2) `-p 16686:16686` - forward Jaeger UI  
-3) `-p 4317:4317` and `-p 4318:4318` - the OpenTelemetry receiver ports for HTTP and gRPC protocols  
+1) `-e COLLECTOR_OTLP_ENABLED=true` - enable OpenTelemetry receiver
+2) `-p 16686:16686` - forward Jaeger UI
+3) `-p 4317:4317` and `-p 4318:4318` - the OpenTelemetry receiver ports for HTTP and gRPC protocols
 
 ### Application example
 
@@ -122,7 +122,7 @@ object TracingExample extends IOApp.Simple {
   def tracerResource: Resource[IO, Tracer[IO]] =
     Resource
       .eval(IO(GlobalOpenTelemetry.get))
-      .evalMap(OtelJava.forSync[IO])
+      .evalMap(OtelJava.forAsync[IO])
       .evalMap(_.tracerProvider.get("Example"))
 
   def run: IO[Unit] = {

@@ -16,7 +16,9 @@
 
 package org.typelevel.otel4s.metrics
 
+import cats.Monad
 import cats.effect.Resource
+import cats.syntax.all._
 
 trait ObservableInstrumentBuilder[F[_], A, Instrument] {
   type Self <: ObservableInstrumentBuilder[F, A, Instrument]
@@ -61,4 +63,19 @@ trait ObservableInstrumentBuilder[F[_], A, Instrument] {
   def createWithCallback(
       cb: ObservableMeasurement[F, A] => F[Unit]
   ): Resource[F, Instrument]
+
+  /** Creates an asynchronous instrument that an effect that produces a number
+    * of measurements
+    *
+    * @param measurements
+    *   Effect that produces a number of measurements
+    */
+  def create(measurements: F[List[Measurement[A]]])(implicit
+      F: Monad[F]
+  ): Resource[F, Instrument] =
+    createWithCallback(cb =>
+      measurements.flatMap(
+        _.traverse_(m => cb.record(m.value, m.attributes: _*))
+      )
+    )
 }

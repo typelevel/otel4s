@@ -40,12 +40,12 @@ Add directives to the `tracing.scala`:
 
 @:@
 
-1) Add the `otel4s` library
-2) Add an OpenTelemetry exporter. Without the exporter, the application will crash
-3) Add an OpenTelemetry autoconfigure extension
-4) Enable OpenTelemetry SDK autoconfigure mode
-5) Add the name of the application to use in the traces
-6) Disable metrics exporter since Jaeger is compatible only with traces
+1) Add the `otel4s` library  
+2) Add an OpenTelemetry exporter. Without the exporter, the application will crash  
+3) Add an OpenTelemetry autoconfigure extension  
+4) Enable OpenTelemetry SDK autoconfigure mode  
+5) Add the name of the application to use in the traces  
+6) Disable metrics exporter since Jaeger is compatible only with traces  
 
 ### OpenTelemetry SDK configuration
 
@@ -69,9 +69,9 @@ $ docker run --name jaeger \
   jaegertracing/all-in-one:1.35
 ```
 
-1) `-e COLLECTOR_OTLP_ENABLED=true` - enable OpenTelemetry receiver
-2) `-p 16686:16686` - forward Jaeger UI
-3) `-p 4317:4317` and `-p 4318:4318` - the OpenTelemetry receiver ports for HTTP and gRPC protocols
+1) `-e COLLECTOR_OTLP_ENABLED=true` - enable OpenTelemetry receiver  
+2) `-p 16686:16686` - forward Jaeger UI  
+3) `-p 4317:4317` and `-p 4318:4318` - the OpenTelemetry receiver ports for HTTP and gRPC protocols  
 
 ### Application example
 

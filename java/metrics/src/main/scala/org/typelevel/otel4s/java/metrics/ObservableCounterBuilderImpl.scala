@@ -55,5 +55,28 @@ private[java] case class ObservableCounterBuilderImpl[F[_]](
         })
         .as(new ObservableCounter {})
     )
-
+  def create(
+      measurements: F[List[Measurement[Long]]]
+  ): Resource[F, ObservableCounter] =
+    Dispatcher.sequential.flatMap(dispatcher =>
+      Resource
+        .fromAutoCloseable(F.delay {
+          val b = jMeter.counterBuilder(name)
+          unit.foreach(b.setUnit)
+          description.foreach(b.setDescription)
+          b.buildWithCallback { gauge =>
+            dispatcher.unsafeRunSync(
+              measurements.flatMap(ms =>
+                F.delay(
+                  ms.foreach(m =>
+                    gauge
+                      .record(m.value, Conversions.toJAttributes(m.attributes))
+                  )
+                )
+              )
+            )
+          }
+        })
+        .as(new ObservableCounter {})
+    )
 }

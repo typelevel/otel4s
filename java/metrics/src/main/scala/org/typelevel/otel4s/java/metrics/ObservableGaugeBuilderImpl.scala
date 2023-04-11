@@ -55,5 +55,29 @@ private[java] case class ObservableGaugeBuilderImpl[F[_]](
         })
         .as(new ObservableGauge {})
     )
+  def create(
+      measurements: F[List[Measurement[Double]]]
+  ): Resource[F, ObservableGauge] =
+    Dispatcher.sequential.flatMap(dispatcher =>
+      Resource
+        .fromAutoCloseable(F.delay {
+          val b = jMeter.gaugeBuilder(name)
+          unit.foreach(b.setUnit)
+          description.foreach(b.setDescription)
+          b.buildWithCallback { gauge =>
+            dispatcher.unsafeRunSync(
+              measurements.flatMap(ms =>
+                F.delay(
+                  ms.foreach(m =>
+                    gauge
+                      .record(m.value, Conversions.toJAttributes(m.attributes))
+                  )
+                )
+              )
+            )
+          }
+        })
+        .as(new ObservableGauge {})
+    )
 
 }

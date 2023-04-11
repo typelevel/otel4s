@@ -46,12 +46,12 @@ Add directives to the `tracing.scala`:
 
 @:@
 
-1) Add the `otel4s` library
-2) Add an OpenTelemetry exporter. Without the exporter, the application will crash
-3) Add an OpenTelemetry autoconfigure extension
-4) Enable OpenTelemetry SDK autoconfigure mode
-5) Add the name of the application to use in the traces
-6) Add the Honeycomb API endpoint
+1) Add the `otel4s` library  
+2) Add an OpenTelemetry exporter. Without the exporter, the application will crash  
+3) Add an OpenTelemetry autoconfigure extension  
+4) Enable OpenTelemetry SDK autoconfigure mode  
+5) Add the name of the application to use in the traces  
+6) Add the Honeycomb API endpoint  
 
 ### OpenTelemetry SDK configuration
 
@@ -79,7 +79,7 @@ Since the API key is sensitive data, we advise providing them via environment va
 $ export OTEL_EXPORTER_OTLP_HEADERS="x-honeycomb-team=your-api-key,x-honeycomb-dataset=honeycomb-example"
 ```
 
-1) `x-honeycomb-team` - the API key
+1) `x-honeycomb-team` - the API key  
 2) `x-honeycomb-dataset` - the name of the dataset to send metrics to. We use `honeycomb-example` so both metrics and traces appear in the same dataset.
 
 **Note:** if the `x-honeycomb-dataset` header is not configured, the **metrics** will be sent to a dataset called `unknown_metrics`.

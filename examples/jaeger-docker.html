@@ -111,9 +111,9 @@
           <div class="tab-content active" data-choice-name="sbt">
             <p>Add settings to the <code>build.sbt</code>:</p>
             <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">libraryDependencies</span><span> ++= </span><span class="type-name">Seq</span><span>(
-  </span><span class="string-literal">&quot;org.typelevel&quot;</span><span> %% </span><span class="string-literal">&quot;otel4s-java&quot;</span><span> % </span><span class="string-literal">&quot;0.2-9856cc0-SNAPSHOT&quot;</span><span>, </span><span class="comment">// &lt;1&gt;
-</span><span>  </span><span class="string-literal">&quot;io.opentelemetry&quot;</span><span> % </span><span class="string-literal">&quot;opentelemetry-exporter-otlp&quot;</span><span> % </span><span class="string-literal">&quot;1.24.0&quot;</span><span> % </span><span class="type-name">Runtime</span><span>, </span><span class="comment">// &lt;2&gt;
-</span><span>  </span><span class="string-literal">&quot;io.opentelemetry&quot;</span><span> % </span><span class="string-literal">&quot;opentelemetry-sdk-extension-autoconfigure&quot;</span><span> % </span><span class="string-literal">&quot;1.24.0-alpha&quot;</span><span> % </span><span class="type-name">Runtime</span><span> </span><span class="comment">// &lt;3&gt;
+  </span><span class="string-literal">&quot;org.typelevel&quot;</span><span> %% </span><span class="string-literal">&quot;otel4s-java&quot;</span><span> % </span><span class="string-literal">&quot;0.2-7a95c3d-SNAPSHOT&quot;</span><span>, </span><span class="comment">// &lt;1&gt;
+</span><span>  </span><span class="string-literal">&quot;io.opentelemetry&quot;</span><span> % </span><span class="string-literal">&quot;opentelemetry-exporter-otlp&quot;</span><span> % </span><span class="string-literal">&quot;1.25.0&quot;</span><span> % </span><span class="type-name">Runtime</span><span>, </span><span class="comment">// &lt;2&gt;
+</span><span>  </span><span class="string-literal">&quot;io.opentelemetry&quot;</span><span> % </span><span class="string-literal">&quot;opentelemetry-sdk-extension-autoconfigure&quot;</span><span> % </span><span class="string-literal">&quot;1.25.0-alpha&quot;</span><span> % </span><span class="type-name">Runtime</span><span> </span><span class="comment">// &lt;3&gt;
 </span><span>)
 </span><span class="identifier">run</span><span> / </span><span class="identifier">fork</span><span> := </span><span class="boolean-literal">true</span><span>
 </span><span class="identifier">javaOptions</span><span> += </span><span class="string-literal">&quot;-Dotel.java.global-autoconfigure.enabled=true&quot;</span><span> </span><span class="comment">// &lt;4&gt;
@@ -122,20 +122,20 @@
           </div>
           <div class="tab-content" data-choice-name="scala-cli">
             <p>Add directives to the <code>tracing.scala</code>:</p>
-            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="comment">//&gt; using lib &quot;org.typelevel::otel4s-java:0.2-9856cc0-SNAPSHOT&quot; // &lt;1&gt;
-//&gt; using lib &quot;io.opentelemetry:opentelemetry-exporter-otlp:1.24.0&quot; // &lt;2&gt;
-//&gt; using lib &quot;io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:1.24.0-alpha&quot; // &lt;3&gt;
+            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="comment">//&gt; using lib &quot;org.typelevel::otel4s-java:0.2-7a95c3d-SNAPSHOT&quot; // &lt;1&gt;
+//&gt; using lib &quot;io.opentelemetry:opentelemetry-exporter-otlp:1.25.0&quot; // &lt;2&gt;
+//&gt; using lib &quot;io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:1.25.0-alpha&quot; // &lt;3&gt;
 //&gt; using `java-opt` &quot;-Dotel.java.global-autoconfigure.enabled=true&quot; // &lt;4&gt;
 //&gt; using `java-opt` &quot;-Dotel.service.name=jaeger-example&quot;            // &lt;5&gt;
-//&gt; using `java-opt` &quot;-Dotel.metrics.exporter=none&quot;                  // &lt;6&gt; </span></code></pre>
+//&gt; using `java-opt` &quot;-Dotel.metrics.exporter=none&quot;                  // &lt;6&gt;</span></code></pre>
           </div>
         </div>
-        <p>1) Add the <code>otel4s</code> library<br>
-        2) Add an OpenTelemetry exporter. Without the exporter, the application will crash<br>
-        3) Add an OpenTelemetry autoconfigure extension<br>
-        4) Enable OpenTelemetry SDK autoconfigure mode<br>
-        5) Add the name of the application to use in the traces<br>
-        6) Disable metrics exporter since Jaeger is compatible only with traces<br></p>
+        <p>1) Add the <code>otel4s</code> library
+        2) Add an OpenTelemetry exporter. Without the exporter, the application will crash
+        3) Add an OpenTelemetry autoconfigure extension
+        4) Enable OpenTelemetry SDK autoconfigure mode
+        5) Add the name of the application to use in the traces
+        6) Disable metrics exporter since Jaeger is compatible only with traces</p>
         
         <h3 id="opentelemetry-sdk-configuration" class="section">OpenTelemetry SDK configuration<a class="anchor-link right" href="#opentelemetry-sdk-configuration"><i class="icofont-laika">&#xef71;</i></a></h3>
         <p>As mentioned above, we use <code>otel.service.name</code> and <code>otel.metrics.exporter</code> system properties to configure the
@@ -153,9 +153,9 @@
   -p 4317:4317 \
   -p 4318:4318 \
   jaegertracing/all-in-one:1.35</code></pre>
-        <p>1) <code>-e COLLECTOR_OTLP_ENABLED=true</code> - enable OpenTelemetry receiver<br>
-        2) <code>-p 16686:16686</code> - forward Jaeger UI<br>
-        3) <code>-p 4317:4317</code> and <code>-p 4318:4318</code> - the OpenTelemetry receiver ports for HTTP and gRPC protocols<br></p>
+        <p>1) <code>-e COLLECTOR_OTLP_ENABLED=true</code> - enable OpenTelemetry receiver
+        2) <code>-p 16686:16686</code> - forward Jaeger UI
+        3) <code>-p 4317:4317</code> and <code>-p 4318:4318</code> - the OpenTelemetry receiver ports for HTTP and gRPC protocols</p>
         
         <h3 id="application-example" class="section">Application example<a class="anchor-link right" href="#application-example"><i class="icofont-laika">&#xef71;</i></a></h3>
         <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.{</span><span class="type-name">Async</span><span>, </span><span class="type-name">IO</span><span>, </span><span class="type-name">IOApp</span><span>, </span><span class="type-name">Resource</span><span>}
@@ -204,7 +204,7 @@
   </span><span class="keyword">def</span><span> </span><span class="declaration-name">tracerResource</span><span>: </span><span class="type-name">Resource</span><span>[</span><span class="type-name">IO</span><span>, </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">IO</span><span>]] =
     </span><span class="type-name">Resource</span><span>
       .</span><span class="identifier">eval</span><span>(</span><span class="type-name">IO</span><span>(</span><span class="type-name">GlobalOpenTelemetry</span><span>.</span><span class="identifier">get</span><span>))
-      .</span><span class="identifier">evalMap</span><span>(</span><span class="type-name">OtelJava</span><span>.</span><span class="identifier">forSync</span><span>[</span><span class="type-name">IO</span><span>])
+      .</span><span class="identifier">evalMap</span><span>(</span><span class="type-name">OtelJava</span><span>.</span><span class="identifier">forAsync</span><span>[</span><span class="type-name">IO</span><span>])
       .</span><span class="identifier">evalMap</span><span>(</span><span class="identifier">_</span><span>.</span><span class="identifier">tracerProvider</span><span>.</span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;Example&quot;</span><span>))
 
   </span><span class="keyword">def</span><span> </span><span class="declaration-name">run</span><span>: </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] = {

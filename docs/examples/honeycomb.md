@@ -6,10 +6,10 @@ We will cover the configuration of OpenTelemetry exporter, as well as the instru
 otel4s library.
 
 Unlike [Jaeger example](jaeger-docker.md), you do not need to set up a collector service locally. The metrics and traces
-will be sent to a remote Honeycomb API.  
+will be sent to a remote Honeycomb API.
 
 At the time of writing, Honeycomb allows having up to 20 million spans per month for a free account.
-It offers robust analysis and visualization tools that are handy for exploring the world of telemetry. 
+It offers robust analysis and visualization tools that are handy for exploring the world of telemetry.
 
 ### Project setup
 
@@ -46,12 +46,12 @@ Add directives to the `tracing.scala`:
 
 @:@
 
-1) Add the `otel4s` library  
-2) Add an OpenTelemetry exporter. Without the exporter, the application will crash  
-3) Add an OpenTelemetry autoconfigure extension  
-4) Enable OpenTelemetry SDK autoconfigure mode  
-5) Add the name of the application to use in the traces  
-6) Add the Honeycomb API endpoint  
+1) Add the `otel4s` library
+2) Add an OpenTelemetry exporter. Without the exporter, the application will crash
+3) Add an OpenTelemetry autoconfigure extension
+4) Enable OpenTelemetry SDK autoconfigure mode
+5) Add the name of the application to use in the traces
+6) Add the Honeycomb API endpoint
 
 ### OpenTelemetry SDK configuration
 
@@ -72,14 +72,14 @@ Once you have done this, log into your account and navigate to the environment s
 
 The Honeycomb [official configuration guide](https://docs.honeycomb.io/getting-data-in/opentelemetry-overview/).
 
-In order to send metrics and traces to Honeycomb, the API key and dataset name need to be configured.  
+In order to send metrics and traces to Honeycomb, the API key and dataset name need to be configured.
 Since the API key is sensitive data, we advise providing them via environment variables:
 
 ```shell
 $ export OTEL_EXPORTER_OTLP_HEADERS="x-honeycomb-team=your-api-key,x-honeycomb-dataset=honeycomb-example"
 ```
 
-1) `x-honeycomb-team` - the API key  
+1) `x-honeycomb-team` - the API key
 2) `x-honeycomb-dataset` - the name of the dataset to send metrics to. We use `honeycomb-example` so both metrics and traces appear in the same dataset.
 
 **Note:** if the `x-honeycomb-dataset` header is not configured, the **metrics** will be sent to a dataset called `unknown_metrics`.
@@ -138,7 +138,7 @@ object TracingExample extends IOApp.Simple {
   def otelResource: Resource[IO, Otel4s[IO]] =
     Resource
       .eval(IO(GlobalOpenTelemetry.get))
-      .evalMap(OtelJava.forSync[IO])
+      .evalMap(OtelJava.forAsync[IO])
 
   def run: IO[Unit] = {
     otelResource.use { otel4s =>

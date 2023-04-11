@@ -1,0 +1,85 @@
+/*
+ * Copyright 2022 Typelevel
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.typelevel.otel4s
+package metrics
+
+import cats.effect.IO
+import cats.effect.Ref
+import cats.effect.Resource
+import munit.CatsEffectSuite
+
+class ObservableSuite extends CatsEffectSuite {
+
+  import ObservableSuite._
+
+  test("observable test") {
+
+    for {
+      _ <- new InMemoryObservableInstrumentBuilder[Double]
+        .createWithCallback(instrument =>
+          instrument.record(2.0) *> instrument.record(3.0)
+        )
+        .use { r =>
+          for {
+            _ <- r.observations.get.assertEquals(List.empty)
+            _ <- r.run
+            _ <- r.observations.get.assertEquals(
+              List(Record(3.0, Seq.empty), Record(2.0, Seq.empty))
+            )
+          } yield ()
+        }
+    } yield ()
+
+  }
+
+}
+
+object ObservableSuite {
+
+  final case class Record[A](value: A, attributes: Seq[Attribute[_]])
+
+  final case class InMemoryObservable[A](
+      callback: ObservableMeasurement[IO, A] => IO[Unit],
+      observations: Ref[IO, List[Record[A]]]
+  ) {
+    def run: IO[Unit] =
+      callback(new ObservableMeasurement[IO, A] {
+        def record(value: A, attributes: Attribute[_]*): IO[Unit] =
+          observations.update(Record(value, attributes) :: _)
+      })
+  }
+
+  class InMemoryObservableInstrumentBuilder[A]
+      extends ObservableInstrumentBuilder[IO, A, InMemoryObservable[A]] {
+
+    type Self =
+      ObservableInstrumentBuilder[IO, A, InMemoryObservable[A]]
+
+    def withUnit(unit: String): Self = this
+
+    def withDescription(description: String): Self = this
+
+    def createWithCallback(
+        cb: ObservableMeasurement[IO, A] => IO[Unit]
+    ): Resource[IO, InMemoryObservable[A]] =
+      Resource
+        .eval(Ref.of[IO, List[Record[A]]](List.empty))
+        .map(obs => InMemoryObservable[A](cb, obs))
+
+  }
+
+}

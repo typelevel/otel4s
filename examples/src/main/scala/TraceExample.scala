@@ -122,7 +122,7 @@ object TraceExample extends IOApp.Simple {
   def globalOtel4s: Resource[IO, Otel4s[IO]] =
     Resource
       .eval(IO(GlobalOpenTelemetry.get))
-      .evalMap(OtelJava.forSync[IO])
+      .evalMap(OtelJava.forAsync[IO])
 
   /** Run Method
     *

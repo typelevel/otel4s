@@ -17,6 +17,7 @@
 package org.typelevel.otel4s.metrics
 
 import cats.Applicative
+import cats.effect.Resource
 
 trait Meter[F[_]] {
 
@@ -66,10 +67,13 @@ trait Meter[F[_]] {
   def observableGauge(
       name: String
   ): ObservableInstrumentBuilder[F, Double, ObservableGauge]
-
+  def observableCounter(
+      name: String
+  ): ObservableInstrumentBuilder[F, Long, ObservableCounter]
   def observableUpDownCounter(
-                       name: String
-                     ): ObservableInstrumentBuilder[F, Long, ObservableUpDownCounter]
+      name: String
+  ): ObservableInstrumentBuilder[F, Long, ObservableUpDownCounter]
+
 }
 
 object Meter {
@@ -102,6 +106,47 @@ object Meter {
           def withUnit(unit: String): Self = this
           def withDescription(description: String): Self = this
           def create: F[UpDownCounter[F, Long]] = F.pure(UpDownCounter.noop)
+        }
+      def observableGauge(
+          name: String
+      ): ObservableInstrumentBuilder[F, Double, ObservableGauge] =
+        new ObservableInstrumentBuilder[F, Double, ObservableGauge] {
+          type Self = this.type
+
+          def withUnit(unit: String): Self = this
+          def withDescription(description: String): Self = this
+          def createWithCallback(
+              cb: ObservableMeasurement[F, Double] => F[Unit]
+          ): Resource[F, ObservableGauge] =
+            Resource.pure(new ObservableGauge {})
+        }
+
+      def observableCounter(
+          name: String
+      ): ObservableInstrumentBuilder[F, Long, ObservableCounter] =
+        new ObservableInstrumentBuilder[F, Long, ObservableCounter] {
+          type Self = this.type
+
+          def withUnit(unit: String): Self = this
+          def withDescription(description: String): Self = this
+          def createWithCallback(
+              cb: ObservableMeasurement[F, Long] => F[Unit]
+          ): Resource[F, ObservableCounter] =
+            Resource.pure(new ObservableCounter {})
+        }
+
+      def observableUpDownCounter(
+          name: String
+      ): ObservableInstrumentBuilder[F, Long, ObservableUpDownCounter] =
+        new ObservableInstrumentBuilder[F, Long, ObservableUpDownCounter] {
+          type Self = this.type
+
+          def withUnit(unit: String): Self = this
+          def withDescription(description: String): Self = this
+          def createWithCallback(
+              cb: ObservableMeasurement[F, Long] => F[Unit]
+          ): Resource[F, ObservableUpDownCounter] =
+            Resource.pure(new ObservableUpDownCounter {})
         }
     }
 }

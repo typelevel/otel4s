@@ -18,11 +18,11 @@ package org.typelevel.otel4s
 package java
 package metrics
 
-import cats.effect.kernel.Sync
+import cats.effect.kernel.Async
 import io.opentelemetry.api.metrics.{Meter => JMeter}
 import org.typelevel.otel4s.metrics._
 
-private[java] class MeterImpl[F[_]: Sync](jMeter: JMeter) extends Meter[F] {
+private[java] class MeterImpl[F[_]: Async](jMeter: JMeter) extends Meter[F] {
   def counter(name: String): SyncInstrumentBuilder[F, Counter[F, Long]] =
     new CounterBuilderImpl(jMeter, name)
 
@@ -35,4 +35,19 @@ private[java] class MeterImpl[F[_]: Sync](jMeter: JMeter) extends Meter[F] {
       name: String
   ): SyncInstrumentBuilder[F, UpDownCounter[F, Long]] =
     new UpDownCounterBuilderImpl(jMeter, name)
+
+  def observableGauge(
+      name: String
+  ): ObservableInstrumentBuilder[F, Double, ObservableGauge] =
+    new ObservableGaugeBuilderImpl(jMeter, name)
+
+  def observableUpDownCounter(
+      name: String
+  ): ObservableInstrumentBuilder[F, Long, ObservableUpDownCounter] =
+    new ObservableUpDownCounterBuilderImpl(jMeter, name)
+
+  def observableCounter(
+      name: String
+  ): ObservableInstrumentBuilder[F, Long, ObservableCounter] =
+    new ObservableCounterBuilderImpl(jMeter, name)
 }

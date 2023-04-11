@@ -32,7 +32,7 @@ class CounterSuite extends CatsEffectSuite {
     for {
       sdk <- IO.delay(makeSdk)
       meter <- Metrics
-        .forSync[IO](sdk.sdk)
+        .forAsync[IO](sdk.sdk)
         .meterProvider
         .meter("java.otel.suite")
         .withVersion("1.0")

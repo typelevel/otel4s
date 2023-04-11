@@ -16,4 +16,4 @@
 
 package org.typelevel.otel4s.metrics
 
-trait ObservableGauge[F[_], A]
+trait ObservableGauge

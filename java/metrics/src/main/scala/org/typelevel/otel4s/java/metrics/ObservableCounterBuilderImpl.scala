@@ -23,6 +23,7 @@ import cats.effect.kernel.Resource
 import cats.effect.std.Dispatcher
 import cats.syntax.all._
 import io.opentelemetry.api.metrics.{Meter => JMeter}
+import io.opentelemetry.api.metrics.ObservableLongMeasurement
 import org.typelevel.otel4s.metrics._
 
 private[java] case class ObservableCounterBuilderImpl[F[_]](
@@ -39,8 +40,8 @@ private[java] case class ObservableCounterBuilderImpl[F[_]](
   def withDescription(description: String): Self =
     copy(description = Option(description))
 
-  def createWithCallback(
-      cb: ObservableMeasurement[F, Long] => F[Unit]
+  private def createInternal(
+      cb: ObservableLongMeasurement => F[Unit]
   ): Resource[F, ObservableCounter] =
     Dispatcher.sequential.flatMap(dispatcher =>
       Resource
@@ -48,35 +49,28 @@ private[java] case class ObservableCounterBuilderImpl[F[_]](
           val b = jMeter.counterBuilder(name)
           unit.foreach(b.setUnit)
           description.foreach(b.setDescription)
-          b.buildWithCallback { gauge =>
-            dispatcher.unsafeRunSync(cb(new ObservableLongImpl(gauge)))
+          b.buildWithCallback { olm =>
+            dispatcher.unsafeRunSync(cb(olm))
           }
-
         })
         .as(new ObservableCounter {})
     )
+
+  def createWithCallback(
+      cb: ObservableMeasurement[F, Long] => F[Unit]
+  ): Resource[F, ObservableCounter] =
+    createInternal(olm => cb(new ObservableLongImpl(olm)))
+
   def create(
       measurements: F[List[Measurement[Long]]]
   ): Resource[F, ObservableCounter] =
-    Dispatcher.sequential.flatMap(dispatcher =>
-      Resource
-        .fromAutoCloseable(F.delay {
-          val b = jMeter.counterBuilder(name)
-          unit.foreach(b.setUnit)
-          description.foreach(b.setDescription)
-          b.buildWithCallback { gauge =>
-            dispatcher.unsafeRunSync(
-              measurements.flatMap(ms =>
-                F.delay(
-                  ms.foreach(m =>
-                    gauge
-                      .record(m.value, Conversions.toJAttributes(m.attributes))
-                  )
-                )
-              )
-            )
-          }
-        })
-        .as(new ObservableCounter {})
+    createInternal(olm =>
+      measurements.flatMap(ms =>
+        F.delay(
+          ms.foreach(m =>
+            olm.record(m.value, Conversions.toJAttributes(m.attributes))
+          )
+        )
+      )
     )
 }

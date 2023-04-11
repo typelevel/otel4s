@@ -18,7 +18,7 @@ package org.typelevel.otel4s
 package java
 package metrics
 
-import cats.effect.kernel.Sync
+import cats.effect.kernel.Async
 import io.opentelemetry.api.{OpenTelemetry => JOpenTelemetry}
 import org.typelevel.otel4s.metrics._
 
@@ -27,7 +27,7 @@ private[java] case class MeterBuilderImpl[F[_]](
     name: String,
     version: Option[String] = None,
     schemaUrl: Option[String] = None
-)(implicit F: Sync[F])
+)(implicit F: Async[F])
     extends MeterBuilder[F] {
   def withVersion(version: String): MeterBuilder[F] =
     copy(version = Option(version))

@@ -16,8 +16,10 @@
 
 package org.typelevel.otel4s.metrics
 
-trait ObservableInstrumentBuilder[F[_], A] {
-  type Self <: ObservableInstrumentBuilder[F, A]
+import cats.effect.Resource
+
+trait ObservableInstrumentBuilder[F[_], A, Instrument] {
+  type Self <: ObservableInstrumentBuilder[F, A, Instrument]
 
   /** Sets the unit of measure for this instrument.
     *
@@ -43,7 +45,20 @@ trait ObservableInstrumentBuilder[F[_], A] {
     */
   def withDescription(description: String): Self
 
-  /** Creates an instrument with the given `unit` and `description` (if any).
+  /** Creates an instrument with the given callback, using `unit` and
+    * `description` (if any).
+    *
+    * The callback will be called when the instrument is being observed.
+    *
+    * The callback is expected to abide by the following restrictions:
+    *   - Short-living and (ideally) non-blocking
+    *   - Run in a finite amount of time
+    *   - Safe to call repeatedly, across multiple threads
+    *
+    * @param cb
+    *   The callback which observes measurements when invoked
     */
-  def create: F[A]
+  def createWithCallback(
+      cb: ObservableMeasurement[F, A] => F[Unit]
+  ): Resource[F, Instrument]
 }

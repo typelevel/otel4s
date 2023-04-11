@@ -46,7 +46,7 @@ object OtelJava {
     * @return
     *   An effect of an [[org.typelevel.otel4s.Otel4s]] resource.
     */
-  def forSync[F[_]: LiftIO: Sync](jOtel: JOpenTelemetry): F[Otel4s[F]] =
+  def forAsync[F[_]: LiftIO: Async](jOtel: JOpenTelemetry): F[Otel4s[F]] =
     IOLocal(Vault.empty)
       .map { implicit ioLocal: IOLocal[Vault] =>
         local[F](jOtel)
@@ -55,14 +55,14 @@ object OtelJava {
 
   def local[F[_]](
       jOtel: JOpenTelemetry
-  )(implicit F: Sync[F], L: Local[F, Vault]): Otel4s[F] = {
+  )(implicit F: Async[F], L: Local[F, Vault]): Otel4s[F] = {
     val contentPropagators = new ContextPropagatorsImpl[F](
       jOtel.getPropagators,
       ContextConversions.toJContext,
       ContextConversions.fromJContext
     )
 
-    val metrics = Metrics.forSync(jOtel)
+    val metrics = Metrics.forAsync(jOtel)
     val traces = Traces.local(jOtel, contentPropagators)
     new Otel4s[F] {
       def propagators: ContextPropagators[F] = contentPropagators
@@ -86,5 +86,5 @@ object OtelJava {
       .make(acquire)(sdk =>
         asyncFromCompletableResultCode(Sync[F].delay(sdk.shutdown()))
       )
-      .evalMap(forSync[F])
+      .evalMap(forAsync[F])
 }

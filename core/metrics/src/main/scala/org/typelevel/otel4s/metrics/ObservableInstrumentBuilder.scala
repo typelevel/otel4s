@@ -64,8 +64,16 @@ trait ObservableInstrumentBuilder[F[_], A, Instrument] {
       cb: ObservableMeasurement[F, A] => F[Unit]
   ): Resource[F, Instrument]
 
-  /** Creates an asynchronous instrument that an effect that produces a number
-    * of measurements
+  /** Creates an asynchronous instrument based on an effect that produces a
+    * number of measurements.
+    *
+    * The measurement effect will be evaluted when the instrument is being
+    * observed.
+    *
+    * The measurement effect is expected to abide by the following restrictions:
+    *   - Short-living and (ideally) non-blocking
+    *   - Run in a finite amount of time
+    *   - Safe to call repeatedly, across multiple threads
     *
     * @param measurements
     *   Effect that produces a number of measurements

@@ -24,4 +24,4 @@ import org.typelevel.otel4s.Attribute
   * @param attributes
   *   the set of attributes to associate with the value
   */
-final case class Measurement[A](value: A, attributes: Attribute[_]*)
+final case class Measurement[A](value: A, attributes: List[Attribute[_]])

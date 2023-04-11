@@ -56,8 +56,8 @@ class ObservableSuite extends CatsEffectSuite {
             .getAndUpdate(_ + 1)
             .map(x =>
               List(
-                Measurement(x, Attribute("thing", "a")),
-                Measurement(x, Attribute("thing", "b"))
+                Measurement(x, List(Attribute("thing", "a"))),
+                Measurement(x, List(Attribute("thing", "b")))
               )
             )
         )

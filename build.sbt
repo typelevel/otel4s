@@ -24,13 +24,13 @@ ThisBuild / crossScalaVersions := Seq(Scala213, "3.2.2")
 ThisBuild / scalaVersion := Scala213 // the default Scala
 
 val CatsVersion = "2.9.0"
-val CatsEffectVersion = "3.4.7"
+val CatsEffectVersion = "3.4.8"
 val CatsMtlVersion = "1.3.0"
 val FS2Version = "3.6.1"
 val MUnitVersion = "1.0.0-M7"
 val MUnitCatsEffectVersion = "2.0.0-M3"
-val OpenTelemetryVersion = "1.23.1"
-val ScodecVersion = "1.1.35"
+val OpenTelemetryVersion = "1.25.0"
+val ScodecVersion = "1.1.37"
 val VaultVersion = "3.5.0"
 
 lazy val scalaReflectDependency = Def.settings(
@@ -238,7 +238,10 @@ lazy val examples = project
     ),
     run / fork := true,
     javaOptions += "-Dotel.java.global-autoconfigure.enabled=true",
-    envVars += "OTEL_PROPAGATORS" -> "b3multi"
+    envVars ++= Map(
+      "OTEL_PROPAGATORS" -> "b3multi",
+      "OTEL_SERVICE_NAME" -> "Trace Example"
+    )
   )
 
 lazy val docs = project

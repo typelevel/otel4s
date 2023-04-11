@@ -18,12 +18,12 @@ package org.typelevel.otel4s
 package java
 package metrics
 
-import cats.effect.kernel.Sync
+import cats.effect.kernel.Async
 import io.opentelemetry.api.{OpenTelemetry => JOpenTelemetry}
 import org.typelevel.otel4s.metrics.MeterBuilder
 import org.typelevel.otel4s.metrics.MeterProvider
 
-private[java] class MeterProviderImpl[F[_]: Sync](
+private[java] class MeterProviderImpl[F[_]: Async](
     jOtel: JOpenTelemetry
 ) extends MeterProvider[F] {
 

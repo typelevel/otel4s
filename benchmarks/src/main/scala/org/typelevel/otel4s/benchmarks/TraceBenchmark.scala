@@ -89,7 +89,7 @@ object TraceBenchmark {
         .setTracerProvider(tracerProvider)
         .build()
 
-      OtelJava.forSync(otel).flatMap {
+      OtelJava.forAsync(otel).flatMap {
         _.tracerProvider.tracer("trace-benchmark").get
       }
     }

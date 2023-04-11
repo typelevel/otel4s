@@ -64,12 +64,44 @@ trait Meter[F[_]] {
       name: String
   ): SyncInstrumentBuilder[F, UpDownCounter[F, Long]]
 
+  /** Creates a builder of [[ObservableGauge]] instrument that collects
+    * [[scala.Double]] values from the given callback.
+    *
+    * @param name
+    *   the name of the instrument
+    */
   def observableGauge(
       name: String
   ): ObservableInstrumentBuilder[F, Double, ObservableGauge]
+
+  /** Creates a builder of [[ObservableCounter]] instrument that collects
+    * [[scala.Long]] values from the given callback.
+    *
+    * The [[ObservableCounter]] is monotonic. This means the aggregated value is
+    * nominally increasing.
+    *
+    * @see
+    *   See [[observableUpDownCounter]] for non-monotonic alternative
+    *
+    * @param name
+    *   the name of the instrument
+    */
   def observableCounter(
       name: String
   ): ObservableInstrumentBuilder[F, Long, ObservableCounter]
+
+  /** Creates a builder of [[ObservableUpDownCounter]] instrument that collects
+    * [[scala.Long]] values from the given callback.
+    *
+    * The [[ObservableUpDownCounter]] is non-monotonic. This means the
+    * aggregated value can increase and decrease.
+    *
+    * @see
+    *   See [[observableCounter]] for monotonic alternative
+    *
+    * @param name
+    *   the name of the instrument
+    */
   def observableUpDownCounter(
       name: String
   ): ObservableInstrumentBuilder[F, Long, ObservableUpDownCounter]

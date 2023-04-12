@@ -1,3 +1,4 @@
+import cats.effect.std.Random
 import cats.effect.{IO, IOApp, Resource}
 import cats.syntax.foldable._
 import io.opentelemetry.sdk.OpenTelemetrySdk
@@ -6,8 +7,8 @@ import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader
 import org.typelevel.otel4s.java.OtelJava
 import org.typelevel.otel4s.metrics.preset.IOMetrics
 
+import scala.concurrent.duration._
 import scala.jdk.CollectionConverters._
-import scala.util.Random
 
 object RuntimeMetricsExample extends IOApp.Simple {
   def run: IO[Unit] = {
@@ -27,21 +28,32 @@ object RuntimeMetricsExample extends IOApp.Simple {
     }
 
     def printMetrics: IO[Unit] =
-      IO.delay(jMetricReader.collectAllMetrics().asScala.toList)
-        .flatMap(_.traverse_(v => IO.println(v.getName + " = " + v.getData)))
+      for {
+        _ <- IO.println("New cycle: ")
+        metrics <- IO.delay(jMetricReader.collectAllMetrics().asScala.toList)
+        _ <- metrics.traverse_(v => IO.println(v.getName + " = " + v.getData))
+      } yield ()
 
     Resource
       .eval(OtelJava.forAsync[IO](jSdk))
       .evalMap(_.meterProvider.get("cats-effect-runtime-metrics"))
       .use { implicit meter =>
         IOMetrics.fromRuntimeMetrics[IO](runtime.metrics).surround {
-          compute >> printMetrics
+          printMetrics.delayBy(500.millis).foreverM.background.surround {
+            compute
+          }
         }
       }
   }
 
   private def compute: IO[Unit] =
-    IO.parReplicateAN(5)(20, IO.blocking(Thread.sleep(Random.nextInt(1000))))
-      .void
+    Random.scalaUtilRandom[IO].flatMap { random =>
+      val io = random.betweenLong(10, 3000).flatMap { delay =>
+        if (delay % 2 == 0) IO.blocking(Thread.sleep(delay))
+        else IO.delay(Thread.sleep(delay))
+      }
+
+      IO.parReplicateAN(30)(100, io).void
+    }
 
 }

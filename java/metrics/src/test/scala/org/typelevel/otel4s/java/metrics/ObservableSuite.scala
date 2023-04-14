@@ -20,6 +20,7 @@ package metrics
 
 import cats.effect.IO
 import munit.CatsEffectSuite
+import org.typelevel.otel4s.metrics.Measurement
 import org.typelevel.otel4s.testkit.metrics.MetricsSdk
 
 class ObservableSuite extends CatsEffectSuite {
@@ -44,6 +45,31 @@ class ObservableSuite extends CatsEffectSuite {
           sdk.metrics
             .map(_.flatMap(_.data.points.map(x => (x.value, x.attributes))))
             .assertEquals(List((42.0, List(Attribute("foo", "bar")))))
+        )
+
+      _ <- meter
+        .observableGauge("gauge")
+        .withUnit("unit")
+        .withDescription("description")
+        .create(
+          IO.pure(
+            List(
+              Measurement(1336.0, List(Attribute("1", "2"))),
+              Measurement(1337.0, List(Attribute("a", "b")))
+            )
+          )
+        )
+        .use(_ =>
+          sdk.metrics
+            .map(
+              _.flatMap(_.data.points.map(x => (x.value, x.attributes)))
+            )
+            .assertEquals(
+              List(
+                (1336.0, List(Attribute("1", "2"))),
+                (1337.0, List(Attribute("a", "b")))
+              )
+            )
         )
 
     } yield ()
@@ -71,6 +97,31 @@ class ObservableSuite extends CatsEffectSuite {
             .assertEquals(List((1234, List(Attribute("number", 42L)))))
         )
 
+      _ <- meter
+        .observableCounter("counter")
+        .withUnit("unit")
+        .withDescription("description")
+        .create(
+          IO.pure(
+            List(
+              Measurement(1336, List(Attribute("1", "2"))),
+              Measurement(1337, List(Attribute("a", "b")))
+            )
+          )
+        )
+        .use(_ =>
+          sdk.metrics
+            .map(
+              _.flatMap(_.data.points.map(x => (x.value, x.attributes)))
+            )
+            .assertEquals(
+              List(
+                (1336, List(Attribute("1", "2"))),
+                (1337, List(Attribute("a", "b")))
+              )
+            )
+        )
+
     } yield ()
   }
 
@@ -96,6 +147,31 @@ class ObservableSuite extends CatsEffectSuite {
           sdk.metrics
             .map(_.flatMap(_.data.points.map(x => (x.value, x.attributes))))
             .assertEquals(List((1234, List(Attribute("is_false", true)))))
+        )
+
+      _ <- meter
+        .observableUpDownCounter("updowncounter")
+        .withUnit("unit")
+        .withDescription("description")
+        .create(
+          IO.pure(
+            List(
+              Measurement(1336, List(Attribute("1", "2"))),
+              Measurement(1336, List(Attribute("a", "b")))
+            )
+          )
+        )
+        .use(_ =>
+          sdk.metrics
+            .map(
+              _.flatMap(_.data.points.map(x => (x.value, x.attributes)))
+            )
+            .assertEquals(
+              List(
+                (1336, List(Attribute("1", "2"))),
+                (1336, List(Attribute("a", "b")))
+              )
+            )
         )
 
     } yield ()

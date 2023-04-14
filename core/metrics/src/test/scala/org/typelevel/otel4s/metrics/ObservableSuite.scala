@@ -20,6 +20,7 @@ package metrics
 import cats.effect.IO
 import cats.effect.Ref
 import cats.effect.Resource
+import cats.syntax.all._
 import munit.CatsEffectSuite
 
 class ObservableSuite extends CatsEffectSuite {
@@ -39,6 +40,40 @@ class ObservableSuite extends CatsEffectSuite {
             _ <- r.run
             _ <- r.observations.get.assertEquals(
               List(Record(3.0, Seq.empty), Record(2.0, Seq.empty))
+            )
+          } yield ()
+        }
+    } yield ()
+
+  }
+
+  test("observable test with list") {
+
+    for {
+      counter <- Ref.of[IO, Int](0)
+      _ <- new InMemoryObservableInstrumentBuilder[Int]
+        .create(
+          counter
+            .getAndUpdate(_ + 1)
+            .map(x =>
+              List(
+                Measurement(x, List(Attribute("thing", "a"))),
+                Measurement(x, List(Attribute("thing", "b")))
+              )
+            )
+        )
+        .use { r =>
+          for {
+            _ <- r.observations.get.assertEquals(List.empty)
+            _ <- r.run
+            _ <- r.run
+            _ <- r.observations.get.assertEquals(
+              List(
+                Record(1, Seq(Attribute("thing", "b"))),
+                Record(1, Seq(Attribute("thing", "a"))),
+                Record(0, Seq(Attribute("thing", "b"))),
+                Record(0, Seq(Attribute("thing", "a")))
+              )
             )
           } yield ()
         }
@@ -72,6 +107,21 @@ object ObservableSuite {
     def withUnit(unit: String): Self = this
 
     def withDescription(description: String): Self = this
+
+    def create(
+        measurements: IO[List[Measurement[A]]]
+    ): Resource[IO, InMemoryObservable[A]] =
+      Resource
+        .eval(Ref.of[IO, List[Record[A]]](List.empty))
+        .map(obs =>
+          InMemoryObservable[A](
+            recorder =>
+              measurements.flatMap(
+                _.traverse_(x => recorder.record(x.value, x.attributes: _*))
+              ),
+            obs
+          )
+        )
 
     def createWithCallback(
         cb: ObservableMeasurement[IO, A] => IO[Unit]

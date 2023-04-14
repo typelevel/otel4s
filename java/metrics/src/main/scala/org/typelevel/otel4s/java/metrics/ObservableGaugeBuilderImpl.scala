@@ -23,6 +23,7 @@ import cats.effect.kernel.Resource
 import cats.effect.std.Dispatcher
 import cats.syntax.all._
 import io.opentelemetry.api.metrics.{Meter => JMeter}
+import io.opentelemetry.api.metrics.ObservableDoubleMeasurement
 import org.typelevel.otel4s.metrics._
 
 private[java] case class ObservableGaugeBuilderImpl[F[_]](
@@ -39,8 +40,8 @@ private[java] case class ObservableGaugeBuilderImpl[F[_]](
   def withDescription(description: String): Self =
     copy(description = Option(description))
 
-  def createWithCallback(
-      cb: ObservableMeasurement[F, Double] => F[Unit]
+  private def createInternal(
+      cb: ObservableDoubleMeasurement => F[Unit]
   ): Resource[F, ObservableGauge] =
     Dispatcher.sequential.flatMap(dispatcher =>
       Resource
@@ -48,12 +49,29 @@ private[java] case class ObservableGaugeBuilderImpl[F[_]](
           val b = jMeter.gaugeBuilder(name)
           unit.foreach(b.setUnit)
           description.foreach(b.setDescription)
-          b.buildWithCallback { gauge =>
-            dispatcher.unsafeRunSync(cb(new ObservableDoubleImpl(gauge)))
+          b.buildWithCallback { odm =>
+            dispatcher.unsafeRunSync(cb(odm))
           }
-
         })
         .as(new ObservableGauge {})
+    )
+
+  def createWithCallback(
+      cb: ObservableMeasurement[F, Double] => F[Unit]
+  ): Resource[F, ObservableGauge] =
+    createInternal(odm => cb(new ObservableDoubleImpl(odm)))
+
+  def create(
+      measurements: F[List[Measurement[Double]]]
+  ): Resource[F, ObservableGauge] =
+    createInternal(odm =>
+      measurements.flatMap(ms =>
+        F.delay(
+          ms.foreach(m =>
+            odm.record(m.value, Conversions.toJAttributes(m.attributes))
+          )
+        )
+      )
     )
 
 }

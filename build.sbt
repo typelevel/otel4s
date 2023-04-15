@@ -61,7 +61,8 @@ lazy val root = tlCrossRootProject
     `java-trace`,
     java,
     benchmarks,
-    examples
+    examples,
+    unidocs
   )
   .settings(name := "otel4s")
 
@@ -266,4 +267,24 @@ lazy val docs = project
         )
       )
     }
+  )
+
+lazy val unidocs = project
+  .in(file("unidocs"))
+  .enablePlugins(TypelevelUnidocPlugin)
+  .settings(
+    name := "otel4s-docs",
+    ScalaUnidoc / unidoc / unidocProjectFilter := inProjects(
+      `core-common`.jvm,
+      `core-metrics`.jvm,
+      `core-trace`.jvm,
+      core.jvm,
+      `testkit-common`.jvm,
+      `testkit-metrics`.jvm,
+      testkit.jvm,
+      `java-common`,
+      `java-metrics`,
+      `java-trace`,
+      java
+    )
   )

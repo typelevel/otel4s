@@ -18,6 +18,8 @@ package org.typelevel.otel4s
 package testkit
 package metrics
 
+import _root_.java.{lang => jl}
+import _root_.java.{util => ju}
 import cats.effect.kernel.Sync
 import io.opentelemetry.api.common.{AttributeType => JAttributeType}
 import io.opentelemetry.api.common.{Attributes => JAttributes}
@@ -36,8 +38,6 @@ import io.opentelemetry.sdk.metrics.data.LongPointData
 import io.opentelemetry.sdk.metrics.data.MetricDataType
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader
 
-import java.{lang => jl}
-import java.{util => ju}
 import scala.jdk.CollectionConverters._
 
 trait MetricsSdk[F[_]] {

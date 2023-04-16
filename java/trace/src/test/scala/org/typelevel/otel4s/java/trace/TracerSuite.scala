@@ -716,6 +716,80 @@ class TracerSuite extends CatsEffectSuite {
     }
   }
 
+  // external span does not appear in the recorded spans of the in-memory sdk
+  test("joinOrRoot: join an external span when can be extracted") {
+    val traceId = "84b54e9330faae5350f0dd8673c98146"
+    val spanId = "279fa73bc935cc05"
+
+    val headers = Map(
+      "traceparent" -> s"00-$traceId-$spanId-01"
+    )
+
+    TestControl.executeEmbed {
+      for {
+        sdk <- makeSdk()
+        tracer <- sdk.provider.get("tracer")
+        pair <- tracer.span("local").surround {
+          tracer.joinOrRoot(headers) {
+            tracer.currentSpanContext.product(
+              tracer.span("inner").use(r => IO.pure(r.context))
+            )
+          }
+        }
+        (external, inner) = pair
+      } yield {
+        assertEquals(external.map(_.traceIdHex), Some(traceId))
+        assertEquals(external.map(_.spanIdHex), Some(spanId))
+        assertEquals(inner.traceIdHex, traceId)
+      }
+    }
+  }
+
+  test(
+    "joinOrRoot: ignore an external span when cannot be extracted and start a root span"
+  ) {
+    val traceId = "84b54e9330faae5350f0dd8673c98146"
+    val spanId = "279fa73bc935cc05"
+
+    val headers = Map(
+      "some_random_header" -> s"00-$traceId-$spanId-01"
+    )
+
+    // we must always start a root span
+    def expected(now: FiniteDuration) = List(
+      SpanNode(
+        name = "inner",
+        start = now.plus(500.millis),
+        end = now.plus(500.millis).plus(200.millis),
+        children = Nil
+      ),
+      SpanNode(
+        name = "local",
+        start = now,
+        end = now.plus(500.millis).plus(200.millis),
+        children = Nil
+      )
+    )
+
+    TestControl.executeEmbed {
+      for {
+        now <- IO.monotonic.delayBy(1.second) // otherwise returns 0
+        sdk <- makeSdk()
+        tracer <- sdk.provider.get("tracer")
+        _ <- tracer.span("local").surround {
+          tracer
+            .joinOrRoot(headers) {
+              tracer.span("inner").surround(IO.sleep(200.millis))
+            }
+            .delayBy(500.millis)
+        }
+        spans <- sdk.finishedSpans
+        tree <- IO.pure(SpanNode.fromSpans(spans))
+        // _ <- IO.println(tree.map(SpanNode.render).mkString("\n"))
+      } yield assertEquals(tree, expected(now))
+    }
+  }
+
   /*
   test("propagate trace info over stream scopes") {
     def expected(now: FiniteDuration) =

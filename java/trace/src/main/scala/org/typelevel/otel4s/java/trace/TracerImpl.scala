@@ -73,4 +73,15 @@ private[java] class TracerImpl[F[_]: Sync](
         fa
     }
   }
+
+  def joinOrRoot[A, C: TextMapGetter](carrier: C)(fa: F[A]): F[A] = {
+    val context = propagators.textMapPropagator.extract(Vault.empty, carrier)
+
+    SpanContext.fromContext(context) match {
+      case Some(parent) =>
+        childScope(parent)(fa)
+      case None =>
+        rootScope(fa)
+    }
+  }
 }

@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-package org.typelevel.otel4s.java.trace
+package org.typelevel.otel4s
+package java.trace
 
 import cats.effect.IOLocal
 import cats.effect.LiftIO
@@ -32,18 +33,23 @@ trait Traces[F[_]] {
 object Traces {
 
   def local[F[_]](
-      jOtel: JOpenTelemetry
+      jOtel: JOpenTelemetry,
+      propagators: ContextPropagators[F]
   )(implicit F: Sync[F], L: Local[F, Vault]): Traces[F] = {
-    val provider = TracerProviderImpl.local(jOtel.getTracerProvider)
+    val provider =
+      TracerProviderImpl.local(jOtel.getTracerProvider, propagators)
     new Traces[F] {
       def tracerProvider: TracerProvider[F] = provider
     }
   }
 
-  def ioLocal[F[_]: LiftIO: Sync](jOtel: JOpenTelemetry): F[Traces[F]] =
+  def ioLocal[F[_]: LiftIO: Sync](
+      jOtel: JOpenTelemetry,
+      propagators: ContextPropagators[F]
+  ): F[Traces[F]] =
     IOLocal(Vault.empty)
       .map { implicit ioLocal: IOLocal[Vault] =>
-        local(jOtel)
+        local(jOtel, propagators)
       }
       .to[F]
 

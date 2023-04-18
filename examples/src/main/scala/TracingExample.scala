@@ -36,7 +36,7 @@ object Work {
     new Work[F] {
       def request(headers: Map[String, String]): F[Unit] = {
         Tracer[F].currentSpanContext.flatMap { current =>
-          Tracer[F].joinOrContinue(headers) {
+          Tracer[F].joinOrRoot(headers) {
             val builder = Tracer[F].spanBuilder("Work.DoWork")
             current.fold(builder)(builder.addLink(_)).build.use { span =>
               Tracer[F].currentSpanContext

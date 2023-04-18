@@ -23,6 +23,10 @@ import cats.effect.testkit.TestControl
 import io.opentelemetry.api.common.{AttributeKey => JAttributeKey}
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.trace.StatusCode
+import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator
+import io.opentelemetry.context.propagation.{
+  ContextPropagators => JContextPropagators
+}
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo
 import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter
 import io.opentelemetry.sdk.testing.time.TestClock
@@ -35,6 +39,8 @@ import io.opentelemetry.sdk.trace.`export`.SimpleSpanProcessor
 import io.opentelemetry.sdk.trace.internal.data.ExceptionEventData
 import munit.CatsEffectSuite
 import org.typelevel.otel4s.Attribute
+import org.typelevel.otel4s.java.ContextConversions
+import org.typelevel.otel4s.java.ContextPropagatorsImpl
 import org.typelevel.otel4s.java.instances._
 import org.typelevel.otel4s.trace.Span
 import org.typelevel.otel4s.trace.Tracer
@@ -641,6 +647,80 @@ class TracerSuite extends CatsEffectSuite {
     }
   }
 
+  // external span does not appear in the recorded spans of the in-memory sdk
+  test("joinOrRoot: join an external span when can be extracted") {
+    val traceId = "84b54e9330faae5350f0dd8673c98146"
+    val spanId = "279fa73bc935cc05"
+
+    val headers = Map(
+      "traceparent" -> s"00-$traceId-$spanId-01"
+    )
+
+    TestControl.executeEmbed {
+      for {
+        sdk <- makeSdk()
+        tracer <- sdk.provider.get("tracer")
+        pair <- tracer.span("local").surround {
+          tracer.joinOrRoot(headers) {
+            tracer.currentSpanContext.product(
+              tracer.span("inner").use(r => IO.pure(r.context))
+            )
+          }
+        }
+        (external, inner) = pair
+      } yield {
+        assertEquals(external.map(_.traceIdHex), Some(traceId))
+        assertEquals(external.map(_.spanIdHex), Some(spanId))
+        assertEquals(inner.traceIdHex, traceId)
+      }
+    }
+  }
+
+  test(
+    "joinOrRoot: ignore an external span when cannot be extracted and start a root span"
+  ) {
+    val traceId = "84b54e9330faae5350f0dd8673c98146"
+    val spanId = "279fa73bc935cc05"
+
+    val headers = Map(
+      "some_random_header" -> s"00-$traceId-$spanId-01"
+    )
+
+    // we must always start a root span
+    def expected(now: FiniteDuration) = List(
+      SpanNode(
+        name = "inner",
+        start = now.plus(500.millis),
+        end = now.plus(500.millis).plus(200.millis),
+        children = Nil
+      ),
+      SpanNode(
+        name = "local",
+        start = now,
+        end = now.plus(500.millis).plus(200.millis),
+        children = Nil
+      )
+    )
+
+    TestControl.executeEmbed {
+      for {
+        now <- IO.monotonic.delayBy(1.second) // otherwise returns 0
+        sdk <- makeSdk()
+        tracer <- sdk.provider.get("tracer")
+        _ <- tracer.span("local").surround {
+          tracer
+            .joinOrRoot(headers) {
+              tracer.span("inner").surround(IO.sleep(200.millis))
+            }
+            .delayBy(500.millis)
+        }
+        spans <- sdk.finishedSpans
+        tree <- IO.pure(SpanNode.fromSpans(spans))
+        // _ <- IO.println(tree.map(SpanNode.render).mkString("\n"))
+      } yield assertEquals(tree, expected(now))
+    }
+  }
+
   /*
   test("propagate trace info over stream scopes") {
     def expected(now: FiniteDuration) =
@@ -706,7 +786,13 @@ class TracerSuite extends CatsEffectSuite {
       customize(builder).build()
 
     IOLocal(Vault.empty).map { implicit ioLocal: IOLocal[Vault] =>
-      val provider = TracerProviderImpl.local[IO](tracerProvider)
+      val propagators = new ContextPropagatorsImpl[IO](
+        JContextPropagators.create(W3CTraceContextPropagator.getInstance()),
+        ContextConversions.toJContext,
+        ContextConversions.fromJContext
+      )
+
+      val provider = TracerProviderImpl.local[IO](tracerProvider, propagators)
       new TracerSuite.Sdk(provider, exporter)
     }
   }

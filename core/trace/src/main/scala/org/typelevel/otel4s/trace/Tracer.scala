@@ -76,6 +76,47 @@ trait Tracer[F[_]] extends TracerMacro[F] {
         fa
     }
 
+  /** Creates a new tracing scope if a parent can be extracted from the given
+    * `carrier`. A newly created non-root span will be a child of the extracted
+    * parent.
+    *
+    * If the context cannot be extracted from the `carrier`, the given effect
+    * `fa` will be executed within the '''root''' span.
+    *
+    * To make the propagation and extraction work, you need to configure the
+    * OpenTelemetry SDK. For example, you can use `OTEL_PROPAGATORS` environment
+    * variable. See the official
+    * [[https://opentelemetry.io/docs/reference/specification/sdk-environment-variables/#general-sdk-configuration SDK configuration guide]].
+    *
+    * ==Examples==
+    *
+    * ===Propagation via [[https://www.w3.org/TR/trace-context W3C headers]]:===
+    * {{{
+    * val w3cHeaders: Map[String, String] =
+    *   Map("traceparent" -> "00-80f198ee56343ba864fe8b2a57d3eff7-e457b5a2e4d86bd1-01")
+    *
+    * Tracer[F].joinOrRoot(w3cHeaders) {
+    *   Tracer[F].span("child").use { span => ??? } // a child of the external span
+    * }
+    * }}}
+    *
+    * ===Start a root span as a fallback:===
+    * {{{
+    * Tracer[F].span("process").surround {
+    *   Tracer[F].joinOrRoot(Map.empty) { // cannot extract the context from the empty map
+    *     Tracer[F].span("child").use { span => ??? } // a child of the new root span
+    *   }
+    * }
+    * }}}
+    *
+    * @param carrier
+    *   the carrier to extract the context from
+    *
+    * @tparam C
+    *   the type of the carrier
+    */
+  def joinOrRoot[A, C: TextMapGetter](carrier: C)(fa: F[A]): F[A]
+
   /** Creates a new root tracing scope. The parent span will not be available
     * inside. Thus, a span created inside of the scope will be a root one.
     *
@@ -161,5 +202,6 @@ object Tracer {
       def noopScope[A](fa: F[A]): F[A] = fa
       def childScope[A](parent: SpanContext)(fa: F[A]): F[A] = fa
       def spanBuilder(name: String): SpanBuilder.Aux[F, Span[F]] = builder
+      def joinOrRoot[A, C: TextMapGetter](carrier: C)(fa: F[A]): F[A] = fa
     }
 }

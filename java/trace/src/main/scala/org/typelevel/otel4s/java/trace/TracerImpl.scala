@@ -63,17 +63,6 @@ private[java] class TracerImpl[F[_]: Sync](
   def noopScope[A](fa: F[A]): F[A] =
     scope.noopScope(fa)
 
-  def joinOrContinue[A, C: TextMapGetter](carrier: C)(fa: F[A]): F[A] = {
-    val context = propagators.textMapPropagator.extract(Vault.empty, carrier)
-
-    SpanContext.fromContext(context) match {
-      case Some(parent) =>
-        childScope(parent)(fa)
-      case None =>
-        fa
-    }
-  }
-
   def joinOrRoot[A, C: TextMapGetter](carrier: C)(fa: F[A]): F[A] = {
     val context = propagators.textMapPropagator.extract(Vault.empty, carrier)
 

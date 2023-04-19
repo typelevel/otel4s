@@ -62,10 +62,12 @@ class ObservableSuite extends CatsEffectSuite {
         .use(_ =>
           sdk.metrics
             .map(
-              _.flatMap(_.data.points.map(x => (x.value, x.attributes)))
+              _.flatMap(
+                _.data.points.map(x => (x.value, x.attributes))
+              ).toSet
             )
             .assertEquals(
-              List(
+              Set[(Any, List[Attribute[_]])](
                 (1336.0, List(Attribute("1", "2"))),
                 (1337.0, List(Attribute("a", "b")))
               )
@@ -112,10 +114,10 @@ class ObservableSuite extends CatsEffectSuite {
         .use(_ =>
           sdk.metrics
             .map(
-              _.flatMap(_.data.points.map(x => (x.value, x.attributes)))
+              _.flatMap(_.data.points.map(x => (x.value, x.attributes))).toSet
             )
             .assertEquals(
-              List(
+              Set[(Any, List[Attribute[_]])](
                 (1336, List(Attribute("1", "2"))),
                 (1337, List(Attribute("a", "b")))
               )
@@ -164,10 +166,10 @@ class ObservableSuite extends CatsEffectSuite {
         .use(_ =>
           sdk.metrics
             .map(
-              _.flatMap(_.data.points.map(x => (x.value, x.attributes)))
+              _.flatMap(_.data.points.map(x => (x.value, x.attributes))).toSet
             )
             .assertEquals(
-              List(
+              Set[(Any, List[Attribute[_]])](
                 (1336, List(Attribute("1", "2"))),
                 (1336, List(Attribute("a", "b")))
               )

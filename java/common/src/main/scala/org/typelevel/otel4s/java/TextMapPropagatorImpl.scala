@@ -39,4 +39,16 @@ private[java] class TextMapPropagatorImpl[F[_]: Sync](
     Sync[F].delay(
       jPropagator.inject(toJContext(ctx), carrier, fromTextMapSetter)
     )
+
+  def injected[A](ctx: Vault, carrier: A)(implicit
+      injector: TextMapInjector[A]
+  ): A = {
+    val builder = injector.toBuilder(carrier)
+    jPropagator.inject(
+      toJContext(ctx),
+      builder,
+      fromTextMapSetter(injector.textMapSetter)
+    )
+    injector.toCarrier(builder)
+  }
 }

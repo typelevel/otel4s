@@ -53,8 +53,25 @@ trait TextMapPropagator[F[_]] {
     */
   def extract[A: TextMapGetter](ctx: Vault, carrier: A): Vault
 
-  /** Injects data from the context into the given `carrier` for downstream
-    * consumers, for example as HTTP headers.
+  /** Injects data from the context into the given mutable `carrier` for
+    * downstream consumers, for example as HTTP headers.
+    *
+    * @param ctx
+    *   the context containing the value to be injected
+    *
+    * @param carrier
+    *   holds propagation fields
+    *
+    * @tparam A
+    *   the type of the carrier, which is mutable
+    */
+  def inject[A: TextMapSetter](ctx: Vault, carrier: A): F[Unit]
+
+  /** Injects data from the context into a copy of the given immutable `carrier`
+    * for downstream consumers, for example as HTTP headers.
+    *
+    * This method is an extension to the OpenTelemetry specification to support
+    * immutable carrier types.
     *
     * @param ctx
     *   the context containing the value to be injected
@@ -64,8 +81,11 @@ trait TextMapPropagator[F[_]] {
     *
     * @tparam A
     *   the type of the carrier
+    *
+    * @return
+    *   a copy of the carrier, with new fields injected
     */
-  def inject[A: TextMapSetter](ctx: Vault, carrier: A): F[Unit]
+  def injected[A: TextMapInjector](ctx: Vault, carrier: A): A
 }
 
 object TextMapPropagator {
@@ -79,5 +99,8 @@ object TextMapPropagator {
 
       def inject[A: TextMapSetter](ctx: Vault, carrier: A): F[Unit] =
         Applicative[F].unit
+
+      def injected[A: TextMapInjector](ctx: Vault, carrier: A): A =
+        carrier
     }
 }

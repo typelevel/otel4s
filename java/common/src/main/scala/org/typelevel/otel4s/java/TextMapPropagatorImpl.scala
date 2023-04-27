@@ -41,14 +41,16 @@ private[java] class TextMapPropagatorImpl[F[_]: Sync](
     )
 
   def injected[A](ctx: Vault, carrier: A)(implicit
-      injector: TextMapInjector[A]
+      injector: TextMapUpdater[A]
   ): A = {
-    val builder = injector.toBuilder(carrier)
-    jPropagator.inject(
+    var injectedCarrier = carrier
+    jPropagator.inject[Null](
       toJContext(ctx),
-      builder,
-      fromTextMapSetter(injector.textMapSetter)
+      null, // explicitly allowed per opentelemetry-java, so our setter can be a lambda!
+      (_, key, value) => {
+        injectedCarrier = injector.updated(injectedCarrier, key, value)
+      }
     )
-    injector.toCarrier(builder)
+    injectedCarrier
   }
 }

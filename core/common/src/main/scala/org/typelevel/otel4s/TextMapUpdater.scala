@@ -16,12 +16,6 @@
 
 package org.typelevel.otel4s
 
-trait TextMapInjector[A] {
-  type Builder
-
-  def textMapSetter: TextMapSetter[Builder]
-
-  def toBuilder(carrier: A): Builder
-
-  def toCarrier(builder: Builder): A
+trait TextMapUpdater[A] {
+  def updated(carrier: A, key: String, value: String): A
 }

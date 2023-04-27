@@ -85,7 +85,7 @@ trait TextMapPropagator[F[_]] {
     * @return
     *   a copy of the carrier, with new fields injected
     */
-  def injected[A: TextMapInjector](ctx: Vault, carrier: A): A
+  def injected[A: TextMapUpdater](ctx: Vault, carrier: A): A
 }
 
 object TextMapPropagator {
@@ -100,7 +100,7 @@ object TextMapPropagator {
       def inject[A: TextMapSetter](ctx: Vault, carrier: A): F[Unit] =
         Applicative[F].unit
 
-      def injected[A: TextMapInjector](ctx: Vault, carrier: A): A =
+      def injected[A: TextMapUpdater](ctx: Vault, carrier: A): A =
         carrier
     }
 }

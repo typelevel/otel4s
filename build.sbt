@@ -26,7 +26,7 @@ ThisBuild / crossScalaVersions := Seq(Scala213, "3.2.2")
 ThisBuild / scalaVersion := Scala213 // the default Scala
 
 val CatsVersion = "2.9.0"
-val CatsEffectVersion = "3.4.9"
+val CatsEffectVersion = "3.4.10"
 val CatsMtlVersion = "1.3.0"
 val FS2Version = "3.6.1"
 val MUnitVersion = "1.0.0-M7"

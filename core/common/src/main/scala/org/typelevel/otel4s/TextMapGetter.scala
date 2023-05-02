@@ -16,6 +16,8 @@
 
 package org.typelevel.otel4s
 
+import scala.collection.generic.{IsMap, IsSeq}
+
 /** Offers a way to get a string value associated with a given key.
   *
   * A type class can be implemented for any data structure that stores key-value
@@ -60,11 +62,23 @@ trait TextMapGetter[A] {
 }
 
 object TextMapGetter {
-  implicit val forMapStringString: TextMapGetter[Map[String, String]] =
-    new TextMapGetter[Map[String, String]] {
-      def get(carrier: Map[String, String], key: String): Option[String] =
-        carrier.get(key)
-      def keys(carrier: Map[String, String]): List[String] =
-        carrier.keys.toList
+  implicit def forMapLike[Repr](implicit
+      conv: IsMap[Repr] { type K = String; type V = String }
+  ): TextMapGetter[Repr] =
+    new TextMapGetter[Repr] {
+      override def get(carrier: Repr, key: String): Option[String] =
+        conv(carrier).get(key)
+      override def keys(carrier: Repr): List[String] =
+        conv(carrier).keys.toList
+    }
+
+  implicit def forSeqLike[Repr](implicit
+      conv: IsSeq[Repr] { type A = (String, String) }
+  ): TextMapGetter[Repr] =
+    new TextMapGetter[Repr] {
+      override def get(carrier: Repr, key: String): Option[String] =
+        conv(carrier).collectFirst { case (`key`, value) => value }
+      override def keys(carrier: Repr): List[String] =
+        conv(carrier).view.map(_._1).toList
     }
 }

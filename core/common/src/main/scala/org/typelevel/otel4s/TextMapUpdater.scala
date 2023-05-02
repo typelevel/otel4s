@@ -16,6 +16,8 @@
 
 package org.typelevel.otel4s
 
+import scala.collection.immutable.{MapOps, SeqOps, SortedMapOps}
+
 /** Offers a way to store a string value associated with a given key to an
   * immutable carrier type.
   *
@@ -44,4 +46,22 @@ trait TextMapUpdater[A] {
     *   the value to associate with the key
     */
   def updated(carrier: A, key: String, value: String): A
+}
+
+object TextMapUpdater {
+  implicit def forMap[CC[x, +y] <: MapOps[x, y, CC, CC[x, y]]]
+      : TextMapUpdater[CC[String, String]] =
+    (carrier: CC[String, String], key: String, value: String) =>
+      carrier.updated(key, value)
+
+  implicit def forSortedMap[
+      CC[x, +y] <: Map[x, y] with SortedMapOps[x, y, CC, CC[x, y]]
+  ]: TextMapUpdater[CC[String, String]] =
+    (carrier: CC[String, String], key: String, value: String) =>
+      carrier.updated(key, value)
+
+  implicit def forSeq[CC[x] <: SeqOps[x, CC, CC[x]]]
+      : TextMapUpdater[CC[(String, String)]] =
+    (carrier: CC[(String, String)], key: String, value: String) =>
+      carrier.appended(key -> value)
 }

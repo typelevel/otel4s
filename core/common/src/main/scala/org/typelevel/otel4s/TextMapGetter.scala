@@ -56,9 +56,9 @@ trait TextMapGetter[A] {
     *   the carrier to get keys from
     *
     * @return
-    *   a [[scala.List]] of all the keys in the carrier
+    *   an [[scala.collection.Iterable]] of all the keys in the carrier
     */
-  def keys(carrier: A): List[String]
+  def keys(carrier: A): Iterable[String]
 }
 
 object TextMapGetter {
@@ -68,8 +68,8 @@ object TextMapGetter {
     new TextMapGetter[Repr] {
       override def get(carrier: Repr, key: String): Option[String] =
         conv(carrier).get(key)
-      override def keys(carrier: Repr): List[String] =
-        conv(carrier).keys.toList
+      override def keys(carrier: Repr): Iterable[String] =
+        conv(carrier).keys
     }
 
   implicit def forSeqLike[Repr](implicit
@@ -78,7 +78,7 @@ object TextMapGetter {
     new TextMapGetter[Repr] {
       override def get(carrier: Repr, key: String): Option[String] =
         conv(carrier).collectFirst { case (`key`, value) => value }
-      override def keys(carrier: Repr): List[String] =
-        conv(carrier).view.map(_._1).toList
+      override def keys(carrier: Repr): Iterable[String] =
+        conv(carrier).view.map(_._1)
     }
 }

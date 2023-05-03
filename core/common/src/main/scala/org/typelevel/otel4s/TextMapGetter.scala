@@ -22,7 +22,9 @@ package org.typelevel.otel4s
   * pairs.
   *
   * @see
-  *   See [[TextMapSetter]] to set a value into the carrier
+  *   See [[TextMapSetter]] to set a value to a mutable carrier
+  * @see
+  *   See [[TextMapUpdater]] to update values of an immutable carrier
   *
   * @tparam A
   *   the type of the key-value carrier

@@ -16,6 +16,32 @@
 
 package org.typelevel.otel4s
 
+/** Offers a way to store a string value associated with a given key to an
+  * immutable carrier type.
+  *
+  * @see
+  *   See [[TextMapGetter]] to get a value from the carrier
+  * @see
+  *   See [[TextMapSetter]] to set values to a mutable carrier
+  *
+  * @tparam A
+  *   the type of the carrier
+  */
 trait TextMapUpdater[A] {
+
+  /** Updates a carrier with the given `key` associated with the given `value`.
+    * The original `carrier` is unmodified.
+    *
+    * '''Important:''' the carrier must to be '''immutable'''.
+    *
+    * @param carrier
+    *   the carrier to update with a key-value pair
+    *
+    * @param key
+    *   the key to associate the value with
+    *
+    * @param value
+    *   the value to associate with the key
+    */
   def updated(carrier: A, key: String, value: String): A
 }

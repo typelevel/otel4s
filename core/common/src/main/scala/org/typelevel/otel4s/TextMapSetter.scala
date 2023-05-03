@@ -22,6 +22,8 @@ package org.typelevel.otel4s
   *
   * @see
   *   See [[TextMapGetter]] to get a value from the carrier
+  * @see
+  *   See [[TextMapUpdater]] to update values of an immutable carrier
   *
   * @tparam A
   *   the type of the carrier
@@ -36,7 +38,7 @@ trait TextMapSetter[A] {
     *   the carrier to store the key-value pair at
     *
     * @param key
-    *   the key to associated the value with
+    *   the key to associate the value with
     *
     * @param value
     *   the value to set

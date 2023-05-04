@@ -56,16 +56,16 @@ object OtelJava {
   def local[F[_]](
       jOtel: JOpenTelemetry
   )(implicit F: Async[F], L: Local[F, Vault]): Otel4s[F] = {
-    val contentPropagators = new ContextPropagatorsImpl[F](
+    val contextPropagators = new ContextPropagatorsImpl[F](
       jOtel.getPropagators,
       ContextConversions.toJContext,
       ContextConversions.fromJContext
     )
 
     val metrics = Metrics.forAsync(jOtel)
-    val traces = Traces.local(jOtel, contentPropagators)
+    val traces = Traces.local(jOtel, contextPropagators)
     new Otel4s[F] {
-      def propagators: ContextPropagators[F] = contentPropagators
+      def propagators: ContextPropagators[F] = contextPropagators
       def meterProvider: MeterProvider[F] = metrics.meterProvider
       def tracerProvider: TracerProvider[F] = traces.tracerProvider
     }

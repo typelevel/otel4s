@@ -204,4 +204,6 @@ object Tracer {
       def spanBuilder(name: String): SpanBuilder.Aux[F, Span[F]] = builder
       def joinOrRoot[A, C: TextMapGetter](carrier: C)(fa: F[A]): F[A] = fa
     }
+
+  implicit def noop[F[_]: MonadCancelThrow]: Tracer[F] = noop
 }

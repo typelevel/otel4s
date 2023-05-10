@@ -49,6 +49,8 @@ trait TextMapUpdater[A] {
 }
 
 object TextMapUpdater {
+  def apply[A](implicit updater: TextMapUpdater[A]): TextMapUpdater[A] = updater
+
   implicit def forMap[CC[x, +y] <: MapOps[x, y, CC, CC[x, y]]]
       : TextMapUpdater[CC[String, String]] =
     (carrier: CC[String, String], key: String, value: String) =>

@@ -62,6 +62,8 @@ trait TextMapGetter[A] {
 }
 
 object TextMapGetter {
+  def apply[A](implicit getter: TextMapGetter[A]): TextMapGetter[A] = getter
+
   implicit def forMapLike[Repr](implicit
       conv: IsMap[Repr] { type K = String; type V = String }
   ): TextMapGetter[Repr] =

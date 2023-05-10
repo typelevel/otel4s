@@ -50,6 +50,8 @@ trait TextMapSetter[A] {
 }
 
 object TextMapSetter {
+  def apply[A](implicit setter: TextMapSetter[A]): TextMapSetter[A] = setter
+
   implicit def forMap[C <: mutable.Map[String, String]]: TextMapSetter[C] =
     (carrier: C, key: String, value: String) => carrier.update(key, value)
 

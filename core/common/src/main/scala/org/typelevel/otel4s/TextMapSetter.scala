@@ -23,6 +23,14 @@ import scala.collection.mutable.Buffer
   *
   * A trait that defines a method to set a value in a key-value store.
   *
+  * Implicit instances of `TextMapSetter` are provided for
+  * [[scala.collection.mutable.Map]] and [[scala.collection.mutable.Buffer]]
+  * types. The behavior of `TextMapSetter[Buffer[(String, String)]]` when
+  * duplicate keys are present is unspecified, and may change at any time. In
+  * particular, if the behavior of `Buffer` types with duplicate keys is ever
+  * specified by open telemetry, the behavior of such implicit instances will
+  * be made to match the specification.
+  *
   * @see
   *   See [[TextMapGetter]] to get a value from the carrier
   * @see

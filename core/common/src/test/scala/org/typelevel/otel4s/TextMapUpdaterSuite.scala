@@ -27,7 +27,7 @@ class TextMapUpdaterSuite extends FunSuite {
   def check[C](tmu: TextMapUpdater[C])(initial: C)(expected: C): Unit = {
     val res =
       List("1" -> "one", "2" -> "two", "3" -> "three")
-        .fold(initial) { case (carrier: C, (key: String, value: String)) =>
+        .foldLeft(initial) { case (carrier, (key, value)) =>
           tmu.updated(carrier, key, value)
         }
     assertEquals(res, expected)

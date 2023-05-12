@@ -21,6 +21,14 @@ import scala.collection.immutable.{MapOps, SeqOps, SortedMapOps}
 /** Offers a way to store a string value associated with a given key to an
   * immutable carrier type.
   *
+  * Implicit instances of `TextMapUpdater` are provided for
+  * [[scala.collection.immutable.Map]] and [[scala.collection.immutable.Seq]]
+  * types.The behavior of `TextMapUpdater[Seq[(String, String)]]` when duplicate
+  * keys are present is unspecified, and may change at any time. In particular,
+  * if the behavior of `Seq` types with duplicate keys is ever specified by open
+  * telemetry, the behavior of such implicit instances will be made to match the
+  * specification.
+  *
   * @see
   *   See [[TextMapGetter]] to get a value from the carrier
   * @see

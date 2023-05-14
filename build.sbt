@@ -1,6 +1,6 @@
 import com.typesafe.tools.mima.core._
 
-ThisBuild / tlBaseVersion := "0.2"
+ThisBuild / tlBaseVersion := "0.3"
 
 ThisBuild / organization := "org.typelevel"
 ThisBuild / organizationName := "Typelevel"
@@ -26,9 +26,9 @@ ThisBuild / crossScalaVersions := Seq(Scala213, "3.2.2")
 ThisBuild / scalaVersion := Scala213 // the default Scala
 
 val CatsVersion = "2.9.0"
-val CatsEffectVersion = "3.4.10"
+val CatsEffectVersion = "3.5.0"
 val CatsMtlVersion = "1.3.1"
-val FS2Version = "3.6.1"
+val FS2Version = "3.7.0"
 val MUnitVersion = "1.0.0-M7"
 val MUnitCatsEffectVersion = "2.0.0-M3"
 val OpenTelemetryVersion = "1.26.0"

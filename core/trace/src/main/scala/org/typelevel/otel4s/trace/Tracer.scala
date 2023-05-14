@@ -22,6 +22,20 @@ import cats.effect.kernel.MonadCancelThrow
 import cats.effect.kernel.Resource
 import org.typelevel.otel4s.meta.InstrumentMeta
 
+@annotation.implicitNotFound("""
+Could not find the `Tracer` for ${F}. `Tracer` can be one of the following:
+
+1) No-operation (a.k.a. without tracing)
+
+import Tracer.Implicits.noop
+
+2) Manually from TracerProvider
+
+val tracerProvider: TracerProvider[IO] = ???
+tracerProvider
+  .get("com.service.runtime")
+  .flatMap { implicit tracer: Tracer[IO] => ??? }
+""")
 trait Tracer[F[_]] extends TracerMacro[F] {
 
   /** The instrument's metadata. Indicates whether instrumentation is enabled or
@@ -204,4 +218,8 @@ object Tracer {
       def spanBuilder(name: String): SpanBuilder.Aux[F, Span[F]] = builder
       def joinOrRoot[A, C: TextMapGetter](carrier: C)(fa: F[A]): F[A] = fa
     }
+
+  object Implicits {
+    implicit def noop[F[_]: MonadCancelThrow]: Tracer[F] = Tracer.noop
+  }
 }

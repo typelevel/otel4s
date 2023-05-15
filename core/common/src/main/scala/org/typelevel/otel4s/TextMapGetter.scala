@@ -23,8 +23,8 @@ import scala.collection.generic.{IsMap, IsSeq}
   * A type class can be implemented for any data structure that stores key-value
   * pairs.
   *
-  * Implicit instances of `TextMapGetter` are provided for [[scala.collection.Map]]
-  * and [[scala.collection.Seq]] types. The behavior of
+  * Implicit instances of `TextMapGetter` are provided for
+  * [[scala.collection.Map]] and [[scala.collection.Seq]] types. The behavior of
   * `TextMapGetter[Seq[(String, String)]]` when duplicate keys are present is
   * unspecified, and may change at any time. In particular, if the behavior of
   * `Seq` types with duplicate keys is ever specified by open telemetry, the

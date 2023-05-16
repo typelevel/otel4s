@@ -67,7 +67,11 @@ class TextMapGetterSuite extends FunSuite {
     )
   }
 
-  test("duplicate keys") {
+  test("Seq-like with duplicate keys") {
+    check(TextMapGetter[List[(String, String)]])(
+      List("1" -> "one", "2" -> "two", "3" -> "three", "1" -> "four")
+    )
+
     val res = TextMapGetter[List[(String, String)]]
       .get(List("1" -> "first", "1" -> "second", "1" -> "last"), "1")
     assertEquals(res, Some("first"))

@@ -16,10 +16,20 @@
 
 package org.typelevel.otel4s
 
+import scala.collection.generic.IsMap
+import scala.collection.generic.IsSeq
+
 /** Offers a way to get a string value associated with a given key.
   *
   * A type class can be implemented for any data structure that stores key-value
   * pairs.
+  *
+  * Implicit instances of `TextMapGetter` are provided for
+  * [[scala.collection.Map]] and [[scala.collection.Seq]] types. The behavior of
+  * `TextMapGetter[Seq[(String, String)]]` when duplicate keys are present is
+  * unspecified, and may change at any time. In particular, if the behavior of
+  * `Seq` types with duplicate keys is ever specified by open telemetry, the
+  * behavior of such implicit instances will be made to match the specification.
   *
   * @see
   *   See [[TextMapSetter]] to set a value to a mutable carrier
@@ -54,17 +64,31 @@ trait TextMapGetter[A] {
     *   the carrier to get keys from
     *
     * @return
-    *   a [[scala.List]] of all the keys in the carrier
+    *   an [[scala.collection.Iterable]] of all the keys in the carrier
     */
-  def keys(carrier: A): List[String]
+  def keys(carrier: A): Iterable[String]
 }
 
 object TextMapGetter {
-  implicit val forMapStringString: TextMapGetter[Map[String, String]] =
-    new TextMapGetter[Map[String, String]] {
-      def get(carrier: Map[String, String], key: String): Option[String] =
-        carrier.get(key)
-      def keys(carrier: Map[String, String]): List[String] =
-        carrier.keys.toList
+  def apply[A](implicit getter: TextMapGetter[A]): TextMapGetter[A] = getter
+
+  implicit def forMapLike[Repr](implicit
+      conv: IsMap[Repr] { type K = String; type V = String }
+  ): TextMapGetter[Repr] =
+    new TextMapGetter[Repr] {
+      override def get(carrier: Repr, key: String): Option[String] =
+        conv(carrier).get(key)
+      override def keys(carrier: Repr): Iterable[String] =
+        conv(carrier).keys
+    }
+
+  implicit def forSeqLike[Repr](implicit
+      conv: IsSeq[Repr] { type A = (String, String) }
+  ): TextMapGetter[Repr] =
+    new TextMapGetter[Repr] {
+      override def get(carrier: Repr, key: String): Option[String] =
+        conv(carrier).collectFirst { case (`key`, value) => value }
+      override def keys(carrier: Repr): Iterable[String] =
+        conv(carrier).view.map(_._1)
     }
 }

@@ -18,7 +18,8 @@ package org.typelevel.otel4s
 
 import munit.FunSuite
 
-import scala.collection.{immutable, mutable}
+import scala.collection.immutable
+import scala.collection.mutable
 
 class TextMapGetterSuite extends FunSuite {
   // `TextMapGetter[C]` is not implicitly summoned by this method

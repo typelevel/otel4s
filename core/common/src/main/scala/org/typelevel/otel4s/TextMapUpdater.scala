@@ -16,7 +16,9 @@
 
 package org.typelevel.otel4s
 
-import scala.collection.immutable.{MapOps, SeqOps, SortedMapOps}
+import scala.collection.immutable.MapOps
+import scala.collection.immutable.SeqOps
+import scala.collection.immutable.SortedMapOps
 
 /** Offers a way to store a string value associated with a given key to an
   * immutable carrier type.

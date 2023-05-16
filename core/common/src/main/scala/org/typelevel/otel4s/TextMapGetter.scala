@@ -16,7 +16,8 @@
 
 package org.typelevel.otel4s
 
-import scala.collection.generic.{IsMap, IsSeq}
+import scala.collection.generic.IsMap
+import scala.collection.generic.IsSeq
 
 /** Offers a way to get a string value associated with a given key.
   *

@@ -19,7 +19,9 @@ package org.typelevel.otel4s
 import munit.FunSuite
 
 import scala.collection.mutable
-import scala.collection.mutable.{ArrayBuffer, Buffer, ListBuffer}
+import scala.collection.mutable.ArrayBuffer
+import scala.collection.mutable.Buffer
+import scala.collection.mutable.ListBuffer
 
 class TextMapSetterSuite extends FunSuite {
   // `TextMapSetter[C]` is not implicitly summoned by this method

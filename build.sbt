@@ -75,6 +75,7 @@ lazy val `core-common` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
     name := "otel4s-core-common",
     libraryDependencies ++= Seq(
       "org.typelevel" %%% "cats-core" % CatsVersion,
+      "org.typelevel" %%% "cats-mtl" % CatsMtlVersion,
       "org.typelevel" %%% "vault" % VaultVersion,
       "org.scalameta" %%% "munit" % MUnitVersion % Test
     )

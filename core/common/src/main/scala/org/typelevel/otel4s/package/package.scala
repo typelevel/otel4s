@@ -16,8 +16,8 @@
 
 package org.typelevel.otel4s
 
-import cats.mtl.Local
 import cats.mtl.Ask
+import cats.mtl.Local
 import org.typelevel.vault.Vault
 
 package object context {

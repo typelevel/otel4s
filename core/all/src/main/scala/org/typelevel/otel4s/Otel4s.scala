@@ -29,4 +29,9 @@ trait Otel4s[F[_]] {
   /** An entry point of the tracing API.
     */
   def tracerProvider: TracerProvider[F]
+
+  /** TODO -- how do I write comments?
+    */
+  override def toString(): String =
+    return "TODO -- what goes here?"
 }

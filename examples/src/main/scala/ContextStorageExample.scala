@@ -27,7 +27,7 @@ object ContextStorageExample extends IOApp.Simple {
       storage = new IOLocalContextStorage(ioLocal)
       _ <- IO(ContextStorage.addWrapper(_ => storage))
       ctx = Context.root()
-      _ = IOLocals.set(ioLocal, Context.root())
+      _ <- ioLocal.set(Context.root())
       _ <- Resource
         .make(IO(ctx.`with`(key, "hello").makeCurrent()))(scope =>
           IO(scope.close())

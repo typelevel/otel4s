@@ -241,7 +241,7 @@ lazy val examples = project
     ),
     run / fork := true,
     javaOptions += "-Dotel.java.global-autoconfigure.enabled=true",
-    javaOptions += "-Dcats.effect.tracing.dumpLocals",
+    javaOptions += "-Dcats.effect.tracing.dumpLocals=true",
     envVars ++= Map(
       "OTEL_PROPAGATORS" -> "b3multi",
       "OTEL_SERVICE_NAME" -> "Trace Example"

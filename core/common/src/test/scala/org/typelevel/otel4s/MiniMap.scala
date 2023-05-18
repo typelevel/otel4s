@@ -18,10 +18,11 @@ package org.typelevel.otel4s
 
 import cats.laws.discipline.ExhaustiveCheck
 import cats.syntax.all._
+
 import scala.collection.AbstractMap
 import scala.collection.Map
-import scala.collection.immutable
 import scala.collection.generic.IsMap
+import scala.collection.immutable
 
 /** A Map with a cardinality of 25, which is a nice fit for ExhaustiveCheck. For
   * each Boolean key (cardinality 2), the value may be any (Boolean, Boolean)

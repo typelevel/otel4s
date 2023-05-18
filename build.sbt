@@ -76,6 +76,7 @@ lazy val `core-common` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
     libraryDependencies ++= Seq(
       "org.typelevel" %%% "cats-core" % CatsVersion,
       "org.typelevel" %%% "cats-laws" % CatsVersion % Test,
+      "org.typelevel" %%% "cats-mtl" % CatsMtlVersion,
       "org.typelevel" %%% "vault" % VaultVersion,
       "org.scalameta" %%% "munit" % MUnitVersion % Test
     )

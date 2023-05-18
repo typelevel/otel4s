@@ -26,7 +26,7 @@ ThisBuild / crossScalaVersions := Seq(Scala213, "3.2.2")
 ThisBuild / scalaVersion := Scala213 // the default Scala
 
 val CatsVersion = "2.9.0"
-val CatsEffectVersion = "3.5.0"
+val CatsEffectVersion = "3.5.0-30-0a69caf"
 val CatsMtlVersion = "1.3.1"
 val FS2Version = "3.6.1"
 val MUnitVersion = "1.0.0-M7"
@@ -154,7 +154,7 @@ lazy val `java-common` = project
   .settings(
     name := "otel4s-java-common",
     libraryDependencies ++= Seq(
-      "org.typelevel" %%% "cats-effect-kernel" % CatsEffectVersion,
+      "org.typelevel" %%% "cats-effect" % CatsEffectVersion,
       "org.typelevel" %%% "cats-mtl" % CatsMtlVersion,
       "io.opentelemetry" % "opentelemetry-sdk" % OpenTelemetryVersion,
       "org.scalameta" %%% "munit" % MUnitVersion % Test
@@ -241,6 +241,7 @@ lazy val examples = project
     ),
     run / fork := true,
     javaOptions += "-Dotel.java.global-autoconfigure.enabled=true",
+    javaOptions += "-Dcats.effect.tracing.dumpLocals",
     envVars ++= Map(
       "OTEL_PROPAGATORS" -> "b3multi",
       "OTEL_SERVICE_NAME" -> "Trace Example"

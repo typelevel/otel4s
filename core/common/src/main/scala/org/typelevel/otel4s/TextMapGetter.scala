@@ -58,7 +58,8 @@ trait TextMapGetter[A] {
     */
   def get(carrier: A, key: String): Option[String]
 
-  /** Returns a list of all available keys in the given `carrier`.
+  /** Returns a collection of all available keys in the given `carrier`. The
+    * collection SHOULD never return duplicates.
     *
     * @param carrier
     *   the carrier to get keys from
@@ -89,6 +90,6 @@ object TextMapGetter {
       override def get(carrier: Repr, key: String): Option[String] =
         conv(carrier).collectFirst { case (`key`, value) => value }
       override def keys(carrier: Repr): Iterable[String] =
-        conv(carrier).view.map(_._1)
+        conv(carrier).view.map(_._1).distinct
     }
 }

@@ -23,8 +23,12 @@ import scala.collection.Map
 import scala.collection.immutable
 import scala.collection.generic.IsMap
 
-// A Map with a cardinality of 25, which is a nice fit for ExhaustiveCheck.
-case class MiniMap(underlying: immutable.Map[Boolean, Compass])
+/** A Map with a cardinality of 25, which is a nice fit for ExhaustiveCheck. For
+  * each Boolean key (cardinality 2), the value may be any (Boolean, Boolean)
+  * value (cardinality 4) or absent. Each of these is independent. Therefore,
+  * the cardinality of the MiniMap is 2^(4+1) == 25.
+  */
+case class MiniMap(underlying: immutable.Map[Boolean, (Boolean, Boolean)])
     extends AbstractMap[String, String] {
   def iterator =
     underlying.iterator.map { case (k, v) => k.toString -> v.toString }
@@ -47,7 +51,7 @@ object MiniMap {
         .map(_.toList)
         .flatMap(
           _.map(key =>
-            ExhaustiveCheck[Compass].allValues
+            ExhaustiveCheck[(Boolean, Boolean)].allValues
               .map(value => key -> value)
           ).sequence
         )

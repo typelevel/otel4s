@@ -24,6 +24,7 @@ object TestInstances {
   implicit def eqForTextMapGetter[A: ExhaustiveCheck]: Eq[TextMapGetter[A]] =
     (f, g) =>
       ExhaustiveCheck[(A, Boolean)].allValues.forall { case (a, b) =>
-        f.get(a, b.toString) === g.get(a, b.toString)
+        f.get(a, b.toString) === g.get(a, b.toString) &&
+        f.keys(a).toSet === g.keys(a).toSet
       }
 }

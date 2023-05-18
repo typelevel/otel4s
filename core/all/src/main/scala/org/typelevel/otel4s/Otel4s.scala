@@ -30,8 +30,7 @@ trait Otel4s[F[_]] {
     */
   def tracerProvider: TracerProvider[F]
 
-  /** TODO -- how do I write comments?
+  /** TODO -- write something nice
     */
-  override def toString(): String =
-    return "TODO -- what goes here?"
+  override def toString(): String
 }

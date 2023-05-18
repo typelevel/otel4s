@@ -51,10 +51,10 @@ object MiniMap {
         .allValues
         .map(_.toList)
         .flatMap(
-          _.map(key =>
+          _.traverse[List, (Boolean, (Boolean, Boolean))](key =>
             ExhaustiveCheck[(Boolean, Boolean)].allValues
               .map(value => key -> value)
-          ).sequence[List, (Boolean, (Boolean, Boolean))]
+          )
         )
         .map(_.toMap)
         .map(MiniMap(_))

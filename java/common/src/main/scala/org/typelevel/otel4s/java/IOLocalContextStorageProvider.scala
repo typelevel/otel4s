@@ -18,14 +18,24 @@ package org.typelevel.otel4s.java
 
 import cats.Eval
 import cats.effect.IOLocal
-import cats.effect.unsafe.implicits.global
+import cats.effect.SyncIO
+import cats.syntax.all._
 import io.opentelemetry.context.Context
 import io.opentelemetry.context.ContextStorage
 import io.opentelemetry.context.ContextStorageProvider
 
 object IOLocalContextStorageProvider {
   val localContext: IOLocal[Context] =
-    IOLocal[Context](Context.root()).unsafeRunSync()
+    IOLocal[Context](Context.root())
+      .syncStep(100)
+      .flatMap(
+        _.leftMap(_ =>
+          new Error(
+            "Failed to initialize the local context of the IOLocalContextStorageProvider."
+          )
+        ).liftTo[SyncIO]
+      )
+      .unsafeRunSync()
 }
 
 class IOLocalContextStorageProvider extends ContextStorageProvider {

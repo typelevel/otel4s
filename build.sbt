@@ -150,7 +150,7 @@ lazy val testkit = crossProject(JVMPlatform)
 lazy val `java-common` = project
   .in(file("java/common"))
   .enablePlugins(BuildInfoPlugin)
-  .dependsOn(`core-common`.jvm, `testkit-common`.jvm)
+  .dependsOn(`core-common`.jvm, `testkit-common`.jvm % Test)
   .settings(
     name := "otel4s-java-common",
     libraryDependencies ++= Seq(
@@ -168,7 +168,7 @@ lazy val `java-common` = project
 
 lazy val `java-metrics` = project
   .in(file("java/metrics"))
-  .dependsOn(`java-common`, `core-metrics`.jvm, `testkit-metrics`.jvm)
+  .dependsOn(`java-common`, `core-metrics`.jvm, `testkit-metrics`.jvm % Test)
   .settings(munitDependencies)
   .settings(
     name := "otel4s-java-metrics",
@@ -222,7 +222,7 @@ lazy val benchmarks = project
   .enablePlugins(NoPublishPlugin)
   .enablePlugins(JmhPlugin)
   .in(file("benchmarks"))
-  .dependsOn(core.jvm, java)
+  .dependsOn(core.jvm, java, `testkit-metrics`.jvm)
   .settings(
     name := "otel4s-benchmarks"
   )

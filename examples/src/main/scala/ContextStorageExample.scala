@@ -18,7 +18,6 @@ import cats.effect.IO
 import cats.effect.IOApp
 import cats.effect.IOLocal
 import cats.effect.Resource
-import cats.effect.unsafe.IOLocals
 import io.opentelemetry.context.Context
 import io.opentelemetry.context.ContextKey
 import io.opentelemetry.context.ContextStorage

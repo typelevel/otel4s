@@ -18,24 +18,19 @@ package org.typelevel.otel4s.java
 
 import cats.Eval
 import cats.effect.IOLocal
-import cats.effect.unsafe.IOLocals
+import cats.effect.unsafe.implicits.global
 import io.opentelemetry.context.Context
 import io.opentelemetry.context.ContextStorage
-import io.opentelemetry.context.Scope
+import io.opentelemetry.context.ContextStorageProvider
 
-class IOLocalContextStorage(
-    ioLocal: Eval[IOLocal[Context]]
-) extends ContextStorage {
+object IOLocalContextStorageProvider {
+  val localContext: IOLocal[Context] =
+    IOLocal[Context](Context.root()).unsafeRunSync()
+}
 
-  override def attach(toAttach: Context): Scope = {
-    val previous = current()
-    IOLocals.set(ioLocal.value, toAttach)
-    new Scope {
-      def close() = IOLocals.set(ioLocal.value, previous)
-    }
-  }
-
-  override def current(): Context =
-    IOLocals.get(ioLocal.value)
-
+class IOLocalContextStorageProvider extends ContextStorageProvider {
+  def get(): ContextStorage =
+    new IOLocalContextStorage(
+      Eval.later(IOLocalContextStorageProvider.localContext)
+    )
 }

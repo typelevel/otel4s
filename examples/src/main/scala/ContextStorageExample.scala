@@ -16,12 +16,12 @@
 
 import cats.effect.IO
 import cats.effect.IOApp
-import cats.effect.IOLocal
 import cats.effect.Resource
 import io.opentelemetry.context.Context
 import io.opentelemetry.context.ContextKey
 import io.opentelemetry.context.ContextStorage
-import org.typelevel.otel4s.java.IOLocalContextStorage
+import org.typelevel.otel4s.java.IOLocalContextStorageProvider
+
 import java.util.logging._
 
 object ContextStorageExample extends IOApp.Simple {
@@ -38,13 +38,10 @@ object ContextStorageExample extends IOApp.Simple {
         rootLog.setLevel(Level.FINE)
         rootLog.getHandlers().head.setLevel(Level.FINE)
       }
-      ioLocal <- IOLocal(null: Context)
-      storage = new IOLocalContextStorage(ioLocal)
-      _ <- IO(ContextStorage.addWrapper(_ => storage))
-      ctx = Context.root()
-      _ <- ioLocal.set(Context.root())
+      _ <- IOLocalContextStorageProvider.localContext.set(Context.root())
+      _ <- IO.println(ContextStorage.get.getClass())
       _ <- Resource
-        .make(IO(ctx.`with`(key, "hello").makeCurrent()))(scope =>
+        .make(IO(Context.root().`with`(key, "hello").makeCurrent()))(scope =>
           IO(scope.close())
         )
         .surround(printKey)

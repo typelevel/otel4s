@@ -27,7 +27,7 @@ import scala.collection.immutable
 /** A Map with a cardinality of 25, which is a nice fit for ExhaustiveCheck. For
   * each Boolean key (cardinality 2), the value may be any (Boolean, Boolean)
   * value (cardinality 4) or absent. Each of these is independent. Therefore,
-  * the cardinality of the MiniMap is 2^(4+1) == 25.
+  * the cardinality of the MiniMap is (4+1)^2 == 25.
   */
 case class MiniMap(underlying: immutable.Map[Boolean, (Boolean, Boolean)])
     extends AbstractMap[String, String] {

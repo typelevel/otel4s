@@ -24,9 +24,9 @@ import io.opentelemetry.context.ContextStorage
 import io.opentelemetry.context.Scope
 
 class IOLocalContextStorage(
-    ioLocal: Eval[IOLocal[Context]]
+    _ioLocal: => IOLocal[Context]
 ) extends ContextStorage {
-
+  private[this] lazy val ioLocal = _ioLocal
   override def attach(toAttach: Context): Scope = {
     val previous = current()
     IOLocals.set(ioLocal.value, toAttach)

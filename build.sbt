@@ -31,6 +31,7 @@ val CatsMtlVersion = "1.3.1"
 val FS2Version = "3.7.0"
 val MUnitVersion = "1.0.0-M7"
 val MUnitCatsEffectVersion = "2.0.0-M3"
+val MUnitDisciplineVersion = "2.0.0-M3"
 val OpenTelemetryVersion = "1.26.0"
 val ScodecVersion = "1.1.37"
 val VaultVersion = "3.5.0"
@@ -152,13 +153,16 @@ lazy val `java-common` = project
   .in(file("java/common"))
   .enablePlugins(BuildInfoPlugin)
   .dependsOn(`core-common`.jvm, `testkit-common`.jvm)
+  .settings(munitDependencies)
   .settings(
     name := "otel4s-java-common",
     libraryDependencies ++= Seq(
       "org.typelevel" %%% "cats-effect-kernel" % CatsEffectVersion,
       "org.typelevel" %%% "cats-mtl" % CatsMtlVersion,
       "io.opentelemetry" % "opentelemetry-sdk" % OpenTelemetryVersion,
-      "org.scalameta" %%% "munit" % MUnitVersion % Test
+      "org.typelevel" %%% "discipline-munit" % MUnitDisciplineVersion % Test,
+      "org.typelevel" %%% "cats-mtl-laws" % CatsMtlVersion % Test,
+      "org.typelevel" %%% "cats-effect-testkit" % CatsEffectVersion % Test
     ),
     buildInfoPackage := "org.typelevel.otel4s.java",
     buildInfoOptions += sbtbuildinfo.BuildInfoOption.PackagePrivate,

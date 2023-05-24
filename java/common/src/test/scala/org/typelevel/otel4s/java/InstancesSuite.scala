@@ -16,8 +16,9 @@
 
 package org.typelevel.otel4s.java
 
+import cats.effect.IO
+import cats.effect.IOLocal
 import cats.effect.testkit.TestInstances
-import cats.effect.{IO, IOLocal}
 import cats.mtl.laws.discipline.LocalTests
 import munit.DisciplineSuite
 import org.scalacheck.Arbitrary.arbString

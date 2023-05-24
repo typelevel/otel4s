@@ -16,12 +16,18 @@
 
 package org.typelevel.otel4s
 
+import cats.Eq
+import cats.laws.discipline._
+import cats.syntax.all._
+import munit.DisciplineSuite
 import munit.FunSuite
+import org.scalacheck.Arbitrary
+import org.scalacheck.Gen
 
 import scala.collection.immutable
 import scala.collection.mutable
 
-class TextMapGetterSuite extends FunSuite {
+class TextMapGetterSuite extends FunSuite with DisciplineSuite {
   // `TextMapGetter[C]` is not implicitly summoned by this method
   // so that it tests that instances are available in a non-generic
   // context.
@@ -75,5 +81,52 @@ class TextMapGetterSuite extends FunSuite {
     val res = TextMapGetter[List[(String, String)]]
       .get(List("1" -> "first", "1" -> "second", "1" -> "last"), "1")
     assertEquals(res, Some("first"))
+  }
+
+  implicit def arbGetter[A: TextMapGetter]: Arbitrary[TextMapGetter[A]] =
+    Arbitrary(Gen.const(TextMapGetter[A]))
+
+  locally { // constrain `import NotQuiteExhaustiveChecks._` to a limited scope
+    import NotQuiteExhaustiveChecks._
+
+    implicit def getterEq[A: ExhaustiveCheck]: Eq[TextMapGetter[A]] = {
+      (x, y) =>
+        ExhaustiveCheck[(A, String)].allValues
+          .forall { case (carrier, key) =>
+            x.get(carrier, key) === y.get(carrier, key)
+          } &&
+        ExhaustiveCheck[A].allValues
+          .forall(carrier => x.keys(carrier).toSet === y.keys(carrier).toSet)
+    }
+
+    test("TextMapGetter is contravariant") {
+      checkAll(
+        "TextMapGetter[Map[String, String]]",
+        ContravariantTests[TextMapGetter]
+          .contravariant[
+            Map[String, String],
+            Map[String, String],
+            Box[Map[String, String]]
+          ]
+      )
+      checkAll(
+        "TextMapGetter[Seq[(String, String)]]",
+        ContravariantTests[TextMapGetter]
+          .contravariant[
+            Seq[(String, String)],
+            Seq[(String, String)],
+            Box[Seq[(String, String)]]
+          ]
+      )
+      checkAll(
+        "TextMapGetter[Array[(String, String)]]",
+        ContravariantTests[TextMapGetter]
+          .contravariant[
+            Array[(String, String)],
+            Array[(String, String)],
+            Box[Array[(String, String)]]
+          ]
+      )
+    }
   }
 }

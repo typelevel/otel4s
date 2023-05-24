@@ -16,6 +16,8 @@
 
 package org.typelevel.otel4s
 
+import cats.Invariant
+
 import scala.collection.immutable.MapOps
 import scala.collection.immutable.SeqOps
 import scala.collection.immutable.SortedMapOps
@@ -76,4 +78,13 @@ object TextMapUpdater {
       : TextMapUpdater[CC[(String, String)]] =
     (carrier: CC[(String, String)], key: String, value: String) =>
       carrier.appended(key -> value)
+
+  implicit val invariant: Invariant[TextMapUpdater] =
+    new Invariant[TextMapUpdater] {
+      override def imap[A, B](
+          fa: TextMapUpdater[A]
+      )(f: A => B)(g: B => A): TextMapUpdater[B] =
+        (carrier: B, key: String, value: String) =>
+          f(fa.updated(g(carrier), key, value))
+    }
 }

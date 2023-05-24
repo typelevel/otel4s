@@ -27,7 +27,7 @@ class InstancesSuite extends DisciplineSuite with TestInstances {
   implicit val ticker: Ticker = Ticker()
 
   unsafeRun {
-    IOLocal("").map {implicit ioLocal =>
+    IOLocal("").map { implicit ioLocal =>
       checkAll("IOLocal.LocalLaws", LocalTests[IO, String].local[String, Int])
     }
   }

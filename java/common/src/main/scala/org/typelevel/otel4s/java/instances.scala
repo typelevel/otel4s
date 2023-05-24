@@ -23,7 +23,7 @@ import cats.effect.LiftIO
 import cats.effect.MonadCancelThrow
 import cats.mtl.Local
 
-private[java] object instances {
+object instances {
   // We hope this instance is moved into Cats Effect.
   implicit def localForIoLocal[F[_]: MonadCancelThrow: LiftIO, E](implicit
       ioLocal: IOLocal[E]

@@ -19,10 +19,7 @@ package org.typelevel.otel4s.semconv.resource.attributes
 import org.typelevel.otel4s.AttributeKey
 import org.typelevel.otel4s.AttributeKey._
 
-import scala.annotation.nowarn
-
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/semantic-convention/templates/SemanticAttributes.scala.j2
-@nowarn("msg=never used")
 object ResourceAttributes {
 
   /** The URL of the OpenTelemetry schema for these keys and values.
@@ -686,7 +683,7 @@ object ResourceAttributes {
   val OtelLibraryVersion: AttributeKey[String] = string("otel.library.version")
 
   // Enum definitions
-  abstract class CloudProviderValue(value: String)
+  abstract class CloudProviderValue(val value: String)
   object CloudProviderValue {
 
     /** Alibaba Cloud. */
@@ -712,7 +709,7 @@ object ResourceAttributes {
 
   }
 
-  abstract class CloudPlatformValue(value: String)
+  abstract class CloudPlatformValue(val value: String)
   object CloudPlatformValue {
 
     /** Alibaba Cloud Elastic Compute Service. */
@@ -802,7 +799,7 @@ object ResourceAttributes {
 
   }
 
-  abstract class AwsEcsLaunchtypeValue(value: String)
+  abstract class AwsEcsLaunchtypeValue(val value: String)
   object AwsEcsLaunchtypeValue {
 
     /** ec2. */
@@ -813,7 +810,7 @@ object ResourceAttributes {
 
   }
 
-  abstract class HostArchValue(value: String)
+  abstract class HostArchValue(val value: String)
   object HostArchValue {
 
     /** AMD64. */
@@ -842,7 +839,7 @@ object ResourceAttributes {
 
   }
 
-  abstract class OsTypeValue(value: String)
+  abstract class OsTypeValue(val value: String)
   object OsTypeValue {
 
     /** Microsoft Windows. */
@@ -880,7 +877,7 @@ object ResourceAttributes {
 
   }
 
-  abstract class TelemetrySdkLanguageValue(value: String)
+  abstract class TelemetrySdkLanguageValue(val value: String)
   object TelemetrySdkLanguageValue {
 
     /** cpp. */

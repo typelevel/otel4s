@@ -57,6 +57,7 @@ lazy val root = tlCrossRootProject
     `core-metrics`,
     `core-trace`,
     core,
+    `sdk-common`,
     `testkit-common`,
     `testkit-metrics`,
     testkit,
@@ -123,6 +124,25 @@ lazy val core = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .settings(
     name := "otel4s-core"
   )
+
+lazy val `sdk-common` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
+  .crossType(CrossType.Pure)
+  .enablePlugins(BuildInfoPlugin)
+  .in(file("sdk/common"))
+  .dependsOn(`core-common`, semconv)
+  .settings(
+    name := "otel4s-sdk-common",
+    libraryDependencies ++= Seq(
+      "org.typelevel" %%% "cats-effect-kernel" % CatsEffectVersion,
+      "org.typelevel" %%% "cats-mtl" % CatsMtlVersion,
+    ),
+    buildInfoPackage := "org.typelevel.otel4s.sdk",
+    buildInfoOptions += sbtbuildinfo.BuildInfoOption.PackagePrivate,
+    buildInfoKeys := Seq[BuildInfoKey](
+      "openTelemetrySdkVersion" -> OpenTelemetryVersion
+    )
+  )
+  .settings(munitDependencies)
 
 lazy val `testkit-common` = crossProject(JVMPlatform)
   .crossType(CrossType.Full)
@@ -301,6 +321,7 @@ lazy val unidocs = project
       `core-metrics`.jvm,
       `core-trace`.jvm,
       core.jvm,
+      `sdk-common`.jvm,
       `testkit-common`.jvm,
       `testkit-metrics`.jvm,
       testkit.jvm,

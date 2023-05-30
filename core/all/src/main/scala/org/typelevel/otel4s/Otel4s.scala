@@ -29,8 +29,4 @@ trait Otel4s[F[_]] {
   /** An entry point of the tracing API.
     */
   def tracerProvider: TracerProvider[F]
-
-  /** TODO -- write something nice
-    */
-  override def toString(): String
 }

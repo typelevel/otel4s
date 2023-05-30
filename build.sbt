@@ -218,7 +218,7 @@ lazy val java = project
   .settings(
     name := "otel4s-java",
     libraryDependencies ++= Seq(
-      "io.opentelemetry" % "opentelemetry-sdk-testing" % OpenTelemetryVersion % Test,
+      "io.opentelemetry" % "opentelemetry-sdk-testing" % OpenTelemetryVersion % Test
     )
   )
   .settings(munitDependencies)

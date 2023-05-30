@@ -16,15 +16,33 @@
 
 package org.typelevel.otel4s.java
 
+import cats.effect.IO
+import io.opentelemetry.api.{OpenTelemetry => JOpenTelemetry}
 import io.opentelemetry.sdk.{OpenTelemetrySdk => JOpenTelemetrySdk}
+import org.typelevel.otel4s.Otel4s
+import org.typelevel.otel4s.java.OtelJava
+import org.typelevel.otel4s.ContextPropagators
+import org.typelevel.otel4s.metrics.MeterProvider
+import org.typelevel.otel4s.trace.TracerProvider
 import munit.CatsEffectSuite
 
 class OtelJavaSuite extends CatsEffectSuite {
 
-  test("JOtelSDK toString returns useful info") {
+  test("OtelJava toString returns useful info") {
+
+    val testSdk = JOpenTelemetrySdk.builder().build()
+    val testOtel4s = new Otel4s[IO] {
+      def propagators: ContextPropagators[IO] =
+        testSdk.getPropagators() // TODO: resolve
+      def meterProvider: MeterProvider[IO] = testSdk.getMeterProvider()
+      def tracerProvider: TracerProvider[IO] = testSdk.getTracerProvider()
+
+      override def toString: String = testSdk.toString()
+    }
+
     assertEquals(
-      JOpenTelemetrySdk.builder().build().toString(),
-      "OpenTelemetrySdk{tracerProvider=SdkTracerProvider{clock=SystemClock{}, idGenerator=RandomIdGenerator{}, resource=Resource{schemaUrl=null, attributes={service.name=\"unknown_service:java\", telemetry.sdk.language=\"java\", telemetry.sdk.name=\"opentelemetry\", telemetry.sdk.version=\"1.26.0\"}}, spanLimitsSupplier=SpanLimitsValue{maxNumberOfAttributes=128, maxNumberOfEvents=128, maxNumberOfLinks=128, maxNumberOfAttributesPerEvent=128, maxNumberOfAttributesPerLink=128, maxAttributeValueLength=2147483647}, sampler=ParentBased{root:AlwaysOnSampler,remoteParentSampled:AlwaysOnSampler,remoteParentNotSampled:AlwaysOffSampler,localParentSampled:AlwaysOnSampler,localParentNotSampled:AlwaysOffSampler}, spanProcessor=NoopSpanProcessor{}}, meterProvider=SdkMeterProvider{clock=SystemClock{}, resource=Resource{schemaUrl=null, attributes={service.name=\"unknown_service:java\", telemetry.sdk.language=\"java\", telemetry.sdk.name=\"opentelemetry\", telemetry.sdk.version=\"1.26.0\"}}, metricReaders=[], views=[]}, loggerProvider=SdkLoggerProvider{clock=SystemClock{}, resource=Resource{schemaUrl=null, attributes={service.name=\"unknown_service:java\", telemetry.sdk.language=\"java\", telemetry.sdk.name=\"opentelemetry\", telemetry.sdk.version=\"1.26.0\"}}, logLimits=LogLimits{maxNumberOfAttributes=128, maxAttributeValueLength=2147483647}, logRecordProcessor=io.opentelemetry.sdk.logs.NoopLogRecordProcessor@59364403}, propagators=DefaultContextPropagators{textMapPropagator=NoopTextMapPropagator}}"
+      testOtel4s.toString(),
+      "some string here"
     )
   }
 }

@@ -62,6 +62,7 @@ lazy val root = tlCrossRootProject
     `java-metrics`,
     `java-trace`,
     java,
+    semconv,
     benchmarks,
     examples,
     unidocs
@@ -217,6 +218,14 @@ lazy val java = project
   .dependsOn(core.jvm, `java-metrics`, `java-trace`)
   .settings(
     name := "otel4s-java"
+  )
+
+lazy val semconv = crossProject(JVMPlatform, JSPlatform, NativePlatform)
+  .crossType(CrossType.Pure)
+  .in(file("semconv"))
+  .dependsOn(`core-common`)
+  .settings(
+    name := "otel4s-semconv"
   )
 
 lazy val benchmarks = project

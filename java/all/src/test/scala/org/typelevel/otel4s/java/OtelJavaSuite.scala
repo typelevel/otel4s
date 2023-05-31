@@ -17,32 +17,19 @@
 package org.typelevel.otel4s.java
 
 import cats.effect.IO
-import io.opentelemetry.api.{OpenTelemetry => JOpenTelemetry}
 import io.opentelemetry.sdk.{OpenTelemetrySdk => JOpenTelemetrySdk}
-import org.typelevel.otel4s.Otel4s
-import org.typelevel.otel4s.java.OtelJava
-import org.typelevel.otel4s.ContextPropagators
-import org.typelevel.otel4s.metrics.MeterProvider
-import org.typelevel.otel4s.trace.TracerProvider
 import munit.CatsEffectSuite
+import org.typelevel.otel4s.java.OtelJava
 
 class OtelJavaSuite extends CatsEffectSuite {
 
   test("OtelJava toString returns useful info") {
-
-    val testSdk = JOpenTelemetrySdk.builder().build()
-    val testOtel4s = new Otel4s[IO] {
-      def propagators: ContextPropagators[IO] =
-        testSdk.getPropagators() // TODO: resolve
-      def meterProvider: MeterProvider[IO] = testSdk.getMeterProvider()
-      def tracerProvider: TracerProvider[IO] = testSdk.getTracerProvider()
-
-      override def toString: String = testSdk.toString()
-    }
-
-    assertEquals(
-      testOtel4s.toString(),
-      "some string here"
-    )
+    val testSdk: JOpenTelemetrySdk = JOpenTelemetrySdk.builder().build()
+    OtelJava
+      .forAsync[IO](testSdk)
+      .map(testOtel4s => {
+        val res = testOtel4s.toString()
+        assert(clue(res).startsWith("OpenTelemetrySdk"))
+      })
   }
 }

@@ -103,10 +103,10 @@ object {{class}} {
 
     {%- if class_name == "NetTransportValue" %}
     /** @deprecated This item has been removed as of 1.13.0 of the semantic conventions. */
-    @deprecated("This item has been removed", "1.13.0")
+    @deprecated("This item has been removed", "")
     case object Ip extends NetTransportValue("ip")
     /** @deprecated This item has been removed as of 1.13.0 of the semantic conventions. */
-    @deprecated("This item has been removed", "1.13.0")
+    @deprecated("This item has been removed", "")
     case object Unix extends NetTransportValue("unix")
     {%- endif %}
 
@@ -135,7 +135,7 @@ object {{class}} {
    *
    * @deprecated this item has been removed as of 1.8.0 of the semantic conventions. Please use {@link SemanticAttributes#DbName} instead.
    */
-  @deprecated("Use SemanticAttributes.DbName instead", "1.8.0")
+  @deprecated("Use SemanticAttributes.DbName instead", "")
   val DbCassandraKeyspace = string("db.cassandra.keyspace")
 
   /**
@@ -143,7 +143,7 @@ object {{class}} {
    *
    * @deprecated this item has been removed as of 1.8.0 of the semantic conventions. Please use {@link SemanticAttributes#DbName} instead.
    */
-  @deprecated("Use SemanticAttributes.DbName instead", "1.8.0")
+  @deprecated("Use SemanticAttributes.DbName instead", "")
   val DbHbaseNameSpace = string("db.hbase.namespace")
 
   /**
@@ -152,46 +152,46 @@ object {{class}} {
    *
    * @deprecated  this item has been removed as of 1.13.0 of the semantic conventions. Please use {@link SemanticAttributes#HttpRequestContentLength} instead.
    */
-  @deprecated("Use SemanticAttributes.HttpRequestContentLength instead", "1.13.0")
+  @deprecated("Use SemanticAttributes.HttpRequestContentLength instead", "")
   val HttpRequestContentLengthUncompressed = long("http.request_content_length_uncompressed")
 
   /**
    * @deprecated This item has been removed as of 1.13.0 of the semantic conventions. Please use {@link SemanticAttributes#HttpResponseContentLength} instead.
    */
-  @deprecated("Use SemanticAttributes.HttpResponseContentLength instead", "1.13.0")
+  @deprecated("Use SemanticAttributes.HttpResponseContentLength instead", "")
   val HttpResponseContentLengthUncompressed = long("http.response_content_length_uncompressed")
 
   /**
    * @deprecated This item has been removed as of 1.13.0 of the semantic conventions. Please use
    *     {@link SemanticAttributes#NetHostName} instead.
    */
-  @deprecated("Use SemanticAttributes.NetHostName instead", "1.13.0")
+  @deprecated("Use SemanticAttributes.NetHostName instead", "")
   val HttpServerName = string("http.server_name")
 
   /**
    * @deprecated This item has been removed as of 1.13.0 of the semantic conventions. Please use
    *     {@link SemanticAttributes#NetHostName} instead.
    */
-  @deprecated("Use SemanticAttributes.NetHostName instead", "1.13.0")
+  @deprecated("Use SemanticAttributes.NetHostName instead", "")
   val HttpHost = string("http.host")
 
   /**
    * @deprecated This item has been removed as of 1.13.0 of the semantic conventions. Please use {@link SemanticAttributes#NetSockPeerAddr} instead.
    */
-  @deprecated("Use SemanticAttributes.NetSockPeerAddr instead", "1.13.0")
+  @deprecated("Use SemanticAttributes.NetSockPeerAddr instead", "")
   val NetPeerIp = string("net.peer.ip")
 
   /**
    * @deprecated This item has been removed as of 1.13.0 of the semantic conventions. Please use {@link SemanticAttributes#NetSockHostAddr} instead.
    */
-  @deprecated("Use SemanticAttributes.NetSockHostAddr instead", "1.13.0")
+  @deprecated("Use SemanticAttributes.NetSockHostAddr instead", "")
   val NetHostIp = string("net.host.ip")
 
   /**
    * The ordinal number of request re-sending attempt.
    * @deprecated This item has been removed as of 1.15.0 of the semantic conventions. Use {@link SemanticAttributes#HttpResendCount} instead.
    */
-  @deprecated("Use SemanticAttributes.HttpResendCount instead", "1.15.0")
+  @deprecated("Use SemanticAttributes.HttpResendCount instead", "")
   val HttpRetryCount = long("http.retry_count")
 
 
@@ -199,35 +199,35 @@ object {{class}} {
   * A string identifying the messaging system.
   * @deprecated This item has been removed as of 1.17.0 of the semantic conventions. Use {@link SemanticAttributes#MessagingDestinationName} instead.
   */
-  @deprecated("Use SemanticAttributes.MessagingDestinationName instead", "1.17.0")
+  @deprecated("Use SemanticAttributes.MessagingDestinationName instead", "")
   val MessagingDestination = string("messaging.destination")
 
  /**
   * A boolean that is true if the message destination is temporary.
   * @deprecated This item has been removed as of 1.17.0 of the semantic conventions. Use {@link SemanticAttributes#MessagingDestinationTemporary} instead.
   */
-  @deprecated("Use SemanticAttributes.MessagingDestinationTemporary instead", "1.17.0")
+  @deprecated("Use SemanticAttributes.MessagingDestinationTemporary instead", "")
   val MessagingTempDestination = boolean("messaging.temp_destination")
 
  /**
   * The name of the transport protocol.
   * @deprecated This item has been removed as of 1.17.0 of the semantic conventions. Use {@link SemanticAttributes#NetAppProtocolName} instead.
   */
-  @deprecated("Use SemanticAttributes.NetAppProtocolName instead", "1.17.0")
+  @deprecated("Use SemanticAttributes.NetAppProtocolName instead", "")
   val MessagingProtocol = string("messaging.protocol")
 
   /**
   * The version of the transport protocol.
   * @deprecated This item has been removed as of 1.17.0 of the semantic conventions. Use {@link SemanticAttributes#NetAppProtocolVersion} instead.
   */
-  @deprecated("Use SemanticAttributes.NetAppProtocolVersion instead", "1.17.0")
+  @deprecated("Use SemanticAttributes.NetAppProtocolVersion instead", "")
   val MessagingProtocolVersion = string("messaging.protocol_version")
 
   /**
    * Connection string.
    * @deprecated This item has been removed as of 1.17.0 of the semantic conventions. There is no replacement.
    */
-  @deprecated("There is no replacement", "1.17.0")
+  @deprecated("There is no replacement", "")
   val MessagingUrl = string("messaging.url")
 
   /**
@@ -235,42 +235,42 @@ object {{class}} {
    * message belongs, represented as a string. Sometimes called &quot;Correlation ID&quot;.
    * @deprecated This item has been removed as of 1.17.0 of the semantic conventions. Use {@link SemanticAttributes#MessagingMessageConversationId} instead.
    */
-  @deprecated("Use SemanticAttributes.MessagingMessageConversationId instead", "1.17.0")
+  @deprecated("Use SemanticAttributes.MessagingMessageConversationId instead", "")
   val MessagingConversationId = string("messaging.conversation_id")
 
   /**
    * RabbitMQ message routing key.
    * @deprecated This item has been removed as of 1.17.0 of the semantic conventions. Use {@link SemanticAttributes#MessagingRabbitmqDestinationRoutingKey} instead.
    */
-  @deprecated("Use SemanticAttributes.MessagingRabbitmqDestinationRoutingKey instead", "1.17.0")
+  @deprecated("Use SemanticAttributes.MessagingRabbitmqDestinationRoutingKey instead", "")
   val MessagingRabbitmqRoutingKey = string("messaging.rabbitmq.routing_key")
 
   /**
    * Partition the message is received from.
    * @deprecated This item has been removed as of 1.17.0 of the semantic conventions. Use {@link SemanticAttributes#MessagingKafkaSourcePartition} instead.
    */
-  @deprecated("Use SemanticAttributes.MessagingKafkaSourcePartition instead", "1.17.0")
+  @deprecated("Use SemanticAttributes.MessagingKafkaSourcePartition instead", "")
   val MessagingKafkaPartition = long("messaging.kafka.partition")
 
   /**
    * A boolean that is true if the message is a tombstone.
    * @deprecated This item has been removed as of 1.17.0 of the semantic conventions. Use {@link SemanticAttributes#MessagingKafkaMessageTombstone} instead.
    */
-  @deprecated("Use SemanticAttributes.MessagingKafkaMessageTombstone instead", "1.17.0")
+  @deprecated("Use SemanticAttributes.MessagingKafkaMessageTombstone instead", "")
   val MessagingKafkaTombstone = boolean("messaging.kafka.tombstone")
 
   /**
    * The timestamp in milliseconds that the delay message is expected to be delivered to consumer.
    * @deprecated This item has been removed as of 1.17.0 of the semantic conventions. Use {@link SemanticAttributes#MessagingRocketmqMessageDeliveryTimestamp} instead.
    */
-  @deprecated("Use SemanticAttributes.MessagingRocketmqMessageDeliveryTimestamp instead", "1.17.0")
+  @deprecated("Use SemanticAttributes.MessagingRocketmqMessageDeliveryTimestamp instead", "")
   val MessagingRocketmqDeliveryTimestamp = long("messaging.rocketmq.delivery_timestamp")
 
   /**
    * The delay time level for delay message, which determines the message delay time.
    * @deprecated This item has been removed as of 1.17.0 of the semantic conventions. Use {@link SemanticAttributes#MessagingRocketmqMessageDelayTimeLevel} instead.
    */
-  @deprecated("Use SemanticAttributes.MessagingRocketmqMessageDelayTimeLevel instead", "1.17.0")
+  @deprecated("Use SemanticAttributes.MessagingRocketmqMessageDelayTimeLevel instead", "")
   val MessagingRocketmqDelayTimeLevel = long("messaging.rocketmq.delay_time_level")
 
   /** 
@@ -292,7 +292,7 @@ object {{class}} {
    * @deprecated This item has been renamed in 1.19.0 version of the semantic conventions. 
    * Use {@link SemanticAttributes#FaasInvocationId} instead.
    */
-  @deprecated("Use SemanticAttributes.FaasInvocationId instead", "1.19.0")
+  @deprecated("Use SemanticAttributes.FaasInvocationId instead", "")
   val FaasExecution = string("faas.execution")
 
   /**
@@ -301,7 +301,7 @@ object {{class}} {
    * @deprecated This item has been renamed in 1.19.0 version of the semantic conventions. 
    * Use {@link SemanticAttributes#UserAgentOriginal} instead.
    */
-  @deprecated("Use SemanticAttributes.UserAgentOriginal instead", "1.19.0")
+  @deprecated("Use SemanticAttributes.UserAgentOriginal instead", "")
   val HttpUserAgent = string("http.user_agent")
 
   /**
@@ -328,7 +328,7 @@ object {{class}} {
    * Red Hat OpenShift on Google Cloud.
    * @deprecated This item has been removed as of 1.18.0 of the semantic conventions. Use {@link ResourceAttributes.CloudPlatform#GcpOpenshift} instead.
    */
-  @deprecated("Use ResourceAttributes.CloudPlatform.GcpOpenshift instead", "1.18.0")
+  @deprecated("Use ResourceAttributes.CloudPlatform.GcpOpenshift instead", "")
   val GcpOpenshift = string("gcp_openshift")
 
   /**
@@ -343,7 +343,7 @@ object {{class}} {
    * </ul>
    * @deprecated This item has been renamed in 1.19.0 version of the semantic conventions. Use {@link org.typelevel.otel4s.semconv.trace.attributes.SemanticAttributes#UserAgentOriginal} instead.
    */
-  @deprecated("Use SemanticAttributes.UserAgentOriginal instead", "1.19.0")
+  @deprecated("Use SemanticAttributes.UserAgentOriginal instead", "")
   val BrowserUserAgent = string("browser.user_agent")
 
   /**
@@ -373,7 +373,7 @@ object {{class}} {
    * </ul>
    * @deprecated This item has been removed in 1.19.0 version of the semantic conventions. Use {@link ResourceAttributes#CloudResourceId} instead.
    */
-  @deprecated("Use ResourceAttributes.CloudResourceId instead", "1.19.0")
+  @deprecated("Use ResourceAttributes.CloudResourceId instead", "")
   val FaasId = string("faas.id")
 
   {% endif %}

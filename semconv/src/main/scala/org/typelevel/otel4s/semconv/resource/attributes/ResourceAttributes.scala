@@ -926,10 +926,7 @@ object ResourceAttributes {
     *   This item has been removed as of 1.18.0 of the semantic conventions. Use
     *   {@link ResourceAttributes.CloudPlatform#GcpOpenshift} instead.
     */
-  @deprecated(
-    "Use ResourceAttributes.CloudPlatform.GcpOpenshift instead",
-    "1.18.0"
-  )
+  @deprecated("Use ResourceAttributes.CloudPlatform.GcpOpenshift instead", "")
   val GcpOpenshift = string("gcp_openshift")
 
   /** Full user-agent string provided by the browser
@@ -946,7 +943,7 @@ object ResourceAttributes {
     *   org.typelevel.otel4s.semconv.trace.attributes.SemanticAttributes#UserAgentOriginal}
     *   instead.
     */
-  @deprecated("Use SemanticAttributes.UserAgentOriginal instead", "1.19.0")
+  @deprecated("Use SemanticAttributes.UserAgentOriginal instead", "")
   val BrowserUserAgent = string("browser.user_agent")
 
   /** The unique ID of the single function that this runtime instance executes.
@@ -977,7 +974,7 @@ object ResourceAttributes {
     *   This item has been removed in 1.19.0 version of the semantic
     *   conventions. Use {@link ResourceAttributes#CloudResourceId} instead.
     */
-  @deprecated("Use ResourceAttributes.CloudResourceId instead", "1.19.0")
+  @deprecated("Use ResourceAttributes.CloudResourceId instead", "")
   val FaasId = string("faas.id")
 
 }

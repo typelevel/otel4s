@@ -28,7 +28,7 @@ object ResourceAttributes {
 
   /** The URL of the OpenTelemetry schema for these keys and values.
     */
-  final val SchemaUrl: String = "https://opentelemetry.io/schemas/1.19.0"
+  final val SchemaUrl = "https://opentelemetry.io/schemas/1.19.0"
 
   /** Array of brand name and version separated by a space
     *
@@ -36,9 +36,7 @@ object ResourceAttributes {
     * href="https://wicg.github.io/ua-client-hints/#interface">UA client hints
     * API</a> ({@code navigator.userAgentData.brands}).</li> </ul>
     */
-  final val BrowserBrands: AttributeKey[List[String]] = stringList(
-    "browser.brands"
-  )
+  val BrowserBrands: AttributeKey[List[String]] = stringList("browser.brands")
 
   /** The platform on which the browser is running
     *
@@ -55,7 +53,7 @@ object ResourceAttributes {
     * values in the {@code browser.platform} attribute should capture the exact
     * value that the user agent provides.</li> </ul>
     */
-  final val BrowserPlatform: AttributeKey[String] = string("browser.platform")
+  val BrowserPlatform: AttributeKey[String] = string("browser.platform")
 
   /** A boolean that is true if the browser is running on a mobile device
     *
@@ -64,22 +62,22 @@ object ResourceAttributes {
     * API</a> ({@code navigator.userAgentData.mobile}). If unavailable, this
     * attribute SHOULD be left unset.</li> </ul>
     */
-  final val BrowserMobile: AttributeKey[Boolean] = boolean("browser.mobile")
+  val BrowserMobile: AttributeKey[Boolean] = boolean("browser.mobile")
 
   /** Preferred language of the user using the browser
     *
     * <p>Notes: <ul> <li>This value is intended to be taken from the Navigator
     * API {@code navigator.language}.</li> </ul>
     */
-  final val BrowserLanguage: AttributeKey[String] = string("browser.language")
+  val BrowserLanguage: AttributeKey[String] = string("browser.language")
 
   /** Name of the cloud provider.
     */
-  final val CloudProvider: AttributeKey[String] = string("cloud.provider")
+  val CloudProvider: AttributeKey[String] = string("cloud.provider")
 
   /** The cloud account ID the resource is assigned to.
     */
-  final val CloudAccountId: AttributeKey[String] = string("cloud.account.id")
+  val CloudAccountId: AttributeKey[String] = string("cloud.account.id")
 
   /** The geographical region the resource is running.
     *
@@ -95,7 +93,7 @@ object ResourceAttributes {
     * href="https://www.tencentcloud.com/document/product/213/6091">Tencent
     * Cloud regions</a>.</li> </ul>
     */
-  final val CloudRegion: AttributeKey[String] = string("cloud.region")
+  val CloudRegion: AttributeKey[String] = string("cloud.region")
 
   /** Cloud provider-specific native identifier of the monitored cloud resource
     * (e.g. an <a
@@ -129,7 +127,7 @@ object ResourceAttributes {
     * can host multiple functions that would usually share a
     * TracerProvider.</li> </ul>
     */
-  final val CloudResourceId: AttributeKey[String] = string("cloud.resource_id")
+  val CloudResourceId: AttributeKey[String] = string("cloud.resource_id")
 
   /** Cloud regions often have multiple, isolated locations known as zones to
     * increase availability. Availability zone represents the zone where the
@@ -138,7 +136,7 @@ object ResourceAttributes {
     * <p>Notes: <ul> <li>Availability zones are called &quot;zones&quot; on
     * Alibaba Cloud and Google Cloud.</li> </ul>
     */
-  final val CloudAvailabilityZone: AttributeKey[String] = string(
+  val CloudAvailabilityZone: AttributeKey[String] = string(
     "cloud.availability_zone"
   )
 
@@ -147,55 +145,43 @@ object ResourceAttributes {
     * <p>Notes: <ul> <li>The prefix of the service SHOULD match the one
     * specified in {@code cloud.provider}.</li> </ul>
     */
-  final val CloudPlatform: AttributeKey[String] = string("cloud.platform")
+  val CloudPlatform: AttributeKey[String] = string("cloud.platform")
 
   /** The Amazon Resource Name (ARN) of an <a
     * href="https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ECS_instances.html">ECS
     * container instance</a>.
     */
-  final val AwsEcsContainerArn: AttributeKey[String] = string(
-    "aws.ecs.container.arn"
-  )
+  val AwsEcsContainerArn: AttributeKey[String] = string("aws.ecs.container.arn")
 
   /** The ARN of an <a
     * href="https://docs.aws.amazon.com/AmazonECS/latest/developerguide/clusters.html">ECS
     * cluster</a>.
     */
-  final val AwsEcsClusterArn: AttributeKey[String] = string(
-    "aws.ecs.cluster.arn"
-  )
+  val AwsEcsClusterArn: AttributeKey[String] = string("aws.ecs.cluster.arn")
 
   /** The <a
     * href="https://docs.aws.amazon.com/AmazonECS/latest/developerguide/launch_types.html">launch
     * type</a> for an ECS task.
     */
-  final val AwsEcsLaunchtype: AttributeKey[String] = string(
-    "aws.ecs.launchtype"
-  )
+  val AwsEcsLaunchtype: AttributeKey[String] = string("aws.ecs.launchtype")
 
   /** The ARN of an <a
     * href="https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_definitions.html">ECS
     * task definition</a>.
     */
-  final val AwsEcsTaskArn: AttributeKey[String] = string("aws.ecs.task.arn")
+  val AwsEcsTaskArn: AttributeKey[String] = string("aws.ecs.task.arn")
 
   /** The task definition family this task definition is a member of.
     */
-  final val AwsEcsTaskFamily: AttributeKey[String] = string(
-    "aws.ecs.task.family"
-  )
+  val AwsEcsTaskFamily: AttributeKey[String] = string("aws.ecs.task.family")
 
   /** The revision for this task definition.
     */
-  final val AwsEcsTaskRevision: AttributeKey[String] = string(
-    "aws.ecs.task.revision"
-  )
+  val AwsEcsTaskRevision: AttributeKey[String] = string("aws.ecs.task.revision")
 
   /** The ARN of an EKS cluster.
     */
-  final val AwsEksClusterArn: AttributeKey[String] = string(
-    "aws.eks.cluster.arn"
-  )
+  val AwsEksClusterArn: AttributeKey[String] = string("aws.eks.cluster.arn")
 
   /** The name(s) of the AWS log group(s) an application is writing to.
     *
@@ -203,7 +189,7 @@ object ResourceAttributes {
     * multi-container applications, where a single application has sidecar
     * containers, and each write to their own log group.</li> </ul>
     */
-  final val AwsLogGroupNames: AttributeKey[List[String]] = stringList(
+  val AwsLogGroupNames: AttributeKey[List[String]] = stringList(
     "aws.log.group.names"
   )
 
@@ -213,13 +199,13 @@ object ResourceAttributes {
     * href="https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/iam-access-control-overview-cwl.html#CWL_ARN_Format">log
     * group ARN format documentation</a>.</li> </ul>
     */
-  final val AwsLogGroupArns: AttributeKey[List[String]] = stringList(
+  val AwsLogGroupArns: AttributeKey[List[String]] = stringList(
     "aws.log.group.arns"
   )
 
   /** The name(s) of the AWS log stream(s) an application is writing to.
     */
-  final val AwsLogStreamNames: AttributeKey[List[String]] = stringList(
+  val AwsLogStreamNames: AttributeKey[List[String]] = stringList(
     "aws.log.stream.names"
   )
 
@@ -231,57 +217,53 @@ object ResourceAttributes {
     * streams, so these ARNs necessarily identify both a log group and a log
     * stream.</li> </ul>
     */
-  final val AwsLogStreamArns: AttributeKey[List[String]] = stringList(
+  val AwsLogStreamArns: AttributeKey[List[String]] = stringList(
     "aws.log.stream.arns"
   )
 
   /** Time and date the release was created
     */
-  final val HerokuReleaseCreationTimestamp: AttributeKey[String] = string(
+  val HerokuReleaseCreationTimestamp: AttributeKey[String] = string(
     "heroku.release.creation_timestamp"
   )
 
   /** Commit hash for the current release
     */
-  final val HerokuReleaseCommit: AttributeKey[String] = string(
+  val HerokuReleaseCommit: AttributeKey[String] = string(
     "heroku.release.commit"
   )
 
   /** Unique identifier for the application
     */
-  final val HerokuAppId: AttributeKey[String] = string("heroku.app.id")
+  val HerokuAppId: AttributeKey[String] = string("heroku.app.id")
 
   /** Container name used by container runtime.
     */
-  final val ContainerName: AttributeKey[String] = string("container.name")
+  val ContainerName: AttributeKey[String] = string("container.name")
 
   /** Container ID. Usually a UUID, as for example used to <a
     * href="https://docs.docker.com/engine/reference/run/#container-identification">identify
     * Docker containers</a>. The UUID might be abbreviated.
     */
-  final val ContainerId: AttributeKey[String] = string("container.id")
+  val ContainerId: AttributeKey[String] = string("container.id")
 
   /** The container runtime managing this container.
     */
-  final val ContainerRuntime: AttributeKey[String] = string("container.runtime")
+  val ContainerRuntime: AttributeKey[String] = string("container.runtime")
 
   /** Name of the image the container was built on.
     */
-  final val ContainerImageName: AttributeKey[String] = string(
-    "container.image.name"
-  )
+  val ContainerImageName: AttributeKey[String] = string("container.image.name")
 
   /** Container image tag.
     */
-  final val ContainerImageTag: AttributeKey[String] = string(
-    "container.image.tag"
-  )
+  val ContainerImageTag: AttributeKey[String] = string("container.image.tag")
 
   /** Name of the <a
     * href="https://en.wikipedia.org/wiki/Deployment_environment">deployment
     * environment</a> (aka deployment tier).
     */
-  final val DeploymentEnvironment: AttributeKey[String] = string(
+  val DeploymentEnvironment: AttributeKey[String] = string(
     "deployment.environment"
   )
 
@@ -301,7 +283,7 @@ object ResourceAttributes {
     * GDPR and data protection laws may apply, ensure you do your own due
     * diligence.</li> </ul>
     */
-  final val DeviceId: AttributeKey[String] = string("device.id")
+  val DeviceId: AttributeKey[String] = string("device.id")
 
   /** The model identifier for the device
     *
@@ -309,7 +291,7 @@ object ResourceAttributes {
     * readable version of the model identifier rather than the market or
     * consumer-friendly name of the device.</li> </ul>
     */
-  final val DeviceModelIdentifier: AttributeKey[String] = string(
+  val DeviceModelIdentifier: AttributeKey[String] = string(
     "device.model.identifier"
   )
 
@@ -319,7 +301,7 @@ object ResourceAttributes {
     * version of the device model rather than a machine readable
     * alternative.</li> </ul>
     */
-  final val DeviceModelName: AttributeKey[String] = string("device.model.name")
+  val DeviceModelName: AttributeKey[String] = string("device.model.name")
 
   /** The name of the device manufacturer
     *
@@ -327,9 +309,7 @@ object ResourceAttributes {
     * href="https://developer.android.com/reference/android/os/Build#MANUFACTURER">Build</a>.
     * iOS apps SHOULD hardcode the value {@code Apple}.</li> </ul>
     */
-  final val DeviceManufacturer: AttributeKey[String] = string(
-    "device.manufacturer"
-  )
+  val DeviceManufacturer: AttributeKey[String] = string("device.manufacturer")
 
   /** The name of the single function that this runtime instance executes.
     *
@@ -349,7 +329,7 @@ object ResourceAttributes {
     * a TracerProvider (see also the {@code cloud.resource_id} attribute).</li>
     * </ul>
     */
-  final val FaasName: AttributeKey[String] = string("faas.name")
+  val FaasName: AttributeKey[String] = string("faas.name")
 
   /** The immutable version of the function being executed.
     *
@@ -365,7 +345,7 @@ object ResourceAttributes {
     * K_REVISION} environment variable</a>.</li> <li><strong>Azure
     * Functions:</strong> Not applicable. Do not set this attribute.</li> </ul>
     */
-  final val FaasVersion: AttributeKey[String] = string("faas.version")
+  val FaasVersion: AttributeKey[String] = string("faas.version")
 
   /** The execution environment ID as a string, that will be potentially reused
     * for other invocations to the same function/function version.
@@ -373,7 +353,7 @@ object ResourceAttributes {
     * <p>Notes: <ul> <li><strong>AWS Lambda:</strong> Use the (full) log stream
     * name.</li> </ul>
     */
-  final val FaasInstance: AttributeKey[String] = string("faas.instance")
+  val FaasInstance: AttributeKey[String] = string("faas.instance")
 
   /** The amount of memory available to the serverless function converted to
     * Bytes.
@@ -384,180 +364,160 @@ object ResourceAttributes {
     * AWS_LAMBDA_FUNCTION_MEMORY_SIZE} provides this information (which must be
     * multiplied by 1,048,576).</li> </ul>
     */
-  final val FaasMaxMemory: AttributeKey[Long] = long("faas.max_memory")
+  val FaasMaxMemory: AttributeKey[Long] = long("faas.max_memory")
 
   /** Unique host ID. For Cloud, this must be the instance_id assigned by the
     * cloud provider. For non-containerized systems, this should be the {@code
     * machine-id}. See the table below for the sources to use to determine the
     * {@code machine-id} based on operating system.
     */
-  final val HostId: AttributeKey[String] = string("host.id")
+  val HostId: AttributeKey[String] = string("host.id")
 
   /** Name of the host. On Unix systems, it may contain what the hostname
     * command returns, or the fully qualified hostname, or another name
     * specified by the user.
     */
-  final val HostName: AttributeKey[String] = string("host.name")
+  val HostName: AttributeKey[String] = string("host.name")
 
   /** Type of host. For Cloud, this must be the machine type.
     */
-  final val HostType: AttributeKey[String] = string("host.type")
+  val HostType: AttributeKey[String] = string("host.type")
 
   /** The CPU architecture the host system is running on.
     */
-  final val HostArch: AttributeKey[String] = string("host.arch")
+  val HostArch: AttributeKey[String] = string("host.arch")
 
   /** Name of the VM image or OS install the host was instantiated from.
     */
-  final val HostImageName: AttributeKey[String] = string("host.image.name")
+  val HostImageName: AttributeKey[String] = string("host.image.name")
 
   /** VM image ID. For Cloud, this value is from the provider.
     */
-  final val HostImageId: AttributeKey[String] = string("host.image.id")
+  val HostImageId: AttributeKey[String] = string("host.image.id")
 
   /** The version string of the VM image as defined in <a
     * href="README.md#version-attributes">Version Attributes</a>.
     */
-  final val HostImageVersion: AttributeKey[String] = string(
-    "host.image.version"
-  )
+  val HostImageVersion: AttributeKey[String] = string("host.image.version")
 
   /** The name of the cluster.
     */
-  final val K8sClusterName: AttributeKey[String] = string("k8s.cluster.name")
+  val K8sClusterName: AttributeKey[String] = string("k8s.cluster.name")
 
   /** The name of the Node.
     */
-  final val K8sNodeName: AttributeKey[String] = string("k8s.node.name")
+  val K8sNodeName: AttributeKey[String] = string("k8s.node.name")
 
   /** The UID of the Node.
     */
-  final val K8sNodeUid: AttributeKey[String] = string("k8s.node.uid")
+  val K8sNodeUid: AttributeKey[String] = string("k8s.node.uid")
 
   /** The name of the namespace that the pod is running in.
     */
-  final val K8sNamespaceName: AttributeKey[String] = string(
-    "k8s.namespace.name"
-  )
+  val K8sNamespaceName: AttributeKey[String] = string("k8s.namespace.name")
 
   /** The UID of the Pod.
     */
-  final val K8sPodUid: AttributeKey[String] = string("k8s.pod.uid")
+  val K8sPodUid: AttributeKey[String] = string("k8s.pod.uid")
 
   /** The name of the Pod.
     */
-  final val K8sPodName: AttributeKey[String] = string("k8s.pod.name")
+  val K8sPodName: AttributeKey[String] = string("k8s.pod.name")
 
   /** The name of the Container from Pod specification, must be unique within a
     * Pod. Container runtime usually uses different globally unique name ({@code
     * container.name}).
     */
-  final val K8sContainerName: AttributeKey[String] = string(
-    "k8s.container.name"
-  )
+  val K8sContainerName: AttributeKey[String] = string("k8s.container.name")
 
   /** Number of times the container was restarted. This attribute can be used to
     * identify a particular container (running or stopped) within a container
     * spec.
     */
-  final val K8sContainerRestartCount: AttributeKey[Long] = long(
+  val K8sContainerRestartCount: AttributeKey[Long] = long(
     "k8s.container.restart_count"
   )
 
   /** The UID of the ReplicaSet.
     */
-  final val K8sReplicasetUid: AttributeKey[String] = string(
-    "k8s.replicaset.uid"
-  )
+  val K8sReplicasetUid: AttributeKey[String] = string("k8s.replicaset.uid")
 
   /** The name of the ReplicaSet.
     */
-  final val K8sReplicasetName: AttributeKey[String] = string(
-    "k8s.replicaset.name"
-  )
+  val K8sReplicasetName: AttributeKey[String] = string("k8s.replicaset.name")
 
   /** The UID of the Deployment.
     */
-  final val K8sDeploymentUid: AttributeKey[String] = string(
-    "k8s.deployment.uid"
-  )
+  val K8sDeploymentUid: AttributeKey[String] = string("k8s.deployment.uid")
 
   /** The name of the Deployment.
     */
-  final val K8sDeploymentName: AttributeKey[String] = string(
-    "k8s.deployment.name"
-  )
+  val K8sDeploymentName: AttributeKey[String] = string("k8s.deployment.name")
 
   /** The UID of the StatefulSet.
     */
-  final val K8sStatefulsetUid: AttributeKey[String] = string(
-    "k8s.statefulset.uid"
-  )
+  val K8sStatefulsetUid: AttributeKey[String] = string("k8s.statefulset.uid")
 
   /** The name of the StatefulSet.
     */
-  final val K8sStatefulsetName: AttributeKey[String] = string(
-    "k8s.statefulset.name"
-  )
+  val K8sStatefulsetName: AttributeKey[String] = string("k8s.statefulset.name")
 
   /** The UID of the DaemonSet.
     */
-  final val K8sDaemonsetUid: AttributeKey[String] = string("k8s.daemonset.uid")
+  val K8sDaemonsetUid: AttributeKey[String] = string("k8s.daemonset.uid")
 
   /** The name of the DaemonSet.
     */
-  final val K8sDaemonsetName: AttributeKey[String] = string(
-    "k8s.daemonset.name"
-  )
+  val K8sDaemonsetName: AttributeKey[String] = string("k8s.daemonset.name")
 
   /** The UID of the Job.
     */
-  final val K8sJobUid: AttributeKey[String] = string("k8s.job.uid")
+  val K8sJobUid: AttributeKey[String] = string("k8s.job.uid")
 
   /** The name of the Job.
     */
-  final val K8sJobName: AttributeKey[String] = string("k8s.job.name")
+  val K8sJobName: AttributeKey[String] = string("k8s.job.name")
 
   /** The UID of the CronJob.
     */
-  final val K8sCronjobUid: AttributeKey[String] = string("k8s.cronjob.uid")
+  val K8sCronjobUid: AttributeKey[String] = string("k8s.cronjob.uid")
 
   /** The name of the CronJob.
     */
-  final val K8sCronjobName: AttributeKey[String] = string("k8s.cronjob.name")
+  val K8sCronjobName: AttributeKey[String] = string("k8s.cronjob.name")
 
   /** The operating system type.
     */
-  final val OsType: AttributeKey[String] = string("os.type")
+  val OsType: AttributeKey[String] = string("os.type")
 
   /** Human readable (not intended to be parsed) OS version information, like
     * e.g. reported by {@code ver} or {@code lsb_release -a} commands.
     */
-  final val OsDescription: AttributeKey[String] = string("os.description")
+  val OsDescription: AttributeKey[String] = string("os.description")
 
   /** Human readable operating system name.
     */
-  final val OsName: AttributeKey[String] = string("os.name")
+  val OsName: AttributeKey[String] = string("os.name")
 
   /** The version string of the operating system as defined in <a
     * href="../../resource/semantic_conventions/README.md#version-attributes">Version
     * Attributes</a>.
     */
-  final val OsVersion: AttributeKey[String] = string("os.version")
+  val OsVersion: AttributeKey[String] = string("os.version")
 
   /** Process identifier (PID).
     */
-  final val ProcessPid: AttributeKey[Long] = long("process.pid")
+  val ProcessPid: AttributeKey[Long] = long("process.pid")
 
   /** Parent Process identifier (PID).
     */
-  final val ProcessParentPid: AttributeKey[Long] = long("process.parent_pid")
+  val ProcessParentPid: AttributeKey[Long] = long("process.parent_pid")
 
   /** The name of the process executable. On Linux based systems, can be set to
     * the {@code Name} in {@code proc/[pid]/status}. On Windows, can be set to
     * the base name of {@code GetProcessImageFileNameW}.
     */
-  final val ProcessExecutableName: AttributeKey[String] = string(
+  val ProcessExecutableName: AttributeKey[String] = string(
     "process.executable.name"
   )
 
@@ -565,7 +525,7 @@ object ResourceAttributes {
     * set to the target of {@code proc/[pid]/exe}. On Windows, can be set to the
     * result of {@code GetProcessImageFileNameW}.
     */
-  final val ProcessExecutablePath: AttributeKey[String] = string(
+  val ProcessExecutablePath: AttributeKey[String] = string(
     "process.executable.path"
   )
 
@@ -574,16 +534,14 @@ object ResourceAttributes {
     * proc/[pid]/cmdline}. On Windows, can be set to the first parameter
     * extracted from {@code GetCommandLineW}.
     */
-  final val ProcessCommand: AttributeKey[String] = string("process.command")
+  val ProcessCommand: AttributeKey[String] = string("process.command")
 
   /** The full command used to launch the process as a single string
     * representing the full command. On Windows, can be set to the result of
     * {@code GetCommandLineW}. Do not set this if you have to assemble it just
     * for monitoring; use {@code process.command_args} instead.
     */
-  final val ProcessCommandLine: AttributeKey[String] = string(
-    "process.command_line"
-  )
+  val ProcessCommandLine: AttributeKey[String] = string("process.command_line")
 
   /** All the command arguments (including the command/executable itself) as
     * received by the process. On Linux-based systems (and some other Unixoid
@@ -592,32 +550,30 @@ object ResourceAttributes {
     * libc-based executables, this would be the full argv vector passed to
     * {@code main}.
     */
-  final val ProcessCommandArgs: AttributeKey[List[String]] = stringList(
+  val ProcessCommandArgs: AttributeKey[List[String]] = stringList(
     "process.command_args"
   )
 
   /** The username of the user that owns the process.
     */
-  final val ProcessOwner: AttributeKey[String] = string("process.owner")
+  val ProcessOwner: AttributeKey[String] = string("process.owner")
 
   /** The name of the runtime of this process. For compiled native binaries,
     * this SHOULD be the name of the compiler.
     */
-  final val ProcessRuntimeName: AttributeKey[String] = string(
-    "process.runtime.name"
-  )
+  val ProcessRuntimeName: AttributeKey[String] = string("process.runtime.name")
 
   /** The version of the runtime of this process, as returned by the runtime
     * without modification.
     */
-  final val ProcessRuntimeVersion: AttributeKey[String] = string(
+  val ProcessRuntimeVersion: AttributeKey[String] = string(
     "process.runtime.version"
   )
 
   /** An additional description about the runtime of the process, for example a
     * specific vendor customization of the runtime environment.
     */
-  final val ProcessRuntimeDescription: AttributeKey[String] = string(
+  val ProcessRuntimeDescription: AttributeKey[String] = string(
     "process.runtime.description"
   )
 
@@ -630,7 +586,7 @@ object ResourceAttributes {
     * unknown_service:bash}. If {@code process.executable.name} is not
     * available, the value MUST be set to {@code unknown_service}.</li> </ul>
     */
-  final val ServiceName: AttributeKey[String] = string("service.name")
+  val ServiceName: AttributeKey[String] = string("service.name")
 
   /** A namespace for {@code service.name}.
     *
@@ -643,7 +599,7 @@ object ResourceAttributes {
     * namespace is simply one more valid namespace). Zero-length namespace
     * string is assumed equal to unspecified namespace.</li> </ul>
     */
-  final val ServiceNamespace: AttributeKey[String] = string("service.namespace")
+  val ServiceNamespace: AttributeKey[String] = string("service.namespace")
 
   /** The string ID of the service instance.
     *
@@ -661,64 +617,58 @@ object ResourceAttributes {
     * for reproducible UUIDs may also use Version 5, see RFC 4122 for more
     * recommendations).</li> </ul>
     */
-  final val ServiceInstanceId: AttributeKey[String] = string(
-    "service.instance.id"
-  )
+  val ServiceInstanceId: AttributeKey[String] = string("service.instance.id")
 
   /** The version string of the service API or implementation.
     */
-  final val ServiceVersion: AttributeKey[String] = string("service.version")
+  val ServiceVersion: AttributeKey[String] = string("service.version")
 
   /** The name of the telemetry SDK as defined above.
     */
-  final val TelemetrySdkName: AttributeKey[String] = string(
-    "telemetry.sdk.name"
-  )
+  val TelemetrySdkName: AttributeKey[String] = string("telemetry.sdk.name")
 
   /** The language of the telemetry SDK.
     */
-  final val TelemetrySdkLanguage: AttributeKey[String] = string(
+  val TelemetrySdkLanguage: AttributeKey[String] = string(
     "telemetry.sdk.language"
   )
 
   /** The version string of the telemetry SDK.
     */
-  final val TelemetrySdkVersion: AttributeKey[String] = string(
+  val TelemetrySdkVersion: AttributeKey[String] = string(
     "telemetry.sdk.version"
   )
 
   /** The version string of the auto instrumentation agent, if used.
     */
-  final val TelemetryAutoVersion: AttributeKey[String] = string(
+  val TelemetryAutoVersion: AttributeKey[String] = string(
     "telemetry.auto.version"
   )
 
   /** The name of the web engine.
     */
-  final val WebengineName: AttributeKey[String] = string("webengine.name")
+  val WebengineName: AttributeKey[String] = string("webengine.name")
 
   /** The version of the web engine.
     */
-  final val WebengineVersion: AttributeKey[String] = string("webengine.version")
+  val WebengineVersion: AttributeKey[String] = string("webengine.version")
 
   /** Additional description of the web engine (e.g. detailed version and
     * edition information).
     */
-  final val WebengineDescription: AttributeKey[String] = string(
+  val WebengineDescription: AttributeKey[String] = string(
     "webengine.description"
   )
 
   /** The name of the instrumentation scope - ({@code InstrumentationScope.Name}
     * in OTLP).
     */
-  final val OtelScopeName: AttributeKey[String] = string("otel.scope.name")
+  val OtelScopeName: AttributeKey[String] = string("otel.scope.name")
 
   /** The version of the instrumentation scope - ({@code
     * InstrumentationScope.Version} in OTLP).
     */
-  final val OtelScopeVersion: AttributeKey[String] = string(
-    "otel.scope.version"
-  )
+  val OtelScopeVersion: AttributeKey[String] = string("otel.scope.version")
 
   /** Deprecated, use the {@code otel.scope.name} attribute.
     *
@@ -726,7 +676,7 @@ object ResourceAttributes {
     *   Deprecated, use the `otel.scope.name` attribute.
     */
   @deprecated
-  final val OtelLibraryName: AttributeKey[String] = string("otel.library.name")
+  val OtelLibraryName: AttributeKey[String] = string("otel.library.name")
 
   /** Deprecated, use the {@code otel.scope.version} attribute.
     *
@@ -734,12 +684,10 @@ object ResourceAttributes {
     *   Deprecated, use the `otel.scope.version` attribute.
     */
   @deprecated
-  final val OtelLibraryVersion: AttributeKey[String] = string(
-    "otel.library.version"
-  )
+  val OtelLibraryVersion: AttributeKey[String] = string("otel.library.version")
 
   // Enum definitions
-  sealed abstract class CloudProviderValue(value: String)
+  abstract class CloudProviderValue(value: String)
   object CloudProviderValue {
 
     /** Alibaba Cloud. */
@@ -765,7 +713,7 @@ object ResourceAttributes {
 
   }
 
-  sealed abstract class CloudPlatformValue(value: String)
+  abstract class CloudPlatformValue(value: String)
   object CloudPlatformValue {
 
     /** Alibaba Cloud Elastic Compute Service. */
@@ -855,7 +803,7 @@ object ResourceAttributes {
 
   }
 
-  sealed abstract class AwsEcsLaunchtypeValue(value: String)
+  abstract class AwsEcsLaunchtypeValue(value: String)
   object AwsEcsLaunchtypeValue {
 
     /** ec2. */
@@ -866,7 +814,7 @@ object ResourceAttributes {
 
   }
 
-  sealed abstract class HostArchValue(value: String)
+  abstract class HostArchValue(value: String)
   object HostArchValue {
 
     /** AMD64. */
@@ -895,7 +843,7 @@ object ResourceAttributes {
 
   }
 
-  sealed abstract class OsTypeValue(value: String)
+  abstract class OsTypeValue(value: String)
   object OsTypeValue {
 
     /** Microsoft Windows. */
@@ -933,7 +881,7 @@ object ResourceAttributes {
 
   }
 
-  sealed abstract class TelemetrySdkLanguageValue(value: String)
+  abstract class TelemetrySdkLanguageValue(value: String)
   object TelemetrySdkLanguageValue {
 
     /** cpp. */
@@ -983,7 +931,7 @@ object ResourceAttributes {
     "Use ResourceAttributes.CloudPlatform.GcpOpenshift instead",
     "1.18.0"
   )
-  final val GcpOpenshift: AttributeKey[String] = string("gcp_openshift")
+  val GcpOpenshift = string("gcp_openshift")
 
   /** Full user-agent string provided by the browser
     *
@@ -1000,9 +948,7 @@ object ResourceAttributes {
     *   instead.
     */
   @deprecated("Use SemanticAttributes.UserAgentOriginal instead", "1.19.0")
-  final val BrowserUserAgent: AttributeKey[String] = string(
-    "browser.user_agent"
-  )
+  val BrowserUserAgent = string("browser.user_agent")
 
   /** The unique ID of the single function that this runtime instance executes.
     *
@@ -1033,6 +979,6 @@ object ResourceAttributes {
     *   conventions. Use {@link ResourceAttributes#CloudResourceId} instead.
     */
   @deprecated("Use ResourceAttributes.CloudResourceId instead", "1.19.0")
-  final val FaasId: AttributeKey[String] = string("faas.id")
+  val FaasId = string("faas.id")
 
 }

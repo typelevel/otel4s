@@ -18,6 +18,7 @@ package org.typelevel.otel4s
 package trace
 
 import cats.Applicative
+import cats.data.OptionT
 import cats.effect.kernel.MonadCancelThrow
 import cats.effect.kernel.Resource
 import org.typelevel.otel4s.meta.InstrumentMeta
@@ -218,4 +219,36 @@ object Tracer {
   object Implicits {
     implicit def noop[F[_]: MonadCancelThrow]: Tracer[F] = Tracer.noop
   }
+
+  implicit def liftOptionT[F[_]: MonadCancelThrow](implicit
+      tracer: Tracer[F]
+  ): Tracer[OptionT[F, *]] =
+    new Tracer[OptionT[F, *]] {
+      def meta: Meta[OptionT[F, *]] =
+        new Meta[OptionT[F, *]] {
+          def noopSpanBuilder
+              : SpanBuilder.Aux[OptionT[F, *], Span[OptionT[F, *]]] =
+            SpanBuilder.liftOptionT(tracer.meta.noopSpanBuilder)
+          def isEnabled: Boolean =
+            tracer.meta.isEnabled
+          def unit: OptionT[F, Unit] =
+            OptionT.liftF(tracer.meta.unit)
+        }
+      def currentSpanContext: OptionT[F, Option[SpanContext]] =
+        OptionT.liftF(tracer.currentSpanContext)
+      def spanBuilder(
+          name: String
+      ): SpanBuilder.Aux[OptionT[F, *], Span[OptionT[F, *]]] =
+        SpanBuilder.liftOptionT(tracer.spanBuilder(name))
+      def childScope[A](parent: SpanContext)(fa: OptionT[F, A]): OptionT[F, A] =
+        OptionT(tracer.childScope(parent)(fa.value))
+      def joinOrRoot[A, C: TextMapGetter](carrier: C)(
+          fa: OptionT[F, A]
+      ): OptionT[F, A] =
+        OptionT(tracer.joinOrRoot(carrier)(fa.value))
+      def rootScope[A](fa: OptionT[F, A]): OptionT[F, A] =
+        OptionT(tracer.rootScope(fa.value))
+      def noopScope[A](fa: OptionT[F, A]): OptionT[F, A] =
+        OptionT(tracer.noopScope(fa.value))
+    }
 }

@@ -18,6 +18,7 @@ package org.typelevel.otel4s
 package trace
 
 import cats.Applicative
+import cats.data.OptionT
 import cats.effect.kernel.MonadCancelThrow
 import cats.effect.kernel.Resource
 
@@ -210,4 +211,54 @@ object SpanBuilder {
       }
     }
 
+  def liftOptionT[F[_]: MonadCancelThrow](
+      builder: Aux[F, Span[F]]
+  ): Aux[OptionT[F, *], Span[OptionT[F, *]]] =
+    new SpanBuilder[OptionT[F, *]] { outer =>
+      type Result = Span[OptionT[F, *]]
+
+      def addAttribute[A](attribute: Attribute[A]): Builder =
+        liftOptionT(builder.addAttribute(attribute))
+      def addAttributes(attributes: Attribute[_]*): Builder =
+        liftOptionT(builder.addAttributes(attributes: _*))
+      def addLink(
+          spanContext: SpanContext,
+          attributes: Attribute[_]*
+      ): Builder =
+        liftOptionT(builder.addLink(spanContext, attributes: _*))
+      def withFinalizationStrategy(strategy: SpanFinalizer.Strategy): Builder =
+        liftOptionT(builder.withFinalizationStrategy(strategy))
+      def withSpanKind(spanKind: SpanKind): Builder =
+        liftOptionT(builder.withSpanKind(spanKind))
+      def withStartTimestamp(timestamp: FiniteDuration): Builder =
+        liftOptionT(builder.withStartTimestamp(timestamp))
+      def root: Builder =
+        liftOptionT(builder.root)
+      def withParent(parent: SpanContext): Builder =
+        liftOptionT(builder.withParent(parent))
+      def wrapResource[A](resource: Resource[OptionT[F, *], A])(implicit
+          ev: Result =:= Span[OptionT[F, *]]
+      ): Aux[OptionT[F, *], Span.Res[OptionT[F, *], A]] =
+        ???
+
+      def build: SpanOps.Aux[OptionT[F, *], Result] =
+        new SpanOps[OptionT[F, *]] {
+          type Result = outer.Result
+
+          def startUnmanaged(implicit
+              ev: Result =:= Span[OptionT[F, *]]
+          ): OptionT[F, Span[OptionT[F, *]]] =
+            OptionT
+              .liftF(builder.build.startUnmanaged)
+              .map(Span.liftOptionT(_))
+          def use[A](f: Result => OptionT[F, A]): OptionT[F, A] =
+            OptionT(
+              builder.build.use(spanF => f(Span.liftOptionT(spanF)).value)
+            )
+          def use_ : OptionT[F, Unit] =
+            OptionT.liftF(builder.build.use_)
+          def surround[A](fa: OptionT[F, A]): OptionT[F, A] =
+            OptionT(builder.build.surround(fa.value))
+        }
+    }
 }

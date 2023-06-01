@@ -18,6 +18,7 @@ package org.typelevel.otel4s
 package trace
 
 import cats.Applicative
+import cats.data.OptionT
 import org.typelevel.otel4s.meta.InstrumentMeta
 
 import scala.concurrent.duration.FiniteDuration
@@ -151,6 +152,42 @@ object Span {
         private[otel4s] def end: F[Unit] = unit
         private[otel4s] def end(timestamp: FiniteDuration): F[Unit] = unit
       }
+
+    def liftOptionT[F[_]: Applicative](
+        backend: Backend[F]
+    ): Backend[OptionT[F, *]] =
+      new Backend[OptionT[F, *]] {
+        def meta: InstrumentMeta[OptionT[F, *]] =
+          InstrumentMeta.liftOptionT(backend.meta)
+        def context: SpanContext =
+          backend.context
+        def addAttributes(attributes: Attribute[_]*): OptionT[F, Unit] =
+          OptionT.liftF(backend.addAttributes(attributes: _*))
+        def addEvent(
+            name: String,
+            attributes: Attribute[_]*
+        ): OptionT[F, Unit] =
+          OptionT.liftF(backend.addEvent(name, attributes: _*))
+        def addEvent(
+            name: String,
+            timestamp: FiniteDuration,
+            attributes: Attribute[_]*
+        ): OptionT[F, Unit] =
+          OptionT.liftF(backend.addEvent(name, timestamp, attributes: _*))
+        def recordException(
+            exception: Throwable,
+            attributes: Attribute[_]*
+        ): OptionT[F, Unit] =
+          OptionT.liftF(backend.recordException(exception, attributes: _*))
+        def setStatus(status: Status): OptionT[F, Unit] =
+          OptionT.liftF(backend.setStatus(status))
+        def setStatus(status: Status, description: String): OptionT[F, Unit] =
+          OptionT.liftF(backend.setStatus(status, description))
+        private[otel4s] def end: OptionT[F, Unit] =
+          OptionT.liftF(backend.end)
+        private[otel4s] def end(timestamp: FiniteDuration): OptionT[F, Unit] =
+          OptionT.liftF(backend.end(timestamp))
+      }
   }
 
   private[otel4s] def fromBackend[F[_]](back: Backend[F]): Span[F] =
@@ -185,5 +222,23 @@ object Span {
         def value: A = a
         def backend: Backend[F] = back
       }
+
+    def liftOptionT[F[_]: Applicative, A](
+        res: Span.Res[F, A]
+    ): Span.Res[OptionT[F, *], A] =
+      new Span.Res[OptionT[F, *], A] {
+        def value: A = res.value
+        def backend: Backend[OptionT[F, *]] = Backend.liftOptionT(res.backend)
+      }
   }
+
+  def liftOptionT[F[_]: Applicative](span: Span[F]): Span[OptionT[F, *]] =
+    span match {
+      case res: Span.Res[F, _] => Span.Res.liftOptionT(res)
+      case _ =>
+        new Span[OptionT[F, *]] {
+          def backend: Backend[OptionT[F, *]] =
+            Backend.liftOptionT(span.backend)
+        }
+    }
 }

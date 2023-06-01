@@ -16,6 +16,8 @@
 
 package org.typelevel.otel4s
 
+import cats.Contravariant
+
 import scala.collection.generic.IsMap
 import scala.collection.generic.IsSeq
 
@@ -91,5 +93,18 @@ object TextMapGetter {
         conv(carrier).collectFirst { case (`key`, value) => value }
       override def keys(carrier: Repr): Iterable[String] =
         conv(carrier).view.map(_._1).distinct
+    }
+
+  implicit val contravariant: Contravariant[TextMapGetter] =
+    new Contravariant[TextMapGetter] {
+      override def contramap[A, B](
+          fa: TextMapGetter[A]
+      )(f: B => A): TextMapGetter[B] =
+        new TextMapGetter[B] {
+          override def get(carrier: B, key: String): Option[String] =
+            fa.get(f(carrier), key)
+          override def keys(carrier: B): Iterable[String] =
+            fa.keys(f(carrier))
+        }
     }
 }

@@ -16,11 +16,17 @@
 
 package org.typelevel.otel4s
 
+import cats.Eq
+import cats.laws.discipline._
+import cats.syntax.all._
+import munit.DisciplineSuite
 import munit.FunSuite
+import org.scalacheck.Arbitrary
+import org.scalacheck.Gen
 
 import scala.collection.immutable
 
-class TextMapUpdaterSuite extends FunSuite {
+class TextMapUpdaterSuite extends FunSuite with DisciplineSuite {
   // `TextMapUpdater[C]` is not implicitly summoned by this method
   // so that it tests that instances are available in a non-generic
   // context.
@@ -64,5 +70,41 @@ class TextMapUpdaterSuite extends FunSuite {
     check(TextMapUpdater[immutable.Seq[(String, String)]])(
       immutable.Seq.empty
     )(immutable.Seq("1" -> "one", "2" -> "two", "3" -> "three"))
+  }
+
+  implicit def arbUpdater[A: TextMapUpdater]: Arbitrary[TextMapUpdater[A]] =
+    Arbitrary(Gen.const(TextMapUpdater[A]))
+
+  locally { // constrain `import NotQuiteExhaustiveChecks._` to a limited scope
+    import NotQuiteExhaustiveChecks._
+
+    implicit def updaterEq[A: ExhaustiveCheck: Eq]: Eq[TextMapUpdater[A]] = {
+      (x, y) =>
+        ExhaustiveCheck[(A, String, String)].allValues
+          .forall { case (carrier, key, value) =>
+            x.updated(carrier, key, value) === y.updated(carrier, key, value)
+          }
+    }
+
+    test("TextMapUpdater is invariant") {
+      checkAll(
+        "TextMapUpdater[Map[String, String]]",
+        InvariantTests[TextMapUpdater]
+          .invariant[
+            Map[String, String],
+            Map[String, String],
+            Box[Map[String, String]]
+          ]
+      )
+      checkAll(
+        "TextMapUpdater[Seq[(String, String)]]",
+        InvariantTests[TextMapUpdater]
+          .invariant[
+            Seq[(String, String)],
+            Seq[(String, String)],
+            Box[Seq[(String, String)]]
+          ]
+      )
+    }
   }
 }

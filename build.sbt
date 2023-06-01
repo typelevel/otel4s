@@ -79,7 +79,7 @@ lazy val `core-common` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
       "org.typelevel" %%% "cats-mtl" % CatsMtlVersion,
       "org.typelevel" %%% "vault" % VaultVersion,
       "org.typelevel" %%% "cats-laws" % CatsVersion % Test,
-      "org.typelevel" %%% "discipline-munit" % "2.0.0-M2" % Test,
+      "org.typelevel" %%% "discipline-munit" % "2.0.0-M3" % Test,
       "org.scalameta" %%% "munit" % MUnitVersion % Test
     )
   )

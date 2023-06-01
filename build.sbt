@@ -297,6 +297,7 @@ lazy val unidocs = project
       `java-common`,
       `java-metrics`,
       `java-trace`,
-      java
+      java,
+      semconv.jvm
     )
   )

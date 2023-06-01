@@ -23,7 +23,6 @@ import scala.annotation.nowarn
 
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/semantic-convention/templates/SemanticAttributes.scala.j2
 @nowarn("msg=never used")
-@nowarn("msg=message and version: @deprecated")
 object SemanticAttributes {
 
   /** The URL of the OpenTelemetry schema for these keys and values.
@@ -1062,8 +1061,8 @@ object SemanticAttributes {
     */
   val RpcService: AttributeKey[String] = string("rpc.service")
 
-  /** The name of the (logical) method being called, must be equal to the
-    * $method part in the span name.
+  /** The name of the (logical) method being called, must be equal to the method
+    * part in the span name.
     *
     * <p>Notes: <ul> <li>This is the logical name of the method from the RPC
     * interface perspective, which can be different from the name of any
@@ -1850,7 +1849,7 @@ object SemanticAttributes {
   /** The name of an event describing an exception.
     *
     * <p>Typically an event with that name should not be manually created.
-    * Instead {@link org.typelevel.otel4s.trace.Span#recordException(Throwable)}
+    * Instead {@see org.typelevel.otel4s.trace.Span#recordException(Throwable)}
     * should be used.
     */
   final val ExceptionEventName = "exception"
@@ -2067,7 +2066,7 @@ object SemanticAttributes {
     *   org.typelevel.otel4s.semconv.resource.attributes.ResourceAttributes#OtelScopeName}
     *   instead.
     */
-  @deprecated("Use ResourceAttributes.OtelScopeName instead")
+  @deprecated("Use ResourceAttributes.OtelScopeName instead", "")
   val OtelScopeName = string("otel.scope.name")
 
   /** The version of the instrumentation scope - ({@code
@@ -2077,7 +2076,7 @@ object SemanticAttributes {
     *   org.typelevel.otel4s.semconv.resource.attributes.ResourceAttributes#OtelScopeVersion}
     *   instead.
     */
-  @deprecated("Use ResourceAttributes.OtelScopeVersion instead")
+  @deprecated("Use ResourceAttributes.OtelScopeVersion instead", "")
   val OtelScopeVersion = string("otel.scope.version")
 
   /** The execution ID of the current function execution.
@@ -2105,7 +2104,7 @@ object SemanticAttributes {
     *   org.typelevel.otel4s.semconv.resource.attributes.ResourceAttributes#OtelScopeName}
     *   attribute.
     */
-  @deprecated("Use ResourceAttributes.OtelScopeName instead")
+  @deprecated("Use ResourceAttributes.OtelScopeName instead", "")
   val OtelLibraryName = string("otel.library.name")
 
   /** Deprecated.
@@ -2115,7 +2114,7 @@ object SemanticAttributes {
     *   org.typelevel.otel4s.semconv.resource.attributes.ResourceAttributes#OtelScopeVersion}
     *   attribute.
     */
-  @deprecated("Use ResourceAttributes.OtelScopeVersion instead")
+  @deprecated("Use ResourceAttributes.OtelScopeVersion instead", "")
   val OtelLibraryVersion = string("otel.library.version")
 
 }

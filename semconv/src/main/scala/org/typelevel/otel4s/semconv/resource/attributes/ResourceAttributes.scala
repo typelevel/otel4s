@@ -23,7 +23,6 @@ import scala.annotation.nowarn
 
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/semantic-convention/templates/SemanticAttributes.scala.j2
 @nowarn("msg=never used")
-@nowarn("msg=message and version: @deprecated")
 object ResourceAttributes {
 
   /** The URL of the OpenTelemetry schema for these keys and values.
@@ -675,7 +674,7 @@ object ResourceAttributes {
     * @deprecated
     *   Deprecated, use the `otel.scope.name` attribute.
     */
-  @deprecated
+  @deprecated("Use the `otel.scope.name` attribute", "")
   val OtelLibraryName: AttributeKey[String] = string("otel.library.name")
 
   /** Deprecated, use the {@code otel.scope.version} attribute.
@@ -683,7 +682,7 @@ object ResourceAttributes {
     * @deprecated
     *   Deprecated, use the `otel.scope.version` attribute.
     */
-  @deprecated
+  @deprecated("Use the `otel.scope.version` attribute", "")
   val OtelLibraryVersion: AttributeKey[String] = string("otel.library.version")
 
   // Enum definitions

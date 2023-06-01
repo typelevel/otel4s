@@ -64,7 +64,6 @@ import scala.annotation.nowarn
 
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/semantic-convention{{template}}
 @nowarn("msg=never used")
-@nowarn("msg=message and version: @deprecated")
 object {{class}} {
   /**
    * The URL of the OpenTelemetry schema for these keys and values.
@@ -73,7 +72,7 @@ object {{class}} {
   {%- for attribute in attributes if attribute.is_local and not attribute.ref %}
 
   /**
-  * {{attribute.brief | render_markdown(code="{{@code {0}}}", paragraph="{0}")}}
+  * {{ attribute.brief | regex_replace(pattern='\\$', replace='') | render_markdown(code="{{@code {0}}}", paragraph="{0}") }}
     {%- if attribute.note %}
   *
   * <p>Notes:
@@ -85,7 +84,7 @@ object {{class}} {
     {%- endif %}
   */
     {%- if (attribute.stability | string()) == "StabilityLevel.DEPRECATED"  %}
-  @deprecated
+  @deprecated("{{attribute.brief | regex_replace("Deprecated\, ", "") | capitalize | to_doc_brief}}", "")
     {%- endif %}
   val {{attribute.fqn | to_camelcase(True)}}: AttributeKey[{{upFirst(to_scala_return_type(attribute.attr_type | string))}}] = {{to_scala_key_type(attribute.attr_type | string)}}("{{attribute.fqn}}")
   {%- endfor %}
@@ -126,7 +125,7 @@ object {{class}} {
   /**
    * The name of an event describing an exception.
    *
-   * <p>Typically an event with that name should not be manually created. Instead {@link
+   * <p>Typically an event with that name should not be manually created. Instead {@see
    * org.typelevel.otel4s.trace.Span#recordException(Throwable)} should be used.
    */
   final val ExceptionEventName = "exception"
@@ -278,14 +277,14 @@ object {{class}} {
    * The name of the instrumentation scope - ({@code InstrumentationScope.Name} in OTLP).
    * @deprecated This item has been moved, use {@link org.typelevel.otel4s.semconv.resource.attributes.ResourceAttributes#OtelScopeName} instead.
    */
-  @deprecated("Use ResourceAttributes.OtelScopeName instead")
+  @deprecated("Use ResourceAttributes.OtelScopeName instead", "")
   val OtelScopeName = string("otel.scope.name")
 
   /** 
    * The version of the instrumentation scope - ({@code InstrumentationScope.Version} in OTLP).
    * @deprecated This item has been moved, use {@link org.typelevel.otel4s.semconv.resource.attributes.ResourceAttributes#OtelScopeVersion} instead.
    */
-  @deprecated("Use ResourceAttributes.OtelScopeVersion instead")
+  @deprecated("Use ResourceAttributes.OtelScopeVersion instead", "")
   val OtelScopeVersion = string("otel.scope.version")
 
   /**
@@ -310,7 +309,7 @@ object {{class}} {
    *
    * @deprecated Deprecated, use the {@link org.typelevel.otel4s.semconv.resource.attributes.ResourceAttributes#OtelScopeName} attribute.
    */
-  @deprecated("Use ResourceAttributes.OtelScopeName instead")
+  @deprecated("Use ResourceAttributes.OtelScopeName instead", "")
   val OtelLibraryName = string("otel.library.name")
 
   /**
@@ -318,7 +317,7 @@ object {{class}} {
    *
    * @deprecated Deprecated, use the {@link org.typelevel.otel4s.semconv.resource.attributes.ResourceAttributes#OtelScopeVersion} attribute.
    */
-  @deprecated("Use ResourceAttributes.OtelScopeVersion instead")
+  @deprecated("Use ResourceAttributes.OtelScopeVersion instead", "")
   val OtelLibraryVersion = string("otel.library.version")  
 
   {% endif %}

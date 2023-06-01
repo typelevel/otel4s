@@ -217,8 +217,12 @@ lazy val java = project
   .in(file("java/all"))
   .dependsOn(core.jvm, `java-metrics`, `java-trace`)
   .settings(
-    name := "otel4s-java"
+    name := "otel4s-java",
+    libraryDependencies ++= Seq(
+      "io.opentelemetry" % "opentelemetry-sdk-testing" % OpenTelemetryVersion % Test
+    )
   )
+  .settings(munitDependencies)
 
 lazy val semconv = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .crossType(CrossType.Pure)

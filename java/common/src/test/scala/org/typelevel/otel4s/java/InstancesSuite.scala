@@ -16,26 +16,20 @@
 
 package org.typelevel.otel4s.java
 
-import cats.Applicative
-import cats.Functor
+import cats.effect.IO
 import cats.effect.IOLocal
-import cats.effect.LiftIO
-import cats.effect.MonadCancelThrow
-import cats.mtl.Local
+import cats.effect.testkit.TestInstances
+import cats.mtl.laws.discipline.LocalTests
+import munit.DisciplineSuite
+import org.scalacheck.Arbitrary.arbString
+import org.typelevel.otel4s.java.instances._
 
-object instances {
-  // We hope this instance is moved into Cats Effect.
-  implicit def localForIoLocal[F[_]: MonadCancelThrow: LiftIO, E](implicit
-      ioLocal: IOLocal[E]
-  ): Local[F, E] =
-    new Local[F, E] {
-      def applicative =
-        Applicative[F]
-      def ask[E2 >: E] =
-        Functor[F].widen[E, E2](ioLocal.get.to[F])
-      def local[A](fa: F[A])(f: E => E): F[A] =
-        MonadCancelThrow[F].bracket(ioLocal.modify(e => (f(e), e)).to[F])(_ =>
-          fa
-        )(ioLocal.set(_).to[F])
+class InstancesSuite extends DisciplineSuite with TestInstances {
+  implicit val ticker: Ticker = Ticker()
+
+  unsafeRun {
+    IOLocal("").map { implicit ioLocal =>
+      checkAll("IOLocal.LocalLaws", LocalTests[IO, String].local[String, Int])
     }
+  }
 }

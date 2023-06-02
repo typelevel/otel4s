@@ -180,9 +180,10 @@ object Tracer {
 
   trait Meta[F[_]] extends InstrumentMeta[F] {
     def noopSpanBuilder: SpanBuilder.Aux[F, Span[F]]
-    def noopResSpan[A](
+    final def noopResSpan[A](
         resource: Resource[F, A]
-    ): SpanBuilder.Aux[F, Span.Res[F, A]]
+    ): SpanBuilder.Aux[F, Span.Res[F, A]] =
+      noopSpanBuilder.wrapResource(resource)
   }
 
   object Meta {
@@ -198,11 +199,6 @@ object Tracer {
         val unit: F[Unit] = Applicative[F].unit
         val noopSpanBuilder: SpanBuilder.Aux[F, Span[F]] =
           SpanBuilder.noop(noopBackend)
-
-        def noopResSpan[A](
-            resource: Resource[F, A]
-        ): SpanBuilder.Aux[F, Span.Res[F, A]] =
-          SpanBuilder.noop(noopBackend).wrapResource(resource)
       }
   }
 

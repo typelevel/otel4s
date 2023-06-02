@@ -28,10 +28,12 @@ ThisBuild / scalaVersion := Scala213 // the default Scala
 val CatsVersion = "2.9.0"
 val CatsEffectVersion = "3.5.0"
 val CatsMtlVersion = "1.3.1"
+val DisciplineMUnitVersion = "2.0.0-M2"
 val FS2Version = "3.7.0"
 val MUnitVersion = "1.0.0-M7"
 val MUnitCatsEffectVersion = "2.0.0-M3"
 val OpenTelemetryVersion = "1.26.0"
+val PlatformVersion = "1.0.2"
 val ScodecVersion = "1.1.37"
 val VaultVersion = "3.5.0"
 
@@ -79,8 +81,10 @@ lazy val `core-common` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
       "org.typelevel" %%% "cats-mtl" % CatsMtlVersion,
       "org.typelevel" %%% "vault" % VaultVersion,
       "org.typelevel" %%% "cats-laws" % CatsVersion % Test,
-      "org.typelevel" %%% "discipline-munit" % "2.0.0-M2" % Test,
-      "org.scalameta" %%% "munit" % MUnitVersion % Test
+      "org.typelevel" %%% "discipline-munit" % DisciplineMUnitVersion % Test,
+      "org.scalameta" %%% "munit" % MUnitVersion % Test,
+      "org.scalameta" %%% "munit-scalacheck" % MUnitVersion % Test,
+      "lgbt.princess" %%% "platform" % PlatformVersion % Test
     )
   )
 

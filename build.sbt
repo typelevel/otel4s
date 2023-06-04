@@ -238,6 +238,29 @@ lazy val semconv = crossProject(JVMPlatform, JSPlatform, NativePlatform)
     name := "otel4s-semconv"
   )
 
+lazy val `sdk-common` = project
+  .in(file("sdk/common"))
+  .dependsOn(`core-common`, `testkit-common`)
+  .settings(
+    name := "otel4s-java-common",
+    libraryDependencies ++= Seq(
+      "org.typelevel" %%% "cats-effect-kernel" % CatsEffectVersion,
+      "org.typelevel" %%% "cats-mtl" % CatsMtlVersion,
+      "org.scalameta" %%% "munit" % MUnitVersion % Test
+    ),
+  )
+
+lazy val `sdk-trace` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
+  .crossType(CrossType.Pure)
+  .in(file("sdk/trace"))
+  .dependsOn(`sdk-common`, `core-trace`)
+  .settings(
+    name := "otel4s-sdk-trace",
+    libraryDependencies ++= Seq(
+      "org.typelevel" %%% "cats-effect" % CatsEffectVersion,
+    ),
+  )
+
 lazy val benchmarks = project
   .enablePlugins(NoPublishPlugin)
   .enablePlugins(JmhPlugin)

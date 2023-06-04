@@ -238,11 +238,12 @@ lazy val semconv = crossProject(JVMPlatform, JSPlatform, NativePlatform)
     name := "otel4s-semconv"
   )
 
-lazy val `sdk-common` = project
+lazy val `sdk-common` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
+  .crossType(CrossType.Pure)
   .in(file("sdk/common"))
-  .dependsOn(`core-common`, `testkit-common`)
+  .dependsOn(`core-common`)
   .settings(
-    name := "otel4s-java-common",
+    name := "otel4s-sdk-common",
     libraryDependencies ++= Seq(
       "org.typelevel" %%% "cats-effect-kernel" % CatsEffectVersion,
       "org.typelevel" %%% "cats-mtl" % CatsMtlVersion,

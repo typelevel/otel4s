@@ -247,9 +247,9 @@ lazy val `sdk-common` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
     libraryDependencies ++= Seq(
       "org.typelevel" %%% "cats-effect-kernel" % CatsEffectVersion,
       "org.typelevel" %%% "cats-mtl" % CatsMtlVersion,
-      "org.scalameta" %%% "munit" % MUnitVersion % Test
     ),
   )
+  .settings(munitDependencies)
 
 lazy val `sdk-trace` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .crossType(CrossType.Pure)
@@ -259,9 +259,9 @@ lazy val `sdk-trace` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
     name := "otel4s-sdk-trace",
     libraryDependencies ++= Seq(
       "org.typelevel" %%% "cats-effect" % CatsEffectVersion,
-      "org.scalameta" %%% "munit" % MUnitVersion % Test
     ),
   )
+  .settings(munitDependencies)
 
 lazy val benchmarks = project
   .enablePlugins(NoPublishPlugin)

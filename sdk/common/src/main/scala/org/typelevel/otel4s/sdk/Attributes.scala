@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Typelevel
+ * Copyright 2023 Typelevel
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,8 @@
 
 package org.typelevel.otel4s.sdk
 
-import cats.kernel.Monoid
+import cats.Show
+import cats.implicits.showInterpolator
 import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.Attribute.KeySelect
 import org.typelevel.otel4s.AttributeKey
@@ -36,6 +37,12 @@ final class Attributes private (
   def isEmpty: Boolean = m.isEmpty
   def size: Int = m.size
   def contains(key: AttributeKey[_]): Boolean = m.contains(key)
+  def foldLeft[B](z: B)(f: (B, Attribute[_]) => B): B =
+    m.foldLeft(z)((b, v) => f(b, v._2))
+  def forall(p: Attribute[_] => Boolean): Boolean =
+    m.forall(v => p(v._2))
+  def toMap: Map[AttributeKey[_], Attribute[_]] = m
+  def toList: List[Attribute[_]] = m.values.toList
 
   def foreach(f: Attribute[_] => Unit): Unit =
     m.foreach(v => f(v._2))
@@ -66,10 +73,9 @@ object Attributes {
     new Attributes(m)
   }
 
-  implicit val attributesMonoid: Monoid[Attributes] = new Monoid[Attributes] {
-    def empty: Attributes = Attributes.Empty
-
-    def combine(xa: Attributes, xb: Attributes): Attributes =
-      xa ++ xb
+  implicit val attributesShow: Show[Attributes] = Show.show { attributes =>
+    attributes.toList
+      .map(a => show"$a")
+      .mkString("Attributes(", ", ", ")")
   }
 }

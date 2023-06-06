@@ -18,6 +18,9 @@ ThisBuild / tlSonatypeUseLegacyHost := false
 ThisBuild / tlSitePublishBranch := Some("main")
 
 ThisBuild / scalafixDependencies += "com.github.liancheng" %% "organize-imports" % "0.6.0"
+ThisBuild / semanticdbOptions ++= Seq("-P:semanticdb:synthetics:on").filter(_ =>
+  !tlIsScala3.value
+)
 
 ThisBuild / tlMimaPreviousVersions ~= (_.filterNot(_ == "0.2.0"))
 
@@ -132,9 +135,14 @@ lazy val `sdk-common` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .dependsOn(`core-common`, semconv)
   .settings(
     name := "otel4s-sdk-common",
+    startYear := Some(2023),
     libraryDependencies ++= Seq(
       "org.typelevel" %%% "cats-effect-kernel" % CatsEffectVersion,
       "org.typelevel" %%% "cats-mtl" % CatsMtlVersion,
+      "org.typelevel" %%% "cats-laws" % CatsVersion % Test,
+      "org.typelevel" %%% "discipline-munit" % DisciplineMUnitVersion % Test,
+      "org.scalameta" %%% "munit" % MUnitVersion % Test,
+      "org.scalameta" %%% "munit-scalacheck" % MUnitVersion % Test,
     ),
     buildInfoPackage := "org.typelevel.otel4s.sdk",
     buildInfoOptions += sbtbuildinfo.BuildInfoOption.PackagePrivate,
@@ -255,7 +263,8 @@ lazy val semconv = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .in(file("semconv"))
   .dependsOn(`core-common`)
   .settings(
-    name := "otel4s-semconv"
+    name := "otel4s-semconv",
+    startYear := Some(2023),
   )
 
 lazy val benchmarks = project

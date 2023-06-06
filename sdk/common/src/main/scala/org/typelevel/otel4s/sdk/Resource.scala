@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Typelevel
+ * Copyright 2023 Typelevel
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
 
 package org.typelevel.otel4s.sdk
 
+import cats.Show
+import cats.implicits.showInterpolator
 import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.sdk.BuildInfo
 import org.typelevel.otel4s.semconv.resource.attributes.ResourceAttributes._
@@ -88,5 +90,8 @@ object Resource {
     *   a <pre>Resource</pre>.
     */
   val Default: Resource = TelemetrySdk.mergeInto(Mandatory)
+
+  implicit val showResource: Show[Resource] =
+    r => show"Resource(${r.attributes}, ${r.schemaUrl})"
 
 }

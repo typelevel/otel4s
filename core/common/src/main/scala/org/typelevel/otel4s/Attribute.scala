@@ -16,14 +16,15 @@
 
 package org.typelevel.otel4s
 
+import cats.Show
+import cats.implicits.showInterpolator
+
 /** Represents the key-value attribute.
   *
   * @param key
   *   the key of the attribute. Denotes the types of the `value`
-  *
   * @param value
   *   the value of the attribute
-  *
   * @tparam A
   *   the type of the attribute's value. One of [[AttributeType]]
   */
@@ -67,5 +68,8 @@ String, Boolean, Long, Double, List[String], List[Boolean], List[Long], List[Dou
 
   def apply[A: KeySelect](name: String, value: A): Attribute[A] =
     Attribute(KeySelect[A].make(name), value)
+
+  implicit val showAttribute: Show[Attribute[_]] = (a: Attribute[_]) =>
+    s"${show"${a.key}"}=${a.value}"
 
 }

@@ -46,7 +46,7 @@ case class Resource(
   def mergeInto(other: Resource): Resource = {
     if (other == Resource.Empty) this
     else {
-      val mergedAttributes = attributes ++ other.attributes
+      val mergedAttributes = other.attributes ++ attributes
       val mergedSchemaUrl = (other.schemaUrl, schemaUrl) match {
         case (Some(otherUrl), Some(url)) =>
           if (otherUrl == url) Some(url) else None
@@ -71,9 +71,9 @@ object Resource {
 
   private val TelemetrySdk: Resource = Resource(
     Attributes(
-      Attribute(TelemetrySdkName, "opentelemetry"),
+      Attribute(TelemetrySdkName, "otel4s"),
       Attribute(TelemetrySdkLanguage, TelemetrySdkLanguageValue.Scala.value),
-      Attribute(TelemetrySdkVersion, BuildInfo.openTelemetrySdkVersion)
+      Attribute(TelemetrySdkVersion, BuildInfo.version)
     )
   )
 

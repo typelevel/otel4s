@@ -16,6 +16,7 @@
 
 package org.typelevel.otel4s.sdk
 
+import cats.Monoid
 import cats.Show
 import cats.implicits.showInterpolator
 import org.typelevel.otel4s.Attribute
@@ -55,10 +56,7 @@ final class Attributes private (
   def ++(those: Attributes): Attributes =
     if (those.isEmpty) this
     else if (this.isEmpty) those
-    else
-      new Attributes(
-        (those.m ++ m.filterNot(h => those.m.keySet.contains(h._1)))
-      )
+    else new Attributes(m ++ those.m)
 }
 
 object Attributes {
@@ -78,4 +76,10 @@ object Attributes {
       .map(a => show"$a")
       .mkString("Attributes(", ", ", ")")
   }
+
+  implicit val attributesMonoid: Monoid[Attributes] =
+    new Monoid[Attributes] {
+      def empty: Attributes = Attributes.Empty
+      def combine(x: Attributes, y: Attributes): Attributes = x ++ y
+    }
 }

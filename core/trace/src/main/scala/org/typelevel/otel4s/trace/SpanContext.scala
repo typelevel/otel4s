@@ -91,3 +91,14 @@ object SpanContext {
   def fromContext[F[_]](context: Vault): Option[SpanContext] =
     context.lookup(key)
 }
+
+private final case class SpanContextImpl(
+    traceId: ByteVector,
+    traceIdHex: String,
+    spanId: ByteVector,
+    spanIdHex: String,
+    samplingDecision: SamplingDecision,
+    isValid: Boolean,
+    isRemote: Boolean,
+    storeInContext: Vault
+) extends SpanContext

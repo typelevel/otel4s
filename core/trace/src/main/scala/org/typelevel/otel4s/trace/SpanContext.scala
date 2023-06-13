@@ -57,7 +57,7 @@ trait SpanContext {
     */
   def isRemote: Boolean
 
-  def storeInContext(context: Vault): Vault =
+  final def storeInContext(context: Vault): Vault =
     context.insert(SpanContext.key, this)
 }
 
@@ -99,6 +99,5 @@ private final case class SpanContextImpl(
     spanIdHex: String,
     samplingDecision: SamplingDecision,
     isValid: Boolean,
-    isRemote: Boolean,
-    storeInContext: Vault
+    isRemote: Boolean
 ) extends SpanContext

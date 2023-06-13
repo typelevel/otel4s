@@ -66,6 +66,8 @@ lazy val root = tlCrossRootProject
     `java-trace`,
     java,
     semconv,
+    `sdk-common`,
+    `sdk-trace`,
     benchmarks,
     examples,
     unidocs

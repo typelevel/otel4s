@@ -21,7 +21,7 @@ import org.typelevel.vault.Key
 import org.typelevel.vault.Vault
 import scodec.bits.ByteVector
 
-trait SpanContext {
+sealed trait SpanContext {
 
   /** Returns the trace identifier associated with this [[SpanContext]] as
     * 16-byte vector.
@@ -31,7 +31,8 @@ trait SpanContext {
   /** Returns the trace identifier associated with this [[SpanContext]] as 32
     * character lowercase hex String.
     */
-  def traceIdHex: String
+  final def traceIdHex: String =
+    traceId.toHex
 
   /** Returns the span identifier associated with this [[SpanContext]] as 8-byte
     * vector.
@@ -41,7 +42,8 @@ trait SpanContext {
   /** Returns the span identifier associated with this [[SpanContext]] as 16
     * character lowercase hex String.
     */
-  def spanIdHex: String
+  final def spanIdHex: String =
+    spanId.toHex
 
   /** Returns the sampling strategy of this [[SpanContext]]. Indicates whether
     * the span in this context is sampled.
@@ -77,9 +79,7 @@ object SpanContext {
 
   val invalid: SpanContext =
     new SpanContext {
-      val traceIdHex: String = TraceId.InvalidHex
       val traceId: ByteVector = ByteVector.fromValidHex(traceIdHex)
-      val spanIdHex: String = SpanId.InvalidHex
       val spanId: ByteVector = ByteVector.fromValidHex(spanIdHex)
       val samplingDecision: SamplingDecision = SamplingDecision.Drop
       val isValid: Boolean = false
@@ -90,14 +90,20 @@ object SpanContext {
 
   def fromContext[F[_]](context: Vault): Option[SpanContext] =
     context.lookup(key)
+
+  final private[trace] val SampledMask = 1
 }
 
 private final case class SpanContextImpl(
     traceId: ByteVector,
-    traceIdHex: String,
     spanId: ByteVector,
-    spanIdHex: String,
-    samplingDecision: SamplingDecision,
+    flags: Byte,
     isValid: Boolean,
     isRemote: Boolean
-) extends SpanContext
+) extends SpanContext {
+
+  def samplingDecision: SamplingDecision =
+    SamplingDecision.fromBoolean(
+      (flags & SpanContext.SampledMask) == SpanContext.SampledMask
+    )
+}

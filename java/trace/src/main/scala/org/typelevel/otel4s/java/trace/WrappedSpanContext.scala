@@ -25,7 +25,7 @@ import scodec.bits.ByteVector
 
 private[java] final case class WrappedSpanContext(
     jSpanContext: JSpanContext
-) extends SpanContext {
+) extends SpanContext { // create, not implement, a new SpanContext
 
   lazy val traceId: ByteVector =
     ByteVector(jSpanContext.getTraceIdBytes)

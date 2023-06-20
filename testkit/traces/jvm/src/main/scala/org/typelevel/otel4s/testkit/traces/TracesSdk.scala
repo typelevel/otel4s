@@ -12,6 +12,10 @@ import cats.effect.IOLocal
 import org.typelevel.vault.Vault
 import org.typelevel.otel4s.trace.TracerProvider
 import io.opentelemetry.sdk.trace.data.SpanData
+import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator
+import io.opentelemetry.context.propagation.{
+  ContextPropagators => JContextPropagators
+}
 
 import scala.jdk.CollectionConverters._
 

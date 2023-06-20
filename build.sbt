@@ -60,6 +60,7 @@ lazy val root = tlCrossRootProject
     core,
     `testkit-common`,
     `testkit-metrics`,
+    `testkit-traces`,
     testkit,
     `java-common`,
     `java-metrics`,
@@ -147,11 +148,25 @@ lazy val `testkit-metrics` = crossProject(JVMPlatform)
       "io.opentelemetry" % "opentelemetry-sdk-testing" % OpenTelemetryVersion
     )
   )
+lazy val `testkit-traces` = crossProject(JVMPlatform)
+  .crossType(CrossType.Full)
+  .in(file("testkit/traces"))
+  .dependsOn(`testkit-common`, `core-trace`)
+  .settings(
+    name := "otel4s-testkit-traces"
+  )
+  .jvmSettings(
+    libraryDependencies ++= Seq(
+      "io.opentelemetry" % "opentelemetry-api" % OpenTelemetryVersion,
+      "io.opentelemetry" % "opentelemetry-sdk" % OpenTelemetryVersion,
+      "io.opentelemetry" % "opentelemetry-sdk-testing" % OpenTelemetryVersion
+    )
+  )
 
 lazy val testkit = crossProject(JVMPlatform)
   .crossType(CrossType.Full)
   .in(file("testkit/all"))
-  .dependsOn(`testkit-common`, `testkit-metrics`)
+  .dependsOn(`testkit-common`, `testkit-metrics`, `testkit-traces`)
   .settings(
     name := "otel4s-testkit"
   )

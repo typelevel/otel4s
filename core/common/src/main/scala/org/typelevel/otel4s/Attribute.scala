@@ -18,6 +18,7 @@ package org.typelevel.otel4s
 
 import cats.Show
 import cats.implicits.showInterpolator
+import cats.kernel.Hash
 
 /** Represents the key-value attribute.
   *
@@ -71,5 +72,8 @@ String, Boolean, Long, Double, List[String], List[Boolean], List[Long], List[Dou
 
   implicit val showAttribute: Show[Attribute[_]] = (a: Attribute[_]) =>
     s"${show"${a.key}"}=${a.value}"
+
+  implicit def hashAttribute[T: Hash]: Hash[Attribute[T]] =
+    Hash.by(a => (a.key, a.value))
 
 }

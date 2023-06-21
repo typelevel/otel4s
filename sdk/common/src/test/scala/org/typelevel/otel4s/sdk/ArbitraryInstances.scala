@@ -85,9 +85,9 @@ trait ArbitraryInstances {
     listOf(attribute.arbitrary).map(Attributes(_: _*))
   )
 
-  implicit val resource: Gen[Resource] = for {
+  implicit val resource: Arbitrary[Resource] = Arbitrary(for {
     attrs <- attributes.arbitrary
     schemaUrl <- Gen.option(nonEmptyString)
-  } yield Resource(attrs, schemaUrl)
+  } yield Resource(attrs, schemaUrl))
 
 }

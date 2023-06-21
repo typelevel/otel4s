@@ -16,9 +16,11 @@
 
 package org.typelevel.otel4s.sdk
 
+import cats.Applicative
+import cats.Monad
 import cats.Monoid
 import cats.Show
-import cats.implicits.showInterpolator
+import cats.implicits._
 import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.Attribute.KeySelect
 import org.typelevel.otel4s.AttributeKey
@@ -38,25 +40,25 @@ final class Attributes private (
   def isEmpty: Boolean = m.isEmpty
   def size: Int = m.size
   def contains(key: AttributeKey[_]): Boolean = m.contains(key)
-  def foldLeft[B](z: B)(f: (B, Attribute[_]) => B): B =
-    m.foldLeft(z)((b, v) => f(b, v._2))
-  def forall(p: Attribute[_] => Boolean): Boolean =
-    m.forall(v => p(v._2))
+  def foldLeft[F[_]: Monad, B](z: B)(f: (B, Attribute[_]) => F[B]): F[B] =
+    m.foldLeft(Monad[F].pure(z)) { (acc, v) =>
+      acc.flatMap { b =>
+        f(b, v._2)
+      }
+    }
+  def forall[F[_]: Monad](p: Attribute[_] => F[Boolean]): F[Boolean] =
+    foldLeft(true)((b, a) => {
+      if (b) p(a).map(b && _)
+      else Monad[F].pure(false)
+    })
+  def foreach[F[_]: Applicative](f: Attribute[_] => F[Unit]): F[Unit] =
+    m.foldLeft(Applicative[F].unit) { (acc, v) =>
+      acc *> f(v._2)
+    }
+
   def toMap: Map[AttributeKey[_], Attribute[_]] = m
   def toList: List[Attribute[_]] = m.values.toList
 
-  def foreach(f: Attribute[_] => Unit): Unit =
-    m.foreach(v => f(v._2))
-
-  /** Returns a new [[Attributes]] instance with the given [[Attributes]] added.
-    * If the key already exists, the value will be overwritten.
-    * @return
-    *   a new [[Attributes]] instance
-    */
-  def ++(those: Attributes): Attributes =
-    if (those.isEmpty) this
-    else if (this.isEmpty) those
-    else new Attributes(m ++ those.m)
 }
 
 object Attributes {
@@ -64,22 +66,26 @@ object Attributes {
   val Empty = new Attributes(Map.empty)
 
   def apply(attributes: Attribute[_]*): Attributes = {
-    val m = attributes.foldLeft(Map.empty[AttributeKey[_], Attribute[_]]) {
-      case (m, a) =>
-        m.updated(a.key, a)
+    val builder = Map.newBuilder[AttributeKey[_], Attribute[_]]
+    attributes.foreach { a =>
+      builder += (a.key -> a)
     }
-    new Attributes(m)
+    new Attributes(builder.result())
   }
 
-  implicit val attributesShow: Show[Attributes] = Show.show { attributes =>
+  implicit val showAttributes: Show[Attributes] = Show.show { attributes =>
     attributes.toList
       .map(a => show"$a")
       .mkString("Attributes(", ", ", ")")
   }
 
-  implicit val attributesMonoid: Monoid[Attributes] =
+  implicit val monoidAttributes: Monoid[Attributes] =
     new Monoid[Attributes] {
       def empty: Attributes = Attributes.Empty
-      def combine(x: Attributes, y: Attributes): Attributes = x ++ y
+      def combine(x: Attributes, y: Attributes): Attributes = {
+        if (y.isEmpty) x
+        else if (x.isEmpty) y
+        else new Attributes(x.m ++ y.m)
+      }
     }
 }

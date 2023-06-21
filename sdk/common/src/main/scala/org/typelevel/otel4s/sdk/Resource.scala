@@ -17,6 +17,7 @@
 package org.typelevel.otel4s.sdk
 
 import cats.Show
+import cats.implicits.catsSyntaxSemigroup
 import cats.implicits.showInterpolator
 import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.sdk.BuildInfo
@@ -30,9 +31,9 @@ import org.typelevel.otel4s.semconv.resource.attributes.ResourceAttributes._
   * @param schemaUrl
   *   \- an optional schema URL
   */
-case class Resource(
+final case class Resource(
     attributes: Attributes,
-    schemaUrl: Option[String] = None
+    schemaUrl: Option[String]
 ) {
 
   /** Merges [[Resource]] into another [[Resource]]. If the same attribute
@@ -46,7 +47,7 @@ case class Resource(
   def mergeInto(other: Resource): Resource = {
     if (other == Resource.Empty) this
     else {
-      val mergedAttributes = other.attributes ++ attributes
+      val mergedAttributes = other.attributes |+| attributes
       val mergedSchemaUrl = (other.schemaUrl, schemaUrl) match {
         case (Some(otherUrl), Some(url)) =>
           if (otherUrl == url) Some(url) else None
@@ -59,6 +60,9 @@ case class Resource(
 }
 
 object Resource {
+
+  def apply(attributes: Attributes): Resource =
+    Resource(attributes, None)
 
   /** Returns an empty [[Resource]]. It is strongly recommended to start with
     * [[Resource.Default]] instead of this method to include SDK required

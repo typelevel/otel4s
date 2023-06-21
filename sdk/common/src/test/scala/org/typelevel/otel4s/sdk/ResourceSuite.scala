@@ -20,11 +20,11 @@ import munit.FunSuite
 
 class ResourceSuite extends FunSuite {
 
-  def check(
+  def checkSchemaMerge(
       leftSchemaUrl: Option[String],
       rightSchemaUrl: Option[String],
       expected: Option[String]
-  ) =
+  ): Unit =
     assertEquals(
       Resource(Attributes.Empty, leftSchemaUrl)
         .mergeInto(Resource(Attributes.Empty, rightSchemaUrl))
@@ -36,27 +36,44 @@ class ResourceSuite extends FunSuite {
     "Resource#merge should create a resource with the same schemaUrl when merging resources with identical schemaUrls"
   ) {
     val schemaUrl = Some("http://example.com")
-    check(schemaUrl, schemaUrl, schemaUrl)
+    checkSchemaMerge(schemaUrl, schemaUrl, schemaUrl)
   }
 
+  /*
+    The behavior in this case is not defined in the specification and it's up to the SDK implementation.
+    The easiest way to implement this is to drop the schemaUrl if they are different. In the future, we may
+    apply schema transformations whenever possible.
+   */
   test("Resource#merge should drop schemaUrl if they are different") {
-    check(Some("http://example.com"), Some("http://example.org"), None)
+    checkSchemaMerge(
+      Some("http://example.com"),
+      Some("http://example.org"),
+      None
+    )
   }
 
   test(
     "Resource#merge should return the left schemaUrl if the right is empty"
   ) {
-    check(Some("http://example.com"), None, Some("http://example.com"))
+    checkSchemaMerge(
+      Some("http://example.com"),
+      None,
+      Some("http://example.com")
+    )
   }
 
   test(
     "Resource#merge should return the right schemaUrl if the left is empty"
   ) {
-    check(None, Some("http://example.com"), Some("http://example.com"))
+    checkSchemaMerge(
+      None,
+      Some("http://example.com"),
+      Some("http://example.com")
+    )
   }
 
   test("Resource#merge should return None if both schemaUrls are empty") {
-    check(None, None, None)
+    checkSchemaMerge(None, None, None)
   }
 
 }

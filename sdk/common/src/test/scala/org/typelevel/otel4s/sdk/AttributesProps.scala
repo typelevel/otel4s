@@ -16,6 +16,8 @@
 
 package org.typelevel.otel4s.sdk
 
+import cats.Id
+import cats.implicits.catsSyntaxSemigroup
 import munit.ScalaCheckSuite
 import org.scalacheck.Arbitrary
 import org.scalacheck.Gen
@@ -59,7 +61,7 @@ class AttributesProps extends ScalaCheckSuite {
       val attrs = Attributes(attributes: _*)
 
       var count = 0
-      attrs.foreach { _ => count += 1 }
+      attrs.foreach[Id] { _ => count += 1 }
 
       count == attrs.size
     }
@@ -79,7 +81,7 @@ class AttributesProps extends ScalaCheckSuite {
       val attrs = Attributes(attributes: _*)
       val list = attrs.toList
 
-      val folded = attrs.foldLeft(0) { (acc, _) => acc + 1 }
+      val folded = attrs.foldLeft[Id, Int](0) { (acc, _) => acc + 1 }
 
       folded == list.size
     }
@@ -91,7 +93,7 @@ class AttributesProps extends ScalaCheckSuite {
     forAll(listOfAttributes) { attributes =>
       val attrs = Attributes(attributes: _*)
 
-      attrs.forall(_ => true)
+      attrs.forall[Id](_ => true)
     }
   }
 
@@ -115,7 +117,7 @@ class AttributesProps extends ScalaCheckSuite {
       val attrs1 = Attributes(attributes1: _*)
       val attrs2 = Attributes(attributes2: _*)
 
-      val combined = attrs1 ++ attrs2
+      val combined = attrs1 |+| attrs2
       val sizeIsEqual = combined.size == keySet1.size + keySet2.size
 
       val secondCollectionOverrodeValues = diff.forall { key =>

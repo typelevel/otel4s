@@ -19,13 +19,13 @@ package org.typelevel.otel4s.java.trace
 import io.opentelemetry.api.trace.{SpanContext => JSpanContext}
 import io.opentelemetry.api.trace.TraceFlags
 import io.opentelemetry.api.trace.TraceState
-import org.typelevel.otel4s.trace.SamplingDecision
 import org.typelevel.otel4s.trace.SpanContext
+import org.typelevel.otel4s.trace.SpanContextImpl
 import scodec.bits.ByteVector
 
 private[java] final case class WrappedSpanContext(
     jSpanContext: JSpanContext
-) extends SpanContext { // create, not implement, a new SpanContext
+) {
 
   lazy val traceId: ByteVector =
     ByteVector(jSpanContext.getTraceIdBytes)
@@ -39,9 +39,6 @@ private[java] final case class WrappedSpanContext(
   def spanIdHex: String =
     jSpanContext.getSpanId
 
-  lazy val samplingDecision: SamplingDecision =
-    SamplingDecision.fromBoolean(jSpanContext.isSampled)
-
   def isValid: Boolean =
     jSpanContext.isValid
 
@@ -51,13 +48,29 @@ private[java] final case class WrappedSpanContext(
 
 private[trace] object WrappedSpanContext {
 
+  def wrap(jSpanContext: JSpanContext): SpanContext = {
+
+    lazy val traceId: ByteVector =
+      ByteVector(jSpanContext.getTraceIdBytes)
+
+    lazy val spanId: ByteVector =
+      ByteVector(jSpanContext.getSpanIdBytes)
+
+    val traceFlags: Byte = jSpanContext.getTraceFlags().asByte()
+
+    def isValid: Boolean =
+      jSpanContext.isValid
+
+    def isRemote: Boolean =
+      jSpanContext.isRemote
+
+    SpanContextImpl(traceId, spanId, traceFlags, isValid, isRemote)
+  }
+
   def unwrap(context: SpanContext): JSpanContext = {
-    def flags =
-      if (context.samplingDecision.isSampled) TraceFlags.getSampled
-      else TraceFlags.getDefault
 
     context match {
-      case ctx: WrappedSpanContext =>
+      case ctx: SpanContext =>
         ctx.jSpanContext
 
       case other if other.isRemote =>

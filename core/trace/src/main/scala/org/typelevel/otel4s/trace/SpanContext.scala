@@ -45,11 +45,6 @@ sealed trait SpanContext {
   final def spanIdHex: String =
     spanId.toHex
 
-  /** Returns the sampling strategy of this [[SpanContext]]. Indicates whether
-    * the span in this context is sampled.
-    */
-  def samplingDecision: SamplingDecision
-
   /** Returns `true` if this [[SpanContext]] is valid.
     */
   def isValid: Boolean
@@ -81,7 +76,6 @@ object SpanContext {
     new SpanContext {
       val traceId: ByteVector = ByteVector.fromValidHex(traceIdHex)
       val spanId: ByteVector = ByteVector.fromValidHex(spanIdHex)
-      val samplingDecision: SamplingDecision = SamplingDecision.Drop
       val isValid: Boolean = false
       val isRemote: Boolean = false
     }
@@ -92,9 +86,10 @@ object SpanContext {
     context.lookup(key)
 
   final private[trace] val SampledMask = 1
+
 }
 
-private final case class SpanContextImpl(
+final case class SpanContextImpl(
     traceId: ByteVector,
     spanId: ByteVector,
     flags: Byte,
@@ -102,8 +97,16 @@ private final case class SpanContextImpl(
     isRemote: Boolean
 ) extends SpanContext {
 
-  def samplingDecision: SamplingDecision =
-    SamplingDecision.fromBoolean(
-      (flags & SpanContext.SampledMask) == SpanContext.SampledMask
-    )
+  /** If set, the least significant bit denotes the caller may have recorded
+    * trace data.
+    */
+  def sampledFlag: Boolean =
+    (flags & SpanContext.SampledMask) == SpanContext.SampledMask
+
+  /** Checks whether a trace or span id has correct length and is not the
+    * invalid id.
+    */
+  def isValidId(id: ByteVector): Boolean =
+    (id.length == SpanContext.TraceId.HexLength) && (id != SpanContext.invalid.traceId)
+
 }

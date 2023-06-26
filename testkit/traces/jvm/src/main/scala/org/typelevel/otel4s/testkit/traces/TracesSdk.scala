@@ -1,7 +1,7 @@
 package org.typelevel.otel4s
 
 package testkit
-package metrics
+package traces
 
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor
@@ -17,8 +17,14 @@ import io.opentelemetry.context.propagation.{
   ContextPropagators => JContextPropagators
 }
 
+import io.opentelemetry.sdk.OpenTelemetrySdk
+
 import scala.jdk.CollectionConverters._
 
+// trait TracesSdk[F[_]] {
+//   def sdk: OpenTelemetrySdk
+//   def metrics: F[List[Metric]]
+// }
 object TracesSdk {
   object TracerSuite {
 
@@ -32,27 +38,27 @@ object TracesSdk {
     }
   }
 
-  def create[F[_]: Sync](
-      customize: SdkTracerProviderBuilder => SdkTracerProviderBuilder = identity
-  ): F[TracerSuite.Sdk[F]] = {
-    val exporter = InMemorySpanExporter.create()
+  // def create[F[_]: Sync](
+  //     customize: SdkTracerProviderBuilder => SdkTracerProviderBuilder = identity
+  // ): F[TracerSuite.Sdk[F]] = {
+  //   val exporter = InMemorySpanExporter.create()
 
-    val builder = SdkTracerProvider
-      .builder()
-      .addSpanProcessor(SimpleSpanProcessor.create(exporter))
+  //   val builder = SdkTracerProvider
+  //     .builder()
+  //     .addSpanProcessor(SimpleSpanProcessor.create(exporter))
 
-    val tracerProvider: SdkTracerProvider =
-      customize(builder).build()
+  //   val tracerProvider: SdkTracerProvider =
+  //     customize(builder).build()
 
-    IOLocal(Vault.empty).map { implicit ioLocal: IOLocal[Vault] =>
-      val propagators = new ContextPropagatorsImpl[F](
-        JContextPropagators.create(W3CTraceContextPropagator.getInstance()),
-        ContextConversions.toJContext,
-        ContextConversions.fromJContext
-      )
+  //   IOLocal(Vault.empty).map { implicit ioLocal: IOLocal[Vault] =>
+  //     val propagators = new ContextPropagatorsImpl[F](
+  //       JContextPropagators.create(W3CTraceContextPropagator.getInstance()),
+  //       ContextConversions.toJContext,
+  //       ContextConversions.fromJContext
+  //     )
 
-      val provider = TracerProviderImpl.local[F](tracerProvider, propagators)
-      new TracerSuite.Sdk[F](provider, exporter)
-    }
-  }
+  //     val provider = TracerProviderImpl.local[F](tracerProvider, propagators)
+  //     new TracerSuite.Sdk[F](provider, exporter)
+  //   }
+  // }
 }

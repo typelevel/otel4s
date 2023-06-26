@@ -21,10 +21,11 @@ import io.opentelemetry.sdk.OpenTelemetrySdk
 
 import scala.jdk.CollectionConverters._
 
-// trait TracesSdk[F[_]] {
-//   def sdk: OpenTelemetrySdk
-//   def metrics: F[List[Metric]]
-// }
+trait TracesSdk[F[_]] {
+  def sdk: OpenTelemetrySdk
+  def traces: F[List[Trace]]
+}
+
 object TracesSdk {
   object TracerSuite {
 
@@ -35,6 +36,30 @@ object TracesSdk {
 
       def finishedSpans: F[List[SpanData]] =
         Sync[F].delay(exporter.getFinishedSpanItems.asScala.toList)
+    }
+  }
+
+  def create[F[_]: Sync](
+      customize: SdkTracerProviderBuilder => SdkTracerProviderBuilder = identity
+  ): TracesSdk[F] = {
+    new TracesSdk[F] {
+
+      val exporter = InMemorySpanExporter.create()
+
+      val tracerProviderBuilder = SdkTracerProvider
+        .builder()
+        .addSpanProcessor(SimpleSpanProcessor.create(exporter))
+
+        val traceProvider = customize(tracerProviderBuilder).build()
+
+        val openTelemetrySdk = OpenTelemetrySdk
+          .builder()
+          .setTracerProvider(traceProvider)
+          .build()
+
+      val sdk: OpenTelemetrySdk = openTelemetrySdk
+
+      val traces: F[List[Trace]] = ???
     }
   }
 

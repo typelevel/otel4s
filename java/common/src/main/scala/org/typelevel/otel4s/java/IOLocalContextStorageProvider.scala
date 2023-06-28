@@ -16,7 +16,6 @@
 
 package org.typelevel.otel4s.java
 
-import cats.Eval
 import cats.effect.IOLocal
 import cats.effect.SyncIO
 import cats.syntax.all._
@@ -40,7 +39,5 @@ object IOLocalContextStorageProvider {
 
 class IOLocalContextStorageProvider extends ContextStorageProvider {
   def get(): ContextStorage =
-    new IOLocalContextStorage(
-      Eval.later(IOLocalContextStorageProvider.localContext)
-    )
+    new IOLocalContextStorage(IOLocalContextStorageProvider.localContext)
 }

@@ -26,7 +26,7 @@ ThisBuild / crossScalaVersions := Seq(Scala213, "3.3.0")
 ThisBuild / scalaVersion := Scala213 // the default Scala
 
 val CatsVersion = "2.9.0"
-val CatsEffectVersion = "3.5.0-34-2cf72a5"
+val CatsEffectVersion = "3.6-02a43a6"
 val CatsMtlVersion = "1.3.1"
 val DisciplineMUnitVersion = "2.0.0-M3"
 val FS2Version = "3.7.0"
@@ -265,7 +265,7 @@ lazy val examples = project
     ),
     run / fork := true,
     javaOptions += "-Dotel.java.global-autoconfigure.enabled=true",
-    javaOptions += "-Dcats.effect.tracing.dumpLocals=true",
+    javaOptions += "-Dcats.effect.ioLocalPropagation=true",
     envVars ++= Map(
       "OTEL_PROPAGATORS" -> "b3multi",
       "OTEL_SERVICE_NAME" -> "Trace Example"

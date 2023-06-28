@@ -16,7 +16,6 @@
 
 package org.typelevel.otel4s.java
 
-import cats.Eval
 import cats.effect.IOLocal
 import cats.effect.unsafe.IOLocals
 import io.opentelemetry.context.Context
@@ -29,13 +28,13 @@ class IOLocalContextStorage(
   private[this] lazy val ioLocal = _ioLocal
   override def attach(toAttach: Context): Scope = {
     val previous = current()
-    IOLocals.set(ioLocal.value, toAttach)
+    IOLocals.set(ioLocal, toAttach)
     new Scope {
-      def close() = IOLocals.set(ioLocal.value, previous)
+      def close() = IOLocals.set(ioLocal, previous)
     }
   }
 
   override def current(): Context =
-    IOLocals.get(ioLocal.value)
+    IOLocals.get(ioLocal)
 
 }

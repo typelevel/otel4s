@@ -68,6 +68,8 @@ object OtelJava {
       def propagators: ContextPropagators[F] = contextPropagators
       def meterProvider: MeterProvider[F] = metrics.meterProvider
       def tracerProvider: TracerProvider[F] = traces.tracerProvider
+
+      override def toString: String = jOtel.toString()
     }
   }
 

@@ -1,0 +1,1 @@
+semconv/src/main/**/*.scala build-diff -merge linguist-generated=true

@@ -768,6 +768,38 @@ class TracerSuite extends CatsEffectSuite {
    }
    */
 
+  test("setting attributes using builder does not remove previous ones") {
+    val previousKey = "previous-attribute"
+    val previousValue = "previous-value"
+    val previousAttribute = Attribute(previousKey, previousValue)
+
+    val newKey = "new-attribute"
+    val newValue = "new-value"
+    val newAttribute = Attribute(newKey, newValue)
+
+    for {
+      sdk <- makeSdk()
+      tracer <- sdk.provider.get("tracer")
+      _ <- tracer
+        .spanBuilder("span")
+        .addAttribute(previousAttribute)
+        .addAttributes(newAttribute)
+        .build
+        .use_
+      spans <- sdk.finishedSpans
+    } yield {
+      assertEquals(spans.map(_.getAttributes.size), List(2))
+      assertEquals(
+        spans.map(_.getAttributes.get(JAttributeKey.stringKey(previousKey))),
+        List(previousValue)
+      )
+      assertEquals(
+        spans.map(_.getAttributes.get(JAttributeKey.stringKey(newKey))),
+        List(newValue)
+      )
+    }
+  }
+
   private def assertIdsNotEqual(s1: Span[IO], s2: Span[IO]): Unit = {
     assertNotEquals(s1.context.traceIdHex, s2.context.traceIdHex)
     assertNotEquals(s1.context.spanIdHex, s2.context.spanIdHex)

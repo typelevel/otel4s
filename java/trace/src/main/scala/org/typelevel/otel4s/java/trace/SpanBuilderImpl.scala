@@ -61,7 +61,7 @@ private[java] final case class SpanBuilderImpl[F[_]: Sync, Res <: Span[F]](
     copy(attributes = attributes :+ attribute)
 
   def addAttributes(attributes: Attribute[_]*): Builder =
-    copy(attributes = attributes ++ attributes)
+    copy(attributes = this.attributes ++ attributes)
 
   def addLink(spanContext: SpanContext, attributes: Attribute[_]*): Builder =
     copy(links = links :+ (spanContext, attributes))

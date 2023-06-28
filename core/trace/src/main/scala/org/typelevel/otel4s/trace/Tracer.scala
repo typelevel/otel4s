@@ -22,6 +22,20 @@ import cats.effect.kernel.MonadCancelThrow
 import cats.effect.kernel.Resource
 import org.typelevel.otel4s.meta.InstrumentMeta
 
+@annotation.implicitNotFound("""
+Could not find the `Tracer` for ${F}. `Tracer` can be one of the following:
+
+1) No-operation (a.k.a. without tracing)
+
+import Tracer.Implicits.noop
+
+2) Manually from TracerProvider
+
+val tracerProvider: TracerProvider[IO] = ???
+tracerProvider
+  .get("com.service.runtime")
+  .flatMap { implicit tracer: Tracer[IO] => ??? }
+""")
 trait Tracer[F[_]] extends TracerMacro[F] {
 
   /** The instrument's metadata. Indicates whether instrumentation is enabled or
@@ -166,9 +180,10 @@ object Tracer {
 
   trait Meta[F[_]] extends InstrumentMeta[F] {
     def noopSpanBuilder: SpanBuilder.Aux[F, Span[F]]
-    def noopResSpan[A](
+    final def noopResSpan[A](
         resource: Resource[F, A]
-    ): SpanBuilder.Aux[F, Span.Res[F, A]]
+    ): SpanBuilder.Aux[F, Span.Res[F, A]] =
+      noopSpanBuilder.wrapResource(resource)
   }
 
   object Meta {
@@ -184,11 +199,6 @@ object Tracer {
         val unit: F[Unit] = Applicative[F].unit
         val noopSpanBuilder: SpanBuilder.Aux[F, Span[F]] =
           SpanBuilder.noop(noopBackend)
-
-        def noopResSpan[A](
-            resource: Resource[F, A]
-        ): SpanBuilder.Aux[F, Span.Res[F, A]] =
-          SpanBuilder.noop(noopBackend).wrapResource(resource)
       }
   }
 
@@ -204,4 +214,8 @@ object Tracer {
       def spanBuilder(name: String): SpanBuilder.Aux[F, Span[F]] = builder
       def joinOrRoot[A, C: TextMapGetter](carrier: C)(fa: F[A]): F[A] = fa
     }
+
+  object Implicits {
+    implicit def noop[F[_]: MonadCancelThrow]: Tracer[F] = Tracer.noop
+  }
 }

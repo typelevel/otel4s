@@ -276,6 +276,9 @@ lazy val docs = project
   .enablePlugins(TypelevelSitePlugin)
   .dependsOn(java)
   .settings(
+    libraryDependencies ++= Seq(
+      "io.opentelemetry" % "opentelemetry-sdk-extension-autoconfigure" % s"${OpenTelemetryVersion}-alpha"
+    ),
     mdocVariables := Map(
       "VERSION" -> version.value,
       "OPEN_TELEMETRY_VERSION" -> OpenTelemetryVersion

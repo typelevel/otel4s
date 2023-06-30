@@ -25,17 +25,22 @@ class ResourceProps extends ScalaCheckSuite {
 
   property("Attributes#mergeInto merges attributes") {
     forAll(resource.arbitrary, resource.arbitrary) { (resource1, resource2) =>
-      val merged = resource1.mergeInto(resource2)
-      val mergedAttrs = merged.attributes
-      val keys =
-        resource1.attributes.toMap.keySet ++ resource2.attributes.toMap.keySet
+      val mergedEither = resource1.mergeInto(resource2)
+      mergedEither match {
+        case Right(merged) =>
+          val mergedAttrs = merged.attributes
+          val keys =
+            resource1.attributes.toMap.keySet ++ resource2.attributes.toMap.keySet
 
-      mergedAttrs.size == keys.size && mergedAttrs.forall[Id] { a =>
-        resource2.attributes
-          .get(a.key)
-          .orElse(resource1.attributes.get(a.key))
-          .contains(a)
+          mergedAttrs.size == keys.size && mergedAttrs.forall[Id] { a =>
+            resource2.attributes
+              .get(a.key)
+              .orElse(resource1.attributes.get(a.key))
+              .contains(a)
+          }
+        case Left(_) => true
       }
+
     }
   }
 

@@ -17,11 +17,16 @@
 package org.typelevel.otel4s.sdk
 
 import cats.Show
+import cats.implicits.catsSyntaxEitherId
+import cats.implicits.catsSyntaxOptionId
 import cats.implicits.catsSyntaxSemigroup
 import cats.implicits.showInterpolator
 import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.sdk.BuildInfo
+import org.typelevel.otel4s.sdk.Resource.ResourceInitiationError
 import org.typelevel.otel4s.semconv.resource.attributes.ResourceAttributes._
+
+import scala.util.control.NoStackTrace
 
 /** [[Resource]] serves as a representation of a resource that captures
   * essential identifying information regarding the entities associated with
@@ -44,22 +49,43 @@ final case class Resource(
     * @return
     *   a new [[Resource]] with the merged attributes.
     */
-  def mergeInto(other: Resource): Resource = {
-    if (other == Resource.Empty) this
+  def mergeInto(other: Resource): Either[ResourceInitiationError, Resource] = {
+    if (other == Resource.Empty) this.asRight
     else {
-      val mergedAttributes = other.attributes |+| attributes
-      val mergedSchemaUrl = (other.schemaUrl, schemaUrl) match {
+      val schemaUrlOptEither = (other.schemaUrl, schemaUrl) match {
         case (Some(otherUrl), Some(url)) =>
-          if (otherUrl == url) Some(url) else None
+          if (otherUrl == url)
+            url.some.asRight
+          else
+            ResourceInitiationError.SchemaUrlConflict.asLeft
         case (otherUrl, url) =>
-          otherUrl.orElse(url)
+          otherUrl.orElse(url).asRight
       }
-      Resource(mergedAttributes, mergedSchemaUrl)
+
+      schemaUrlOptEither.map(
+        Resource(
+          other.attributes |+| attributes,
+          _
+        )
+      )
     }
   }
+
+  /** Unsafe version of [[Resource.mergeInto]] which trows an exception if the
+    * merge fails.
+    */
+  def mergeIntoUnsafe(other: Resource): Resource =
+    mergeInto(other).fold(
+      throw _,
+      identity
+    )
 }
 
 object Resource {
+  sealed trait ResourceInitiationError extends NoStackTrace
+  object ResourceInitiationError {
+    case object SchemaUrlConflict extends ResourceInitiationError
+  }
 
   def apply(attributes: Attributes): Resource =
     Resource(attributes, None)
@@ -93,7 +119,7 @@ object Resource {
     * @return
     *   a <pre>Resource</pre>.
     */
-  val Default: Resource = TelemetrySdk.mergeInto(Mandatory)
+  val Default: Resource = TelemetrySdk.mergeIntoUnsafe(Mandatory)
 
   implicit val showResource: Show[Resource] =
     r => show"Resource(${r.attributes}, ${r.schemaUrl})"

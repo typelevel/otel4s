@@ -16,19 +16,22 @@
 
 package org.typelevel.otel4s.sdk
 
+import cats.implicits.catsSyntaxEitherId
 import munit.FunSuite
+import org.typelevel.otel4s.sdk.Resource.ResourceInitiationError
+import org.typelevel.otel4s.sdk.Resource.ResourceInitiationError.SchemaUrlConflict
 
 class ResourceSuite extends FunSuite {
 
   def checkSchemaMerge(
       leftSchemaUrl: Option[String],
       rightSchemaUrl: Option[String],
-      expected: Option[String]
+      expected: Either[ResourceInitiationError, Option[String]]
   ): Unit =
     assertEquals(
       Resource(Attributes.Empty, leftSchemaUrl)
         .mergeInto(Resource(Attributes.Empty, rightSchemaUrl))
-        .schemaUrl,
+        .map(_.schemaUrl),
       expected
     )
 
@@ -36,7 +39,7 @@ class ResourceSuite extends FunSuite {
     "Resource#merge should create a resource with the same schemaUrl when merging resources with identical schemaUrls"
   ) {
     val schemaUrl = Some("http://example.com")
-    checkSchemaMerge(schemaUrl, schemaUrl, schemaUrl)
+    checkSchemaMerge(schemaUrl, schemaUrl, schemaUrl.asRight)
   }
 
   /*
@@ -44,11 +47,13 @@ class ResourceSuite extends FunSuite {
     The easiest way to implement this is to drop the schemaUrl if they are different. In the future, we may
     apply schema transformations whenever possible.
    */
-  test("Resource#merge should drop schemaUrl if they are different") {
+  test(
+    "Resource#merge should return the SchemaUrlConflict if schemas are different"
+  ) {
     checkSchemaMerge(
       Some("http://example.com"),
       Some("http://example.org"),
-      None
+      SchemaUrlConflict.asLeft
     )
   }
 
@@ -58,7 +63,7 @@ class ResourceSuite extends FunSuite {
     checkSchemaMerge(
       Some("http://example.com"),
       None,
-      Some("http://example.com")
+      Some("http://example.com").asRight
     )
   }
 
@@ -68,12 +73,12 @@ class ResourceSuite extends FunSuite {
     checkSchemaMerge(
       None,
       Some("http://example.com"),
-      Some("http://example.com")
+      Some("http://example.com").asRight
     )
   }
 
   test("Resource#merge should return None if both schemaUrls are empty") {
-    checkSchemaMerge(None, None, None)
+    checkSchemaMerge(None, None, None.asRight)
   }
 
 }

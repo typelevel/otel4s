@@ -21,19 +21,19 @@ ThisBuild / scalafixDependencies += "com.github.liancheng" %% "organize-imports"
 
 ThisBuild / tlMimaPreviousVersions ~= (_.filterNot(_ == "0.2.0"))
 
-val Scala213 = "2.13.10"
+val Scala213 = "2.13.11"
 ThisBuild / crossScalaVersions := Seq(Scala213, "3.3.0")
 ThisBuild / scalaVersion := Scala213 // the default Scala
 
 val CatsVersion = "2.9.0"
-val CatsEffectVersion = "3.5.0"
+val CatsEffectVersion = "3.5.1"
 val CatsMtlVersion = "1.3.1"
 val DisciplineMUnitVersion = "2.0.0-M3"
 val FS2Version = "3.7.0"
-val MUnitVersion = "1.0.0-M7"
+val MUnitVersion = "1.0.0-M8"
 val MUnitCatsEffectVersion = "2.0.0-M3"
 val MUnitDisciplineVersion = "2.0.0-M3"
-val OpenTelemetryVersion = "1.26.0"
+val OpenTelemetryVersion = "1.27.0"
 val PlatformVersion = "1.0.2"
 val ScodecVersion = "1.1.37"
 val VaultVersion = "3.5.0"
@@ -161,7 +161,7 @@ lazy val testkit = crossProject(JVMPlatform)
 lazy val `java-common` = project
   .in(file("java/common"))
   .enablePlugins(BuildInfoPlugin)
-  .dependsOn(`core-common`.jvm, `testkit-common`.jvm)
+  .dependsOn(`core-common`.jvm, `testkit-common`.jvm % Test)
   .settings(munitDependencies)
   .settings(
     name := "otel4s-java-common",
@@ -182,7 +182,7 @@ lazy val `java-common` = project
 
 lazy val `java-metrics` = project
   .in(file("java/metrics"))
-  .dependsOn(`java-common`, `core-metrics`.jvm, `testkit-metrics`.jvm)
+  .dependsOn(`java-common`, `core-metrics`.jvm, `testkit-metrics`.jvm % Test)
   .settings(munitDependencies)
   .settings(
     name := "otel4s-java-metrics",
@@ -273,7 +273,7 @@ lazy val benchmarks = project
   .enablePlugins(NoPublishPlugin)
   .enablePlugins(JmhPlugin)
   .in(file("benchmarks"))
-  .dependsOn(core.jvm, java)
+  .dependsOn(core.jvm, java, testkit.jvm)
   .settings(
     name := "otel4s-benchmarks"
   )

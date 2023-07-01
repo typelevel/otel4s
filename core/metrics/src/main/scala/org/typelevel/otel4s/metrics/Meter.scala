@@ -19,6 +19,20 @@ package org.typelevel.otel4s.metrics
 import cats.Applicative
 import cats.effect.Resource
 
+@annotation.implicitNotFound("""
+Could not find the `Meter` for ${F}. `Meter` can be one of the following:
+
+1) No-operation (a.k.a. without measurements)
+
+import Meter.Implicits.noop
+
+2) Manually from MeterProvider
+
+val meterProvider: MeterProvider[IO] = ???
+meterProvider
+  .get("com.service.runtime")
+  .flatMap { implicit meter: Meter[IO] => ??? }
+""")
 trait Meter[F[_]] {
 
   /** Creates a builder of [[Counter]] instrument that records [[scala.Long]]
@@ -109,6 +123,9 @@ trait Meter[F[_]] {
 }
 
 object Meter {
+
+  def apply[F[_]](implicit ev: Meter[F]): Meter[F] = ev
+
   def noop[F[_]](implicit F: Applicative[F]): Meter[F] =
     new Meter[F] {
       def counter(name: String): SyncInstrumentBuilder[F, Counter[F, Long]] =
@@ -193,4 +210,8 @@ object Meter {
             Resource.pure(new ObservableUpDownCounter {})
         }
     }
+
+  object Implicits {
+    implicit def noop[F[_]: Applicative]: Meter[F] = Meter.noop
+  }
 }

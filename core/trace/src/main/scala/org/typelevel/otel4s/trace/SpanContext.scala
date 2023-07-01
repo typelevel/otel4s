@@ -89,7 +89,7 @@ object SpanContext {
 
   private val key = Key.newKey[SyncIO, SpanContext].unsafeRunSync()
 
-  def fromContext[F[_]](context: Vault): Option[SpanContext] =
+  def fromContext(context: Vault): Option[SpanContext] =
     context.lookup(key)
 
   final private[trace] val SampledMask = 1

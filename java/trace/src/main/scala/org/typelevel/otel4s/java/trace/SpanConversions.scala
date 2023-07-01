@@ -17,12 +17,13 @@
 package org.typelevel.otel4s.java.trace
 
 import io.opentelemetry.api.trace.{SpanContext => JSpanContext}
-import io.opentelemetry.api.trace.TraceFlags
+import io.opentelemetry.api.trace.{TraceFlags => JTraceFlags}
 import io.opentelemetry.api.trace.TraceState
 import org.typelevel.otel4s.trace.SpanContext
+import org.typelevel.otel4s.trace.TraceFlags
 import scodec.bits.ByteVector
 
-private[java] final case class WrappedSpanContext(
+private[java] final case class SpanConversions(
     jSpanContext: JSpanContext
 ) {
 
@@ -45,7 +46,7 @@ private[java] final case class WrappedSpanContext(
     jSpanContext.isRemote
 }
 
-private[trace] object WrappedSpanContext {
+private[java] object SpanConversions {
 
   def wrap(jSpanContext: JSpanContext): SpanContext = {
 
@@ -55,15 +56,12 @@ private[trace] object WrappedSpanContext {
     lazy val spanId: ByteVector =
       ByteVector(jSpanContext.getSpanIdBytes)
 
-    val traceFlags: Byte = jSpanContext.getTraceFlags().asByte()
-
-    def isValid: Boolean =
-      jSpanContext.isValid
+    val traceFlags = TraceFlags.fromByte(jSpanContext.getTraceFlags().asByte())
 
     def isRemote: Boolean =
       jSpanContext.isRemote
 
-    SpanContext.create(traceId, spanId, traceFlags, isValid, isRemote)
+    SpanContext.create(traceId, spanId, traceFlags, isRemote)
   }
 
   def unwrap(context: SpanContext): JSpanContext = {
@@ -74,7 +72,7 @@ private[trace] object WrappedSpanContext {
         JSpanContext.createFromRemoteParent(
           other.traceIdHex,
           other.spanIdHex,
-          TraceFlags.fromByte(other.traceFlags),
+          JTraceFlags.fromByte(other.traceFlags.toByte),
           TraceState.getDefault
         )
 
@@ -82,7 +80,7 @@ private[trace] object WrappedSpanContext {
         JSpanContext.create(
           other.traceIdHex,
           other.spanIdHex,
-          TraceFlags.fromByte(other.traceFlags),
+          JTraceFlags.fromByte(other.traceFlags.toByte),
           TraceState.getDefault
         )
     }

@@ -19,7 +19,7 @@ package org.typelevel.otel4s.java
 import io.opentelemetry.api.trace.{Span => JSpan}
 import io.opentelemetry.context.{Context => JContext}
 import org.typelevel.otel4s.java.trace.Scope
-import org.typelevel.otel4s.java.trace.WrappedSpanContext
+import org.typelevel.otel4s.java.trace.SpanConversions
 import org.typelevel.vault.Vault
 
 private[otel4s] object ContextConversions {
@@ -45,7 +45,7 @@ private[otel4s] object ContextConversions {
       case jSpan =>
         if (jSpan.getSpanContext.isValid) {
           context = Scope.Span(jContext, jSpan).storeInContext(context)
-          context = WrappedSpanContext
+          context = SpanConversions
             .wrap(jSpan.getSpanContext)
             .storeInContext(context)
         } else {

@@ -43,7 +43,7 @@ private[java] class TracerImpl[F[_]: Sync](
   def currentSpanContext: F[Option[SpanContext]] =
     scope.current.map {
       case Scope.Span(_, jSpan) if jSpan.getSpanContext.isValid =>
-        Some(WrappedSpanContext.wrap(jSpan.getSpanContext))
+        Some(SpanConversions.wrap(jSpan.getSpanContext))
 
       case _ =>
         None
@@ -54,7 +54,7 @@ private[java] class TracerImpl[F[_]: Sync](
 
   def childScope[A](parent: SpanContext)(fa: F[A]): F[A] =
     scope
-      .makeScope(JSpan.wrap(WrappedSpanContext.unwrap(parent)))
+      .makeScope(JSpan.wrap(SpanConversions.unwrap(parent)))
       .flatMap(_(fa))
 
   def rootScope[A](fa: F[A]): F[A] =

@@ -134,7 +134,7 @@ private[java] object SpanRunner {
       jSpan <- Sync[F].delay(builder.startSpan())
     } yield new SpanBackendImpl(
       jSpan,
-      WrappedSpanContext.wrap(jSpan.getSpanContext)
+      SpanConversions.wrap(jSpan.getSpanContext)
     )
 
   private def startManaged[F[_]: Sync](

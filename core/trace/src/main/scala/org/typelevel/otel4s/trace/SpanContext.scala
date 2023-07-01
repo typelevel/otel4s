@@ -48,7 +48,9 @@ sealed trait SpanContext {
   /** Returns details about the trace associated with this [[SpanContext]] as an
     * 8-bit field.
     */
-  def traceFlags: Byte
+  def traceFlags: TraceFlags
+
+  final def isSampled: Boolean = traceFlags.isSampled
 
   /** Returns `true` if this [[SpanContext]] is valid.
     */
@@ -78,13 +80,14 @@ object SpanContext {
   }
 
   val invalid: SpanContext =
-    new SpanContext {
-      val traceId: ByteVector = ByteVector.fromValidHex(traceIdHex)
-      val spanId: ByteVector = ByteVector.fromValidHex(spanIdHex)
+   {
+      val traceId: ByteVector = ByteVector.fromValidHex(TraceId.InvalidHex)
+      val spanId: ByteVector = ByteVector.fromValidHex(SpanId.InvalidHex)
 
-      val traceFlags: Byte = 0
-      val isValid: Boolean = false
+      val traceFlags: TraceFlags = TraceFlags.fromByte(0)
       val isRemote: Boolean = false
+
+      SpanContextImpl(traceId, spanId, traceFlags, false, isRemote)
     }
 
   private val key = Key.newKey[SyncIO, SpanContext].unsafeRunSync()
@@ -92,38 +95,34 @@ object SpanContext {
   def fromContext(context: Vault): Option[SpanContext] =
     context.lookup(key)
 
-  final private[trace] val SampledMask = 1
-
-  /** Checks whether a trace or span id has correct length and is not the
+  /** Checks whether a span id has correct length and is not the
     * invalid id.
     */
-  def isValidId(id: ByteVector): Boolean =
+  def isValidSpanId(id: ByteVector): Boolean =
+    (id.length == SpanContext.SpanId.HexLength) && (id != SpanContext.invalid.spanId)
+
+  /** Checks whether a trace id has correct length and is not the
+    * invalid id.
+    */
+  def isValidTraceId(id: ByteVector): Boolean =
     (id.length == SpanContext.TraceId.HexLength) && (id != SpanContext.invalid.traceId)
 
   def create(
       traceId: ByteVector,
       spanId: ByteVector,
-      traceFlags: Byte,
-      isValid: Boolean,
+      traceFlags: TraceFlags,
       isRemote: Boolean
   ): SpanContext = {
-    if (isValidId(traceId) && isValidId(spanId)) {
-      SpanContextImpl(traceId, spanId, traceFlags, isValid, isRemote)
+    if (isValidTraceId(traceId) && isValidSpanId(spanId)) {
+      SpanContextImpl(traceId, spanId, traceFlags, true, isRemote)
     } else invalid
   }
 }
 
-final case class SpanContextImpl(
+private final case class SpanContextImpl(
     traceId: ByteVector,
     spanId: ByteVector,
-    traceFlags: Byte,
+    traceFlags: TraceFlags,
     isValid: Boolean,
     isRemote: Boolean
-) extends SpanContext {
-
-  /** If set, the least significant bit denotes the caller may have recorded
-    * trace data.
-    */
-  def sampledFlag: Boolean =
-    (traceFlags & SpanContext.SampledMask) == SpanContext.SampledMask
-}
+) extends SpanContext 

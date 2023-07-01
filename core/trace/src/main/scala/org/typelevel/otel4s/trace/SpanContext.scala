@@ -45,6 +45,11 @@ sealed trait SpanContext {
   final def spanIdHex: String =
     spanId.toHex
 
+  /** Returns details about the trace associated with this [[SpanContext]] as an
+    * 8-bit field.
+    */
+  def traceFlags: Byte
+
   /** Returns `true` if this [[SpanContext]] is valid.
     */
   def isValid: Boolean
@@ -76,6 +81,8 @@ object SpanContext {
     new SpanContext {
       val traceId: ByteVector = ByteVector.fromValidHex(traceIdHex)
       val spanId: ByteVector = ByteVector.fromValidHex(spanIdHex)
+
+      val traceFlags: Byte = 0
       val isValid: Boolean = false
       val isRemote: Boolean = false
     }
@@ -87,12 +94,29 @@ object SpanContext {
 
   final private[trace] val SampledMask = 1
 
+  /** Checks whether a trace or span id has correct length and is not the
+    * invalid id.
+    */
+  def isValidId(id: ByteVector): Boolean =
+    (id.length == SpanContext.TraceId.HexLength) && (id != SpanContext.invalid.traceId)
+
+  def create(
+      traceId: ByteVector,
+      spanId: ByteVector,
+      traceFlags: Byte,
+      isValid: Boolean,
+      isRemote: Boolean
+  ): SpanContext = {
+    if (isValidId(traceId) && isValidId(spanId)) {
+      SpanContextImpl(traceId, spanId, traceFlags, isValid, isRemote)
+    } else invalid
+  }
 }
 
 final case class SpanContextImpl(
     traceId: ByteVector,
     spanId: ByteVector,
-    flags: Byte,
+    traceFlags: Byte,
     isValid: Boolean,
     isRemote: Boolean
 ) extends SpanContext {
@@ -101,12 +125,5 @@ final case class SpanContextImpl(
     * trace data.
     */
   def sampledFlag: Boolean =
-    (flags & SpanContext.SampledMask) == SpanContext.SampledMask
-
-  /** Checks whether a trace or span id has correct length and is not the
-    * invalid id.
-    */
-  def isValidId(id: ByteVector): Boolean =
-    (id.length == SpanContext.TraceId.HexLength) && (id != SpanContext.invalid.traceId)
-
+    (traceFlags & SpanContext.SampledMask) == SpanContext.SampledMask
 }

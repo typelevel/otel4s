@@ -43,7 +43,7 @@ private[java] class TracerImpl[F[_]: Sync](
   def currentSpanContext: F[Option[SpanContext]] =
     scope.current.map {
       case Scope.Span(_, jSpan) if jSpan.getSpanContext.isValid =>
-        Some(new WrappedSpanContext(jSpan.getSpanContext))
+        Some(WrappedSpanContext.wrap(jSpan.getSpanContext))
 
       case _ =>
         None

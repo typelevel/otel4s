@@ -16,7 +16,9 @@
 
 package org.typelevel.otel4s.java.trace
 
+import cats.effect.kernel.CancelScope
 import cats.effect.kernel.MonadCancelThrow
+import cats.effect.kernel.Poll
 import cats.effect.kernel.Sync
 import cats.syntax.flatMap._
 import cats.syntax.functor._
@@ -31,6 +33,8 @@ import org.typelevel.otel4s.trace.SpanBuilder.Aux
 import org.typelevel.otel4s.trace.SpanContext
 import org.typelevel.otel4s.trace.Tracer
 import org.typelevel.vault.Vault
+
+import scala.concurrent.duration.FiniteDuration
 
 private[java] class TracerImpl[F[_]: Sync](
     jTracer: JTracer,
@@ -77,8 +81,10 @@ private[java] class TracerImpl[F[_]: Sync](
     }
   }
 
-  def translate[G[_]: Sync](fk: F ~> G, gk: G ~> F): Tracer[G] =
+  def translate[G[_]: MonadCancelThrow](fk: F ~> G, gk: G ~> F): Tracer[G] =
     new Tracer[G] {
+      private implicit val G: Sync[G] = TracerImpl.liftSync[F, G](Sync[F], fk, gk)
+
       private val traceScope: TraceScope[G] =
         new TraceScope[G] {
           def root: G[Scope.Root] = fk(scope.root)
@@ -142,7 +148,57 @@ private[java] class TracerImpl[F[_]: Sync](
       def noopScope[A](fa: G[A]): G[A] =
         fk(self.noopScope(gk(fa)))
 
-      def translate[Q[_]: Sync](fk1: G ~> Q, gk1: Q ~> G): Tracer[Q] =
+      def translate[Q[_]: MonadCancelThrow](fk1: G ~> Q, gk1: Q ~> G): Tracer[Q] =
         self.translate[Q](fk.andThen(fk1), gk1.andThen(gk))
+    }
+
+
+}
+
+object TracerImpl {
+
+  private def liftSync[F[_], G[_]](F: Sync[F], fk: F ~> G, gk: G ~> F): Sync[G] =
+    new Sync[G] {
+      def pure[A] (x: A): G[A] = fk(F.pure(x))
+
+      // Members declared in cats.ApplicativeError
+      def handleErrorWith[A](ga: G[A])(f: Throwable => G[A]): G[A] =
+        fk(F.handleErrorWith(gk(ga))(ex => gk(f(ex))))
+
+      def raiseError[A](e: Throwable): G[A] = fk(F.raiseError[A](e))
+
+      // Members declared in cats.FlatMap
+      def flatMap[A, B](ga: G[A])(f: A => G[B]): G[B] =
+        fk(F.flatMap(gk(ga))(a => gk(f(a))))
+
+      def tailRecM[A, B](a: A)(f: A => G[Either[A, B]]): G[B] =
+        fk(F.tailRecM(a)(a => gk(f(a))))
+
+      // Members declared in cats.effect.kernel.MonadCancel
+      def canceled: G[Unit] = fk(F.canceled)
+
+      def forceR[A, B](ga: G[A])(gb: G[B]): G[B] =
+        fk(F.forceR(gk(ga))(gk(gb)))
+
+      def onCancel[A](ga: G[A], fin: G[Unit]): G[A] =
+        fk(F.onCancel(gk(ga), gk(fin)))
+
+      def rootCancelScope: CancelScope = F.rootCancelScope
+
+      def uncancelable[A](body: Poll[G] => G[A]): G[A] =
+        fk(F.uncancelable { pollF =>
+          gk(body(new Poll[G] {
+            def apply[B](gb: G[B]): G[B] = fk(pollF(gk(gb)))
+          }))
+        })
+
+      def suspend[A](hint: Sync.Type)(thunk: => A): G[A] =
+        fk(F.suspend(hint)(thunk))
+
+      def monotonic: G[FiniteDuration] =
+        fk(F.monotonic)
+
+      def realTime: G[FiniteDuration] =
+        fk(F.realTime)
     }
 }

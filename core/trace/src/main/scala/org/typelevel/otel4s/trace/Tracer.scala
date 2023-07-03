@@ -20,6 +20,8 @@ package trace
 import cats.Applicative
 import cats.effect.kernel.MonadCancelThrow
 import cats.effect.kernel.Resource
+import cats.effect.kernel.Sync
+import cats.~>
 import org.typelevel.otel4s.meta.InstrumentMeta
 
 @annotation.implicitNotFound("""
@@ -172,6 +174,8 @@ trait Tracer[F[_]] extends TracerMacro[F] {
     */
   def noopScope[A](fa: F[A]): F[A]
 
+  def mapK[G[_]: Sync](fk: F ~> G, gk: G ~> F): Tracer[G]
+
 }
 
 object Tracer {
@@ -213,6 +217,7 @@ object Tracer {
       def childScope[A](parent: SpanContext)(fa: F[A]): F[A] = fa
       def spanBuilder(name: String): SpanBuilder.Aux[F, Span[F]] = builder
       def joinOrRoot[A, C: TextMapGetter](carrier: C)(fa: F[A]): F[A] = fa
+      def mapK[G[_]: Sync](fk: F ~> G, gk: G ~> F): Tracer[G] = noop[G]
     }
 
   object Implicits {

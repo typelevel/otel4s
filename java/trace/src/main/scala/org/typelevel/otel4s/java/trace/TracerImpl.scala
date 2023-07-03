@@ -77,7 +77,7 @@ private[java] class TracerImpl[F[_]: Sync](
     }
   }
 
-  def mapK[G[_]: Sync](fk: F ~> G, gk: G ~> F): Tracer[G] =
+  def translate[G[_]: Sync](fk: F ~> G, gk: G ~> F): Tracer[G] =
     new Tracer[G] {
       private val traceScope: TraceScope[G] =
         new TraceScope[G] {
@@ -142,7 +142,7 @@ private[java] class TracerImpl[F[_]: Sync](
       def noopScope[A](fa: G[A]): G[A] =
         fk(self.noopScope(gk(fa)))
 
-      def mapK[Q[_]: Sync](fk1: G ~> Q, gk1: Q ~> G): Tracer[Q] =
-        self.mapK[Q](fk.andThen(fk1), gk1.andThen(gk))
+      def translate[Q[_]: Sync](fk1: G ~> Q, gk1: Q ~> G): Tracer[Q] =
+        self.translate[Q](fk.andThen(fk1), gk1.andThen(gk))
     }
 }

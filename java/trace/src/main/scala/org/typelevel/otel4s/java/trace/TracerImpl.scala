@@ -81,9 +81,10 @@ private[java] class TracerImpl[F[_]: Sync](
     }
   }
 
-  def translate[G[_]: MonadCancelThrow](fk: F ~> G, gk: G ~> F): Tracer[G] =
+  def translate[G[_]](fk: F ~> G, gk: G ~> F): Tracer[G] =
     new Tracer[G] {
-      private implicit val G: Sync[G] = TracerImpl.liftSync[F, G](Sync[F], fk, gk)
+      private implicit val G: Sync[G] =
+        TracerImpl.liftSync[F, G](Sync[F], fk, gk)
 
       private val traceScope: TraceScope[G] =
         new TraceScope[G] {
@@ -148,18 +149,21 @@ private[java] class TracerImpl[F[_]: Sync](
       def noopScope[A](fa: G[A]): G[A] =
         fk(self.noopScope(gk(fa)))
 
-      def translate[Q[_]: MonadCancelThrow](fk1: G ~> Q, gk1: Q ~> G): Tracer[Q] =
+      def translate[Q[_]](fk1: G ~> Q, gk1: Q ~> G): Tracer[Q] =
         self.translate[Q](fk.andThen(fk1), gk1.andThen(gk))
     }
-
 
 }
 
 object TracerImpl {
 
-  private def liftSync[F[_], G[_]](F: Sync[F], fk: F ~> G, gk: G ~> F): Sync[G] =
+  private def liftSync[F[_], G[_]](
+      F: Sync[F],
+      fk: F ~> G,
+      gk: G ~> F
+  ): Sync[G] =
     new Sync[G] {
-      def pure[A] (x: A): G[A] = fk(F.pure(x))
+      def pure[A](x: A): G[A] = fk(F.pure(x))
 
       // Members declared in cats.ApplicativeError
       def handleErrorWith[A](ga: G[A])(f: Throwable => G[A]): G[A] =

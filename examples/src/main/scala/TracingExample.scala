@@ -20,7 +20,6 @@ import cats.effect.IOApp
 import cats.effect.Resource
 import cats.effect.std.Console
 import cats.syntax.all._
-import io.opentelemetry.api.GlobalOpenTelemetry
 import org.typelevel.otel4s.Otel4s
 import org.typelevel.otel4s.java.OtelJava
 import org.typelevel.otel4s.trace.Tracer
@@ -59,13 +58,8 @@ object Work {
 }
 
 object TracingExample extends IOApp.Simple {
-  def globalOtel4s: Resource[IO, Otel4s[IO]] =
-    Resource
-      .eval(IO(GlobalOpenTelemetry.get))
-      .evalMap(OtelJava.forAsync[IO])
-
   def run: IO[Unit] = {
-    globalOtel4s.use { (otel4s: Otel4s[IO]) =>
+    OtelJava.global.flatMap { (otel4s: Otel4s[IO]) =>
       otel4s.tracerProvider.tracer("example").get.flatMap {
         implicit tracer: Tracer[IO] =>
           val resource: Resource[IO, Unit] =

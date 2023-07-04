@@ -93,7 +93,6 @@ import cats.effect.{Async, IO, IOApp, Resource}
 import cats.effect.std.Console
 import cats.effect.std.Random
 import cats.syntax.all._
-import io.opentelemetry.api.GlobalOpenTelemetry
 import org.typelevel.otel4s.{Attribute, AttributeKey, Otel4s}
 import org.typelevel.otel4s.java.OtelJava
 import org.typelevel.otel4s.metrics.Histogram
@@ -135,13 +134,8 @@ object Work {
 }
 
 object TracingExample extends IOApp.Simple {
-  def otelResource: Resource[IO, Otel4s[IO]] =
-    Resource
-      .eval(IO(GlobalOpenTelemetry.get))
-      .evalMap(OtelJava.forAsync[IO])
-
   def run: IO[Unit] = {
-    otelResource.use { otel4s =>
+    OtelJava.global.flatMap { otel4s =>
       otel4s.tracerProvider.get("com.service.runtime")
         .flatMap { implicit tracer: Tracer[IO] =>
           for {

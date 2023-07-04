@@ -20,7 +20,6 @@ import cats.effect.Resource
 import cats.effect.Temporal
 import cats.effect.implicits._
 import cats.implicits._
-import io.opentelemetry.api.GlobalOpenTelemetry
 import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.Otel4s
 import org.typelevel.otel4s.java.OtelJava
@@ -119,10 +118,6 @@ object UserIdsAlg {
 }
 
 object TraceExample extends IOApp.Simple {
-  def globalOtel4s: Resource[IO, Otel4s[IO]] =
-    Resource
-      .eval(IO(GlobalOpenTelemetry.get))
-      .evalMap(OtelJava.forAsync[IO])
 
   /** Run Method
     *
@@ -131,7 +126,7 @@ object TraceExample extends IOApp.Simple {
     * from our UserIdsAlg.
     */
   def run: IO[Unit] = {
-    globalOtel4s.use { (otel4s: Otel4s[IO]) =>
+    OtelJava.global.flatMap { (otel4s: Otel4s[IO]) =>
       otel4s.tracerProvider.tracer("TraceExample").get.flatMap {
         implicit tracer: Tracer[IO] =>
           val userIdAlg = UserIdsAlg.apply[IO](

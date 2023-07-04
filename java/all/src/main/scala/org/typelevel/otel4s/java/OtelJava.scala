@@ -23,10 +23,8 @@ import cats.effect.Resource
 import cats.effect.Sync
 import cats.mtl.Local
 import cats.syntax.all._
-import io.opentelemetry.api.{
-  GlobalOpenTelemetry,
-  OpenTelemetry => JOpenTelemetry
-}
+import io.opentelemetry.api.{OpenTelemetry => JOpenTelemetry}
+import io.opentelemetry.api.GlobalOpenTelemetry
 import io.opentelemetry.sdk.{OpenTelemetrySdk => JOpenTelemetrySdk}
 import org.typelevel.otel4s.ContextPropagators
 import org.typelevel.otel4s.Otel4s

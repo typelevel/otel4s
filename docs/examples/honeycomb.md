@@ -89,11 +89,11 @@ $ export OTEL_EXPORTER_OTLP_HEADERS="x-honeycomb-team=your-api-key,x-honeycomb-d
 ```scala mdoc:silent
 import java.util.concurrent.TimeUnit
 
-import cats.effect.{Async, IO, IOApp, Resource}
+import cats.effect.{Async, IO, IOApp}
 import cats.effect.std.Console
 import cats.effect.std.Random
 import cats.syntax.all._
-import org.typelevel.otel4s.{Attribute, AttributeKey, Otel4s}
+import org.typelevel.otel4s.{Attribute, AttributeKey}
 import org.typelevel.otel4s.java.OtelJava
 import org.typelevel.otel4s.metrics.Histogram
 import org.typelevel.otel4s.trace.Tracer

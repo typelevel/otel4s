@@ -76,11 +76,10 @@ $ docker run --name jaeger \
 ### Application example
 
 ```scala mdoc:silent
-import cats.effect.{Async, IO, IOApp, Resource}
+import cats.effect.{Async, IO, IOApp}
 import cats.effect.std.Console
 import cats.effect.std.Random
 import cats.syntax.all._
-import io.opentelemetry.api.GlobalOpenTelemetry
 import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.java.OtelJava
 import org.typelevel.otel4s.trace.Tracer
@@ -119,14 +118,11 @@ object Work {
 }
 
 object TracingExample extends IOApp.Simple {
-  def tracerResource: Resource[IO, Tracer[IO]] =
-    Resource
-      .eval(IO(GlobalOpenTelemetry.get))
-      .evalMap(OtelJava.forAsync[IO])
-      .evalMap(_.tracerProvider.get("Example"))
+  def tracer: IO[Tracer[IO]] =
+    OtelJava.global.flatMap(_.tracerProvider.get("Example"))
 
   def run: IO[Unit] = {
-    tracerResource.use { implicit tracer: Tracer[IO] =>
+    tracer.flatMap { implicit tracer: Tracer[IO] =>
       Work[IO].doWork
     }
   }

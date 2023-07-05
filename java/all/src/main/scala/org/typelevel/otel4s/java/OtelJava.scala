@@ -22,7 +22,9 @@ import cats.effect.LiftIO
 import cats.effect.Resource
 import cats.effect.Sync
 import cats.mtl.Local
+import cats.syntax.all._
 import io.opentelemetry.api.{OpenTelemetry => JOpenTelemetry}
+import io.opentelemetry.api.GlobalOpenTelemetry
 import io.opentelemetry.sdk.{OpenTelemetrySdk => JOpenTelemetrySdk}
 import org.typelevel.otel4s.ContextPropagators
 import org.typelevel.otel4s.Otel4s
@@ -89,4 +91,10 @@ object OtelJava {
         asyncFromCompletableResultCode(Sync[F].delay(sdk.shutdown()))
       )
       .evalMap(forAsync[F])
+
+  /** Creates an [[org.typelevel.otel4s.Otel4s]] from the global Java
+    * OpenTelemetry instance.
+    */
+  def global[F[_]: LiftIO: Async]: F[Otel4s[F]] =
+    Sync[F].delay(GlobalOpenTelemetry.get).flatMap(forAsync[F])
 }

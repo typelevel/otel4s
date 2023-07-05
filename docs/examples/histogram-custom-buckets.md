@@ -7,7 +7,7 @@ In some cases, these boundaries don't represent the distribution of the values. 
 latency should be somewhere between 100ms and 1s. Therefore, 2.5, 5, 7.5, and 10 seconds buckets are redundant.
 
 In this example, we will
-customize [OpenTelemetry Autoconfigure](https://opentelemetry.io/docs/instrumentation/java/manual/#auto-configuration)
+customize the [OpenTelemetry Autoconfigure](https://opentelemetry.io/docs/instrumentation/java/manual/#auto-configuration)
 extension with a [View](https://opentelemetry.io/docs/instrumentation/java/manual/#views) to configure custom buckets
 for a histogram.
 

@@ -135,24 +135,24 @@
           <div class="tab-content active" data-choice-name="sbt">
             <p>Add settings to the <code>build.sbt</code>:</p>
             <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">libraryDependencies</span><span> ++= </span><span class="type-name">Seq</span><span>(
-  </span><span class="string-literal">&quot;org.typelevel&quot;</span><span> %% </span><span class="string-literal">&quot;otel4s-java&quot;</span><span> % </span><span class="string-literal">&quot;0.3-fa41610-SNAPSHOT&quot;</span><span>, </span><span class="comment">// &lt;1&gt;
+  </span><span class="string-literal">&quot;org.typelevel&quot;</span><span> %% </span><span class="string-literal">&quot;otel4s-java&quot;</span><span> % </span><span class="string-literal">&quot;0.3-bc52ad9-SNAPSHOT&quot;</span><span>, </span><span class="comment">// &lt;1&gt;
 </span><span>  </span><span class="string-literal">&quot;io.opentelemetry&quot;</span><span> % </span><span class="string-literal">&quot;opentelemetry-exporter-otlp&quot;</span><span> % </span><span class="string-literal">&quot;1.27.0&quot;</span><span> % </span><span class="type-name">Runtime</span><span>, </span><span class="comment">// &lt;2&gt;
 </span><span>  </span><span class="string-literal">&quot;io.opentelemetry&quot;</span><span> % </span><span class="string-literal">&quot;opentelemetry-sdk-extension-autoconfigure&quot;</span><span> % </span><span class="string-literal">&quot;1.27.0-alpha&quot;</span><span> % </span><span class="type-name">Runtime</span><span> </span><span class="comment">// &lt;3&gt;
 </span><span>)
 </span><span class="identifier">run</span><span> / </span><span class="identifier">fork</span><span> := </span><span class="boolean-literal">true</span><span>
-</span><span class="identifier">javaOptions</span><span> += </span><span class="string-literal">&quot;-Dotel.service.name=histogram-buckets-example&quot;</span><span> </span><span class="comment">// &lt;5&gt;</span></code></pre>
+</span><span class="identifier">javaOptions</span><span> += </span><span class="string-literal">&quot;-Dotel.service.name=histogram-buckets-example&quot;</span><span> </span><span class="comment">// &lt;4&gt;</span></code></pre>
           </div>
           <div class="tab-content" data-choice-name="scala-cli">
             <p>Add directives to the <code>histogram-buckets.scala</code>:</p>
-            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="comment">//&gt; using lib &quot;org.typelevel::otel4s-java:0.3-fa41610-SNAPSHOT&quot; // &lt;1&gt;
+            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="comment">//&gt; using lib &quot;org.typelevel::otel4s-java:0.3-bc52ad9-SNAPSHOT&quot; // &lt;1&gt;
 //&gt; using lib &quot;io.opentelemetry:opentelemetry-exporter-otlp:1.27.0&quot; // &lt;2&gt;
 //&gt; using lib &quot;io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:1.27.0-alpha&quot; // &lt;3&gt;
 //&gt; using `java-opt` &quot;-Dotel.service.name=histogram-buckets-example&quot; // &lt;4&gt;</span></code></pre>
           </div>
         </div>
-        <p>1) Add the <code>otel4s</code> library
-        2) Add an OpenTelemetry exporter. Without the exporter, the application will crash
-        3) Add an OpenTelemetry autoconfigure extension
+        <p>1) Add the <code>otel4s</code> library<br>
+        2) Add an OpenTelemetry exporter. Without the exporter, the application will crash<br>
+        3) Add an OpenTelemetry autoconfigure extension<br>
         4) Add the name of the application to use in the traces and metrics</p>
         
         <h3 id="opentelemetry-sdk-configuration" class="section">OpenTelemetry SDK configuration<a class="anchor-link right" href="#opentelemetry-sdk-configuration"><i class="icofont-laika">&#xef71;</i></a></h3>
@@ -220,7 +220,10 @@
 
 </span><span class="keyword">object</span><span> </span><span class="type-name">HistogramBucketsExample</span><span> </span><span class="keyword">extends</span><span> </span><span class="type-name">IOApp</span><span>.</span><span class="type-name">Simple</span><span> {
 
-  </span><span class="keyword">def</span><span> </span><span class="declaration-name">work</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>] : </span><span class="type-name">Temporal</span><span> : </span><span class="type-name">Console</span><span>](</span><span class="identifier">histogram</span><span>: </span><span class="type-name">Histogram</span><span>[</span><span class="type-name">F</span><span>, </span><span class="type-name">Double</span><span>], </span><span class="identifier">random</span><span>: </span><span class="type-name">Random</span><span>[</span><span class="type-name">F</span><span>]): </span><span class="type-name">F</span><span>[</span><span class="type-name">Unit</span><span>] =
+  </span><span class="keyword">def</span><span> </span><span class="declaration-name">work</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>] : </span><span class="type-name">Temporal</span><span> : </span><span class="type-name">Console</span><span>](
+    </span><span class="identifier">histogram</span><span>: </span><span class="type-name">Histogram</span><span>[</span><span class="type-name">F</span><span>, </span><span class="type-name">Double</span><span>], 
+    </span><span class="identifier">random</span><span>: </span><span class="type-name">Random</span><span>[</span><span class="type-name">F</span><span>]
+  ): </span><span class="type-name">F</span><span>[</span><span class="type-name">Unit</span><span>] =
     </span><span class="keyword">for</span><span> {
       </span><span class="identifier">sleepDuration</span><span> &lt;- </span><span class="identifier">random</span><span>.</span><span class="identifier">nextIntBounded</span><span>(</span><span class="number-literal">5000</span><span>)
       </span><span class="identifier">_</span><span> &lt;- </span><span class="identifier">histogram</span><span>

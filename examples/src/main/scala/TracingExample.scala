@@ -17,7 +17,6 @@
 import cats.Monad
 import cats.effect.IO
 import cats.effect.IOApp
-import cats.effect.Resource
 import cats.effect.std.Console
 import cats.syntax.all._
 import org.typelevel.otel4s.Otel4s
@@ -62,20 +61,30 @@ object TracingExample extends IOApp.Simple {
     OtelJava.global.flatMap { (otel4s: Otel4s[IO]) =>
       otel4s.tracerProvider.tracer("example").get.flatMap {
         implicit tracer: Tracer[IO] =>
-          val resource: Resource[IO, Unit] =
-            Resource.make(IO.sleep(50.millis))(_ => IO.sleep(100.millis))
           tracer
-            .resourceSpan("resource")(resource)
-            .surround(
-              Work[IO].request(
-                Map(
-                  "X-B3-TraceId" -> "80f198ee56343ba864fe8b2a57d3eff7",
-                  "X-B3-ParentSpanId" -> "05e3ac9a4f6e3b90",
-                  "X-B3-SpanId" -> "e457b5a2e4d86bd1",
-                  "X-B3-Sampled" -> "1"
-                )
-              )
-            )
+            .span("resource")
+            .resource
+            .use { case (span, wrap) =>
+              // `wrap` encloses its contents within the "resource" span;
+              // anything not applied to `wrap` will not end up in the span
+              wrap {
+                for {
+                  _ <- tracer.span("acquire").surround(IO.sleep(50.millis))
+                  _ <- tracer.span("use").surround {
+                    Work[IO].request(
+                      Map(
+                        "X-B3-TraceId" -> "80f198ee56343ba864fe8b2a57d3eff7",
+                        "X-B3-ParentSpanId" -> "05e3ac9a4f6e3b90",
+                        "X-B3-SpanId" -> "e457b5a2e4d86bd1",
+                        "X-B3-Sampled" -> "1"
+                      )
+                    )
+                  }
+                  _ <- span.addEvent("event")
+                  _ <- tracer.span("release").surround(IO.sleep(100.millis))
+                } yield ()
+              }
+            }
       }
     }
   }

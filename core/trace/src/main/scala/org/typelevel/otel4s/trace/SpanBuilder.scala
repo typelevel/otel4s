@@ -18,8 +18,10 @@ package org.typelevel.otel4s
 package trace
 
 import cats.Applicative
-import cats.effect.kernel.MonadCancelThrow
-import cats.effect.kernel.Resource
+import cats.arrow.FunctionK
+import cats.effect.MonadCancelThrow
+import cats.effect.Resource
+import cats.~>
 
 import scala.concurrent.duration.FiniteDuration
 
@@ -110,41 +112,6 @@ trait SpanBuilder[F[_]] {
     */
   def withParent(parent: SpanContext): Builder
 
-  /** Wraps the given resource to trace it upon the start.
-    *
-    * The span is started upon resource allocation and ended upon finalization.
-    * The allocation and release stages of the `resource` are traced by separate
-    * spans. Carries a value of the given `resource`.
-    *
-    * The structure of the inner spans:
-    * {{{
-    * > span-name
-    *   > acquire
-    *   > use
-    *   > release
-    * }}}
-    *
-    * The finalization strategy is determined by [[SpanFinalizer.Strategy]]. By
-    * default, the abnormal termination (error, cancelation) is recorded.
-    *
-    * @see
-    *   default finalization strategy [[SpanFinalizer.Strategy.reportAbnormal]]
-    * @example
-    *   {{{
-    * val tracer: Tracer[F] = ???
-    * val resource: Resource[F, String] = Resource.eval(Sync[F].delay("string"))
-    * val ok: F[Unit] =
-    *   tracer.spanBuilder("wrapped-resource").wrapResource(resource).build.use { case span @ Span.Res(value) =>
-    *     span.setStatus(Status.Ok, s"all good. resource value: $${value}")
-    *   }
-    *   }}}
-    * @param resource
-    *   the resource to trace
-    */
-  def wrapResource[A](
-      resource: Resource[F, A]
-  )(implicit ev: Result =:= Span[F]): SpanBuilder.Aux[F, Span.Res[F, A]]
-
   def build: SpanOps.Aux[F, Result]
 }
 
@@ -167,14 +134,6 @@ object SpanBuilder {
       type Result = Res
 
       private val span: Span[F] = Span.fromBackend(back)
-
-      def wrapResource[A](
-          resource: Resource[F, A]
-      )(implicit ev: Result =:= Span[F]): SpanBuilder.Aux[F, Span.Res[F, A]] =
-        make(
-          back,
-          resource.map(r => Span.Res.fromBackend(r, back))
-        )
 
       def addAttribute[A](attribute: Attribute[A]): Builder = this
 
@@ -207,6 +166,9 @@ object SpanBuilder {
 
         def surround[A](fa: F[A]): F[A] =
           fa
+
+        def resource: Resource[F, (Res, F ~> F)] =
+          startSpan.map(res => res -> FunctionK.id)
       }
     }
 

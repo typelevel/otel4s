@@ -78,11 +78,6 @@ private[java] final case class SpanBuilderImpl[F[_]: Sync, Res <: Span[F]](
   def withFinalizationStrategy(strategy: SpanFinalizer.Strategy): Builder =
     copy(finalizationStrategy = strategy)
 
-  def wrapResource[A](
-      resource: Resource[F, A]
-  )(implicit ev: Result =:= Span[F]): SpanBuilder.Aux[F, Span.Res[F, A]] =
-    copy(runner = SpanRunner.resource(scope, resource, jTracer))
-
   def build: SpanOps.Aux[F, Result] = new SpanOps[F] {
     type Result = Res
 
@@ -97,6 +92,8 @@ private[java] final case class SpanBuilderImpl[F[_]: Sync, Res <: Span[F]](
 
     def surround[A](fa: F[A]): F[A] =
       use(_ => fa)
+
+    def resource: Resource[F, (Result, F ~> F)] = start
 
     private def start: Resource[F, (Result, F ~> F)] =
       Resource.eval(runnerContext).flatMap(ctx => runner.start(ctx))

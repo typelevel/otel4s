@@ -17,8 +17,6 @@
 package org.typelevel.otel4s
 package trace
 
-import cats.effect.kernel.Resource
-
 private[otel4s] trait TracerMacro[F[_]] {
   self: Tracer[F] =>
 
@@ -77,34 +75,6 @@ private[otel4s] trait TracerMacro[F[_]] {
       attributes: Attribute[_]*
   ): SpanOps.Aux[F, Span[F]] =
     macro TracerMacro.rootSpan
-
-  /** Creates a new child span. The span is automatically attached to a parent
-    * span (based on the scope).
-    *
-    * The lifecycle of the span is managed automatically. That means the span is
-    * ended upon the finalization of a resource.
-    *
-    * The abnormal termination (error, cancelation) is recorded by
-    * [[SpanFinalizer.Strategy.reportAbnormal default finalization strategy]].
-    *
-    * The structure of the inner spans:
-    * {{{
-    * > name
-    *   > acquire
-    *   > use
-    *   > release
-    * }}}
-    *
-    * @param name
-    *   the name of the span
-    *
-    * @param attributes
-    *   the set of attributes to associate with the span
-    */
-  def resourceSpan[A](name: String, attributes: Attribute[_]*)(
-      resource: Resource[F, A]
-  ): SpanOps.Aux[F, Span.Res[F, A]] =
-    macro TracerMacro.resourceSpan[F, A]
 }
 
 object TracerMacro {
@@ -126,16 +96,6 @@ object TracerMacro {
     import c.universe._
     val meta = q"${c.prefix}.meta"
     q"(if ($meta.isEnabled) ${c.prefix}.spanBuilder($name).root.addAttributes(..$attributes) else $meta.noopSpanBuilder).build"
-  }
-
-  def resourceSpan[F[_], A](c: blackbox.Context)(
-      name: c.Expr[String],
-      attributes: c.Expr[Attribute[_]]*
-  )(resource: c.Expr[Resource[F, A]]): c.universe.Tree = {
-    import c.universe._
-    val meta = q"${c.prefix}.meta"
-
-    q"if ($meta.isEnabled) ${c.prefix}.spanBuilder($name).addAttributes(..$attributes).wrapResource($resource).build else $meta.noopResSpan($resource).build"
   }
 
 }

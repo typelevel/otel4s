@@ -16,6 +16,9 @@
 
 package org.typelevel.otel4s.trace
 
+import cats.effect.Resource
+import cats.~>
+
 trait SpanOps[F[_]] {
   type Result <: Span[F]
 
@@ -104,6 +107,35 @@ trait SpanOps[F[_]] {
     *   See [[use]] for more details regarding lifecycle strategy
     */
   def surround[A](fa: F[A]): F[A]
+
+  /** Creates a [[Span]] and a [[cats.effect.Resource Resource]] for using it.
+    * Unlike [[startUnmanaged]], the lifecycle of the span is fully managed.
+    *
+    * The finalization strategy is determined by [[SpanFinalizer.Strategy]]. By
+    * default, the abnormal termination (error, cancelation) is recorded.
+    *
+    * If the start timestamp is not configured explicitly in a builder, the
+    * `Clock[F].realTime` is used to determine the timestamp.
+    *
+    * `Clock[F].realTime` is always used as the end timestamp.
+    *
+    * @see
+    *   default finalization strategy [[SpanFinalizer.Strategy.reportAbnormal]]
+    * @example
+    *   {{{
+    * val tracer: Tracer[F] = ???
+    * val ok: F[Unit] =
+    *   tracer.spanBuilder("resource-span")
+    *     .build
+    *     .resource
+    *     .use { case (span, wrap) =>
+    *       // `wrap` encloses its contents within the "resource-span" span;
+    *       // anything not applied to `wrap` will not end up in the span
+    *       wrap(span.setStatus(Status.Ok, "all good"))
+    *     }
+    *   }}}
+    */
+  def resource: Resource[F, (Result, F ~> F)]
 }
 
 object SpanOps {

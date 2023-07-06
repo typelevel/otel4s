@@ -17,8 +17,6 @@
 package org.typelevel.otel4s
 package trace
 
-import cats.effect.kernel.Resource
-
 import scala.quoted.*
 
 private[otel4s] trait TracerMacro[F[_]] {
@@ -83,35 +81,6 @@ private[otel4s] trait TracerMacro[F[_]] {
   ): SpanOps.Aux[F, Span[F]] =
     ${ TracerMacro.rootSpan('self, 'name, 'attributes) }
 
-  /** Creates a new child span. The span is automatically attached to a parent
-    * span (based on the scope).
-    *
-    * The lifecycle of the span is managed automatically. That means the span is
-    * ended upon the finalization of a resource.
-    *
-    * The abnormal termination (error, cancelation) is recorded by
-    * [[SpanFinalizer.Strategy.reportAbnormal default finalization strategy]].
-    *
-    * The structure of the inner spans:
-    * {{{
-    * > name
-    *   > acquire
-    *   > use
-    *   > release
-    * }}}
-    *
-    * @param name
-    *   the name of the span
-    *
-    * @param attributes
-    *   the set of attributes to associate with the span
-    */
-  inline def resourceSpan[A](
-      inline name: String,
-      inline attributes: Attribute[_]*
-  )(inline resource: Resource[F, A]): SpanOps.Aux[F, Span.Res[F, A]] =
-    ${ TracerMacro.resourceSpan('self, 'name, 'attributes, 'resource) }
-
 }
 
 object TracerMacro {
@@ -136,22 +105,6 @@ object TracerMacro {
       if ($tracer.meta.isEnabled)
         $tracer.spanBuilder($name).root.addAttributes($attributes*).build
       else $tracer.meta.noopSpanBuilder.build
-    }
-
-  def resourceSpan[F[_], A](
-      tracer: Expr[Tracer[F]],
-      name: Expr[String],
-      attributes: Expr[Seq[Attribute[_]]],
-      resource: Expr[Resource[F, A]]
-  )(using Quotes, Type[F], Type[A]) =
-    '{
-      if ($tracer.meta.isEnabled)
-        $tracer
-          .spanBuilder($name)
-          .addAttributes($attributes*)
-          .wrapResource($resource)
-          .build
-      else $tracer.meta.noopResSpan($resource).build
     }
 
 }

@@ -28,7 +28,7 @@ libraryDependencies ++= Seq(
   "io.opentelemetry" % "opentelemetry-sdk-extension-autoconfigure" % "@OPEN_TELEMETRY_VERSION@-alpha" % Runtime // <3>
 )
 run / fork := true
-javaOptions += "-Dotel.service.name=histogram-buckets-example" // <5>
+javaOptions += "-Dotel.service.name=histogram-buckets-example" // <4>
 ```
 
 @:choice(scala-cli)
@@ -44,9 +44,9 @@ Add directives to the `histogram-buckets.scala`:
 
 @:@
 
-1) Add the `otel4s` library
-2) Add an OpenTelemetry exporter. Without the exporter, the application will crash
-3) Add an OpenTelemetry autoconfigure extension
+1) Add the `otel4s` library  
+2) Add an OpenTelemetry exporter. Without the exporter, the application will crash  
+3) Add an OpenTelemetry autoconfigure extension  
 4) Add the name of the application to use in the traces and metrics
 
 ### OpenTelemetry SDK configuration
@@ -131,7 +131,10 @@ import scala.concurrent.duration._
 
 object HistogramBucketsExample extends IOApp.Simple {
 
-  def work[F[_] : Temporal : Console](histogram: Histogram[F, Double], random: Random[F]): F[Unit] =
+  def work[F[_] : Temporal : Console](
+    histogram: Histogram[F, Double], 
+    random: Random[F]
+  ): F[Unit] =
     for {
       sleepDuration <- random.nextIntBounded(5000)
       _ <- histogram

@@ -183,7 +183,7 @@ object HistogramBucketsExample extends IOApp.Simple {
               .build()
           )
       }
-      .setResultAsGlobal(true)
+      .setResultAsGlobal
       .build()
       .getOpenTelemetrySdk
   }

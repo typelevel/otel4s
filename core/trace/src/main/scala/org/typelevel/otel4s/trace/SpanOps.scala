@@ -20,7 +20,6 @@ import cats.effect.Resource
 import cats.~>
 
 trait SpanOps[F[_]] {
-  type Result <: Span[F]
 
   /** Creates a [[Span]]. The span requires to be ended ''explicitly'' by
     * invoking `end`.
@@ -50,63 +49,9 @@ trait SpanOps[F[_]] {
     * }}}
     *
     * @see
-    *   [[use]], [[use_]], or [[surround]] for a managed lifecycle
+    *   [[use]], [[use_]], [[surround]], or [[resource]] for a managed lifecycle
     */
-  def startUnmanaged(implicit ev: Result =:= Span[F]): F[Span[F]]
-
-  /** Creates and uses a [[Span]]. Unlike [[startUnmanaged]], the lifecycle of
-    * the span is fully managed. The span is started and passed to `f` to
-    * produce the effect, and ended when the effect completes.
-    *
-    * The finalization strategy is determined by [[SpanFinalizer.Strategy]]. By
-    * default, the abnormal termination (error, cancelation) is recorded.
-    *
-    * If the start timestamp is not configured explicitly in a builder, the
-    * `Clock[F].realTime` is used to determine the timestamp.
-    *
-    * `Clock[F].realTime` is always used as the end timestamp.
-    *
-    * @see
-    *   default finalization strategy [[SpanFinalizer.Strategy.reportAbnormal]]
-    * @example
-    *   {{{
-    * val tracer: Tracer[F] = ???
-    * val ok: F[Unit] =
-    *   tracer.spanBuilder("auto-span").build.use { span =>
-    *     span.setStatus(Status.Ok, "all good")
-    *   }
-    *   }}}
-    */
-  def use[A](f: Result => F[A]): F[A]
-
-  /** Starts a span and ends it immediately.
-    *
-    * A shortcut for:
-    * {{{
-    * val tracer: Tracer[F] = ???
-    * val ops: SpanOps.Aux[F, Span[F]] = tracer.spanBuilder("auto-span").build
-    * ops.use(_ => F.unit) <-> ops.use_
-    * }}}
-    *
-    * @see
-    *   See [[use]] for more details regarding lifecycle strategy
-    */
-  def use_ : F[Unit]
-
-  /** Starts a span, runs `fa` and ends the span once `fa` terminates, fails or
-    * gets interrupted.
-    *
-    * A shortcut for:
-    * {{{
-    * val tracer: Tracer[F] = ???
-    * val ops: SpanOps.Aux[F, Span[F]] = tracer.spanBuilder("auto-span").build
-    * ops.use(_ => fa) <-> ops.surround(fa)
-    * }}}
-    *
-    * @see
-    *   See [[use]] for more details regarding lifecycle strategy
-    */
-  def surround[A](fa: F[A]): F[A]
+  def startUnmanaged: F[Span[F]]
 
   /** Creates a [[Span]] and a [[cats.effect.Resource Resource]] for using it.
     * Unlike [[startUnmanaged]], the lifecycle of the span is fully managed.
@@ -135,11 +80,59 @@ trait SpanOps[F[_]] {
     *     }
     *   }}}
     */
-  def resource: Resource[F, (Result, F ~> F)]
-}
+  def resource: Resource[F, (Span[F], F ~> F)]
 
-object SpanOps {
-  type Aux[F[_], A] = SpanOps[F] {
-    type Result = A
-  }
+  /** Creates and uses a [[Span]]. Unlike [[startUnmanaged]], the lifecycle of
+    * the span is fully managed. The span is started and passed to `f` to
+    * produce the effect, and ended when the effect completes.
+    *
+    * The finalization strategy is determined by [[SpanFinalizer.Strategy]]. By
+    * default, the abnormal termination (error, cancelation) is recorded.
+    *
+    * If the start timestamp is not configured explicitly in a builder, the
+    * `Clock[F].realTime` is used to determine the timestamp.
+    *
+    * `Clock[F].realTime` is always used as the end timestamp.
+    *
+    * @see
+    *   default finalization strategy [[SpanFinalizer.Strategy.reportAbnormal]]
+    * @example
+    *   {{{
+    * val tracer: Tracer[F] = ???
+    * val ok: F[Unit] =
+    *   tracer.spanBuilder("auto-span").build.use { span =>
+    *     span.setStatus(Status.Ok, "all good")
+    *   }
+    *   }}}
+    */
+  def use[A](f: Span[F] => F[A]): F[A]
+
+  /** Starts a span and ends it immediately.
+    *
+    * A shortcut for:
+    * {{{
+    * val tracer: Tracer[F] = ???
+    * val ops: SpanOps.Aux[F, Span[F]] = tracer.spanBuilder("auto-span").build
+    * ops.use(_ => F.unit) <-> ops.use_
+    * }}}
+    *
+    * @see
+    *   See [[use]] for more details regarding lifecycle strategy
+    */
+  def use_ : F[Unit]
+
+  /** Starts a span, runs `fa` and ends the span once `fa` terminates, fails or
+    * gets interrupted.
+    *
+    * A shortcut for:
+    * {{{
+    * val tracer: Tracer[F] = ???
+    * val ops: SpanOps.Aux[F, Span[F]] = tracer.spanBuilder("auto-span").build
+    * ops.use(_ => fa) <-> ops.surround(fa)
+    * }}}
+    *
+    * @see
+    *   See [[use]] for more details regarding lifecycle strategy
+    */
+  final def surround[A](fa: F[A]): F[A] = use(_ => fa)
 }

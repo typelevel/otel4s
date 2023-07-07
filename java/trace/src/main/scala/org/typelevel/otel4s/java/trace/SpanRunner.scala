@@ -29,8 +29,10 @@ import io.opentelemetry.context.{Context => JContext}
 import org.typelevel.otel4s.trace.Span
 import org.typelevel.otel4s.trace.SpanFinalizer
 
-private[java] sealed trait SpanRunner[F[_], Res <: Span[F]] {
-  def start(ctx: Option[SpanRunner.RunnerContext]): Resource[F, (Res, F ~> F)]
+private[java] sealed trait SpanRunner[F[_]] {
+  def start(
+      ctx: Option[SpanRunner.RunnerContext]
+  ): Resource[F, (Span[F], F ~> F)]
 }
 
 private[java] object SpanRunner {
@@ -42,8 +44,8 @@ private[java] object SpanRunner {
       finalizationStrategy: SpanFinalizer.Strategy
   )
 
-  def span[F[_]: Sync](scope: TraceScope[F]): SpanRunner[F, Span[F]] =
-    new SpanRunner[F, Span[F]] {
+  def span[F[_]: Sync](scope: TraceScope[F]): SpanRunner[F] =
+    new SpanRunner[F] {
       def start(ctx: Option[RunnerContext]): Resource[F, (Span[F], F ~> F)] = {
         ctx match {
           case Some(RunnerContext(builder, _, hasStartTs, finalization)) =>

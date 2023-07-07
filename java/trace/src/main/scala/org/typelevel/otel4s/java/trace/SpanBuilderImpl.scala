@@ -37,11 +37,11 @@ import org.typelevel.otel4s.trace.SpanOps
 
 import scala.concurrent.duration.FiniteDuration
 
-private[java] final case class SpanBuilderImpl[F[_]: Sync, Res <: Span[F]](
+private[java] final case class SpanBuilderImpl[F[_]: Sync](
     jTracer: JTracer,
     name: String,
     scope: TraceScope[F],
-    runner: SpanRunner[F, Res],
+    runner: SpanRunner[F],
     parent: SpanBuilderImpl.Parent = SpanBuilderImpl.Parent.Propagate,
     finalizationStrategy: SpanFinalizer.Strategy =
       SpanFinalizer.Strategy.reportAbnormal,
@@ -50,53 +50,48 @@ private[java] final case class SpanBuilderImpl[F[_]: Sync, Res <: Span[F]](
     attributes: Seq[Attribute[_]] = Nil,
     startTimestamp: Option[FiniteDuration] = None
 ) extends SpanBuilder[F] {
-  type Result = Res
-
   import SpanBuilderImpl._
 
-  def withSpanKind(spanKind: SpanKind): Builder =
+  def withSpanKind(spanKind: SpanKind): SpanBuilder[F] =
     copy(kind = Some(spanKind))
 
-  def addAttribute[A](attribute: Attribute[A]): Builder =
+  def addAttribute[A](attribute: Attribute[A]): SpanBuilder[F] =
     copy(attributes = attributes :+ attribute)
 
-  def addAttributes(attributes: Attribute[_]*): Builder =
+  def addAttributes(attributes: Attribute[_]*): SpanBuilder[F] =
     copy(attributes = this.attributes ++ attributes)
 
-  def addLink(spanContext: SpanContext, attributes: Attribute[_]*): Builder =
+  def addLink(
+      spanContext: SpanContext,
+      attributes: Attribute[_]*
+  ): SpanBuilder[F] =
     copy(links = links :+ (spanContext, attributes))
 
-  def root: Builder =
+  def root: SpanBuilder[F] =
     copy(parent = Parent.Root)
 
-  def withParent(parent: SpanContext): Builder =
+  def withParent(parent: SpanContext): SpanBuilder[F] =
     copy(parent = Parent.Explicit(parent))
 
-  def withStartTimestamp(timestamp: FiniteDuration): Builder =
+  def withStartTimestamp(timestamp: FiniteDuration): SpanBuilder[F] =
     copy(startTimestamp = Some(timestamp))
 
-  def withFinalizationStrategy(strategy: SpanFinalizer.Strategy): Builder =
+  def withFinalizationStrategy(
+      strategy: SpanFinalizer.Strategy
+  ): SpanBuilder[F] =
     copy(finalizationStrategy = strategy)
 
-  def build: SpanOps.Aux[F, Result] = new SpanOps[F] {
-    type Result = Res
-
-    def startUnmanaged(implicit ev: Result =:= Span[F]): F[Span[F]] =
+  def build: SpanOps[F] = new SpanOps[F] {
+    def startUnmanaged: F[Span[F]] =
       runnerContext.flatMap(ctx => SpanRunner.startUnmanaged(ctx))
 
-    def use[A](f: Result => F[A]): F[A] =
-      start.use { case (span, nt) => nt(f(span)) }
-
-    def use_ : F[Unit] =
-      start.use_
-
-    def surround[A](fa: F[A]): F[A] =
-      use(_ => fa)
-
-    def resource: Resource[F, (Result, F ~> F)] = start
-
-    private def start: Resource[F, (Result, F ~> F)] =
+    def resource: Resource[F, (Span[F], F ~> F)] =
       Resource.eval(runnerContext).flatMap(ctx => runner.start(ctx))
+
+    override def use[A](f: Span[F] => F[A]): F[A] =
+      resource.use { case (span, nt) => nt(f(span)) }
+
+    override def use_ : F[Unit] = use(_ => Sync[F].unit)
   }
 
   private[trace] def makeJBuilder(parent: JContext): JSpanBuilder = {

@@ -26,8 +26,6 @@ import cats.~>
 import scala.concurrent.duration.FiniteDuration
 
 trait SpanBuilder[F[_]] {
-  type Result <: Span[F]
-  type Builder = SpanBuilder.Aux[F, Result]
 
   /** Adds an attribute to the newly created span. If [[SpanBuilder]] previously
     * contained a mapping for the key, the old value is replaced by the
@@ -36,7 +34,7 @@ trait SpanBuilder[F[_]] {
     * @param attribute
     *   the attribute to associate with the span
     */
-  def addAttribute[A](attribute: Attribute[A]): Builder
+  def addAttribute[A](attribute: Attribute[A]): SpanBuilder[F]
 
   /** Adds attributes to the [[SpanBuilder]]. If the SpanBuilder previously
     * contained a mapping for any of the keys, the old values are replaced by
@@ -45,7 +43,7 @@ trait SpanBuilder[F[_]] {
     * @param attributes
     *   the set of attributes to associate with the span
     */
-  def addAttributes(attributes: Attribute[_]*): Builder
+  def addAttributes(attributes: Attribute[_]*): SpanBuilder[F]
 
   /** Adds a link to the newly created span.
     *
@@ -59,7 +57,10 @@ trait SpanBuilder[F[_]] {
     * @param attributes
     *   the set of attributes to associate with the link
     */
-  def addLink(spanContext: SpanContext, attributes: Attribute[_]*): Builder
+  def addLink(
+      spanContext: SpanContext,
+      attributes: Attribute[_]*
+  ): SpanBuilder[F]
 
   /** Sets the finalization strategy for the newly created span.
     *
@@ -70,7 +71,7 @@ trait SpanBuilder[F[_]] {
     * @param strategy
     *   the strategy to apply upon span finalization
     */
-  def withFinalizationStrategy(strategy: SpanFinalizer.Strategy): Builder
+  def withFinalizationStrategy(strategy: SpanFinalizer.Strategy): SpanBuilder[F]
 
   /** Sets the [[SpanKind]] for the newly created span. If not called, the
     * implementation will provide a default value [[SpanKind.Internal]].
@@ -78,7 +79,7 @@ trait SpanBuilder[F[_]] {
     * @param spanKind
     *   the kind of the newly created span
     */
-  def withSpanKind(spanKind: SpanKind): Builder
+  def withSpanKind(spanKind: SpanKind): SpanBuilder[F]
 
   /** Sets an explicit start timestamp for the newly created span.
     *
@@ -92,12 +93,12 @@ trait SpanBuilder[F[_]] {
     * @param timestamp
     *   the explicit start timestamp from the epoch
     */
-  def withStartTimestamp(timestamp: FiniteDuration): Builder
+  def withStartTimestamp(timestamp: FiniteDuration): SpanBuilder[F]
 
   /** Indicates that the span should be the root one and the scope parent should
     * be ignored.
     */
-  def root: Builder
+  def root: SpanBuilder[F]
 
   /** Sets the parent to use from the specified [[SpanContext]]. If not set, the
     * span that is currently available in the scope will be used as parent.
@@ -110,65 +111,46 @@ trait SpanBuilder[F[_]] {
     * @param parent
     *   the span context to use as a parent
     */
-  def withParent(parent: SpanContext): Builder
+  def withParent(parent: SpanContext): SpanBuilder[F]
 
-  def build: SpanOps.Aux[F, Result]
+  def build: SpanOps[F]
 }
 
 object SpanBuilder {
 
-  type Aux[F[_], A] = SpanBuilder[F] {
-    type Result = A
-  }
-
-  def noop[F[_]: MonadCancelThrow](
-      back: Span.Backend[F]
-  ): SpanBuilder.Aux[F, Span[F]] =
-    make(back, Resource.pure(Span.fromBackend(back)))
-
-  private def make[F[_]: MonadCancelThrow, Res <: Span[F]](
-      back: Span.Backend[F],
-      startSpan: Resource[F, Res]
-  ): SpanBuilder.Aux[F, Res] =
+  def noop[F[_]: MonadCancelThrow](back: Span.Backend[F]): SpanBuilder[F] =
     new SpanBuilder[F] {
-      type Result = Res
-
       private val span: Span[F] = Span.fromBackend(back)
 
-      def addAttribute[A](attribute: Attribute[A]): Builder = this
+      def addAttribute[A](attribute: Attribute[A]): SpanBuilder[F] = this
 
-      def addAttributes(attributes: Attribute[_]*): Builder = this
+      def addAttributes(attributes: Attribute[_]*): SpanBuilder[F] = this
 
-      def addLink(ctx: SpanContext, attributes: Attribute[_]*): Builder = this
-
-      def root: Builder = this
-
-      def withFinalizationStrategy(strategy: SpanFinalizer.Strategy): Builder =
+      def addLink(ctx: SpanContext, attributes: Attribute[_]*): SpanBuilder[F] =
         this
 
-      def withParent(parent: SpanContext): Builder = this
+      def root: SpanBuilder[F] = this
 
-      def withSpanKind(spanKind: SpanKind): Builder = this
+      def withFinalizationStrategy(
+          strategy: SpanFinalizer.Strategy
+      ): SpanBuilder[F] = this
 
-      def withStartTimestamp(timestamp: FiniteDuration): Builder = this
+      def withParent(parent: SpanContext): SpanBuilder[F] = this
 
-      def build: SpanOps.Aux[F, Result] = new SpanOps[F] {
-        type Result = Res
+      def withSpanKind(spanKind: SpanKind): SpanBuilder[F] = this
 
-        def startUnmanaged(implicit ev: Result =:= Span[F]): F[Span[F]] =
+      def withStartTimestamp(timestamp: FiniteDuration): SpanBuilder[F] = this
+
+      def build: SpanOps[F] = new SpanOps[F] {
+        def startUnmanaged: F[Span[F]] =
           Applicative[F].pure(span)
 
-        def use[A](f: Res => F[A]): F[A] =
-          startSpan.use(res => f(res))
+        def resource: Resource[F, (Span[F], F ~> F)] =
+          Resource.pure(span -> FunctionK.id)
 
-        def use_ : F[Unit] =
-          startSpan.use_
+        def use[A](f: Span[F] => F[A]): F[A] = f(span)
 
-        def surround[A](fa: F[A]): F[A] =
-          fa
-
-        def resource: Resource[F, (Res, F ~> F)] =
-          startSpan.map(res => res -> FunctionK.id)
+        override def use_ : F[Unit] = Applicative[F].unit
       }
     }
 

@@ -19,8 +19,6 @@ package trace
 
 import cats.Applicative
 import cats.effect.MonadCancelThrow
-import cats.effect.Resource
-import cats.~>
 import org.typelevel.otel4s.meta.InstrumentMeta
 
 @annotation.implicitNotFound("""
@@ -54,7 +52,7 @@ trait Tracer[F[_]] extends TracerMacro[F] {
     * @param name
     *   the name of the span
     */
-  def spanBuilder(name: String): SpanBuilder.Aux[F, Span[F]]
+  def spanBuilder(name: String): SpanBuilder[F]
 
   /** Creates a new tracing scope with a custom parent. A newly created non-root
     * span will be a child of the given `parent`.
@@ -180,9 +178,7 @@ object Tracer {
   def apply[F[_]](implicit ev: Tracer[F]): Tracer[F] = ev
 
   trait Meta[F[_]] extends InstrumentMeta[F] {
-    def noopSpanBuilder: SpanBuilder.Aux[F, Span[F]]
-    final def noopResSpan: Resource[F, (Span[F], F ~> F)] =
-      noopSpanBuilder.build.resource
+    def noopSpanBuilder: SpanBuilder[F]
   }
 
   object Meta {
@@ -196,7 +192,7 @@ object Tracer {
 
         val isEnabled: Boolean = enabled
         val unit: F[Unit] = Applicative[F].unit
-        val noopSpanBuilder: SpanBuilder.Aux[F, Span[F]] =
+        val noopSpanBuilder: SpanBuilder[F] =
           SpanBuilder.noop(noopBackend)
       }
   }
@@ -210,7 +206,7 @@ object Tracer {
       def rootScope[A](fa: F[A]): F[A] = fa
       def noopScope[A](fa: F[A]): F[A] = fa
       def childScope[A](parent: SpanContext)(fa: F[A]): F[A] = fa
-      def spanBuilder(name: String): SpanBuilder.Aux[F, Span[F]] = builder
+      def spanBuilder(name: String): SpanBuilder[F] = builder
       def joinOrRoot[A, C: TextMapGetter](carrier: C)(fa: F[A]): F[A] = fa
     }
 

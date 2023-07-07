@@ -24,7 +24,7 @@ Add settings to the `build.sbt`:
 libraryDependencies ++= Seq(
   "org.typelevel" %% "otel4s-java" % "@VERSION@", // <1>
   "io.opentelemetry" % "opentelemetry-exporter-otlp" % "@OPEN_TELEMETRY_VERSION@" % Runtime, // <2>
-  "io.opentelemetry" % "opentelemetry-sdk-extension-autoconfigure" % "@OPEN_TELEMETRY_VERSION@-alpha" % Runtime // <3>
+  "io.opentelemetry" % "opentelemetry-sdk-extension-autoconfigure" % "@OPEN_TELEMETRY_VERSION@" % Runtime // <3>
 )
 run / fork := true
 javaOptions += "-Dotel.java.global-autoconfigure.enabled=true"            // <4>
@@ -38,7 +38,7 @@ Add directives to the `tracing.scala`:
 ```scala
 //> using lib "org.typelevel::otel4s-java:@VERSION@" // <1>
 //> using lib "io.opentelemetry:opentelemetry-exporter-otlp:@OPEN_TELEMETRY_VERSION@" // <2>
-//> using lib "io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:@OPEN_TELEMETRY_VERSION@-alpha" // <3>
+//> using lib "io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:@OPEN_TELEMETRY_VERSION@" // <3>
 //> using `java-opt` "-Dotel.java.global-autoconfigure.enabled=true"            // <4>
 //> using `java-opt` "-Dotel.service.name=honeycomb-example"                    // <5>
 //> using `java-opt` "-Dotel.exporter.otlp.endpoint=https://api.honeycomb.io/"  // <6>

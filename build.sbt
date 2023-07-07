@@ -260,8 +260,8 @@ lazy val examples = project
     libraryDependencies ++= Seq(
       "io.opentelemetry" % "opentelemetry-exporter-otlp" % OpenTelemetryVersion,
       "io.opentelemetry" % "opentelemetry-sdk" % OpenTelemetryVersion,
-      "io.opentelemetry" % "opentelemetry-sdk-extension-autoconfigure" % s"${OpenTelemetryVersion}-alpha",
-      "io.opentelemetry" % "opentelemetry-extension-trace-propagators" % s"${OpenTelemetryVersion}" % Runtime
+      "io.opentelemetry" % "opentelemetry-sdk-extension-autoconfigure" % OpenTelemetryVersion,
+      "io.opentelemetry" % "opentelemetry-extension-trace-propagators" % OpenTelemetryVersion % Runtime
     ),
     run / fork := true,
     javaOptions += "-Dotel.java.global-autoconfigure.enabled=true",
@@ -277,7 +277,7 @@ lazy val docs = project
   .dependsOn(java)
   .settings(
     libraryDependencies ++= Seq(
-      "io.opentelemetry" % "opentelemetry-sdk-extension-autoconfigure" % s"${OpenTelemetryVersion}-alpha"
+      "io.opentelemetry" % "opentelemetry-sdk-extension-autoconfigure" % OpenTelemetryVersion
     ),
     mdocVariables := Map(
       "VERSION" -> version.value,

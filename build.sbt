@@ -33,7 +33,7 @@ val FS2Version = "3.7.0"
 val MUnitVersion = "1.0.0-M8"
 val MUnitCatsEffectVersion = "2.0.0-M3"
 val MUnitDisciplineVersion = "2.0.0-M3"
-val OpenTelemetryVersion = "1.27.0"
+val OpenTelemetryVersion = "1.28.0"
 val PlatformVersion = "1.0.2"
 val ScodecVersion = "1.1.37"
 val VaultVersion = "3.5.0"
@@ -260,8 +260,8 @@ lazy val examples = project
     libraryDependencies ++= Seq(
       "io.opentelemetry" % "opentelemetry-exporter-otlp" % OpenTelemetryVersion,
       "io.opentelemetry" % "opentelemetry-sdk" % OpenTelemetryVersion,
-      "io.opentelemetry" % "opentelemetry-sdk-extension-autoconfigure" % s"${OpenTelemetryVersion}-alpha",
-      "io.opentelemetry" % "opentelemetry-extension-trace-propagators" % s"${OpenTelemetryVersion}" % Runtime
+      "io.opentelemetry" % "opentelemetry-sdk-extension-autoconfigure" % OpenTelemetryVersion,
+      "io.opentelemetry" % "opentelemetry-extension-trace-propagators" % OpenTelemetryVersion % Runtime
     ),
     run / fork := true,
     javaOptions += "-Dotel.java.global-autoconfigure.enabled=true",
@@ -277,7 +277,7 @@ lazy val docs = project
   .dependsOn(java)
   .settings(
     libraryDependencies ++= Seq(
-      "io.opentelemetry" % "opentelemetry-sdk-extension-autoconfigure" % s"${OpenTelemetryVersion}-alpha"
+      "io.opentelemetry" % "opentelemetry-sdk-extension-autoconfigure" % OpenTelemetryVersion
     ),
     mdocVariables := Map(
       "VERSION" -> version.value,

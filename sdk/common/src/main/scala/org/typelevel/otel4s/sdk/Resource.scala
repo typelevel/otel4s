@@ -26,8 +26,6 @@ import org.typelevel.otel4s.sdk.BuildInfo
 import org.typelevel.otel4s.sdk.Resource.ResourceInitiationError
 import org.typelevel.otel4s.semconv.resource.attributes.ResourceAttributes._
 
-import scala.util.control.NoStackTrace
-
 /** [[Resource]] serves as a representation of a resource that captures
   * essential identifying information regarding the entities associated with
   * reported signals, such as statistics or traces.
@@ -71,10 +69,10 @@ final case class Resource(
     }
   }
 
-  /** Unsafe version of [[Resource.mergeInto]] which trows an exception if the
+  /** Unsafe version of [[Resource.mergeInto]] which throws an exception if the
     * merge fails.
     */
-  def mergeIntoUnsafe(other: Resource): Resource =
+  private def mergeIntoUnsafe(other: Resource): Resource =
     mergeInto(other).fold(
       throw _,
       identity
@@ -82,7 +80,7 @@ final case class Resource(
 }
 
 object Resource {
-  sealed trait ResourceInitiationError extends NoStackTrace
+  sealed abstract class ResourceInitiationError extends Throwable
   object ResourceInitiationError {
     case object SchemaUrlConflict extends ResourceInitiationError
   }
@@ -95,7 +93,7 @@ object Resource {
     * attributes.
     *
     * @return
-    *   an empty <pre>Resource</pre>.
+    *   an empty [[Resource]].
     */
   val Empty: Resource = Resource(Attributes.Empty)
 
@@ -117,7 +115,7 @@ object Resource {
     * attributes provided by the SDK.
     *
     * @return
-    *   a <pre>Resource</pre>.
+    *   a [[Resource]].
     */
   val Default: Resource = TelemetrySdk.mergeIntoUnsafe(Mandatory)
 

@@ -18,6 +18,8 @@ package org.typelevel.otel4s
 package trace
 
 import cats.Applicative
+import cats.effect.MonadCancelThrow
+import cats.~>
 import org.typelevel.otel4s.meta.InstrumentMeta
 
 @annotation.implicitNotFound("""
@@ -184,6 +186,14 @@ trait Tracer[F[_]] extends TracerMacro[F] {
     */
   def propagate[C: TextMapUpdater](carrier: C): F[C]
 
+  /** Modify the context `F` using an implicit [[KindTransformer]] from `F` to
+    * `G`.
+    */
+  def mapK[G[_]: MonadCancelThrow](implicit
+      F: MonadCancelThrow[F],
+      kt: KindTransformer[F, G]
+  ): Tracer[G] =
+    new Tracer.MappedK(this)
 }
 
 object Tracer {
@@ -192,6 +202,15 @@ object Tracer {
 
   trait Meta[F[_]] extends InstrumentMeta[F] {
     def noopSpanBuilder: SpanBuilder[F]
+
+    /** Modify the context `F` using an implicit [[KindTransformer]] from `F` to
+      * `G`.
+      */
+    def mapK[G[_]: MonadCancelThrow](implicit
+        F: MonadCancelThrow[F],
+        kt: KindTransformer[F, G]
+    ): Meta[G] =
+      new Meta.MappedK(this)
   }
 
   object Meta {
@@ -208,6 +227,17 @@ object Tracer {
         val noopSpanBuilder: SpanBuilder[F] =
           SpanBuilder.noop(noopBackend)
       }
+
+    /** Implementation for [[Meta.mapK]]. */
+    private class MappedK[F[_]: MonadCancelThrow, G[_]: MonadCancelThrow](
+        meta: Meta[F]
+    )(implicit kt: KindTransformer[F, G])
+        extends Meta[G] {
+      def noopSpanBuilder: SpanBuilder[G] =
+        meta.noopSpanBuilder.mapK[G]
+      def isEnabled: Boolean = meta.isEnabled
+      def unit: G[Unit] = kt.liftK(meta.unit)
+    }
   }
 
   def noop[F[_]: Applicative]: Tracer[F] =
@@ -224,6 +254,36 @@ object Tracer {
       def propagate[C: TextMapUpdater](carrier: C): F[C] =
         Applicative[F].pure(carrier)
     }
+
+  /** Implementation for [[Tracer.mapK]]. */
+  private class MappedK[F[_]: MonadCancelThrow, G[_]: MonadCancelThrow](
+      tracer: Tracer[F]
+  )(implicit kt: KindTransformer[F, G])
+      extends Tracer[G] {
+    def meta: Meta[G] = tracer.meta.mapK[G]
+    def currentSpanContext: G[Option[SpanContext]] =
+      kt.liftK(tracer.currentSpanContext)
+    def spanBuilder(name: String): SpanBuilder[G] =
+      tracer.spanBuilder(name).mapK[G]
+    def childScope[A](parent: SpanContext)(ga: G[A]): G[A] =
+      kt.limitedMapK(ga)(new (F ~> F) {
+        def apply[B](fb: F[B]): F[B] = tracer.childScope(parent)(fb)
+      })
+    def joinOrRoot[A, C: TextMapGetter](carrier: C)(ga: G[A]): G[A] =
+      kt.limitedMapK(ga)(new (F ~> F) {
+        def apply[B](fb: F[B]): F[B] = tracer.joinOrRoot(carrier)(fb)
+      })
+    def rootScope[A](ga: G[A]): G[A] =
+      kt.limitedMapK(ga)(new (F ~> F) {
+        def apply[B](fb: F[B]): F[B] = tracer.rootScope(fb)
+      })
+    def noopScope[A](ga: G[A]): G[A] =
+      kt.limitedMapK(ga)(new (F ~> F) {
+        def apply[B](fb: F[B]): F[B] = tracer.noopScope(fb)
+      })
+    def propagate[C: TextMapUpdater](carrier: C): G[C] =
+      kt.liftK(tracer.propagate(carrier))
+  }
 
   object Implicits {
     implicit def noop[F[_]: Applicative]: Tracer[F] = Tracer.noop

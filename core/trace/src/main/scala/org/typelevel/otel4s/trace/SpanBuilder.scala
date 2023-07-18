@@ -21,7 +21,6 @@ import cats.Applicative
 import cats.arrow.FunctionK
 import cats.effect.MonadCancelThrow
 import cats.effect.Resource
-import cats.~>
 
 import scala.concurrent.duration.FiniteDuration
 
@@ -145,8 +144,8 @@ object SpanBuilder {
         def startUnmanaged: F[Span[F]] =
           Applicative[F].pure(span)
 
-        def resource: Resource[F, (Span[F], F ~> F)] =
-          Resource.pure(span -> FunctionK.id)
+        def resource: Resource[F, SpanOps.Res[F]] =
+          Resource.pure(SpanOps.Res(span, FunctionK.id))
 
         def use[A](f: Span[F] => F[A]): F[A] = f(span)
 

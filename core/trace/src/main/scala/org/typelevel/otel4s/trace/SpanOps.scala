@@ -66,6 +66,8 @@ trait SpanOps[F[_]] {
     *
     * @see
     *   default finalization strategy [[SpanFinalizer.Strategy.reportAbnormal]]
+    * @see
+    *   [[SpanOps.Res]] for the semantics and usage of the resource's value
     * @example
     *   {{{
     * val tracer: Tracer[F] = ???
@@ -73,14 +75,15 @@ trait SpanOps[F[_]] {
     *   tracer.spanBuilder("resource-span")
     *     .build
     *     .resource
-    *     .use { case (span, wrap) =>
-    *       // `wrap` encloses its contents within the "resource-span" span;
-    *       // anything not applied to `wrap` will not end up in the span
-    *       wrap(span.setStatus(Status.Ok, "all good"))
+    *     .use { res =>
+    *       // `res.include` encloses its contents within the "resource-span"
+    *       // span; anything not applied to `res.include` will not end up in
+    *       // the span
+    *       res.include(res.span.setStatus(Status.Ok, "all good"))
     *     }
     *   }}}
     */
-  def resource: Resource[F, (Span[F], F ~> F)]
+  def resource: Resource[F, SpanOps.Res[F]]
 
   /** Creates and uses a [[Span]]. Unlike [[startUnmanaged]], the lifecycle of
     * the span is fully managed. The span is started and passed to `f` to
@@ -135,4 +138,34 @@ trait SpanOps[F[_]] {
     *   See [[use]] for more details regarding lifecycle strategy
     */
   final def surround[A](fa: F[A]): F[A] = use(_ => fa)
+}
+
+object SpanOps {
+
+  /** The span and associated natural transformation [[`trace`]] provided and
+    * managed by a call to [[SpanOps.resource]]. In order to trace something in
+    * the span, it must be applied to [[`trace`]].
+    */
+  sealed trait Res[F[_]] {
+
+    /** The managed span. */
+    def span: Span[F]
+
+    /** A natural transformation that traces everything applied to it in the
+      * span. Note: anything not applied to this
+      * [[cats.arrow.FunctionK FunctionK]] will not be traced.
+      */
+    def trace: F ~> F
+  }
+
+  object Res {
+    private[this] final case class Impl[F[_]](span: Span[F], trace: F ~> F)
+        extends Res[F]
+
+    /** Creates a [[Res]] from a managed span and a natural transformation for
+      * tracing operations in the span.
+      */
+    def apply[F[_]](span: Span[F], trace: F ~> F): Res[F] =
+      Impl(span, trace)
+  }
 }

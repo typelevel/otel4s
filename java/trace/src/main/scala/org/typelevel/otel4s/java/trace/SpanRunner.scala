@@ -28,11 +28,10 @@ import io.opentelemetry.api.trace.{SpanBuilder => JSpanBuilder}
 import io.opentelemetry.context.{Context => JContext}
 import org.typelevel.otel4s.trace.Span
 import org.typelevel.otel4s.trace.SpanFinalizer
+import org.typelevel.otel4s.trace.SpanOps
 
 private[java] sealed trait SpanRunner[F[_]] {
-  def start(
-      ctx: Option[SpanRunner.RunnerContext]
-  ): Resource[F, (Span[F], F ~> F)]
+  def start(ctx: Option[SpanRunner.RunnerContext]): Resource[F, SpanOps.Res[F]]
 }
 
 private[java] object SpanRunner {
@@ -46,7 +45,7 @@ private[java] object SpanRunner {
 
   def span[F[_]: Sync](scope: TraceScope[F]): SpanRunner[F] =
     new SpanRunner[F] {
-      def start(ctx: Option[RunnerContext]): Resource[F, (Span[F], F ~> F)] = {
+      def start(ctx: Option[RunnerContext]): Resource[F, SpanOps.Res[F]] = {
         ctx match {
           case Some(RunnerContext(builder, _, hasStartTs, finalization)) =>
             startManaged(
@@ -54,10 +53,12 @@ private[java] object SpanRunner {
               hasStartTimestamp = hasStartTs,
               finalizationStrategy = finalization,
               scope = scope
-            ).map { case (back, nt) => (Span.fromBackend(back), nt) }
+            ).map { case (back, nt) => SpanOps.Res(Span.fromBackend(back), nt) }
 
           case None =>
-            Resource.pure((Span.fromBackend(Span.Backend.noop), FunctionK.id))
+            Resource.pure(
+              SpanOps.Res(Span.fromBackend(Span.Backend.noop), FunctionK.id)
+            )
         }
       }
     }

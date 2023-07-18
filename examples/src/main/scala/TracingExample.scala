@@ -64,10 +64,8 @@ object TracingExample extends IOApp.Simple {
           tracer
             .span("resource")
             .resource
-            .use { case (span, wrap) =>
-              // `wrap` encloses its contents within the "resource" span;
-              // anything not applied to `wrap` will not end up in the span
-              wrap {
+            .use { res =>
+              res.trace {
                 for {
                   _ <- tracer.span("acquire").surround(IO.sleep(50.millis))
                   _ <- tracer.span("use").surround {
@@ -80,7 +78,7 @@ object TracingExample extends IOApp.Simple {
                       )
                     )
                   }
-                  _ <- span.addEvent("event")
+                  _ <- res.span.addEvent("event")
                   _ <- tracer.span("release").surround(IO.sleep(100.millis))
                 } yield ()
               }

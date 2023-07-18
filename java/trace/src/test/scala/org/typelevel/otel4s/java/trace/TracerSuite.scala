@@ -408,18 +408,20 @@ class TracerSuite extends CatsEffectSuite {
     tracer
       .span("resource-span", attributes: _*)
       .resource
-      .flatMap { case (_, nt) =>
+      .flatMap { res =>
         Resource[F, A] {
-          nt {
+          res.trace {
             tracer
               .span("acquire")
               .surround {
                 resource.allocated.map { case (acquired, release) =>
-                  acquired -> nt(tracer.span("release").use(_ => release))
+                  acquired -> res.trace(
+                    tracer.span("release").surround(release)
+                  )
                 }
               }
           }
-        }.map(_ => nt)
+        }.as(res.trace)
       }
   }
 

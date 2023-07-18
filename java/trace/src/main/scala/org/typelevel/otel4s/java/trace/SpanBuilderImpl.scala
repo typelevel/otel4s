@@ -21,7 +21,6 @@ import cats.effect.Resource
 import cats.effect.Sync
 import cats.syntax.flatMap._
 import cats.syntax.functor._
-import cats.~>
 import io.opentelemetry.api.trace.{Span => JSpan}
 import io.opentelemetry.api.trace.{SpanBuilder => JSpanBuilder}
 import io.opentelemetry.api.trace.{SpanKind => JSpanKind}
@@ -85,11 +84,11 @@ private[java] final case class SpanBuilderImpl[F[_]: Sync](
     def startUnmanaged: F[Span[F]] =
       runnerContext.flatMap(ctx => SpanRunner.startUnmanaged(ctx))
 
-    def resource: Resource[F, (Span[F], F ~> F)] =
+    def resource: Resource[F, SpanOps.Res[F]] =
       Resource.eval(runnerContext).flatMap(ctx => runner.start(ctx))
 
     override def use[A](f: Span[F] => F[A]): F[A] =
-      resource.use { case (span, nt) => nt(f(span)) }
+      resource.use { res => res.trace(f(res.span)) }
 
     override def use_ : F[Unit] = use(_ => Sync[F].unit)
   }

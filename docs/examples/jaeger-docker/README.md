@@ -151,6 +151,6 @@ $ scala-cli run tracing.scala
 
 Jaeger UI is available at http://localhost:16686. You can find the collected traces there.
 
-@:image(jaeger_traces_example.png) {
+@:image(traces_example.png) {
   alt = Jaeger Traces Example
 }

@@ -5,7 +5,7 @@ application.
 We will cover the configuration of OpenTelemetry exporter, as well as the instrumentation of the application using the
 otel4s library.
 
-Unlike [Jaeger example](jaeger-docker.md), you do not need to set up a collector service locally. The metrics and traces
+Unlike [Jaeger example](../jaeger-docker/README.md), you do not need to set up a collector service locally. The metrics and traces
 will be sent to a remote Honeycomb API.
 
 At the time of writing, Honeycomb allows having up to 20 million spans per month for a free account.
@@ -175,12 +175,12 @@ You can query collected traces and metrics at https://ui.honeycomb.io/.
 
 #### Traces
 
-@:image(honeycomb_traces_example.png) {
+@:image(traces_example.png) {
   alt = Honeycomb Traces Example
 }
 
 #### Metrics
 
-@:image(honeycomb_metrics_example.png) {
+@:image(metrics_example.png) {
   alt = Honeycomb Metrics Example
 }

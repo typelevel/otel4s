@@ -18,7 +18,6 @@ package org.typelevel.otel4s
 package trace
 
 import cats.Applicative
-import cats.effect.MonadCancelThrow
 import org.typelevel.otel4s.meta.InstrumentMeta
 
 @annotation.implicitNotFound("""
@@ -183,10 +182,10 @@ object Tracer {
 
   object Meta {
 
-    def enabled[F[_]: MonadCancelThrow]: Meta[F] = make(true)
-    def disabled[F[_]: MonadCancelThrow]: Meta[F] = make(false)
+    def enabled[F[_]: Applicative]: Meta[F] = make(true)
+    def disabled[F[_]: Applicative]: Meta[F] = make(false)
 
-    private def make[F[_]: MonadCancelThrow](enabled: Boolean): Meta[F] =
+    private def make[F[_]: Applicative](enabled: Boolean): Meta[F] =
       new Meta[F] {
         private val noopBackend = Span.Backend.noop[F]
 
@@ -197,7 +196,7 @@ object Tracer {
       }
   }
 
-  def noop[F[_]: MonadCancelThrow]: Tracer[F] =
+  def noop[F[_]: Applicative]: Tracer[F] =
     new Tracer[F] {
       private val noopBackend = Span.Backend.noop
       private val builder = SpanBuilder.noop(noopBackend)
@@ -211,6 +210,6 @@ object Tracer {
     }
 
   object Implicits {
-    implicit def noop[F[_]: MonadCancelThrow]: Tracer[F] = Tracer.noop
+    implicit def noop[F[_]: Applicative]: Tracer[F] = Tracer.noop
   }
 }

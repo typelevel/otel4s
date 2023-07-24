@@ -19,7 +19,6 @@ package trace
 
 import cats.Applicative
 import cats.arrow.FunctionK
-import cats.effect.MonadCancelThrow
 import cats.effect.Resource
 
 import scala.concurrent.duration.FiniteDuration
@@ -117,7 +116,7 @@ trait SpanBuilder[F[_]] {
 
 object SpanBuilder {
 
-  def noop[F[_]: MonadCancelThrow](back: Span.Backend[F]): SpanBuilder[F] =
+  def noop[F[_]: Applicative](back: Span.Backend[F]): SpanBuilder[F] =
     new SpanBuilder[F] {
       private val span: Span[F] = Span.fromBackend(back)
 

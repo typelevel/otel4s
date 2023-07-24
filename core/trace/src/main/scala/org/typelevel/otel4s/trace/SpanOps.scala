@@ -19,6 +19,9 @@ package org.typelevel.otel4s.trace
 import cats.data.OptionT
 import cats.effect.MonadCancel
 import cats.effect.Resource
+import cats.effect.kernel.CancelScope
+import cats.effect.kernel.MonadCancelThrow
+import cats.effect.kernel.Poll
 import cats.syntax.functor._
 import cats.~>
 
@@ -189,10 +192,12 @@ object SpanOps {
   ) extends AnyVal {
 
     def translate[G[_]](fk: F ~> G, gk: G ~> F)(implicit
-        F: MonadCancel[F, _],
-        G: MonadCancel[G, _]
+        F: MonadCancelThrow[F]
     ): SpanOps[G] =
       new SpanOps[G] {
+        private implicit val G: MonadCancelThrow[G] =
+          liftMonadCancelThrow(F, fk, gk)
+
         def startUnmanaged: G[Span[G]] =
           fk(ops.startUnmanaged).map(span => span.mapK(fk))
 
@@ -218,7 +223,7 @@ object SpanOps {
 
       def resource: Resource[OptionT[F, *], Res[OptionT[F, *]]] =
         ops.resource
-          .map(res =>
+          .map { res =>
             new Res[OptionT[F, *]] {
               def span: Span[OptionT[F, *]] =
                 res.span.mapK(OptionT.liftK)
@@ -229,7 +234,7 @@ object SpanOps {
                     OptionT(res.trace.apply(fa.value))
                 }
             }
-          )
+          }
           .mapK(OptionT.liftK)
 
       def use[A](f: Span[OptionT[F, *]] => OptionT[F, A]): OptionT[F, A] =
@@ -239,4 +244,44 @@ object SpanOps {
         OptionT.liftF(ops.use_)
     }
   }
+
+  private def liftMonadCancelThrow[F[_], G[_]](
+      F: MonadCancelThrow[F],
+      fk: F ~> G,
+      gk: G ~> F
+  ): MonadCancelThrow[G] =
+    new MonadCancelThrow[G] {
+      def pure[A](x: A): G[A] = fk(F.pure(x))
+
+      // Members declared in cats.ApplicativeError
+      def handleErrorWith[A](ga: G[A])(f: Throwable => G[A]): G[A] =
+        fk(F.handleErrorWith(gk(ga))(ex => gk(f(ex))))
+
+      def raiseError[A](e: Throwable): G[A] = fk(F.raiseError[A](e))
+
+      // Members declared in cats.FlatMap
+      def flatMap[A, B](ga: G[A])(f: A => G[B]): G[B] =
+        fk(F.flatMap(gk(ga))(a => gk(f(a))))
+
+      def tailRecM[A, B](a: A)(f: A => G[Either[A, B]]): G[B] =
+        fk(F.tailRecM(a)(a => gk(f(a))))
+
+      // Members declared in cats.effect.kernel.MonadCancel
+      def canceled: G[Unit] = fk(F.canceled)
+
+      def forceR[A, B](ga: G[A])(gb: G[B]): G[B] =
+        fk(F.forceR(gk(ga))(gk(gb)))
+
+      def onCancel[A](ga: G[A], fin: G[Unit]): G[A] =
+        fk(F.onCancel(gk(ga), gk(fin)))
+
+      def rootCancelScope: CancelScope = F.rootCancelScope
+
+      def uncancelable[A](body: Poll[G] => G[A]): G[A] =
+        fk(F.uncancelable { pollF =>
+          gk(body(new Poll[G] {
+            def apply[B](gb: G[B]): G[B] = fk(pollF(gk(gb)))
+          }))
+        })
+    }
 }

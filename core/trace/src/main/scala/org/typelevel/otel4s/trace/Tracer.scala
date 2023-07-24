@@ -19,6 +19,7 @@ package trace
 
 import cats.Applicative
 import cats.data.OptionT
+import cats.effect.MonadCancelThrow
 import cats.effect.kernel.MonadCancel
 import cats.~>
 import org.typelevel.otel4s.meta.InstrumentMeta
@@ -249,12 +250,19 @@ object Tracer {
   ) extends AnyVal {
 
     def translate[G[_]](fk: F ~> G, gk: G ~> F)(implicit
-        F: MonadCancel[F, _],
-        G: MonadCancel[G, _]
+        F: MonadCancelThrow[F],
     ): Tracer[G] =
       new Tracer[G] {
+        private implicit val G: Applicative[G] =
+          new Applicative[G] {
+            def pure[A](x: A): G[A] =
+              fk(F.pure(x))
+            def ap[A, B](ff: G[A => B])(fa: G[A]): G[B] =
+              fk(F.ap(gk(ff))(gk(fa)))
+          }
+
         def meta: Meta[G] =
-          Meta.make(tracer.meta.isEnabled)
+          Meta.make[G](tracer.meta.isEnabled)
 
         def currentSpanContext: G[Option[SpanContext]] =
           fk(tracer.currentSpanContext)

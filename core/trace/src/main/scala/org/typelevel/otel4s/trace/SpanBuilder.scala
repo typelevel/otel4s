@@ -21,6 +21,7 @@ import cats.Applicative
 import cats.arrow.FunctionK
 import cats.data.OptionT
 import cats.effect.MonadCancel
+import cats.effect.MonadCancelThrow
 import cats.effect.Resource
 import cats.~>
 import org.typelevel.otel4s.trace.SpanFinalizer.Strategy
@@ -161,8 +162,7 @@ object SpanBuilder {
   ) extends AnyVal {
 
     def translate[G[_]](fk: F ~> G, gk: G ~> F)(implicit
-        F: MonadCancel[F, _],
-        G: MonadCancel[G, _]
+        F: MonadCancelThrow[F]
     ): SpanBuilder[G] =
       new SpanBuilder[G] {
 

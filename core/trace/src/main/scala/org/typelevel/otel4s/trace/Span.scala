@@ -157,33 +157,4 @@ object Span {
     new Span[F] {
       def backend: Backend[F] = back
     }
-
-  /** The allocation and release stages of a supplied resource are traced by
-    * separate spans. Carries a value of a wrapped resource.
-    *
-    * The structure of the inner spans:
-    * {{{
-    * > span-name
-    *   > acquire
-    *   > use
-    *   > release
-    * }}}
-    */
-  trait Res[F[_], A] extends Span[F] {
-    def value: A
-  }
-
-  object Res {
-    def unapply[F[_], A](span: Span.Res[F, A]): Option[A] =
-      Some(span.value)
-
-    private[otel4s] def fromBackend[F[_], A](
-        a: A,
-        back: Backend[F]
-    ): Res[F, A] =
-      new Res[F, A] {
-        def value: A = a
-        def backend: Backend[F] = back
-      }
-  }
 }

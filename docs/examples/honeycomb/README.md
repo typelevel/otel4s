@@ -5,7 +5,7 @@ application.
 We will cover the configuration of OpenTelemetry exporter, as well as the instrumentation of the application using the
 otel4s library.
 
-Unlike [Jaeger example](jaeger-docker.md), you do not need to set up a collector service locally. The metrics and traces
+Unlike [Jaeger example](../jaeger-docker/README.md), you do not need to set up a collector service locally. The metrics and traces
 will be sent to a remote Honeycomb API.
 
 At the time of writing, Honeycomb allows having up to 20 million spans per month for a free account.
@@ -24,7 +24,7 @@ Add settings to the `build.sbt`:
 libraryDependencies ++= Seq(
   "org.typelevel" %% "otel4s-java" % "@VERSION@", // <1>
   "io.opentelemetry" % "opentelemetry-exporter-otlp" % "@OPEN_TELEMETRY_VERSION@" % Runtime, // <2>
-  "io.opentelemetry" % "opentelemetry-sdk-extension-autoconfigure" % "@OPEN_TELEMETRY_VERSION@-alpha" % Runtime // <3>
+  "io.opentelemetry" % "opentelemetry-sdk-extension-autoconfigure" % "@OPEN_TELEMETRY_VERSION@" % Runtime // <3>
 )
 run / fork := true
 javaOptions += "-Dotel.java.global-autoconfigure.enabled=true"            // <4>
@@ -38,7 +38,7 @@ Add directives to the `tracing.scala`:
 ```scala
 //> using lib "org.typelevel::otel4s-java:@VERSION@" // <1>
 //> using lib "io.opentelemetry:opentelemetry-exporter-otlp:@OPEN_TELEMETRY_VERSION@" // <2>
-//> using lib "io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:@OPEN_TELEMETRY_VERSION@-alpha" // <3>
+//> using lib "io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:@OPEN_TELEMETRY_VERSION@" // <3>
 //> using `java-opt` "-Dotel.java.global-autoconfigure.enabled=true"            // <4>
 //> using `java-opt` "-Dotel.service.name=honeycomb-example"                    // <5>
 //> using `java-opt` "-Dotel.exporter.otlp.endpoint=https://api.honeycomb.io/"  // <6>
@@ -89,12 +89,11 @@ $ export OTEL_EXPORTER_OTLP_HEADERS="x-honeycomb-team=your-api-key,x-honeycomb-d
 ```scala mdoc:silent
 import java.util.concurrent.TimeUnit
 
-import cats.effect.{Async, IO, IOApp, Resource}
+import cats.effect.{Async, IO, IOApp}
 import cats.effect.std.Console
 import cats.effect.std.Random
 import cats.syntax.all._
-import io.opentelemetry.api.GlobalOpenTelemetry
-import org.typelevel.otel4s.{Attribute, AttributeKey, Otel4s}
+import org.typelevel.otel4s.{Attribute, AttributeKey}
 import org.typelevel.otel4s.java.OtelJava
 import org.typelevel.otel4s.metrics.Histogram
 import org.typelevel.otel4s.trace.Tracer
@@ -135,13 +134,8 @@ object Work {
 }
 
 object TracingExample extends IOApp.Simple {
-  def otelResource: Resource[IO, Otel4s[IO]] =
-    Resource
-      .eval(IO(GlobalOpenTelemetry.get))
-      .evalMap(OtelJava.forAsync[IO])
-
   def run: IO[Unit] = {
-    otelResource.use { otel4s =>
+    OtelJava.global.flatMap { otel4s =>
       otel4s.tracerProvider.get("com.service.runtime")
         .flatMap { implicit tracer: Tracer[IO] =>
           for {
@@ -181,12 +175,12 @@ You can query collected traces and metrics at https://ui.honeycomb.io/.
 
 #### Traces
 
-@:image(honeycomb_traces_example.png) {
+@:image(traces_example.png) {
   alt = Honeycomb Traces Example
 }
 
 #### Metrics
 
-@:image(honeycomb_metrics_example.png) {
+@:image(metrics_example.png) {
   alt = Honeycomb Metrics Example
 }

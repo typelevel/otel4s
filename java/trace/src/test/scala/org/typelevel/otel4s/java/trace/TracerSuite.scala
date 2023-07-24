@@ -19,7 +19,10 @@ package org.typelevel.otel4s.java.trace
 import cats.effect.IO
 import cats.effect.IOLocal
 import cats.effect.Resource
+import cats.effect.kernel.MonadCancelThrow
 import cats.effect.testkit.TestControl
+import cats.syntax.functor._
+import cats.~>
 import io.opentelemetry.api.common.{AttributeKey => JAttributeKey}
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.trace.StatusCode
@@ -397,6 +400,31 @@ class TracerSuite extends CatsEffectSuite {
     }
   }
 
+  private def wrapResource[F[_]: MonadCancelThrow, A](
+      tracer: Tracer[F],
+      resource: Resource[F, A],
+      attributes: Attribute[_]*
+  ): Resource[F, F ~> F] = {
+    tracer
+      .span("resource-span", attributes: _*)
+      .resource
+      .flatMap { res =>
+        Resource[F, A] {
+          res.trace {
+            tracer
+              .span("acquire")
+              .surround {
+                resource.allocated.map { case (acquired, release) =>
+                  acquired -> res.trace(
+                    tracer.span("release").surround(release)
+                  )
+                }
+              }
+          }
+        }.as(res.trace)
+      }
+  }
+
   test("trace resource with use") {
     val attribute = Attribute("string-attribute", "value")
 
@@ -464,14 +492,17 @@ class TracerSuite extends CatsEffectSuite {
         now <- IO.monotonic.delayBy(1.second) // otherwise returns 0
         sdk <- makeSdk()
         tracer <- sdk.provider.get("tracer")
-        _ <- tracer
-          .resourceSpan("resource-span", attribute)(mkRes(tracer))
-          .use { _ =>
-            for {
-              _ <- tracer.span("body-1").surround(IO.sleep(100.millis))
-              _ <- tracer.span("body-2").surround(IO.sleep(200.millis))
-              _ <- tracer.span("body-3").surround(IO.sleep(50.millis))
-            } yield ()
+        _ <- wrapResource(tracer, mkRes(tracer), attribute)
+          .use {
+            _ {
+              tracer.span("use").surround {
+                for {
+                  _ <- tracer.span("body-1").surround(IO.sleep(100.millis))
+                  _ <- tracer.span("body-2").surround(IO.sleep(200.millis))
+                  _ <- tracer.span("body-3").surround(IO.sleep(50.millis))
+                } yield ()
+              }
+            }
           }
         spans <- sdk.finishedSpans
         tree <- IO.pure(SpanNode.fromSpans(spans))
@@ -527,11 +558,14 @@ class TracerSuite extends CatsEffectSuite {
         now <- IO.monotonic.delayBy(1.second) // otherwise returns 0
         sdk <- makeSdk()
         tracer <- sdk.provider.tracer("tracer").get
-        _ <- tracer
-          .resourceSpan("resource-span")(mkRes)
-          .surround(
-            tracer.span("body").surround(IO.sleep(100.millis))
-          )
+        _ <- wrapResource(tracer, mkRes)
+          .use {
+            _ {
+              tracer.span("use").surround {
+                tracer.span("body").surround(IO.sleep(100.millis))
+              }
+            }
+          }
         spans <- sdk.finishedSpans
         tree <- IO.pure(SpanNode.fromSpans(spans))
       } yield assertEquals(tree, List(expected(now)))
@@ -581,9 +615,10 @@ class TracerSuite extends CatsEffectSuite {
         now <- IO.monotonic.delayBy(1.second) // otherwise returns 0
         sdk <- makeSdk()
         tracer <- sdk.provider.tracer("tracer").get
-        _ <- tracer
-          .resourceSpan("resource-span")(mkRes)
-          .use_
+        _ <- wrapResource(tracer, mkRes)
+          .use {
+            _(tracer.span("use").use_)
+          }
         spans <- sdk.finishedSpans
         tree <- IO.pure(SpanNode.fromSpans(spans))
       } yield assertEquals(tree, List(expected(now)))

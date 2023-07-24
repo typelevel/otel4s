@@ -27,7 +27,6 @@ import io.opentelemetry.api.trace.{Span => JSpan}
 import io.opentelemetry.api.trace.{Tracer => JTracer}
 import org.typelevel.otel4s.ContextPropagators
 import org.typelevel.otel4s.TextMapGetter
-import org.typelevel.otel4s.trace.Span
 import org.typelevel.otel4s.trace.SpanBuilder
 import org.typelevel.otel4s.trace.SpanBuilder.Aux
 import org.typelevel.otel4s.trace.SpanContext
@@ -42,7 +41,7 @@ private[java] class TracerImpl[F[_]: Sync](
     propagators: ContextPropagators[F]
 ) extends Tracer[F] { self =>
 
-  private val runner: SpanRunner[F, Span[F]] = SpanRunner.span(scope)
+  private val runner: SpanRunner[F] = SpanRunner.span(scope)
 
   val meta: Tracer.Meta[F] =
     Tracer.Meta.enabled
@@ -56,8 +55,8 @@ private[java] class TracerImpl[F[_]: Sync](
         None
     }
 
-  def spanBuilder(name: String): SpanBuilder.Aux[F, Span[F]] =
-    new SpanBuilderImpl[F, Span[F]](jTracer, name, scope, runner)
+  def spanBuilder(name: String): SpanBuilder[F] =
+    new SpanBuilderImpl[F](jTracer, name, scope, runner)
 
   def childScope[A](parent: SpanContext)(fa: F[A]): F[A] =
     scope

@@ -56,7 +56,7 @@ trait Tracer[F[_]] extends TracerMacro[F] {
     * @param name
     *   the name of the span
     */
-  def spanBuilder(name: String): SpanBuilder.Aux[F, Span[F]]
+  def spanBuilder(name: String): SpanBuilder[F]
 
   /** Creates a new tracing scope with a custom parent. A newly created non-root
     * span will be a child of the given `parent`.
@@ -184,30 +184,26 @@ object Tracer {
   def apply[F[_]](implicit ev: Tracer[F]): Tracer[F] = ev
 
   trait Meta[F[_]] extends InstrumentMeta[F] {
-    def noopSpanBuilder: SpanBuilder.Aux[F, Span[F]]
-    final def noopResSpan[A](
-        resource: Resource[F, A]
-    ): SpanBuilder.Aux[F, Span.Res[F, A]] =
-      noopSpanBuilder.wrapResource(resource)
+    def noopSpanBuilder: SpanBuilder[F]
   }
 
   object Meta {
 
-    def enabled[F[_]: MonadCancelThrow]: Meta[F] = make(true)
-    def disabled[F[_]: MonadCancelThrow]: Meta[F] = make(false)
+    def enabled[F[_]: Applicative]: Meta[F] = make(true)
+    def disabled[F[_]: Applicative]: Meta[F] = make(false)
 
-    private def make[F[_]: MonadCancelThrow](enabled: Boolean): Meta[F] =
+    private def make[F[_]: Applicative](enabled: Boolean): Meta[F] =
       new Meta[F] {
         private val noopBackend = Span.Backend.noop[F]
 
         val isEnabled: Boolean = enabled
         val unit: F[Unit] = Applicative[F].unit
-        val noopSpanBuilder: SpanBuilder.Aux[F, Span[F]] =
+        val noopSpanBuilder: SpanBuilder[F] =
           SpanBuilder.noop(noopBackend)
       }
   }
 
-  def noop[F[_]: MonadCancelThrow]: Tracer[F] =
+  def noop[F[_]: Applicative]: Tracer[F] =
     new Tracer[F] {
       private val noopBackend = Span.Backend.noop
       private val builder = SpanBuilder.noop(noopBackend)
@@ -216,14 +212,14 @@ object Tracer {
       def rootScope[A](fa: F[A]): F[A] = fa
       def noopScope[A](fa: F[A]): F[A] = fa
       def childScope[A](parent: SpanContext)(fa: F[A]): F[A] = fa
-      def spanBuilder(name: String): SpanBuilder.Aux[F, Span[F]] = builder
+      def spanBuilder(name: String): SpanBuilder[F] = builder
       def joinOrRoot[A, C: TextMapGetter](carrier: C)(fa: F[A]): F[A] = fa
       def translate[G[_]](fk: F ~> G, gk: G ~> F): Tracer[G] =
         noop[G](liftMonadCancelThrow[F, G](MonadCancelThrow[F], fk, gk))
     }
 
   object Implicits {
-    implicit def noop[F[_]: MonadCancelThrow]: Tracer[F] = Tracer.noop
+    implicit def noop[F[_]: Applicative]: Tracer[F] = Tracer.noop
   }
 
   private def liftMonadCancelThrow[F[_], G[_]](

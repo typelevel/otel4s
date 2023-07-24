@@ -19,7 +19,11 @@ package trace
 
 import cats.Applicative
 import cats.arrow.FunctionK
+import cats.data.OptionT
+import cats.effect.MonadCancel
 import cats.effect.Resource
+import cats.~>
+import org.typelevel.otel4s.trace.SpanFinalizer.Strategy
 
 import scala.concurrent.duration.FiniteDuration
 
@@ -150,6 +154,86 @@ object SpanBuilder {
 
         override def use_ : F[Unit] = Applicative[F].unit
       }
+    }
+
+  implicit final class SpanBuilderSyntax[F[_]](
+      private val builder: SpanBuilder[F]
+  ) extends AnyVal {
+
+    def translate[G[_]](fk: F ~> G, gk: G ~> F)(implicit
+        F: MonadCancel[F, _],
+        G: MonadCancel[G, _]
+    ): SpanBuilder[G] =
+      new SpanBuilder[G] {
+
+        def addAttribute[A](attribute: Attribute[A]): SpanBuilder[G] =
+          builder.addAttribute(attribute).translate(fk, gk)
+
+        def addAttributes(attributes: Attribute[_]*): SpanBuilder[G] =
+          builder.addAttributes(attributes: _*).translate(fk, gk)
+
+        def addLink(
+            spanContext: SpanContext,
+            attributes: Attribute[_]*
+        ): SpanBuilder[G] =
+          builder.addLink(spanContext, attributes: _*).translate(fk, gk)
+
+        def withFinalizationStrategy(strategy: Strategy): SpanBuilder[G] =
+          builder.withFinalizationStrategy(strategy).translate(fk, gk)
+
+        def withSpanKind(spanKind: SpanKind): SpanBuilder[G] =
+          builder.withSpanKind(spanKind).translate(fk, gk)
+
+        def withStartTimestamp(timestamp: FiniteDuration): SpanBuilder[G] =
+          builder.withStartTimestamp(timestamp).translate(fk, gk)
+
+        def root: SpanBuilder[G] =
+          builder.root.translate(fk, gk)
+
+        def withParent(parent: SpanContext): SpanBuilder[G] =
+          builder.withParent(parent).translate(fk, gk)
+
+        def build: SpanOps[G] =
+          builder.build.translate(fk, gk)
+      }
+
+  }
+
+  def liftOptionT[F[_]](builder: SpanBuilder[F])(implicit
+      F: MonadCancel[F, _]
+  ): SpanBuilder[OptionT[F, *]] =
+    new SpanBuilder[OptionT[F, *]] {
+      type Builder = SpanBuilder[OptionT[F, *]]
+
+      def addAttribute[A](attribute: Attribute[A]): Builder =
+        liftOptionT(builder.addAttribute(attribute))
+
+      def addAttributes(attributes: Attribute[_]*): Builder =
+        liftOptionT(builder.addAttributes(attributes: _*))
+
+      def addLink(
+          spanContext: SpanContext,
+          attributes: Attribute[_]*
+      ): Builder =
+        liftOptionT(builder.addLink(spanContext, attributes: _*))
+
+      def withFinalizationStrategy(strategy: SpanFinalizer.Strategy): Builder =
+        liftOptionT(builder.withFinalizationStrategy(strategy))
+
+      def withSpanKind(spanKind: SpanKind): Builder =
+        liftOptionT(builder.withSpanKind(spanKind))
+
+      def withStartTimestamp(timestamp: FiniteDuration): Builder =
+        liftOptionT(builder.withStartTimestamp(timestamp))
+
+      def root: Builder =
+        liftOptionT(builder.root)
+
+      def withParent(parent: SpanContext): Builder =
+        liftOptionT(builder.withParent(parent))
+
+      def build: SpanOps[OptionT[F, *]] =
+        SpanOps.liftOptionT(builder.build)
     }
 
 }

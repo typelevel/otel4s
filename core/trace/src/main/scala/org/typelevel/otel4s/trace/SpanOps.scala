@@ -16,7 +16,10 @@
 
 package org.typelevel.otel4s.trace
 
+import cats.data.OptionT
+import cats.effect.MonadCancel
 import cats.effect.Resource
+import cats.syntax.functor._
 import cats.~>
 
 trait SpanOps[F[_]] {
@@ -167,5 +170,73 @@ object SpanOps {
       */
     def apply[F[_]](span: Span[F], trace: F ~> F): Res[F] =
       Impl(span, trace)
+
+    implicit final class SpanOpsResSyntax[F[_]](
+        private val res: Res[F]
+    ) extends AnyVal {
+
+      def translate[G[_]](fk: F ~> G, gk: G ~> F): Res[G] =
+        new Res[G] {
+          def span: Span[G] = res.span.mapK(fk)
+          def trace: G ~> G = res.trace.andThen(fk).compose(gk)
+        }
+
+    }
+  }
+
+  implicit final class SpanOpsSyntax[F[_]](
+      private val ops: SpanOps[F]
+  ) extends AnyVal {
+
+    def translate[G[_]](fk: F ~> G, gk: G ~> F)(implicit
+        F: MonadCancel[F, _],
+        G: MonadCancel[G, _]
+    ): SpanOps[G] =
+      new SpanOps[G] {
+        def startUnmanaged: G[Span[G]] =
+          fk(ops.startUnmanaged).map(span => span.mapK(fk))
+
+        def resource: Resource[G, Res[G]] =
+          ops.resource.map(res => res.translate(fk, gk)).mapK(fk)
+
+        def use[A](f: Span[G] => G[A]): G[A] =
+          fk(ops.use(span => gk(f(span.mapK(fk)))))
+
+        def use_ : G[Unit] =
+          fk(ops.use_)
+      }
+
+  }
+
+  def liftOptionT[F[_]](ops: SpanOps[F])(implicit
+      F: MonadCancel[F, _]
+  ): SpanOps[OptionT[F, *]] = {
+    new SpanOps[OptionT[F, *]] {
+
+      def startUnmanaged: OptionT[F, Span[OptionT[F, *]]] =
+        OptionT.liftF(ops.startUnmanaged).map(span => span.mapK(OptionT.liftK))
+
+      def resource: Resource[OptionT[F, *], Res[OptionT[F, *]]] =
+        ops.resource
+          .map(res =>
+            new Res[OptionT[F, *]] {
+              def span: Span[OptionT[F, *]] =
+                res.span.mapK(OptionT.liftK)
+
+              def trace: OptionT[F, *] ~> OptionT[F, *] =
+                new (OptionT[F, *] ~> OptionT[F, *]) {
+                  def apply[A](fa: OptionT[F, A]): OptionT[F, A] =
+                    OptionT(res.trace.apply(fa.value))
+                }
+            }
+          )
+          .mapK(OptionT.liftK)
+
+      def use[A](f: Span[OptionT[F, *]] => OptionT[F, A]): OptionT[F, A] =
+        OptionT(ops.use(span => f(span.mapK(OptionT.liftK)).value))
+
+      def use_ : OptionT[F, Unit] =
+        OptionT.liftF(ops.use_)
+    }
   }
 }

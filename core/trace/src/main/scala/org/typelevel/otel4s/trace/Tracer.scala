@@ -18,10 +18,8 @@ package org.typelevel.otel4s
 package trace
 
 import cats.Applicative
-import cats.effect.kernel.CancelScope
-import cats.effect.kernel.MonadCancelThrow
-import cats.effect.kernel.Poll
-import cats.effect.kernel.Resource
+import cats.data.OptionT
+import cats.effect.kernel.MonadCancel
 import cats.~>
 import org.typelevel.otel4s.meta.InstrumentMeta
 
@@ -175,8 +173,6 @@ trait Tracer[F[_]] extends TracerMacro[F] {
     */
   def noopScope[A](fa: F[A]): F[A]
 
-  def translate[G[_]](fk: F ~> G, gk: G ~> F): Tracer[G]
-
 }
 
 object Tracer {
@@ -192,7 +188,7 @@ object Tracer {
     def enabled[F[_]: Applicative]: Meta[F] = make(true)
     def disabled[F[_]: Applicative]: Meta[F] = make(false)
 
-    private def make[F[_]: Applicative](enabled: Boolean): Meta[F] =
+    private[Tracer] def make[F[_]: Applicative](enabled: Boolean): Meta[F] =
       new Meta[F] {
         private val noopBackend = Span.Backend.noop[F]
 
@@ -214,51 +210,70 @@ object Tracer {
       def childScope[A](parent: SpanContext)(fa: F[A]): F[A] = fa
       def spanBuilder(name: String): SpanBuilder[F] = builder
       def joinOrRoot[A, C: TextMapGetter](carrier: C)(fa: F[A]): F[A] = fa
-      def translate[G[_]](fk: F ~> G, gk: G ~> F): Tracer[G] =
-        noop[G](liftMonadCancelThrow[F, G](MonadCancelThrow[F], fk, gk))
+    }
+
+  def liftOptionT[F[_]](tracer: Tracer[F])(implicit
+      F: MonadCancel[F, _]
+  ): Tracer[OptionT[F, *]] =
+    new Tracer[OptionT[F, *]] {
+      def meta: Meta[OptionT[F, *]] =
+        Meta.make(tracer.meta.isEnabled)
+
+      def currentSpanContext: OptionT[F, Option[SpanContext]] =
+        OptionT.liftF(tracer.currentSpanContext)
+
+      def spanBuilder(name: String): SpanBuilder[OptionT[F, *]] =
+        SpanBuilder.liftOptionT(tracer.spanBuilder(name))
+
+      def childScope[A](parent: SpanContext)(fa: OptionT[F, A]): OptionT[F, A] =
+        OptionT(tracer.childScope(parent)(fa.value))
+
+      def joinOrRoot[A, C: TextMapGetter](carrier: C)(
+          fa: OptionT[F, A]
+      ): OptionT[F, A] =
+        OptionT(tracer.joinOrRoot(carrier)(fa.value))
+
+      def rootScope[A](fa: OptionT[F, A]): OptionT[F, A] =
+        OptionT(tracer.rootScope(fa.value))
+
+      def noopScope[A](fa: OptionT[F, A]): OptionT[F, A] =
+        OptionT(tracer.noopScope(fa.value))
     }
 
   object Implicits {
     implicit def noop[F[_]: Applicative]: Tracer[F] = Tracer.noop
   }
 
-  private def liftMonadCancelThrow[F[_], G[_]](
-      F: MonadCancelThrow[F],
-      fk: F ~> G,
-      gk: G ~> F
-  ): MonadCancelThrow[G] =
-    new MonadCancelThrow[G] {
-      def pure[A](x: A): G[A] = fk(F.pure(x))
+  implicit final class TracerSyntax[F[_]](
+      private val tracer: Tracer[F]
+  ) extends AnyVal {
 
-      // Members declared in cats.ApplicativeError
-      def handleErrorWith[A](ga: G[A])(f: Throwable => G[A]): G[A] =
-        fk(F.handleErrorWith(gk(ga))(ex => gk(f(ex))))
+    def translate[G[_]](fk: F ~> G, gk: G ~> F)(implicit
+        F: MonadCancel[F, _],
+        G: MonadCancel[G, _]
+    ): Tracer[G] =
+      new Tracer[G] {
+        def meta: Meta[G] =
+          Meta.make(tracer.meta.isEnabled)
 
-      def raiseError[A](e: Throwable): G[A] = fk(F.raiseError[A](e))
+        def currentSpanContext: G[Option[SpanContext]] =
+          fk(tracer.currentSpanContext)
 
-      // Members declared in cats.FlatMap
-      def flatMap[A, B](ga: G[A])(f: A => G[B]): G[B] =
-        fk(F.flatMap(gk(ga))(a => gk(f(a))))
+        def spanBuilder(name: String): SpanBuilder[G] =
+          tracer.spanBuilder(name).translate(fk, gk)
 
-      def tailRecM[A, B](a: A)(f: A => G[Either[A, B]]): G[B] =
-        fk(F.tailRecM(a)(a => gk(f(a))))
+        def childScope[A](parent: SpanContext)(fa: G[A]): G[A] =
+          fk(tracer.childScope(parent)(gk(fa)))
 
-      // Members declared in cats.effect.kernel.MonadCancel
-      def canceled: G[Unit] = fk(F.canceled)
+        def joinOrRoot[A, C: TextMapGetter](carrier: C)(fa: G[A]): G[A] =
+          fk(tracer.joinOrRoot(carrier)(gk(fa)))
 
-      def forceR[A, B](ga: G[A])(gb: G[B]): G[B] =
-        fk(F.forceR(gk(ga))(gk(gb)))
+        def rootScope[A](fa: G[A]): G[A] =
+          fk(tracer.rootScope(gk(fa)))
 
-      def onCancel[A](ga: G[A], fin: G[Unit]): G[A] =
-        fk(F.onCancel(gk(ga), gk(fin)))
+        def noopScope[A](fa: G[A]): G[A] =
+          fk(tracer.noopScope(gk(fa)))
+      }
 
-      def rootCancelScope: CancelScope = F.rootCancelScope
-
-      def uncancelable[A](body: Poll[G] => G[A]): G[A] =
-        fk(F.uncancelable { pollF =>
-          gk(body(new Poll[G] {
-            def apply[B](gb: G[B]): G[B] = fk(pollF(gk(gb)))
-          }))
-        })
-    }
+  }
 }

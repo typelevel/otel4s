@@ -18,6 +18,7 @@ package org.typelevel.otel4s
 package trace
 
 import cats.Applicative
+import cats.~>
 import org.typelevel.otel4s.meta.InstrumentMeta
 
 import scala.concurrent.duration.FiniteDuration
@@ -151,10 +152,66 @@ object Span {
         private[otel4s] def end: F[Unit] = unit
         private[otel4s] def end(timestamp: FiniteDuration): F[Unit] = unit
       }
+
+    implicit final class BackendSyntax[F[_]](
+        private val backend: Backend[F]
+    ) extends AnyVal {
+
+      def mapK[G[_]](fk: F ~> G): Backend[G] =
+        new Backend[G] {
+          def meta: InstrumentMeta[G] =
+            backend.meta.mapK(fk)
+
+          def context: SpanContext =
+            backend.context
+
+          def addAttributes(attributes: Attribute[_]*): G[Unit] =
+            fk(backend.addAttributes(attributes: _*))
+
+          def addEvent(name: String, attributes: Attribute[_]*): G[Unit] =
+            fk(backend.addEvent(name, attributes: _*))
+
+          def addEvent(
+              name: String,
+              timestamp: FiniteDuration,
+              attributes: Attribute[_]*
+          ): G[Unit] =
+            fk(backend.addEvent(name, timestamp, attributes: _*))
+
+          def recordException(
+              exception: Throwable,
+              attributes: Attribute[_]*
+          ): G[Unit] =
+            fk(backend.recordException(exception, attributes: _*))
+
+          def setStatus(status: Status): G[Unit] =
+            fk(backend.setStatus(status))
+
+          def setStatus(status: Status, description: String): G[Unit] =
+            fk(backend.setStatus(status, description))
+
+          private[otel4s] def end: G[Unit] =
+            fk(backend.end)
+
+          private[otel4s] def end(timestamp: FiniteDuration): G[Unit] =
+            fk(backend.end(timestamp))
+        }
+
+    }
+  }
+
+  implicit final class SpanSyntax[F[_]](
+      private val span: Span[F]
+  ) extends AnyVal {
+
+    def mapK[G[_]](fk: F ~> G): Span[G] =
+      Span.fromBackend(span.backend.mapK(fk))
+
   }
 
   private[otel4s] def fromBackend[F[_]](back: Backend[F]): Span[F] =
     new Span[F] {
       def backend: Backend[F] = back
     }
+
 }

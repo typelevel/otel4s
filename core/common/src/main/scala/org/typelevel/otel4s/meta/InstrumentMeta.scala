@@ -17,6 +17,7 @@
 package org.typelevel.otel4s.meta
 
 import cats.Applicative
+import cats.~>
 
 trait InstrumentMeta[F[_]] {
 
@@ -37,6 +38,18 @@ object InstrumentMeta {
 
   def disabled[F[_]: Applicative]: InstrumentMeta[F] =
     make(enabled = false)
+
+  implicit final class InstrumentMetaSyntax[F[_]](
+      private val meta: InstrumentMeta[F]
+  ) extends AnyVal {
+
+    def mapK[G[_]](fk: F ~> G): InstrumentMeta[G] =
+      new InstrumentMeta[G] {
+        def isEnabled: Boolean = meta.isEnabled
+        def unit: G[Unit] = fk(meta.unit)
+      }
+
+  }
 
   private def make[F[_]: Applicative](enabled: Boolean): InstrumentMeta[F] =
     new InstrumentMeta[F] {

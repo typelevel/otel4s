@@ -21,7 +21,7 @@ import cats.~>
 
 trait SpanOps[F[_]] {
 
-  /** Creates a [[Span]]. The span requires to be ended ''explicitly'' by
+  /** Creates a [[Span]]. The span requires to be ended '''explicitly''' by
     * invoking `end`.
     *
     * This strategy can be used when it's necessary to end a span outside of the
@@ -76,10 +76,10 @@ trait SpanOps[F[_]] {
     *     .build
     *     .resource
     *     .use { res =>
-    *       // `res.include` encloses its contents within the "resource-span"
+    *       // `res.trace` encloses its contents within the "resource-span"
     *       // span; anything not applied to `res.include` will not end up in
     *       // the span
-    *       res.include(res.span.setStatus(Status.Ok, "all good"))
+    *       res.trace(res.span.setStatus(Status.Ok, "all good"))
     *     }
     *   }}}
     */

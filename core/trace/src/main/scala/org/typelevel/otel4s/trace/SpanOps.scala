@@ -16,8 +16,10 @@
 
 package org.typelevel.otel4s.trace
 
+import cats.effect.Resource
+import cats.~>
+
 trait SpanOps[F[_]] {
-  type Result <: Span[F]
 
   /** Creates a [[Span]]. The span requires to be ended ''explicitly'' by
     * invoking `end`.
@@ -47,9 +49,41 @@ trait SpanOps[F[_]] {
     * }}}
     *
     * @see
-    *   [[use]], [[use_]], or [[surround]] for a managed lifecycle
+    *   [[use]], [[use_]], [[surround]], or [[resource]] for a managed lifecycle
     */
-  def startUnmanaged(implicit ev: Result =:= Span[F]): F[Span[F]]
+  def startUnmanaged: F[Span[F]]
+
+  /** Creates a [[Span]] and a [[cats.effect.Resource Resource]] for using it.
+    * Unlike [[startUnmanaged]], the lifecycle of the span is fully managed.
+    *
+    * The finalization strategy is determined by [[SpanFinalizer.Strategy]]. By
+    * default, the abnormal termination (error, cancelation) is recorded.
+    *
+    * If the start timestamp is not configured explicitly in a builder, the
+    * `Clock[F].realTime` is used to determine the timestamp.
+    *
+    * `Clock[F].realTime` is always used as the end timestamp.
+    *
+    * @see
+    *   default finalization strategy [[SpanFinalizer.Strategy.reportAbnormal]]
+    * @see
+    *   [[SpanOps.Res]] for the semantics and usage of the resource's value
+    * @example
+    *   {{{
+    * val tracer: Tracer[F] = ???
+    * val ok: F[Unit] =
+    *   tracer.spanBuilder("resource-span")
+    *     .build
+    *     .resource
+    *     .use { res =>
+    *       // `res.include` encloses its contents within the "resource-span"
+    *       // span; anything not applied to `res.include` will not end up in
+    *       // the span
+    *       res.include(res.span.setStatus(Status.Ok, "all good"))
+    *     }
+    *   }}}
+    */
+  def resource: Resource[F, SpanOps.Res[F]]
 
   /** Creates and uses a [[Span]]. Unlike [[startUnmanaged]], the lifecycle of
     * the span is fully managed. The span is started and passed to `f` to
@@ -74,7 +108,7 @@ trait SpanOps[F[_]] {
     *   }
     *   }}}
     */
-  def use[A](f: Result => F[A]): F[A]
+  def use[A](f: Span[F] => F[A]): F[A]
 
   /** Starts a span and ends it immediately.
     *
@@ -103,11 +137,35 @@ trait SpanOps[F[_]] {
     * @see
     *   See [[use]] for more details regarding lifecycle strategy
     */
-  def surround[A](fa: F[A]): F[A]
+  final def surround[A](fa: F[A]): F[A] = use(_ => fa)
 }
 
 object SpanOps {
-  type Aux[F[_], A] = SpanOps[F] {
-    type Result = A
+
+  /** The span and associated natural transformation [[`trace`]] provided and
+    * managed by a call to [[SpanOps.resource]]. In order to trace something in
+    * the span, it must be applied to [[`trace`]].
+    */
+  sealed trait Res[F[_]] {
+
+    /** The managed span. */
+    def span: Span[F]
+
+    /** A natural transformation that traces everything applied to it in the
+      * span. Note: anything not applied to this
+      * [[cats.arrow.FunctionK FunctionK]] will not be traced.
+      */
+    def trace: F ~> F
+  }
+
+  object Res {
+    private[this] final case class Impl[F[_]](span: Span[F], trace: F ~> F)
+        extends Res[F]
+
+    /** Creates a [[Res]] from a managed span and a natural transformation for
+      * tracing operations in the span.
+      */
+    def apply[F[_]](span: Span[F], trace: F ~> F): Res[F] =
+      Impl(span, trace)
   }
 }

@@ -17,7 +17,7 @@
 package org.typelevel.otel4s.metrics
 
 import cats.Applicative
-import cats.effect.Resource
+import cats.effect.kernel.Resource
 
 @annotation.implicitNotFound("""
 Could not find the `Meter` for ${F}. `Meter` can be one of the following:

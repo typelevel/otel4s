@@ -18,34 +18,29 @@ package org.typelevel.otel4s
 package java
 
 import cats.effect.Sync
-import io.opentelemetry.context.{Context => JContext}
 import io.opentelemetry.context.propagation.{
   TextMapPropagator => JTextMapPropagator
 }
 import org.typelevel.otel4s.java.Conversions._
-import org.typelevel.vault.Vault
+import org.typelevel.otel4s.java.context.Context
 
 private[java] class TextMapPropagatorImpl[F[_]: Sync](
-    jPropagator: JTextMapPropagator,
-    toJContext: Vault => JContext,
-    fromJContext: JContext => Vault
-) extends TextMapPropagator[F] {
-  def extract[A: TextMapGetter](ctx: Vault, carrier: A): Vault =
-    fromJContext(
-      jPropagator.extract(toJContext(ctx), carrier, fromTextMapGetter)
-    )
+    jPropagator: JTextMapPropagator
+) extends TextMapPropagator[F, Context] {
+  def extract[A: TextMapGetter](ctx: Context, carrier: A): Context =
+    ctx.map(jPropagator.extract(_, carrier, fromTextMapGetter))
 
-  def inject[A: TextMapSetter](ctx: Vault, carrier: A): F[Unit] =
+  def inject[A: TextMapSetter](ctx: Context, carrier: A): F[Unit] =
     Sync[F].delay(
-      jPropagator.inject(toJContext(ctx), carrier, fromTextMapSetter)
+      jPropagator.inject(ctx.underlying, carrier, fromTextMapSetter)
     )
 
-  def injected[A](ctx: Vault, carrier: A)(implicit
+  def injected[A](ctx: Context, carrier: A)(implicit
       injector: TextMapUpdater[A]
   ): A = {
     var injectedCarrier = carrier
     jPropagator.inject[Null](
-      toJContext(ctx),
+      ctx.underlying,
       null, // explicitly allowed per opentelemetry-java, so our setter can be a lambda!
       (_, key, value) => {
         injectedCarrier = injector.updated(injectedCarrier, key, value)

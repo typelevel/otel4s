@@ -19,8 +19,8 @@ package trace
 
 import cats.Applicative
 import cats.arrow.FunctionK
-import cats.effect.MonadCancelThrow
-import cats.effect.Resource
+import cats.effect.kernel.MonadCancelThrow
+import cats.effect.kernel.Resource
 
 import scala.concurrent.duration.FiniteDuration
 

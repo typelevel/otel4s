@@ -17,31 +17,26 @@
 package org.typelevel.otel4s.java.trace
 
 import cats.effect.Sync
-import cats.mtl.Local
 import io.opentelemetry.api.trace.{TracerProvider => JTracerProvider}
 import org.typelevel.otel4s.ContextPropagators
-import org.typelevel.otel4s.context.LocalVault
+import org.typelevel.otel4s.java.context.Context
+import org.typelevel.otel4s.java.context.LocalContext
 import org.typelevel.otel4s.trace.TracerBuilder
 import org.typelevel.otel4s.trace.TracerProvider
-import org.typelevel.vault.Vault
 
-private[java] class TracerProviderImpl[F[_]: Sync: LocalVault](
+private[java] class TracerProviderImpl[F[_]: Sync: LocalContext] private (
     jTracerProvider: JTracerProvider,
-    propagators: ContextPropagators[F],
-    scope: TraceScope[F]
+    propagators: ContextPropagators[F, Context]
 ) extends TracerProvider[F] {
   def tracer(name: String): TracerBuilder[F] =
-    TracerBuilderImpl(jTracerProvider, propagators, scope, name)
+    TracerBuilderImpl(jTracerProvider, propagators, name)
 }
 
 private[java] object TracerProviderImpl {
 
-  def local[F[_]](
+  def local[F[_]: Sync: LocalContext](
       jTracerProvider: JTracerProvider,
-      propagators: ContextPropagators[F]
-  )(implicit F: Sync[F], L: Local[F, Vault]): TracerProvider[F] = {
-    val traceScope = TraceScope.fromLocal[F]
-    new TracerProviderImpl(jTracerProvider, propagators, traceScope)
-  }
-
+      propagators: ContextPropagators[F, Context]
+  ): TracerProvider[F] =
+    new TracerProviderImpl(jTracerProvider, propagators)
 }

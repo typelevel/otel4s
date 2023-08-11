@@ -17,18 +17,21 @@
 package org.typelevel.otel4s.java.trace
 
 import cats.effect.Sync
+import cats.mtl.Ask
 import cats.syntax.flatMap._
 import cats.syntax.functor._
 import io.opentelemetry.api.trace.{Span => JSpan}
 import io.opentelemetry.api.trace.{Tracer => JTracer}
 import org.typelevel.otel4s.ContextPropagators
 import org.typelevel.otel4s.TextMapGetter
+import org.typelevel.otel4s.TextMapUpdater
+import org.typelevel.otel4s.context.AskVault
 import org.typelevel.otel4s.trace.SpanBuilder
 import org.typelevel.otel4s.trace.SpanContext
 import org.typelevel.otel4s.trace.Tracer
 import org.typelevel.vault.Vault
 
-private[java] class TracerImpl[F[_]: Sync](
+private[java] class TracerImpl[F[_]: Sync: AskVault](
     jTracer: JTracer,
     scope: TraceScope[F],
     propagators: ContextPropagators[F]
@@ -72,4 +75,7 @@ private[java] class TracerImpl[F[_]: Sync](
         rootScope(fa)
     }
   }
+
+  def propagate[C: TextMapUpdater](carrier: C): F[C] =
+    Ask[F, Vault].reader(propagators.textMapPropagator.injected(_, carrier))
 }

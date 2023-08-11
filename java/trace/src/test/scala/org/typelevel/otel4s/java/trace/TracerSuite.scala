@@ -144,6 +144,25 @@ class TracerSuite extends CatsEffectSuite {
     }
   }
 
+  test("propagate to an arbitrary carrier") {
+    TestControl.executeEmbed {
+      for {
+        sdk <- makeSdk()
+        tracer <- sdk.provider.get("tracer")
+        _ <- tracer.span("span").use { span =>
+          for {
+            carrier <- tracer.propagate(Map("key" -> "value"))
+          } yield {
+            assertEquals(carrier.get("key"), Some("value"))
+            val expected =
+              s"00-${span.context.traceIdHex}-${span.context.spanIdHex}-01"
+            assertEquals(carrier.get("traceparent"), Some(expected))
+          }
+        }
+      } yield ()
+    }
+  }
+
   test("automatically start and stop span") {
     val sleepDuration = 500.millis
 

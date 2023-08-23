@@ -22,7 +22,6 @@ import cats.implicits.catsSyntaxOptionId
 import cats.implicits.catsSyntaxSemigroup
 import cats.implicits.showInterpolator
 import org.typelevel.otel4s.Attribute
-import org.typelevel.otel4s.sdk.BuildInfo
 import org.typelevel.otel4s.sdk.Resource.ResourceInitiationError
 import org.typelevel.otel4s.semconv.resource.attributes.ResourceAttributes._
 

@@ -22,7 +22,6 @@ import cats.effect.Sync
 import cats.syntax.flatMap._
 import io.opentelemetry.api.trace.{Span => JSpan}
 import io.opentelemetry.api.trace.{StatusCode => JStatusCode}
-import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.meta.InstrumentMeta
 import org.typelevel.otel4s.trace.Span
 import org.typelevel.otel4s.trace.SpanContext

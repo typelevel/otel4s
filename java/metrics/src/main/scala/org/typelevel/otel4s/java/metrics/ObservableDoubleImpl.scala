@@ -20,7 +20,6 @@ package metrics
 
 import cats.effect.Sync
 import io.opentelemetry.api.metrics.ObservableDoubleMeasurement
-import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.metrics._
 
 private[java] class ObservableDoubleImpl[F[_]](

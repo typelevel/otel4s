@@ -67,6 +67,7 @@ lazy val root = tlCrossRootProject
     `testkit-metrics`,
     testkit,
     `java-common`,
+    `java-context-storage`,
     `java-metrics`,
     `java-trace`,
     java,
@@ -288,9 +289,27 @@ lazy val `java-trace` = project
   )
   .settings(scalafixSettings)
 
+lazy val `java-context-storage` = project
+  .in(file("java/context-storage"))
+  .dependsOn(`java-common`)
+  .settings(munitDependencies)
+  .settings(
+    name := "otel4s-java-context-storage",
+    libraryDependencies ++= Seq(
+      "org.typelevel" %%% "cats-effect" % CatsEffectVersion,
+      "org.typelevel" %%% "cats-effect-testkit" % CatsEffectVersion % Test,
+    ),
+    Test / javaOptions ++= Seq(
+      "-Dotel.java.global-autoconfigure.enabled=true",
+      "-Dcats.effect.ioLocalPropagation=true",
+    ),
+    Test / fork := true,
+  )
+  .settings(scalafixSettings)
+
 lazy val java = project
   .in(file("java/all"))
-  .dependsOn(core.jvm, `java-metrics`, `java-trace`)
+  .dependsOn(core.jvm, `java-metrics`, `java-trace`, `java-context-storage`)
   .settings(
     name := "otel4s-java",
     libraryDependencies ++= Seq(

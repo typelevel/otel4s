@@ -19,13 +19,13 @@ package org.typelevel.otel4s.java
 import cats.effect.IOLocal
 import cats.effect.SyncIO
 import cats.syntax.all._
-import io.opentelemetry.context.Context
 import io.opentelemetry.context.ContextStorage
 import io.opentelemetry.context.ContextStorageProvider
+import org.typelevel.otel4s.java.context.Context
 
 object IOLocalContextStorageProvider {
-  val localContext: IOLocal[Context] =
-    IOLocal[Context](Context.root())
+  private lazy val localContext: IOLocal[Context] =
+    IOLocal[Context](Context.root)
       .syncStep(100)
       .flatMap(
         _.leftMap(_ =>
@@ -37,7 +37,8 @@ object IOLocalContextStorageProvider {
       .unsafeRunSync()
 }
 
+/** SPI implementation for [[`IOLocalContextStorage`]]. */
 class IOLocalContextStorageProvider extends ContextStorageProvider {
   def get(): ContextStorage =
-    new IOLocalContextStorage(IOLocalContextStorageProvider.localContext)
+    new IOLocalContextStorage(() => IOLocalContextStorageProvider.localContext)
 }

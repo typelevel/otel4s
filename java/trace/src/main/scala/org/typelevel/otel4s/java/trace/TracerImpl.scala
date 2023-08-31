@@ -17,7 +17,7 @@
 package org.typelevel.otel4s.java.trace
 
 import cats.effect.Sync
-import cats.mtl.Ask
+import cats.mtl.Local
 import cats.syntax.flatMap._
 import cats.syntax.functor._
 import io.opentelemetry.api.trace.{Span => JSpan}
@@ -25,13 +25,13 @@ import io.opentelemetry.api.trace.{Tracer => JTracer}
 import org.typelevel.otel4s.ContextPropagators
 import org.typelevel.otel4s.TextMapGetter
 import org.typelevel.otel4s.TextMapUpdater
-import org.typelevel.otel4s.context.AskVault
+import org.typelevel.otel4s.context.LocalVault
 import org.typelevel.otel4s.trace.SpanBuilder
 import org.typelevel.otel4s.trace.SpanContext
 import org.typelevel.otel4s.trace.Tracer
 import org.typelevel.vault.Vault
 
-private[java] class TracerImpl[F[_]: Sync: AskVault](
+private[java] class TracerImpl[F[_]: Sync: LocalVault](
     jTracer: JTracer,
     scope: TraceScope[F],
     propagators: ContextPropagators[F]
@@ -68,14 +68,15 @@ private[java] class TracerImpl[F[_]: Sync: AskVault](
   def joinOrRoot[A, C: TextMapGetter](carrier: C)(fa: F[A]): F[A] = {
     val context = propagators.textMapPropagator.extract(Vault.empty, carrier)
 
+    // use Local[F, Vault].scope(..)(context) to bring extracted headers
     SpanContext.fromContext(context) match {
       case Some(parent) =>
-        childScope(parent)(fa)
+        Local[F, Vault].scope(childScope(parent)(fa))(context)
       case None =>
-        rootScope(fa)
+        Local[F, Vault].scope(fa)(context)
     }
   }
 
   def propagate[C: TextMapUpdater](carrier: C): F[C] =
-    Ask[F, Vault].reader(propagators.textMapPropagator.injected(_, carrier))
+    Local[F, Vault].reader(propagators.textMapPropagator.injected(_, carrier))
 }

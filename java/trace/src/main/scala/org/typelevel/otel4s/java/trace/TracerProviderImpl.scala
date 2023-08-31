@@ -20,12 +20,12 @@ import cats.effect.Sync
 import cats.mtl.Local
 import io.opentelemetry.api.trace.{TracerProvider => JTracerProvider}
 import org.typelevel.otel4s.ContextPropagators
-import org.typelevel.otel4s.context.AskVault
+import org.typelevel.otel4s.context.LocalVault
 import org.typelevel.otel4s.trace.TracerBuilder
 import org.typelevel.otel4s.trace.TracerProvider
 import org.typelevel.vault.Vault
 
-private[java] class TracerProviderImpl[F[_]: Sync: AskVault](
+private[java] class TracerProviderImpl[F[_]: Sync: LocalVault](
     jTracerProvider: JTracerProvider,
     propagators: ContextPropagators[F],
     scope: TraceScope[F]

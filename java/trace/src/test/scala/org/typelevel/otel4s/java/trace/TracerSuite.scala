@@ -21,6 +21,7 @@ import cats.effect.IOLocal
 import cats.effect.Resource
 import cats.effect.kernel.MonadCancelThrow
 import cats.effect.testkit.TestControl
+import cats.syntax.apply._
 import cats.syntax.functor._
 import cats.~>
 import io.opentelemetry.api.common.{AttributeKey => JAttributeKey}
@@ -30,6 +31,10 @@ import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator
 import io.opentelemetry.context.propagation.{
   ContextPropagators => JContextPropagators
 }
+import io.opentelemetry.context.propagation.{
+  TextMapPropagator => JTextMapPropagator
+}
+import io.opentelemetry.extension.incubator.propagation.PassThroughPropagator
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo
 import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter
 import io.opentelemetry.sdk.testing.time.TestClock
@@ -707,25 +712,37 @@ class TracerSuite extends CatsEffectSuite {
     val spanId = "279fa73bc935cc05"
 
     val headers = Map(
-      "traceparent" -> s"00-$traceId-$spanId-01"
+      "traceparent" -> s"00-$traceId-$spanId-01",
+      "foo" -> "1",
+      "baz" -> "2"
     )
 
     TestControl.executeEmbed {
       for {
-        sdk <- makeSdk()
+        sdk <- makeSdk(additionalPropagators =
+          Seq(PassThroughPropagator.create("foo", "bar"))
+        )
         tracer <- sdk.provider.get("tracer")
-        pair <- tracer.span("local").surround {
+        tuple <- tracer.span("local").surround {
           tracer.joinOrRoot(headers) {
-            tracer.currentSpanContext.product(
-              tracer.span("inner").use(r => IO.pure(r.context))
-            )
+            (
+              tracer.currentSpanContext,
+              tracer.span("inner").use(r => IO.pure(r.context)),
+              tracer.propagate(Map.empty[String, String]),
+            ).tupled
           }
         }
-        (external, inner) = pair
+        (external, inner, resultHeaders) = tuple
       } yield {
         assertEquals(external.map(_.traceIdHex), Some(traceId))
         assertEquals(external.map(_.spanIdHex), Some(spanId))
         assertEquals(inner.traceIdHex, traceId)
+        assertEquals(resultHeaders.size, 2)
+        assertEquals(
+          resultHeaders.get("traceparent"),
+          Some(s"00-$traceId-$spanId-01")
+        )
+        assertEquals(resultHeaders.get("foo"), Some("1"))
       }
     }
   }
@@ -854,13 +871,35 @@ class TracerSuite extends CatsEffectSuite {
     }
   }
 
+  // typelevel/otel4s#277
+  test("retain all of a provided context through propagation") {
+    TestControl.executeEmbed {
+      for {
+        sdk <- makeSdk(additionalPropagators =
+          Seq(PassThroughPropagator.create("foo", "bar"))
+        )
+        tracer <- sdk.provider.get("tracer")
+        _ <- tracer.joinOrRoot(Map("foo" -> "1", "baz" -> "2")) {
+          for {
+            carrier <- tracer.propagate(Map.empty[String, String])
+          } yield {
+            assertEquals(carrier.size, 1)
+            assertEquals(carrier.get("foo"), Some("1"))
+          }
+        }
+      } yield ()
+    }
+  }
+
   private def assertIdsNotEqual(s1: Span[IO], s2: Span[IO]): Unit = {
     assertNotEquals(s1.context.traceIdHex, s2.context.traceIdHex)
     assertNotEquals(s1.context.spanIdHex, s2.context.spanIdHex)
   }
 
   private def makeSdk(
-      customize: SdkTracerProviderBuilder => SdkTracerProviderBuilder = identity
+      customize: SdkTracerProviderBuilder => SdkTracerProviderBuilder =
+        identity,
+      additionalPropagators: Seq[JTextMapPropagator] = Nil
   ): IO[TracerSuite.Sdk] = {
     val exporter = InMemorySpanExporter.create()
 
@@ -872,8 +911,13 @@ class TracerSuite extends CatsEffectSuite {
       customize(builder).build()
 
     IOLocal(Vault.empty).map { implicit ioLocal: IOLocal[Vault] =>
+      val textMapPropagators =
+        W3CTraceContextPropagator.getInstance() +: additionalPropagators
+
       val propagators = new ContextPropagatorsImpl[IO](
-        JContextPropagators.create(W3CTraceContextPropagator.getInstance()),
+        JContextPropagators.create(
+          JTextMapPropagator.composite(textMapPropagators.asJava)
+        ),
         ContextConversions.toJContext,
         ContextConversions.fromJContext
       )

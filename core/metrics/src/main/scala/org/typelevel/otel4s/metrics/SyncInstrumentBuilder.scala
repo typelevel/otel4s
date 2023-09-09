@@ -27,7 +27,7 @@ trait SyncInstrumentBuilder[F[_], A] {
     *   Unit</a>
     *
     * @param unit
-    *   the measurement unit. Must be 63 or fewer ASCII characters.
+    *   the measurement unit. Must be 255 or fewer ASCII characters.
     */
   def withUnit(unit: String): Self
 

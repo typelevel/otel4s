@@ -1,0 +1,119 @@
+{
+  "__inputs": [
+    {
+      "name": "DS_JAEGER",
+      "label": "Jaeger",
+      "description": "",
+      "type": "datasource",
+      "pluginId": "jaeger",
+      "pluginName": "Jaeger"
+    }
+  ],
+  "__elements": {},
+  "__requires": [
+    {
+      "type": "grafana",
+      "id": "grafana",
+      "name": "Grafana",
+      "version": "10.0.3"
+    },
+    {
+      "type": "datasource",
+      "id": "jaeger",
+      "name": "Jaeger",
+      "version": "1.0.0"
+    },
+    {
+      "type": "panel",
+      "id": "traces",
+      "name": "Traces",
+      "version": ""
+    }
+  ],
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "datasource": {
+        "type": "jaeger",
+        "uid": "${DS_JAEGER}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "targets": [
+        {
+          "datasource": {
+            "type": "jaeger",
+            "uid": "${DS_JAEGER}"
+          },
+          "query": "${TraceId}",
+          "refId": "A"
+        }
+      ],
+      "title": "Example Traces Dashboard",
+      "type": "traces"
+    }
+  ],
+  "refresh": "",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": [],
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "selected": false,
+          "text": "a825392fffcdc16aed677dfb2db7db89",
+          "value": "a825392fffcdc16aed677dfb2db7db89"
+        },
+        "hide": 0,
+        "name": "TraceId",
+        "options": [
+          {
+            "selected": true,
+            "text": "a825392fffcdc16aed677dfb2db7db89",
+            "value": "a825392fffcdc16aed677dfb2db7db89"
+          }
+        ],
+        "query": "a825392fffcdc16aed677dfb2db7db89",
+        "skipUrlSync": false,
+        "type": "textbox"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "Traces",
+  "uid": "b6b5915c-16c4-4008-a6b2-2d5d3c1e6372",
+  "version": 4,
+  "weekStart": ""
+}

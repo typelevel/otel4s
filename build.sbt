@@ -23,7 +23,7 @@ lazy val scalafixSettings = Seq(
   )
 )
 
-val Scala213 = "2.13.11"
+val Scala213 = "2.13.12"
 ThisBuild / crossScalaVersions := Seq(Scala213, "3.3.0")
 ThisBuild / scalaVersion := Scala213 // the default Scala
 
@@ -31,11 +31,11 @@ val CatsVersion = "2.10.0"
 val CatsEffectVersion = "3.5.1"
 val CatsMtlVersion = "1.3.1"
 val DisciplineMUnitVersion = "2.0.0-M3"
-val FS2Version = "3.9.0"
+val FS2Version = "3.9.2"
 val MUnitVersion = "1.0.0-M8"
 val MUnitCatsEffectVersion = "2.0.0-M3"
 val MUnitDisciplineVersion = "2.0.0-M3"
-val OpenTelemetryVersion = "1.29.0"
+val OpenTelemetryVersion = "1.30.1"
 val PlatformVersion = "1.0.2"
 val ScodecVersion = "1.1.37"
 val VaultVersion = "3.5.0"

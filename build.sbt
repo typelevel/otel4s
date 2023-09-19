@@ -24,7 +24,7 @@ lazy val scalafixSettings = Seq(
 )
 
 val Scala213 = "2.13.12"
-ThisBuild / crossScalaVersions := Seq(Scala213, "3.3.0")
+ThisBuild / crossScalaVersions := Seq(Scala213, "3.3.1")
 ThisBuild / scalaVersion := Scala213 // the default Scala
 
 val CatsVersion = "2.10.0"

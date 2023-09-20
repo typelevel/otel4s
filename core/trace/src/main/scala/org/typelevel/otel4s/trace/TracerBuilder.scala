@@ -17,6 +17,8 @@
 package org.typelevel.otel4s
 package trace
 
+import cats.Applicative
+
 trait TracerBuilder[F[_]] {
 
   /** Assigns a version to the resulting Meter.
@@ -37,4 +39,13 @@ trait TracerBuilder[F[_]] {
     */
   def get: F[Tracer[F]]
 
+}
+
+object TracerBuilder {
+  def noop[F[_]](implicit F: Applicative[F]): TracerBuilder[F] =
+    new TracerBuilder[F] {
+      def withVersion(version: String): TracerBuilder[F] = this
+      def withSchemaUrl(schemaUrl: String): TracerBuilder[F] = this
+      def get: F[Tracer[F]] = F.pure(Tracer.noop)
+    }
 }

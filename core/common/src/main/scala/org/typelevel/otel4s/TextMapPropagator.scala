@@ -92,6 +92,13 @@ object TextMapPropagator {
 
   def apply[F[_]](implicit ev: TextMapPropagator[F]): TextMapPropagator[F] = ev
 
+  /** Creates a no-op implementation of the [[TextMapPropagator]].
+    *
+    * All propagation operations are no-op.
+    *
+    * @tparam F
+    *   the higher-kinded type of a polymorphic effect
+    */
   def noop[F[_]: Applicative]: TextMapPropagator[F] =
     new TextMapPropagator[F] {
       def extract[A: TextMapGetter](ctx: Vault, carrier: A): Vault =

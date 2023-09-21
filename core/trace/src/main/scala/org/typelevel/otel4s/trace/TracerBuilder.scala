@@ -42,6 +42,14 @@ trait TracerBuilder[F[_]] {
 }
 
 object TracerBuilder {
+
+  /** Creates a no-op implementation of the [[TracerBuilder]].
+    *
+    * A [[Tracer]] has no-op implementation too.
+    *
+    * @tparam F
+    *   the higher-kinded type of a polymorphic effect
+    */
   def noop[F[_]](implicit F: Applicative[F]): TracerBuilder[F] =
     new TracerBuilder[F] {
       def withVersion(version: String): TracerBuilder[F] = this

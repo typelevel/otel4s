@@ -210,6 +210,13 @@ object Tracer {
       }
   }
 
+  /** Creates a no-op implementation of the [[Tracer]].
+    *
+    * All tracing operations are no-op.
+    *
+    * @tparam F
+    *   the higher-kinded type of a polymorphic effect
+    */
   def noop[F[_]: Applicative]: Tracer[F] =
     new Tracer[F] {
       private val noopBackend = Span.Backend.noop

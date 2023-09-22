@@ -58,6 +58,14 @@ trait MeterProvider[F[_]] {
 }
 
 object MeterProvider {
+
+  /** Creates a no-op implementation of the [[MeterProvider]].
+    *
+    * A [[MeterBuilder]] has no-op implementation too.
+    *
+    * @tparam F
+    *   the higher-kinded type of a polymorphic effect
+    */
   def noop[F[_]: Applicative]: MeterProvider[F] =
     new MeterProvider[F] {
       def meter(name: String): MeterBuilder[F] =

@@ -17,6 +17,8 @@
 package org.typelevel.otel4s
 package trace
 
+import cats.Applicative
+
 trait TracerBuilder[F[_]] {
 
   /** Assigns a version to the resulting Meter.
@@ -37,4 +39,21 @@ trait TracerBuilder[F[_]] {
     */
   def get: F[Tracer[F]]
 
+}
+
+object TracerBuilder {
+
+  /** Creates a no-op implementation of the [[TracerBuilder]].
+    *
+    * A [[Tracer]] has no-op implementation too.
+    *
+    * @tparam F
+    *   the higher-kinded type of a polymorphic effect
+    */
+  def noop[F[_]](implicit F: Applicative[F]): TracerBuilder[F] =
+    new TracerBuilder[F] {
+      def withVersion(version: String): TracerBuilder[F] = this
+      def withSchemaUrl(schemaUrl: String): TracerBuilder[F] = this
+      def get: F[Tracer[F]] = F.pure(Tracer.noop)
+    }
 }

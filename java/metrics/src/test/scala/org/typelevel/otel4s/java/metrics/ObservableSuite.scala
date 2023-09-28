@@ -27,7 +27,7 @@ class ObservableSuite extends CatsEffectSuite {
 
   test("gauge test") {
     for {
-      sdk <- IO.delay(MetricsSdk.create[IO]())
+      sdk <- IO.delay(MetricsSdk.inMemory[IO]())
       meter <- Metrics
         .forAsync[IO](sdk.sdk)
         .meterProvider
@@ -79,7 +79,7 @@ class ObservableSuite extends CatsEffectSuite {
 
   test("counter test") {
     for {
-      sdk <- IO.delay(MetricsSdk.create[IO]())
+      sdk <- IO.delay(MetricsSdk.inMemory[IO]())
       meter <- Metrics
         .forAsync[IO](sdk.sdk)
         .meterProvider
@@ -129,7 +129,7 @@ class ObservableSuite extends CatsEffectSuite {
 
   test("up down counter test") {
     for {
-      sdk <- IO.delay(MetricsSdk.create[IO]())
+      sdk <- IO.delay(MetricsSdk.inMemory[IO]())
       meter <- Metrics
         .forAsync[IO](sdk.sdk)
         .meterProvider

@@ -14,21 +14,14 @@
  * limitations under the License.
  */
 
-package org.typelevel.otel4s.java.trace
+package org.typelevel.otel4s.testkit
+package trace
 
 import io.opentelemetry.sdk.trace.data.SpanData
 
 import scala.concurrent.duration._
 
-// Tree-like representation of a span
-final case class SpanNode(
-    name: String,
-    start: FiniteDuration,
-    end: FiniteDuration,
-    children: List[SpanNode]
-)
-
-object SpanNode {
+trait SpanNodePlatform { self: SpanNode.type =>
 
   def fromSpans(spans: List[SpanData]): List[SpanNode] = {
     val spansByParent = spans.groupBy { span =>
@@ -38,19 +31,6 @@ object SpanNode {
     val bottomToTop = sortNodesByDepth(0, topNodes, spansByParent, Nil)
     val maxDepth = bottomToTop.headOption.map(_.depth).getOrElse(0)
     buildFromBottom(maxDepth, bottomToTop, spansByParent, Map.empty)
-  }
-
-  def render(tree: SpanNode): String = {
-    def loop(input: SpanNode, depth: Int): String = {
-      val prefix = " " * depth
-      val next =
-        if (input.children.isEmpty) ""
-        else " =>\n" + input.children.map(loop(_, depth + 2)).mkString("\n")
-
-      s"$prefix${input.name} ${input.start.toNanos} -> ${input.end.toNanos}$next"
-    }
-
-    loop(tree, 0)
   }
 
   private case class EntryWithDepth(data: SpanData, depth: Int)
@@ -90,11 +70,13 @@ object SpanNode {
       val children = nodesByParent
         .getOrElse(Some(nodeId), Nil)
         .flatMap(c => processedNodesById.get(c.getSpanId))
-      val node = SpanNode(
-        n.data.getName,
-        n.data.getStartEpochNanos.nanos,
-        n.data.getEndEpochNanos.nanos,
-        children
+
+      val node = new SpanNode(
+        name = n.data.getName,
+        start = n.data.getStartEpochNanos.nanos,
+        end = n.data.getEndEpochNanos.nanos,
+        attributes = TestkitConversion.fromJAttributes(n.data.getAttributes),
+        children = children
       )
       nodeId -> node
     }.toMap

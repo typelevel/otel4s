@@ -27,29 +27,24 @@ import cats.~>
 import io.opentelemetry.api.common.{AttributeKey => JAttributeKey}
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.trace.StatusCode
-import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator
-import io.opentelemetry.context.propagation.{
-  ContextPropagators => JContextPropagators
-}
 import io.opentelemetry.context.propagation.{
   TextMapPropagator => JTextMapPropagator
 }
 import io.opentelemetry.extension.incubator.propagation.PassThroughPropagator
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo
-import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter
 import io.opentelemetry.sdk.testing.time.TestClock
-import io.opentelemetry.sdk.trace.SdkTracerProvider
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder
 import io.opentelemetry.sdk.trace.SpanLimits
 import io.opentelemetry.sdk.trace.data.SpanData
 import io.opentelemetry.sdk.trace.data.StatusData
-import io.opentelemetry.sdk.trace.`export`.SimpleSpanProcessor
 import io.opentelemetry.sdk.trace.internal.data.ExceptionEventData
 import munit.CatsEffectSuite
 import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.java.ContextConversions
 import org.typelevel.otel4s.java.ContextPropagatorsImpl
 import org.typelevel.otel4s.java.instances._
+import org.typelevel.otel4s.testkit.trace.SpanNode
+import org.typelevel.otel4s.testkit.trace.TracerSdk
 import org.typelevel.otel4s.trace.Span
 import org.typelevel.otel4s.trace.Tracer
 import org.typelevel.otel4s.trace.TracerProvider
@@ -79,7 +74,7 @@ class TracerSuite extends CatsEffectSuite {
 
       _ <- tracer.span("span").use_
 
-      spans <- sdk.finishedSpans
+      spans <- sdk.finishedSpanData
     } yield assertEquals(
       spans.map(_.getInstrumentationScopeInfo),
       List(expected)
@@ -95,7 +90,7 @@ class TracerSuite extends CatsEffectSuite {
       sdk <- makeSdk()
       tracer <- sdk.provider.get("tracer")
       _ <- tracer.span("span", attribute).use_
-      spans <- sdk.finishedSpans
+      spans <- sdk.finishedSpanData
     } yield {
       assertEquals(spans.map(_.getAttributes.size), List(1))
       assertEquals(
@@ -120,7 +115,7 @@ class TracerSuite extends CatsEffectSuite {
           }
         } yield (span, span2)
       }
-      spans <- sdk.finishedSpans
+      spans <- sdk.finishedSpanData
     } yield {
       val (span, span2) = result
       assertEquals(span.context.traceIdHex, span2.context.traceIdHex)
@@ -142,7 +137,7 @@ class TracerSuite extends CatsEffectSuite {
       sdk <- makeSdk()
       tracer <- sdk.provider.get("tracer")
       span <- tracer.span("span", attribute).use(IO.pure)
-      spans <- sdk.finishedSpans
+      spans <- sdk.finishedSpanData
     } yield {
       assertEquals(spans.map(_.getTraceId), List(span.context.traceIdHex))
       assertEquals(spans.map(_.getSpanId), List(span.context.spanIdHex))
@@ -177,7 +172,7 @@ class TracerSuite extends CatsEffectSuite {
         tracer <- sdk.provider.get("tracer")
         now <- IO.monotonic.delayBy(1.millis) // otherwise returns 0
         _ <- tracer.span("span").surround(IO.sleep(sleepDuration))
-        spans <- sdk.finishedSpans
+        spans <- sdk.finishedSpanData
       } yield {
         assertEquals(spans.map(_.getStartEpochNanos), List(now.toNanos))
         assertEquals(
@@ -194,7 +189,7 @@ class TracerSuite extends CatsEffectSuite {
       tracer <- sdk.provider.get("tracer")
       fiber <- tracer.span("span").surround(IO.canceled).start
       _ <- fiber.joinWith(IO.unit)
-      spans <- sdk.finishedSpans
+      spans <- sdk.finishedSpanData
     } yield {
       assertEquals(
         spans.map(_.getStatus),
@@ -223,7 +218,7 @@ class TracerSuite extends CatsEffectSuite {
         )
         tracer <- sdk.provider.get("tracer")
         _ <- tracer.span("span").surround(IO.raiseError(exception)).attempt
-        spans <- sdk.finishedSpans
+        spans <- sdk.finishedSpanData
       } yield {
         assertEquals(spans.map(_.getStatus), List(StatusData.error()))
         assertEquals(
@@ -237,8 +232,8 @@ class TracerSuite extends CatsEffectSuite {
   test("create root span explicitly") {
     def expected(now: FiniteDuration) =
       List(
-        SpanNode("span-2", now, now, Nil),
-        SpanNode("span-1", now, now, Nil)
+        new SpanNode("span-2", now, now, Nil, Nil),
+        new SpanNode("span-1", now, now, Nil, Nil)
       )
 
     TestControl.executeEmbed {
@@ -254,8 +249,7 @@ class TracerSuite extends CatsEffectSuite {
             } yield ()
           }
         }
-        spans <- sdk.finishedSpans
-        tree <- IO.pure(SpanNode.fromSpans(spans))
+        tree <- sdk.finishedSpanNodes
         //  _ <- IO.println(tree.map(SpanNode.render).mkString("\n"))
       } yield assertEquals(tree, expected(now))
     }
@@ -264,8 +258,8 @@ class TracerSuite extends CatsEffectSuite {
   test("create a new root scope") {
     def expected(now: FiniteDuration) =
       List(
-        SpanNode("span-2", now, now, Nil),
-        SpanNode("span-1", now, now, Nil)
+        new SpanNode("span-2", now, now, Nil, Nil),
+        new SpanNode("span-1", now, now, Nil, Nil)
       )
 
     TestControl.executeEmbed {
@@ -292,8 +286,7 @@ class TracerSuite extends CatsEffectSuite {
             }
           } yield ()
         }
-        spans <- sdk.finishedSpans
-        tree <- IO.pure(SpanNode.fromSpans(spans))
+        tree <- sdk.finishedSpanNodes
         //  _ <- IO.println(tree.map(SpanNode.render).mkString("\n"))
       } yield assertEquals(tree, expected(now))
     }
@@ -328,23 +321,26 @@ class TracerSuite extends CatsEffectSuite {
             }
           } yield ()
         }
-        spans <- sdk.finishedSpans
-        tree <- IO.pure(SpanNode.fromSpans(spans))
+        tree <- sdk.finishedSpanNodes
         // _ <- IO.println(tree.map(SpanNode.render).mkString("\n"))
-      } yield assertEquals(tree, List(SpanNode("span-1", now, now, Nil)))
+      } yield assertEquals(
+        tree,
+        List(new SpanNode("span-1", now, now, Nil, Nil))
+      )
     }
   }
 
   test("create a new scope with a custom parent") {
 
     def expected(now: FiniteDuration) =
-      SpanNode(
+      new SpanNode(
         "span",
         now,
         now,
+        Nil,
         List(
-          SpanNode("span-3", now, now, Nil),
-          SpanNode("span-2", now, now, Nil)
+          new SpanNode("span-3", now, now, Nil, Nil),
+          new SpanNode("span-2", now, now, Nil, Nil)
         )
       )
 
@@ -375,8 +371,7 @@ class TracerSuite extends CatsEffectSuite {
             }
           } yield ()
         }
-        spans <- sdk.finishedSpans
-        tree <- IO.pure(SpanNode.fromSpans(spans))
+        tree <- sdk.finishedSpanNodes
         // _ <- IO.println(tree.map(SpanNode.render).mkString("\n"))
       } yield assertEquals(tree, List(expected(now)))
     }
@@ -384,13 +379,14 @@ class TracerSuite extends CatsEffectSuite {
 
   test("create a span with a custom parent (via builder)") {
     def expected(now: FiniteDuration) =
-      SpanNode(
+      new SpanNode(
         "span",
         now,
         now,
+        Nil,
         List(
-          SpanNode("span-3", now, now, Nil),
-          SpanNode("span-2", now, now, Nil)
+          new SpanNode("span-3", now, now, Nil, Nil),
+          new SpanNode("span-2", now, now, Nil, Nil)
         )
       )
 
@@ -417,8 +413,7 @@ class TracerSuite extends CatsEffectSuite {
             }
           } yield ()
         }
-        spans <- sdk.finishedSpans
-        tree <- IO.pure(SpanNode.fromSpans(spans))
+        tree <- sdk.finishedSpanNodes
         // _ <- IO.println(tree.map(SpanNode.render).mkString("\n"))
       } yield assertEquals(tree, List(expected(now)))
     }
@@ -473,38 +468,43 @@ class TracerSuite extends CatsEffectSuite {
 
       val end = body3End + releaseDuration
 
-      SpanNode(
+      new SpanNode(
         "resource-span",
         start,
         end,
+        List(attribute),
         List(
-          SpanNode(
+          new SpanNode(
             "acquire",
             start,
             acquireEnd,
+            Nil,
             List(
-              SpanNode(
+              new SpanNode(
                 "acquire-inner",
                 start,
                 acquireEnd,
+                Nil,
                 Nil
               )
             )
           ),
-          SpanNode(
+          new SpanNode(
             "use",
             body1Start,
             body3End,
+            Nil,
             List(
-              SpanNode("body-1", body1Start, body1End, Nil),
-              SpanNode("body-2", body2Start, body2End, Nil),
-              SpanNode("body-3", body3Start, body3End, Nil)
+              new SpanNode("body-1", body1Start, body1End, Nil, Nil),
+              new SpanNode("body-2", body2Start, body2End, Nil, Nil),
+              new SpanNode("body-3", body3Start, body3End, Nil, Nil)
             )
           ),
-          SpanNode(
+          new SpanNode(
             "release",
             body3End,
             end,
+            Nil,
             Nil
           )
         )
@@ -528,8 +528,7 @@ class TracerSuite extends CatsEffectSuite {
               }
             }
           }
-        spans <- sdk.finishedSpans
-        tree <- IO.pure(SpanNode.fromSpans(spans))
+        tree <- sdk.finishedSpanNodes
         // _ <- IO.println(tree.map(SpanNode.render).mkString("\n"))
       } yield assertEquals(tree, List(expected(now)))
     }
@@ -548,29 +547,33 @@ class TracerSuite extends CatsEffectSuite {
       val (bodyStart, bodyEnd) = (acquireEnd, acquireEnd + bodyDuration)
       val end = bodyEnd + releaseDuration
 
-      SpanNode(
+      new SpanNode(
         "resource-span",
         start,
         end,
+        Nil,
         List(
-          SpanNode(
+          new SpanNode(
             "acquire",
             start,
             acquireEnd,
+            Nil,
             Nil
           ),
-          SpanNode(
+          new SpanNode(
             "use",
             bodyStart,
             bodyEnd,
+            Nil,
             List(
-              SpanNode("body", bodyStart, bodyEnd, Nil)
+              new SpanNode("body", bodyStart, bodyEnd, Nil, Nil)
             )
           ),
-          SpanNode(
+          new SpanNode(
             "release",
             bodyEnd,
             end,
+            Nil,
             Nil
           )
         )
@@ -590,8 +593,7 @@ class TracerSuite extends CatsEffectSuite {
               }
             }
           }
-        spans <- sdk.finishedSpans
-        tree <- IO.pure(SpanNode.fromSpans(spans))
+        tree <- sdk.finishedSpanNodes
       } yield assertEquals(tree, List(expected(now)))
     }
   }
@@ -607,27 +609,31 @@ class TracerSuite extends CatsEffectSuite {
       val acquireEnd = start + acquireDuration
       val end = acquireEnd + releaseDuration
 
-      SpanNode(
+      new SpanNode(
         "resource-span",
         start,
         end,
+        Nil,
         List(
-          SpanNode(
+          new SpanNode(
             "acquire",
             start,
             acquireEnd,
+            Nil,
             Nil
           ),
-          SpanNode(
+          new SpanNode(
             "use",
             acquireEnd,
             acquireEnd,
+            Nil,
             Nil
           ),
-          SpanNode(
+          new SpanNode(
             "release",
             acquireEnd,
             end,
+            Nil,
             Nil
           )
         )
@@ -643,17 +649,17 @@ class TracerSuite extends CatsEffectSuite {
           .use {
             _(tracer.span("use").use_)
           }
-        spans <- sdk.finishedSpans
-        tree <- IO.pure(SpanNode.fromSpans(spans))
+        tree <- sdk.finishedSpanNodes
       } yield assertEquals(tree, List(expected(now)))
     }
   }
 
   test("startUnmanaged: respect builder start time") {
-    val expected = SpanNode(
+    val expected = new SpanNode(
       name = "span",
       start = 100.millis,
       end = 200.millis,
+      attributes = Nil,
       children = Nil
     )
 
@@ -671,8 +677,7 @@ class TracerSuite extends CatsEffectSuite {
         _ <- IO.sleep(100.millis)
 
         _ <- span.end(200.millis)
-        spans <- sdk.finishedSpans
-        tree <- IO.pure(SpanNode.fromSpans(spans))
+        tree <- sdk.finishedSpanNodes
         // _ <- IO.println(tree.map(SpanNode.render).mkString("\n"))
       } yield assertEquals(tree, List(expected))
     }
@@ -682,10 +687,11 @@ class TracerSuite extends CatsEffectSuite {
     "startUnmanaged: use Clock[F].realTime to set start and end if builder's time is undefined"
   ) {
     def expected(now: FiniteDuration) =
-      SpanNode(
+      new SpanNode(
         name = "span",
         start = now,
         end = now.plus(100.millis),
+        attributes = Nil,
         children = Nil
       )
 
@@ -699,8 +705,7 @@ class TracerSuite extends CatsEffectSuite {
         _ <- IO.sleep(100.millis)
 
         _ <- span.end
-        spans <- sdk.finishedSpans
-        tree <- IO.pure(SpanNode.fromSpans(spans))
+        tree <- sdk.finishedSpanNodes
         // _ <- IO.println(tree.map(SpanNode.render).mkString("\n"))
       } yield assertEquals(tree, List(expected(now)))
     }
@@ -759,16 +764,18 @@ class TracerSuite extends CatsEffectSuite {
 
     // we must always start a root span
     def expected(now: FiniteDuration) = List(
-      SpanNode(
+      new SpanNode(
         name = "inner",
         start = now.plus(500.millis),
         end = now.plus(500.millis).plus(200.millis),
+        attributes = Nil,
         children = Nil
       ),
-      SpanNode(
+      new SpanNode(
         name = "local",
         start = now,
         end = now.plus(500.millis).plus(200.millis),
+        attributes = Nil,
         children = Nil
       )
     )
@@ -785,8 +792,7 @@ class TracerSuite extends CatsEffectSuite {
             }
             .delayBy(500.millis)
         }
-        spans <- sdk.finishedSpans
-        tree <- IO.pure(SpanNode.fromSpans(spans))
+        tree <- sdk.finishedSpanNodes
         // _ <- IO.println(tree.map(SpanNode.render).mkString("\n"))
       } yield assertEquals(tree, expected(now))
     }
@@ -795,13 +801,13 @@ class TracerSuite extends CatsEffectSuite {
   /*
   test("propagate trace info over stream scopes") {
     def expected(now: FiniteDuration) =
-      SpanNode(
+      new SpanNode(
         "span",
         now,
         now,
         List(
-          SpanNode("span-3", now, now, Nil),
-          SpanNode("span-2", now, now, Nil)
+          new SpanNode("span-3", now, now, Nil),
+          new SpanNode("span-2", now, now, Nil)
         )
       )
 
@@ -857,7 +863,7 @@ class TracerSuite extends CatsEffectSuite {
         .addAttributes(newAttribute)
         .build
         .use_
-      spans <- sdk.finishedSpans
+      spans <- sdk.finishedSpanData
     } yield {
       assertEquals(spans.map(_.getAttributes.size), List(2))
       assertEquals(
@@ -901,29 +907,19 @@ class TracerSuite extends CatsEffectSuite {
         identity,
       additionalPropagators: Seq[JTextMapPropagator] = Nil
   ): IO[TracerSuite.Sdk] = {
-    val exporter = InMemorySpanExporter.create()
-
-    val builder = SdkTracerProvider
-      .builder()
-      .addSpanProcessor(SimpleSpanProcessor.create(exporter))
-
-    val tracerProvider: SdkTracerProvider =
-      customize(builder).build()
+    val tracer = TracerSdk.inMemory[IO](customize, additionalPropagators)
+    val sdk = tracer.sdk
 
     IOLocal(Vault.empty).map { implicit ioLocal: IOLocal[Vault] =>
-      val textMapPropagators =
-        W3CTraceContextPropagator.getInstance() +: additionalPropagators
-
       val propagators = new ContextPropagatorsImpl[IO](
-        JContextPropagators.create(
-          JTextMapPropagator.composite(textMapPropagators.asJava)
-        ),
+        sdk.getPropagators,
         ContextConversions.toJContext,
         ContextConversions.fromJContext
       )
 
-      val provider = TracerProviderImpl.local[IO](tracerProvider, propagators)
-      new TracerSuite.Sdk(provider, exporter)
+      val provider =
+        TracerProviderImpl.local[IO](sdk.getTracerProvider, propagators)
+      new TracerSuite.Sdk(provider, tracer)
     }
   }
 
@@ -933,12 +929,13 @@ object TracerSuite {
 
   class Sdk(
       val provider: TracerProvider[IO],
-      exporter: InMemorySpanExporter
+      tracer: TracerSdk[IO]
   ) {
+    def finishedSpanData: IO[List[SpanData]] =
+      tracer.finishedSpanData
 
-    def finishedSpans: IO[List[SpanData]] =
-      IO.delay(exporter.getFinishedSpanItems.asScala.toList)
-
+    def finishedSpanNodes: IO[List[SpanNode]] =
+      tracer.finishedSpanNodes
   }
 
 }

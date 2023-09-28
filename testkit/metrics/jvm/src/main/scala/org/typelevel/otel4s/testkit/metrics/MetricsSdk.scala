@@ -18,11 +18,7 @@ package org.typelevel.otel4s
 package testkit
 package metrics
 
-import _root_.java.{lang => jl}
-import _root_.java.{util => ju}
 import cats.effect.kernel.Sync
-import io.opentelemetry.api.common.{AttributeType => JAttributeType}
-import io.opentelemetry.api.common.{Attributes => JAttributes}
 import io.opentelemetry.sdk.OpenTelemetrySdk
 import io.opentelemetry.sdk.metrics.SdkMeterProvider
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder
@@ -47,7 +43,7 @@ trait MetricsSdk[F[_]] {
 
 object MetricsSdk {
 
-  def create[F[_]: Sync](
+  def inMemory[F[_]: Sync](
       customize: SdkMeterProviderBuilder => SdkMeterProviderBuilder = identity
   ): MetricsSdk[F] = {
     val metricReader = InMemoryMetricReader.create()
@@ -63,6 +59,13 @@ object MetricsSdk {
       .setMeterProvider(meterProvider)
       .build()
 
+    fromSdk(openTelemetrySdk, metricReader)
+  }
+
+  private[testkit] def fromSdk[F[_]: Sync](
+      openTelemetrySdk: OpenTelemetrySdk,
+      metricReader: InMemoryMetricReader
+  ): MetricsSdk[F] =
     new MetricsSdk[F] {
       val sdk: OpenTelemetrySdk = openTelemetrySdk
 
@@ -71,7 +74,6 @@ object MetricsSdk {
           metricReader.collectAllMetrics().asScala.toList.map(makeMetric)
         }
     }
-  }
 
   private def makeMetric(md: JMetricData): Metric = {
 
@@ -96,7 +98,7 @@ object MetricsSdk {
       new PointData(
         point.getStartEpochNanos,
         point.getEpochNanos,
-        collectAttributes(point.getAttributes),
+        TestkitConversion.fromJAttributes(point.getAttributes),
         f(point)
       )
 
@@ -176,47 +178,10 @@ object MetricsSdk {
       ),
       resource = new InstrumentationResource(
         schemaUrl = Option(resource.getSchemaUrl),
-        attributes = collectAttributes(resource.getAttributes)
+        attributes = TestkitConversion.fromJAttributes(resource.getAttributes)
       ),
       data = data
     )
   }
-
-  private[testkit] def collectAttributes(
-      attributes: JAttributes
-  ): List[Attribute[_]] =
-    attributes.asMap().asScala.toList.collect {
-      case (attribute, value: String)
-          if attribute.getType == JAttributeType.STRING =>
-        Attribute(attribute.getKey, value)
-
-      case (attribute, value: jl.Boolean)
-          if attribute.getType == JAttributeType.BOOLEAN =>
-        Attribute(attribute.getKey, value.booleanValue())
-
-      case (attribute, value: jl.Long)
-          if attribute.getType == JAttributeType.LONG =>
-        Attribute(attribute.getKey, value.longValue())
-
-      case (attribute, value: jl.Double)
-          if attribute.getType == JAttributeType.DOUBLE =>
-        Attribute(attribute.getKey, value.doubleValue())
-
-      case (attribute, value: ju.List[String] @unchecked)
-          if attribute.getType == JAttributeType.STRING_ARRAY =>
-        Attribute(attribute.getKey, value.asScala.toList)
-
-      case (attribute, value: ju.List[jl.Boolean] @unchecked)
-          if attribute.getType == JAttributeType.BOOLEAN_ARRAY =>
-        Attribute(attribute.getKey, value.asScala.toList.map(_.booleanValue()))
-
-      case (attribute, value: ju.List[jl.Long] @unchecked)
-          if attribute.getType == JAttributeType.LONG_ARRAY =>
-        Attribute(attribute.getKey, value.asScala.toList.map(_.longValue()))
-
-      case (attribute, value: ju.List[jl.Double] @unchecked)
-          if attribute.getType == JAttributeType.DOUBLE_ARRAY =>
-        Attribute(attribute.getKey, value.asScala.toList.map(_.doubleValue()))
-    }
 
 }

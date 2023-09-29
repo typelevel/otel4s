@@ -61,6 +61,7 @@ lazy val root = tlCrossRootProject
     `core-trace`,
     core,
     `sdk-common`,
+    `sdk-trace`,
     `testkit-common`,
     `testkit-metrics`,
     testkit,
@@ -157,6 +158,20 @@ lazy val `sdk-common` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   )
   .settings(munitDependencies)
   .settings(scalafixSettings)
+
+lazy val `sdk-trace` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
+  .crossType(CrossType.Pure)
+  .in(file("sdk/trace"))
+  .dependsOn(`sdk-common`, `core-trace`)
+  .settings(
+    name := "otel4s-sdk-trace",
+    startYear := Some(2023),
+    libraryDependencies ++= Seq(
+      "org.typelevel" %%% "cats-effect" % CatsEffectVersion,
+      "org.typelevel" %%% "cats-effect-testkit" % CatsEffectVersion % Test
+    ),
+  )
+  .settings(munitDependencies)
 
 lazy val `testkit-common` = crossProject(JVMPlatform)
   .crossType(CrossType.Full)
@@ -353,6 +368,7 @@ lazy val unidocs = project
       `core-trace`.jvm,
       core.jvm,
       `sdk-common`.jvm,
+      `sdk-trace`.jvm,
       `testkit-common`.jvm,
       `testkit-metrics`.jvm,
       testkit.jvm,

@@ -43,10 +43,9 @@ trait SpanContext {
     */
   def spanIdHex: String
 
-  /** Returns the sampling strategy of this [[SpanContext]]. Indicates whether
-    * the span in this context is sampled.
-    */
-  def samplingDecision: SamplingDecision
+  def traceFlags: TraceFlags
+
+  def isSampled: Boolean = traceFlags.isSampled
 
   /** Returns `true` if this [[SpanContext]] is valid.
     */
@@ -81,12 +80,29 @@ object SpanContext {
       val traceId: ByteVector = ByteVector.fromValidHex(traceIdHex)
       val spanIdHex: String = SpanId.InvalidHex
       val spanId: ByteVector = ByteVector.fromValidHex(spanIdHex)
-      val samplingDecision: SamplingDecision = SamplingDecision.Drop
+      val traceFlags: TraceFlags = TraceFlags.fromByte(0)
       val isValid: Boolean = false
       val isRemote: Boolean = false
     }
 
   private val key = Key.newKey[SyncIO, SpanContext].unsafeRunSync()
+
+  def create(
+      traceId_ : ByteVector,
+      spanId_ : ByteVector,
+      traceFlags_ : TraceFlags,
+      remote: Boolean
+  ): SpanContext = {
+    new SpanContext {
+      def traceId: ByteVector = traceId_
+      def traceIdHex: String = traceId.toHex
+      def spanId: ByteVector = spanId_
+      def spanIdHex: String = spanId.toHex
+      def traceFlags: TraceFlags = traceFlags_
+      def isValid: Boolean = true // todo calculate
+      def isRemote: Boolean = remote
+    }
+  }
 
   def fromContext(context: Vault): Option[SpanContext] =
     context.lookup(key)

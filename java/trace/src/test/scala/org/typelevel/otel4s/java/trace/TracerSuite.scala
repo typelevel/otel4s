@@ -1083,35 +1083,6 @@ class TracerSuite extends CatsEffectSuite {
     }
   }
 
-  /*
-  test("nested SpanOps#surround for Tracer[Nested[IO, List, *]]") {
-    TestControl.executeEmbed {
-      for {
-        now <- IO.monotonic.delayBy(1.second) // otherwise returns 0
-        sdk <- makeSdk()
-        tracerIO <- sdk.provider.get("tracer")
-        tracer = tracerIO.mapK[Nested[IO, List, *]]
-        _ <- tracer
-          .span("outer")
-          .surround {
-            for {
-              _ <- IO.sleep(NestedSurround.preBodyDuration).map(List(_)).nested
-              _ <- tracer
-                .span("body-1")
-                .surround(IO.sleep(NestedSurround.body1Duration).map(List(_)).nested)
-              _ <- tracer
-                .span("body-2")
-                .surround(IO.sleep(NestedSurround.body2Duration).map(List(_)).nested)
-            } yield ()
-          }
-          .value
-        spans <- sdk.finishedSpans
-        tree <- IO.pure(SpanNode.fromSpans(spans))
-      } yield assertEquals(tree, List(NestedSurround.expected(now)))
-    }
-  }
-   */
-
   private def assertIdsNotEqual(s1: Span[IO], s2: Span[IO]): Unit = {
     assertNotEquals(s1.context.traceIdHex, s2.context.traceIdHex)
     assertNotEquals(s1.context.spanIdHex, s2.context.spanIdHex)

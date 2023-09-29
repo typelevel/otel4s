@@ -16,19 +16,15 @@
 
 package org.typelevel.otel4s
 
-import cats.Applicative
 import cats.Functor
 import cats.Monad
 import cats.data.EitherT
 import cats.data.IorT
 import cats.data.Kleisli
-import cats.data.Nested
 import cats.data.OptionT
 import cats.data.StateT
 import cats.effect.MonadCancelThrow
 import cats.effect.Resource
-import cats.implicits.toFunctorOps
-import cats.syntax.all._
 import cats.~>
 
 /** A utility for transforming the higher-kinded type `F` to another
@@ -106,18 +102,6 @@ object KindTransformer {
     new KindTransformer[F, Resource[F, *]] {
       val liftK: F ~> Resource[F, *] = Resource.liftK
       def limitedMapK[A](ga: Resource[F, A])(f: F ~> F): Resource[F, A] =
-        ga.mapK(f)
-    }
-
-  implicit def nested[F[_]: Functor, G[_]: Applicative]
-      : KindTransformer[F, Nested[F, G, *]] =
-    new KindTransformer[F, Nested[F, G, *]] {
-      val liftK: F ~> Nested[F, G, *] =
-        new (F ~> Nested[F, G, *]) {
-          def apply[A](fa: F[A]): Nested[F, G, A] =
-            fa.map(_.pure[G]).nested
-        }
-      def limitedMapK[A](ga: Nested[F, G, A])(f: F ~> F): Nested[F, G, A] =
         ga.mapK(f)
     }
 }

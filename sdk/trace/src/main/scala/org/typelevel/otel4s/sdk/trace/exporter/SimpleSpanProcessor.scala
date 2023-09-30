@@ -16,7 +16,7 @@
 
 package org.typelevel.otel4s.sdk
 package trace
-package exporters
+package exporter
 
 import cats.Applicative
 import cats.Monad

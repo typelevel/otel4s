@@ -63,7 +63,10 @@ object EventData {
       val builder = List.newBuilder[Attribute[_]]
 
       builder.addOne(
-        Attribute(Keys.ExceptionType, Option(exception.getClass.getCanonicalName).getOrElse(""))
+        Attribute(
+          Keys.ExceptionType,
+          Option(exception.getClass.getCanonicalName).getOrElse("")
+        )
       )
 
       val message = exception.getMessage

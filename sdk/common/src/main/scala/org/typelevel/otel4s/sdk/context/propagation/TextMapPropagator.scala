@@ -30,7 +30,6 @@ package propagation
   * the process is often implemented using library-specific request
   * interceptors. On the client side, values are injected into the carriers,
   * while on the server side, values are extracted from them.
-  *
   */
 trait TextMapPropagator {
 

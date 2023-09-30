@@ -40,8 +40,8 @@ import org.typelevel.otel4s.sdk.context.propagation.TextMapPropagator
 import org.typelevel.otel4s.sdk.trace.data.EventData
 import org.typelevel.otel4s.sdk.trace.data.SpanData
 import org.typelevel.otel4s.sdk.trace.data.StatusData
-import org.typelevel.otel4s.sdk.trace.exporters.InMemorySpanExporter
-import org.typelevel.otel4s.sdk.trace.exporters.SimpleSpanProcessor
+import org.typelevel.otel4s.sdk.trace.exporter.InMemorySpanExporter
+import org.typelevel.otel4s.sdk.trace.exporter.SimpleSpanProcessor
 import org.typelevel.otel4s.sdk.trace.propagation.W3CTraceContextPropagator
 import org.typelevel.otel4s.sdk.trace.samplers.Sampler
 import org.typelevel.otel4s.trace.Span

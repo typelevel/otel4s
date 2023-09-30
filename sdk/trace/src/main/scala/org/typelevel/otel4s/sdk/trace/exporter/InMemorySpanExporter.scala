@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.typelevel.otel4s.sdk.trace.exporters
+package org.typelevel.otel4s.sdk.trace.exporter
 
 import cats.data.Chain
 import cats.effect.Concurrent

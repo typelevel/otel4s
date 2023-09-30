@@ -143,7 +143,8 @@ final class SdkSpanBackend[F[_]: Monad: Clock](
     } yield new SpanData {
       def name: String = immutableState.name
       def resource: Resource = immutableState.resource
-      def instrumentationScopeInfo: InstrumentationScopeInfo = immutableState.scopeInfo
+      def instrumentationScopeInfo: InstrumentationScopeInfo =
+        immutableState.scopeInfo
       def kind: SpanKind = immutableState.kind
       def spanContext: SpanContext = immutableState.context
       def parentSpanContext: Option[SpanContext] = immutableState.parentContext

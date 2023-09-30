@@ -18,13 +18,13 @@ package org.typelevel.otel4s.sdk.trace.data
 
 import org.typelevel.otel4s.trace.Status
 
-sealed abstract class StatusData(val status: Status, val description: String)
+final case class StatusData(status: Status, description: String)
 
 object StatusData {
 
-  case object Ok extends StatusData(Status.Ok, "")
-  case object Unset extends StatusData(Status.Unset, "")
-  case object Error extends StatusData(Status.Error, "")
+  val Ok = StatusData(Status.Ok, "")
+  val Unset = StatusData(Status.Unset, "")
+  val Error = StatusData(Status.Error, "")
 
   def create(status: Status): StatusData =
     status match {
@@ -35,6 +35,6 @@ object StatusData {
 
   def create(status: Status, description: String): StatusData =
     if (description.isEmpty) create(status)
-    else new StatusData(status, description) {}
+    else StatusData(status, description)
 
 }

@@ -18,6 +18,8 @@ package org.typelevel.otel4s.sdk
 package trace
 package exporters
 
+import java.util.concurrent.ConcurrentMap
+
 import cats.Applicative
 import cats.Monad
 import cats.effect.Concurrent
@@ -25,10 +27,11 @@ import cats.effect.Resource
 import cats.effect.std.Supervisor
 import cats.syntax.flatMap._
 import cats.syntax.functor._
+import fs2.concurrent.Channel
 import org.typelevel.otel4s.trace.SpanContext
 
 final class SimpleSpanProcessor[F[_]: Monad] private (
-    supervisor: Supervisor[F],
+    supervisor: Channel[F, F[Unit]],
     exporter: SpanExporter[F],
     sampled: Boolean
 ) extends SpanProcessor[F] {
@@ -52,7 +55,7 @@ final class SimpleSpanProcessor[F[_]: Monad] private (
           _ <- exporter.exportSpans(List(data))
         } yield ()
 
-      supervisor.supervise(exportSpans).void
+      supervisor.send(exportSpans).void
     }
   }
 
@@ -63,6 +66,8 @@ final class SimpleSpanProcessor[F[_]: Monad] private (
 }
 
 object SimpleSpanProcessor {
+
+  import cats.effect.syntax.all._
 
   def create[F[_]: Concurrent](
       exporter: SpanExporter[F]
@@ -75,7 +80,14 @@ object SimpleSpanProcessor {
   ): Resource[F, SimpleSpanProcessor[F]] = {
     for {
       supervisor <- Supervisor[F](await = true)
-    } yield new SimpleSpanProcessor[F](supervisor, exporter, sampled)
+      channel <- Resource.eval(fs2.concurrent.Channel.bounded[F, F[Unit]](100))
+      _ <- Resource.eval(
+        supervisor.supervise(channel.stream.evalMap(identity).compile.drain)
+      )
+      _ <- Resource.make(Concurrent[F].unit)(_ =>
+        channel.closeWithElement(Concurrent[F].unit).void
+      )
+    } yield new SimpleSpanProcessor[F](channel, exporter, sampled)
   }
 
 }

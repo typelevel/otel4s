@@ -59,6 +59,13 @@ final class Attributes private (
   def toMap: Map[AttributeKey[_], Attribute[_]] = m
   def toList: List[Attribute[_]] = m.values.toList
 
+  override def hashCode(): Int = m.hashCode()
+  override def equals(obj: Any): Boolean =
+    obj match {
+      case a: Attributes => m.equals(a.m)
+      case _             => false
+    }
+  override def toString: String = m.toString
 }
 
 object Attributes {

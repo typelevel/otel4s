@@ -168,6 +168,7 @@ lazy val `sdk-trace` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
     startYear := Some(2023),
     libraryDependencies ++= Seq(
       "org.typelevel" %%% "cats-effect" % CatsEffectVersion,
+      "co.fs2" %%% "fs2-core" % FS2Version,
       "org.typelevel" %%% "cats-effect-testkit" % CatsEffectVersion % Test
     ),
   )

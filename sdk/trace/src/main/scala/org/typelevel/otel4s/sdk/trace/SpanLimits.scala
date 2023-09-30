@@ -26,12 +26,23 @@ sealed trait SpanLimits {
 }
 
 object SpanLimits {
-  def default = new SpanLimits {
-    def maxNumberOfAttributes: Int = -1
-    def maxNumberOfEvents: Int = -1
-    def maxNumberOfLinks: Int = -1
-    def maxNumberOfAttributesPerEvent: Int = -1
-    def maxNumberOfAttributesPerLink: Int = -1
-    def maxAttributeValueLength: Int = -1
-  }
+
+  private final case class SpanLimitsImpl(
+      maxNumberOfAttributes: Int,
+      maxNumberOfEvents: Int,
+      maxNumberOfLinks: Int,
+      maxNumberOfAttributesPerEvent: Int,
+      maxNumberOfAttributesPerLink: Int,
+      maxAttributeValueLength: Int,
+  ) extends SpanLimits
+
+  val Default: SpanLimits = SpanLimitsImpl(
+    maxNumberOfAttributes = 100,
+    maxNumberOfEvents = 100,
+    maxNumberOfLinks = 100,
+    maxNumberOfAttributesPerEvent = 100,
+    maxNumberOfAttributesPerLink = 100,
+    maxAttributeValueLength = 100
+  )
+
 }

@@ -146,7 +146,7 @@ final class SdkSpanBackend[F[_]: Monad: Clock](
       def instrumentationScopeInfo: InstrumentationScopeInfo = immutableState.scopeInfo
       def kind: SpanKind = immutableState.kind
       def spanContext: SpanContext = immutableState.context
-      // def parentSpanContext: SpanContext = immutableState.parentContext
+      def parentSpanContext: Option[SpanContext] = immutableState.parentContext
       def startEpochNanos: Long = immutableState.startEpochNanos
       def links: List[LinkData] = immutableState.links
       def totalRecordedLinks: Int = immutableState.totalRecordedLinks

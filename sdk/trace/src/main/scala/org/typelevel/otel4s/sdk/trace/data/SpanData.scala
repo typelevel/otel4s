@@ -26,7 +26,7 @@ trait SpanData {
   def name: String
   def kind: SpanKind
   def spanContext: SpanContext
-  // def parentSpanContext: SpanContext
+  def parentSpanContext: Option[SpanContext]
   def status: StatusData
   def startEpochNanos: Long
   def attributes: Attributes

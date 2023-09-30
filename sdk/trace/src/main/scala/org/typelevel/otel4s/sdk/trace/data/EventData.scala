@@ -63,7 +63,7 @@ object EventData {
       val builder = List.newBuilder[Attribute[_]]
 
       builder.addOne(
-        Attribute(Keys.ExceptionType, exception.getClass.getCanonicalName)
+        Attribute(Keys.ExceptionType, Option(exception.getClass.getCanonicalName).getOrElse(""))
       )
 
       val message = exception.getMessage
@@ -89,6 +89,7 @@ object EventData {
              spanLimits.getMaxAttributeValueLength());
        */
 
+      println("calc attributes: ")
       Attributes(builder.result(): _*)
     }
 

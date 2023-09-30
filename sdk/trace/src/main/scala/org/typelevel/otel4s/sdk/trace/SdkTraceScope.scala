@@ -81,7 +81,7 @@ private[trace] object SdkTraceScope {
       ): SpanContext =
         current match {
           case Some(value) if value.isValid => next
-          case Some(value)                  => SpanContext.invalid
+          case Some(_)                      => SpanContext.invalid
           case None                         => next
         }
     }

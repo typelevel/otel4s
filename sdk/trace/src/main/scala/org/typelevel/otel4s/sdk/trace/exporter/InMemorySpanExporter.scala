@@ -22,6 +22,7 @@ import cats.effect.Ref
 import cats.syntax.functor._
 import org.typelevel.otel4s.sdk.trace.data.SpanData
 
+// todo: should be in the testkit package
 final class InMemorySpanExporter[F[_]] private (
     storage: Ref[F, Chain[SpanData]]
 ) extends SpanExporter[F] {

@@ -19,6 +19,7 @@ package trace
 
 import cats.effect.Clock
 import cats.effect.Concurrent
+import org.typelevel.otel4s.sdk.context.propagation.ContextPropagators
 import org.typelevel.otel4s.sdk.internal.ComponentRegistry
 import org.typelevel.otel4s.sdk.trace.samplers.Sampler
 import org.typelevel.otel4s.trace.TracerBuilder
@@ -29,6 +30,7 @@ class SdkTracerProvider[F[_]: Concurrent: Clock](
     resource: Resource,
     spanLimits: SpanLimits,
     sampler: Sampler,
+    propagators: ContextPropagators,
     spanProcessors: List[SpanProcessor[F]],
     scope: SdkTraceScope[F]
 ) extends TracerProvider[F] {
@@ -44,7 +46,9 @@ class SdkTracerProvider[F[_]: Concurrent: Clock](
 
   private val registry: ComponentRegistry[F, SdkTracer[F]] =
     new ComponentRegistry[F, SdkTracer[F]](scopeInfo =>
-      Concurrent[F].pure(new SdkTracer[F](sharedState, scopeInfo, scope))
+      Concurrent[F].pure(
+        new SdkTracer[F](sharedState, scopeInfo, propagators, scope)
+      )
     )
 
   def tracer(name: String): TracerBuilder[F] =

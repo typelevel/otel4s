@@ -18,8 +18,6 @@ package org.typelevel.otel4s.sdk
 package trace
 package exporters
 
-import java.util.concurrent.ConcurrentMap
-
 import cats.Applicative
 import cats.Monad
 import cats.effect.Concurrent
@@ -29,6 +27,8 @@ import cats.syntax.flatMap._
 import cats.syntax.functor._
 import fs2.concurrent.Channel
 import org.typelevel.otel4s.trace.SpanContext
+
+import java.util.concurrent.ConcurrentMap
 
 final class SimpleSpanProcessor[F[_]: Monad] private (
     supervisor: Channel[F, F[Unit]],

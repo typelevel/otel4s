@@ -24,6 +24,8 @@ import cats.syntax.functor._
 import org.typelevel.otel4s.TextMapGetter
 import org.typelevel.otel4s.TextMapUpdater
 import org.typelevel.otel4s.sdk.common.InstrumentationScopeInfo
+import org.typelevel.otel4s.sdk.context.Context
+import org.typelevel.otel4s.sdk.context.propagation.ContextPropagators
 import org.typelevel.otel4s.trace.SpanBuilder
 import org.typelevel.otel4s.trace.SpanContext
 import org.typelevel.otel4s.trace.Tracer
@@ -31,6 +33,7 @@ import org.typelevel.otel4s.trace.Tracer
 private[trace] class SdkTracer[F[_]: Concurrent: Clock](
     sharedState: TracerSharedState[F],
     scopeInfo: InstrumentationScopeInfo,
+    propagators: ContextPropagators,
     scope: SdkTraceScope[F]
 ) extends Tracer[F] {
 
@@ -51,10 +54,19 @@ private[trace] class SdkTracer[F[_]: Concurrent: Clock](
   def noopScope[A](fa: F[A]): F[A] =
     scope.noopScope(fa)
 
-  def joinOrRoot[A, C: TextMapGetter](carrier: C)(fa: F[A]): F[A] =
-    ???
+  def joinOrRoot[A, C: TextMapGetter](carrier: C)(fa: F[A]): F[A] = {
+    val context = propagators.textMapPropagator.extract(Context.root, carrier)
+
+    val f = SdkTraceScope.fromContext(context) match {
+      case Some(parent) => childScope(parent)(fa)
+      case None         => fa
+    }
+
+    // use external context to bring extracted headers
+    scope.withExplicitContext(context)(f)
+  }
 
   def propagate[C: TextMapUpdater](carrier: C): F[C] =
-    ???
+    scope.reader(ctx => propagators.textMapPropagator.injected(ctx, carrier))
 
 }

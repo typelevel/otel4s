@@ -28,6 +28,8 @@ private[trace] trait SdkTraceScope[F[_]] {
   def makeScope(span: SpanContext): F[F ~> F]
   def rootScope: F ~> F
   def noopScope: F ~> F
+  def withExplicitContext(context: Context): F ~> F
+  def reader[A](f: Context => A): F[A]
 }
 
 private[trace] object SdkTraceScope {
@@ -36,8 +38,8 @@ private[trace] object SdkTraceScope {
       .unique[SyncIO, SpanContext]("otel4s-trace-span-context-key")
       .unsafeRunSync()
 
-  def fromContext(context: Context): SpanContext =
-    context.get(SpanContextKey).getOrElse(SpanContext.invalid)
+  def fromContext(context: Context): Option[SpanContext] =
+    context.get(SpanContextKey)
 
   def storeInContext(
       context: Context,
@@ -47,9 +49,6 @@ private[trace] object SdkTraceScope {
 
   def fromLocal[F[_]](implicit L: Local[F, Context]): SdkTraceScope[F] = {
     new SdkTraceScope[F] {
-      /*val root: F[SdkScope.Root] =
-        L.applicative.pure(scopeRoot)*/
-
       def current: F[Option[SpanContext]] =
         L.applicative.map(L.ask[Context])(context =>
           context.get(SpanContextKey)
@@ -68,6 +67,15 @@ private[trace] object SdkTraceScope {
 
       def noopScope: F ~> F =
         createScope(SpanContext.invalid)
+
+      def withExplicitContext(context: Context): F ~> F =
+        new (F ~> F) {
+          def apply[A](fa: F[A]): F[A] =
+            L.scope(fa)(context)
+        }
+
+      def reader[A](f: Context => A): F[A] =
+        L.reader(f)
 
       private def createScope(spanContext: SpanContext): F ~> F =
         new (F ~> F) {

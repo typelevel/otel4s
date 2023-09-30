@@ -16,19 +16,26 @@
 
 package org.typelevel.otel4s.trace
 
+import scodec.bits.ByteVector
+
 sealed trait TraceFlags {
   def toByte: Byte
+  def toHex: String
   def isSampled: Boolean
 }
 
 object TraceFlags {
   private[trace] final val SampledMask = 1
 
+  val HexLength = 2
+
   val Default = fromByte(0x00)
   val Sampled = fromByte(0x01)
 
   private final case class TraceFlagsImpl(byte: Byte) extends TraceFlags {
     def toByte: Byte = byte
+
+    def toHex: String = ByteVector.fromByte(byte).toHex // todo: incorrect
 
     /** If set, the least significant bit denotes the caller may have recorded
       * trace data.

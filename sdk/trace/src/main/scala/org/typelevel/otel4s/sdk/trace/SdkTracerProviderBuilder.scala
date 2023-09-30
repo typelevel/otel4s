@@ -19,6 +19,8 @@ package trace
 
 import cats.effect.Clock
 import cats.effect.Concurrent
+import org.typelevel.otel4s.sdk.context.propagation.ContextPropagators
+import org.typelevel.otel4s.sdk.context.propagation.TextMapPropagator
 import org.typelevel.otel4s.sdk.trace.samplers.Sampler
 
 final case class SdkTracerProviderBuilder[F[_]: Concurrent: Clock](
@@ -26,8 +28,9 @@ final case class SdkTracerProviderBuilder[F[_]: Concurrent: Clock](
     resource: Resource,
     spanLimits: SpanLimits,
     sampler: Sampler,
+    propagators: List[TextMapPropagator],
     spanProcessors: List[SpanProcessor[F]],
-    scope: SdkTraceScope[F]
+    scope: SdkTraceScope[F],
 ) {
 
   // def setClock(): SdkTracerProviderBuilder[F] = copy()
@@ -47,6 +50,11 @@ final case class SdkTracerProviderBuilder[F[_]: Concurrent: Clock](
   def setSampler(sampler: Sampler): SdkTracerProviderBuilder[F] =
     copy(sampler = sampler)
 
+  def addTextMapPropagator(
+      propagator: TextMapPropagator
+  ): SdkTracerProviderBuilder[F] =
+    copy(propagators = this.propagators :+ propagator)
+
   def addSpanProcessor(
       processor: SpanProcessor[F]
   ): SdkTracerProviderBuilder[F] =
@@ -58,6 +66,7 @@ final case class SdkTracerProviderBuilder[F[_]: Concurrent: Clock](
       resource,
       spanLimits,
       sampler,
+      ContextPropagators.create(TextMapPropagator.composite(propagators)),
       spanProcessors,
       scope
     )

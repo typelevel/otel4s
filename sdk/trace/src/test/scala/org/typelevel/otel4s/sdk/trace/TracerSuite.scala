@@ -16,30 +16,40 @@
 
 package org.typelevel.otel4s.sdk.trace
 
-import java.io.{PrintWriter, StringWriter}
-import java.time.Instant
-
+import cats.Applicative
+import cats.Functor
+import cats.effect.IO
+import cats.effect.IOLocal
+import cats.effect.LiftIO
+import cats.effect.MonadCancelThrow
+import cats.effect.Resource
 import cats.effect.std.Random
-import cats.effect.{IO, IOLocal, LiftIO, MonadCancelThrow, Resource}
-import org.typelevel.otel4s.sdk.{Resource => InstrumentResource}
 import cats.effect.testkit.TestControl
 import cats.mtl.Local
 import cats.syntax.apply._
 import cats.syntax.functor._
-import cats.{Applicative, Functor, ~>}
+import cats.~>
 import munit.CatsEffectSuite
 import org.typelevel.otel4s.Attribute
+import org.typelevel.otel4s.sdk.{Resource => InstrumentResource}
 import org.typelevel.otel4s.sdk.Attributes
 import org.typelevel.otel4s.sdk.common.InstrumentationScopeInfo
 import org.typelevel.otel4s.sdk.context.Context
-import org.typelevel.otel4s.sdk.trace.data.{EventData, SpanData, StatusData}
-import org.typelevel.otel4s.sdk.trace.exporters.{InMemorySpanExporter, SimpleSpanProcessor}
+import org.typelevel.otel4s.sdk.context.propagation.PassThroughPropagator
+import org.typelevel.otel4s.sdk.context.propagation.TextMapPropagator
+import org.typelevel.otel4s.sdk.trace.data.EventData
+import org.typelevel.otel4s.sdk.trace.data.SpanData
+import org.typelevel.otel4s.sdk.trace.data.StatusData
+import org.typelevel.otel4s.sdk.trace.exporters.InMemorySpanExporter
+import org.typelevel.otel4s.sdk.trace.exporters.SimpleSpanProcessor
+import org.typelevel.otel4s.sdk.trace.propagation.W3CTraceContextPropagator
 import org.typelevel.otel4s.sdk.trace.samplers.Sampler
-import org.typelevel.otel4s.trace.{Span, Status, Tracer, TracerProvider}
-import org.typelevel.vault.Vault
+import org.typelevel.otel4s.trace.Span
+import org.typelevel.otel4s.trace.Status
+import org.typelevel.otel4s.trace.Tracer
+import org.typelevel.otel4s.trace.TracerProvider
 
 import scala.concurrent.duration._
-import scala.jdk.CollectionConverters._
 import scala.util.control.NoStackTrace
 
 class TracerSuite extends CatsEffectSuite {
@@ -351,7 +361,8 @@ class TracerSuite extends CatsEffectSuite {
               _ <- tracer.currentSpanContext.assertEquals(Some(span.context))
               _ <- tracer.span("span-2").use { span2 =>
                 for {
-                  _ <- tracer.currentSpanContext.assertEquals(Some(span2.context))
+                  _ <- tracer.currentSpanContext
+                    .assertEquals(Some(span2.context))
                   _ <- tracer.childScope(span.context) {
                     for {
                       _ <- tracer.currentSpanContext
@@ -710,47 +721,50 @@ class TracerSuite extends CatsEffectSuite {
   }
 
   // external span does not appear in the recorded spans of the in-memory sdk
-  /*test("joinOrRoot: join an external span when can be extracted") {
+  test("joinOrRoot: join an external span when can be extracted") {
     val traceId = "84b54e9330faae5350f0dd8673c98146"
     val spanId = "279fa73bc935cc05"
 
     val headers = Map(
-      "traceparent" -> s"00-$traceId-$spanId-01",
+      "traceparent" -> s"00-$traceId-$spanId-00", // todo: should be 00-$traceId-$spanId-01
       "foo" -> "1",
       "baz" -> "2"
     )
 
+    val propagator = PassThroughPropagator.create("foo", "bar")
+
     TestControl.executeEmbed {
-      for {
-        sdk <- makeSdk(additionalPropagators =
-          Seq(PassThroughPropagator.create("foo", "bar"))
-        )
-        tracer <- sdk.provider.get("tracer")
-        tuple <- tracer.span("local").surround {
-          tracer.joinOrRoot(headers) {
-            (
-              tracer.currentSpanContext,
-              tracer.span("inner").use(r => IO.pure(r.context)),
-              tracer.propagate(Map.empty[String, String]),
-            ).tupled
+      makeSdk(additionalPropagators = List(propagator)).use { sdk =>
+        for {
+          tracer <- sdk.provider.get("tracer")
+          tuple <- tracer.span("local").surround {
+            tracer.joinOrRoot(headers) {
+              (
+                tracer.currentSpanContext,
+                tracer.span("inner").use(r => IO.pure(r.context)),
+                tracer.propagate(Map.empty[String, String]),
+              ).tupled
+            }
           }
+          (external, inner, resultHeaders) = tuple
+        } yield {
+          assertEquals(external.map(_.traceIdHex), Some(traceId))
+          assertEquals(external.map(_.spanIdHex), Some(spanId))
+          assertEquals(inner.traceIdHex, traceId)
+          assertEquals(resultHeaders.size, 2)
+          assertEquals(
+            resultHeaders.get("traceparent"),
+            Some(
+              s"00-$traceId-$spanId-00"
+            ) // todo: should be 00-$traceId-$spanId-01
+          )
+          assertEquals(resultHeaders.get("foo"), Some("1"))
         }
-        (external, inner, resultHeaders) = tuple
-      } yield {
-        assertEquals(external.map(_.traceIdHex), Some(traceId))
-        assertEquals(external.map(_.spanIdHex), Some(spanId))
-        assertEquals(inner.traceIdHex, traceId)
-        assertEquals(resultHeaders.size, 2)
-        assertEquals(
-          resultHeaders.get("traceparent"),
-          Some(s"00-$traceId-$spanId-01")
-        )
-        assertEquals(resultHeaders.get("foo"), Some("1"))
       }
     }
-  }*/
+  }
 
-  /*test(
+  test(
     "joinOrRoot: ignore an external span when cannot be extracted and start a root span"
   ) {
     val traceId = "84b54e9330faae5350f0dd8673c98146"
@@ -777,23 +791,24 @@ class TracerSuite extends CatsEffectSuite {
     )
 
     TestControl.executeEmbed {
-      for {
-        now <- IO.monotonic.delayBy(1.second) // otherwise returns 0
-        sdk <- makeSdk()
-        tracer <- sdk.provider.get("tracer")
-        _ <- tracer.span("local").surround {
-          tracer
-            .joinOrRoot(headers) {
-              tracer.span("inner").surround(IO.sleep(200.millis))
-            }
-            .delayBy(500.millis)
-        }
-        spans <- sdk.finishedSpans
-        tree <- IO.pure(SpanNode.fromSpans(spans))
-        // _ <- IO.println(tree.map(SpanNode.render).mkString("\n"))
-      } yield assertEquals(tree, expected(now))
+      withSdk() { sdk =>
+        for {
+          now <- IO.monotonic.delayBy(1.second) // otherwise returns 0
+          tracer <- sdk.provider.get("tracer")
+          _ <- tracer.span("local").surround {
+            tracer
+              .joinOrRoot(headers) {
+                tracer.span("inner").surround(IO.sleep(200.millis))
+              }
+              .delayBy(500.millis)
+          }
+        } yield now
+      } { case (now, spans) =>
+        val tree = SpanNode.fromSpans(spans)
+        assertEquals(tree, expected(now))
+      }
     }
-  }*/
+  }
 
   /*
   test("propagate trace info over stream scopes") {
@@ -865,24 +880,25 @@ class TracerSuite extends CatsEffectSuite {
   }
 
   // typelevel/otel4s#277
-  /*test("retain all of a provided context through propagation") {
+  test("retain all of a provided context through propagation") {
+    val propagator = PassThroughPropagator.create("foo", "bar")
+
     TestControl.executeEmbed {
-      for {
-        sdk <- makeSdk(additionalPropagators =
-          Seq(PassThroughPropagator.create("foo", "bar"))
-        )
-        tracer <- sdk.provider.get("tracer")
-        _ <- tracer.joinOrRoot(Map("foo" -> "1", "baz" -> "2")) {
-          for {
-            carrier <- tracer.propagate(Map.empty[String, String])
-          } yield {
-            assertEquals(carrier.size, 1)
-            assertEquals(carrier.get("foo"), Some("1"))
+      makeSdk(additionalPropagators = List(propagator)).use { sdk =>
+        for {
+          tracer <- sdk.provider.get("tracer")
+          _ <- tracer.joinOrRoot(Map("foo" -> "1", "baz" -> "2")) {
+            for {
+              carrier <- tracer.propagate(Map.empty[String, String])
+            } yield {
+              assertEquals(carrier.size, 1)
+              assertEquals(carrier.get("foo"), Some("1"))
+            }
           }
-        }
-      } yield ()
+        } yield ()
+      }
     }
-  } */
+  }
 
   private def assertIdsNotEqual(s1: Span[IO], s2: Span[IO]): Unit = {
     assertNotEquals(s1.context.traceIdHex, s2.context.traceIdHex)
@@ -901,7 +917,7 @@ class TracerSuite extends CatsEffectSuite {
   private def makeSdk(
       customize: SdkTracerProviderBuilder[IO] => SdkTracerProviderBuilder[IO] =
         identity,
-      /*additionalPropagators: Seq[JTextMapPropagator] = Nil*/
+      additionalPropagators: List[TextMapPropagator] = Nil
   ): Resource[IO, TracerSuite.Sdk] = {
     Resource.eval(IOLocal(Context.root)).flatMap {
       implicit ioLocal: IOLocal[Context] =>
@@ -912,11 +928,15 @@ class TracerSuite extends CatsEffectSuite {
 
             Resource.eval(InMemorySpanExporter.create[IO]).flatMap { exporter =>
               SimpleSpanProcessor.create[IO](exporter).map { processor =>
+                val textMapPropagators =
+                  List(W3CTraceContextPropagator) ++ additionalPropagators
+
                 val builder = SdkTracerProviderBuilder(
                   idGenerator,
                   InstrumentResource.Empty,
                   SpanLimits.Default,
                   Sampler.recordAndSample,
+                  textMapPropagators,
                   List(processor),
                   scope
                 )

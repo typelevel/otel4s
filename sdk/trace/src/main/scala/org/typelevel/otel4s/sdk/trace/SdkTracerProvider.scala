@@ -17,9 +17,9 @@
 package org.typelevel.otel4s.sdk
 package trace
 
+import cats.effect.Async
 import cats.effect.Clock
 import cats.effect.Concurrent
-import cats.effect.Async
 import org.typelevel.otel4s.sdk.context.LocalContext
 import org.typelevel.otel4s.sdk.context.propagation.ContextPropagators
 import org.typelevel.otel4s.sdk.internal.ComponentRegistry

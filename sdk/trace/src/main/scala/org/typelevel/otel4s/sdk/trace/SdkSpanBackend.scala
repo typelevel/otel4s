@@ -153,10 +153,11 @@ final class SdkSpanBackend[F[_]: Monad: Clock](
       hasEnded = state.hasEnded,
       totalRecordedEvents = state.totalRecordedEvents,
       totalRecordedLinks = immutableState.totalRecordedLinks,
-      totalAttributeCount = state.attributes.size, // todo: incorrect when limits are applied,
+      totalAttributeCount =
+        state.attributes.size, // todo: incorrect when limits are applied,
       instrumentationScopeInfo = immutableState.scopeInfo,
       resource = immutableState.resource
-  )
+    )
 
   def hasEnded: F[Boolean] =
     mutableState.get.map(_.hasEnded)

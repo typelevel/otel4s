@@ -18,16 +18,19 @@ package org.typelevel.otel4s.sdk
 package trace
 package exporter
 
+import cats.effect.Ref
+import cats.effect.Resource
+import cats.effect.Temporal
+import cats.effect.std.CountDownLatch
+import cats.effect.std.Queue
+import cats.effect.syntax.monadCancel._
 import cats.effect.syntax.spawn._
 import cats.effect.syntax.temporal._
-import cats.syntax.apply._
 import cats.syntax.applicative._
-import cats.syntax.foldable._
-import cats.effect.syntax.monadCancel._
+import cats.syntax.apply._
 import cats.syntax.flatMap._
+import cats.syntax.foldable._
 import cats.syntax.functor._
-import cats.effect.{Ref, Resource, Temporal}
-import cats.effect.std.{CountDownLatch, Queue}
 import org.typelevel.otel4s.sdk.trace.data.SpanData
 import org.typelevel.otel4s.trace.SpanContext
 

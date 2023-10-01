@@ -16,13 +16,11 @@
 
 import cats.effect._
 import org.typelevel.otel4s.Attribute
-import org.typelevel.otel4s.sdk.instances._
 import org.typelevel.otel4s.sdk.context.Context
+import org.typelevel.otel4s.sdk.instances._
 import org.typelevel.otel4s.sdk.trace.SdkTracerProvider
-import org.typelevel.otel4s.sdk.trace.exporter.{
-  BatchSpanProcessor,
-  InMemorySpanExporter
-}
+import org.typelevel.otel4s.sdk.trace.exporter.BatchSpanProcessor
+import org.typelevel.otel4s.sdk.trace.exporter.InMemorySpanExporter
 
 object TraceSdkExample extends IOApp.Simple {
 

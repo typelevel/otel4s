@@ -24,7 +24,9 @@ import cats.effect.testkit.TestControl
 import cats.syntax.apply._
 import cats.syntax.functor._
 import cats.~>
-import munit.{CatsEffectSuite, Location, TestOptions}
+import munit.CatsEffectSuite
+import munit.Location
+import munit.TestOptions
 import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.sdk.Attributes
 import org.typelevel.otel4s.sdk.common.InstrumentationScopeInfo
@@ -34,10 +36,8 @@ import org.typelevel.otel4s.sdk.context.propagation.TextMapPropagator
 import org.typelevel.otel4s.sdk.trace.data.EventData
 import org.typelevel.otel4s.sdk.trace.data.SpanData
 import org.typelevel.otel4s.sdk.trace.data.StatusData
-import org.typelevel.otel4s.sdk.trace.exporter.{
-  BatchSpanProcessor,
-  InMemorySpanExporter,
-}
+import org.typelevel.otel4s.sdk.trace.exporter.BatchSpanProcessor
+import org.typelevel.otel4s.sdk.trace.exporter.InMemorySpanExporter
 import org.typelevel.otel4s.sdk.trace.propagation.W3CTraceContextPropagator
 import org.typelevel.otel4s.trace.Span
 import org.typelevel.otel4s.trace.Status

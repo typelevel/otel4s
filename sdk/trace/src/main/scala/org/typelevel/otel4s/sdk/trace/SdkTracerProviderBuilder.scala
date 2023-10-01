@@ -19,8 +19,8 @@ package trace
 
 import cats.effect.Async
 import cats.syntax.functor._
-import org.typelevel.otel4s.sdk.context.LocalContext
 import org.typelevel.otel4s.sdk.{Resource => InstrumentResource}
+import org.typelevel.otel4s.sdk.context.LocalContext
 import org.typelevel.otel4s.sdk.context.propagation.ContextPropagators
 import org.typelevel.otel4s.sdk.context.propagation.TextMapPropagator
 import org.typelevel.otel4s.sdk.trace.samplers.Sampler

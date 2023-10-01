@@ -21,8 +21,8 @@ import cats.Show
 import cats.syntax.show._
 import org.typelevel.otel4s.trace.Status
 
-/** Defines the status of a Span by providing a standard Status in
-  * conjunction with an optional descriptive message.
+/** Defines the status of a Span by providing a standard Status in conjunction
+  * with an optional descriptive message.
   */
 sealed trait StatusData {
 

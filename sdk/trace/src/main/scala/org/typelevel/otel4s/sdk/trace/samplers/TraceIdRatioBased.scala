@@ -3,7 +3,8 @@ package trace
 package samplers
 
 import org.typelevel.otel4s.sdk.trace.data.LinkData
-import org.typelevel.otel4s.trace.{SpanContext, SpanKind}
+import org.typelevel.otel4s.trace.SpanContext
+import org.typelevel.otel4s.trace.SpanKind
 
 final class TraceIdRatioBased private (
     ratio: Double,

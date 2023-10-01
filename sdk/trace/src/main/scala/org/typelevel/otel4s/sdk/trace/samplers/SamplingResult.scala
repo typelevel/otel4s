@@ -16,7 +16,8 @@
 
 package org.typelevel.otel4s.sdk.trace.samplers
 
-import cats.{Hash, Show}
+import cats.Hash
+import cats.Show
 import cats.syntax.show._
 import org.typelevel.otel4s.sdk.Attributes
 import org.typelevel.otel4s.trace.SamplingDecision
@@ -40,7 +41,7 @@ sealed trait SamplingResult {
   override final def equals(obj: Any): Boolean =
     obj match {
       case other: SamplingResult => Hash[SamplingResult].eqv(this, other)
-      case _ => false
+      case _                     => false
     }
 
   override final def toString: String =

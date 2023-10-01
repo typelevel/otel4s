@@ -39,8 +39,8 @@ sealed trait SdkTracerProviderBuilder[F[_]] {
     */
   def setIdGenerator(idGenerator: IdGenerator[F]): SdkTracerProviderBuilder[F]
 
-  /** Sets a [[org.typelevel.otel4s.sdk.Resource]] to be attached to all spans created by
-    * [[org.typelevel.otel4s.trace.Tracer Tracer]].
+  /** Sets a [[org.typelevel.otel4s.sdk.Resource]] to be attached to all spans
+    * created by [[org.typelevel.otel4s.trace.Tracer Tracer]].
     */
   def setResource(resource: InstrumentResource): SdkTracerProviderBuilder[F]
 
@@ -55,7 +55,8 @@ sealed trait SdkTracerProviderBuilder[F[_]] {
     */
   def setSpanLimits(limits: SpanLimits): SdkTracerProviderBuilder[F]
 
-  /** Sets a [[org.typelevel.otel4s.sdk.trace.samplers.Sampler Sampler]] to use for sampling traces.
+  /** Sets a [[org.typelevel.otel4s.sdk.trace.samplers.Sampler Sampler]] to use
+    * for sampling traces.
     *
     * Sampler will be called each time a
     * [[org.typelevel.otel4s.trace.Span Span]] is started.

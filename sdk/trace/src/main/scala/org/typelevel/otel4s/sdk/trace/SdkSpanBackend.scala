@@ -19,8 +19,8 @@ package trace
 
 import cats.Applicative
 import cats.Monad
-import cats.effect.Concurrent
 import cats.effect.Clock
+import cats.effect.Concurrent
 import cats.effect.Ref
 import cats.syntax.flatMap._
 import cats.syntax.functor._
@@ -44,7 +44,10 @@ final class SdkSpanBackend[F[_]: Monad: Clock] private (
     spanLimits: SpanLimits,
     spanProcessor: SpanProcessor[F],
     immutableState: SdkSpanBackend.ImmutableState,
-    mutableState: Ref[F, SdkSpanBackend.MutableState] // todo: use AtomicCell[F, SdkSpanBackend.MutableState]
+    mutableState: Ref[
+      F,
+      SdkSpanBackend.MutableState
+    ] // todo: use AtomicCell[F, SdkSpanBackend.MutableState]
 ) extends Span.Backend[F]
     with ReadWriteSpan[F] {
 
@@ -259,7 +262,9 @@ object SdkSpanBackend {
 
     for {
       start <- computeNow
-      ms <- Concurrent[F].ref(mutableState) // todo: use AtomicCell[F].of(mutableState)
+      ms <- Concurrent[F].ref(
+        mutableState
+      ) // todo: use AtomicCell[F].of(mutableState)
       backend = new SdkSpanBackend[F](
         spanLimits,
         spanProcessor,

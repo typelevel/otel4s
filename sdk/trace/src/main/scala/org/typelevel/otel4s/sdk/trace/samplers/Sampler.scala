@@ -85,8 +85,8 @@ object Sampler {
   def parentBased(root: Sampler): Sampler =
     parentBasedBuilder(root).build
 
-  /** Creates a [[ParentBasedSampler.Builder]] for [[ParentBasedSampler]] that enables
-    * configuration of the parent-based sampling strategy.
+  /** Creates a [[ParentBasedSampler.Builder]] for [[ParentBasedSampler]] that
+    * enables configuration of the parent-based sampling strategy.
     *
     * The parent's sampling decision is used if a parent span exists, otherwise
     * this strategy uses the root sampler's decision.

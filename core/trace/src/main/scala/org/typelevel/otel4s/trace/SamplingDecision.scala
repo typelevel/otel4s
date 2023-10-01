@@ -16,7 +16,8 @@
 
 package org.typelevel.otel4s.trace
 
-import cats.{Hash, Show}
+import cats.Hash
+import cats.Show
 
 /** A decision on whether a span should be recorded or dropped.
   */

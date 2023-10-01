@@ -2,7 +2,8 @@ package org.typelevel.otel4s.sdk.trace.samplers
 
 import org.typelevel.otel4s.sdk.Attributes
 import org.typelevel.otel4s.sdk.trace.data.LinkData
-import org.typelevel.otel4s.trace.{SpanContext, SpanKind}
+import org.typelevel.otel4s.trace.SpanContext
+import org.typelevel.otel4s.trace.SpanKind
 
 /** Sampler that uses the sampled flag of the parent Span, if present.
   *

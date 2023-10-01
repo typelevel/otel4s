@@ -18,8 +18,8 @@ package org.typelevel.otel4s.sdk
 package trace
 package data
 
-import cats.Show
 import cats.Hash
+import cats.Show
 import cats.syntax.show._
 import org.typelevel.otel4s.trace.SpanContext
 

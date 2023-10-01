@@ -16,9 +16,9 @@
 
 package org.typelevel.otel4s
 
+import cats.Hash
 import cats.Show
 import cats.syntax.show._
-import cats.Hash
 
 /** Represents the key-value attribute.
   *

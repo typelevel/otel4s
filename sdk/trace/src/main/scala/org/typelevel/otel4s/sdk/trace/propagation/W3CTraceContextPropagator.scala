@@ -97,7 +97,7 @@ object W3CTraceContextPropagator extends TextMapPropagator {
     val Version00 = "00"
     val ValidVersions: Set[String] = Set.tabulate(255) { i =>
       val version = Integer.toHexString(i)
-      if (version.length < 2) '0' + version else version
+      if (version.length < 2) "0" + version else version
     }
   }
 

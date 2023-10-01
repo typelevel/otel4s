@@ -363,6 +363,8 @@ lazy val unidocs = project
   .enablePlugins(TypelevelUnidocPlugin)
   .settings(
     name := "otel4s-docs",
+    ScalaUnidoc / unidoc / fullClasspath := (ScalaUnidoc / unidoc / unidocAllClasspaths).value.flatten.distinct
+      .sortBy(_.data.getName)(Ordering[String].reverse),
     ScalaUnidoc / unidoc / unidocProjectFilter := inProjects(
       `core-common`.jvm,
       `core-metrics`.jvm,

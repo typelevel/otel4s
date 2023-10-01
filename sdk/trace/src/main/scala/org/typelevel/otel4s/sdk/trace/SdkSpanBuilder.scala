@@ -18,9 +18,9 @@ package org.typelevel.otel4s.sdk.trace
 
 import cats.Applicative
 import cats.arrow.FunctionK
-import cats.effect.Clock
 import cats.effect.Concurrent
 import cats.effect.Resource
+import cats.effect.Temporal
 import cats.syntax.flatMap._
 import cats.syntax.foldable._
 import cats.syntax.functor._
@@ -41,7 +41,7 @@ import scodec.bits.ByteVector
 
 import scala.concurrent.duration.FiniteDuration
 
-private[trace] final case class SdkSpanBuilder[F[_]: Concurrent: Clock](
+private[trace] final case class SdkSpanBuilder[F[_]: Temporal](
     name: String,
     scopeInfo: InstrumentationScopeInfo,
     tracerSharedState: TracerSharedState[F],

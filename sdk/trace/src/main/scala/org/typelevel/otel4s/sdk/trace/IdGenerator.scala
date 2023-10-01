@@ -17,7 +17,6 @@
 package org.typelevel.otel4s.sdk.trace
 
 import cats.Monad
-import cats.effect.Sync
 import cats.effect.std.Random
 import cats.syntax.flatMap._
 import cats.syntax.functor._
@@ -59,8 +58,5 @@ object IdGenerator {
 
   def random[F[_]: Monad: Random]: IdGenerator[F] =
     new RandomIdGenerator[F]
-
-  def default[F[_]: Sync]: F[IdGenerator[F]] =
-    Random.scalaUtilRandom[F].map(implicit rnd => random[F])
 
 }

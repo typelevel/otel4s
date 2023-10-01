@@ -17,8 +17,8 @@
 package org.typelevel.otel4s.sdk
 package trace
 
-import cats.effect.Async
-import cats.syntax.functor._
+import cats.effect.Temporal
+import cats.effect.std.Random
 import org.typelevel.otel4s.sdk.{Resource => InstrumentResource}
 import org.typelevel.otel4s.sdk.context.LocalContext
 import org.typelevel.otel4s.sdk.context.propagation.ContextPropagators
@@ -87,16 +87,18 @@ sealed trait SdkTracerProviderBuilder[F[_]] {
 
   /** Creates a new [[SdkTracerProvider]] with configuration of this builder.
     */
-  def build: F[SdkTracerProvider[F]]
+  def build: SdkTracerProvider[F]
 }
 
 object SdkTracerProviderBuilder {
 
   /** Creates a new [[SdkTracerProviderBuilder]] with default configuration.
     */
-  def default[F[_]: Async: LocalContext]: SdkTracerProviderBuilder[F] =
+  def default[
+      F[_]: Temporal: Random: LocalContext
+  ]: SdkTracerProviderBuilder[F] =
     new Builder[F](
-      idGeneratorF = IdGenerator.default[F],
+      idGenerator = IdGenerator.random,
       resource = InstrumentResource.Default,
       spanLimits = SpanLimits.Default,
       sampler = Sampler.parentBased(Sampler.AlwaysOn),
@@ -104,8 +106,8 @@ object SdkTracerProviderBuilder {
       spanProcessors = Nil
     )
 
-  private final case class Builder[F[_]: Async: LocalContext](
-      idGeneratorF: F[IdGenerator[F]],
+  private final case class Builder[F[_]: Temporal: LocalContext](
+      idGenerator: IdGenerator[F],
       resource: InstrumentResource,
       spanLimits: SpanLimits,
       sampler: Sampler,
@@ -114,7 +116,7 @@ object SdkTracerProviderBuilder {
   ) extends SdkTracerProviderBuilder[F] {
 
     def setIdGenerator(generator: IdGenerator[F]): SdkTracerProviderBuilder[F] =
-      copy(idGeneratorF = Async[F].pure(generator))
+      copy(idGenerator = generator)
 
     def setResource(resource: InstrumentResource): SdkTracerProviderBuilder[F] =
       copy(resource = resource)
@@ -138,10 +140,8 @@ object SdkTracerProviderBuilder {
     ): SdkTracerProviderBuilder[F] =
       copy(spanProcessors = this.spanProcessors :+ processor)
 
-    def build: F[SdkTracerProvider[F]] =
-      for {
-        idGenerator <- idGeneratorF
-      } yield new SdkTracerProvider[F](
+    def build: SdkTracerProvider[F] =
+      new SdkTracerProvider[F](
         idGenerator,
         resource,
         spanLimits,

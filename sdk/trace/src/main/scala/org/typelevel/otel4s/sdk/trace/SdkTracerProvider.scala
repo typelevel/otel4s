@@ -17,9 +17,8 @@
 package org.typelevel.otel4s.sdk
 package trace
 
-import cats.effect.Async
-import cats.effect.Clock
-import cats.effect.Concurrent
+import cats.effect.Temporal
+import cats.effect.std.Random
 import org.typelevel.otel4s.sdk.context.LocalContext
 import org.typelevel.otel4s.sdk.context.propagation.ContextPropagators
 import org.typelevel.otel4s.sdk.internal.ComponentRegistry
@@ -27,7 +26,7 @@ import org.typelevel.otel4s.sdk.trace.samplers.Sampler
 import org.typelevel.otel4s.trace.TracerBuilder
 import org.typelevel.otel4s.trace.TracerProvider
 
-class SdkTracerProvider[F[_]: Concurrent: Clock](
+class SdkTracerProvider[F[_]: Temporal](
     idGenerator: IdGenerator[F],
     resource: Resource,
     spanLimits: SpanLimits,
@@ -48,7 +47,7 @@ class SdkTracerProvider[F[_]: Concurrent: Clock](
 
   private val registry: ComponentRegistry[F, SdkTracer[F]] =
     new ComponentRegistry[F, SdkTracer[F]](scopeInfo =>
-      Concurrent[F].pure(
+      Temporal[F].pure(
         new SdkTracer[F](sharedState, scopeInfo, propagators, scope)
       )
     )
@@ -61,7 +60,9 @@ object SdkTracerProvider {
 
   /** Creates a new [[SdkTracerProviderBuilder]] with default configuration.
     */
-  def builder[F[_]: Async: LocalContext]: SdkTracerProviderBuilder[F] =
+  def builder[
+      F[_]: Temporal: Random: LocalContext
+  ]: SdkTracerProviderBuilder[F] =
     SdkTracerProviderBuilder.default
 
 }

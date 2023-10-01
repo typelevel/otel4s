@@ -20,8 +20,8 @@ package trace
 import cats.Applicative
 import cats.Monad
 import cats.effect.Clock
-import cats.effect.Concurrent
-import cats.effect.Ref
+import cats.effect.Temporal
+import cats.effect.std.AtomicCell
 import cats.syntax.flatMap._
 import cats.syntax.functor._
 import cats.syntax.semigroup._
@@ -44,10 +44,7 @@ final class SdkSpanBackend[F[_]: Monad: Clock] private (
     spanLimits: SpanLimits,
     spanProcessor: SpanProcessor[F],
     immutableState: SdkSpanBackend.ImmutableState,
-    mutableState: Ref[
-      F,
-      SdkSpanBackend.MutableState
-    ] // todo: use AtomicCell[F, SdkSpanBackend.MutableState]
+    mutableState: AtomicCell[F, SdkSpanBackend.MutableState]
 ) extends Span.Backend[F]
     with ReadWriteSpan[F] {
 
@@ -202,8 +199,7 @@ object SdkSpanBackend {
       hasEnded: Boolean
   )
 
-  // todo: replace Concurrent with Async
-  def start[F[_]: Concurrent: Clock](
+  def start[F[_]: Temporal](
       context: SpanContext,
       name: String,
       scopeInfo: InstrumentationScopeInfo,
@@ -219,24 +215,9 @@ object SdkSpanBackend {
       userStartEpochNanos: Long
   ): F[SdkSpanBackend[F]] = {
 
-    /*val (clock: Clock[F], createdAnchoredClock: Boolean) =
-      if (parentSpan.isInstanceOf[Span[F]]) {
-        (parentSpan.clock, false)
-      } else {
-        (AnchoredClock.create(tracerClock), true)
-      }*/
-
-    val createdAnchoredClock = false
-    val clock = Clock[F]
-
     val computeNow =
-      if (userStartEpochNanos != 0) {
-        Monad[F].pure(userStartEpochNanos)
-      } else if (createdAnchoredClock) {
-        clock.realTime.map(_.toNanos) // clock.startTime
-      } else {
-        clock.realTime.map(_.toNanos)
-      }
+      if (userStartEpochNanos != 0) Temporal[F].pure(userStartEpochNanos)
+      else Temporal[F].realTime.map(_.toNanos)
 
     def immutableState(startEpochNanos: Long) =
       ImmutableState(
@@ -262,14 +243,12 @@ object SdkSpanBackend {
 
     for {
       start <- computeNow
-      ms <- Concurrent[F].ref(
-        mutableState
-      ) // todo: use AtomicCell[F].of(mutableState)
+      state <- AtomicCell[F].of(mutableState)
       backend = new SdkSpanBackend[F](
         spanLimits,
         spanProcessor,
         immutableState(start),
-        ms
+        state
       )
       _ <- spanProcessor.onStart(parentContext, backend)
     } yield backend

@@ -20,6 +20,7 @@ import cats.effect.IO
 import cats.effect.IOLocal
 import cats.effect.MonadCancelThrow
 import cats.effect.Resource
+import cats.effect.std.Random
 import cats.effect.testkit.TestControl
 import cats.syntax.apply._
 import cats.syntax.functor._
@@ -879,11 +880,13 @@ class TracerSuite extends CatsEffectSuite {
     def createTracerProvider(
         processor: SpanProcessor[IO]
     )(implicit ioLocal: IOLocal[Context]): IO[SdkTracerProvider[IO]] =
-      SdkTracerProvider
-        .builder[IO]
-        .addTextMapPropagators(textMapPropagators: _*)
-        .addSpanProcessor(processor)
-        .build
+      Random.scalaUtilRandom[IO].map { implicit random =>
+        SdkTracerProvider
+          .builder[IO]
+          .addTextMapPropagators(textMapPropagators: _*)
+          .addSpanProcessor(processor)
+          .build
+      }
 
     for {
       ioLocal <- Resource.eval(IOLocal(Context.root))

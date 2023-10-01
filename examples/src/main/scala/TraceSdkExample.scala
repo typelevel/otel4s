@@ -15,6 +15,7 @@
  */
 
 import cats.effect._
+import cats.effect.std.Random
 import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.sdk.context.Context
 import org.typelevel.otel4s.sdk.instances._
@@ -28,12 +29,16 @@ object TraceSdkExample extends IOApp.Simple {
     IOLocal(Context.root).flatMap { implicit local =>
       for {
         exporter <- InMemorySpanExporter.create[IO]
+        random <- Random.scalaUtilRandom[IO]
         _ <- BatchSpanProcessor.builder[IO](exporter).build.use { processor =>
+          implicit val rnd: Random[IO] = random
+
+          val traceProvider = SdkTracerProvider
+            .builder[IO]
+            .addSpanProcessor(processor)
+            .build
+
           for {
-            traceProvider <- SdkTracerProvider
-              .builder[IO]
-              .addSpanProcessor(processor)
-              .build
             tracer <- traceProvider.get("my-tracer")
             _ <- tracer
               .span("test", Attribute("test", "test123"))

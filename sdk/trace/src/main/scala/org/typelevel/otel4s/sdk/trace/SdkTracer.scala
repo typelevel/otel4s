@@ -17,8 +17,7 @@
 package org.typelevel.otel4s.sdk
 package trace
 
-import cats.effect.Clock
-import cats.effect.Concurrent
+import cats.effect.Temporal
 import cats.syntax.flatMap._
 import cats.syntax.functor._
 import org.typelevel.otel4s.TextMapGetter
@@ -30,7 +29,7 @@ import org.typelevel.otel4s.trace.SpanBuilder
 import org.typelevel.otel4s.trace.SpanContext
 import org.typelevel.otel4s.trace.Tracer
 
-final class SdkTracer[F[_]: Concurrent: Clock] private[trace] (
+final class SdkTracer[F[_]: Temporal] private[trace] (
     sharedState: TracerSharedState[F],
     scopeInfo: InstrumentationScopeInfo,
     propagators: ContextPropagators,

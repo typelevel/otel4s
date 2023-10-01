@@ -45,8 +45,9 @@ trait Tracer[F[_]] extends TracerMacro[F] {
     */
   def currentSpanContext: F[Option[SpanContext]]
 
-  /** Creates a new [[SpanBuilder]]. The builder can be used to make a fully
-    * customized [[Span]].
+  /** Creates a new [[org.typelevel.otel4s.trace.SpanBuilder SpanBuilder]]. The
+    * builder can be used to make a fully customized
+    * [[org.typelevel.otel4s.trace.Span Span]].
     *
     * @param name
     *   the name of the span

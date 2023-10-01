@@ -19,11 +19,12 @@ package trace
 
 import cats.Applicative
 
-/** The entry point of the tracing API. Provides access to [[Tracer]].
+/** The entry point of the tracing API. Provides access to
+  * [[org.typelevel.otel4s.trace.Tracer Tracer]].
   */
 trait TracerProvider[F[_]] {
 
-  /** Creates a named [[Tracer]].
+  /** Creates a named [[org.typelevel.otel4s.trace.Tracer Tracer]].
     *
     * @example
     *   {{{
@@ -38,7 +39,8 @@ trait TracerProvider[F[_]] {
   def get(name: String): F[Tracer[F]] =
     tracer(name).get
 
-  /** Creates a [[TracerBuilder]] for a named [[Tracer]] instance.
+  /** Creates a [[org.typelevel.otel4s.trace.TracerBuilder TracerBuilder]] for a
+    * named [[org.typelevel.otel4s.trace.Tracer Tracer]] instance.
     *
     * @example
     *   {{{
@@ -61,7 +63,8 @@ object TracerProvider {
 
   /** Creates a no-op implementation of the [[TracerProvider]].
     *
-    * A [[TracerBuilder]] has no-op implementation too.
+    * A [[org.typelevel.otel4s.trace.TracerBuilder TraceBuilder]] has no-op
+    * implementation too.
     *
     * @tparam F
     *   the higher-kinded type of a polymorphic effect

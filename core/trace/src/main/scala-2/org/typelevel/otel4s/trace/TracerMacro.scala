@@ -27,10 +27,10 @@ private[otel4s] trait TracerMacro[F[_]] {
     * ended upon the finalization of a resource.
     *
     * The abnormal termination (error, cancelation) is recorded by
-    * [[SpanFinalizer.Strategy.reportAbnormal default finalization strategy]].
+    * [[org.typelevel.otel4s.trace.SpanFinalizer.Strategy.reportAbnormal default finalization strategy]].
     *
     * To attach span to a specific parent, use [[childScope]] or
-    * [[SpanBuilder.withParent]].
+    * [[org.typelevel.otel4s.trace.SpanBuilder.withParent SpanBuilder.withParent]].
     *
     * @example
     *   attaching span to a specific parent
@@ -62,7 +62,7 @@ private[otel4s] trait TracerMacro[F[_]] {
     * ended upon the finalization of a resource.
     *
     * The abnormal termination (error, cancelation) is recorded by
-    * [[SpanFinalizer.Strategy.reportAbnormal default finalization strategy]].
+    * [[org.typelevel.otel4s.trace.SpanFinalizer.Strategy.reportAbnormal default finalization strategy]].
     *
     * @param name
     *   the name of the span

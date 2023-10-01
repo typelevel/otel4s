@@ -145,15 +145,16 @@ final class BatchSpanProcessor[F[_]: Temporal](
   }
 
   // export all available data
-  private def exportAll: F[Unit] =
+  private[trace] def exportAll: F[Unit] =
     for {
-      state <- state.get
+      st <- state.get
       spanData <- queue.tryTakeN(None)
-      batch = state.batch ++ spanData
+      batch = st.batch ++ spanData
       _ <- batch
         .grouped(config.maxExportBatchSize)
         .toList
         .traverse_(exportBatch)
+      _ <- state.update(_.copy(batch = Nil, spansNeeded = None))
     } yield ()
 
   // todo 1: .timeoutTo(config.exporterTimeoutNanos)

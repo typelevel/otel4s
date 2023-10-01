@@ -19,6 +19,7 @@ package internal
 
 import org.typelevel.otel4s.sdk.common.InstrumentationScopeInfo
 
+// todo: implement caching
 final class ComponentRegistry[F[_], A](
     factory: InstrumentationScopeInfo => F[A]
 ) {
@@ -34,7 +35,7 @@ final class ComponentRegistry[F[_], A](
     )
   }
 
-  private def buildComponent(info: InstrumentationScopeInfo) = {
+  private def buildComponent(info: InstrumentationScopeInfo): F[A] = {
     val component = factory(info)
     component
   }

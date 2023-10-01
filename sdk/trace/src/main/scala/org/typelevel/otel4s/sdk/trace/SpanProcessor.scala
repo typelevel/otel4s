@@ -21,7 +21,7 @@ import cats.syntax.foldable._
 import org.typelevel.otel4s.trace.SpanContext
 
 /** The interface that [[SdkTracer]] uses to allow synchronous hooks for when a
-  * span is started or when a span is ended.
+  * span is started or ended.
   *
   * @tparam F
   *   the higher-kinded type of a polymorphic effect

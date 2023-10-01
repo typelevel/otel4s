@@ -25,7 +25,6 @@ import cats.effect.std.Supervisor
 import cats.syntax.applicative._
 import cats.syntax.flatMap._
 import cats.syntax.functor._
-import fs2.concurrent.Channel
 import org.typelevel.otel4s.trace.SpanContext
 
 /** An implementation of the [[SpanProcessor]] that converts the
@@ -36,7 +35,7 @@ import org.typelevel.otel4s.trace.SpanContext
   *   the higher-kinded type of a polymorphic effect
   */
 final class SimpleSpanProcessor[F[_]: Monad] private (
-    processingChannel: Channel[F, F[Unit]],
+    supervisor: Supervisor[F],
     exporter: SpanExporter[F],
     sampled: Boolean
 ) extends SpanProcessor[F] {
@@ -59,7 +58,7 @@ final class SimpleSpanProcessor[F[_]: Monad] private (
         _ <- exporter.exportSpans(List(data))
       } yield ()
 
-    processingChannel.send(exportSpans).void.whenA(canExport)
+    supervisor.supervise(exportSpans).void.whenA(canExport)
   }
 
 }
@@ -77,14 +76,7 @@ object SimpleSpanProcessor {
   ): Resource[F, SimpleSpanProcessor[F]] = {
     for {
       supervisor <- Supervisor[F](await = true)
-      channel <- Resource.eval(Channel.bounded[F, F[Unit]](10000)) // todo: make configurable?
-      _ <- Resource.eval(
-        supervisor.supervise(channel.stream.evalMap(identity).compile.drain)
-      )
-      _ <- Resource.make(Concurrent[F].unit)(_ =>
-        channel.closeWithElement(Concurrent[F].unit).void
-      )
-    } yield new SimpleSpanProcessor[F](channel, exporter, sampled)
+    } yield new SimpleSpanProcessor[F](supervisor, exporter, sampled)
   }
 
 }

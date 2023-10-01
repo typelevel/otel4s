@@ -19,6 +19,8 @@ package trace
 
 import cats.effect.Clock
 import cats.effect.Concurrent
+import cats.effect.Async
+import org.typelevel.otel4s.sdk.context.LocalContext
 import org.typelevel.otel4s.sdk.context.propagation.ContextPropagators
 import org.typelevel.otel4s.sdk.internal.ComponentRegistry
 import org.typelevel.otel4s.sdk.trace.samplers.Sampler
@@ -53,4 +55,13 @@ class SdkTracerProvider[F[_]: Concurrent: Clock](
 
   def tracer(name: String): TracerBuilder[F] =
     new SdkTracerBuilder[F](registry, name)
+}
+
+object SdkTracerProvider {
+
+  /** Creates a new [[SdkTracerProviderBuilder]] with default configuration.
+    */
+  def builder[F[_]: Async: LocalContext]: SdkTracerProviderBuilder[F] =
+    SdkTracerProviderBuilder.default
+
 }

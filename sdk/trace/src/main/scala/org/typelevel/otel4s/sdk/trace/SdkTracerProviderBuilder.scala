@@ -17,69 +17,139 @@
 package org.typelevel.otel4s.sdk
 package trace
 
-import cats.effect.Clock
-import cats.effect.Concurrent
+import cats.effect.Async
+import cats.syntax.functor._
+import org.typelevel.otel4s.sdk.context.LocalContext
+import org.typelevel.otel4s.sdk.{Resource => InstrumentResource}
 import org.typelevel.otel4s.sdk.context.propagation.ContextPropagators
 import org.typelevel.otel4s.sdk.context.propagation.TextMapPropagator
 import org.typelevel.otel4s.sdk.trace.samplers.Sampler
 
-final case class SdkTracerProviderBuilder[F[_]: Concurrent: Clock](
-    idGenerator: IdGenerator[F],
-    resource: Resource,
-    spanLimits: SpanLimits,
-    sampler: Sampler,
-    propagators: List[TextMapPropagator],
-    spanProcessors: List[SpanProcessor[F]],
-    scope: SdkTraceScope[F],
-) {
+/** Builder for [[SdkTracerProvider]].
+  */
+trait SdkTracerProviderBuilder[F[_]] {
 
-  // def setClock(): SdkTracerProviderBuilder[F] = copy()
+  /** Sets an [[IdGenerator]].
+    *
+    * [[IdGenerator]] will be used each time a
+    * [[org.typelevel.otel4s.trace.Span Span]] is started.
+    *
+    * ''Note'': the id generator must be thread-safe and return immediately (no
+    * remote calls, as contention free as possible).
+    */
+  def setIdGenerator(idGenerator: IdGenerator[F]): SdkTracerProviderBuilder[F]
 
-  def setIdGenerator(idGenerator: IdGenerator[F]): SdkTracerProviderBuilder[F] =
-    copy(idGenerator = idGenerator)
+  /** Sets a [[InstrumentResource]] to be attached to all spans created by
+    * [[org.typelevel.otel4s.trace.Tracer Tracer]].
+    */
+  def setResource(resource: InstrumentResource): SdkTracerProviderBuilder[F]
 
-  def setResource(resource: Resource): SdkTracerProviderBuilder[F] =
-    copy(resource = resource)
+  /** Merges a [[InstrumentResource]] with the current one.
+    */
+  def addResource(resource: InstrumentResource): SdkTracerProviderBuilder[F]
 
-  def addResource(resource: Resource): SdkTracerProviderBuilder[F] =
-    copy(resource = this.resource.mergeInto(resource).fold(throw _, identity))
+  /** Sets an initial [[SpanLimits]] that should be used with this SDK.
+    *
+    * The limits will be used for every
+    * [[org.typelevel.otel4s.trace.Span Span]].
+    */
+  def setSpanLimits(limits: SpanLimits): SdkTracerProviderBuilder[F]
 
-  def setSpanLimits(limits: SpanLimits): SdkTracerProviderBuilder[F] =
-    copy(spanLimits = limits)
+  /** Sets a [[Sampler]] to use for sampling traces.
+    *
+    * Sampler will be called each time a
+    * [[org.typelevel.otel4s.trace.Span Span]] is started.
+    *
+    * ''Note:'' the sampler must be thread-safe and return immediately (no
+    * remote calls, as contention free as possible).
+    */
+  def setSampler(sampler: Sampler): SdkTracerProviderBuilder[F]
 
-  def setSampler(sampler: Sampler): SdkTracerProviderBuilder[F] =
-    copy(sampler = sampler)
+  /** Adds a [[TextMapPropagator]]s to use for the context propagation.
+    */
+  def addTextMapPropagators(
+      propagators: TextMapPropagator*
+  ): SdkTracerProviderBuilder[F]
 
-  def addTextMapPropagator(
-      propagator: TextMapPropagator
-  ): SdkTracerProviderBuilder[F] =
-    copy(propagators = this.propagators :+ propagator)
-
+  /** Adds a [[SpanProcessor]] to the span processing pipeline that will be
+    * built.
+    *
+    * [[SpanProcessor]] will be called each time a
+    * [[org.typelevel.otel4s.trace.Span Span]] is started or ended.
+    *
+    * ''Note:'' the span processor must be thread-safe and return immediately
+    * (no remote calls, as contention free as possible).
+    */
   def addSpanProcessor(
       processor: SpanProcessor[F]
-  ): SdkTracerProviderBuilder[F] =
-    copy(spanProcessors = this.spanProcessors :+ processor)
+  ): SdkTracerProviderBuilder[F]
 
-  def build: SdkTracerProvider[F] =
-    new SdkTracerProvider[F](
-      idGenerator,
-      resource,
-      spanLimits,
-      sampler,
-      ContextPropagators.create(TextMapPropagator.composite(propagators)),
-      spanProcessors,
-      scope
-    )
-
+  /** Creates a new [[SdkTracerProvider]] with configuration of this builder.
+    */
+  def build: F[SdkTracerProvider[F]]
 }
-/*
 
 object SdkTracerProviderBuilder {
 
-  def default[F[_]: Async: Clock]: F[SdkTracerProviderBuilder[F]] =
-    for {
-      random      <- Random.scalaUtilRandom[F]
-      idGenerator <- IdGenerator.random[F](implicitly, random)
-    } yield SdkTracerProviderBuilder(idGenerator, resource, , Sampler.recordOnly, )
+  /** Creates a new [[SdkTracerProviderBuilder]] with default configuration.
+    */
+  def default[F[_]: Async: LocalContext]: SdkTracerProviderBuilder[F] =
+    new Builder[F](
+      idGeneratorF = IdGenerator.default[F],
+      resource = InstrumentResource.Default,
+      spanLimits = SpanLimits.Default,
+      sampler =
+        Sampler.recordAndSample, // Sampler.parentBased(Sampler.alwaysOn)
+      propagators = Nil,
+      spanProcessors = Nil
+    )
 
-}*/
+  private final case class Builder[F[_]: Async: LocalContext](
+      idGeneratorF: F[IdGenerator[F]],
+      resource: InstrumentResource,
+      spanLimits: SpanLimits,
+      sampler: Sampler,
+      propagators: List[TextMapPropagator],
+      spanProcessors: List[SpanProcessor[F]]
+  ) extends SdkTracerProviderBuilder[F] {
+
+    def setIdGenerator(generator: IdGenerator[F]): SdkTracerProviderBuilder[F] =
+      copy(idGeneratorF = Async[F].pure(generator))
+
+    def setResource(resource: InstrumentResource): SdkTracerProviderBuilder[F] =
+      copy(resource = resource)
+
+    def addResource(resource: InstrumentResource): SdkTracerProviderBuilder[F] =
+      copy(resource = this.resource.mergeInto(resource).fold(throw _, identity))
+
+    def setSpanLimits(limits: SpanLimits): SdkTracerProviderBuilder[F] =
+      copy(spanLimits = limits)
+
+    def setSampler(sampler: Sampler): SdkTracerProviderBuilder[F] =
+      copy(sampler = sampler)
+
+    def addTextMapPropagators(
+        propagator: TextMapPropagator*
+    ): SdkTracerProviderBuilder[F] =
+      copy(propagators = this.propagators ++ propagator)
+
+    def addSpanProcessor(
+        processor: SpanProcessor[F]
+    ): SdkTracerProviderBuilder[F] =
+      copy(spanProcessors = this.spanProcessors :+ processor)
+
+    def build: F[SdkTracerProvider[F]] =
+      for {
+        idGenerator <- idGeneratorF
+      } yield new SdkTracerProvider[F](
+        idGenerator,
+        resource,
+        spanLimits,
+        sampler,
+        ContextPropagators.create(TextMapPropagator.composite(propagators)),
+        spanProcessors,
+        SdkTraceScope.fromLocal[F]
+      )
+  }
+
+}

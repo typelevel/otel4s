@@ -17,21 +17,91 @@
 package org.typelevel.otel4s.sdk
 package common
 
-trait InstrumentationScopeInfo {
+import cats.Show
+import cats.kernel.Hash
+import cats.syntax.show._
+
+/** Holds information about instrumentation scope.
+  *
+  * Instrumentation scope is a logical unit of the application code with which
+  * emitted telemetry is associated. The most common approach is to use the
+  * instrumentation library as the scope, however other scopes are also common,
+  * e.g. a module, a package, or a class may be chosen as the instrumentation
+  * scope.
+  */
+sealed trait InstrumentationScopeInfo {
+
+  /** Returns the name of the instrumentation scope.
+    */
   def name: String
+
+  /** Returns the version of the instrumentation scope, or None if not
+    * available.
+    */
   def version: Option[String]
+
+  /** Returns the URL of the schema used by this instrumentation scope, or None
+    * if not available.
+    */
   def schemaUrl: Option[String]
+
+  /** Returns the attributes of this instrumentation scope.
+    */
   def attributes: Attributes
+
+  override final def hashCode(): Int =
+    Hash[InstrumentationScopeInfo].hash(this)
+
+  override final def equals(obj: Any): Boolean =
+    obj match {
+      case other: InstrumentationScopeInfo =>
+        Hash[InstrumentationScopeInfo].eqv(this, other)
+      case _ =>
+        false
+    }
+
+  override final def toString: String =
+    Show[InstrumentationScopeInfo].show(this)
 }
 
 object InstrumentationScopeInfo {
 
-  private final case class InstrumentationScopeInfoImpl(
-      name: String,
-      version: Option[String],
-      schemaUrl: Option[String],
-      attributes: Attributes
-  ) extends InstrumentationScopeInfo
+  /** A builder for [[InstrumentationScopeInfo]].
+    */
+  sealed trait Builder {
+
+    /** Sets the version.
+      *
+      * @param version
+      *   the version to set
+      */
+    def setVersion(version: String): Builder
+
+    /** Sets the schema URL.
+      *
+      * @param schemaUrl
+      *   the schema URL to set
+      */
+    def setSchemaUrl(schemaUrl: String): Builder
+
+    /** Sets the attributes.
+      *
+      * @param attributes
+      *   the attributes to set
+      */
+    def setAttributes(attributes: Attributes): Builder
+
+    /** Creates an [[InstrumentationScopeInfo]] with the configuration of this
+      * builder.
+      */
+    def build: InstrumentationScopeInfo
+  }
+
+  val Empty: InstrumentationScopeInfo =
+    create("", None, None, Attributes.Empty)
+
+  def builder(name: String): Builder =
+    BuilderImpl(name, None, None, Attributes.Empty)
 
   def create(
       name: String,
@@ -39,5 +109,41 @@ object InstrumentationScopeInfo {
       schemaUrl: Option[String],
       attributes: Attributes
   ): InstrumentationScopeInfo =
-    InstrumentationScopeInfoImpl(name, version, schemaUrl, attributes)
+    ScopeInfoImpl(name, version, schemaUrl, attributes)
+
+  implicit val showInstrumentationScopeInfo: Show[InstrumentationScopeInfo] =
+    Show.show { scope =>
+      show"InstrumentationScopeInfo{name=${scope.name}, version=${scope.version}, schemaUrl=${scope.schemaUrl}, attributes=${scope.attributes}}"
+    }
+
+  implicit val hashInstrumentationScopeInfo: Hash[InstrumentationScopeInfo] =
+    Hash.by { scope =>
+      (scope.name, scope.version, scope.schemaUrl, scope.attributes)
+    }
+
+  private final case class ScopeInfoImpl(
+      name: String,
+      version: Option[String],
+      schemaUrl: Option[String],
+      attributes: Attributes
+  ) extends InstrumentationScopeInfo
+
+  private final case class BuilderImpl(
+      name: String,
+      version: Option[String],
+      schemaUrl: Option[String],
+      attributes: Attributes
+  ) extends Builder {
+    def setVersion(version: String): Builder =
+      copy(version = Some(version))
+
+    def setSchemaUrl(schemaUrl: String): Builder =
+      copy(schemaUrl = Some(schemaUrl))
+
+    def setAttributes(attributes: Attributes): Builder =
+      copy(attributes = attributes)
+
+    def build: InstrumentationScopeInfo =
+      ScopeInfoImpl(name, version, schemaUrl, attributes)
+  }
 }

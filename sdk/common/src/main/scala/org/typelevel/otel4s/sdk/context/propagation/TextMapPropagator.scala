@@ -33,6 +33,7 @@ package propagation
   */
 trait TextMapPropagator {
 
+  /** The list of propagation fields. */
   def fields: List[String]
 
   /** Extracts key-value pairs from the given `carrier` and adds them to the
@@ -75,6 +76,23 @@ trait TextMapPropagator {
 
 object TextMapPropagator {
 
+  /** Creates a no-op implementation of the [[TextMapPropagator]].
+    *
+    * All propagation operations are no-op.
+    */
+  def noop: TextMapPropagator =
+    Noop
+
+  /** Creates a [[TextMapPropagator]] which delegates injection and extraction
+    * to the provided propagators.
+    */
+  def composite(propagators: List[TextMapPropagator]): TextMapPropagator =
+    propagators match {
+      case Nil         => Noop
+      case head :: Nil => head
+      case _           => new Multi(propagators)
+    }
+
   private object Noop extends TextMapPropagator {
     def fields: List[String] =
       Nil
@@ -102,19 +120,5 @@ object TextMapPropagator {
         propagator.injected(ctx, carrier)
       }
   }
-
-  /** Creates a no-op implementation of the [[TextMapPropagator]].
-    *
-    * All propagation operations are no-op.
-    */
-  def noop: TextMapPropagator =
-    Noop
-
-  def composite(propagators: List[TextMapPropagator]): TextMapPropagator =
-    propagators match {
-      case Nil         => Noop
-      case head :: Nil => head
-      case _           => new Multi(propagators)
-    }
 
 }

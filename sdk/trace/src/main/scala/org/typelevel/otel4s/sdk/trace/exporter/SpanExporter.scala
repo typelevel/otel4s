@@ -14,17 +14,53 @@
  * limitations under the License.
  */
 
-package org.typelevel.otel4s.sdk.trace.exporter
+package org.typelevel.otel4s.sdk.trace
+package exporter
 
 import cats.Applicative
 import cats.syntax.foldable._
 import org.typelevel.otel4s.sdk.trace.data.SpanData
 
+/** An interface that allows different tracing services to export recorded data
+  * for sampled spans in their own format. To export data, the exporter MUST be
+  * register to the [[SdkTracer]] using a [[SimpleSpanProcessor]] or a
+  * [[BatchSpanProcessor]].
+  *
+  * @tparam F
+  *   the higher-kinded type of a polymorphic effect
+  */
 trait SpanExporter[F[_]] {
+
+  /** Called to export sampled [[SpanData]].
+    *
+    * ''Note'': the export operations can be performed simultaneously depending
+    * on the type of span processor being used. However, the
+    * [[BatchSpanProcessor]] will ensure that only one export can occur at a
+    * time.
+    *
+    * @param span
+    *   the collection of sampled Spans to be exported
+    */
   def exportSpans(span: List[SpanData]): F[Unit]
 }
 
 object SpanExporter {
+
+  /** Creates a [[SpanExporter]] which delegates all exports to the exporters in
+    * order.
+    *
+    * Can be used to export to multiple backends using the same
+    * [[SpanProcessor]] like a [[SimpleSpanProcessor]] or a
+    * [[BatchSpanProcessor]].
+    */
+  def composite[F[_]: Applicative](
+      exporters: List[SpanExporter[F]]
+  ): SpanExporter[F] =
+    exporters match {
+      case Nil         => new Noop
+      case head :: Nil => head
+      case _           => new Multi[F](exporters)
+    }
 
   private final class Noop[F[_]: Applicative] extends SpanExporter[F] {
     def exportSpans(span: List[SpanData]): F[Unit] = Applicative[F].unit
@@ -53,14 +89,5 @@ object SpanExporter {
         return CompletableResultCode.ofAll(results);
      */
   }
-
-  def composite[F[_]: Applicative](
-      exporters: List[SpanExporter[F]]
-  ): SpanExporter[F] =
-    exporters match {
-      case Nil         => new Noop
-      case head :: Nil => head
-      case _           => new Multi[F](exporters)
-    }
 
 }

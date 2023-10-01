@@ -21,6 +21,7 @@ import cats.Monad
 import cats.Monoid
 import cats.Show
 import cats.implicits._
+import cats.kernel.Hash
 import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.Attribute.KeySelect
 import org.typelevel.otel4s.AttributeKey
@@ -59,13 +60,17 @@ final class Attributes private (
   def toMap: Map[AttributeKey[_], Attribute[_]] = m
   def toList: List[Attribute[_]] = m.values.toList
 
-  override def hashCode(): Int = m.hashCode()
+  override def hashCode(): Int =
+    Hash[Attributes].hash(this)
+
   override def equals(obj: Any): Boolean =
     obj match {
-      case a: Attributes => m.equals(a.m)
-      case _             => false
+      case other: Attributes => Hash[Attributes].eqv(this, other)
+      case _                 => false
     }
-  override def toString: String = m.toString
+
+  override def toString: String =
+    Show[Attributes].show(this)
 }
 
 object Attributes {
@@ -85,6 +90,9 @@ object Attributes {
       .map(a => show"$a")
       .mkString("Attributes(", ", ", ")")
   }
+
+  implicit val hashAttributes: Hash[Attributes] =
+    Hash.by(_.m)
 
   implicit val monoidAttributes: Monoid[Attributes] =
     new Monoid[Attributes] {

@@ -29,7 +29,6 @@ import cats.~>
 import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.sdk.Attributes
 import org.typelevel.otel4s.sdk.common.InstrumentationScopeInfo
-import org.typelevel.otel4s.sdk.context.Context
 import org.typelevel.otel4s.sdk.trace.data.LinkData
 import org.typelevel.otel4s.trace.Span
 import org.typelevel.otel4s.trace.SpanBuilder

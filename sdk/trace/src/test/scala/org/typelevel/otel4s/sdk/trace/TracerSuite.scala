@@ -933,7 +933,7 @@ class TracerSuite extends CatsEffectSuite {
 
                 val builder = SdkTracerProviderBuilder(
                   idGenerator,
-                  InstrumentResource.Empty,
+                  InstrumentResource.Default,
                   SpanLimits.Default,
                   Sampler.recordAndSample,
                   textMapPropagators,

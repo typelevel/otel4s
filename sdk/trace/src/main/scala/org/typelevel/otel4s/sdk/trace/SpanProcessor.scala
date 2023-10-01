@@ -20,20 +20,70 @@ import cats.Applicative
 import cats.syntax.foldable._
 import org.typelevel.otel4s.trace.SpanContext
 
+/** The interface that [[SdkTracer]] uses to allow synchronous hooks for when a
+  * span is started or when a span is ended.
+  *
+  * @tparam F
+  *   the higher-kinded type of a polymorphic effect
+  */
 trait SpanProcessor[F[_]] {
+
+  /** Called when a span is started, if the `span.isRecording` returns true.
+    *
+    * This method is called synchronously on the execution thread, should not
+    * throw or block the execution thread.
+    *
+    * @param parentContext
+    *   the optional parent [[SpanContext]]
+    *
+    * @param span
+    *   the started span
+    */
   def onStart(
       parentContext: Option[SpanContext],
       span: ReadWriteSpan[F]
   ): F[Unit]
+
+  /** Whether the [[SpanProcessor]] requires start events.
+    *
+    * If true, the [[onStart]] will be called upon the start of a span.
+    */
   def isStartRequired: Boolean
+
+  /** Called when a span is ended, if the `span.isRecording` returns true.
+    *
+    * This method is called synchronously on the execution thread, should not
+    * throw or block the execution thread.
+    *
+    * @param span
+    *   the ended span
+    */
   def onEnd(span: ReadableSpan[F]): F[Unit]
+
+  /** Whether the [[SpanProcessor]] requires end events.
+    *
+    * If true, the [[onEnd]] will be called upon the end of a span.
+    */
   def isEndRequired: Boolean
 }
 
 object SpanProcessor {
 
+  /** Creates a [[SpanProcessor]] which delegates all processing to the
+    * processors in order.
+    */
+  def composite[F[_]: Applicative](
+      processors: List[SpanProcessor[F]]
+  ): SpanProcessor[F] =
+    processors match {
+      case Nil         => new Noop
+      case head :: Nil => head
+      case _           => new Multi[F](processors)
+    }
+
   private final class Noop[F[_]: Applicative] extends SpanProcessor[F] {
     def isStartRequired: Boolean = false
+
     def isEndRequired: Boolean = false
 
     def onStart(
@@ -56,6 +106,7 @@ object SpanProcessor {
       processors.filter(_.isEndRequired)
 
     def isStartRequired: Boolean = startOnly.nonEmpty
+
     def isEndRequired: Boolean = endOnly.nonEmpty
 
     def onStart(
@@ -67,13 +118,4 @@ object SpanProcessor {
     def onEnd(span: ReadableSpan[F]): F[Unit] =
       endOnly.traverse_(_.onEnd(span))
   }
-
-  def composite[F[_]: Applicative](
-      processors: List[SpanProcessor[F]]
-  ): SpanProcessor[F] =
-    processors match {
-      case Nil         => new Noop
-      case head :: Nil => head
-      case _           => new Multi[F](processors)
-    }
 }

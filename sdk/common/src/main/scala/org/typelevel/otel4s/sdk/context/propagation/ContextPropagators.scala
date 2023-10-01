@@ -33,4 +33,7 @@ object ContextPropagators {
   def create(textMapPropagator: TextMapPropagator): ContextPropagators =
     new Default(textMapPropagator)
 
+  def noop: ContextPropagators =
+    Noop
+
 }

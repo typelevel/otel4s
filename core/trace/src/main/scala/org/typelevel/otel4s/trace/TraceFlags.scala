@@ -16,35 +16,66 @@
 
 package org.typelevel.otel4s.trace
 
+import cats.Hash
+import cats.Show
 import scodec.bits.ByteVector
 
+/** A valid trace flags is a byte or 2 character lowercase hex (base16) String.
+  *
+  * These options are propagated to all child spans. These determine features
+  * such as whether a Span should be traced.
+  */
 sealed trait TraceFlags {
-  def toByte: Byte
-  def toHex: String
+
+  /** Returns the byte representation of this [[TraceFlags]].
+    */
+  def asByte: Byte
+
+  /** Returns the lowercase hex (base16) representation of this [[TraceFlags]].
+    */
+  def asHex: String
+
+  /** Returns `true` if the sampling bit is on, otherwise `false`.
+    */
   def isSampled: Boolean
+
+  override final def hashCode(): Int =
+    Hash[TraceFlags].hash(this)
+
+  override final def equals(obj: Any): Boolean =
+    obj match {
+      case other: TraceFlags => Hash[TraceFlags].eqv(this, other)
+      case _                 => false
+    }
+
+  override final def toString: String =
+    Show[TraceFlags].show(this)
 }
 
 object TraceFlags {
-  private[trace] final val SampledMask = 1
+  private[trace] final val SampledMask = 0x01
 
   val HexLength = 2
 
-  val Default = fromByte(0x00)
-  val Sampled = fromByte(0x01)
+  val Default: TraceFlags = fromByte(0x00)
+  val Sampled: TraceFlags = fromByte(0x01)
 
   private final case class TraceFlagsImpl(byte: Byte) extends TraceFlags {
-    def toByte: Byte = byte
-
-    def toHex: String = ByteVector.fromByte(byte).toHex // todo: incorrect
-
-    /** If set, the least significant bit denotes the caller may have recorded
-      * trace data.
-      */
+    def asByte: Byte = byte
+    def asHex: String = ByteVector.fromByte(byte).toHex // todo: incorrect
     def isSampled: Boolean =
       (byte & TraceFlags.SampledMask) == TraceFlags.SampledMask
   }
 
+  /** Returns the [[TraceFlags]] converted from the given byte representation.
+    */
   def fromByte(byte: Byte): TraceFlags =
     TraceFlagsImpl(byte)
+
+  implicit val traceFlagsHash: Hash[TraceFlags] =
+    Hash.by(_.asByte)
+
+  implicit val traceFlagsShow: Show[TraceFlags] =
+    Show.show(_.asHex)
 
 }

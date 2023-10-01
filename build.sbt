@@ -314,7 +314,7 @@ lazy val benchmarks = project
 lazy val examples = project
   .enablePlugins(NoPublishPlugin)
   .in(file("examples"))
-  .dependsOn(core.jvm, java)
+  .dependsOn(core.jvm, java, `sdk-trace`.jvm)
   .settings(
     name := "otel4s-examples",
     libraryDependencies ++= Seq(

@@ -29,7 +29,6 @@ import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.AttributeKey
 import org.typelevel.otel4s.meta.InstrumentMeta
 import org.typelevel.otel4s.sdk.common.InstrumentationScopeInfo
-import org.typelevel.otel4s.sdk.context.Context
 import org.typelevel.otel4s.sdk.trace.data.EventData
 import org.typelevel.otel4s.sdk.trace.data.LinkData
 import org.typelevel.otel4s.sdk.trace.data.SpanData
@@ -140,27 +139,24 @@ final class SdkSpanBackend[F[_]: Monad: Clock](
   def toSpanData: F[SpanData] =
     for {
       state <- mutableState.get
-    } yield new SpanData {
-      def name: String = immutableState.name
-      def resource: Resource = immutableState.resource
-      def instrumentationScopeInfo: InstrumentationScopeInfo =
-        immutableState.scopeInfo
-      def kind: SpanKind = immutableState.kind
-      def spanContext: SpanContext = immutableState.context
-      def parentSpanContext: Option[SpanContext] = immutableState.parentContext
-      def startEpochNanos: Long = immutableState.startEpochNanos
-      def links: List[LinkData] = immutableState.links
-      def totalRecordedLinks: Int = immutableState.totalRecordedLinks
-      def status: StatusData = state.status
-      def attributes: Attributes = state.attributes
-      def totalAttributeCount: Int =
-        state.attributes.size // todo: incorrect when limits are applied
-      def events: List[EventData] = state.events
-      def totalRecordedEvents: Int = state.totalRecordedEvents
-      def endEpochNanos: Long = state.endEpochNanos
-      def hasEnded: Boolean = state.hasEnded
-
-    }
+    } yield SpanData.create(
+      name = immutableState.name,
+      kind = immutableState.kind,
+      spanContext = immutableState.context,
+      parentSpanContext = immutableState.parentContext,
+      status = state.status,
+      startEpochNanos = immutableState.startEpochNanos,
+      attributes = state.attributes,
+      events = state.events,
+      links = immutableState.links,
+      endEpochNanos = state.endEpochNanos,
+      hasEnded = state.hasEnded,
+      totalRecordedEvents = state.totalRecordedEvents,
+      totalRecordedLinks = immutableState.totalRecordedLinks,
+      totalAttributeCount = state.attributes.size, // todo: incorrect when limits are applied,
+      instrumentationScopeInfo = immutableState.scopeInfo,
+      resource = immutableState.resource
+  )
 
   def hasEnded: F[Boolean] =
     mutableState.get.map(_.hasEnded)

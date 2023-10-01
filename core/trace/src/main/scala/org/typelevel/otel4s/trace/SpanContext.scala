@@ -16,7 +16,10 @@
 
 package org.typelevel.otel4s.trace
 
+import cats.Hash
+import cats.Show
 import cats.effect.SyncIO
+import cats.syntax.show._
 import org.typelevel.vault.Key
 import org.typelevel.vault.Vault
 import scodec.bits.ByteVector
@@ -66,12 +69,18 @@ object SpanContext {
     val Bytes: Int = 16
     val HexLength: Int = Bytes * 2
     val InvalidHex: String = "0" * HexLength
+
+    def fromLongs(hi: Long, lo: Long): String =
+      (ByteVector.fromLong(hi, 8) ++ ByteVector.fromLong(lo, 8)).toHex
   }
 
   object SpanId {
     val Bytes: Int = 8
     val HexLength: Int = Bytes * 2
     val InvalidHex: String = "0" * HexLength
+
+    def fromLong(value: Long): String =
+      ByteVector.fromLong(value, 8).toHex
   }
 
   val invalid: SpanContext =
@@ -106,4 +115,15 @@ object SpanContext {
 
   def fromContext(context: Vault): Option[SpanContext] =
     context.lookup(key)
+
+  implicit val spanContextHash: Hash[SpanContext] =
+    Hash.by { ctx =>
+      (ctx.traceIdHex, ctx.spanIdHex, ctx.traceFlags, ctx.isValid, ctx.isRemote)
+    }
+
+  implicit val spanContextShow: Show[SpanContext] =
+    Show.show { ctx =>
+      show"SpanContext{traceId=${ctx.traceIdHex}, spanId=${ctx.spanIdHex}, traceFlags=${ctx.traceFlags}, remote=${ctx.isRemote}, valid=${ctx.isValid}}"
+    }
+
 }

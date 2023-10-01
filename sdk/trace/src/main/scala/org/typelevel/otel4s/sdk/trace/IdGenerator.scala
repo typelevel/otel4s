@@ -21,7 +21,8 @@ import cats.effect.std.Random
 import cats.syntax.flatMap._
 import cats.syntax.functor._
 import cats.syntax.monad._
-import scodec.bits.ByteVector
+import org.typelevel.otel4s.trace.SpanContext.SpanId
+import org.typelevel.otel4s.trace.SpanContext.TraceId
 
 trait IdGenerator[F[_]] {
   def generateSpanId: F[String]
@@ -38,14 +39,13 @@ object IdGenerator {
     def generateSpanId: F[String] =
       Random[F].nextLong
         .iterateUntil(_ != InvalidId)
-        .map(ByteVector.fromLong(_, 8).toHex) // SpanId.fromLong(id)
+        .map(SpanId.fromLong)
 
     def generateTraceId: F[String] =
       for {
-        idHi <- Random[F].nextLong
-        idLo <- Random[F].nextLong.iterateUntil(_ != InvalidId)
-      } yield (ByteVector.fromLong(idHi, 8) ++
-        ByteVector.fromLong(idLo, 8)).toHex
+        hi <- Random[F].nextLong
+        lo <- Random[F].nextLong.iterateUntil(_ != InvalidId)
+      } yield TraceId.fromLongs(hi, lo)
   }
 
   def random[F[_]: Monad: Random]: IdGenerator[F] =

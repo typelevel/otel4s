@@ -64,7 +64,7 @@ object W3CTraceContextPropagator extends TextMapPropagator {
         spanId.getChars(0, spanId.length, chars, Const.SpanIdOffset)
 
         chars(Const.TraceOptionOffset - 1) = Const.TraceParentDelimiter
-        val traceFlagsHex = spanContext.traceFlags.toHex
+        val traceFlagsHex = spanContext.traceFlags.asHex
         chars(Const.TraceOptionOffset) = traceFlagsHex.charAt(0)
         chars(Const.TraceOptionOffset + 1) = traceFlagsHex.charAt(1)
 

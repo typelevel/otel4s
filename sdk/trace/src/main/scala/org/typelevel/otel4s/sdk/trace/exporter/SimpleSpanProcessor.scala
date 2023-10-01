@@ -18,56 +18,53 @@ package org.typelevel.otel4s.sdk
 package trace
 package exporter
 
-import cats.Applicative
 import cats.Monad
 import cats.effect.Concurrent
 import cats.effect.Resource
 import cats.effect.std.Supervisor
+import cats.syntax.applicative._
 import cats.syntax.flatMap._
 import cats.syntax.functor._
 import fs2.concurrent.Channel
 import org.typelevel.otel4s.trace.SpanContext
 
-import java.util.concurrent.ConcurrentMap
-
+/** An implementation of the [[SpanProcessor]] that converts the
+  * [[ReadableSpan]] to [[data.SpanData SpanData]] and passes it directly to the
+  * configured exporter.
+  *
+  * @tparam F
+  *   the higher-kinded type of a polymorphic effect
+  */
 final class SimpleSpanProcessor[F[_]: Monad] private (
-    supervisor: Channel[F, F[Unit]],
+    processingChannel: Channel[F, F[Unit]],
     exporter: SpanExporter[F],
     sampled: Boolean
 ) extends SpanProcessor[F] {
 
-  def isStartRequired: Boolean = false
-  def isEndRequired: Boolean = true
+  val isStartRequired: Boolean = false
+  val isEndRequired: Boolean = true
 
   def onStart(
       parentContext: Option[SpanContext],
       span: ReadWriteSpan[F]
   ): F[Unit] =
-    Applicative[F].unit
+    Monad[F].unit
 
   def onEnd(span: ReadableSpan[F]): F[Unit] = {
-    if (sampled && !span.spanContext.isSampled) {
-      Applicative[F].unit
-    } else {
-      def exportSpans: F[Unit] =
-        for {
-          data <- span.toSpanData
-          _ <- exporter.exportSpans(List(data))
-        } yield ()
+    val canExport = !sampled || span.spanContext.isSampled
 
-      supervisor.send(exportSpans).void
-    }
+    def exportSpans: F[Unit] = // todo: log error on failure
+      for {
+        data <- span.toSpanData
+        _ <- exporter.exportSpans(List(data))
+      } yield ()
+
+    processingChannel.send(exportSpans).void.whenA(canExport)
   }
-
-  // todo: if (!result.isSuccess()) {
-  //                logger.log(Level.FINE, "Exporter failed");
-  //              }
 
 }
 
 object SimpleSpanProcessor {
-
-  import cats.effect.syntax.all._
 
   def create[F[_]: Concurrent](
       exporter: SpanExporter[F]
@@ -80,7 +77,7 @@ object SimpleSpanProcessor {
   ): Resource[F, SimpleSpanProcessor[F]] = {
     for {
       supervisor <- Supervisor[F](await = true)
-      channel <- Resource.eval(fs2.concurrent.Channel.bounded[F, F[Unit]](100))
+      channel <- Resource.eval(Channel.bounded[F, F[Unit]](10000)) // todo: make configurable?
       _ <- Resource.eval(
         supervisor.supervise(channel.stream.evalMap(identity).compile.drain)
       )

@@ -16,15 +16,44 @@
 
 package org.typelevel.otel4s.sdk.trace.data
 
+import cats.Hash
+import cats.Show
+import cats.syntax.show._
 import org.typelevel.otel4s.trace.Status
 
-final case class StatusData(status: Status, description: String)
+/** Defines the status of a Span by providing a standard [[Status]] in
+  * conjunction with an optional descriptive message.
+  */
+sealed trait StatusData {
+
+  /** The status code
+    */
+  def status: Status
+
+  /** The description of this status for human consumption
+    */
+  def description: String
+}
 
 object StatusData {
 
-  val Ok = StatusData(Status.Ok, "")
-  val Unset = StatusData(Status.Unset, "")
-  val Error = StatusData(Status.Error, "")
+  private final case class StatusDataImpl(
+      status: Status,
+      description: String
+  ) extends StatusData
+
+  /** Indicates the successfully completed operation,validated by an application
+    * developer or operator.
+    */
+  val Ok: StatusData = StatusDataImpl(Status.Ok, "")
+
+  /** The default state.
+    */
+  val Unset: StatusData = StatusDataImpl(Status.Unset, "")
+
+  /** Indicates an occurred error.
+    */
+  val Error: StatusData = StatusDataImpl(Status.Error, "")
 
   def create(status: Status): StatusData =
     status match {
@@ -35,6 +64,13 @@ object StatusData {
 
   def create(status: Status, description: String): StatusData =
     if (description.isEmpty) create(status)
-    else StatusData(status, description)
+    else StatusDataImpl(status, description)
+
+  implicit val statusDataHash: Hash[StatusData] =
+    Hash.by(a => (a.status, a.description))
+
+  implicit val statusDataShow: Show[StatusData] = Show.show { data =>
+    show"StatusData{status=${data.status}, description=${data.description}}"
+  }
 
 }

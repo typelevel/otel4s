@@ -18,12 +18,27 @@ package org.typelevel.otel4s.sdk
 package trace
 package data
 
+import cats.Show
+import cats.kernel.Hash
+import cats.syntax.show._
 import org.typelevel.otel4s.trace.SpanContext
 
 sealed trait LinkData {
   def spanContext: SpanContext
   def attributes: Attributes
   def totalAttributeCount: Int
+
+  override final def hashCode(): Int =
+    Hash[LinkData].hash(this)
+
+  override final def equals(obj: Any): Boolean =
+    obj match {
+      case other: LinkData => Hash[LinkData].eqv(this, other)
+      case _               => false
+    }
+
+  override final def toString: String =
+    Show[LinkData].show(this)
 }
 
 object LinkData {
@@ -46,5 +61,15 @@ object LinkData {
       totalAttributeCount: Int
   ): LinkData =
     LinkDataImpl(context, attributes, totalAttributeCount)
+
+  implicit val linkDataHash: Hash[LinkData] =
+    Hash.by { data =>
+      (data.spanContext, data.attributes, data.totalAttributeCount)
+    }
+
+  implicit val linkDataShow: Show[LinkData] =
+    Show.show { data =>
+      show"LinkData{spanContext=${data.spanContext}, attributes=${data.attributes}, totalAttributeCount=${data.totalAttributeCount}}"
+    }
 
 }

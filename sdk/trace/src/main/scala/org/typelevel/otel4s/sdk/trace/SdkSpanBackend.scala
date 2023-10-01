@@ -40,7 +40,7 @@ import org.typelevel.otel4s.trace.Status
 
 import scala.concurrent.duration.FiniteDuration
 
-final class SdkSpanBackend[F[_]: Monad: Clock](
+final class SdkSpanBackend[F[_]: Monad: Clock] private (
     spanLimits: SpanLimits,
     spanProcessor: SpanProcessor[F],
     immutableState: SdkSpanBackend.ImmutableState,

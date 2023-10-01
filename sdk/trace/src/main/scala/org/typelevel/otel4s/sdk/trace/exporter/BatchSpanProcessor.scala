@@ -49,7 +49,7 @@ import scala.concurrent.duration._
   * @tparam F
   *   the higher-kinded type of a polymorphic effect
   */
-final class BatchSpanProcessor[F[_]: Temporal](
+final class BatchSpanProcessor[F[_]: Temporal] private (
     queue: Queue[F, SpanData],
     signal: CountDownLatch[F],
     state: Ref[F, BatchSpanProcessor.State],

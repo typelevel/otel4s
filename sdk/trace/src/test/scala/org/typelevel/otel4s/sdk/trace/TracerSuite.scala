@@ -29,11 +29,11 @@ import munit.CatsEffectSuite
 import munit.Location
 import munit.TestOptions
 import org.typelevel.otel4s.Attribute
+import org.typelevel.otel4s.TextMapPropagator
 import org.typelevel.otel4s.sdk.Attributes
 import org.typelevel.otel4s.sdk.common.InstrumentationScopeInfo
 import org.typelevel.otel4s.sdk.context.Context
 import org.typelevel.otel4s.sdk.context.propagation.PassThroughPropagator
-import org.typelevel.otel4s.sdk.context.propagation.TextMapPropagator
 import org.typelevel.otel4s.sdk.trace.data.EventData
 import org.typelevel.otel4s.sdk.trace.data.SpanData
 import org.typelevel.otel4s.sdk.trace.data.StatusData
@@ -865,12 +865,12 @@ class TracerSuite extends CatsEffectSuite {
 
   private def sdkTest[A](
       options: TestOptions,
-      additionalPropagators: List[TextMapPropagator] = Nil
+      additionalPropagators: List[TextMapPropagator[Context]] = Nil
   )(body: TracerSuite.Sdk => IO[A])(implicit loc: Location): Unit =
     test(options)(makeSdk(additionalPropagators).use(body))
 
   private def makeSdk(
-      additionalPropagators: List[TextMapPropagator]
+      additionalPropagators: List[TextMapPropagator[Context]]
   ): Resource[IO, TracerSuite.Sdk] = {
     import org.typelevel.otel4s.sdk.instances._
 

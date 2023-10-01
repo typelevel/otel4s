@@ -20,7 +20,9 @@ import org.typelevel.otel4s.metrics.MeterProvider
 import org.typelevel.otel4s.trace.TracerProvider
 
 trait Otel4s[F[_]] {
-  def propagators: ContextPropagators[F]
+  type Ctx
+
+  def propagators: ContextPropagators[Ctx]
 
   /** A registry for creating named meters.
     */

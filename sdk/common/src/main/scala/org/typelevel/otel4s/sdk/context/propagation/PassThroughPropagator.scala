@@ -18,12 +18,13 @@ package org.typelevel.otel4s.sdk.context.propagation
 
 import cats.effect.SyncIO
 import org.typelevel.otel4s.TextMapGetter
+import org.typelevel.otel4s.TextMapPropagator
 import org.typelevel.otel4s.TextMapUpdater
 import org.typelevel.otel4s.sdk.context.Context
 
 class PassThroughPropagator(
     val fields: List[String]
-) extends TextMapPropagator {
+) extends TextMapPropagator[Context] {
   import PassThroughPropagator.ExtractedKeyValuesKey
 
   def extract[A: TextMapGetter](ctx: Context, carrier: A): Context = {

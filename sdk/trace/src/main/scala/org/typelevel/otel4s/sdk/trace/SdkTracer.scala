@@ -20,11 +20,11 @@ package trace
 import cats.effect.Temporal
 import cats.syntax.flatMap._
 import cats.syntax.functor._
+import org.typelevel.otel4s.ContextPropagators
 import org.typelevel.otel4s.TextMapGetter
 import org.typelevel.otel4s.TextMapUpdater
 import org.typelevel.otel4s.sdk.common.InstrumentationScopeInfo
 import org.typelevel.otel4s.sdk.context.Context
-import org.typelevel.otel4s.sdk.context.propagation.ContextPropagators
 import org.typelevel.otel4s.trace.SpanBuilder
 import org.typelevel.otel4s.trace.SpanContext
 import org.typelevel.otel4s.trace.Tracer
@@ -32,7 +32,7 @@ import org.typelevel.otel4s.trace.Tracer
 final class SdkTracer[F[_]: Temporal] private[trace] (
     sharedState: TracerSharedState[F],
     scopeInfo: InstrumentationScopeInfo,
-    propagators: ContextPropagators,
+    propagators: ContextPropagators[Context],
     scope: SdkTraceScope[F]
 ) extends Tracer[F] {
 

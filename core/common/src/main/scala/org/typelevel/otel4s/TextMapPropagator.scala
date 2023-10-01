@@ -16,9 +16,6 @@
 
 package org.typelevel.otel4s
 
-import cats.Applicative
-import org.typelevel.vault.Vault
-
 /** The process of propagating data across process boundaries involves injecting
   * and extracting values in the form of text into carriers that travel in-band.
   *
@@ -30,11 +27,11 @@ import org.typelevel.vault.Vault
   * the process is often implemented using library-specific request
   * interceptors. On the client side, values are injected into the carriers,
   * while on the server side, values are extracted from them.
-  *
-  * @tparam F
-  *   the higher-kinded type of a polymorphic effect
   */
-trait TextMapPropagator[F[_]] {
+trait TextMapPropagator[Ctx] {
+
+  /** The list of propagation fields. */
+  def fields: List[String]
 
   /** Extracts key-value pairs from the given `carrier` and adds them to the
     * given context.
@@ -51,21 +48,7 @@ trait TextMapPropagator[F[_]] {
     * @return
     *   the new context with stored key-value pairs
     */
-  def extract[A: TextMapGetter](ctx: Vault, carrier: A): Vault
-
-  /** Injects data from the context into the given mutable `carrier` for
-    * downstream consumers, for example as HTTP headers.
-    *
-    * @param ctx
-    *   the context containing the value to be injected
-    *
-    * @param carrier
-    *   holds propagation fields
-    *
-    * @tparam A
-    *   the type of the carrier, which is mutable
-    */
-  def inject[A: TextMapSetter](ctx: Vault, carrier: A): F[Unit]
+  def extract[A: TextMapGetter](ctx: Ctx, carrier: A): Ctx
 
   /** Injects data from the context into a copy of the given immutable `carrier`
     * for downstream consumers, for example as HTTP headers.
@@ -85,29 +68,55 @@ trait TextMapPropagator[F[_]] {
     * @return
     *   a copy of the carrier, with new fields injected
     */
-  def injected[A: TextMapUpdater](ctx: Vault, carrier: A): A
+  def injected[A: TextMapUpdater](ctx: Ctx, carrier: A): A
 }
 
 object TextMapPropagator {
 
-  def apply[F[_]](implicit ev: TextMapPropagator[F]): TextMapPropagator[F] = ev
+  /** Creates a [[TextMapPropagator]] which delegates injection and extraction
+    * to the provided propagators.
+    */
+  def composite[Ctx](
+      propagators: List[TextMapPropagator[Ctx]]
+  ): TextMapPropagator[Ctx] =
+    propagators match {
+      case Nil         => new Noop[Ctx]
+      case head :: Nil => head
+      case _           => new Multi(propagators)
+    }
 
   /** Creates a no-op implementation of the [[TextMapPropagator]].
     *
     * All propagation operations are no-op.
-    *
-    * @tparam F
-    *   the higher-kinded type of a polymorphic effect
     */
-  def noop[F[_]: Applicative]: TextMapPropagator[F] =
-    new TextMapPropagator[F] {
-      def extract[A: TextMapGetter](ctx: Vault, carrier: A): Vault =
-        ctx
+  def noop[Ctx]: TextMapPropagator[Ctx] =
+    new Noop
 
-      def inject[A: TextMapSetter](ctx: Vault, carrier: A): F[Unit] =
-        Applicative[F].unit
+  private final class Noop[Ctx] extends TextMapPropagator[Ctx] {
+    def fields: List[String] =
+      Nil
 
-      def injected[A: TextMapUpdater](ctx: Vault, carrier: A): A =
-        carrier
-    }
+    def extract[A: TextMapGetter](ctx: Ctx, carrier: A): Ctx =
+      ctx
+
+    def injected[A: TextMapUpdater](ctx: Ctx, carrier: A): A =
+      carrier
+  }
+
+  private final class Multi[Ctx](
+      propagators: List[TextMapPropagator[Ctx]]
+  ) extends TextMapPropagator[Ctx] {
+    val fields: List[String] =
+      propagators.flatMap(_.fields)
+
+    def extract[A: TextMapGetter](ctx: Ctx, carrier: A): Ctx =
+      propagators.foldLeft(ctx) { (ctx, propagator) =>
+        propagator.extract(ctx, carrier)
+      }
+
+    def injected[A: TextMapUpdater](ctx: Ctx, carrier: A): A =
+      propagators.foldLeft(carrier) { (carrier, propagator) =>
+        propagator.injected(ctx, carrier)
+      }
+  }
 }

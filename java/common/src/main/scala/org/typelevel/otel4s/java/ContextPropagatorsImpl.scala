@@ -17,19 +17,18 @@
 package org.typelevel.otel4s
 package java
 
-import cats.effect.kernel.Sync
 import io.opentelemetry.context.{Context => JContext}
 import io.opentelemetry.context.propagation.{
   ContextPropagators => JContextPropagators
 }
 import org.typelevel.vault.Vault
 
-private[java] class ContextPropagatorsImpl[F[_]: Sync](
+private[java] class ContextPropagatorsImpl(
     propagators: JContextPropagators,
     toJContext: Vault => JContext,
     fromJContext: JContext => Vault
-) extends ContextPropagators[F] {
-  val textMapPropagator: TextMapPropagator[F] =
+) extends ContextPropagators[Vault] {
+  val textMapPropagator: TextMapPropagator[Vault] =
     new TextMapPropagatorImpl(
       propagators.getTextMapPropagator,
       toJContext,

@@ -19,8 +19,9 @@ package trace
 
 import cats.effect.Temporal
 import cats.effect.std.Random
+import org.typelevel.otel4s.ContextPropagators
+import org.typelevel.otel4s.sdk.context.Context
 import org.typelevel.otel4s.sdk.context.LocalContext
-import org.typelevel.otel4s.sdk.context.propagation.ContextPropagators
 import org.typelevel.otel4s.sdk.internal.ComponentRegistry
 import org.typelevel.otel4s.sdk.trace.samplers.Sampler
 import org.typelevel.otel4s.trace.TracerBuilder
@@ -31,7 +32,7 @@ class SdkTracerProvider[F[_]: Temporal](
     resource: Resource,
     spanLimits: SpanLimits,
     sampler: Sampler,
-    propagators: ContextPropagators,
+    propagators: ContextPropagators[Context],
     spanProcessors: List[SpanProcessor[F]],
     scope: SdkTraceScope[F]
 ) extends TracerProvider[F] {

@@ -27,7 +27,7 @@ import org.typelevel.vault.Vault
 
 private[java] class TracerProviderImpl[F[_]: Sync: LocalVault](
     jTracerProvider: JTracerProvider,
-    propagators: ContextPropagators[F],
+    propagators: ContextPropagators[Vault],
     scope: TraceScope[F]
 ) extends TracerProvider[F] {
   def tracer(name: String): TracerBuilder[F] =
@@ -38,7 +38,7 @@ private[java] object TracerProviderImpl {
 
   def local[F[_]](
       jTracerProvider: JTracerProvider,
-      propagators: ContextPropagators[F]
+      propagators: ContextPropagators[Vault]
   )(implicit F: Sync[F], L: Local[F, Vault]): TracerProvider[F] = {
     val traceScope = TraceScope.fromLocal[F]
     new TracerProviderImpl(jTracerProvider, propagators, traceScope)

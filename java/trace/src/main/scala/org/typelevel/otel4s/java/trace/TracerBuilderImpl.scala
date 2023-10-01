@@ -21,10 +21,11 @@ import io.opentelemetry.api.trace.{TracerProvider => JTracerProvider}
 import org.typelevel.otel4s.ContextPropagators
 import org.typelevel.otel4s.context.LocalVault
 import org.typelevel.otel4s.trace._
+import org.typelevel.vault.Vault
 
 private[java] final case class TracerBuilderImpl[F[_]: Sync: LocalVault](
     jTracerProvider: JTracerProvider,
-    propagators: ContextPropagators[F],
+    propagators: ContextPropagators[Vault],
     scope: TraceScope[F],
     name: String,
     version: Option[String] = None,

@@ -34,7 +34,7 @@ import org.typelevel.vault.Vault
 private[java] class TracerImpl[F[_]: Sync: LocalVault](
     jTracer: JTracer,
     scope: TraceScope[F],
-    propagators: ContextPropagators[F]
+    propagators: ContextPropagators[Vault]
 ) extends Tracer[F] {
 
   private val runner: SpanRunner[F] = SpanRunner.span(scope)

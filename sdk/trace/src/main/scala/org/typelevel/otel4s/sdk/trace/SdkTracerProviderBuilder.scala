@@ -19,10 +19,11 @@ package trace
 
 import cats.effect.Temporal
 import cats.effect.std.Random
+import org.typelevel.otel4s.ContextPropagators
+import org.typelevel.otel4s.TextMapPropagator
 import org.typelevel.otel4s.sdk.{Resource => InstrumentResource}
+import org.typelevel.otel4s.sdk.context.Context
 import org.typelevel.otel4s.sdk.context.LocalContext
-import org.typelevel.otel4s.sdk.context.propagation.ContextPropagators
-import org.typelevel.otel4s.sdk.context.propagation.TextMapPropagator
 import org.typelevel.otel4s.sdk.trace.samplers.Sampler
 
 /** Builder for [[SdkTracerProvider]].
@@ -69,7 +70,7 @@ sealed trait SdkTracerProviderBuilder[F[_]] {
   /** Adds a [[TextMapPropagator]]s to use for the context propagation.
     */
   def addTextMapPropagators(
-      propagators: TextMapPropagator*
+      propagators: TextMapPropagator[Context]*
   ): SdkTracerProviderBuilder[F]
 
   /** Adds a [[SpanProcessor]] to the span processing pipeline that will be
@@ -111,7 +112,7 @@ object SdkTracerProviderBuilder {
       resource: InstrumentResource,
       spanLimits: SpanLimits,
       sampler: Sampler,
-      propagators: List[TextMapPropagator],
+      propagators: List[TextMapPropagator[Context]],
       spanProcessors: List[SpanProcessor[F]]
   ) extends SdkTracerProviderBuilder[F] {
 
@@ -131,7 +132,7 @@ object SdkTracerProviderBuilder {
       copy(sampler = sampler)
 
     def addTextMapPropagators(
-        propagator: TextMapPropagator*
+        propagator: TextMapPropagator[Context]*
     ): SdkTracerProviderBuilder[F] =
       copy(propagators = this.propagators ++ propagator)
 

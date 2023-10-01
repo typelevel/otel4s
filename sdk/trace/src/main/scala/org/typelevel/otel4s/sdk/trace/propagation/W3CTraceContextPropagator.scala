@@ -17,9 +17,9 @@
 package org.typelevel.otel4s.sdk.trace.propagation
 
 import org.typelevel.otel4s.TextMapGetter
+import org.typelevel.otel4s.TextMapPropagator
 import org.typelevel.otel4s.TextMapUpdater
 import org.typelevel.otel4s.sdk.context.Context
-import org.typelevel.otel4s.sdk.context.propagation.TextMapPropagator
 import org.typelevel.otel4s.sdk.trace.SdkTraceScope
 import org.typelevel.otel4s.trace.SpanContext
 import org.typelevel.otel4s.trace.SpanContext.SpanId
@@ -27,7 +27,7 @@ import org.typelevel.otel4s.trace.SpanContext.TraceId
 import org.typelevel.otel4s.trace.TraceFlags
 import scodec.bits.ByteVector
 
-object W3CTraceContextPropagator extends TextMapPropagator {
+object W3CTraceContextPropagator extends TextMapPropagator[Context] {
 
   val fields: List[String] = List(Fields.TraceParent, Fields.TraceState)
 

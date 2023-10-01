@@ -914,7 +914,7 @@ class TracerSuite extends CatsEffectSuite {
       val textMapPropagators =
         W3CTraceContextPropagator.getInstance() +: additionalPropagators
 
-      val propagators = new ContextPropagatorsImpl[IO](
+      val propagators = new ContextPropagatorsImpl(
         JContextPropagators.create(
           JTextMapPropagator.composite(textMapPropagators.asJava)
         ),

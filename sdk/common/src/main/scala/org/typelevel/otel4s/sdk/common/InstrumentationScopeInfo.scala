@@ -18,7 +18,7 @@ package org.typelevel.otel4s.sdk
 package common
 
 import cats.Show
-import cats.kernel.Hash
+import cats.Hash
 import cats.syntax.show._
 
 /** Holds information about instrumentation scope.

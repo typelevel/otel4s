@@ -101,6 +101,7 @@ object W3CTraceContextPropagator extends TextMapPropagator {
     }
   }
 
+  // todo: for god's sake, replace with scodec
   private def extractContextFromTraceParent(
       traceParent: String
   ): Option[SpanContext] = {
@@ -129,29 +130,25 @@ object W3CTraceContextPropagator extends TextMapPropagator {
       } else {
         val traceId =
           traceParent.substring(TraceIdOffset, TraceIdOffset + TraceIdHexSize)
+
         val spanId =
           traceParent.substring(SpanIdOffset, SpanIdOffset + SpanIdHexSize)
-        /*val firstTraceFlagsChar = traceParent.charAt(TraceOptionOffset)
-        val secondTraceFlagsChar = traceParent.charAt(TraceOptionOffset + 1)*/
 
-        /*if (!OtelEncodingUtils.isValidBase16Character(firstTraceFlagsChar) ||
-          !OtelEncodingUtils.isValidBase16Character(secondTraceFlagsChar)) {
-          SpanContext.getInvalid
-        } else {
-          val traceFlags = TraceFlags.fromByte(
-            OtelEncodingUtils.byteFromBase16(firstTraceFlagsChar, secondTraceFlagsChar)
-          )
-          SpanContext.createFromRemoteParent(traceId, spanId, traceFlags, TraceState.getDefault)
-        }*/
+        val firstTraceFlagsChar = traceParent.charAt(TraceOptionOffset)
+        val secondTraceFlagsChar = traceParent.charAt(TraceOptionOffset + 1)
 
-        Some(
-          SpanContext.create(
-            traceId_ = ByteVector.fromValidHex(traceId),
-            spanId_ = ByteVector.fromValidHex(spanId),
-            traceFlags_ = TraceFlags.Default,
-            remote = true
-          )
-        )
+        ByteVector
+          .fromHex(new String(Array(firstTraceFlagsChar, secondTraceFlagsChar)))
+          .map { bytes =>
+            val traceFlags = TraceFlags.fromByte(bytes.toByte())
+
+            SpanContext.create(
+              traceId_ = ByteVector.fromValidHex(traceId),
+              spanId_ = ByteVector.fromValidHex(spanId),
+              traceFlags_ = traceFlags,
+              remote = true
+            )
+          }
       }
     }
 

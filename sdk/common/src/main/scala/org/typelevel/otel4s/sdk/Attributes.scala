@@ -21,7 +21,7 @@ import cats.Monad
 import cats.Monoid
 import cats.Show
 import cats.implicits._
-import cats.kernel.Hash
+import cats.Hash
 import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.Attribute.KeySelect
 import org.typelevel.otel4s.AttributeKey

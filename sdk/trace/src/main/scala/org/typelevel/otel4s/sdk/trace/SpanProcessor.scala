@@ -34,7 +34,8 @@ trait SpanProcessor[F[_]] {
     * throw or block the execution thread.
     *
     * @param parentContext
-    *   the optional parent [[SpanContext]]
+    *   the optional parent
+    *   [[org.typelevel.otel4s.trace.SpanContext SpanContext]]
     *
     * @param span
     *   the started span

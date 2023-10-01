@@ -17,8 +17,8 @@
 package org.typelevel.otel4s
 
 import cats.Show
-import cats.implicits.showInterpolator
-import cats.kernel.Hash
+import cats.syntax.show._
+import cats.Hash
 
 /** Represents the key-value attribute.
   *

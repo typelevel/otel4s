@@ -27,7 +27,7 @@ import org.typelevel.otel4s.sdk.trace.samplers.Sampler
 
 /** Builder for [[SdkTracerProvider]].
   */
-trait SdkTracerProviderBuilder[F[_]] {
+sealed trait SdkTracerProviderBuilder[F[_]] {
 
   /** Sets an [[IdGenerator]].
     *
@@ -39,12 +39,12 @@ trait SdkTracerProviderBuilder[F[_]] {
     */
   def setIdGenerator(idGenerator: IdGenerator[F]): SdkTracerProviderBuilder[F]
 
-  /** Sets a [[InstrumentResource]] to be attached to all spans created by
+  /** Sets a [[org.typelevel.otel4s.sdk.Resource]] to be attached to all spans created by
     * [[org.typelevel.otel4s.trace.Tracer Tracer]].
     */
   def setResource(resource: InstrumentResource): SdkTracerProviderBuilder[F]
 
-  /** Merges a [[InstrumentResource]] with the current one.
+  /** Merges a [[org.typelevel.otel4s.sdk.Resource]] with the current one.
     */
   def addResource(resource: InstrumentResource): SdkTracerProviderBuilder[F]
 
@@ -55,7 +55,7 @@ trait SdkTracerProviderBuilder[F[_]] {
     */
   def setSpanLimits(limits: SpanLimits): SdkTracerProviderBuilder[F]
 
-  /** Sets a [[Sampler]] to use for sampling traces.
+  /** Sets a [[org.typelevel.otel4s.sdk.trace.samplers.Sampler Sampler]] to use for sampling traces.
     *
     * Sampler will be called each time a
     * [[org.typelevel.otel4s.trace.Span Span]] is started.
@@ -98,8 +98,7 @@ object SdkTracerProviderBuilder {
       idGeneratorF = IdGenerator.default[F],
       resource = InstrumentResource.Default,
       spanLimits = SpanLimits.Default,
-      sampler =
-        Sampler.recordAndSample, // Sampler.parentBased(Sampler.alwaysOn)
+      sampler = Sampler.parentBased(Sampler.AlwaysOn),
       propagators = Nil,
       spanProcessors = Nil
     )

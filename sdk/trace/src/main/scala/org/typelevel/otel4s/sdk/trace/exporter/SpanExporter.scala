@@ -31,7 +31,8 @@ import org.typelevel.otel4s.sdk.trace.data.SpanData
   */
 trait SpanExporter[F[_]] {
 
-  /** Called to export sampled [[SpanData]].
+  /** Called to export sampled
+    * [[org.typelevel.otel4s.sdk.trace.data.SpanData SpanData]].
     *
     * ''Note'': the export operations can be performed simultaneously depending
     * on the type of span processor being used. However, the

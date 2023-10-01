@@ -72,6 +72,9 @@ object SpanContext {
 
     def fromLongs(hi: Long, lo: Long): String =
       (ByteVector.fromLong(hi, 8) ++ ByteVector.fromLong(lo, 8)).toHex
+
+    def randomPart(traceIdHex: String): Long =
+      ByteVector.fromValidHex(traceIdHex.drop(16)).toLong()
   }
 
   object SpanId {

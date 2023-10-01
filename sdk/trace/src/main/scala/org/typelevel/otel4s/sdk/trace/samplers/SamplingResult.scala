@@ -16,35 +16,47 @@
 
 package org.typelevel.otel4s.sdk.trace.samplers
 
+import cats.{Hash, Show}
+import cats.syntax.show._
 import org.typelevel.otel4s.sdk.Attributes
 import org.typelevel.otel4s.trace.SamplingDecision
 
+/** Sampling result returned by [[Sampler.shouldSample]].
+  */
 sealed trait SamplingResult {
+
+  /** The decision on whether a span should be recorded, recorded and sampled or
+    * not recorded.
+    */
   def decision: SamplingDecision
+
+  /** The attributes that will be attached to the span
+    */
   def attributes: Attributes
 
-  /*
-   default TraceState getUpdatedTraceState(TraceState parentTraceState) {
-     return parentTraceState;
-   }
-   */
+  override final def hashCode(): Int =
+    Hash[SamplingResult].hash(this)
+
+  override final def equals(obj: Any): Boolean =
+    obj match {
+      case other: SamplingResult => Hash[SamplingResult].eqv(this, other)
+      case _ => false
+    }
+
+  override final def toString: String =
+    Show[SamplingResult].show(this)
 }
 
 object SamplingResult {
 
-  private val RecordAndSample =
+  val RecordAndSample: SamplingResult =
     SamplingResultImpl(SamplingDecision.RecordAndSample, Attributes.Empty)
 
-  private val RecordOnly =
+  val RecordOnly: SamplingResult =
     SamplingResultImpl(SamplingDecision.RecordOnly, Attributes.Empty)
 
-  private val Drop =
+  val Drop: SamplingResult =
     SamplingResultImpl(SamplingDecision.Drop, Attributes.Empty)
-
-  private final case class SamplingResultImpl(
-      decision: SamplingDecision,
-      attributes: Attributes
-  ) extends SamplingResult
 
   def create(decision: SamplingDecision): SamplingResult =
     decision match {
@@ -60,8 +72,17 @@ object SamplingResult {
     if (attributes.isEmpty) create(decision)
     else SamplingResultImpl(decision, attributes)
 
-  def recordAndSample: SamplingResult = RecordAndSample
-  def recordOnly: SamplingResult = RecordOnly
-  def drop: SamplingResult = Drop
+  implicit val samplingResultHash: Hash[SamplingResult] =
+    Hash.by(r => (r.decision, r.attributes))
+
+  implicit val samplingResultShow: Show[SamplingResult] =
+    Show.show { r =>
+      show"SamplingResult{decision=${r.decision}, attributes=${r.attributes}}"
+    }
+
+  private final case class SamplingResultImpl(
+      decision: SamplingDecision,
+      attributes: Attributes
+  ) extends SamplingResult
 
 }

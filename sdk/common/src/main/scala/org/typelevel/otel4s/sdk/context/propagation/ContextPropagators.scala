@@ -26,12 +26,12 @@ object ContextPropagators {
     val textMapPropagator: TextMapPropagator = TextMapPropagator.noop
   }
 
-  private final class Default(
+  private final class ContextPropagatorsImpl(
       val textMapPropagator: TextMapPropagator
   ) extends ContextPropagators
 
   def create(textMapPropagator: TextMapPropagator): ContextPropagators =
-    new Default(textMapPropagator)
+    new ContextPropagatorsImpl(textMapPropagator)
 
   def noop: ContextPropagators =
     Noop

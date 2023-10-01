@@ -283,42 +283,41 @@ class TracerSuite extends CatsEffectSuite {
     }
   }
 
-  /*test("create a no-op scope") { todo: fix
+  // todo: should pass
+  sdkTest("create a no-op scope".ignore) { sdk =>
     TestControl.executeEmbed {
-      withSdk() { sdk =>
-        for {
-          now <- IO.monotonic.delayBy(1.second) // otherwise returns 0
-          tracer <- sdk.provider.get("tracer")
-          _ <- tracer.currentSpanContext.assertEquals(None)
-          _ <- tracer.span("span-1").use { span =>
-            for {
-              _ <- tracer.currentSpanContext.assertEquals(Some(span.context))
-              _ <- tracer.noopScope {
-                for {
-                  _ <- tracer.currentSpanContext.assertEquals(None)
-                  // a new root span should not be created
-                  _ <- tracer
-                    .span("span-2")
+      for {
+        now <- IO.monotonic.delayBy(1.second) // otherwise returns 0
+        tracer <- sdk.provider.get("tracer")
+        _ <- tracer.currentSpanContext.assertEquals(None)
+        _ <- tracer.span("span-1").use { span =>
+          for {
+            _ <- tracer.currentSpanContext.assertEquals(Some(span.context))
+            _ <- tracer.noopScope {
+              for {
+                _ <- tracer.currentSpanContext.assertEquals(None)
+                // a new root span should not be created
+                _ <- tracer
+                  .span("span-2")
+                  .use(_ => tracer.currentSpanContext.assertEquals(None))
+                _ <- tracer
+                  .rootSpan("span-3")
+                  .use(_ => tracer.currentSpanContext.assertEquals(None))
+                _ <- tracer.rootScope {
+                  tracer
+                    .span("span-4")
                     .use(_ => tracer.currentSpanContext.assertEquals(None))
-                  _ <- tracer
-                    .rootSpan("span-3")
-                    .use(_ => tracer.currentSpanContext.assertEquals(None))
-                  _ <- tracer.rootScope {
-                    tracer
-                      .span("span-4")
-                      .use(_ => tracer.currentSpanContext.assertEquals(None))
-                  }
-                } yield ()
-              }
-            } yield ()
-          }
-        } yield now
-      } { case (now, spans) =>
-        val tree = SpanNode.fromSpans(spans)
-        assertEquals(tree, List(SpanNode("span-1", now, now, Nil)))
-      }
+                }
+              } yield ()
+            }
+          } yield ()
+        }
+        spans <- sdk.finishedSpans
+        tree <- IO.pure(SpanNode.fromSpans(spans))
+        // _ <- IO.println(tree.map(SpanNode.render).mkString("\n"))
+      } yield assertEquals(tree, List(SpanNode("span-1", now, now, Nil)))
     }
-  }*/
+  }
 
   sdkTest("create a new scope with a custom parent") { sdk =>
     def expected(now: FiniteDuration) =
@@ -669,7 +668,7 @@ class TracerSuite extends CatsEffectSuite {
     val spanId = "279fa73bc935cc05"
 
     val headers = Map(
-      "traceparent" -> s"00-$traceId-$spanId-00", // todo: should be 00-$traceId-$spanId-01
+      "traceparent" -> s"00-$traceId-$spanId-01",
       "foo" -> "1",
       "baz" -> "2"
     )
@@ -694,9 +693,7 @@ class TracerSuite extends CatsEffectSuite {
         assertEquals(resultHeaders.size, 2)
         assertEquals(
           resultHeaders.get("traceparent"),
-          Some(
-            s"00-$traceId-$spanId-00"
-          ) // todo: should be 00-$traceId-$spanId-01
+          Some(s"00-$traceId-$spanId-01")
         )
         assertEquals(resultHeaders.get("foo"), Some("1"))
       }
@@ -866,10 +863,10 @@ class TracerSuite extends CatsEffectSuite {
   }
 
   private def sdkTest[A](
-      name: String,
+      options: TestOptions,
       additionalPropagators: List[TextMapPropagator] = Nil
   )(body: TracerSuite.Sdk => IO[A])(implicit loc: Location): Unit =
-    test(new TestOptions(name))(makeSdk(additionalPropagators).use(body))
+    test(options)(makeSdk(additionalPropagators).use(body))
 
   private def makeSdk(
       additionalPropagators: List[TextMapPropagator]

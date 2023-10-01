@@ -19,7 +19,7 @@ package trace
 package data
 
 import cats.Show
-import cats.kernel.Hash
+import cats.Hash
 import cats.syntax.show._
 import org.typelevel.otel4s.trace.SpanContext
 

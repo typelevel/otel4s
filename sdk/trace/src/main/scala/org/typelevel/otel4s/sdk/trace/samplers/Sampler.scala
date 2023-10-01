@@ -22,7 +22,29 @@ import org.typelevel.otel4s.sdk.trace.data.LinkData
 import org.typelevel.otel4s.trace.SpanContext
 import org.typelevel.otel4s.trace.SpanKind
 
+/** A Sampler is used to make decisions on Span sampling. */
 trait Sampler {
+
+  /** Called during span creation to make a sampling result.
+    *
+    * @param parentContext
+    *   the parent's span context. `None` means there is no parent
+    *
+    * @param traceId
+    *   the trace id of the new span
+    *
+    * @param name
+    *   the name of the new span
+    *
+    * @param kind
+    *   the kind of the new span
+    *
+    * @param attributes
+    *   the attributes associated with the new span
+    *
+    * @param parentLinks
+    *   the parent links associated with the new span
+    */
   def shouldSample(
       parentContext: Option[SpanContext],
       traceId: String,
@@ -32,23 +54,83 @@ trait Sampler {
       parentLinks: List[LinkData]
   ): SamplingResult
 
+  /** The description of the [[Sampler]]. This may be displayed on debug pages
+    * or in the logs.
+    */
   def description: String
+
+  override final def toString: String = description
 }
 
 object Sampler {
 
-  def recordAndSample: Sampler =
-    new Sampler {
-      def shouldSample(
-          parentContext: Option[SpanContext],
-          traceId: String,
-          name: String,
-          kind: SpanKind,
-          attributes: Attributes,
-          parentLinks: List[LinkData]
-      ): SamplingResult = SamplingResult.recordAndSample
+  // Always makes a "yes" SamplingResult for Span sampling.
+  val AlwaysOn: Sampler =
+    new Const(SamplingResult.RecordAndSample, "AlwaysOnSampler")
 
-      def description: String = "record and sample"
-    }
+  // Always makes a "no" SamplingResult for Span sampling.
+  val AlwaysOff: Sampler =
+    new Const(SamplingResult.Drop, "AlwaysOffSampler")
+
+  /** Returns a [[Sampler]] that always makes the same decision as the parent
+    * Span to whether or not to sample.
+    *
+    * If there is no parent, the sampler uses the provided root [[Sampler]] to
+    * determine the sampling decision.
+    *
+    * @param root
+    *   the [[Sampler]] which is used to make the sampling decisions if the
+    *   parent does not exist
+    */
+  def parentBased(root: Sampler): Sampler =
+    parentBasedBuilder(root).build
+
+  /** Creates a [[ParentBasedSampler.Builder]] for [[ParentBasedSampler]] that enables
+    * configuration of the parent-based sampling strategy.
+    *
+    * The parent's sampling decision is used if a parent span exists, otherwise
+    * this strategy uses the root sampler's decision.
+    *
+    * There are a several options available on the builder to control the
+    * precise behavior of how the decision will be made.
+    *
+    * @param root
+    *   the [[Sampler]] which is used to make the sampling decisions if the
+    *   parent does not exist
+    */
+  def parentBasedBuilder(root: Sampler): ParentBasedSampler.Builder =
+    ParentBasedSampler.builder(root)
+
+  /** Creates a new [[TraceIdRatioBased]] Sampler.
+    *
+    * The ratio of sampling a trace is equal to that of the specified ratio.
+    *
+    * The algorithm used by the Sampler is undefined, notably it may or may not
+    * use parts of the trace ID when generating a sampling decision.
+    *
+    * Currently, only the ratio of traces that are sampled can be relied on, not
+    * how the sampled traces are determined. As such, it is recommended to only
+    * use this [[Sampler]] for root spans using [[parentBased]].
+    *
+    * @param ratio
+    *   the desired ratio of sampling. Must be >= 0 and <= 1.0.
+    */
+  def traceIdRatioBased(ratio: Double): Sampler =
+    TraceIdRatioBased.create(ratio)
+
+  private final class Const(
+      result: SamplingResult,
+      val description: String
+  ) extends Sampler {
+    def shouldSample(
+        parentContext: Option[SpanContext],
+        traceId: String,
+        name: String,
+        kind: SpanKind,
+        attributes: Attributes,
+        parentLinks: List[LinkData]
+    ): SamplingResult =
+      result
+  }
 
 }

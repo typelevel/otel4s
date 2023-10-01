@@ -20,8 +20,8 @@ package trace
 import cats.Applicative
 import cats.Monad
 import cats.effect.Concurrent
-import cats.effect.kernel.Clock
-import cats.effect.std.AtomicCell
+import cats.effect.Clock
+import cats.effect.Ref
 import cats.syntax.flatMap._
 import cats.syntax.functor._
 import cats.syntax.semigroup._
@@ -44,7 +44,7 @@ final class SdkSpanBackend[F[_]: Monad: Clock] private (
     spanLimits: SpanLimits,
     spanProcessor: SpanProcessor[F],
     immutableState: SdkSpanBackend.ImmutableState,
-    mutableState: AtomicCell[F, SdkSpanBackend.MutableState]
+    mutableState: Ref[F, SdkSpanBackend.MutableState] // todo: use AtomicCell[F, SdkSpanBackend.MutableState]
 ) extends Span.Backend[F]
     with ReadWriteSpan[F] {
 
@@ -56,9 +56,9 @@ final class SdkSpanBackend[F[_]: Monad: Clock] private (
   def addAttributes(attributes: Attribute[_]*): F[Unit] =
     if (attributes.isEmpty) Applicative[F].unit
     else
-      mutableState.update(s =>
+      mutableState.update { s =>
         s.copy(attributes = s.attributes |+| Attributes(attributes: _*))
-      )
+      }
 
   def addEvent(name: String, attributes: Attribute[_]*): F[Unit] =
     for {
@@ -199,6 +199,7 @@ object SdkSpanBackend {
       hasEnded: Boolean
   )
 
+  // todo: replace Concurrent with Async
   def start[F[_]: Concurrent: Clock](
       context: SpanContext,
       name: String,
@@ -258,7 +259,7 @@ object SdkSpanBackend {
 
     for {
       start <- computeNow
-      ms <- AtomicCell[F].of(mutableState)
+      ms <- Concurrent[F].ref(mutableState) // todo: use AtomicCell[F].of(mutableState)
       backend = new SdkSpanBackend[F](
         spanLimits,
         spanProcessor,

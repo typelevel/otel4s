@@ -17,11 +17,11 @@
 package org.typelevel.otel4s.sdk
 
 import cats.Show
-import cats.implicits.catsSyntaxEitherId
-import cats.implicits.catsSyntaxOptionId
-import cats.implicits.catsSyntaxSemigroup
-import cats.implicits.showInterpolator
-import cats.kernel.Hash
+import cats.syntax.either._
+import cats.syntax.option._
+import cats.syntax.semigroup._
+import cats.syntax.show._
+import cats.Hash
 import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.sdk.Resource.ResourceInitiationError
 import org.typelevel.otel4s.semconv.resource.attributes.ResourceAttributes._

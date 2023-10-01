@@ -30,7 +30,7 @@ import org.typelevel.otel4s.trace.SpanBuilder
 import org.typelevel.otel4s.trace.SpanContext
 import org.typelevel.otel4s.trace.Tracer
 
-private[trace] class SdkTracer[F[_]: Concurrent: Clock](
+final class SdkTracer[F[_]: Concurrent: Clock] private[trace] (
     sharedState: TracerSharedState[F],
     scopeInfo: InstrumentationScopeInfo,
     propagators: ContextPropagators,

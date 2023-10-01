@@ -60,13 +60,6 @@ object TraceFlags {
   val Default: TraceFlags = fromByte(0x00)
   val Sampled: TraceFlags = fromByte(0x01)
 
-  private final case class TraceFlagsImpl(byte: Byte) extends TraceFlags {
-    def asByte: Byte = byte
-    def asHex: String = ByteVector.fromByte(byte).toHex
-    def isSampled: Boolean =
-      (byte & TraceFlags.SampledMask) == TraceFlags.SampledMask
-  }
-
   /** Returns the [[TraceFlags]] converted from the given byte representation.
     */
   def fromByte(byte: Byte): TraceFlags =
@@ -77,5 +70,13 @@ object TraceFlags {
 
   implicit val traceFlagsShow: Show[TraceFlags] =
     Show.show(_.asHex)
+
+  private final case class TraceFlagsImpl(byte: Byte) extends TraceFlags {
+    def asByte: Byte = byte
+    def asHex: String = ByteVector.fromByte(byte).toHex
+
+    def isSampled: Boolean =
+      (byte & TraceFlags.SampledMask) == TraceFlags.SampledMask
+  }
 
 }

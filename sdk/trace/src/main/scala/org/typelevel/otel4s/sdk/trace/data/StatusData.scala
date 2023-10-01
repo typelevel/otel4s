@@ -21,7 +21,7 @@ import cats.Show
 import cats.syntax.show._
 import org.typelevel.otel4s.trace.Status
 
-/** Defines the status of a Span by providing a standard [[Status]] in
+/** Defines the status of a Span by providing a standard Status in
   * conjunction with an optional descriptive message.
   */
 sealed trait StatusData {
@@ -33,6 +33,18 @@ sealed trait StatusData {
   /** The description of this status for human consumption
     */
   def description: String
+
+  override final def hashCode(): Int =
+    Hash[StatusData].hash(this)
+
+  override final def equals(obj: Any): Boolean =
+    obj match {
+      case other: StatusData => Hash[StatusData].eqv(this, other)
+      case _                 => false
+    }
+
+  override final def toString: String =
+    Show[StatusData].show(this)
 }
 
 object StatusData {

@@ -101,7 +101,7 @@ object SpanContext {
       spanId_ : ByteVector,
       traceFlags_ : TraceFlags,
       remote: Boolean
-  ): SpanContext = {
+  ): SpanContext =
     new SpanContext {
       def traceId: ByteVector = traceId_
       def traceIdHex: String = traceId.toHex
@@ -111,7 +111,6 @@ object SpanContext {
       def isValid: Boolean = true // todo calculate
       def isRemote: Boolean = remote
     }
-  }
 
   def fromContext(context: Vault): Option[SpanContext] =
     context.lookup(key)

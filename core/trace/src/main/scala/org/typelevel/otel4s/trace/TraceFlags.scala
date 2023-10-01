@@ -53,7 +53,7 @@ sealed trait TraceFlags {
 }
 
 object TraceFlags {
-  private[trace] final val SampledMask = 0x01
+  private val SampledMask = 0x01
 
   val HexLength = 2
 
@@ -62,7 +62,7 @@ object TraceFlags {
 
   private final case class TraceFlagsImpl(byte: Byte) extends TraceFlags {
     def asByte: Byte = byte
-    def asHex: String = ByteVector.fromByte(byte).toHex // todo: incorrect
+    def asHex: String = ByteVector.fromByte(byte).toHex
     def isSampled: Boolean =
       (byte & TraceFlags.SampledMask) == TraceFlags.SampledMask
   }

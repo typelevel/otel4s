@@ -131,8 +131,8 @@ object W3CTraceContextPropagator extends TextMapPropagator {
           traceParent.substring(TraceIdOffset, TraceIdOffset + TraceIdHexSize)
         val spanId =
           traceParent.substring(SpanIdOffset, SpanIdOffset + SpanIdHexSize)
-        val firstTraceFlagsChar = traceParent.charAt(TraceOptionOffset)
-        val secondTraceFlagsChar = traceParent.charAt(TraceOptionOffset + 1)
+        /*val firstTraceFlagsChar = traceParent.charAt(TraceOptionOffset)
+        val secondTraceFlagsChar = traceParent.charAt(TraceOptionOffset + 1)*/
 
         /*if (!OtelEncodingUtils.isValidBase16Character(firstTraceFlagsChar) ||
           !OtelEncodingUtils.isValidBase16Character(secondTraceFlagsChar)) {

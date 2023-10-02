@@ -40,6 +40,12 @@ private[java] class SpanBackendImpl[F[_]: Sync](
   def context: SpanContext =
     spanContext
 
+  def updateName(name: String): F[Unit] =
+    Sync[F].delay {
+      jSpan.updateName(name)
+      ()
+    }
+
   def addAttributes(attributes: Attribute[_]*): F[Unit] =
     Sync[F].delay {
       jSpan.setAllAttributes(Conversions.toJAttributes(attributes))

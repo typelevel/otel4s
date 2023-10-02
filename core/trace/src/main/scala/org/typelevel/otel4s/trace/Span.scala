@@ -71,6 +71,20 @@ trait Span[F[_]] extends SpanMacro[F] {
   final def context: SpanContext =
     backend.context
 
+  /** Updates the name of the [[Span]].
+    *
+    * '''Note''': if used, this will override the name provided via the
+    * [[SpanBuilder]].
+    *
+    * '''Caution''': upon this update, any sampling behavior based on span's
+    * name will depend on the implementation.
+    *
+    * @param name
+    *   the new name of the span
+    */
+  final def updateName(name: String): F[Unit] =
+    backend.updateName(name)
+
   /** Marks the end of [[Span]] execution.
     *
     * Only the timing of the first end call for a given span will be recorded,
@@ -102,6 +116,8 @@ object Span {
     def meta: InstrumentMeta[F]
     def context: SpanContext
 
+    def updateName(name: String): F[Unit]
+
     def addAttributes(attributes: Attribute[_]*): F[Unit]
     def addEvent(name: String, attributes: Attribute[_]*): F[Unit]
 
@@ -130,6 +146,8 @@ object Span {
 
         val meta: InstrumentMeta[F] = InstrumentMeta.disabled
         val context: SpanContext = SpanContext.invalid
+
+        def updateName(name: String): F[Unit] = unit
 
         def addAttributes(attributes: Attribute[_]*): F[Unit] = unit
         def addEvent(name: String, attributes: Attribute[_]*): F[Unit] = unit

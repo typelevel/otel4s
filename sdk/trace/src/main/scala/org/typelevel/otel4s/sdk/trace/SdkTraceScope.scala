@@ -26,7 +26,7 @@ import org.typelevel.otel4s.trace.SpanContext
 private[trace] trait SdkTraceScope[F[_]] {
   def current: F[Option[SpanContext]]
   def makeScope(span: SpanContext): F[F ~> F]
-  def rootScope: F ~> F
+  def rootScope: F[F ~> F]
   def noopScope: F ~> F
   def withExplicitContext(context: Context): F ~> F
   def reader[A](f: Context => A): F[A]
@@ -50,19 +50,26 @@ private[trace] object SdkTraceScope {
   def fromLocal[F[_]](implicit L: Local[F, Context]): SdkTraceScope[F] = {
     new SdkTraceScope[F] {
       def current: F[Option[SpanContext]] =
-        L.applicative.map(L.ask[Context])(context =>
-          context.get(SpanContextKey)
-        )
+        L.reader(_.get(SpanContextKey))
 
       def makeScope(span: SpanContext): F[F ~> F] =
         L.applicative.map(current)(context =>
           createScope(nextScope(context, span))
         )
 
-      def rootScope: F ~> F =
-        new (F ~> F) {
-          def apply[A](fa: F[A]): F[A] =
-            L.scope(fa)(Context.root)
+      def rootScope: F[F ~> F] =
+        L.reader { context =>
+          val ctx = fromContext(context) match {
+            // the SpanContext exist and it's invalid.
+            // It means, the propagation strategy is noop and we should keep the current context
+            case Some(ctx) if !ctx.isValid => context
+            // the SpanContext exist and it's valid, hence we start with the fresh one
+            case Some(_) => Context.root
+            // there is no existing SpanContext, we can continue using the context
+            case None => context
+          }
+
+          withExplicitContext(ctx)
         }
 
       def noopScope: F ~> F =
@@ -83,14 +90,18 @@ private[trace] object SdkTraceScope {
             L.local(fa)(context => storeInContext(context, spanContext))
         }
 
+      // the context propagation logic
       private def nextScope(
           current: Option[SpanContext],
           next: SpanContext
       ): SpanContext =
         current match {
+          // the current span context is valid, so we can switch to the next one
           case Some(value) if value.isValid => next
-          case Some(_)                      => SpanContext.invalid
-          case None                         => next
+          // the current span context is invalid, so we cannot switch and keep the current one
+          case Some(value) => value
+          // the current span context does not exist, so we start with the next one
+          case None => next
         }
     }
   }

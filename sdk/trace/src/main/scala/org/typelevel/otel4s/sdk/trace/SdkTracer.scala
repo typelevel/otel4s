@@ -48,7 +48,7 @@ final class SdkTracer[F[_]: Temporal] private[trace] (
     scope.makeScope(parent).flatMap(trace => trace(fa))
 
   def rootScope[A](fa: F[A]): F[A] =
-    scope.rootScope(fa)
+    scope.rootScope.flatMap(trace => trace(fa))
 
   def noopScope[A](fa: F[A]): F[A] =
     scope.noopScope(fa)

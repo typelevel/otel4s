@@ -292,8 +292,7 @@ class TracerSuite extends CatsEffectSuite {
     }
   }
 
-  // todo: should pass
-  sdkTest("create a no-op scope".ignore) { sdk =>
+  sdkTest("create a no-op scope") { sdk =>
     TestControl.executeEmbed {
       for {
         now <- IO.monotonic.delayBy(1.second) // otherwise returns 0

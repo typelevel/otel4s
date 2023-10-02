@@ -19,7 +19,7 @@ package trace
 
 import cats.Applicative
 import cats.arrow.FunctionK
-import cats.effect.Resource
+import cats.effect.kernel.Resource
 
 import scala.concurrent.duration.FiniteDuration
 

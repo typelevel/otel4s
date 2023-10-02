@@ -16,48 +16,41 @@
 
 package org.typelevel.otel4s.java.trace
 
+import cats.effect.SyncIO
 import io.opentelemetry.api.trace.{SpanContext => JSpanContext}
 import io.opentelemetry.api.trace.{TraceFlags => JTraceFlags}
 import io.opentelemetry.api.trace.TraceState
 import org.typelevel.otel4s.trace.SpanContext
 import org.typelevel.otel4s.trace.TraceFlags
+import org.typelevel.vault.{Key, Vault}
 import scodec.bits.ByteVector
 
-private[java] final case class WrappedSpanContext(
-    jSpanContext: JSpanContext
-) extends SpanContext {
+private[otel4s] object WrappedSpanContext {
 
-  lazy val traceId: ByteVector =
-    ByteVector(jSpanContext.getTraceIdBytes)
+  private val key = Key.newKey[SyncIO, SpanContext].unsafeRunSync()
 
-  def traceIdHex: String =
-    jSpanContext.getTraceId
+  def storeInContext(context: Vault, ctx: SpanContext): Vault =
+    context.insert(key, ctx)
 
-  lazy val spanId: ByteVector =
-    ByteVector(jSpanContext.getSpanIdBytes)
+  def getFromContext(context: Vault): Option[SpanContext] =
+    context.lookup(key)
 
-  def spanIdHex: String =
-    jSpanContext.getSpanId
-
-  def traceFlags: TraceFlags =
-    TraceFlags.fromByte(jSpanContext.getTraceFlags.asByte())
-
-  def isValid: Boolean =
-    jSpanContext.isValid
-
-  def isRemote: Boolean =
-    jSpanContext.isRemote
-}
-
-private[trace] object WrappedSpanContext {
+  def wrap(context: JSpanContext): SpanContext =
+    SpanContext.delegate(
+      underlying = context,
+      traceId = ByteVector(context.getTraceIdBytes),
+      spanId = ByteVector(context.getSpanIdBytes),
+      traceFlags = TraceFlags.fromByte(context.getTraceFlags.asByte),
+      remote = context.isRemote,
+      isValid = context.isValid
+    )
 
   def unwrap(context: SpanContext): JSpanContext = {
-    def flags =
-      if (context.isSampled) JTraceFlags.getSampled else JTraceFlags.getDefault
+    val flags = JTraceFlags.fromByte(context.traceFlags.asByte)
 
     context match {
-      case ctx: WrappedSpanContext =>
-        ctx.jSpanContext
+      case ctx: SpanContext.Delegate[JSpanContext @unchecked] =>
+        ctx.underlying
 
       case other if other.isRemote =>
         JSpanContext.createFromRemoteParent(

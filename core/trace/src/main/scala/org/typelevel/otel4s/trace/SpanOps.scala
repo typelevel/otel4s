@@ -16,7 +16,7 @@
 
 package org.typelevel.otel4s.trace
 
-import cats.effect.Resource
+import cats.effect.kernel.Resource
 import cats.~>
 
 trait SpanOps[F[_]] {
@@ -53,7 +53,7 @@ trait SpanOps[F[_]] {
     */
   def startUnmanaged: F[Span[F]]
 
-  /** Creates a [[Span]] and a [[cats.effect.Resource Resource]] for using it.
+  /** Creates a [[Span]] and a [[cats.effect.kernel.Resource Resource]] for using it.
     * Unlike [[startUnmanaged]], the lifecycle of the span is fully managed.
     *
     * The finalization strategy is determined by [[SpanFinalizer.Strategy]]. By

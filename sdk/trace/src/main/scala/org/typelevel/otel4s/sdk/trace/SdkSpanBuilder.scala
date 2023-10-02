@@ -37,7 +37,6 @@ import org.typelevel.otel4s.trace.SpanFinalizer
 import org.typelevel.otel4s.trace.SpanKind
 import org.typelevel.otel4s.trace.SpanOps
 import org.typelevel.otel4s.trace.TraceFlags
-import scodec.bits.ByteVector
 
 import scala.concurrent.duration.FiniteDuration
 
@@ -140,10 +139,6 @@ private[trace] final case class SdkSpanBuilder[F[_]: Temporal](
     }
 
   private[trace] def start: F[SdkSpanBackend[F]] = {
-
-    // val parentSpan = Span.fromContext(parentContext)
-    // val parentSpanContext: SpanContext = ??? //
-
     val idGenerator = tracerSharedState.idGenerator
     val spanKind = kind.getOrElse(SpanKind.Internal)
 
@@ -156,13 +151,13 @@ private[trace] final case class SdkSpanBuilder[F[_]: Temporal](
         parentSpanContext
           .filter(_.isValid)
           .fold(idGenerator.generateTraceId) { spanContext =>
-            Concurrent[F].pure(spanContext.traceIdHex)
+            Concurrent[F].pure(spanContext.traceId)
           }
 
       backend <- {
         val samplingResult = tracerSharedState.sampler.shouldSample(
           parentSpanContext,
-          traceId,
+          traceId.toHex,
           name,
           spanKind,
           Attributes(attributes: _*),
@@ -175,15 +170,15 @@ private[trace] final case class SdkSpanBuilder[F[_]: Temporal](
           if (samplingDecision.isSampled) TraceFlags.Sampled
           else TraceFlags.Default
 
-        val spanContext = SpanContext.create(
-          ByteVector.fromValidHex(traceId),
-          ByteVector.fromValidHex(spanId),
-          traceFlags,
-          remote = false /*,
-          tracerSharedState.idGeneratorSafeToSkipIdValidation*/
+        val spanContext = SpanContext.createInternal(
+          traceId = traceId,
+          spanId = spanId,
+          traceFlags = traceFlags,
+          remote = false,
+          skipIdValidation = tracerSharedState.idGenerator.canSkipIdValidation
         )
 
-        /*if (!samplingDecision.isRecording) {
+        /*if (!samplingDecision.isRecording) { todo
           return Span.wrap(spanContext)
         }*/
 

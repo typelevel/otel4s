@@ -42,7 +42,8 @@ private[otel4s] object ContextConversions {
         if (jSpan.getSpanContext.isValid) {
           var context = Vault.empty
           context = Scope.Span(jContext, jSpan).storeInContext(context)
-          new WrappedSpanContext(jSpan.getSpanContext).storeInContext(context)
+          val ctx = WrappedSpanContext.wrap(jSpan.getSpanContext)
+          WrappedSpanContext.storeInContext(context, ctx)
         } else {
           Scope.Noop.storeInContext(Vault.empty)
         }

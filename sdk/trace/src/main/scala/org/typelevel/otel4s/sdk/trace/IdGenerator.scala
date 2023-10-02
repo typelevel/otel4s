@@ -22,6 +22,7 @@ import cats.syntax.flatMap._
 import cats.syntax.functor._
 import cats.syntax.monad._
 import org.typelevel.otel4s.trace.SpanContext
+import scodec.bits.ByteVector
 
 /** Used by the [[SdkTracer]] to generate new span and trace ids.
   *
@@ -30,11 +31,17 @@ import org.typelevel.otel4s.trace.SpanContext
   */
 trait IdGenerator[F[_]] {
 
-  /** Generates a valid span id. */
-  def generateSpanId: F[String]
+  /** Generates a valid span id */
+  def generateSpanId: F[ByteVector]
 
-  /** Generates a valid trace id. */
-  def generateTraceId: F[String]
+  /** Generates a valid trace id */
+  def generateTraceId: F[ByteVector]
+
+  /** Whether it's safe to skip the ID validation: we are sure the generated ids
+    * are valid
+    */
+  private[trace] def canSkipIdValidation: Boolean =
+    false
 }
 
 object IdGenerator {
@@ -44,16 +51,20 @@ object IdGenerator {
   private[trace] final class RandomIdGenerator[F[_]: Monad: Random]
       extends IdGenerator[F] {
 
-    def generateSpanId: F[String] =
+    def generateSpanId: F[ByteVector] =
       Random[F].nextLong
         .iterateUntil(_ != InvalidId)
         .map(SpanContext.SpanId.fromLong)
 
-    def generateTraceId: F[String] =
+    def generateTraceId: F[ByteVector] =
       for {
         hi <- Random[F].nextLong
         lo <- Random[F].nextLong.iterateUntil(_ != InvalidId)
       } yield SpanContext.TraceId.fromLongs(hi, lo)
+
+    // we trust ourselves
+    override private[trace] def canSkipIdValidation: Boolean =
+      true
   }
 
   def random[F[_]: Monad: Random]: IdGenerator[F] =

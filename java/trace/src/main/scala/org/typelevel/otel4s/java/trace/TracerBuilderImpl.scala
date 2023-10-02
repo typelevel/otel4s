@@ -19,7 +19,7 @@ package org.typelevel.otel4s.java.trace
 import cats.effect.Sync
 import io.opentelemetry.api.trace.{TracerProvider => JTracerProvider}
 import org.typelevel.otel4s.ContextPropagators
-import org.typelevel.otel4s.context.LocalVault
+import org.typelevel.otel4s.java.trace.context.LocalVault
 import org.typelevel.otel4s.trace._
 import org.typelevel.vault.Vault
 

@@ -25,7 +25,7 @@ import io.opentelemetry.api.trace.{Tracer => JTracer}
 import org.typelevel.otel4s.ContextPropagators
 import org.typelevel.otel4s.TextMapGetter
 import org.typelevel.otel4s.TextMapUpdater
-import org.typelevel.otel4s.context.LocalVault
+import org.typelevel.otel4s.java.trace.context.LocalVault
 import org.typelevel.otel4s.trace.SpanBuilder
 import org.typelevel.otel4s.trace.SpanContext
 import org.typelevel.otel4s.trace.Tracer
@@ -45,7 +45,7 @@ private[java] class TracerImpl[F[_]: Sync: LocalVault](
   def currentSpanContext: F[Option[SpanContext]] =
     scope.current.map {
       case Scope.Span(_, jSpan) if jSpan.getSpanContext.isValid =>
-        Some(new WrappedSpanContext(jSpan.getSpanContext))
+        Some(WrappedSpanContext.wrap(jSpan.getSpanContext))
 
       case _ =>
         None
@@ -69,7 +69,7 @@ private[java] class TracerImpl[F[_]: Sync: LocalVault](
     val context = propagators.textMapPropagator.extract(Vault.empty, carrier)
 
     // use Local[F, Vault].scope(..)(context) to bring extracted headers
-    SpanContext.fromContext(context) match {
+    WrappedSpanContext.getFromContext(context) match {
       case Some(parent) =>
         Local[F, Vault].scope(childScope(parent)(fa))(context)
       case None =>

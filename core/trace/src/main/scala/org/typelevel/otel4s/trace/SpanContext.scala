@@ -18,13 +18,19 @@ package org.typelevel.otel4s.trace
 
 import cats.Hash
 import cats.Show
-import cats.effect.SyncIO
 import cats.syntax.show._
-import org.typelevel.vault.Key
-import org.typelevel.vault.Vault
 import scodec.bits.ByteVector
 
-trait SpanContext {
+/** A class that represents a span context.
+  *
+  * A span context contains the state that must propagate to child spans and
+  * across process boundaries.
+  *
+  * It contains the identifiers (a `trace_id` and `span_id`) associated with the
+  * span and a set of flags (currently only whether the context is sampled or
+  * not), as well as the remote flag.
+  */
+sealed trait SpanContext {
 
   /** Returns the trace identifier associated with this [[SpanContext]] as
     * 16-byte vector.
@@ -34,7 +40,8 @@ trait SpanContext {
   /** Returns the trace identifier associated with this [[SpanContext]] as 32
     * character lowercase hex String.
     */
-  def traceIdHex: String
+  final def traceIdHex: String =
+    traceId.toHex
 
   /** Returns the span identifier associated with this [[SpanContext]] as 8-byte
     * vector.
@@ -44,11 +51,17 @@ trait SpanContext {
   /** Returns the span identifier associated with this [[SpanContext]] as 16
     * character lowercase hex String.
     */
-  def spanIdHex: String
+  final def spanIdHex: String =
+    spanId.toHex
 
+  /** Returns the [[TraceFlags]] associated with this [[SpanContext]].
+    */
   def traceFlags: TraceFlags
 
-  def isSampled: Boolean = traceFlags.isSampled
+  /** Return `true` if this [[SpanContext]] is sampled.
+    */
+  final def isSampled: Boolean =
+    traceFlags.isSampled
 
   /** Returns `true` if this [[SpanContext]] is valid.
     */
@@ -59,64 +72,177 @@ trait SpanContext {
     */
   def isRemote: Boolean
 
-  def storeInContext(context: Vault): Vault =
-    context.insert(SpanContext.key, this)
+  override final def hashCode(): Int =
+    Hash[SpanContext].hash(this)
+
+  override final def equals(obj: Any): Boolean =
+    obj match {
+      case other: SpanContext => Hash[SpanContext].eqv(this, other)
+      case _                  => false
+    }
+
+  override final def toString: String =
+    Show[SpanContext].show(this)
 }
 
 object SpanContext {
+
+  private[otel4s] sealed trait Delegate[A] extends SpanContext {
+    def underlying: A
+  }
 
   object TraceId {
     val Bytes: Int = 16
     val HexLength: Int = Bytes * 2
     val InvalidHex: String = "0" * HexLength
+    val Invalid: ByteVector = ByteVector.fromValidHex(InvalidHex)
 
-    def fromLongs(hi: Long, lo: Long): String =
-      (ByteVector.fromLong(hi, 8) ++ ByteVector.fromLong(lo, 8)).toHex
+    def fromLongs(hi: Long, lo: Long): ByteVector =
+      ByteVector.fromLong(hi, 8) ++ ByteVector.fromLong(lo, 8)
 
     def randomPart(traceIdHex: String): Long =
       ByteVector.fromValidHex(traceIdHex.drop(16)).toLong()
+
+    /** Checks whether a trace id has correct length and is not the invalid id.
+      */
+    def isValid(id: ByteVector): Boolean =
+      (id.length == HexLength) && (id != Invalid)
   }
 
   object SpanId {
     val Bytes: Int = 8
     val HexLength: Int = Bytes * 2
     val InvalidHex: String = "0" * HexLength
+    val Invalid: ByteVector = ByteVector.fromValidHex(InvalidHex)
 
-    def fromLong(value: Long): String =
-      ByteVector.fromLong(value, 8).toHex
+    def fromLong(value: Long): ByteVector =
+      ByteVector.fromLong(value, 8)
+
+    /** Checks whether a span id has correct length and is not the invalid id.
+      */
+    def isValid(id: ByteVector): Boolean =
+      (id.length == HexLength) && (id != Invalid)
   }
 
   val invalid: SpanContext =
-    new SpanContext {
-      val traceIdHex: String = TraceId.InvalidHex
-      val traceId: ByteVector = ByteVector.fromValidHex(traceIdHex)
-      val spanIdHex: String = SpanId.InvalidHex
-      val spanId: ByteVector = ByteVector.fromValidHex(spanIdHex)
-      val traceFlags: TraceFlags = TraceFlags.fromByte(0)
-      val isValid: Boolean = false
-      val isRemote: Boolean = false
-    }
+    SpanContextImpl(
+      traceId = TraceId.Invalid,
+      spanId = SpanId.Invalid,
+      traceFlags = TraceFlags.Default,
+      isRemote = false,
+      isValid = false
+    )
 
-  private val key = Key.newKey[SyncIO, SpanContext].unsafeRunSync()
-
+  /** Creates a new [[SpanContext]] with the given identifiers and options.
+    *
+    * If the `traceId` or the `spanId` are invalid (ie. do not conform to the
+    * requirements for hexadecimal ids of the appropriate lengths), both will be
+    * replaced with the standard "invalid" versions (i.e. all '0's).
+    *
+    * @param traceId
+    *   the trace identifier of the span context
+    *
+    * @param spanId
+    *   the span identifier of the span context
+    *
+    * @param traceFlags
+    *   the trace flags of the span context
+    *
+    * @param remote
+    *   whether the span is propagated from the remote parent or not
+    */
   def create(
-      traceId_ : ByteVector,
-      spanId_ : ByteVector,
-      traceFlags_ : TraceFlags,
+      traceId: ByteVector,
+      spanId: ByteVector,
+      traceFlags: TraceFlags,
       remote: Boolean
   ): SpanContext =
-    new SpanContext {
-      def traceId: ByteVector = traceId_
-      def traceIdHex: String = traceId.toHex
-      def spanId: ByteVector = spanId_
-      def spanIdHex: String = spanId.toHex
-      def traceFlags: TraceFlags = traceFlags_
-      def isValid: Boolean = true // todo calculate
-      def isRemote: Boolean = remote
-    }
+    createInternal(
+      traceId = traceId,
+      spanId = spanId,
+      traceFlags = traceFlags,
+      remote = remote,
+      skipIdValidation = false
+    )
 
-  def fromContext(context: Vault): Option[SpanContext] =
-    context.lookup(key)
+  /** Creates a new [[SpanContext]] with the given identifiers and options.
+    *
+    * If the id validation isn't skipped and the `traceId` or the `spanId` are
+    * invalid (ie. do not conform to the requirements for hexadecimal ids of the
+    * appropriate lengths), both will be replaced with the standard "invalid"
+    * versions (i.e. all '0's).
+    *
+    * ''Note:'' the method is for the internal use only. It is not supposed to
+    * be publicly available.
+    *
+    * @see
+    *   [[create]]
+    *
+    * @param traceId
+    *   the trace identifier of the span context
+    *
+    * @param spanId
+    *   the span identifier of the span context
+    *
+    * @param traceFlags
+    *   the trace flags of the span context
+    *
+    * @param remote
+    *   whether the span is propagated from the remote parent or not
+    *
+    * @param skipIdValidation
+    *   pass true to skip validation of trace ID and span ID as an optimization
+    *   in cases where they are known to have been already validated
+    */
+  private[otel4s] def createInternal(
+      traceId: ByteVector,
+      spanId: ByteVector,
+      traceFlags: TraceFlags,
+      remote: Boolean,
+      skipIdValidation: Boolean
+  ): SpanContext = {
+    if (
+      skipIdValidation || (TraceId.isValid(traceId) && SpanId.isValid(spanId))
+    ) {
+      SpanContextImpl(
+        traceId = traceId,
+        spanId = spanId,
+        traceFlags = traceFlags,
+        isRemote = remote,
+        isValid = true
+      )
+    } else {
+      SpanContextImpl(
+        traceId = invalid.traceId,
+        spanId = invalid.spanId,
+        traceFlags = traceFlags,
+        isRemote = remote,
+        isValid = false,
+      )
+    }
+  }
+
+  /** Creates a delegated [[SpanContext]].
+    *
+    * ''Note:'' the method is for the internal use only. It is not supposed to
+    * be publicly available.
+    */
+  private[otel4s] def delegate[A](
+      underlying: A,
+      traceId: ByteVector,
+      spanId: ByteVector,
+      traceFlags: TraceFlags,
+      remote: Boolean,
+      isValid: Boolean
+  ): Delegate[A] =
+    DelegateImpl(
+      underlying = underlying,
+      traceId = traceId,
+      spanId = spanId,
+      traceFlags = traceFlags,
+      isRemote = remote,
+      isValid = isValid,
+    )
 
   implicit val spanContextHash: Hash[SpanContext] =
     Hash.by { ctx =>
@@ -127,5 +253,22 @@ object SpanContext {
     Show.show { ctx =>
       show"SpanContext{traceId=${ctx.traceIdHex}, spanId=${ctx.spanIdHex}, traceFlags=${ctx.traceFlags}, remote=${ctx.isRemote}, valid=${ctx.isValid}}"
     }
+
+  private final case class SpanContextImpl(
+      traceId: ByteVector,
+      spanId: ByteVector,
+      traceFlags: TraceFlags,
+      isRemote: Boolean,
+      isValid: Boolean
+  ) extends SpanContext
+
+  private final case class DelegateImpl[A](
+      underlying: A,
+      traceId: ByteVector,
+      spanId: ByteVector,
+      traceFlags: TraceFlags,
+      isRemote: Boolean,
+      isValid: Boolean
+  ) extends Delegate[A]
 
 }

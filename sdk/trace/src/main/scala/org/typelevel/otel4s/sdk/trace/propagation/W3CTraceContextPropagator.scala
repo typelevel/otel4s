@@ -143,9 +143,9 @@ object W3CTraceContextPropagator extends TextMapPropagator[Context] {
             val traceFlags = TraceFlags.fromByte(bytes.toByte())
 
             SpanContext.create(
-              traceId_ = ByteVector.fromValidHex(traceId),
-              spanId_ = ByteVector.fromValidHex(spanId),
-              traceFlags_ = traceFlags,
+              traceId = ByteVector.fromValidHex(traceId),
+              spanId = ByteVector.fromValidHex(spanId),
+              traceFlags = traceFlags,
               remote = true
             )
           }

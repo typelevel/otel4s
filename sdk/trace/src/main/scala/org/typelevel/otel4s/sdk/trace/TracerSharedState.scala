@@ -25,10 +25,4 @@ private final case class TracerSharedState[F[_]](
     spanLimits: SpanLimits,
     sampler: Sampler,
     activeSpanProcessor: SpanProcessor[F]
-) {
-
-  // tracks whether it is safe to skip id validation on ids from the above generator
-  val idGeneratorSafeToSkipIdValidation: Boolean =
-    idGenerator.isInstanceOf[IdGenerator.RandomIdGenerator[F]]
-
-}
+)

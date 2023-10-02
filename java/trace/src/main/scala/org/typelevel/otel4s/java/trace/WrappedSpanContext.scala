@@ -17,10 +17,10 @@
 package org.typelevel.otel4s.java.trace
 
 import io.opentelemetry.api.trace.{SpanContext => JSpanContext}
-import io.opentelemetry.api.trace.TraceFlags
+import io.opentelemetry.api.trace.{TraceFlags => JTraceFlags}
 import io.opentelemetry.api.trace.TraceState
-import org.typelevel.otel4s.trace.SamplingDecision
 import org.typelevel.otel4s.trace.SpanContext
+import org.typelevel.otel4s.trace.TraceFlags
 import scodec.bits.ByteVector
 
 private[java] final case class WrappedSpanContext(
@@ -39,8 +39,8 @@ private[java] final case class WrappedSpanContext(
   def spanIdHex: String =
     jSpanContext.getSpanId
 
-  lazy val samplingDecision: SamplingDecision =
-    SamplingDecision.fromBoolean(jSpanContext.isSampled)
+  lazy val traceFlags: TraceFlags =
+    TraceFlags.fromByte(jSpanContext.getTraceFlags.asByte)
 
   def isValid: Boolean =
     jSpanContext.isValid
@@ -52,9 +52,7 @@ private[java] final case class WrappedSpanContext(
 private[trace] object WrappedSpanContext {
 
   def unwrap(context: SpanContext): JSpanContext = {
-    def flags =
-      if (context.samplingDecision.isSampled) TraceFlags.getSampled
-      else TraceFlags.getDefault
+    def flags = JTraceFlags.fromByte(context.traceFlags.asByte)
 
     context match {
       case ctx: WrappedSpanContext =>

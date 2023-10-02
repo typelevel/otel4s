@@ -28,11 +28,15 @@ object SamplingDecision {
     */
   case object Drop extends SamplingDecision(false)
 
+  /** Span is recorded only. The resulting span will record all information like
+    * timings and attributes but will not be exported. Downstream parent-based
+    * samplers will not sample the span.
+    */
+  case object RecordOnly extends SamplingDecision(false)
+
   /** Span is recorded and sampled. The resulting span will record all
     * information like timings and attributes and will be exported.
     */
-  case object Record extends SamplingDecision(true)
+  case object RecordAndSample extends SamplingDecision(true)
 
-  def fromBoolean(isSampled: Boolean): SamplingDecision =
-    if (isSampled) Record else Drop
 }

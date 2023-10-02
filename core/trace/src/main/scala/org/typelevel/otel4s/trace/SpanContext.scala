@@ -106,7 +106,7 @@ object SpanContext {
     /** Checks whether a trace id has correct length and is not the invalid id.
       */
     def isValid(id: ByteVector): Boolean =
-      (id.length == HexLength) && (id != Invalid)
+      (id.length == Bytes) && (id != Invalid)
   }
 
   object SpanId {
@@ -121,7 +121,7 @@ object SpanContext {
     /** Checks whether a span id has correct length and is not the invalid id.
       */
     def isValid(id: ByteVector): Boolean =
-      (id.length == HexLength) && (id != Invalid)
+      (id.length == Bytes) && (id != Invalid)
   }
 
   val invalid: SpanContext =
@@ -217,7 +217,7 @@ object SpanContext {
         spanId = invalid.spanId,
         traceFlags = traceFlags,
         isRemote = remote,
-        isValid = false,
+        isValid = false
       )
     }
   }

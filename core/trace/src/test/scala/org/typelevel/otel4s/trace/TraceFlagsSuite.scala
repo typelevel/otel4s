@@ -38,4 +38,17 @@ class TraceFlagsSuite extends FunSuite {
     }
   }
 
+  test("create from hex") {
+    (0 until 256).foreach { i =>
+      val hex = Integer.toHexString(i)
+      val input = if (hex.length == 1) "0" + hex else hex
+
+      assertEquals(TraceFlags.fromHex(input).map(_.asHex), Some(input))
+    }
+  }
+
+  test("create from hex (invalid)") {
+    assertEquals(TraceFlags.fromHex("zxc"), None)
+  }
+
 }

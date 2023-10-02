@@ -60,10 +60,17 @@ object TraceFlags {
   val Default: TraceFlags = fromByte(0x00)
   val Sampled: TraceFlags = fromByte(0x01)
 
-  /** Returns the [[TraceFlags]] converted from the given byte representation.
+  /** Creates the [[TraceFlags]] from the given byte representation.
     */
   def fromByte(byte: Byte): TraceFlags =
     TraceFlagsImpl(byte)
+
+  /** Creates the [[TraceFlags]] from the given hex representation.
+    *
+    * Returns `None` if input string has invalid (non-hex) characters.
+    */
+  def fromHex(hex: String): Option[TraceFlags] =
+    ByteVector.fromHex(hex).map(b => TraceFlagsImpl(b.toByte()))
 
   implicit val traceFlagsHash: Hash[TraceFlags] =
     Hash.by(_.asByte)

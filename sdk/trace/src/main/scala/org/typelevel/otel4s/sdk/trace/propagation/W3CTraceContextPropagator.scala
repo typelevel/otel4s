@@ -137,11 +137,9 @@ object W3CTraceContextPropagator extends TextMapPropagator[Context] {
         val firstTraceFlagsChar = traceParent.charAt(TraceOptionOffset)
         val secondTraceFlagsChar = traceParent.charAt(TraceOptionOffset + 1)
 
-        ByteVector
+        TraceFlags
           .fromHex(new String(Array(firstTraceFlagsChar, secondTraceFlagsChar)))
-          .map { bytes =>
-            val traceFlags = TraceFlags.fromByte(bytes.toByte())
-
+          .map { traceFlags =>
             SpanContext.create(
               traceId = ByteVector.fromValidHex(traceId),
               spanId = ByteVector.fromValidHex(spanId),

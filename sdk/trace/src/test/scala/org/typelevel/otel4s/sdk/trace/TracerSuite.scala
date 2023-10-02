@@ -74,6 +74,14 @@ class TracerSuite extends CatsEffectSuite {
     )
   }
 
+  sdkTest("update span name") { sdk =>
+    for {
+      tracer <- sdk.provider.get("tracer")
+      _ <- tracer.span("span").use(span => span.updateName("span-use"))
+      spans <- sdk.finishedSpans
+    } yield assertEquals(spans.map(_.name), List("span-use"))
+  }
+
   sdkTest("set attributes only once") { sdk =>
     val key = "string-attribute"
     val value = "value"

@@ -66,7 +66,7 @@ sealed trait InstrumentationScopeInfo {
 
 object InstrumentationScopeInfo {
 
-  /** A builder for [[InstrumentationScopeInfo]].
+  /** A builder of [[InstrumentationScopeInfo]].
     */
   sealed trait Builder {
 

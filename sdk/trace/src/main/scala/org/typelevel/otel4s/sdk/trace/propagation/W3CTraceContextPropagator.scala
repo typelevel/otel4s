@@ -16,6 +16,7 @@
 
 package org.typelevel.otel4s.sdk.trace.propagation
 
+import cats.syntax.apply._
 import org.typelevel.otel4s.TextMapGetter
 import org.typelevel.otel4s.TextMapPropagator
 import org.typelevel.otel4s.TextMapUpdater
@@ -25,9 +26,18 @@ import org.typelevel.otel4s.trace.SpanContext
 import org.typelevel.otel4s.trace.SpanContext.SpanId
 import org.typelevel.otel4s.trace.SpanContext.TraceId
 import org.typelevel.otel4s.trace.TraceFlags
-import scodec.bits.ByteVector
+
+import scala.util.matching.Regex
 
 object W3CTraceContextPropagator extends TextMapPropagator[Context] {
+
+  private object Fields {
+    val TraceParent = "traceparent"
+    val TraceState = "tracestate"
+  }
+
+  private val Pattern: Regex =
+    "([0-9]{2})-([0-9a-f]{32})-([0-9a-f]{16})-([0-9a-f]{2})".r
 
   val fields: List[String] = List(Fields.TraceParent, Fields.TraceState)
 
@@ -50,25 +60,8 @@ object W3CTraceContextPropagator extends TextMapPropagator[Context] {
   def injected[A: TextMapUpdater](ctx: Context, carrier: A): A =
     SdkTraceScope.fromContext(ctx).filter(_.isValid) match {
       case Some(spanContext) =>
-        val chars = new Array[Char](Const.TraceParentHeaderSize)
-        chars(0) = Const.Version.charAt(0)
-        chars(1) = Const.Version.charAt(1)
-        chars(2) = Const.TraceParentDelimiter
-
-        val traceId = spanContext.traceIdHex
-        traceId.getChars(0, traceId.length, chars, Const.TraceIdOffset)
-
-        chars(Const.SpanIdOffset - 1) = Const.TraceParentDelimiter
-
-        val spanId = spanContext.spanIdHex
-        spanId.getChars(0, spanId.length, chars, Const.SpanIdOffset)
-
-        chars(Const.TraceOptionOffset - 1) = Const.TraceParentDelimiter
-        val traceFlagsHex = spanContext.traceFlags.asHex
-        chars(Const.TraceOptionOffset) = traceFlagsHex.charAt(0)
-        chars(Const.TraceOptionOffset + 1) = traceFlagsHex.charAt(1)
-
-        val traceParent = new String(chars, 0, Const.TraceParentHeaderSize)
+        val traceParent =
+          s"00-${spanContext.traceIdHex}-${spanContext.spanIdHex}-${spanContext.traceFlags.asHex}"
 
         TextMapUpdater[A].updated(carrier, Fields.TraceParent, traceParent)
 
@@ -76,80 +69,21 @@ object W3CTraceContextPropagator extends TextMapPropagator[Context] {
         carrier
     }
 
-  private object Fields {
-    val TraceParent = "traceparent"
-    val TraceState = "tracestate"
-  }
-
-  private object Const {
-    val Version = "00"
-    val VersionSize = 2
-    val TraceParentDelimiter = '-'
-    val TraceParentDelimiterSize = 1
-    val TraceIdHexSize = TraceId.HexLength
-    val SpanIdHexSize = SpanId.HexLength
-    val TraceOptionHexSize = TraceFlags.HexLength
-    val TraceIdOffset = VersionSize + TraceParentDelimiterSize
-    val SpanIdOffset = TraceIdOffset + TraceIdHexSize + TraceParentDelimiterSize
-    val TraceOptionOffset =
-      SpanIdOffset + SpanIdHexSize + TraceParentDelimiterSize
-    val TraceParentHeaderSize = TraceOptionOffset + TraceOptionHexSize
-    val Version00 = "00"
-    val ValidVersions: Set[String] = Set.tabulate(255) { i =>
-      val version = Integer.toHexString(i)
-      if (version.length < 2) "0" + version else version
-    }
-  }
-
-  // todo: for god's sake, replace with scodec
   private def extractContextFromTraceParent(
       traceParent: String
-  ): Option[SpanContext] = {
-    import Const._
+  ): Option[SpanContext] =
+    traceParent match {
+      case Pattern(_, traceIdHex, spanIdHex, traceFlagsHex) =>
+        (
+          TraceId.fromHex(traceIdHex),
+          SpanId.fromHex(spanIdHex),
+          TraceFlags.fromHex(traceFlagsHex)
+        ).mapN { (traceId, spanId, traceFlags) =>
+          SpanContext.create(traceId, spanId, traceFlags, remote = true)
+        }
 
-    val isValid = (
-      traceParent.length == TraceParentHeaderSize ||
-        (traceParent.length > TraceParentHeaderSize && traceParent.charAt(
-          TraceParentHeaderSize
-        ) == TraceParentDelimiter)
-    ) && traceParent.charAt(TraceIdOffset - 1) == TraceParentDelimiter &&
-      traceParent.charAt(SpanIdOffset - 1) == TraceParentDelimiter &&
-      traceParent.charAt(TraceOptionOffset - 1) == TraceParentDelimiter
-
-    if (!isValid) {
-      //   logger.fine("Unparseable traceparent header. Returning INVALID span context.")
-      None
-    } else {
-      val version = traceParent.substring(0, 2)
-      if (!ValidVersions.contains(version)) {
+      case _ =>
         None
-      } else if (
-        version == Version00 && traceParent.length > TraceParentHeaderSize
-      ) {
-        None
-      } else {
-        val traceId =
-          traceParent.substring(TraceIdOffset, TraceIdOffset + TraceIdHexSize)
-
-        val spanId =
-          traceParent.substring(SpanIdOffset, SpanIdOffset + SpanIdHexSize)
-
-        val firstTraceFlagsChar = traceParent.charAt(TraceOptionOffset)
-        val secondTraceFlagsChar = traceParent.charAt(TraceOptionOffset + 1)
-
-        TraceFlags
-          .fromHex(new String(Array(firstTraceFlagsChar, secondTraceFlagsChar)))
-          .map { traceFlags =>
-            SpanContext.create(
-              traceId = ByteVector.fromValidHex(traceId),
-              spanId = ByteVector.fromValidHex(spanId),
-              traceFlags = traceFlags,
-              remote = true
-            )
-          }
-      }
     }
-
-  }
 
 }

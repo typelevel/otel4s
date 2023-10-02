@@ -27,9 +27,9 @@ import cats.syntax.flatMap._
 import cats.syntax.functor._
 import org.typelevel.otel4s.trace.SpanContext
 
-/** An implementation of the [[SpanProcessor]] that converts the
-  * [[ReadableSpan]] to [[data.SpanData SpanData]] and passes it directly to the
-  * configured exporter.
+/** An implementation of the [[SpanProcessor]] that converts the [[SpanView]] to
+  * [[data.SpanData SpanData]] and passes it directly to the configured
+  * exporter.
   *
   * @tparam F
   *   the higher-kinded type of a polymorphic effect
@@ -43,13 +43,10 @@ final class SimpleSpanProcessor[F[_]: Monad] private (
   val isStartRequired: Boolean = false
   val isEndRequired: Boolean = true
 
-  def onStart(
-      parentContext: Option[SpanContext],
-      span: ReadWriteSpan[F]
-  ): F[Unit] =
+  def onStart(parentContext: Option[SpanContext], span: SpanView[F]): F[Unit] =
     Monad[F].unit
 
-  def onEnd(span: ReadableSpan[F]): F[Unit] = {
+  def onEnd(span: SpanView[F]): F[Unit] = {
     val canExport = !sampled || span.spanContext.isSampled
 
     def exportSpans: F[Unit] = // todo: log error on failure

@@ -35,8 +35,8 @@ sealed trait SdkTracerProviderBuilder[F[_]] {
     * [[IdGenerator]] will be used each time a
     * [[org.typelevel.otel4s.trace.Span Span]] is started.
     *
-    * ''Note'': the id generator must be thread-safe and return immediately (no
-    * remote calls, as contention free as possible).
+    * '''Note''': the id generator must be thread-safe and return immediately
+    * (no remote calls, as contention free as possible).
     */
   def setIdGenerator(idGenerator: IdGenerator[F]): SdkTracerProviderBuilder[F]
 
@@ -62,7 +62,7 @@ sealed trait SdkTracerProviderBuilder[F[_]] {
     * Sampler will be called each time a
     * [[org.typelevel.otel4s.trace.Span Span]] is started.
     *
-    * ''Note:'' the sampler must be thread-safe and return immediately (no
+    * '''Note''': the sampler must be thread-safe and return immediately (no
     * remote calls, as contention free as possible).
     */
   def setSampler(sampler: Sampler): SdkTracerProviderBuilder[F]
@@ -79,7 +79,7 @@ sealed trait SdkTracerProviderBuilder[F[_]] {
     * [[SpanProcessor]] will be called each time a
     * [[org.typelevel.otel4s.trace.Span Span]] is started or ended.
     *
-    * ''Note:'' the span processor must be thread-safe and return immediately
+    * '''Note''': the span processor must be thread-safe and return immediately
     * (no remote calls, as contention free as possible).
     */
   def addSpanProcessor(

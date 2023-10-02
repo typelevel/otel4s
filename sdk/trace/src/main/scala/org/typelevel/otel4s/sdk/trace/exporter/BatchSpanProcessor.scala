@@ -61,13 +61,10 @@ final class BatchSpanProcessor[F[_]: Temporal] private (
   val isStartRequired: Boolean = false
   val isEndRequired: Boolean = true
 
-  def onStart(
-      parentContext: Option[SpanContext],
-      span: ReadWriteSpan[F]
-  ): F[Unit] =
+  def onStart(parentContext: Option[SpanContext], span: SpanView[F]): F[Unit] =
     Temporal[F].unit
 
-  def onEnd(span: ReadableSpan[F]): F[Unit] = {
+  def onEnd(span: SpanView[F]): F[Unit] = {
     val canExport = span.spanContext.isSampled
 
     // if 'spansNeeded' is defined, it means the worker is waiting for a certain number of spans

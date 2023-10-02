@@ -34,8 +34,8 @@ trait SpanExporter[F[_]] {
   /** Called to export sampled
     * [[org.typelevel.otel4s.sdk.trace.data.SpanData SpanData]].
     *
-    * ''Note'': the export operations can be performed simultaneously depending
-    * on the type of span processor being used. However, the
+    * '''Note''': the export operations can be performed simultaneously
+    * depending on the type of span processor being used. However, the
     * [[BatchSpanProcessor]] will ensure that only one export can occur at a
     * time.
     *

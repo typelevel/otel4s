@@ -127,7 +127,7 @@ private[trace] final case class SdkSpanBuilder[F[_]: Temporal](
 
     for {
       backend <- Resource.makeCase(acquire) { case (b, ec) => release(b, ec) }
-      nt <- Resource.eval(scope.makeScope(backend.spanContext))
+      nt <- Resource.eval(scope.makeScope(backend.context))
     } yield (backend, nt)
   }
 

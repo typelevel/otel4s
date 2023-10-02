@@ -169,7 +169,7 @@ object SpanContext {
     * appropriate lengths), both will be replaced with the standard "invalid"
     * versions (i.e. all '0's).
     *
-    * ''Note:'' the method is for the internal use only. It is not supposed to
+    * '''Note''': the method is for the internal use only. It is not supposed to
     * be publicly available.
     *
     * @see
@@ -221,7 +221,7 @@ object SpanContext {
 
   /** Creates a delegated [[SpanContext]].
     *
-    * ''Note:'' the method is for the internal use only. It is not supposed to
+    * '''Note''': the method is for the internal use only. It is not supposed to
     * be publicly available.
     */
   private[otel4s] def delegate[A](

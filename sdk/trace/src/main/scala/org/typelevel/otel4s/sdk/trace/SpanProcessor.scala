@@ -20,8 +20,8 @@ import cats.Applicative
 import cats.syntax.foldable._
 import org.typelevel.otel4s.trace.SpanContext
 
-/** The interface that [[SdkTracer]] uses to allow synchronous hooks for when a
-  * span is started or ended.
+/** The interface that [[SdkTracer]] uses to allow hooks for when a span is
+  * started or ended.
   *
   * @tparam F
   *   the higher-kinded type of a polymorphic effect
@@ -40,10 +40,7 @@ trait SpanProcessor[F[_]] {
     * @param span
     *   the started span
     */
-  def onStart(
-      parentContext: Option[SpanContext],
-      span: ReadWriteSpan[F]
-  ): F[Unit]
+  def onStart(parentContext: Option[SpanContext], span: SpanView[F]): F[Unit]
 
   /** Whether the [[SpanProcessor]] requires start events.
     *
@@ -59,7 +56,7 @@ trait SpanProcessor[F[_]] {
     * @param span
     *   the ended span
     */
-  def onEnd(span: ReadableSpan[F]): F[Unit]
+  def onEnd(span: SpanView[F]): F[Unit]
 
   /** Whether the [[SpanProcessor]] requires end events.
     *
@@ -87,13 +84,10 @@ object SpanProcessor {
 
     def isEndRequired: Boolean = false
 
-    def onStart(
-        parentContext: Option[SpanContext],
-        span: ReadWriteSpan[F]
-    ): F[Unit] =
+    def onStart(parentCtx: Option[SpanContext], span: SpanView[F]): F[Unit] =
       Applicative[F].unit
 
-    def onEnd(span: ReadableSpan[F]): F[Unit] =
+    def onEnd(span: SpanView[F]): F[Unit] =
       Applicative[F].unit
   }
 
@@ -110,13 +104,10 @@ object SpanProcessor {
 
     def isEndRequired: Boolean = endOnly.nonEmpty
 
-    def onStart(
-        parentContext: Option[SpanContext],
-        span: ReadWriteSpan[F]
-    ): F[Unit] =
-      startOnly.traverse_(_.onStart(parentContext, span))
+    def onStart(parentCtx: Option[SpanContext], span: SpanView[F]): F[Unit] =
+      startOnly.traverse_(_.onStart(parentCtx, span))
 
-    def onEnd(span: ReadableSpan[F]): F[Unit] =
+    def onEnd(span: SpanView[F]): F[Unit] =
       endOnly.traverse_(_.onEnd(span))
   }
 }

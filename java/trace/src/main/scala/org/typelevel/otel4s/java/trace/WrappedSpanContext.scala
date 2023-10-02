@@ -22,7 +22,8 @@ import io.opentelemetry.api.trace.{TraceFlags => JTraceFlags}
 import io.opentelemetry.api.trace.TraceState
 import org.typelevel.otel4s.trace.SpanContext
 import org.typelevel.otel4s.trace.TraceFlags
-import org.typelevel.vault.{Key, Vault}
+import org.typelevel.vault.Key
+import org.typelevel.vault.Vault
 import scodec.bits.ByteVector
 
 private[otel4s] object WrappedSpanContext {

@@ -16,7 +16,8 @@
 
 package org.typelevel.otel4s.java.trace
 
-import cats.mtl.{Ask, Local}
+import cats.mtl.Ask
+import cats.mtl.Local
 import org.typelevel.vault.Vault
 
 package object context {

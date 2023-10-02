@@ -17,7 +17,8 @@
 package org.typelevel.otel4s.trace
 
 import munit._
-import org.typelevel.otel4s.trace.SpanContext.{SpanId, TraceId}
+import org.typelevel.otel4s.trace.SpanContext.SpanId
+import org.typelevel.otel4s.trace.SpanContext.TraceId
 import scodec.bits.ByteVector
 
 class SpanContextSuite extends FunSuite {

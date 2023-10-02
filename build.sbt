@@ -62,6 +62,10 @@ lazy val root = tlCrossRootProject
     core,
     `sdk-common`,
     `sdk-trace`,
+    sdk,
+    `sdk-exporter-common`,
+    `sdk-exporter-trace`,
+    `sdk-exporter`,
     `testkit-common`,
     `testkit-metrics`,
     testkit,
@@ -75,6 +79,10 @@ lazy val root = tlCrossRootProject
     unidocs
   )
   .settings(name := "otel4s")
+
+//
+// Core
+//
 
 lazy val `core-common` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .crossType(CrossType.Pure)
@@ -133,6 +141,10 @@ lazy val core = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   )
   .settings(scalafixSettings)
 
+//
+// SDK
+//
+
 lazy val `sdk-common` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .crossType(CrossType.Pure)
   .enablePlugins(BuildInfoPlugin)
@@ -174,6 +186,61 @@ lazy val `sdk-trace` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   )
   .settings(munitDependencies)
 
+lazy val sdk = crossProject(JVMPlatform, JSPlatform, NativePlatform)
+  .crossType(CrossType.Pure)
+  .in(file("sdk/all"))
+  .enablePlugins(NoPublishPlugin)
+  .dependsOn(`sdk-common`, `sdk-trace`)
+  .settings(
+    name := "otel4s-sdk"
+  )
+  .settings(scalafixSettings)
+
+//
+// SDK exporter
+//
+
+lazy val `sdk-exporter-common` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
+  .crossType(CrossType.Pure)
+  .enablePlugins(NoPublishPlugin)
+  .in(file("sdk-exporter/common"))
+  .dependsOn(`sdk-common`)
+  .settings(
+    name := "otel4s-sdk-exporter-common",
+    startYear := Some(2023)
+  )
+  .settings(munitDependencies)
+  .settings(scalafixSettings)
+
+lazy val `sdk-exporter-trace` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
+  .crossType(CrossType.Pure)
+  .in(file("sdk-exporter/trace"))
+  .enablePlugins(NoPublishPlugin)
+  .dependsOn(`sdk-exporter-common`, `sdk-trace`)
+  .settings(
+    name := "otel4s-sdk-exporter-trace",
+    startYear := Some(2023),
+    libraryDependencies ++= Seq(
+      "org.http4s" %%% "http4s-ember-client" % "0.23.18",
+      "org.http4s" %%% "http4s-circe" % "0.23.18",
+    ),
+  )
+  .settings(munitDependencies)
+
+lazy val `sdk-exporter` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
+  .crossType(CrossType.Pure)
+  .in(file("sdk-exporter/all"))
+  .enablePlugins(NoPublishPlugin)
+  .dependsOn(`sdk-exporter-common`, `sdk-exporter-trace`)
+  .settings(
+    name := "otel4s-sdk-exporter"
+  )
+  .settings(scalafixSettings)
+
+//
+// Testkit
+//
+
 lazy val `testkit-common` = crossProject(JVMPlatform)
   .crossType(CrossType.Full)
   .in(file("testkit/common"))
@@ -207,6 +274,10 @@ lazy val testkit = crossProject(JVMPlatform)
     name := "otel4s-testkit"
   )
   .settings(scalafixSettings)
+
+//
+// Java
+//
 
 lazy val `java-common` = project
   .in(file("java/common"))
@@ -373,6 +444,10 @@ lazy val unidocs = project
       core.jvm,
       `sdk-common`.jvm,
       `sdk-trace`.jvm,
+      sdk.jvm,
+      `sdk-exporter-common`.jvm,
+      `sdk-exporter-trace`.jvm,
+      `sdk-exporter`.jvm,
       `testkit-common`.jvm,
       `testkit-metrics`.jvm,
       testkit.jvm,

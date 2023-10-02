@@ -39,10 +39,10 @@ trait SpanExporter[F[_]] {
     * [[BatchSpanProcessor]] will ensure that only one export can occur at a
     * time.
     *
-    * @param span
+    * @param spans
     *   the collection of sampled Spans to be exported
     */
-  def exportSpans(span: List[SpanData]): F[Unit]
+  def exportSpans(spans: List[SpanData]): F[Unit]
 }
 
 object SpanExporter {
@@ -64,14 +64,14 @@ object SpanExporter {
     }
 
   private final class Noop[F[_]: Applicative] extends SpanExporter[F] {
-    def exportSpans(span: List[SpanData]): F[Unit] = Applicative[F].unit
+    def exportSpans(spans: List[SpanData]): F[Unit] = Applicative[F].unit
   }
 
   private final class Multi[F[_]: Applicative](
       exporters: List[SpanExporter[F]]
   ) extends SpanExporter[F] {
-    def exportSpans(span: List[SpanData]): F[Unit] =
-      exporters.traverse_(_.exportSpans(span))
+    def exportSpans(spans: List[SpanData]): F[Unit] =
+      exporters.traverse_(_.exportSpans(spans))
 
     /*
     List<CompletableResultCode> results = new ArrayList<>(spanExporters.length);

@@ -26,8 +26,8 @@ import org.typelevel.otel4s.sdk.trace.data.SpanData
 final class InMemorySpanExporter[F[_]] private (
     storage: Ref[F, Chain[SpanData]]
 ) extends SpanExporter[F] {
-  def exportSpans(span: List[SpanData]): F[Unit] =
-    storage.update(_.concat(Chain.fromSeq(span)))
+  def exportSpans(spans: List[SpanData]): F[Unit] =
+    storage.update(_.concat(Chain.fromSeq(spans)))
 
   def finishedSpans: F[Chain[SpanData]] =
     storage.get

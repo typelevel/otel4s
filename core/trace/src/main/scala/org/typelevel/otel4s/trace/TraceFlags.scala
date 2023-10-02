@@ -53,12 +53,13 @@ sealed trait TraceFlags {
 }
 
 object TraceFlags {
-  private val SampledMask = 0x01
+  private val SampledMask: Byte = 0x01
 
-  val HexLength = 2
-
+  // The default trace flags (not sampled): with all flag bits off
   val Default: TraceFlags = fromByte(0x00)
-  val Sampled: TraceFlags = fromByte(0x01)
+
+  // The sampled trace flags: the sampled bit is on
+  val Sampled: TraceFlags = fromByte(SampledMask)
 
   /** Creates the [[TraceFlags]] from the given byte representation.
     */

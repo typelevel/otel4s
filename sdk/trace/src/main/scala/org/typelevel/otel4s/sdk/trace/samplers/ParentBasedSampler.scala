@@ -16,10 +16,8 @@
 
 package org.typelevel.otel4s.sdk.trace.samplers
 
-import org.typelevel.otel4s.sdk.Attributes
-import org.typelevel.otel4s.sdk.trace.data.LinkData
 import org.typelevel.otel4s.trace.SpanContext
-import org.typelevel.otel4s.trace.SpanKind
+import scodec.bits.ByteVector
 
 /** Sampler that uses the sampled flag of the parent Span, if present.
   *
@@ -36,11 +34,7 @@ final class ParentBasedSampler private (
 
   def shouldSample(
       parentContext: Option[SpanContext],
-      traceId: String,
-      name: String,
-      kind: SpanKind,
-      attributes: Attributes,
-      parentLinks: List[LinkData]
+      traceId: ByteVector
   ): SamplingResult = {
     val sampler = parentContext.filter(_.isValid) match {
       case Some(ctx) if ctx.isRemote =>
@@ -53,14 +47,7 @@ final class ParentBasedSampler private (
         root
     }
 
-    sampler.shouldSample(
-      parentContext,
-      traceId,
-      name,
-      kind,
-      attributes,
-      parentLinks
-    )
+    sampler.shouldSample(parentContext, traceId)
   }
 
   val description: String =

@@ -18,9 +18,8 @@ package org.typelevel.otel4s.sdk
 package trace
 package samplers
 
-import org.typelevel.otel4s.sdk.trace.data.LinkData
 import org.typelevel.otel4s.trace.SpanContext
-import org.typelevel.otel4s.trace.SpanKind
+import scodec.bits.ByteVector
 
 final class TraceIdRatioBased private (
     ratio: Double,
@@ -29,17 +28,16 @@ final class TraceIdRatioBased private (
 
   def shouldSample(
       parentContext: Option[SpanContext],
-      traceId: String,
-      name: String,
-      kind: SpanKind,
-      attributes: Attributes,
-      parentLinks: List[LinkData]
+      traceId: ByteVector
   ): SamplingResult = {
-    if (math.abs(SpanContext.TraceId.randomPart(traceId)) < idUpperBound)
+    if (math.abs(traceIdRandomPart(traceId)) < idUpperBound)
       SamplingResult.RecordAndSample
     else
       SamplingResult.Drop
   }
+
+  private def traceIdRandomPart(traceId: ByteVector): Long =
+    traceId.drop(8).toLong()
 
   // format as: 0.000000
   val description: String = f"TraceIdRatioBased{$ratio%.6f}".replace(",", ".")

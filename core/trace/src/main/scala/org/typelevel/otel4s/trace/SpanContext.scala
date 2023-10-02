@@ -100,9 +100,6 @@ object SpanContext {
     def fromLongs(hi: Long, lo: Long): ByteVector =
       ByteVector.fromLong(hi, 8) ++ ByteVector.fromLong(lo, 8)
 
-    def randomPart(traceIdHex: String): Long =
-      ByteVector.fromValidHex(traceIdHex.drop(16)).toLong()
-
     /** Checks whether a trace id has correct length and is not the invalid id.
       */
     def isValid(id: ByteVector): Boolean =

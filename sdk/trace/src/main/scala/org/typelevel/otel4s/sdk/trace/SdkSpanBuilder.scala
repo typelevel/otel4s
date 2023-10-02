@@ -140,7 +140,6 @@ private[trace] final case class SdkSpanBuilder[F[_]: Temporal](
 
   private[trace] def start: F[SdkSpanBackend[F]] = {
     val idGenerator = tracerSharedState.idGenerator
-    val spanKind = kind.getOrElse(SpanKind.Internal)
 
     for {
       parentSpanContext <- chooseParentSpanContext
@@ -155,14 +154,8 @@ private[trace] final case class SdkSpanBuilder[F[_]: Temporal](
           }
 
       backend <- {
-        val samplingResult = tracerSharedState.sampler.shouldSample(
-          parentSpanContext,
-          traceId.toHex,
-          name,
-          spanKind,
-          Attributes(attributes: _*),
-          links
-        )
+        val samplingResult =
+          tracerSharedState.sampler.shouldSample(parentSpanContext, traceId)
 
         val samplingDecision = samplingResult.decision
 
@@ -193,7 +186,6 @@ private[trace] final case class SdkSpanBuilder[F[_]: Temporal](
           scopeInfo = scopeInfo,
           resource = tracerSharedState.resource,
           kind = kind.getOrElse(SpanKind.Internal),
-          //  parentSpan = parentSpan,
           parentContext = parentSpanContext,
           spanLimits = tracerSharedState.spanLimits,
           spanProcessor = tracerSharedState.activeSpanProcessor,

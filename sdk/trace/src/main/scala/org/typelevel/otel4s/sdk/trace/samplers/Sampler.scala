@@ -18,9 +18,8 @@ package org.typelevel.otel4s.sdk
 package trace
 package samplers
 
-import org.typelevel.otel4s.sdk.trace.data.LinkData
 import org.typelevel.otel4s.trace.SpanContext
-import org.typelevel.otel4s.trace.SpanKind
+import scodec.bits.ByteVector
 
 /** A Sampler is used to make decisions on Span sampling. */
 trait Sampler {
@@ -32,26 +31,10 @@ trait Sampler {
     *
     * @param traceId
     *   the trace id of the new span
-    *
-    * @param name
-    *   the name of the new span
-    *
-    * @param kind
-    *   the kind of the new span
-    *
-    * @param attributes
-    *   the attributes associated with the new span
-    *
-    * @param parentLinks
-    *   the parent links associated with the new span
     */
   def shouldSample(
       parentContext: Option[SpanContext],
-      traceId: String,
-      name: String,
-      kind: SpanKind,
-      attributes: Attributes,
-      parentLinks: List[LinkData]
+      traceId: ByteVector
   ): SamplingResult
 
   /** The description of the [[Sampler]]. This may be displayed on debug pages
@@ -124,11 +107,7 @@ object Sampler {
   ) extends Sampler {
     def shouldSample(
         parentContext: Option[SpanContext],
-        traceId: String,
-        name: String,
-        kind: SpanKind,
-        attributes: Attributes,
-        parentLinks: List[LinkData]
+        traceId: ByteVector
     ): SamplingResult =
       result
   }

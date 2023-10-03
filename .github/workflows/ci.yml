@@ -239,7 +239,7 @@ jobs:
       - name: Submit Dependencies
         uses: scalacenter/sbt-dependency-submission@v2
         with:
-          modules-ignore: otel4s-sdk-common_native0.4_2.13 otel4s-sdk-common_native0.4_3 otel4s-benchmarks_2.13 otel4s-benchmarks_3 otel4s-examples_2.13 otel4s-examples_3 otel4s-sdk-common_sjs1_2.13 otel4s-sdk-common_sjs1_3 otel4s_2.13 otel4s_3 docs_2.13 docs_3 otel4s-sdk-common_2.13 otel4s-sdk-common_3 otel4s_2.13 otel4s_3 otel4s_2.13 otel4s_3
+          modules-ignore: otel4s-sdk-common_native0.4_2.13 otel4s-sdk-common_native0.4_3 otel4s-benchmarks_2.13 otel4s-benchmarks_3 otel4s-examples_2.13 otel4s-examples_3 otel4s-sdk-common_sjs1_2.13 otel4s-sdk-common_sjs1_3 otel4s-sdk-trace_sjs1_2.13 otel4s-sdk-trace_sjs1_3 otel4s_2.13 otel4s_3 docs_2.13 docs_3 otel4s-sdk_native0.4_2.13 otel4s-sdk_native0.4_3 otel4s-sdk-common_2.13 otel4s-sdk-common_3 otel4s_2.13 otel4s_3 otel4s_2.13 otel4s_3 otel4s-sdk-trace_native0.4_2.13 otel4s-sdk-trace_native0.4_3 otel4s-sdk_sjs1_2.13 otel4s-sdk_sjs1_3 otel4s-sdk_2.13 otel4s-sdk_3 otel4s-sdk-trace_2.13 otel4s-sdk-trace_3
           configs-ignore: test scala-tool scala-doc-tool test-internal
 
   site:

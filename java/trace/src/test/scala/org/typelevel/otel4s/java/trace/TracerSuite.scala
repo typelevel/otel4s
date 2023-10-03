@@ -724,9 +724,11 @@ class TracerSuite extends CatsEffectSuite {
   test("joinOrRoot: join an external span when can be extracted") {
     val traceId = "84b54e9330faae5350f0dd8673c98146"
     val spanId = "279fa73bc935cc05"
+    val traceState = "congo=t61rcWkgMzE"
 
     val headers = Map(
       "traceparent" -> s"00-$traceId-$spanId-01",
+      "tracestate" -> traceState,
       "foo" -> "1",
       "baz" -> "2"
     )
@@ -751,10 +753,14 @@ class TracerSuite extends CatsEffectSuite {
         assertEquals(external.map(_.traceIdHex), Some(traceId))
         assertEquals(external.map(_.spanIdHex), Some(spanId))
         assertEquals(inner.traceIdHex, traceId)
-        assertEquals(resultHeaders.size, 2)
+        assertEquals(resultHeaders.size, 3)
         assertEquals(
           resultHeaders.get("traceparent"),
           Some(s"00-$traceId-$spanId-01")
+        )
+        assertEquals(
+          resultHeaders.get("tracestate"),
+          Some(traceState)
         )
         assertEquals(resultHeaders.get("foo"), Some("1"))
       }

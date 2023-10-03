@@ -104,7 +104,8 @@ object Resource {
     Attributes(
       Attribute(TelemetrySdkName, "otel4s"),
       Attribute(TelemetrySdkLanguage, TelemetrySdkLanguageValue.Scala.value),
-      Attribute(TelemetrySdkVersion, BuildInfo.version)
+      Attribute(TelemetrySdkVersion, BuildInfo.version),
+      Attribute("otel4s.platform", BuildInfo.platform),
     )
   )
 

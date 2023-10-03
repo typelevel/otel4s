@@ -99,10 +99,11 @@ object EventData {
     lazy val attributes: Attributes = {
       val builder = List.newBuilder[Attribute[_]]
 
+      // exception.getClass.getCanonicalName - todo: platform specific
       builder.addOne(
         Attribute(
           Keys.ExceptionType,
-          Option(exception.getClass.getCanonicalName).getOrElse("")
+          Option("exception").getOrElse("")
         )
       )
 

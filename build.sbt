@@ -148,7 +148,6 @@ lazy val core = crossProject(JVMPlatform, JSPlatform, NativePlatform)
 lazy val `sdk-common` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .crossType(CrossType.Pure)
   .enablePlugins(BuildInfoPlugin)
-  .enablePlugins(NoPublishPlugin)
   .in(file("sdk/common"))
   .dependsOn(`core-common`, semconv)
   .settings(
@@ -175,7 +174,6 @@ lazy val `sdk-common` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
 lazy val `sdk-trace` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .crossType(CrossType.Pure)
   .in(file("sdk/trace"))
-  .enablePlugins(NoPublishPlugin)
   .dependsOn(`sdk-common`, `core-trace`)
   .settings(
     name := "otel4s-sdk-trace",
@@ -190,7 +188,6 @@ lazy val `sdk-trace` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
 lazy val sdk = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .crossType(CrossType.Pure)
   .in(file("sdk/all"))
-  .enablePlugins(NoPublishPlugin)
   .dependsOn(`sdk-common`, `sdk-trace`)
   .settings(
     name := "otel4s-sdk"
@@ -204,7 +201,6 @@ lazy val sdk = crossProject(JVMPlatform, JSPlatform, NativePlatform)
 lazy val `sdk-exporter-common` =
   crossProject(JVMPlatform, JSPlatform, NativePlatform)
     .crossType(CrossType.Pure)
-    .enablePlugins(NoPublishPlugin)
     .in(file("sdk-exporter/common"))
     .dependsOn(`sdk-common`)
     .settings(
@@ -218,7 +214,6 @@ lazy val `sdk-exporter-trace` =
   crossProject(JVMPlatform, JSPlatform, NativePlatform)
     .crossType(CrossType.Pure)
     .in(file("sdk-exporter/trace"))
-    .enablePlugins(NoPublishPlugin)
     .dependsOn(`sdk-exporter-common`, `sdk-trace`)
     .settings(
       name := "otel4s-sdk-exporter-trace",

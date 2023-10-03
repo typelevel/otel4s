@@ -195,6 +195,8 @@ object Span {
       def meta: InstrumentMeta[G] =
         backend.meta.mapK(f)
       def context: SpanContext = backend.context
+      def updateName(name: String): G[Unit] =
+        f(backend.updateName(name))
       def addAttributes(attributes: Attribute[_]*): G[Unit] =
         f(backend.addAttributes(attributes: _*))
       def addEvent(name: String, attributes: Attribute[_]*): G[Unit] =

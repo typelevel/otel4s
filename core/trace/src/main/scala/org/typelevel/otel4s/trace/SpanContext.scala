@@ -21,9 +21,7 @@ import cats.Show
 import cats.syntax.show._
 import scodec.bits.ByteVector
 
-/** A class that represents a span context.
-  *
-  * A span context contains the state that must propagate to child spans and
+/** A span context contains the state that must propagate to child spans and
   * across process boundaries.
   *
   * It contains the identifiers (a `trace_id` and `span_id`) associated with the
@@ -55,6 +53,11 @@ sealed trait SpanContext {
     spanId.toHex
 
   /** Returns the [[TraceFlags]] associated with this [[SpanContext]].
+    */
+  def traceFlags: TraceFlags
+
+  /** Returns details about the trace associated with this [[SpanContext]] as an
+    * 8-bit field.
     */
   def traceFlags: TraceFlags
 

@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-package org.typelevel.otel4s.sdk
+package org.typelevel.otel4s
+package sdk
 
 import cats.implicits.catsSyntaxEitherId
 import munit.FunSuite
@@ -79,6 +80,13 @@ class ResourceSuite extends FunSuite {
 
   test("Resource#merge should return None if both schemaUrls are empty") {
     checkSchemaMerge(None, None, None.asRight)
+  }
+
+  test("Resource#mergeInto attributes and prioritize the latter") {
+    val that = Resource(Attributes(Attribute("key", "that")))
+    val other = Resource(Attributes(Attribute("key", "other")))
+
+    assertEquals(that.mergeInto(other), Right(other))
   }
 
 }

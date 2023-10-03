@@ -62,7 +62,7 @@ final case class Resource(
 
       schemaUrlOptEither.map(
         Resource(
-          other.attributes |+| attributes,
+          attributes |+| other.attributes,
           _
         )
       )

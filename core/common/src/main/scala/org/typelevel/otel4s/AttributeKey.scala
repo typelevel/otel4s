@@ -74,6 +74,9 @@ object AttributeKey {
   def doubleList(name: String): AttributeKey[List[Double]] =
     new Impl(name, AttributeType.DoubleList)
 
+  def unapply[A](key: AttributeKey[A]): Option[(String, AttributeType[A])] =
+    Some((key.name, key.`type`))
+
   implicit def attributeKeyHash[A]: Hash[AttributeKey[A]] =
     Hash.by(key => (key.name, key.`type`))
 

@@ -43,6 +43,10 @@ sealed trait SpanData {
   def instrumentationScopeInfo: InstrumentationScopeInfo
   def resource: Resource
 
+  final def droppedAttributesCount: Int = totalAttributeCount - attributes.size
+  final def droppedEventsCount: Int = totalRecordedEvents - events.size
+  final def droppedLinksCount: Int = totalRecordedLinks - links.size
+
   override final def hashCode(): Int =
     Hash[SpanData].hash(this)
 

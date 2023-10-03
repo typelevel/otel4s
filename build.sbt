@@ -200,32 +200,35 @@ lazy val sdk = crossProject(JVMPlatform, JSPlatform, NativePlatform)
 // SDK exporter
 //
 
-lazy val `sdk-exporter-common` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
-  .crossType(CrossType.Pure)
-  .enablePlugins(NoPublishPlugin)
-  .in(file("sdk-exporter/common"))
-  .dependsOn(`sdk-common`)
-  .settings(
-    name := "otel4s-sdk-exporter-common",
-    startYear := Some(2023)
-  )
-  .settings(munitDependencies)
-  .settings(scalafixSettings)
+lazy val `sdk-exporter-common` =
+  crossProject(JVMPlatform, JSPlatform, NativePlatform)
+    .crossType(CrossType.Pure)
+    .enablePlugins(NoPublishPlugin)
+    .in(file("sdk-exporter/common"))
+    .dependsOn(`sdk-common`)
+    .settings(
+      name := "otel4s-sdk-exporter-common",
+      startYear := Some(2023)
+    )
+    .settings(munitDependencies)
+    .settings(scalafixSettings)
 
-lazy val `sdk-exporter-trace` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
-  .crossType(CrossType.Pure)
-  .in(file("sdk-exporter/trace"))
-  .enablePlugins(NoPublishPlugin)
-  .dependsOn(`sdk-exporter-common`, `sdk-trace`)
-  .settings(
-    name := "otel4s-sdk-exporter-trace",
-    startYear := Some(2023),
-    libraryDependencies ++= Seq(
-      "org.http4s" %%% "http4s-ember-client" % "0.23.18",
-      "org.http4s" %%% "http4s-circe" % "0.23.18",
-    ),
-  )
-  .settings(munitDependencies)
+lazy val `sdk-exporter-trace` =
+  crossProject(JVMPlatform, JSPlatform, NativePlatform)
+    .crossType(CrossType.Pure)
+    .in(file("sdk-exporter/trace"))
+    .enablePlugins(NoPublishPlugin)
+    .dependsOn(`sdk-exporter-common`, `sdk-trace`)
+    .settings(
+      name := "otel4s-sdk-exporter-trace",
+      startYear := Some(2023),
+      libraryDependencies ++= Seq(
+        "org.http4s" %%% "http4s-ember-client" % "0.23.18",
+        "org.http4s" %%% "http4s-circe" % "0.23.18",
+        "org.scalameta" %%% "munit-scalacheck" % MUnitVersion % Test
+      ),
+    )
+    .settings(munitDependencies)
 
 lazy val `sdk-exporter` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .crossType(CrossType.Pure)
@@ -362,6 +365,10 @@ lazy val java = project
   .settings(munitDependencies)
   .settings(scalafixSettings)
 
+//
+// Utility
+//
+
 lazy val semconv = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .crossType(CrossType.Pure)
   .in(file("semconv"))
@@ -385,7 +392,7 @@ lazy val benchmarks = project
 lazy val examples = project
   .enablePlugins(NoPublishPlugin)
   .in(file("examples"))
-  .dependsOn(core.jvm, java, `sdk-trace`.jvm)
+  .dependsOn(core.jvm, java, `sdk-trace`.jvm, `sdk-exporter-trace`.jvm)
   .settings(
     name := "otel4s-examples",
     libraryDependencies ++= Seq(

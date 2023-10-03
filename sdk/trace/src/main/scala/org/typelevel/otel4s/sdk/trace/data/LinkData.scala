@@ -28,6 +28,10 @@ sealed trait LinkData {
   def attributes: Attributes
   def totalAttributeCount: Int
 
+  /** The count of dropped attributes of the link. */
+  def droppedAttributesCount: Int =
+    totalAttributeCount - attributes.size
+
   override final def hashCode(): Int =
     Hash[LinkData].hash(this)
 

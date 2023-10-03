@@ -18,6 +18,7 @@ package org.typelevel.otel4s.sdk.trace
 package exporter
 
 import cats.Applicative
+import cats.kernel.Monoid
 import cats.syntax.foldable._
 import org.typelevel.otel4s.sdk.trace.data.SpanData
 
@@ -63,32 +64,51 @@ object SpanExporter {
       case _           => new Multi[F](exporters)
     }
 
+  /** Creates a no-op implementation of the [[SpanExporter]].
+    *
+    * All export operations are no-op.
+    */
+  def noop[F[_]: Applicative]: SpanExporter[F] =
+    new Noop
+
+  implicit def spanExporterMonoid[F[_]: Applicative]: Monoid[SpanExporter[F]] =
+    new Monoid[SpanExporter[F]] {
+      val empty: SpanExporter[F] = noop[F]
+
+      def combine(x: SpanExporter[F], y: SpanExporter[F]): SpanExporter[F] =
+        (x, y) match {
+          case (_: Noop[F], _: Noop[F]) =>
+            empty
+
+          case (that, _: Noop[F]) =>
+            that
+
+          case (_: Noop[F], other) =>
+            other
+
+          case (that: Multi[F], other: Multi[F]) =>
+            new Multi[F](that.exporters ++ other.exporters)
+
+          case (that: Multi[F], other) =>
+            new Multi[F](that.exporters :+ other)
+
+          case (that, other: Multi[F]) =>
+            new Multi[F](that +: other.exporters)
+
+          case (that, other) =>
+            new Multi[F](List(that, other))
+        }
+    }
+
   private final class Noop[F[_]: Applicative] extends SpanExporter[F] {
     def exportSpans(spans: List[SpanData]): F[Unit] = Applicative[F].unit
   }
 
   private final class Multi[F[_]: Applicative](
-      exporters: List[SpanExporter[F]]
+      private[SpanExporter] val exporters: List[SpanExporter[F]]
   ) extends SpanExporter[F] {
     def exportSpans(spans: List[SpanData]): F[Unit] =
       exporters.traverse_(_.exportSpans(spans))
-
-    /*
-    List<CompletableResultCode> results = new ArrayList<>(spanExporters.length);
-        for (SpanExporter spanExporter : spanExporters) {
-          CompletableResultCode exportResult;
-          try {
-            exportResult = spanExporter.export(spans);
-          } catch (RuntimeException e) {
-            // If an exception was thrown by the exporter
-            logger.log(Level.WARNING, "Exception thrown by the export.", e);
-            results.add(CompletableResultCode.ofFailure());
-            continue;
-          }
-          results.add(exportResult);
-        }
-        return CompletableResultCode.ofAll(results);
-     */
   }
 
 }

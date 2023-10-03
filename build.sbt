@@ -165,7 +165,8 @@ lazy val `sdk-common` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
     buildInfoPackage := "org.typelevel.otel4s.sdk",
     buildInfoOptions += sbtbuildinfo.BuildInfoOption.PackagePrivate,
     buildInfoKeys := Seq[BuildInfoKey](
-      version
+      version,
+      "platform" -> crossProjectPlatform.value.identifier
     )
   )
   .settings(munitDependencies)

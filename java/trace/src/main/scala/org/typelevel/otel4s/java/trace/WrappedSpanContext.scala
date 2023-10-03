@@ -23,9 +23,9 @@ import org.typelevel.otel4s.trace.SpanContext
 import org.typelevel.otel4s.trace.TraceFlags
 import scodec.bits.ByteVector
 
-private[java] final case class SpanConversions(
+private[java] final case class WrappedSpanContext(
     jSpanContext: JSpanContext
-) {
+) extends SpanContext {
 
   lazy val traceId: ByteVector =
     ByteVector(jSpanContext.getTraceIdBytes)
@@ -39,6 +39,9 @@ private[java] final case class SpanConversions(
   def spanIdHex: String =
     jSpanContext.getSpanId
 
+  lazy val traceFlags: TraceFlags =
+    TraceFlags.fromByte(jSpanContext.getTraceFlags.asByte)
+
   def isValid: Boolean =
     jSpanContext.isValid
 
@@ -46,33 +49,20 @@ private[java] final case class SpanConversions(
     jSpanContext.isRemote
 }
 
-private[java] object SpanConversions {
-
-  def wrap(jSpanContext: JSpanContext): SpanContext = {
-
-    lazy val traceId: ByteVector =
-      ByteVector(jSpanContext.getTraceIdBytes)
-
-    lazy val spanId: ByteVector =
-      ByteVector(jSpanContext.getSpanIdBytes)
-
-    val traceFlags = TraceFlags.fromByte(jSpanContext.getTraceFlags().asByte())
-
-    def isRemote: Boolean =
-      jSpanContext.isRemote
-
-    SpanContext.create(traceId, spanId, traceFlags, isRemote)
-  }
+private[trace] object WrappedSpanContext {
 
   def unwrap(context: SpanContext): JSpanContext = {
+    def flags = JTraceFlags.fromByte(context.traceFlags.toByte)
 
     context match {
+      case ctx: WrappedSpanContext =>
+        ctx.jSpanContext
 
       case other if other.isRemote =>
         JSpanContext.createFromRemoteParent(
           other.traceIdHex,
           other.spanIdHex,
-          JTraceFlags.fromByte(other.traceFlags.toByte),
+          flags,
           TraceState.getDefault
         )
 
@@ -80,7 +70,7 @@ private[java] object SpanConversions {
         JSpanContext.create(
           other.traceIdHex,
           other.spanIdHex,
-          JTraceFlags.fromByte(other.traceFlags.toByte),
+          flags,
           TraceState.getDefault
         )
     }

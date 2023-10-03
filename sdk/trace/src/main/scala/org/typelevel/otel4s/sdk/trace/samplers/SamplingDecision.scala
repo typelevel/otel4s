@@ -14,22 +14,25 @@
  * limitations under the License.
  */
 
-package org.typelevel.otel4s
+package org.typelevel.otel4s.sdk.trace.samplers
 
-sealed abstract class SamplingDecision extends Product with Serializable
+/** A decision on whether a span should be recorded, sampled, or dropped.
+  */
+sealed abstract class SamplingDecision(val isSampled: Boolean)
+    extends Product
+    with Serializable
 
 object SamplingDecision {
 
-  /** IsRecording will be false, the span is not recorded, and all events and
-    * attributes will be dropped.
+  /** The span is not recorded, and all events and attributes will be dropped.
     */
-  case object Drop extends SamplingDecision
+  case object Drop extends SamplingDecision(false)
 
-  /** IsRecording will be true, but the Sampled flag will not be set.
+  /** The span is recorded, but the Sampled flag will not be set.
     */
-  case object RecordOnly extends SamplingDecision
+  case object RecordOnly extends SamplingDecision(false)
 
-  /** IsRecording will be true, and the Sampled flag will be set.
+  /** The span is recorded, and the Sampled flag will be set.
     */
-  case object RecordAndSample extends SamplingDecision
+  case object RecordAndSample extends SamplingDecision(true)
 }

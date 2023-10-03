@@ -103,7 +103,7 @@ private[java] final case class SpanBuilderImpl[F[_]: Sync](
     startTimestamp.foreach(d => b.setStartTimestamp(d.length, d.unit))
     links.foreach { case (ctx, attributes) =>
       b.addLink(
-        SpanConversions.unwrap(ctx),
+        WrappedSpanContext.unwrap(ctx),
         Conversions.toJAttributes(attributes)
       )
     }
@@ -145,7 +145,7 @@ private[java] final case class SpanBuilderImpl[F[_]: Sync](
         }
 
       case Parent.Explicit(parent) =>
-        def parentSpan = JSpan.wrap(SpanConversions.unwrap(parent))
+        def parentSpan = JSpan.wrap(WrappedSpanContext.unwrap(parent))
         scope.current.map {
           case Scope.Root(ctx)    => Some(ctx.`with`(parentSpan))
           case Scope.Span(ctx, _) => Some(ctx.`with`(parentSpan))

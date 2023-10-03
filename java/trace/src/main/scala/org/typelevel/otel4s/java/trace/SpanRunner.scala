@@ -25,13 +25,13 @@ import cats.syntax.foldable._
 import cats.syntax.functor._
 import cats.~>
 import io.opentelemetry.api.trace.{SpanBuilder => JSpanBuilder}
-import io.opentelemetry.api.trace.{Tracer => JTracer}
 import io.opentelemetry.context.{Context => JContext}
 import org.typelevel.otel4s.trace.Span
 import org.typelevel.otel4s.trace.SpanFinalizer
+import org.typelevel.otel4s.trace.SpanOps
 
-private[java] sealed trait SpanRunner[F[_], Res <: Span[F]] {
-  def start(ctx: Option[SpanRunner.RunnerContext]): Resource[F, (Res, F ~> F)]
+private[java] sealed trait SpanRunner[F[_]] {
+  def start(ctx: Option[SpanRunner.RunnerContext]): Resource[F, SpanOps.Res[F]]
 }
 
 private[java] object SpanRunner {
@@ -43,9 +43,9 @@ private[java] object SpanRunner {
       finalizationStrategy: SpanFinalizer.Strategy
   )
 
-  def span[F[_]: Sync](scope: TraceScope[F]): SpanRunner[F, Span[F]] =
-    new SpanRunner[F, Span[F]] {
-      def start(ctx: Option[RunnerContext]): Resource[F, (Span[F], F ~> F)] = {
+  def span[F[_]: Sync](scope: TraceScope[F]): SpanRunner[F] =
+    new SpanRunner[F] {
+      def start(ctx: Option[RunnerContext]): Resource[F, SpanOps.Res[F]] = {
         ctx match {
           case Some(RunnerContext(builder, _, hasStartTs, finalization)) =>
             startManaged(
@@ -53,63 +53,14 @@ private[java] object SpanRunner {
               hasStartTimestamp = hasStartTs,
               finalizationStrategy = finalization,
               scope = scope
-            ).map { case (back, nt) => (Span.fromBackend(back), nt) }
+            ).map { case (back, nt) => SpanOps.Res(Span.fromBackend(back), nt) }
 
           case None =>
-            Resource.pure((Span.fromBackend(Span.Backend.noop), FunctionK.id))
-        }
-      }
-    }
-
-  def resource[F[_]: Sync, A](
-      scope: TraceScope[F],
-      resource: Resource[F, A],
-      jTracer: JTracer
-  ): SpanRunner[F, Span.Res[F, A]] =
-    new SpanRunner[F, Span.Res[F, A]] {
-      def start(
-          ctx: Option[RunnerContext]
-      ): Resource[F, (Span.Res[F, A], F ~> F)] =
-        ctx match {
-          case Some(RunnerContext(builder, parent, hasStartTimestamp, fin)) =>
-            def child(
-                name: String,
-                parent: JContext
-            ): Resource[F, (SpanBackendImpl[F], F ~> F)] =
-              startManaged(
-                builder = jTracer.spanBuilder(name).setParent(parent),
-                hasStartTimestamp = false,
-                finalizationStrategy = fin,
-                scope = scope
-              )
-
-            for {
-              rootBackend <- startManaged(
-                builder = builder,
-                hasStartTimestamp = hasStartTimestamp,
-                finalizationStrategy = fin,
-                scope = scope
-              )
-
-              rootCtx <- Resource.pure(parent.`with`(rootBackend._1.jSpan))
-
-              pair <- Resource.make(
-                child("acquire", rootCtx).use(b => b._2(resource.allocated))
-              ) { case (_, release) =>
-                child("release", rootCtx).use(b => b._2(release))
-              }
-              (value, _) = pair
-
-              pair2 <- child("use", rootCtx)
-              (useSpanBackend, nt) = pair2
-            } yield (Span.Res.fromBackend(value, useSpanBackend), nt)
-
-          case None =>
-            resource.map(a =>
-              (Span.Res.fromBackend(a, Span.Backend.noop), FunctionK.id)
+            Resource.pure(
+              SpanOps.Res(Span.fromBackend(Span.Backend.noop), FunctionK.id)
             )
         }
-
+      }
     }
 
   def startUnmanaged[F[_]: Sync](context: Option[RunnerContext]): F[Span[F]] =

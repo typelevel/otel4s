@@ -26,8 +26,8 @@ it out and let us know what you think.
 
 ## Getting started
 
-* Start tracing your application with [Jaeger and Docker](examples/jaeger-docker.md)
-* Implement tracing and metrics with [Honeycomb](examples/honeycomb.md)
+* Start tracing your application with [Jaeger and Docker](examples/jaeger-docker/README.md)
+* Implement tracing and metrics with [Honeycomb](examples/honeycomb/README.md)
 
 [cats-effect]: https://typelevel.org/cats-effect/
 [opentelemetry-java]: https://github.com/open-telemetry/opentelemetry-java/tree/main/api/all

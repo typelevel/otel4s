@@ -16,11 +16,9 @@
 
 import cats.effect.IO
 import cats.effect.IOApp
-import cats.effect.Resource
 import cats.effect.Temporal
 import cats.effect.implicits._
 import cats.implicits._
-import io.opentelemetry.api.GlobalOpenTelemetry
 import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.Otel4s
 import org.typelevel.otel4s.java.OtelJava
@@ -119,10 +117,6 @@ object UserIdsAlg {
 }
 
 object TraceExample extends IOApp.Simple {
-  def globalOtel4s: Resource[IO, Otel4s[IO]] =
-    Resource
-      .eval(IO(GlobalOpenTelemetry.get))
-      .evalMap(OtelJava.forAsync[IO])
 
   /** Run Method
     *
@@ -131,24 +125,29 @@ object TraceExample extends IOApp.Simple {
     * from our UserIdsAlg.
     */
   def run: IO[Unit] = {
-    globalOtel4s.use { (otel4s: Otel4s[IO]) =>
+    OtelJava.global.flatMap { (otel4s: Otel4s[IO]) =>
       otel4s.tracerProvider.tracer("TraceExample").get.flatMap {
         implicit tracer: Tracer[IO] =>
           val userIdAlg = UserIdsAlg.apply[IO](
             InstitutionServiceClient.apply[IO],
             UserDatabase.apply[IO]
           )
-          val resource: Resource[IO, Unit] =
-            Resource.make(IO.sleep(50.millis))(_ => IO.sleep(100.millis))
           tracer
-            .resourceSpan("Start up")(resource)
-            .surround(
-              userIdAlg
-                .getAllUsersForInstitution(
-                  "9902181e-1d8d-4e00-913d-51532b493f1b"
-                )
-                .flatMap(IO.println)
-            )
+            .span("Start up")
+            .use { span =>
+              for {
+                _ <- tracer.span("acquire").surround(IO.sleep(50.millis))
+                _ <- span.addEvent("event")
+                _ <- tracer.span("use").surround {
+                  userIdAlg
+                    .getAllUsersForInstitution(
+                      "9902181e-1d8d-4e00-913d-51532b493f1b"
+                    )
+                    .flatMap(IO.println)
+                }
+                _ <- tracer.span("release").surround(IO.sleep(100.millis))
+              } yield ()
+            }
       }
     }
   }

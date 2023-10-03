@@ -17,23 +17,25 @@ ThisBuild / tlSonatypeUseLegacyHost := false
 // publish website from this branch
 ThisBuild / tlSitePublishBranch := Some("main")
 
-ThisBuild / scalafixDependencies += "com.github.liancheng" %% "organize-imports" % "0.6.0"
+lazy val scalafixSettings = Seq(
+  semanticdbOptions ++= Seq("-P:semanticdb:synthetics:on").filter(_ =>
+    !tlIsScala3.value
+  )
+)
 
-ThisBuild / tlMimaPreviousVersions ~= (_.filterNot(_ == "0.2.0"))
-
-val Scala213 = "2.13.11"
-ThisBuild / crossScalaVersions := Seq(Scala213, "3.3.0")
+val Scala213 = "2.13.12"
+ThisBuild / crossScalaVersions := Seq(Scala213, "3.3.1")
 ThisBuild / scalaVersion := Scala213 // the default Scala
 
-val CatsVersion = "2.9.0"
-val CatsEffectVersion = "3.5.1"
+val CatsVersion = "2.10.0"
+val CatsEffectVersion = "3.5.2"
 val CatsMtlVersion = "1.3.1"
 val DisciplineMUnitVersion = "2.0.0-M3"
-val FS2Version = "3.7.0"
-val MUnitVersion = "1.0.0-M8"
+val FS2Version = "3.9.2"
+val MUnitVersion = "1.0.0-M10"
 val MUnitCatsEffectVersion = "2.0.0-M3"
 val MUnitDisciplineVersion = "2.0.0-M3"
-val OpenTelemetryVersion = "1.27.0"
+val OpenTelemetryVersion = "1.30.1"
 val PlatformVersion = "1.0.2"
 val ScodecVersion = "1.1.37"
 val VaultVersion = "3.5.0"
@@ -58,6 +60,7 @@ lazy val root = tlCrossRootProject
     `core-metrics`,
     `core-trace`,
     core,
+    `sdk-common`,
     `testkit-common`,
     `testkit-metrics`,
     testkit,
@@ -90,6 +93,7 @@ lazy val `core-common` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
       "lgbt.princess" %%% "platform" % PlatformVersion % Test
     )
   )
+  .settings(scalafixSettings)
 
 lazy val `core-metrics` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .crossType(CrossType.Pure)
@@ -104,6 +108,7 @@ lazy val `core-metrics` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
       "org.typelevel" %%% "cats-effect-testkit" % CatsEffectVersion % Test
     )
   )
+  .settings(scalafixSettings)
 
 lazy val `core-trace` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .crossType(CrossType.Pure)
@@ -118,6 +123,7 @@ lazy val `core-trace` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
       "org.scodec" %%% "scodec-bits" % ScodecVersion
     )
   )
+  .settings(scalafixSettings)
 
 lazy val core = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .crossType(CrossType.Pure)
@@ -126,6 +132,33 @@ lazy val core = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .settings(
     name := "otel4s-core"
   )
+  .settings(scalafixSettings)
+
+lazy val `sdk-common` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
+  .crossType(CrossType.Pure)
+  .enablePlugins(BuildInfoPlugin)
+  .enablePlugins(NoPublishPlugin)
+  .in(file("sdk/common"))
+  .dependsOn(`core-common`, semconv)
+  .settings(
+    name := "otel4s-sdk-common",
+    startYear := Some(2023),
+    libraryDependencies ++= Seq(
+      "org.typelevel" %%% "cats-effect-kernel" % CatsEffectVersion,
+      "org.typelevel" %%% "cats-mtl" % CatsMtlVersion,
+      "org.typelevel" %%% "cats-laws" % CatsVersion % Test,
+      "org.typelevel" %%% "discipline-munit" % DisciplineMUnitVersion % Test,
+      "org.scalameta" %%% "munit" % MUnitVersion % Test,
+      "org.scalameta" %%% "munit-scalacheck" % MUnitVersion % Test,
+    ),
+    buildInfoPackage := "org.typelevel.otel4s.sdk",
+    buildInfoOptions += sbtbuildinfo.BuildInfoOption.PackagePrivate,
+    buildInfoKeys := Seq[BuildInfoKey](
+      version
+    )
+  )
+  .settings(munitDependencies)
+  .settings(scalafixSettings)
 
 lazy val `testkit-common` = crossProject(JVMPlatform)
   .crossType(CrossType.Full)
@@ -134,6 +167,7 @@ lazy val `testkit-common` = crossProject(JVMPlatform)
   .settings(
     name := "otel4s-testkit-common"
   )
+  .settings(scalafixSettings)
 
 lazy val `testkit-metrics` = crossProject(JVMPlatform)
   .crossType(CrossType.Full)
@@ -149,6 +183,7 @@ lazy val `testkit-metrics` = crossProject(JVMPlatform)
       "io.opentelemetry" % "opentelemetry-sdk-testing" % OpenTelemetryVersion
     )
   )
+  .settings(scalafixSettings)
 
 lazy val testkit = crossProject(JVMPlatform)
   .crossType(CrossType.Full)
@@ -157,6 +192,7 @@ lazy val testkit = crossProject(JVMPlatform)
   .settings(
     name := "otel4s-testkit"
   )
+  .settings(scalafixSettings)
 
 lazy val `java-common` = project
   .in(file("java/common"))
@@ -179,6 +215,7 @@ lazy val `java-common` = project
       "openTelemetrySdkVersion" -> OpenTelemetryVersion
     )
   )
+  .settings(scalafixSettings)
 
 lazy val `java-metrics` = project
   .in(file("java/metrics"))
@@ -190,6 +227,7 @@ lazy val `java-metrics` = project
       "io.opentelemetry" % "opentelemetry-sdk-testing" % OpenTelemetryVersion % Test
     )
   )
+  .settings(scalafixSettings)
 
 lazy val `java-trace` = project
   .in(file("java/trace"))
@@ -224,6 +262,7 @@ lazy val `java-trace` = project
       )
     )
   )
+  .settings(scalafixSettings)
 
 lazy val java = project
   .in(file("java/all"))
@@ -235,14 +274,17 @@ lazy val java = project
     )
   )
   .settings(munitDependencies)
+  .settings(scalafixSettings)
 
 lazy val semconv = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .crossType(CrossType.Pure)
   .in(file("semconv"))
   .dependsOn(`core-common`)
   .settings(
-    name := "otel4s-semconv"
+    name := "otel4s-semconv",
+    startYear := Some(2023),
   )
+  .settings(scalafixSettings)
 
 lazy val `sdk-common` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .crossType(CrossType.Pure)
@@ -277,6 +319,7 @@ lazy val benchmarks = project
   .settings(
     name := "otel4s-benchmarks"
   )
+  .settings(scalafixSettings)
 
 lazy val examples = project
   .enablePlugins(NoPublishPlugin)
@@ -287,8 +330,8 @@ lazy val examples = project
     libraryDependencies ++= Seq(
       "io.opentelemetry" % "opentelemetry-exporter-otlp" % OpenTelemetryVersion,
       "io.opentelemetry" % "opentelemetry-sdk" % OpenTelemetryVersion,
-      "io.opentelemetry" % "opentelemetry-sdk-extension-autoconfigure" % s"${OpenTelemetryVersion}-alpha",
-      "io.opentelemetry" % "opentelemetry-extension-trace-propagators" % s"${OpenTelemetryVersion}" % Runtime
+      "io.opentelemetry" % "opentelemetry-sdk-extension-autoconfigure" % OpenTelemetryVersion,
+      "io.opentelemetry" % "opentelemetry-extension-trace-propagators" % OpenTelemetryVersion % Runtime
     ),
     run / fork := true,
     javaOptions += "-Dotel.java.global-autoconfigure.enabled=true",
@@ -297,12 +340,16 @@ lazy val examples = project
       "OTEL_SERVICE_NAME" -> "Trace Example"
     )
   )
+  .settings(scalafixSettings)
 
 lazy val docs = project
   .in(file("site"))
   .enablePlugins(TypelevelSitePlugin)
   .dependsOn(java)
   .settings(
+    libraryDependencies ++= Seq(
+      "io.opentelemetry" % "opentelemetry-sdk-extension-autoconfigure" % OpenTelemetryVersion
+    ),
     mdocVariables := Map(
       "VERSION" -> version.value,
       "OPEN_TELEMETRY_VERSION" -> OpenTelemetryVersion
@@ -332,6 +379,7 @@ lazy val unidocs = project
       `core-metrics`.jvm,
       `core-trace`.jvm,
       core.jvm,
+      `sdk-common`.jvm,
       `testkit-common`.jvm,
       `testkit-metrics`.jvm,
       testkit.jvm,

@@ -19,7 +19,6 @@ package org.typelevel.otel4s.java
 import cats.effect.IO
 import io.opentelemetry.sdk.{OpenTelemetrySdk => JOpenTelemetrySdk}
 import munit.CatsEffectSuite
-import org.typelevel.otel4s.java.OtelJava
 
 class OtelJavaSuite extends CatsEffectSuite {
 

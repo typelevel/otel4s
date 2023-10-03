@@ -24,34 +24,27 @@ import org.typelevel.vault.Vault
 
 private[otel4s] object ContextConversions {
 
-  def toJContext(context: Vault): JContext = {
-    var jContext = JContext.root()
-    jContext = Scope.fromContext(context) match {
-      case Scope.Root(_) =>
-        jContext
-      case Scope.Span(_, jSpan) =>
-        jSpan.storeInContext(jContext)
+  def toJContext(context: Vault): JContext =
+    Scope.fromContext(context) match {
+      case Scope.Root(ctx) =>
+        ctx
+      case Scope.Span(ctx, jSpan) =>
+        jSpan.storeInContext(ctx)
       case Scope.Noop =>
-        JSpan.getInvalid.storeInContext(jContext)
+        JSpan.getInvalid.storeInContext(JContext.root())
     }
-    jContext
-  }
 
-  def fromJContext(jContext: JContext): Vault = {
-    var context = Vault.empty
+  def fromJContext(jContext: JContext): Vault =
     JSpan.fromContextOrNull(jContext) match {
       case null =>
-        context = Scope.root.storeInContext(context)
+        Scope.Root(jContext).storeInContext(Vault.empty)
       case jSpan =>
         if (jSpan.getSpanContext.isValid) {
+          var context = Vault.empty
           context = Scope.Span(jContext, jSpan).storeInContext(context)
-          context = SpanConversions
-            .wrap(jSpan.getSpanContext)
-            .storeInContext(context)
+          new WrappedSpanContext(jSpan.getSpanContext).storeInContext(context)
         } else {
-          context = Scope.Noop.storeInContext(context)
+          Scope.Noop.storeInContext(Vault.empty)
         }
     }
-    context
-  }
 }

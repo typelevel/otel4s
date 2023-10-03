@@ -17,6 +17,8 @@
 package org.typelevel.otel4s
 package trace
 
+import cats.Applicative
+
 /** The entry point of the tracing API. Provides access to [[Tracer]].
   */
 trait TracerProvider[F[_]] {
@@ -53,4 +55,20 @@ trait TracerProvider[F[_]] {
     *   library, package, or fully qualified class name
     */
   def tracer(name: String): TracerBuilder[F]
+}
+
+object TracerProvider {
+
+  /** Creates a no-op implementation of the [[TracerProvider]].
+    *
+    * A [[TracerBuilder]] has no-op implementation too.
+    *
+    * @tparam F
+    *   the higher-kinded type of a polymorphic effect
+    */
+  def noop[F[_]: Applicative]: TracerProvider[F] =
+    new TracerProvider[F] {
+      def tracer(name: String): TracerBuilder[F] =
+        TracerBuilder.noop
+    }
 }

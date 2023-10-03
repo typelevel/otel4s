@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Typelevel
+ * Copyright 2023 Typelevel
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,10 +19,7 @@ package org.typelevel.otel4s.semconv.trace.attributes
 import org.typelevel.otel4s.AttributeKey
 import org.typelevel.otel4s.AttributeKey._
 
-import scala.annotation.nowarn
-
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/semantic-convention/templates/SemanticAttributes.scala.j2
-@nowarn("msg=never used")
 object SemanticAttributes {
 
   /** The URL of the OpenTelemetry schema for these keys and values.
@@ -1161,7 +1158,7 @@ object SemanticAttributes {
   val UserAgentOriginal: AttributeKey[String] = string("user_agent.original")
 
   // Enum definitions
-  abstract class HttpFlavorValue(value: String)
+  abstract class HttpFlavorValue(val value: String)
   object HttpFlavorValue {
 
     /** HTTP/1.0. */
@@ -1184,7 +1181,7 @@ object SemanticAttributes {
 
   }
 
-  abstract class EventDomainValue(value: String)
+  abstract class EventDomainValue(val value: String)
   object EventDomainValue {
 
     /** Events from browser apps. */
@@ -1198,7 +1195,7 @@ object SemanticAttributes {
 
   }
 
-  abstract class OpentracingRefTypeValue(value: String)
+  abstract class OpentracingRefTypeValue(val value: String)
   object OpentracingRefTypeValue {
 
     /** The parent Span depends on the child Span in some capacity. */
@@ -1211,7 +1208,7 @@ object SemanticAttributes {
 
   }
 
-  abstract class DbSystemValue(value: String)
+  abstract class DbSystemValue(val value: String)
   object DbSystemValue {
 
     /** Some other SQL database. Fallback only. See notes. */
@@ -1369,7 +1366,7 @@ object SemanticAttributes {
 
   }
 
-  abstract class DbCassandraConsistencyLevelValue(value: String)
+  abstract class DbCassandraConsistencyLevelValue(val value: String)
   object DbCassandraConsistencyLevelValue {
 
     /** all. */
@@ -1410,7 +1407,7 @@ object SemanticAttributes {
 
   }
 
-  abstract class OtelStatusCodeValue(value: String)
+  abstract class OtelStatusCodeValue(val value: String)
   object OtelStatusCodeValue {
 
     /** The operation has been validated by an Application developer or Operator
@@ -1423,7 +1420,7 @@ object SemanticAttributes {
 
   }
 
-  abstract class FaasTriggerValue(value: String)
+  abstract class FaasTriggerValue(val value: String)
   object FaasTriggerValue {
 
     /** A response to some data source operation such as a database or
@@ -1447,7 +1444,7 @@ object SemanticAttributes {
 
   }
 
-  abstract class FaasDocumentOperationValue(value: String)
+  abstract class FaasDocumentOperationValue(val value: String)
   object FaasDocumentOperationValue {
 
     /** When a new object is created. */
@@ -1461,7 +1458,7 @@ object SemanticAttributes {
 
   }
 
-  abstract class FaasInvokedProviderValue(value: String)
+  abstract class FaasInvokedProviderValue(val value: String)
   object FaasInvokedProviderValue {
 
     /** Alibaba Cloud. */
@@ -1481,7 +1478,7 @@ object SemanticAttributes {
 
   }
 
-  abstract class NetTransportValue(value: String)
+  abstract class NetTransportValue(val value: String)
   object NetTransportValue {
 
     /** ip_tcp. */
@@ -1513,7 +1510,7 @@ object SemanticAttributes {
 
   }
 
-  abstract class NetSockFamilyValue(value: String)
+  abstract class NetSockFamilyValue(val value: String)
   object NetSockFamilyValue {
 
     /** IPv4 address. */
@@ -1527,7 +1524,7 @@ object SemanticAttributes {
 
   }
 
-  abstract class NetHostConnectionTypeValue(value: String)
+  abstract class NetHostConnectionTypeValue(val value: String)
   object NetHostConnectionTypeValue {
 
     /** wifi. */
@@ -1547,7 +1544,7 @@ object SemanticAttributes {
 
   }
 
-  abstract class NetHostConnectionSubtypeValue(value: String)
+  abstract class NetHostConnectionSubtypeValue(val value: String)
   object NetHostConnectionSubtypeValue {
 
     /** GPRS. */
@@ -1616,7 +1613,7 @@ object SemanticAttributes {
 
   }
 
-  abstract class GraphqlOperationTypeValue(value: String)
+  abstract class GraphqlOperationTypeValue(val value: String)
   object GraphqlOperationTypeValue {
 
     /** GraphQL query. */
@@ -1630,7 +1627,7 @@ object SemanticAttributes {
 
   }
 
-  abstract class MessagingDestinationKindValue(value: String)
+  abstract class MessagingDestinationKindValue(val value: String)
   object MessagingDestinationKindValue {
 
     /** A message sent to a queue. */
@@ -1641,7 +1638,7 @@ object SemanticAttributes {
 
   }
 
-  abstract class MessagingSourceKindValue(value: String)
+  abstract class MessagingSourceKindValue(val value: String)
   object MessagingSourceKindValue {
 
     /** A message received from a queue. */
@@ -1652,7 +1649,7 @@ object SemanticAttributes {
 
   }
 
-  abstract class MessagingOperationValue(value: String)
+  abstract class MessagingOperationValue(val value: String)
   object MessagingOperationValue {
 
     /** publish. */
@@ -1666,7 +1663,7 @@ object SemanticAttributes {
 
   }
 
-  abstract class MessagingRocketmqMessageTypeValue(value: String)
+  abstract class MessagingRocketmqMessageTypeValue(val value: String)
   object MessagingRocketmqMessageTypeValue {
 
     /** Normal message. */
@@ -1684,7 +1681,7 @@ object SemanticAttributes {
 
   }
 
-  abstract class MessagingRocketmqConsumptionModelValue(value: String)
+  abstract class MessagingRocketmqConsumptionModelValue(val value: String)
   object MessagingRocketmqConsumptionModelValue {
 
     /** Clustering consumption model. */
@@ -1697,7 +1694,7 @@ object SemanticAttributes {
 
   }
 
-  abstract class RpcSystemValue(value: String)
+  abstract class RpcSystemValue(val value: String)
   object RpcSystemValue {
 
     /** gRPC. */
@@ -1717,7 +1714,7 @@ object SemanticAttributes {
 
   }
 
-  abstract class RpcGrpcStatusCodeValue(value: Long)
+  abstract class RpcGrpcStatusCodeValue(val value: Long)
   object RpcGrpcStatusCodeValue {
 
     /** OK. */
@@ -1773,7 +1770,7 @@ object SemanticAttributes {
 
   }
 
-  abstract class MessageTypeValue(value: String)
+  abstract class MessageTypeValue(val value: String)
   object MessageTypeValue {
 
     /** sent. */
@@ -1784,7 +1781,7 @@ object SemanticAttributes {
 
   }
 
-  abstract class RpcConnectRpcErrorCodeValue(value: String)
+  abstract class RpcConnectRpcErrorCodeValue(val value: String)
   object RpcConnectRpcErrorCodeValue {
 
     /** cancelled. */

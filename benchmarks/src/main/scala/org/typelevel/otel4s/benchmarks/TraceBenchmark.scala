@@ -36,7 +36,7 @@ class TraceBenchmark {
   import TraceBenchmark._
 
   @Benchmark
-  def pure: Unit =
+  def pure(): Unit =
     IO.unit.unsafeRunSync()
 
   @Benchmark

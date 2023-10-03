@@ -17,7 +17,6 @@
 import cats.effect.IO
 import cats.effect.IOApp
 import cats.effect.Resource
-import io.opentelemetry.api.GlobalOpenTelemetry
 import org.typelevel.otel4s.java.OtelJava
 import org.typelevel.otel4s.metrics.ObservableCounter
 
@@ -32,8 +31,7 @@ object ObservableExample extends IOApp.Simple {
 
   def meterResource: Resource[IO, ObservableCounter] =
     Resource
-      .eval(IO(GlobalOpenTelemetry.get))
-      .evalMap(OtelJava.forAsync[IO])
+      .eval(OtelJava.global)
       .evalMap(_.meterProvider.get("observable-example"))
       .flatMap(
         _.observableCounter("cats-effect-runtime-cpu-starvation-count")

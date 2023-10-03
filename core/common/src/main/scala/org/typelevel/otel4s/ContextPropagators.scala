@@ -23,6 +23,14 @@ trait ContextPropagators[F[_]] {
 }
 
 object ContextPropagators {
+
+  /** Creates a no-op implementation of the [[ContextPropagators]].
+    *
+    * A [[TextMapPropagator]] has no-op implementation too.
+    *
+    * @tparam F
+    *   the higher-kinded type of a polymorphic effect
+    */
   def noop[F[_]: Applicative]: ContextPropagators[F] =
     new ContextPropagators[F] {
       def textMapPropagator: TextMapPropagator[F] =

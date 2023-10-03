@@ -19,6 +19,7 @@ package trace
 
 import cats.Applicative
 import cats.arrow.FunctionK
+import cats.effect.MonadCancelThrow
 import cats.effect.Resource
 
 import scala.concurrent.duration.FiniteDuration
@@ -112,6 +113,15 @@ trait SpanBuilder[F[_]] {
   def withParent(parent: SpanContext): SpanBuilder[F]
 
   def build: SpanOps[F]
+
+  /** Modify the context `F` using an implicit [[KindTransformer]] from `F` to
+    * `G`.
+    */
+  def mapK[G[_]: MonadCancelThrow](implicit
+      F: MonadCancelThrow[F],
+      kt: KindTransformer[F, G]
+  ): SpanBuilder[G] =
+    new SpanBuilder.MappedK(this)
 }
 
 object SpanBuilder {
@@ -152,4 +162,31 @@ object SpanBuilder {
       }
     }
 
+  /** Implementation for [[SpanBuilder.mapK]]. */
+  private class MappedK[F[_]: MonadCancelThrow, G[_]: MonadCancelThrow](
+      builder: SpanBuilder[F]
+  )(implicit kt: KindTransformer[F, G])
+      extends SpanBuilder[G] {
+    def addAttribute[A](attribute: Attribute[A]): SpanBuilder[G] =
+      new MappedK(builder.addAttribute(attribute))
+    def addAttributes(attributes: Attribute[_]*): SpanBuilder[G] =
+      new MappedK(builder.addAttributes(attributes: _*))
+    def addLink(
+        spanContext: SpanContext,
+        attributes: Attribute[_]*
+    ): SpanBuilder[G] =
+      new MappedK(builder.addLink(spanContext, attributes: _*))
+    def withFinalizationStrategy(
+        strategy: SpanFinalizer.Strategy
+    ): SpanBuilder[G] =
+      new MappedK(builder.withFinalizationStrategy(strategy))
+    def withSpanKind(spanKind: SpanKind): SpanBuilder[G] =
+      new MappedK(builder.withSpanKind(spanKind))
+    def withStartTimestamp(timestamp: FiniteDuration): SpanBuilder[G] =
+      new MappedK(builder.withStartTimestamp(timestamp))
+    def root: SpanBuilder[G] = new MappedK(builder.root)
+    def withParent(parent: SpanContext): SpanBuilder[G] =
+      new MappedK(builder.withParent(parent))
+    def build: SpanOps[G] = builder.build.mapK[G]
+  }
 }

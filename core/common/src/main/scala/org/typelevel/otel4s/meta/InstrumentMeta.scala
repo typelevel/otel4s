@@ -17,6 +17,7 @@
 package org.typelevel.otel4s.meta
 
 import cats.Applicative
+import cats.~>
 
 trait InstrumentMeta[F[_]] {
 
@@ -28,6 +29,9 @@ trait InstrumentMeta[F[_]] {
     */
   def unit: F[Unit]
 
+  /** Modify the context `F` using the transformation `f`. */
+  def mapK[G[_]](f: F ~> G): InstrumentMeta[G] =
+    new InstrumentMeta.MappedK(this)(f)
 }
 
 object InstrumentMeta {
@@ -44,4 +48,9 @@ object InstrumentMeta {
       val unit: F[Unit] = Applicative[F].unit
     }
 
+  private class MappedK[F[_], G[_]](meta: InstrumentMeta[F])(f: F ~> G)
+      extends InstrumentMeta[G] {
+    def isEnabled: Boolean = meta.isEnabled
+    def unit: G[Unit] = f(meta.unit)
+  }
 }

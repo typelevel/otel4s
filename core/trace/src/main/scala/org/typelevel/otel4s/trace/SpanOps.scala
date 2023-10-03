@@ -14,9 +14,12 @@
  * limitations under the License.
  */
 
-package org.typelevel.otel4s.trace
+package org.typelevel.otel4s
+package trace
 
+import cats.effect.MonadCancelThrow
 import cats.effect.kernel.Resource
+import cats.syntax.functor._
 import cats.~>
 
 trait SpanOps[F[_]] {
@@ -139,6 +142,15 @@ trait SpanOps[F[_]] {
     *   See [[use]] for more details regarding lifecycle strategy
     */
   final def surround[A](fa: F[A]): F[A] = use(_ => fa)
+
+  /** Modify the context `F` using an implicit [[KindTransformer]] from `F` to
+    * `G`.
+    */
+  def mapK[G[_]: MonadCancelThrow](implicit
+      F: MonadCancelThrow[F],
+      kt: KindTransformer[F, G]
+  ): SpanOps[G] =
+    new SpanOps.MappedK(this)
 }
 
 object SpanOps {
@@ -157,6 +169,12 @@ object SpanOps {
       * [[cats.arrow.FunctionK FunctionK]] will not be traced.
       */
     def trace: F ~> F
+
+    /** Modify the context `F` using an implicit [[KindTransformer]] from `F` to
+      * `G`.
+      */
+    def mapK[G[_]](implicit kt: KindTransformer[F, G]): Res[G] =
+      Res(span.mapK[G], kt.liftFunctionK(trace))
   }
 
   object Res {
@@ -168,5 +186,22 @@ object SpanOps {
       */
     def apply[F[_]](span: Span[F], trace: F ~> F): Res[F] =
       Impl(span, trace)
+  }
+
+  /** Implementation for [[SpanOps.mapK]]. */
+  private class MappedK[F[_]: MonadCancelThrow, G[_]: MonadCancelThrow](
+      ops: SpanOps[F]
+  )(implicit kt: KindTransformer[F, G])
+      extends SpanOps[G] {
+    def startUnmanaged: G[Span[G]] =
+      kt.liftK(ops.startUnmanaged).map(_.mapK[G])
+
+    def resource: Resource[G, Res[G]] =
+      ops.resource.mapK(kt.liftK).map(res => res.mapK[G])
+
+    def use[A](f: Span[G] => G[A]): G[A] =
+      resource.use { res => res.trace(f(res.span)) }
+
+    def use_ : G[Unit] = kt.liftK(ops.use_)
   }
 }

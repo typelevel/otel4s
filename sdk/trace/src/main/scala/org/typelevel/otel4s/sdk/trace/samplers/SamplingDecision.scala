@@ -16,6 +16,9 @@
 
 package org.typelevel.otel4s.sdk.trace.samplers
 
+import cats.Hash
+import cats.Show
+
 /** A decision on whether a span should be recorded, sampled, or dropped.
   */
 sealed abstract class SamplingDecision(val isSampled: Boolean)
@@ -35,4 +38,10 @@ object SamplingDecision {
   /** The span is recorded, and the Sampled flag will be set.
     */
   case object RecordAndSample extends SamplingDecision(true)
+
+  implicit val samplingDecisionHash: Hash[SamplingDecision] =
+    Hash.fromUniversalHashCode
+
+  implicit val samplingDecisionShow: Show[SamplingDecision] =
+    Show.fromToString
 }

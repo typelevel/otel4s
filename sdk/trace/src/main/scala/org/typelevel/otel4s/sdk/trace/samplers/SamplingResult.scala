@@ -20,7 +20,6 @@ import cats.Hash
 import cats.Show
 import cats.syntax.show._
 import org.typelevel.otel4s.sdk.Attributes
-import org.typelevel.otel4s.trace.SamplingDecision
 
 /** Sampling result returned by [[Sampler.shouldSample]].
   */

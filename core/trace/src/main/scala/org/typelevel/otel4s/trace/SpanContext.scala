@@ -38,8 +38,7 @@ sealed trait SpanContext {
   /** Returns the trace identifier associated with this [[SpanContext]] as 32
     * character lowercase hex String.
     */
-  final def traceIdHex: String =
-    traceId.toHex
+  def traceIdHex: String
 
   /** Returns the span identifier associated with this [[SpanContext]] as 8-byte
     * vector.
@@ -49,12 +48,7 @@ sealed trait SpanContext {
   /** Returns the span identifier associated with this [[SpanContext]] as 16
     * character lowercase hex String.
     */
-  final def spanIdHex: String =
-    spanId.toHex
-
-  /** Returns the [[TraceFlags]] associated with this [[SpanContext]].
-    */
-  def traceFlags: TraceFlags
+  def spanIdHex: String
 
   /** Returns details about the trace associated with this [[SpanContext]] as an
     * 8-bit field.
@@ -141,7 +135,9 @@ object SpanContext {
   val invalid: SpanContext =
     SpanContextImpl(
       traceId = TraceId.Invalid,
+      traceIdHex = TraceId.Invalid.toHex,
       spanId = SpanId.Invalid,
+      spanIdHex = SpanId.Invalid.toHex,
       traceFlags = TraceFlags.Default,
       isRemote = false,
       isValid = false
@@ -220,15 +216,19 @@ object SpanContext {
     ) {
       SpanContextImpl(
         traceId = traceId,
+        traceIdHex = traceId.toHex,
         spanId = spanId,
+        spanIdHex = spanId.toHex,
         traceFlags = traceFlags,
         isRemote = remote,
         isValid = true
       )
     } else {
       SpanContextImpl(
-        traceId = invalid.traceId,
-        spanId = invalid.spanId,
+        traceId = TraceId.Invalid,
+        traceIdHex = TraceId.Invalid.toHex,
+        spanId = SpanId.Invalid,
+        spanIdHex = SpanId.Invalid.toHex,
         traceFlags = traceFlags,
         isRemote = remote,
         isValid = false
@@ -252,7 +252,9 @@ object SpanContext {
     DelegateImpl(
       underlying = underlying,
       traceId = traceId,
+      traceIdHex = traceId.toHex,
       spanId = spanId,
+      spanIdHex = spanId.toHex,
       traceFlags = traceFlags,
       isRemote = remote,
       isValid = isValid,
@@ -270,7 +272,9 @@ object SpanContext {
 
   private final case class SpanContextImpl(
       traceId: ByteVector,
+      traceIdHex: String,
       spanId: ByteVector,
+      spanIdHex: String,
       traceFlags: TraceFlags,
       isRemote: Boolean,
       isValid: Boolean
@@ -279,7 +283,9 @@ object SpanContext {
   private final case class DelegateImpl[A](
       underlying: A,
       traceId: ByteVector,
+      traceIdHex: String,
       spanId: ByteVector,
+      spanIdHex: String,
       traceFlags: TraceFlags,
       isRemote: Boolean,
       isValid: Boolean

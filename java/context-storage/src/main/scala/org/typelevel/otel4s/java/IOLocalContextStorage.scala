@@ -28,10 +28,10 @@ import org.typelevel.otel4s.java.context.LocalContext
 import org.typelevel.otel4s.java.instances._
 
 /** A `ContextStorage` backed by an [[cats.effect.IOLocal `IOLocal`]] of a
-  * [[`Context`]] that also provides [[cats.mtl.Local `Local`]] instances that
-  * reflect the state of the backing `IOLocal`. Usage of `Local` and
-  * `ContextStorage` methods will be consistent and stay in sync as long as
-  * effects are threaded properly.
+  * [[org.typelevel.otel4s.java.context.Context `Context`]] that also provides
+  * [[cats.mtl.Local `Local`]] instances that reflect the state of the backing
+  * `IOLocal`. Usage of `Local` and `ContextStorage` methods will be consistent
+  * and stay in sync as long as effects are threaded properly.
   */
 class IOLocalContextStorage(_ioLocal: () => IOLocal[Context])
     extends ContextStorage {
@@ -50,15 +50,17 @@ class IOLocalContextStorage(_ioLocal: () => IOLocal[Context])
     unsafeCurrent.underlying
 
   /** @return
-    *   a [[cats.mtl.Local `Local`]] of a [[`Context`]] that reflects the state
-    *   of the backing `IOLocal`
+    *   a [[cats.mtl.Local `Local`]] of a
+    *   [[org.typelevel.otel4s.java.context.Context `Context`]] that reflects
+    *   the state of the backing `IOLocal`
     */
   def local[F[_]: MonadCancelThrow: LiftIO]: LocalContext[F] = implicitly
 }
 
 object IOLocalContextStorage {
 
-  /** Returns a [[cats.mtl.Local `Local`]] of a [[`Context`]] if an
+  /** Returns a [[cats.mtl.Local `Local`]] of a
+    * [[org.typelevel.otel4s.java.context.Context `Context`]] if an
     * [[`IOLocalContextStorage`]] is configured to be used as the
     * `ContextStorage` for the Java otel library.
     *

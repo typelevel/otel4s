@@ -19,7 +19,7 @@ package metrics
 
 import cats.effect.IO
 import cats.effect.Ref
-import cats.effect.Resource
+import cats.effect.kernel.Resource
 import cats.syntax.all._
 import munit.CatsEffectSuite
 

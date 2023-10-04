@@ -17,8 +17,8 @@
 package org.typelevel.otel4s
 package trace
 
-import cats.effect.MonadCancelThrow
-import cats.effect.Resource
+import cats.effect.kernel.MonadCancelThrow
+import cats.effect.kernel.Resource
 import cats.syntax.functor._
 import cats.~>
 
@@ -56,8 +56,9 @@ trait SpanOps[F[_]] {
     */
   def startUnmanaged: F[Span[F]]
 
-  /** Creates a [[Span]] and a [[cats.effect.Resource Resource]] for using it.
-    * Unlike [[startUnmanaged]], the lifecycle of the span is fully managed.
+  /** Creates a [[Span]] and a [[cats.effect.kernel.Resource Resource]] for
+    * using it. Unlike [[startUnmanaged]], the lifecycle of the span is fully
+    * managed.
     *
     * The finalization strategy is determined by [[SpanFinalizer.Strategy]]. By
     * default, the abnormal termination (error, cancelation) is recorded.

@@ -18,8 +18,8 @@ package org.typelevel.otel4s
 
 import cats.Applicative
 
-trait ContextPropagators[F[_]] {
-  def textMapPropagator: TextMapPropagator[F]
+trait ContextPropagators[F[_], Ctx] {
+  def textMapPropagator: TextMapPropagator[F, Ctx]
 }
 
 object ContextPropagators {
@@ -31,9 +31,9 @@ object ContextPropagators {
     * @tparam F
     *   the higher-kinded type of a polymorphic effect
     */
-  def noop[F[_]: Applicative]: ContextPropagators[F] =
-    new ContextPropagators[F] {
-      def textMapPropagator: TextMapPropagator[F] =
+  def noop[F[_]: Applicative, Ctx]: ContextPropagators[F, Ctx] =
+    new ContextPropagators[F, Ctx] {
+      def textMapPropagator: TextMapPropagator[F, Ctx] =
         TextMapPropagator.noop
     }
 }

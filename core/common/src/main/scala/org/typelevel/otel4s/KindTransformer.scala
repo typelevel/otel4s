@@ -23,8 +23,8 @@ import cats.data.IorT
 import cats.data.Kleisli
 import cats.data.OptionT
 import cats.data.StateT
-import cats.effect.MonadCancelThrow
-import cats.effect.Resource
+import cats.effect.kernel.MonadCancelThrow
+import cats.effect.kernel.Resource
 import cats.~>
 
 /** A utility for transforming the higher-kinded type `F` to another

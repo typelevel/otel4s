@@ -130,4 +130,9 @@ trait ArbitraryInstances {
   implicit val attributesCogen: Cogen[Attributes] =
     Cogen[List[Attribute[_]]].contramap(_.toList)
 
+  implicit val resourceCogen: Cogen[Resource] =
+    Cogen[(Attributes, Option[String])].contramap { r =>
+      (r.attributes, r.schemaUrl)
+    }
+
 }

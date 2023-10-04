@@ -26,6 +26,7 @@ import cats.syntax.functor._
 import cats.~>
 import io.opentelemetry.api.trace.{SpanBuilder => JSpanBuilder}
 import io.opentelemetry.context.{Context => JContext}
+import org.typelevel.otel4s.java.context.LocalContext
 import org.typelevel.otel4s.trace.Span
 import org.typelevel.otel4s.trace.SpanFinalizer
 import org.typelevel.otel4s.trace.SpanOps
@@ -43,7 +44,7 @@ private[java] object SpanRunner {
       finalizationStrategy: SpanFinalizer.Strategy
   )
 
-  def span[F[_]: Sync](scope: TraceScope[F]): SpanRunner[F] =
+  def fromLocal[F[_]: Sync: LocalContext]: SpanRunner[F] =
     new SpanRunner[F] {
       def start(ctx: Option[RunnerContext]): Resource[F, SpanOps.Res[F]] = {
         ctx match {
@@ -51,8 +52,7 @@ private[java] object SpanRunner {
             startManaged(
               builder = builder,
               hasStartTimestamp = hasStartTs,
-              finalizationStrategy = finalization,
-              scope = scope
+              finalizationStrategy = finalization
             ).map { case (back, nt) => SpanOps.Res(Span.fromBackend(back), nt) }
 
           case None =>
@@ -91,9 +91,8 @@ private[java] object SpanRunner {
   private def startManaged[F[_]: Sync](
       builder: JSpanBuilder,
       hasStartTimestamp: Boolean,
-      finalizationStrategy: SpanFinalizer.Strategy,
-      scope: TraceScope[F]
-  ): Resource[F, (SpanBackendImpl[F], F ~> F)] = {
+      finalizationStrategy: SpanFinalizer.Strategy
+  )(implicit L: LocalContext[F]): Resource[F, (SpanBackendImpl[F], F ~> F)] = {
 
     def acquire: F[SpanBackendImpl[F]] =
       startSpan(builder, hasStartTimestamp)
@@ -108,8 +107,14 @@ private[java] object SpanRunner {
 
     for {
       backend <- Resource.makeCase(acquire) { case (b, ec) => release(b, ec) }
-      nt <- Resource.eval(scope.makeScope(backend.jSpan))
+      nt <- Resource.eval {
+        L.reader { ctx =>
+          new (F ~> F) {
+            def apply[A](fa: F[A]): F[A] =
+              L.scope(fa)(ctx.map(backend.jSpan.storeInContext))
+          }
+        }
+      }
     } yield (backend, nt)
   }
-
 }

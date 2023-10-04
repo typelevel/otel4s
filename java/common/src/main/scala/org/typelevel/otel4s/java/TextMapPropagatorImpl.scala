@@ -17,34 +17,29 @@
 package org.typelevel.otel4s
 package java
 
-import io.opentelemetry.context.{Context => JContext}
 import io.opentelemetry.context.propagation.{
   TextMapPropagator => JTextMapPropagator
 }
 import org.typelevel.otel4s.java.Conversions._
-import org.typelevel.vault.Vault
+import org.typelevel.otel4s.java.context.Context
 
 import scala.jdk.CollectionConverters._
 
 private[java] class TextMapPropagatorImpl(
-    jPropagator: JTextMapPropagator,
-    toJContext: Vault => JContext,
-    fromJContext: JContext => Vault
-) extends TextMapPropagator[Vault] {
+    jPropagator: JTextMapPropagator
+) extends TextMapPropagator[Context] {
   def fields: List[String] =
     jPropagator.fields().asScala.toList
 
-  def extract[A: TextMapGetter](ctx: Vault, carrier: A): Vault =
-    fromJContext(
-      jPropagator.extract(toJContext(ctx), carrier, fromTextMapGetter)
-    )
+  def extract[A: TextMapGetter](ctx: Context, carrier: A): Context =
+    ctx.map(jPropagator.extract(_, carrier, fromTextMapGetter))
 
-  def injected[A](ctx: Vault, carrier: A)(implicit
+  def injected[A](ctx: Context, carrier: A)(implicit
       injector: TextMapUpdater[A]
   ): A = {
     var injectedCarrier = carrier
     jPropagator.inject[Null](
-      toJContext(ctx),
+      ctx.underlying,
       null, // explicitly allowed per opentelemetry-java, so our setter can be a lambda!
       (_, key, value) => {
         injectedCarrier = injector.updated(injectedCarrier, key, value)

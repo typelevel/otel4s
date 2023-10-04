@@ -19,29 +19,27 @@ import cats.effect.Async
 import cats.effect.IO
 import cats.effect.IOApp
 import cats.effect.Resource
-import cats.mtl.Local
 import io.opentelemetry.api.GlobalOpenTelemetry
 import org.typelevel.otel4s.java.OtelJava
+import org.typelevel.otel4s.java.context.Context
+import org.typelevel.otel4s.java.context.LocalContext
 import org.typelevel.otel4s.trace.Tracer
-import org.typelevel.vault.Vault
 
 object KleisliExample extends IOApp.Simple {
-  def work[F[_]: Async: Tracer] =
+  def work[F[_]: Async: Tracer]: F[Unit] =
     Tracer[F].span("work").surround(Async[F].delay(println("I'm working")))
 
-  def tracerResource[F[_]](implicit
-      F: Async[F],
-      L: Local[F, Vault]
-  ): Resource[F, Tracer[F]] =
+  private def tracerResource[F[_]: Async: LocalContext]
+      : Resource[F, Tracer[F]] =
     Resource
       .eval(Async[F].delay(GlobalOpenTelemetry.get))
       .map(OtelJava.local[F])
       .evalMap(_.tracerProvider.get("kleisli-example"))
 
   def run: IO[Unit] =
-    tracerResource[Kleisli[IO, Vault, *]]
-      .use { implicit tracer: Tracer[Kleisli[IO, Vault, *]] =>
-        work[Kleisli[IO, Vault, *]]
+    tracerResource[Kleisli[IO, Context, *]]
+      .use { implicit tracer: Tracer[Kleisli[IO, Context, *]] =>
+        work[Kleisli[IO, Context, *]]
       }
-      .run(Vault.empty)
+      .run(Context.root)
 }

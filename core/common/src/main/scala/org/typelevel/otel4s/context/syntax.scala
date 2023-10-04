@@ -14,13 +14,6 @@
  * limitations under the License.
  */
 
-package org.typelevel.otel4s.java.trace
+package org.typelevel.otel4s.context
 
-import cats.mtl.Ask
-import cats.mtl.Local
-import org.typelevel.vault.Vault
-
-package object context {
-  type LocalVault[F[_]] = Local[F, Vault]
-  type AskVault[F[_]] = Ask[F, Vault]
-}
+object syntax extends Contextual.Syntax

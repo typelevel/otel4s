@@ -25,13 +25,14 @@ import cats.syntax.foldable._
 import cats.syntax.functor._
 import cats.~>
 import io.opentelemetry.api.trace.{SpanBuilder => JSpanBuilder}
-import io.opentelemetry.api.trace.{Tracer => JTracer}
 import io.opentelemetry.context.{Context => JContext}
+import org.typelevel.otel4s.java.context.LocalContext
 import org.typelevel.otel4s.trace.Span
 import org.typelevel.otel4s.trace.SpanFinalizer
+import org.typelevel.otel4s.trace.SpanOps
 
-private[java] sealed trait SpanRunner[F[_], Res <: Span[F]] {
-  def start(ctx: Option[SpanRunner.RunnerContext]): Resource[F, (Res, F ~> F)]
+private[java] sealed trait SpanRunner[F[_]] {
+  def start(ctx: Option[SpanRunner.RunnerContext]): Resource[F, SpanOps.Res[F]]
 }
 
 private[java] object SpanRunner {
@@ -43,73 +44,23 @@ private[java] object SpanRunner {
       finalizationStrategy: SpanFinalizer.Strategy
   )
 
-  def span[F[_]: Sync](scope: TraceScope[F]): SpanRunner[F, Span[F]] =
-    new SpanRunner[F, Span[F]] {
-      def start(ctx: Option[RunnerContext]): Resource[F, (Span[F], F ~> F)] = {
+  def fromLocal[F[_]: Sync: LocalContext]: SpanRunner[F] =
+    new SpanRunner[F] {
+      def start(ctx: Option[RunnerContext]): Resource[F, SpanOps.Res[F]] = {
         ctx match {
           case Some(RunnerContext(builder, _, hasStartTs, finalization)) =>
             startManaged(
               builder = builder,
               hasStartTimestamp = hasStartTs,
-              finalizationStrategy = finalization,
-              scope = scope
-            ).map { case (back, nt) => (Span.fromBackend(back), nt) }
+              finalizationStrategy = finalization
+            ).map { case (back, nt) => SpanOps.Res(Span.fromBackend(back), nt) }
 
           case None =>
-            Resource.pure((Span.fromBackend(Span.Backend.noop), FunctionK.id))
-        }
-      }
-    }
-
-  def resource[F[_]: Sync, A](
-      scope: TraceScope[F],
-      resource: Resource[F, A],
-      jTracer: JTracer
-  ): SpanRunner[F, Span.Res[F, A]] =
-    new SpanRunner[F, Span.Res[F, A]] {
-      def start(
-          ctx: Option[RunnerContext]
-      ): Resource[F, (Span.Res[F, A], F ~> F)] =
-        ctx match {
-          case Some(RunnerContext(builder, parent, hasStartTimestamp, fin)) =>
-            def child(
-                name: String,
-                parent: JContext
-            ): Resource[F, (SpanBackendImpl[F], F ~> F)] =
-              startManaged(
-                builder = jTracer.spanBuilder(name).setParent(parent),
-                hasStartTimestamp = false,
-                finalizationStrategy = fin,
-                scope = scope
-              )
-
-            for {
-              rootBackend <- startManaged(
-                builder = builder,
-                hasStartTimestamp = hasStartTimestamp,
-                finalizationStrategy = fin,
-                scope = scope
-              )
-
-              rootCtx <- Resource.pure(parent.`with`(rootBackend._1.jSpan))
-
-              pair <- Resource.make(
-                child("acquire", rootCtx).use(b => b._2(resource.allocated))
-              ) { case (_, release) =>
-                child("release", rootCtx).use(b => b._2(release))
-              }
-              (value, _) = pair
-
-              pair2 <- child("use", rootCtx)
-              (useSpanBackend, nt) = pair2
-            } yield (Span.Res.fromBackend(value, useSpanBackend), nt)
-
-          case None =>
-            resource.map(a =>
-              (Span.Res.fromBackend(a, Span.Backend.noop), FunctionK.id)
+            Resource.pure(
+              SpanOps.Res(Span.fromBackend(Span.Backend.noop), FunctionK.id)
             )
         }
-
+      }
     }
 
   def startUnmanaged[F[_]: Sync](context: Option[RunnerContext]): F[Span[F]] =
@@ -140,9 +91,8 @@ private[java] object SpanRunner {
   private def startManaged[F[_]: Sync](
       builder: JSpanBuilder,
       hasStartTimestamp: Boolean,
-      finalizationStrategy: SpanFinalizer.Strategy,
-      scope: TraceScope[F]
-  ): Resource[F, (SpanBackendImpl[F], F ~> F)] = {
+      finalizationStrategy: SpanFinalizer.Strategy
+  )(implicit L: LocalContext[F]): Resource[F, (SpanBackendImpl[F], F ~> F)] = {
 
     def acquire: F[SpanBackendImpl[F]] =
       startSpan(builder, hasStartTimestamp)
@@ -157,8 +107,14 @@ private[java] object SpanRunner {
 
     for {
       backend <- Resource.makeCase(acquire) { case (b, ec) => release(b, ec) }
-      nt <- Resource.eval(scope.makeScope(backend.jSpan))
+      nt <- Resource.eval {
+        L.reader { ctx =>
+          new (F ~> F) {
+            def apply[A](fa: F[A]): F[A] =
+              L.scope(fa)(ctx.map(backend.jSpan.storeInContext))
+          }
+        }
+      }
     } yield (backend, nt)
   }
-
 }

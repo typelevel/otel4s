@@ -19,12 +19,13 @@ package org.typelevel.otel4s.java.trace
 import cats.effect.Sync
 import io.opentelemetry.api.trace.{TracerProvider => JTracerProvider}
 import org.typelevel.otel4s.ContextPropagators
+import org.typelevel.otel4s.java.context.Context
+import org.typelevel.otel4s.java.context.LocalContext
 import org.typelevel.otel4s.trace._
 
-private[java] final case class TracerBuilderImpl[F[_]: Sync](
+private[java] final case class TracerBuilderImpl[F[_]: Sync: LocalContext](
     jTracerProvider: JTracerProvider,
-    propagators: ContextPropagators[F],
-    scope: TraceScope[F],
+    propagators: ContextPropagators[F, Context],
     name: String,
     version: Option[String] = None,
     schemaUrl: Option[String] = None
@@ -40,7 +41,6 @@ private[java] final case class TracerBuilderImpl[F[_]: Sync](
     val b = jTracerProvider.tracerBuilder(name)
     version.foreach(b.setInstrumentationVersion)
     schemaUrl.foreach(b.setSchemaUrl)
-    new TracerImpl(b.build(), scope, propagators)
+    new TracerImpl(b.build(), propagators)
   }
-
 }

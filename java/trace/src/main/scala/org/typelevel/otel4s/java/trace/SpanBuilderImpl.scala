@@ -21,13 +21,14 @@ import cats.effect.Resource
 import cats.effect.Sync
 import cats.syntax.flatMap._
 import cats.syntax.functor._
-import cats.~>
 import io.opentelemetry.api.trace.{Span => JSpan}
 import io.opentelemetry.api.trace.{SpanBuilder => JSpanBuilder}
 import io.opentelemetry.api.trace.{SpanKind => JSpanKind}
 import io.opentelemetry.api.trace.{Tracer => JTracer}
 import io.opentelemetry.context.{Context => JContext}
 import org.typelevel.otel4s.Attribute
+import org.typelevel.otel4s.java.context.Context
+import org.typelevel.otel4s.java.context.LocalContext
 import org.typelevel.otel4s.trace.Span
 import org.typelevel.otel4s.trace.SpanBuilder
 import org.typelevel.otel4s.trace.SpanContext
@@ -37,11 +38,10 @@ import org.typelevel.otel4s.trace.SpanOps
 
 import scala.concurrent.duration.FiniteDuration
 
-private[java] final case class SpanBuilderImpl[F[_]: Sync, Res <: Span[F]](
+private[java] final case class SpanBuilderImpl[F[_]: Sync](
     jTracer: JTracer,
     name: String,
-    scope: TraceScope[F],
-    runner: SpanRunner[F, Res],
+    runner: SpanRunner[F],
     parent: SpanBuilderImpl.Parent = SpanBuilderImpl.Parent.Propagate,
     finalizationStrategy: SpanFinalizer.Strategy =
       SpanFinalizer.Strategy.reportAbnormal,
@@ -49,57 +49,50 @@ private[java] final case class SpanBuilderImpl[F[_]: Sync, Res <: Span[F]](
     links: Seq[(SpanContext, Seq[Attribute[_]])] = Nil,
     attributes: Seq[Attribute[_]] = Nil,
     startTimestamp: Option[FiniteDuration] = None
-) extends SpanBuilder[F] {
-  type Result = Res
-
+)(implicit L: LocalContext[F])
+    extends SpanBuilder[F] {
   import SpanBuilderImpl._
 
-  def withSpanKind(spanKind: SpanKind): Builder =
+  def withSpanKind(spanKind: SpanKind): SpanBuilder[F] =
     copy(kind = Some(spanKind))
 
-  def addAttribute[A](attribute: Attribute[A]): Builder =
+  def addAttribute[A](attribute: Attribute[A]): SpanBuilder[F] =
     copy(attributes = attributes :+ attribute)
 
-  def addAttributes(attributes: Attribute[_]*): Builder =
+  def addAttributes(attributes: Attribute[_]*): SpanBuilder[F] =
     copy(attributes = this.attributes ++ attributes)
 
-  def addLink(spanContext: SpanContext, attributes: Attribute[_]*): Builder =
+  def addLink(
+      spanContext: SpanContext,
+      attributes: Attribute[_]*
+  ): SpanBuilder[F] =
     copy(links = links :+ (spanContext, attributes))
 
-  def root: Builder =
+  def root: SpanBuilder[F] =
     copy(parent = Parent.Root)
 
-  def withParent(parent: SpanContext): Builder =
+  def withParent(parent: SpanContext): SpanBuilder[F] =
     copy(parent = Parent.Explicit(parent))
 
-  def withStartTimestamp(timestamp: FiniteDuration): Builder =
+  def withStartTimestamp(timestamp: FiniteDuration): SpanBuilder[F] =
     copy(startTimestamp = Some(timestamp))
 
-  def withFinalizationStrategy(strategy: SpanFinalizer.Strategy): Builder =
+  def withFinalizationStrategy(
+      strategy: SpanFinalizer.Strategy
+  ): SpanBuilder[F] =
     copy(finalizationStrategy = strategy)
 
-  def wrapResource[A](
-      resource: Resource[F, A]
-  )(implicit ev: Result =:= Span[F]): SpanBuilder.Aux[F, Span.Res[F, A]] =
-    copy(runner = SpanRunner.resource(scope, resource, jTracer))
-
-  def build: SpanOps.Aux[F, Result] = new SpanOps[F] {
-    type Result = Res
-
-    def startUnmanaged(implicit ev: Result =:= Span[F]): F[Span[F]] =
+  def build: SpanOps[F] = new SpanOps[F] {
+    def startUnmanaged: F[Span[F]] =
       runnerContext.flatMap(ctx => SpanRunner.startUnmanaged(ctx))
 
-    def use[A](f: Result => F[A]): F[A] =
-      start.use { case (span, nt) => nt(f(span)) }
-
-    def use_ : F[Unit] =
-      start.use_
-
-    def surround[A](fa: F[A]): F[A] =
-      use(_ => fa)
-
-    private def start: Resource[F, (Result, F ~> F)] =
+    def resource: Resource[F, SpanOps.Res[F]] =
       Resource.eval(runnerContext).flatMap(ctx => runner.start(ctx))
+
+    override def use[A](f: Span[F] => F[A]): F[A] =
+      resource.use { res => res.trace(f(res.span)) }
+
+    override def use_ : F[Unit] = use(_ => Sync[F].unit)
   }
 
   private[trace] def makeJBuilder(parent: JContext): JSpanBuilder = {
@@ -133,32 +126,19 @@ private[java] final case class SpanBuilderImpl[F[_]: Sync, Res <: Span[F]](
     }
 
   private def parentContext: F[Option[JContext]] =
-    parent match {
-      case Parent.Root =>
-        scope.current.flatMap {
-          case Scope.Root(ctx) =>
-            Sync[F].pure(Some(ctx))
-
-          case Scope.Span(_, _) =>
-            scope.root.map(s => Some(s.ctx))
-
-          case Scope.Noop =>
-            Sync[F].pure(None)
-        }
-
-      case Parent.Propagate =>
-        scope.current.map {
-          case Scope.Root(ctx)    => Some(ctx)
-          case Scope.Span(ctx, _) => Some(ctx)
-          case Scope.Noop         => None
-        }
-
-      case Parent.Explicit(parent) =>
-        def parentSpan = JSpan.wrap(WrappedSpanContext.unwrap(parent))
-        scope.current.map {
-          case Scope.Root(ctx)    => Some(ctx.`with`(parentSpan))
-          case Scope.Span(ctx, _) => Some(ctx.`with`(parentSpan))
-          case Scope.Noop         => None
+    L.reader {
+      case Context.Noop => None
+      case Context.Wrapped(underlying) =>
+        Some {
+          parent match {
+            case Parent.Root =>
+              Context.root.underlying
+            case Parent.Propagate => underlying
+            case Parent.Explicit(parent) =>
+              JSpan
+                .wrap(WrappedSpanContext.unwrap(parent))
+                .storeInContext(underlying)
+          }
         }
     }
 }
@@ -166,7 +146,7 @@ private[java] final case class SpanBuilderImpl[F[_]: Sync, Res <: Span[F]](
 private[java] object SpanBuilderImpl {
 
   sealed trait Parent
-  object Parent {
+  private object Parent {
     case object Propagate extends Parent
     case object Root extends Parent
     final case class Explicit(parent: SpanContext) extends Parent
@@ -180,5 +160,4 @@ private[java] object SpanBuilderImpl {
       case SpanKind.Producer => JSpanKind.PRODUCER
       case SpanKind.Consumer => JSpanKind.CONSUMER
     }
-
 }

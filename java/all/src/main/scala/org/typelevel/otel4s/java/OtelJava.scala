@@ -21,18 +21,28 @@ import cats.effect.IOLocal
 import cats.effect.LiftIO
 import cats.effect.Resource
 import cats.effect.Sync
-import cats.mtl.Local
+import cats.syntax.all._
 import io.opentelemetry.api.{OpenTelemetry => JOpenTelemetry}
+import io.opentelemetry.api.GlobalOpenTelemetry
 import io.opentelemetry.sdk.{OpenTelemetrySdk => JOpenTelemetrySdk}
 import org.typelevel.otel4s.ContextPropagators
 import org.typelevel.otel4s.Otel4s
 import org.typelevel.otel4s.java.Conversions.asyncFromCompletableResultCode
+import org.typelevel.otel4s.java.context.Context
+import org.typelevel.otel4s.java.context.LocalContext
 import org.typelevel.otel4s.java.instances._
 import org.typelevel.otel4s.java.metrics.Metrics
 import org.typelevel.otel4s.java.trace.Traces
 import org.typelevel.otel4s.metrics.MeterProvider
 import org.typelevel.otel4s.trace.TracerProvider
-import org.typelevel.vault.Vault
+
+sealed class OtelJava[F[_]] private (
+    val propagators: ContextPropagators[F, Context],
+    val meterProvider: MeterProvider[F],
+    val tracerProvider: TracerProvider[F],
+) extends Otel4s[F] {
+  type Ctx = Context
+}
 
 object OtelJava {
 
@@ -46,30 +56,26 @@ object OtelJava {
     * @return
     *   An effect of an [[org.typelevel.otel4s.Otel4s]] resource.
     */
-  def forAsync[F[_]: LiftIO: Async](jOtel: JOpenTelemetry): F[Otel4s[F]] =
-    IOLocal(Vault.empty)
-      .map { implicit ioLocal: IOLocal[Vault] =>
+  def forAsync[F[_]: LiftIO: Async](jOtel: JOpenTelemetry): F[OtelJava[F]] =
+    IOLocal(Context.root)
+      .map { implicit ioLocal: IOLocal[Context] =>
         local[F](jOtel)
       }
       .to[F]
 
-  def local[F[_]](
+  def local[F[_]: Async: LocalContext](
       jOtel: JOpenTelemetry
-  )(implicit F: Async[F], L: Local[F, Vault]): Otel4s[F] = {
-    val contextPropagators = new ContextPropagatorsImpl[F](
-      jOtel.getPropagators,
-      ContextConversions.toJContext,
-      ContextConversions.fromJContext
-    )
+  ): OtelJava[F] = {
+    val contextPropagators = new ContextPropagatorsImpl[F](jOtel.getPropagators)
 
     val metrics = Metrics.forAsync(jOtel)
     val traces = Traces.local(jOtel, contextPropagators)
-    new Otel4s[F] {
-      def propagators: ContextPropagators[F] = contextPropagators
-      def meterProvider: MeterProvider[F] = metrics.meterProvider
-      def tracerProvider: TracerProvider[F] = traces.tracerProvider
-
-      override def toString: String = jOtel.toString()
+    new OtelJava[F](
+      contextPropagators,
+      metrics.meterProvider,
+      traces.tracerProvider,
+    ) {
+      override def toString: String = jOtel.toString
     }
   }
 
@@ -83,10 +89,16 @@ object OtelJava {
     */
   def resource[F[_]: LiftIO: Async](
       acquire: F[JOpenTelemetrySdk]
-  ): Resource[F, Otel4s[F]] =
+  ): Resource[F, OtelJava[F]] =
     Resource
       .make(acquire)(sdk =>
         asyncFromCompletableResultCode(Sync[F].delay(sdk.shutdown()))
       )
       .evalMap(forAsync[F])
+
+  /** Creates an [[org.typelevel.otel4s.Otel4s]] from the global Java
+    * OpenTelemetry instance.
+    */
+  def global[F[_]: LiftIO: Async]: F[OtelJava[F]] =
+    Sync[F].delay(GlobalOpenTelemetry.get).flatMap(forAsync[F])
 }

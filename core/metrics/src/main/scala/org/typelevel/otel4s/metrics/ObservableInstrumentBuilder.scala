@@ -16,7 +16,7 @@
 
 package org.typelevel.otel4s.metrics
 
-import cats.effect.Resource
+import cats.effect.kernel.Resource
 
 trait ObservableInstrumentBuilder[F[_], A, Instrument] {
   type Self <: ObservableInstrumentBuilder[F, A, Instrument]

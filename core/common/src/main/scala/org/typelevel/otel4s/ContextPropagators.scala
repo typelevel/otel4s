@@ -18,14 +18,22 @@ package org.typelevel.otel4s
 
 import cats.Applicative
 
-trait ContextPropagators[F[_]] {
-  def textMapPropagator: TextMapPropagator[F]
+trait ContextPropagators[F[_], Ctx] {
+  def textMapPropagator: TextMapPropagator[F, Ctx]
 }
 
 object ContextPropagators {
-  def noop[F[_]: Applicative]: ContextPropagators[F] =
-    new ContextPropagators[F] {
-      def textMapPropagator: TextMapPropagator[F] =
+
+  /** Creates a no-op implementation of the [[ContextPropagators]].
+    *
+    * A [[TextMapPropagator]] has no-op implementation too.
+    *
+    * @tparam F
+    *   the higher-kinded type of a polymorphic effect
+    */
+  def noop[F[_]: Applicative, Ctx]: ContextPropagators[F, Ctx] =
+    new ContextPropagators[F, Ctx] {
+      def textMapPropagator: TextMapPropagator[F, Ctx] =
         TextMapPropagator.noop
     }
 }

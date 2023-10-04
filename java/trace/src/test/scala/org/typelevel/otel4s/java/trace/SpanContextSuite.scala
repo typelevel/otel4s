@@ -29,7 +29,7 @@ class SpanContextSuite extends CatsEffectSuite {
     assertEquals(context.traceIdHex, jContext.getTraceId)
     assert(context.spanId.toArray.sameElements(jContext.getSpanIdBytes))
     assertEquals(context.spanIdHex, jContext.getSpanId)
-    assertEquals(context.samplingDecision.isSampled, jContext.isSampled)
+    assertEquals(context.isSampled, jContext.isSampled)
     assertEquals(context.isValid, jContext.isValid)
     assertEquals(context.isRemote, jContext.isRemote)
   }

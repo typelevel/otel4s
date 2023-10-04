@@ -17,7 +17,7 @@
 package org.typelevel.otel4s.metrics
 
 import cats.Applicative
-import cats.effect.Resource
+import cats.effect.kernel.Resource
 
 @annotation.implicitNotFound("""
 Could not find the `Meter` for ${F}. `Meter` can be one of the following:
@@ -126,6 +126,14 @@ object Meter {
 
   def apply[F[_]](implicit ev: Meter[F]): Meter[F] = ev
 
+  /** Creates a no-op implementation of the [[Meter]].
+    *
+    * All meter instruments ([[Counter]], [[Histogram]], etc) have no-op
+    * implementation too.
+    *
+    * @tparam F
+    *   the higher-kinded type of a polymorphic effect
+    */
   def noop[F[_]](implicit F: Applicative[F]): Meter[F] =
     new Meter[F] {
       def counter(name: String): SyncInstrumentBuilder[F, Counter[F, Long]] =

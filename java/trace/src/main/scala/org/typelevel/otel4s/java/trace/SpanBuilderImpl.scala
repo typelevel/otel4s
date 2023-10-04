@@ -27,6 +27,8 @@ import io.opentelemetry.api.trace.{SpanKind => JSpanKind}
 import io.opentelemetry.api.trace.{Tracer => JTracer}
 import io.opentelemetry.context.{Context => JContext}
 import org.typelevel.otel4s.Attribute
+import org.typelevel.otel4s.java.context.Context
+import org.typelevel.otel4s.java.context.LocalContext
 import org.typelevel.otel4s.trace.Span
 import org.typelevel.otel4s.trace.SpanBuilder
 import org.typelevel.otel4s.trace.SpanContext
@@ -39,7 +41,6 @@ import scala.concurrent.duration.FiniteDuration
 private[java] final case class SpanBuilderImpl[F[_]: Sync](
     jTracer: JTracer,
     name: String,
-    scope: TraceScope[F],
     runner: SpanRunner[F],
     parent: SpanBuilderImpl.Parent = SpanBuilderImpl.Parent.Propagate,
     finalizationStrategy: SpanFinalizer.Strategy =
@@ -48,7 +49,8 @@ private[java] final case class SpanBuilderImpl[F[_]: Sync](
     links: Seq[(SpanContext, Seq[Attribute[_]])] = Nil,
     attributes: Seq[Attribute[_]] = Nil,
     startTimestamp: Option[FiniteDuration] = None
-) extends SpanBuilder[F] {
+)(implicit L: LocalContext[F])
+    extends SpanBuilder[F] {
   import SpanBuilderImpl._
 
   def withSpanKind(spanKind: SpanKind): SpanBuilder[F] =
@@ -124,32 +126,19 @@ private[java] final case class SpanBuilderImpl[F[_]: Sync](
     }
 
   private def parentContext: F[Option[JContext]] =
-    parent match {
-      case Parent.Root =>
-        scope.current.flatMap {
-          case Scope.Root(ctx) =>
-            Sync[F].pure(Some(ctx))
-
-          case Scope.Span(_, _) =>
-            scope.root.map(s => Some(s.ctx))
-
-          case Scope.Noop =>
-            Sync[F].pure(None)
-        }
-
-      case Parent.Propagate =>
-        scope.current.map {
-          case Scope.Root(ctx)    => Some(ctx)
-          case Scope.Span(ctx, _) => Some(ctx)
-          case Scope.Noop         => None
-        }
-
-      case Parent.Explicit(parent) =>
-        def parentSpan = JSpan.wrap(WrappedSpanContext.unwrap(parent))
-        scope.current.map {
-          case Scope.Root(ctx)    => Some(ctx.`with`(parentSpan))
-          case Scope.Span(ctx, _) => Some(ctx.`with`(parentSpan))
-          case Scope.Noop         => None
+    L.reader {
+      case Context.Noop => None
+      case Context.Wrapped(underlying) =>
+        Some {
+          parent match {
+            case Parent.Root =>
+              Context.root.underlying
+            case Parent.Propagate => underlying
+            case Parent.Explicit(parent) =>
+              JSpan
+                .wrap(WrappedSpanContext.unwrap(parent))
+                .storeInContext(underlying)
+          }
         }
     }
 }
@@ -157,7 +146,7 @@ private[java] final case class SpanBuilderImpl[F[_]: Sync](
 private[java] object SpanBuilderImpl {
 
   sealed trait Parent
-  object Parent {
+  private object Parent {
     case object Propagate extends Parent
     case object Root extends Parent
     final case class Explicit(parent: SpanContext) extends Parent
@@ -171,5 +160,4 @@ private[java] object SpanBuilderImpl {
       case SpanKind.Producer => JSpanKind.PRODUCER
       case SpanKind.Consumer => JSpanKind.CONSUMER
     }
-
 }

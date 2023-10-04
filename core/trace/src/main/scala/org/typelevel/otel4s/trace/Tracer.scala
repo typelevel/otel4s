@@ -18,7 +18,7 @@ package org.typelevel.otel4s
 package trace
 
 import cats.Applicative
-import cats.effect.MonadCancelThrow
+import cats.effect.kernel.MonadCancelThrow
 import cats.~>
 import org.typelevel.otel4s.meta.InstrumentMeta
 

@@ -76,7 +76,7 @@ String, Boolean, Long, Double, List[String], List[Boolean], List[Long], List[Dou
   implicit def hashAttribute[T: Hash]: Hash[Attribute[T]] =
     Hash.by(a => (a.key, a.value))
 
-  implicit val hashAnyAttribute: Hash[Attribute[_]] = {
+  implicit val hashAttributeExistential: Hash[Attribute[_]] = {
     implicit val hashAny: Hash[Any] = Hash.fromUniversalHashCode
     Hash.by(a => (a.key, a.value))
   }

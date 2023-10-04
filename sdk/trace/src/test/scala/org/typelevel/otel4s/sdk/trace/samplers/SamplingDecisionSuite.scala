@@ -16,13 +16,15 @@
 
 package org.typelevel.otel4s.sdk.trace.samplers
 
-import cats.Hash
 import cats.Show
+import cats.kernel.laws.discipline.HashTests
 import munit._
+import org.scalacheck.Arbitrary
+import org.scalacheck.Cogen
 import org.scalacheck.Gen
 import org.scalacheck.Prop
 
-class SamplingDecisionSuite extends ScalaCheckSuite {
+class SamplingDecisionSuite extends DisciplineSuite {
 
   private val samplingDecisionGen: Gen[SamplingDecision] =
     Gen.oneOf(
@@ -30,6 +32,14 @@ class SamplingDecisionSuite extends ScalaCheckSuite {
       SamplingDecision.RecordOnly,
       SamplingDecision.RecordAndSample
     )
+
+  private implicit val samplingDecisionArbitrary: Arbitrary[SamplingDecision] =
+    Arbitrary(samplingDecisionGen)
+
+  private implicit val samplingDecisionCogen: Cogen[SamplingDecision] =
+    Cogen[String].contramap(_.toString)
+
+  checkAll("SamplingDecision.HashLaws", HashTests[SamplingDecision].hash)
 
   property("is sampled") {
     Prop.forAll(samplingDecisionGen) { decision =>
@@ -52,23 +62,6 @@ class SamplingDecisionSuite extends ScalaCheckSuite {
       }
 
       assertEquals(Show[SamplingDecision].show(decision), expected)
-    }
-  }
-
-  test("Hash[SamplingDecision]") {
-    val allWithIndex = List(
-      SamplingDecision.Drop,
-      SamplingDecision.RecordOnly,
-      SamplingDecision.RecordAndSample
-    ).zipWithIndex
-
-    allWithIndex.foreach { case (that, thatIdx) =>
-      allWithIndex.foreach { case (other, otherIdx) =>
-        assertEquals(
-          Hash[SamplingDecision].eqv(that, other),
-          thatIdx == otherIdx
-        )
-      }
     }
   }
 

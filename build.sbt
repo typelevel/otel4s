@@ -121,7 +121,9 @@ lazy val `core-trace` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
     libraryDependencies ++= Seq(
       "org.typelevel" %%% "cats-effect-kernel" % CatsEffectVersion,
       "org.scodec" %%% "scodec-bits" % ScodecVersion,
-      "org.scalameta" %%% "munit-scalacheck" % MUnitVersion % Test
+      "org.scalameta" %%% "munit-scalacheck" % MUnitVersion % Test,
+      "org.typelevel" %%% "cats-laws" % CatsVersion % Test,
+      "org.typelevel" %%% "discipline-munit" % DisciplineMUnitVersion % Test
     )
   )
   .settings(scalafixSettings)
@@ -170,7 +172,9 @@ lazy val `sdk-trace` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
     name := "otel4s-sdk-trace",
     libraryDependencies ++= Seq(
       "org.typelevel" %%% "cats-effect" % CatsEffectVersion,
-      "org.scalameta" %%% "munit-scalacheck" % MUnitVersion % Test
+      "org.scalameta" %%% "munit-scalacheck" % MUnitVersion % Test,
+      "org.typelevel" %%% "cats-laws" % CatsVersion % Test,
+      "org.typelevel" %%% "discipline-munit" % DisciplineMUnitVersion % Test
     ),
   )
   .settings(munitDependencies)

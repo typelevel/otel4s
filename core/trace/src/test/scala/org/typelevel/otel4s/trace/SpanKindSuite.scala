@@ -16,13 +16,15 @@
 
 package org.typelevel.otel4s.trace
 
-import cats.Hash
 import cats.Show
+import cats.kernel.laws.discipline.HashTests
 import munit._
+import org.scalacheck.Arbitrary
+import org.scalacheck.Cogen
 import org.scalacheck.Gen
 import org.scalacheck.Prop
 
-class SpanKindSuite extends ScalaCheckSuite {
+class SpanKindSuite extends DisciplineSuite {
 
   private val spanKindGen: Gen[SpanKind] =
     Gen.oneOf(
@@ -32,6 +34,14 @@ class SpanKindSuite extends ScalaCheckSuite {
       SpanKind.Producer,
       SpanKind.Consumer
     )
+
+  private implicit val spanKindArbitrary: Arbitrary[SpanKind] =
+    Arbitrary(spanKindGen)
+
+  private implicit val spanKindCogen: Cogen[SpanKind] =
+    Cogen[String].contramap(_.toString)
+
+  checkAll("SpanKind.HashLaws", HashTests[SpanKind].hash)
 
   property("Show[SpanKind]") {
     Prop.forAll(spanKindGen) { spanKind =>
@@ -44,22 +54,6 @@ class SpanKindSuite extends ScalaCheckSuite {
       }
 
       assertEquals(Show[SpanKind].show(spanKind), expected)
-    }
-  }
-
-  test("Hash[SpanKind]") {
-    val allWithIndex = List(
-      SpanKind.Internal,
-      SpanKind.Server,
-      SpanKind.Client,
-      SpanKind.Producer,
-      SpanKind.Consumer
-    ).zipWithIndex
-
-    allWithIndex.foreach { case (that, thatIdx) =>
-      allWithIndex.foreach { case (other, otherIdx) =>
-        assertEquals(Hash[SpanKind].eqv(that, other), thatIdx == otherIdx)
-      }
     }
   }
 

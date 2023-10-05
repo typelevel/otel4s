@@ -21,7 +21,7 @@ package org.typelevel.otel4s.context.propagation
   * @tparam Ctx
   *   the type of the Context
   */
-trait ContextPropagators[Ctx] {
+sealed trait ContextPropagators[Ctx] {
 
   /** Returns a text map propagator to extract or inject data.
     */

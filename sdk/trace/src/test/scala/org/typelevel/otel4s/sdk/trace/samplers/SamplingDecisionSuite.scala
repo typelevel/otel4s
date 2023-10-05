@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Typelevel
+ * Copyright 2023 Typelevel
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,12 +14,11 @@
  * limitations under the License.
  */
 
-package org.typelevel.otel4s.trace
+package org.typelevel.otel4s.sdk.trace.samplers
 
 import munit._
 
 class SamplingDecisionSuite extends FunSuite {
-
   test("Drop should have isSampled = false") {
     assertEquals(SamplingDecision.Drop.isSampled, false)
   }
@@ -31,5 +30,4 @@ class SamplingDecisionSuite extends FunSuite {
   test("RecordAndSample should have isSampled = true") {
     assertEquals(SamplingDecision.RecordAndSample.isSampled, true)
   }
-
 }

@@ -29,11 +29,11 @@ sealed trait TraceFlags {
 
   /** Returns the byte representation of this [[TraceFlags]].
     */
-  def asByte: Byte
+  def toByte: Byte
 
   /** Returns the lowercase hex (base16) representation of this [[TraceFlags]].
     */
-  def asHex: String
+  def toHex: String
 
   /** Returns `true` if the sampling bit is on, otherwise `false`.
     */
@@ -53,12 +53,13 @@ sealed trait TraceFlags {
 }
 
 object TraceFlags {
-  private val SampledMask = 0x01
+  private val SampledMask: Byte = 0x01
 
-  val HexLength = 2
-
+  // The default trace flags (not sampled): with all flag bits off
   val Default: TraceFlags = fromByte(0x00)
-  val Sampled: TraceFlags = fromByte(0x01)
+
+  // The sampled trace flags: the sampled bit is on
+  val Sampled: TraceFlags = fromByte(SampledMask)
 
   /** Creates the [[TraceFlags]] from the given byte representation.
     */
@@ -73,15 +74,18 @@ object TraceFlags {
     ByteVector.fromHex(hex).map(b => TraceFlagsImpl(b.toByte()))
 
   implicit val traceFlagsHash: Hash[TraceFlags] =
-    Hash.by(_.asByte)
+    Hash.by(_.toByte)
 
   implicit val traceFlagsShow: Show[TraceFlags] =
-    Show.show(_.asHex)
+    Show.show(_.toHex)
 
   private final case class TraceFlagsImpl(byte: Byte) extends TraceFlags {
-    def asByte: Byte = byte
-    def asHex: String = ByteVector.fromByte(byte).toHex
+    def toByte: Byte = byte
+    def toHex: String = ByteVector.fromByte(byte).toHex
 
+    /** If set, the least significant bit denotes the caller may have recorded
+      * trace data.
+      */
     def isSampled: Boolean =
       (byte & TraceFlags.SampledMask) == TraceFlags.SampledMask
   }

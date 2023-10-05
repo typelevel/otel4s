@@ -24,7 +24,7 @@ lazy val scalafixSettings = Seq(
 )
 
 val Scala213 = "2.13.12"
-ThisBuild / crossScalaVersions := Seq(Scala213, "3.3.0")
+ThisBuild / crossScalaVersions := Seq(Scala213, "3.3.1")
 ThisBuild / scalaVersion := Scala213 // the default Scala
 
 val CatsVersion = "2.10.0"
@@ -32,7 +32,7 @@ val CatsEffectVersion = "3.5.2"
 val CatsMtlVersion = "1.3.1"
 val DisciplineMUnitVersion = "2.0.0-M3"
 val FS2Version = "3.9.2"
-val MUnitVersion = "1.0.0-M8"
+val MUnitVersion = "1.0.0-M10"
 val MUnitCatsEffectVersion = "2.0.0-M3"
 val MUnitDisciplineVersion = "2.0.0-M3"
 val OpenTelemetryVersion = "1.30.1"
@@ -91,8 +91,9 @@ lazy val `core-common` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
     name := "otel4s-core-common",
     libraryDependencies ++= Seq(
       "org.typelevel" %%% "cats-core" % CatsVersion,
-      "org.typelevel" %%% "cats-mtl" % CatsMtlVersion,
       "org.typelevel" %%% "cats-effect-kernel" % CatsEffectVersion,
+      "org.typelevel" %%% "cats-mtl" % CatsMtlVersion,
+      "org.typelevel" %%% "vault" % VaultVersion % Test,
       "org.typelevel" %%% "cats-laws" % CatsVersion % Test,
       "org.typelevel" %%% "discipline-munit" % DisciplineMUnitVersion % Test,
       "org.scalameta" %%% "munit" % MUnitVersion % Test,
@@ -286,7 +287,7 @@ lazy val `java-common` = project
   .settings(
     name := "otel4s-java-common",
     libraryDependencies ++= Seq(
-      "org.typelevel" %%% "cats-effect-kernel" % CatsEffectVersion,
+      "org.typelevel" %%% "cats-effect" % CatsEffectVersion,
       "org.typelevel" %%% "cats-mtl" % CatsMtlVersion,
       "org.typelevel" %%% "vault" % VaultVersion,
       "io.opentelemetry" % "opentelemetry-sdk" % OpenTelemetryVersion,

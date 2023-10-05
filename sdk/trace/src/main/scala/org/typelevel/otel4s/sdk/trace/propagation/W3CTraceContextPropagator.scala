@@ -61,7 +61,7 @@ object W3CTraceContextPropagator extends TextMapPropagator[Context] {
     SdkTraceScope.fromContext(ctx).filter(_.isValid) match {
       case Some(spanContext) =>
         val traceParent =
-          s"00-${spanContext.traceIdHex}-${spanContext.spanIdHex}-${spanContext.traceFlags.asHex}"
+          s"00-${spanContext.traceIdHex}-${spanContext.spanIdHex}-${spanContext.traceFlags.toHex}"
 
         TextMapUpdater[A].updated(carrier, Fields.TraceParent, traceParent)
 

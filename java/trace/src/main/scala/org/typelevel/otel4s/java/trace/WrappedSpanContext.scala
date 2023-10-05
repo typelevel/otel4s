@@ -47,7 +47,7 @@ private[otel4s] object WrappedSpanContext {
     )
 
   def unwrap(context: SpanContext): JSpanContext = {
-    val flags = JTraceFlags.fromByte(context.traceFlags.asByte)
+    def flags = JTraceFlags.fromByte(context.traceFlags.toByte)
 
     context match {
       case ctx: SpanContext.Delegate[JSpanContext @unchecked] =>

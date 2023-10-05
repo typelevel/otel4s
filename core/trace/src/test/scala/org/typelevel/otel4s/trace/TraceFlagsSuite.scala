@@ -21,8 +21,8 @@ import munit._
 class TraceFlagsSuite extends FunSuite {
 
   test("default instances") {
-    assertEquals(TraceFlags.Default.asHex, "00")
-    assertEquals(TraceFlags.Sampled.asHex, "01")
+    assertEquals(TraceFlags.Default.toHex, "00")
+    assertEquals(TraceFlags.Sampled.toHex, "01")
   }
 
   test("is sampled") {
@@ -34,7 +34,7 @@ class TraceFlagsSuite extends FunSuite {
 
   test("create from byte") {
     (0 until 256).foreach { i =>
-      assertEquals(TraceFlags.fromByte(i.toByte).asByte, i.toByte)
+      assertEquals(TraceFlags.fromByte(i.toByte).toByte, i.toByte)
     }
   }
 
@@ -43,7 +43,7 @@ class TraceFlagsSuite extends FunSuite {
       val hex = Integer.toHexString(i)
       val input = if (hex.length == 1) "0" + hex else hex
 
-      assertEquals(TraceFlags.fromHex(input).map(_.asHex), Some(input))
+      assertEquals(TraceFlags.fromHex(input).map(_.toHex), Some(input))
     }
   }
 

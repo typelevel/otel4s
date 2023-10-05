@@ -95,5 +95,5 @@ class W3CTraceContextPropagatorSuite extends FunSuite {
   }
 
   private def toTraceParent(spanContext: SpanContext): String =
-    s"00-${spanContext.traceIdHex}-${spanContext.spanIdHex}-${spanContext.traceFlags.asHex}"
+    s"00-${spanContext.traceIdHex}-${spanContext.spanIdHex}-${spanContext.traceFlags.toHex}"
 }

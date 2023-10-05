@@ -24,6 +24,8 @@ import io.opentelemetry.api.common.{Attributes => JAttributes}
 import io.opentelemetry.context.propagation.{TextMapGetter => JTextMapGetter}
 import io.opentelemetry.context.propagation.{TextMapSetter => JTextMapSetter}
 import io.opentelemetry.sdk.common.CompletableResultCode
+import org.typelevel.otel4s.context.propagation.TextMapGetter
+import org.typelevel.otel4s.context.propagation.TextMapSetter
 
 import scala.jdk.CollectionConverters._
 

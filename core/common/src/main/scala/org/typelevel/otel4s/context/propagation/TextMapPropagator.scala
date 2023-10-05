@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-package org.typelevel.otel4s
+package org.typelevel.otel4s.context.propagation
 
-import cats.Applicative
+import cats.data.NonEmptyList
+import cats.syntax.foldable._
 
 /** The process of propagating data across process boundaries involves injecting
   * and extracting values in the form of text into carriers that travel in-band.
@@ -30,10 +31,13 @@ import cats.Applicative
   * interceptors. On the client side, values are injected into the carriers,
   * while on the server side, values are extracted from them.
   *
-  * @tparam F
-  *   the higher-kinded type of a polymorphic effect
+  * @tparam Ctx
+  *   the context to use to extra or inject data
   */
-trait TextMapPropagator[F[_], Ctx] {
+trait TextMapPropagator[Ctx] {
+
+  /** The list of propagation fields. */
+  def fields: List[String]
 
   /** Extracts key-value pairs from the given `carrier` and adds them to the
     * given context.
@@ -51,20 +55,6 @@ trait TextMapPropagator[F[_], Ctx] {
     *   the new context with stored key-value pairs
     */
   def extract[A: TextMapGetter](ctx: Ctx, carrier: A): Ctx
-
-  /** Injects data from the context into the given mutable `carrier` for
-    * downstream consumers, for example as HTTP headers.
-    *
-    * @param ctx
-    *   the context containing the value to be injected
-    *
-    * @param carrier
-    *   holds propagation fields
-    *
-    * @tparam A
-    *   the type of the carrier, which is mutable
-    */
-  def inject[A: TextMapSetter](ctx: Ctx, carrier: A): F[Unit]
 
   /** Injects data from the context into a copy of the given immutable `carrier`
     * for downstream consumers, for example as HTTP headers.
@@ -84,31 +74,70 @@ trait TextMapPropagator[F[_], Ctx] {
     * @return
     *   a copy of the carrier, with new fields injected
     */
-  def injected[A: TextMapUpdater](ctx: Ctx, carrier: A): A
+  def inject[A: TextMapUpdater](ctx: Ctx, carrier: A): A
 }
 
 object TextMapPropagator {
 
-  def apply[F[_], Ctx](implicit
-      ev: TextMapPropagator[F, Ctx]
-  ): TextMapPropagator[F, Ctx] = ev
+  /** Creates a [[TextMapPropagator]] which delegates injection and extraction
+    * to the provided propagators.
+    *
+    * @example
+    *   {{{
+    * val w3cPropagator: TextMapPropagator[Context] = ???
+    * val httpTracePropagator: TextMapPropagator[Context] = ???
+    * val textMapPropagator = TextMapPropagator.composite(w3cPropagator, httpTracePropagator)
+    *   }}}
+    * @tparam Ctx
+    *   the context to use to extra or inject data
+    */
+  def composite[Ctx](
+      propagators: TextMapPropagator[Ctx]*
+  ): TextMapPropagator[Ctx] =
+    propagators.toList match {
+      case Nil          => new Noop[Ctx]
+      case head :: Nil  => head
+      case head :: tail => new Multi(NonEmptyList(head, tail))
+    }
 
   /** Creates a no-op implementation of the [[TextMapPropagator]].
     *
     * All propagation operations are no-op.
-    *
-    * @tparam F
-    *   the higher-kinded type of a polymorphic effect
     */
-  def noop[F[_]: Applicative, Ctx]: TextMapPropagator[F, Ctx] =
-    new TextMapPropagator[F, Ctx] {
-      def extract[A: TextMapGetter](ctx: Ctx, carrier: A): Ctx =
-        ctx
+  def noop[Ctx]: TextMapPropagator[Ctx] =
+    new Noop
 
-      def inject[A: TextMapSetter](ctx: Ctx, carrier: A): F[Unit] =
-        Applicative[F].unit
+  private final class Noop[Ctx] extends TextMapPropagator[Ctx] {
+    def fields: List[String] =
+      Nil
 
-      def injected[A: TextMapUpdater](ctx: Ctx, carrier: A): A =
-        carrier
-    }
+    def extract[A: TextMapGetter](ctx: Ctx, carrier: A): Ctx =
+      ctx
+
+    def inject[A: TextMapUpdater](ctx: Ctx, carrier: A): A =
+      carrier
+
+    override def toString: String = "TextMapPropagator.Noop"
+  }
+
+  private final class Multi[Ctx](
+      val propagators: NonEmptyList[TextMapPropagator[Ctx]]
+  ) extends TextMapPropagator[Ctx] {
+    val fields: List[String] =
+      propagators.toList.flatMap(_.fields)
+
+    def extract[A: TextMapGetter](ctx: Ctx, carrier: A): Ctx =
+      propagators.foldLeft(ctx) { (ctx, propagator) =>
+        propagator.extract(ctx, carrier)
+      }
+
+    def inject[A: TextMapUpdater](ctx: Ctx, carrier: A): A =
+      propagators.foldLeft(carrier) { (carrier, propagator) =>
+        propagator.inject(ctx, carrier)
+      }
+
+    override def toString: String =
+      s"TextMapPropagator.Multi(${propagators.map(_.toString).mkString_(", ")})"
+  }
+
 }

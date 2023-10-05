@@ -17,33 +17,33 @@
 package org.typelevel.otel4s
 package java
 
-import cats.effect.Sync
 import io.opentelemetry.context.propagation.{
   TextMapPropagator => JTextMapPropagator
 }
+import org.typelevel.otel4s.context.propagation.TextMapGetter
+import org.typelevel.otel4s.context.propagation.TextMapPropagator
+import org.typelevel.otel4s.context.propagation.TextMapUpdater
 import org.typelevel.otel4s.java.Conversions._
 import org.typelevel.otel4s.java.context.Context
 
-private[java] class TextMapPropagatorImpl[F[_]: Sync](
+import scala.jdk.CollectionConverters._
+
+private[java] class TextMapPropagatorImpl(
     jPropagator: JTextMapPropagator
-) extends TextMapPropagator[F, Context] {
+) extends TextMapPropagator[Context] {
+  lazy val fields: List[String] =
+    jPropagator.fields().asScala.toList
+
   def extract[A: TextMapGetter](ctx: Context, carrier: A): Context =
     ctx.map(jPropagator.extract(_, carrier, fromTextMapGetter))
 
-  def inject[A: TextMapSetter](ctx: Context, carrier: A): F[Unit] =
-    Sync[F].delay(
-      jPropagator.inject(ctx.underlying, carrier, fromTextMapSetter)
-    )
-
-  def injected[A](ctx: Context, carrier: A)(implicit
-      injector: TextMapUpdater[A]
-  ): A = {
+  def inject[A: TextMapUpdater](ctx: Context, carrier: A): A = {
     var injectedCarrier = carrier
     jPropagator.inject[Null](
       ctx.underlying,
       null, // explicitly allowed per opentelemetry-java, so our setter can be a lambda!
       (_, key, value) => {
-        injectedCarrier = injector.updated(injectedCarrier, key, value)
+        injectedCarrier = TextMapUpdater[A].updated(injectedCarrier, key, value)
       }
     )
     injectedCarrier

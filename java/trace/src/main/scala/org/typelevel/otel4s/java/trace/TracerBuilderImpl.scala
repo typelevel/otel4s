@@ -18,14 +18,14 @@ package org.typelevel.otel4s.java.trace
 
 import cats.effect.Sync
 import io.opentelemetry.api.trace.{TracerProvider => JTracerProvider}
-import org.typelevel.otel4s.ContextPropagators
+import org.typelevel.otel4s.context.propagation.ContextPropagators
 import org.typelevel.otel4s.java.context.Context
 import org.typelevel.otel4s.java.context.LocalContext
 import org.typelevel.otel4s.trace._
 
 private[java] final case class TracerBuilderImpl[F[_]: Sync: LocalContext](
     jTracerProvider: JTracerProvider,
-    propagators: ContextPropagators[F, Context],
+    propagators: ContextPropagators[Context],
     name: String,
     version: Option[String] = None,
     schemaUrl: Option[String] = None

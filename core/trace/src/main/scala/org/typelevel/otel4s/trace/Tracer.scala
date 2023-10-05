@@ -20,6 +20,8 @@ package trace
 import cats.Applicative
 import cats.effect.kernel.MonadCancelThrow
 import cats.~>
+import org.typelevel.otel4s.context.propagation.TextMapGetter
+import org.typelevel.otel4s.context.propagation.TextMapUpdater
 import org.typelevel.otel4s.meta.InstrumentMeta
 
 @annotation.implicitNotFound("""
@@ -182,7 +184,7 @@ trait Tracer[F[_]] extends TracerMacro[F] {
     *   a copy of the immutable carrier with this tracer's context appended to
     *   it
     * @see
-    *   [[org.typelevel.otel4s.TextMapPropagator.injected TextMapPropagator#injected]]
+    *   [[org.typelevel.otel4s.context.propagation.TextMapPropagator.inject TextMapPropagator#inject]]
     */
   def propagate[C: TextMapUpdater](carrier: C): F[C]
 

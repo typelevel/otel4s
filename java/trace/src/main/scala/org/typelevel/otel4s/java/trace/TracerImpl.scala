@@ -19,9 +19,9 @@ package org.typelevel.otel4s.java.trace
 import cats.effect.Sync
 import io.opentelemetry.api.trace.{Span => JSpan}
 import io.opentelemetry.api.trace.{Tracer => JTracer}
-import org.typelevel.otel4s.ContextPropagators
-import org.typelevel.otel4s.TextMapGetter
-import org.typelevel.otel4s.TextMapUpdater
+import org.typelevel.otel4s.context.propagation.ContextPropagators
+import org.typelevel.otel4s.context.propagation.TextMapGetter
+import org.typelevel.otel4s.context.propagation.TextMapUpdater
 import org.typelevel.otel4s.java.context.Context
 import org.typelevel.otel4s.java.context.LocalContext
 import org.typelevel.otel4s.trace.SpanBuilder
@@ -30,7 +30,7 @@ import org.typelevel.otel4s.trace.Tracer
 
 private[java] class TracerImpl[F[_]: Sync](
     jTracer: JTracer,
-    propagators: ContextPropagators[F, Context]
+    propagators: ContextPropagators[Context]
 )(implicit L: LocalContext[F])
     extends Tracer[F] {
 
@@ -70,5 +70,5 @@ private[java] class TracerImpl[F[_]: Sync](
   }
 
   def propagate[C: TextMapUpdater](carrier: C): F[C] =
-    L.reader(propagators.textMapPropagator.injected(_, carrier))
+    L.reader(propagators.textMapPropagator.inject(_, carrier))
 }

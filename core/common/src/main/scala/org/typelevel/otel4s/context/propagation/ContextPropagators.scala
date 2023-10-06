@@ -33,27 +33,34 @@ object ContextPropagators {
   /** Creates a [[ContextPropagators]] which can be used to extract and inject
     * context in text payloads with the given [[TextMapPropagator]].
     *
-    * '''Hint''': use [[TextMapPropagator.composite]] to combine multiple text
-    * map propagators.
+    * If multiple text map propagators are passed, the combined (composite)
+    * TextMapPropagator instance will be created.
+    *
+    * It's a shortcut for:
+    * {{{
+    * ContextPropagators.of(TextMapPropagator.of(w3cPropagator, httpTracePropagator))
+    * }}}
     *
     * @example
     *   {{{
     * val w3cPropagator: TextMapPropagator[Context] = ???
     * val httpTracePropagator: TextMapPropagator[Context] = ???
-    * val textMapPropagator = TextMapPropagator.composite(w3cPropagator, httpTracePropagator)
-    * val contextPropagators = ContextPropagators.create(textMapPropagator)
+    * val contextPropagators = ContextPropagators.of(w3cPropagator, httpTracePropagator)
     *   }}}
     *
-    * @param textMapPropagator
-    *   the text map propagator to extract or inject data
+    * @see
+    *   [[TextMapPropagator.of]]
+    *
+    * @param textMapPropagators
+    *   the propagators to use for injection and extraction
     *
     * @tparam Ctx
-    *   the context to use to extra or inject data
+    *   the context to use to extract or inject data
     */
-  def create[Ctx](
-      textMapPropagator: TextMapPropagator[Ctx]
+  def of[Ctx](
+      textMapPropagators: TextMapPropagator[Ctx]*
   ): ContextPropagators[Ctx] =
-    new Default(textMapPropagator)
+    new Default(TextMapPropagator.of(textMapPropagators: _*))
 
   /** Creates a no-op implementation of the [[ContextPropagators]].
     *

@@ -66,7 +66,7 @@ object OtelJava {
   def local[F[_]: Async: LocalContext](
       jOtel: JOpenTelemetry
   ): OtelJava[F] = {
-    val contextPropagators = ContextPropagators.create(
+    val contextPropagators = ContextPropagators.of(
       new TextMapPropagatorImpl(jOtel.getPropagators.getTextMapPropagator)
     )
 

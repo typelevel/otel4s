@@ -31,15 +31,31 @@ class ContextPropagatorsSuite extends FunSuite {
     assertEquals(propagators.toString, "ContextPropagators.Noop")
   }
 
-  test("create (noop propagator) - use noop") {
+  test("of (single input) - use this input") {
     val fields = List("a", "b", "c")
     val propagator = new TestPropagator[String](fields, "TestPropagator")
-    val propagators = ContextPropagators.create(propagator)
+    val propagators = ContextPropagators.of(propagator)
 
     assertEquals(propagators.textMapPropagator.fields, fields)
     assertEquals(
       propagators.toString,
       "ContextPropagators.Default{textMapPropagator=TestPropagator}"
+    )
+  }
+
+  test("of (multiple inputs) - create a multi text map propagator instance") {
+    val fieldsA = List("a", "b")
+    val fieldsB = List("c", "d")
+
+    val propagatorA = new TestPropagator[String](fieldsA, "TestPropagatorA")
+    val propagatorB = new TestPropagator[String](fieldsB, "TestPropagatorB")
+
+    val propagators = ContextPropagators.of(propagatorA, propagatorB)
+
+    assertEquals(propagators.textMapPropagator.fields, fieldsA ++ fieldsB)
+    assertEquals(
+      propagators.toString,
+      "ContextPropagators.Default{textMapPropagator=TextMapPropagator.Multi(TestPropagatorA, TestPropagatorB)}"
     )
   }
 

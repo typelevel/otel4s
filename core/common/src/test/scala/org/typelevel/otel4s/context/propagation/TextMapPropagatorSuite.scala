@@ -27,34 +27,54 @@ class TextMapPropagatorSuite extends FunSuite {
     assertEquals(propagator.toString, "TextMapPropagator.Noop")
   }
 
-  test("composite (empty input) - use noop") {
-    val composite = TextMapPropagator.composite()
+  test("of (empty input) - use noop") {
+    val composite = TextMapPropagator.of()
 
     assertEquals(composite.fields, Nil)
     assertEquals(composite.toString, "TextMapPropagator.Noop")
   }
 
-  test("composite (single input) - use this input") {
+  test("of (single input) - use this input") {
     val fields = List("a", "b", "c")
     val propagator = new TestPropagator[String](fields, "TestPropagator")
-    val composite = TextMapPropagator.composite(propagator)
+    val composite = TextMapPropagator.of(propagator)
 
     assertEquals(composite.fields, fields)
     assertEquals(composite.toString, "TestPropagator")
   }
 
-  test("composite (multiple) - create a multi instance") {
+  test("of (multiple) - create a multi instance") {
     val fieldsA = List("a", "b")
     val fieldsB = List("c", "d")
 
     val propagatorA = new TestPropagator[String](fieldsA, "PropagatorA")
     val propagatorB = new TestPropagator[String](fieldsB, "PropagatorB")
-    val composite = TextMapPropagator.composite(propagatorA, propagatorB)
 
-    assertEquals(composite.fields, fieldsA ++ fieldsB)
+    val propagator = TextMapPropagator.of(propagatorA, propagatorB)
+
+    assertEquals(propagator.fields, fieldsA ++ fieldsB)
     assertEquals(
-      composite.toString,
+      propagator.toString,
       "TextMapPropagator.Multi(PropagatorA, PropagatorB)"
+    )
+  }
+
+  test("of (multiple) - flatten out nested multi instances") {
+    val fieldsA = List("a", "b")
+    val fieldsB = List("c", "d")
+
+    val propagatorA = new TestPropagator[String](fieldsA, "PropagatorA")
+    val propagatorB = new TestPropagator[String](fieldsB, "PropagatorB")
+
+    val multi1 = TextMapPropagator.of(propagatorA, propagatorB)
+    val multi2 = TextMapPropagator.of(propagatorA, propagatorB)
+
+    val propagator = TextMapPropagator.of(multi1, multi2)
+
+    assertEquals(propagator.fields, fieldsA ++ fieldsB ++ fieldsA ++ fieldsB)
+    assertEquals(
+      propagator.toString,
+      "TextMapPropagator.Multi(PropagatorA, PropagatorB, PropagatorA, PropagatorB)"
     )
   }
 

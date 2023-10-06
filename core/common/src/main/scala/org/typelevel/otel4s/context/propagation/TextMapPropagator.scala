@@ -16,7 +16,7 @@
 
 package org.typelevel.otel4s.context.propagation
 
-import cats.data.NonEmptyList
+import cats.Monoid
 import cats.syntax.foldable._
 
 /** The process of propagating data across process boundaries involves injecting
@@ -32,7 +32,7 @@ import cats.syntax.foldable._
   * while on the server side, values are extracted from them.
   *
   * @tparam Ctx
-  *   the context to use to extra or inject data
+  *   the context to use to extract or inject data
   */
 trait TextMapPropagator[Ctx] {
 
@@ -86,19 +86,19 @@ object TextMapPropagator {
     *   {{{
     * val w3cPropagator: TextMapPropagator[Context] = ???
     * val httpTracePropagator: TextMapPropagator[Context] = ???
-    * val textMapPropagator = TextMapPropagator.composite(w3cPropagator, httpTracePropagator)
+    * val textMapPropagator = TextMapPropagator.of(w3cPropagator, httpTracePropagator)
     *   }}}
+    *
+    * @param propagators
+    *   the propagators to use for injection and extraction
+    *
     * @tparam Ctx
-    *   the context to use to extra or inject data
+    *   the context to use to extract or inject data
     */
-  def composite[Ctx](
+  def of[Ctx](
       propagators: TextMapPropagator[Ctx]*
   ): TextMapPropagator[Ctx] =
-    propagators.toList match {
-      case Nil          => new Noop[Ctx]
-      case head :: Nil  => head
-      case head :: tail => new Multi(NonEmptyList(head, tail))
-    }
+    propagators.combineAll
 
   /** Creates a no-op implementation of the [[TextMapPropagator]].
     *
@@ -106,6 +106,34 @@ object TextMapPropagator {
     */
   def noop[Ctx]: TextMapPropagator[Ctx] =
     new Noop
+
+  implicit def textMapPropagatorMonoid[Ctx]: Monoid[TextMapPropagator[Ctx]] =
+    new Monoid[TextMapPropagator[Ctx]] {
+      val empty: TextMapPropagator[Ctx] =
+        noop[Ctx]
+
+      def combine(
+          x: TextMapPropagator[Ctx],
+          y: TextMapPropagator[Ctx]
+      ): TextMapPropagator[Ctx] =
+        (x, y) match {
+          case (that, _: Noop[Ctx]) =>
+            that
+          case (_: Noop[Ctx], other) =>
+            other
+          case (that: Multi[Ctx], other: Multi[Ctx]) =>
+            multi(that.propagators ++ other.propagators)
+          case (that: Multi[Ctx], other) =>
+            multi(that.propagators :+ other)
+          case (that, other: Multi[Ctx]) =>
+            multi(that +: other.propagators)
+          case (that, other) =>
+            multi(List(that, other))
+        }
+
+      private def multi(propagators: List[TextMapPropagator[Ctx]]): Multi[Ctx] =
+        Multi(propagators, propagators.flatMap(_.fields))
+    }
 
   private final class Noop[Ctx] extends TextMapPropagator[Ctx] {
     def fields: List[String] =
@@ -120,12 +148,10 @@ object TextMapPropagator {
     override def toString: String = "TextMapPropagator.Noop"
   }
 
-  private final class Multi[Ctx](
-      val propagators: NonEmptyList[TextMapPropagator[Ctx]]
+  private final case class Multi[Ctx](
+      propagators: List[TextMapPropagator[Ctx]],
+      fields: List[String]
   ) extends TextMapPropagator[Ctx] {
-    val fields: List[String] =
-      propagators.toList.flatMap(_.fields)
-
     def extract[A: TextMapGetter](ctx: Ctx, carrier: A): Ctx =
       propagators.foldLeft(ctx) { (ctx, propagator) =>
         propagator.extract(ctx, carrier)
@@ -137,7 +163,7 @@ object TextMapPropagator {
       }
 
     override def toString: String =
-      s"TextMapPropagator.Multi(${propagators.map(_.toString).mkString_(", ")})"
+      s"TextMapPropagator.Multi(${propagators.map(_.toString).mkString(", ")})"
   }
 
 }

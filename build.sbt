@@ -64,6 +64,7 @@ lazy val root = tlCrossRootProject
     `sdk-trace`,
     sdk,
     `sdk-exporter-common`,
+    `sdk-exporter-proto`,
     `sdk-exporter-trace`,
     `sdk-exporter`,
     `testkit-common`,
@@ -211,11 +212,28 @@ lazy val `sdk-exporter-common` =
     .settings(munitDependencies)
     .settings(scalafixSettings)
 
+lazy val `sdk-exporter-proto` =
+  crossProject(JVMPlatform, JSPlatform, NativePlatform)
+    .crossType(CrossType.Pure)
+    .in(file("sdk-exporter/proto"))
+    .settings(
+      name := "otel4s-sdk-exporter-proto",
+      Compile / PB.protoSources += baseDirectory.value.getParentFile / "src" / "main" / "protobuf",
+      Compile / PB.targets ++= Seq(
+        scalapb.gen(grpc = false) -> (Compile / sourceManaged).value / "scalapb"
+      ),
+      // We use open-telemetry protobuf spec to generate models
+      // See https://scalapb.github.io/docs/third-party-protos/#there-is-a-library-on-maven-with-the-protos-and-possibly-generated-java-code
+      libraryDependencies ++= Seq(
+        "io.opentelemetry.proto" % "opentelemetry-proto" % "1.0.0-alpha" % "protobuf-src" intransitive (),
+      )
+    )
+
 lazy val `sdk-exporter-trace` =
   crossProject(JVMPlatform, JSPlatform, NativePlatform)
     .crossType(CrossType.Pure)
     .in(file("sdk-exporter/trace"))
-    .dependsOn(`sdk-exporter-common`, `sdk-trace`)
+    .dependsOn(`sdk-exporter-common`, `sdk-exporter-proto`, `sdk-trace`)
     .settings(
       name := "otel4s-sdk-exporter-trace",
       startYear := Some(2023),

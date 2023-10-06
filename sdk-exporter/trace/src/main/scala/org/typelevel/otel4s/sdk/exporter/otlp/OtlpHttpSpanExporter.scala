@@ -25,17 +25,21 @@ import cats.syntax.applicative._
 import cats.syntax.applicativeError._
 import cats.syntax.flatMap._
 import cats.syntax.functor._
+import fs2.Chunk
 import fs2.io.net.Network
-import io.circe.syntax._
+import io.opentelemetry.proto.collector.trace.v1.trace_service.ExportTraceServiceRequest
+import org.http4s.EntityEncoder
+import org.http4s.Header
 import org.http4s.Headers
 import org.http4s.Method
 import org.http4s.Request
 import org.http4s.Response
 import org.http4s.Uri
-import org.http4s.circe._
 import org.http4s.client.Client
 import org.http4s.ember.client.EmberClientBuilder
 import org.http4s.syntax.literals._
+import org.typelevel.ci._
+import org.typelevel.otel4s.sdk.exporter.otlp.OtlpHttpSpanExporter.Encoding
 import org.typelevel.otel4s.sdk.trace.data.SpanData
 import org.typelevel.otel4s.sdk.trace.exporter.SpanExporter
 
@@ -47,12 +51,24 @@ final class OtlpHttpSpanExporter[F[_]: Temporal: Console] private (
 ) extends SpanExporter[F] {
   import JsonCodecs._
 
+  private implicit val spansEncoder: EntityEncoder[F, List[SpanData]] =
+    config.encoding match {
+      case Encoding.Json =>
+        import org.http4s.circe._
+        jsonEncoderOf[F, List[SpanData]]
+
+      case Encoding.Protobuf =>
+        val content = Header.Raw(ci"Content-Type", "application/x-protobuf")
+        EntityEncoder.simple(content) { spans =>
+          val request: ExportTraceServiceRequest = ProtoCodecs.toProto(spans)
+          Chunk.array(request.toByteArray)
+        }
+    }
+
   def exportSpans(spans: List[SpanData]): F[Unit] = {
-    val request = Request[F](
-      Method.POST,
-      config.endpoint,
-      headers = config.headers
-    ).withEntity(spans.asJson)
+    val request = Request[F](Method.POST, config.endpoint)
+      .withEntity(spans)
+      .putHeaders(config.headers)
 
     client
       .run(request)
@@ -63,11 +79,11 @@ final class OtlpHttpSpanExporter[F[_]: Temporal: Console] private (
       }
   }
 
-  private def logBody(response: Response[F]) =
+  private def logBody(response: Response[F]): F[Unit] =
     for {
       body <- response.bodyText.compile.string
       _ <- Console[F].println(
-        s"[OtlpHttpSpanExporter] the request failed with [${response.status}]. Body: $body"
+        s"[OtlpHttpSpanExporter/${config.encoding}] the request failed with [${response.status}]. Body: $body"
       )
     } yield ()
 
@@ -78,13 +94,21 @@ object OtlpHttpSpanExporter {
   private object Defaults {
     val Endpoint: Uri = uri"http://localhost:4318/v1/traces"
     val Timeout: FiniteDuration = 10.seconds
+    val GzipCompression: Boolean = false
   }
 
   private final case class Config(
+      encoding: Encoding,
       endpoint: Uri,
       timeout: FiniteDuration,
       headers: Headers
   )
+
+  sealed trait Encoding
+  object Encoding {
+    case object Json extends Encoding
+    case object Protobuf extends Encoding
+  }
 
   /** A builder of [[OtlpHttpSpanExporter]] */
   sealed trait Builder[F[_]] {
@@ -105,6 +129,15 @@ object OtlpHttpSpanExporter {
       */
     def setTimeout(timeout: FiniteDuration): Builder[F]
 
+    /** Enables Gzip compression.
+      *
+      * The compression is disabled by default.
+      */
+    def enableGzip: Builder[F]
+
+    /** Disables Gzip compression. */
+    def disableGzip: Builder[F]
+
     /** Add headers to requests. */
     def addHeaders(headers: Headers): Builder[F]
 
@@ -117,15 +150,19 @@ object OtlpHttpSpanExporter {
   /** Creates a [[Builder]] of [[OtlpHttpSpanExporter]] with the default
     * configuration.
     */
-  def builder[F[_]: Async: Network: Console]: Builder[F] =
+  def builder[F[_]: Async: Network: Console](encoding: Encoding): Builder[F] =
     BuilderImpl(
-      Defaults.Endpoint,
-      Defaults.Timeout,
-      Headers.empty
+      encoding = encoding,
+      endpoint = Defaults.Endpoint,
+      gzipCompression = Defaults.GzipCompression,
+      timeout = Defaults.Timeout,
+      headers = Headers.empty
     )
 
   private final case class BuilderImpl[F[_]: Async: Network: Console](
+      encoding: Encoding,
       endpoint: Uri,
+      gzipCompression: Boolean,
       timeout: FiniteDuration,
       headers: Headers
   ) extends Builder[F] {
@@ -139,11 +176,19 @@ object OtlpHttpSpanExporter {
     def addHeaders(headers: Headers): Builder[F] =
       copy(headers = this.headers ++ headers)
 
+    def enableGzip: Builder[F] =
+      copy(gzipCompression = true)
+
+    def disableGzip: Builder[F] =
+      copy(gzipCompression = false)
+
     def build: Resource[F, OtlpHttpSpanExporter[F]] = {
-      val config = Config(endpoint, timeout, headers)
+      val config =
+        Config(encoding, endpoint, timeout, headers)
 
       for {
         client <- EmberClientBuilder.default[F].build
+        //   client = if (gzipCompression) GZip()(c) else c // todo: doesn't compile in js
       } yield new OtlpHttpSpanExporter[F](client, config)
     }
   }

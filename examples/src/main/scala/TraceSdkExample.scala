@@ -23,6 +23,7 @@ import cats.syntax.apply._
 import cats.syntax.flatMap._
 import org.typelevel.otel4s.sdk.context.Context
 import org.typelevel.otel4s.sdk.exporter.otlp.OtlpHttpSpanExporter
+import org.typelevel.otel4s.sdk.exporter.otlp.OtlpHttpSpanExporter.Encoding
 import org.typelevel.otel4s.sdk.instances._
 import org.typelevel.otel4s.sdk.trace.SdkTracerProvider
 import org.typelevel.otel4s.sdk.trace.exporter.BatchSpanProcessor
@@ -49,7 +50,7 @@ object TraceSdkExample extends IOApp.Simple {
                 Tracer[F].currentSpanContext
                   .flatMap(ctx => Console[F].println("Context is " + ctx)) *>
                   span.addEvent("Starting the work.") *>
-                  doWorkInternal *>
+                  doWorkInternal() *>
                   span.addEvent("Finished working.")
               }
             }
@@ -67,7 +68,9 @@ object TraceSdkExample extends IOApp.Simple {
 
   def run: IO[Unit] = {
     IOLocal(Context.root).flatMap { implicit local =>
-      OtlpHttpSpanExporter.builder[IO].build.use { otlpExporter =>
+      val builder = OtlpHttpSpanExporter.builder[IO](Encoding.Protobuf)
+
+      builder.build.use { otlpExporter =>
         for {
           inMemory <- InMemorySpanExporter.create[IO]
           random <- Random.scalaUtilRandom[IO]
@@ -108,8 +111,8 @@ object TraceSdkExample extends IOApp.Simple {
                 }
             } yield ()
           }
-          spans <- inMemory.finishedSpans
-          _ <- IO.println("Spans: " + spans.toList.mkString("\n"))
+          //     spans <- inMemory.finishedSpans
+          //    _ <- IO.println("Spans: " + spans.toList.mkString("\n"))
         } yield ()
       }
     }

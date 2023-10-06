@@ -19,7 +19,8 @@ package org.typelevel.otel4s.context.propagation
 import cats.Eq
 import cats.kernel.laws.discipline.MonoidTests
 import munit._
-import org.scalacheck.{Arbitrary, Gen}
+import org.scalacheck.Arbitrary
+import org.scalacheck.Gen
 
 class TextMapPropagatorLawTests extends DisciplineSuite {
 

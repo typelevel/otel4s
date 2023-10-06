@@ -31,6 +31,7 @@ import io.opentelemetry.proto.collector.trace.v1.trace_service.ExportTraceServic
 import org.http4s.EntityEncoder
 import org.http4s.Header
 import org.http4s.Headers
+import org.http4s.HttpVersion
 import org.http4s.Method
 import org.http4s.Request
 import org.http4s.Response
@@ -66,7 +67,7 @@ final class OtlpHttpSpanExporter[F[_]: Temporal: Console] private (
     }
 
   def exportSpans(spans: List[SpanData]): F[Unit] = {
-    val request = Request[F](Method.POST, config.endpoint)
+    val request = Request[F](Method.POST, config.endpoint, HttpVersion.`HTTP/2`)
       .withEntity(spans)
       .putHeaders(config.headers)
 

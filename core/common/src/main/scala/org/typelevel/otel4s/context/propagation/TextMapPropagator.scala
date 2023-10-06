@@ -36,8 +36,8 @@ import cats.syntax.foldable._
   */
 trait TextMapPropagator[Ctx] {
 
-  /** The list of propagation fields. */
-  def fields: List[String]
+  /** The collection of propagation fields. */
+  def fields: Iterable[String]
 
   /** Extracts key-value pairs from the given `carrier` and adds them to the
     * given context.
@@ -136,7 +136,7 @@ object TextMapPropagator {
     }
 
   private final class Noop[Ctx] extends TextMapPropagator[Ctx] {
-    def fields: List[String] =
+    def fields: Iterable[String] =
       Nil
 
     def extract[A: TextMapGetter](ctx: Ctx, carrier: A): Ctx =

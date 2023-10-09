@@ -938,7 +938,33 @@ class TracerSuite extends CatsEffectSuite {
     }
   }
 
-  test("nested SpanOps#surround for Tracer[OptionT[IO, *]]") {
+  test("nested SpanOps#surround for Tracer[IO].mapK[IO]") {
+    TestControl.executeEmbed {
+      for {
+        now <- IO.monotonic.delayBy(1.second) // otherwise returns 0
+        sdk <- makeSdk()
+        tracerIO <- sdk.provider.get("tracer")
+        tracer = tracerIO.mapK[IO]
+        _ <- tracer
+          .span("outer")
+          .surround {
+            for {
+              _ <- IO.sleep(NestedSurround.preBodyDuration)
+              _ <- tracer
+                .span("body-1")
+                .surround(IO.sleep(NestedSurround.body1Duration))
+              _ <- tracer
+                .span("body-2")
+                .surround(IO.sleep(NestedSurround.body2Duration))
+            } yield ()
+          }
+        spans <- sdk.finishedSpans
+        tree <- IO.pure(SpanNode.fromSpans(spans))
+      } yield assertEquals(tree, List(NestedSurround.expected(now)))
+    }
+  }
+
+  test("nested SpanOps#surround for Tracer[IO].mapK[OptionT[IO, *]]") {
     TestControl.executeEmbed {
       for {
         now <- IO.monotonic.delayBy(1.second) // otherwise returns 0
@@ -965,7 +991,7 @@ class TracerSuite extends CatsEffectSuite {
     }
   }
 
-  test("nested SpanOps#surround for Tracer[EitherT[IO, String, *]]") {
+  test("nested SpanOps#surround for Tracer[IO].mapK[EitherT[IO, String, *]]") {
     TestControl.executeEmbed {
       for {
         now <- IO.monotonic.delayBy(1.second) // otherwise returns 0
@@ -992,7 +1018,7 @@ class TracerSuite extends CatsEffectSuite {
     }
   }
 
-  test("nested SpanOps#surround for Tracer[IorT[IO, String, *]]") {
+  test("nested SpanOps#surround for Tracer[IO].mapK[IorT[IO, String, *]]") {
     TestControl.executeEmbed {
       for {
         now <- IO.monotonic.delayBy(1.second) // otherwise returns 0
@@ -1019,7 +1045,7 @@ class TracerSuite extends CatsEffectSuite {
     }
   }
 
-  test("nested SpanOps#surround for Tracer[Kleisli[IO, String, *]]") {
+  test("nested SpanOps#surround for Tracer[IO].mapK[Kleisli[IO, String, *]]") {
     TestControl.executeEmbed {
       for {
         now <- IO.monotonic.delayBy(1.second) // otherwise returns 0
@@ -1046,7 +1072,7 @@ class TracerSuite extends CatsEffectSuite {
     }
   }
 
-  test("nested SpanOps#surround for Tracer[StateT[IO, Int, *]]") {
+  test("nested SpanOps#surround for Tracer[IO].mapK[StateT[IO, Int, *]]") {
     TestControl.executeEmbed {
       for {
         now <- IO.monotonic.delayBy(1.second) // otherwise returns 0
@@ -1073,7 +1099,7 @@ class TracerSuite extends CatsEffectSuite {
     }
   }
 
-  test("nested SpanOps#surround for Tracer[Resource[IO, *]]") {
+  test("nested SpanOps#surround for Tracer[IO].mapK[Resource[IO, *]]") {
     TestControl.executeEmbed {
       for {
         now <- IO.monotonic.delayBy(1.second) // otherwise returns 0

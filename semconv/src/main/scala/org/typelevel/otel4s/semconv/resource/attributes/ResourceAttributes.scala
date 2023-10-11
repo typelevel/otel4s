@@ -24,13 +24,13 @@ object ResourceAttributes {
 
   /** The URL of the OpenTelemetry schema for these keys and values.
     */
-  final val SchemaUrl = "https://opentelemetry.io/schemas/1.19.0"
+  final val SchemaUrl = "https://opentelemetry.io/schemas/1.21.0"
 
   /** Array of brand name and version separated by a space
     *
     * <p>Notes: <ul> <li>This value is intended to be taken from the <a
     * href="https://wicg.github.io/ua-client-hints/#interface">UA client hints
-    * API</a> ({@code navigator.userAgentData.brands}).</li> </ul>
+    * API</a> (`navigator.userAgentData.brands`).</li> </ul>
     */
   val BrowserBrands: AttributeKey[List[String]] = stringList("browser.brands")
 
@@ -38,16 +38,16 @@ object ResourceAttributes {
     *
     * <p>Notes: <ul> <li>This value is intended to be taken from the <a
     * href="https://wicg.github.io/ua-client-hints/#interface">UA client hints
-    * API</a> ({@code navigator.userAgentData.platform}). If unavailable, the
-    * legacy {@code navigator.platform} API SHOULD NOT be used instead and this
-    * attribute SHOULD be left unset in order for the values to be consistent.
-    * The list of possible values is defined in the <a
+    * API</a> (`navigator.userAgentData.platform`). If unavailable, the legacy
+    * `navigator.platform` API SHOULD NOT be used instead and this attribute
+    * SHOULD be left unset in order for the values to be consistent. The list of
+    * possible values is defined in the <a
     * href="https://wicg.github.io/ua-client-hints/#sec-ch-ua-platform">W3C
     * User-Agent Client Hints specification</a>. Note that some (but not all) of
-    * these values can overlap with values in the <a href="./os.md">{@code
-    * os.type} and {@code os.name} attributes</a>. However, for consistency, the
-    * values in the {@code browser.platform} attribute should capture the exact
-    * value that the user agent provides.</li> </ul>
+    * these values can overlap with values in the <a href="./os.md">`os.type`
+    * and `os.name` attributes</a>. However, for consistency, the values in the
+    * `browser.platform` attribute should capture the exact value that the user
+    * agent provides.</li> </ul>
     */
   val BrowserPlatform: AttributeKey[String] = string("browser.platform")
 
@@ -55,15 +55,15 @@ object ResourceAttributes {
     *
     * <p>Notes: <ul> <li>This value is intended to be taken from the <a
     * href="https://wicg.github.io/ua-client-hints/#interface">UA client hints
-    * API</a> ({@code navigator.userAgentData.mobile}). If unavailable, this
-    * attribute SHOULD be left unset.</li> </ul>
+    * API</a> (`navigator.userAgentData.mobile`). If unavailable, this attribute
+    * SHOULD be left unset.</li> </ul>
     */
   val BrowserMobile: AttributeKey[Boolean] = boolean("browser.mobile")
 
   /** Preferred language of the user using the browser
     *
     * <p>Notes: <ul> <li>This value is intended to be taken from the Navigator
-    * API {@code navigator.language}.</li> </ul>
+    * API `navigator.language`.</li> </ul>
     */
   val BrowserLanguage: AttributeKey[String] = string("browser.language")
 
@@ -101,9 +101,9 @@ object ResourceAttributes {
     * resource name</a> on GCP)
     *
     * <p>Notes: <ul> <li>On some cloud providers, it may not be possible to
-    * determine the full ID at startup, so it may be necessary to set {@code
-    * cloud.resource_id} as a span attribute instead.</li><li>The exact value to
-    * use for {@code cloud.resource_id} depends on the cloud provider. The
+    * determine the full ID at startup, so it may be necessary to set
+    * `cloud.resource_id` as a span attribute instead.</li><li>The exact value
+    * to use for `cloud.resource_id` depends on the cloud provider. The
     * following well-known definitions MUST be used if you set this attribute
     * and they apply:</li><li><strong>AWS Lambda:</strong> The function <a
     * href="https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html">ARN</a>.
@@ -117,8 +117,8 @@ object ResourceAttributes {
     * resource</a></li> <li><strong>Azure:</strong> The <a
     * href="https://docs.microsoft.com/en-us/rest/api/resources/resources/get-by-id">Fully
     * Qualified Resource ID</a> of the invoked function, <em>not</em> the
-    * function app, having the form {@code
-    * /subscriptions/<SUBSCIPTION_GUID>/resourceGroups/<RG>/providers/Microsoft.Web/sites/<FUNCAPP>/functions/<FUNC>}.
+    * function app, having the form
+    * `/subscriptions/<SUBSCIPTION_GUID>/resourceGroups/<RG>/providers/Microsoft.Web/sites/<FUNCAPP>/functions/<FUNC>`.
     * This means that a span attribute MUST be used, as an Azure function app
     * can host multiple functions that would usually share a
     * TracerProvider.</li> </ul>
@@ -139,7 +139,7 @@ object ResourceAttributes {
   /** The cloud platform in use.
     *
     * <p>Notes: <ul> <li>The prefix of the service SHOULD match the one
-    * specified in {@code cloud.provider}.</li> </ul>
+    * specified in `cloud.provider`.</li> </ul>
     */
   val CloudPlatform: AttributeKey[String] = string("cloud.platform")
 
@@ -217,6 +217,41 @@ object ResourceAttributes {
     "aws.log.stream.arns"
   )
 
+  /** The name of the Cloud Run <a
+    * href="https://cloud.google.com/run/docs/managing/job-executions">execution</a>
+    * being run for the Job, as set by the <a
+    * href="https://cloud.google.com/run/docs/container-contract#jobs-env-vars">`CLOUD_RUN_EXECUTION`</a>
+    * environment variable.
+    */
+  val GcpCloudRunJobExecution: AttributeKey[String] = string(
+    "gcp.cloud_run.job.execution"
+  )
+
+  /** The index for a task within an execution as provided by the <a
+    * href="https://cloud.google.com/run/docs/container-contract#jobs-env-vars">`CLOUD_RUN_TASK_INDEX`</a>
+    * environment variable.
+    */
+  val GcpCloudRunJobTaskIndex: AttributeKey[Long] = long(
+    "gcp.cloud_run.job.task_index"
+  )
+
+  /** The instance name of a GCE instance. This is the value provided by
+    * `host.name`, the visible name of the instance in the Cloud Console UI, and
+    * the prefix for the default hostname of the instance as defined by the <a
+    * href="https://cloud.google.com/compute/docs/internal-dns#instance-fully-qualified-domain-names">default
+    * internal DNS name</a>.
+    */
+  val GcpGceInstanceName: AttributeKey[String] = string("gcp.gce.instance.name")
+
+  /** The hostname of a GCE instance. This is the full value of the default or
+    * <a
+    * href="https://cloud.google.com/compute/docs/instances/custom-hostname-vm">custom
+    * hostname</a>.
+    */
+  val GcpGceInstanceHostname: AttributeKey[String] = string(
+    "gcp.gce.instance.hostname"
+  )
+
   /** Time and date the release was created
     */
   val HerokuReleaseCreationTimestamp: AttributeKey[String] = string(
@@ -254,6 +289,41 @@ object ResourceAttributes {
   /** Container image tag.
     */
   val ContainerImageTag: AttributeKey[String] = string("container.image.tag")
+
+  /** Runtime specific image identifier. Usually a hash algorithm followed by a
+    * UUID.
+    *
+    * <p>Notes: <ul> <li>Docker defines a sha256 of the image id;
+    * `container.image.id` corresponds to the `Image` field from the Docker
+    * container inspect <a
+    * href="https://docs.docker.com/engine/api/v1.43/#tag/Container/operation/ContainerInspect">API</a>
+    * endpoint. K8s defines a link to the container registry repository with
+    * digest `"imageID": "registry.azurecr.io
+    * /namespace/service/dockerfile@sha256:bdeabd40c3a8a492eaf9e8e44d0ebbb84bac7ee25ac0cf8a7159d25f62555625"`.
+    * OCI defines a digest of manifest.</li> </ul>
+    */
+  val ContainerImageId: AttributeKey[String] = string("container.image.id")
+
+  /** The command used to run the container (i.e. the command name).
+    *
+    * <p>Notes: <ul> <li>If using embedded credentials or sensitive data, it is
+    * recommended to remove them to prevent potential leakage.</li> </ul>
+    */
+  val ContainerCommand: AttributeKey[String] = string("container.command")
+
+  /** The full command run by the container as a single string representing the
+    * full command. [2]
+    */
+  val ContainerCommandLine: AttributeKey[String] = string(
+    "container.command_line"
+  )
+
+  /** All the command arguments (including the command/executable itself) run by
+    * the container. [2]
+    */
+  val ContainerCommandArgs: AttributeKey[List[String]] = stringList(
+    "container.command_args"
+  )
 
   /** Name of the <a
     * href="https://en.wikipedia.org/wiki/Deployment_environment">deployment
@@ -303,7 +373,7 @@ object ResourceAttributes {
     *
     * <p>Notes: <ul> <li>The Android OS provides this field via <a
     * href="https://developer.android.com/reference/android/os/Build#MANUFACTURER">Build</a>.
-    * iOS apps SHOULD hardcode the value {@code Apple}.</li> </ul>
+    * iOS apps SHOULD hardcode the value `Apple`.</li> </ul>
     */
   val DeviceManufacturer: AttributeKey[String] = string("device.manufacturer")
 
@@ -312,18 +382,16 @@ object ResourceAttributes {
     * <p>Notes: <ul> <li>This is the name of the function as configured/deployed
     * on the FaaS platform and is usually different from the name of the
     * callback function (which may be stored in the <a
-    * href="../../trace/semantic_conventions/span-general.md#source-code-attributes">{@code
-    * code.namespace}/{@code code.function}</a> span attributes).</li><li>For
-    * some cloud providers, the above definition is ambiguous. The following
-    * definition of function name MUST be used for this attribute (and
-    * consequently the span name) for the listed cloud
-    * providers/products:</li><li><strong>Azure:</strong> The full name {@code
-    * <FUNCAPP>/<FUNC>}, i.e., function app name followed by a forward slash
+    * href="/docs/general/general-attributes.md#source-code-attributes">`code.namespace`/`code.function`</a>
+    * span attributes).</li><li>For some cloud providers, the above definition
+    * is ambiguous. The following definition of function name MUST be used for
+    * this attribute (and consequently the span name) for the listed cloud
+    * providers/products:</li><li><strong>Azure:</strong> The full name
+    * `<FUNCAPP>/<FUNC>`, i.e., function app name followed by a forward slash
     * followed by the function name (this form can also be seen in the resource
     * JSON for the function). This means that a span attribute MUST be used, as
     * an Azure function app can host multiple functions that would usually share
-    * a TracerProvider (see also the {@code cloud.resource_id} attribute).</li>
-    * </ul>
+    * a TracerProvider (see also the `cloud.resource_id` attribute).</li> </ul>
     */
   val FaasName: AttributeKey[String] = string("faas.name")
 
@@ -333,13 +401,13 @@ object ResourceAttributes {
     * use:</li><li><strong>AWS Lambda:</strong> The <a
     * href="https://docs.aws.amazon.com/lambda/latest/dg/configuration-versions.html">function
     * version</a> (an integer represented as a decimal string).</li>
-    * <li><strong>Google Cloud Run:</strong> The <a
+    * <li><strong>Google Cloud Run (Services):</strong> The <a
     * href="https://cloud.google.com/run/docs/managing/revisions">revision</a>
     * (i.e., the function name plus the revision suffix).</li>
     * <li><strong>Google Cloud Functions:</strong> The value of the <a
-    * href="https://cloud.google.com/functions/docs/env-var#runtime_environment_variables_set_automatically">{@code
-    * K_REVISION} environment variable</a>.</li> <li><strong>Azure
-    * Functions:</strong> Not applicable. Do not set this attribute.</li> </ul>
+    * href="https://cloud.google.com/functions/docs/env-var#runtime_environment_variables_set_automatically">`K_REVISION`
+    * environment variable</a>.</li> <li><strong>Azure Functions:</strong> Not
+    * applicable. Do not set this attribute.</li> </ul>
     */
   val FaasVersion: AttributeKey[String] = string("faas.version")
 
@@ -356,16 +424,16 @@ object ResourceAttributes {
     *
     * <p>Notes: <ul> <li>It's recommended to set this attribute since e.g. too
     * little memory can easily stop a Java AWS Lambda function from working
-    * correctly. On AWS Lambda, the environment variable {@code
-    * AWS_LAMBDA_FUNCTION_MEMORY_SIZE} provides this information (which must be
+    * correctly. On AWS Lambda, the environment variable
+    * `AWS_LAMBDA_FUNCTION_MEMORY_SIZE` provides this information (which must be
     * multiplied by 1,048,576).</li> </ul>
     */
   val FaasMaxMemory: AttributeKey[Long] = long("faas.max_memory")
 
   /** Unique host ID. For Cloud, this must be the instance_id assigned by the
-    * cloud provider. For non-containerized systems, this should be the {@code
-    * machine-id}. See the table below for the sources to use to determine the
-    * {@code machine-id} based on operating system.
+    * cloud provider. For non-containerized systems, this should be the
+    * `machine-id`. See the table below for the sources to use to determine the
+    * `machine-id` based on operating system.
     */
   val HostId: AttributeKey[String] = string("host.id")
 
@@ -387,11 +455,12 @@ object ResourceAttributes {
     */
   val HostImageName: AttributeKey[String] = string("host.image.name")
 
-  /** VM image ID. For Cloud, this value is from the provider.
+  /** VM image ID or host OS image ID. For Cloud, this value is from the
+    * provider.
     */
   val HostImageId: AttributeKey[String] = string("host.image.id")
 
-  /** The version string of the VM image as defined in <a
+  /** The version string of the VM image or host OS as defined in <a
     * href="README.md#version-attributes">Version Attributes</a>.
     */
   val HostImageVersion: AttributeKey[String] = string("host.image.version")
@@ -399,6 +468,30 @@ object ResourceAttributes {
   /** The name of the cluster.
     */
   val K8sClusterName: AttributeKey[String] = string("k8s.cluster.name")
+
+  /** A pseudo-ID for the cluster, set to the UID of the `kube-system`
+    * namespace.
+    *
+    * <p>Notes: <ul> <li>K8s does not have support for obtaining a cluster ID.
+    * If this is ever added, we will recommend collecting the `k8s.cluster.uid`
+    * through the official APIs. In the meantime, we are able to use the `uid`
+    * of the `kube-system` namespace as a proxy for cluster ID. Read on for the
+    * rationale.</li><li>Every object created in a K8s cluster is assigned a
+    * distinct UID. The `kube-system` namespace is used by Kubernetes itself and
+    * will exist for the lifetime of the cluster. Using the `uid` of the
+    * `kube-system` namespace is a reasonable proxy for the K8s ClusterID as it
+    * will only change if the cluster is rebuilt. Furthermore, Kubernetes UIDs
+    * are UUIDs as standardized by <a
+    * href="https://www.itu.int/ITU-T/studygroups/com17/oid.html">ISO/IEC 9834-8
+    * and ITU-T X.667</a>. Which states:</li><blockquote> <li>If generated
+    * according to one of the mechanisms defined in Rec.</li></blockquote>
+    * <li>ITU-T X.667 | ISO/IEC 9834-8, a UUID is either guaranteed to be
+    * different from all other UUIDs generated before 3603 A.D., or is extremely
+    * likely to be different (depending on the mechanism
+    * chosen).</li><li>Therefore, UIDs between clusters should be extremely
+    * unlikely to conflict.</li> </ul>
+    */
+  val K8sClusterUid: AttributeKey[String] = string("k8s.cluster.uid")
 
   /** The name of the Node.
     */
@@ -421,8 +514,8 @@ object ResourceAttributes {
   val K8sPodName: AttributeKey[String] = string("k8s.pod.name")
 
   /** The name of the Container from Pod specification, must be unique within a
-    * Pod. Container runtime usually uses different globally unique name ({@code
-    * container.name}).
+    * Pod. Container runtime usually uses different globally unique name
+    * (`container.name`).
     */
   val K8sContainerName: AttributeKey[String] = string("k8s.container.name")
 
@@ -487,7 +580,7 @@ object ResourceAttributes {
   val OsType: AttributeKey[String] = string("os.type")
 
   /** Human readable (not intended to be parsed) OS version information, like
-    * e.g. reported by {@code ver} or {@code lsb_release -a} commands.
+    * e.g. reported by `ver` or `lsb_release -a` commands.
     */
   val OsDescription: AttributeKey[String] = string("os.description")
 
@@ -496,8 +589,7 @@ object ResourceAttributes {
   val OsName: AttributeKey[String] = string("os.name")
 
   /** The version string of the operating system as defined in <a
-    * href="../../resource/semantic_conventions/README.md#version-attributes">Version
-    * Attributes</a>.
+    * href="/docs/resource/README.md#version-attributes">Version Attributes</a>.
     */
   val OsVersion: AttributeKey[String] = string("os.version")
 
@@ -510,41 +602,40 @@ object ResourceAttributes {
   val ProcessParentPid: AttributeKey[Long] = long("process.parent_pid")
 
   /** The name of the process executable. On Linux based systems, can be set to
-    * the {@code Name} in {@code proc/[pid]/status}. On Windows, can be set to
-    * the base name of {@code GetProcessImageFileNameW}.
+    * the `Name` in `proc/[pid]/status`. On Windows, can be set to the base name
+    * of `GetProcessImageFileNameW`.
     */
   val ProcessExecutableName: AttributeKey[String] = string(
     "process.executable.name"
   )
 
   /** The full path to the process executable. On Linux based systems, can be
-    * set to the target of {@code proc/[pid]/exe}. On Windows, can be set to the
-    * result of {@code GetProcessImageFileNameW}.
+    * set to the target of `proc/[pid]/exe`. On Windows, can be set to the
+    * result of `GetProcessImageFileNameW`.
     */
   val ProcessExecutablePath: AttributeKey[String] = string(
     "process.executable.path"
   )
 
   /** The command used to launch the process (i.e. the command name). On Linux
-    * based systems, can be set to the zeroth string in {@code
-    * proc/[pid]/cmdline}. On Windows, can be set to the first parameter
-    * extracted from {@code GetCommandLineW}.
+    * based systems, can be set to the zeroth string in `proc/[pid]/cmdline`. On
+    * Windows, can be set to the first parameter extracted from
+    * `GetCommandLineW`.
     */
   val ProcessCommand: AttributeKey[String] = string("process.command")
 
   /** The full command used to launch the process as a single string
     * representing the full command. On Windows, can be set to the result of
-    * {@code GetCommandLineW}. Do not set this if you have to assemble it just
-    * for monitoring; use {@code process.command_args} instead.
+    * `GetCommandLineW`. Do not set this if you have to assemble it just for
+    * monitoring; use `process.command_args` instead.
     */
   val ProcessCommandLine: AttributeKey[String] = string("process.command_line")
 
   /** All the command arguments (including the command/executable itself) as
     * received by the process. On Linux-based systems (and some other Unixoid
     * systems supporting procfs), can be set according to the list of
-    * null-delimited strings extracted from {@code proc/[pid]/cmdline}. For
-    * libc-based executables, this would be the full argv vector passed to
-    * {@code main}.
+    * null-delimited strings extracted from `proc/[pid]/cmdline`. For libc-based
+    * executables, this would be the full argv vector passed to `main`.
     */
   val ProcessCommandArgs: AttributeKey[List[String]] = stringList(
     "process.command_args"
@@ -577,31 +668,36 @@ object ResourceAttributes {
     *
     * <p>Notes: <ul> <li>MUST be the same for all instances of horizontally
     * scaled services. If the value was not specified, SDKs MUST fallback to
-    * {@code unknown_service:} concatenated with <a
-    * href="process.md#process">{@code process.executable.name}</a>, e.g. {@code
-    * unknown_service:bash}. If {@code process.executable.name} is not
-    * available, the value MUST be set to {@code unknown_service}.</li> </ul>
+    * `unknown_service:` concatenated with <a
+    * href="process.md#process">`process.executable.name`</a>, e.g.
+    * `unknown_service:bash`. If `process.executable.name` is not available, the
+    * value MUST be set to `unknown_service`.</li> </ul>
     */
   val ServiceName: AttributeKey[String] = string("service.name")
 
-  /** A namespace for {@code service.name}.
+  /** The version string of the service API or implementation. The format is not
+    * defined by these conventions.
+    */
+  val ServiceVersion: AttributeKey[String] = string("service.version")
+
+  /** A namespace for `service.name`.
     *
     * <p>Notes: <ul> <li>A string value having a meaning that helps to
     * distinguish a group of services, for example the team name that owns a
-    * group of services. {@code service.name} is expected to be unique within
-    * the same namespace. If {@code service.namespace} is not specified in the
-    * Resource then {@code service.name} is expected to be unique for all
-    * services that have no explicit namespace defined (so the empty/unspecified
-    * namespace is simply one more valid namespace). Zero-length namespace
-    * string is assumed equal to unspecified namespace.</li> </ul>
+    * group of services. `service.name` is expected to be unique within the same
+    * namespace. If `service.namespace` is not specified in the Resource then
+    * `service.name` is expected to be unique for all services that have no
+    * explicit namespace defined (so the empty/unspecified namespace is simply
+    * one more valid namespace). Zero-length namespace string is assumed equal
+    * to unspecified namespace.</li> </ul>
     */
   val ServiceNamespace: AttributeKey[String] = string("service.namespace")
 
   /** The string ID of the service instance.
     *
-    * <p>Notes: <ul> <li>MUST be unique for each instance of the same {@code
-    * service.namespace,service.name} pair (in other words {@code
-    * service.namespace,service.name,service.instance.id} triplet MUST be
+    * <p>Notes: <ul> <li>MUST be unique for each instance of the same
+    * `service.namespace,service.name` pair (in other words
+    * `service.namespace,service.name,service.instance.id` triplet MUST be
     * globally unique). The ID helps to distinguish instances of the same
     * service that exist at the same time (e.g. instances of a horizontally
     * scaled service). It is preferable for the ID to be persistent and stay the
@@ -615,11 +711,16 @@ object ResourceAttributes {
     */
   val ServiceInstanceId: AttributeKey[String] = string("service.instance.id")
 
-  /** The version string of the service API or implementation.
-    */
-  val ServiceVersion: AttributeKey[String] = string("service.version")
-
   /** The name of the telemetry SDK as defined above.
+    *
+    * <p>Notes: <ul> <li>The OpenTelemetry SDK MUST set the `telemetry.sdk.name`
+    * attribute to `opentelemetry`. If another SDK, like a fork or a
+    * vendor-provided implementation, is used, this SDK MUST set the
+    * `telemetry.sdk.name` attribute to the fully-qualified class or module name
+    * of this SDK's main entry point or another suitable identifier depending on
+    * the language. The identifier `opentelemetry` is reserved and MUST NOT be
+    * used in this case. All custom identifiers SHOULD be stable across
+    * different versions of an implementation.</li> </ul>
     */
   val TelemetrySdkName: AttributeKey[String] = string("telemetry.sdk.name")
 
@@ -656,28 +757,22 @@ object ResourceAttributes {
     "webengine.description"
   )
 
-  /** The name of the instrumentation scope - ({@code InstrumentationScope.Name}
-    * in OTLP).
+  /** The name of the instrumentation scope - (`InstrumentationScope.Name` in
+    * OTLP).
     */
   val OtelScopeName: AttributeKey[String] = string("otel.scope.name")
 
-  /** The version of the instrumentation scope - ({@code
-    * InstrumentationScope.Version} in OTLP).
+  /** The version of the instrumentation scope - (`InstrumentationScope.Version`
+    * in OTLP).
     */
   val OtelScopeVersion: AttributeKey[String] = string("otel.scope.version")
 
-  /** Deprecated, use the {@code otel.scope.name} attribute.
-    *
-    * @deprecated
-    *   Deprecated, use the `otel.scope.name` attribute.
+  /** Deprecated, use the `otel.scope.name` attribute.
     */
   @deprecated("Use the `otel.scope.name` attribute", "")
   val OtelLibraryName: AttributeKey[String] = string("otel.library.name")
 
-  /** Deprecated, use the {@code otel.scope.version} attribute.
-    *
-    * @deprecated
-    *   Deprecated, use the `otel.scope.version` attribute.
+  /** Deprecated, use the `otel.scope.version` attribute.
     */
   @deprecated("Use the `otel.scope.version` attribute", "")
   val OtelLibraryVersion: AttributeKey[String] = string("otel.library.version")
@@ -762,6 +857,10 @@ object ResourceAttributes {
 
     /** Azure Red Hat OpenShift. */
     case object AzureOpenshift extends CloudPlatformValue("azure_openshift")
+
+    /** Google Bare Metal Solution (BMS). */
+    case object GcpBareMetalSolution
+        extends CloudPlatformValue("gcp_bare_metal_solution")
 
     /** Google Cloud Compute Engine (GCE). */
     case object GcpComputeEngine
@@ -907,11 +1006,14 @@ object ResourceAttributes {
     /** ruby. */
     case object Ruby extends TelemetrySdkLanguageValue("ruby")
 
-    /** webjs. */
-    case object Webjs extends TelemetrySdkLanguageValue("webjs")
+    /** rust. */
+    case object Rust extends TelemetrySdkLanguageValue("rust")
 
     /** swift. */
     case object Swift extends TelemetrySdkLanguageValue("swift")
+
+    /** webjs. */
+    case object Webjs extends TelemetrySdkLanguageValue("webjs")
 
     /** scala. */
     case object Scala extends TelemetrySdkLanguageValue("scala")
@@ -921,7 +1023,8 @@ object ResourceAttributes {
   /** Red Hat OpenShift on Google Cloud.
     * @deprecated
     *   This item has been removed as of 1.18.0 of the semantic conventions. Use
-    *   {@link ResourceAttributes.CloudPlatform#GcpOpenshift} instead.
+    *   [[org.typelevel.otel4s.semconv.resource.attributes.ResourceAttributes.CloudPlatform.GcpOpenshift ResourceAttributes.CloudPlatform.GcpOpenshift]]
+    *   instead.
     */
   @deprecated("Use ResourceAttributes.CloudPlatform.GcpOpenshift instead", "")
   val GcpOpenshift = string("gcp_openshift")
@@ -932,12 +1035,12 @@ object ResourceAttributes {
     *
     * <ul> <li>The user-agent value SHOULD be provided only from browsers that
     * do not have a mechanism to retrieve brands and platform individually from
-    * the User-Agent Client Hints API. To retrieve the value, the legacy {@code
-    * navigator.userAgent} API can be used. </ul>
+    * the User-Agent Client Hints API. To retrieve the value, the legacy
+    * `navigator.userAgent` API can be used. </ul>
     * @deprecated
     *   This item has been renamed in 1.19.0 version of the semantic
-    *   conventions. Use {@link
-    *   org.typelevel.otel4s.semconv.trace.attributes.SemanticAttributes#UserAgentOriginal}
+    *   conventions. Use
+    *   [[org.typelevel.otel4s.semconv.trace.attributes.SemanticAttributes.UserAgentOriginal]]
     *   instead.
     */
   @deprecated("Use SemanticAttributes.UserAgentOriginal instead", "")
@@ -948,9 +1051,9 @@ object ResourceAttributes {
     * <p>Notes:
     *
     * <ul> <li>On some cloud providers, it may not be possible to determine the
-    * full ID at startup, so consider setting {@code faas.id} as a span
-    * attribute instead. <li>The exact value to use for {@code faas.id} depends
-    * on the cloud provider: <li><strong>AWS Lambda:</strong> The function <a
+    * full ID at startup, so consider setting `faas.id` as a span attribute
+    * instead. <li>The exact value to use for `faas.id` depends on the cloud
+    * provider: <li><strong>AWS Lambda:</strong> The function <a
     * href="https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html">ARN</a>.
     * Take care not to use the &quot;invoked ARN&quot; directly but replace any
     * <a
@@ -962,14 +1065,14 @@ object ResourceAttributes {
     * resource</a> <li><strong>Azure:</strong> The <a
     * href="https://docs.microsoft.com/en-us/rest/api/resources/resources/get-by-id">Fully
     * Qualified Resource ID</a> of the invoked function, <em>not</em> the
-    * function app, having the form {@code
-    * /subscriptions/<SUBSCIPTION_GUID>/resourceGroups/<RG>/providers/Microsoft.Web/sites/<FUNCAPP>/functions/<FUNC>}.
+    * function app, having the form
+    * `/subscriptions/<SUBSCIPTION_GUID>/resourceGroups/<RG>/providers/Microsoft.Web/sites/<FUNCAPP>/functions/<FUNC>}`.
     * This means that a span attribute MUST be used, as an Azure function app
     * can host multiple functions that would usually share a TracerProvider.
     * </ul>
     * @deprecated
     *   This item has been removed in 1.19.0 version of the semantic
-    *   conventions. Use {@link ResourceAttributes#CloudResourceId} instead.
+    *   conventions. Use [[ResourceAttributes.CloudResourceId]] instead.
     */
   @deprecated("Use ResourceAttributes.CloudResourceId instead", "")
   val FaasId = string("faas.id")

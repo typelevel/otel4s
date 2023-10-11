@@ -69,15 +69,11 @@ object {{class}} {
   {%- for attribute in attributes if attribute.is_local and not attribute.ref %}
 
   /**
-  * {{ attribute.brief | regex_replace(pattern='\\$', replace='') | render_markdown(code="{{@code {0}}}", paragraph="{0}") }}
+  * {{ attribute.brief | regex_replace(pattern='\\$', replace='') | render_markdown(code="`{0}`", paragraph="{0}") }}
     {%- if attribute.note %}
   *
   * <p>Notes:
-    <ul> {{attribute.note | render_markdown(code="{{@code {0}}}", paragraph="<li>{0}</li>", list="{0}")}} </ul>
-    {%- endif %}
-    {%- if (attribute.stability | string())  == "StabilityLevel.DEPRECATED" %}
-  *
-  * @deprecated {{attribute.brief | to_doc_brief}}.
+    <ul> {{attribute.note | render_markdown(code="`{0}`", paragraph="<li>{0}</li>", list="{0}")}} </ul>
     {%- endif %}
   */
     {%- if (attribute.stability | string()) == "StabilityLevel.DEPRECATED"  %}
@@ -122,15 +118,15 @@ object {{class}} {
   /**
    * The name of an event describing an exception.
    *
-   * <p>Typically an event with that name should not be manually created. Instead {@see
-   * org.typelevel.otel4s.trace.Span#recordException(Throwable)} should be used.
+   * <p>Typically an event with that name should not be manually created. Instead
+   * `org.typelevel.otel4s.trace.Span#recordException(Throwable)` should be used.
    */
   final val ExceptionEventName = "exception"
 
   /**
    * The name of the keyspace being accessed.
    *
-   * @deprecated this item has been removed as of 1.8.0 of the semantic conventions. Please use {@link SemanticAttributes#DbName} instead.
+   * @deprecated this item has been removed as of 1.8.0 of the semantic conventions. Please use [[SemanticAttributes.DbName]] instead.
    */
   @deprecated("Use SemanticAttributes.DbName instead", "")
   val DbCassandraKeyspace = string("db.cassandra.keyspace")
@@ -138,7 +134,7 @@ object {{class}} {
   /**
    * The <a href="https://hbase.apache.org/book.html#_namespace">HBase namespace</a> being accessed.
    *
-   * @deprecated this item has been removed as of 1.8.0 of the semantic conventions. Please use {@link SemanticAttributes#DbName} instead.
+   * @deprecated this item has been removed as of 1.8.0 of the semantic conventions. Please use [[SemanticAttributes.DbName]] instead.
    */
   @deprecated("Use SemanticAttributes.DbName instead", "")
   val DbHbaseNameSpace = string("db.hbase.namespace")
@@ -147,46 +143,46 @@ object {{class}} {
    * The size of the uncompressed request payload body after transport decoding. Not set if
    * transport encoding not used.
    *
-   * @deprecated  this item has been removed as of 1.13.0 of the semantic conventions. Please use {@link SemanticAttributes#HttpRequestContentLength} instead.
+   * @deprecated  this item has been removed as of 1.13.0 of the semantic conventions. Please use [[SemanticAttributes.HttpRequestContentLength]] instead.
    */
   @deprecated("Use SemanticAttributes.HttpRequestContentLength instead", "")
   val HttpRequestContentLengthUncompressed = long("http.request_content_length_uncompressed")
 
   /**
-   * @deprecated This item has been removed as of 1.13.0 of the semantic conventions. Please use {@link SemanticAttributes#HttpResponseContentLength} instead.
+   * @deprecated This item has been removed as of 1.13.0 of the semantic conventions. Please use [[SemanticAttributes.HttpResponseContentLength]] instead.
    */
   @deprecated("Use SemanticAttributes.HttpResponseContentLength instead", "")
   val HttpResponseContentLengthUncompressed = long("http.response_content_length_uncompressed")
 
   /**
    * @deprecated This item has been removed as of 1.13.0 of the semantic conventions. Please use
-   *     {@link SemanticAttributes#NetHostName} instead.
+   *     [[SemanticAttributes.NetHostName]] instead.
    */
   @deprecated("Use SemanticAttributes.NetHostName instead", "")
   val HttpServerName = string("http.server_name")
 
   /**
    * @deprecated This item has been removed as of 1.13.0 of the semantic conventions. Please use
-   *     {@link SemanticAttributes#NetHostName} instead.
+   *     [[SemanticAttributes.NetHostName]] instead.
    */
   @deprecated("Use SemanticAttributes.NetHostName instead", "")
   val HttpHost = string("http.host")
 
   /**
-   * @deprecated This item has been removed as of 1.13.0 of the semantic conventions. Please use {@link SemanticAttributes#NetSockPeerAddr} instead.
+   * @deprecated This item has been removed as of 1.13.0 of the semantic conventions. Please use [[SemanticAttributes.NetSockPeerAddr]] instead.
    */
   @deprecated("Use SemanticAttributes.NetSockPeerAddr instead", "")
   val NetPeerIp = string("net.peer.ip")
 
   /**
-   * @deprecated This item has been removed as of 1.13.0 of the semantic conventions. Please use {@link SemanticAttributes#NetSockHostAddr} instead.
+   * @deprecated This item has been removed as of 1.13.0 of the semantic conventions. Please use [[SemanticAttributes.NetSockHostAddr]] instead.
    */
   @deprecated("Use SemanticAttributes.NetSockHostAddr instead", "")
   val NetHostIp = string("net.host.ip")
 
   /**
    * The ordinal number of request re-sending attempt.
-   * @deprecated This item has been removed as of 1.15.0 of the semantic conventions. Use {@link SemanticAttributes#HttpResendCount} instead.
+   * @deprecated This item has been removed as of 1.15.0 of the semantic conventions. Use [[SemanticAttributes.HttpResendCount]] instead.
    */
   @deprecated("Use SemanticAttributes.HttpResendCount instead", "")
   val HttpRetryCount = long("http.retry_count")
@@ -194,28 +190,28 @@ object {{class}} {
 
  /**
   * A string identifying the messaging system.
-  * @deprecated This item has been removed as of 1.17.0 of the semantic conventions. Use {@link SemanticAttributes#MessagingDestinationName} instead.
+  * @deprecated This item has been removed as of 1.17.0 of the semantic conventions. Use [[SemanticAttributes.MessagingDestinationName]] instead.
   */
   @deprecated("Use SemanticAttributes.MessagingDestinationName instead", "")
   val MessagingDestination = string("messaging.destination")
 
  /**
   * A boolean that is true if the message destination is temporary.
-  * @deprecated This item has been removed as of 1.17.0 of the semantic conventions. Use {@link SemanticAttributes#MessagingDestinationTemporary} instead.
+  * @deprecated This item has been removed as of 1.17.0 of the semantic conventions. Use [[SemanticAttributes.MessagingDestinationTemporary]] instead.
   */
   @deprecated("Use SemanticAttributes.MessagingDestinationTemporary instead", "")
   val MessagingTempDestination = boolean("messaging.temp_destination")
 
  /**
   * The name of the transport protocol.
-  * @deprecated This item has been removed as of 1.17.0 of the semantic conventions. Use {@link SemanticAttributes#NetAppProtocolName} instead.
+  * @deprecated This item has been removed as of 1.17.0 of the semantic conventions. Use [[SemanticAttributes.NetAppProtocolName]] instead.
   */
   @deprecated("Use SemanticAttributes.NetAppProtocolName instead", "")
   val MessagingProtocol = string("messaging.protocol")
 
   /**
   * The version of the transport protocol.
-  * @deprecated This item has been removed as of 1.17.0 of the semantic conventions. Use {@link SemanticAttributes#NetAppProtocolVersion} instead.
+  * @deprecated This item has been removed as of 1.17.0 of the semantic conventions. Use [[SemanticAttributes.NetAppProtocolVersion]] instead.
   */
   @deprecated("Use SemanticAttributes.NetAppProtocolVersion instead", "")
   val MessagingProtocolVersion = string("messaging.protocol_version")
@@ -230,56 +226,56 @@ object {{class}} {
   /**
    * The <a href="#conversations">conversation ID</a> identifying the conversation to which the
    * message belongs, represented as a string. Sometimes called &quot;Correlation ID&quot;.
-   * @deprecated This item has been removed as of 1.17.0 of the semantic conventions. Use {@link SemanticAttributes#MessagingMessageConversationId} instead.
+   * @deprecated This item has been removed as of 1.17.0 of the semantic conventions. Use [[SemanticAttributes.MessagingMessageConversationId]] instead.
    */
   @deprecated("Use SemanticAttributes.MessagingMessageConversationId instead", "")
   val MessagingConversationId = string("messaging.conversation_id")
 
   /**
    * RabbitMQ message routing key.
-   * @deprecated This item has been removed as of 1.17.0 of the semantic conventions. Use {@link SemanticAttributes#MessagingRabbitmqDestinationRoutingKey} instead.
+   * @deprecated This item has been removed as of 1.17.0 of the semantic conventions. Use [[SemanticAttributes.MessagingRabbitmqDestinationRoutingKey]] instead.
    */
   @deprecated("Use SemanticAttributes.MessagingRabbitmqDestinationRoutingKey instead", "")
   val MessagingRabbitmqRoutingKey = string("messaging.rabbitmq.routing_key")
 
   /**
    * Partition the message is received from.
-   * @deprecated This item has been removed as of 1.17.0 of the semantic conventions. Use {@link SemanticAttributes#MessagingKafkaSourcePartition} instead.
+   * @deprecated This item has been removed as of 1.17.0 of the semantic conventions. Use [[SemanticAttributes.MessagingKafkaSourcePartition]] instead.
    */
   @deprecated("Use SemanticAttributes.MessagingKafkaSourcePartition instead", "")
   val MessagingKafkaPartition = long("messaging.kafka.partition")
 
   /**
    * A boolean that is true if the message is a tombstone.
-   * @deprecated This item has been removed as of 1.17.0 of the semantic conventions. Use {@link SemanticAttributes#MessagingKafkaMessageTombstone} instead.
+   * @deprecated This item has been removed as of 1.17.0 of the semantic conventions. Use [[SemanticAttributes.MessagingKafkaMessageTombstone]] instead.
    */
   @deprecated("Use SemanticAttributes.MessagingKafkaMessageTombstone instead", "")
   val MessagingKafkaTombstone = boolean("messaging.kafka.tombstone")
 
   /**
    * The timestamp in milliseconds that the delay message is expected to be delivered to consumer.
-   * @deprecated This item has been removed as of 1.17.0 of the semantic conventions. Use {@link SemanticAttributes#MessagingRocketmqMessageDeliveryTimestamp} instead.
+   * @deprecated This item has been removed as of 1.17.0 of the semantic conventions. Use [[SemanticAttributes.MessagingRocketmqMessageDeliveryTimestamp]] instead.
    */
   @deprecated("Use SemanticAttributes.MessagingRocketmqMessageDeliveryTimestamp instead", "")
   val MessagingRocketmqDeliveryTimestamp = long("messaging.rocketmq.delivery_timestamp")
 
   /**
    * The delay time level for delay message, which determines the message delay time.
-   * @deprecated This item has been removed as of 1.17.0 of the semantic conventions. Use {@link SemanticAttributes#MessagingRocketmqMessageDelayTimeLevel} instead.
+   * @deprecated This item has been removed as of 1.17.0 of the semantic conventions. Use [[SemanticAttributes.MessagingRocketmqMessageDelayTimeLevel]] instead.
    */
   @deprecated("Use SemanticAttributes.MessagingRocketmqMessageDelayTimeLevel instead", "")
   val MessagingRocketmqDelayTimeLevel = long("messaging.rocketmq.delay_time_level")
 
   /** 
-   * The name of the instrumentation scope - ({@code InstrumentationScope.Name} in OTLP).
-   * @deprecated This item has been moved, use {@link org.typelevel.otel4s.semconv.resource.attributes.ResourceAttributes#OtelScopeName} instead.
+   * The name of the instrumentation scope - (`InstrumentationScope.Name` in OTLP).
+   * @deprecated This item has been moved, use [[org.typelevel.otel4s.semconv.resource.attributes.ResourceAttributes.OtelScopeName ResourceAttributes.OtelScopeName]] instead.
    */
   @deprecated("Use ResourceAttributes.OtelScopeName instead", "")
   val OtelScopeName = string("otel.scope.name")
 
   /** 
-   * The version of the instrumentation scope - ({@code InstrumentationScope.Version} in OTLP).
-   * @deprecated This item has been moved, use {@link org.typelevel.otel4s.semconv.resource.attributes.ResourceAttributes#OtelScopeVersion} instead.
+   * The version of the instrumentation scope - (`InstrumentationScope.Version` in OTLP).
+   * @deprecated This item has been moved, use [[org.typelevel.otel4s.semconv.resource.attributes.ResourceAttributes.OtelScopeVersion ResourceAttributes.OtelScopeVersion]] instead.
    */
   @deprecated("Use ResourceAttributes.OtelScopeVersion instead", "")
   val OtelScopeVersion = string("otel.scope.version")
@@ -287,7 +283,7 @@ object {{class}} {
   /**
    * The execution ID of the current function execution.
    * @deprecated This item has been renamed in 1.19.0 version of the semantic conventions. 
-   * Use {@link SemanticAttributes#FaasInvocationId} instead.
+   * Use [[SemanticAttributes.FaasInvocationId]] instead.
    */
   @deprecated("Use SemanticAttributes.FaasInvocationId instead", "")
   val FaasExecution = string("faas.execution")
@@ -296,7 +292,7 @@ object {{class}} {
    * Value of the <a href="https://www.rfc-editor.org/rfc/rfc9110.html#field.user-agent">HTTP
    * User-Agent</a> header sent by the client.
    * @deprecated This item has been renamed in 1.19.0 version of the semantic conventions. 
-   * Use {@link SemanticAttributes#UserAgentOriginal} instead.
+   * Use [[SemanticAttributes.UserAgentOriginal]] instead.
    */
   @deprecated("Use SemanticAttributes.UserAgentOriginal instead", "")
   val HttpUserAgent = string("http.user_agent")
@@ -304,7 +300,7 @@ object {{class}} {
   /**
    * Deprecated.
    *
-   * @deprecated Deprecated, use the {@link org.typelevel.otel4s.semconv.resource.attributes.ResourceAttributes#OtelScopeName} attribute.
+   * @deprecated Deprecated, use the [[org.typelevel.otel4s.semconv.resource.attributes.ResourceAttributes.OtelScopeName ResourceAttributes.OtelScopeName]] attribute.
    */
   @deprecated("Use ResourceAttributes.OtelScopeName instead", "")
   val OtelLibraryName = string("otel.library.name")
@@ -312,7 +308,7 @@ object {{class}} {
   /**
    * Deprecated.
    *
-   * @deprecated Deprecated, use the {@link org.typelevel.otel4s.semconv.resource.attributes.ResourceAttributes#OtelScopeVersion} attribute.
+   * @deprecated Deprecated, use the [[org.typelevel.otel4s.semconv.resource.attributes.ResourceAttributes.OtelScopeVersion ResourceAttributes.OtelScopeVersion]] attribute.
    */
   @deprecated("Use ResourceAttributes.OtelScopeVersion instead", "")
   val OtelLibraryVersion = string("otel.library.version")  
@@ -323,7 +319,7 @@ object {{class}} {
 
   /**
    * Red Hat OpenShift on Google Cloud.
-   * @deprecated This item has been removed as of 1.18.0 of the semantic conventions. Use {@link ResourceAttributes.CloudPlatform#GcpOpenshift} instead.
+   * @deprecated This item has been removed as of 1.18.0 of the semantic conventions. Use [[org.typelevel.otel4s.semconv.resource.attributes.ResourceAttributes.CloudPlatform.GcpOpenshift ResourceAttributes.CloudPlatform.GcpOpenshift]] instead.
    */
   @deprecated("Use ResourceAttributes.CloudPlatform.GcpOpenshift instead", "")
   val GcpOpenshift = string("gcp_openshift")
@@ -336,9 +332,9 @@ object {{class}} {
    * <ul>
    *   <li>The user-agent value SHOULD be provided only from browsers that do not have a mechanism
    *       to retrieve brands and platform individually from the User-Agent Client Hints API. To
-   *       retrieve the value, the legacy {@code navigator.userAgent} API can be used.
+   *       retrieve the value, the legacy `navigator.userAgent` API can be used.
    * </ul>
-   * @deprecated This item has been renamed in 1.19.0 version of the semantic conventions. Use {@link org.typelevel.otel4s.semconv.trace.attributes.SemanticAttributes#UserAgentOriginal} instead.
+   * @deprecated This item has been renamed in 1.19.0 version of the semantic conventions. Use [[org.typelevel.otel4s.semconv.trace.attributes.SemanticAttributes.UserAgentOriginal]] instead.
    */
   @deprecated("Use SemanticAttributes.UserAgentOriginal instead", "")
   val BrowserUserAgent = string("browser.user_agent")
@@ -350,8 +346,8 @@ object {{class}} {
    *
    * <ul>
    *   <li>On some cloud providers, it may not be possible to determine the full ID at startup, so
-   *       consider setting {@code faas.id} as a span attribute instead.
-   *   <li>The exact value to use for {@code faas.id} depends on the cloud provider:
+   *       consider setting `faas.id` as a span attribute instead.
+   *   <li>The exact value to use for `faas.id` depends on the cloud provider:
    *   <li><strong>AWS Lambda:</strong> The function <a
    *       href="https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html">ARN</a>.
    *       Take care not to use the &quot;invoked ARN&quot; directly but replace any <a
@@ -363,12 +359,11 @@ object {{class}} {
    *   <li><strong>Azure:</strong> The <a
    *       href="https://docs.microsoft.com/en-us/rest/api/resources/resources/get-by-id">Fully
    *       Qualified Resource ID</a> of the invoked function, <em>not</em> the function app, having
-   *       the form {@code
-   *       /subscriptions/<SUBSCIPTION_GUID>/resourceGroups/<RG>/providers/Microsoft.Web/sites/<FUNCAPP>/functions/<FUNC>}.
+   *       the form `/subscriptions/<SUBSCIPTION_GUID>/resourceGroups/<RG>/providers/Microsoft.Web/sites/<FUNCAPP>/functions/<FUNC>}`.
    *       This means that a span attribute MUST be used, as an Azure function app can host multiple
    *       functions that would usually share a TracerProvider.
    * </ul>
-   * @deprecated This item has been removed in 1.19.0 version of the semantic conventions. Use {@link ResourceAttributes#CloudResourceId} instead.
+   * @deprecated This item has been removed in 1.19.0 version of the semantic conventions. Use [[ResourceAttributes.CloudResourceId]] instead.
    */
   @deprecated("Use ResourceAttributes.CloudResourceId instead", "")
   val FaasId = string("faas.id")

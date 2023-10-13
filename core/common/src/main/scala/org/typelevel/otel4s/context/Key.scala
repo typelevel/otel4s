@@ -16,13 +16,20 @@
 
 package org.typelevel.otel4s.context
 
-/** A key for a context. */
+import cats.Hash
+import cats.Show
+
+/** A key for a context.
+  *
+  * @note
+  *   Implementations MUST treat different instances as non-equal.
+  */
 trait Key[A] {
 
   /** The debug name of the key. */
   val name: String
 
-  override def toString: String = s"Key($name)"
+  override def toString: String = Key.defaultShowKey(this)
 }
 
 object Key {
@@ -45,4 +52,16 @@ object Key {
         p: Provider[F, K]
     ): Provider[F, K] = p
   }
+
+  @inline private def defaultShowKey(key: Key[_]): String =
+    s"Key(${key.name})"
+
+  implicit def showKey[K[X] <: Key[X], A]: Show[K[A]] =
+    defaultShowKey(_)
+
+  implicit def hashKey[K[X] <: Key[X], A]: Hash[K[A]] =
+    new Hash[K[A]] {
+      def hash(x: K[A]): Int = System.identityHashCode(x)
+      def eqv(x: K[A], y: K[A]): Boolean = x eq y
+    }
 }

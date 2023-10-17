@@ -60,26 +60,6 @@ object SemanticAttributes {
   @deprecated("Use `http.request.method` instead", "")
   val HttpMethod: AttributeKey[String] = string("http.method")
 
-  /** Deprecated, use `http.response.status_code` instead.
-    */
-  @deprecated("Use `http.response.status_code` instead", "")
-  val HttpStatusCode: AttributeKey[Long] = long("http.status_code")
-
-  /** Deprecated, use `url.scheme` instead.
-    */
-  @deprecated("Use `url.scheme` instead", "")
-  val HttpScheme: AttributeKey[String] = string("http.scheme")
-
-  /** Deprecated, use `url.full` instead.
-    */
-  @deprecated("Use `url.full` instead", "")
-  val HttpUrl: AttributeKey[String] = string("http.url")
-
-  /** Deprecated, use `url.path` and `url.query` instead.
-    */
-  @deprecated("Use `url.path` and `url.query` instead", "")
-  val HttpTarget: AttributeKey[String] = string("http.target")
-
   /** Deprecated, use `http.request.body.size` instead.
     */
   @deprecated("Use `http.request.body.size` instead", "")
@@ -94,28 +74,35 @@ object SemanticAttributes {
     "http.response_content_length"
   )
 
-  /** Deprecated, use `server.socket.domain` on client spans.
+  /** Deprecated, use `url.scheme` instead.
     */
-  @deprecated("Use `server.socket.domain` on client spans", "")
-  val NetSockPeerName: AttributeKey[String] = string("net.sock.peer.name")
+  @deprecated("Use `url.scheme` instead", "")
+  val HttpScheme: AttributeKey[String] = string("http.scheme")
 
-  /** Deprecated, use `server.socket.address` on client spans and
-    * `client.socket.address` on server spans.
+  /** Deprecated, use `http.response.status_code` instead.
     */
-  @deprecated(
-    "Use `server.socket.address` on client spans and `client.socket.address` on server spans",
-    ""
-  )
-  val NetSockPeerAddr: AttributeKey[String] = string("net.sock.peer.addr")
+  @deprecated("Use `http.response.status_code` instead", "")
+  val HttpStatusCode: AttributeKey[Long] = long("http.status_code")
 
-  /** Deprecated, use `server.socket.port` on client spans and
-    * `client.socket.port` on server spans.
+  /** Deprecated, use `url.path` and `url.query` instead.
     */
-  @deprecated(
-    "Use `server.socket.port` on client spans and `client.socket.port` on server spans",
-    ""
-  )
-  val NetSockPeerPort: AttributeKey[Long] = long("net.sock.peer.port")
+  @deprecated("Use `url.path` and `url.query` instead", "")
+  val HttpTarget: AttributeKey[String] = string("http.target")
+
+  /** Deprecated, use `url.full` instead.
+    */
+  @deprecated("Use `url.full` instead", "")
+  val HttpUrl: AttributeKey[String] = string("http.url")
+
+  /** Deprecated, use `server.address`.
+    */
+  @deprecated("Use `server.address`", "")
+  val NetHostName: AttributeKey[String] = string("net.host.name")
+
+  /** Deprecated, use `server.port`.
+    */
+  @deprecated("Use `server.port`", "")
+  val NetHostPort: AttributeKey[Long] = long("net.host.port")
 
   /** Deprecated, use `server.address` on client spans and `client.address` on
     * server spans.
@@ -135,31 +122,6 @@ object SemanticAttributes {
   )
   val NetPeerPort: AttributeKey[Long] = long("net.peer.port")
 
-  /** Deprecated, use `server.address`.
-    */
-  @deprecated("Use `server.address`", "")
-  val NetHostName: AttributeKey[String] = string("net.host.name")
-
-  /** Deprecated, use `server.port`.
-    */
-  @deprecated("Use `server.port`", "")
-  val NetHostPort: AttributeKey[Long] = long("net.host.port")
-
-  /** Deprecated, use `server.socket.address`.
-    */
-  @deprecated("Use `server.socket.address`", "")
-  val NetSockHostAddr: AttributeKey[String] = string("net.sock.host.addr")
-
-  /** Deprecated, use `server.socket.port`.
-    */
-  @deprecated("Use `server.socket.port`", "")
-  val NetSockHostPort: AttributeKey[Long] = long("net.sock.host.port")
-
-  /** Deprecated, use `network.transport`.
-    */
-  @deprecated("Use `network.transport`", "")
-  val NetTransport: AttributeKey[String] = string("net.transport")
-
   /** Deprecated, use `network.protocol.name`.
     */
   @deprecated("Use `network.protocol.name`", "")
@@ -175,6 +137,48 @@ object SemanticAttributes {
   @deprecated("Use `network.transport` and `network.type`", "")
   val NetSockFamily: AttributeKey[String] = string("net.sock.family")
 
+  /** Deprecated, use `server.socket.address`.
+    */
+  @deprecated("Use `server.socket.address`", "")
+  val NetSockHostAddr: AttributeKey[String] = string("net.sock.host.addr")
+
+  /** Deprecated, use `server.socket.port`.
+    */
+  @deprecated("Use `server.socket.port`", "")
+  val NetSockHostPort: AttributeKey[Long] = long("net.sock.host.port")
+
+  /** Deprecated, use `server.socket.address` on client spans and
+    * `client.socket.address` on server spans.
+    */
+  @deprecated(
+    "Use `server.socket.address` on client spans and `client.socket.address` on server spans",
+    ""
+  )
+  val NetSockPeerAddr: AttributeKey[String] = string("net.sock.peer.addr")
+
+  /** Deprecated, use `server.socket.domain` on client spans.
+    */
+  @deprecated("Use `server.socket.domain` on client spans", "")
+  val NetSockPeerName: AttributeKey[String] = string("net.sock.peer.name")
+
+  /** Deprecated, use `server.socket.port` on client spans and
+    * `client.socket.port` on server spans.
+    */
+  @deprecated(
+    "Use `server.socket.port` on client spans and `client.socket.port` on server spans",
+    ""
+  )
+  val NetSockPeerPort: AttributeKey[Long] = long("net.sock.peer.port")
+
+  /** Deprecated, use `network.transport`.
+    */
+  @deprecated("Use `network.transport`", "")
+  val NetTransport: AttributeKey[String] = string("net.transport")
+
+  /** Peer address, for example IP address or UNIX socket name.
+    */
+  val DestinationAddress: AttributeKey[String] = string("destination.address")
+
   /** The domain name of the destination system.
     *
     * <p>Notes: <ul> <li>This value may be a host name, a fully qualified domain
@@ -182,19 +186,9 @@ object SemanticAttributes {
     */
   val DestinationDomain: AttributeKey[String] = string("destination.domain")
 
-  /** Peer address, for example IP address or UNIX socket name.
-    */
-  val DestinationAddress: AttributeKey[String] = string("destination.address")
-
   /** Peer port number
     */
   val DestinationPort: AttributeKey[Long] = long("destination.port")
-
-  /** The type of the exception (its fully-qualified class name, if applicable).
-    * The dynamic type of the exception should be preferred over the static type
-    * in languages that support it.
-    */
-  val ExceptionType: AttributeKey[String] = string("exception.type")
 
   /** The exception message.
     */
@@ -205,6 +199,12 @@ object SemanticAttributes {
     * language SIG.
     */
   val ExceptionStacktrace: AttributeKey[String] = string("exception.stacktrace")
+
+  /** The type of the exception (its fully-qualified class name, if applicable).
+    * The dynamic type of the exception should be preferred over the static type
+    * in languages that support it.
+    */
+  val ExceptionType: AttributeKey[String] = string("exception.type")
 
   /** HTTP request method.
     *
@@ -251,16 +251,16 @@ object SemanticAttributes {
     */
   val HttpRoute: AttributeKey[String] = string("http.route")
 
-  /** The name identifies the event.
-    */
-  val EventName: AttributeKey[String] = string("event.name")
-
   /** The domain identifies the business context for the events.
     *
     * <p>Notes: <ul> <li>Events across different domains may have same
     * `event.name`, yet be unrelated events.</li> </ul>
     */
   val EventDomain: AttributeKey[String] = string("event.domain")
+
+  /** The name identifies the event.
+    */
+  val EventName: AttributeKey[String] = string("event.name")
 
   /** A unique identifier for the Log Record.
     *
@@ -282,25 +282,21 @@ object SemanticAttributes {
     */
   val LogFileName: AttributeKey[String] = string("log.file.name")
 
-  /** The full path to the file.
-    */
-  val LogFilePath: AttributeKey[String] = string("log.file.path")
-
   /** The basename of the file, with symlinks resolved.
     */
   val LogFileNameResolved: AttributeKey[String] = string(
     "log.file.name_resolved"
   )
 
+  /** The full path to the file.
+    */
+  val LogFilePath: AttributeKey[String] = string("log.file.path")
+
   /** The full path to the file, with symlinks resolved.
     */
   val LogFilePathResolved: AttributeKey[String] = string(
     "log.file.path_resolved"
   )
-
-  /** The type of memory.
-    */
-  val Type: AttributeKey[String] = string("type")
 
   /** Name of the memory pool.
     *
@@ -309,6 +305,10 @@ object SemanticAttributes {
     * </ul>
     */
   val Pool: AttributeKey[String] = string("pool")
+
+  /** The type of memory.
+    */
+  val Type: AttributeKey[String] = string("type")
 
   /** Logical server hostname, matches server FQDN if available, and IP or
     * socket address if FQDN is not known.
@@ -319,13 +319,6 @@ object SemanticAttributes {
     */
   val ServerPort: AttributeKey[Long] = long("server.port")
 
-  /** The domain name of an immediate peer.
-    *
-    * <p>Notes: <ul> <li>Typically observed from the client side, and represents
-    * a proxy or other intermediary domain name.</li> </ul>
-    */
-  val ServerSocketDomain: AttributeKey[String] = string("server.socket.domain")
-
   /** Physical server IP address or Unix socket address. If set from the client,
     * should simply use the socket's peer address, and not attempt to find any
     * actual server IP (i.e., if set from client, this may represent some proxy
@@ -335,9 +328,20 @@ object SemanticAttributes {
     "server.socket.address"
   )
 
+  /** The domain name of an immediate peer.
+    *
+    * <p>Notes: <ul> <li>Typically observed from the client side, and represents
+    * a proxy or other intermediary domain name.</li> </ul>
+    */
+  val ServerSocketDomain: AttributeKey[String] = string("server.socket.domain")
+
   /** Physical server port.
     */
   val ServerSocketPort: AttributeKey[Long] = long("server.socket.port")
+
+  /** Source address, for example IP address or Unix socket name.
+    */
+  val SourceAddress: AttributeKey[String] = string("source.address")
 
   /** The domain name of the source system.
     *
@@ -345,10 +349,6 @@ object SemanticAttributes {
     * name, or another host naming format.</li> </ul>
     */
   val SourceDomain: AttributeKey[String] = string("source.domain")
-
-  /** Source address, for example IP address or Unix socket name.
-    */
-  val SourceAddress: AttributeKey[String] = string("source.address")
 
   /** Source port number
     */
@@ -388,20 +388,20 @@ object SemanticAttributes {
   )
 
   /** The <a
+    * href="https://github.com/cloudevents/spec/blob/v1.0.2/cloudevents/spec.md#subject">subject</a>
+    * of the event in the context of the event producer (identified by source).
+    */
+  val CloudeventsEventSubject: AttributeKey[String] = string(
+    "cloudevents.event_subject"
+  )
+
+  /** The <a
     * href="https://github.com/cloudevents/spec/blob/v1.0.2/cloudevents/spec.md#type">event_type</a>
     * contains a value describing the type of event related to the originating
     * occurrence.
     */
   val CloudeventsEventType: AttributeKey[String] = string(
     "cloudevents.event_type"
-  )
-
-  /** The <a
-    * href="https://github.com/cloudevents/spec/blob/v1.0.2/cloudevents/spec.md#subject">subject</a>
-    * of the event in the context of the event producer (identified by source).
-    */
-  val CloudeventsEventSubject: AttributeKey[String] = string(
-    "cloudevents.event_subject"
   )
 
   /** Parent-child Reference type
@@ -411,19 +411,10 @@ object SemanticAttributes {
     */
   val OpentracingRefType: AttributeKey[String] = string("opentracing.ref_type")
 
-  /** An identifier for the database management system (DBMS) product being
-    * used. See below for a list of well-known identifiers.
-    */
-  val DbSystem: AttributeKey[String] = string("db.system")
-
   /** The connection string used to connect to the database. It is recommended
     * to remove embedded credentials.
     */
   val DbConnectionString: AttributeKey[String] = string("db.connection_string")
-
-  /** Username for accessing the database.
-    */
-  val DbUser: AttributeKey[String] = string("db.user")
 
   /** The fully-qualified class name of the <a
     * href="https://docs.oracle.com/javase/8/docs/technotes/guides/jdbc/">Java
@@ -445,10 +436,6 @@ object SemanticAttributes {
     */
   val DbName: AttributeKey[String] = string("db.name")
 
-  /** The database statement being executed.
-    */
-  val DbStatement: AttributeKey[String] = string("db.statement")
-
   /** The name of the operation being executed, e.g. the <a
     * href="https://docs.mongodb.com/manual/reference/command/#database-operations">MongoDB
     * command name</a> such as `findAndModify`, or the SQL keyword.
@@ -462,6 +449,19 @@ object SemanticAttributes {
     */
   val DbOperation: AttributeKey[String] = string("db.operation")
 
+  /** The database statement being executed.
+    */
+  val DbStatement: AttributeKey[String] = string("db.statement")
+
+  /** An identifier for the database management system (DBMS) product being
+    * used. See below for a list of well-known identifiers.
+    */
+  val DbSystem: AttributeKey[String] = string("db.system")
+
+  /** Username for accessing the database.
+    */
+  val DbUser: AttributeKey[String] = string("db.user")
+
   /** The Microsoft SQL Server <a
     * href="https://docs.microsoft.com/en-us/sql/connect/jdbc/building-the-connection-url?view=sql-server-ver15">instance
     * name</a> connecting to. This name is used to determine the port of a named
@@ -474,16 +474,41 @@ object SemanticAttributes {
     "db.mssql.instance_name"
   )
 
-  /** The fetch size used for paging, i.e. how many rows will be returned at
-    * once.
-    */
-  val DbCassandraPageSize: AttributeKey[Long] = long("db.cassandra.page_size")
-
   /** The consistency level of the query. Based on consistency values from <a
     * href="https://docs.datastax.com/en/cassandra-oss/3.0/cassandra/dml/dmlConfigConsistency.html">CQL</a>.
     */
   val DbCassandraConsistencyLevel: AttributeKey[String] = string(
     "db.cassandra.consistency_level"
+  )
+
+  /** The data center of the coordinating node for a query.
+    */
+  val DbCassandraCoordinatorDc: AttributeKey[String] = string(
+    "db.cassandra.coordinator.dc"
+  )
+
+  /** The ID of the coordinating node for a query.
+    */
+  val DbCassandraCoordinatorId: AttributeKey[String] = string(
+    "db.cassandra.coordinator.id"
+  )
+
+  /** Whether or not the query is idempotent.
+    */
+  val DbCassandraIdempotence: AttributeKey[Boolean] = boolean(
+    "db.cassandra.idempotence"
+  )
+
+  /** The fetch size used for paging, i.e. how many rows will be returned at
+    * once.
+    */
+  val DbCassandraPageSize: AttributeKey[Long] = long("db.cassandra.page_size")
+
+  /** The number of times a query was speculatively executed. Not set or `0` if
+    * the query was not executed speculatively.
+    */
+  val DbCassandraSpeculativeExecutionCount: AttributeKey[Long] = long(
+    "db.cassandra.speculative_execution_count"
   )
 
   /** The name of the primary table that the operation is acting upon, including
@@ -497,31 +522,6 @@ object SemanticAttributes {
     * value MUST NOT be set.</li> </ul>
     */
   val DbCassandraTable: AttributeKey[String] = string("db.cassandra.table")
-
-  /** Whether or not the query is idempotent.
-    */
-  val DbCassandraIdempotence: AttributeKey[Boolean] = boolean(
-    "db.cassandra.idempotence"
-  )
-
-  /** The number of times a query was speculatively executed. Not set or `0` if
-    * the query was not executed speculatively.
-    */
-  val DbCassandraSpeculativeExecutionCount: AttributeKey[Long] = long(
-    "db.cassandra.speculative_execution_count"
-  )
-
-  /** The ID of the coordinating node for a query.
-    */
-  val DbCassandraCoordinatorId: AttributeKey[String] = string(
-    "db.cassandra.coordinator.id"
-  )
-
-  /** The data center of the coordinating node for a query.
-    */
-  val DbCassandraCoordinatorDc: AttributeKey[String] = string(
-    "db.cassandra.coordinator.dc"
-  )
 
   /** The index of the database being accessed as used in the <a
     * href="https://redis.io/commands/select">`SELECT` command</a>, provided as
@@ -550,12 +550,6 @@ object SemanticAttributes {
     */
   val DbCosmosdbClientId: AttributeKey[String] = string("db.cosmosdb.client_id")
 
-  /** CosmosDB Operation Type.
-    */
-  val DbCosmosdbOperationType: AttributeKey[String] = string(
-    "db.cosmosdb.operation_type"
-  )
-
   /** Cosmos client connection mode.
     */
   val DbCosmosdbConnectionMode: AttributeKey[String] = string(
@@ -566,6 +560,18 @@ object SemanticAttributes {
     */
   val DbCosmosdbContainer: AttributeKey[String] = string(
     "db.cosmosdb.container"
+  )
+
+  /** CosmosDB Operation Type.
+    */
+  val DbCosmosdbOperationType: AttributeKey[String] = string(
+    "db.cosmosdb.operation_type"
+  )
+
+  /** RU consumed for that operation
+    */
+  val DbCosmosdbRequestCharge: AttributeKey[Double] = double(
+    "db.cosmosdb.request_charge"
   )
 
   /** Request payload size in bytes
@@ -584,12 +590,6 @@ object SemanticAttributes {
     "db.cosmosdb.sub_status_code"
   )
 
-  /** RU consumed for that operation
-    */
-  val DbCosmosdbRequestCharge: AttributeKey[Double] = double(
-    "db.cosmosdb.request_charge"
-  )
-
   /** Name of the code, either &quot;OK&quot; or &quot;ERROR&quot;. MUST NOT be
     * set if the status code is UNSET.
     */
@@ -600,6 +600,10 @@ object SemanticAttributes {
   val OtelStatusDescription: AttributeKey[String] = string(
     "otel.status_description"
   )
+
+  /** The invocation ID of the current function invocation.
+    */
+  val FaasInvocationId: AttributeKey[String] = string("faas.invocation_id")
 
   /** Type of the trigger which caused this function invocation.
     *
@@ -613,10 +617,6 @@ object SemanticAttributes {
     */
   val FaasTrigger: AttributeKey[String] = string("faas.trigger")
 
-  /** The invocation ID of the current function invocation.
-    */
-  val FaasInvocationId: AttributeKey[String] = string("faas.invocation_id")
-
   /** The name of the source on which the triggering operation was performed.
     * For example, in Cloud Storage or S3 corresponds to the bucket name, and in
     * Cosmos DB to the database name.
@@ -624,6 +624,11 @@ object SemanticAttributes {
   val FaasDocumentCollection: AttributeKey[String] = string(
     "faas.document.collection"
   )
+
+  /** The document name/table subjected to the operation. For example, in Cloud
+    * Storage or S3 is the name of the file, and in Cosmos DB the table name.
+    */
+  val FaasDocumentName: AttributeKey[String] = string("faas.document.name")
 
   /** Describes the type of the operation that was performed on the data.
     */
@@ -637,22 +642,17 @@ object SemanticAttributes {
     */
   val FaasDocumentTime: AttributeKey[String] = string("faas.document.time")
 
-  /** The document name/table subjected to the operation. For example, in Cloud
-    * Storage or S3 is the name of the file, and in Cosmos DB the table name.
+  /** A string containing the schedule period as <a
+    * href="https://docs.oracle.com/cd/E12058_01/doc/doc.1014/e12030/cron_expressions.htm">Cron
+    * Expression</a>.
     */
-  val FaasDocumentName: AttributeKey[String] = string("faas.document.name")
+  val FaasCron: AttributeKey[String] = string("faas.cron")
 
   /** A string containing the function invocation time in the <a
     * href="https://www.iso.org/iso-8601-date-and-time-format.html">ISO 8601</a>
     * format expressed in <a href="https://www.w3.org/TR/NOTE-datetime">UTC</a>.
     */
   val FaasTime: AttributeKey[String] = string("faas.time")
-
-  /** A string containing the schedule period as <a
-    * href="https://docs.oracle.com/cd/E12058_01/doc/doc.1014/e12030/cron_expressions.htm">Cron
-    * Expression</a>.
-    */
-  val FaasCron: AttributeKey[String] = string("faas.cron")
 
   /** A boolean that is true if the serverless function is executed for the
     * first time (aka cold-start).
@@ -706,18 +706,6 @@ object SemanticAttributes {
     */
   val FeatureFlagVariant: AttributeKey[String] = string("feature_flag.variant")
 
-  /** <a href="https://osi-model.com/transport-layer/">OSI Transport Layer</a>
-    * or <a
-    * href="https://en.wikipedia.org/wiki/Inter-process_communication">Inter-process
-    * Communication method</a>. The value SHOULD be normalized to lowercase.
-    */
-  val NetworkTransport: AttributeKey[String] = string("network.transport")
-
-  /** <a href="https://osi-model.com/network-layer/">OSI Network Layer</a> or
-    * non-OSI equivalent. The value SHOULD be normalized to lowercase.
-    */
-  val NetworkType: AttributeKey[String] = string("network.type")
-
   /** <a href="https://osi-model.com/application-layer/">OSI Application
     * Layer</a> or non-OSI equivalent. The value SHOULD be normalized to
     * lowercase.
@@ -737,23 +725,22 @@ object SemanticAttributes {
     "network.protocol.version"
   )
 
-  /** The internet connection type.
+  /** <a href="https://osi-model.com/transport-layer/">OSI Transport Layer</a>
+    * or <a
+    * href="https://en.wikipedia.org/wiki/Inter-process_communication">Inter-process
+    * Communication method</a>. The value SHOULD be normalized to lowercase.
     */
-  val NetworkConnectionType: AttributeKey[String] = string(
-    "network.connection.type"
-  )
+  val NetworkTransport: AttributeKey[String] = string("network.transport")
 
-  /** This describes more details regarding the connection.type. It may be the
-    * type of cell technology connection, but it could be used for describing
-    * details about a wifi connection.
+  /** <a href="https://osi-model.com/network-layer/">OSI Network Layer</a> or
+    * non-OSI equivalent. The value SHOULD be normalized to lowercase.
     */
-  val NetworkConnectionSubtype: AttributeKey[String] = string(
-    "network.connection.subtype"
-  )
+  val NetworkType: AttributeKey[String] = string("network.type")
 
-  /** The name of the mobile carrier.
+  /** The ISO 3166-1 alpha-2 2-character country code associated with the mobile
+    * carrier network.
     */
-  val NetworkCarrierName: AttributeKey[String] = string("network.carrier.name")
+  val NetworkCarrierIcc: AttributeKey[String] = string("network.carrier.icc")
 
   /** The mobile carrier country code.
     */
@@ -763,10 +750,23 @@ object SemanticAttributes {
     */
   val NetworkCarrierMnc: AttributeKey[String] = string("network.carrier.mnc")
 
-  /** The ISO 3166-1 alpha-2 2-character country code associated with the mobile
-    * carrier network.
+  /** The name of the mobile carrier.
     */
-  val NetworkCarrierIcc: AttributeKey[String] = string("network.carrier.icc")
+  val NetworkCarrierName: AttributeKey[String] = string("network.carrier.name")
+
+  /** This describes more details regarding the connection.type. It may be the
+    * type of cell technology connection, but it could be used for describing
+    * details about a wifi connection.
+    */
+  val NetworkConnectionSubtype: AttributeKey[String] = string(
+    "network.connection.subtype"
+  )
+
+  /** The internet connection type.
+    */
+  val NetworkConnectionType: AttributeKey[String] = string(
+    "network.connection.type"
+  )
 
   /** The <a href="/docs/resource/README.md#service">`service.name`</a> of the
     * remote service. SHOULD be equal to the actual `service.name` resource
@@ -803,37 +803,31 @@ object SemanticAttributes {
     */
   val ThreadName: AttributeKey[String] = string("thread.name")
 
-  /** The method or function name, or equivalent (usually rightmost part of the
-    * code unit's name).
+  /** The column number in `code.filepath` best representing the operation. It
+    * SHOULD point within the code unit named in `code.function`.
     */
-  val CodeFunction: AttributeKey[String] = string("code.function")
-
-  /** The &quot;namespace&quot; within which `code.function` is defined. Usually
-    * the qualified class or module name, such that `code.namespace` + some
-    * separator + `code.function` form a unique identifier for the code unit.
-    */
-  val CodeNamespace: AttributeKey[String] = string("code.namespace")
+  val CodeColumn: AttributeKey[Long] = long("code.column")
 
   /** The source code file name that identifies the code unit as uniquely as
     * possible (preferably an absolute file path).
     */
   val CodeFilepath: AttributeKey[String] = string("code.filepath")
 
+  /** The method or function name, or equivalent (usually rightmost part of the
+    * code unit's name).
+    */
+  val CodeFunction: AttributeKey[String] = string("code.function")
+
   /** The line number in `code.filepath` best representing the operation. It
     * SHOULD point within the code unit named in `code.function`.
     */
   val CodeLineno: AttributeKey[Long] = long("code.lineno")
 
-  /** The column number in `code.filepath` best representing the operation. It
-    * SHOULD point within the code unit named in `code.function`.
+  /** The &quot;namespace&quot; within which `code.function` is defined. Usually
+    * the qualified class or module name, such that `code.namespace` + some
+    * separator + `code.function` form a unique identifier for the code unit.
     */
-  val CodeColumn: AttributeKey[Long] = long("code.column")
-
-  /** Original HTTP method sent by the client in the request line.
-    */
-  val HttpRequestMethodOriginal: AttributeKey[String] = string(
-    "http.request.method_original"
-  )
+  val CodeNamespace: AttributeKey[String] = string("code.namespace")
 
   /** The size of the request payload body in bytes. This is the number of bytes
     * transferred excluding headers and is often, but not always, present as the
@@ -843,6 +837,12 @@ object SemanticAttributes {
     * compressed size.
     */
   val HttpRequestBodySize: AttributeKey[Long] = long("http.request.body.size")
+
+  /** Original HTTP method sent by the client in the request line.
+    */
+  val HttpRequestMethodOriginal: AttributeKey[String] = string(
+    "http.request.method_original"
+  )
 
   /** The size of the response payload body in bytes. This is the number of
     * bytes transferred excluding headers and is often, but not always, present
@@ -868,10 +868,16 @@ object SemanticAttributes {
     */
   val AwsRequestId: AttributeKey[String] = string("aws.request_id")
 
-  /** The keys in the `RequestItems` object field.
+  /** The value of the `AttributesToGet` request parameter.
     */
-  val AwsDynamodbTableNames: AttributeKey[List[String]] = stringList(
-    "aws.dynamodb.table_names"
+  val AwsDynamodbAttributesToGet: AttributeKey[List[String]] = stringList(
+    "aws.dynamodb.attributes_to_get"
+  )
+
+  /** The value of the `ConsistentRead` request parameter.
+    */
+  val AwsDynamodbConsistentRead: AttributeKey[Boolean] = boolean(
+    "aws.dynamodb.consistent_read"
   )
 
   /** The JSON-serialized value of each item in the `ConsumedCapacity` response
@@ -881,10 +887,26 @@ object SemanticAttributes {
     "aws.dynamodb.consumed_capacity"
   )
 
+  /** The value of the `IndexName` request parameter.
+    */
+  val AwsDynamodbIndexName: AttributeKey[String] = string(
+    "aws.dynamodb.index_name"
+  )
+
   /** The JSON-serialized value of the `ItemCollectionMetrics` response field.
     */
   val AwsDynamodbItemCollectionMetrics: AttributeKey[String] = string(
     "aws.dynamodb.item_collection_metrics"
+  )
+
+  /** The value of the `Limit` request parameter.
+    */
+  val AwsDynamodbLimit: AttributeKey[Long] = long("aws.dynamodb.limit")
+
+  /** The value of the `ProjectionExpression` request parameter.
+    */
+  val AwsDynamodbProjection: AttributeKey[String] = string(
+    "aws.dynamodb.projection"
   )
 
   /** The value of the `ProvisionedThroughput.ReadCapacityUnits` request
@@ -901,37 +923,15 @@ object SemanticAttributes {
     "aws.dynamodb.provisioned_write_capacity"
   )
 
-  /** The value of the `ConsistentRead` request parameter.
-    */
-  val AwsDynamodbConsistentRead: AttributeKey[Boolean] = boolean(
-    "aws.dynamodb.consistent_read"
-  )
-
-  /** The value of the `ProjectionExpression` request parameter.
-    */
-  val AwsDynamodbProjection: AttributeKey[String] = string(
-    "aws.dynamodb.projection"
-  )
-
-  /** The value of the `Limit` request parameter.
-    */
-  val AwsDynamodbLimit: AttributeKey[Long] = long("aws.dynamodb.limit")
-
-  /** The value of the `AttributesToGet` request parameter.
-    */
-  val AwsDynamodbAttributesToGet: AttributeKey[List[String]] = stringList(
-    "aws.dynamodb.attributes_to_get"
-  )
-
-  /** The value of the `IndexName` request parameter.
-    */
-  val AwsDynamodbIndexName: AttributeKey[String] = string(
-    "aws.dynamodb.index_name"
-  )
-
   /** The value of the `Select` request parameter.
     */
   val AwsDynamodbSelect: AttributeKey[String] = string("aws.dynamodb.select")
+
+  /** The keys in the `RequestItems` object field.
+    */
+  val AwsDynamodbTableNames: AttributeKey[List[String]] = stringList(
+    "aws.dynamodb.table_names"
+  )
 
   /** The JSON-serialized value of each item of the `GlobalSecondaryIndexes`
     * request field
@@ -964,16 +964,6 @@ object SemanticAttributes {
     "aws.dynamodb.scan_forward"
   )
 
-  /** The value of the `Segment` request parameter.
-    */
-  val AwsDynamodbSegment: AttributeKey[Long] = long("aws.dynamodb.segment")
-
-  /** The value of the `TotalSegments` request parameter.
-    */
-  val AwsDynamodbTotalSegments: AttributeKey[Long] = long(
-    "aws.dynamodb.total_segments"
-  )
-
   /** The value of the `Count` response parameter.
     */
   val AwsDynamodbCount: AttributeKey[Long] = long("aws.dynamodb.count")
@@ -982,6 +972,16 @@ object SemanticAttributes {
     */
   val AwsDynamodbScannedCount: AttributeKey[Long] = long(
     "aws.dynamodb.scanned_count"
+  )
+
+  /** The value of the `Segment` request parameter.
+    */
+  val AwsDynamodbSegment: AttributeKey[Long] = long("aws.dynamodb.segment")
+
+  /** The value of the `TotalSegments` request parameter.
+    */
+  val AwsDynamodbTotalSegments: AttributeKey[Long] = long(
+    "aws.dynamodb.total_segments"
   )
 
   /** The JSON-serialized value of each item in the `AttributeDefinitions`
@@ -1008,6 +1008,31 @@ object SemanticAttributes {
     * `list-buckets`.</li> </ul>
     */
   val AwsS3Bucket: AttributeKey[String] = string("aws.s3.bucket")
+
+  /** The source object (in the form `bucket`/`key`) for the copy operation.
+    *
+    * <p>Notes: <ul> <li>The `copy_source` attribute applies to S3 copy
+    * operations and corresponds to the `--copy-source` parameter of the <a
+    * href="https://docs.aws.amazon.com/cli/latest/reference/s3api/copy-object.html">copy-object
+    * operation within the S3 API</a>. This applies in particular to the
+    * following operations:</li><li><a
+    * href="https://docs.aws.amazon.com/cli/latest/reference/s3api/copy-object.html">copy-object</a></li>
+    * <li><a
+    * href="https://docs.aws.amazon.com/cli/latest/reference/s3api/upload-part-copy.html">upload-part-copy</a></li>
+    * </ul>
+    */
+  val AwsS3CopySource: AttributeKey[String] = string("aws.s3.copy_source")
+
+  /** The delete request container that specifies the objects to be deleted.
+    *
+    * <p>Notes: <ul> <li>The `delete` attribute is only applicable to the <a
+    * href="https://docs.aws.amazon.com/cli/latest/reference/s3api/delete-object.html">delete-object</a>
+    * operation. The `delete` attribute corresponds to the `--delete` parameter
+    * of the <a
+    * href="https://docs.aws.amazon.com/cli/latest/reference/s3api/delete-objects.html">delete-objects
+    * operation within the S3 API</a>.</li> </ul>
+    */
+  val AwsS3Delete: AttributeKey[String] = string("aws.s3.delete")
 
   /** The S3 object key the request refers to. Corresponds to the `--key`
     * parameter of the <a
@@ -1046,19 +1071,20 @@ object SemanticAttributes {
     */
   val AwsS3Key: AttributeKey[String] = string("aws.s3.key")
 
-  /** The source object (in the form `bucket`/`key`) for the copy operation.
+  /** The part number of the part being uploaded in a multipart-upload
+    * operation. This is a positive integer between 1 and 10,000.
     *
-    * <p>Notes: <ul> <li>The `copy_source` attribute applies to S3 copy
-    * operations and corresponds to the `--copy-source` parameter of the <a
-    * href="https://docs.aws.amazon.com/cli/latest/reference/s3api/copy-object.html">copy-object
-    * operation within the S3 API</a>. This applies in particular to the
-    * following operations:</li><li><a
-    * href="https://docs.aws.amazon.com/cli/latest/reference/s3api/copy-object.html">copy-object</a></li>
-    * <li><a
-    * href="https://docs.aws.amazon.com/cli/latest/reference/s3api/upload-part-copy.html">upload-part-copy</a></li>
-    * </ul>
+    * <p>Notes: <ul> <li>The `part_number` attribute is only applicable to the
+    * <a
+    * href="https://docs.aws.amazon.com/cli/latest/reference/s3api/upload-part.html">upload-part</a>
+    * and <a
+    * href="https://docs.aws.amazon.com/cli/latest/reference/s3api/upload-part-copy.html">upload-part-copy</a>
+    * operations. The `part_number` attribute corresponds to the `--part-number`
+    * parameter of the <a
+    * href="https://docs.aws.amazon.com/cli/latest/reference/s3api/upload-part.html">upload-part
+    * operation within the S3 API</a>.</li> </ul>
     */
-  val AwsS3CopySource: AttributeKey[String] = string("aws.s3.copy_source")
+  val AwsS3PartNumber: AttributeKey[Long] = long("aws.s3.part_number")
 
   /** Upload ID that identifies the multipart upload.
     *
@@ -1081,31 +1107,12 @@ object SemanticAttributes {
     */
   val AwsS3UploadId: AttributeKey[String] = string("aws.s3.upload_id")
 
-  /** The delete request container that specifies the objects to be deleted.
+  /** The GraphQL document being executed.
     *
-    * <p>Notes: <ul> <li>The `delete` attribute is only applicable to the <a
-    * href="https://docs.aws.amazon.com/cli/latest/reference/s3api/delete-object.html">delete-object</a>
-    * operation. The `delete` attribute corresponds to the `--delete` parameter
-    * of the <a
-    * href="https://docs.aws.amazon.com/cli/latest/reference/s3api/delete-objects.html">delete-objects
-    * operation within the S3 API</a>.</li> </ul>
+    * <p>Notes: <ul> <li>The value may be sanitized to exclude sensitive
+    * information.</li> </ul>
     */
-  val AwsS3Delete: AttributeKey[String] = string("aws.s3.delete")
-
-  /** The part number of the part being uploaded in a multipart-upload
-    * operation. This is a positive integer between 1 and 10,000.
-    *
-    * <p>Notes: <ul> <li>The `part_number` attribute is only applicable to the
-    * <a
-    * href="https://docs.aws.amazon.com/cli/latest/reference/s3api/upload-part.html">upload-part</a>
-    * and <a
-    * href="https://docs.aws.amazon.com/cli/latest/reference/s3api/upload-part-copy.html">upload-part-copy</a>
-    * operations. The `part_number` attribute corresponds to the `--part-number`
-    * parameter of the <a
-    * href="https://docs.aws.amazon.com/cli/latest/reference/s3api/upload-part.html">upload-part
-    * operation within the S3 API</a>.</li> </ul>
-    */
-  val AwsS3PartNumber: AttributeKey[Long] = long("aws.s3.part_number")
+  val GraphqlDocument: AttributeKey[String] = string("graphql.document")
 
   /** The name of the operation being executed.
     */
@@ -1119,24 +1126,23 @@ object SemanticAttributes {
     "graphql.operation.type"
   )
 
-  /** The GraphQL document being executed.
-    *
-    * <p>Notes: <ul> <li>The value may be sanitized to exclude sensitive
-    * information.</li> </ul>
-    */
-  val GraphqlDocument: AttributeKey[String] = string("graphql.document")
-
-  /** A value used by the messaging system as an identifier for the message,
-    * represented as a string.
-    */
-  val MessagingMessageId: AttributeKey[String] = string("messaging.message.id")
-
   /** The <a href="#conversations">conversation ID</a> identifying the
     * conversation to which the message belongs, represented as a string.
     * Sometimes called &quot;Correlation ID&quot;.
     */
   val MessagingMessageConversationId: AttributeKey[String] = string(
     "messaging.message.conversation_id"
+  )
+
+  /** A value used by the messaging system as an identifier for the message,
+    * represented as a string.
+    */
+  val MessagingMessageId: AttributeKey[String] = string("messaging.message.id")
+
+  /** The compressed size of the message payload in bytes.
+    */
+  val MessagingMessagePayloadCompressedSizeBytes: AttributeKey[Long] = long(
+    "messaging.message.payload_compressed_size_bytes"
   )
 
   /** The (uncompressed) size of the message payload in bytes. Also use this
@@ -1147,10 +1153,11 @@ object SemanticAttributes {
     "messaging.message.payload_size_bytes"
   )
 
-  /** The compressed size of the message payload in bytes.
+  /** A boolean that is true if the message destination is anonymous (could be
+    * unnamed or have auto-generated name).
     */
-  val MessagingMessagePayloadCompressedSizeBytes: AttributeKey[Long] = long(
-    "messaging.message.payload_compressed_size_bytes"
+  val MessagingDestinationAnonymous: AttributeKey[Boolean] = boolean(
+    "messaging.destination.anonymous"
   )
 
   /** The message destination name
@@ -1183,25 +1190,6 @@ object SemanticAttributes {
     "messaging.destination.temporary"
   )
 
-  /** A boolean that is true if the message destination is anonymous (could be
-    * unnamed or have auto-generated name).
-    */
-  val MessagingDestinationAnonymous: AttributeKey[Boolean] = boolean(
-    "messaging.destination.anonymous"
-  )
-
-  /** A string identifying the messaging system.
-    */
-  val MessagingSystem: AttributeKey[String] = string("messaging.system")
-
-  /** A string identifying the kind of messaging operation as defined in the <a
-    * href="#operation-names">Operation names</a> section above.
-    *
-    * <p>Notes: <ul> <li>If a custom value is used, it MUST be of low
-    * cardinality.</li> </ul>
-    */
-  val MessagingOperation: AttributeKey[String] = string("messaging.operation")
-
   /** The number of messages sent, received, or processed in the scope of the
     * batching operation.
     *
@@ -1220,23 +1208,22 @@ object SemanticAttributes {
     */
   val MessagingClientId: AttributeKey[String] = string("messaging.client_id")
 
+  /** A string identifying the kind of messaging operation as defined in the <a
+    * href="#operation-names">Operation names</a> section above.
+    *
+    * <p>Notes: <ul> <li>If a custom value is used, it MUST be of low
+    * cardinality.</li> </ul>
+    */
+  val MessagingOperation: AttributeKey[String] = string("messaging.operation")
+
+  /** A string identifying the messaging system.
+    */
+  val MessagingSystem: AttributeKey[String] = string("messaging.system")
+
   /** RabbitMQ message routing key.
     */
   val MessagingRabbitmqDestinationRoutingKey: AttributeKey[String] = string(
     "messaging.rabbitmq.destination.routing_key"
-  )
-
-  /** Message keys in Kafka are used for grouping alike messages to ensure
-    * they're processed on the same partition. They differ from
-    * `messaging.message.id` in that they're not unique. If the key is `null`,
-    * the attribute MUST NOT be set.
-    *
-    * <p>Notes: <ul> <li>If the key type is not string, it's string
-    * representation has to be supplied for the attribute. If the key has no
-    * unambiguous, canonical string form, don't include its value.</li> </ul>
-    */
-  val MessagingKafkaMessageKey: AttributeKey[String] = string(
-    "messaging.kafka.message.key"
   )
 
   /** Name of the Kafka Consumer Group that is handling the message. Only
@@ -1252,6 +1239,19 @@ object SemanticAttributes {
     "messaging.kafka.destination.partition"
   )
 
+  /** Message keys in Kafka are used for grouping alike messages to ensure
+    * they're processed on the same partition. They differ from
+    * `messaging.message.id` in that they're not unique. If the key is `null`,
+    * the attribute MUST NOT be set.
+    *
+    * <p>Notes: <ul> <li>If the key type is not string, it's string
+    * representation has to be supplied for the attribute. If the key has no
+    * unambiguous, canonical string form, don't include its value.</li> </ul>
+    */
+  val MessagingKafkaMessageKey: AttributeKey[String] = string(
+    "messaging.kafka.message.key"
+  )
+
   /** The offset of a record in the corresponding Kafka partition.
     */
   val MessagingKafkaMessageOffset: AttributeKey[Long] = long(
@@ -1264,13 +1264,6 @@ object SemanticAttributes {
     "messaging.kafka.message.tombstone"
   )
 
-  /** Namespace of RocketMQ resources, resources in different namespaces are
-    * individual.
-    */
-  val MessagingRocketmqNamespace: AttributeKey[String] = string(
-    "messaging.rocketmq.namespace"
-  )
-
   /** Name of the RocketMQ producer/consumer group that is handling the message.
     * The client type is identified by the SpanKind.
     */
@@ -1278,11 +1271,10 @@ object SemanticAttributes {
     "messaging.rocketmq.client_group"
   )
 
-  /** The timestamp in milliseconds that the delay message is expected to be
-    * delivered to consumer.
+  /** Model of message consumption. This only applies to consumer spans.
     */
-  val MessagingRocketmqMessageDeliveryTimestamp: AttributeKey[Long] = long(
-    "messaging.rocketmq.message.delivery_timestamp"
+  val MessagingRocketmqConsumptionModel: AttributeKey[String] = string(
+    "messaging.rocketmq.consumption_model"
   )
 
   /** The delay time level for delay message, which determines the message delay
@@ -1292,23 +1284,18 @@ object SemanticAttributes {
     "messaging.rocketmq.message.delay_time_level"
   )
 
+  /** The timestamp in milliseconds that the delay message is expected to be
+    * delivered to consumer.
+    */
+  val MessagingRocketmqMessageDeliveryTimestamp: AttributeKey[Long] = long(
+    "messaging.rocketmq.message.delivery_timestamp"
+  )
+
   /** It is essential for FIFO message. Messages that belong to the same message
     * group are always processed one by one within the same consumer group.
     */
   val MessagingRocketmqMessageGroup: AttributeKey[String] = string(
     "messaging.rocketmq.message.group"
-  )
-
-  /** Type of message.
-    */
-  val MessagingRocketmqMessageType: AttributeKey[String] = string(
-    "messaging.rocketmq.message.type"
-  )
-
-  /** The secondary classifier of message besides topic.
-    */
-  val MessagingRocketmqMessageTag: AttributeKey[String] = string(
-    "messaging.rocketmq.message.tag"
   )
 
   /** Key(s) of message, another way to mark message besides message id.
@@ -1317,16 +1304,35 @@ object SemanticAttributes {
     "messaging.rocketmq.message.keys"
   )
 
-  /** Model of message consumption. This only applies to consumer spans.
+  /** The secondary classifier of message besides topic.
     */
-  val MessagingRocketmqConsumptionModel: AttributeKey[String] = string(
-    "messaging.rocketmq.consumption_model"
+  val MessagingRocketmqMessageTag: AttributeKey[String] = string(
+    "messaging.rocketmq.message.tag"
   )
 
-  /** A string identifying the remoting system. See below for a list of
-    * well-known identifiers.
+  /** Type of message.
     */
-  val RpcSystem: AttributeKey[String] = string("rpc.system")
+  val MessagingRocketmqMessageType: AttributeKey[String] = string(
+    "messaging.rocketmq.message.type"
+  )
+
+  /** Namespace of RocketMQ resources, resources in different namespaces are
+    * individual.
+    */
+  val MessagingRocketmqNamespace: AttributeKey[String] = string(
+    "messaging.rocketmq.namespace"
+  )
+
+  /** The name of the (logical) method being called, must be equal to the method
+    * part in the span name.
+    *
+    * <p>Notes: <ul> <li>This is the logical name of the method from the RPC
+    * interface perspective, which can be different from the name of any
+    * implementing method/function. The `code.function` attribute may be used to
+    * store the latter (e.g., method actually executing the call on the server
+    * side, RPC client stub method on the client side).</li> </ul>
+    */
+  val RpcMethod: AttributeKey[String] = string("rpc.method")
 
   /** The full (logical) name of the service being called, including its package
     * name, if applicable.
@@ -1340,36 +1346,16 @@ object SemanticAttributes {
     */
   val RpcService: AttributeKey[String] = string("rpc.service")
 
-  /** The name of the (logical) method being called, must be equal to the method
-    * part in the span name.
-    *
-    * <p>Notes: <ul> <li>This is the logical name of the method from the RPC
-    * interface perspective, which can be different from the name of any
-    * implementing method/function. The `code.function` attribute may be used to
-    * store the latter (e.g., method actually executing the call on the server
-    * side, RPC client stub method on the client side).</li> </ul>
+  /** A string identifying the remoting system. See below for a list of
+    * well-known identifiers.
     */
-  val RpcMethod: AttributeKey[String] = string("rpc.method")
+  val RpcSystem: AttributeKey[String] = string("rpc.system")
 
   /** The <a
     * href="https://github.com/grpc/grpc/blob/v1.33.2/doc/statuscodes.md">numeric
     * status code</a> of the gRPC request.
     */
   val RpcGrpcStatusCode: AttributeKey[Long] = long("rpc.grpc.status_code")
-
-  /** Protocol version as in `jsonrpc` property of request/response. Since
-    * JSON-RPC 1.0 does not specify this, the value can be omitted.
-    */
-  val RpcJsonrpcVersion: AttributeKey[String] = string("rpc.jsonrpc.version")
-
-  /** `id` property of request or response. Since protocol allows id to be int,
-    * string, `null` or missing (for notifications), value is expected to be
-    * cast to string for simplicity. Use empty string in case of `null` value.
-    * Omit entirely if this is a notification.
-    */
-  val RpcJsonrpcRequestId: AttributeKey[String] = string(
-    "rpc.jsonrpc.request_id"
-  )
 
   /** `error.code` property of response if it is an error response.
     */
@@ -1381,9 +1367,25 @@ object SemanticAttributes {
     "rpc.jsonrpc.error_message"
   )
 
-  /** Whether this is a received or sent message.
+  /** `id` property of request or response. Since protocol allows id to be int,
+    * string, `null` or missing (for notifications), value is expected to be
+    * cast to string for simplicity. Use empty string in case of `null` value.
+    * Omit entirely if this is a notification.
     */
-  val MessageType: AttributeKey[String] = string("message.type")
+  val RpcJsonrpcRequestId: AttributeKey[String] = string(
+    "rpc.jsonrpc.request_id"
+  )
+
+  /** Protocol version as in `jsonrpc` property of request/response. Since
+    * JSON-RPC 1.0 does not specify this, the value can be omitted.
+    */
+  val RpcJsonrpcVersion: AttributeKey[String] = string("rpc.jsonrpc.version")
+
+  /** Compressed size of the message in bytes.
+    */
+  val MessageCompressedSize: AttributeKey[Long] = long(
+    "message.compressed_size"
+  )
 
   /** MUST be calculated as two different counters starting from `1` one for
     * sent messages and one for received message.
@@ -1393,11 +1395,9 @@ object SemanticAttributes {
     */
   val MessageId: AttributeKey[Long] = long("message.id")
 
-  /** Compressed size of the message in bytes.
+  /** Whether this is a received or sent message.
     */
-  val MessageCompressedSize: AttributeKey[Long] = long(
-    "message.compressed_size"
-  )
+  val MessageType: AttributeKey[String] = string("message.type")
 
   /** Uncompressed size of the message in bytes.
     */
@@ -1433,10 +1433,10 @@ object SemanticAttributes {
     */
   val ExceptionEscaped: AttributeKey[Boolean] = boolean("exception.escaped")
 
-  /** The <a href="https://www.rfc-editor.org/rfc/rfc3986#section-3.1">URI
-    * scheme</a> component identifying the used protocol.
+  /** The <a href="https://www.rfc-editor.org/rfc/rfc3986#section-3.5">URI
+    * fragment</a> component
     */
-  val UrlScheme: AttributeKey[String] = string("url.scheme")
+  val UrlFragment: AttributeKey[String] = string("url.fragment")
 
   /** Absolute URL describing a network resource according to <a
     * href="https://www.rfc-editor.org/rfc/rfc3986">RFC3986</a>
@@ -1468,10 +1468,10 @@ object SemanticAttributes {
     */
   val UrlQuery: AttributeKey[String] = string("url.query")
 
-  /** The <a href="https://www.rfc-editor.org/rfc/rfc3986#section-3.5">URI
-    * fragment</a> component
+  /** The <a href="https://www.rfc-editor.org/rfc/rfc3986#section-3.1">URI
+    * scheme</a> component identifying the used protocol.
     */
-  val UrlFragment: AttributeKey[String] = string("url.fragment")
+  val UrlScheme: AttributeKey[String] = string("url.scheme")
 
   /** Value of the <a
     * href="https://www.rfc-editor.org/rfc/rfc9110.html#field.user-agent">HTTP
@@ -1480,6 +1480,20 @@ object SemanticAttributes {
   val UserAgentOriginal: AttributeKey[String] = string("user_agent.original")
 
   // Enum definitions
+  abstract class NetSockFamilyValue(val value: String)
+  object NetSockFamilyValue {
+
+    /** IPv4 address. */
+    case object Inet extends NetSockFamilyValue("inet")
+
+    /** IPv6 address. */
+    case object Inet6 extends NetSockFamilyValue("inet6")
+
+    /** Unix domain socket path. */
+    case object Unix extends NetSockFamilyValue("unix")
+
+  }
+
   abstract class NetTransportValue(val value: String)
   object NetTransportValue {
 
@@ -1509,20 +1523,6 @@ object SemanticAttributes {
       */
     @deprecated("This item has been removed", "")
     case object Unix extends NetTransportValue("unix")
-
-  }
-
-  abstract class NetSockFamilyValue(val value: String)
-  object NetSockFamilyValue {
-
-    /** IPv4 address. */
-    case object Inet extends NetSockFamilyValue("inet")
-
-    /** IPv6 address. */
-    case object Inet6 extends NetSockFamilyValue("inet6")
-
-    /** Unix domain socket path. */
-    case object Unix extends NetSockFamilyValue("unix")
 
   }
 
@@ -1812,6 +1812,17 @@ object SemanticAttributes {
 
   }
 
+  abstract class DbCosmosdbConnectionModeValue(val value: String)
+  object DbCosmosdbConnectionModeValue {
+
+    /** Gateway (HTTP) connections mode. */
+    case object Gateway extends DbCosmosdbConnectionModeValue("gateway")
+
+    /** Direct connection. */
+    case object Direct extends DbCosmosdbConnectionModeValue("direct")
+
+  }
+
   abstract class DbCosmosdbOperationTypeValue(val value: String)
   object DbCosmosdbOperationTypeValue {
 
@@ -1860,17 +1871,6 @@ object SemanticAttributes {
     /** execute_javascript. */
     case object ExecuteJavascript
         extends DbCosmosdbOperationTypeValue("ExecuteJavaScript")
-
-  }
-
-  abstract class DbCosmosdbConnectionModeValue(val value: String)
-  object DbCosmosdbConnectionModeValue {
-
-    /** Gateway (HTTP) connections mode. */
-    case object Gateway extends DbCosmosdbConnectionModeValue("gateway")
-
-    /** Direct connection. */
-    case object Direct extends DbCosmosdbConnectionModeValue("direct")
 
   }
 
@@ -1973,26 +1973,6 @@ object SemanticAttributes {
 
   }
 
-  abstract class NetworkConnectionTypeValue(val value: String)
-  object NetworkConnectionTypeValue {
-
-    /** wifi. */
-    case object Wifi extends NetworkConnectionTypeValue("wifi")
-
-    /** wired. */
-    case object Wired extends NetworkConnectionTypeValue("wired")
-
-    /** cell. */
-    case object Cell extends NetworkConnectionTypeValue("cell")
-
-    /** unavailable. */
-    case object Unavailable extends NetworkConnectionTypeValue("unavailable")
-
-    /** unknown. */
-    case object Unknown extends NetworkConnectionTypeValue("unknown")
-
-  }
-
   abstract class NetworkConnectionSubtypeValue(val value: String)
   object NetworkConnectionSubtypeValue {
 
@@ -2062,6 +2042,26 @@ object SemanticAttributes {
 
   }
 
+  abstract class NetworkConnectionTypeValue(val value: String)
+  object NetworkConnectionTypeValue {
+
+    /** wifi. */
+    case object Wifi extends NetworkConnectionTypeValue("wifi")
+
+    /** wired. */
+    case object Wired extends NetworkConnectionTypeValue("wired")
+
+    /** cell. */
+    case object Cell extends NetworkConnectionTypeValue("cell")
+
+    /** unavailable. */
+    case object Unavailable extends NetworkConnectionTypeValue("unavailable")
+
+    /** unknown. */
+    case object Unknown extends NetworkConnectionTypeValue("unknown")
+
+  }
+
   abstract class GraphqlOperationTypeValue(val value: String)
   object GraphqlOperationTypeValue {
 
@@ -2090,6 +2090,19 @@ object SemanticAttributes {
 
   }
 
+  abstract class MessagingRocketmqConsumptionModelValue(val value: String)
+  object MessagingRocketmqConsumptionModelValue {
+
+    /** Clustering consumption model. */
+    case object Clustering
+        extends MessagingRocketmqConsumptionModelValue("clustering")
+
+    /** Broadcasting consumption model. */
+    case object Broadcasting
+        extends MessagingRocketmqConsumptionModelValue("broadcasting")
+
+  }
+
   abstract class MessagingRocketmqMessageTypeValue(val value: String)
   object MessagingRocketmqMessageTypeValue {
 
@@ -2105,19 +2118,6 @@ object SemanticAttributes {
     /** Transaction message. */
     case object Transaction
         extends MessagingRocketmqMessageTypeValue("transaction")
-
-  }
-
-  abstract class MessagingRocketmqConsumptionModelValue(val value: String)
-  object MessagingRocketmqConsumptionModelValue {
-
-    /** Clustering consumption model. */
-    case object Clustering
-        extends MessagingRocketmqConsumptionModelValue("clustering")
-
-    /** Broadcasting consumption model. */
-    case object Broadcasting
-        extends MessagingRocketmqConsumptionModelValue("broadcasting")
 
   }
 

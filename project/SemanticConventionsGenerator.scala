@@ -3,7 +3,7 @@ import scala.sys.process._
 
 object SemanticConventionsGenerator {
 
-  private val generatorVersion = "0.18.0"
+  private val generatorVersion = "0.22.0"
 
   // generates semantic conventions by using `otel/semconvgen` in docker
   def generate(version: String, rootDir: File): Unit = {

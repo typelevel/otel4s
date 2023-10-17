@@ -324,7 +324,8 @@ lazy val semconv = crossProject(JVMPlatform, JSPlatform, NativePlatform)
     buildInfoOptions += sbtbuildinfo.BuildInfoOption.PackagePrivate,
     buildInfoKeys := Seq[BuildInfoKey](
       "openTelemetrySemanticConventionsVersion" -> OpenTelemetrySemConvVersion
-    )
+    ),
+    scalacOptions += "-Wconf:cat=deprecation:s"
   )
   .settings(munitDependencies)
   .settings(scalafixSettings)

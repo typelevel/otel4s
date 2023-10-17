@@ -31,8 +31,8 @@ import scala.jdk.CollectionConverters._
 private[java] class TextMapPropagatorImpl(
     jPropagator: JTextMapPropagator
 ) extends TextMapPropagator[Context] {
-  lazy val fields: List[String] =
-    jPropagator.fields().asScala.toList
+  lazy val fields: Iterable[String] =
+    jPropagator.fields().asScala
 
   def extract[A: TextMapGetter](ctx: Context, carrier: A): Context =
     ctx.map(jPropagator.extract(_, carrier, fromTextMapGetter))

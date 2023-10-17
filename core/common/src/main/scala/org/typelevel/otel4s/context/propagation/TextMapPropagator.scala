@@ -132,7 +132,7 @@ object TextMapPropagator {
         }
 
       private def multi(propagators: List[TextMapPropagator[Ctx]]): Multi[Ctx] =
-        Multi(propagators, propagators.flatMap(_.fields))
+        Multi(propagators, propagators.flatMap(_.fields).distinct)
     }
 
   private final class Noop[Ctx] extends TextMapPropagator[Ctx] {

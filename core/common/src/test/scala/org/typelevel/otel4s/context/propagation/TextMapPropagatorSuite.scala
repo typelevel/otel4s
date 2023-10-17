@@ -71,7 +71,26 @@ class TextMapPropagatorSuite extends FunSuite {
 
     val propagator = TextMapPropagator.of(multi1, multi2)
 
-    assertEquals(propagator.fields, fieldsA ++ fieldsB ++ fieldsA ++ fieldsB)
+    assertEquals(propagator.fields, fieldsA ++ fieldsB)
+    assertEquals(
+      propagator.toString,
+      "TextMapPropagator.Multi(PropagatorA, PropagatorB, PropagatorA, PropagatorB)"
+    )
+  }
+
+  test("of (multiple) - keep unique fields") {
+    val fieldsA = List("a", "b", "c", "d")
+    val fieldsB = List("c", "d", "e", "f")
+
+    val propagatorA = new TestPropagator[String](fieldsA, "PropagatorA")
+    val propagatorB = new TestPropagator[String](fieldsB, "PropagatorB")
+
+    val multi1 = TextMapPropagator.of(propagatorA, propagatorB)
+    val multi2 = TextMapPropagator.of(propagatorA, propagatorB)
+
+    val propagator = TextMapPropagator.of(multi1, multi2)
+
+    assertEquals(propagator.fields, List("a", "b", "c", "d", "e", "f"))
     assertEquals(
       propagator.toString,
       "TextMapPropagator.Multi(PropagatorA, PropagatorB, PropagatorA, PropagatorB)"

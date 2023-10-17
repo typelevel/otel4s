@@ -37,13 +37,15 @@ private[java] class TextMapPropagatorImpl(
   def extract[A: TextMapGetter](ctx: Context, carrier: A): Context =
     ctx.map(jPropagator.extract(_, carrier, fromTextMapGetter))
 
-  def inject[A: TextMapUpdater](ctx: Context, carrier: A): A = {
+  def inject[A](ctx: Context, carrier: A)(implicit
+      injector: TextMapUpdater[A]
+  ): A = {
     var injectedCarrier = carrier
     jPropagator.inject[Null](
       ctx.underlying,
       null, // explicitly allowed per opentelemetry-java, so our setter can be a lambda!
       (_, key, value) => {
-        injectedCarrier = TextMapUpdater[A].updated(injectedCarrier, key, value)
+        injectedCarrier = injector.updated(injectedCarrier, key, value)
       }
     )
     injectedCarrier

@@ -17,7 +17,12 @@
 package org.typelevel.otel4s.java
 
 import cats.effect.IO
+import io.opentelemetry.api.trace.{Span => JSpan}
+import io.opentelemetry.context.{Context => JContext}
 import io.opentelemetry.sdk.{OpenTelemetrySdk => JOpenTelemetrySdk}
+import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter
+import io.opentelemetry.sdk.trace.SdkTracerProvider
+import io.opentelemetry.sdk.trace.`export`.SimpleSpanProcessor
 import munit.CatsEffectSuite
 
 class OtelJavaSuite extends CatsEffectSuite {
@@ -26,9 +31,46 @@ class OtelJavaSuite extends CatsEffectSuite {
     val testSdk: JOpenTelemetrySdk = JOpenTelemetrySdk.builder().build()
     OtelJava
       .forAsync[IO](testSdk)
-      .map(testOtel4s => {
+      .map { testOtel4s =>
         val res = testOtel4s.toString()
         assert(clue(res).startsWith("OpenTelemetrySdk"))
-      })
+      }
   }
+
+  test("interop with java") {
+    val sdk = createSdk
+
+    OtelJava
+      .forAsync[IO](sdk)
+      .map { otel4s =>
+        val getCurrentSpan = otel4s.useJContextUnsafe(_ => JSpan.current())
+
+        val jTracer = sdk.getTracer("tracer")
+        val span = jTracer.spanBuilder("test").startSpan()
+
+        span.storeInContext(JContext.current()).makeCurrent()
+
+        val ioSpan = otel4s
+          .withJContext(JContext.current())(getCurrentSpan)
+          .unsafeRunSync()
+
+        span.end()
+
+        assertEquals(span, ioSpan)
+      }
+  }
+
+  private def createSdk: JOpenTelemetrySdk = {
+    val exporter = InMemorySpanExporter.create()
+
+    val builder = SdkTracerProvider
+      .builder()
+      .addSpanProcessor(SimpleSpanProcessor.create(exporter))
+
+    JOpenTelemetrySdk
+      .builder()
+      .setTracerProvider(builder.build())
+      .build()
+  }
+
 }

@@ -21,9 +21,11 @@ import cats.effect.IOLocal
 import cats.effect.LiftIO
 import cats.effect.Resource
 import cats.effect.Sync
+import cats.mtl.Local
 import cats.syntax.all._
 import io.opentelemetry.api.{OpenTelemetry => JOpenTelemetry}
 import io.opentelemetry.api.GlobalOpenTelemetry
+import io.opentelemetry.context.{Context => JContext}
 import io.opentelemetry.sdk.{OpenTelemetrySdk => JOpenTelemetrySdk}
 import org.typelevel.otel4s.ContextPropagators
 import org.typelevel.otel4s.Otel4s
@@ -36,12 +38,71 @@ import org.typelevel.otel4s.java.trace.Traces
 import org.typelevel.otel4s.metrics.MeterProvider
 import org.typelevel.otel4s.trace.TracerProvider
 
-sealed class OtelJava[F[_]] private (
+import scala.util.Using
+
+sealed abstract class OtelJava[F[_]] private (
     val propagators: ContextPropagators[F, Context],
     val meterProvider: MeterProvider[F],
     val tracerProvider: TracerProvider[F],
 ) extends Otel4s[F] {
   type Ctx = Context
+
+  /** Runs the given `fa` with the given `JContext`.
+    *
+    * Can be used to run the effect with the external Open Telemetry Java
+    * context.
+    *
+    * @see
+    *   [[useJContextUnsafe]]
+    *
+    * @param ctx
+    *   the Open Telemetry Java Context
+    *
+    * @param fa
+    *   the effect to run
+    */
+  def withJContext[A](ctx: JContext)(fa: F[A]): F[A]
+
+  /** Extracts the currently active context and sets it into the thread local
+    * variable.
+    *
+    * Can be used to interop with the Java libraries, that rely on the Open
+    * Telemetry Java context.
+    *
+    * @example
+    *   {{{
+    * import io.opentelemetry.api.trace.{Span => JSpan}
+    * import io.opentelemetry.api.trace.{Tracer => JTracer}
+    * import io.opentelemetry.context.{Context => JContext}
+    *
+    * val jTracer: JTracer = ???
+    * val dispatcher: Dispatcher[IO] = ???
+    * val otel4s: OtelJava[IO] = ???
+    * val otel4sTracer: Tracer[IO] = ???
+    *
+    * val io = otel4sTracer.span("otel4s-span").surround {
+    *   otel4s.useJContextUnsafe { _ =>
+    *     val span = jTracer.spanBuilder("java-span-inside-io").startSpan()
+    *     span.storeInContext(JContext.current()).makeCurrent()
+    *     // invoke java code, e.g. instrumented RabbitMQ Java client
+    *     span.end()
+    *   }
+    * }
+    *
+    * val span = jTracer.span("java-span").startSpan()
+    * span.storeInContext(JContext.current()).makeCurrent() // store span in the context
+    * otel4s.withJContext(JContext.current())(io).unsafeRunSync() // run IO using the external context
+    * span.end()
+    *   }}}
+    *
+    * The hierarchy of spans will be:
+    * {{{
+    * > java-span
+    *   > otel4s-span
+    *     > java-span-inside-io
+    * }}}
+    */
+  def useJContextUnsafe[A](fa: JContext => A): F[A]
 }
 
 object OtelJava {
@@ -76,6 +137,17 @@ object OtelJava {
       traces.tracerProvider,
     ) {
       override def toString: String = jOtel.toString
+
+      def withJContext[A](ctx: JContext)(fa: F[A]): F[A] =
+        Local[F, Context].scope(fa)(Context.wrap(ctx))
+
+      def useJContextUnsafe[A](fa: JContext => A): F[A] =
+        Local[F, Context].ask.flatMap { ctx =>
+          Async[F].fromTry {
+            val jContext = ctx.underlying
+            Using(jContext.makeCurrent())(_ => fa(jContext))
+          }
+        }
     }
   }
 

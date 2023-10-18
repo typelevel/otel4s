@@ -145,7 +145,7 @@
           <div class="tab-content active" data-choice-name="sbt">
             <p>Add settings to the <code>build.sbt</code>:</p>
             <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">libraryDependencies</span><span> ++= </span><span class="type-name">Seq</span><span>(
-  </span><span class="string-literal">&quot;org.typelevel&quot;</span><span> %% </span><span class="string-literal">&quot;otel4s-java&quot;</span><span> % </span><span class="string-literal">&quot;0.3-7df1630-SNAPSHOT&quot;</span><span>, </span><span class="comment">// &lt;1&gt;
+  </span><span class="string-literal">&quot;org.typelevel&quot;</span><span> %% </span><span class="string-literal">&quot;otel4s-java&quot;</span><span> % </span><span class="string-literal">&quot;0.3-73f3ba4-SNAPSHOT&quot;</span><span>, </span><span class="comment">// &lt;1&gt;
 </span><span>  </span><span class="string-literal">&quot;io.opentelemetry&quot;</span><span> % </span><span class="string-literal">&quot;opentelemetry-exporter-otlp&quot;</span><span> % </span><span class="string-literal">&quot;1.31.0&quot;</span><span> % </span><span class="type-name">Runtime</span><span>, </span><span class="comment">// &lt;2&gt;
 </span><span>  </span><span class="string-literal">&quot;io.opentelemetry&quot;</span><span> % </span><span class="string-literal">&quot;opentelemetry-sdk-extension-autoconfigure&quot;</span><span> % </span><span class="string-literal">&quot;1.31.0&quot;</span><span> % </span><span class="type-name">Runtime</span><span> </span><span class="comment">// &lt;3&gt;
 </span><span>)
@@ -156,7 +156,7 @@
           </div>
           <div class="tab-content" data-choice-name="scala-cli">
             <p>Add directives to the <code>tracing.scala</code>:</p>
-            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="comment">//&gt; using lib &quot;org.typelevel::otel4s-java:0.3-7df1630-SNAPSHOT&quot; // &lt;1&gt;
+            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="comment">//&gt; using lib &quot;org.typelevel::otel4s-java:0.3-73f3ba4-SNAPSHOT&quot; // &lt;1&gt;
 //&gt; using lib &quot;io.opentelemetry:opentelemetry-exporter-otlp:1.31.0&quot; // &lt;2&gt;
 //&gt; using lib &quot;io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:1.31.0&quot; // &lt;3&gt;
 //&gt; using `java-opt` &quot;-Dotel.java.global-autoconfigure.enabled=true&quot; // &lt;4&gt;

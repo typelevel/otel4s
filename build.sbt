@@ -354,7 +354,7 @@ lazy val docs = project
       "OPEN_TELEMETRY_VERSION" -> OpenTelemetryVersion
     ),
     laikaConfig := {
-      import laika.rewrite.nav.{ChoiceConfig, Selections, SelectionConfig}
+      import laika.config.{ChoiceConfig, Selections, SelectionConfig}
 
       laikaConfig.value.withConfigValue(
         Selections(

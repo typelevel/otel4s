@@ -769,12 +769,12 @@ object ResourceAttributes {
 
   /** Deprecated, use the `otel.scope.name` attribute.
     */
-  @deprecated("Use the `otel.scope.name` attribute", "")
+  @deprecated("Use the `otel.scope.name` attribute", "0.3.0")
   val OtelLibraryName: AttributeKey[String] = string("otel.library.name")
 
   /** Deprecated, use the `otel.scope.version` attribute.
     */
-  @deprecated("Use the `otel.scope.version` attribute", "")
+  @deprecated("Use the `otel.scope.version` attribute", "0.3.0")
   val OtelLibraryVersion: AttributeKey[String] = string("otel.library.version")
 
   // Enum definitions
@@ -1026,7 +1026,10 @@ object ResourceAttributes {
     *   [[org.typelevel.otel4s.semconv.resource.attributes.ResourceAttributes.CloudPlatform.GcpOpenshift ResourceAttributes.CloudPlatform.GcpOpenshift]]
     *   instead.
     */
-  @deprecated("Use ResourceAttributes.CloudPlatform.GcpOpenshift instead", "")
+  @deprecated(
+    "Use ResourceAttributes.CloudPlatform.GcpOpenshift instead",
+    "0.3.0"
+  )
   val GcpOpenshift = string("gcp_openshift")
 
   /** Full user-agent string provided by the browser
@@ -1043,7 +1046,7 @@ object ResourceAttributes {
     *   [[org.typelevel.otel4s.semconv.trace.attributes.SemanticAttributes.UserAgentOriginal]]
     *   instead.
     */
-  @deprecated("Use SemanticAttributes.UserAgentOriginal instead", "")
+  @deprecated("Use SemanticAttributes.UserAgentOriginal instead", "0.3.0")
   val BrowserUserAgent = string("browser.user_agent")
 
   /** The unique ID of the single function that this runtime instance executes.
@@ -1074,7 +1077,7 @@ object ResourceAttributes {
     *   This item has been removed in 1.19.0 version of the semantic
     *   conventions. Use [[ResourceAttributes.CloudResourceId]] instead.
     */
-  @deprecated("Use ResourceAttributes.CloudResourceId instead", "")
+  @deprecated("Use ResourceAttributes.CloudResourceId instead", "0.3.0")
   val FaasId = string("faas.id")
 
 }

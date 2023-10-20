@@ -28,7 +28,7 @@ ThisBuild / crossScalaVersions := Seq(Scala213, "3.3.1")
 ThisBuild / scalaVersion := Scala213 // the default Scala
 
 val CatsVersion = "2.10.0"
-val CatsEffectVersion = "3.5.2"
+val CatsEffectVersion = "3.6-02a43a6"
 val CatsMtlVersion = "1.3.1"
 val DisciplineMUnitVersion = "2.0.0-M3"
 val FS2Version = "3.9.2"
@@ -77,6 +77,7 @@ lazy val root = tlCrossRootProject
     `testkit-metrics`,
     testkit,
     `java-common`,
+    `java-context-storage`,
     `java-metrics`,
     `java-trace`,
     java,
@@ -298,9 +299,27 @@ lazy val `java-trace` = project
   )
   .settings(scalafixSettings)
 
+lazy val `java-context-storage` = project
+  .in(file("java/context-storage"))
+  .dependsOn(`java-common`)
+  .settings(munitDependencies)
+  .settings(
+    name := "otel4s-java-context-storage",
+    libraryDependencies ++= Seq(
+      "org.typelevel" %%% "cats-effect" % CatsEffectVersion,
+      "org.typelevel" %%% "cats-effect-testkit" % CatsEffectVersion % Test,
+    ),
+    Test / javaOptions ++= Seq(
+      "-Dotel.java.global-autoconfigure.enabled=true",
+      "-Dcats.effect.ioLocalPropagation=true",
+    ),
+    Test / fork := true,
+  )
+  .settings(scalafixSettings)
+
 lazy val java = project
   .in(file("java/all"))
-  .dependsOn(core.jvm, `java-metrics`, `java-trace`)
+  .dependsOn(core.jvm, `java-metrics`, `java-trace`, `java-context-storage`)
   .settings(
     name := "otel4s-java",
     libraryDependencies ++= Seq(
@@ -353,6 +372,7 @@ lazy val examples = project
     ),
     run / fork := true,
     javaOptions += "-Dotel.java.global-autoconfigure.enabled=true",
+    javaOptions += "-Dcats.effect.ioLocalPropagation=true",
     envVars ++= Map(
       "OTEL_PROPAGATORS" -> "b3multi",
       "OTEL_SERVICE_NAME" -> "Trace Example"

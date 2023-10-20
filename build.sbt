@@ -36,6 +36,7 @@ val MUnitVersion = "1.0.0-M10"
 val MUnitCatsEffectVersion = "2.0.0-M3"
 val MUnitDisciplineVersion = "2.0.0-M3"
 val OpenTelemetryVersion = "1.31.0"
+val OpenTelemetrySemConvVersion = "1.21.0-alpha"
 val PlatformVersion = "1.0.2"
 val ScodecVersion = "1.1.37"
 val VaultVersion = "3.5.0"
@@ -53,6 +54,15 @@ lazy val munitDependencies = Def.settings(
     "org.typelevel" %%% "munit-cats-effect" % MUnitCatsEffectVersion % Test
   )
 )
+
+lazy val semanticConventionsGenerate =
+  taskKey[Unit]("Generate semantic conventions")
+semanticConventionsGenerate := {
+  SemanticConventionsGenerator.generate(
+    OpenTelemetrySemConvVersion.stripSuffix("-alpha"),
+    baseDirectory.value
+  )
+}
 
 lazy val root = tlCrossRootProject
   .aggregate(
@@ -302,12 +312,21 @@ lazy val java = project
 
 lazy val semconv = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .crossType(CrossType.Pure)
+  .enablePlugins(BuildInfoPlugin)
   .in(file("semconv"))
   .dependsOn(`core-common`)
   .settings(
     name := "otel4s-semconv",
     startYear := Some(2023),
+    // We use opentelemetry-semconv dependency to track releases of the OpenTelemetry semantic convention spec
+    libraryDependencies += "io.opentelemetry.semconv" % "opentelemetry-semconv" % OpenTelemetrySemConvVersion % "compile-internal" intransitive (),
+    buildInfoPackage := "org.typelevel.otel4s.semconv",
+    buildInfoOptions += sbtbuildinfo.BuildInfoOption.PackagePrivate,
+    buildInfoKeys := Seq[BuildInfoKey](
+      "openTelemetrySemanticConventionsVersion" -> OpenTelemetrySemConvVersion
+    )
   )
+  .settings(munitDependencies)
   .settings(scalafixSettings)
 
 lazy val benchmarks = project

@@ -38,7 +38,7 @@ val MUnitDisciplineVersion = "2.0.0-M3"
 val OpenTelemetryVersion = "1.31.0"
 val OpenTelemetrySemConvVersion = "1.21.0-alpha"
 val PlatformVersion = "1.0.2"
-val ScodecVersion = "1.1.37"
+val ScodecVersion = "1.1.38"
 val VaultVersion = "3.5.0"
 
 lazy val scalaReflectDependency = Def.settings(

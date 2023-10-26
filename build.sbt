@@ -369,7 +369,7 @@ lazy val docs = project
       "io.opentelemetry" % "opentelemetry-sdk-extension-autoconfigure" % OpenTelemetryVersion
     ),
     mdocVariables := Map(
-      "VERSION" -> version.value,
+      "VERSION" -> tlLatestVersion.value.getOrElse(version.value),
       "OPEN_TELEMETRY_VERSION" -> OpenTelemetryVersion
     ),
     laikaConfig := {

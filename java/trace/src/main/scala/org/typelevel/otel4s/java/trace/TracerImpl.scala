@@ -24,6 +24,7 @@ import org.typelevel.otel4s.context.propagation.TextMapGetter
 import org.typelevel.otel4s.context.propagation.TextMapUpdater
 import org.typelevel.otel4s.java.context.Context
 import org.typelevel.otel4s.java.context.LocalContext
+import org.typelevel.otel4s.trace.Span
 import org.typelevel.otel4s.trace.SpanBuilder
 import org.typelevel.otel4s.trace.SpanContext
 import org.typelevel.otel4s.trace.Tracer
@@ -45,6 +46,15 @@ private[java] class TracerImpl[F[_]: Sync](
       case Context.Wrapped(underlying) =>
         Option(JSpan.fromContextOrNull(underlying))
           .map(jSpan => new WrappedSpanContext(jSpan.getSpanContext))
+    }
+
+  def currentSpanOrNoop: F[Span[F]] =
+    L.reader { ctx =>
+      Span.fromBackend(
+        SpanBackendImpl.fromJSpan(
+          JSpan.fromContext(ctx.underlying)
+        )
+      )
     }
 
   def spanBuilder(name: String): SpanBuilder[F] =

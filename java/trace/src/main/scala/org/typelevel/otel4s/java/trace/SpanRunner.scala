@@ -83,10 +83,7 @@ private[java] object SpanRunner {
         if (hasStartTimestamp) Sync[F].pure(b)
         else Sync[F].realTime.map(t => b.setStartTimestamp(t.length, t.unit))
       jSpan <- Sync[F].delay(builder.startSpan())
-    } yield new SpanBackendImpl(
-      jSpan,
-      WrappedSpanContext(jSpan.getSpanContext)
-    )
+    } yield SpanBackendImpl.fromJSpan(jSpan)
 
   private def startManaged[F[_]: Sync](
       builder: JSpanBuilder,

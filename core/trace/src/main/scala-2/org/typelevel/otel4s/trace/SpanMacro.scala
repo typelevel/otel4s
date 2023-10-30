@@ -20,7 +20,7 @@ package trace
 import scala.concurrent.duration.FiniteDuration
 
 private[otel4s] trait SpanMacro[F[_]] {
-  self: Span[F] =>
+  self: SpanAPI[F] =>
 
   /** Adds an attribute to the span. If the span previously contained a mapping
     * for the key, the old value is replaced by the specified value.

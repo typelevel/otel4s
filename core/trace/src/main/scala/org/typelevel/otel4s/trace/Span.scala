@@ -23,6 +23,30 @@ import org.typelevel.otel4s.meta.InstrumentMeta
 
 import scala.concurrent.duration.FiniteDuration
 
+/** An implementation detail of [[Span]]. Users SHOULD NOT refer to this type.
+  */
+sealed abstract class SpanAPI[F[_]] extends SpanMacro[F] {
+  def backend: Span.Backend[F]
+
+  /** Returns the [[SpanContext]] associated with this span. */
+  final def context: SpanContext =
+    backend.context
+
+  /** Updates the name of the [[Span]].
+    *
+    * '''Note''': if used, this will override the name provided via the
+    * [[SpanBuilder]].
+    *
+    * '''Caution''': upon this update, any sampling behavior based on span's
+    * name will depend on the implementation.
+    *
+    * @param name
+    *   the new name of the span
+    */
+  final def updateName(name: String): F[Unit] =
+    backend.updateName(name)
+}
+
 /** The API to trace an operation.
   *
   * There are two types of span lifecycle managements: manual and auto.
@@ -64,51 +88,8 @@ import scala.concurrent.duration.FiniteDuration
   *   }
   * }}}
   */
-trait Span[F[_]] extends SpanMacro[F] {
-  def backend: Span.Backend[F]
-
-  /** Returns the [[SpanContext]] associated with this span.
-    */
-  final def context: SpanContext =
-    backend.context
-
-  /** Updates the name of the [[Span]].
-    *
-    * '''Note''': if used, this will override the name provided via the
-    * [[SpanBuilder]].
-    *
-    * '''Caution''': upon this update, any sampling behavior based on span's
-    * name will depend on the implementation.
-    *
-    * @param name
-    *   the new name of the span
-    */
-  final def updateName(name: String): F[Unit] =
-    backend.updateName(name)
-
-  /** Marks the end of [[Span]] execution.
-    *
-    * Only the timing of the first end call for a given span will be recorded,
-    * the subsequent calls will be ignored.
-    *
-    * The end timestamp is based on the `Clock[F].realTime`.
-    */
-  final def end: F[Unit] =
-    backend.end
-
-  /** Marks the end of [[Span]] execution with the specified timestamp.
-    *
-    * Only the timing of the first end call for a given span will be recorded,
-    * the subsequent calls will be ignored.
-    *
-    * '''Note''': the timestamp should be based on `Clock[F].realTime`. Using
-    * `Clock[F].monotonic` may lead to a missing span.
-    *
-    * @param timestamp
-    *   the explicit timestamp from the epoch
-    */
-  final def end(timestamp: FiniteDuration): F[Unit] =
-    backend.end(timestamp)
+final class Span[F[_]] private (val backend: Span.Backend[F])
+    extends SpanAPI[F] {
 
   /** Modify the context `F` using the transformation `f`. */
   def mapK[G[_]](f: F ~> G): Span[G] = Span.fromBackend(backend.mapK(f))
@@ -116,8 +97,7 @@ trait Span[F[_]] extends SpanMacro[F] {
   /** Modify the context `F` using an implicit [[KindTransformer]] from `F` to
     * `G`.
     */
-  final def mapK[G[_]](implicit kt: KindTransformer[F, G]): Span[G] =
-    mapK(kt.liftK)
+  def mapK[G[_]](implicit kt: KindTransformer[F, G]): Span[G] = mapK(kt.liftK)
 }
 
 object Span {
@@ -150,12 +130,6 @@ object Span {
 
     /** Modify the context `F` using the transformation `f`. */
     def mapK[G[_]](f: F ~> G): Backend[G] = new Backend.MappedK(this)(f)
-
-    /** Modify the context `F` using an implicit [[KindTransformer]] from `F` to
-      * `G`.
-      */
-    final def mapK[G[_]](implicit kt: KindTransformer[F, G]): Backend[G] =
-      mapK(kt.liftK)
   }
 
   object Backend {
@@ -222,8 +196,59 @@ object Span {
     }
   }
 
-  private[otel4s] def fromBackend[F[_]](back: Backend[F]): Span[F] =
-    new Span[F] {
-      def backend: Backend[F] = back
-    }
+  /** The API for a manually managed trace operation, including the ability to
+    * end the operation. A `Span.Manual` can be converted into a [[Span]] by
+    * calling [[unmanageable]], and the `Span` type should be used for the
+    * majority of operations on spans.
+    *
+    * @see
+    *   [[Span]]
+    */
+  final class Manual[F[_]] private (val backend: Backend[F])
+      extends SpanAPI[F] {
+
+    /** This span, without the ability to end it. */
+    lazy val unmanageable: Span[F] = Span.fromBackend(backend)
+
+    /** Marks the end of span execution.
+      *
+      * Only the timing of the first end call for a given span will be recorded,
+      * the subsequent calls will be ignored.
+      *
+      * The end timestamp is based on the `Clock[F].realTime`.
+      */
+    def end: F[Unit] =
+      backend.end
+
+    /** Marks the end of span execution with the specified timestamp.
+      *
+      * Only the timing of the first end call for a given span will be recorded,
+      * the subsequent calls will be ignored.
+      *
+      * '''Note''': the timestamp should be based on `Clock[F].realTime`. Using
+      * `Clock[F].monotonic` may lead to a missing span.
+      *
+      * @param timestamp
+      *   the explicit timestamp from the epoch
+      */
+    def end(timestamp: FiniteDuration): F[Unit] =
+      backend.end(timestamp)
+
+    /** Modify the context `F` using the transformation `f`. */
+    def mapK[G[_]](f: F ~> G): Manual[G] = Manual.fromBackend(backend.mapK(f))
+
+    /** Modify the context `F` using an implicit [[KindTransformer]] from `F` to
+      * `G`.
+      */
+    def mapK[G[_]](implicit kt: KindTransformer[F, G]): Manual[G] =
+      mapK(kt.liftK)
+  }
+
+  private[otel4s] object Manual {
+    private[otel4s] def fromBackend[F[_]](backend: Backend[F]): Manual[F] =
+      new Manual(backend)
+  }
+
+  private[otel4s] def fromBackend[F[_]](backend: Backend[F]): Span[F] =
+    new Span(backend)
 }

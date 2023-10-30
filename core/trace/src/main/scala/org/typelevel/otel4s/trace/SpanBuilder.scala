@@ -128,7 +128,7 @@ object SpanBuilder {
 
   def noop[F[_]: Applicative](back: Span.Backend[F]): SpanBuilder[F] =
     new SpanBuilder[F] {
-      private val span: Span[F] = Span.fromBackend(back)
+      private val span: Span.Manual[F] = Span.Manual.fromBackend(back)
 
       def addAttribute[A](attribute: Attribute[A]): SpanBuilder[F] = this
 
@@ -150,13 +150,13 @@ object SpanBuilder {
       def withStartTimestamp(timestamp: FiniteDuration): SpanBuilder[F] = this
 
       def build: SpanOps[F] = new SpanOps[F] {
-        def startUnmanaged: F[Span[F]] =
+        def startUnmanaged: F[Span.Manual[F]] =
           Applicative[F].pure(span)
 
         def resource: Resource[F, SpanOps.Res[F]] =
-          Resource.pure(SpanOps.Res(span, FunctionK.id))
+          Resource.pure(SpanOps.Res(span.unmanageable, FunctionK.id))
 
-        def use[A](f: Span[F] => F[A]): F[A] = f(span)
+        def use[A](f: Span[F] => F[A]): F[A] = f(span.unmanageable)
 
         override def use_ : F[Unit] = Applicative[F].unit
       }

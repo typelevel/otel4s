@@ -63,15 +63,17 @@ private[java] object SpanRunner {
       }
     }
 
-  def startUnmanaged[F[_]: Sync](context: Option[RunnerContext]): F[Span[F]] =
+  def startUnmanaged[F[_]: Sync](
+      context: Option[RunnerContext]
+  ): F[Span.Manual[F]] =
     context match {
       case Some(RunnerContext(builder, _, ts, _)) =>
         for {
           back <- SpanRunner.startSpan(builder, ts)
-        } yield Span.fromBackend(back)
+        } yield Span.Manual.fromBackend(back)
 
       case None =>
-        Sync[F].pure(Span.fromBackend(Span.Backend.noop))
+        Sync[F].pure(Span.Manual.fromBackend(Span.Backend.noop))
     }
 
   private def startSpan[F[_]: Sync](

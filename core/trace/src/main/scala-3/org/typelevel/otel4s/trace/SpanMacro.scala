@@ -21,7 +21,7 @@ import scala.concurrent.duration.FiniteDuration
 import scala.quoted.*
 
 private[otel4s] trait SpanMacro[F[_]] {
-  self: Span[F] =>
+  self: SpanAPI[F] =>
 
   /** Adds an attribute to the span. If the span previously contained a mapping
     * for the key, the old value is replaced by the specified value.
@@ -124,7 +124,7 @@ private[otel4s] trait SpanMacro[F[_]] {
 object SpanMacro {
 
   def addAttribute[F[_], A](
-      span: Expr[Span[F]],
+      span: Expr[SpanAPI[F]],
       attribute: Expr[Attribute[A]]
   )(using Quotes, Type[F], Type[A]) =
     '{
@@ -134,7 +134,7 @@ object SpanMacro {
     }
 
   def addAttributes[F[_]](
-      span: Expr[Span[F]],
+      span: Expr[SpanAPI[F]],
       attributes: Expr[Seq[Attribute[_]]]
   )(using Quotes, Type[F]) =
     '{
@@ -144,7 +144,7 @@ object SpanMacro {
     }
 
   def addEvent[F[_]](
-      span: Expr[Span[F]],
+      span: Expr[SpanAPI[F]],
       name: Expr[String],
       attributes: Expr[Seq[Attribute[_]]]
   )(using Quotes, Type[F]) =
@@ -155,7 +155,7 @@ object SpanMacro {
     }
 
   def addEvent[F[_]](
-      span: Expr[Span[F]],
+      span: Expr[SpanAPI[F]],
       name: Expr[String],
       timestamp: Expr[FiniteDuration],
       attributes: Expr[Seq[Attribute[_]]]
@@ -167,7 +167,7 @@ object SpanMacro {
     }
 
   def recordException[F[_]](
-      span: Expr[Span[F]],
+      span: Expr[SpanAPI[F]],
       exception: Expr[Throwable],
       attributes: Expr[Seq[Attribute[_]]]
   )(using Quotes, Type[F]) =
@@ -178,7 +178,7 @@ object SpanMacro {
     }
 
   def setStatus[F[_]](
-      span: Expr[Span[F]],
+      span: Expr[SpanAPI[F]],
       status: Expr[Status]
   )(using Quotes, Type[F]) =
     '{
@@ -188,7 +188,7 @@ object SpanMacro {
     }
 
   def setStatus[F[_]](
-      span: Expr[Span[F]],
+      span: Expr[SpanAPI[F]],
       status: Expr[Status],
       description: Expr[String]
   )(using Quotes, Type[F]) =

@@ -83,7 +83,7 @@ private[java] final case class SpanBuilderImpl[F[_]: Sync](
     copy(finalizationStrategy = strategy)
 
   def build: SpanOps[F] = new SpanOps[F] {
-    def startUnmanaged: F[Span[F]] =
+    def startUnmanaged: F[Span.Manual[F]] =
       runnerContext.flatMap(ctx => SpanRunner.startUnmanaged(ctx))
 
     def resource: Resource[F, SpanOps.Res[F]] =

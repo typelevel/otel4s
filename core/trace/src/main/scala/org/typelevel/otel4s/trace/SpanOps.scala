@@ -24,8 +24,8 @@ import cats.~>
 
 trait SpanOps[F[_]] {
 
-  /** Creates a [[Span]]. The span requires to be ended '''explicitly''' by
-    * invoking `end`.
+  /** Creates a [[Span.Manual]]. The span requires to be ended '''explicitly'''
+    * by invoking `end`.
     *
     * This strategy can be used when it's necessary to end a span outside of the
     * scope (e.g. async callback). Make sure the span is ended properly.
@@ -54,7 +54,7 @@ trait SpanOps[F[_]] {
     * @see
     *   [[use]], [[use_]], [[surround]], or [[resource]] for a managed lifecycle
     */
-  def startUnmanaged: F[Span[F]]
+  def startUnmanaged: F[Span.Manual[F]]
 
   /** Creates a [[Span]] and a [[cats.effect.kernel.Resource Resource]] for
     * using it. Unlike [[startUnmanaged]], the lifecycle of the span is fully
@@ -193,7 +193,7 @@ object SpanOps {
       ops: SpanOps[F]
   )(implicit kt: KindTransformer[F, G])
       extends SpanOps[G] {
-    def startUnmanaged: G[Span[G]] =
+    def startUnmanaged: G[Span.Manual[G]] =
       kt.liftK(ops.startUnmanaged).map(_.mapK[G])
 
     def resource: Resource[G, Res[G]] =

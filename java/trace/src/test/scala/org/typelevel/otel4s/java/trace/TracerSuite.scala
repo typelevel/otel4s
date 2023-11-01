@@ -33,9 +33,6 @@ import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.trace.StatusCode
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator
 import io.opentelemetry.context.propagation.{
-  ContextPropagators => JContextPropagators
-}
-import io.opentelemetry.context.propagation.{
   TextMapPropagator => JTextMapPropagator
 }
 import io.opentelemetry.extension.incubator.propagation.PassThroughPropagator
@@ -51,7 +48,8 @@ import io.opentelemetry.sdk.trace.`export`.SimpleSpanProcessor
 import io.opentelemetry.sdk.trace.internal.data.ExceptionEventData
 import munit.CatsEffectSuite
 import org.typelevel.otel4s.Attribute
-import org.typelevel.otel4s.java.ContextPropagatorsImpl
+import org.typelevel.otel4s.context.propagation.ContextPropagators
+import org.typelevel.otel4s.java.TextMapPropagatorImpl
 import org.typelevel.otel4s.java.context.Context
 import org.typelevel.otel4s.java.instances._
 import org.typelevel.otel4s.trace.Span
@@ -1149,8 +1147,8 @@ class TracerSuite extends CatsEffectSuite {
       val textMapPropagators =
         W3CTraceContextPropagator.getInstance() +: additionalPropagators
 
-      val propagators = new ContextPropagatorsImpl[IO](
-        JContextPropagators.create(
+      val propagators = ContextPropagators.of(
+        new TextMapPropagatorImpl(
           JTextMapPropagator.composite(textMapPropagators.asJava)
         )
       )

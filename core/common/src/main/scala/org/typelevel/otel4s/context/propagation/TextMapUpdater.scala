@@ -35,8 +35,6 @@ import scala.collection.immutable.SortedMapOps
   *
   * @see
   *   See [[TextMapGetter]] to get a value from the carrier
-  * @see
-  *   See [[TextMapSetter]] to set values to a mutable carrier
   *
   * @tparam A
   *   the type of the carrier

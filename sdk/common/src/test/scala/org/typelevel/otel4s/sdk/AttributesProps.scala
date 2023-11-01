@@ -17,13 +17,15 @@
 package org.typelevel.otel4s.sdk
 
 import cats.Id
-import cats.implicits.catsSyntaxSemigroup
+import cats.Show
+import cats.syntax.semigroup._
 import munit.ScalaCheckSuite
 import org.scalacheck.Arbitrary
 import org.scalacheck.Gen
 import org.scalacheck.Prop.forAll
 import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.sdk.arbitrary.attribute
+import org.typelevel.otel4s.sdk.arbitrary.attributes
 
 class AttributesProps extends ScalaCheckSuite {
 
@@ -125,6 +127,16 @@ class AttributesProps extends ScalaCheckSuite {
       }
 
       sizeIsEqual && secondCollectionOverrodeValues
+    }
+  }
+
+  property("Show[Attributes]") {
+    forAll(attributes.arbitrary) { attributes =>
+      val expected = attributes.toList
+        .map(Show[Attribute[_]].show)
+        .mkString("Attributes(", ", ", ")")
+
+      assertEquals(Show[Attributes].show(attributes), expected)
     }
   }
 

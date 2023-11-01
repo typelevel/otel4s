@@ -17,6 +17,9 @@
 package org.typelevel.otel4s
 package trace
 
+import cats.Hash
+import cats.Show
+
 /** Type of [[Span]]. Can be used to specify additional relationships between
   * spans in addition to a parent/child relationship.
   */
@@ -48,4 +51,7 @@ object SpanKind {
     * relationship between producer and consumer spans.
     */
   case object Consumer extends SpanKind
+
+  implicit val spanKindHash: Hash[SpanKind] = Hash.fromUniversalHashCode
+  implicit val spanKindShow: Show[SpanKind] = Show.fromToString
 }

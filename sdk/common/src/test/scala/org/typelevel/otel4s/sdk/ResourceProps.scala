@@ -17,6 +17,8 @@
 package org.typelevel.otel4s.sdk
 
 import cats.Id
+import cats.Show
+import cats.syntax.show._
 import munit.ScalaCheckSuite
 import org.scalacheck.Prop.forAll
 import org.typelevel.otel4s.sdk.arbitrary.resource
@@ -41,6 +43,15 @@ class ResourceProps extends ScalaCheckSuite {
         case Left(_) => true
       }
 
+    }
+  }
+
+  property("Show[Resource]") {
+    forAll(resource.arbitrary) { resource =>
+      val expected =
+        show"Resource{attributes=${resource.attributes}, schemaUrl=${resource.schemaUrl}}"
+
+      assertEquals(Show[Resource].show(resource), expected)
     }
   }
 

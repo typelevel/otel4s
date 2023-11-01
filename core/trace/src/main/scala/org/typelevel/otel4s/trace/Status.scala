@@ -16,6 +16,9 @@
 
 package org.typelevel.otel4s.trace
 
+import cats.Hash
+import cats.Show
+
 /** The set of canonical status codes
   */
 sealed trait Status extends Product with Serializable
@@ -32,5 +35,8 @@ object Status {
 
   /** The operation contains an error. */
   case object Error extends Status
+
+  implicit val statusHash: Hash[Status] = Hash.fromUniversalHashCode
+  implicit val statusShow: Show[Status] = Show.fromToString
 
 }

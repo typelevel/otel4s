@@ -17,13 +17,11 @@
 package org.typelevel.otel4s.sdk
 
 import cats.kernel.laws.discipline.HashTests
-import cats.kernel.laws.discipline.MonoidTests
 import munit.DisciplineSuite
 import org.typelevel.otel4s.sdk.arbitrary._
 
-class AttributesLawTests extends DisciplineSuite {
+class ResourceLawTests extends DisciplineSuite {
 
-  checkAll("Attributes.HashLaws", HashTests[Attributes].hash)
-  checkAll("Attributes.MonoidLaws", MonoidTests[Attributes].monoid)
+  checkAll("Resource.HashLaws", HashTests[Resource].hash)
 
 }

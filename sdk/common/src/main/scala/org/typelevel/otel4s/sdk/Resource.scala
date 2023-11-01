@@ -16,11 +16,9 @@
 
 package org.typelevel.otel4s.sdk
 
+import cats.Hash
 import cats.Show
-import cats.implicits.catsSyntaxEitherId
-import cats.implicits.catsSyntaxOptionId
-import cats.implicits.catsSyntaxSemigroup
-import cats.implicits.showInterpolator
+import cats.syntax.all._
 import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.sdk.Resource.ResourceInitiationError
 import org.typelevel.otel4s.semconv.resource.attributes.ResourceAttributes._
@@ -61,7 +59,7 @@ final case class Resource(
 
       schemaUrlOptEither.map(
         Resource(
-          other.attributes |+| attributes,
+          attributes |+| other.attributes,
           _
         )
       )
@@ -76,6 +74,9 @@ final case class Resource(
       throw _,
       identity
     )
+
+  override def toString: String =
+    Show[Resource].show(this)
 }
 
 object Resource {
@@ -119,6 +120,9 @@ object Resource {
   val Default: Resource = TelemetrySdk.mergeIntoUnsafe(Mandatory)
 
   implicit val showResource: Show[Resource] =
-    r => show"Resource(${r.attributes}, ${r.schemaUrl})"
+    r => show"Resource{attributes=${r.attributes}, schemaUrl=${r.schemaUrl}}"
+
+  implicit val hashResource: Hash[Resource] =
+    Hash.by(r => (r.attributes, r.schemaUrl))
 
 }

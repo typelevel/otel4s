@@ -16,18 +16,53 @@
 
 package org.typelevel.otel4s.sdk.trace.samplers
 
+import cats.Show
+import cats.kernel.laws.discipline.HashTests
 import munit._
+import org.scalacheck.Arbitrary
+import org.scalacheck.Cogen
+import org.scalacheck.Gen
+import org.scalacheck.Prop
 
-class SamplingDecisionSuite extends FunSuite {
-  test("Drop should have isSampled = false") {
-    assertEquals(SamplingDecision.Drop.isSampled, false)
+class SamplingDecisionSuite extends DisciplineSuite {
+
+  private val samplingDecisionGen: Gen[SamplingDecision] =
+    Gen.oneOf(
+      SamplingDecision.Drop,
+      SamplingDecision.RecordOnly,
+      SamplingDecision.RecordAndSample
+    )
+
+  private implicit val samplingDecisionArbitrary: Arbitrary[SamplingDecision] =
+    Arbitrary(samplingDecisionGen)
+
+  private implicit val samplingDecisionCogen: Cogen[SamplingDecision] =
+    Cogen[String].contramap(_.toString)
+
+  checkAll("SamplingDecision.HashLaws", HashTests[SamplingDecision].hash)
+
+  property("is sampled") {
+    Prop.forAll(samplingDecisionGen) { decision =>
+      val expected = decision match {
+        case SamplingDecision.Drop            => false
+        case SamplingDecision.RecordOnly      => false
+        case SamplingDecision.RecordAndSample => true
+      }
+
+      assertEquals(decision.isSampled, expected)
+    }
   }
 
-  test("RecordOnly should have isSampled = false") {
-    assertEquals(SamplingDecision.RecordOnly.isSampled, false)
+  property("Show[SamplingDecision]") {
+    Prop.forAll(samplingDecisionGen) { decision =>
+      val expected = decision match {
+        case SamplingDecision.Drop            => "Drop"
+        case SamplingDecision.RecordOnly      => "RecordOnly"
+        case SamplingDecision.RecordAndSample => "RecordAndSample"
+      }
+
+      assertEquals(Show[SamplingDecision].show(decision), expected)
+    }
   }
 
-  test("RecordAndSample should have isSampled = true") {
-    assertEquals(SamplingDecision.RecordAndSample.isSampled, true)
-  }
 }

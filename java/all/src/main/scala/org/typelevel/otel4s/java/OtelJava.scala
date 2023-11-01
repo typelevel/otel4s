@@ -30,6 +30,7 @@ import org.typelevel.otel4s.context.propagation.ContextPropagators
 import org.typelevel.otel4s.java.Conversions.asyncFromCompletableResultCode
 import org.typelevel.otel4s.java.context.Context
 import org.typelevel.otel4s.java.context.LocalContext
+import org.typelevel.otel4s.java.context.propagation.PropagatorConverters._
 import org.typelevel.otel4s.java.instances._
 import org.typelevel.otel4s.java.metrics.Metrics
 import org.typelevel.otel4s.java.trace.Traces
@@ -66,9 +67,7 @@ object OtelJava {
   def local[F[_]: Async: LocalContext](
       jOtel: JOpenTelemetry
   ): OtelJava[F] = {
-    val contextPropagators = ContextPropagators.of(
-      new TextMapPropagatorImpl(jOtel.getPropagators.getTextMapPropagator)
-    )
+    val contextPropagators = jOtel.getPropagators.asScala
 
     val metrics = Metrics.forAsync(jOtel)
     val traces = Traces.local(jOtel, contextPropagators)

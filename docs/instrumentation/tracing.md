@@ -62,7 +62,7 @@ OtelJava.global.flatMap { otel4s =>
 You can use the `span` or `spanBuilder` API to create a new span. 
 
 The tracer automatically determines whether to create a child span or a root span based on the presence of a valid parent in the tracing context. 
-If a valid parent is available, the new span becomes a child of it; otherwise, it becomes a root span. 
+If a valid parent is available, the new span becomes a child of it.  Otherwise, it becomes a root span. 
 
 Here's how you can do it:
 

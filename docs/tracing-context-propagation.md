@@ -32,15 +32,14 @@ You can find both examples below and choose which one suits your requirements.
 ```scala mdoc:silent:reset
 import cats.effect._
 import cats.mtl.Local
+import cats.syntax.functor._
 import org.typelevel.otel4s.java.context.Context
 import org.typelevel.otel4s.java.OtelJava
 import org.typelevel.otel4s.java.instances._ // brings Local derived from IOLocal
 import io.opentelemetry.api.GlobalOpenTelemetry
 
-def createOtel4s[F[_]: Async](implicit L: Local[F, Context]): Resource[F, OtelJava[F]] =
-  Resource
-    .eval(Async[F].delay(GlobalOpenTelemetry.get))
-    .map(OtelJava.local[F])
+def createOtel4s[F[_]: Async](implicit L: Local[F, Context]): F[OtelJava[F]] =
+  Async[F].delay(GlobalOpenTelemetry.get).map(OtelJava.local[F])
     
 def program[F[_] : Async](otel4s: OtelJava[F]): F[Unit] = {
   val _ = otel4s
@@ -49,7 +48,7 @@ def program[F[_] : Async](otel4s: OtelJava[F]): F[Unit] = {
 
 val run: IO[Unit] =
   IOLocal(Context.root).flatMap { implicit ioLocal: IOLocal[Context] =>
-    createOtel4s[IO].use(otel4s => program(otel4s))
+    createOtel4s[IO].flatMap(otel4s => program(otel4s))
   }
 ```
 
@@ -57,13 +56,12 @@ If you don't need direct access to the `IOLocal` instance, there is also a short
 
 ```scala mdoc:silent:reset
 import cats.effect._
+import cats.syntax.flatMap._
 import org.typelevel.otel4s.java.OtelJava
 import io.opentelemetry.api.GlobalOpenTelemetry
 
-def createOtel4s[F[_]: Async: LiftIO]: Resource[F, OtelJava[F]] =
-  Resource
-    .eval(Async[F].delay(GlobalOpenTelemetry.get))
-    .evalMap(OtelJava.forAsync[F])
+def createOtel4s[F[_]: Async: LiftIO]: F[OtelJava[F]] =
+  Async[F].delay(GlobalOpenTelemetry.get).flatMap(OtelJava.forAsync[F])
 
 def program[F[_]: Async](otel4s: OtelJava[F]): F[Unit] = {
   val _ = otel4s
@@ -71,23 +69,36 @@ def program[F[_]: Async](otel4s: OtelJava[F]): F[Unit] = {
 }
 
 val run: IO[Unit] =
-  createOtel4s[IO].use(otel4s => program(otel4s))
+  createOtel4s[IO].flatMap(otel4s => program(otel4s))
+```
+
+Of even shorter with `OtelJava.global`: 
+```scala mdoc:silent:reset
+import cats.effect._
+import org.typelevel.otel4s.java.OtelJava
+
+def program[F[_]: Async](otel4s: OtelJava[F]): F[Unit] = {
+  val _ = otel4s
+  Async[F].unit
+}
+
+val run: IO[Unit] =
+  OtelJava.global[IO].flatMap(otel4s => program(otel4s))
 ```
 
 ### 2. Kleisli
 
 ```scala mdoc:silent:reset
 import cats.effect._
+import cats.syntax.functor._
 import cats.data.Kleisli
 import cats.mtl.Local
 import org.typelevel.otel4s.java.context.Context
 import org.typelevel.otel4s.java.OtelJava
 import io.opentelemetry.api.GlobalOpenTelemetry
 
-def createOtel4s[F[_]: Async](implicit L: Local[F, Context]): Resource[F, OtelJava[F]] =
-  Resource
-    .eval(Async[F].delay(GlobalOpenTelemetry.get))
-    .map(OtelJava.local[F])
+def createOtel4s[F[_]: Async](implicit L: Local[F, Context]): F[OtelJava[F]] =
+  Async[F].delay(GlobalOpenTelemetry.get).map(OtelJava.local[F])
     
 def program[F[_]: Async](otel4s: OtelJava[F]): F[Unit] = {
   val _ = otel4s
@@ -95,7 +106,7 @@ def program[F[_]: Async](otel4s: OtelJava[F]): F[Unit] = {
 }
 
 val kleisli: Kleisli[IO, Context, Unit] = 
-  createOtel4s[Kleisli[IO, Context, *]].use(otel4s => program(otel4s))
+  createOtel4s[Kleisli[IO, Context, *]].flatMap(otel4s => program(otel4s))
 
 val run: IO[Unit] = kleisli.run(Context.root)
 ```

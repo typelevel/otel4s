@@ -16,9 +16,26 @@
 
 package org.typelevel.otel4s.trace
 
+import cats.Show
+import cats.kernel.laws.discipline.HashTests
 import munit._
+import org.scalacheck.Arbitrary
+import org.scalacheck.Cogen
+import org.scalacheck.Gen
+import org.scalacheck.Prop
 
-class TraceFlagsSuite extends FunSuite {
+class TraceFlagsSuite extends DisciplineSuite {
+
+  private val traceFlagsGen: Gen[TraceFlags] =
+    Gen.chooseNum(0, 255).map(byte => TraceFlags.fromByte(byte.toByte))
+
+  private implicit val traceFlagsArbitrary: Arbitrary[TraceFlags] =
+    Arbitrary(traceFlagsGen)
+
+  private implicit val traceFlagsCogen: Cogen[TraceFlags] =
+    Cogen[Byte].contramap(_.toByte)
+
+  checkAll("TraceFlags.HashLaws", HashTests[TraceFlags].hash)
 
   test("default instances") {
     assertEquals(TraceFlags.Default.toHex, "00")
@@ -49,6 +66,12 @@ class TraceFlagsSuite extends FunSuite {
 
   test("create from hex (invalid)") {
     assertEquals(TraceFlags.fromHex("zxc"), None)
+  }
+
+  property("Show[TraceFlags]") {
+    Prop.forAll(traceFlagsGen) { traceFlags =>
+      assertEquals(Show[TraceFlags].show(traceFlags), traceFlags.toHex)
+    }
   }
 
 }

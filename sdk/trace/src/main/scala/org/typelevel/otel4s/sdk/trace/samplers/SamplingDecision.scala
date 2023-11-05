@@ -44,4 +44,5 @@ object SamplingDecision {
 
   implicit val samplingDecisionShow: Show[SamplingDecision] =
     Show.fromToString
+
 }

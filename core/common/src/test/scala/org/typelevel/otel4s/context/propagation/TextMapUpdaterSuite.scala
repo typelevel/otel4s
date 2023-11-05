@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.typelevel.otel4s
+package org.typelevel.otel4s.context.propagation
 
 import cats.Eq
 import cats.laws.discipline._
@@ -23,6 +23,8 @@ import munit.DisciplineSuite
 import munit.FunSuite
 import org.scalacheck.Arbitrary
 import org.scalacheck.Gen
+import org.typelevel.otel4s.Box
+import org.typelevel.otel4s.NotQuiteExhaustiveChecks
 
 import scala.collection.immutable
 

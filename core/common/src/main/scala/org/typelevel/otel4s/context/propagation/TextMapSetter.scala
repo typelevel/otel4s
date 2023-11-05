@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.typelevel.otel4s
+package org.typelevel.otel4s.context.propagation
 
 import scala.collection.mutable
 import scala.collection.mutable.Buffer

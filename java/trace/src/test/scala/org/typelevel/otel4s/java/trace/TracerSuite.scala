@@ -33,9 +33,6 @@ import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.trace.StatusCode
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator
 import io.opentelemetry.context.propagation.{
-  ContextPropagators => JContextPropagators
-}
-import io.opentelemetry.context.propagation.{
   TextMapPropagator => JTextMapPropagator
 }
 import io.opentelemetry.extension.incubator.propagation.PassThroughPropagator
@@ -51,7 +48,8 @@ import io.opentelemetry.sdk.trace.`export`.SimpleSpanProcessor
 import io.opentelemetry.sdk.trace.internal.data.ExceptionEventData
 import munit.CatsEffectSuite
 import org.typelevel.otel4s.Attribute
-import org.typelevel.otel4s.java.ContextPropagatorsImpl
+import org.typelevel.otel4s.context.propagation.ContextPropagators
+import org.typelevel.otel4s.java.TextMapPropagatorImpl
 import org.typelevel.otel4s.java.context.Context
 import org.typelevel.otel4s.java.instances._
 import org.typelevel.otel4s.trace.Span
@@ -938,7 +936,33 @@ class TracerSuite extends CatsEffectSuite {
     }
   }
 
-  test("nested SpanOps#surround for Tracer[OptionT[IO, *]]") {
+  test("nested SpanOps#surround for Tracer[IO].mapK[IO]") {
+    TestControl.executeEmbed {
+      for {
+        now <- IO.monotonic.delayBy(1.second) // otherwise returns 0
+        sdk <- makeSdk()
+        tracerIO <- sdk.provider.get("tracer")
+        tracer = tracerIO.mapK[IO]
+        _ <- tracer
+          .span("outer")
+          .surround {
+            for {
+              _ <- IO.sleep(NestedSurround.preBodyDuration)
+              _ <- tracer
+                .span("body-1")
+                .surround(IO.sleep(NestedSurround.body1Duration))
+              _ <- tracer
+                .span("body-2")
+                .surround(IO.sleep(NestedSurround.body2Duration))
+            } yield ()
+          }
+        spans <- sdk.finishedSpans
+        tree <- IO.pure(SpanNode.fromSpans(spans))
+      } yield assertEquals(tree, List(NestedSurround.expected(now)))
+    }
+  }
+
+  test("nested SpanOps#surround for Tracer[IO].mapK[OptionT[IO, *]]") {
     TestControl.executeEmbed {
       for {
         now <- IO.monotonic.delayBy(1.second) // otherwise returns 0
@@ -965,7 +989,7 @@ class TracerSuite extends CatsEffectSuite {
     }
   }
 
-  test("nested SpanOps#surround for Tracer[EitherT[IO, String, *]]") {
+  test("nested SpanOps#surround for Tracer[IO].mapK[EitherT[IO, String, *]]") {
     TestControl.executeEmbed {
       for {
         now <- IO.monotonic.delayBy(1.second) // otherwise returns 0
@@ -992,7 +1016,7 @@ class TracerSuite extends CatsEffectSuite {
     }
   }
 
-  test("nested SpanOps#surround for Tracer[IorT[IO, String, *]]") {
+  test("nested SpanOps#surround for Tracer[IO].mapK[IorT[IO, String, *]]") {
     TestControl.executeEmbed {
       for {
         now <- IO.monotonic.delayBy(1.second) // otherwise returns 0
@@ -1019,7 +1043,7 @@ class TracerSuite extends CatsEffectSuite {
     }
   }
 
-  test("nested SpanOps#surround for Tracer[Kleisli[IO, String, *]]") {
+  test("nested SpanOps#surround for Tracer[IO].mapK[Kleisli[IO, String, *]]") {
     TestControl.executeEmbed {
       for {
         now <- IO.monotonic.delayBy(1.second) // otherwise returns 0
@@ -1046,7 +1070,7 @@ class TracerSuite extends CatsEffectSuite {
     }
   }
 
-  test("nested SpanOps#surround for Tracer[StateT[IO, Int, *]]") {
+  test("nested SpanOps#surround for Tracer[IO].mapK[StateT[IO, Int, *]]") {
     TestControl.executeEmbed {
       for {
         now <- IO.monotonic.delayBy(1.second) // otherwise returns 0
@@ -1073,7 +1097,7 @@ class TracerSuite extends CatsEffectSuite {
     }
   }
 
-  test("nested SpanOps#surround for Tracer[Resource[IO, *]]") {
+  test("nested SpanOps#surround for Tracer[IO].mapK[Resource[IO, *]]") {
     TestControl.executeEmbed {
       for {
         now <- IO.monotonic.delayBy(1.second) // otherwise returns 0
@@ -1123,8 +1147,8 @@ class TracerSuite extends CatsEffectSuite {
       val textMapPropagators =
         W3CTraceContextPropagator.getInstance() +: additionalPropagators
 
-      val propagators = new ContextPropagatorsImpl(
-        JContextPropagators.create(
+      val propagators = ContextPropagators.of(
+        new TextMapPropagatorImpl(
           JTextMapPropagator.composite(textMapPropagators.asJava)
         )
       )

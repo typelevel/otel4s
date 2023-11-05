@@ -16,6 +16,7 @@
 
 package org.typelevel.otel4s
 
+import org.typelevel.otel4s.context.propagation.ContextPropagators
 import org.typelevel.otel4s.metrics.MeterProvider
 import org.typelevel.otel4s.trace.TracerProvider
 

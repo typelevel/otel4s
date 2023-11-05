@@ -21,6 +21,7 @@ import cats.effect.IOLocal
 import cats.effect.LiftIO
 import cats.effect.Sync
 import io.opentelemetry.api.{OpenTelemetry => JOpenTelemetry}
+import org.typelevel.otel4s.context.propagation.ContextPropagators
 import org.typelevel.otel4s.java.context.Context
 import org.typelevel.otel4s.java.context.LocalContext
 import org.typelevel.otel4s.java.instances._

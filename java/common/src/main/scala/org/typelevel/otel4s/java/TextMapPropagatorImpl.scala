@@ -20,6 +20,9 @@ package java
 import io.opentelemetry.context.propagation.{
   TextMapPropagator => JTextMapPropagator
 }
+import org.typelevel.otel4s.context.propagation.TextMapGetter
+import org.typelevel.otel4s.context.propagation.TextMapPropagator
+import org.typelevel.otel4s.context.propagation.TextMapUpdater
 import org.typelevel.otel4s.java.Conversions._
 import org.typelevel.otel4s.java.context.Context
 
@@ -28,13 +31,13 @@ import scala.jdk.CollectionConverters._
 private[java] class TextMapPropagatorImpl(
     jPropagator: JTextMapPropagator
 ) extends TextMapPropagator[Context] {
-  def fields: List[String] =
-    jPropagator.fields().asScala.toList
+  lazy val fields: Iterable[String] =
+    jPropagator.fields().asScala
 
   def extract[A: TextMapGetter](ctx: Context, carrier: A): Context =
     ctx.map(jPropagator.extract(_, carrier, fromTextMapGetter))
 
-  def injected[A](ctx: Context, carrier: A)(implicit
+  def inject[A](ctx: Context, carrier: A)(implicit
       injector: TextMapUpdater[A]
   ): A = {
     var injectedCarrier = carrier

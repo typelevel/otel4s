@@ -80,7 +80,7 @@ object AttributeKey {
   implicit def attributeKeyShow[A]: Show[AttributeKey[A]] =
     Show.show(key => show"${key.`type`}(${key.name})")
 
-  implicit val attributeKeyAnyHash: Hash[AttributeKey[_]] =
+  implicit val attributeKeyExistentialHash: Hash[AttributeKey[_]] =
     Hash.by(key => (key.name, key.`type`))
 
 }

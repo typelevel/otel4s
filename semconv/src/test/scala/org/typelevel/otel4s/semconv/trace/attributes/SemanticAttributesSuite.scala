@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Typelevel
+ * Copyright 2023 Typelevel
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,17 +14,21 @@
  * limitations under the License.
  */
 
-package org.typelevel.otel4s
-package java
+package org.typelevel.otel4s.semconv
+package trace.attributes
 
-import io.opentelemetry.context.propagation.{
-  ContextPropagators => JContextPropagators
-}
-import org.typelevel.otel4s.java.context.Context
+import munit._
 
-private[java] class ContextPropagatorsImpl(
-    propagators: JContextPropagators
-) extends ContextPropagators[Context] {
-  val textMapPropagator: TextMapPropagator[Context] =
-    new TextMapPropagatorImpl(propagators.getTextMapPropagator)
+class SemanticAttributesSuite extends FunSuite {
+
+  test("the schema url should match with the sem conv version") {
+    val version =
+      BuildInfo.openTelemetrySemanticConventionsVersion.stripSuffix("-alpha")
+
+    assertEquals(
+      SemanticAttributes.SchemaUrl,
+      s"https://opentelemetry.io/schemas/$version"
+    )
+  }
+
 }

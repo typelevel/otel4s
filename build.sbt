@@ -29,15 +29,16 @@ ThisBuild / scalaVersion := Scala213 // the default Scala
 
 val CatsVersion = "2.10.0"
 val CatsEffectVersion = "3.5.2"
-val CatsMtlVersion = "1.3.1"
+val CatsMtlVersion = "1.4.0"
 val DisciplineMUnitVersion = "2.0.0-M3"
 val FS2Version = "3.9.2"
 val MUnitVersion = "1.0.0-M10"
 val MUnitCatsEffectVersion = "2.0.0-M3"
 val MUnitDisciplineVersion = "2.0.0-M3"
-val OpenTelemetryVersion = "1.30.1"
+val OpenTelemetryVersion = "1.31.0"
+val OpenTelemetrySemConvVersion = "1.21.0-alpha"
 val PlatformVersion = "1.0.2"
-val ScodecVersion = "1.1.37"
+val ScodecVersion = "1.1.38"
 val VaultVersion = "3.5.0"
 
 lazy val scalaReflectDependency = Def.settings(
@@ -53,6 +54,15 @@ lazy val munitDependencies = Def.settings(
     "org.typelevel" %%% "munit-cats-effect" % MUnitCatsEffectVersion % Test
   )
 )
+
+lazy val semanticConventionsGenerate =
+  taskKey[Unit]("Generate semantic conventions")
+semanticConventionsGenerate := {
+  SemanticConventionsGenerator.generate(
+    OpenTelemetrySemConvVersion.stripSuffix("-alpha"),
+    baseDirectory.value
+  )
+}
 
 lazy val root = tlCrossRootProject
   .aggregate(
@@ -121,7 +131,10 @@ lazy val `core-trace` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
     name := "otel4s-core-trace",
     libraryDependencies ++= Seq(
       "org.typelevel" %%% "cats-effect-kernel" % CatsEffectVersion,
-      "org.scodec" %%% "scodec-bits" % ScodecVersion
+      "org.scodec" %%% "scodec-bits" % ScodecVersion,
+      "org.scalameta" %%% "munit-scalacheck" % MUnitVersion % Test,
+      "org.typelevel" %%% "cats-laws" % CatsVersion % Test,
+      "org.typelevel" %%% "discipline-munit" % DisciplineMUnitVersion % Test
     )
   )
   .settings(scalafixSettings)
@@ -171,6 +184,9 @@ lazy val `sdk-trace` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
     startYear := Some(2023),
     libraryDependencies ++= Seq(
       "org.typelevel" %%% "cats-effect" % CatsEffectVersion,
+      "org.scalameta" %%% "munit-scalacheck" % MUnitVersion % Test,
+      "org.typelevel" %%% "cats-laws" % CatsVersion % Test,
+      "org.typelevel" %%% "discipline-munit" % DisciplineMUnitVersion % Test,
       "org.typelevel" %%% "cats-effect-testkit" % CatsEffectVersion % Test
     ),
   )
@@ -305,12 +321,21 @@ lazy val java = project
 
 lazy val semconv = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .crossType(CrossType.Pure)
+  .enablePlugins(BuildInfoPlugin)
   .in(file("semconv"))
   .dependsOn(`core-common`)
   .settings(
     name := "otel4s-semconv",
     startYear := Some(2023),
+    // We use opentelemetry-semconv dependency to track releases of the OpenTelemetry semantic convention spec
+    libraryDependencies += "io.opentelemetry.semconv" % "opentelemetry-semconv" % OpenTelemetrySemConvVersion % "compile-internal" intransitive (),
+    buildInfoPackage := "org.typelevel.otel4s.semconv",
+    buildInfoOptions += sbtbuildinfo.BuildInfoOption.PackagePrivate,
+    buildInfoKeys := Seq[BuildInfoKey](
+      "openTelemetrySemanticConventionsVersion" -> OpenTelemetrySemConvVersion
+    )
   )
+  .settings(munitDependencies)
   .settings(scalafixSettings)
 
 lazy val benchmarks = project
@@ -352,12 +377,11 @@ lazy val docs = project
     libraryDependencies ++= Seq(
       "io.opentelemetry" % "opentelemetry-sdk-extension-autoconfigure" % OpenTelemetryVersion
     ),
-    mdocVariables := Map(
-      "VERSION" -> version.value,
+    mdocVariables ++= Map(
       "OPEN_TELEMETRY_VERSION" -> OpenTelemetryVersion
     ),
     laikaConfig := {
-      import laika.rewrite.nav.{ChoiceConfig, Selections, SelectionConfig}
+      import laika.config.{ChoiceConfig, Selections, SelectionConfig}
 
       laikaConfig.value.withConfigValue(
         Selections(

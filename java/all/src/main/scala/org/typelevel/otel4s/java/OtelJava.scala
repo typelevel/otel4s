@@ -25,8 +25,8 @@ import cats.syntax.all._
 import io.opentelemetry.api.{OpenTelemetry => JOpenTelemetry}
 import io.opentelemetry.api.GlobalOpenTelemetry
 import io.opentelemetry.sdk.{OpenTelemetrySdk => JOpenTelemetrySdk}
-import org.typelevel.otel4s.ContextPropagators
 import org.typelevel.otel4s.Otel4s
+import org.typelevel.otel4s.context.propagation.ContextPropagators
 import org.typelevel.otel4s.java.Conversions.asyncFromCompletableResultCode
 import org.typelevel.otel4s.java.context.Context
 import org.typelevel.otel4s.java.context.LocalContext
@@ -66,7 +66,9 @@ object OtelJava {
   def local[F[_]: Async: LocalContext](
       jOtel: JOpenTelemetry
   ): OtelJava[F] = {
-    val contextPropagators = new ContextPropagatorsImpl(jOtel.getPropagators)
+    val contextPropagators = ContextPropagators.of(
+      new TextMapPropagatorImpl(jOtel.getPropagators.getTextMapPropagator)
+    )
 
     val metrics = Metrics.forAsync(jOtel)
     val traces = Traces.local(jOtel, contextPropagators)

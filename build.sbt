@@ -181,6 +181,7 @@ lazy val `sdk-trace` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .dependsOn(`sdk-common`, `core-trace`)
   .settings(
     name := "otel4s-sdk-trace",
+    startYear := Some(2023),
     libraryDependencies ++= Seq(
       "org.typelevel" %%% "cats-effect" % CatsEffectVersion,
       "org.scalameta" %%% "munit-scalacheck" % MUnitVersion % Test,

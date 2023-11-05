@@ -20,9 +20,9 @@ package trace
 import cats.effect.Temporal
 import cats.syntax.flatMap._
 import cats.syntax.functor._
-import org.typelevel.otel4s.ContextPropagators
-import org.typelevel.otel4s.TextMapGetter
-import org.typelevel.otel4s.TextMapUpdater
+import org.typelevel.otel4s.context.propagation.ContextPropagators
+import org.typelevel.otel4s.context.propagation.TextMapGetter
+import org.typelevel.otel4s.context.propagation.TextMapUpdater
 import org.typelevel.otel4s.sdk.common.InstrumentationScopeInfo
 import org.typelevel.otel4s.sdk.context.Context
 import org.typelevel.otel4s.trace.SpanBuilder
@@ -66,6 +66,6 @@ final class SdkTracer[F[_]: Temporal] private[trace] (
   }
 
   def propagate[C: TextMapUpdater](carrier: C): F[C] =
-    scope.reader(ctx => propagators.textMapPropagator.injected(ctx, carrier))
+    scope.reader(ctx => propagators.textMapPropagator.inject(ctx, carrier))
 
 }

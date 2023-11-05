@@ -17,9 +17,9 @@
 package org.typelevel.otel4s.sdk.trace.propagation
 
 import cats.syntax.apply._
-import org.typelevel.otel4s.TextMapGetter
-import org.typelevel.otel4s.TextMapPropagator
-import org.typelevel.otel4s.TextMapUpdater
+import org.typelevel.otel4s.context.propagation.TextMapGetter
+import org.typelevel.otel4s.context.propagation.TextMapPropagator
+import org.typelevel.otel4s.context.propagation.TextMapUpdater
 import org.typelevel.otel4s.sdk.context.Context
 import org.typelevel.otel4s.sdk.trace.SdkTraceScope
 import org.typelevel.otel4s.trace.SpanContext
@@ -57,7 +57,7 @@ object W3CTraceContextPropagator extends TextMapPropagator[Context] {
     }
   }
 
-  def injected[A: TextMapUpdater](ctx: Context, carrier: A): A =
+  def inject[A: TextMapUpdater](ctx: Context, carrier: A): A =
     SdkTraceScope.fromContext(ctx).filter(_.isValid) match {
       case Some(spanContext) =>
         val traceParent =

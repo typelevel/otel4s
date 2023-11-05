@@ -40,7 +40,7 @@ class W3CTraceContextPropagatorSuite extends FunSuite {
   //
 
   test("inject nothing when context is empty") {
-    val result = propagator.injected(Context.root, Map.empty[String, String])
+    val result = propagator.inject(Context.root, Map.empty[String, String])
     assertEquals(result.size, 0)
   }
 
@@ -49,7 +49,7 @@ class W3CTraceContextPropagatorSuite extends FunSuite {
       val spanContext =
         SpanContext.create(traceId, spanId, flag, remote = false)
       val ctx = SdkTraceScope.storeInContext(Context.root, spanContext)
-      val result = propagator.injected(ctx, Map.empty[String, String])
+      val result = propagator.inject(ctx, Map.empty[String, String])
 
       val suffix = if (flag.isSampled) "01" else "00"
 

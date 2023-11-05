@@ -17,9 +17,9 @@
 package org.typelevel.otel4s.sdk.context.propagation
 
 import cats.effect.SyncIO
-import org.typelevel.otel4s.TextMapGetter
-import org.typelevel.otel4s.TextMapPropagator
-import org.typelevel.otel4s.TextMapUpdater
+import org.typelevel.otel4s.context.propagation.TextMapGetter
+import org.typelevel.otel4s.context.propagation.TextMapPropagator
+import org.typelevel.otel4s.context.propagation.TextMapUpdater
 import org.typelevel.otel4s.sdk.context.Context
 
 class PassThroughPropagator(
@@ -35,7 +35,7 @@ class PassThroughPropagator(
     if (extracted.nonEmpty) ctx.set(ExtractedKeyValuesKey, extracted) else ctx
   }
 
-  def injected[A: TextMapUpdater](ctx: Context, carrier: A): A =
+  def inject[A: TextMapUpdater](ctx: Context, carrier: A): A =
     ctx.get(ExtractedKeyValuesKey) match {
       case Some(extracted) =>
         extracted.foldLeft(carrier) { case (carrier, (key, value)) =>

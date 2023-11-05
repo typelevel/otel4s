@@ -29,7 +29,7 @@ import munit.CatsEffectSuite
 import munit.Location
 import munit.TestOptions
 import org.typelevel.otel4s.Attribute
-import org.typelevel.otel4s.TextMapPropagator
+import org.typelevel.otel4s.context.propagation.TextMapPropagator
 import org.typelevel.otel4s.sdk.Attributes
 import org.typelevel.otel4s.sdk.common.InstrumentationScopeInfo
 import org.typelevel.otel4s.sdk.context.Context

@@ -19,8 +19,8 @@ package trace
 
 import cats.effect.Temporal
 import cats.effect.std.Random
-import org.typelevel.otel4s.ContextPropagators
-import org.typelevel.otel4s.TextMapPropagator
+import org.typelevel.otel4s.context.propagation.ContextPropagators
+import org.typelevel.otel4s.context.propagation.TextMapPropagator
 import org.typelevel.otel4s.sdk.{Resource => InstrumentResource}
 import org.typelevel.otel4s.sdk.context.Context
 import org.typelevel.otel4s.sdk.context.LocalContext
@@ -147,7 +147,7 @@ object SdkTracerProviderBuilder {
         resource,
         spanLimits,
         sampler,
-        ContextPropagators.create(TextMapPropagator.composite(propagators)),
+        ContextPropagators.of(propagators: _*),
         spanProcessors,
         SdkTraceScope.fromLocal[F]
       )

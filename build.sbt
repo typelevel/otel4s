@@ -246,7 +246,6 @@ lazy val `java-common` = project
     libraryDependencies ++= Seq(
       "org.typelevel" %%% "cats-effect" % CatsEffectVersion,
       "org.typelevel" %%% "cats-mtl" % CatsMtlVersion,
-      "org.typelevel" %%% "vault" % VaultVersion,
       "io.opentelemetry" % "opentelemetry-sdk" % OpenTelemetryVersion,
       "org.typelevel" %%% "discipline-munit" % MUnitDisciplineVersion % Test,
       "org.typelevel" %%% "cats-mtl-laws" % CatsMtlVersion % Test,

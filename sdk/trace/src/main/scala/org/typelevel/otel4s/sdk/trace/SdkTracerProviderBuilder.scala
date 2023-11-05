@@ -67,7 +67,9 @@ sealed trait SdkTracerProviderBuilder[F[_]] {
     */
   def setSampler(sampler: Sampler): SdkTracerProviderBuilder[F]
 
-  /** Adds a [[TextMapPropagator]]s to use for the context propagation.
+  /** Adds a
+    * [[org.typelevel.otel4s.context.propagation.TextMapPropagator TextMapPropagator]]s
+    * to use for the context propagation.
     */
   def addTextMapPropagators(
       propagators: TextMapPropagator[Context]*

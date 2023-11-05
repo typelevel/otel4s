@@ -16,25 +16,14 @@
 
 package org.typelevel.otel4s.java.trace
 
-import cats.effect.SyncIO
 import io.opentelemetry.api.trace.{SpanContext => JSpanContext}
 import io.opentelemetry.api.trace.{TraceFlags => JTraceFlags}
 import io.opentelemetry.api.trace.TraceState
 import org.typelevel.otel4s.trace.SpanContext
 import org.typelevel.otel4s.trace.TraceFlags
-import org.typelevel.vault.Key
-import org.typelevel.vault.Vault
 import scodec.bits.ByteVector
 
 private[otel4s] object WrappedSpanContext {
-
-  private val key = Key.newKey[SyncIO, SpanContext].unsafeRunSync()
-
-  def storeInContext(context: Vault, ctx: SpanContext): Vault =
-    context.insert(key, ctx)
-
-  def getFromContext(context: Vault): Option[SpanContext] =
-    context.lookup(key)
 
   def wrap(context: JSpanContext): SpanContext =
     SpanContext.delegate(

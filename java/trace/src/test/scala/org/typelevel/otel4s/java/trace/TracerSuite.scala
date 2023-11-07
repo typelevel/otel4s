@@ -349,6 +349,61 @@ class TracerSuite extends CatsEffectSuite {
     }
   }
 
+  test("`currentSpanOrNoop` outside of a span (root scope)") {
+    for {
+      sdk <- makeSdk()
+      tracer <- sdk.provider.get("tracer")
+      currentSpan <- tracer.currentSpanOrNoop
+      _ <- currentSpan.addAttribute(Attribute("string-attribute", "value"))
+      spans <- sdk.finishedSpans
+    } yield {
+      assert(!currentSpan.context.isValid)
+      assertEquals(spans.length, 0)
+    }
+  }
+
+  test("`currentSpanOrNoop` in noop scope") {
+    for {
+      sdk <- makeSdk()
+      tracer <- sdk.provider.get("tracer")
+      _ <- tracer.noopScope {
+        for {
+          currentSpan <- tracer.currentSpanOrNoop
+          _ <- currentSpan.addAttribute(Attribute("string-attribute", "value"))
+        } yield assert(!currentSpan.context.isValid)
+      }
+      spans <- sdk.finishedSpans
+    } yield assertEquals(spans.length, 0)
+  }
+
+  test("`currentSpanOrNoop` inside a span") {
+    def expected(now: FiniteDuration): List[SpanNode] =
+      List(SpanNode("span", now, now, Nil))
+
+    TestControl.executeEmbed {
+      for {
+        now <- IO.monotonic.delayBy(1.second) // otherwise returns 0
+        sdk <- makeSdk()
+        tracer <- sdk.provider.get("tracer")
+        _ <- tracer.span("span").surround {
+          for {
+            currentSpan <- tracer.currentSpanOrNoop
+            _ <- currentSpan
+              .addAttribute(Attribute("string-attribute", "value"))
+          } yield assert(currentSpan.context.isValid)
+        }
+        spans <- sdk.finishedSpans
+        tree <- IO.pure(SpanNode.fromSpans(spans))
+        // _ <- IO.println(tree.map(SpanNode.render).mkString("\n"))
+      } yield {
+        assertEquals(tree, expected(now))
+        val key = JAttributeKey.stringKey("string-attribute")
+        val attr = spans.map(data => Option(data.getAttributes.get(key)))
+        assertEquals(attr.flatten, List("value"))
+      }
+    }
+  }
+
   test("create a new scope with a custom parent") {
 
     def expected(now: FiniteDuration) =

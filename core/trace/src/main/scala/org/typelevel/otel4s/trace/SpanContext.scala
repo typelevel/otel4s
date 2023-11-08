@@ -52,6 +52,10 @@ trait SpanContext {
     */
   def traceFlags: TraceFlags
 
+  /** Returns the trace state associated with this [[SpanContext]].
+    */
+  def traceState: TraceState
+
   /** Return `true` if this [[SpanContext]] is sampled.
     */
   final def isSampled: Boolean =
@@ -106,6 +110,7 @@ object SpanContext {
       val spanIdHex: String = SpanId.InvalidHex
       val spanId: ByteVector = ByteVector.fromValidHex(spanIdHex)
       val traceFlags: TraceFlags = TraceFlags.Default
+      val traceState: TraceState = TraceState.empty
       val isValid: Boolean = false
       val isRemote: Boolean = false
     }

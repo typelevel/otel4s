@@ -55,6 +55,10 @@ sealed trait SpanContext {
     */
   def traceFlags: TraceFlags
 
+  /** Returns the trace state associated with this [[SpanContext]].
+    */
+  def traceState: TraceState
+
   /** Return `true` if this [[SpanContext]] is sampled.
     */
   final def isSampled: Boolean =
@@ -139,6 +143,7 @@ object SpanContext {
       spanId = SpanId.Invalid,
       spanIdHex = SpanId.Invalid.toHex,
       traceFlags = TraceFlags.Default,
+      traceState = TraceState.empty,
       isRemote = false,
       isValid = false
     )
@@ -276,6 +281,7 @@ object SpanContext {
       spanId: ByteVector,
       spanIdHex: String,
       traceFlags: TraceFlags,
+      traceState: TraceState,
       isRemote: Boolean,
       isValid: Boolean
   ) extends SpanContext
@@ -287,6 +293,7 @@ object SpanContext {
       spanId: ByteVector,
       spanIdHex: String,
       traceFlags: TraceFlags,
+      traceState: TraceState,
       isRemote: Boolean,
       isValid: Boolean
   ) extends Delegate[A]

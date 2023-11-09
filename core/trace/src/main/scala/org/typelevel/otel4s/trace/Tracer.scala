@@ -19,6 +19,7 @@ package trace
 
 import cats.Applicative
 import cats.effect.kernel.MonadCancelThrow
+import cats.syntax.functor._
 import cats.~>
 import org.typelevel.otel4s.context.propagation.TextMapGetter
 import org.typelevel.otel4s.context.propagation.TextMapUpdater
@@ -45,9 +46,15 @@ trait Tracer[F[_]] extends TracerMacro[F] {
     */
   def meta: Tracer.Meta[F]
 
-  /** Returns the context of a span when it is available in the scope.
+  /** Returns the context of the current span when a span that is not no-op
+    * exists in the local scope.
     */
   def currentSpanContext: F[Option[SpanContext]]
+
+  /** Returns the current span if one exists in the local scope, or a no-op span
+    * otherwise.
+    */
+  def currentSpanOrNoop: F[Span[F]]
 
   /** Creates a new [[org.typelevel.otel4s.trace.SpanBuilder SpanBuilder]]. The
     * builder can be used to make a fully customized
@@ -256,6 +263,8 @@ object Tracer {
       private val builder = SpanBuilder.noop(noopBackend)
       val meta: Meta[F] = Meta.disabled
       val currentSpanContext: F[Option[SpanContext]] = Applicative[F].pure(None)
+      val currentSpanOrNoop: F[Span[F]] =
+        Applicative[F].pure(Span.fromBackend(noopBackend))
       def rootScope[A](fa: F[A]): F[A] = fa
       def noopScope[A](fa: F[A]): F[A] = fa
       def childScope[A](parent: SpanContext)(fa: F[A]): F[A] = fa
@@ -273,6 +282,8 @@ object Tracer {
     def meta: Meta[G] = tracer.meta.mapK[G]
     def currentSpanContext: G[Option[SpanContext]] =
       kt.liftK(tracer.currentSpanContext)
+    def currentSpanOrNoop: G[Span[G]] =
+      kt.liftK(tracer.currentSpanOrNoop.map(_.mapK[G]))
     def spanBuilder(name: String): SpanBuilder[G] =
       tracer.spanBuilder(name).mapK[G]
     def childScope[A](parent: SpanContext)(ga: G[A]): G[A] =

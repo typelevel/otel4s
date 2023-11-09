@@ -25,6 +25,7 @@ import org.typelevel.otel4s.context.propagation.TextMapGetter
 import org.typelevel.otel4s.context.propagation.TextMapUpdater
 import org.typelevel.otel4s.sdk.common.InstrumentationScopeInfo
 import org.typelevel.otel4s.sdk.context.Context
+import org.typelevel.otel4s.trace.Span
 import org.typelevel.otel4s.trace.SpanBuilder
 import org.typelevel.otel4s.trace.SpanContext
 import org.typelevel.otel4s.trace.Tracer
@@ -40,6 +41,9 @@ final class SdkTracer[F[_]: Temporal] private[trace] (
 
   def currentSpanContext: F[Option[SpanContext]] =
     scope.current.map(current => current.filter(_.isValid))
+
+  def currentSpanOrNoop: F[Span[F]] =
+    ???
 
   def spanBuilder(name: String): SpanBuilder[F] =
     new SdkSpanBuilder[F](name, scopeInfo, sharedState, scope)

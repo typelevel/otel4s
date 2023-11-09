@@ -21,6 +21,7 @@ import org.typelevel.otel4s.sdk.context.Context
 import org.typelevel.otel4s.sdk.trace.SdkTraceScope
 import org.typelevel.otel4s.trace.SpanContext
 import org.typelevel.otel4s.trace.TraceFlags
+import org.typelevel.otel4s.trace.TraceState
 import scodec.bits.ByteVector
 
 class W3CTraceContextPropagatorSuite extends FunSuite {
@@ -32,6 +33,7 @@ class W3CTraceContextPropagatorSuite extends FunSuite {
   private val spanId = ByteVector.fromValidHex(spanIdHex)
 
   private val flags = List(TraceFlags.Sampled, TraceFlags.Default)
+  private val state = TraceState.empty
 
   private val propagator = W3CTraceContextPropagator
 
@@ -47,7 +49,7 @@ class W3CTraceContextPropagatorSuite extends FunSuite {
   test("inject context info") {
     flags.foreach { flag =>
       val spanContext =
-        SpanContext.create(traceId, spanId, flag, remote = false)
+        SpanContext.create(traceId, spanId, flag, state, remote = false)
       val ctx = SdkTraceScope.storeInContext(Context.root, spanContext)
       val result = propagator.inject(ctx, Map.empty[String, String])
 
@@ -67,12 +69,13 @@ class W3CTraceContextPropagatorSuite extends FunSuite {
   test("extract span context") {
     flags.foreach { flag =>
       val spanContext =
-        SpanContext.create(traceId, spanId, flag, remote = false)
+        SpanContext.create(traceId, spanId, flag, state, remote = false)
       val carrier = Map("traceparent" -> toTraceParent(spanContext))
 
       val ctx = propagator.extract(Context.root, carrier)
 
-      val expected = SpanContext.create(traceId, spanId, flag, remote = true)
+      val expected =
+        SpanContext.create(traceId, spanId, flag, state, remote = true)
 
       assertEquals(SdkTraceScope.fromContext(ctx), Some(expected))
     }

@@ -20,8 +20,12 @@ import cats.Hash
 import cats.Show
 import cats.syntax.show._
 import org.typelevel.otel4s.sdk.Attributes
+import org.typelevel.otel4s.trace.TraceState
 
 /** Sampling result returned by [[Sampler.shouldSample]].
+  *
+  * @see
+  *   [[https://opentelemetry.io/docs/specs/otel/trace/sdk/#shouldsample]]
   */
 sealed trait SamplingResult {
 
@@ -30,9 +34,20 @@ sealed trait SamplingResult {
     */
   def decision: SamplingDecision
 
-  /** The attributes that will be attached to the span
+  /** The attributes that will be attached to the span.
     */
   def attributes: Attributes
+
+  /** A modifier of the parent's TraceState.
+    *
+    * It may return the same trace state that was provided originally, or an
+    * updated one.
+    *
+    * '''Note''': If an empty trace state is returned, the trace state will be
+    * cleared, so samplers should normally return the passed-in trace state if
+    * they do not intend to change it.
+    */
+  def traceStateUpdater: SamplingResult.TraceStateUpdater
 
   override final def hashCode(): Int =
     Hash[SamplingResult].hash(this)
@@ -49,40 +64,106 @@ sealed trait SamplingResult {
 
 object SamplingResult {
 
+  /** A modifier of the parent's TraceState.
+    *
+    * It may return the same trace state that was provided originally, or an
+    * updated one.
+    *
+    * '''Note''': If an empty trace state is returned, the trace state will be
+    * cleared, so samplers should normally return the passed-in trace state if
+    * they do not intend to change it.
+    */
+  sealed trait TraceStateUpdater {
+    def update(state: TraceState): TraceState
+  }
+
+  object TraceStateUpdater {
+
+    /** Always returns the given trace state without modifications. */
+    case object Identity extends TraceStateUpdater {
+      def update(state: TraceState): TraceState = state
+    }
+
+    /** Returns the given trace state modified by the `modify` function. */
+    final case class Modifier(modify: TraceState => TraceState)
+        extends TraceStateUpdater {
+      def update(state: TraceState): TraceState =
+        modify(state)
+    }
+
+    /** Always returns the `const` state. No matter the input. */
+    final case class Const(const: TraceState) extends TraceStateUpdater {
+      def update(state: TraceState): TraceState = const
+    }
+
+    implicit val traceStateUpdaterHash: Hash[TraceStateUpdater] =
+      Hash.fromUniversalHashCode
+
+    implicit val traceStateUpdaterShow: Show[TraceStateUpdater] =
+      Show.show {
+        case Identity     => "Identity"
+        case Modifier(_)  => "Modifier(f)"
+        case Const(const) => show"Const($const)"
+      }
+  }
+
   val RecordAndSample: SamplingResult =
-    SamplingResultImpl(SamplingDecision.RecordAndSample, Attributes.Empty)
+    SamplingResultImpl(
+      SamplingDecision.RecordAndSample,
+      Attributes.Empty,
+      TraceStateUpdater.Identity
+    )
 
   val RecordOnly: SamplingResult =
-    SamplingResultImpl(SamplingDecision.RecordOnly, Attributes.Empty)
+    SamplingResultImpl(
+      SamplingDecision.RecordOnly,
+      Attributes.Empty,
+      TraceStateUpdater.Identity
+    )
 
   val Drop: SamplingResult =
-    SamplingResultImpl(SamplingDecision.Drop, Attributes.Empty)
+    SamplingResultImpl(
+      SamplingDecision.Drop,
+      Attributes.Empty,
+      TraceStateUpdater.Identity
+    )
 
-  def create(decision: SamplingDecision): SamplingResult =
+  def apply(decision: SamplingDecision): SamplingResult =
     decision match {
       case SamplingDecision.RecordAndSample => RecordAndSample
       case SamplingDecision.RecordOnly      => RecordOnly
       case SamplingDecision.Drop            => Drop
     }
 
-  def create(
+  def apply(
       decision: SamplingDecision,
       attributes: Attributes
   ): SamplingResult =
-    if (attributes.isEmpty) create(decision)
-    else SamplingResultImpl(decision, attributes)
+    if (attributes.isEmpty) apply(decision)
+    else SamplingResultImpl(decision, attributes, TraceStateUpdater.Identity)
+
+  def apply(
+      decision: SamplingDecision,
+      attributes: Attributes,
+      traceStateUpdater: TraceStateUpdater
+  ): SamplingResult =
+    if (traceStateUpdater == TraceStateUpdater.Identity)
+      apply(decision, attributes)
+    else
+      SamplingResultImpl(decision, attributes, traceStateUpdater)
 
   implicit val samplingResultHash: Hash[SamplingResult] =
-    Hash.by(r => (r.decision, r.attributes))
+    Hash.by(r => (r.decision, r.attributes, r.traceStateUpdater))
 
   implicit val samplingResultShow: Show[SamplingResult] =
     Show.show { r =>
-      show"SamplingResult{decision=${r.decision}, attributes=${r.attributes}}"
+      show"SamplingResult{decision=${r.decision}, attributes=${r.attributes}, traceStateUpdater=${r.traceStateUpdater}}"
     }
 
   private final case class SamplingResultImpl(
       decision: SamplingDecision,
-      attributes: Attributes
+      attributes: Attributes,
+      traceStateUpdater: TraceStateUpdater
   ) extends SamplingResult
 
 }

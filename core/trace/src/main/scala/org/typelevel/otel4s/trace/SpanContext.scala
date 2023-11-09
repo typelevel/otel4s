@@ -163,6 +163,9 @@ object SpanContext {
     * @param traceFlags
     *   the trace flags of the span context
     *
+    * @param traceState
+    *   the trace state of the span context
+    *
     * @param remote
     *   whether the span is propagated from the remote parent or not
     */
@@ -170,12 +173,14 @@ object SpanContext {
       traceId: ByteVector,
       spanId: ByteVector,
       traceFlags: TraceFlags,
+      traceState: TraceState,
       remote: Boolean
   ): SpanContext =
     createInternal(
       traceId = traceId,
       spanId = spanId,
       traceFlags = traceFlags,
+      traceState = traceState,
       remote = remote,
       skipIdValidation = false
     )
@@ -202,6 +207,9 @@ object SpanContext {
     * @param traceFlags
     *   the trace flags of the span context
     *
+    * @param traceState
+    *   the trace state of the span context
+    *
     * @param remote
     *   whether the span is propagated from the remote parent or not
     *
@@ -213,6 +221,7 @@ object SpanContext {
       traceId: ByteVector,
       spanId: ByteVector,
       traceFlags: TraceFlags,
+      traceState: TraceState,
       remote: Boolean,
       skipIdValidation: Boolean
   ): SpanContext = {
@@ -225,6 +234,7 @@ object SpanContext {
         spanId = spanId,
         spanIdHex = spanId.toHex,
         traceFlags = traceFlags,
+        traceState = traceState,
         isRemote = remote,
         isValid = true
       )
@@ -235,6 +245,7 @@ object SpanContext {
         spanId = SpanId.Invalid,
         spanIdHex = SpanId.Invalid.toHex,
         traceFlags = traceFlags,
+        traceState = traceState,
         isRemote = remote,
         isValid = false
       )
@@ -251,6 +262,7 @@ object SpanContext {
       traceId: ByteVector,
       spanId: ByteVector,
       traceFlags: TraceFlags,
+      traceState: TraceState,
       remote: Boolean,
       isValid: Boolean
   ): Delegate[A] =
@@ -261,6 +273,7 @@ object SpanContext {
       spanId = spanId,
       spanIdHex = spanId.toHex,
       traceFlags = traceFlags,
+      traceState = traceState,
       isRemote = remote,
       isValid = isValid,
     )
@@ -272,7 +285,13 @@ object SpanContext {
 
   implicit val spanContextShow: Show[SpanContext] =
     Show.show { ctx =>
-      show"SpanContext{traceId=${ctx.traceIdHex}, spanId=${ctx.spanIdHex}, traceFlags=${ctx.traceFlags}, remote=${ctx.isRemote}, valid=${ctx.isValid}}"
+      show"SpanContext{" +
+        show"traceId=${ctx.traceIdHex}, " +
+        show"spanId=${ctx.spanIdHex}, " +
+        show"traceFlags=${ctx.traceFlags}, " +
+        show"traceState=${ctx.traceState}, " +
+        show"remote=${ctx.isRemote}, " +
+        show"valid=${ctx.isValid}}"
     }
 
   private final case class SpanContextImpl(

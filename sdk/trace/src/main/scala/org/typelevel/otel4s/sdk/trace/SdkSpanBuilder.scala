@@ -37,6 +37,7 @@ import org.typelevel.otel4s.trace.SpanFinalizer
 import org.typelevel.otel4s.trace.SpanKind
 import org.typelevel.otel4s.trace.SpanOps
 import org.typelevel.otel4s.trace.TraceFlags
+import org.typelevel.otel4s.trace.TraceState
 
 import scala.concurrent.duration.FiniteDuration
 
@@ -163,10 +164,15 @@ private[trace] final case class SdkSpanBuilder[F[_]: Temporal](
           if (samplingDecision.isSampled) TraceFlags.Sampled
           else TraceFlags.Default
 
+        val traceState = parentSpanContext.fold(TraceState.empty) { ctx =>
+          samplingResult.traceStateUpdater.update(ctx.traceState)
+        }
+
         val spanContext = SpanContext.createInternal(
           traceId = traceId,
           spanId = spanId,
           traceFlags = traceFlags,
+          traceState = traceState,
           remote = false,
           skipIdValidation = tracerSharedState.idGenerator.canSkipIdValidation
         )

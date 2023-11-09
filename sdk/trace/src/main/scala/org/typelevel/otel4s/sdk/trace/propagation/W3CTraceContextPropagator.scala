@@ -26,6 +26,7 @@ import org.typelevel.otel4s.trace.SpanContext
 import org.typelevel.otel4s.trace.SpanContext.SpanId
 import org.typelevel.otel4s.trace.SpanContext.TraceId
 import org.typelevel.otel4s.trace.TraceFlags
+import org.typelevel.otel4s.trace.TraceState
 
 import scala.util.matching.Regex
 
@@ -79,7 +80,8 @@ object W3CTraceContextPropagator extends TextMapPropagator[Context] {
           SpanId.fromHex(spanIdHex),
           TraceFlags.fromHex(traceFlagsHex)
         ).mapN { (traceId, spanId, traceFlags) =>
-          SpanContext.create(traceId, spanId, traceFlags, remote = true)
+          val state = TraceState.empty
+          SpanContext.create(traceId, spanId, traceFlags, state, remote = true)
         }
 
       case _ =>

@@ -1,7 +1,7 @@
 # Histogram custom buckets
 
 By default, OpenTelemetry use the following boundary values for histogram
-bucketing: {0, 5, 10, 25, 50, 75, 100, 250, 500, 750, 1000, 2500, 5000, 7500, 10000}.
+bucketing:［0, 5, 10, 25, 50, 75, 100, 250, 500, 750, 1000, 2500, 5000, 7500, 10000］.
 
 In some cases, these boundaries don't represent the distribution of the values. For example, we expect that HTTP server
 latency should be somewhere between 100ms and 1s. Therefore, 2.5, 5, 7.5, and 10 seconds buckets are redundant.
@@ -88,7 +88,7 @@ To select multiple instruments, a wildcard pattern can be used: `service.*.durat
 
 The view determines how the selected instruments should be changed or aggregated.
 
-In our particular case, we create a histogram view with custom buckets: {.005, .01, .025, .05, .075, .1, .25, .5}.
+In our particular case, we create a histogram view with custom buckets:［.005, .01, .025, .05, .075, .1, .25, .5］.
 
 ```scala mdoc:silent
 import io.opentelemetry.sdk.metrics.{Aggregation, View}

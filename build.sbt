@@ -37,6 +37,8 @@ val MUnitCatsEffectVersion = "2.0.0-M3"
 val MUnitDisciplineVersion = "2.0.0-M3"
 val OpenTelemetryVersion = "1.31.0"
 val OpenTelemetrySemConvVersion = "1.21.0-alpha"
+val PekkoStreamVersion = "1.0.1"
+val PekkoHttpVersion = "1.0.0"
 val PlatformVersion = "1.0.2"
 val ScodecVersion = "1.1.38"
 val VaultVersion = "3.5.0"
@@ -347,17 +349,21 @@ lazy val benchmarks = project
   .settings(scalafixSettings)
 
 lazy val examples = project
-  .enablePlugins(NoPublishPlugin)
+  .enablePlugins(NoPublishPlugin, JavaAgent)
   .in(file("examples"))
   .dependsOn(core.jvm, java)
   .settings(
     name := "otel4s-examples",
     libraryDependencies ++= Seq(
+      "org.apache.pekko" %% "pekko-stream" % PekkoStreamVersion,
+      "org.apache.pekko" %% "pekko-http" % PekkoHttpVersion,
       "io.opentelemetry" % "opentelemetry-exporter-otlp" % OpenTelemetryVersion,
       "io.opentelemetry" % "opentelemetry-sdk" % OpenTelemetryVersion,
       "io.opentelemetry" % "opentelemetry-sdk-extension-autoconfigure" % OpenTelemetryVersion,
-      "io.opentelemetry" % "opentelemetry-extension-trace-propagators" % OpenTelemetryVersion % Runtime
+      "io.opentelemetry" % "opentelemetry-extension-trace-propagators" % OpenTelemetryVersion % Runtime,
+      "io.opentelemetry.instrumentation" % "opentelemetry-instrumentation-annotations" % OpenTelemetryVersion
     ),
+    javaAgents += "io.opentelemetry.javaagent" % "opentelemetry-javaagent" % OpenTelemetryVersion % Runtime,
     run / fork := true,
     javaOptions += "-Dotel.java.global-autoconfigure.enabled=true",
     envVars ++= Map(
@@ -373,7 +379,9 @@ lazy val docs = project
   .dependsOn(java)
   .settings(
     libraryDependencies ++= Seq(
-      "io.opentelemetry" % "opentelemetry-sdk-extension-autoconfigure" % OpenTelemetryVersion
+      "org.apache.pekko" %% "pekko-http" % PekkoHttpVersion,
+      "io.opentelemetry" % "opentelemetry-sdk-extension-autoconfigure" % OpenTelemetryVersion,
+      "io.opentelemetry.instrumentation" % "opentelemetry-instrumentation-annotations" % OpenTelemetryVersion
     ),
     mdocVariables ++= Map(
       "OPEN_TELEMETRY_VERSION" -> OpenTelemetryVersion

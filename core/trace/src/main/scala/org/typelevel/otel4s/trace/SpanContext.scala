@@ -161,14 +161,25 @@ object SpanContext {
       traceState: TraceState,
       remote: Boolean
   ): SpanContext =
-    createInternal(
-      traceId = traceId,
-      spanId = spanId,
-      traceFlags = traceFlags,
-      traceState = traceState,
-      remote = remote,
-      skipIdValidation = false
-    )
+    if (TraceId.isValid(traceId) && SpanId.isValid(spanId)) {
+      createInternal(
+        traceId = traceId,
+        spanId = spanId,
+        traceFlags = traceFlags,
+        traceState = traceState,
+        remote = remote,
+        isValid = true
+      )
+    } else {
+      createInternal(
+        traceId = TraceId.Invalid,
+        spanId = SpanId.Invalid,
+        traceFlags = traceFlags,
+        traceState = traceState,
+        remote = remote,
+        isValid = false
+      )
+    }
 
   implicit val spanContextHash: Hash[SpanContext] =
     Hash.by { ctx =>
@@ -221,9 +232,8 @@ object SpanContext {
     * @param remote
     *   whether the span is propagated from the remote parent or not
     *
-    * @param skipIdValidation
-    *   pass true to skip validation of trace ID and span ID as an optimization
-    *   in cases where they are known to have been already validated
+    * @param isValid
+    *   whether the span is valid or not
     */
   private[otel4s] def createInternal(
       traceId: ByteVector,
@@ -231,34 +241,18 @@ object SpanContext {
       traceFlags: TraceFlags,
       traceState: TraceState,
       remote: Boolean,
-      skipIdValidation: Boolean
-  ): SpanContext = {
-    if (
-      skipIdValidation || (TraceId.isValid(traceId) && SpanId.isValid(spanId))
-    ) {
-      SpanContextImpl(
-        traceId = traceId,
-        traceIdHex = traceId.toHex,
-        spanId = spanId,
-        spanIdHex = spanId.toHex,
-        traceFlags = traceFlags,
-        traceState = traceState,
-        isRemote = remote,
-        isValid = true
-      )
-    } else {
-      SpanContextImpl(
-        traceId = TraceId.Invalid,
-        traceIdHex = TraceId.Invalid.toHex,
-        spanId = SpanId.Invalid,
-        spanIdHex = SpanId.Invalid.toHex,
-        traceFlags = traceFlags,
-        traceState = traceState,
-        isRemote = remote,
-        isValid = false
-      )
-    }
-  }
+      isValid: Boolean
+  ): SpanContext =
+    SpanContextImpl(
+      traceId = traceId,
+      traceIdHex = traceId.toHex,
+      spanId = spanId,
+      spanIdHex = spanId.toHex,
+      traceFlags = traceFlags,
+      traceState = traceState,
+      isRemote = remote,
+      isValid = isValid
+    )
 
   private final case class SpanContextImpl(
       traceId: ByteVector,

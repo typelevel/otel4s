@@ -24,23 +24,24 @@ import org.typelevel.otel4s.trace.TraceFlags
 import org.typelevel.otel4s.trace.TraceState
 import scodec.bits.ByteVector
 
-private[otel4s] object WrappedSpanContext {
+private[otel4s] object SpanContextConversion {
 
-  def wrap(context: JSpanContext): SpanContext = {
+  def fromJSpanContext(context: JSpanContext): SpanContext = {
     val entries = Vector.newBuilder[(String, String)]
     context.getTraceState.forEach((k, v) => entries.addOne(k -> v))
     val traceState = TraceState.fromVectorUnsafe(entries.result())
 
-    SpanContext(
+    SpanContext.createInternal(
       traceId = ByteVector(context.getTraceIdBytes),
       spanId = ByteVector(context.getSpanIdBytes),
       traceFlags = TraceFlags.fromByte(context.getTraceFlags.asByte),
       traceState = traceState,
-      remote = context.isRemote
+      remote = context.isRemote,
+      isValid = context.isValid
     )
   }
 
-  def unwrap(context: SpanContext): JSpanContext = {
+  def toJSpanContext(context: SpanContext): JSpanContext = {
     val traceId = context.traceIdHex
     val spanId = context.spanIdHex
     val flags = JTraceFlags.fromByte(context.traceFlags.toByte)

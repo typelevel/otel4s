@@ -41,6 +41,7 @@ class SpanContextSuite extends FunSuite {
     assertEquals(SpanContext.invalid.spanId, SpanId.Invalid)
     assertEquals(SpanContext.invalid.spanIdHex, SpanId.InvalidHex)
     assertEquals(SpanContext.invalid.traceFlags, TraceFlags.Default)
+    assertEquals(SpanContext.invalid.traceState, TraceState.empty)
     assertEquals(SpanContext.invalid.isValid, false)
     assertEquals(SpanContext.invalid.isRemote, false)
   }
@@ -56,6 +57,7 @@ class SpanContextSuite extends FunSuite {
       traceId = traceId,
       spanId = ByteVector.fromValidHex("0000000000000061"),
       traceFlags = TraceFlags.Default,
+      traceState = TraceState.empty,
       remote = false
     )
 
@@ -75,6 +77,7 @@ class SpanContextSuite extends FunSuite {
       traceId = ValidTraceId,
       spanId = spanId,
       traceFlags = TraceFlags.Default,
+      traceState = TraceState.empty,
       remote = false
     )
 
@@ -88,6 +91,7 @@ class SpanContextSuite extends FunSuite {
       traceId = ValidTraceId,
       spanId = ValidSpanId,
       traceFlags = TraceFlags.Sampled,
+      traceState = TraceState.empty,
       remote = false
     )
 

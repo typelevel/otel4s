@@ -108,6 +108,7 @@
     <li class="level2 nav-leaf"><a href="../../examples/grafana/">Grafana - All-in-one</a></li>
     <li class="level1 nav-header">Instrumentation</li>
     <li class="level2 nav-leaf"><a href="../../instrumentation/tracing.html">Tracing</a></li>
+    <li class="level2 nav-leaf"><a href="../../instrumentation/tracing-java-interop.html">Tracing - interop with Java-instrumented libraries</a></li>
   </ul>
 
 </nav>
@@ -136,7 +137,7 @@
 
         <h1 id="histogram-custom-buckets" class="title">Histogram custom buckets</h1>
         <p>By default, OpenTelemetry use the following boundary values for histogram
-        bucketing: {0, 5, 10, 25, 50, 75, 100, 250, 500, 750, 1000, 2500, 5000, 7500, 10000}.</p>
+        bucketing:［0, 5, 10, 25, 50, 75, 100, 250, 500, 750, 1000, 2500, 5000, 7500, 10000］.</p>
         <p>In some cases, these boundaries don&#39;t represent the distribution of the values. For example, we expect that HTTP server
         latency should be somewhere between 100ms and 1s. Therefore, 2.5, 5, 7.5, and 10 seconds buckets are redundant.</p>
         <p>In this example, we will
@@ -202,7 +203,7 @@
         
         <h4 id="view-definition" class="section"><a class="anchor-link left" href="#view-definition"><i class="icofont-laika link">&#xef71;</i></a>View definition</h4>
         <p>The view determines how the selected instruments should be changed or aggregated.</p>
-        <p>In our particular case, we create a histogram view with custom buckets: {.005, .01, .025, .05, .075, .1, .25, .5}.</p>
+        <p>In our particular case, we create a histogram view with custom buckets:［.005, .01, .025, .05, .075, .1, .25, .5］.</p>
         <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">io</span><span>.</span><span class="identifier">opentelemetry</span><span>.</span><span class="identifier">sdk</span><span>.</span><span class="identifier">metrics</span><span>.{</span><span class="type-name">Aggregation</span><span>, </span><span class="type-name">View</span><span>}
 
 </span><span class="type-name">View</span><span>

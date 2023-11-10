@@ -31,7 +31,7 @@ import munit.TestOptions
 import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.context.propagation.TextMapPropagator
 import org.typelevel.otel4s.sdk.Attributes
-import org.typelevel.otel4s.sdk.common.InstrumentationScopeInfo
+import org.typelevel.otel4s.sdk.common.InstrumentationScope
 import org.typelevel.otel4s.sdk.context.Context
 import org.typelevel.otel4s.sdk.context.propagation.PassThroughPropagator
 import org.typelevel.otel4s.sdk.trace.data.EventData
@@ -51,7 +51,7 @@ import scala.util.control.NoStackTrace
 class TracerSuite extends CatsEffectSuite {
 
   sdkTest("propagate instrumentation info") { sdk =>
-    val expected = InstrumentationScopeInfo.create(
+    val expected = InstrumentationScope(
       name = "tracer",
       version = Some("1.0"),
       schemaUrl = Some("https://localhost:8080"),
@@ -69,7 +69,7 @@ class TracerSuite extends CatsEffectSuite {
 
       spans <- sdk.finishedSpans
     } yield assertEquals(
-      spans.map(_.instrumentationScopeInfo),
+      spans.map(_.instrumentationScope),
       List(expected)
     )
   }

@@ -28,7 +28,7 @@ import cats.syntax.semigroup._
 import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.AttributeKey
 import org.typelevel.otel4s.meta.InstrumentMeta
-import org.typelevel.otel4s.sdk.common.InstrumentationScopeInfo
+import org.typelevel.otel4s.sdk.common.InstrumentationScope
 import org.typelevel.otel4s.sdk.trace.data.EventData
 import org.typelevel.otel4s.sdk.trace.data.LinkData
 import org.typelevel.otel4s.sdk.trace.data.SpanData
@@ -131,7 +131,7 @@ final class SdkSpanBackend[F[_]: Monad: Clock] private (
       def kind: SpanKind =
         immutableState.kind
 
-      def scopeInfo: InstrumentationScopeInfo =
+      def scopeInfo: InstrumentationScope =
         immutableState.scopeInfo
 
       def spanContext: SpanContext =
@@ -163,7 +163,7 @@ final class SdkSpanBackend[F[_]: Monad: Clock] private (
           totalRecordedLinks = immutableState.totalRecordedLinks,
           totalAttributeCount =
             state.attributes.size, // todo: incorrect when limits are applied,
-          instrumentationScopeInfo = immutableState.scopeInfo,
+          instrumentationScope = immutableState.scopeInfo,
           resource = immutableState.resource
         )
 
@@ -190,7 +190,7 @@ object SdkSpanBackend {
 
   private final case class ImmutableState(
       context: SpanContext,
-      scopeInfo: InstrumentationScopeInfo,
+      scopeInfo: InstrumentationScope,
       kind: SpanKind,
       parentContext: Option[SpanContext],
       resource: Resource,
@@ -212,7 +212,7 @@ object SdkSpanBackend {
   def start[F[_]: Temporal](
       context: SpanContext,
       name: String,
-      scopeInfo: InstrumentationScopeInfo,
+      scopeInfo: InstrumentationScope,
       resource: Resource,
       kind: SpanKind,
       parentContext: Option[SpanContext],

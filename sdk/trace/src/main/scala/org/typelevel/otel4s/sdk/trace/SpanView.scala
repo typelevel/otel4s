@@ -18,7 +18,7 @@ package org.typelevel.otel4s
 package sdk
 package trace
 
-import org.typelevel.otel4s.sdk.common.InstrumentationScopeInfo
+import org.typelevel.otel4s.sdk.common.InstrumentationScope
 import org.typelevel.otel4s.sdk.trace.data.SpanData
 import org.typelevel.otel4s.trace.SpanContext
 import org.typelevel.otel4s.trace.SpanKind
@@ -37,7 +37,7 @@ trait SpanView[F[_]] {
   /** Returns the instrumentation scope specified when creating the tracer which
     * produced this span.
     */
-  def scopeInfo: InstrumentationScopeInfo
+  def scopeInfo: InstrumentationScope
 
   /** Returns the span context of the span. */
   def spanContext: SpanContext

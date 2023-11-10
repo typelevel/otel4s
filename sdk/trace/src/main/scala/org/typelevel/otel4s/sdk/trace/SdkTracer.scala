@@ -23,7 +23,7 @@ import cats.syntax.functor._
 import org.typelevel.otel4s.context.propagation.ContextPropagators
 import org.typelevel.otel4s.context.propagation.TextMapGetter
 import org.typelevel.otel4s.context.propagation.TextMapUpdater
-import org.typelevel.otel4s.sdk.common.InstrumentationScopeInfo
+import org.typelevel.otel4s.sdk.common.InstrumentationScope
 import org.typelevel.otel4s.sdk.context.Context
 import org.typelevel.otel4s.trace.Span
 import org.typelevel.otel4s.trace.SpanBuilder
@@ -32,7 +32,7 @@ import org.typelevel.otel4s.trace.Tracer
 
 final class SdkTracer[F[_]: Temporal] private[trace] (
     sharedState: TracerSharedState[F],
-    scopeInfo: InstrumentationScopeInfo,
+    scopeInfo: InstrumentationScope,
     propagators: ContextPropagators[Context],
     scope: SdkTraceScope[F]
 ) extends Tracer[F] {

@@ -28,7 +28,7 @@ import cats.syntax.semigroup._
 import cats.~>
 import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.sdk.Attributes
-import org.typelevel.otel4s.sdk.common.InstrumentationScopeInfo
+import org.typelevel.otel4s.sdk.common.InstrumentationScope
 import org.typelevel.otel4s.sdk.trace.data.LinkData
 import org.typelevel.otel4s.trace.Span
 import org.typelevel.otel4s.trace.SpanBuilder
@@ -43,7 +43,7 @@ import scala.concurrent.duration.FiniteDuration
 
 private[trace] final case class SdkSpanBuilder[F[_]: Temporal](
     name: String,
-    scopeInfo: InstrumentationScopeInfo,
+    scopeInfo: InstrumentationScope,
     tracerSharedState: TracerSharedState[F],
     scope: SdkTraceScope[F],
     parent: SdkSpanBuilder.Parent = SdkSpanBuilder.Parent.Propagate,

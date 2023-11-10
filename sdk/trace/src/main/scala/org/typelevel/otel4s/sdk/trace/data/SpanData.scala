@@ -21,7 +21,7 @@ package data
 import cats.Hash
 import cats.Show
 import cats.syntax.show._
-import org.typelevel.otel4s.sdk.common.InstrumentationScopeInfo
+import org.typelevel.otel4s.sdk.common.InstrumentationScope
 import org.typelevel.otel4s.trace.SpanContext
 import org.typelevel.otel4s.trace.SpanKind
 
@@ -40,7 +40,7 @@ sealed trait SpanData {
   def totalRecordedEvents: Int
   def totalRecordedLinks: Int
   def totalAttributeCount: Int
-  def instrumentationScopeInfo: InstrumentationScopeInfo
+  def instrumentationScope: InstrumentationScope
   def resource: Resource
 
   override final def hashCode(): Int =
@@ -73,7 +73,7 @@ object SpanData {
       totalRecordedEvents: Int,
       totalRecordedLinks: Int,
       totalAttributeCount: Int,
-      instrumentationScopeInfo: InstrumentationScopeInfo,
+      instrumentationScope: InstrumentationScope,
       resource: Resource
   ) extends SpanData
 
@@ -92,7 +92,7 @@ object SpanData {
       totalRecordedEvents: Int,
       totalRecordedLinks: Int,
       totalAttributeCount: Int,
-      instrumentationScopeInfo: InstrumentationScopeInfo,
+      instrumentationScope: InstrumentationScope,
       resource: Resource
   ): SpanData =
     SpanDataImpl(
@@ -110,7 +110,7 @@ object SpanData {
       totalRecordedEvents,
       totalRecordedLinks,
       totalAttributeCount,
-      instrumentationScopeInfo,
+      instrumentationScope,
       resource
     )
 
@@ -131,7 +131,7 @@ object SpanData {
         data.totalRecordedEvents,
         data.totalRecordedLinks,
         data.totalAttributeCount,
-        data.instrumentationScopeInfo,
+        data.instrumentationScope,
         data.resource
       )
     }
@@ -153,7 +153,7 @@ object SpanData {
         show"totalRecordedEvents=${data.totalRecordedEvents}, " +
         show"totalRecordedLinks=${data.totalRecordedLinks}, " +
         show"totalAttributeCount=${data.totalAttributeCount}, " +
-        show"instrumentationScopeInfo=${data.instrumentationScopeInfo}, " +
+        show"instrumentationScope=${data.instrumentationScope}, " +
         show"resource=${data.resource}}"
     }
 

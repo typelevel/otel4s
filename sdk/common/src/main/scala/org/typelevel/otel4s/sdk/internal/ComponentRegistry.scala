@@ -17,11 +17,11 @@
 package org.typelevel.otel4s.sdk
 package internal
 
-import org.typelevel.otel4s.sdk.common.InstrumentationScopeInfo
+import org.typelevel.otel4s.sdk.common.InstrumentationScope
 
 // todo: implement caching
 final class ComponentRegistry[F[_], A](
-    factory: InstrumentationScopeInfo => F[A]
+    factory: InstrumentationScope => F[A]
 ) {
 
   def get(
@@ -31,11 +31,11 @@ final class ComponentRegistry[F[_], A](
       attributes: Attributes
   ): F[A] = {
     buildComponent(
-      InstrumentationScopeInfo.create(name, version, schemaUrl, attributes)
+      InstrumentationScope(name, version, schemaUrl, attributes)
     )
   }
 
-  private def buildComponent(info: InstrumentationScopeInfo): F[A] = {
+  private def buildComponent(info: InstrumentationScope): F[A] = {
     val component = factory(info)
     component
   }

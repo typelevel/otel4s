@@ -24,70 +24,37 @@ import org.typelevel.otel4s.trace.TraceFlags
 import org.typelevel.otel4s.trace.TraceState
 import scodec.bits.ByteVector
 
-private[java] final case class WrappedSpanContext(
-    jSpanContext: JSpanContext
-) extends SpanContext {
+private[otel4s] object WrappedSpanContext {
 
-  lazy val traceId: ByteVector =
-    ByteVector(jSpanContext.getTraceIdBytes)
-
-  def traceIdHex: String =
-    jSpanContext.getTraceId
-
-  lazy val spanId: ByteVector =
-    ByteVector(jSpanContext.getSpanIdBytes)
-
-  def spanIdHex: String =
-    jSpanContext.getSpanId
-
-  lazy val traceFlags: TraceFlags =
-    TraceFlags.fromByte(jSpanContext.getTraceFlags.asByte)
-
-  lazy val traceState: TraceState = {
+  def wrap(context: JSpanContext): SpanContext = {
     val entries = Vector.newBuilder[(String, String)]
-    jSpanContext.getTraceState.forEach((k, v) => entries.addOne(k -> v))
-    TraceState.fromVectorUnsafe(entries.result())
+    context.getTraceState.forEach((k, v) => entries.addOne(k -> v))
+    val traceState = TraceState.fromVectorUnsafe(entries.result())
+
+    SpanContext(
+      traceId = ByteVector(context.getTraceIdBytes),
+      spanId = ByteVector(context.getSpanIdBytes),
+      traceFlags = TraceFlags.fromByte(context.getTraceFlags.asByte),
+      traceState = traceState,
+      remote = context.isRemote
+    )
   }
 
-  def isValid: Boolean =
-    jSpanContext.isValid
-
-  def isRemote: Boolean =
-    jSpanContext.isRemote
-}
-
-private[trace] object WrappedSpanContext {
-
   def unwrap(context: SpanContext): JSpanContext = {
-    def flags = JTraceFlags.fromByte(context.traceFlags.toByte)
-
-    def traceState =
+    val traceId = context.traceIdHex
+    val spanId = context.spanIdHex
+    val flags = JTraceFlags.fromByte(context.traceFlags.toByte)
+    val traceState =
       context.traceState.asMap
         .foldLeft(JTraceState.builder()) { case (builder, (key, value)) =>
           builder.put(key, value)
         }
         .build()
 
-    context match {
-      case ctx: WrappedSpanContext =>
-        ctx.jSpanContext
-
-      case other if other.isRemote =>
-        JSpanContext.createFromRemoteParent(
-          other.traceIdHex,
-          other.spanIdHex,
-          flags,
-          traceState
-        )
-
-      case other =>
-        JSpanContext.create(
-          other.traceIdHex,
-          other.spanIdHex,
-          flags,
-          traceState
-        )
-    }
+    if (context.isRemote)
+      JSpanContext.createFromRemoteParent(traceId, spanId, flags, traceState)
+    else
+      JSpanContext.create(traceId, spanId, flags, traceState)
   }
 
 }

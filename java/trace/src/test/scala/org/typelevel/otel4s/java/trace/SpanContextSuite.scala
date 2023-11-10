@@ -17,10 +17,34 @@
 package org.typelevel.otel4s.java.trace
 
 import io.opentelemetry.api.trace.{SpanContext => JSpanContext}
-import munit.CatsEffectSuite
+import munit.ScalaCheckSuite
+import org.scalacheck.Gen
+import org.scalacheck.Prop
 import org.typelevel.otel4s.trace.SpanContext
+import org.typelevel.otel4s.trace.TraceFlags
+import org.typelevel.otel4s.trace.TraceState
+import scodec.bits.ByteVector
 
-class SpanContextSuite extends CatsEffectSuite {
+class SpanContextSuite extends ScalaCheckSuite {
+
+  private val traceIdGen: Gen[ByteVector] =
+    for {
+      hi <- Gen.long
+      lo <- Gen.long.suchThat(_ != 0)
+    } yield SpanContext.TraceId.fromLongs(hi, lo)
+
+  private val spanIdGen: Gen[ByteVector] =
+    for {
+      value <- Gen.long.suchThat(_ != 0)
+    } yield SpanContext.SpanId.fromLong(value)
+
+  private val spanContextGen: Gen[SpanContext] =
+    for {
+      traceId <- traceIdGen
+      spanId <- spanIdGen
+      traceFlags <- Gen.oneOf(TraceFlags.Sampled, TraceFlags.Default)
+      remote <- Gen.oneOf(true, false)
+    } yield SpanContext(traceId, spanId, traceFlags, TraceState.empty, remote)
 
   test("SpanContext.invalid satisfies the specification") {
     val context = SpanContext.invalid
@@ -32,6 +56,29 @@ class SpanContextSuite extends CatsEffectSuite {
     assertEquals(context.isSampled, jContext.isSampled)
     assertEquals(context.isValid, jContext.isValid)
     assertEquals(context.isRemote, jContext.isRemote)
+  }
+
+  test("SpanContext to JSpanContext") {
+    Prop.forAll(spanContextGen) { ctx =>
+      val jCtx = WrappedSpanContext.unwrap(ctx)
+
+      assert(ctx.traceId.toArray.sameElements(jCtx.getTraceIdBytes))
+      assert(ctx.spanId.toArray.sameElements(jCtx.getSpanIdBytes))
+      assertEquals(ctx.traceIdHex, jCtx.getTraceId)
+      assertEquals(ctx.spanIdHex, jCtx.getSpanId)
+      assertEquals(ctx.isSampled, jCtx.isSampled)
+      assertEquals(ctx.isValid, jCtx.isValid)
+      assertEquals(ctx.isRemote, jCtx.isRemote)
+      assertEquals(ctx.traceFlags.toByte, jCtx.getTraceFlags.asByte())
+      assertEquals(ctx.traceFlags.toHex, jCtx.getTraceFlags.asHex())
+    }
+  }
+
+  test("back and forth conversion") {
+    Prop.forAll(spanContextGen) { ctx =>
+      val jCtx = WrappedSpanContext.unwrap(ctx)
+      assertEquals(WrappedSpanContext.wrap(jCtx), ctx)
+    }
   }
 
 }

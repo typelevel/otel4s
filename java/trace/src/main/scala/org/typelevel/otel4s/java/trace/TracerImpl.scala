@@ -45,7 +45,7 @@ private[java] class TracerImpl[F[_]: Sync](
       case Context.Noop => None
       case Context.Wrapped(underlying) =>
         Option(JSpan.fromContextOrNull(underlying))
-          .map(jSpan => new WrappedSpanContext(jSpan.getSpanContext))
+          .map(jSpan => WrappedSpanContext.wrap(jSpan.getSpanContext))
     }
 
   def currentSpanOrNoop: F[Span[F]] =

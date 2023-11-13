@@ -18,6 +18,7 @@ package org.typelevel.otel4s.trace
 
 import cats.Show
 import cats.kernel.Hash
+import org.typelevel.scalaccompat.annotation.threadUnsafe3
 
 import scala.collection.immutable.ListMap
 import scala.collection.immutable.SeqMap
@@ -140,6 +141,7 @@ object TraceState {
   ) extends TraceState {
     import Validation._
 
+    @threadUnsafe3
     lazy val asMap: SeqMap[String, String] =
       ListMap.from(entries)
 

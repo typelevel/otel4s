@@ -181,17 +181,20 @@ object SpanContext {
       )
     }
 
-  implicit val spanContextHash: Hash[SpanContext] =
+  implicit val spanContextHash: Hash[SpanContext] = {
+    implicit val byteVectorHash: Hash[ByteVector] = Hash.fromUniversalHashCode
+
     Hash.by { ctx =>
       (
-        ctx.traceIdHex,
-        ctx.spanIdHex,
+        ctx.traceId,
+        ctx.spanId,
         ctx.traceFlags,
         ctx.traceState,
         ctx.isValid,
         ctx.isRemote
       )
     }
+  }
 
   implicit val spanContextShow: Show[SpanContext] =
     Show.show { ctx =>

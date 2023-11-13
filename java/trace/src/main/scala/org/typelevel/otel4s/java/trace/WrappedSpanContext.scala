@@ -22,27 +22,32 @@ import io.opentelemetry.api.trace.{TraceState => JTraceState}
 import org.typelevel.otel4s.trace.SpanContext
 import org.typelevel.otel4s.trace.TraceFlags
 import org.typelevel.otel4s.trace.TraceState
+import org.typelevel.scalaccompat.annotation.threadUnsafe3
 import scodec.bits.ByteVector
 
 private[java] final case class WrappedSpanContext(
     jSpanContext: JSpanContext
 ) extends SpanContext {
 
+  @threadUnsafe3
   lazy val traceId: ByteVector =
     ByteVector(jSpanContext.getTraceIdBytes)
 
   def traceIdHex: String =
     jSpanContext.getTraceId
 
+  @threadUnsafe3
   lazy val spanId: ByteVector =
     ByteVector(jSpanContext.getSpanIdBytes)
 
   def spanIdHex: String =
     jSpanContext.getSpanId
 
+  @threadUnsafe3
   lazy val traceFlags: TraceFlags =
     TraceFlags.fromByte(jSpanContext.getTraceFlags.asByte)
 
+  @threadUnsafe3
   lazy val traceState: TraceState = {
     val entries = Vector.newBuilder[(String, String)]
     jSpanContext.getTraceState.forEach((k, v) => entries.addOne(k -> v))

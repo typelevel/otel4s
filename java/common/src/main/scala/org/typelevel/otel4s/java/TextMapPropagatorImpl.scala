@@ -25,12 +25,14 @@ import org.typelevel.otel4s.context.propagation.TextMapPropagator
 import org.typelevel.otel4s.context.propagation.TextMapUpdater
 import org.typelevel.otel4s.java.Conversions._
 import org.typelevel.otel4s.java.context.Context
+import org.typelevel.scalaccompat.annotation.threadUnsafe3
 
 import scala.jdk.CollectionConverters._
 
 private[java] class TextMapPropagatorImpl(
     jPropagator: JTextMapPropagator
 ) extends TextMapPropagator[Context] {
+  @threadUnsafe3
   lazy val fields: Iterable[String] =
     jPropagator.fields().asScala
 

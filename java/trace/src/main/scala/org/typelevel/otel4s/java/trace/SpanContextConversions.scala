@@ -24,15 +24,14 @@ import org.typelevel.otel4s.trace.TraceFlags
 import org.typelevel.otel4s.trace.TraceState
 import scodec.bits.ByteVector
 
-private[otel4s] object WrappedSpanContext {
+private[otel4s] object SpanContextConversions {
 
-  def wrap(context: JSpanContext): SpanContext = {
+  def toScala(context: JSpanContext): SpanContext = {
     val entries = Vector.newBuilder[(String, String)]
     context.getTraceState.forEach((k, v) => entries.addOne(k -> v))
     val traceState = TraceState.fromVectorUnsafe(entries.result())
 
-    SpanContext.delegate(
-      underlying = context,
+    SpanContext.createInternal(
       traceId = ByteVector(context.getTraceIdBytes),
       spanId = ByteVector(context.getSpanIdBytes),
       traceFlags = TraceFlags.fromByte(context.getTraceFlags.asByte),
@@ -42,36 +41,21 @@ private[otel4s] object WrappedSpanContext {
     )
   }
 
-  def unwrap(context: SpanContext): JSpanContext = {
-    def flags = JTraceFlags.fromByte(context.traceFlags.toByte)
-
-    def traceState =
+  def toJava(context: SpanContext): JSpanContext = {
+    val traceId = context.traceIdHex
+    val spanId = context.spanIdHex
+    val flags = JTraceFlags.fromByte(context.traceFlags.toByte)
+    val traceState =
       context.traceState.asMap
         .foldLeft(JTraceState.builder()) { case (builder, (key, value)) =>
           builder.put(key, value)
         }
         .build()
 
-    context match {
-      case ctx: SpanContext.Delegate[JSpanContext @unchecked] =>
-        ctx.underlying
-
-      case other if other.isRemote =>
-        JSpanContext.createFromRemoteParent(
-          other.traceIdHex,
-          other.spanIdHex,
-          flags,
-          traceState
-        )
-
-      case other =>
-        JSpanContext.create(
-          other.traceIdHex,
-          other.spanIdHex,
-          flags,
-          traceState
-        )
-    }
+    if (context.isRemote)
+      JSpanContext.createFromRemoteParent(traceId, spanId, flags, traceState)
+    else
+      JSpanContext.create(traceId, spanId, flags, traceState)
   }
 
 }

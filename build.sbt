@@ -1,6 +1,6 @@
 import com.typesafe.tools.mima.core._
 
-ThisBuild / tlBaseVersion := "0.3"
+ThisBuild / tlBaseVersion := "0.4"
 
 ThisBuild / organization := "org.typelevel"
 ThisBuild / organizationName := "Typelevel"
@@ -33,7 +33,7 @@ val CatsMtlVersion = "1.4.0"
 val DisciplineMUnitVersion = "2.0.0-M3"
 val FS2Version = "3.9.3"
 val MUnitVersion = "1.0.0-M10"
-val MUnitCatsEffectVersion = "2.0.0-M3"
+val MUnitCatsEffectVersion = "2.0.0-M4"
 val MUnitDisciplineVersion = "2.0.0-M3"
 val OpenTelemetryVersion = "1.31.0"
 val OpenTelemetrySemConvVersion = "1.21.0-alpha"
@@ -283,7 +283,8 @@ lazy val `java-trace` = project
       "org.typelevel" %%% "cats-effect" % CatsEffectVersion,
       "io.opentelemetry" % "opentelemetry-sdk-testing" % OpenTelemetryVersion % Test,
       "org.typelevel" %%% "cats-effect-testkit" % CatsEffectVersion % Test,
-      "co.fs2" %% "fs2-core" % FS2Version % Test
+      "co.fs2" %% "fs2-core" % FS2Version % Test,
+      "org.scalameta" %%% "munit-scalacheck" % MUnitVersion % Test
     ),
     mimaBinaryIssueFilters ++= Seq(
       ProblemFilters.exclude[MissingClassProblem](

@@ -27,6 +27,9 @@ import scodec.bits.ByteVector
   * It contains the identifiers (a `trace_id` and `span_id`) associated with the
   * span and a set of flags (currently only whether the context is sampled or
   * not), as well as the remote flag.
+  *
+  * @see
+  *   [[https://opentelemetry.io/docs/specs/otel/trace/api/#spancontext]]
   */
 sealed trait SpanContext {
 
@@ -88,10 +91,6 @@ sealed trait SpanContext {
 
 object SpanContext {
 
-  private[otel4s] sealed trait Delegate[A] extends SpanContext {
-    def underlying: A
-  }
-
   object TraceId {
     val Bytes: Int = 16
     val HexLength: Int = Bytes * 2
@@ -137,7 +136,7 @@ object SpanContext {
   }
 
   val invalid: SpanContext =
-    SpanContextImpl(
+    Impl(
       traceId = TraceId.Invalid,
       traceIdHex = TraceId.Invalid.toHex,
       spanId = SpanId.Invalid,
@@ -169,21 +168,58 @@ object SpanContext {
     * @param remote
     *   whether the span is propagated from the remote parent or not
     */
-  def create(
+  def apply(
       traceId: ByteVector,
       spanId: ByteVector,
       traceFlags: TraceFlags,
       traceState: TraceState,
       remote: Boolean
   ): SpanContext =
-    createInternal(
-      traceId = traceId,
-      spanId = spanId,
-      traceFlags = traceFlags,
-      traceState = traceState,
-      remote = remote,
-      skipIdValidation = false
-    )
+    if (TraceId.isValid(traceId) && SpanId.isValid(spanId)) {
+      createInternal(
+        traceId = traceId,
+        spanId = spanId,
+        traceFlags = traceFlags,
+        traceState = traceState,
+        remote = remote,
+        isValid = true
+      )
+    } else {
+      createInternal(
+        traceId = TraceId.Invalid,
+        spanId = SpanId.Invalid,
+        traceFlags = traceFlags,
+        traceState = traceState,
+        remote = remote,
+        isValid = false
+      )
+    }
+
+  implicit val spanContextHash: Hash[SpanContext] = {
+    implicit val byteVectorHash: Hash[ByteVector] = Hash.fromUniversalHashCode
+
+    Hash.by { ctx =>
+      (
+        ctx.traceId,
+        ctx.spanId,
+        ctx.traceFlags,
+        ctx.traceState,
+        ctx.isValid,
+        ctx.isRemote
+      )
+    }
+  }
+
+  implicit val spanContextShow: Show[SpanContext] =
+    Show.show { ctx =>
+      show"SpanContext{" +
+        show"traceId=${ctx.traceIdHex}, " +
+        show"spanId=${ctx.spanIdHex}, " +
+        show"traceFlags=${ctx.traceFlags}, " +
+        show"traceState=${ctx.traceState}, " +
+        show"remote=${ctx.isRemote}, " +
+        show"valid=${ctx.isValid}}"
+    }
 
   /** Creates a new [[SpanContext]] with the given identifiers and options.
     *
@@ -196,7 +232,7 @@ object SpanContext {
     * be publicly available.
     *
     * @see
-    *   [[create]]
+    *   [[apply]]
     *
     * @param traceId
     *   the trace identifier of the span context
@@ -213,9 +249,8 @@ object SpanContext {
     * @param remote
     *   whether the span is propagated from the remote parent or not
     *
-    * @param skipIdValidation
-    *   pass true to skip validation of trace ID and span ID as an optimization
-    *   in cases where they are known to have been already validated
+    * @param isValid
+    *   whether the span is valid or not
     */
   private[otel4s] def createInternal(
       traceId: ByteVector,
@@ -223,51 +258,9 @@ object SpanContext {
       traceFlags: TraceFlags,
       traceState: TraceState,
       remote: Boolean,
-      skipIdValidation: Boolean
-  ): SpanContext = {
-    if (
-      skipIdValidation || (TraceId.isValid(traceId) && SpanId.isValid(spanId))
-    ) {
-      SpanContextImpl(
-        traceId = traceId,
-        traceIdHex = traceId.toHex,
-        spanId = spanId,
-        spanIdHex = spanId.toHex,
-        traceFlags = traceFlags,
-        traceState = traceState,
-        isRemote = remote,
-        isValid = true
-      )
-    } else {
-      SpanContextImpl(
-        traceId = TraceId.Invalid,
-        traceIdHex = TraceId.Invalid.toHex,
-        spanId = SpanId.Invalid,
-        spanIdHex = SpanId.Invalid.toHex,
-        traceFlags = traceFlags,
-        traceState = traceState,
-        isRemote = remote,
-        isValid = false
-      )
-    }
-  }
-
-  /** Creates a delegated [[SpanContext]].
-    *
-    * '''Note''': the method is for the internal use only. It is not supposed to
-    * be publicly available.
-    */
-  private[otel4s] def delegate[A](
-      underlying: A,
-      traceId: ByteVector,
-      spanId: ByteVector,
-      traceFlags: TraceFlags,
-      traceState: TraceState,
-      remote: Boolean,
       isValid: Boolean
-  ): Delegate[A] =
-    DelegateImpl(
-      underlying = underlying,
+  ): SpanContext =
+    Impl(
       traceId = traceId,
       traceIdHex = traceId.toHex,
       spanId = spanId,
@@ -275,26 +268,10 @@ object SpanContext {
       traceFlags = traceFlags,
       traceState = traceState,
       isRemote = remote,
-      isValid = isValid,
+      isValid = isValid
     )
 
-  implicit val spanContextHash: Hash[SpanContext] =
-    Hash.by { ctx =>
-      (ctx.traceIdHex, ctx.spanIdHex, ctx.traceFlags, ctx.isValid, ctx.isRemote)
-    }
-
-  implicit val spanContextShow: Show[SpanContext] =
-    Show.show { ctx =>
-      show"SpanContext{" +
-        show"traceId=${ctx.traceIdHex}, " +
-        show"spanId=${ctx.spanIdHex}, " +
-        show"traceFlags=${ctx.traceFlags}, " +
-        show"traceState=${ctx.traceState}, " +
-        show"remote=${ctx.isRemote}, " +
-        show"valid=${ctx.isValid}}"
-    }
-
-  private final case class SpanContextImpl(
+  private final case class Impl(
       traceId: ByteVector,
       traceIdHex: String,
       spanId: ByteVector,
@@ -304,17 +281,5 @@ object SpanContext {
       isRemote: Boolean,
       isValid: Boolean
   ) extends SpanContext
-
-  private final case class DelegateImpl[A](
-      underlying: A,
-      traceId: ByteVector,
-      traceIdHex: String,
-      spanId: ByteVector,
-      spanIdHex: String,
-      traceFlags: TraceFlags,
-      traceState: TraceState,
-      isRemote: Boolean,
-      isValid: Boolean
-  ) extends Delegate[A]
 
 }

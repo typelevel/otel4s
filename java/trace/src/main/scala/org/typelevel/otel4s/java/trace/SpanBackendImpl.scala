@@ -104,7 +104,10 @@ private[java] class SpanBackendImpl[F[_]: Sync](
 
 private[java] object SpanBackendImpl {
   def fromJSpan[F[_]: Sync](jSpan: JSpan): SpanBackendImpl[F] =
-    new SpanBackendImpl(jSpan, WrappedSpanContext.wrap(jSpan.getSpanContext))
+    new SpanBackendImpl(
+      jSpan,
+      SpanContextConversions.toScala(jSpan.getSpanContext)
+    )
 
   private def toJStatus(status: Status): JStatusCode =
     status match {

@@ -168,14 +168,26 @@ private[trace] final case class SdkSpanBuilder[F[_]: Temporal](
           samplingResult.traceStateUpdater.update(ctx.traceState)
         }
 
-        val spanContext = SpanContext.createInternal(
-          traceId = traceId,
-          spanId = spanId,
-          traceFlags = traceFlags,
-          traceState = traceState,
-          remote = false,
-          skipIdValidation = tracerSharedState.idGenerator.canSkipIdValidation
-        )
+        val spanContext = {
+          if (tracerSharedState.idGenerator.canSkipIdValidation) {
+            SpanContext.createInternal(
+              traceId = traceId,
+              spanId = spanId,
+              traceFlags = traceFlags,
+              traceState = traceState,
+              remote = false,
+              isValid = true
+            )
+          } else {
+            SpanContext(
+              traceId = traceId,
+              spanId = spanId,
+              traceFlags = traceFlags,
+              traceState = traceState,
+              remote = false
+            )
+          }
+        }
 
         /*if (!samplingDecision.isRecording) { todo
           return Span.wrap(spanContext)

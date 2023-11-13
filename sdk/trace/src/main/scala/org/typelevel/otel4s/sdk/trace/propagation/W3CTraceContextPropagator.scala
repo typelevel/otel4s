@@ -81,7 +81,7 @@ object W3CTraceContextPropagator extends TextMapPropagator[Context] {
           TraceFlags.fromHex(traceFlagsHex)
         ).mapN { (traceId, spanId, traceFlags) =>
           val state = TraceState.empty
-          SpanContext.create(traceId, spanId, traceFlags, state, remote = true)
+          SpanContext(traceId, spanId, traceFlags, state, remote = true)
         }
 
       case _ =>

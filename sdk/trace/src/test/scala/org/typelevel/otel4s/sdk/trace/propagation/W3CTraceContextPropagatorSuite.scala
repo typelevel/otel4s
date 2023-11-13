@@ -49,7 +49,7 @@ class W3CTraceContextPropagatorSuite extends FunSuite {
   test("inject context info") {
     flags.foreach { flag =>
       val spanContext =
-        SpanContext.create(traceId, spanId, flag, state, remote = false)
+        SpanContext(traceId, spanId, flag, state, remote = false)
       val ctx = SdkTraceScope.storeInContext(Context.root, spanContext)
       val result = propagator.inject(ctx, Map.empty[String, String])
 
@@ -69,13 +69,13 @@ class W3CTraceContextPropagatorSuite extends FunSuite {
   test("extract span context") {
     flags.foreach { flag =>
       val spanContext =
-        SpanContext.create(traceId, spanId, flag, state, remote = false)
+        SpanContext(traceId, spanId, flag, state, remote = false)
       val carrier = Map("traceparent" -> toTraceParent(spanContext))
 
       val ctx = propagator.extract(Context.root, carrier)
 
       val expected =
-        SpanContext.create(traceId, spanId, flag, state, remote = true)
+        SpanContext(traceId, spanId, flag, state, remote = true)
 
       assertEquals(SdkTraceScope.fromContext(ctx), Some(expected))
     }

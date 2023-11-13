@@ -22,9 +22,15 @@ import org.scalacheck.rng.Seed
 import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.AttributeKey
 import org.typelevel.otel4s.AttributeType
+import org.typelevel.otel4s.sdk.common.InstrumentationScope
 import org.typelevel.otel4s.sdk.trace.data.EventData
+import org.typelevel.otel4s.sdk.trace.data.LinkData
+import org.typelevel.otel4s.sdk.trace.data.SpanData
+import org.typelevel.otel4s.sdk.trace.data.StatusData
 import org.typelevel.otel4s.sdk.trace.samplers.SamplingDecision
 import org.typelevel.otel4s.trace.SpanContext
+import org.typelevel.otel4s.trace.SpanKind
+import org.typelevel.otel4s.trace.Status
 import org.typelevel.otel4s.trace.TraceFlags
 import org.typelevel.otel4s.trace.TraceState
 
@@ -68,12 +74,23 @@ object Cogens {
   implicit val attributesCogen: Cogen[Attributes] =
     Cogen[List[Attribute[_]]].contramap(_.toList)
 
+  implicit val instrumentationScopeCogen: Cogen[InstrumentationScope] =
+    Cogen[(String, Option[String], Option[String], Attributes)].contramap { s =>
+      (s.name, s.version, s.schemaUrl, s.attributes)
+    }
+
   implicit val resourceCogen: Cogen[Resource] =
     Cogen[(Attributes, Option[String])].contramap { r =>
       (r.attributes, r.schemaUrl)
     }
 
   implicit val samplingDecisionCogen: Cogen[SamplingDecision] =
+    Cogen[String].contramap(_.toString)
+
+  implicit val spanKindCogen: Cogen[SpanKind] =
+    Cogen[String].contramap(_.toString)
+
+  implicit val statusCogen: Cogen[Status] =
     Cogen[String].contramap(_.toString)
 
   implicit val traceFlagsCogen: Cogen[TraceFlags] =
@@ -99,4 +116,47 @@ object Cogens {
     Cogen[(String, FiniteDuration, Attributes)].contramap { data =>
       (data.name, data.timestamp, data.attributes)
     }
+
+  implicit val linkDataCogen: Cogen[LinkData] =
+    Cogen[(SpanContext, Attributes)].contramap { data =>
+      (data.spanContext, data.attributes)
+    }
+
+  implicit val statusDataCogen: Cogen[StatusData] =
+    Cogen[(Status, Option[String])].contramap { data =>
+      (data.status, data.description)
+    }
+
+  implicit val spanDataCogen: Cogen[SpanData] = Cogen[
+    (
+        String,
+        SpanContext,
+        Option[SpanContext],
+        SpanKind,
+        FiniteDuration,
+        Option[FiniteDuration],
+        StatusData,
+        Attributes,
+        List[EventData],
+        List[LinkData],
+        InstrumentationScope,
+        Resource
+    )
+  ].contramap { spanData =>
+    (
+      spanData.name,
+      spanData.spanContext,
+      spanData.parentSpanContext,
+      spanData.kind,
+      spanData.startTimestamp,
+      spanData.endTimestamp,
+      spanData.status,
+      spanData.attributes,
+      spanData.events,
+      spanData.links,
+      spanData.instrumentationScope,
+      spanData.resource
+    )
+  }
+
 }

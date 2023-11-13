@@ -22,34 +22,18 @@ import cats.kernel.laws.discipline.HashTests
 import cats.syntax.show._
 import munit.DisciplineSuite
 import org.scalacheck.Arbitrary
-import org.scalacheck.Cogen
-import org.scalacheck.Gen
 import org.scalacheck.Prop
-import org.typelevel.otel4s.sdk.Attributes
-import org.typelevel.otel4s.trace.SpanContext
 
 class LinkDataSuite extends DisciplineSuite {
-  import Cogens.attributesCogen
-  import Cogens.spanContextCogen
-
-  private val linkDataGen: Gen[LinkData] =
-    for {
-      spanContext <- Gens.spanContext
-      attributes <- Gens.attributes
-    } yield LinkData(spanContext, attributes)
+  import Cogens.linkDataCogen
 
   private implicit val linkDataArbitrary: Arbitrary[LinkData] =
-    Arbitrary(linkDataGen)
-
-  private implicit val linkDataCogen: Cogen[LinkData] =
-    Cogen[(SpanContext, Attributes)].contramap(s =>
-      (s.spanContext, s.attributes)
-    )
+    Arbitrary(Gens.linkData)
 
   checkAll("LinkData.HashLaws", HashTests[LinkData].hash)
 
   test("Show[LinkData]") {
-    Prop.forAll(linkDataGen) { data =>
+    Prop.forAll(Gens.linkData) { data =>
       val expected =
         show"LinkData{spanContext=${data.spanContext}, attributes=${data.attributes}}"
 
@@ -58,7 +42,7 @@ class LinkDataSuite extends DisciplineSuite {
   }
 
   test("create LinkData with given arguments") {
-    Prop.forAll(linkDataGen) { data =>
+    Prop.forAll(Gens.linkData) { data =>
       assertEquals(LinkData(data.spanContext, data.attributes), data)
     }
   }

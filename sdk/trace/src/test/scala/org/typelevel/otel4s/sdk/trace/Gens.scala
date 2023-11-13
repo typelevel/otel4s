@@ -21,10 +21,15 @@ import org.scalacheck.Arbitrary
 import org.scalacheck.Gen
 import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.Attribute.KeySelect
+import org.typelevel.otel4s.sdk.common.InstrumentationScope
 import org.typelevel.otel4s.sdk.trace.data.EventData
+import org.typelevel.otel4s.sdk.trace.data.LinkData
+import org.typelevel.otel4s.sdk.trace.data.SpanData
+import org.typelevel.otel4s.sdk.trace.data.StatusData
 import org.typelevel.otel4s.sdk.trace.samplers.SamplingDecision
 import org.typelevel.otel4s.trace.SpanContext
 import org.typelevel.otel4s.trace.SpanKind
+import org.typelevel.otel4s.trace.Status
 import org.typelevel.otel4s.trace.TraceFlags
 import org.typelevel.otel4s.trace.TraceState
 import scodec.bits.ByteVector
@@ -74,6 +79,14 @@ object Gens {
       attributes <- Gen.listOf(attribute)
     } yield Attributes(attributes: _*)
 
+  val instrumentationScope: Gen[InstrumentationScope] =
+    for {
+      name <- nonEmptyString
+      version <- Gen.option(nonEmptyString)
+      schemaUrl <- Gen.option(nonEmptyString)
+      attributes <- Gens.attributes
+    } yield InstrumentationScope(name, version, schemaUrl, attributes)
+
   val resource: Gen[Resource] =
     for {
       attributes <- Gens.attributes
@@ -95,6 +108,9 @@ object Gens {
       SpanKind.Producer,
       SpanKind.Consumer
     )
+
+  val status: Gen[Status] =
+    Gen.oneOf(Status.Ok, Status.Error, Status.Unset)
 
   val traceId: Gen[ByteVector] =
     for {
@@ -122,4 +138,48 @@ object Gens {
       attributes <- Gens.attributes
     } yield EventData(name, epoch, attributes)
 
+  val linkData: Gen[LinkData] =
+    for {
+      spanContext <- Gens.spanContext
+      attributes <- Gens.attributes
+    } yield LinkData(spanContext, attributes)
+
+  val statusData: Gen[StatusData] =
+    for {
+      description <- Gen.option(Gen.alphaNumStr)
+      data <- Gen.oneOf(
+        StatusData.Ok,
+        StatusData.Unset,
+        StatusData.Error(description)
+      )
+    } yield data
+
+  val spanData: Gen[SpanData] =
+    for {
+      name <- Gen.alphaStr
+      spanContext <- Gens.spanContext
+      parentSpanContext <- Gen.option(Gens.spanContext)
+      kind <- Gens.spanKind
+      startEpochNanos <- Gen.finiteDuration
+      endEpochNanos <- Gen.option(Gen.finiteDuration)
+      status <- Gens.statusData
+      attributes <- Gens.attributes
+      events <- Gen.listOf(Gens.eventData)
+      links <- Gen.listOf(Gens.linkData)
+      instrumentationScope <- Gens.instrumentationScope
+      resource <- Gens.resource
+    } yield SpanData(
+      name,
+      spanContext,
+      parentSpanContext,
+      kind,
+      startEpochNanos,
+      endEpochNanos,
+      status,
+      attributes,
+      events,
+      links,
+      instrumentationScope,
+      resource
+    )
 }

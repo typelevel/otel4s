@@ -45,9 +45,7 @@ private[java] class TracerImpl[F[_]: Sync](
       case Context.Noop => None
       case Context.Wrapped(underlying) =>
         Option(JSpan.fromContextOrNull(underlying))
-          .map(jSpan =>
-            SpanContextConversion.fromJSpanContext(jSpan.getSpanContext)
-          )
+          .map(jSpan => SpanContextConversions.toScala(jSpan.getSpanContext))
     }
 
   def currentSpanOrNoop: F[Span[F]] =
@@ -64,9 +62,7 @@ private[java] class TracerImpl[F[_]: Sync](
 
   def childScope[A](parent: SpanContext)(fa: F[A]): F[A] =
     L.local(fa) {
-      _.map(
-        JSpan.wrap(SpanContextConversion.toJSpanContext(parent)).storeInContext
-      )
+      _.map(JSpan.wrap(SpanContextConversions.toJava(parent)).storeInContext)
     }
 
   def rootScope[A](fa: F[A]): F[A] =

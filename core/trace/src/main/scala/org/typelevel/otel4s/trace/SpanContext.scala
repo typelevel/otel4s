@@ -122,7 +122,7 @@ object SpanContext {
   }
 
   val invalid: SpanContext =
-    SpanContextImpl(
+    Impl(
       traceId = TraceId.Invalid,
       traceIdHex = TraceId.Invalid.toHex,
       spanId = SpanId.Invalid,
@@ -243,7 +243,7 @@ object SpanContext {
       remote: Boolean,
       isValid: Boolean
   ): SpanContext =
-    SpanContextImpl(
+    Impl(
       traceId = traceId,
       traceIdHex = traceId.toHex,
       spanId = spanId,
@@ -254,7 +254,7 @@ object SpanContext {
       isValid = isValid
     )
 
-  private final case class SpanContextImpl(
+  private final case class Impl(
       traceId: ByteVector,
       traceIdHex: String,
       spanId: ByteVector,

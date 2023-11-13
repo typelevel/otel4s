@@ -105,7 +105,7 @@ private[java] final case class SpanBuilderImpl[F[_]: Sync](
     startTimestamp.foreach(d => b.setStartTimestamp(d.length, d.unit))
     links.foreach { case (ctx, attributes) =>
       b.addLink(
-        SpanContextConversion.toJSpanContext(ctx),
+        SpanContextConversions.toJava(ctx),
         Conversions.toJAttributes(attributes)
       )
     }
@@ -136,7 +136,7 @@ private[java] final case class SpanBuilderImpl[F[_]: Sync](
             case Parent.Propagate => underlying
             case Parent.Explicit(parent) =>
               JSpan
-                .wrap(SpanContextConversion.toJSpanContext(parent))
+                .wrap(SpanContextConversions.toJava(parent))
                 .storeInContext(underlying)
           }
         }

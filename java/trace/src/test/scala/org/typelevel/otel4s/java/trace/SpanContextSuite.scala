@@ -60,7 +60,7 @@ class SpanContextSuite extends ScalaCheckSuite {
 
   test("SpanContext to JSpanContext") {
     Prop.forAll(spanContextGen) { ctx =>
-      val jCtx = SpanContextConversion.toJSpanContext(ctx)
+      val jCtx = SpanContextConversions.toJava(ctx)
 
       assert(ctx.traceId.toArray.sameElements(jCtx.getTraceIdBytes))
       assert(ctx.spanId.toArray.sameElements(jCtx.getSpanIdBytes))
@@ -76,8 +76,8 @@ class SpanContextSuite extends ScalaCheckSuite {
 
   test("back and forth conversion") {
     Prop.forAll(spanContextGen) { ctx =>
-      val jCtx = SpanContextConversion.toJSpanContext(ctx)
-      assertEquals(SpanContextConversion.fromJSpanContext(jCtx), ctx)
+      val jCtx = SpanContextConversions.toJava(ctx)
+      assertEquals(SpanContextConversions.toScala(jCtx), ctx)
     }
   }
 

@@ -24,9 +24,9 @@ import org.typelevel.otel4s.trace.TraceFlags
 import org.typelevel.otel4s.trace.TraceState
 import scodec.bits.ByteVector
 
-private[otel4s] object SpanContextConversion {
+private[otel4s] object SpanContextConversions {
 
-  def fromJSpanContext(context: JSpanContext): SpanContext = {
+  def toScala(context: JSpanContext): SpanContext = {
     val entries = Vector.newBuilder[(String, String)]
     context.getTraceState.forEach((k, v) => entries.addOne(k -> v))
     val traceState = TraceState.fromVectorUnsafe(entries.result())
@@ -41,7 +41,7 @@ private[otel4s] object SpanContextConversion {
     )
   }
 
-  def toJSpanContext(context: SpanContext): JSpanContext = {
+  def toJava(context: SpanContext): JSpanContext = {
     val traceId = context.traceIdHex
     val spanId = context.spanIdHex
     val flags = JTraceFlags.fromByte(context.traceFlags.toByte)

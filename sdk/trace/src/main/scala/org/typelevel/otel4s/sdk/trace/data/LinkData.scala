@@ -23,10 +23,23 @@ import cats.Show
 import cats.syntax.show._
 import org.typelevel.otel4s.trace.SpanContext
 
+/** Data representation of a link.
+  *
+  * Link can be also used to reference spans from the same trace.
+  *
+  * @see
+  *   [[https://opentelemetry.io/docs/specs/otel/trace/api/#link]]
+  */
 sealed trait LinkData {
+
+  /** The [[org.typelevel.otel4s.trace.SpanContext SpanContext]] of the span
+    * this link refers to.
+    */
   def spanContext: SpanContext
+
+  /** The [[Attributes]] associated with this link.
+    */
   def attributes: Attributes
-  def totalAttributeCount: Int
 
   override final def hashCode(): Int =
     Hash[LinkData].hash(this)
@@ -43,33 +56,33 @@ sealed trait LinkData {
 
 object LinkData {
 
-  private final case class LinkDataImpl(
-      spanContext: SpanContext,
-      attributes: Attributes,
-      totalAttributeCount: Int
-  ) extends LinkData
+  /** Creates a [[LinkData]] with the given `context`.
+    *
+    * @param context
+    *   the context of the span the link refers to
+    */
+  def apply(context: SpanContext): LinkData =
+    Impl(context, Attributes.Empty)
 
-  def create(context: SpanContext): LinkData =
-    LinkDataImpl(context, Attributes.Empty, 0)
-
-  def create(context: SpanContext, attributes: Attributes): LinkData =
-    LinkDataImpl(context, attributes, attributes.size)
-
-  def create(
-      context: SpanContext,
-      attributes: Attributes,
-      totalAttributeCount: Int
-  ): LinkData =
-    LinkDataImpl(context, attributes, totalAttributeCount)
+  /** Creates a [[LinkData]] with the given `context`.
+    *
+    * @param context
+    *   the context of the span the link refers to
+    */
+  def apply(context: SpanContext, attributes: Attributes): LinkData =
+    Impl(context, attributes)
 
   implicit val linkDataHash: Hash[LinkData] =
-    Hash.by { data =>
-      (data.spanContext, data.attributes, data.totalAttributeCount)
-    }
+    Hash.by(data => (data.spanContext, data.attributes))
 
   implicit val linkDataShow: Show[LinkData] =
     Show.show { data =>
-      show"LinkData{spanContext=${data.spanContext}, attributes=${data.attributes}, totalAttributeCount=${data.totalAttributeCount}}"
+      show"LinkData{spanContext=${data.spanContext}, attributes=${data.attributes}}"
     }
+
+  private final case class Impl(
+      spanContext: SpanContext,
+      attributes: Attributes
+  ) extends LinkData
 
 }

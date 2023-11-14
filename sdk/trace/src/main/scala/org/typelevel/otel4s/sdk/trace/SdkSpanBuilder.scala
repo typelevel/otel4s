@@ -69,9 +69,7 @@ private[trace] final case class SdkSpanBuilder[F[_]: Temporal](
       spanContext: SpanContext,
       attributes: Attribute[_]*
   ): SpanBuilder[F] =
-    copy(links =
-      links :+ LinkData.create(spanContext, Attributes(attributes: _*))
-    )
+    copy(links = links :+ LinkData(spanContext, Attributes(attributes: _*)))
 
   def root: SpanBuilder[F] =
     copy(parent = Parent.Root)

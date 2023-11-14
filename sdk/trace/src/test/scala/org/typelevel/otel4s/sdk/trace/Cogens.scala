@@ -22,10 +22,13 @@ import org.scalacheck.rng.Seed
 import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.AttributeKey
 import org.typelevel.otel4s.AttributeType
+import org.typelevel.otel4s.sdk.trace.data.EventData
 import org.typelevel.otel4s.sdk.trace.samplers.SamplingDecision
 import org.typelevel.otel4s.trace.SpanContext
 import org.typelevel.otel4s.trace.TraceFlags
 import org.typelevel.otel4s.trace.TraceState
+
+import scala.concurrent.duration.FiniteDuration
 
 object Cogens {
 
@@ -92,4 +95,8 @@ object Cogens {
         )
       }
 
+  implicit val eventDataCogen: Cogen[EventData] =
+    Cogen[(String, FiniteDuration, Attributes)].contramap { data =>
+      (data.name, data.timestamp, data.attributes)
+    }
 }

@@ -191,7 +191,7 @@ class TracerSuite extends CatsEffectSuite {
     } yield {
       assertEquals(
         spans.map(_.status),
-        List(StatusData.create(Status.Error, "canceled"))
+        List(StatusData(Status.Error, "canceled"))
       )
       assertEquals(spans.map(_.events.isEmpty), List(true))
     }
@@ -204,12 +204,13 @@ class TracerSuite extends CatsEffectSuite {
 
     val exception = Err("error")
 
-    def expected(epoch: Long) =
-      EventData.exception(
-        SpanLimits.Default,
-        epoch,
+    def expected(timestamp: FiniteDuration) =
+      EventData.fromException(
+        // SpanLimits.Default,
+        timestamp,
         exception,
-        Attributes.Empty
+        Attributes.Empty,
+        true
       )
 
     TestControl.executeEmbed {
@@ -219,10 +220,10 @@ class TracerSuite extends CatsEffectSuite {
         _ <- tracer.span("span").surround(IO.raiseError(exception)).attempt
         spans <- sdk.finishedSpans
       } yield {
-        assertEquals(spans.map(_.status), List(StatusData.Error))
+        assertEquals(spans.map(_.status), List(StatusData.Error(None)))
         assertEquals(
           spans.map(_.events),
-          List(List(expected(now.toNanos)))
+          List(List(expected(now)))
         )
       }
 

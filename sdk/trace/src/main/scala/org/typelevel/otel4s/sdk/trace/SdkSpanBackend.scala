@@ -75,7 +75,7 @@ final class SdkSpanBackend[F[_]: Monad: Clock] private (
       attributes: Attribute[_]*
   ): F[Unit] =
     addTimedEvent(
-      EventData.general(name, timestamp.toNanos, Attributes(attributes: _*))
+      EventData(name, timestamp, Attributes(attributes: _*))
     )
 
   def recordException(
@@ -85,22 +85,20 @@ final class SdkSpanBackend[F[_]: Monad: Clock] private (
     for {
       now <- Clock[F].realTime
       _ <- addTimedEvent(
-        EventData.exception(
-          spanLimits,
-          now.toNanos,
+        EventData.fromException(
+          now,
           exception,
-          Attributes(attributes: _*)
+          Attributes(attributes: _*),
+          false
         )
       )
     } yield ()
 
   def setStatus(status: Status): F[Unit] =
-    mutableState.update(s => s.copy(status = StatusData.create(status)))
+    mutableState.update(s => s.copy(status = StatusData(status)))
 
   def setStatus(status: Status, description: String): F[Unit] =
-    mutableState.update(s =>
-      s.copy(status = StatusData.create(status, description))
-    )
+    mutableState.update(s => s.copy(status = StatusData(status, description)))
 
   private[otel4s] def end: F[Unit] =
     for {

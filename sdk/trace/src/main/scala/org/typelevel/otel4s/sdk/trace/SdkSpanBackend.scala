@@ -111,7 +111,7 @@ final class SdkSpanBackend[F[_]: Monad: Clock] private (
     mutableState.update { s =>
       if (s.endTimestamp.isDefined) s // todo: log warn
       else s.copy(endTimestamp = Some(timestamp))
-    } >> spanProcessor.onEnd(spanView)
+    } >> spanRef.toSpanData >>= spanProcessor.onEnd
 
   private def addTimedEvent(event: EventData): F[Unit] =
     mutableState.update { s =>
@@ -125,8 +125,8 @@ final class SdkSpanBackend[F[_]: Monad: Clock] private (
       }
     }
 
-  private val spanView: SpanView[F] =
-    new SpanView[F] {
+  private val spanRef: SpanRef[F] =
+    new SpanRef[F] {
       def kind: SpanKind =
         immutableState.kind
 
@@ -168,7 +168,7 @@ final class SdkSpanBackend[F[_]: Monad: Clock] private (
       def hasEnded: F[Boolean] =
         mutableState.get.map(_.endTimestamp.isDefined)
 
-      def latency: F[FiniteDuration] =
+      def duration: F[FiniteDuration] =
         for {
           state <- mutableState.get
           endEpochNanos <- state.endTimestamp.fold(Clock[F].realTime)(_.pure)
@@ -248,7 +248,7 @@ object SdkSpanBackend {
         immutableState(start),
         state
       )
-      _ <- spanProcessor.onStart(parentContext, backend.spanView)
+      _ <- spanProcessor.onStart(parentContext, backend.spanRef)
     } yield backend
   }
 }

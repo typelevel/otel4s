@@ -61,10 +61,10 @@ final class BatchSpanProcessor[F[_]: Temporal] private (
   val isStartRequired: Boolean = false
   val isEndRequired: Boolean = true
 
-  def onStart(parentContext: Option[SpanContext], span: SpanView[F]): F[Unit] =
+  def onStart(parentContext: Option[SpanContext], span: SpanRef[F]): F[Unit] =
     Temporal[F].unit
 
-  def onEnd(span: SpanView[F]): F[Unit] = {
+  def onEnd(span: SpanData): F[Unit] = {
     val canExport = span.spanContext.isSampled
 
     // if 'spansNeeded' is defined, it means the worker is waiting for a certain number of spans
@@ -79,8 +79,7 @@ final class BatchSpanProcessor[F[_]: Temporal] private (
 
     val enqueue =
       for {
-        data <- span.toSpanData
-        offered <- queue.tryOffer(data)
+        offered <- queue.tryOffer(span)
         _ <- notifyWorker.whenA(offered)
       } yield ()
 

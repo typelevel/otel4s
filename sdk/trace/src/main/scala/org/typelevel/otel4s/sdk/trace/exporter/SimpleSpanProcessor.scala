@@ -23,13 +23,12 @@ import cats.effect.Concurrent
 import cats.effect.Resource
 import cats.effect.std.Supervisor
 import cats.syntax.applicative._
-import cats.syntax.flatMap._
 import cats.syntax.functor._
+import org.typelevel.otel4s.sdk.trace.data.SpanData
 import org.typelevel.otel4s.trace.SpanContext
 
-/** An implementation of the [[SpanProcessor]] that converts the [[SpanView]] to
-  * [[data.SpanData SpanData]] and passes it directly to the configured
-  * exporter.
+/** An implementation of the [[SpanProcessor]] that passes
+  * [[data.SpanData SpanData]] directly to the configured exporter.
   *
   * @tparam F
   *   the higher-kinded type of a polymorphic effect
@@ -43,17 +42,14 @@ final class SimpleSpanProcessor[F[_]: Monad] private (
   val isStartRequired: Boolean = false
   val isEndRequired: Boolean = true
 
-  def onStart(parentContext: Option[SpanContext], span: SpanView[F]): F[Unit] =
+  def onStart(parentContext: Option[SpanContext], span: SpanRef[F]): F[Unit] =
     Monad[F].unit
 
-  def onEnd(span: SpanView[F]): F[Unit] = {
+  def onEnd(span: SpanData): F[Unit] = {
     val canExport = !sampled || span.spanContext.isSampled
 
     def exportSpans: F[Unit] = // todo: log error on failure
-      for {
-        data <- span.toSpanData
-        _ <- exporter.exportSpans(List(data))
-      } yield ()
+      exporter.exportSpans(List(span))
 
     supervisor.supervise(exportSpans).void.whenA(canExport)
   }

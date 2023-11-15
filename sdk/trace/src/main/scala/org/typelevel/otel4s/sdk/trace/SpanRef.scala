@@ -25,13 +25,13 @@ import org.typelevel.otel4s.trace.SpanKind
 
 import scala.concurrent.duration.FiniteDuration
 
-/** Represents the state of the span. Since the span internal state can be
-  * mutated during the lifetime, some operations are effectful.
+/** A reference to the span. Since the span internal state can be mutated during
+  * the lifetime, some operations are effectful.
   *
   * @tparam F
   *   the higher-kinded type of a polymorphic effect
   */
-trait SpanView[F[_]] {
+trait SpanRef[F[_]] {
 
   /** Returns the kind of the span. */
   def kind: SpanKind
@@ -65,11 +65,11 @@ trait SpanView[F[_]] {
   /** Indicates whether the span has already been ended. */
   def hasEnded: F[Boolean]
 
-  /** Returns the latency of the span in nanos.
+  /** Returns the duration of the span.
     *
     * If still active then returns `Clock[F].realTime - start` time.
     */
-  def latency: F[FiniteDuration]
+  def duration: F[FiniteDuration]
 
   /** Returns the attribute value for the given `key`. Returns `None` if the key
     * is absent in the storage.

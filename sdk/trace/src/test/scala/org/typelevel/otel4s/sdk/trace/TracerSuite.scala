@@ -173,10 +173,10 @@ class TracerSuite extends CatsEffectSuite {
         _ <- tracer.span("span").surround(IO.sleep(sleepDuration))
         spans <- sdk.finishedSpans
       } yield {
-        assertEquals(spans.map(_.startEpochNanos), List(now.toNanos))
+        assertEquals(spans.map(_.startTimestamp), List(now))
         assertEquals(
-          spans.map(_.endEpochNanos),
-          List(now.plus(sleepDuration).toNanos)
+          spans.map(_.endTimestamp),
+          List(Some(now.plus(sleepDuration)))
         )
       }
     }
@@ -210,7 +210,7 @@ class TracerSuite extends CatsEffectSuite {
         timestamp,
         exception,
         Attributes.Empty,
-        true
+        false
       )
 
     TestControl.executeEmbed {

@@ -208,7 +208,7 @@ private[trace] final case class SdkSpanBuilder[F[_]: Temporal](
           attributes = recordedAttributes,
           links = links,
           totalRecordedLinks = links.size,
-          userStartEpochNanos = startTimestamp.map(_.toNanos).getOrElse(0L)
+          userStartTimestamp = startTimestamp
         )
       }
     } yield backend

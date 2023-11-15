@@ -23,6 +23,8 @@ import org.typelevel.otel4s.sdk.trace.data.SpanData
 import org.typelevel.otel4s.trace.SpanContext
 import org.typelevel.otel4s.trace.SpanKind
 
+import scala.concurrent.duration.FiniteDuration
+
 /** Represents the state of the span. Since the span internal state can be
   * mutated during the lifetime, some operations are effectful.
   *
@@ -67,7 +69,7 @@ trait SpanView[F[_]] {
     *
     * If still active then returns `Clock[F].realTime - start` time.
     */
-  def latencyNanos: F[Long]
+  def latency: F[FiniteDuration]
 
   /** Returns the attribute value for the given `key`. Returns `None` if the key
     * is absent in the storage.

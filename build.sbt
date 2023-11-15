@@ -35,7 +35,8 @@ val FS2Version = "3.9.3"
 val MUnitVersion = "1.0.0-M10"
 val MUnitCatsEffectVersion = "2.0.0-M4"
 val MUnitDisciplineVersion = "2.0.0-M3"
-val OpenTelemetryVersion = "1.31.0"
+val OpenTelemetryVersion = "1.32.0"
+val OpenTelemetryInstrumentationVersion = "1.31.0"
 val OpenTelemetrySemConvVersion = "1.21.0-alpha"
 val PekkoStreamVersion = "1.0.1"
 val PekkoHttpVersion = "1.0.0"
@@ -362,9 +363,9 @@ lazy val examples = project
       "io.opentelemetry" % "opentelemetry-sdk" % OpenTelemetryVersion,
       "io.opentelemetry" % "opentelemetry-sdk-extension-autoconfigure" % OpenTelemetryVersion,
       "io.opentelemetry" % "opentelemetry-extension-trace-propagators" % OpenTelemetryVersion % Runtime,
-      "io.opentelemetry.instrumentation" % "opentelemetry-instrumentation-annotations" % OpenTelemetryVersion
+      "io.opentelemetry.instrumentation" % "opentelemetry-instrumentation-annotations" % OpenTelemetryInstrumentationVersion
     ),
-    javaAgents += "io.opentelemetry.javaagent" % "opentelemetry-javaagent" % OpenTelemetryVersion % Runtime,
+    javaAgents += "io.opentelemetry.javaagent" % "opentelemetry-javaagent" % OpenTelemetryInstrumentationVersion % Runtime,
     run / fork := true,
     javaOptions += "-Dotel.java.global-autoconfigure.enabled=true",
     envVars ++= Map(
@@ -382,7 +383,7 @@ lazy val docs = project
     libraryDependencies ++= Seq(
       "org.apache.pekko" %% "pekko-http" % PekkoHttpVersion,
       "io.opentelemetry" % "opentelemetry-sdk-extension-autoconfigure" % OpenTelemetryVersion,
-      "io.opentelemetry.instrumentation" % "opentelemetry-instrumentation-annotations" % OpenTelemetryVersion
+      "io.opentelemetry.instrumentation" % "opentelemetry-instrumentation-annotations" % OpenTelemetryInstrumentationVersion
     ),
     mdocVariables ++= Map(
       "OPEN_TELEMETRY_VERSION" -> OpenTelemetryVersion

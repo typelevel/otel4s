@@ -14,45 +14,27 @@
  * limitations under the License.
  */
 
-package org.typelevel.otel4s.sdk.trace.data
+package org.typelevel.otel4s.sdk.trace
+package data
 
 import cats.Show
 import cats.kernel.laws.discipline.HashTests
 import munit.DisciplineSuite
 import org.scalacheck.Arbitrary
-import org.scalacheck.Cogen
 import org.scalacheck.Gen
 import org.scalacheck.Prop
 import org.typelevel.otel4s.trace.Status
 
 class StatusDataSuite extends DisciplineSuite {
-
-  private val statusGen: Gen[Status] =
-    Gen.oneOf(Status.Ok, Status.Error, Status.Unset)
-
-  private val statusDataGen: Gen[StatusData] =
-    for {
-      description <- Gen.alphaNumStr
-      data <- Gen.oneOf(
-        StatusData.Ok,
-        StatusData.Unset,
-        StatusData.Error(Some(description))
-      )
-    } yield data
+  import Cogens.statusDataCogen
 
   private implicit val statusDataArbitrary: Arbitrary[StatusData] =
-    Arbitrary(statusDataGen)
-
-  private implicit val statusCogen: Cogen[Status] =
-    Cogen[String].contramap(_.toString)
-
-  private implicit val statusDataCogen: Cogen[StatusData] =
-    Cogen[(Status, Option[String])].contramap(s => (s.status, s.description))
+    Arbitrary(Gens.statusData)
 
   checkAll("StatusData.HashLaws", HashTests[StatusData].hash)
 
   test("Show[StatusData]") {
-    Prop.forAll(statusDataGen) { data =>
+    Prop.forAll(Gens.statusData) { data =>
       val expected = data match {
         case StatusData.Ok          => "StatusData{status=Ok}"
         case StatusData.Unset       => "StatusData{status=Unset}"
@@ -86,7 +68,7 @@ class StatusDataSuite extends DisciplineSuite {
   }
 
   test("create StatusData from a given status") {
-    Prop.forAll(statusGen) { status =>
+    Prop.forAll(Gens.status) { status =>
       val expected = status match {
         case Status.Ok    => StatusData.Ok
         case Status.Error => StatusData.Error(None)

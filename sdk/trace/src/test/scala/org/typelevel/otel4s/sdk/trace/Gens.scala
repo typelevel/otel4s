@@ -21,6 +21,7 @@ import org.scalacheck.Arbitrary
 import org.scalacheck.Gen
 import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.Attribute.KeySelect
+import org.typelevel.otel4s.sdk.trace.data.EventData
 import org.typelevel.otel4s.sdk.trace.samplers.SamplingDecision
 import org.typelevel.otel4s.trace.SpanContext
 import org.typelevel.otel4s.trace.SpanKind
@@ -108,10 +109,17 @@ object Gens {
 
   val spanContext: Gen[SpanContext] =
     for {
-      traceId <- traceId
-      spanId <- spanId
+      traceId <- Gens.traceId
+      spanId <- Gens.spanId
       traceFlags <- Gen.oneOf(TraceFlags.Sampled, TraceFlags.Default)
       remote <- Gen.oneOf(true, false)
     } yield SpanContext(traceId, spanId, traceFlags, TraceState.empty, remote)
+
+  val eventData: Gen[EventData] =
+    for {
+      name <- Gen.alphaNumStr
+      epoch <- Gen.finiteDuration
+      attributes <- Gens.attributes
+    } yield EventData(name, epoch, attributes)
 
 }

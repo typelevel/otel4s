@@ -24,21 +24,26 @@ import cats.syntax.monad._
 import org.typelevel.otel4s.trace.SpanContext
 import scodec.bits.ByteVector
 
-/** Used by the [[SdkTracer]] to generate new span and trace ids.
+/** Generates new span and trace ids.
+  *
+  * @see
+  *   [[https://opentelemetry.io/docs/specs/otel/trace/sdk/#id-generators]]
   *
   * @tparam F
   *   the higher-kinded type of a polymorphic effect
   */
 trait IdGenerator[F[_]] {
 
-  /** Generates a valid span id */
+  /** Generates a valid span id.
+    */
   def generateSpanId: F[ByteVector]
 
-  /** Generates a valid trace id */
+  /** Generates a valid trace id.
+    */
   def generateTraceId: F[ByteVector]
 
   /** Whether it's safe to skip the ID validation: we are sure the generated ids
-    * are valid
+    * are valid.
     */
   private[trace] def canSkipIdValidation: Boolean =
     false
@@ -46,9 +51,15 @@ trait IdGenerator[F[_]] {
 
 object IdGenerator {
 
-  private val InvalidId = 0
+  private final val InvalidId = 0
 
-  private[trace] final class RandomIdGenerator[F[_]: Monad: Random]
+  /** Creates [[IdGenerator]] that uses [[cats.effect.std.Random]] under the
+    * hood.
+    */
+  def random[F[_]: Monad: Random]: IdGenerator[F] =
+    new RandomIdGenerator[F]
+
+  private final class RandomIdGenerator[F[_]: Monad: Random]
       extends IdGenerator[F] {
 
     def generateSpanId: F[ByteVector] =
@@ -66,8 +77,5 @@ object IdGenerator {
     override private[trace] def canSkipIdValidation: Boolean =
       true
   }
-
-  def random[F[_]: Monad: Random]: IdGenerator[F] =
-    new RandomIdGenerator[F]
 
 }

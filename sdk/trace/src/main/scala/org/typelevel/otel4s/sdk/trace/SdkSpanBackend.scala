@@ -46,7 +46,8 @@ final class SdkSpanBackend[F[_]: Monad: Clock] private (
     spanProcessor: SpanProcessor[F],
     immutableState: SdkSpanBackend.ImmutableState,
     mutableState: AtomicCell[F, SdkSpanBackend.MutableState]
-) extends Span.Backend[F] {
+) extends Span.Backend[F]
+    with SpanRef[F] {
 
   def meta: InstrumentMeta[F] = InstrumentMeta.enabled
 
@@ -111,7 +112,7 @@ final class SdkSpanBackend[F[_]: Monad: Clock] private (
     mutableState.update { s =>
       if (s.endTimestamp.isDefined) s // todo: log warn
       else s.copy(endTimestamp = Some(timestamp))
-    } >> spanRef.toSpanData >>= spanProcessor.onEnd
+    } >> toSpanData >>= spanProcessor.onEnd
 
   private def addTimedEvent(event: EventData): F[Unit] =
     mutableState.update { s =>
@@ -125,60 +126,55 @@ final class SdkSpanBackend[F[_]: Monad: Clock] private (
       }
     }
 
-  private val spanRef: SpanRef[F] =
-    new SpanRef[F] {
-      def kind: SpanKind =
-        immutableState.kind
+  // SpanRef interfaces
+  def kind: SpanKind =
+    immutableState.kind
 
-      def scopeInfo: InstrumentationScope =
-        immutableState.scopeInfo
+  def scopeInfo: InstrumentationScope =
+    immutableState.scopeInfo
 
-      def spanContext: SpanContext =
-        immutableState.context
+  def parentSpanContext: Option[SpanContext] =
+    immutableState.parentContext
 
-      def parentSpanContext: Option[SpanContext] =
-        immutableState.parentContext
+  // todo: name can be mutated by internals
+  def name: F[String] =
+    mutableState.get.map(_.name)
 
-      // todo: name can be mutated by internals
-      def name: F[String] =
-        mutableState.get.map(_.name)
+  def toSpanData: F[SpanData] =
+    for {
+      state <- mutableState.get
+    } yield SpanData(
+      name = state.name,
+      spanContext = immutableState.context,
+      parentSpanContext = immutableState.parentContext,
+      kind = immutableState.kind,
+      startTimestamp = immutableState.startTimestamp,
+      endTimestamp = state.endTimestamp,
+      status = state.status,
+      attributes = state.attributes,
+      events = state.events,
+      links = immutableState.links,
+      /*totalRecordedEvents = state.totalRecordedEvents,
+      totalRecordedLinks = immutableState.totalRecordedLinks,
+      totalAttributeCount =
+        state.attributes.size, // todo: incorrect when limits are applied,*/
+      instrumentationScope = immutableState.scopeInfo,
+      resource = immutableState.resource
+    )
 
-      def toSpanData: F[SpanData] =
-        for {
-          state <- mutableState.get
-        } yield SpanData(
-          name = state.name,
-          spanContext = immutableState.context,
-          parentSpanContext = immutableState.parentContext,
-          kind = immutableState.kind,
-          startTimestamp = immutableState.startTimestamp,
-          endTimestamp = state.endTimestamp,
-          status = state.status,
-          attributes = state.attributes,
-          events = state.events,
-          links = immutableState.links,
-          /*totalRecordedEvents = state.totalRecordedEvents,
-          totalRecordedLinks = immutableState.totalRecordedLinks,
-          totalAttributeCount =
-            state.attributes.size, // todo: incorrect when limits are applied,*/
-          instrumentationScope = immutableState.scopeInfo,
-          resource = immutableState.resource
-        )
+  def hasEnded: F[Boolean] =
+    mutableState.get.map(_.endTimestamp.isDefined)
 
-      def hasEnded: F[Boolean] =
-        mutableState.get.map(_.endTimestamp.isDefined)
+  def duration: F[FiniteDuration] =
+    for {
+      state <- mutableState.get
+      endEpochNanos <- state.endTimestamp.fold(Clock[F].realTime)(_.pure)
+    } yield endEpochNanos - immutableState.startTimestamp
 
-      def duration: F[FiniteDuration] =
-        for {
-          state <- mutableState.get
-          endEpochNanos <- state.endTimestamp.fold(Clock[F].realTime)(_.pure)
-        } yield endEpochNanos - immutableState.startTimestamp
-
-      def getAttribute[A](key: AttributeKey[A]): F[Option[A]] =
-        for {
-          state <- mutableState.get
-        } yield state.attributes.get(key).map(_.value)
-    }
+  def getAttribute[A](key: AttributeKey[A]): F[Option[A]] =
+    for {
+      state <- mutableState.get
+    } yield state.attributes.get(key).map(_.value)
 
 }
 
@@ -248,7 +244,7 @@ object SdkSpanBackend {
         immutableState(start),
         state
       )
-      _ <- spanProcessor.onStart(parentContext, backend.spanRef)
+      _ <- spanProcessor.onStart(parentContext, backend)
     } yield backend
   }
 }

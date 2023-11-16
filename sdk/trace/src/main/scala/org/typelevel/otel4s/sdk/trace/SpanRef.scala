@@ -20,6 +20,7 @@ package trace
 
 import org.typelevel.otel4s.sdk.common.InstrumentationScope
 import org.typelevel.otel4s.sdk.trace.data.SpanData
+import org.typelevel.otel4s.trace.Span
 import org.typelevel.otel4s.trace.SpanContext
 import org.typelevel.otel4s.trace.SpanKind
 
@@ -31,7 +32,7 @@ import scala.concurrent.duration.FiniteDuration
   * @tparam F
   *   the higher-kinded type of a polymorphic effect
   */
-trait SpanRef[F[_]] {
+trait SpanRef[F[_]] { self: Span.Backend[F] =>
 
   /** Returns the kind of the span. */
   def kind: SpanKind
@@ -40,9 +41,6 @@ trait SpanRef[F[_]] {
     * produced this span.
     */
   def scopeInfo: InstrumentationScope
-
-  /** Returns the span context of the span. */
-  def spanContext: SpanContext
 
   /** Returns the parent's span context of the span. */
   def parentSpanContext: Option[SpanContext]

@@ -20,7 +20,6 @@ package trace.data
 import cats.Hash
 import cats.Show
 import cats.syntax.show._
-import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.semconv.trace.attributes.SemanticAttributes
 
 import java.io.PrintWriter
@@ -106,16 +105,19 @@ object EventData {
       attributes: Attributes,
       escaped: Boolean
   ): EventData = {
-    val allAttributes = {
-      val builder = Vector.newBuilder[Attribute[_]]
+    import SemanticAttributes.ExceptionEscaped
+    import SemanticAttributes.ExceptionMessage
+    import SemanticAttributes.ExceptionStacktrace
+    import SemanticAttributes.ExceptionType
 
-      builder.addOne(
-        Attribute(SemanticAttributes.ExceptionType, exception.getClass.getName)
-      )
+    val allAttributes = {
+      val builder = Attributes.builder
+
+      builder.addOne(ExceptionType, exception.getClass.getName)
 
       val message = exception.getMessage
       if (message != null) {
-        builder.addOne(Attribute(SemanticAttributes.ExceptionMessage, message))
+        val _ = builder.addOne(ExceptionMessage, message)
       }
 
       if (exception.getStackTrace.nonEmpty) {
@@ -123,19 +125,13 @@ object EventData {
         val printWriter = new PrintWriter(stringWriter)
         exception.printStackTrace(printWriter)
 
-        builder.addOne(
-          Attribute(
-            SemanticAttributes.ExceptionStacktrace,
-            stringWriter.toString
-          )
-        )
+        val _ = builder.addOne(ExceptionStacktrace, stringWriter.toString)
       }
 
-      builder.addOne(Attribute(SemanticAttributes.ExceptionEscaped, escaped))
+      builder.addOne(ExceptionEscaped, escaped)
+      builder.addAll(attributes)
 
-      builder.addAll(attributes.toList)
-
-      Attributes(builder.result(): _*)
+      builder.result()
     }
 
     Impl(ExceptionEventName, timestamp, allAttributes)

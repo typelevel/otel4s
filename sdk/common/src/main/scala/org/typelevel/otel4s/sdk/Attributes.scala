@@ -26,39 +26,53 @@ import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.Attribute.KeySelect
 import org.typelevel.otel4s.AttributeKey
 
-/** An immutable collection of [[Attribute]]s.
+/** An immutable collection of [[Attribute]]s. It contains only unique keys.
+  *
+  * @see
+  *   [[https://opentelemetry.io/docs/specs/otel/common/#attribute-collections]]
   */
-final class Attributes private (
-    private val m: Map[AttributeKey[_], Attribute[_]]
-) {
-  def get[T: KeySelect](name: String): Option[Attribute[T]] = {
-    val key = KeySelect[T].make(name)
-    m.get(key).map(_.asInstanceOf[Attribute[T]])
-  }
-  def get[T](key: AttributeKey[T]): Option[Attribute[T]] =
-    m.get(key).map(_.asInstanceOf[Attribute[T]])
+sealed trait Attributes {
 
-  def isEmpty: Boolean = m.isEmpty
-  def size: Int = m.size
-  def contains(key: AttributeKey[_]): Boolean = m.contains(key)
-  def foldLeft[F[_]: Monad, B](z: B)(f: (B, Attribute[_]) => F[B]): F[B] =
-    m.foldLeft(Monad[F].pure(z)) { (acc, v) =>
-      acc.flatMap { b =>
-        f(b, v._2)
-      }
-    }
-  def forall[F[_]: Monad](p: Attribute[_] => F[Boolean]): F[Boolean] =
-    foldLeft(true)((b, a) => {
-      if (b) p(a).map(b && _)
-      else Monad[F].pure(false)
-    })
-  def foreach[F[_]: Applicative](f: Attribute[_] => F[Unit]): F[Unit] =
-    m.foldLeft(Applicative[F].unit) { (acc, v) =>
-      acc *> f(v._2)
-    }
+  /** Returns an attribute for the given attribute name, or `None` if not found.
+    */
+  def get[T: KeySelect](name: String): Option[Attribute[T]]
 
-  def toMap: Map[AttributeKey[_], Attribute[_]] = m
-  def toList: List[Attribute[_]] = m.values.toList
+  /** Returns an attribute for the given attribute key, or `None` if not found.
+    */
+  def get[T](key: AttributeKey[T]): Option[Attribute[T]]
+
+  /** Whether the attributes collection is empty or not.
+    */
+  def isEmpty: Boolean
+
+  /** The size of the attributes collection.
+    */
+  def size: Int
+
+  /** Whether this attributes collection contains the given key.
+    */
+  def contains(key: AttributeKey[_]): Boolean
+
+  /** Applies an operation to each attribute and accumulates the results from
+    * left to right.
+    */
+  def foldLeft[F[_]: Monad, B](z: B)(f: (B, Attribute[_]) => F[B]): F[B]
+
+  /** Checks if the given predicate holds for all attributes in the collection.
+    */
+  def forall[F[_]: Monad](p: Attribute[_] => F[Boolean]): F[Boolean]
+
+  /** Applies the given operation to each attribute in the collection.
+    */
+  def foreach[F[_]: Applicative](f: Attribute[_] => F[Unit]): F[Unit]
+
+  /** Returns the `Map` representation of the attributes collection.
+    */
+  def toMap: Map[AttributeKey[_], Attribute[_]]
+
+  /** Returns the `List` representation of the attributes collection.
+    */
+  def toList: List[Attribute[_]]
 
   override def hashCode(): Int =
     Hash[Attributes].hash(this)
@@ -75,15 +89,95 @@ final class Attributes private (
 
 object Attributes {
 
-  val Empty = new Attributes(Map.empty)
+  /** A '''mutable''' builder of [[Attributes]].
+    */
+  sealed trait Builder {
 
-  def apply(attributes: Attribute[_]*): Attributes = {
+    /** Adds the given `attribute` to the builder.
+      *
+      * @note
+      *   if the key of the given `attribute` is already present in the builder,
+      *   the value will be overwritten with the corresponding given attribute.
+      *
+      * @param attribute
+      *   the attribute to add
+      */
+    def addOne[A](attribute: Attribute[A]): Builder
+
+    /** Adds the attribute with the given `key` and `value` to the builder.
+      *
+      * @note
+      *   if the given `key` is already present in the builder, the value will
+      *   be overwritten with the given `value`.
+      *
+      * @param key
+      *   the key of the attribute. Denotes the types of the `value`
+      *
+      * @param value
+      *   the value of the attribute
+      */
+    def addOne[A](key: AttributeKey[A], value: A): Builder
+
+    /** Adds the given `attributes` to the builder.
+      *
+      * @note
+      *   if the keys of the given `attributes` are already present in the
+      *   builder, the values will be overwritten with the corresponding given
+      *   attributes.
+      *
+      * @param attributes
+      *   the attributes to add
+      */
+    def addAll(attributes: Attributes): Builder
+
+    /** Creates [[Attributes]] with the attributes of this builder.
+      */
+    def result(): Attributes
+  }
+
+  val Empty: Attributes = new MapAttributes(Map.empty)
+
+  /** Creates [[Attributes]] with the given `attributes`.
+    *
+    * @note
+    *   if there are duplicated keys in the given `attributes`, only the last
+    *   occurrence will be retained.
+    *
+    * @param attributes
+    *   the attributes to use
+    */
+  def apply(attributes: Attribute[_]*): Attributes =
+    fromIterable(attributes)
+
+  /** Creates [[Attributes]] from the given collection of `attributes`.
+    *
+    * @note
+    *   if there are duplicated keys in the given `attributes`, only the last
+    *   occurrence will be retained.
+    *
+    * @param attributes
+    *   the attributes to use
+    */
+  def fromIterable(attributes: Iterable[Attribute[_]]): Attributes = {
     val builder = Map.newBuilder[AttributeKey[_], Attribute[_]]
     attributes.foreach { a =>
       builder += (a.key -> a)
     }
-    new Attributes(builder.result())
+    new MapAttributes(builder.result())
   }
+
+  /** Creates [[Attributes]] from the given map of `attributes`.
+    *
+    * @param attributes
+    *   the attributes to use
+    */
+  def fromMap(attributes: Map[AttributeKey[_], Attribute[_]]): Attributes =
+    new MapAttributes(attributes)
+
+  /** Creates an empty [[Builder]] of [[Attributes]].
+    */
+  def builder: Builder =
+    new MutableBuilder
 
   implicit val showAttributes: Show[Attributes] = Show.show { attributes =>
     attributes.toList
@@ -92,15 +186,72 @@ object Attributes {
   }
 
   implicit val hashAttributes: Hash[Attributes] =
-    Hash.by(_.m)
+    Hash.by(_.toMap)
 
   implicit val monoidAttributes: Monoid[Attributes] =
     new Monoid[Attributes] {
       def empty: Attributes = Attributes.Empty
-      def combine(x: Attributes, y: Attributes): Attributes = {
+      def combine(x: Attributes, y: Attributes): Attributes =
         if (y.isEmpty) x
         else if (x.isEmpty) y
-        else new Attributes(x.m ++ y.m)
-      }
+        else new MapAttributes(x.toMap ++ y.toMap)
     }
+
+  private final class MapAttributes(
+      private val m: Map[AttributeKey[_], Attribute[_]]
+  ) extends Attributes {
+    def get[T: KeySelect](name: String): Option[Attribute[T]] = {
+      val key = KeySelect[T].make(name)
+      m.get(key).map(_.asInstanceOf[Attribute[T]])
+    }
+
+    def get[T](key: AttributeKey[T]): Option[Attribute[T]] =
+      m.get(key).map(_.asInstanceOf[Attribute[T]])
+
+    def isEmpty: Boolean = m.isEmpty
+
+    def size: Int = m.size
+
+    def contains(key: AttributeKey[_]): Boolean = m.contains(key)
+
+    def foldLeft[F[_]: Monad, B](z: B)(f: (B, Attribute[_]) => F[B]): F[B] =
+      m.foldLeft(Monad[F].pure(z)) { (acc, v) =>
+        acc.flatMap(b => f(b, v._2))
+      }
+
+    def forall[F[_]: Monad](p: Attribute[_] => F[Boolean]): F[Boolean] =
+      foldLeft(true) { (b, a) =>
+        if (b) p(a).map(b && _)
+        else Monad[F].pure(false)
+      }
+
+    def foreach[F[_]: Applicative](f: Attribute[_] => F[Unit]): F[Unit] =
+      m.foldLeft(Applicative[F].unit)((acc, v) => acc *> f(v._2))
+
+    def toMap: Map[AttributeKey[_], Attribute[_]] = m
+
+    def toList: List[Attribute[_]] = m.values.toList
+  }
+
+  private final class MutableBuilder extends Builder {
+    private val builder = Map.newBuilder[AttributeKey[_], Attribute[_]]
+
+    def addOne[A](attribute: Attribute[A]): Builder = {
+      val _ = builder.addOne((attribute.key, attribute))
+      this
+    }
+
+    def addOne[A](key: AttributeKey[A], value: A): Builder = {
+      val _ = builder.addOne((key, Attribute(key, value)))
+      this
+    }
+
+    def addAll(attributes: Attributes): Builder = {
+      val _ = builder.addAll(attributes.toMap)
+      this
+    }
+
+    def result(): Attributes =
+      new MapAttributes(builder.result())
+  }
 }

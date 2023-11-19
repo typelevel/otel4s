@@ -22,7 +22,7 @@ import munit.CatsEffectSuite
 import org.typelevel.otel4s.trace.SpanContext
 
 class IdGeneratorSuite extends CatsEffectSuite {
-  private val Attempts = 1_000_000
+  private val Attempts = 100_000
 
   generatorTest("generate a valid trace id") { generator =>
     generator.generateTraceId

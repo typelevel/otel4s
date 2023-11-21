@@ -105,19 +105,17 @@ object EventData {
       attributes: Attributes,
       escaped: Boolean
   ): EventData = {
-    import SemanticAttributes.ExceptionEscaped
-    import SemanticAttributes.ExceptionMessage
-    import SemanticAttributes.ExceptionStacktrace
-    import SemanticAttributes.ExceptionType
-
     val allAttributes = {
-      val builder = Attributes.builder
+      val builder = Attributes.newBuilder
 
-      builder.addOne(ExceptionType, exception.getClass.getName)
+      builder.addOne(
+        SemanticAttributes.ExceptionType,
+        exception.getClass.getName
+      )
 
       val message = exception.getMessage
       if (message != null) {
-        val _ = builder.addOne(ExceptionMessage, message)
+        builder.addOne(SemanticAttributes.ExceptionMessage, message)
       }
 
       if (exception.getStackTrace.nonEmpty) {
@@ -125,10 +123,13 @@ object EventData {
         val printWriter = new PrintWriter(stringWriter)
         exception.printStackTrace(printWriter)
 
-        val _ = builder.addOne(ExceptionStacktrace, stringWriter.toString)
+        builder.addOne(
+          SemanticAttributes.ExceptionStacktrace,
+          stringWriter.toString
+        )
       }
 
-      builder.addOne(ExceptionEscaped, escaped)
+      builder.addOne(SemanticAttributes.ExceptionEscaped, escaped)
       builder.addAll(attributes)
 
       builder.result()

@@ -77,7 +77,7 @@ object Gens {
   val attributes: Gen[Attributes] =
     for {
       attributes <- Gen.listOf(attribute)
-    } yield Attributes.fromIterable(attributes)
+    } yield Attributes.fromSpecific(attributes)
 
   val instrumentationScope: Gen[InstrumentationScope] =
     for {

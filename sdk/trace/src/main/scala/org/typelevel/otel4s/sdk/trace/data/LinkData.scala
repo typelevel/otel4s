@@ -62,7 +62,7 @@ object LinkData {
     *   the context of the span the link refers to
     */
   def apply(context: SpanContext): LinkData =
-    Impl(context, Attributes.Empty)
+    Impl(context, Attributes.empty)
 
   /** Creates a [[LinkData]] with the given `context`.
     *

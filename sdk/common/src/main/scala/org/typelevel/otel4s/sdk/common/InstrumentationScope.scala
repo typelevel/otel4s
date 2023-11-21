@@ -104,7 +104,7 @@ object InstrumentationScope {
   }
 
   private val Empty: InstrumentationScope =
-    apply("", None, None, Attributes.Empty)
+    apply("", None, None, Attributes.empty)
 
   /** An empty [[InstrumentationScope]] */
   def empty: InstrumentationScope = Empty
@@ -115,7 +115,7 @@ object InstrumentationScope {
     *   the name of the instrumentation scope
     */
   def builder(name: String): Builder =
-    ScopeImpl(name, None, None, Attributes.Empty)
+    ScopeImpl(name, None, None, Attributes.empty)
 
   /** Creates an [[InstrumentationScope]].
     *

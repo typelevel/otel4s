@@ -30,8 +30,8 @@ class ResourceSuite extends FunSuite {
       expected: Either[ResourceInitiationError, Option[String]]
   ): Unit =
     assertEquals(
-      Resource(Attributes.Empty, leftSchemaUrl)
-        .mergeInto(Resource(Attributes.Empty, rightSchemaUrl))
+      Resource(Attributes.empty, leftSchemaUrl)
+        .mergeInto(Resource(Attributes.empty, rightSchemaUrl))
         .map(_.schemaUrl),
       expected
     )

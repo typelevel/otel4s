@@ -16,7 +16,6 @@
 
 package org.typelevel.otel4s.sdk
 
-import cats.Id
 import cats.Show
 import cats.syntax.semigroup._
 import munit.ScalaCheckSuite
@@ -63,7 +62,7 @@ class AttributesProps extends ScalaCheckSuite {
       val attrs = Attributes(attributes: _*)
 
       var count = 0
-      attrs.foreach[Id] { _ => count += 1 }
+      attrs.foreach { _ => count += 1 }
 
       count == attrs.size
     }
@@ -83,7 +82,7 @@ class AttributesProps extends ScalaCheckSuite {
       val attrs = Attributes(attributes: _*)
       val list = attrs.toList
 
-      val folded = attrs.foldLeft[Id, Int](0) { (acc, _) => acc + 1 }
+      val folded = attrs.foldLeft(0) { (acc, _) => acc + 1 }
 
       folded == list.size
     }
@@ -95,7 +94,7 @@ class AttributesProps extends ScalaCheckSuite {
     forAll(listOfAttributes) { attributes =>
       val attrs = Attributes(attributes: _*)
 
-      attrs.forall[Id](_ => true)
+      attrs.forall(_ => true)
     }
   }
 

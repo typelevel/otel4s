@@ -16,7 +16,6 @@
 
 package org.typelevel.otel4s.sdk
 
-import cats.Id
 import cats.Show
 import cats.syntax.show._
 import munit.ScalaCheckSuite
@@ -34,7 +33,7 @@ class ResourceProps extends ScalaCheckSuite {
           val keys =
             resource1.attributes.toMap.keySet ++ resource2.attributes.toMap.keySet
 
-          mergedAttrs.size == keys.size && mergedAttrs.forall[Id] { a =>
+          mergedAttrs.size == keys.size && mergedAttrs.forall { a =>
             resource2.attributes
               .get(a.key)
               .orElse(resource1.attributes.get(a.key))

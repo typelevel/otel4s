@@ -344,7 +344,7 @@ lazy val benchmarks = project
   .enablePlugins(NoPublishPlugin)
   .enablePlugins(JmhPlugin)
   .in(file("benchmarks"))
-  .dependsOn(core.jvm, java, testkit.jvm)
+  .dependsOn(core.jvm, sdk.jvm, java, testkit.jvm)
   .settings(
     name := "otel4s-benchmarks"
   )

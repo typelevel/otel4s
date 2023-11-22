@@ -50,10 +50,6 @@ sealed trait Attributes extends Iterable[Attribute[_]] {
     */
   def toMap: Map[AttributeKey[_], Attribute[_]]
 
-  /** Returns the `List` representation of the attributes collection.
-    */
-  def toList: List[Attribute[_]]
-
   override def hashCode(): Int =
     Hash[Attributes].hash(this)
 
@@ -104,14 +100,6 @@ object Attributes extends SpecificIterableFactory[Attribute[_], Attributes] {
       case a: Attributes => a
       case other         => (newBuilder ++= other).result()
     }
-
-  /** Creates [[Attributes]] from the given map of `attributes`.
-    *
-    * @param attributes
-    *   the attributes to use
-    */
-  def fromMap(attributes: Map[AttributeKey[_], Attribute[_]]): Attributes =
-    new MapAttributes(attributes)
 
   implicit val showAttributes: Show[Attributes] = Show.show { attributes =>
     attributes.toList

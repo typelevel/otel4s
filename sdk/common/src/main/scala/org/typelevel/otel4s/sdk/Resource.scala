@@ -95,7 +95,7 @@ object Resource {
     * @return
     *   an empty [[Resource]].
     */
-  val Empty: Resource = Resource(Attributes.Empty)
+  val Empty: Resource = Resource(Attributes.empty)
 
   private val TelemetrySdk: Resource = Resource(
     Attributes(

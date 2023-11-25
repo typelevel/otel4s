@@ -16,7 +16,6 @@
 
 package org.typelevel.otel4s.sdk
 
-import cats.Id
 import cats.Show
 import cats.syntax.semigroup._
 import munit.ScalaCheckSuite
@@ -34,7 +33,7 @@ class AttributesProps extends ScalaCheckSuite {
   property("Attributes#size is equal to the number of unique keys") {
     forAll(listOfAttributes) { attributes =>
       val keysSet = attributes.map(_.key).toSet
-      val attrs = Attributes(attributes: _*)
+      val attrs = Attributes.fromSpecific(attributes)
 
       keysSet.size == attrs.size
     }
@@ -43,7 +42,7 @@ class AttributesProps extends ScalaCheckSuite {
   property("Attributes#isEmpty is true when there are no attributes") {
     forAll(listOfAttributes) { attributes =>
       val keysSet = attributes.map(_.key).toSet
-      val attrs = Attributes(attributes: _*)
+      val attrs = Attributes.fromSpecific(attributes)
 
       keysSet.isEmpty == attrs.isEmpty
     }
@@ -52,7 +51,7 @@ class AttributesProps extends ScalaCheckSuite {
   property("Attributes#contains is true when the key is present") {
     forAll(listOfAttributes) { attributes =>
       val keysSet = attributes.map(_.key).toSet
-      val attrs = Attributes(attributes: _*)
+      val attrs = Attributes.fromSpecific(attributes)
 
       keysSet.forall(attrs.contains)
     }
@@ -60,10 +59,10 @@ class AttributesProps extends ScalaCheckSuite {
 
   property("Attributes#foreach iterates over all attributes") {
     forAll(listOfAttributes) { attributes =>
-      val attrs = Attributes(attributes: _*)
+      val attrs = Attributes.fromSpecific(attributes)
 
       var count = 0
-      attrs.foreach[Id] { _ => count += 1 }
+      attrs.foreach(_ => count += 1)
 
       count == attrs.size
     }
@@ -71,7 +70,7 @@ class AttributesProps extends ScalaCheckSuite {
 
   property("Attributes#toList returns a list of all attributes") {
     forAll(listOfAttributes) { attributes =>
-      val attrs = Attributes(attributes: _*)
+      val attrs = Attributes.fromSpecific(attributes)
       val list = attrs.toList
 
       list.size == attrs.size && list.forall(a => attrs.contains(a.key))
@@ -80,10 +79,10 @@ class AttributesProps extends ScalaCheckSuite {
 
   property("Attributes#foldLeft folds over all attributes") {
     forAll(listOfAttributes) { attributes =>
-      val attrs = Attributes(attributes: _*)
+      val attrs = Attributes.fromSpecific(attributes)
       val list = attrs.toList
 
-      val folded = attrs.foldLeft[Id, Int](0) { (acc, _) => acc + 1 }
+      val folded = attrs.foldLeft[Int](0) { (acc, _) => acc + 1 }
 
       folded == list.size
     }
@@ -93,15 +92,15 @@ class AttributesProps extends ScalaCheckSuite {
     "Attributes#forall returns true when all attributes match the predicate"
   ) {
     forAll(listOfAttributes) { attributes =>
-      val attrs = Attributes(attributes: _*)
+      val attrs = Attributes.fromSpecific(attributes)
 
-      attrs.forall[Id](_ => true)
+      attrs.forall(_ => true)
     }
   }
 
   property("Attributes#toMap returns a map of all attributes") {
     forAll(listOfAttributes) { attributes =>
-      val attrs = Attributes(attributes: _*)
+      val attrs = Attributes.fromSpecific(attributes)
       val map = attrs.toMap
 
       map.size == attrs.size && map.forall { case (k, v) =>

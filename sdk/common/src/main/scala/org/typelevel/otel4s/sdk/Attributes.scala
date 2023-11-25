@@ -19,7 +19,7 @@ package org.typelevel.otel4s.sdk
 import cats.Hash
 import cats.Monoid
 import cats.Show
-import cats.implicits._
+import cats.syntax.show._
 import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.Attribute.KeySelect
 import org.typelevel.otel4s.AttributeKey
@@ -137,6 +137,25 @@ object Attributes extends SpecificIterableFactory[Attribute[_], Attributes] {
       *   the value of the attribute
       */
     def addOne[A](key: AttributeKey[A], value: A): this.type = {
+      builder.addOne((key, Attribute(key, value)))
+      this
+    }
+
+    /** Adds the attribute with the given `key` (created from `name`) and
+      * `value` to the builder.
+      *
+      * @note
+      *   if the given `key` is already present in the builder, the value will
+      *   be overwritten with the given `value`.
+      *
+      * @param name
+      *   the name of the attribute's key
+      *
+      * @param value
+      *   the value of the attribute
+      */
+    def addOne[A: KeySelect](name: String, value: A): this.type = {
+      val key = KeySelect[A].make(name)
       builder.addOne((key, Attribute(key, value)))
       this
     }

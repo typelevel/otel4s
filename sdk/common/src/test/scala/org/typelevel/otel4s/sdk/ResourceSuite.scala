@@ -19,19 +19,19 @@ package sdk
 
 import cats.syntax.either._
 import munit.FunSuite
-import org.typelevel.otel4s.sdk.Resource.ResourceInitiationError
-import org.typelevel.otel4s.sdk.Resource.ResourceInitiationError.SchemaUrlConflict
+import org.typelevel.otel4s.sdk.Resource.ResourceInitializationError
+import org.typelevel.otel4s.sdk.Resource.ResourceInitializationError.SchemaUrlConflict
 
 class ResourceSuite extends FunSuite {
 
   def checkSchemaMerge(
       leftSchemaUrl: Option[String],
       rightSchemaUrl: Option[String],
-      expected: Either[ResourceInitiationError, Option[String]]
+      expected: Either[ResourceInitializationError, Option[String]]
   ): Unit =
     assertEquals(
       Resource(Attributes.empty, leftSchemaUrl)
-        .mergeInto(Resource(Attributes.empty, rightSchemaUrl))
+        .merge(Resource(Attributes.empty, rightSchemaUrl))
         .map(_.schemaUrl),
       expected
     )
@@ -86,7 +86,7 @@ class ResourceSuite extends FunSuite {
     val that = Resource(Attributes(Attribute("key", "that")))
     val other = Resource(Attributes(Attribute("key", "other")))
 
-    assertEquals(that.mergeInto(other), Right(other))
+    assertEquals(that.merge(other), Right(other))
   }
 
 }

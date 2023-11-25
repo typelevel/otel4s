@@ -26,8 +26,10 @@ import org.typelevel.otel4s.trace.SpanKind
 
 import scala.concurrent.duration.FiniteDuration
 
-/** A reference to the span. Since the span internal state can be mutated during
-  * the lifetime, some operations are effectful.
+/** An extended Span interface that provides access to internal state.
+  *
+  * Since the span's internal state can be mutated during the lifetime, some
+  * operations are effectful.
   *
   * @tparam F
   *   the higher-kinded type of a polymorphic effect
@@ -54,9 +56,8 @@ trait SpanRef[F[_]] { self: Span.Backend[F] =>
     */
   def name: F[String]
 
-  /** Returns an immutable instance of the
-    * [[org.typelevel.otel4s.sdk.trace.data.SpanData SpanData]], for use in
-    * export.
+  /** Returns an immutable instance of the [[data.SpanData SpanData]], for use
+    * in export.
     */
   def toSpanData: F[SpanData]
 

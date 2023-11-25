@@ -14,15 +14,23 @@
  * limitations under the License.
  */
 
-package org.typelevel.otel4s.sdk.trace
+package org.typelevel.otel4s
+package sdk.trace
 
 import cats.Applicative
+import cats.Monoid
+import cats.Parallel
+import cats.data.NonEmptyList
 import cats.syntax.foldable._
+import cats.syntax.parallel._
 import org.typelevel.otel4s.sdk.trace.data.SpanData
 import org.typelevel.otel4s.trace.SpanContext
 
-/** The interface that [[SdkTracer]] uses to allow hooks for when a span is
-  * started or ended.
+/** The interface that tracer uses to invoke hooks when a span is started or
+  * ended.
+  *
+  * @see
+  *   [[https://opentelemetry.io/docs/specs/otel/trace/sdk/#span-processor]]
   *
   * @tparam F
   *   the higher-kinded type of a polymorphic effect
@@ -35,8 +43,7 @@ trait SpanProcessor[F[_]] {
     * throw or block the execution thread.
     *
     * @param parentContext
-    *   the optional parent
-    *   [[org.typelevel.otel4s.trace.SpanContext SpanContext]]
+    *   the optional parent [[trace.SpanContext SpanContext]]
     *
     * @param span
     *   the started span
@@ -64,6 +71,10 @@ trait SpanProcessor[F[_]] {
     * If true, the [[onEnd]] will be called upon the end of a span.
     */
   def isEndRequired: Boolean
+
+  /** Processes all pending spans (if any).
+    */
+  def forceFlush: F[Unit]
 }
 
 object SpanProcessor {
@@ -71,18 +82,44 @@ object SpanProcessor {
   /** Creates a [[SpanProcessor]] which delegates all processing to the
     * processors in order.
     */
-  def composite[F[_]: Applicative](
-      processors: List[SpanProcessor[F]]
+  def of[F[_]: Applicative: Parallel](
+      processors: SpanProcessor[F]*
   ): SpanProcessor[F] =
-    processors match {
-      case Nil         => new Noop
-      case head :: Nil => head
-      case _           => new Multi[F](processors)
+    if (processors.sizeIs == 1) processors.head
+    else processors.combineAll
+
+  /** Creates a no-op implementation of the [[SpanProcessor]].
+    *
+    * All export operations are no-op.
+    */
+  def noop[F[_]: Applicative]: SpanProcessor[F] =
+    new Noop
+
+  implicit def spanProcessorMonoid[F[_]: Applicative: Parallel]
+      : Monoid[SpanProcessor[F]] =
+    new Monoid[SpanProcessor[F]] {
+      val empty: SpanProcessor[F] =
+        noop[F]
+
+      def combine(x: SpanProcessor[F], y: SpanProcessor[F]): SpanProcessor[F] =
+        (x, y) match {
+          case (that, _: Noop[F]) =>
+            that
+          case (_: Noop[F], other) =>
+            other
+          case (that: Multi[F], other: Multi[F]) =>
+            Multi(that.processors.concatNel(other.processors))
+          case (that: Multi[F], other) =>
+            Multi(that.processors :+ other)
+          case (that, other: Multi[F]) =>
+            Multi(that :: other.processors)
+          case (that, other) =>
+            Multi(NonEmptyList.of(that, other))
+        }
     }
 
   private final class Noop[F[_]: Applicative] extends SpanProcessor[F] {
     def isStartRequired: Boolean = false
-
     def isEndRequired: Boolean = false
 
     def onStart(parentCtx: Option[SpanContext], span: SpanRef[F]): F[Unit] =
@@ -90,10 +127,15 @@ object SpanProcessor {
 
     def onEnd(span: SpanData): F[Unit] =
       Applicative[F].unit
+
+    def forceFlush: F[Unit] =
+      Applicative[F].unit
+
+    override def toString: String = "SpanProcessor.Noop"
   }
 
-  private final class Multi[F[_]: Applicative](
-      processors: List[SpanProcessor[F]]
+  private final case class Multi[F[_]: Parallel](
+      processors: NonEmptyList[SpanProcessor[F]]
   ) extends SpanProcessor[F] {
     private val startOnly: List[SpanProcessor[F]] =
       processors.filter(_.isStartRequired)
@@ -102,13 +144,18 @@ object SpanProcessor {
       processors.filter(_.isEndRequired)
 
     def isStartRequired: Boolean = startOnly.nonEmpty
-
     def isEndRequired: Boolean = endOnly.nonEmpty
 
     def onStart(parentCtx: Option[SpanContext], span: SpanRef[F]): F[Unit] =
-      startOnly.traverse_(_.onStart(parentCtx, span))
+      startOnly.parTraverse_(_.onStart(parentCtx, span))
 
     def onEnd(span: SpanData): F[Unit] =
-      endOnly.traverse_(_.onEnd(span))
+      endOnly.parTraverse_(_.onEnd(span))
+
+    def forceFlush: F[Unit] =
+      processors.parTraverse_(_.forceFlush)
+
+    override def toString: String =
+      s"SpanProcessor.Multi(${processors.map(_.toString).mkString_(", ")})"
   }
 }

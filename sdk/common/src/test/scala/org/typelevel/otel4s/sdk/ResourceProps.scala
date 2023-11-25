@@ -16,7 +16,6 @@
 
 package org.typelevel.otel4s.sdk
 
-import cats.Id
 import cats.Show
 import cats.syntax.show._
 import munit.ScalaCheckSuite
@@ -25,16 +24,16 @@ import org.typelevel.otel4s.sdk.arbitrary.resource
 
 class ResourceProps extends ScalaCheckSuite {
 
-  property("Attributes#mergeInto merges attributes") {
+  property("Attributes#merge merges attributes") {
     forAll(resource.arbitrary, resource.arbitrary) { (resource1, resource2) =>
-      val mergedEither = resource1.mergeInto(resource2)
+      val mergedEither = resource1.merge(resource2)
       mergedEither match {
         case Right(merged) =>
           val mergedAttrs = merged.attributes
           val keys =
             resource1.attributes.toMap.keySet ++ resource2.attributes.toMap.keySet
 
-          mergedAttrs.size == keys.size && mergedAttrs.forall[Id] { a =>
+          mergedAttrs.size == keys.size && mergedAttrs.forall { a =>
             resource2.attributes
               .get(a.key)
               .orElse(resource1.attributes.get(a.key))

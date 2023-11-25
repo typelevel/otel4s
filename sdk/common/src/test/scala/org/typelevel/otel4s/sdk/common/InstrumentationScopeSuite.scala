@@ -77,7 +77,7 @@ class InstrumentationScopeSuite extends DisciplineSuite {
   }
 
   test("empty instance") {
-    val expected = InstrumentationScope("", None, None, Attributes.Empty)
+    val expected = InstrumentationScope("", None, None, Attributes.empty)
     assertEquals(InstrumentationScope.empty, expected)
   }
 

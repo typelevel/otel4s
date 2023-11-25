@@ -110,21 +110,21 @@ object SamplingResult {
   val RecordAndSample: SamplingResult =
     SamplingResultImpl(
       SamplingDecision.RecordAndSample,
-      Attributes.Empty,
+      Attributes.empty,
       TraceStateUpdater.Identity
     )
 
   val RecordOnly: SamplingResult =
     SamplingResultImpl(
       SamplingDecision.RecordOnly,
-      Attributes.Empty,
+      Attributes.empty,
       TraceStateUpdater.Identity
     )
 
   val Drop: SamplingResult =
     SamplingResultImpl(
       SamplingDecision.Drop,
-      Attributes.Empty,
+      Attributes.empty,
       TraceStateUpdater.Identity
     )
 

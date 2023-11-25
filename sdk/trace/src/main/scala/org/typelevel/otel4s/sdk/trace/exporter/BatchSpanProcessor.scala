@@ -86,6 +86,9 @@ final class BatchSpanProcessor[F[_]: Temporal] private (
     enqueue.whenA(canExport)
   }
 
+  def forceFlush: F[Unit] =
+    exportAll
+
   private def worker: F[Unit] =
     run.foreverM[Unit].guarantee(exportAll)
 
@@ -192,14 +195,14 @@ object BatchSpanProcessor {
       *
       * Default value is `5 seconds`.
       */
-    def setScheduleDelay(delay: FiniteDuration): Builder[F]
+    def withScheduleDelay(delay: FiniteDuration): Builder[F]
 
     /** Sets the maximum time an export will be allowed to run before being
       * cancelled.
       *
       * Default value is `30 seconds`.
       */
-    def exporterTimeout(timeout: FiniteDuration): Builder[F]
+    def withExporterTimeout(timeout: FiniteDuration): Builder[F]
 
     /** Sets the maximum number of Spans that are kept in the queue before start
       * dropping. More memory than this value may be allocated to optimize queue
@@ -207,14 +210,14 @@ object BatchSpanProcessor {
       *
       * Default value is `2048`.
       */
-    def setMaxQueueSize(maxQueueSize: Int): Builder[F]
+    def withMaxQueueSize(maxQueueSize: Int): Builder[F]
 
     /** Sets the maximum batch size for every export. This must be smaller or
       * equal to `maxQueueSize`.
       *
       * Default value is `512`.
       */
-    def setMaxExportBatchSize(maxExportBatchSize: Int): Builder[F]
+    def withMaxExportBatchSize(maxExportBatchSize: Int): Builder[F]
 
     /** Creates a [[BatchSpanProcessor]] with the configuration of this builder.
       */
@@ -243,16 +246,16 @@ object BatchSpanProcessor {
       maxExportBatchSize: Int
   ) extends Builder[F] {
 
-    def setScheduleDelay(delay: FiniteDuration): Builder[F] =
+    def withScheduleDelay(delay: FiniteDuration): Builder[F] =
       copy(scheduleDelay = delay)
 
-    def exporterTimeout(timeout: FiniteDuration): Builder[F] =
+    def withExporterTimeout(timeout: FiniteDuration): Builder[F] =
       copy(exporterTimeout = timeout)
 
-    def setMaxQueueSize(maxQueueSize: Int): Builder[F] =
+    def withMaxQueueSize(maxQueueSize: Int): Builder[F] =
       copy(maxQueueSize = maxQueueSize)
 
-    def setMaxExportBatchSize(maxExportBatchSize: Int): Builder[F] =
+    def withMaxExportBatchSize(maxExportBatchSize: Int): Builder[F] =
       copy(maxExportBatchSize = maxExportBatchSize)
 
     def build: Resource[F, BatchSpanProcessor[F]] = {

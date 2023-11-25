@@ -37,5 +37,5 @@ private[sdk] final case class SdkTracerBuilder[F[_]: Functor](
     copy(schemaUrl = Option(schemaUrl))
 
   def get: F[Tracer[F]] =
-    registry.get(name, version, schemaUrl, Attributes.Empty).widen
+    registry.get(name, version, schemaUrl, Attributes.empty).widen
 }

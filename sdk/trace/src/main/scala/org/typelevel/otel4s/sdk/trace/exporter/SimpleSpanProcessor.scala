@@ -54,6 +54,8 @@ final class SimpleSpanProcessor[F[_]: Monad] private (
     supervisor.supervise(exportSpans).void.whenA(canExport)
   }
 
+  def forceFlush: F[Unit] =
+    Monad[F].unit
 }
 
 object SimpleSpanProcessor {

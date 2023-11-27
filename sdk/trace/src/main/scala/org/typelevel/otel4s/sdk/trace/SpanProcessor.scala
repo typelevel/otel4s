@@ -143,7 +143,7 @@ object SpanProcessor {
     *   the error occurred
     */
   final case class ProcessorFailure(processor: String, failure: Throwable)
-      extends Throwable(
+      extends Exception(
         s"The processor [$processor] has failed due to ${failure.getMessage}",
         failure
       )
@@ -159,7 +159,7 @@ object SpanProcessor {
   final case class CompositeProcessorFailure(
       first: ProcessorFailure,
       rest: NonEmptyList[ProcessorFailure]
-  ) extends Throwable(
+  ) extends Exception(
         s"Multiple processors [${rest.prepend(first).map(_.processor).mkString_(", ")}] have failed",
         first
       )

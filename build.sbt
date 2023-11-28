@@ -30,7 +30,6 @@ ThisBuild / scalaVersion := Scala213 // the default Scala
 val CatsVersion = "2.10.0"
 val CatsEffectVersion = "3.5.2"
 val CatsMtlVersion = "1.4.0"
-val DisciplineMUnitVersion = "2.0.0-M3"
 val FS2Version = "3.9.3"
 val MUnitVersion = "1.0.0-M10"
 val MUnitCatsEffectVersion = "2.0.0-M4"
@@ -54,6 +53,7 @@ lazy val scalaReflectDependency = Def.settings(
 lazy val munitDependencies = Def.settings(
   libraryDependencies ++= Seq(
     "org.scalameta" %%% "munit" % MUnitVersion % Test,
+    "org.scalameta" %%% "munit-scalacheck" % MUnitVersion % Test,
     "org.typelevel" %%% "munit-cats-effect" % MUnitCatsEffectVersion % Test
   )
 )
@@ -93,6 +93,7 @@ lazy val root = tlCrossRootProject
 lazy val `core-common` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .crossType(CrossType.Pure)
   .in(file("core/common"))
+  .settings(munitDependencies)
   .settings(
     name := "otel4s-core-common",
     libraryDependencies ++= Seq(
@@ -101,9 +102,7 @@ lazy val `core-common` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
       "org.typelevel" %%% "cats-mtl" % CatsMtlVersion,
       "org.typelevel" %%% "vault" % VaultVersion % Test,
       "org.typelevel" %%% "cats-laws" % CatsVersion % Test,
-      "org.typelevel" %%% "discipline-munit" % DisciplineMUnitVersion % Test,
-      "org.scalameta" %%% "munit" % MUnitVersion % Test,
-      "org.scalameta" %%% "munit-scalacheck" % MUnitVersion % Test,
+      "org.typelevel" %%% "discipline-munit" % MUnitDisciplineVersion % Test,
       "lgbt.princess" %%% "platform" % PlatformVersion % Test
     )
   )
@@ -135,9 +134,8 @@ lazy val `core-trace` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
     libraryDependencies ++= Seq(
       "org.typelevel" %%% "cats-effect-kernel" % CatsEffectVersion,
       "org.scodec" %%% "scodec-bits" % ScodecVersion,
-      "org.scalameta" %%% "munit-scalacheck" % MUnitVersion % Test,
       "org.typelevel" %%% "cats-laws" % CatsVersion % Test,
-      "org.typelevel" %%% "discipline-munit" % DisciplineMUnitVersion % Test
+      "org.typelevel" %%% "discipline-munit" % MUnitDisciplineVersion % Test
     )
   )
   .settings(scalafixSettings)
@@ -164,9 +162,7 @@ lazy val `sdk-common` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
       "org.typelevel" %%% "cats-effect" % CatsEffectVersion,
       "org.typelevel" %%% "cats-mtl" % CatsMtlVersion,
       "org.typelevel" %%% "cats-laws" % CatsVersion % Test,
-      "org.typelevel" %%% "discipline-munit" % DisciplineMUnitVersion % Test,
-      "org.scalameta" %%% "munit" % MUnitVersion % Test,
-      "org.scalameta" %%% "munit-scalacheck" % MUnitVersion % Test,
+      "org.typelevel" %%% "discipline-munit" % MUnitDisciplineVersion % Test,
     ),
     buildInfoPackage := "org.typelevel.otel4s.sdk",
     buildInfoOptions += sbtbuildinfo.BuildInfoOption.PackagePrivate,
@@ -187,9 +183,8 @@ lazy val `sdk-trace` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
     startYear := Some(2023),
     libraryDependencies ++= Seq(
       "org.typelevel" %%% "cats-effect" % CatsEffectVersion,
-      "org.scalameta" %%% "munit-scalacheck" % MUnitVersion % Test,
       "org.typelevel" %%% "cats-laws" % CatsVersion % Test,
-      "org.typelevel" %%% "discipline-munit" % DisciplineMUnitVersion % Test,
+      "org.typelevel" %%% "discipline-munit" % MUnitDisciplineVersion % Test,
       "org.typelevel" %%% "cats-effect-testkit" % CatsEffectVersion % Test
     ),
   )
@@ -285,7 +280,6 @@ lazy val `java-trace` = project
       "io.opentelemetry" % "opentelemetry-sdk-testing" % OpenTelemetryVersion % Test,
       "org.typelevel" %%% "cats-effect-testkit" % CatsEffectVersion % Test,
       "co.fs2" %% "fs2-core" % FS2Version % Test,
-      "org.scalameta" %%% "munit-scalacheck" % MUnitVersion % Test
     ),
     mimaBinaryIssueFilters ++= Seq(
       ProblemFilters.exclude[MissingClassProblem](

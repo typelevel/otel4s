@@ -18,77 +18,180 @@ package org.typelevel.otel4s.sdk.trace
 package exporter
 
 import cats.Applicative
-import cats.syntax.foldable._
+import cats.Foldable
+import cats.MonadThrow
+import cats.Monoid
+import cats.Parallel
+import cats.data.NonEmptyList
+import cats.syntax.all._
 import org.typelevel.otel4s.sdk.trace.data.SpanData
 
 /** An interface that allows different tracing services to export recorded data
-  * for sampled spans in their own format. To export data, the exporter MUST be
-  * register to the [[SdkTracer]] using a [[SimpleSpanProcessor]] or a
-  * [[BatchSpanProcessor]].
+  * for sampled spans in their own format.
+  *
+  * @see
+  *   [[https://opentelemetry.io/docs/specs/otel/trace/sdk/#span-exporter]]
   *
   * @tparam F
   *   the higher-kinded type of a polymorphic effect
   */
 trait SpanExporter[F[_]] {
 
-  /** Called to export sampled
-    * [[org.typelevel.otel4s.sdk.trace.data.SpanData SpanData]].
+  /** The name of the exporter.
     *
-    * '''Note''': the export operations can be performed simultaneously
-    * depending on the type of span processor being used. However, the
-    * [[BatchSpanProcessor]] will ensure that only one export can occur at a
-    * time.
+    * It will be used in an exception to distinguish individual failures in the
+    * multi-error scenario.
     *
-    * @param span
-    *   the collection of sampled Spans to be exported
+    * @see
+    *   [[SpanExporter.ExporterFailure]]
+    *
+    * @see
+    *   [[SpanExporter.CompositeExporterFailure]]
     */
-  def exportSpans(span: List[SpanData]): F[Unit]
+  def name: String
+
+  /** Called to export sampled [[data.SpanData SpanData]].
+    *
+    * @note
+    *   the export operations can be performed simultaneously depending on the
+    *   type of span processor being used. However, the batch span processor
+    *   will ensure that only one export can occur at a time.
+    *
+    * @param spans
+    *   the sampled spans to be exported
+    */
+  def exportSpans[G[_]: Foldable](spans: G[SpanData]): F[Unit]
+
+  /** Exports the collection of sampled [[data.SpanData SpanData]] that have not
+    * yet been exported.
+    *
+    * @note
+    *   the export operations can be performed simultaneously depending on the
+    *   type of span processor being used. However, the batch span processor
+    *   will ensure that only one export can occur at a time.
+    */
+  def flush: F[Unit]
+
+  override def toString: String =
+    name
 }
 
 object SpanExporter {
 
-  /** Creates a [[SpanExporter]] which delegates all exports to the exporters in
-    * order.
-    *
-    * Can be used to export to multiple backends using the same
-    * [[SpanProcessor]] like a [[SimpleSpanProcessor]] or a
-    * [[BatchSpanProcessor]].
+  /** Creates a [[SpanExporter]] which delegates all exports to the exporters.
     */
-  def composite[F[_]: Applicative](
-      exporters: List[SpanExporter[F]]
+  def of[F[_]: MonadThrow: Parallel](
+      exporters: SpanExporter[F]*
   ): SpanExporter[F] =
-    exporters match {
-      case Nil         => new Noop
-      case head :: Nil => head
-      case _           => new Multi[F](exporters)
+    if (exporters.sizeIs == 1) exporters.head
+    else exporters.combineAll
+
+  /** Creates a no-op implementation of the [[SpanExporter]].
+    *
+    * All export operations are no-op.
+    */
+  def noop[F[_]: Applicative]: SpanExporter[F] =
+    new Noop
+
+  implicit def spanExporterMonoid[F[_]: MonadThrow: Parallel]
+      : Monoid[SpanExporter[F]] =
+    new Monoid[SpanExporter[F]] {
+      val empty: SpanExporter[F] =
+        noop[F]
+
+      def combine(x: SpanExporter[F], y: SpanExporter[F]): SpanExporter[F] =
+        (x, y) match {
+          case (that, _: Noop[F]) =>
+            that
+          case (_: Noop[F], other) =>
+            other
+          case (that: Multi[F], other: Multi[F]) =>
+            Multi(that.exporters.concatNel(other.exporters))
+          case (that: Multi[F], other) =>
+            Multi(that.exporters :+ other)
+          case (that, other: Multi[F]) =>
+            Multi(that :: other.exporters)
+          case (that, other) =>
+            Multi(NonEmptyList.of(that, other))
+        }
     }
 
+  /** An error occurred when invoking an exporter.
+    *
+    * @param exporter
+    *   the name of an exporter that failed. See [[SpanExporter.name]]
+    *
+    * @param failure
+    *   the error occurred
+    */
+  final case class ExporterFailure(exporter: String, failure: Throwable)
+      extends Exception(
+        s"The exporter [$exporter] has failed due to ${failure.getMessage}",
+        failure
+      )
+
+  /** An composite failure, when '''at least 2''' exporters have failed.
+    *
+    * @param first
+    *   the first occurred error
+    *
+    * @param rest
+    *   the rest of errors
+    */
+  final case class CompositeExporterFailure(
+      first: ExporterFailure,
+      rest: NonEmptyList[ExporterFailure]
+  ) extends Exception(
+        s"Multiple exporters [${rest.prepend(first).map(_.exporter).mkString_(", ")}] have failed",
+        first
+      )
+
   private final class Noop[F[_]: Applicative] extends SpanExporter[F] {
-    def exportSpans(span: List[SpanData]): F[Unit] = Applicative[F].unit
+    val name: String = "SpanExporter.Noop"
+
+    def exportSpans[G[_]: Foldable](spans: G[SpanData]): F[Unit] =
+      Applicative[F].unit
+
+    def flush: F[Unit] =
+      Applicative[F].unit
   }
 
-  private final class Multi[F[_]: Applicative](
-      exporters: List[SpanExporter[F]]
+  private final case class Multi[F[_]: MonadThrow: Parallel](
+      exporters: NonEmptyList[SpanExporter[F]]
   ) extends SpanExporter[F] {
-    def exportSpans(span: List[SpanData]): F[Unit] =
-      exporters.traverse_(_.exportSpans(span))
+    val name: String =
+      s"SpanExporter.Multi(${exporters.map(_.toString).mkString_(", ")})"
 
-    /*
-    List<CompletableResultCode> results = new ArrayList<>(spanExporters.length);
-        for (SpanExporter spanExporter : spanExporters) {
-          CompletableResultCode exportResult;
-          try {
-            exportResult = spanExporter.export(spans);
-          } catch (RuntimeException e) {
-            // If an exception was thrown by the exporter
-            logger.log(Level.WARNING, "Exception thrown by the export.", e);
-            results.add(CompletableResultCode.ofFailure());
-            continue;
-          }
-          results.add(exportResult);
-        }
-        return CompletableResultCode.ofAll(results);
-     */
+    def exportSpans[G[_]: Foldable](spans: G[SpanData]): F[Unit] =
+      exporters
+        .parTraverse(e => e.exportSpans(spans).attempt.tupleLeft(e.toString))
+        .flatMap(attempts => handleAttempts(attempts))
+
+    def flush: F[Unit] =
+      exporters
+        .parTraverse(e => e.flush.attempt.tupleLeft(e.toString))
+        .flatMap(attempts => handleAttempts(attempts))
+
+    private def handleAttempts(
+        results: NonEmptyList[(String, Either[Throwable, Unit])]
+    ): F[Unit] = {
+      val failures = results.collect { case (exporter, Left(failure)) =>
+        ExporterFailure(exporter, failure)
+      }
+
+      failures match {
+        case Nil =>
+          MonadThrow[F].unit
+
+        case head :: Nil =>
+          MonadThrow[F].raiseError(head)
+
+        case head :: tail =>
+          MonadThrow[F].raiseError(
+            CompositeExporterFailure(head, NonEmptyList.fromListUnsafe(tail))
+          )
+      }
+    }
   }
 
 }

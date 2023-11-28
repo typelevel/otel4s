@@ -119,10 +119,14 @@ object SdkTracerProviderBuilder {
       spanProcessors: List[SpanProcessor[F]]
   ) extends SdkTracerProviderBuilder[F] {
 
-    def withIdGenerator(generator: IdGenerator[F]): SdkTracerProviderBuilder[F] =
+    def withIdGenerator(
+        generator: IdGenerator[F]
+    ): SdkTracerProviderBuilder[F] =
       copy(idGenerator = generator)
 
-    def withResource(resource: InstrumentResource): SdkTracerProviderBuilder[F] =
+    def withResource(
+        resource: InstrumentResource
+    ): SdkTracerProviderBuilder[F] =
       copy(resource = resource)
 
     def addResource(resource: InstrumentResource): SdkTracerProviderBuilder[F] =

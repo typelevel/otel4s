@@ -55,7 +55,7 @@ class TracerSuite extends CatsEffectSuite {
       name = "tracer",
       version = Some("1.0"),
       schemaUrl = Some("https://localhost:8080"),
-      attributes = Attributes.Empty
+      attributes = Attributes.empty
     )
 
     for {
@@ -209,7 +209,7 @@ class TracerSuite extends CatsEffectSuite {
         // SpanLimits.Default,
         timestamp,
         exception,
-        Attributes.Empty,
+        Attributes.empty,
         false
       )
 
@@ -898,7 +898,7 @@ class TracerSuite extends CatsEffectSuite {
 
     for {
       ioLocal <- Resource.eval(IOLocal(Context.root))
-      exporter <- Resource.eval(InMemorySpanExporter.create[IO])
+      exporter <- Resource.eval(InMemorySpanExporter.create[IO](None))
       processor <- BatchSpanProcessor.builder(exporter).build
       tracerProvider <- Resource.eval(createTracerProvider(processor)(ioLocal))
     } yield new TracerSuite.Sdk(tracerProvider, processor, exporter)

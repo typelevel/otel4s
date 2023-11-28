@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+/*
 import cats.effect._
 import cats.effect.std.Random
 import org.typelevel.otel4s.Attribute
@@ -52,3 +53,4 @@ object TraceSdkExample extends IOApp.Simple {
   }
 
 }
+ */

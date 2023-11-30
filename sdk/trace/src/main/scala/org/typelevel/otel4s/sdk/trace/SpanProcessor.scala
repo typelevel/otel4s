@@ -18,11 +18,11 @@ package org.typelevel.otel4s
 package sdk.trace
 
 import cats.Applicative
+import cats.MonadThrow
 import cats.Monoid
 import cats.Parallel
 import cats.data.NonEmptyList
-import cats.syntax.foldable._
-import cats.syntax.parallel._
+import cats.syntax.all._
 import org.typelevel.otel4s.sdk.trace.data.SpanData
 import org.typelevel.otel4s.trace.SpanContext
 
@@ -36,6 +36,19 @@ import org.typelevel.otel4s.trace.SpanContext
   *   the higher-kinded type of a polymorphic effect
   */
 trait SpanProcessor[F[_]] {
+
+  /** The name of the processor.
+    *
+    * It will be used in an exception to distinguish individual failures in the
+    * multi-error scenario.
+    *
+    * @see
+    *   [[SpanProcessor.ProcessorFailure]]
+    *
+    * @see
+    *   [[SpanProcessor.CompositeProcessorFailure]]
+    */
+  def name: String
 
   /** Called when a span is started, if the `span.isRecording` returns true.
     *
@@ -75,6 +88,9 @@ trait SpanProcessor[F[_]] {
   /** Processes all pending spans (if any).
     */
   def forceFlush: F[Unit]
+
+  override def toString: String =
+    name
 }
 
 object SpanProcessor {
@@ -82,7 +98,7 @@ object SpanProcessor {
   /** Creates a [[SpanProcessor]] which delegates all processing to the
     * processors in order.
     */
-  def of[F[_]: Applicative: Parallel](
+  def of[F[_]: MonadThrow: Parallel](
       processors: SpanProcessor[F]*
   ): SpanProcessor[F] =
     if (processors.sizeIs == 1) processors.head
@@ -95,7 +111,7 @@ object SpanProcessor {
   def noop[F[_]: Applicative]: SpanProcessor[F] =
     new Noop
 
-  implicit def spanProcessorMonoid[F[_]: Applicative: Parallel]
+  implicit def spanProcessorMonoid[F[_]: MonadThrow: Parallel]
       : Monoid[SpanProcessor[F]] =
     new Monoid[SpanProcessor[F]] {
       val empty: SpanProcessor[F] =
@@ -118,7 +134,39 @@ object SpanProcessor {
         }
     }
 
+  /** An error occurred when invoking a processor.
+    *
+    * @param processor
+    *   the name of a processor that failed. See [[SpanProcessor.name]]
+    *
+    * @param failure
+    *   the error occurred
+    */
+  final case class ProcessorFailure(processor: String, failure: Throwable)
+      extends Exception(
+        s"The processor [$processor] has failed due to ${failure.getMessage}",
+        failure
+      )
+
+  /** An composite failure, when '''at least 2''' processors have failed.
+    *
+    * @param first
+    *   the first occurred error
+    *
+    * @param rest
+    *   the rest of errors
+    */
+  final case class CompositeProcessorFailure(
+      first: ProcessorFailure,
+      rest: NonEmptyList[ProcessorFailure]
+  ) extends Exception(
+        s"Multiple processors [${rest.prepend(first).map(_.processor).mkString_(", ")}] have failed",
+        first
+      )
+
   private final class Noop[F[_]: Applicative] extends SpanProcessor[F] {
+    val name: String = "SpanProcessor.Noop"
+
     def isStartRequired: Boolean = false
     def isEndRequired: Boolean = false
 
@@ -130,11 +178,9 @@ object SpanProcessor {
 
     def forceFlush: F[Unit] =
       Applicative[F].unit
-
-    override def toString: String = "SpanProcessor.Noop"
   }
 
-  private final case class Multi[F[_]: Parallel](
+  private final case class Multi[F[_]: MonadThrow: Parallel](
       processors: NonEmptyList[SpanProcessor[F]]
   ) extends SpanProcessor[F] {
     private val startOnly: List[SpanProcessor[F]] =
@@ -143,19 +189,49 @@ object SpanProcessor {
     private val endOnly: List[SpanProcessor[F]] =
       processors.filter(_.isEndRequired)
 
+    val name: String =
+      s"SpanProcessor.Multi(${processors.map(_.name).mkString_(", ")})"
+
     def isStartRequired: Boolean = startOnly.nonEmpty
     def isEndRequired: Boolean = endOnly.nonEmpty
 
     def onStart(parentCtx: Option[SpanContext], span: SpanRef[F]): F[Unit] =
-      startOnly.parTraverse_(_.onStart(parentCtx, span))
+      startOnly
+        .parTraverse { p =>
+          p.onStart(parentCtx, span).attempt.tupleLeft(p.name)
+        }
+        .flatMap(attempts => handleAttempts(attempts))
 
     def onEnd(span: SpanData): F[Unit] =
-      endOnly.parTraverse_(_.onEnd(span))
+      endOnly
+        .parTraverse(p => p.onEnd(span).attempt.tupleLeft(p.name))
+        .flatMap(attempts => handleAttempts(attempts))
 
     def forceFlush: F[Unit] =
-      processors.parTraverse_(_.forceFlush)
+      processors
+        .parTraverse(p => p.forceFlush.attempt.tupleLeft(p.name))
+        .flatMap(attempts => handleAttempts(attempts.toList))
 
-    override def toString: String =
-      s"SpanProcessor.Multi(${processors.map(_.toString).mkString_(", ")})"
+    private def handleAttempts(
+        results: List[(String, Either[Throwable, Unit])]
+    ): F[Unit] = {
+      val failures = results.collect { case (processor, Left(failure)) =>
+        ProcessorFailure(processor, failure)
+      }
+
+      failures match {
+        case Nil =>
+          MonadThrow[F].unit
+
+        case head :: Nil =>
+          MonadThrow[F].raiseError(head)
+
+        case head :: tail =>
+          MonadThrow[F].raiseError(
+            CompositeProcessorFailure(head, NonEmptyList.fromListUnsafe(tail))
+          )
+      }
+    }
   }
+
 }

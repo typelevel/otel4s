@@ -16,6 +16,7 @@
 
 package org.typelevel.otel4s.sdk.trace
 
+import cats.data.NonEmptyList
 import cats.effect.IO
 import munit.FunSuite
 import org.typelevel.otel4s.sdk.trace.data.SpanData
@@ -65,27 +66,95 @@ class SpanProcessorSuite extends FunSuite {
     )
   }
 
-  private def testProcessor(name: String): SpanProcessor[IO] =
+  test("of (multiple) - single failure - rethrow a single failure") {
+    val onStart = new RuntimeException("cannot start")
+    val onEnd = new RuntimeException("cannot end")
+    val onFlush = new RuntimeException("cannot flush")
+
+    val failing = testProcessor(
+      processorName = "error-prone",
+      start = IO.raiseError(onStart),
+      end = IO.raiseError(onEnd),
+      flush = IO.raiseError(onFlush)
+    )
+
+    val processor = SpanProcessor.of(testProcessor("success"), failing)
+
+    def expected(e: Throwable) =
+      SpanProcessor.ProcessorFailure("error-prone", e)
+
+    for {
+      start <- processor.onStart(None, null: SpanRef[IO]).attempt
+      end <- processor.onEnd(null).attempt
+      flush <- processor.forceFlush.attempt
+    } yield {
+      assertEquals(start, Left(expected(onStart)))
+      assertEquals(end, Left(expected(onEnd)))
+      assertEquals(flush, Left(expected(onFlush)))
+    }
+  }
+
+  test("of (multiple) - multiple failures - rethrow a composite failure") {
+    val onStart = new RuntimeException("cannot start")
+    val onEnd = new RuntimeException("cannot end")
+    val onFlush = new RuntimeException("cannot flush")
+
+    def failing(name: String) = testProcessor(
+      processorName = name,
+      start = IO.raiseError(onStart),
+      end = IO.raiseError(onEnd),
+      flush = IO.raiseError(onFlush)
+    )
+
+    val processor = SpanProcessor.of(
+      failing("error-prone-1"),
+      failing("error-prone-2")
+    )
+
+    def expected(e: Throwable) =
+      SpanProcessor.CompositeProcessorFailure(
+        SpanProcessor.ProcessorFailure("error-prone-1", e),
+        NonEmptyList.of(SpanProcessor.ProcessorFailure("error-prone-2", e))
+      )
+
+    for {
+      start <- processor.onStart(None, null).attempt
+      end <- processor.onEnd(null).attempt
+      flush <- processor.forceFlush.attempt
+    } yield {
+      assertEquals(start, Left(expected(onStart)))
+      assertEquals(end, Left(expected(onEnd)))
+      assertEquals(flush, Left(expected(onFlush)))
+    }
+  }
+
+  private def testProcessor(
+      processorName: String,
+      start: IO[Unit] = IO.unit,
+      end: IO[Unit] = IO.unit,
+      flush: IO[Unit] = IO.unit,
+  ): SpanProcessor[IO] =
     new SpanProcessor[IO] {
+      def name: String =
+        processorName
+
       def onStart(
           parentContext: Option[SpanContext],
           span: SpanRef[IO]
       ): IO[Unit] =
-        IO.unit
+        start
 
       def isStartRequired: Boolean =
         false
 
       def onEnd(span: SpanData): IO[Unit] =
-        IO.unit
+        end
 
       def isEndRequired: Boolean =
         false
 
       def forceFlush: IO[Unit] =
-        IO.unit
-
-      override def toString: String = name
+        flush
     }
 
 }

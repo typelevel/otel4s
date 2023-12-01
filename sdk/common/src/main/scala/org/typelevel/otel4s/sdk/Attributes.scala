@@ -24,7 +24,9 @@ import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.Attribute.KeySelect
 import org.typelevel.otel4s.AttributeKey
 
+import scala.collection.IterableOps
 import scala.collection.SpecificIterableFactory
+import scala.collection.immutable
 import scala.collection.mutable
 
 /** An immutable collection of [[Attribute]]s. It contains only unique keys.
@@ -32,7 +34,9 @@ import scala.collection.mutable
   * @see
   *   [[https://opentelemetry.io/docs/specs/otel/common/#attribute-collections]]
   */
-sealed trait Attributes extends Iterable[Attribute[_]] {
+sealed trait Attributes
+    extends immutable.Iterable[Attribute[_]]
+    with IterableOps[Attribute[_], immutable.Iterable, Attributes] {
 
   /** Returns an attribute for the given attribute name, or `None` if not found.
     */
@@ -49,6 +53,17 @@ sealed trait Attributes extends Iterable[Attribute[_]] {
   /** Returns the `Map` representation of the attributes collection.
     */
   def toMap: Map[AttributeKey[_], Attribute[_]]
+
+  def attributesFactory: SpecificIterableFactory[Attribute[_], Attributes]
+
+  override def empty: Attributes = attributesFactory.empty
+  override protected def fromSpecific(
+      coll: IterableOnce[Attribute[_]]
+  ): Attributes =
+    attributesFactory.fromSpecific(coll)
+  override protected def newSpecificBuilder
+      : mutable.Builder[Attribute[_], Attributes] =
+    attributesFactory.newBuilder
 
   override def hashCode(): Int =
     Hash[Attributes].hash(this)
@@ -207,10 +222,8 @@ object Attributes extends SpecificIterableFactory[Attribute[_], Attributes] {
   private final class MapAttributes(
       private val m: Map[AttributeKey[_], Attribute[_]]
   ) extends Attributes {
-    def get[T: KeySelect](name: String): Option[Attribute[T]] = {
-      val key = KeySelect[T].make(name)
-      m.get(key).map(_.asInstanceOf[Attribute[T]])
-    }
+    def get[T: KeySelect](name: String): Option[Attribute[T]] =
+      get(KeySelect[T].make(name))
 
     def get[T](key: AttributeKey[T]): Option[Attribute[T]] =
       m.get(key).map(_.asInstanceOf[Attribute[T]])
@@ -219,20 +232,11 @@ object Attributes extends SpecificIterableFactory[Attribute[_], Attributes] {
     def toMap: Map[AttributeKey[_], Attribute[_]] = m
     def iterator: Iterator[Attribute[_]] = m.valuesIterator
 
+    def attributesFactory: Attributes.type = Attributes
+
     override def isEmpty: Boolean = m.isEmpty
     override def size: Int = m.size
     override def knownSize: Int = m.knownSize
-    override def empty: Attributes = Attributes.empty
-    override def toList: List[Attribute[_]] = m.values.toList
-
-    override protected def fromSpecific(
-        coll: IterableOnce[Attribute[_]]
-    ): Attributes =
-      Attributes.fromSpecific(coll)
-
-    override protected def newSpecificBuilder
-        : mutable.Builder[Attribute[_], Attributes] =
-      Attributes.newBuilder
   }
 
 }

@@ -48,7 +48,7 @@ import org.typelevel.otel4s.trace.TracerProvider
 import scala.concurrent.duration._
 import scala.util.control.NoStackTrace
 
-class TracerSuite extends CatsEffectSuite {
+class SdkTracerSuite extends CatsEffectSuite {
 
   sdkTest("propagate instrumentation info") { sdk =>
     val expected = InstrumentationScope(
@@ -325,6 +325,58 @@ class TracerSuite extends CatsEffectSuite {
         tree <- IO.pure(SpanNode.fromSpans(spans))
         // _ <- IO.println(tree.map(SpanNode.render).mkString("\n"))
       } yield assertEquals(tree, List(SpanNode("span-1", now, now, Nil)))
+    }
+  }
+
+  sdkTest("`currentSpanOrNoop` outside of a span (root scope)") { sdk =>
+    for {
+      tracer <- sdk.provider.get("tracer")
+      currentSpan <- tracer.currentSpanOrNoop
+      _ <- currentSpan.addAttribute(Attribute("string-attribute", "value"))
+      spans <- sdk.finishedSpans
+    } yield {
+      assert(!currentSpan.context.isValid)
+      assertEquals(spans.length, 0)
+    }
+  }
+
+  sdkTest("`currentSpanOrNoop` in noop scope") { sdk =>
+    for {
+      tracer <- sdk.provider.get("tracer")
+      _ <- tracer.noopScope {
+        for {
+          currentSpan <- tracer.currentSpanOrNoop
+          _ <- currentSpan.addAttribute(Attribute("string-attribute", "value"))
+        } yield assert(!currentSpan.context.isValid)
+      }
+      spans <- sdk.finishedSpans
+    } yield assertEquals(spans.length, 0)
+  }
+
+  sdkTest("`currentSpanOrNoop` inside a span") { sdk =>
+    def expected(now: FiniteDuration): List[SpanNode] =
+      List(SpanNode("span", now, now, Nil))
+
+    val attribute =
+      Attribute("string-attribute", "value")
+
+    TestControl.executeEmbed {
+      for {
+        now <- IO.monotonic.delayBy(1.second) // otherwise returns 0
+        tracer <- sdk.provider.get("tracer")
+        _ <- tracer.span("span").surround {
+          for {
+            currentSpan <- tracer.currentSpanOrNoop
+            _ <- currentSpan.addAttribute(attribute)
+          } yield assert(currentSpan.context.isValid)
+        }
+        spans <- sdk.finishedSpans
+        tree <- IO.pure(SpanNode.fromSpans(spans))
+        // _ <- IO.println(tree.map(SpanNode.render).mkString("\n"))
+      } yield {
+        assertEquals(tree, expected(now))
+        assertEquals(spans.map(_.attributes), List(Attributes(attribute)))
+      }
     }
   }
 
@@ -888,7 +940,7 @@ class TracerSuite extends CatsEffectSuite {
     def createTracerProvider(
         processor: SpanProcessor[IO]
     )(implicit ioLocal: IOLocal[Context]): IO[SdkTracerProvider[IO]] =
-      Random.scalaUtilRandom[IO].map { implicit random =>
+      Random.scalaUtilRandom[IO].flatMap { implicit random =>
         SdkTracerProvider
           .builder[IO]
           .addTextMapPropagators(textMapPropagators: _*)

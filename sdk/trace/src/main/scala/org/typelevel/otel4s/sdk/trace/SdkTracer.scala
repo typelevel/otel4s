@@ -17,6 +17,7 @@
 package org.typelevel.otel4s.sdk
 package trace
 
+import cats.data.OptionT
 import cats.effect.Temporal
 import cats.syntax.flatMap._
 import cats.syntax.functor._
@@ -25,6 +26,7 @@ import org.typelevel.otel4s.context.propagation.TextMapGetter
 import org.typelevel.otel4s.context.propagation.TextMapUpdater
 import org.typelevel.otel4s.sdk.common.InstrumentationScope
 import org.typelevel.otel4s.sdk.context.Context
+import org.typelevel.otel4s.sdk.trace.processor.SpanStorage
 import org.typelevel.otel4s.trace.Span
 import org.typelevel.otel4s.trace.SpanBuilder
 import org.typelevel.otel4s.trace.SpanContext
@@ -34,7 +36,8 @@ final class SdkTracer[F[_]: Temporal] private[trace] (
     sharedState: TracerSharedState[F],
     scopeInfo: InstrumentationScope,
     propagators: ContextPropagators[Context],
-    scope: SdkTraceScope[F]
+    scope: SdkTraceScope[F],
+    storage: SpanStorage[F]
 ) extends Tracer[F] {
 
   def meta: Tracer.Meta[F] = Tracer.Meta.enabled[F]
@@ -43,7 +46,10 @@ final class SdkTracer[F[_]: Temporal] private[trace] (
     scope.current.map(current => current.filter(_.isValid))
 
   def currentSpanOrNoop: F[Span[F]] =
-    ???
+    OptionT(scope.current)
+      .flatMapF(ctx => storage.get(ctx))
+      .map(ref => Span.fromBackend(ref))
+      .getOrElse(Span.fromBackend(Span.Backend.noop))
 
   def spanBuilder(name: String): SpanBuilder[F] =
     new SdkSpanBuilder[F](name, scopeInfo, sharedState, scope)

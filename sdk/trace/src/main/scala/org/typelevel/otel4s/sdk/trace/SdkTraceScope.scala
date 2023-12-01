@@ -45,9 +45,9 @@ private[trace] object SdkTraceScope {
       context: Context,
       spanContext: SpanContext
   ): Context =
-    context.set(SpanContextKey, spanContext)
+    context.updated(SpanContextKey, spanContext)
 
-  def fromLocal[F[_]](implicit L: Local[F, Context]): SdkTraceScope[F] = {
+  def fromLocal[F[_]](implicit L: Local[F, Context]): SdkTraceScope[F] =
     new SdkTraceScope[F] {
       def current: F[Option[SpanContext]] =
         L.reader(_.get(SpanContextKey))
@@ -104,5 +104,4 @@ private[trace] object SdkTraceScope {
           case None => next
         }
     }
-  }
 }

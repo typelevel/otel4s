@@ -24,6 +24,7 @@ import org.typelevel.otel4s.context.propagation.ContextPropagators
 import org.typelevel.otel4s.sdk.context.Context
 import org.typelevel.otel4s.sdk.context.LocalContext
 import org.typelevel.otel4s.sdk.internal.ComponentRegistry
+import org.typelevel.otel4s.sdk.trace.processor.SpanStorage
 import org.typelevel.otel4s.sdk.trace.samplers.Sampler
 import org.typelevel.otel4s.trace.TracerBuilder
 import org.typelevel.otel4s.trace.TracerProvider
@@ -35,7 +36,8 @@ class SdkTracerProvider[F[_]: Temporal: Parallel](
     sampler: Sampler,
     propagators: ContextPropagators[Context],
     spanProcessors: List[SpanProcessor[F]],
-    scope: SdkTraceScope[F]
+    scope: SdkTraceScope[F],
+    storage: SpanStorage[F]
 ) extends TracerProvider[F] {
 
   private val sharedState: TracerSharedState[F] =
@@ -50,7 +52,7 @@ class SdkTracerProvider[F[_]: Temporal: Parallel](
   private val registry: ComponentRegistry[F, SdkTracer[F]] =
     new ComponentRegistry[F, SdkTracer[F]](scopeInfo =>
       Temporal[F].pure(
-        new SdkTracer[F](sharedState, scopeInfo, propagators, scope)
+        new SdkTracer[F](sharedState, scopeInfo, propagators, scope, storage)
       )
     )
 

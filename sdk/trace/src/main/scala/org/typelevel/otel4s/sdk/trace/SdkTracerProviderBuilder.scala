@@ -20,11 +20,13 @@ package trace
 import cats.Parallel
 import cats.effect.Temporal
 import cats.effect.std.Random
+import cats.syntax.functor._
 import org.typelevel.otel4s.context.propagation.ContextPropagators
 import org.typelevel.otel4s.context.propagation.TextMapPropagator
 import org.typelevel.otel4s.sdk.{Resource => InstrumentResource}
 import org.typelevel.otel4s.sdk.context.Context
 import org.typelevel.otel4s.sdk.context.LocalContext
+import org.typelevel.otel4s.sdk.trace.processor.SpanStorage
 import org.typelevel.otel4s.sdk.trace.samplers.Sampler
 
 /** Builder for [[SdkTracerProvider]].
@@ -91,7 +93,7 @@ sealed trait SdkTracerProviderBuilder[F[_]] {
 
   /** Creates a new [[SdkTracerProvider]] with configuration of this builder.
     */
-  def build: SdkTracerProvider[F]
+  def build: F[SdkTracerProvider[F]]
 }
 
 object SdkTracerProviderBuilder {
@@ -148,16 +150,19 @@ object SdkTracerProviderBuilder {
     ): SdkTracerProviderBuilder[F] =
       copy(spanProcessors = this.spanProcessors :+ processor)
 
-    def build: SdkTracerProvider[F] =
-      new SdkTracerProvider[F](
-        idGenerator,
-        resource,
-        spanLimits,
-        sampler,
-        ContextPropagators.of(propagators: _*),
-        spanProcessors,
-        SdkTraceScope.fromLocal[F]
-      )
+    def build: F[SdkTracerProvider[F]] =
+      SpanStorage.create[F].map { storage =>
+        new SdkTracerProvider[F](
+          idGenerator,
+          resource,
+          spanLimits,
+          sampler,
+          ContextPropagators.of(propagators: _*),
+          spanProcessors :+ storage,
+          SdkTraceScope.fromLocal[F],
+          storage
+        )
+      }
   }
 
 }

@@ -32,7 +32,7 @@ class PassThroughPropagator(
       TextMapGetter[A].get(carrier, field).map(value => (field, value))
     }
 
-    if (extracted.nonEmpty) ctx.set(ExtractedKeyValuesKey, extracted) else ctx
+    if (extracted.nonEmpty) ctx.updated(ExtractedKeyValuesKey, extracted) else ctx
   }
 
   def inject[A: TextMapUpdater](ctx: Context, carrier: A): A =

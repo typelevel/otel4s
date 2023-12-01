@@ -58,6 +58,7 @@ final class BatchSpanProcessor[F[_]: Temporal] private (
 ) extends SpanProcessor[F] {
   import BatchSpanProcessor.State
 
+  val name: String = "BatchSpanProcessor"
   val isStartRequired: Boolean = false
   val isEndRequired: Boolean = true
 

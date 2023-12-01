@@ -39,6 +39,7 @@ final class SimpleSpanProcessor[F[_]: Monad] private (
     sampled: Boolean
 ) extends SpanProcessor[F] {
 
+  val name: String = "SimpleSpanProcessor"
   val isStartRequired: Boolean = false
   val isEndRequired: Boolean = true
 

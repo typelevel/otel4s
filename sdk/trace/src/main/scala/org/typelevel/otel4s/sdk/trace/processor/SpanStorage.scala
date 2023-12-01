@@ -11,6 +11,8 @@ import org.typelevel.otel4s.trace.SpanContext
 class SpanStorage[F[_]: Applicative](
     storage: AtomicCell[F, Map[SpanContext, SpanRef[F]]]
 ) extends SpanProcessor[F] {
+  val name: String = "SpanStorage"
+
   def isStartRequired: Boolean = true
   def isEndRequired: Boolean = true
 

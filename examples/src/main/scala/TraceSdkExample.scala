@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-/*
 import cats.effect._
 import cats.effect.std.Random
 import org.typelevel.otel4s.Attribute
@@ -22,35 +21,37 @@ import org.typelevel.otel4s.sdk.context.Context
 import org.typelevel.otel4s.sdk.instances._
 import org.typelevel.otel4s.sdk.trace.SdkTracerProvider
 import org.typelevel.otel4s.sdk.trace.exporter.BatchSpanProcessor
-import org.typelevel.otel4s.sdk.trace.exporter.InMemorySpanExporter
+import org.typelevel.otel4s.sdk.trace.exporter.SpanExporter
 
 object TraceSdkExample extends IOApp.Simple {
 
   def run: IO[Unit] = {
     IOLocal(Context.root).flatMap { implicit local =>
       for {
-        exporter <- InMemorySpanExporter.create[IO]
+        exporter <- IO.pure(
+          SpanExporter.noop[IO]
+        ) // InMemorySpanExporter.create[IO]
         random <- Random.scalaUtilRandom[IO]
         _ <- BatchSpanProcessor.builder[IO](exporter).build.use { processor =>
           implicit val rnd: Random[IO] = random
 
-          val traceProvider = SdkTracerProvider
+          val traceProviderF = SdkTracerProvider
             .builder[IO]
             .addSpanProcessor(processor)
             .build
 
           for {
+            traceProvider <- traceProviderF
             tracer <- traceProvider.get("my-tracer")
             _ <- tracer
               .span("test", Attribute("test", "test123"))
               .use(sd => IO.println(sd.context))
           } yield ()
         }
-        spans <- exporter.finishedSpans
-        _ <- IO.println("Spans: " + spans.toList.mkString("\n"))
+        // spans <- exporter.finishedSpans
+        // _ <- IO.println("Spans: " + spans.toList.mkString("\n"))
       } yield ()
     }
   }
 
 }
- */

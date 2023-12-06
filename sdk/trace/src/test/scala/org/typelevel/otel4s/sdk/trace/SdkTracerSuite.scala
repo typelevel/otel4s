@@ -939,7 +939,7 @@ class SdkTracerSuite extends CatsEffectSuite {
 
     def createTracerProvider(
         processor: SpanProcessor[IO]
-    )(implicit ioLocal: IOLocal[Context]): IO[SdkTracerProvider[IO]] =
+    )(implicit ioLocal: IOLocal[Context]): IO[TracerProvider[IO]] =
       Random.scalaUtilRandom[IO].flatMap { implicit random =>
         SdkTracerProvider
           .builder[IO]

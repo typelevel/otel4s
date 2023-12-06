@@ -34,6 +34,7 @@ val FS2Version = "3.9.3"
 val MUnitVersion = "1.0.0-M10"
 val MUnitCatsEffectVersion = "2.0.0-M4"
 val MUnitDisciplineVersion = "2.0.0-M3"
+val MUnitScalaCheckEffectVersion = "2.0.0-M2"
 val OpenTelemetryVersion = "1.32.0"
 val OpenTelemetryInstrumentationVersion = "1.32.0"
 val OpenTelemetrySemConvVersion = "1.21.0-alpha"
@@ -185,7 +186,8 @@ lazy val `sdk-trace` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
       "org.typelevel" %%% "cats-effect" % CatsEffectVersion,
       "org.typelevel" %%% "cats-laws" % CatsVersion % Test,
       "org.typelevel" %%% "discipline-munit" % MUnitDisciplineVersion % Test,
-      "org.typelevel" %%% "cats-effect-testkit" % CatsEffectVersion % Test
+      "org.typelevel" %%% "cats-effect-testkit" % CatsEffectVersion % Test,
+      "org.typelevel" %%% "scalacheck-effect-munit" % MUnitScalaCheckEffectVersion % Test
     ),
   )
   .settings(munitDependencies)

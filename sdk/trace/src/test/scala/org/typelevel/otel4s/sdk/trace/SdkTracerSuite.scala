@@ -926,12 +926,12 @@ class SdkTracerSuite extends CatsEffectSuite {
   private def sdkTest[A](
       options: TestOptions,
       additionalPropagators: List[TextMapPropagator[Context]] = Nil
-  )(body: TracerSuite.Sdk => IO[A])(implicit loc: Location): Unit =
+  )(body: SdkTracerSuite.Sdk => IO[A])(implicit loc: Location): Unit =
     test(options)(makeSdk(additionalPropagators).use(body))
 
   private def makeSdk(
       additionalPropagators: List[TextMapPropagator[Context]]
-  ): Resource[IO, TracerSuite.Sdk] = {
+  ): Resource[IO, SdkTracerSuite.Sdk] = {
     import org.typelevel.otel4s.sdk.instances._
 
     val textMapPropagators =
@@ -953,12 +953,12 @@ class SdkTracerSuite extends CatsEffectSuite {
       exporter <- Resource.eval(InMemorySpanExporter.create[IO](None))
       processor <- BatchSpanProcessor.builder(exporter).build
       tracerProvider <- Resource.eval(createTracerProvider(processor)(ioLocal))
-    } yield new TracerSuite.Sdk(tracerProvider, processor, exporter)
+    } yield new SdkTracerSuite.Sdk(tracerProvider, processor, exporter)
   }
 
 }
 
-object TracerSuite {
+object SdkTracerSuite {
 
   class Sdk(
       val provider: TracerProvider[IO],

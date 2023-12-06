@@ -24,10 +24,64 @@ import org.typelevel.otel4s.sdk.context.Context.Key
 import org.typelevel.otel4s.trace.SpanContext
 
 private[trace] trait SdkTraceScope[F[_]] {
+
+  /** Returns a [[SpanContext]] if it's available in the current scope.
+    */
   def current: F[Option[SpanContext]]
-  def makeScope(span: SpanContext): F[F ~> F]
+
+  /** Creates a new scope using the given `spanContext` context if the
+    * requirement are met.
+    *
+    * The propagation logic is based on the [[SpanContext]], that may be present
+    * in the [[Context]]:
+    *
+    *   - the [[SpanContext]] is missing -> we use the given `spanContext`
+    *
+    *   - the [[SpanContext]] is valid -> we use the given `spanContext`
+    *
+    *   - the [[SpanContext]] is invalid -> we use [[SpanContext.invalid]]
+    *
+    * @param spanContext
+    *   the span context to use
+    */
+  def makeScope(spanContext: SpanContext): F[F ~> F]
+
+  /** Creates a root scope. The difference with the [[makeScope]] is that we
+    * override the whole [[Context]], rather then only a [[SpanContext]] within
+    * the context.
+    *
+    * The propagation logic is based on the [[SpanContext]], that may be present
+    * in the [[Context]]:
+    *
+    *   - the [[SpanContext]] is missing -> the scope is already root, so we
+    *     keep the context as is
+    *
+    *   - the [[SpanContext]] is valid -> there is a valid span, we forcefully
+    *     use [[Context.root]]
+    *
+    *   - the [[SpanContext]] is invalid -> the current propagation strategy is
+    *     no-op, so we keep the context as is
+    */
   def rootScope: F[F ~> F]
+
+  /** Creates a no-op scope.
+    *
+    * No-op scope means the tracing operations are no-op and the spans created
+    * within this scope will not be exported anywhere.
+    *
+    * We use [[SpanContext.invalid]] as a mark the segment.
+    *
+    * The propagation logic is based on the [[SpanContext]], that may be present
+    * in the [[Context]]:
+    *
+    *   - the [[SpanContext]] is missing -> we use [[SpanContext.invalid]]
+    *
+    *   - the [[SpanContext]] is valid -> we use [[SpanContext.invalid]]
+    *
+    *   - the [[SpanContext]] is invalid -> we use [[SpanContext.invalid]]
+    */
   def noopScope: F ~> F
+
   def withExplicitContext(context: Context): F ~> F
   def reader[A](f: Context => A): F[A]
 }
@@ -53,9 +107,9 @@ private[trace] object SdkTraceScope {
         L.reader(_.get(SpanContextKey))
 
       def makeScope(span: SpanContext): F[F ~> F] =
-        L.applicative.map(current)(context =>
+        L.applicative.map(current) { context =>
           createScope(nextScope(context, span))
-        )
+        }
 
       def rootScope: F[F ~> F] =
         L.reader { context =>

@@ -19,8 +19,8 @@ package trace
 
 import cats.Monad
 import cats.effect.Clock
+import cats.effect.Ref
 import cats.effect.Temporal
-import cats.effect.std.AtomicCell
 import cats.effect.std.Console
 import cats.syntax.applicative._
 import cats.syntax.flatMap._
@@ -69,7 +69,7 @@ import scala.concurrent.duration.FiniteDuration
 private[trace] final class SdkSpanBackend[F[_]: Monad: Clock: Console] private (
     spanProcessor: SpanProcessor[F],
     immutableState: SdkSpanBackend.ImmutableState,
-    mutableState: AtomicCell[F, SdkSpanBackend.MutableState]
+    mutableState: Ref[F, SdkSpanBackend.MutableState]
 ) extends Span.Backend[F]
     with SpanRef[F] {
 
@@ -282,7 +282,7 @@ private[trace] object SdkSpanBackend {
 
     for {
       start <- userStartTimestamp.fold(Clock[F].realTime)(_.pure)
-      state <- AtomicCell[F].of(mutableState)
+      state <- Ref[F].of(mutableState)
       backend = new SdkSpanBackend[F](processor, immutableState(start), state)
       _ <- processor.onStart(parentContext, backend)
     } yield backend

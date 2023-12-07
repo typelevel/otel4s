@@ -258,7 +258,7 @@ private[trace] object SdkSpanBackend {
       parentContext: Option[SpanContext],
       processor: SpanProcessor[F],
       attributes: Attributes,
-      links: List[LinkData],
+      links: Vector[LinkData],
       userStartTimestamp: Option[FiniteDuration]
   ): F[SdkSpanBackend[F]] = {
     def immutableState(startTimestamp: FiniteDuration) =
@@ -276,7 +276,7 @@ private[trace] object SdkSpanBackend {
       name = name,
       status = StatusData.Unset,
       attributes = attributes,
-      events = Nil,
+      events = Vector.empty,
       endTimestamp = None
     )
 
@@ -294,7 +294,7 @@ private[trace] object SdkSpanBackend {
       kind: SpanKind,
       parentContext: Option[SpanContext],
       resource: Resource,
-      links: List[LinkData],
+      links: Vector[LinkData],
       startTimestamp: FiniteDuration
   )
 
@@ -304,7 +304,7 @@ private[trace] object SdkSpanBackend {
       name: String,
       status: StatusData,
       attributes: Attributes,
-      events: List[EventData],
+      events: Vector[EventData],
       endTimestamp: Option[FiniteDuration]
   )
 

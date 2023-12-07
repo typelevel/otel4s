@@ -82,9 +82,9 @@ class SdkSpanBackendSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
       TestControl.executeEmbed {
         for {
           span <- start()
-          _ <- assertIO(span.toSpanData.map(_.events), Nil)
+          _ <- assertIO(span.toSpanData.map(_.events), Vector.empty)
           _ <- span.addEvent(name, attributes.toList: _*)
-          _ <- assertIO(span.toSpanData.map(_.events), List(event))
+          _ <- assertIO(span.toSpanData.map(_.events), Vector(event))
         } yield ()
       }
     }
@@ -97,9 +97,9 @@ class SdkSpanBackendSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
       TestControl.executeEmbed {
         for {
           span <- start()
-          _ <- assertIO(span.toSpanData.map(_.events), Nil)
+          _ <- assertIO(span.toSpanData.map(_.events), Vector.empty)
           _ <- span.addEvent(name, ts, attrs.toList: _*)
-          _ <- assertIO(span.toSpanData.map(_.events), List(event))
+          _ <- assertIO(span.toSpanData.map(_.events), Vector(event))
         } yield ()
       }
     }
@@ -129,9 +129,9 @@ class SdkSpanBackendSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
       TestControl.executeEmbed {
         for {
           span <- start()
-          _ <- assertIO(span.toSpanData.map(_.events), Nil)
+          _ <- assertIO(span.toSpanData.map(_.events), Vector.empty)
           _ <- span.recordException(exception, attributes.toList: _*)
-          _ <- assertIO(span.toSpanData.map(_.events), List(event))
+          _ <- assertIO(span.toSpanData.map(_.events), Vector(event))
         } yield ()
       }
     }
@@ -303,7 +303,7 @@ class SdkSpanBackendSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
           kind: SpanKind,
           parentCtx: Option[SpanContext],
           attributes: Attributes,
-          links: List[LinkData],
+          links: Vector[LinkData],
           userStartTimestamp: Option[FiniteDuration]
       ) =>
         def expected(end: Option[FiniteDuration]) =
@@ -316,7 +316,7 @@ class SdkSpanBackendSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
             endTimestamp = end,
             status = StatusData.Unset,
             attributes = attributes,
-            events = Nil,
+            events = Vector.empty,
             links = links,
             instrumentationScope = scope,
             resource = Defaults.resource
@@ -385,8 +385,8 @@ class SdkSpanBackendSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
           endTimestamp = end,
           status = StatusData.Unset,
           attributes = Defaults.attributes,
-          events = Nil,
-          links = Nil,
+          events = Vector.empty,
+          links = Vector.empty,
           instrumentationScope = Defaults.scope,
           resource = Defaults.resource
         )
@@ -445,7 +445,7 @@ class SdkSpanBackendSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
       parentSpanContext: Option[SpanContext] = None,
       attributes: Attributes = Defaults.attributes,
       spanProcessor: SpanProcessor[IO] = Defaults.spanProcessor,
-      links: List[LinkData] = Nil,
+      links: Vector[LinkData] = Vector.empty,
       userStartTimestamp: Option[FiniteDuration] = None
   ): IO[SdkSpanBackend[IO]] = {
     SdkSpanBackend.start[IO](

@@ -19,13 +19,13 @@ package processor
 
 import cats.Applicative
 import cats.effect.Concurrent
-import cats.effect.std.AtomicCell
+import cats.effect.Ref
 import cats.syntax.functor._
 import org.typelevel.otel4s.sdk.trace.data.SpanData
 import org.typelevel.otel4s.trace.SpanContext
 
 class SpanStorage[F[_]: Applicative](
-    storage: AtomicCell[F, Map[SpanContext, SpanRef[F]]]
+    storage: Ref[F, Map[SpanContext, SpanRef[F]]]
 ) extends SpanProcessor[F] {
   val name: String = "SpanStorage"
 
@@ -48,6 +48,6 @@ class SpanStorage[F[_]: Applicative](
 object SpanStorage {
   def create[F[_]: Concurrent]: F[SpanStorage[F]] =
     for {
-      storage <- AtomicCell[F].of(Map.empty[SpanContext, SpanRef[F]])
+      storage <- Ref[F].of(Map.empty[SpanContext, SpanRef[F]])
     } yield new SpanStorage[F](storage)
 }

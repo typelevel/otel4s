@@ -70,11 +70,11 @@ sealed trait SpanData {
 
   /** The events associated with the span.
     */
-  def events: List[EventData]
+  def events: Vector[EventData]
 
   /** The links associated with the span.
     */
-  def links: List[LinkData]
+  def links: Vector[LinkData]
 
   /** The instrumentation scope associated with the span.
     */
@@ -151,8 +151,8 @@ object SpanData {
       endTimestamp: Option[FiniteDuration],
       status: StatusData,
       attributes: Attributes,
-      events: List[EventData],
-      links: List[LinkData],
+      events: Vector[EventData],
+      links: Vector[LinkData],
       instrumentationScope: InstrumentationScope,
       resource: Resource
   ): SpanData =
@@ -219,8 +219,8 @@ object SpanData {
       endTimestamp: Option[FiniteDuration],
       status: StatusData,
       attributes: Attributes,
-      events: List[EventData],
-      links: List[LinkData],
+      events: Vector[EventData],
+      links: Vector[LinkData],
       instrumentationScope: InstrumentationScope,
       resource: Resource
   ) extends SpanData

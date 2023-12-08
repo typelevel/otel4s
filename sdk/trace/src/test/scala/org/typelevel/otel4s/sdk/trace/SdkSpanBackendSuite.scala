@@ -331,9 +331,11 @@ class SdkSpanBackendSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
               Defaults.resource,
               kind,
               parentCtx,
+              Defaults.spanLimits,
               Defaults.spanProcessor,
               attributes,
               links,
+              0,
               userStartTimestamp
             )
             _ <- assertIO(span.toSpanData, expected(None))
@@ -444,6 +446,7 @@ class SdkSpanBackendSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
       kind: SpanKind = Defaults.kind,
       parentSpanContext: Option[SpanContext] = None,
       attributes: Attributes = Defaults.attributes,
+      spanLimits: SpanLimits = Defaults.spanLimits,
       spanProcessor: SpanProcessor[IO] = Defaults.spanProcessor,
       links: Vector[LinkData] = Vector.empty,
       userStartTimestamp: Option[FiniteDuration] = None
@@ -455,9 +458,11 @@ class SdkSpanBackendSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
       resource = resource,
       kind = kind,
       parentContext = parentSpanContext,
+      spanLimits = spanLimits,
       processor = spanProcessor,
       attributes = attributes,
       links = links,
+      totalRecordedLinks = 0,
       userStartTimestamp = userStartTimestamp
     )
   }
@@ -469,6 +474,7 @@ class SdkSpanBackendSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
     val resource = Resource.default
     val kind = SpanKind.Client
     val attributes = Attributes.empty
+    val spanLimits = SpanLimits.Default
     val spanProcessor = SpanProcessor.noop[IO]
   }
 

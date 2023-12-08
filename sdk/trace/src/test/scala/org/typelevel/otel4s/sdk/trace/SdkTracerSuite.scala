@@ -223,7 +223,7 @@ class SdkTracerSuite extends CatsEffectSuite {
         assertEquals(spans.map(_.status), List(StatusData.Error(None)))
         assertEquals(
           spans.map(_.events),
-          List(List(expected(now)))
+          List(Vector(expected(now)))
         )
       }
 

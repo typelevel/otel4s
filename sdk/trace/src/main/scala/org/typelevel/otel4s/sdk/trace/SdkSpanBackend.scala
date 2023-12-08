@@ -67,6 +67,7 @@ import scala.concurrent.duration.FiniteDuration
   *   the higher-kinded type of a polymorphic effect
   */
 private[trace] final class SdkSpanBackend[F[_]: Monad: Clock: Console] private (
+    spanLimits: SpanLimits,
     spanProcessor: SpanProcessor[F],
     immutableState: SdkSpanBackend.ImmutableState,
     mutableState: Ref[F, SdkSpanBackend.MutableState]
@@ -147,7 +148,16 @@ private[trace] final class SdkSpanBackend[F[_]: Monad: Clock: Console] private (
   }
 
   private def addTimedEvent(event: EventData): F[Unit] =
-    updateState("addEvent")(s => s.copy(events = s.events :+ event)).void
+    updateState("addEvent") { s =>
+      if (s.events.sizeIs <= spanLimits.maxNumberOfEvents) {
+        s.copy(
+          events = s.events :+ event,
+          totalRecordedEvents = s.totalRecordedEvents + 1
+        )
+      } else {
+        s.copy(totalRecordedEvents = s.totalRecordedEvents + 1)
+      }
+    }.void
 
   // applies modifications while the span is still active
   // modifications are ignored when the span is ended
@@ -194,6 +204,10 @@ private[trace] final class SdkSpanBackend[F[_]: Monad: Clock: Console] private (
       attributes = state.attributes,
       events = state.events,
       links = immutableState.links,
+      /*totalRecordedEvents = state.totalRecordedEvents,
+      totalRecordedLinks = immutableState.totalRecordedLinks,
+      totalAttributeCount =
+        state.attributes.size, // todo: incorrect when limits are applied,*/
       instrumentationScope = immutableState.scopeInfo,
       resource = immutableState.resource
     )
@@ -256,9 +270,11 @@ private[trace] object SdkSpanBackend {
       resource: Resource,
       kind: SpanKind,
       parentContext: Option[SpanContext],
+      spanLimits: SpanLimits,
       processor: SpanProcessor[F],
       attributes: Attributes,
       links: Vector[LinkData],
+      totalRecordedLinks: Int,
       userStartTimestamp: Option[FiniteDuration]
   ): F[SdkSpanBackend[F]] = {
     def immutableState(startTimestamp: FiniteDuration) =
@@ -269,6 +285,7 @@ private[trace] object SdkSpanBackend {
         parentContext = parentContext,
         resource = resource,
         links = links,
+        totalRecordedLinks = totalRecordedLinks,
         startTimestamp = startTimestamp
       )
 
@@ -277,13 +294,19 @@ private[trace] object SdkSpanBackend {
       status = StatusData.Unset,
       attributes = attributes,
       events = Vector.empty,
+      totalRecordedEvents = 0,
       endTimestamp = None
     )
 
     for {
       start <- userStartTimestamp.fold(Clock[F].realTime)(_.pure)
       state <- Ref[F].of(mutableState)
-      backend = new SdkSpanBackend[F](processor, immutableState(start), state)
+      backend = new SdkSpanBackend[F](
+        spanLimits,
+        processor,
+        immutableState(start),
+        state
+      )
       _ <- processor.onStart(parentContext, backend)
     } yield backend
   }
@@ -295,6 +318,7 @@ private[trace] object SdkSpanBackend {
       parentContext: Option[SpanContext],
       resource: Resource,
       links: Vector[LinkData],
+      totalRecordedLinks: Int,
       startTimestamp: FiniteDuration
   )
 
@@ -305,6 +329,7 @@ private[trace] object SdkSpanBackend {
       status: StatusData,
       attributes: Attributes,
       events: Vector[EventData],
+      totalRecordedEvents: Int,
       endTimestamp: Option[FiniteDuration]
   )
 

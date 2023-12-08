@@ -21,6 +21,7 @@ import cats.arrow.FunctionK
 import cats.effect.Concurrent
 import cats.effect.Resource
 import cats.effect.Temporal
+import cats.effect.std.Console
 import cats.syntax.flatMap._
 import cats.syntax.foldable._
 import cats.syntax.functor._
@@ -41,7 +42,7 @@ import org.typelevel.otel4s.trace.TraceState
 
 import scala.concurrent.duration.FiniteDuration
 
-private[trace] final case class SdkSpanBuilder[F[_]: Temporal](
+private[trace] final case class SdkSpanBuilder[F[_]: Temporal: Console](
     name: String,
     scopeInfo: InstrumentationScope,
     tracerSharedState: TracerSharedState[F],
@@ -50,7 +51,7 @@ private[trace] final case class SdkSpanBuilder[F[_]: Temporal](
     finalizationStrategy: SpanFinalizer.Strategy =
       SpanFinalizer.Strategy.reportAbnormal,
     kind: Option[SpanKind] = None,
-    links: List[LinkData] = Nil,
+    links: Vector[LinkData] = Vector.empty,
     attributes: Seq[Attribute[_]] = Nil,
     startTimestamp: Option[FiniteDuration] = None
 ) extends SpanBuilder[F] {
@@ -204,7 +205,7 @@ private[trace] final case class SdkSpanBuilder[F[_]: Temporal](
           kind = kind.getOrElse(SpanKind.Internal),
           parentContext = parentSpanContext,
           spanLimits = tracerSharedState.spanLimits,
-          spanProcessor = tracerSharedState.activeSpanProcessor,
+          processor = tracerSharedState.activeSpanProcessor,
           attributes = recordedAttributes,
           links = links,
           totalRecordedLinks = links.size,

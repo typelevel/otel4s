@@ -19,6 +19,7 @@ package trace
 
 import cats.Parallel
 import cats.effect.Temporal
+import cats.effect.std.Console
 import cats.effect.std.Random
 import cats.syntax.functor._
 import org.typelevel.otel4s.context.propagation.ContextPropagators
@@ -31,7 +32,7 @@ import org.typelevel.otel4s.sdk.trace.samplers.Sampler
 import org.typelevel.otel4s.trace.TracerBuilder
 import org.typelevel.otel4s.trace.TracerProvider
 
-private[trace] class SdkTracerProvider[F[_]: Temporal: Parallel](
+private[trace] class SdkTracerProvider[F[_]: Temporal: Parallel: Console](
     idGenerator: IdGenerator[F],
     resource: Resource,
     spanLimits: SpanLimits,
@@ -167,7 +168,9 @@ object SdkTracerProvider {
 
   /** Creates a new [[Builder]] with default configuration.
     */
-  def builder[F[_]: Temporal: Parallel: Random: LocalContext]: Builder[F] =
+  def builder[
+      F[_]: Temporal: Parallel: Random: LocalContext: Console
+  ]: Builder[F] =
     BuilderImpl[F](
       idGenerator = IdGenerator.random,
       resource = Resource.default,
@@ -177,7 +180,9 @@ object SdkTracerProvider {
       spanProcessors = Nil
     )
 
-  private final case class BuilderImpl[F[_]: Temporal: Parallel: LocalContext](
+  private final case class BuilderImpl[
+      F[_]: Temporal: Parallel: LocalContext: Console
+  ](
       idGenerator: IdGenerator[F],
       resource: Resource,
       spanLimits: SpanLimits,

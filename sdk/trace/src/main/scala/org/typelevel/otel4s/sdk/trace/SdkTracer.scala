@@ -19,6 +19,7 @@ package trace
 
 import cats.data.OptionT
 import cats.effect.Temporal
+import cats.effect.std.Console
 import cats.syntax.flatMap._
 import cats.syntax.functor._
 import org.typelevel.otel4s.context.propagation.ContextPropagators
@@ -32,7 +33,7 @@ import org.typelevel.otel4s.trace.SpanBuilder
 import org.typelevel.otel4s.trace.SpanContext
 import org.typelevel.otel4s.trace.Tracer
 
-final class SdkTracer[F[_]: Temporal] private[trace] (
+final class SdkTracer[F[_]: Temporal: Console] private[trace] (
     sharedState: TracerSharedState[F],
     scopeInfo: InstrumentationScope,
     propagators: ContextPropagators[Context],

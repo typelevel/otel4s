@@ -18,7 +18,7 @@ package org.typelevel.otel4s.sdk.trace.propagation
 
 import munit._
 import org.typelevel.otel4s.sdk.context.Context
-import org.typelevel.otel4s.sdk.trace.SdkTraceScope
+import org.typelevel.otel4s.sdk.trace.SdkContextKeys
 import org.typelevel.otel4s.trace.SpanContext
 import org.typelevel.otel4s.trace.TraceFlags
 import org.typelevel.otel4s.trace.TraceState
@@ -50,7 +50,7 @@ class W3CTraceContextPropagatorSuite extends FunSuite {
     flags.foreach { flag =>
       val spanContext =
         SpanContext(traceId, spanId, flag, state, remote = false)
-      val ctx = SdkTraceScope.storeInContext(Context.root, spanContext)
+      val ctx = Context.root.updated(SdkContextKeys.SpanContextKey, spanContext)
       val result = propagator.inject(ctx, Map.empty[String, String])
 
       val suffix = if (flag.isSampled) "01" else "00"
@@ -77,24 +77,24 @@ class W3CTraceContextPropagatorSuite extends FunSuite {
       val expected =
         SpanContext(traceId, spanId, flag, state, remote = true)
 
-      assertEquals(SdkTraceScope.fromContext(ctx), Some(expected))
+      assertEquals(ctx.get(SdkContextKeys.SpanContextKey), Some(expected))
     }
   }
 
   test("extract nothing when carrier is empty") {
     val ctx = propagator.extract(Context.root, Map.empty[String, String])
-    assertEquals(SdkTraceScope.fromContext(ctx), None)
+    assertEquals(ctx.get(SdkContextKeys.SpanContextKey), None)
   }
 
   test("extract nothing when carrier doesn't have a mandatory key") {
     val ctx = propagator.extract(Context.root, Map("key" -> "value"))
-    assertEquals(SdkTraceScope.fromContext(ctx), None)
+    assertEquals(ctx.get(SdkContextKeys.SpanContextKey), None)
   }
 
   test("extract nothing when the traceparent in invalid") {
     val carrier = Map("traceparent" -> "00-11-22-33")
     val ctx = propagator.extract(Context.root, carrier)
-    assertEquals(SdkTraceScope.fromContext(ctx), None)
+    assertEquals(ctx.get(SdkContextKeys.SpanContextKey), None)
   }
 
   private def toTraceParent(spanContext: SpanContext): String =

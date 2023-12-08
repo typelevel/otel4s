@@ -21,7 +21,7 @@ import org.typelevel.otel4s.context.propagation.TextMapGetter
 import org.typelevel.otel4s.context.propagation.TextMapPropagator
 import org.typelevel.otel4s.context.propagation.TextMapUpdater
 import org.typelevel.otel4s.sdk.context.Context
-import org.typelevel.otel4s.sdk.trace.SdkTraceScope
+import org.typelevel.otel4s.sdk.trace.SdkContextKeys
 import org.typelevel.otel4s.trace.SpanContext
 import org.typelevel.otel4s.trace.SpanContext.SpanId
 import org.typelevel.otel4s.trace.SpanContext.TraceId
@@ -47,7 +47,7 @@ object W3CTraceContextPropagator extends TextMapPropagator[Context] {
       case Some(value) =>
         extractContextFromTraceParent(value) match {
           case Some(parentContext) =>
-            SdkTraceScope.storeInContext(ctx, parentContext)
+            ctx.updated(SdkContextKeys.SpanContextKey, parentContext)
 
           case None =>
             ctx
@@ -59,7 +59,7 @@ object W3CTraceContextPropagator extends TextMapPropagator[Context] {
   }
 
   def inject[A: TextMapUpdater](ctx: Context, carrier: A): A =
-    SdkTraceScope.fromContext(ctx).filter(_.isValid) match {
+    ctx.get(SdkContextKeys.SpanContextKey).filter(_.isValid) match {
       case Some(spanContext) =>
         val traceParent =
           s"00-${spanContext.traceIdHex}-${spanContext.spanIdHex}-${spanContext.traceFlags.toHex}"

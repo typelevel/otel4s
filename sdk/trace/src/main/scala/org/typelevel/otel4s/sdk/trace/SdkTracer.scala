@@ -66,16 +66,18 @@ final class SdkTracer[F[_]: Temporal] private[trace] (
   def joinOrRoot[A, C: TextMapGetter](carrier: C)(fa: F[A]): F[A] = {
     val context = propagators.textMapPropagator.extract(Context.root, carrier)
 
-    val f = SdkTraceScope.fromContext(context) match {
+    val f = context.get(SdkContextKeys.SpanContextKey) match {
       case Some(parent) => childScope(parent)(fa)
       case None         => fa
     }
 
     // use external context to bring extracted headers
-    scope.withExplicitContext(context)(f)
+    scope.withContext(context)(f)
   }
 
   def propagate[C: TextMapUpdater](carrier: C): F[C] =
-    scope.reader(ctx => propagators.textMapPropagator.inject(ctx, carrier))
+    scope.contextReader(ctx =>
+      propagators.textMapPropagator.inject(ctx, carrier)
+    )
 
 }

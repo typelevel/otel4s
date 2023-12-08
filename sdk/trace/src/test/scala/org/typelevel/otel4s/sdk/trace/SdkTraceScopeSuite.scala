@@ -53,18 +53,18 @@ class SdkTraceScopeSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
       _ <- assertIO(scope.current, None)
 
       key <- Context.Key.unique[IO, String]("some-key")
-      ctxWithKey <- scope.reader(_.updated(key, value))
+      ctxWithKey <- scope.contextReader(_.updated(key, value))
 
       // the context wasn't modified yet, so it should be empty
-      _ <- assertIO(scope.reader(_.get(key)), None)
+      _ <- assertIO(scope.contextReader(_.get(key)), None)
 
       // here we use an explicit context with a custom key
-      _ <- scope.withExplicitContext(ctxWithKey) {
+      _ <- scope.withContext(ctxWithKey) {
         for {
-          _ <- assertIO(scope.reader(_.get(key)), Some(value))
+          _ <- assertIO(scope.contextReader(_.get(key)), Some(value))
           rootScope <- scope.rootScope
           _ <- assertIO(rootScope(scope.current), None)
-          _ <- assertIO(rootScope(scope.reader(_.get(key))), Some(value))
+          _ <- assertIO(rootScope(scope.contextReader(_.get(key))), Some(value))
         } yield ()
       }
 
@@ -84,20 +84,23 @@ class SdkTraceScopeSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
       _ <- assertIO(scope.current, None)
 
       key <- Context.Key.unique[IO, String]("some-key")
-      ctxWithKey <- scope.reader(_.updated(key, value))
+      ctxWithKey <- scope.contextReader(_.updated(key, value))
 
       // the context wasn't modified yet, so it should be empty
-      _ <- assertIO(scope.reader(_.get(key)), None)
+      _ <- assertIO(scope.contextReader(_.get(key)), None)
 
       // here we use an explicit context with a custom key
-      _ <- scope.withExplicitContext(ctxWithKey) {
+      _ <- scope.withContext(ctxWithKey) {
         scope.noopScope {
           for {
-            _ <- assertIO(scope.reader(_.get(key)), Some(value))
+            _ <- assertIO(scope.contextReader(_.get(key)), Some(value))
             _ <- assertIO(scope.current, Some(invalid))
             rootScope <- scope.rootScope
             _ <- assertIO(rootScope(scope.current), Some(invalid))
-            _ <- assertIO(rootScope(scope.reader(_.get(key))), Some(value))
+            _ <- assertIO(
+              rootScope(scope.contextReader(_.get(key))),
+              Some(value)
+            )
           } yield ()
         }
       }
@@ -118,25 +121,25 @@ class SdkTraceScopeSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
         _ <- assertIO(scope.current, None)
 
         key <- Context.Key.unique[IO, String]("some-key")
-        ctxWithKey <- scope.reader(_.updated(key, value))
+        ctxWithKey <- scope.contextReader(_.updated(key, value))
 
         // the context wasn't modified yet, so it should be empty
-        _ <- assertIO(scope.reader(_.get(key)), None)
+        _ <- assertIO(scope.contextReader(_.get(key)), None)
 
-        _ <- scope.withExplicitContext(ctxWithKey) {
+        _ <- scope.withContext(ctxWithKey) {
           for {
-            _ <- assertIO(scope.reader(_.get(key)), Some(value))
+            _ <- assertIO(scope.contextReader(_.get(key)), Some(value))
             scope1 <- scope.makeScope(ctx)
             _ <- scope1 {
               for {
                 // the key must be present within the custom scope
-                _ <- assertIO(scope.reader(_.get(key)), Some(value))
+                _ <- assertIO(scope.contextReader(_.get(key)), Some(value))
                 _ <- assertIO(scope.current, Some(ctx))
 
                 // the key must be present within the root scope, because we use empty span context
                 rootScope <- scope.rootScope
                 _ <- assertIO(rootScope(scope.current), None)
-                _ <- assertIO(rootScope(scope.reader(_.get(key))), None)
+                _ <- assertIO(rootScope(scope.contextReader(_.get(key))), None)
               } yield ()
             }
           } yield ()

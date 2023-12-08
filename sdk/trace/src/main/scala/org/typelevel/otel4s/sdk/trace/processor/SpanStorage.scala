@@ -24,7 +24,7 @@ import cats.syntax.functor._
 import org.typelevel.otel4s.sdk.trace.data.SpanData
 import org.typelevel.otel4s.trace.SpanContext
 
-class SpanStorage[F[_]: Applicative](
+private[trace] class SpanStorage[F[_]: Applicative] private (
     storage: Ref[F, Map[SpanContext, SpanRef[F]]]
 ) extends SpanProcessor[F] {
   val name: String = "SpanStorage"
@@ -45,7 +45,7 @@ class SpanStorage[F[_]: Applicative](
     Applicative[F].unit
 }
 
-object SpanStorage {
+private[trace] object SpanStorage {
   def create[F[_]: Concurrent]: F[SpanStorage[F]] =
     for {
       storage <- Ref[F].of(Map.empty[SpanContext, SpanRef[F]])

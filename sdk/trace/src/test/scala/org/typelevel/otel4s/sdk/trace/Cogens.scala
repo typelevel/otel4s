@@ -137,8 +137,8 @@ object Cogens {
         Option[FiniteDuration],
         StatusData,
         Attributes,
-        List[EventData],
-        List[LinkData],
+        Vector[EventData],
+        Vector[LinkData],
         InstrumentationScope,
         Resource
     )

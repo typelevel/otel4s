@@ -38,7 +38,7 @@ val MUnitScalaCheckEffectVersion = "2.0.0-M2"
 val OpenTelemetryVersion = "1.32.0"
 val OpenTelemetryInstrumentationVersion = "1.32.0"
 val OpenTelemetrySemConvVersion = "1.21.0-alpha"
-val PekkoStreamVersion = "1.0.1"
+val PekkoStreamVersion = "1.0.2"
 val PekkoHttpVersion = "1.0.0"
 val PlatformVersion = "1.0.2"
 val ScodecVersion = "1.1.38"
@@ -185,8 +185,8 @@ lazy val `sdk-trace` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
     libraryDependencies ++= Seq(
       "org.typelevel" %%% "cats-effect" % CatsEffectVersion,
       "org.typelevel" %%% "cats-laws" % CatsVersion % Test,
-      "org.typelevel" %%% "discipline-munit" % MUnitDisciplineVersion % Test,
       "org.typelevel" %%% "cats-effect-testkit" % CatsEffectVersion % Test,
+      "org.typelevel" %%% "discipline-munit" % MUnitDisciplineVersion % Test,
       "org.typelevel" %%% "scalacheck-effect-munit" % MUnitScalaCheckEffectVersion % Test
     ),
   )

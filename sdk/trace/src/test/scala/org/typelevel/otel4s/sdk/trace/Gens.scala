@@ -177,8 +177,8 @@ object Gens {
       endEpochNanos,
       status,
       attributes,
-      events,
-      links,
+      events.toVector,
+      links.toVector,
       instrumentationScope,
       resource
     )

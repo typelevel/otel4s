@@ -24,7 +24,8 @@ import org.typelevel.otel4s.trace.SpanContext
   */
 object SdkContextKeys {
 
-  /** The [[SpanContext]] is stored under this key in the [[Context]].
+  /** The [[org.typelevel.otel4s.trace.SpanContext SpanContext]] is stored under
+    * this key in the [[org.typelevel.otel4s.sdk.context.Context Context]].
     *
     * To retrieve the context use:
     * {{{

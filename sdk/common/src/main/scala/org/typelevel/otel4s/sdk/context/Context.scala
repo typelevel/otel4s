@@ -22,6 +22,9 @@ import cats.Show
 import cats.effect.kernel.Unique
 
 /** A type-safe immutable storage.
+  *
+  * @see
+  *   [[https://opentelemetry.io/docs/specs/otel/context]]
   */
 sealed trait Context {
 

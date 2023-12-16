@@ -168,7 +168,9 @@ object Span {
       * @param context
       *   the context to propagate
       */
-    def propagating[F[_]: Applicative](context: SpanContext): Backend[F] =
+    private[otel4s] def propagating[F[_]: Applicative](
+        context: SpanContext
+    ): Backend[F] =
       noopInternal(InstrumentMeta.enabled, context)
 
     def noop[F[_]: Applicative]: Backend[F] =

@@ -16,6 +16,7 @@
 
 package org.typelevel.otel4s
 package sdk.trace
+package processor
 
 import cats.Applicative
 import cats.MonadThrow

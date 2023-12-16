@@ -56,7 +56,7 @@ trait Sampler {
       name: String,
       spanKind: SpanKind,
       attributes: Attributes,
-      parentLinks: List[LinkData]
+      parentLinks: Seq[LinkData]
   ): SamplingResult
 
   /** The description of the [[Sampler]]. This may be displayed on debug pages
@@ -141,7 +141,7 @@ object Sampler {
         name: String,
         spanKind: SpanKind,
         attributes: Attributes,
-        parentLinks: List[LinkData]
+        parentLinks: Seq[LinkData]
     ): SamplingResult =
       result
   }

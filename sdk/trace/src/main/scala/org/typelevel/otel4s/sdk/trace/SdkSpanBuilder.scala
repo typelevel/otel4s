@@ -52,7 +52,7 @@ private[trace] final case class SdkSpanBuilder[F[_]: Temporal: Console](
       SpanFinalizer.Strategy.reportAbnormal,
     kind: Option[SpanKind] = None,
     links: Vector[LinkData] = Vector.empty,
-    attributes: Seq[Attribute[_]] = Nil,
+    attributes: Vector[Attribute[_]] = Vector.empty,
     startTimestamp: Option[FiniteDuration] = None
 ) extends SpanBuilder[F] {
   import SdkSpanBuilder._
@@ -140,6 +140,8 @@ private[trace] final case class SdkSpanBuilder[F[_]: Temporal: Console](
 
   private[trace] def start: F[Span.Backend[F]] = {
     val idGenerator = tracerSharedState.idGenerator
+    val spanKind = kind.getOrElse(SpanKind.Internal)
+    val attrs = Attributes.fromSpecific(attributes)
 
     for {
       parentSpanContext <- chooseParentSpanContext
@@ -155,7 +157,14 @@ private[trace] final case class SdkSpanBuilder[F[_]: Temporal: Console](
 
       backend <- {
         val samplingResult =
-          tracerSharedState.sampler.shouldSample(parentSpanContext, traceId)
+          tracerSharedState.sampler.shouldSample(
+            parentContext = parentSpanContext,
+            traceId = traceId,
+            name = name,
+            spanKind = spanKind,
+            attributes = attrs,
+            parentLinks = links
+          )
 
         val samplingDecision = samplingResult.decision
 
@@ -191,25 +200,24 @@ private[trace] final case class SdkSpanBuilder[F[_]: Temporal: Console](
         if (!samplingDecision.isRecording) {
           Applicative[F].pure(Span.Backend.propagating(spanContext))
         } else {
-          val samplingAttributes = samplingResult.attributes
+          val recordedAttributes = attrs |+| samplingResult.attributes
 
-          val recordedAttributes =
-            Attributes.fromSpecific(attributes) |+| samplingAttributes
-
-          SdkSpanBackend.start[F](
-            context = spanContext,
-            name = name,
-            scopeInfo = scopeInfo,
-            resource = tracerSharedState.resource,
-            kind = kind.getOrElse(SpanKind.Internal),
-            parentContext = parentSpanContext,
-            spanLimits = tracerSharedState.spanLimits,
-            processor = tracerSharedState.activeSpanProcessor,
-            attributes = recordedAttributes,
-            links = links,
-            totalRecordedLinks = links.size,
-            userStartTimestamp = startTimestamp
-          )
+          SdkSpanBackend
+            .start[F](
+              context = spanContext,
+              name = name,
+              scopeInfo = scopeInfo,
+              resource = tracerSharedState.resource,
+              kind = spanKind,
+              parentContext = parentSpanContext,
+              spanLimits = tracerSharedState.spanLimits,
+              processor = tracerSharedState.activeSpanProcessor,
+              attributes = recordedAttributes,
+              links = links,
+              totalRecordedLinks = links.size,
+              userStartTimestamp = startTimestamp
+            )
+            .widen
         }
       }
     } yield backend

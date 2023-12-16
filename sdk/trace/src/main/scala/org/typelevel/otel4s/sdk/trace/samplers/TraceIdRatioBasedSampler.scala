@@ -49,7 +49,7 @@ private[samplers] final class TraceIdRatioBasedSampler private (
       name: String,
       spanKind: SpanKind,
       attributes: Attributes,
-      parentLinks: List[LinkData]
+      parentLinks: Seq[LinkData]
   ): SamplingResult =
     if (math.abs(traceIdRandomPart(traceId)) < idUpperBound)
       SamplingResult.RecordAndSample

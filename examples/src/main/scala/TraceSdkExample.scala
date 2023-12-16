@@ -20,8 +20,8 @@ import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.sdk.context.Context
 import org.typelevel.otel4s.sdk.instances._
 import org.typelevel.otel4s.sdk.trace.SdkTracerProvider
-import org.typelevel.otel4s.sdk.trace.exporter.BatchSpanProcessor
 import org.typelevel.otel4s.sdk.trace.exporter.SpanExporter
+import org.typelevel.otel4s.sdk.trace.processor.BatchSpanProcessor
 
 object TraceSdkExample extends IOApp.Simple {
 

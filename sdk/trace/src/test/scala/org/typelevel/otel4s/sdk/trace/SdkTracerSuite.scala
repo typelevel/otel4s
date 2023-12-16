@@ -37,8 +37,9 @@ import org.typelevel.otel4s.sdk.context.propagation.PassThroughPropagator
 import org.typelevel.otel4s.sdk.trace.data.EventData
 import org.typelevel.otel4s.sdk.trace.data.SpanData
 import org.typelevel.otel4s.sdk.trace.data.StatusData
-import org.typelevel.otel4s.sdk.trace.exporter.BatchSpanProcessor
 import org.typelevel.otel4s.sdk.trace.exporter.InMemorySpanExporter
+import org.typelevel.otel4s.sdk.trace.processor.BatchSpanProcessor
+import org.typelevel.otel4s.sdk.trace.processor.SpanProcessor
 import org.typelevel.otel4s.sdk.trace.propagation.W3CTraceContextPropagator
 import org.typelevel.otel4s.sdk.trace.samplers.Sampler
 import org.typelevel.otel4s.trace.Span

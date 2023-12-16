@@ -16,7 +16,7 @@
 
 package org.typelevel.otel4s.sdk
 package trace
-package exporter
+package processor
 
 import cats.effect.Ref
 import cats.effect.Resource
@@ -32,6 +32,7 @@ import cats.syntax.flatMap._
 import cats.syntax.foldable._
 import cats.syntax.functor._
 import org.typelevel.otel4s.sdk.trace.data.SpanData
+import org.typelevel.otel4s.sdk.trace.exporter.SpanExporter
 import org.typelevel.otel4s.trace.SpanContext
 
 import scala.concurrent.duration._

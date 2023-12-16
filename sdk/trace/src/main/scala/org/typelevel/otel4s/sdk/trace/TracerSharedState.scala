@@ -17,6 +17,7 @@
 package org.typelevel.otel4s.sdk
 package trace
 
+import org.typelevel.otel4s.sdk.trace.processor.SpanProcessor
 import org.typelevel.otel4s.sdk.trace.samplers.Sampler
 
 private final case class TracerSharedState[F[_]](

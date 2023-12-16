@@ -113,8 +113,8 @@ private[trace] final case class SdkSpanBuilder[F[_]: Temporal: Console](
         )
     }
 
-  private def startManaged: Resource[F, (SdkSpanBackend[F], F ~> F)] = {
-    def acquire: F[SdkSpanBackend[F]] =
+  private def startManaged: Resource[F, (Span.Backend[F], F ~> F)] = {
+    def acquire: F[Span.Backend[F]] =
       start
 
     def release(backend: Span.Backend[F], ec: Resource.ExitCase): F[Unit] =
@@ -138,7 +138,7 @@ private[trace] final case class SdkSpanBuilder[F[_]: Temporal: Console](
       case Parent.Explicit(parent) => Concurrent[F].pure(Some(parent))
     }
 
-  private[trace] def start: F[SdkSpanBackend[F]] = {
+  private[trace] def start: F[Span.Backend[F]] = {
     val idGenerator = tracerSharedState.idGenerator
 
     for {
@@ -188,29 +188,29 @@ private[trace] final case class SdkSpanBuilder[F[_]: Temporal: Console](
           }
         }
 
-        /*if (!samplingDecision.isRecording) { todo
-          return Span.wrap(spanContext)
-        }*/
+        if (!samplingDecision.isRecording) {
+          Applicative[F].pure(Span.Backend.propagating(spanContext))
+        } else {
+          val samplingAttributes = samplingResult.attributes
 
-        val samplingAttributes = samplingResult.attributes
+          val recordedAttributes =
+            Attributes.fromSpecific(attributes) |+| samplingAttributes
 
-        val recordedAttributes =
-          Attributes(attributes: _*) |+| samplingAttributes
-
-        SdkSpanBackend.start[F](
-          context = spanContext,
-          name = name,
-          scopeInfo = scopeInfo,
-          resource = tracerSharedState.resource,
-          kind = kind.getOrElse(SpanKind.Internal),
-          parentContext = parentSpanContext,
-          spanLimits = tracerSharedState.spanLimits,
-          processor = tracerSharedState.activeSpanProcessor,
-          attributes = recordedAttributes,
-          links = links,
-          totalRecordedLinks = links.size,
-          userStartTimestamp = startTimestamp
-        )
+          SdkSpanBackend.start[F](
+            context = spanContext,
+            name = name,
+            scopeInfo = scopeInfo,
+            resource = tracerSharedState.resource,
+            kind = kind.getOrElse(SpanKind.Internal),
+            parentContext = parentSpanContext,
+            spanLimits = tracerSharedState.spanLimits,
+            processor = tracerSharedState.activeSpanProcessor,
+            attributes = recordedAttributes,
+            links = links,
+            totalRecordedLinks = links.size,
+            userStartTimestamp = startTimestamp
+          )
+        }
       }
     } yield backend
 

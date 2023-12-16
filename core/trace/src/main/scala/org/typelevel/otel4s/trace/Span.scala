@@ -159,12 +159,30 @@ object Span {
   }
 
   object Backend {
+
+    /** Returns a non-recording backend that holds the provided [[SpanContext]]
+      * but has all operations are no-op. It will not be exported and all
+      * tracing operations are no-op, but it can be used to propagate a valid
+      * [[SpanContext]] downstream.
+      *
+      * @param context
+      *   the context to propagate
+      */
+    def propagating[F[_]: Applicative](context: SpanContext): Backend[F] =
+      noopInternal(InstrumentMeta.enabled, context)
+
     def noop[F[_]: Applicative]: Backend[F] =
+      noopInternal(InstrumentMeta.disabled, SpanContext.invalid)
+
+    private def noopInternal[F[_]: Applicative](
+        m: InstrumentMeta[F],
+        ctx: SpanContext
+    ): Backend[F] =
       new Backend[F] {
         private val unit = Applicative[F].unit
 
-        val meta: InstrumentMeta[F] = InstrumentMeta.disabled
-        val context: SpanContext = SpanContext.invalid
+        val meta: InstrumentMeta[F] = m
+        val context: SpanContext = ctx
 
         def updateName(name: String): F[Unit] = unit
 

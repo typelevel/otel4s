@@ -40,6 +40,7 @@ import org.typelevel.otel4s.sdk.trace.data.StatusData
 import org.typelevel.otel4s.sdk.trace.exporter.BatchSpanProcessor
 import org.typelevel.otel4s.sdk.trace.exporter.InMemorySpanExporter
 import org.typelevel.otel4s.sdk.trace.propagation.W3CTraceContextPropagator
+import org.typelevel.otel4s.sdk.trace.samplers.Sampler
 import org.typelevel.otel4s.trace.Span
 import org.typelevel.otel4s.trace.Status
 import org.typelevel.otel4s.trace.Tracer
@@ -878,19 +879,42 @@ class SdkTracerSuite extends CatsEffectSuite {
     "retain all of a provided context through propagation",
     additionalPropagators = List(PassThroughPropagator.create("foo", "bar"))
   ) { sdk =>
-    TestControl.executeEmbed {
-      for {
-        tracer <- sdk.provider.get("tracer")
-        _ <- tracer.joinOrRoot(Map("foo" -> "1", "baz" -> "2")) {
-          for {
-            carrier <- tracer.propagate(Map.empty[String, String])
-          } yield {
-            assertEquals(carrier.size, 1)
-            assertEquals(carrier.get("foo"), Some("1"))
-          }
+    for {
+      tracer <- sdk.provider.get("tracer")
+      _ <- tracer.joinOrRoot(Map("foo" -> "1", "baz" -> "2")) {
+        for {
+          carrier <- tracer.propagate(Map.empty[String, String])
+        } yield {
+          assertEquals(carrier.size, 1)
+          assertEquals(carrier.get("foo"), Some("1"))
         }
-      } yield ()
-    }
+      }
+    } yield ()
+  }
+
+  sdkTest(
+    "keep propagating non-recording spans, but don't record them",
+    sampler = Sampler.AlwaysOff
+  ) { sdk =>
+    for {
+      tracer <- sdk.provider.get("tracer")
+      _ <- tracer.span("local").use { span1 =>
+        for {
+          _ <- IO(assertEquals(span1.context.isValid, true))
+          _ <- IO(assertEquals(span1.context.isSampled, false))
+          _ <- tracer.span("local-2").use { span2 =>
+            for {
+              _ <- IO(assertEquals(span2.context.isValid, true))
+              _ <- IO(assertEquals(span2.context.isSampled, false))
+              _ <- IO(
+                assertEquals(span2.context.traceId, span1.context.traceId)
+              )
+            } yield ()
+          }
+        } yield ()
+      }
+      spans <- sdk.finishedSpans
+    } yield assertEquals(spans, Nil)
   }
 
   private def wrapResource[F[_]: MonadCancelThrow, A](
@@ -925,11 +949,13 @@ class SdkTracerSuite extends CatsEffectSuite {
 
   private def sdkTest[A](
       options: TestOptions,
+      sampler: Sampler = Sampler.parentBased(Sampler.AlwaysOn),
       additionalPropagators: List[TextMapPropagator[Context]] = Nil
   )(body: SdkTracerSuite.Sdk => IO[A])(implicit loc: Location): Unit =
-    test(options)(makeSdk(additionalPropagators).use(body))
+    test(options)(makeSdk(sampler, additionalPropagators).use(body))
 
   private def makeSdk(
+      sampler: Sampler,
       additionalPropagators: List[TextMapPropagator[Context]]
   ): Resource[IO, SdkTracerSuite.Sdk] = {
     import org.typelevel.otel4s.sdk.instances._
@@ -945,6 +971,7 @@ class SdkTracerSuite extends CatsEffectSuite {
           .builder[IO]
           .addTextMapPropagators(textMapPropagators: _*)
           .addSpanProcessor(processor)
+          .withSampler(sampler)
           .build
       }
 

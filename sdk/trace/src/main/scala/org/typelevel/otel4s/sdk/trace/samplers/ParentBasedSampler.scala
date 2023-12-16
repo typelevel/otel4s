@@ -16,15 +16,21 @@
 
 package org.typelevel.otel4s.sdk.trace.samplers
 
+import org.typelevel.otel4s.sdk.Attributes
+import org.typelevel.otel4s.sdk.trace.data.LinkData
 import org.typelevel.otel4s.trace.SpanContext
+import org.typelevel.otel4s.trace.SpanKind
 import scodec.bits.ByteVector
 
 /** Sampler that uses the sampled flag of the parent Span, if present.
   *
   * If the span has no parent, this Sampler will use the "root" sampler that it
   * is built with.
+  *
+  * @see
+  *   [[https://opentelemetry.io/docs/specs/otel/trace/sdk/#parentbased]]
   */
-final class ParentBasedSampler private (
+private[samplers] final class ParentBasedSampler private (
     root: Sampler,
     remoteParentSampled: Sampler,
     remoteParentNotSampled: Sampler,
@@ -34,7 +40,11 @@ final class ParentBasedSampler private (
 
   def shouldSample(
       parentContext: Option[SpanContext],
-      traceId: ByteVector
+      traceId: ByteVector,
+      name: String,
+      spanKind: SpanKind,
+      attributes: Attributes,
+      parentLinks: List[LinkData]
   ): SamplingResult = {
     val sampler = parentContext.filter(_.isValid) match {
       case Some(ctx) if ctx.isRemote =>
@@ -47,11 +57,18 @@ final class ParentBasedSampler private (
         root
     }
 
-    sampler.shouldSample(parentContext, traceId)
+    sampler.shouldSample(
+      parentContext,
+      traceId,
+      name,
+      spanKind,
+      attributes,
+      parentLinks
+    )
   }
 
   val description: String =
-    s"ParentBasedSampler{root=$root, " +
+    s"ParentBased{root=$root, " +
       s"remoteParentSampled=$remoteParentSampled, " +
       s"remoteParentNotSampled=$remoteParentNotSampled, " +
       s"localParentSampled=$localParentSampled, " +
@@ -60,7 +77,7 @@ final class ParentBasedSampler private (
 
 object ParentBasedSampler {
 
-  /** Creates a [[Builder]] for [[ParentBasedSampler]] that enables
+  /** Creates a [[Builder]] for the parent-based sampler that enables
     * configuration of the parent-based sampling strategy.
     *
     * The parent's sampling decision is used if a parent span exists, otherwise
@@ -76,43 +93,42 @@ object ParentBasedSampler {
   def builder(root: Sampler): Builder =
     BuilderImpl(root, None, None, None, None)
 
-  /** A builder for creating [[ParentBasedSampler]].
+  /** A builder for creating parent-based sampler.
     */
   sealed trait Builder {
 
-    /** Sets the [[Sampler]] to use when there is a remote parent that was
+    /** Assigns the [[Sampler]] to use when there is a remote parent that was
       * sampled.
       *
       * If not set, defaults to always sampling if the remote parent was
       * sampled.
       */
-    def setRemoteParentSampled(sampler: Sampler): Builder
+    def withRemoteParentSampled(sampler: Sampler): Builder
 
-    /** Sets the [[Sampler]] to use when there is a remote parent that was not
-      * sampled.
+    /** Assigns the [[Sampler]] to use when there is a remote parent that was
+      * not sampled.
       *
       * If not set, defaults to never sampling when the remote parent isn't
       * sampled.
       */
-    def setRemoteParentNotSampled(sampler: Sampler): Builder
+    def withRemoteParentNotSampled(sampler: Sampler): Builder
 
-    /** Sets the [[Sampler]] to use when there is a local parent that was
+    /** Assigns the [[Sampler]] to use when there is a local parent that was
       * sampled.
       *
       * If not set, defaults to always sampling if the local parent was sampled.
       */
-    def setLocalParentSampled(sampler: Sampler): Builder
+    def withLocalParentSampled(sampler: Sampler): Builder
 
-    /** Sets the [[Sampler]] to use when there is a local parent that was not
+    /** Assigns the [[Sampler]] to use when there is a local parent that was not
       * sampled.
       *
       * If not set, defaults to never sampling when the local parent isn't
       * sampled.
       */
-    def setLocalParentNotSampled(sampler: Sampler): Builder
+    def withLocalParentNotSampled(sampler: Sampler): Builder
 
-    /** Creates a [[ParentBasedSampler]] using the configuration of this
-      * builder.
+    /** Creates a parent-based sampler using the configuration of this builder.
       */
     def build: Sampler
   }
@@ -124,16 +140,16 @@ object ParentBasedSampler {
       localParentSampled: Option[Sampler],
       localParentNotSampled: Option[Sampler]
   ) extends Builder {
-    def setRemoteParentSampled(sampler: Sampler): Builder =
+    def withRemoteParentSampled(sampler: Sampler): Builder =
       copy(remoteParentSampled = Some(sampler))
 
-    def setRemoteParentNotSampled(sampler: Sampler): Builder =
+    def withRemoteParentNotSampled(sampler: Sampler): Builder =
       copy(remoteParentNotSampled = Some(sampler))
 
-    def setLocalParentSampled(sampler: Sampler): Builder =
+    def withLocalParentSampled(sampler: Sampler): Builder =
       copy(localParentSampled = Some(sampler))
 
-    def setLocalParentNotSampled(sampler: Sampler): Builder =
+    def withLocalParentNotSampled(sampler: Sampler): Builder =
       copy(localParentNotSampled = Some(sampler))
 
     def build: Sampler =

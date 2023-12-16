@@ -43,9 +43,11 @@ sealed trait SamplingResult {
     * It may return the same trace state that was provided originally, or an
     * updated one.
     *
-    * '''Note''': If an empty trace state is returned, the trace state will be
-    * cleared, so samplers should normally return the passed-in trace state if
-    * they do not intend to change it.
+    * @note
+    *   if updated returns an empty trace state, the trace state will be
+    *   cleared, so samplers should normally use
+    *   [[SamplingResult.TraceStateUpdater.Identity]] to return the passed-in
+    *   trace state if it's not intended to be changed.
     */
   def traceStateUpdater: SamplingResult.TraceStateUpdater
 
@@ -69,9 +71,10 @@ object SamplingResult {
     * It may return the same trace state that was provided originally, or an
     * updated one.
     *
-    * '''Note''': If an empty trace state is returned, the trace state will be
-    * cleared, so samplers should normally return the passed-in trace state if
-    * they do not intend to change it.
+    * @note
+    *   if an empty trace state is returned, the trace state will be cleared, so
+    *   the updater should normally return the passed-in trace state (via
+    *   [[TraceStateUpdater.Identity]]) if it's intended to be changed.
     */
   sealed trait TraceStateUpdater {
     def update(state: TraceState): TraceState
@@ -107,27 +110,29 @@ object SamplingResult {
       }
   }
 
+  /** The [[SamplingResult]] with the [[SamplingDecision.RecordAndSample]]
+    * decision, no attributes, and [[TraceStateUpdater.Identity]] updater.
+    */
   val RecordAndSample: SamplingResult =
-    SamplingResultImpl(
-      SamplingDecision.RecordAndSample,
-      Attributes.empty,
-      TraceStateUpdater.Identity
-    )
+    fromDecision(SamplingDecision.RecordAndSample)
 
+  /** The [[SamplingResult]] with the [[SamplingDecision.RecordOnly]] decision,
+    * no attributes, and [[TraceStateUpdater.Identity]] updater.
+    */
   val RecordOnly: SamplingResult =
-    SamplingResultImpl(
-      SamplingDecision.RecordOnly,
-      Attributes.empty,
-      TraceStateUpdater.Identity
-    )
+    fromDecision(SamplingDecision.RecordOnly)
 
+  /** The [[SamplingResult]] with the [[SamplingDecision.Drop]] decision, no
+    * attributes, and [[TraceStateUpdater.Identity]] updater.
+    */
   val Drop: SamplingResult =
-    SamplingResultImpl(
-      SamplingDecision.Drop,
-      Attributes.empty,
-      TraceStateUpdater.Identity
-    )
+    fromDecision(SamplingDecision.Drop)
 
+  /** Creates a [[SamplingResult]] with the given `decision`.
+    *
+    * @param decision
+    *   the [[SamplingDecision]] to associate with the result
+    */
   def apply(decision: SamplingDecision): SamplingResult =
     decision match {
       case SamplingDecision.RecordAndSample => RecordAndSample
@@ -135,13 +140,33 @@ object SamplingResult {
       case SamplingDecision.Drop            => Drop
     }
 
+  /** Creates a [[SamplingResult]] with the given `decision` and `attributes`.
+    *
+    * @param decision
+    *   the [[SamplingDecision]] to associate with the result
+    *
+    * @param attributes
+    *   the [[Attributes]] to associate with the result
+    */
   def apply(
       decision: SamplingDecision,
       attributes: Attributes
   ): SamplingResult =
     if (attributes.isEmpty) apply(decision)
-    else SamplingResultImpl(decision, attributes, TraceStateUpdater.Identity)
+    else Impl(decision, attributes, TraceStateUpdater.Identity)
 
+  /** Creates a [[SamplingResult]] with the given `decision`, `attributes`, and
+    * `traceStateUpdater`.
+    *
+    * @param decision
+    *   the [[SamplingDecision]] to associate with the result
+    *
+    * @param attributes
+    *   the [[Attributes]] to associate with the result
+    *
+    * @param traceStateUpdater
+    *   the [[TraceStateUpdater]] to associate with the result
+    */
   def apply(
       decision: SamplingDecision,
       attributes: Attributes,
@@ -150,7 +175,7 @@ object SamplingResult {
     if (traceStateUpdater == TraceStateUpdater.Identity)
       apply(decision, attributes)
     else
-      SamplingResultImpl(decision, attributes, traceStateUpdater)
+      Impl(decision, attributes, traceStateUpdater)
 
   implicit val samplingResultHash: Hash[SamplingResult] =
     Hash.by(r => (r.decision, r.attributes, r.traceStateUpdater))
@@ -160,7 +185,10 @@ object SamplingResult {
       show"SamplingResult{decision=${r.decision}, attributes=${r.attributes}, traceStateUpdater=${r.traceStateUpdater}}"
     }
 
-  private final case class SamplingResultImpl(
+  private def fromDecision(decision: SamplingDecision): SamplingResult =
+    Impl(decision, Attributes.empty, TraceStateUpdater.Identity)
+
+  private final case class Impl(
       decision: SamplingDecision,
       attributes: Attributes,
       traceStateUpdater: TraceStateUpdater

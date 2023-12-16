@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-package org.typelevel.otel4s.sdk.trace
+package org.typelevel.otel4s.sdk.trace.processor
 
 import cats.data.NonEmptyList
 import cats.effect.IO
 import munit.FunSuite
+import org.typelevel.otel4s.sdk.trace.SpanRef
 import org.typelevel.otel4s.sdk.trace.data.SpanData
 import org.typelevel.otel4s.trace.SpanContext
 

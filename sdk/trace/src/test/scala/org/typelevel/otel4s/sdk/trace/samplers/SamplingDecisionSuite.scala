@@ -14,35 +14,25 @@
  * limitations under the License.
  */
 
-package org.typelevel.otel4s.sdk.trace.samplers
+package org.typelevel.otel4s.sdk.trace
+package samplers
 
 import cats.Show
 import cats.kernel.laws.discipline.HashTests
 import munit._
 import org.scalacheck.Arbitrary
-import org.scalacheck.Cogen
-import org.scalacheck.Gen
 import org.scalacheck.Prop
 
 class SamplingDecisionSuite extends DisciplineSuite {
-
-  private val samplingDecisionGen: Gen[SamplingDecision] =
-    Gen.oneOf(
-      SamplingDecision.Drop,
-      SamplingDecision.RecordOnly,
-      SamplingDecision.RecordAndSample
-    )
+  import Cogens.samplingDecisionCogen
 
   private implicit val samplingDecisionArbitrary: Arbitrary[SamplingDecision] =
-    Arbitrary(samplingDecisionGen)
-
-  private implicit val samplingDecisionCogen: Cogen[SamplingDecision] =
-    Cogen[String].contramap(_.toString)
+    Arbitrary(Gens.samplingDecision)
 
   checkAll("SamplingDecision.HashLaws", HashTests[SamplingDecision].hash)
 
   property("is sampled") {
-    Prop.forAll(samplingDecisionGen) { decision =>
+    Prop.forAll(Gens.samplingDecision) { decision =>
       val expected = decision match {
         case SamplingDecision.Drop            => false
         case SamplingDecision.RecordOnly      => false
@@ -53,8 +43,20 @@ class SamplingDecisionSuite extends DisciplineSuite {
     }
   }
 
+  property("is recording") {
+    Prop.forAll(Gens.samplingDecision) { decision =>
+      val expected = decision match {
+        case SamplingDecision.Drop            => false
+        case SamplingDecision.RecordOnly      => true
+        case SamplingDecision.RecordAndSample => true
+      }
+
+      assertEquals(decision.isRecording, expected)
+    }
+  }
+
   property("Show[SamplingDecision]") {
-    Prop.forAll(samplingDecisionGen) { decision =>
+    Prop.forAll(Gens.samplingDecision) { decision =>
       val expected = decision match {
         case SamplingDecision.Drop            => "Drop"
         case SamplingDecision.RecordOnly      => "RecordOnly"

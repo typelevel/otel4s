@@ -49,10 +49,10 @@ trait SpanRef[F[_]] { self: Span.Backend[F] =>
 
   /** Returns the name of the span.
     *
-    * '''Note''': the name of the span can be changed during the lifetime of the
-    * span by using
-    * [[org.typelevel.otel4s.trace.Span.updateName Span.updateName]], so this
-    * value cannot be cached.
+    * @note
+    *   the name of the span can be changed during the lifetime of the span by
+    *   using [[org.typelevel.otel4s.trace.Span.updateName Span.updateName]], so
+    *   this value cannot be cached.
     */
   def name: F[String]
 
@@ -73,10 +73,11 @@ trait SpanRef[F[_]] { self: Span.Backend[F] =>
   /** Returns the attribute value for the given `key`. Returns `None` if the key
     * is absent in the storage.
     *
-    * '''Note''': the attribute values can be changed during the lifetime of the
-    * span by using
-    * [[org.typelevel.otel4s.trace.Span.addAttribute Span.addAttribute]], so
-    * this value cannot be cached.
+    * @note
+    *   the attribute values can be changed during the lifetime of the span by
+    *   using
+    *   [[org.typelevel.otel4s.trace.Span.addAttribute Span.addAttribute]], so
+    *   this value cannot be cached.
     */
   def getAttribute[A](key: AttributeKey[A]): F[Option[A]]
 

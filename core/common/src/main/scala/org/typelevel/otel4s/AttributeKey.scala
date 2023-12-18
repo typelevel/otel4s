@@ -29,6 +29,11 @@ import cats.syntax.show._
 sealed trait AttributeKey[A] {
   def name: String
   def `type`: AttributeType[A]
+
+  /** @return
+    *   an [[`Attribute`]] associating this key with the given value
+    */
+  final def apply(value: A): Attribute[A] = Attribute(this, value)
 }
 
 object AttributeKey {

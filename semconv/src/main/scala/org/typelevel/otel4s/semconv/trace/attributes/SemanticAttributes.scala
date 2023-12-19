@@ -24,75 +24,26 @@ object SemanticAttributes {
 
   /** The URL of the OpenTelemetry schema for these keys and values.
     */
-  final val SchemaUrl = "https://opentelemetry.io/schemas/1.21.0"
+  final val SchemaUrl = "https://opentelemetry.io/schemas/1.22.0"
 
-  /** Client address - unix domain socket name, IPv4 or IPv6 address.
+  /** Client address - domain name if available without reverse DNS lookup,
+    * otherwise IP address or Unix domain socket name.
     *
     * <p>Notes: <ul> <li>When observed from the server side, and when
     * communicating through an intermediary, `client.address` SHOULD represent
-    * client address behind any intermediaries (e.g. proxies) if it's
+    * the client address behind any intermediaries (e.g. proxies) if it's
     * available.</li> </ul>
     */
   val ClientAddress: AttributeKey[String] = string("client.address")
 
-  /** Client port number
+  /** Client port number.
     *
     * <p>Notes: <ul> <li>When observed from the server side, and when
-    * communicating through an intermediary, `client.port` SHOULD represent
+    * communicating through an intermediary, `client.port` SHOULD represent the
     * client port behind any intermediaries (e.g. proxies) if it's
     * available.</li> </ul>
     */
   val ClientPort: AttributeKey[Long] = long("client.port")
-
-  /** Immediate client peer address - unix domain socket name, IPv4 or IPv6
-    * address.
-    */
-  val ClientSocketAddress: AttributeKey[String] = string(
-    "client.socket.address"
-  )
-
-  /** Immediate client peer port number
-    */
-  val ClientSocketPort: AttributeKey[Long] = long("client.socket.port")
-
-  /** Deprecated, use `http.request.method` instead.
-    */
-  @deprecated("Use `http.request.method` instead", "0.3.0")
-  val HttpMethod: AttributeKey[String] = string("http.method")
-
-  /** Deprecated, use `http.request.body.size` instead.
-    */
-  @deprecated("Use `http.request.body.size` instead", "0.3.0")
-  val HttpRequestContentLength: AttributeKey[Long] = long(
-    "http.request_content_length"
-  )
-
-  /** Deprecated, use `http.response.body.size` instead.
-    */
-  @deprecated("Use `http.response.body.size` instead", "0.3.0")
-  val HttpResponseContentLength: AttributeKey[Long] = long(
-    "http.response_content_length"
-  )
-
-  /** Deprecated, use `url.scheme` instead.
-    */
-  @deprecated("Use `url.scheme` instead", "0.3.0")
-  val HttpScheme: AttributeKey[String] = string("http.scheme")
-
-  /** Deprecated, use `http.response.status_code` instead.
-    */
-  @deprecated("Use `http.response.status_code` instead", "0.3.0")
-  val HttpStatusCode: AttributeKey[Long] = long("http.status_code")
-
-  /** Deprecated, use `url.path` and `url.query` instead.
-    */
-  @deprecated("Use `url.path` and `url.query` instead", "0.3.0")
-  val HttpTarget: AttributeKey[String] = string("http.target")
-
-  /** Deprecated, use `url.full` instead.
-    */
-  @deprecated("Use `url.full` instead", "0.3.0")
-  val HttpUrl: AttributeKey[String] = string("http.url")
 
   /** Deprecated, use `server.address`.
     */
@@ -137,37 +88,29 @@ object SemanticAttributes {
   @deprecated("Use `network.transport` and `network.type`", "0.3.0")
   val NetSockFamily: AttributeKey[String] = string("net.sock.family")
 
-  /** Deprecated, use `server.socket.address`.
+  /** Deprecated, use `network.local.address`.
     */
-  @deprecated("Use `server.socket.address`", "0.3.0")
+  @deprecated("Use `network.local.address`", "0.3.0")
   val NetSockHostAddr: AttributeKey[String] = string("net.sock.host.addr")
 
-  /** Deprecated, use `server.socket.port`.
+  /** Deprecated, use `network.local.port`.
     */
-  @deprecated("Use `server.socket.port`", "0.3.0")
+  @deprecated("Use `network.local.port`", "0.3.0")
   val NetSockHostPort: AttributeKey[Long] = long("net.sock.host.port")
 
-  /** Deprecated, use `server.socket.address` on client spans and
-    * `client.socket.address` on server spans.
+  /** Deprecated, use `network.peer.address`.
     */
-  @deprecated(
-    "Use `server.socket.address` on client spans and `client.socket.address` on server spans",
-    "0.3.0"
-  )
+  @deprecated("Use `network.peer.address`", "0.3.0")
   val NetSockPeerAddr: AttributeKey[String] = string("net.sock.peer.addr")
 
-  /** Deprecated, use `server.socket.domain` on client spans.
+  /** Deprecated, no replacement at this time.
     */
-  @deprecated("Use `server.socket.domain` on client spans", "0.3.0")
+  @deprecated("No replacement at this time", "0.3.0")
   val NetSockPeerName: AttributeKey[String] = string("net.sock.peer.name")
 
-  /** Deprecated, use `server.socket.port` on client spans and
-    * `client.socket.port` on server spans.
+  /** Deprecated, use `network.peer.port`.
     */
-  @deprecated(
-    "Use `server.socket.port` on client spans and `client.socket.port` on server spans",
-    "0.3.0"
-  )
+  @deprecated("Use `network.peer.port`", "0.3.0")
   val NetSockPeerPort: AttributeKey[Long] = long("net.sock.peer.port")
 
   /** Deprecated, use `network.transport`.
@@ -175,20 +118,36 @@ object SemanticAttributes {
   @deprecated("Use `network.transport`", "0.3.0")
   val NetTransport: AttributeKey[String] = string("net.transport")
 
-  /** Peer address, for example IP address or UNIX socket name.
+  /** Destination address - domain name if available without reverse DNS lookup,
+    * otherwise IP address or Unix domain socket name.
+    *
+    * <p>Notes: <ul> <li>When observed from the source side, and when
+    * communicating through an intermediary, `destination.address` SHOULD
+    * represent the destination address behind any intermediaries (e.g. proxies)
+    * if it's available.</li> </ul>
     */
   val DestinationAddress: AttributeKey[String] = string("destination.address")
 
-  /** The domain name of the destination system.
-    *
-    * <p>Notes: <ul> <li>This value may be a host name, a fully qualified domain
-    * name, or another host naming format.</li> </ul>
-    */
-  val DestinationDomain: AttributeKey[String] = string("destination.domain")
-
-  /** Peer port number
+  /** Destination port number
     */
   val DestinationPort: AttributeKey[Long] = long("destination.port")
+
+  /** Describes a class of error the operation ended with.
+    *
+    * <p>Notes: <ul> <li>The `error.type` SHOULD be predictable and SHOULD have
+    * low cardinality. Instrumentations SHOULD document the list of errors they
+    * report.</li><li>The cardinality of `error.type` within one instrumentation
+    * library SHOULD be low, but telemetry consumers that aggregate data from
+    * multiple instrumentation libraries and applications should be prepared for
+    * `error.type` to have high cardinality at query time, when no additional
+    * filters are applied.</li><li>If the operation has completed successfully,
+    * instrumentations SHOULD NOT set `error.type`.</li><li>If a specific domain
+    * defines its own set of error codes (such as HTTP or gRPC status codes),
+    * it's RECOMMENDED to use a domain-specific attribute and also set
+    * `error.type` to capture all errors, regardless of whether they are defined
+    * within the domain-specific set or not.</li> </ul>
+    */
+  val ErrorType: AttributeKey[String] = string("error.type")
 
   /** The exception message.
     */
@@ -206,50 +165,97 @@ object SemanticAttributes {
     */
   val ExceptionType: AttributeKey[String] = string("exception.type")
 
-  /** HTTP request method.
+  /** The name of the invoked function.
     *
-    * <p>Notes: <ul> <li>HTTP request method value SHOULD be &quot;known&quot;
-    * to the instrumentation. By default, this convention defines
-    * &quot;known&quot; methods as the ones listed in <a
-    * href="https://www.rfc-editor.org/rfc/rfc9110.html#name-methods">RFC9110</a>
-    * and the PATCH method defined in <a
-    * href="https://www.rfc-editor.org/rfc/rfc5789.html">RFC5789</a>.</li><li>If
-    * the HTTP request method is not known to instrumentation, it MUST set the
-    * `http.request.method` attribute to `_OTHER` and, except if reporting a
-    * metric, MUST set the exact method received in the request line as value of
-    * the `http.request.method_original` attribute.</li><li>If the HTTP
-    * instrumentation could end up converting valid HTTP request methods to
-    * `_OTHER`, then it MUST provide a way to override the list of known HTTP
-    * methods. If this override is done via environment variable, then the
-    * environment variable MUST be named OTEL_INSTRUMENTATION_HTTP_KNOWN_METHODS
-    * and support a comma-separated list of case-sensitive known HTTP methods
-    * (this list MUST be a full override of the default known method, it is not
-    * a list of known methods in addition to the defaults).</li><li>HTTP method
-    * names are case-sensitive and `http.request.method` attribute value MUST
-    * match a known HTTP method name exactly. Instrumentations for specific web
-    * frameworks that consider HTTP methods to be case insensitive, SHOULD
-    * populate a canonical equivalent. Tracing instrumentations that do so, MUST
-    * also set `http.request.method_original` to the original value.</li> </ul>
+    * <p>Notes: <ul> <li>SHOULD be equal to the `faas.name` resource attribute
+    * of the invoked function.</li> </ul>
     */
-  val HttpRequestMethod: AttributeKey[String] = string("http.request.method")
+  val FaasInvokedName: AttributeKey[String] = string("faas.invoked_name")
 
-  /** <a href="https://tools.ietf.org/html/rfc7231#section-6">HTTP response
-    * status code</a>.
+  /** The cloud provider of the invoked function.
+    *
+    * <p>Notes: <ul> <li>SHOULD be equal to the `cloud.provider` resource
+    * attribute of the invoked function.</li> </ul>
     */
-  val HttpResponseStatusCode: AttributeKey[Long] = long(
-    "http.response.status_code"
+  val FaasInvokedProvider: AttributeKey[String] = string(
+    "faas.invoked_provider"
   )
 
-  /** The matched route (path template in the format used by the respective
-    * server framework). See note below
+  /** The cloud region of the invoked function.
     *
-    * <p>Notes: <ul> <li>MUST NOT be populated when this is not supported by the
-    * HTTP server framework as the route attribute should have low-cardinality
-    * and the URI path can NOT substitute it. SHOULD include the <a
-    * href="/docs/http/http-spans.md#http-server-definitions">application
-    * root</a> if there is one.</li> </ul>
+    * <p>Notes: <ul> <li>SHOULD be equal to the `cloud.region` resource
+    * attribute of the invoked function.</li> </ul>
     */
-  val HttpRoute: AttributeKey[String] = string("http.route")
+  val FaasInvokedRegion: AttributeKey[String] = string("faas.invoked_region")
+
+  /** Type of the trigger which caused this function invocation.
+    */
+  val FaasTrigger: AttributeKey[String] = string("faas.trigger")
+
+  /** The <a href="/docs/resource/README.md#service">`service.name`</a> of the
+    * remote service. SHOULD be equal to the actual `service.name` resource
+    * attribute of the remote service if any.
+    */
+  val PeerService: AttributeKey[String] = string("peer.service")
+
+  /** Username or client_id extracted from the access token or <a
+    * href="https://tools.ietf.org/html/rfc7235#section-4.2">Authorization</a>
+    * header in the inbound request from outside the system.
+    */
+  val EnduserId: AttributeKey[String] = string("enduser.id")
+
+  /** Actual/assumed role the client is making the request under extracted from
+    * token or application security context.
+    */
+  val EnduserRole: AttributeKey[String] = string("enduser.role")
+
+  /** Scopes or granted authorities the client currently possesses extracted
+    * from token or application security context. The value would come from the
+    * scope associated with an <a
+    * href="https://tools.ietf.org/html/rfc6749#section-3.3">OAuth 2.0 Access
+    * Token</a> or an attribute value in a <a
+    * href="http://docs.oasis-open.org/security/saml/Post2.0/sstc-saml-tech-overview-2.0.html">SAML
+    * 2.0 Assertion</a>.
+    */
+  val EnduserScope: AttributeKey[String] = string("enduser.scope")
+
+  /** Whether the thread is daemon or not.
+    */
+  val ThreadDaemon: AttributeKey[Boolean] = boolean("thread.daemon")
+
+  /** Current &quot;managed&quot; thread ID (as opposed to OS thread ID).
+    */
+  val ThreadId: AttributeKey[Long] = long("thread.id")
+
+  /** Current thread name.
+    */
+  val ThreadName: AttributeKey[String] = string("thread.name")
+
+  /** The column number in `code.filepath` best representing the operation. It
+    * SHOULD point within the code unit named in `code.function`.
+    */
+  val CodeColumn: AttributeKey[Long] = long("code.column")
+
+  /** The source code file name that identifies the code unit as uniquely as
+    * possible (preferably an absolute file path).
+    */
+  val CodeFilepath: AttributeKey[String] = string("code.filepath")
+
+  /** The method or function name, or equivalent (usually rightmost part of the
+    * code unit's name).
+    */
+  val CodeFunction: AttributeKey[String] = string("code.function")
+
+  /** The line number in `code.filepath` best representing the operation. It
+    * SHOULD point within the code unit named in `code.function`.
+    */
+  val CodeLineno: AttributeKey[Long] = long("code.lineno")
+
+  /** The &quot;namespace&quot; within which `code.function` is defined. Usually
+    * the qualified class or module name, such that `code.namespace` + some
+    * separator + `code.function` form a unique identifier for the code unit.
+    */
+  val CodeNamespace: AttributeKey[String] = string("code.namespace")
 
   /** The domain identifies the business context for the events.
     *
@@ -298,57 +304,356 @@ object SemanticAttributes {
     "log.file.path_resolved"
   )
 
+  /** The name of the connection pool; unique within the instrumented
+    * application. In case the connection pool implementation does not provide a
+    * name, then the <a
+    * href="/docs/database/database-spans.md#connection-level-attributes">db.connection_string</a>
+    * should be used
+    */
+  val PoolName: AttributeKey[String] = string("pool.name")
+
+  /** The state of a connection in the pool
+    */
+  val State: AttributeKey[String] = string("state")
+
+  /** Name of the buffer pool.
+    *
+    * <p>Notes: <ul> <li>Pool names are generally obtained via <a
+    * href="https://docs.oracle.com/en/java/javase/11/docs/api/java.management/java/lang/management/BufferPoolMXBean.html#getName()">BufferPoolMXBean#getName()</a>.</li>
+    * </ul>
+    */
+  val JvmBufferPoolName: AttributeKey[String] = string("jvm.buffer.pool.name")
+
   /** Name of the memory pool.
     *
     * <p>Notes: <ul> <li>Pool names are generally obtained via <a
     * href="https://docs.oracle.com/en/java/javase/11/docs/api/java.management/java/lang/management/MemoryPoolMXBean.html#getName()">MemoryPoolMXBean#getName()</a>.</li>
     * </ul>
     */
-  val Pool: AttributeKey[String] = string("pool")
+  val JvmMemoryPoolName: AttributeKey[String] = string("jvm.memory.pool.name")
 
   /** The type of memory.
     */
-  val Type: AttributeKey[String] = string("type")
+  val JvmMemoryType: AttributeKey[String] = string("jvm.memory.type")
 
-  /** Logical server hostname, matches server FQDN if available, and IP or
-    * socket address if FQDN is not known.
+  /** The device identifier
+    */
+  val SystemDevice: AttributeKey[String] = string("system.device")
+
+  /** The logical CPU number [0..n-1]
+    */
+  val SystemCpuLogicalNumber: AttributeKey[Long] = long(
+    "system.cpu.logical_number"
+  )
+
+  /** The state of the CPU
+    */
+  val SystemCpuState: AttributeKey[String] = string("system.cpu.state")
+
+  /** The memory state
+    */
+  val SystemMemoryState: AttributeKey[String] = string("system.memory.state")
+
+  /** The paging access direction
+    */
+  val SystemPagingDirection: AttributeKey[String] = string(
+    "system.paging.direction"
+  )
+
+  /** The memory paging state
+    */
+  val SystemPagingState: AttributeKey[String] = string("system.paging.state")
+
+  /** The memory paging type
+    */
+  val SystemPagingType: AttributeKey[String] = string("system.paging.type")
+
+  /** The disk operation direction
+    */
+  val SystemDiskDirection: AttributeKey[String] = string(
+    "system.disk.direction"
+  )
+
+  /** The filesystem mode
+    */
+  val SystemFilesystemMode: AttributeKey[String] = string(
+    "system.filesystem.mode"
+  )
+
+  /** The filesystem mount path
+    */
+  val SystemFilesystemMountpoint: AttributeKey[String] = string(
+    "system.filesystem.mountpoint"
+  )
+
+  /** The filesystem state
+    */
+  val SystemFilesystemState: AttributeKey[String] = string(
+    "system.filesystem.state"
+  )
+
+  /** The filesystem type
+    */
+  val SystemFilesystemType: AttributeKey[String] = string(
+    "system.filesystem.type"
+  )
+
+  /** */
+  val SystemNetworkDirection: AttributeKey[String] = string(
+    "system.network.direction"
+  )
+
+  /** A stateless protocol MUST NOT set this attribute
+    */
+  val SystemNetworkState: AttributeKey[String] = string("system.network.state")
+
+  /** The process state, e.g., <a
+    * href="https://man7.org/linux/man-pages/man1/ps.1.html#PROCESS_STATE_CODES">Linux
+    * Process State Codes</a>
+    */
+  val SystemProcessesStatus: AttributeKey[String] = string(
+    "system.processes.status"
+  )
+
+  /** Local address of the network connection - IP address or Unix domain socket
+    * name.
+    */
+  val NetworkLocalAddress: AttributeKey[String] = string(
+    "network.local.address"
+  )
+
+  /** Local port number of the network connection.
+    */
+  val NetworkLocalPort: AttributeKey[Long] = long("network.local.port")
+
+  /** Peer address of the network connection - IP address or Unix domain socket
+    * name.
+    */
+  val NetworkPeerAddress: AttributeKey[String] = string("network.peer.address")
+
+  /** Peer port number of the network connection.
+    */
+  val NetworkPeerPort: AttributeKey[Long] = long("network.peer.port")
+
+  /** <a href="https://osi-model.com/application-layer/">OSI application
+    * layer</a> or non-OSI equivalent.
+    *
+    * <p>Notes: <ul> <li>The value SHOULD be normalized to lowercase.</li> </ul>
+    */
+  val NetworkProtocolName: AttributeKey[String] = string(
+    "network.protocol.name"
+  )
+
+  /** Version of the protocol specified in `network.protocol.name`.
+    *
+    * <p>Notes: <ul> <li>`network.protocol.version` refers to the version of the
+    * protocol used and might be different from the protocol client's version.
+    * If the HTTP client used has a version of `0.27.2`, but sends HTTP version
+    * `1.1`, this attribute should be set to `1.1`.</li> </ul>
+    */
+  val NetworkProtocolVersion: AttributeKey[String] = string(
+    "network.protocol.version"
+  )
+
+  /** <a href="https://osi-model.com/transport-layer/">OSI transport layer</a>
+    * or <a
+    * href="https://en.wikipedia.org/wiki/Inter-process_communication">inter-process
+    * communication method</a>.
+    *
+    * <p>Notes: <ul> <li>The value SHOULD be normalized to
+    * lowercase.</li><li>Consider always setting the transport when setting a
+    * port number, since a port number is ambiguous without knowing the
+    * transport, for example different processes could be listening on TCP port
+    * 12345 and UDP port 12345.</li> </ul>
+    */
+  val NetworkTransport: AttributeKey[String] = string("network.transport")
+
+  /** <a href="https://osi-model.com/network-layer/">OSI network layer</a> or
+    * non-OSI equivalent.
+    *
+    * <p>Notes: <ul> <li>The value SHOULD be normalized to lowercase.</li> </ul>
+    */
+  val NetworkType: AttributeKey[String] = string("network.type")
+
+  /** The ISO 3166-1 alpha-2 2-character country code associated with the mobile
+    * carrier network.
+    */
+  val NetworkCarrierIcc: AttributeKey[String] = string("network.carrier.icc")
+
+  /** The mobile carrier country code.
+    */
+  val NetworkCarrierMcc: AttributeKey[String] = string("network.carrier.mcc")
+
+  /** The mobile carrier network code.
+    */
+  val NetworkCarrierMnc: AttributeKey[String] = string("network.carrier.mnc")
+
+  /** The name of the mobile carrier.
+    */
+  val NetworkCarrierName: AttributeKey[String] = string("network.carrier.name")
+
+  /** This describes more details regarding the connection.type. It may be the
+    * type of cell technology connection, but it could be used for describing
+    * details about a wifi connection.
+    */
+  val NetworkConnectionSubtype: AttributeKey[String] = string(
+    "network.connection.subtype"
+  )
+
+  /** The internet connection type.
+    */
+  val NetworkConnectionType: AttributeKey[String] = string(
+    "network.connection.type"
+  )
+
+  /** Deprecated, use `http.request.method` instead.
+    */
+  @deprecated("Use `http.request.method` instead", "0.3.0")
+  val HttpMethod: AttributeKey[String] = string("http.method")
+
+  /** Deprecated, use `http.request.body.size` instead.
+    */
+  @deprecated("Use `http.request.body.size` instead", "0.3.0")
+  val HttpRequestContentLength: AttributeKey[Long] = long(
+    "http.request_content_length"
+  )
+
+  /** Deprecated, use `http.response.body.size` instead.
+    */
+  @deprecated("Use `http.response.body.size` instead", "0.3.0")
+  val HttpResponseContentLength: AttributeKey[Long] = long(
+    "http.response_content_length"
+  )
+
+  /** Deprecated, use `url.scheme` instead.
+    */
+  @deprecated("Use `url.scheme` instead", "0.3.0")
+  val HttpScheme: AttributeKey[String] = string("http.scheme")
+
+  /** Deprecated, use `http.response.status_code` instead.
+    */
+  @deprecated("Use `http.response.status_code` instead", "0.3.0")
+  val HttpStatusCode: AttributeKey[Long] = long("http.status_code")
+
+  /** Deprecated, use `url.path` and `url.query` instead.
+    */
+  @deprecated("Use `url.path` and `url.query` instead", "0.3.0")
+  val HttpTarget: AttributeKey[String] = string("http.target")
+
+  /** Deprecated, use `url.full` instead.
+    */
+  @deprecated("Use `url.full` instead", "0.3.0")
+  val HttpUrl: AttributeKey[String] = string("http.url")
+
+  /** The size of the request payload body in bytes. This is the number of bytes
+    * transferred excluding headers and is often, but not always, present as the
+    * <a
+    * href="https://www.rfc-editor.org/rfc/rfc9110.html#field.content-length">Content-Length</a>
+    * header. For requests using transport encoding, this should be the
+    * compressed size.
+    */
+  val HttpRequestBodySize: AttributeKey[Long] = long("http.request.body.size")
+
+  /** HTTP request method.
+    *
+    * <p>Notes: <ul> <li>HTTP request method value SHOULD be &quot;known&quot;
+    * to the instrumentation. By default, this convention defines
+    * &quot;known&quot; methods as the ones listed in <a
+    * href="https://www.rfc-editor.org/rfc/rfc9110.html#name-methods">RFC9110</a>
+    * and the PATCH method defined in <a
+    * href="https://www.rfc-editor.org/rfc/rfc5789.html">RFC5789</a>.</li><li>If
+    * the HTTP request method is not known to instrumentation, it MUST set the
+    * `http.request.method` attribute to `_OTHER`.</li><li>If the HTTP
+    * instrumentation could end up converting valid HTTP request methods to
+    * `_OTHER`, then it MUST provide a way to override the list of known HTTP
+    * methods. If this override is done via environment variable, then the
+    * environment variable MUST be named OTEL_INSTRUMENTATION_HTTP_KNOWN_METHODS
+    * and support a comma-separated list of case-sensitive known HTTP methods
+    * (this list MUST be a full override of the default known method, it is not
+    * a list of known methods in addition to the defaults).</li><li>HTTP method
+    * names are case-sensitive and `http.request.method` attribute value MUST
+    * match a known HTTP method name exactly. Instrumentations for specific web
+    * frameworks that consider HTTP methods to be case insensitive, SHOULD
+    * populate a canonical equivalent. Tracing instrumentations that do so, MUST
+    * also set `http.request.method_original` to the original value.</li> </ul>
+    */
+  val HttpRequestMethod: AttributeKey[String] = string("http.request.method")
+
+  /** Original HTTP method sent by the client in the request line.
+    */
+  val HttpRequestMethodOriginal: AttributeKey[String] = string(
+    "http.request.method_original"
+  )
+
+  /** The ordinal number of request resending attempt (for any reason, including
+    * redirects).
+    *
+    * <p>Notes: <ul> <li>The resend count SHOULD be updated each time an HTTP
+    * request gets resent by the client, regardless of what was the cause of the
+    * resending (e.g. redirection, authorization failure, 503 Server
+    * Unavailable, network issues, or any other).</li> </ul>
+    */
+  val HttpResendCount: AttributeKey[Long] = long("http.resend_count")
+
+  /** The size of the response payload body in bytes. This is the number of
+    * bytes transferred excluding headers and is often, but not always, present
+    * as the <a
+    * href="https://www.rfc-editor.org/rfc/rfc9110.html#field.content-length">Content-Length</a>
+    * header. For requests using transport encoding, this should be the
+    * compressed size.
+    */
+  val HttpResponseBodySize: AttributeKey[Long] = long("http.response.body.size")
+
+  /** <a href="https://tools.ietf.org/html/rfc7231#section-6">HTTP response
+    * status code</a>.
+    */
+  val HttpResponseStatusCode: AttributeKey[Long] = long(
+    "http.response.status_code"
+  )
+
+  /** The matched route (path template in the format used by the respective
+    * server framework). See note below
+    *
+    * <p>Notes: <ul> <li>MUST NOT be populated when this is not supported by the
+    * HTTP server framework as the route attribute should have low-cardinality
+    * and the URI path can NOT substitute it. SHOULD include the <a
+    * href="/docs/http/http-spans.md#http-server-definitions">application
+    * root</a> if there is one.</li> </ul>
+    */
+  val HttpRoute: AttributeKey[String] = string("http.route")
+
+  /** Server address - domain name if available without reverse DNS lookup,
+    * otherwise IP address or Unix domain socket name.
+    *
+    * <p>Notes: <ul> <li>When observed from the client side, and when
+    * communicating through an intermediary, `server.address` SHOULD represent
+    * the server address behind any intermediaries (e.g. proxies) if it's
+    * available.</li> </ul>
     */
   val ServerAddress: AttributeKey[String] = string("server.address")
 
-  /** Logical server port number
+  /** Server port number.
+    *
+    * <p>Notes: <ul> <li>When observed from the client side, and when
+    * communicating through an intermediary, `server.port` SHOULD represent the
+    * server port behind any intermediaries (e.g. proxies) if it's
+    * available.</li> </ul>
     */
   val ServerPort: AttributeKey[Long] = long("server.port")
 
-  /** Physical server IP address or Unix socket address. If set from the client,
-    * should simply use the socket's peer address, and not attempt to find any
-    * actual server IP (i.e., if set from client, this may represent some proxy
-    * server instead of the logical server).
+  /** A unique id to identify a session.
     */
-  val ServerSocketAddress: AttributeKey[String] = string(
-    "server.socket.address"
-  )
+  val SessionId: AttributeKey[String] = string("session.id")
 
-  /** The domain name of an immediate peer.
+  /** Source address - domain name if available without reverse DNS lookup,
+    * otherwise IP address or Unix domain socket name.
     *
-    * <p>Notes: <ul> <li>Typically observed from the client side, and represents
-    * a proxy or other intermediary domain name.</li> </ul>
-    */
-  val ServerSocketDomain: AttributeKey[String] = string("server.socket.domain")
-
-  /** Physical server port.
-    */
-  val ServerSocketPort: AttributeKey[Long] = long("server.socket.port")
-
-  /** Source address, for example IP address or Unix socket name.
+    * <p>Notes: <ul> <li>When observed from the destination side, and when
+    * communicating through an intermediary, `source.address` SHOULD represent
+    * the source address behind any intermediaries (e.g. proxies) if it's
+    * available.</li> </ul>
     */
   val SourceAddress: AttributeKey[String] = string("source.address")
-
-  /** The domain name of the source system.
-    *
-    * <p>Notes: <ul> <li>This value may be a host name, a fully qualified domain
-    * name, or another host naming format.</li> </ul>
-    */
-  val SourceDomain: AttributeKey[String] = string("source.domain")
 
   /** Source port number
     */
@@ -535,6 +840,19 @@ object SemanticAttributes {
     "db.mongodb.collection"
   )
 
+  /** Represents the identifier of an Elasticsearch cluster.
+    */
+  val DbElasticsearchClusterName: AttributeKey[String] = string(
+    "db.elasticsearch.cluster.name"
+  )
+
+  /** Represents the human-readable identifier of the node/instance to which a
+    * request was routed.
+    */
+  val DbElasticsearchNodeName: AttributeKey[String] = string(
+    "db.elasticsearch.node.name"
+  )
+
   /** The name of the primary table that the operation is acting upon, including
     * the database name (if applicable).
     *
@@ -605,18 +923,6 @@ object SemanticAttributes {
     */
   val FaasInvocationId: AttributeKey[String] = string("faas.invocation_id")
 
-  /** Type of the trigger which caused this function invocation.
-    *
-    * <p>Notes: <ul> <li>For the server/consumer span on the incoming side,
-    * `faas.trigger` MUST be set.</li><li>Clients invoking FaaS instances
-    * usually cannot set `faas.trigger`, since they would typically need to look
-    * in the payload to determine the event type. If clients set it, it should
-    * be the same as the trigger that corresponding incoming would have (i.e.,
-    * this has nothing to do with the underlying transport used to make the API
-    * call to invoke the lambda, which is often HTTP).</li> </ul>
-    */
-  val FaasTrigger: AttributeKey[String] = string("faas.trigger")
-
   /** The name of the source on which the triggering operation was performed.
     * For example, in Cloud Storage or S3 corresponds to the bucket name, and in
     * Cosmos DB to the database name.
@@ -659,29 +965,6 @@ object SemanticAttributes {
     */
   val FaasColdstart: AttributeKey[Boolean] = boolean("faas.coldstart")
 
-  /** The name of the invoked function.
-    *
-    * <p>Notes: <ul> <li>SHOULD be equal to the `faas.name` resource attribute
-    * of the invoked function.</li> </ul>
-    */
-  val FaasInvokedName: AttributeKey[String] = string("faas.invoked_name")
-
-  /** The cloud provider of the invoked function.
-    *
-    * <p>Notes: <ul> <li>SHOULD be equal to the `cloud.provider` resource
-    * attribute of the invoked function.</li> </ul>
-    */
-  val FaasInvokedProvider: AttributeKey[String] = string(
-    "faas.invoked_provider"
-  )
-
-  /** The cloud region of the invoked function.
-    *
-    * <p>Notes: <ul> <li>SHOULD be equal to the `cloud.region` resource
-    * attribute of the invoked function.</li> </ul>
-    */
-  val FaasInvokedRegion: AttributeKey[String] = string("faas.invoked_region")
-
   /** The unique identifier of the feature flag.
     */
   val FeatureFlagKey: AttributeKey[String] = string("feature_flag.key")
@@ -705,163 +988,6 @@ object SemanticAttributes {
     * </ul>
     */
   val FeatureFlagVariant: AttributeKey[String] = string("feature_flag.variant")
-
-  /** <a href="https://osi-model.com/application-layer/">OSI Application
-    * Layer</a> or non-OSI equivalent. The value SHOULD be normalized to
-    * lowercase.
-    */
-  val NetworkProtocolName: AttributeKey[String] = string(
-    "network.protocol.name"
-  )
-
-  /** Version of the application layer protocol used. See note below.
-    *
-    * <p>Notes: <ul> <li>`network.protocol.version` refers to the version of the
-    * protocol used and might be different from the protocol client's version.
-    * If the HTTP client used has a version of `0.27.2`, but sends HTTP version
-    * `1.1`, this attribute should be set to `1.1`.</li> </ul>
-    */
-  val NetworkProtocolVersion: AttributeKey[String] = string(
-    "network.protocol.version"
-  )
-
-  /** <a href="https://osi-model.com/transport-layer/">OSI Transport Layer</a>
-    * or <a
-    * href="https://en.wikipedia.org/wiki/Inter-process_communication">Inter-process
-    * Communication method</a>. The value SHOULD be normalized to lowercase.
-    */
-  val NetworkTransport: AttributeKey[String] = string("network.transport")
-
-  /** <a href="https://osi-model.com/network-layer/">OSI Network Layer</a> or
-    * non-OSI equivalent. The value SHOULD be normalized to lowercase.
-    */
-  val NetworkType: AttributeKey[String] = string("network.type")
-
-  /** The ISO 3166-1 alpha-2 2-character country code associated with the mobile
-    * carrier network.
-    */
-  val NetworkCarrierIcc: AttributeKey[String] = string("network.carrier.icc")
-
-  /** The mobile carrier country code.
-    */
-  val NetworkCarrierMcc: AttributeKey[String] = string("network.carrier.mcc")
-
-  /** The mobile carrier network code.
-    */
-  val NetworkCarrierMnc: AttributeKey[String] = string("network.carrier.mnc")
-
-  /** The name of the mobile carrier.
-    */
-  val NetworkCarrierName: AttributeKey[String] = string("network.carrier.name")
-
-  /** This describes more details regarding the connection.type. It may be the
-    * type of cell technology connection, but it could be used for describing
-    * details about a wifi connection.
-    */
-  val NetworkConnectionSubtype: AttributeKey[String] = string(
-    "network.connection.subtype"
-  )
-
-  /** The internet connection type.
-    */
-  val NetworkConnectionType: AttributeKey[String] = string(
-    "network.connection.type"
-  )
-
-  /** The <a href="/docs/resource/README.md#service">`service.name`</a> of the
-    * remote service. SHOULD be equal to the actual `service.name` resource
-    * attribute of the remote service if any.
-    */
-  val PeerService: AttributeKey[String] = string("peer.service")
-
-  /** Username or client_id extracted from the access token or <a
-    * href="https://tools.ietf.org/html/rfc7235#section-4.2">Authorization</a>
-    * header in the inbound request from outside the system.
-    */
-  val EnduserId: AttributeKey[String] = string("enduser.id")
-
-  /** Actual/assumed role the client is making the request under extracted from
-    * token or application security context.
-    */
-  val EnduserRole: AttributeKey[String] = string("enduser.role")
-
-  /** Scopes or granted authorities the client currently possesses extracted
-    * from token or application security context. The value would come from the
-    * scope associated with an <a
-    * href="https://tools.ietf.org/html/rfc6749#section-3.3">OAuth 2.0 Access
-    * Token</a> or an attribute value in a <a
-    * href="http://docs.oasis-open.org/security/saml/Post2.0/sstc-saml-tech-overview-2.0.html">SAML
-    * 2.0 Assertion</a>.
-    */
-  val EnduserScope: AttributeKey[String] = string("enduser.scope")
-
-  /** Current &quot;managed&quot; thread ID (as opposed to OS thread ID).
-    */
-  val ThreadId: AttributeKey[Long] = long("thread.id")
-
-  /** Current thread name.
-    */
-  val ThreadName: AttributeKey[String] = string("thread.name")
-
-  /** The column number in `code.filepath` best representing the operation. It
-    * SHOULD point within the code unit named in `code.function`.
-    */
-  val CodeColumn: AttributeKey[Long] = long("code.column")
-
-  /** The source code file name that identifies the code unit as uniquely as
-    * possible (preferably an absolute file path).
-    */
-  val CodeFilepath: AttributeKey[String] = string("code.filepath")
-
-  /** The method or function name, or equivalent (usually rightmost part of the
-    * code unit's name).
-    */
-  val CodeFunction: AttributeKey[String] = string("code.function")
-
-  /** The line number in `code.filepath` best representing the operation. It
-    * SHOULD point within the code unit named in `code.function`.
-    */
-  val CodeLineno: AttributeKey[Long] = long("code.lineno")
-
-  /** The &quot;namespace&quot; within which `code.function` is defined. Usually
-    * the qualified class or module name, such that `code.namespace` + some
-    * separator + `code.function` form a unique identifier for the code unit.
-    */
-  val CodeNamespace: AttributeKey[String] = string("code.namespace")
-
-  /** The size of the request payload body in bytes. This is the number of bytes
-    * transferred excluding headers and is often, but not always, present as the
-    * <a
-    * href="https://www.rfc-editor.org/rfc/rfc9110.html#field.content-length">Content-Length</a>
-    * header. For requests using transport encoding, this should be the
-    * compressed size.
-    */
-  val HttpRequestBodySize: AttributeKey[Long] = long("http.request.body.size")
-
-  /** Original HTTP method sent by the client in the request line.
-    */
-  val HttpRequestMethodOriginal: AttributeKey[String] = string(
-    "http.request.method_original"
-  )
-
-  /** The size of the response payload body in bytes. This is the number of
-    * bytes transferred excluding headers and is often, but not always, present
-    * as the <a
-    * href="https://www.rfc-editor.org/rfc/rfc9110.html#field.content-length">Content-Length</a>
-    * header. For requests using transport encoding, this should be the
-    * compressed size.
-    */
-  val HttpResponseBodySize: AttributeKey[Long] = long("http.response.body.size")
-
-  /** The ordinal number of request resending attempt (for any reason, including
-    * redirects).
-    *
-    * <p>Notes: <ul> <li>The resend count SHOULD be updated each time an HTTP
-    * request gets resent by the client, regardless of what was the cause of the
-    * resending (e.g. redirection, authorization failure, 503 Server
-    * Unavailable, network issues, or any other).</li> </ul>
-    */
-  val HttpResendCount: AttributeKey[Long] = long("http.resend_count")
 
   /** The AWS request ID as returned in the response headers `x-amz-request-id`
     * or `x-amz-requestid`.
@@ -1126,6 +1252,16 @@ object SemanticAttributes {
     "graphql.operation.type"
   )
 
+  /** The size of the message body in bytes.
+    *
+    * <p>Notes: <ul> <li>This can refer to both the compressed or uncompressed
+    * body size. If both sizes are known, the uncompressed body size should be
+    * used.</li> </ul>
+    */
+  val MessagingMessageBodySize: AttributeKey[Long] = long(
+    "messaging.message.body.size"
+  )
+
   /** The <a href="#conversations">conversation ID</a> identifying the
     * conversation to which the message belongs, represented as a string.
     * Sometimes called &quot;Correlation ID&quot;.
@@ -1134,24 +1270,20 @@ object SemanticAttributes {
     "messaging.message.conversation_id"
   )
 
+  /** The size of the message body and metadata in bytes.
+    *
+    * <p>Notes: <ul> <li>This can refer to both the compressed or uncompressed
+    * size. If both sizes are known, the uncompressed size should be used.</li>
+    * </ul>
+    */
+  val MessagingMessageEnvelopeSize: AttributeKey[Long] = long(
+    "messaging.message.envelope.size"
+  )
+
   /** A value used by the messaging system as an identifier for the message,
     * represented as a string.
     */
   val MessagingMessageId: AttributeKey[String] = string("messaging.message.id")
-
-  /** The compressed size of the message payload in bytes.
-    */
-  val MessagingMessagePayloadCompressedSizeBytes: AttributeKey[Long] = long(
-    "messaging.message.payload_compressed_size_bytes"
-  )
-
-  /** The (uncompressed) size of the message payload in bytes. Also use this
-    * attribute if it is unknown whether the compressed or uncompressed payload
-    * size is reported.
-    */
-  val MessagingMessagePayloadSizeBytes: AttributeKey[Long] = long(
-    "messaging.message.payload_size_bytes"
-  )
 
   /** A boolean that is true if the message destination is anonymous (could be
     * unnamed or have auto-generated name).
@@ -1188,6 +1320,24 @@ object SemanticAttributes {
     */
   val MessagingDestinationTemporary: AttributeKey[Boolean] = boolean(
     "messaging.destination.temporary"
+  )
+
+  /** A boolean that is true if the publish message destination is anonymous
+    * (could be unnamed or have auto-generated name).
+    */
+  val MessagingDestinationPublishAnonymous: AttributeKey[Boolean] = boolean(
+    "messaging.destination_publish.anonymous"
+  )
+
+  /** The name of the original destination the message was published to
+    *
+    * <p>Notes: <ul> <li>The name SHOULD uniquely identify a specific queue,
+    * topic, or other entity within the broker. If the broker does not have such
+    * notion, the original destination name SHOULD uniquely identify the
+    * broker.</li> </ul>
+    */
+  val MessagingDestinationPublishName: AttributeKey[String] = string(
+    "messaging.destination_publish.name"
   )
 
   /** The number of messages sent, received, or processed in the scope of the
@@ -1526,6 +1676,423 @@ object SemanticAttributes {
 
   }
 
+  abstract class ErrorTypeValue(val value: String)
+  object ErrorTypeValue {
+
+    /** A fallback error value to be used when the instrumentation does not
+      * define a custom value for it.
+      */
+    case object Other extends ErrorTypeValue("_OTHER")
+
+  }
+
+  abstract class FaasInvokedProviderValue(val value: String)
+  object FaasInvokedProviderValue {
+
+    /** Alibaba Cloud. */
+    case object AlibabaCloud extends FaasInvokedProviderValue("alibaba_cloud")
+
+    /** Amazon Web Services. */
+    case object Aws extends FaasInvokedProviderValue("aws")
+
+    /** Microsoft Azure. */
+    case object Azure extends FaasInvokedProviderValue("azure")
+
+    /** Google Cloud Platform. */
+    case object Gcp extends FaasInvokedProviderValue("gcp")
+
+    /** Tencent Cloud. */
+    case object TencentCloud extends FaasInvokedProviderValue("tencent_cloud")
+
+  }
+
+  abstract class FaasTriggerValue(val value: String)
+  object FaasTriggerValue {
+
+    /** A response to some data source operation such as a database or
+      * filesystem read/write.
+      */
+    case object Datasource extends FaasTriggerValue("datasource")
+
+    /** To provide an answer to an inbound HTTP request. */
+    case object Http extends FaasTriggerValue("http")
+
+    /** A function is set to be executed when messages are sent to a messaging
+      * system.
+      */
+    case object Pubsub extends FaasTriggerValue("pubsub")
+
+    /** A function is scheduled to be executed regularly. */
+    case object Timer extends FaasTriggerValue("timer")
+
+    /** If none of the others apply. */
+    case object Other extends FaasTriggerValue("other")
+
+  }
+
+  abstract class EventDomainValue(val value: String)
+  object EventDomainValue {
+
+    /** Events from browser apps. */
+    case object Browser extends EventDomainValue("browser")
+
+    /** Events from mobile apps. */
+    case object Device extends EventDomainValue("device")
+
+    /** Events from Kubernetes. */
+    case object K8s extends EventDomainValue("k8s")
+
+  }
+
+  abstract class LogIostreamValue(val value: String)
+  object LogIostreamValue {
+
+    /** Logs from stdout stream. */
+    case object Stdout extends LogIostreamValue("stdout")
+
+    /** Events from stderr stream. */
+    case object Stderr extends LogIostreamValue("stderr")
+
+  }
+
+  abstract class StateValue(val value: String)
+  object StateValue {
+
+    /** idle. */
+    case object Idle extends StateValue("idle")
+
+    /** used. */
+    case object Used extends StateValue("used")
+
+  }
+
+  abstract class JvmMemoryTypeValue(val value: String)
+  object JvmMemoryTypeValue {
+
+    /** Heap memory. */
+    case object Heap extends JvmMemoryTypeValue("heap")
+
+    /** Non-heap memory. */
+    case object NonHeap extends JvmMemoryTypeValue("non_heap")
+
+  }
+
+  abstract class SystemCpuStateValue(val value: String)
+  object SystemCpuStateValue {
+
+    /** user. */
+    case object User extends SystemCpuStateValue("user")
+
+    /** system. */
+    case object System extends SystemCpuStateValue("system")
+
+    /** nice. */
+    case object Nice extends SystemCpuStateValue("nice")
+
+    /** idle. */
+    case object Idle extends SystemCpuStateValue("idle")
+
+    /** iowait. */
+    case object Iowait extends SystemCpuStateValue("iowait")
+
+    /** interrupt. */
+    case object Interrupt extends SystemCpuStateValue("interrupt")
+
+    /** steal. */
+    case object Steal extends SystemCpuStateValue("steal")
+
+  }
+
+  abstract class SystemMemoryStateValue(val value: String)
+  object SystemMemoryStateValue {
+
+    /** total. */
+    case object Total extends SystemMemoryStateValue("total")
+
+    /** used. */
+    case object Used extends SystemMemoryStateValue("used")
+
+    /** free. */
+    case object Free extends SystemMemoryStateValue("free")
+
+    /** shared. */
+    case object Shared extends SystemMemoryStateValue("shared")
+
+    /** buffers. */
+    case object Buffers extends SystemMemoryStateValue("buffers")
+
+    /** cached. */
+    case object Cached extends SystemMemoryStateValue("cached")
+
+  }
+
+  abstract class SystemPagingDirectionValue(val value: String)
+  object SystemPagingDirectionValue {
+
+    /** in. */
+    case object In extends SystemPagingDirectionValue("in")
+
+    /** out. */
+    case object Out extends SystemPagingDirectionValue("out")
+
+  }
+
+  abstract class SystemPagingStateValue(val value: String)
+  object SystemPagingStateValue {
+
+    /** used. */
+    case object Used extends SystemPagingStateValue("used")
+
+    /** free. */
+    case object Free extends SystemPagingStateValue("free")
+
+  }
+
+  abstract class SystemPagingTypeValue(val value: String)
+  object SystemPagingTypeValue {
+
+    /** major. */
+    case object Major extends SystemPagingTypeValue("major")
+
+    /** minor. */
+    case object Minor extends SystemPagingTypeValue("minor")
+
+  }
+
+  abstract class SystemDiskDirectionValue(val value: String)
+  object SystemDiskDirectionValue {
+
+    /** read. */
+    case object Read extends SystemDiskDirectionValue("read")
+
+    /** write. */
+    case object Write extends SystemDiskDirectionValue("write")
+
+  }
+
+  abstract class SystemFilesystemStateValue(val value: String)
+  object SystemFilesystemStateValue {
+
+    /** used. */
+    case object Used extends SystemFilesystemStateValue("used")
+
+    /** free. */
+    case object Free extends SystemFilesystemStateValue("free")
+
+    /** reserved. */
+    case object Reserved extends SystemFilesystemStateValue("reserved")
+
+  }
+
+  abstract class SystemFilesystemTypeValue(val value: String)
+  object SystemFilesystemTypeValue {
+
+    /** fat32. */
+    case object Fat32 extends SystemFilesystemTypeValue("fat32")
+
+    /** exfat. */
+    case object Exfat extends SystemFilesystemTypeValue("exfat")
+
+    /** ntfs. */
+    case object Ntfs extends SystemFilesystemTypeValue("ntfs")
+
+    /** refs. */
+    case object Refs extends SystemFilesystemTypeValue("refs")
+
+    /** hfsplus. */
+    case object Hfsplus extends SystemFilesystemTypeValue("hfsplus")
+
+    /** ext4. */
+    case object Ext4 extends SystemFilesystemTypeValue("ext4")
+
+  }
+
+  abstract class SystemNetworkDirectionValue(val value: String)
+  object SystemNetworkDirectionValue {
+
+    /** transmit. */
+    case object Transmit extends SystemNetworkDirectionValue("transmit")
+
+    /** receive. */
+    case object Receive extends SystemNetworkDirectionValue("receive")
+
+  }
+
+  abstract class SystemNetworkStateValue(val value: String)
+  object SystemNetworkStateValue {
+
+    /** close. */
+    case object Close extends SystemNetworkStateValue("close")
+
+    /** close_wait. */
+    case object CloseWait extends SystemNetworkStateValue("close_wait")
+
+    /** closing. */
+    case object Closing extends SystemNetworkStateValue("closing")
+
+    /** delete. */
+    case object Delete extends SystemNetworkStateValue("delete")
+
+    /** established. */
+    case object Established extends SystemNetworkStateValue("established")
+
+    /** fin_wait_1. */
+    case object FinWait1 extends SystemNetworkStateValue("fin_wait_1")
+
+    /** fin_wait_2. */
+    case object FinWait2 extends SystemNetworkStateValue("fin_wait_2")
+
+    /** last_ack. */
+    case object LastAck extends SystemNetworkStateValue("last_ack")
+
+    /** listen. */
+    case object Listen extends SystemNetworkStateValue("listen")
+
+    /** syn_recv. */
+    case object SynRecv extends SystemNetworkStateValue("syn_recv")
+
+    /** syn_sent. */
+    case object SynSent extends SystemNetworkStateValue("syn_sent")
+
+    /** time_wait. */
+    case object TimeWait extends SystemNetworkStateValue("time_wait")
+
+  }
+
+  abstract class SystemProcessesStatusValue(val value: String)
+  object SystemProcessesStatusValue {
+
+    /** running. */
+    case object Running extends SystemProcessesStatusValue("running")
+
+    /** sleeping. */
+    case object Sleeping extends SystemProcessesStatusValue("sleeping")
+
+    /** stopped. */
+    case object Stopped extends SystemProcessesStatusValue("stopped")
+
+    /** defunct. */
+    case object Defunct extends SystemProcessesStatusValue("defunct")
+
+  }
+
+  abstract class NetworkTransportValue(val value: String)
+  object NetworkTransportValue {
+
+    /** TCP. */
+    case object Tcp extends NetworkTransportValue("tcp")
+
+    /** UDP. */
+    case object Udp extends NetworkTransportValue("udp")
+
+    /** Named or anonymous pipe. See note below. */
+    case object Pipe extends NetworkTransportValue("pipe")
+
+    /** Unix domain socket. */
+    case object Unix extends NetworkTransportValue("unix")
+
+  }
+
+  abstract class NetworkTypeValue(val value: String)
+  object NetworkTypeValue {
+
+    /** IPv4. */
+    case object Ipv4 extends NetworkTypeValue("ipv4")
+
+    /** IPv6. */
+    case object Ipv6 extends NetworkTypeValue("ipv6")
+
+  }
+
+  abstract class NetworkConnectionSubtypeValue(val value: String)
+  object NetworkConnectionSubtypeValue {
+
+    /** GPRS. */
+    case object Gprs extends NetworkConnectionSubtypeValue("gprs")
+
+    /** EDGE. */
+    case object Edge extends NetworkConnectionSubtypeValue("edge")
+
+    /** UMTS. */
+    case object Umts extends NetworkConnectionSubtypeValue("umts")
+
+    /** CDMA. */
+    case object Cdma extends NetworkConnectionSubtypeValue("cdma")
+
+    /** EVDO Rel. 0. */
+    case object Evdo0 extends NetworkConnectionSubtypeValue("evdo_0")
+
+    /** EVDO Rev. A. */
+    case object EvdoA extends NetworkConnectionSubtypeValue("evdo_a")
+
+    /** CDMA2000 1XRTT. */
+    case object Cdma20001xrtt
+        extends NetworkConnectionSubtypeValue("cdma2000_1xrtt")
+
+    /** HSDPA. */
+    case object Hsdpa extends NetworkConnectionSubtypeValue("hsdpa")
+
+    /** HSUPA. */
+    case object Hsupa extends NetworkConnectionSubtypeValue("hsupa")
+
+    /** HSPA. */
+    case object Hspa extends NetworkConnectionSubtypeValue("hspa")
+
+    /** IDEN. */
+    case object Iden extends NetworkConnectionSubtypeValue("iden")
+
+    /** EVDO Rev. B. */
+    case object EvdoB extends NetworkConnectionSubtypeValue("evdo_b")
+
+    /** LTE. */
+    case object Lte extends NetworkConnectionSubtypeValue("lte")
+
+    /** EHRPD. */
+    case object Ehrpd extends NetworkConnectionSubtypeValue("ehrpd")
+
+    /** HSPAP. */
+    case object Hspap extends NetworkConnectionSubtypeValue("hspap")
+
+    /** GSM. */
+    case object Gsm extends NetworkConnectionSubtypeValue("gsm")
+
+    /** TD-SCDMA. */
+    case object TdScdma extends NetworkConnectionSubtypeValue("td_scdma")
+
+    /** IWLAN. */
+    case object Iwlan extends NetworkConnectionSubtypeValue("iwlan")
+
+    /** 5G NR (New Radio). */
+    case object Nr extends NetworkConnectionSubtypeValue("nr")
+
+    /** 5G NRNSA (New Radio Non-Standalone). */
+    case object Nrnsa extends NetworkConnectionSubtypeValue("nrnsa")
+
+    /** LTE CA. */
+    case object LteCa extends NetworkConnectionSubtypeValue("lte_ca")
+
+  }
+
+  abstract class NetworkConnectionTypeValue(val value: String)
+  object NetworkConnectionTypeValue {
+
+    /** wifi. */
+    case object Wifi extends NetworkConnectionTypeValue("wifi")
+
+    /** wired. */
+    case object Wired extends NetworkConnectionTypeValue("wired")
+
+    /** cell. */
+    case object Cell extends NetworkConnectionTypeValue("cell")
+
+    /** unavailable. */
+    case object Unavailable extends NetworkConnectionTypeValue("unavailable")
+
+    /** unknown. */
+    case object Unknown extends NetworkConnectionTypeValue("unknown")
+
+  }
+
   abstract class HttpRequestMethodValue(val value: String)
   object HttpRequestMethodValue {
 
@@ -1558,42 +2125,6 @@ object SemanticAttributes {
 
     /** Any HTTP method that the instrumentation has no prior knowledge of. */
     case object Other extends HttpRequestMethodValue("_OTHER")
-
-  }
-
-  abstract class EventDomainValue(val value: String)
-  object EventDomainValue {
-
-    /** Events from browser apps. */
-    case object Browser extends EventDomainValue("browser")
-
-    /** Events from mobile apps. */
-    case object Device extends EventDomainValue("device")
-
-    /** Events from Kubernetes. */
-    case object K8s extends EventDomainValue("k8s")
-
-  }
-
-  abstract class LogIostreamValue(val value: String)
-  object LogIostreamValue {
-
-    /** Logs from stdout stream. */
-    case object Stdout extends LogIostreamValue("stdout")
-
-    /** Events from stderr stream. */
-    case object Stderr extends LogIostreamValue("stderr")
-
-  }
-
-  abstract class TypeValue(val value: String)
-  object TypeValue {
-
-    /** Heap memory. */
-    case object Heap extends TypeValue("heap")
-
-    /** Non-heap memory. */
-    case object NonHeap extends TypeValue("non_heap")
 
   }
 
@@ -1887,30 +2418,6 @@ object SemanticAttributes {
 
   }
 
-  abstract class FaasTriggerValue(val value: String)
-  object FaasTriggerValue {
-
-    /** A response to some data source operation such as a database or
-      * filesystem read/write.
-      */
-    case object Datasource extends FaasTriggerValue("datasource")
-
-    /** To provide an answer to an inbound HTTP request. */
-    case object Http extends FaasTriggerValue("http")
-
-    /** A function is set to be executed when messages are sent to a messaging
-      * system.
-      */
-    case object Pubsub extends FaasTriggerValue("pubsub")
-
-    /** A function is scheduled to be executed regularly. */
-    case object Timer extends FaasTriggerValue("timer")
-
-    /** If none of the others apply. */
-    case object Other extends FaasTriggerValue("other")
-
-  }
-
   abstract class FaasDocumentOperationValue(val value: String)
   object FaasDocumentOperationValue {
 
@@ -1922,143 +2429,6 @@ object SemanticAttributes {
 
     /** When an object is deleted. */
     case object Delete extends FaasDocumentOperationValue("delete")
-
-  }
-
-  abstract class FaasInvokedProviderValue(val value: String)
-  object FaasInvokedProviderValue {
-
-    /** Alibaba Cloud. */
-    case object AlibabaCloud extends FaasInvokedProviderValue("alibaba_cloud")
-
-    /** Amazon Web Services. */
-    case object Aws extends FaasInvokedProviderValue("aws")
-
-    /** Microsoft Azure. */
-    case object Azure extends FaasInvokedProviderValue("azure")
-
-    /** Google Cloud Platform. */
-    case object Gcp extends FaasInvokedProviderValue("gcp")
-
-    /** Tencent Cloud. */
-    case object TencentCloud extends FaasInvokedProviderValue("tencent_cloud")
-
-  }
-
-  abstract class NetworkTransportValue(val value: String)
-  object NetworkTransportValue {
-
-    /** TCP. */
-    case object Tcp extends NetworkTransportValue("tcp")
-
-    /** UDP. */
-    case object Udp extends NetworkTransportValue("udp")
-
-    /** Named or anonymous pipe. See note below. */
-    case object Pipe extends NetworkTransportValue("pipe")
-
-    /** Unix domain socket. */
-    case object Unix extends NetworkTransportValue("unix")
-
-  }
-
-  abstract class NetworkTypeValue(val value: String)
-  object NetworkTypeValue {
-
-    /** IPv4. */
-    case object Ipv4 extends NetworkTypeValue("ipv4")
-
-    /** IPv6. */
-    case object Ipv6 extends NetworkTypeValue("ipv6")
-
-  }
-
-  abstract class NetworkConnectionSubtypeValue(val value: String)
-  object NetworkConnectionSubtypeValue {
-
-    /** GPRS. */
-    case object Gprs extends NetworkConnectionSubtypeValue("gprs")
-
-    /** EDGE. */
-    case object Edge extends NetworkConnectionSubtypeValue("edge")
-
-    /** UMTS. */
-    case object Umts extends NetworkConnectionSubtypeValue("umts")
-
-    /** CDMA. */
-    case object Cdma extends NetworkConnectionSubtypeValue("cdma")
-
-    /** EVDO Rel. 0. */
-    case object Evdo0 extends NetworkConnectionSubtypeValue("evdo_0")
-
-    /** EVDO Rev. A. */
-    case object EvdoA extends NetworkConnectionSubtypeValue("evdo_a")
-
-    /** CDMA2000 1XRTT. */
-    case object Cdma20001xrtt
-        extends NetworkConnectionSubtypeValue("cdma2000_1xrtt")
-
-    /** HSDPA. */
-    case object Hsdpa extends NetworkConnectionSubtypeValue("hsdpa")
-
-    /** HSUPA. */
-    case object Hsupa extends NetworkConnectionSubtypeValue("hsupa")
-
-    /** HSPA. */
-    case object Hspa extends NetworkConnectionSubtypeValue("hspa")
-
-    /** IDEN. */
-    case object Iden extends NetworkConnectionSubtypeValue("iden")
-
-    /** EVDO Rev. B. */
-    case object EvdoB extends NetworkConnectionSubtypeValue("evdo_b")
-
-    /** LTE. */
-    case object Lte extends NetworkConnectionSubtypeValue("lte")
-
-    /** EHRPD. */
-    case object Ehrpd extends NetworkConnectionSubtypeValue("ehrpd")
-
-    /** HSPAP. */
-    case object Hspap extends NetworkConnectionSubtypeValue("hspap")
-
-    /** GSM. */
-    case object Gsm extends NetworkConnectionSubtypeValue("gsm")
-
-    /** TD-SCDMA. */
-    case object TdScdma extends NetworkConnectionSubtypeValue("td_scdma")
-
-    /** IWLAN. */
-    case object Iwlan extends NetworkConnectionSubtypeValue("iwlan")
-
-    /** 5G NR (New Radio). */
-    case object Nr extends NetworkConnectionSubtypeValue("nr")
-
-    /** 5G NRNSA (New Radio Non-Standalone). */
-    case object Nrnsa extends NetworkConnectionSubtypeValue("nrnsa")
-
-    /** LTE CA. */
-    case object LteCa extends NetworkConnectionSubtypeValue("lte_ca")
-
-  }
-
-  abstract class NetworkConnectionTypeValue(val value: String)
-  object NetworkConnectionTypeValue {
-
-    /** wifi. */
-    case object Wifi extends NetworkConnectionTypeValue("wifi")
-
-    /** wired. */
-    case object Wired extends NetworkConnectionTypeValue("wired")
-
-    /** cell. */
-    case object Cell extends NetworkConnectionTypeValue("cell")
-
-    /** unavailable. */
-    case object Unavailable extends NetworkConnectionTypeValue("unavailable")
-
-    /** unknown. */
-    case object Unknown extends NetworkConnectionTypeValue("unknown")
 
   }
 
@@ -2904,6 +3274,160 @@ object SemanticAttributes {
 
     /** LTE CA. */
     case object LteCa extends NetHostConnectionSubtypeValue("lte_ca")
+  }
+
+  /** Immediate client peer port number.
+    *
+    * @deprecated
+    *   This item has been renamed in 1.22.0 of the semantic conventions. Use
+    *   [[SemanticAttributes.NetworkPeerPort]] on server telemetry and
+    *   [[SemanticAttributes.NetworkLocalPort]] on client telemetry instead.
+    */
+  @deprecated(
+    "Use SemanticAttributes.NetworkPeerPort or SemanticAttributes.NetworkLocalPort instead",
+    "0.4.0"
+  )
+  val ClientSocketPort = long("client.socket.port")
+
+  /** Name of the memory pool.
+    *
+    * <p>Notes:
+    *
+    * <ul> <li>Pool names are generally obtained via <a
+    * href="https://docs.oracle.com/en/java/javase/11/docs/api/java.management/java/lang/management/MemoryPoolMXBean.html#getName()">MemoryPoolMXBean#getName()</a>.
+    * </ul>
+    * @deprecated
+    *   This item has been renamed in 1.22.0 of the semantic conventions. Use
+    *   [[SemanticAttributes.JvmMemoryPoolName]] instead.
+    */
+  @deprecated("Use SemanticAttributes.JvmMemoryPoolName instead", "0.4.0")
+  val Pool = string("pool")
+
+  /** The domain name of the source system.
+    *
+    * <p>Notes:
+    *
+    * <ul> <li>This value may be a host name, a fully qualified domain name, or
+    * another host naming format. </ul>
+    * @deprecated
+    *   This item has been removed in 1.22.0 of the semantic conventions.
+    */
+  @deprecated("There is no replacement", "0.4.0")
+  val SourceDomain = string("source.domain")
+
+  /** Physical server IP address or Unix socket address. If set from the client,
+    * should simply use the socket's peer address, and not attempt to find any
+    * actual server IP (i.e., if set from client, this may represent some proxy
+    * server instead of the logical server).
+    *
+    * @deprecated
+    *   This item has been renamed in 1.22.0 of the semantic conventions. Use
+    *   [[SemanticAttributes.NetworkLocalAddress]] on server telemetry and
+    *   [[SemanticAttributes.NetworkPeerAddress]] on client telemetry instead.
+    */
+  @deprecated(
+    "Use SemanticAttributes.NetworkLocalAddress or SemanticAttributes.NetworkPeerAddress instead",
+    "0.4.0"
+  )
+  val ServerSocketAddress = string("server.socket.address")
+
+  /** The (uncompressed) size of the message payload in bytes. Also use this
+    * attribute if it is unknown whether the compressed or uncompressed payload
+    * size is reported.
+    *
+    * @deprecated
+    *   This item has been renamed in 1.22.0 of the semantic conventions. Use
+    *   [[SemanticAttributes.MessagingMessageBodySize]] instead.
+    */
+  @deprecated(
+    "Use SemanticAttributes.MessagingMessageBodySize instead",
+    "0.4.0"
+  )
+  val MessagingMessagePayloadSizeBytes = long(
+    "messaging.message.payload_size_bytes"
+  )
+
+  /** The domain name of the destination system.
+    *
+    * @deprecated
+    *   This item has been removed in 1.22.0 of the semantic conventions.
+    */
+  @deprecated("There is no replacement", "0.4.0")
+  val DestinationDomain = string("destination.domain")
+
+  /** The compressed size of the message payload in bytes.
+    *
+    * @deprecated
+    *   This item has been removed in 1.22.0 of the semantic conventions.
+    */
+  @deprecated("There is no replacement", "0.4.0")
+  val MessagingMessagePayloadCompressedSizeBytes = long(
+    "messaging.message.payload_compressed_size_bytes"
+  )
+
+  /** The domain name of an immediate peer.
+    *
+    * <p>Notes:
+    *
+    * <ul> <li>Typically observed from the client side, and represents a proxy
+    * or other intermediary domain name. </ul>
+    *
+    * @deprecated
+    *   This item has been removed in 1.22.0 of the semantic conventions.
+    */
+  @deprecated("There is no replacement", "0.4.0")
+  val ServerSocketDomain = string("server.socket.domain")
+
+  /** The type of memory.
+    *
+    * @deprecated
+    *   This item has been renamed in 1.22.0 of the semantic conventions. Use
+    *   [[SemanticAttributes.JvmMemoryType]] instead.
+    */
+  @deprecated("Use SemanticAttributes.JvmMemoryType instead", "0.4.0")
+  val Type = string("type")
+
+  /** Physical server port.
+    *
+    * @deprecated
+    *   This item has been renamed in 1.22.0 of the semantic conventions. Use
+    *   [[SemanticAttributes.NetworkLocalPort]] on server telemetry and
+    *   [[SemanticAttributes.NetworkPeerPort]] on client telemetry instead.
+    */
+  @deprecated(
+    "Use SemanticAttributes.NetworkLocalPort or SemanticAttributes.NetworkPeerPort instead",
+    "0.4.0"
+  )
+  val ServerSocketPort = long("server.socket.port")
+
+  /** Immediate client peer address - unix domain socket name, IPv4 or IPv6
+    * address.
+    *
+    * @deprecated
+    *   This item has been renamed in 1.22.0 of the semantic conventions. Use
+    *   [[SemanticAttributes.NetworkPeerAddress]] on server telemetry and
+    *   [[SemanticAttributes.NetworkLocalAddress]] on client telemetry instead.
+    */
+  @deprecated(
+    "Use SemanticAttributes.NetworkPeerAddress or SemanticAttributes.NetworkLocalAddress instead",
+    "0.4.0"
+  )
+  val ClientSocketAddress = string("client.socket.address")
+
+  /** @deprecated
+    *   This item has been renamed as of 1.21.0 of the semantic conventions. Use
+    *   [[SemanticAttributes.JvmMemoryTypeValue]] instead.
+    */
+  @deprecated("Use SemanticAttributes.JvmMemoryTypeValue instead", "0.4.0")
+  abstract class TypeValue(val value: String)
+  @annotation.nowarn("cat=deprecation")
+  object TypeValue {
+
+    /** Heap memory. */
+    case object Heap extends TypeValue("heap")
+
+    /** Non-heap memory. */
+    case object NonHeap extends TypeValue("non_heap")
   }
 
 }

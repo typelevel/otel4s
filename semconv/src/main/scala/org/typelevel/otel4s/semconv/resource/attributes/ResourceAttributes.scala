@@ -24,7 +24,14 @@ object ResourceAttributes {
 
   /** The URL of the OpenTelemetry schema for these keys and values.
     */
-  final val SchemaUrl = "https://opentelemetry.io/schemas/1.21.0"
+  final val SchemaUrl = "https://opentelemetry.io/schemas/1.22.0"
+
+  /** Uniquely identifies the framework API revision offered by a version
+    * (`os.version`) of the android operating system. More information can be
+    * found <a
+    * href="https://developer.android.com/guide/topics/manifest/uses-sdk-element#ApiLevels">here</a>.
+    */
+  val AndroidOsApiLevel: AttributeKey[String] = string("android.os.api_level")
 
   /** Array of brand name and version separated by a space
     *
@@ -305,7 +312,9 @@ object ResourceAttributes {
     * endpoint. K8s defines a link to the container registry repository with
     * digest `"imageID": "registry.azurecr.io
     * /namespace/service/dockerfile@sha256:bdeabd40c3a8a492eaf9e8e44d0ebbb84bac7ee25ac0cf8a7159d25f62555625"`.
-    * OCI defines a digest of manifest.</li> </ul>
+    * The ID is assinged by the container runtime and can vary in different
+    * environments. Consider using `oci.manifest.digest` if it is important to
+    * identify the same image in different environments/runtimes.</li> </ul>
     */
   val ContainerImageId: AttributeKey[String] = string("container.image.id")
 
@@ -313,9 +322,26 @@ object ResourceAttributes {
     */
   val ContainerImageName: AttributeKey[String] = string("container.image.name")
 
-  /** Container image tag.
+  /** Repo digests of the container image as provided by the container runtime.
+    *
+    * <p>Notes: <ul> <li><a
+    * href="https://docs.docker.com/engine/api/v1.43/#tag/Image/operation/ImageInspect">Docker</a>
+    * and <a
+    * href="https://github.com/kubernetes/cri-api/blob/c75ef5b473bbe2d0a4fc92f82235efd665ea8e9f/pkg/apis/runtime/v1/api.proto#L1237-L1238">CRI</a>
+    * report those under the `RepoDigests` field.</li> </ul>
     */
-  val ContainerImageTag: AttributeKey[String] = string("container.image.tag")
+  val ContainerImageRepoDigests: AttributeKey[List[String]] = stringList(
+    "container.image.repo_digests"
+  )
+
+  /** Container image tags. An example can be found in <a
+    * href="https://docs.docker.com/engine/api/v1.43/#tag/Image/operation/ImageInspect">Docker
+    * Image Inspect</a>. Should be only the `<tag>` section of the full name for
+    * example from `registry.example.com/my-org/my-image:<tag>`.
+    */
+  val ContainerImageTags: AttributeKey[List[String]] = stringList(
+    "container.image.tags"
+  )
 
   /** Container name used by container runtime.
     */
@@ -401,7 +427,7 @@ object ResourceAttributes {
     * <p>Notes: <ul> <li>This is the name of the function as configured/deployed
     * on the FaaS platform and is usually different from the name of the
     * callback function (which may be stored in the <a
-    * href="/docs/general/general-attributes.md#source-code-attributes">`code.namespace`/`code.function`</a>
+    * href="/docs/general/attributes.md#source-code-attributes">`code.namespace`/`code.function`</a>
     * span attributes).</li><li>For some cloud providers, the above definition
     * is ambiguous. The following definition of function name MUST be used for
     * this attribute (and consequently the span name) for the listed cloud
@@ -455,6 +481,15 @@ object ResourceAttributes {
     */
   val HostImageVersion: AttributeKey[String] = string("host.image.version")
 
+  /** Available IP addresses of the host, excluding loopback interfaces.
+    *
+    * <p>Notes: <ul> <li>IPv4 Addresses MUST be specified in dotted-quad
+    * notation. IPv6 addresses MUST be specified in the <a
+    * href="https://www.rfc-editor.org/rfc/rfc5952.html">RFC 5952</a>
+    * format.</li> </ul>
+    */
+  val HostIp: AttributeKey[List[String]] = stringList("host.ip")
+
   /** Name of the host. On Unix systems, it may contain what the hostname
     * command returns, or the fully qualified hostname, or another name
     * specified by the user.
@@ -464,6 +499,36 @@ object ResourceAttributes {
   /** Type of host. For Cloud, this must be the machine type.
     */
   val HostType: AttributeKey[String] = string("host.type")
+
+  /** The amount of level 2 memory cache available to the processor (in Bytes).
+    */
+  val HostCpuCacheL2Size: AttributeKey[Long] = long("host.cpu.cache.l2.size")
+
+  /** Numeric value specifying the family or generation of the CPU.
+    */
+  val HostCpuFamily: AttributeKey[Long] = long("host.cpu.family")
+
+  /** Model identifier. It provides more granular information about the CPU,
+    * distinguishing it from other CPUs within the same family.
+    */
+  val HostCpuModelId: AttributeKey[Long] = long("host.cpu.model.id")
+
+  /** Model designation of the processor.
+    */
+  val HostCpuModelName: AttributeKey[String] = string("host.cpu.model.name")
+
+  /** Stepping or core revisions.
+    */
+  val HostCpuStepping: AttributeKey[Long] = long("host.cpu.stepping")
+
+  /** Processor manufacturer identifier. A maximum 12-character string.
+    *
+    * <p>Notes: <ul> <li><a href="https://wiki.osdev.org/CPUID">CPUID</a>
+    * command returns the vendor ID string in EBX, EDX and ECX registers.
+    * Writing these to memory in this order results in a 12-character
+    * string.</li> </ul>
+    */
+  val HostCpuVendorId: AttributeKey[String] = string("host.cpu.vendor.id")
 
   /** The name of the cluster.
     */
@@ -574,6 +639,24 @@ object ResourceAttributes {
   /** The UID of the CronJob.
     */
   val K8sCronjobUid: AttributeKey[String] = string("k8s.cronjob.uid")
+
+  /** The digest of the OCI image manifest. For container images specifically is
+    * the digest by which the container image is known.
+    *
+    * <p>Notes: <ul> <li>Follows <a
+    * href="https://github.com/opencontainers/image-spec/blob/main/manifest.md">OCI
+    * Image Manifest Specification</a>, and specifically the <a
+    * href="https://github.com/opencontainers/image-spec/blob/main/descriptor.md#digests">Digest
+    * property</a>. An example can be found in <a
+    * href="https://docs.docker.com/registry/spec/manifest-v2-2/#example-image-manifest">Example
+    * Image Manifest</a>.</li> </ul>
+    */
+  val OciManifestDigest: AttributeKey[String] = string("oci.manifest.digest")
+
+  /** Unique identifier for a particular build or compilation of the operating
+    * system.
+    */
+  val OsBuildId: AttributeKey[String] = string("os.build_id")
 
   /** Human readable (not intended to be parsed) OS version information, like
     * e.g. reported by `ver` or `lsb_release -a` commands.
@@ -736,10 +819,21 @@ object ResourceAttributes {
     "telemetry.sdk.version"
   )
 
-  /** The version string of the auto instrumentation agent, if used.
+  /** The name of the auto instrumentation agent or distribution, if used.
+    *
+    * <p>Notes: <ul> <li>Official auto instrumentation agents and distributions
+    * SHOULD set the `telemetry.distro.name` attribute to a string starting with
+    * `opentelemetry-`, e.g. `opentelemetry-java-instrumentation`.</li> </ul>
     */
-  val TelemetryAutoVersion: AttributeKey[String] = string(
-    "telemetry.auto.version"
+  val TelemetryDistroName: AttributeKey[String] = string(
+    "telemetry.distro.name"
+  )
+
+  /** The version string of the auto instrumentation agent or distribution, if
+    * used.
+    */
+  val TelemetryDistroVersion: AttributeKey[String] = string(
+    "telemetry.distro.version"
   )
 
   /** Additional description of the web engine (e.g. detailed version and
@@ -1079,5 +1173,23 @@ object ResourceAttributes {
     */
   @deprecated("Use ResourceAttributes.CloudResourceId instead", "0.3.0")
   val FaasId = string("faas.id")
+
+  /** The version string of the auto instrumentation agent, if used.
+    *
+    * @deprecated
+    *   This item has been renamed in 1.22.0 of the semantic conventions. Use
+    *   [[ResourceAttributes.TelemetryDistroVersion]] instead.
+    */
+  @deprecated("Use ResourceAttributes.TelemetryDistroVersion instead", "0.4.0")
+  val TelemetryAutoVersion = string("telemetry.auto.version")
+
+  /** Container image tag.
+    *
+    * @deprecated
+    *   This item has been renamed in 1.22.0 of the semantic conventions. Use
+    *   [[ResourceAttributes.ContainerImageTags]] instead.
+    */
+  @deprecated("Use ResourceAttributes.ContainerImageTags instead", "0.4.0")
+  val ContainerImageTag = string("container.image.tag")
 
 }

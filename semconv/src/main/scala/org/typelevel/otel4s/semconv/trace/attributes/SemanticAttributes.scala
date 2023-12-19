@@ -24,14 +24,14 @@ object SemanticAttributes {
 
   /** The URL of the OpenTelemetry schema for these keys and values.
     */
-  final val SchemaUrl = "https://opentelemetry.io/schemas/1.22.0"
+  final val SchemaUrl = "https://opentelemetry.io/schemas/1.23.1"
 
-  /** Client address - domain name if available without reverse DNS lookup,
-    * otherwise IP address or Unix domain socket name.
+  /** Client address - domain name if available without reverse DNS lookup;
+    * otherwise, IP address or Unix domain socket name.
     *
     * <p>Notes: <ul> <li>When observed from the server side, and when
     * communicating through an intermediary, `client.address` SHOULD represent
-    * the client address behind any intermediaries (e.g. proxies) if it's
+    * the client address behind any intermediaries, for example proxies, if it's
     * available.</li> </ul>
     */
   val ClientAddress: AttributeKey[String] = string("client.address")
@@ -40,91 +40,18 @@ object SemanticAttributes {
     *
     * <p>Notes: <ul> <li>When observed from the server side, and when
     * communicating through an intermediary, `client.port` SHOULD represent the
-    * client port behind any intermediaries (e.g. proxies) if it's
+    * client port behind any intermediaries, for example proxies, if it's
     * available.</li> </ul>
     */
   val ClientPort: AttributeKey[Long] = long("client.port")
 
-  /** Deprecated, use `server.address`.
-    */
-  @deprecated("Use `server.address`", "0.3.0")
-  val NetHostName: AttributeKey[String] = string("net.host.name")
-
-  /** Deprecated, use `server.port`.
-    */
-  @deprecated("Use `server.port`", "0.3.0")
-  val NetHostPort: AttributeKey[Long] = long("net.host.port")
-
-  /** Deprecated, use `server.address` on client spans and `client.address` on
-    * server spans.
-    */
-  @deprecated(
-    "Use `server.address` on client spans and `client.address` on server spans",
-    "0.3.0"
-  )
-  val NetPeerName: AttributeKey[String] = string("net.peer.name")
-
-  /** Deprecated, use `server.port` on client spans and `client.port` on server
-    * spans.
-    */
-  @deprecated(
-    "Use `server.port` on client spans and `client.port` on server spans",
-    "0.3.0"
-  )
-  val NetPeerPort: AttributeKey[Long] = long("net.peer.port")
-
-  /** Deprecated, use `network.protocol.name`.
-    */
-  @deprecated("Use `network.protocol.name`", "0.3.0")
-  val NetProtocolName: AttributeKey[String] = string("net.protocol.name")
-
-  /** Deprecated, use `network.protocol.version`.
-    */
-  @deprecated("Use `network.protocol.version`", "0.3.0")
-  val NetProtocolVersion: AttributeKey[String] = string("net.protocol.version")
-
-  /** Deprecated, use `network.transport` and `network.type`.
-    */
-  @deprecated("Use `network.transport` and `network.type`", "0.3.0")
-  val NetSockFamily: AttributeKey[String] = string("net.sock.family")
-
-  /** Deprecated, use `network.local.address`.
-    */
-  @deprecated("Use `network.local.address`", "0.3.0")
-  val NetSockHostAddr: AttributeKey[String] = string("net.sock.host.addr")
-
-  /** Deprecated, use `network.local.port`.
-    */
-  @deprecated("Use `network.local.port`", "0.3.0")
-  val NetSockHostPort: AttributeKey[Long] = long("net.sock.host.port")
-
-  /** Deprecated, use `network.peer.address`.
-    */
-  @deprecated("Use `network.peer.address`", "0.3.0")
-  val NetSockPeerAddr: AttributeKey[String] = string("net.sock.peer.addr")
-
-  /** Deprecated, no replacement at this time.
-    */
-  @deprecated("No replacement at this time", "0.3.0")
-  val NetSockPeerName: AttributeKey[String] = string("net.sock.peer.name")
-
-  /** Deprecated, use `network.peer.port`.
-    */
-  @deprecated("Use `network.peer.port`", "0.3.0")
-  val NetSockPeerPort: AttributeKey[Long] = long("net.sock.peer.port")
-
-  /** Deprecated, use `network.transport`.
-    */
-  @deprecated("Use `network.transport`", "0.3.0")
-  val NetTransport: AttributeKey[String] = string("net.transport")
-
-  /** Destination address - domain name if available without reverse DNS lookup,
-    * otherwise IP address or Unix domain socket name.
+  /** Destination address - domain name if available without reverse DNS lookup;
+    * otherwise, IP address or Unix domain socket name.
     *
     * <p>Notes: <ul> <li>When observed from the source side, and when
     * communicating through an intermediary, `destination.address` SHOULD
-    * represent the destination address behind any intermediaries (e.g. proxies)
-    * if it's available.</li> </ul>
+    * represent the destination address behind any intermediaries, for example
+    * proxies, if it's available.</li> </ul>
     */
   val DestinationAddress: AttributeKey[String] = string("destination.address")
 
@@ -137,15 +64,15 @@ object SemanticAttributes {
     * <p>Notes: <ul> <li>The `error.type` SHOULD be predictable and SHOULD have
     * low cardinality. Instrumentations SHOULD document the list of errors they
     * report.</li><li>The cardinality of `error.type` within one instrumentation
-    * library SHOULD be low, but telemetry consumers that aggregate data from
+    * library SHOULD be low. Telemetry consumers that aggregate data from
     * multiple instrumentation libraries and applications should be prepared for
-    * `error.type` to have high cardinality at query time, when no additional
+    * `error.type` to have high cardinality at query time when no additional
     * filters are applied.</li><li>If the operation has completed successfully,
     * instrumentations SHOULD NOT set `error.type`.</li><li>If a specific domain
-    * defines its own set of error codes (such as HTTP or gRPC status codes),
-    * it's RECOMMENDED to use a domain-specific attribute and also set
-    * `error.type` to capture all errors, regardless of whether they are defined
-    * within the domain-specific set or not.</li> </ul>
+    * defines its own set of error identifiers (such as HTTP or gRPC status
+    * codes), it's RECOMMENDED to:</li><li>Use a domain-specific attribute</li>
+    * <li>Set `error.type` to capture all errors, regardless of whether they are
+    * defined within the domain-specific set or not.</li> </ul>
     */
   val ErrorType: AttributeKey[String] = string("error.type")
 
@@ -219,44 +146,6 @@ object SemanticAttributes {
     */
   val EnduserScope: AttributeKey[String] = string("enduser.scope")
 
-  /** Whether the thread is daemon or not.
-    */
-  val ThreadDaemon: AttributeKey[Boolean] = boolean("thread.daemon")
-
-  /** Current &quot;managed&quot; thread ID (as opposed to OS thread ID).
-    */
-  val ThreadId: AttributeKey[Long] = long("thread.id")
-
-  /** Current thread name.
-    */
-  val ThreadName: AttributeKey[String] = string("thread.name")
-
-  /** The column number in `code.filepath` best representing the operation. It
-    * SHOULD point within the code unit named in `code.function`.
-    */
-  val CodeColumn: AttributeKey[Long] = long("code.column")
-
-  /** The source code file name that identifies the code unit as uniquely as
-    * possible (preferably an absolute file path).
-    */
-  val CodeFilepath: AttributeKey[String] = string("code.filepath")
-
-  /** The method or function name, or equivalent (usually rightmost part of the
-    * code unit's name).
-    */
-  val CodeFunction: AttributeKey[String] = string("code.function")
-
-  /** The line number in `code.filepath` best representing the operation. It
-    * SHOULD point within the code unit named in `code.function`.
-    */
-  val CodeLineno: AttributeKey[Long] = long("code.lineno")
-
-  /** The &quot;namespace&quot; within which `code.function` is defined. Usually
-    * the qualified class or module name, such that `code.namespace` + some
-    * separator + `code.function` form a unique identifier for the code unit.
-    */
-  val CodeNamespace: AttributeKey[String] = string("code.namespace")
-
   /** The domain identifies the business context for the events.
     *
     * <p>Notes: <ul> <li>Events across different domains may have same
@@ -304,8 +193,28 @@ object SemanticAttributes {
     "log.file.path_resolved"
   )
 
+  /** This attribute represents the state the application has transitioned into
+    * at the occurrence of the event.
+    *
+    * <p>Notes: <ul> <li>The iOS lifecycle states are defined in the <a
+    * href="https://developer.apple.com/documentation/uikit/uiapplicationdelegate#1656902">UIApplicationDelegate
+    * documentation</a>, and from which the `OS terminology` column values are
+    * derived.</li> </ul>
+    */
+  val IosState: AttributeKey[String] = string("ios.state")
+
+  /** This attribute represents the state the application has transitioned into
+    * at the occurrence of the event.
+    *
+    * <p>Notes: <ul> <li>The Android lifecycle states are defined in <a
+    * href="https://developer.android.com/guide/components/activities/activity-lifecycle#lc">Activity
+    * lifecycle callbacks</a>, and from which the `OS identifiers` are
+    * derived.</li> </ul>
+    */
+  val AndroidState: AttributeKey[String] = string("android.state")
+
   /** The name of the connection pool; unique within the instrumented
-    * application. In case the connection pool implementation does not provide a
+    * application. In case the connection pool implementation doesn't provide a
     * name, then the <a
     * href="/docs/database/database-spans.md#connection-level-attributes">db.connection_string</a>
     * should be used
@@ -415,112 +324,47 @@ object SemanticAttributes {
     "system.processes.status"
   )
 
-  /** Local address of the network connection - IP address or Unix domain socket
-    * name.
+  /** The column number in `code.filepath` best representing the operation. It
+    * SHOULD point within the code unit named in `code.function`.
     */
-  val NetworkLocalAddress: AttributeKey[String] = string(
-    "network.local.address"
-  )
+  val CodeColumn: AttributeKey[Long] = long("code.column")
 
-  /** Local port number of the network connection.
+  /** The source code file name that identifies the code unit as uniquely as
+    * possible (preferably an absolute file path).
     */
-  val NetworkLocalPort: AttributeKey[Long] = long("network.local.port")
+  val CodeFilepath: AttributeKey[String] = string("code.filepath")
 
-  /** Peer address of the network connection - IP address or Unix domain socket
-    * name.
+  /** The method or function name, or equivalent (usually rightmost part of the
+    * code unit's name).
     */
-  val NetworkPeerAddress: AttributeKey[String] = string("network.peer.address")
+  val CodeFunction: AttributeKey[String] = string("code.function")
 
-  /** Peer port number of the network connection.
+  /** The line number in `code.filepath` best representing the operation. It
+    * SHOULD point within the code unit named in `code.function`.
     */
-  val NetworkPeerPort: AttributeKey[Long] = long("network.peer.port")
+  val CodeLineno: AttributeKey[Long] = long("code.lineno")
 
-  /** <a href="https://osi-model.com/application-layer/">OSI application
-    * layer</a> or non-OSI equivalent.
-    *
-    * <p>Notes: <ul> <li>The value SHOULD be normalized to lowercase.</li> </ul>
+  /** The &quot;namespace&quot; within which `code.function` is defined. Usually
+    * the qualified class or module name, such that `code.namespace` + some
+    * separator + `code.function` form a unique identifier for the code unit.
     */
-  val NetworkProtocolName: AttributeKey[String] = string(
-    "network.protocol.name"
-  )
-
-  /** Version of the protocol specified in `network.protocol.name`.
-    *
-    * <p>Notes: <ul> <li>`network.protocol.version` refers to the version of the
-    * protocol used and might be different from the protocol client's version.
-    * If the HTTP client used has a version of `0.27.2`, but sends HTTP version
-    * `1.1`, this attribute should be set to `1.1`.</li> </ul>
-    */
-  val NetworkProtocolVersion: AttributeKey[String] = string(
-    "network.protocol.version"
-  )
-
-  /** <a href="https://osi-model.com/transport-layer/">OSI transport layer</a>
-    * or <a
-    * href="https://en.wikipedia.org/wiki/Inter-process_communication">inter-process
-    * communication method</a>.
-    *
-    * <p>Notes: <ul> <li>The value SHOULD be normalized to
-    * lowercase.</li><li>Consider always setting the transport when setting a
-    * port number, since a port number is ambiguous without knowing the
-    * transport, for example different processes could be listening on TCP port
-    * 12345 and UDP port 12345.</li> </ul>
-    */
-  val NetworkTransport: AttributeKey[String] = string("network.transport")
-
-  /** <a href="https://osi-model.com/network-layer/">OSI network layer</a> or
-    * non-OSI equivalent.
-    *
-    * <p>Notes: <ul> <li>The value SHOULD be normalized to lowercase.</li> </ul>
-    */
-  val NetworkType: AttributeKey[String] = string("network.type")
-
-  /** The ISO 3166-1 alpha-2 2-character country code associated with the mobile
-    * carrier network.
-    */
-  val NetworkCarrierIcc: AttributeKey[String] = string("network.carrier.icc")
-
-  /** The mobile carrier country code.
-    */
-  val NetworkCarrierMcc: AttributeKey[String] = string("network.carrier.mcc")
-
-  /** The mobile carrier network code.
-    */
-  val NetworkCarrierMnc: AttributeKey[String] = string("network.carrier.mnc")
-
-  /** The name of the mobile carrier.
-    */
-  val NetworkCarrierName: AttributeKey[String] = string("network.carrier.name")
-
-  /** This describes more details regarding the connection.type. It may be the
-    * type of cell technology connection, but it could be used for describing
-    * details about a wifi connection.
-    */
-  val NetworkConnectionSubtype: AttributeKey[String] = string(
-    "network.connection.subtype"
-  )
-
-  /** The internet connection type.
-    */
-  val NetworkConnectionType: AttributeKey[String] = string(
-    "network.connection.type"
-  )
+  val CodeNamespace: AttributeKey[String] = string("code.namespace")
 
   /** Deprecated, use `http.request.method` instead.
     */
   @deprecated("Use `http.request.method` instead", "0.3.0")
   val HttpMethod: AttributeKey[String] = string("http.method")
 
-  /** Deprecated, use `http.request.body.size` instead.
+  /** Deprecated, use `http.request.header.content-length` instead.
     */
-  @deprecated("Use `http.request.body.size` instead", "0.3.0")
+  @deprecated("Use `http.request.header.content-length` instead", "0.3.0")
   val HttpRequestContentLength: AttributeKey[Long] = long(
     "http.request_content_length"
   )
 
-  /** Deprecated, use `http.response.body.size` instead.
+  /** Deprecated, use `http.response.header.content-length` instead.
     */
-  @deprecated("Use `http.response.body.size` instead", "0.3.0")
+  @deprecated("Use `http.response.header.content-length` instead", "0.3.0")
   val HttpResponseContentLength: AttributeKey[Long] = long(
     "http.response_content_length"
   )
@@ -544,6 +388,79 @@ object SemanticAttributes {
     */
   @deprecated("Use `url.full` instead", "0.3.0")
   val HttpUrl: AttributeKey[String] = string("http.url")
+
+  /** Deprecated, use `server.address`.
+    */
+  @deprecated("Use `server.address`", "0.3.0")
+  val NetHostName: AttributeKey[String] = string("net.host.name")
+
+  /** Deprecated, use `server.port`.
+    */
+  @deprecated("Use `server.port`", "0.3.0")
+  val NetHostPort: AttributeKey[Long] = long("net.host.port")
+
+  /** Deprecated, use `server.address` on client spans and `client.address` on
+    * server spans.
+    */
+  @deprecated(
+    "Use `server.address` on client spans and `client.address` on server spans",
+    "0.3.0"
+  )
+  val NetPeerName: AttributeKey[String] = string("net.peer.name")
+
+  /** Deprecated, use `server.port` on client spans and `client.port` on server
+    * spans.
+    */
+  @deprecated(
+    "Use `server.port` on client spans and `client.port` on server spans",
+    "0.3.0"
+  )
+  val NetPeerPort: AttributeKey[Long] = long("net.peer.port")
+
+  /** Deprecated, use `network.protocol.name`.
+    */
+  @deprecated("Use `network.protocol.name`", "0.3.0")
+  val NetProtocolName: AttributeKey[String] = string("net.protocol.name")
+
+  /** Deprecated, use `network.protocol.version`.
+    */
+  @deprecated("Use `network.protocol.version`", "0.3.0")
+  val NetProtocolVersion: AttributeKey[String] = string("net.protocol.version")
+
+  /** Deprecated, use `network.transport` and `network.type`.
+    */
+  @deprecated("Use `network.transport` and `network.type`", "0.3.0")
+  val NetSockFamily: AttributeKey[String] = string("net.sock.family")
+
+  /** Deprecated, use `network.local.address`.
+    */
+  @deprecated("Use `network.local.address`", "0.3.0")
+  val NetSockHostAddr: AttributeKey[String] = string("net.sock.host.addr")
+
+  /** Deprecated, use `network.local.port`.
+    */
+  @deprecated("Use `network.local.port`", "0.3.0")
+  val NetSockHostPort: AttributeKey[Long] = long("net.sock.host.port")
+
+  /** Deprecated, use `network.peer.address`.
+    */
+  @deprecated("Use `network.peer.address`", "0.3.0")
+  val NetSockPeerAddr: AttributeKey[String] = string("net.sock.peer.addr")
+
+  /** Deprecated, no replacement at this time.
+    */
+  @deprecated("No replacement at this time", "0.3.0")
+  val NetSockPeerName: AttributeKey[String] = string("net.sock.peer.name")
+
+  /** Deprecated, use `network.peer.port`.
+    */
+  @deprecated("Use `network.peer.port`", "0.3.0")
+  val NetSockPeerPort: AttributeKey[Long] = long("net.sock.peer.port")
+
+  /** Deprecated, use `network.transport`.
+    */
+  @deprecated("Use `network.transport`", "0.3.0")
+  val NetTransport: AttributeKey[String] = string("net.transport")
 
   /** The size of the request payload body in bytes. This is the number of bytes
     * transferred excluding headers and is often, but not always, present as the
@@ -593,7 +510,9 @@ object SemanticAttributes {
     * resending (e.g. redirection, authorization failure, 503 Server
     * Unavailable, network issues, or any other).</li> </ul>
     */
-  val HttpResendCount: AttributeKey[Long] = long("http.resend_count")
+  val HttpRequestResendCount: AttributeKey[Long] = long(
+    "http.request.resend_count"
+  )
 
   /** The size of the response payload body in bytes. This is the number of
     * bytes transferred excluding headers and is often, but not always, present
@@ -611,8 +530,8 @@ object SemanticAttributes {
     "http.response.status_code"
   )
 
-  /** The matched route (path template in the format used by the respective
-    * server framework). See note below
+  /** The matched route, that is, the path template in the format used by the
+    * respective server framework.
     *
     * <p>Notes: <ul> <li>MUST NOT be populated when this is not supported by the
     * HTTP server framework as the route attribute should have low-cardinality
@@ -622,12 +541,440 @@ object SemanticAttributes {
     */
   val HttpRoute: AttributeKey[String] = string("http.route")
 
-  /** Server address - domain name if available without reverse DNS lookup,
-    * otherwise IP address or Unix domain socket name.
+  /** The number of messages sent, received, or processed in the scope of the
+    * batching operation.
+    *
+    * <p>Notes: <ul> <li>Instrumentations SHOULD NOT set
+    * `messaging.batch.message_count` on spans that operate with a single
+    * message. When a messaging client library supports both batch and
+    * single-message API for the same operation, instrumentations SHOULD use
+    * `messaging.batch.message_count` for batching APIs and SHOULD NOT use it
+    * for single-message APIs.</li> </ul>
+    */
+  val MessagingBatchMessageCount: AttributeKey[Long] = long(
+    "messaging.batch.message_count"
+  )
+
+  /** A unique identifier for the client that consumes or produces a message.
+    */
+  val MessagingClientId: AttributeKey[String] = string("messaging.client_id")
+
+  /** A boolean that is true if the message destination is anonymous (could be
+    * unnamed or have auto-generated name).
+    */
+  val MessagingDestinationAnonymous: AttributeKey[Boolean] = boolean(
+    "messaging.destination.anonymous"
+  )
+
+  /** The message destination name
+    *
+    * <p>Notes: <ul> <li>Destination name SHOULD uniquely identify a specific
+    * queue, topic or other entity within the broker. If the broker doesn't have
+    * such notion, the destination name SHOULD uniquely identify the
+    * broker.</li> </ul>
+    */
+  val MessagingDestinationName: AttributeKey[String] = string(
+    "messaging.destination.name"
+  )
+
+  /** Low cardinality representation of the messaging destination name
+    *
+    * <p>Notes: <ul> <li>Destination names could be constructed from templates.
+    * An example would be a destination name involving a user name or product
+    * id. Although the destination name in this case is of high cardinality, the
+    * underlying template is of low cardinality and can be effectively used for
+    * grouping and aggregation.</li> </ul>
+    */
+  val MessagingDestinationTemplate: AttributeKey[String] = string(
+    "messaging.destination.template"
+  )
+
+  /** A boolean that is true if the message destination is temporary and might
+    * not exist anymore after messages are processed.
+    */
+  val MessagingDestinationTemporary: AttributeKey[Boolean] = boolean(
+    "messaging.destination.temporary"
+  )
+
+  /** A boolean that is true if the publish message destination is anonymous
+    * (could be unnamed or have auto-generated name).
+    */
+  val MessagingDestinationPublishAnonymous: AttributeKey[Boolean] = boolean(
+    "messaging.destination_publish.anonymous"
+  )
+
+  /** The name of the original destination the message was published to
+    *
+    * <p>Notes: <ul> <li>The name SHOULD uniquely identify a specific queue,
+    * topic, or other entity within the broker. If the broker doesn't have such
+    * notion, the original destination name SHOULD uniquely identify the
+    * broker.</li> </ul>
+    */
+  val MessagingDestinationPublishName: AttributeKey[String] = string(
+    "messaging.destination_publish.name"
+  )
+
+  /** Name of the Kafka Consumer Group that is handling the message. Only
+    * applies to consumers, not producers.
+    */
+  val MessagingKafkaConsumerGroup: AttributeKey[String] = string(
+    "messaging.kafka.consumer.group"
+  )
+
+  /** Partition the message is sent to.
+    */
+  val MessagingKafkaDestinationPartition: AttributeKey[Long] = long(
+    "messaging.kafka.destination.partition"
+  )
+
+  /** Message keys in Kafka are used for grouping alike messages to ensure
+    * they're processed on the same partition. They differ from
+    * `messaging.message.id` in that they're not unique. If the key is `null`,
+    * the attribute MUST NOT be set.
+    *
+    * <p>Notes: <ul> <li>If the key type is not string, it's string
+    * representation has to be supplied for the attribute. If the key has no
+    * unambiguous, canonical string form, don't include its value.</li> </ul>
+    */
+  val MessagingKafkaMessageKey: AttributeKey[String] = string(
+    "messaging.kafka.message.key"
+  )
+
+  /** The offset of a record in the corresponding Kafka partition.
+    */
+  val MessagingKafkaMessageOffset: AttributeKey[Long] = long(
+    "messaging.kafka.message.offset"
+  )
+
+  /** A boolean that is true if the message is a tombstone.
+    */
+  val MessagingKafkaMessageTombstone: AttributeKey[Boolean] = boolean(
+    "messaging.kafka.message.tombstone"
+  )
+
+  /** The size of the message body in bytes.
+    *
+    * <p>Notes: <ul> <li>This can refer to both the compressed or uncompressed
+    * body size. If both sizes are known, the uncompressed body size should be
+    * used.</li> </ul>
+    */
+  val MessagingMessageBodySize: AttributeKey[Long] = long(
+    "messaging.message.body.size"
+  )
+
+  /** The conversation ID identifying the conversation to which the message
+    * belongs, represented as a string. Sometimes called &quot;Correlation
+    * ID&quot;.
+    */
+  val MessagingMessageConversationId: AttributeKey[String] = string(
+    "messaging.message.conversation_id"
+  )
+
+  /** The size of the message body and metadata in bytes.
+    *
+    * <p>Notes: <ul> <li>This can refer to both the compressed or uncompressed
+    * size. If both sizes are known, the uncompressed size should be used.</li>
+    * </ul>
+    */
+  val MessagingMessageEnvelopeSize: AttributeKey[Long] = long(
+    "messaging.message.envelope.size"
+  )
+
+  /** A value used by the messaging system as an identifier for the message,
+    * represented as a string.
+    */
+  val MessagingMessageId: AttributeKey[String] = string("messaging.message.id")
+
+  /** A string identifying the kind of messaging operation.
+    *
+    * <p>Notes: <ul> <li>If a custom value is used, it MUST be of low
+    * cardinality.</li> </ul>
+    */
+  val MessagingOperation: AttributeKey[String] = string("messaging.operation")
+
+  /** RabbitMQ message routing key.
+    */
+  val MessagingRabbitmqDestinationRoutingKey: AttributeKey[String] = string(
+    "messaging.rabbitmq.destination.routing_key"
+  )
+
+  /** Name of the RocketMQ producer/consumer group that is handling the message.
+    * The client type is identified by the SpanKind.
+    */
+  val MessagingRocketmqClientGroup: AttributeKey[String] = string(
+    "messaging.rocketmq.client_group"
+  )
+
+  /** Model of message consumption. This only applies to consumer spans.
+    */
+  val MessagingRocketmqConsumptionModel: AttributeKey[String] = string(
+    "messaging.rocketmq.consumption_model"
+  )
+
+  /** The delay time level for delay message, which determines the message delay
+    * time.
+    */
+  val MessagingRocketmqMessageDelayTimeLevel: AttributeKey[Long] = long(
+    "messaging.rocketmq.message.delay_time_level"
+  )
+
+  /** The timestamp in milliseconds that the delay message is expected to be
+    * delivered to consumer.
+    */
+  val MessagingRocketmqMessageDeliveryTimestamp: AttributeKey[Long] = long(
+    "messaging.rocketmq.message.delivery_timestamp"
+  )
+
+  /** It is essential for FIFO message. Messages that belong to the same message
+    * group are always processed one by one within the same consumer group.
+    */
+  val MessagingRocketmqMessageGroup: AttributeKey[String] = string(
+    "messaging.rocketmq.message.group"
+  )
+
+  /** Key(s) of message, another way to mark message besides message id.
+    */
+  val MessagingRocketmqMessageKeys: AttributeKey[List[String]] = stringList(
+    "messaging.rocketmq.message.keys"
+  )
+
+  /** The secondary classifier of message besides topic.
+    */
+  val MessagingRocketmqMessageTag: AttributeKey[String] = string(
+    "messaging.rocketmq.message.tag"
+  )
+
+  /** Type of message.
+    */
+  val MessagingRocketmqMessageType: AttributeKey[String] = string(
+    "messaging.rocketmq.message.type"
+  )
+
+  /** Namespace of RocketMQ resources, resources in different namespaces are
+    * individual.
+    */
+  val MessagingRocketmqNamespace: AttributeKey[String] = string(
+    "messaging.rocketmq.namespace"
+  )
+
+  /** A string identifying the messaging system.
+    */
+  val MessagingSystem: AttributeKey[String] = string("messaging.system")
+
+  /** The ISO 3166-1 alpha-2 2-character country code associated with the mobile
+    * carrier network.
+    */
+  val NetworkCarrierIcc: AttributeKey[String] = string("network.carrier.icc")
+
+  /** The mobile carrier country code.
+    */
+  val NetworkCarrierMcc: AttributeKey[String] = string("network.carrier.mcc")
+
+  /** The mobile carrier network code.
+    */
+  val NetworkCarrierMnc: AttributeKey[String] = string("network.carrier.mnc")
+
+  /** The name of the mobile carrier.
+    */
+  val NetworkCarrierName: AttributeKey[String] = string("network.carrier.name")
+
+  /** This describes more details regarding the connection.type. It may be the
+    * type of cell technology connection, but it could be used for describing
+    * details about a wifi connection.
+    */
+  val NetworkConnectionSubtype: AttributeKey[String] = string(
+    "network.connection.subtype"
+  )
+
+  /** The internet connection type.
+    */
+  val NetworkConnectionType: AttributeKey[String] = string(
+    "network.connection.type"
+  )
+
+  /** Local address of the network connection - IP address or Unix domain socket
+    * name.
+    */
+  val NetworkLocalAddress: AttributeKey[String] = string(
+    "network.local.address"
+  )
+
+  /** Local port number of the network connection.
+    */
+  val NetworkLocalPort: AttributeKey[Long] = long("network.local.port")
+
+  /** Peer address of the network connection - IP address or Unix domain socket
+    * name.
+    */
+  val NetworkPeerAddress: AttributeKey[String] = string("network.peer.address")
+
+  /** Peer port number of the network connection.
+    */
+  val NetworkPeerPort: AttributeKey[Long] = long("network.peer.port")
+
+  /** <a href="https://osi-model.com/application-layer/">OSI application
+    * layer</a> or non-OSI equivalent.
+    *
+    * <p>Notes: <ul> <li>The value SHOULD be normalized to lowercase.</li> </ul>
+    */
+  val NetworkProtocolName: AttributeKey[String] = string(
+    "network.protocol.name"
+  )
+
+  /** Version of the protocol specified in `network.protocol.name`.
+    *
+    * <p>Notes: <ul> <li>`network.protocol.version` refers to the version of the
+    * protocol used and might be different from the protocol client's version.
+    * If the HTTP client has a version of `0.27.2`, but sends HTTP version
+    * `1.1`, this attribute should be set to `1.1`.</li> </ul>
+    */
+  val NetworkProtocolVersion: AttributeKey[String] = string(
+    "network.protocol.version"
+  )
+
+  /** <a href="https://osi-model.com/transport-layer/">OSI transport layer</a>
+    * or <a
+    * href="https://wikipedia.org/wiki/Inter-process_communication">inter-process
+    * communication method</a>.
+    *
+    * <p>Notes: <ul> <li>The value SHOULD be normalized to
+    * lowercase.</li><li>Consider always setting the transport when setting a
+    * port number, since a port number is ambiguous without knowing the
+    * transport. For example different processes could be listening on TCP port
+    * 12345 and UDP port 12345.</li> </ul>
+    */
+  val NetworkTransport: AttributeKey[String] = string("network.transport")
+
+  /** <a href="https://osi-model.com/network-layer/">OSI network layer</a> or
+    * non-OSI equivalent.
+    *
+    * <p>Notes: <ul> <li>The value SHOULD be normalized to lowercase.</li> </ul>
+    */
+  val NetworkType: AttributeKey[String] = string("network.type")
+
+  /** The <a href="https://connect.build/docs/protocol/#error-codes">error
+    * codes</a> of the Connect request. Error codes are always string values.
+    */
+  val RpcConnectRpcErrorCode: AttributeKey[String] = string(
+    "rpc.connect_rpc.error_code"
+  )
+
+  /** The <a
+    * href="https://github.com/grpc/grpc/blob/v1.33.2/doc/statuscodes.md">numeric
+    * status code</a> of the gRPC request.
+    */
+  val RpcGrpcStatusCode: AttributeKey[Long] = long("rpc.grpc.status_code")
+
+  /** `error.code` property of response if it is an error response.
+    */
+  val RpcJsonrpcErrorCode: AttributeKey[Long] = long("rpc.jsonrpc.error_code")
+
+  /** `error.message` property of response if it is an error response.
+    */
+  val RpcJsonrpcErrorMessage: AttributeKey[String] = string(
+    "rpc.jsonrpc.error_message"
+  )
+
+  /** `id` property of request or response. Since protocol allows id to be int,
+    * string, `null` or missing (for notifications), value is expected to be
+    * cast to string for simplicity. Use empty string in case of `null` value.
+    * Omit entirely if this is a notification.
+    */
+  val RpcJsonrpcRequestId: AttributeKey[String] = string(
+    "rpc.jsonrpc.request_id"
+  )
+
+  /** Protocol version as in `jsonrpc` property of request/response. Since
+    * JSON-RPC 1.0 doesn't specify this, the value can be omitted.
+    */
+  val RpcJsonrpcVersion: AttributeKey[String] = string("rpc.jsonrpc.version")
+
+  /** The name of the (logical) method being called, must be equal to the method
+    * part in the span name.
+    *
+    * <p>Notes: <ul> <li>This is the logical name of the method from the RPC
+    * interface perspective, which can be different from the name of any
+    * implementing method/function. The `code.function` attribute may be used to
+    * store the latter (e.g., method actually executing the call on the server
+    * side, RPC client stub method on the client side).</li> </ul>
+    */
+  val RpcMethod: AttributeKey[String] = string("rpc.method")
+
+  /** The full (logical) name of the service being called, including its package
+    * name, if applicable.
+    *
+    * <p>Notes: <ul> <li>This is the logical name of the service from the RPC
+    * interface perspective, which can be different from the name of any
+    * implementing class. The `code.namespace` attribute may be used to store
+    * the latter (despite the attribute name, it may include a class name; e.g.,
+    * class with method actually executing the call on the server side, RPC
+    * client stub class on the client side).</li> </ul>
+    */
+  val RpcService: AttributeKey[String] = string("rpc.service")
+
+  /** A string identifying the remoting system. See below for a list of
+    * well-known identifiers.
+    */
+  val RpcSystem: AttributeKey[String] = string("rpc.system")
+
+  /** Current &quot;managed&quot; thread ID (as opposed to OS thread ID).
+    */
+  val ThreadId: AttributeKey[Long] = long("thread.id")
+
+  /** Current thread name.
+    */
+  val ThreadName: AttributeKey[String] = string("thread.name")
+
+  /** The <a href="https://www.rfc-editor.org/rfc/rfc3986#section-3.5">URI
+    * fragment</a> component
+    */
+  val UrlFragment: AttributeKey[String] = string("url.fragment")
+
+  /** Absolute URL describing a network resource according to <a
+    * href="https://www.rfc-editor.org/rfc/rfc3986">RFC3986</a>
+    *
+    * <p>Notes: <ul> <li>For network calls, URL usually has
+    * `scheme://host[:port][path][?query][#fragment]` format, where the fragment
+    * is not transmitted over HTTP, but if it is known, it SHOULD be included
+    * nevertheless. `url.full` MUST NOT contain credentials passed via URL in
+    * form of `https://username:password@www.example.com/`. In such case
+    * username and password SHOULD be redacted and attribute's value SHOULD be
+    * `https://REDACTED:REDACTED@www.example.com/`. `url.full` SHOULD capture
+    * the absolute URL when it is available (or can be reconstructed) and SHOULD
+    * NOT be validated or modified except for sanitizing purposes.</li> </ul>
+    */
+  val UrlFull: AttributeKey[String] = string("url.full")
+
+  /** The <a href="https://www.rfc-editor.org/rfc/rfc3986#section-3.3">URI
+    * path</a> component
+    */
+  val UrlPath: AttributeKey[String] = string("url.path")
+
+  /** The <a href="https://www.rfc-editor.org/rfc/rfc3986#section-3.4">URI
+    * query</a> component
+    *
+    * <p>Notes: <ul> <li>Sensitive content provided in query string SHOULD be
+    * scrubbed when instrumentations can identify it.</li> </ul>
+    */
+  val UrlQuery: AttributeKey[String] = string("url.query")
+
+  /** The <a href="https://www.rfc-editor.org/rfc/rfc3986#section-3.1">URI
+    * scheme</a> component identifying the used protocol.
+    */
+  val UrlScheme: AttributeKey[String] = string("url.scheme")
+
+  /** Value of the <a
+    * href="https://www.rfc-editor.org/rfc/rfc9110.html#field.user-agent">HTTP
+    * User-Agent</a> header sent by the client.
+    */
+  val UserAgentOriginal: AttributeKey[String] = string("user_agent.original")
+
+  /** Server domain name if available without reverse DNS lookup; otherwise, IP
+    * address or Unix domain socket name.
     *
     * <p>Notes: <ul> <li>When observed from the client side, and when
     * communicating through an intermediary, `server.address` SHOULD represent
-    * the server address behind any intermediaries (e.g. proxies) if it's
+    * the server address behind any intermediaries, for example proxies, if it's
     * available.</li> </ul>
     */
   val ServerAddress: AttributeKey[String] = string("server.address")
@@ -636,7 +983,7 @@ object SemanticAttributes {
     *
     * <p>Notes: <ul> <li>When observed from the client side, and when
     * communicating through an intermediary, `server.port` SHOULD represent the
-    * server port behind any intermediaries (e.g. proxies) if it's
+    * server port behind any intermediaries, for example proxies, if it's
     * available.</li> </ul>
     */
   val ServerPort: AttributeKey[Long] = long("server.port")
@@ -645,12 +992,16 @@ object SemanticAttributes {
     */
   val SessionId: AttributeKey[String] = string("session.id")
 
-  /** Source address - domain name if available without reverse DNS lookup,
-    * otherwise IP address or Unix domain socket name.
+  /** The previous `session.id` for this user, when known.
+    */
+  val SessionPreviousId: AttributeKey[String] = string("session.previous_id")
+
+  /** Source address - domain name if available without reverse DNS lookup;
+    * otherwise, IP address or Unix domain socket name.
     *
     * <p>Notes: <ul> <li>When observed from the destination side, and when
     * communicating through an intermediary, `source.address` SHOULD represent
-    * the source address behind any intermediaries (e.g. proxies) if it's
+    * the source address behind any intermediaries, for example proxies, if it's
     * available.</li> </ul>
     */
   val SourceAddress: AttributeKey[String] = string("source.address")
@@ -768,7 +1119,7 @@ object SemanticAttributes {
   val DbUser: AttributeKey[String] = string("db.user")
 
   /** The Microsoft SQL Server <a
-    * href="https://docs.microsoft.com/en-us/sql/connect/jdbc/building-the-connection-url?view=sql-server-ver15">instance
+    * href="https://docs.microsoft.com/sql/connect/jdbc/building-the-connection-url?view=sql-server-ver15">instance
     * name</a> connecting to. This name is used to determine the port of a named
     * instance.
     *
@@ -1252,285 +1603,6 @@ object SemanticAttributes {
     "graphql.operation.type"
   )
 
-  /** The size of the message body in bytes.
-    *
-    * <p>Notes: <ul> <li>This can refer to both the compressed or uncompressed
-    * body size. If both sizes are known, the uncompressed body size should be
-    * used.</li> </ul>
-    */
-  val MessagingMessageBodySize: AttributeKey[Long] = long(
-    "messaging.message.body.size"
-  )
-
-  /** The <a href="#conversations">conversation ID</a> identifying the
-    * conversation to which the message belongs, represented as a string.
-    * Sometimes called &quot;Correlation ID&quot;.
-    */
-  val MessagingMessageConversationId: AttributeKey[String] = string(
-    "messaging.message.conversation_id"
-  )
-
-  /** The size of the message body and metadata in bytes.
-    *
-    * <p>Notes: <ul> <li>This can refer to both the compressed or uncompressed
-    * size. If both sizes are known, the uncompressed size should be used.</li>
-    * </ul>
-    */
-  val MessagingMessageEnvelopeSize: AttributeKey[Long] = long(
-    "messaging.message.envelope.size"
-  )
-
-  /** A value used by the messaging system as an identifier for the message,
-    * represented as a string.
-    */
-  val MessagingMessageId: AttributeKey[String] = string("messaging.message.id")
-
-  /** A boolean that is true if the message destination is anonymous (could be
-    * unnamed or have auto-generated name).
-    */
-  val MessagingDestinationAnonymous: AttributeKey[Boolean] = boolean(
-    "messaging.destination.anonymous"
-  )
-
-  /** The message destination name
-    *
-    * <p>Notes: <ul> <li>Destination name SHOULD uniquely identify a specific
-    * queue, topic or other entity within the broker. If the broker does not
-    * have such notion, the destination name SHOULD uniquely identify the
-    * broker.</li> </ul>
-    */
-  val MessagingDestinationName: AttributeKey[String] = string(
-    "messaging.destination.name"
-  )
-
-  /** Low cardinality representation of the messaging destination name
-    *
-    * <p>Notes: <ul> <li>Destination names could be constructed from templates.
-    * An example would be a destination name involving a user name or product
-    * id. Although the destination name in this case is of high cardinality, the
-    * underlying template is of low cardinality and can be effectively used for
-    * grouping and aggregation.</li> </ul>
-    */
-  val MessagingDestinationTemplate: AttributeKey[String] = string(
-    "messaging.destination.template"
-  )
-
-  /** A boolean that is true if the message destination is temporary and might
-    * not exist anymore after messages are processed.
-    */
-  val MessagingDestinationTemporary: AttributeKey[Boolean] = boolean(
-    "messaging.destination.temporary"
-  )
-
-  /** A boolean that is true if the publish message destination is anonymous
-    * (could be unnamed or have auto-generated name).
-    */
-  val MessagingDestinationPublishAnonymous: AttributeKey[Boolean] = boolean(
-    "messaging.destination_publish.anonymous"
-  )
-
-  /** The name of the original destination the message was published to
-    *
-    * <p>Notes: <ul> <li>The name SHOULD uniquely identify a specific queue,
-    * topic, or other entity within the broker. If the broker does not have such
-    * notion, the original destination name SHOULD uniquely identify the
-    * broker.</li> </ul>
-    */
-  val MessagingDestinationPublishName: AttributeKey[String] = string(
-    "messaging.destination_publish.name"
-  )
-
-  /** The number of messages sent, received, or processed in the scope of the
-    * batching operation.
-    *
-    * <p>Notes: <ul> <li>Instrumentations SHOULD NOT set
-    * `messaging.batch.message_count` on spans that operate with a single
-    * message. When a messaging client library supports both batch and
-    * single-message API for the same operation, instrumentations SHOULD use
-    * `messaging.batch.message_count` for batching APIs and SHOULD NOT use it
-    * for single-message APIs.</li> </ul>
-    */
-  val MessagingBatchMessageCount: AttributeKey[Long] = long(
-    "messaging.batch.message_count"
-  )
-
-  /** A unique identifier for the client that consumes or produces a message.
-    */
-  val MessagingClientId: AttributeKey[String] = string("messaging.client_id")
-
-  /** A string identifying the kind of messaging operation as defined in the <a
-    * href="#operation-names">Operation names</a> section above.
-    *
-    * <p>Notes: <ul> <li>If a custom value is used, it MUST be of low
-    * cardinality.</li> </ul>
-    */
-  val MessagingOperation: AttributeKey[String] = string("messaging.operation")
-
-  /** A string identifying the messaging system.
-    */
-  val MessagingSystem: AttributeKey[String] = string("messaging.system")
-
-  /** RabbitMQ message routing key.
-    */
-  val MessagingRabbitmqDestinationRoutingKey: AttributeKey[String] = string(
-    "messaging.rabbitmq.destination.routing_key"
-  )
-
-  /** Name of the Kafka Consumer Group that is handling the message. Only
-    * applies to consumers, not producers.
-    */
-  val MessagingKafkaConsumerGroup: AttributeKey[String] = string(
-    "messaging.kafka.consumer.group"
-  )
-
-  /** Partition the message is sent to.
-    */
-  val MessagingKafkaDestinationPartition: AttributeKey[Long] = long(
-    "messaging.kafka.destination.partition"
-  )
-
-  /** Message keys in Kafka are used for grouping alike messages to ensure
-    * they're processed on the same partition. They differ from
-    * `messaging.message.id` in that they're not unique. If the key is `null`,
-    * the attribute MUST NOT be set.
-    *
-    * <p>Notes: <ul> <li>If the key type is not string, it's string
-    * representation has to be supplied for the attribute. If the key has no
-    * unambiguous, canonical string form, don't include its value.</li> </ul>
-    */
-  val MessagingKafkaMessageKey: AttributeKey[String] = string(
-    "messaging.kafka.message.key"
-  )
-
-  /** The offset of a record in the corresponding Kafka partition.
-    */
-  val MessagingKafkaMessageOffset: AttributeKey[Long] = long(
-    "messaging.kafka.message.offset"
-  )
-
-  /** A boolean that is true if the message is a tombstone.
-    */
-  val MessagingKafkaMessageTombstone: AttributeKey[Boolean] = boolean(
-    "messaging.kafka.message.tombstone"
-  )
-
-  /** Name of the RocketMQ producer/consumer group that is handling the message.
-    * The client type is identified by the SpanKind.
-    */
-  val MessagingRocketmqClientGroup: AttributeKey[String] = string(
-    "messaging.rocketmq.client_group"
-  )
-
-  /** Model of message consumption. This only applies to consumer spans.
-    */
-  val MessagingRocketmqConsumptionModel: AttributeKey[String] = string(
-    "messaging.rocketmq.consumption_model"
-  )
-
-  /** The delay time level for delay message, which determines the message delay
-    * time.
-    */
-  val MessagingRocketmqMessageDelayTimeLevel: AttributeKey[Long] = long(
-    "messaging.rocketmq.message.delay_time_level"
-  )
-
-  /** The timestamp in milliseconds that the delay message is expected to be
-    * delivered to consumer.
-    */
-  val MessagingRocketmqMessageDeliveryTimestamp: AttributeKey[Long] = long(
-    "messaging.rocketmq.message.delivery_timestamp"
-  )
-
-  /** It is essential for FIFO message. Messages that belong to the same message
-    * group are always processed one by one within the same consumer group.
-    */
-  val MessagingRocketmqMessageGroup: AttributeKey[String] = string(
-    "messaging.rocketmq.message.group"
-  )
-
-  /** Key(s) of message, another way to mark message besides message id.
-    */
-  val MessagingRocketmqMessageKeys: AttributeKey[List[String]] = stringList(
-    "messaging.rocketmq.message.keys"
-  )
-
-  /** The secondary classifier of message besides topic.
-    */
-  val MessagingRocketmqMessageTag: AttributeKey[String] = string(
-    "messaging.rocketmq.message.tag"
-  )
-
-  /** Type of message.
-    */
-  val MessagingRocketmqMessageType: AttributeKey[String] = string(
-    "messaging.rocketmq.message.type"
-  )
-
-  /** Namespace of RocketMQ resources, resources in different namespaces are
-    * individual.
-    */
-  val MessagingRocketmqNamespace: AttributeKey[String] = string(
-    "messaging.rocketmq.namespace"
-  )
-
-  /** The name of the (logical) method being called, must be equal to the method
-    * part in the span name.
-    *
-    * <p>Notes: <ul> <li>This is the logical name of the method from the RPC
-    * interface perspective, which can be different from the name of any
-    * implementing method/function. The `code.function` attribute may be used to
-    * store the latter (e.g., method actually executing the call on the server
-    * side, RPC client stub method on the client side).</li> </ul>
-    */
-  val RpcMethod: AttributeKey[String] = string("rpc.method")
-
-  /** The full (logical) name of the service being called, including its package
-    * name, if applicable.
-    *
-    * <p>Notes: <ul> <li>This is the logical name of the service from the RPC
-    * interface perspective, which can be different from the name of any
-    * implementing class. The `code.namespace` attribute may be used to store
-    * the latter (despite the attribute name, it may include a class name; e.g.,
-    * class with method actually executing the call on the server side, RPC
-    * client stub class on the client side).</li> </ul>
-    */
-  val RpcService: AttributeKey[String] = string("rpc.service")
-
-  /** A string identifying the remoting system. See below for a list of
-    * well-known identifiers.
-    */
-  val RpcSystem: AttributeKey[String] = string("rpc.system")
-
-  /** The <a
-    * href="https://github.com/grpc/grpc/blob/v1.33.2/doc/statuscodes.md">numeric
-    * status code</a> of the gRPC request.
-    */
-  val RpcGrpcStatusCode: AttributeKey[Long] = long("rpc.grpc.status_code")
-
-  /** `error.code` property of response if it is an error response.
-    */
-  val RpcJsonrpcErrorCode: AttributeKey[Long] = long("rpc.jsonrpc.error_code")
-
-  /** `error.message` property of response if it is an error response.
-    */
-  val RpcJsonrpcErrorMessage: AttributeKey[String] = string(
-    "rpc.jsonrpc.error_message"
-  )
-
-  /** `id` property of request or response. Since protocol allows id to be int,
-    * string, `null` or missing (for notifications), value is expected to be
-    * cast to string for simplicity. Use empty string in case of `null` value.
-    * Omit entirely if this is a notification.
-    */
-  val RpcJsonrpcRequestId: AttributeKey[String] = string(
-    "rpc.jsonrpc.request_id"
-  )
-
-  /** Protocol version as in `jsonrpc` property of request/response. Since
-    * JSON-RPC 1.0 does not specify this, the value can be omitted.
-    */
-  val RpcJsonrpcVersion: AttributeKey[String] = string("rpc.jsonrpc.version")
-
   /** Compressed size of the message in bytes.
     */
   val MessageCompressedSize: AttributeKey[Long] = long(
@@ -1555,13 +1627,6 @@ object SemanticAttributes {
     "message.uncompressed_size"
   )
 
-  /** The <a href="https://connect.build/docs/protocol/#error-codes">error
-    * codes</a> of the Connect request. Error codes are always string values.
-    */
-  val RpcConnectRpcErrorCode: AttributeKey[String] = string(
-    "rpc.connect_rpc.error_code"
-  )
-
   /** SHOULD be set to true if the exception event is recorded at a point where
     * it is known that the exception is escaping the scope of the span.
     *
@@ -1583,104 +1648,12 @@ object SemanticAttributes {
     */
   val ExceptionEscaped: AttributeKey[Boolean] = boolean("exception.escaped")
 
-  /** The <a href="https://www.rfc-editor.org/rfc/rfc3986#section-3.5">URI
-    * fragment</a> component
-    */
-  val UrlFragment: AttributeKey[String] = string("url.fragment")
-
-  /** Absolute URL describing a network resource according to <a
-    * href="https://www.rfc-editor.org/rfc/rfc3986">RFC3986</a>
-    *
-    * <p>Notes: <ul> <li>For network calls, URL usually has
-    * `scheme://host[:port][path][?query][#fragment]` format, where the fragment
-    * is not transmitted over HTTP, but if it is known, it should be included
-    * nevertheless. `url.full` MUST NOT contain credentials passed via URL in
-    * form of `https://username:password@www.example.com/`. In such case
-    * username and password should be redacted and attribute's value should be
-    * `https://REDACTED:REDACTED@www.example.com/`. `url.full` SHOULD capture
-    * the absolute URL when it is available (or can be reconstructed) and SHOULD
-    * NOT be validated or modified except for sanitizing purposes.</li> </ul>
-    */
-  val UrlFull: AttributeKey[String] = string("url.full")
-
-  /** The <a href="https://www.rfc-editor.org/rfc/rfc3986#section-3.3">URI
-    * path</a> component
-    *
-    * <p>Notes: <ul> <li>When missing, the value is assumed to be `/`</li> </ul>
-    */
-  val UrlPath: AttributeKey[String] = string("url.path")
-
-  /** The <a href="https://www.rfc-editor.org/rfc/rfc3986#section-3.4">URI
-    * query</a> component
-    *
-    * <p>Notes: <ul> <li>Sensitive content provided in query string SHOULD be
-    * scrubbed when instrumentations can identify it.</li> </ul>
-    */
-  val UrlQuery: AttributeKey[String] = string("url.query")
-
-  /** The <a href="https://www.rfc-editor.org/rfc/rfc3986#section-3.1">URI
-    * scheme</a> component identifying the used protocol.
-    */
-  val UrlScheme: AttributeKey[String] = string("url.scheme")
-
-  /** Value of the <a
-    * href="https://www.rfc-editor.org/rfc/rfc9110.html#field.user-agent">HTTP
-    * User-Agent</a> header sent by the client.
-    */
-  val UserAgentOriginal: AttributeKey[String] = string("user_agent.original")
-
   // Enum definitions
-  abstract class NetSockFamilyValue(val value: String)
-  object NetSockFamilyValue {
-
-    /** IPv4 address. */
-    case object Inet extends NetSockFamilyValue("inet")
-
-    /** IPv6 address. */
-    case object Inet6 extends NetSockFamilyValue("inet6")
-
-    /** Unix domain socket path. */
-    case object Unix extends NetSockFamilyValue("unix")
-
-  }
-
-  abstract class NetTransportValue(val value: String)
-  object NetTransportValue {
-
-    /** ip_tcp. */
-    case object IpTcp extends NetTransportValue("ip_tcp")
-
-    /** ip_udp. */
-    case object IpUdp extends NetTransportValue("ip_udp")
-
-    /** Named or anonymous pipe. */
-    case object Pipe extends NetTransportValue("pipe")
-
-    /** In-process communication. */
-    case object Inproc extends NetTransportValue("inproc")
-
-    /** Something else (non IP-based). */
-    case object Other extends NetTransportValue("other")
-
-    /** @deprecated
-      *   This item has been removed as of 1.13.0 of the semantic conventions.
-      */
-    @deprecated("This item has been removed", "0.3.0")
-    case object Ip extends NetTransportValue("ip")
-
-    /** @deprecated
-      *   This item has been removed as of 1.13.0 of the semantic conventions.
-      */
-    @deprecated("This item has been removed", "0.3.0")
-    case object Unix extends NetTransportValue("unix")
-
-  }
-
   abstract class ErrorTypeValue(val value: String)
   object ErrorTypeValue {
 
-    /** A fallback error value to be used when the instrumentation does not
-      * define a custom value for it.
+    /** A fallback error value to be used when the instrumentation doesn&#39;t
+      * define a custom value.
       */
     case object Other extends ErrorTypeValue("_OTHER")
 
@@ -1755,6 +1728,58 @@ object SemanticAttributes {
 
   }
 
+  abstract class IosStateValue(val value: String)
+  object IosStateValue {
+
+    /** The app has become `active`. Associated with UIKit notification
+      * `applicationDidBecomeActive`.
+      */
+    case object Active extends IosStateValue("active")
+
+    /** The app is now `inactive`. Associated with UIKit notification
+      * `applicationWillResignActive`.
+      */
+    case object Inactive extends IosStateValue("inactive")
+
+    /** The app is now in the background. This value is associated with UIKit
+      * notification `applicationDidEnterBackground`.
+      */
+    case object Background extends IosStateValue("background")
+
+    /** The app is now in the foreground. This value is associated with UIKit
+      * notification `applicationWillEnterForeground`.
+      */
+    case object Foreground extends IosStateValue("foreground")
+
+    /** The app is about to terminate. Associated with UIKit notification
+      * `applicationWillTerminate`.
+      */
+    case object Terminate extends IosStateValue("terminate")
+
+  }
+
+  abstract class AndroidStateValue(val value: String)
+  object AndroidStateValue {
+
+    /** Any time before Activity.onResume() or, if the app has no Activity,
+      * Context.startService() has been called in the app for the first time.
+      */
+    case object Created extends AndroidStateValue("created")
+
+    /** Any time after Activity.onPause() or, if the app has no Activity,
+      * Context.stopService() has been called when the app was in the foreground
+      * state.
+      */
+    case object Background extends AndroidStateValue("background")
+
+    /** Any time after Activity.onResume() or, if the app has no Activity,
+      * Context.startService() has been called when the app was in either the
+      * created or background states.
+      */
+    case object Foreground extends AndroidStateValue("foreground")
+
+  }
+
   abstract class StateValue(val value: String)
   object StateValue {
 
@@ -1806,9 +1831,6 @@ object SemanticAttributes {
   abstract class SystemMemoryStateValue(val value: String)
   object SystemMemoryStateValue {
 
-    /** total. */
-    case object Total extends SystemMemoryStateValue("total")
-
     /** used. */
     case object Used extends SystemMemoryStateValue("used")
 
@@ -1823,6 +1845,14 @@ object SemanticAttributes {
 
     /** cached. */
     case object Cached extends SystemMemoryStateValue("cached")
+
+    /** total.
+      *
+      * @deprecated
+      *   this value has been removed as of 1.23.1 of the semantic conventions.
+      */
+    @deprecated("The item has been removed", "0.4.0")
+    case object Total extends SystemMemoryStateValue("total")
 
   }
 
@@ -1976,31 +2006,153 @@ object SemanticAttributes {
 
   }
 
-  abstract class NetworkTransportValue(val value: String)
-  object NetworkTransportValue {
+  abstract class NetSockFamilyValue(val value: String)
+  object NetSockFamilyValue {
 
-    /** TCP. */
-    case object Tcp extends NetworkTransportValue("tcp")
+    /** IPv4 address. */
+    case object Inet extends NetSockFamilyValue("inet")
 
-    /** UDP. */
-    case object Udp extends NetworkTransportValue("udp")
+    /** IPv6 address. */
+    case object Inet6 extends NetSockFamilyValue("inet6")
 
-    /** Named or anonymous pipe. See note below. */
-    case object Pipe extends NetworkTransportValue("pipe")
-
-    /** Unix domain socket. */
-    case object Unix extends NetworkTransportValue("unix")
+    /** Unix domain socket path. */
+    case object Unix extends NetSockFamilyValue("unix")
 
   }
 
-  abstract class NetworkTypeValue(val value: String)
-  object NetworkTypeValue {
+  abstract class NetTransportValue(val value: String)
+  object NetTransportValue {
 
-    /** IPv4. */
-    case object Ipv4 extends NetworkTypeValue("ipv4")
+    /** ip_tcp. */
+    case object IpTcp extends NetTransportValue("ip_tcp")
 
-    /** IPv6. */
-    case object Ipv6 extends NetworkTypeValue("ipv6")
+    /** ip_udp. */
+    case object IpUdp extends NetTransportValue("ip_udp")
+
+    /** Named or anonymous pipe. */
+    case object Pipe extends NetTransportValue("pipe")
+
+    /** In-process communication. */
+    case object Inproc extends NetTransportValue("inproc")
+
+    /** Something else (non IP-based). */
+    case object Other extends NetTransportValue("other")
+
+    /** @deprecated
+      *   This item has been removed as of 1.13.0 of the semantic conventions.
+      */
+    @deprecated("This item has been removed", "0.3.0")
+    case object Ip extends NetTransportValue("ip")
+
+    /** @deprecated
+      *   This item has been removed as of 1.13.0 of the semantic conventions.
+      */
+    @deprecated("This item has been removed", "0.3.0")
+    case object Unix extends NetTransportValue("unix")
+
+  }
+
+  abstract class HttpRequestMethodValue(val value: String)
+  object HttpRequestMethodValue {
+
+    /** CONNECT method. */
+    case object Connect extends HttpRequestMethodValue("CONNECT")
+
+    /** DELETE method. */
+    case object Delete extends HttpRequestMethodValue("DELETE")
+
+    /** GET method. */
+    case object Get extends HttpRequestMethodValue("GET")
+
+    /** HEAD method. */
+    case object Head extends HttpRequestMethodValue("HEAD")
+
+    /** OPTIONS method. */
+    case object Options extends HttpRequestMethodValue("OPTIONS")
+
+    /** PATCH method. */
+    case object Patch extends HttpRequestMethodValue("PATCH")
+
+    /** POST method. */
+    case object Post extends HttpRequestMethodValue("POST")
+
+    /** PUT method. */
+    case object Put extends HttpRequestMethodValue("PUT")
+
+    /** TRACE method. */
+    case object Trace extends HttpRequestMethodValue("TRACE")
+
+    /** Any HTTP method that the instrumentation has no prior knowledge of. */
+    case object Other extends HttpRequestMethodValue("_OTHER")
+
+  }
+
+  abstract class MessagingOperationValue(val value: String)
+  object MessagingOperationValue {
+
+    /** One or more messages are provided for publishing to an intermediary. If
+      * a single message is published, the context of the &#34;Publish&#34; span
+      * can be used as the creation context and no &#34;Create&#34; span needs
+      * to be created.
+      */
+    case object Publish extends MessagingOperationValue("publish")
+
+    /** A message is created. &#34;Create&#34; spans always refer to a single
+      * message and are used to provide a unique creation context for messages
+      * in batch publishing scenarios.
+      */
+    case object Create extends MessagingOperationValue("create")
+
+    /** One or more messages are requested by a consumer. This operation refers
+      * to pull-based scenarios, where consumers explicitly call methods of
+      * messaging SDKs to receive messages.
+      */
+    case object Receive extends MessagingOperationValue("receive")
+
+    /** One or more messages are passed to a consumer. This operation refers to
+      * push-based scenarios, where consumer register callbacks which get called
+      * by messaging SDKs.
+      */
+    case object Deliver extends MessagingOperationValue("deliver")
+
+    /** process.
+      *
+      * @deprecated
+      *   this value has been removed as of 1.23.1 of the semantic conventions.
+      */
+    @deprecated("The item has been removed", "0.4.0")
+    case object Process extends MessagingOperationValue("process")
+
+  }
+
+  abstract class MessagingRocketmqConsumptionModelValue(val value: String)
+  object MessagingRocketmqConsumptionModelValue {
+
+    /** Clustering consumption model. */
+    case object Clustering
+        extends MessagingRocketmqConsumptionModelValue("clustering")
+
+    /** Broadcasting consumption model. */
+    case object Broadcasting
+        extends MessagingRocketmqConsumptionModelValue("broadcasting")
+
+  }
+
+  abstract class MessagingRocketmqMessageTypeValue(val value: String)
+  object MessagingRocketmqMessageTypeValue {
+
+    /** Normal message. */
+    case object Normal extends MessagingRocketmqMessageTypeValue("normal")
+
+    /** FIFO message. */
+    case object Fifo extends MessagingRocketmqMessageTypeValue("fifo")
+
+    /** Delay message. */
+    case object Delay extends MessagingRocketmqMessageTypeValue("delay")
+
+    /** Transaction message. */
+    case object Transaction
+        extends MessagingRocketmqMessageTypeValue("transaction")
 
   }
 
@@ -2093,38 +2245,168 @@ object SemanticAttributes {
 
   }
 
-  abstract class HttpRequestMethodValue(val value: String)
-  object HttpRequestMethodValue {
+  abstract class NetworkTransportValue(val value: String)
+  object NetworkTransportValue {
 
-    /** CONNECT method. */
-    case object Connect extends HttpRequestMethodValue("CONNECT")
+    /** TCP. */
+    case object Tcp extends NetworkTransportValue("tcp")
 
-    /** DELETE method. */
-    case object Delete extends HttpRequestMethodValue("DELETE")
+    /** UDP. */
+    case object Udp extends NetworkTransportValue("udp")
 
-    /** GET method. */
-    case object Get extends HttpRequestMethodValue("GET")
+    /** Named or anonymous pipe. */
+    case object Pipe extends NetworkTransportValue("pipe")
 
-    /** HEAD method. */
-    case object Head extends HttpRequestMethodValue("HEAD")
+    /** Unix domain socket. */
+    case object Unix extends NetworkTransportValue("unix")
 
-    /** OPTIONS method. */
-    case object Options extends HttpRequestMethodValue("OPTIONS")
+  }
 
-    /** PATCH method. */
-    case object Patch extends HttpRequestMethodValue("PATCH")
+  abstract class NetworkTypeValue(val value: String)
+  object NetworkTypeValue {
 
-    /** POST method. */
-    case object Post extends HttpRequestMethodValue("POST")
+    /** IPv4. */
+    case object Ipv4 extends NetworkTypeValue("ipv4")
 
-    /** PUT method. */
-    case object Put extends HttpRequestMethodValue("PUT")
+    /** IPv6. */
+    case object Ipv6 extends NetworkTypeValue("ipv6")
 
-    /** TRACE method. */
-    case object Trace extends HttpRequestMethodValue("TRACE")
+  }
 
-    /** Any HTTP method that the instrumentation has no prior knowledge of. */
-    case object Other extends HttpRequestMethodValue("_OTHER")
+  abstract class RpcConnectRpcErrorCodeValue(val value: String)
+  object RpcConnectRpcErrorCodeValue {
+
+    /** cancelled. */
+    case object Cancelled extends RpcConnectRpcErrorCodeValue("cancelled")
+
+    /** unknown. */
+    case object Unknown extends RpcConnectRpcErrorCodeValue("unknown")
+
+    /** invalid_argument. */
+    case object InvalidArgument
+        extends RpcConnectRpcErrorCodeValue("invalid_argument")
+
+    /** deadline_exceeded. */
+    case object DeadlineExceeded
+        extends RpcConnectRpcErrorCodeValue("deadline_exceeded")
+
+    /** not_found. */
+    case object NotFound extends RpcConnectRpcErrorCodeValue("not_found")
+
+    /** already_exists. */
+    case object AlreadyExists
+        extends RpcConnectRpcErrorCodeValue("already_exists")
+
+    /** permission_denied. */
+    case object PermissionDenied
+        extends RpcConnectRpcErrorCodeValue("permission_denied")
+
+    /** resource_exhausted. */
+    case object ResourceExhausted
+        extends RpcConnectRpcErrorCodeValue("resource_exhausted")
+
+    /** failed_precondition. */
+    case object FailedPrecondition
+        extends RpcConnectRpcErrorCodeValue("failed_precondition")
+
+    /** aborted. */
+    case object Aborted extends RpcConnectRpcErrorCodeValue("aborted")
+
+    /** out_of_range. */
+    case object OutOfRange extends RpcConnectRpcErrorCodeValue("out_of_range")
+
+    /** unimplemented. */
+    case object Unimplemented
+        extends RpcConnectRpcErrorCodeValue("unimplemented")
+
+    /** internal. */
+    case object Internal extends RpcConnectRpcErrorCodeValue("internal")
+
+    /** unavailable. */
+    case object Unavailable extends RpcConnectRpcErrorCodeValue("unavailable")
+
+    /** data_loss. */
+    case object DataLoss extends RpcConnectRpcErrorCodeValue("data_loss")
+
+    /** unauthenticated. */
+    case object Unauthenticated
+        extends RpcConnectRpcErrorCodeValue("unauthenticated")
+
+  }
+
+  abstract class RpcGrpcStatusCodeValue(val value: Long)
+  object RpcGrpcStatusCodeValue {
+
+    /** OK. */
+    case object Ok extends RpcGrpcStatusCodeValue(0)
+
+    /** CANCELLED. */
+    case object Cancelled extends RpcGrpcStatusCodeValue(1)
+
+    /** UNKNOWN. */
+    case object Unknown extends RpcGrpcStatusCodeValue(2)
+
+    /** INVALID_ARGUMENT. */
+    case object InvalidArgument extends RpcGrpcStatusCodeValue(3)
+
+    /** DEADLINE_EXCEEDED. */
+    case object DeadlineExceeded extends RpcGrpcStatusCodeValue(4)
+
+    /** NOT_FOUND. */
+    case object NotFound extends RpcGrpcStatusCodeValue(5)
+
+    /** ALREADY_EXISTS. */
+    case object AlreadyExists extends RpcGrpcStatusCodeValue(6)
+
+    /** PERMISSION_DENIED. */
+    case object PermissionDenied extends RpcGrpcStatusCodeValue(7)
+
+    /** RESOURCE_EXHAUSTED. */
+    case object ResourceExhausted extends RpcGrpcStatusCodeValue(8)
+
+    /** FAILED_PRECONDITION. */
+    case object FailedPrecondition extends RpcGrpcStatusCodeValue(9)
+
+    /** ABORTED. */
+    case object Aborted extends RpcGrpcStatusCodeValue(10)
+
+    /** OUT_OF_RANGE. */
+    case object OutOfRange extends RpcGrpcStatusCodeValue(11)
+
+    /** UNIMPLEMENTED. */
+    case object Unimplemented extends RpcGrpcStatusCodeValue(12)
+
+    /** INTERNAL. */
+    case object Internal extends RpcGrpcStatusCodeValue(13)
+
+    /** UNAVAILABLE. */
+    case object Unavailable extends RpcGrpcStatusCodeValue(14)
+
+    /** DATA_LOSS. */
+    case object DataLoss extends RpcGrpcStatusCodeValue(15)
+
+    /** UNAUTHENTICATED. */
+    case object Unauthenticated extends RpcGrpcStatusCodeValue(16)
+
+  }
+
+  abstract class RpcSystemValue(val value: String)
+  object RpcSystemValue {
+
+    /** gRPC. */
+    case object Grpc extends RpcSystemValue("grpc")
+
+    /** Java RMI. */
+    case object JavaRmi extends RpcSystemValue("java_rmi")
+
+    /** .NET WCF. */
+    case object DotnetWcf extends RpcSystemValue("dotnet_wcf")
+
+    /** Apache Dubbo. */
+    case object ApacheDubbo extends RpcSystemValue("apache_dubbo")
+
+    /** Connect RPC. */
+    case object ConnectRpc extends RpcSystemValue("connect_rpc")
 
   }
 
@@ -2134,7 +2416,7 @@ object SemanticAttributes {
     /** The parent Span depends on the child Span in some capacity. */
     case object ChildOf extends OpentracingRefTypeValue("child_of")
 
-    /** The parent Span does not depend in any way on the result of the child
+    /** The parent Span doesn&#39;t depend in any way on the result of the child
       * Span.
       */
     case object FollowsFrom extends OpentracingRefTypeValue("follows_from")
@@ -2446,127 +2728,6 @@ object SemanticAttributes {
 
   }
 
-  abstract class MessagingOperationValue(val value: String)
-  object MessagingOperationValue {
-
-    /** publish. */
-    case object Publish extends MessagingOperationValue("publish")
-
-    /** receive. */
-    case object Receive extends MessagingOperationValue("receive")
-
-    /** process. */
-    case object Process extends MessagingOperationValue("process")
-
-  }
-
-  abstract class MessagingRocketmqConsumptionModelValue(val value: String)
-  object MessagingRocketmqConsumptionModelValue {
-
-    /** Clustering consumption model. */
-    case object Clustering
-        extends MessagingRocketmqConsumptionModelValue("clustering")
-
-    /** Broadcasting consumption model. */
-    case object Broadcasting
-        extends MessagingRocketmqConsumptionModelValue("broadcasting")
-
-  }
-
-  abstract class MessagingRocketmqMessageTypeValue(val value: String)
-  object MessagingRocketmqMessageTypeValue {
-
-    /** Normal message. */
-    case object Normal extends MessagingRocketmqMessageTypeValue("normal")
-
-    /** FIFO message. */
-    case object Fifo extends MessagingRocketmqMessageTypeValue("fifo")
-
-    /** Delay message. */
-    case object Delay extends MessagingRocketmqMessageTypeValue("delay")
-
-    /** Transaction message. */
-    case object Transaction
-        extends MessagingRocketmqMessageTypeValue("transaction")
-
-  }
-
-  abstract class RpcSystemValue(val value: String)
-  object RpcSystemValue {
-
-    /** gRPC. */
-    case object Grpc extends RpcSystemValue("grpc")
-
-    /** Java RMI. */
-    case object JavaRmi extends RpcSystemValue("java_rmi")
-
-    /** .NET WCF. */
-    case object DotnetWcf extends RpcSystemValue("dotnet_wcf")
-
-    /** Apache Dubbo. */
-    case object ApacheDubbo extends RpcSystemValue("apache_dubbo")
-
-    /** Connect RPC. */
-    case object ConnectRpc extends RpcSystemValue("connect_rpc")
-
-  }
-
-  abstract class RpcGrpcStatusCodeValue(val value: Long)
-  object RpcGrpcStatusCodeValue {
-
-    /** OK. */
-    case object Ok extends RpcGrpcStatusCodeValue(0)
-
-    /** CANCELLED. */
-    case object Cancelled extends RpcGrpcStatusCodeValue(1)
-
-    /** UNKNOWN. */
-    case object Unknown extends RpcGrpcStatusCodeValue(2)
-
-    /** INVALID_ARGUMENT. */
-    case object InvalidArgument extends RpcGrpcStatusCodeValue(3)
-
-    /** DEADLINE_EXCEEDED. */
-    case object DeadlineExceeded extends RpcGrpcStatusCodeValue(4)
-
-    /** NOT_FOUND. */
-    case object NotFound extends RpcGrpcStatusCodeValue(5)
-
-    /** ALREADY_EXISTS. */
-    case object AlreadyExists extends RpcGrpcStatusCodeValue(6)
-
-    /** PERMISSION_DENIED. */
-    case object PermissionDenied extends RpcGrpcStatusCodeValue(7)
-
-    /** RESOURCE_EXHAUSTED. */
-    case object ResourceExhausted extends RpcGrpcStatusCodeValue(8)
-
-    /** FAILED_PRECONDITION. */
-    case object FailedPrecondition extends RpcGrpcStatusCodeValue(9)
-
-    /** ABORTED. */
-    case object Aborted extends RpcGrpcStatusCodeValue(10)
-
-    /** OUT_OF_RANGE. */
-    case object OutOfRange extends RpcGrpcStatusCodeValue(11)
-
-    /** UNIMPLEMENTED. */
-    case object Unimplemented extends RpcGrpcStatusCodeValue(12)
-
-    /** INTERNAL. */
-    case object Internal extends RpcGrpcStatusCodeValue(13)
-
-    /** UNAVAILABLE. */
-    case object Unavailable extends RpcGrpcStatusCodeValue(14)
-
-    /** DATA_LOSS. */
-    case object DataLoss extends RpcGrpcStatusCodeValue(15)
-
-    /** UNAUTHENTICATED. */
-    case object Unauthenticated extends RpcGrpcStatusCodeValue(16)
-
-  }
-
   abstract class MessageTypeValue(val value: String)
   object MessageTypeValue {
 
@@ -2575,67 +2736,6 @@ object SemanticAttributes {
 
     /** received. */
     case object Received extends MessageTypeValue("RECEIVED")
-
-  }
-
-  abstract class RpcConnectRpcErrorCodeValue(val value: String)
-  object RpcConnectRpcErrorCodeValue {
-
-    /** cancelled. */
-    case object Cancelled extends RpcConnectRpcErrorCodeValue("cancelled")
-
-    /** unknown. */
-    case object Unknown extends RpcConnectRpcErrorCodeValue("unknown")
-
-    /** invalid_argument. */
-    case object InvalidArgument
-        extends RpcConnectRpcErrorCodeValue("invalid_argument")
-
-    /** deadline_exceeded. */
-    case object DeadlineExceeded
-        extends RpcConnectRpcErrorCodeValue("deadline_exceeded")
-
-    /** not_found. */
-    case object NotFound extends RpcConnectRpcErrorCodeValue("not_found")
-
-    /** already_exists. */
-    case object AlreadyExists
-        extends RpcConnectRpcErrorCodeValue("already_exists")
-
-    /** permission_denied. */
-    case object PermissionDenied
-        extends RpcConnectRpcErrorCodeValue("permission_denied")
-
-    /** resource_exhausted. */
-    case object ResourceExhausted
-        extends RpcConnectRpcErrorCodeValue("resource_exhausted")
-
-    /** failed_precondition. */
-    case object FailedPrecondition
-        extends RpcConnectRpcErrorCodeValue("failed_precondition")
-
-    /** aborted. */
-    case object Aborted extends RpcConnectRpcErrorCodeValue("aborted")
-
-    /** out_of_range. */
-    case object OutOfRange extends RpcConnectRpcErrorCodeValue("out_of_range")
-
-    /** unimplemented. */
-    case object Unimplemented
-        extends RpcConnectRpcErrorCodeValue("unimplemented")
-
-    /** internal. */
-    case object Internal extends RpcConnectRpcErrorCodeValue("internal")
-
-    /** unavailable. */
-    case object Unavailable extends RpcConnectRpcErrorCodeValue("unavailable")
-
-    /** data_loss. */
-    case object DataLoss extends RpcConnectRpcErrorCodeValue("data_loss")
-
-    /** unauthenticated. */
-    case object Unauthenticated
-        extends RpcConnectRpcErrorCodeValue("unauthenticated")
 
   }
 
@@ -3429,5 +3529,31 @@ object SemanticAttributes {
     /** Non-heap memory. */
     case object NonHeap extends TypeValue("non_heap")
   }
+
+  /** Whether the thread is daemon or not.
+    *
+    * @deprecated
+    *   This item has been renamed in 1.23.1 of the semantic conventions. Use
+    *   [[SemanticAttributes.JvmThreadDaemon]] instead.
+    */
+  @deprecated("Use SemanticAttributes.JvmThreadDaemon instead", "0.4.0")
+  val ThreadDaemon = boolean("thread.daemon")
+
+  /** The ordinal number of request resending attempt (for any reason, including
+    * redirects).
+    *
+    * <p>Notes:
+    *
+    * <ul> <li>The resend count SHOULD be updated each time an HTTP request gets
+    * resent by the client, regardless of what was the cause of the resending
+    * (e.g. redirection, authorization failure, 503 Server Unavailable, network
+    * issues, or any other). </ul>
+    *
+    * @deprecated
+    *   This item has been renamed in 1.23.1 of the semantic conventions. Use
+    *   [[SemanticAttributes.HttpRequestResendCount]] instead.
+    */
+  @deprecated("Use SemanticAttributes.HttpRequestResendCount instead", "0.4.0")
+  val HttpResendCount = long("http.resend_count")
 
 }

@@ -24,7 +24,172 @@ object ResourceAttributes {
 
   /** The URL of the OpenTelemetry schema for these keys and values.
     */
-  final val SchemaUrl = "https://opentelemetry.io/schemas/1.22.0"
+  final val SchemaUrl = "https://opentelemetry.io/schemas/1.23.1"
+
+  /** The cloud account ID the resource is assigned to.
+    */
+  val CloudAccountId: AttributeKey[String] = string("cloud.account.id")
+
+  /** Cloud regions often have multiple, isolated locations known as zones to
+    * increase availability. Availability zone represents the zone where the
+    * resource is running.
+    *
+    * <p>Notes: <ul> <li>Availability zones are called &quot;zones&quot; on
+    * Alibaba Cloud and Google Cloud.</li> </ul>
+    */
+  val CloudAvailabilityZone: AttributeKey[String] = string(
+    "cloud.availability_zone"
+  )
+
+  /** The cloud platform in use.
+    *
+    * <p>Notes: <ul> <li>The prefix of the service SHOULD match the one
+    * specified in `cloud.provider`.</li> </ul>
+    */
+  val CloudPlatform: AttributeKey[String] = string("cloud.platform")
+
+  /** Name of the cloud provider.
+    */
+  val CloudProvider: AttributeKey[String] = string("cloud.provider")
+
+  /** The geographical region the resource is running.
+    *
+    * <p>Notes: <ul> <li>Refer to your provider's docs to see the available
+    * regions, for example <a
+    * href="https://www.alibabacloud.com/help/doc-detail/40654.htm">Alibaba
+    * Cloud regions</a>, <a
+    * href="https://aws.amazon.com/about-aws/global-infrastructure/regions_az/">AWS
+    * regions</a>, <a
+    * href="https://azure.microsoft.com/global-infrastructure/geographies/">Azure
+    * regions</a>, <a href="https://cloud.google.com/about/locations">Google
+    * Cloud regions</a>, or <a
+    * href="https://www.tencentcloud.com/document/product/213/6091">Tencent
+    * Cloud regions</a>.</li> </ul>
+    */
+  val CloudRegion: AttributeKey[String] = string("cloud.region")
+
+  /** Cloud provider-specific native identifier of the monitored cloud resource
+    * (e.g. an <a
+    * href="https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html">ARN</a>
+    * on AWS, a <a
+    * href="https://learn.microsoft.com/rest/api/resources/resources/get-by-id">fully
+    * qualified resource ID</a> on Azure, a <a
+    * href="https://cloud.google.com/apis/design/resource_names#full_resource_name">full
+    * resource name</a> on GCP)
+    *
+    * <p>Notes: <ul> <li>On some cloud providers, it may not be possible to
+    * determine the full ID at startup, so it may be necessary to set
+    * `cloud.resource_id` as a span attribute instead.</li><li>The exact value
+    * to use for `cloud.resource_id` depends on the cloud provider. The
+    * following well-known definitions MUST be used if you set this attribute
+    * and they apply:</li><li><strong>AWS Lambda:</strong> The function <a
+    * href="https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html">ARN</a>.
+    * Take care not to use the &quot;invoked ARN&quot; directly but replace any
+    * <a
+    * href="https://docs.aws.amazon.com/lambda/latest/dg/configuration-aliases.html">alias
+    * suffix</a> with the resolved function version, as the same runtime
+    * instance may be invokable with multiple different aliases.</li>
+    * <li><strong>GCP:</strong> The <a
+    * href="https://cloud.google.com/iam/docs/full-resource-names">URI of the
+    * resource</a></li> <li><strong>Azure:</strong> The <a
+    * href="https://docs.microsoft.com/rest/api/resources/resources/get-by-id">Fully
+    * Qualified Resource ID</a> of the invoked function, <em>not</em> the
+    * function app, having the form
+    * `/subscriptions/<SUBSCIPTION_GUID>/resourceGroups/<RG>/providers/Microsoft.Web/sites/<FUNCAPP>/functions/<FUNC>`.
+    * This means that a span attribute MUST be used, as an Azure function app
+    * can host multiple functions that would usually share a
+    * TracerProvider.</li> </ul>
+    */
+  val CloudResourceId: AttributeKey[String] = string("cloud.resource_id")
+
+  /** The command used to run the container (i.e. the command name).
+    *
+    * <p>Notes: <ul> <li>If using embedded credentials or sensitive data, it is
+    * recommended to remove them to prevent potential leakage.</li> </ul>
+    */
+  val ContainerCommand: AttributeKey[String] = string("container.command")
+
+  /** All the command arguments (including the command/executable itself) run by
+    * the container. [2]
+    */
+  val ContainerCommandArgs: AttributeKey[List[String]] = stringList(
+    "container.command_args"
+  )
+
+  /** The full command run by the container as a single string representing the
+    * full command. [2]
+    */
+  val ContainerCommandLine: AttributeKey[String] = string(
+    "container.command_line"
+  )
+
+  /** Container ID. Usually a UUID, as for example used to <a
+    * href="https://docs.docker.com/engine/reference/run/#container-identification">identify
+    * Docker containers</a>. The UUID might be abbreviated.
+    */
+  val ContainerId: AttributeKey[String] = string("container.id")
+
+  /** Runtime specific image identifier. Usually a hash algorithm followed by a
+    * UUID.
+    *
+    * <p>Notes: <ul> <li>Docker defines a sha256 of the image id;
+    * `container.image.id` corresponds to the `Image` field from the Docker
+    * container inspect <a
+    * href="https://docs.docker.com/engine/api/v1.43/#tag/Container/operation/ContainerInspect">API</a>
+    * endpoint. K8s defines a link to the container registry repository with
+    * digest `"imageID": "registry.azurecr.io
+    * /namespace/service/dockerfile@sha256:bdeabd40c3a8a492eaf9e8e44d0ebbb84bac7ee25ac0cf8a7159d25f62555625"`.
+    * The ID is assinged by the container runtime and can vary in different
+    * environments. Consider using `oci.manifest.digest` if it is important to
+    * identify the same image in different environments/runtimes.</li> </ul>
+    */
+  val ContainerImageId: AttributeKey[String] = string("container.image.id")
+
+  /** Name of the image the container was built on.
+    */
+  val ContainerImageName: AttributeKey[String] = string("container.image.name")
+
+  /** Repo digests of the container image as provided by the container runtime.
+    *
+    * <p>Notes: <ul> <li><a
+    * href="https://docs.docker.com/engine/api/v1.43/#tag/Image/operation/ImageInspect">Docker</a>
+    * and <a
+    * href="https://github.com/kubernetes/cri-api/blob/c75ef5b473bbe2d0a4fc92f82235efd665ea8e9f/pkg/apis/runtime/v1/api.proto#L1237-L1238">CRI</a>
+    * report those under the `RepoDigests` field.</li> </ul>
+    */
+  val ContainerImageRepoDigests: AttributeKey[List[String]] = stringList(
+    "container.image.repo_digests"
+  )
+
+  /** Container image tags. An example can be found in <a
+    * href="https://docs.docker.com/engine/api/v1.43/#tag/Image/operation/ImageInspect">Docker
+    * Image Inspect</a>. Should be only the `<tag>` section of the full name for
+    * example from `registry.example.com/my-org/my-image:<tag>`.
+    */
+  val ContainerImageTags: AttributeKey[List[String]] = stringList(
+    "container.image.tags"
+  )
+
+  /** Container name used by container runtime.
+    */
+  val ContainerName: AttributeKey[String] = string("container.name")
+
+  /** The container runtime managing this container.
+    */
+  val ContainerRuntime: AttributeKey[String] = string("container.runtime")
+
+  /** The digest of the OCI image manifest. For container images specifically is
+    * the digest by which the container image is known.
+    *
+    * <p>Notes: <ul> <li>Follows <a
+    * href="https://github.com/opencontainers/image-spec/blob/main/manifest.md">OCI
+    * Image Manifest Specification</a>, and specifically the <a
+    * href="https://github.com/opencontainers/image-spec/blob/main/descriptor.md#digests">Digest
+    * property</a>. An example can be found in <a
+    * href="https://docs.docker.com/registry/spec/manifest-v2-2/#example-image-manifest">Example
+    * Image Manifest</a>.</li> </ul>
+    */
+  val OciManifestDigest: AttributeKey[String] = string("oci.manifest.digest")
 
   /** Uniquely identifies the framework API revision offered by a version
     * (`os.version`) of the android operating system. More information can be
@@ -73,82 +238,6 @@ object ResourceAttributes {
     * agent provides.</li> </ul>
     */
   val BrowserPlatform: AttributeKey[String] = string("browser.platform")
-
-  /** The cloud account ID the resource is assigned to.
-    */
-  val CloudAccountId: AttributeKey[String] = string("cloud.account.id")
-
-  /** Cloud regions often have multiple, isolated locations known as zones to
-    * increase availability. Availability zone represents the zone where the
-    * resource is running.
-    *
-    * <p>Notes: <ul> <li>Availability zones are called &quot;zones&quot; on
-    * Alibaba Cloud and Google Cloud.</li> </ul>
-    */
-  val CloudAvailabilityZone: AttributeKey[String] = string(
-    "cloud.availability_zone"
-  )
-
-  /** The cloud platform in use.
-    *
-    * <p>Notes: <ul> <li>The prefix of the service SHOULD match the one
-    * specified in `cloud.provider`.</li> </ul>
-    */
-  val CloudPlatform: AttributeKey[String] = string("cloud.platform")
-
-  /** Name of the cloud provider.
-    */
-  val CloudProvider: AttributeKey[String] = string("cloud.provider")
-
-  /** The geographical region the resource is running.
-    *
-    * <p>Notes: <ul> <li>Refer to your provider's docs to see the available
-    * regions, for example <a
-    * href="https://www.alibabacloud.com/help/doc-detail/40654.htm">Alibaba
-    * Cloud regions</a>, <a
-    * href="https://aws.amazon.com/about-aws/global-infrastructure/regions_az/">AWS
-    * regions</a>, <a
-    * href="https://azure.microsoft.com/en-us/global-infrastructure/geographies/">Azure
-    * regions</a>, <a href="https://cloud.google.com/about/locations">Google
-    * Cloud regions</a>, or <a
-    * href="https://www.tencentcloud.com/document/product/213/6091">Tencent
-    * Cloud regions</a>.</li> </ul>
-    */
-  val CloudRegion: AttributeKey[String] = string("cloud.region")
-
-  /** Cloud provider-specific native identifier of the monitored cloud resource
-    * (e.g. an <a
-    * href="https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html">ARN</a>
-    * on AWS, a <a
-    * href="https://learn.microsoft.com/en-us/rest/api/resources/resources/get-by-id">fully
-    * qualified resource ID</a> on Azure, a <a
-    * href="https://cloud.google.com/apis/design/resource_names#full_resource_name">full
-    * resource name</a> on GCP)
-    *
-    * <p>Notes: <ul> <li>On some cloud providers, it may not be possible to
-    * determine the full ID at startup, so it may be necessary to set
-    * `cloud.resource_id` as a span attribute instead.</li><li>The exact value
-    * to use for `cloud.resource_id` depends on the cloud provider. The
-    * following well-known definitions MUST be used if you set this attribute
-    * and they apply:</li><li><strong>AWS Lambda:</strong> The function <a
-    * href="https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html">ARN</a>.
-    * Take care not to use the &quot;invoked ARN&quot; directly but replace any
-    * <a
-    * href="https://docs.aws.amazon.com/lambda/latest/dg/configuration-aliases.html">alias
-    * suffix</a> with the resolved function version, as the same runtime
-    * instance may be invokable with multiple different aliases.</li>
-    * <li><strong>GCP:</strong> The <a
-    * href="https://cloud.google.com/iam/docs/full-resource-names">URI of the
-    * resource</a></li> <li><strong>Azure:</strong> The <a
-    * href="https://docs.microsoft.com/en-us/rest/api/resources/resources/get-by-id">Fully
-    * Qualified Resource ID</a> of the invoked function, <em>not</em> the
-    * function app, having the form
-    * `/subscriptions/<SUBSCIPTION_GUID>/resourceGroups/<RG>/providers/Microsoft.Web/sites/<FUNCAPP>/functions/<FUNC>`.
-    * This means that a span attribute MUST be used, as an Azure function app
-    * can host multiple functions that would usually share a
-    * TracerProvider.</li> </ul>
-    */
-  val CloudResourceId: AttributeKey[String] = string("cloud.resource_id")
 
   /** The ARN of an <a
     * href="https://docs.aws.amazon.com/AmazonECS/latest/developerguide/clusters.html">ECS
@@ -275,84 +364,8 @@ object ResourceAttributes {
     "heroku.release.creation_timestamp"
   )
 
-  /** The command used to run the container (i.e. the command name).
-    *
-    * <p>Notes: <ul> <li>If using embedded credentials or sensitive data, it is
-    * recommended to remove them to prevent potential leakage.</li> </ul>
-    */
-  val ContainerCommand: AttributeKey[String] = string("container.command")
-
-  /** All the command arguments (including the command/executable itself) run by
-    * the container. [2]
-    */
-  val ContainerCommandArgs: AttributeKey[List[String]] = stringList(
-    "container.command_args"
-  )
-
-  /** The full command run by the container as a single string representing the
-    * full command. [2]
-    */
-  val ContainerCommandLine: AttributeKey[String] = string(
-    "container.command_line"
-  )
-
-  /** Container ID. Usually a UUID, as for example used to <a
-    * href="https://docs.docker.com/engine/reference/run/#container-identification">identify
-    * Docker containers</a>. The UUID might be abbreviated.
-    */
-  val ContainerId: AttributeKey[String] = string("container.id")
-
-  /** Runtime specific image identifier. Usually a hash algorithm followed by a
-    * UUID.
-    *
-    * <p>Notes: <ul> <li>Docker defines a sha256 of the image id;
-    * `container.image.id` corresponds to the `Image` field from the Docker
-    * container inspect <a
-    * href="https://docs.docker.com/engine/api/v1.43/#tag/Container/operation/ContainerInspect">API</a>
-    * endpoint. K8s defines a link to the container registry repository with
-    * digest `"imageID": "registry.azurecr.io
-    * /namespace/service/dockerfile@sha256:bdeabd40c3a8a492eaf9e8e44d0ebbb84bac7ee25ac0cf8a7159d25f62555625"`.
-    * The ID is assinged by the container runtime and can vary in different
-    * environments. Consider using `oci.manifest.digest` if it is important to
-    * identify the same image in different environments/runtimes.</li> </ul>
-    */
-  val ContainerImageId: AttributeKey[String] = string("container.image.id")
-
-  /** Name of the image the container was built on.
-    */
-  val ContainerImageName: AttributeKey[String] = string("container.image.name")
-
-  /** Repo digests of the container image as provided by the container runtime.
-    *
-    * <p>Notes: <ul> <li><a
-    * href="https://docs.docker.com/engine/api/v1.43/#tag/Image/operation/ImageInspect">Docker</a>
-    * and <a
-    * href="https://github.com/kubernetes/cri-api/blob/c75ef5b473bbe2d0a4fc92f82235efd665ea8e9f/pkg/apis/runtime/v1/api.proto#L1237-L1238">CRI</a>
-    * report those under the `RepoDigests` field.</li> </ul>
-    */
-  val ContainerImageRepoDigests: AttributeKey[List[String]] = stringList(
-    "container.image.repo_digests"
-  )
-
-  /** Container image tags. An example can be found in <a
-    * href="https://docs.docker.com/engine/api/v1.43/#tag/Image/operation/ImageInspect">Docker
-    * Image Inspect</a>. Should be only the `<tag>` section of the full name for
-    * example from `registry.example.com/my-org/my-image:<tag>`.
-    */
-  val ContainerImageTags: AttributeKey[List[String]] = stringList(
-    "container.image.tags"
-  )
-
-  /** Container name used by container runtime.
-    */
-  val ContainerName: AttributeKey[String] = string("container.name")
-
-  /** The container runtime managing this container.
-    */
-  val ContainerRuntime: AttributeKey[String] = string("container.runtime")
-
   /** Name of the <a
-    * href="https://en.wikipedia.org/wiki/Deployment_environment">deployment
+    * href="https://wikipedia.org/wiki/Deployment_environment">deployment
     * environment</a> (aka deployment tier).
     */
   val DeploymentEnvironment: AttributeKey[String] = string(
@@ -490,6 +503,15 @@ object ResourceAttributes {
     */
   val HostIp: AttributeKey[List[String]] = stringList("host.ip")
 
+  /** Available MAC addresses of the host, excluding loopback interfaces.
+    *
+    * <p>Notes: <ul> <li>MAC Addresses MUST be represented in <a
+    * href="https://standards.ieee.org/wp-content/uploads/import/documents/tutorials/eui.pdf">IEEE
+    * RA hexadecimal form</a>: as hyphen-separated octets in uppercase
+    * hexadecimal form from most to least significant.</li> </ul>
+    */
+  val HostMac: AttributeKey[List[String]] = stringList("host.mac")
+
   /** Name of the host. On Unix systems, it may contain what the hostname
     * command returns, or the fully qualified hostname, or another name
     * specified by the user.
@@ -537,8 +559,8 @@ object ResourceAttributes {
   /** A pseudo-ID for the cluster, set to the UID of the `kube-system`
     * namespace.
     *
-    * <p>Notes: <ul> <li>K8s does not have support for obtaining a cluster ID.
-    * If this is ever added, we will recommend collecting the `k8s.cluster.uid`
+    * <p>Notes: <ul> <li>K8s doesn't have support for obtaining a cluster ID. If
+    * this is ever added, we will recommend collecting the `k8s.cluster.uid`
     * through the official APIs. In the meantime, we are able to use the `uid`
     * of the `kube-system` namespace as a proxy for cluster ID. Read on for the
     * rationale.</li><li>Every object created in a K8s cluster is assigned a
@@ -639,19 +661,6 @@ object ResourceAttributes {
   /** The UID of the CronJob.
     */
   val K8sCronjobUid: AttributeKey[String] = string("k8s.cronjob.uid")
-
-  /** The digest of the OCI image manifest. For container images specifically is
-    * the digest by which the container image is known.
-    *
-    * <p>Notes: <ul> <li>Follows <a
-    * href="https://github.com/opencontainers/image-spec/blob/main/manifest.md">OCI
-    * Image Manifest Specification</a>, and specifically the <a
-    * href="https://github.com/opencontainers/image-spec/blob/main/descriptor.md#digests">Digest
-    * property</a>. An example can be found in <a
-    * href="https://docs.docker.com/registry/spec/manifest-v2-2/#example-image-manifest">Example
-    * Image Manifest</a>.</li> </ul>
-    */
-  val OciManifestDigest: AttributeKey[String] = string("oci.manifest.digest")
 
   /** Unique identifier for a particular build or compilation of the operating
     * system.

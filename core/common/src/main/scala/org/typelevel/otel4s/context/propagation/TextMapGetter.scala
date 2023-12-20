@@ -34,8 +34,6 @@ import scala.collection.generic.IsSeq
   * behavior of such implicit instances will be made to match the specification.
   *
   * @see
-  *   See [[TextMapSetter]] to set a value to a mutable carrier
-  * @see
   *   See [[TextMapUpdater]] to update values of an immutable carrier
   *
   * @tparam A

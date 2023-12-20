@@ -48,9 +48,12 @@ import io.opentelemetry.sdk.trace.`export`.SimpleSpanProcessor
 import io.opentelemetry.sdk.trace.internal.data.ExceptionEventData
 import munit.CatsEffectSuite
 import org.typelevel.otel4s.Attribute
+import org.typelevel.otel4s.context.propagation.{
+  PassThroughPropagator => SPassThroughPropagator
+}
 import org.typelevel.otel4s.context.propagation.ContextPropagators
-import org.typelevel.otel4s.java.TextMapPropagatorImpl
 import org.typelevel.otel4s.java.context.Context
+import org.typelevel.otel4s.java.context.propagation.PropagatorConverters._
 import org.typelevel.otel4s.java.instances._
 import org.typelevel.otel4s.trace.Span
 import org.typelevel.otel4s.trace.Tracer
@@ -948,22 +951,37 @@ class TracerSuite extends CatsEffectSuite {
 
   // typelevel/otel4s#277
   test("retain all of a provided context through propagation") {
-    TestControl.executeEmbed {
-      for {
-        sdk <- makeSdk(additionalPropagators =
-          Seq(PassThroughPropagator.create("foo", "bar"))
-        )
-        tracer <- sdk.provider.get("tracer")
-        _ <- tracer.joinOrRoot(Map("foo" -> "1", "baz" -> "2")) {
-          for {
-            carrier <- tracer.propagate(Map.empty[String, String])
-          } yield {
-            assertEquals(carrier.size, 1)
-            assertEquals(carrier.get("foo"), Some("1"))
-          }
+    for {
+      sdk <- makeSdk(additionalPropagators =
+        Seq(PassThroughPropagator.create("foo", "bar"))
+      )
+      tracer <- sdk.provider.get("tracer")
+      _ <- tracer.joinOrRoot(Map("foo" -> "1", "baz" -> "2")) {
+        for {
+          carrier <- tracer.propagate(Map.empty[String, String])
+        } yield {
+          assertEquals(carrier.size, 1)
+          assertEquals(carrier.get("foo"), Some("1"))
         }
-      } yield ()
-    }
+      }
+    } yield ()
+  }
+
+  test("retain context when using Java and Scala propagators together") {
+    for {
+      sdk <- makeSdk(additionalPropagators =
+        Seq(SPassThroughPropagator[Context, Context.Key]("foo", "bar").asJava)
+      )
+      tracer <- sdk.provider.get("tracer")
+      _ <- tracer.joinOrRoot(Map("foo" -> "1", "baz" -> "2")) {
+        for {
+          carrier <- tracer.propagate(Map.empty[String, String])
+        } yield {
+          assertEquals(carrier.size, 1)
+          assertEquals(carrier.get("foo"), Some("1"))
+        }
+      }
+    } yield ()
   }
 
   test("nested SpanOps#surround for Tracer[IO]") {
@@ -1203,9 +1221,7 @@ class TracerSuite extends CatsEffectSuite {
         W3CTraceContextPropagator.getInstance() +: additionalPropagators
 
       val propagators = ContextPropagators.of(
-        new TextMapPropagatorImpl(
-          JTextMapPropagator.composite(textMapPropagators.asJava)
-        )
+        JTextMapPropagator.composite(textMapPropagators.asJava).asScala
       )
 
       val provider = TracerProviderImpl.local[IO](tracerProvider, propagators)

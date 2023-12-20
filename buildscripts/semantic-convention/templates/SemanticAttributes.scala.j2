@@ -108,6 +108,30 @@ object {{class}} {
     case object Scala extends TelemetrySdkLanguageValue("scala")
     {%- endif %}
 
+
+    {%- if class_name == "MessagingOperationValue" %}
+    /**
+     * process.
+     *
+     * @deprecated this value has been removed as of 1.23.1 of the semantic conventions.
+     */
+    @deprecated("The item has been removed", "0.4.0")
+    case object Process extends MessagingOperationValue("process")
+
+    {% endif %}
+
+    {%- if class_name == "SystemMemoryStateValue" %}
+
+    /**
+     * total.
+     *
+     * @deprecated this value has been removed as of 1.23.1 of the semantic conventions.
+     */
+    @deprecated("The item has been removed", "0.4.0")
+    case object Total extends SystemMemoryStateValue("total")
+
+    {% endif %}
+
   }
 
   {% endif %}
@@ -622,6 +646,154 @@ object {{class}} {
     case object LteCa extends NetHostConnectionSubtypeValue("lte_ca")
   }
 
+  /**
+   * Immediate client peer port number.
+   *
+   * @deprecated This item has been renamed in 1.22.0 of the semantic conventions. Use [[SemanticAttributes.NetworkPeerPort]] on server telemetry and [[SemanticAttributes.NetworkLocalPort]] on client telemetry instead.
+   */
+  @deprecated("Use SemanticAttributes.NetworkPeerPort or SemanticAttributes.NetworkLocalPort instead", "0.4.0")
+  val ClientSocketPort = long("client.socket.port")
+
+  /**
+   * Name of the memory pool.
+   *
+   * <p>Notes:
+   *
+   * <ul>
+   *   <li>Pool names are generally obtained via <a
+   *       href="https://docs.oracle.com/en/java/javase/11/docs/api/java.management/java/lang/management/MemoryPoolMXBean.html#getName()">MemoryPoolMXBean#getName()</a>.
+   * </ul>
+   * @deprecated This item has been renamed in 1.22.0 of the semantic conventions. Use [[SemanticAttributes.JvmMemoryPoolName]] instead.
+   */
+  @deprecated("Use SemanticAttributes.JvmMemoryPoolName instead", "0.4.0")
+  val Pool = string("pool")
+
+  /**
+   * The domain name of the source system.
+   *
+   * <p>Notes:
+   *
+   * <ul>
+   *   <li>This value may be a host name, a fully qualified domain name, or another host naming
+   *       format.
+   * </ul>
+   * @deprecated This item has been removed in 1.22.0 of the semantic conventions.
+   */
+  @deprecated("There is no replacement", "0.4.0")
+  val SourceDomain = string("source.domain")
+
+  /**
+   * Physical server IP address or Unix socket address. If set from the client, should simply use
+   * the socket's peer address, and not attempt to find any actual server IP (i.e., if set from
+   * client, this may represent some proxy server instead of the logical server).
+   *
+   * @deprecated This item has been renamed in 1.22.0 of the semantic conventions. Use [[SemanticAttributes.NetworkLocalAddress]] on server telemetry and [[SemanticAttributes.NetworkPeerAddress]] on client telemetry instead.
+   */
+  @deprecated("Use SemanticAttributes.NetworkLocalAddress or SemanticAttributes.NetworkPeerAddress instead", "0.4.0")
+  val ServerSocketAddress = string("server.socket.address")
+
+  /**
+   * The (uncompressed) size of the message payload in bytes. Also use this attribute if it is
+   * unknown whether the compressed or uncompressed payload size is reported.
+   *
+   * @deprecated This item has been renamed in 1.22.0 of the semantic conventions. Use [[SemanticAttributes.MessagingMessageBodySize]] instead.
+   */
+  @deprecated("Use SemanticAttributes.MessagingMessageBodySize instead", "0.4.0")
+  val MessagingMessagePayloadSizeBytes = long("messaging.message.payload_size_bytes")
+
+  /**
+   * The domain name of the destination system.
+   *
+   * @deprecated This item has been removed in 1.22.0 of the semantic conventions.
+   */
+  @deprecated("There is no replacement", "0.4.0")
+  val DestinationDomain = string("destination.domain")
+
+  /**
+   * The compressed size of the message payload in bytes.
+   *
+   * @deprecated This item has been removed in 1.22.0 of the semantic conventions.
+   */
+  @deprecated("There is no replacement", "0.4.0")
+  val MessagingMessagePayloadCompressedSizeBytes = long("messaging.message.payload_compressed_size_bytes")
+
+  /**
+   * The domain name of an immediate peer.
+   *
+   * <p>Notes:
+   *
+   * <ul>
+   *   <li>Typically observed from the client side, and represents a proxy or other intermediary
+   *       domain name.
+   * </ul>
+   *
+   * @deprecated This item has been removed in 1.22.0 of the semantic conventions.
+   */
+  @deprecated("There is no replacement", "0.4.0")
+  val ServerSocketDomain = string("server.socket.domain")
+
+  /**
+   * The type of memory.
+   *
+   * @deprecated This item has been renamed in 1.22.0 of the semantic conventions. Use [[SemanticAttributes.JvmMemoryType]] instead.
+   */
+  @deprecated("Use SemanticAttributes.JvmMemoryType instead", "0.4.0")
+  val Type = string("type")
+
+  /**
+   * Physical server port.
+   *
+   * @deprecated This item has been renamed in 1.22.0 of the semantic conventions. Use [[SemanticAttributes.NetworkLocalPort]] on server telemetry and [[SemanticAttributes.NetworkPeerPort]] on client telemetry instead.
+   */
+  @deprecated("Use SemanticAttributes.NetworkLocalPort or SemanticAttributes.NetworkPeerPort instead", "0.4.0")
+  val ServerSocketPort = long("server.socket.port")
+
+  /**
+   * Immediate client peer address - unix domain socket name, IPv4 or IPv6 address.
+   *
+   * @deprecated This item has been renamed in 1.22.0 of the semantic conventions. Use [[SemanticAttributes.NetworkPeerAddress]] on server telemetry and [[SemanticAttributes.NetworkLocalAddress]] on client telemetry instead.
+   */
+  @deprecated("Use SemanticAttributes.NetworkPeerAddress or SemanticAttributes.NetworkLocalAddress instead", "0.4.0")
+  val ClientSocketAddress = string("client.socket.address")
+
+  /**
+   * @deprecated This item has been renamed as of 1.21.0 of the semantic conventions. Use [[SemanticAttributes.JvmMemoryTypeValue]] instead.
+   */
+  @deprecated("Use SemanticAttributes.JvmMemoryTypeValue instead", "0.4.0")
+  abstract class TypeValue(val value: String)
+  @annotation.nowarn("cat=deprecation")
+  object TypeValue {
+    /** Heap memory. */
+    case object Heap extends TypeValue("heap")
+    /** Non-heap memory. */
+    case object NonHeap extends TypeValue("non_heap")
+  }
+
+
+  /**
+   * Whether the thread is daemon or not.
+   *
+   * @deprecated This item has been renamed in 1.23.1 of the semantic conventions. Use [[SemanticAttributes.JvmThreadDaemon]] instead.
+   */
+  @deprecated("Use SemanticAttributes.JvmThreadDaemon instead", "0.4.0")
+  val ThreadDaemon = boolean("thread.daemon")
+
+  /**
+   * The ordinal number of request resending attempt (for any reason, including redirects).
+   *
+   * <p>Notes:
+   *
+   * <ul>
+   *   <li>The resend count SHOULD be updated each time an HTTP request gets resent by the client,
+   *       regardless of what was the cause of the resending (e.g. redirection, authorization
+   *       failure, 503 Server Unavailable, network issues, or any other).
+   * </ul>
+   *
+   * @deprecated This item has been renamed in 1.23.1 of the semantic conventions. Use [[SemanticAttributes.HttpRequestResendCount]] instead.
+   */
+  @deprecated("Use SemanticAttributes.HttpRequestResendCount instead", "0.4.0")
+  val HttpResendCount = long("http.resend_count")
+
   {% endif %}
 
   {%- if class == "ResourceAttributes" %}
@@ -676,6 +848,22 @@ object {{class}} {
    */
   @deprecated("Use ResourceAttributes.CloudResourceId instead", "0.3.0")
   val FaasId = string("faas.id")
+
+  /**
+   * The version string of the auto instrumentation agent, if used.
+   *
+   * @deprecated This item has been renamed in 1.22.0 of the semantic conventions. Use [[ResourceAttributes.TelemetryDistroVersion]] instead.
+   */
+  @deprecated("Use ResourceAttributes.TelemetryDistroVersion instead", "0.4.0")
+  val TelemetryAutoVersion = string("telemetry.auto.version")
+
+  /**
+   * Container image tag.
+   *
+   * @deprecated This item has been renamed in 1.22.0 of the semantic conventions. Use [[ResourceAttributes.ContainerImageTags]] instead.
+   */
+  @deprecated("Use ResourceAttributes.ContainerImageTags instead", "0.4.0")
+  val ContainerImageTag = string("container.image.tag")
 
   {% endif %}
 

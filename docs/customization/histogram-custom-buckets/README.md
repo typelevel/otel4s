@@ -23,7 +23,7 @@ Add settings to the `build.sbt`:
 
 ```scala
 libraryDependencies ++= Seq(
-  "org.typelevel" %% "otel4s-java" % "@VERSION@", // <1>
+  "org.typelevel" %% "otel4s-oteljava" % "@VERSION@", // <1>
   "io.opentelemetry" % "opentelemetry-exporter-otlp" % "@OPEN_TELEMETRY_VERSION@" % Runtime, // <2>
   "io.opentelemetry" % "opentelemetry-sdk-extension-autoconfigure" % "@OPEN_TELEMETRY_VERSION@" % Runtime // <3>
 )
@@ -36,7 +36,7 @@ javaOptions += "-Dotel.service.name=histogram-buckets-example" // <4>
 Add directives to the `histogram-buckets.scala`:
 
 ```scala
-//> using lib "org.typelevel::otel4s-java:@VERSION@" // <1>
+//> using lib "org.typelevel::otel4s-oteljava:@VERSION@" // <1>
 //> using lib "io.opentelemetry:opentelemetry-exporter-otlp:@OPEN_TELEMETRY_VERSION@" // <2>
 //> using lib "io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:@OPEN_TELEMETRY_VERSION@" // <3>
 //> using `java-opt` "-Dotel.service.name=histogram-buckets-example" // <4>

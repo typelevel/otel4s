@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Typelevel
+ * Copyright 2022 Typelevel
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,15 +14,13 @@
  * limitations under the License.
  */
 
-package org.typelevel.otel4s.sdk
+package org.typelevel.otel4s
 
 import cats.Hash
 import cats.Monoid
 import cats.Show
 import cats.syntax.show._
-import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.Attribute.KeySelect
-import org.typelevel.otel4s.AttributeKey
 
 import scala.collection.IterableOps
 import scala.collection.SpecificIterableFactory

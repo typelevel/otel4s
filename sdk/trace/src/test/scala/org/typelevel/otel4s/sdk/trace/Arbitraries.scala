@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package org.typelevel.otel4s.sdk
+package org.typelevel.otel4s
+package sdk
 package trace
 
 import org.scalacheck.Arbitrary
-import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.sdk.trace.samplers.SamplingDecision
 
 object Arbitraries {

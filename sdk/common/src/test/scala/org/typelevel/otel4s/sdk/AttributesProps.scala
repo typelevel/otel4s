@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-package org.typelevel.otel4s.sdk
+package org.typelevel.otel4s
+package sdk
 
 import cats.Show
 import cats.syntax.semigroup._
@@ -22,7 +23,6 @@ import munit.ScalaCheckSuite
 import org.scalacheck.Arbitrary
 import org.scalacheck.Gen
 import org.scalacheck.Prop.forAll
-import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.sdk.arbitrary.attribute
 import org.typelevel.otel4s.sdk.arbitrary.attributes
 

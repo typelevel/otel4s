@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-package org.typelevel.otel4s.sdk
+package org.typelevel.otel4s
+package sdk
 
 import org.scalacheck.Arbitrary
 import org.scalacheck.Cogen
@@ -22,9 +23,6 @@ import org.scalacheck.Gen
 import org.scalacheck.Gen.listOf
 import org.scalacheck.Gen.nonEmptyListOf
 import org.scalacheck.rng.Seed
-import org.typelevel.otel4s.Attribute
-import org.typelevel.otel4s.AttributeKey
-import org.typelevel.otel4s.AttributeType
 
 object arbitrary extends ArbitraryInstances
 trait ArbitraryInstances {

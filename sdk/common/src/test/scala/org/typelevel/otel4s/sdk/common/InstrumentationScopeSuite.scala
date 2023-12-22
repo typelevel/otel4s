@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-package org.typelevel.otel4s.sdk.common
+package org.typelevel.otel4s
+package sdk.common
 
 import cats.Show
 import cats.kernel.laws.discipline.HashTests
@@ -24,7 +25,6 @@ import org.scalacheck.Arbitrary
 import org.scalacheck.Cogen
 import org.scalacheck.Gen
 import org.scalacheck.Prop
-import org.typelevel.otel4s.sdk.Attributes
 import org.typelevel.otel4s.sdk.arbitrary.{attributes => attributesArbitrary}
 import org.typelevel.otel4s.sdk.arbitrary.attributesCogen
 

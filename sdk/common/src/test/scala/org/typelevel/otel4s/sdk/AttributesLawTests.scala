@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-package org.typelevel.otel4s.sdk
+package org.typelevel.otel4s
+package sdk
 
 import cats.kernel.laws.discipline.HashTests
 import cats.kernel.laws.discipline.MonoidTests

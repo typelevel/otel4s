@@ -21,7 +21,7 @@ import cats.effect.implicits._
 import cats.implicits._
 import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.Otel4s
-import org.typelevel.otel4s.java.OtelJava
+import org.typelevel.otel4s.oteljava.OtelJava
 import org.typelevel.otel4s.trace.Tracer
 
 import scala.concurrent.duration._

@@ -47,7 +47,7 @@ Once the build configuration is up-to-date, the `Tracer` can be created:
 ```scala mdoc:silent
 import cats.effect.IO
 import org.typelevel.otel4s.trace.Tracer
-import org.typelevel.otel4s.java.OtelJava
+import org.typelevel.otel4s.oteljava.OtelJava
 
 OtelJava.global.flatMap { otel4s =>
   otel4s.tracerProvider.get("com.service").flatMap { implicit tracer: Tracer[IO] =>

@@ -252,7 +252,7 @@ lazy val `java-common` = project
       "org.typelevel" %%% "cats-effect-testkit" % CatsEffectVersion % Test,
       "io.opentelemetry" % "opentelemetry-sdk-testing" % OpenTelemetryVersion % Test
     ),
-    buildInfoPackage := "org.typelevel.otel4s.java",
+    buildInfoPackage := "org.typelevel.otel4s.oteljava",
     buildInfoOptions += sbtbuildinfo.BuildInfoOption.PackagePrivate,
     buildInfoKeys := Seq[BuildInfoKey](
       "openTelemetrySdkVersion" -> OpenTelemetryVersion
@@ -284,26 +284,6 @@ lazy val `java-trace` = project
       "org.typelevel" %%% "cats-effect-testkit" % CatsEffectVersion % Test,
       "co.fs2" %% "fs2-core" % FS2Version % Test,
     ),
-    mimaBinaryIssueFilters ++= Seq(
-      ProblemFilters.exclude[MissingClassProblem](
-        "org.typelevel.otel4s.java.trace.SpanBuilderImpl$Runner"
-      ),
-      ProblemFilters.exclude[MissingClassProblem](
-        "org.typelevel.otel4s.java.trace.SpanBuilderImpl$Runner$"
-      ),
-      ProblemFilters.exclude[MissingClassProblem](
-        "org.typelevel.otel4s.java.trace.SpanBuilderImpl$TimestampSelect"
-      ),
-      ProblemFilters.exclude[MissingClassProblem](
-        "org.typelevel.otel4s.java.trace.SpanBuilderImpl$TimestampSelect$"
-      ),
-      ProblemFilters.exclude[MissingClassProblem](
-        "org.typelevel.otel4s.java.trace.SpanBuilderImpl$TimestampSelect$Delegate$"
-      ),
-      ProblemFilters.exclude[MissingClassProblem](
-        "org.typelevel.otel4s.java.trace.SpanBuilderImpl$TimestampSelect$Explicit$"
-      )
-    )
   )
   .settings(scalafixSettings)
 

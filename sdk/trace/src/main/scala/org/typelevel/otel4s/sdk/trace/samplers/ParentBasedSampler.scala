@@ -44,7 +44,7 @@ private[samplers] final class ParentBasedSampler private (
       name: String,
       spanKind: SpanKind,
       attributes: Attributes,
-      parentLinks: List[LinkData]
+      parentLinks: Vector[LinkData]
   ): SamplingResult = {
     val sampler = parentContext.filter(_.isValid) match {
       case Some(ctx) if ctx.isRemote =>

@@ -148,7 +148,7 @@ object SdkTracerProvider {
     /** Adds the given processor to the span processing pipeline that will be
       * built.
       *
-      * [[SpanProcessor]] will be called each time a
+      * The span processor will be called each time a
       * [[org.typelevel.otel4s.trace.Span Span]] is started or ended.
       *
       * @note

@@ -56,7 +56,7 @@ final class SdkTracer[F[_]: Temporal: Console] private[trace] (
     new SdkSpanBuilder[F](name, scopeInfo, sharedState, scope)
 
   def childScope[A](parent: SpanContext)(fa: F[A]): F[A] =
-    scope.makeScope(parent).flatMap(trace => trace(fa))
+    scope.childScope(parent).flatMap(trace => trace(fa))
 
   def rootScope[A](fa: F[A]): F[A] =
     scope.rootScope.flatMap(trace => trace(fa))

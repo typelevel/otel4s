@@ -229,7 +229,7 @@ object BatchSpanProcessor {
   /** Create a [[Builder]] for [[BatchSpanProcessor]].
     *
     * @param exporter
-    *   the [[SpanExporter]] to which the Spans are pushed
+    *   the exporter to which the Spans are pushed
     */
   def builder[F[_]: Temporal](exporter: SpanExporter[F]): Builder[F] =
     new BuilderImpl[F](

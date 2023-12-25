@@ -145,7 +145,7 @@ object SdkTracerProvider {
         propagators: TextMapPropagator[Context]*
     ): Builder[F]
 
-    /** Adds a [[SpanProcessor]] to the span processing pipeline that will be
+    /** Adds the given processor to the span processing pipeline that will be
       * built.
       *
       * [[SpanProcessor]] will be called each time a

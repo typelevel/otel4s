@@ -196,7 +196,7 @@ lazy val sdk = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .crossType(CrossType.Pure)
   .enablePlugins(NoPublishPlugin)
   .in(file("sdk/all"))
-  .dependsOn(`sdk-common`, `sdk-trace`)
+  .dependsOn(core, `sdk-common`, `sdk-trace`)
   .settings(
     name := "otel4s-sdk"
   )
@@ -352,7 +352,7 @@ lazy val benchmarks = project
 lazy val examples = project
   .enablePlugins(NoPublishPlugin, JavaAgent)
   .in(file("examples"))
-  .dependsOn(core.jvm, java, `sdk-trace`.jvm)
+  .dependsOn(core.jvm, java, sdk.jvm)
   .settings(
     name := "otel4s-examples",
     libraryDependencies ++= Seq(

@@ -16,17 +16,13 @@
 
 package org.typelevel.otel4s.sdk.trace
 
-import cats.Applicative
-import cats.Functor
 import cats.effect.IO
 import cats.effect.IOLocal
-import cats.effect.LiftIO
-import cats.effect.MonadCancelThrow
-import cats.mtl.Local
 import munit.CatsEffectSuite
 import munit.ScalaCheckEffectSuite
 import org.scalacheck.Arbitrary
 import org.scalacheck.effect.PropF
+import org.typelevel.otel4s.instances.local._
 import org.typelevel.otel4s.sdk.context.Context
 import org.typelevel.otel4s.trace.SpanContext
 
@@ -294,17 +290,4 @@ class SdkTraceScopeSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
       SdkTraceScope.fromLocal[IO]
     }
 
-  private implicit def localForIoLocal[F[_]: MonadCancelThrow: LiftIO, E](
-      implicit ioLocal: IOLocal[E]
-  ): Local[F, E] =
-    new Local[F, E] {
-      def applicative =
-        Applicative[F]
-      def ask[E2 >: E] =
-        Functor[F].widen[E, E2](ioLocal.get.to[F])
-      def local[A](fa: F[A])(f: E => E): F[A] =
-        MonadCancelThrow[F].bracket(ioLocal.modify(e => (f(e), e)).to[F])(_ =>
-          fa
-        )(ioLocal.set(_).to[F])
-    }
 }

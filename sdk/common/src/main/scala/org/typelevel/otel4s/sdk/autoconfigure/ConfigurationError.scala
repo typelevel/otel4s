@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Typelevel
+ * Copyright 2023 Typelevel
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,23 +14,14 @@
  * limitations under the License.
  */
 
-import cats.effect._
-import org.typelevel.otel4s.Attribute
-import org.typelevel.otel4s.sdk.OpenTelemetrySdk
+package org.typelevel.otel4s.sdk.autoconfigure
 
-object TraceSdkExample extends IOApp.Simple {
+final class ConfigurationError(message: String, cause: Option[Throwable])
+    extends RuntimeException(message, cause.orNull)
 
-  def run: IO[Unit] = {
-    OpenTelemetrySdk.AutoConfigured.load[IO].use { autoConfigured =>
-      val sdk = autoConfigured.sdk
+object ConfigurationError {
 
-      for {
-        tracer <- sdk.tracerProvider.get("my-tracer")
-        _ <- tracer
-          .span("test", Attribute("test", "test123"))
-          .use(sd => IO.println(sd.context))
-      } yield ()
-    }
-  }
+  def unrecognized(key: String, value: String): ConfigurationError =
+    new ConfigurationError(s"Unrecognized value for [$key]: $value", None)
 
 }

@@ -14,23 +14,12 @@
  * limitations under the License.
  */
 
-import cats.effect._
-import org.typelevel.otel4s.Attribute
-import org.typelevel.otel4s.sdk.OpenTelemetrySdk
+package org.typelevel.otel4s
 
-object TraceSdkExample extends IOApp.Simple {
+package object instances {
 
-  def run: IO[Unit] = {
-    OpenTelemetrySdk.AutoConfigured.load[IO].use { autoConfigured =>
-      val sdk = autoConfigured.sdk
+  object all extends AllInstances
 
-      for {
-        tracer <- sdk.tracerProvider.get("my-tracer")
-        _ <- tracer
-          .span("test", Attribute("test", "test123"))
-          .use(sd => IO.println(sd.context))
-      } yield ()
-    }
-  }
+  object local extends LocalInstances
 
 }

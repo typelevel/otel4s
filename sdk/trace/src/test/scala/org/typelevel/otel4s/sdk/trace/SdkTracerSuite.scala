@@ -959,7 +959,7 @@ class SdkTracerSuite extends CatsEffectSuite {
       sampler: Sampler,
       additionalPropagators: List[TextMapPropagator[Context]]
   ): Resource[IO, SdkTracerSuite.Sdk] = {
-    import org.typelevel.otel4s.sdk.instances._
+    import org.typelevel.otel4s.instances.local._
 
     val textMapPropagators =
       List(W3CTraceContextPropagator) ++ additionalPropagators

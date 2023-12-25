@@ -29,11 +29,11 @@ import munit.CatsEffectSuite
 import munit.Location
 import munit.TestOptions
 import org.typelevel.otel4s.Attribute
+import org.typelevel.otel4s.context.propagation.PassThroughPropagator
 import org.typelevel.otel4s.context.propagation.TextMapPropagator
 import org.typelevel.otel4s.sdk.Attributes
 import org.typelevel.otel4s.sdk.common.InstrumentationScope
 import org.typelevel.otel4s.sdk.context.Context
-import org.typelevel.otel4s.sdk.context.propagation.PassThroughPropagator
 import org.typelevel.otel4s.sdk.trace.data.EventData
 import org.typelevel.otel4s.sdk.trace.data.SpanData
 import org.typelevel.otel4s.sdk.trace.data.StatusData
@@ -725,7 +725,7 @@ class SdkTracerSuite extends CatsEffectSuite {
   // external span does not appear in the recorded spans of the in-memory sdk
   sdkTest(
     "joinOrRoot: join an external span when can be extracted",
-    additionalPropagators = List(PassThroughPropagator.create("foo", "bar"))
+    additionalPropagators = List(PassThroughPropagator("foo", "bar"))
   ) { sdk =>
     val traceId = "84b54e9330faae5350f0dd8673c98146"
     val spanId = "279fa73bc935cc05"
@@ -878,7 +878,7 @@ class SdkTracerSuite extends CatsEffectSuite {
   // typelevel/otel4s#277
   sdkTest(
     "retain all of a provided context through propagation",
-    additionalPropagators = List(PassThroughPropagator.create("foo", "bar"))
+    additionalPropagators = List(PassThroughPropagator("foo", "bar"))
   ) { sdk =>
     for {
       tracer <- sdk.provider.get("tracer")

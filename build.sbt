@@ -1,6 +1,6 @@
 import com.typesafe.tools.mima.core._
 
-ThisBuild / tlBaseVersion := "0.4"
+ThisBuild / tlBaseVersion := "0.5"
 
 ThisBuild / organization := "org.typelevel"
 ThisBuild / organizationName := "Typelevel"
@@ -37,7 +37,7 @@ val MUnitDisciplineVersion = "2.0.0-M3"
 val MUnitScalaCheckEffectVersion = "2.0.0-M2"
 val OpenTelemetryVersion = "1.33.0"
 val OpenTelemetryInstrumentationVersion = "1.32.0"
-val OpenTelemetrySemConvVersion = "1.21.0-alpha"
+val OpenTelemetrySemConvVersion = "1.23.1-alpha"
 val PekkoStreamVersion = "1.0.2"
 val PekkoHttpVersion = "1.0.0"
 val PlatformVersion = "1.0.2"
@@ -99,7 +99,7 @@ lazy val `core-common` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
     name := "otel4s-core-common",
     libraryDependencies ++= Seq(
       "org.typelevel" %%% "cats-core" % CatsVersion,
-      "org.typelevel" %%% "cats-effect-kernel" % CatsEffectVersion,
+      "org.typelevel" %%% "cats-effect" % CatsEffectVersion,
       "org.typelevel" %%% "cats-mtl" % CatsMtlVersion,
       "org.typelevel" %%% "vault" % VaultVersion % Test,
       "org.typelevel" %%% "cats-laws" % CatsVersion % Test,
@@ -246,10 +246,11 @@ lazy val `java-common` = project
     libraryDependencies ++= Seq(
       "org.typelevel" %%% "cats-effect" % CatsEffectVersion,
       "org.typelevel" %%% "cats-mtl" % CatsMtlVersion,
-      "io.opentelemetry" % "opentelemetry-sdk" % OpenTelemetryVersion,
+      "io.opentelemetry" % "opentelemetry-api" % OpenTelemetryVersion,
       "org.typelevel" %%% "discipline-munit" % MUnitDisciplineVersion % Test,
       "org.typelevel" %%% "cats-mtl-laws" % CatsMtlVersion % Test,
-      "org.typelevel" %%% "cats-effect-testkit" % CatsEffectVersion % Test
+      "org.typelevel" %%% "cats-effect-testkit" % CatsEffectVersion % Test,
+      "io.opentelemetry" % "opentelemetry-sdk-testing" % OpenTelemetryVersion % Test
     ),
     buildInfoPackage := "org.typelevel.otel4s.java",
     buildInfoOptions += sbtbuildinfo.BuildInfoOption.PackagePrivate,
@@ -312,6 +313,7 @@ lazy val java = project
   .settings(
     name := "otel4s-java",
     libraryDependencies ++= Seq(
+      "io.opentelemetry" % "opentelemetry-sdk" % OpenTelemetryVersion,
       "io.opentelemetry" % "opentelemetry-sdk-testing" % OpenTelemetryVersion % Test
     )
   )

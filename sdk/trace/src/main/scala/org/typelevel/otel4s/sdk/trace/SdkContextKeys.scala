@@ -20,7 +20,7 @@ import cats.effect.SyncIO
 import org.typelevel.otel4s.sdk.context.Context
 import org.typelevel.otel4s.trace.SpanContext
 
-/** The keys that may be used by a third-party integrations.
+/** The keys that can be used by a third-party integrations.
   */
 object SdkContextKeys {
 

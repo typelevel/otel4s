@@ -39,8 +39,16 @@ class TextMapPropagatorSuite extends FunSuite {
     val propagator = new TestPropagator[String](fields, "TestPropagator")
     val composite = TextMapPropagator.of(propagator)
 
-    assertEquals(composite.fields, fields)
+    assert(composite eq propagator)
     assertEquals(composite.toString, "TestPropagator")
+  }
+
+  test("of (single input, noop) - use same reference") {
+    val propagator = TextMapPropagator.noop[String]
+    val composite = TextMapPropagator.of(propagator)
+
+    assert(composite eq propagator)
+    assertEquals(composite.toString, "TextMapPropagator.Noop")
   }
 
   test("of (multiple) - create a multi instance") {

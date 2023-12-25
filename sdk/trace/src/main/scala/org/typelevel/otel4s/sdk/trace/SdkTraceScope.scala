@@ -110,14 +110,11 @@ private[trace] trait SdkTraceScope[F[_]] {
     * @param spanContext
     *   the span context to use
     */
-  def makeScope(spanContext: SpanContext): F[F ~> F]
+  def childScope(spanContext: SpanContext): F[F ~> F]
 
-  /** Creates a root scope. The difference with the [[makeScope]] is that we
+  /** Creates a root scope. The difference with the [[childScope]] is that we
     * override the whole [[Context]], rather then only a [[SpanContext]] within
     * the context.
-    *
-    * The propagation logic is based on the [[SpanContext]] that may be present
-    * in the [[Context]]:
     *
     * ==The propagation logic==
     *
@@ -129,18 +126,17 @@ private[trace] trait SdkTraceScope[F[_]] {
     *
     * ===The [[SpanContext]] is missing===
     *
-    * The scope is already root, so we keep the context as is. The baggage data
-    * remains.
+    * The scope is already root, so we keep the context as is.
     *
     * {{{
     * ┌───────────────────────┐        ┌───────────────────────┐
     * │   Context             │        │   Context             │
     * │                       │        │                       │
-    * │  ┌─────────────────┐  │        │  ┌─────────────────┐  │
-    * │  │                 │  │        │  │                 │  │
-    * │  │     Baggage     │  │  --->  │  │     Baggage     │  │
-    * │  │                 │  │        │  │                 │  │
-    * │  └─────────────────┘  │        │  └─────────────────┘  │
+    * │  ┌─────────────────┐  │        │                       │
+    * │  │                 │  │        │                       │
+    * │  │     Baggage     │  │  --->  │                       │
+    * │  │                 │  │        │                       │
+    * │  └─────────────────┘  │        │                       │
     * │                       │        │                       │
     * └───────────────────────┘        └───────────────────────┘
     * }}}
@@ -190,7 +186,7 @@ private[trace] trait SdkTraceScope[F[_]] {
     * We use [[SpanContext.invalid]] as a mark that the propagation logic is
     * no-op.
     *
-    * A shortcut for `makeScope(SpanContext.invalid)`.
+    * A shortcut for `childScope(SpanContext.invalid)`.
     *
     * ==The propagation logic==
     *
@@ -253,7 +249,7 @@ private[trace] trait SdkTraceScope[F[_]] {
     */
   def noopScope: F ~> F
 
-  /** Creates a scope that uses the `given` context.
+  /** Creates a scope that uses the given `context`.
     *
     * A shortcut for
     * {{{
@@ -284,7 +280,7 @@ private[trace] object SdkTraceScope {
       def current: F[Option[SpanContext]] =
         L.reader(_.get(SpanContextKey))
 
-      def makeScope(span: SpanContext): F[F ~> F] =
+      def childScope(span: SpanContext): F[F ~> F] =
         L.applicative.map(current) { context =>
           createScope(nextScope(context, span))
         }
@@ -297,8 +293,8 @@ private[trace] object SdkTraceScope {
             case Some(ctx) if !ctx.isValid => context
             // the SpanContext exist and it's valid, hence we start with the fresh one
             case Some(_) => Context.root
-            // there is no existing SpanContext, we can continue using the context
-            case None => context
+            // there is no existing SpanContext, we start with the fresh one
+            case None => Context.root
           }
 
           withContext(ctx)

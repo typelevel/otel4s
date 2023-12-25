@@ -17,17 +17,7 @@
 package org.typelevel.otel4s
 package java
 
-import _root_.java.lang.{Iterable => JIterable}
-import cats.effect.kernel.Async
-import cats.syntax.either._
 import io.opentelemetry.api.common.{Attributes => JAttributes}
-import io.opentelemetry.context.propagation.{TextMapGetter => JTextMapGetter}
-import io.opentelemetry.context.propagation.{TextMapSetter => JTextMapSetter}
-import io.opentelemetry.sdk.common.CompletableResultCode
-import org.typelevel.otel4s.context.propagation.TextMapGetter
-import org.typelevel.otel4s.context.propagation.TextMapSetter
-
-import scala.jdk.CollectionConverters._
 
 private[java] object Conversions {
 
@@ -58,48 +48,4 @@ private[java] object Conversions {
     builder.build()
   }
 
-  def asyncFromCompletableResultCode[F[_]](
-      codeF: F[CompletableResultCode],
-      msg: => Option[String] = None
-  )(implicit F: Async[F]): F[Unit] =
-    F.flatMap(codeF)(code =>
-      F.async[Unit](cb =>
-        F.delay {
-          code.whenComplete(() =>
-            if (code.isSuccess())
-              cb(Either.unit)
-            else
-              cb(
-                Left(
-                  new RuntimeException(
-                    msg.getOrElse(
-                      "OpenTelemetry SDK async operation failed"
-                    )
-                  )
-                )
-              )
-          )
-          None
-        }
-      )
-    )
-
-  implicit def fromTextMapGetter[A](implicit
-      getter: TextMapGetter[A]
-  ): JTextMapGetter[A] =
-    new JTextMapGetter[A] {
-      def get(carrier: A, key: String) =
-        getter.get(carrier, key).orNull
-
-      def keys(carrier: A): JIterable[String] =
-        getter.keys(carrier).asJava
-    }
-
-  implicit def fromTextMapSetter[A](implicit
-      setter: TextMapSetter[A]
-  ): JTextMapSetter[A] =
-    new JTextMapSetter[A] {
-      def set(carrier: A, key: String, value: String) =
-        setter.unsafeSet(carrier, key, value)
-    }
 }

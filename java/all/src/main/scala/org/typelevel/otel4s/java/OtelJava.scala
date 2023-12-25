@@ -25,11 +25,12 @@ import cats.syntax.all._
 import io.opentelemetry.api.{OpenTelemetry => JOpenTelemetry}
 import io.opentelemetry.api.GlobalOpenTelemetry
 import io.opentelemetry.sdk.{OpenTelemetrySdk => JOpenTelemetrySdk}
+import io.opentelemetry.sdk.common.CompletableResultCode
 import org.typelevel.otel4s.Otel4s
 import org.typelevel.otel4s.context.propagation.ContextPropagators
-import org.typelevel.otel4s.java.Conversions.asyncFromCompletableResultCode
 import org.typelevel.otel4s.java.context.Context
 import org.typelevel.otel4s.java.context.LocalContext
+import org.typelevel.otel4s.java.context.propagation.PropagatorConverters._
 import org.typelevel.otel4s.java.instances._
 import org.typelevel.otel4s.java.metrics.Metrics
 import org.typelevel.otel4s.java.trace.Traces
@@ -66,9 +67,7 @@ object OtelJava {
   def local[F[_]: Async: LocalContext](
       jOtel: JOpenTelemetry
   ): OtelJava[F] = {
-    val contextPropagators = ContextPropagators.of(
-      new TextMapPropagatorImpl(jOtel.getPropagators.getTextMapPropagator)
-    )
+    val contextPropagators = jOtel.getPropagators.asScala
 
     val metrics = Metrics.forAsync(jOtel)
     val traces = Traces.local(jOtel, contextPropagators)
@@ -103,4 +102,30 @@ object OtelJava {
     */
   def global[F[_]: LiftIO: Async]: F[OtelJava[F]] =
     Sync[F].delay(GlobalOpenTelemetry.get).flatMap(forAsync[F])
+
+  private[this] def asyncFromCompletableResultCode[F[_]](
+      codeF: F[CompletableResultCode],
+      msg: => Option[String] = None
+  )(implicit F: Async[F]): F[Unit] =
+    F.flatMap(codeF)(code =>
+      F.async[Unit](cb =>
+        F.delay {
+          code.whenComplete(() =>
+            if (code.isSuccess())
+              cb(Either.unit)
+            else
+              cb(
+                Left(
+                  new RuntimeException(
+                    msg.getOrElse(
+                      "OpenTelemetry SDK async operation failed"
+                    )
+                  )
+                )
+              )
+          )
+          None
+        }
+      )
+    )
 }

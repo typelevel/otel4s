@@ -1,0 +1,15 @@
+otel4s
+Copyright 2022-2023 Typelevel
+Licensed under Apache License 2.0 (see LICENSE)
+
+This software contains portions of code derived from scala
+https://github.com/scala/scala
+Scala
+Copyright (c) 2002-2023 EPFL
+Copyright (c) 2011-2023 Lightbend, Inc.
+
+Scala includes software developed at
+LAMP/EPFL (https://lamp.epfl.ch/) and
+Lightbend, Inc. (https://www.lightbend.com/).
+
+Licensed under the Apache License, Version 2.0 (see licenses/LICENSE_scala).

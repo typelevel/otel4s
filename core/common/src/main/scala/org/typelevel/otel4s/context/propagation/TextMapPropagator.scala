@@ -97,8 +97,11 @@ object TextMapPropagator {
     */
   def of[Ctx](
       propagators: TextMapPropagator[Ctx]*
-  ): TextMapPropagator[Ctx] =
-    propagators.combineAll
+  ): TextMapPropagator[Ctx] = {
+    // reference stability for noop
+    if (propagators.lengthIs == 1) propagators.head
+    else propagators.combineAll
+  }
 
   /** Creates a no-op implementation of the [[TextMapPropagator]].
     *

@@ -28,11 +28,11 @@ import io.opentelemetry.sdk.{OpenTelemetrySdk => JOpenTelemetrySdk}
 import io.opentelemetry.sdk.common.CompletableResultCode
 import org.typelevel.otel4s.Otel4s
 import org.typelevel.otel4s.context.propagation.ContextPropagators
+import org.typelevel.otel4s.instances.local._
 import org.typelevel.otel4s.metrics.MeterProvider
 import org.typelevel.otel4s.oteljava.context.Context
 import org.typelevel.otel4s.oteljava.context.LocalContext
 import org.typelevel.otel4s.oteljava.context.propagation.PropagatorConverters._
-import org.typelevel.otel4s.oteljava.instances._
 import org.typelevel.otel4s.oteljava.metrics.Metrics
 import org.typelevel.otel4s.oteljava.trace.Traces
 import org.typelevel.otel4s.trace.TracerProvider

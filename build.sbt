@@ -80,10 +80,10 @@ lazy val root = tlCrossRootProject
     `testkit-common`,
     `testkit-metrics`,
     testkit,
-    `java-common`,
-    `java-metrics`,
-    `java-trace`,
-    java,
+    `oteljava-common`,
+    `oteljava-metrics`,
+    `oteljava-trace`,
+    oteljava,
     semconv,
     benchmarks,
     examples,
@@ -236,13 +236,13 @@ lazy val testkit = crossProject(JVMPlatform)
   )
   .settings(scalafixSettings)
 
-lazy val `java-common` = project
-  .in(file("java/common"))
+lazy val `oteljava-common` = project
+  .in(file("oteljava/common"))
   .enablePlugins(BuildInfoPlugin)
   .dependsOn(`core-common`.jvm, `testkit-common`.jvm % Test)
   .settings(munitDependencies)
   .settings(
-    name := "otel4s-java-common",
+    name := "otel4s-oteljava-common",
     libraryDependencies ++= Seq(
       "org.typelevel" %%% "cats-effect" % CatsEffectVersion,
       "org.typelevel" %%% "cats-mtl" % CatsMtlVersion,
@@ -252,7 +252,7 @@ lazy val `java-common` = project
       "org.typelevel" %%% "cats-effect-testkit" % CatsEffectVersion % Test,
       "io.opentelemetry" % "opentelemetry-sdk-testing" % OpenTelemetryVersion % Test
     ),
-    buildInfoPackage := "org.typelevel.otel4s.java",
+    buildInfoPackage := "org.typelevel.otel4s.oteljava",
     buildInfoOptions += sbtbuildinfo.BuildInfoOption.PackagePrivate,
     buildInfoKeys := Seq[BuildInfoKey](
       "openTelemetrySdkVersion" -> OpenTelemetryVersion
@@ -260,58 +260,42 @@ lazy val `java-common` = project
   )
   .settings(scalafixSettings)
 
-lazy val `java-metrics` = project
-  .in(file("java/metrics"))
-  .dependsOn(`java-common`, `core-metrics`.jvm, `testkit-metrics`.jvm % Test)
+lazy val `oteljava-metrics` = project
+  .in(file("oteljava/metrics"))
+  .dependsOn(
+    `oteljava-common`,
+    `core-metrics`.jvm,
+    `testkit-metrics`.jvm % Test
+  )
   .settings(munitDependencies)
   .settings(
-    name := "otel4s-java-metrics",
+    name := "otel4s-oteljava-metrics",
     libraryDependencies ++= Seq(
       "io.opentelemetry" % "opentelemetry-sdk-testing" % OpenTelemetryVersion % Test
     )
   )
   .settings(scalafixSettings)
 
-lazy val `java-trace` = project
-  .in(file("java/trace"))
-  .dependsOn(`java-common`, `core-trace`.jvm)
+lazy val `oteljava-trace` = project
+  .in(file("oteljava/trace"))
+  .dependsOn(`oteljava-common`, `core-trace`.jvm)
   .settings(munitDependencies)
   .settings(
-    name := "otel4s-java-trace",
+    name := "otel4s-oteljava-trace",
     libraryDependencies ++= Seq(
       "org.typelevel" %%% "cats-effect" % CatsEffectVersion,
       "io.opentelemetry" % "opentelemetry-sdk-testing" % OpenTelemetryVersion % Test,
       "org.typelevel" %%% "cats-effect-testkit" % CatsEffectVersion % Test,
       "co.fs2" %% "fs2-core" % FS2Version % Test,
     ),
-    mimaBinaryIssueFilters ++= Seq(
-      ProblemFilters.exclude[MissingClassProblem](
-        "org.typelevel.otel4s.java.trace.SpanBuilderImpl$Runner"
-      ),
-      ProblemFilters.exclude[MissingClassProblem](
-        "org.typelevel.otel4s.java.trace.SpanBuilderImpl$Runner$"
-      ),
-      ProblemFilters.exclude[MissingClassProblem](
-        "org.typelevel.otel4s.java.trace.SpanBuilderImpl$TimestampSelect"
-      ),
-      ProblemFilters.exclude[MissingClassProblem](
-        "org.typelevel.otel4s.java.trace.SpanBuilderImpl$TimestampSelect$"
-      ),
-      ProblemFilters.exclude[MissingClassProblem](
-        "org.typelevel.otel4s.java.trace.SpanBuilderImpl$TimestampSelect$Delegate$"
-      ),
-      ProblemFilters.exclude[MissingClassProblem](
-        "org.typelevel.otel4s.java.trace.SpanBuilderImpl$TimestampSelect$Explicit$"
-      )
-    )
   )
   .settings(scalafixSettings)
 
-lazy val java = project
-  .in(file("java/all"))
-  .dependsOn(core.jvm, `java-metrics`, `java-trace`)
+lazy val oteljava = project
+  .in(file("oteljava/all"))
+  .dependsOn(core.jvm, `oteljava-metrics`, `oteljava-trace`)
   .settings(
-    name := "otel4s-java",
+    name := "otel4s-oteljava",
     libraryDependencies ++= Seq(
       "io.opentelemetry" % "opentelemetry-sdk" % OpenTelemetryVersion,
       "io.opentelemetry" % "opentelemetry-sdk-testing" % OpenTelemetryVersion % Test
@@ -343,7 +327,7 @@ lazy val benchmarks = project
   .enablePlugins(NoPublishPlugin)
   .enablePlugins(JmhPlugin)
   .in(file("benchmarks"))
-  .dependsOn(core.jvm, sdk.jvm, java, testkit.jvm)
+  .dependsOn(core.jvm, sdk.jvm, oteljava, testkit.jvm)
   .settings(
     name := "otel4s-benchmarks"
   )
@@ -352,7 +336,7 @@ lazy val benchmarks = project
 lazy val examples = project
   .enablePlugins(NoPublishPlugin, JavaAgent)
   .in(file("examples"))
-  .dependsOn(core.jvm, java)
+  .dependsOn(core.jvm, oteljava)
   .settings(
     name := "otel4s-examples",
     libraryDependencies ++= Seq(
@@ -377,7 +361,7 @@ lazy val examples = project
 lazy val docs = project
   .in(file("site"))
   .enablePlugins(TypelevelSitePlugin)
-  .dependsOn(java)
+  .dependsOn(oteljava)
   .settings(
     libraryDependencies ++= Seq(
       "org.apache.pekko" %% "pekko-http" % PekkoHttpVersion,
@@ -418,10 +402,10 @@ lazy val unidocs = project
       `testkit-common`.jvm,
       `testkit-metrics`.jvm,
       testkit.jvm,
-      `java-common`,
-      `java-metrics`,
-      `java-trace`,
-      java,
+      `oteljava-common`,
+      `oteljava-metrics`,
+      `oteljava-trace`,
+      oteljava,
       semconv.jvm
     )
   )

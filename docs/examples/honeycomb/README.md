@@ -22,7 +22,7 @@ Configure the project using your favorite tool:
 Add settings to the `build.sbt`:
 ```scala
 libraryDependencies ++= Seq(
-  "org.typelevel" %% "otel4s-java" % "@VERSION@", // <1>
+  "org.typelevel" %% "otel4s-oteljava" % "@VERSION@", // <1>
   "io.opentelemetry" % "opentelemetry-exporter-otlp" % "@OPEN_TELEMETRY_VERSION@" % Runtime, // <2>
   "io.opentelemetry" % "opentelemetry-sdk-extension-autoconfigure" % "@OPEN_TELEMETRY_VERSION@" % Runtime // <3>
 )
@@ -36,7 +36,7 @@ javaOptions += "-Dotel.exporter.otlp.endpoint=https://api.honeycomb.io/"  // <6>
 
 Add directives to the `tracing.scala`:
 ```scala
-//> using lib "org.typelevel::otel4s-java:@VERSION@" // <1>
+//> using lib "org.typelevel::otel4s-oteljava:@VERSION@" // <1>
 //> using lib "io.opentelemetry:opentelemetry-exporter-otlp:@OPEN_TELEMETRY_VERSION@" // <2>
 //> using lib "io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:@OPEN_TELEMETRY_VERSION@" // <3>
 //> using `java-opt` "-Dotel.java.global-autoconfigure.enabled=true"            // <4>
@@ -94,7 +94,7 @@ import cats.effect.std.Console
 import cats.effect.std.Random
 import cats.syntax.all._
 import org.typelevel.otel4s.{Attribute, AttributeKey}
-import org.typelevel.otel4s.java.OtelJava
+import org.typelevel.otel4s.oteljava.OtelJava
 import org.typelevel.otel4s.metrics.Histogram
 import org.typelevel.otel4s.trace.Tracer
 

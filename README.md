@@ -32,7 +32,7 @@ it out and let us know what you think.
 | Module / Platform | JVM | Scala Native | Scala.js |  
 |:-----------------:|:---:|:------------:|:--------:|
 |   `otel4s-core`   |  ✅  |      ✅       |    ✅     |
-|   `otel4s-java`   |  ✅  |      ❌       |    ❌     | 
+| `otel4s-oteljava` |  ✅  |      ❌       |    ❌     | 
 
 ## Learn more
 

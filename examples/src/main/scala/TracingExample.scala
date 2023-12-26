@@ -20,7 +20,7 @@ import cats.effect.IOApp
 import cats.effect.std.Console
 import cats.syntax.all._
 import org.typelevel.otel4s.Otel4s
-import org.typelevel.otel4s.java.OtelJava
+import org.typelevel.otel4s.oteljava.OtelJava
 import org.typelevel.otel4s.trace.Tracer
 
 import scala.concurrent.duration._

@@ -155,7 +155,7 @@ lazy val `sdk-common` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .enablePlugins(BuildInfoPlugin)
   .enablePlugins(NoPublishPlugin)
   .in(file("sdk/common"))
-  .dependsOn(`core-common`, semconv)
+  .dependsOn(`core-common` % "test->test", semconv)
   .settings(
     name := "otel4s-sdk-common",
     startYear := Some(2023),

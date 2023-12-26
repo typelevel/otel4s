@@ -103,6 +103,8 @@ lazy val `core-common` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
       "org.typelevel" %%% "cats-mtl" % CatsMtlVersion,
       "org.typelevel" %%% "vault" % VaultVersion % Test,
       "org.typelevel" %%% "cats-laws" % CatsVersion % Test,
+      "org.typelevel" %%% "cats-mtl-laws" % CatsMtlVersion % Test,
+      "org.typelevel" %%% "cats-effect-testkit" % CatsEffectVersion % Test,
       "org.typelevel" %%% "discipline-munit" % MUnitDisciplineVersion % Test,
       "lgbt.princess" %%% "platform" % PlatformVersion % Test
     )
@@ -247,8 +249,6 @@ lazy val `oteljava-common` = project
       "org.typelevel" %%% "cats-effect" % CatsEffectVersion,
       "org.typelevel" %%% "cats-mtl" % CatsMtlVersion,
       "io.opentelemetry" % "opentelemetry-api" % OpenTelemetryVersion,
-      "org.typelevel" %%% "discipline-munit" % MUnitDisciplineVersion % Test,
-      "org.typelevel" %%% "cats-mtl-laws" % CatsMtlVersion % Test,
       "org.typelevel" %%% "cats-effect-testkit" % CatsEffectVersion % Test,
       "io.opentelemetry" % "opentelemetry-sdk-testing" % OpenTelemetryVersion % Test
     ),

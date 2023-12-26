@@ -22,9 +22,9 @@ import cats.effect.LiftIO
 import cats.effect.Sync
 import io.opentelemetry.api.{OpenTelemetry => JOpenTelemetry}
 import org.typelevel.otel4s.context.propagation.ContextPropagators
+import org.typelevel.otel4s.instances.local._
 import org.typelevel.otel4s.oteljava.context.Context
 import org.typelevel.otel4s.oteljava.context.LocalContext
-import org.typelevel.otel4s.oteljava.instances._
 import org.typelevel.otel4s.trace.TracerProvider
 
 trait Traces[F[_]] {

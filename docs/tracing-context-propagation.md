@@ -33,9 +33,9 @@ You can find both examples below and choose which one suits your requirements.
 import cats.effect._
 import cats.mtl.Local
 import cats.syntax.functor._
+import org.typelevel.otel4s.instances.local._ // brings Local derived from IOLocal
 import org.typelevel.otel4s.oteljava.context.Context
 import org.typelevel.otel4s.oteljava.OtelJava
-import org.typelevel.otel4s.oteljava.instances._ // brings Local derived from IOLocal
 import io.opentelemetry.api.GlobalOpenTelemetry
 
 def createOtel4s[F[_]: Async](implicit L: Local[F, Context]): F[OtelJava[F]] =

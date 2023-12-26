@@ -14,22 +14,6 @@
  * limitations under the License.
  */
 
-package org.typelevel.otel4s.oteljava
+package org.typelevel.otel4s.instances
 
-import cats.effect.IO
-import cats.effect.IOLocal
-import cats.effect.testkit.TestInstances
-import cats.mtl.laws.discipline.LocalTests
-import munit.DisciplineSuite
-import org.scalacheck.Arbitrary.arbString
-import org.typelevel.otel4s.oteljava.instances._
-
-class InstancesSuite extends DisciplineSuite with TestInstances {
-  implicit val ticker: Ticker = Ticker()
-
-  unsafeRun {
-    IOLocal("").map { implicit ioLocal =>
-      checkAll("IOLocal.LocalLaws", LocalTests[IO, String].local[String, Int])
-    }
-  }
-}
+trait AllInstances extends LocalInstances

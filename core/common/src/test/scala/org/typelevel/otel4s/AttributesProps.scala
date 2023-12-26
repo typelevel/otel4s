@@ -17,7 +17,6 @@
 package org.typelevel.otel4s
 
 import cats.Show
-import cats.syntax.semigroup._
 import munit.ScalaCheckSuite
 import org.scalacheck.Arbitrary
 import org.scalacheck.Gen
@@ -108,6 +107,28 @@ class AttributesProps extends ScalaCheckSuite {
     }
   }
 
+  property("Attributes#updated adds attributes and replaces existing ones") {
+    forAll { (value1: String, value2: String) =>
+      val a1 = Attribute("key", value1)
+      val a2 = Attribute("key", value2)
+      val attrs1 = Attributes.empty + a1
+      val attrs2 = Attributes.empty + a2
+      val attrs12 = Attributes.empty + a1 + a2
+
+      val attrs1Contains = attrs1.get[String]("key").exists(_.value == value1)
+      val attrs2Contains = attrs2.get[String]("key").exists(_.value == value2)
+      val attrs12Checks =
+        attrs12.get[String]("key").exists(_.value == value2) &&
+          attrs12.sizeIs == 1 &&
+          (value1 == value2 ||
+            attrs12
+              .get[String]("key")
+              .forall(_.value != value1))
+
+      attrs1Contains && attrs2Contains && attrs12Checks
+    }
+  }
+
   property("Attributes#++ combines two sets of attributes") {
     forAll(listOfAttributes, listOfAttributes) { (attributes1, attributes2) =>
       val keySet1 = attributes1.map(_.key).toSet
@@ -117,7 +138,7 @@ class AttributesProps extends ScalaCheckSuite {
       val attrs1 = Attributes(attributes1: _*)
       val attrs2 = Attributes(attributes2: _*)
 
-      val combined = attrs1 |+| attrs2
+      val combined = attrs1 ++ attrs2
       val sizeIsEqual = combined.size == keySet1.size + keySet2.size
 
       val secondCollectionOverrodeValues = diff.forall { key =>

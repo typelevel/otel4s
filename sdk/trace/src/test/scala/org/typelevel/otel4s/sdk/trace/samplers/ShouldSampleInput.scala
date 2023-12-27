@@ -30,7 +30,7 @@ final case class ShouldSampleInput(
     name: String,
     spanKind: SpanKind,
     attributes: Attributes,
-    parentLinks: List[LinkData]
+    parentLinks: Vector[LinkData]
 )
 
 object ShouldSampleInput {
@@ -49,7 +49,7 @@ object ShouldSampleInput {
       name,
       kind,
       attributes,
-      parentLinks
+      parentLinks.toVector
     )
 
 }

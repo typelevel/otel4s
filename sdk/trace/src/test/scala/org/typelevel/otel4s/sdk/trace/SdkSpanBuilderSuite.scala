@@ -160,6 +160,7 @@ class SdkSpanBuilderSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
       TracerSharedState(
         IdGenerator.random[IO],
         InstrumentationResource.default,
+        SpanLimits.Default,
         sampler,
         SimpleSpanProcessor(exporter)
       )

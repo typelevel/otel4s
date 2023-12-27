@@ -29,9 +29,9 @@ import munit.CatsEffectSuite
 import munit.Location
 import munit.TestOptions
 import org.typelevel.otel4s.Attribute
+import org.typelevel.otel4s.Attributes
 import org.typelevel.otel4s.context.propagation.PassThroughPropagator
 import org.typelevel.otel4s.context.propagation.TextMapPropagator
-import org.typelevel.otel4s.sdk.Attributes
 import org.typelevel.otel4s.sdk.common.InstrumentationScope
 import org.typelevel.otel4s.sdk.context.Context
 import org.typelevel.otel4s.sdk.trace.data.EventData

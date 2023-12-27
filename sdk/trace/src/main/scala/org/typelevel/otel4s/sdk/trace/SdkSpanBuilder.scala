@@ -188,9 +188,11 @@ private[trace] final case class SdkSpanBuilder[F[_]: Temporal: Console](
               resource = tracerSharedState.resource,
               kind = spanKind,
               parentContext = parentSpanContext,
+              spanLimits = tracerSharedState.spanLimits,
               processor = tracerSharedState.spanProcessor,
               attributes = attrs |+| samplingResult.attributes,
               links = links,
+              totalRecordedLinks = links.size,
               userStartTimestamp = startTimestamp
             )
             .widen

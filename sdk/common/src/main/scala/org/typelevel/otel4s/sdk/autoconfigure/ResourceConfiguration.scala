@@ -19,7 +19,7 @@ package org.typelevel.otel4s.sdk.autoconfigure
 import cats.syntax.either._
 import cats.syntax.traverse._
 import org.typelevel.otel4s.Attribute
-import org.typelevel.otel4s.sdk.Attributes
+import org.typelevel.otel4s.Attributes
 import org.typelevel.otel4s.sdk.Resource
 import org.typelevel.otel4s.semconv.resource.attributes.ResourceAttributes
 

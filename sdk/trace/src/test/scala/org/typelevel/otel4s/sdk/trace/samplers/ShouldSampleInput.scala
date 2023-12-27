@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package org.typelevel.otel4s.sdk.trace
+package org.typelevel.otel4s
+package sdk.trace
 package samplers
 
 import org.scalacheck.Gen
-import org.typelevel.otel4s.sdk.Attributes
 import org.typelevel.otel4s.sdk.trace.data.LinkData
 import org.typelevel.otel4s.trace.SpanContext
 import org.typelevel.otel4s.trace.SpanKind
@@ -30,7 +30,7 @@ final case class ShouldSampleInput(
     name: String,
     spanKind: SpanKind,
     attributes: Attributes,
-    parentLinks: List[LinkData]
+    parentLinks: Vector[LinkData]
 )
 
 object ShouldSampleInput {
@@ -49,7 +49,7 @@ object ShouldSampleInput {
       name,
       kind,
       attributes,
-      parentLinks
+      parentLinks.toVector
     )
 
 }

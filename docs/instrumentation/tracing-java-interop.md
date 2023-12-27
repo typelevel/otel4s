@@ -51,9 +51,9 @@ It can be constructed in the following way:
 import cats.effect._
 import cats.mtl.Local
 import cats.syntax.functor._
-import org.typelevel.otel4s.java.context.Context
-import org.typelevel.otel4s.java.OtelJava
-import org.typelevel.otel4s.java.instances._ // brings Local derived from IOLocal
+import org.typelevel.otel4s.instances.local._ // brings Local derived from IOLocal
+import org.typelevel.otel4s.oteljava.context.Context
+import org.typelevel.otel4s.oteljava.OtelJava
 import io.opentelemetry.api.GlobalOpenTelemetry
 
 def createOtel4s[F[_]: Async](implicit L: Local[F, Context]): F[OtelJava[F]] =
@@ -78,7 +78,7 @@ For example, when you need to materialize an effect inside [Pekko HTTP][pekko-ht
 To make it work, we can define a utility method:
 ```scala mdoc:silent:reset
 import cats.mtl.Local
-import org.typelevel.otel4s.java.context.Context
+import org.typelevel.otel4s.oteljava.context.Context
 import io.opentelemetry.context.{Context => JContext}
 
 def withJContext[F[_], A](ctx: JContext)(fa: F[A])(implicit L: Local[F, Context]): F[A] =
@@ -103,7 +103,7 @@ import org.apache.pekko.http.scaladsl.server.Directives._
 import org.apache.pekko.http.scaladsl.server.Route
 import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.trace.Tracer
-import org.typelevel.otel4s.java.context.Context
+import org.typelevel.otel4s.oteljava.context.Context
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import io.opentelemetry.context.{Context => JContext}
 import scala.concurrent.duration._
@@ -150,7 +150,7 @@ The following utility method allows you to extract the current otel4s context an
 import cats.effect.Sync
 import cats.mtl.Local
 import cats.syntax.flatMap._
-import org.typelevel.otel4s.java.context.Context
+import org.typelevel.otel4s.oteljava.context.Context
 import io.opentelemetry.context.{Context => JContext}
 
 def useJContext[F[_]: Sync, A](use: JContext => A)(implicit L: Local[F, Context]): F[A] = 

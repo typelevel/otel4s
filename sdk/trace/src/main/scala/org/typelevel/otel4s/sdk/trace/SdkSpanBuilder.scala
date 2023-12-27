@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package org.typelevel.otel4s.sdk.trace
+package org.typelevel.otel4s
+package sdk
+package trace
 
-import cats.Applicative
 import cats.arrow.FunctionK
-import cats.effect.Concurrent
 import cats.effect.Resource
 import cats.effect.Temporal
 import cats.effect.std.Console
@@ -27,10 +27,9 @@ import cats.syntax.foldable._
 import cats.syntax.functor._
 import cats.syntax.semigroup._
 import cats.~>
-import org.typelevel.otel4s.Attribute
-import org.typelevel.otel4s.sdk.Attributes
 import org.typelevel.otel4s.sdk.common.InstrumentationScope
 import org.typelevel.otel4s.sdk.trace.data.LinkData
+import org.typelevel.otel4s.sdk.trace.samplers.SamplingResult
 import org.typelevel.otel4s.trace.Span
 import org.typelevel.otel4s.trace.SpanBuilder
 import org.typelevel.otel4s.trace.SpanContext
@@ -39,6 +38,7 @@ import org.typelevel.otel4s.trace.SpanKind
 import org.typelevel.otel4s.trace.SpanOps
 import org.typelevel.otel4s.trace.TraceFlags
 import org.typelevel.otel4s.trace.TraceState
+import scodec.bits.ByteVector
 
 import scala.concurrent.duration.FiniteDuration
 
@@ -70,7 +70,9 @@ private[trace] final case class SdkSpanBuilder[F[_]: Temporal: Console](
       spanContext: SpanContext,
       attributes: Attribute[_]*
   ): SpanBuilder[F] =
-    copy(links = links :+ LinkData(spanContext, Attributes(attributes: _*)))
+    copy(links =
+      links :+ LinkData(spanContext, Attributes.fromSpecific(attributes))
+    )
 
   def root: SpanBuilder[F] =
     copy(parent = Parent.Root)
@@ -97,7 +99,7 @@ private[trace] final case class SdkSpanBuilder[F[_]: Temporal: Console](
       resource.use(res => res.trace(f(res.span)))
 
     def use_ : F[Unit] =
-      use(_ => Applicative[F].unit)
+      use(_ => Temporal[F].unit)
   }
 
   private def startAsRes: Resource[F, SpanOps.Res[F]] =
@@ -131,77 +133,53 @@ private[trace] final case class SdkSpanBuilder[F[_]: Temporal: Console](
     } yield (backend, nt)
   }
 
-  private def chooseParentSpanContext: F[Option[SpanContext]] =
-    parent match {
-      case Parent.Root             => Concurrent[F].pure(None)
-      case Parent.Propagate        => scope.current
-      case Parent.Explicit(parent) => Concurrent[F].pure(Some(parent))
-    }
-
-  private[trace] def start: F[Span.Backend[F]] = {
+  private def start: F[Span.Backend[F]] = {
     val idGenerator = tracerSharedState.idGenerator
     val spanKind = kind.getOrElse(SpanKind.Internal)
     val attrs = Attributes.fromSpecific(attributes)
 
+    def genTraceId(parent: Option[SpanContext]): F[ByteVector] =
+      parent
+        .filter(_.isValid)
+        .fold(idGenerator.generateTraceId)(ctx => Temporal[F].pure(ctx.traceId))
+
+    def sample(
+        parent: Option[SpanContext],
+        traceId: ByteVector
+    ): SamplingResult =
+      tracerSharedState.sampler.shouldSample(
+        parentContext = parent,
+        traceId = traceId,
+        name = name,
+        spanKind = spanKind,
+        attributes = attrs,
+        parentLinks = links
+      )
+
     for {
       parentSpanContext <- chooseParentSpanContext
-
       spanId <- idGenerator.generateSpanId
-
-      traceId <-
-        parentSpanContext
-          .filter(_.isValid)
-          .fold(idGenerator.generateTraceId) { spanContext =>
-            Concurrent[F].pure(spanContext.traceId)
-          }
+      traceId <- genTraceId(parentSpanContext)
 
       backend <- {
-        val samplingResult =
-          tracerSharedState.sampler.shouldSample(
-            parentContext = parentSpanContext,
-            traceId = traceId,
-            name = name,
-            spanKind = spanKind,
-            attributes = attrs,
-            parentLinks = links
-          )
-
+        val samplingResult = sample(parentSpanContext, traceId)
         val samplingDecision = samplingResult.decision
 
         val traceFlags =
           if (samplingDecision.isSampled) TraceFlags.Sampled
           else TraceFlags.Default
 
-        val traceState = parentSpanContext.fold(TraceState.empty) { ctx =>
-          samplingResult.traceStateUpdater.update(ctx.traceState)
-        }
-
-        val spanContext = {
-          if (tracerSharedState.idGenerator.canSkipIdValidation) {
-            SpanContext.createInternal(
-              traceId = traceId,
-              spanId = spanId,
-              traceFlags = traceFlags,
-              traceState = traceState,
-              remote = false,
-              isValid = true
-            )
-          } else {
-            SpanContext(
-              traceId = traceId,
-              spanId = spanId,
-              traceFlags = traceFlags,
-              traceState = traceState,
-              remote = false
-            )
+        val traceState =
+          parentSpanContext.fold(TraceState.empty) { ctx =>
+            samplingResult.traceStateUpdater.update(ctx.traceState)
           }
-        }
+
+        val spanContext =
+          createSpanContext(traceId, spanId, traceFlags, traceState)
 
         if (!samplingDecision.isRecording) {
-          Applicative[F].pure(Span.Backend.propagating(spanContext))
+          Temporal[F].pure(Span.Backend.propagating(spanContext))
         } else {
-          val recordedAttributes = attrs |+| samplingResult.attributes
-
           SdkSpanBackend
             .start[F](
               context = spanContext,
@@ -210,19 +188,43 @@ private[trace] final case class SdkSpanBuilder[F[_]: Temporal: Console](
               resource = tracerSharedState.resource,
               kind = spanKind,
               parentContext = parentSpanContext,
-              spanLimits = tracerSharedState.spanLimits,
-              processor = tracerSharedState.activeSpanProcessor,
-              attributes = recordedAttributes,
+              processor = tracerSharedState.spanProcessor,
+              attributes = attrs |+| samplingResult.attributes,
               links = links,
-              totalRecordedLinks = links.size,
               userStartTimestamp = startTimestamp
             )
             .widen
         }
       }
     } yield backend
-
   }
+
+  private def chooseParentSpanContext: F[Option[SpanContext]] =
+    parent match {
+      case Parent.Root             => Temporal[F].pure(None)
+      case Parent.Propagate        => scope.current
+      case Parent.Explicit(parent) => Temporal[F].pure(Some(parent))
+    }
+
+  private def createSpanContext(
+      traceId: ByteVector,
+      spanId: ByteVector,
+      flags: TraceFlags,
+      state: TraceState
+  ): SpanContext =
+    if (tracerSharedState.idGenerator.canSkipIdValidation) {
+      SpanContext.createInternal(
+        traceId,
+        spanId,
+        flags,
+        state,
+        remote = false,
+        isValid = true
+      )
+    } else {
+      SpanContext(traceId, spanId, flags, state, remote = false)
+    }
+
 }
 
 private[trace] object SdkSpanBuilder {

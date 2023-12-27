@@ -33,9 +33,9 @@ You can find both examples below and choose which one suits your requirements.
 import cats.effect._
 import cats.mtl.Local
 import cats.syntax.functor._
-import org.typelevel.otel4s.java.context.Context
-import org.typelevel.otel4s.java.OtelJava
-import org.typelevel.otel4s.java.instances._ // brings Local derived from IOLocal
+import org.typelevel.otel4s.instances.local._ // brings Local derived from IOLocal
+import org.typelevel.otel4s.oteljava.context.Context
+import org.typelevel.otel4s.oteljava.OtelJava
 import io.opentelemetry.api.GlobalOpenTelemetry
 
 def createOtel4s[F[_]: Async](implicit L: Local[F, Context]): F[OtelJava[F]] =
@@ -57,7 +57,7 @@ If you don't need direct access to the `IOLocal` instance, there is also a short
 ```scala mdoc:silent:reset
 import cats.effect._
 import cats.syntax.flatMap._
-import org.typelevel.otel4s.java.OtelJava
+import org.typelevel.otel4s.oteljava.OtelJava
 import io.opentelemetry.api.GlobalOpenTelemetry
 
 def createOtel4s[F[_]: Async: LiftIO]: F[OtelJava[F]] =
@@ -75,7 +75,7 @@ val run: IO[Unit] =
 Of even shorter with `OtelJava.global`: 
 ```scala mdoc:silent:reset
 import cats.effect._
-import org.typelevel.otel4s.java.OtelJava
+import org.typelevel.otel4s.oteljava.OtelJava
 
 def program[F[_]: Async](otel4s: OtelJava[F]): F[Unit] = {
   val _ = otel4s
@@ -93,8 +93,8 @@ import cats.effect._
 import cats.syntax.functor._
 import cats.data.Kleisli
 import cats.mtl.Local
-import org.typelevel.otel4s.java.context.Context
-import org.typelevel.otel4s.java.OtelJava
+import org.typelevel.otel4s.oteljava.context.Context
+import org.typelevel.otel4s.oteljava.OtelJava
 import io.opentelemetry.api.GlobalOpenTelemetry
 
 def createOtel4s[F[_]: Async](implicit L: Local[F, Context]): F[OtelJava[F]] =

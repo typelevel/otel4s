@@ -34,7 +34,7 @@ trait LocalInstances {
       def applicative: Applicative[F] =
         Applicative[F]
       def ask[E2 >: E]: F[E2] =
-        Functor[F].widen(ioLocal.get.to[F])
+        Functor[F].widen[E, E2](ioLocal.get.to[F])
       def local[A](fa: F[A])(f: E => E): F[A] =
         MonadCancelThrow[F].bracket(ioLocal.modify(e => (f(e), e)).to[F])(_ =>
           fa

@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-package org.typelevel.otel4s.sdk.trace
+package org.typelevel.otel4s
+package sdk.trace
 package data
 
 import cats.Show
@@ -25,8 +26,6 @@ import munit.DisciplineSuite
 import org.scalacheck.Arbitrary
 import org.scalacheck.Gen
 import org.scalacheck.Prop
-import org.typelevel.otel4s.Attribute
-import org.typelevel.otel4s.sdk.Attributes
 
 import java.io.PrintWriter
 import java.io.StringWriter

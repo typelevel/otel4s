@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package org.typelevel.otel4s.sdk.trace.samplers
+package org.typelevel.otel4s
+package sdk.trace.samplers
 
-import org.typelevel.otel4s.sdk.Attributes
 import org.typelevel.otel4s.sdk.trace.data.LinkData
 import org.typelevel.otel4s.trace.SpanContext
 import org.typelevel.otel4s.trace.SpanKind
@@ -44,7 +44,7 @@ private[samplers] final class ParentBasedSampler private (
       name: String,
       spanKind: SpanKind,
       attributes: Attributes,
-      parentLinks: Seq[LinkData]
+      parentLinks: Vector[LinkData]
   ): SamplingResult = {
     val sampler = parentContext.filter(_.isValid) match {
       case Some(ctx) if ctx.isRemote =>

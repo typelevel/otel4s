@@ -161,7 +161,7 @@ object Span {
   object Backend {
 
     /** Returns a non-recording backend that holds the provided [[SpanContext]]
-      * but has all operations are no-op. It will not be exported and all
+      * but all operations have no effect. The span will not be exported and all
       * tracing operations are no-op, but it can be used to propagate a valid
       * [[SpanContext]] downstream.
       *
@@ -171,12 +171,12 @@ object Span {
     private[otel4s] def propagating[F[_]: Applicative](
         context: SpanContext
     ): Backend[F] =
-      noopInternal(InstrumentMeta.enabled, context)
+      make(InstrumentMeta.enabled, context)
 
     def noop[F[_]: Applicative]: Backend[F] =
-      noopInternal(InstrumentMeta.disabled, SpanContext.invalid)
+      make(InstrumentMeta.disabled, SpanContext.invalid)
 
-    private def noopInternal[F[_]: Applicative](
+    private def make[F[_]: Applicative](
         m: InstrumentMeta[F],
         ctx: SpanContext
     ): Backend[F] =

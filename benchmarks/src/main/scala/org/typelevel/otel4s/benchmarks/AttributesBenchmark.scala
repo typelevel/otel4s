@@ -14,14 +14,12 @@
  * limitations under the License.
  */
 
-package org.typelevel.otel4s.benchmarks
+package org.typelevel.otel4s
+package benchmarks
 
 import io.opentelemetry.api.common.{AttributeKey => JAttributeKey}
 import io.opentelemetry.api.common.{Attributes => JAttributes}
 import org.openjdk.jmh.annotations._
-import org.typelevel.otel4s.Attribute
-import org.typelevel.otel4s.AttributeKey
-import org.typelevel.otel4s.sdk.Attributes
 
 import java.util.concurrent.TimeUnit
 

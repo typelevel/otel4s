@@ -14,7 +14,9 @@
  * limitations under the License.
  */
 
-package org.typelevel.otel4s.sdk.trace
+package org.typelevel.otel4s
+package sdk
+package trace
 
 import cats.effect.IO
 import cats.effect.std.Queue
@@ -27,8 +29,6 @@ import munit.internal.PlatformCompat
 import org.scalacheck.Arbitrary
 import org.scalacheck.Test
 import org.scalacheck.effect.PropF
-import org.typelevel.otel4s.sdk.Attributes
-import org.typelevel.otel4s.sdk.Resource
 import org.typelevel.otel4s.sdk.common.InstrumentationScope
 import org.typelevel.otel4s.sdk.trace.data.EventData
 import org.typelevel.otel4s.sdk.trace.data.LinkData

@@ -25,5 +25,5 @@ private final case class TracerSharedState[F[_]](
     resource: Resource,
     spanLimits: SpanLimits,
     sampler: Sampler,
-    activeSpanProcessor: SpanProcessor[F]
+    spanProcessor: SpanProcessor[F]
 )

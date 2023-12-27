@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-package org.typelevel.otel4s.sdk
+package org.typelevel.otel4s
+package sdk
 package trace
 package samplers
 
@@ -56,7 +57,7 @@ trait Sampler {
       name: String,
       spanKind: SpanKind,
       attributes: Attributes,
-      parentLinks: Seq[LinkData]
+      parentLinks: Vector[LinkData]
   ): SamplingResult
 
   /** The description of the [[Sampler]]. This may be displayed on debug pages
@@ -141,7 +142,7 @@ object Sampler {
         name: String,
         spanKind: SpanKind,
         attributes: Attributes,
-        parentLinks: Seq[LinkData]
+        parentLinks: Vector[LinkData]
     ): SamplingResult =
       result
   }

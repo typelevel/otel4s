@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package org.typelevel.otel4s.sdk
+package org.typelevel.otel4s
+package sdk
 
 import cats.Hash
 import cats.Show
 import cats.syntax.all._
-import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.sdk.Resource.ResourceInitializationError
 import org.typelevel.otel4s.semconv.resource.attributes.ResourceAttributes._
 

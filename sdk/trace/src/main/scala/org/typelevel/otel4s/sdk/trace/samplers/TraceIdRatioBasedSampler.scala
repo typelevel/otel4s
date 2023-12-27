@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-package org.typelevel.otel4s.sdk
+package org.typelevel.otel4s
+package sdk
 package trace
 package samplers
 
@@ -49,7 +50,7 @@ private[samplers] final class TraceIdRatioBasedSampler private (
       name: String,
       spanKind: SpanKind,
       attributes: Attributes,
-      parentLinks: Seq[LinkData]
+      parentLinks: Vector[LinkData]
   ): SamplingResult =
     if (math.abs(traceIdRandomPart(traceId)) < idUpperBound)
       SamplingResult.RecordAndSample

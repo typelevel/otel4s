@@ -1,0 +1,22 @@
+receivers:
+  otlp:
+    protocols: # enable OpenTelemetry Protocol receiver, both gRPC and HTTP
+      grpc:
+      http:
+
+exporters:
+  otlp/jaeger: # export received traces to Jaeger
+    endpoint: jaeger:4317 # grpc endpoint
+    tls:
+      insecure: true
+
+processors:
+  batch:
+    timeout: 0 # send data immediately
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [otlp/jaeger]

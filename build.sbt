@@ -173,7 +173,7 @@ lazy val `sdk-common` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
     name := "otel4s-sdk-common",
     startYear := Some(2023),
     libraryDependencies ++= Seq(
-      "org.typelevel" %%% "cats-effect" % CatsEffectVersion,
+      "org.typelevel" %%% "cats-effect-kernel" % CatsEffectVersion,
       "org.typelevel" %%% "cats-mtl" % CatsMtlVersion,
       "org.typelevel" %%% "cats-laws" % CatsVersion % Test,
       "org.typelevel" %%% "discipline-munit" % MUnitDisciplineVersion % Test,
@@ -251,7 +251,11 @@ lazy val `sdk-exporter-trace` =
   crossProject(JVMPlatform, JSPlatform, NativePlatform)
     .crossType(CrossType.Pure)
     .in(file("sdk-exporter/trace"))
-    .dependsOn(`sdk-exporter-common`, `sdk-exporter-proto`, `sdk-trace`)
+    .dependsOn(
+      `sdk-exporter-common`,
+      `sdk-exporter-proto`,
+      `sdk-trace` % "compile->compile;test->test"
+    )
     .settings(
       name := "otel4s-sdk-exporter-trace",
       startYear := Some(2023),
@@ -427,9 +431,10 @@ lazy val examples = project
       "io.opentelemetry" % "opentelemetry-sdk" % OpenTelemetryVersion,
       "io.opentelemetry" % "opentelemetry-sdk-extension-autoconfigure" % OpenTelemetryVersion,
       "io.opentelemetry" % "opentelemetry-extension-trace-propagators" % OpenTelemetryVersion % Runtime,
-      "io.opentelemetry.instrumentation" % "opentelemetry-instrumentation-annotations" % OpenTelemetryInstrumentationVersion
+      "io.opentelemetry.instrumentation" % "opentelemetry-instrumentation-annotations" % OpenTelemetryInstrumentationVersion,
+      "com.fasterxml.jackson.core" % "jackson-core" % "2.14.2"
     ),
-    javaAgents += "io.opentelemetry.javaagent" % "opentelemetry-javaagent" % OpenTelemetryInstrumentationVersion % Runtime,
+    //javaAgents += "io.opentelemetry.javaagent" % "opentelemetry-javaagent" % OpenTelemetryInstrumentationVersion % Runtime,
     run / fork := true,
     javaOptions += "-Dotel.java.global-autoconfigure.enabled=true",
     envVars ++= Map(

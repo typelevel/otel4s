@@ -86,12 +86,8 @@ sealed trait SpanData {
   def resource: Resource
 
   /** Whether the span has ended.
-   */
+    */
   final def hasEnded: Boolean = endTimestamp.isDefined
-
-  final def droppedAttributesCount: Int = totalAttributeCount - attributes.size
-  final def droppedEventsCount: Int = totalRecordedEvents - events.size
-  final def droppedLinksCount: Int = totalRecordedLinks - links.size
 
   override final def hashCode(): Int =
     Hash[SpanData].hash(this)

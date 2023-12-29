@@ -16,6 +16,7 @@
 
 package org.typelevel.otel4s.sdk.exporter.otlp
 
+import cats.Foldable
 import cats.effect.Async
 import cats.effect.Resource
 import cats.effect.Temporal
@@ -24,6 +25,7 @@ import cats.effect.syntax.temporal._
 import cats.syntax.applicative._
 import cats.syntax.applicativeError._
 import cats.syntax.flatMap._
+import cats.syntax.foldable._
 import cats.syntax.functor._
 import fs2.Chunk
 import fs2.io.net.Network
@@ -46,11 +48,28 @@ import org.typelevel.otel4s.sdk.trace.exporter.SpanExporter
 
 import scala.concurrent.duration._
 
-final class OtlpHttpSpanExporter[F[_]: Temporal: Console] private (
+private final class OtlpHttpSpanExporter[F[_]: Temporal: Console] private (
     client: Client[F],
     config: OtlpHttpSpanExporter.Config
 ) extends SpanExporter[F] {
   import JsonCodecs._
+
+  val name: String = {
+    val headers = config.headers.mkString(
+      "headers{",
+      ",",
+      "}",
+      Headers.SensitiveHeaders
+    )
+
+    "OtlpHttpSpanExporter{" +
+      s"encoding=${config.encoding}, " +
+      s"endpoint=${config.endpoint}, " +
+      s"timeout=${config.timeout}, " +
+      s"gzipCompression=${config.gzipCompression}, " +
+      headers +
+      "}"
+  }
 
   private implicit val spansEncoder: EntityEncoder[F, List[SpanData]] =
     config.encoding match {
@@ -66,9 +85,9 @@ final class OtlpHttpSpanExporter[F[_]: Temporal: Console] private (
         }
     }
 
-  def exportSpans(spans: List[SpanData]): F[Unit] = {
+  def exportSpans[G[_]: Foldable](spans: G[SpanData]): F[Unit] = {
     val request = Request[F](Method.POST, config.endpoint, HttpVersion.`HTTP/2`)
-      .withEntity(spans)
+      .withEntity(spans.toList)
       .putHeaders(config.headers)
 
     client
@@ -76,9 +95,13 @@ final class OtlpHttpSpanExporter[F[_]: Temporal: Console] private (
       .use(response => logBody(response).unlessA(response.status.isSuccess))
       .timeout(config.timeout)
       .handleErrorWith { e =>
-        Console[F].error("Cannot export spans") >> Console[F].printStackTrace(e)
+        Console[F].errorln(
+          s"OtlpHttpSpanExporter: cannot export spans: ${e.getMessage}\n${e.getStackTrace.mkString("\n")}\n"
+        )
       }
   }
+
+  def flush: F[Unit] = Temporal[F].unit
 
   private def logBody(response: Response[F]): F[Unit] =
     for {
@@ -102,7 +125,8 @@ object OtlpHttpSpanExporter {
       encoding: Encoding,
       endpoint: Uri,
       timeout: FiniteDuration,
-      headers: Headers
+      headers: Headers,
+      gzipCompression: Boolean
   )
 
   sealed trait Encoding
@@ -121,14 +145,14 @@ object OtlpHttpSpanExporter {
       *
       * Default value is `http://localhost:4318/v1/traces`.
       */
-    def setEndpoint(endpoint: Uri): Builder[F]
+    def withEndpoint(endpoint: Uri): Builder[F]
 
     /** Sets the maximum time to wait for the collector to process an exported
       * batch of spans.
       *
       * Default value is `10 seconds`.
       */
-    def setTimeout(timeout: FiniteDuration): Builder[F]
+    def withTimeout(timeout: FiniteDuration): Builder[F]
 
     /** Enables Gzip compression.
       *
@@ -139,13 +163,13 @@ object OtlpHttpSpanExporter {
     /** Disables Gzip compression. */
     def disableGzip: Builder[F]
 
-    /** Add headers to requests. */
+    /** Adds headers to requests. */
     def addHeaders(headers: Headers): Builder[F]
 
     /** Creates a [[OtlpHttpSpanExporter]] using the configuration of this
       * builder.
       */
-    def build: Resource[F, OtlpHttpSpanExporter[F]]
+    def build: Resource[F, SpanExporter[F]]
   }
 
   /** Creates a [[Builder]] of [[OtlpHttpSpanExporter]] with the default
@@ -168,10 +192,10 @@ object OtlpHttpSpanExporter {
       headers: Headers
   ) extends Builder[F] {
 
-    def setTimeout(timeout: FiniteDuration): Builder[F] =
+    def withTimeout(timeout: FiniteDuration): Builder[F] =
       copy(timeout = timeout)
 
-    def setEndpoint(endpoint: Uri): Builder[F] =
+    def withEndpoint(endpoint: Uri): Builder[F] =
       copy(endpoint = endpoint)
 
     def addHeaders(headers: Headers): Builder[F] =
@@ -183,9 +207,8 @@ object OtlpHttpSpanExporter {
     def disableGzip: Builder[F] =
       copy(gzipCompression = false)
 
-    def build: Resource[F, OtlpHttpSpanExporter[F]] = {
-      val config =
-        Config(encoding, endpoint, timeout, headers)
+    def build: Resource[F, SpanExporter[F]] = {
+      val config = Config(encoding, endpoint, timeout, headers, gzipCompression)
 
       for {
         client <- EmberClientBuilder.default[F].build

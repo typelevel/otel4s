@@ -159,10 +159,10 @@ object InstrumentationScope {
   ) extends InstrumentationScope
       with Builder {
     def withVersion(version: String): Builder =
-      copy(version = Some(version))
+      copy(version = Option(version).filter(_.nonEmpty))
 
     def withSchemaUrl(schemaUrl: String): Builder =
-      copy(schemaUrl = Some(schemaUrl))
+      copy(schemaUrl = Option(schemaUrl).filter(_.nonEmpty))
 
     def withAttributes(attributes: Attributes): Builder =
       copy(attributes = attributes)

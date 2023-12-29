@@ -22,16 +22,19 @@ import io.circe.Encoder
 import io.circe.Json
 import io.circe.syntax._
 import org.typelevel.otel4s.sdk.{Resource => InstrumentationResource}
-import org.typelevel.otel4s.sdk.common.InstrumentationScopeInfo
+import org.typelevel.otel4s.sdk.common.InstrumentationScope
 import org.typelevel.otel4s.sdk.trace.data.EventData
 import org.typelevel.otel4s.sdk.trace.data.LinkData
 import org.typelevel.otel4s.sdk.trace.data.SpanData
 import org.typelevel.otel4s.sdk.trace.data.StatusData
 import org.typelevel.otel4s.trace.SpanKind
 import org.typelevel.otel4s.trace.Status
+import org.typelevel.otel4s.trace.TraceState
 
-// Spec: https://github.com/open-telemetry/opentelemetry-proto/blob/v1.0.0/opentelemetry/proto/trace/v1/trace.proto
-private[otlp] object JsonCodecs {
+/** @see
+  *   [[https://github.com/open-telemetry/opentelemetry-proto/blob/v1.0.0/opentelemetry/proto/trace/v1/trace.proto]]
+  */
+private object JsonCodecs {
 
   implicit val attributeEncoder: Encoder[Attribute[_]] =
     Encoder.instance { attribute =>
@@ -56,14 +59,15 @@ private[otlp] object JsonCodecs {
       )
     }
 
-  implicit val scopeInfoEncoder: Encoder[InstrumentationScopeInfo] =
+  implicit val instrumentationScopeEncoder: Encoder[InstrumentationScope] =
     Encoder.instance { scope =>
-      Json.obj(
-        "name" := scope.name,
-        "version" := scope.version.getOrElse(""),
-        // "schemaUrl" := scope.schemaUrl.getOrElse(""), todo: Jaeger does not accept the request when 'schemaUrl' is present
-        // "attributes" := scope.attributes todo: Jaeger does not accept the request when 'attributes' is present
-      )
+      Json
+        .obj(
+          "name" := scope.name,
+          "version" := scope.version,
+          "attributes" := scope.attributes // todo: Jaeger does not accept the request when 'attributes' is present
+        )
+        .dropNullValues
     }
 
   implicit val statusEncoder: Encoder[Status] =
@@ -82,54 +86,71 @@ private[otlp] object JsonCodecs {
       case SpanKind.Consumer => 5
     }
 
+  implicit val traceStateEncoder: Encoder[TraceState] =
+    Encoder.instance { state =>
+      if (state.isEmpty)
+        Json.Null
+      else
+        state.asMap
+          .map { case (key, value) => s"$key=$value" }
+          .mkString(",")
+          .asJson
+    }
+
   implicit val statusDataEncoder: Encoder[StatusData] =
     Encoder.instance { statusData =>
-      Json.obj(
-        "code" := statusData.status,
-        "message" := statusData.description
-      )
+      Json
+        .obj(
+          "message" := statusData.description,
+          "code" := statusData.status
+        )
+        .dropNullValues
     }
 
   implicit val eventDataEncoder: Encoder[EventData] =
     Encoder.instance { eventData =>
       Json.obj(
+        "timeUnixNano" := eventData.timestamp.toNanos.toString,
         "name" := eventData.name,
-        "timeUnixNano" := eventData.epochNanos,
-        "attributes" := eventData.attributes,
-        "droppedAttributesCount" := eventData.droppedAttributesCount
+        "attributes" := eventData.attributes
+        // "droppedAttributesCount" := eventData.droppedAttributesCount
       )
     }
 
   implicit val linkDataEncoder: Encoder[LinkData] =
     Encoder.instance { link =>
-      Json.obj(
-        "traceId" := link.spanContext.traceIdHex,
-        "spanId" := link.spanContext.spanIdHex,
-        "traceState" := "", // todo: don't forget to export traceState
-        "attributes" := link.attributes,
-        "droppedAttributesCount" := link.droppedAttributesCount
-      )
+      Json
+        .obj(
+          "traceId" := link.spanContext.traceIdHex,
+          "spanId" := link.spanContext.spanIdHex,
+          "traceState" := link.spanContext.traceState,
+          "attributes" := link.attributes,
+          // "droppedAttributesCount" := 0 // link.droppedAttributesCount
+        )
+        .dropNullValues
     }
 
   implicit val spanDataEncoder: Encoder[SpanData] =
     Encoder.instance { span =>
-      Json.obj(
-        "traceId" := span.spanContext.traceIdHex,
-        "spanId" := span.spanContext.spanIdHex,
-        "traceState" := "", // todo: don't forget to export traceState
-        "parentSpanId" := span.parentSpanContext.map(_.spanIdHex),
-        "name" := span.name,
-        "kind" := span.kind,
-        "startTimeUnixNano" := span.startEpochNanos.toString,
-        "endTimeUnixNano" := span.endEpochNanos.toString,
-        "attributes" := span.attributes,
-        "droppedAttributesCount" := span.droppedAttributesCount,
-        "events" := span.events,
-        "droppedEventsCount" := span.droppedEventsCount,
-        "links" := span.links,
-        "droppedLinksCount" := span.droppedLinksCount,
-        "status" := span.status
-      )
+      Json
+        .obj(
+          "traceId" := span.spanContext.traceIdHex,
+          "spanId" := span.spanContext.spanIdHex,
+          "traceState" := span.spanContext.traceState,
+          "parentSpanId" := span.parentSpanContext.map(_.spanIdHex),
+          "name" := span.name,
+          "kind" := span.kind,
+          "startTimeUnixNano" := span.startTimestamp.toNanos.toString,
+          "endTimeUnixNano" := span.endTimestamp.map(_.toNanos.toString),
+          "attributes" := span.attributes,
+          // "droppedAttributesCount" := 0, // span.droppedAttributesCount,
+          "events" := span.events,
+          // "droppedEventsCount" := 0, // span.droppedEventsCount,
+          "links" := span.links,
+          // "droppedLinksCount" := 0, // span.droppedLinksCount,
+          "status" := span.status
+        )
+        .dropNullValues
     }
 
   implicit val spanDataListEncoder: Encoder[List[SpanData]] =
@@ -138,7 +159,7 @@ private[otlp] object JsonCodecs {
         spans.groupBy(_.resource).map { case (resource, resourceSpans) =>
           val scopeSpans: Iterable[Json] =
             resourceSpans
-              .groupBy(_.instrumentationScopeInfo)
+              .groupBy(_.instrumentationScope)
               .map { case (scope, spans) =>
                 Json.obj(
                   "scope" := scope,

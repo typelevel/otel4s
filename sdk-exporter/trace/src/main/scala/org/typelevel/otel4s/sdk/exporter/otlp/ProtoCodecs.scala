@@ -15,7 +15,8 @@
  */
 
 package org.typelevel.otel4s
-package sdk.exporter.otlp
+package sdk
+package exporter.otlp
 
 import com.google.protobuf.ByteString
 import io.opentelemetry.proto.collector.trace.v1.trace_service.ExportTraceServiceRequest
@@ -31,9 +32,7 @@ import io.opentelemetry.proto.trace.v1.trace.{Status => StatusProto}
 import io.opentelemetry.proto.trace.v1.trace.ResourceSpans
 import io.opentelemetry.proto.trace.v1.trace.ScopeSpans
 import org.typelevel.otel4s.AttributeType
-import org.typelevel.otel4s.sdk.Attributes
-import org.typelevel.otel4s.sdk.Resource
-import org.typelevel.otel4s.sdk.common.{InstrumentationScopeInfo => ScopeInfo}
+import org.typelevel.otel4s.sdk.common.InstrumentationScope
 import org.typelevel.otel4s.sdk.trace.data.EventData
 import org.typelevel.otel4s.sdk.trace.data.LinkData
 import org.typelevel.otel4s.sdk.trace.data.SpanData
@@ -41,7 +40,7 @@ import org.typelevel.otel4s.sdk.trace.data.StatusData
 import org.typelevel.otel4s.trace.SpanKind
 import org.typelevel.otel4s.trace.Status
 
-private[otlp] object ProtoCodecs {
+private object ProtoCodecs {
   trait ToProto[A, P] {
     def encode(a: A): P
   }
@@ -85,13 +84,14 @@ private[otlp] object ProtoCodecs {
     )
   }
 
-  implicit val scopeInfoToProto: ToProto[ScopeInfo, ScopeProto] = { scope =>
-    ScopeProto(
-      name = scope.name,
-      version = scope.version.getOrElse(""),
-      attributes = toProto(scope.attributes),
-      droppedAttributesCount = 0 // todo: add droppedAttributes
-    )
+  implicit val scopeInfoToProto: ToProto[InstrumentationScope, ScopeProto] = {
+    scope =>
+      ScopeProto(
+        name = scope.name,
+        version = scope.version.getOrElse(""),
+        attributes = toProto(scope.attributes),
+        droppedAttributesCount = 0 // todo: add droppedAttributes
+      )
   }
 
   implicit val statusToProto: ToProto[Status, StatusProto.StatusCode] = {
@@ -110,48 +110,56 @@ private[otlp] object ProtoCodecs {
 
   implicit val statusDataToProto: ToProto[StatusData, StatusProto] = { data =>
     StatusProto(
-      message = data.description,
+      message = data.description.getOrElse(""),
       code = toProto(data.status)
     )
   }
 
   implicit val eventDataToProto: ToProto[EventData, SpanProto.Event] = { data =>
     SpanProto.Event(
-      timeUnixNano = data.epochNanos,
+      timeUnixNano = data.timestamp.toNanos,
       name = data.name,
       attributes = toProto(data.attributes),
-      droppedAttributesCount = data.droppedAttributesCount
+      droppedAttributesCount = 0 // data.droppedAttributesCount
     )
   }
 
   implicit val linkDataToProto: ToProto[LinkData, SpanProto.Link] = { data =>
+    val traceState = data.spanContext.traceState.asMap
+      .map { case (key, value) => s"$key=$value" }
+      .mkString(",")
+
     SpanProto.Link(
       traceId = ByteString.copyFrom(data.spanContext.traceId.toArray),
       spanId = ByteString.copyFrom(data.spanContext.spanId.toArray),
-      traceState = "", // todo: don't forget to export traceState
+      traceState = traceState,
       attributes = toProto(data.attributes),
-      droppedAttributesCount = data.droppedAttributesCount
+      droppedAttributesCount = 0 // data.droppedAttributesCount
     )
   }
 
   implicit val spanDataToProto: ToProto[SpanData, SpanProto] = { span =>
+    val traceState = span.spanContext.traceState.asMap
+      .map { case (key, value) => s"$key=$value" }
+      .mkString(",")
+
     SpanProto(
       ByteString.copyFrom(span.spanContext.traceId.toArray),
       ByteString.copyFrom(span.spanContext.spanId.toArray),
-      traceState = "", // todo: don't forget to export traceState
+      traceState = traceState,
       parentSpanId = span.parentSpanContext
         .map(s => ByteString.copyFrom(s.spanId.toArray))
         .getOrElse(ByteString.EMPTY),
       name = span.name,
       kind = toProto(span.kind),
-      startTimeUnixNano = span.startEpochNanos,
-      endTimeUnixNano = span.endEpochNanos,
+      startTimeUnixNano = span.startTimestamp.toNanos,
+      endTimeUnixNano = span.endTimestamp.map(_.toNanos).getOrElse(0L),
       attributes = toProto(span.attributes),
-      droppedAttributesCount = span.droppedAttributesCount,
+      droppedAttributesCount = 0, // span.droppedAttributesCount,
       events = span.events.map(event => toProto(event)),
-      droppedEventsCount = span.droppedEventsCount,
+      droppedEventsCount = 0, // span.droppedEventsCount,
       links = span.links.map(link => toProto(link)),
-      droppedLinksCount = span.droppedLinksCount,
+      droppedLinksCount = 0, // span.droppedLinksCount,
       status = Some(toProto(span.status))
     )
   }
@@ -164,7 +172,7 @@ private[otlp] object ProtoCodecs {
         .map { case (resource, resourceSpans) =>
           val scopeSpans: List[ScopeSpans] =
             resourceSpans
-              .groupBy(_.instrumentationScopeInfo)
+              .groupBy(_.instrumentationScope)
               .map { case (scope, spans) =>
                 ScopeSpans(
                   scope = Some(toProto(scope)),

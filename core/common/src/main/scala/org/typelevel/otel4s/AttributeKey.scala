@@ -29,6 +29,11 @@ import cats.syntax.show._
 sealed trait AttributeKey[A] {
   def name: String
   def `type`: AttributeType[A]
+
+  /** @return
+    *   an [[`Attribute`]] associating this key with the given value
+    */
+  final def apply(value: A): Attribute[A] = Attribute(this, value)
 }
 
 object AttributeKey {
@@ -83,7 +88,7 @@ object AttributeKey {
   implicit def attributeKeyShow[A]: Show[AttributeKey[A]] =
     Show.show(key => show"${key.`type`}(${key.name})")
 
-  implicit val attributeKeyAnyHash: Hash[AttributeKey[_]] =
+  implicit val attributeKeyExistentialHash: Hash[AttributeKey[_]] =
     Hash.by(key => (key.name, key.`type`))
 
 }

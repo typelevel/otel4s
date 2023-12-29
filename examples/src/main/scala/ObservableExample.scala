@@ -17,8 +17,8 @@
 import cats.effect.IO
 import cats.effect.IOApp
 import cats.effect.Resource
-import org.typelevel.otel4s.java.OtelJava
 import org.typelevel.otel4s.metrics.ObservableCounter
+import org.typelevel.otel4s.oteljava.OtelJava
 
 import java.lang.management.ManagementFactory
 import javax.management.MBeanServer

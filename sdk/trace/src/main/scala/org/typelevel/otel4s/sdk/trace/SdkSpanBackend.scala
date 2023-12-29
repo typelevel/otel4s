@@ -14,25 +14,26 @@
  * limitations under the License.
  */
 
-package org.typelevel.otel4s.sdk
+package org.typelevel.otel4s
+package sdk
 package trace
 
-import cats.Applicative
 import cats.Monad
 import cats.effect.Clock
+import cats.effect.Ref
 import cats.effect.Temporal
-import cats.effect.std.AtomicCell
+import cats.effect.std.Console
+import cats.syntax.applicative._
 import cats.syntax.flatMap._
 import cats.syntax.functor._
-import cats.syntax.semigroup._
-import org.typelevel.otel4s.Attribute
-import org.typelevel.otel4s.AttributeKey
 import org.typelevel.otel4s.meta.InstrumentMeta
-import org.typelevel.otel4s.sdk.common.InstrumentationScopeInfo
+import org.typelevel.otel4s.sdk.common.InstrumentationScope
+import org.typelevel.otel4s.sdk.trace.SdkSpanBackend.MutableState
 import org.typelevel.otel4s.sdk.trace.data.EventData
 import org.typelevel.otel4s.sdk.trace.data.LinkData
 import org.typelevel.otel4s.sdk.trace.data.SpanData
 import org.typelevel.otel4s.sdk.trace.data.StatusData
+import org.typelevel.otel4s.sdk.trace.processor.SpanProcessor
 import org.typelevel.otel4s.trace.Span
 import org.typelevel.otel4s.trace.SpanContext
 import org.typelevel.otel4s.trace.SpanKind
@@ -40,27 +41,57 @@ import org.typelevel.otel4s.trace.Status
 
 import scala.concurrent.duration.FiniteDuration
 
-final class SdkSpanBackend[F[_]: Monad: Clock] private (
+/** The backend of the span that manages it's internal state. It has mutable and
+  * immutable states:
+  *   - immutable state - cannot be modified at any point of the span's
+  *     lifecycle, for example: span context, parent's span context, span kind,
+  *     and so on
+  *   - mutable state - can be modified during the lifecycle, for example: name,
+  *     attributes, events, etc
+  *
+  * All modifications of the mutable state are ignored once the span is ended.
+  *
+  * @see
+  *   [[https://opentelemetry.io/docs/specs/otel/trace/api]]
+  *
+  * @param spanProcessor
+  *   the [[SpanProcessor]] to call on span's end
+  *
+  * @param immutableState
+  *   the immutable state of the span
+  *
+  * @param mutableState
+  *   the mutable state of the span
+  *
+  * @tparam F
+  *   the higher-kinded type of a polymorphic effect
+  */
+private[trace] final class SdkSpanBackend[F[_]: Monad: Clock: Console] private (
     spanLimits: SpanLimits,
     spanProcessor: SpanProcessor[F],
     immutableState: SdkSpanBackend.ImmutableState,
-    mutableState: AtomicCell[F, SdkSpanBackend.MutableState]
-) extends Span.Backend[F] {
+    mutableState: Ref[F, SdkSpanBackend.MutableState]
+) extends Span.Backend[F]
+    with SpanRef[F] {
 
-  def meta: InstrumentMeta[F] = InstrumentMeta.enabled
+  def meta: InstrumentMeta[F] =
+    InstrumentMeta.enabled
 
-  def context: SpanContext = immutableState.context
+  def context: SpanContext =
+    immutableState.context
 
   def updateName(name: String): F[Unit] =
-    mutableState.update(_.copy(name = name))
+    updateState("updateName")(_.copy(name = name)).void
 
-  // todo: apply attribute span limits
   def addAttributes(attributes: Attribute[_]*): F[Unit] =
-    if (attributes.isEmpty) Applicative[F].unit
-    else
-      mutableState.update { s =>
-        s.copy(attributes = s.attributes |+| Attributes(attributes: _*))
-      }
+    updateState("addAttributes") { s =>
+      val next = Attributes.newBuilder
+        .addAll(s.attributes)
+        .addAll(attributes)
+        .result()
+
+      s.copy(attributes = next)
+    }.unlessA(attributes.isEmpty)
 
   def addEvent(name: String, attributes: Attribute[_]*): F[Unit] =
     for {
@@ -68,14 +99,13 @@ final class SdkSpanBackend[F[_]: Monad: Clock] private (
       _ <- addEvent(name, now, attributes: _*)
     } yield ()
 
-  // todo: apply attribute span limits
   def addEvent(
       name: String,
       timestamp: FiniteDuration,
       attributes: Attribute[_]*
   ): F[Unit] =
     addTimedEvent(
-      EventData.general(name, timestamp.toNanos, Attributes(attributes: _*))
+      EventData(name, timestamp, Attributes.fromSpecific(attributes))
     )
 
   def recordException(
@@ -85,22 +115,24 @@ final class SdkSpanBackend[F[_]: Monad: Clock] private (
     for {
       now <- Clock[F].realTime
       _ <- addTimedEvent(
-        EventData.exception(
-          spanLimits,
-          now.toNanos,
+        EventData.fromException(
+          now,
           exception,
-          Attributes(attributes: _*)
+          Attributes.fromSpecific(attributes),
+          false
         )
       )
     } yield ()
 
   def setStatus(status: Status): F[Unit] =
-    mutableState.update(s => s.copy(status = StatusData.create(status)))
+    updateState("setStatus") { s =>
+      s.copy(status = StatusData(status))
+    }.void
 
   def setStatus(status: Status, description: String): F[Unit] =
-    mutableState.update(s =>
-      s.copy(status = StatusData.create(status, description))
-    )
+    updateState("setStatus") { s =>
+      s.copy(status = StatusData(status, description))
+    }.void
 
   private[otel4s] def end: F[Unit] =
     for {
@@ -108,14 +140,15 @@ final class SdkSpanBackend[F[_]: Monad: Clock] private (
       _ <- end(now)
     } yield ()
 
-  private[otel4s] def end(timestamp: FiniteDuration): F[Unit] =
-    mutableState.update { s =>
-      if (s.hasEnded) s // todo: log warn
-      else s.copy(endEpochNanos = timestamp.toNanos, hasEnded = true)
-    } >> spanProcessor.onEnd(spanView)
+  private[otel4s] def end(timestamp: FiniteDuration): F[Unit] = {
+    for {
+      updated <- updateState("end")(s => s.copy(endTimestamp = Some(timestamp)))
+      _ <- toSpanData.flatMap(span => spanProcessor.onEnd(span)).whenA(updated)
+    } yield ()
+  }
 
   private def addTimedEvent(event: EventData): F[Unit] =
-    mutableState.update { s =>
+    updateState("addEvent") { s =>
       if (s.events.sizeIs <= spanLimits.maxNumberOfEvents) {
         s.copy(
           events = s.events :+ event,
@@ -124,111 +157,127 @@ final class SdkSpanBackend[F[_]: Monad: Clock] private (
       } else {
         s.copy(totalRecordedEvents = s.totalRecordedEvents + 1)
       }
-    }
+    }.void
 
-  private val spanView: SpanView[F] =
-    new SpanView[F] {
-      def kind: SpanKind =
-        immutableState.kind
+  // applies modifications while the span is still active
+  // modifications are ignored when the span is ended
+  private def updateState(
+      method: String
+  )(update: MutableState => MutableState): F[Boolean] =
+    mutableState
+      .modify { state =>
+        if (state.endTimestamp.isDefined) (state, false)
+        else (update(state), true)
+      }
+      .flatTap { modified =>
+        Console[F]
+          .println(
+            s"SdkSpanBackend: calling [$method] on the ended span $context"
+          )
+          .unlessA(modified)
+      }
 
-      def scopeInfo: InstrumentationScopeInfo =
-        immutableState.scopeInfo
+  // SpanRef interfaces
+  def kind: SpanKind =
+    immutableState.kind
 
-      def spanContext: SpanContext =
-        immutableState.context
+  def scopeInfo: InstrumentationScope =
+    immutableState.scopeInfo
 
-      def parentSpanContext: Option[SpanContext] =
-        immutableState.parentContext
+  def parentSpanContext: Option[SpanContext] =
+    immutableState.parentContext
 
-      // todo: name can be mutated by internals
-      def name: F[String] =
-        mutableState.get.map(_.name)
+  def name: F[String] =
+    mutableState.get.map(_.name)
 
-      def toSpanData: F[SpanData] =
-        for {
-          state <- mutableState.get
-        } yield SpanData.create(
-          name = state.name,
-          kind = immutableState.kind,
-          spanContext = immutableState.context,
-          parentSpanContext = immutableState.parentContext,
-          status = state.status,
-          startEpochNanos = immutableState.startEpochNanos,
-          attributes = state.attributes,
-          events = state.events,
-          links = immutableState.links,
-          endEpochNanos = state.endEpochNanos,
-          hasEnded = state.hasEnded,
-          totalRecordedEvents = state.totalRecordedEvents,
-          totalRecordedLinks = immutableState.totalRecordedLinks,
-          totalAttributeCount =
-            state.attributes.size, // todo: incorrect when limits are applied,
-          instrumentationScopeInfo = immutableState.scopeInfo,
-          resource = immutableState.resource
-        )
+  def toSpanData: F[SpanData] =
+    for {
+      state <- mutableState.get
+    } yield SpanData(
+      name = state.name,
+      spanContext = immutableState.context,
+      parentSpanContext = immutableState.parentContext,
+      kind = immutableState.kind,
+      startTimestamp = immutableState.startTimestamp,
+      endTimestamp = state.endTimestamp,
+      status = state.status,
+      attributes = state.attributes,
+      events = state.events,
+      links = immutableState.links,
+      /*totalRecordedEvents = state.totalRecordedEvents,
+      totalRecordedLinks = immutableState.totalRecordedLinks,
+      totalAttributeCount =
+        state.attributes.size, // todo: incorrect when limits are applied,*/
+      instrumentationScope = immutableState.scopeInfo,
+      resource = immutableState.resource
+    )
 
-      def hasEnded: F[Boolean] =
-        mutableState.get.map(_.hasEnded)
+  def hasEnded: F[Boolean] =
+    mutableState.get.map(_.endTimestamp.isDefined)
 
-      def latencyNanos: F[Long] =
-        for {
-          state <- mutableState.get
-          endEpochNanos <-
-            if (state.hasEnded) Monad[F].pure(state.endEpochNanos)
-            else Clock[F].realTime.map(_.toNanos)
-        } yield endEpochNanos - immutableState.startEpochNanos
+  def duration: F[FiniteDuration] =
+    for {
+      state <- mutableState.get
+      endEpochNanos <- state.endTimestamp.fold(Clock[F].realTime)(_.pure)
+    } yield endEpochNanos - immutableState.startTimestamp
 
-      def getAttribute[A](key: AttributeKey[A]): F[Option[A]] =
-        for {
-          state <- mutableState.get
-        } yield state.attributes.get(key).map(_.value)
-    }
+  def getAttribute[A](key: AttributeKey[A]): F[Option[A]] =
+    for {
+      state <- mutableState.get
+    } yield state.attributes.get(key).map(_.value)
 
 }
 
-object SdkSpanBackend {
+private[trace] object SdkSpanBackend {
 
-  private final case class ImmutableState(
+  /** Starts a new span.
+    *
+    * @param context
+    *   the [[SpanContext]] of the span
+    *
+    * @param name
+    *   the name of the span
+    *
+    * @param scopeInfo
+    *   the [[InstrumentationScope]] of the span
+    *
+    * @param resource
+    *   the [[Resource]] of the span
+    *
+    * @param kind
+    *   the [[SpanKind]] of the span
+    *
+    * @param parentContext
+    *   the optional parent's [[SpanContext]]
+    *
+    * @param processor
+    *   the [[SpanProcessor]] to call on span's start and end
+    *
+    * @param attributes
+    *   the [[Attributes]] of the span
+    *
+    * @param links
+    *   the collection of [[LinkData]] of the span
+    *
+    * @param userStartTimestamp
+    *   the explicit start timestamp. If `None` is passed the start time will be
+    *   calculated automatically (via `Clock[F].realTime`)
+    */
+  def start[F[_]: Temporal: Console](
       context: SpanContext,
-      scopeInfo: InstrumentationScopeInfo,
-      kind: SpanKind,
-      parentContext: Option[SpanContext],
-      resource: Resource,
-      links: List[LinkData],
-      totalRecordedLinks: Int,
-      startEpochNanos: Long
-  )
-
-  private final case class MutableState(
       name: String,
-      status: StatusData,
-      attributes: Attributes,
-      events: List[EventData],
-      totalRecordedEvents: Int,
-      endEpochNanos: Long,
-      hasEnded: Boolean
-  )
-
-  def start[F[_]: Temporal](
-      context: SpanContext,
-      name: String,
-      scopeInfo: InstrumentationScopeInfo,
+      scopeInfo: InstrumentationScope,
       resource: Resource,
       kind: SpanKind,
       parentContext: Option[SpanContext],
       spanLimits: SpanLimits,
-      spanProcessor: SpanProcessor[F],
+      processor: SpanProcessor[F],
       attributes: Attributes,
-      links: List[LinkData],
+      links: Vector[LinkData],
       totalRecordedLinks: Int,
-      userStartEpochNanos: Long
+      userStartTimestamp: Option[FiniteDuration]
   ): F[SdkSpanBackend[F]] = {
-
-    val computeNow =
-      if (userStartEpochNanos != 0) Temporal[F].pure(userStartEpochNanos)
-      else Temporal[F].realTime.map(_.toNanos)
-
-    def immutableState(startEpochNanos: Long) =
+    def immutableState(startTimestamp: FiniteDuration) =
       ImmutableState(
         context = context,
         scopeInfo = scopeInfo,
@@ -237,29 +286,51 @@ object SdkSpanBackend {
         resource = resource,
         links = links,
         totalRecordedLinks = totalRecordedLinks,
-        startEpochNanos = startEpochNanos
+        startTimestamp = startTimestamp
       )
 
     val mutableState = MutableState(
       name = name,
       status = StatusData.Unset,
       attributes = attributes,
-      events = Nil,
+      events = Vector.empty,
       totalRecordedEvents = 0,
-      endEpochNanos = 0,
-      hasEnded = false
+      endTimestamp = None
     )
 
     for {
-      start <- computeNow
-      state <- AtomicCell[F].of(mutableState)
+      start <- userStartTimestamp.fold(Clock[F].realTime)(_.pure)
+      state <- Ref[F].of(mutableState)
       backend = new SdkSpanBackend[F](
         spanLimits,
-        spanProcessor,
+        processor,
         immutableState(start),
         state
       )
-      _ <- spanProcessor.onStart(parentContext, backend.spanView)
+      _ <- processor.onStart(parentContext, backend)
     } yield backend
   }
+
+  private final case class ImmutableState(
+      context: SpanContext,
+      scopeInfo: InstrumentationScope,
+      kind: SpanKind,
+      parentContext: Option[SpanContext],
+      resource: Resource,
+      links: Vector[LinkData],
+      totalRecordedLinks: Int,
+      startTimestamp: FiniteDuration
+  )
+
+  /** The things that may change during the lifecycle of the span.
+    */
+  private final case class MutableState(
+      name: String,
+      status: StatusData,
+      attributes: Attributes,
+      events: Vector[EventData],
+      totalRecordedEvents: Int,
+      endTimestamp: Option[FiniteDuration]
+  )
+
 }

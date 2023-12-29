@@ -94,8 +94,8 @@ object SpanNode {
         .flatMap(c => processedNodesById.get(c.spanContext.spanIdHex))
       val node = SpanNode(
         n.data.name,
-        n.data.startEpochNanos.nanos,
-        n.data.endEpochNanos.nanos,
+        n.data.startTimestamp,
+        n.data.endTimestamp.getOrElse(Duration.Zero),
         children
       )
       nodeId -> node

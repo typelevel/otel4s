@@ -27,6 +27,13 @@ instrumenting various libraries and applications to check for fit.
 Don't put it in a binary-stable library yet, but we invite you to try
 it out and let us know what you think.
 
+## Modules availability
+
+| Module / Platform | JVM | Scala Native | Scala.js |  
+|:-----------------:|:---:|:------------:|:--------:|
+|   `otel4s-core`   |  ✅  |      ✅       |    ✅     |
+| `otel4s-oteljava` |  ✅  |      ❌       |    ❌     | 
+
 ## Learn more
 
 See the [website](https://typelevel.org/otel4s).

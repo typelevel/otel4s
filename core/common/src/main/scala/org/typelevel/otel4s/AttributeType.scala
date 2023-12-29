@@ -41,7 +41,7 @@ object AttributeType {
   implicit def attributeTypeShow[A]: Show[AttributeType[A]] =
     Show.fromToString
 
-  implicit val attributeTypeAnyHash: Hash[AttributeType[_]] =
+  implicit val attributeTypeExistentialHash: Hash[AttributeType[_]] =
     Hash.fromUniversalHashCode
 
 }

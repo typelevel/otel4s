@@ -18,6 +18,8 @@ package org.typelevel.otel4s
 package trace
 
 import cats.Applicative
+import cats.effect.kernel.MonadCancelThrow
+import cats.syntax.functor._
 
 /** The entry point of the tracing API. Provides access to
   * [[org.typelevel.otel4s.trace.Tracer Tracer]].
@@ -57,6 +59,15 @@ trait TracerProvider[F[_]] {
     *   library, package, or fully qualified class name
     */
   def tracer(name: String): TracerBuilder[F]
+
+  /** Modify the context `F` using an implicit [[KindTransformer]] from `F` to
+    * `G`.
+    */
+  def mapK[G[_]: MonadCancelThrow](implicit
+      F: MonadCancelThrow[F],
+      kt: KindTransformer[F, G]
+  ): TracerProvider[G] =
+    new TracerProvider.MappedK(this)
 }
 
 object TracerProvider {
@@ -74,4 +85,14 @@ object TracerProvider {
       def tracer(name: String): TracerBuilder[F] =
         TracerBuilder.noop
     }
+
+  private class MappedK[F[_]: MonadCancelThrow, G[_]: MonadCancelThrow](
+      provider: TracerProvider[F]
+  )(implicit kt: KindTransformer[F, G])
+      extends TracerProvider[G] {
+    override def get(name: String): G[Tracer[G]] =
+      kt.liftK(provider.get(name).map(_.mapK[G]))
+    def tracer(name: String): TracerBuilder[G] =
+      provider.tracer(name).mapK[G]
+  }
 }

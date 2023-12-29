@@ -18,6 +18,7 @@ package org.typelevel.otel4s
 
 import cats.Functor
 import cats.Monad
+import cats.arrow.FunctionK
 import cats.data.EitherT
 import cats.data.IorT
 import cats.data.Kleisli
@@ -54,14 +55,25 @@ trait KindTransformer[F[_], G[_]] {
 
   /** Lifts a natural transformation from `F` to `F` into a natural
     * transformation from `G` to `G`.
+    *
+    * @note
+    *   Implementors SHOULD NOT override this method; the only reason it is not
+    *   final is for optimization of the identity case.
     */
-  final def liftFunctionK(f: F ~> F): G ~> G =
+  def liftFunctionK(f: F ~> F): G ~> G =
     new (G ~> G) {
       def apply[A](ga: G[A]): G[A] = limitedMapK(ga)(f)
     }
 }
 
 object KindTransformer {
+  implicit def id[F[_]]: KindTransformer[F, F] =
+    new KindTransformer[F, F] {
+      val liftK: F ~> F = FunctionK.id
+      def limitedMapK[A](ga: F[A])(f: F ~> F): F[A] = f(ga)
+      override def liftFunctionK(f: F ~> F): F ~> F = f
+    }
+
   implicit def optionT[F[_]: Functor]: KindTransformer[F, OptionT[F, *]] =
     new KindTransformer[F, OptionT[F, *]] {
       val liftK: F ~> OptionT[F, *] = OptionT.liftK

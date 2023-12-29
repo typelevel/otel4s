@@ -18,9 +18,10 @@ package org.typelevel.otel4s.sdk.trace.propagation
 
 import munit._
 import org.typelevel.otel4s.sdk.context.Context
-import org.typelevel.otel4s.sdk.trace.SdkTraceScope
+import org.typelevel.otel4s.sdk.trace.SdkContextKeys
 import org.typelevel.otel4s.trace.SpanContext
 import org.typelevel.otel4s.trace.TraceFlags
+import org.typelevel.otel4s.trace.TraceState
 import scodec.bits.ByteVector
 
 class W3CTraceContextPropagatorSuite extends FunSuite {
@@ -32,6 +33,7 @@ class W3CTraceContextPropagatorSuite extends FunSuite {
   private val spanId = ByteVector.fromValidHex(spanIdHex)
 
   private val flags = List(TraceFlags.Sampled, TraceFlags.Default)
+  private val state = TraceState.empty
 
   private val propagator = W3CTraceContextPropagator
 
@@ -40,16 +42,16 @@ class W3CTraceContextPropagatorSuite extends FunSuite {
   //
 
   test("inject nothing when context is empty") {
-    val result = propagator.injected(Context.root, Map.empty[String, String])
+    val result = propagator.inject(Context.root, Map.empty[String, String])
     assertEquals(result.size, 0)
   }
 
   test("inject context info") {
     flags.foreach { flag =>
       val spanContext =
-        SpanContext.create(traceId, spanId, flag, remote = false)
-      val ctx = SdkTraceScope.storeInContext(Context.root, spanContext)
-      val result = propagator.injected(ctx, Map.empty[String, String])
+        SpanContext(traceId, spanId, flag, state, remote = false)
+      val ctx = Context.root.updated(SdkContextKeys.SpanContextKey, spanContext)
+      val result = propagator.inject(ctx, Map.empty[String, String])
 
       val suffix = if (flag.isSampled) "01" else "00"
 
@@ -67,31 +69,32 @@ class W3CTraceContextPropagatorSuite extends FunSuite {
   test("extract span context") {
     flags.foreach { flag =>
       val spanContext =
-        SpanContext.create(traceId, spanId, flag, remote = false)
+        SpanContext(traceId, spanId, flag, state, remote = false)
       val carrier = Map("traceparent" -> toTraceParent(spanContext))
 
       val ctx = propagator.extract(Context.root, carrier)
 
-      val expected = SpanContext.create(traceId, spanId, flag, remote = true)
+      val expected =
+        SpanContext(traceId, spanId, flag, state, remote = true)
 
-      assertEquals(SdkTraceScope.fromContext(ctx), Some(expected))
+      assertEquals(ctx.get(SdkContextKeys.SpanContextKey), Some(expected))
     }
   }
 
   test("extract nothing when carrier is empty") {
     val ctx = propagator.extract(Context.root, Map.empty[String, String])
-    assertEquals(SdkTraceScope.fromContext(ctx), None)
+    assertEquals(ctx.get(SdkContextKeys.SpanContextKey), None)
   }
 
   test("extract nothing when carrier doesn't have a mandatory key") {
     val ctx = propagator.extract(Context.root, Map("key" -> "value"))
-    assertEquals(SdkTraceScope.fromContext(ctx), None)
+    assertEquals(ctx.get(SdkContextKeys.SpanContextKey), None)
   }
 
   test("extract nothing when the traceparent in invalid") {
     val carrier = Map("traceparent" -> "00-11-22-33")
     val ctx = propagator.extract(Context.root, carrier)
-    assertEquals(SdkTraceScope.fromContext(ctx), None)
+    assertEquals(ctx.get(SdkContextKeys.SpanContextKey), None)
   }
 
   private def toTraceParent(spanContext: SpanContext): String =

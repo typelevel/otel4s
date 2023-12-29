@@ -78,4 +78,9 @@ class TracerSuite extends CatsEffectSuite {
     } yield assert(!allocated)
   }
 
+  test("`currentSpanOrNoop` is not valid when instrument is noop") {
+    val tracer = Tracer.noop[IO]
+    for (span <- tracer.currentSpanOrNoop)
+      yield assert(!span.context.isValid)
+  }
 }

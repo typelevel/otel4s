@@ -21,18 +21,20 @@ import cats.Show
 import cats.syntax.show._
 import org.typelevel.otel4s.trace.Status
 
-/** Defines the status of a Span by providing a standard Status in conjunction
-  * with an optional descriptive message.
+/** Defines the status of a span by providing a standard status in conjunction
+  * with an optional description message.
+  *
+  * @param status
+  *   status code
+  *
+  * @see
+  *   [[https://opentelemetry.io/docs/specs/otel/trace/api/#set-status]]
   */
-sealed trait StatusData {
+sealed abstract class StatusData(val status: Status) {
 
-  /** The status code
+  /** The description of this status for human consumption.
     */
-  def status: Status
-
-  /** The description of this status for human consumption
-    */
-  def description: String
+  def description: Option[String]
 
   override final def hashCode(): Int =
     Hash[StatusData].hash(this)
@@ -49,40 +51,57 @@ sealed trait StatusData {
 
 object StatusData {
 
-  private final case class StatusDataImpl(
-      status: Status,
-      description: String
-  ) extends StatusData
-
-  /** Indicates the successfully completed operation,validated by an application
-    * developer or operator.
+  /** Indicates the successfully completed operation, validated by an
+    * application developer or operator.
     */
-  val Ok: StatusData = StatusDataImpl(Status.Ok, "")
+  case object Ok extends StatusData(Status.Ok) {
+    def description: Option[String] = None
+  }
 
   /** The default state.
     */
-  val Unset: StatusData = StatusDataImpl(Status.Unset, "")
+  case object Unset extends StatusData(Status.Unset) {
+    def description: Option[String] = None
+  }
 
   /** Indicates an occurred error.
     */
-  val Error: StatusData = StatusDataImpl(Status.Error, "")
+  final case class Error(description: Option[String])
+      extends StatusData(Status.Error)
 
-  def create(status: Status): StatusData =
+  /** Returns [[StatusData]] for the given `status`.
+    */
+  def apply(status: Status): StatusData =
     status match {
       case Status.Ok    => Ok
       case Status.Unset => Unset
-      case Status.Error => Error
+      case Status.Error => Error(None)
     }
 
-  def create(status: Status, description: String): StatusData =
-    if (description.isEmpty) create(status)
-    else StatusDataImpl(status, description)
+  /** Creates [[StatusData]] using the given `status` and `description`.
+    *
+    * @param status
+    *   the status of the [[StatusData]]
+    *
+    * @param description
+    *   the description of the [[StatusData]]. Effective only for the
+    *   [[org.typelevel.otel4s.trace.Status.Error Status.Error]].
+    */
+  def apply(status: Status, description: String): StatusData =
+    status match {
+      case Status.Ok    => Ok
+      case Status.Unset => Unset
+      case Status.Error => Error(Option.when(description.nonEmpty)(description))
+    }
 
   implicit val statusDataHash: Hash[StatusData] =
     Hash.by(a => (a.status, a.description))
 
   implicit val statusDataShow: Show[StatusData] = Show.show { data =>
-    show"StatusData{status=${data.status}, description=${data.description}}"
+    data.description match {
+      case Some(d) => show"StatusData{status=${data.status}, description=$d}"
+      case None    => show"StatusData{status=${data.status}}"
+    }
   }
 
 }

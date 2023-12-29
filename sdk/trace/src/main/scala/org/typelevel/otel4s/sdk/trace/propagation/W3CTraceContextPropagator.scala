@@ -17,15 +17,16 @@
 package org.typelevel.otel4s.sdk.trace.propagation
 
 import cats.syntax.apply._
-import org.typelevel.otel4s.TextMapGetter
-import org.typelevel.otel4s.TextMapPropagator
-import org.typelevel.otel4s.TextMapUpdater
+import org.typelevel.otel4s.context.propagation.TextMapGetter
+import org.typelevel.otel4s.context.propagation.TextMapPropagator
+import org.typelevel.otel4s.context.propagation.TextMapUpdater
 import org.typelevel.otel4s.sdk.context.Context
-import org.typelevel.otel4s.sdk.trace.SdkTraceScope
+import org.typelevel.otel4s.sdk.trace.SdkContextKeys
 import org.typelevel.otel4s.trace.SpanContext
 import org.typelevel.otel4s.trace.SpanContext.SpanId
 import org.typelevel.otel4s.trace.SpanContext.TraceId
 import org.typelevel.otel4s.trace.TraceFlags
+import org.typelevel.otel4s.trace.TraceState
 
 import scala.util.matching.Regex
 
@@ -46,7 +47,7 @@ object W3CTraceContextPropagator extends TextMapPropagator[Context] {
       case Some(value) =>
         extractContextFromTraceParent(value) match {
           case Some(parentContext) =>
-            SdkTraceScope.storeInContext(ctx, parentContext)
+            ctx.updated(SdkContextKeys.SpanContextKey, parentContext)
 
           case None =>
             ctx
@@ -57,8 +58,8 @@ object W3CTraceContextPropagator extends TextMapPropagator[Context] {
     }
   }
 
-  def injected[A: TextMapUpdater](ctx: Context, carrier: A): A =
-    SdkTraceScope.fromContext(ctx).filter(_.isValid) match {
+  def inject[A: TextMapUpdater](ctx: Context, carrier: A): A =
+    ctx.get(SdkContextKeys.SpanContextKey).filter(_.isValid) match {
       case Some(spanContext) =>
         val traceParent =
           s"00-${spanContext.traceIdHex}-${spanContext.spanIdHex}-${spanContext.traceFlags.toHex}"
@@ -79,7 +80,8 @@ object W3CTraceContextPropagator extends TextMapPropagator[Context] {
           SpanId.fromHex(spanIdHex),
           TraceFlags.fromHex(traceFlagsHex)
         ).mapN { (traceId, spanId, traceFlags) =>
-          SpanContext.create(traceId, spanId, traceFlags, remote = true)
+          val state = TraceState.empty
+          SpanContext(traceId, spanId, traceFlags, state, remote = true)
         }
 
       case _ =>

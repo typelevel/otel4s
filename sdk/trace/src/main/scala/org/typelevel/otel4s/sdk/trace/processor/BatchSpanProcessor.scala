@@ -21,16 +21,13 @@ package processor
 import cats.effect.Ref
 import cats.effect.Resource
 import cats.effect.Temporal
+import cats.effect.std.Console
 import cats.effect.std.CountDownLatch
 import cats.effect.std.Queue
 import cats.effect.syntax.monadCancel._
 import cats.effect.syntax.spawn._
 import cats.effect.syntax.temporal._
-import cats.syntax.applicative._
-import cats.syntax.apply._
-import cats.syntax.flatMap._
-import cats.syntax.foldable._
-import cats.syntax.functor._
+import cats.syntax.all._
 import org.typelevel.otel4s.sdk.trace.data.SpanData
 import org.typelevel.otel4s.sdk.trace.exporter.SpanExporter
 import org.typelevel.otel4s.trace.SpanContext
@@ -40,17 +37,20 @@ import scala.concurrent.duration._
 /** Implementation of the [[SpanProcessor]] that batches spans exported by the
   * SDK then pushes them to the exporter pipeline.
   *
-  * All spans reported by the SDK implementation are first added to a
-  * synchronized queue (with a `maxQueueSize` maximum size, if queue is full
-  * spans are dropped).
+  * All spans reported by the SDK implementation are first added to a queue. If
+  * the queue is full (with a `config.maxQueueSize` maximum size), the incoming
+  * spans are dropped.
   *
-  * Spans are exported either when there are `maxExportBatchSize` pending spans
-  * or `scheduleDelayNanos` has passed since the last export finished.
+  * Spans are exported either when there are `config.maxExportBatchSize` pending
+  * spans or `config.scheduleDelay` has passed since the last export attempt.
+  *
+  * @see
+  *   [[https://opentelemetry.io/docs/specs/otel/trace/sdk/#batching-processor]]
   *
   * @tparam F
   *   the higher-kinded type of a polymorphic effect
   */
-final class BatchSpanProcessor[F[_]: Temporal] private (
+final class BatchSpanProcessor[F[_]: Temporal: Console] private (
     queue: Queue[F, SpanData],
     signal: CountDownLatch[F],
     state: Ref[F, BatchSpanProcessor.State],
@@ -59,7 +59,13 @@ final class BatchSpanProcessor[F[_]: Temporal] private (
 ) extends SpanProcessor[F] {
   import BatchSpanProcessor.State
 
-  val name: String = "BatchSpanProcessor"
+  val name: String = "BatchSpanProcessor{" +
+    s"exporter=${exporter.name}, " +
+    s"scheduleDelay=${config.scheduleDelay}, " +
+    s"exporterTimeout=${config.exporterTimeout}, " +
+    s"maxQueueSize=${config.maxQueueSize}, " +
+    s"maxExportBatchSize=${config.maxExportBatchSize}}"
+
   val isStartRequired: Boolean = false
   val isEndRequired: Boolean = true
 
@@ -79,7 +85,7 @@ final class BatchSpanProcessor[F[_]: Temporal] private (
         }
         .ifM(signal.release, Temporal[F].unit)
 
-    val enqueue =
+    def enqueue =
       for {
         offered <- queue.tryOffer(span)
         _ <- notifyWorker.whenA(offered)
@@ -92,103 +98,94 @@ final class BatchSpanProcessor[F[_]: Temporal] private (
     exportAll
 
   private def worker: F[Unit] =
-    run.foreverM[Unit].guarantee(exportAll)
+    run.foreverM[Unit]
 
-  private def run: F[Unit] = {
-    // export the current batch and reset the state
-    def doExport(now: FiniteDuration, batch: List[SpanData]): F[Unit] =
+  private def run: F[Unit] =
+    Temporal[F].uncancelable { poll =>
+      // export the current batch and reset the state
+      def doExport(now: FiniteDuration, batch: Vector[SpanData]): F[Unit] =
+        poll(exportBatch(batch)).guarantee(
+          state.set(State(now + config.scheduleDelay, Vector.empty, None))
+        )
+
+      // wait either for:
+      // 1) the signal - it means the queue has enough spans
+      // 2) the timeout - it means we can export all remaining spans
+      def pollMore(
+          now: FiniteDuration,
+          nextExportTime: FiniteDuration,
+          currentBatchSize: Int
+      ): F[Unit] = {
+        val pollWaitTime = nextExportTime - now
+        val spansNeeded = config.maxExportBatchSize - currentBatchSize
+
+        val request =
+          for {
+            _ <- state.update(_.copy(spansNeeded = Some(spansNeeded)))
+            _ <- signal.await.timeoutTo(pollWaitTime, Temporal[F].unit)
+          } yield ()
+
+        poll(request)
+          .guarantee(state.update(_.copy(spansNeeded = None)))
+          .whenA(pollWaitTime > Duration.Zero)
+      }
+
       for {
-        _ <- exportBatch(batch)
-        _ <- state.set(State(now + config.scheduleDelay, Nil, None))
+        st <- poll(state.get)
+
+        // try to take enough spans to fill up the current batch
+        spans <- queue.tryTakeN(Some(config.maxExportBatchSize - st.batch.size))
+
+        // modify the state with the updated batch
+        nextState <- state.updateAndGet(_.copy(batch = st.batch ++ spans))
+
+        // the current timestamp
+        now <- Temporal[F].monotonic
+
+        _ <- {
+          val batch = nextState.batch
+          val nextExportTime = nextState.nextExportTime
+
+          // two reasons to export:
+          // 1) the current batch size exceeds the limit
+          // 2) the worker is behind the scheduled export time
+          val canExport =
+            batch.size >= config.maxExportBatchSize || now >= nextExportTime
+
+          if (canExport) doExport(now, batch)
+          else pollMore(now, nextExportTime, batch.size)
+        }
       } yield ()
-
-    def pollMore(
-        now: FiniteDuration,
-        nextExportTime: FiniteDuration,
-        currentBatchSize: Int
-    ): F[Unit] = {
-      val pollWaitTime = nextExportTime - now
-      val spansNeeded = config.maxExportBatchSize - currentBatchSize
-
-      val request =
-        for {
-          _ <- state.update(_.copy(spansNeeded = Some(spansNeeded)))
-          _ <- signal.await.timeoutTo(pollWaitTime, Temporal[F].unit)
-          _ <- state.update(_.copy(spansNeeded = None))
-        } yield ()
-
-      request.whenA(pollWaitTime > Duration.Zero)
     }
 
-    for {
-      st <- state.get
-
-      // try to take enough spans to fill up the current batch
-      spans <- queue.tryTakeN(Some(config.maxExportBatchSize - st.batch.size))
-
-      // modify the state with the updated batch
-      nextState <- state.updateAndGet(_.copy(batch = st.batch ++ spans))
-
-      // the current timestamp
-      now <- Temporal[F].monotonic
-
-      _ <- {
-        val batch = nextState.batch
-        val nextExportTime = nextState.nextExportTime
-
-        // two reasons to export:
-        // 1) the current batch size exceeds the limit
-        // 2) the worker is behind the export time
-        val canExport =
-          batch.size >= config.maxExportBatchSize || now >= nextExportTime
-
-        if (canExport) doExport(now, batch)
-        else pollMore(now, nextExportTime, batch.size)
-      }
-    } yield ()
-  }
-
   // export all available data
-  private[trace] def exportAll: F[Unit] =
+  private def exportAll: F[Unit] =
     for {
       st <- state.get
       spanData <- queue.tryTakeN(None)
-      batch = st.batch ++ spanData
-      _ <- batch
-        .grouped(config.maxExportBatchSize)
-        .toList
-        .traverse_(exportBatch)
-      _ <- state.update(_.copy(batch = Nil, spansNeeded = None))
+      all = st.batch ++ spanData
+      _ <- all.grouped(config.maxExportBatchSize).toList.traverse_(exportBatch)
+      _ <- state.update(_.copy(batch = Vector.empty, spansNeeded = None))
     } yield ()
 
-  // todo 1: .timeoutTo(config.exporterTimeoutNanos)
-  // todo 2: handle errors (log them)
-  private def exportBatch(batch: List[SpanData]): F[Unit] =
-    exporter.exportSpans(batch)
+  private def exportBatch(batch: Vector[SpanData]): F[Unit] =
+    exporter
+      .exportSpans(batch)
+      .timeoutTo(
+        config.exporterTimeout,
+        Console[F].error(
+          s"BatchSpanProcessor: the export attempt has been canceled after [${config.exporterTimeout}]"
+        )
+      )
+      .handleErrorWith { e =>
+        Console[F].error(
+          s"BatchSpanProcessor: the export has failed: ${e.getMessage}\n${e.getStackTrace.mkString("\n")}\n"
+        )
+      }
 
 }
 
 object BatchSpanProcessor {
-
-  private object Defaults {
-    val ScheduleDelay: FiniteDuration = 5.second
-    val ExportTimeout: FiniteDuration = 30.seconds
-    val MaxQueueSize: Int = 2048
-    val MaxExportBatchSize: Int = 512
-  }
-
-  private final case class Config(
-      scheduleDelay: FiniteDuration,
-      exporterTimeout: FiniteDuration,
-      maxQueueSize: Int,
-      maxExportBatchSize: Int
-  )
-
-  private final case class State(
-      nextExportTime: FiniteDuration,
-      batch: List[SpanData],
-      spansNeeded: Option[Int]
-  )
 
   /** Builder for [[BatchSpanProcessor]]. */
   trait Builder[F[_]] {
@@ -229,9 +226,9 @@ object BatchSpanProcessor {
   /** Create a [[Builder]] for [[BatchSpanProcessor]].
     *
     * @param exporter
-    *   the exporter to which the Spans are pushed
+    *   the [[exporter.SpanExporter SpanExporter]] to which the spans are pushed
     */
-  def builder[F[_]: Temporal](exporter: SpanExporter[F]): Builder[F] =
+  def builder[F[_]: Temporal: Console](exporter: SpanExporter[F]): Builder[F] =
     new BuilderImpl[F](
       exporter = exporter,
       scheduleDelay = Defaults.ScheduleDelay,
@@ -240,7 +237,43 @@ object BatchSpanProcessor {
       maxExportBatchSize = Defaults.MaxExportBatchSize
     )
 
-  private final case class BuilderImpl[F[_]: Temporal](
+  private object Defaults {
+    val ScheduleDelay: FiniteDuration = 5.second
+    val ExportTimeout: FiniteDuration = 30.seconds
+    val MaxQueueSize: Int = 2048
+    val MaxExportBatchSize: Int = 512
+  }
+
+  /** The configuration of the [[BatchSpanProcessor]].
+    *
+    * @param scheduleDelay
+    *   the maximum delay interval in milliseconds between two consecutive
+    *   exports
+    *
+    * @param exporterTimeout
+    *   how long the export can run before it is cancelled
+    *
+    * @param maxQueueSize
+    *   the maximum queue size. Once the the limit is reached new spans will be
+    *   dropped
+    *
+    * @param maxExportBatchSize
+    *   the maximum batch size of every export
+    */
+  private final case class Config(
+      scheduleDelay: FiniteDuration,
+      exporterTimeout: FiniteDuration,
+      maxQueueSize: Int,
+      maxExportBatchSize: Int
+  )
+
+  private final case class State(
+      nextExportTime: FiniteDuration,
+      batch: Vector[SpanData],
+      spansNeeded: Option[Int]
+  )
+
+  private final case class BuilderImpl[F[_]: Temporal: Console](
       exporter: SpanExporter[F],
       scheduleDelay: FiniteDuration,
       exporterTimeout: FiniteDuration,
@@ -270,9 +303,9 @@ object BatchSpanProcessor {
 
       def create: F[BatchSpanProcessor[F]] =
         for {
-          queue <- Queue.bounded[F, SpanData](maxQueueSize)
+          queue <- Queue.dropping[F, SpanData](maxQueueSize)
           now <- Temporal[F].monotonic
-          state <- Ref.of(State(now + config.scheduleDelay, Nil, None))
+          state <- Ref.of(State(now + config.scheduleDelay, Vector.empty, None))
           signal <- CountDownLatch[F](1)
         } yield new BatchSpanProcessor[F](
           queue = queue,
@@ -284,6 +317,7 @@ object BatchSpanProcessor {
 
       for {
         processor <- Resource.eval(create)
+        _ <- Resource.make(Temporal[F].unit)(_ => processor.exportAll)
         _ <- processor.worker.background
       } yield processor
     }

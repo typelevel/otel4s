@@ -38,20 +38,72 @@ sealed trait Attributes
 
   /** Returns an attribute for the given attribute name, or `None` if not found.
     */
-  def get[T: KeySelect](name: String): Option[Attribute[T]]
+  final def get[T: KeySelect](name: String): Option[Attribute[T]] =
+    get(KeySelect[T].make(name))
 
   /** Returns an attribute for the given attribute key, or `None` if not found.
     */
   def get[T](key: AttributeKey[T]): Option[Attribute[T]]
 
-  /** Whether this attributes collection contains the given key.
+  /** Whether or not these `Attributes` contain a key with the given name and
+    * type.
     */
+  final def contains[T: KeySelect](name: String): Boolean =
+    contains(KeySelect[T].make(name))
+
+  /** Whether or not these `Attributes` contain the given key. */
   def contains(key: AttributeKey[_]): Boolean
+
+  /** Adds an [[`Attribute`]] with the given name and value to these
+    * `Attributes`, replacing any `Attribute` with the same name and type if one
+    * exists.
+    */
+  final def updated[T: KeySelect](name: String, value: T): Attributes =
+    updated(Attribute(name, value))
+
+  /** Adds an [[`Attribute`]] with the given key and value to these
+    * `Attributes`, replacing any `Attribute` with the same key if one exists.
+    */
+  final def updated[T](key: AttributeKey[T], value: T): Attributes =
+    updated(Attribute(key, value))
+
+  /** Adds the given [[`Attribute`]] to these `Attributes`, replacing any
+    * `Attribute` with the same key if one exists.
+    */
+  def updated(attribute: Attribute[_]): Attributes
+
+  /** Adds the given [[`Attribute`]] to these `Attributes`, replacing any
+    * `Attribute` with the same key if one exists.
+    */
+  final def +(attribute: Attribute[_]): Attributes =
+    updated(attribute)
+
+  /** Invariant overload of
+    * [[scala.collection.IterableOps.concat `IterableOps#concat`]] that returns
+    * `Attributes` rather than `Iterable`.
+    *
+    * If multiple [[`Attribute`]]s in `this` and/or `that` have the same key,
+    * only the final one (according to `that`'s iterator) will be retained in
+    * the resulting `Attributes`.
+    */
+  def concat(that: IterableOnce[Attribute[_]]): Attributes =
+    attributesFactory.fromSpecific(this.view ++ that)
+
+  /** Invariant overload of [[scala.collection.IterableOps.++ `IterableOps#++`]]
+    * that returns `Attributes` rather than `Iterable`.
+    *
+    * If multiple [[`Attribute`]]s in `this` and/or `that` have the same key,
+    * only the final one (according to `that`'s iterator) will be retained in
+    * the resulting `Attributes`.
+    */
+  final def ++(that: IterableOnce[Attribute[_]]): Attributes =
+    concat(that)
 
   /** Returns the `Map` representation of the attributes collection.
     */
   def toMap: Map[AttributeKey[_], Attribute[_]]
 
+  /** A factory for creating `Attributes`. */
   def attributesFactory: SpecificIterableFactory[Attribute[_], Attributes]
 
   override def empty: Attributes = attributesFactory.empty
@@ -220,13 +272,19 @@ object Attributes extends SpecificIterableFactory[Attribute[_], Attributes] {
   private final class MapAttributes(
       private val m: Map[AttributeKey[_], Attribute[_]]
   ) extends Attributes {
-    def get[T: KeySelect](name: String): Option[Attribute[T]] =
-      get(KeySelect[T].make(name))
-
     def get[T](key: AttributeKey[T]): Option[Attribute[T]] =
       m.get(key).map(_.asInstanceOf[Attribute[T]])
-
     def contains(key: AttributeKey[_]): Boolean = m.contains(key)
+    def updated(attribute: Attribute[_]): Attributes =
+      new MapAttributes(m.updated(attribute.key, attribute))
+    override def concat(that: IterableOnce[Attribute[_]]): Attributes =
+      that match {
+        case other: Attributes =>
+          new MapAttributes(m ++ other.toMap)
+        case other =>
+          new MapAttributes(m ++ other.iterator.map(a => a.key -> a))
+      }
+
     def toMap: Map[AttributeKey[_], Attribute[_]] = m
     def iterator: Iterator[Attribute[_]] = m.valuesIterator
 

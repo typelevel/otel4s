@@ -995,7 +995,7 @@ object SdkTracerSuite {
   ) {
 
     def finishedSpans: IO[List[SpanData]] =
-      processor.exportAll >> exporter.finishedSpans.map(_.toList)
+      processor.forceFlush >> exporter.finishedSpans.map(_.toList)
 
   }
 

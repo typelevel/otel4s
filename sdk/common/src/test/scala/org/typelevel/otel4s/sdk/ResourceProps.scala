@@ -20,12 +20,12 @@ import cats.Show
 import cats.syntax.show._
 import munit.ScalaCheckSuite
 import org.scalacheck.Prop.forAll
-import org.typelevel.otel4s.sdk.arbitrary.resource
+import org.typelevel.otel4s.sdk.scalacheck.Gens
 
 class ResourceProps extends ScalaCheckSuite {
 
   property("Attributes#merge merges attributes") {
-    forAll(resource.arbitrary, resource.arbitrary) { (resource1, resource2) =>
+    forAll(Gens.resource, Gens.resource) { (resource1, resource2) =>
       val mergedEither = resource1.merge(resource2)
       mergedEither match {
         case Right(merged) =>
@@ -46,7 +46,7 @@ class ResourceProps extends ScalaCheckSuite {
   }
 
   property("Show[Resource]") {
-    forAll(resource.arbitrary) { resource =>
+    forAll(Gens.resource) { resource =>
       val expected =
         show"Resource{attributes=${resource.attributes}, schemaUrl=${resource.schemaUrl}}"
 

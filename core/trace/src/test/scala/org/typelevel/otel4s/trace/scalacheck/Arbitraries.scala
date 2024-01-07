@@ -14,17 +14,24 @@
  * limitations under the License.
  */
 
-package org.typelevel.otel4s
+package org.typelevel.otel4s.trace.scalacheck
 
-import cats.kernel.laws.discipline.HashTests
-import cats.kernel.laws.discipline.MonoidTests
-import munit.DisciplineSuite
-import org.typelevel.otel4s.scalacheck.Arbitraries._
-import org.typelevel.otel4s.scalacheck.Cogens._
+import org.scalacheck.Arbitrary
+import org.typelevel.otel4s.trace.SpanContext
+import org.typelevel.otel4s.trace.SpanKind
+import org.typelevel.otel4s.trace.Status
 
-class AttributesLawTests extends DisciplineSuite {
+trait Arbitraries extends org.typelevel.otel4s.scalacheck.Arbitraries {
 
-  checkAll("Attributes.HashLaws", HashTests[Attributes].hash)
-  checkAll("Attributes.MonoidLaws", MonoidTests[Attributes].monoid)
+  implicit val spanContextArbitrary: Arbitrary[SpanContext] =
+    Arbitrary(Gens.spanContext)
+
+  implicit val spanKindArbitrary: Arbitrary[SpanKind] =
+    Arbitrary(Gens.spanKind)
+
+  implicit val statusArbitrary: Arbitrary[Status] =
+    Arbitrary(Gens.status)
 
 }
+
+object Arbitraries extends Arbitraries

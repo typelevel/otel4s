@@ -14,25 +14,20 @@
  * limitations under the License.
  */
 
-package org.typelevel.otel4s
-package sdk
-package trace
+package org.typelevel.otel4s.sdk.scalacheck
 
 import org.scalacheck.Arbitrary
-import org.typelevel.otel4s.sdk.trace.samplers.SamplingDecision
+import org.typelevel.otel4s.sdk.Resource
+import org.typelevel.otel4s.sdk.common.InstrumentationScope
 
-object Arbitraries {
-
-  implicit val attributeArbitrary: Arbitrary[Attribute[_]] =
-    Arbitrary(Gens.attribute)
-
-  implicit val attributesArbitrary: Arbitrary[Attributes] =
-    Arbitrary(Gens.attributes)
+trait Arbitraries extends org.typelevel.otel4s.scalacheck.Arbitraries {
 
   implicit val resourceArbitrary: Arbitrary[Resource] =
     Arbitrary(Gens.resource)
 
-  implicit val samplingDecisionArbitrary: Arbitrary[SamplingDecision] =
-    Arbitrary(Gens.samplingDecision)
+  implicit val instrumentationScopeArbitrary: Arbitrary[InstrumentationScope] =
+    Arbitrary(Gens.instrumentationScope)
 
 }
+
+object Arbitraries extends Arbitraries

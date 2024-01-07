@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Typelevel
+ * Copyright 2022 Typelevel
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,25 +14,20 @@
  * limitations under the License.
  */
 
-package org.typelevel
-package otel4s
-package sdk
+package org.typelevel.otel4s.scalacheck
 
 import org.scalacheck.Arbitrary
-import org.scalacheck.Cogen
-import org.scalacheck.Gen
+import org.typelevel.otel4s.Attribute
+import org.typelevel.otel4s.Attributes
 
-object arbitrary extends ArbitraryInstances
-trait ArbitraryInstances extends otel4s.ArbitraryInstances {
+trait Arbitraries {
 
-  implicit val resource: Arbitrary[Resource] = Arbitrary(for {
-    attrs <- attributes.arbitrary
-    schemaUrl <- Gen.option(nonEmptyString)
-  } yield Resource(attrs, schemaUrl))
+  implicit val attributeArbitrary: Arbitrary[Attribute[_]] =
+    Arbitrary(Gens.attribute)
 
-  implicit val resourceCogen: Cogen[Resource] =
-    Cogen[(Attributes, Option[String])].contramap { r =>
-      (r.attributes, r.schemaUrl)
-    }
+  implicit val attributesArbitrary: Arbitrary[Attributes] =
+    Arbitrary(Gens.attributes)
 
 }
+
+object Arbitraries extends Arbitraries

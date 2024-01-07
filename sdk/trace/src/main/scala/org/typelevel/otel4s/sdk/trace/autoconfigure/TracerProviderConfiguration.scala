@@ -64,7 +64,7 @@ private[sdk] object TracerProviderConfiguration {
     }
   }
 
-  private def configureBatchSpanProcessor[F[_]: Temporal](
+  private def configureBatchSpanProcessor[F[_]: Temporal: Console](
       config: Config,
       exporter: SpanExporter[F]
   ): Resource[F, SpanProcessor[F]] = {

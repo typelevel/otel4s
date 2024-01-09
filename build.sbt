@@ -89,6 +89,9 @@ lazy val root = tlCrossRootProject
     examples,
     unidocs
   )
+  .configureRoot(
+    _.aggregate(scalafix.componentProjectReferences: _*)
+  )
   .settings(name := "otel4s")
 
 lazy val `core-common` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
@@ -326,6 +329,28 @@ lazy val semconv = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   )
   .settings(munitDependencies)
   .settings(scalafixSettings)
+
+lazy val scalafix = tlScalafixProject
+  .rulesSettings(
+    name := "otel4s-scalafix",
+    crossScalaVersions := Seq(Scala213),
+    startYear := Some(2024)
+  )
+  .inputSettings(
+    crossScalaVersions := Seq(Scala213),
+    libraryDependencies += "org.typelevel" %% "otel4s-java" % "0.4.0",
+    headerSources / excludeFilter := AllPassFilter
+  )
+  .inputConfigure(_.disablePlugins(ScalafixPlugin))
+  .outputSettings(
+    crossScalaVersions := Seq(Scala213),
+    headerSources / excludeFilter := AllPassFilter
+  )
+  .outputConfigure(_.dependsOn(oteljava).disablePlugins(ScalafixPlugin))
+  .testsSettings(
+    crossScalaVersions := Seq(Scala213),
+    startYear := Some(2024)
+  )
 
 lazy val benchmarks = project
   .enablePlugins(NoPublishPlugin)

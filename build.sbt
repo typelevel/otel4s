@@ -129,7 +129,7 @@ lazy val `core-metrics` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
 lazy val `core-trace` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .crossType(CrossType.Pure)
   .in(file("core/trace"))
-  .dependsOn(`core-common`)
+  .dependsOn(`core-common` % "compile->compile;test->test")
   .settings(scalaReflectDependency)
   .settings(munitDependencies)
   .settings(
@@ -157,7 +157,7 @@ lazy val `sdk-common` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .enablePlugins(BuildInfoPlugin)
   .enablePlugins(NoPublishPlugin)
   .in(file("sdk/common"))
-  .dependsOn(`core-common` % "test->test", semconv)
+  .dependsOn(`core-common` % "compile->compile;test->test", semconv)
   .settings(
     name := "otel4s-sdk-common",
     startYear := Some(2023),
@@ -180,7 +180,10 @@ lazy val `sdk-trace` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .crossType(CrossType.Pure)
   .enablePlugins(NoPublishPlugin)
   .in(file("sdk/trace"))
-  .dependsOn(`sdk-common`, `core-trace`)
+  .dependsOn(
+    `sdk-common` % "compile->compile;test->test",
+    `core-trace` % "compile->compile;test->test"
+  )
   .settings(
     name := "otel4s-sdk-trace",
     startYear := Some(2023),

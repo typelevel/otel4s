@@ -23,9 +23,11 @@ import cats.kernel.laws.discipline.HashTests
 import cats.syntax.monoid._
 import cats.syntax.show._
 import munit.DisciplineSuite
-import org.scalacheck.Arbitrary
 import org.scalacheck.Gen
 import org.scalacheck.Prop
+import org.typelevel.otel4s.sdk.trace.scalacheck.Arbitraries
+import org.typelevel.otel4s.sdk.trace.scalacheck.Cogens
+import org.typelevel.otel4s.sdk.trace.scalacheck.Gens
 
 import java.io.PrintWriter
 import java.io.StringWriter
@@ -33,9 +35,7 @@ import scala.util.control.NoStackTrace
 
 class EventDataSuite extends DisciplineSuite {
   import Cogens.eventDataCogen
-
-  private implicit val eventDataArbitrary: Arbitrary[EventData] =
-    Arbitrary(Gens.eventData)
+  import Arbitraries.eventDataArbitrary
 
   checkAll("EventData.HashLaws", HashTests[EventData].hash)
 

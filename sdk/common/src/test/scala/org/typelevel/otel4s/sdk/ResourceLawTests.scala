@@ -18,7 +18,8 @@ package org.typelevel.otel4s.sdk
 
 import cats.kernel.laws.discipline.HashTests
 import munit.DisciplineSuite
-import org.typelevel.otel4s.sdk.arbitrary._
+import org.typelevel.otel4s.sdk.scalacheck.Arbitraries._
+import org.typelevel.otel4s.sdk.scalacheck.Cogens._
 
 class ResourceLawTests extends DisciplineSuite {
 

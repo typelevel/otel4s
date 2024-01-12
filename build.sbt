@@ -75,6 +75,7 @@ lazy val root = tlCrossRootProject
     `core-trace`,
     core,
     `sdk-common`,
+    `sdk-metrics`,
     `sdk-trace`,
     sdk,
     `testkit-common`,
@@ -176,6 +177,25 @@ lazy val `sdk-common` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .settings(munitDependencies)
   .settings(scalafixSettings)
 
+lazy val `sdk-metrics` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
+  .crossType(CrossType.Pure)
+  .enablePlugins(NoPublishPlugin)
+  .in(file("sdk/metrics"))
+  .dependsOn(`sdk-common`, `core-metrics`)
+  .settings(
+    name := "otel4s-sdk-metrics",
+    startYear := Some(2024),
+    run / fork := true,
+    libraryDependencies ++= Seq(
+      "org.typelevel" %%% "cats-effect" % CatsEffectVersion,
+      "org.typelevel" %%% "cats-laws" % CatsVersion % Test,
+      "org.typelevel" %%% "cats-effect-testkit" % CatsEffectVersion % Test,
+      "org.typelevel" %%% "discipline-munit" % MUnitDisciplineVersion % Test,
+      "org.typelevel" %%% "scalacheck-effect-munit" % MUnitScalaCheckEffectVersion % Test
+    ),
+  )
+  .settings(munitDependencies)
+
 lazy val `sdk-trace` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .crossType(CrossType.Pure)
   .enablePlugins(NoPublishPlugin)
@@ -198,7 +218,7 @@ lazy val sdk = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .crossType(CrossType.Pure)
   .enablePlugins(NoPublishPlugin)
   .in(file("sdk/all"))
-  .dependsOn(`sdk-common`, `sdk-trace`)
+  .dependsOn(`sdk-common`, `sdk-metrics`, `sdk-trace`)
   .settings(
     name := "otel4s-sdk"
   )
@@ -397,6 +417,7 @@ lazy val unidocs = project
       `core-trace`.jvm,
       core.jvm,
       `sdk-common`.jvm,
+      `sdk-metrics`.jvm,
       `sdk-trace`.jvm,
       sdk.jvm,
       `testkit-common`.jvm,

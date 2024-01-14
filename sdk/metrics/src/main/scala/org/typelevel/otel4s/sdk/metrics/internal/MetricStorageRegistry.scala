@@ -1,8 +1,8 @@
 package org.typelevel.otel4s.sdk.metrics.internal
 
 import cats.Monad
-import cats.effect.Ref
 import cats.effect.Concurrent
+import cats.effect.Ref
 import cats.syntax.functor._
 import org.typelevel.otel4s.sdk.metrics.storage.MetricStorage
 

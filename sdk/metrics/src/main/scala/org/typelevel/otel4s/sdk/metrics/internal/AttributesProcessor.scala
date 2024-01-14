@@ -12,5 +12,6 @@ object AttributesProcessor {
     (attributes, _) => attributes
 
   def filterByKeyName(keepWhen: String => Boolean): AttributesProcessor =
-    (attributes, _) => attributes.filter(attribute => keepWhen(attribute.key.name))
+    (attributes, _) =>
+      attributes.filter(attribute => keepWhen(attribute.key.name))
 }

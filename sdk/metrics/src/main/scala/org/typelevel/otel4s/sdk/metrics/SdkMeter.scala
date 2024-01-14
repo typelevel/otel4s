@@ -1,16 +1,23 @@
 package org.typelevel.otel4s.sdk.metrics
 
-import cats.effect.kernel.{Clock, MonadCancelThrow}
+import cats.effect.Clock
+import cats.effect.MonadCancelThrow
 import cats.effect.std.Console
-import org.typelevel.otel4s.metrics.{Counter, Histogram, Meter, ObservableCounter, ObservableGauge, ObservableInstrumentBuilder, ObservableUpDownCounter, SyncInstrumentBuilder, UpDownCounter}
-import org.typelevel.otel4s.sdk.common.InstrumentationScope
+import org.typelevel.otel4s.metrics.Counter
+import org.typelevel.otel4s.metrics.Histogram
+import org.typelevel.otel4s.metrics.Meter
+import org.typelevel.otel4s.metrics.ObservableCounter
+import org.typelevel.otel4s.metrics.ObservableGauge
+import org.typelevel.otel4s.metrics.ObservableInstrumentBuilder
+import org.typelevel.otel4s.metrics.ObservableUpDownCounter
+import org.typelevel.otel4s.metrics.SyncInstrumentBuilder
+import org.typelevel.otel4s.metrics.UpDownCounter
 import org.typelevel.otel4s.sdk.context.AskContext
 import org.typelevel.otel4s.sdk.metrics.data.MetricData
 
 import scala.concurrent.duration.FiniteDuration
 
-class SdkMeter[F[_]: MonadCancelThrow: Clock: Console: AskContext](
-    scopeInfo: InstrumentationScope,
+private class SdkMeter[F[_]: MonadCancelThrow: Clock: Console: AskContext](
     sharedState: MeterSharedState[F]
 ) extends Meter[F] {
 
@@ -48,17 +55,20 @@ class SdkMeter[F[_]: MonadCancelThrow: Clock: Console: AskContext](
     /*if (isValidName(name))
       SdkLongCounter.Builder[F](name, storage)
     else*/
-      NoopInstrumentBuilder.observable(name, new ObservableCounter {})
+    NoopInstrumentBuilder.observable(name, new ObservableCounter {})
 
   def observableUpDownCounter(
       name: String
   ): ObservableInstrumentBuilder[F, Long, ObservableUpDownCounter] =
-   /* if (isValidName(name))
+    /* if (isValidName(name))
       SdkLongCounter.Builder[F](name, storage)
     else*/
-      NoopInstrumentBuilder.observable(name, new ObservableUpDownCounter {})
+    NoopInstrumentBuilder.observable(name, new ObservableUpDownCounter {})
 
-  def collectAll(reader: RegisteredReader[F], collectTimestamp: FiniteDuration): F[Vector[MetricData]] =
+  def collectAll(
+      reader: RegisteredReader[F],
+      collectTimestamp: FiniteDuration
+  ): F[Vector[MetricData]] =
     sharedState.collectAll(reader, collectTimestamp)
 
   private def isValidName(name: String): Boolean =

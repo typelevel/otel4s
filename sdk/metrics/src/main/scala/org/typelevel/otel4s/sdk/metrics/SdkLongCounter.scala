@@ -3,14 +3,20 @@ package org.typelevel.otel4s.sdk.metrics
 import cats.Monad
 import cats.effect.std.Console
 import cats.mtl.Ask
-import cats.syntax.functor._
 import cats.syntax.flatMap._
-import org.typelevel.otel4s.{Attribute, Attributes}
+import cats.syntax.functor._
+import org.typelevel.otel4s.Attribute
+import org.typelevel.otel4s.Attributes
 import org.typelevel.otel4s.meta.InstrumentMeta
-import org.typelevel.otel4s.metrics.{Counter, SyncInstrumentBuilder}
-import org.typelevel.otel4s.sdk.context.{AskContext, Context}
-import org.typelevel.otel4s.sdk.metrics.internal.{Advice, InstrumentDescriptor, InstrumentType, InstrumentValueType}
-import org.typelevel.otel4s.sdk.metrics.storage.{MetricStorage}
+import org.typelevel.otel4s.metrics.Counter
+import org.typelevel.otel4s.metrics.SyncInstrumentBuilder
+import org.typelevel.otel4s.sdk.context.AskContext
+import org.typelevel.otel4s.sdk.context.Context
+import org.typelevel.otel4s.sdk.metrics.internal.Advice
+import org.typelevel.otel4s.sdk.metrics.internal.InstrumentDescriptor
+import org.typelevel.otel4s.sdk.metrics.internal.InstrumentType
+import org.typelevel.otel4s.sdk.metrics.internal.InstrumentValueType
+import org.typelevel.otel4s.sdk.metrics.storage.MetricStorage
 
 private final class SdkLongCounter[F[_]: Monad: Console: AskContext](
     descriptor: InstrumentDescriptor,
@@ -27,13 +33,10 @@ private final class SdkLongCounter[F[_]: Monad: Console: AskContext](
             s"Counters can only increase. Instrument ${descriptor.name} has tried to record a negative value."
           )
         } else {
+          val attrs = Attributes.fromSpecific(attributes)
           for {
             ctx <- Ask[F, Context].ask
-            _ <- storage.recordLong(
-              value,
-              Attributes.fromSpecific(attributes),
-              ctx
-            )
+            _ <- storage.recordLong(value, attrs, ctx)
           } yield ()
         }
 

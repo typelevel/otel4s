@@ -1,35 +1,29 @@
 package org.typelevel.otel4s.sdk.metrics.storage
 
-import cats.{Applicative, Monad}
-import cats.effect.Ref
-import cats.effect.kernel.Concurrent
-import cats.syntax.foldable._
+import cats.Applicative
+import cats.Monad
+import cats.effect.Concurrent
+import cats.effect.std.AtomicCell
 import cats.syntax.flatMap._
+import cats.syntax.foldable._
 import cats.syntax.functor._
 import cats.syntax.traverse._
 import org.typelevel.otel4s.Attributes
 import org.typelevel.otel4s.sdk.Resource
 import org.typelevel.otel4s.sdk.common.InstrumentationScope
 import org.typelevel.otel4s.sdk.context.Context
-import org.typelevel.otel4s.sdk.metrics.{
-  ExemplarFilter,
-  RegisteredReader,
-  RegisteredView
-}
-import org.typelevel.otel4s.sdk.metrics.data.{
-  AggregationTemporality,
-  ExemplarData,
-  MetricData,
-  PointData
-}
-import org.typelevel.otel4s.sdk.metrics.internal.Aggregator.AggregatorHandle
-import org.typelevel.otel4s.sdk.metrics.internal.{
-  Aggregator,
-  AttributesProcessor,
-  InstrumentDescriptor,
-  Measurement,
-  MetricDescriptor
-}
+import org.typelevel.otel4s.sdk.metrics.Aggregation
+import org.typelevel.otel4s.sdk.metrics.ExemplarFilter
+import org.typelevel.otel4s.sdk.metrics.RegisteredReader
+import org.typelevel.otel4s.sdk.metrics.RegisteredView
+import org.typelevel.otel4s.sdk.metrics.data.AggregationTemporality
+import org.typelevel.otel4s.sdk.metrics.data.MetricData
+import org.typelevel.otel4s.sdk.metrics.data.PointData
+import org.typelevel.otel4s.sdk.metrics.internal.AttributesProcessor
+import org.typelevel.otel4s.sdk.metrics.internal.InstrumentDescriptor
+import org.typelevel.otel4s.sdk.metrics.internal.Measurement
+import org.typelevel.otel4s.sdk.metrics.internal.MetricDescriptor
+import org.typelevel.otel4s.sdk.metrics.internal.aggregation.Aggregator
 
 import scala.concurrent.duration.FiniteDuration
 
@@ -40,7 +34,7 @@ trait MetricStorage[F[_]] {
       scope: InstrumentationScope,
       startTimestamp: FiniteDuration,
       collectTimestamp: FiniteDuration
-  ): F[MetricData]
+  ): F[Option[MetricData]]
 }
 
 object MetricStorage {
@@ -94,22 +88,59 @@ object MetricStorage {
   ): F[Synchronous[F]] = {
     val view = registeredView.view
     val descriptor = MetricDescriptor(view, instrumentDescriptor)
-    val aggregator: Aggregator.Aux[F] =
-      view.aggregation.createAggregator(instrumentDescriptor, exemplarFilter)
-    // todo if aggregator == drop
 
-    Ref
-      .of(Map.empty[Attributes, AggregatorHandle[F, PointData, ExemplarData]])
-      .map { handlers =>
-        new DefaultSynchronous(
-          reader,
-          descriptor,
-          aggregator,
-          registeredView.viewAttributesProcessor,
-          registeredView.cardinalityLimit - 1,
-          handlers
-        )
-      }
+    view.aggregation match {
+      case Aggregation.Drop =>
+        Concurrent[F].pure {
+          new Synchronous[F] {
+            def recordLong(
+                value: Long,
+                attributes: Attributes,
+                context: Context
+            ): F[Unit] =
+              Concurrent[F].unit
+
+            def recordDouble(
+                value: Double,
+                attributes: Attributes,
+                context: Context
+            ): F[Unit] =
+              Concurrent[F].unit
+
+            def metricDescriptor: MetricDescriptor =
+              descriptor // todo should be noop
+
+            def collect(
+                resource: Resource,
+                scope: InstrumentationScope,
+                startTimestamp: FiniteDuration,
+                collectTimestamp: FiniteDuration
+            ): F[Option[MetricData]] =
+              Concurrent[F].pure(None)
+          }
+        }
+
+      case aggregation: Aggregation.HasAggregator =>
+        val aggregator: Aggregator[F] =
+          Aggregator.create(
+            aggregation,
+            instrumentDescriptor,
+            exemplarFilter
+          )
+
+        AtomicCell[F]
+          .of(Map.empty[Attributes, Aggregator.Handle[F, PointData]])
+          .map { handlers =>
+            new DefaultSynchronous(
+              reader,
+              descriptor,
+              aggregator.asInstanceOf[Aggregator.Aux[F, PointData]],
+              registeredView.viewAttributesProcessor,
+              registeredView.cardinalityLimit - 1,
+              handlers
+            )
+          }
+    }
   }
 
   def asynchronous[F[_]](
@@ -121,10 +152,10 @@ object MetricStorage {
   private final class DefaultSynchronous[F[_]: Monad](
       reader: RegisteredReader[F],
       val metricDescriptor: MetricDescriptor,
-      aggregator: Aggregator.Aux[F],
+      aggregator: Aggregator.Aux[F, PointData],
       attributesProcessor: AttributesProcessor,
       maxCardinality: Int,
-      handlers: Ref[F, Map[Attributes, AggregatorHandle[F, PointData, ExemplarData]]]
+      handlers: AtomicCell[F, Map[Attributes, Aggregator.Handle[F, PointData]]]
   ) extends Synchronous[F] {
 
     private val aggregationTemporality =
@@ -157,7 +188,7 @@ object MetricStorage {
         scope: InstrumentationScope,
         startTimestamp: FiniteDuration,
         collectTimestamp: FiniteDuration
-    ): F[MetricData] = {
+    ): F[Option[MetricData]] = {
       val isDelta = aggregationTemporality == AggregationTemporality.Delta
       val reset = isDelta
       val getStart =
@@ -177,24 +208,27 @@ object MetricStorage {
           resource,
           scope,
           metricDescriptor,
-          points.flatten.asInstanceOf[Vector[PointData]],
+          points.flatten,
           aggregationTemporality
         )
-      } yield data
+      } yield Some(data)
     }
 
-    private def getHandle(attributes: Attributes, context: Context): F[AggregatorHandle[F, PointData, ExemplarData]] =
-      handlers.modify { map =>
+    private def getHandle(
+        attributes: Attributes,
+        context: Context
+    ): F[Aggregator.Handle[F, PointData]] =
+      handlers.evalModify { map =>
         val attrs = attributesProcessor.process(attributes, context)
         map.get(attrs) match {
           case Some(handle) =>
-            (map, handle)
+            Monad[F].pure((map, handle))
 
           case None =>
             // todo: check cardinality
-
-            val newHandle = aggregator.createHandle.asInstanceOf[AggregatorHandle[F, PointData, ExemplarData]]
-            (map.updated(attrs, newHandle), newHandle)
+            for {
+              handle <- aggregator.createHandle
+            } yield (map.updated(attrs, handle), handle)
         }
       }
 

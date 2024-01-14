@@ -1,14 +1,14 @@
 package org.typelevel.otel4s.sdk.metrics.internal
 
 import cats.Monad
-import cats.effect.Ref
 import cats.effect.Concurrent
+import cats.effect.Ref
 import cats.syntax.applicative._
 import cats.syntax.flatMap._
-import cats.syntax.traverse._
 import cats.syntax.foldable._
 import cats.syntax.functor._
-import org.typelevel.otel4s.{Attribute, Attributes}
+import org.typelevel.otel4s.Attribute
+import org.typelevel.otel4s.Attributes
 import org.typelevel.otel4s.metrics.ObservableMeasurement
 import org.typelevel.otel4s.sdk.metrics.RegisteredReader
 import org.typelevel.otel4s.sdk.metrics.storage.MetricStorage

@@ -1,8 +1,6 @@
 package org.typelevel.otel4s.sdk.metrics.data
 
-sealed trait MetricDataType {
-
-}
+sealed trait MetricDataType
 
 object MetricDataType {
 

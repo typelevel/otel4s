@@ -33,7 +33,7 @@ object InstrumentDescriptor {
 
 }
 
-sealed trait InstrumentType
+sealed trait InstrumentType extends Product with Serializable
 object InstrumentType {
 
   case object Counter extends InstrumentType
@@ -43,7 +43,7 @@ object InstrumentType {
   case object ObservableUpDownCounter extends InstrumentType
   case object ObservableGauge extends InstrumentType
 
-  val values: List[InstrumentType] = List(
+  val values: Set[InstrumentType] = Set(
     Counter,
     UpDownCounter,
     Histogram,

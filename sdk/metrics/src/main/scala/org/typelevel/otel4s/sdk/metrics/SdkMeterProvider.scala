@@ -1,35 +1,38 @@
 package org.typelevel.otel4s.sdk.metrics
 
+import cats.Applicative
+import cats.Functor
+import cats.Monad
+import cats.effect.Clock
+import cats.effect.Concurrent
 import cats.effect.Ref
-import cats.{Applicative, Monad}
-import cats.effect.kernel.{Clock, Concurrent, Temporal}
+import cats.effect.Temporal
 import cats.effect.std.Console
 import cats.syntax.flatMap._
+import cats.syntax.foldable._
 import cats.syntax.functor._
 import cats.syntax.traverse._
-import cats.syntax.foldable._
 import org.typelevel.otel4s.Attributes
-import org.typelevel.otel4s.metrics.{MeterBuilder, MeterProvider}
+import org.typelevel.otel4s.metrics.MeterBuilder
+import org.typelevel.otel4s.metrics.MeterProvider
 import org.typelevel.otel4s.sdk.Resource
 import org.typelevel.otel4s.sdk.common.InstrumentationScope
-import org.typelevel.otel4s.sdk.context.{AskContext, Context}
+import org.typelevel.otel4s.sdk.context.AskContext
+import org.typelevel.otel4s.sdk.context.Context
 import org.typelevel.otel4s.sdk.internal.ComponentRegistry
 import org.typelevel.otel4s.sdk.metrics.data.MetricData
-import org.typelevel.otel4s.sdk.metrics.exporter.{
-  CollectionRegistration,
-  DefaultAggregationSelector,
-  MetricProducer,
-  MetricReader
-}
-import org.typelevel.otel4s.sdk.metrics.internal.{
-  AttributesProcessor,
-  InstrumentDescriptor,
-  InstrumentType
-}
+import org.typelevel.otel4s.sdk.metrics.exporter.CollectionRegistration
+import org.typelevel.otel4s.sdk.metrics.exporter.DefaultAggregationSelector
+import org.typelevel.otel4s.sdk.metrics.exporter.MetricProducer
+import org.typelevel.otel4s.sdk.metrics.exporter.MetricReader
+import org.typelevel.otel4s.sdk.metrics.internal.AttributesProcessor
+import org.typelevel.otel4s.sdk.metrics.internal.InstrumentDescriptor
+import org.typelevel.otel4s.sdk.metrics.internal.InstrumentType
 
-import scala.concurrent.duration.{Duration, FiniteDuration}
+import scala.concurrent.duration.Duration
+import scala.concurrent.duration.FiniteDuration
 
-private final class SdkMeterProvider[F[_]: Monad: Clock: Console: AskContext](
+private final class SdkMeterProvider[F[_]: Functor](
     componentRegistry: ComponentRegistry[F, SdkMeter[F]],
     views: Vector[RegisteredView],
     readers: Vector[RegisteredReader[F]],
@@ -132,7 +135,7 @@ object ViewRegistry {
     ): Vector[RegisteredView] = {
       val result = registeredViews.filter { entry =>
         matchesSelector(entry.selector, descriptor, scope) &&
-        entry.view.aggregation.compatibleWith(descriptor)
+        entry.view.aggregation.compatibleWith(descriptor.instrumentType)
       }
 
       if (result.nonEmpty) {
@@ -443,7 +446,7 @@ object SdkMeterProvider {
                       exemplarFilter,
                       readers
                     )
-                  } yield new SdkMeter[F](scope, state)
+                  } yield new SdkMeter[F](state)
                 }
                 .flatMap { registry =>
                   readers

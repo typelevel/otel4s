@@ -15,41 +15,22 @@ sealed trait MetricData {
 
   def unit: Option[String]
 
-  def tpe: MetricDataType
-
   def data: Data
 
+  final def tpe: MetricDataType = data.tpe
   final def isEmpty: Boolean = data.points.isEmpty
   final def nonEmpty: Boolean = !isEmpty
 }
 
 object MetricData {
 
-  def longSum(
-                 resource: Resource,
-                 scope: InstrumentationScope,
-                 name: String,
-                 description: Option[String],
-                 unit: Option[String],
-                 data: Data.LongSum
-               ): MetricData =
-    MetricDataImpl(
-      resource = resource,
-      instrumentationScope = scope,
-      name = name,
-      description = description,
-      unit = unit,
-      tpe = MetricDataType.LongSum,
-      data = data
-    )
-
-  def doubleSum(
+  def apply(
       resource: Resource,
       scope: InstrumentationScope,
       name: String,
       description: Option[String],
       unit: Option[String],
-      data: Data.DoubleSum
+      data: Data
   ): MetricData =
     MetricDataImpl(
       resource = resource,
@@ -57,25 +38,6 @@ object MetricData {
       name = name,
       description = description,
       unit = unit,
-      tpe = MetricDataType.DoubleSum,
-      data = data
-    )
-
-  def doubleGauge(
-      resource: Resource,
-      scope: InstrumentationScope,
-      name: String,
-      description: Option[String],
-      unit: Option[String],
-      data: Data.DoubleGauge
-  ): MetricData =
-    MetricDataImpl(
-      resource = resource,
-      instrumentationScope = scope,
-      name = name,
-      description = description,
-      unit = unit,
-      tpe = MetricDataType.DoubleGauge,
       data = data
     )
 
@@ -85,7 +47,6 @@ object MetricData {
       name: String,
       description: Option[String],
       unit: Option[String],
-      tpe: MetricDataType,
       data: Data,
   ) extends MetricData
 

@@ -1,13 +1,18 @@
 package org.typelevel.otel4s.sdk.metrics.exporter
 
-import cats.effect.kernel.{Concurrent, Fiber, Ref, Resource, Spawn, Temporal}
-import cats.effect.std.{AtomicCell, Console}
+import cats.effect.Concurrent
+import cats.effect.Fiber
+import cats.effect.Resource
+import cats.effect.Spawn
+import cats.effect.Temporal
+import cats.effect.std.AtomicCell
+import cats.effect.std.Console
 import cats.effect.syntax.spawn._
 import cats.effect.syntax.temporal._
 import cats.syntax.applicative._
 import cats.syntax.applicativeError._
-import cats.syntax.functor._
 import cats.syntax.flatMap._
+import cats.syntax.functor._
 import org.typelevel.otel4s.sdk.metrics.Aggregation
 import org.typelevel.otel4s.sdk.metrics.data.AggregationTemporality
 import org.typelevel.otel4s.sdk.metrics.internal.InstrumentType
@@ -15,9 +20,9 @@ import org.typelevel.otel4s.sdk.metrics.internal.InstrumentType
 import scala.concurrent.duration.FiniteDuration
 
 class PeriodicMetricReader[F[_]: Temporal: Console](
-                                                     stateRef: AtomicCell[F, PeriodicMetricReader.State[F]],
-                                                     exporter: MetricExporter[F],
-                                                     interval: FiniteDuration
+    stateRef: AtomicCell[F, PeriodicMetricReader.State[F]],
+    exporter: MetricExporter[F],
+    interval: FiniteDuration
 ) extends MetricReader[F] {
   import PeriodicMetricReader._
 

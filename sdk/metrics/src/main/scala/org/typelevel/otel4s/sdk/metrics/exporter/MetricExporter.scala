@@ -1,12 +1,14 @@
 package org.typelevel.otel4s.sdk.metrics.exporter
 
 import cats.Foldable
-import org.typelevel.otel4s.sdk.metrics.data.{AggregationTemporality, MetricData}
+import org.typelevel.otel4s.sdk.metrics.data.AggregationTemporality
+import org.typelevel.otel4s.sdk.metrics.data.MetricData
 import org.typelevel.otel4s.sdk.metrics.internal.InstrumentType
 
 trait MetricExporter[F[_]] {
-  def aggregationTemporality(instrumentType: InstrumentType): AggregationTemporality
-
+  def aggregationTemporality(
+      instrumentType: InstrumentType
+  ): AggregationTemporality
 
   def name: String
 
@@ -19,8 +21,4 @@ trait MetricExporter[F[_]] {
 
 }
 
-object MetricExporter {
-
-
-
-}
+object MetricExporter {}

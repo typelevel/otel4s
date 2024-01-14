@@ -5,13 +5,10 @@ import org.typelevel.otel4s.Attributes
 import scala.concurrent.duration.FiniteDuration
 
 sealed trait PointData {
-  type Exemplar <: ExemplarData
-
   def startTimestamp: FiniteDuration
   def endTimestamp: FiniteDuration
   def attributes: Attributes
-  def exemplars: Vector[Exemplar]
-
+  def exemplars: Vector[ExemplarData]
 }
 
 object PointData {
@@ -22,9 +19,7 @@ object PointData {
       attributes: Attributes,
       exemplars: Vector[ExemplarData.LongExemplar],
       value: Long
-  ) extends PointData {
-    type Exemplar = ExemplarData.LongExemplar
-  }
+  ) extends PointData
 
   final case class DoublePoint(
       startTimestamp: FiniteDuration,
@@ -32,9 +27,7 @@ object PointData {
       attributes: Attributes,
       exemplars: Vector[ExemplarData.DoubleExemplar],
       value: Double
-  ) extends PointData {
-    type Exemplar = ExemplarData.DoubleExemplar
-  }
+  ) extends PointData
 
   final case class Summary(
       startTimestamp: FiniteDuration,
@@ -44,7 +37,6 @@ object PointData {
       sum: Double,
       percentileValues: Vector[ValueAtQuantile]
   ) extends PointData {
-    type Exemplar = ExemplarData
     def exemplars: Vector[ExemplarData] = Vector.empty
   }
 
@@ -61,8 +53,6 @@ object PointData {
       boundaries: Vector[Double],
       counts: Vector[Long]
   ) extends PointData {
-    type Exemplar = ExemplarData.DoubleExemplar
-
     require(counts.length == boundaries.size + 1)
     // todo require(isStrictlyIncreasing())
 
@@ -83,8 +73,6 @@ object PointData {
       positiveBuckets: ExponentialHistogramBuckets,
       negativeBuckets: ExponentialHistogramBuckets
   ) extends PointData {
-    type Exemplar = ExemplarData.DoubleExemplar
-
     val count: Long =
       zeroCount + positiveBuckets.totalCount + negativeBuckets.totalCount
   }

@@ -1,17 +1,13 @@
 package org.typelevel.otel4s.sdk.metrics
 
-import cats.Monad
-import cats.effect.kernel.Clock
-import cats.effect.std.Console
+import cats.Functor
 import cats.syntax.functor._
 import org.typelevel.otel4s.Attributes
-import org.typelevel.otel4s.metrics.{Meter, MeterBuilder}
-import org.typelevel.otel4s.sdk.context.AskContext
+import org.typelevel.otel4s.metrics.Meter
+import org.typelevel.otel4s.metrics.MeterBuilder
 import org.typelevel.otel4s.sdk.internal.ComponentRegistry
 
-private final case class SdkMeterBuilder[
-    F[_]: Monad: Clock: Console: AskContext
-](
+private final case class SdkMeterBuilder[F[_]: Functor](
     componentRegistry: ComponentRegistry[F, SdkMeter[F]],
     name: String,
     version: Option[String] = None,

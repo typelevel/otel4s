@@ -7,6 +7,4 @@ trait DefaultAggregationSelector {
   def get(instrumentType: InstrumentType): Aggregation
 }
 
-object DefaultAggregationSelector {
-
-}
+object DefaultAggregationSelector {}

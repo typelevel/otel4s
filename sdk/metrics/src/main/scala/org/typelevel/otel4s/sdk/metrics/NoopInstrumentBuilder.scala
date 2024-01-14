@@ -1,15 +1,13 @@
 package org.typelevel.otel4s.sdk.metrics
 
 import cats.Functor
-import cats.effect.kernel.Resource
+import cats.effect.Resource
 import cats.effect.std.Console
 import cats.syntax.functor._
-import org.typelevel.otel4s.metrics.{
-  Measurement,
-  ObservableInstrumentBuilder,
-  ObservableMeasurement,
-  SyncInstrumentBuilder
-}
+import org.typelevel.otel4s.metrics.Measurement
+import org.typelevel.otel4s.metrics.ObservableInstrumentBuilder
+import org.typelevel.otel4s.metrics.ObservableMeasurement
+import org.typelevel.otel4s.metrics.SyncInstrumentBuilder
 
 object NoopInstrumentBuilder {
 
@@ -28,7 +26,7 @@ object NoopInstrumentBuilder {
         warn(name).as(noop)
     }
 
-  def observable[F[_]: Functor: Console, A, Instrument](
+  def observable[F[_]: Console, A, Instrument](
       name: String,
       noop: => Instrument
   ): ObservableInstrumentBuilder[F, A, Instrument] =

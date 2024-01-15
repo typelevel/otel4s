@@ -153,7 +153,7 @@ object HistogramBucketsExample extends IOApp.Simple {
       .use { meter =>
         for {
           random <- Random.scalaUtilRandom[F]
-          histogram <- meter.histogram("service.work.duration").create
+          histogram <- meter.histogram[Double]("service.work.duration").create
           _ <- work[F](histogram, random).parReplicateA_(50)
         } yield ()
       }

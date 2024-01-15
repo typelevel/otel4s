@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-package org.typelevel.otel4s
-package oteljava
-package metrics
+package org.typelevel.otel4s.oteljava.metrics
 
 import cats.effect.Async
 import cats.effect.Resource
@@ -26,24 +24,21 @@ import cats.syntax.functor._
 import io.opentelemetry.api.metrics.{Meter => JMeter}
 import io.opentelemetry.api.metrics.ObservableDoubleMeasurement
 import io.opentelemetry.api.metrics.ObservableLongMeasurement
-import org.typelevel.otel4s.meta.InstrumentMeta
 import org.typelevel.otel4s.metrics._
+import org.typelevel.otel4s.oteljava.Conversions
 
-private[oteljava] case class CounterBuilderImpl[F[_], A](
-    factory: CounterBuilderImpl.Factory[F, A],
+private[oteljava] case class GaugeBuilderImpl[F[_], A](
+    factory: GaugeBuilderImpl.Factory[F, A],
     name: String,
     unit: Option[String] = None,
     description: Option[String] = None
-) extends Counter.Builder[F, A] {
+) extends Gauge.Builder[F, A] {
 
-  def withUnit(unit: String): Counter.Builder[F, A] =
+  def withUnit(unit: String): Gauge.Builder[F, A] =
     copy(unit = Option(unit))
 
-  def withDescription(description: String): Counter.Builder[F, A] =
+  def withDescription(description: String): Gauge.Builder[F, A] =
     copy(description = Option(description))
-
-  def create: F[Counter[F, A]] =
-    factory.create(name, unit, description)
 
   def createWithCallback(
       cb: ObservableMeasurement[F, A] => F[Unit]
@@ -54,29 +49,24 @@ private[oteljava] case class CounterBuilderImpl[F[_], A](
       measurements: F[List[Measurement[A]]]
   ): Resource[F, Unit] =
     factory.createWithSupplier(name, unit, description, measurements)
+
 }
 
-private[oteljava] object CounterBuilderImpl {
+private[oteljava] object GaugeBuilderImpl {
 
   def apply[F[_]: Async, A: MeasurementValue](
       jMeter: JMeter,
       name: String
-  ): Counter.Builder[F, A] =
+  ): Gauge.Builder[F, A] =
     MeasurementValue[A] match {
       case MeasurementValue.LongMeasurementValue =>
-        CounterBuilderImpl(longFactory(jMeter), name)
+        GaugeBuilderImpl(longFactory(jMeter), name)
 
       case MeasurementValue.DoubleMeasurementValue =>
-        CounterBuilderImpl(doubleFactory(jMeter), name)
+        GaugeBuilderImpl(doubleFactory(jMeter), name)
     }
 
   private[oteljava] trait Factory[F[_], A] {
-    def create(
-        name: String,
-        unit: Option[String],
-        description: Option[String]
-    ): F[Counter[F, A]]
-
     def createWithCallback(
         name: String,
         unit: Option[String],
@@ -94,37 +84,14 @@ private[oteljava] object CounterBuilderImpl {
 
   private def longFactory[F[_]: Async](jMeter: JMeter): Factory[F, Long] =
     new Factory[F, Long] {
-      def create(
-          name: String,
-          unit: Option[String],
-          description: Option[String]
-      ): F[Counter[F, Long]] =
-        Async[F].delay {
-          val builder = jMeter.counterBuilder(name)
-          unit.foreach(builder.setUnit)
-          description.foreach(builder.setDescription)
-          val counter = builder.build()
-
-          val backend = new Counter.LongBackend[F] {
-            val meta: InstrumentMeta[F] = InstrumentMeta.enabled
-
-            def add(value: Long, attributes: Attribute[_]*): F[Unit] =
-              Async[F].delay(
-                counter.add(value, Conversions.toJAttributes(attributes))
-              )
-          }
-
-          Counter.fromBackend(backend)
-        }
-
       def createWithCallback(
           name: String,
           unit: Option[String],
           description: Option[String],
           cb: ObservableMeasurement[F, Long] => F[Unit]
       ): Resource[F, Unit] =
-        createInternal(name, unit, description) { olm =>
-          cb(new ObservableLongImpl(olm))
+        createInternal(name, unit, description) { odm =>
+          cb(new ObservableLongImpl(odm))
         }
 
       def createWithSupplier(
@@ -133,11 +100,11 @@ private[oteljava] object CounterBuilderImpl {
           description: Option[String],
           measurements: F[List[Measurement[Long]]]
       ): Resource[F, Unit] =
-        createInternal(name, unit, description) { olm =>
+        createInternal(name, unit, description) { odm =>
           measurements.flatMap(ms =>
             Async[F].delay(
               ms.foreach(m =>
-                olm.record(m.value, Conversions.toJAttributes(m.attributes))
+                odm.record(m.value, Conversions.toJAttributes(m.attributes))
               )
             )
           )
@@ -151,11 +118,11 @@ private[oteljava] object CounterBuilderImpl {
         Dispatcher.sequential.flatMap { dispatcher =>
           Resource
             .fromAutoCloseable(Async[F].delay {
-              val b = jMeter.counterBuilder(name)
+              val b = jMeter.gaugeBuilder(name)
               unit.foreach(b.setUnit)
               description.foreach(b.setDescription)
-              b.buildWithCallback { olm =>
-                dispatcher.unsafeRunSync(cb(olm))
+              b.ofLongs().buildWithCallback { odm =>
+                dispatcher.unsafeRunSync(cb(odm))
               }
             })
             .void
@@ -164,37 +131,14 @@ private[oteljava] object CounterBuilderImpl {
 
   private def doubleFactory[F[_]: Async](jMeter: JMeter): Factory[F, Double] =
     new Factory[F, Double] {
-      def create(
-          name: String,
-          unit: Option[String],
-          description: Option[String]
-      ): F[Counter[F, Double]] =
-        Async[F].delay {
-          val builder = jMeter.counterBuilder(name)
-          unit.foreach(builder.setUnit)
-          description.foreach(builder.setDescription)
-          val counter = builder.ofDoubles().build()
-
-          val backend = new Counter.DoubleBackend[F] {
-            val meta: InstrumentMeta[F] = InstrumentMeta.enabled
-
-            def add(value: Double, attributes: Attribute[_]*): F[Unit] =
-              Async[F].delay(
-                counter.add(value, Conversions.toJAttributes(attributes))
-              )
-          }
-
-          Counter.fromBackend(backend)
-        }
-
       def createWithCallback(
           name: String,
           unit: Option[String],
           description: Option[String],
           cb: ObservableMeasurement[F, Double] => F[Unit]
       ): Resource[F, Unit] =
-        createInternal(name, unit, description) { olm =>
-          cb(new ObservableDoubleImpl(olm))
+        createInternal(name, unit, description) { odm =>
+          cb(new ObservableDoubleImpl(odm))
         }
 
       def createWithSupplier(
@@ -203,11 +147,11 @@ private[oteljava] object CounterBuilderImpl {
           description: Option[String],
           measurements: F[List[Measurement[Double]]]
       ): Resource[F, Unit] =
-        createInternal(name, unit, description) { olm =>
+        createInternal(name, unit, description) { odm =>
           measurements.flatMap(ms =>
             Async[F].delay(
               ms.foreach(m =>
-                olm.record(m.value, Conversions.toJAttributes(m.attributes))
+                odm.record(m.value, Conversions.toJAttributes(m.attributes))
               )
             )
           )
@@ -221,11 +165,11 @@ private[oteljava] object CounterBuilderImpl {
         Dispatcher.sequential.flatMap { dispatcher =>
           Resource
             .fromAutoCloseable(Async[F].delay {
-              val b = jMeter.counterBuilder(name)
+              val b = jMeter.gaugeBuilder(name)
               unit.foreach(b.setUnit)
               description.foreach(b.setDescription)
-              b.ofDoubles().buildWithCallback { olm =>
-                dispatcher.unsafeRunSync(cb(olm))
+              b.buildWithCallback { odm =>
+                dispatcher.unsafeRunSync(cb(odm))
               }
             })
             .void

@@ -39,7 +39,7 @@ class ObservableSuite extends CatsEffectSuite {
             _ <- r.observations.get.assertEquals(List.empty)
             _ <- r.run
             _ <- r.observations.get.assertEquals(
-              List(Record(3.0, Seq.empty), Record(2.0, Seq.empty))
+              List(Record(3.0, Attributes.empty), Record(2.0, Attributes.empty))
             )
           } yield ()
         }
@@ -69,10 +69,10 @@ class ObservableSuite extends CatsEffectSuite {
             _ <- r.run
             _ <- r.observations.get.assertEquals(
               List(
-                Record(1, Seq(Attribute("thing", "b"))),
-                Record(1, Seq(Attribute("thing", "a"))),
-                Record(0, Seq(Attribute("thing", "b"))),
-                Record(0, Seq(Attribute("thing", "a")))
+                Record(1, Attributes(Attribute("thing", "b"))),
+                Record(1, Attributes(Attribute("thing", "a"))),
+                Record(0, Attributes(Attribute("thing", "b"))),
+                Record(0, Attributes(Attribute("thing", "a")))
               )
             )
           } yield ()
@@ -85,7 +85,7 @@ class ObservableSuite extends CatsEffectSuite {
 
 object ObservableSuite {
 
-  final case class Record[A](value: A, attributes: Seq[Attribute[_]])
+  final case class Record[A](value: A, attributes: Attributes)
 
   final case class InMemoryObservable[A](
       callback: ObservableMeasurement[IO, A] => IO[Unit],
@@ -93,7 +93,7 @@ object ObservableSuite {
   ) {
     def run: IO[Unit] =
       callback(new ObservableMeasurement[IO, A] {
-        def record(value: A, attributes: Attribute[_]*): IO[Unit] =
+        def record(value: A, attributes: Attributes): IO[Unit] =
           observations.update(Record(value, attributes) :: _)
       })
   }
@@ -117,7 +117,7 @@ object ObservableSuite {
           InMemoryObservable[A](
             recorder =>
               measurements.flatMap(
-                _.traverse_(x => recorder.record(x.value, x.attributes: _*))
+                _.traverse_(x => recorder.record(x.value, x.attributes))
               ),
             obs
           )

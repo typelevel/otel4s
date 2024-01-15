@@ -37,7 +37,7 @@ class ObservableSuite extends CatsEffectSuite {
         .get
 
       _ <- meter
-        .observableGauge("gauge")
+        .gauge[Double]("gauge")
         .withUnit("unit")
         .withDescription("description")
         .createWithCallback(_.record(42.0, Attribute("foo", "bar")))
@@ -48,10 +48,10 @@ class ObservableSuite extends CatsEffectSuite {
         )
 
       _ <- meter
-        .observableGauge("gauge")
+        .gauge[Double]("gauge")
         .withUnit("unit")
         .withDescription("description")
-        .create(
+        .createWithSupplier(
           IO.pure(
             List(
               Measurement(1336.0, List(Attribute("1", "2"))),
@@ -89,7 +89,7 @@ class ObservableSuite extends CatsEffectSuite {
         .get
 
       _ <- meter
-        .observableCounter("counter")
+        .counter[Long]("counter")
         .withUnit("unit")
         .withDescription("description")
         .createWithCallback(_.record(1234, Attribute("number", 42L)))
@@ -100,10 +100,10 @@ class ObservableSuite extends CatsEffectSuite {
         )
 
       _ <- meter
-        .observableCounter("counter")
+        .counter[Long]("counter")
         .withUnit("unit")
         .withDescription("description")
-        .create(
+        .createWithSupplier(
           IO.pure(
             List(
               Measurement(1336, List(Attribute("1", "2"))),
@@ -139,7 +139,7 @@ class ObservableSuite extends CatsEffectSuite {
         .get
 
       _ <- meter
-        .observableUpDownCounter("updowncounter")
+        .upDownCounter[Long]("updowncounter")
         .withUnit("unit")
         .withDescription("description")
         .createWithCallback(
@@ -152,10 +152,10 @@ class ObservableSuite extends CatsEffectSuite {
         )
 
       _ <- meter
-        .observableUpDownCounter("updowncounter")
+        .upDownCounter[Long]("updowncounter")
         .withUnit("unit")
         .withDescription("description")
-        .create(
+        .createWithSupplier(
           IO.pure(
             List(
               Measurement(1336, List(Attribute("1", "2"))),

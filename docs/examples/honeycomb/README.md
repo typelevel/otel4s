@@ -140,7 +140,7 @@ object TracingExample extends IOApp.Simple {
         .flatMap { implicit tracer: Tracer[IO] =>
           for {
             meter <- otel4s.meterProvider.get("com.service.runtime")
-            histogram <- meter.histogram("work.execution.duration").create
+            histogram <- meter.histogram[Double]("work.execution.duration").create
             _ <- Work[IO](histogram).doWork
           } yield ()
         }

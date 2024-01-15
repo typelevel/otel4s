@@ -65,7 +65,7 @@ trait ObservableInstrumentBuilder[F[_], A, Instrument] {
   /** Creates an asynchronous instrument based on an effect that produces a
     * number of measurements.
     *
-    * The measurement effect will be evaluted when the instrument is being
+    * The measurement effect will be evaluated when the instrument is being
     * observed.
     *
     * The measurement effect is expected to abide by the following restrictions:

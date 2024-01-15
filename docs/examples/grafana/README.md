@@ -218,7 +218,7 @@ object ApiService {
       bananaPercentage: Int
   ): F[ApiService[F]] = 
     Meter[F]
-      .counter("RemoteApi.fruit.count")
+      .counter[Long]("RemoteApi.fruit.count")
       .withDescription("Number of fruits returned by the API.")
       .create
       .map { remoteApiFruitCount =>

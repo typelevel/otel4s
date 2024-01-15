@@ -18,28 +18,107 @@ package org.typelevel.otel4s
 package oteljava
 package metrics
 
-import cats.effect.kernel.Sync
+import cats.effect.Sync
 import io.opentelemetry.api.metrics.{Meter => JMeter}
 import org.typelevel.otel4s.metrics._
 
-private[oteljava] case class HistogramBuilderImpl[F[_]](
-    jMeter: JMeter,
+import scala.jdk.CollectionConverters._
+
+private[oteljava] case class HistogramBuilderImpl[F[_], A](
+    factory: HistogramBuilderImpl.Factory[F, A],
     name: String,
     unit: Option[String] = None,
-    description: Option[String] = None
-)(implicit F: Sync[F])
-    extends SyncInstrumentBuilder[F, Histogram[F, Double]] {
-  type Self = HistogramBuilderImpl[F]
+    description: Option[String] = None,
+    boundaries: Option[BucketBoundaries] = None
+) extends Histogram.Builder[F, A] {
 
-  def withUnit(unit: String): Self = copy(unit = Option(unit))
+  def withUnit(unit: String): Histogram.Builder[F, A] =
+    copy(unit = Option(unit))
 
-  def withDescription(description: String): Self =
+  def withDescription(description: String): Histogram.Builder[F, A] =
     copy(description = Option(description))
 
-  def create: F[Histogram[F, Double]] = F.delay {
-    val b = jMeter.histogramBuilder(name)
-    unit.foreach(b.setUnit)
-    description.foreach(b.setDescription)
-    new HistogramImpl(b.build)
+  def withExplicitBucketBoundaries(
+      boundaries: BucketBoundaries
+  ): Histogram.Builder[F, A] =
+    copy(boundaries = Some(boundaries))
+
+  def create: F[Histogram[F, A]] =
+    factory.create(name, unit, description, boundaries)
+
+}
+
+object HistogramBuilderImpl {
+
+  def apply[F[_]: Sync, A: MeasurementValue](
+      jMeter: JMeter,
+      name: String
+  ): Histogram.Builder[F, A] =
+    MeasurementValue[A] match {
+      case MeasurementValue.LongMeasurementValue =>
+        HistogramBuilderImpl(longFactory(jMeter), name)
+
+      case MeasurementValue.DoubleMeasurementValue =>
+        HistogramBuilderImpl(doubleFactory(jMeter), name)
+    }
+
+  private[oteljava] trait Factory[F[_], A] {
+    def create(
+        name: String,
+        unit: Option[String],
+        description: Option[String],
+        boundaries: Option[BucketBoundaries]
+    ): F[Histogram[F, A]]
   }
+
+  private def longFactory[F[_]: Sync](jMeter: JMeter): Factory[F, Long] =
+    (name, unit, description, boundaries) =>
+      Sync[F].delay {
+        val builder = jMeter.histogramBuilder(name)
+        unit.foreach(builder.setUnit)
+        description.foreach(builder.setDescription)
+        boundaries.foreach(b =>
+          builder.setExplicitBucketBoundariesAdvice(
+            b.boundaries.map(Double.box).asJava
+          )
+        )
+        val histogram = builder.ofLongs().build
+
+        val backend = new Histogram.LongBackend[F] {
+          val meta: Histogram.Meta[F] = Histogram.Meta.enabled
+
+          def record(value: Long, attributes: Attribute[_]*): F[Unit] =
+            Sync[F].delay(
+              histogram.record(value, Conversions.toJAttributes(attributes))
+            )
+        }
+
+        Histogram.fromBackend(backend)
+      }
+
+  private def doubleFactory[F[_]: Sync](jMeter: JMeter): Factory[F, Double] =
+    (name, unit, description, boundaries) =>
+      Sync[F].delay {
+        val builder = jMeter.histogramBuilder(name)
+        unit.foreach(builder.setUnit)
+        description.foreach(builder.setDescription)
+        boundaries.foreach(b =>
+          builder.setExplicitBucketBoundariesAdvice(
+            b.boundaries.map(Double.box).asJava
+          )
+        )
+        val histogram = builder.build
+
+        val backend = new Histogram.DoubleBackend[F] {
+          val meta: Histogram.Meta[F] = Histogram.Meta.enabled
+
+          def record(value: Double, attributes: Attribute[_]*): F[Unit] =
+            Sync[F].delay(
+              histogram.record(value, Conversions.toJAttributes(attributes))
+            )
+        }
+
+        Histogram.fromBackend(backend)
+      }
+
 }

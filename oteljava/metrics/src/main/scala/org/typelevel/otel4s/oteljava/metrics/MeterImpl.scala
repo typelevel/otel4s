@@ -24,31 +24,19 @@ import org.typelevel.otel4s.metrics._
 
 private[oteljava] class MeterImpl[F[_]: Async](jMeter: JMeter)
     extends Meter[F] {
-  def counter(name: String): SyncInstrumentBuilder[F, Counter[F, Long]] =
-    new CounterBuilderImpl(jMeter, name)
 
-  def histogram(
-      name: String
-  ): SyncInstrumentBuilder[F, Histogram[F, Double]] =
-    new HistogramBuilderImpl(jMeter, name)
+  def counter[A: MeasurementValue](name: String): Counter.Builder[F, A] =
+    CounterBuilderImpl(jMeter, name)
 
-  def upDownCounter(
-      name: String
-  ): SyncInstrumentBuilder[F, UpDownCounter[F, Long]] =
-    new UpDownCounterBuilderImpl(jMeter, name)
+  def histogram[A: MeasurementValue](name: String): Histogram.Builder[F, A] =
+    HistogramBuilderImpl(jMeter, name)
 
-  def observableGauge(
+  def upDownCounter[A: MeasurementValue](
       name: String
-  ): ObservableInstrumentBuilder[F, Double, ObservableGauge] =
-    new ObservableGaugeBuilderImpl(jMeter, name)
+  ): UpDownCounter.Builder[F, A] =
+    UpDownCounterBuilderImpl(jMeter, name)
 
-  def observableUpDownCounter(
-      name: String
-  ): ObservableInstrumentBuilder[F, Long, ObservableUpDownCounter] =
-    new ObservableUpDownCounterBuilderImpl(jMeter, name)
+  def gauge[A: MeasurementValue](name: String): Gauge.Builder[F, A] =
+    GaugeBuilderImpl(jMeter, name)
 
-  def observableCounter(
-      name: String
-  ): ObservableInstrumentBuilder[F, Long, ObservableCounter] =
-    new ObservableCounterBuilderImpl(jMeter, name)
 }

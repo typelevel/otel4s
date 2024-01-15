@@ -18,6 +18,7 @@ package org.typelevel.otel4s
 package metrics
 
 import cats.Applicative
+import cats.effect.Resource
 import org.typelevel.otel4s.meta.InstrumentMeta
 
 /** A `Counter` instrument that records values of type `A`.
@@ -37,6 +38,70 @@ import org.typelevel.otel4s.meta.InstrumentMeta
 trait UpDownCounter[F[_], A] extends UpDownCounterMacro[F, A]
 
 object UpDownCounter {
+
+  trait Builder[F[_], A] {
+
+    /** Sets the unit of measure for this counter.
+      *
+      * @see
+      *   [[https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/api.md#instrument-unit Instrument Unit]]
+      *
+      * @param unit
+      *   the measurement unit. Must be 63 or fewer ASCII characters.
+      */
+    def withUnit(unit: String): Builder[F, A]
+
+    /** Sets the description for this counter.
+      *
+      * @see
+      *   [[https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/api.md#instrument-description Instrument Description]]
+      *
+      * @param description
+      *   the description
+      */
+    def withDescription(description: String): Builder[F, A]
+
+    /** Creates an [[UpDownCounter]] with the given `unit` and `description` (if
+      * any).
+      */
+    def create: F[UpDownCounter[F, A]]
+
+    /** Creates a [[UpDownCounter]] with the given callback, using `unit` and
+      * `description` (if any).
+      *
+      * The callback will be called when the instrument is being observed.
+      *
+      * The callback is expected to abide by the following restrictions:
+      *   - Short-living and (ideally) non-blocking
+      *   - Run in a finite amount of time
+      *   - Safe to call repeatedly, across multiple threads
+      *
+      * @param cb
+      *   the callback which observes measurements when invoked
+      */
+    def createWithCallback(
+        cb: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, Unit]
+
+    /** Creates an asynchronous [[UpDownCounter]] based on an effect that
+      * produces a number of measurements.
+      *
+      * The measurement effect will be evaluated when the instrument is being
+      * observed.
+      *
+      * The measurement effect is expected to abide by the following
+      * restrictions:
+      *   - Short-living and (ideally) non-blocking
+      *   - Run in a finite amount of time
+      *   - Safe to call repeatedly, across multiple threads
+      *
+      * @param measurements
+      *   effect that produces a number of measurements
+      */
+    def createWithSupplier(
+        measurements: F[List[Measurement[A]]]
+    ): Resource[F, Unit]
+  }
 
   trait Backend[F[_], A] {
     def meta: InstrumentMeta[F]
@@ -91,6 +156,13 @@ object UpDownCounter {
           def inc(attributes: Attribute[_]*): F[Unit] = meta.unit
           def dec(attributes: Attribute[_]*): F[Unit] = meta.unit
         }
+    }
+
+  private[otel4s] def fromBackend[F[_], A](
+      b: Backend[F, A]
+  ): UpDownCounter[F, A] =
+    new UpDownCounter[F, A] {
+      def backend: Backend[F, A] = b
     }
 
 }

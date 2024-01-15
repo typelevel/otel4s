@@ -14,31 +14,11 @@
  * limitations under the License.
  */
 
-package org.typelevel.otel4s
-package metrics
+package org.typelevel.otel4s.metrics
 
-import cats.Applicative
 import cats.effect.Resource
-import org.typelevel.otel4s.meta.InstrumentMeta
 
-/** A `Counter` instrument that records values of type `A`.
-  *
-  * The [[Counter]] is monotonic. This means the aggregated value is nominally
-  * increasing.
-  *
-  * @see
-  *   See [[UpDownCounter]] for non-monotonic alternative
-  *
-  * @tparam F
-  *   the higher-kinded type of a polymorphic effect
-  *
-  * @tparam A
-  *   the type of the values to record. OpenTelemetry specification expects `A`
-  *   to be either [[scala.Long]] or [[scala.Double]]
-  */
-trait Counter[F[_], A] extends CounterMacro[F, A]
-
-object Counter {
+object Gauge {
 
   trait Builder[F[_], A] {
 
@@ -62,12 +42,8 @@ object Counter {
       */
     def withDescription(description: String): Builder[F, A]
 
-    /** Creates a [[Counter]] with the given `unit` and `description` (if any).
-      */
-    def create: F[Counter[F, A]]
-
-    /** Creates a [[Counter]] with the given callback, using `unit` and
-      * `description` (if any).
+    /** Creates a Gauge with the given callback, using `unit` and `description`
+      * (if any).
       *
       * The callback will be called when the instrument is being observed.
       *
@@ -83,8 +59,8 @@ object Counter {
         cb: ObservableMeasurement[F, A] => F[Unit]
     ): Resource[F, Unit]
 
-    /** Creates an asynchronous [[Counter]] based on an effect that produces a
-      * number of measurements.
+    /** Creates an asynchronous Gauge based on an effect that produces a number
+      * of measurements.
       *
       * The measurement effect will be evaluated when the instrument is being
       * observed.
@@ -102,51 +78,5 @@ object Counter {
         measurements: F[List[Measurement[A]]]
     ): Resource[F, Unit]
   }
-
-  trait Backend[F[_], A] {
-    def meta: InstrumentMeta[F]
-
-    /** Records a value with a set of attributes.
-      *
-      * @param value
-      *   the value to increment a counter with. Must be '''non-negative'''
-      *
-      * @param attributes
-      *   the set of attributes to associate with the value
-      */
-    def add(value: A, attributes: Attribute[_]*): F[Unit]
-
-    /** Increments a counter by one.
-      *
-      * @param attributes
-      *   the set of attributes to associate with the value
-      */
-    def inc(attributes: Attribute[_]*): F[Unit]
-  }
-
-  trait LongBackend[F[_]] extends Backend[F, Long] {
-    final def inc(attributes: Attribute[_]*): F[Unit] =
-      add(1L, attributes: _*)
-  }
-
-  trait DoubleBackend[F[_]] extends Backend[F, Double] {
-    final def inc(attributes: Attribute[_]*): F[Unit] =
-      add(1.0, attributes: _*)
-  }
-
-  def noop[F[_], A](implicit F: Applicative[F]): Counter[F, A] =
-    new Counter[F, A] {
-      val backend: Backend[F, A] =
-        new Backend[F, A] {
-          val meta: InstrumentMeta[F] = InstrumentMeta.disabled
-          def add(value: A, attributes: Attribute[_]*): F[Unit] = meta.unit
-          def inc(attributes: Attribute[_]*): F[Unit] = meta.unit
-        }
-    }
-
-  private[otel4s] def fromBackend[F[_], A](b: Backend[F, A]): Counter[F, A] =
-    new Counter[F, A] {
-      def backend: Backend[F, A] = b
-    }
 
 }

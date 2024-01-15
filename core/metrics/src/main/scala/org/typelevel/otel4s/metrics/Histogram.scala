@@ -45,6 +45,46 @@ trait Histogram[F[_], A] extends HistogramMacro[F, A]
 
 object Histogram {
 
+  trait Builder[F[_], A] {
+
+    /** Sets the unit of measure for this histogram.
+      *
+      * @see
+      *   [[https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/api.md#instrument-unit Instrument Unit]]
+      *
+      * @param unit
+      *   the measurement unit. Must be 63 or fewer ASCII characters.
+      */
+    def withUnit(unit: String): Builder[F, A]
+
+    /** Sets the description for this histogram.
+      *
+      * @see
+      *   [[https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/api.md#instrument-description Instrument Description]]
+      *
+      * @param description
+      *   the description
+      */
+    def withDescription(description: String): Builder[F, A]
+
+    /** Sets the explicit bucket boundaries for this histogram.
+      *
+      * @see
+      *   [[https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/api.md#instrument-advisory-parameter-explicitbucketboundaries Explicit bucket boundaries]]
+      *
+      * @param boundaries
+      *   the boundaries to use
+      */
+    def withExplicitBucketBoundaries(
+        boundaries: BucketBoundaries
+    ): Builder[F, A]
+
+    /** Creates a [[Histogram]] with the given `unit`, `description`, and
+      * `bucket boundaries` (if any).
+      */
+    def create: F[Histogram[F, A]]
+  }
+
   trait Meta[F[_]] extends InstrumentMeta[F] {
     def resourceUnit: Resource[F, Unit]
   }
@@ -100,6 +140,28 @@ object Histogram {
 
   }
 
+  abstract class LongBackend[F[_]: Monad: Clock] extends Backend[F, Long] {
+
+    final val unit: F[Unit] = Monad[F].unit
+
+    final def recordDuration(
+        timeUnit: TimeUnit,
+        attributes: Attribute[_]*
+    ): Resource[F, Unit] =
+      Resource
+        .makeCase(Clock[F].monotonic) { case (start, ec) =>
+          for {
+            end <- Clock[F].monotonic
+            _ <- record(
+              (end - start).toUnit(timeUnit).toLong,
+              attributes ++ causeAttributes(ec): _*
+            )
+          } yield ()
+        }
+        .void
+
+  }
+
   abstract class DoubleBackend[F[_]: Monad: Clock] extends Backend[F, Double] {
 
     final val unit: F[Unit] = Monad[F].unit
@@ -145,6 +207,11 @@ object Histogram {
         List(Attribute(CauseKey, e.getClass.getName))
       case Resource.ExitCase.Canceled =>
         List(Attribute(CauseKey, "canceled"))
+    }
+
+  private[otel4s] def fromBackend[F[_], A](b: Backend[F, A]): Histogram[F, A] =
+    new Histogram[F, A] {
+      def backend: Backend[F, A] = b
     }
 
 }

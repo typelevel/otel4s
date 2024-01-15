@@ -35,8 +35,7 @@ meterProvider
 """)
 trait Meter[F[_]] {
 
-  /** Creates a builder of [[Counter]] instrument that records [[scala.Long]]
-    * values.
+  /** Creates a builder of [[Counter]] instrument that records values.
     *
     * The [[Counter]] is monotonic. This means the aggregated value is nominally
     * increasing.
@@ -47,10 +46,9 @@ trait Meter[F[_]] {
     * @param name
     *   the name of the instrument
     */
-  def counter(name: String): SyncInstrumentBuilder[F, Counter[F, Long]]
+  def counter[A: MeasurementValue](name: String): Counter.Builder[F, A]
 
-  /** Creates a builder of [[Histogram]] instrument that records
-    * [[scala.Double]] values.
+  /** Creates a builder of [[Histogram]] instrument that records values.
     *
     * [[Histogram]] metric data points convey a population of recorded
     * measurements in a compressed format. A histogram bundles a set of events
@@ -60,10 +58,9 @@ trait Meter[F[_]] {
     * @param name
     *   the name of the instrument
     */
-  def histogram(name: String): SyncInstrumentBuilder[F, Histogram[F, Double]]
+  def histogram[A: MeasurementValue](name: String): Histogram.Builder[F, A]
 
-  /** Creates a builder of [[UpDownCounter]] instrument that records
-    * [[scala.Long]] values.
+  /** Creates a builder of [[UpDownCounter]] instrument that records values.
     *
     * The [[UpDownCounter]] is non-monotonic. This means the aggregated value
     * can increase and decrease.
@@ -74,51 +71,17 @@ trait Meter[F[_]] {
     * @param name
     *   the name of the instrument
     */
-  def upDownCounter(
+  def upDownCounter[A: MeasurementValue](
       name: String
-  ): SyncInstrumentBuilder[F, UpDownCounter[F, Long]]
+  ): UpDownCounter.Builder[F, A]
 
-  /** Creates a builder of [[ObservableGauge]] instrument that collects
-    * [[scala.Double]] values from the given callback.
+  /** Creates a builder of a gauge instrument that collects values from the
+    * given callback.
     *
     * @param name
     *   the name of the instrument
     */
-  def observableGauge(
-      name: String
-  ): ObservableInstrumentBuilder[F, Double, ObservableGauge]
-
-  /** Creates a builder of [[ObservableCounter]] instrument that collects
-    * [[scala.Long]] values from the given callback.
-    *
-    * The [[ObservableCounter]] is monotonic. This means the aggregated value is
-    * nominally increasing.
-    *
-    * @see
-    *   See [[observableUpDownCounter]] for non-monotonic alternative
-    *
-    * @param name
-    *   the name of the instrument
-    */
-  def observableCounter(
-      name: String
-  ): ObservableInstrumentBuilder[F, Long, ObservableCounter]
-
-  /** Creates a builder of [[ObservableUpDownCounter]] instrument that collects
-    * [[scala.Long]] values from the given callback.
-    *
-    * The [[ObservableUpDownCounter]] is non-monotonic. This means the
-    * aggregated value can increase and decrease.
-    *
-    * @see
-    *   See [[observableCounter]] for monotonic alternative
-    *
-    * @param name
-    *   the name of the instrument
-    */
-  def observableUpDownCounter(
-      name: String
-  ): ObservableInstrumentBuilder[F, Long, ObservableUpDownCounter]
+  def gauge[A: MeasurementValue](name: String): Gauge.Builder[F, A]
 
 }
 
@@ -136,86 +99,69 @@ object Meter {
     */
   def noop[F[_]](implicit F: Applicative[F]): Meter[F] =
     new Meter[F] {
-      def counter(name: String): SyncInstrumentBuilder[F, Counter[F, Long]] =
-        new SyncInstrumentBuilder[F, Counter[F, Long]] {
-          type Self = this.type
-          def withUnit(unit: String): Self = this
-          def withDescription(description: String): Self = this
-          def create: F[Counter[F, Long]] = F.pure(Counter.noop)
-        }
-
-      def histogram(
+      def counter[A: MeasurementValue](
           name: String
-      ): SyncInstrumentBuilder[F, Histogram[F, Double]] =
-        new SyncInstrumentBuilder[F, Histogram[F, Double]] {
-          type Self = this.type
-          def withUnit(unit: String): Self = this
-          def withDescription(description: String): Self = this
-          def create: F[Histogram[F, Double]] = F.pure(Histogram.noop)
-        }
-
-      def upDownCounter(
-          name: String
-      ): SyncInstrumentBuilder[F, UpDownCounter[F, Long]] =
-        new SyncInstrumentBuilder[F, UpDownCounter[F, Long]] {
-          type Self = this.type
-
-          def withUnit(unit: String): Self = this
-          def withDescription(description: String): Self = this
-          def create: F[UpDownCounter[F, Long]] = F.pure(UpDownCounter.noop)
-        }
-      def observableGauge(
-          name: String
-      ): ObservableInstrumentBuilder[F, Double, ObservableGauge] =
-        new ObservableInstrumentBuilder[F, Double, ObservableGauge] {
-          type Self = this.type
-
-          def withUnit(unit: String): Self = this
-          def withDescription(description: String): Self = this
-          def create(
-              measurements: F[List[Measurement[Double]]]
-          ): Resource[F, ObservableGauge] =
-            Resource.pure(new ObservableGauge {})
+      ): Counter.Builder[F, A] =
+        new Counter.Builder[F, A] {
+          def withUnit(unit: String): Counter.Builder[F, A] = this
+          def withDescription(description: String): Counter.Builder[F, A] = this
+          def create: F[Counter[F, A]] = F.pure(Counter.noop)
           def createWithCallback(
-              cb: ObservableMeasurement[F, Double] => F[Unit]
-          ): Resource[F, ObservableGauge] =
-            Resource.pure(new ObservableGauge {})
+              cb: ObservableMeasurement[F, A] => F[Unit]
+          ): Resource[F, Unit] =
+            Resource.unit
+          def createWithSupplier(
+              measurements: F[List[Measurement[A]]]
+          ): Resource[F, Unit] =
+            Resource.unit
         }
 
-      def observableCounter(
+      def histogram[A: MeasurementValue](
           name: String
-      ): ObservableInstrumentBuilder[F, Long, ObservableCounter] =
-        new ObservableInstrumentBuilder[F, Long, ObservableCounter] {
-          type Self = this.type
-
-          def withUnit(unit: String): Self = this
-          def withDescription(description: String): Self = this
-          def create(
-              measurements: F[List[Measurement[Long]]]
-          ): Resource[F, ObservableCounter] =
-            Resource.pure(new ObservableCounter {})
-          def createWithCallback(
-              cb: ObservableMeasurement[F, Long] => F[Unit]
-          ): Resource[F, ObservableCounter] =
-            Resource.pure(new ObservableCounter {})
+      ): Histogram.Builder[F, A] =
+        new Histogram.Builder[F, A] {
+          def withUnit(unit: String): Histogram.Builder[F, A] = this
+          def withDescription(description: String): Histogram.Builder[F, A] =
+            this
+          def withExplicitBucketBoundaries(
+              boundaries: BucketBoundaries
+          ): Histogram.Builder[F, A] = this
+          def create: F[Histogram[F, A]] = F.pure(Histogram.noop)
         }
 
-      def observableUpDownCounter(
+      def upDownCounter[A: MeasurementValue](
           name: String
-      ): ObservableInstrumentBuilder[F, Long, ObservableUpDownCounter] =
-        new ObservableInstrumentBuilder[F, Long, ObservableUpDownCounter] {
-          type Self = this.type
-
-          def withUnit(unit: String): Self = this
-          def withDescription(description: String): Self = this
-          def create(
-              measurements: F[List[Measurement[Long]]]
-          ): Resource[F, ObservableUpDownCounter] =
-            Resource.pure(new ObservableUpDownCounter {})
+      ): UpDownCounter.Builder[F, A] =
+        new UpDownCounter.Builder[F, A] {
+          def withUnit(unit: String): UpDownCounter.Builder[F, A] = this
+          def withDescription(
+              description: String
+          ): UpDownCounter.Builder[F, A] = this
+          def create: F[UpDownCounter[F, A]] = F.pure(UpDownCounter.noop)
           def createWithCallback(
-              cb: ObservableMeasurement[F, Long] => F[Unit]
-          ): Resource[F, ObservableUpDownCounter] =
-            Resource.pure(new ObservableUpDownCounter {})
+              cb: ObservableMeasurement[F, A] => F[Unit]
+          ): Resource[F, Unit] =
+            Resource.unit
+          def createWithSupplier(
+              measurements: F[List[Measurement[A]]]
+          ): Resource[F, Unit] =
+            Resource.unit
+        }
+
+      def gauge[A: MeasurementValue](
+          name: String
+      ): Gauge.Builder[F, A] =
+        new Gauge.Builder[F, A] {
+          def withUnit(unit: String): Gauge.Builder[F, A] = this
+          def withDescription(description: String): Gauge.Builder[F, A] = this
+          def createWithSupplier(
+              measurements: F[List[Measurement[A]]]
+          ): Resource[F, Unit] =
+            Resource.unit
+          def createWithCallback(
+              cb: ObservableMeasurement[F, A] => F[Unit]
+          ): Resource[F, Unit] =
+            Resource.unit
         }
     }
 

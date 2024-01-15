@@ -27,7 +27,7 @@ private[oteljava] class ObservableDoubleImpl[F[_]](
 )(implicit F: Sync[F])
     extends ObservableMeasurement[F, Double] {
 
-  def record(value: Double, attributes: Attribute[_]*): F[Unit] =
+  def record(value: Double, attributes: Attributes): F[Unit] =
     F.delay(odm.record(value, Conversions.toJAttributes(attributes)))
 
 }

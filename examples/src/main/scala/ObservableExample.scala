@@ -17,7 +17,6 @@
 import cats.effect.IO
 import cats.effect.IOApp
 import cats.effect.Resource
-import org.typelevel.otel4s.metrics.ObservableCounter
 import org.typelevel.otel4s.oteljava.OtelJava
 
 import java.lang.management.ManagementFactory
@@ -29,12 +28,12 @@ object ObservableExample extends IOApp.Simple {
   val mbeanServer: MBeanServer = ManagementFactory.getPlatformMBeanServer
   val mbeanName = new ObjectName("cats.effect.metrics:type=CpuStarvation")
 
-  def meterResource: Resource[IO, ObservableCounter] =
+  def meterResource: Resource[IO, Unit] =
     Resource
       .eval(OtelJava.global)
       .evalMap(_.meterProvider.get("observable-example"))
       .flatMap(
-        _.observableCounter("cats-effect-runtime-cpu-starvation-count")
+        _.counter[Long]("cats-effect-runtime-cpu-starvation-count")
           .withDescription("CE runtime starvation count")
           .createWithCallback(obs =>
             IO(

@@ -17,11 +17,35 @@
 package org.typelevel.otel4s.metrics
 
 import org.typelevel.otel4s.Attribute
+import org.typelevel.otel4s.Attributes
 
-/** @param value
-  *   the value to record
-  *
-  * @param attributes
-  *   the set of attributes to associate with the value
-  */
-final case class Measurement[A](value: A, attributes: List[Attribute[_]])
+sealed trait Measurement[A] {
+
+  /** The value to record.
+    */
+  def value: A
+
+  /** The set of attributes to associate with the value.
+    */
+  def attributes: Attributes
+}
+
+object Measurement {
+
+  def apply[A](value: A): Measurement[A] =
+    Impl(value, Attributes.empty)
+
+  def apply[A](value: A, attributes: Attributes): Measurement[A] =
+    Impl(value, attributes)
+
+  def apply[A](value: A, attributes: Iterable[Attribute[_]]): Measurement[A] =
+    Impl(value, Attributes.fromSpecific(attributes))
+
+  def apply[A](value: A, attributes: Attribute[_]*): Measurement[A] =
+    Impl(value, Attributes.fromSpecific(attributes))
+
+  private final case class Impl[A](
+      value: A,
+      attributes: Attributes
+  ) extends Measurement[A]
+}

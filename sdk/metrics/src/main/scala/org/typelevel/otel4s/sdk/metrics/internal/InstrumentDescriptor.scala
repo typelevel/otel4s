@@ -1,5 +1,7 @@
 package org.typelevel.otel4s.sdk.metrics.internal
 
+import org.typelevel.otel4s.sdk.metrics.BucketBoundaries
+
 sealed trait InstrumentDescriptor {
 
   def name: String
@@ -59,7 +61,11 @@ object InstrumentValueType {
   case object Double extends InstrumentValueType
 }
 
-sealed trait Advice
+sealed trait Advice {
+  def explicitBoundaries: Option[BucketBoundaries]
+}
 object Advice {
-  def empty: Advice = new Advice {}
+  def empty: Advice = new Advice {
+    def explicitBoundaries: Option[BucketBoundaries] = None
+  }
 }

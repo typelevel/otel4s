@@ -1,8 +1,10 @@
 package org.typelevel.otel4s.sdk.metrics.internal
 
+import cats.Applicative
+import cats.syntax.applicative._
 import org.typelevel.otel4s.Attributes
 import org.typelevel.otel4s.sdk.context.Context
-import org.typelevel.otel4s.sdk.metrics.ExemplarFilter
+import org.typelevel.otel4s.sdk.metrics.{BucketBoundaries, ExemplarFilter}
 import org.typelevel.otel4s.sdk.metrics.data.ExemplarData
 
 trait ExemplarReservoir[F[_], E <: ExemplarData] {
@@ -18,28 +20,78 @@ trait ExemplarReservoir[F[_], E <: ExemplarData] {
       context: Context
   ): F[Unit]
 
-  def collectAndReset(pointAttributes: Attributes): F[Vector[E]]
+  def collectAndReset(attributes: Attributes): F[Vector[E]]
 }
 
 object ExemplarReservoir {
 
-  def filtered[F[_], E <: ExemplarData](
+  def filtered[F[_]: Applicative, E <: ExemplarData](
       filter: ExemplarFilter,
       original: ExemplarReservoir[F, E]
-  ): ExemplarReservoir[F, E] = ???
+  ): ExemplarReservoir[F, E] =
+    new ExemplarReservoir[F, E] {
+      def offerDoubleMeasurement(
+          value: Double,
+          attributes: Attributes,
+          context: Context
+      ): F[Unit] =
+        original
+          .offerDoubleMeasurement(value, attributes, context)
+          .whenA(
+            filter.shouldSample(value, attributes, context)
+          )
+
+      def offerLongMeasurement(
+          value: Long,
+          attributes: Attributes,
+          context: Context
+      ): F[Unit] =
+        original
+          .offerLongMeasurement(value, attributes, context)
+          .whenA(
+            filter.shouldSample(value, attributes, context)
+          )
+
+      def collectAndReset(attributes: Attributes): F[Vector[E]] =
+        original.collectAndReset(attributes)
+    }
 
   // size = availableProcessors
-  def longFixedSize[F[_]](
+  def longFixedSize[F[_]: Applicative](
       size: Int
-  ): F[ExemplarReservoir[F, ExemplarData.LongExemplar]] = ???
+  ): F[ExemplarReservoir[F, ExemplarData.LongExemplar]] =
+    Applicative[F].pure(noop)
 
-  def doubleFixedSize[F[_]](
+  def doubleFixedSize[F[_]: Applicative](
       size: Int
-  ): F[ExemplarReservoir[F, ExemplarData.DoubleExemplar]] = ???
+  ): F[ExemplarReservoir[F, ExemplarData.DoubleExemplar]] =
+    Applicative[F].pure(noop)
 
-  def longNoSamples[F[_]]: ExemplarReservoir[F, ExemplarData.LongExemplar] =
-    ???
+  def histogramBucket[F[_]: Applicative](
+      boundaries: BucketBoundaries
+  ): F[ExemplarReservoir[F, ExemplarData.DoubleExemplar]] =
+    Applicative[F].pure(noop)
 
-  def doubleNoSamples[F[_]]: ExemplarReservoir[F, ExemplarData.DoubleExemplar] =
-    ???
+  private def noop[
+      F[_]: Applicative,
+      E <: ExemplarData
+  ]: ExemplarReservoir[F, E] =
+    new ExemplarReservoir[F, E] {
+      def offerDoubleMeasurement(
+          value: Double,
+          attributes: Attributes,
+          context: Context
+      ): F[Unit] =
+        Applicative[F].unit
+
+      def offerLongMeasurement(
+          value: Long,
+          attributes: Attributes,
+          context: Context
+      ): F[Unit] =
+        Applicative[F].unit
+
+      def collectAndReset(attributes: Attributes): F[Vector[E]] =
+        Applicative[F].pure(Vector.empty)
+    }
 }

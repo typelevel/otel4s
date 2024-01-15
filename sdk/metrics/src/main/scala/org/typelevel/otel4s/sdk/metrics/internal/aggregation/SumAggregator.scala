@@ -72,7 +72,7 @@ private object SumAggregator {
       filter: ExemplarFilter
   ): OfLong[F] = {
     val reservoir = ExemplarReservoir
-      .longFixedSize[F](reservoirSize)
+      .longFixedSize[F](reservoirSize) // todo size = availableProcessors
       .map(r => ExemplarReservoir.filtered(filter, r))
 
     new SumAggregator(
@@ -88,7 +88,7 @@ private object SumAggregator {
       filter: ExemplarFilter
   ): OfDouble[F] = {
     val reservoir = ExemplarReservoir
-      .doubleFixedSize[F](reservoirSize)
+      .doubleFixedSize[F](reservoirSize) // todo size = availableProcessors
       .map(r => ExemplarReservoir.filtered(filter, r))
 
     new SumAggregator(

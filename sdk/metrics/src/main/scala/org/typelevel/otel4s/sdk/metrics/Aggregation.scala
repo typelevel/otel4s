@@ -36,7 +36,7 @@ object Aggregation {
       with HasAggregator
 
   private[metrics] final case class ExplicitBucketHistogram(
-      boundaries: List[Double]
+      boundaries: BucketBoundaries
   ) extends Aggregation(Compatability.ExplicitBucketHistogram)
       with HasAggregator
 
@@ -72,80 +72,3 @@ object Aggregation {
   }
 
 }
-
-/*
-import cats.Applicative
-import org.typelevel.otel4s.sdk.metrics.data.{ExemplarData, PointData}
-import org.typelevel.otel4s.sdk.metrics.internal.aggregation.Aggregator
-import org.typelevel.otel4s.sdk.metrics.internal.{InstrumentDescriptor, InstrumentType, InstrumentValueType}
-
-sealed trait Aggregation {
-  def createAggregator[F[_]: Applicative](
-      descriptor: InstrumentDescriptor,
-      filter: ExemplarFilter
-  ): Aggregator[F]
-}
-
-object Aggregation {
-  /*def default: Aggregation =
-    new Aggregation {
-      def createAggregator[F[_]: Applicative](
-          descriptor: InstrumentDescriptor,
-          filter: ExemplarFilter
-      ): Aggregator[F] =
-        resolve(descriptor, true).createAggregator(descriptor, filter)
-
-      private def resolve(
-          descriptor: InstrumentDescriptor,
-          withAdvice: Boolean
-      ) =
-        descriptor.instrumentType match {
-          case InstrumentType.Counter                 => Aggregation.sum
-          case InstrumentType.UpDownCounter           => Aggregation.sum
-          case InstrumentType.ObservableCounter       => Aggregation.sum
-          case InstrumentType.ObservableUpDownCounter => Aggregation.sum
-          case InstrumentType.Histogram               => ???
-          case InstrumentType.ObservableGauge         => ???
-        }
-    }
-
-  def drop: Aggregation =
-    new Aggregation {
-      def createAggregator[F[_]: Applicative](
-          descriptor: InstrumentDescriptor,
-          filter: ExemplarFilter
-      ): Aggregator.Aux[F] =
-        new Aggregator.Drop
-
-      def compatibleWith(descriptor: InstrumentDescriptor): Boolean =
-        true
-    }
-
-  def sum: Aggregation =
-    new Aggregation {
-      def createAggregator[F[_]: Applicative](
-          descriptor: InstrumentDescriptor,
-          filter: ExemplarFilter
-      ): Aggregator.Aux[F] =
-        descriptor.valueType match {
-          case InstrumentValueType.Long =>
-            new Aggregator.LongSum(() => null).asInstanceOf[Aggregator.Aux[F]]
-
-          case InstrumentValueType.Double =>
-            new Aggregator.DoubleLastValue[F](() => null)
-              .asInstanceOf[Aggregator.Aux[F]]
-        }
-    }*/
-
-  def lastValue: Aggregation = ???
-
-  def explicitBucketHistogram(
-      boundaries: List[Double]
-  ): Aggregation = ???
-
-  def base2ExponentialHistogram: Aggregation = ???
-
-  def base2ExponentialHistogram(maxBuckets: Int, maxScale: Int): Aggregation = ???
-
-}
- */

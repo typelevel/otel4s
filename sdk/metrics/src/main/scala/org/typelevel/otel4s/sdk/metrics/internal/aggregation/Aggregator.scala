@@ -5,8 +5,11 @@ import org.typelevel.otel4s.Attributes
 import org.typelevel.otel4s.sdk.Resource
 import org.typelevel.otel4s.sdk.common.InstrumentationScope
 import org.typelevel.otel4s.sdk.context.Context
-import org.typelevel.otel4s.sdk.metrics.Aggregation
-import org.typelevel.otel4s.sdk.metrics.ExemplarFilter
+import org.typelevel.otel4s.sdk.metrics.{
+  Aggregation,
+  BucketBoundaries,
+  ExemplarFilter
+}
 import org.typelevel.otel4s.sdk.metrics.data.AggregationTemporality
 import org.typelevel.otel4s.sdk.metrics.data.MetricData
 import org.typelevel.otel4s.sdk.metrics.data.PointData
@@ -75,6 +78,12 @@ private[metrics] object Aggregator {
         case InstrumentValueType.Double => LastValueAggregator.ofDouble
       }
 
+    def histogram: Aggregator[F] = {
+      val boundaries =
+        descriptor.advice.explicitBoundaries.getOrElse(BucketBoundaries.default)
+      ExplicitBucketHistogramAggregator(boundaries, filter)
+    }
+
     aggregation match {
       case Aggregation.Default =>
         descriptor.instrumentType match {
@@ -82,13 +91,16 @@ private[metrics] object Aggregator {
           case InstrumentType.UpDownCounter           => sum
           case InstrumentType.ObservableCounter       => sum
           case InstrumentType.ObservableUpDownCounter => sum
-          case InstrumentType.Histogram               => ???
+          case InstrumentType.Histogram               => histogram
           case InstrumentType.ObservableGauge         => lastValue
         }
 
-      case Aggregation.Sum                                 => sum
-      case Aggregation.LastValue                           => lastValue
-      case Aggregation.ExplicitBucketHistogram(boundaries) => ???
+      case Aggregation.Sum       => sum
+      case Aggregation.LastValue => lastValue
+
+      case Aggregation.ExplicitBucketHistogram(boundaries) =>
+        ExplicitBucketHistogramAggregator(boundaries, filter)
+
       case Aggregation.Base2ExponentialHistogram(maxBuckets, maxScale) =>
         ???
     }

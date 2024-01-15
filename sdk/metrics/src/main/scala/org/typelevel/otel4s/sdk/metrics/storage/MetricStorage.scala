@@ -12,10 +12,13 @@ import org.typelevel.otel4s.Attributes
 import org.typelevel.otel4s.sdk.Resource
 import org.typelevel.otel4s.sdk.common.InstrumentationScope
 import org.typelevel.otel4s.sdk.context.Context
-import org.typelevel.otel4s.sdk.metrics.Aggregation
-import org.typelevel.otel4s.sdk.metrics.ExemplarFilter
-import org.typelevel.otel4s.sdk.metrics.RegisteredReader
-import org.typelevel.otel4s.sdk.metrics.RegisteredView
+import org.typelevel.otel4s.sdk.metrics.{
+  Aggregation,
+  ExemplarFilter,
+  MeasurementValue,
+  RegisteredReader,
+  RegisteredView
+}
 import org.typelevel.otel4s.sdk.metrics.data.AggregationTemporality
 import org.typelevel.otel4s.sdk.metrics.data.MetricData
 import org.typelevel.otel4s.sdk.metrics.data.PointData
@@ -40,14 +43,8 @@ trait MetricStorage[F[_]] {
 object MetricStorage {
 
   trait Writeable[F[_]] {
-    def recordLong(
-        value: Long,
-        attributes: Attributes,
-        context: Context
-    ): F[Unit]
-
-    def recordDouble(
-        value: Double,
+    def record[A: MeasurementValue](
+        value: A,
         attributes: Attributes,
         context: Context
     ): F[Unit]
@@ -56,19 +53,12 @@ object MetricStorage {
   object Writeable {
     def of[F[_]: Applicative](storages: Writeable[F]*): Writeable[F] =
       new Writeable[F] {
-        def recordLong(
-            value: Long,
+        def record[A: MeasurementValue](
+            value: A,
             attributes: Attributes,
             context: Context
         ): F[Unit] =
-          storages.traverse_(_.recordLong(value, attributes, context))
-
-        def recordDouble(
-            value: Double,
-            attributes: Attributes,
-            context: Context
-        ): F[Unit] =
-          storages.traverse_(_.recordDouble(value, attributes, context))
+          storages.traverse_(_.record(value, attributes, context))
       }
   }
 
@@ -93,15 +83,8 @@ object MetricStorage {
       case Aggregation.Drop =>
         Concurrent[F].pure {
           new Synchronous[F] {
-            def recordLong(
-                value: Long,
-                attributes: Attributes,
-                context: Context
-            ): F[Unit] =
-              Concurrent[F].unit
-
-            def recordDouble(
-                value: Double,
+            def record[A: MeasurementValue](
+                value: A,
                 attributes: Attributes,
                 context: Context
             ): F[Unit] =
@@ -163,25 +146,15 @@ object MetricStorage {
         metricDescriptor.sourceInstrument.instrumentType
       )
 
-    def recordLong(
-        value: Long,
+    def record[A: MeasurementValue](
+        value: A,
         attributes: Attributes,
         context: Context
     ): F[Unit] =
       for {
         handle <- getHandle(attributes, context)
-        result <- handle.recordLong(value, attributes, context)
-      } yield result
-
-    def recordDouble(
-        value: Double,
-        attributes: Attributes,
-        context: Context
-    ): F[Unit] =
-      for {
-        handle <- getHandle(attributes, context)
-        result <- handle.recordDouble(value, attributes, context)
-      } yield result
+        _ <- handle.record(value, attributes, context)
+      } yield ()
 
     def collect(
         resource: Resource,

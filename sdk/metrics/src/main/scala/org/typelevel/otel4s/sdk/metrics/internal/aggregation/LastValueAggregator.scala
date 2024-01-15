@@ -7,6 +7,7 @@ import org.typelevel.otel4s.Attributes
 import org.typelevel.otel4s.sdk.Resource
 import org.typelevel.otel4s.sdk.common.InstrumentationScope
 import org.typelevel.otel4s.sdk.context.Context
+import org.typelevel.otel4s.sdk.metrics.MeasurementValue
 import org.typelevel.otel4s.sdk.metrics.data.AggregationTemporality
 import org.typelevel.otel4s.sdk.metrics.data.Data
 import org.typelevel.otel4s.sdk.metrics.data.ExemplarData
@@ -104,6 +105,11 @@ private object LastValueAggregator {
           )
         }
       }
+
+    def record[A: MeasurementValue](
+                                     value: A, attributes: Attributes, context: Context
+                                   ): F[Unit] =
+      MeasurementValue[A]
 
     def recordLong(value: Long, a: Attributes, c: Context): F[Unit] =
       current.setLong(value)

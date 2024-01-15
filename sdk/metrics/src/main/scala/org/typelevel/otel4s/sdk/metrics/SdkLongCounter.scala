@@ -33,10 +33,9 @@ private final class SdkLongCounter[F[_]: Monad: Console: AskContext](
             s"Counters can only increase. Instrument ${descriptor.name} has tried to record a negative value."
           )
         } else {
-          val attrs = Attributes.fromSpecific(attributes)
           for {
             ctx <- Ask[F, Context].ask
-            _ <- storage.recordLong(value, attrs, ctx)
+            _ <- storage.record(value, Attributes.fromSpecific(attributes), ctx)
           } yield ()
         }
 

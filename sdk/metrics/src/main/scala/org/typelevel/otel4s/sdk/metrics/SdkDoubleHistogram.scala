@@ -36,11 +36,7 @@ private final class SdkDoubleHistogram[F[_]: Monad: Clock: Console: AskContext](
         } else {
           for {
             ctx <- Ask[F, Context].ask
-            _ <- storage.recordDouble(
-              value,
-              Attributes.fromSpecific(attributes),
-              ctx
-            )
+            _ <- storage.record(value, Attributes.fromSpecific(attributes), ctx)
           } yield ()
         }
 

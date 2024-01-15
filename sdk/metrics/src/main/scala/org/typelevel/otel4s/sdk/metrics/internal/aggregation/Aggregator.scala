@@ -8,7 +8,8 @@ import org.typelevel.otel4s.sdk.context.Context
 import org.typelevel.otel4s.sdk.metrics.{
   Aggregation,
   BucketBoundaries,
-  ExemplarFilter
+  ExemplarFilter,
+  MeasurementValue
 }
 import org.typelevel.otel4s.sdk.metrics.data.AggregationTemporality
 import org.typelevel.otel4s.sdk.metrics.data.MetricData
@@ -48,14 +49,8 @@ private[metrics] object Aggregator {
         reset: Boolean
     ): F[Option[P]]
 
-    def recordLong(
-        value: Long,
-        attributes: Attributes,
-        context: Context
-    ): F[Unit]
-
-    def recordDouble(
-        value: Double,
+    def record[A: MeasurementValue](
+        value: A,
         attributes: Attributes,
         context: Context
     ): F[Unit]

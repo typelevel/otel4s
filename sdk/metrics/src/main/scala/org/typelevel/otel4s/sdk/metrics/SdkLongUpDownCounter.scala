@@ -30,11 +30,7 @@ private final class SdkLongUpDownCounter[F[_]: Monad: AskContext](
       def add(value: Long, attributes: Attribute[_]*): F[Unit] =
         for {
           ctx <- Ask[F, Context].ask
-          _ <- storage.recordLong(
-            value,
-            Attributes.fromSpecific(attributes),
-            ctx
-          )
+          _ <- storage.record(value, Attributes.fromSpecific(attributes), ctx)
         } yield ()
     }
 

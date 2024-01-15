@@ -28,13 +28,12 @@ private[oteljava] case class UpDownCounterBuilderImpl[F[_]](
     unit: Option[String] = None,
     description: Option[String] = None
 )(implicit F: Sync[F])
-    extends SyncInstrumentBuilder[F, UpDownCounter[F, Long]] {
-  type Self = UpDownCounterBuilderImpl[F]
+    extends UpDownCounter.Builder[F, Long] {
 
-  def withUnit(unit: String): UpDownCounterBuilderImpl[F] =
+  def withUnit(unit: String): UpDownCounter.Builder[F, Long] =
     copy(unit = Option(unit))
 
-  def withDescription(description: String): UpDownCounterBuilderImpl[F] =
+  def withDescription(description: String): UpDownCounter.Builder[F, Long] =
     copy(description = Option(description))
 
   def create: F[UpDownCounter[F, Long]] = F.delay {

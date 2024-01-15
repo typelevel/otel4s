@@ -24,16 +24,14 @@ import org.typelevel.otel4s.metrics._
 
 private[oteljava] class MeterImpl[F[_]: Async](jMeter: JMeter)
     extends Meter[F] {
-  def counter(name: String): SyncInstrumentBuilder[F, Counter[F, Long]] =
-    new CounterBuilderImpl(jMeter, name)
+  def counter(name: String): Counter.Builder[F, Long] =
+    CounterBuilderImpl(jMeter, name)
 
   def histogram(name: String): Histogram.Builder[F, Double] =
     new HistogramBuilderImpl(jMeter, name)
 
-  def upDownCounter(
-      name: String
-  ): SyncInstrumentBuilder[F, UpDownCounter[F, Long]] =
-    new UpDownCounterBuilderImpl(jMeter, name)
+  def upDownCounter(name: String): UpDownCounter.Builder[F, Long] =
+    UpDownCounterBuilderImpl(jMeter, name)
 
   def observableGauge(
       name: String

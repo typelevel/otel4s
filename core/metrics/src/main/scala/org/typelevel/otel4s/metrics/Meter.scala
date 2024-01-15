@@ -47,7 +47,7 @@ trait Meter[F[_]] {
     * @param name
     *   the name of the instrument
     */
-  def counter(name: String): SyncInstrumentBuilder[F, Counter[F, Long]]
+  def counter(name: String): Counter.Builder[F, Long]
 
   /** Creates a builder of [[Histogram]] instrument that records
     * [[scala.Double]] values.
@@ -74,9 +74,7 @@ trait Meter[F[_]] {
     * @param name
     *   the name of the instrument
     */
-  def upDownCounter(
-      name: String
-  ): SyncInstrumentBuilder[F, UpDownCounter[F, Long]]
+  def upDownCounter(name: String): UpDownCounter.Builder[F, Long]
 
   /** Creates a builder of [[ObservableGauge]] instrument that collects
     * [[scala.Double]] values from the given callback.
@@ -136,11 +134,11 @@ object Meter {
     */
   def noop[F[_]](implicit F: Applicative[F]): Meter[F] =
     new Meter[F] {
-      def counter(name: String): SyncInstrumentBuilder[F, Counter[F, Long]] =
-        new SyncInstrumentBuilder[F, Counter[F, Long]] {
-          type Self = this.type
-          def withUnit(unit: String): Self = this
-          def withDescription(description: String): Self = this
+      def counter(name: String): Counter.Builder[F, Long] =
+        new Counter.Builder[F, Long] {
+          def withUnit(unit: String): Counter.Builder[F, Long] = this
+          def withDescription(description: String): Counter.Builder[F, Long] =
+            this
           def create: F[Counter[F, Long]] = F.pure(Counter.noop)
         }
 
@@ -159,16 +157,15 @@ object Meter {
           def create: F[Histogram[F, Double]] = F.pure(Histogram.noop)
         }
 
-      def upDownCounter(
-          name: String
-      ): SyncInstrumentBuilder[F, UpDownCounter[F, Long]] =
-        new SyncInstrumentBuilder[F, UpDownCounter[F, Long]] {
-          type Self = this.type
-
-          def withUnit(unit: String): Self = this
-          def withDescription(description: String): Self = this
+      def upDownCounter(name: String): UpDownCounter.Builder[F, Long] =
+        new UpDownCounter.Builder[F, Long] {
+          def withUnit(unit: String): UpDownCounter.Builder[F, Long] = this
+          def withDescription(
+              description: String
+          ): UpDownCounter.Builder[F, Long] = this
           def create: F[UpDownCounter[F, Long]] = F.pure(UpDownCounter.noop)
         }
+
       def observableGauge(
           name: String
       ): ObservableInstrumentBuilder[F, Double, ObservableGauge] =

@@ -28,12 +28,12 @@ private[oteljava] case class CounterBuilderImpl[F[_]](
     unit: Option[String] = None,
     description: Option[String] = None
 )(implicit F: Sync[F])
-    extends SyncInstrumentBuilder[F, Counter[F, Long]] {
-  type Self = CounterBuilderImpl[F]
+    extends Counter.Builder[F, Long] {
 
-  def withUnit(unit: String): Self = copy(unit = Option(unit))
+  def withUnit(unit: String): Counter.Builder[F, Long] =
+    copy(unit = Option(unit))
 
-  def withDescription(description: String): Self =
+  def withDescription(description: String): Counter.Builder[F, Long] =
     copy(description = Option(description))
 
   def create: F[Counter[F, Long]] = F.delay {

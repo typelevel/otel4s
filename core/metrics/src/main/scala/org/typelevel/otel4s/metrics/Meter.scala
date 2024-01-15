@@ -60,7 +60,7 @@ trait Meter[F[_]] {
     * @param name
     *   the name of the instrument
     */
-  def histogram(name: String): SyncInstrumentBuilder[F, Histogram[F, Double]]
+  def histogram(name: String): Histogram.Builder[F, Double]
 
   /** Creates a builder of [[UpDownCounter]] instrument that records
     * [[scala.Long]] values.
@@ -146,11 +146,16 @@ object Meter {
 
       def histogram(
           name: String
-      ): SyncInstrumentBuilder[F, Histogram[F, Double]] =
-        new SyncInstrumentBuilder[F, Histogram[F, Double]] {
-          type Self = this.type
-          def withUnit(unit: String): Self = this
-          def withDescription(description: String): Self = this
+      ): Histogram.Builder[F, Double] =
+        new Histogram.Builder[F, Double] {
+          def withUnit(unit: String): Histogram.Builder[F, Double] = this
+          def withDescription(
+              description: String
+          ): Histogram.Builder[F, Double] = this
+          def withExplicitBucketBoundaries(
+              boundaries: BucketBoundaries
+          ): Histogram.Builder[F, Double] =
+            this
           def create: F[Histogram[F, Double]] = F.pure(Histogram.noop)
         }
 

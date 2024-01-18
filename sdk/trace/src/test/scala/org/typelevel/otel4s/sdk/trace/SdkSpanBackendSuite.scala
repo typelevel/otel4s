@@ -218,7 +218,11 @@ class SdkSpanBackendSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
         )
 
         _ <- assertIO(
-          extra.toList.traverse(a => span.getAttribute(a.key)),
+          extra.view
+            .map(_.key)
+            .filterNot(init.contains)
+            .toList
+            .traverse(span.getAttribute(_)),
           List.fill(extra.size)(None)
         )
 
@@ -226,7 +230,11 @@ class SdkSpanBackendSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
         _ <- span.addAttributes(extra.toList: _*)
 
         _ <- assertIO(
-          init.toList.traverse(a => span.getAttribute(a.key)),
+          init.view
+            .map(_.key)
+            .filterNot(extra.contains)
+            .toList
+            .traverse(span.getAttribute(_)),
           init.toList.map(v => Some(v.value))
         )
 

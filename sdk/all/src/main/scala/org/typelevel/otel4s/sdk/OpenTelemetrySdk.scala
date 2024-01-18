@@ -18,9 +18,9 @@ package org.typelevel.otel4s.sdk
 
 import cats.Applicative
 import cats.Parallel
-import cats.effect.{Resource => CResource}
 import cats.effect.Async
 import cats.effect.MonadCancelThrow
+import cats.effect.Resource
 import cats.effect.std.Console
 import cats.effect.std.Random
 import cats.syntax.apply._
@@ -82,7 +82,7 @@ object OpenTelemetrySdk {
 
     /** The resource that was auto-configured.
       */
-    def resource: Resource
+    def resource: TelemetryResource
 
     /** The config used for auto-configuration.
       */
@@ -110,7 +110,7 @@ object OpenTelemetrySdk {
           customizer: Customizer[SdkTracerProvider.Builder[F]]
       ): Builder[F]
 
-      def addResourceCustomizer(customizer: Customizer[Resource]): Builder[F]
+      def addResourceCustomizer(customizer: Customizer[TelemetryResource]): Builder[F]
 
       def addPropertiesLoader(loader: F[Map[String, String]]): Builder[F]
 
@@ -118,10 +118,10 @@ object OpenTelemetrySdk {
           customizer: Config => Map[String, String]
       ): Builder[F]
 
-      def build: CResource[F, AutoConfigured[F]]
+      def build: Resource[F, AutoConfigured[F]]
     }
 
-    def load[F[_]: Async: Parallel: Carrier]: CResource[F, AutoConfigured[F]] =
+    def load[F[_]: Async: Parallel: Carrier]: Resource[F, AutoConfigured[F]] =
       builder[F].build
 
     def builder[F[_]: Async: Parallel: Carrier]: Builder[F] =
@@ -136,7 +136,7 @@ object OpenTelemetrySdk {
     private final case class BuilderImpl[F[_]: Async: Parallel: Carrier](
         customConfig: Option[Config],
         tracerProviderCustomizer: Customizer[SdkTracerProvider.Builder[F]],
-        resourceCustomizer: Customizer[Resource],
+        resourceCustomizer: Customizer[TelemetryResource],
         propertiesLoader: F[Map[String, String]],
         propertiesCustomizers: List[Config => Map[String, String]]
     ) extends Builder[F] {
@@ -151,7 +151,7 @@ object OpenTelemetrySdk {
           merge(this.tracerProviderCustomizer, customizer)
         )
 
-      def addResourceCustomizer(customizer: Customizer[Resource]): Builder[F] =
+      def addResourceCustomizer(customizer: Customizer[TelemetryResource]): Builder[F] =
         copy(resourceCustomizer = merge(this.resourceCustomizer, customizer))
 
       def addPropertiesLoader(
@@ -164,7 +164,7 @@ object OpenTelemetrySdk {
       ): Builder[F] =
         copy(propertiesCustomizers = this.propertiesCustomizers :+ customizer)
 
-      def build: CResource[F, AutoConfigured[F]] = {
+      def build: Resource[F, AutoConfigured[F]] = {
         def loadConfig: F[Config] =
           for {
             props <- propertiesLoader
@@ -174,11 +174,11 @@ object OpenTelemetrySdk {
           )
 
         def loadSdk(
-            resource: Resource,
+            resource: TelemetryResource,
             config: Config
-        ): CResource[F, OpenTelemetrySdk[F]] =
-          CResource.eval(Random.scalaUtilRandom[F]).flatMap { implicit random =>
-            CResource.eval(ContextCarrier[F, Context].local).flatMap {
+        ): Resource[F, OpenTelemetrySdk[F]] =
+          Resource.eval(Random.scalaUtilRandom[F]).flatMap { implicit random =>
+            Resource.eval(ContextCarrier[F, Context].local).flatMap {
               implicit local =>
                 implicit val console: Console[F] = Console.make[F]
 
@@ -189,10 +189,10 @@ object OpenTelemetrySdk {
                   tpBuilder <-
                     TracerProviderConfiguration.configure(builder, config)
 
-                  tracerProvider <- CResource.eval(
+                  tracerProvider <- Resource.eval(
                     tracerProviderCustomizer(tpBuilder, config).build
                   )
-                  propagators <- CResource.eval(
+                  propagators <- Resource.eval(
                     PropagatorsConfiguration.configure(config)
                   )
                 } yield OpenTelemetrySdk(
@@ -204,15 +204,15 @@ object OpenTelemetrySdk {
           }
 
         for {
-          config <- CResource.eval(customConfig.fold(loadConfig)(Async[F].pure))
+          config <- Resource.eval(customConfig.fold(loadConfig)(Async[F].pure))
           // _ <- if (config.getString("OTEL_CONFIG_FILE")) return loadFromConfigFile
-          resource <- CResource.eval(
+          resource <- Resource.eval(
             MonadCancelThrow[F].fromEither(
               ResourceConfiguration.configure(config)
             )
           )
 
-          isDisabled <- CResource.eval(
+          isDisabled <- Resource.eval(
             MonadCancelThrow[F].fromEither(
               config.getBoolean("otel.sdk.disabled")
             )
@@ -220,7 +220,7 @@ object OpenTelemetrySdk {
 
           sdk <-
             if (isDisabled.getOrElse(false)) {
-              CResource.pure[F, OpenTelemetrySdk[F]](OpenTelemetrySdk.noop[F])
+              Resource.pure[F, OpenTelemetrySdk[F]](OpenTelemetrySdk.noop[F])
             } else {
               loadSdk(resource, config)
             }
@@ -237,7 +237,7 @@ object OpenTelemetrySdk {
 
     private final case class Impl[F[_]](
         sdk: OpenTelemetrySdk[F],
-        resource: Resource,
+        resource: TelemetryResource,
         config: Config
     ) extends AutoConfigured[F]
   }

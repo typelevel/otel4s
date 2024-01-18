@@ -35,7 +35,7 @@ import org.typelevel.otel4s.trace.TracerProvider
 
 private[trace] class SdkTracerProvider[F[_]: Temporal: Parallel: Console](
     idGenerator: IdGenerator[F],
-    resource: Resource,
+    resource: TelemetryResource,
     spanLimits: SpanLimits,
     sampler: Sampler,
     propagators: ContextPropagators[Context],
@@ -84,7 +84,7 @@ object SdkTracerProvider {
       */
     def withIdGenerator(idGenerator: IdGenerator[F]): Builder[F]
 
-    /** Sets a [[Resource]] to be attached to all spans created by
+    /** Sets a [[TelemetryResource]] to be attached to all spans created by
       * [[org.typelevel.otel4s.trace.Tracer Tracer]].
       *
       * @note
@@ -92,23 +92,23 @@ object SdkTracerProvider {
       *   retained.
       *
       * @param resource
-      *   the [[Resource]] to use
+      *   the [[TelemetryResource]] to use
       */
-    def withResource(resource: Resource): Builder[F]
+    def withResource(resource: TelemetryResource): Builder[F]
 
-    /** Merges the given [[Resource]] with the current one.
+    /** Merges the given [[TelemetryResource]] with the current one.
       *
       * @note
       *   if both resources have different non-empty `schemaUrl`, the merge will
       *   fail.
       *
       * @see
-      *   [[Resource.mergeUnsafe]]
+      *   [[TelemetryResource.mergeUnsafe]]
       *
       * @param resource
-      *   the [[Resource]] to merge the current one with
+      *   the [[TelemetryResource]] to merge the current one with
       */
-    def addResource(resource: Resource): Builder[F]
+    def addResource(resource: TelemetryResource): Builder[F]
 
     /** Sets an initial [[SpanLimits]] that should be used with this SDK.
       *
@@ -174,7 +174,7 @@ object SdkTracerProvider {
   ]: Builder[F] =
     BuilderImpl[F](
       idGenerator = IdGenerator.random,
-      resource = Resource.default,
+      resource = TelemetryResource.default,
       spanLimits = SpanLimits.Default,
       sampler = Sampler.parentBased(Sampler.AlwaysOn),
       propagators = Nil,
@@ -185,7 +185,7 @@ object SdkTracerProvider {
       F[_]: Temporal: Parallel: LocalContext: Console
   ](
       idGenerator: IdGenerator[F],
-      resource: Resource,
+      resource: TelemetryResource,
       spanLimits: SpanLimits,
       sampler: Sampler,
       propagators: List[TextMapPropagator[Context]],
@@ -195,10 +195,10 @@ object SdkTracerProvider {
     def withIdGenerator(generator: IdGenerator[F]): Builder[F] =
       copy(idGenerator = generator)
 
-    def withResource(resource: Resource): Builder[F] =
+    def withResource(resource: TelemetryResource): Builder[F] =
       copy(resource = resource)
 
-    def addResource(resource: Resource): Builder[F] =
+    def addResource(resource: TelemetryResource): Builder[F] =
       copy(resource = this.resource.mergeUnsafe(resource))
 
     def withSpanLimits(limits: SpanLimits): Builder[F] =

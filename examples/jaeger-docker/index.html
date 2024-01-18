@@ -197,7 +197,7 @@
         3) <code>-p 4317:4317</code> and <code>-p 4318:4318</code> - the OpenTelemetry receiver ports for HTTP and gRPC protocols<br></p>
         
         <h3 id="application-example" class="section"><a class="anchor-link left" href="#application-example"><i class="icofont-laika link">&#xef71;</i></a>Application example</h3>
-        <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.{</span><span class="type-name">Async</span><span>, </span><span class="type-name">IO</span><span>, </span><span class="type-name">IOApp</span><span>}
+        <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.{</span><span class="type-name">Async</span><span>, </span><span class="type-name">IO</span><span>, </span><span class="type-name">IOApp</span><span>, </span><span class="type-name">Resource</span><span>}
 </span><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.</span><span class="identifier">std</span><span>.</span><span class="type-name">Console</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.</span><span class="identifier">std</span><span>.</span><span class="type-name">Random</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">syntax</span><span>.</span><span class="identifier">all</span><span>.</span><span class="identifier">_</span><span>
@@ -239,14 +239,15 @@
 }
 
 </span><span class="keyword">object</span><span> </span><span class="type-name">TracingExample</span><span> </span><span class="keyword">extends</span><span> </span><span class="type-name">IOApp</span><span>.</span><span class="type-name">Simple</span><span> {
-  </span><span class="keyword">def</span><span> </span><span class="declaration-name">tracer</span><span>: </span><span class="type-name">IO</span><span>[</span><span class="type-name">Tracer</span><span>[</span><span class="type-name">IO</span><span>]] =
-    </span><span class="type-name">OtelJava</span><span>.</span><span class="identifier">global</span><span>.</span><span class="identifier">flatMap</span><span>(</span><span class="identifier">_</span><span>.</span><span class="identifier">tracerProvider</span><span>.</span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;Example&quot;</span><span>))
+  </span><span class="keyword">def</span><span> </span><span class="declaration-name">tracer</span><span>: </span><span class="type-name">Resource</span><span>[</span><span class="type-name">IO</span><span>, </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">IO</span><span>]] =
+    </span><span class="type-name">OtelJava</span><span>.</span><span class="identifier">autoConfigured</span><span>().</span><span class="identifier">evalMap</span><span>(</span><span class="identifier">_</span><span>.</span><span class="identifier">tracerProvider</span><span>.</span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;Example&quot;</span><span>))
 
-  </span><span class="keyword">def</span><span> </span><span class="declaration-name">run</span><span>: </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] = {
-    </span><span class="identifier">tracer</span><span>.</span><span class="identifier">flatMap</span><span> { </span><span class="keyword">implicit</span><span> </span><span class="identifier">tracer</span><span>: </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">IO</span><span>] =&gt;
-      </span><span class="type-name">Work</span><span>[</span><span class="type-name">IO</span><span>].</span><span class="identifier">doWork</span><span>
-    }
-  }
+  </span><span class="keyword">def</span><span> </span><span class="declaration-name">run</span><span>: </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] =
+    </span><span class="identifier">tracer</span><span>
+      .</span><span class="identifier">evalMap</span><span> { </span><span class="keyword">implicit</span><span> </span><span class="identifier">tracer</span><span>: </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">IO</span><span>] =&gt;
+        </span><span class="type-name">Work</span><span>[</span><span class="type-name">IO</span><span>].</span><span class="identifier">doWork</span><span>
+      }
+      .</span><span class="identifier">use_</span><span>
 }</span></code></pre>
         
         <h3 id="run-the-application" class="section"><a class="anchor-link left" href="#run-the-application"><i class="icofont-laika link">&#xef71;</i></a>Run the application</h3>

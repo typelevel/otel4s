@@ -173,12 +173,13 @@
 </span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">trace</span><span>.</span><span class="type-name">Tracer</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="type-name">OtelJava</span><span>
 
-</span><span class="type-name">OtelJava</span><span>.</span><span class="identifier">global</span><span>.</span><span class="identifier">flatMap</span><span> { </span><span class="identifier">otel4s</span><span> =&gt;
-  </span><span class="identifier">otel4s</span><span>.</span><span class="identifier">tracerProvider</span><span>.</span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;com.service&quot;</span><span>).</span><span class="identifier">flatMap</span><span> { </span><span class="keyword">implicit</span><span> </span><span class="identifier">tracer</span><span>: </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">IO</span><span>] =&gt;
-    </span><span class="keyword">val</span><span> </span><span class="identifier">_</span><span> = </span><span class="identifier">tracer</span><span> </span><span class="comment">// use tracer here
-</span><span>    ???
-  }
-}</span></code></pre>
+</span><span class="type-name">OtelJava</span><span>.</span><span class="identifier">autoConfigured</span><span>[</span><span class="type-name">IO</span><span>]()
+  .</span><span class="identifier">evalMap</span><span> { </span><span class="identifier">otel4s</span><span> =&gt;
+    </span><span class="identifier">otel4s</span><span>.</span><span class="identifier">tracerProvider</span><span>.</span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;com.service&quot;</span><span>).</span><span class="identifier">flatMap</span><span> { </span><span class="keyword">implicit</span><span> </span><span class="identifier">tracer</span><span>: </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">IO</span><span>] =&gt;
+      </span><span class="keyword">val</span><span> </span><span class="identifier">_</span><span> = </span><span class="identifier">tracer</span><span> </span><span class="comment">// use tracer here
+</span><span>      ???
+    }
+  }</span></code></pre>
         
         <h3 id="creating-a-span" class="section"><a class="anchor-link left" href="#creating-a-span"><i class="icofont-laika link">&#xef71;</i></a>Creating a span</h3>
         <p>You can use the <code>span</code> or <code>spanBuilder</code> API to create a new span. </p>

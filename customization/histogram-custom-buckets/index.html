@@ -226,8 +226,6 @@
 </span><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">syntax</span><span>.</span><span class="identifier">flatMap</span><span>.</span><span class="identifier">_</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">syntax</span><span>.</span><span class="identifier">functor</span><span>.</span><span class="identifier">_</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">syntax</span><span>.</span><span class="identifier">parallel</span><span>.</span><span class="identifier">_</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">io</span><span>.</span><span class="identifier">opentelemetry</span><span>.</span><span class="identifier">sdk</span><span>.</span><span class="type-name">OpenTelemetrySdk</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">io</span><span>.</span><span class="identifier">opentelemetry</span><span>.</span><span class="identifier">sdk</span><span>.</span><span class="identifier">autoconfigure</span><span>.</span><span class="type-name">AutoConfiguredOpenTelemetrySdk</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">io</span><span>.</span><span class="identifier">opentelemetry</span><span>.</span><span class="identifier">sdk</span><span>.</span><span class="identifier">metrics</span><span>.</span><span class="type-name">Aggregation</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">io</span><span>.</span><span class="identifier">opentelemetry</span><span>.</span><span class="identifier">sdk</span><span>.</span><span class="identifier">metrics</span><span>.</span><span class="type-name">InstrumentSelector</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">io</span><span>.</span><span class="identifier">opentelemetry</span><span>.</span><span class="identifier">sdk</span><span>.</span><span class="identifier">metrics</span><span>.</span><span class="type-name">InstrumentType</span><span>
@@ -255,9 +253,7 @@
     } </span><span class="keyword">yield</span><span> ()
 
   </span><span class="keyword">def</span><span> </span><span class="declaration-name">program</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>] : </span><span class="type-name">Async</span><span> : </span><span class="type-name">LiftIO</span><span> : </span><span class="type-name">Parallel</span><span> : </span><span class="type-name">Console</span><span>]: </span><span class="type-name">F</span><span>[</span><span class="type-name">Unit</span><span>] =
-    </span><span class="type-name">Resource</span><span>
-      .</span><span class="identifier">eval</span><span>(</span><span class="identifier">configureSdk</span><span>[</span><span class="type-name">F</span><span>])
-      .</span><span class="identifier">evalMap</span><span>(</span><span class="type-name">OtelJava</span><span>.</span><span class="identifier">forAsync</span><span>[</span><span class="type-name">F</span><span>])
+    </span><span class="identifier">configureSdk</span><span>[</span><span class="type-name">F</span><span>]
       .</span><span class="identifier">evalMap</span><span>(</span><span class="identifier">_</span><span>.</span><span class="identifier">meterProvider</span><span>.</span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;histogram-example&quot;</span><span>))
       .</span><span class="identifier">use</span><span> { </span><span class="identifier">meter</span><span> =&gt;
         </span><span class="keyword">for</span><span> {
@@ -270,32 +266,30 @@
   </span><span class="keyword">def</span><span> </span><span class="declaration-name">run</span><span>: </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] =
     </span><span class="identifier">program</span><span>[</span><span class="type-name">IO</span><span>]
 
-  </span><span class="keyword">private</span><span> </span><span class="keyword">def</span><span> </span><span class="declaration-name">configureSdk</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>] : </span><span class="type-name">Sync</span><span>]: </span><span class="type-name">F</span><span>[</span><span class="type-name">OpenTelemetrySdk</span><span>] = </span><span class="type-name">Sync</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">delay</span><span> {
-    </span><span class="type-name">AutoConfiguredOpenTelemetrySdk</span><span>
-      .</span><span class="identifier">builder</span><span>()
-      .</span><span class="identifier">addMeterProviderCustomizer</span><span> { (</span><span class="identifier">meterProviderBuilder</span><span>, </span><span class="identifier">_</span><span>) =&gt;
-        </span><span class="identifier">meterProviderBuilder</span><span>
-          .</span><span class="identifier">registerView</span><span>(
-            </span><span class="type-name">InstrumentSelector</span><span>
-              .</span><span class="identifier">builder</span><span>()
-              .</span><span class="identifier">setName</span><span>(</span><span class="string-literal">&quot;service.work.duration&quot;</span><span>)
-              .</span><span class="identifier">setType</span><span>(</span><span class="type-name">InstrumentType</span><span>.</span><span class="type-name">HISTOGRAM</span><span>)
-              .</span><span class="identifier">build</span><span>(),
-            </span><span class="type-name">View</span><span>
-              .</span><span class="identifier">builder</span><span>()
-              .</span><span class="identifier">setName</span><span>(</span><span class="string-literal">&quot;service.work.duration&quot;</span><span>)
-              .</span><span class="identifier">setAggregation</span><span>(
-                </span><span class="type-name">Aggregation</span><span>.</span><span class="identifier">explicitBucketHistogram</span><span>(
-                  </span><span class="identifier">java</span><span>.</span><span class="identifier">util</span><span>.</span><span class="type-name">Arrays</span><span>.</span><span class="identifier">asList</span><span>(</span><span class="number-literal">.005</span><span>, </span><span class="number-literal">.01</span><span>, </span><span class="number-literal">.025</span><span>, </span><span class="number-literal">.05</span><span>, </span><span class="number-literal">.075</span><span>, </span><span class="number-literal">.1</span><span>, </span><span class="number-literal">.25</span><span>, </span><span class="number-literal">.5</span><span>)
+  </span><span class="keyword">private</span><span> </span><span class="keyword">def</span><span> </span><span class="declaration-name">configureSdk</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>] : </span><span class="type-name">Async</span><span> : </span><span class="type-name">LiftIO</span><span>]: </span><span class="type-name">Resource</span><span>[</span><span class="type-name">F</span><span>, </span><span class="type-name">OtelJava</span><span>[</span><span class="type-name">F</span><span>]] =
+    </span><span class="type-name">OtelJava</span><span>.</span><span class="identifier">autoConfigured</span><span> { </span><span class="identifier">sdkBuilder</span><span> =&gt;
+      </span><span class="identifier">sdkBuilder</span><span>
+        .</span><span class="identifier">addMeterProviderCustomizer</span><span> { (</span><span class="identifier">meterProviderBuilder</span><span>, </span><span class="identifier">_</span><span>) =&gt;
+          </span><span class="identifier">meterProviderBuilder</span><span>
+            .</span><span class="identifier">registerView</span><span>(
+              </span><span class="type-name">InstrumentSelector</span><span>
+                .</span><span class="identifier">builder</span><span>()
+                .</span><span class="identifier">setName</span><span>(</span><span class="string-literal">&quot;service.work.duration&quot;</span><span>)
+                .</span><span class="identifier">setType</span><span>(</span><span class="type-name">InstrumentType</span><span>.</span><span class="type-name">HISTOGRAM</span><span>)
+                .</span><span class="identifier">build</span><span>(),
+              </span><span class="type-name">View</span><span>
+                .</span><span class="identifier">builder</span><span>()
+                .</span><span class="identifier">setName</span><span>(</span><span class="string-literal">&quot;service.work.duration&quot;</span><span>)
+                .</span><span class="identifier">setAggregation</span><span>(
+                  </span><span class="type-name">Aggregation</span><span>.</span><span class="identifier">explicitBucketHistogram</span><span>(
+                    </span><span class="identifier">java</span><span>.</span><span class="identifier">util</span><span>.</span><span class="type-name">Arrays</span><span>.</span><span class="identifier">asList</span><span>(</span><span class="number-literal">.005</span><span>, </span><span class="number-literal">.01</span><span>, </span><span class="number-literal">.025</span><span>, </span><span class="number-literal">.05</span><span>, </span><span class="number-literal">.075</span><span>, </span><span class="number-literal">.1</span><span>, </span><span class="number-literal">.25</span><span>, </span><span class="number-literal">.5</span><span>)
+                  )
                 )
-              )
-              .</span><span class="identifier">build</span><span>()
-          )
-      }
-      .</span><span class="identifier">setResultAsGlobal</span><span>
-      .</span><span class="identifier">build</span><span>()
-      .</span><span class="identifier">getOpenTelemetrySdk</span><span>
-  }
+                .</span><span class="identifier">build</span><span>()
+            )
+        }
+        .</span><span class="identifier">setResultAsGlobal</span><span>
+    }
 }</span></code></pre>
         
         <h3 id="run-the-application" class="section"><a class="anchor-link left" href="#run-the-application"><i class="icofont-laika link">&#xef71;</i></a>Run the application</h3>

@@ -253,16 +253,18 @@
 
 </span><span class="keyword">object</span><span> </span><span class="type-name">TracingExample</span><span> </span><span class="keyword">extends</span><span> </span><span class="type-name">IOApp</span><span>.</span><span class="type-name">Simple</span><span> {
   </span><span class="keyword">def</span><span> </span><span class="declaration-name">run</span><span>: </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] = {
-    </span><span class="type-name">OtelJava</span><span>.</span><span class="identifier">global</span><span>.</span><span class="identifier">flatMap</span><span> { </span><span class="identifier">otel4s</span><span> =&gt;
-      </span><span class="identifier">otel4s</span><span>.</span><span class="identifier">tracerProvider</span><span>.</span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;com.service.runtime&quot;</span><span>)
-        .</span><span class="identifier">flatMap</span><span> { </span><span class="keyword">implicit</span><span> </span><span class="identifier">tracer</span><span>: </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">IO</span><span>] =&gt;
-          </span><span class="keyword">for</span><span> {
-            </span><span class="identifier">meter</span><span> &lt;- </span><span class="identifier">otel4s</span><span>.</span><span class="identifier">meterProvider</span><span>.</span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;com.service.runtime&quot;</span><span>)
-            </span><span class="identifier">histogram</span><span> &lt;- </span><span class="identifier">meter</span><span>.</span><span class="identifier">histogram</span><span>(</span><span class="string-literal">&quot;work.execution.duration&quot;</span><span>).</span><span class="identifier">create</span><span>
-            </span><span class="identifier">_</span><span> &lt;- </span><span class="type-name">Work</span><span>[</span><span class="type-name">IO</span><span>](</span><span class="identifier">histogram</span><span>).</span><span class="identifier">doWork</span><span>
-          } </span><span class="keyword">yield</span><span> ()
-        }
-    }
+    </span><span class="type-name">OtelJava</span><span>.</span><span class="identifier">autoConfigured</span><span>()
+      .</span><span class="identifier">evalMap</span><span> { </span><span class="identifier">otel4s</span><span> =&gt;
+        </span><span class="identifier">otel4s</span><span>.</span><span class="identifier">tracerProvider</span><span>.</span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;com.service.runtime&quot;</span><span>)
+          .</span><span class="identifier">flatMap</span><span> { </span><span class="keyword">implicit</span><span> </span><span class="identifier">tracer</span><span>: </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">IO</span><span>] =&gt;
+            </span><span class="keyword">for</span><span> {
+              </span><span class="identifier">meter</span><span> &lt;- </span><span class="identifier">otel4s</span><span>.</span><span class="identifier">meterProvider</span><span>.</span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;com.service.runtime&quot;</span><span>)
+              </span><span class="identifier">histogram</span><span> &lt;- </span><span class="identifier">meter</span><span>.</span><span class="identifier">histogram</span><span>(</span><span class="string-literal">&quot;work.execution.duration&quot;</span><span>).</span><span class="identifier">create</span><span>
+              </span><span class="identifier">_</span><span> &lt;- </span><span class="type-name">Work</span><span>[</span><span class="type-name">IO</span><span>](</span><span class="identifier">histogram</span><span>).</span><span class="identifier">doWork</span><span>
+            } </span><span class="keyword">yield</span><span> ()
+          }
+      }
+      .</span><span class="identifier">use_</span><span>
   }
 }</span></code></pre>
         

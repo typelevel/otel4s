@@ -20,17 +20,20 @@ package sdk
 import cats.Hash
 import cats.Show
 import cats.syntax.all._
-import org.typelevel.otel4s.sdk.Resource.ResourceInitializationError
+import org.typelevel.otel4s.sdk.TelemetryResource.ResourceInitializationError
 import org.typelevel.otel4s.semconv.resource.attributes.ResourceAttributes._
 
-/** [[Resource]] serves as a representation of a resource that captures
+/** [[TelemetryResource]] serves as a representation of a resource that captures
   * essential identifying information regarding the entities associated with
   * reported signals, such as statistics or traces.
   *
   * @see
+  *   [[https://opentelemetry.io/docs/specs/otel/overview/#resources]]
+  *
+  * @see
   *   [[https://opentelemetry.io/docs/specs/otel/resource/sdk]]
   */
-sealed trait Resource {
+sealed trait TelemetryResource {
 
   /** An [[Attributes]] associated with the resource.
     */
@@ -40,7 +43,7 @@ sealed trait Resource {
     */
   def schemaUrl: Option[String]
 
-  /** Merges [[Resource]] into another [[Resource]].
+  /** Merges [[TelemetryResource]] into another [[TelemetryResource]].
     *
     * Schema URL merge outcomes:
     *   - if `this` resource's schema URL is empty then the `other` resource's
@@ -57,42 +60,44 @@ sealed trait Resource {
     *
     * @note
     *   if the same attribute exists in both resources, the attribute from the
-    *   `other` [[Resource]] will be retained.
+    *   `other` [[TelemetryResource]] will be retained.
     *
     * @param other
-    *   the other [[Resource]] to merge with
+    *   the other [[TelemetryResource]] to merge with
     *
     * @return
-    *   a new [[Resource]] with the merged attributes
+    *   a new [[TelemetryResource]] with the merged attributes
     */
-  def merge(other: Resource): Either[ResourceInitializationError, Resource]
+  def merge(
+      other: TelemetryResource
+  ): Either[ResourceInitializationError, TelemetryResource]
 
   /** Unsafe version of [[merge]] which throws an exception if the merge fails.
     *
     * @param other
-    *   the other [[Resource]] to merge with
+    *   the other [[TelemetryResource]] to merge with
     */
-  def mergeUnsafe(other: Resource): Resource
+  def mergeUnsafe(other: TelemetryResource): TelemetryResource
 
   override final def hashCode(): Int =
-    Hash[Resource].hash(this)
+    Hash[TelemetryResource].hash(this)
 
   override final def equals(obj: Any): Boolean =
     obj match {
-      case other: Resource => Hash[Resource].eqv(this, other)
-      case _               => false
+      case other: TelemetryResource => Hash[TelemetryResource].eqv(this, other)
+      case _                        => false
     }
 
   override final def toString: String =
-    Show[Resource].show(this)
+    Show[TelemetryResource].show(this)
 
 }
 
-object Resource {
-  private val Empty: Resource =
-    Resource(Attributes.empty, None)
+object TelemetryResource {
+  private val Empty: TelemetryResource =
+    TelemetryResource(Attributes.empty, None)
 
-  private val Default: Resource = {
+  private val Default: TelemetryResource = {
     val telemetrySdk = Attributes(
       Attribute(TelemetrySdkName, "otel4s"),
       Attribute(TelemetrySdkLanguage, TelemetrySdkLanguageValue.Scala.value),
@@ -103,7 +108,7 @@ object Resource {
       Attribute(ServiceName, "unknown_service:scala")
     )
 
-    Resource(telemetrySdk |+| mandatory, None)
+    TelemetryResource(telemetrySdk |+| mandatory, None)
   }
 
   sealed abstract class ResourceInitializationError extends Throwable
@@ -111,52 +116,58 @@ object Resource {
     case object SchemaUrlConflict extends ResourceInitializationError
   }
 
-  /** Creates a [[Resource]] with the given `attributes`. The `schemaUrl` will
-    * be `None.`
+  /** Creates a [[TelemetryResource]] with the given `attributes`. The
+    * `schemaUrl` will be `None.`
     *
     * @param attributes
     *   the attributes to associate with the resource
     */
-  def apply(attributes: Attributes): Resource =
+  def apply(attributes: Attributes): TelemetryResource =
     Impl(attributes, None)
 
-  /** Creates a [[Resource]] with the given `attributes` and `schemaUrl`.
+  /** Creates a [[TelemetryResource]] with the given `attributes` and
+    * `schemaUrl`.
     *
     * @param attributes
     *   the attributes to associate with the resource
-    *
     * @param schemaUrl
     *   schema URL to associate with the result
     */
-  def apply(attributes: Attributes, schemaUrl: Option[String]): Resource =
+  def apply(
+      attributes: Attributes,
+      schemaUrl: Option[String]
+  ): TelemetryResource =
     Impl(attributes, schemaUrl)
 
-  /** Returns an empty [[Resource]].
+  /** Returns an empty [[TelemetryResource]].
     *
-    * It is strongly recommended to start with [[Resource.default]] instead of
-    * this method to include SDK required attributes.
+    * It is strongly recommended to start with [[TelemetryResource.default]]
+    * instead of this method to include SDK required attributes.
     */
-  def empty: Resource = Empty
+  def empty: TelemetryResource = Empty
 
-  /** Returns the default [[Resource]]. This resource contains the default
-    * attributes provided by the SDK.
+  /** Returns the default [[TelemetryResource]]. This resource contains the
+    * default attributes provided by the SDK.
     */
-  def default: Resource = Default
+  def default: TelemetryResource = Default
 
-  implicit val showResource: Show[Resource] =
-    r => show"Resource{attributes=${r.attributes}, schemaUrl=${r.schemaUrl}}"
+  implicit val showResource: Show[TelemetryResource] =
+    r =>
+      show"TelemetryResource{attributes=${r.attributes}, schemaUrl=${r.schemaUrl}}"
 
-  implicit val hashResource: Hash[Resource] =
+  implicit val hashResource: Hash[TelemetryResource] =
     Hash.by(r => (r.attributes, r.schemaUrl))
 
   private final case class Impl(
       attributes: Attributes,
       schemaUrl: Option[String]
-  ) extends Resource {
+  ) extends TelemetryResource {
 
-    def merge(other: Resource): Either[ResourceInitializationError, Resource] =
-      if (other == Resource.Empty) Right(this)
-      else if (this == Resource.Empty) Right(other)
+    def merge(
+        other: TelemetryResource
+    ): Either[ResourceInitializationError, TelemetryResource] =
+      if (other == TelemetryResource.Empty) Right(this)
+      else if (this == TelemetryResource.Empty) Right(other)
       else {
         (other.schemaUrl, schemaUrl) match {
           case (Some(otherUrl), Some(url)) if otherUrl != url =>
@@ -167,7 +178,7 @@ object Resource {
         }
       }
 
-    def mergeUnsafe(other: Resource): Resource =
+    def mergeUnsafe(other: TelemetryResource): TelemetryResource =
       merge(other).fold(throw _, identity)
 
   }

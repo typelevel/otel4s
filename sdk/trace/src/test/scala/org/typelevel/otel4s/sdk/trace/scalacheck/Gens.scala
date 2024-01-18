@@ -77,7 +77,7 @@ trait Gens
       events <- Gen.listOf(Gens.eventData)
       links <- Gen.listOf(Gens.linkData)
       instrumentationScope <- Gens.instrumentationScope
-      resource <- Gens.resource
+      resource <- Gens.telemetryResource
     } yield SpanData(
       name,
       spanContext,

@@ -17,16 +17,16 @@
 package org.typelevel.otel4s.sdk.scalacheck
 
 import org.scalacheck.Gen
-import org.typelevel.otel4s.sdk.Resource
+import org.typelevel.otel4s.sdk.TelemetryResource
 import org.typelevel.otel4s.sdk.common.InstrumentationScope
 
 trait Gens extends org.typelevel.otel4s.scalacheck.Gens {
 
-  val resource: Gen[Resource] =
+  val telemetryResource: Gen[TelemetryResource] =
     for {
       attributes <- Gens.attributes
       schemaUrl <- Gen.option(nonEmptyString)
-    } yield Resource(attributes, schemaUrl)
+    } yield TelemetryResource(attributes, schemaUrl)
 
   val instrumentationScope: Gen[InstrumentationScope] =
     for {

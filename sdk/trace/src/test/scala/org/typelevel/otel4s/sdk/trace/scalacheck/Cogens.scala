@@ -18,7 +18,7 @@ package org.typelevel.otel4s.sdk.trace.scalacheck
 
 import org.scalacheck.Cogen
 import org.typelevel.otel4s.Attributes
-import org.typelevel.otel4s.sdk.Resource
+import org.typelevel.otel4s.sdk.TelemetryResource
 import org.typelevel.otel4s.sdk.common.InstrumentationScope
 import org.typelevel.otel4s.sdk.trace.data.EventData
 import org.typelevel.otel4s.sdk.trace.data.LinkData
@@ -72,7 +72,7 @@ trait Cogens
         Vector[EventData],
         Vector[LinkData],
         InstrumentationScope,
-        Resource
+        TelemetryResource
     )
   ].contramap { spanData =>
     (

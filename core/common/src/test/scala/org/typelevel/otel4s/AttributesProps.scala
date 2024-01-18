@@ -18,15 +18,13 @@ package org.typelevel.otel4s
 
 import cats.Show
 import munit.ScalaCheckSuite
-import org.scalacheck.Arbitrary
 import org.scalacheck.Gen
 import org.scalacheck.Prop.forAll
-import org.typelevel.otel4s.arbitrary.attribute
-import org.typelevel.otel4s.arbitrary.attributes
+import org.typelevel.otel4s.scalacheck.Gens
 
 class AttributesProps extends ScalaCheckSuite {
 
-  private val listOfAttributes = Gen.listOf(Arbitrary.arbitrary[Attribute[_]])
+  private val listOfAttributes = Gen.listOf(Gens.attribute)
 
   property("Attributes#size is equal to the number of unique keys") {
     forAll(listOfAttributes) { attributes =>
@@ -150,7 +148,7 @@ class AttributesProps extends ScalaCheckSuite {
   }
 
   property("Show[Attributes]") {
-    forAll(attributes.arbitrary) { attributes =>
+    forAll(Gens.attributes) { attributes =>
       val expected = attributes.toList
         .map(Show[Attribute[_]].show)
         .mkString("Attributes(", ", ", ")")

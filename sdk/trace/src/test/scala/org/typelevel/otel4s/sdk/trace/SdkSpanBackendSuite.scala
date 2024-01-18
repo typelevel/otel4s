@@ -26,7 +26,6 @@ import cats.syntax.traverse._
 import munit.CatsEffectSuite
 import munit.ScalaCheckEffectSuite
 import munit.internal.PlatformCompat
-import org.scalacheck.Arbitrary
 import org.scalacheck.Test
 import org.scalacheck.effect.PropF
 import org.typelevel.otel4s.sdk.common.InstrumentationScope
@@ -35,6 +34,7 @@ import org.typelevel.otel4s.sdk.trace.data.LinkData
 import org.typelevel.otel4s.sdk.trace.data.SpanData
 import org.typelevel.otel4s.sdk.trace.data.StatusData
 import org.typelevel.otel4s.sdk.trace.processor.SpanProcessor
+import org.typelevel.otel4s.sdk.trace.scalacheck.Arbitraries._
 import org.typelevel.otel4s.trace.SpanContext
 import org.typelevel.otel4s.trace.SpanKind
 import org.typelevel.otel4s.trace.Status
@@ -42,24 +42,6 @@ import org.typelevel.otel4s.trace.Status
 import scala.concurrent.duration._
 
 class SdkSpanBackendSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
-
-  private implicit val attributesArbitrary: Arbitrary[Attributes] =
-    Arbitrary(Gens.attributes)
-
-  private implicit val scopeArbitrary: Arbitrary[InstrumentationScope] =
-    Arbitrary(Gens.instrumentationScope)
-
-  private implicit val linkDataArbitrary: Arbitrary[LinkData] =
-    Arbitrary(Gens.linkData)
-
-  private implicit val statusArbitrary: Arbitrary[Status] =
-    Arbitrary(Gens.status)
-
-  private implicit val kindArbitrary: Arbitrary[SpanKind] =
-    Arbitrary(Gens.spanKind)
-
-  private implicit val spanContextArbitrary: Arbitrary[SpanContext] =
-    Arbitrary(Gens.spanContext)
 
   // Span.Backend methods
 
@@ -236,7 +218,11 @@ class SdkSpanBackendSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
         )
 
         _ <- assertIO(
-          extra.toList.traverse(a => span.getAttribute(a.key)),
+          extra.view
+            .map(_.key)
+            .filterNot(init.contains)
+            .toList
+            .traverse(span.getAttribute(_)),
           List.fill(extra.size)(None)
         )
 
@@ -244,7 +230,11 @@ class SdkSpanBackendSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
         _ <- span.addAttributes(extra.toList: _*)
 
         _ <- assertIO(
-          init.toList.traverse(a => span.getAttribute(a.key)),
+          init.view
+            .map(_.key)
+            .filterNot(extra.contains)
+            .toList
+            .traverse(span.getAttribute(_)),
           init.toList.map(v => Some(v.value))
         )
 
@@ -443,7 +433,7 @@ class SdkSpanBackendSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
       context: SpanContext = Defaults.context,
       name: String = Defaults.name,
       scope: InstrumentationScope = Defaults.scope,
-      resource: Resource = Defaults.resource,
+      resource: TelemetryResource = Defaults.resource,
       kind: SpanKind = Defaults.kind,
       parentSpanContext: Option[SpanContext] = None,
       attributes: Attributes = Defaults.attributes,
@@ -472,7 +462,7 @@ class SdkSpanBackendSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
     val context = SpanContext.invalid
     val name = "span name"
     val scope = InstrumentationScope.builder("otel4s").build
-    val resource = Resource.default
+    val resource = TelemetryResource.default
     val kind = SpanKind.Client
     val attributes = Attributes.empty
     val spanLimits = SpanLimits.Default

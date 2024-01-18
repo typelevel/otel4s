@@ -23,34 +23,20 @@ import cats.Show
 import cats.kernel.laws.discipline.HashTests
 import cats.syntax.show._
 import munit.DisciplineSuite
-import org.scalacheck.Arbitrary
-import org.scalacheck.Cogen
-import org.scalacheck.Gen
 import org.scalacheck.Prop
+import org.typelevel.otel4s.sdk.trace.scalacheck.Arbitraries
+import org.typelevel.otel4s.sdk.trace.scalacheck.Cogens
+import org.typelevel.otel4s.sdk.trace.scalacheck.Gens
 
 class SamplingResultSuite extends DisciplineSuite {
   import SamplingResult.TraceStateUpdater
-  import Cogens.attributesCogen
-  import Cogens.samplingDecisionCogen
-
-  private val samplingResultGen: Gen[SamplingResult] =
-    for {
-      decision <- Gens.samplingDecision
-      attributes <- Gens.attributes
-    } yield SamplingResult(decision, attributes)
-
-  private implicit val samplingResultArbitrary: Arbitrary[SamplingResult] =
-    Arbitrary(samplingResultGen)
-
-  private implicit val samplingResultCogen: Cogen[SamplingResult] =
-    Cogen[(SamplingDecision, Attributes)].contramap { result =>
-      (result.decision, result.attributes)
-    }
+  import Cogens.samplingResultCogen
+  import Arbitraries.samplingResultArbitrary
 
   checkAll("SamplingResult.HashLaws", HashTests[SamplingResult].hash)
 
   property("Show[SamplingResult]") {
-    Prop.forAll(samplingResultGen) { result =>
+    Prop.forAll(Gens.samplingResult) { result =>
       val expected =
         show"SamplingResult{decision=${result.decision}, attributes=${result.attributes}, traceStateUpdater=${result.traceStateUpdater}}"
 

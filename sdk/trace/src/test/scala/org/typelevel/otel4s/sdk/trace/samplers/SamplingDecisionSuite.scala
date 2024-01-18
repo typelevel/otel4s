@@ -20,14 +20,14 @@ package samplers
 import cats.Show
 import cats.kernel.laws.discipline.HashTests
 import munit._
-import org.scalacheck.Arbitrary
 import org.scalacheck.Prop
+import org.typelevel.otel4s.sdk.trace.scalacheck.Arbitraries
+import org.typelevel.otel4s.sdk.trace.scalacheck.Cogens
+import org.typelevel.otel4s.sdk.trace.scalacheck.Gens
 
 class SamplingDecisionSuite extends DisciplineSuite {
   import Cogens.samplingDecisionCogen
-
-  private implicit val samplingDecisionArbitrary: Arbitrary[SamplingDecision] =
-    Arbitrary(Gens.samplingDecision)
+  import Arbitraries.samplingDecisionArbitrary
 
   checkAll("SamplingDecision.HashLaws", HashTests[SamplingDecision].hash)
 

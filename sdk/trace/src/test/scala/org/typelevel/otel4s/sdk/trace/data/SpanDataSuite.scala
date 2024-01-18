@@ -23,15 +23,15 @@ import cats.syntax.foldable._
 import cats.syntax.show._
 import munit.DisciplineSuite
 import munit.internal.PlatformCompat
-import org.scalacheck.Arbitrary
 import org.scalacheck.Prop
 import org.scalacheck.Test
+import org.typelevel.otel4s.sdk.trace.scalacheck.Arbitraries
+import org.typelevel.otel4s.sdk.trace.scalacheck.Cogens
+import org.typelevel.otel4s.sdk.trace.scalacheck.Gens
 
 class SpanDataSuite extends DisciplineSuite {
   import Cogens.spanDataCogen
-
-  private implicit val spanDataArbitrary: Arbitrary[SpanData] =
-    Arbitrary(Gens.spanData)
+  import Arbitraries.spanDataArbitrary
 
   checkAll("SpanData.HashLaws", HashTests[SpanData].hash)
 

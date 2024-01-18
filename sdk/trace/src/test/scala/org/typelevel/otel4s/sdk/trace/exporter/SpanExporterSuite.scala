@@ -22,6 +22,7 @@ import cats.data.NonEmptyList
 import cats.effect.IO
 import munit.CatsEffectSuite
 import org.typelevel.otel4s.sdk.trace.data.SpanData
+import org.typelevel.otel4s.sdk.trace.scalacheck.Gens
 
 class SpanExporterSuite extends CatsEffectSuite {
 

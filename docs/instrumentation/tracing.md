@@ -49,12 +49,13 @@ import cats.effect.IO
 import org.typelevel.otel4s.trace.Tracer
 import org.typelevel.otel4s.oteljava.OtelJava
 
-OtelJava.global.flatMap { otel4s =>
-  otel4s.tracerProvider.get("com.service").flatMap { implicit tracer: Tracer[IO] =>
-    val _ = tracer // use tracer here
-    ???
+OtelJava.autoConfigured[IO]()
+  .evalMap { otel4s =>
+    otel4s.tracerProvider.get("com.service").flatMap { implicit tracer: Tracer[IO] =>
+      val _ = tracer // use tracer here
+      ???
+    }
   }
-}
 ```
 
 ### Creating a span

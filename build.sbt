@@ -28,15 +28,15 @@ ThisBuild / crossScalaVersions := Seq(Scala213, "3.3.1")
 ThisBuild / scalaVersion := Scala213 // the default Scala
 
 val CatsVersion = "2.10.0"
-val CatsEffectVersion = "3.5.2"
+val CatsEffectVersion = "3.5.3"
 val CatsMtlVersion = "1.4.0"
 val FS2Version = "3.9.3"
 val MUnitVersion = "1.0.0-M10"
 val MUnitCatsEffectVersion = "2.0.0-M4"
 val MUnitDisciplineVersion = "2.0.0-M3"
 val MUnitScalaCheckEffectVersion = "2.0.0-M2"
-val OpenTelemetryVersion = "1.33.0"
-val OpenTelemetryInstrumentationVersion = "1.32.0"
+val OpenTelemetryVersion = "1.34.1"
+val OpenTelemetryInstrumentationVersion = "2.0.0"
 val OpenTelemetrySemConvVersion = "1.23.1-alpha"
 val PekkoStreamVersion = "1.0.2"
 val PekkoHttpVersion = "1.0.0"
@@ -129,7 +129,7 @@ lazy val `core-metrics` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
 lazy val `core-trace` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .crossType(CrossType.Pure)
   .in(file("core/trace"))
-  .dependsOn(`core-common`)
+  .dependsOn(`core-common` % "compile->compile;test->test")
   .settings(scalaReflectDependency)
   .settings(munitDependencies)
   .settings(
@@ -157,7 +157,7 @@ lazy val `sdk-common` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .enablePlugins(BuildInfoPlugin)
   .enablePlugins(NoPublishPlugin)
   .in(file("sdk/common"))
-  .dependsOn(`core-common` % "test->test", semconv)
+  .dependsOn(`core-common` % "compile->compile;test->test", semconv)
   .settings(
     name := "otel4s-sdk-common",
     startYear := Some(2023),
@@ -180,7 +180,10 @@ lazy val `sdk-trace` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .crossType(CrossType.Pure)
   .enablePlugins(NoPublishPlugin)
   .in(file("sdk/trace"))
-  .dependsOn(`sdk-common`, `core-trace`)
+  .dependsOn(
+    `sdk-common` % "compile->compile;test->test",
+    `core-trace` % "compile->compile;test->test"
+  )
   .settings(
     name := "otel4s-sdk-trace",
     startYear := Some(2023),
@@ -298,6 +301,7 @@ lazy val oteljava = project
     name := "otel4s-oteljava",
     libraryDependencies ++= Seq(
       "io.opentelemetry" % "opentelemetry-sdk" % OpenTelemetryVersion,
+      "io.opentelemetry" % "opentelemetry-sdk-extension-autoconfigure" % OpenTelemetryVersion,
       "io.opentelemetry" % "opentelemetry-sdk-testing" % OpenTelemetryVersion % Test
     )
   )

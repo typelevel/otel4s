@@ -20,50 +20,15 @@ import cats.Show
 import cats.kernel.laws.discipline.HashTests
 import cats.syntax.show._
 import munit._
-import org.scalacheck.Arbitrary
-import org.scalacheck.Cogen
-import org.scalacheck.Gen
 import org.scalacheck.Prop
 import org.typelevel.otel4s.trace.SpanContext.SpanId
 import org.typelevel.otel4s.trace.SpanContext.TraceId
+import org.typelevel.otel4s.trace.scalacheck.Arbitraries._
+import org.typelevel.otel4s.trace.scalacheck.Cogens._
+import org.typelevel.otel4s.trace.scalacheck.Gens
 import scodec.bits.ByteVector
 
 class SpanContextSuite extends DisciplineSuite {
-
-  private val traceIdGen: Gen[ByteVector] =
-    for {
-      hi <- Gen.long
-      lo <- Gen.long.suchThat(_ != 0)
-    } yield SpanContext.TraceId.fromLongs(hi, lo)
-
-  private val spanIdGen: Gen[ByteVector] =
-    for {
-      value <- Gen.long.suchThat(_ != 0)
-    } yield SpanContext.SpanId.fromLong(value)
-
-  private val spanContextGen: Gen[SpanContext] =
-    for {
-      traceId <- traceIdGen
-      spanId <- spanIdGen
-      traceFlags <- Gen.oneOf(TraceFlags.Sampled, TraceFlags.Default)
-      remote <- Gen.oneOf(true, false)
-    } yield SpanContext(traceId, spanId, traceFlags, TraceState.empty, remote)
-
-  private implicit val spanContextArbitrary: Arbitrary[SpanContext] =
-    Arbitrary(spanContextGen)
-
-  private implicit val spanContextCogen: Cogen[SpanContext] =
-    Cogen[(String, String, Byte, Map[String, String], Boolean, Boolean)]
-      .contramap(c =>
-        (
-          c.traceIdHex,
-          c.spanIdHex,
-          c.traceFlags.toByte,
-          c.traceState.asMap,
-          c.isValid,
-          c.isRemote
-        )
-      )
 
   private val ValidTraceIdHex =
     "00000000000000000000000000000061"
@@ -146,7 +111,7 @@ class SpanContextSuite extends DisciplineSuite {
   }
 
   test("Show[SpanContext]") {
-    Prop.forAll(spanContextGen) { ctx =>
+    Prop.forAll(Gens.spanContext) { ctx =>
       val expected = show"SpanContext{" +
         show"traceId=${ctx.traceIdHex}, " +
         show"spanId=${ctx.spanIdHex}, " +

@@ -242,7 +242,7 @@ private[trace] object SdkSpanBackend {
     *   the [[InstrumentationScope]] of the span
     *
     * @param resource
-    *   the [[Resource]] of the span
+    *   the [[TelemetryResource]] of the span
     *
     * @param kind
     *   the [[SpanKind]] of the span
@@ -267,7 +267,7 @@ private[trace] object SdkSpanBackend {
       context: SpanContext,
       name: String,
       scopeInfo: InstrumentationScope,
-      resource: Resource,
+      resource: TelemetryResource,
       kind: SpanKind,
       parentContext: Option[SpanContext],
       spanLimits: SpanLimits,
@@ -316,7 +316,7 @@ private[trace] object SdkSpanBackend {
       scopeInfo: InstrumentationScope,
       kind: SpanKind,
       parentContext: Option[SpanContext],
-      resource: Resource,
+      resource: TelemetryResource,
       links: Vector[LinkData],
       totalRecordedLinks: Int,
       startTimestamp: FiniteDuration

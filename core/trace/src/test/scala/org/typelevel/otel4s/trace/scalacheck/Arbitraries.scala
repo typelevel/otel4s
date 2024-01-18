@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Typelevel
+ * Copyright 2022 Typelevel
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,25 +14,24 @@
  * limitations under the License.
  */
 
-package org.typelevel.otel4s
-package sdk
-package trace
+package org.typelevel.otel4s.trace.scalacheck
 
 import org.scalacheck.Arbitrary
-import org.typelevel.otel4s.sdk.trace.samplers.SamplingDecision
+import org.typelevel.otel4s.trace.SpanContext
+import org.typelevel.otel4s.trace.SpanKind
+import org.typelevel.otel4s.trace.Status
 
-object Arbitraries {
+trait Arbitraries extends org.typelevel.otel4s.scalacheck.Arbitraries {
 
-  implicit val attributeArbitrary: Arbitrary[Attribute[_]] =
-    Arbitrary(Gens.attribute)
+  implicit val spanContextArbitrary: Arbitrary[SpanContext] =
+    Arbitrary(Gens.spanContext)
 
-  implicit val attributesArbitrary: Arbitrary[Attributes] =
-    Arbitrary(Gens.attributes)
+  implicit val spanKindArbitrary: Arbitrary[SpanKind] =
+    Arbitrary(Gens.spanKind)
 
-  implicit val resourceArbitrary: Arbitrary[Resource] =
-    Arbitrary(Gens.resource)
-
-  implicit val samplingDecisionArbitrary: Arbitrary[SamplingDecision] =
-    Arbitrary(Gens.samplingDecision)
+  implicit val statusArbitrary: Arbitrary[Status] =
+    Arbitrary(Gens.status)
 
 }
+
+object Arbitraries extends Arbitraries

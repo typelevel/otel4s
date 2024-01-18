@@ -21,14 +21,14 @@ import cats.Show
 import cats.kernel.laws.discipline.HashTests
 import cats.syntax.show._
 import munit.DisciplineSuite
-import org.scalacheck.Arbitrary
 import org.scalacheck.Prop
+import org.typelevel.otel4s.sdk.trace.scalacheck.Arbitraries
+import org.typelevel.otel4s.sdk.trace.scalacheck.Cogens
+import org.typelevel.otel4s.sdk.trace.scalacheck.Gens
 
 class LinkDataSuite extends DisciplineSuite {
   import Cogens.linkDataCogen
-
-  private implicit val linkDataArbitrary: Arbitrary[LinkData] =
-    Arbitrary(Gens.linkData)
+  import Arbitraries.linkDataArbitrary
 
   checkAll("LinkData.HashLaws", HashTests[LinkData].hash)
 

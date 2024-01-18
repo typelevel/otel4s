@@ -14,25 +14,20 @@
  * limitations under the License.
  */
 
-package org.typelevel
-package otel4s
-package sdk
+package org.typelevel.otel4s.sdk.scalacheck
 
 import org.scalacheck.Arbitrary
-import org.scalacheck.Cogen
-import org.scalacheck.Gen
+import org.typelevel.otel4s.sdk.TelemetryResource
+import org.typelevel.otel4s.sdk.common.InstrumentationScope
 
-object arbitrary extends ArbitraryInstances
-trait ArbitraryInstances extends otel4s.ArbitraryInstances {
+trait Arbitraries extends org.typelevel.otel4s.scalacheck.Arbitraries {
 
-  implicit val resource: Arbitrary[Resource] = Arbitrary(for {
-    attrs <- attributes.arbitrary
-    schemaUrl <- Gen.option(nonEmptyString)
-  } yield Resource(attrs, schemaUrl))
+  implicit val telemetryResourceArbitrary: Arbitrary[TelemetryResource] =
+    Arbitrary(Gens.telemetryResource)
 
-  implicit val resourceCogen: Cogen[Resource] =
-    Cogen[(Attributes, Option[String])].contramap { r =>
-      (r.attributes, r.schemaUrl)
-    }
+  implicit val instrumentationScopeArbitrary: Arbitrary[InstrumentationScope] =
+    Arbitrary(Gens.instrumentationScope)
 
 }
+
+object Arbitraries extends Arbitraries

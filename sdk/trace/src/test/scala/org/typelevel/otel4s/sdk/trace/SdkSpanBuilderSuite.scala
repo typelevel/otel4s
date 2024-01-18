@@ -21,12 +21,11 @@ import cats.effect.IOLocal
 import cats.effect.std.Random
 import munit.CatsEffectSuite
 import munit.ScalaCheckEffectSuite
-import org.scalacheck.Arbitrary
 import org.scalacheck.Test
 import org.scalacheck.effect.PropF
 import org.typelevel.otel4s.Attributes
 import org.typelevel.otel4s.instances.local._
-import org.typelevel.otel4s.sdk.{Resource => InstrumentationResource}
+import org.typelevel.otel4s.sdk.TelemetryResource
 import org.typelevel.otel4s.sdk.common.InstrumentationScope
 import org.typelevel.otel4s.sdk.context.Context
 import org.typelevel.otel4s.sdk.trace.data.LinkData
@@ -34,6 +33,7 @@ import org.typelevel.otel4s.sdk.trace.exporter.InMemorySpanExporter
 import org.typelevel.otel4s.sdk.trace.exporter.SpanExporter
 import org.typelevel.otel4s.sdk.trace.processor.SimpleSpanProcessor
 import org.typelevel.otel4s.sdk.trace.samplers.Sampler
+import org.typelevel.otel4s.sdk.trace.scalacheck.Arbitraries._
 import org.typelevel.otel4s.trace.SpanBuilder
 import org.typelevel.otel4s.trace.SpanContext
 import org.typelevel.otel4s.trace.SpanKind
@@ -41,21 +41,6 @@ import org.typelevel.otel4s.trace.SpanKind
 import scala.concurrent.duration.FiniteDuration
 
 class SdkSpanBuilderSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
-
-  private implicit val scopeArbitrary: Arbitrary[InstrumentationScope] =
-    Arbitrary(Gens.instrumentationScope)
-
-  private implicit val spanContextArbitrary: Arbitrary[SpanContext] =
-    Arbitrary(Gens.spanContext)
-
-  private implicit val spanKindArbitrary: Arbitrary[SpanKind] =
-    Arbitrary(Gens.spanKind)
-
-  private implicit val attributesArbitrary: Arbitrary[Attributes] =
-    Arbitrary(Gens.attributes)
-
-  private implicit val linkDataArbitrary: Arbitrary[LinkData] =
-    Arbitrary(Gens.linkData)
 
   test("defaults") {
     PropF.forAllF { (name: String, scope: InstrumentationScope) =>
@@ -159,7 +144,7 @@ class SdkSpanBuilderSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
     Random.scalaUtilRandom[IO].map { implicit random =>
       TracerSharedState(
         IdGenerator.random[IO],
-        InstrumentationResource.default,
+        TelemetryResource.default,
         SpanLimits.Default,
         sampler,
         SimpleSpanProcessor(exporter)

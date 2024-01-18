@@ -239,7 +239,7 @@ object ApiService {
 
 object ExampleService extends IOApp.Simple {
   def run: IO[Unit] =
-    OtelJava.autoConfigured()
+    OtelJava.autoConfigured[IO]()
       .evalMap { otel4s =>
         (
           otel4s.tracerProvider.get("com.service.runtime"),

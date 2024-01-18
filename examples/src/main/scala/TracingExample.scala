@@ -59,7 +59,7 @@ object Work {
 object TracingExample extends IOApp.Simple {
   def run: IO[Unit] =
     OtelJava
-      .autoConfigured()
+      .autoConfigured[IO]()
       .evalMap { (otel4s: Otel4s[IO]) =>
         otel4s.tracerProvider.tracer("example").get.flatMap {
           implicit tracer: Tracer[IO] =>

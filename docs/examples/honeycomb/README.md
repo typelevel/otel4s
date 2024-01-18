@@ -105,7 +105,7 @@ trait Work[F[_]] {
 }
 
 object Work {
-  def apply[F[_] : Async : Tracer : Console](histogram: Histogram[F, Double]): Work[F] =
+  def apply[F[_]: Async: Tracer: Console](histogram: Histogram[F, Double]): Work[F] =
     new Work[F] {
       def doWork: F[Unit] =
         Tracer[F].span("Work.DoWork").use { span =>
@@ -135,7 +135,8 @@ object Work {
 
 object TracingExample extends IOApp.Simple {
   def run: IO[Unit] = {
-    OtelJava.autoConfigured()
+    OtelJava
+      .autoConfigured[IO]()
       .evalMap { otel4s =>
         otel4s.tracerProvider.get("com.service.runtime")
           .flatMap { implicit tracer: Tracer[IO] =>

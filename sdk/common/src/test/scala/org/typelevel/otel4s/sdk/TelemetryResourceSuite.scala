@@ -19,10 +19,10 @@ package sdk
 
 import cats.syntax.either._
 import munit.FunSuite
-import org.typelevel.otel4s.sdk.Resource.ResourceInitializationError
-import org.typelevel.otel4s.sdk.Resource.ResourceInitializationError.SchemaUrlConflict
+import org.typelevel.otel4s.sdk.TelemetryResource.ResourceInitializationError
+import org.typelevel.otel4s.sdk.TelemetryResource.ResourceInitializationError.SchemaUrlConflict
 
-class ResourceSuite extends FunSuite {
+class TelemetryResourceSuite extends FunSuite {
 
   def checkSchemaMerge(
       leftSchemaUrl: Option[String],
@@ -30,8 +30,8 @@ class ResourceSuite extends FunSuite {
       expected: Either[ResourceInitializationError, Option[String]]
   ): Unit =
     assertEquals(
-      Resource(Attributes.empty, leftSchemaUrl)
-        .merge(Resource(Attributes.empty, rightSchemaUrl))
+      TelemetryResource(Attributes.empty, leftSchemaUrl)
+        .merge(TelemetryResource(Attributes.empty, rightSchemaUrl))
         .map(_.schemaUrl),
       expected
     )
@@ -83,8 +83,8 @@ class ResourceSuite extends FunSuite {
   }
 
   test("Resource#mergeInto - merge attributes and prioritize the latter") {
-    val that = Resource(Attributes(Attribute("key", "that")))
-    val other = Resource(Attributes(Attribute("key", "other")))
+    val that = TelemetryResource(Attributes(Attribute("key", "that")))
+    val other = TelemetryResource(Attributes(Attribute("key", "other")))
 
     assertEquals(that.merge(other), Right(other))
   }

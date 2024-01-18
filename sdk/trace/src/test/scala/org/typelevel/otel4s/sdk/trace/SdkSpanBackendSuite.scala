@@ -431,7 +431,7 @@ class SdkSpanBackendSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
       context: SpanContext = Defaults.context,
       name: String = Defaults.name,
       scope: InstrumentationScope = Defaults.scope,
-      resource: Resource = Defaults.resource,
+      resource: TelemetryResource = Defaults.resource,
       kind: SpanKind = Defaults.kind,
       parentSpanContext: Option[SpanContext] = None,
       attributes: Attributes = Defaults.attributes,
@@ -457,7 +457,7 @@ class SdkSpanBackendSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
     val context = SpanContext.invalid
     val name = "span name"
     val scope = InstrumentationScope.builder("otel4s").build
-    val resource = Resource.default
+    val resource = TelemetryResource.default
     val kind = SpanKind.Client
     val attributes = Attributes.empty
     val spanProcessor = SpanProcessor.noop[IO]

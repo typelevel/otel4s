@@ -18,12 +18,12 @@ package org.typelevel.otel4s.sdk.scalacheck
 
 import org.scalacheck.Cogen
 import org.typelevel.otel4s.Attributes
-import org.typelevel.otel4s.sdk.Resource
+import org.typelevel.otel4s.sdk.TelemetryResource
 import org.typelevel.otel4s.sdk.common.InstrumentationScope
 
 trait Cogens extends org.typelevel.otel4s.scalacheck.Cogens {
 
-  implicit val resourceCogen: Cogen[Resource] =
+  implicit val telemetryResourceCogen: Cogen[TelemetryResource] =
     Cogen[(Attributes, Option[String])].contramap { r =>
       (r.attributes, r.schemaUrl)
     }

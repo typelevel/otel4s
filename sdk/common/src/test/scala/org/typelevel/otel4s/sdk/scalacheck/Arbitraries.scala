@@ -17,13 +17,13 @@
 package org.typelevel.otel4s.sdk.scalacheck
 
 import org.scalacheck.Arbitrary
-import org.typelevel.otel4s.sdk.Resource
+import org.typelevel.otel4s.sdk.TelemetryResource
 import org.typelevel.otel4s.sdk.common.InstrumentationScope
 
 trait Arbitraries extends org.typelevel.otel4s.scalacheck.Arbitraries {
 
-  implicit val resourceArbitrary: Arbitrary[Resource] =
-    Arbitrary(Gens.resource)
+  implicit val telemetryResourceArbitrary: Arbitrary[TelemetryResource] =
+    Arbitrary(Gens.telemetryResource)
 
   implicit val instrumentationScopeArbitrary: Arbitrary[InstrumentationScope] =
     Arbitrary(Gens.instrumentationScope)

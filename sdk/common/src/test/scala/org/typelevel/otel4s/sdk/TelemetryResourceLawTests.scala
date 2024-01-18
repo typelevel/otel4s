@@ -21,8 +21,8 @@ import munit.DisciplineSuite
 import org.typelevel.otel4s.sdk.scalacheck.Arbitraries._
 import org.typelevel.otel4s.sdk.scalacheck.Cogens._
 
-class ResourceLawTests extends DisciplineSuite {
+class TelemetryResourceLawTests extends DisciplineSuite {
 
-  checkAll("Resource.HashLaws", HashTests[Resource].hash)
+  checkAll("TelemetryResource.HashLaws", HashTests[TelemetryResource].hash)
 
 }

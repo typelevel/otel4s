@@ -53,7 +53,7 @@ object HistogramBucketsExample extends IOApp.Simple {
 
   def program[F[_]: Async: LocalContextProvider: Parallel: Console]: F[Unit] =
     OtelJava
-      .autoConfigured(builder => configureBuilder(builder))
+      .autoConfigured(configureBuilder)
       .evalMap(_.meterProvider.get("histogram-example"))
       .use { meter =>
         for {

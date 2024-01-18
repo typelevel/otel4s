@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package org.typelevel.otel4s.sdk.autoconfigure
+package org.typelevel.otel4s.sdk
+package autoconfigure
 
 import cats.syntax.either._
 import cats.syntax.traverse._
 import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.Attributes
-import org.typelevel.otel4s.sdk.Resource
 import org.typelevel.otel4s.semconv.resource.attributes.ResourceAttributes
 
 import java.net.URLDecoder
@@ -31,7 +31,9 @@ private[sdk] object ResourceConfiguration {
   // Attributes specified via otel.resource.attributes follow the W3C Baggage spec and
   // characters outside the baggage-octet range are percent encoded
   // https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/resource/sdk.md#specifying-resource-information-via-an-environment-variable
-  def configure(config: Config): Either[ConfigurationError, Resource] = {
+  def configure(
+      config: Config
+  ): Either[ConfigurationError, TelemetryResource] = {
     def parse(entries: List[(String, String)], disabledKeys: Set[String]) =
       entries
         .filter { case (key, _) => !disabledKeys.contains(key) }
@@ -61,7 +63,9 @@ private[sdk] object ResourceConfiguration {
         .getString("otel.service.name")
         .map(value => ResourceAttributes.ServiceName(value))
 
-      Resource(Attributes.fromSpecific(attributes ++ serviceName.toSeq))
+      TelemetryResource(
+        Attributes.fromSpecific(attributes ++ serviceName.toSeq)
+      )
     }
   }
 

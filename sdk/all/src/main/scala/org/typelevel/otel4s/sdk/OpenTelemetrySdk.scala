@@ -110,7 +110,9 @@ object OpenTelemetrySdk {
           customizer: Customizer[SdkTracerProvider.Builder[F]]
       ): Builder[F]
 
-      def addResourceCustomizer(customizer: Customizer[TelemetryResource]): Builder[F]
+      def addResourceCustomizer(
+          customizer: Customizer[TelemetryResource]
+      ): Builder[F]
 
       def addPropertiesLoader(loader: F[Map[String, String]]): Builder[F]
 
@@ -151,7 +153,9 @@ object OpenTelemetrySdk {
           merge(this.tracerProviderCustomizer, customizer)
         )
 
-      def addResourceCustomizer(customizer: Customizer[TelemetryResource]): Builder[F] =
+      def addResourceCustomizer(
+          customizer: Customizer[TelemetryResource]
+      ): Builder[F] =
         copy(resourceCustomizer = merge(this.resourceCustomizer, customizer))
 
       def addPropertiesLoader(

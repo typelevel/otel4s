@@ -239,26 +239,28 @@ object ApiService {
 
 object ExampleService extends IOApp.Simple {
   def run: IO[Unit] =
-    OtelJava.global.flatMap { otel4s =>
-      (
-        otel4s.tracerProvider.get("com.service.runtime"),
-        otel4s.meterProvider.get("com.service.runtime"),
-        Random.scalaUtilRandom[IO]
-      ).flatMapN { case components =>
-        implicit val (tracer: Tracer[IO], meter: Meter[IO], random: Random[IO]) = 
-          components
+    OtelJava.autoConfigured()
+      .evalMap { otel4s =>
+        (
+          otel4s.tracerProvider.get("com.service.runtime"),
+          otel4s.meterProvider.get("com.service.runtime"),
+          Random.scalaUtilRandom[IO]
+        ).flatMapN { case components =>
+          implicit val (tracer: Tracer[IO], meter: Meter[IO], random: Random[IO]) = 
+            components
 
-        for {
-          service <- ApiService[IO](
-            minLatency = 40, 
-            maxLatency = 80, 
-            bananaPercentage = 70
-          )
-          data <- service.getDataFromSomeAPI
-          _ <- IO.println(s"Service data: $data")
-        } yield ()
+          for {
+            service <- ApiService[IO](
+              minLatency = 40, 
+              maxLatency = 80, 
+              bananaPercentage = 70
+            )
+            data <- service.getDataFromSomeAPI
+            _ <- IO.println(s"Service data: $data")
+          } yield ()
+        }
       }
-    }
+      .use_
 }
 ```
 

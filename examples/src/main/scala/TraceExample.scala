@@ -124,31 +124,33 @@ object TraceExample extends IOApp.Simple {
     * to acquire and then 100 to shutdown, but in the middle are the child spans
     * from our UserIdsAlg.
     */
-  def run: IO[Unit] = {
-    OtelJava.global.flatMap { (otel4s: Otel4s[IO]) =>
-      otel4s.tracerProvider.tracer("TraceExample").get.flatMap {
-        implicit tracer: Tracer[IO] =>
-          val userIdAlg = UserIdsAlg.apply[IO](
-            InstitutionServiceClient.apply[IO],
-            UserDatabase.apply[IO]
-          )
-          tracer
-            .span("Start up")
-            .use { span =>
-              for {
-                _ <- tracer.span("acquire").surround(IO.sleep(50.millis))
-                _ <- span.addEvent("event")
-                _ <- tracer.span("use").surround {
-                  userIdAlg
-                    .getAllUsersForInstitution(
-                      "9902181e-1d8d-4e00-913d-51532b493f1b"
-                    )
-                    .flatMap(IO.println)
-                }
-                _ <- tracer.span("release").surround(IO.sleep(100.millis))
-              } yield ()
-            }
+  def run: IO[Unit] =
+    OtelJava
+      .autoConfigured()
+      .evalMap { (otel4s: Otel4s[IO]) =>
+        otel4s.tracerProvider.tracer("TraceExample").get.flatMap {
+          implicit tracer: Tracer[IO] =>
+            val userIdAlg = UserIdsAlg.apply[IO](
+              InstitutionServiceClient.apply[IO],
+              UserDatabase.apply[IO]
+            )
+            tracer
+              .span("Start up")
+              .use { span =>
+                for {
+                  _ <- tracer.span("acquire").surround(IO.sleep(50.millis))
+                  _ <- span.addEvent("event")
+                  _ <- tracer.span("use").surround {
+                    userIdAlg
+                      .getAllUsersForInstitution(
+                        "9902181e-1d8d-4e00-913d-51532b493f1b"
+                      )
+                      .flatMap(IO.println)
+                  }
+                  _ <- tracer.span("release").surround(IO.sleep(100.millis))
+                } yield ()
+              }
+        }
       }
-    }
-  }
+      .use_
 }

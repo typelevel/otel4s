@@ -19,6 +19,7 @@ package sdk
 package trace
 
 import cats.effect.IO
+import cats.effect.std.Console
 import cats.effect.std.Queue
 import cats.effect.testkit.TestControl
 import cats.syntax.monoid._
@@ -42,6 +43,8 @@ import org.typelevel.otel4s.trace.Status
 import scala.concurrent.duration._
 
 class SdkSpanBackendSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
+
+  private implicit val noopConsole: Console[IO] = new NoopConsole[IO]
 
   // Span.Backend methods
 

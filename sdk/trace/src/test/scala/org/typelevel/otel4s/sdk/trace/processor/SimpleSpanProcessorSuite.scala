@@ -19,6 +19,7 @@ package processor
 
 import cats.Foldable
 import cats.effect.IO
+import cats.effect.std.Console
 import cats.syntax.foldable._
 import cats.syntax.traverse._
 import munit.CatsEffectSuite
@@ -43,6 +44,8 @@ import scala.concurrent.duration.FiniteDuration
 class SimpleSpanProcessorSuite
     extends CatsEffectSuite
     with ScalaCheckEffectSuite {
+
+  private implicit val noopConsole: Console[IO] = new NoopConsole[IO]
 
   test("show details in the name") {
     val exporter = new FailingExporter(

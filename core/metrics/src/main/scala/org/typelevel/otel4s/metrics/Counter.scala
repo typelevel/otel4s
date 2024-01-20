@@ -30,6 +30,7 @@ import org.typelevel.otel4s.meta.InstrumentMeta
   *
   * @tparam F
   *   the higher-kinded type of a polymorphic effect
+  *
   * @tparam A
   *   the type of the values to record. OpenTelemetry specification expects `A`
   *   to be either [[scala.Long]] or [[scala.Double]]
@@ -37,6 +38,42 @@ import org.typelevel.otel4s.meta.InstrumentMeta
 trait Counter[F[_], A] extends CounterMacro[F, A]
 
 object Counter {
+
+  /** A builder of [[Counter]].
+    *
+    * @tparam F
+    *   the higher-kinded type of a polymorphic effect
+    *
+    * @tparam A
+    *   the type of the values to record. OpenTelemetry specification expects
+    *   `A` to be either [[scala.Long]] or [[scala.Double]].
+    */
+  trait Builder[F[_], A] {
+
+    /** Sets the unit of measure for this counter.
+      *
+      * @see
+      *   [[https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/api.md#instrument-unit Instrument Unit]]
+      *
+      * @param unit
+      *   the measurement unit. Must be 63 or fewer ASCII characters.
+      */
+    def withUnit(unit: String): Builder[F, A]
+
+    /** Sets the description for this counter.
+      *
+      * @see
+      *   [[https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/api.md#instrument-description Instrument Description]]
+      *
+      * @param description
+      *   the description
+      */
+    def withDescription(description: String): Builder[F, A]
+
+    /** Creates a [[Counter]] with the given `unit` and `description` (if any).
+      */
+    def create: F[Counter[F, A]]
+  }
 
   trait Backend[F[_], A] {
     def meta: InstrumentMeta[F]

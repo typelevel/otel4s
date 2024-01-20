@@ -56,7 +56,13 @@ private class SdkTracerProvider[F[_]: Temporal: Parallel: Console](
   private val registry: ComponentRegistry[F, SdkTracer[F]] =
     new ComponentRegistry[F, SdkTracer[F]](scopeInfo =>
       Temporal[F].pure(
-        new SdkTracer[F](sharedState, scopeInfo, propagators, traceScope, storage)
+        new SdkTracer[F](
+          scopeInfo,
+          propagators,
+          sharedState,
+          traceScope,
+          storage
+        )
       )
     )
 

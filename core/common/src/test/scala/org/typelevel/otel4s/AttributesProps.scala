@@ -18,15 +18,13 @@ package org.typelevel.otel4s
 
 import cats.Show
 import munit.ScalaCheckSuite
-import org.scalacheck.Arbitrary
 import org.scalacheck.Gen
 import org.scalacheck.Prop.forAll
-import org.typelevel.otel4s.arbitrary.attribute
-import org.typelevel.otel4s.arbitrary.attributes
+import org.typelevel.otel4s.scalacheck.Gens
 
 class AttributesProps extends ScalaCheckSuite {
 
-  private val listOfAttributes = Gen.listOf(Arbitrary.arbitrary[Attribute[_]])
+  private val listOfAttributes = Gen.listOf(Gens.attribute)
 
   property("Attributes#size is equal to the number of unique keys") {
     forAll(listOfAttributes) { attributes =>
@@ -133,13 +131,14 @@ class AttributesProps extends ScalaCheckSuite {
     forAll(listOfAttributes, listOfAttributes) { (attributes1, attributes2) =>
       val keySet1 = attributes1.map(_.key).toSet
       val keySet2 = attributes2.map(_.key).toSet
+      val unique = keySet1 ++ keySet2
       val diff = keySet1.intersect(keySet2)
 
       val attrs1 = Attributes(attributes1: _*)
       val attrs2 = Attributes(attributes2: _*)
 
       val combined = attrs1 ++ attrs2
-      val sizeIsEqual = combined.size == keySet1.size + keySet2.size
+      val sizeIsEqual = combined.size == unique.size
 
       val secondCollectionOverrodeValues = diff.forall { key =>
         combined.get(key).contains(attrs2.get(key).get)
@@ -150,7 +149,7 @@ class AttributesProps extends ScalaCheckSuite {
   }
 
   property("Show[Attributes]") {
-    forAll(attributes.arbitrary) { attributes =>
+    forAll(Gens.attributes) { attributes =>
       val expected = attributes.toList
         .map(Show[Attribute[_]].show)
         .mkString("Attributes(", ", ", ")")

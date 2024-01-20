@@ -20,6 +20,7 @@ package samplers
 
 import org.scalacheck.Gen
 import org.typelevel.otel4s.sdk.trace.data.LinkData
+import org.typelevel.otel4s.sdk.trace.scalacheck.Gens
 import org.typelevel.otel4s.trace.SpanContext
 import org.typelevel.otel4s.trace.SpanKind
 import scodec.bits.ByteVector

@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Typelevel
+ * Copyright 2023 Typelevel
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,17 +14,15 @@
  * limitations under the License.
  */
 
-package org.typelevel.otel4s
+package org.typelevel.otel4s.sdk
 
 import cats.kernel.laws.discipline.HashTests
-import cats.kernel.laws.discipline.MonoidTests
 import munit.DisciplineSuite
-import org.typelevel.otel4s.scalacheck.Arbitraries._
-import org.typelevel.otel4s.scalacheck.Cogens._
+import org.typelevel.otel4s.sdk.scalacheck.Arbitraries._
+import org.typelevel.otel4s.sdk.scalacheck.Cogens._
 
-class AttributesLawTests extends DisciplineSuite {
+class TelemetryResourceLawTests extends DisciplineSuite {
 
-  checkAll("Attributes.HashLaws", HashTests[Attributes].hash)
-  checkAll("Attributes.MonoidLaws", MonoidTests[Attributes].monoid)
+  checkAll("TelemetryResource.HashLaws", HashTests[TelemetryResource].hash)
 
 }

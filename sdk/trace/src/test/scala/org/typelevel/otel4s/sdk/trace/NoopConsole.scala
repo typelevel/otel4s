@@ -14,14 +14,19 @@
  * limitations under the License.
  */
 
-package org.typelevel.otel4s.sdk
+package org.typelevel.otel4s.sdk.trace
 
-import cats.mtl.Ask
-import cats.mtl.Local
+import cats.Show
+import cats.effect.Sync
+import cats.effect.std.Console
 
-package object context {
+import java.nio.charset.Charset
 
-  type AskContext[F[_]] = Ask[F, Context]
-  type LocalContext[F[_]] = Local[F, Context]
-
+class NoopConsole[F[_]: Sync] extends Console[F] {
+  def readLineWithCharset(charset: Charset): F[String] =
+    Sync[F].delay(sys.error("not implemented"))
+  def print[A](a: A)(implicit S: Show[A]): F[Unit] = Sync[F].unit
+  def println[A](a: A)(implicit S: Show[A]): F[Unit] = Sync[F].unit
+  def error[A](a: A)(implicit S: Show[A]): F[Unit] = Sync[F].unit
+  def errorln[A](a: A)(implicit S: Show[A]): F[Unit] = Sync[F].unit
 }

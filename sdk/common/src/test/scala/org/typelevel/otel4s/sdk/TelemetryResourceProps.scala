@@ -20,23 +20,23 @@ import cats.Show
 import cats.syntax.show._
 import munit.ScalaCheckSuite
 import org.scalacheck.Prop.forAll
-import org.typelevel.otel4s.sdk.arbitrary.resource
+import org.typelevel.otel4s.sdk.scalacheck.Gens
 
-class ResourceProps extends ScalaCheckSuite {
+class TelemetryResourceProps extends ScalaCheckSuite {
 
-  property("Attributes#merge merges attributes") {
-    forAll(resource.arbitrary, resource.arbitrary) { (resource1, resource2) =>
-      val mergedEither = resource1.merge(resource2)
+  property("TelemetryResource#merge merges attributes") {
+    forAll(Gens.telemetryResource, Gens.telemetryResource) { (r1, r2) =>
+      val mergedEither = r1.merge(r2)
       mergedEither match {
         case Right(merged) =>
           val mergedAttrs = merged.attributes
           val keys =
-            resource1.attributes.toMap.keySet ++ resource2.attributes.toMap.keySet
+            r1.attributes.toMap.keySet ++ r2.attributes.toMap.keySet
 
           mergedAttrs.size == keys.size && mergedAttrs.forall { a =>
-            resource2.attributes
+            r2.attributes
               .get(a.key)
-              .orElse(resource1.attributes.get(a.key))
+              .orElse(r1.attributes.get(a.key))
               .contains(a)
           }
         case Left(_) => true
@@ -45,12 +45,12 @@ class ResourceProps extends ScalaCheckSuite {
     }
   }
 
-  property("Show[Resource]") {
-    forAll(resource.arbitrary) { resource =>
+  property("Show[TelemetryResource]") {
+    forAll(Gens.telemetryResource) { resource =>
       val expected =
-        show"Resource{attributes=${resource.attributes}, schemaUrl=${resource.schemaUrl}}"
+        show"TelemetryResource{attributes=${resource.attributes}, schemaUrl=${resource.schemaUrl}}"
 
-      assertEquals(Show[Resource].show(resource), expected)
+      assertEquals(Show[TelemetryResource].show(resource), expected)
     }
   }
 

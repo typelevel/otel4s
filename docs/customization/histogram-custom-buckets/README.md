@@ -117,8 +117,6 @@ import cats.effect.std.Random
 import cats.syntax.flatMap._
 import cats.syntax.functor._
 import cats.syntax.parallel._
-import io.opentelemetry.sdk.OpenTelemetrySdk
-import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk
 import io.opentelemetry.sdk.metrics.Aggregation
 import io.opentelemetry.sdk.metrics.InstrumentSelector
 import io.opentelemetry.sdk.metrics.InstrumentType
@@ -146,9 +144,7 @@ object HistogramBucketsExample extends IOApp.Simple {
     } yield ()
 
   def program[F[_] : Async : LiftIO : Parallel : Console]: F[Unit] =
-    Resource
-      .eval(configureSdk[F])
-      .evalMap(OtelJava.forAsync[F])
+    configureSdk[F]
       .evalMap(_.meterProvider.get("histogram-example"))
       .use { meter =>
         for {
@@ -161,32 +157,30 @@ object HistogramBucketsExample extends IOApp.Simple {
   def run: IO[Unit] =
     program[IO]
 
-  private def configureSdk[F[_] : Sync]: F[OpenTelemetrySdk] = Sync[F].delay {
-    AutoConfiguredOpenTelemetrySdk
-      .builder()
-      .addMeterProviderCustomizer { (meterProviderBuilder, _) =>
-        meterProviderBuilder
-          .registerView(
-            InstrumentSelector
-              .builder()
-              .setName("service.work.duration")
-              .setType(InstrumentType.HISTOGRAM)
-              .build(),
-            View
-              .builder()
-              .setName("service.work.duration")
-              .setAggregation(
-                Aggregation.explicitBucketHistogram(
-                  java.util.Arrays.asList(.005, .01, .025, .05, .075, .1, .25, .5)
+  private def configureSdk[F[_] : Async : LiftIO]: Resource[F, OtelJava[F]] =
+    OtelJava.autoConfigured { sdkBuilder =>
+      sdkBuilder
+        .addMeterProviderCustomizer { (meterProviderBuilder, _) =>
+          meterProviderBuilder
+            .registerView(
+              InstrumentSelector
+                .builder()
+                .setName("service.work.duration")
+                .setType(InstrumentType.HISTOGRAM)
+                .build(),
+              View
+                .builder()
+                .setName("service.work.duration")
+                .setAggregation(
+                  Aggregation.explicitBucketHistogram(
+                    java.util.Arrays.asList(.005, .01, .025, .05, .075, .1, .25, .5)
+                  )
                 )
-              )
-              .build()
-          )
-      }
-      .setResultAsGlobal
-      .build()
-      .getOpenTelemetrySdk
-  }
+                .build()
+            )
+        }
+        .setResultAsGlobal
+    }
 }
 ```
 

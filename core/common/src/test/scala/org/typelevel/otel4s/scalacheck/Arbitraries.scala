@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Typelevel
+ * Copyright 2022 Typelevel
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,14 +14,20 @@
  * limitations under the License.
  */
 
-package org.typelevel.otel4s.sdk
+package org.typelevel.otel4s.scalacheck
 
-import cats.kernel.laws.discipline.HashTests
-import munit.DisciplineSuite
-import org.typelevel.otel4s.sdk.arbitrary._
+import org.scalacheck.Arbitrary
+import org.typelevel.otel4s.Attribute
+import org.typelevel.otel4s.Attributes
 
-class ResourceLawTests extends DisciplineSuite {
+trait Arbitraries {
 
-  checkAll("Resource.HashLaws", HashTests[Resource].hash)
+  implicit val attributeArbitrary: Arbitrary[Attribute[_]] =
+    Arbitrary(Gens.attribute)
+
+  implicit val attributesArbitrary: Arbitrary[Attributes] =
+    Arbitrary(Gens.attributes)
 
 }
+
+object Arbitraries extends Arbitraries

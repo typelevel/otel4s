@@ -20,16 +20,13 @@ import cats.effect.IO
 import cats.effect.IOLocal
 import munit.CatsEffectSuite
 import munit.ScalaCheckEffectSuite
-import org.scalacheck.Arbitrary
 import org.scalacheck.effect.PropF
 import org.typelevel.otel4s.instances.local._
 import org.typelevel.otel4s.sdk.context.Context
+import org.typelevel.otel4s.sdk.trace.scalacheck.Arbitraries._
 import org.typelevel.otel4s.trace.SpanContext
 
 class SdkTraceScopeSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
-
-  private implicit val spanContextArbitrary: Arbitrary[SpanContext] =
-    Arbitrary(Gens.spanContext)
 
   test("current - return None when there is no SpanContext") {
     for {

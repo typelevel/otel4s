@@ -83,7 +83,7 @@ sealed trait SpanData {
 
   /** The resource associated with the span.
     */
-  def resource: Resource
+  def resource: TelemetryResource
 
   /** Whether the span has ended.
     */
@@ -155,7 +155,7 @@ object SpanData {
       events: Vector[EventData],
       links: Vector[LinkData],
       instrumentationScope: InstrumentationScope,
-      resource: Resource
+      resource: TelemetryResource
   ): SpanData =
     Impl(
       name = name,
@@ -223,7 +223,7 @@ object SpanData {
       events: Vector[EventData],
       links: Vector[LinkData],
       instrumentationScope: InstrumentationScope,
-      resource: Resource
+      resource: TelemetryResource
   ) extends SpanData
 
 }

@@ -37,7 +37,7 @@ import org.typelevel.otel4s.trace.SpanContext
   * @tparam F
   *   the higher-kinded type of a polymorphic effect
   */
-private[trace] trait SdkTraceScope[F[_]] {
+private trait SdkTraceScope[F[_]] {
 
   /** Returns a [[SpanContext]] if it's available in the current scope.
     */
@@ -271,7 +271,7 @@ private[trace] trait SdkTraceScope[F[_]] {
   def contextReader[A](f: Context => A): F[A]
 }
 
-private[trace] object SdkTraceScope {
+private object SdkTraceScope {
 
   def fromLocal[F[_]](implicit L: Local[F, Context]): SdkTraceScope[F] =
     new SdkTraceScope[F] {

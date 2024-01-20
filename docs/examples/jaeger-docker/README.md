@@ -76,7 +76,7 @@ $ docker run --name jaeger \
 ### Application example
 
 ```scala mdoc:silent
-import cats.effect.{Async, IO, IOApp}
+import cats.effect.{Async, IO, IOApp, Resource}
 import cats.effect.std.Console
 import cats.effect.std.Random
 import cats.syntax.all._
@@ -118,14 +118,15 @@ object Work {
 }
 
 object TracingExample extends IOApp.Simple {
-  def tracer: IO[Tracer[IO]] =
-    OtelJava.global.flatMap(_.tracerProvider.get("Example"))
+  def tracer: Resource[IO, Tracer[IO]] =
+    OtelJava.autoConfigured().evalMap(_.tracerProvider.get("Example"))
 
-  def run: IO[Unit] = {
-    tracer.flatMap { implicit tracer: Tracer[IO] =>
-      Work[IO].doWork
-    }
-  }
+  def run: IO[Unit] =
+    tracer
+      .evalMap { implicit tracer: Tracer[IO] =>
+        Work[IO].doWork
+      }
+      .use_
 }
 ```
 

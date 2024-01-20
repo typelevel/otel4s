@@ -135,16 +135,18 @@ object Work {
 
 object TracingExample extends IOApp.Simple {
   def run: IO[Unit] = {
-    OtelJava.global.flatMap { otel4s =>
-      otel4s.tracerProvider.get("com.service.runtime")
-        .flatMap { implicit tracer: Tracer[IO] =>
-          for {
-            meter <- otel4s.meterProvider.get("com.service.runtime")
-            histogram <- meter.histogram("work.execution.duration").create
-            _ <- Work[IO](histogram).doWork
-          } yield ()
-        }
-    }
+    OtelJava.autoConfigured()
+      .evalMap { otel4s =>
+        otel4s.tracerProvider.get("com.service.runtime")
+          .flatMap { implicit tracer: Tracer[IO] =>
+            for {
+              meter <- otel4s.meterProvider.get("com.service.runtime")
+              histogram <- meter.histogram("work.execution.duration").create
+              _ <- Work[IO](histogram).doWork
+            } yield ()
+          }
+      }
+      .use_
   }
 }
 ```

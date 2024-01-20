@@ -30,8 +30,8 @@ object ObservableExample extends IOApp.Simple {
   val mbeanName = new ObjectName("cats.effect.metrics:type=CpuStarvation")
 
   def meterResource: Resource[IO, ObservableCounter] =
-    Resource
-      .eval(OtelJava.global)
+    OtelJava
+      .autoConfigured()
       .evalMap(_.meterProvider.get("observable-example"))
       .flatMap(
         _.observableCounter("cats-effect-runtime-cpu-starvation-count")

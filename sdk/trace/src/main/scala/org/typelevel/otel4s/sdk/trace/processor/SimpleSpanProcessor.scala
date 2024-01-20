@@ -60,7 +60,7 @@ final class SimpleSpanProcessor[F[_]: MonadThrow: Console] private (
   private def doExport(span: SpanData): F[Unit] =
     exporter.exportSpans(List(span)).handleErrorWith { e =>
       Console[F].errorln(
-        s"SimpleSpanExporter: the export has failed: ${e.getMessage}\n${e.getStackTrace.mkString("\n")}\n"
+        s"SimpleSpanProcessor: the export has failed: ${e.getMessage}\n${e.getStackTrace.mkString("\n")}\n"
       )
     }
 

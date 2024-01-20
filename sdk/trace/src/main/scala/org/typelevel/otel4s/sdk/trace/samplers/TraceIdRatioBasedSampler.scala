@@ -39,7 +39,7 @@ import scodec.bits.ByteVector
   * @see
   *   [[https://opentelemetry.io/docs/specs/otel/trace/sdk/#traceidratiobased]]
   */
-private[samplers] final class TraceIdRatioBasedSampler private (
+private final class TraceIdRatioBasedSampler private (
     ratio: Double,
     idUpperBound: Long
 ) extends Sampler {
@@ -64,7 +64,7 @@ private[samplers] final class TraceIdRatioBasedSampler private (
   val description: String = f"TraceIdRatioBased{$ratio%.6f}".replace(",", ".")
 }
 
-private[samplers] object TraceIdRatioBasedSampler {
+private object TraceIdRatioBasedSampler {
 
   /** Creates a new [[TraceIdRatioBasedSampler]] Sampler.
     *

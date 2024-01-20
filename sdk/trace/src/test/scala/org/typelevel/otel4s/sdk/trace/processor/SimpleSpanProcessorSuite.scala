@@ -19,11 +19,11 @@ package processor
 
 import cats.Foldable
 import cats.effect.IO
+import cats.effect.std.Console
 import cats.syntax.foldable._
 import cats.syntax.traverse._
 import munit.CatsEffectSuite
 import munit.ScalaCheckEffectSuite
-import org.scalacheck.Arbitrary
 import org.scalacheck.Test
 import org.scalacheck.effect.PropF
 import org.typelevel.otel4s.Attribute
@@ -33,6 +33,7 @@ import org.typelevel.otel4s.sdk.common.InstrumentationScope
 import org.typelevel.otel4s.sdk.trace.data.SpanData
 import org.typelevel.otel4s.sdk.trace.exporter.InMemorySpanExporter
 import org.typelevel.otel4s.sdk.trace.exporter.SpanExporter
+import org.typelevel.otel4s.sdk.trace.scalacheck.Arbitraries._
 import org.typelevel.otel4s.trace.Span
 import org.typelevel.otel4s.trace.SpanContext
 import org.typelevel.otel4s.trace.SpanKind
@@ -44,8 +45,7 @@ class SimpleSpanProcessorSuite
     extends CatsEffectSuite
     with ScalaCheckEffectSuite {
 
-  private implicit val spanDataArbitrary: Arbitrary[SpanData] =
-    Arbitrary(Gens.spanData)
+  private implicit val noopConsole: Console[IO] = new NoopConsole[IO]
 
   test("show details in the name") {
     val exporter = new FailingExporter(

@@ -42,7 +42,7 @@ import scodec.bits.ByteVector
 
 import scala.concurrent.duration.FiniteDuration
 
-private[trace] final case class SdkSpanBuilder[F[_]: Temporal: Console](
+private final case class SdkSpanBuilder[F[_]: Temporal: Console](
     name: String,
     scopeInfo: InstrumentationScope,
     tracerSharedState: TracerSharedState[F],
@@ -227,7 +227,7 @@ private[trace] final case class SdkSpanBuilder[F[_]: Temporal: Console](
 
 }
 
-private[trace] object SdkSpanBuilder {
+private object SdkSpanBuilder {
 
   sealed trait Parent
   object Parent {

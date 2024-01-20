@@ -21,30 +21,12 @@ import cats.Show
 import cats.kernel.laws.discipline.HashTests
 import cats.syntax.show._
 import munit._
-import org.scalacheck.Arbitrary
-import org.scalacheck.Cogen
-import org.scalacheck.Gen
 import org.scalacheck.Prop
-import org.typelevel.otel4s.sdk.arbitrary.{attributes => attributesArbitrary}
-import org.typelevel.otel4s.sdk.arbitrary.attributesCogen
+import org.typelevel.otel4s.sdk.scalacheck.Arbitraries._
+import org.typelevel.otel4s.sdk.scalacheck.Cogens._
+import org.typelevel.otel4s.sdk.scalacheck.Gens
 
 class InstrumentationScopeSuite extends DisciplineSuite {
-
-  private val scopeGen: Gen[InstrumentationScope] =
-    for {
-      name <- Gen.alphaNumStr
-      version <- Gen.option(Gen.alphaNumStr)
-      schemaUrl <- Gen.option(Gen.alphaNumStr)
-      attributes <- attributesArbitrary.arbitrary
-    } yield InstrumentationScope(name, version, schemaUrl, attributes)
-
-  private implicit val scopeArbitrary: Arbitrary[InstrumentationScope] =
-    Arbitrary(scopeGen)
-
-  private implicit val instrumentationScopeCogen: Cogen[InstrumentationScope] =
-    Cogen[(String, Option[String], Option[String], Attributes)].contramap { s =>
-      (s.name, s.version, s.schemaUrl, s.attributes)
-    }
 
   checkAll(
     "InstrumentationScope.HashLaws",
@@ -52,7 +34,7 @@ class InstrumentationScopeSuite extends DisciplineSuite {
   )
 
   property("Show[InstrumentationScope]") {
-    Prop.forAll(scopeGen) { scope =>
+    Prop.forAll(Gens.instrumentationScope) { scope =>
       val expected =
         show"InstrumentationScope{name=${scope.name}, version=${scope.version}, schemaUrl=${scope.schemaUrl}, attributes=${scope.attributes}}"
 
@@ -61,7 +43,7 @@ class InstrumentationScopeSuite extends DisciplineSuite {
   }
 
   property("create via builder") {
-    Prop.forAll(scopeGen) { scope =>
+    Prop.forAll(Gens.instrumentationScope) { scope =>
       val builder = InstrumentationScope
         .builder(scope.name)
         .withAttributes(scope.attributes)

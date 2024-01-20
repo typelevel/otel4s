@@ -45,6 +45,55 @@ trait Histogram[F[_], A] extends HistogramMacro[F, A]
 
 object Histogram {
 
+  /** A builder of [[Histogram]].
+    *
+    * @tparam F
+    *   the higher-kinded type of a polymorphic effect
+    *
+    * @tparam A
+    *   the type of the values to record. OpenTelemetry specification expects
+    *   `A` to be either [[scala.Long]] or [[scala.Double]].
+    */
+  trait Builder[F[_], A] {
+
+    /** Sets the unit of measure for this histogram.
+      *
+      * @see
+      *   [[https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/api.md#instrument-unit Instrument Unit]]
+      *
+      * @param unit
+      *   the measurement unit. Must be 63 or fewer ASCII characters.
+      */
+    def withUnit(unit: String): Builder[F, A]
+
+    /** Sets the description for this histogram.
+      *
+      * @see
+      *   [[https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/api.md#instrument-description Instrument Description]]
+      *
+      * @param description
+      *   the description to use
+      */
+    def withDescription(description: String): Builder[F, A]
+
+    /** Sets the explicit bucket boundaries for this histogram.
+      *
+      * @see
+      *   [[https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/api.md#instrument-advisory-parameter-explicitbucketboundaries Explicit bucket boundaries]]
+      *
+      * @param boundaries
+      *   the boundaries to use
+      */
+    def withExplicitBucketBoundaries(
+        boundaries: BucketBoundaries
+    ): Builder[F, A]
+
+    /** Creates a [[Histogram]] with the given `unit`, `description`, and
+      * `bucket boundaries` (if any).
+      */
+    def create: F[Histogram[F, A]]
+  }
+
   trait Meta[F[_]] extends InstrumentMeta[F] {
     def resourceUnit: Resource[F, Unit]
   }

@@ -19,26 +19,17 @@ package org.typelevel.otel4s.trace
 import cats.Show
 import cats.kernel.laws.discipline.HashTests
 import munit._
-import org.scalacheck.Arbitrary
-import org.scalacheck.Cogen
-import org.scalacheck.Gen
 import org.scalacheck.Prop
+import org.typelevel.otel4s.trace.scalacheck.Arbitraries._
+import org.typelevel.otel4s.trace.scalacheck.Cogens._
+import org.typelevel.otel4s.trace.scalacheck.Gens
 
 class StatusSuite extends DisciplineSuite {
-
-  private val statusGen: Gen[Status] =
-    Gen.oneOf(Status.Unset, Status.Ok, Status.Error)
-
-  private implicit val statusArbitrary: Arbitrary[Status] =
-    Arbitrary(statusGen)
-
-  private implicit val statusCogen: Cogen[Status] =
-    Cogen[String].contramap(_.toString)
 
   checkAll("Status.HashLaws", HashTests[Status].hash)
 
   property("Show[Status]") {
-    Prop.forAll(statusGen) { status =>
+    Prop.forAll(Gens.status) { status =>
       val expected = status match {
         case Status.Unset => "Unset"
         case Status.Ok    => "Ok"

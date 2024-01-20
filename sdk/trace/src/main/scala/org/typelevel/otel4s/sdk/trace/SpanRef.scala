@@ -34,7 +34,7 @@ import scala.concurrent.duration.FiniteDuration
   * @tparam F
   *   the higher-kinded type of a polymorphic effect
   */
-trait SpanRef[F[_]] { self: Span.Backend[F] =>
+trait SpanRef[F[_]] extends Span.Backend[F] {
 
   /** Returns the kind of the span. */
   def kind: SpanKind

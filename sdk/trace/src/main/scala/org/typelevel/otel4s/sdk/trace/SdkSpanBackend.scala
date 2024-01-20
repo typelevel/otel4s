@@ -66,7 +66,7 @@ import scala.concurrent.duration.FiniteDuration
   * @tparam F
   *   the higher-kinded type of a polymorphic effect
   */
-private[trace] final class SdkSpanBackend[F[_]: Monad: Clock: Console] private (
+private final class SdkSpanBackend[F[_]: Monad: Clock: Console] private (
     spanProcessor: SpanProcessor[F],
     immutableState: SdkSpanBackend.ImmutableState,
     mutableState: Ref[F, SdkSpanBackend.MutableState]
@@ -214,7 +214,7 @@ private[trace] final class SdkSpanBackend[F[_]: Monad: Clock: Console] private (
 
 }
 
-private[trace] object SdkSpanBackend {
+private object SdkSpanBackend {
 
   /** Starts a new span.
     *

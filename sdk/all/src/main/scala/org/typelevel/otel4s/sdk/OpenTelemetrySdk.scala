@@ -27,12 +27,12 @@ import cats.syntax.apply._
 import cats.syntax.flatMap._
 import cats.syntax.functor._
 import org.typelevel.otel4s.Otel4s
-import org.typelevel.otel4s.context.ContextCarrier
+import org.typelevel.otel4s.context.LocalProvider
 import org.typelevel.otel4s.context.propagation.ContextPropagators
 import org.typelevel.otel4s.metrics.MeterProvider
 import org.typelevel.otel4s.sdk.autoconfigure.Config
 import org.typelevel.otel4s.sdk.autoconfigure.ResourceConfiguration
-import org.typelevel.otel4s.sdk.context.Context
+import org.typelevel.otel4s.sdk.context.{Context, LocalContextProvider}
 import org.typelevel.otel4s.sdk.trace.SdkTracerProvider
 import org.typelevel.otel4s.sdk.trace.autoconfigure.PropagatorsConfiguration
 import org.typelevel.otel4s.sdk.trace.autoconfigure.TracerProviderConfiguration
@@ -50,8 +50,6 @@ sealed class OpenTelemetrySdk[F[_]] private (
 }
 
 object OpenTelemetrySdk {
-
-  type Carrier[F[_]] = ContextCarrier[F, Context]
 
   def apply[F[_]](
       propagators: ContextPropagators[Context],
@@ -123,10 +121,12 @@ object OpenTelemetrySdk {
       def build: Resource[F, AutoConfigured[F]]
     }
 
-    def load[F[_]: Async: Parallel: Carrier]: Resource[F, AutoConfigured[F]] =
+    def load[
+        F[_]: Async: Parallel: LocalContextProvider
+    ]: Resource[F, AutoConfigured[F]] =
       builder[F].build
 
-    def builder[F[_]: Async: Parallel: Carrier]: Builder[F] =
+    def builder[F[_]: Async: Parallel: LocalContextProvider]: Builder[F] =
       BuilderImpl(
         customConfig = None,
         tracerProviderCustomizer = (a: SdkTracerProvider.Builder[F], _) => a,
@@ -135,7 +135,9 @@ object OpenTelemetrySdk {
         propertiesCustomizers = Nil
       )
 
-    private final case class BuilderImpl[F[_]: Async: Parallel: Carrier](
+    private final case class BuilderImpl[
+        F[_]: Async: Parallel: LocalContextProvider
+    ](
         customConfig: Option[Config],
         tracerProviderCustomizer: Customizer[SdkTracerProvider.Builder[F]],
         resourceCustomizer: Customizer[TelemetryResource],
@@ -182,7 +184,7 @@ object OpenTelemetrySdk {
             config: Config
         ): Resource[F, OpenTelemetrySdk[F]] =
           Resource.eval(Random.scalaUtilRandom[F]).flatMap { implicit random =>
-            Resource.eval(ContextCarrier[F, Context].local).flatMap {
+            Resource.eval(LocalProvider[F, Context].local).flatMap {
               implicit local =>
                 implicit val console: Console[F] = Console.make[F]
 

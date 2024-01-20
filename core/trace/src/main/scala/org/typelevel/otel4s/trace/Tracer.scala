@@ -56,9 +56,8 @@ trait Tracer[F[_]] extends TracerMacro[F] {
     */
   def currentSpanOrNoop: F[Span[F]]
 
-  /** Creates a new [[org.typelevel.otel4s.trace.SpanBuilder SpanBuilder]]. The
-    * builder can be used to make a fully customized
-    * [[org.typelevel.otel4s.trace.Span Span]].
+  /** Creates a new [[SpanBuilder]]. The builder can be used to make a fully
+    * customized [[Span]].
     *
     * @param name
     *   the name of the span

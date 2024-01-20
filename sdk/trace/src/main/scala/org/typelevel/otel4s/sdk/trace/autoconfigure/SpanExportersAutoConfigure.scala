@@ -34,7 +34,7 @@ private final class SpanExportersAutoConfigure[F[_]: MonadThrow: Console]
 
   import SpanExportersAutoConfigure.ConfigKeys
 
-  def configure(config: Config): Resource[F, Map[String, SpanExporter[F]]] = {
+  def fromConfig(config: Config): Resource[F, Map[String, SpanExporter[F]]] = {
     val values = config.getOrElse(ConfigKeys.Exporter, Set.empty[String])
     Resource.eval(MonadThrow[F].fromEither(values)).flatMap {
       case names if names.contains("none") && names.sizeIs > 1 =>

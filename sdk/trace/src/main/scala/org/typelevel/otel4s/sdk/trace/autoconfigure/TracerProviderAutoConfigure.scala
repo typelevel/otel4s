@@ -41,7 +41,7 @@ private final class TracerProviderAutoConfigure[
 
   import TracerProviderAutoConfigure.ConfigKeys
 
-  def configure(config: Config): Resource[F, SdkTracerProvider.Builder[F]] =
+  def fromConfig(config: Config): Resource[F, SdkTracerProvider.Builder[F]] =
     for {
       sampler <- SamplerAutoConfigure[F].configure(config)
       exporters <- SpanExportersAutoConfigure[F].configure(config)

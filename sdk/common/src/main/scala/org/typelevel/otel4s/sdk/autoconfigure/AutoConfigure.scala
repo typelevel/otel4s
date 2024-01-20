@@ -16,8 +16,9 @@
 
 package org.typelevel.otel4s.sdk.autoconfigure
 
-import cats.ApplicativeThrow
+import cats.MonadThrow
 import cats.effect.Resource
+import cats.syntax.monadError._
 
 /** Creates and autoconfigures the component of type `A` using `config`.
   *
@@ -28,28 +29,22 @@ import cats.effect.Resource
   *   the type of the component
   */
 trait AutoConfigure[F[_], A] {
-  def hint: String
   def configure(config: Config): Resource[F, A]
 }
 
 object AutoConfigure {
 
-  abstract class WithHint[F[_], A](val hint: String) extends AutoConfigure[F, A]
+  abstract class WithHint[F[_]: MonadThrow, A](
+      hint: String
+  ) extends AutoConfigure[F, A] {
 
-  def fromEither[F[_]: ApplicativeThrow, A](hint: String)(
-      load: Config => Either[ConfigurationError, A]
-  ): AutoConfigure[F, A] =
-    new AutoConfigure.WithHint[F, A](hint) {
-      def configure(config: Config): Resource[F, A] =
-        load(config) match {
-          case Right(value) =>
-            Resource.pure(value)
+    final def configure(config: Config): Resource[F, A] =
+      fromConfig(config).adaptError {
+        case e: AutoConfigureError => e
+        case cause                 => new AutoConfigureError(hint, cause)
+      }
 
-          case Left(error) =>
-            Resource.raiseError[F, A, Throwable](
-              new AutoConfigureError(hint, error)
-            )
-        }
-    }
+    protected def fromConfig(config: Config): Resource[F, A]
+  }
 
 }

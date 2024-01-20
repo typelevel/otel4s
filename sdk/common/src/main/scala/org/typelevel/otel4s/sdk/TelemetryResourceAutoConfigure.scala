@@ -17,9 +17,10 @@
 package org.typelevel.otel4s
 package sdk
 
-import cats.ApplicativeThrow
+import cats.MonadThrow
 import cats.effect.Resource
-import cats.syntax.all._
+import cats.syntax.either._
+import cats.syntax.traverse._
 import org.typelevel.otel4s.sdk.autoconfigure.AutoConfigure
 import org.typelevel.otel4s.sdk.autoconfigure.Config
 import org.typelevel.otel4s.sdk.autoconfigure.ConfigurationError
@@ -28,12 +29,12 @@ import org.typelevel.otel4s.semconv.resource.attributes.ResourceAttributes
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
 
-private final class TelemetryResourceAutoConfigure[F[_]: ApplicativeThrow]
+private final class TelemetryResourceAutoConfigure[F[_]: MonadThrow]
     extends AutoConfigure.WithHint[F, TelemetryResource]("TelemetryResource") {
 
   import TelemetryResourceAutoConfigure.ConfigKeys
 
-  def configure(config: Config): Resource[F, TelemetryResource] = {
+  def fromConfig(config: Config): Resource[F, TelemetryResource] = {
     def parse(entries: List[(String, String)], disabledKeys: Set[String]) =
       entries
         .filter { case (key, _) => !disabledKeys.contains(key) }
@@ -69,7 +70,7 @@ private final class TelemetryResourceAutoConfigure[F[_]: ApplicativeThrow]
       )
     }
 
-    Resource.eval(ApplicativeThrow[F].fromEither(attempt))
+    Resource.eval(MonadThrow[F].fromEither(attempt))
   }
 
 }
@@ -87,7 +88,7 @@ private[sdk] object TelemetryResourceAutoConfigure {
       Config.Key("otel.service.name")
   }
 
-  def apply[F[_]: ApplicativeThrow]: AutoConfigure[F, TelemetryResource] =
+  def apply[F[_]: MonadThrow]: AutoConfigure[F, TelemetryResource] =
     new TelemetryResourceAutoConfigure[F]
 
 }

@@ -37,7 +37,7 @@ private final class PropagatorsConfiguration[F[_]: MonadThrow]
   import PropagatorsConfiguration.ConfigKeys
   import PropagatorsConfiguration.Default
 
-  def configure(config: Config): Resource[F, ContextPropagators[Context]] = {
+  def fromConfig(config: Config): Resource[F, ContextPropagators[Context]] = {
     val values = config.getOrElse(ConfigKeys.Propagators, Set.empty[String])
     Resource.eval {
       MonadThrow[F].fromEither(values).flatMap[ContextPropagators[Context]] {

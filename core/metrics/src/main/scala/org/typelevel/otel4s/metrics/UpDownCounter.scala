@@ -70,6 +70,10 @@ object UpDownCounter {
       */
     def withDescription(description: String): Builder[F, A]
 
+    /** Changes the type of the measurement for this counter.
+      */
+    def of[B: MeasurementValue]: Builder[F, B]
+
     /** Creates an [[UpDownCounter]] with the given `unit` and `description` (if
       * any).
       */
@@ -129,6 +133,13 @@ object UpDownCounter {
           def inc(attributes: Attribute[_]*): F[Unit] = meta.unit
           def dec(attributes: Attribute[_]*): F[Unit] = meta.unit
         }
+    }
+
+  private[otel4s] def fromBackend[F[_], A](
+      b: Backend[F, A]
+  ): UpDownCounter[F, A] =
+    new UpDownCounter[F, A] {
+      def backend: Backend[F, A] = b
     }
 
 }

@@ -135,36 +135,13 @@ object Meter {
   def noop[F[_]](implicit F: Applicative[F]): Meter[F] =
     new Meter[F] {
       def counter(name: String): Counter.Builder[F, Long] =
-        new Counter.Builder[F, Long] {
-          def withUnit(unit: String): Counter.Builder[F, Long] = this
-          def withDescription(description: String): Counter.Builder[F, Long] =
-            this
-          def create: F[Counter[F, Long]] = F.pure(Counter.noop)
-        }
+        noopCounter[Long]
 
-      def histogram(
-          name: String
-      ): Histogram.Builder[F, Double] =
-        new Histogram.Builder[F, Double] {
-          def withUnit(unit: String): Histogram.Builder[F, Double] = this
-          def withDescription(
-              description: String
-          ): Histogram.Builder[F, Double] = this
-          def withExplicitBucketBoundaries(
-              boundaries: BucketBoundaries
-          ): Histogram.Builder[F, Double] =
-            this
-          def create: F[Histogram[F, Double]] = F.pure(Histogram.noop)
-        }
+      def histogram(name: String): Histogram.Builder[F, Double] =
+        noopHistogram
 
       def upDownCounter(name: String): UpDownCounter.Builder[F, Long] =
-        new UpDownCounter.Builder[F, Long] {
-          def withUnit(unit: String): UpDownCounter.Builder[F, Long] = this
-          def withDescription(
-              description: String
-          ): UpDownCounter.Builder[F, Long] = this
-          def create: F[UpDownCounter[F, Long]] = F.pure(UpDownCounter.noop)
-        }
+        noopUpDownCounter
 
       def observableGauge(
           name: String
@@ -218,6 +195,37 @@ object Meter {
               cb: ObservableMeasurement[F, Long] => F[Unit]
           ): Resource[F, ObservableUpDownCounter] =
             Resource.pure(new ObservableUpDownCounter {})
+        }
+
+      private def noopCounter[A]: Counter.Builder[F, A] =
+        new Counter.Builder[F, A] {
+          def withUnit(unit: String): Counter.Builder[F, A] = this
+          def withDescription(description: String): Counter.Builder[F, A] = this
+          def of[B: MeasurementValue]: Counter.Builder[F, B] = noopCounter
+          def create: F[Counter[F, A]] = Applicative[F].pure(Counter.noop)
+        }
+
+      private def noopHistogram[A]: Histogram.Builder[F, A] =
+        new Histogram.Builder[F, A] {
+          def withUnit(unit: String): Histogram.Builder[F, A] = this
+          def withDescription(description: String): Histogram.Builder[F, A] =
+            this
+          def withExplicitBucketBoundaries(
+              boundaries: BucketBoundaries
+          ): Histogram.Builder[F, A] = this
+          def of[B: MeasurementValue]: Histogram.Builder[F, B] = noopHistogram
+          def create: F[Histogram[F, A]] = F.pure(Histogram.noop)
+        }
+
+      private def noopUpDownCounter[A]: UpDownCounter.Builder[F, A] =
+        new UpDownCounter.Builder[F, A] {
+          def withUnit(unit: String): UpDownCounter.Builder[F, A] = this
+          def withDescription(
+              description: String
+          ): UpDownCounter.Builder[F, A] = this
+          def of[B: MeasurementValue]: UpDownCounter.Builder[F, B] =
+            noopUpDownCounter
+          def create: F[UpDownCounter[F, A]] = F.pure(UpDownCounter.noop)
         }
     }
 

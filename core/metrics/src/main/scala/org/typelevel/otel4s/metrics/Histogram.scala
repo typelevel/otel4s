@@ -88,6 +88,10 @@ object Histogram {
         boundaries: BucketBoundaries
     ): Builder[F, A]
 
+    /** Changes the type of the measurement for this histogram.
+      */
+    def of[B: MeasurementValue]: Builder[F, B]
+
     /** Creates a [[Histogram]] with the given `unit`, `description`, and
       * `bucket boundaries` (if any).
       */
@@ -149,6 +153,28 @@ object Histogram {
 
   }
 
+  abstract class LongBackend[F[_]: Monad: Clock] extends Backend[F, Long] {
+
+    final val unit: F[Unit] = Monad[F].unit
+
+    final def recordDuration(
+        timeUnit: TimeUnit,
+        attributes: Attribute[_]*
+    ): Resource[F, Unit] =
+      Resource
+        .makeCase(Clock[F].monotonic) { case (start, ec) =>
+          for {
+            end <- Clock[F].monotonic
+            _ <- record(
+              (end - start).toUnit(timeUnit).toLong,
+              attributes ++ causeAttributes(ec): _*
+            )
+          } yield ()
+        }
+        .void
+
+  }
+
   abstract class DoubleBackend[F[_]: Monad: Clock] extends Backend[F, Double] {
 
     final val unit: F[Unit] = Monad[F].unit
@@ -194,6 +220,11 @@ object Histogram {
         List(Attribute(CauseKey, e.getClass.getName))
       case Resource.ExitCase.Canceled =>
         List(Attribute(CauseKey, "canceled"))
+    }
+
+  private[otel4s] def fromBackend[F[_], A](b: Backend[F, A]): Histogram[F, A] =
+    new Histogram[F, A] {
+      def backend: Backend[F, A] = b
     }
 
 }

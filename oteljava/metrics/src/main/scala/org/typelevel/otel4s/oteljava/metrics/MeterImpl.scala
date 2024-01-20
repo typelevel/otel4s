@@ -28,7 +28,7 @@ private[oteljava] class MeterImpl[F[_]: Async](jMeter: JMeter)
     CounterBuilderImpl(jMeter, name)
 
   def histogram(name: String): Histogram.Builder[F, Double] =
-    new HistogramBuilderImpl(jMeter, name)
+    HistogramBuilderImpl(jMeter, name)
 
   def upDownCounter(name: String): UpDownCounter.Builder[F, Long] =
     UpDownCounterBuilderImpl(jMeter, name)

@@ -196,4 +196,9 @@ object Histogram {
         List(Attribute(CauseKey, "canceled"))
     }
 
+  private[otel4s] def fromBackend[F[_], A](b: Backend[F, A]): Histogram[F, A] =
+    new Histogram[F, A] {
+      def backend: Backend[F, A] = b
+    }
+
 }

@@ -131,4 +131,11 @@ object UpDownCounter {
         }
     }
 
+  private[otel4s] def fromBackend[F[_], A](
+      b: Backend[F, A]
+  ): UpDownCounter[F, A] =
+    new UpDownCounter[F, A] {
+      def backend: Backend[F, A] = b
+    }
+
 }

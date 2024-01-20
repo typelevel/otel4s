@@ -33,52 +33,48 @@ import org.typelevel.otel4s.trace.SpanBuilder
 import org.typelevel.otel4s.trace.SpanContext
 import org.typelevel.otel4s.trace.Tracer
 
-final class SdkTracer[F[_]: Temporal: Console] private[trace] (
-    sharedState: TracerSharedState[F],
+private final class SdkTracer[F[_]: Temporal: Console] private[trace] (
     scopeInfo: InstrumentationScope,
     propagators: ContextPropagators[Context],
-    scope: SdkTraceScope[F],
+    sharedState: TracerSharedState[F],
+    traceScope: SdkTraceScope[F],
     storage: SpanStorage[F]
 ) extends Tracer[F] {
 
-  def meta: Tracer.Meta[F] = Tracer.Meta.enabled[F]
+  val meta: Tracer.Meta[F] = Tracer.Meta.enabled[F]
 
   def currentSpanContext: F[Option[SpanContext]] =
-    scope.current.map(current => current.filter(_.isValid))
+    traceScope.current.map(current => current.filter(_.isValid))
 
   def currentSpanOrNoop: F[Span[F]] =
-    OptionT(scope.current)
-      .flatMapF(ctx => storage.get(ctx))
-      .map(ref => Span.fromBackend(ref))
-      .getOrElse(Span.fromBackend(Span.Backend.noop))
+    OptionT(traceScope.current)
+      .semiflatMap { ctx =>
+        OptionT(storage.get(ctx)).getOrElse(Span.Backend.propagating(ctx))
+      }
+      .getOrElse(Span.Backend.noop)
+      .map(backend => Span.fromBackend(backend))
 
   def spanBuilder(name: String): SpanBuilder[F] =
-    new SdkSpanBuilder[F](name, scopeInfo, sharedState, scope)
+    new SdkSpanBuilder[F](name, scopeInfo, sharedState, traceScope)
 
   def childScope[A](parent: SpanContext)(fa: F[A]): F[A] =
-    scope.childScope(parent).flatMap(trace => trace(fa))
+    traceScope.childScope(parent).flatMap(trace => trace(fa))
 
   def rootScope[A](fa: F[A]): F[A] =
-    scope.rootScope.flatMap(trace => trace(fa))
+    traceScope.rootScope.flatMap(trace => trace(fa))
 
   def noopScope[A](fa: F[A]): F[A] =
-    scope.noopScope(fa)
+    traceScope.noopScope(fa)
 
   def joinOrRoot[A, C: TextMapGetter](carrier: C)(fa: F[A]): F[A] = {
     val context = propagators.textMapPropagator.extract(Context.root, carrier)
-
-    val f = context.get(SdkContextKeys.SpanContextKey) match {
-      case Some(parent) => childScope(parent)(fa)
-      case None         => fa
-    }
-
     // use external context to bring extracted headers
-    scope.withContext(context)(f)
+    traceScope.withContext(context)(fa)
   }
 
   def propagate[C: TextMapUpdater](carrier: C): F[C] =
-    scope.contextReader(ctx =>
+    traceScope.contextReader { ctx =>
       propagators.textMapPropagator.inject(ctx, carrier)
-    )
+    }
 
 }

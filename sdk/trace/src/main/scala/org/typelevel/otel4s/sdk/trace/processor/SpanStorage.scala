@@ -24,6 +24,14 @@ import cats.syntax.functor._
 import org.typelevel.otel4s.sdk.trace.data.SpanData
 import org.typelevel.otel4s.trace.SpanContext
 
+/** The span storage is used to keep the references of the active SpanRefs.
+  *
+  * @see
+  *   [[SdkTracer.currentSpanOrNoop]]
+  *
+  * @tparam F
+  *   the higher-kinded type of a polymorphic effect
+  */
 private[trace] class SpanStorage[F[_]: Applicative] private (
     storage: Ref[F, Map[SpanContext, SpanRef[F]]]
 ) extends SpanProcessor[F] {

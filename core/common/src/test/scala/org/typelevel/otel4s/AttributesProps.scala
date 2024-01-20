@@ -131,13 +131,14 @@ class AttributesProps extends ScalaCheckSuite {
     forAll(listOfAttributes, listOfAttributes) { (attributes1, attributes2) =>
       val keySet1 = attributes1.map(_.key).toSet
       val keySet2 = attributes2.map(_.key).toSet
+      val unique = keySet1 ++ keySet2
       val diff = keySet1.intersect(keySet2)
 
       val attrs1 = Attributes(attributes1: _*)
       val attrs2 = Attributes(attributes2: _*)
 
       val combined = attrs1 ++ attrs2
-      val sizeIsEqual = combined.size == keySet1.size + keySet2.size
+      val sizeIsEqual = combined.size == unique.size
 
       val secondCollectionOverrodeValues = diff.forall { key =>
         combined.get(key).contains(attrs2.get(key).get)

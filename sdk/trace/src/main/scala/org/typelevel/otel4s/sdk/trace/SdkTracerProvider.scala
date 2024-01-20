@@ -33,14 +33,14 @@ import org.typelevel.otel4s.sdk.trace.samplers.Sampler
 import org.typelevel.otel4s.trace.TracerBuilder
 import org.typelevel.otel4s.trace.TracerProvider
 
-private[trace] class SdkTracerProvider[F[_]: Temporal: Parallel: Console](
+private class SdkTracerProvider[F[_]: Temporal: Parallel: Console](
     idGenerator: IdGenerator[F],
     resource: TelemetryResource,
     spanLimits: SpanLimits,
     sampler: Sampler,
     propagators: ContextPropagators[Context],
     spanProcessors: List[SpanProcessor[F]],
-    scope: SdkTraceScope[F],
+    traceScope: SdkTraceScope[F],
     storage: SpanStorage[F]
 ) extends TracerProvider[F] {
 
@@ -56,7 +56,7 @@ private[trace] class SdkTracerProvider[F[_]: Temporal: Parallel: Console](
   private val registry: ComponentRegistry[F, SdkTracer[F]] =
     new ComponentRegistry[F, SdkTracer[F]](scopeInfo =>
       Temporal[F].pure(
-        new SdkTracer[F](sharedState, scopeInfo, propagators, scope, storage)
+        new SdkTracer[F](sharedState, scopeInfo, propagators, traceScope, storage)
       )
     )
 
@@ -145,8 +145,9 @@ object SdkTracerProvider {
         propagators: TextMapPropagator[Context]*
     ): Builder[F]
 
-    /** Adds the given processor to the span processing pipeline that will be
-      * built.
+    /** Adds a
+      * [[org.typelevel.otel4s.sdk.trace.processor.SpanProcessor SpanProcessor]]
+      * to the span processing pipeline that will be built.
       *
       * The span processor will be called each time a
       * [[org.typelevel.otel4s.trace.Span Span]] is started or ended.

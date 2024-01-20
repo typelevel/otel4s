@@ -24,7 +24,7 @@ import org.typelevel.otel4s.sdk.internal.ComponentRegistry
 import org.typelevel.otel4s.trace.Tracer
 import org.typelevel.otel4s.trace.TracerBuilder
 
-private[sdk] final case class SdkTracerBuilder[F[_]: Functor](
+private final case class SdkTracerBuilder[F[_]: Functor](
     registry: ComponentRegistry[F, SdkTracer[F]],
     name: String,
     version: Option[String] = None,

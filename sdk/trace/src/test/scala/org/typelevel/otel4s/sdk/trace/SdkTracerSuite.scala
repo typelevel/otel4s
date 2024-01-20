@@ -961,7 +961,7 @@ class SdkTracerSuite extends CatsEffectSuite {
   ): Resource[IO, SdkTracerSuite.Sdk] = {
     import org.typelevel.otel4s.instances.local._
 
-    val textMapPropagators =
+    val textMapPropagators: List[TextMapPropagator[Context]] =
       List(W3CTraceContextPropagator) ++ additionalPropagators
 
     def createTracerProvider(
@@ -990,12 +990,12 @@ object SdkTracerSuite {
 
   class Sdk(
       val provider: TracerProvider[IO],
-      processor: BatchSpanProcessor[IO],
+      processor: SpanProcessor[IO],
       exporter: InMemorySpanExporter[IO]
   ) {
 
     def finishedSpans: IO[List[SpanData]] =
-      processor.forceFlush >> exporter.finishedSpans.map(_.toList)
+      processor.forceFlush >> exporter.finishedSpans
 
   }
 

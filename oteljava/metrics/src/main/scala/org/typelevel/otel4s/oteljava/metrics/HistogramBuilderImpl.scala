@@ -22,24 +22,35 @@ import cats.effect.kernel.Sync
 import io.opentelemetry.api.metrics.{Meter => JMeter}
 import org.typelevel.otel4s.metrics._
 
+import scala.jdk.CollectionConverters._
+
 private[oteljava] case class HistogramBuilderImpl[F[_]](
     jMeter: JMeter,
     name: String,
     unit: Option[String] = None,
-    description: Option[String] = None
+    description: Option[String] = None,
+    boundaries: Option[BucketBoundaries] = None
 )(implicit F: Sync[F])
-    extends SyncInstrumentBuilder[F, Histogram[F, Double]] {
-  type Self = HistogramBuilderImpl[F]
+    extends Histogram.Builder[F, Double] {
 
-  def withUnit(unit: String): Self = copy(unit = Option(unit))
+  def withUnit(unit: String): Histogram.Builder[F, Double] =
+    copy(unit = Option(unit))
 
-  def withDescription(description: String): Self =
+  def withDescription(description: String): Histogram.Builder[F, Double] =
     copy(description = Option(description))
+
+  def withExplicitBucketBoundaries(
+      boundaries: BucketBoundaries
+  ): Histogram.Builder[F, Double] =
+    copy(boundaries = Some(boundaries))
 
   def create: F[Histogram[F, Double]] = F.delay {
     val b = jMeter.histogramBuilder(name)
     unit.foreach(b.setUnit)
     description.foreach(b.setDescription)
+    boundaries.foreach(bo =>
+      b.setExplicitBucketBoundariesAdvice(bo.boundaries.map(Double.box).asJava)
+    )
     new HistogramImpl(b.build)
   }
 }

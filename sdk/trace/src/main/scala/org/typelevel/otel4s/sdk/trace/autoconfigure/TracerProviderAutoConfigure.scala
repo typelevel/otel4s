@@ -21,6 +21,7 @@ import cats.effect.Resource
 import cats.effect.Temporal
 import cats.effect.std.Console
 import cats.syntax.foldable._
+import org.typelevel.otel4s.sdk.autoconfigure.AutoConfigure
 import org.typelevel.otel4s.sdk.autoconfigure.Config
 import org.typelevel.otel4s.sdk.autoconfigure.ConfigurationError
 import org.typelevel.otel4s.sdk.trace.SdkTracerProvider
@@ -29,22 +30,26 @@ import org.typelevel.otel4s.sdk.trace.processor.BatchSpanProcessor
 import org.typelevel.otel4s.sdk.trace.processor.SimpleSpanProcessor
 import org.typelevel.otel4s.sdk.trace.processor.SpanProcessor
 
-private[sdk] object TracerProviderConfiguration {
+import scala.concurrent.duration.FiniteDuration
 
-  def configure[F[_]: Temporal: Parallel: Console](
-      builder: SdkTracerProvider.Builder[F],
-      config: Config
-  ): Resource[F, SdkTracerProvider.Builder[F]] =
+private final class TracerProviderAutoConfigure[
+    F[_]: Temporal: Parallel: Console
+] private (builder: SdkTracerProvider.Builder[F])
+    extends AutoConfigure.WithHint[F, SdkTracerProvider.Builder[F]](
+      "TracerProvider"
+    ) {
+
+  import TracerProviderAutoConfigure.ConfigKeys
+
+  def configure(config: Config): Resource[F, SdkTracerProvider.Builder[F]] =
     for {
-      sampler <- Resource.eval(
-        Temporal[F].fromEither(SamplerConfiguration.configure(config))
-      )
-      exporters <- SpanExporterConfiguration.configure[F](config)
+      sampler <- SamplerAutoConfigure[F].configure(config)
+      exporters <- SpanExportersAutoConfigure[F].configure(config)
       processors <- configureProcessors(config, exporters)
       withSampler = builder.withSampler(sampler)
     } yield processors.foldLeft(withSampler)(_.addSpanProcessor(_))
 
-  private def configureProcessors[F[_]: Temporal: Parallel: Console](
+  private def configureProcessors(
       config: Config,
       exporters: Map[String, SpanExporter[F]]
   ): Resource[F, List[SpanProcessor[F]]] = {
@@ -64,18 +69,16 @@ private[sdk] object TracerProviderConfiguration {
     }
   }
 
-  private def configureBatchSpanProcessor[F[_]: Temporal: Console](
+  private def configureBatchSpanProcessor(
       config: Config,
       exporter: SpanExporter[F]
   ): Resource[F, SpanProcessor[F]] = {
     def configure: Either[ConfigurationError, BatchSpanProcessor.Builder[F]] =
       for {
-        scheduleDelay <- config.getFiniteDuration("otel.bsp.schedule.delay")
-        maxQueueSize <- config.getInt("otel.bsp.max.queue.size")
-        maxExportBatchSize <- config.getInt(
-          "otel.bsp.map.export.batch.size"
-        )
-        exporterTimeout <- config.getFiniteDuration("otel.bsp.export.timeout")
+        scheduleDelay <- config.get(ConfigKeys.ScheduleDelay)
+        maxQueueSize <- config.get(ConfigKeys.MaxQueueSize)
+        maxExportBatchSize <- config.get(ConfigKeys.MaxExportBatchSize)
+        exporterTimeout <- config.get(ConfigKeys.ExporterTimeout)
       } yield {
         val builder = BatchSpanProcessor.builder(exporter)
 
@@ -103,5 +106,28 @@ private[sdk] object TracerProviderConfiguration {
       processor <- builder.build
     } yield processor
   }
+
+}
+
+private[sdk] object TracerProviderAutoConfigure {
+
+  private object ConfigKeys {
+    val ScheduleDelay: Config.Key[FiniteDuration] =
+      Config.Key("otel.bsp.schedule.delay")
+
+    val MaxQueueSize: Config.Key[Int] =
+      Config.Key("otel.bsp.max.queue.size")
+
+    val MaxExportBatchSize: Config.Key[Int] =
+      Config.Key("otel.bsp.map.export.batch.size")
+
+    val ExporterTimeout: Config.Key[FiniteDuration] =
+      Config.Key("otel.bsp.export.timeout")
+  }
+
+  def apply[F[_]: Temporal: Parallel: Console](
+      builder: SdkTracerProvider.Builder[F]
+  ): AutoConfigure[F, SdkTracerProvider.Builder[F]] =
+    new TracerProviderAutoConfigure[F](builder)
 
 }

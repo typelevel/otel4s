@@ -16,20 +16,7 @@
 
 package org.typelevel.otel4s.sdk.autoconfigure
 
-final class ConfigurationError(
-    message: String,
-    cause: Option[Throwable]
-) extends RuntimeException(message, cause.orNull)
-
-object ConfigurationError {
-
-  def apply(message: String): ConfigurationError =
-    new ConfigurationError(message, None)
-
-  def apply(message: String, cause: Throwable): ConfigurationError =
-    new ConfigurationError(message, Some(cause))
-
-  def unrecognized(key: String, value: String): ConfigurationError =
-    new ConfigurationError(s"Unrecognized value for [$key]: $value", None)
-
-}
+final class AutoConfigureError(
+    hint: String,
+    cause: Throwable
+) extends RuntimeException(s"Cannot auto configure [$hint]", cause)

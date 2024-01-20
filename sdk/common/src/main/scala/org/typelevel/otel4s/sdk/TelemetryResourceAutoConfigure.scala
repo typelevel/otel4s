@@ -14,26 +14,26 @@
  * limitations under the License.
  */
 
-package org.typelevel.otel4s.sdk
-package autoconfigure
+package org.typelevel.otel4s
+package sdk
 
-import cats.syntax.either._
-import cats.syntax.traverse._
-import org.typelevel.otel4s.Attribute
-import org.typelevel.otel4s.Attributes
+import cats.ApplicativeThrow
+import cats.effect.Resource
+import cats.syntax.all._
+import org.typelevel.otel4s.sdk.autoconfigure.AutoConfigure
+import org.typelevel.otel4s.sdk.autoconfigure.Config
+import org.typelevel.otel4s.sdk.autoconfigure.ConfigurationError
 import org.typelevel.otel4s.semconv.resource.attributes.ResourceAttributes
 
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
 
-private[sdk] object ResourceConfiguration {
+private final class TelemetryResourceAutoConfigure[F[_]: ApplicativeThrow]
+    extends AutoConfigure.WithHint[F, TelemetryResource]("TelemetryResource") {
 
-  // Attributes specified via otel.resource.attributes follow the W3C Baggage spec and
-  // characters outside the baggage-octet range are percent encoded
-  // https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/resource/sdk.md#specifying-resource-information-via-an-environment-variable
-  def configure(
-      config: Config
-  ): Either[ConfigurationError, TelemetryResource] = {
+  import TelemetryResourceAutoConfigure.ConfigKeys
+
+  def configure(config: Config): Resource[F, TelemetryResource] = {
     def parse(entries: List[(String, String)], disabledKeys: Set[String]) =
       entries
         .filter { case (key, _) => !disabledKeys.contains(key) }
@@ -45,28 +45,49 @@ private[sdk] object ResourceConfiguration {
               Attribute(key, decoded)
             }
             .leftMap { e =>
-              new ConfigurationError(
-                "Unable to decode resource attributes",
-                Some(e)
-              )
+              ConfigurationError("Unable to decode resource attributes", e)
             }
         }
 
-    for {
+    val attempt = for {
       disabledKeys <-
-        config.getStringSet("otel.experimental.resource.disabled.keys")
+        config.getOrElse(ConfigKeys.DisabledKeys, Set.empty[String])
 
-      entries <- config.getStringMap("otel.resource.attributes")
+      entries <-
+        config.getOrElse(ConfigKeys.Attributes, Map.empty[String, String])
+
       attributes <- parse(entries.toList, disabledKeys)
     } yield {
       val serviceName = config
-        .getString("otel.service.name")
+        .get(ConfigKeys.ServiceName)
+        .toOption
+        .flatten
         .map(value => ResourceAttributes.ServiceName(value))
 
       TelemetryResource(
         Attributes.fromSpecific(attributes ++ serviceName.toSeq)
       )
     }
+
+    Resource.eval(ApplicativeThrow[F].fromEither(attempt))
   }
+
+}
+
+private[sdk] object TelemetryResourceAutoConfigure {
+
+  private object ConfigKeys {
+    val DisabledKeys: Config.Key[Set[String]] =
+      Config.Key("otel.experimental.resource.disabled.keys")
+
+    val Attributes: Config.Key[Map[String, String]] =
+      Config.Key("otel.resource.attributes")
+
+    val ServiceName: Config.Key[String] =
+      Config.Key("otel.service.name")
+  }
+
+  def apply[F[_]: ApplicativeThrow]: AutoConfigure[F, TelemetryResource] =
+    new TelemetryResourceAutoConfigure[F]
 
 }

@@ -18,46 +18,52 @@ package org.typelevel.otel4s.sdk.trace.autoconfigure
 
 import cats.MonadThrow
 import cats.data.NonEmptyList
+import cats.effect.Resource
 import cats.syntax.flatMap._
 import cats.syntax.functor._
 import org.typelevel.otel4s.context.propagation.ContextPropagators
 import org.typelevel.otel4s.context.propagation.TextMapPropagator
+import org.typelevel.otel4s.sdk.autoconfigure.AutoConfigure
 import org.typelevel.otel4s.sdk.autoconfigure.Config
 import org.typelevel.otel4s.sdk.autoconfigure.ConfigurationError
 import org.typelevel.otel4s.sdk.context.Context
 import org.typelevel.otel4s.sdk.trace.propagation.W3CTraceContextPropagator
 
-private[sdk] object PropagatorsConfiguration {
+private final class PropagatorsConfiguration[F[_]: MonadThrow]
+    extends AutoConfigure.WithHint[F, ContextPropagators[Context]](
+      "ContextPropagators"
+    ) {
 
-  private val Default = NonEmptyList.one("tracecontext" /*, "baggage"*/ )
+  import PropagatorsConfiguration.ConfigKeys
+  import PropagatorsConfiguration.Default
 
-  def configure[F[_]: MonadThrow](
-      config: Config
-  ): F[ContextPropagators[Context]] = {
-    MonadThrow[F].fromEither(config.getStringSet("otel.propagators")).flatMap {
-      case names if names.contains("none") && names.sizeIs > 1 =>
-        MonadThrow[F].raiseError(
-          new ConfigurationError(
-            "[otel.propagators] contains 'none' along with other propagators",
-            None
+  def configure(config: Config): Resource[F, ContextPropagators[Context]] = {
+    val values = config.getOrElse(ConfigKeys.Propagators, Set.empty[String])
+    Resource.eval {
+      MonadThrow[F].fromEither(values).flatMap[ContextPropagators[Context]] {
+        case names if names.contains("none") && names.sizeIs > 1 =>
+          MonadThrow[F].raiseError(
+            new ConfigurationError(
+              s"[${ConfigKeys.Propagators}] contains 'none' along with other propagators",
+              None
+            )
           )
-        )
 
-      case names if names.contains("none") =>
-        MonadThrow[F].pure(ContextPropagators.noop)
+        case names if names.contains("none") =>
+          MonadThrow[F].pure(ContextPropagators.noop)
 
-      case names =>
-        val requested = NonEmptyList.fromList(names.toList).getOrElse(Default)
+        case names =>
+          val requested =
+            NonEmptyList.fromList(names.toList).getOrElse(Default)
 
-        for {
-          propagators <- requested.traverse(name => create(name))
-        } yield ContextPropagators.of(propagators.toList: _*)
+          for {
+            propagators <- requested.traverse(name => create(name))
+          } yield ContextPropagators.of(propagators.toList: _*)
+      }
     }
   }
 
-  private def create[F[_]: MonadThrow](
-      name: String
-  ): F[TextMapPropagator[Context]] =
+  private def create(name: String): F[TextMapPropagator[Context]] =
     name match {
       case "tracecontext" =>
         MonadThrow[F].pure(W3CTraceContextPropagator)
@@ -70,4 +76,17 @@ private[sdk] object PropagatorsConfiguration {
           ConfigurationError.unrecognized("otel.propagators", other)
         )
     }
+}
+
+private[sdk] object PropagatorsConfiguration {
+
+  private object ConfigKeys {
+    val Propagators: Config.Key[Set[String]] = Config.Key("otel.propagators")
+  }
+
+  private val Default = NonEmptyList.one("tracecontext" /*, "baggage"*/ )
+
+  def apply[F[_]: MonadThrow]: AutoConfigure[F, ContextPropagators[Context]] =
+    new PropagatorsConfiguration[F]
+
 }

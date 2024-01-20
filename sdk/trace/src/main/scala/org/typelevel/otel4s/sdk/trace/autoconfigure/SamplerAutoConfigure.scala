@@ -16,20 +16,23 @@
 
 package org.typelevel.otel4s.sdk.trace.autoconfigure
 
+import cats.ApplicativeThrow
+import cats.effect.Resource
+import org.typelevel.otel4s.sdk.autoconfigure.AutoConfigure
 import org.typelevel.otel4s.sdk.autoconfigure.Config
 import org.typelevel.otel4s.sdk.autoconfigure.ConfigurationError
 import org.typelevel.otel4s.sdk.trace.samplers.Sampler
 
-private[sdk] object SamplerConfiguration {
+private final class SamplerAutoConfigure[F[_]: ApplicativeThrow]
+    extends AutoConfigure.WithHint[F, Sampler]("Sampler") {
 
-  def configure(config: Config): Either[ConfigurationError, Sampler] = {
-    val sampler =
-      config.getString("otel.traces.sampler").getOrElse("parentbased_always_on")
+  import SamplerAutoConfigure.ConfigKeys
 
-    def ratio =
-      config.getDouble("otel.traces.sampler.arg").map(_.getOrElse(1.0))
+  def configure(config: Config): Resource[F, Sampler] = {
+    val sampler = config.getOrElse(ConfigKeys.Sampler, "parentbased_always_on")
+    def ratio = config.getOrElse(ConfigKeys.SamplerArg, 1.0)
 
-    sampler match {
+    val attempt = sampler.flatMap {
       case "always_on" =>
         Right(Sampler.AlwaysOn)
 
@@ -49,8 +52,21 @@ private[sdk] object SamplerConfiguration {
         ratio.map(r => Sampler.parentBased(Sampler.traceIdRatioBased(r)))
 
       case other =>
-        Left(ConfigurationError.unrecognized("otel.traces.sampler", other))
+        Left(ConfigurationError.unrecognized(ConfigKeys.Sampler.name, other))
     }
+
+    Resource.eval(ApplicativeThrow[F].fromEither(attempt))
   }
+}
+
+private[sdk] object SamplerAutoConfigure {
+
+  private object ConfigKeys {
+    val Sampler: Config.Key[String] = Config.Key("otel.traces.sampler")
+    val SamplerArg: Config.Key[Double] = Config.Key("otel.traces.sampler.arg")
+  }
+
+  def apply[F[_]: ApplicativeThrow]: AutoConfigure[F, Sampler] =
+    new SamplerAutoConfigure[F]
 
 }

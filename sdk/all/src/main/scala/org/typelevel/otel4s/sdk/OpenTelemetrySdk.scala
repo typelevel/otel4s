@@ -31,11 +31,11 @@ import org.typelevel.otel4s.context.LocalProvider
 import org.typelevel.otel4s.context.propagation.ContextPropagators
 import org.typelevel.otel4s.metrics.MeterProvider
 import org.typelevel.otel4s.sdk.autoconfigure.Config
-import org.typelevel.otel4s.sdk.autoconfigure.ResourceConfiguration
-import org.typelevel.otel4s.sdk.context.{Context, LocalContextProvider}
+import org.typelevel.otel4s.sdk.context.Context
+import org.typelevel.otel4s.sdk.context.LocalContextProvider
 import org.typelevel.otel4s.sdk.trace.SdkTracerProvider
 import org.typelevel.otel4s.sdk.trace.autoconfigure.PropagatorsConfiguration
-import org.typelevel.otel4s.sdk.trace.autoconfigure.TracerProviderConfiguration
+import org.typelevel.otel4s.sdk.trace.autoconfigure.TracerProviderAutoConfigure
 import org.typelevel.otel4s.trace.TracerProvider
 
 sealed class OpenTelemetrySdk[F[_]] private (
@@ -193,14 +193,12 @@ object OpenTelemetrySdk {
 
                 for {
                   tpBuilder <-
-                    TracerProviderConfiguration.configure(builder, config)
+                    TracerProviderAutoConfigure[F](builder).configure(config)
 
                   tracerProvider <- Resource.eval(
                     tracerProviderCustomizer(tpBuilder, config).build
                   )
-                  propagators <- Resource.eval(
-                    PropagatorsConfiguration.configure(config)
-                  )
+                  propagators <- PropagatorsConfiguration[F].configure(config)
                 } yield OpenTelemetrySdk(
                   propagators,
                   MeterProvider.noop[F],
@@ -212,15 +210,11 @@ object OpenTelemetrySdk {
         for {
           config <- Resource.eval(customConfig.fold(loadConfig)(Async[F].pure))
           // _ <- if (config.getString("OTEL_CONFIG_FILE")) return loadFromConfigFile
-          resource <- Resource.eval(
-            MonadCancelThrow[F].fromEither(
-              ResourceConfiguration.configure(config)
-            )
-          )
+          resource <- TelemetryResourceAutoConfigure[F].configure(config)
 
           isDisabled <- Resource.eval(
             MonadCancelThrow[F].fromEither(
-              config.getBoolean("otel.sdk.disabled")
+              config.get[Boolean]("otel.sdk.disabled")
             )
           )
 

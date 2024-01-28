@@ -1,11 +1,11 @@
 package org.typelevel.otel4s.sdk.metrics.data
 
-import org.typelevel.otel4s.sdk.Resource
+import org.typelevel.otel4s.sdk.TelemetryResource
 import org.typelevel.otel4s.sdk.common.InstrumentationScope
 
 sealed trait MetricData {
 
-  def resource: Resource
+  def resource: TelemetryResource
 
   def instrumentationScope: InstrumentationScope
 
@@ -25,7 +25,7 @@ sealed trait MetricData {
 object MetricData {
 
   def apply(
-      resource: Resource,
+      resource: TelemetryResource,
       scope: InstrumentationScope,
       name: String,
       description: Option[String],
@@ -42,7 +42,7 @@ object MetricData {
     )
 
   private final case class MetricDataImpl(
-      resource: Resource,
+      resource: TelemetryResource,
       instrumentationScope: InstrumentationScope,
       name: String,
       description: Option[String],

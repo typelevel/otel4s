@@ -1,6 +1,6 @@
 package org.typelevel.otel4s.sdk.metrics.internal
 
-import org.typelevel.otel4s.sdk.metrics.BucketBoundaries
+import org.typelevel.otel4s.metrics.{BucketBoundaries, MeasurementValue}
 
 sealed trait InstrumentDescriptor {
 
@@ -59,6 +59,12 @@ sealed trait InstrumentValueType
 object InstrumentValueType {
   case object Long extends InstrumentValueType
   case object Double extends InstrumentValueType
+
+  def of[A: MeasurementValue]: InstrumentValueType =
+    MeasurementValue[A] match {
+      case MeasurementValue.LongMeasurementValue(_)   => Long
+      case MeasurementValue.DoubleMeasurementValue(_) => Double
+    }
 }
 
 sealed trait Advice {
@@ -68,4 +74,9 @@ object Advice {
   def empty: Advice = new Advice {
     def explicitBoundaries: Option[BucketBoundaries] = None
   }
+
+  def apply(bucketBoundaries: Option[BucketBoundaries]): Advice =
+    new Advice {
+      def explicitBoundaries: Option[BucketBoundaries] = bucketBoundaries
+    }
 }

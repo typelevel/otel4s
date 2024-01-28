@@ -9,7 +9,7 @@ import cats.syntax.foldable._
 import cats.syntax.functor._
 import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.Attributes
-import org.typelevel.otel4s.metrics.ObservableMeasurement
+import org.typelevel.otel4s.metrics.{MeasurementValue, ObservableMeasurement}
 import org.typelevel.otel4s.sdk.metrics.RegisteredReader
 import org.typelevel.otel4s.sdk.metrics.storage.MetricStorage
 
@@ -33,7 +33,7 @@ private[metrics] abstract class SdkObservableMeasurement[F[_]: Monad, A](
   def unsetActiveReader: F[Unit] =
     stateRef.set(State.Empty())
 
-  def record(value: A, attributes: Attribute[_]*): F[Unit] = {
+  def record(value: A, attributes: Attributes): F[Unit] = {
     stateRef.get.flatMap {
       case State.Empty() =>
         Monad[F].unit // todo: log warning
@@ -74,47 +74,38 @@ object SdkObservableMeasurement {
     ) extends State[F]
   }
 
-  def ofLong[F[_]: Concurrent](
+  def create[F[_]: Concurrent, A: MeasurementValue](
       storages: Vector[MetricStorage.Asynchronous[F]],
       descriptor: InstrumentDescriptor
-  ): F[SdkObservableMeasurement[F, Long]] =
+  ): F[SdkObservableMeasurement[F, A]] =
     Ref.of[F, State[F]](State.Empty()).map { state =>
-      new SdkObservableMeasurement[F, Long](state, descriptor, storages) {
+      new SdkObservableMeasurement[F, A](state, descriptor, storages) {
         protected def create(
-            value: Long,
+            value: A,
             startTimestamp: FiniteDuration,
             collectTimestamp: FiniteDuration,
             attributes: Attributes
-        ): Measurement =
-          Measurement.LongMeasurement(
-            startTimestamp,
-            collectTimestamp,
-            attributes,
-            value
-          )
-      }
-    }
+        ): Measurement = {
+          MeasurementValue[A] match {
+            case MeasurementValue.LongMeasurementValue(cast) =>
+              Measurement.LongMeasurement(
+                startTimestamp,
+                collectTimestamp,
+                attributes,
+                cast(value)
+              )
 
-  def ofDouble[F[_]: Concurrent](
-      storages: Vector[MetricStorage.Asynchronous[F]],
-      descriptor: InstrumentDescriptor
-  ): F[SdkObservableMeasurement[F, Double]] = {
-    Ref.of[F, State[F]](State.Empty()).map { state =>
-      new SdkObservableMeasurement[F, Double](state, descriptor, storages) {
-        protected def create(
-            value: Double,
-            startTimestamp: FiniteDuration,
-            collectTimestamp: FiniteDuration,
-            attributes: Attributes
-        ): Measurement =
-          Measurement.DoubleMeasurement(
-            startTimestamp,
-            collectTimestamp,
-            attributes,
-            value
-          )
+            case MeasurementValue.DoubleMeasurementValue(cast) =>
+              Measurement.DoubleMeasurement(
+                startTimestamp,
+                collectTimestamp,
+                attributes,
+                cast(value)
+              )
+          }
+
+        }
       }
     }
-  }
 
 }

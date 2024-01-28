@@ -2,15 +2,11 @@ package org.typelevel.otel4s.sdk.metrics.internal.aggregation
 
 import cats.effect.Concurrent
 import org.typelevel.otel4s.Attributes
-import org.typelevel.otel4s.sdk.Resource
+import org.typelevel.otel4s.metrics.{BucketBoundaries, MeasurementValue}
+import org.typelevel.otel4s.sdk.TelemetryResource
 import org.typelevel.otel4s.sdk.common.InstrumentationScope
 import org.typelevel.otel4s.sdk.context.Context
-import org.typelevel.otel4s.sdk.metrics.{
-  Aggregation,
-  BucketBoundaries,
-  ExemplarFilter,
-  MeasurementValue
-}
+import org.typelevel.otel4s.sdk.metrics.{Aggregation, ExemplarFilter}
 import org.typelevel.otel4s.sdk.metrics.data.AggregationTemporality
 import org.typelevel.otel4s.sdk.metrics.data.MetricData
 import org.typelevel.otel4s.sdk.metrics.data.PointData
@@ -27,7 +23,7 @@ private[metrics] trait Aggregator[F[_]] {
   def createHandle: F[Aggregator.Handle[F, Point]]
 
   def toMetricData(
-      resource: Resource,
+      resource: TelemetryResource,
       scope: InstrumentationScope,
       descriptor: MetricDescriptor,
       points: Vector[Point],

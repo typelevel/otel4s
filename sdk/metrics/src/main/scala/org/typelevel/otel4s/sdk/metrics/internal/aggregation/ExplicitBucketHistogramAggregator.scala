@@ -5,21 +5,13 @@ import cats.effect.{Concurrent, Ref}
 import cats.syntax.flatMap._
 import cats.syntax.functor._
 import org.typelevel.otel4s.Attributes
-import org.typelevel.otel4s.sdk.Resource
+import org.typelevel.otel4s.metrics.{BucketBoundaries, MeasurementValue}
+import org.typelevel.otel4s.sdk.TelemetryResource
 import org.typelevel.otel4s.sdk.common.InstrumentationScope
 import org.typelevel.otel4s.sdk.context.Context
-import org.typelevel.otel4s.sdk.metrics.{BucketBoundaries, ExemplarFilter}
-import org.typelevel.otel4s.sdk.metrics.data.{
-  AggregationTemporality,
-  Data,
-  ExemplarData,
-  MetricData,
-  PointData
-}
-import org.typelevel.otel4s.sdk.metrics.internal.{
-  ExemplarReservoir,
-  MetricDescriptor
-}
+import org.typelevel.otel4s.sdk.metrics.ExemplarFilter
+import org.typelevel.otel4s.sdk.metrics.data.{AggregationTemporality, Data, ExemplarData, MetricData, PointData}
+import org.typelevel.otel4s.sdk.metrics.internal.{ExemplarReservoir, MetricDescriptor}
 
 import scala.concurrent.duration.FiniteDuration
 
@@ -38,7 +30,7 @@ private final class ExplicitBucketHistogramAggregator[F[_]: Concurrent](
     } yield new Handle(state, boundaries, reservoir)
 
   def toMetricData(
-      resource: Resource,
+      resource: TelemetryResource,
       scope: InstrumentationScope,
       descriptor: MetricDescriptor,
       points: Vector[PointData.Histogram],
@@ -112,6 +104,14 @@ private object ExplicitBucketHistogramAggregator {
 
           (next, Some(histogram))
         }
+      }
+
+    def record[A: MeasurementValue](value: A, attributes: Attributes, context: Context): F[Unit] =
+      MeasurementValue[A] match {
+        case MeasurementValue.LongMeasurementValue(cast)   =>
+          recordLong(cast(value), attributes, context)
+        case MeasurementValue.DoubleMeasurementValue(cast) =>
+          recordDouble(cast(value), attributes, context)
       }
 
     def recordDouble(

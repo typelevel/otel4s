@@ -9,16 +9,11 @@ import cats.syntax.foldable._
 import cats.syntax.functor._
 import cats.syntax.traverse._
 import org.typelevel.otel4s.Attributes
-import org.typelevel.otel4s.sdk.Resource
+import org.typelevel.otel4s.metrics.MeasurementValue
+import org.typelevel.otel4s.sdk.TelemetryResource
 import org.typelevel.otel4s.sdk.common.InstrumentationScope
 import org.typelevel.otel4s.sdk.context.Context
-import org.typelevel.otel4s.sdk.metrics.{
-  Aggregation,
-  ExemplarFilter,
-  MeasurementValue,
-  RegisteredReader,
-  RegisteredView
-}
+import org.typelevel.otel4s.sdk.metrics.{Aggregation, ExemplarFilter, RegisteredReader, RegisteredView}
 import org.typelevel.otel4s.sdk.metrics.data.AggregationTemporality
 import org.typelevel.otel4s.sdk.metrics.data.MetricData
 import org.typelevel.otel4s.sdk.metrics.data.PointData
@@ -33,7 +28,7 @@ import scala.concurrent.duration.FiniteDuration
 trait MetricStorage[F[_]] {
   def metricDescriptor: MetricDescriptor
   def collect(
-      resource: Resource,
+      resource: TelemetryResource,
       scope: InstrumentationScope,
       startTimestamp: FiniteDuration,
       collectTimestamp: FiniteDuration
@@ -94,7 +89,7 @@ object MetricStorage {
               descriptor // todo should be noop
 
             def collect(
-                resource: Resource,
+                resource: TelemetryResource,
                 scope: InstrumentationScope,
                 startTimestamp: FiniteDuration,
                 collectTimestamp: FiniteDuration
@@ -157,7 +152,7 @@ object MetricStorage {
       } yield ()
 
     def collect(
-        resource: Resource,
+        resource: TelemetryResource,
         scope: InstrumentationScope,
         startTimestamp: FiniteDuration,
         collectTimestamp: FiniteDuration

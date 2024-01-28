@@ -8,7 +8,8 @@ import cats.syntax.flatMap._
 import cats.syntax.foldable._
 import cats.syntax.functor._
 import cats.syntax.traverse._
-import org.typelevel.otel4s.sdk.Resource
+import org.typelevel.otel4s.metrics.MeasurementValue
+import org.typelevel.otel4s.sdk.TelemetryResource
 import org.typelevel.otel4s.sdk.common.InstrumentationScope
 import org.typelevel.otel4s.sdk.metrics.data.MetricData
 import org.typelevel.otel4s.sdk.metrics.internal.CallbackRegistration
@@ -21,7 +22,7 @@ import scala.concurrent.duration.FiniteDuration
 
 private[metrics] final class MeterSharedState[F[_]: Concurrent](
     mutex: Mutex[F],
-    resource: Resource,
+    resource: TelemetryResource,
     scope: InstrumentationScope,
     startTimestamp: FiniteDuration,
     exemplarFilter: ExemplarFilter,
@@ -56,9 +57,9 @@ private[metrics] final class MeterSharedState[F[_]: Concurrent](
         MetricStorage.Writeable.of(storages: _*)
       }
 
-  def registerLongObservableMeasurement(
+  def registerObservableMeasurement[A: MeasurementValue](
       descriptor: InstrumentDescriptor
-  ): F[SdkObservableMeasurement[F, Long]] = {
+  ): F[SdkObservableMeasurement[F, A]] =
     registries.toVector
       .flatTraverse { case (reader, registry) =>
         reader.viewRegistry.findViews(descriptor, scope).flatTraverse {
@@ -66,31 +67,6 @@ private[metrics] final class MeterSharedState[F[_]: Concurrent](
             if (registeredView.view.aggregation == Aggregation.drop) {
               MonadCancelThrow[F]
                 .pure(Vector.empty[MetricStorage.Asynchronous[F]])
-            } else {
-              for {
-                s <- MetricStorage
-                  .asynchronous(reader, registeredView, descriptor)
-                _ <- registry.register(s)
-              } yield Vector(s)
-            }
-        }
-      }
-      .flatMap { storages =>
-        SdkObservableMeasurement.ofLong(storages, descriptor)
-      }
-  }
-
-  def registerDoubleObservableMeasurement(
-      descriptor: InstrumentDescriptor
-  ): F[SdkObservableMeasurement[F, Double]] =
-    registries.toVector
-      .flatTraverse { case (reader, registry) =>
-        reader.viewRegistry.findViews(descriptor, scope).flatTraverse {
-          registeredView =>
-            if (registeredView.view.aggregation != Aggregation.drop) {
-              MonadCancelThrow[F].pure(
-                Vector.empty[MetricStorage.Asynchronous[F]]
-              )
             } else {
               for {
                 s <- MetricStorage.asynchronous(
@@ -104,7 +80,7 @@ private[metrics] final class MeterSharedState[F[_]: Concurrent](
         }
       }
       .flatMap { storages =>
-        SdkObservableMeasurement.ofDouble(storages, descriptor)
+        SdkObservableMeasurement.create(storages, descriptor)
       }
 
   def collectAll(
@@ -145,7 +121,7 @@ private[metrics] final class MeterSharedState[F[_]: Concurrent](
 private object MeterSharedState {
 
   def create[F[_]: Concurrent](
-      resource: Resource,
+      resource: TelemetryResource,
       scope: InstrumentationScope,
       startTimestamp: FiniteDuration,
       exemplarFilter: ExemplarFilter,

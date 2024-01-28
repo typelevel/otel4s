@@ -1,5 +1,6 @@
 package org.typelevel.otel4s.sdk.metrics
 
+import org.typelevel.otel4s.metrics.BucketBoundaries
 import org.typelevel.otel4s.sdk.metrics.internal.InstrumentType
 
 sealed abstract class Aggregation(

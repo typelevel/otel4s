@@ -4,7 +4,8 @@ import cats.Monad
 import cats.syntax.flatMap._
 import cats.syntax.functor._
 import org.typelevel.otel4s.Attributes
-import org.typelevel.otel4s.sdk.Resource
+import org.typelevel.otel4s.metrics.MeasurementValue
+import org.typelevel.otel4s.sdk.TelemetryResource
 import org.typelevel.otel4s.sdk.common.InstrumentationScope
 import org.typelevel.otel4s.sdk.context.Context
 import org.typelevel.otel4s.sdk.metrics.ExemplarFilter
@@ -40,7 +41,7 @@ private final class SumAggregator[
     } yield new Handle[F, Input, Point, E](adder, reservoir, pointDataBuilder)
 
   def toMetricData(
-      resource: Resource,
+      resource: TelemetryResource,
       scope: InstrumentationScope,
       descriptor: MetricDescriptor,
       points: Vector[Point],
@@ -124,6 +125,14 @@ private object SumAggregator {
         )
       )
     }
+
+    def record[A: MeasurementValue](value: A, attributes: Attributes, context: Context): F[Unit] =
+      MeasurementValue[A] match {
+        case MeasurementValue.LongMeasurementValue(cast)   =>
+          recordLong(cast(value), attributes, context)
+        case MeasurementValue.DoubleMeasurementValue(cast) =>
+          recordDouble(cast(value), attributes, context)
+      }
 
     def recordLong(value: Long, a: Attributes, c: Context): F[Unit] =
       reservoir.offerLongMeasurement(value, a, c) >> adder.addLong(value)

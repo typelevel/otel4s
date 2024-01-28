@@ -3,15 +3,16 @@ package org.typelevel.otel4s.sdk.metrics
 import cats.effect.Clock
 import cats.effect.MonadCancelThrow
 import cats.effect.std.Console
-import org.typelevel.otel4s.metrics.Counter
-import org.typelevel.otel4s.metrics.Histogram
-import org.typelevel.otel4s.metrics.Meter
-import org.typelevel.otel4s.metrics.ObservableCounter
-import org.typelevel.otel4s.metrics.ObservableGauge
-import org.typelevel.otel4s.metrics.ObservableInstrumentBuilder
-import org.typelevel.otel4s.metrics.ObservableUpDownCounter
-import org.typelevel.otel4s.metrics.SyncInstrumentBuilder
-import org.typelevel.otel4s.metrics.UpDownCounter
+import org.typelevel.otel4s.metrics.{
+  Counter,
+  Histogram,
+  MeasurementValue,
+  Meter,
+  ObservableCounter,
+  ObservableGauge,
+  ObservableUpDownCounter,
+  UpDownCounter
+}
 import org.typelevel.otel4s.sdk.context.AskContext
 import org.typelevel.otel4s.sdk.metrics.data.MetricData
 
@@ -21,49 +22,53 @@ private class SdkMeter[F[_]: MonadCancelThrow: Clock: Console: AskContext](
     sharedState: MeterSharedState[F]
 ) extends Meter[F] {
 
-  def counter(name: String): SyncInstrumentBuilder[F, Counter[F, Long]] =
-    if (isValidName(name))
-      SdkLongCounter.Builder[F](name, sharedState)
-    else
-      NoopInstrumentBuilder.sync(name, Counter.noop)
-
-  def histogram(name: String): SyncInstrumentBuilder[F, Histogram[F, Double]] =
-    if (isValidName(name))
-      SdkDoubleHistogram.Builder[F](name, sharedState)
-    else
-      NoopInstrumentBuilder.sync(name, Histogram.noop)
-
-  def upDownCounter(
+  def counter[A: MeasurementValue](
       name: String
-  ): SyncInstrumentBuilder[F, UpDownCounter[F, Long]] =
+  ): Counter.Builder[F, A] =
     if (isValidName(name))
-      SdkLongUpDownCounter.Builder[F](name, sharedState)
+      SdkCounter.Builder(name, sharedState)
     else
-      NoopInstrumentBuilder.sync(name, UpDownCounter.noop)
+      NoopInstrumentBuilder.counter(name)
 
-  def observableGauge(
+  def histogram[A: MeasurementValue](
       name: String
-  ): ObservableInstrumentBuilder[F, Double, ObservableGauge] =
+  ): Histogram.Builder[F, A] =
     if (isValidName(name))
-      SdkDoubleGauge.Builder[F](name, sharedState)
+      SdkHistogram.Builder(name, sharedState)
     else
-      NoopInstrumentBuilder.observable(name, new ObservableGauge {})
+      NoopInstrumentBuilder.histogram(name)
 
-  def observableCounter(
+  def upDownCounter[A: MeasurementValue](
       name: String
-  ): ObservableInstrumentBuilder[F, Long, ObservableCounter] =
+  ): UpDownCounter.Builder[F, A] =
+    if (isValidName(name))
+      SdkUpDownCounter.Builder(name, sharedState)
+    else
+      NoopInstrumentBuilder.upDownCounter(name)
+
+  def observableGauge[A: MeasurementValue](
+      name: String
+  ): ObservableGauge.Builder[F, A] =
+    if (isValidName(name))
+      SdkObservableGauge.Builder(name, sharedState)
+    else
+      NoopInstrumentBuilder.observableGauge(name)
+
+  def observableCounter[A: MeasurementValue](
+      name: String
+  ): ObservableCounter.Builder[F, A] =
     /*if (isValidName(name))
       SdkLongCounter.Builder[F](name, storage)
     else*/
-    NoopInstrumentBuilder.observable(name, new ObservableCounter {})
+    NoopInstrumentBuilder.observableCounter(name)
 
-  def observableUpDownCounter(
+  def observableUpDownCounter[A: MeasurementValue](
       name: String
-  ): ObservableInstrumentBuilder[F, Long, ObservableUpDownCounter] =
+  ): ObservableUpDownCounter.Builder[F, A] =
     /* if (isValidName(name))
       SdkLongCounter.Builder[F](name, storage)
     else*/
-    NoopInstrumentBuilder.observable(name, new ObservableUpDownCounter {})
+    NoopInstrumentBuilder.observableUpDownCounter(name)
 
   def collectAll(
       reader: RegisteredReader[F],

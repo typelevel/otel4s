@@ -4,10 +4,10 @@ import cats.Monad
 import cats.effect.Concurrent
 import cats.syntax.functor._
 import org.typelevel.otel4s.Attributes
-import org.typelevel.otel4s.sdk.Resource
+import org.typelevel.otel4s.metrics.MeasurementValue
+import org.typelevel.otel4s.sdk.TelemetryResource
 import org.typelevel.otel4s.sdk.common.InstrumentationScope
 import org.typelevel.otel4s.sdk.context.Context
-import org.typelevel.otel4s.sdk.metrics.MeasurementValue
 import org.typelevel.otel4s.sdk.metrics.data.AggregationTemporality
 import org.typelevel.otel4s.sdk.metrics.data.Data
 import org.typelevel.otel4s.sdk.metrics.data.ExemplarData
@@ -37,7 +37,7 @@ private final class LastValueAggregator[
     } yield new Handle[F, Input, Point, E](current, pointDataBuilder)
 
   def toMetricData(
-      resource: Resource,
+      resource: TelemetryResource,
       scope: InstrumentationScope,
       descriptor: MetricDescriptor,
       points: Vector[Point],
@@ -107,15 +107,17 @@ private object LastValueAggregator {
       }
 
     def record[A: MeasurementValue](
-                                     value: A, attributes: Attributes, context: Context
-                                   ): F[Unit] =
-      MeasurementValue[A]
+        value: A,
+        attributes: Attributes,
+        context: Context
+    ): F[Unit] =
+      MeasurementValue[A] match {
+        case MeasurementValue.LongMeasurementValue(cast)   =>
+          current.setLong(cast(value))
+        case MeasurementValue.DoubleMeasurementValue(cast) =>
+          current.setDouble(cast(value))
+      }
 
-    def recordLong(value: Long, a: Attributes, c: Context): F[Unit] =
-      current.setLong(value)
-
-    def recordDouble(value: Double, a: Attributes, c: Context): F[Unit] =
-      current.setDouble(value)
   }
 
 }

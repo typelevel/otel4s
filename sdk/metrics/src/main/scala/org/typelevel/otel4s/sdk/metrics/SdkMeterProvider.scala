@@ -15,7 +15,7 @@ import cats.syntax.traverse._
 import org.typelevel.otel4s.Attributes
 import org.typelevel.otel4s.metrics.MeterBuilder
 import org.typelevel.otel4s.metrics.MeterProvider
-import org.typelevel.otel4s.sdk.Resource
+import org.typelevel.otel4s.sdk.TelemetryResource
 import org.typelevel.otel4s.sdk.common.InstrumentationScope
 import org.typelevel.otel4s.sdk.context.AskContext
 import org.typelevel.otel4s.sdk.context.Context
@@ -341,13 +341,13 @@ object CardinalityLimitSelector {
 object SdkMeterProvider {
 
   private[metrics] final case class Config(
-      resource: Resource,
+      resource: TelemetryResource,
       exemplarFilter: ExemplarFilter
   )
 
   sealed trait Builder[F[_]] {
 
-    /** Sets a [[Resource]] to be attached to all spans created by
+    /** Sets a [[TelemetryResource]] to be attached to all spans created by
       * [[org.typelevel.otel4s.trace.Tracer Tracer]].
       *
       * @note
@@ -355,23 +355,23 @@ object SdkMeterProvider {
       *   retained.
       *
       * @param resource
-      *   the [[Resource]] to use
+      *   the [[TelemetryResource]] to use
       */
-    def withResource(resource: Resource): Builder[F]
+    def withResource(resource: TelemetryResource): Builder[F]
 
-    /** Merges the given [[Resource]] with the current one.
+    /** Merges the given [[TelemetryResource]] with the current one.
       *
       * @note
       *   if both resources have different non-empty `schemaUrl`, the merge will
       *   fail.
       *
       * @see
-      *   [[Resource.mergeUnsafe]]
+      *   [[TelemetryResource.mergeUnsafe]]
       *
       * @param resource
-      *   the [[Resource]] to merge the current one with
+      *   the [[TelemetryResource]] to merge the current one with
       */
-    def addResource(resource: Resource): Builder[F]
+    def addResource(resource: TelemetryResource): Builder[F]
 
     def withExemplarFilter(filter: ExemplarFilter): Builder[F]
 
@@ -388,7 +388,7 @@ object SdkMeterProvider {
 
   def builder[F[_]: Temporal: Console: AskContext]: Builder[F] =
     BuilderImpl(
-      resource = Resource.default,
+      resource = TelemetryResource.default,
       exemplarFilter = ExemplarFilter.traceBased,
       registeredViews = Vector.empty,
       metricReaders = Map.empty,
@@ -396,17 +396,17 @@ object SdkMeterProvider {
     )
 
   private final case class BuilderImpl[F[_]: Temporal: Console: AskContext](
-      resource: Resource,
+      resource: TelemetryResource,
       exemplarFilter: ExemplarFilter,
       registeredViews: Vector[RegisteredView],
       metricReaders: Map[MetricReader[F], CardinalityLimitSelector],
       metricProducers: Vector[MetricProducer[F]]
   ) extends Builder[F] {
 
-    def withResource(resource: Resource): Builder[F] =
+    def withResource(resource: TelemetryResource): Builder[F] =
       copy(resource = resource)
 
-    def addResource(resource: Resource): Builder[F] =
+    def addResource(resource: TelemetryResource): Builder[F] =
       copy(resource = this.resource.mergeUnsafe(resource))
 
     def withExemplarFilter(filter: ExemplarFilter): Builder[F] =
@@ -495,7 +495,7 @@ object SdkMeterProvider {
       registry: ComponentRegistry[F, SdkMeter[F]],
       reader: RegisteredReader[F]
   ) extends MetricProducer[F] {
-    def produce(resource: Resource): F[Vector[MetricData]] =
+    def produce(resource: TelemetryResource): F[Vector[MetricData]] =
       registry.components.flatMap { meters =>
         Clock[F].realTime.flatMap { now =>
           for {
@@ -508,7 +508,7 @@ object SdkMeterProvider {
 
   private final class SdkCollectionRegistration[F[_]: Applicative](
       producers: Vector[MetricProducer[F]],
-      resource: Resource
+      resource: TelemetryResource
   ) extends CollectionRegistration[F] {
     def collectAllMetrics: F[Vector[MetricData]] =
       producers.flatTraverse(producer => producer.produce(resource))

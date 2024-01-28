@@ -135,15 +135,38 @@ trait Meter[F[_]] {
       name: String
   ): UpDownCounter.Builder[F, A]
 
-  /** Creates a builder of [[ObservableGauge]] instrument that collects
-    * [[scala.Double]] values from the given callback.
+  /** Creates a builder of [[ObservableGauge]] instrument that collects values
+    * of type `A` from the given callback.
+    *
+    * @note
+    *   the `A` type must be provided explicitly, for example
+    *   `meter.observableGauge[Long]` or `meter.observableGauge[Double]`
+    *
+    * @example
+    *   {{{
+    * val meter: Meter[F] = ???
+    *
+    * val doubleGauge: Resource[F, ObservableGauge] =
+    *   meter
+    *     .observableGauge[Double]("double-gauge")
+    *     .create(Sync[F].delay(List(Measurement(1.0))))
+    *
+    * val longGauge: Resource[F, ObservableGauge] =
+    *   meter
+    *     .observableGauge[Long]("long-gauge")
+    *     .create(Sync[F].delay(List(Measurement(1L))))
+    *   }}}
     *
     * @param name
     *   the name of the instrument
+    *
+    * @tparam A
+    *   the type of the measurement. [[scala.Long]] and [[scala.Double]] are
+    *   supported out of the box
     */
-  def observableGauge(
+  def observableGauge[A: MeasurementValue](
       name: String
-  ): ObservableInstrumentBuilder[F, Double, ObservableGauge]
+  ): ObservableGauge.Builder[F, A]
 
   /** Creates a builder of [[ObservableCounter]] instrument that collects
     * [[scala.Long]] values from the given callback.
@@ -226,20 +249,20 @@ object Meter {
           def create: F[UpDownCounter[F, A]] = F.pure(UpDownCounter.noop)
         }
 
-      def observableGauge(
+      def observableGauge[A: MeasurementValue](
           name: String
-      ): ObservableInstrumentBuilder[F, Double, ObservableGauge] =
-        new ObservableInstrumentBuilder[F, Double, ObservableGauge] {
-          type Self = this.type
-
-          def withUnit(unit: String): Self = this
-          def withDescription(description: String): Self = this
-          def create(
-              measurements: F[List[Measurement[Double]]]
+      ): ObservableGauge.Builder[F, A] =
+        new ObservableGauge.Builder[F, A] {
+          def withUnit(unit: String): ObservableGauge.Builder[F, A] = this
+          def withDescription(
+              description: String
+          ): ObservableGauge.Builder[F, A] = this
+          def createWithCallback(
+              cb: ObservableMeasurement[F, A] => F[Unit]
           ): Resource[F, ObservableGauge] =
             Resource.pure(new ObservableGauge {})
-          def createWithCallback(
-              cb: ObservableMeasurement[F, Double] => F[Unit]
+          def create(
+              measurements: F[Iterable[Measurement[A]]]
           ): Resource[F, ObservableGauge] =
             Resource.pure(new ObservableGauge {})
         }

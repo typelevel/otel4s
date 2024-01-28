@@ -37,7 +37,7 @@ class ObservableSuite extends CatsEffectSuite {
         .get
 
       _ <- meter
-        .observableGauge("gauge")
+        .observableGauge[Double]("gauge")
         .withUnit("unit")
         .withDescription("description")
         .createWithCallback(_.record(42.0, Attribute("foo", "bar")))
@@ -48,7 +48,7 @@ class ObservableSuite extends CatsEffectSuite {
         )
 
       _ <- meter
-        .observableGauge("gauge")
+        .observableGauge[Double]("gauge")
         .withUnit("unit")
         .withDescription("description")
         .create(

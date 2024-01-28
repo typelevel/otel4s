@@ -89,6 +89,15 @@ object ObservableUpDownCounter {
     def create(
         measurements: F[Iterable[Measurement[A]]]
     ): Resource[F, ObservableUpDownCounter]
+
+    /** Creates an observer for this instrument to observe values from a
+      * [[BatchCallback]].
+      *
+      * @note
+      *   The observer '''must''' be registered by [[Meter.batchCallback]].
+      *   Values observed outside registered callbacks are ignored.
+      */
+    def createObserver: F[ObservableMeasurement[F, A]]
   }
 
 }

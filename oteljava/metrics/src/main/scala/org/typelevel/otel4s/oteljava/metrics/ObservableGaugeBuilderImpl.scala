@@ -53,6 +53,9 @@ private[oteljava] case class ObservableGaugeBuilderImpl[F[_], A](
       measurements: F[Iterable[Measurement[A]]]
   ): Resource[F, ObservableGauge] =
     factory.create(name, unit, description, measurements)
+
+  def createObserver: F[ObservableMeasurement[F, A]] =
+    factory.createObserver(name, unit, description)
 }
 
 private[oteljava] object ObservableGaugeBuilderImpl {
@@ -105,11 +108,27 @@ private[oteljava] object ObservableGaugeBuilderImpl {
         )
       }
 
+    final def createObserver(
+        name: String,
+        unit: Option[String],
+        description: Option[String]
+    ): F[ObservableMeasurement[F, A]] =
+      Async[F].delay {
+        val b = jMeter.gaugeBuilder(name)
+        unit.foreach(b.setUnit)
+        description.foreach(b.setDescription)
+        buildObservable(b)
+      }
+
     protected def create(
         builder: DoubleGaugeBuilder,
         dispatcher: Dispatcher[F],
         cb: JMeasurement => F[Unit]
     ): AutoCloseable
+
+    protected def buildObservable(
+        builder: DoubleGaugeBuilder
+    ): ObservableMeasurementImpl[F, A]
 
     protected def doRecord(
         measurement: JMeasurement,
@@ -151,6 +170,14 @@ private[oteljava] object ObservableGaugeBuilderImpl {
           .ofLongs()
           .buildWithCallback(om => dispatcher.unsafeRunSync(cb(om)))
 
+      protected def buildObservable(
+          builder: DoubleGaugeBuilder
+      ): ObservableMeasurementImpl[F, A] =
+        new ObservableMeasurementImpl.LongObservableMeasurement[F, A](
+          cast,
+          builder.ofLongs().buildObserver()
+        )
+
       protected def doRecord(
           om: ObservableLongMeasurement,
           value: A,
@@ -172,6 +199,14 @@ private[oteljava] object ObservableGaugeBuilderImpl {
           cb: ObservableDoubleMeasurement => F[Unit]
       ): AutoCloseable =
         builder.buildWithCallback(om => dispatcher.unsafeRunSync(cb(om)))
+
+      protected def buildObservable(
+          builder: DoubleGaugeBuilder
+      ): ObservableMeasurementImpl[F, A] =
+        new ObservableMeasurementImpl.DoubleObservableMeasurement[F, A](
+          cast,
+          builder.buildObserver()
+        )
 
       protected def doRecord(
           om: ObservableDoubleMeasurement,

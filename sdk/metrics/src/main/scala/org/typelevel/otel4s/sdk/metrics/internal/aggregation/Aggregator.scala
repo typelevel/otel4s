@@ -1,3 +1,19 @@
+/*
+ * Copyright 2024 Typelevel
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.typelevel.otel4s.sdk.metrics.internal.aggregation
 
 import cats.effect.Concurrent
@@ -61,14 +77,15 @@ private[metrics] object Aggregator {
   ): Aggregator[F] = {
     def sum: Aggregator[F] =
       descriptor.valueType match {
-        case InstrumentValueType.Long   => SumAggregator.ofLong(1, filter)
-        case InstrumentValueType.Double => SumAggregator.ofDouble(1, filter)
+        case InstrumentValueType.LongValue => SumAggregator.ofLong(1, filter)
+        case InstrumentValueType.DoubleValue =>
+          SumAggregator.ofDouble(1, filter)
       }
 
     def lastValue: Aggregator[F] =
       descriptor.valueType match {
-        case InstrumentValueType.Long   => LastValueAggregator.ofLong
-        case InstrumentValueType.Double => LastValueAggregator.ofDouble
+        case InstrumentValueType.LongValue   => LastValueAggregator.ofLong
+        case InstrumentValueType.DoubleValue => LastValueAggregator.ofDouble
       }
 
     def histogram: Aggregator[F] = {

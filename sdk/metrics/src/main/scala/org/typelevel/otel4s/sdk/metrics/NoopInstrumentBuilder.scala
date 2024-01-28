@@ -1,7 +1,22 @@
+/*
+ * Copyright 2024 Typelevel
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.typelevel.otel4s.sdk.metrics
 
 import cats.Applicative
-import cats.Functor
 import cats.effect.Resource
 import cats.effect.std.Console
 import cats.syntax.functor._
@@ -48,7 +63,7 @@ object NoopInstrumentBuilder {
       def create: F[UpDownCounter[F, A]] = warn(name).as(UpDownCounter.noop)
     }
 
-  def observableGauge[F[_]: Console, A](
+  def observableGauge[F[_]: Applicative: Console, A](
       name: String
   ): ObservableGauge.Builder[F, A] =
     new ObservableGauge.Builder[F, A] {
@@ -66,11 +81,14 @@ object NoopInstrumentBuilder {
       ): Resource[F, ObservableGauge] =
         createNoop
 
+      def createObserver: F[ObservableMeasurement[F, A]] =
+        warn(name).as(ObservableMeasurement.noop)
+
       private def createNoop: Resource[F, ObservableGauge] =
         Resource.eval(warn(name)).as(new ObservableGauge {})
     }
 
-  def observableCounter[F[_]: Console, A](
+  def observableCounter[F[_]: Applicative: Console, A](
       name: String
   ): ObservableCounter.Builder[F, A] =
     new ObservableCounter.Builder[F, A] {
@@ -89,11 +107,14 @@ object NoopInstrumentBuilder {
       ): Resource[F, ObservableCounter] =
         createNoop
 
+      def createObserver: F[ObservableMeasurement[F, A]] =
+        warn(name).as(ObservableMeasurement.noop)
+
       private def createNoop: Resource[F, ObservableCounter] =
         Resource.eval(warn(name)).as(new ObservableCounter {})
     }
 
-  def observableUpDownCounter[F[_]: Console, A](
+  def observableUpDownCounter[F[_]: Applicative: Console, A](
       name: String
   ): ObservableUpDownCounter.Builder[F, A] =
     new ObservableUpDownCounter.Builder[F, A] {
@@ -111,6 +132,9 @@ object NoopInstrumentBuilder {
           measurements: F[Iterable[Measurement[A]]]
       ): Resource[F, ObservableUpDownCounter] =
         createNoop
+
+      def createObserver: F[ObservableMeasurement[F, A]] =
+        warn(name).as(ObservableMeasurement.noop)
 
       private def createNoop: Resource[F, ObservableUpDownCounter] =
         Resource.eval(warn(name)).as(new ObservableUpDownCounter {})

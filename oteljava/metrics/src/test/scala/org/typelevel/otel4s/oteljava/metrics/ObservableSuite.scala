@@ -37,7 +37,7 @@ class ObservableSuite extends CatsEffectSuite {
         .get
 
       _ <- meter
-        .observableGauge("gauge")
+        .observableGauge[Double]("gauge")
         .withUnit("unit")
         .withDescription("description")
         .createWithCallback(_.record(42.0, Attribute("foo", "bar")))
@@ -48,14 +48,14 @@ class ObservableSuite extends CatsEffectSuite {
         )
 
       _ <- meter
-        .observableGauge("gauge")
+        .observableGauge[Double]("gauge")
         .withUnit("unit")
         .withDescription("description")
         .create(
           IO.pure(
             List(
-              Measurement(1336.0, List(Attribute("1", "2"))),
-              Measurement(1337.0, List(Attribute("a", "b")))
+              Measurement(1336.0, Attribute("1", "2")),
+              Measurement(1337.0, Attribute("a", "b"))
             )
           )
         )
@@ -89,7 +89,7 @@ class ObservableSuite extends CatsEffectSuite {
         .get
 
       _ <- meter
-        .observableCounter("counter")
+        .observableCounter[Long]("counter")
         .withUnit("unit")
         .withDescription("description")
         .createWithCallback(_.record(1234, Attribute("number", 42L)))
@@ -100,14 +100,14 @@ class ObservableSuite extends CatsEffectSuite {
         )
 
       _ <- meter
-        .observableCounter("counter")
+        .observableCounter[Long]("counter")
         .withUnit("unit")
         .withDescription("description")
         .create(
           IO.pure(
             List(
-              Measurement(1336, List(Attribute("1", "2"))),
-              Measurement(1337, List(Attribute("a", "b")))
+              Measurement(1336, Attribute("1", "2")),
+              Measurement(1337, Attribute("a", "b"))
             )
           )
         )
@@ -139,7 +139,7 @@ class ObservableSuite extends CatsEffectSuite {
         .get
 
       _ <- meter
-        .observableUpDownCounter("updowncounter")
+        .observableUpDownCounter[Long]("updowncounter")
         .withUnit("unit")
         .withDescription("description")
         .createWithCallback(
@@ -152,14 +152,14 @@ class ObservableSuite extends CatsEffectSuite {
         )
 
       _ <- meter
-        .observableUpDownCounter("updowncounter")
+        .observableUpDownCounter[Long]("updowncounter")
         .withUnit("unit")
         .withDescription("description")
         .create(
           IO.pure(
             List(
-              Measurement(1336, List(Attribute("1", "2"))),
-              Measurement(1336, List(Attribute("a", "b")))
+              Measurement(1336, Attribute("1", "2")),
+              Measurement(1336, Attribute("a", "b"))
             )
           )
         )

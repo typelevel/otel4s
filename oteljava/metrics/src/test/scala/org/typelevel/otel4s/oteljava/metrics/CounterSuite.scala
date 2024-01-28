@@ -40,7 +40,7 @@ class CounterSuite extends CatsEffectSuite {
         .get
 
       counter <- meter
-        .counter("counter")
+        .counter[Long]("counter")
         .withUnit("unit")
         .withDescription("description")
         .create

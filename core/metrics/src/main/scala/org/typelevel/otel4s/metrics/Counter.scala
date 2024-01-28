@@ -116,4 +116,9 @@ object Counter {
         }
     }
 
+  private[otel4s] def fromBackend[F[_], A](b: Backend[F, A]): Counter[F, A] =
+    new Counter[F, A] {
+      def backend: Backend[F, A] = b
+    }
+
 }

@@ -20,26 +20,115 @@ package metrics
 
 import cats.effect.kernel.Sync
 import io.opentelemetry.api.metrics.{Meter => JMeter}
+import org.typelevel.otel4s.meta.InstrumentMeta
 import org.typelevel.otel4s.metrics._
 
-private[oteljava] case class CounterBuilderImpl[F[_]](
-    jMeter: JMeter,
+private[oteljava] case class CounterBuilderImpl[F[_], A](
+    factory: CounterBuilderImpl.Factory[F, A],
     name: String,
     unit: Option[String] = None,
     description: Option[String] = None
-)(implicit F: Sync[F])
-    extends Counter.Builder[F, Long] {
+) extends Counter.Builder[F, A] {
 
-  def withUnit(unit: String): Counter.Builder[F, Long] =
+  def withUnit(unit: String): Counter.Builder[F, A] =
     copy(unit = Option(unit))
 
-  def withDescription(description: String): Counter.Builder[F, Long] =
+  def withDescription(description: String): Counter.Builder[F, A] =
     copy(description = Option(description))
 
-  def create: F[Counter[F, Long]] = F.delay {
-    val b = jMeter.counterBuilder(name)
-    unit.foreach(b.setUnit)
-    description.foreach(b.setDescription)
-    new CounterImpl(b.build)
+  def create: F[Counter[F, A]] =
+    factory.create(name, unit, description)
+
+}
+
+private[oteljava] object CounterBuilderImpl {
+
+  def apply[F[_]: Sync, A: MeasurementValue](
+      jMeter: JMeter,
+      name: String
+  ): Counter.Builder[F, A] =
+    MeasurementValue[A] match {
+      case MeasurementValue.LongMeasurementValue(cast) =>
+        CounterBuilderImpl(longFactory(jMeter, cast), name)
+
+      case MeasurementValue.DoubleMeasurementValue(cast) =>
+        CounterBuilderImpl(doubleFactory(jMeter, cast), name)
+    }
+
+  private[oteljava] trait Factory[F[_], A] {
+    def create(
+        name: String,
+        unit: Option[String],
+        description: Option[String]
+    ): F[Counter[F, A]]
   }
+
+  private def longFactory[F[_]: Sync, A](
+      jMeter: JMeter,
+      cast: A => Long
+  ): Factory[F, A] =
+    new Factory[F, A] {
+      def create(
+          name: String,
+          unit: Option[String],
+          description: Option[String]
+      ): F[Counter[F, A]] =
+        Sync[F].delay {
+          val builder = jMeter.counterBuilder(name)
+          unit.foreach(builder.setUnit)
+          description.foreach(builder.setDescription)
+          val counter = builder.build()
+
+          val backend = new Counter.Backend[F, A] {
+            val meta: InstrumentMeta[F] = InstrumentMeta.enabled
+
+            def add(value: A, attributes: Attribute[_]*): F[Unit] =
+              Sync[F].delay(
+                counter.add(cast(value), Conversions.toJAttributes(attributes))
+              )
+
+            def inc(attributes: Attribute[_]*): F[Unit] =
+              Sync[F].delay(
+                counter.add(1L, Conversions.toJAttributes(attributes))
+              )
+          }
+
+          Counter.fromBackend(backend)
+        }
+    }
+
+  private def doubleFactory[F[_]: Sync, A](
+      jMeter: JMeter,
+      cast: A => Double
+  ): Factory[F, A] =
+    new Factory[F, A] {
+      def create(
+          name: String,
+          unit: Option[String],
+          description: Option[String]
+      ): F[Counter[F, A]] =
+        Sync[F].delay {
+          val builder = jMeter.counterBuilder(name)
+          unit.foreach(builder.setUnit)
+          description.foreach(builder.setDescription)
+          val counter = builder.ofDoubles().build()
+
+          val backend = new Counter.Backend[F, A] {
+            val meta: InstrumentMeta[F] = InstrumentMeta.enabled
+
+            def add(value: A, attributes: Attribute[_]*): F[Unit] =
+              Sync[F].delay(
+                counter.add(cast(value), Conversions.toJAttributes(attributes))
+              )
+
+            def inc(attributes: Attribute[_]*): F[Unit] =
+              Sync[F].delay(
+                counter.add(1.0, Conversions.toJAttributes(attributes))
+              )
+          }
+
+          Counter.fromBackend(backend)
+        }
+    }
+
 }

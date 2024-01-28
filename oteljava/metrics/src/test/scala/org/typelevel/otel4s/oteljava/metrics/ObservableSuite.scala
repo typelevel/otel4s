@@ -54,8 +54,8 @@ class ObservableSuite extends CatsEffectSuite {
         .create(
           IO.pure(
             List(
-              Measurement(1336.0, List(Attribute("1", "2"))),
-              Measurement(1337.0, List(Attribute("a", "b")))
+              Measurement(1336.0, Attribute("1", "2")),
+              Measurement(1337.0, Attribute("a", "b"))
             )
           )
         )
@@ -106,8 +106,8 @@ class ObservableSuite extends CatsEffectSuite {
         .create(
           IO.pure(
             List(
-              Measurement(1336, List(Attribute("1", "2"))),
-              Measurement(1337, List(Attribute("a", "b")))
+              Measurement(1336, Attribute("1", "2")),
+              Measurement(1337, Attribute("a", "b"))
             )
           )
         )
@@ -158,8 +158,8 @@ class ObservableSuite extends CatsEffectSuite {
         .create(
           IO.pure(
             List(
-              Measurement(1336, List(Attribute("1", "2"))),
-              Measurement(1336, List(Attribute("a", "b")))
+              Measurement(1336, Attribute("1", "2")),
+              Measurement(1336, Attribute("a", "b"))
             )
           )
         )

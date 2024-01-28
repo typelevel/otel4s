@@ -57,8 +57,8 @@ class ObservableSuite extends CatsEffectSuite {
             .getAndUpdate(_ + 1)
             .map(x =>
               List(
-                Measurement(x, List(Attribute("thing", "a"))),
-                Measurement(x, List(Attribute("thing", "b")))
+                Measurement(x, Attribute("thing", "a")),
+                Measurement(x, Attribute("thing", "b"))
               )
             )
         )
@@ -93,8 +93,8 @@ object ObservableSuite {
   ) {
     def run: IO[Unit] =
       callback(new ObservableMeasurement[IO, A] {
-        def record(value: A, attributes: Attribute[_]*): IO[Unit] =
-          observations.update(Record(value, attributes) :: _)
+        def record(value: A, attributes: Attributes): IO[Unit] =
+          observations.update(Record(value, attributes.toSeq) :: _)
       })
   }
 
@@ -117,7 +117,7 @@ object ObservableSuite {
           InMemoryObservable[A](
             recorder =>
               measurements.flatMap(
-                _.traverse_(x => recorder.record(x.value, x.attributes: _*))
+                _.traverse_(x => recorder.record(x.value, x.attributes))
               ),
             obs
           )

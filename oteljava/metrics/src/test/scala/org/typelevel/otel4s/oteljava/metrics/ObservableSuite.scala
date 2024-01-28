@@ -89,7 +89,7 @@ class ObservableSuite extends CatsEffectSuite {
         .get
 
       _ <- meter
-        .observableCounter("counter")
+        .observableCounter[Long]("counter")
         .withUnit("unit")
         .withDescription("description")
         .createWithCallback(_.record(1234, Attribute("number", 42L)))
@@ -100,7 +100,7 @@ class ObservableSuite extends CatsEffectSuite {
         )
 
       _ <- meter
-        .observableCounter("counter")
+        .observableCounter[Long]("counter")
         .withUnit("unit")
         .withDescription("description")
         .create(

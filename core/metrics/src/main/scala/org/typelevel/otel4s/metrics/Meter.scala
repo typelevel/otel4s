@@ -168,21 +168,44 @@ trait Meter[F[_]] {
       name: String
   ): ObservableGauge.Builder[F, A]
 
-  /** Creates a builder of [[ObservableCounter]] instrument that collects
-    * [[scala.Long]] values from the given callback.
+  /** Creates a builder of [[ObservableCounter]] instrument that collects values
+    * of type `A` from the given callback.
     *
     * The [[ObservableCounter]] is monotonic. This means the aggregated value is
     * nominally increasing.
+    *
+    * @note
+    *   the `A` type must be provided explicitly, for example
+    *   `meter.observableCounter[Long]` or `meter.observableCounter[Double]`
+    *
+    * @example
+    *   {{{
+    * val meter: Meter[F] = ???
+    *
+    * val doubleObservableCounter: Resource[F, ObservableCounter] =
+    *   meter
+    *     .observableCounter[Double]("double-counter")
+    *     .create(Sync[F].delay(List(Measurement(1.0))))
+    *
+    * val longObservableCounter: Resource[F, ObservableCounter] =
+    *   meter
+    *     .observableCounter[Long]("long-counter")
+    *     .create(Sync[F].delay(List(Measurement(1L))))
+    *   }}}
     *
     * @see
     *   See [[observableUpDownCounter]] for non-monotonic alternative
     *
     * @param name
     *   the name of the instrument
+    *
+    * @tparam A
+    *   the type of the measurement. [[scala.Long]] and [[scala.Double]] are
+    *   supported out of the box
     */
-  def observableCounter(
+  def observableCounter[A: MeasurementValue](
       name: String
-  ): ObservableInstrumentBuilder[F, Long, ObservableCounter]
+  ): ObservableCounter.Builder[F, A]
 
   /** Creates a builder of [[ObservableUpDownCounter]] instrument that collects
     * [[scala.Long]] values from the given callback.
@@ -267,20 +290,20 @@ object Meter {
             Resource.pure(new ObservableGauge {})
         }
 
-      def observableCounter(
+      def observableCounter[A: MeasurementValue](
           name: String
-      ): ObservableInstrumentBuilder[F, Long, ObservableCounter] =
-        new ObservableInstrumentBuilder[F, Long, ObservableCounter] {
-          type Self = this.type
-
-          def withUnit(unit: String): Self = this
-          def withDescription(description: String): Self = this
-          def create(
-              measurements: F[List[Measurement[Long]]]
+      ): ObservableCounter.Builder[F, A] =
+        new ObservableCounter.Builder[F, A] {
+          def withUnit(unit: String): ObservableCounter.Builder[F, A] = this
+          def withDescription(
+              description: String
+          ): ObservableCounter.Builder[F, A] = this
+          def createWithCallback(
+              cb: ObservableMeasurement[F, A] => F[Unit]
           ): Resource[F, ObservableCounter] =
             Resource.pure(new ObservableCounter {})
-          def createWithCallback(
-              cb: ObservableMeasurement[F, Long] => F[Unit]
+          def create(
+              measurements: F[Iterable[Measurement[A]]]
           ): Resource[F, ObservableCounter] =
             Resource.pure(new ObservableCounter {})
         }

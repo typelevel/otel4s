@@ -208,20 +208,48 @@ trait Meter[F[_]] {
   ): ObservableCounter.Builder[F, A]
 
   /** Creates a builder of [[ObservableUpDownCounter]] instrument that collects
-    * [[scala.Long]] values from the given callback.
+    * values of type `A` from the given callback.
     *
     * The [[ObservableUpDownCounter]] is non-monotonic. This means the
     * aggregated value can increase and decrease.
+    *
+    * @note
+    *   the `A` type must be provided explicitly, for example
+    *   `meter.observableUpDownCounter[Long]` or
+    *   `meter.observableUpDownCounter[Double]`
+    *
+    * @example
+    *   {{{
+    * val meter: Meter[F] = ???
+    *
+    * val doubleObservableUpDownCounter: Resource[F, ObservableUpDownCounter] =
+    *   meter
+    *     .observableUpDownCounter[Double]("double-up-down-counter")
+    *     .create(Sync[F].delay(List(Measurement(1.0))))
+    *
+    * val longObservableUpDownCounter: Resource[F, ObservableUpDownCounter] =
+    *   meter
+    *     .observableUpDownCounter[Long]("long-up-down-counter")
+    *     .create(Sync[F].delay(List(Measurement(1L))))
+    *   }}}
+    *
+    * @note
+    *   the `A` type must be provided explicitly, for example
+    *   `meter.observableCounter[Long]` or `meter.observableCounter[Double]`
     *
     * @see
     *   See [[observableCounter]] for monotonic alternative
     *
     * @param name
     *   the name of the instrument
+    *
+    * @tparam A
+    *   the type of the measurement. [[scala.Long]] and [[scala.Double]] are
+    *   supported out of the box
     */
-  def observableUpDownCounter(
+  def observableUpDownCounter[A: MeasurementValue](
       name: String
-  ): ObservableInstrumentBuilder[F, Long, ObservableUpDownCounter]
+  ): ObservableUpDownCounter.Builder[F, A]
 
 }
 
@@ -308,20 +336,21 @@ object Meter {
             Resource.pure(new ObservableCounter {})
         }
 
-      def observableUpDownCounter(
+      def observableUpDownCounter[A: MeasurementValue](
           name: String
-      ): ObservableInstrumentBuilder[F, Long, ObservableUpDownCounter] =
-        new ObservableInstrumentBuilder[F, Long, ObservableUpDownCounter] {
-          type Self = this.type
-
-          def withUnit(unit: String): Self = this
-          def withDescription(description: String): Self = this
-          def create(
-              measurements: F[List[Measurement[Long]]]
+      ): ObservableUpDownCounter.Builder[F, A] =
+        new ObservableUpDownCounter.Builder[F, A] {
+          def withUnit(unit: String): ObservableUpDownCounter.Builder[F, A] =
+            this
+          def withDescription(
+              description: String
+          ): ObservableUpDownCounter.Builder[F, A] = this
+          def createWithCallback(
+              cb: ObservableMeasurement[F, A] => F[Unit]
           ): Resource[F, ObservableUpDownCounter] =
             Resource.pure(new ObservableUpDownCounter {})
-          def createWithCallback(
-              cb: ObservableMeasurement[F, Long] => F[Unit]
+          def create(
+              measurements: F[Iterable[Measurement[A]]]
           ): Resource[F, ObservableUpDownCounter] =
             Resource.pure(new ObservableUpDownCounter {})
         }

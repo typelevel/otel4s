@@ -46,8 +46,8 @@ private[oteljava] class MeterImpl[F[_]: Async](jMeter: JMeter)
   ): ObservableCounter.Builder[F, A] =
     ObservableCounterBuilderImpl(jMeter, name)
 
-  def observableUpDownCounter(
+  def observableUpDownCounter[A: MeasurementValue](
       name: String
-  ): ObservableInstrumentBuilder[F, Long, ObservableUpDownCounter] =
-    new ObservableUpDownCounterBuilderImpl(jMeter, name)
+  ): ObservableUpDownCounter.Builder[F, A] =
+    ObservableUpDownCounterBuilderImpl(jMeter, name)
 }

@@ -41,10 +41,10 @@ private[oteljava] class MeterImpl[F[_]: Async](jMeter: JMeter)
   ): ObservableGauge.Builder[F, A] =
     ObservableGaugeBuilderImpl(jMeter, name)
 
-  def observableCounter(
+  def observableCounter[A: MeasurementValue](
       name: String
-  ): ObservableInstrumentBuilder[F, Long, ObservableCounter] =
-    new ObservableCounterBuilderImpl(jMeter, name)
+  ): ObservableCounter.Builder[F, A] =
+    ObservableCounterBuilderImpl(jMeter, name)
 
   def observableUpDownCounter(
       name: String

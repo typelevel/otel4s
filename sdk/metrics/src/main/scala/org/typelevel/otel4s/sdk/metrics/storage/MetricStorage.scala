@@ -13,7 +13,10 @@ import org.typelevel.otel4s.metrics.MeasurementValue
 import org.typelevel.otel4s.sdk.TelemetryResource
 import org.typelevel.otel4s.sdk.common.InstrumentationScope
 import org.typelevel.otel4s.sdk.context.Context
-import org.typelevel.otel4s.sdk.metrics.{Aggregation, ExemplarFilter, RegisteredReader, RegisteredView}
+import org.typelevel.otel4s.sdk.metrics.Aggregation
+import org.typelevel.otel4s.sdk.metrics.ExemplarFilter
+import org.typelevel.otel4s.sdk.metrics.RegisteredReader
+import org.typelevel.otel4s.sdk.metrics.RegisteredView
 import org.typelevel.otel4s.sdk.metrics.data.AggregationTemporality
 import org.typelevel.otel4s.sdk.metrics.data.MetricData
 import org.typelevel.otel4s.sdk.metrics.data.PointData

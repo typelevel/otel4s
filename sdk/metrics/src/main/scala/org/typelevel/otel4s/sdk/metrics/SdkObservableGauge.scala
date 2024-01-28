@@ -1,25 +1,24 @@
 package org.typelevel.otel4s.sdk.metrics
 
 import cats.data.NonEmptyList
-import cats.effect.{Async, Clock, MonadCancelThrow, Resource}
+import cats.effect.Async
+import cats.effect.Clock
+import cats.effect.MonadCancelThrow
+import cats.effect.Resource
 import cats.effect.std.Console
 import cats.syntax.flatMap._
 import cats.syntax.foldable._
 import cats.syntax.functor._
-import org.typelevel.otel4s.metrics.{
-  Measurement,
-  MeasurementValue,
-  ObservableGauge,
-  ObservableMeasurement
-}
+import org.typelevel.otel4s.metrics.Measurement
+import org.typelevel.otel4s.metrics.MeasurementValue
+import org.typelevel.otel4s.metrics.ObservableGauge
+import org.typelevel.otel4s.metrics.ObservableMeasurement
 import org.typelevel.otel4s.sdk.context.AskContext
-import org.typelevel.otel4s.sdk.metrics.internal.{
-  Advice,
-  CallbackRegistration,
-  InstrumentDescriptor,
-  InstrumentType,
-  InstrumentValueType,
-}
+import org.typelevel.otel4s.sdk.metrics.internal.Advice
+import org.typelevel.otel4s.sdk.metrics.internal.CallbackRegistration
+import org.typelevel.otel4s.sdk.metrics.internal.InstrumentDescriptor
+import org.typelevel.otel4s.sdk.metrics.internal.InstrumentType
+import org.typelevel.otel4s.sdk.metrics.internal.InstrumentValueType
 
 private object SdkObservableGauge {
 

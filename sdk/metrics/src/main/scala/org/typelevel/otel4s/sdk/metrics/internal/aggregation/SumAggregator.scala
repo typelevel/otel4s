@@ -126,18 +126,26 @@ private object SumAggregator {
       )
     }
 
-    def record[A: MeasurementValue](value: A, attributes: Attributes, context: Context): F[Unit] =
+    def record[A: MeasurementValue](
+        value: A,
+        attributes: Attributes,
+        context: Context
+    ): F[Unit] =
       MeasurementValue[A] match {
-        case MeasurementValue.LongMeasurementValue(cast)   =>
+        case MeasurementValue.LongMeasurementValue(cast) =>
           recordLong(cast(value), attributes, context)
         case MeasurementValue.DoubleMeasurementValue(cast) =>
           recordDouble(cast(value), attributes, context)
       }
 
-    def recordLong(value: Long, a: Attributes, c: Context): F[Unit] =
+    private def recordLong(value: Long, a: Attributes, c: Context): F[Unit] =
       reservoir.offerLongMeasurement(value, a, c) >> adder.addLong(value)
 
-    def recordDouble(value: Double, a: Attributes, c: Context): F[Unit] =
+    private def recordDouble(
+        value: Double,
+        a: Attributes,
+        c: Context
+    ): F[Unit] =
       reservoir.offerDoubleMeasurement(value, a, c) >> adder.addDouble(value)
   }
 

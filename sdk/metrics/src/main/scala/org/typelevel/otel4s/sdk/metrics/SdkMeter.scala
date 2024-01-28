@@ -3,16 +3,14 @@ package org.typelevel.otel4s.sdk.metrics
 import cats.effect.Clock
 import cats.effect.MonadCancelThrow
 import cats.effect.std.Console
-import org.typelevel.otel4s.metrics.{
-  Counter,
-  Histogram,
-  MeasurementValue,
-  Meter,
-  ObservableCounter,
-  ObservableGauge,
-  ObservableUpDownCounter,
-  UpDownCounter
-}
+import org.typelevel.otel4s.metrics.Counter
+import org.typelevel.otel4s.metrics.Histogram
+import org.typelevel.otel4s.metrics.MeasurementValue
+import org.typelevel.otel4s.metrics.Meter
+import org.typelevel.otel4s.metrics.ObservableCounter
+import org.typelevel.otel4s.metrics.ObservableGauge
+import org.typelevel.otel4s.metrics.ObservableUpDownCounter
+import org.typelevel.otel4s.metrics.UpDownCounter
 import org.typelevel.otel4s.sdk.context.AskContext
 import org.typelevel.otel4s.sdk.metrics.data.MetricData
 

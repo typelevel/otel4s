@@ -160,17 +160,33 @@ object ViewRegistry {
 }
 
 trait ExemplarFilter {
-  def shouldSample(value: Long, attributes: Attributes, context: Context): Boolean
-  def shouldSample(value: Double, attributes: Attributes, context: Context): Boolean
+  def shouldSample(
+      value: Long,
+      attributes: Attributes,
+      context: Context
+  ): Boolean
+  def shouldSample(
+      value: Double,
+      attributes: Attributes,
+      context: Context
+  ): Boolean
 
 }
 
 object ExemplarFilter {
   def traceBased: ExemplarFilter = new ExemplarFilter {
-    def shouldSample(value: Long, attributes: Attributes, context: Context): Boolean =
+    def shouldSample(
+        value: Long,
+        attributes: Attributes,
+        context: Context
+    ): Boolean =
       true
 
-    def shouldSample(value: Double, attributes: Attributes, context: Context): Boolean =
+    def shouldSample(
+        value: Double,
+        attributes: Attributes,
+        context: Context
+    ): Boolean =
       true
   }
 }

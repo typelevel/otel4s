@@ -1,20 +1,19 @@
 package org.typelevel.otel4s.sdk.metrics
 
-import cats.{Applicative, Functor}
+import cats.Applicative
+import cats.Functor
 import cats.effect.Resource
 import cats.effect.std.Console
 import cats.syntax.functor._
-import org.typelevel.otel4s.metrics.{
-  BucketBoundaries,
-  Counter,
-  Histogram,
-  Measurement,
-  ObservableCounter,
-  ObservableGauge,
-  ObservableMeasurement,
-  ObservableUpDownCounter,
-  UpDownCounter
-}
+import org.typelevel.otel4s.metrics.BucketBoundaries
+import org.typelevel.otel4s.metrics.Counter
+import org.typelevel.otel4s.metrics.Histogram
+import org.typelevel.otel4s.metrics.Measurement
+import org.typelevel.otel4s.metrics.ObservableCounter
+import org.typelevel.otel4s.metrics.ObservableGauge
+import org.typelevel.otel4s.metrics.ObservableMeasurement
+import org.typelevel.otel4s.metrics.ObservableUpDownCounter
+import org.typelevel.otel4s.metrics.UpDownCounter
 
 object NoopInstrumentBuilder {
 

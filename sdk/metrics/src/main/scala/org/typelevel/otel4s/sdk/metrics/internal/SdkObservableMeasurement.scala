@@ -9,7 +9,8 @@ import cats.syntax.foldable._
 import cats.syntax.functor._
 import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.Attributes
-import org.typelevel.otel4s.metrics.{MeasurementValue, ObservableMeasurement}
+import org.typelevel.otel4s.metrics.MeasurementValue
+import org.typelevel.otel4s.metrics.ObservableMeasurement
 import org.typelevel.otel4s.sdk.metrics.RegisteredReader
 import org.typelevel.otel4s.sdk.metrics.storage.MetricStorage
 

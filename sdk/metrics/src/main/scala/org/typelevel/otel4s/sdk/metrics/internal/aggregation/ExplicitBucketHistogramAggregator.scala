@@ -1,17 +1,24 @@
 package org.typelevel.otel4s.sdk.metrics.internal.aggregation
 
 import cats.FlatMap
-import cats.effect.{Concurrent, Ref}
+import cats.effect.Concurrent
+import cats.effect.Ref
 import cats.syntax.flatMap._
 import cats.syntax.functor._
 import org.typelevel.otel4s.Attributes
-import org.typelevel.otel4s.metrics.{BucketBoundaries, MeasurementValue}
+import org.typelevel.otel4s.metrics.BucketBoundaries
+import org.typelevel.otel4s.metrics.MeasurementValue
 import org.typelevel.otel4s.sdk.TelemetryResource
 import org.typelevel.otel4s.sdk.common.InstrumentationScope
 import org.typelevel.otel4s.sdk.context.Context
 import org.typelevel.otel4s.sdk.metrics.ExemplarFilter
-import org.typelevel.otel4s.sdk.metrics.data.{AggregationTemporality, Data, ExemplarData, MetricData, PointData}
-import org.typelevel.otel4s.sdk.metrics.internal.{ExemplarReservoir, MetricDescriptor}
+import org.typelevel.otel4s.sdk.metrics.data.AggregationTemporality
+import org.typelevel.otel4s.sdk.metrics.data.Data
+import org.typelevel.otel4s.sdk.metrics.data.ExemplarData
+import org.typelevel.otel4s.sdk.metrics.data.MetricData
+import org.typelevel.otel4s.sdk.metrics.data.PointData
+import org.typelevel.otel4s.sdk.metrics.internal.ExemplarReservoir
+import org.typelevel.otel4s.sdk.metrics.internal.MetricDescriptor
 
 import scala.concurrent.duration.FiniteDuration
 
@@ -106,9 +113,13 @@ private object ExplicitBucketHistogramAggregator {
         }
       }
 
-    def record[A: MeasurementValue](value: A, attributes: Attributes, context: Context): F[Unit] =
+    def record[A: MeasurementValue](
+        value: A,
+        attributes: Attributes,
+        context: Context
+    ): F[Unit] =
       MeasurementValue[A] match {
-        case MeasurementValue.LongMeasurementValue(cast)   =>
+        case MeasurementValue.LongMeasurementValue(cast) =>
           recordLong(cast(value), attributes, context)
         case MeasurementValue.DoubleMeasurementValue(cast) =>
           recordDouble(cast(value), attributes, context)

@@ -8,7 +8,8 @@ import cats.syntax.functor._
 import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.Attributes
 import org.typelevel.otel4s.meta.InstrumentMeta
-import org.typelevel.otel4s.metrics.{MeasurementValue, UpDownCounter}
+import org.typelevel.otel4s.metrics.MeasurementValue
+import org.typelevel.otel4s.metrics.UpDownCounter
 import org.typelevel.otel4s.sdk.context.AskContext
 import org.typelevel.otel4s.sdk.context.Context
 import org.typelevel.otel4s.sdk.metrics.internal.Advice

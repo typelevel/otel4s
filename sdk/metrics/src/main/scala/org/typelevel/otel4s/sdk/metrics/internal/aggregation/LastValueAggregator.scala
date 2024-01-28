@@ -112,7 +112,7 @@ private object LastValueAggregator {
         context: Context
     ): F[Unit] =
       MeasurementValue[A] match {
-        case MeasurementValue.LongMeasurementValue(cast)   =>
+        case MeasurementValue.LongMeasurementValue(cast) =>
           current.setLong(cast(value))
         case MeasurementValue.DoubleMeasurementValue(cast) =>
           current.setDouble(cast(value))

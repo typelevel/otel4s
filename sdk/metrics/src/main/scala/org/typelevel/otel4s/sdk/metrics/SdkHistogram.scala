@@ -9,7 +9,9 @@ import cats.syntax.flatMap._
 import cats.syntax.functor._
 import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.Attributes
-import org.typelevel.otel4s.metrics.{BucketBoundaries, Histogram, MeasurementValue}
+import org.typelevel.otel4s.metrics.BucketBoundaries
+import org.typelevel.otel4s.metrics.Histogram
+import org.typelevel.otel4s.metrics.MeasurementValue
 import org.typelevel.otel4s.sdk.context.AskContext
 import org.typelevel.otel4s.sdk.context.Context
 import org.typelevel.otel4s.sdk.metrics.internal.Advice
@@ -18,33 +20,39 @@ import org.typelevel.otel4s.sdk.metrics.internal.InstrumentType
 import org.typelevel.otel4s.sdk.metrics.internal.InstrumentValueType
 import org.typelevel.otel4s.sdk.metrics.storage.MetricStorage
 
-import scala.concurrent.duration.{FiniteDuration, TimeUnit}
+import scala.concurrent.duration.FiniteDuration
+import scala.concurrent.duration.TimeUnit
 
 private object SdkHistogram {
 
   private final class Backend[
-    F[_]: Monad: Clock: Console: AskContext,
-    A,
-    Primitive: MeasurementValue: Numeric
+      F[_]: Monad: Clock: Console: AskContext,
+      A,
+      Primitive: MeasurementValue: Numeric
   ](
-     cast: A => Primitive,
-     castDuration: Double => Primitive,
-     name: String,
-     storage: MetricStorage.Writeable[F]
-   ) extends Histogram.Backend[F, A] {
+      cast: A => Primitive,
+      castDuration: Double => Primitive,
+      name: String,
+      storage: MetricStorage.Writeable[F]
+  ) extends Histogram.Backend[F, A] {
     def meta: Histogram.Meta[F] = Histogram.Meta.enabled
 
     def record(value: A, attributes: Attribute[_]*): F[Unit] =
       doRecord(cast(value), Attributes.fromSpecific(attributes))
 
-    def recordDuration(timeUnit: TimeUnit, attributes: Attribute[_]*): Resource[F, Unit] =
+    def recordDuration(
+        timeUnit: TimeUnit,
+        attributes: Attribute[_]*
+    ): Resource[F, Unit] =
       Resource
         .makeCase(Clock[F].monotonic) { case (start, ec) =>
           for {
             end <- Clock[F].monotonic
             _ <- doRecord(
               castDuration((end - start).toUnit(timeUnit)),
-              Attributes.fromSpecific(attributes ++ Histogram.causeAttributes(ec))
+              Attributes.fromSpecific(
+                attributes ++ Histogram.causeAttributes(ec)
+              )
             )
           } yield ()
         }
@@ -100,7 +108,7 @@ private object SdkHistogram {
       } yield {
         val backend: Histogram.Backend[F, A] =
           MeasurementValue[A] match {
-            case MeasurementValue.LongMeasurementValue(cast)   =>
+            case MeasurementValue.LongMeasurementValue(cast) =>
               new Backend[F, A, Long](cast, _.toLong, name, storage)
             case MeasurementValue.DoubleMeasurementValue(cast) =>
               new Backend[F, A, Double](cast, identity, name, storage)

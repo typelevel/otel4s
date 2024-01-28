@@ -1,6 +1,7 @@
 package org.typelevel.otel4s.sdk.metrics.internal
 
-import org.typelevel.otel4s.metrics.{BucketBoundaries, MeasurementValue}
+import org.typelevel.otel4s.metrics.BucketBoundaries
+import org.typelevel.otel4s.metrics.MeasurementValue
 
 sealed trait InstrumentDescriptor {
 

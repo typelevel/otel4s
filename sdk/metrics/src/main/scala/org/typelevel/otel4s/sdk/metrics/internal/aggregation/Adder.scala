@@ -1,7 +1,9 @@
 package org.typelevel.otel4s.sdk.metrics.internal.aggregation
 
 import cats.Monad
-import java.util.concurrent.atomic.{DoubleAdder, LongAdder}
+
+import java.util.concurrent.atomic.DoubleAdder
+import java.util.concurrent.atomic.LongAdder
 
 private trait Adder[F[_], A] {
   def addLong(a: Long): F[Unit]

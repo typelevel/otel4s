@@ -135,4 +135,4 @@ private object Base2ExponentialHistogramAggregator {
   }
 
 }
-*/
+ */

@@ -63,8 +63,8 @@ trait Meter[F[_]] {
     *   the name of the instrument
     *
     * @tparam A
-    *   the type of the measurement. `Long` and `Double` are supported out of
-    *   the box
+    *   the type of the measurement. [[scala.Long]] and [[scala.Double]] are
+    *   supported out of the box
     */
   def counter[A: MeasurementValue](name: String): Counter.Builder[F, A]
 
@@ -95,8 +95,8 @@ trait Meter[F[_]] {
     *   the name of the instrument
     *
     * @tparam A
-    *   the type of the measurement. `Long` and `Double` are supported out of
-    *   the box
+    *   the type of the measurement. [[scala.Long]] and [[scala.Double]] are
+    *   supported out of the box
     */
   def histogram[A: MeasurementValue](name: String): Histogram.Builder[F, A]
 
@@ -128,8 +128,8 @@ trait Meter[F[_]] {
     *   the name of the instrument
     *
     * @tparam A
-    *   the type of the measurement. `Long` and `Double` are supported out of
-    *   the box
+    *   the type of the measurement. [[scala.Long]] and [[scala.Double]] are
+    *   supported out of the box
     */
   def upDownCounter[A: MeasurementValue](
       name: String

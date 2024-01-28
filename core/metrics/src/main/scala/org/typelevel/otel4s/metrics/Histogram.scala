@@ -38,8 +38,9 @@ import scala.concurrent.duration.TimeUnit
   *   the higher-kinded type of a polymorphic effect
   *
   * @tparam A
-  *   the type of the values to record. OpenTelemetry specification expects `A`
-  *   to be either [[scala.Long]] or [[scala.Double]].
+  *   the type of the values to record. The type must have an instance of
+  *   [[MeasurementValue]]. [[scala.Long]] and [[scala.Double]] are supported
+  *   out of the box.
   */
 trait Histogram[F[_], A] extends HistogramMacro[F, A]
 
@@ -51,8 +52,9 @@ object Histogram {
     *   the higher-kinded type of a polymorphic effect
     *
     * @tparam A
-    *   the type of the values to record. OpenTelemetry specification expects
-    *   `A` to be either [[scala.Long]] or [[scala.Double]].
+    *   the type of the values to record. The type must have an instance of
+    *   [[MeasurementValue]]. [[scala.Long]] and [[scala.Double]] are supported
+    *   out of the box.
     */
   trait Builder[F[_], A] {
 

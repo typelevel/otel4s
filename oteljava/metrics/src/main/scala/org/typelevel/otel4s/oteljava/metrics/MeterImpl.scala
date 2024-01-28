@@ -50,4 +50,8 @@ private[oteljava] class MeterImpl[F[_]: Async](jMeter: JMeter)
       name: String
   ): ObservableUpDownCounter.Builder[F, A] =
     ObservableUpDownCounterBuilderImpl(jMeter, name)
+
+  val batchCallback: BatchCallback[F] =
+    new BatchCallbackImpl(jMeter)
+
 }

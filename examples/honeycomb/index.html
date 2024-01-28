@@ -259,7 +259,7 @@
           .</span><span class="identifier">flatMap</span><span> { </span><span class="keyword">implicit</span><span> </span><span class="identifier">tracer</span><span>: </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">IO</span><span>] =&gt;
             </span><span class="keyword">for</span><span> {
               </span><span class="identifier">meter</span><span> &lt;- </span><span class="identifier">otel4s</span><span>.</span><span class="identifier">meterProvider</span><span>.</span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;com.service.runtime&quot;</span><span>)
-              </span><span class="identifier">histogram</span><span> &lt;- </span><span class="identifier">meter</span><span>.</span><span class="identifier">histogram</span><span>(</span><span class="string-literal">&quot;work.execution.duration&quot;</span><span>).</span><span class="identifier">create</span><span>
+              </span><span class="identifier">histogram</span><span> &lt;- </span><span class="identifier">meter</span><span>.</span><span class="identifier">histogram</span><span>[</span><span class="type-name">Double</span><span>](</span><span class="string-literal">&quot;work.execution.duration&quot;</span><span>).</span><span class="identifier">create</span><span>
               </span><span class="identifier">_</span><span> &lt;- </span><span class="type-name">Work</span><span>[</span><span class="type-name">IO</span><span>](</span><span class="identifier">histogram</span><span>).</span><span class="identifier">doWork</span><span>
             } </span><span class="keyword">yield</span><span> ()
           }

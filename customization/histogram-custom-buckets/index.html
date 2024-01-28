@@ -258,7 +258,7 @@
       .</span><span class="identifier">use</span><span> { </span><span class="identifier">meter</span><span> =&gt;
         </span><span class="keyword">for</span><span> {
           </span><span class="identifier">random</span><span> &lt;- </span><span class="type-name">Random</span><span>.</span><span class="identifier">scalaUtilRandom</span><span>[</span><span class="type-name">F</span><span>]
-          </span><span class="identifier">histogram</span><span> &lt;- </span><span class="identifier">meter</span><span>.</span><span class="identifier">histogram</span><span>(</span><span class="string-literal">&quot;service.work.duration&quot;</span><span>).</span><span class="identifier">create</span><span>
+          </span><span class="identifier">histogram</span><span> &lt;- </span><span class="identifier">meter</span><span>.</span><span class="identifier">histogram</span><span>[</span><span class="type-name">Double</span><span>](</span><span class="string-literal">&quot;service.work.duration&quot;</span><span>).</span><span class="identifier">create</span><span>
           </span><span class="identifier">_</span><span> &lt;- </span><span class="identifier">work</span><span>[</span><span class="type-name">F</span><span>](</span><span class="identifier">histogram</span><span>, </span><span class="identifier">random</span><span>).</span><span class="identifier">parReplicateA_</span><span>(</span><span class="number-literal">50</span><span>)
         } </span><span class="keyword">yield</span><span> ()
       }

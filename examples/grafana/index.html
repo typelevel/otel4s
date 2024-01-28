@@ -331,7 +331,7 @@
       </span><span class="identifier">bananaPercentage</span><span>: </span><span class="type-name">Int</span><span>
   ): </span><span class="type-name">F</span><span>[</span><span class="type-name">ApiService</span><span>[</span><span class="type-name">F</span><span>]] = 
     </span><span class="type-name">Meter</span><span>[</span><span class="type-name">F</span><span>]
-      .</span><span class="identifier">counter</span><span>(</span><span class="string-literal">&quot;RemoteApi.fruit.count&quot;</span><span>)
+      .</span><span class="identifier">counter</span><span>[</span><span class="type-name">Long</span><span>](</span><span class="string-literal">&quot;RemoteApi.fruit.count&quot;</span><span>)
       .</span><span class="identifier">withDescription</span><span>(</span><span class="string-literal">&quot;Number of fruits returned by the API.&quot;</span><span>)
       .</span><span class="identifier">create</span><span>
       .</span><span class="identifier">map</span><span> { </span><span class="identifier">remoteApiFruitCount</span><span> =&gt;

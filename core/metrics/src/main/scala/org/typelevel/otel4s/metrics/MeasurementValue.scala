@@ -35,6 +35,7 @@ Choose the type of an instrument explicitly, for example:
 3) `.histogram[Long](...)` or `.histogram[Double](...)`
 4) `.observableGauge[Long](...)` or `.observableGauge[Double](...)`
 5) `.observableCounter[Long](...)` or `.observableCounter[Double](...)`
+6) `.observableUpDownCounter[Long](...)` or `.observableUpDownCounter[Double](...)`
     """
   )
   implicit val longMeasurementValue: MeasurementValue[Long] =

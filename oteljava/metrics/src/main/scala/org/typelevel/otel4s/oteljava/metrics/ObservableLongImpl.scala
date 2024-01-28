@@ -27,7 +27,7 @@ private[oteljava] class ObservableLongImpl[F[_]](
 )(implicit F: Sync[F])
     extends ObservableMeasurement[F, Long] {
 
-  def record(value: Long, attributes: Attribute[_]*): F[Unit] =
+  def record(value: Long, attributes: Attributes): F[Unit] =
     F.delay(olm.record(value, Conversions.toJAttributes(attributes)))
 
 }

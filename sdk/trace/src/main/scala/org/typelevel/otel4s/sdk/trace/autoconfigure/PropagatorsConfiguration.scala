@@ -27,6 +27,7 @@ import org.typelevel.otel4s.sdk.autoconfigure.AutoConfigure
 import org.typelevel.otel4s.sdk.autoconfigure.Config
 import org.typelevel.otel4s.sdk.autoconfigure.ConfigurationError
 import org.typelevel.otel4s.sdk.context.Context
+import org.typelevel.otel4s.sdk.trace.context.propagation.B3Propagator
 import org.typelevel.otel4s.sdk.trace.propagation.W3CTraceContextPropagator
 
 private final class PropagatorsConfiguration[F[_]: MonadThrow]
@@ -70,6 +71,12 @@ private final class PropagatorsConfiguration[F[_]: MonadThrow]
 
       /*case "baggage" =>
         MonadThrow[F].pure(W3CBaggagePropagator)*/
+
+      case "b3" =>
+        MonadThrow[F].pure(B3Propagator.singleHeader)
+
+      case "b3multi" =>
+        MonadThrow[F].pure(B3Propagator.multipleHeaders)
 
       case other =>
         MonadThrow[F].raiseError(

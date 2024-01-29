@@ -100,6 +100,13 @@ object SpanContext {
     def fromLongs(hi: Long, lo: Long): ByteVector =
       ByteVector.fromLong(hi, 8) ++ ByteVector.fromLong(lo, 8)
 
+    /** Creates trace id from the hex string.
+      *
+      * Returns `None` when the input isn't a valid hex or the id is invalid.
+      */
+    def fromHex(hex: String): Option[ByteVector] =
+      ByteVector.fromHex(hex).filter(bv => isValid(bv))
+
     /** Checks whether a trace id has correct length and is not the invalid id.
       */
     def isValid(id: ByteVector): Boolean =

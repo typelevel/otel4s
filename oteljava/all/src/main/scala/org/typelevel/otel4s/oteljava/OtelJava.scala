@@ -43,12 +43,16 @@ import org.typelevel.otel4s.oteljava.metrics.Metrics
 import org.typelevel.otel4s.oteljava.trace.Traces
 import org.typelevel.otel4s.trace.TracerProvider
 
-sealed class OtelJava[F[_]] private (
+final class OtelJava[F[_]] private (
+    jOtel: JOpenTelemetry,
     val propagators: ContextPropagators[Context],
     val meterProvider: MeterProvider[F],
     val tracerProvider: TracerProvider[F],
-) extends Otel4s[F] {
+)(implicit val localContext: LocalContext[F])
+    extends Otel4s[F] {
   type Ctx = Context
+
+  override def toString: String = s"OtelJava{$jOtel}"
 }
 
 object OtelJava {
@@ -78,12 +82,11 @@ object OtelJava {
     val metrics = Metrics.forAsync(jOtel)
     val traces = Traces.local(jOtel, contextPropagators)
     new OtelJava[F](
+      jOtel,
       contextPropagators,
       metrics.meterProvider,
       traces.tracerProvider,
-    ) {
-      override def toString: String = jOtel.toString
-    }
+    )
   }
 
   /** Lifts the acquisition of a Java OpenTelemetrySdk instance to a Resource.

@@ -105,7 +105,15 @@ class AttributesProps extends ScalaCheckSuite {
     }
   }
 
-  property("Attributes#updated adds attributes and replaces existing ones") {
+  property("Attributes#keys returns all of the attributes' keys") {
+    forAll(Gens.attributes) { attributes =>
+      attributes.keys == attributes.map(_.key).toSet
+    }
+  }
+
+  property(
+    "Attributes#updated (+) adds attributes and replaces existing ones"
+  ) {
     forAll { (value1: String, value2: String) =>
       val a1 = Attribute("key", value1)
       val a2 = Attribute("key", value2)
@@ -127,24 +135,38 @@ class AttributesProps extends ScalaCheckSuite {
     }
   }
 
-  property("Attributes#++ combines two sets of attributes") {
-    forAll(listOfAttributes, listOfAttributes) { (attributes1, attributes2) =>
-      val keySet1 = attributes1.map(_.key).toSet
-      val keySet2 = attributes2.map(_.key).toSet
-      val unique = keySet1 ++ keySet2
-      val diff = keySet1.intersect(keySet2)
+  property("Attributes#removed (-) removes attributes") {
+    forAll { (value: String) =>
+      val a = Attribute("key", value)
+      val attrs = Attributes(a)
 
-      val attrs1 = Attributes(attributes1: _*)
-      val attrs2 = Attributes(attributes2: _*)
+      (attrs - a.key).isEmpty &&
+      attrs
+        .removed[Long]("key")
+        .get[String]("key")
+        .contains(a)
+    }
+  }
 
-      val combined = attrs1 ++ attrs2
+  property("Attributes#concat (++) combines two sets of attributes") {
+    forAll(Gens.attributes, Gens.attributes) { (attributes1, attributes2) =>
+      val unique = attributes1.keys ++ attributes2.keys
+      val diff = attributes1.keys.intersect(attributes2.keys)
+
+      val combined = attributes1 ++ attributes2
       val sizeIsEqual = combined.size == unique.size
 
       val secondCollectionOverrodeValues = diff.forall { key =>
-        combined.get(key).contains(attrs2.get(key).get)
+        combined.get(key).contains(attributes2.get(key).get)
       }
 
       sizeIsEqual && secondCollectionOverrodeValues
+    }
+  }
+
+  property("Attributes#removedAll (--) removes a set of attributes") {
+    forAll(Gens.attributes) { attributes =>
+      (attributes -- attributes.keys).isEmpty
     }
   }
 

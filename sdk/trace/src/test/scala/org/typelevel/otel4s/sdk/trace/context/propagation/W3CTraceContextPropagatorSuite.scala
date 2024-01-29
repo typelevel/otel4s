@@ -90,6 +90,7 @@ class W3CTraceContextPropagatorSuite extends ScalaCheckSuite {
       )
     }
   }
+
   //
   // Extract
   //

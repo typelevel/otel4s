@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.typelevel.otel4s.sdk.trace.propagation
+package org.typelevel.otel4s.sdk.trace.context.propagation
 
 import cats.syntax.apply._
 import org.typelevel.otel4s.context.propagation.TextMapGetter
@@ -33,21 +33,11 @@ import org.typelevel.otel4s.trace.TraceState
   * @see
   *   [[https://www.w3.org/TR/trace-context/]]
   */
-object W3CTraceContextPropagator extends TextMapPropagator[Context] {
+private final class W3CTraceContextPropagator
+    extends TextMapPropagator[Context] {
 
-  private object Headers {
-    val TraceParent = "traceparent"
-    val TraceState = "tracestate"
-  }
-
-  private object Const {
-    val Delimiter = "-"
-    val Version = "00"
-    val TraceStateEntryPattern = "[ \t]*,[ \t]*".r
-    val TraceStateEntryDelimiter = ","
-    val TraceStateKeyValueDelimiter = "="
-    val TraceStateMaxMembers = 32
-  }
+  import W3CTraceContextPropagator.Headers
+  import W3CTraceContextPropagator.Const
 
   val fields: List[String] = List(Headers.TraceParent, Headers.TraceState)
 
@@ -144,4 +134,28 @@ object W3CTraceContextPropagator extends TextMapPropagator[Context] {
 
   override def toString: String =
     "W3CTraceContextPropagator"
+}
+
+object W3CTraceContextPropagator {
+
+  private val Default = new W3CTraceContextPropagator
+
+  private object Headers {
+    val TraceParent = "traceparent"
+    val TraceState = "tracestate"
+  }
+
+  private object Const {
+    val Delimiter = "-"
+    val Version = "00"
+    val TraceStateEntryPattern = "[ \t]*,[ \t]*".r
+    val TraceStateEntryDelimiter = ","
+    val TraceStateKeyValueDelimiter = "="
+    val TraceStateMaxMembers = 32
+  }
+
+  /** Returns an instance of the W3CTraceContextPropagator.
+    */
+  def default: TextMapPropagator[Context] = Default
+
 }

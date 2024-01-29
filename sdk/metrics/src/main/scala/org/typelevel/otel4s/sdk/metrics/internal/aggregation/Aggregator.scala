@@ -77,7 +77,8 @@ private[metrics] object Aggregator {
   ): Aggregator[F] = {
     def sum: Aggregator[F] =
       descriptor.valueType match {
-        case InstrumentValueType.LongValue => SumAggregator.ofLong(1, filter)
+        case InstrumentValueType.LongValue =>
+          SumAggregator.ofLong(1, filter)
         case InstrumentValueType.DoubleValue =>
           SumAggregator.ofDouble(1, filter)
       }

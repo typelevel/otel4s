@@ -72,18 +72,18 @@ private class SdkMeter[F[_]: MonadCancelThrow: Clock: Console: AskContext](
   def observableCounter[A: MeasurementValue](
       name: String
   ): ObservableCounter.Builder[F, A] =
-    /*if (isValidName(name))
-      SdkLongCounter.Builder[F](name, storage)
-    else*/
-    NoopInstrumentBuilder.observableCounter(name)
+    if (isValidName(name))
+      SdkObservableCounter.Builder(name, sharedState)
+    else
+      NoopInstrumentBuilder.observableCounter(name)
 
   def observableUpDownCounter[A: MeasurementValue](
       name: String
   ): ObservableUpDownCounter.Builder[F, A] =
-    /* if (isValidName(name))
-      SdkLongCounter.Builder[F](name, storage)
-    else*/
-    NoopInstrumentBuilder.observableUpDownCounter(name)
+    if (isValidName(name))
+      SdkObservableUpDownCounter.Builder(name, sharedState)
+    else
+      NoopInstrumentBuilder.observableUpDownCounter(name)
 
   def collectAll(
       reader: RegisteredReader[F],

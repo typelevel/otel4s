@@ -17,25 +17,21 @@
 package org.typelevel.otel4s.sdk.metrics
 
 import cats.data.NonEmptyList
-import cats.effect.Clock
-import cats.effect.MonadCancelThrow
-import cats.effect.Resource
 import cats.effect.std.Console
+import cats.effect.{Clock, MonadCancelThrow, Resource}
 import cats.syntax.flatMap._
 import cats.syntax.foldable._
 import cats.syntax.functor._
-import org.typelevel.otel4s.metrics.Measurement
-import org.typelevel.otel4s.metrics.MeasurementValue
-import org.typelevel.otel4s.metrics.ObservableGauge
-import org.typelevel.otel4s.metrics.ObservableMeasurement
+import org.typelevel.otel4s.metrics.{
+  Measurement,
+  MeasurementValue,
+  ObservableMeasurement,
+  ObservableUpDownCounter
+}
 import org.typelevel.otel4s.sdk.context.AskContext
-import org.typelevel.otel4s.sdk.metrics.internal.Advice
-import org.typelevel.otel4s.sdk.metrics.internal.CallbackRegistration
-import org.typelevel.otel4s.sdk.metrics.internal.InstrumentDescriptor
-import org.typelevel.otel4s.sdk.metrics.internal.InstrumentType
-import org.typelevel.otel4s.sdk.metrics.internal.InstrumentValueType
+import org.typelevel.otel4s.sdk.metrics.internal._
 
-private object SdkObservableGauge {
+private object SdkObservableUpDownCounter {
 
   final case class Builder[
       F[_]: MonadCancelThrow: Clock: Console: AskContext,
@@ -45,17 +41,19 @@ private object SdkObservableGauge {
       sharedState: MeterSharedState[F],
       unit: Option[String] = None,
       description: Option[String] = None
-  ) extends ObservableGauge.Builder[F, A] {
+  ) extends ObservableUpDownCounter.Builder[F, A] {
 
-    def withUnit(unit: String): ObservableGauge.Builder[F, A] =
+    def withUnit(unit: String): ObservableUpDownCounter.Builder[F, A] =
       copy(unit = Some(unit))
 
-    def withDescription(description: String): ObservableGauge.Builder[F, A] =
+    def withDescription(
+        description: String
+    ): ObservableUpDownCounter.Builder[F, A] =
       copy(description = Some(description))
 
     def createWithCallback(
         cb: ObservableMeasurement[F, A] => F[Unit]
-    ): Resource[F, ObservableGauge] = {
+    ): Resource[F, ObservableUpDownCounter] = {
       val descriptor = makeDescriptor
 
       Resource
@@ -69,13 +67,13 @@ private object SdkObservableGauge {
             .make(sharedState.registerCallback(cr))(_ =>
               sharedState.removeCallback(cr)
             )
-            .as(new ObservableGauge {})
+            .as(new ObservableUpDownCounter {})
         }
     }
 
     def create(
         measurements: F[Iterable[Measurement[A]]]
-    ): Resource[F, ObservableGauge] =
+    ): Resource[F, ObservableUpDownCounter] =
       createWithCallback { cb =>
         for {
           m <- measurements
@@ -94,7 +92,7 @@ private object SdkObservableGauge {
         name,
         unit,
         description,
-        InstrumentType.ObservableGauge,
+        InstrumentType.ObservableUpDownCounter,
         InstrumentValueType.of[A],
         Advice.empty
       )

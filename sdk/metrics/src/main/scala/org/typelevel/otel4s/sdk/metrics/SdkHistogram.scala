@@ -36,7 +36,6 @@ import org.typelevel.otel4s.sdk.metrics.internal.InstrumentType
 import org.typelevel.otel4s.sdk.metrics.internal.InstrumentValueType
 import org.typelevel.otel4s.sdk.metrics.storage.MetricStorage
 
-import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.duration.TimeUnit
 
 private object SdkHistogram {

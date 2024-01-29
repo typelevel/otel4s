@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.typelevel.otel4s.sdk.trace.propagation
+package org.typelevel.otel4s.sdk.trace.context.propagation
 
 import munit._
 import org.scalacheck.Prop
@@ -26,7 +26,7 @@ import org.typelevel.otel4s.trace.TraceState
 
 class W3CTraceContextPropagatorSuite extends ScalaCheckSuite {
 
-  private val propagator = W3CTraceContextPropagator
+  private val propagator = W3CTraceContextPropagator.default
 
   //
   // Common

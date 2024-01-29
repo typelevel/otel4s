@@ -34,13 +34,13 @@ import org.typelevel.otel4s.context.propagation.PassThroughPropagator
 import org.typelevel.otel4s.context.propagation.TextMapPropagator
 import org.typelevel.otel4s.sdk.common.InstrumentationScope
 import org.typelevel.otel4s.sdk.context.Context
+import org.typelevel.otel4s.sdk.trace.context.propagation.W3CTraceContextPropagator
 import org.typelevel.otel4s.sdk.trace.data.EventData
 import org.typelevel.otel4s.sdk.trace.data.SpanData
 import org.typelevel.otel4s.sdk.trace.data.StatusData
 import org.typelevel.otel4s.sdk.trace.exporter.InMemorySpanExporter
 import org.typelevel.otel4s.sdk.trace.processor.BatchSpanProcessor
 import org.typelevel.otel4s.sdk.trace.processor.SpanProcessor
-import org.typelevel.otel4s.sdk.trace.propagation.W3CTraceContextPropagator
 import org.typelevel.otel4s.sdk.trace.samplers.Sampler
 import org.typelevel.otel4s.trace.Span
 import org.typelevel.otel4s.trace.Status
@@ -962,7 +962,7 @@ class SdkTracerSuite extends CatsEffectSuite {
     import org.typelevel.otel4s.instances.local._
 
     val textMapPropagators: List[TextMapPropagator[Context]] =
-      List(W3CTraceContextPropagator) ++ additionalPropagators
+      W3CTraceContextPropagator.default :: additionalPropagators
 
     def createTracerProvider(
         processor: SpanProcessor[IO]

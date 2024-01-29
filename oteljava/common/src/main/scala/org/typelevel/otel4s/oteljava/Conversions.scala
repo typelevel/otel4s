@@ -21,7 +21,7 @@ import io.opentelemetry.api.common.{Attributes => JAttributes}
 
 private[oteljava] object Conversions {
 
-  def toJAttributes(attributes: Seq[Attribute[_]]): JAttributes = {
+  def toJAttributes(attributes: Iterable[Attribute[_]]): JAttributes = {
     val builder = JAttributes.builder
 
     attributes.foreach { case Attribute(key, value) =>

@@ -23,55 +23,162 @@ import cats.effect.kernel.Resource
 import cats.effect.std.Dispatcher
 import cats.syntax.all._
 import io.opentelemetry.api.metrics.{Meter => JMeter}
+import io.opentelemetry.api.metrics.{
+  ObservableMeasurement => JObservableMeasurement
+}
+import io.opentelemetry.api.metrics.LongUpDownCounterBuilder
+import io.opentelemetry.api.metrics.ObservableDoubleMeasurement
 import io.opentelemetry.api.metrics.ObservableLongMeasurement
 import org.typelevel.otel4s.metrics._
 
-private[oteljava] case class ObservableUpDownCounterBuilderImpl[F[_]](
-    jMeter: JMeter,
+private[oteljava] case class ObservableUpDownCounterBuilderImpl[F[_], A](
+    factory: ObservableUpDownCounterBuilderImpl.Factory[F, A],
     name: String,
     unit: Option[String] = None,
     description: Option[String] = None
-)(implicit F: Async[F])
-    extends ObservableInstrumentBuilder[F, Long, ObservableUpDownCounter] {
+) extends ObservableUpDownCounter.Builder[F, A] {
 
-  type Self = ObservableUpDownCounterBuilderImpl[F]
+  def withUnit(unit: String): ObservableUpDownCounter.Builder[F, A] =
+    copy(unit = Option(unit))
 
-  def withUnit(unit: String): Self = copy(unit = Option(unit))
-  def withDescription(description: String): Self =
+  def withDescription(
+      description: String
+  ): ObservableUpDownCounter.Builder[F, A] =
     copy(description = Option(description))
 
-  private def createInternal(
-      cb: ObservableLongMeasurement => F[Unit]
-  ): Resource[F, ObservableUpDownCounter] =
-    Dispatcher.sequential.flatMap(dispatcher =>
-      Resource
-        .fromAutoCloseable(F.delay {
-          val b = jMeter.upDownCounterBuilder(name)
-          unit.foreach(b.setUnit)
-          description.foreach(b.setDescription)
-          b.buildWithCallback { olm =>
-            dispatcher.unsafeRunSync(cb(olm))
-          }
-        })
-        .as(new ObservableUpDownCounter {})
-    )
-
   def createWithCallback(
-      cb: ObservableMeasurement[F, Long] => F[Unit]
+      cb: ObservableMeasurement[F, A] => F[Unit]
   ): Resource[F, ObservableUpDownCounter] =
-    createInternal(olm => cb(new ObservableLongImpl(olm)))
+    factory.createWithCallback(name, unit, description, cb)
 
   def create(
-      measurements: F[List[Measurement[Long]]]
+      measurements: F[Iterable[Measurement[A]]]
   ): Resource[F, ObservableUpDownCounter] =
-    createInternal(olm =>
-      measurements.flatMap(ms =>
-        F.delay(
-          ms.foreach(m =>
-            olm.record(m.value, Conversions.toJAttributes(m.attributes))
-          )
+    factory.create(name, unit, description, measurements)
+}
+
+private[oteljava] object ObservableUpDownCounterBuilderImpl {
+
+  def apply[F[_]: Async, A: MeasurementValue](
+      jMeter: JMeter,
+      name: String
+  ): ObservableUpDownCounter.Builder[F, A] =
+    MeasurementValue[A] match {
+      case MeasurementValue.LongMeasurementValue(cast) =>
+        ObservableUpDownCounterBuilderImpl(longFactory(jMeter, cast), name)
+
+      case MeasurementValue.DoubleMeasurementValue(cast) =>
+        ObservableUpDownCounterBuilderImpl(doubleFactory(jMeter, cast), name)
+    }
+
+  private[oteljava] sealed abstract class Factory[F[_]: Async, A](
+      jMeter: JMeter
+  ) {
+    type JMeasurement <: JObservableMeasurement
+
+    final def create(
+        name: String,
+        unit: Option[String],
+        description: Option[String],
+        measurements: F[Iterable[Measurement[A]]]
+    ): Resource[F, ObservableUpDownCounter] =
+      createInternal(name, unit, description) { om =>
+        measurements.flatMap { ms =>
+          Async[F].delay(ms.foreach(m => doRecord(om, m.value, m.attributes)))
+        }
+      }
+
+    final def createWithCallback(
+        name: String,
+        unit: Option[String],
+        description: Option[String],
+        cb: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableUpDownCounter] =
+      createInternal(name, unit, description) { om =>
+        cb(
+          new ObservableMeasurement[F, A] {
+            def record(value: A, attributes: Attributes): F[Unit] =
+              Async[F].delay(
+                doRecord(om, value, attributes)
+              )
+          }
         )
-      )
-    )
+      }
+
+    protected def create(
+        builder: LongUpDownCounterBuilder,
+        dispatcher: Dispatcher[F],
+        cb: JMeasurement => F[Unit]
+    ): AutoCloseable
+
+    protected def doRecord(
+        measurement: JMeasurement,
+        value: A,
+        attributes: Attributes
+    ): Unit
+
+    private final def createInternal(
+        name: String,
+        unit: Option[String],
+        description: Option[String]
+    )(cb: JMeasurement => F[Unit]): Resource[F, ObservableUpDownCounter] =
+      Dispatcher.sequential.flatMap { dispatcher =>
+        Resource
+          .fromAutoCloseable(Async[F].delay {
+            val b = jMeter.upDownCounterBuilder(name)
+            unit.foreach(b.setUnit)
+            description.foreach(b.setDescription)
+            create(b, dispatcher, cb)
+          })
+          .as(new ObservableUpDownCounter {})
+      }
+
+  }
+
+  private def longFactory[F[_]: Async, A](
+      jMeter: JMeter,
+      cast: A => Long
+  ): Factory[F, A] =
+    new Factory[F, A](jMeter) {
+      type JMeasurement = ObservableLongMeasurement
+
+      protected def create(
+          builder: LongUpDownCounterBuilder,
+          dispatcher: Dispatcher[F],
+          cb: ObservableLongMeasurement => F[Unit]
+      ): AutoCloseable =
+        builder.buildWithCallback(om => dispatcher.unsafeRunSync(cb(om)))
+
+      protected def doRecord(
+          om: ObservableLongMeasurement,
+          value: A,
+          attributes: Attributes
+      ): Unit =
+        om.record(cast(value), Conversions.toJAttributes(attributes))
+    }
+
+  private def doubleFactory[F[_]: Async, A](
+      jMeter: JMeter,
+      cast: A => Double
+  ): Factory[F, A] =
+    new Factory[F, A](jMeter) {
+      type JMeasurement = ObservableDoubleMeasurement
+
+      protected def create(
+          builder: LongUpDownCounterBuilder,
+          dispatcher: Dispatcher[F],
+          cb: ObservableDoubleMeasurement => F[Unit]
+      ): AutoCloseable =
+        builder
+          .ofDoubles()
+          .buildWithCallback(om => dispatcher.unsafeRunSync(cb(om)))
+
+      protected def doRecord(
+          om: ObservableDoubleMeasurement,
+          value: A,
+          attributes: Attributes
+      ): Unit =
+        om.record(cast(value), Conversions.toJAttributes(attributes))
+    }
 
 }

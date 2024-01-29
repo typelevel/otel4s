@@ -17,6 +17,7 @@
 package org.typelevel.otel4s.sdk.trace
 
 import cats.effect.SyncIO
+import org.typelevel.otel4s.baggage.Baggage
 import org.typelevel.otel4s.sdk.context.Context
 import org.typelevel.otel4s.trace.SpanContext
 
@@ -36,6 +37,20 @@ object SdkContextKeys {
   val SpanContextKey: Context.Key[SpanContext] =
     Context.Key
       .unique[SyncIO, SpanContext]("otel4s-trace-span-context-key")
+      .unsafeRunSync()
+
+  /** The [[org.typelevel.otel4s.baggage.Baggage Baggage]] is stored under this
+    * key in the [[org.typelevel.otel4s.sdk.context.Context Context]].
+    *
+    * To retrieve the baggage use:
+    * {{{
+    *   val context: Context = ???
+    *   val baggage: Option[Baggage] = context.get(SdkContextKeys.BaggageKey)
+    * }}}
+    */
+  val BaggageKey: Context.Key[Baggage] =
+    Context.Key
+      .unique[SyncIO, Baggage]("otel4s-trace-baggage-key")
       .unsafeRunSync()
 
 }

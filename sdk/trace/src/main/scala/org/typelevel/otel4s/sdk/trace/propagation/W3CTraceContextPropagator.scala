@@ -28,24 +28,35 @@ import org.typelevel.otel4s.trace.SpanContext.TraceId
 import org.typelevel.otel4s.trace.TraceFlags
 import org.typelevel.otel4s.trace.TraceState
 
-import scala.util.matching.Regex
-
+/** A W3C trace context propagator.
+  *
+  * @see
+  *   [[https://www.w3.org/TR/trace-context/]]
+  */
 object W3CTraceContextPropagator extends TextMapPropagator[Context] {
 
-  private object Fields {
+  private object Headers {
     val TraceParent = "traceparent"
     val TraceState = "tracestate"
   }
 
-  private val Pattern: Regex =
-    "([0-9]{2})-([0-9a-f]{32})-([0-9a-f]{16})-([0-9a-f]{2})".r
+  private object Const {
+    val Delimiter = "-"
+    val Version = "00"
+    val TraceStateEntryPattern = "[ \t]*,[ \t]*".r
+    val TraceStateEntryDelimiter = ","
+    val TraceStateKeyValueDelimiter = "="
+    val TraceStateMaxMembers = 32
+  }
 
-  val fields: List[String] = List(Fields.TraceParent, Fields.TraceState)
+  val fields: List[String] = List(Headers.TraceParent, Headers.TraceState)
 
-  def extract[A: TextMapGetter](ctx: Context, carrier: A): Context = {
-    TextMapGetter[A].get(carrier, Fields.TraceParent) match {
-      case Some(value) =>
-        extractContextFromTraceParent(value) match {
+  def extract[A: TextMapGetter](ctx: Context, carrier: A): Context =
+    TextMapGetter[A].get(carrier, Headers.TraceParent) match {
+      case Some(traceParent) =>
+        val traceState = TextMapGetter[A].get(carrier, Headers.TraceState)
+
+        decode(traceParent, traceState) match {
           case Some(parentContext) =>
             ctx.updated(SdkContextKeys.SpanContextKey, parentContext)
 
@@ -56,36 +67,81 @@ object W3CTraceContextPropagator extends TextMapPropagator[Context] {
       case None =>
         ctx
     }
-  }
 
   def inject[A: TextMapUpdater](ctx: Context, carrier: A): A =
     ctx.get(SdkContextKeys.SpanContextKey).filter(_.isValid) match {
       case Some(spanContext) =>
-        val traceParent =
-          s"00-${spanContext.traceIdHex}-${spanContext.spanIdHex}-${spanContext.traceFlags.toHex}"
+        val traceParent = Const.Version +
+          Const.Delimiter + spanContext.traceIdHex +
+          Const.Delimiter + spanContext.spanIdHex +
+          Const.Delimiter + spanContext.traceFlags.toHex
 
-        TextMapUpdater[A].updated(carrier, Fields.TraceParent, traceParent)
+        val withParent =
+          TextMapUpdater[A].updated(carrier, Headers.TraceParent, traceParent)
+
+        encodeTraceState(spanContext.traceState)
+          .foldLeft(withParent) { (carrier, state) =>
+            TextMapUpdater[A].updated(carrier, Headers.TraceState, state)
+          }
 
       case None =>
         carrier
     }
 
-  private def extractContextFromTraceParent(
-      traceParent: String
-  ): Option[SpanContext] =
-    traceParent match {
-      case Pattern(_, traceIdHex, spanIdHex, traceFlagsHex) =>
-        (
-          TraceId.fromHex(traceIdHex),
-          SpanId.fromHex(spanIdHex),
-          TraceFlags.fromHex(traceFlagsHex)
-        ).mapN { (traceId, spanId, traceFlags) =>
-          val state = TraceState.empty
-          SpanContext(traceId, spanId, traceFlags, state, remote = true)
-        }
+  /** @see
+    *   [[https://www.w3.org/TR/trace-context/#traceparent-header]]
+    */
+  private def decode(
+      traceParent: String,
+      traceStateHeader: Option[String]
+  ): Option[SpanContext] = {
+    val parts = traceParent.split(Const.Delimiter)
 
-      case _ =>
-        None
+    if (parts.size >= 4) {
+      val traceIdHex = parts(1)
+      val spanIdHex = parts(2)
+      val traceFlagsHex = parts(3)
+
+      (
+        TraceId.fromHex(traceIdHex),
+        SpanId.fromHex(spanIdHex),
+        TraceFlags.fromHex(traceFlagsHex)
+      ).mapN { (traceId, spanId, traceFlags) =>
+        val state = traceStateHeader
+          .flatMap(header => decodeTraceState(header))
+          .getOrElse(TraceState.empty)
+        SpanContext(traceId, spanId, traceFlags, state, remote = true)
+      }
+    } else {
+      None
+    }
+  }
+
+  /** @see
+    *   [[https://www.w3.org/TR/trace-context/#tracestate-header]]
+    */
+  private def decodeTraceState(traceStateHeader: String): Option[TraceState] = {
+    val members = Const.TraceStateEntryPattern.split(traceStateHeader)
+
+    val result = members
+      .take(Const.TraceStateMaxMembers)
+      .foldLeft(TraceState.empty) { (acc, entry) =>
+        val parts = entry.split(Const.TraceStateKeyValueDelimiter)
+        if (parts.length == 2) acc.updated(parts(0), parts(1)) else acc
+      }
+
+    Option.when(result.size == members.length)(result)
+  }
+
+  private def encodeTraceState(traceState: TraceState): Option[String] =
+    Option.when(!traceState.isEmpty) {
+      traceState.asMap
+        .map { case (key, value) =>
+          key + Const.TraceStateKeyValueDelimiter + value
+        }
+        .mkString(Const.TraceStateEntryDelimiter)
     }
 
+  override def toString: String =
+    "W3CTraceContextPropagator"
 }

@@ -17,25 +17,28 @@
 package org.typelevel.otel4s.sdk.trace.propagation
 
 import munit._
+import org.scalacheck.Prop
 import org.typelevel.otel4s.sdk.context.Context
 import org.typelevel.otel4s.sdk.trace.SdkContextKeys
+import org.typelevel.otel4s.sdk.trace.scalacheck.Gens
 import org.typelevel.otel4s.trace.SpanContext
-import org.typelevel.otel4s.trace.TraceFlags
 import org.typelevel.otel4s.trace.TraceState
-import scodec.bits.ByteVector
 
-class W3CTraceContextPropagatorSuite extends FunSuite {
-
-  private val traceIdHex = "00000000000000000000000000000061"
-  private val traceId = ByteVector.fromValidHex(traceIdHex)
-
-  private val spanIdHex = "0000000000000061"
-  private val spanId = ByteVector.fromValidHex(spanIdHex)
-
-  private val flags = List(TraceFlags.Sampled, TraceFlags.Default)
-  private val state = TraceState.empty
+class W3CTraceContextPropagatorSuite extends ScalaCheckSuite {
 
   private val propagator = W3CTraceContextPropagator
+
+  //
+  // Common
+  //
+
+  test("fields") {
+    assertEquals(propagator.fields, List("traceparent", "tracestate"))
+  }
+
+  test("toString") {
+    assertEquals(propagator.toString, "W3CTraceContextPropagator")
+  }
 
   //
   // Inject
@@ -46,57 +49,108 @@ class W3CTraceContextPropagatorSuite extends FunSuite {
     assertEquals(result.size, 0)
   }
 
-  test("inject context info") {
-    flags.foreach { flag =>
-      val spanContext =
-        SpanContext(traceId, spanId, flag, state, remote = false)
-      val ctx = Context.root.updated(SdkContextKeys.SpanContextKey, spanContext)
-      val result = propagator.inject(ctx, Map.empty[String, String])
+  test("inject - invalid context") {
+    val ctx = SpanContext.invalid
+    val context = Context.root.updated(SdkContextKeys.SpanContextKey, ctx)
 
-      val suffix = if (flag.isSampled) "01" else "00"
+    assertEquals(
+      propagator.inject(context, Map.empty[String, String]),
+      Map.empty[String, String]
+    )
+  }
 
-      val expected =
-        s"00-${spanContext.traceIdHex}-${spanContext.spanIdHex}-$suffix"
+  test("inject - valid context") {
+    Prop.forAll(Gens.spanContext) { ctx =>
+      val context = Context.root.updated(SdkContextKeys.SpanContextKey, ctx)
+
+      val suffix = if (ctx.isSampled) "01" else "00"
+      val expected = s"00-${ctx.traceIdHex}-${ctx.spanIdHex}-$suffix"
+
+      val result = propagator.inject(context, Map.empty[String, String])
 
       assertEquals(result.get("traceparent"), Some(expected))
     }
   }
 
+  test("inject - valid context with trace state") {
+    Prop.forAll(Gens.spanContext, Gens.traceState) { (c, state) =>
+      val ctx = asRemote(c, Some(state))
+      val context = Context.root.updated(SdkContextKeys.SpanContextKey, ctx)
+
+      val suffix = if (ctx.isSampled) "01" else "00"
+      val expectedParent = s"00-${ctx.traceIdHex}-${ctx.spanIdHex}-$suffix"
+      val expectedState = toTraceState(state)
+
+      val result = propagator.inject(context, Map.empty[String, String])
+
+      assertEquals(result.get("traceparent"), Some(expectedParent))
+      assertEquals(
+        result.get("tracestate"),
+        Some(expectedState).filter(_.nonEmpty)
+      )
+    }
+  }
   //
   // Extract
   //
 
-  test("extract span context") {
-    flags.foreach { flag =>
-      val spanContext =
-        SpanContext(traceId, spanId, flag, state, remote = false)
-      val carrier = Map("traceparent" -> toTraceParent(spanContext))
+  test("extract - empty empty") {
+    val ctx = propagator.extract(Context.root, Map.empty[String, String])
+    assertEquals(getSpanContext(ctx), None)
+  }
 
-      val ctx = propagator.extract(Context.root, carrier)
+  test("extract - 'traceparent' header is missing") {
+    val ctx = propagator.extract(Context.root, Map("key" -> "value"))
+    assertEquals(getSpanContext(ctx), None)
+  }
 
-      val expected =
-        SpanContext(traceId, spanId, flag, state, remote = true)
-
-      assertEquals(ctx.get(SdkContextKeys.SpanContextKey), Some(expected))
+  test("extract - valid 'traceparent' header") {
+    Prop.forAll(Gens.spanContext) { ctx =>
+      val carrier = Map("traceparent" -> toTraceParent(ctx))
+      val result = propagator.extract(Context.root, carrier)
+      assertEquals(getSpanContext(result), Some(asRemote(ctx)))
     }
   }
 
-  test("extract nothing when carrier is empty") {
-    val ctx = propagator.extract(Context.root, Map.empty[String, String])
-    assertEquals(ctx.get(SdkContextKeys.SpanContextKey), None)
+  test("extract - 'traceparent' and 'tracestate' headers are valid") {
+    Prop.forAll(Gens.spanContext, Gens.traceState) { (ctx, state) =>
+      val carrier = Map(
+        "traceparent" -> toTraceParent(ctx),
+        "tracestate" -> toTraceState(state)
+      )
+
+      val result = propagator.extract(Context.root, carrier)
+      val expected = asRemote(ctx, Some(state))
+
+      assertEquals(getSpanContext(result), Some(expected))
+    }
   }
 
-  test("extract nothing when carrier doesn't have a mandatory key") {
-    val ctx = propagator.extract(Context.root, Map("key" -> "value"))
-    assertEquals(ctx.get(SdkContextKeys.SpanContextKey), None)
-  }
-
-  test("extract nothing when the traceparent in invalid") {
+  test("extract - 'traceparent' header is invalid") {
     val carrier = Map("traceparent" -> "00-11-22-33")
-    val ctx = propagator.extract(Context.root, carrier)
-    assertEquals(ctx.get(SdkContextKeys.SpanContextKey), None)
+    val result = propagator.extract(Context.root, carrier)
+    assertEquals(getSpanContext(result), None)
   }
 
   private def toTraceParent(spanContext: SpanContext): String =
     s"00-${spanContext.traceIdHex}-${spanContext.spanIdHex}-${spanContext.traceFlags.toHex}"
+
+  private def toTraceState(state: TraceState): String =
+    state.asMap.map { case (key, value) => key + "=" + value }.mkString(",")
+
+  private def getSpanContext(ctx: Context): Option[SpanContext] =
+    ctx.get(SdkContextKeys.SpanContextKey)
+
+  private def asRemote(
+      ctx: SpanContext,
+      traceState: Option[TraceState] = None
+  ): SpanContext =
+    SpanContext(
+      traceId = ctx.traceId,
+      spanId = ctx.spanId,
+      traceFlags = ctx.traceFlags,
+      traceState = traceState.getOrElse(ctx.traceState),
+      remote = true
+    )
+
 }

@@ -240,23 +240,6 @@ lazy val sdk = crossProject(JVMPlatform, JSPlatform, NativePlatform)
 // SDK exporter
 //
 
-lazy val `sdk-exporter-common` =
-  crossProject(JVMPlatform, JSPlatform, NativePlatform)
-    .crossType(CrossType.Pure)
-    .in(file("sdk-exporter/common"))
-    .enablePlugins(NoPublishPlugin)
-    .dependsOn(`sdk-common`)
-    .settings(
-      name := "otel4s-sdk-exporter-common",
-      startYear := Some(2023),
-      libraryDependencies ++= Seq(
-        "org.typelevel" %%% "cats-laws" % CatsVersion % Test,
-        "org.typelevel" %%% "discipline-munit" % MUnitDisciplineVersion % Test
-      )
-    )
-    .settings(munitDependencies)
-    .settings(scalafixSettings)
-
 lazy val `sdk-exporter-proto` =
   crossProject(JVMPlatform, JSPlatform, NativePlatform)
     .crossType(CrossType.Pure)
@@ -279,27 +262,40 @@ lazy val `sdk-exporter-proto` =
       )
     )
 
-lazy val `sdk-exporter-metrics` =
+lazy val `sdk-exporter-common` =
   crossProject(JVMPlatform, JSPlatform, NativePlatform)
-    .crossType(CrossType.Full)
-    .in(file("sdk-exporter/metrics"))
-    .enablePlugins(NoPublishPlugin/*, DockerComposeEnvPlugin*/)
-    .dependsOn(
-      `sdk-exporter-common`,
-      `sdk-exporter-proto`,
-      `sdk-metrics` % "compile->compile;test->test"
-    )
+    .crossType(CrossType.Pure)
+    .in(file("sdk-exporter/common"))
+    .enablePlugins(NoPublishPlugin)
+    .dependsOn(`sdk-common`, `sdk-exporter-proto`)
     .settings(
-      name := "otel4s-sdk-exporter-metrics",
+      name := "otel4s-sdk-exporter-common",
       startYear := Some(2023),
       libraryDependencies ++= Seq(
         "org.http4s" %%% "http4s-ember-client" % Http4sVersion,
         "org.http4s" %%% "http4s-circe" % Http4sVersion,
         "io.github.scalapb-json" %%% "scalapb-circe" % ScalaPBCirceVersion,
-        "org.scalameta" %%% "munit-scalacheck" % MUnitVersion % Test,
+        "org.typelevel" %%% "cats-laws" % CatsVersion % Test,
+        "org.typelevel" %%% "discipline-munit" % MUnitDisciplineVersion % Test,
         "io.circe" %%% "circe-generic" % CirceVersion % Test
-      ),
-     // dockerComposeEnvFile := crossProjectBaseDirectory.value / "docker" / "docker-compose.yml"
+      )
+    )
+    .settings(munitDependencies)
+    .settings(scalafixSettings)
+
+lazy val `sdk-exporter-metrics` =
+  crossProject(JVMPlatform, JSPlatform, NativePlatform)
+    .crossType(CrossType.Full)
+    .in(file("sdk-exporter/metrics"))
+    .enablePlugins(NoPublishPlugin /*, DockerComposeEnvPlugin*/ )
+    .dependsOn(
+      `sdk-exporter-common`,
+      `sdk-metrics` % "compile->compile;test->test"
+    )
+    .settings(
+      name := "otel4s-sdk-exporter-metrics",
+      startYear := Some(2023),
+      // dockerComposeEnvFile := crossProjectBaseDirectory.value / "docker" / "docker-compose.yml"
     )
     .jsSettings(
       scalaJSLinkerConfig ~= (_.withESFeatures(

@@ -109,16 +109,15 @@ private object ExplicitBucketHistogramAggregator {
     ): F[Option[PointData.Histogram]] =
       reservoir.collectAndReset(attributes).flatMap { exemplars =>
         stateRef.modify { state =>
+          val nonEmpty = state.count > 0
           val histogram = PointData.Histogram(
             startTimestamp = startTimestamp,
-            endTimestamp = collectTimestamp,
+            timestamp = collectTimestamp,
             attributes = attributes,
             exemplars = exemplars,
-            sum = state.sum,
-            hasMin = state.count > 0,
-            min = state.min,
-            hasMax = state.count > 0,
-            max = state.max,
+            sum = Option.when(nonEmpty)(state.sum),
+            min = Option.when(nonEmpty)(state.min),
+            max = Option.when(nonEmpty)(state.max),
             boundaries = boundaries.boundaries,
             counts = state.counts
           )

@@ -1,5 +1,3 @@
-import com.typesafe.tools.mima.core._
-
 ThisBuild / tlBaseVersion := "0.5"
 
 ThisBuild / organization := "org.typelevel"
@@ -27,6 +25,8 @@ val Scala213 = "2.13.12"
 ThisBuild / crossScalaVersions := Seq(Scala213, "3.3.1")
 ThisBuild / scalaVersion := Scala213 // the default Scala
 
+ThisBuild / githubWorkflowBuildPreamble ++= nativeBrewInstallWorkflowSteps.value
+
 val CatsVersion = "2.10.0"
 val CatsEffectVersion = "3.5.3"
 val CatsMtlVersion = "1.4.0"
@@ -38,11 +38,16 @@ val MUnitScalaCheckEffectVersion = "2.0.0-M2"
 val OpenTelemetryVersion = "1.34.1"
 val OpenTelemetryInstrumentationVersion = "2.0.0"
 val OpenTelemetrySemConvVersion = "1.23.1-alpha"
+val OpenTelemetryProtoVersion = "1.0.0-alpha"
 val PekkoStreamVersion = "1.0.2"
 val PekkoHttpVersion = "1.0.0"
 val PlatformVersion = "1.0.2"
 val ScodecVersion = "1.1.38"
 val VaultVersion = "3.5.0"
+val Http4sVersion = "0.23.25"
+val CirceVersion = "0.14.6"
+val EpollcatVersion = "0.1.6"
+val ScalaPBCirceVersion = "0.15.1"
 
 lazy val scalaReflectDependency = Def.settings(
   libraryDependencies ++= {
@@ -78,6 +83,10 @@ lazy val root = tlCrossRootProject
     `sdk-metrics`,
     `sdk-trace`,
     sdk,
+    `sdk-exporter-common`,
+    `sdk-exporter-proto`,
+    `sdk-exporter-metrics`,
+    `sdk-exporter`,
     `testkit-common`,
     `testkit-metrics`,
     testkit,
@@ -226,6 +235,102 @@ lazy val sdk = crossProject(JVMPlatform, JSPlatform, NativePlatform)
     name := "otel4s-sdk"
   )
   .settings(scalafixSettings)
+
+//
+// SDK exporter
+//
+
+lazy val `sdk-exporter-common` =
+  crossProject(JVMPlatform, JSPlatform, NativePlatform)
+    .crossType(CrossType.Pure)
+    .in(file("sdk-exporter/common"))
+    .enablePlugins(NoPublishPlugin)
+    .dependsOn(`sdk-common`)
+    .settings(
+      name := "otel4s-sdk-exporter-common",
+      startYear := Some(2023),
+      libraryDependencies ++= Seq(
+        "org.typelevel" %%% "cats-laws" % CatsVersion % Test,
+        "org.typelevel" %%% "discipline-munit" % MUnitDisciplineVersion % Test
+      )
+    )
+    .settings(munitDependencies)
+    .settings(scalafixSettings)
+
+lazy val `sdk-exporter-proto` =
+  crossProject(JVMPlatform, JSPlatform, NativePlatform)
+    .crossType(CrossType.Pure)
+    .enablePlugins(NoPublishPlugin)
+    .in(file("sdk-exporter/proto"))
+    .settings(
+      name := "otel4s-sdk-exporter-proto",
+      Compile / PB.protoSources += baseDirectory.value.getParentFile / "src" / "main" / "protobuf",
+      Compile / PB.targets ++= Seq(
+        scalapb.gen(grpc = false) -> (Compile / sourceManaged).value / "scalapb"
+      ),
+      scalacOptions := {
+        val opts = scalacOptions.value
+        if (tlIsScala3.value) opts.filterNot(_ == "-Wvalue-discard") else opts
+      },
+      // We use open-telemetry protobuf spec to generate models
+      // See https://scalapb.github.io/docs/third-party-protos/#there-is-a-library-on-maven-with-the-protos-and-possibly-generated-java-code
+      libraryDependencies ++= Seq(
+        "io.opentelemetry.proto" % "opentelemetry-proto" % OpenTelemetryProtoVersion % "protobuf-src" intransitive ()
+      )
+    )
+
+lazy val `sdk-exporter-metrics` =
+  crossProject(JVMPlatform, JSPlatform, NativePlatform)
+    .crossType(CrossType.Full)
+    .in(file("sdk-exporter/metrics"))
+    .enablePlugins(NoPublishPlugin/*, DockerComposeEnvPlugin*/)
+    .dependsOn(
+      `sdk-exporter-common`,
+      `sdk-exporter-proto`,
+      `sdk-metrics` % "compile->compile;test->test"
+    )
+    .settings(
+      name := "otel4s-sdk-exporter-metrics",
+      startYear := Some(2023),
+      libraryDependencies ++= Seq(
+        "org.http4s" %%% "http4s-ember-client" % Http4sVersion,
+        "org.http4s" %%% "http4s-circe" % Http4sVersion,
+        "io.github.scalapb-json" %%% "scalapb-circe" % ScalaPBCirceVersion,
+        "org.scalameta" %%% "munit-scalacheck" % MUnitVersion % Test,
+        "io.circe" %%% "circe-generic" % CirceVersion % Test
+      ),
+     // dockerComposeEnvFile := crossProjectBaseDirectory.value / "docker" / "docker-compose.yml"
+    )
+    .jsSettings(
+      scalaJSLinkerConfig ~= (_.withESFeatures(
+        _.withESVersion(org.scalajs.linker.interface.ESVersion.ES2018)
+      )),
+      Test / scalaJSLinkerConfig ~= (_.withModuleKind(
+        ModuleKind.CommonJSModule
+      ))
+    )
+    .nativeEnablePlugins(ScalaNativeBrewedConfigPlugin)
+    .nativeSettings(
+      libraryDependencies += "com.armanbilge" %%% "epollcat" % EpollcatVersion % Test,
+      Test / nativeBrewFormulas ++= Set("s2n", "utf8proc"),
+      Test / envVars ++= Map("S2N_DONT_MLOCK" -> "1")
+    )
+    .settings(munitDependencies)
+    .settings(scalafixSettings)
+
+lazy val `sdk-exporter` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
+  .crossType(CrossType.Pure)
+  .in(file("sdk-exporter/all"))
+  .enablePlugins(NoPublishPlugin)
+  .dependsOn(`sdk-exporter-common`, `sdk-exporter-metrics`)
+  .settings(
+    name := "otel4s-sdk-exporter"
+  )
+  .settings(scalafixSettings)
+
+//
+// Testkit
+//
 
 lazy val `testkit-common` = crossProject(JVMPlatform)
   .crossType(CrossType.Full)
@@ -424,6 +529,9 @@ lazy val unidocs = project
       `sdk-metrics`.jvm,
       `sdk-trace`.jvm,
       sdk.jvm,
+      `sdk-exporter-common`.jvm,
+      `sdk-exporter-metrics`.jvm,
+      `sdk-exporter`.jvm,
       `testkit-common`.jvm,
       `testkit-metrics`.jvm,
       testkit.jvm,

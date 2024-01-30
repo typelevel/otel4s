@@ -22,7 +22,7 @@ import scala.concurrent.duration.FiniteDuration
 
 sealed trait PointData {
   def startTimestamp: FiniteDuration
-  def endTimestamp: FiniteDuration
+  def timestamp: FiniteDuration
   def attributes: Attributes
   def exemplars: Vector[ExemplarData]
 }
@@ -31,7 +31,7 @@ object PointData {
 
   final case class LongPoint(
       startTimestamp: FiniteDuration,
-      endTimestamp: FiniteDuration,
+      timestamp: FiniteDuration,
       attributes: Attributes,
       exemplars: Vector[ExemplarData.LongExemplar],
       value: Long
@@ -39,7 +39,7 @@ object PointData {
 
   final case class DoublePoint(
       startTimestamp: FiniteDuration,
-      endTimestamp: FiniteDuration,
+      timestamp: FiniteDuration,
       attributes: Attributes,
       exemplars: Vector[ExemplarData.DoubleExemplar],
       value: Double
@@ -47,7 +47,7 @@ object PointData {
 
   final case class Summary(
       startTimestamp: FiniteDuration,
-      endTimestamp: FiniteDuration,
+      timestamp: FiniteDuration,
       attributes: Attributes,
       count: Long,
       sum: Double,
@@ -58,14 +58,12 @@ object PointData {
 
   final case class Histogram(
       startTimestamp: FiniteDuration,
-      endTimestamp: FiniteDuration,
+      timestamp: FiniteDuration,
       attributes: Attributes,
       exemplars: Vector[ExemplarData.DoubleExemplar],
-      sum: Double,
-      hasMin: Boolean,
-      min: Double,
-      hasMax: Boolean,
-      max: Double,
+      sum: Option[Double],
+      min: Option[Double],
+      max: Option[Double],
       boundaries: Vector[Double],
       counts: Vector[Long]
   ) extends PointData {
@@ -77,7 +75,7 @@ object PointData {
 
   final case class ExponentialHistogram(
       startTimestamp: FiniteDuration,
-      endTimestamp: FiniteDuration,
+      timestamp: FiniteDuration,
       attributes: Attributes,
       exemplars: Vector[ExemplarData.DoubleExemplar],
       sum: Double,

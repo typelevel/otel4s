@@ -6,6 +6,7 @@ package example
 import cats.effect.Async
 import cats.effect.LiftIO
 import cats.effect.IOLocal
+import org.typelevel.otel4s.metrics.Meter
 import org.typelevel.otel4s.java._
 import org.typelevel.otel4s.java.OtelJava
 import org.typelevel.otel4s.java.trace._
@@ -37,5 +38,14 @@ object Test {
   def askCtx[F[_]: AskContext]: Unit = ???
 
   def localCtx[F[_]: LocalContext]: Unit = ???
+
+  def meterOps[F[_]: Async](implicit meter: Meter[F]): Unit = {
+    meter.counter("counter").create
+    meter.histogram("histogram").withUnit("unit").create
+    meter.upDownCounter("upDownCounter").create
+    meter.observableGauge("observableGauge").create(Async[F].pure(Nil))
+    meter.observableCounter("observableCounter").create(Async[F].pure(Nil))
+    meter.observableUpDownCounter("observableUpDownCounter").create(Async[F].pure(Nil))
+  }
 
 }

@@ -95,7 +95,7 @@ class W3CTraceContextPropagatorSuite extends ScalaCheckSuite {
   // Extract
   //
 
-  test("extract - empty empty") {
+  test("extract - empty context") {
     val ctx = propagator.extract(Context.root, Map.empty[String, String])
     assertEquals(getSpanContext(ctx), None)
   }

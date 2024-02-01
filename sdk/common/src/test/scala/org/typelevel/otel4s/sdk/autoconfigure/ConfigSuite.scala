@@ -202,6 +202,10 @@ class ConfigSuite extends FunSuite {
     )
   }
 
+  test("Config.Key - toString") {
+    assertEquals(Config.Key("some-name").toString, "some-name")
+  }
+
   private def makeConfig(props: Map[String, String]): Config =
     Config.ofProps(props)
 

@@ -16,6 +16,7 @@
 
 package org.typelevel.otel4s.sdk.autoconfigure
 
+import cats.Functor
 import cats.effect.Sync
 import cats.effect.std.Env
 import cats.syntax.either._
@@ -114,7 +115,9 @@ sealed trait Config {
 
 object Config {
 
-  final class Key[A] private (val name: String)
+  final class Key[A] private (val name: String) {
+    override def toString: String = name
+  }
   object Key {
     def apply[A](name: String): Key[A] = new Key[A](name)
   }
@@ -194,6 +197,12 @@ object Config {
               .collect { case key :: value :: Nil => (key, value) }
               .groupMapReduce(_._1)(_._2)((_, last) => last)
           }
+      }
+
+    implicit val readerFunctor: Functor[Reader] =
+      new Functor[Reader] {
+        def map[A, B](fa: Reader[A])(f: A => B): Reader[B] =
+          (key, properties) => fa.read(key, properties).map(_.map(f))
       }
 
     private def asStringList(string: String): List[String] =

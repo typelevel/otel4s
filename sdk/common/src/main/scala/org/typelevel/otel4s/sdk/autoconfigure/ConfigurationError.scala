@@ -29,4 +29,17 @@ object ConfigurationError {
   def apply(message: String, cause: Throwable): ConfigurationError =
     new ConfigurationError(message, Some(cause))
 
+  def unrecognized(key: String, value: String): ConfigurationError =
+    new ConfigurationError(s"Unrecognized value for [$key]: $value", None)
+
+  def unrecognized(
+      key: String,
+      value: String,
+      supported: Set[String]
+  ): ConfigurationError =
+    new ConfigurationError(
+      s"Unrecognized value for [$key]: $value. Supported options [${supported.mkString(", ")}]",
+      None
+    )
+
 }

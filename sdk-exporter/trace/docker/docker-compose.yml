@@ -1,0 +1,23 @@
+version: '3.7'
+services:
+  otel-collector: # receives application metrics and traces via gRPC or HTTP protocol
+    image: otel/opentelemetry-collector-contrib:0.91.0
+    command: [ --config=/etc/otel-collector-config.yaml ]
+    volumes:
+      - "./config/otel-collector-config.yaml:/etc/otel-collector-config.yaml"
+    ports:
+      - "4317:4317" # OTLP gRPC receiver
+      - "4318:4318" # OTLP http receiver
+    depends_on:
+      jaeger:
+        condition: service_healthy
+
+  jaeger: # stores traces received from the OpenTelemetry Collector
+    image: jaegertracing/all-in-one:1.52
+    ports:
+      - "16686:16686" # UI
+    healthcheck:
+      test: [ "CMD", "wget", "--spider", "-S", "http://localhost:14269/health" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3

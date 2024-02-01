@@ -48,6 +48,23 @@ sealed trait Config {
     */
   def get[A: Config.Reader](key: String): Either[ConfigurationError, Option[A]]
 
+  /** Returns the decoded value for the given key or the default one.
+    *
+    * @param key
+    *   the key a value is associated with
+    *
+    * @param default
+    *   the default value
+    *
+    * @tparam A
+    *   the type of a value
+    */
+  final def getOrElse[A: Config.Reader](
+      key: String,
+      default: => A
+  ): Either[ConfigurationError, A] =
+    get[A](key).map(_.getOrElse(default))
+
   /** Returns the decoded value for the given key.
     *
     * @param key
@@ -70,6 +87,17 @@ sealed trait Config {
   ): Either[ConfigurationError, Option[A]] =
     get[A](key.name)
 
+  /** Returns the decoded value for the given key or the default one.
+    *
+    * @param key
+    *   the key a value is associated with
+    *
+    * @param default
+    *   the default value
+    *
+    * @tparam A
+    *   the type of a value
+    */
   final def getOrElse[A: Config.Reader](
       key: Config.Key[A],
       default: => A

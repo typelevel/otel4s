@@ -24,9 +24,14 @@ import org.typelevel.otel4s.sdk.trace.data.StatusData
 import org.typelevel.otel4s.sdk.trace.samplers.SamplingDecision
 import org.typelevel.otel4s.sdk.trace.samplers.SamplingResult
 
+import scala.concurrent.duration._
+
 trait Gens
     extends org.typelevel.otel4s.sdk.scalacheck.Gens
     with org.typelevel.otel4s.trace.scalacheck.Gens {
+
+  val timestamp: Gen[FiniteDuration] =
+    Gen.chooseNum(1L, Long.MaxValue).map(_.nanos)
 
   val samplingDecision: Gen[SamplingDecision] =
     Gen.oneOf(
@@ -43,8 +48,8 @@ trait Gens
 
   val eventData: Gen[EventData] =
     for {
-      name <- Gen.alphaNumStr
-      epoch <- Gen.finiteDuration
+      name <- Gens.nonEmptyString
+      epoch <- Gens.timestamp
       attributes <- Gens.attributes
     } yield EventData(name, epoch, attributes)
 
@@ -56,7 +61,7 @@ trait Gens
 
   val statusData: Gen[StatusData] =
     for {
-      description <- Gen.option(Gen.alphaNumStr)
+      description <- Gen.option(Gens.nonEmptyString)
       data <- Gen.oneOf(
         StatusData.Ok,
         StatusData.Unset,
@@ -66,12 +71,12 @@ trait Gens
 
   val spanData: Gen[SpanData] =
     for {
-      name <- Gen.alphaStr
+      name <- Gens.nonEmptyString
       spanContext <- Gens.spanContext
       parentSpanContext <- Gen.option(Gens.spanContext)
       kind <- Gens.spanKind
-      startEpochNanos <- Gen.finiteDuration
-      endEpochNanos <- Gen.option(Gen.finiteDuration)
+      startTimestamp <- Gens.timestamp
+      endTimestamp <- Gen.option(Gens.timestamp)
       status <- Gens.statusData
       attributes <- Gens.attributes
       events <- Gen.listOf(Gens.eventData)
@@ -83,8 +88,8 @@ trait Gens
       spanContext,
       parentSpanContext,
       kind,
-      startEpochNanos,
-      endEpochNanos,
+      startTimestamp,
+      endTimestamp,
       status,
       attributes,
       events.toVector,

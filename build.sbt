@@ -1,5 +1,3 @@
-import com.typesafe.tools.mima.core._
-
 ThisBuild / tlBaseVersion := "0.5"
 
 ThisBuild / organization := "org.typelevel"
@@ -27,6 +25,8 @@ val Scala213 = "2.13.12"
 ThisBuild / crossScalaVersions := Seq(Scala213, "3.3.1")
 ThisBuild / scalaVersion := Scala213 // the default Scala
 
+ThisBuild / githubWorkflowBuildPreamble ++= nativeBrewInstallWorkflowSteps.value
+
 val CatsVersion = "2.10.0"
 val CatsEffectVersion = "3.5.3"
 val CatsMtlVersion = "1.4.0"
@@ -38,11 +38,16 @@ val MUnitScalaCheckEffectVersion = "2.0.0-M2"
 val OpenTelemetryVersion = "1.34.1"
 val OpenTelemetryInstrumentationVersion = "2.0.0"
 val OpenTelemetrySemConvVersion = "1.23.1-alpha"
+val OpenTelemetryProtoVersion = "1.0.0-alpha"
 val PekkoStreamVersion = "1.0.2"
 val PekkoHttpVersion = "1.0.0"
 val PlatformVersion = "1.0.2"
 val ScodecVersion = "1.1.38"
 val VaultVersion = "3.5.0"
+val Http4sVersion = "0.23.25"
+val CirceVersion = "0.14.6"
+val EpollcatVersion = "0.1.6"
+val ScalaPBCirceVersion = "0.15.1"
 
 lazy val scalaReflectDependency = Def.settings(
   libraryDependencies ++= {
@@ -77,6 +82,10 @@ lazy val root = tlCrossRootProject
     `sdk-common`,
     `sdk-trace`,
     sdk,
+    `sdk-exporter-common`,
+    `sdk-exporter-proto`,
+    `sdk-exporter-trace`,
+    `sdk-exporter`,
     `testkit-common`,
     `testkit-metrics`,
     testkit,
@@ -88,6 +97,9 @@ lazy val root = tlCrossRootProject
     benchmarks,
     examples,
     unidocs
+  )
+  .configureRoot(
+    _.aggregate(scalafix.componentProjectReferences: _*)
   )
   .settings(name := "otel4s")
 
@@ -206,6 +218,101 @@ lazy val sdk = crossProject(JVMPlatform, JSPlatform, NativePlatform)
     name := "otel4s-sdk"
   )
   .settings(scalafixSettings)
+
+//
+// SDK exporter
+//
+
+lazy val `sdk-exporter-proto` =
+  crossProject(JVMPlatform, JSPlatform, NativePlatform)
+    .crossType(CrossType.Pure)
+    .enablePlugins(NoPublishPlugin)
+    .in(file("sdk-exporter/proto"))
+    .settings(
+      name := "otel4s-sdk-exporter-proto",
+      Compile / PB.protoSources += baseDirectory.value.getParentFile / "src" / "main" / "protobuf",
+      Compile / PB.targets ++= Seq(
+        scalapb.gen(grpc = false) -> (Compile / sourceManaged).value / "scalapb"
+      ),
+      scalacOptions := {
+        val opts = scalacOptions.value
+        if (tlIsScala3.value) opts.filterNot(_ == "-Wvalue-discard") else opts
+      },
+      // We use open-telemetry protobuf spec to generate models
+      // See https://scalapb.github.io/docs/third-party-protos/#there-is-a-library-on-maven-with-the-protos-and-possibly-generated-java-code
+      libraryDependencies ++= Seq(
+        "io.opentelemetry.proto" % "opentelemetry-proto" % OpenTelemetryProtoVersion % "protobuf-src" intransitive ()
+      )
+    )
+
+lazy val `sdk-exporter-common` =
+  crossProject(JVMPlatform, JSPlatform, NativePlatform)
+    .crossType(CrossType.Pure)
+    .in(file("sdk-exporter/common"))
+    .enablePlugins(NoPublishPlugin)
+    .dependsOn(
+      `sdk-common` % "compile->compile;test->test",
+      `sdk-exporter-proto`
+    )
+    .settings(
+      name := "otel4s-sdk-exporter-common",
+      startYear := Some(2023),
+      libraryDependencies ++= Seq(
+        "org.http4s" %%% "http4s-ember-client" % Http4sVersion,
+        "org.http4s" %%% "http4s-circe" % Http4sVersion,
+        "io.github.scalapb-json" %%% "scalapb-circe" % ScalaPBCirceVersion,
+        "org.typelevel" %%% "cats-laws" % CatsVersion % Test,
+        "org.typelevel" %%% "discipline-munit" % MUnitDisciplineVersion % Test,
+        "io.circe" %%% "circe-generic" % CirceVersion % Test
+      )
+    )
+    .settings(munitDependencies)
+    .settings(scalafixSettings)
+
+lazy val `sdk-exporter-trace` =
+  crossProject(JVMPlatform, JSPlatform, NativePlatform)
+    .crossType(CrossType.Full)
+    .in(file("sdk-exporter/trace"))
+    .enablePlugins(NoPublishPlugin, DockerComposeEnvPlugin)
+    .dependsOn(
+      `sdk-exporter-common` % "compile->compile;test->test",
+      `sdk-trace` % "compile->compile;test->test"
+    )
+    .settings(
+      name := "otel4s-sdk-exporter-trace",
+      startYear := Some(2023),
+      dockerComposeEnvFile := crossProjectBaseDirectory.value / "docker" / "docker-compose.yml"
+    )
+    .jsSettings(
+      scalaJSLinkerConfig ~= (_.withESFeatures(
+        _.withESVersion(org.scalajs.linker.interface.ESVersion.ES2018)
+      )),
+      Test / scalaJSLinkerConfig ~= (_.withModuleKind(
+        ModuleKind.CommonJSModule
+      ))
+    )
+    .nativeEnablePlugins(ScalaNativeBrewedConfigPlugin)
+    .nativeSettings(
+      libraryDependencies += "com.armanbilge" %%% "epollcat" % EpollcatVersion % Test,
+      Test / nativeBrewFormulas ++= Set("s2n", "utf8proc"),
+      Test / envVars ++= Map("S2N_DONT_MLOCK" -> "1")
+    )
+    .settings(munitDependencies)
+    .settings(scalafixSettings)
+
+lazy val `sdk-exporter` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
+  .crossType(CrossType.Pure)
+  .in(file("sdk-exporter/all"))
+  .enablePlugins(NoPublishPlugin)
+  .dependsOn(`sdk-exporter-common`, `sdk-exporter-trace`)
+  .settings(
+    name := "otel4s-sdk-exporter"
+  )
+  .settings(scalafixSettings)
+
+//
+// Testkit
+//
 
 lazy val `testkit-common` = crossProject(JVMPlatform)
   .crossType(CrossType.Full)
@@ -327,6 +434,28 @@ lazy val semconv = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .settings(munitDependencies)
   .settings(scalafixSettings)
 
+lazy val scalafix = tlScalafixProject
+  .rulesSettings(
+    name := "otel4s-scalafix",
+    crossScalaVersions := Seq(Scala213),
+    startYear := Some(2024)
+  )
+  .inputSettings(
+    crossScalaVersions := Seq(Scala213),
+    libraryDependencies += "org.typelevel" %% "otel4s-java" % "0.4.0",
+    headerSources / excludeFilter := AllPassFilter
+  )
+  .inputConfigure(_.disablePlugins(ScalafixPlugin))
+  .outputSettings(
+    crossScalaVersions := Seq(Scala213),
+    headerSources / excludeFilter := AllPassFilter
+  )
+  .outputConfigure(_.dependsOn(oteljava).disablePlugins(ScalafixPlugin))
+  .testsSettings(
+    crossScalaVersions := Seq(Scala213),
+    startYear := Some(2024)
+  )
+
 lazy val benchmarks = project
   .enablePlugins(NoPublishPlugin)
   .enablePlugins(JmhPlugin)
@@ -405,6 +534,9 @@ lazy val unidocs = project
       `sdk-common`.jvm,
       `sdk-trace`.jvm,
       sdk.jvm,
+      `sdk-exporter-common`.jvm,
+      `sdk-exporter-trace`.jvm,
+      `sdk-exporter`.jvm,
       `testkit-common`.jvm,
       `testkit-metrics`.jvm,
       testkit.jvm,

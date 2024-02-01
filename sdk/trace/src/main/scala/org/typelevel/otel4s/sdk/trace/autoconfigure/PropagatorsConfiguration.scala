@@ -28,6 +28,7 @@ import org.typelevel.otel4s.sdk.autoconfigure.Config
 import org.typelevel.otel4s.sdk.autoconfigure.ConfigurationError
 import org.typelevel.otel4s.sdk.context.Context
 import org.typelevel.otel4s.sdk.trace.context.propagation.B3Propagator
+import org.typelevel.otel4s.sdk.trace.context.propagation.W3CBaggagePropagator
 import org.typelevel.otel4s.sdk.trace.context.propagation.W3CTraceContextPropagator
 
 private final class PropagatorsConfiguration[F[_]: MonadThrow]
@@ -67,10 +68,10 @@ private final class PropagatorsConfiguration[F[_]: MonadThrow]
   private def create(name: String): F[TextMapPropagator[Context]] =
     name match {
       case "tracecontext" =>
-        MonadThrow[F].pure(W3CTraceContextPropagator)
+        MonadThrow[F].pure(W3CTraceContextPropagator.default)
 
-      /*case "baggage" =>
-        MonadThrow[F].pure(W3CBaggagePropagator)*/
+      case "baggage" =>
+        MonadThrow[F].pure(W3CBaggagePropagator.default)
 
       case "b3" =>
         MonadThrow[F].pure(B3Propagator.singleHeader)
@@ -91,7 +92,7 @@ private[sdk] object PropagatorsConfiguration {
     val Propagators: Config.Key[Set[String]] = Config.Key("otel.propagators")
   }
 
-  private val Default = NonEmptyList.one("tracecontext" /*, "baggage"*/ )
+  private val Default = NonEmptyList.of("tracecontext", "baggage")
 
   def apply[F[_]: MonadThrow]: AutoConfigure[F, ContextPropagators[Context]] =
     new PropagatorsConfiguration[F]

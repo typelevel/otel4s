@@ -28,7 +28,7 @@ import org.typelevel.otel4s.sdk.autoconfigure.Config
 import org.typelevel.otel4s.sdk.autoconfigure.ConfigurationError
 import org.typelevel.otel4s.sdk.context.Context
 import org.typelevel.otel4s.sdk.trace.context.propagation.B3Propagator
-import org.typelevel.otel4s.sdk.trace.propagation.W3CTraceContextPropagator
+import org.typelevel.otel4s.sdk.trace.context.propagation.W3CTraceContextPropagator
 
 private final class PropagatorsConfiguration[F[_]: MonadThrow]
     extends AutoConfigure.WithHint[F, ContextPropagators[Context]](

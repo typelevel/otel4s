@@ -41,9 +41,9 @@ object Test {
     meter.counter[Long]("counter").create
     meter.histogram[Double]("histogram").withUnit("unit").create
     meter.upDownCounter[Long]("upDownCounter").create
-    meter.observableGauge[Double]("observableGauge").create(Async[F].pure(Nil))
-    meter.observableCounter[Long]("observableCounter").create(Async[F].pure(Nil))
-    meter.observableUpDownCounter[Long]("observableUpDownCounter").create(Async[F].pure(Nil))
+    meter.observableGauge[Double]("OG").create(Async[F].pure(Nil))
+    meter.observableCounter[Long]("OC").create(Async[F].pure(Nil))
+    meter.observableUpDownCounter[Long]("OUDC").create(Async[F].pure(Nil))
   }
 
 }

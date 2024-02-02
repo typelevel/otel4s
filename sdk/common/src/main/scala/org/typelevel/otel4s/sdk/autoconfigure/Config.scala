@@ -255,6 +255,15 @@ object Config {
     Impl(default ++ env ++ props)
   }
 
+  /** Creates a [[Config]] with the given properties. The properties will be
+    * treated as the system props.
+    *
+    * @param properties
+    *   the properties to use
+    */
+  def ofProps(properties: Map[String, String]): Config =
+    apply(properties, Map.empty, Map.empty)
+
   /** Creates a [[Config]] by loading properties from the env variables and
     * system props.
     *

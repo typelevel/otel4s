@@ -23,15 +23,39 @@ final class AutoConfigureError private (
 
 object AutoConfigureError {
 
+  /** Creates an [[AutoConfigureError]] with the given `hint` and `cause`.
+    *
+    * @param hint
+    *   the name of the component
+    *
+    * @param cause
+    *   the cause
+    */
   def apply(
       hint: String,
       cause: Throwable
   ): AutoConfigureError =
     new AutoConfigureError(
-      s"Cannot autoconfigure [$hint]. Cause: ${cause.getMessage}",
+      s"Cannot autoconfigure [$hint]. Cause: ${cause.getMessage}.",
       cause
     )
 
+  /** Creates an [[AutoConfigureError]] with the given `hint` and `cause`. The
+    * debug information associated with the `configKeys` will be added to the
+    * message.
+    *
+    * @param hint
+    *   the name of the component
+    *
+    * @param cause
+    *   the cause
+    *
+    * @param configKeys
+    *   the config keys that could be used to autoconfigure the component
+    *
+    * @param config
+    *   the config
+    */
   def apply(
       hint: String,
       cause: Throwable,
@@ -42,7 +66,8 @@ object AutoConfigureError {
       val params = configKeys.zipWithIndex
         .map { case (key, i) =>
           val name = key.name
-          val value = config.getOrElse[String](key.name, "[N/A]")
+          val value =
+            config.get[String](key.name).toOption.flatten.getOrElse("N/A")
           val idx = i + 1
           s"$idx) `$name` - $value"
         }

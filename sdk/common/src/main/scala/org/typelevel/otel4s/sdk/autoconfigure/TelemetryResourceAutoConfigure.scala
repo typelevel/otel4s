@@ -42,7 +42,10 @@ import java.nio.charset.StandardCharsets
   *   [[https://github.com/open-telemetry/opentelemetry-java/blob/main/sdk-extensions/autoconfigure/README.md#opentelemetry-resource]]
   */
 private final class TelemetryResourceAutoConfigure[F[_]: MonadThrow]
-    extends AutoConfigure.WithHint[F, TelemetryResource]("TelemetryResource") {
+    extends AutoConfigure.WithHint[F, TelemetryResource](
+      "TelemetryResource",
+      TelemetryResourceAutoConfigure.ConfigKeys.All
+    ) {
 
   import TelemetryResourceAutoConfigure.ConfigKeys
 
@@ -98,6 +101,8 @@ private[sdk] object TelemetryResourceAutoConfigure {
 
     val ServiceName: Config.Key[String] =
       Config.Key("otel.service.name")
+
+    val All: Set[Config.Key[_]] = Set(DisabledKeys, Attributes, ServiceName)
   }
 
   /** Returns [[AutoConfigure]] that configures the [[TelemetryResource]].

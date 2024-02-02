@@ -203,6 +203,6 @@ class ConfigSuite extends FunSuite {
   }
 
   private def makeConfig(props: Map[String, String]): Config =
-    Config(props, Map.empty, Map.empty)
+    Config.ofProps(props)
 
 }

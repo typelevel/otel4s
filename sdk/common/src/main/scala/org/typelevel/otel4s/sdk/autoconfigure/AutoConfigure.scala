@@ -34,14 +34,30 @@ trait AutoConfigure[F[_], A] {
 
 object AutoConfigure {
 
+  /** If the component cannot be created due to an error, the meaningful debug
+    * information will be added to the exception.
+    *
+    * @param hint
+    *   the name of the component. For example: Sampler, TelemetryResource
+    *
+    * @param configKeys
+    *   the config keys that could be used to autoconfigure the component
+    *
+    * @tparam F
+    *   the higher-kinded type of a polymorphic effect
+    *
+    * @tparam A
+    *   the type of the component
+    */
   abstract class WithHint[F[_]: MonadThrow, A](
-      hint: String
+      hint: String,
+      configKeys: Set[Config.Key[_]]
   ) extends AutoConfigure[F, A] {
 
     final def configure(config: Config): Resource[F, A] =
       fromConfig(config).adaptError {
         case e: AutoConfigureError => e
-        case cause                 => new AutoConfigureError(hint, cause)
+        case cause => AutoConfigureError(hint, cause, configKeys, config)
       }
 
     protected def fromConfig(config: Config): Resource[F, A]

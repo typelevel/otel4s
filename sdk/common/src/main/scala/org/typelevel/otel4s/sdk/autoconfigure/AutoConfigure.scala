@@ -35,13 +35,14 @@ trait AutoConfigure[F[_], A] {
 object AutoConfigure {
 
   abstract class WithHint[F[_]: MonadThrow, A](
-      hint: String
+      hint: String,
+      configKeys: Set[Config.Key[_]]
   ) extends AutoConfigure[F, A] {
 
     final def configure(config: Config): Resource[F, A] =
       fromConfig(config).adaptError {
         case e: AutoConfigureError => e
-        case cause                 => new AutoConfigureError(hint, cause)
+        case cause => AutoConfigureError(hint, cause, configKeys, config)
       }
 
     protected def fromConfig(config: Config): Resource[F, A]

@@ -29,7 +29,8 @@ import org.typelevel.otel4s.sdk.trace.exporter.SpanExporter
 
 private final class SpanExportersAutoConfigure[F[_]: MonadThrow: Console]
     extends AutoConfigure.WithHint[F, Map[String, SpanExporter[F]]](
-      "SpanExporter"
+      "SpanExporter",
+      SpanExportersAutoConfigure.ConfigKeys.All
     ) {
 
   import SpanExportersAutoConfigure.ConfigKeys
@@ -81,6 +82,8 @@ private[sdk] object SpanExportersAutoConfigure {
 
   private object ConfigKeys {
     val Exporter: Config.Key[Set[String]] = Config.Key("otel.traces.exporter")
+
+    val All: Set[Config.Key[_]] = Set(Exporter)
   }
 
   def apply[

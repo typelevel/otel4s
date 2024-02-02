@@ -31,13 +31,14 @@ import org.typelevel.otel4s.sdk.trace.context.propagation.B3Propagator
 import org.typelevel.otel4s.sdk.trace.context.propagation.W3CBaggagePropagator
 import org.typelevel.otel4s.sdk.trace.context.propagation.W3CTraceContextPropagator
 
-private final class PropagatorsConfiguration[F[_]: MonadThrow]
+private final class PropagatorsAutoConfigure[F[_]: MonadThrow]
     extends AutoConfigure.WithHint[F, ContextPropagators[Context]](
-      "ContextPropagators"
+      "ContextPropagators",
+      PropagatorsAutoConfigure.ConfigKeys.All
     ) {
 
-  import PropagatorsConfiguration.ConfigKeys
-  import PropagatorsConfiguration.Default
+  import PropagatorsAutoConfigure.ConfigKeys
+  import PropagatorsAutoConfigure.Default
 
   def fromConfig(config: Config): Resource[F, ContextPropagators[Context]] = {
     val values = config.getOrElse(ConfigKeys.Propagators, Set.empty[String])
@@ -86,15 +87,17 @@ private final class PropagatorsConfiguration[F[_]: MonadThrow]
     }
 }
 
-private[sdk] object PropagatorsConfiguration {
+private[sdk] object PropagatorsAutoConfigure {
 
   private object ConfigKeys {
     val Propagators: Config.Key[Set[String]] = Config.Key("otel.propagators")
+
+    val All: Set[Config.Key[_]] = Set(ConfigKeys.Propagators)
   }
 
   private val Default = NonEmptyList.of("tracecontext", "baggage")
 
   def apply[F[_]: MonadThrow]: AutoConfigure[F, ContextPropagators[Context]] =
-    new PropagatorsConfiguration[F]
+    new PropagatorsAutoConfigure[F]
 
 }

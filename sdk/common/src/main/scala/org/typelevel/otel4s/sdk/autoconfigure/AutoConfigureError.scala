@@ -16,7 +16,44 @@
 
 package org.typelevel.otel4s.sdk.autoconfigure
 
-final class AutoConfigureError(
-    hint: String,
+final class AutoConfigureError private (
+    message: String,
     cause: Throwable
-) extends RuntimeException(s"Cannot auto configure [$hint]", cause)
+) extends RuntimeException(message, cause)
+
+object AutoConfigureError {
+
+  def apply(
+      hint: String,
+      cause: Throwable
+  ): AutoConfigureError =
+    new AutoConfigureError(
+      s"Cannot autoconfigure [$hint]. Cause: ${cause.getMessage}",
+      cause
+    )
+
+  def apply(
+      hint: String,
+      cause: Throwable,
+      configKeys: Set[Config.Key[_]],
+      config: Config
+  ): AutoConfigureError =
+    if (configKeys.nonEmpty) {
+      val params = configKeys.zipWithIndex
+        .map { case (key, i) =>
+          val name = key.name
+          val value = config.getOrElse[String](key.name, "[N/A]")
+          val idx = i + 1
+          s"$idx) `$name` - $value"
+        }
+        .mkString("\n")
+
+      new AutoConfigureError(
+        s"Cannot autoconfigure [$hint].\nCause: ${cause.getMessage}.\nConfig:\n$params",
+        cause
+      )
+    } else {
+      apply(hint, cause)
+    }
+
+}

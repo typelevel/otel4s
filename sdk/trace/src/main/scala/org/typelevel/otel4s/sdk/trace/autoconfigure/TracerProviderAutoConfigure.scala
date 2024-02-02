@@ -36,7 +36,8 @@ private final class TracerProviderAutoConfigure[
     F[_]: Temporal: Parallel: Console
 ] private (builder: SdkTracerProvider.Builder[F])
     extends AutoConfigure.WithHint[F, SdkTracerProvider.Builder[F]](
-      "TracerProvider"
+      "TracerProvider",
+      TracerProviderAutoConfigure.ConfigKeys.All
     ) {
 
   import TracerProviderAutoConfigure.ConfigKeys
@@ -123,6 +124,9 @@ private[sdk] object TracerProviderAutoConfigure {
 
     val ExporterTimeout: Config.Key[FiniteDuration] =
       Config.Key("otel.bsp.export.timeout")
+
+    val All: Set[Config.Key[_]] =
+      Set(ScheduleDelay, MaxQueueSize, MaxExportBatchSize, ExporterTimeout)
   }
 
   def apply[F[_]: Temporal: Parallel: Console](

@@ -24,7 +24,10 @@ import org.typelevel.otel4s.sdk.autoconfigure.ConfigurationError
 import org.typelevel.otel4s.sdk.trace.samplers.Sampler
 
 private final class SamplerAutoConfigure[F[_]: MonadThrow]
-    extends AutoConfigure.WithHint[F, Sampler]("Sampler") {
+    extends AutoConfigure.WithHint[F, Sampler](
+      "Sampler",
+      SamplerAutoConfigure.ConfigKeys.All
+    ) {
 
   import SamplerAutoConfigure.ConfigKeys
 
@@ -64,6 +67,8 @@ private[sdk] object SamplerAutoConfigure {
   private object ConfigKeys {
     val Sampler: Config.Key[String] = Config.Key("otel.traces.sampler")
     val SamplerArg: Config.Key[Double] = Config.Key("otel.traces.sampler.arg")
+
+    val All: Set[Config.Key[_]] = Set(Sampler, SamplerArg)
   }
 
   def apply[F[_]: MonadThrow]: AutoConfigure[F, Sampler] =

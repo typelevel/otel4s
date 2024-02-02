@@ -34,7 +34,7 @@ import org.typelevel.otel4s.sdk.autoconfigure.Config
 import org.typelevel.otel4s.sdk.context.Context
 import org.typelevel.otel4s.sdk.context.LocalContextProvider
 import org.typelevel.otel4s.sdk.trace.SdkTracerProvider
-import org.typelevel.otel4s.sdk.trace.autoconfigure.PropagatorsConfiguration
+import org.typelevel.otel4s.sdk.trace.autoconfigure.PropagatorsAutoConfigure
 import org.typelevel.otel4s.sdk.trace.autoconfigure.TracerProviderAutoConfigure
 import org.typelevel.otel4s.trace.TracerProvider
 
@@ -198,7 +198,7 @@ object OpenTelemetrySdk {
                   tracerProvider <- Resource.eval(
                     tracerProviderCustomizer(tpBuilder, config).build
                   )
-                  propagators <- PropagatorsConfiguration[F].configure(config)
+                  propagators <- PropagatorsAutoConfigure[F].configure(config)
                 } yield OpenTelemetrySdk(
                   propagators,
                   MeterProvider.noop[F],

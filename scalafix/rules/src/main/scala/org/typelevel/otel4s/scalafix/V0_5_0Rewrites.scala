@@ -17,6 +17,7 @@
 package org.typelevel.otel4s.scalafix
 
 import scalafix.v1._
+
 import scala.meta._
 
 class V0_5_0Rewrites extends SemanticRule("V0_5_0Rewrites") {

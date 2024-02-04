@@ -78,9 +78,11 @@ lazy val root = tlCrossRootProject
     `core-common`,
     `core-metrics`,
     `core-trace`,
+    `core-trace-testkit`,
     core,
     `sdk-common`,
     `sdk-trace`,
+    `sdk-trace-testkit`,
     sdk,
     `sdk-exporter-common`,
     `sdk-exporter-proto`,
@@ -92,6 +94,7 @@ lazy val root = tlCrossRootProject
     `oteljava-common`,
     `oteljava-metrics`,
     `oteljava-trace`,
+    `oteljava-trace-testkit`,
     oteljava,
     semconv,
     benchmarks,
@@ -102,6 +105,10 @@ lazy val root = tlCrossRootProject
     _.aggregate(scalafix.componentProjectReferences: _*)
   )
   .settings(name := "otel4s")
+
+//
+// Core
+//
 
 lazy val `core-common` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .crossType(CrossType.Pure)
@@ -155,6 +162,17 @@ lazy val `core-trace` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   )
   .settings(scalafixSettings)
 
+lazy val `core-trace-testkit` =
+  crossProject(JVMPlatform, JSPlatform, NativePlatform)
+    .crossType(CrossType.Pure)
+    .in(file("core/trace-testkit"))
+    .dependsOn(`core-trace`)
+    .settings(
+      name := "otel4s-core-trace-testkit",
+      startYear := Some(2024)
+    )
+    .settings(scalafixSettings)
+
 lazy val core = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .crossType(CrossType.Pure)
   .in(file("core/all"))
@@ -163,6 +181,10 @@ lazy val core = crossProject(JVMPlatform, JSPlatform, NativePlatform)
     name := "otel4s-core"
   )
   .settings(scalafixSettings)
+
+//
+// SDK
+//
 
 lazy val `sdk-common` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .crossType(CrossType.Pure)
@@ -194,7 +216,8 @@ lazy val `sdk-trace` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .in(file("sdk/trace"))
   .dependsOn(
     `sdk-common` % "compile->compile;test->test",
-    `core-trace` % "compile->compile;test->test"
+    `core-trace` % "compile->compile;test->test",
+    `core-trace-testkit` % Test
   )
   .settings(
     name := "otel4s-sdk-trace",
@@ -208,6 +231,17 @@ lazy val `sdk-trace` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
     ),
   )
   .settings(munitDependencies)
+
+lazy val `sdk-trace-testkit` =
+  crossProject(JVMPlatform, JSPlatform, NativePlatform)
+    .crossType(CrossType.Pure)
+    .enablePlugins(NoPublishPlugin)
+    .in(file("sdk/trace-testkit"))
+    .dependsOn(`sdk-trace`, `core-trace-testkit`)
+    .settings(
+      name := "otel4s-sdk-trace-testkit",
+      startYear := Some(2024)
+    )
 
 lazy val sdk = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .crossType(CrossType.Pure)
@@ -388,7 +422,11 @@ lazy val `oteljava-metrics` = project
 
 lazy val `oteljava-trace` = project
   .in(file("oteljava/trace"))
-  .dependsOn(`oteljava-common`, `core-trace`.jvm)
+  .dependsOn(
+    `oteljava-common`,
+    `core-trace`.jvm,
+    `core-trace-testkit`.jvm % Test
+  )
   .settings(munitDependencies)
   .settings(
     name := "otel4s-oteljava-trace",
@@ -398,6 +436,18 @@ lazy val `oteljava-trace` = project
       "org.typelevel" %%% "cats-effect-testkit" % CatsEffectVersion % Test,
       "co.fs2" %% "fs2-core" % FS2Version % Test,
     ),
+  )
+  .settings(scalafixSettings)
+
+lazy val `oteljava-trace-testkit` = project
+  .in(file("oteljava/trace-testkit"))
+  .dependsOn(`oteljava-trace`, `core-trace-testkit`.jvm)
+  .settings(
+    name := "otel4s-oteljava-trace-testkit",
+    libraryDependencies ++= Seq(
+      "io.opentelemetry" % "opentelemetry-sdk-testing" % OpenTelemetryVersion
+    ),
+    startYear := Some(2024)
   )
   .settings(scalafixSettings)
 
@@ -528,9 +578,11 @@ lazy val unidocs = project
       `core-common`.jvm,
       `core-metrics`.jvm,
       `core-trace`.jvm,
+      `core-trace-testkit`.jvm,
       core.jvm,
       `sdk-common`.jvm,
       `sdk-trace`.jvm,
+      `sdk-trace-testkit`.jvm,
       sdk.jvm,
       `sdk-exporter-common`.jvm,
       `sdk-exporter-trace`.jvm,
@@ -541,6 +593,7 @@ lazy val unidocs = project
       `oteljava-common`,
       `oteljava-metrics`,
       `oteljava-trace`,
+      `oteljava-trace-testkit`,
       oteljava,
       semconv.jvm
     )

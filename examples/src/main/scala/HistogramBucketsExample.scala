@@ -22,14 +22,14 @@ import cats.effect.std.Random
 import cats.syntax.flatMap._
 import cats.syntax.functor._
 import cats.syntax.parallel._
-import io.opentelemetry.sdk.OpenTelemetrySdk
-import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk
+import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdkBuilder
 import io.opentelemetry.sdk.metrics.Aggregation
 import io.opentelemetry.sdk.metrics.InstrumentSelector
 import io.opentelemetry.sdk.metrics.InstrumentType
 import io.opentelemetry.sdk.metrics.View
 import org.typelevel.otel4s.metrics.Histogram
 import org.typelevel.otel4s.oteljava.OtelJava
+import org.typelevel.otel4s.oteljava.context.LocalContextProvider
 
 import java.{util => ju}
 import java.util.concurrent.TimeUnit
@@ -51,10 +51,9 @@ object HistogramBucketsExample extends IOApp.Simple {
         )
     } yield ()
 
-  def program[F[_]: Async: LiftIO: Parallel: Console]: F[Unit] =
-    Resource
-      .eval(configureSdk[F])
-      .evalMap(OtelJava.forAsync[F])
+  def program[F[_]: Async: LocalContextProvider: Parallel: Console]: F[Unit] =
+    OtelJava
+      .autoConfigured(configureBuilder)
       .evalMap(_.meterProvider.get("histogram-example"))
       .use { meter =>
         for {
@@ -67,9 +66,10 @@ object HistogramBucketsExample extends IOApp.Simple {
   def run: IO[Unit] =
     program[IO]
 
-  private def configureSdk[F[_]: Sync]: F[OpenTelemetrySdk] = Sync[F].delay {
-    AutoConfiguredOpenTelemetrySdk
-      .builder()
+  private def configureBuilder(
+      builder: AutoConfiguredOpenTelemetrySdkBuilder
+  ): AutoConfiguredOpenTelemetrySdkBuilder =
+    builder
       .addMeterProviderCustomizer { (meterProviderBuilder, _) =>
         meterProviderBuilder
           .registerView(
@@ -89,8 +89,5 @@ object HistogramBucketsExample extends IOApp.Simple {
               .build()
           )
       }
-      .setResultAsGlobal
-      .build()
-      .getOpenTelemetrySdk
-  }
+
 }

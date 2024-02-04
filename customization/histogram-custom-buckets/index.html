@@ -230,6 +230,7 @@
 </span><span class="keyword">import</span><span> </span><span class="identifier">io</span><span>.</span><span class="identifier">opentelemetry</span><span>.</span><span class="identifier">sdk</span><span>.</span><span class="identifier">metrics</span><span>.</span><span class="type-name">InstrumentSelector</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">io</span><span>.</span><span class="identifier">opentelemetry</span><span>.</span><span class="identifier">sdk</span><span>.</span><span class="identifier">metrics</span><span>.</span><span class="type-name">InstrumentType</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">io</span><span>.</span><span class="identifier">opentelemetry</span><span>.</span><span class="identifier">sdk</span><span>.</span><span class="identifier">metrics</span><span>.</span><span class="type-name">View</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="identifier">context</span><span>.</span><span class="type-name">LocalContextProvider</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="type-name">OtelJava</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">metrics</span><span>.</span><span class="type-name">Histogram</span><span>
 
@@ -238,7 +239,7 @@
 
 </span><span class="keyword">object</span><span> </span><span class="type-name">HistogramBucketsExample</span><span> </span><span class="keyword">extends</span><span> </span><span class="type-name">IOApp</span><span>.</span><span class="type-name">Simple</span><span> {
 
-  </span><span class="keyword">def</span><span> </span><span class="declaration-name">work</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>] : </span><span class="type-name">Temporal</span><span> : </span><span class="type-name">Console</span><span>](
+  </span><span class="keyword">def</span><span> </span><span class="declaration-name">work</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>]: </span><span class="type-name">Temporal</span><span>: </span><span class="type-name">Console</span><span>](
     </span><span class="identifier">histogram</span><span>: </span><span class="type-name">Histogram</span><span>[</span><span class="type-name">F</span><span>, </span><span class="type-name">Double</span><span>], 
     </span><span class="identifier">random</span><span>: </span><span class="type-name">Random</span><span>[</span><span class="type-name">F</span><span>]
   ): </span><span class="type-name">F</span><span>[</span><span class="type-name">Unit</span><span>] =
@@ -252,7 +253,7 @@
         )
     } </span><span class="keyword">yield</span><span> ()
 
-  </span><span class="keyword">def</span><span> </span><span class="declaration-name">program</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>] : </span><span class="type-name">Async</span><span> : </span><span class="type-name">LiftIO</span><span> : </span><span class="type-name">Parallel</span><span> : </span><span class="type-name">Console</span><span>]: </span><span class="type-name">F</span><span>[</span><span class="type-name">Unit</span><span>] =
+  </span><span class="keyword">def</span><span> </span><span class="declaration-name">program</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>]: </span><span class="type-name">Async</span><span>: </span><span class="type-name">LocalContextProvider</span><span>: </span><span class="type-name">Parallel</span><span>: </span><span class="type-name">Console</span><span>]: </span><span class="type-name">F</span><span>[</span><span class="type-name">Unit</span><span>] =
     </span><span class="identifier">configureSdk</span><span>[</span><span class="type-name">F</span><span>]
       .</span><span class="identifier">evalMap</span><span>(</span><span class="identifier">_</span><span>.</span><span class="identifier">meterProvider</span><span>.</span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;histogram-example&quot;</span><span>))
       .</span><span class="identifier">use</span><span> { </span><span class="identifier">meter</span><span> =&gt;
@@ -266,7 +267,7 @@
   </span><span class="keyword">def</span><span> </span><span class="declaration-name">run</span><span>: </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] =
     </span><span class="identifier">program</span><span>[</span><span class="type-name">IO</span><span>]
 
-  </span><span class="keyword">private</span><span> </span><span class="keyword">def</span><span> </span><span class="declaration-name">configureSdk</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>] : </span><span class="type-name">Async</span><span> : </span><span class="type-name">LiftIO</span><span>]: </span><span class="type-name">Resource</span><span>[</span><span class="type-name">F</span><span>, </span><span class="type-name">OtelJava</span><span>[</span><span class="type-name">F</span><span>]] =
+  </span><span class="keyword">private</span><span> </span><span class="keyword">def</span><span> </span><span class="declaration-name">configureSdk</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>]: </span><span class="type-name">Async</span><span>: </span><span class="type-name">LocalContextProvider</span><span>]: </span><span class="type-name">Resource</span><span>[</span><span class="type-name">F</span><span>, </span><span class="type-name">OtelJava</span><span>[</span><span class="type-name">F</span><span>]] =
     </span><span class="type-name">OtelJava</span><span>.</span><span class="identifier">autoConfigured</span><span> { </span><span class="identifier">sdkBuilder</span><span> =&gt;
       </span><span class="identifier">sdkBuilder</span><span>
         .</span><span class="identifier">addMeterProviderCustomizer</span><span> { (</span><span class="identifier">meterProviderBuilder</span><span>, </span><span class="identifier">_</span><span>) =&gt;

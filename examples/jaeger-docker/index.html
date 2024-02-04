@@ -212,7 +212,7 @@
 }
 
 </span><span class="keyword">object</span><span> </span><span class="type-name">Work</span><span> {
-  </span><span class="keyword">def</span><span> </span><span class="declaration-name">apply</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>] : </span><span class="type-name">Async</span><span> : </span><span class="type-name">Tracer</span><span> : </span><span class="type-name">Console</span><span>]: </span><span class="type-name">Work</span><span>[</span><span class="type-name">F</span><span>] =
+  </span><span class="keyword">def</span><span> </span><span class="declaration-name">apply</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>]: </span><span class="type-name">Async</span><span>: </span><span class="type-name">Tracer</span><span>: </span><span class="type-name">Console</span><span>]: </span><span class="type-name">Work</span><span>[</span><span class="type-name">F</span><span>] =
     </span><span class="keyword">new</span><span> </span><span class="type-name">Work</span><span>[</span><span class="type-name">F</span><span>] {
       </span><span class="keyword">def</span><span> </span><span class="declaration-name">doWork</span><span>: </span><span class="type-name">F</span><span>[</span><span class="type-name">Unit</span><span>] =
         </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">span</span><span>(</span><span class="string-literal">&quot;Work.DoWork&quot;</span><span>).</span><span class="identifier">use</span><span> { </span><span class="identifier">span</span><span> =&gt;
@@ -240,7 +240,7 @@
 
 </span><span class="keyword">object</span><span> </span><span class="type-name">TracingExample</span><span> </span><span class="keyword">extends</span><span> </span><span class="type-name">IOApp</span><span>.</span><span class="type-name">Simple</span><span> {
   </span><span class="keyword">def</span><span> </span><span class="declaration-name">tracer</span><span>: </span><span class="type-name">Resource</span><span>[</span><span class="type-name">IO</span><span>, </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">IO</span><span>]] =
-    </span><span class="type-name">OtelJava</span><span>.</span><span class="identifier">autoConfigured</span><span>().</span><span class="identifier">evalMap</span><span>(</span><span class="identifier">_</span><span>.</span><span class="identifier">tracerProvider</span><span>.</span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;Example&quot;</span><span>))
+    </span><span class="type-name">OtelJava</span><span>.</span><span class="identifier">autoConfigured</span><span>[</span><span class="type-name">IO</span><span>]().</span><span class="identifier">evalMap</span><span>(</span><span class="identifier">_</span><span>.</span><span class="identifier">tracerProvider</span><span>.</span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;Example&quot;</span><span>))
 
   </span><span class="keyword">def</span><span> </span><span class="declaration-name">run</span><span>: </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] =
     </span><span class="identifier">tracer</span><span>

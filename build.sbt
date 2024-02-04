@@ -86,12 +86,12 @@ lazy val root = tlCrossRootProject
     `sdk-exporter-proto`,
     `sdk-exporter-trace`,
     `sdk-exporter`,
-    `testkit-common`,
-    `testkit-metrics`,
-    testkit,
     `oteljava-common`,
+    `oteljava-common-testkit`,
     `oteljava-metrics`,
+    `oteljava-metrics-testkit`,
     `oteljava-trace`,
+    `oteljava-testkit`,
     oteljava,
     semconv,
     benchmarks,
@@ -311,47 +311,13 @@ lazy val `sdk-exporter` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .settings(scalafixSettings)
 
 //
-// Testkit
+// OpenTelemetry Java
 //
-
-lazy val `testkit-common` = crossProject(JVMPlatform)
-  .crossType(CrossType.Full)
-  .in(file("testkit/common"))
-  .dependsOn(`core-common`)
-  .settings(
-    name := "otel4s-testkit-common"
-  )
-  .settings(scalafixSettings)
-
-lazy val `testkit-metrics` = crossProject(JVMPlatform)
-  .crossType(CrossType.Full)
-  .in(file("testkit/metrics"))
-  .dependsOn(`testkit-common`, `core-metrics`)
-  .settings(
-    name := "otel4s-testkit-metrics"
-  )
-  .jvmSettings(
-    libraryDependencies ++= Seq(
-      "io.opentelemetry" % "opentelemetry-api" % OpenTelemetryVersion,
-      "io.opentelemetry" % "opentelemetry-sdk" % OpenTelemetryVersion,
-      "io.opentelemetry" % "opentelemetry-sdk-testing" % OpenTelemetryVersion
-    )
-  )
-  .settings(scalafixSettings)
-
-lazy val testkit = crossProject(JVMPlatform)
-  .crossType(CrossType.Full)
-  .in(file("testkit/all"))
-  .dependsOn(`testkit-common`, `testkit-metrics`)
-  .settings(
-    name := "otel4s-testkit"
-  )
-  .settings(scalafixSettings)
 
 lazy val `oteljava-common` = project
   .in(file("oteljava/common"))
   .enablePlugins(BuildInfoPlugin)
-  .dependsOn(`core-common`.jvm, `testkit-common`.jvm % Test)
+  .dependsOn(`core-common`.jvm)
   .settings(munitDependencies)
   .settings(
     name := "otel4s-oteljava-common",
@@ -370,19 +336,36 @@ lazy val `oteljava-common` = project
   )
   .settings(scalafixSettings)
 
+lazy val `oteljava-common-testkit` = project
+  .in(file("oteljava/common-testkit"))
+  .dependsOn(`oteljava-common`)
+  .settings(
+    name := "otel4s-oteljava-common-testkit",
+    libraryDependencies ++= Seq(
+      "io.opentelemetry" % "opentelemetry-sdk-testing" % OpenTelemetryVersion
+    ),
+    startYear := Some(2024)
+  )
+  .settings(scalafixSettings)
+
 lazy val `oteljava-metrics` = project
   .in(file("oteljava/metrics"))
-  .dependsOn(
-    `oteljava-common`,
-    `core-metrics`.jvm,
-    `testkit-metrics`.jvm % Test
-  )
+  .dependsOn(`oteljava-common`, `core-metrics`.jvm)
   .settings(munitDependencies)
   .settings(
     name := "otel4s-oteljava-metrics",
     libraryDependencies ++= Seq(
       "io.opentelemetry" % "opentelemetry-sdk-testing" % OpenTelemetryVersion % Test
     )
+  )
+  .settings(scalafixSettings)
+
+lazy val `oteljava-metrics-testkit` = project
+  .in(file("oteljava/metrics-testkit"))
+  .dependsOn(`oteljava-metrics`, `oteljava-common-testkit`)
+  .settings(
+    name := "otel4s-oteljava-metrics-testkit",
+    startYear := Some(2024)
   )
   .settings(scalafixSettings)
 
@@ -401,9 +384,21 @@ lazy val `oteljava-trace` = project
   )
   .settings(scalafixSettings)
 
+lazy val `oteljava-testkit` = project
+  .in(file("oteljava/testkit"))
+  .dependsOn(`oteljava-metrics-testkit`)
+  .settings(
+    name := "otel4s-oteljava-testkit"
+  )
+
 lazy val oteljava = project
   .in(file("oteljava/all"))
-  .dependsOn(core.jvm, `oteljava-metrics`, `oteljava-trace`)
+  .dependsOn(
+    core.jvm,
+    `oteljava-metrics`,
+    `oteljava-trace`,
+    `oteljava-metrics-testkit` % Test
+  )
   .settings(
     name := "otel4s-oteljava",
     libraryDependencies ++= Seq(
@@ -460,9 +455,12 @@ lazy val benchmarks = project
   .enablePlugins(NoPublishPlugin)
   .enablePlugins(JmhPlugin)
   .in(file("benchmarks"))
-  .dependsOn(core.jvm, sdk.jvm, oteljava, testkit.jvm)
+  .dependsOn(core.jvm, sdk.jvm, oteljava)
   .settings(
-    name := "otel4s-benchmarks"
+    name := "otel4s-benchmarks",
+    libraryDependencies ++= Seq(
+      "io.opentelemetry" % "opentelemetry-sdk-testing" % OpenTelemetryVersion
+    )
   )
   .settings(scalafixSettings)
 
@@ -535,12 +533,12 @@ lazy val unidocs = project
       `sdk-exporter-common`.jvm,
       `sdk-exporter-trace`.jvm,
       `sdk-exporter`.jvm,
-      `testkit-common`.jvm,
-      `testkit-metrics`.jvm,
-      testkit.jvm,
       `oteljava-common`,
+      `oteljava-common-testkit`,
       `oteljava-metrics`,
+      `oteljava-metrics-testkit`,
       `oteljava-trace`,
+      `oteljava-testkit`,
       oteljava,
       semconv.jvm
     )

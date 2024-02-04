@@ -19,11 +19,11 @@ package oteljava
 package metrics
 
 import cats.effect.kernel.Async
-import io.opentelemetry.api.{OpenTelemetry => JOpenTelemetry}
+import io.opentelemetry.api.metrics.{MeterProvider => JMeterProvider}
 import org.typelevel.otel4s.metrics._
 
 private[oteljava] case class MeterBuilderImpl[F[_]](
-    jOtel: JOpenTelemetry,
+    jMeterProvider: JMeterProvider,
     name: String,
     version: Option[String] = None,
     schemaUrl: Option[String] = None
@@ -36,7 +36,7 @@ private[oteljava] case class MeterBuilderImpl[F[_]](
     copy(schemaUrl = Option(schemaUrl))
 
   def get: F[Meter[F]] = F.delay {
-    val b = jOtel.meterBuilder(name)
+    val b = jMeterProvider.meterBuilder(name)
     version.foreach(b.setInstrumentationVersion)
     schemaUrl.foreach(b.setSchemaUrl)
     new MeterImpl(b.build())

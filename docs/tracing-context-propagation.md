@@ -41,7 +41,7 @@ import io.opentelemetry.api.GlobalOpenTelemetry
 def createOtel4s[F[_]: Async](implicit L: Local[F, Context]): F[OtelJava[F]] =
   Async[F].delay(GlobalOpenTelemetry.get).map(OtelJava.local[F])
     
-def program[F[_] : Async](otel4s: OtelJava[F]): F[Unit] = {
+def program[F[_]: Async](otel4s: OtelJava[F]): F[Unit] = {
   val _ = otel4s
   Async[F].unit
 }

@@ -17,8 +17,6 @@
 package org.typelevel.otel4s.oteljava
 
 import cats.effect.Async
-import cats.effect.IOLocal
-import cats.effect.LiftIO
 import cats.effect.Resource
 import cats.effect.Sync
 import cats.syntax.all._
@@ -33,11 +31,12 @@ import io.opentelemetry.sdk.autoconfigure.{
 }
 import io.opentelemetry.sdk.common.CompletableResultCode
 import org.typelevel.otel4s.Otel4s
+import org.typelevel.otel4s.context.LocalProvider
 import org.typelevel.otel4s.context.propagation.ContextPropagators
-import org.typelevel.otel4s.instances.local._
 import org.typelevel.otel4s.metrics.MeterProvider
 import org.typelevel.otel4s.oteljava.context.Context
 import org.typelevel.otel4s.oteljava.context.LocalContext
+import org.typelevel.otel4s.oteljava.context.LocalContextProvider
 import org.typelevel.otel4s.oteljava.context.propagation.PropagatorConverters._
 import org.typelevel.otel4s.oteljava.metrics.Metrics
 import org.typelevel.otel4s.oteljava.trace.Traces
@@ -67,12 +66,12 @@ object OtelJava {
     * @return
     *   An effect of an [[org.typelevel.otel4s.Otel4s]] resource.
     */
-  def forAsync[F[_]: LiftIO: Async](jOtel: JOpenTelemetry): F[OtelJava[F]] =
-    IOLocal(Context.root)
-      .map { implicit ioLocal: IOLocal[Context] =>
-        local[F](jOtel)
-      }
-      .to[F]
+  def forAsync[F[_]: Async: LocalContextProvider](
+      jOtel: JOpenTelemetry
+  ): F[OtelJava[F]] =
+    LocalProvider[F, Context].local.map { implicit l =>
+      local[F](jOtel)
+    }
 
   def local[F[_]: Async: LocalContext](
       jOtel: JOpenTelemetry
@@ -97,7 +96,7 @@ object OtelJava {
     * @return
     *   An [[org.typelevel.otel4s.Otel4s]] resource.
     */
-  def resource[F[_]: LiftIO: Async](
+  def resource[F[_]: Async: LocalContextProvider](
       acquire: F[JOpenTelemetrySdk]
   ): Resource[F, OtelJava[F]] =
     Resource
@@ -121,7 +120,7 @@ object OtelJava {
     * @see
     *   [[global]]
     */
-  def autoConfigured[F[_]: LiftIO: Async](
+  def autoConfigured[F[_]: Async: LocalContextProvider](
       customize: AutoConfigOtelSdkBuilder => AutoConfigOtelSdkBuilder = identity
   ): Resource[F, OtelJava[F]] =
     resource {
@@ -139,7 +138,7 @@ object OtelJava {
     * @see
     *   [[autoConfigured]]
     */
-  def global[F[_]: LiftIO: Async]: F[OtelJava[F]] =
+  def global[F[_]: Async: LocalContextProvider]: F[OtelJava[F]] =
     Sync[F].delay(GlobalOpenTelemetry.get).flatMap(forAsync[F])
 
   private[this] def asyncFromCompletableResultCode[F[_]](

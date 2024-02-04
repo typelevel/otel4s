@@ -18,8 +18,10 @@ package org.typelevel.otel4s.oteljava
 
 import cats.mtl.Ask
 import cats.mtl.Local
+import org.typelevel.otel4s.context.LocalProvider
 
 package object context {
   type AskContext[F[_]] = Ask[F, Context]
   type LocalContext[F[_]] = Local[F, Context]
+  type LocalContextProvider[F[_]] = LocalProvider[F, Context]
 }

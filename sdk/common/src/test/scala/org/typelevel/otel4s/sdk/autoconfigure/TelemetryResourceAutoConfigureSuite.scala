@@ -37,7 +37,7 @@ class TelemetryResourceAutoConfigureSuite extends CatsEffectSuite {
       "otel.experimental.resource.disabled-keys" -> "key1,val3,test,key3"
     )
 
-    val config = Config(props, Map.empty, Map.empty)
+    val config = Config.ofProps(props)
 
     val expectedAttributes = Attributes(
       Attribute("key2", "val2"),

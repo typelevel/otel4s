@@ -34,6 +34,48 @@ trait AutoConfigure[F[_], A] {
 
 object AutoConfigure {
 
+  /** A component that must be associated with a specific name. Can be used for
+    * ad-hoc loading.
+    *
+    * See `PropagatorsAutoConfigure` and `SpanExportersAutoConfigure` for more
+    * examples.
+    *
+    * @tparam F
+    *   the higher-kinded type of a polymorphic effect
+    *
+    * @tparam A
+    *   the type of the component
+    */
+  trait Named[F[_], A] extends AutoConfigure[F, A] {
+
+    /** The name to associate the component with.
+      */
+    def name: String
+  }
+
+  object Named {
+
+    /** Creates a [[Named]] auto configurer that always returns the same value.
+      *
+      * @param name
+      *   the name to associate the component with
+      *
+      * @param component
+      *   the component to return
+      */
+    def const[F[_], A](name: String, component: A): Named[F, A] =
+      Const(name, component)
+
+    private final case class Const[F[_], A](
+        name: String,
+        component: A
+    ) extends Named[F, A] {
+      def configure(config: Config): Resource[F, A] =
+        Resource.pure(component)
+    }
+
+  }
+
   /** If the component cannot be created due to an error, the meaningful debug
     * information will be added to the exception.
     *

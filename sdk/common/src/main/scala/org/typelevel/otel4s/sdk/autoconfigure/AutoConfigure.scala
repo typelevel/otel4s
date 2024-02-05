@@ -55,6 +55,14 @@ object AutoConfigure {
 
   object Named {
 
+    /** Creates a [[Named]] auto configurer that always returns the same value.
+      *
+      * @param name
+      *   the name to associate the component with
+      *
+      * @param component
+      *   the component to return
+      */
     def const[F[_], A](name: String, component: A): Named[F, A] =
       Const(name, component)
 

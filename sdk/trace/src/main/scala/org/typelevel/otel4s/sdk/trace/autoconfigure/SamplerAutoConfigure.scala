@@ -18,11 +18,25 @@ package org.typelevel.otel4s.sdk.trace.autoconfigure
 
 import cats.MonadThrow
 import cats.effect.Resource
+import cats.syntax.either._
 import org.typelevel.otel4s.sdk.autoconfigure.AutoConfigure
 import org.typelevel.otel4s.sdk.autoconfigure.Config
 import org.typelevel.otel4s.sdk.autoconfigure.ConfigurationError
 import org.typelevel.otel4s.sdk.trace.samplers.Sampler
 
+/** Autoconfigures a [[Sampler]].
+  *
+  * The configuration options:
+  * {{{
+  * | System property         | Environment variable    | Description                                                             |
+  * |-------------------------|-------------------------|-------------------------------------------------------------------------|
+  * | otel.traces.sampler     | OTEL_TRACES_SAMPLER     | The sampler to use for tracing. Defaults to `parentbased_always_on`     |
+  * | otel.traces.sampler.arg | OTEL_TRACES_SAMPLER_ARG | An argument to the configured tracer if supported, for example a ratio. |
+  * }}}
+  *
+  * @see
+  *   [[https://github.com/open-telemetry/opentelemetry-java/blob/main/sdk-extensions/autoconfigure/README.md#sampler]]
+  */
 private final class SamplerAutoConfigure[F[_]: MonadThrow]
     extends AutoConfigure.WithHint[F, Sampler](
       "Sampler",
@@ -30,12 +44,34 @@ private final class SamplerAutoConfigure[F[_]: MonadThrow]
     ) {
 
   import SamplerAutoConfigure.ConfigKeys
+  import SamplerAutoConfigure.Defaults
+
+  private val options = Set(
+    "always_on",
+    "always_off",
+    "traceidratio",
+    "parentbased_always_on",
+    "parentbased_always_off",
+    "parentbased_traceidratio"
+  )
 
   def fromConfig(config: Config): Resource[F, Sampler] = {
-    val sampler = config.getOrElse(ConfigKeys.Sampler, "parentbased_always_on")
-    def ratio = config.getOrElse(ConfigKeys.SamplerArg, 1.0)
+    val sampler = config.getOrElse(ConfigKeys.Sampler, Defaults.Sampler)
+    def traceIdRatioSampler =
+      config
+        .getOrElse(ConfigKeys.SamplerArg, Defaults.Ratio)
+        .flatMap { ratio =>
+          Either
+            .catchNonFatal(Sampler.traceIdRatioBased(ratio))
+            .leftMap { cause =>
+              ConfigurationError(
+                s"[${ConfigKeys.SamplerArg.name}] has invalid ratio [$ratio] - ${cause.getMessage}",
+                cause
+              )
+            }
+        }
 
-    val attempt = sampler.flatMap {
+    def attempt = sampler.flatMap {
       case "always_on" =>
         Right(Sampler.AlwaysOn)
 
@@ -43,7 +79,7 @@ private final class SamplerAutoConfigure[F[_]: MonadThrow]
         Right(Sampler.AlwaysOff)
 
       case "traceidratio" =>
-        ratio.map(r => Sampler.traceIdRatioBased(r))
+        traceIdRatioSampler
 
       case "parentbased_always_on" =>
         Right(Sampler.parentBased(Sampler.AlwaysOn))
@@ -52,14 +88,21 @@ private final class SamplerAutoConfigure[F[_]: MonadThrow]
         Right(Sampler.parentBased(Sampler.AlwaysOff))
 
       case "parentbased_traceidratio" =>
-        ratio.map(r => Sampler.parentBased(Sampler.traceIdRatioBased(r)))
+        traceIdRatioSampler.map(s => Sampler.parentBased(s))
 
       case other =>
-        Left(ConfigurationError.unrecognized(ConfigKeys.Sampler.name, other))
+        Left(
+          ConfigurationError.unrecognized(
+            ConfigKeys.Sampler.name,
+            other,
+            options
+          )
+        )
     }
 
     Resource.eval(MonadThrow[F].fromEither(attempt))
   }
+
 }
 
 private[sdk] object SamplerAutoConfigure {
@@ -71,6 +114,42 @@ private[sdk] object SamplerAutoConfigure {
     val All: Set[Config.Key[_]] = Set(Sampler, SamplerArg)
   }
 
+  private object Defaults {
+    val Sampler = "parentbased_always_on"
+    val Ratio = 1.0
+  }
+
+  /** Autoconfigures a [[Sampler]].
+    *
+    * The configuration options:
+    * {{{
+    * | System property         | Environment variable    | Description                                                             |
+    * |-------------------------|-------------------------|-------------------------------------------------------------------------|
+    * | otel.traces.sampler     | OTEL_TRACES_SAMPLER     | The sampler to use for tracing. Defaults to `parentbased_always_on`     |
+    * | otel.traces.sampler.arg | OTEL_TRACES_SAMPLER_ARG | An argument to the configured tracer if supported, for example a ratio. |
+    * }}}
+    *
+    * Supported options for `otel.traces.sampler` are:
+    *   - `always_on` - [[Sampler.AlwaysOn]]
+    *
+    *   - `always_off` - [[Sampler.AlwaysOff]]
+    *
+    *   - `traceidratio` - [[Sampler.traceIdRatioBased]], where
+    *     `otel.traces.sampler.arg` sets the ratio
+    *
+    *   - `parentbased_always_on` - [[Sampler.parentBased]] with
+    *     [[Sampler.AlwaysOn]]
+    *
+    *   - `parentbased_always_off` - [[Sampler.parentBased]] with
+    *     [[Sampler.AlwaysOff]]
+    *
+    *   - `parentbased_traceidratio`- [[Sampler.parentBased]] with
+    *     [[Sampler.traceIdRatioBased]], where `otel.traces.sampler.arg` sets
+    *     the ratio
+    *
+    * @see
+    *   [[https://github.com/open-telemetry/opentelemetry-java/blob/main/sdk-extensions/autoconfigure/README.md#sampler]]
+    */
   def apply[F[_]: MonadThrow]: AutoConfigure[F, Sampler] =
     new SamplerAutoConfigure[F]
 

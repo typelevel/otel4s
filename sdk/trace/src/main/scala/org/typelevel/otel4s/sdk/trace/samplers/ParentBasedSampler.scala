@@ -30,7 +30,7 @@ import scodec.bits.ByteVector
   * @see
   *   [[https://opentelemetry.io/docs/specs/otel/trace/sdk/#parentbased]]
   */
-private final class ParentBasedSampler private (
+private final case class ParentBasedSampler private (
     root: Sampler,
     remoteParentSampled: Sampler,
     remoteParentNotSampled: Sampler,
@@ -153,7 +153,7 @@ object ParentBasedSampler {
       copy(localParentNotSampled = Some(sampler))
 
     def build: Sampler =
-      new ParentBasedSampler(
+      ParentBasedSampler(
         root,
         remoteParentSampled.getOrElse(Sampler.AlwaysOn),
         remoteParentNotSampled.getOrElse(Sampler.AlwaysOff),

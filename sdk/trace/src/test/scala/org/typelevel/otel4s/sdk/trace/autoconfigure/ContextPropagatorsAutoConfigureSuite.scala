@@ -125,7 +125,7 @@ class ContextPropagatorsAutoConfigureSuite extends CatsEffectSuite {
       .map(_.leftMap(_.getMessage))
       .assertEquals(
         Left("""Cannot autoconfigure [ContextPropagators].
-            |Cause: Unrecognized value for [otel.propagators]: aws-xray. Supported options [b3, jaeger, b3multi, tracecontext, baggage].
+            |Cause: Unrecognized value for [otel.propagators]: aws-xray. Supported options [b3, jaeger, b3multi, none, tracecontext, baggage].
             |Config:
             |1) `otel.propagators` - aws-xray""".stripMargin)
       )

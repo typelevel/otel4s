@@ -34,9 +34,9 @@ import org.typelevel.otel4s.sdk.trace.context.propagation.W3CTraceContextPropaga
   *
   * The configuration options:
   * {{{
-  * | System property  | Environment variable | Description                                                                                                               |
-  * |------------------|----------------------|---------------------------------------------------------------------------------------------------------------------------|
-  * | otel.propagators | OTEL_PROPAGATORS     | The propagators to be used. Use a comma-separated list for multiple propagators. Default is `tracecontext,baggage` (W3C). |
+  * | System property  | Environment variable | Description                                                                                                           |
+  * |------------------|----------------------|-----------------------------------------------------------------------------------------------------------------------|
+  * | otel.propagators | OTEL_PROPAGATORS     | The propagators to use. Use a comma-separated list for multiple propagators. Default is `tracecontext,baggage` (W3C). |
   * }}}
   *
   * @see
@@ -50,10 +50,12 @@ private final class ContextPropagatorsAutoConfigure[F[_]: MonadThrow](
     ) {
 
   import ContextPropagatorsAutoConfigure.ConfigKeys
+  import ContextPropagatorsAutoConfigure.Const
   import ContextPropagatorsAutoConfigure.Default
 
   private val configurers = {
     val default: Set[AutoConfigure.Named[F, TextMapPropagator[Context]]] = Set(
+      AutoConfigure.Named.const("none", TextMapPropagator.noop),
       AutoConfigure.Named.const(
         "tracecontext",
         W3CTraceContextPropagator.default
@@ -70,10 +72,10 @@ private final class ContextPropagatorsAutoConfigure[F[_]: MonadThrow](
   def fromConfig(config: Config): Resource[F, ContextPropagators[Context]] = {
     val values = config.getOrElse(ConfigKeys.Propagators, Set.empty[String])
     Resource.eval(MonadThrow[F].fromEither(values)).flatMap {
-      case names if names.contains("none") && names.sizeIs > 1 =>
+      case names if names.contains(Const.NonePropagator) && names.sizeIs > 1 =>
         Resource.raiseError(
           ConfigurationError(
-            s"[${ConfigKeys.Propagators}] contains 'none' along with other propagators"
+            s"[${ConfigKeys.Propagators}] contains '${Const.NonePropagator}' along with other propagators"
           ): Throwable
         )
 
@@ -116,15 +118,19 @@ private[sdk] object ContextPropagatorsAutoConfigure {
     val All: Set[Config.Key[_]] = Set(Propagators)
   }
 
+  private object Const {
+    val NonePropagator = "none"
+  }
+
   private val Default = NonEmptyList.of("tracecontext", "baggage")
 
   /** Autoconfigures [[ContextPropagators]].
     *
     * The configuration options:
     * {{{
-    * | System property  | Environment variable | Description                                                                                                               |
-    * |------------------|----------------------|---------------------------------------------------------------------------------------------------------------------------|
-    * | otel.propagators | OTEL_PROPAGATORS     | The propagators to be used. Use a comma-separated list for multiple propagators. Default is `tracecontext,baggage` (W3C). |
+    * | System property  | Environment variable | Description                                                                                                           |
+    * |------------------|----------------------|-----------------------------------------------------------------------------------------------------------------------|
+    * | otel.propagators | OTEL_PROPAGATORS     | The propagators to use. Use a comma-separated list for multiple propagators. Default is `tracecontext,baggage` (W3C). |
     * }}}
     *
     * Out of the box, the following options are supported:

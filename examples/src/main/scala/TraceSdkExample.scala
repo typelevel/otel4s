@@ -23,7 +23,9 @@ object TraceSdkExample extends IOApp.Simple {
 
   def run: IO[Unit] =
     OpenTelemetrySdk
-      .autoConfigured[IO](_.addExporterConfigurer(OtlpSpanExporterAutoConfigure[IO]))
+      .autoConfigured[IO](
+        _.addExporterConfigurer(OtlpSpanExporterAutoConfigure[IO])
+      )
       .use { autoConfigured =>
         val sdk = autoConfigured.sdk
 

@@ -37,7 +37,7 @@ import org.typelevel.otel4s.sdk.autoconfigure.TelemetryResourceAutoConfigure
 import org.typelevel.otel4s.sdk.context.Context
 import org.typelevel.otel4s.sdk.context.LocalContextProvider
 import org.typelevel.otel4s.sdk.trace.SdkTracerProvider
-import org.typelevel.otel4s.sdk.trace.autoconfigure.PropagatorsAutoConfigure
+import org.typelevel.otel4s.sdk.trace.autoconfigure.ContextPropagatorsAutoConfigure
 import org.typelevel.otel4s.sdk.trace.autoconfigure.TracerProviderAutoConfigure
 import org.typelevel.otel4s.sdk.trace.exporter.SpanExporter
 import org.typelevel.otel4s.trace.TracerProvider
@@ -235,7 +235,7 @@ object OpenTelemetrySdk {
                   tracerProvider <- Resource.eval(
                     tracerProviderCustomizer(tpBuilder, config).build
                   )
-                  propagators <- PropagatorsAutoConfigure[F](
+                  propagators <- ContextPropagatorsAutoConfigure[F](
                     textMapPropagatorConfigurers
                   ).configure(config)
                 } yield OpenTelemetrySdk(

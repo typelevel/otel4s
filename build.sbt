@@ -174,7 +174,7 @@ lazy val `sdk-common` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
     name := "otel4s-sdk-common",
     startYear := Some(2023),
     libraryDependencies ++= Seq(
-      "org.typelevel" %%% "cats-effect" % CatsEffectVersion,
+      "org.typelevel" %%% "cats-effect-kernel" % CatsEffectVersion,
       "org.typelevel" %%% "cats-mtl" % CatsMtlVersion,
       "org.typelevel" %%% "cats-laws" % CatsVersion % Test,
       "org.typelevel" %%% "discipline-munit" % MUnitDisciplineVersion % Test,
@@ -524,8 +524,6 @@ lazy val unidocs = project
   .enablePlugins(TypelevelUnidocPlugin)
   .settings(
     name := "otel4s-docs",
-    ScalaUnidoc / unidoc / fullClasspath := (ScalaUnidoc / unidoc / unidocAllClasspaths).value.flatten.distinct
-      .sortBy(_.data.getName)(Ordering[String].reverse),
     ScalaUnidoc / unidoc / unidocProjectFilter := inProjects(
       `core-common`.jvm,
       `core-metrics`.jvm,

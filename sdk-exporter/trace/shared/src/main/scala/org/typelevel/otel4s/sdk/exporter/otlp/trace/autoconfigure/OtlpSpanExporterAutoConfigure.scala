@@ -31,7 +31,8 @@ import org.typelevel.otel4s.sdk.exporter.otlp.autoconfigure.OtlpHttpClientAutoCo
 import org.typelevel.otel4s.sdk.trace.data.SpanData
 import org.typelevel.otel4s.sdk.trace.exporter.SpanExporter
 
-/** Autoconfigures OTLP [[SpanExporter]].
+/** Autoconfigures OTLP
+  * [[org.typelevel.otel4s.sdk.trace.exporter.SpanExporter SpanExporter]].
   *
   * The general configuration options:
   * {{{
@@ -145,7 +146,8 @@ object OtlpSpanExporterAutoConfigure {
     val OtlpProtocol: Protocol = Protocol.Http(HttpPayloadEncoding.Protobuf)
   }
 
-  /** Autoconfigures OTLP [[SpanExporter]].
+  /** Autoconfigures OTLP
+    * [[org.typelevel.otel4s.sdk.trace.exporter.SpanExporter SpanExporter]].
     *
     * The configuration depends on the `otel.exporter.otlp.protocol` or
     * `otel.exporter.otlp.traces.protocol`.
@@ -153,8 +155,8 @@ object OtlpSpanExporterAutoConfigure {
     * The supported protocols: `http/json`, `http/protobuf`.
     *
     * @see
-    *   [[OtlpHttpClientAutoConfigure]] for the configuration details of the
-    *   OTLP HTTP client
+    *   `OtlpHttpClientAutoConfigure` for the configuration details of the OTLP
+    *   HTTP client
     */
   def apply[
       F[_]: Async: Network: Compression: Console

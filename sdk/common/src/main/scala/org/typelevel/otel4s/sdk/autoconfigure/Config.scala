@@ -16,6 +16,7 @@
 
 package org.typelevel.otel4s.sdk.autoconfigure
 
+import cats.Functor
 import cats.effect.Sync
 import cats.effect.std.Env
 import cats.syntax.either._
@@ -196,10 +197,16 @@ object Config {
           }
       }
 
+    implicit val readerFunctor: Functor[Reader] =
+      new Functor[Reader] {
+        def map[A, B](fa: Reader[A])(f: A => B): Reader[B] =
+          (key, properties) => fa.read(key, properties).map(_.map(f))
+      }
+
     private def asStringList(string: String): List[String] =
       string.split(",").map(_.trim).filter(_.nonEmpty).toList
 
-    private def decodeWithHint[A](
+    private[otel4s] def decodeWithHint[A](
         hint: String
     )(decode: String => Either[ConfigurationError, A]): Reader[A] =
       (key, properties) =>

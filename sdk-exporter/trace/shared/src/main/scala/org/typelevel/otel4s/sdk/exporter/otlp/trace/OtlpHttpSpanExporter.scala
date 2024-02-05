@@ -45,7 +45,7 @@ import scala.concurrent.duration._
   * @see
   *   [[https://opentelemetry.io/docs/concepts/sdk-configuration/otlp-exporter-configuration/]]
   */
-private final class OtlpHttpSpanExporter[F[_]: Applicative] private (
+private final class OtlpHttpSpanExporter[F[_]: Applicative] private[otlp] (
     client: OtlpHttpClient[F, SpanData]
 ) extends SpanExporter[F] {
   val name: String = s"OtlpHttpSpanExporter{client=$client}"
@@ -58,7 +58,7 @@ private final class OtlpHttpSpanExporter[F[_]: Applicative] private (
 
 object OtlpHttpSpanExporter {
 
-  private object Defaults {
+  private[otlp] object Defaults {
     val Endpoint: Uri = uri"http://localhost:4318/v1/traces"
     val Timeout: FiniteDuration = 10.seconds
     val GzipCompression: Boolean = false

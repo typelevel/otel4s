@@ -63,7 +63,9 @@ object AutoConfigureError {
       config: Config
   ): AutoConfigureError =
     if (configKeys.nonEmpty) {
-      val params = configKeys.zipWithIndex
+      val params = configKeys.toSeq
+        .sortBy(_.name)
+        .zipWithIndex
         .map { case (key, i) =>
           val name = key.name
           val value =

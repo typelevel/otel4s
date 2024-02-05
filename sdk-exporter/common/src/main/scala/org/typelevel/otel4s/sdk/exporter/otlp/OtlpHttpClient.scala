@@ -60,7 +60,7 @@ import scala.concurrent.duration.FiniteDuration
   * @see
   *   [[https://opentelemetry.io/docs/concepts/sdk-configuration/otlp-exporter-configuration/]]
   */
-private final class OtlpHttpClient[F[_]: Temporal: Console, A] private (
+private[otlp] final class OtlpHttpClient[F[_]: Temporal: Console, A] private (
     client: Client[F],
     config: OtlpHttpClient.Config,
 )(implicit encoder: ProtoEncoder.Message[List[A]], printer: Printer) {

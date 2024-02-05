@@ -21,7 +21,6 @@ import org.typelevel.otel4s.baggage.Baggage
 import org.typelevel.otel4s.context.propagation.TextMapGetter
 import org.typelevel.otel4s.context.propagation.TextMapPropagator
 import org.typelevel.otel4s.context.propagation.TextMapUpdater
-import org.typelevel.otel4s.sdk.autoconfigure.AutoConfigure
 import org.typelevel.otel4s.sdk.context.Context
 import org.typelevel.otel4s.sdk.trace.SdkContextKeys
 

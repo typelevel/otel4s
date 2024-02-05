@@ -19,8 +19,6 @@ package org.typelevel.otel4s.sdk.trace.autoconfigure
 import cats.MonadThrow
 import cats.data.NonEmptyList
 import cats.effect.Resource
-import cats.syntax.flatMap._
-import cats.syntax.functor._
 import org.typelevel.otel4s.context.propagation.ContextPropagators
 import org.typelevel.otel4s.context.propagation.TextMapPropagator
 import org.typelevel.otel4s.sdk.autoconfigure.AutoConfigure
@@ -31,8 +29,9 @@ import org.typelevel.otel4s.sdk.trace.context.propagation.B3Propagator
 import org.typelevel.otel4s.sdk.trace.context.propagation.W3CBaggagePropagator
 import org.typelevel.otel4s.sdk.trace.context.propagation.W3CTraceContextPropagator
 
-private final class PropagatorsAutoConfigure[F[_]: MonadThrow]
-    extends AutoConfigure.WithHint[F, ContextPropagators[Context]](
+private final class PropagatorsAutoConfigure[F[_]: MonadThrow](
+    extra: Set[AutoConfigure.Named[F, TextMapPropagator[Context]]]
+) extends AutoConfigure.WithHint[F, ContextPropagators[Context]](
       "ContextPropagators",
       PropagatorsAutoConfigure.ConfigKeys.All
     ) {
@@ -40,50 +39,66 @@ private final class PropagatorsAutoConfigure[F[_]: MonadThrow]
   import PropagatorsAutoConfigure.ConfigKeys
   import PropagatorsAutoConfigure.Default
 
+  private val configurers = {
+    val default: Set[AutoConfigure.Named[F, TextMapPropagator[Context]]] = Set(
+      constConfigure("tracecontext", W3CTraceContextPropagator.default),
+      constConfigure("baggage", W3CBaggagePropagator.default),
+      constConfigure("b3", B3Propagator.singleHeader),
+      constConfigure("b3multi", B3Propagator.multipleHeaders),
+    )
+
+    default ++ extra
+  }
+
   def fromConfig(config: Config): Resource[F, ContextPropagators[Context]] = {
     val values = config.getOrElse(ConfigKeys.Propagators, Set.empty[String])
-    Resource.eval {
-      MonadThrow[F].fromEither(values).flatMap[ContextPropagators[Context]] {
-        case names if names.contains("none") && names.sizeIs > 1 =>
-          MonadThrow[F].raiseError(
-            new ConfigurationError(
-              s"[${ConfigKeys.Propagators}] contains 'none' along with other propagators",
-              None
-            )
-          )
 
-        case names if names.contains("none") =>
-          MonadThrow[F].pure(ContextPropagators.noop)
+    Resource.eval(MonadThrow[F].fromEither(values)).flatMap {
+      case names if names.contains("none") && names.sizeIs > 1 =>
+        Resource.raiseError(
+          ConfigurationError(
+            s"[${ConfigKeys.Propagators.name}] contains 'none' along with other propagators"
+          ): Throwable
+        )
 
-        case names =>
-          val requested =
-            NonEmptyList.fromList(names.toList).getOrElse(Default)
+      case names if names.contains("none") =>
+        Resource.pure(ContextPropagators.noop)
 
-          for {
-            propagators <- requested.traverse(name => create(name))
-          } yield ContextPropagators.of(propagators.toList: _*)
-      }
+      case names =>
+        val requested = NonEmptyList.fromList(names.toList).getOrElse(Default)
+
+        for {
+          propagators <- requested.traverse(name => create(name, config))
+        } yield ContextPropagators.of(propagators.toList: _*)
     }
   }
 
-  private def create(name: String): F[TextMapPropagator[Context]] =
-    name match {
-      case "tracecontext" =>
-        MonadThrow[F].pure(W3CTraceContextPropagator.default)
+  private def create(
+      name: String,
+      config: Config
+  ): Resource[F, TextMapPropagator[Context]] =
+    configurers.find(_.name == name) match {
+      case Some(configurer) =>
+        configurer.configure(config)
 
-      case "baggage" =>
-        MonadThrow[F].pure(W3CBaggagePropagator.default)
-
-      case "b3" =>
-        MonadThrow[F].pure(B3Propagator.singleHeader)
-
-      case "b3multi" =>
-        MonadThrow[F].pure(B3Propagator.multipleHeaders)
-
-      case other =>
-        MonadThrow[F].raiseError(
-          ConfigurationError.unrecognized("otel.propagators", other)
+      case None =>
+        Resource.raiseError(
+          ConfigurationError.unrecognized(
+            ConfigKeys.Propagators.name,
+            name,
+            configurers.map(_.name)
+          ): Throwable
         )
+    }
+
+  private def constConfigure[A](
+      n: String,
+      component: A
+  ): AutoConfigure.Named[F, A] =
+    new AutoConfigure.Named[F, A] {
+      def name: String = n
+      def configure(config: Config): Resource[F, A] =
+        Resource.pure(component)
     }
 }
 
@@ -97,7 +112,9 @@ private[sdk] object PropagatorsAutoConfigure {
 
   private val Default = NonEmptyList.of("tracecontext", "baggage")
 
-  def apply[F[_]: MonadThrow]: AutoConfigure[F, ContextPropagators[Context]] =
-    new PropagatorsAutoConfigure[F]
+  def apply[F[_]: MonadThrow](
+      extra: Set[AutoConfigure.Named[F, TextMapPropagator[Context]]]
+  ): AutoConfigure[F, ContextPropagators[Context]] =
+    new PropagatorsAutoConfigure[F](extra)
 
 }

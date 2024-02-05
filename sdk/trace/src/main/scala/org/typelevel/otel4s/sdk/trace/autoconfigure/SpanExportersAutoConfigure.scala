@@ -27,25 +27,31 @@ import org.typelevel.otel4s.sdk.autoconfigure.ConfigurationError
 import org.typelevel.otel4s.sdk.trace.exporter.LoggingSpanExporter
 import org.typelevel.otel4s.sdk.trace.exporter.SpanExporter
 
-private final class SpanExportersAutoConfigure[F[_]: MonadThrow: Console]
-    extends AutoConfigure.WithHint[F, Map[String, SpanExporter[F]]](
+private final class SpanExportersAutoConfigure[F[_]: MonadThrow: Console](
+    extra: Set[AutoConfigure.Named[F, SpanExporter[F]]]
+) extends AutoConfigure.WithHint[F, Map[String, SpanExporter[F]]](
       "SpanExporter",
       SpanExportersAutoConfigure.ConfigKeys.All
     ) {
 
   import SpanExportersAutoConfigure.ConfigKeys
 
+  private val configurers = {
+    val default: Set[AutoConfigure.Named[F, SpanExporter[F]]] = Set(
+      constConfigure("logging", LoggingSpanExporter[F])
+    )
+
+    default ++ extra
+  }
+
   def fromConfig(config: Config): Resource[F, Map[String, SpanExporter[F]]] = {
     val values = config.getOrElse(ConfigKeys.Exporter, Set.empty[String])
     Resource.eval(MonadThrow[F].fromEither(values)).flatMap {
       case names if names.contains("none") && names.sizeIs > 1 =>
-        Resource.eval(
-          MonadThrow[F].raiseError(
-            new ConfigurationError(
-              s"[${ConfigKeys.Exporter.name}] contains 'none' along with other exporters",
-              None
-            )
-          )
+        Resource.raiseError(
+          ConfigurationError(
+            s"[${ConfigKeys.Exporter.name}] contains 'none' along with other exporters"
+          ): Throwable
         )
 
       case exporterNames if exporterNames.contains("none") =>
@@ -57,24 +63,34 @@ private final class SpanExportersAutoConfigure[F[_]: MonadThrow: Console]
           .getOrElse(NonEmptyList.one("otlp"))
 
         names
-          .traverse(name => create(name).tupleLeft(name))
+          .traverse(name => create(name, config).tupleLeft(name))
           .map(_.toList.toMap)
     }
   }
 
-  private def create(name: String): Resource[F, SpanExporter[F]] =
-    name match {
-      // case "otlp" => todo use OtlpExporter
+  private def create(name: String, cfg: Config): Resource[F, SpanExporter[F]] =
+    configurers.find(_.name == name) match {
+      case Some(configure) =>
+        configure.configure(cfg)
 
-      case "logging" =>
-        Resource.eval(MonadThrow[F].pure(LoggingSpanExporter[F]))
-
-      case other =>
-        Resource.eval(
-          MonadThrow[F].raiseError(
-            ConfigurationError.unrecognized(ConfigKeys.Exporter.name, other)
-          )
+      case None =>
+        Resource.raiseError(
+          ConfigurationError.unrecognized(
+            ConfigKeys.Exporter.name,
+            name,
+            configurers.map(_.name)
+          ): Throwable
         )
+    }
+
+  private def constConfigure[A](
+      n: String,
+      component: A
+  ): AutoConfigure.Named[F, A] =
+    new AutoConfigure.Named[F, A] {
+      def name: String = n
+      def configure(config: Config): Resource[F, A] =
+        Resource.pure(component)
     }
 }
 
@@ -86,9 +102,9 @@ private[sdk] object SpanExportersAutoConfigure {
     val All: Set[Config.Key[_]] = Set(Exporter)
   }
 
-  def apply[
-      F[_]: MonadThrow: Console
-  ]: AutoConfigure[F, Map[String, SpanExporter[F]]] =
-    new SpanExportersAutoConfigure[F]
+  def apply[F[_]: MonadThrow: Console](
+      configurers: Set[AutoConfigure.Named[F, SpanExporter[F]]]
+  ): AutoConfigure[F, Map[String, SpanExporter[F]]] =
+    new SpanExportersAutoConfigure[F](configurers)
 
 }

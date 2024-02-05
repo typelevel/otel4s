@@ -29,7 +29,9 @@ import cats.syntax.functor._
 import org.typelevel.otel4s.Otel4s
 import org.typelevel.otel4s.context.LocalProvider
 import org.typelevel.otel4s.context.propagation.ContextPropagators
+import org.typelevel.otel4s.context.propagation.TextMapPropagator
 import org.typelevel.otel4s.metrics.MeterProvider
+import org.typelevel.otel4s.sdk.autoconfigure.AutoConfigure
 import org.typelevel.otel4s.sdk.autoconfigure.Config
 import org.typelevel.otel4s.sdk.autoconfigure.TelemetryResourceAutoConfigure
 import org.typelevel.otel4s.sdk.context.Context
@@ -37,6 +39,7 @@ import org.typelevel.otel4s.sdk.context.LocalContextProvider
 import org.typelevel.otel4s.sdk.trace.SdkTracerProvider
 import org.typelevel.otel4s.sdk.trace.autoconfigure.PropagatorsAutoConfigure
 import org.typelevel.otel4s.sdk.trace.autoconfigure.TracerProviderAutoConfigure
+import org.typelevel.otel4s.sdk.trace.exporter.SpanExporter
 import org.typelevel.otel4s.trace.TracerProvider
 
 sealed class OpenTelemetrySdk[F[_]] private (
@@ -113,6 +116,14 @@ object OpenTelemetrySdk {
           customizer: Customizer[TelemetryResource]
       ): Builder[F]
 
+      def addExporterConfigurer(
+          configurer: AutoConfigure.Named[F, SpanExporter[F]]
+      ): Builder[F]
+
+      def addTextMapPropagatorConfigurer(
+          configurer: AutoConfigure.Named[F, TextMapPropagator[Context]]
+      ): Builder[F]
+
       def addPropertiesLoader(loader: F[Map[String, String]]): Builder[F]
 
       def addPropertiesCustomizer(
@@ -133,7 +144,9 @@ object OpenTelemetrySdk {
         tracerProviderCustomizer = (a: SdkTracerProvider.Builder[F], _) => a,
         resourceCustomizer = (a, _) => a,
         propertiesLoader = Async[F].pure(Map.empty),
-        propertiesCustomizers = Nil
+        propertiesCustomizers = Nil,
+        exporterConfigurers = Set.empty,
+        textMapPropagatorConfigurers = Set.empty
       )
 
     private final case class BuilderImpl[
@@ -143,7 +156,11 @@ object OpenTelemetrySdk {
         tracerProviderCustomizer: Customizer[SdkTracerProvider.Builder[F]],
         resourceCustomizer: Customizer[TelemetryResource],
         propertiesLoader: F[Map[String, String]],
-        propertiesCustomizers: List[Config => Map[String, String]]
+        propertiesCustomizers: List[Config => Map[String, String]],
+        exporterConfigurers: Set[AutoConfigure.Named[F, SpanExporter[F]]],
+        textMapPropagatorConfigurers: Set[
+          AutoConfigure.Named[F, TextMapPropagator[Context]]
+        ]
     ) extends Builder[F] {
 
       def withConfig(config: Config): Builder[F] =
@@ -171,6 +188,18 @@ object OpenTelemetrySdk {
       ): Builder[F] =
         copy(propertiesCustomizers = this.propertiesCustomizers :+ customizer)
 
+      def addExporterConfigurer(
+          configurer: AutoConfigure.Named[F, SpanExporter[F]]
+      ): Builder[F] =
+        copy(exporterConfigurers = exporterConfigurers + configurer)
+
+      def addTextMapPropagatorConfigurer(
+          configurer: AutoConfigure.Named[F, TextMapPropagator[Context]]
+      ): Builder[F] =
+        copy(textMapPropagatorConfigurers =
+          textMapPropagatorConfigurers + configurer
+        )
+
       def build: Resource[F, AutoConfigured[F]] = {
         def loadConfig: F[Config] =
           for {
@@ -193,13 +222,17 @@ object OpenTelemetrySdk {
                   SdkTracerProvider.builder[F].withResource(resource)
 
                 for {
-                  tpBuilder <-
-                    TracerProviderAutoConfigure[F](builder).configure(config)
+                  tpBuilder <- TracerProviderAutoConfigure[F](
+                    builder,
+                    exporterConfigurers
+                  ).configure(config)
 
                   tracerProvider <- Resource.eval(
                     tracerProviderCustomizer(tpBuilder, config).build
                   )
-                  propagators <- PropagatorsAutoConfigure[F].configure(config)
+                  propagators <- PropagatorsAutoConfigure[F](
+                    textMapPropagatorConfigurers
+                  ).configure(config)
                 } yield OpenTelemetrySdk(
                   propagators,
                   MeterProvider.noop[F],

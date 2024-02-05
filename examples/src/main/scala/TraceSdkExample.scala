@@ -17,20 +17,25 @@
 import cats.effect._
 import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.sdk.OpenTelemetrySdk
+import org.typelevel.otel4s.sdk.exporter.otlp.trace.autoconfigure.OtlpSpanExporterAutoConfigure
 
 object TraceSdkExample extends IOApp.Simple {
 
   def run: IO[Unit] = {
-    OpenTelemetrySdk.AutoConfigured.load[IO].use { autoConfigured =>
-      val sdk = autoConfigured.sdk
+    OpenTelemetrySdk.AutoConfigured
+      .builder[IO]
+      .addExporterConfigurer(OtlpSpanExporterAutoConfigure[IO])
+      .build
+      .use { autoConfigured =>
+        val sdk = autoConfigured.sdk
 
-      for {
-        tracer <- sdk.tracerProvider.get("my-tracer")
-        _ <- tracer
-          .span("test", Attribute("test", "test123"))
-          .use(sd => IO.println(sd.context))
-      } yield ()
-    }
+        for {
+          tracer <- sdk.tracerProvider.get("my-tracer")
+          _ <- tracer
+            .span("test", Attribute("test", "test123"))
+            .use(sd => IO.println(sd.context))
+        } yield ()
+      }
   }
 
 }

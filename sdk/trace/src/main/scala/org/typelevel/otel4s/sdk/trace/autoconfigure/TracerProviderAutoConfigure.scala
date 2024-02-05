@@ -34,8 +34,10 @@ import scala.concurrent.duration.FiniteDuration
 
 private final class TracerProviderAutoConfigure[
     F[_]: Temporal: Parallel: Console
-] private (builder: SdkTracerProvider.Builder[F])
-    extends AutoConfigure.WithHint[F, SdkTracerProvider.Builder[F]](
+] private (
+    builder: SdkTracerProvider.Builder[F],
+    configurers: Set[AutoConfigure.Named[F, SpanExporter[F]]]
+) extends AutoConfigure.WithHint[F, SdkTracerProvider.Builder[F]](
       "TracerProvider",
       TracerProviderAutoConfigure.ConfigKeys.All
     ) {
@@ -45,7 +47,7 @@ private final class TracerProviderAutoConfigure[
   def fromConfig(config: Config): Resource[F, SdkTracerProvider.Builder[F]] =
     for {
       sampler <- SamplerAutoConfigure[F].configure(config)
-      exporters <- SpanExportersAutoConfigure[F].configure(config)
+      exporters <- SpanExportersAutoConfigure[F](configurers).configure(config)
       processors <- configureProcessors(config, exporters)
       withSampler = builder.withSampler(sampler)
     } yield processors.foldLeft(withSampler)(_.addSpanProcessor(_))
@@ -130,8 +132,9 @@ private[sdk] object TracerProviderAutoConfigure {
   }
 
   def apply[F[_]: Temporal: Parallel: Console](
-      builder: SdkTracerProvider.Builder[F]
+      builder: SdkTracerProvider.Builder[F],
+      configurers: Set[AutoConfigure.Named[F, SpanExporter[F]]]
   ): AutoConfigure[F, SdkTracerProvider.Builder[F]] =
-    new TracerProviderAutoConfigure[F](builder)
+    new TracerProviderAutoConfigure[F](builder, configurers)
 
 }

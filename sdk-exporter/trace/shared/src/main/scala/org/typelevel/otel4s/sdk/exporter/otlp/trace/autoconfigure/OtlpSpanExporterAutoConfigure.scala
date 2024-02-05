@@ -58,11 +58,14 @@ private final class OtlpSpanExporterAutoConfigure[
 ] extends AutoConfigure.WithHint[F, SpanExporter[F]](
       "OtlpSpanExporter",
       OtlpSpanExporterAutoConfigure.ConfigKeys.All
-    ) {
+    )
+    with AutoConfigure.Named[F, SpanExporter[F]] {
 
   import OtlpSpanExporterAutoConfigure.ConfigKeys
   import OtlpSpanExporterAutoConfigure.Defaults
   import OtlpSpanExporterAutoConfigure.Protocol
+
+  def name: String = "otlp"
 
   protected def fromConfig(config: Config): Resource[F, SpanExporter[F]] = {
     import SpansProtoEncoder.spanDataToRequest
@@ -155,7 +158,7 @@ object OtlpSpanExporterAutoConfigure {
     */
   def apply[
       F[_]: Async: Network: Compression: Console
-  ]: AutoConfigure[F, SpanExporter[F]] =
+  ]: AutoConfigure.Named[F, SpanExporter[F]] =
     new OtlpSpanExporterAutoConfigure[F]
 
 }

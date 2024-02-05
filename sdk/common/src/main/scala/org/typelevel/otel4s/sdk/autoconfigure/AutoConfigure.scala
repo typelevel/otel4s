@@ -34,6 +34,37 @@ trait AutoConfigure[F[_], A] {
 
 object AutoConfigure {
 
+  /** A component that must be associated with a specific name. Can be used for
+    * ad-hoc loading.
+    *
+    * For example:
+    *   - `otlp` for OtlpSpanExporter
+    *   - `logging` for `LoggingExporter` and so on
+    *
+    * @tparam F
+    *   the higher-kinded type of a polymorphic effect
+    *
+    * @tparam A
+    *   the type of the component
+    */
+  trait Named[F[_], A] extends AutoConfigure[F, A] {
+
+    /** The name of the component
+      */
+    def name: String
+  }
+
+  object Named {
+
+    def const[F[_], A](n: String, component: A): Named[F, A] =
+      new Named[F, A] {
+        def name: String = n
+        def configure(config: Config): Resource[F, A] =
+          Resource.pure(component)
+      }
+
+  }
+
   /** If the component cannot be created due to an error, the meaningful debug
     * information will be added to the exception.
     *

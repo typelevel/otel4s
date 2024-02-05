@@ -18,8 +18,10 @@ package org.typelevel.otel4s.sdk.trace.autoconfigure
 
 import cats.MonadThrow
 import cats.data.NonEmptyList
-import cats.effect.kernel.Resource
+import cats.effect.Resource
 import cats.effect.std.Console
+import cats.syntax.applicative._
+import cats.syntax.flatMap._
 import cats.syntax.functor._
 import org.typelevel.otel4s.sdk.autoconfigure.AutoConfigure
 import org.typelevel.otel4s.sdk.autoconfigure.Config
@@ -38,7 +40,7 @@ private final class SpanExportersAutoConfigure[F[_]: MonadThrow: Console](
 
   private val configurers = {
     val default: Set[AutoConfigure.Named[F, SpanExporter[F]]] = Set(
-      constConfigure("logging", LoggingSpanExporter[F])
+      AutoConfigure.Named.const("logging", LoggingSpanExporter[F])
     )
 
     default ++ extra
@@ -50,7 +52,7 @@ private final class SpanExportersAutoConfigure[F[_]: MonadThrow: Console](
       case names if names.contains("none") && names.sizeIs > 1 =>
         Resource.raiseError(
           ConfigurationError(
-            s"[${ConfigKeys.Exporter.name}] contains 'none' along with other exporters"
+            s"[${ConfigKeys.Exporter}] contains 'none' along with other exporters"
           ): Throwable
         )
 
@@ -74,24 +76,33 @@ private final class SpanExportersAutoConfigure[F[_]: MonadThrow: Console](
         configure.configure(cfg)
 
       case None =>
-        Resource.raiseError(
-          ConfigurationError.unrecognized(
-            ConfigKeys.Exporter.name,
-            name,
-            configurers.map(_.name)
-          ): Throwable
-        )
+        Resource.eval(otlpMissingWarning.whenA(name == "otlp")) >>
+          Resource.raiseError(
+            ConfigurationError.unrecognized(
+              ConfigKeys.Exporter.name,
+              name,
+              configurers.map(_.name)
+            ): Throwable
+          )
     }
 
-  private def constConfigure[A](
-      n: String,
-      component: A
-  ): AutoConfigure.Named[F, A] =
-    new AutoConfigure.Named[F, A] {
-      def name: String = n
-      def configure(config: Config): Resource[F, A] =
-        Resource.pure(component)
-    }
+  private def otlpMissingWarning: F[Unit] = {
+    Console[F].errorln(
+      """The configurer for the [otlp] exporter is not registered.
+        |
+        |Add the `otel4s-sdk-exporter` dependency and register the configurer:
+        |
+        |import org.typelevel.otel4s.sdk.OpenTelemetrySdk
+        |import org.typelevel.otel4s.sdk.exporter.otlp.trace.autoconfigure.OtlpSpanExporterAutoConfigure
+        |
+        |OpenTelemetrySdk.AutoConfigured
+        |  .builder[IO]
+        |  .addExporterConfigurer(OtlpSpanExporterAutoConfigure[IO])
+        |  .build
+        |""".stripMargin
+    )
+  }
+
 }
 
 private[sdk] object SpanExportersAutoConfigure {

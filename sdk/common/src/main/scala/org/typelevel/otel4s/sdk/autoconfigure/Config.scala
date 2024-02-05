@@ -115,7 +115,9 @@ sealed trait Config {
 
 object Config {
 
-  final class Key[A] private (val name: String)
+  final class Key[A] private (val name: String) {
+    override def toString: String = name
+  }
   object Key {
     def apply[A](name: String): Key[A] = new Key[A](name)
   }

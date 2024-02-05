@@ -37,9 +37,8 @@ object AutoConfigure {
   /** A component that must be associated with a specific name. Can be used for
     * ad-hoc loading.
     *
-    * For example:
-    *   - `otlp` for OtlpSpanExporter
-    *   - `logging` for `LoggingExporter` and so on
+    * See `PropagatorsAutoConfigure` and `SpanExportersAutoConfigure` for more
+    * examples.
     *
     * @tparam F
     *   the higher-kinded type of a polymorphic effect
@@ -49,19 +48,23 @@ object AutoConfigure {
     */
   trait Named[F[_], A] extends AutoConfigure[F, A] {
 
-    /** The name of the component
+    /** The name to associate the component with.
       */
     def name: String
   }
 
   object Named {
 
-    def const[F[_], A](n: String, component: A): Named[F, A] =
-      new Named[F, A] {
-        def name: String = n
-        def configure(config: Config): Resource[F, A] =
-          Resource.pure(component)
-      }
+    def const[F[_], A](name: String, component: A): Named[F, A] =
+      Const(name, component)
+
+    private final case class Const[F[_], A](
+        name: String,
+        component: A
+    ) extends Named[F, A] {
+      def configure(config: Config): Resource[F, A] =
+        Resource.pure(component)
+    }
 
   }
 

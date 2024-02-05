@@ -41,10 +41,13 @@ private final class PropagatorsAutoConfigure[F[_]: MonadThrow](
 
   private val configurers = {
     val default: Set[AutoConfigure.Named[F, TextMapPropagator[Context]]] = Set(
-      constConfigure("tracecontext", W3CTraceContextPropagator.default),
-      constConfigure("baggage", W3CBaggagePropagator.default),
-      constConfigure("b3", B3Propagator.singleHeader),
-      constConfigure("b3multi", B3Propagator.multipleHeaders),
+      AutoConfigure.Named.const(
+        "tracecontext",
+        W3CTraceContextPropagator.default
+      ),
+      AutoConfigure.Named.const("baggage", W3CBaggagePropagator.default),
+      AutoConfigure.Named.const("b3", B3Propagator.singleHeader),
+      AutoConfigure.Named.const("b3multi", B3Propagator.multipleHeaders),
     )
 
     default ++ extra
@@ -57,7 +60,7 @@ private final class PropagatorsAutoConfigure[F[_]: MonadThrow](
       case names if names.contains("none") && names.sizeIs > 1 =>
         Resource.raiseError(
           ConfigurationError(
-            s"[${ConfigKeys.Propagators.name}] contains 'none' along with other propagators"
+            s"[${ConfigKeys.Propagators}] contains 'none' along with other propagators"
           ): Throwable
         )
 
@@ -91,15 +94,6 @@ private final class PropagatorsAutoConfigure[F[_]: MonadThrow](
         )
     }
 
-  private def constConfigure[A](
-      n: String,
-      component: A
-  ): AutoConfigure.Named[F, A] =
-    new AutoConfigure.Named[F, A] {
-      def name: String = n
-      def configure(config: Config): Resource[F, A] =
-        Resource.pure(component)
-    }
 }
 
 private[sdk] object PropagatorsAutoConfigure {

@@ -69,6 +69,12 @@ object OpenTelemetrySdk {
       TracerProvider.noop
     )
 
+  def autoConfigured[F[_]: Async: Parallel: LocalContextProvider](
+      customize: AutoConfigured.Builder[F] => AutoConfigured.Builder[F] =
+        (a: AutoConfigured.Builder[F]) => a
+  ): Resource[F, AutoConfigured[F]] =
+    customize(AutoConfigured.builder[F]).build
+
   /** @see
     *   [[https://github.com/open-telemetry/opentelemetry-java/blob/main/sdk-extensions/autoconfigure/README.md]]
     *
@@ -78,7 +84,6 @@ object OpenTelemetrySdk {
   sealed trait AutoConfigured[F[_]] {
 
     /** The auto-configured OpenTelemetry SDK.
-      * @return
       */
     def sdk: OpenTelemetrySdk[F]
 

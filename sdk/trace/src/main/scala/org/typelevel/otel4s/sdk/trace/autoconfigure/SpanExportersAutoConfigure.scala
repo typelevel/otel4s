@@ -95,9 +95,8 @@ private final class SpanExportersAutoConfigure[F[_]: MonadThrow: Console](
         |import org.typelevel.otel4s.sdk.OpenTelemetrySdk
         |import org.typelevel.otel4s.sdk.exporter.otlp.trace.autoconfigure.OtlpSpanExporterAutoConfigure
         |
-        |OpenTelemetrySdk.AutoConfigured
-        |  .builder[IO]
-        |  .addExporterConfigurer(OtlpSpanExporterAutoConfigure[IO])
+        |OpenTelemetrySdk
+        |  .autoConfigured[IO](_.addExporterConfigurer(OtlpSpanExporterAutoConfigure[IO]))
         |  .build
         |""".stripMargin
     )

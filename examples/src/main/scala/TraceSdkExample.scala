@@ -21,11 +21,9 @@ import org.typelevel.otel4s.sdk.exporter.otlp.trace.autoconfigure.OtlpSpanExport
 
 object TraceSdkExample extends IOApp.Simple {
 
-  def run: IO[Unit] = {
-    OpenTelemetrySdk.AutoConfigured
-      .builder[IO]
-      .addExporterConfigurer(OtlpSpanExporterAutoConfigure[IO])
-      .build
+  def run: IO[Unit] =
+    OpenTelemetrySdk
+      .autoConfigured[IO](_.addExporterConfigurer(OtlpSpanExporterAutoConfigure[IO]))
       .use { autoConfigured =>
         val sdk = autoConfigured.sdk
 
@@ -36,6 +34,5 @@ object TraceSdkExample extends IOApp.Simple {
             .use(sd => IO.println(sd.context))
         } yield ()
       }
-  }
 
 }

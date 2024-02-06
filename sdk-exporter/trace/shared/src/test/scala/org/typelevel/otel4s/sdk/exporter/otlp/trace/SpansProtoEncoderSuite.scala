@@ -126,6 +126,7 @@ class SpansProtoEncoderSuite extends ScalaCheckSuite {
           "spanId" := link.spanContext.spanIdHex,
           "traceState" := link.spanContext.traceState,
           "attributes" := link.attributes,
+          "flags" := encodeFlags(link.spanContext.traceFlags)
         )
         .dropNullValues
         .dropEmptyValues
@@ -155,12 +156,12 @@ class SpansProtoEncoderSuite extends ScalaCheckSuite {
 
     assertEquals(
       ProtoEncoder.toJson(LinkData(ctx)).noSpaces,
-      """{"traceId":"aae6750d58ff8148fa33894599afaaf2","spanId":"f676d76b0b3d4324","traceState":"k2=v2,k=v"}"""
+      """{"traceId":"aae6750d58ff8148fa33894599afaaf2","spanId":"f676d76b0b3d4324","traceState":"k2=v2,k=v","flags":1}"""
     )
 
     assertEquals(
       ProtoEncoder.toJson(LinkData(ctx, attrs)).noSpaces,
-      """{"traceId":"aae6750d58ff8148fa33894599afaaf2","spanId":"f676d76b0b3d4324","traceState":"k2=v2,k=v","attributes":[{"key":"key","value":{"stringValue":"value"}}]}"""
+      """{"traceId":"aae6750d58ff8148fa33894599afaaf2","spanId":"f676d76b0b3d4324","traceState":"k2=v2,k=v","attributes":[{"key":"key","value":{"stringValue":"value"}}],"flags":1}"""
     )
 
     assertEquals(
@@ -180,6 +181,7 @@ class SpansProtoEncoderSuite extends ScalaCheckSuite {
           "spanId" := span.spanContext.spanIdHex,
           "traceState" := span.spanContext.traceState,
           "parentSpanId" := span.parentSpanContext.map(_.spanIdHex),
+          "flags" := encodeFlags(span.spanContext.traceFlags),
           "name" := name,
           "kind" := span.kind,
           "startTimeUnixNano" := span.startTimestamp.toNanos.toString,
@@ -229,6 +231,11 @@ class SpansProtoEncoderSuite extends ScalaCheckSuite {
         expected.noSpacesSortKeys
       )
     }
+  }
+
+  private def encodeFlags(traceFlags: TraceFlags): Json = {
+    val int = traceFlags.toByte.toInt
+    if (int == 0) Json.Null else int.asJson
   }
 
   override protected def scalaCheckTestParameters: Test.Parameters =

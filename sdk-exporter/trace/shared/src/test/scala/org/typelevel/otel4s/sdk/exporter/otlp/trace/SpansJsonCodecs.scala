@@ -28,6 +28,7 @@ import org.typelevel.otel4s.sdk.trace.data.SpanData
 import org.typelevel.otel4s.sdk.trace.data.StatusData
 import org.typelevel.otel4s.trace.SpanKind
 import org.typelevel.otel4s.trace.Status
+import org.typelevel.otel4s.trace.TraceFlags
 import org.typelevel.otel4s.trace.TraceState
 
 // the instances mimic Protobuf encoding
@@ -90,7 +91,8 @@ private object SpansJsonCodecs extends JsonCodecs {
           "traceId" := link.spanContext.traceIdHex,
           "spanId" := link.spanContext.spanIdHex,
           "traceState" := link.spanContext.traceState,
-          "attributes" := link.attributes
+          "attributes" := link.attributes,
+          "flags" := encodeFlags(link.spanContext.traceFlags)
         )
         .dropNullValues
         .dropEmptyValues
@@ -104,6 +106,7 @@ private object SpansJsonCodecs extends JsonCodecs {
           "spanId" := span.spanContext.spanIdHex,
           "traceState" := span.spanContext.traceState,
           "parentSpanId" := span.parentSpanContext.map(_.spanIdHex),
+          "flags" := encodeFlags(span.spanContext.traceFlags),
           "name" := span.name,
           "kind" := span.kind,
           "startTimeUnixNano" := span.startTimestamp.toNanos.toString,
@@ -140,4 +143,8 @@ private object SpansJsonCodecs extends JsonCodecs {
       Json.obj("resourceSpans" := resourceSpans).deepDropNullValues
     }
 
+  private def encodeFlags(traceFlags: TraceFlags): Json = {
+    val int = traceFlags.toByte.toInt
+    if (int == 0) Json.Null else int.asJson
+  }
 }

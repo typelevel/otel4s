@@ -49,17 +49,17 @@ import scala.concurrent.duration.FiniteDuration
   * | otel.exporter.otlp.endpoint           | OTEL_EXPORTER_OTLP_ENDPOINT           | The OTLP traces, metrics, and logs endpoint to connect to. Must be a URL with a scheme of either `http` or `https` based on the use of TLS. Default is `http://localhost:4318/`. |
   * | otel.exporter.otlp.headers            | OTEL_EXPORTER_OTLP_HEADERS            | Key-value pairs separated by commas to pass as request headers on OTLP trace, metric, and log requests.                                                                          |
   * | otel.exporter.otlp.compression        | OTEL_EXPORTER_OTLP_COMPRESSION        | The compression type to use on OTLP trace, metric, and log requests. Options include `gzip`. By default no compression will be used.                                             |
-  * | otel.exporter.otlp.timeout            | OTEL_EXPORTER_OTLP_TIMEOUT            | The maximum waiting time, in milliseconds, allowed to send each OTLP trace, metric, and log batch. Default is `10 seconds`.                                                      |
+  * | otel.exporter.otlp.timeout            | OTEL_EXPORTER_OTLP_TIMEOUT            | The maximum waiting time to send each OTLP trace, metric, and log batch. Default is `10 seconds`.                                                                                |
   * }}}
   *
   * The traces-specific configuration options:
   * {{{
-  * | System property                       | Environment variable                  | Description                                                                                                          |
-  * |---------------------------------------|---------------------------------------|----------------------------------------------------------------------------------------------------------------------|
-  * | otel.exporter.otlp.traces.headers     | OTEL_EXPORTER_OTLP_TRACES_HEADERS     | Key-value pairs separated by commas to pass as request headers on OTLP trace requests.                               |
-  * | otel.exporter.otlp.traces.endpoint    | OTEL_EXPORTER_OTLP_TRACES_ENDPOINT    | The OTLP traces endpoint to connect to. Default is `http://localhost:4318/v1/traces`.                                |
-  * | otel.exporter.otlp.traces.compression | OTEL_EXPORTER_OTLP_TRACES_COMPRESSION | The compression type to use on OTLP trace requests. Options include `gzip`. By default no compression will be used.  |
-  * | otel.exporter.otlp.traces.timeout     | OTEL_EXPORTER_OTLP_TRACES_TIMEOUT     | The maximum waiting time, in milliseconds, allowed to send each OTLP trace batch. Default is `10 seconds`.           |
+  * | System property                       | Environment variable                  | Description                                                                                                         |
+  * |---------------------------------------|---------------------------------------|---------------------------------------------------------------------------------------------------------------------|
+  * | otel.exporter.otlp.traces.headers     | OTEL_EXPORTER_OTLP_TRACES_HEADERS     | Key-value pairs separated by commas to pass as request headers on OTLP trace requests.                              |
+  * | otel.exporter.otlp.traces.endpoint    | OTEL_EXPORTER_OTLP_TRACES_ENDPOINT    | The OTLP traces endpoint to connect to. Default is `http://localhost:4318/v1/traces`.                               |
+  * | otel.exporter.otlp.traces.compression | OTEL_EXPORTER_OTLP_TRACES_COMPRESSION | The compression type to use on OTLP trace requests. Options include `gzip`. By default no compression will be used. |
+  * | otel.exporter.otlp.traces.timeout     | OTEL_EXPORTER_OTLP_TRACES_TIMEOUT     | The maximum waiting time to send each OTLP trace batch. Default is `10 seconds`.                                    |
   * }}}
   *
   * @see

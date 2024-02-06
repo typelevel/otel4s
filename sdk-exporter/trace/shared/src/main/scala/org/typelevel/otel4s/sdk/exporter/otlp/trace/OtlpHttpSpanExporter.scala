@@ -27,17 +27,14 @@ import fs2.compression.Compression
 import fs2.io.net.Network
 import fs2.io.net.tls.TLSContext
 import org.http4s.Headers
-import org.http4s.ProductId
 import org.http4s.Uri
-import org.http4s.headers.`User-Agent`
 import org.http4s.syntax.literals._
-import org.typelevel.otel4s.sdk.BuildInfo
 import org.typelevel.otel4s.sdk.trace.data.SpanData
 import org.typelevel.otel4s.sdk.trace.exporter.SpanExporter
 
 import scala.concurrent.duration._
 
-/** Exports spans via HTTP. Support `json` and `protobuf` encoding.
+/** Exports spans via HTTP. Supports `json` and `protobuf` encodings.
   *
   * @see
   *   [[https://opentelemetry.io/docs/specs/otel/protocol/exporter/]]
@@ -62,7 +59,6 @@ object OtlpHttpSpanExporter {
     val Endpoint: Uri = uri"http://localhost:4318/v1/traces"
     val Timeout: FiniteDuration = 10.seconds
     val GzipCompression: Boolean = false
-    val UserAgentName: String = "OTel-OTLP-Exporter-Scala-Otel4s"
   }
 
   /** A builder of [[OtlpHttpSpanExporter]] */
@@ -132,11 +128,7 @@ object OtlpHttpSpanExporter {
       endpoint = Defaults.Endpoint,
       gzipCompression = Defaults.GzipCompression,
       timeout = Defaults.Timeout,
-      headers = Headers(
-        `User-Agent`(
-          ProductId(Defaults.UserAgentName, version = Some(BuildInfo.version))
-        )
-      ),
+      headers = Headers.empty,
       retryPolicy = RetryPolicy.default,
       tlsContext = None
     )

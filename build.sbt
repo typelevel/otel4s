@@ -28,6 +28,12 @@ lazy val scalaJSLinkerSettings = Def.settings(
   Test / scalaJSLinkerConfig ~= (_.withModuleKind(ModuleKind.CommonJSModule))
 )
 
+lazy val scalaNativeSettings = Def.settings(
+  libraryDependencies += "com.armanbilge" %%% "epollcat" % EpollcatVersion % Test,
+  Test / nativeBrewFormulas ++= Set("s2n", "utf8proc"),
+  Test / envVars ++= Map("S2N_DONT_MLOCK" -> "1")
+)
+
 val Scala213 = "2.13.12"
 ThisBuild / crossScalaVersions := Seq(Scala213, "3.3.1")
 ThisBuild / scalaVersion := Scala213 // the default Scala
@@ -274,6 +280,8 @@ lazy val `sdk-exporter-common` =
       )
     )
     .jsSettings(scalaJSLinkerSettings)
+    .nativeEnablePlugins(ScalaNativeBrewedConfigPlugin)
+    .nativeSettings(scalaNativeSettings)
     .settings(munitDependencies)
     .settings(scalafixSettings)
 
@@ -293,11 +301,7 @@ lazy val `sdk-exporter-trace` =
     )
     .jsSettings(scalaJSLinkerSettings)
     .nativeEnablePlugins(ScalaNativeBrewedConfigPlugin)
-    .nativeSettings(
-      libraryDependencies += "com.armanbilge" %%% "epollcat" % EpollcatVersion % Test,
-      Test / nativeBrewFormulas ++= Set("s2n", "utf8proc"),
-      Test / envVars ++= Map("S2N_DONT_MLOCK" -> "1")
-    )
+    .nativeSettings(scalaNativeSettings)
     .settings(munitDependencies)
     .settings(scalafixSettings)
 

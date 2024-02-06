@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package org.typelevel.otel4s.sdk.exporter.otlp.autoconfigure
+package org.typelevel.otel4s.sdk.exporter
+package otlp.autoconfigure
 
 import cats.effect.IO
 import cats.syntax.either._
 import cats.syntax.traverse._
-import fs2.compression.Compression
 import munit.CatsEffectSuite
 import org.http4s.Headers
 import org.http4s.Uri
@@ -31,11 +31,11 @@ import scalapb_circe.Printer
 
 import scala.concurrent.duration._
 
-class OtlpHttpClientAutoConfigureSuite extends CatsEffectSuite {
-  import OtlpHttpClientAutoConfigure.Defaults
+class OtlpHttpClientAutoConfigureSuite
+    extends CatsEffectSuite
+    with SuiteRuntimePlatform {
 
-  implicit val compression: Compression[IO] =
-    fs2.io.compression.fs2ioCompressionForIO
+  import OtlpHttpClientAutoConfigure.Defaults
 
   private sealed trait Payload
 

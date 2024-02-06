@@ -36,6 +36,7 @@ import org.http4s.Header
 import org.http4s.Headers
 import org.http4s.HttpVersion
 import org.http4s.Method
+import org.http4s.ProductId
 import org.http4s.Request
 import org.http4s.Response
 import org.http4s.Status
@@ -45,7 +46,9 @@ import org.http4s.client.middleware.{RetryPolicy => HttpRetryPolicy}
 import org.http4s.client.middleware.GZip
 import org.http4s.client.middleware.Retry
 import org.http4s.ember.client.EmberClientBuilder
+import org.http4s.headers.`User-Agent`
 import org.typelevel.ci._
+import org.typelevel.otel4s.sdk.BuildInfo
 import org.typelevel.otel4s.sdk.exporter.RetryPolicy
 import scalapb_circe.Printer
 
@@ -64,6 +67,12 @@ private[otlp] final class OtlpHttpClient[F[_]: Temporal: Console, A] private (
     client: Client[F],
     config: OtlpHttpClient.Config,
 )(implicit encoder: ProtoEncoder.Message[List[A]], printer: Printer) {
+
+  import OtlpHttpClient.Defaults
+
+  private val userAgent = `User-Agent`(
+    ProductId(Defaults.UserAgentName, version = Some(BuildInfo.version))
+  )
 
   private implicit val entityEncoder: EntityEncoder[F, List[A]] =
     config.encoding match {
@@ -85,6 +94,7 @@ private[otlp] final class OtlpHttpClient[F[_]: Temporal: Console, A] private (
     val request =
       Request[F](Method.POST, config.endpoint, HttpVersion.`HTTP/1.1`)
         .withEntity(records.toList)
+        .putHeaders(userAgent)
         .putHeaders(config.headers)
 
     client
@@ -140,6 +150,10 @@ private[otlp] object OtlpHttpClient {
       headers: Headers,
       gzipCompression: Boolean
   )
+
+  private object Defaults {
+    val UserAgentName: String = "OTel-OTLP-Exporter-Scala-Otel4s"
+  }
 
   def create[F[_]: Async: Network: Compression: Console, A](
       encoding: HttpPayloadEncoding,

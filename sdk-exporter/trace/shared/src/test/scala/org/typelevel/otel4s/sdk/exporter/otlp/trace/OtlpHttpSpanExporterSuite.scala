@@ -65,7 +65,7 @@ class OtlpHttpSpanExporterSuite
           "endpoint=https://localhost:4318/api/v1/traces, " +
           "timeout=5 seconds, " +
           "gzipCompression=true, " +
-          s"headers={User-Agent: OTel-OTLP-Exporter-Scala-Otel4s/${BuildInfo.version},X-Forwarded-For: 127.0.0.1}}}"
+          "headers={X-Forwarded-For: 127.0.0.1}}}"
 
       OtlpHttpSpanExporter
         .builder[IO]

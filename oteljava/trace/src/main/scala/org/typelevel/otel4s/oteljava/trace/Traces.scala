@@ -37,8 +37,11 @@ object Traces {
       jOtel: JOpenTelemetry,
       propagators: ContextPropagators[Context]
   ): Traces[F] = {
-    val provider =
-      TracerProviderImpl.local(jOtel.getTracerProvider, propagators)
+    val provider = TracerProviderImpl.local(
+      jOtel.getTracerProvider,
+      propagators,
+      TraceScopeImpl.fromLocal[F]
+    )
     new Traces[F] {
       def tracerProvider: TracerProvider[F] = provider
     }

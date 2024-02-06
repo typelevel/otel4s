@@ -18,7 +18,6 @@ package org.typelevel.otel4s
 package oteljava.context
 
 import cats.effect.Sync
-import io.opentelemetry.api.trace.{Span => JSpan}
 import io.opentelemetry.context.{Context => JContext}
 import io.opentelemetry.context.ContextKey
 
@@ -51,13 +50,6 @@ sealed trait Context {
 }
 
 object Context {
-  private[oteljava] object Noop extends Context {
-    val underlying: JContext =
-      JSpan.getInvalid.storeInContext(root.underlying)
-    def get[A](key: Context.Key[A]): Option[A] = None
-    def updated[A](key: Context.Key[A], value: A): Context = this
-    private[oteljava] def map(f: JContext => JContext): Context = this
-  }
 
   private[oteljava] final case class Wrapped private[Context] (
       underlying: JContext
@@ -88,12 +80,8 @@ object Context {
   }
 
   /** Wraps a Java context as a [[`Context`]]. */
-  def wrap(context: JContext): Context = {
-    val isNoop =
-      Option(JSpan.fromContextOrNull(context))
-        .exists(!_.getSpanContext.isValid)
-    if (isNoop) Noop else Wrapped(context)
-  }
+  def wrap(context: JContext): Context =
+    Wrapped(context)
 
   /** The root [[`Context`]], from which all other contexts are derived. */
   val root: Context = wrap(JContext.root())

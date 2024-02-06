@@ -28,6 +28,7 @@ import cats.syntax.functor._
 import cats.syntax.semigroup._
 import cats.~>
 import org.typelevel.otel4s.sdk.common.InstrumentationScope
+import org.typelevel.otel4s.sdk.context.Context
 import org.typelevel.otel4s.sdk.trace.data.LinkData
 import org.typelevel.otel4s.sdk.trace.samplers.SamplingResult
 import org.typelevel.otel4s.trace.Span
@@ -37,6 +38,7 @@ import org.typelevel.otel4s.trace.SpanFinalizer
 import org.typelevel.otel4s.trace.SpanKind
 import org.typelevel.otel4s.trace.SpanOps
 import org.typelevel.otel4s.trace.TraceFlags
+import org.typelevel.otel4s.trace.TraceScope
 import org.typelevel.otel4s.trace.TraceState
 import scodec.bits.ByteVector
 
@@ -46,7 +48,7 @@ private final case class SdkSpanBuilder[F[_]: Temporal: Console](
     name: String,
     scopeInfo: InstrumentationScope,
     tracerSharedState: TracerSharedState[F],
-    scope: SdkTraceScope[F],
+    scope: TraceScope[F, Context],
     parent: SdkSpanBuilder.Parent = SdkSpanBuilder.Parent.Propagate,
     finalizationStrategy: SpanFinalizer.Strategy =
       SpanFinalizer.Strategy.reportAbnormal,

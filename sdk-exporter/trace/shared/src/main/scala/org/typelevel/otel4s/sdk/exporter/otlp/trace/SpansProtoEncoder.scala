@@ -110,7 +110,8 @@ private object SpansProtoEncoder {
         traceId = ByteString.copyFrom(data.spanContext.traceId.toArray),
         spanId = ByteString.copyFrom(data.spanContext.spanId.toArray),
         traceState = traceState,
-        attributes = ProtoEncoder.encode(data.attributes)
+        attributes = ProtoEncoder.encode(data.attributes),
+        flags = data.spanContext.traceFlags.toByte.toInt
       )
   }
 
@@ -126,6 +127,7 @@ private object SpansProtoEncoder {
       parentSpanId = span.parentSpanContext
         .map(s => ByteString.copyFrom(s.spanId.toArray))
         .getOrElse(ByteString.EMPTY),
+      flags = span.spanContext.traceFlags.toByte.toInt,
       name = span.name,
       kind = ProtoEncoder.encode(span.kind),
       startTimeUnixNano = span.startTimestamp.toNanos,

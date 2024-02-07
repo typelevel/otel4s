@@ -287,7 +287,7 @@ lazy val `sdk-exporter-common` =
 
 lazy val `sdk-exporter-trace` =
   crossProject(JVMPlatform, JSPlatform, NativePlatform)
-    .crossType(CrossType.Full)
+    .crossType(CrossType.Pure)
     .in(file("sdk-exporter/trace"))
     .enablePlugins(NoPublishPlugin, DockerComposeEnvPlugin)
     .dependsOn(

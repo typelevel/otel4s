@@ -15,7 +15,9 @@
  */
 
 package org.typelevel.otel4s.sdk
-package exporter.otlp.trace
+package exporter
+package otlp
+package trace
 
 import cats.effect.IO
 import com.comcast.ip4s.IpAddress
@@ -33,8 +35,6 @@ import org.scalacheck.effect.PropF
 import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.AttributeType
 import org.typelevel.otel4s.Attributes
-import org.typelevel.otel4s.sdk.exporter.RetryPolicy
-import org.typelevel.otel4s.sdk.exporter.otlp.HttpPayloadEncoding
 import org.typelevel.otel4s.sdk.trace.data.EventData
 import org.typelevel.otel4s.sdk.trace.data.SpanData
 import org.typelevel.otel4s.sdk.trace.scalacheck.Arbitraries._
@@ -46,7 +46,7 @@ import scala.concurrent.duration._
 class OtlpHttpSpanExporterSuite
     extends CatsEffectSuite
     with ScalaCheckEffectSuite
-    with ExporterSuitePlatform {
+    with SuiteRuntimePlatform {
 
   import OtlpHttpSpanExporterSuite._
 

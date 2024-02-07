@@ -208,7 +208,7 @@ object Config {
     private def asStringList(string: String): List[String] =
       string.split(",").map(_.trim).filter(_.nonEmpty).toList
 
-    private def decodeWithHint[A](
+    private[otel4s] def decodeWithHint[A](
         hint: String
     )(decode: String => Either[ConfigurationError, A]): Reader[A] =
       (key, properties) =>

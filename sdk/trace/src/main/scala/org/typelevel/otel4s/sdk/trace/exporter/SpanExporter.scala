@@ -43,14 +43,15 @@ trait SpanExporter[F[_]] {
     * multi-error scenario.
     *
     * @see
-    *   [[SpanExporter.ExporterFailure]]
+    *   [[org.typelevel.otel4s.sdk.trace.exporter.SpanExporter.ExporterFailure SpanExporter.ExporterFailure]]
     *
     * @see
-    *   [[SpanExporter.CompositeExporterFailure]]
+    *   [[org.typelevel.otel4s.sdk.trace.exporter.SpanExporter.CompositeExporterFailure SpanExporter.CompositeExporterFailure]]
     */
   def name: String
 
-  /** Called to export sampled [[data.SpanData SpanData]].
+  /** Called to export sampled
+    * [[org.typelevel.otel4s.sdk.trace.data.SpanData SpanData]].
     *
     * @note
     *   the export operations can be performed simultaneously depending on the
@@ -62,7 +63,8 @@ trait SpanExporter[F[_]] {
     */
   def exportSpans[G[_]: Foldable](spans: G[SpanData]): F[Unit]
 
-  /** Exports the collection of sampled [[data.SpanData SpanData]] that have not
+  /** Exports the collection of sampled
+    * [[org.typelevel.otel4s.sdk.trace.data.SpanData SpanData]] that have not
     * yet been exported.
     *
     * @note
@@ -130,7 +132,7 @@ object SpanExporter {
         failure
       )
 
-  /** An composite failure, when '''at least 2''' exporters have failed.
+  /** A composite failure, when '''at least 2''' exporters have failed.
     *
     * @param first
     *   the first occurred error

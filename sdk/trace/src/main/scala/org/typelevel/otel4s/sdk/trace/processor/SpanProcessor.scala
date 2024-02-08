@@ -149,7 +149,7 @@ object SpanProcessor {
         failure
       )
 
-  /** An composite failure, when '''at least 2''' processors have failed.
+  /** A composite failure, when '''at least 2''' processors have failed.
     *
     * @param first
     *   the first occurred error

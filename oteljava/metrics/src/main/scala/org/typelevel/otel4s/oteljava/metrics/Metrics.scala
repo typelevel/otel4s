@@ -28,7 +28,8 @@ object Metrics {
 
   def forAsync[F[_]: Async](jOtel: JOpenTelemetry): Metrics[F] =
     new Metrics[F] {
-      val meterProvider: MeterProvider[F] = new MeterProviderImpl[F](jOtel)
+      val meterProvider: MeterProvider[F] =
+        new MeterProviderImpl[F](jOtel.getMeterProvider)
     }
 
 }

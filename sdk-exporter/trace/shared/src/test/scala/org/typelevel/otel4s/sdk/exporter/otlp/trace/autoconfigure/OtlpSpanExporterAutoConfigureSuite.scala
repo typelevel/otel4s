@@ -14,18 +14,17 @@
  * limitations under the License.
  */
 
-package org.typelevel.otel4s.sdk.exporter.otlp.trace.autoconfigure
+package org.typelevel.otel4s.sdk.exporter
+package otlp.trace.autoconfigure
 
 import cats.effect.IO
 import cats.syntax.either._
-import fs2.compression.Compression
 import munit.CatsEffectSuite
 import org.typelevel.otel4s.sdk.autoconfigure.Config
 
-class OtlpSpanExporterAutoConfigureSuite extends CatsEffectSuite {
-
-  private implicit val compression: Compression[IO] =
-    fs2.io.compression.fs2ioCompressionForIO
+class OtlpSpanExporterAutoConfigureSuite
+    extends CatsEffectSuite
+    with SuiteRuntimePlatform {
 
   test("load from the config - empty config - load default") {
     val config = Config.ofProps(Map.empty)

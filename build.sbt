@@ -104,6 +104,7 @@ lazy val root = tlCrossRootProject
     `oteljava-metrics`,
     `oteljava-metrics-testkit`,
     `oteljava-trace`,
+    `oteljava-trace-testkit`,
     `oteljava-testkit`,
     oteljava,
     semconv,
@@ -368,6 +369,7 @@ lazy val `oteljava-metrics` = project
 lazy val `oteljava-metrics-testkit` = project
   .in(file("oteljava/metrics-testkit"))
   .dependsOn(`oteljava-metrics`, `oteljava-common-testkit`)
+  .settings(munitDependencies)
   .settings(
     name := "otel4s-oteljava-metrics-testkit",
     startYear := Some(2024)
@@ -389,11 +391,22 @@ lazy val `oteljava-trace` = project
   )
   .settings(scalafixSettings)
 
+lazy val `oteljava-trace-testkit` = project
+  .in(file("oteljava/trace-testkit"))
+  .dependsOn(`oteljava-trace`, `oteljava-common-testkit`)
+  .settings(munitDependencies)
+  .settings(
+    name := "otel4s-oteljava-trace-testkit",
+    startYear := Some(2024)
+  )
+  .settings(scalafixSettings)
+
 lazy val `oteljava-testkit` = project
   .in(file("oteljava/testkit"))
-  .dependsOn(`oteljava-metrics-testkit`)
+  .dependsOn(`oteljava-metrics-testkit`, `oteljava-trace-testkit`)
   .settings(
-    name := "otel4s-oteljava-testkit"
+    name := "otel4s-oteljava-testkit",
+    startYear := Some(2024)
   )
 
 lazy val oteljava = project
@@ -543,6 +556,7 @@ lazy val unidocs = project
       `oteljava-metrics`,
       `oteljava-metrics-testkit`,
       `oteljava-trace`,
+      `oteljava-trace-testkit`,
       `oteljava-testkit`,
       oteljava,
       semconv.jvm

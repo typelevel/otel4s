@@ -50,7 +50,8 @@ trait SpanExporter[F[_]] {
     */
   def name: String
 
-  /** Called to export sampled [[data.SpanData SpanData]].
+  /** Called to export sampled
+    * [[org.typelevel.otel4s.sdk.trace.data.SpanData SpanData]].
     *
     * @note
     *   the export operations can be performed simultaneously depending on the
@@ -62,7 +63,8 @@ trait SpanExporter[F[_]] {
     */
   def exportSpans[G[_]: Foldable](spans: G[SpanData]): F[Unit]
 
-  /** Exports the collection of sampled [[data.SpanData SpanData]] that have not
+  /** Exports the collection of sampled
+    * [[org.typelevel.otel4s.sdk.trace.data.SpanData SpanData]] that have not
     * yet been exported.
     *
     * @note

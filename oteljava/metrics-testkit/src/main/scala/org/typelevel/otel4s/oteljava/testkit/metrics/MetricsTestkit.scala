@@ -18,49 +18,48 @@ package org.typelevel.otel4s.oteljava.testkit.metrics
 
 import cats.effect.Async
 import cats.effect.Resource
-import cats.syntax.functor._
 import io.opentelemetry.sdk.metrics.SdkMeterProvider
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder
-import io.opentelemetry.sdk.metrics.data.MetricData
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader
 import org.typelevel.otel4s.metrics.MeterProvider
 import org.typelevel.otel4s.oteljava.metrics.MeterProviderImpl
-import org.typelevel.otel4s.oteljava.testkit.metrics.data.Metric
 
 import scala.jdk.CollectionConverters._
 
-trait TestkitMetrics[F[_]] {
+trait MetricsTestkit[F[_]] {
 
   /** The [[org.typelevel.otel4s.metrics.MeterProvider MeterProvider]].
     */
   def meterProvider: MeterProvider[F]
 
-  /** The collected raw metrics (OpenTelemetry Java models).
+  /** Collects and returns metrics.
+    *
+    * @example
+    *   {{{
+    * import io.opentelemetry.sdk.metrics.data.MetricData
+    * import org.typelevel.otel4s.oteljava.testkit.metrics.data.Metric
+    *
+    * MetricTestkit[F].collectMetrics[MetricData] // OpenTelemetry Java models
+    * MetricTestkit[F].collectMetrics[Metric] // Otel4s testkit models
+    *   }}}
     *
     * @note
     *   metrics are recollected on each invocation.
     */
-  def rawMetrics: F[List[MetricData]]
-
-  /** The collected metrics converted into Scala models.
-    *
-    * @note
-    *   metrics are recollected on each invocation.
-    */
-  def metrics: F[List[Metric]]
+  def collectMetrics[A: FromMetricData]: F[List[A]]
 
 }
 
-object TestkitMetrics {
+object MetricsTestkit {
 
-  /** Creates [[TestkitMetrics]] that keeps metrics in-memory.
+  /** Creates [[MetricsTestkit]] that keeps metrics in-memory.
     *
     * @param customize
     *   the customization of the builder
     */
   def inMemory[F[_]: Async](
       customize: SdkMeterProviderBuilder => SdkMeterProviderBuilder = identity
-  ): Resource[F, TestkitMetrics[F]] = {
+  ): Resource[F, MetricsTestkit[F]] = {
 
     def createMetricReader =
       Async[F].delay(InMemoryMetricReader.create())
@@ -86,15 +85,13 @@ object TestkitMetrics {
   private final class Impl[F[_]: Async](
       val meterProvider: MeterProvider[F],
       metricReader: InMemoryMetricReader
-  ) extends TestkitMetrics[F] {
+  ) extends MetricsTestkit[F] {
 
-    def rawMetrics: F[List[MetricData]] =
+    def collectMetrics[A: FromMetricData]: F[List[A]] =
       Async[F].delay {
-        metricReader.collectAllMetrics().asScala.toList
+        val metrics = metricReader.collectAllMetrics().asScala.toList
+        metrics.map(FromMetricData[A].from)
       }
-
-    def metrics: F[List[Metric]] =
-      rawMetrics.map(_.map(Metric(_)))
   }
 
 }

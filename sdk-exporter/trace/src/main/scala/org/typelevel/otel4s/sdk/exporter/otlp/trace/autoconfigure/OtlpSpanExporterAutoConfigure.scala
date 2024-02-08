@@ -62,12 +62,15 @@ private final class OtlpSpanExporterAutoConfigure[
     )
     with AutoConfigure.Named[F, SpanExporter[F]] {
 
-  import OtlpSpanExporterAutoConfigure.{ConfigKeys, Defaults, Protocol}
+  import OtlpSpanExporterAutoConfigure.ConfigKeys
+  import OtlpSpanExporterAutoConfigure.Defaults
+  import OtlpSpanExporterAutoConfigure.Protocol
 
   def name: String = "otlp"
 
   protected def fromConfig(config: Config): Resource[F, SpanExporter[F]] = {
-    import SpansProtoEncoder.{jsonPrinter, spanDataToRequest}
+    import SpansProtoEncoder.spanDataToRequest
+    import SpansProtoEncoder.jsonPrinter
 
     val protocol = config.get(ConfigKeys.TracesProtocol).flatMap {
       case Some(value) =>

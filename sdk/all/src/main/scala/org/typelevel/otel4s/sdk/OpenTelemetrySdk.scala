@@ -25,6 +25,7 @@ import cats.effect.std.Console
 import cats.effect.std.Random
 import cats.syntax.apply._
 import cats.syntax.flatMap._
+import cats.syntax.foldable._
 import cats.syntax.functor._
 import org.typelevel.otel4s.Otel4s
 import org.typelevel.otel4s.context.LocalProvider
@@ -37,9 +38,13 @@ import org.typelevel.otel4s.sdk.autoconfigure.TelemetryResourceAutoConfigure
 import org.typelevel.otel4s.sdk.context.Context
 import org.typelevel.otel4s.sdk.context.LocalContextProvider
 import org.typelevel.otel4s.sdk.trace.SdkTracerProvider
+import org.typelevel.otel4s.sdk.trace.autoconfigure.BatchSpanProcessorAutoConfigure
 import org.typelevel.otel4s.sdk.trace.autoconfigure.ContextPropagatorsAutoConfigure
-import org.typelevel.otel4s.sdk.trace.autoconfigure.TracerProviderAutoConfigure
+import org.typelevel.otel4s.sdk.trace.autoconfigure.SamplerAutoConfigure
+import org.typelevel.otel4s.sdk.trace.autoconfigure.SpanExportersAutoConfigure
 import org.typelevel.otel4s.sdk.trace.exporter.SpanExporter
+import org.typelevel.otel4s.sdk.trace.processor.SimpleSpanProcessor
+import org.typelevel.otel4s.sdk.trace.processor.SpanProcessor
 import org.typelevel.otel4s.trace.TracerProvider
 
 sealed class OpenTelemetrySdk[F[_]] private (
@@ -69,7 +74,7 @@ object OpenTelemetrySdk {
       TracerProvider.noop
     )
 
-  def autoConfigured[F[_]: Async: Parallel: LocalContextProvider](
+  def autoConfigured[F[_]: Async: Parallel: Console: LocalContextProvider](
       customize: AutoConfigured.Builder[F] => AutoConfigured.Builder[F] =
         (a: AutoConfigured.Builder[F]) => a
   ): Resource[F, AutoConfigured[F]] =
@@ -139,11 +144,13 @@ object OpenTelemetrySdk {
     }
 
     def load[
-        F[_]: Async: Parallel: LocalContextProvider
+        F[_]: Async: Parallel: Console: LocalContextProvider
     ]: Resource[F, AutoConfigured[F]] =
       builder[F].build
 
-    def builder[F[_]: Async: Parallel: LocalContextProvider]: Builder[F] =
+    def builder[
+        F[_]: Async: Parallel: Console: LocalContextProvider
+    ]: Builder[F] =
       BuilderImpl(
         customConfig = None,
         tracerProviderCustomizer = (a: SdkTracerProvider.Builder[F], _) => a,
@@ -155,7 +162,7 @@ object OpenTelemetrySdk {
       )
 
     private final case class BuilderImpl[
-        F[_]: Async: Parallel: LocalContextProvider
+        F[_]: Async: Parallel: Console: LocalContextProvider
     ](
         customConfig: Option[Config],
         tracerProviderCustomizer: Customizer[SdkTracerProvider.Builder[F]],
@@ -214,6 +221,26 @@ object OpenTelemetrySdk {
             cfg.withOverrides(c(cfg))
           )
 
+        def configureProcessors(
+            config: Config,
+            exporters: Map[String, SpanExporter[F]]
+        ): Resource[F, List[SpanProcessor[F]]] = {
+          val logging = exporters.get("logging") match {
+            case Some(logging) => List(SimpleSpanProcessor(logging))
+            case None          => Nil
+          }
+
+          val others = exporters.removed("logging")
+          if (others.nonEmpty) {
+            val exporter = others.values.toList.combineAll
+            BatchSpanProcessorAutoConfigure[F](exporter)
+              .configure(config)
+              .map(processor => logging :+ processor)
+          } else {
+            Resource.pure(logging)
+          }
+        }
+
         def loadSdk(
             resource: TelemetryResource,
             config: Config
@@ -221,23 +248,33 @@ object OpenTelemetrySdk {
           Resource.eval(Random.scalaUtilRandom[F]).flatMap { implicit random =>
             Resource.eval(LocalProvider[F, Context].local).flatMap {
               implicit local =>
-                implicit val console: Console[F] = Console.make[F]
+                val exporterAutoConfigure =
+                  SpanExportersAutoConfigure[F](exporterConfigurers)
 
-                val builder =
-                  SdkTracerProvider.builder[F].withResource(resource)
+                val propagatorsAutoConfigure =
+                  ContextPropagatorsAutoConfigure[F](
+                    textMapPropagatorConfigurers
+                  )
 
                 for {
-                  tpBuilder <- TracerProviderAutoConfigure[F](
-                    builder,
-                    exporterConfigurers
-                  ).configure(config)
+                  sampler <- SamplerAutoConfigure[F].configure(config)
+                  exporters <- exporterAutoConfigure.configure(config)
+                  processors <- configureProcessors(config, exporters)
+
+                  tpBuilder = {
+                    val builder = SdkTracerProvider
+                      .builder[F]
+                      .withResource(resource)
+                      .withSampler(sampler)
+
+                    processors.foldLeft(builder)(_.addSpanProcessor(_))
+                  }
 
                   tracerProvider <- Resource.eval(
                     tracerProviderCustomizer(tpBuilder, config).build
                   )
-                  propagators <- ContextPropagatorsAutoConfigure[F](
-                    textMapPropagatorConfigurers
-                  ).configure(config)
+
+                  propagators <- propagatorsAutoConfigure.configure(config)
                 } yield OpenTelemetrySdk(
                   propagators,
                   MeterProvider.noop[F],

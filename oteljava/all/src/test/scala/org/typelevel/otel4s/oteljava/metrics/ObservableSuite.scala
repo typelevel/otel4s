@@ -21,12 +21,13 @@ package metrics
 import cats.effect.IO
 import munit.CatsEffectSuite
 import org.typelevel.otel4s.metrics.Measurement
-import org.typelevel.otel4s.oteljava.testkit.metrics.TestkitMetrics
+import org.typelevel.otel4s.oteljava.testkit.metrics.MetricsTestkit
+import org.typelevel.otel4s.oteljava.testkit.metrics.data.Metric
 
 class ObservableSuite extends CatsEffectSuite {
 
   test("gauge test") {
-    TestkitMetrics.inMemory[IO]().use { sdk =>
+    MetricsTestkit.inMemory[IO]().use { sdk =>
       for {
         meter <- sdk.meterProvider
           .meter("java.otel.suite")
@@ -40,7 +41,8 @@ class ObservableSuite extends CatsEffectSuite {
           .withDescription("description")
           .createWithCallback(_.record(42.0, Attribute("foo", "bar")))
           .use(_ =>
-            sdk.metrics
+            sdk
+              .collectMetrics[Metric]
               .map(_.flatMap(_.data.points.map(x => (x.value, x.attributes))))
               .assertEquals(List((42.0, Attributes(Attribute("foo", "bar")))))
           )
@@ -58,7 +60,8 @@ class ObservableSuite extends CatsEffectSuite {
             )
           )
           .use(_ =>
-            sdk.metrics
+            sdk
+              .collectMetrics[Metric]
               .map(
                 _.flatMap(
                   _.data.points.map(x => (x.value, x.attributes))
@@ -77,7 +80,7 @@ class ObservableSuite extends CatsEffectSuite {
   }
 
   test("counter test") {
-    TestkitMetrics.inMemory[IO]().use { sdk =>
+    MetricsTestkit.inMemory[IO]().use { sdk =>
       for {
         meter <- sdk.meterProvider
           .meter("java.otel.suite")
@@ -91,7 +94,8 @@ class ObservableSuite extends CatsEffectSuite {
           .withDescription("description")
           .createWithCallback(_.record(1234, Attribute("number", 42L)))
           .use(_ =>
-            sdk.metrics
+            sdk
+              .collectMetrics[Metric]
               .map(_.flatMap(_.data.points.map(x => (x.value, x.attributes))))
               .assertEquals(List((1234, Attributes(Attribute("number", 42L)))))
           )
@@ -109,7 +113,8 @@ class ObservableSuite extends CatsEffectSuite {
             )
           )
           .use(_ =>
-            sdk.metrics
+            sdk
+              .collectMetrics[Metric]
               .map(
                 _.flatMap(_.data.points.map(x => (x.value, x.attributes))).toSet
               )
@@ -126,7 +131,7 @@ class ObservableSuite extends CatsEffectSuite {
   }
 
   test("up down counter test") {
-    TestkitMetrics.inMemory[IO]().use { sdk =>
+    MetricsTestkit.inMemory[IO]().use { sdk =>
       for {
         meter <- sdk.meterProvider
           .meter("java.otel.suite")
@@ -142,7 +147,8 @@ class ObservableSuite extends CatsEffectSuite {
             _.record(1234, Attribute[Boolean]("is_false", true))
           )
           .use(_ =>
-            sdk.metrics
+            sdk
+              .collectMetrics[Metric]
               .map(_.flatMap(_.data.points.map(x => (x.value, x.attributes))))
               .assertEquals(
                 List((1234, Attributes(Attribute("is_false", true))))
@@ -162,7 +168,8 @@ class ObservableSuite extends CatsEffectSuite {
             )
           )
           .use(_ =>
-            sdk.metrics
+            sdk
+              .collectMetrics[Metric]
               .map(
                 _.flatMap(_.data.points.map(x => (x.value, x.attributes))).toSet
               )

@@ -53,7 +53,7 @@ val OpenTelemetryInstrumentationVersion = "2.0.0"
 val OpenTelemetrySemConvVersion = "1.23.1-alpha"
 val OpenTelemetryProtoVersion = "1.1.0-alpha"
 val PekkoStreamVersion = "1.0.2"
-val PekkoHttpVersion = "1.0.0"
+val PekkoHttpVersion = "1.0.1"
 val PlatformVersion = "1.0.2"
 val ScodecVersion = "1.1.38"
 val VaultVersion = "3.5.0"
@@ -94,6 +94,7 @@ lazy val root = tlCrossRootProject
     core,
     `sdk-common`,
     `sdk-trace`,
+    `sdk-trace-testkit`,
     sdk,
     `sdk-exporter-common`,
     `sdk-exporter-proto`,
@@ -104,6 +105,7 @@ lazy val root = tlCrossRootProject
     `oteljava-metrics`,
     `oteljava-metrics-testkit`,
     `oteljava-trace`,
+    `oteljava-trace-testkit`,
     `oteljava-testkit`,
     oteljava,
     semconv,
@@ -115,6 +117,10 @@ lazy val root = tlCrossRootProject
     _.aggregate(scalafix.componentProjectReferences: _*)
   )
   .settings(name := "otel4s")
+
+//
+// Core
+//
 
 lazy val `core-common` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .crossType(CrossType.Pure)
@@ -177,6 +183,10 @@ lazy val core = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   )
   .settings(scalafixSettings)
 
+//
+// SDK
+//
+
 lazy val `sdk-common` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .crossType(CrossType.Pure)
   .enablePlugins(BuildInfoPlugin)
@@ -221,6 +231,19 @@ lazy val `sdk-trace` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
     ),
   )
   .settings(munitDependencies)
+  .settings(scalafixSettings)
+
+lazy val `sdk-trace-testkit` =
+  crossProject(JVMPlatform, JSPlatform, NativePlatform)
+    .crossType(CrossType.Pure)
+    .enablePlugins(NoPublishPlugin)
+    .in(file("sdk/trace-testkit"))
+    .dependsOn(`sdk-trace`)
+    .settings(
+      name := "otel4s-sdk-trace-testkit",
+      startYear := Some(2024)
+    )
+    .settings(scalafixSettings)
 
 lazy val sdk = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .crossType(CrossType.Pure)
@@ -257,6 +280,7 @@ lazy val `sdk-exporter-proto` =
         "io.opentelemetry.proto" % "opentelemetry-proto" % OpenTelemetryProtoVersion % "protobuf-src" intransitive ()
       )
     )
+    .settings(scalafixSettings)
 
 lazy val `sdk-exporter-common` =
   crossProject(JVMPlatform, JSPlatform, NativePlatform)
@@ -368,6 +392,7 @@ lazy val `oteljava-metrics` = project
 lazy val `oteljava-metrics-testkit` = project
   .in(file("oteljava/metrics-testkit"))
   .dependsOn(`oteljava-metrics`, `oteljava-common-testkit`)
+  .settings(munitDependencies)
   .settings(
     name := "otel4s-oteljava-metrics-testkit",
     startYear := Some(2024)
@@ -389,11 +414,22 @@ lazy val `oteljava-trace` = project
   )
   .settings(scalafixSettings)
 
+lazy val `oteljava-trace-testkit` = project
+  .in(file("oteljava/trace-testkit"))
+  .dependsOn(`oteljava-trace`, `oteljava-common-testkit`)
+  .settings(munitDependencies)
+  .settings(
+    name := "otel4s-oteljava-trace-testkit",
+    startYear := Some(2024)
+  )
+  .settings(scalafixSettings)
+
 lazy val `oteljava-testkit` = project
   .in(file("oteljava/testkit"))
-  .dependsOn(`oteljava-metrics-testkit`)
+  .dependsOn(`oteljava-metrics-testkit`, `oteljava-trace-testkit`)
   .settings(
-    name := "otel4s-oteljava-testkit"
+    name := "otel4s-oteljava-testkit",
+    startYear := Some(2024)
   )
 
 lazy val oteljava = project
@@ -534,6 +570,7 @@ lazy val unidocs = project
       core.jvm,
       `sdk-common`.jvm,
       `sdk-trace`.jvm,
+      `sdk-trace-testkit`.jvm,
       sdk.jvm,
       `sdk-exporter-common`.jvm,
       `sdk-exporter-trace`.jvm,
@@ -543,6 +580,7 @@ lazy val unidocs = project
       `oteljava-metrics`,
       `oteljava-metrics-testkit`,
       `oteljava-trace`,
+      `oteljava-trace-testkit`,
       `oteljava-testkit`,
       oteljava,
       semconv.jvm

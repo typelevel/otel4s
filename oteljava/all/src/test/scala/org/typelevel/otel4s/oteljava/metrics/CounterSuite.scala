@@ -24,7 +24,8 @@ import io.opentelemetry.sdk.metrics._
 import munit.CatsEffectSuite
 import org.typelevel.otel4s.oteljava.testkit.InstrumentationScope
 import org.typelevel.otel4s.oteljava.testkit.TelemetryResource
-import org.typelevel.otel4s.oteljava.testkit.metrics.TestkitMetrics
+import org.typelevel.otel4s.oteljava.testkit.metrics.MetricsTestkit
+import org.typelevel.otel4s.oteljava.testkit.metrics.data.Metric
 
 import scala.jdk.CollectionConverters._
 
@@ -47,7 +48,7 @@ class CounterSuite extends CatsEffectSuite {
 
         _ <- counter.add(1L, Attribute("string-attribute", "value"))
 
-        metrics <- sdk.metrics
+        metrics <- sdk.collectMetrics[Metric]
       } yield {
         val resourceAttributes = Attributes(
           Attribute("service.name", "unknown_service:java"),
@@ -79,7 +80,7 @@ class CounterSuite extends CatsEffectSuite {
     }
   }
 
-  private def makeSdk: Resource[IO, TestkitMetrics[IO]] = {
+  private def makeSdk: Resource[IO, MetricsTestkit[IO]] = {
     def customize(builder: SdkMeterProviderBuilder): SdkMeterProviderBuilder =
       builder.registerView(
         InstrumentSelector.builder().setType(InstrumentType.HISTOGRAM).build(),
@@ -93,7 +94,7 @@ class CounterSuite extends CatsEffectSuite {
           .build()
       )
 
-    TestkitMetrics.inMemory[IO](customize)
+    MetricsTestkit.inMemory[IO](customize)
   }
 
   private val HistogramBuckets: List[Double] =

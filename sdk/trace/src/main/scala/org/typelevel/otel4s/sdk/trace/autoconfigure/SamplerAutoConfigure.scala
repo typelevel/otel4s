@@ -37,8 +37,9 @@ import org.typelevel.otel4s.sdk.trace.samplers.Sampler
   * @see
   *   [[https://github.com/open-telemetry/opentelemetry-java/blob/main/sdk-extensions/autoconfigure/README.md#sampler]]
   */
-private final class SamplerAutoConfigure[F[_]: MonadThrow]
-    extends AutoConfigure.WithHint[F, Sampler](
+private final class SamplerAutoConfigure[F[_]: MonadThrow](
+    extra: Set[AutoConfigure.Named[F, Sampler]]
+) extends AutoConfigure.WithHint[F, Sampler](
       "Sampler",
       SamplerAutoConfigure.ConfigKeys.All
     ) {
@@ -46,62 +47,73 @@ private final class SamplerAutoConfigure[F[_]: MonadThrow]
   import SamplerAutoConfigure.ConfigKeys
   import SamplerAutoConfigure.Defaults
 
-  private val options = Set(
-    "always_on",
-    "always_off",
-    "traceidratio",
-    "parentbased_always_on",
-    "parentbased_always_off",
-    "parentbased_traceidratio"
-  )
+  private val configurers = {
+    val default: Set[AutoConfigure.Named[F, Sampler]] = Set(
+      AutoConfigure.Named.const("always_on", Sampler.AlwaysOn),
+      AutoConfigure.Named.const("always_off", Sampler.AlwaysOff),
+      traceIdRatioSampler("traceidratio")(identity),
+      AutoConfigure.Named.const(
+        "parentbased_always_on",
+        Sampler.parentBased(Sampler.AlwaysOn)
+      ),
+      AutoConfigure.Named.const(
+        "parentbased_always_off",
+        Sampler.parentBased(Sampler.AlwaysOff)
+      ),
+      traceIdRatioSampler("parentbased_traceidratio")(Sampler.parentBased)
+    )
 
-  def fromConfig(config: Config): Resource[F, Sampler] = {
-    val sampler = config.getOrElse(ConfigKeys.Sampler, Defaults.Sampler)
-    def traceIdRatioSampler =
-      config
-        .getOrElse(ConfigKeys.SamplerArg, Defaults.Ratio)
-        .flatMap { ratio =>
-          Either
-            .catchNonFatal(Sampler.traceIdRatioBased(ratio))
-            .leftMap { cause =>
-              ConfigurationError(
-                s"[${ConfigKeys.SamplerArg.name}] has invalid ratio [$ratio] - ${cause.getMessage}",
-                cause
-              )
-            }
+    default ++ extra
+  }
+
+  def fromConfig(config: Config): Resource[F, Sampler] =
+    config.getOrElse(ConfigKeys.Sampler, Defaults.Sampler) match {
+      case Right(name) =>
+        configurers.find(_.name == name) match {
+          case Some(configure) =>
+            configure.configure(config)
+
+          case None =>
+            Resource.raiseError(
+              ConfigurationError.unrecognized(
+                ConfigKeys.Sampler.name,
+                name,
+                configurers.map(_.name)
+              ): Throwable
+            )
         }
 
-    def attempt = sampler.flatMap {
-      case "always_on" =>
-        Right(Sampler.AlwaysOn)
-
-      case "always_off" =>
-        Right(Sampler.AlwaysOff)
-
-      case "traceidratio" =>
-        traceIdRatioSampler
-
-      case "parentbased_always_on" =>
-        Right(Sampler.parentBased(Sampler.AlwaysOn))
-
-      case "parentbased_always_off" =>
-        Right(Sampler.parentBased(Sampler.AlwaysOff))
-
-      case "parentbased_traceidratio" =>
-        traceIdRatioSampler.map(s => Sampler.parentBased(s))
-
-      case other =>
-        Left(
-          ConfigurationError.unrecognized(
-            ConfigKeys.Sampler.name,
-            other,
-            options
-          )
-        )
+      case Left(error) =>
+        Resource.raiseError(error: Throwable)
     }
 
-    Resource.eval(MonadThrow[F].fromEither(attempt))
-  }
+  private def traceIdRatioSampler(
+      samplerName: String
+  )(make: Sampler => Sampler): AutoConfigure.Named[F, Sampler] =
+    new AutoConfigure.Named[F, Sampler] {
+      def name: String = samplerName
+
+      def configure(config: Config): Resource[F, Sampler] = {
+        val attempt = config
+          .getOrElse(ConfigKeys.SamplerArg, Defaults.Ratio)
+          .flatMap { ratio =>
+            Either
+              .catchNonFatal(Sampler.traceIdRatioBased(ratio))
+              .leftMap { cause =>
+                ConfigurationError(
+                  s"[${ConfigKeys.SamplerArg.name}] has invalid ratio [$ratio] - ${cause.getMessage}",
+                  cause
+                )
+              }
+          }
+
+        attempt match {
+          case Right(sampler) => Resource.pure(make(sampler))
+          case Left(error)    => Resource.raiseError(error: Throwable)
+        }
+
+      }
+    }
 
 }
 
@@ -129,7 +141,8 @@ private[sdk] object SamplerAutoConfigure {
     * | otel.traces.sampler.arg | OTEL_TRACES_SAMPLER_ARG | An argument to the configured tracer if supported, for example a ratio. |
     * }}}
     *
-    * Supported options for `otel.traces.sampler` are:
+    * The following options for `otel.traces.sampler` are supported out of the
+    * box:
     *   - `always_on` - [[Sampler.AlwaysOn]]
     *
     *   - `always_off` - [[Sampler.AlwaysOff]]
@@ -150,7 +163,9 @@ private[sdk] object SamplerAutoConfigure {
     * @see
     *   [[https://github.com/open-telemetry/opentelemetry-java/blob/main/sdk-extensions/autoconfigure/README.md#sampler]]
     */
-  def apply[F[_]: MonadThrow]: AutoConfigure[F, Sampler] =
-    new SamplerAutoConfigure[F]
+  def apply[F[_]: MonadThrow](
+      extra: Set[AutoConfigure.Named[F, Sampler]]
+  ): AutoConfigure[F, Sampler] =
+    new SamplerAutoConfigure[F](extra)
 
 }

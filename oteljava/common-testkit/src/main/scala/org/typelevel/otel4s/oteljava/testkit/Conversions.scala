@@ -18,8 +18,11 @@ package org.typelevel.otel4s.oteljava.testkit
 
 import _root_.java.{lang => jl}
 import _root_.java.{util => ju}
+import cats.effect.Async
+import cats.syntax.either._
 import io.opentelemetry.api.common.{AttributeType => JAttributeType}
 import io.opentelemetry.api.common.{Attributes => JAttributes}
+import io.opentelemetry.sdk.common.CompletableResultCode
 import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.Attributes
 
@@ -64,5 +67,31 @@ private[testkit] object Conversions {
 
     Attributes.fromSpecific(converted)
   }
+
+  def asyncFromCompletableResultCode[F[_]](
+      codeF: F[CompletableResultCode],
+      msg: => Option[String] = None
+  )(implicit F: Async[F]): F[Unit] =
+    F.flatMap(codeF)(code =>
+      F.async[Unit](cb =>
+        F.delay {
+          code.whenComplete(() =>
+            if (code.isSuccess())
+              cb(Either.unit)
+            else
+              cb(
+                Left(
+                  new RuntimeException(
+                    msg.getOrElse(
+                      "OpenTelemetry SDK async operation failed"
+                    )
+                  )
+                )
+              )
+          )
+          None
+        }
+      )
+    )
 
 }

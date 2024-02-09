@@ -434,11 +434,12 @@ lazy val `oteljava-trace-testkit` = project
 
 lazy val `oteljava-testkit` = project
   .in(file("oteljava/testkit"))
-  .dependsOn(`oteljava-metrics-testkit`, `oteljava-trace-testkit`)
+  .dependsOn(core.jvm, `oteljava-metrics-testkit`, `oteljava-trace-testkit`)
   .settings(
     name := "otel4s-oteljava-testkit",
     startYear := Some(2024)
   )
+  .settings(scalafixSettings)
 
 lazy val oteljava = project
   .in(file("oteljava/all"))

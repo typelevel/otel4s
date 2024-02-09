@@ -33,6 +33,7 @@ import io.opentelemetry.sdk.trace.`export`.SpanExporter
 import org.typelevel.otel4s.context.LocalProvider
 import org.typelevel.otel4s.context.propagation.ContextPropagators
 import org.typelevel.otel4s.oteljava.context.Context
+import org.typelevel.otel4s.oteljava.context.LocalContext
 import org.typelevel.otel4s.oteljava.context.LocalContextProvider
 import org.typelevel.otel4s.oteljava.context.propagation.PropagatorConverters._
 import org.typelevel.otel4s.oteljava.trace.TraceScopeImpl
@@ -60,6 +61,16 @@ trait TracesTestkit[F[_]] {
     *   each invocation cleans up the internal buffer.
     */
   def finishedSpans[A: FromSpanData]: F[List[A]]
+
+  /** The propagators used by the
+    * [[org.typelevel.otel4s.trace.TracerProvider TracerProvider]].
+    */
+  def propagators: ContextPropagators[Context]
+
+  /** The [[org.typelevel.otel4s.oteljava.context.LocalContext LocalContext]]
+    * used by the [[org.typelevel.otel4s.trace.TracerProvider TracerProvider]].
+    */
+  def localContext: LocalContext[F]
 }
 
 object TracesTestkit {
@@ -107,6 +118,8 @@ object TracesTestkit {
         contextPropagators,
         TraceScopeImpl.fromLocal[F](local)
       ),
+      contextPropagators,
+      local,
       processor,
       exporter
     )
@@ -114,6 +127,8 @@ object TracesTestkit {
 
   private final class Impl[F[_]: Async](
       val tracerProvider: TracerProvider[F],
+      val propagators: ContextPropagators[Context],
+      val localContext: LocalContext[F],
       processor: SpanProcessor,
       exporter: InMemorySpanExporter
   ) extends TracesTestkit[F] {

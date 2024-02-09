@@ -350,7 +350,7 @@ object SdkTraces {
       val localContext: LocalContext[F]
   ) extends SdkTraces[F] {
     override def toString: String =
-      s"SdkTraces{traceProvider=$tracerProvider,propagators=$propagators,resource=$resource}"
+      s"SdkTraces{tracerProvider=$tracerProvider,propagators=$propagators,resource=$resource}"
   }
 
 }

@@ -72,7 +72,7 @@ private class SdkTracerProvider[F[_]: Temporal: Parallel: Console](
 
 object SdkTracerProvider {
 
-  /** Builder for [[org.typelevel.otel4s.trace.TracerProvider TraceProvider]].
+  /** Builder for [[org.typelevel.otel4s.trace.TracerProvider TracerProvider]].
     */
   sealed trait Builder[F[_]] {
 
@@ -168,7 +168,7 @@ object SdkTracerProvider {
     def addSpanProcessor(processor: SpanProcessor[F]): Builder[F]
 
     /** Creates a new
-      * [[org.typelevel.otel4s.trace.TracerProvider TraceProvider]] with the
+      * [[org.typelevel.otel4s.trace.TracerProvider TracerProvider]] with the
       * configuration of this builder.
       */
     def build: F[TracerProvider[F]]

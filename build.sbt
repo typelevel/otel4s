@@ -94,6 +94,7 @@ lazy val root = tlCrossRootProject
     core,
     `sdk-common`,
     `sdk-trace`,
+    `sdk-trace-testkit`,
     sdk,
     `sdk-exporter-common`,
     `sdk-exporter-proto`,
@@ -115,6 +116,10 @@ lazy val root = tlCrossRootProject
     _.aggregate(scalafix.componentProjectReferences: _*)
   )
   .settings(name := "otel4s")
+
+//
+// Core
+//
 
 lazy val `core-common` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .crossType(CrossType.Pure)
@@ -177,6 +182,10 @@ lazy val core = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   )
   .settings(scalafixSettings)
 
+//
+// SDK
+//
+
 lazy val `sdk-common` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .crossType(CrossType.Pure)
   .enablePlugins(BuildInfoPlugin)
@@ -221,6 +230,19 @@ lazy val `sdk-trace` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
     ),
   )
   .settings(munitDependencies)
+  .settings(scalafixSettings)
+
+lazy val `sdk-trace-testkit` =
+  crossProject(JVMPlatform, JSPlatform, NativePlatform)
+    .crossType(CrossType.Pure)
+    .enablePlugins(NoPublishPlugin)
+    .in(file("sdk/trace-testkit"))
+    .dependsOn(`sdk-trace`)
+    .settings(
+      name := "otel4s-sdk-trace-testkit",
+      startYear := Some(2024)
+    )
+    .settings(scalafixSettings)
 
 lazy val sdk = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .crossType(CrossType.Pure)
@@ -257,6 +279,7 @@ lazy val `sdk-exporter-proto` =
         "io.opentelemetry.proto" % "opentelemetry-proto" % OpenTelemetryProtoVersion % "protobuf-src" intransitive ()
       )
     )
+    .settings(scalafixSettings)
 
 lazy val `sdk-exporter-common` =
   crossProject(JVMPlatform, JSPlatform, NativePlatform)
@@ -534,6 +557,7 @@ lazy val unidocs = project
       core.jvm,
       `sdk-common`.jvm,
       `sdk-trace`.jvm,
+      `sdk-trace-testkit`.jvm,
       sdk.jvm,
       `sdk-exporter-common`.jvm,
       `sdk-exporter-trace`.jvm,

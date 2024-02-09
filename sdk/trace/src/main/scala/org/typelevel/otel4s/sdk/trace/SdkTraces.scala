@@ -48,6 +48,11 @@ import org.typelevel.otel4s.sdk.trace.processor.SpanProcessor
 import org.typelevel.otel4s.sdk.trace.samplers.Sampler
 import org.typelevel.otel4s.trace.TracerProvider
 
+/** The configured tracing module.
+  *
+  * @tparam F
+  *   the higher-kinded type of a polymorphic effect
+  */
 trait SdkTraces[F[_]] {
 
   /** The [[org.typelevel.otel4s.trace.TracerProvider TracerProvider]].
@@ -77,7 +82,7 @@ object SdkTraces {
     *
     * @note
     *   the external components (e.g. OTLP exporter) must be registered
-    *   manually. Add the `otel4s-sdk-exporter` dependency to the sbt file:
+    *   manually. Add the `otel4s-sdk-exporter` dependency to the build file:
     *   {{{
     * libraryDependencies += "org.typelevel" %%% "otel4s-sdk-exporter" % "x.x.x"
     *   }}}
@@ -88,6 +93,7 @@ object SdkTraces {
     *
     * SdkTraces.autoConfigured[IO](_.addExporterConfigurer(OtlpSpanExporterAutoConfigure[IO]))
     *   }}}
+    *
     * @param customize
     *   a function for customizing the auto-configured SDK builder
     */
@@ -109,6 +115,8 @@ object SdkTraces {
 
     type Customizer[A] = (A, Config) => A
 
+    /** A builder of [[SdkTraces]].
+      */
     sealed trait Builder[F[_]] {
 
       /** Sets the given config to use when resolving properties.
@@ -122,35 +130,95 @@ object SdkTraces {
         */
       def withConfig(config: Config): Builder[F]
 
+      /** Adds the properties loader. Multiple loaders will be added. The loaded
+        * properties will be merged with the default config. Loaded properties
+        * take precedence over the default ones.
+        *
+        * @param loader
+        *   the additional loader to add
+        */
       def addPropertiesLoader(loader: F[Map[String, String]]): Builder[F]
 
+      /** Adds the properties customizer. Multiple customizers can be added, and
+        * they will be executed in the order they were added.
+        *
+        * @param customizer
+        *   the customizer to add
+        */
       def addPropertiesCustomizer(
           customizer: Config => Map[String, String]
       ): Builder[F]
 
+      /** Adds the tracer provider builder customizer. Multiple customizers can
+        * be added, and they will be executed in the order they were added.
+        *
+        * @param customizer
+        *   the customizer to add
+        */
       def addTracerProviderCustomizer(
           customizer: Customizer[SdkTracerProvider.Builder[F]]
       ): Builder[F]
 
+      /** Adds the telemetry resource customizer. Multiple customizers can be
+        * added, and they will be executed in the order they were added.
+        *
+        * @param customizer
+        *   the customizer to add
+        */
       def addResourceCustomizer(
           customizer: Customizer[TelemetryResource]
       ): Builder[F]
 
+      /** Adds the exporter configurer. Can be used to register exporters that
+        * aren't included in the SDK.
+        *
+        * @example
+        *   Add the `otel4s-sdk-exporter` dependency to the build file:
+        *   {{{
+        * libraryDependencies += "org.typelevel" %%% "otel4s-sdk-exporter" % "x.x.x"
+        *   }}}
+        *   and register the configurer manually:
+        *   {{{
+        * import org.typelevel.otel4s.sdk.trace.Traces
+        * import org.typelevel.otel4s.sdk.exporter.otlp.trace.autoconfigure.OtlpSpanExporterAutoConfigure
+        *
+        * SdkTraces.autoConfigured[IO](_.addExporterConfigurer(OtlpSpanExporterAutoConfigure[IO]))
+        *   }}}
+        *
+        * @param configurer
+        *   the configurer to add
+        */
       def addExporterConfigurer(
           configurer: AutoConfigure.Named[F, SpanExporter[F]]
       ): Builder[F]
 
+      /** Adds the sampler configurer. Can be used to register samplers that
+        * aren't included in the SDK.
+        *
+        * @param configurer
+        *   the configurer to add
+        */
       def addSamplerConfigurer(
           configurer: AutoConfigure.Named[F, Sampler]
       ): Builder[F]
 
+      /** Adds the text map propagator configurer. Can be used to register
+        * propagators that aren't included in the SDK.
+        *
+        * @param configurer
+        *   the configurer to add
+        */
       def addTextMapPropagatorConfigurer(
           configurer: AutoConfigure.Named[F, TextMapPropagator[Context]]
       ): Builder[F]
 
+      /** Creates [[SdkTraces]] using the configuration of this builder.
+        */
       def build: Resource[F, SdkTraces[F]]
     }
 
+    /** Creates a [[Builder]].
+      */
     def builder[
         F[_]: Async: Parallel: Console: LocalContextProvider
     ]: Builder[F] =

@@ -53,7 +53,7 @@ import org.typelevel.otel4s.trace.TracerProvider
   * @tparam F
   *   the higher-kinded type of a polymorphic effect
   */
-trait SdkTraces[F[_]] {
+sealed trait SdkTraces[F[_]] {
 
   /** The [[org.typelevel.otel4s.trace.TracerProvider TracerProvider]].
     */
@@ -63,12 +63,6 @@ trait SdkTraces[F[_]] {
     * [[org.typelevel.otel4s.trace.TracerProvider TracerProvider]].
     */
   def propagators: ContextPropagators[Context]
-
-  /** The [[TelemetryResource]] the
-    * [[org.typelevel.otel4s.trace.TracerProvider TracerProvider]] links spans
-    * to.
-    */
-  def resource: TelemetryResource
 
   /** The [[org.typelevel.otel4s.sdk.context.LocalContext LocalContext]] used by
     * the [[org.typelevel.otel4s.trace.TracerProvider TracerProvider]].
@@ -107,7 +101,6 @@ object SdkTraces {
     new Impl(
       TracerProvider.noop,
       ContextPropagators.noop,
-      TelemetryResource.empty,
       Local[F, Context]
     )
 
@@ -140,7 +133,7 @@ object SdkTraces {
       def addPropertiesLoader(loader: F[Map[String, String]]): Builder[F]
 
       /** Adds the properties customizer. Multiple customizers can be added, and
-        * they will be executed in the order they were added.
+        * they will be applied in the order they were added.
         *
         * @param customizer
         *   the customizer to add
@@ -150,7 +143,7 @@ object SdkTraces {
       ): Builder[F]
 
       /** Adds the tracer provider builder customizer. Multiple customizers can
-        * be added, and they will be executed in the order they were added.
+        * be added, and they will be applied in the order they were added.
         *
         * @param customizer
         *   the customizer to add
@@ -160,7 +153,7 @@ object SdkTraces {
       ): Builder[F]
 
       /** Adds the telemetry resource customizer. Multiple customizers can be
-        * added, and they will be executed in the order they were added.
+        * added, and they will be applied in the order they were added.
         *
         * @param customizer
         *   the customizer to add
@@ -297,7 +290,7 @@ object SdkTraces {
             )
 
             propagators <- propagatorsAutoConfigure.configure(config)
-          } yield new Impl[F](tracerProvider, propagators, resource, local)
+          } yield new Impl[F](tracerProvider, propagators, local)
         }
       }
     }
@@ -390,7 +383,10 @@ object SdkTraces {
 
         for {
           config <- Resource.eval(customConfig.fold(loadConfig)(Async[F].pure))
-          resource <- TelemetryResourceAutoConfigure[F].configure(config)
+
+          resource <- TelemetryResourceAutoConfigure[F]
+            .configure(config)
+            .map(resourceCustomizer(_, config))
 
           isDisabled <- Resource.eval(
             Async[F].fromEither(
@@ -414,11 +410,10 @@ object SdkTraces {
   private final class Impl[F[_]](
       val tracerProvider: TracerProvider[F],
       val propagators: ContextPropagators[Context],
-      val resource: TelemetryResource,
       val localContext: LocalContext[F]
   ) extends SdkTraces[F] {
     override def toString: String =
-      s"SdkTraces{tracerProvider=$tracerProvider,propagators=$propagators,resource=$resource}"
+      s"SdkTraces{tracerProvider=$tracerProvider, propagators=$propagators}"
   }
 
 }

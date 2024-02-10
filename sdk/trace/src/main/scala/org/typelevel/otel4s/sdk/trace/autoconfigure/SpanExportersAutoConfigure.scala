@@ -29,18 +29,32 @@ import org.typelevel.otel4s.sdk.autoconfigure.ConfigurationError
 import org.typelevel.otel4s.sdk.trace.exporter.LoggingSpanExporter
 import org.typelevel.otel4s.sdk.trace.exporter.SpanExporter
 
+/** Autoconfigures [[SpanExporter]]s.
+  *
+  * The configuration options:
+  * {{{
+  * | System property      | Environment variable | Description                                                                                   |
+  * |----------------------|----------------------|-----------------------------------------------------------------------------------------------|
+  * | otel.traces.exporter | OTEL_TRACES_EXPORTER | The exporters to use. Use a comma-separated list for multiple propagators. Default is `otlp`. |
+  * }}}
+  *
+  * @see
+  *   [[https://github.com/open-telemetry/opentelemetry-java/blob/main/sdk-extensions/autoconfigure/README.md#propagator]]
+  */
 private final class SpanExportersAutoConfigure[F[_]: MonadThrow: Console](
     extra: Set[AutoConfigure.Named[F, SpanExporter[F]]]
 ) extends AutoConfigure.WithHint[F, Map[String, SpanExporter[F]]](
-      "SpanExporter",
+      "SpanExporters",
       SpanExportersAutoConfigure.ConfigKeys.All
     ) {
 
   import SpanExportersAutoConfigure.ConfigKeys
+  import SpanExportersAutoConfigure.Const
 
   private val configurers = {
     val default: Set[AutoConfigure.Named[F, SpanExporter[F]]] = Set(
-      AutoConfigure.Named.const("logging", LoggingSpanExporter[F])
+      AutoConfigure.Named.const(Const.NoneExporter, SpanExporter.noop[F]),
+      AutoConfigure.Named.const(Const.LoggingExporter, LoggingSpanExporter[F])
     )
 
     default ++ extra
@@ -49,20 +63,17 @@ private final class SpanExportersAutoConfigure[F[_]: MonadThrow: Console](
   def fromConfig(config: Config): Resource[F, Map[String, SpanExporter[F]]] = {
     val values = config.getOrElse(ConfigKeys.Exporter, Set.empty[String])
     Resource.eval(MonadThrow[F].fromEither(values)).flatMap {
-      case names if names.contains("none") && names.sizeIs > 1 =>
+      case names if names.contains(Const.NoneExporter) && names.sizeIs > 1 =>
         Resource.raiseError(
           ConfigurationError(
-            s"[${ConfigKeys.Exporter}] contains 'none' along with other exporters"
+            s"[${ConfigKeys.Exporter}] contains '${Const.NoneExporter}' along with other exporters"
           ): Throwable
         )
-
-      case exporterNames if exporterNames.contains("none") =>
-        Resource.pure(Map("none" -> SpanExporter.noop[F]))
 
       case exporterNames =>
         val names = NonEmptyList
           .fromList(exporterNames.toList)
-          .getOrElse(NonEmptyList.one("otlp"))
+          .getOrElse(NonEmptyList.one(Const.OtlpExporter))
 
         names
           .traverse(name => create(name, config).tupleLeft(name))
@@ -76,7 +87,7 @@ private final class SpanExportersAutoConfigure[F[_]: MonadThrow: Console](
         configure.configure(cfg)
 
       case None =>
-        Resource.eval(otlpMissingWarning.whenA(name == "otlp")) >>
+        Resource.eval(otlpMissingWarning.whenA(name == Const.OtlpExporter)) >>
           Resource.raiseError(
             ConfigurationError.unrecognized(
               ConfigKeys.Exporter.name,
@@ -88,16 +99,20 @@ private final class SpanExportersAutoConfigure[F[_]: MonadThrow: Console](
 
   private def otlpMissingWarning: F[Unit] = {
     Console[F].errorln(
-      """The configurer for the [otlp] exporter is not registered.
+      s"""The configurer for the [${Const.OtlpExporter}] exporter is not registered.
         |
-        |Add the `otel4s-sdk-exporter` dependency and register the configurer:
+        |Add the `otel4s-sdk-exporter` dependency to the build file:
+        |
+        |libraryDependencies += "org.typelevel" %%% "otel4s-sdk-exporter" % "x.x.x"
+        |
+        |and register the configurer:
         |
         |import org.typelevel.otel4s.sdk.OpenTelemetrySdk
         |import org.typelevel.otel4s.sdk.exporter.otlp.trace.autoconfigure.OtlpSpanExporterAutoConfigure
         |
-        |OpenTelemetrySdk
-        |  .autoConfigured[IO](_.addExporterConfigurer(OtlpSpanExporterAutoConfigure[IO]))
-        |  .build
+        |OpenTelemetrySdk.autoConfigured[IO](
+        |  _.addExporterConfigurer(OtlpSpanExporterAutoConfigure[IO])
+        |)
         |""".stripMargin
     )
   }
@@ -112,6 +127,27 @@ private[sdk] object SpanExportersAutoConfigure {
     val All: Set[Config.Key[_]] = Set(Exporter)
   }
 
+  private object Const {
+    val OtlpExporter = "otlp"
+    val NoneExporter = "none"
+    val LoggingExporter = "logging"
+  }
+
+  /** Autoconfigures [[SpanExporter]]s.
+    *
+    * The configuration options:
+    * {{{
+    * | System property      | Environment variable | Description                                                                                   |
+    * |----------------------|----------------------|-----------------------------------------------------------------------------------------------|
+    * | otel.traces.exporter | OTEL_TRACES_EXPORTER | The exporters be use. Use a comma-separated list for multiple propagators. Default is `otlp`. |
+    * }}}
+    *
+    * @see
+    *   [[https://github.com/open-telemetry/opentelemetry-java/blob/main/sdk-extensions/autoconfigure/README.md#span-exporters]]
+    *
+    * @param configurers
+    *   the configurers to use
+    */
   def apply[F[_]: MonadThrow: Console](
       configurers: Set[AutoConfigure.Named[F, SpanExporter[F]]]
   ): AutoConfigure[F, Map[String, SpanExporter[F]]] =

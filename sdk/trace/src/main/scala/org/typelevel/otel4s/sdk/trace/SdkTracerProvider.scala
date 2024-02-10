@@ -68,6 +68,13 @@ private class SdkTracerProvider[F[_]: Temporal: Parallel: Console](
 
   def tracer(name: String): TracerBuilder[F] =
     new SdkTracerBuilder[F](registry, name)
+
+  override def toString: String =
+    "SdkTracerProvider{" +
+      s"resource=$resource, " +
+      s"spanLimits=$spanLimits, " +
+      s"sampler=$sampler, " +
+      s"spanProcessor=${spanProcessors.mkString("[", ", ", "]")}}"
 }
 
 object SdkTracerProvider {

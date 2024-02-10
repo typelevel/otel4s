@@ -265,7 +265,10 @@ object OpenTelemetrySdk {
 
         for {
           config <- Resource.eval(customConfig.fold(loadConfig)(Async[F].pure))
-          resource <- TelemetryResourceAutoConfigure[F].configure(config)
+
+          resource <- TelemetryResourceAutoConfigure[F]
+            .configure(config)
+            .map(resourceCustomizer(_, config))
 
           isDisabled <- Resource.eval(
             Async[F].fromEither(

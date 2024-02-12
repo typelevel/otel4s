@@ -23,6 +23,8 @@ import io.opentelemetry.api.metrics.{Meter => JMeter}
 import org.typelevel.otel4s.meta.InstrumentMeta
 import org.typelevel.otel4s.metrics._
 
+import scala.collection.immutable
+
 private[oteljava] case class UpDownCounterBuilderImpl[F[_], A](
     factory: UpDownCounterBuilderImpl.Factory[F, A],
     name: String,
@@ -81,17 +83,20 @@ private[oteljava] object UpDownCounterBuilderImpl {
           val backend = new UpDownCounter.Backend[F, A] {
             val meta: InstrumentMeta[F] = InstrumentMeta.enabled
 
-            def add(value: A, attributes: Attribute[_]*): F[Unit] =
+            def add(
+                value: A,
+                attributes: immutable.Iterable[Attribute[_]]
+            ): F[Unit] =
               Sync[F].delay(
                 counter.add(cast(value), Conversions.toJAttributes(attributes))
               )
 
-            def inc(attributes: Attribute[_]*): F[Unit] =
+            def inc(attributes: immutable.Iterable[Attribute[_]]): F[Unit] =
               Sync[F].delay(
                 counter.add(1L, Conversions.toJAttributes(attributes))
               )
 
-            def dec(attributes: Attribute[_]*): F[Unit] =
+            def dec(attributes: immutable.Iterable[Attribute[_]]): F[Unit] =
               Sync[F].delay(
                 counter.add(-1L, Conversions.toJAttributes(attributes))
               )
@@ -120,17 +125,20 @@ private[oteljava] object UpDownCounterBuilderImpl {
           val backend = new UpDownCounter.Backend[F, A] {
             val meta: InstrumentMeta[F] = InstrumentMeta.enabled
 
-            def add(value: A, attributes: Attribute[_]*): F[Unit] =
+            def add(
+                value: A,
+                attributes: immutable.Iterable[Attribute[_]]
+            ): F[Unit] =
               Sync[F].delay(
                 counter.add(cast(value), Conversions.toJAttributes(attributes))
               )
 
-            def inc(attributes: Attribute[_]*): F[Unit] =
+            def inc(attributes: immutable.Iterable[Attribute[_]]): F[Unit] =
               Sync[F].delay(
                 counter.add(1.0, Conversions.toJAttributes(attributes))
               )
 
-            def dec(attributes: Attribute[_]*): F[Unit] =
+            def dec(attributes: immutable.Iterable[Attribute[_]]): F[Unit] =
               Sync[F].delay(
                 counter.add(-1.0, Conversions.toJAttributes(attributes))
               )

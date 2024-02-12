@@ -27,6 +27,7 @@ import org.typelevel.otel4s.trace.Span
 import org.typelevel.otel4s.trace.SpanContext
 import org.typelevel.otel4s.trace.Status
 
+import scala.collection.immutable
 import scala.concurrent.duration.FiniteDuration
 
 private[oteljava] class SpanBackendImpl[F[_]: Sync](
@@ -46,13 +47,16 @@ private[oteljava] class SpanBackendImpl[F[_]: Sync](
       ()
     }
 
-  def addAttributes(attributes: Attribute[_]*): F[Unit] =
+  def addAttributes(attributes: immutable.Iterable[Attribute[_]]): F[Unit] =
     Sync[F].delay {
       jSpan.setAllAttributes(Conversions.toJAttributes(attributes))
       ()
     }
 
-  def addEvent(name: String, attributes: Attribute[_]*): F[Unit] =
+  def addEvent(
+      name: String,
+      attributes: immutable.Iterable[Attribute[_]]
+  ): F[Unit] =
     Sync[F].delay {
       jSpan.addEvent(name, Conversions.toJAttributes(attributes))
       ()
@@ -61,7 +65,7 @@ private[oteljava] class SpanBackendImpl[F[_]: Sync](
   def addEvent(
       name: String,
       timestamp: FiniteDuration,
-      attributes: Attribute[_]*
+      attributes: immutable.Iterable[Attribute[_]]
   ): F[Unit] =
     Sync[F].delay {
       jSpan.addEvent(
@@ -87,7 +91,7 @@ private[oteljava] class SpanBackendImpl[F[_]: Sync](
 
   def recordException(
       exception: Throwable,
-      attributes: Attribute[_]*
+      attributes: immutable.Iterable[Attribute[_]]
   ): F[Unit] =
     Sync[F].delay {
       jSpan.recordException(exception, Conversions.toJAttributes(attributes))

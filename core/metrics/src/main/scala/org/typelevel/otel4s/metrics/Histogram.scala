@@ -25,6 +25,7 @@ import cats.syntax.flatMap._
 import cats.syntax.functor._
 import org.typelevel.otel4s.meta.InstrumentMeta
 
+import scala.collection.immutable
 import scala.concurrent.duration.TimeUnit
 
 /** A `Histogram` instrument that records values of type `A`.
@@ -123,7 +124,7 @@ object Histogram {
       * @param attributes
       *   the set of attributes to associate with the value
       */
-    def record(value: A, attributes: Attribute[_]*): F[Unit]
+    def record(value: A, attributes: immutable.Iterable[Attribute[_]]): F[Unit]
 
     /** Records duration of the given effect.
       *
@@ -146,9 +147,8 @@ object Histogram {
       */
     def recordDuration(
         timeUnit: TimeUnit,
-        attributes: Attribute[_]*
+        attributes: immutable.Iterable[Attribute[_]]
     ): Resource[F, Unit]
-
   }
 
   abstract class DoubleBackend[F[_]: Monad: Clock] extends Backend[F, Double] {
@@ -157,7 +157,7 @@ object Histogram {
 
     final def recordDuration(
         timeUnit: TimeUnit,
-        attributes: Attribute[_]*
+        attributes: immutable.Iterable[Attribute[_]]
     ): Resource[F, Unit] =
       Resource
         .makeCase(Clock[F].monotonic) { case (start, ec) =>
@@ -165,7 +165,7 @@ object Histogram {
             end <- Clock[F].monotonic
             _ <- record(
               (end - start).toUnit(timeUnit),
-              attributes ++ causeAttributes(ec): _*
+              attributes ++ causeAttributes(ec)
             )
           } yield ()
         }
@@ -178,10 +178,13 @@ object Histogram {
       val backend: Backend[F, A] =
         new Backend[F, A] {
           val meta: Meta[F] = Meta.disabled
-          def record(value: A, attributes: Attribute[_]*): F[Unit] = meta.unit
+          def record(
+              value: A,
+              attributes: immutable.Iterable[Attribute[_]]
+          ): F[Unit] = meta.unit
           def recordDuration(
               timeUnit: TimeUnit,
-              attributes: Attribute[_]*
+              attributes: immutable.Iterable[Attribute[_]]
           ): Resource[F, Unit] = meta.resourceUnit
         }
     }

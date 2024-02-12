@@ -22,6 +22,7 @@ import cats.arrow.FunctionK
 import cats.effect.kernel.MonadCancelThrow
 import cats.effect.kernel.Resource
 
+import scala.collection.immutable
 import scala.concurrent.duration.FiniteDuration
 
 trait SpanBuilder[F[_]] {
@@ -42,7 +43,37 @@ trait SpanBuilder[F[_]] {
     * @param attributes
     *   the set of attributes to associate with the span
     */
-  def addAttributes(attributes: Attribute[_]*): SpanBuilder[F]
+  final def addAttributes(attributes: Attribute[_]*): SpanBuilder[F] =
+    addAttributes(attributes)
+
+  /** Adds attributes to the [[SpanBuilder]]. If the SpanBuilder previously
+    * contained a mapping for any of the keys, the old values are replaced by
+    * the specified values.
+    *
+    * @param attributes
+    *   the set of attributes to associate with the span
+    */
+  def addAttributes(
+      attributes: immutable.Iterable[Attribute[_]]
+  ): SpanBuilder[F]
+
+  /** Adds a link to the newly created span.
+    *
+    * Links are used to link spans in different traces. Used (for example) in
+    * batching operations, where a single batch handler processes multiple
+    * requests from different traces or the same trace.
+    *
+    * @param spanContext
+    *   the context of the linked span
+    *
+    * @param attributes
+    *   the set of attributes to associate with the link
+    */
+  final def addLink(
+      spanContext: SpanContext,
+      attributes: Attribute[_]*
+  ): SpanBuilder[F] =
+    addLink(spanContext, attributes)
 
   /** Adds a link to the newly created span.
     *
@@ -58,7 +89,7 @@ trait SpanBuilder[F[_]] {
     */
   def addLink(
       spanContext: SpanContext,
-      attributes: Attribute[_]*
+      attributes: immutable.Iterable[Attribute[_]]
   ): SpanBuilder[F]
 
   /** Sets the finalization strategy for the newly created span.
@@ -132,9 +163,14 @@ object SpanBuilder {
 
       def addAttribute[A](attribute: Attribute[A]): SpanBuilder[F] = this
 
-      def addAttributes(attributes: Attribute[_]*): SpanBuilder[F] = this
+      def addAttributes(
+          attributes: immutable.Iterable[Attribute[_]]
+      ): SpanBuilder[F] = this
 
-      def addLink(ctx: SpanContext, attributes: Attribute[_]*): SpanBuilder[F] =
+      def addLink(
+          ctx: SpanContext,
+          attributes: immutable.Iterable[Attribute[_]]
+      ): SpanBuilder[F] =
         this
 
       def root: SpanBuilder[F] = this
@@ -169,13 +205,15 @@ object SpanBuilder {
       extends SpanBuilder[G] {
     def addAttribute[A](attribute: Attribute[A]): SpanBuilder[G] =
       new MappedK(builder.addAttribute(attribute))
-    def addAttributes(attributes: Attribute[_]*): SpanBuilder[G] =
-      new MappedK(builder.addAttributes(attributes: _*))
+    def addAttributes(
+        attributes: immutable.Iterable[Attribute[_]]
+    ): SpanBuilder[G] =
+      new MappedK(builder.addAttributes(attributes))
     def addLink(
         spanContext: SpanContext,
-        attributes: Attribute[_]*
+        attributes: immutable.Iterable[Attribute[_]]
     ): SpanBuilder[G] =
-      new MappedK(builder.addLink(spanContext, attributes: _*))
+      new MappedK(builder.addLink(spanContext, attributes))
     def withFinalizationStrategy(
         strategy: SpanFinalizer.Strategy
     ): SpanBuilder[G] =

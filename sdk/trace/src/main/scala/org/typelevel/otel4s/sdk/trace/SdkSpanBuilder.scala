@@ -40,6 +40,7 @@ import org.typelevel.otel4s.trace.TraceFlags
 import org.typelevel.otel4s.trace.TraceState
 import scodec.bits.ByteVector
 
+import scala.collection.immutable
 import scala.concurrent.duration.FiniteDuration
 
 private final case class SdkSpanBuilder[F[_]: Temporal: Console](
@@ -63,12 +64,14 @@ private final case class SdkSpanBuilder[F[_]: Temporal: Console](
   def addAttribute[A](attribute: Attribute[A]): SpanBuilder[F] =
     copy(attributes = attributes :+ attribute)
 
-  def addAttributes(attributes: Attribute[_]*): SpanBuilder[F] =
+  def addAttributes(
+      attributes: immutable.Iterable[Attribute[_]]
+  ): SpanBuilder[F] =
     copy(attributes = this.attributes ++ attributes)
 
   def addLink(
       spanContext: SpanContext,
-      attributes: Attribute[_]*
+      attributes: immutable.Iterable[Attribute[_]]
   ): SpanBuilder[F] =
     copy(links =
       links :+ LinkData(spanContext, Attributes.fromSpecific(attributes))

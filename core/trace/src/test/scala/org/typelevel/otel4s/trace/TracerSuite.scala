@@ -44,7 +44,7 @@ class TracerSuite extends CatsEffectSuite {
       100.millis
     }
 
-    def attribute = {
+    def attribute: List[Attribute[String]] = {
       allocated = true
       List(Attribute("key", "value"))
     }
@@ -54,27 +54,38 @@ class TracerSuite extends CatsEffectSuite {
       new RuntimeException("exception")
     }
 
+    // test varargs and Iterable overloads
     for {
       _ <- tracer.span("span", attribute: _*).use { span =>
         for {
           _ <- span.addAttributes(attribute: _*)
+          _ <- span.addAttributes(attribute)
           _ <- span.addEvent(text, attribute: _*)
+          _ <- span.addEvent(text, attribute)
           _ <- span.addEvent(text, timestamp, attribute: _*)
+          _ <- span.addEvent(text, timestamp, attribute)
           _ <- span.recordException(exception, attribute: _*)
+          _ <- span.recordException(exception, attribute)
           _ <- span.setStatus(status)
           _ <- span.setStatus(status, text)
         } yield ()
       }
+      _ <- tracer.span("span", attribute).use_
       _ <- tracer.rootSpan("span", attribute: _*).use { span =>
         for {
           _ <- span.addAttributes(attribute: _*)
+          _ <- span.addAttributes(attribute)
           _ <- span.addEvent(text, attribute: _*)
+          _ <- span.addEvent(text, attribute)
           _ <- span.addEvent(text, timestamp, attribute: _*)
+          _ <- span.addEvent(text, timestamp, attribute)
           _ <- span.recordException(exception, attribute: _*)
+          _ <- span.recordException(exception, attribute)
           _ <- span.setStatus(status)
           _ <- span.setStatus(status, text)
         } yield ()
       }
+      _ <- tracer.rootSpan("span", attribute).use_
     } yield assert(!allocated)
   }
 

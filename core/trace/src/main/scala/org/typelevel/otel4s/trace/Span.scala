@@ -21,6 +21,7 @@ import cats.Applicative
 import cats.~>
 import org.typelevel.otel4s.meta.InstrumentMeta
 
+import scala.collection.immutable
 import scala.concurrent.duration.FiniteDuration
 
 /** The API to trace an operation.
@@ -128,18 +129,21 @@ object Span {
 
     def updateName(name: String): F[Unit]
 
-    def addAttributes(attributes: Attribute[_]*): F[Unit]
-    def addEvent(name: String, attributes: Attribute[_]*): F[Unit]
+    def addAttributes(attributes: immutable.Iterable[Attribute[_]]): F[Unit]
+    def addEvent(
+        name: String,
+        attributes: immutable.Iterable[Attribute[_]]
+    ): F[Unit]
 
     def addEvent(
         name: String,
         timestamp: FiniteDuration,
-        attributes: Attribute[_]*
+        attributes: immutable.Iterable[Attribute[_]]
     ): F[Unit]
 
     def recordException(
         exception: Throwable,
-        attributes: Attribute[_]*
+        attributes: immutable.Iterable[Attribute[_]]
     ): F[Unit]
 
     def setStatus(status: Status): F[Unit]
@@ -188,18 +192,23 @@ object Span {
 
         def updateName(name: String): F[Unit] = unit
 
-        def addAttributes(attributes: Attribute[_]*): F[Unit] = unit
-        def addEvent(name: String, attributes: Attribute[_]*): F[Unit] = unit
+        def addAttributes(
+            attributes: immutable.Iterable[Attribute[_]]
+        ): F[Unit] = unit
+        def addEvent(
+            name: String,
+            attributes: immutable.Iterable[Attribute[_]]
+        ): F[Unit] = unit
 
         def addEvent(
             name: String,
             timestamp: FiniteDuration,
-            attributes: Attribute[_]*
+            attributes: immutable.Iterable[Attribute[_]]
         ): F[Unit] = unit
 
         def recordException(
             exception: Throwable,
-            attributes: Attribute[_]*
+            attributes: immutable.Iterable[Attribute[_]]
         ): F[Unit] = unit
 
         def setStatus(status: Status): F[Unit] = unit
@@ -217,21 +226,24 @@ object Span {
       def context: SpanContext = backend.context
       def updateName(name: String): G[Unit] =
         f(backend.updateName(name))
-      def addAttributes(attributes: Attribute[_]*): G[Unit] =
-        f(backend.addAttributes(attributes: _*))
-      def addEvent(name: String, attributes: Attribute[_]*): G[Unit] =
-        f(backend.addEvent(name, attributes: _*))
+      def addAttributes(attributes: immutable.Iterable[Attribute[_]]): G[Unit] =
+        f(backend.addAttributes(attributes))
+      def addEvent(
+          name: String,
+          attributes: immutable.Iterable[Attribute[_]]
+      ): G[Unit] =
+        f(backend.addEvent(name, attributes))
       def addEvent(
           name: String,
           timestamp: FiniteDuration,
-          attributes: Attribute[_]*
+          attributes: immutable.Iterable[Attribute[_]]
       ): G[Unit] =
-        f(backend.addEvent(name, timestamp, attributes: _*))
+        f(backend.addEvent(name, timestamp, attributes))
       def recordException(
           exception: Throwable,
-          attributes: Attribute[_]*
+          attributes: immutable.Iterable[Attribute[_]]
       ): G[Unit] =
-        f(backend.recordException(exception, attributes: _*))
+        f(backend.recordException(exception, attributes))
       def setStatus(status: Status): G[Unit] =
         f(backend.setStatus(status))
       def setStatus(status: Status, description: String): G[Unit] =

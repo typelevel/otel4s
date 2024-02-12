@@ -39,6 +39,7 @@ import org.typelevel.otel4s.trace.SpanContext
 import org.typelevel.otel4s.trace.SpanKind
 import org.typelevel.otel4s.trace.Status
 
+import scala.collection.immutable
 import scala.concurrent.duration.FiniteDuration
 
 class SimpleSpanProcessorSuite
@@ -150,24 +151,29 @@ class SimpleSpanProcessorSuite
       def updateName(name: String): IO[Unit] =
         noopBackend.updateName(name)
 
-      def addAttributes(attributes: Attribute[_]*): IO[Unit] =
-        noopBackend.addAttributes(attributes: _*)
+      def addAttributes(
+          attributes: immutable.Iterable[Attribute[_]]
+      ): IO[Unit] =
+        noopBackend.addAttributes(attributes)
 
-      def addEvent(name: String, attributes: Attribute[_]*): IO[Unit] =
-        noopBackend.addEvent(name, attributes: _*)
+      def addEvent(
+          name: String,
+          attributes: immutable.Iterable[Attribute[_]]
+      ): IO[Unit] =
+        noopBackend.addEvent(name, attributes)
 
       def addEvent(
           name: String,
           timestamp: FiniteDuration,
-          attributes: Attribute[_]*
+          attributes: immutable.Iterable[Attribute[_]]
       ): IO[Unit] =
-        noopBackend.addEvent(name, timestamp, attributes: _*)
+        noopBackend.addEvent(name, timestamp, attributes)
 
       def recordException(
           exception: Throwable,
-          attributes: Attribute[_]*
+          attributes: immutable.Iterable[Attribute[_]]
       ): IO[Unit] =
-        noopBackend.recordException(exception, attributes: _*)
+        noopBackend.recordException(exception, attributes)
 
       def setStatus(status: Status): IO[Unit] =
         noopBackend.setStatus(status)

@@ -17,6 +17,7 @@
 package org.typelevel.otel4s
 package trace
 
+import scala.collection.immutable
 import scala.concurrent.duration.FiniteDuration
 import scala.quoted.*
 
@@ -41,6 +42,17 @@ private[otel4s] trait SpanMacro[F[_]] {
   inline def addAttributes(inline attributes: Attribute[_]*): F[Unit] =
     ${ SpanMacro.addAttributes('self, 'attributes) }
 
+  /** Adds attributes to the span. If the span previously contained a mapping
+    * for any of the keys, the old values are replaced by the specified values.
+    *
+    * @param attributes
+    *   the set of attributes to add to the span
+    */
+  inline def addAttributes(
+      inline attributes: immutable.Iterable[Attribute[_]]
+  ): F[Unit] =
+    ${ SpanMacro.addAttributes('self, 'attributes) }
+
   /** Adds an event to the span with the given attributes. The timestamp of the
     * event will be the current time.
     *
@@ -53,6 +65,21 @@ private[otel4s] trait SpanMacro[F[_]] {
   inline def addEvent(
       inline name: String,
       inline attributes: Attribute[_]*
+  ): F[Unit] =
+    ${ SpanMacro.addEvent('self, 'name, 'attributes) }
+
+  /** Adds an event to the span with the given attributes. The timestamp of the
+    * event will be the current time.
+    *
+    * @param name
+    *   the name of the event
+    *
+    * @param attributes
+    *   the set of attributes to associate with the event
+    */
+  inline def addEvent(
+      inline name: String,
+      inline attributes: immutable.Iterable[Attribute[_]]
   ): F[Unit] =
     ${ SpanMacro.addEvent('self, 'name, 'attributes) }
 
@@ -77,6 +104,27 @@ private[otel4s] trait SpanMacro[F[_]] {
   ): F[Unit] =
     ${ SpanMacro.addEvent('self, 'name, 'timestamp, 'attributes) }
 
+  /** Adds an event to the span with the given attributes and timestamp.
+    *
+    * '''Note''': the timestamp should be based on `Clock[F].realTime`. Using
+    * `Clock[F].monotonic` may lead to an incorrect data.
+    *
+    * @param name
+    *   the name of the event
+    *
+    * @param timestamp
+    *   the explicit event timestamp since epoch
+    *
+    * @param attributes
+    *   the set of attributes to associate with the event
+    */
+  inline def addEvent(
+      inline name: String,
+      inline timestamp: FiniteDuration,
+      inline attributes: immutable.Iterable[Attribute[_]]
+  ): F[Unit] =
+    ${ SpanMacro.addEvent('self, 'name, 'timestamp, 'attributes) }
+
   /** Records information about the `Throwable` to the span.
     *
     * @param exception
@@ -88,6 +136,20 @@ private[otel4s] trait SpanMacro[F[_]] {
   inline def recordException(
       inline exception: Throwable,
       inline attributes: Attribute[_]*
+  ): F[Unit] =
+    ${ SpanMacro.recordException('self, 'exception, 'attributes) }
+
+  /** Records information about the `Throwable` to the span.
+    *
+    * @param exception
+    *   the `Throwable` to record
+    *
+    * @param attributes
+    *   the set of attributes to associate with the value
+    */
+  inline def recordException(
+      inline exception: Throwable,
+      inline attributes: immutable.Iterable[Attribute[_]]
   ): F[Unit] =
     ${ SpanMacro.recordException('self, 'exception, 'attributes) }
 
@@ -129,28 +191,28 @@ object SpanMacro {
   )(using Quotes, Type[F], Type[A]) =
     '{
       if ($span.backend.meta.isEnabled)
-        $span.backend.addAttributes($attribute)
+        $span.backend.addAttributes(List($attribute))
       else $span.backend.meta.unit
     }
 
   def addAttributes[F[_]](
       span: Expr[Span[F]],
-      attributes: Expr[Seq[Attribute[_]]]
+      attributes: Expr[immutable.Iterable[Attribute[_]]]
   )(using Quotes, Type[F]) =
     '{
       if ($span.backend.meta.isEnabled)
-        $span.backend.addAttributes($attributes*)
+        $span.backend.addAttributes($attributes)
       else $span.backend.meta.unit
     }
 
   def addEvent[F[_]](
       span: Expr[Span[F]],
       name: Expr[String],
-      attributes: Expr[Seq[Attribute[_]]]
+      attributes: Expr[immutable.Iterable[Attribute[_]]]
   )(using Quotes, Type[F]) =
     '{
       if ($span.backend.meta.isEnabled)
-        $span.backend.addEvent($name, $attributes*)
+        $span.backend.addEvent($name, $attributes)
       else $span.backend.meta.unit
     }
 
@@ -158,22 +220,22 @@ object SpanMacro {
       span: Expr[Span[F]],
       name: Expr[String],
       timestamp: Expr[FiniteDuration],
-      attributes: Expr[Seq[Attribute[_]]]
+      attributes: Expr[immutable.Iterable[Attribute[_]]]
   )(using Quotes, Type[F]) =
     '{
       if ($span.backend.meta.isEnabled)
-        $span.backend.addEvent($name, $timestamp, $attributes*)
+        $span.backend.addEvent($name, $timestamp, $attributes)
       else $span.backend.meta.unit
     }
 
   def recordException[F[_]](
       span: Expr[Span[F]],
       exception: Expr[Throwable],
-      attributes: Expr[Seq[Attribute[_]]]
+      attributes: Expr[immutable.Iterable[Attribute[_]]]
   )(using Quotes, Type[F]) =
     '{
       if ($span.backend.meta.isEnabled)
-        $span.backend.recordException($exception, $attributes*)
+        $span.backend.recordException($exception, $attributes)
       else $span.backend.meta.unit
     }
 

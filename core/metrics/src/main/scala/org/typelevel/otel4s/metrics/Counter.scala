@@ -20,6 +20,8 @@ package metrics
 import cats.Applicative
 import org.typelevel.otel4s.meta.InstrumentMeta
 
+import scala.collection.immutable
+
 /** A `Counter` instrument that records values of type `A`.
   *
   * The [[Counter]] is monotonic. This means the aggregated value is nominally
@@ -88,24 +90,24 @@ object Counter {
       * @param attributes
       *   the set of attributes to associate with the value
       */
-    def add(value: A, attributes: Attribute[_]*): F[Unit]
+    def add(value: A, attributes: immutable.Iterable[Attribute[_]]): F[Unit]
 
     /** Increments a counter by one.
       *
       * @param attributes
       *   the set of attributes to associate with the value
       */
-    def inc(attributes: Attribute[_]*): F[Unit]
+    def inc(attributes: immutable.Iterable[Attribute[_]]): F[Unit]
   }
 
   trait LongBackend[F[_]] extends Backend[F, Long] {
-    final def inc(attributes: Attribute[_]*): F[Unit] =
-      add(1L, attributes: _*)
+    final def inc(attributes: immutable.Iterable[Attribute[_]]): F[Unit] =
+      add(1L, attributes)
   }
 
   trait DoubleBackend[F[_]] extends Backend[F, Double] {
-    final def inc(attributes: Attribute[_]*): F[Unit] =
-      add(1.0, attributes: _*)
+    final def inc(attributes: immutable.Iterable[Attribute[_]]): F[Unit] =
+      add(1.0, attributes)
   }
 
   def noop[F[_], A](implicit F: Applicative[F]): Counter[F, A] =
@@ -113,8 +115,12 @@ object Counter {
       val backend: Backend[F, A] =
         new Backend[F, A] {
           val meta: InstrumentMeta[F] = InstrumentMeta.disabled
-          def add(value: A, attributes: Attribute[_]*): F[Unit] = meta.unit
-          def inc(attributes: Attribute[_]*): F[Unit] = meta.unit
+          def add(
+              value: A,
+              attributes: immutable.Iterable[Attribute[_]]
+          ): F[Unit] = meta.unit
+          def inc(attributes: immutable.Iterable[Attribute[_]]): F[Unit] =
+            meta.unit
         }
     }
 

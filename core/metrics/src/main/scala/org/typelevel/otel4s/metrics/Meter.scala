@@ -251,6 +251,32 @@ trait Meter[F[_]] {
       name: String
   ): ObservableUpDownCounter.Builder[F, A]
 
+  /** Constructs a batch callback.
+    *
+    * Batch callbacks allow a single callback to observe measurements for
+    * multiple asynchronous instruments.
+    *
+    * The callback will be called when the instruments are being observed.
+    *
+    * @example
+    *   {{{
+    * val meter: Meter[F] = ???
+    * val server: F[Unit] = ??? // runs the server
+    *
+    * val background: Resource[F, Unit] =
+    *   meter.batchCallback.of(
+    *     meter.observableCounter[Long]("counter").createObserver,
+    *     meter.observableUpDownCounter[Double]("up-down-counter").createObserver,
+    *     meter.observableGauge[Double]("gauge").createObserver
+    *   ) { (counter, upDownCounter, gauge) =>
+    *     counter.record(1L) *> upDownCounter.record(2.0) *> gauge.record(3.0)
+    *   }
+    *
+    * background.surround(server) // register batch callback and run the server
+    *   }}}
+    */
+  def batchCallback: BatchCallback[F]
+
 }
 
 object Meter {
@@ -316,6 +342,8 @@ object Meter {
               measurements: F[Iterable[Measurement[A]]]
           ): Resource[F, ObservableGauge] =
             Resource.pure(new ObservableGauge {})
+          def createObserver: F[ObservableMeasurement[F, A]] =
+            Applicative[F].pure(ObservableMeasurement.noop)
         }
 
       def observableCounter[A: MeasurementValue](
@@ -334,6 +362,8 @@ object Meter {
               measurements: F[Iterable[Measurement[A]]]
           ): Resource[F, ObservableCounter] =
             Resource.pure(new ObservableCounter {})
+          def createObserver: F[ObservableMeasurement[F, A]] =
+            Applicative[F].pure(ObservableMeasurement.noop)
         }
 
       def observableUpDownCounter[A: MeasurementValue](
@@ -353,7 +383,12 @@ object Meter {
               measurements: F[Iterable[Measurement[A]]]
           ): Resource[F, ObservableUpDownCounter] =
             Resource.pure(new ObservableUpDownCounter {})
+          def createObserver: F[ObservableMeasurement[F, A]] =
+            Applicative[F].pure(ObservableMeasurement.noop)
         }
+
+      val batchCallback: BatchCallback[F] =
+        BatchCallback.noop
     }
 
   object Implicits {

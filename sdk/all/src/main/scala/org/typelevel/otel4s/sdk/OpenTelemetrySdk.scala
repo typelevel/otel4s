@@ -21,6 +21,7 @@ import cats.Parallel
 import cats.effect.Async
 import cats.effect.Resource
 import cats.effect.std.Console
+import cats.effect.std.Random
 import cats.syntax.apply._
 import cats.syntax.flatMap._
 import cats.syntax.functor._
@@ -37,15 +38,16 @@ import org.typelevel.otel4s.sdk.context.Context
 import org.typelevel.otel4s.sdk.context.LocalContext
 import org.typelevel.otel4s.sdk.context.LocalContextProvider
 import org.typelevel.otel4s.sdk.trace.SdkTracerProvider
-import org.typelevel.otel4s.sdk.trace.SdkTraces
+import org.typelevel.otel4s.sdk.trace.autoconfigure.ContextPropagatorsAutoConfigure
+import org.typelevel.otel4s.sdk.trace.autoconfigure.TracerProviderAutoConfigure
 import org.typelevel.otel4s.sdk.trace.exporter.SpanExporter
 import org.typelevel.otel4s.sdk.trace.samplers.Sampler
 import org.typelevel.otel4s.trace.TracerProvider
 
 final class OpenTelemetrySdk[F[_]] private (
-    val propagators: ContextPropagators[Context],
     val meterProvider: MeterProvider[F],
-    val tracerProvider: TracerProvider[F]
+    val tracerProvider: TracerProvider[F],
+    val propagators: ContextPropagators[Context]
 )(implicit val localContext: LocalContext[F])
     extends Otel4s[F] {
 
@@ -83,9 +85,9 @@ object OpenTelemetrySdk {
 
   def noop[F[_]: Applicative: LocalContext]: OpenTelemetrySdk[F] =
     new OpenTelemetrySdk[F](
-      ContextPropagators.noop,
       MeterProvider.noop,
-      TracerProvider.noop
+      TracerProvider.noop,
+      ContextPropagators.noop
     )
 
   /** The auto-configured [[OpenTelemetrySdk]].
@@ -247,21 +249,35 @@ object OpenTelemetrySdk {
         def loadSdk(
             config: Config,
             resource: TelemetryResource
-        ): Resource[F, OpenTelemetrySdk[F]] =
-          for {
-            traces <- SdkTraces.AutoConfigured.configure(
-              config,
-              resource,
-              tracerProviderCustomizer,
-              samplerConfigurers,
-              exporterConfigurers,
-              textMapPropagatorConfigurers
-            )
-          } yield new OpenTelemetrySdk(
-            traces.propagators,
-            MeterProvider.noop,
-            traces.tracerProvider
-          )(traces.localContext)
+        ): Resource[F, OpenTelemetrySdk[F]] = {
+          def makeLocalContext = LocalProvider[F, Context].local
+
+          Resource.eval(makeLocalContext).flatMap { implicit local =>
+            Resource.eval(Random.scalaUtilRandom).flatMap { implicit random =>
+              val propagatorsConfigure = ContextPropagatorsAutoConfigure[F](
+                textMapPropagatorConfigurers
+              )
+
+              propagatorsConfigure.configure(config).flatMap { propagators =>
+                val tracerProviderConfigure = TracerProviderAutoConfigure[F](
+                  resource,
+                  propagators,
+                  tracerProviderCustomizer,
+                  samplerConfigurers,
+                  exporterConfigurers
+                )
+
+                for {
+                  tracerProvider <- tracerProviderConfigure.configure(config)
+                } yield new OpenTelemetrySdk(
+                  MeterProvider.noop,
+                  tracerProvider,
+                  propagators
+                )
+              }
+            }
+          }
+        }
 
         for {
           config <- Resource.eval(customConfig.fold(loadConfig)(Async[F].pure))

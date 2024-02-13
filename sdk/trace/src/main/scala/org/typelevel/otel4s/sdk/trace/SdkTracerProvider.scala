@@ -147,7 +147,7 @@ object SdkTracerProvider {
       */
     def withSampler(sampler: Sampler): Builder[F]
 
-    /** Adds a
+    /** Adds
       * [[org.typelevel.otel4s.context.propagation.TextMapPropagator TextMapPropagator]]s
       * to use for the context propagation.
       *

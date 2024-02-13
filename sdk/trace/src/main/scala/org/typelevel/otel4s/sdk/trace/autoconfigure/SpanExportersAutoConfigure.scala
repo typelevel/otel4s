@@ -127,7 +127,7 @@ private[sdk] object SpanExportersAutoConfigure {
     val All: Set[Config.Key[_]] = Set(Exporter)
   }
 
-  private object Const {
+  private[trace] object Const {
     val OtlpExporter = "otlp"
     val NoneExporter = "none"
     val LoggingExporter = "logging"

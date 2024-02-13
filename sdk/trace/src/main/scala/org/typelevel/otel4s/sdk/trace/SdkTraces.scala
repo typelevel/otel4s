@@ -242,12 +242,14 @@ object SdkTraces {
       def configureProcessors(
           exporters: Map[String, SpanExporter[F]]
       ): Resource[F, List[SpanProcessor[F]]] = {
-        val logging = exporters.get("logging") match {
+        val loggingExporter = SpanExportersAutoConfigure.Const.LoggingExporter
+
+        val logging = exporters.get(loggingExporter) match {
           case Some(logging) => List(SimpleSpanProcessor(logging))
           case None          => Nil
         }
 
-        val others = exporters.removed("logging")
+        val others = exporters.removed(loggingExporter)
         if (others.nonEmpty) {
           val exporter = others.values.toList.combineAll
           BatchSpanProcessorAutoConfigure[F](exporter)

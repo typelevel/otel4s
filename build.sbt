@@ -374,7 +374,7 @@ lazy val `sdk-exporter` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .crossType(CrossType.Pure)
   .in(file("sdk-exporter/all"))
   .enablePlugins(NoPublishPlugin)
-  .dependsOn(`sdk-exporter-common`, `sdk-exporter-trace`)
+  .dependsOn(`sdk-exporter-trace`, `sdk-exporter-metrics`)
   .settings(
     name := "otel4s-sdk-exporter"
   )

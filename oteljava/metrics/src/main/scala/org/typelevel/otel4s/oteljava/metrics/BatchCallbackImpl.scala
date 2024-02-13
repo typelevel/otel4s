@@ -33,9 +33,9 @@ private final class BatchCallbackImpl[F[_]: Async](
       observable: ObservableMeasurement[F, _],
       rest: ObservableMeasurement[F, _]*
   ): Resource[F, Unit] = {
-    val all = (observable +: rest).toList.collect {
+    val all = (observable +: rest.view).collect {
       case o: ObservableMeasurementImpl[F, _] => o.jObservableMeasurement
-    }
+    }.toList
 
     all match {
       case head :: tail =>

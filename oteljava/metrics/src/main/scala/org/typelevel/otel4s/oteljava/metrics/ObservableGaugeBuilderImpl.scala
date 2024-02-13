@@ -117,7 +117,7 @@ private[oteljava] object ObservableGaugeBuilderImpl {
         val b = jMeter.gaugeBuilder(name)
         unit.foreach(b.setUnit)
         description.foreach(b.setDescription)
-        buildObservable(b)
+        buildObserver(b)
       }
 
     protected def create(
@@ -126,7 +126,7 @@ private[oteljava] object ObservableGaugeBuilderImpl {
         cb: JMeasurement => F[Unit]
     ): AutoCloseable
 
-    protected def buildObservable(
+    protected def buildObserver(
         builder: DoubleGaugeBuilder
     ): ObservableMeasurementImpl[F, A]
 
@@ -170,7 +170,7 @@ private[oteljava] object ObservableGaugeBuilderImpl {
           .ofLongs()
           .buildWithCallback(om => dispatcher.unsafeRunSync(cb(om)))
 
-      protected def buildObservable(
+      protected def buildObserver(
           builder: DoubleGaugeBuilder
       ): ObservableMeasurementImpl[F, A] =
         new ObservableMeasurementImpl.LongObservableMeasurement[F, A](
@@ -200,7 +200,7 @@ private[oteljava] object ObservableGaugeBuilderImpl {
       ): AutoCloseable =
         builder.buildWithCallback(om => dispatcher.unsafeRunSync(cb(om)))
 
-      protected def buildObservable(
+      protected def buildObserver(
           builder: DoubleGaugeBuilder
       ): ObservableMeasurementImpl[F, A] =
         new ObservableMeasurementImpl.DoubleObservableMeasurement[F, A](

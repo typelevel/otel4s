@@ -21,6 +21,19 @@ lazy val scalafixSettings = Seq(
   )
 )
 
+lazy val scalaJSLinkerSettings = Def.settings(
+  scalaJSLinkerConfig ~= (_.withESFeatures(
+    _.withESVersion(org.scalajs.linker.interface.ESVersion.ES2018)
+  )),
+  Test / scalaJSLinkerConfig ~= (_.withModuleKind(ModuleKind.CommonJSModule))
+)
+
+lazy val scalaNativeSettings = Def.settings(
+  libraryDependencies += "com.armanbilge" %%% "epollcat" % EpollcatVersion % Test,
+  Test / nativeBrewFormulas ++= Set("s2n", "utf8proc"),
+  Test / envVars ++= Map("S2N_DONT_MLOCK" -> "1")
+)
+
 val Scala213 = "2.13.12"
 ThisBuild / crossScalaVersions := Seq(Scala213, "3.3.1")
 ThisBuild / scalaVersion := Scala213 // the default Scala
@@ -31,16 +44,16 @@ val CatsVersion = "2.10.0"
 val CatsEffectVersion = "3.5.3"
 val CatsMtlVersion = "1.4.0"
 val FS2Version = "3.9.4"
-val MUnitVersion = "1.0.0-M10"
+val MUnitVersion = "1.0.0-M11"
 val MUnitCatsEffectVersion = "2.0.0-M4"
 val MUnitDisciplineVersion = "2.0.0-M3"
 val MUnitScalaCheckEffectVersion = "2.0.0-M2"
-val OpenTelemetryVersion = "1.34.1"
+val OpenTelemetryVersion = "1.35.0"
 val OpenTelemetryInstrumentationVersion = "2.0.0"
 val OpenTelemetrySemConvVersion = "1.23.1-alpha"
-val OpenTelemetryProtoVersion = "1.0.0-alpha"
+val OpenTelemetryProtoVersion = "1.1.0-alpha"
 val PekkoStreamVersion = "1.0.2"
-val PekkoHttpVersion = "1.0.0"
+val PekkoHttpVersion = "1.0.1"
 val PlatformVersion = "1.0.2"
 val ScodecVersion = "1.1.38"
 val VaultVersion = "3.5.0"
@@ -82,24 +95,34 @@ lazy val root = tlCrossRootProject
     `sdk-common`,
     `sdk-metrics`,
     `sdk-trace`,
+    `sdk-trace-testkit`,
     sdk,
     `sdk-exporter-common`,
     `sdk-exporter-proto`,
     `sdk-exporter-metrics`,
+    `sdk-exporter-trace`,
     `sdk-exporter`,
-    `testkit-common`,
-    `testkit-metrics`,
-    testkit,
     `oteljava-common`,
+    `oteljava-common-testkit`,
     `oteljava-metrics`,
+    `oteljava-metrics-testkit`,
     `oteljava-trace`,
+    `oteljava-trace-testkit`,
+    `oteljava-testkit`,
     oteljava,
     semconv,
     benchmarks,
     examples,
     unidocs
   )
+  .configureRoot(
+    _.aggregate(scalafix.componentProjectReferences: _*)
+  )
   .settings(name := "otel4s")
+
+//
+// Core
+//
 
 lazy val `core-common` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .crossType(CrossType.Pure)
@@ -161,6 +184,10 @@ lazy val core = crossProject(JVMPlatform, JSPlatform, NativePlatform)
     name := "otel4s-core"
   )
   .settings(scalafixSettings)
+
+//
+// SDK
+//
 
 lazy val `sdk-common` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .crossType(CrossType.Pure)
@@ -225,6 +252,19 @@ lazy val `sdk-trace` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
     ),
   )
   .settings(munitDependencies)
+  .settings(scalafixSettings)
+
+lazy val `sdk-trace-testkit` =
+  crossProject(JVMPlatform, JSPlatform, NativePlatform)
+    .crossType(CrossType.Pure)
+    .enablePlugins(NoPublishPlugin)
+    .in(file("sdk/trace-testkit"))
+    .dependsOn(`sdk-trace`)
+    .settings(
+      name := "otel4s-sdk-trace-testkit",
+      startYear := Some(2024)
+    )
+    .settings(scalafixSettings)
 
 lazy val sdk = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .crossType(CrossType.Pure)
@@ -261,13 +301,17 @@ lazy val `sdk-exporter-proto` =
         "io.opentelemetry.proto" % "opentelemetry-proto" % OpenTelemetryProtoVersion % "protobuf-src" intransitive ()
       )
     )
+    .settings(scalafixSettings)
 
 lazy val `sdk-exporter-common` =
   crossProject(JVMPlatform, JSPlatform, NativePlatform)
     .crossType(CrossType.Pure)
     .in(file("sdk-exporter/common"))
     .enablePlugins(NoPublishPlugin)
-    .dependsOn(`sdk-common`, `sdk-exporter-proto`)
+    .dependsOn(
+      `sdk-common` % "compile->compile;test->test",
+      `sdk-exporter-proto`
+    )
     .settings(
       name := "otel4s-sdk-exporter-common",
       startYear := Some(2023),
@@ -280,6 +324,9 @@ lazy val `sdk-exporter-common` =
         "io.circe" %%% "circe-generic" % CirceVersion % Test
       )
     )
+    .jsSettings(scalaJSLinkerSettings)
+    .nativeEnablePlugins(ScalaNativeBrewedConfigPlugin)
+    .nativeSettings(scalaNativeSettings)
     .settings(munitDependencies)
     .settings(scalafixSettings)
 
@@ -297,20 +344,29 @@ lazy val `sdk-exporter-metrics` =
       startYear := Some(2023),
       // dockerComposeEnvFile := crossProjectBaseDirectory.value / "docker" / "docker-compose.yml"
     )
-    .jsSettings(
-      scalaJSLinkerConfig ~= (_.withESFeatures(
-        _.withESVersion(org.scalajs.linker.interface.ESVersion.ES2018)
-      )),
-      Test / scalaJSLinkerConfig ~= (_.withModuleKind(
-        ModuleKind.CommonJSModule
-      ))
-    )
+    .jsSettings(scalaJSLinkerSettings)
     .nativeEnablePlugins(ScalaNativeBrewedConfigPlugin)
-    .nativeSettings(
-      libraryDependencies += "com.armanbilge" %%% "epollcat" % EpollcatVersion % Test,
-      Test / nativeBrewFormulas ++= Set("s2n", "utf8proc"),
-      Test / envVars ++= Map("S2N_DONT_MLOCK" -> "1")
+    .nativeSettings(scalaNativeSettings)
+    .settings(munitDependencies)
+    .settings(scalafixSettings)
+
+lazy val `sdk-exporter-trace` =
+  crossProject(JVMPlatform, JSPlatform, NativePlatform)
+    .crossType(CrossType.Pure)
+    .in(file("sdk-exporter/trace"))
+    .enablePlugins(NoPublishPlugin, DockerComposeEnvPlugin)
+    .dependsOn(
+      `sdk-exporter-common` % "compile->compile;test->test",
+      `sdk-trace` % "compile->compile;test->test"
     )
+    .settings(
+      name := "otel4s-sdk-exporter-trace",
+      startYear := Some(2023),
+      dockerComposeEnvFile := crossProjectBaseDirectory.value / "docker" / "docker-compose.yml"
+    )
+    .jsSettings(scalaJSLinkerSettings)
+    .nativeEnablePlugins(ScalaNativeBrewedConfigPlugin)
+    .nativeSettings(scalaNativeSettings)
     .settings(munitDependencies)
     .settings(scalafixSettings)
 
@@ -318,54 +374,20 @@ lazy val `sdk-exporter` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .crossType(CrossType.Pure)
   .in(file("sdk-exporter/all"))
   .enablePlugins(NoPublishPlugin)
-  .dependsOn(`sdk-exporter-common`, `sdk-exporter-metrics`)
+  .dependsOn(`sdk-exporter-common`, `sdk-exporter-trace`)
   .settings(
     name := "otel4s-sdk-exporter"
   )
   .settings(scalafixSettings)
 
 //
-// Testkit
+// OpenTelemetry Java
 //
-
-lazy val `testkit-common` = crossProject(JVMPlatform)
-  .crossType(CrossType.Full)
-  .in(file("testkit/common"))
-  .dependsOn(`core-common`)
-  .settings(
-    name := "otel4s-testkit-common"
-  )
-  .settings(scalafixSettings)
-
-lazy val `testkit-metrics` = crossProject(JVMPlatform)
-  .crossType(CrossType.Full)
-  .in(file("testkit/metrics"))
-  .dependsOn(`testkit-common`, `core-metrics`)
-  .settings(
-    name := "otel4s-testkit-metrics"
-  )
-  .jvmSettings(
-    libraryDependencies ++= Seq(
-      "io.opentelemetry" % "opentelemetry-api" % OpenTelemetryVersion,
-      "io.opentelemetry" % "opentelemetry-sdk" % OpenTelemetryVersion,
-      "io.opentelemetry" % "opentelemetry-sdk-testing" % OpenTelemetryVersion
-    )
-  )
-  .settings(scalafixSettings)
-
-lazy val testkit = crossProject(JVMPlatform)
-  .crossType(CrossType.Full)
-  .in(file("testkit/all"))
-  .dependsOn(`testkit-common`, `testkit-metrics`)
-  .settings(
-    name := "otel4s-testkit"
-  )
-  .settings(scalafixSettings)
 
 lazy val `oteljava-common` = project
   .in(file("oteljava/common"))
   .enablePlugins(BuildInfoPlugin)
-  .dependsOn(`core-common`.jvm, `testkit-common`.jvm % Test)
+  .dependsOn(`core-common`.jvm)
   .settings(munitDependencies)
   .settings(
     name := "otel4s-oteljava-common",
@@ -384,19 +406,37 @@ lazy val `oteljava-common` = project
   )
   .settings(scalafixSettings)
 
+lazy val `oteljava-common-testkit` = project
+  .in(file("oteljava/common-testkit"))
+  .dependsOn(`oteljava-common`)
+  .settings(
+    name := "otel4s-oteljava-common-testkit",
+    libraryDependencies ++= Seq(
+      "io.opentelemetry" % "opentelemetry-sdk-testing" % OpenTelemetryVersion
+    ),
+    startYear := Some(2024)
+  )
+  .settings(scalafixSettings)
+
 lazy val `oteljava-metrics` = project
   .in(file("oteljava/metrics"))
-  .dependsOn(
-    `oteljava-common`,
-    `core-metrics`.jvm,
-    `testkit-metrics`.jvm % Test
-  )
+  .dependsOn(`oteljava-common`, `core-metrics`.jvm)
   .settings(munitDependencies)
   .settings(
     name := "otel4s-oteljava-metrics",
     libraryDependencies ++= Seq(
       "io.opentelemetry" % "opentelemetry-sdk-testing" % OpenTelemetryVersion % Test
     )
+  )
+  .settings(scalafixSettings)
+
+lazy val `oteljava-metrics-testkit` = project
+  .in(file("oteljava/metrics-testkit"))
+  .dependsOn(`oteljava-metrics`, `oteljava-common-testkit`)
+  .settings(munitDependencies)
+  .settings(
+    name := "otel4s-oteljava-metrics-testkit",
+    startYear := Some(2024)
   )
   .settings(scalafixSettings)
 
@@ -415,9 +455,32 @@ lazy val `oteljava-trace` = project
   )
   .settings(scalafixSettings)
 
+lazy val `oteljava-trace-testkit` = project
+  .in(file("oteljava/trace-testkit"))
+  .dependsOn(`oteljava-trace`, `oteljava-common-testkit`)
+  .settings(munitDependencies)
+  .settings(
+    name := "otel4s-oteljava-trace-testkit",
+    startYear := Some(2024)
+  )
+  .settings(scalafixSettings)
+
+lazy val `oteljava-testkit` = project
+  .in(file("oteljava/testkit"))
+  .dependsOn(`oteljava-metrics-testkit`, `oteljava-trace-testkit`)
+  .settings(
+    name := "otel4s-oteljava-testkit",
+    startYear := Some(2024)
+  )
+
 lazy val oteljava = project
   .in(file("oteljava/all"))
-  .dependsOn(core.jvm, `oteljava-metrics`, `oteljava-trace`)
+  .dependsOn(
+    core.jvm,
+    `oteljava-metrics`,
+    `oteljava-trace`,
+    `oteljava-metrics-testkit` % Test
+  )
   .settings(
     name := "otel4s-oteljava",
     libraryDependencies ++= Seq(
@@ -448,13 +511,38 @@ lazy val semconv = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .settings(munitDependencies)
   .settings(scalafixSettings)
 
+lazy val scalafix = tlScalafixProject
+  .rulesSettings(
+    name := "otel4s-scalafix",
+    crossScalaVersions := Seq(Scala213),
+    startYear := Some(2024)
+  )
+  .inputSettings(
+    crossScalaVersions := Seq(Scala213),
+    libraryDependencies += "org.typelevel" %% "otel4s-java" % "0.4.0",
+    headerSources / excludeFilter := AllPassFilter
+  )
+  .inputConfigure(_.disablePlugins(ScalafixPlugin))
+  .outputSettings(
+    crossScalaVersions := Seq(Scala213),
+    headerSources / excludeFilter := AllPassFilter
+  )
+  .outputConfigure(_.dependsOn(oteljava).disablePlugins(ScalafixPlugin))
+  .testsSettings(
+    crossScalaVersions := Seq(Scala213),
+    startYear := Some(2024)
+  )
+
 lazy val benchmarks = project
   .enablePlugins(NoPublishPlugin)
   .enablePlugins(JmhPlugin)
   .in(file("benchmarks"))
-  .dependsOn(core.jvm, sdk.jvm, oteljava, testkit.jvm)
+  .dependsOn(core.jvm, sdk.jvm, oteljava)
   .settings(
-    name := "otel4s-benchmarks"
+    name := "otel4s-benchmarks",
+    libraryDependencies ++= Seq(
+      "io.opentelemetry" % "opentelemetry-sdk-testing" % OpenTelemetryVersion
+    )
   )
   .settings(scalafixSettings)
 
@@ -524,16 +612,19 @@ lazy val unidocs = project
       `sdk-common`.jvm,
       `sdk-metrics`.jvm,
       `sdk-trace`.jvm,
+      `sdk-trace-testkit`.jvm,
       sdk.jvm,
       `sdk-exporter-common`.jvm,
       `sdk-exporter-metrics`.jvm,
+      `sdk-exporter-trace`.jvm,
       `sdk-exporter`.jvm,
-      `testkit-common`.jvm,
-      `testkit-metrics`.jvm,
-      testkit.jvm,
       `oteljava-common`,
+      `oteljava-common-testkit`,
       `oteljava-metrics`,
+      `oteljava-metrics-testkit`,
       `oteljava-trace`,
+      `oteljava-trace-testkit`,
+      `oteljava-testkit`,
       oteljava,
       semconv.jvm
     )

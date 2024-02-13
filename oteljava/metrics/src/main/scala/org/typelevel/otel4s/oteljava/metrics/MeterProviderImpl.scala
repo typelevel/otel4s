@@ -19,14 +19,15 @@ package oteljava
 package metrics
 
 import cats.effect.kernel.Async
-import io.opentelemetry.api.{OpenTelemetry => JOpenTelemetry}
+import io.opentelemetry.api.metrics.{MeterProvider => JMeterProvider}
 import org.typelevel.otel4s.metrics.MeterBuilder
 import org.typelevel.otel4s.metrics.MeterProvider
 
 private[oteljava] class MeterProviderImpl[F[_]: Async](
-    jOtel: JOpenTelemetry
+    jMeterProvider: JMeterProvider
 ) extends MeterProvider[F] {
 
-  def meter(name: String): MeterBuilder[F] = new MeterBuilderImpl(jOtel, name)
+  def meter(name: String): MeterBuilder[F] =
+    MeterBuilderImpl(jMeterProvider, name)
 
 }

@@ -94,7 +94,7 @@ object ObservableGauge {
       * [[BatchCallback]].
       *
       * @note
-      *   The observer '''must''' be registered by [[Meter.batchCallback]].
+      *   The observer '''must''' be registered via [[Meter.batchCallback]].
       *   Values observed outside registered callbacks are ignored.
       */
     def createObserver: F[ObservableMeasurement[F, A]]

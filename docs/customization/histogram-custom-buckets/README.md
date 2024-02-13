@@ -121,6 +121,7 @@ import io.opentelemetry.sdk.metrics.Aggregation
 import io.opentelemetry.sdk.metrics.InstrumentSelector
 import io.opentelemetry.sdk.metrics.InstrumentType
 import io.opentelemetry.sdk.metrics.View
+import org.typelevel.otel4s.oteljava.context.LocalContextProvider
 import org.typelevel.otel4s.oteljava.OtelJava
 import org.typelevel.otel4s.metrics.Histogram
 
@@ -129,7 +130,7 @@ import scala.concurrent.duration._
 
 object HistogramBucketsExample extends IOApp.Simple {
 
-  def work[F[_] : Temporal : Console](
+  def work[F[_]: Temporal: Console](
     histogram: Histogram[F, Double], 
     random: Random[F]
   ): F[Unit] =
@@ -143,7 +144,7 @@ object HistogramBucketsExample extends IOApp.Simple {
         )
     } yield ()
 
-  def program[F[_] : Async : LiftIO : Parallel : Console]: F[Unit] =
+  def program[F[_]: Async: LocalContextProvider: Parallel: Console]: F[Unit] =
     configureSdk[F]
       .evalMap(_.meterProvider.get("histogram-example"))
       .use { meter =>
@@ -157,7 +158,7 @@ object HistogramBucketsExample extends IOApp.Simple {
   def run: IO[Unit] =
     program[IO]
 
-  private def configureSdk[F[_] : Async : LiftIO]: Resource[F, OtelJava[F]] =
+  private def configureSdk[F[_]: Async: LocalContextProvider]: Resource[F, OtelJava[F]] =
     OtelJava.autoConfigured { sdkBuilder =>
       sdkBuilder
         .addMeterProviderCustomizer { (meterProviderBuilder, _) =>

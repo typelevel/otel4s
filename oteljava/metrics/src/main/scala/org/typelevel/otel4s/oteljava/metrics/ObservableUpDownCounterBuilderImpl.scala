@@ -100,7 +100,7 @@ private[oteljava] object ObservableUpDownCounterBuilderImpl {
         val b = jMeter.upDownCounterBuilder(name)
         unit.foreach(b.setUnit)
         description.foreach(b.setDescription)
-        buildObservable(b)
+        buildObserver(b)
       }
 
     final def createWithCallback(
@@ -126,7 +126,7 @@ private[oteljava] object ObservableUpDownCounterBuilderImpl {
         cb: JMeasurement => F[Unit]
     ): AutoCloseable
 
-    protected def buildObservable(
+    protected def buildObserver(
         builder: LongUpDownCounterBuilder
     ): ObservableMeasurementImpl[F, A]
 
@@ -168,7 +168,7 @@ private[oteljava] object ObservableUpDownCounterBuilderImpl {
       ): AutoCloseable =
         builder.buildWithCallback(om => dispatcher.unsafeRunSync(cb(om)))
 
-      protected def buildObservable(
+      protected def buildObserver(
           builder: LongUpDownCounterBuilder
       ): ObservableMeasurementImpl[F, A] =
         new ObservableMeasurementImpl.LongObservableMeasurement[F, A](
@@ -200,7 +200,7 @@ private[oteljava] object ObservableUpDownCounterBuilderImpl {
           .ofDoubles()
           .buildWithCallback(om => dispatcher.unsafeRunSync(cb(om)))
 
-      protected def buildObservable(
+      protected def buildObserver(
           builder: LongUpDownCounterBuilder
       ): ObservableMeasurementImpl[F, A] =
         new ObservableMeasurementImpl.DoubleObservableMeasurement[F, A](

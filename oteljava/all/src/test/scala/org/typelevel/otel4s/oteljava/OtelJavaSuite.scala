@@ -28,7 +28,7 @@ class OtelJavaSuite extends CatsEffectSuite {
       .forAsync[IO](testSdk)
       .map(testOtel4s => {
         val res = testOtel4s.toString()
-        assert(clue(res).startsWith("OpenTelemetrySdk"))
+        assert(clue(res).contains("OpenTelemetrySdk"))
       })
   }
 }

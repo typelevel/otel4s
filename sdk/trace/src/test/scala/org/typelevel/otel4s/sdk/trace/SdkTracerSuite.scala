@@ -22,6 +22,7 @@ import cats.effect.MonadCancelThrow
 import cats.effect.Resource
 import cats.effect.std.Random
 import cats.effect.testkit.TestControl
+import cats.syntax.apply._
 import cats.syntax.functor._
 import cats.~>
 import munit.CatsEffectSuite
@@ -33,6 +34,7 @@ import org.typelevel.otel4s.context.propagation.PassThroughPropagator
 import org.typelevel.otel4s.context.propagation.TextMapPropagator
 import org.typelevel.otel4s.sdk.common.InstrumentationScope
 import org.typelevel.otel4s.sdk.context.Context
+import org.typelevel.otel4s.sdk.trace.context.propagation.W3CTraceContextPropagator
 import org.typelevel.otel4s.sdk.trace.data.EventData
 import org.typelevel.otel4s.sdk.trace.data.SpanData
 import org.typelevel.otel4s.sdk.trace.data.StatusData
@@ -145,8 +147,7 @@ class SdkTracerSuite extends CatsEffectSuite {
     }
   }
 
-  // todo: enable when W3C propagator is ready
-  /*sdkTest("propagate to an arbitrary carrier") { sdk =>
+  sdkTest("propagate to an arbitrary carrier") { sdk =>
     TestControl.executeEmbed {
       for {
         tracer <- sdk.provider.get("tracer")
@@ -162,7 +163,7 @@ class SdkTracerSuite extends CatsEffectSuite {
         }
       } yield ()
     }
-  }*/
+  }
 
   sdkTest("automatically start and stop span") { sdk =>
     val sleepDuration = 500.millis
@@ -722,8 +723,7 @@ class SdkTracerSuite extends CatsEffectSuite {
   }
 
   // external span does not appear in the recorded spans of the in-memory sdk
-  // todo: enable when W3C propagator is ready
-  /*sdkTest(
+  sdkTest(
     "joinOrRoot: join an external span when can be extracted",
     additionalPropagators = List(PassThroughPropagator("foo", "bar"))
   ) { sdk =>
@@ -761,7 +761,7 @@ class SdkTracerSuite extends CatsEffectSuite {
         assertEquals(resultHeaders.get("foo"), Some("1"))
       }
     }
-  }*/
+  }
 
   sdkTest(
     "joinOrRoot: ignore an external span when cannot be extracted and start a root span"
@@ -962,7 +962,7 @@ class SdkTracerSuite extends CatsEffectSuite {
     import org.typelevel.otel4s.instances.local._
 
     val textMapPropagators: List[TextMapPropagator[Context]] =
-      /*List(W3CTraceContextPropagator) ++*/ additionalPropagators
+      W3CTraceContextPropagator.default :: additionalPropagators
 
     def createTracerProvider(
         processor: SpanProcessor[IO]

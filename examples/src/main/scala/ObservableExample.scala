@@ -31,7 +31,7 @@ object ObservableExample extends IOApp.Simple {
 
   def meterResource: Resource[IO, ObservableCounter] =
     OtelJava
-      .autoConfigured()
+      .autoConfigured[IO]()
       .evalMap(_.meterProvider.get("observable-example"))
       .flatMap(
         _.observableCounter[Long]("cats-effect-runtime-cpu-starvation-count")

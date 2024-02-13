@@ -91,7 +91,7 @@ trait Work[F[_]] {
 }
 
 object Work {
-  def apply[F[_] : Async : Tracer : Console]: Work[F] =
+  def apply[F[_]: Async: Tracer: Console]: Work[F] =
     new Work[F] {
       def doWork: F[Unit] =
         Tracer[F].span("Work.DoWork").use { span =>
@@ -119,7 +119,7 @@ object Work {
 
 object TracingExample extends IOApp.Simple {
   def tracer: Resource[IO, Tracer[IO]] =
-    OtelJava.autoConfigured().evalMap(_.tracerProvider.get("Example"))
+    OtelJava.autoConfigured[IO]().evalMap(_.tracerProvider.get("Example"))
 
   def run: IO[Unit] =
     tracer

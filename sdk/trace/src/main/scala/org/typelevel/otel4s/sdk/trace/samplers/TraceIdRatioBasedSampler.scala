@@ -39,7 +39,7 @@ import scodec.bits.ByteVector
   * @see
   *   [[https://opentelemetry.io/docs/specs/otel/trace/sdk/#traceidratiobased]]
   */
-private final class TraceIdRatioBasedSampler private (
+private final case class TraceIdRatioBasedSampler private (
     ratio: Double,
     idUpperBound: Long
 ) extends Sampler {
@@ -91,7 +91,7 @@ private object TraceIdRatioBasedSampler {
       else if (ratio == 1.0) Long.MaxValue
       else (ratio * Long.MaxValue).toLong
 
-    new TraceIdRatioBasedSampler(ratio, idUpperBound)
+    TraceIdRatioBasedSampler(ratio, idUpperBound)
   }
 
 }

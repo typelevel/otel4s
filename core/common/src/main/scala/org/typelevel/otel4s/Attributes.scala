@@ -78,6 +78,17 @@ sealed trait Attributes
   final def +(attribute: Attribute[_]): Attributes =
     updated(attribute)
 
+  /** Removes the [[`Attribute`]] with the given name and type, if present. */
+  final def removed[T: KeySelect](name: String): Attributes =
+    removed(KeySelect[T].make(name))
+
+  /** Removes the [[`Attribute`]] with the given key, if present. */
+  def removed(key: AttributeKey[_]): Attributes
+
+  /** Removes the [[`Attribute`]] with the given key, if present. */
+  final def -(key: AttributeKey[_]): Attributes =
+    removed(key)
+
   /** Invariant overload of
     * [[scala.collection.IterableOps.concat `IterableOps#concat`]] that returns
     * `Attributes` rather than `Iterable`.
@@ -99,9 +110,23 @@ sealed trait Attributes
   final def ++(that: IterableOnce[Attribute[_]]): Attributes =
     concat(that)
 
-  /** Returns the `Map` representation of the attributes collection.
-    */
+  /** Removes all attributes with any of the given keys. */
+  def removedAll(that: IterableOnce[AttributeKey[_]]): Attributes =
+    attributesFactory.fromSpecific((toMap -- that).values)
+
+  /** Removes all attributes with any of the given keys. */
+  final def --(that: IterableOnce[AttributeKey[_]]): Attributes =
+    removedAll(that)
+
+  /** @return the `Map` representation of these `Attributes` */
   def toMap: Map[AttributeKey[_], Attribute[_]]
+
+  /** Equivalent to `toMap.keySet`.
+    *
+    * @return
+    *   the keys of the [[`Attribute`]]s
+    */
+  final def keys: Set[AttributeKey[_]] = toMap.keySet
 
   /** A factory for creating `Attributes`. */
   def attributesFactory: SpecificIterableFactory[Attribute[_], Attributes]
@@ -114,6 +139,7 @@ sealed trait Attributes
   override protected def newSpecificBuilder
       : mutable.Builder[Attribute[_], Attributes] =
     attributesFactory.newBuilder
+  override protected[this] def className: String = "Attributes"
 
   override def hashCode(): Int =
     Hash[Attributes].hash(this)
@@ -167,7 +193,7 @@ object Attributes extends SpecificIterableFactory[Attribute[_], Attributes] {
     }
 
   implicit val showAttributes: Show[Attributes] = Show.show { attributes =>
-    attributes.toList
+    attributes.view
       .map(a => show"$a")
       .mkString("Attributes(", ", ", ")")
   }
@@ -277,6 +303,8 @@ object Attributes extends SpecificIterableFactory[Attribute[_], Attributes] {
     def contains(key: AttributeKey[_]): Boolean = m.contains(key)
     def updated(attribute: Attribute[_]): Attributes =
       new MapAttributes(m.updated(attribute.key, attribute))
+    def removed(key: AttributeKey[_]): Attributes =
+      new MapAttributes(m.removed(key))
     override def concat(that: IterableOnce[Attribute[_]]): Attributes =
       that match {
         case other: Attributes =>
@@ -284,6 +312,8 @@ object Attributes extends SpecificIterableFactory[Attribute[_], Attributes] {
         case other =>
           new MapAttributes(m ++ other.iterator.map(a => a.key -> a))
       }
+    override def removedAll(that: IterableOnce[AttributeKey[_]]): Attributes =
+      new MapAttributes(m -- that)
 
     def toMap: Map[AttributeKey[_], Attribute[_]] = m
     def iterator: Iterator[Attribute[_]] = m.valuesIterator

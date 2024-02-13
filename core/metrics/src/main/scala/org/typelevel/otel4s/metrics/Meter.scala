@@ -257,8 +257,26 @@ trait Meter[F[_]] {
     * multiple asynchronous instruments.
     *
     * The callback will be called when the instruments are being observed.
+    *
+    * @example
+    *   {{{
+    * val meter: Meter[F] = ???
+    * val server: F[Unit] = ??? // runs the server
+    *
+    * val background: Resource[F, Unit] =
+    *   meter.batchCallback.of(
+    *     meter.observableCounter[Long]("counter").createObserver,
+    *     meter.observableUpDownCounter[Double]("up-down-counter").createObserver,
+    *     meter.observableGauge[Double]("gauge").createObserver
+    *   ) { (counter, upDownCounter, gauge) =>
+    *     counter.record(1L) *> upDownCounter.record(2.0) *> gauge.record(3.0)
+    *   }
+    *
+    * background.surround(server) // register batch callback and run the server
+    *   }}}
     */
   def batchCallback: BatchCallback[F]
+
 }
 
 object Meter {

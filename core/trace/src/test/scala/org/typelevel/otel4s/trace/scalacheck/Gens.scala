@@ -17,6 +17,7 @@
 package org.typelevel.otel4s.trace.scalacheck
 
 import org.scalacheck.Gen
+import org.typelevel.otel4s.baggage.Baggage
 import org.typelevel.otel4s.trace.SpanContext
 import org.typelevel.otel4s.trace.SpanKind
 import org.typelevel.otel4s.trace.Status
@@ -39,6 +40,26 @@ trait Gens extends org.typelevel.otel4s.scalacheck.Gens {
 
   val traceFlags: Gen[TraceFlags] =
     Gen.oneOf(TraceFlags.Sampled, TraceFlags.Default)
+
+  val traceState: Gen[TraceState] =
+    for {
+      k1 <- nonEmptyString
+      v1 <- nonEmptyString
+      k2 <- nonEmptyString
+      v2 <- nonEmptyString
+      k3 <- nonEmptyString
+      v3 <- nonEmptyString
+    } yield TraceState.empty.updated(k1, v1).updated(k2, v2).updated(k3, v3)
+
+  val baggage: Gen[Baggage] =
+    for {
+      k1 <- nonEmptyString
+      v1 <- nonEmptyString
+      k2 <- nonEmptyString
+      v2 <- nonEmptyString
+      k3 <- nonEmptyString
+      v3 <- nonEmptyString
+    } yield Baggage.empty.updated(k1, v1).updated(k2, v2).updated(k3, v3)
 
   val spanContext: Gen[SpanContext] =
     for {

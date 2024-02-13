@@ -55,6 +55,9 @@ private[oteljava] case class ObservableUpDownCounterBuilderImpl[F[_], A](
       measurements: F[Iterable[Measurement[A]]]
   ): Resource[F, ObservableUpDownCounter] =
     factory.create(name, unit, description, measurements)
+
+  def createObserver: F[ObservableMeasurement[F, A]] =
+    factory.createObserver(name, unit, description)
 }
 
 private[oteljava] object ObservableUpDownCounterBuilderImpl {
@@ -88,6 +91,18 @@ private[oteljava] object ObservableUpDownCounterBuilderImpl {
         }
       }
 
+    def createObserver(
+        name: String,
+        unit: Option[String],
+        description: Option[String]
+    ): F[ObservableMeasurement[F, A]] =
+      Async[F].delay {
+        val b = jMeter.upDownCounterBuilder(name)
+        unit.foreach(b.setUnit)
+        description.foreach(b.setDescription)
+        buildObserver(b)
+      }
+
     final def createWithCallback(
         name: String,
         unit: Option[String],
@@ -110,6 +125,10 @@ private[oteljava] object ObservableUpDownCounterBuilderImpl {
         dispatcher: Dispatcher[F],
         cb: JMeasurement => F[Unit]
     ): AutoCloseable
+
+    protected def buildObserver(
+        builder: LongUpDownCounterBuilder
+    ): ObservableMeasurementImpl[F, A]
 
     protected def doRecord(
         measurement: JMeasurement,
@@ -149,6 +168,14 @@ private[oteljava] object ObservableUpDownCounterBuilderImpl {
       ): AutoCloseable =
         builder.buildWithCallback(om => dispatcher.unsafeRunSync(cb(om)))
 
+      protected def buildObserver(
+          builder: LongUpDownCounterBuilder
+      ): ObservableMeasurementImpl[F, A] =
+        new ObservableMeasurementImpl.LongObservableMeasurement[F, A](
+          cast,
+          builder.buildObserver()
+        )
+
       protected def doRecord(
           om: ObservableLongMeasurement,
           value: A,
@@ -172,6 +199,14 @@ private[oteljava] object ObservableUpDownCounterBuilderImpl {
         builder
           .ofDoubles()
           .buildWithCallback(om => dispatcher.unsafeRunSync(cb(om)))
+
+      protected def buildObserver(
+          builder: LongUpDownCounterBuilder
+      ): ObservableMeasurementImpl[F, A] =
+        new ObservableMeasurementImpl.DoubleObservableMeasurement[F, A](
+          cast,
+          builder.ofDoubles().buildObserver()
+        )
 
       protected def doRecord(
           om: ObservableDoubleMeasurement,

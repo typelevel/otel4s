@@ -138,6 +138,9 @@ object ObservableSuite {
         measurements: IO[Iterable[Measurement[A]]]
     ): Resource[IO, ObservableGauge] =
       createObservable(measurements).as(new ObservableGauge {})
+
+    def createObserver: IO[ObservableMeasurement[IO, A]] =
+      IO.pure(ObservableMeasurement.noop)
   }
 
 }

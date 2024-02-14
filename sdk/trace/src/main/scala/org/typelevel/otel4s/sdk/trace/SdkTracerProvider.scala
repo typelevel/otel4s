@@ -52,6 +52,10 @@ private class SdkTracerProvider[F[_]: Temporal: Parallel: Console](
 
   def tracer(name: String): TracerBuilder[F] =
     new SdkTracerBuilder[F](propagators, traceScope, sharedState, storage, name)
+
+  override def toString: String =
+    s"SdkTracerProvider{resource=$resource, sampler=$sampler, spanProcessor=${sharedState.spanProcessor}}"
+
 }
 
 object SdkTracerProvider {
@@ -114,7 +118,7 @@ object SdkTracerProvider {
       */
     def withSampler(sampler: Sampler): Builder[F]
 
-    /** Adds a
+    /** Adds
       * [[org.typelevel.otel4s.context.propagation.TextMapPropagator TextMapPropagator]]s
       * to use for the context propagation.
       *

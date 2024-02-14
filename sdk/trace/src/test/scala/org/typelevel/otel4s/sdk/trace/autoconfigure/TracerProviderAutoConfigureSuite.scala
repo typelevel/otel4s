@@ -170,20 +170,19 @@ class TracerProviderAutoConfigureSuite extends CatsEffectSuite {
       )
     )
 
-    val logging: SpanExporter[IO] = customExporter("LoggingExporter")
     val custom: SpanExporter[IO] = customExporter("CustomExporter")
 
     val configurers: Set[AutoConfigure.Named[IO, SpanExporter[IO]]] = Set(
-      AutoConfigure.Named.const("logging", logging),
       AutoConfigure.Named.const("custom", custom)
     )
 
     val expected =
       "SdkTracerProvider{" +
         s"resource=${TelemetryResource.empty}, " +
+        s"spanLimits=${SpanLimits.Default}, " +
         s"sampler=${Sampler.AlwaysOff}, " +
         "spanProcessor=SpanProcessor.Multi(" +
-        "SimpleSpanProcessor{exporter=LoggingExporter, exportOnlySampled=true}, " +
+        "SimpleSpanProcessor{exporter=LoggingSpanExporter, exportOnlySampled=true}, " +
         "BatchSpanProcessor{exporter=CustomExporter, scheduleDelay=5 seconds, exporterTimeout=30 seconds, maxQueueSize=2048, maxExportBatchSize=512}, " +
         "SpanStorage)}"
 

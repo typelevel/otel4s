@@ -266,7 +266,9 @@ class SdkTracesSuite extends CatsEffectSuite {
     "SdkTraces{tracerProvider=" +
       s"SdkTracerProvider{resource=$resource, spanLimits=${SpanLimits.Default}, " +
       s"sampler=$sampler, " +
-      s"spanProcessor=[BatchSpanProcessor{exporter=$exporter, scheduleDelay=5 seconds, exporterTimeout=30 seconds, maxQueueSize=2048, maxExportBatchSize=512}, SpanStorage]}, " +
+      "spanProcessor=SpanProcessor.Multi(" +
+      s"BatchSpanProcessor{exporter=$exporter, scheduleDelay=5 seconds, exporterTimeout=30 seconds, maxQueueSize=2048, maxExportBatchSize=512}, " +
+      "SpanStorage)}, " +
       s"propagators=$propagators}"
 
 }

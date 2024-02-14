@@ -74,7 +74,7 @@ private class SdkTracerProvider[F[_]: Temporal: Parallel: Console](
       s"resource=$resource, " +
       s"spanLimits=$spanLimits, " +
       s"sampler=$sampler, " +
-      s"spanProcessor=${spanProcessors.mkString("[", ", ", "]")}}"
+      s"spanProcessor=${sharedState.spanProcessor}}"
 }
 
 object SdkTracerProvider {

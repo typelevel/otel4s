@@ -54,29 +54,6 @@ class TracerProviderAutoConfigureSuite extends CatsEffectSuite {
       Sampler.parentBased(Sampler.AlwaysOn)
     )
 
-  private def configure[A](
-      config: Config,
-      resource: TelemetryResource = TelemetryResource.empty,
-      propagators: ContextPropagators[Context] = ContextPropagators.noop,
-      customizer: Customizer[SdkTracerProvider.Builder[IO]] = (a, _) => a,
-      samplerConfigurers: Set[AutoConfigure.Named[IO, Sampler]] = Set.empty,
-      exporterConfigurers: Set[AutoConfigure.Named[IO, SpanExporter[IO]]] =
-        Set.empty
-  )(f: TracerProvider[IO] => IO[A]): IO[A] =
-    Resource.eval(LocalProvider[IO, Context].local).use { implicit local =>
-      Resource.eval(Random.scalaUtilRandom[IO]).use { implicit random =>
-        val autoConfigure = TracerProviderAutoConfigure[IO](
-          resource,
-          propagators,
-          customizer,
-          samplerConfigurers,
-          exporterConfigurers
-        )
-
-        autoConfigure.configure(config).use(f)
-      }
-    }
-
   test("load default") {
     val config = Config.ofProps(Map("otel.traces.exporter" -> "none"))
 
@@ -107,13 +84,6 @@ class TracerProviderAutoConfigureSuite extends CatsEffectSuite {
     val config = Config.ofProps(
       Map("otel.traces.exporter" -> "custom-1,custom-2")
     )
-
-    def customExporter(exporterName: String): SpanExporter[IO] =
-      new SpanExporter[IO] {
-        def name: String = exporterName
-        def exportSpans[G[_]: Foldable](spans: G[SpanData]): IO[Unit] = IO.unit
-        def flush: IO[Unit] = IO.unit
-      }
 
     val exporter1: SpanExporter[IO] = customExporter("CustomExporter1")
     val exporter2: SpanExporter[IO] = customExporter("CustomExporter2")
@@ -192,6 +162,66 @@ class TracerProviderAutoConfigureSuite extends CatsEffectSuite {
     }
   }
 
+  test("logging exporter should use a dedicated SimpleSpanProcessor") {
+    val config = Config.ofProps(
+      Map(
+        "otel.traces.exporter" -> "logging,custom",
+        "otel.traces.sampler" -> "always_off"
+      )
+    )
+
+    val logging: SpanExporter[IO] = customExporter("LoggingExporter")
+    val custom: SpanExporter[IO] = customExporter("CustomExporter")
+
+    val configurers: Set[AutoConfigure.Named[IO, SpanExporter[IO]]] = Set(
+      AutoConfigure.Named.const("logging", logging),
+      AutoConfigure.Named.const("custom", custom)
+    )
+
+    val expected =
+      "SdkTracerProvider{" +
+        s"resource=${TelemetryResource.empty}, " +
+        s"sampler=${Sampler.AlwaysOff}, " +
+        "spanProcessor=SpanProcessor.Multi(" +
+        "SimpleSpanProcessor{exporter=LoggingExporter, exportOnlySampled=true}, " +
+        "BatchSpanProcessor{exporter=CustomExporter, scheduleDelay=5 seconds, exporterTimeout=30 seconds, maxQueueSize=2048, maxExportBatchSize=512}, " +
+        "SpanStorage)}"
+
+    configure(config, exporterConfigurers = configurers) { provider =>
+      IO(assertEquals(provider.toString, expected))
+    }
+  }
+
+  private def configure[A](
+      config: Config,
+      resource: TelemetryResource = TelemetryResource.empty,
+      propagators: ContextPropagators[Context] = ContextPropagators.noop,
+      customizer: Customizer[SdkTracerProvider.Builder[IO]] = (a, _) => a,
+      samplerConfigurers: Set[AutoConfigure.Named[IO, Sampler]] = Set.empty,
+      exporterConfigurers: Set[AutoConfigure.Named[IO, SpanExporter[IO]]] =
+        Set.empty
+  )(f: TracerProvider[IO] => IO[A]): IO[A] =
+    Resource.eval(LocalProvider[IO, Context].local).use { implicit local =>
+      Resource.eval(Random.scalaUtilRandom[IO]).use { implicit random =>
+        val autoConfigure = TracerProviderAutoConfigure[IO](
+          resource,
+          propagators,
+          customizer,
+          samplerConfigurers,
+          exporterConfigurers
+        )
+
+        autoConfigure.configure(config).use(f)
+      }
+    }
+
+  private def customExporter(exporterName: String): SpanExporter[IO] =
+    new SpanExporter[IO] {
+      def name: String = exporterName
+      def exportSpans[G[_]: Foldable](spans: G[SpanData]): IO[Unit] = IO.unit
+      def flush: IO[Unit] = IO.unit
+    }
+
   private def providerToString(
       resource: TelemetryResource = TelemetryResource.empty,
       sampler: Sampler = Sampler.parentBased(Sampler.AlwaysOn),
@@ -201,6 +231,8 @@ class TracerProviderAutoConfigureSuite extends CatsEffectSuite {
       s"resource=$resource, " +
       s"spanLimits=${SpanLimits.Default}, " +
       s"sampler=$sampler, " +
-      s"spanProcessor=[BatchSpanProcessor{exporter=$exporter, scheduleDelay=5 seconds, exporterTimeout=30 seconds, maxQueueSize=2048, maxExportBatchSize=512}, SpanStorage]}"
+      "spanProcessor=SpanProcessor.Multi(" +
+      s"BatchSpanProcessor{exporter=$exporter, scheduleDelay=5 seconds, exporterTimeout=30 seconds, maxQueueSize=2048, maxExportBatchSize=512}, " +
+      "SpanStorage)}"
 
 }

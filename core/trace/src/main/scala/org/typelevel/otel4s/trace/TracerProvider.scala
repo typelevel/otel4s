@@ -81,6 +81,8 @@ object TracerProvider {
     new TracerProvider[F] {
       def tracer(name: String): TracerBuilder[F] =
         TracerBuilder.noop
+      override def toString: String =
+        "TracerProvider.Noop"
     }
 
   private class MappedK[F[_]: MonadCancelThrow, G[_]: MonadCancelThrow](

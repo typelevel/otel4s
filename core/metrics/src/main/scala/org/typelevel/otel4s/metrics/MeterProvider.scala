@@ -70,5 +70,7 @@ object MeterProvider {
     new MeterProvider[F] {
       def meter(name: String): MeterBuilder[F] =
         MeterBuilder.noop
+      override def toString: String =
+        "MeterProvider.Noop"
     }
 }

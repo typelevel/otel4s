@@ -54,7 +54,7 @@ final class OpenTelemetrySdk[F[_]] private (
   type Ctx = Context
 
   override def toString: String =
-    s"OpenTelemetrySdk{tracerProvider=$tracerProvider, meterProvider=$meterProvider, propagators=$propagators}"
+    s"OpenTelemetrySdk{meterProvider=$meterProvider, tracerProvider=$tracerProvider, propagators=$propagators}"
 }
 
 object OpenTelemetrySdk {
@@ -308,7 +308,10 @@ object OpenTelemetrySdk {
         sdk: OpenTelemetrySdk[F],
         resource: TelemetryResource,
         config: Config
-    ) extends AutoConfigured[F]
+    ) extends AutoConfigured[F] {
+      override def toString: String =
+        s"OpenTelemetrySdk.AutoConfigured{sdk=$sdk, resource=$resource}"
+    }
   }
 
 }

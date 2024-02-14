@@ -253,6 +253,7 @@ lazy val sdk = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .settings(
     name := "otel4s-sdk"
   )
+  .settings(munitDependencies)
   .settings(scalafixSettings)
 
 //

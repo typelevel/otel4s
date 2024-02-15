@@ -34,6 +34,12 @@ sealed trait AttributeKey[A] {
     *   an [[`Attribute`]] associating this key with the given value
     */
   final def apply(value: A): Attribute[A] = Attribute(this, value)
+
+  /** @return
+    *   an [[`AttributeKey`]] of the same type as this key, with name
+    *   transformed by `f`
+    */
+  def transformName(f: String => String): AttributeKey[A]
 }
 
 object AttributeKey {
@@ -53,6 +59,9 @@ object AttributeKey {
         case _ =>
           false
       }
+
+    override def transformName(f: String => String): AttributeKey[A] =
+      new Impl[A](f(name), `type`)
   }
 
   def string(name: String): AttributeKey[String] =

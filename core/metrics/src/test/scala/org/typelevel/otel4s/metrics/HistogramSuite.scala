@@ -23,6 +23,7 @@ import cats.effect.testkit.TestControl
 import munit.CatsEffectSuite
 
 import java.util.concurrent.TimeUnit
+import scala.collection.immutable
 import scala.concurrent.duration._
 
 class HistogramSuite extends CatsEffectSuite {
@@ -38,10 +39,15 @@ class HistogramSuite extends CatsEffectSuite {
       List(Attribute("key", "value"))
     }
 
+    // test varargs and Iterable overloads
     for {
       _ <- histogram.record(1.0, allocateAttribute: _*)
+      _ <- histogram.record(1.0, allocateAttribute)
       _ <- histogram
         .recordDuration(TimeUnit.SECONDS, allocateAttribute: _*)
+        .use_
+      _ <- histogram
+        .recordDuration(TimeUnit.SECONDS, allocateAttribute)
         .use_
     } yield assert(!allocated)
   }
@@ -51,14 +57,15 @@ class HistogramSuite extends CatsEffectSuite {
 
     val expected =
       List(
-        Record(1.0, Seq(attribute)),
-        Record(-1.0, Nil),
-        Record(2.0, Seq(attribute, attribute))
+        Record(1.0, Attributes(attribute)),
+        Record(-1.0, Attributes.empty),
+        Record(2.0, Attributes(attribute, attribute))
       )
 
+    // test varargs and Iterable overloads
     for {
       histogram <- inMemoryHistogram
-      _ <- histogram.record(1.0, attribute)
+      _ <- histogram.record(1.0, Attributes(attribute))
       _ <- histogram.record(-1.0)
       _ <- histogram.record(2.0, attribute, attribute)
       records <- histogram.records
@@ -72,14 +79,19 @@ class HistogramSuite extends CatsEffectSuite {
 
     val expected =
       List(
-        Record(sleepDuration.toUnit(unit), Seq(attribute))
+        Record(sleepDuration.toUnit(unit), Attributes(attribute)),
+        Record(sleepDuration.toUnit(unit), Attributes(attribute))
       )
 
     TestControl.executeEmbed {
+      // test varargs and Iterable overloads
       for {
         histogram <- inMemoryHistogram
         _ <- histogram
           .recordDuration(unit, attribute)
+          .use(_ => IO.sleep(sleepDuration))
+        _ <- histogram
+          .recordDuration(unit, Attributes(attribute))
           .use(_ => IO.sleep(sleepDuration))
         records <- histogram.records
       } yield assertEquals(records, expected)
@@ -93,7 +105,7 @@ class HistogramSuite extends CatsEffectSuite {
 
 object HistogramSuite {
 
-  final case class Record[A](value: A, attributes: Seq[Attribute[_]])
+  final case class Record[A](value: A, attributes: Attributes)
 
   class InMemoryHistogram(ref: Ref[IO, List[Record[Double]]])
       extends Histogram[IO, Double] {
@@ -102,8 +114,11 @@ object HistogramSuite {
       new Histogram.DoubleBackend[IO] {
         val meta: Histogram.Meta[IO] = Histogram.Meta.enabled
 
-        def record(value: Double, attributes: Attribute[_]*): IO[Unit] =
-          ref.update(_.appended(Record(value, attributes)))
+        def record(
+            value: Double,
+            attributes: immutable.Iterable[Attribute[_]]
+        ): IO[Unit] =
+          ref.update(_.appended(Record(value, attributes.to(Attributes))))
       }
 
     def records: IO[List[Record[Double]]] =

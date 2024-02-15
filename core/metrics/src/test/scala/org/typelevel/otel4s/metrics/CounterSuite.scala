@@ -22,6 +22,8 @@ import cats.effect.Ref
 import munit.CatsEffectSuite
 import org.typelevel.otel4s.meta.InstrumentMeta
 
+import scala.collection.immutable
+
 class CounterSuite extends CatsEffectSuite {
   import CounterSuite._
 
@@ -35,9 +37,12 @@ class CounterSuite extends CatsEffectSuite {
       List(Attribute("key", "value"))
     }
 
+    // test varargs and Iterable overloads
     for {
       _ <- counter.add(1L, allocateAttribute: _*)
+      _ <- counter.add(1L, allocateAttribute)
       _ <- counter.inc(allocateAttribute: _*)
+      _ <- counter.inc(allocateAttribute)
     } yield assert(!allocated)
   }
 
@@ -46,14 +51,15 @@ class CounterSuite extends CatsEffectSuite {
 
     val expected =
       List(
-        Record(1L, Seq(attribute)),
-        Record(2L, Nil),
-        Record(3L, Seq(attribute, attribute))
+        Record(1L, Attributes(attribute)),
+        Record(2L, Attributes.empty),
+        Record(3L, Attributes(attribute, attribute))
       )
 
+    // test varargs and Iterable overloads
     for {
       counter <- inMemoryCounter
-      _ <- counter.add(1L, attribute)
+      _ <- counter.add(1L, Attributes(attribute))
       _ <- counter.add(2L)
       _ <- counter.add(3L, attribute, attribute)
       records <- counter.records
@@ -65,14 +71,15 @@ class CounterSuite extends CatsEffectSuite {
 
     val expected =
       List(
-        Record(1L, Seq(attribute)),
-        Record(1L, Nil),
-        Record(1L, Seq(attribute, attribute))
+        Record(1L, Attributes(attribute)),
+        Record(1L, Attributes.empty),
+        Record(1L, Attributes(attribute, attribute))
       )
 
+    // test varargs and Iterable overloads
     for {
       counter <- inMemoryCounter
-      _ <- counter.inc(attribute)
+      _ <- counter.inc(Attributes(attribute))
       _ <- counter.inc()
       _ <- counter.inc(attribute, attribute)
       records <- counter.records
@@ -86,7 +93,7 @@ class CounterSuite extends CatsEffectSuite {
 
 object CounterSuite {
 
-  final case class Record[A](value: A, attributes: Seq[Attribute[_]])
+  final case class Record[A](value: A, attributes: Attributes)
 
   class InMemoryCounter(ref: Ref[IO, List[Record[Long]]])
       extends Counter[IO, Long] {
@@ -95,8 +102,11 @@ object CounterSuite {
       new Counter.LongBackend[IO] {
         val meta: InstrumentMeta[IO] = InstrumentMeta.enabled
 
-        def add(value: Long, attributes: Attribute[_]*): IO[Unit] =
-          ref.update(_.appended(Record(value, attributes)))
+        def add(
+            value: Long,
+            attributes: immutable.Iterable[Attribute[_]]
+        ): IO[Unit] =
+          ref.update(_.appended(Record(value, attributes.to(Attributes))))
       }
 
     def records: IO[List[Record[Long]]] =

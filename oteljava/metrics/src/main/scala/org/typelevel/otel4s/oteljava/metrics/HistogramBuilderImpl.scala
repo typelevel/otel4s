@@ -25,6 +25,7 @@ import cats.syntax.functor._
 import io.opentelemetry.api.metrics.{Meter => JMeter}
 import org.typelevel.otel4s.metrics._
 
+import scala.collection.immutable
 import scala.concurrent.duration.TimeUnit
 import scala.jdk.CollectionConverters._
 
@@ -100,7 +101,10 @@ object HistogramBuilderImpl {
           val backend = new Histogram.Backend[F, A] {
             val meta: Histogram.Meta[F] = Histogram.Meta.enabled
 
-            def record(value: A, attributes: Attribute[_]*): F[Unit] =
+            def record(
+                value: A,
+                attributes: immutable.Iterable[Attribute[_]]
+            ): F[Unit] =
               Sync[F].delay(
                 histogram.record(
                   cast(value),
@@ -110,7 +114,7 @@ object HistogramBuilderImpl {
 
             def recordDuration(
                 timeUnit: TimeUnit,
-                attributes: Attribute[_]*
+                attributes: immutable.Iterable[Attribute[_]]
             ): Resource[F, Unit] =
               Resource
                 .makeCase(Sync[F].monotonic) { case (start, ec) =>
@@ -158,7 +162,10 @@ object HistogramBuilderImpl {
           val backend = new Histogram.Backend[F, A] {
             val meta: Histogram.Meta[F] = Histogram.Meta.enabled
 
-            def record(value: A, attributes: Attribute[_]*): F[Unit] =
+            def record(
+                value: A,
+                attributes: immutable.Iterable[Attribute[_]]
+            ): F[Unit] =
               Sync[F].delay(
                 histogram.record(
                   cast(value),
@@ -168,7 +175,7 @@ object HistogramBuilderImpl {
 
             def recordDuration(
                 timeUnit: TimeUnit,
-                attributes: Attribute[_]*
+                attributes: immutable.Iterable[Attribute[_]]
             ): Resource[F, Unit] =
               Resource
                 .makeCase(Sync[F].monotonic) { case (start, ec) =>

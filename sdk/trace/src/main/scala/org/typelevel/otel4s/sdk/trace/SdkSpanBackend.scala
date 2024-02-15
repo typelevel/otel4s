@@ -39,6 +39,7 @@ import org.typelevel.otel4s.trace.SpanContext
 import org.typelevel.otel4s.trace.SpanKind
 import org.typelevel.otel4s.trace.Status
 
+import scala.collection.immutable
 import scala.concurrent.duration.FiniteDuration
 
 /** The backend of the span that manages it's internal state. It has mutable and
@@ -82,26 +83,24 @@ private final class SdkSpanBackend[F[_]: Monad: Clock: Console] private (
   def updateName(name: String): F[Unit] =
     updateState("updateName")(_.copy(name = name)).void
 
-  def addAttributes(attributes: Attribute[_]*): F[Unit] =
+  def addAttributes(attributes: immutable.Iterable[Attribute[_]]): F[Unit] =
     updateState("addAttributes") { s =>
-      val next = Attributes.newBuilder
-        .addAll(s.attributes)
-        .addAll(attributes)
-        .result()
-
-      s.copy(attributes = next)
+      s.copy(attributes = s.attributes ++ attributes)
     }.unlessA(attributes.isEmpty)
 
-  def addEvent(name: String, attributes: Attribute[_]*): F[Unit] =
+  def addEvent(
+      name: String,
+      attributes: immutable.Iterable[Attribute[_]]
+  ): F[Unit] =
     for {
       now <- Clock[F].realTime
-      _ <- addEvent(name, now, attributes: _*)
+      _ <- addEvent(name, now, attributes)
     } yield ()
 
   def addEvent(
       name: String,
       timestamp: FiniteDuration,
-      attributes: Attribute[_]*
+      attributes: immutable.Iterable[Attribute[_]]
   ): F[Unit] =
     addTimedEvent(
       EventData(name, timestamp, Attributes.fromSpecific(attributes))
@@ -109,7 +108,7 @@ private final class SdkSpanBackend[F[_]: Monad: Clock: Console] private (
 
   def recordException(
       exception: Throwable,
-      attributes: Attribute[_]*
+      attributes: immutable.Iterable[Attribute[_]]
   ): F[Unit] =
     for {
       now <- Clock[F].realTime
@@ -118,7 +117,7 @@ private final class SdkSpanBackend[F[_]: Monad: Clock: Console] private (
           now,
           exception,
           Attributes.fromSpecific(attributes),
-          false
+          escaped = false
         )
       )
     } yield ()

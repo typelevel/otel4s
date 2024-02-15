@@ -55,7 +55,7 @@ class SdkSpanBackendSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
       for {
         span <- start(attributes = attributes)
         _ <- assertIO(span.toSpanData.map(_.attributes), attributes)
-        _ <- span.addAttributes(nextAttributes.toList: _*)
+        _ <- span.addAttributes(nextAttributes)
         _ <- assertIO(span.toSpanData.map(_.attributes), expected)
       } yield ()
     }
@@ -69,7 +69,7 @@ class SdkSpanBackendSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
         for {
           span <- start()
           _ <- assertIO(span.toSpanData.map(_.events), Vector.empty)
-          _ <- span.addEvent(name, attributes.toList: _*)
+          _ <- span.addEvent(name, attributes)
           _ <- assertIO(span.toSpanData.map(_.events), Vector(event))
         } yield ()
       }
@@ -84,7 +84,7 @@ class SdkSpanBackendSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
         for {
           span <- start()
           _ <- assertIO(span.toSpanData.map(_.events), Vector.empty)
-          _ <- span.addEvent(name, ts, attrs.toList: _*)
+          _ <- span.addEvent(name, ts, attrs)
           _ <- assertIO(span.toSpanData.map(_.events), Vector(event))
         } yield ()
       }
@@ -116,7 +116,7 @@ class SdkSpanBackendSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
         for {
           span <- start()
           _ <- assertIO(span.toSpanData.map(_.events), Vector.empty)
-          _ <- span.recordException(exception, attributes.toList: _*)
+          _ <- span.recordException(exception, attributes)
           _ <- assertIO(span.toSpanData.map(_.events), Vector(event))
         } yield ()
       }
@@ -229,7 +229,7 @@ class SdkSpanBackendSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
         )
 
         // add attributes
-        _ <- span.addAttributes(extra.toList: _*)
+        _ <- span.addAttributes(extra)
 
         _ <- assertIO(
           init.toList.traverse(a => span.getAttribute(a.key)),
@@ -392,8 +392,8 @@ class SdkSpanBackendSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
           // should have zero effect
           _ <- IO.sleep(125.millis)
           _ <- span.updateName(name)
-          _ <- span.addAttributes(attributes.toList: _*)
-          _ <- span.addEvent("event")
+          _ <- span.addAttributes(attributes)
+          _ <- span.addEvent("event", Nil)
           _ <- span.setStatus(status)
           _ <- span.end
 

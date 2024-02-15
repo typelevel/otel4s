@@ -27,6 +27,7 @@ import io.opentelemetry.api.trace.{SpanKind => JSpanKind}
 import io.opentelemetry.api.trace.{Tracer => JTracer}
 import io.opentelemetry.context.{Context => JContext}
 import org.typelevel.otel4s.Attribute
+import org.typelevel.otel4s.Attributes
 import org.typelevel.otel4s.oteljava.context.Context
 import org.typelevel.otel4s.oteljava.context.LocalContext
 import org.typelevel.otel4s.trace.Span
@@ -36,6 +37,7 @@ import org.typelevel.otel4s.trace.SpanFinalizer
 import org.typelevel.otel4s.trace.SpanKind
 import org.typelevel.otel4s.trace.SpanOps
 
+import scala.collection.immutable
 import scala.concurrent.duration.FiniteDuration
 
 private[oteljava] final case class SpanBuilderImpl[F[_]: Sync](
@@ -46,8 +48,8 @@ private[oteljava] final case class SpanBuilderImpl[F[_]: Sync](
     finalizationStrategy: SpanFinalizer.Strategy =
       SpanFinalizer.Strategy.reportAbnormal,
     kind: Option[SpanKind] = None,
-    links: Seq[(SpanContext, Seq[Attribute[_]])] = Nil,
-    attributes: Seq[Attribute[_]] = Nil,
+    links: Seq[(SpanContext, Attributes)] = Nil,
+    attributes: Attributes = Attributes.empty,
     startTimestamp: Option[FiniteDuration] = None
 )(implicit L: LocalContext[F])
     extends SpanBuilder[F] {
@@ -57,16 +59,18 @@ private[oteljava] final case class SpanBuilderImpl[F[_]: Sync](
     copy(kind = Some(spanKind))
 
   def addAttribute[A](attribute: Attribute[A]): SpanBuilder[F] =
-    copy(attributes = attributes :+ attribute)
+    copy(attributes = attributes + attribute)
 
-  def addAttributes(attributes: Attribute[_]*): SpanBuilder[F] =
+  def addAttributes(
+      attributes: immutable.Iterable[Attribute[_]]
+  ): SpanBuilder[F] =
     copy(attributes = this.attributes ++ attributes)
 
   def addLink(
       spanContext: SpanContext,
-      attributes: Attribute[_]*
+      attributes: immutable.Iterable[Attribute[_]]
   ): SpanBuilder[F] =
-    copy(links = links :+ (spanContext, attributes))
+    copy(links = links :+ (spanContext, attributes.to(Attributes)))
 
   def root: SpanBuilder[F] =
     copy(parent = Parent.Root)

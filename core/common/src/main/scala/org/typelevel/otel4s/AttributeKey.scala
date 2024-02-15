@@ -39,7 +39,8 @@ sealed trait AttributeKey[A] {
     *   an [[`AttributeKey`]] of the same type as this key, with name
     *   transformed by `f`
     */
-  def transformName(f: String => String): AttributeKey[A]
+  final def transformName(f: String => String): AttributeKey[A] =
+    new AttributeKey.Impl[A](f(name), `type`)
 }
 
 object AttributeKey {
@@ -59,9 +60,6 @@ object AttributeKey {
         case _ =>
           false
       }
-
-    override def transformName(f: String => String): AttributeKey[A] =
-      new Impl[A](f(name), `type`)
   }
 
   def string(name: String): AttributeKey[String] =

@@ -29,13 +29,13 @@ import io.opentelemetry.context.{Context => JContext}
 import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.Attributes
 import org.typelevel.otel4s.oteljava.context.Context
-import org.typelevel.otel4s.oteljava.context.LocalContext
 import org.typelevel.otel4s.trace.Span
 import org.typelevel.otel4s.trace.SpanBuilder
 import org.typelevel.otel4s.trace.SpanContext
 import org.typelevel.otel4s.trace.SpanFinalizer
 import org.typelevel.otel4s.trace.SpanKind
 import org.typelevel.otel4s.trace.SpanOps
+import org.typelevel.otel4s.trace.TraceScope
 
 import scala.collection.immutable
 import scala.concurrent.duration.FiniteDuration
@@ -44,6 +44,7 @@ private[oteljava] final case class SpanBuilderImpl[F[_]: Sync](
     jTracer: JTracer,
     name: String,
     runner: SpanRunner[F],
+    scope: TraceScope[F, Context],
     parent: SpanBuilderImpl.Parent = SpanBuilderImpl.Parent.Propagate,
     finalizationStrategy: SpanFinalizer.Strategy =
       SpanFinalizer.Strategy.reportAbnormal,
@@ -51,8 +52,7 @@ private[oteljava] final case class SpanBuilderImpl[F[_]: Sync](
     links: Seq[(SpanContext, Attributes)] = Nil,
     attributes: Attributes = Attributes.empty,
     startTimestamp: Option[FiniteDuration] = None
-)(implicit L: LocalContext[F])
-    extends SpanBuilder[F] {
+) extends SpanBuilder[F] {
   import SpanBuilderImpl._
 
   def withSpanKind(spanKind: SpanKind): SpanBuilder[F] =
@@ -130,20 +130,33 @@ private[oteljava] final case class SpanBuilderImpl[F[_]: Sync](
     }
 
   private def parentContext: F[Option[JContext]] =
-    L.reader {
-      case Context.Noop => None
-      case Context.Wrapped(underlying) =>
-        Some {
+    scope.contextReader { case Context.Wrapped(underlying) =>
+      def explicit(parent: SpanContext) =
+        JSpan
+          .wrap(SpanContextConversions.toJava(parent))
+          .storeInContext(underlying)
+
+      Option(JSpan.fromContextOrNull(underlying)) match {
+        // there is a valid span in the current context = child scope
+        case Some(current) if current.getSpanContext.isValid =>
           parent match {
-            case Parent.Root =>
-              Context.root.underlying
-            case Parent.Propagate => underlying
-            case Parent.Explicit(parent) =>
-              JSpan
-                .wrap(SpanContextConversions.toJava(parent))
-                .storeInContext(underlying)
+            case Parent.Root             => Some(JContext.root)
+            case Parent.Propagate        => Some(underlying)
+            case Parent.Explicit(parent) => Some(explicit(parent))
           }
-        }
+
+        // there is no span in the current context = root scope
+        case None =>
+          parent match {
+            case Parent.Root             => Some(underlying)
+            case Parent.Propagate        => Some(underlying)
+            case Parent.Explicit(parent) => Some(explicit(parent))
+          }
+
+        // there is an invalid span = noop scope
+        case Some(_) =>
+          None
+      }
     }
 }
 

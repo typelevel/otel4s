@@ -1224,7 +1224,12 @@ class TracerSuite extends CatsEffectSuite {
         JTextMapPropagator.composite(textMapPropagators.asJava).asScala
       )
 
-      val provider = TracerProviderImpl.local[IO](tracerProvider, propagators)
+      val provider = TracerProviderImpl.local[IO](
+        tracerProvider,
+        propagators,
+        TraceScopeImpl.fromLocal
+      )
+
       new TracerSuite.Sdk(provider, exporter)
     }
   }

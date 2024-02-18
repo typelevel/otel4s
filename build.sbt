@@ -169,7 +169,8 @@ lazy val `core-trace` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
       "org.typelevel" %%% "cats-effect-kernel" % CatsEffectVersion,
       "org.scodec" %%% "scodec-bits" % ScodecVersion,
       "org.typelevel" %%% "cats-laws" % CatsVersion % Test,
-      "org.typelevel" %%% "discipline-munit" % MUnitDisciplineVersion % Test
+      "org.typelevel" %%% "discipline-munit" % MUnitDisciplineVersion % Test,
+      "org.typelevel" %%% "scalacheck-effect-munit" % MUnitScalaCheckEffectVersion % Test
     )
   )
   .settings(scalafixSettings)
@@ -401,7 +402,10 @@ lazy val `oteljava-metrics-testkit` = project
 
 lazy val `oteljava-trace` = project
   .in(file("oteljava/trace"))
-  .dependsOn(`oteljava-common`, `core-trace`.jvm)
+  .dependsOn(
+    `oteljava-common`,
+    `core-trace`.jvm % "compile->compile;test->test"
+  )
   .settings(munitDependencies)
   .settings(
     name := "otel4s-oteljava-trace",

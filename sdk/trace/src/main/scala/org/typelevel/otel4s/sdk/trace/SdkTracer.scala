@@ -31,13 +31,14 @@ import org.typelevel.otel4s.sdk.trace.processor.SpanStorage
 import org.typelevel.otel4s.trace.Span
 import org.typelevel.otel4s.trace.SpanBuilder
 import org.typelevel.otel4s.trace.SpanContext
+import org.typelevel.otel4s.trace.TraceScope
 import org.typelevel.otel4s.trace.Tracer
 
 private final class SdkTracer[F[_]: Temporal: Console] private[trace] (
     scopeInfo: InstrumentationScope,
     propagators: ContextPropagators[Context],
     sharedState: TracerSharedState[F],
-    traceScope: SdkTraceScope[F],
+    traceScope: TraceScope[F, Context],
     storage: SpanStorage[F]
 ) extends Tracer[F] {
 

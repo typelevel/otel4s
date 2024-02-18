@@ -17,39 +17,36 @@
 package org.typelevel.otel4s.oteljava.trace
 
 import cats.effect.Sync
+import cats.syntax.flatMap._
+import cats.syntax.functor._
 import io.opentelemetry.api.trace.{Span => JSpan}
 import io.opentelemetry.api.trace.{Tracer => JTracer}
 import org.typelevel.otel4s.context.propagation.ContextPropagators
 import org.typelevel.otel4s.context.propagation.TextMapGetter
 import org.typelevel.otel4s.context.propagation.TextMapUpdater
 import org.typelevel.otel4s.oteljava.context.Context
-import org.typelevel.otel4s.oteljava.context.LocalContext
 import org.typelevel.otel4s.trace.Span
 import org.typelevel.otel4s.trace.SpanBuilder
 import org.typelevel.otel4s.trace.SpanContext
+import org.typelevel.otel4s.trace.TraceScope
 import org.typelevel.otel4s.trace.Tracer
 
 private[oteljava] class TracerImpl[F[_]: Sync](
     jTracer: JTracer,
-    propagators: ContextPropagators[Context]
-)(implicit L: LocalContext[F])
-    extends Tracer[F] {
+    propagators: ContextPropagators[Context],
+    traceScope: TraceScope[F, Context],
+) extends Tracer[F] {
 
-  private val runner: SpanRunner[F] = SpanRunner.fromLocal
+  private val runner: SpanRunner[F] = SpanRunner.fromTraceScope(traceScope)
 
   val meta: Tracer.Meta[F] =
     Tracer.Meta.enabled
 
   def currentSpanContext: F[Option[SpanContext]] =
-    L.reader {
-      case Context.Noop => None
-      case Context.Wrapped(underlying) =>
-        Option(JSpan.fromContextOrNull(underlying))
-          .map(jSpan => SpanContextConversions.toScala(jSpan.getSpanContext))
-    }
+    traceScope.current.map(_.filter(_.isValid))
 
   def currentSpanOrNoop: F[Span[F]] =
-    L.reader { ctx =>
+    traceScope.contextReader { ctx =>
       Span.fromBackend(
         SpanBackendImpl.fromJSpan(
           JSpan.fromContext(ctx.underlying)
@@ -58,27 +55,24 @@ private[oteljava] class TracerImpl[F[_]: Sync](
     }
 
   def spanBuilder(name: String): SpanBuilder[F] =
-    new SpanBuilderImpl[F](jTracer, name, runner)
+    new SpanBuilderImpl[F](jTracer, name, runner, traceScope)
 
   def childScope[A](parent: SpanContext)(fa: F[A]): F[A] =
-    L.local(fa) {
-      _.map(JSpan.wrap(SpanContextConversions.toJava(parent)).storeInContext)
-    }
+    traceScope.childScope(parent).flatMap(trace => trace(fa))
 
   def rootScope[A](fa: F[A]): F[A] =
-    L.local(fa) {
-      case Context.Noop       => Context.Noop
-      case Context.Wrapped(_) => Context.root
-    }
+    traceScope.rootScope.flatMap(trace => trace(fa))
 
   def noopScope[A](fa: F[A]): F[A] =
-    L.scope(fa)(Context.Noop)
+    traceScope.noopScope(fa)
 
   def joinOrRoot[A, C: TextMapGetter](carrier: C)(fa: F[A]): F[A] = {
     val context = propagators.textMapPropagator.extract(Context.root, carrier)
-    L.scope(fa)(context)
+    traceScope.withContext(context)(fa)
   }
 
   def propagate[C: TextMapUpdater](carrier: C): F[C] =
-    L.reader(propagators.textMapPropagator.inject(_, carrier))
+    traceScope.contextReader(ctx =>
+      propagators.textMapPropagator.inject(ctx, carrier)
+    )
 }

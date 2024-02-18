@@ -29,6 +29,7 @@ import org.typelevel.otel4s.sdk.context.LocalContext
 import org.typelevel.otel4s.sdk.trace.processor.SpanProcessor
 import org.typelevel.otel4s.sdk.trace.processor.SpanStorage
 import org.typelevel.otel4s.sdk.trace.samplers.Sampler
+import org.typelevel.otel4s.trace.TraceScope
 import org.typelevel.otel4s.trace.TracerBuilder
 import org.typelevel.otel4s.trace.TracerProvider
 
@@ -38,7 +39,7 @@ private class SdkTracerProvider[F[_]: Temporal: Parallel: Console](
     sampler: Sampler,
     propagators: ContextPropagators[Context],
     spanProcessors: List[SpanProcessor[F]],
-    traceScope: SdkTraceScope[F],
+    traceScope: TraceScope[F, Context],
     storage: SpanStorage[F]
 ) extends TracerProvider[F] {
 

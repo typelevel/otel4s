@@ -28,13 +28,14 @@ import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter
 import io.opentelemetry.sdk.trace.SdkTracerProvider
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder
 import io.opentelemetry.sdk.trace.SpanProcessor
-import io.opentelemetry.sdk.trace.`export`.BatchSpanProcessor
+import io.opentelemetry.sdk.trace.`export`.SimpleSpanProcessor
 import io.opentelemetry.sdk.trace.`export`.SpanExporter
 import org.typelevel.otel4s.context.LocalProvider
 import org.typelevel.otel4s.context.propagation.ContextPropagators
 import org.typelevel.otel4s.oteljava.context.Context
 import org.typelevel.otel4s.oteljava.context.LocalContextProvider
 import org.typelevel.otel4s.oteljava.context.propagation.PropagatorConverters._
+import org.typelevel.otel4s.oteljava.trace.TraceScopeImpl
 import org.typelevel.otel4s.oteljava.trace.TracerProviderImpl
 import org.typelevel.otel4s.trace.TracerProvider
 
@@ -80,7 +81,7 @@ object TracesTestkit {
       Async[F].delay(InMemorySpanExporter.create())
 
     def createSpanProcessor(exporter: SpanExporter) =
-      Async[F].delay(BatchSpanProcessor.builder(exporter).build)
+      Async[F].delay(SimpleSpanProcessor.builder(exporter).build)
 
     def createTracerProvider(processor: SpanProcessor): F[SdkTracerProvider] =
       Async[F].delay {
@@ -103,8 +104,9 @@ object TracesTestkit {
     } yield new Impl(
       TracerProviderImpl.local[F](
         provider,
-        contextPropagators
-      )(Async[F], local),
+        contextPropagators,
+        TraceScopeImpl.fromLocal[F](local)
+      ),
       processor,
       exporter
     )

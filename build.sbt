@@ -250,7 +250,11 @@ lazy val sdk = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .crossType(CrossType.Pure)
   .enablePlugins(NoPublishPlugin)
   .in(file("sdk/all"))
-  .dependsOn(`sdk-common`, `sdk-trace`)
+  .dependsOn(
+    `sdk-common`,
+    `sdk-trace` % "compile->compile;test->test",
+    `sdk-trace-testkit` % Test
+  )
   .settings(
     name := "otel4s-sdk"
   )
@@ -441,8 +445,9 @@ lazy val oteljava = project
   .dependsOn(
     core.jvm,
     `oteljava-metrics`,
-    `oteljava-trace`,
-    `oteljava-metrics-testkit` % Test
+    `oteljava-metrics-testkit` % Test,
+    `oteljava-trace` % "compile->compile;test->test",
+    `oteljava-trace-testkit` % Test
   )
   .settings(
     name := "otel4s-oteljava",

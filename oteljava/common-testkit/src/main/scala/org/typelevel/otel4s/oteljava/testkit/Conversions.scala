@@ -28,7 +28,7 @@ import org.typelevel.otel4s.Attributes
 
 import scala.jdk.CollectionConverters._
 
-private[testkit] object Conversions {
+private[oteljava] object Conversions {
 
   def fromJAttributes(attributes: JAttributes): Attributes = {
     val converted = attributes.asMap().asScala.toList.collect {

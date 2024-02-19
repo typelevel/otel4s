@@ -251,7 +251,9 @@ lazy val sdk = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .enablePlugins(NoPublishPlugin)
   .in(file("sdk/all"))
   .dependsOn(
-    core, `sdk-common`,`sdk-trace` % "compile->compile;test->test",
+    core,
+    `sdk-common`,
+    `sdk-trace` % "compile->compile;test->test",
     `sdk-trace-testkit` % Test
   )
   .settings(

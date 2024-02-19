@@ -49,7 +49,7 @@ val MUnitCatsEffectVersion = "2.0.0-M4"
 val MUnitDisciplineVersion = "2.0.0-M3"
 val MUnitScalaCheckEffectVersion = "2.0.0-M2"
 val OpenTelemetryVersion = "1.35.0"
-val OpenTelemetryInstrumentationVersion = "2.0.0"
+val OpenTelemetryInstrumentationVersion = "2.1.0"
 val OpenTelemetrySemConvVersion = "1.23.1-alpha"
 val OpenTelemetryProtoVersion = "1.1.0-alpha"
 val PekkoStreamVersion = "1.0.2"
@@ -169,7 +169,8 @@ lazy val `core-trace` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
       "org.typelevel" %%% "cats-effect-kernel" % CatsEffectVersion,
       "org.scodec" %%% "scodec-bits" % ScodecVersion,
       "org.typelevel" %%% "cats-laws" % CatsVersion % Test,
-      "org.typelevel" %%% "discipline-munit" % MUnitDisciplineVersion % Test
+      "org.typelevel" %%% "discipline-munit" % MUnitDisciplineVersion % Test,
+      "org.typelevel" %%% "scalacheck-effect-munit" % MUnitScalaCheckEffectVersion % Test
     )
   )
   .settings(scalafixSettings)
@@ -249,7 +250,10 @@ lazy val sdk = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .crossType(CrossType.Pure)
   .enablePlugins(NoPublishPlugin)
   .in(file("sdk/all"))
-  .dependsOn(core, `sdk-common`, `sdk-trace`)
+  .dependsOn(
+    core, `sdk-common`,`sdk-trace` % "compile->compile;test->test",
+    `sdk-trace-testkit` % Test
+  )
   .settings(
     name := "otel4s-sdk"
   )
@@ -402,7 +406,10 @@ lazy val `oteljava-metrics-testkit` = project
 
 lazy val `oteljava-trace` = project
   .in(file("oteljava/trace"))
-  .dependsOn(`oteljava-common`, `core-trace`.jvm)
+  .dependsOn(
+    `oteljava-common`,
+    `core-trace`.jvm % "compile->compile;test->test"
+  )
   .settings(munitDependencies)
   .settings(
     name := "otel4s-oteljava-trace",
@@ -427,19 +434,21 @@ lazy val `oteljava-trace-testkit` = project
 
 lazy val `oteljava-testkit` = project
   .in(file("oteljava/testkit"))
-  .dependsOn(`oteljava-metrics-testkit`, `oteljava-trace-testkit`)
+  .dependsOn(core.jvm, `oteljava-metrics-testkit`, `oteljava-trace-testkit`)
   .settings(
     name := "otel4s-oteljava-testkit",
     startYear := Some(2024)
   )
+  .settings(scalafixSettings)
 
 lazy val oteljava = project
   .in(file("oteljava/all"))
   .dependsOn(
     core.jvm,
     `oteljava-metrics`,
-    `oteljava-trace`,
-    `oteljava-metrics-testkit` % Test
+    `oteljava-metrics-testkit` % Test,
+    `oteljava-trace` % "compile->compile;test->test",
+    `oteljava-trace-testkit` % Test
   )
   .settings(
     name := "otel4s-oteljava",

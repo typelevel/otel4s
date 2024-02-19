@@ -18,6 +18,7 @@ package org.typelevel.otel4s.sdk.trace
 
 import cats.Foldable
 import cats.effect.IO
+import cats.effect.std.Console
 import munit.CatsEffectSuite
 import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.Attributes
@@ -41,6 +42,8 @@ import org.typelevel.otel4s.trace.SpanKind
 import scodec.bits.ByteVector
 
 class SdkTracesSuite extends CatsEffectSuite {
+
+  private implicit val noopConsole: Console[IO] = new NoopConsole[IO]
 
   private val DefaultTraces =
     tracesToString(
@@ -264,8 +267,7 @@ class SdkTracesSuite extends CatsEffectSuite {
       exporter: String = "SpanExporter.Noop"
   ) =
     "SdkTraces{tracerProvider=" +
-      s"SdkTracerProvider{resource=$resource, spanLimits=${SpanLimits.Default}, " +
-      s"sampler=$sampler, " +
+      s"SdkTracerProvider{resource=$resource, spanLimits=${SpanLimits.Default}, sampler=$sampler, " +
       "spanProcessor=SpanProcessor.Multi(" +
       s"BatchSpanProcessor{exporter=$exporter, scheduleDelay=5 seconds, exporterTimeout=30 seconds, maxQueueSize=2048, maxExportBatchSize=512}, " +
       "SpanStorage)}, " +

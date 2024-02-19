@@ -25,6 +25,8 @@ import cats.syntax.applicative._
 import cats.syntax.foldable._
 import cats.syntax.semigroup._
 
+import scala.collection.immutable
+
 sealed trait SpanFinalizer
 
 object SpanFinalizer {
@@ -53,7 +55,7 @@ object SpanFinalizer {
   ) extends SpanFinalizer
 
   final class AddAttributes private[SpanFinalizer] (
-      val attributes: Seq[Attribute[_]]
+      val attributes: Attributes
   ) extends SpanFinalizer
 
   final class Multiple private[SpanFinalizer] (
@@ -70,10 +72,15 @@ object SpanFinalizer {
     new SetStatus(status, Some(description))
 
   def addAttribute[A](attribute: Attribute[A]): SpanFinalizer =
-    new AddAttributes(List(attribute))
+    new AddAttributes(Attributes(attribute))
 
   def addAttributes(attributes: Attribute[_]*): SpanFinalizer =
-    new AddAttributes(attributes)
+    addAttributes(attributes)
+
+  def addAttributes(
+      attributes: immutable.Iterable[Attribute[_]]
+  ): SpanFinalizer =
+    new AddAttributes(attributes.to(Attributes))
 
   def multiple(head: SpanFinalizer, tail: SpanFinalizer*): Multiple =
     new Multiple(NonEmptyList.of(head, tail: _*))
@@ -100,7 +107,7 @@ object SpanFinalizer {
     def loop(input: SpanFinalizer): F[Unit] =
       input match {
         case r: RecordException =>
-          backend.recordException(r.throwable)
+          backend.recordException(r.throwable, Attributes.empty)
 
         case s: SetStatus =>
           s.description match {
@@ -109,7 +116,7 @@ object SpanFinalizer {
           }
 
         case s: AddAttributes =>
-          backend.addAttributes(s.attributes: _*)
+          backend.addAttributes(s.attributes)
 
         case m: Multiple =>
           m.finalizers.traverse_(strategy => loop(strategy))

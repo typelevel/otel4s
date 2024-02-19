@@ -17,6 +17,7 @@
 package org.typelevel.otel4s
 package metrics
 
+import scala.collection.immutable
 import scala.quoted.*
 
 private[otel4s] trait UpDownCounterMacro[F[_], A] {
@@ -33,12 +34,34 @@ private[otel4s] trait UpDownCounterMacro[F[_], A] {
   inline def add(inline value: A, inline attributes: Attribute[_]*): F[Unit] =
     ${ UpDownCounterMacro.add('backend, 'value, 'attributes) }
 
+  /** Records a value with a set of attributes.
+    *
+    * @param value
+    *   the value to add to the counter
+    *
+    * @param attributes
+    *   the set of attributes to associate with the value
+    */
+  inline def add(
+      inline value: A,
+      inline attributes: immutable.Iterable[Attribute[_]]
+  ): F[Unit] =
+    ${ UpDownCounterMacro.add('backend, 'value, 'attributes) }
+
   /** Increments a counter by one.
     *
     * @param attributes
     *   the set of attributes to associate with the value
     */
   inline def inc(inline attributes: Attribute[_]*): F[Unit] =
+    ${ UpDownCounterMacro.inc('backend, 'attributes) }
+
+  /** Increments a counter by one.
+    *
+    * @param attributes
+    *   the set of attributes to associate with the value
+    */
+  inline def inc(inline attributes: immutable.Iterable[Attribute[_]]): F[Unit] =
     ${ UpDownCounterMacro.inc('backend, 'attributes) }
 
   /** Decrements a counter by one.
@@ -49,6 +72,14 @@ private[otel4s] trait UpDownCounterMacro[F[_], A] {
   inline def dec(inline attributes: Attribute[_]*): F[Unit] =
     ${ UpDownCounterMacro.dec('backend, 'attributes) }
 
+  /** Decrements a counter by one.
+    *
+    * @param attributes
+    *   the set of attributes to associate with the value
+    */
+  inline def dec(inline attributes: immutable.Iterable[Attribute[_]]): F[Unit] =
+    ${ UpDownCounterMacro.dec('backend, 'attributes) }
+
 }
 
 object UpDownCounterMacro {
@@ -56,28 +87,28 @@ object UpDownCounterMacro {
   def add[F[_], A](
       backend: Expr[UpDownCounter.Backend[F, A]],
       value: Expr[A],
-      attributes: Expr[Seq[Attribute[_]]]
+      attributes: Expr[immutable.Iterable[Attribute[_]]]
   )(using Quotes, Type[F], Type[A]) =
     '{
-      if ($backend.meta.isEnabled) $backend.add($value, $attributes*)
+      if ($backend.meta.isEnabled) $backend.add($value, $attributes)
       else $backend.meta.unit
     }
 
   def inc[F[_], A](
       backend: Expr[UpDownCounter.Backend[F, A]],
-      attributes: Expr[Seq[Attribute[_]]]
+      attributes: Expr[immutable.Iterable[Attribute[_]]]
   )(using Quotes, Type[F], Type[A]) =
     '{
-      if ($backend.meta.isEnabled) $backend.inc($attributes*)
+      if ($backend.meta.isEnabled) $backend.inc($attributes)
       else $backend.meta.unit
     }
 
   def dec[F[_], A](
       backend: Expr[UpDownCounter.Backend[F, A]],
-      attributes: Expr[Seq[Attribute[_]]]
+      attributes: Expr[immutable.Iterable[Attribute[_]]]
   )(using Quotes, Type[F], Type[A]) =
     '{
-      if ($backend.meta.isEnabled) $backend.dec($attributes*)
+      if ($backend.meta.isEnabled) $backend.dec($attributes)
       else $backend.meta.unit
     }
 

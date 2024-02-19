@@ -28,6 +28,7 @@ import cats.syntax.functor._
 import cats.syntax.semigroup._
 import cats.~>
 import org.typelevel.otel4s.sdk.common.InstrumentationScope
+import org.typelevel.otel4s.sdk.context.Context
 import org.typelevel.otel4s.sdk.trace.data.LinkData
 import org.typelevel.otel4s.sdk.trace.samplers.SamplingResult
 import org.typelevel.otel4s.trace.Span
@@ -37,16 +38,18 @@ import org.typelevel.otel4s.trace.SpanFinalizer
 import org.typelevel.otel4s.trace.SpanKind
 import org.typelevel.otel4s.trace.SpanOps
 import org.typelevel.otel4s.trace.TraceFlags
+import org.typelevel.otel4s.trace.TraceScope
 import org.typelevel.otel4s.trace.TraceState
 import scodec.bits.ByteVector
 
+import scala.collection.immutable
 import scala.concurrent.duration.FiniteDuration
 
 private final case class SdkSpanBuilder[F[_]: Temporal: Console](
     name: String,
     scopeInfo: InstrumentationScope,
     tracerSharedState: TracerSharedState[F],
-    scope: SdkTraceScope[F],
+    scope: TraceScope[F, Context],
     parent: SdkSpanBuilder.Parent = SdkSpanBuilder.Parent.Propagate,
     finalizationStrategy: SpanFinalizer.Strategy =
       SpanFinalizer.Strategy.reportAbnormal,
@@ -63,12 +66,14 @@ private final case class SdkSpanBuilder[F[_]: Temporal: Console](
   def addAttribute[A](attribute: Attribute[A]): SpanBuilder[F] =
     copy(attributes = attributes :+ attribute)
 
-  def addAttributes(attributes: Attribute[_]*): SpanBuilder[F] =
+  def addAttributes(
+      attributes: immutable.Iterable[Attribute[_]]
+  ): SpanBuilder[F] =
     copy(attributes = this.attributes ++ attributes)
 
   def addLink(
       spanContext: SpanContext,
-      attributes: Attribute[_]*
+      attributes: immutable.Iterable[Attribute[_]]
   ): SpanBuilder[F] =
     copy(links =
       links :+ LinkData(spanContext, Attributes.fromSpecific(attributes))

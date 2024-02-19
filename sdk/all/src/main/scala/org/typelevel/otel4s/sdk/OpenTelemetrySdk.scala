@@ -74,6 +74,7 @@ object OpenTelemetrySdk {
     *
     * OpenTelemetrySdk.autoConfigured[IO](_.addExporterConfigurer(OtlpSpanExporterAutoConfigure[IO]))
     *   }}}
+    *
     * @param customize
     *   a function for customizing the auto-configured SDK builder
     */
@@ -130,35 +131,95 @@ object OpenTelemetrySdk {
         */
       def withConfig(config: Config): Builder[F]
 
+      /** Adds the properties loader. Multiple loaders will be added. The loaded
+        * properties will be merged with the default config. Loaded properties
+        * take precedence over the default ones.
+        *
+        * @param loader
+        *   the additional loader to add
+        */
       def addPropertiesLoader(loader: F[Map[String, String]]): Builder[F]
 
+      /** Adds the properties customizer. Multiple customizers can be added, and
+        * they will be applied in the order they were added.
+        *
+        * @param customizer
+        *   the customizer to add
+        */
       def addPropertiesCustomizer(
           customizer: Config => Map[String, String]
       ): Builder[F]
 
+      /** Adds the tracer provider builder customizer. Multiple customizers can
+        * be added, and they will be applied in the order they were added.
+        *
+        * @param customizer
+        *   the customizer to add
+        */
       def addTracerProviderCustomizer(
           customizer: Customizer[SdkTracerProvider.Builder[F]]
       ): Builder[F]
 
+      /** Adds the telemetry resource customizer. Multiple customizers can be
+        * added, and they will be applied in the order they were added.
+        *
+        * @param customizer
+        *   the customizer to add
+        */
       def addResourceCustomizer(
           customizer: Customizer[TelemetryResource]
       ): Builder[F]
 
+      /** Adds the exporter configurer. Can be used to register exporters that
+        * aren't included in the SDK.
+        *
+        * @example
+        *   Add the `otel4s-sdk-exporter` dependency to the build file:
+        *   {{{
+        * libraryDependencies += "org.typelevel" %%% "otel4s-sdk-exporter" % "x.x.x"
+        *   }}}
+        *   and register the configurer manually:
+        *   {{{
+        * import org.typelevel.otel4s.sdk.OpenTelemetrySdk
+        * import org.typelevel.otel4s.sdk.exporter.otlp.trace.autoconfigure.OtlpSpanExporterAutoConfigure
+        *
+        * OpenTelemetrySdk.autoConfigured[IO](_.addExporterConfigurer(OtlpSpanExporterAutoConfigure[IO]))
+        *   }}}
+        *
+        * @param configurer
+        *   the configurer to add
+        */
       def addExporterConfigurer(
           configurer: AutoConfigure.Named[F, SpanExporter[F]]
       ): Builder[F]
 
+      /** Adds the sampler configurer. Can be used to register samplers that
+        * aren't included in the SDK.
+        *
+        * @param configurer
+        *   the configurer to add
+        */
       def addSamplerConfigurer(
           configurer: AutoConfigure.Named[F, Sampler]
       ): Builder[F]
 
+      /** Adds the text map propagator configurer. Can be used to register
+        * propagators that aren't included in the SDK.
+        *
+        * @param configurer
+        *   the configurer to add
+        */
       def addTextMapPropagatorConfigurer(
           configurer: AutoConfigure.Named[F, TextMapPropagator[Context]]
       ): Builder[F]
 
+      /** Creates [[OpenTelemetrySdk]] using the configuration of this builder.
+        */
       def build: Resource[F, AutoConfigured[F]]
     }
 
+    /** Creates a [[Builder]].
+      */
     def builder[
         F[_]: Async: Parallel: Console: LocalContextProvider
     ]: Builder[F] =
@@ -242,6 +303,9 @@ object OpenTelemetrySdk {
         def loadNoop: Resource[F, OpenTelemetrySdk[F]] =
           Resource.eval(
             for {
+              _ <- Console[F].println(
+                s"OpenTelemetrySdk: the '${CommonConfigKeys.SdkDisabled}' set to 'true'. Using no-op implementation"
+              )
               local <- LocalProvider[F, Context].local
             } yield OpenTelemetrySdk.noop[F](Async[F], local)
           )

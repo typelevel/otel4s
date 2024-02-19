@@ -290,6 +290,9 @@ object SdkTraces {
         def loadNoop: Resource[F, SdkTraces[F]] =
           Resource.eval(
             for {
+              _ <- Console[F].println(
+                s"SdkTraces: the '${CommonConfigKeys.SdkDisabled}' set to 'true'. Using no-op implementation"
+              )
               local <- LocalProvider[F, Context].local
             } yield SdkTraces.noop[F](Async[F], local)
           )

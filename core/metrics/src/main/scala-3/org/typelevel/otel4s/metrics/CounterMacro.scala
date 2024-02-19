@@ -17,6 +17,7 @@
 package org.typelevel.otel4s
 package metrics
 
+import scala.collection.immutable
 import scala.quoted.*
 
 private[otel4s] trait CounterMacro[F[_], A] {
@@ -33,12 +34,34 @@ private[otel4s] trait CounterMacro[F[_], A] {
   inline def add(inline value: A, inline attributes: Attribute[_]*): F[Unit] =
     ${ CounterMacro.add('backend, 'value, 'attributes) }
 
+  /** Records a value with a set of attributes.
+    *
+    * @param value
+    *   the value to increment a counter with. Must be '''non-negative'''
+    *
+    * @param attributes
+    *   the set of attributes to associate with the value
+    */
+  inline def add(
+      inline value: A,
+      inline attributes: immutable.Iterable[Attribute[_]]
+  ): F[Unit] =
+    ${ CounterMacro.add('backend, 'value, 'attributes) }
+
   /** Increments a counter by one.
     *
     * @param attributes
     *   the set of attributes to associate with the value
     */
   inline def inc(inline attributes: Attribute[_]*): F[Unit] =
+    ${ CounterMacro.inc('backend, 'attributes) }
+
+  /** Increments a counter by one.
+    *
+    * @param attributes
+    *   the set of attributes to associate with the value
+    */
+  inline def inc(inline attributes: immutable.Iterable[Attribute[_]]): F[Unit] =
     ${ CounterMacro.inc('backend, 'attributes) }
 
 }
@@ -48,19 +71,19 @@ object CounterMacro {
   def add[F[_], A](
       backend: Expr[Counter.Backend[F, A]],
       value: Expr[A],
-      attributes: Expr[Seq[Attribute[_]]]
+      attributes: Expr[immutable.Iterable[Attribute[_]]]
   )(using Quotes, Type[F], Type[A]) =
     '{
-      if ($backend.meta.isEnabled) $backend.add($value, $attributes*)
+      if ($backend.meta.isEnabled) $backend.add($value, $attributes)
       else $backend.meta.unit
     }
 
   def inc[F[_], A](
       backend: Expr[Counter.Backend[F, A]],
-      attributes: Expr[Seq[Attribute[_]]]
+      attributes: Expr[immutable.Iterable[Attribute[_]]]
   )(using Quotes, Type[F], Type[A]) =
     '{
-      if ($backend.meta.isEnabled) $backend.inc($attributes*)
+      if ($backend.meta.isEnabled) $backend.inc($attributes)
       else $backend.meta.unit
     }
 

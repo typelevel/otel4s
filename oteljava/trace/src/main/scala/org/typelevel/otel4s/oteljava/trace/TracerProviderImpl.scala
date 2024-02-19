@@ -20,23 +20,25 @@ import cats.effect.Sync
 import io.opentelemetry.api.trace.{TracerProvider => JTracerProvider}
 import org.typelevel.otel4s.context.propagation.ContextPropagators
 import org.typelevel.otel4s.oteljava.context.Context
-import org.typelevel.otel4s.oteljava.context.LocalContext
+import org.typelevel.otel4s.trace.TraceScope
 import org.typelevel.otel4s.trace.TracerBuilder
 import org.typelevel.otel4s.trace.TracerProvider
 
-private[oteljava] class TracerProviderImpl[F[_]: Sync: LocalContext] private (
+private[oteljava] class TracerProviderImpl[F[_]: Sync] private (
     jTracerProvider: JTracerProvider,
-    propagators: ContextPropagators[Context]
+    propagators: ContextPropagators[Context],
+    traceScope: TraceScope[F, Context],
 ) extends TracerProvider[F] {
   def tracer(name: String): TracerBuilder[F] =
-    TracerBuilderImpl(jTracerProvider, propagators, name)
+    TracerBuilderImpl(jTracerProvider, propagators, traceScope, name)
 }
 
 private[oteljava] object TracerProviderImpl {
 
-  def local[F[_]: Sync: LocalContext](
+  def local[F[_]: Sync](
       jTracerProvider: JTracerProvider,
-      propagators: ContextPropagators[Context]
+      propagators: ContextPropagators[Context],
+      traceScope: TraceScope[F, Context]
   ): TracerProvider[F] =
-    new TracerProviderImpl(jTracerProvider, propagators)
+    new TracerProviderImpl(jTracerProvider, propagators, traceScope)
 }

@@ -37,6 +37,7 @@ import org.typelevel.otel4s.sdk.trace.scalacheck.Arbitraries._
 import org.typelevel.otel4s.trace.SpanBuilder
 import org.typelevel.otel4s.trace.SpanContext
 import org.typelevel.otel4s.trace.SpanKind
+import org.typelevel.otel4s.trace.TraceScope
 
 import scala.concurrent.duration.FiniteDuration
 
@@ -132,7 +133,7 @@ class SdkSpanBuilderSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
     }
   }
 
-  private def createTraceScope: IO[SdkTraceScope[IO]] =
+  private def createTraceScope: IO[TraceScope[IO, Context]] =
     IOLocal(Context.root).map { implicit ioLocal =>
       SdkTraceScope.fromLocal[IO]
     }

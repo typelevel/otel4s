@@ -18,6 +18,7 @@ package org.typelevel.otel4s.sdk
 
 import cats.Foldable
 import cats.effect.IO
+import cats.effect.std.Console
 import munit.CatsEffectSuite
 import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.Attributes
@@ -28,6 +29,7 @@ import org.typelevel.otel4s.context.propagation.TextMapUpdater
 import org.typelevel.otel4s.sdk.autoconfigure.AutoConfigure
 import org.typelevel.otel4s.sdk.autoconfigure.Config
 import org.typelevel.otel4s.sdk.context.Context
+import org.typelevel.otel4s.sdk.trace.NoopConsole
 import org.typelevel.otel4s.sdk.trace.SpanLimits
 import org.typelevel.otel4s.sdk.trace.context.propagation.W3CBaggagePropagator
 import org.typelevel.otel4s.sdk.trace.context.propagation.W3CTraceContextPropagator
@@ -41,6 +43,8 @@ import org.typelevel.otel4s.trace.SpanKind
 import scodec.bits.ByteVector
 
 class OpenTelemetrySdkSuite extends CatsEffectSuite {
+
+  private implicit val noopConsole: Console[IO] = new NoopConsole[IO]
 
   private val DefaultSdk =
     sdkToString(
@@ -269,8 +273,7 @@ class OpenTelemetrySdkSuite extends CatsEffectSuite {
     "OpenTelemetrySdk.AutoConfigured{sdk=" +
       "OpenTelemetrySdk{meterProvider=MeterProvider.Noop, " +
       "tracerProvider=" +
-      s"SdkTracerProvider{resource=$resource, spanLimits=${SpanLimits.Default}, " +
-      s"sampler=$sampler, " +
+      s"SdkTracerProvider{resource=$resource, spanLimits=${SpanLimits.Default}, sampler=$sampler, " +
       "spanProcessor=SpanProcessor.Multi(" +
       s"BatchSpanProcessor{exporter=$exporter, scheduleDelay=5 seconds, exporterTimeout=30 seconds, maxQueueSize=2048, maxExportBatchSize=512}, " +
       "SpanStorage)}, " +

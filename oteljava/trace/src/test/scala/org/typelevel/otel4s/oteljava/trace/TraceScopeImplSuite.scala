@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Typelevel
+ * Copyright 2022 Typelevel
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,18 +14,20 @@
  * limitations under the License.
  */
 
-package org.typelevel.otel4s.sdk.trace
+package org.typelevel.otel4s.oteljava.trace
 
-import cats.mtl.Local
-import org.typelevel.otel4s.sdk.context.Context
+import cats.effect.IO
+import cats.effect.IOLocal
+import org.typelevel.otel4s.instances.local._
+import org.typelevel.otel4s.oteljava.context.Context
 import org.typelevel.otel4s.trace.TraceScope
+import org.typelevel.otel4s.trace.TraceScopeSuite
 
-private object SdkTraceScope {
+class TraceScopeImplSuite extends TraceScopeSuite[Context, Context.Key] {
 
-  def fromLocal[F[_]](implicit L: Local[F, Context]): TraceScope[F, Context] =
-    TraceScope.fromLocal(
-      ctx => ctx.get(SdkContextKeys.SpanContextKey),
-      (ctx, spanCtx) => ctx.updated(SdkContextKeys.SpanContextKey, spanCtx)
-    )
+  protected def createTraceScope: IO[TraceScope[IO, Context]] =
+    IOLocal(Context.root).map { implicit ioLocal =>
+      TraceScopeImpl.fromLocal[IO]
+    }
 
 }

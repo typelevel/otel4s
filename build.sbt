@@ -34,6 +34,7 @@ lazy val scalaNativeSettings = Def.settings(
   Test / envVars ++= Map("S2N_DONT_MLOCK" -> "1")
 )
 
+val Scala212 = "2.12.18"
 val Scala213 = "2.13.12"
 ThisBuild / crossScalaVersions := Seq(Scala213, "3.3.1")
 ThisBuild / scalaVersion := Scala213 // the default Scala
@@ -485,7 +486,7 @@ lazy val semconv = crossProject(JVMPlatform, JSPlatform, NativePlatform)
 lazy val scalafix = tlScalafixProject
   .rulesSettings(
     name := "otel4s-scalafix",
-    crossScalaVersions := Seq(Scala213),
+    crossScalaVersions := Seq(Scala212),
     startYear := Some(2024)
   )
   .inputSettings(
@@ -500,7 +501,7 @@ lazy val scalafix = tlScalafixProject
   )
   .outputConfigure(_.dependsOn(oteljava).disablePlugins(ScalafixPlugin))
   .testsSettings(
-    crossScalaVersions := Seq(Scala213),
+    crossScalaVersions := Seq(Scala212),
     startYear := Some(2024)
   )
 

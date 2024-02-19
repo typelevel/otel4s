@@ -26,18 +26,26 @@ class AttributesProps extends ScalaCheckSuite {
 
   private val listOfAttributes = Gen.listOf(Gens.attribute)
 
-  property("Attributes#size is equal to the number of unique keys") {
+  private def lastDistinct(
+      keys: Iterable[AttributeKey[_]]
+  ): Set[AttributeKey[_]] =
+    keys
+      .groupMapReduce(_.name)(identity)((_, second) => second)
+      .values
+      .toSet
+
+  property("Attributes#size is equal to the number of unique key names") {
     forAll(listOfAttributes) { attributes =>
-      val keysSet = attributes.map(_.key).toSet
+      val keyNames = attributes.map(_.key.name).toSet
       val attrs = attributes.to(Attributes)
 
-      keysSet.size == attrs.size
+      keyNames.size == attrs.size
     }
   }
 
   property("Attributes#isEmpty is true when there are no attributes") {
     forAll(listOfAttributes) { attributes =>
-      val keysSet = attributes.map(_.key).toSet
+      val keysSet = attributes.map(_.key.name).toSet
       val attrs = attributes.to(Attributes)
 
       keysSet.isEmpty == attrs.isEmpty
@@ -46,7 +54,7 @@ class AttributesProps extends ScalaCheckSuite {
 
   property("Attributes#contains is true when the key is present") {
     forAll(listOfAttributes) { attributes =>
-      val keysSet = attributes.map(_.key).toSet
+      val keysSet = lastDistinct(attributes.view.map(_.key))
       val attrs = attributes.to(Attributes)
 
       keysSet.forall(attrs.contains)
@@ -94,20 +102,38 @@ class AttributesProps extends ScalaCheckSuite {
     }
   }
 
-  property("Attributes#toMap returns a map of all attributes") {
+  property("Attributes#asMap returns a map of all attributes") {
     forAll(listOfAttributes) { attributes =>
       val attrs = attributes.to(Attributes)
-      val map = attrs.toMap
+      val map = attrs.asMap
 
-      map.size == attrs.size && map.forall { case (k, v) =>
-        attrs.contains(k) && attrs.get(k).contains(v)
+      map.size == attrs.size && map.forall { case (_, a) =>
+        attrs.contains(a.key) && attrs.get(a.key).contains(a)
       }
+    }
+  }
+
+  property("Attributes#asUntypedMap returns a map of all attributes") {
+    forAll(listOfAttributes) { attributes =>
+      val attrs = attributes.to(Attributes)
+      val map = attrs.asUntypedMap
+
+      map.size == attrs.size &&
+      attrs.forall { a =>
+        map.contains(a.key.name) && map.get(a.key.name).contains(a)
+      } && map.keys.forall(attrs.containsUntyped)
     }
   }
 
   property("Attributes#keys returns all of the attributes' keys") {
     forAll(Gens.attributes) { attributes =>
       attributes.keys == attributes.map(_.key).toSet
+    }
+  }
+
+  property("Attributes#untypedKeys returns all of the attributes' key names") {
+    forAll(Gens.attributes) { attributes =>
+      attributes.untypedKeys == attributes.map(_.key.name).toSet
     }
   }
 
@@ -148,16 +174,28 @@ class AttributesProps extends ScalaCheckSuite {
     }
   }
 
+  property("Attributes#removedUntyped removes attributes") {
+    forAll { (value: String) =>
+      val a = Attribute("key", value)
+      val attrs = Attributes(a)
+
+      attrs.removedUntyped(a.key.name).isEmpty &&
+      attrs.removedUntyped("other").sizeIs == 1
+    }
+  }
+
   property("Attributes#concat (++) combines two sets of attributes") {
     forAll(Gens.attributes, Gens.attributes) { (attributes1, attributes2) =>
-      val unique = attributes1.keys ++ attributes2.keys
-      val diff = attributes1.keys.intersect(attributes2.keys)
+      val unique = attributes1.untypedKeys ++ attributes2.untypedKeys
+      val diff = attributes1.untypedKeys.intersect(attributes2.untypedKeys)
 
       val combined = attributes1 ++ attributes2
       val sizeIsEqual = combined.size == unique.size
 
-      val secondCollectionOverrodeValues = diff.forall { key =>
-        combined.get(key).contains(attributes2.get(key).get)
+      val secondCollectionOverrodeValues = diff.forall { name =>
+        combined.asUntypedMap
+          .get(name)
+          .exists(attributes2.asUntypedMap.get(name).contains)
       }
 
       sizeIsEqual && secondCollectionOverrodeValues
@@ -167,6 +205,26 @@ class AttributesProps extends ScalaCheckSuite {
   property("Attributes#removedAll (--) removes a set of attributes") {
     forAll(Gens.attributes) { attributes =>
       (attributes -- attributes.keys).isEmpty
+    }
+  }
+
+  property("Attributes#removedAllUntyped removes a set of attributes") {
+    forAll(Gens.attributes) { attributes =>
+      attributes.removedAllUntyped(attributes.untypedKeys).isEmpty
+    }
+  }
+
+  property(
+    "Multiple keys with the same name but different types not allowed"
+  ) {
+    forAll { (longValue: Long, stringValue: String) =>
+      val longKey = AttributeKey.long("key")
+      val stringKey = AttributeKey.string("key")
+      val attrs = Attributes(longKey(longValue), stringKey(stringValue))
+
+      (attrs.sizeIs == 1) &&
+      !attrs.contains(longKey) &&
+      attrs.get(stringKey).exists(_.value == stringValue)
     }
   }
 

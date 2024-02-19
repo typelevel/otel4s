@@ -112,7 +112,7 @@ object ResourceAttributes {
   /** All the command arguments (including the command/executable itself) run by
     * the container. [2]
     */
-  val ContainerCommandArgs: AttributeKey[List[String]] = stringList(
+  val ContainerCommandArgs: AttributeKey[List[String]] = stringSeq(
     "container.command_args"
   )
 
@@ -157,7 +157,7 @@ object ResourceAttributes {
     * href="https://github.com/kubernetes/cri-api/blob/c75ef5b473bbe2d0a4fc92f82235efd665ea8e9f/pkg/apis/runtime/v1/api.proto#L1237-L1238">CRI</a>
     * report those under the `RepoDigests` field.</li> </ul>
     */
-  val ContainerImageRepoDigests: AttributeKey[List[String]] = stringList(
+  val ContainerImageRepoDigests: AttributeKey[List[String]] = stringSeq(
     "container.image.repo_digests"
   )
 
@@ -166,7 +166,7 @@ object ResourceAttributes {
     * Image Inspect</a>. Should be only the `<tag>` section of the full name for
     * example from `registry.example.com/my-org/my-image:<tag>`.
     */
-  val ContainerImageTags: AttributeKey[List[String]] = stringList(
+  val ContainerImageTags: AttributeKey[List[String]] = stringSeq(
     "container.image.tags"
   )
 
@@ -204,7 +204,7 @@ object ResourceAttributes {
     * href="https://wicg.github.io/ua-client-hints/#interface">UA client hints
     * API</a> (`navigator.userAgentData.brands`).</li> </ul>
     */
-  val BrowserBrands: AttributeKey[List[String]] = stringList("browser.brands")
+  val BrowserBrands: AttributeKey[List[String]] = stringSeq("browser.brands")
 
   /** Preferred language of the user using the browser
     *
@@ -281,7 +281,7 @@ object ResourceAttributes {
     * href="https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/iam-access-control-overview-cwl.html#CWL_ARN_Format">log
     * group ARN format documentation</a>.</li> </ul>
     */
-  val AwsLogGroupArns: AttributeKey[List[String]] = stringList(
+  val AwsLogGroupArns: AttributeKey[List[String]] = stringSeq(
     "aws.log.group.arns"
   )
 
@@ -291,7 +291,7 @@ object ResourceAttributes {
     * multi-container applications, where a single application has sidecar
     * containers, and each write to their own log group.</li> </ul>
     */
-  val AwsLogGroupNames: AttributeKey[List[String]] = stringList(
+  val AwsLogGroupNames: AttributeKey[List[String]] = stringSeq(
     "aws.log.group.names"
   )
 
@@ -303,13 +303,13 @@ object ResourceAttributes {
     * streams, so these ARNs necessarily identify both a log group and a log
     * stream.</li> </ul>
     */
-  val AwsLogStreamArns: AttributeKey[List[String]] = stringList(
+  val AwsLogStreamArns: AttributeKey[List[String]] = stringSeq(
     "aws.log.stream.arns"
   )
 
   /** The name(s) of the AWS log stream(s) an application is writing to.
     */
-  val AwsLogStreamNames: AttributeKey[List[String]] = stringList(
+  val AwsLogStreamNames: AttributeKey[List[String]] = stringSeq(
     "aws.log.stream.names"
   )
 
@@ -501,7 +501,7 @@ object ResourceAttributes {
     * href="https://www.rfc-editor.org/rfc/rfc5952.html">RFC 5952</a>
     * format.</li> </ul>
     */
-  val HostIp: AttributeKey[List[String]] = stringList("host.ip")
+  val HostIp: AttributeKey[List[String]] = stringSeq("host.ip")
 
   /** Available MAC addresses of the host, excluding loopback interfaces.
     *
@@ -510,7 +510,7 @@ object ResourceAttributes {
     * RA hexadecimal form</a>: as hyphen-separated octets in uppercase
     * hexadecimal form from most to least significant.</li> </ul>
     */
-  val HostMac: AttributeKey[List[String]] = stringList("host.mac")
+  val HostMac: AttributeKey[List[String]] = stringSeq("host.mac")
 
   /** Name of the host. On Unix systems, it may contain what the hostname
     * command returns, or the fully qualified hostname, or another name
@@ -698,7 +698,7 @@ object ResourceAttributes {
     * null-delimited strings extracted from `proc/[pid]/cmdline`. For libc-based
     * executables, this would be the full argv vector passed to `main`.
     */
-  val ProcessCommandArgs: AttributeKey[List[String]] = stringList(
+  val ProcessCommandArgs: AttributeKey[List[String]] = stringSeq(
     "process.command_args"
   )
 

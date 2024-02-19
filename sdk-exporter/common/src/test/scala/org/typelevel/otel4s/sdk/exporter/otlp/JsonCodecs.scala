@@ -69,37 +69,37 @@ trait JsonCodecs {
     def primitive[A: Encoder]: Json =
       Encoder[A].apply(value.asInstanceOf[A])
 
-    def list[A: Encoder](attributeType: AttributeType[A]): Json = {
+    def seq[A: Encoder](attributeType: AttributeType[A]): Json = {
       val typeName = attributeTypeName(attributeType)
-      val list = value.asInstanceOf[List[A]]
-      Json.obj("values" := list.map(value => Json.obj(typeName := value)))
+      val values = value.asInstanceOf[Seq[A]]
+      Json.obj("values" := values.map(value => Json.obj(typeName := value)))
     }
 
     implicit val longEncoder: Encoder[Long] =
       Encoder[String].contramap(_.toString)
 
     attributeType match {
-      case AttributeType.Boolean     => primitive[Boolean]
-      case AttributeType.Double      => primitive[Double]
-      case AttributeType.String      => primitive[String]
-      case AttributeType.Long        => primitive[Long]
-      case AttributeType.BooleanList => list[Boolean](AttributeType.Boolean)
-      case AttributeType.DoubleList  => list[Double](AttributeType.Double)
-      case AttributeType.StringList  => list[String](AttributeType.String)
-      case AttributeType.LongList    => list[Long](AttributeType.Long)
+      case AttributeType.Boolean    => primitive[Boolean]
+      case AttributeType.Double     => primitive[Double]
+      case AttributeType.String     => primitive[String]
+      case AttributeType.Long       => primitive[Long]
+      case AttributeType.BooleanSeq => seq[Boolean](AttributeType.Boolean)
+      case AttributeType.DoubleSeq  => seq[Double](AttributeType.Double)
+      case AttributeType.StringSeq  => seq[String](AttributeType.String)
+      case AttributeType.LongSeq    => seq[Long](AttributeType.Long)
     }
   }
 
   private def attributeTypeName(attributeType: AttributeType[_]): String =
     attributeType match {
-      case AttributeType.Boolean     => "boolValue"
-      case AttributeType.Double      => "doubleValue"
-      case AttributeType.String      => "stringValue"
-      case AttributeType.Long        => "intValue"
-      case AttributeType.BooleanList => "arrayValue"
-      case AttributeType.DoubleList  => "arrayValue"
-      case AttributeType.StringList  => "arrayValue"
-      case AttributeType.LongList    => "arrayValue"
+      case AttributeType.Boolean    => "boolValue"
+      case AttributeType.Double     => "doubleValue"
+      case AttributeType.String     => "stringValue"
+      case AttributeType.Long       => "intValue"
+      case AttributeType.BooleanSeq => "arrayValue"
+      case AttributeType.DoubleSeq  => "arrayValue"
+      case AttributeType.StringSeq  => "arrayValue"
+      case AttributeType.LongSeq    => "arrayValue"
     }
 
 }

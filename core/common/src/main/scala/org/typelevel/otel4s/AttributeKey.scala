@@ -64,7 +64,7 @@ object AttributeKey {
 
   @annotation.implicitNotFound("""
 Could not find the `KeySelect` for ${A}. The `KeySelect` is defined for the following types:
-String, Boolean, Long, Double, List[String], List[Boolean], List[Long], List[Double].
+String, Boolean, Long, Double, Seq[String], Seq[Boolean], Seq[Long], Seq[Double].
 """)
   sealed trait KeySelect[A] {
     def make(name: String): AttributeKey[A]
@@ -78,17 +78,17 @@ String, Boolean, Long, Double, List[String], List[Boolean], List[Long], List[Dou
     implicit val longKey: KeySelect[Long] = instance(AttributeKey.long)
     implicit val doubleKey: KeySelect[Double] = instance(AttributeKey.double)
 
-    implicit val stringListKey: KeySelect[List[String]] =
-      instance(AttributeKey.stringList)
+    implicit val stringSeqKey: KeySelect[Seq[String]] =
+      instance(AttributeKey.stringSeq)
 
-    implicit val booleanListKey: KeySelect[List[Boolean]] =
-      instance(AttributeKey.booleanList)
+    implicit val booleanSeqKey: KeySelect[Seq[Boolean]] =
+      instance(AttributeKey.booleanSeq)
 
-    implicit val longListKey: KeySelect[List[Long]] =
-      instance(AttributeKey.longList)
+    implicit val longSeqKey: KeySelect[Seq[Long]] =
+      instance(AttributeKey.longSeq)
 
-    implicit val doubleListKey: KeySelect[List[Double]] =
-      instance(AttributeKey.doubleList)
+    implicit val doubleSeqKey: KeySelect[Seq[Double]] =
+      instance(AttributeKey.doubleSeq)
 
     private def instance[A](f: String => AttributeKey[A]): KeySelect[A] =
       new KeySelect[A] {
@@ -111,17 +111,17 @@ String, Boolean, Long, Double, List[String], List[Boolean], List[Long], List[Dou
   def double(name: String): AttributeKey[Double] =
     new Impl(name, AttributeType.Double)
 
-  def stringList(name: String): AttributeKey[List[String]] =
-    new Impl(name, AttributeType.StringList)
+  def stringSeq(name: String): AttributeKey[Seq[String]] =
+    new Impl(name, AttributeType.StringSeq)
 
-  def booleanList(name: String): AttributeKey[List[Boolean]] =
-    new Impl(name, AttributeType.BooleanList)
+  def booleanSeq(name: String): AttributeKey[Seq[Boolean]] =
+    new Impl(name, AttributeType.BooleanSeq)
 
-  def longList(name: String): AttributeKey[List[Long]] =
-    new Impl(name, AttributeType.LongList)
+  def longSeq(name: String): AttributeKey[Seq[Long]] =
+    new Impl(name, AttributeType.LongSeq)
 
-  def doubleList(name: String): AttributeKey[List[Double]] =
-    new Impl(name, AttributeType.DoubleList)
+  def doubleSeq(name: String): AttributeKey[Seq[Double]] =
+    new Impl(name, AttributeType.DoubleSeq)
 
   implicit def attributeKeyHash[A]: Hash[AttributeKey[A]] =
     Hash.by(key => (key.name, key.`type`))

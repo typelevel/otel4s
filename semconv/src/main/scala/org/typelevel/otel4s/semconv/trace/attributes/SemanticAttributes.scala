@@ -734,7 +734,7 @@ object SemanticAttributes {
 
   /** Key(s) of message, another way to mark message besides message id.
     */
-  val MessagingRocketmqMessageKeys: AttributeKey[List[String]] = stringList(
+  val MessagingRocketmqMessageKeys: AttributeKey[List[String]] = stringSeq(
     "messaging.rocketmq.message.keys"
   )
 
@@ -1347,7 +1347,7 @@ object SemanticAttributes {
 
   /** The value of the `AttributesToGet` request parameter.
     */
-  val AwsDynamodbAttributesToGet: AttributeKey[List[String]] = stringList(
+  val AwsDynamodbAttributesToGet: AttributeKey[List[String]] = stringSeq(
     "aws.dynamodb.attributes_to_get"
   )
 
@@ -1360,7 +1360,7 @@ object SemanticAttributes {
   /** The JSON-serialized value of each item in the `ConsumedCapacity` response
     * field.
     */
-  val AwsDynamodbConsumedCapacity: AttributeKey[List[String]] = stringList(
+  val AwsDynamodbConsumedCapacity: AttributeKey[List[String]] = stringSeq(
     "aws.dynamodb.consumed_capacity"
   )
 
@@ -1406,7 +1406,7 @@ object SemanticAttributes {
 
   /** The keys in the `RequestItems` object field.
     */
-  val AwsDynamodbTableNames: AttributeKey[List[String]] = stringList(
+  val AwsDynamodbTableNames: AttributeKey[List[String]] = stringSeq(
     "aws.dynamodb.table_names"
   )
 
@@ -1414,12 +1414,12 @@ object SemanticAttributes {
     * request field
     */
   val AwsDynamodbGlobalSecondaryIndexes: AttributeKey[List[String]] =
-    stringList("aws.dynamodb.global_secondary_indexes")
+    stringSeq("aws.dynamodb.global_secondary_indexes")
 
   /** The JSON-serialized value of each item of the `LocalSecondaryIndexes`
     * request field.
     */
-  val AwsDynamodbLocalSecondaryIndexes: AttributeKey[List[String]] = stringList(
+  val AwsDynamodbLocalSecondaryIndexes: AttributeKey[List[String]] = stringSeq(
     "aws.dynamodb.local_secondary_indexes"
   )
 
@@ -1464,7 +1464,7 @@ object SemanticAttributes {
   /** The JSON-serialized value of each item in the `AttributeDefinitions`
     * request field.
     */
-  val AwsDynamodbAttributeDefinitions: AttributeKey[List[String]] = stringList(
+  val AwsDynamodbAttributeDefinitions: AttributeKey[List[String]] = stringSeq(
     "aws.dynamodb.attribute_definitions"
   )
 
@@ -1472,7 +1472,7 @@ object SemanticAttributes {
     * `GlobalSecondaryIndexUpdates` request field.
     */
   val AwsDynamodbGlobalSecondaryIndexUpdates: AttributeKey[List[String]] =
-    stringList("aws.dynamodb.global_secondary_index_updates")
+    stringSeq("aws.dynamodb.global_secondary_index_updates")
 
   /** The S3 bucket name the request refers to. Corresponds to the `--bucket`
     * parameter of the <a

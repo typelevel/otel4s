@@ -29,7 +29,7 @@ trait Gens {
     implicit val stringArb: Arbitrary[String] =
       Arbitrary(nonEmptyString)
 
-    implicit def listArb[A: Arbitrary]: Arbitrary[List[A]] =
+    implicit def seqArb[A: Arbitrary]: Arbitrary[Seq[A]] =
       Arbitrary(Gen.nonEmptyListOf(Arbitrary.arbitrary[A]))
 
     def attribute[A: AttributeKey.KeySelect: Arbitrary]: Gen[Attribute[A]] =
@@ -43,20 +43,20 @@ trait Gens {
     val long: Gen[Attribute[Long]] = attribute[Long]
     val double: Gen[Attribute[Double]] = attribute[Double]
 
-    val stringList: Gen[Attribute[List[String]]] = attribute[List[String]]
-    val booleanList: Gen[Attribute[List[Boolean]]] = attribute[List[Boolean]]
-    val longList: Gen[Attribute[List[Long]]] = attribute[List[Long]]
-    val doubleList: Gen[Attribute[List[Double]]] = attribute[List[Double]]
+    val stringSeq: Gen[Attribute[Seq[String]]] = attribute[Seq[String]]
+    val booleanSeq: Gen[Attribute[Seq[Boolean]]] = attribute[Seq[Boolean]]
+    val longSeq: Gen[Attribute[Seq[Long]]] = attribute[Seq[Long]]
+    val doubleSeq: Gen[Attribute[Seq[Double]]] = attribute[Seq[Double]]
 
     Gen.oneOf(
       boolean,
       string,
       long,
       double,
-      stringList,
-      booleanList,
-      longList,
-      doubleList
+      stringSeq,
+      booleanSeq,
+      longSeq,
+      doubleSeq
     )
   }
 

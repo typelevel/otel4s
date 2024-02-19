@@ -29,11 +29,11 @@ it out and let us know what you think.
 | Module / Platform | JVM | Scala Native | Scala.js |  
 |:-----------------:|:---:|:------------:|:--------:|
 |   `otel4s-core`   |  ✅  |      ✅       |    ✅     |
-|   `otel4s-java`   |  ✅  |      ❌       |    ❌     | 
+| `otel4s-oteljava` |  ✅  |      ❌       |    ❌     |
 
 ## Getting started
 
-If you develop an application and want to export the telemetry, use `otel4s-java` module. 
+If you develop an application and want to export the telemetry, use `otel4s-oteljava` module. 
 If you develop a library, check out this [recommendation](modules-structure.md#which-module-do-i-need).
 
 @:select(build-tool)
@@ -44,7 +44,7 @@ Add settings to the `build.sbt`:
 
 ```scala
 libraryDependencies ++= Seq(
-  "org.typelevel" %% "otel4s-java" % "@VERSION@", // <1>
+  "org.typelevel" %% "otel4s-oteljava" % "@VERSION@", // <1>
   "io.opentelemetry" % "opentelemetry-exporter-otlp" % "@OPEN_TELEMETRY_VERSION@" % Runtime, // <2>
   "io.opentelemetry" % "opentelemetry-sdk-extension-autoconfigure" % "@OPEN_TELEMETRY_VERSION@" % Runtime // <3>
 )
@@ -56,7 +56,7 @@ javaOptions += "-Dotel.java.global-autoconfigure.enabled=true" // <4>
 Add directives to the `*.scala` file:
 
 ```scala
-//> using lib "org.typelevel::otel4s-java:@VERSION@" // <1>
+//> using lib "org.typelevel::otel4s-oteljava:@VERSION@" // <1>
 //> using lib "io.opentelemetry:opentelemetry-exporter-otlp:@OPEN_TELEMETRY_VERSION@" // <2>
 //> using lib "io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:@OPEN_TELEMETRY_VERSION@" // <3>
 //> using `java-opt` "-Dotel.java.global-autoconfigure.enabled=true" // <4>
@@ -64,7 +64,7 @@ Add directives to the `*.scala` file:
 
 @:@
 
-1. Add the `otel4s-java` library  
+1. Add the `otel4s-oteljava` library  
 2. Add an OpenTelemetry exporter. Without the exporter, the application will crash  
 3. Add an OpenTelemetry autoconfigure extension  
 4. Enable OpenTelemetry SDK [autoconfigure mode][opentelemetry-java-autoconfigure]  

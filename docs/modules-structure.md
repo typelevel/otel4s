@@ -2,7 +2,7 @@
 
 The `otel4s` is designed with modularity in mind. To achieve this, the project is organized 
 into distinct high-level modules, each serving specific purposes and functionalities. 
-These modules are: `otel4s-core`, `otel4s-sdk`, `otel4s-java`.
+These modules are: `otel4s-core`, `otel4s-sdk`, `otel4s-oteljava`.
 
 The primary motivation behind this modular architecture is to keep the classpath small. 
 
@@ -11,7 +11,7 @@ The primary motivation behind this modular architecture is to keep the classpath
 ```mermaid
 graph BT
   otel4s-sdk --> otel4s-core
-  otel4s-java --> otel4s-core
+  otel4s-oteljava --> otel4s-core
 ```
 
 ### 1) `otel4s-core`
@@ -25,7 +25,7 @@ It also offers no-op implementations.
 The implementation of Open Telemetry specification written purely in Scala. 
 Will be available for all platforms: JVM, Scala Native, Scala.js. 
 
-### 3) `otel4s-java` 
+### 3) `otel4s-oteljava` 
 
 The implementation of `otel4s-core` interfaces. Uses [OpenTelemetry Java][otel-java] under the hood.
 
@@ -50,10 +50,10 @@ graph BT
   otel4s-sdk-metrics --> otel4s-sdk-common
   otel4s-sdk-trace --> otel4s-sdk-common
 
-  otel4s-java --> otel4s-java-metrics
-  otel4s-java --> otel4s-java-trace
-  otel4s-java-metrics --> otel4s-java-common
-  otel4s-java-trace --> otel4s-java-common
+  otel4s-oteljava --> otel4s-oteljava-metrics
+  otel4s-oteljava --> otel4s-oteljava-trace
+  otel4s-oteljava-metrics --> otel4s-oteljava-common
+  otel4s-oteljava-trace --> otel4s-oteljava-common
 ```
 
 ## Which module do I need?
@@ -62,7 +62,7 @@ Let's take a look into common scenarios:
 
 1. You develop a library, and you will use only trace-specific interfaces - use `otel4s-core-trace`  
 2. You develop a library, and you will use both tracing and metrics interfaces - use `otel4s-core`  
-3. You develop an app and want to export your telemetry - use `otel4s-java` module  
+3. You develop an app and want to export your telemetry - use `otel4s-oteljava` module  
 
 [tracer-github]: https://github.com/typelevel/otel4s/blob/main/core/trace/src/main/scala/org/typelevel/otel4s/trace/Tracer.scala
 [meter-github]: https://github.com/typelevel/otel4s/blob/main/core/metrics/src/main/scala/org/typelevel/otel4s/metrics/Meter.scala

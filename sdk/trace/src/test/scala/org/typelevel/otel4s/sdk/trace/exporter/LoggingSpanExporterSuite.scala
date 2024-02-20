@@ -26,7 +26,7 @@ import cats.Applicative
 
 class LoggingSpanExporterSuite extends CatsEffectSuite {
 
-  test("span data is exported as log") {
+  test("span data is exported as a log which is printed to the console") {
     val span1: SpanData = getSpanData
     val span2: SpanData = getSpanData
 
@@ -47,7 +47,7 @@ class LoggingSpanExporterSuite extends CatsEffectSuite {
     Gens.spanData.sample.getOrElse(getSpanData)
 
   private def expectedLog(span: SpanData): String =
-    s"'${span.name}' : " +
+    s"LoggingSpanExporter: '${span.name}' : " +
       s"${span.spanContext.traceIdHex} ${span.spanContext.spanIdHex} ${span.kind} " +
       s"[tracer: ${span.instrumentationScope.name}:${span.instrumentationScope.version
           .getOrElse("")}] " +

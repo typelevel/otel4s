@@ -34,6 +34,7 @@ lazy val scalaNativeSettings = Def.settings(
   Test / envVars ++= Map("S2N_DONT_MLOCK" -> "1")
 )
 
+val Scala212 = "2.12.18"
 val Scala213 = "2.13.12"
 ThisBuild / crossScalaVersions := Seq(Scala213, "3.3.1")
 ThisBuild / scalaVersion := Scala213 // the default Scala
@@ -49,7 +50,7 @@ val MUnitCatsEffectVersion = "2.0.0-M4"
 val MUnitDisciplineVersion = "2.0.0-M3"
 val MUnitScalaCheckEffectVersion = "2.0.0-M2"
 val OpenTelemetryVersion = "1.35.0"
-val OpenTelemetryInstrumentationVersion = "2.0.0"
+val OpenTelemetryInstrumentationVersion = "2.1.0"
 val OpenTelemetrySemConvVersion = "1.23.1-alpha"
 val OpenTelemetryProtoVersion = "1.1.0-alpha"
 val PekkoStreamVersion = "1.0.2"
@@ -250,10 +251,16 @@ lazy val sdk = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .crossType(CrossType.Pure)
   .enablePlugins(NoPublishPlugin)
   .in(file("sdk/all"))
-  .dependsOn(`sdk-common`, `sdk-trace`)
+  .dependsOn(
+    core,
+    `sdk-common`,
+    `sdk-trace` % "compile->compile;test->test",
+    `sdk-trace-testkit` % Test
+  )
   .settings(
     name := "otel4s-sdk"
   )
+  .settings(munitDependencies)
   .settings(scalafixSettings)
 
 //
@@ -430,19 +437,21 @@ lazy val `oteljava-trace-testkit` = project
 
 lazy val `oteljava-testkit` = project
   .in(file("oteljava/testkit"))
-  .dependsOn(`oteljava-metrics-testkit`, `oteljava-trace-testkit`)
+  .dependsOn(core.jvm, `oteljava-metrics-testkit`, `oteljava-trace-testkit`)
   .settings(
     name := "otel4s-oteljava-testkit",
     startYear := Some(2024)
   )
+  .settings(scalafixSettings)
 
 lazy val oteljava = project
   .in(file("oteljava/all"))
   .dependsOn(
     core.jvm,
     `oteljava-metrics`,
-    `oteljava-trace`,
-    `oteljava-metrics-testkit` % Test
+    `oteljava-metrics-testkit` % Test,
+    `oteljava-trace` % "compile->compile;test->test",
+    `oteljava-trace-testkit` % Test
   )
   .settings(
     name := "otel4s-oteljava",
@@ -477,7 +486,7 @@ lazy val semconv = crossProject(JVMPlatform, JSPlatform, NativePlatform)
 lazy val scalafix = tlScalafixProject
   .rulesSettings(
     name := "otel4s-scalafix",
-    crossScalaVersions := Seq(Scala213),
+    crossScalaVersions := Seq(Scala212),
     startYear := Some(2024)
   )
   .inputSettings(
@@ -492,7 +501,7 @@ lazy val scalafix = tlScalafixProject
   )
   .outputConfigure(_.dependsOn(oteljava).disablePlugins(ScalafixPlugin))
   .testsSettings(
-    crossScalaVersions := Seq(Scala213),
+    crossScalaVersions := Seq(Scala212),
     startYear := Some(2024)
   )
 

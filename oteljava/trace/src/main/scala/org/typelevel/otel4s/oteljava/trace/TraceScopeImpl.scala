@@ -22,7 +22,7 @@ import org.typelevel.otel4s.oteljava.context.LocalContext
 import org.typelevel.otel4s.trace.SpanContext
 import org.typelevel.otel4s.trace.TraceScope
 
-private object TraceScopeImpl {
+private[oteljava] object TraceScopeImpl {
 
   def fromLocal[F[_]: LocalContext]: TraceScope[F, Context] = {
     def getSpanContext(context: Context): Option[SpanContext] =

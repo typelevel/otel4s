@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Typelevel
+ * Copyright 2022 Typelevel
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.typelevel.otel4s.sdk.trace
+package org.typelevel.otel4s.sdk
 
 import cats.Foldable
 import cats.effect.IO
@@ -26,10 +26,10 @@ import org.typelevel.otel4s.context.propagation.ContextPropagators
 import org.typelevel.otel4s.context.propagation.TextMapGetter
 import org.typelevel.otel4s.context.propagation.TextMapPropagator
 import org.typelevel.otel4s.context.propagation.TextMapUpdater
-import org.typelevel.otel4s.sdk.TelemetryResource
 import org.typelevel.otel4s.sdk.autoconfigure.AutoConfigure
 import org.typelevel.otel4s.sdk.autoconfigure.Config
 import org.typelevel.otel4s.sdk.context.Context
+import org.typelevel.otel4s.sdk.trace.NoopConsole
 import org.typelevel.otel4s.sdk.trace.context.propagation.W3CBaggagePropagator
 import org.typelevel.otel4s.sdk.trace.context.propagation.W3CTraceContextPropagator
 import org.typelevel.otel4s.sdk.trace.data.LinkData
@@ -41,33 +41,37 @@ import org.typelevel.otel4s.trace.SpanContext
 import org.typelevel.otel4s.trace.SpanKind
 import scodec.bits.ByteVector
 
-class SdkTracesSuite extends CatsEffectSuite {
+class OpenTelemetrySdkSuite extends CatsEffectSuite {
 
   private implicit val noopConsole: Console[IO] = new NoopConsole[IO]
 
-  private val DefaultTraces =
-    tracesToString(
+  private val DefaultSdk =
+    sdkToString(
       TelemetryResource.empty,
       Sampler.parentBased(Sampler.AlwaysOn)
     )
 
-  private val NoopTraces =
-    "SdkTraces{tracerProvider=TracerProvider.Noop, propagators=ContextPropagators.Noop}"
+  private val NoopSdk =
+    "OpenTelemetrySdk.AutoConfigured{sdk=" +
+      "OpenTelemetrySdk{" +
+      "meterProvider=MeterProvider.Noop, " +
+      "tracerProvider=TracerProvider.Noop, " +
+      s"propagators=ContextPropagators.Noop}, resource=${TelemetryResource.empty}}"
 
   test("withConfig - use the given config") {
     val config = Config.ofProps(Map("otel.traces.exporter" -> "none"))
 
-    SdkTraces
+    OpenTelemetrySdk
       .autoConfigured[IO](_.withConfig(config))
-      .use(traces => IO(assertEquals(traces.toString, DefaultTraces)))
+      .use(traces => IO(assertEquals(traces.toString, DefaultSdk)))
   }
 
   test("load noop instance when 'otel.sdk.disabled=true'") {
     val config = Config.ofProps(Map("otel.sdk.disabled" -> "true"))
 
-    SdkTraces
+    OpenTelemetrySdk
       .autoConfigured[IO](_.withConfig(config))
-      .use(traces => IO(assertEquals(traces.toString, NoopTraces)))
+      .use(traces => IO(assertEquals(traces.toString, NoopSdk)))
   }
 
   test(
@@ -75,49 +79,48 @@ class SdkTracesSuite extends CatsEffectSuite {
   ) {
     val config = Config.ofProps(Map("otel.sdk.disabled" -> "true"))
 
-    SdkTraces
+    OpenTelemetrySdk
       .autoConfigured[IO](
         _.withConfig(config)
           .addPropertiesCustomizer(_ => Map("otel.sdk.disabled" -> "false"))
           .addPropertiesLoader(IO.pure(Map("otel.sdk.disabled" -> "false")))
       )
-      .use(traces => IO(assertEquals(traces.toString, NoopTraces)))
+      .use(traces => IO(assertEquals(traces.toString, NoopSdk)))
   }
 
   // the latter loader should prevail
   test("addPropertiesLoader - use the loaded properties") {
-    SdkTraces
+    OpenTelemetrySdk
       .autoConfigured[IO](
         _.addPropertiesLoader(IO.pure(Map("otel.sdk.disabled" -> "false")))
           .addPropertiesLoader(IO.delay(Map("otel.sdk.disabled" -> "true")))
       )
-      .use(traces => IO(assertEquals(traces.toString, NoopTraces)))
+      .use(traces => IO(assertEquals(traces.toString, NoopSdk)))
   }
 
   // the latter customizer should prevail
   test("addPropertiesCustomizer - customize properties") {
-    SdkTraces
+    OpenTelemetrySdk
       .autoConfigured[IO](
         _.addPropertiesCustomizer(_ => Map("otel.sdk.disabled" -> "false"))
           .addPropertiesCustomizer(_ => Map("otel.sdk.disabled" -> "true"))
       )
-      .use(traces => IO(assertEquals(traces.toString, NoopTraces)))
+      .use(traces => IO(assertEquals(traces.toString, NoopSdk)))
   }
 
   test("addTracerProviderCustomizer - customize tracer provider") {
     val config = Config.ofProps(Map("otel.traces.exporter" -> "none"))
 
     val sampler = Sampler.AlwaysOff
-    val resource = TelemetryResource.default
 
-    SdkTraces
+    OpenTelemetrySdk
       .autoConfigured[IO](
-        _.withConfig(config)
-          .addTracerProviderCustomizer((t, _) => t.withSampler(sampler))
-          .addTracerProviderCustomizer((t, _) => t.withResource(resource))
+        _.withConfig(config).addTracerProviderCustomizer((t, _) =>
+          t.withSampler(sampler)
+        )
       )
       .use { traces =>
-        IO(assertEquals(traces.toString, tracesToString(resource, sampler)))
+        IO(assertEquals(traces.toString, sdkToString(sampler = sampler)))
       }
   }
 
@@ -130,7 +133,7 @@ class SdkTracesSuite extends CatsEffectSuite {
     val withSchema = TelemetryResource(Attributes.empty, Some("schema"))
     val result = default.mergeUnsafe(withAttributes).mergeUnsafe(withSchema)
 
-    SdkTraces
+    OpenTelemetrySdk
       .autoConfigured[IO](
         _.withConfig(config)
           .addResourceCustomizer((r, _) => r.mergeUnsafe(default))
@@ -139,7 +142,7 @@ class SdkTracesSuite extends CatsEffectSuite {
       )
       .use { traces =>
         IO(
-          assertEquals(traces.toString, tracesToString(result))
+          assertEquals(traces.toString, sdkToString(result))
         )
       }
   }
@@ -159,7 +162,7 @@ class SdkTracesSuite extends CatsEffectSuite {
     val exporter1: SpanExporter[IO] = customExporter("CustomExporter1")
     val exporter2: SpanExporter[IO] = customExporter("CustomExporter2")
 
-    SdkTraces
+    OpenTelemetrySdk
       .autoConfigured[IO](
         _.withConfig(config)
           .addExporterConfigurer(
@@ -173,7 +176,7 @@ class SdkTracesSuite extends CatsEffectSuite {
         IO(
           assertEquals(
             traces.toString,
-            tracesToString(
+            sdkToString(
               exporter = "SpanExporter.Multi(CustomExporter1, CustomExporter2)"
             )
           )
@@ -203,14 +206,14 @@ class SdkTracesSuite extends CatsEffectSuite {
       def description: String = "CustomSampler"
     }
 
-    SdkTraces
+    OpenTelemetrySdk
       .autoConfigured[IO](
         _.withConfig(config).addSamplerConfigurer(
           AutoConfigure.Named.const("custom-sampler", sampler)
         )
       )
       .use { traces =>
-        IO(assertEquals(traces.toString, tracesToString(sampler = sampler)))
+        IO(assertEquals(traces.toString, sdkToString(sampler = sampler)))
       }
   }
 
@@ -240,7 +243,7 @@ class SdkTracesSuite extends CatsEffectSuite {
       W3CBaggagePropagator.default
     )
 
-    SdkTraces
+    OpenTelemetrySdk
       .autoConfigured[IO](
         _.withConfig(config)
           .addTextMapPropagatorConfigurer(
@@ -252,12 +255,12 @@ class SdkTracesSuite extends CatsEffectSuite {
       )
       .use { traces =>
         IO(
-          assertEquals(traces.toString, tracesToString(propagators = expected))
+          assertEquals(traces.toString, sdkToString(propagators = expected))
         )
       }
   }
 
-  private def tracesToString(
+  private def sdkToString(
       resource: TelemetryResource = TelemetryResource.empty,
       sampler: Sampler = Sampler.parentBased(Sampler.AlwaysOn),
       propagators: ContextPropagators[Context] = ContextPropagators.of(
@@ -266,11 +269,13 @@ class SdkTracesSuite extends CatsEffectSuite {
       ),
       exporter: String = "SpanExporter.Noop"
   ) =
-    "SdkTraces{tracerProvider=" +
+    "OpenTelemetrySdk.AutoConfigured{sdk=" +
+      "OpenTelemetrySdk{meterProvider=MeterProvider.Noop, " +
+      "tracerProvider=" +
       s"SdkTracerProvider{resource=$resource, sampler=$sampler, " +
       "spanProcessor=SpanProcessor.Multi(" +
       s"BatchSpanProcessor{exporter=$exporter, scheduleDelay=5 seconds, exporterTimeout=30 seconds, maxQueueSize=2048, maxExportBatchSize=512}, " +
       "SpanStorage)}, " +
-      s"propagators=$propagators}"
+      s"propagators=$propagators}, resource=$resource}"
 
 }

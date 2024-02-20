@@ -29,7 +29,7 @@ class AttributesProps extends ScalaCheckSuite {
   property("Attributes#size is equal to the number of unique keys") {
     forAll(listOfAttributes) { attributes =>
       val keysSet = attributes.map(_.key).toSet
-      val attrs = Attributes.fromSpecific(attributes)
+      val attrs = attributes.to(Attributes)
 
       keysSet.size == attrs.size
     }
@@ -38,7 +38,7 @@ class AttributesProps extends ScalaCheckSuite {
   property("Attributes#isEmpty is true when there are no attributes") {
     forAll(listOfAttributes) { attributes =>
       val keysSet = attributes.map(_.key).toSet
-      val attrs = Attributes.fromSpecific(attributes)
+      val attrs = attributes.to(Attributes)
 
       keysSet.isEmpty == attrs.isEmpty
     }
@@ -47,7 +47,7 @@ class AttributesProps extends ScalaCheckSuite {
   property("Attributes#contains is true when the key is present") {
     forAll(listOfAttributes) { attributes =>
       val keysSet = attributes.map(_.key).toSet
-      val attrs = Attributes.fromSpecific(attributes)
+      val attrs = attributes.to(Attributes)
 
       keysSet.forall(attrs.contains)
     }
@@ -55,7 +55,7 @@ class AttributesProps extends ScalaCheckSuite {
 
   property("Attributes#foreach iterates over all attributes") {
     forAll(listOfAttributes) { attributes =>
-      val attrs = Attributes.fromSpecific(attributes)
+      val attrs = attributes.to(Attributes)
 
       var count = 0
       attrs.foreach(_ => count += 1)
@@ -66,7 +66,7 @@ class AttributesProps extends ScalaCheckSuite {
 
   property("Attributes#toList returns a list of all attributes") {
     forAll(listOfAttributes) { attributes =>
-      val attrs = Attributes.fromSpecific(attributes)
+      val attrs = attributes.to(Attributes)
       val list = attrs.toList
 
       list.size == attrs.size && list.forall(a => attrs.contains(a.key))
@@ -75,7 +75,7 @@ class AttributesProps extends ScalaCheckSuite {
 
   property("Attributes#foldLeft folds over all attributes") {
     forAll(listOfAttributes) { attributes =>
-      val attrs = Attributes.fromSpecific(attributes)
+      val attrs = attributes.to(Attributes)
       val list = attrs.toList
 
       val folded = attrs.foldLeft[Int](0) { (acc, _) => acc + 1 }
@@ -88,7 +88,7 @@ class AttributesProps extends ScalaCheckSuite {
     "Attributes#forall returns true when all attributes match the predicate"
   ) {
     forAll(listOfAttributes) { attributes =>
-      val attrs = Attributes.fromSpecific(attributes)
+      val attrs = attributes.to(Attributes)
 
       attrs.forall(_ => true)
     }
@@ -96,7 +96,7 @@ class AttributesProps extends ScalaCheckSuite {
 
   property("Attributes#toMap returns a map of all attributes") {
     forAll(listOfAttributes) { attributes =>
-      val attrs = Attributes.fromSpecific(attributes)
+      val attrs = attributes.to(Attributes)
       val map = attrs.toMap
 
       map.size == attrs.size && map.forall { case (k, v) =>

@@ -75,9 +75,7 @@ private final case class SdkSpanBuilder[F[_]: Temporal: Console](
       spanContext: SpanContext,
       attributes: immutable.Iterable[Attribute[_]]
   ): SpanBuilder[F] =
-    copy(links =
-      links :+ LinkData(spanContext, Attributes.fromSpecific(attributes))
-    )
+    copy(links = links :+ LinkData(spanContext, attributes.to(Attributes)))
 
   def root: SpanBuilder[F] =
     copy(parent = Parent.Root)
@@ -141,7 +139,7 @@ private final case class SdkSpanBuilder[F[_]: Temporal: Console](
   private def start: F[Span.Backend[F]] = {
     val idGenerator = tracerSharedState.idGenerator
     val spanKind = kind.getOrElse(SpanKind.Internal)
-    val attrs = Attributes.fromSpecific(attributes)
+    val attrs = attributes.to(Attributes)
 
     def genTraceId(parent: Option[SpanContext]): F[ByteVector] =
       parent

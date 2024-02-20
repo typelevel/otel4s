@@ -65,7 +65,7 @@ private[oteljava] object Conversions {
         Attribute(attribute.getKey, value.asScala.toList.map(_.doubleValue()))
     }
 
-    Attributes.fromSpecific(converted)
+    converted.to(Attributes)
   }
 
   def asyncFromCompletableResultCode[F[_]](

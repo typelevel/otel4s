@@ -64,7 +64,7 @@ trait Gens {
   val attributes: Gen[Attributes] =
     for {
       attributes <- Gen.listOf(attribute)
-    } yield Attributes.fromSpecific(attributes)
+    } yield attributes.to(Attributes)
 
 }
 

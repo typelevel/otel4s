@@ -34,6 +34,13 @@ sealed trait AttributeKey[A] {
     *   an [[`Attribute`]] associating this key with the given value
     */
   final def apply(value: A): Attribute[A] = Attribute(this, value)
+
+  /** @return
+    *   an [[`AttributeKey`]] of the same type as this key, with name
+    *   transformed by `f`
+    */
+  final def transformName(f: String => String): AttributeKey[A] =
+    new AttributeKey.Impl[A](f(name), `type`)
 }
 
 object AttributeKey {

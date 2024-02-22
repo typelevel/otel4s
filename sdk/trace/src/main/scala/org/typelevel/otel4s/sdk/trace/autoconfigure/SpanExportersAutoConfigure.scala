@@ -26,8 +26,8 @@ import cats.syntax.functor._
 import org.typelevel.otel4s.sdk.autoconfigure.AutoConfigure
 import org.typelevel.otel4s.sdk.autoconfigure.Config
 import org.typelevel.otel4s.sdk.autoconfigure.ConfigurationError
-import org.typelevel.otel4s.sdk.trace.exporter.SpanExporter
 import org.typelevel.otel4s.sdk.trace.exporter.LoggingSpanExporter
+import org.typelevel.otel4s.sdk.trace.exporter.SpanExporter
 
 /** Autoconfigures [[SpanExporter]]s.
   *

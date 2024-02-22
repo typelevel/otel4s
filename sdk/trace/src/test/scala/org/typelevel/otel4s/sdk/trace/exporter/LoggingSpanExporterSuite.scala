@@ -17,12 +17,12 @@
 package org.typelevel.otel4s.sdk.trace
 package exporter
 
+import cats.Applicative
+import cats.effect.IO
 import munit.CatsEffectSuite
 import org.typelevel.otel4s.sdk.trace.data.SpanData
-import org.typelevel.otel4s.sdk.trace.scalacheck.Gens
-import cats.effect.IO
 import org.typelevel.otel4s.sdk.trace.exporter.InMemoryConsole._
-import cats.Applicative
+import org.typelevel.otel4s.sdk.trace.scalacheck.Gens
 
 class LoggingSpanExporterSuite extends CatsEffectSuite {
 

@@ -182,7 +182,7 @@ class TracerProviderAutoConfigureSuite extends CatsEffectSuite {
         s"resource=${TelemetryResource.empty}, " +
         s"sampler=${Sampler.AlwaysOff}, " +
         "spanProcessor=SpanProcessor.Multi(" +
-        "SimpleSpanProcessor{exporter=LoggingExporter, exportOnlySampled=true}, " +
+        "SimpleSpanProcessor{exporter=LoggingSpanExporter, exportOnlySampled=true}, " +
         "BatchSpanProcessor{exporter=CustomExporter, scheduleDelay=5 seconds, exporterTimeout=30 seconds, maxQueueSize=2048, maxExportBatchSize=512}, " +
         "SpanStorage)}"
 

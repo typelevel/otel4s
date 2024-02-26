@@ -19,7 +19,7 @@ package org.typelevel.otel4s.sdk.trace.data
 import cats.Hash
 import cats.Show
 import cats.syntax.show._
-import org.typelevel.otel4s.trace.Status
+import org.typelevel.otel4s.trace.StatusCode
 
 /** Defines the status of a span by providing a standard status in conjunction
   * with an optional description message.
@@ -30,7 +30,7 @@ import org.typelevel.otel4s.trace.Status
   * @see
   *   [[https://opentelemetry.io/docs/specs/otel/trace/api/#set-status]]
   */
-sealed abstract class StatusData(val status: Status) {
+sealed abstract class StatusData(val status: StatusCode) {
 
   /** The description of this status for human consumption.
     */
@@ -54,44 +54,44 @@ object StatusData {
   /** Indicates the successfully completed operation, validated by an
     * application developer or operator.
     */
-  case object Ok extends StatusData(Status.Ok) {
+  case object Ok extends StatusData(StatusCode.Ok) {
     def description: Option[String] = None
   }
 
   /** The default state.
     */
-  case object Unset extends StatusData(Status.Unset) {
+  case object Unset extends StatusData(StatusCode.Unset) {
     def description: Option[String] = None
   }
 
   /** Indicates an occurred error.
     */
   final case class Error(description: Option[String])
-      extends StatusData(Status.Error)
+      extends StatusData(StatusCode.Error)
 
   /** Returns [[StatusData]] for the given `status`.
     */
-  def apply(status: Status): StatusData =
+  def apply(status: StatusCode): StatusData =
     status match {
-      case Status.Ok    => Ok
-      case Status.Unset => Unset
-      case Status.Error => Error(None)
+      case StatusCode.Ok    => Ok
+      case StatusCode.Unset => Unset
+      case StatusCode.Error => Error(None)
     }
 
   /** Creates [[StatusData]] using the given `status` and `description`.
     *
     * @param status
     *   the status of the [[StatusData]]
-    *
     * @param description
     *   the description of the [[StatusData]]. Effective only for the
-    *   [[org.typelevel.otel4s.trace.Status.Error Status.Error]].
+    *   [[org.typelevel.otel4s.trace.StatusCode.Error Status.Error]].
     */
-  def apply(status: Status, description: String): StatusData =
+  def apply(status: StatusCode, description: String): StatusData =
     status match {
-      case Status.Ok    => Ok
-      case Status.Unset => Unset
-      case Status.Error => Error(Option.when(description.nonEmpty)(description))
+      case StatusCode.Ok    => Ok
+      case StatusCode.Unset => Unset
+      case StatusCode.Error =>
+        Error(Option.when(description.nonEmpty)(description))
     }
 
   implicit val statusDataHash: Hash[StatusData] =

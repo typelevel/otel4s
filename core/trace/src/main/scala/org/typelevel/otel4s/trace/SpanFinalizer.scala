@@ -38,10 +38,10 @@ object SpanFinalizer {
 
     def reportAbnormal: Strategy = {
       case Resource.ExitCase.Errored(e) =>
-        recordException(e) |+| setStatus(Status.Error)
+        recordException(e) |+| setStatus(StatusCode.Error)
 
       case Resource.ExitCase.Canceled =>
-        setStatus(Status.Error, "canceled")
+        setStatus(StatusCode.Error, "canceled")
     }
   }
 
@@ -50,7 +50,7 @@ object SpanFinalizer {
   ) extends SpanFinalizer
 
   final class SetStatus private[SpanFinalizer] (
-      val status: Status,
+      val status: StatusCode,
       val description: Option[String]
   ) extends SpanFinalizer
 
@@ -65,10 +65,10 @@ object SpanFinalizer {
   def recordException(throwable: Throwable): SpanFinalizer =
     new RecordException(throwable)
 
-  def setStatus(status: Status): SpanFinalizer =
+  def setStatus(status: StatusCode): SpanFinalizer =
     new SetStatus(status, None)
 
-  def setStatus(status: Status, description: String): SpanFinalizer =
+  def setStatus(status: StatusCode, description: String): SpanFinalizer =
     new SetStatus(status, Some(description))
 
   def addAttribute[A](attribute: Attribute[A]): SpanFinalizer =

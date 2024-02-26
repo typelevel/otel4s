@@ -32,7 +32,7 @@ import org.typelevel.otel4s.sdk.trace.data.SpanData
 import org.typelevel.otel4s.sdk.trace.data.StatusData
 import org.typelevel.otel4s.sdk.trace.scalacheck.Arbitraries._
 import org.typelevel.otel4s.trace.SpanContext
-import org.typelevel.otel4s.trace.Status
+import org.typelevel.otel4s.trace.StatusCode
 import org.typelevel.otel4s.trace.TraceFlags
 import org.typelevel.otel4s.trace.TraceState
 import scodec.bits.ByteVector
@@ -49,9 +49,9 @@ class SpansProtoEncoderSuite extends ScalaCheckSuite {
         statusData.description.filter(_.trim.nonEmpty).fold(Json.Null)(_.asJson)
 
       val code = statusData.status match {
-        case Status.Unset => Json.Null
-        case Status.Ok    => 1.asJson
-        case Status.Error => 2.asJson
+        case StatusCode.Unset => Json.Null
+        case StatusCode.Ok    => 1.asJson
+        case StatusCode.Error => 2.asJson
       }
 
       val expected = Json
@@ -67,22 +67,22 @@ class SpansProtoEncoderSuite extends ScalaCheckSuite {
 
   test("encode StatusData (noSpaces)") {
     assertEquals(
-      ProtoEncoder.toJson(StatusData(Status.Unset)).noSpaces,
+      ProtoEncoder.toJson(StatusData(StatusCode.Unset)).noSpaces,
       """{}"""
     )
 
     assertEquals(
-      ProtoEncoder.toJson(StatusData(Status.Ok)).noSpaces,
+      ProtoEncoder.toJson(StatusData(StatusCode.Ok)).noSpaces,
       """{"code":1}"""
     )
 
     assertEquals(
-      ProtoEncoder.toJson(StatusData(Status.Error)).noSpaces,
+      ProtoEncoder.toJson(StatusData(StatusCode.Error)).noSpaces,
       """{"code":2}"""
     )
 
     assertEquals(
-      ProtoEncoder.toJson(StatusData(Status.Error, "description")).noSpaces,
+      ProtoEncoder.toJson(StatusData(StatusCode.Error, "description")).noSpaces,
       """{"message":"description","code":2}"""
     )
   }

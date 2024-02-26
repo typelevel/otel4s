@@ -30,7 +30,7 @@ import org.typelevel.otel4s.sdk.trace.data.StatusData
 import org.typelevel.otel4s.sdk.trace.samplers.Sampler
 import org.typelevel.otel4s.trace.BaseTracerSuite
 import org.typelevel.otel4s.trace.SpanContext
-import org.typelevel.otel4s.trace.Status
+import org.typelevel.otel4s.trace.StatusCode
 import org.typelevel.otel4s.trace.TracerProvider
 
 import scala.concurrent.duration._
@@ -74,7 +74,7 @@ class SdkTracerSuite extends BaseTracerSuite[Context, Context.Key] {
     } yield {
       assertEquals(
         spans.map(_.underlying.status),
-        List(StatusData(Status.Error, "canceled"))
+        List(StatusData(StatusCode.Error, "canceled"))
       )
       assertEquals(spans.map(_.underlying.events.isEmpty), List(true))
     }

@@ -28,7 +28,7 @@ import org.typelevel.otel4s.sdk.trace.samplers.SamplingDecision
 import org.typelevel.otel4s.sdk.trace.samplers.SamplingResult
 import org.typelevel.otel4s.trace.SpanContext
 import org.typelevel.otel4s.trace.SpanKind
-import org.typelevel.otel4s.trace.Status
+import org.typelevel.otel4s.trace.StatusCode
 
 import scala.concurrent.duration.FiniteDuration
 
@@ -55,7 +55,7 @@ trait Cogens
     }
 
   implicit val statusDataCogen: Cogen[StatusData] =
-    Cogen[(Status, Option[String])].contramap { data =>
+    Cogen[(StatusCode, Option[String])].contramap { data =>
       (data.status, data.description)
     }
 

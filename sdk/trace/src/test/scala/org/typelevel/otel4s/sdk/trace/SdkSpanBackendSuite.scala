@@ -38,7 +38,7 @@ import org.typelevel.otel4s.sdk.trace.processor.SpanProcessor
 import org.typelevel.otel4s.sdk.trace.scalacheck.Arbitraries._
 import org.typelevel.otel4s.trace.SpanContext
 import org.typelevel.otel4s.trace.SpanKind
-import org.typelevel.otel4s.trace.Status
+import org.typelevel.otel4s.trace.StatusCode
 
 import scala.concurrent.duration._
 
@@ -124,7 +124,7 @@ class SdkSpanBackendSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
   }
 
   test(".setStatus(:Status)") {
-    PropF.forAllF { (status: Status) =>
+    PropF.forAllF { (status: StatusCode) =>
       for {
         span <- start()
         _ <- assertIO(span.toSpanData.map(_.status), StatusData.Unset)
@@ -135,7 +135,7 @@ class SdkSpanBackendSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
   }
 
   test(".setStatus(:Status, :String)") {
-    PropF.forAllF { (status: Status, desc: String) =>
+    PropF.forAllF { (status: StatusCode, desc: String) =>
       for {
         span <- start()
         _ <- assertIO(span.toSpanData.map(_.status), StatusData.Unset)
@@ -363,7 +363,7 @@ class SdkSpanBackendSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
   }
 
   test("lifecycle: ignore modifications once the span has ended") {
-    PropF.forAllF { (name: String, status: Status, attributes: Attributes) =>
+    PropF.forAllF { (name: String, code: StatusCode, attributes: Attributes) =>
       def expected(end: Option[FiniteDuration]) =
         SpanData(
           name = Defaults.name,
@@ -394,7 +394,7 @@ class SdkSpanBackendSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
           _ <- span.updateName(name)
           _ <- span.addAttributes(attributes)
           _ <- span.addEvent("event", Nil)
-          _ <- span.setStatus(status)
+          _ <- span.setStatus(code)
           _ <- span.end
 
           _ <- assertIO(span.toSpanData, expected(Some(125.millis)))

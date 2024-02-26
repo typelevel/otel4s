@@ -31,7 +31,7 @@ import org.typelevel.otel4s.sdk.trace.data.LinkData
 import org.typelevel.otel4s.sdk.trace.data.SpanData
 import org.typelevel.otel4s.sdk.trace.data.StatusData
 import org.typelevel.otel4s.trace.SpanKind
-import org.typelevel.otel4s.trace.Status
+import org.typelevel.otel4s.trace.StatusCode
 import scalapb.descriptors.FieldDescriptor
 import scalapb.descriptors.PByteString
 import scalapb.descriptors.PValue
@@ -69,10 +69,13 @@ private object SpansProtoEncoder {
     }
   }
 
-  implicit val statusEncoder: ProtoEncoder[Status, StatusProto.StatusCode] = {
-    case Status.Unset => StatusProto.StatusCode.STATUS_CODE_UNSET
-    case Status.Ok    => StatusProto.StatusCode.STATUS_CODE_OK
-    case Status.Error => StatusProto.StatusCode.STATUS_CODE_ERROR
+  implicit val statusEncoder: ProtoEncoder[
+    StatusCode,
+    StatusProto.StatusCode
+  ] = {
+    case StatusCode.Unset => StatusProto.StatusCode.STATUS_CODE_UNSET
+    case StatusCode.Ok    => StatusProto.StatusCode.STATUS_CODE_OK
+    case StatusCode.Error => StatusProto.StatusCode.STATUS_CODE_ERROR
   }
 
   implicit val spanKindEncoder: ProtoEncoder[SpanKind, SpanProto.SpanKind] = {

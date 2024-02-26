@@ -21,22 +21,22 @@ import cats.Show
 
 /** The set of canonical status codes
   */
-sealed trait Status extends Product with Serializable
+sealed trait StatusCode extends Product with Serializable
 
-object Status {
+object StatusCode {
 
   /** The default status. */
-  case object Unset extends Status
+  case object Unset extends StatusCode
 
   /** The operation has been validated by an Application developers or Operator
     * to have completed successfully.
     */
-  case object Ok extends Status
+  case object Ok extends StatusCode
 
   /** The operation contains an error. */
-  case object Error extends Status
+  case object Error extends StatusCode
 
-  implicit val statusHash: Hash[Status] = Hash.fromUniversalHashCode
-  implicit val statusShow: Show[Status] = Show.fromToString
+  implicit val statusHash: Hash[StatusCode] = Hash.fromUniversalHashCode
+  implicit val statusShow: Show[StatusCode] = Show.fromToString
 
 }

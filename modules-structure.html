@@ -141,7 +141,7 @@ mermaid.initialize({
     <li class="level1 nav-node"><a href="#high-level-modules">High-level modules</a></li>
     <li class="level2 nav-leaf"><a href="#_1-otel4s-core">1) <code>otel4s-core</code></a></li>
     <li class="level2 nav-leaf"><a href="#_2-otel4s-sdk-under-development-not-published-yet">2) <code>otel4s-sdk</code> - under development, not published yet</a></li>
-    <li class="level2 nav-leaf"><a href="#_3-otel4s-java">3) <code>otel4s-java</code></a></li>
+    <li class="level2 nav-leaf"><a href="#_3-otel4s-oteljava">3) <code>otel4s-oteljava</code></a></li>
     <li class="level1 nav-leaf"><a href="#high-level-module-structure">High-level module structure</a></li>
     <li class="level1 nav-leaf"><a href="#which-module-do-i-need">Which module do I need?</a></li>
   </ul>
@@ -155,13 +155,13 @@ mermaid.initialize({
         <h1 id="modules-structure" class="title">Modules structure</h1>
         <p>The <code>otel4s</code> is designed with modularity in mind. To achieve this, the project is organized 
         into distinct high-level modules, each serving specific purposes and functionalities. 
-        These modules are: <code>otel4s-core</code>, <code>otel4s-sdk</code>, <code>otel4s-java</code>.</p>
+        These modules are: <code>otel4s-core</code>, <code>otel4s-sdk</code>, <code>otel4s-oteljava</code>.</p>
         <p>The primary motivation behind this modular architecture is to keep the classpath small. </p>
         
         <h2 id="high-level-modules" class="section"><a class="anchor-link left" href="#high-level-modules"><i class="icofont-laika link">&#xef71;</i></a>High-level modules</h2>
         <pre class="mermaid">graph BT
   otel4s-sdk --&gt; otel4s-core
-  otel4s-java --&gt; otel4s-core</pre>
+  otel4s-oteljava --&gt; otel4s-core</pre>
         
         <h3 id="_1-otel4s-core" class="section"><a class="anchor-link left" href="#_1-otel4s-core"><i class="icofont-laika link">&#xef71;</i></a>1) <code>otel4s-core</code></h3>
         <p>Defines the interfaces: <a href="https://github.com/typelevel/otel4s/blob/main/core/trace/src/main/scala/org/typelevel/otel4s/trace/Tracer.scala">Tracer</a>,
@@ -172,7 +172,7 @@ mermaid.initialize({
         <p>The implementation of Open Telemetry specification written purely in Scala. 
         Will be available for all platforms: JVM, Scala Native, Scala.js. </p>
         
-        <h3 id="_3-otel4s-java" class="section"><a class="anchor-link left" href="#_3-otel4s-java"><i class="icofont-laika link">&#xef71;</i></a>3) <code>otel4s-java</code></h3>
+        <h3 id="_3-otel4s-oteljava" class="section"><a class="anchor-link left" href="#_3-otel4s-oteljava"><i class="icofont-laika link">&#xef71;</i></a>3) <code>otel4s-oteljava</code></h3>
         <p>The implementation of <code>otel4s-core</code> interfaces. Uses <a href="https://github.com/open-telemetry/opentelemetry-java">OpenTelemetry Java</a> under the hood.</p>
         
         <h2 id="high-level-module-structure" class="section"><a class="anchor-link left" href="#high-level-module-structure"><i class="icofont-laika link">&#xef71;</i></a>High-level module structure</h2>
@@ -193,17 +193,17 @@ mermaid.initialize({
   otel4s-sdk-metrics --&gt; otel4s-sdk-common
   otel4s-sdk-trace --&gt; otel4s-sdk-common
 
-  otel4s-java --&gt; otel4s-java-metrics
-  otel4s-java --&gt; otel4s-java-trace
-  otel4s-java-metrics --&gt; otel4s-java-common
-  otel4s-java-trace --&gt; otel4s-java-common</pre>
+  otel4s-oteljava --&gt; otel4s-oteljava-metrics
+  otel4s-oteljava --&gt; otel4s-oteljava-trace
+  otel4s-oteljava-metrics --&gt; otel4s-oteljava-common
+  otel4s-oteljava-trace --&gt; otel4s-oteljava-common</pre>
         
         <h2 id="which-module-do-i-need" class="section"><a class="anchor-link left" href="#which-module-do-i-need"><i class="icofont-laika link">&#xef71;</i></a>Which module do I need?</h2>
         <p>Let&#39;s take a look into common scenarios:</p>
         <ol class="arabic">
           <li>You develop a library, and you will use only trace-specific interfaces - use <code>otel4s-core-trace</code><br></li>
           <li>You develop a library, and you will use both tracing and metrics interfaces - use <code>otel4s-core</code><br></li>
-          <li>You develop an app and want to export your telemetry - use <code>otel4s-java</code> module<br></li>
+          <li>You develop an app and want to export your telemetry - use <code>otel4s-oteljava</code> module<br></li>
         </ol>
 
         

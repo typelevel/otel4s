@@ -181,7 +181,7 @@
               <td>✅</td>
             </tr>
             <tr>
-              <td><code>otel4s-java</code></td>
+              <td><code>otel4s-oteljava</code></td>
               <td>✅</td>
               <td>❌</td>
               <td>❌</td>
@@ -190,7 +190,7 @@
         </table>
         
         <h2 id="getting-started" class="section"><a class="anchor-link left" href="#getting-started"><i class="icofont-laika link">&#xef71;</i></a>Getting started</h2>
-        <p>If you develop an application and want to export the telemetry, use <code>otel4s-java</code> module. 
+        <p>If you develop an application and want to export the telemetry, use <code>otel4s-oteljava</code> module. 
         If you develop a library, check out this <a href="modules-structure.html#which-module-do-i-need">recommendation</a>.</p>
         <div class="tab-container" data-tab-group="build-tool">
           <ul class="tab-group">
@@ -200,7 +200,7 @@
           <div class="tab-content active" data-choice-name="sbt">
             <p>Add settings to the <code>build.sbt</code>:</p>
             <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">libraryDependencies</span><span> ++= </span><span class="type-name">Seq</span><span>(
-  </span><span class="string-literal">&quot;org.typelevel&quot;</span><span> %% </span><span class="string-literal">&quot;otel4s-java&quot;</span><span> % </span><span class="string-literal">&quot;0.4.0&quot;</span><span>, </span><span class="comment">// &lt;1&gt;
+  </span><span class="string-literal">&quot;org.typelevel&quot;</span><span> %% </span><span class="string-literal">&quot;otel4s-oteljava&quot;</span><span> % </span><span class="string-literal">&quot;0.4.0&quot;</span><span>, </span><span class="comment">// &lt;1&gt;
 </span><span>  </span><span class="string-literal">&quot;io.opentelemetry&quot;</span><span> % </span><span class="string-literal">&quot;opentelemetry-exporter-otlp&quot;</span><span> % </span><span class="string-literal">&quot;1.35.0&quot;</span><span> % </span><span class="type-name">Runtime</span><span>, </span><span class="comment">// &lt;2&gt;
 </span><span>  </span><span class="string-literal">&quot;io.opentelemetry&quot;</span><span> % </span><span class="string-literal">&quot;opentelemetry-sdk-extension-autoconfigure&quot;</span><span> % </span><span class="string-literal">&quot;1.35.0&quot;</span><span> % </span><span class="type-name">Runtime</span><span> </span><span class="comment">// &lt;3&gt;
 </span><span>)
@@ -208,14 +208,14 @@
           </div>
           <div class="tab-content" data-choice-name="scala-cli">
             <p>Add directives to the <code>*.scala</code> file:</p>
-            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="comment">//&gt; using lib &quot;org.typelevel::otel4s-java:0.4.0&quot; // &lt;1&gt;
+            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="comment">//&gt; using lib &quot;org.typelevel::otel4s-oteljava:0.4.0&quot; // &lt;1&gt;
 //&gt; using lib &quot;io.opentelemetry:opentelemetry-exporter-otlp:1.35.0&quot; // &lt;2&gt;
 //&gt; using lib &quot;io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:1.35.0&quot; // &lt;3&gt;
 //&gt; using `java-opt` &quot;-Dotel.java.global-autoconfigure.enabled=true&quot; // &lt;4&gt;</span></code></pre>
           </div>
         </div>
         <ol class="arabic">
-          <li>Add the <code>otel4s-java</code> library<br></li>
+          <li>Add the <code>otel4s-oteljava</code> library<br></li>
           <li>Add an OpenTelemetry exporter. Without the exporter, the application will crash<br></li>
           <li>Add an OpenTelemetry autoconfigure extension<br></li>
           <li>Enable OpenTelemetry SDK <a href="https://github.com/open-telemetry/opentelemetry-java/blob/main/sdk-extensions/autoconfigure/README.md">autoconfigure mode</a><br></li>

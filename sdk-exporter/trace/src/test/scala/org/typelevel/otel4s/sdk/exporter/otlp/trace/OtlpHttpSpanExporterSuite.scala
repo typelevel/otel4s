@@ -38,7 +38,7 @@ import org.typelevel.otel4s.Attributes
 import org.typelevel.otel4s.sdk.trace.data.EventData
 import org.typelevel.otel4s.sdk.trace.data.SpanData
 import org.typelevel.otel4s.sdk.trace.scalacheck.Arbitraries._
-import org.typelevel.otel4s.trace.Status
+import org.typelevel.otel4s.trace.StatusCode
 
 import java.util.Locale
 import scala.concurrent.duration._
@@ -140,13 +140,13 @@ class OtlpHttpSpanExporterSuite
                   span.kind.toString.toLowerCase(Locale.ROOT)
                 )
               ),
-              Option.when(span.status.status != Status.Unset)(
+              Option.when(span.status.status != StatusCode.Unset)(
                 Attribute(
                   "otel.status_code",
                   span.status.status.toString.toUpperCase(Locale.ROOT)
                 )
               ),
-              Option.when(span.status.status == Status.Error)(
+              Option.when(span.status.status == StatusCode.Error)(
                 Attribute("error", true)
               ),
               span.status.description.filter(_.nonEmpty).map { description =>

@@ -4,6 +4,7 @@ package example
 import cats.effect.Async
 import cats.effect.LiftIO
 import cats.effect.IOLocal
+import org.typelevel.otel4s.trace.Span
 import org.typelevel.otel4s.metrics.Meter
 import org.typelevel.otel4s.oteljava._
 import org.typelevel.otel4s.oteljava.OtelJava
@@ -18,6 +19,7 @@ import org.typelevel.otel4s.oteljava.context.Context
 import org.typelevel.otel4s.instances.local._
 import org.typelevel.otel4s.instances.local.localForIOLocal
 import org.typelevel.otel4s.instances.local.{localForIOLocal => liftLocal}
+import org.typelevel.otel4s.trace.StatusCode
 // format: on
 
 object Test {
@@ -36,6 +38,12 @@ object Test {
   def askCtx[F[_]: AskContext]: Unit = ???
 
   def localCtx[F[_]: LocalContext]: Unit = ???
+
+  def setStatus[F[_]](span: Span[F]): Unit = {
+    val errorStatus: StatusCode = StatusCode.Error
+    span.setStatus(StatusCode.Ok)
+    span.setStatus(errorStatus, "error")
+  }
 
   def meterOps[F[_]: Async](implicit meter: Meter[F]): Unit = {
     meter.counter[Long]("counter").create

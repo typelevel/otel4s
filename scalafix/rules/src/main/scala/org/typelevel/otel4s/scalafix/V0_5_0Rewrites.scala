@@ -102,7 +102,9 @@ class V0_5_0Rewrites extends SemanticRule("V0_5_0Rewrites") {
       case MeterOps.ObservableUpDownCounter(patch) =>
         patch
 
-    }.asPatch
+    }.asPatch + Patch.replaceSymbols(
+      "org.typelevel.otel4s.trace.Status" -> "org.typelevel.otel4s.trace.StatusCode"
+    )
   }
 
   private object MeterOps {

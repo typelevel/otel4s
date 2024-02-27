@@ -19,7 +19,7 @@ package org.typelevel.otel4s.trace.scalacheck
 import org.scalacheck.Arbitrary
 import org.typelevel.otel4s.trace.SpanContext
 import org.typelevel.otel4s.trace.SpanKind
-import org.typelevel.otel4s.trace.Status
+import org.typelevel.otel4s.trace.StatusCode
 
 trait Arbitraries extends org.typelevel.otel4s.scalacheck.Arbitraries {
 
@@ -29,8 +29,8 @@ trait Arbitraries extends org.typelevel.otel4s.scalacheck.Arbitraries {
   implicit val spanKindArbitrary: Arbitrary[SpanKind] =
     Arbitrary(Gens.spanKind)
 
-  implicit val statusArbitrary: Arbitrary[Status] =
-    Arbitrary(Gens.status)
+  implicit val statusCodeArbitrary: Arbitrary[StatusCode] =
+    Arbitrary(Gens.statusCode)
 
 }
 

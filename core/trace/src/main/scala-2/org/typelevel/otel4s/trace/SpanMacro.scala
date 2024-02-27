@@ -153,9 +153,9 @@ private[otel4s] trait SpanMacro[F[_]] {
     * free to ignore previous calls.
     *
     * @param status
-    *   the [[Status]] to set
+    *   the [[StatusCode]] to set
     */
-  def setStatus(status: Status): F[Unit] =
+  def setStatus(status: StatusCode): F[Unit] =
     macro SpanMacro.setStatus
 
   /** Sets the status to the span.
@@ -164,12 +164,12 @@ private[otel4s] trait SpanMacro[F[_]] {
     * free to ignore previous calls.
     *
     * @param status
-    *   the [[Status]] to set
+    *   the [[StatusCode]] to set
     *
     * @param description
-    *   the description of the [[Status]]
+    *   the description of the [[StatusCode]]
     */
-  def setStatus(status: Status, description: String): F[Unit] =
+  def setStatus(status: StatusCode, description: String): F[Unit] =
     macro SpanMacro.setStatusWithDescription
 
 }
@@ -277,7 +277,7 @@ object SpanMacro {
   }
 
   def setStatus(c: blackbox.Context)(
-      status: c.Expr[Status]
+      status: c.Expr[StatusCode]
   ): c.universe.Tree = {
     import c.universe._
 
@@ -288,7 +288,7 @@ object SpanMacro {
   }
 
   def setStatusWithDescription(c: blackbox.Context)(
-      status: c.Expr[Status],
+      status: c.Expr[StatusCode],
       description: c.Expr[String]
   ): c.universe.Tree = {
     import c.universe._

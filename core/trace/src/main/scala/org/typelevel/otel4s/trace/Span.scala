@@ -146,8 +146,8 @@ object Span {
         attributes: immutable.Iterable[Attribute[_]]
     ): F[Unit]
 
-    def setStatus(status: Status): F[Unit]
-    def setStatus(status: Status, description: String): F[Unit]
+    def setStatus(status: StatusCode): F[Unit]
+    def setStatus(status: StatusCode, description: String): F[Unit]
 
     private[otel4s] def end: F[Unit]
     private[otel4s] def end(timestamp: FiniteDuration): F[Unit]
@@ -211,8 +211,8 @@ object Span {
             attributes: immutable.Iterable[Attribute[_]]
         ): F[Unit] = unit
 
-        def setStatus(status: Status): F[Unit] = unit
-        def setStatus(status: Status, description: String): F[Unit] = unit
+        def setStatus(status: StatusCode): F[Unit] = unit
+        def setStatus(status: StatusCode, description: String): F[Unit] = unit
 
         private[otel4s] def end: F[Unit] = unit
         private[otel4s] def end(timestamp: FiniteDuration): F[Unit] = unit
@@ -244,9 +244,9 @@ object Span {
           attributes: immutable.Iterable[Attribute[_]]
       ): G[Unit] =
         f(backend.recordException(exception, attributes))
-      def setStatus(status: Status): G[Unit] =
+      def setStatus(status: StatusCode): G[Unit] =
         f(backend.setStatus(status))
-      def setStatus(status: Status, description: String): G[Unit] =
+      def setStatus(status: StatusCode, description: String): G[Unit] =
         f(backend.setStatus(status, description))
       private[otel4s] def end: G[Unit] = f(backend.end)
       private[otel4s] def end(timestamp: FiniteDuration): G[Unit] =

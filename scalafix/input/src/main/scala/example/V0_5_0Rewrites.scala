@@ -6,6 +6,8 @@ package example
 import cats.effect.Async
 import cats.effect.LiftIO
 import cats.effect.IOLocal
+import org.typelevel.otel4s.trace.Span
+import org.typelevel.otel4s.trace.Status
 import org.typelevel.otel4s.metrics.Meter
 import org.typelevel.otel4s.java._
 import org.typelevel.otel4s.java.OtelJava
@@ -38,6 +40,12 @@ object Test {
   def askCtx[F[_]: AskContext]: Unit = ???
 
   def localCtx[F[_]: LocalContext]: Unit = ???
+
+  def setStatus[F[_]](span: Span[F]): Unit = {
+    val errorStatus: Status = Status.Error
+    span.setStatus(Status.Ok)
+    span.setStatus(errorStatus, "error")
+  }
 
   def meterOps[F[_]: Async](implicit meter: Meter[F]): Unit = {
     meter.counter("counter").create

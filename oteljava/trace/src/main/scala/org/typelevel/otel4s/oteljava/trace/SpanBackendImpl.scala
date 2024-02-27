@@ -25,7 +25,7 @@ import io.opentelemetry.api.trace.{StatusCode => JStatusCode}
 import org.typelevel.otel4s.meta.InstrumentMeta
 import org.typelevel.otel4s.trace.Span
 import org.typelevel.otel4s.trace.SpanContext
-import org.typelevel.otel4s.trace.Status
+import org.typelevel.otel4s.trace.StatusCode
 
 import scala.collection.immutable
 import scala.concurrent.duration.FiniteDuration
@@ -77,13 +77,13 @@ private[oteljava] class SpanBackendImpl[F[_]: Sync](
       ()
     }
 
-  def setStatus(status: Status): F[Unit] =
+  def setStatus(status: StatusCode): F[Unit] =
     Sync[F].delay {
       jSpan.setStatus(toJStatus(status))
       ()
     }
 
-  def setStatus(status: Status, description: String): F[Unit] =
+  def setStatus(status: StatusCode, description: String): F[Unit] =
     Sync[F].delay {
       jSpan.setStatus(toJStatus(status), description)
       ()
@@ -113,11 +113,11 @@ private[oteljava] object SpanBackendImpl {
       SpanContextConversions.toScala(jSpan.getSpanContext)
     )
 
-  private def toJStatus(status: Status): JStatusCode =
+  private def toJStatus(status: StatusCode): JStatusCode =
     status match {
-      case Status.Unset => JStatusCode.UNSET
-      case Status.Ok    => JStatusCode.OK
-      case Status.Error => JStatusCode.ERROR
+      case StatusCode.Unset => JStatusCode.UNSET
+      case StatusCode.Ok    => JStatusCode.OK
+      case StatusCode.Error => JStatusCode.ERROR
     }
 
 }

@@ -25,7 +25,7 @@ import org.scalacheck.Prop
 import org.typelevel.otel4s.sdk.trace.scalacheck.Arbitraries
 import org.typelevel.otel4s.sdk.trace.scalacheck.Cogens
 import org.typelevel.otel4s.sdk.trace.scalacheck.Gens
-import org.typelevel.otel4s.trace.Status
+import org.typelevel.otel4s.trace.StatusCode
 
 class StatusDataSuite extends DisciplineSuite {
   import Cogens.statusDataCogen
@@ -48,12 +48,12 @@ class StatusDataSuite extends DisciplineSuite {
   }
 
   test("StatusData.Ok") {
-    assertEquals(StatusData.Ok.status, Status.Ok)
+    assertEquals(StatusData.Ok.status, StatusCode.Ok)
     assertEquals(StatusData.Ok.description, None)
   }
 
   test("StatusData.Unset") {
-    assertEquals(StatusData.Unset.status, Status.Unset)
+    assertEquals(StatusData.Unset.status, StatusCode.Unset)
     assertEquals(StatusData.Unset.description, None)
   }
 
@@ -62,17 +62,17 @@ class StatusDataSuite extends DisciplineSuite {
       val desc = Option.when(description.nonEmpty)(description)
       val error = StatusData.Error(desc)
 
-      assertEquals(error.status, Status.Error)
+      assertEquals(error.status, StatusCode.Error)
       assertEquals(error.description, desc)
     }
   }
 
   test("create StatusData from a given status") {
-    Prop.forAll(Gens.status) { status =>
+    Prop.forAll(Gens.statusCode) { status =>
       val expected = status match {
-        case Status.Ok    => StatusData.Ok
-        case Status.Error => StatusData.Error(None)
-        case Status.Unset => StatusData.Unset
+        case StatusCode.Ok    => StatusData.Ok
+        case StatusCode.Error => StatusData.Error(None)
+        case StatusCode.Unset => StatusData.Unset
       }
 
       assertEquals(StatusData(status), expected)

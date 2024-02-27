@@ -159,9 +159,9 @@ private[otel4s] trait SpanMacro[F[_]] {
     * free to ignore previous calls.
     *
     * @param status
-    *   the [[Status]] to set
+    *   the [[StatusCode]] to set
     */
-  inline def setStatus(inline status: Status): F[Unit] =
+  inline def setStatus(inline status: StatusCode): F[Unit] =
     ${ SpanMacro.setStatus('self, 'status) }
 
   /** Sets the status to the span.
@@ -170,13 +170,13 @@ private[otel4s] trait SpanMacro[F[_]] {
     * free to ignore previous calls.
     *
     * @param status
-    *   the [[Status]] to set
+    *   the [[StatusCode]] to set
     *
     * @param description
-    *   the description of the [[Status]]
+    *   the description of the [[StatusCode]]
     */
   inline def setStatus(
-      inline status: Status,
+      inline status: StatusCode,
       inline description: String
   ): F[Unit] =
     ${ SpanMacro.setStatus('self, 'status, 'description) }
@@ -241,7 +241,7 @@ object SpanMacro {
 
   def setStatus[F[_]](
       span: Expr[Span[F]],
-      status: Expr[Status]
+      status: Expr[StatusCode]
   )(using Quotes, Type[F]) =
     '{
       if ($span.backend.meta.isEnabled)
@@ -251,7 +251,7 @@ object SpanMacro {
 
   def setStatus[F[_]](
       span: Expr[Span[F]],
-      status: Expr[Status],
+      status: Expr[StatusCode],
       description: Expr[String]
   )(using Quotes, Type[F]) =
     '{

@@ -27,7 +27,7 @@ import org.typelevel.otel4s.sdk.trace.data.LinkData
 import org.typelevel.otel4s.sdk.trace.data.SpanData
 import org.typelevel.otel4s.sdk.trace.data.StatusData
 import org.typelevel.otel4s.trace.SpanKind
-import org.typelevel.otel4s.trace.Status
+import org.typelevel.otel4s.trace.StatusCode
 import org.typelevel.otel4s.trace.TraceFlags
 import org.typelevel.otel4s.trace.TraceState
 
@@ -60,9 +60,9 @@ private object SpansJsonCodecs extends JsonCodecs {
         statusData.description.filter(_.trim.nonEmpty).fold(Json.Null)(_.asJson)
 
       val code = statusData.status match {
-        case Status.Unset => Json.Null
-        case Status.Ok    => 1.asJson
-        case Status.Error => 2.asJson
+        case StatusCode.Unset => Json.Null
+        case StatusCode.Ok    => 1.asJson
+        case StatusCode.Error => 2.asJson
       }
 
       Json

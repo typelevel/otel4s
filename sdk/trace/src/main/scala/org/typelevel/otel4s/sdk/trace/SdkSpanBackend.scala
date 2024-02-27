@@ -37,7 +37,7 @@ import org.typelevel.otel4s.sdk.trace.processor.SpanProcessor
 import org.typelevel.otel4s.trace.Span
 import org.typelevel.otel4s.trace.SpanContext
 import org.typelevel.otel4s.trace.SpanKind
-import org.typelevel.otel4s.trace.Status
+import org.typelevel.otel4s.trace.StatusCode
 
 import scala.collection.immutable
 import scala.concurrent.duration.FiniteDuration
@@ -122,12 +122,12 @@ private final class SdkSpanBackend[F[_]: Monad: Clock: Console] private (
       )
     } yield ()
 
-  def setStatus(status: Status): F[Unit] =
+  def setStatus(status: StatusCode): F[Unit] =
     updateState("setStatus") { s =>
       s.copy(status = StatusData(status))
     }.void
 
-  def setStatus(status: Status, description: String): F[Unit] =
+  def setStatus(status: StatusCode, description: String): F[Unit] =
     updateState("setStatus") { s =>
       s.copy(status = StatusData(status, description))
     }.void

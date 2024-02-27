@@ -20,7 +20,7 @@ import org.scalacheck.Gen
 import org.typelevel.otel4s.baggage.Baggage
 import org.typelevel.otel4s.trace.SpanContext
 import org.typelevel.otel4s.trace.SpanKind
-import org.typelevel.otel4s.trace.Status
+import org.typelevel.otel4s.trace.StatusCode
 import org.typelevel.otel4s.trace.TraceFlags
 import org.typelevel.otel4s.trace.TraceState
 import scodec.bits.ByteVector
@@ -78,8 +78,8 @@ trait Gens extends org.typelevel.otel4s.scalacheck.Gens {
       SpanKind.Consumer
     )
 
-  val status: Gen[Status] =
-    Gen.oneOf(Status.Unset, Status.Ok, Status.Error)
+  val statusCode: Gen[StatusCode] =
+    Gen.oneOf(StatusCode.Unset, StatusCode.Ok, StatusCode.Error)
 
 }
 

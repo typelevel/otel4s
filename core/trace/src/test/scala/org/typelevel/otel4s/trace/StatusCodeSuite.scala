@@ -24,19 +24,19 @@ import org.typelevel.otel4s.trace.scalacheck.Arbitraries._
 import org.typelevel.otel4s.trace.scalacheck.Cogens._
 import org.typelevel.otel4s.trace.scalacheck.Gens
 
-class StatusSuite extends DisciplineSuite {
+class StatusCodeSuite extends DisciplineSuite {
 
-  checkAll("Status.HashLaws", HashTests[Status].hash)
+  checkAll("StatusCode.HashLaws", HashTests[StatusCode].hash)
 
-  property("Show[Status]") {
-    Prop.forAll(Gens.status) { status =>
+  property("Show[StatusCode]") {
+    Prop.forAll(Gens.statusCode) { status =>
       val expected = status match {
-        case Status.Unset => "Unset"
-        case Status.Ok    => "Ok"
-        case Status.Error => "Error"
+        case StatusCode.Unset => "Unset"
+        case StatusCode.Ok    => "Ok"
+        case StatusCode.Error => "Error"
       }
 
-      assertEquals(Show[Status].show(status), expected)
+      assertEquals(Show[StatusCode].show(status), expected)
     }
   }
 

@@ -36,7 +36,7 @@ class TracerSuite extends CatsEffectSuite {
 
     def status = {
       allocated = true
-      Status.Ok
+      StatusCode.Ok
     }
 
     def timestamp = {

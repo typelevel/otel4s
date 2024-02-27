@@ -19,7 +19,7 @@ package org.typelevel.otel4s.trace.scalacheck
 import org.scalacheck.Cogen
 import org.typelevel.otel4s.trace.SpanContext
 import org.typelevel.otel4s.trace.SpanKind
-import org.typelevel.otel4s.trace.Status
+import org.typelevel.otel4s.trace.StatusCode
 import org.typelevel.otel4s.trace.TraceFlags
 import org.typelevel.otel4s.trace.TraceState
 
@@ -47,7 +47,7 @@ trait Cogens extends org.typelevel.otel4s.scalacheck.Cogens {
   implicit val spanKindCogen: Cogen[SpanKind] =
     Cogen[String].contramap(_.toString)
 
-  implicit val statusCogen: Cogen[Status] =
+  implicit val statusCodeCogen: Cogen[StatusCode] =
     Cogen[String].contramap(_.toString)
 
 }

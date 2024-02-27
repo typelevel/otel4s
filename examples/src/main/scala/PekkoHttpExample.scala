@@ -60,7 +60,7 @@ import scala.concurrent.duration._
   * .enablePlugins(JavaAgent)
   * .settings(
   *   libraryDependencies ++= Seq(
-  *     "org.typelevel"                   %% "otel4s-java"                               % "0.3.0-RC2",
+  *     "org.typelevel"                   %% "otel4s-oteljava"                           % "0.5.0",
   *     "org.apache.pekko"                %% "pekko-stream"                              % "1.0.2",
   *     "org.apache.pekko"                %% "pekko-http"                                % "1.0.1",
   *     "io.opentelemetry.instrumentation" % "opentelemetry-instrumentation-annotations" % "2.1.0",

@@ -103,7 +103,7 @@ private final class SdkSpanBackend[F[_]: Monad: Clock: Console] private (
       attributes: immutable.Iterable[Attribute[_]]
   ): F[Unit] =
     addTimedEvent(
-      EventData(name, timestamp, Attributes.fromSpecific(attributes))
+      EventData(name, timestamp, attributes.to(Attributes))
     )
 
   def recordException(
@@ -116,7 +116,7 @@ private final class SdkSpanBackend[F[_]: Monad: Clock: Console] private (
         EventData.fromException(
           now,
           exception,
-          Attributes.fromSpecific(attributes),
+          attributes.to(Attributes),
           escaped = false
         )
       )

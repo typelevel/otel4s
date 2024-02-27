@@ -54,7 +54,7 @@ object Measurement {
     *   the attributes to associate with the value
     */
   def apply[A](value: A, attributes: Attribute[_]*): Measurement[A] =
-    Impl(value, Attributes.fromSpecific(attributes))
+    Impl(value, attributes.to(Attributes))
 
   /** Creates a [[Measurement]] with the given `value` and `attributes`.
     *

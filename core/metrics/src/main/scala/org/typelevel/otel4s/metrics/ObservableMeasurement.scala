@@ -31,7 +31,7 @@ trait ObservableMeasurement[F[_], A] {
     *   the set of attributes to associate with the value
     */
   final def record(value: A, attributes: Attribute[_]*): F[Unit] =
-    record(value, Attributes.fromSpecific(attributes))
+    record(value, attributes.to(Attributes))
 
   /** Records a value with a set of attributes.
     *

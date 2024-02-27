@@ -215,7 +215,7 @@ class OtlpHttpSpanExporterSuite
       }
     }
 
-    Attributes.fromSpecific(adapted)
+    adapted.to(Attributes)
   }
 
   private def toJaegerTag(a: Attribute[_]): JaegerTag = {

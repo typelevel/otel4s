@@ -22,12 +22,10 @@ import cats.Show
 import cats.syntax.show._
 import org.typelevel.otel4s.Attribute.KeySelect
 
-import scala.collection.{
-  IterableOps,
-  SpecificIterableFactory,
-  immutable,
-  mutable
-}
+import scala.collection.IterableOps
+import scala.collection.SpecificIterableFactory
+import scala.collection.immutable
+import scala.collection.mutable
 
 /** An immutable collection of [[Attribute]]s. It contains only unique keys.
   *

@@ -22,9 +22,12 @@ import cats.Show
 import cats.syntax.show._
 import org.typelevel.otel4s.Attribute.KeySelect
 
-import scala.collection.IterableOps
-import scala.collection.immutable
-import scala.collection.mutable
+import scala.collection.{
+  IterableOps,
+  SpecificIterableFactory,
+  immutable,
+  mutable
+}
 
 /** An immutable collection of [[Attribute]]s. It contains only unique keys.
   *
@@ -35,7 +38,8 @@ sealed trait Attributes
     extends immutable.Iterable[Attribute[_]]
     with IterableOps[Attribute[_], immutable.Iterable, Attributes] { self =>
 
-  /** Returns an attribute for the given attribute name, or `None` if not found.
+  /** Returns an attribute for the given attribute name and type, or `None` if
+    * not found.
     */
   final def get[T: KeySelect](name: String): Option[Attribute[T]] =
     get(KeySelect[T].make(name))
@@ -45,8 +49,7 @@ sealed trait Attributes
   def get[T](key: AttributeKey[T]): Option[Attribute[T]]
 
   /** Whether or not these `Attributes` contain a key with the given name. */
-  def containsUntyped(name: String): Boolean =
-    asUntypedMap.contains(name)
+  def containsUntyped(name: String): Boolean
 
   /** Whether or not these `Attributes` contain a key with the given name and
     * type.
@@ -81,8 +84,7 @@ sealed trait Attributes
     updated(attribute)
 
   /** Removes the [[`Attribute`]] with the given name, if present. */
-  def removedUntyped(name: String): Attributes =
-    uncheckedFromMap(asUntypedMap.removed(name))
+  def removedUntyped(name: String): Attributes
 
   /** Removes the [[`Attribute`]] with the given name and type, if present. */
   final def removed[T: KeySelect](name: String): Attributes =
@@ -104,14 +106,7 @@ sealed trait Attributes
     * the resulting `Attributes`.
     */
   def concat(that: IterableOnce[Attribute[_]]): Attributes =
-    that match {
-      case other: Attributes =>
-        uncheckedFromMap(asUntypedMap ++ other.asUntypedMap)
-      case other =>
-        uncheckedFromMap(
-          asUntypedMap ++ other.iterator.map(a => a.key.name -> a)
-        )
-    }
+    fromSpecific(this.view ++ that)
 
   /** Invariant overload of [[scala.collection.IterableOps.++ `IterableOps#++`]]
     * that returns `Attributes` rather than `Iterable`.
@@ -125,7 +120,7 @@ sealed trait Attributes
 
   /** Removes all attributes with any of the given key names. */
   def removedAllUntyped(names: IterableOnce[String]): Attributes =
-    uncheckedFromMap(asUntypedMap.removedAll(names))
+    names.iterator.foldLeft(this)(_.removedUntyped(_))
 
   /** Removes all attributes with any of the given keys. */
   def removedAll(keys: IterableOnce[AttributeKey[_]]): Attributes =
@@ -162,11 +157,7 @@ sealed trait Attributes
   final def untypedKeys: Set[String] = asUntypedMap.keySet
 
   /** A factory for creating `Attributes`. */
-  def attributesFactory: AttributesFactory
-
-  /** Alias for `attributesFactory.uncheckedFromMap`. */
-  protected def uncheckedFromMap(map: Map[String, Attribute[_]]): Attributes =
-    attributesFactory.uncheckedFromMap(map)
+  def attributesFactory: SpecificIterableFactory[Attribute[_], Attributes]
 
   override def empty: Attributes = attributesFactory.empty
   override protected def fromSpecific(
@@ -219,13 +210,8 @@ sealed trait Attributes
   }
 }
 
-object Attributes extends AttributesFactory {
+object Attributes extends SpecificIterableFactory[Attribute[_], Attributes] {
   private val Empty = new MapAttributes(Map.empty)
-
-  private[otel4s] def uncheckedFromMap(
-      map: Map[String, Attribute[_]]
-  ): Attributes =
-    new MapAttributes(map)
 
   /** Creates [[Attributes]] with the given `attributes`.
     *
@@ -373,13 +359,29 @@ object Attributes extends AttributesFactory {
         .get(key.name)
         .filter(_.key.`type` == key.`type`)
         .map(_.asInstanceOf[Attribute[T]])
+    def containsUntyped(name: String): Boolean =
+      asUntypedMap.contains(name)
     def contains(key: AttributeKey[_]): Boolean =
       asUntypedMap.get(key.name).exists(_.key.`type` == key.`type`)
     def updated(attribute: Attribute[_]): Attributes =
       new MapAttributes(asUntypedMap.updated(attribute.key.name, attribute))
+    def removedUntyped(name: String): Attributes =
+      new MapAttributes(asUntypedMap - name)
     def removed(key: AttributeKey[_]): Attributes =
-      if (contains(key)) new MapAttributes(asUntypedMap.removed(key.name))
+      if (contains(key)) new MapAttributes(asUntypedMap - key.name)
       else this
+
+    override def concat(that: IterableOnce[Attribute[_]]): Attributes =
+      that match {
+        case other: Attributes =>
+          new MapAttributes(asUntypedMap ++ other.asUntypedMap)
+        case other =>
+          new MapAttributes(
+            asUntypedMap ++ other.iterator.map(a => a.key.name -> a)
+          )
+      }
+    override def removedAllUntyped(names: IterableOnce[String]): Attributes =
+      new MapAttributes(asUntypedMap -- names)
 
     def iterator: Iterator[Attribute[_]] = asUntypedMap.valuesIterator
 

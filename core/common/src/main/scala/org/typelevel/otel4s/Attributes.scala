@@ -36,58 +36,42 @@ sealed trait Attributes
     extends immutable.Iterable[Attribute[_]]
     with IterableOps[Attribute[_], immutable.Iterable, Attributes] {
 
-  /** Returns an attribute for the given attribute name, or `None` if not found.
+  /** @return
+    *   an [[`Attribute`]] matching the given attribute name and type, or `None`
+    *   if not found.
     */
   final def get[T: KeySelect](name: String): Option[Attribute[T]] =
     get(KeySelect[T].make(name))
 
-  /** Returns an attribute for the given attribute key, or `None` if not found.
+  /** @return
+    *   an [[`Attribute`]] matching the given attribute key, or `None` if not
+    *   found
     */
   def get[T](key: AttributeKey[T]): Option[Attribute[T]]
-
-  /** Whether or not these `Attributes` contain a key with the given name and
-    * type.
-    */
-  final def contains[T: KeySelect](name: String): Boolean =
-    contains(KeySelect[T].make(name))
-
-  /** Whether or not these `Attributes` contain the given key. */
-  def contains(key: AttributeKey[_]): Boolean
 
   /** Adds an [[`Attribute`]] with the given name and value to these
     * `Attributes`, replacing any `Attribute` with the same name and type if one
     * exists.
     */
-  final def updated[T: KeySelect](name: String, value: T): Attributes =
-    updated(Attribute(name, value))
+  final def added[T: KeySelect](name: String, value: T): Attributes =
+    added(Attribute(name, value))
 
   /** Adds an [[`Attribute`]] with the given key and value to these
     * `Attributes`, replacing any `Attribute` with the same key if one exists.
     */
-  final def updated[T](key: AttributeKey[T], value: T): Attributes =
-    updated(Attribute(key, value))
+  final def added[T](key: AttributeKey[T], value: T): Attributes =
+    added(Attribute(key, value))
 
   /** Adds the given [[`Attribute`]] to these `Attributes`, replacing any
     * `Attribute` with the same key if one exists.
     */
-  def updated(attribute: Attribute[_]): Attributes
+  def added(attribute: Attribute[_]): Attributes
 
   /** Adds the given [[`Attribute`]] to these `Attributes`, replacing any
     * `Attribute` with the same key if one exists.
     */
   final def +(attribute: Attribute[_]): Attributes =
-    updated(attribute)
-
-  /** Removes the [[`Attribute`]] with the given name and type, if present. */
-  final def removed[T: KeySelect](name: String): Attributes =
-    removed(KeySelect[T].make(name))
-
-  /** Removes the [[`Attribute`]] with the given key, if present. */
-  def removed(key: AttributeKey[_]): Attributes
-
-  /** Removes the [[`Attribute`]] with the given key, if present. */
-  final def -(key: AttributeKey[_]): Attributes =
-    removed(key)
+    added(attribute)
 
   /** Invariant overload of
     * [[scala.collection.IterableOps.concat `IterableOps#concat`]] that returns
@@ -98,7 +82,7 @@ sealed trait Attributes
     * the resulting `Attributes`.
     */
   def concat(that: IterableOnce[Attribute[_]]): Attributes =
-    attributesFactory.fromSpecific(this.view ++ that)
+    fromSpecific(this.view ++ that)
 
   /** Invariant overload of [[scala.collection.IterableOps.++ `IterableOps#++`]]
     * that returns `Attributes` rather than `Iterable`.
@@ -110,23 +94,12 @@ sealed trait Attributes
   final def ++(that: IterableOnce[Attribute[_]]): Attributes =
     concat(that)
 
-  /** Removes all attributes with any of the given keys. */
-  def removedAll(that: IterableOnce[AttributeKey[_]]): Attributes =
-    attributesFactory.fromSpecific((toMap -- that).values)
-
-  /** Removes all attributes with any of the given keys. */
-  final def --(that: IterableOnce[AttributeKey[_]]): Attributes =
-    removedAll(that)
-
-  /** @return the `Map` representation of these `Attributes` */
-  def toMap: Map[AttributeKey[_], Attribute[_]]
-
-  /** Equivalent to `toMap.keySet`.
+  /** For internal use only, for comparison and testing. May not be fast.
     *
     * @return
-    *   the keys of the [[`Attribute`]]s
+    *   the `Map` representation of these `Attributes`
     */
-  final def keys: Set[AttributeKey[_]] = toMap.keySet
+  private[otel4s] def toMap: Map[String, Attribute[_]]
 
   /** A factory for creating `Attributes`. */
   def attributesFactory: SpecificIterableFactory[Attribute[_], Attributes]
@@ -207,13 +180,13 @@ object Attributes extends SpecificIterableFactory[Attribute[_], Attributes] {
       def combine(x: Attributes, y: Attributes): Attributes =
         if (y.isEmpty) x
         else if (x.isEmpty) y
-        else new MapAttributes(x.toMap ++ y.toMap)
+        else x ++ y
     }
 
   /** A '''mutable''' builder of [[Attributes]].
     */
   final class Builder extends mutable.Builder[Attribute[_], Attributes] {
-    private val builder = Map.newBuilder[AttributeKey[_], Attribute[_]]
+    private val builder = Map.newBuilder[String, Attribute[_]]
 
     /** Adds the attribute with the given `key` and `value` to the builder.
       *
@@ -228,7 +201,7 @@ object Attributes extends SpecificIterableFactory[Attribute[_], Attributes] {
       *   the value of the attribute
       */
     def addOne[A](key: AttributeKey[A], value: A): this.type = {
-      builder.addOne((key, Attribute(key, value)))
+      builder.addOne(key.name -> Attribute(key, value))
       this
     }
 
@@ -247,7 +220,7 @@ object Attributes extends SpecificIterableFactory[Attribute[_], Attributes] {
       */
     def addOne[A: KeySelect](name: String, value: A): this.type = {
       val key = KeySelect[A].make(name)
-      builder.addOne((key, Attribute(key, value)))
+      builder.addOne(key.name -> Attribute(key, value))
       this
     }
 
@@ -261,7 +234,7 @@ object Attributes extends SpecificIterableFactory[Attribute[_], Attributes] {
       *   the attribute to add
       */
     def addOne(attribute: Attribute[_]): this.type = {
-      builder.addOne((attribute.key, attribute))
+      builder.addOne(attribute.key.name -> attribute)
       this
     }
 
@@ -277,8 +250,8 @@ object Attributes extends SpecificIterableFactory[Attribute[_], Attributes] {
       */
     override def addAll(attributes: IterableOnce[Attribute[_]]): this.type = {
       attributes match {
-        case a: Attributes => builder.addAll(a.toMap)
-        case other         => super.addAll(other)
+        case a: MapAttributes => builder.addAll(a.m)
+        case other            => super.addAll(other)
       }
       this
     }
@@ -296,26 +269,23 @@ object Attributes extends SpecificIterableFactory[Attribute[_], Attributes] {
   }
 
   private final class MapAttributes(
-      private val m: Map[AttributeKey[_], Attribute[_]]
+      private[Attributes] val m: Map[String, Attribute[_]]
   ) extends Attributes {
     def get[T](key: AttributeKey[T]): Option[Attribute[T]] =
-      m.get(key).map(_.asInstanceOf[Attribute[T]])
-    def contains(key: AttributeKey[_]): Boolean = m.contains(key)
-    def updated(attribute: Attribute[_]): Attributes =
-      new MapAttributes(m.updated(attribute.key, attribute))
-    def removed(key: AttributeKey[_]): Attributes =
-      new MapAttributes(m.removed(key))
+      m.get(key.name)
+        .filter(_.key.`type` == key.`type`)
+        .asInstanceOf[Option[Attribute[T]]]
+    def added(attribute: Attribute[_]): Attributes =
+      new MapAttributes(m.updated(attribute.key.name, attribute))
     override def concat(that: IterableOnce[Attribute[_]]): Attributes =
       that match {
-        case other: Attributes =>
-          new MapAttributes(m ++ other.toMap)
+        case other: MapAttributes =>
+          new MapAttributes(m ++ other.m)
         case other =>
-          new MapAttributes(m ++ other.iterator.map(a => a.key -> a))
+          new MapAttributes(m ++ other.iterator.map(a => a.key.name -> a))
       }
-    override def removedAll(that: IterableOnce[AttributeKey[_]]): Attributes =
-      new MapAttributes(m -- that)
 
-    def toMap: Map[AttributeKey[_], Attribute[_]] = m
+    private[otel4s] def toMap: Map[String, Attribute[_]] = m
     def iterator: Iterator[Attribute[_]] = m.valuesIterator
 
     def attributesFactory: Attributes.type = Attributes

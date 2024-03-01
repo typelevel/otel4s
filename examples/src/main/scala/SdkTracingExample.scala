@@ -45,7 +45,7 @@ object SdkTracingExample extends IOApp.Simple {
   def run: IO[Unit] =
     OpenTelemetrySdk
       .autoConfigured[IO](
-        _.addExporterConfigurer(
+        _.addSpanExporterConfigurer(
           OtlpSpanExporterAutoConfigure[IO]
         ) // register OTLP exporter configurer
       )

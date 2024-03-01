@@ -189,7 +189,7 @@ object Histogram {
         }
     }
 
-  private val CauseKey: AttributeKey[String] = AttributeKey.string("cause")
+  private val CauseKey: AttributeKey[String] = AttributeKey("cause")
 
   def causeAttributes(ec: Resource.ExitCase): List[Attribute[String]] =
     ec match {

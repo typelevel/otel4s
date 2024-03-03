@@ -77,7 +77,7 @@ object SdkTraces {
     *   }}}
     *   and register the configurer manually:
     *   {{{
-    * import org.typelevel.otel4s.sdk.trace.Traces
+    * import org.typelevel.otel4s.sdk.trace.SdkTraces
     * import org.typelevel.otel4s.sdk.exporter.otlp.trace.autoconfigure.OtlpSpanExporterAutoConfigure
     *
     * SdkTraces.autoConfigured[IO](_.addExporterConfigurer(OtlpSpanExporterAutoConfigure[IO]))
@@ -167,7 +167,7 @@ object SdkTraces {
         *   }}}
         *   and register the configurer manually:
         *   {{{
-        * import org.typelevel.otel4s.sdk.trace.Traces
+        * import org.typelevel.otel4s.sdk.trace.SdkTraces
         * import org.typelevel.otel4s.sdk.exporter.otlp.trace.autoconfigure.OtlpSpanExporterAutoConfigure
         *
         * SdkTraces.autoConfigured[IO](_.addExporterConfigurer(OtlpSpanExporterAutoConfigure[IO]))

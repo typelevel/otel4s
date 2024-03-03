@@ -165,10 +165,10 @@ class OpenTelemetrySdkSuite extends CatsEffectSuite {
     OpenTelemetrySdk
       .autoConfigured[IO](
         _.withConfig(config)
-          .addExporterConfigurer(
+          .addSpanExporterConfigurer(
             AutoConfigure.Named.const("custom-1", exporter1)
           )
-          .addExporterConfigurer(
+          .addSpanExporterConfigurer(
             AutoConfigure.Named.const("custom-2", exporter2)
           )
       )

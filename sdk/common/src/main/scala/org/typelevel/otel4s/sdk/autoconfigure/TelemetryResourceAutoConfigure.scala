@@ -64,6 +64,7 @@ private final class TelemetryResourceAutoConfigure[F[_]: MonadThrow]
               ConfigurationError("Unable to decode resource attributes", e)
             }
         }
+        .map(_.to(Attributes))
 
     val attempt = for {
       disabledKeys <-
@@ -80,9 +81,10 @@ private final class TelemetryResourceAutoConfigure[F[_]: MonadThrow]
         .flatten
         .map(value => ResourceAttributes.ServiceName(value))
 
-      TelemetryResource(
-        Attributes.fromSpecific(attributes ++ serviceName.toSeq)
-      )
+      val default = TelemetryResource.default
+      val fromEnv = TelemetryResource(attributes ++ serviceName)
+
+      default.mergeUnsafe(fromEnv)
     }
 
     Resource.eval(MonadThrow[F].fromEither(attempt))

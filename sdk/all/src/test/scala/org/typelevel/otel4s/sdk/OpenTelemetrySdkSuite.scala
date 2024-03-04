@@ -47,7 +47,7 @@ class OpenTelemetrySdkSuite extends CatsEffectSuite {
 
   private val DefaultSdk =
     sdkToString(
-      TelemetryResource.empty,
+      TelemetryResource.default,
       Sampler.parentBased(Sampler.AlwaysOn)
     )
 
@@ -261,7 +261,7 @@ class OpenTelemetrySdkSuite extends CatsEffectSuite {
   }
 
   private def sdkToString(
-      resource: TelemetryResource = TelemetryResource.empty,
+      resource: TelemetryResource = TelemetryResource.default,
       sampler: Sampler = Sampler.parentBased(Sampler.AlwaysOn),
       propagators: ContextPropagators[Context] = ContextPropagators.of(
         W3CTraceContextPropagator.default,

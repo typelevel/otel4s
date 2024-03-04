@@ -20,7 +20,7 @@ import cats.Hash
 import cats.Monoid
 import cats.Show
 import cats.syntax.show._
-import org.typelevel.otel4s.Attribute.KeySelect
+import org.typelevel.otel4s.AttributeKey.KeySelect
 
 import scala.collection.IterableOps
 import scala.collection.SpecificIterableFactory

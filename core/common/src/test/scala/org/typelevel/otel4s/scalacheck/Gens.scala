@@ -19,7 +19,6 @@ package scalacheck
 
 import org.scalacheck.Arbitrary
 import org.scalacheck.Gen
-import org.typelevel.otel4s.Attribute.KeySelect
 
 trait Gens {
 
@@ -33,7 +32,7 @@ trait Gens {
     implicit def listArb[A: Arbitrary]: Arbitrary[List[A]] =
       Arbitrary(Gen.nonEmptyListOf(Arbitrary.arbitrary[A]))
 
-    def attribute[A: KeySelect: Arbitrary]: Gen[Attribute[A]] =
+    def attribute[A: AttributeKey.KeySelect: Arbitrary]: Gen[Attribute[A]] =
       for {
         key <- nonEmptyString
         value <- Arbitrary.arbitrary[A]

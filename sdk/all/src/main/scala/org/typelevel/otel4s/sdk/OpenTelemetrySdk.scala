@@ -300,20 +300,22 @@ object OpenTelemetrySdk {
             cfg.withOverrides(c(cfg))
           )
 
-        def loadNoop: Resource[F, OpenTelemetrySdk[F]] =
+        def loadNoop(config: Config): Resource[F, AutoConfigured[F]] =
           Resource.eval(
             for {
               _ <- Console[F].println(
                 s"OpenTelemetrySdk: the '${CommonConfigKeys.SdkDisabled}' set to 'true'. Using no-op implementation"
               )
               local <- LocalProvider[F, Context].local
-            } yield OpenTelemetrySdk.noop[F](Async[F], local)
+              sdk = OpenTelemetrySdk.noop[F](Async[F], local)
+              resource = TelemetryResource.empty
+            } yield Impl(sdk, resource, config)
           )
 
         def loadSdk(
             config: Config,
             resource: TelemetryResource
-        ): Resource[F, OpenTelemetrySdk[F]] = {
+        ): Resource[F, AutoConfigured[F]] = {
           def makeLocalContext = LocalProvider[F, Context].local
 
           Resource.eval(makeLocalContext).flatMap { implicit local =>
@@ -333,11 +335,12 @@ object OpenTelemetrySdk {
 
                 for {
                   tracerProvider <- tracerProviderConfigure.configure(config)
-                } yield new OpenTelemetrySdk(
-                  MeterProvider.noop,
-                  tracerProvider,
-                  propagators
-                )
+                  sdk = new OpenTelemetrySdk(
+                    MeterProvider.noop,
+                    tracerProvider,
+                    propagators
+                  )
+                } yield Impl(sdk, resource, config)
               }
             }
           }
@@ -356,8 +359,8 @@ object OpenTelemetrySdk {
             )
           )
 
-          sdk <- if (isDisabled) loadNoop else loadSdk(config, resource)
-        } yield Impl[F](sdk, resource, config)
+          sdk <- if (isDisabled) loadNoop(config) else loadSdk(config, resource)
+        } yield sdk
       }
 
       private def merge[A](

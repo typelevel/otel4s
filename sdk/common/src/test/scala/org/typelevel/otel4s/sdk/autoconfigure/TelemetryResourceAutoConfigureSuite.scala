@@ -23,14 +23,14 @@ import munit.CatsEffectSuite
 
 class TelemetryResourceAutoConfigureSuite extends CatsEffectSuite {
 
-  test("load from an empty config") {
+  test("load from an empty config - use default as a fallback") {
     val config = Config(Map.empty, Map.empty, Map.empty)
     TelemetryResourceAutoConfigure[IO].configure(config).use { resource =>
-      IO(assertEquals(resource, TelemetryResource.empty))
+      IO(assertEquals(resource, TelemetryResource.default))
     }
   }
 
-  test("load from the config") {
+  test("load from the config - use default as an initial resource") {
     val props = Map(
       "otel.service.name" -> "some-service",
       "otel.resource.attributes" -> "key1=val1,key2=val2,key3=val3",
@@ -44,8 +44,12 @@ class TelemetryResourceAutoConfigureSuite extends CatsEffectSuite {
       Attribute("service.name", "some-service")
     )
 
+    val expected = TelemetryResource.default.mergeUnsafe(
+      TelemetryResource(expectedAttributes)
+    )
+
     TelemetryResourceAutoConfigure[IO].configure(config).use { resource =>
-      IO(assertEquals(resource, TelemetryResource(expectedAttributes)))
+      IO(assertEquals(resource, expected))
     }
   }
 }

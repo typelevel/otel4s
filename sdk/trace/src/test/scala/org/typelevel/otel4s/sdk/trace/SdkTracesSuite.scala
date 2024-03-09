@@ -47,7 +47,7 @@ class SdkTracesSuite extends CatsEffectSuite {
 
   private val DefaultTraces =
     tracesToString(
-      TelemetryResource.empty,
+      TelemetryResource.default,
       Sampler.parentBased(Sampler.AlwaysOn)
     )
 
@@ -258,7 +258,7 @@ class SdkTracesSuite extends CatsEffectSuite {
   }
 
   private def tracesToString(
-      resource: TelemetryResource = TelemetryResource.empty,
+      resource: TelemetryResource = TelemetryResource.default,
       sampler: Sampler = Sampler.parentBased(Sampler.AlwaysOn),
       propagators: ContextPropagators[Context] = ContextPropagators.of(
         W3CTraceContextPropagator.default,

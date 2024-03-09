@@ -43,7 +43,7 @@ import org.typelevel.otel4s.oteljava.trace.Traces
 import org.typelevel.otel4s.trace.TracerProvider
 
 final class OtelJava[F[_]] private (
-    jOtel: JOpenTelemetry,
+    val underlying: JOpenTelemetry,
     val propagators: ContextPropagators[Context],
     val meterProvider: MeterProvider[F],
     val tracerProvider: TracerProvider[F],
@@ -51,7 +51,7 @@ final class OtelJava[F[_]] private (
     extends Otel4s[F] {
   type Ctx = Context
 
-  override def toString: String = s"OtelJava{$jOtel}"
+  override def toString: String = s"OtelJava{$underlying}"
 }
 
 object OtelJava {

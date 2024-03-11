@@ -16,6 +16,7 @@
 
 package org.typelevel.otel4s.oteljava
 
+import cats.Applicative
 import cats.effect.Async
 import cats.effect.Resource
 import cats.effect.Sync
@@ -87,6 +88,18 @@ object OtelJava {
       traces.tracerProvider,
     )
   }
+
+  /** Creates a no-op implementation of the [[OtelJava]].
+    */
+  def noop[F[_]: Applicative: LocalContextProvider]: F[OtelJava[F]] =
+    for {
+      local <- LocalProvider[F, Context].local
+    } yield new OtelJava(
+      JOpenTelemetry.noop(),
+      ContextPropagators.noop,
+      MeterProvider.noop,
+      TracerProvider.noop
+    )(local)
 
   /** Lifts the acquisition of a Java OpenTelemetrySdk instance to a Resource.
     *

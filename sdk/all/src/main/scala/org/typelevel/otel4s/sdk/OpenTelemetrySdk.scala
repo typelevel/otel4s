@@ -84,12 +84,16 @@ object OpenTelemetrySdk {
   ): Resource[F, AutoConfigured[F]] =
     customize(AutoConfigured.builder[F]).build
 
-  def noop[F[_]: Applicative: LocalContext]: OpenTelemetrySdk[F] =
-    new OpenTelemetrySdk[F](
+  /** Creates a no-op implementation of the [[OpenTelemetrySdk]].
+    */
+  def noop[F[_]: Applicative: LocalContextProvider]: F[OpenTelemetrySdk[F]] =
+    for {
+      local <- LocalProvider[F, Context].local
+    } yield new OpenTelemetrySdk[F](
       MeterProvider.noop,
       TracerProvider.noop,
       ContextPropagators.noop
-    )
+    )(local)
 
   /** The auto-configured [[OpenTelemetrySdk]].
     *
@@ -306,8 +310,7 @@ object OpenTelemetrySdk {
               _ <- Console[F].println(
                 s"OpenTelemetrySdk: the '${CommonConfigKeys.SdkDisabled}' set to 'true'. Using no-op implementation"
               )
-              local <- LocalProvider[F, Context].local
-              sdk = OpenTelemetrySdk.noop[F](Async[F], local)
+              sdk <- OpenTelemetrySdk.noop[F]
               resource = TelemetryResource.empty
             } yield Impl(sdk, resource, config)
           )

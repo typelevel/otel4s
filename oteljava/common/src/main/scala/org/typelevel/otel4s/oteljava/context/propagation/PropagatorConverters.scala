@@ -20,15 +20,25 @@
  * in the Scala standard library.
  */
 
-package org.typelevel.otel4s.oteljava.context.propagation
+package org.typelevel.otel4s.oteljava.context
+package propagation
 
-/** This object provides extension methods that convert between Scala and Java
-  * `TextMapGetter`s, `TextMapPropagator`s, and `ContextPropagators` using
-  * `asScala` and `asJava` extension methods.
-  *
-  * For the rare instances where they are needed, explicit conversion methods
-  * are defined in
-  * [[org.typelevel.otel4s.oteljava.context.propagation.convert.PropagatorConverters]].
+import io.opentelemetry.context.propagation.{
+  ContextPropagators => JContextPropagators
+}
+import io.opentelemetry.context.propagation.{TextMapGetter => JTextMapGetter}
+import io.opentelemetry.context.propagation.{
+  TextMapPropagator => JTextMapPropagator
+}
+import org.typelevel.otel4s.context.propagation.ContextPropagators
+import org.typelevel.otel4s.context.propagation.TextMapGetter
+import org.typelevel.otel4s.context.propagation.TextMapPropagator
+
+import scala.{unchecked => uc}
+
+/** This object provides `asScala` and `asJava` extension methods that convert
+  * between Scala and Java `TextMapGetter`s, `TextMapPropagator`s, and
+  * `ContextPropagators`.
   *
   * {{{
   *   import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator
@@ -60,6 +70,113 @@ package org.typelevel.otel4s.oteljava.context.propagation
   * Consequently, conversions between `ContextPropagators` convert the
   * `TextMapPropagator` and do not use a custom wrapper.
   */
-object PropagatorConverters
-    extends convert.AsJavaExtensions
-    with convert.AsScalaExtensions
+object PropagatorConverters {
+
+  implicit final class TextMapGetterHasAsJava[A](
+      private val getter: TextMapGetter[A]
+  ) extends AnyVal {
+
+    /** Converts a Scala `TextMapGetter` to a Java `TextMapGetter`.
+      *
+      * The returned Java `TextMapGetter` is backed by the provided Scala
+      * `TextMapGetter` unless the Scala `TextMapGetter` was previously obtained
+      * from an implicit or explicit call of `asScala`, in which case the
+      * original Java `TextMapGetter` will be returned.
+      */
+    def asJava: JTextMapGetter[A] = Explicit.asJava(getter)
+  }
+
+  implicit final class TextMapPropagatorHasAsJava(
+      private val prop: TextMapPropagator[Context]
+  ) extends AnyVal {
+
+    /** Converts a Scala `TextMapPropagator` to a Java `TextMapPropagator`.
+      *
+      * The returned Java `TextMapPropagator` is backed by the provided Scala
+      * `TextMapPropagator`unless the Scala `TextMapPropagator` was previously
+      * obtained from an implicit or explicit call of `asScala`, in which case
+      * the original Java `TextMapPropagator` will be returned.
+      */
+    def asJava: JTextMapPropagator = Explicit.asJava(prop)
+  }
+
+  implicit final class ContextPropagatorsHasAsJava(
+      private val cp: ContextPropagators[Context]
+  ) extends AnyVal {
+
+    /** Converts a Scala `ContextPropagators` to a Java `ContextPropagators`. */
+    def asJava: JContextPropagators = Explicit.asJava(cp)
+  }
+
+  implicit final class TextMapGetterHasAsScala[A](
+      private val getter: JTextMapGetter[A]
+  ) extends AnyVal {
+
+    /** Converts a Java `TextMapGetter` to a Scala `TextMapGetter`.
+      *
+      * The returned Scala `TextMapGetter` is backed by the provided Java
+      * `TextMapGetter` unless the Java `TextMapGetter` was previously obtained
+      * from an implicit or explicit call of `asJava`, in which case the
+      * original Scala `TextMapGetter` will be returned.
+      */
+    def asScala: TextMapGetter[A] = Explicit.asScala(getter)
+  }
+
+  implicit final class TextMapPropagatorHasAsScala(
+      private val propagator: JTextMapPropagator
+  ) extends AnyVal {
+
+    /** Converts a Java `TextMapPropagator` to a Scala `TextMapPropagator`.
+      *
+      * The returned Scala `TextMapPropagator` is backed by the provided Java
+      * `TextMapPropagator` unless the Java `TextMapPropagator` was previously
+      * obtained from an implicit or explicit call of `asJava`, in which case
+      * the original Scala `TextMapPropagator` will be returned.
+      */
+    def asScala: TextMapPropagator[Context] = Explicit.asScala(propagator)
+  }
+
+  implicit final class ContextPropagatorsHasAsScala(
+      private val cp: JContextPropagators
+  ) extends AnyVal {
+
+    /** Converts a Java `ContextPropagators` to a Scala `ContextPropagators`. */
+    def asScala: ContextPropagators[Context] = Explicit.asScala(cp)
+  }
+
+  private[propagation] object Explicit {
+    import JavaPropagatorWrappers._
+
+    def asJava[A](getter: TextMapGetter[A]): JTextMapGetter[A] = getter match {
+      case null                                  => null
+      case wrapper: JTextMapGetterWrapper[A @uc] => wrapper.underlying
+      case _ => new TextMapGetterWrapper(getter)
+    }
+
+    def asJava(propagator: TextMapPropagator[Context]): JTextMapPropagator =
+      propagator match {
+        case null                               => null
+        case wrapper: JTextMapPropagatorWrapper => wrapper.underlying
+        case _ => new TextMapPropagatorWrapper(propagator)
+      }
+
+    def asJava(propagators: ContextPropagators[Context]): JContextPropagators =
+      JContextPropagators.create(asJava(propagators.textMapPropagator))
+
+    def asScala[A](getter: JTextMapGetter[A]): TextMapGetter[A] = getter match {
+      case null                                 => null
+      case wrapper: TextMapGetterWrapper[A @uc] => wrapper.underlying
+      case _ => new JTextMapGetterWrapper(getter)
+    }
+
+    def asScala(propagator: JTextMapPropagator): TextMapPropagator[Context] =
+      propagator match {
+        case null                              => null
+        case wrapper: TextMapPropagatorWrapper => wrapper.underlying
+        case _ => new JTextMapPropagatorWrapper(propagator)
+      }
+
+    def asScala(propagators: JContextPropagators): ContextPropagators[Context] =
+      ContextPropagators.of(asScala(propagators.getTextMapPropagator))
+  }
+}

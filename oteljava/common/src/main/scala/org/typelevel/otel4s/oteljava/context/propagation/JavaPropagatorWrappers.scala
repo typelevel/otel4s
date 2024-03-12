@@ -15,7 +15,7 @@
  */
 
 package org.typelevel.otel4s.oteljava.context
-package propagation.convert
+package propagation
 
 import io.opentelemetry.context.{Context => JContext}
 import io.opentelemetry.context.propagation.{TextMapGetter => JTextMapGetter}
@@ -31,7 +31,7 @@ import java.{lang => jl}
 import java.{util => ju}
 import scala.jdk.CollectionConverters._
 
-private[convert] object JavaPropagatorWrappers {
+private[propagation] object JavaPropagatorWrappers {
   class TextMapGetterWrapper[C](val underlying: TextMapGetter[C])
       extends JTextMapGetter[C] {
     def keys(carrier: C): jl.Iterable[String] =
@@ -70,7 +70,7 @@ private[convert] object JavaPropagatorWrappers {
         getter: JTextMapGetter[C]
     ): JContext = {
       implicit val tmg: TextMapGetter[C] =
-        PropagatorConverters.asScala(getter) // don't double-wrap
+        PropagatorConverters.Explicit.asScala(getter) // don't double-wrap
       Option(carrier)
         .fold(context)(underlying.extract(Context.wrap(context), _).underlying)
     }
@@ -87,7 +87,7 @@ private[convert] object JavaPropagatorWrappers {
         underlying.extract(
           _,
           carrier,
-          PropagatorConverters.asJava(getter) // don't double-wrap
+          PropagatorConverters.Explicit.asJava(getter) // don't double-wrap
         )
       )
     def inject[A](ctx: Context, carrier: A)(implicit

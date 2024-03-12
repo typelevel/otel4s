@@ -22,6 +22,7 @@ import cats.Show
 import cats.syntax.show._
 import io.opentelemetry.sdk.metrics.data.{PointData => JPointData}
 import org.typelevel.otel4s.Attributes
+import org.typelevel.otel4s.oteljava.AttributeConverters._
 
 import scala.concurrent.duration._
 
@@ -48,7 +49,7 @@ object PointData {
     PointData(
       point.getStartEpochNanos.nanos,
       point.getEpochNanos.nanos,
-      Conversions.fromJAttributes(point.getAttributes),
+      point.getAttributes.toScala,
       f(point)
     )
 

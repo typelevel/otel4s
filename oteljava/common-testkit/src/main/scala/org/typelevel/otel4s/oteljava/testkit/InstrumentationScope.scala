@@ -23,6 +23,7 @@ import io.opentelemetry.sdk.common.{
   InstrumentationScopeInfo => JInstrumentationScopeInfo
 }
 import org.typelevel.otel4s.Attributes
+import org.typelevel.otel4s.oteljava.AttributeConverters._
 
 /** A representation of the
   * `io.opentelemetry.sdk.common.InstrumentationScopeInfo`.
@@ -67,7 +68,7 @@ object InstrumentationScope {
       name = scope.getName,
       version = Option(scope.getVersion),
       schemaUrl = Option(scope.getSchemaUrl),
-      attributes = Conversions.fromJAttributes(scope.getAttributes)
+      attributes = scope.getAttributes.toScala
     )
 
   implicit val instrumentationScopeHash: Hash[InstrumentationScope] =

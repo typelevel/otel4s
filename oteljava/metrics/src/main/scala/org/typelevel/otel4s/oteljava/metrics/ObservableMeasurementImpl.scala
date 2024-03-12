@@ -24,7 +24,7 @@ import io.opentelemetry.api.metrics.ObservableDoubleMeasurement
 import io.opentelemetry.api.metrics.ObservableLongMeasurement
 import org.typelevel.otel4s.Attributes
 import org.typelevel.otel4s.metrics.ObservableMeasurement
-import org.typelevel.otel4s.oteljava.Conversions
+import org.typelevel.otel4s.oteljava.AttributeConverters._
 
 private[metrics] sealed abstract class ObservableMeasurementImpl[F[_], A](
     val jObservableMeasurement: JObservableMeasurement
@@ -41,7 +41,7 @@ private object ObservableMeasurementImpl {
       Sync[F].delay(
         jObservableMeasurement.record(
           cast(value),
-          Conversions.toJAttributes(attributes)
+          attributes.toJava
         )
       )
   }
@@ -55,7 +55,7 @@ private object ObservableMeasurementImpl {
       Sync[F].delay(
         jObservableMeasurement.record(
           cast(value),
-          Conversions.toJAttributes(attributes)
+          attributes.toJava
         )
       )
   }

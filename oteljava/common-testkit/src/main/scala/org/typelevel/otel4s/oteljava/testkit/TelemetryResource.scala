@@ -21,6 +21,7 @@ import cats.Show
 import cats.syntax.show._
 import io.opentelemetry.sdk.resources.{Resource => JResource}
 import org.typelevel.otel4s.Attributes
+import org.typelevel.otel4s.oteljava.AttributeConverters._
 
 /** A representation of the `io.opentelemetry.sdk.resources.Resource`.
   */
@@ -57,7 +58,7 @@ object TelemetryResource {
   def apply(resource: JResource): TelemetryResource =
     Impl(
       schemaUrl = Option(resource.getSchemaUrl),
-      attributes = Conversions.fromJAttributes(resource.getAttributes)
+      attributes = resource.getAttributes.toScala
     )
 
   implicit val telemetryResourceHash: Hash[TelemetryResource] =

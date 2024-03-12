@@ -30,9 +30,9 @@ import io.opentelemetry.sdk.trace.data.StatusData
 import io.opentelemetry.sdk.trace.internal.data.ExceptionEventData
 import org.typelevel.otel4s.Attributes
 import org.typelevel.otel4s.context.propagation.TextMapPropagator
+import org.typelevel.otel4s.oteljava.AttributeConverters._
 import org.typelevel.otel4s.oteljava.context.Context
 import org.typelevel.otel4s.oteljava.context.propagation.PropagatorConverters._
-import org.typelevel.otel4s.oteljava.testkit.Conversions
 import org.typelevel.otel4s.oteljava.testkit.trace.TracesTestkit
 import org.typelevel.otel4s.trace.BaseTracerSuite
 import org.typelevel.otel4s.trace.SpanContext
@@ -155,7 +155,7 @@ class TracerSuite extends BaseTracerSuite[Context, Context.Key] {
         )
 
       def attributes: Attributes =
-        Conversions.fromJAttributes(sd.getAttributes)
+        sd.getAttributes.toScala
 
       def startTimestamp: FiniteDuration =
         sd.getStartEpochNanos.nanos

@@ -30,6 +30,7 @@ import io.opentelemetry.api.metrics.DoubleGaugeBuilder
 import io.opentelemetry.api.metrics.ObservableDoubleMeasurement
 import io.opentelemetry.api.metrics.ObservableLongMeasurement
 import org.typelevel.otel4s.metrics._
+import org.typelevel.otel4s.oteljava.AttributeConverters._
 
 private[oteljava] case class ObservableGaugeBuilderImpl[F[_], A](
     factory: ObservableGaugeBuilderImpl.Factory[F, A],
@@ -183,7 +184,7 @@ private[oteljava] object ObservableGaugeBuilderImpl {
           value: A,
           attributes: Attributes
       ): Unit =
-        om.record(cast(value), Conversions.toJAttributes(attributes))
+        om.record(cast(value), attributes.toJava)
     }
 
   private def doubleFactory[F[_]: Async, A](
@@ -213,7 +214,7 @@ private[oteljava] object ObservableGaugeBuilderImpl {
           value: A,
           attributes: Attributes
       ): Unit =
-        om.record(cast(value), Conversions.toJAttributes(attributes))
+        om.record(cast(value), attributes.toJava)
     }
 
 }

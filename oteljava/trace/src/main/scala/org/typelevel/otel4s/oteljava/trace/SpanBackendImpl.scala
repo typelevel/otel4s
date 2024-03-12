@@ -23,6 +23,7 @@ import cats.syntax.flatMap._
 import io.opentelemetry.api.trace.{Span => JSpan}
 import io.opentelemetry.api.trace.{StatusCode => JStatusCode}
 import org.typelevel.otel4s.meta.InstrumentMeta
+import org.typelevel.otel4s.oteljava.AttributeConverters._
 import org.typelevel.otel4s.trace.Span
 import org.typelevel.otel4s.trace.SpanContext
 import org.typelevel.otel4s.trace.StatusCode
@@ -49,7 +50,7 @@ private[oteljava] class SpanBackendImpl[F[_]: Sync](
 
   def addAttributes(attributes: immutable.Iterable[Attribute[_]]): F[Unit] =
     Sync[F].delay {
-      jSpan.setAllAttributes(Conversions.toJAttributes(attributes))
+      jSpan.setAllAttributes(attributes.toJavaAttributes)
       ()
     }
 
@@ -58,7 +59,7 @@ private[oteljava] class SpanBackendImpl[F[_]: Sync](
       attributes: immutable.Iterable[Attribute[_]]
   ): F[Unit] =
     Sync[F].delay {
-      jSpan.addEvent(name, Conversions.toJAttributes(attributes))
+      jSpan.addEvent(name, attributes.toJavaAttributes)
       ()
     }
 
@@ -70,7 +71,7 @@ private[oteljava] class SpanBackendImpl[F[_]: Sync](
     Sync[F].delay {
       jSpan.addEvent(
         name,
-        Conversions.toJAttributes(attributes),
+        attributes.toJavaAttributes,
         timestamp.length,
         timestamp.unit
       )
@@ -94,7 +95,7 @@ private[oteljava] class SpanBackendImpl[F[_]: Sync](
       attributes: immutable.Iterable[Attribute[_]]
   ): F[Unit] =
     Sync[F].delay {
-      jSpan.recordException(exception, Conversions.toJAttributes(attributes))
+      jSpan.recordException(exception, attributes.toJavaAttributes)
       ()
     }
 

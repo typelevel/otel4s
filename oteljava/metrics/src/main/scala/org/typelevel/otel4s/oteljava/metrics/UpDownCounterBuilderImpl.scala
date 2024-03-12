@@ -22,6 +22,7 @@ import cats.effect.kernel.Sync
 import io.opentelemetry.api.metrics.{Meter => JMeter}
 import org.typelevel.otel4s.meta.InstrumentMeta
 import org.typelevel.otel4s.metrics._
+import org.typelevel.otel4s.oteljava.AttributeConverters._
 
 import scala.collection.immutable
 
@@ -88,17 +89,17 @@ private[oteljava] object UpDownCounterBuilderImpl {
                 attributes: immutable.Iterable[Attribute[_]]
             ): F[Unit] =
               Sync[F].delay(
-                counter.add(cast(value), Conversions.toJAttributes(attributes))
+                counter.add(cast(value), attributes.toJavaAttributes)
               )
 
             def inc(attributes: immutable.Iterable[Attribute[_]]): F[Unit] =
               Sync[F].delay(
-                counter.add(1L, Conversions.toJAttributes(attributes))
+                counter.add(1L, attributes.toJavaAttributes)
               )
 
             def dec(attributes: immutable.Iterable[Attribute[_]]): F[Unit] =
               Sync[F].delay(
-                counter.add(-1L, Conversions.toJAttributes(attributes))
+                counter.add(-1L, attributes.toJavaAttributes)
               )
           }
 
@@ -130,17 +131,17 @@ private[oteljava] object UpDownCounterBuilderImpl {
                 attributes: immutable.Iterable[Attribute[_]]
             ): F[Unit] =
               Sync[F].delay(
-                counter.add(cast(value), Conversions.toJAttributes(attributes))
+                counter.add(cast(value), attributes.toJavaAttributes)
               )
 
             def inc(attributes: immutable.Iterable[Attribute[_]]): F[Unit] =
               Sync[F].delay(
-                counter.add(1.0, Conversions.toJAttributes(attributes))
+                counter.add(1.0, attributes.toJavaAttributes)
               )
 
             def dec(attributes: immutable.Iterable[Attribute[_]]): F[Unit] =
               Sync[F].delay(
-                counter.add(-1.0, Conversions.toJAttributes(attributes))
+                counter.add(-1.0, attributes.toJavaAttributes)
               )
           }
 

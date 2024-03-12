@@ -24,6 +24,7 @@ import cats.syntax.flatMap._
 import cats.syntax.functor._
 import io.opentelemetry.api.metrics.{Meter => JMeter}
 import org.typelevel.otel4s.metrics._
+import org.typelevel.otel4s.oteljava.AttributeConverters._
 
 import scala.collection.immutable
 import scala.concurrent.duration.TimeUnit
@@ -108,7 +109,7 @@ object HistogramBuilderImpl {
               Sync[F].delay(
                 histogram.record(
                   cast(value),
-                  Conversions.toJAttributes(attributes)
+                  attributes.toJavaAttributes
                 )
               )
 
@@ -123,9 +124,9 @@ object HistogramBuilderImpl {
                     _ <- Sync[F].delay(
                       histogram.record(
                         (end - start).toUnit(timeUnit).toLong,
-                        Conversions.toJAttributes(
+                        (
                           attributes ++ Histogram.causeAttributes(ec)
-                        )
+                        ).toJavaAttributes
                       )
                     )
                   } yield ()
@@ -169,7 +170,7 @@ object HistogramBuilderImpl {
               Sync[F].delay(
                 histogram.record(
                   cast(value),
-                  Conversions.toJAttributes(attributes)
+                  attributes.toJavaAttributes
                 )
               )
 
@@ -184,9 +185,9 @@ object HistogramBuilderImpl {
                     _ <- Sync[F].delay(
                       histogram.record(
                         (end - start).toUnit(timeUnit),
-                        Conversions.toJAttributes(
+                        (
                           attributes ++ Histogram.causeAttributes(ec)
-                        )
+                        ).toJavaAttributes
                       )
                     )
                   } yield ()

@@ -28,6 +28,7 @@ import io.opentelemetry.api.trace.{Tracer => JTracer}
 import io.opentelemetry.context.{Context => JContext}
 import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.Attributes
+import org.typelevel.otel4s.oteljava.AttributeConverters._
 import org.typelevel.otel4s.oteljava.context.Context
 import org.typelevel.otel4s.trace.Span
 import org.typelevel.otel4s.trace.SpanBuilder
@@ -102,7 +103,7 @@ private[oteljava] final case class SpanBuilderImpl[F[_]: Sync](
   private[trace] def makeJBuilder(parent: JContext): JSpanBuilder = {
     val b = jTracer
       .spanBuilder(name)
-      .setAllAttributes(Conversions.toJAttributes(attributes))
+      .setAllAttributes(attributes.toJava)
       .setParent(parent)
 
     kind.foreach(k => b.setSpanKind(toJSpanKind(k)))
@@ -110,7 +111,7 @@ private[oteljava] final case class SpanBuilderImpl[F[_]: Sync](
     links.foreach { case (ctx, attributes) =>
       b.addLink(
         SpanContextConversions.toJava(ctx),
-        Conversions.toJAttributes(attributes)
+        attributes.toJava
       )
     }
 

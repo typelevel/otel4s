@@ -192,7 +192,6 @@ lazy val core = crossProject(JVMPlatform, JSPlatform, NativePlatform)
 lazy val `sdk-common` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .crossType(CrossType.Pure)
   .enablePlugins(BuildInfoPlugin)
-  .enablePlugins(NoPublishPlugin)
   .in(file("sdk/common"))
   .dependsOn(`core-common` % "compile->compile;test->test", semconv)
   .settings(
@@ -215,7 +214,6 @@ lazy val `sdk-common` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
 
 lazy val `sdk-trace` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .crossType(CrossType.Pure)
-  .enablePlugins(NoPublishPlugin)
   .in(file("sdk/trace"))
   .dependsOn(
     `sdk-common` % "compile->compile;test->test",
@@ -238,7 +236,6 @@ lazy val `sdk-trace` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
 lazy val `sdk-trace-testkit` =
   crossProject(JVMPlatform, JSPlatform, NativePlatform)
     .crossType(CrossType.Pure)
-    .enablePlugins(NoPublishPlugin)
     .in(file("sdk/trace-testkit"))
     .dependsOn(`sdk-trace`)
     .settings(
@@ -249,7 +246,6 @@ lazy val `sdk-trace-testkit` =
 
 lazy val sdk = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .crossType(CrossType.Pure)
-  .enablePlugins(NoPublishPlugin)
   .in(file("sdk/all"))
   .dependsOn(
     core,
@@ -270,7 +266,6 @@ lazy val sdk = crossProject(JVMPlatform, JSPlatform, NativePlatform)
 lazy val `sdk-exporter-proto` =
   crossProject(JVMPlatform, JSPlatform, NativePlatform)
     .crossType(CrossType.Pure)
-    .enablePlugins(NoPublishPlugin)
     .in(file("sdk-exporter/proto"))
     .settings(
       name := "otel4s-sdk-exporter-proto",
@@ -294,7 +289,6 @@ lazy val `sdk-exporter-common` =
   crossProject(JVMPlatform, JSPlatform, NativePlatform)
     .crossType(CrossType.Pure)
     .in(file("sdk-exporter/common"))
-    .enablePlugins(NoPublishPlugin)
     .dependsOn(
       `sdk-common` % "compile->compile;test->test",
       `sdk-exporter-proto`
@@ -321,7 +315,7 @@ lazy val `sdk-exporter-trace` =
   crossProject(JVMPlatform, JSPlatform, NativePlatform)
     .crossType(CrossType.Pure)
     .in(file("sdk-exporter/trace"))
-    .enablePlugins(NoPublishPlugin, DockerComposeEnvPlugin)
+    .enablePlugins(DockerComposeEnvPlugin)
     .dependsOn(
       `sdk-exporter-common` % "compile->compile;test->test",
       `sdk-trace` % "compile->compile;test->test"
@@ -340,7 +334,6 @@ lazy val `sdk-exporter-trace` =
 lazy val `sdk-exporter` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .crossType(CrossType.Pure)
   .in(file("sdk-exporter/all"))
-  .enablePlugins(NoPublishPlugin)
   .dependsOn(`sdk-exporter-common`, `sdk-exporter-trace`)
   .settings(
     name := "otel4s-sdk-exporter"

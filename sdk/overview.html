@@ -6,7 +6,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="generator" content="Typelevel Laika + Helium Theme" />
-  <title>Modules structure</title>
+  <title>Overview</title>
   
   <meta name="author" content="Ross A. Baker"/>
   
@@ -22,27 +22,9 @@
   
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Fira+Mono:500">
   
-  <link rel="stylesheet" type="text/css" href="helium/site/icofont.min.css" />
-    <link rel="stylesheet" type="text/css" href="helium/site/laika-helium.css" />
-  <script src="helium/site/laika-helium.js"></script>
-    <script type="module">
-
-import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
-const dark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-mermaid.initialize({ 
-  startOnLoad: true,
-  theme: "base",
-  themeVariables: {
-    'darkMode': dark,
-    'primaryColor': dark ? '#f4f8fa' : '#f4f8fa', 
-    'primaryTextColor': dark ? '#385a70' : '#385a70',
-    'primaryBorderColor': dark ? '#8ebac7' : '#8ebac7',
-    'lineColor': dark ? '#385a70' : '#385a70',
-    'background': dark ? '#ffffff' : '#ffffff',
-  }
-});
-
-</script>
+  <link rel="stylesheet" type="text/css" href="../helium/site/icofont.min.css" />
+    <link rel="stylesheet" type="text/css" href="../helium/site/laika-helium.css" />
+  <script src="../helium/site/laika-helium.js"></script>
   
   
   <script> /* for avoiding page load transitions */ </script>
@@ -115,21 +97,21 @@ mermaid.initialize({
   </div>
 
   <ul class="nav-list">
-    <li class="level1 nav-leaf"><a href="index.html">otel4s</a></li>
-    <li class="level1 active nav-leaf"><a href="#">Modules structure</a></li>
-    <li class="level1 nav-leaf"><a href="tracing-context-propagation.html">Tracing context propagation</a></li>
+    <li class="level1 nav-leaf"><a href="../">otel4s</a></li>
+    <li class="level1 nav-leaf"><a href="../modules-structure.html">Modules structure</a></li>
+    <li class="level1 nav-leaf"><a href="../tracing-context-propagation.html">Tracing context propagation</a></li>
     <li class="level1 nav-header">Instrumentation</li>
-    <li class="level2 nav-leaf"><a href="instrumentation/tracing.html">Tracing</a></li>
-    <li class="level2 nav-leaf"><a href="instrumentation/tracing-java-interop.html">Tracing - interop with Java-instrumented libraries</a></li>
+    <li class="level2 nav-leaf"><a href="../instrumentation/tracing.html">Tracing</a></li>
+    <li class="level2 nav-leaf"><a href="../instrumentation/tracing-java-interop.html">Tracing - interop with Java-instrumented libraries</a></li>
     <li class="level1 nav-header">Customization</li>
-    <li class="level2 nav-leaf"><a href="customization/histogram-custom-buckets/">Histogram custom buckets</a></li>
+    <li class="level2 nav-leaf"><a href="../customization/histogram-custom-buckets/">Histogram custom buckets</a></li>
     <li class="level1 nav-header">SDK</li>
-    <li class="level2 nav-leaf"><a href="sdk/overview.html">Overview</a></li>
-    <li class="level2 nav-leaf"><a href="sdk/configuration.html">Configuration</a></li>
+    <li class="level2 active nav-leaf"><a href="#">Overview</a></li>
+    <li class="level2 nav-leaf"><a href="configuration.html">Configuration</a></li>
     <li class="level1 nav-header">Examples</li>
-    <li class="level2 nav-leaf"><a href="examples/jaeger-docker/">Jaeger - collecting traces</a></li>
-    <li class="level2 nav-leaf"><a href="examples/honeycomb/">Honeycomb - metrics and traces</a></li>
-    <li class="level2 nav-leaf"><a href="examples/grafana/">Grafana - All-in-one</a></li>
+    <li class="level2 nav-leaf"><a href="../examples/jaeger-docker/">Jaeger - collecting traces</a></li>
+    <li class="level2 nav-leaf"><a href="../examples/honeycomb/">Honeycomb - metrics and traces</a></li>
+    <li class="level2 nav-leaf"><a href="../examples/grafana/">Grafana - All-in-one</a></li>
   </ul>
 
 </nav>
@@ -138,15 +120,14 @@ mermaid.initialize({
 
       
 <nav id="page-nav">
-  <p class="header"><a href="#">Modules structure</a></p>
+  <p class="header"><a href="#">Overview</a></p>
 
   <ul class="nav-list">
-    <li class="level1 nav-node"><a href="#high-level-modules">High-level modules</a></li>
-    <li class="level2 nav-leaf"><a href="#_1-otel4s-core">1) <code>otel4s-core</code></a></li>
-    <li class="level2 nav-leaf"><a href="#_2-otel4s-sdk-under-development-not-published-yet">2) <code>otel4s-sdk</code> - under development, not published yet</a></li>
-    <li class="level2 nav-leaf"><a href="#_3-otel4s-oteljava">3) <code>otel4s-oteljava</code></a></li>
-    <li class="level1 nav-leaf"><a href="#high-level-module-structure">High-level module structure</a></li>
-    <li class="level1 nav-leaf"><a href="#which-module-do-i-need">Which module do I need?</a></li>
+    <li class="level1 nav-leaf"><a href="#getting-started">Getting Started</a></li>
+    <li class="level1 nav-leaf"><a href="#configuration">Configuration</a></li>
+    <li class="level1 nav-node"><a href="#limitations">Limitations</a></li>
+    <li class="level2 nav-leaf"><a href="#no-autoload-of-third-party-components">No autoload of third-party components</a></li>
+    <li class="level2 nav-leaf"><a href="#no-environment-aware-telemetry-resource">No environment-aware Telemetry Resource</a></li>
   </ul>
 
   <p class="footer"></p>
@@ -155,59 +136,78 @@ mermaid.initialize({
 
       <main class="content">
 
-        <h1 id="modules-structure" class="title">Modules structure</h1>
-        <p>The <code>otel4s</code> is designed with modularity in mind. To achieve this, the project is organized 
-        into distinct high-level modules, each serving specific purposes and functionalities. 
-        These modules are: <code>otel4s-core</code>, <code>otel4s-sdk</code>, <code>otel4s-oteljava</code>.</p>
-        <p>The primary motivation behind this modular architecture is to keep the classpath small. </p>
+        <h1 id="overview" class="title">Overview</h1>
+        <p>SDK modules are implemented in Scala and available for all platforms: JVM, Scala Native, and Scala.js.
+        Currently, only <strong>tracing</strong> module is implemented.
+        The implementation remains <strong>experimental</strong> and some functionality may be lacking.</p>
         
-        <h2 id="high-level-modules" class="section"><a class="anchor-link left" href="#high-level-modules"><i class="icofont-laika link">&#xef71;</i></a>High-level modules</h2>
-        <pre class="mermaid">graph BT
-  otel4s-sdk --&gt; otel4s-core
-  otel4s-oteljava --&gt; otel4s-core</pre>
-        
-        <h3 id="_1-otel4s-core" class="section"><a class="anchor-link left" href="#_1-otel4s-core"><i class="icofont-laika link">&#xef71;</i></a>1) <code>otel4s-core</code></h3>
-        <p>Defines the interfaces: <a href="https://github.com/typelevel/otel4s/blob/main/core/trace/src/main/scala/org/typelevel/otel4s/trace/Tracer.scala">Tracer</a>,
-        <a href="https://github.com/typelevel/otel4s/blob/main/core/metrics/src/main/scala/org/typelevel/otel4s/metrics/Meter.scala">Meter</a>, and others. 
-        It also offers no-op implementations.</p>
-        
-        <h3 id="_2-otel4s-sdk-under-development-not-published-yet" class="section"><a class="anchor-link left" href="#_2-otel4s-sdk-under-development-not-published-yet"><i class="icofont-laika link">&#xef71;</i></a>2) <code>otel4s-sdk</code> - under development, not published yet</h3>
-        <p>The implementation of Open Telemetry specification written purely in Scala. 
-        Will be available for all platforms: JVM, Scala Native, Scala.js. </p>
-        
-        <h3 id="_3-otel4s-oteljava" class="section"><a class="anchor-link left" href="#_3-otel4s-oteljava"><i class="icofont-laika link">&#xef71;</i></a>3) <code>otel4s-oteljava</code></h3>
-        <p>The implementation of <code>otel4s-core</code> interfaces. Uses <a href="https://github.com/open-telemetry/opentelemetry-java">OpenTelemetry Java</a> under the hood.</p>
-        
-        <h2 id="high-level-module-structure" class="section"><a class="anchor-link left" href="#high-level-module-structure"><i class="icofont-laika link">&#xef71;</i></a>High-level module structure</h2>
-        <p>Each high-level module has several submodules:<br>
-        1. <code>{x}-common</code> - the shared code, used by <code>{x}-trace</code> and <code>{x}-metrics</code><br>
-        2. <code>{x}-trace</code> - the tracing-specific code<br>
-        3. <code>{x}-metrics</code> - the metrics-specific code<br>
-        4. <code>{x}</code> - the high-level module itself - aggregates all of the above<br></p>
-        <p>The current structure of the modules:</p>
-        <pre class="mermaid">graph BT
-  otel4s-core --&gt; otel4s-core-metrics
-  otel4s-core --&gt; otel4s-core-trace
-  otel4s-core-metrics --&gt; otel4s-core-common
-  otel4s-core-trace --&gt; otel4s-core-common
-
-  otel4s-sdk --&gt; otel4s-sdk-metrics
-  otel4s-sdk --&gt; otel4s-sdk-trace
-  otel4s-sdk-metrics --&gt; otel4s-sdk-common
-  otel4s-sdk-trace --&gt; otel4s-sdk-common
-
-  otel4s-oteljava --&gt; otel4s-oteljava-metrics
-  otel4s-oteljava --&gt; otel4s-oteljava-trace
-  otel4s-oteljava-metrics --&gt; otel4s-oteljava-common
-  otel4s-oteljava-trace --&gt; otel4s-oteljava-common</pre>
-        
-        <h2 id="which-module-do-i-need" class="section"><a class="anchor-link left" href="#which-module-do-i-need"><i class="icofont-laika link">&#xef71;</i></a>Which module do I need?</h2>
-        <p>Let&#39;s take a look into common scenarios:</p>
+        <h2 id="getting-started" class="section"><a class="anchor-link left" href="#getting-started"><i class="icofont-laika link">&#xef71;</i></a>Getting Started</h2>
+        <div class="tab-container" data-tab-group="build-tool">
+          <ul class="tab-group">
+            <li class="tab active" data-choice-name="sbt"><a href="#">sbt</a></li>
+            <li class="tab" data-choice-name="scala-cli"><a href="#">Scala CLI</a></li>
+          </ul>
+          <div class="tab-content active" data-choice-name="sbt">
+            <p>Add settings to the <code>build.sbt</code>:</p>
+            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">libraryDependencies</span><span> ++= </span><span class="type-name">Seq</span><span>(
+  </span><span class="string-literal">&quot;org.typelevel&quot;</span><span> %%% </span><span class="string-literal">&quot;otel4s-sdk&quot;</span><span> % </span><span class="string-literal">&quot;0.5.0-RC2&quot;</span><span>, </span><span class="comment">// &lt;1&gt;
+</span><span>  </span><span class="string-literal">&quot;org.typelevel&quot;</span><span> %%% </span><span class="string-literal">&quot;otel4s-sdk-exporter&quot;</span><span> % </span><span class="string-literal">&quot;0.5.0-RC2&quot;</span><span> </span><span class="comment">// &lt;2&gt;
+</span><span>)</span></code></pre>
+          </div>
+          <div class="tab-content" data-choice-name="scala-cli">
+            <p>Add directives to the <code>*.scala</code> file:</p>
+            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="comment">//&gt; using lib &quot;org.typelevel::otel4s-sdk::0.5.0-RC2&quot; // &lt;1&gt;
+//&gt; using lib &quot;org.typelevel::otel4s-sdk-exporter::0.5.0-RC2&quot; // &lt;2&gt;</span></code></pre>
+          </div>
+        </div>
         <ol class="arabic">
-          <li>You develop a library, and you will use only trace-specific interfaces - use <code>otel4s-core-trace</code><br></li>
-          <li>You develop a library, and you will use both tracing and metrics interfaces - use <code>otel4s-core</code><br></li>
-          <li>You develop an app and want to export your telemetry - use <code>otel4s-oteljava</code> module<br></li>
+          <li>Add the <code>otel4s-sdk</code> library</li>
+          <li>Add the <code>otel4s-sdk-exporter</code> library. Without the exporter, the application will crash</li>
         </ol>
+        <hr>
+        <p>Then use <code>OpenTelemetrySdk.autoConfigured</code> or <code>SdkTraces.autoConfigured</code> to autoconfigure the SDK:</p>
+        <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.{</span><span class="type-name">IO</span><span>, </span><span class="type-name">IOApp</span><span>}
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">sdk</span><span>.</span><span class="type-name">OpenTelemetrySdk</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">sdk</span><span>.</span><span class="identifier">exporter</span><span>.</span><span class="identifier">otlp</span><span>.</span><span class="identifier">trace</span><span>.</span><span class="identifier">autoconfigure</span><span>.</span><span class="type-name">OtlpSpanExporterAutoConfigure</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">trace</span><span>.</span><span class="type-name">TracerProvider</span><span>
+
+</span><span class="keyword">object</span><span> </span><span class="type-name">TelemetryApp</span><span> </span><span class="keyword">extends</span><span> </span><span class="type-name">IOApp</span><span>.</span><span class="type-name">Simple</span><span> {
+
+  </span><span class="keyword">def</span><span> </span><span class="declaration-name">run</span><span>: </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] =
+    </span><span class="type-name">OpenTelemetrySdk</span><span>
+      .</span><span class="identifier">autoConfigured</span><span>[</span><span class="type-name">IO</span><span>](
+        </span><span class="identifier">_</span><span>.</span><span class="identifier">addSpanExporterConfigurer</span><span>(
+          </span><span class="type-name">OtlpSpanExporterAutoConfigure</span><span>[</span><span class="type-name">IO</span><span>]
+        ) </span><span class="comment">// register OTLP exporter configurer
+</span><span>      )
+      .</span><span class="identifier">use</span><span> { </span><span class="identifier">autoConfigured</span><span> =&gt;
+        </span><span class="keyword">val</span><span> </span><span class="identifier">sdk</span><span> = </span><span class="identifier">autoConfigured</span><span>.</span><span class="identifier">sdk</span><span>
+        </span><span class="identifier">program</span><span>(</span><span class="identifier">sdk</span><span>.</span><span class="identifier">tracerProvider</span><span>)
+      }
+
+  </span><span class="keyword">def</span><span> </span><span class="declaration-name">program</span><span>(</span><span class="identifier">tracerProvider</span><span>: </span><span class="type-name">TracerProvider</span><span>[</span><span class="type-name">IO</span><span>]): </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] =
+    ???
+}</span></code></pre>
+        
+        <h2 id="configuration" class="section"><a class="anchor-link left" href="#configuration"><i class="icofont-laika link">&#xef71;</i></a>Configuration</h2>
+        <p>The <code>.autoConfigured(...)</code> relies on the environment variables and system properties to configure the SDK.
+        For example, use <code>export OTEL_SERVICE_NAME=auth-service</code> to configure the name of the service.</p>
+        <p>See the full set of the <a href="configuration.html">supported options</a>.</p>
+        
+        <h2 id="limitations" class="section"><a class="anchor-link left" href="#limitations"><i class="icofont-laika link">&#xef71;</i></a>Limitations</h2>
+        
+        <h3 id="no-autoload-of-third-party-components" class="section"><a class="anchor-link left" href="#no-autoload-of-third-party-components"><i class="icofont-laika link">&#xef71;</i></a>No autoload of third-party components</h3>
+        <p>Since Scala Native and Scala.js lack <a href="https://docs.oracle.com/javase/tutorial/sound/SPI-intro.html">SPI</a> support, 
+        third-party components cannot be loaded dynamically as OpenTelemetry Java does.</p>
+        <p>Hence, the configurers must be registered manually:</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="type-name">OpenTelemetrySdk</span><span>.</span><span class="identifier">autoConfigured</span><span>[</span><span class="type-name">IO</span><span>](
+  </span><span class="identifier">_</span><span>.</span><span class="identifier">addSpanExporterConfigurer</span><span>(</span><span class="type-name">OtlpSpanExporterAutoConfigure</span><span>[</span><span class="type-name">IO</span><span>])
+)</span></code></pre>
+        
+        <h3 id="no-environment-aware-telemetry-resource" class="section"><a class="anchor-link left" href="#no-environment-aware-telemetry-resource"><i class="icofont-laika link">&#xef71;</i></a>No environment-aware Telemetry Resource</h3>
+        <p>OpenTelemetry Java can detect a large variety of environments (e.g. GCP, AWS ECS, etc) and add additional 
+        environment-specific attributes to the Telemetry Resource.</p>
+        <p>Otel4s SDK module does not support this yet. But we have a plan to provide this functionality in the future.</p>
 
         
 <hr class="footer-rule"/>

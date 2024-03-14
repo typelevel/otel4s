@@ -558,7 +558,7 @@ lazy val examples = project
 lazy val docs = project
   .in(file("site"))
   .enablePlugins(TypelevelSitePlugin)
-  .dependsOn(oteljava)
+  .dependsOn(oteljava, sdk.jvm, `sdk-exporter`.jvm)
   .settings(
     libraryDependencies ++= Seq(
       "org.apache.pekko" %% "pekko-http" % PekkoHttpVersion,
@@ -577,6 +577,12 @@ lazy val docs = project
             "build-tool",
             ChoiceConfig("sbt", "sbt"),
             ChoiceConfig("scala-cli", "Scala CLI")
+          ).withSeparateEbooks,
+          SelectionConfig(
+            "sdk-options-source",
+            ChoiceConfig("sbt", "sbt"),
+            ChoiceConfig("scala-cli", "Scala CLI"),
+            ChoiceConfig("shell", "Shell")
           ).withSeparateEbooks
         )
       )

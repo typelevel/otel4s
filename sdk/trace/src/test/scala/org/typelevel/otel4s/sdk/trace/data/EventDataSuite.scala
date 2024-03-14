@@ -69,7 +69,8 @@ class EventDataSuite extends DisciplineSuite {
         Attribute("exception.escaped", true)
       ) |+| attributes
 
-      val data = EventData.fromException(ts, exception, attributes, true)
+      val data =
+        EventData.fromException(ts, exception, attributes, escaped = true)
 
       assertEquals(data.name, "exception")
       assertEquals(data.timestamp, ts)
@@ -90,7 +91,8 @@ class EventDataSuite extends DisciplineSuite {
         Attribute("exception.escaped", false)
       ) |+| attributes
 
-      val data = EventData.fromException(ts, exception, attributes, false)
+      val data =
+        EventData.fromException(ts, exception, attributes, escaped = false)
 
       assertEquals(data.name, "exception")
       assertEquals(data.timestamp, ts)

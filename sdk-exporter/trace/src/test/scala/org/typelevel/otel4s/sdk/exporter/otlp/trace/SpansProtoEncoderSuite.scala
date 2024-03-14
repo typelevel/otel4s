@@ -139,19 +139,19 @@ class SpansProtoEncoderSuite extends ScalaCheckSuite {
     val attrs = Attributes(Attribute("key", "value"))
 
     val ctx = SpanContext(
-      ByteVector.fromValidHex("aae6750d58ff8148fa33894599afaaf2"),
-      ByteVector.fromValidHex("f676d76b0b3d4324"),
-      TraceFlags.fromByte(1),
-      TraceState.empty.updated("k", "v").updated("k2", "v2"),
-      false
+      traceId = ByteVector.fromValidHex("aae6750d58ff8148fa33894599afaaf2"),
+      spanId = ByteVector.fromValidHex("f676d76b0b3d4324"),
+      traceFlags = TraceFlags.fromByte(1),
+      traceState = TraceState.empty.updated("k", "v").updated("k2", "v2"),
+      remote = false
     )
 
     val ctx2 = SpanContext(
-      ByteVector.fromValidHex("aae6750d58ff8148fa33894599afaaf2"),
-      ByteVector.fromValidHex("f676d76b0b3d4324"),
-      TraceFlags.Default,
-      TraceState.empty,
-      false
+      traceId = ByteVector.fromValidHex("aae6750d58ff8148fa33894599afaaf2"),
+      spanId = ByteVector.fromValidHex("f676d76b0b3d4324"),
+      traceFlags = TraceFlags.Default,
+      traceState = TraceState.empty,
+      remote = false
     )
 
     assertEquals(

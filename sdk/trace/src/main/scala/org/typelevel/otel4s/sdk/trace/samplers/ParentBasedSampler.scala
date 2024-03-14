@@ -30,7 +30,7 @@ import scodec.bits.ByteVector
   * @see
   *   [[https://opentelemetry.io/docs/specs/otel/trace/sdk/#parentbased]]
   */
-private final case class ParentBasedSampler private (
+private[samplers] final case class ParentBasedSampler private (
     root: Sampler,
     remoteParentSampled: Sampler,
     remoteParentNotSampled: Sampler,

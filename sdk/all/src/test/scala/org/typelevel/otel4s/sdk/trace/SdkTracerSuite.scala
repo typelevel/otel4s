@@ -89,10 +89,10 @@ class SdkTracerSuite extends BaseTracerSuite[Context, Context.Key] {
 
     def expected(timestamp: FiniteDuration) =
       EventData.fromException(
-        timestamp,
-        exception,
-        Attributes.empty,
-        false
+        timestamp = timestamp,
+        exception = exception,
+        attributes = Attributes.empty,
+        escaped = false
       )
 
     TestControl.executeEmbed {

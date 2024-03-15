@@ -62,4 +62,14 @@ class PassThroughPropagatorProps extends ScalaCheckSuite {
       assert(injected.isEmpty)
     }
   }
+
+  property("does not inject fields after extracting none") {
+    forAll { (entries: Map[String, String]) =>
+      val propagator = vaultPropagator(entries.keySet)
+      val extracted1 = propagator.extract(VaultContext.root, entries)
+      val extracted2 = propagator.extract(extracted1, Map.empty[String, String])
+      val injected = propagator.inject(extracted2, Map.empty[String, String])
+      assert(injected.isEmpty)
+    }
+  }
 }

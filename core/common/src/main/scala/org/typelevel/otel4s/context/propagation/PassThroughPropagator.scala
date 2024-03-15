@@ -33,10 +33,10 @@ final class PassThroughPropagator[Ctx, K[X] <: Key[X]] private (
   def extract[A](ctx: Ctx, carrier: A)(implicit
       getter: TextMapGetter[A]
   ): Ctx = {
-    val list = fields.view
+    val entries = fields.view
       .flatMap(k => getter.get(carrier, k).map(k -> _))
       .toList
-    if (list.isEmpty) ctx else ctx.updated(entriesKey, list)
+    ctx.updated(entriesKey, entries)
   }
 
   def inject[A](ctx: Ctx, carrier: A)(implicit updater: TextMapUpdater[A]): A =

@@ -36,4 +36,11 @@ class PassThroughPropagatorSuite extends FunSuite {
     val injected = propagator.inject(extracted, Map.empty[String, String])
     assert(injected.isEmpty)
   }
+
+  test("does not inject fields after extracting none") {
+    val extracted1 = propagator.extract(VaultContext.root, Map("foo" -> "0"))
+    val extracted2 = propagator.extract(extracted1, Map.empty[String, String])
+    val injected = propagator.inject(extracted2, Map.empty[String, String])
+    assert(injected.isEmpty)
+  }
 }

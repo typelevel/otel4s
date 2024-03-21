@@ -984,20 +984,20 @@ abstract class BaseTracerSuite[Ctx, K[X] <: Key[X]](implicit
     tracer
       .span("resource-span", attributes: _*)
       .resource
-      .flatMap { res =>
+      .flatMap { case SpanOps.Res(_, trace) =>
         Resource[F, A] {
-          res.trace {
+          trace {
             tracer
               .span("acquire")
               .surround {
                 resource.allocated.map { case (acquired, release) =>
-                  acquired -> res.trace(
+                  acquired -> trace(
                     tracer.span("release").surround(release)
                   )
                 }
               }
           }
-        }.as(res.trace)
+        }.as(trace)
       }
   }
 

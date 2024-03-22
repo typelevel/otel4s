@@ -311,6 +311,58 @@ abstract class BaseTracerSuite[Ctx, K[X] <: Key[X]](implicit
     }
   }
 
+  sdkTest("`currentSpanOrThrow` outside of a span (root scope)") { sdk =>
+    {
+      for {
+        tracer <- sdk.provider.get("tracer")
+        _ <- tracer.currentSpanOrThrow
+        _ <- IO.raiseError[Unit](
+          new AssertionError("did not throw for `currentSpanOrThrow`")
+        )
+      } yield ()
+    }.recover { case _: IllegalStateException => () }
+  }
+
+  sdkTest("`currentSpanOrThrow` in noop scope") { sdk =>
+    for {
+      tracer <- sdk.provider.get("tracer")
+      _ <- tracer.noopScope {
+        for {
+          currentSpan <- tracer.currentSpanOrThrow
+          _ <- currentSpan.addAttribute(Attribute("string-attribute", "value"))
+        } yield assert(!currentSpan.context.isValid)
+      }
+      spans <- sdk.finishedSpans
+    } yield assertEquals(spans.length, 0)
+  }
+
+  sdkTest("`currentSpanOrThrow` inside a span") { sdk =>
+    def expected(now: FiniteDuration) =
+      List(SpanTree(SpanInfo("span", now, now)))
+
+    val attribute =
+      Attribute("string-attribute", "value")
+
+    TestControl.executeEmbed {
+      for {
+        now <- IO.monotonic.delayBy(1.second) // otherwise returns 0
+        tracer <- sdk.provider.get("tracer")
+        _ <- tracer.span("span").surround {
+          for {
+            currentSpan <- tracer.currentSpanOrThrow
+            _ <- currentSpan.addAttribute(attribute)
+          } yield assert(currentSpan.context.isValid)
+        }
+        spans <- sdk.finishedSpans
+        tree <- IO.pure(treeOf(spans))
+        // _ <- IO.println(tree.map(renderTree).mkString("\n"))
+      } yield {
+        assertEquals(tree, expected(now))
+        assertEquals(spans.map(_.attributes), List(Attributes(attribute)))
+      }
+    }
+  }
+
   sdkTest("create a new scope with a custom parent") { sdk =>
     def expected(now: FiniteDuration) =
       SpanTree(

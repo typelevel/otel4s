@@ -18,6 +18,7 @@ package org.typelevel.otel4s
 package trace
 
 import cats.Applicative
+import cats.ApplicativeThrow
 import cats.effect.kernel.MonadCancelThrow
 import cats.syntax.functor._
 import cats.~>
@@ -51,10 +52,20 @@ trait Tracer[F[_]] extends TracerMacro[F] {
     */
   def currentSpanContext: F[Option[SpanContext]]
 
-  /** Returns the current span if one exists in the local scope, or a no-op span
-    * otherwise.
+  /** @return
+    *   the current span if one exists in the local scope, or a no-op span
+    *   otherwise
     */
   def currentSpanOrNoop: F[Span[F]]
+
+  /** @return
+    *   the current span if one exists in the local scope (even if it's a no-op
+    *   span), or raises an error in `F` otherwise
+    *
+    * @throws java.lang.IllegalStateException
+    *   when called while not inside a span, indicating programmer error
+    */
+  def currentSpanOrThrow: F[Span[F]]
 
   /** Creates a new [[SpanBuilder]]. The builder can be used to make a fully
     * customized [[Span]].
@@ -206,6 +217,10 @@ trait Tracer[F[_]] extends TracerMacro[F] {
 }
 
 object Tracer {
+  private[otel4s] def raiseNoCurrentSpan[F[_]](implicit
+      F: ApplicativeThrow[F]
+  ): F[Span[F]] =
+    F.raiseError(new IllegalStateException("not inside a span"))
 
   def apply[F[_]](implicit ev: Tracer[F]): Tracer[F] = ev
 
@@ -264,6 +279,7 @@ object Tracer {
       val currentSpanContext: F[Option[SpanContext]] = Applicative[F].pure(None)
       val currentSpanOrNoop: F[Span[F]] =
         Applicative[F].pure(Span.fromBackend(noopBackend))
+      def currentSpanOrThrow: F[Span[F]] = currentSpanOrNoop
       def rootScope[A](fa: F[A]): F[A] = fa
       def noopScope[A](fa: F[A]): F[A] = fa
       def childScope[A](parent: SpanContext)(fa: F[A]): F[A] = fa
@@ -283,6 +299,8 @@ object Tracer {
       kt.liftK(tracer.currentSpanContext)
     def currentSpanOrNoop: G[Span[G]] =
       kt.liftK(tracer.currentSpanOrNoop.map(_.mapK[G]))
+    def currentSpanOrThrow: G[Span[G]] =
+      kt.liftK(tracer.currentSpanOrThrow.map(_.mapK[G]))
     def spanBuilder(name: String): SpanBuilder[G] =
       tracer.spanBuilder(name).mapK[G]
     def childScope[A](parent: SpanContext)(ga: G[A]): G[A] =

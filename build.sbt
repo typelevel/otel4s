@@ -217,7 +217,7 @@ lazy val `sdk-metrics` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .crossType(CrossType.Pure)
   .enablePlugins(NoPublishPlugin)
   .in(file("sdk/metrics"))
-  .dependsOn(`sdk-common`, `core-metrics`)
+  .dependsOn(`sdk-common` % "compile->compile;test->test", `core-metrics`)
   .settings(
     name := "otel4s-sdk-metrics",
     startYear := Some(2024),

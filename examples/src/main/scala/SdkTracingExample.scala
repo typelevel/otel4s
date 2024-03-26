@@ -20,6 +20,7 @@ import cats.effect.std.Console
 import cats.syntax.all._
 import org.typelevel.otel4s.sdk.OpenTelemetrySdk
 import org.typelevel.otel4s.sdk.exporter.otlp.trace.autoconfigure.OtlpSpanExporterAutoConfigure
+import org.typelevel.otel4s.trace.SpanOps
 import org.typelevel.otel4s.trace.Tracer
 
 import scala.concurrent.duration._
@@ -51,13 +52,13 @@ object SdkTracingExample extends IOApp.Simple {
       )
       .use { autoConfigured =>
         val sdk = autoConfigured.sdk
-        val getTracer = sdk.tracerProvider.tracer("example").get
+        val getTracer = sdk.tracerProvider.get("example")
         getTracer.flatMap { implicit tracer: Tracer[IO] =>
           tracer
             .span("resource")
             .resource
-            .use { res =>
-              res.trace {
+            .use { case SpanOps.Res(span, trace) =>
+              trace {
                 for {
                   _ <- tracer.span("acquire").surround(IO.sleep(50.millis))
                   _ <- tracer.span("use").surround {
@@ -70,7 +71,7 @@ object SdkTracingExample extends IOApp.Simple {
                       )
                     )
                   }
-                  _ <- res.span.addEvent("event")
+                  _ <- span.addEvent("event")
                   _ <- tracer.span("release").surround(IO.sleep(100.millis))
                 } yield ()
               }

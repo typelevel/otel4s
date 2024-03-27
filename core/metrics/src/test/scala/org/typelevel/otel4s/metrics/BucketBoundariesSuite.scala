@@ -16,9 +16,36 @@
 
 package org.typelevel.otel4s.metrics
 
+import cats.Show
+import cats.kernel.laws.discipline.HashTests
 import munit._
+import org.scalacheck.Arbitrary
+import org.scalacheck.Cogen
+import org.scalacheck.Gen
+import org.scalacheck.Prop
 
-class BucketBoundariesSuite extends FunSuite {
+class BucketBoundariesSuite extends DisciplineSuite {
+
+  private implicit val boundariesArbitrary: Arbitrary[BucketBoundaries] =
+    Arbitrary(
+      for {
+        size <- Gen.choose(0, 20)
+        b <- Gen.containerOfN[Vector, Double](size, Gen.choose(-100.0, 100.0))
+      } yield BucketBoundaries(b.distinct.sorted)
+    )
+
+  private implicit val boundariesCogen: Cogen[BucketBoundaries] =
+    Cogen[Vector[Double]].contramap(_.boundaries)
+
+  checkAll("BucketBoundaries.Hash", HashTests[BucketBoundaries].hash)
+
+  test("Show[BucketBoundaries]") {
+    Prop.forAll(boundariesArbitrary.arbitrary) { b =>
+      val expected = s"BucketBoundaries{${b.boundaries.mkString(", ")}}"
+
+      assertEquals(Show[BucketBoundaries].show(b), expected)
+    }
+  }
 
   test("fail when a boundary is Double.NaN") {
     interceptMessage[IllegalArgumentException](

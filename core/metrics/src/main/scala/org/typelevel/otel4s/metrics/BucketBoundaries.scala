@@ -16,10 +16,27 @@
 
 package org.typelevel.otel4s.metrics
 
+import cats.Hash
+import cats.Show
+
 /** Represents bucket boundaries of a [[Histogram]] instrument.
   */
 sealed trait BucketBoundaries {
   def boundaries: Vector[Double]
+
+  final def length: Int = boundaries.length
+
+  override final def hashCode(): Int =
+    Hash[BucketBoundaries].hash(this)
+
+  override final def equals(obj: Any): Boolean =
+    obj match {
+      case other: BucketBoundaries => Hash[BucketBoundaries].eqv(this, other)
+      case _                       => false
+    }
+
+  override final def toString: String =
+    Show[BucketBoundaries].show(this)
 }
 
 object BucketBoundaries {
@@ -57,6 +74,14 @@ object BucketBoundaries {
 
     Impl(boundaries)
   }
+
+  implicit val bucketBoundariesHash: Hash[BucketBoundaries] =
+    Hash.by(_.boundaries)
+
+  implicit val bucketBoundariesShow: Show[BucketBoundaries] =
+    Show.show { boundaries =>
+      boundaries.boundaries.mkString("BucketBoundaries{", ", ", "}")
+    }
 
   private final case class Impl(
       boundaries: Vector[Double]

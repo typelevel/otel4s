@@ -45,9 +45,9 @@ class ProtoEncoderSuite extends ScalaCheckSuite {
     Prop.forAll(Arbitrary.arbitrary[Attribute[_]]) { attribute =>
       val value = attribute.value
 
-      def list[A: Encoder](typeName: String): Json = {
-        val list = value.asInstanceOf[List[A]]
-        Json.obj("values" := list.map(value => Json.obj(typeName := value)))
+      def seq[A: Encoder](typeName: String): Json = {
+        val values = value.asInstanceOf[Seq[A]]
+        Json.obj("values" := values.map(value => Json.obj(typeName := value)))
       }
 
       implicit val longEncoder: Encoder[Long] =
@@ -63,14 +63,14 @@ class ProtoEncoderSuite extends ScalaCheckSuite {
             Json.obj("stringValue" := value.asInstanceOf[String])
           case AttributeType.Long =>
             Json.obj("intValue" := value.asInstanceOf[Long])
-          case AttributeType.BooleanList =>
-            Json.obj("arrayValue" := list[Boolean]("boolValue"))
-          case AttributeType.DoubleList =>
-            Json.obj("arrayValue" := list[Double]("doubleValue"))
-          case AttributeType.StringList =>
-            Json.obj("arrayValue" := list[String]("stringValue"))
-          case AttributeType.LongList =>
-            Json.obj("arrayValue" := list[Long]("intValue"))
+          case AttributeType.BooleanSeq =>
+            Json.obj("arrayValue" := seq[Boolean]("boolValue"))
+          case AttributeType.DoubleSeq =>
+            Json.obj("arrayValue" := seq[Double]("doubleValue"))
+          case AttributeType.StringSeq =>
+            Json.obj("arrayValue" := seq[String]("stringValue"))
+          case AttributeType.LongSeq =>
+            Json.obj("arrayValue" := seq[Long]("intValue"))
         }
 
         Json.obj("key" := attribute.key.name, "value" := v)
@@ -92,7 +92,7 @@ class ProtoEncoderSuite extends ScalaCheckSuite {
     )
 
     assertEquals(
-      ProtoEncoder.toJson(Attribute("string_list", List("a", "b"))).noSpaces,
+      ProtoEncoder.toJson(Attribute("string_list", Seq("a", "b"))).noSpaces,
       """{"key":"string_list","value":{"arrayValue":{"values":[{"stringValue":"a"},{"stringValue":"b"}]}}}"""
     )
 
@@ -103,7 +103,7 @@ class ProtoEncoderSuite extends ScalaCheckSuite {
 
     assertEquals(
       ProtoEncoder
-        .toJson(Attribute("boolean_list", List(true, false)))
+        .toJson(Attribute("boolean_list", Seq(true, false)))
         .noSpaces,
       """{"key":"boolean_list","value":{"arrayValue":{"values":[{"boolValue":true},{"boolValue":false}]}}}"""
     )
@@ -119,7 +119,7 @@ class ProtoEncoderSuite extends ScalaCheckSuite {
     )
 
     assertEquals(
-      ProtoEncoder.toJson(Attribute("int_list", List(1L, -1L))).noSpaces,
+      ProtoEncoder.toJson(Attribute("int_list", Seq(1L, -1L))).noSpaces,
       """{"key":"int_list","value":{"arrayValue":{"values":[{"intValue":"1"},{"intValue":"-1"}]}}}"""
     )
 
@@ -134,7 +134,7 @@ class ProtoEncoderSuite extends ScalaCheckSuite {
     )
 
     assertEquals(
-      ProtoEncoder.toJson(Attribute("double_list", List(1.1, -1.1))).noSpaces,
+      ProtoEncoder.toJson(Attribute("double_list", Seq(1.1, -1.1))).noSpaces,
       """{"key":"double_list","value":{"arrayValue":{"values":[{"doubleValue":1.1},{"doubleValue":-1.1}]}}}"""
     )
   }

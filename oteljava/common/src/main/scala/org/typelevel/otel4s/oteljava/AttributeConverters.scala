@@ -100,11 +100,10 @@ object AttributeConverters {
         case AttributeType.Boolean    => JAttributeKey.booleanKey(key.name)
         case AttributeType.Long       => JAttributeKey.longKey(key.name)
         case AttributeType.Double     => JAttributeKey.doubleKey(key.name)
-        case AttributeType.StringList => JAttributeKey.stringArrayKey(key.name)
-        case AttributeType.BooleanList =>
-          JAttributeKey.booleanArrayKey(key.name)
-        case AttributeType.LongList   => JAttributeKey.longArrayKey(key.name)
-        case AttributeType.DoubleList => JAttributeKey.doubleArrayKey(key.name)
+        case AttributeType.StringSeq  => JAttributeKey.stringArrayKey(key.name)
+        case AttributeType.BooleanSeq => JAttributeKey.booleanArrayKey(key.name)
+        case AttributeType.LongSeq    => JAttributeKey.longArrayKey(key.name)
+        case AttributeType.DoubleSeq  => JAttributeKey.doubleArrayKey(key.name)
       }
 
     final def toJava(attributes: Attributes): JAttributes =
@@ -125,14 +124,14 @@ object AttributeConverters {
             builder.put(key.name, value.asInstanceOf[Long])
           case AttributeType.Double =>
             builder.put(key.name, value.asInstanceOf[Double])
-          case AttributeType.StringList =>
-            builder.put(key.name, value.asInstanceOf[List[String]]: _*)
-          case AttributeType.BooleanList =>
-            builder.put(key.name, value.asInstanceOf[List[Boolean]]: _*)
-          case AttributeType.LongList =>
-            builder.put(key.name, value.asInstanceOf[List[Long]]: _*)
-          case AttributeType.DoubleList =>
-            builder.put(key.name, value.asInstanceOf[List[Double]]: _*)
+          case AttributeType.StringSeq =>
+            builder.put(key.name, value.asInstanceOf[Seq[String]]: _*)
+          case AttributeType.BooleanSeq =>
+            builder.put(key.name, value.asInstanceOf[Seq[Boolean]]: _*)
+          case AttributeType.LongSeq =>
+            builder.put(key.name, value.asInstanceOf[Seq[Long]]: _*)
+          case AttributeType.DoubleSeq =>
+            builder.put(key.name, value.asInstanceOf[Seq[Double]]: _*)
         }
       }
 
@@ -141,15 +140,14 @@ object AttributeConverters {
 
     def toScala(key: JAttributeKey[_]): AttributeKey[_] =
       key.getType match {
-        case JAttributeType.STRING       => AttributeKey.string(key.getKey)
-        case JAttributeType.BOOLEAN      => AttributeKey.boolean(key.getKey)
-        case JAttributeType.LONG         => AttributeKey.long(key.getKey)
-        case JAttributeType.DOUBLE       => AttributeKey.double(key.getKey)
-        case JAttributeType.STRING_ARRAY => AttributeKey.stringList(key.getKey)
-        case JAttributeType.BOOLEAN_ARRAY =>
-          AttributeKey.booleanList(key.getKey)
-        case JAttributeType.LONG_ARRAY   => AttributeKey.longList(key.getKey)
-        case JAttributeType.DOUBLE_ARRAY => AttributeKey.doubleList(key.getKey)
+        case JAttributeType.STRING        => AttributeKey.string(key.getKey)
+        case JAttributeType.BOOLEAN       => AttributeKey.boolean(key.getKey)
+        case JAttributeType.LONG          => AttributeKey.long(key.getKey)
+        case JAttributeType.DOUBLE        => AttributeKey.double(key.getKey)
+        case JAttributeType.STRING_ARRAY  => AttributeKey.stringSeq(key.getKey)
+        case JAttributeType.BOOLEAN_ARRAY => AttributeKey.booleanSeq(key.getKey)
+        case JAttributeType.LONG_ARRAY    => AttributeKey.longSeq(key.getKey)
+        case JAttributeType.DOUBLE_ARRAY  => AttributeKey.doubleSeq(key.getKey)
       }
 
     def toScala(attributes: JAttributes): Attributes = {
@@ -168,22 +166,22 @@ object AttributeConverters {
           case JAttributeType.STRING_ARRAY =>
             builder.addOne(
               key.getKey,
-              value.asInstanceOf[ju.List[String]].asScala.toList
+              value.asInstanceOf[ju.List[String]].asScala.toSeq
             )
           case JAttributeType.BOOLEAN_ARRAY =>
             builder.addOne(
               key.getKey,
-              value.asInstanceOf[ju.List[Boolean]].asScala.toList
+              value.asInstanceOf[ju.List[Boolean]].asScala.toSeq
             )
           case JAttributeType.LONG_ARRAY =>
             builder.addOne(
               key.getKey,
-              value.asInstanceOf[ju.List[Long]].asScala.toList
+              value.asInstanceOf[ju.List[Long]].asScala.toSeq
             )
           case JAttributeType.DOUBLE_ARRAY =>
             builder.addOne(
               key.getKey,
-              value.asInstanceOf[ju.List[Double]].asScala.toList
+              value.asInstanceOf[ju.List[Double]].asScala.toSeq
             )
         }
       }

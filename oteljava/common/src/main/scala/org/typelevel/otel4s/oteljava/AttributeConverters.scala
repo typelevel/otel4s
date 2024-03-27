@@ -96,15 +96,14 @@ object AttributeConverters {
   private object Explicit {
     def toJava(key: AttributeKey[_]): JAttributeKey[_] =
       key.`type` match {
-        case AttributeType.String    => JAttributeKey.stringKey(key.name)
-        case AttributeType.Boolean   => JAttributeKey.booleanKey(key.name)
-        case AttributeType.Long      => JAttributeKey.longKey(key.name)
-        case AttributeType.Double    => JAttributeKey.doubleKey(key.name)
-        case AttributeType.StringSeq => JAttributeKey.stringArrayKey(key.name)
-        case AttributeType.BooleanSeq =>
-          JAttributeKey.booleanArrayKey(key.name)
-        case AttributeType.LongSeq   => JAttributeKey.longArrayKey(key.name)
-        case AttributeType.DoubleSeq => JAttributeKey.doubleArrayKey(key.name)
+        case AttributeType.String     => JAttributeKey.stringKey(key.name)
+        case AttributeType.Boolean    => JAttributeKey.booleanKey(key.name)
+        case AttributeType.Long       => JAttributeKey.longKey(key.name)
+        case AttributeType.Double     => JAttributeKey.doubleKey(key.name)
+        case AttributeType.StringSeq  => JAttributeKey.stringArrayKey(key.name)
+        case AttributeType.BooleanSeq => JAttributeKey.booleanArrayKey(key.name)
+        case AttributeType.LongSeq    => JAttributeKey.longArrayKey(key.name)
+        case AttributeType.DoubleSeq  => JAttributeKey.doubleArrayKey(key.name)
       }
 
     final def toJava(attributes: Attributes): JAttributes =
@@ -141,15 +140,14 @@ object AttributeConverters {
 
     def toScala(key: JAttributeKey[_]): AttributeKey[_] =
       key.getType match {
-        case JAttributeType.STRING       => AttributeKey.string(key.getKey)
-        case JAttributeType.BOOLEAN      => AttributeKey.boolean(key.getKey)
-        case JAttributeType.LONG         => AttributeKey.long(key.getKey)
-        case JAttributeType.DOUBLE       => AttributeKey.double(key.getKey)
-        case JAttributeType.STRING_ARRAY => AttributeKey.stringSeq(key.getKey)
-        case JAttributeType.BOOLEAN_ARRAY =>
-          AttributeKey.booleanSeq(key.getKey)
-        case JAttributeType.LONG_ARRAY   => AttributeKey.longSeq(key.getKey)
-        case JAttributeType.DOUBLE_ARRAY => AttributeKey.doubleSeq(key.getKey)
+        case JAttributeType.STRING        => AttributeKey.string(key.getKey)
+        case JAttributeType.BOOLEAN       => AttributeKey.boolean(key.getKey)
+        case JAttributeType.LONG          => AttributeKey.long(key.getKey)
+        case JAttributeType.DOUBLE        => AttributeKey.double(key.getKey)
+        case JAttributeType.STRING_ARRAY  => AttributeKey.stringSeq(key.getKey)
+        case JAttributeType.BOOLEAN_ARRAY => AttributeKey.booleanSeq(key.getKey)
+        case JAttributeType.LONG_ARRAY    => AttributeKey.longSeq(key.getKey)
+        case JAttributeType.DOUBLE_ARRAY  => AttributeKey.doubleSeq(key.getKey)
       }
 
     def toScala(attributes: JAttributes): Attributes = {

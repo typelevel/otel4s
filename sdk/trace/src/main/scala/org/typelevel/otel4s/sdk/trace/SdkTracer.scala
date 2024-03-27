@@ -47,13 +47,21 @@ private final class SdkTracer[F[_]: Temporal: Console] private[trace] (
   def currentSpanContext: F[Option[SpanContext]] =
     traceScope.current.map(current => current.filter(_.isValid))
 
-  def currentSpanOrNoop: F[Span[F]] =
+  private[this] def currentBackend: OptionT[F, Span.Backend[F]] =
     OptionT(traceScope.current)
       .semiflatMap { ctx =>
         OptionT(storage.get(ctx)).getOrElse(Span.Backend.propagating(ctx))
       }
+
+  def currentSpanOrNoop: F[Span[F]] =
+    currentBackend
       .getOrElse(Span.Backend.noop)
-      .map(backend => Span.fromBackend(backend))
+      .map(Span.fromBackend)
+
+  def currentSpanOrThrow: F[Span[F]] =
+    currentBackend
+      .map(Span.fromBackend)
+      .getOrElseF(Tracer.raiseNoCurrentSpan)
 
   def spanBuilder(name: String): SpanBuilder[F] =
     new SdkSpanBuilder[F](name, scopeInfo, sharedState, traceScope)

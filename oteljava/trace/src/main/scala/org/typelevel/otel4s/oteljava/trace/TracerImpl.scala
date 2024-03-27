@@ -31,11 +31,12 @@ import org.typelevel.otel4s.trace.SpanContext
 import org.typelevel.otel4s.trace.TraceScope
 import org.typelevel.otel4s.trace.Tracer
 
-private[oteljava] class TracerImpl[F[_]: Sync](
+private[oteljava] class TracerImpl[F[_]](
     jTracer: JTracer,
     propagators: ContextPropagators[Context],
     traceScope: TraceScope[F, Context],
-) extends Tracer[F] {
+)(implicit F: Sync[F])
+    extends Tracer[F] {
 
   private val runner: SpanRunner[F] = SpanRunner.fromTraceScope(traceScope)
 
@@ -53,6 +54,15 @@ private[oteljava] class TracerImpl[F[_]: Sync](
         )
       )
     }
+
+  def currentSpanOrThrow: F[Span[F]] =
+    traceScope.contextReader { ctx =>
+      Option(JSpan.fromContextOrNull(ctx.underlying))
+        .map { jSpan =>
+          F.pure(Span.fromBackend(SpanBackendImpl.fromJSpan(jSpan)))
+        }
+        .getOrElse(Tracer.raiseNoCurrentSpan)
+    }.flatten
 
   def spanBuilder(name: String): SpanBuilder[F] =
     new SpanBuilderImpl[F](jTracer, name, runner, traceScope)

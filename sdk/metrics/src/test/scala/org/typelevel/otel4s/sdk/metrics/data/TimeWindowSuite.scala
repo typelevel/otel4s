@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-package org.typelevel.otel4s
-package sdk.metrics
-package data
+package org.typelevel.otel4s.sdk.metrics.data
 
 import cats.Show
 import cats.kernel.laws.discipline.HashTests
@@ -26,21 +24,25 @@ import org.typelevel.otel4s.sdk.metrics.scalacheck.Arbitraries._
 import org.typelevel.otel4s.sdk.metrics.scalacheck.Cogens._
 import org.typelevel.otel4s.sdk.metrics.scalacheck.Gens
 
-class AggregationTemporalitySuite extends DisciplineSuite {
+import scala.concurrent.duration._
 
-  checkAll(
-    "AggregationTemporality.HashLaws",
-    HashTests[AggregationTemporality].hash
-  )
+class TimeWindowSuite extends DisciplineSuite {
 
-  test("Show[AggregationTemporality]") {
-    Prop.forAll(Gens.aggregationTemporality) { temporality =>
-      val expected = temporality match {
-        case AggregationTemporality.Delta      => "Delta"
-        case AggregationTemporality.Cumulative => "Cumulative"
-      }
+  checkAll("TimeWindow.Hash", HashTests[TimeWindow].hash)
 
-      assertEquals(Show[AggregationTemporality].show(temporality), expected)
+  test("fail when start > end") {
+    interceptMessage[IllegalArgumentException](
+      "requirement failed: end must be greater than or equal to start"
+    )(
+      TimeWindow(2.nanos, 1.nanos)
+    )
+  }
+
+  test("Show[TimeWindow]") {
+    Prop.forAll(Gens.timeWindow) { window =>
+      val expected = s"TimeWindow{start=${window.start}, end=${window.end}}"
+
+      assertEquals(Show[TimeWindow].show(window), expected)
     }
   }
 

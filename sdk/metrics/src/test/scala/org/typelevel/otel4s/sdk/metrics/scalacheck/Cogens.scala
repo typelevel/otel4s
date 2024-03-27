@@ -18,8 +18,10 @@ package org.typelevel.otel4s.sdk.metrics.scalacheck
 
 import org.scalacheck.Cogen
 import org.typelevel.otel4s.Attributes
+import org.typelevel.otel4s.metrics.BucketBoundaries
 import org.typelevel.otel4s.sdk.metrics.data.AggregationTemporality
 import org.typelevel.otel4s.sdk.metrics.data.ExemplarData
+import org.typelevel.otel4s.sdk.metrics.data.PointData
 import org.typelevel.otel4s.sdk.metrics.data.TimeWindow
 
 import scala.concurrent.duration.FiniteDuration
@@ -28,6 +30,9 @@ trait Cogens extends org.typelevel.otel4s.sdk.scalacheck.Cogens {
 
   implicit val aggregationTemporalityCogen: Cogen[AggregationTemporality] =
     Cogen[String].contramap(_.toString)
+
+  private implicit val boundariesCogen: Cogen[BucketBoundaries] =
+    Cogen[Vector[Double]].contramap(_.boundaries)
 
   implicit val timeWindowCogen: Cogen[TimeWindow] =
     Cogen[(FiniteDuration, FiniteDuration)].contramap(w => (w.start, w.end))
@@ -52,6 +57,53 @@ trait Cogens extends org.typelevel.otel4s.sdk.scalacheck.Cogens {
       (e.filteredAttributes, e.timestamp, e.traceContext, value)
     }
 
+  implicit val numberPointDataCogen: Cogen[PointData.NumberPoint] =
+    Cogen[(TimeWindow, Attributes, Vector[ExemplarData], Either[Long, Double])]
+      .contramap { p =>
+        val value = p match {
+          case long: PointData.LongNumber     => Left(long.value)
+          case double: PointData.DoubleNumber => Right(double.value)
+        }
+
+        (p.timeWindow, p.attributes, p.exemplars: Vector[ExemplarData], value)
+      }
+
+  implicit val histogramPointDataCogen: Cogen[PointData.Histogram] = {
+    implicit val statsCogen: Cogen[PointData.Histogram.Stats] =
+      Cogen[(Double, Double, Double, Long)].contramap { s =>
+        (s.sum, s.min, s.max, s.count)
+      }
+
+    Cogen[
+      (
+          TimeWindow,
+          Attributes,
+          Vector[ExemplarData],
+          Option[PointData.Histogram.Stats],
+          BucketBoundaries,
+          Vector[Long]
+      )
+    ].contramap { h =>
+      (
+        h.timeWindow,
+        h.attributes,
+        h.exemplars: Vector[ExemplarData],
+        h.stats,
+        h.boundaries,
+        h.counts
+      )
+    }
+  }
+
+  implicit val pointDataCogen: Cogen[PointData] =
+    Cogen { (seed, pointData) =>
+      pointData match {
+        case point: PointData.NumberPoint =>
+          numberPointDataCogen.perturb(seed, point)
+        case histogram: PointData.Histogram =>
+          histogramPointDataCogen.perturb(seed, histogram)
+      }
+    }
 }
 
 object Cogens extends Cogens

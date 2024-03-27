@@ -30,7 +30,7 @@ class TimeWindowSuite extends DisciplineSuite {
 
   checkAll("TimeWindow.Hash", HashTests[TimeWindow].hash)
 
-  test("fail when start <= end") {
+  test("fail when start > end") {
     interceptMessage[IllegalArgumentException](
       "requirement failed: end must be greater than or equal to start"
     )(

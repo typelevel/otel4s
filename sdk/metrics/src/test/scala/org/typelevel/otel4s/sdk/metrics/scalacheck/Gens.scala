@@ -18,7 +18,9 @@ package org.typelevel.otel4s.sdk.metrics.scalacheck
 
 import org.scalacheck.Gen
 import org.typelevel.otel4s.sdk.metrics.data.AggregationTemporality
+import org.typelevel.otel4s.sdk.metrics.data.ExemplarData
 import org.typelevel.otel4s.sdk.metrics.data.TimeWindow
+import scodec.bits.ByteVector
 
 import scala.concurrent.duration._
 
@@ -32,6 +34,34 @@ trait Gens extends org.typelevel.otel4s.sdk.scalacheck.Gens {
       start <- Gen.chooseNum(1L, Long.MaxValue - 5)
       end <- Gen.chooseNum(start, Long.MaxValue)
     } yield TimeWindow(start.nanos, end.nanos)
+
+  val traceContext: Gen[ExemplarData.TraceContext] =
+    for {
+      traceId <- Gen.stringOfN(16, Gen.hexChar)
+      spanId <- Gen.stringOfN(8, Gen.hexChar)
+    } yield ExemplarData.TraceContext(
+      ByteVector.fromValidHex(traceId),
+      ByteVector.fromValidHex(spanId)
+    )
+
+  val longExemplarData: Gen[ExemplarData.LongExemplar] =
+    for {
+      attributes <- Gens.attributes
+      timestamp <- Gen.finiteDuration
+      traceContext <- Gen.option(Gens.traceContext)
+      value <- Gen.long
+    } yield ExemplarData.long(attributes, timestamp, traceContext, value)
+
+  val doubleExemplarData: Gen[ExemplarData.DoubleExemplar] =
+    for {
+      attributes <- Gens.attributes
+      timestamp <- Gen.finiteDuration
+      traceContext <- Gen.option(Gens.traceContext)
+      value <- Gen.double
+    } yield ExemplarData.double(attributes, timestamp, traceContext, value)
+
+  val exemplarData: Gen[ExemplarData] =
+    Gen.oneOf(longExemplarData, doubleExemplarData)
 
 }
 

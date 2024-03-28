@@ -21,7 +21,6 @@ package trace.data
 import cats.Hash
 import cats.Show
 import cats.syntax.show._
-import org.typelevel.otel4s.semconv.trace.attributes.SemanticAttributes
 
 import java.io.PrintWriter
 import java.io.StringWriter
@@ -110,13 +109,13 @@ object EventData {
       val builder = Attributes.newBuilder
 
       builder.addOne(
-        SemanticAttributes.ExceptionType,
+        "exception.type",
         exception.getClass.getName
       )
 
       val message = exception.getMessage
       if (message != null) {
-        builder.addOne(SemanticAttributes.ExceptionMessage, message)
+        builder.addOne("exception.message", message)
       }
 
       if (exception.getStackTrace.nonEmpty) {
@@ -125,12 +124,12 @@ object EventData {
         exception.printStackTrace(printWriter)
 
         builder.addOne(
-          SemanticAttributes.ExceptionStacktrace,
+          "exception.stacktrace",
           stringWriter.toString
         )
       }
 
-      builder.addOne(SemanticAttributes.ExceptionEscaped, escaped)
+      builder.addOne("exception.escaped", escaped)
       builder.addAll(attributes)
 
       builder.result()

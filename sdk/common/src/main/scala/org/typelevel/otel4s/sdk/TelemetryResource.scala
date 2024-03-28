@@ -21,7 +21,6 @@ import cats.Hash
 import cats.Show
 import cats.syntax.all._
 import org.typelevel.otel4s.sdk.TelemetryResource.ResourceInitializationError
-import org.typelevel.otel4s.semconv.resource.attributes.ResourceAttributes._
 
 /** [[TelemetryResource]] serves as a representation of a resource that captures
   * essential identifying information regarding the entities associated with
@@ -94,13 +93,29 @@ sealed trait TelemetryResource {
 }
 
 object TelemetryResource {
+  private[otel4s] object ResourceAttributes {
+    val TelemetrySdkName: AttributeKey[String] =
+      AttributeKey("telemetry.sdk.name")
+
+    val TelemetrySdkLanguage: AttributeKey[String] =
+      AttributeKey("telemetry.sdk.language")
+
+    val TelemetrySdkVersion: AttributeKey[String] =
+      AttributeKey("telemetry.sdk.version")
+
+    val ServiceName: AttributeKey[String] =
+      AttributeKey("service.name")
+  }
+
   private val Empty: TelemetryResource =
     TelemetryResource(Attributes.empty, None)
 
   private val Default: TelemetryResource = {
+    import ResourceAttributes._
+
     val telemetrySdk = Attributes(
       Attribute(TelemetrySdkName, "otel4s"),
-      Attribute(TelemetrySdkLanguage, TelemetrySdkLanguageValue.Scala.value),
+      Attribute(TelemetrySdkLanguage, "scala"),
       Attribute(TelemetrySdkVersion, BuildInfo.version)
     )
 

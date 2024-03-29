@@ -35,8 +35,7 @@ class ObservableSuite extends CatsEffectSuite {
           .withSchemaUrl("https://localhost:8080")
           .get
 
-        _ <- meter
-          .observableGauge[Double]("gauge")
+        _ <- meter.observableGauge[Double][Double]("gauge")
           .withUnit("unit")
           .withDescription("description")
           .createWithCallback(_.record(42.0, Attribute("foo", "bar")))
@@ -47,8 +46,7 @@ class ObservableSuite extends CatsEffectSuite {
               .assertEquals(List((42.0, Attributes(Attribute("foo", "bar")))))
           )
 
-        _ <- meter
-          .observableGauge[Double]("gauge")
+        _ <- meter.observableGauge[Double][Double]("gauge")
           .withUnit("unit")
           .withDescription("description")
           .create(
@@ -88,8 +86,7 @@ class ObservableSuite extends CatsEffectSuite {
           .withSchemaUrl("https://localhost:8080")
           .get
 
-        _ <- meter
-          .observableCounter[Long]("counter")
+        _ <- meter.observableCounter[Long][Long]("counter")
           .withUnit("unit")
           .withDescription("description")
           .createWithCallback(_.record(1234, Attribute("number", 42L)))
@@ -100,8 +97,7 @@ class ObservableSuite extends CatsEffectSuite {
               .assertEquals(List((1234, Attributes(Attribute("number", 42L)))))
           )
 
-        _ <- meter
-          .observableCounter[Long]("counter")
+        _ <- meter.observableCounter[Long][Long]("counter")
           .withUnit("unit")
           .withDescription("description")
           .create(
@@ -139,8 +135,7 @@ class ObservableSuite extends CatsEffectSuite {
           .withSchemaUrl("https://localhost:8080")
           .get
 
-        _ <- meter
-          .observableUpDownCounter[Long]("updowncounter")
+        _ <- meter.observableUpDownCounter[Long][Long]("updowncounter")
           .withUnit("unit")
           .withDescription("description")
           .createWithCallback(
@@ -155,8 +150,7 @@ class ObservableSuite extends CatsEffectSuite {
               )
           )
 
-        _ <- meter
-          .observableUpDownCounter[Long]("updowncounter")
+        _ <- meter.observableUpDownCounter[Long][Long]("updowncounter")
           .withUnit("unit")
           .withDescription("description")
           .create(

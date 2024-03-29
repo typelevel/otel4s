@@ -51,7 +51,7 @@ val MUnitDisciplineVersion = "2.0.0-M3"
 val MUnitScalaCheckEffectVersion = "2.0.0-M2"
 val OpenTelemetryVersion = "1.36.0"
 val OpenTelemetryInstrumentationVersion = "2.2.0"
-val OpenTelemetrySemConvVersion = "1.23.1-alpha"
+val OpenTelemetrySemConvVersion = "1.24.0-alpha"
 val OpenTelemetryProtoVersion = "1.1.0-alpha"
 val PekkoStreamVersion = "1.0.2"
 val PekkoHttpVersion = "1.0.1"
@@ -110,7 +110,8 @@ lazy val root = tlCrossRootProject
     `oteljava-trace-testkit`,
     `oteljava-testkit`,
     oteljava,
-    semconv,
+    `semconv-stable`,
+    `semconv-experimental`,
     benchmarks,
     examples,
     unidocs
@@ -196,7 +197,7 @@ lazy val `sdk-common` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .crossType(CrossType.Pure)
   .enablePlugins(BuildInfoPlugin)
   .in(file("sdk/common"))
-  .dependsOn(`core-common` % "compile->compile;test->test", semconv)
+  .dependsOn(`core-common` % "compile->compile;test->test", `semconv-stable`)
   .settings(
     name := "otel4s-sdk-common",
     startYear := Some(2023),
@@ -478,24 +479,41 @@ lazy val oteljava = project
   .settings(munitDependencies)
   .settings(scalafixSettings)
 
-lazy val semconv = crossProject(JVMPlatform, JSPlatform, NativePlatform)
-  .crossType(CrossType.Pure)
-  .enablePlugins(BuildInfoPlugin)
-  .in(file("semconv"))
-  .dependsOn(`core-common`)
-  .settings(
-    name := "otel4s-semconv",
-    startYear := Some(2023),
-    // We use opentelemetry-semconv dependency to track releases of the OpenTelemetry semantic convention spec
-    libraryDependencies += "io.opentelemetry.semconv" % "opentelemetry-semconv" % OpenTelemetrySemConvVersion % "compile-internal" intransitive (),
-    buildInfoPackage := "org.typelevel.otel4s.semconv",
-    buildInfoOptions += sbtbuildinfo.BuildInfoOption.PackagePrivate,
-    buildInfoKeys := Seq[BuildInfoKey](
-      "openTelemetrySemanticConventionsVersion" -> OpenTelemetrySemConvVersion
+lazy val `semconv-stable` =
+  crossProject(JVMPlatform, JSPlatform, NativePlatform)
+    .crossType(CrossType.Pure)
+    .enablePlugins(BuildInfoPlugin)
+    .in(file("semconv/stable"))
+    .dependsOn(`core-common`)
+    .settings(
+      name := "otel4s-semconv",
+      startYear := Some(2023),
+      description := "Stable semantic conventions.",
+      // We use opentelemetry-semconv dependency to track releases of the OpenTelemetry semantic convention spec
+      libraryDependencies += "io.opentelemetry.semconv" % "opentelemetry-semconv" % OpenTelemetrySemConvVersion % "compile-internal" intransitive (),
+      buildInfoPackage := "org.typelevel.otel4s.semconv",
+      buildInfoOptions += sbtbuildinfo.BuildInfoOption.PackagePrivate,
+      buildInfoKeys := Seq[BuildInfoKey](
+        "openTelemetrySemanticConventionsVersion" -> OpenTelemetrySemConvVersion
+      )
     )
-  )
-  .settings(munitDependencies)
-  .settings(scalafixSettings)
+    .settings(munitDependencies)
+    .settings(scalafixSettings)
+
+lazy val `semconv-experimental` =
+  crossProject(JVMPlatform, JSPlatform, NativePlatform)
+    .crossType(CrossType.Pure)
+    .in(file("semconv/experimental"))
+    .dependsOn(`core-common`)
+    .settings(
+      name := "otel4s-semconv-experimental",
+      description := "Experimental (incubating) semantic conventions. Breaking changes expected. Library instrumentation SHOULD NOT depend on this.",
+      startYear := Some(2023),
+      // We use opentelemetry-semconv dependency to track releases of the OpenTelemetry semantic convention spec
+      libraryDependencies += "io.opentelemetry.semconv" % "opentelemetry-semconv-incubating" % OpenTelemetrySemConvVersion % "compile-internal" intransitive (),
+    )
+    .settings(munitDependencies)
+    .settings(scalafixSettings)
 
 lazy val scalafix = tlScalafixProject
   .rulesSettings(
@@ -617,6 +635,7 @@ lazy val unidocs = project
       `oteljava-trace-testkit`,
       `oteljava-testkit`,
       oteljava,
-      semconv.jvm
+      `semconv-stable`.jvm,
+      `semconv-experimental`.jvm
     )
   )

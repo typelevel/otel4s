@@ -14,20 +14,33 @@
  * limitations under the License.
  */
 
-package org.typelevel.otel4s.sdk.metrics.scalacheck
+package org.typelevel.otel4s.sdk.metrics
+package scalacheck
 
 import org.scalacheck.Cogen
+import org.typelevel.ci.CIString
 import org.typelevel.otel4s.Attributes
 import org.typelevel.otel4s.sdk.metrics.data.AggregationTemporality
 import org.typelevel.otel4s.sdk.metrics.data.ExemplarData
 import org.typelevel.otel4s.sdk.metrics.data.TimeWindow
+import org.typelevel.otel4s.sdk.metrics.internal.InstrumentDescriptor
 
 import scala.concurrent.duration.FiniteDuration
 
 trait Cogens extends org.typelevel.otel4s.sdk.scalacheck.Cogens {
 
+  implicit val ciStringCogen: Cogen[CIString] =
+    Cogen[String].contramap(_.toString)
+
   implicit val aggregationTemporalityCogen: Cogen[AggregationTemporality] =
     Cogen[String].contramap(_.toString)
+
+  implicit val instrumentTypeCogen: Cogen[InstrumentType] =
+    Cogen[String].contramap(_.toString)
+
+  implicit val instrumentDescriptorCogen: Cogen[InstrumentDescriptor] =
+    Cogen[(CIString, Option[String], Option[String], InstrumentType)]
+      .contramap(d => (d.name, d.description, d.unit, d.instrumentType))
 
   implicit val timeWindowCogen: Cogen[TimeWindow] =
     Cogen[(FiniteDuration, FiniteDuration)].contramap(w => (w.start, w.end))

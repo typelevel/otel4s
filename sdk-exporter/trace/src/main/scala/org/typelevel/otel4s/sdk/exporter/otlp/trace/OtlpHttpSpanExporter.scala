@@ -28,6 +28,7 @@ import fs2.io.net.Network
 import fs2.io.net.tls.TLSContext
 import org.http4s.Headers
 import org.http4s.Uri
+import org.http4s.client.Client
 import org.http4s.syntax.literals._
 import org.typelevel.otel4s.sdk.trace.data.SpanData
 import org.typelevel.otel4s.sdk.trace.exporter.SpanExporter
@@ -130,7 +131,8 @@ object OtlpHttpSpanExporter {
       timeout = Defaults.Timeout,
       headers = Headers.empty,
       retryPolicy = RetryPolicy.default,
-      tlsContext = None
+      tlsContext = None,
+      client = None
     )
 
   private final case class BuilderImpl[
@@ -142,7 +144,8 @@ object OtlpHttpSpanExporter {
       timeout: FiniteDuration,
       headers: Headers,
       retryPolicy: RetryPolicy,
-      tlsContext: Option[TLSContext[F]]
+      tlsContext: Option[TLSContext[F]],
+      client: Option[Client[F]]
   ) extends Builder[F] {
 
     def withTimeout(timeout: FiniteDuration): Builder[F] =
@@ -169,6 +172,9 @@ object OtlpHttpSpanExporter {
     def withEncoding(encoding: HttpPayloadEncoding): Builder[F] =
       copy(encoding = encoding)
 
+    def withClient(client: Client[F]): Builder[F] =
+      copy(client = Some(client))
+
     def build: Resource[F, SpanExporter[F]] = {
       import SpansProtoEncoder.spanDataToRequest
       import SpansProtoEncoder.jsonPrinter
@@ -181,7 +187,8 @@ object OtlpHttpSpanExporter {
           headers,
           gzipCompression,
           retryPolicy,
-          tlsContext
+          tlsContext,
+          client
         )
       } yield new OtlpHttpSpanExporter[F](client)
     }

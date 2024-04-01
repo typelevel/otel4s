@@ -79,6 +79,15 @@ Add directives to the `*.scala` file:
 * Start tracing your application with [Jaeger and Docker](examples/jaeger-docker/README.md)
 * Implement tracing and metrics with [Honeycomb](examples/honeycomb/README.md)
 
+## The Noop Tracer  
+
+If you use a library that supports otel4s (eg [Skunk](https://github.com/typelevel/skunk)) but do not want to use Open Telemetry, then you can place the [No-op Tracer](https://www.javadoc.io/doc/org.typelevel/otel4s-docs_2.13/latest/org/typelevel/otel4s/trace/Tracer$.html) into implicit scope.
+
+```scala
+import org.typelevel.otel4s.trace.Tracer
+given Tracer[IO] = Tracer.noop
+```
+
 [cats-effect]: https://typelevel.org/cats-effect/
 [opentelemetry-java]: https://github.com/open-telemetry/opentelemetry-java/tree/main/api/all
 [opentelemetry-java-autoconfigure]: https://github.com/open-telemetry/opentelemetry-java/blob/main/sdk-extensions/autoconfigure/README.md

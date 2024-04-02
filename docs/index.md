@@ -83,7 +83,13 @@ Add directives to the `*.scala` file:
 
 If you use a library that supports otel4s (eg [Skunk](https://github.com/typelevel/skunk)) but do not want to use Open Telemetry, then you can place the [No-op Tracer](https://www.javadoc.io/doc/org.typelevel/otel4s-docs_2.13/latest/org/typelevel/otel4s/trace/Tracer$.html) into implicit scope.
 
-```scala
+```scala mdoc:silent
+// via import
+import org.typelevel.otel4s.trace.Tracer.Implicits.noop
+
+// via implicit val
+import org.typelevel.otel4s.trace.Tracer
+implicit val tracer: Tracer[IO] = Tracer.noop
 import org.typelevel.otel4s.trace.Tracer
 given Tracer[IO] = Tracer.noop
 ```

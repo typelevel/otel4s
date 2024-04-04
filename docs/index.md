@@ -90,8 +90,6 @@ import org.typelevel.otel4s.trace.Tracer.Implicits.noop
 // via implicit val
 import org.typelevel.otel4s.trace.Tracer
 implicit val tracer: Tracer[IO] = Tracer.noop
-import org.typelevel.otel4s.trace.Tracer
-given Tracer[IO] = Tracer.noop
 ```
 
 [cats-effect]: https://typelevel.org/cats-effect/

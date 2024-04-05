@@ -88,6 +88,7 @@ If you use a library that supports otel4s (eg [Skunk](https://github.com/typelev
 import org.typelevel.otel4s.trace.Tracer.Implicits.noop
 
 // via implicit val
+import cats.effect.IO
 import org.typelevel.otel4s.trace.Tracer
 implicit val tracer: Tracer[IO] = Tracer.noop
 ```

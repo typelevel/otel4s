@@ -101,8 +101,8 @@
     <li class="level1 nav-leaf"><a href="modules-structure.html">Modules structure</a></li>
     <li class="level1 nav-leaf"><a href="tracing-context-propagation.html">Tracing context propagation</a></li>
     <li class="level1 nav-header">Instrumentation</li>
-    <li class="level2 nav-leaf"><a href="instrumentation/tracing.html">Tracing</a></li>
     <li class="level2 nav-leaf"><a href="instrumentation/tracing-java-interop.html">Tracing - interop with Java-instrumented libraries</a></li>
+    <li class="level2 nav-leaf"><a href="instrumentation/tracing.html">Tracing</a></li>
     <li class="level1 nav-header">Customization</li>
     <li class="level2 nav-leaf"><a href="customization/histogram-custom-buckets/">Histogram custom buckets</a></li>
     <li class="level1 nav-header">SDK</li>
@@ -129,6 +129,7 @@
     <li class="level1 nav-leaf"><a href="#modules-availability">Modules availability</a></li>
     <li class="level1 nav-leaf"><a href="#getting-started">Getting started</a></li>
     <li class="level1 nav-leaf"><a href="#examples">Examples</a></li>
+    <li class="level1 nav-leaf"><a href="#the-noop-tracer">The Noop Tracer</a></li>
   </ul>
 
   <p class="footer"></p>
@@ -240,6 +241,16 @@
           <li>Start tracing your application with <a href="examples/jaeger-docker/">Jaeger and Docker</a></li>
           <li>Implement tracing and metrics with <a href="examples/honeycomb/">Honeycomb</a></li>
         </ul>
+        
+        <h2 id="the-noop-tracer" class="section"><a class="anchor-link left" href="#the-noop-tracer"><i class="icofont-laika link">&#xef71;</i></a>The Noop Tracer</h2>
+        <p>If you use a library that supports otel4s (eg <a href="https://github.com/typelevel/skunk">Skunk</a>) but do not want to use Open Telemetry, then you can place the <a href="https://www.javadoc.io/doc/org.typelevel/otel4s-docs_2.13/latest/org/typelevel/otel4s/trace/Tracer$.html">No-op Tracer</a> into implicit scope.</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="comment">// via import
+// import org.typelevel.otel4s.trace.Tracer.Implicits.noop
+</span><span>
+</span><span class="comment">// via implicit val
+</span><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.</span><span class="type-name">IO</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">trace</span><span>.</span><span class="type-name">Tracer</span><span>
+</span><span class="keyword">implicit</span><span> </span><span class="keyword">val</span><span> </span><span class="identifier">tracer</span><span>: </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">IO</span><span>] = </span><span class="type-name">Tracer</span><span>.</span><span class="identifier">noop</span></code></pre>
 
         
 <hr class="footer-rule"/>

@@ -85,7 +85,7 @@ If you use a library that supports otel4s (eg [Skunk](https://github.com/typelev
 
 ```scala mdoc:silent
 // via import
-import org.typelevel.otel4s.trace.Tracer.Implicits.noop
+// import org.typelevel.otel4s.trace.Tracer.Implicits.noop
 
 // via implicit val
 import cats.effect.IO

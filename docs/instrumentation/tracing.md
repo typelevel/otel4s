@@ -133,7 +133,7 @@ While the behavior seems similar, the outcome is notably different:
 > find-user { user_id = 123 }
 ```
 
-2. `racer[F].rootSpan("handle-user").surround(activateUser(userId))` will create two **child** spans:
+2. `Tracer[F].rootSpan("handle-user").surround(activateUser(userId))` will create two **child** spans:
 
 ```
 > handle-user  

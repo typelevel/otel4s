@@ -101,8 +101,8 @@
     <li class="level1 nav-leaf"><a href="../../modules-structure.html">Modules structure</a></li>
     <li class="level1 nav-leaf"><a href="../../tracing-context-propagation.html">Tracing context propagation</a></li>
     <li class="level1 nav-header">Instrumentation</li>
-    <li class="level2 nav-leaf"><a href="../../instrumentation/tracing.html">Tracing</a></li>
     <li class="level2 nav-leaf"><a href="../../instrumentation/tracing-java-interop.html">Tracing - interop with Java-instrumented libraries</a></li>
+    <li class="level2 nav-leaf"><a href="../../instrumentation/tracing.html">Tracing</a></li>
     <li class="level1 nav-header">Customization</li>
     <li class="level2 nav-leaf"><a href="../../customization/histogram-custom-buckets/">Histogram custom buckets</a></li>
     <li class="level1 nav-header">SDK</li>
@@ -253,8 +253,8 @@
       </span><span class="attribute-name">http</span><span>:
 
 </span><span class="attribute-name">exporters</span><span>:
-  </span><span class="attribute-name">jaeger</span><span>: </span><span class="string-literal"># export received traces to Jaeger</span><span>
-    </span><span class="attribute-name">endpoint</span><span>: </span><span class="string-literal">jaeger:14250</span><span>
+  otlp/</span><span class="attribute-name">jaeger</span><span>: </span><span class="string-literal"># export received traces to Jaeger</span><span>
+    </span><span class="attribute-name">endpoint</span><span>: </span><span class="string-literal">jaeger:4317</span><span>
     </span><span class="attribute-name">tls</span><span>:
       </span><span class="attribute-name">insecure</span><span>: </span><span class="boolean-literal">true</span><span>
 
@@ -271,7 +271,7 @@
     </span><span class="attribute-name">traces</span><span>:
       </span><span class="attribute-name">receivers</span><span>: </span><span class="string-literal">[otlp]</span><span>
       </span><span class="attribute-name">processors</span><span>: </span><span class="string-literal">[batch]</span><span>
-      </span><span class="attribute-name">exporters</span><span>: </span><span class="string-literal">[jaeger]</span><span>
+      </span><span class="attribute-name">exporters</span><span>: </span><span class="string-literal">[otlp/jaeger]</span><span>
     </span><span class="attribute-name">metrics</span><span>:
       </span><span class="attribute-name">receivers</span><span>: </span><span class="string-literal">[otlp]</span><span>
       </span><span class="attribute-name">processors</span><span>: </span><span class="string-literal">[batch]</span><span>

@@ -26,6 +26,7 @@ import org.typelevel.otel4s.sdk.metrics.data.ExemplarData
 import org.typelevel.otel4s.sdk.metrics.data.PointData
 import org.typelevel.otel4s.sdk.metrics.data.TimeWindow
 import org.typelevel.otel4s.sdk.metrics.internal.InstrumentDescriptor
+import org.typelevel.otel4s.sdk.metrics.view.InstrumentSelector
 
 import scala.concurrent.duration.FiniteDuration
 
@@ -46,6 +47,27 @@ trait Cogens extends org.typelevel.otel4s.sdk.scalacheck.Cogens {
   implicit val instrumentDescriptorCogen: Cogen[InstrumentDescriptor] =
     Cogen[(CIString, Option[String], Option[String], InstrumentType)]
       .contramap(d => (d.name, d.description, d.unit, d.instrumentType))
+
+  implicit val instrumentSelectorCogen: Cogen[InstrumentSelector] =
+    Cogen[
+      (
+          Option[InstrumentType],
+          Option[String],
+          Option[String],
+          Option[String],
+          Option[String],
+          Option[String]
+      )
+    ].contramap { selector =>
+      (
+        selector.instrumentType,
+        selector.instrumentName,
+        selector.instrumentUnit,
+        selector.meterName,
+        selector.meterVersion,
+        selector.meterSchemaUrl
+      )
+    }
 
   implicit val timeWindowCogen: Cogen[TimeWindow] =
     Cogen[(FiniteDuration, FiniteDuration)].contramap(w => (w.start, w.end))

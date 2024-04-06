@@ -25,6 +25,7 @@ import org.typelevel.otel4s.sdk.metrics.data.ExemplarData
 import org.typelevel.otel4s.sdk.metrics.data.PointData
 import org.typelevel.otel4s.sdk.metrics.data.TimeWindow
 import org.typelevel.otel4s.sdk.metrics.internal.InstrumentDescriptor
+import org.typelevel.otel4s.sdk.metrics.view.InstrumentSelector
 import scodec.bits.ByteVector
 
 import scala.concurrent.duration._
@@ -74,6 +75,38 @@ trait Gens extends org.typelevel.otel4s.sdk.scalacheck.Gens {
 
   val instrumentDescriptor: Gen[InstrumentDescriptor] =
     Gen.oneOf(synchronousInstrumentDescriptor, asynchronousInstrumentDescriptor)
+
+  val instrumentSelector: Gen[InstrumentSelector] = {
+    def withProp(
+        valueOpt: Option[String],
+        f: InstrumentSelector.Builder => String => InstrumentSelector.Builder
+    ): InstrumentSelector.Builder => InstrumentSelector.Builder =
+      valueOpt.fold((a: InstrumentSelector.Builder) => a) {
+        value => (a: InstrumentSelector.Builder) => f(a)(value)
+      }
+
+    for {
+      instrumentType <- Gens.instrumentType
+      instrumentName <- Gen.option(Gen.alphaNumStr)
+      instrumentUnit <- Gen.option(Gen.alphaNumStr)
+      meterName <- Gen.option(Gen.alphaNumStr)
+      meterVersion <- Gen.option(Gen.alphaNumStr)
+      meterSchemaUrl <- Gen.option(Gen.alphaNumStr)
+    } yield {
+      val builder =
+        InstrumentSelector.builder.withInstrumentType(instrumentType)
+
+      val f = Seq(
+        withProp(instrumentName, _.withInstrumentName),
+        withProp(instrumentUnit, _.withInstrumentUnit),
+        withProp(meterName, _.withMeterName),
+        withProp(meterVersion, _.withMeterVersion),
+        withProp(meterSchemaUrl, _.withMeterSchemaUrl),
+      ).reduce(_ andThen _)
+
+      f(builder).build
+    }
+  }
 
   val timeWindow: Gen[TimeWindow] =
     for {

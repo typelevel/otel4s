@@ -19,8 +19,10 @@ package scalacheck
 
 import org.scalacheck.Gen
 import org.typelevel.ci.CIString
+import org.typelevel.otel4s.metrics.BucketBoundaries
 import org.typelevel.otel4s.sdk.metrics.data.AggregationTemporality
 import org.typelevel.otel4s.sdk.metrics.data.ExemplarData
+import org.typelevel.otel4s.sdk.metrics.data.PointData
 import org.typelevel.otel4s.sdk.metrics.data.TimeWindow
 import org.typelevel.otel4s.sdk.metrics.internal.InstrumentDescriptor
 import scodec.bits.ByteVector
@@ -31,6 +33,12 @@ trait Gens extends org.typelevel.otel4s.sdk.scalacheck.Gens {
 
   val aggregationTemporality: Gen[AggregationTemporality] =
     Gen.oneOf(AggregationTemporality.Delta, AggregationTemporality.Cumulative)
+
+  val bucketBoundaries: Gen[BucketBoundaries] =
+    for {
+      size <- Gen.choose(0, 20)
+      b <- Gen.containerOfN[Vector, Double](size, Gen.choose(-100.0, 100.0))
+    } yield BucketBoundaries(b.distinct.sorted)
 
   val ciString: Gen[CIString] =
     Gens.nonEmptyString.map(CIString(_))
@@ -100,6 +108,62 @@ trait Gens extends org.typelevel.otel4s.sdk.scalacheck.Gens {
 
   val exemplarData: Gen[ExemplarData] =
     Gen.oneOf(longExemplarData, doubleExemplarData)
+
+  val longNumberPointData: Gen[PointData.LongNumber] =
+    for {
+      window <- Gens.timeWindow
+      attributes <- Gens.attributes
+      exemplars <- Gen.listOf(Gens.longExemplarData)
+      value <- Gen.long
+    } yield PointData.longNumber(window, attributes, exemplars.toVector, value)
+
+  val doubleNumberPointData: Gen[PointData.DoubleNumber] =
+    for {
+      window <- Gens.timeWindow
+      attributes <- Gens.attributes
+      exemplars <- Gen.listOf(Gens.doubleExemplarData)
+      value <- Gen.double
+    } yield PointData.doubleNumber(
+      window,
+      attributes,
+      exemplars.toVector,
+      value
+    )
+
+  val histogramPointData: Gen[PointData.Histogram] = {
+    val statsGen =
+      for {
+        sum <- Gen.double
+        min <- Gen.double
+        max <- Gen.double
+        count <- Gen.long
+      } yield PointData.Histogram.Stats(sum, min, max, count)
+
+    for {
+      window <- Gens.timeWindow
+      attributes <- Gens.attributes
+      exemplars <- Gen.listOf(Gens.doubleExemplarData)
+      stats <- Gen.option(statsGen)
+      boundaries <- Gens.bucketBoundaries
+      counts <- Gen.listOfN(
+        boundaries.length,
+        if (stats.isEmpty) Gen.const(0L) else Gen.choose(0L, Long.MaxValue)
+      )
+    } yield PointData.histogram(
+      window,
+      attributes,
+      exemplars.toVector,
+      stats,
+      boundaries,
+      counts.toVector
+    )
+  }
+
+  val pointDataNumber: Gen[PointData.NumberPoint] =
+    Gen.oneOf(longNumberPointData, doubleNumberPointData)
+
+  val pointData: Gen[PointData] =
+    Gen.oneOf(longNumberPointData, doubleNumberPointData, histogramPointData)
 
 }
 

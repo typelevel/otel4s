@@ -101,8 +101,9 @@
     <li class="level1 nav-leaf"><a href="../modules-structure.html">Modules structure</a></li>
     <li class="level1 nav-leaf"><a href="../tracing-context-propagation.html">Tracing context propagation</a></li>
     <li class="level1 nav-header">Instrumentation</li>
-    <li class="level2 nav-leaf"><a href="tracing-java-interop.html">Tracing - interop with Java-instrumented libraries</a></li>
+    <li class="level2 nav-leaf"><a href="metrics.html">Metrics</a></li>
     <li class="level2 active nav-leaf"><a href="#">Tracing</a></li>
+    <li class="level2 nav-leaf"><a href="tracing-java-interop.html">Tracing - interop with Java-instrumented libraries</a></li>
     <li class="level1 nav-header">Customization</li>
     <li class="level2 nav-leaf"><a href="../customization/histogram-custom-buckets/">Histogram custom buckets</a></li>
     <li class="level1 nav-header">SDK</li>
@@ -246,7 +247,7 @@
         <pre><code>&gt; find-user { user_id = -1 }  
 &gt; find-user { user_id = 123 }</code></pre>
         <ol class="arabic">
-          <li><code>racer[F].rootSpan(&quot;handle-user&quot;).surround(activateUser(userId))</code> will create two <strong>child</strong> spans:</li>
+          <li><code>Tracer[F].rootSpan(&quot;handle-user&quot;).surround(activateUser(userId))</code> will create two <strong>child</strong> spans:</li>
         </ol>
         <pre><code>&gt; handle-user  
   &gt; find-user { user_id = -1 }  

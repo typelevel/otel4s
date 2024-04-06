@@ -63,6 +63,7 @@ val Http4sVersion = "0.23.26"
 val CirceVersion = "0.14.6"
 val EpollcatVersion = "0.1.6"
 val ScalaPBCirceVersion = "0.15.1"
+val CaseInsensitiveVersion = "1.4.0"
 
 lazy val scalaReflectDependency = Def.settings(
   libraryDependencies ++= {
@@ -228,6 +229,7 @@ lazy val `sdk-metrics` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
     libraryDependencies ++= Seq(
       "org.typelevel" %%% "cats-effect" % CatsEffectVersion,
       "org.scodec" %%% "scodec-bits" % ScodecVersion,
+      "org.typelevel" %%% "case-insensitive" % CaseInsensitiveVersion,
       "org.typelevel" %%% "cats-laws" % CatsVersion % Test,
       "org.typelevel" %%% "discipline-munit" % MUnitDisciplineVersion % Test,
     )

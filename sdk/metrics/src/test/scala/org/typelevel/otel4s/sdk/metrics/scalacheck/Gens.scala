@@ -14,12 +14,15 @@
  * limitations under the License.
  */
 
-package org.typelevel.otel4s.sdk.metrics.scalacheck
+package org.typelevel.otel4s.sdk.metrics
+package scalacheck
 
 import org.scalacheck.Gen
+import org.typelevel.ci.CIString
 import org.typelevel.otel4s.sdk.metrics.data.AggregationTemporality
 import org.typelevel.otel4s.sdk.metrics.data.ExemplarData
 import org.typelevel.otel4s.sdk.metrics.data.TimeWindow
+import org.typelevel.otel4s.sdk.metrics.internal.InstrumentDescriptor
 import scodec.bits.ByteVector
 
 import scala.concurrent.duration._
@@ -28,6 +31,41 @@ trait Gens extends org.typelevel.otel4s.sdk.scalacheck.Gens {
 
   val aggregationTemporality: Gen[AggregationTemporality] =
     Gen.oneOf(AggregationTemporality.Delta, AggregationTemporality.Cumulative)
+
+  val ciString: Gen[CIString] =
+    Gens.nonEmptyString.map(CIString(_))
+
+  val instrumentType: Gen[InstrumentType] =
+    Gen.oneOf(InstrumentType.values)
+
+  val synchronousInstrumentType: Gen[InstrumentType.Synchronous] =
+    Gen.oneOf(InstrumentType.values.collect {
+      case tpe: InstrumentType.Synchronous => tpe
+    })
+
+  val asynchronousInstrumentType: Gen[InstrumentType.Asynchronous] =
+    Gen.oneOf(InstrumentType.values.collect {
+      case tpe: InstrumentType.Asynchronous => tpe
+    })
+
+  val synchronousInstrumentDescriptor: Gen[InstrumentDescriptor] =
+    for {
+      tpe <- Gens.synchronousInstrumentType
+      name <- Gens.ciString
+      description <- Gen.option(Gen.alphaNumStr)
+      unit <- Gen.option(Gen.alphaNumStr)
+    } yield InstrumentDescriptor.synchronous(name, description, unit, tpe)
+
+  val asynchronousInstrumentDescriptor: Gen[InstrumentDescriptor] =
+    for {
+      tpe <- Gens.asynchronousInstrumentType
+      name <- Gens.ciString
+      description <- Gen.option(Gen.alphaNumStr)
+      unit <- Gen.option(Gen.alphaNumStr)
+    } yield InstrumentDescriptor.asynchronous(name, description, unit, tpe)
+
+  val instrumentDescriptor: Gen[InstrumentDescriptor] =
+    Gen.oneOf(synchronousInstrumentDescriptor, asynchronousInstrumentDescriptor)
 
   val timeWindow: Gen[TimeWindow] =
     for {

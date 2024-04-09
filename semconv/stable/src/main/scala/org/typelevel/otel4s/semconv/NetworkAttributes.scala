@@ -22,97 +22,83 @@ import org.typelevel.otel4s.AttributeKey._
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/semantic-convention/templates/SemanticAttributes.scala.j2
 object NetworkAttributes {
 
-  /** Local address of the network connection - IP address or Unix domain socket
-    * name.
-    */
-  val NetworkLocalAddress: AttributeKey[String] = string(
-    "network.local.address"
-  )
+  /**
+  * Local address of the network connection - IP address or Unix domain socket name.
+  */
+  val NetworkLocalAddress: AttributeKey[String] = string("network.local.address")
 
-  /** Local port number of the network connection.
-    */
+  /**
+  * Local port number of the network connection.
+  */
   val NetworkLocalPort: AttributeKey[Long] = long("network.local.port")
 
-  /** Peer address of the network connection - IP address or Unix domain socket
-    * name.
-    */
+  /**
+  * Peer address of the network connection - IP address or Unix domain socket name.
+  */
   val NetworkPeerAddress: AttributeKey[String] = string("network.peer.address")
 
-  /** Peer port number of the network connection.
-    */
+  /**
+  * Peer port number of the network connection.
+  */
   val NetworkPeerPort: AttributeKey[Long] = long("network.peer.port")
 
-  /** <a href="https://osi-model.com/application-layer/">OSI application
-    * layer</a> or non-OSI equivalent.
-    *
-    * @note
-    *   - The value SHOULD be normalized to lowercase.
-    */
-  val NetworkProtocolName: AttributeKey[String] = string(
-    "network.protocol.name"
-  )
+  /**
+  * <a href="https://osi-model.com/application-layer/">OSI application layer</a> or non-OSI equivalent.
+  *
+  * @note 
+  *  - The value SHOULD be normalized to lowercase.
+  */
+  val NetworkProtocolName: AttributeKey[String] = string("network.protocol.name")
 
-  /** Version of the protocol specified in `network.protocol.name`.
-    *
-    * @note
-    *   - `network.protocol.version` refers to the version of the protocol used
-    *     and might be different from the protocol client's version. If the HTTP
-    *     client has a version of `0.27.2`, but sends HTTP version `1.1`, this
-    *     attribute should be set to `1.1`.
-    */
-  val NetworkProtocolVersion: AttributeKey[String] = string(
-    "network.protocol.version"
-  )
+  /**
+  * The actual version of the protocol used for network communication.
+  *
+  * @note 
+  *  - If protocol version is subject to negotiation (for example using <a href="https://www.rfc-editor.org/rfc/rfc7301.html">ALPN</a>), this attribute SHOULD be set to the negotiated version. If the actual protocol version is not known, this attribute SHOULD NOT be set.
+  */
+  val NetworkProtocolVersion: AttributeKey[String] = string("network.protocol.version")
 
-  /** <a href="https://osi-model.com/transport-layer/">OSI transport layer</a>
-    * or <a
-    * href="https://wikipedia.org/wiki/Inter-process_communication">inter-process
-    * communication method</a>.
-    *
-    * @note
-    *   - The value SHOULD be normalized to lowercase.
-    *   - Consider always setting the transport when setting a port number,
-    *     since a port number is ambiguous without knowing the transport. For
-    *     example different processes could be listening on TCP port 12345 and
-    *     UDP port 12345.
-    */
+  /**
+  * <a href="https://osi-model.com/transport-layer/">OSI transport layer</a> or <a href="https://wikipedia.org/wiki/Inter-process_communication">inter-process communication method</a>.
+  *
+  * @note 
+  *  - The value SHOULD be normalized to lowercase.
+  *  - Consider always setting the transport when setting a port number, since
+a port number is ambiguous without knowing the transport. For example
+different processes could be listening on TCP port 12345 and UDP port 12345.
+  */
   val NetworkTransport: AttributeKey[String] = string("network.transport")
 
-  /** <a href="https://osi-model.com/network-layer/">OSI network layer</a> or
-    * non-OSI equivalent.
-    *
-    * @note
-    *   - The value SHOULD be normalized to lowercase.
-    */
+  /**
+  * <a href="https://osi-model.com/network-layer/">OSI network layer</a> or non-OSI equivalent.
+  *
+  * @note 
+  *  - The value SHOULD be normalized to lowercase.
+  */
   val NetworkType: AttributeKey[String] = string("network.type")
   // Enum definitions
-
-  /** Values for [[NetworkTransport]].
-    */
+  
+  /**
+   * Values for [[NetworkTransport]].
+   */
   abstract class NetworkTransportValue(val value: String)
   object NetworkTransportValue {
-
     /** TCP. */
     case object Tcp extends NetworkTransportValue("tcp")
-
     /** UDP. */
     case object Udp extends NetworkTransportValue("udp")
-
     /** Named or anonymous pipe. */
     case object Pipe extends NetworkTransportValue("pipe")
-
     /** Unix domain socket. */
     case object Unix extends NetworkTransportValue("unix")
   }
-
-  /** Values for [[NetworkType]].
-    */
+  /**
+   * Values for [[NetworkType]].
+   */
   abstract class NetworkTypeValue(val value: String)
   object NetworkTypeValue {
-
     /** IPv4. */
     case object Ipv4 extends NetworkTypeValue("ipv4")
-
     /** IPv6. */
     case object Ipv6 extends NetworkTypeValue("ipv6")
   }

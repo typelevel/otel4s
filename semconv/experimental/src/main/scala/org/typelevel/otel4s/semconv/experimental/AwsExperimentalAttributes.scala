@@ -58,7 +58,7 @@ object AwsExperimentalAttributes {
     "aws.dynamodb.exclusive_start_table"
   )
 
-  /** The JSON-serialized value of each item in the the
+  /** The JSON-serialized value of each item in the
     * `GlobalSecondaryIndexUpdates` request field.
     */
   val AwsDynamodbGlobalSecondaryIndexUpdates: AttributeKey[Seq[String]] =
@@ -134,7 +134,7 @@ object AwsExperimentalAttributes {
     */
   val AwsDynamodbSelect: AttributeKey[String] = string("aws.dynamodb.select")
 
-  /** The the number of items in the `TableNames` response parameter.
+  /** The number of items in the `TableNames` response parameter.
     */
   val AwsDynamodbTableCount: AttributeKey[Long] = long(
     "aws.dynamodb.table_count"
@@ -170,17 +170,23 @@ object AwsExperimentalAttributes {
     */
   val AwsEcsLaunchtype: AttributeKey[String] = string("aws.ecs.launchtype")
 
-  /** The ARN of an <a
-    * href="https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_definitions.html">ECS
-    * task definition</a>.
+  /** The ARN of a running <a
+    * href="https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs-account-settings.html#ecs-resource-ids">ECS
+    * task</a>.
     */
   val AwsEcsTaskArn: AttributeKey[String] = string("aws.ecs.task.arn")
 
-  /** The task definition family this task definition is a member of.
+  /** The family name of the <a
+    * href="https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_definitions.html">ECS
+    * task definition</a> used to create the ECS task.
     */
   val AwsEcsTaskFamily: AttributeKey[String] = string("aws.ecs.task.family")
 
-  /** The revision for this task definition.
+  /** The ID of a running ECS task. The ID MUST be extracted from `task.arn`.
+    */
+  val AwsEcsTaskId: AttributeKey[String] = string("aws.ecs.task.id")
+
+  /** The revision for the task definition used to create the ECS task.
     */
   val AwsEcsTaskRevision: AttributeKey[String] = string("aws.ecs.task.revision")
 

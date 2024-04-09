@@ -129,6 +129,12 @@ object HttpExperimentalAttributes {
     "http.request.resend_count"
   )
 
+  /** The total size of the request in bytes. This should be the total number of
+    * bytes sent over the wire, including the request line (HTTP/1.1), framing
+    * (HTTP/2 and HTTP/3), headers, and request body if any.
+    */
+  val HttpRequestSize: AttributeKey[Long] = long("http.request.size")
+
   /** Deprecated, use `http.request.header.content-length` instead.
     */
   @deprecated("Use `http.request.header.content-length` instead", "0.5.0")
@@ -166,6 +172,12 @@ object HttpExperimentalAttributes {
   val HttpResponseHeader: AttributeKey[Seq[String]] = stringSeq(
     "http.response.header"
   )
+
+  /** The total size of the response in bytes. This should be the total number
+    * of bytes sent over the wire, including the status line (HTTP/1.1), framing
+    * (HTTP/2 and HTTP/3), headers, and response body and trailers if any.
+    */
+  val HttpResponseSize: AttributeKey[Long] = long("http.response.size")
 
   /** <a href="https://tools.ietf.org/html/rfc7231#section-6">HTTP response
     * status code</a>.

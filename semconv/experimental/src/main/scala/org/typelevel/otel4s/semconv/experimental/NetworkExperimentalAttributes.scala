@@ -107,13 +107,13 @@ object NetworkExperimentalAttributes {
     "network.protocol.name"
   )
 
-  /** Version of the protocol specified in `network.protocol.name`.
+  /** The actual version of the protocol used for network communication.
     *
     * @note
-    *   - `network.protocol.version` refers to the version of the protocol used
-    *     and might be different from the protocol client's version. If the HTTP
-    *     client has a version of `0.27.2`, but sends HTTP version `1.1`, this
-    *     attribute should be set to `1.1`.
+    *   - If protocol version is subject to negotiation (for example using <a
+    *     href="https://www.rfc-editor.org/rfc/rfc7301.html">ALPN</a>), this
+    *     attribute SHOULD be set to the negotiated version. If the actual
+    *     protocol version is not known, this attribute SHOULD NOT be set.
     */
   @deprecated(
     "use `org.typelevel.otel4s.semconv.attributes.NetworkAttributes.NetworkProtocolVersion` instead.",

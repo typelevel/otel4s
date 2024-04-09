@@ -118,9 +118,14 @@ object K8sExperimentalAttributes {
     */
   val K8sPodAnnotation: AttributeKey[String] = string("k8s.pod.annotation")
 
-  /** The labels placed on the Pod, the `<key>` being the label name, the value
-    * being the label value.
+  /** The label key-value pairs placed on the Pod, the `<key>` being the label
+    * name, the value being the label value.
     */
+  val K8sPodLabel: AttributeKey[String] = string("k8s.pod.label")
+
+  /** Deprecated, use `k8s.pod.label` instead.
+    */
+  @deprecated("Use `k8s.pod.label` instead", "0.5.0")
   val K8sPodLabels: AttributeKey[String] = string("k8s.pod.labels")
 
   /** The name of the Pod.

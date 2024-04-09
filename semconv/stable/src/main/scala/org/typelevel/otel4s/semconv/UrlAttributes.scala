@@ -40,13 +40,17 @@ object UrlAttributes {
     *     and password SHOULD be redacted and attribute's value SHOULD be
     *     `https://REDACTED:REDACTED@www.example.com/`. `url.full` SHOULD
     *     capture the absolute URL when it is available (or can be
-    *     reconstructed) and SHOULD NOT be validated or modified except for
-    *     sanitizing purposes.
+    *     reconstructed). Sensitive content provided in `url.full` SHOULD be
+    *     scrubbed when instrumentations can identify it.
     */
   val UrlFull: AttributeKey[String] = string("url.full")
 
   /** The <a href="https://www.rfc-editor.org/rfc/rfc3986#section-3.3">URI
     * path</a> component
+    *
+    * @note
+    *   - Sensitive content provided in `url.path` SHOULD be scrubbed when
+    *     instrumentations can identify it.
     */
   val UrlPath: AttributeKey[String] = string("url.path")
 
@@ -54,7 +58,7 @@ object UrlAttributes {
     * query</a> component
     *
     * @note
-    *   - Sensitive content provided in query string SHOULD be scrubbed when
+    *   - Sensitive content provided in `url.query` SHOULD be scrubbed when
     *     instrumentations can identify it.
     */
   val UrlQuery: AttributeKey[String] = string("url.query")

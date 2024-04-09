@@ -28,7 +28,9 @@ object SystemExperimentalAttributes {
     "system.cpu.logical_number"
   )
 
-  /** The state of the CPU
+  /** The CPU state for this data point. A system's CPU SHOULD be characterized
+    * <em>either</em> by data points with no `state` labels, <em>or only</em>
+    * data points with `state` labels.
     */
   val SystemCpuState: AttributeKey[String] = string("system.cpu.state")
 
@@ -86,6 +88,13 @@ object SystemExperimentalAttributes {
     * href="https://man7.org/linux/man-pages/man1/ps.1.html#PROCESS_STATE_CODES">Linux
     * Process State Codes</a>
     */
+  val SystemProcessStatus: AttributeKey[String] = string(
+    "system.process.status"
+  )
+
+  /** Deprecated, use `system.process.status` instead.
+    */
+  @deprecated("Use `system.process.status` instead", "0.5.0")
   val SystemProcessesStatus: AttributeKey[String] = string(
     "system.processes.status"
   )
@@ -256,9 +265,29 @@ object SystemExperimentalAttributes {
     case object Minor extends SystemPagingTypeValue("minor")
   }
 
+  /** Values for [[SystemProcessStatus]].
+    */
+  abstract class SystemProcessStatusValue(val value: String)
+  object SystemProcessStatusValue {
+
+    /** running. */
+    case object Running extends SystemProcessStatusValue("running")
+
+    /** sleeping. */
+    case object Sleeping extends SystemProcessStatusValue("sleeping")
+
+    /** stopped. */
+    case object Stopped extends SystemProcessStatusValue("stopped")
+
+    /** defunct. */
+    case object Defunct extends SystemProcessStatusValue("defunct")
+  }
+
   /** Values for [[SystemProcessesStatus]].
     */
+  @deprecated("Use `system.process.status` instead", "0.5.0")
   abstract class SystemProcessesStatusValue(val value: String)
+  @annotation.nowarn("cat=deprecation")
   object SystemProcessesStatusValue {
 
     /** running. */

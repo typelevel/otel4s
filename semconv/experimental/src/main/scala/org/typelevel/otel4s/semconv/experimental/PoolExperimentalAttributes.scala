@@ -24,9 +24,8 @@ object PoolExperimentalAttributes {
 
   /** The name of the connection pool; unique within the instrumented
     * application. In case the connection pool implementation doesn't provide a
-    * name, then the <a
-    * href="/docs/database/database-spans.md#connection-level-attributes">db.connection_string</a>
-    * should be used
+    * name, instrumentation should use a combination of `server.address` and
+    * `server.port` attributes formatted as `server.address:server.port`.
     */
   val PoolName: AttributeKey[String] = string("pool.name")
 

@@ -84,7 +84,7 @@ object {{ root_namespace | to_camelcase(True) }}{{ classPrefix }}Attributes {
     {%- endif %}
   */
   {%- if attribute | is_deprecated %}
-  @deprecated("{{attribute.brief | regex_replace("Deprecated\, ", "") | capitalize | to_doc_brief}}", "0.5.0")
+  @deprecated("{{attribute.brief | regex_replace("Deprecated\, ", "") | replace('"', "'") | capitalize | to_doc_brief}}", "0.5.0")
   {%- elif attribute | is_stable and stablePkg != "" %}
   @deprecated("use `{{stable_class_ref(attribute_const_name, '.')}}` instead.", "0.5.0")
   {%- endif %}
@@ -105,7 +105,7 @@ object {{ root_namespace | to_camelcase(True) }}{{ classPrefix }}Attributes {
    * Values for [[{{ enum_attribute.fqn | to_camelcase(True) }}]].
    */
   {%- if enum_attribute | is_deprecated %}
-  @deprecated("{{enum_attribute.brief | regex_replace("Deprecated\, ", "") | capitalize | to_doc_brief}}", "0.5.0")
+  @deprecated("{{enum_attribute.brief | regex_replace("Deprecated\, ", "") | replace('"', "'") | capitalize | to_doc_brief}}", "0.5.0")
   {%- elif enum_attribute | is_stable and stablePkg != "" %}
   @deprecated("use `{{stable_class_ref(class_name, '.')}}` instead.", "0.5.0")
   {%- endif %}

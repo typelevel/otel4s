@@ -45,7 +45,7 @@ object HostExperimentalAttributes {
 
   /** Stepping or core revisions.
     */
-  val HostCpuStepping: AttributeKey[Long] = long("host.cpu.stepping")
+  val HostCpuStepping: AttributeKey[String] = string("host.cpu.stepping")
 
   /** Processor manufacturer identifier. A maximum 12-character string.
     *

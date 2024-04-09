@@ -22,6 +22,7 @@ import cats.MonadThrow
 import cats.effect.Resource
 import cats.syntax.either._
 import cats.syntax.traverse._
+import org.typelevel.otel4s.semconv.attributes.ServiceAttributes
 
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
@@ -78,7 +79,7 @@ private final class TelemetryResourceAutoConfigure[F[_]: MonadThrow]
         .get(ConfigKeys.ServiceName)
         .toOption
         .flatten
-        .map(value => TelemetryResource.ResourceAttributes.ServiceName(value))
+        .map(value => ServiceAttributes.ServiceName(value))
 
       val default = TelemetryResource.default
       val fromEnv = TelemetryResource(attributes ++ serviceName)

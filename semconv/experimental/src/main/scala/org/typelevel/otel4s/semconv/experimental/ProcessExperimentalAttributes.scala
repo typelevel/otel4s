@@ -46,6 +46,19 @@ object ProcessExperimentalAttributes {
     */
   val ProcessCommandLine: AttributeKey[String] = string("process.command_line")
 
+  /** Specifies whether the context switches for this data point were voluntary
+    * or involuntary.
+    */
+  val ProcessContextSwitchType: AttributeKey[String] = string(
+    "process.context_switch_type"
+  )
+
+  /** The CPU state for this data point. A process SHOULD be characterized
+    * <em>either</em> by data points with no `state` labels, <em>or only</em>
+    * data points with `state` labels.
+    */
+  val ProcessCpuState: AttributeKey[String] = string("process.cpu.state")
+
   /** The name of the process executable. On Linux based systems, can be set to
     * the `Name` in `proc/[pid]/status`. On Windows, can be set to the base name
     * of `GetProcessImageFileNameW`.
@@ -65,6 +78,13 @@ object ProcessExperimentalAttributes {
   /** The username of the user that owns the process.
     */
   val ProcessOwner: AttributeKey[String] = string("process.owner")
+
+  /** The type of page fault for this data point. Type `major` is for major/hard
+    * page faults, and `minor` is for minor/soft page faults.
+    */
+  val ProcessPagingFaultType: AttributeKey[String] = string(
+    "process.paging.fault_type"
+  )
 
   /** Parent Process identifier (PPID).
     */
@@ -92,5 +112,45 @@ object ProcessExperimentalAttributes {
   val ProcessRuntimeVersion: AttributeKey[String] = string(
     "process.runtime.version"
   )
+  // Enum definitions
+
+  /** Values for [[ProcessContextSwitchType]].
+    */
+  abstract class ProcessContextSwitchTypeValue(val value: String)
+  object ProcessContextSwitchTypeValue {
+
+    /** voluntary. */
+    case object Voluntary extends ProcessContextSwitchTypeValue("voluntary")
+
+    /** involuntary. */
+    case object Involuntary extends ProcessContextSwitchTypeValue("involuntary")
+  }
+
+  /** Values for [[ProcessCpuState]].
+    */
+  abstract class ProcessCpuStateValue(val value: String)
+  object ProcessCpuStateValue {
+
+    /** system. */
+    case object System extends ProcessCpuStateValue("system")
+
+    /** user. */
+    case object User extends ProcessCpuStateValue("user")
+
+    /** wait. */
+    case object Wait extends ProcessCpuStateValue("wait")
+  }
+
+  /** Values for [[ProcessPagingFaultType]].
+    */
+  abstract class ProcessPagingFaultTypeValue(val value: String)
+  object ProcessPagingFaultTypeValue {
+
+    /** major. */
+    case object Major extends ProcessPagingFaultTypeValue("major")
+
+    /** minor. */
+    case object Minor extends ProcessPagingFaultTypeValue("minor")
+  }
 
 }

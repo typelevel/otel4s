@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package org.typelevel.otel4s.semconv.experimental.attributes
+package org.typelevel.otel4s.semconv.attributes
 
 import org.typelevel.otel4s.AttributeKey
 import org.typelevel.otel4s.AttributeKey._
 
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/semantic-convention/templates/SemanticAttributes.scala.j2
-object ExceptionExperimentalAttributes {
+object ExceptionAttributes {
 
   /** SHOULD be set to true if the exception event is recorded at a point where
     * it is known that the exception is escaping the scope of the span.
@@ -43,38 +43,22 @@ object ExceptionExperimentalAttributes {
     *     since the event might have been recorded at a time where it was not
     *     clear whether the exception will escape.
     */
-  @deprecated(
-    "use `org.typelevel.otel4s.semconv.attributes.ExceptionAttributes.ExceptionEscaped` instead.",
-    "0.5.0"
-  )
   val ExceptionEscaped: AttributeKey[Boolean] = boolean("exception.escaped")
 
   /** The exception message.
     */
-  @deprecated(
-    "use `org.typelevel.otel4s.semconv.attributes.ExceptionAttributes.ExceptionMessage` instead.",
-    "0.5.0"
-  )
   val ExceptionMessage: AttributeKey[String] = string("exception.message")
 
   /** A stacktrace as a string in the natural representation for the language
     * runtime. The representation is to be determined and documented by each
     * language SIG.
     */
-  @deprecated(
-    "use `org.typelevel.otel4s.semconv.attributes.ExceptionAttributes.ExceptionStacktrace` instead.",
-    "0.5.0"
-  )
   val ExceptionStacktrace: AttributeKey[String] = string("exception.stacktrace")
 
   /** The type of the exception (its fully-qualified class name, if applicable).
     * The dynamic type of the exception should be preferred over the static type
     * in languages that support it.
     */
-  @deprecated(
-    "use `org.typelevel.otel4s.semconv.attributes.ExceptionAttributes.ExceptionType` instead.",
-    "0.5.0"
-  )
   val ExceptionType: AttributeKey[String] = string("exception.type")
 
 }

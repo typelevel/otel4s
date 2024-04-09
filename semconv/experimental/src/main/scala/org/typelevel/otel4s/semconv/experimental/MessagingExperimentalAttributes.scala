@@ -58,6 +58,13 @@ object MessagingExperimentalAttributes {
     "messaging.destination.name"
   )
 
+  /** The identifier of the partition messages are sent to or received from,
+    * unique within the `messaging.destination.name`.
+    */
+  val MessagingDestinationPartitionId: AttributeKey[String] = string(
+    "messaging.destination.partition.id"
+  )
+
   /** Low cardinality representation of the messaging destination name
     *
     * @note
@@ -96,6 +103,19 @@ object MessagingExperimentalAttributes {
     "messaging.destination_publish.name"
   )
 
+  /** The name of the consumer group the event consumer is associated with.
+    */
+  val MessagingEventhubsConsumerGroup: AttributeKey[String] = string(
+    "messaging.eventhubs.consumer.group"
+  )
+
+  /** The UTC epoch seconds at which the message has been accepted and stored in
+    * the entity.
+    */
+  val MessagingEventhubsMessageEnqueuedTime: AttributeKey[Long] = long(
+    "messaging.eventhubs.message.enqueued_time"
+  )
+
   /** The ordering key for a given message. If the attribute is not present, the
     * message does not have an ordering key.
     */
@@ -110,8 +130,9 @@ object MessagingExperimentalAttributes {
     "messaging.kafka.consumer.group"
   )
 
-  /** Partition the message is sent to.
+  /** &quot;Deprecated, use `messaging.destination.partition.id` instead.&quot;
     */
+  @deprecated("'use `messaging.destination.partition.id` instead.'", "0.5.0")
   val MessagingKafkaDestinationPartition: AttributeKey[Long] = long(
     "messaging.kafka.destination.partition"
   )
@@ -188,6 +209,12 @@ object MessagingExperimentalAttributes {
     "messaging.rabbitmq.destination.routing_key"
   )
 
+  /** RabbitMQ message delivery tag
+    */
+  val MessagingRabbitmqMessageDeliveryTag: AttributeKey[Long] = long(
+    "messaging.rabbitmq.message.delivery_tag"
+  )
+
   /** Name of the RocketMQ producer/consumer group that is handling the message.
     * The client type is identified by the SpanKind.
     */
@@ -247,6 +274,32 @@ object MessagingExperimentalAttributes {
     "messaging.rocketmq.namespace"
   )
 
+  /** The name of the subscription in the topic messages are received from.
+    */
+  val MessagingServicebusDestinationSubscriptionName: AttributeKey[String] =
+    string("messaging.servicebus.destination.subscription_name")
+
+  /** Describes the <a
+    * href="https://learn.microsoft.com/azure/service-bus-messaging/message-transfers-locks-settlement#peeklock">settlement
+    * type</a>.
+    */
+  val MessagingServicebusDispositionStatus: AttributeKey[String] = string(
+    "messaging.servicebus.disposition_status"
+  )
+
+  /** Number of deliveries that have been attempted for this message.
+    */
+  val MessagingServicebusMessageDeliveryCount: AttributeKey[Long] = long(
+    "messaging.servicebus.message.delivery_count"
+  )
+
+  /** The UTC epoch seconds at which the message has been accepted and stored in
+    * the entity.
+    */
+  val MessagingServicebusMessageEnqueuedTime: AttributeKey[Long] = long(
+    "messaging.servicebus.message.enqueued_time"
+  )
+
   /** An identifier for the messaging system being used. See below for a list of
     * well-known identifiers.
     */
@@ -277,11 +330,11 @@ object MessagingExperimentalAttributes {
       */
     case object Receive extends MessagingOperationValue("receive")
 
-    /** One or more messages are passed to a consumer. This operation refers to
-      * push-based scenarios, where consumer register callbacks which get called
-      * by messaging SDKs.
-      */
-    case object Deliver extends MessagingOperationValue("deliver")
+    /** One or more messages are delivered to or processed by a consumer. */
+    case object Deliver extends MessagingOperationValue("process")
+
+    /** One or more messages are settled. */
+    case object Settle extends MessagingOperationValue("settle")
   }
 
   /** Values for [[MessagingRocketmqConsumptionModel]].
@@ -317,6 +370,27 @@ object MessagingExperimentalAttributes {
         extends MessagingRocketmqMessageTypeValue("transaction")
   }
 
+  /** Values for [[MessagingServicebusDispositionStatus]].
+    */
+  abstract class MessagingServicebusDispositionStatusValue(val value: String)
+  object MessagingServicebusDispositionStatusValue {
+
+    /** Message is completed. */
+    case object Complete
+        extends MessagingServicebusDispositionStatusValue("complete")
+
+    /** Message is abandoned. */
+    case object Abandon
+        extends MessagingServicebusDispositionStatusValue("abandon")
+
+    /** Message is sent to dead letter queue. */
+    case object DeadLetter
+        extends MessagingServicebusDispositionStatusValue("dead_letter")
+
+    /** Message is deferred. */
+    case object Defer extends MessagingServicebusDispositionStatusValue("defer")
+  }
+
   /** Values for [[MessagingSystem]].
     */
   abstract class MessagingSystemValue(val value: String)
@@ -329,13 +403,13 @@ object MessagingExperimentalAttributes {
     case object AwsSqs extends MessagingSystemValue("aws_sqs")
 
     /** Azure Event Grid. */
-    case object AzureEventgrid extends MessagingSystemValue("azure_eventgrid")
+    case object Eventgrid extends MessagingSystemValue("eventgrid")
 
     /** Azure Event Hubs. */
-    case object AzureEventhubs extends MessagingSystemValue("azure_eventhubs")
+    case object Eventhubs extends MessagingSystemValue("eventhubs")
 
     /** Azure Service Bus. */
-    case object AzureServicebus extends MessagingSystemValue("azure_servicebus")
+    case object Servicebus extends MessagingSystemValue("servicebus")
 
     /** Google Cloud Pub/Sub. */
     case object GcpPubsub extends MessagingSystemValue("gcp_pubsub")

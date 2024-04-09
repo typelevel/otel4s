@@ -144,6 +144,10 @@ object CloudExperimentalAttributes {
     /** Azure Virtual Machines. */
     case object AzureVm extends CloudPlatformValue("azure_vm")
 
+    /** Azure Container Apps. */
+    case object AzureContainerApps
+        extends CloudPlatformValue("azure_container_apps")
+
     /** Azure Container Instances. */
     case object AzureContainerInstances
         extends CloudPlatformValue("azure_container_instances")

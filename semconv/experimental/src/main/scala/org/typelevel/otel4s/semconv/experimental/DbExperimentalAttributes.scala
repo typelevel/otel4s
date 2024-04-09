@@ -72,9 +72,9 @@ object DbExperimentalAttributes {
     */
   val DbCassandraTable: AttributeKey[String] = string("db.cassandra.table")
 
-  /** The connection string used to connect to the database. It is recommended
-    * to remove embedded credentials.
+  /** Deprecated, use `server.address`, `server.port` attributes instead.
     */
+  @deprecated("Use `server.address`, `server.port` attributes instead", "0.5.0")
   val DbConnectionString: AttributeKey[String] = string("db.connection_string")
 
   /** Unique Cosmos client instance id.
@@ -127,9 +127,9 @@ object DbExperimentalAttributes {
     "db.elasticsearch.cluster.name"
   )
 
-  /** Represents the human-readable identifier of the node/instance to which a
-    * request was routed.
+  /** Deprecated, use `db.instance.id` instead.
     */
+  @deprecated("Use `db.instance.id` instead", "0.5.0")
   val DbElasticsearchNodeName: AttributeKey[String] = string(
     "db.elasticsearch.node.name"
   )
@@ -157,10 +157,9 @@ object DbExperimentalAttributes {
     */
   val DbInstanceId: AttributeKey[String] = string("db.instance.id")
 
-  /** The fully-qualified class name of the <a
-    * href="https://docs.oracle.com/javase/8/docs/technotes/guides/jdbc/">Java
-    * Database Connectivity (JDBC)</a> driver used to connect.
+  /** Removed, no replacement at this time.
     */
+  @deprecated("Removed, no replacement at this time", "0.5.0")
   val DbJdbcDriverClassname: AttributeKey[String] = string(
     "db.jdbc.driver_classname"
   )

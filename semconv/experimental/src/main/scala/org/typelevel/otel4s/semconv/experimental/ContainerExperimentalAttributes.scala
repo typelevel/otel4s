@@ -44,6 +44,10 @@ object ContainerExperimentalAttributes {
     "container.command_line"
   )
 
+  /** The CPU state for this data point.
+    */
+  val ContainerCpuState: AttributeKey[String] = string("container.cpu.state")
+
   /** Container ID. Usually a UUID, as for example used to <a
     * href="https://docs.docker.com/engine/reference/run/#container-identification">identify
     * Docker containers</a>. The UUID might be abbreviated.
@@ -95,6 +99,11 @@ object ContainerExperimentalAttributes {
   /** Container labels, `<key>` being the label name, the value being the label
     * value.
     */
+  val ContainerLabel: AttributeKey[String] = string("container.label")
+
+  /** Deprecated, use `container.label` instead.
+    */
+  @deprecated("Use `container.label` instead", "0.5.0")
   val ContainerLabels: AttributeKey[String] = string("container.labels")
 
   /** Container name used by container runtime.
@@ -104,5 +113,25 @@ object ContainerExperimentalAttributes {
   /** The container runtime managing this container.
     */
   val ContainerRuntime: AttributeKey[String] = string("container.runtime")
+  // Enum definitions
+
+  /** Values for [[ContainerCpuState]].
+    */
+  abstract class ContainerCpuStateValue(val value: String)
+  object ContainerCpuStateValue {
+
+    /** When tasks of the cgroup are in user mode (Linux). When all container
+      * processes are in user mode (Windows).
+      */
+    case object User extends ContainerCpuStateValue("user")
+
+    /** When CPU is used by the system (host OS). */
+    case object System extends ContainerCpuStateValue("system")
+
+    /** When tasks of the cgroup are in kernel mode (Linux). When all container
+      * processes are in kernel mode (Windows).
+      */
+    case object Kernel extends ContainerCpuStateValue("kernel")
+  }
 
 }

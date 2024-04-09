@@ -141,6 +141,11 @@ object Span {
         attributes: immutable.Iterable[Attribute[_]]
     ): F[Unit]
 
+    def addLink(
+        spanContext: SpanContext,
+        attributes: immutable.Iterable[Attribute[_]]
+    ): F[Unit]
+
     def recordException(
         exception: Throwable,
         attributes: immutable.Iterable[Attribute[_]]
@@ -206,6 +211,11 @@ object Span {
             attributes: immutable.Iterable[Attribute[_]]
         ): F[Unit] = unit
 
+        def addLink(
+            spanContext: SpanContext,
+            attributes: immutable.Iterable[Attribute[_]]
+        ): F[Unit] = unit
+
         def recordException(
             exception: Throwable,
             attributes: immutable.Iterable[Attribute[_]]
@@ -239,6 +249,11 @@ object Span {
           attributes: immutable.Iterable[Attribute[_]]
       ): G[Unit] =
         f(backend.addEvent(name, timestamp, attributes))
+      def addLink(
+          spanContext: SpanContext,
+          attributes: immutable.Iterable[Attribute[_]]
+      ): G[Unit] =
+        f(backend.addLink(spanContext, attributes))
       def recordException(
           exception: Throwable,
           attributes: immutable.Iterable[Attribute[_]]

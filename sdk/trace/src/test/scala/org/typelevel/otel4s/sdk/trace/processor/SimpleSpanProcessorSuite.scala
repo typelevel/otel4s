@@ -169,6 +169,12 @@ class SimpleSpanProcessorSuite
       ): IO[Unit] =
         noopBackend.addEvent(name, timestamp, attributes)
 
+      def addLink(
+          spanContext: SpanContext,
+          attributes: immutable.Iterable[Attribute[_]]
+      ): IO[Unit] =
+        noopBackend.addLink(spanContext, attributes)
+
       def recordException(
           exception: Throwable,
           attributes: immutable.Iterable[Attribute[_]]

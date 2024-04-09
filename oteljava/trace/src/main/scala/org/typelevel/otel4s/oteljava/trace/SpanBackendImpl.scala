@@ -78,6 +78,18 @@ private[oteljava] class SpanBackendImpl[F[_]: Sync](
       ()
     }
 
+  def addLink(
+      spanContext: SpanContext,
+      attributes: immutable.Iterable[Attribute[_]]
+  ): F[Unit] =
+    Sync[F].delay {
+      jSpan.addLink(
+        SpanContextConversions.toJava(spanContext),
+        attributes.toJavaAttributes
+      )
+      ()
+    }
+
   def setStatus(status: StatusCode): F[Unit] =
     Sync[F].delay {
       jSpan.setStatus(toJStatus(status))

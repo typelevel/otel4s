@@ -17,15 +17,15 @@
 package org.typelevel.otel4s.oteljava.context
 package propagation
 
+import io.opentelemetry.api.incubator.propagation.{
+  PassThroughPropagator => JPassThroughPropagator
+}
 import io.opentelemetry.context.propagation.{
   ContextPropagators => JContextPropagators
 }
 import io.opentelemetry.context.propagation.{TextMapGetter => JTextMapGetter}
 import io.opentelemetry.context.propagation.{
   TextMapPropagator => JTextMapPropagator
-}
-import io.opentelemetry.extension.incubator.propagation.{
-  PassThroughPropagator => JPassThroughPropagator
 }
 import munit.ScalaCheckSuite
 import org.scalacheck.Arbitrary

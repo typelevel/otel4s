@@ -91,6 +91,21 @@ class SdkSpanBackendSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
     }
   }
 
+  test(".addLink(:SpanContext, :Attribute[_]*)") {
+    PropF.forAllF { (spanContext: SpanContext, attrs: Attributes) =>
+      val link = LinkData(spanContext, attrs)
+
+      TestControl.executeEmbed {
+        for {
+          span <- start()
+          _ <- assertIO(span.toSpanData.map(_.links), Vector.empty)
+          _ <- span.addLink(spanContext, attrs)
+          _ <- assertIO(span.toSpanData.map(_.links), Vector(link))
+        } yield ()
+      }
+    }
+  }
+
   test(".updateName(:String)") {
     PropF.forAllF { (name: String, nextName: String) =>
       for {

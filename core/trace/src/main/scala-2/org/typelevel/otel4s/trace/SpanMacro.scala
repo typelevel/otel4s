@@ -119,6 +119,42 @@ private[otel4s] trait SpanMacro[F[_]] {
   ): F[Unit] =
     macro SpanMacro.addEventWithTimestampColl
 
+  /** Adds a link to the span.
+    *
+    * Links are used to link spans in different traces. Used (for example) in
+    * batching operations, where a single batch handler processes multiple
+    * requests from different traces or the same trace.
+    *
+    * @param spanContext
+    *   the context of the linked span
+    *
+    * @param attributes
+    *   the set of attributes to associated with the link
+    */
+  def addLink(
+      spanContext: SpanContext,
+      attributes: Attribute[_]*
+  ): F[Unit] =
+    macro SpanMacro.addLink
+
+  /** Adds a link to the span.
+    *
+    * Links are used to link spans in different traces. Used (for example) in
+    * batching operations, where a single batch handler processes multiple
+    * requests from different traces or the same trace.
+    *
+    * @param spanContext
+    *   the context of the linked span
+    *
+    * @param attributes
+    *   the set of attributes to associated with the link
+    */
+  def addLink(
+      spanContext: SpanContext,
+      attributes: immutable.Iterable[Attribute[_]]
+  ): F[Unit] =
+    macro SpanMacro.addLinkColl
+
   /** Records information about the `Throwable` to the span.
     *
     * @param exception
@@ -225,6 +261,26 @@ object SpanMacro {
     val meta = q"$backend.meta"
 
     q"if ($meta.isEnabled) $backend.addEvent($name, $attributes) else $meta.unit"
+  }
+
+  def addLink(c: blackbox.Context)(
+      spanContext: c.Expr[SpanContext],
+      attributes: c.Expr[Attribute[_]]*
+  ): c.universe.Tree = {
+    import c.universe._
+    addLinkColl(c)(spanContext, c.Expr(q"_root_.scala.Seq(..$attributes)"))
+  }
+
+  def addLinkColl(c: blackbox.Context)(
+      spanContext: c.Expr[SpanContext],
+      attributes: c.Expr[immutable.Iterable[Attribute[_]]]
+  ): c.universe.Tree = {
+    import c.universe._
+
+    val backend = q"${c.prefix}.backend"
+    val meta = q"$backend.meta"
+
+    q"if ($meta.isEnabled) $backend.addLink($spanContext, $attributes) else $meta.unit"
   }
 
   def addEventWithTimestamp(c: blackbox.Context)(

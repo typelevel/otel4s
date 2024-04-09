@@ -106,6 +106,14 @@ private final class SdkSpanBackend[F[_]: Monad: Clock: Console] private (
       EventData(name, timestamp, attributes.to(Attributes))
     )
 
+  def addLink(
+      context: SpanContext,
+      attributes: immutable.Iterable[Attribute[_]]
+  ): F[Unit] =
+    updateState("addLink") { s =>
+      s.copy(links = s.links :+ LinkData(context, attributes.to(Attributes)))
+    }.void
+
   def recordException(
       exception: Throwable,
       attributes: immutable.Iterable[Attribute[_]]
@@ -192,7 +200,7 @@ private final class SdkSpanBackend[F[_]: Monad: Clock: Console] private (
       status = state.status,
       attributes = state.attributes,
       events = state.events,
-      links = immutableState.links,
+      links = state.links,
       instrumentationScope = immutableState.scopeInfo,
       resource = immutableState.resource
     )
@@ -267,7 +275,6 @@ private object SdkSpanBackend {
         kind = kind,
         parentContext = parentContext,
         resource = resource,
-        links = links,
         startTimestamp = startTimestamp
       )
 
@@ -275,6 +282,7 @@ private object SdkSpanBackend {
       name = name,
       status = StatusData.Unset,
       attributes = attributes,
+      links = links,
       events = Vector.empty,
       endTimestamp = None
     )
@@ -293,7 +301,6 @@ private object SdkSpanBackend {
       kind: SpanKind,
       parentContext: Option[SpanContext],
       resource: TelemetryResource,
-      links: Vector[LinkData],
       startTimestamp: FiniteDuration
   )
 
@@ -304,6 +311,7 @@ private object SdkSpanBackend {
       status: StatusData,
       attributes: Attributes,
       events: Vector[EventData],
+      links: Vector[LinkData],
       endTimestamp: Option[FiniteDuration]
   )
 

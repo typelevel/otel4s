@@ -22,13 +22,18 @@ import org.typelevel.otel4s.AttributeKey._
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/semantic-convention/templates/SemanticAttributes.scala.j2
 object OciExperimentalAttributes {
 
-  /**
-  * The digest of the OCI image manifest. For container images specifically is the digest by which the container image is known.
-  *
-  * @note 
-  *  - Follows <a href="https://github.com/opencontainers/image-spec/blob/main/manifest.md">OCI Image Manifest Specification</a>, and specifically the <a href="https://github.com/opencontainers/image-spec/blob/main/descriptor.md#digests">Digest property</a>.
-An example can be found in <a href="https://docs.docker.com/registry/spec/manifest-v2-2/#example-image-manifest">Example Image Manifest</a>.
-  */
+  /** The digest of the OCI image manifest. For container images specifically is
+    * the digest by which the container image is known.
+    *
+    * @note
+    *   - Follows <a
+    *     href="https://github.com/opencontainers/image-spec/blob/main/manifest.md">OCI
+    *     Image Manifest Specification</a>, and specifically the <a
+    *     href="https://github.com/opencontainers/image-spec/blob/main/descriptor.md#digests">Digest
+    *     property</a>. An example can be found in <a
+    *     href="https://docs.docker.com/registry/spec/manifest-v2-2/#example-image-manifest">Example
+    *     Image Manifest</a>.
+    */
   val OciManifestDigest: AttributeKey[String] = string("oci.manifest.digest")
 
 }

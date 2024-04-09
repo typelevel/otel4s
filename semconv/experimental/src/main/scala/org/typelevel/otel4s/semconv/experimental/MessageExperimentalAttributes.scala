@@ -22,37 +22,40 @@ import org.typelevel.otel4s.AttributeKey._
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/semantic-convention/templates/SemanticAttributes.scala.j2
 object MessageExperimentalAttributes {
 
-  /**
-  * Compressed size of the message in bytes.
-  */
-  val MessageCompressedSize: AttributeKey[Long] = long("message.compressed_size")
+  /** Compressed size of the message in bytes.
+    */
+  val MessageCompressedSize: AttributeKey[Long] = long(
+    "message.compressed_size"
+  )
 
-  /**
-  * MUST be calculated as two different counters starting from `1` one for sent messages and one for received message.
-  *
-  * @note 
-  *  - This way we guarantee that the values will be consistent between different implementations.
-  */
+  /** MUST be calculated as two different counters starting from `1` one for
+    * sent messages and one for received message.
+    *
+    * @note
+    *   - This way we guarantee that the values will be consistent between
+    *     different implementations.
+    */
   val MessageId: AttributeKey[Long] = long("message.id")
 
-  /**
-  * Whether this is a received or sent message.
-  */
+  /** Whether this is a received or sent message.
+    */
   val MessageType: AttributeKey[String] = string("message.type")
 
-  /**
-  * Uncompressed size of the message in bytes.
-  */
-  val MessageUncompressedSize: AttributeKey[Long] = long("message.uncompressed_size")
+  /** Uncompressed size of the message in bytes.
+    */
+  val MessageUncompressedSize: AttributeKey[Long] = long(
+    "message.uncompressed_size"
+  )
   // Enum definitions
-  
-  /**
-   * Values for [[MessageType]].
-   */
+
+  /** Values for [[MessageType]].
+    */
   abstract class MessageTypeValue(val value: String)
   object MessageTypeValue {
+
     /** sent. */
     case object Sent extends MessageTypeValue("SENT")
+
     /** received. */
     case object Received extends MessageTypeValue("RECEIVED")
   }

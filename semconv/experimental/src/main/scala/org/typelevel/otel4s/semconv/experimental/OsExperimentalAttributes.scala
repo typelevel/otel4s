@@ -22,57 +22,65 @@ import org.typelevel.otel4s.AttributeKey._
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/semantic-convention/templates/SemanticAttributes.scala.j2
 object OsExperimentalAttributes {
 
-  /**
-  * Unique identifier for a particular build or compilation of the operating system.
-  */
+  /** Unique identifier for a particular build or compilation of the operating
+    * system.
+    */
   val OsBuildId: AttributeKey[String] = string("os.build_id")
 
-  /**
-  * Human readable (not intended to be parsed) OS version information, like e.g. reported by `ver` or `lsb_release -a` commands.
-  */
+  /** Human readable (not intended to be parsed) OS version information, like
+    * e.g. reported by `ver` or `lsb_release -a` commands.
+    */
   val OsDescription: AttributeKey[String] = string("os.description")
 
-  /**
-  * Human readable operating system name.
-  */
+  /** Human readable operating system name.
+    */
   val OsName: AttributeKey[String] = string("os.name")
 
-  /**
-  * The operating system type.
-  */
+  /** The operating system type.
+    */
   val OsType: AttributeKey[String] = string("os.type")
 
-  /**
-  * The version string of the operating system as defined in <a href="/docs/resource/README.md#version-attributes">Version Attributes</a>.
-  */
+  /** The version string of the operating system as defined in <a
+    * href="/docs/resource/README.md#version-attributes">Version Attributes</a>.
+    */
   val OsVersion: AttributeKey[String] = string("os.version")
   // Enum definitions
-  
-  /**
-   * Values for [[OsType]].
-   */
+
+  /** Values for [[OsType]].
+    */
   abstract class OsTypeValue(val value: String)
   object OsTypeValue {
+
     /** Microsoft Windows. */
     case object Windows extends OsTypeValue("windows")
+
     /** Linux. */
     case object Linux extends OsTypeValue("linux")
+
     /** Apple Darwin. */
     case object Darwin extends OsTypeValue("darwin")
+
     /** FreeBSD. */
     case object Freebsd extends OsTypeValue("freebsd")
+
     /** NetBSD. */
     case object Netbsd extends OsTypeValue("netbsd")
+
     /** OpenBSD. */
     case object Openbsd extends OsTypeValue("openbsd")
+
     /** DragonFly BSD. */
     case object Dragonflybsd extends OsTypeValue("dragonflybsd")
+
     /** HP-UX (Hewlett Packard Unix). */
     case object Hpux extends OsTypeValue("hpux")
+
     /** AIX (Advanced Interactive eXecutive). */
     case object Aix extends OsTypeValue("aix")
+
     /** SunOS, Oracle Solaris. */
     case object Solaris extends OsTypeValue("solaris")
+
     /** IBM z/OS. */
     case object ZOs extends OsTypeValue("z_os")
   }

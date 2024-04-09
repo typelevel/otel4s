@@ -22,19 +22,19 @@ import org.typelevel.otel4s.AttributeKey._
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/semantic-convention/templates/SemanticAttributes.scala.j2
 object OtherExperimentalAttributes {
 
-  /**
-  * The state of a connection in the pool
-  */
+  /** The state of a connection in the pool
+    */
   val State: AttributeKey[String] = string("state")
   // Enum definitions
-  
-  /**
-   * Values for [[State]].
-   */
+
+  /** Values for [[State]].
+    */
   abstract class StateValue(val value: String)
   object StateValue {
+
     /** idle. */
     case object Idle extends StateValue("idle")
+
     /** used. */
     case object Used extends StateValue("used")
   }

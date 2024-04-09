@@ -22,9 +22,10 @@ import org.typelevel.otel4s.AttributeKey._
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/semantic-convention/templates/SemanticAttributes.scala.j2
 object PeerExperimentalAttributes {
 
-  /**
-  * The <a href="/docs/resource/README.md#service">`service.name`</a> of the remote service. SHOULD be equal to the actual `service.name` resource attribute of the remote service if any.
-  */
+  /** The <a href="/docs/resource/README.md#service">`service.name`</a> of the
+    * remote service. SHOULD be equal to the actual `service.name` resource
+    * attribute of the remote service if any.
+    */
   val PeerService: AttributeKey[String] = string("peer.service")
 
 }

@@ -14,38 +14,16 @@
  * limitations under the License.
  */
 
-package org.typelevel.otel4s.semconv.experimental.attributes
+package org.typelevel.otel4s.semconv.attributes
 
 import org.typelevel.otel4s.AttributeKey
 import org.typelevel.otel4s.AttributeKey._
 
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/semantic-convention/templates/SemanticAttributes.scala.j2
-object TelemetryExperimentalAttributes {
-
-  /** The name of the auto instrumentation agent or distribution, if used.
-    *
-    * @note
-    *   - Official auto instrumentation agents and distributions SHOULD set the
-    *     `telemetry.distro.name` attribute to a string starting with
-    *     `opentelemetry-`, e.g. `opentelemetry-java-instrumentation`.
-    */
-  val TelemetryDistroName: AttributeKey[String] = string(
-    "telemetry.distro.name"
-  )
-
-  /** The version string of the auto instrumentation agent or distribution, if
-    * used.
-    */
-  val TelemetryDistroVersion: AttributeKey[String] = string(
-    "telemetry.distro.version"
-  )
+object TelemetryAttributes {
 
   /** The language of the telemetry SDK.
     */
-  @deprecated(
-    "use `org.typelevel.otel4s.semconv.attributes.TelemetryAttributes.TelemetrySdkLanguage` instead.",
-    "0.5.0"
-  )
   val TelemetrySdkLanguage: AttributeKey[String] = string(
     "telemetry.sdk.language"
   )
@@ -62,18 +40,10 @@ object TelemetryExperimentalAttributes {
     *     used in this case. All custom identifiers SHOULD be stable across
     *     different versions of an implementation.
     */
-  @deprecated(
-    "use `org.typelevel.otel4s.semconv.attributes.TelemetryAttributes.TelemetrySdkName` instead.",
-    "0.5.0"
-  )
   val TelemetrySdkName: AttributeKey[String] = string("telemetry.sdk.name")
 
   /** The version string of the telemetry SDK.
     */
-  @deprecated(
-    "use `org.typelevel.otel4s.semconv.attributes.TelemetryAttributes.TelemetrySdkVersion` instead.",
-    "0.5.0"
-  )
   val TelemetrySdkVersion: AttributeKey[String] = string(
     "telemetry.sdk.version"
   )
@@ -81,12 +51,7 @@ object TelemetryExperimentalAttributes {
 
   /** Values for [[TelemetrySdkLanguage]].
     */
-  @deprecated(
-    "use `org.typelevel.otel4s.semconv.attributes.TelemetryAttributes.TelemetrySdkLanguageValue` instead.",
-    "0.5.0"
-  )
   abstract class TelemetrySdkLanguageValue(val value: String)
-  @annotation.nowarn("cat=deprecation")
   object TelemetrySdkLanguageValue {
 
     /** cpp. */

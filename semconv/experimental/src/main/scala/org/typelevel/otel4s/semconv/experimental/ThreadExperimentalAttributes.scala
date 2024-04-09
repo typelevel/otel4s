@@ -22,14 +22,12 @@ import org.typelevel.otel4s.AttributeKey._
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/semantic-convention/templates/SemanticAttributes.scala.j2
 object ThreadExperimentalAttributes {
 
-  /**
-  * Current &quot;managed&quot; thread ID (as opposed to OS thread ID).
-  */
+  /** Current &quot;managed&quot; thread ID (as opposed to OS thread ID).
+    */
   val ThreadId: AttributeKey[Long] = long("thread.id")
 
-  /**
-  * Current thread name.
-  */
+  /** Current thread name.
+    */
   val ThreadName: AttributeKey[String] = string("thread.name")
 
 }

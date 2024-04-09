@@ -22,19 +22,19 @@ import org.typelevel.otel4s.AttributeKey._
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/semantic-convention/templates/SemanticAttributes.scala.j2
 object DiskExperimentalAttributes {
 
-  /**
-  * The disk IO operation direction.
-  */
+  /** The disk IO operation direction.
+    */
   val DiskIoDirection: AttributeKey[String] = string("disk.io.direction")
   // Enum definitions
-  
-  /**
-   * Values for [[DiskIoDirection]].
-   */
+
+  /** Values for [[DiskIoDirection]].
+    */
   abstract class DiskIoDirectionValue(val value: String)
   object DiskIoDirectionValue {
+
     /** read. */
     case object Read extends DiskIoDirectionValue("read")
+
     /** write. */
     case object Write extends DiskIoDirectionValue("write")
   }

@@ -14,28 +14,29 @@
  * limitations under the License.
  */
 
-package org.typelevel.otel4s.semconv.experimental.attributes
+package org.typelevel.otel4s.semconv.attributes
 
 import org.typelevel.otel4s.AttributeKey
 import org.typelevel.otel4s.AttributeKey._
 
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/semantic-convention/templates/SemanticAttributes.scala.j2
-object HerokuExperimentalAttributes {
+object ServiceAttributes {
 
-  /** Unique identifier for the application
+  /** Logical name of the service.
+    *
+    * @note
+    *   - MUST be the same for all instances of horizontally scaled services. If
+    *     the value was not specified, SDKs MUST fallback to `unknown_service:`
+    *     concatenated with <a
+    *     href="process.md#process">`process.executable.name`</a>, e.g.
+    *     `unknown_service:bash`. If `process.executable.name` is not available,
+    *     the value MUST be set to `unknown_service`.
     */
-  val HerokuAppId: AttributeKey[String] = string("heroku.app.id")
+  val ServiceName: AttributeKey[String] = string("service.name")
 
-  /** Commit hash for the current release
+  /** The version string of the service API or implementation. The format is not
+    * defined by these conventions.
     */
-  val HerokuReleaseCommit: AttributeKey[String] = string(
-    "heroku.release.commit"
-  )
-
-  /** Time and date the release was created
-    */
-  val HerokuReleaseCreationTimestamp: AttributeKey[String] = string(
-    "heroku.release.creation_timestamp"
-  )
+  val ServiceVersion: AttributeKey[String] = string("service.version")
 
 }

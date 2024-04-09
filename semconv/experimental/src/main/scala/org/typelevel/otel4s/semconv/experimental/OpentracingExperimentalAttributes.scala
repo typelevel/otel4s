@@ -22,23 +22,25 @@ import org.typelevel.otel4s.AttributeKey._
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/semantic-convention/templates/SemanticAttributes.scala.j2
 object OpentracingExperimentalAttributes {
 
-  /**
-  * Parent-child Reference type
-  *
-  * @note 
-  *  - The causal relationship between a child Span and a parent Span.
-  */
+  /** Parent-child Reference type
+    *
+    * @note
+    *   - The causal relationship between a child Span and a parent Span.
+    */
   val OpentracingRefType: AttributeKey[String] = string("opentracing.ref_type")
   // Enum definitions
-  
-  /**
-   * Values for [[OpentracingRefType]].
-   */
+
+  /** Values for [[OpentracingRefType]].
+    */
   abstract class OpentracingRefTypeValue(val value: String)
   object OpentracingRefTypeValue {
+
     /** The parent Span depends on the child Span in some capacity. */
     case object ChildOf extends OpentracingRefTypeValue("child_of")
-    /** The parent Span doesn&#39;t depend in any way on the result of the child Span. */
+
+    /** The parent Span doesn&#39;t depend in any way on the result of the child
+      * Span.
+      */
     case object FollowsFrom extends OpentracingRefTypeValue("follows_from")
   }
 

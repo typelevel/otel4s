@@ -20,21 +20,32 @@ import org.typelevel.otel4s.AttributeKey
 import org.typelevel.otel4s.AttributeKey._
 
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/semantic-convention/templates/SemanticAttributes.scala.j2
-object DestinationExperimentalAttributes {
+object FileExperimentalAttributes {
 
-  /** Destination address - domain name if available without reverse DNS lookup;
-    * otherwise, IP address or Unix domain socket name.
+  /** Directory where the file is located. It should include the drive letter,
+    * when appropriate.
+    */
+  val FileDirectory: AttributeKey[String] = string("file.directory")
+
+  /** File extension, excluding the leading dot.
     *
     * @note
-    *   - When observed from the source side, and when communicating through an
-    *     intermediary, `destination.address` SHOULD represent the destination
-    *     address behind any intermediaries, for example proxies, if it's
-    *     available.
+    *   - When the file name has multiple extensions (example.tar.gz), only the
+    *     last one should be captured (&quot;gz&quot;, not &quot;tar.gz&quot;).
     */
-  val DestinationAddress: AttributeKey[String] = string("destination.address")
+  val FileExtension: AttributeKey[String] = string("file.extension")
 
-  /** Destination port number
+  /** Name of the file including the extension, without the directory.
     */
-  val DestinationPort: AttributeKey[Long] = long("destination.port")
+  val FileName: AttributeKey[String] = string("file.name")
+
+  /** Full path to the file, including the file name. It should include the
+    * drive letter, when appropriate.
+    */
+  val FilePath: AttributeKey[String] = string("file.path")
+
+  /** File size in bytes.
+    */
+  val FileSize: AttributeKey[Long] = long("file.size")
 
 }

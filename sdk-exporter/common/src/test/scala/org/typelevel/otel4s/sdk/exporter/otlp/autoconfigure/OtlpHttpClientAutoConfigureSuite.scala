@@ -64,7 +64,7 @@ class OtlpHttpClientAutoConfigureSuite
         "headers={}}"
 
     OtlpHttpClientAutoConfigure
-      .traces[IO, Payload](tracesDefaults)
+      .traces[IO, Payload](tracesDefaults, None)
       .configure(config)
       .use(client => IO(assertEquals(client.toString, expected)))
   }
@@ -92,7 +92,7 @@ class OtlpHttpClientAutoConfigureSuite
         "headers={}}"
 
     OtlpHttpClientAutoConfigure
-      .traces[IO, Payload](tracesDefaults)
+      .traces[IO, Payload](tracesDefaults, None)
       .configure(config)
       .use(client => IO(assertEquals(client.toString, expected)))
   }
@@ -116,7 +116,7 @@ class OtlpHttpClientAutoConfigureSuite
         "headers={header1: value1}}"
 
     OtlpHttpClientAutoConfigure
-      .traces[IO, Payload](tracesDefaults)
+      .traces[IO, Payload](tracesDefaults, None)
       .configure(config)
       .use(client => IO(assertEquals(client.toString, expected)))
   }
@@ -144,7 +144,7 @@ class OtlpHttpClientAutoConfigureSuite
         "headers={header2: value2}}"
 
     OtlpHttpClientAutoConfigure
-      .traces[IO, Payload](tracesDefaults)
+      .traces[IO, Payload](tracesDefaults, None)
       .configure(config)
       .use(client => IO(assertEquals(client.toString, expected)))
   }
@@ -204,7 +204,7 @@ class OtlpHttpClientAutoConfigureSuite
         s"Cannot autoconfigure [OtlpHttpClient].\nCause: $cause.\nConfig:\n$prettyConfig"
 
       OtlpHttpClientAutoConfigure
-        .traces[IO, Payload](tracesDefaults)
+        .traces[IO, Payload](tracesDefaults, None)
         .configure(config)
         .use_
         .attempt
@@ -218,7 +218,7 @@ class OtlpHttpClientAutoConfigureSuite
       Config.ofProps(Map("otel.exporter.otlp.headers" -> "non-header"))
 
     OtlpHttpClientAutoConfigure
-      .traces[IO, Payload](tracesDefaults)
+      .traces[IO, Payload](tracesDefaults, None)
       .configure(config)
       .use_
       .attempt

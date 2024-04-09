@@ -28,6 +28,7 @@ import fs2.io.net.Network
 import org.http4s.Header
 import org.http4s.Headers
 import org.http4s.Uri
+import org.http4s.client.Client
 import org.typelevel.ci.CIString
 import org.typelevel.otel4s.sdk.autoconfigure.AutoConfigure
 import org.typelevel.otel4s.sdk.autoconfigure.Config
@@ -71,6 +72,7 @@ private final class OtlpHttpClientAutoConfigure[
 ](
     specific: OtlpHttpClientAutoConfigure.ConfigKeys.Keys,
     defaults: OtlpHttpClientAutoConfigure.Defaults,
+    customClient: Option[Client[F]],
     configKeys: Set[Config.Key[_]]
 )(implicit encoder: ProtoEncoder.Message[List[A]], printer: Printer)
     extends AutoConfigure.WithHint[F, OtlpHttpClient[F, A]](
@@ -125,7 +127,8 @@ private final class OtlpHttpClientAutoConfigure[
         headers,
         compression.isDefined,
         RetryPolicy.default,
-        None
+        None,
+        customClient
       )
 
     tryLoad match {
@@ -205,7 +208,8 @@ private[exporter] object OtlpHttpClientAutoConfigure {
     *   config
     */
   def traces[F[_]: Async: Network: Compression: Console, A](
-      defaults: Defaults
+      defaults: Defaults,
+      customClient: Option[Client[F]]
   )(implicit
       encoder: ProtoEncoder.Message[List[A]],
       printer: Printer
@@ -213,6 +217,7 @@ private[exporter] object OtlpHttpClientAutoConfigure {
     new OtlpHttpClientAutoConfigure[F, A](
       ConfigKeys.Traces,
       defaults,
+      customClient,
       ConfigKeys.General.All ++ ConfigKeys.Traces.All
     )
 

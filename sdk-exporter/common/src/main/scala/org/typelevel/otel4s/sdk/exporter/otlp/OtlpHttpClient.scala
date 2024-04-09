@@ -162,16 +162,32 @@ private[otlp] object OtlpHttpClient {
       headers: Headers,
       gzipCompression: Boolean,
       retryPolicy: RetryPolicy,
-      tlsContext: Option[TLSContext[F]]
+      tlsContext: Option[TLSContext[F]],
+      customClient: Option[Client[F]]
   )(implicit
       encoder: ProtoEncoder.Message[List[A]],
       printer: Printer
   ): Resource[F, OtlpHttpClient[F, A]] = {
     val config = Config(encoding, endpoint, timeout, headers, gzipCompression)
 
-    val builder = EmberClientBuilder
-      .default[F]
-      .withTimeout(config.timeout)
+    def createClient: Resource[F, Client[F]] =
+      customClient match {
+        case Some(client) =>
+          Resource
+            .eval(
+              Console[F].println(
+                "You are using a custom http4s client with OtlpHttpClient. 'timeout' and 'tlsContext' settings are ignored."
+              )
+            )
+            .as(client)
+
+        case None =>
+          val builder = EmberClientBuilder
+            .default[F]
+            .withTimeout(timeout)
+
+          tlsContext.foldLeft(builder)(_.withTLSContext(_)).build
+      }
 
     val gzip: Client[F] => Client[F] =
       if (gzipCompression) GZip[F]() else identity
@@ -207,7 +223,7 @@ private[otlp] object OtlpHttpClient {
     val policy = HttpRetryPolicy[F](backoff, (_, res) => shouldRetry(res))
 
     for {
-      client <- tlsContext.foldLeft(builder)(_.withTLSContext(_)).build
+      client <- createClient
     } yield new OtlpHttpClient[F, A](Retry(policy)(gzip(client)), config)
   }
 

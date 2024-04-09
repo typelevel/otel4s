@@ -23,6 +23,7 @@ import cats.effect.std.Console
 import fs2.compression.Compression
 import fs2.io.net.Network
 import org.http4s.Headers
+import org.http4s.client.Client
 import org.typelevel.otel4s.sdk.autoconfigure.AutoConfigure
 import org.typelevel.otel4s.sdk.autoconfigure.Config
 import org.typelevel.otel4s.sdk.autoconfigure.ConfigurationError
@@ -56,7 +57,8 @@ import org.typelevel.otel4s.sdk.trace.exporter.SpanExporter
   */
 private final class OtlpSpanExporterAutoConfigure[
     F[_]: Async: Network: Compression: Console
-] extends AutoConfigure.WithHint[F, SpanExporter[F]](
+](customClient: Option[Client[F]])
+    extends AutoConfigure.WithHint[F, SpanExporter[F]](
       "OtlpSpanExporter",
       OtlpSpanExporterAutoConfigure.ConfigKeys.All
     )
@@ -93,7 +95,7 @@ private final class OtlpSpanExporterAutoConfigure[
         )
 
         OtlpHttpClientAutoConfigure
-          .traces[F, SpanData](defaults)
+          .traces[F, SpanData](defaults, customClient)
           .configure(config)
           .map(client => new OtlpHttpSpanExporter[F](client))
 
@@ -161,6 +163,49 @@ object OtlpSpanExporterAutoConfigure {
   def apply[
       F[_]: Async: Network: Compression: Console
   ]: AutoConfigure.Named[F, SpanExporter[F]] =
-    new OtlpSpanExporterAutoConfigure[F]
+    new OtlpSpanExporterAutoConfigure[F](None)
+
+  /** Autoconfigures OTLP
+    * [[org.typelevel.otel4s.sdk.trace.exporter.SpanExporter SpanExporter]]
+    * using the given client.
+    *
+    * The configuration depends on the `otel.exporter.otlp.protocol` or
+    * `otel.exporter.otlp.traces.protocol`.
+    *
+    * The supported protocols: `http/json`, `http/protobuf`.
+    *
+    * @see
+    *   `OtlpHttpClientAutoConfigure` for the configuration details of the OTLP
+    *   HTTP client
+    *
+    * @note
+    *   the 'timeout' and 'tlsContext' context settings will be ignored. You
+    *   must preconfigure the client manually.
+    *
+    * @example
+    *   {{{
+    * import java.net.{InetSocketAddress, ProxySelector}
+    * import java.net.http.HttpClient
+    * import org.http4s.jdkhttpclient.JdkHttpClient
+    *
+    * val jdkHttpClient = HttpClient
+    *   .newBuilder()
+    *   .proxy(ProxySelector.of(InetSocketAddress.createUnresolved("localhost", 3312)))
+    *   .build()
+    *
+    * OpenTelemetrySdk.autoConfigured[IO](
+    *   _.addSpanExporterConfigurer(
+    *     OtlpSpanExporterAutoConfigure.customClient[IO](JdkHttpClient(jdkHttpClient))
+    *   )
+    * )
+    *   }}}
+    *
+    * @param client
+    *   the custom http4s client to use
+    */
+  def customClient[
+      F[_]: Async: Network: Compression: Console
+  ](client: Client[F]): AutoConfigure.Named[F, SpanExporter[F]] =
+    new OtlpSpanExporterAutoConfigure[F](Some(client))
 
 }

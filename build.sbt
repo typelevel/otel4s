@@ -609,6 +609,11 @@ lazy val docs = project
             ChoiceConfig("sbt", "sbt"),
             ChoiceConfig("scala-cli", "Scala CLI"),
             ChoiceConfig("shell", "Shell")
+          ).withSeparateEbooks,
+          SelectionConfig(
+            "scala-version",
+            ChoiceConfig("scala-2", "Scala 2"),
+            ChoiceConfig("scala-3", "Scala 3")
           ).withSeparateEbooks
         )
       )

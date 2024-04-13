@@ -23,6 +23,7 @@ import org.typelevel.otel4s.Attributes
 import org.typelevel.otel4s.metrics.BucketBoundaries
 import org.typelevel.otel4s.sdk.metrics.data.AggregationTemporality
 import org.typelevel.otel4s.sdk.metrics.data.ExemplarData
+import org.typelevel.otel4s.sdk.metrics.data.MetricPoints
 import org.typelevel.otel4s.sdk.metrics.data.PointData
 import org.typelevel.otel4s.sdk.metrics.data.TimeWindow
 import org.typelevel.otel4s.sdk.metrics.internal.InstrumentDescriptor
@@ -139,6 +140,32 @@ trait Cogens extends org.typelevel.otel4s.sdk.scalacheck.Cogens {
           histogramPointDataCogen.perturb(seed, histogram)
       }
     }
+
+  implicit val sumMetricPointsCogen: Cogen[MetricPoints.Sum] =
+    Cogen[(Vector[PointData], Boolean, AggregationTemporality)].contramap { s =>
+      (s.points, s.monotonic, s.aggregationTemporality)
+    }
+
+  implicit val gaugeMetricPointsCogen: Cogen[MetricPoints.Gauge] =
+    Cogen[Vector[PointData]].contramap(_.points)
+
+  implicit val histogramMetricPointsCogen: Cogen[MetricPoints.Histogram] =
+    Cogen[(Vector[PointData], AggregationTemporality)].contramap { h =>
+      (h.points, h.aggregationTemporality)
+    }
+
+  implicit val metricPointsCogen: Cogen[MetricPoints] =
+    Cogen { (seed, metricPoints) =>
+      metricPoints match {
+        case sum: MetricPoints.Sum =>
+          sumMetricPointsCogen.perturb(seed, sum)
+        case gauge: MetricPoints.Gauge =>
+          gaugeMetricPointsCogen.perturb(seed, gauge)
+        case histogram: MetricPoints.Histogram =>
+          histogramMetricPointsCogen.perturb(seed, histogram)
+      }
+    }
+
 }
 
 object Cogens extends Cogens

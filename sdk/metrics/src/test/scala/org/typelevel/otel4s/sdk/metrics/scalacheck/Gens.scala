@@ -22,6 +22,7 @@ import org.typelevel.ci.CIString
 import org.typelevel.otel4s.metrics.BucketBoundaries
 import org.typelevel.otel4s.sdk.metrics.data.AggregationTemporality
 import org.typelevel.otel4s.sdk.metrics.data.ExemplarData
+import org.typelevel.otel4s.sdk.metrics.data.MetricPoints
 import org.typelevel.otel4s.sdk.metrics.data.PointData
 import org.typelevel.otel4s.sdk.metrics.data.TimeWindow
 import org.typelevel.otel4s.sdk.metrics.internal.InstrumentDescriptor
@@ -197,6 +198,33 @@ trait Gens extends org.typelevel.otel4s.sdk.scalacheck.Gens {
 
   val pointData: Gen[PointData] =
     Gen.oneOf(longNumberPointData, doubleNumberPointData, histogramPointData)
+
+  val sumMetricPoints: Gen[MetricPoints.Sum] =
+    for {
+      points <- Gen.oneOf(
+        Gen.listOf(longNumberPointData),
+        Gen.listOf(doubleNumberPointData)
+      )
+      isMonotonic <- Gen.oneOf(true, false)
+      temporality <- Gens.aggregationTemporality
+    } yield MetricPoints.sum(points.toVector, isMonotonic, temporality)
+
+  val gaugeMetricPoints: Gen[MetricPoints.Gauge] =
+    for {
+      points <- Gen.oneOf(
+        Gen.listOf(longNumberPointData),
+        Gen.listOf(doubleNumberPointData)
+      )
+    } yield MetricPoints.gauge(points.toVector)
+
+  val histogramMetricPoints: Gen[MetricPoints.Histogram] =
+    for {
+      points <- Gen.listOf(histogramPointData)
+      temporality <- Gens.aggregationTemporality
+    } yield MetricPoints.histogram(points.toVector, temporality)
+
+  val metricPoints: Gen[MetricPoints] =
+    Gen.oneOf(sumMetricPoints, gaugeMetricPoints, histogramMetricPoints)
 
 }
 

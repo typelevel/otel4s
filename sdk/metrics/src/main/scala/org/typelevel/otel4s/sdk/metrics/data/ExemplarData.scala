@@ -73,10 +73,14 @@ object ExemplarData {
   sealed trait DoubleExemplar extends ExemplarData { type Value = Double }
 
   /** The trace information.
+    *
+    * [[TraceContext]] is a minimal version of SpanContext. That way,
+    * `sdk-metrics` does not need to depend on the `core-trace`.
     */
   sealed trait TraceContext {
     def traceId: ByteVector
     def spanId: ByteVector
+    def isSampled: Boolean
 
     override final def hashCode(): Int =
       Hash[TraceContext].hash(this)
@@ -95,22 +99,27 @@ object ExemplarData {
 
     /** Creates a [[TraceContext]] with the given `traceId` and `spanId`.
       */
-    def apply(traceId: ByteVector, spanId: ByteVector): TraceContext =
-      Impl(traceId, spanId)
+    def apply(
+        traceId: ByteVector,
+        spanId: ByteVector,
+        sampled: Boolean
+    ): TraceContext =
+      Impl(traceId, spanId, sampled)
 
     implicit val traceContextShow: Show[TraceContext] =
       Show.show { c =>
-        s"TraceContext{traceId=${c.traceId.toHex}, spanId=${c.spanId.toHex}}"
+        s"TraceContext{traceId=${c.traceId.toHex}, spanId=${c.spanId.toHex}, isSampled=${c.isSampled}}"
       }
 
     implicit val traceContextHash: Hash[TraceContext] = {
       implicit val byteVectorHash: Hash[ByteVector] = Hash.fromUniversalHashCode
-      Hash.by(c => (c.traceId, c.spanId))
+      Hash.by(c => (c.traceId, c.spanId, c.isSampled))
     }
 
     private final case class Impl(
         traceId: ByteVector,
-        spanId: ByteVector
+        spanId: ByteVector,
+        isSampled: Boolean
     ) extends TraceContext
   }
 

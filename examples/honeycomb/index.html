@@ -199,14 +199,16 @@
         <p>The Honeycomb <a href="https://docs.honeycomb.io/getting-data-in/api-keys/#find-api-keys">official guide</a>.</p>
         <p>First, you must create an account on the <a href="https://ui.honeycomb.io/login">Honeycomb website</a>.
         Once you have done this, log into your account and navigate to the environment settings page. There you can find a generated API key.</p>
+        <p>Use a different environment for test, production, and local development. Each will have its own API Key. This organizes your data in Honeycomb.</p>
         
         <h3 id="honeycomb-configuration" class="section"><a class="anchor-link left" href="#honeycomb-configuration"><i class="icofont-laika link">&#xef71;</i></a>Honeycomb configuration</h3>
         <p>The Honeycomb <a href="https://docs.honeycomb.io/getting-data-in/opentelemetry-overview/">official configuration guide</a>.</p>
-        <p>In order to send metrics and traces to Honeycomb, the API key and dataset name need to be configured.
+        <p>In order to send metrics and traces to Honeycomb, the API key and metrics dataset name need to be configured.
         Since the API key is sensitive data, we advise providing them via environment variables:</p>
-        <pre class="keep-together pdf epub"><code class="nohighlight"><span>$ </span><span class="identifier">export</span><span> OTEL_EXPORTER_OTLP_HEADERS=</span><span class="string-literal">&quot;x-honeycomb-team=your-api-key,x-honeycomb-dataset=honeycomb-example&quot;</span></code></pre>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span>$ </span><span class="identifier">export</span><span> OTEL_EXPORTER_OTLP_HEADERS=</span><span class="string-literal">&quot;x-honeycomb-team=your-api-key,x-honeycomb-dataset=otel-metrics&quot;</span></code></pre>
         <p>1) <code>x-honeycomb-team</code> - the API key<br>
-        2) <code>x-honeycomb-dataset</code> - the name of the dataset to send metrics to. We use <code>honeycomb-example</code> so both metrics and traces appear in the same dataset.</p>
+        2) <code>x-honeycomb-dataset</code> - the name of the dataset to send metrics to.</p>
+        <p>Each service&#39;s traces will land in a dataset defined in &#39;otel.service.name&#39;.</p>
         <p><strong>Note:</strong> if the <code>x-honeycomb-dataset</code> header is not configured, the <strong>metrics</strong> will be sent to a dataset called <code>unknown_metrics</code>.</p>
         
         <h3 id="application-example" class="section"><a class="anchor-link left" href="#application-example"><i class="icofont-laika link">&#xef71;</i></a>Application example</h3>

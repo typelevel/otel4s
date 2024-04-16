@@ -83,15 +83,61 @@ Add directives to the `*.scala` file:
 
 If you use a library that supports otel4s (eg [Skunk](https://github.com/typelevel/skunk)) but do not want to use Open Telemetry, then you can place the [No-op Tracer](https://www.javadoc.io/doc/org.typelevel/otel4s-docs_2.13/latest/org/typelevel/otel4s/trace/Tracer$.html) into implicit scope.
 
-```scala mdoc:silent
-// via import
-// import org.typelevel.otel4s.trace.Tracer.Implicits.noop
+The no-op `Tracer` can be provided in the following ways:
 
-// via implicit val
+@:select(scala-version)
+
+@:choice(scala-2)
+
+By using the `import Tracer.Implicits.noop`:
+```scala mdoc:compile-only
 import cats.effect.IO
 import org.typelevel.otel4s.trace.Tracer
-implicit val tracer: Tracer[IO] = Tracer.noop
+
+def program[F[_]: Tracer]: F[Unit] = ???
+
+import Tracer.Implicits.noop
+val io: IO[Unit] = program[IO]
 ```
+
+By defining an `implicit val`:
+
+```scala mdoc:compile-only
+import cats.effect.IO
+import org.typelevel.otel4s.trace.Tracer
+
+def program[F[_]: Tracer]: F[Unit] = ???
+
+implicit val tracer: Tracer[IO] = Tracer.noop
+val io: IO[Unit] = program[IO]
+```
+
+@:choice(scala-3)
+
+By using the `import Tracer.Implicits.noop`:
+```dotty
+import cats.effect.IO
+import org.typelevel.otel4s.trace.Tracer
+
+def program[F[_]](using Tracer[F]): F[Unit] = ???
+
+import Tracer.Implicits.noop
+val io: IO[Unit] = program[IO]
+```
+
+By defining a `given`:
+
+```dotty
+import cats.effect.IO
+import org.typelevel.otel4s.trace.Tracer
+
+def program[F[_]](using Tracer[F]): F[Unit] = ???
+
+given Tracer[IO] = Tracer.noop
+val io: IO[Unit] = program[IO]
+```
+
+@:@
 
 [cats-effect]: https://typelevel.org/cats-effect/
 [opentelemetry-java]: https://github.com/open-telemetry/opentelemetry-java/tree/main/api/all

@@ -21,8 +21,11 @@ import org.scalacheck.Cogen
 import org.typelevel.ci.CIString
 import org.typelevel.otel4s.Attributes
 import org.typelevel.otel4s.metrics.BucketBoundaries
+import org.typelevel.otel4s.sdk.TelemetryResource
+import org.typelevel.otel4s.sdk.common.InstrumentationScope
 import org.typelevel.otel4s.sdk.metrics.data.AggregationTemporality
 import org.typelevel.otel4s.sdk.metrics.data.ExemplarData
+import org.typelevel.otel4s.sdk.metrics.data.MetricData
 import org.typelevel.otel4s.sdk.metrics.data.MetricPoints
 import org.typelevel.otel4s.sdk.metrics.data.PointData
 import org.typelevel.otel4s.sdk.metrics.data.TimeWindow
@@ -164,6 +167,27 @@ trait Cogens extends org.typelevel.otel4s.sdk.scalacheck.Cogens {
         case histogram: MetricPoints.Histogram =>
           histogramMetricPointsCogen.perturb(seed, histogram)
       }
+    }
+
+  implicit val metricDataCogen: Cogen[MetricData] =
+    Cogen[
+      (
+          String,
+          Option[String],
+          Option[String],
+          MetricPoints,
+          InstrumentationScope,
+          TelemetryResource
+      )
+    ].contramap { d =>
+      (
+        d.name,
+        d.description,
+        d.unit,
+        d.data,
+        d.instrumentationScope,
+        d.resource
+      )
     }
 
 }

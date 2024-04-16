@@ -119,9 +119,11 @@ trait Gens extends org.typelevel.otel4s.sdk.scalacheck.Gens {
     for {
       traceId <- Gen.stringOfN(16, Gen.hexChar)
       spanId <- Gen.stringOfN(8, Gen.hexChar)
+      sampled <- Gen.oneOf(true, false)
     } yield ExemplarData.TraceContext(
       ByteVector.fromValidHex(traceId),
-      ByteVector.fromValidHex(spanId)
+      ByteVector.fromValidHex(spanId),
+      sampled
     )
 
   val longExemplarData: Gen[ExemplarData.LongExemplar] =

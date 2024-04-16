@@ -36,16 +36,14 @@ class BatchCallbackSuite extends CatsEffectSuite {
 
         metrics <- meter.batchCallback
           .of(
-            meter.observableCounter[Long]("long-counter").createObserver,
-            meter.observableCounter[Double]("double-counter").createObserver,
-            meter
-              .observableUpDownCounter[Long]("long-up-down-counter")
+            meter.observableCounter[Long][Long]("long-counter").createObserver,
+            meter.observableCounter[Double][Long]("double-counter").createObserver,
+            meter.observableUpDownCounter[Long][Long]("long-up-down-counter")
               .createObserver,
-            meter
-              .observableUpDownCounter[Double]("double-up-down-counter")
+            meter.observableUpDownCounter[Double][Long]("double-up-down-counter")
               .createObserver,
-            meter.observableGauge[Long]("long-gauge").createObserver,
-            meter.observableGauge[Double]("double-gauge").createObserver
+            meter.observableGauge[Long][Double]("long-gauge").createObserver,
+            meter.observableGauge[Double][Double]("double-gauge").createObserver
           ) {
             (
                 counter1,

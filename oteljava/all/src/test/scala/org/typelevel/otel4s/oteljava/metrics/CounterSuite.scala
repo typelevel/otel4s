@@ -40,8 +40,7 @@ class CounterSuite extends CatsEffectSuite {
           .withSchemaUrl("https://localhost:8080")
           .get
 
-        counter <- meter
-          .counter[Long]("counter")
+        counter <- meter.counter[Long][Long]("counter")
           .withUnit("unit")
           .withDescription("description")
           .create

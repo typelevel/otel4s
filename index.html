@@ -246,13 +246,49 @@
         
         <h2 id="the-noop-tracer" class="section"><a class="anchor-link left" href="#the-noop-tracer"><i class="icofont-laika link">&#xef71;</i></a>The Noop Tracer</h2>
         <p>If you use a library that supports otel4s (eg <a href="https://github.com/typelevel/skunk">Skunk</a>) but do not want to use Open Telemetry, then you can place the <a href="https://www.javadoc.io/doc/org.typelevel/otel4s-docs_2.13/latest/org/typelevel/otel4s/trace/Tracer$.html">No-op Tracer</a> into implicit scope.</p>
-        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="comment">// via import
-// import org.typelevel.otel4s.trace.Tracer.Implicits.noop
-</span><span>
-</span><span class="comment">// via implicit val
-</span><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.</span><span class="type-name">IO</span><span>
+        <p>The no-op <code>Tracer</code> can be provided in the following ways:</p>
+        <div class="tab-container" data-tab-group="scala-version">
+          <ul class="tab-group">
+            <li class="tab active" data-choice-name="scala-2"><a href="#">Scala 2</a></li>
+            <li class="tab" data-choice-name="scala-3"><a href="#">Scala 3</a></li>
+          </ul>
+          <div class="tab-content active" data-choice-name="scala-2">
+            <p>By using the <code>import Tracer.Implicits.noop</code>:</p>
+            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.</span><span class="type-name">IO</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">trace</span><span>.</span><span class="type-name">Tracer</span><span>
-</span><span class="keyword">implicit</span><span> </span><span class="keyword">val</span><span> </span><span class="identifier">tracer</span><span>: </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">IO</span><span>] = </span><span class="type-name">Tracer</span><span>.</span><span class="identifier">noop</span></code></pre>
+
+</span><span class="keyword">def</span><span> </span><span class="declaration-name">program</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>]: </span><span class="type-name">Tracer</span><span>]: </span><span class="type-name">F</span><span>[</span><span class="type-name">Unit</span><span>] = ???
+
+</span><span class="keyword">import</span><span> </span><span class="type-name">Tracer</span><span>.</span><span class="type-name">Implicits</span><span>.</span><span class="identifier">noop</span><span>
+</span><span class="keyword">val</span><span> </span><span class="identifier">io</span><span>: </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] = </span><span class="identifier">program</span><span>[</span><span class="type-name">IO</span><span>]</span></code></pre>
+            <p>By defining an <code>implicit val</code>:</p>
+            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.</span><span class="type-name">IO</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">trace</span><span>.</span><span class="type-name">Tracer</span><span>
+
+</span><span class="keyword">def</span><span> </span><span class="declaration-name">program</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>]: </span><span class="type-name">Tracer</span><span>]: </span><span class="type-name">F</span><span>[</span><span class="type-name">Unit</span><span>] = ???
+
+</span><span class="keyword">implicit</span><span> </span><span class="keyword">val</span><span> </span><span class="identifier">tracer</span><span>: </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">IO</span><span>] = </span><span class="type-name">Tracer</span><span>.</span><span class="identifier">noop</span><span>
+</span><span class="keyword">val</span><span> </span><span class="identifier">io</span><span>: </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] = </span><span class="identifier">program</span><span>[</span><span class="type-name">IO</span><span>]</span></code></pre>
+          </div>
+          <div class="tab-content" data-choice-name="scala-3">
+            <p>By using the <code>import Tracer.Implicits.noop</code>:</p>
+            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.</span><span class="type-name">IO</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">trace</span><span>.</span><span class="type-name">Tracer</span><span>
+
+</span><span class="keyword">def</span><span> </span><span class="declaration-name">program</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>]](</span><span class="keyword">using</span><span> </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">F</span><span>]): </span><span class="type-name">F</span><span>[</span><span class="type-name">Unit</span><span>] = ???
+
+</span><span class="keyword">import</span><span> </span><span class="type-name">Tracer</span><span>.</span><span class="type-name">Implicits</span><span>.</span><span class="identifier">noop</span><span>
+</span><span class="keyword">val</span><span> </span><span class="identifier">io</span><span>: </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] = </span><span class="identifier">program</span><span>[</span><span class="type-name">IO</span><span>]</span></code></pre>
+            <p>By defining a <code>given</code>:</p>
+            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.</span><span class="type-name">IO</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">trace</span><span>.</span><span class="type-name">Tracer</span><span>
+
+</span><span class="keyword">def</span><span> </span><span class="declaration-name">program</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>]](</span><span class="keyword">using</span><span> </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">F</span><span>]): </span><span class="type-name">F</span><span>[</span><span class="type-name">Unit</span><span>] = ???
+
+</span><span class="keyword">given</span><span> </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">IO</span><span>] = </span><span class="type-name">Tracer</span><span>.</span><span class="identifier">noop</span><span>
+</span><span class="keyword">val</span><span> </span><span class="identifier">io</span><span>: </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] = </span><span class="identifier">program</span><span>[</span><span class="type-name">IO</span><span>]</span></code></pre>
+          </div>
+        </div>
 
         
 <hr class="footer-rule"/>

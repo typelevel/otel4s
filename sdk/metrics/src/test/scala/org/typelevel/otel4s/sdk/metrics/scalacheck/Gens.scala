@@ -22,6 +22,7 @@ import org.typelevel.ci.CIString
 import org.typelevel.otel4s.metrics.BucketBoundaries
 import org.typelevel.otel4s.sdk.metrics.data.AggregationTemporality
 import org.typelevel.otel4s.sdk.metrics.data.ExemplarData
+import org.typelevel.otel4s.sdk.metrics.data.MetricData
 import org.typelevel.otel4s.sdk.metrics.data.MetricPoints
 import org.typelevel.otel4s.sdk.metrics.data.PointData
 import org.typelevel.otel4s.sdk.metrics.data.TimeWindow
@@ -227,6 +228,16 @@ trait Gens extends org.typelevel.otel4s.sdk.scalacheck.Gens {
 
   val metricPoints: Gen[MetricPoints] =
     Gen.oneOf(sumMetricPoints, gaugeMetricPoints, histogramMetricPoints)
+
+  val metricData: Gen[MetricData] =
+    for {
+      resource <- Gens.telemetryResource
+      scope <- Gens.instrumentationScope
+      name <- Gens.nonEmptyString
+      description <- Gen.option(Gens.nonEmptyString)
+      unit <- Gen.option(Gens.nonEmptyString)
+      data <- Gens.metricPoints
+    } yield MetricData(resource, scope, name, description, unit, data)
 
 }
 

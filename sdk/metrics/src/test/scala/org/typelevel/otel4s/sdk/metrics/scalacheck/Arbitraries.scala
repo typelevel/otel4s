@@ -20,6 +20,7 @@ package scalacheck
 import org.scalacheck.Arbitrary
 import org.typelevel.otel4s.sdk.metrics.data.AggregationTemporality
 import org.typelevel.otel4s.sdk.metrics.data.ExemplarData
+import org.typelevel.otel4s.sdk.metrics.data.MetricData
 import org.typelevel.otel4s.sdk.metrics.data.MetricPoints
 import org.typelevel.otel4s.sdk.metrics.data.PointData
 import org.typelevel.otel4s.sdk.metrics.data.TimeWindow
@@ -54,6 +55,9 @@ trait Arbitraries extends org.typelevel.otel4s.sdk.scalacheck.Arbitraries {
 
   implicit val metricPointsArbitrary: Arbitrary[MetricPoints] =
     Arbitrary(Gens.metricPoints)
+
+  implicit val metricDataArbitrary: Arbitrary[MetricData] =
+    Arbitrary(Gens.metricData)
 
 }
 

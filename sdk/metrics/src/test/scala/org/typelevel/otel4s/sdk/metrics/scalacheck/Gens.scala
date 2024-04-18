@@ -26,6 +26,7 @@ import org.typelevel.otel4s.sdk.metrics.data.MetricData
 import org.typelevel.otel4s.sdk.metrics.data.MetricPoints
 import org.typelevel.otel4s.sdk.metrics.data.PointData
 import org.typelevel.otel4s.sdk.metrics.data.TimeWindow
+import org.typelevel.otel4s.sdk.metrics.internal.AsynchronousMeasurement
 import org.typelevel.otel4s.sdk.metrics.internal.InstrumentDescriptor
 import org.typelevel.otel4s.sdk.metrics.view.InstrumentSelector
 import scodec.bits.ByteVector
@@ -238,6 +239,13 @@ trait Gens extends org.typelevel.otel4s.sdk.scalacheck.Gens {
       unit <- Gen.option(Gens.nonEmptyString)
       data <- Gens.metricPoints
     } yield MetricData(resource, scope, name, description, unit, data)
+
+  def asynchronousMeasurement[A](gen: Gen[A]): Gen[AsynchronousMeasurement[A]] =
+    for {
+      timeWindow <- Gens.timeWindow
+      attributes <- Gens.attributes
+      value <- gen
+    } yield AsynchronousMeasurement(timeWindow, attributes, value)
 
 }
 

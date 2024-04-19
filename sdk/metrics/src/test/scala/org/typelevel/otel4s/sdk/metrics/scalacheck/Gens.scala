@@ -131,7 +131,7 @@ trait Gens extends org.typelevel.otel4s.sdk.scalacheck.Gens {
   val longExemplarData: Gen[ExemplarData.LongExemplar] =
     for {
       attributes <- Gens.attributes
-      timestamp <- Gen.finiteDuration
+      timestamp <- Gens.timestamp
       traceContext <- Gen.option(Gens.traceContext)
       value <- Gen.long
     } yield ExemplarData.long(attributes, timestamp, traceContext, value)
@@ -139,7 +139,7 @@ trait Gens extends org.typelevel.otel4s.sdk.scalacheck.Gens {
   val doubleExemplarData: Gen[ExemplarData.DoubleExemplar] =
     for {
       attributes <- Gens.attributes
-      timestamp <- Gen.finiteDuration
+      timestamp <- Gens.timestamp
       traceContext <- Gen.option(Gens.traceContext)
       value <- Gen.double
     } yield ExemplarData.double(attributes, timestamp, traceContext, value)
@@ -174,7 +174,7 @@ trait Gens extends org.typelevel.otel4s.sdk.scalacheck.Gens {
         sum <- Gen.double
         min <- Gen.double
         max <- Gen.double
-        count <- Gen.long
+        count <- Gen.posNum[Long]
       } yield PointData.Histogram.Stats(sum, min, max, count)
 
     for {

@@ -24,14 +24,9 @@ import org.typelevel.otel4s.sdk.trace.data.StatusData
 import org.typelevel.otel4s.sdk.trace.samplers.SamplingDecision
 import org.typelevel.otel4s.sdk.trace.samplers.SamplingResult
 
-import scala.concurrent.duration._
-
 trait Gens
     extends org.typelevel.otel4s.sdk.scalacheck.Gens
     with org.typelevel.otel4s.trace.scalacheck.Gens {
-
-  val timestamp: Gen[FiniteDuration] =
-    Gen.chooseNum(1L, Long.MaxValue).map(_.nanos)
 
   val samplingDecision: Gen[SamplingDecision] =
     Gen.oneOf(

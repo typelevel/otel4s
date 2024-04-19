@@ -80,7 +80,9 @@ class SumAggregatorSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
             attributes,
             values.lastOption.map { last =>
               ExemplarData.long(
-                exemplarAttributes,
+                exemplarAttributes.filterNot(a =>
+                  attributes.get(a.key).isDefined
+                ),
                 Duration.Zero,
                 Some(traceContext),
                 last
@@ -124,7 +126,9 @@ class SumAggregatorSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
             attributes,
             values.lastOption.map { last =>
               ExemplarData.long(
-                exemplarAttributes,
+                exemplarAttributes.filterNot(a =>
+                  attributes.get(a.key).isDefined
+                ),
                 Duration.Zero,
                 Some(traceContext),
                 last

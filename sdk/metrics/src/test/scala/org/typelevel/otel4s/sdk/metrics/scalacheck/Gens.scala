@@ -60,7 +60,7 @@ trait Gens extends org.typelevel.otel4s.sdk.scalacheck.Gens {
       case tpe: InstrumentType.Asynchronous => tpe
     })
 
-  val synchronousInstrumentDescriptor: Gen[InstrumentDescriptor] =
+  val synchronousInstrumentDescriptor: Gen[InstrumentDescriptor.Synchronous] =
     for {
       tpe <- Gens.synchronousInstrumentType
       name <- Gens.ciString
@@ -68,7 +68,7 @@ trait Gens extends org.typelevel.otel4s.sdk.scalacheck.Gens {
       unit <- Gen.option(Gen.alphaNumStr)
     } yield InstrumentDescriptor.synchronous(name, description, unit, tpe)
 
-  val asynchronousInstrumentDescriptor: Gen[InstrumentDescriptor] =
+  val asynchronousInstrumentDescriptor: Gen[InstrumentDescriptor.Asynchronous] =
     for {
       tpe <- Gens.asynchronousInstrumentType
       name <- Gens.ciString

@@ -79,10 +79,13 @@ class ExplicitBucketHistogramAggregatorSuite
         val stats = makeStats(values)
         val counts = makeCounts(values, boundaries)
 
+        val filteredAttributes =
+          exemplarAttributes.filterNot(a => attributes.get(a.key).isDefined)
+
         val exemplars =
           makeExemplarValues(values, boundaries).map { value =>
             ExemplarData.double(
-              exemplarAttributes,
+              filteredAttributes,
               Duration.Zero,
               Some(traceContext),
               value
@@ -149,10 +152,13 @@ class ExplicitBucketHistogramAggregatorSuite
         val stats = makeStats(values)
         val counts = makeCounts(values, boundaries)
 
+        val filteredAttributes =
+          exemplarAttributes.filterNot(a => attributes.get(a.key).isDefined)
+
         val exemplars =
           makeExemplarValues(values, boundaries).map { value =>
             ExemplarData.double(
-              exemplarAttributes,
+              filteredAttributes,
               Duration.Zero,
               Some(traceContext),
               value

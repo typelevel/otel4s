@@ -41,7 +41,7 @@ sealed abstract class Aggregation(
 
 object Aggregation {
 
-  private object Defaults {
+  private[metrics] object Defaults {
     // See https://opentelemetry.io/docs/specs/otel/metrics/sdk/#explicit-bucket-histogram-aggregation
     val Boundaries: BucketBoundaries = BucketBoundaries(
       Vector(

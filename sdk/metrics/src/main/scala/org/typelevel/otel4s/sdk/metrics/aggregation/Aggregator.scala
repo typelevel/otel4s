@@ -16,15 +16,25 @@
 
 package org.typelevel.otel4s.sdk.metrics.aggregation
 
+import cats.Applicative
+import cats.effect.Temporal
+import cats.effect.std.Random
 import org.typelevel.otel4s.Attributes
+import org.typelevel.otel4s.metrics.BucketBoundaries
+import org.typelevel.otel4s.metrics.MeasurementValue
 import org.typelevel.otel4s.sdk.TelemetryResource
 import org.typelevel.otel4s.sdk.common.InstrumentationScope
 import org.typelevel.otel4s.sdk.context.Context
+import org.typelevel.otel4s.sdk.metrics.Aggregation
+import org.typelevel.otel4s.sdk.metrics.InstrumentType
 import org.typelevel.otel4s.sdk.metrics.data.AggregationTemporality
 import org.typelevel.otel4s.sdk.metrics.data.MetricData
 import org.typelevel.otel4s.sdk.metrics.data.PointData
 import org.typelevel.otel4s.sdk.metrics.data.TimeWindow
+import org.typelevel.otel4s.sdk.metrics.exemplar.ExemplarFilter
+import org.typelevel.otel4s.sdk.metrics.exemplar.TraceContextLookup
 import org.typelevel.otel4s.sdk.metrics.internal.AsynchronousMeasurement
+import org.typelevel.otel4s.sdk.metrics.internal.InstrumentDescriptor
 import org.typelevel.otel4s.sdk.metrics.internal.MetricDescriptor
 
 /** Aggregators are responsible for holding aggregated values and taking a
@@ -181,6 +191,100 @@ private[metrics] object Aggregator {
         attributes: Attributes,
         context: Context
     ): F[Unit]
+  }
+
+  /** Creates a [[Synchronous]] aggregator based on the given `aggregation`.
+    *
+    * @param aggregation
+    *   the aggregation to use
+    *
+    * @param descriptor
+    *   the descriptor of the instrument
+    *
+    * @param filter
+    *   used by the exemplar reservoir to filter the offered values
+    *
+    * @param traceContextLookup
+    *   used by the exemplar reservoir to extract tracing information from the
+    *   context
+    *
+    * @tparam F
+    *   the higher-kinded type of a polymorphic effect
+    *
+    * @tparam A
+    *   the type of the values to record
+    */
+  def synchronous[F[_]: Temporal: Random, A: MeasurementValue: Numeric](
+      aggregation: Aggregation.Synchronous,
+      descriptor: InstrumentDescriptor.Synchronous,
+      filter: ExemplarFilter,
+      traceContextLookup: TraceContextLookup
+  ): Aggregator.Synchronous[F, A] = {
+    def sum: Aggregator.Synchronous[F, A] =
+      SumAggregator.synchronous(
+        Runtime.getRuntime.availableProcessors,
+        filter,
+        traceContextLookup
+      )
+
+    def lastValue: Aggregator.Synchronous[F, A] =
+      LastValueAggregator.synchronous[F, A]
+
+    def histogram(boundaries: BucketBoundaries): Aggregator.Synchronous[F, A] =
+      ExplicitBucketHistogramAggregator(boundaries, filter, traceContextLookup)
+
+    aggregation match {
+      case Aggregation.Default =>
+        descriptor.instrumentType match {
+          case InstrumentType.Counter       => sum
+          case InstrumentType.UpDownCounter => sum
+          case InstrumentType.Histogram =>
+            histogram(Aggregation.Defaults.Boundaries)
+        }
+
+      case Aggregation.Sum       => sum
+      case Aggregation.LastValue => lastValue
+
+      case Aggregation.ExplicitBucketHistogram(boundaries) =>
+        histogram(boundaries)
+    }
+  }
+
+  /** Creates an [[Asynchronous]] aggregator based on the given `aggregation`.
+    *
+    * @param aggregation
+    *   the aggregation to use
+    *
+    * @param descriptor
+    *   the descriptor of the instrument
+    *
+    * @tparam F
+    *   the higher-kinded type of a polymorphic effect
+    *
+    * @tparam A
+    *   the type of the values to record
+    */
+  def asynchronous[F[_]: Applicative, A: MeasurementValue: Numeric](
+      aggregation: Aggregation.Asynchronous,
+      descriptor: InstrumentDescriptor.Asynchronous
+  ): Aggregator.Asynchronous[F, A] = {
+    def sum: Aggregator.Asynchronous[F, A] =
+      SumAggregator.asynchronous[F, A]
+
+    def lastValue: Aggregator.Asynchronous[F, A] =
+      LastValueAggregator.asynchronous[F, A]
+
+    aggregation match {
+      case Aggregation.Default =>
+        descriptor.instrumentType match {
+          case InstrumentType.ObservableCounter       => sum
+          case InstrumentType.ObservableUpDownCounter => sum
+          case InstrumentType.ObservableGauge         => lastValue
+        }
+
+      case Aggregation.Sum       => sum
+      case Aggregation.LastValue => lastValue
+    }
   }
 
 }

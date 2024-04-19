@@ -90,10 +90,11 @@ private object ExplicitBucketHistogramAggregator {
     *   the bucket boundaries to aggregate values at
     *
     * @param filter
-    *   filters the offered values
+    *   used by the exemplar reservoir to filter the offered values
     *
     * @param lookup
-    *   extracts tracing information from the context
+    *   used by the exemplar reservoir to extract tracing information from the
+    *   context
     *
     * @tparam F
     *   the higher-kinded type of a polymorphic effect

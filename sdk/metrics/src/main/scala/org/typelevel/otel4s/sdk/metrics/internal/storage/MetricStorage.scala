@@ -1,0 +1,133 @@
+/*
+ * Copyright 2024 Typelevel
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.typelevel.otel4s.sdk.metrics.internal.storage
+
+import cats.Applicative
+import cats.syntax.foldable._
+import org.typelevel.otel4s.Attribute
+import org.typelevel.otel4s.Attributes
+import org.typelevel.otel4s.sdk.TelemetryResource
+import org.typelevel.otel4s.sdk.common.InstrumentationScope
+import org.typelevel.otel4s.sdk.context.Context
+import org.typelevel.otel4s.sdk.metrics.data.MetricData
+import org.typelevel.otel4s.sdk.metrics.data.TimeWindow
+import org.typelevel.otel4s.sdk.metrics.internal.AsynchronousMeasurement
+import org.typelevel.otel4s.sdk.metrics.internal.MetricDescriptor
+
+/** Stores collected `MetricData`.
+  *
+  * @tparam F
+  *   the higher-kinded type of a polymorphic effect
+  */
+private[metrics] trait MetricStorage[F[_]] {
+
+  /** The description of the metric stored in this storage.
+    */
+  def metricDescriptor: MetricDescriptor
+
+  /** Collects the metrics from this storage.
+    *
+    * @note
+    *   if the aggregation temporality for the metric is `delta`, the state will
+    *   be reset.
+    *
+    * @param resource
+    *   the resource to associate the metrics with
+    *
+    * @param scope
+    *   the instrumentation scope to associate the metrics with
+    *
+    * @param timeWindow
+    *   the time window for the current collection of the metrics
+    */
+  def collect(
+      resource: TelemetryResource,
+      scope: InstrumentationScope,
+      timeWindow: TimeWindow
+  ): F[Option[MetricData]]
+}
+
+private[metrics] object MetricStorage {
+
+  // indicates when cardinality limit has been exceeded
+  private[storage] val OverflowAttribute: Attribute[Boolean] =
+    Attribute("otel.metric.overflow", true)
+
+  /** A storage for the metrics from the synchronous instruments.
+    *
+    * @tparam F
+    *   the higher-kinded type of a polymorphic effect
+    *
+    * @tparam A
+    *   the type of the values to store
+    */
+  trait Synchronous[F[_], A]
+      extends MetricStorage[F]
+      with Synchronous.Writeable[F, A]
+
+  object Synchronous {
+
+    trait Writeable[F[_], A] {
+
+      /** Records a measurement with the given values.
+        *
+        * @param value
+        *   the value to record
+        *
+        * @param attributes
+        *   the attributes to associate with the measurement
+        *
+        * @param context
+        *   the context to associate with the measurement
+        */
+      def record(value: A, attributes: Attributes, context: Context): F[Unit]
+    }
+
+    object Writeable {
+      def of[F[_]: Applicative, A](
+          storages: Vector[Writeable[F, A]]
+      ): Writeable[F, A] =
+        new Writeable[F, A] {
+          def record(
+              value: A,
+              attributes: Attributes,
+              context: Context
+          ): F[Unit] =
+            storages.traverse_(_.record(value, attributes, context))
+        }
+    }
+  }
+
+  /** A storage for the metrics from the asynchronous instruments.
+    *
+    * @tparam F
+    *   the higher-kinded type of a polymorphic effect
+    *
+    * @tparam A
+    *   the type of the values to store
+    */
+  trait Asynchronous[F[_], A] extends MetricStorage[F] {
+
+    /** Records the given measurement.
+      *
+      * @param measurement
+      *   the measurement to record
+      */
+    def record(measurement: AsynchronousMeasurement[A]): F[Unit]
+  }
+
+}

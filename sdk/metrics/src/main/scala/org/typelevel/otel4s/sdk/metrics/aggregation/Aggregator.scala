@@ -171,10 +171,10 @@ private[metrics] object Aggregator {
       *   the value to record
       *
       * @param attributes
-      *   the attributes to record
+      *   the attributes to record by the exemplar reservoir
       *
       * @param context
-      *   the context to record
+      *   the context to record by the exemplar reservoir
       */
     def record(
         value: A,

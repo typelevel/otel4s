@@ -113,20 +113,34 @@ trait Gens extends org.typelevel.otel4s.sdk.scalacheck.Gens {
 
   val timeWindow: Gen[TimeWindow] =
     for {
-      start <- Gen.chooseNum(1L, Long.MaxValue - 5)
-      end <- Gen.chooseNum(start, Long.MaxValue)
-    } yield TimeWindow(start.nanos, end.nanos)
+      start <- Gen.chooseNum(1, Int.MaxValue)
+      delta <- Gen.choose(1, 100)
+    } yield TimeWindow(start.millis, start.millis + delta.seconds)
 
-  val traceContext: Gen[ExemplarData.TraceContext] =
+  val traceContext: Gen[ExemplarData.TraceContext] = {
+    val nonZeroLong: Gen[Long] =
+      Gen.oneOf(
+        Gen.choose(Long.MinValue, -1L),
+        Gen.choose(1L, Long.MaxValue)
+      )
+
+    val traceIdGen: Gen[ByteVector] =
+      for {
+        hi <- Gen.long
+        lo <- nonZeroLong
+      } yield ByteVector.fromLong(hi, 8) ++ ByteVector.fromLong(lo, 8)
+
+    val spanIdGen: Gen[ByteVector] =
+      for {
+        value <- nonZeroLong
+      } yield ByteVector.fromLong(value, 8)
+
     for {
-      traceId <- Gen.stringOfN(16, Gen.hexChar)
-      spanId <- Gen.stringOfN(8, Gen.hexChar)
+      traceId <- traceIdGen
+      spanId <- spanIdGen
       sampled <- Gen.oneOf(true, false)
-    } yield ExemplarData.TraceContext(
-      ByteVector.fromValidHex(traceId),
-      ByteVector.fromValidHex(spanId),
-      sampled
-    )
+    } yield ExemplarData.TraceContext(traceId, spanId, sampled)
+  }
 
   val longExemplarData: Gen[ExemplarData.LongExemplar] =
     for {
@@ -151,7 +165,7 @@ trait Gens extends org.typelevel.otel4s.sdk.scalacheck.Gens {
     for {
       window <- Gens.timeWindow
       attributes <- Gens.attributes
-      exemplars <- Gen.listOf(Gens.longExemplarData)
+      exemplars <- Gen.listOfN(1, Gens.longExemplarData)
       value <- Gen.long
     } yield PointData.longNumber(window, attributes, exemplars.toVector, value)
 
@@ -159,7 +173,7 @@ trait Gens extends org.typelevel.otel4s.sdk.scalacheck.Gens {
     for {
       window <- Gens.timeWindow
       attributes <- Gens.attributes
-      exemplars <- Gen.listOf(Gens.doubleExemplarData)
+      exemplars <- Gen.listOfN(1, Gens.doubleExemplarData)
       value <- Gen.double
     } yield PointData.doubleNumber(
       window,
@@ -169,31 +183,67 @@ trait Gens extends org.typelevel.otel4s.sdk.scalacheck.Gens {
     )
 
   val histogramPointData: Gen[PointData.Histogram] = {
-    val statsGen =
-      for {
-        sum <- Gen.double
-        min <- Gen.double
-        max <- Gen.double
-        count <- Gen.posNum[Long]
-      } yield PointData.Histogram.Stats(sum, min, max, count)
+    def stats(values: List[Double]): Option[PointData.Histogram.Stats] =
+      Option.when(values.nonEmpty)(
+        PointData.Histogram.Stats(
+          sum = values.sum,
+          min = values.min,
+          max = values.max,
+          count = values.size.toLong
+        )
+      )
+
+    def counts(
+        values: List[Double],
+        boundaries: BucketBoundaries
+    ): Vector[Long] =
+      values.foldLeft(Vector.fill(boundaries.length + 1)(0L)) {
+        case (acc, value) =>
+          val i = boundaries.boundaries.indexWhere(b => value <= b)
+          val idx = if (i == -1) boundaries.length else i
+
+          acc.updated(idx, acc(idx) + 1L)
+      }
+
+    // retains last exemplar for each bucket
+    def alignExemplars(
+        values: List[Double],
+        boundaries: BucketBoundaries,
+        exemplars: List[ExemplarData.DoubleExemplar]
+    ): Vector[ExemplarData.DoubleExemplar] =
+      values
+        .foldLeft(
+          Vector.fill(boundaries.length + 1)(Option.empty[Double])
+        ) { case (acc, value) =>
+          val i = boundaries.boundaries.indexWhere(b => value <= b)
+          val idx = if (i == -1) boundaries.length else i
+
+          acc.updated(idx, Some(value))
+        }
+        .collect { case Some(value) => value }
+        .zip(exemplars)
+        .map { case (value, exemplar) =>
+          ExemplarData.double(
+            exemplar.filteredAttributes,
+            exemplar.timestamp,
+            exemplar.traceContext,
+            value
+          )
+        }
 
     for {
       window <- Gens.timeWindow
       attributes <- Gens.attributes
-      exemplars <- Gen.listOf(Gens.doubleExemplarData)
-      stats <- Gen.option(statsGen)
       boundaries <- Gens.bucketBoundaries
-      counts <- Gen.listOfN(
-        boundaries.length,
-        if (stats.isEmpty) Gen.const(0L) else Gen.choose(0L, Long.MaxValue)
-      )
+      exemplars <- Gen.listOfN(boundaries.length + 1, Gens.doubleExemplarData)
+      values <- Gen.listOfN(boundaries.length + 1, Gen.double)
     } yield PointData.histogram(
       window,
       attributes,
-      exemplars.toVector,
-      stats,
+      alignExemplars(values, boundaries, exemplars),
+      stats(values),
       boundaries,
-      counts.toVector
+      counts(values, boundaries)
     )
   }
 
@@ -203,7 +253,16 @@ trait Gens extends org.typelevel.otel4s.sdk.scalacheck.Gens {
   val pointData: Gen[PointData] =
     Gen.oneOf(longNumberPointData, doubleNumberPointData, histogramPointData)
 
-  val sumMetricPoints: Gen[MetricPoints.Sum] =
+  // See https://opentelemetry.io/docs/specs/otel/metrics/data-model/#sums
+  // For delta monotonic sums, this means the reader SHOULD expect non-negative values.
+  // For cumulative monotonic sums, this means the reader SHOULD expect values that are not less than the previous value.
+  val sumMetricPoints: Gen[MetricPoints.Sum] = {
+    implicit val pointNumberOrd: Ordering[PointData.NumberPoint] =
+      Ordering.by {
+        case long: PointData.LongNumber     => long.value.toDouble
+        case double: PointData.DoubleNumber => double.value
+      }
+
     for {
       points <- Gen.oneOf(
         Gen.listOf(longNumberPointData),
@@ -211,7 +270,30 @@ trait Gens extends org.typelevel.otel4s.sdk.scalacheck.Gens {
       )
       isMonotonic <- Gen.oneOf(true, false)
       temporality <- Gens.aggregationTemporality
-    } yield MetricPoints.sum(points.toVector, isMonotonic, temporality)
+    } yield {
+      val values =
+        if (isMonotonic) {
+          temporality match {
+            case AggregationTemporality.Delta =>
+              points.filter {
+                case long: PointData.LongNumber     => long.value > 0
+                case double: PointData.DoubleNumber => double.value > 0.0
+              }
+
+            case AggregationTemporality.Cumulative =>
+              points.sorted[PointData.NumberPoint].distinctBy(_.value)
+          }
+        } else {
+          points
+        }
+
+      MetricPoints.sum(
+        values.toVector,
+        isMonotonic,
+        temporality
+      )
+    }
+  }
 
   val gaugeMetricPoints: Gen[MetricPoints.Gauge] =
     for {

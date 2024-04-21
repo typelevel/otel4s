@@ -71,7 +71,7 @@ class TraceIdRatioBasedSamplerSuite extends ScalaCheckSuite {
 
   test("throw an error when ratio is out of range") {
     val negative = Gen.negNum[Double]
-    val positive = Gen.posNum[Double].suchThat(_ > 1.0)
+    val positive = Gen.chooseNum(1.1, Double.MaxValue)
 
     Prop.forAll(Gen.oneOf(negative, positive)) { ratio =>
       val _ = interceptMessage[Throwable](

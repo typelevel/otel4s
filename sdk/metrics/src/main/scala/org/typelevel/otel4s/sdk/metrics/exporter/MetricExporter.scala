@@ -36,10 +36,16 @@ trait MetricExporter[F[_]] {
   def aggregationTemporalitySelector: AggregationTemporalitySelector
 
   /** The preferred aggregation for the given instrument.
+    *
+    * If no views are configured for a metric instrument, an aggregation
+    * provided by the selector will be used.
     */
   def defaultAggregationSelector: AggregationSelector
 
   /** The preferred cardinality limit for the given instrument.
+    *
+    * If no views are configured for a metric instrument, a limit provided by
+    * the selector will be used.
     */
   def defaultCardinalityLimitSelector: CardinalityLimitSelector
 

@@ -27,15 +27,21 @@ import scodec.bits.ByteVector
 
 class SpanContextSuite extends ScalaCheckSuite {
 
+  private val nonZeroLong: Gen[Long] =
+    Gen.oneOf(
+      Gen.choose(Long.MinValue, -1L),
+      Gen.choose(1L, Long.MaxValue)
+    )
+
   private val traceIdGen: Gen[ByteVector] =
     for {
       hi <- Gen.long
-      lo <- Gen.long.suchThat(_ != 0)
+      lo <- nonZeroLong
     } yield SpanContext.TraceId.fromLongs(hi, lo)
 
   private val spanIdGen: Gen[ByteVector] =
     for {
-      value <- Gen.long.suchThat(_ != 0)
+      value <- nonZeroLong
     } yield SpanContext.SpanId.fromLong(value)
 
   private val spanContextGen: Gen[SpanContext] =

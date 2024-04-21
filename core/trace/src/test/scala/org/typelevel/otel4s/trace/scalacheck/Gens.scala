@@ -30,12 +30,12 @@ trait Gens extends org.typelevel.otel4s.scalacheck.Gens {
   val traceId: Gen[ByteVector] =
     for {
       hi <- Gen.long
-      lo <- Gen.long.suchThat(_ != 0)
+      lo <- nonZeroLong
     } yield SpanContext.TraceId.fromLongs(hi, lo)
 
   val spanId: Gen[ByteVector] =
     for {
-      value <- Gen.long.suchThat(_ != 0)
+      value <- nonZeroLong
     } yield SpanContext.SpanId.fromLong(value)
 
   val traceFlags: Gen[TraceFlags] =

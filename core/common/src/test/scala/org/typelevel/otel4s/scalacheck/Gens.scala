@@ -23,7 +23,16 @@ import org.scalacheck.Gen
 trait Gens {
 
   val nonEmptyString: Gen[String] =
-    Gen.alphaNumStr.suchThat(_.nonEmpty)
+    for {
+      id <- Gen.identifier
+      str <- Gen.stringOfN(5, Gen.alphaNumChar)
+    } yield id ++ str
+
+  val nonZeroLong: Gen[Long] =
+    Gen.oneOf(
+      Gen.choose(Long.MinValue, -1L),
+      Gen.choose(1L, Long.MaxValue)
+    )
 
   val attribute: Gen[Attribute[_]] = {
     implicit val stringArb: Arbitrary[String] =

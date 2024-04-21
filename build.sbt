@@ -368,7 +368,7 @@ lazy val `sdk-exporter-metrics` =
   crossProject(JVMPlatform, JSPlatform, NativePlatform)
     .crossType(CrossType.Pure)
     .in(file("sdk-exporter/metrics"))
-    .enablePlugins(NoPublishPlugin)
+    .enablePlugins(NoPublishPlugin, DockerComposeEnvPlugin)
     .dependsOn(
       `sdk-exporter-common` % "compile->compile;test->test",
       `sdk-metrics` % "compile->compile;test->test"
@@ -376,6 +376,7 @@ lazy val `sdk-exporter-metrics` =
     .settings(
       name := "otel4s-sdk-exporter-metrics",
       startYear := Some(2024),
+      dockerComposeEnvFile := crossProjectBaseDirectory.value / "docker" / "docker-compose.yml"
     )
     .jsSettings(scalaJSLinkerSettings)
     .nativeEnablePlugins(ScalaNativeBrewedConfigPlugin)

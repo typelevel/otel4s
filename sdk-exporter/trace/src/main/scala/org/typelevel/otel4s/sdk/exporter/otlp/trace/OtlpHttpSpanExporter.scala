@@ -109,6 +109,17 @@ object OtlpHttpSpanExporter {
       */
     def withEncoding(encoding: HttpPayloadEncoding): Builder[F]
 
+    /** Configures the exporter to use the given client.
+      *
+      * @note
+      *   the 'timeout' and 'tlsContext' settings will be ignored. You must
+      *   preconfigure the client manually.
+      *
+      * @param client
+      *   the custom http4s client to use
+      */
+    def withClient(client: Client[F]): Builder[F]
+
     /** Creates a [[OtlpHttpSpanExporter]] using the configuration of this
       * builder.
       */

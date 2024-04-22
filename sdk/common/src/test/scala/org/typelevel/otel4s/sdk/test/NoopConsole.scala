@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.typelevel.otel4s.sdk.trace
+package org.typelevel.otel4s.sdk.test
 
 import cats.Show
 import cats.effect.Sync

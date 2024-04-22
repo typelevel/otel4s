@@ -18,7 +18,12 @@ package org.typelevel.otel4s.sdk.metrics
 package exporter
 
 import cats.data.NonEmptyVector
+import cats.effect.Resource
+import cats.effect.Temporal
+import cats.effect.std.Console
 import org.typelevel.otel4s.sdk.metrics.data.MetricData
+
+import scala.concurrent.duration.FiniteDuration
 
 /** A reader of metrics that collects metrics from the associated metric
   * producers.
@@ -68,4 +73,30 @@ trait MetricReader[F[_]] {
     * too.
     */
   def forceFlush: F[Unit]
+}
+
+object MetricReader {
+
+  /** Creates a period metric reader that collects and exports metrics with the
+    * given interval.
+    *
+    * @param exporter
+    *   the exporter to send the collected metrics to
+    *
+    * @param interval
+    *   how often to export the metrics
+    *
+    * @param timeout
+    *   how long the export can run before it is cancelled
+    *
+    * @tparam F
+    *   the higher-kinded type of a polymorphic effect
+    */
+  def periodic[F[_]: Temporal: Console](
+      exporter: MetricExporter[F],
+      interval: FiniteDuration,
+      timeout: FiniteDuration
+  ): Resource[F, MetricReader[F]] =
+    PeriodicMetricReader.create(exporter, interval, timeout)
+
 }

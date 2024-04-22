@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.typelevel.otel4s.sdk.trace.exporter
+package org.typelevel.otel4s.sdk.test
 
 import cats._
 import cats.effect.kernel.Async

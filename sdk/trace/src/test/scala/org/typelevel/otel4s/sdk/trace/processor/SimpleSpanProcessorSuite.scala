@@ -187,10 +187,10 @@ class SimpleSpanProcessorSuite
       def setStatus(status: StatusCode, description: String): IO[Unit] =
         noopBackend.setStatus(status, description)
 
-      private[otel4s] def end: IO[Unit] =
+      def end: IO[Unit] =
         noopBackend.end
 
-      private[otel4s] def end(timestamp: FiniteDuration): IO[Unit] =
+      def end(timestamp: FiniteDuration): IO[Unit] =
         noopBackend.end(timestamp)
     }
   }

@@ -20,8 +20,9 @@ package exporter
 import cats.Applicative
 import cats.effect.IO
 import munit.CatsEffectSuite
+import org.typelevel.otel4s.sdk.test.InMemoryConsole
+import org.typelevel.otel4s.sdk.test.InMemoryConsole._
 import org.typelevel.otel4s.sdk.trace.data.SpanData
-import org.typelevel.otel4s.sdk.trace.exporter.InMemoryConsole._
 import org.typelevel.otel4s.sdk.trace.scalacheck.Gens
 
 class LoggingSpanExporterSuite extends CatsEffectSuite {

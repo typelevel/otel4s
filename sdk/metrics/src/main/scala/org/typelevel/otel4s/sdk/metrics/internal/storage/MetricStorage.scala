@@ -26,6 +26,7 @@ import org.typelevel.otel4s.Attributes
 import org.typelevel.otel4s.metrics.MeasurementValue
 import org.typelevel.otel4s.sdk.TelemetryResource
 import org.typelevel.otel4s.sdk.common.InstrumentationScope
+import org.typelevel.otel4s.sdk.context.AskContext
 import org.typelevel.otel4s.sdk.context.Context
 import org.typelevel.otel4s.sdk.metrics.Aggregation
 import org.typelevel.otel4s.sdk.metrics.data.MetricData
@@ -146,7 +147,47 @@ private[metrics] object MetricStorage {
       *   the measurement to record
       */
     def record(measurement: AsynchronousMeasurement[A]): F[Unit]
+
+    /** The associated reader.
+      */
+    def reader: RegisteredReader[F]
   }
+
+  /** Creates a metric storage for an asynchronous instrument.
+    *
+    * @param reader
+    *   the reader the storage must use to collect metrics
+    *
+    * @param view
+    *   the optional view associated with the instrument
+    *
+    * @param instrumentDescriptor
+    *   the descriptor of the instrument
+    *
+    * @param aggregation
+    *   the preferred aggregation
+    *
+    * @tparam F
+    *   the higher-kinded type of a polymorphic effect
+    *
+    * @tparam A
+    *   the type of the values to store
+    */
+  def asynchronous[
+      F[_]: Temporal: Console: AskContext,
+      A: MeasurementValue: Numeric
+  ](
+      reader: RegisteredReader[F],
+      view: Option[View],
+      instrumentDescriptor: InstrumentDescriptor.Asynchronous,
+      aggregation: Aggregation.Asynchronous
+  ): F[Asynchronous[F, A]] =
+    AsynchronousStorage.create(
+      reader,
+      view,
+      instrumentDescriptor,
+      aggregation
+    )
 
   /** Creates a metric storage for a synchronous instrument.
     *

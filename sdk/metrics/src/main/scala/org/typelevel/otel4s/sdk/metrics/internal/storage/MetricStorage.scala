@@ -17,16 +17,26 @@
 package org.typelevel.otel4s.sdk.metrics.internal.storage
 
 import cats.Applicative
+import cats.effect.Temporal
+import cats.effect.std.Console
+import cats.effect.std.Random
 import cats.syntax.foldable._
 import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.Attributes
+import org.typelevel.otel4s.metrics.MeasurementValue
 import org.typelevel.otel4s.sdk.TelemetryResource
 import org.typelevel.otel4s.sdk.common.InstrumentationScope
 import org.typelevel.otel4s.sdk.context.Context
+import org.typelevel.otel4s.sdk.metrics.Aggregation
 import org.typelevel.otel4s.sdk.metrics.data.MetricData
 import org.typelevel.otel4s.sdk.metrics.data.TimeWindow
+import org.typelevel.otel4s.sdk.metrics.exemplar.ExemplarFilter
+import org.typelevel.otel4s.sdk.metrics.exemplar.TraceContextLookup
 import org.typelevel.otel4s.sdk.metrics.internal.AsynchronousMeasurement
+import org.typelevel.otel4s.sdk.metrics.internal.InstrumentDescriptor
 import org.typelevel.otel4s.sdk.metrics.internal.MetricDescriptor
+import org.typelevel.otel4s.sdk.metrics.internal.exporter.RegisteredReader
+import org.typelevel.otel4s.sdk.metrics.view.View
 
 /** Stores collected `MetricData`.
   *
@@ -66,6 +76,14 @@ private[metrics] object MetricStorage {
   // indicates when cardinality limit has been exceeded
   private[storage] val OverflowAttribute: Attribute[Boolean] =
     Attribute("otel.metric.overflow", true)
+
+  private[storage] def cardinalityWarning[F[_]: Console](
+      instrument: InstrumentDescriptor,
+      maxCardinality: Int
+  ): F[Unit] =
+    Console[F].errorln(
+      s"Instrument [${instrument.name}] has exceeded the maximum allowed cardinality [$maxCardinality]"
+    )
 
   /** A storage for the metrics from the synchronous instruments.
     *
@@ -129,5 +147,52 @@ private[metrics] object MetricStorage {
       */
     def record(measurement: AsynchronousMeasurement[A]): F[Unit]
   }
+
+  /** Creates a metric storage for a synchronous instrument.
+    *
+    * @param reader
+    *   the reader the storage must use to collect metrics
+    *
+    * @param view
+    *   the optional view associated with the instrument
+    *
+    * @param instrumentDescriptor
+    *   the descriptor of the instrument
+    *
+    * @param exemplarFilter
+    *   used by the exemplar reservoir to filter the offered values
+    *
+    * @param traceContextLookup
+    *   used by the exemplar reservoir to extract tracing information from the
+    *   context
+    *
+    * @param aggregation
+    *   the preferred aggregation
+    *
+    * @tparam F
+    *   the higher-kinded type of a polymorphic effect
+    *
+    * @tparam A
+    *   the type of the values to store
+    */
+  def synchronous[
+      F[_]: Temporal: Console: Random,
+      A: MeasurementValue: Numeric
+  ](
+      reader: RegisteredReader[F],
+      view: Option[View],
+      instrumentDescriptor: InstrumentDescriptor.Synchronous,
+      exemplarFilter: ExemplarFilter,
+      traceContextLookup: TraceContextLookup,
+      aggregation: Aggregation.Synchronous
+  ): F[Synchronous[F, A]] =
+    SynchronousStorage.create(
+      reader,
+      view,
+      instrumentDescriptor,
+      exemplarFilter,
+      traceContextLookup,
+      aggregation
+    )
 
 }

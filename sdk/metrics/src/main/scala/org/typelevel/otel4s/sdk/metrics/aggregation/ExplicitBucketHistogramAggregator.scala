@@ -74,7 +74,7 @@ private final class ExplicitBucketHistogramAggregator[
       MetricData(
         resource,
         scope,
-        descriptor.name,
+        descriptor.name.toString,
         descriptor.description,
         descriptor.sourceInstrument.unit,
         MetricPoints.histogram(points, temporality)

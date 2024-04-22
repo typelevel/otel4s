@@ -116,7 +116,7 @@ private object SumAggregator {
         MetricData(
           resource,
           scope,
-          descriptor.name,
+          descriptor.name.toString,
           descriptor.description,
           descriptor.sourceInstrument.unit,
           MetricPoints.sum(points, isMonotonic(descriptor), temporality)
@@ -195,7 +195,7 @@ private object SumAggregator {
         MetricData(
           resource,
           scope,
-          descriptor.name,
+          descriptor.name.toString,
           descriptor.description,
           descriptor.sourceInstrument.unit,
           MetricPoints.sum(points, isMonotonic(descriptor), temporality)

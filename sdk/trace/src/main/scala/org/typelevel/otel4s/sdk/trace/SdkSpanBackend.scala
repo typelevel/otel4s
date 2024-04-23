@@ -140,18 +140,17 @@ private final class SdkSpanBackend[F[_]: Monad: Clock: Console] private (
       s.copy(status = StatusData(status, description))
     }.void
 
-  private[otel4s] def end: F[Unit] =
+  def end: F[Unit] =
     for {
       now <- Clock[F].realTime
       _ <- end(now)
     } yield ()
 
-  private[otel4s] def end(timestamp: FiniteDuration): F[Unit] = {
+  def end(timestamp: FiniteDuration): F[Unit] =
     for {
       updated <- updateState("end")(s => s.copy(endTimestamp = Some(timestamp)))
       _ <- toSpanData.flatMap(span => spanProcessor.onEnd(span)).whenA(updated)
     } yield ()
-  }
 
   private def addTimedEvent(event: EventData): F[Unit] =
     updateState("addEvent")(s => s.copy(events = s.events :+ event)).void

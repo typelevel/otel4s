@@ -43,7 +43,7 @@ private object SdkObservableUpDownCounter {
 
   final case class Builder[
       F[_]: MonadCancelThrow: Clock: Console: AskContext,
-      A: MeasurementValue
+      A: MeasurementValue: Numeric
   ](
       name: String,
       sharedState: MeterSharedState[F],
@@ -111,25 +111,8 @@ private object SdkObservableUpDownCounter {
         } yield ()
       }
 
-    def createObserver: F[ObservableMeasurement[F, A]] = {
-      val descriptor = makeDescriptor
-
-      MeasurementValue[A] match {
-        case MeasurementValue.LongMeasurementValue(cast) =>
-          sharedState
-            .registerObservableMeasurement[Long](descriptor)
-            .map { observable => (value, attributes) =>
-              observable.record(cast(value), attributes)
-            }
-
-        case MeasurementValue.DoubleMeasurementValue(cast) =>
-          sharedState
-            .registerObservableMeasurement[Double](descriptor)
-            .map { observable => (value, attributes) =>
-              observable.record(cast(value), attributes)
-            }
-      }
-    }
+    def createObserver: F[ObservableMeasurement[F, A]] =
+      sharedState.registerObservableMeasurement[A](makeDescriptor).widen
 
     private def makeDescriptor: InstrumentDescriptor.Asynchronous =
       InstrumentDescriptor.asynchronous(

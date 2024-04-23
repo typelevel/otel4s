@@ -123,7 +123,7 @@ private object ExplicitBucketHistogramAggregator {
   )
 
   private def emptyState(buckets: Int): State =
-    State(0, Double.MaxValue, -1, 0L, Vector.fill(buckets + 1)(0))
+    State(0, Double.MaxValue, Double.MinValue, 0L, Vector.fill(buckets + 1)(0))
 
   private class Accumulator[F[_]: FlatMap, A: MeasurementValue](
       stateRef: Ref[F, State],

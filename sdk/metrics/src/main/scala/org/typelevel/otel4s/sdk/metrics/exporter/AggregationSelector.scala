@@ -23,12 +23,44 @@ trait AggregationSelector {
 
   /** Returns preferred [[Aggregation]] for the given [[InstrumentType]].
     */
-  def select(instrumentType: InstrumentType): Aggregation
+  final def select(instrumentType: InstrumentType): Aggregation =
+    instrumentType match {
+      case synchronous: InstrumentType.Synchronous =>
+        forSynchronous(synchronous)
+      case asynchronous: InstrumentType.Asynchronous =>
+        forAsynchronous(asynchronous)
+    }
+
+  /** Returns preferred [[Aggregation]] for the given
+    * [[InstrumentType.Synchronous]].
+    */
+  def forSynchronous(
+      instrumentType: InstrumentType.Synchronous
+  ): Aggregation with Aggregation.Synchronous
+
+  /** Returns preferred [[Aggregation]] for the given
+    * [[InstrumentType.Asynchronous]].
+    */
+  def forAsynchronous(
+      instrumentType: InstrumentType.Asynchronous
+  ): Aggregation with Aggregation.Asynchronous
 }
 
 object AggregationSelector {
 
   /** Returns [[Aggregation.default]] for all instruments.
     */
-  def default: AggregationSelector = _ => Aggregation.default
+  def default: AggregationSelector = Default
+
+  private object Default extends AggregationSelector {
+    def forSynchronous(
+        instrumentType: InstrumentType.Synchronous
+    ): Aggregation with Aggregation.Synchronous =
+      Aggregation.Default
+
+    def forAsynchronous(
+        instrumentType: InstrumentType.Asynchronous
+    ): Aggregation with Aggregation.Asynchronous =
+      Aggregation.Default
+  }
 }

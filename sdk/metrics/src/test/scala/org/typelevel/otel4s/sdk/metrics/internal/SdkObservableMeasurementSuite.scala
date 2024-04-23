@@ -22,20 +22,18 @@ import munit.CatsEffectSuite
 import munit.ScalaCheckEffectSuite
 import org.scalacheck.Gen
 import org.scalacheck.effect.PropF
-import org.typelevel.otel4s.Attributes
 import org.typelevel.otel4s.metrics.MeasurementValue
 import org.typelevel.otel4s.sdk.context.Context
 import org.typelevel.otel4s.sdk.metrics.Aggregation
 import org.typelevel.otel4s.sdk.metrics.data.MetricData
 import org.typelevel.otel4s.sdk.metrics.data.MetricPoints
-import org.typelevel.otel4s.sdk.metrics.data.PointData
-import org.typelevel.otel4s.sdk.metrics.data.TimeWindow
 import org.typelevel.otel4s.sdk.metrics.exporter.AggregationTemporalitySelector
 import org.typelevel.otel4s.sdk.metrics.exporter.InMemoryMetricReader
 import org.typelevel.otel4s.sdk.metrics.exporter.MetricProducer
 import org.typelevel.otel4s.sdk.metrics.internal.exporter.RegisteredReader
 import org.typelevel.otel4s.sdk.metrics.internal.storage.MetricStorage
 import org.typelevel.otel4s.sdk.metrics.scalacheck.Gens
+import org.typelevel.otel4s.sdk.metrics.test.PointDataUtils
 import org.typelevel.otel4s.sdk.test.InMemoryConsole
 
 import scala.concurrent.duration._
@@ -43,9 +41,6 @@ import scala.concurrent.duration._
 class SdkObservableMeasurementSuite
     extends CatsEffectSuite
     with ScalaCheckEffectSuite {
-
-  override def scalaCheckInitialSeed =
-    "JzbNab7748vUF4-GQunGLyY4VoVp0gqbRVsFf27he_I="
 
   test("log an error when reader is unset") {
     PropF.forAllF(
@@ -116,7 +111,7 @@ class SdkObservableMeasurementSuite
           descriptor.description,
           descriptor.unit,
           MetricPoints.gauge(
-            toNumberPoints(Vector(value), attributes, timeWindow)
+            PointDataUtils.toNumberPoints(Vector(value), attributes, timeWindow)
           )
         )
 
@@ -142,33 +137,6 @@ class SdkObservableMeasurementSuite
       }
     }
   }
-
-  private def toNumberPoints[A: MeasurementValue](
-      values: Vector[A],
-      attributes: Attributes,
-      timeWindow: TimeWindow
-  ): Vector[PointData.NumberPoint] =
-    MeasurementValue[A] match {
-      case MeasurementValue.LongMeasurementValue(cast) =>
-        values.map { a =>
-          PointData.longNumber(
-            timeWindow,
-            attributes,
-            Vector.empty,
-            cast(a)
-          )
-        }
-
-      case MeasurementValue.DoubleMeasurementValue(cast) =>
-        values.map { a =>
-          PointData.doubleNumber(
-            timeWindow,
-            attributes,
-            Vector.empty,
-            cast(a)
-          )
-        }
-    }
 
   private def createStorage[A: MeasurementValue: Numeric](
       descriptor: InstrumentDescriptor.Asynchronous

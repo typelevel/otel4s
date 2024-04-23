@@ -84,8 +84,20 @@ private[metrics] final class MeterSharedState[
           traceContextLookup,
           aggregation
         )
-        _ <- registry.register(storage)
-      } yield Vector(storage)
+        registered <- registry.register(storage)
+        result <- registered match {
+          // the storage may already be registered, so we need to reuse it
+          case s: MetricStorage.Synchronous[F @unchecked, A @unchecked] =>
+            Temporal[F].pure(Vector(s))
+
+          case other =>
+            Console[F]
+              .errorln(
+                s"MeterSharedState: there is a different storage $other registered for $descriptor. The current instrument will be noop."
+              )
+              .as(Vector.empty[MetricStorage.Synchronous[F, A]])
+        }
+      } yield result
 
     registries.toVector
       .flatTraverse { case (reader, registry) =>
@@ -145,8 +157,20 @@ private[metrics] final class MeterSharedState[
           descriptor,
           aggregation
         )
-        _ <- registry.register(storage)
-      } yield Vector(storage)
+        registered <- registry.register(storage)
+        result <- registered match {
+          // the storage may already be registered, so we need to reuse it
+          case s: MetricStorage.Asynchronous[F @unchecked, A @unchecked] =>
+            Temporal[F].pure(Vector(s))
+
+          case other =>
+            Console[F]
+              .errorln(
+                s"MeterSharedState: there is a different storage $other registered for $descriptor. The current instrument will be noop."
+              )
+              .as(Vector.empty[MetricStorage.Asynchronous[F, A]])
+        }
+      } yield result
 
     registries.toVector
       .flatTraverse { case (reader, registry) =>

@@ -16,6 +16,10 @@
 
 package org.typelevel.otel4s.sdk.metrics.internal
 
+import cats.Show
+import cats.kernel.Hash
+import cats.syntax.foldable._
+import org.typelevel.ci.CIString
 import org.typelevel.otel4s.sdk.metrics.view.View
 
 /** Describes a metric that will be output.
@@ -26,7 +30,7 @@ private[metrics] sealed trait MetricDescriptor {
     *
     * Either the [[View.name]] or [[InstrumentDescriptor.name]].
     */
-  def name: String
+  def name: CIString
 
   /** The description of the descriptor.
     *
@@ -37,6 +41,18 @@ private[metrics] sealed trait MetricDescriptor {
   /** The instrument used by this metric.
     */
   def sourceInstrument: InstrumentDescriptor
+
+  override final def hashCode(): Int =
+    Hash[MetricDescriptor].hash(this)
+
+  override final def equals(obj: Any): Boolean =
+    obj match {
+      case other: MetricDescriptor => Hash[MetricDescriptor].eqv(this, other)
+      case _                       => false
+    }
+
+  override final def toString: String =
+    Show[MetricDescriptor].show(this)
 
 }
 
@@ -58,13 +74,25 @@ private[metrics] object MetricDescriptor {
       instrumentDescriptor: InstrumentDescriptor
   ): MetricDescriptor =
     Impl(
-      view.flatMap(_.name).getOrElse(instrumentDescriptor.name.toString),
+      view
+        .flatMap(_.name)
+        .map(CIString(_))
+        .getOrElse(instrumentDescriptor.name),
       view.flatMap(_.description).orElse(instrumentDescriptor.description),
       instrumentDescriptor
     )
 
+  implicit val metricDescriptorHash: Hash[MetricDescriptor] =
+    Hash.by(d => (d.name, d.description, d.sourceInstrument))
+
+  implicit val metricDescriptorShow: Show[MetricDescriptor] =
+    Show.show { descriptor =>
+      val description = descriptor.description.foldMap(d => s", description=$d")
+      s"MetricDescriptor{name=${descriptor.name}$description, sourceInstrument=${descriptor.sourceInstrument}}"
+    }
+
   private final case class Impl(
-      name: String,
+      name: CIString,
       description: Option[String],
       sourceInstrument: InstrumentDescriptor
   ) extends MetricDescriptor

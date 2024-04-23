@@ -93,7 +93,7 @@ private object LastValueAggregator {
         MetricData(
           resource,
           scope,
-          descriptor.name,
+          descriptor.name.toString,
           descriptor.description,
           descriptor.sourceInstrument.unit,
           MetricPoints.gauge(points)
@@ -153,7 +153,7 @@ private object LastValueAggregator {
         MetricData(
           resource,
           scope,
-          descriptor.name,
+          descriptor.name.toString,
           descriptor.description,
           descriptor.sourceInstrument.unit,
           MetricPoints.gauge(points)

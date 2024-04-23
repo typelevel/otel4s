@@ -32,7 +32,6 @@ import org.typelevel.otel4s.sdk.metrics.InstrumentType
 import org.typelevel.otel4s.sdk.metrics.data.AggregationTemporality
 import org.typelevel.otel4s.sdk.metrics.data.MetricData
 import org.typelevel.otel4s.sdk.metrics.data.MetricPoints
-import org.typelevel.otel4s.sdk.metrics.data.PointData
 import org.typelevel.otel4s.sdk.metrics.data.TimeWindow
 import org.typelevel.otel4s.sdk.metrics.exemplar.ExemplarFilter
 import org.typelevel.otel4s.sdk.metrics.exemplar.TraceContextLookup
@@ -42,6 +41,7 @@ import org.typelevel.otel4s.sdk.metrics.exporter.MetricProducer
 import org.typelevel.otel4s.sdk.metrics.internal.InstrumentDescriptor
 import org.typelevel.otel4s.sdk.metrics.internal.exporter.RegisteredReader
 import org.typelevel.otel4s.sdk.metrics.scalacheck.Gens
+import org.typelevel.otel4s.sdk.metrics.test.PointDataUtils
 import org.typelevel.otel4s.sdk.metrics.view.View
 import org.typelevel.otel4s.sdk.test.NoopConsole
 
@@ -86,7 +86,7 @@ class SynchronousStorageSuite
             descriptor.description,
             descriptor.unit,
             MetricPoints.sum(
-              toNumberPoints(
+              PointDataUtils.toNumberPoints(
                 Vector(Vector.fill(repeat)(values).flatten.sum),
                 attributes,
                 timeWindow
@@ -139,7 +139,7 @@ class SynchronousStorageSuite
             descriptor.description,
             descriptor.unit,
             MetricPoints.sum(
-              toNumberPoints(
+              PointDataUtils.toNumberPoints(
                 Vector(values.sum),
                 attributes,
                 TimeWindow(Duration.Zero, timeWindow.end)
@@ -198,7 +198,7 @@ class SynchronousStorageSuite
             descriptor.description,
             descriptor.unit,
             MetricPoints.sum(
-              toNumberPoints(
+              PointDataUtils.toNumberPoints(
                 Vector(values.sum),
                 Attributes.empty,
                 TimeWindow(Duration.Zero, timeWindow.end)
@@ -265,7 +265,7 @@ class SynchronousStorageSuite
             descriptor.description,
             descriptor.unit,
             MetricPoints.sum(
-              toNumberPoints(
+              PointDataUtils.toNumberPoints(
                 Vector(values.sum),
                 attrs,
                 TimeWindow(Duration.Zero, timeWindow.end)
@@ -303,33 +303,6 @@ class SynchronousStorageSuite
       }
     }
   }
-
-  private def toNumberPoints[A: MeasurementValue](
-      values: Vector[A],
-      attributes: Attributes,
-      timeWindow: TimeWindow
-  ): Vector[PointData.NumberPoint] =
-    MeasurementValue[A] match {
-      case MeasurementValue.LongMeasurementValue(cast) =>
-        values.map { a =>
-          PointData.longNumber(
-            timeWindow,
-            attributes,
-            Vector.empty,
-            cast(a)
-          )
-        }
-
-      case MeasurementValue.DoubleMeasurementValue(cast) =>
-        values.map { a =>
-          PointData.doubleNumber(
-            timeWindow,
-            attributes,
-            Vector.empty,
-            cast(a)
-          )
-        }
-    }
 
   private def createStorage[A: MeasurementValue: Numeric](
       descriptor: InstrumentDescriptor.Synchronous,

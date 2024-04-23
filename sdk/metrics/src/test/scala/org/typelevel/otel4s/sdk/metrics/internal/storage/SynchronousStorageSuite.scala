@@ -16,7 +16,6 @@
 
 package org.typelevel.otel4s.sdk.metrics.internal.storage
 
-import cats.data.NonEmptyVector
 import cats.effect.IO
 import cats.effect.std.Console
 import cats.effect.std.Random
@@ -37,11 +36,9 @@ import org.typelevel.otel4s.sdk.metrics.data.PointData
 import org.typelevel.otel4s.sdk.metrics.data.TimeWindow
 import org.typelevel.otel4s.sdk.metrics.exemplar.ExemplarFilter
 import org.typelevel.otel4s.sdk.metrics.exemplar.TraceContextLookup
-import org.typelevel.otel4s.sdk.metrics.exporter.AggregationSelector
 import org.typelevel.otel4s.sdk.metrics.exporter.AggregationTemporalitySelector
-import org.typelevel.otel4s.sdk.metrics.exporter.CardinalityLimitSelector
+import org.typelevel.otel4s.sdk.metrics.exporter.InMemoryMetricReader
 import org.typelevel.otel4s.sdk.metrics.exporter.MetricProducer
-import org.typelevel.otel4s.sdk.metrics.exporter.MetricReader
 import org.typelevel.otel4s.sdk.metrics.internal.InstrumentDescriptor
 import org.typelevel.otel4s.sdk.metrics.internal.exporter.RegisteredReader
 import org.typelevel.otel4s.sdk.metrics.scalacheck.Gens
@@ -343,7 +340,7 @@ class SynchronousStorageSuite
         AggregationTemporalitySelector.alwaysCumulative
   ): IO[MetricStorage.Synchronous[IO, A]] =
     Random.scalaUtilRandom[IO].flatMap { implicit R: Random[IO] =>
-      val inMemory = new InMemoryMetricReader(
+      val inMemory = new InMemoryMetricReader[IO](
         producer,
         aggregationTemporalitySelector
       )
@@ -374,25 +371,5 @@ class SynchronousStorageSuite
     new MetricProducer[IO] {
       def produce: IO[Vector[MetricData]] = IO.pure(Vector.empty)
     }
-
-  private final class InMemoryMetricReader(
-      producer: MetricProducer[IO],
-      val aggregationTemporalitySelector: AggregationTemporalitySelector
-  ) extends MetricReader[IO] {
-    def defaultAggregationSelector: AggregationSelector =
-      AggregationSelector.default
-
-    def defaultCardinalityLimitSelector: CardinalityLimitSelector =
-      CardinalityLimitSelector.default
-
-    def register(producers: NonEmptyVector[MetricProducer[IO]]): IO[Unit] =
-      IO.unit
-
-    def collectAllMetrics: IO[Vector[MetricData]] =
-      producer.produce
-
-    def forceFlush: IO[Unit] =
-      IO.unit
-  }
 
 }

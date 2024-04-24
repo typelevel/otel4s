@@ -35,11 +35,11 @@ import org.typelevel.otel4s.sdk.trace.exporter.SpanExporter
   * {{{
   * | System property      | Environment variable | Description                                                                                   |
   * |----------------------|----------------------|-----------------------------------------------------------------------------------------------|
-  * | otel.traces.exporter | OTEL_TRACES_EXPORTER | The exporters to use. Use a comma-separated list for multiple propagators. Default is `otlp`. |
+  * | otel.traces.exporter | OTEL_TRACES_EXPORTER | The exporters to use. Use a comma-separated list for multiple exporters. Default is `otlp`. |
   * }}}
   *
   * @see
-  *   [[https://github.com/open-telemetry/opentelemetry-java/blob/main/sdk-extensions/autoconfigure/README.md#propagator]]
+  *   [[https://github.com/open-telemetry/opentelemetry-java/blob/main/sdk-extensions/autoconfigure/README.md#span-exporters]]
   */
 private final class SpanExportersAutoConfigure[F[_]: MonadThrow: Console](
     extra: Set[AutoConfigure.Named[F, SpanExporter[F]]]
@@ -148,7 +148,7 @@ private[sdk] object SpanExportersAutoConfigure {
     * {{{
     * | System property      | Environment variable | Description                                                                                   |
     * |----------------------|----------------------|-----------------------------------------------------------------------------------------------|
-    * | otel.traces.exporter | OTEL_TRACES_EXPORTER | The exporters be use. Use a comma-separated list for multiple propagators. Default is `otlp`. |
+    * | otel.traces.exporter | OTEL_TRACES_EXPORTER | The exporters to use. Use a comma-separated list for multiple exporters. Default is `otlp`. |
     * }}}
     *
     * @see

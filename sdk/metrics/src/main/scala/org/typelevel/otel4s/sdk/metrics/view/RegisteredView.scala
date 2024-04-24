@@ -16,7 +16,35 @@
 
 package org.typelevel.otel4s.sdk.metrics.view
 
-private[metrics] final case class RegisteredView(
-    selector: InstrumentSelector,
-    view: View
-)
+import cats.Show
+
+private[metrics] sealed trait RegisteredView {
+
+  /** The selector associated with the view.
+    */
+  def selector: InstrumentSelector
+
+  /** The view.
+    */
+  def view: View
+
+  override final def toString: String =
+    Show[RegisteredView].show(this)
+}
+
+private[metrics] object RegisteredView {
+
+  def apply(selector: InstrumentSelector, view: View): RegisteredView =
+    Impl(selector, view)
+
+  implicit val registeredViewShow: Show[RegisteredView] =
+    Show.show { registeredView =>
+      s"RegisteredView{selector=${registeredView.selector}, view=${registeredView.view}}"
+    }
+
+  private final case class Impl(
+      selector: InstrumentSelector,
+      view: View
+  ) extends RegisteredView
+
+}

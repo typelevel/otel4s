@@ -29,7 +29,7 @@ private[metrics] final class CallbackRegistration[F[_]: MonadCancelThrow](
 ) {
 
   private val hasStorages: Boolean =
-    measurements.exists(_.storages.nonEmpty)
+    measurements.exists(_.hasStorages)
 
   /** Set the active reader on each observable measurement so that measurements
     * are only recorded to relevant storages.

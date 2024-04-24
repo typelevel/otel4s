@@ -46,7 +46,7 @@ class SdkBatchCallbackSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
       Gen.option(Gen.alphaNumStr),
       Gen.either(Gen.long, Gen.double)
     ) { (resource, scope, window, attrs, name, description, unit, value) =>
-      def test[A: MeasurementValue: Numeric](value: A): IO[Unit] = {
+      def test[A: MeasurementValue](value: A): IO[Unit] = {
         val expectedCounter = MetricData(
           resource,
           scope,

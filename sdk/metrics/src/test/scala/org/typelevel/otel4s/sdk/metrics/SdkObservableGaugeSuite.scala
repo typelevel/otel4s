@@ -48,7 +48,7 @@ class SdkObservableGaugeSuite
       Gen.option(Gen.alphaNumStr),
       Gen.either(Gen.long, Gen.double)
     ) { (resource, scope, window, attrs, name, unit, description, value) =>
-      def test[A: MeasurementValue: Numeric](value: A): IO[Unit] = {
+      def test[A: MeasurementValue](value: A): IO[Unit] = {
         val expected = MetricData(
           resource,
           scope,

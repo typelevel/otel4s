@@ -17,8 +17,6 @@
 package org.typelevel.otel4s.sdk.metrics
 
 import cats.effect.IO
-import cats.effect.std.Console
-import cats.effect.std.Random
 import cats.effect.testkit.TestControl
 import cats.mtl.Ask
 import cats.syntax.foldable._
@@ -27,22 +25,13 @@ import munit.ScalaCheckEffectSuite
 import org.scalacheck.Gen
 import org.scalacheck.effect.PropF
 import org.typelevel.otel4s.metrics.MeasurementValue
-import org.typelevel.otel4s.sdk.TelemetryResource
-import org.typelevel.otel4s.sdk.common.InstrumentationScope
 import org.typelevel.otel4s.sdk.context.Context
 import org.typelevel.otel4s.sdk.metrics.data.AggregationTemporality
 import org.typelevel.otel4s.sdk.metrics.data.MetricData
 import org.typelevel.otel4s.sdk.metrics.data.MetricPoints
-import org.typelevel.otel4s.sdk.metrics.exemplar.ExemplarFilter
-import org.typelevel.otel4s.sdk.metrics.exemplar.TraceContextLookup
-import org.typelevel.otel4s.sdk.metrics.exporter.AggregationTemporalitySelector
-import org.typelevel.otel4s.sdk.metrics.exporter.InMemoryMetricReader
-import org.typelevel.otel4s.sdk.metrics.exporter.MetricProducer
-import org.typelevel.otel4s.sdk.metrics.internal.MeterSharedState
-import org.typelevel.otel4s.sdk.metrics.internal.exporter.RegisteredReader
 import org.typelevel.otel4s.sdk.metrics.scalacheck.Gens
+import org.typelevel.otel4s.sdk.metrics.test.InMemoryMeterSharedState
 import org.typelevel.otel4s.sdk.metrics.test.PointDataUtils
-import org.typelevel.otel4s.sdk.metrics.view.ViewRegistry
 import org.typelevel.otel4s.sdk.test.InMemoryConsole
 
 import java.util.concurrent.TimeUnit
@@ -62,10 +51,7 @@ class SdkHistogramSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
       Gen.option(Gen.alphaNumStr),
       Gen.option(Gen.alphaNumStr)
     ) { (resource, scope, timeWindow, attributes, name, unit, description) =>
-      def test[A: MeasurementValue: Numeric](
-          reader: RegisteredReader[IO],
-          state: MeterSharedState[IO]
-      )(implicit C: InMemoryConsole[IO]): IO[Unit] = {
+      def test[A: MeasurementValue: Numeric]: IO[Unit] = {
         val value = Numeric[A].negate(Numeric[A].one)
 
         val consoleEntries = {
@@ -79,24 +65,29 @@ class SdkHistogramSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
           )
         }
 
-        for {
-          c <- SdkHistogram
-            .Builder[IO, A](name, state, unit, description)
-            .create
-          _ <- c.record(value, attributes)
-          metrics <- state.collectAll(reader, timeWindow.end)
-          _ <- C.entries.assertEquals(consoleEntries)
-        } yield assertEquals(metrics, Vector.empty)
+        InMemoryConsole.create[IO].flatMap { implicit C: InMemoryConsole[IO] =>
+          for {
+            state <- InMemoryMeterSharedState.create[IO](
+              resource,
+              scope,
+              timeWindow.start
+            )
+
+            histogram <- SdkHistogram
+              .Builder[IO, A](name, state.state, unit, description)
+              .create
+
+            _ <- histogram.record(value, attributes)
+            metrics <- state.collectAll(timeWindow.end)
+            _ <- C.entries.assertEquals(consoleEntries)
+          } yield assertEquals(metrics, Vector.empty)
+        }
       }
 
-      InMemoryConsole.create[IO].flatMap { implicit C: InMemoryConsole[IO] =>
-        for {
-          reader <- createReader(timeWindow.start)
-          state <- createState(resource, scope, reader, timeWindow.start)
-          _ <- test[Double](reader, state)
-          _ <- test[Long](reader, state)
-        } yield ()
-      }
+      for {
+        _ <- test[Double]
+        _ <- test[Long]
+      } yield ()
     }
   }
 
@@ -133,18 +124,21 @@ class SdkHistogramSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
 
         TestControl.executeEmbed {
           for {
-            reader <- createReader(window.start)
-            state <- createState(resource, scope, reader, window.start)
+            state <- InMemoryMeterSharedState.create[IO](
+              resource,
+              scope,
+              window.start
+            )
 
             histogram <- SdkHistogram
-              .Builder[IO, A](name, state, unit, description)
+              .Builder[IO, A](name, state.state, unit, description)
               .create
 
             _ <- histogram
               .recordDuration(TimeUnit.NANOSECONDS, attrs)
               .surround(IO.sleep(duration.nanos))
 
-            metrics <- state.collectAll(reader, window.end)
+            metrics <- state.collectAll(window.end)
           } yield assertEquals(metrics, Vector(expected))
         }
       }
@@ -190,13 +184,18 @@ class SdkHistogramSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
         )
 
         for {
-          reader <- createReader(window.start)
-          state <- createState(resource, scope, reader, window.start)
+          state <- InMemoryMeterSharedState.create[IO](
+            resource,
+            scope,
+            window.start
+          )
+
           histogram <- SdkHistogram
-            .Builder[IO, A](name, state, unit, description)
+            .Builder[IO, A](name, state.state, unit, description)
             .create
+
           _ <- values.traverse_(value => histogram.record(value, attrs))
-          metrics <- state.collectAll(reader, window.end)
+          metrics <- state.collectAll(window.end)
         } yield assertEquals(metrics, expected.toVector)
       }
 
@@ -206,37 +205,4 @@ class SdkHistogramSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
       }
     }
   }
-
-  private def createReader(start: FiniteDuration): IO[RegisteredReader[IO]] = {
-    val inMemory = new InMemoryMetricReader[IO](
-      emptyProducer,
-      AggregationTemporalitySelector.alwaysCumulative
-    )
-
-    RegisteredReader.create(start, inMemory)
-  }
-
-  private def createState(
-      resource: TelemetryResource,
-      scope: InstrumentationScope,
-      reader: RegisteredReader[IO],
-      start: FiniteDuration
-  )(implicit C: Console[IO]): IO[MeterSharedState[IO]] =
-    Random.scalaUtilRandom[IO].flatMap { implicit R: Random[IO] =>
-      MeterSharedState.create[IO](
-        resource,
-        scope,
-        start,
-        ExemplarFilter.alwaysOff,
-        TraceContextLookup.noop,
-        ViewRegistry(Vector.empty),
-        Vector(reader)
-      )
-    }
-
-  private def emptyProducer: MetricProducer[IO] =
-    new MetricProducer[IO] {
-      def produce: IO[Vector[MetricData]] = IO.pure(Vector.empty)
-    }
-
 }

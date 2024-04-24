@@ -38,4 +38,6 @@ final class InMemoryMetricReader[F[_]: Applicative](
 
   def forceFlush: F[Unit] =
     Applicative[F].unit
+
+  override def toString: String = "MetricReader.InMemory"
 }

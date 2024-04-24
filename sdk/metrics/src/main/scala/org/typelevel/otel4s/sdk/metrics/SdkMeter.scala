@@ -29,7 +29,11 @@ import org.typelevel.otel4s.metrics.ObservableGauge
 import org.typelevel.otel4s.metrics.ObservableUpDownCounter
 import org.typelevel.otel4s.metrics.UpDownCounter
 import org.typelevel.otel4s.sdk.context.AskContext
+import org.typelevel.otel4s.sdk.metrics.data.MetricData
 import org.typelevel.otel4s.sdk.metrics.internal.MeterSharedState
+import org.typelevel.otel4s.sdk.metrics.internal.exporter.RegisteredReader
+
+import scala.concurrent.duration.FiniteDuration
 
 /** The meter is responsible for creating instruments.
   *
@@ -91,13 +95,21 @@ private class SdkMeter[F[_]: MonadCancelThrow: Clock: Console: AskContext](
   val batchCallback: BatchCallback[F] =
     new SdkBatchCallback[F](sharedState)
 
+  private[metrics] def collectAll(
+      reader: RegisteredReader[F],
+      collectTimestamp: FiniteDuration
+  ): F[Vector[MetricData]] =
+    sharedState.collectAll(reader, collectTimestamp)
+
+  override def toString: String =
+    s"SdkMeter{instrumentationScope=${sharedState.scope}}"
 }
 
-object SdkMeter {
+private object SdkMeter {
 
   // see https://opentelemetry.io/docs/specs/otel/metrics/api/#instrument-name-syntax
   private val InstrumentNamePattern =
-    "([A-Za-z]){1}([A-Za-z0-9\\_\\-\\./]){0,254}".r
+    "([A-Za-z]){1}([A-Za-z0-9_\\-./]){0,254}".r
 
   private def isValidName(name: String): Boolean =
     name != null && SdkMeter.InstrumentNamePattern.matches(name)

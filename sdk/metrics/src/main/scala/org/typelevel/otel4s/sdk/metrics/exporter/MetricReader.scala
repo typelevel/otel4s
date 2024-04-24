@@ -93,7 +93,7 @@ object MetricReader {
     *   the higher-kinded type of a polymorphic effect
     */
   def periodic[F[_]: Temporal: Console](
-      exporter: MetricExporter[F],
+      exporter: MetricExporter.Push[F],
       interval: FiniteDuration,
       timeout: FiniteDuration
   ): Resource[F, MetricReader[F]] =

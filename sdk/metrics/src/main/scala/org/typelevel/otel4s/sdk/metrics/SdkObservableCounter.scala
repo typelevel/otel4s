@@ -44,7 +44,7 @@ private object SdkObservableCounter {
 
   final case class Builder[
       F[_]: MonadCancelThrow: Clock: Console: AskContext,
-      A: MeasurementValue: Numeric
+      A: MeasurementValue
   ](
       name: String,
       sharedState: MeterSharedState[F],
@@ -111,7 +111,17 @@ private object SdkObservableCounter {
       }
 
     def createObserver: F[ObservableMeasurement[F, A]] =
-      sharedState.registerObservableMeasurement[A](makeDescriptor).widen
+      MeasurementValue[A] match {
+        case MeasurementValue.LongMeasurementValue(cast) =>
+          sharedState
+            .registerObservableMeasurement[Long](makeDescriptor)
+            .map(_.contramap(cast))
+
+        case MeasurementValue.DoubleMeasurementValue(cast) =>
+          sharedState
+            .registerObservableMeasurement[Double](makeDescriptor)
+            .map(_.contramap(cast))
+      }
 
     private def makeDescriptor: InstrumentDescriptor.Asynchronous =
       InstrumentDescriptor.asynchronous(

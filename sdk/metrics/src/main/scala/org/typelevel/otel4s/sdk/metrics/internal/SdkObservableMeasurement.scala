@@ -33,24 +33,20 @@ import org.typelevel.otel4s.sdk.metrics.data.TimeWindow
 import org.typelevel.otel4s.sdk.metrics.internal.exporter.RegisteredReader
 import org.typelevel.otel4s.sdk.metrics.internal.storage.MetricStorage
 
-private[metrics] final class SdkObservableMeasurement[
-    F[_]: Monad: Console,
-    A: MeasurementValue
-] private (
-    stateRef: Ref[F, SdkObservableMeasurement.State[F]],
-    val scope: InstrumentationScope,
-    val descriptor: InstrumentDescriptor,
-    val storages: Vector[MetricStorage.Asynchronous[F, A]]
-) extends ObservableMeasurement[F, A] {
-  import SdkObservableMeasurement._
+private[metrics] sealed trait SdkObservableMeasurement[F[_], A]
+    extends ObservableMeasurement[F, A] { self =>
 
-  private val isValid: A => Boolean =
-    MeasurementValue[A] match {
-      case MeasurementValue.LongMeasurementValue(_) =>
-        Function.const(true)
-      case MeasurementValue.DoubleMeasurementValue(cast) =>
-        v => !cast(v).isNaN
-    }
+  /** The scope associated with this measurement.
+    */
+  def scope: InstrumentationScope
+
+  /** The descriptor associated with this measurement.
+    */
+  def descriptor: InstrumentDescriptor
+
+  /** Whether the measurement has active storages.
+    */
+  def hasStorages: Boolean
 
   /** Sets an active reader and resets the state upon resource finalization.
     *
@@ -63,30 +59,23 @@ private[metrics] final class SdkObservableMeasurement[
   def withActiveReader(
       reader: RegisteredReader[F],
       timeWindow: TimeWindow
-  ): Resource[F, Unit] =
-    Resource.make(stateRef.set(State.WithReader(reader, timeWindow))) { _ =>
-      stateRef.set(State.Empty())
+  ): Resource[F, Unit]
+
+  final def contramap[B](f: B => A): SdkObservableMeasurement[F, B] =
+    new SdkObservableMeasurement[F, B] {
+      def scope: InstrumentationScope = self.scope
+      def descriptor: InstrumentDescriptor = self.descriptor
+      def hasStorages: Boolean = self.hasStorages
+
+      def withActiveReader(
+          reader: RegisteredReader[F],
+          timeWindow: TimeWindow
+      ): Resource[F, Unit] =
+        self.withActiveReader(reader, timeWindow)
+
+      def record(value: B, attributes: Attributes): F[Unit] =
+        self.record(f(value), attributes)
     }
-
-  def record(value: A, attributes: Attributes): F[Unit] =
-    stateRef.get
-      .flatMap {
-        case State.Empty() =>
-          Console[F].errorln(
-            "SdkObservableMeasurement: " +
-              s"trying to record a measurement for an instrument [${descriptor.name}] while the active reader is unset. " +
-              "Dropping the measurement."
-          )
-
-        case State.WithReader(reader, timeWindow) =>
-          val measurement =
-            AsynchronousMeasurement(timeWindow, attributes, value)
-
-          storages
-            .filter(_.reader == reader)
-            .traverse_(storage => storage.record(measurement))
-      }
-      .whenA(isValid(value))
 
 }
 
@@ -109,11 +98,55 @@ private[metrics] object SdkObservableMeasurement {
   ): F[SdkObservableMeasurement[F, A]] =
     for {
       state <- Ref.of[F, State[F]](State.Empty())
-    } yield new SdkObservableMeasurement[F, A](
-      state,
-      scope,
-      descriptor,
-      storages
-    )
+    } yield new Impl[F, A](state, scope, descriptor, storages)
+
+  private final class Impl[
+      F[_]: Monad: Console,
+      A: MeasurementValue
+  ](
+      stateRef: Ref[F, SdkObservableMeasurement.State[F]],
+      val scope: InstrumentationScope,
+      val descriptor: InstrumentDescriptor,
+      storages: Vector[MetricStorage.Asynchronous[F, A]]
+  ) extends SdkObservableMeasurement[F, A] { self =>
+
+    private val isValid: A => Boolean =
+      MeasurementValue[A] match {
+        case MeasurementValue.LongMeasurementValue(_) =>
+          Function.const(true)
+        case MeasurementValue.DoubleMeasurementValue(cast) =>
+          v => !cast(v).isNaN
+      }
+
+    def withActiveReader(
+        reader: RegisteredReader[F],
+        timeWindow: TimeWindow
+    ): Resource[F, Unit] =
+      Resource.make(stateRef.set(State.WithReader(reader, timeWindow))) { _ =>
+        stateRef.set(State.Empty())
+      }
+
+    def record(value: A, attributes: Attributes): F[Unit] =
+      stateRef.get
+        .flatMap {
+          case State.Empty() =>
+            Console[F].errorln(
+              "SdkObservableMeasurement: " +
+                s"trying to record a measurement for an instrument [${descriptor.name}] while the active reader is unset. " +
+                "Dropping the measurement."
+            )
+
+          case State.WithReader(reader, timeWindow) =>
+            val measurement =
+              AsynchronousMeasurement(timeWindow, attributes, value)
+
+            storages
+              .filter(_.reader == reader)
+              .traverse_(storage => storage.record(measurement))
+        }
+        .whenA(isValid(value))
+
+    def hasStorages: Boolean = storages.nonEmpty
+  }
 
 }

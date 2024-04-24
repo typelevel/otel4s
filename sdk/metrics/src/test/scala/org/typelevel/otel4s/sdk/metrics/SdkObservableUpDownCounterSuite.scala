@@ -49,7 +49,7 @@ class SdkObservableUpDownCounterSuite
       Gen.option(Gen.alphaNumStr),
       Gen.either(Gen.posNum[Long], Gen.double)
     ) { (resource, scope, window, attrs, name, unit, description, value) =>
-      def test[A: MeasurementValue: Numeric](value: A): IO[Unit] = {
+      def test[A: MeasurementValue](value: A): IO[Unit] = {
         val expected = MetricData(
           resource,
           scope,

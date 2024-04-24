@@ -20,12 +20,15 @@ import cats.Applicative
 import cats.Foldable
 import org.typelevel.otel4s.sdk.metrics.data.MetricData
 
-/** `MetricExporter` is a push based interface for exporting `MetricData`.
+/** An interface for exporting `MetricData`.
   *
   * @see
   *   [[https://opentelemetry.io/docs/specs/otel/metrics/sdk/#metricexporter]]
+  *
+  * @tparam F
+  *   the higher-kinded type of a polymorphic effect
   */
-trait MetricExporter[F[_]] {
+sealed trait MetricExporter[F[_]] {
 
   /** The name of the exporter.
     */
@@ -49,18 +52,6 @@ trait MetricExporter[F[_]] {
     */
   def defaultCardinalityLimitSelector: CardinalityLimitSelector
 
-  /** Exports the sampled `MetricData`.
-    *
-    * @param metrics
-    *   the sampled metrics to export
-    */
-  def exportMetrics[G[_]: Foldable](metrics: G[MetricData]): F[Unit]
-
-  /** Exports the collection of sampled `MetricData` that have not yet been
-    * exported.
-    */
-  def flush: F[Unit]
-
   override def toString: String =
     name
 
@@ -68,14 +59,47 @@ trait MetricExporter[F[_]] {
 
 object MetricExporter {
 
-  /** Creates a no-op implementation of the [[MetricExporter]].
+  /** A push based interface for exporting `MetricData`.
     *
-    * All export operations are no-op.
+    * Implementation examples:
+    *   - console exporter
+    *   - in-memory exporter
+    *   - OTLP exporter
+    *
+    * This exporter can be used with the periodic metric reader.
+    *
+    * @tparam F
+    *   the higher-kinded type of a polymorphic effect
     */
+  trait Push[F[_]] extends MetricExporter[F] {
+
+    /** Exports the sampled `MetricData`.
+      *
+      * @param metrics
+      *   the sampled metrics to export
+      */
+    def exportMetrics[G[_]: Foldable](metrics: G[MetricData]): F[Unit]
+
+    /** Exports the collection of sampled `MetricData` that have not yet been
+      * exported.
+      */
+    def flush: F[Unit]
+  }
+
+  /** A pull based interface for exporting `MetricData`.
+    *
+    * Implementation examples:
+    *   - Prometheus exporter
+    *
+    * @tparam F
+    *   the higher-kinded type of a polymorphic effect
+    */
+  trait Pull[F[_]] extends MetricExporter[F]
+
   def noop[F[_]: Applicative]: MetricExporter[F] =
     new Noop
 
-  private final class Noop[F[_]: Applicative] extends MetricExporter[F] {
+  private final class Noop[F[_]: Applicative] extends MetricExporter.Push[F] {
     val name: String = "MetricExporter.Noop"
 
     def aggregationTemporalitySelector: AggregationTemporalitySelector =

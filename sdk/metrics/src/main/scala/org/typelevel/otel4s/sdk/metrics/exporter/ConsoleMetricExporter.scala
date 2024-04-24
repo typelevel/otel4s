@@ -37,7 +37,7 @@ import org.typelevel.otel4s.sdk.metrics.data.MetricData
   */
 private final class ConsoleMetricExporter[F[_]: Monad: Console](
     val aggregationTemporalitySelector: AggregationTemporalitySelector
-) extends MetricExporter[F] {
+) extends MetricExporter.Push[F] {
 
   val name: String = "ConsoleMetricExporter"
 
@@ -72,7 +72,7 @@ object ConsoleMetricExporter {
     * @tparam F
     *   the higher-kinded type of a polymorphic effect
     */
-  def apply[F[_]: Monad: Console]: MetricExporter[F] =
+  def apply[F[_]: Monad: Console]: MetricExporter.Push[F] =
     apply(AggregationTemporalitySelector.alwaysCumulative)
 
   /** Creates a metric exporter that logs every metric using
@@ -86,7 +86,7 @@ object ConsoleMetricExporter {
     */
   def apply[F[_]: Monad: Console](
       aggregationTemporalitySelector: AggregationTemporalitySelector
-  ): MetricExporter[F] =
+  ): MetricExporter.Push[F] =
     new ConsoleMetricExporter[F](aggregationTemporalitySelector)
 
 }

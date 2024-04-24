@@ -126,8 +126,8 @@ class MetricExportersAutoConfigureSuite extends CatsEffectSuite {
       )
   }
 
-  private def customExporter(exporterName: String): MetricExporter[IO] =
-    new MetricExporter[IO] {
+  private def customExporter(exporterName: String): MetricExporter.Push[IO] =
+    new MetricExporter.Push[IO] {
       def name: String =
         exporterName
 

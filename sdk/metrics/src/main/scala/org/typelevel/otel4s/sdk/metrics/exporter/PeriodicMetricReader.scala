@@ -52,7 +52,7 @@ import scala.concurrent.duration.FiniteDuration
   */
 private class PeriodicMetricReader[F[_]: Temporal: Console] private (
     metricProducers: Ref[F, Vector[MetricProducer[F]]],
-    exporter: MetricExporter[F],
+    exporter: MetricExporter.Push[F],
     config: PeriodicMetricReader.Config
 ) extends MetricReader[F] {
 
@@ -148,7 +148,7 @@ private object PeriodicMetricReader {
     *   the higher-kinded type of a polymorphic effect
     */
   def create[F[_]: Temporal: Console](
-      exporter: MetricExporter[F],
+      exporter: MetricExporter.Push[F],
       interval: FiniteDuration,
       timeout: FiniteDuration
   ): Resource[F, MetricReader[F]] =

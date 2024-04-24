@@ -206,7 +206,7 @@ class PeriodicMetricReaderSuite
   }
 
   private def makeReader(
-      exporter: MetricExporter[IO]
+      exporter: MetricExporter.Push[IO]
   )(implicit console: Console[IO]): Resource[IO, MetricReader[IO]] =
     MetricReader.periodic(exporter, 30.seconds, 5.seconds)
 

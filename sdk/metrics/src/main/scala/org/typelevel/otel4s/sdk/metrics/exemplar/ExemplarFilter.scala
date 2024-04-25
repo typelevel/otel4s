@@ -38,8 +38,8 @@ sealed trait ExemplarFilter {
 }
 
 object ExemplarFilter {
-  private val AlwaysOn = new Const(decision = true)
-  private val AlwaysOff = new Const(decision = false)
+  private val AlwaysOn = Const(decision = true)
+  private val AlwaysOff = Const(decision = false)
 
   /** A filter which makes all measurements eligible for being an exemplar.
     */
@@ -53,9 +53,9 @@ object ExemplarFilter {
     * that is being sampled.
     */
   def traceBased(lookup: TraceContextLookup): ExemplarFilter =
-    new TraceBased(lookup)
+    TraceBased(lookup)
 
-  private final class Const(decision: Boolean) extends ExemplarFilter {
+  private final case class Const(decision: Boolean) extends ExemplarFilter {
     def shouldSample[A: MeasurementValue](
         value: A,
         attributes: Attributes,
@@ -64,7 +64,7 @@ object ExemplarFilter {
       decision
   }
 
-  private final class TraceBased(
+  private final case class TraceBased(
       lookup: TraceContextLookup
   ) extends ExemplarFilter {
     def shouldSample[A: MeasurementValue](

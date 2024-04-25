@@ -99,7 +99,8 @@ object MetricExporter {
   def noop[F[_]: Applicative]: MetricExporter[F] =
     new Noop
 
-  private final class Noop[F[_]: Applicative] extends MetricExporter.Push[F] {
+  private[metrics] final class Noop[F[_]: Applicative]
+      extends MetricExporter.Push[F] {
     val name: String = "MetricExporter.Noop"
 
     def aggregationTemporalitySelector: AggregationTemporalitySelector =

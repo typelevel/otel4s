@@ -67,8 +67,8 @@ private final class SdkMeterProvider[F[_]: Applicative](
   override def toString: String =
     "SdkMeterProvider{" +
       s"resource=$resource, " +
-      s"metricsReaders=${readers.map(_.reader).mkString("[", ", ", "]")}, " +
-      s"metricsProducers=${producers.mkString("[", ", ", "]")}, " +
+      s"metricReaders=${readers.map(_.reader).mkString("[", ", ", "]")}, " +
+      s"metricProducers=${producers.mkString("[", ", ", "]")}, " +
       s"views=${views.mkString("[", ", ", "]")}" +
       "}"
 

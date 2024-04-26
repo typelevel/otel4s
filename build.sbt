@@ -45,7 +45,8 @@ val CatsVersion = "2.10.0"
 val CatsEffectVersion = "3.5.4"
 val CatsMtlVersion = "1.4.0"
 val FS2Version = "3.10.2"
-val MUnitVersion = "1.0.0-M11"
+val MUnitVersion = "1.0.0-RC1"
+val MUnitScalaCheckVersion = "1.0.0-M11"
 val MUnitCatsEffectVersion = "2.0.0-M5"
 val MUnitDisciplineVersion = "2.0.0-M3"
 val MUnitScalaCheckEffectVersion = "2.0.0-M2"
@@ -75,7 +76,7 @@ lazy val scalaReflectDependency = Def.settings(
 lazy val munitDependencies = Def.settings(
   libraryDependencies ++= Seq(
     "org.scalameta" %%% "munit" % MUnitVersion % Test,
-    "org.scalameta" %%% "munit-scalacheck" % MUnitVersion % Test,
+    "org.scalameta" %%% "munit-scalacheck" % MUnitScalaCheckVersion % Test,
     "org.typelevel" %%% "munit-cats-effect" % MUnitCatsEffectVersion % Test
   )
 )

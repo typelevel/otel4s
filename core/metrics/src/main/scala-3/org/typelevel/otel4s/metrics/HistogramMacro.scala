@@ -20,7 +20,7 @@ package metrics
 import cats.effect.kernel.Resource
 
 import scala.collection.immutable
-import scala.concurrent.duration._
+import scala.concurrent.duration.*
 import scala.quoted.*
 
 private[otel4s] trait HistogramMacro[F[_], A] {

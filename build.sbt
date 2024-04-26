@@ -369,7 +369,11 @@ lazy val `sdk-exporter-trace` =
     .settings(
       name := "otel4s-sdk-exporter-trace",
       startYear := Some(2023),
-      dockerComposeEnvFile := crossProjectBaseDirectory.value / "docker" / "docker-compose.yml"
+      dockerComposeEnvFile := crossProjectBaseDirectory.value / "docker" / "docker-compose.yml",
+      Test / scalacOptions ++= {
+        // see https://github.com/circe/circe/issues/2162
+        if (tlIsScala3.value) Seq("-Xmax-inlines", "64") else Nil
+      }
     )
     .jsSettings(scalaJSLinkerSettings)
     .nativeEnablePlugins(ScalaNativeBrewedConfigPlugin)

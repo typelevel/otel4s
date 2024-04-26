@@ -59,7 +59,7 @@ class SdkMeterProviderSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
       val expected = {
         val metricReader = reader.toString
         val metricProducer = emptyProducer.toString
-        s"SdkMeterProvider{resource=$resource, metricsReaders=[$metricReader], metricsProducers=[$metricProducer], views=[$rv]}"
+        s"SdkMeterProvider{resource=$resource, metricReaders=[$metricReader], metricProducers=[$metricProducer], views=[$rv]}"
       }
 
       Random.scalaUtilRandom[IO].flatMap { implicit R: Random[IO] =>

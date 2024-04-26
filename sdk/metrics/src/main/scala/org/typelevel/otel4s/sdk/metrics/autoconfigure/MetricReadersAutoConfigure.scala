@@ -59,10 +59,15 @@ private final class MetricReadersAutoConfigure[F[_]: Temporal: Console](
   protected def fromConfig(
       config: Config
   ): Resource[F, Vector[MetricReader[F]]] = {
-    val (pull, push) = exporters.toVector.partitionMap {
-      case push: MetricExporter.Push[F] => Right(push)
-      case pull: MetricExporter.Pull[F] => Left(pull)
-    }
+    val (pull, push) = exporters.toVector
+      .filter {
+        case _: MetricExporter.Noop[F] => false // we can ignore noop exporters
+        case _                         => true
+      }
+      .partitionMap {
+        case push: MetricExporter.Push[F] => Right(push)
+        case pull: MetricExporter.Pull[F] => Left(pull)
+      }
 
     for {
       pushReaders <- configurePush(config, push)
@@ -107,7 +112,7 @@ private final class MetricReadersAutoConfigure[F[_]: Temporal: Console](
 
 }
 
-object MetricReadersAutoConfigure {
+private[sdk] object MetricReadersAutoConfigure {
 
   private object ConfigKeys {
     val ExportInterval: Config.Key[FiniteDuration] =

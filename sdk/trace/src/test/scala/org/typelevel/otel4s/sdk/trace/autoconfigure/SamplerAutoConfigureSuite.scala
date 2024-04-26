@@ -59,10 +59,10 @@ class SamplerAutoConfigureSuite extends CatsEffectSuite {
   }
 
   test("load from the config - always_off") {
-    val props = Map("otel.traces.sampler" -> "always_on")
+    val props = Map("otel.traces.sampler" -> "always_off")
     val config = Config(props, Map.empty, Map.empty)
     SamplerAutoConfigure[IO](Set.empty).configure(config).use { sampler =>
-      IO(assertEquals(sampler, Sampler.AlwaysOn))
+      IO(assertEquals(sampler, Sampler.AlwaysOff))
     }
   }
 

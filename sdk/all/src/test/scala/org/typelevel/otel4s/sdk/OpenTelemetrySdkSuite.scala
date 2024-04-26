@@ -29,6 +29,13 @@ import org.typelevel.otel4s.context.propagation.TextMapUpdater
 import org.typelevel.otel4s.sdk.autoconfigure.AutoConfigure
 import org.typelevel.otel4s.sdk.autoconfigure.Config
 import org.typelevel.otel4s.sdk.context.Context
+import org.typelevel.otel4s.sdk.metrics.data.MetricData
+import org.typelevel.otel4s.sdk.metrics.exporter.AggregationSelector
+import org.typelevel.otel4s.sdk.metrics.exporter.AggregationTemporalitySelector
+import org.typelevel.otel4s.sdk.metrics.exporter.CardinalityLimitSelector
+import org.typelevel.otel4s.sdk.metrics.exporter.MetricExporter
+import org.typelevel.otel4s.sdk.metrics.view.InstrumentSelector
+import org.typelevel.otel4s.sdk.metrics.view.View
 import org.typelevel.otel4s.sdk.test.NoopConsole
 import org.typelevel.otel4s.sdk.trace.context.propagation.W3CBaggagePropagator
 import org.typelevel.otel4s.sdk.trace.context.propagation.W3CTraceContextPropagator
@@ -59,7 +66,9 @@ class OpenTelemetrySdkSuite extends CatsEffectSuite {
       s"propagators=ContextPropagators.Noop}, resource=${TelemetryResource.empty}}"
 
   test("withConfig - use the given config") {
-    val config = Config.ofProps(Map("otel.traces.exporter" -> "none"))
+    val config = Config.ofProps(
+      Map("otel.traces.exporter" -> "none", "otel.metrics.exporter" -> "none")
+    )
 
     OpenTelemetrySdk
       .autoConfigured[IO](_.withConfig(config))
@@ -109,7 +118,9 @@ class OpenTelemetrySdkSuite extends CatsEffectSuite {
   }
 
   test("addTracerProviderCustomizer - customize tracer provider") {
-    val config = Config.ofProps(Map("otel.traces.exporter" -> "none"))
+    val config = Config.ofProps(
+      Map("otel.traces.exporter" -> "none", "otel.metrics.exporter" -> "none")
+    )
 
     val sampler = Sampler.AlwaysOff
 
@@ -125,7 +136,9 @@ class OpenTelemetrySdkSuite extends CatsEffectSuite {
   }
 
   test("addResourceCustomizer - customize a resource") {
-    val config = Config.ofProps(Map("otel.traces.exporter" -> "none"))
+    val config = Config.ofProps(
+      Map("otel.traces.exporter" -> "none", "otel.metrics.exporter" -> "none")
+    )
 
     val default = TelemetryResource.default
     val withAttributes =
@@ -147,9 +160,12 @@ class OpenTelemetrySdkSuite extends CatsEffectSuite {
       }
   }
 
-  test("addExporterConfigurer - support external configurers") {
+  test("addSpanExporterConfigurer - support external configurers") {
     val config = Config.ofProps(
-      Map("otel.traces.exporter" -> "custom-1,custom-2")
+      Map(
+        "otel.traces.exporter" -> "custom-1,custom-2",
+        "otel.metrics.exporter" -> "none"
+      )
     )
 
     def customExporter(exporterName: String): SpanExporter[IO] =
@@ -188,6 +204,7 @@ class OpenTelemetrySdkSuite extends CatsEffectSuite {
     val config = Config.ofProps(
       Map(
         "otel.traces.exporter" -> "none",
+        "otel.metrics.exporter" -> "none",
         "otel.traces.sampler" -> "custom-sampler",
       )
     )
@@ -221,6 +238,7 @@ class OpenTelemetrySdkSuite extends CatsEffectSuite {
     val config = Config.ofProps(
       Map(
         "otel.traces.exporter" -> "none",
+        "otel.metrics.exporter" -> "none",
         "otel.propagators" -> "tracecontext,custom-1,custom-2,baggage",
       )
     )
@@ -260,6 +278,100 @@ class OpenTelemetrySdkSuite extends CatsEffectSuite {
       }
   }
 
+  test("addMeterProviderCustomizer - customize meter provider") {
+    val config = Config.ofProps(
+      Map(
+        "otel.traces.exporter" -> "none",
+        "otel.metrics.exporter" -> "console"
+      )
+    )
+
+    val selector = InstrumentSelector.builder.withInstrumentName("*").build
+    val view = View.builder.build
+
+    val expectedMeterProvider =
+      s"SdkMeterProvider{resource=${TelemetryResource.default}, " +
+        "metricReaders=[PeriodicMetricReader{exporter=ConsoleMetricExporter, interval=1 minute, timeout=30 seconds}], " +
+        "metricProducers=[], " +
+        s"views=[RegisteredView{selector=$selector, view=$view}]}"
+
+    OpenTelemetrySdk
+      .autoConfigured[IO](
+        _.withConfig(config).addMeterProviderCustomizer((t, _) =>
+          t.registerView(selector, view)
+        )
+      )
+      .use { traces =>
+        IO(
+          assertEquals(
+            traces.toString,
+            sdkToString(meterProvider = expectedMeterProvider)
+          )
+        )
+      }
+  }
+
+  test("addMeterExporterConfigurer - support external configurers") {
+    val config = Config.ofProps(
+      Map(
+        "otel.traces.exporter" -> "none",
+        "otel.metrics.exporter" -> "custom-1,custom-2"
+      )
+    )
+
+    def customExporter(exporterName: String): MetricExporter.Push[IO] =
+      new MetricExporter.Push[IO] {
+        def name: String =
+          exporterName
+
+        def aggregationTemporalitySelector: AggregationTemporalitySelector =
+          AggregationTemporalitySelector.alwaysCumulative
+
+        def defaultAggregationSelector: AggregationSelector =
+          AggregationSelector.default
+
+        def defaultCardinalityLimitSelector: CardinalityLimitSelector =
+          CardinalityLimitSelector.default
+
+        def exportMetrics[G[_]: Foldable](spans: G[MetricData]): IO[Unit] =
+          IO.unit
+
+        def flush: IO[Unit] =
+          IO.unit
+      }
+
+    val exporter1: MetricExporter[IO] = customExporter("CustomExporter1")
+    val exporter2: MetricExporter[IO] = customExporter("CustomExporter2")
+
+    val expectedMeterProvider =
+      s"SdkMeterProvider{resource=${TelemetryResource.default}, " +
+        "metricReaders=[" +
+        "PeriodicMetricReader{exporter=CustomExporter1, interval=1 minute, timeout=30 seconds}, " +
+        "PeriodicMetricReader{exporter=CustomExporter2, interval=1 minute, timeout=30 seconds}" +
+        "], metricProducers=[], views=[]}"
+
+    OpenTelemetrySdk
+      .autoConfigured[IO](
+        _.withConfig(config)
+          .addMetricExporterConfigurer(
+            AutoConfigure.Named.const("custom-1", exporter1)
+          )
+          .addMetricExporterConfigurer(
+            AutoConfigure.Named.const("custom-2", exporter2)
+          )
+      )
+      .use { traces =>
+        IO(
+          assertEquals(
+            traces.toString,
+            sdkToString(
+              meterProvider = expectedMeterProvider
+            )
+          )
+        )
+      }
+  }
+
   private def sdkToString(
       resource: TelemetryResource = TelemetryResource.default,
       sampler: Sampler = Sampler.parentBased(Sampler.AlwaysOn),
@@ -267,10 +379,11 @@ class OpenTelemetrySdkSuite extends CatsEffectSuite {
         W3CTraceContextPropagator.default,
         W3CBaggagePropagator.default
       ),
-      exporter: String = "SpanExporter.Noop"
+      exporter: String = "SpanExporter.Noop",
+      meterProvider: String = "MeterProvider.Noop"
   ) =
     "OpenTelemetrySdk.AutoConfigured{sdk=" +
-      "OpenTelemetrySdk{meterProvider=MeterProvider.Noop, " +
+      s"OpenTelemetrySdk{meterProvider=$meterProvider, " +
       "tracerProvider=" +
       s"SdkTracerProvider{resource=$resource, sampler=$sampler, " +
       "spanProcessor=SpanProcessor.Multi(" +

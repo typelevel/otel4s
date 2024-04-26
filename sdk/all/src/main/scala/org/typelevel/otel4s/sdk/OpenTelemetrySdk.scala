@@ -37,6 +37,12 @@ import org.typelevel.otel4s.sdk.autoconfigure.TelemetryResourceAutoConfigure
 import org.typelevel.otel4s.sdk.context.Context
 import org.typelevel.otel4s.sdk.context.LocalContext
 import org.typelevel.otel4s.sdk.context.LocalContextProvider
+import org.typelevel.otel4s.sdk.metrics.SdkMeterProvider
+import org.typelevel.otel4s.sdk.metrics.autoconfigure.MeterProviderAutoConfigure
+import org.typelevel.otel4s.sdk.metrics.data.ExemplarData
+import org.typelevel.otel4s.sdk.metrics.exemplar.TraceContextLookup
+import org.typelevel.otel4s.sdk.metrics.exporter.MetricExporter
+import org.typelevel.otel4s.sdk.trace.SdkContextKeys
 import org.typelevel.otel4s.sdk.trace.SdkTracerProvider
 import org.typelevel.otel4s.sdk.trace.autoconfigure.ContextPropagatorsAutoConfigure
 import org.typelevel.otel4s.sdk.trace.autoconfigure.TracerProviderAutoConfigure
@@ -154,6 +160,16 @@ object OpenTelemetrySdk {
           customizer: Config => Map[String, String]
       ): Builder[F]
 
+      /** Adds the meter provider builder customizer. Multiple customizers can
+        * be added, and they will be applied in the order they were added.
+        *
+        * @param customizer
+        *   the customizer to add
+        */
+      def addMeterProviderCustomizer(
+          customizer: Customizer[SdkMeterProvider.Builder[F]]
+      ): Builder[F]
+
       /** Adds the tracer provider builder customizer. Multiple customizers can
         * be added, and they will be applied in the order they were added.
         *
@@ -172,6 +188,29 @@ object OpenTelemetrySdk {
         */
       def addResourceCustomizer(
           customizer: Customizer[TelemetryResource]
+      ): Builder[F]
+
+      /** Adds the exporter configurer. Can be used to register exporters that
+        * aren't included in the SDK.
+        *
+        * @example
+        *   Add the `otel4s-sdk-exporter` dependency to the build file:
+        *   {{{
+        * libraryDependencies += "org.typelevel" %%% "otel4s-sdk-exporter" % "x.x.x"
+        *   }}}
+        *   and register the configurer manually:
+        *   {{{
+        * import org.typelevel.otel4s.sdk.OpenTelemetrySdk
+        * import org.typelevel.otel4s.sdk.exporter.otlp.metrics.autoconfigure.OtlpMetricExporterAutoConfigure
+        *
+        * OpenTelemetrySdk.autoConfigured[IO](_.addMetricExporterConfigurer(OtlpMetricExporterAutoConfigure[IO]))
+        *   }}}
+        *
+        * @param configurer
+        *   the configurer to add
+        */
+      def addMetricExporterConfigurer(
+          configurer: AutoConfigure.Named[F, MetricExporter[F]]
       ): Builder[F]
 
       /** Adds the exporter configurer. Can be used to register exporters that
@@ -232,7 +271,9 @@ object OpenTelemetrySdk {
         propertiesLoader = Async[F].pure(Map.empty),
         propertiesCustomizers = Nil,
         resourceCustomizer = (a, _) => a,
+        meterProviderCustomizer = (a: SdkMeterProvider.Builder[F], _) => a,
         tracerProviderCustomizer = (a: SdkTracerProvider.Builder[F], _) => a,
+        metricExporterConfigurers = Set.empty,
         spanExporterConfigurers = Set.empty,
         samplerConfigurers = Set.empty,
         textMapPropagatorConfigurers = Set.empty
@@ -245,7 +286,11 @@ object OpenTelemetrySdk {
         propertiesLoader: F[Map[String, String]],
         propertiesCustomizers: List[Config => Map[String, String]],
         resourceCustomizer: Customizer[TelemetryResource],
+        meterProviderCustomizer: Customizer[SdkMeterProvider.Builder[F]],
         tracerProviderCustomizer: Customizer[SdkTracerProvider.Builder[F]],
+        metricExporterConfigurers: Set[
+          AutoConfigure.Named[F, MetricExporter[F]]
+        ],
         spanExporterConfigurers: Set[AutoConfigure.Named[F, SpanExporter[F]]],
         samplerConfigurers: Set[AutoConfigure.Named[F, Sampler]],
         textMapPropagatorConfigurers: Set[
@@ -271,12 +316,24 @@ object OpenTelemetrySdk {
       ): Builder[F] =
         copy(resourceCustomizer = merge(this.resourceCustomizer, customizer))
 
+      def addMeterProviderCustomizer(
+          customizer: Customizer[SdkMeterProvider.Builder[F]]
+      ): Builder[F] =
+        copy(meterProviderCustomizer =
+          merge(this.meterProviderCustomizer, customizer)
+        )
+
       def addTracerProviderCustomizer(
           customizer: Customizer[SdkTracerProvider.Builder[F]]
       ): Builder[F] =
         copy(tracerProviderCustomizer =
           merge(this.tracerProviderCustomizer, customizer)
         )
+
+      def addMetricExporterConfigurer(
+          configurer: AutoConfigure.Named[F, MetricExporter[F]]
+      ): Builder[F] =
+        copy(metricExporterConfigurers = metricExporterConfigurers + configurer)
 
       def addSpanExporterConfigurer(
           configurer: AutoConfigure.Named[F, SpanExporter[F]]
@@ -321,6 +378,21 @@ object OpenTelemetrySdk {
         ): Resource[F, AutoConfigured[F]] = {
           def makeLocalContext = LocalProvider[F, Context].local
 
+          val traceContextLookup: TraceContextLookup =
+            new TraceContextLookup {
+              def get(context: Context): Option[ExemplarData.TraceContext] =
+                context
+                  .get(SdkContextKeys.SpanContextKey)
+                  .filter(_.isValid)
+                  .map { ctx =>
+                    ExemplarData.TraceContext(
+                      ctx.traceId,
+                      ctx.spanId,
+                      ctx.isSampled
+                    )
+                  }
+            }
+
           Resource.eval(makeLocalContext).flatMap { implicit local =>
             Resource.eval(Random.scalaUtilRandom).flatMap { implicit random =>
               val propagatorsConfigure = ContextPropagatorsAutoConfigure[F](
@@ -328,6 +400,13 @@ object OpenTelemetrySdk {
               )
 
               propagatorsConfigure.configure(config).flatMap { propagators =>
+                val meterProviderConfigure = MeterProviderAutoConfigure[F](
+                  resource,
+                  traceContextLookup,
+                  meterProviderCustomizer,
+                  metricExporterConfigurers
+                )
+
                 val tracerProviderConfigure = TracerProviderAutoConfigure[F](
                   resource,
                   propagators,
@@ -337,9 +416,10 @@ object OpenTelemetrySdk {
                 )
 
                 for {
+                  meterProvider <- meterProviderConfigure.configure(config)
                   tracerProvider <- tracerProviderConfigure.configure(config)
                   sdk = new OpenTelemetrySdk(
-                    MeterProvider.noop,
+                    meterProvider,
                     tracerProvider,
                     propagators
                   )

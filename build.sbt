@@ -303,6 +303,7 @@ lazy val sdk = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .dependsOn(
     core,
     `sdk-common`,
+    `sdk-metrics`,
     `sdk-trace` % "compile->compile;test->test",
     `sdk-trace-testkit` % Test
   )

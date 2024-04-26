@@ -60,7 +60,7 @@ val PlatformVersion = "1.0.2"
 val ScodecVersion = "1.1.38"
 val VaultVersion = "3.5.0"
 val Http4sVersion = "0.23.26"
-val CirceVersion = "0.14.6"
+val CirceVersion = "0.14.7"
 val EpollcatVersion = "0.1.6"
 val ScalaPBCirceVersion = "0.15.1"
 val CaseInsensitiveVersion = "1.4.0"
@@ -369,7 +369,11 @@ lazy val `sdk-exporter-trace` =
     .settings(
       name := "otel4s-sdk-exporter-trace",
       startYear := Some(2023),
-      dockerComposeEnvFile := crossProjectBaseDirectory.value / "docker" / "docker-compose.yml"
+      dockerComposeEnvFile := crossProjectBaseDirectory.value / "docker" / "docker-compose.yml",
+      Test / scalacOptions ++= {
+        // see https://github.com/circe/circe/issues/2162
+        if (tlIsScala3.value) Seq("-Xmax-inlines", "64") else Nil
+      }
     )
     .jsSettings(scalaJSLinkerSettings)
     .nativeEnablePlugins(ScalaNativeBrewedConfigPlugin)

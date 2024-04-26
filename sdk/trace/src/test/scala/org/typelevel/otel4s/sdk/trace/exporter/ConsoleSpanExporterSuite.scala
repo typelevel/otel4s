@@ -20,38 +20,42 @@ package exporter
 import cats.Applicative
 import cats.effect.IO
 import munit.CatsEffectSuite
+import munit.ScalaCheckEffectSuite
+import org.scalacheck.Gen
+import org.scalacheck.Test
+import org.scalacheck.effect.PropF
 import org.typelevel.otel4s.sdk.test.InMemoryConsole
 import org.typelevel.otel4s.sdk.test.InMemoryConsole._
 import org.typelevel.otel4s.sdk.trace.data.SpanData
 import org.typelevel.otel4s.sdk.trace.scalacheck.Gens
 
-class LoggingSpanExporterSuite extends CatsEffectSuite {
+class ConsoleSpanExporterSuite
+    extends CatsEffectSuite
+    with ScalaCheckEffectSuite {
 
   test("span data is exported as a log which is printed to the console") {
-    val span1: SpanData = getSpanData
-    val span2: SpanData = getSpanData
+    PropF.forAllF(Gen.listOf(Gens.spanData)) { spans =>
+      val expected = spans.map(span => Entry(Op.Println, expectedLog(span)))
 
-    for {
-      inMemConsole <- InMemoryConsole.create[IO]
-      loggingExporter = LoggingSpanExporter[IO](Applicative[IO], inMemConsole)
-      _ <- loggingExporter.exportSpans(List(span1, span2))
-      entries <- inMemConsole.entries
-      expectedLogs = List(expectedLog(span1), expectedLog(span2)).map { msg =>
-        Entry(Op.Println, msg)
-      }
-    } yield {
-      assertEquals(entries, expectedLogs)
+      for {
+        inMemConsole <- InMemoryConsole.create[IO]
+        consoleExporter = ConsoleSpanExporter[IO](Applicative[IO], inMemConsole)
+        _ <- consoleExporter.exportSpans(spans)
+        entries <- inMemConsole.entries
+      } yield assertEquals(entries, expected)
     }
   }
 
-  private def getSpanData: SpanData =
-    Gens.spanData.sample.getOrElse(getSpanData)
-
   private def expectedLog(span: SpanData): String =
-    s"LoggingSpanExporter: '${span.name}' : " +
+    s"ConsoleSpanExporter: '${span.name}' : " +
       s"${span.spanContext.traceIdHex} ${span.spanContext.spanIdHex} ${span.kind} " +
       s"[tracer: ${span.instrumentationScope.name}:${span.instrumentationScope.version
           .getOrElse("")}] " +
       s"${span.attributes}"
+
+  override protected def scalaCheckTestParameters: Test.Parameters =
+    super.scalaCheckTestParameters
+      .withMinSuccessfulTests(20)
+      .withMaxSize(20)
 
 }

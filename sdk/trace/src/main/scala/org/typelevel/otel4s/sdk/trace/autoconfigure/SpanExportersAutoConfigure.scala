@@ -26,7 +26,7 @@ import cats.syntax.functor._
 import org.typelevel.otel4s.sdk.autoconfigure.AutoConfigure
 import org.typelevel.otel4s.sdk.autoconfigure.Config
 import org.typelevel.otel4s.sdk.autoconfigure.ConfigurationError
-import org.typelevel.otel4s.sdk.trace.exporter.LoggingSpanExporter
+import org.typelevel.otel4s.sdk.trace.exporter.ConsoleSpanExporter
 import org.typelevel.otel4s.sdk.trace.exporter.SpanExporter
 
 /** Autoconfigures [[SpanExporter]]s.
@@ -54,7 +54,7 @@ private final class SpanExportersAutoConfigure[F[_]: MonadThrow: Console](
   private val configurers = {
     val default: Set[AutoConfigure.Named[F, SpanExporter[F]]] = Set(
       AutoConfigure.Named.const(Const.NoneExporter, SpanExporter.noop[F]),
-      AutoConfigure.Named.const(Const.LoggingExporter, LoggingSpanExporter[F])
+      AutoConfigure.Named.const(Const.ConsoleExporter, ConsoleSpanExporter[F])
     )
 
     default ++ extra
@@ -139,7 +139,7 @@ private[sdk] object SpanExportersAutoConfigure {
   private[trace] object Const {
     val OtlpExporter = "otlp"
     val NoneExporter = "none"
-    val LoggingExporter = "logging"
+    val ConsoleExporter = "console"
   }
 
   /** Autoconfigures [[SpanExporter]]s.

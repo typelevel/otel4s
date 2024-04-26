@@ -117,7 +117,7 @@ class SpanExportersAutoConfigureSuite extends CatsEffectSuite {
       .map(_.leftMap(_.getMessage))
       .assertEquals(
         Left("""Cannot autoconfigure [SpanExporters].
-            |Cause: Unrecognized value for [otel.traces.exporter]: aws-xray. Supported options [none, logging, otlp].
+            |Cause: Unrecognized value for [otel.traces.exporter]: aws-xray. Supported options [none, console, otlp].
             |Config:
             |1) `otel.traces.exporter` - aws-xray""".stripMargin)
       )

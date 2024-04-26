@@ -117,7 +117,7 @@ object SdkMeterProvider {
       *   [[org.typelevel.otel4s.sdk.metrics.exemplar.ExemplarFilter ExemplarFilter]]
       *   to register
       */
-    private[metrics] def withExemplarFilter(filter: ExemplarFilter): Builder[F]
+    private[sdk] def withExemplarFilter(filter: ExemplarFilter): Builder[F]
 
     /** Sets a
       * [[org.typelevel.otel4s.sdk.metrics.exemplar.TraceContextLookup TraceContextLookup]]
@@ -128,7 +128,7 @@ object SdkMeterProvider {
       *   [[org.typelevel.otel4s.sdk.metrics.exemplar.TraceContextLookup TraceContextLookup]]
       *   to use
       */
-    private[metrics] def withTraceContextLookup(
+    private[sdk] def withTraceContextLookup(
         lookup: TraceContextLookup
     ): Builder[F]
 
@@ -157,9 +157,7 @@ object SdkMeterProvider {
       *   [[org.typelevel.otel4s.sdk.metrics.exporter.MetricReader MetricReader]]
       *   to register
       */
-    private[metrics] def registerMetricReader(
-        reader: MetricReader[F]
-    ): Builder[F]
+    private[sdk] def registerMetricReader(reader: MetricReader[F]): Builder[F]
 
     /** Registers a
       * [[org.typelevel.otel4s.sdk.metrics.exporter.MetricProducer MetricProducer]].

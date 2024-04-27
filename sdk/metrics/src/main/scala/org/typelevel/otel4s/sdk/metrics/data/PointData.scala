@@ -261,14 +261,14 @@ object PointData {
 
         s"PointData.$prefix{" +
           s"timeWindow=${data.timeWindow}, " +
-          s"attribute=${data.attributes}, " +
+          s"attributes=${data.attributes}, " +
           s"exemplars=${data.exemplars}, " +
           s"value=${data.value}}"
 
       case data: Histogram =>
         "PointData.Histogram{" +
           s"timeWindow=${data.timeWindow}, " +
-          s"attribute=${data.attributes}, " +
+          s"attributes=${data.attributes}, " +
           s"exemplars=${data.exemplars}, " +
           s"stats=${data.stats}, " +
           s"boundaries=${data.boundaries}, " +

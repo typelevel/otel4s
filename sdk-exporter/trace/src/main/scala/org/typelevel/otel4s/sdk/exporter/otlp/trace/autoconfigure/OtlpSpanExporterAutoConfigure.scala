@@ -179,8 +179,8 @@ object OtlpSpanExporterAutoConfigure {
     *   HTTP client
     *
     * @note
-    *   the 'timeout' and 'tlsContext' context settings will be ignored. You
-    *   must preconfigure the client manually.
+    *   the 'timeout' and 'tlsContext' settings will be ignored. You must
+    *   preconfigure the client manually.
     *
     * @example
     *   {{{

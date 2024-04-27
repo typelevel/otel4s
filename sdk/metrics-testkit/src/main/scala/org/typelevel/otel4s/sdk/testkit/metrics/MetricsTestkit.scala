@@ -59,12 +59,12 @@ object MetricsTestkit {
     * @param defaultAggregationSelector
     *   the preferred aggregation for the given instrument type. If no views are
     *   configured for a metric instrument, an aggregation provided by the
-    *   selector will be used.
+    *   selector will be used
     *
     * @param defaultCardinalityLimitSelector
     *   the preferred cardinality limit for the given instrument type. If no
-    *   views are configured for a metric instrument, an aggregation provided by
-    *   the selector will be used.
+    *   views are configured for a metric instrument, a limit provided by the
+    *   selector will be used
     */
   def inMemory[F[_]: Async: Console: AskContext](
       customize: SdkMeterProvider.Builder[F] => SdkMeterProvider.Builder[F] =

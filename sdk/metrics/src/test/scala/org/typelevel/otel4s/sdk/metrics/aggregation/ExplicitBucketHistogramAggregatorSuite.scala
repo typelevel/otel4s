@@ -200,7 +200,7 @@ class ExplicitBucketHistogramAggregatorSuite
       Gens.telemetryResource,
       Gens.instrumentationScope,
       Gens.instrumentDescriptor,
-      Gen.listOf(Gens.histogramPointData),
+      Gens.nonEmptyVector(Gens.histogramPointData),
       Gens.aggregationTemporality
     ) { (boundaries, resource, scope, descriptor, points, temporality) =>
       type HistogramAggregator = Aggregator.Synchronous[IO, Double] {
@@ -221,7 +221,7 @@ class ExplicitBucketHistogramAggregatorSuite
           name = descriptor.name.toString,
           description = descriptor.description,
           unit = descriptor.unit,
-          data = MetricPoints.histogram(points.toVector, temporality)
+          data = MetricPoints.histogram(points, temporality)
         )
 
       for {
@@ -229,7 +229,7 @@ class ExplicitBucketHistogramAggregatorSuite
           resource,
           scope,
           MetricDescriptor(None, descriptor),
-          points.toVector,
+          points,
           temporality
         )
       } yield assertEquals(metricData, expected)

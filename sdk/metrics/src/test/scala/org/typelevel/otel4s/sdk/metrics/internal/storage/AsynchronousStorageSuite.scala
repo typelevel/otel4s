@@ -16,6 +16,7 @@
 
 package org.typelevel.otel4s.sdk.metrics.internal.storage
 
+import cats.data.NonEmptyVector
 import cats.effect.IO
 import cats.effect.std.Console
 import cats.mtl.Ask
@@ -63,7 +64,7 @@ class AsynchronousStorageSuite
       Gen.either(Gen.listOf(Gen.long), Gen.listOf(Gen.double))
     ) { (descriptor, resource, scope, attributes, timeWindow, values) =>
       def test[A: MeasurementValue: Numeric](values: Vector[A]): IO[Unit] = {
-        val expected = Option.when(values.nonEmpty)(
+        val expected = NonEmptyVector.fromVector(values).map { points =>
           MetricData(
             resource,
             scope,
@@ -72,7 +73,7 @@ class AsynchronousStorageSuite
             descriptor.unit,
             MetricPoints.sum(
               PointDataUtils.toNumberPoints(
-                values.take(1),
+                NonEmptyVector.one(points.head),
                 attributes,
                 timeWindow
               ),
@@ -80,7 +81,7 @@ class AsynchronousStorageSuite
               AggregationTemporality.Cumulative
             )
           )
-        )
+        }
 
         for {
           storage <- createStorage[A](descriptor)
@@ -120,7 +121,7 @@ class AsynchronousStorageSuite
           descriptor.unit,
           MetricPoints.sum(
             PointDataUtils.toNumberPoints(
-              Vector(value),
+              NonEmptyVector.one(value),
               attributes,
               timeWindow
             ),
@@ -175,7 +176,7 @@ class AsynchronousStorageSuite
           descriptor.unit,
           MetricPoints.sum(
             PointDataUtils.toNumberPoints(
-              Vector(a),
+              NonEmptyVector.one(a),
               attributes,
               TimeWindow(Duration.Zero, timeWindow.end)
             ),
@@ -235,7 +236,7 @@ class AsynchronousStorageSuite
           descriptor.unit,
           MetricPoints.sum(
             PointDataUtils.toNumberPoints(
-              Vector(value),
+              NonEmptyVector.one(value),
               Attributes.empty,
               timeWindow
             ),
@@ -291,7 +292,11 @@ class AsynchronousStorageSuite
             descriptor.description,
             descriptor.unit,
             MetricPoints.sum(
-              PointDataUtils.toNumberPoints(Vector(value), attrs, timeWindow),
+              PointDataUtils.toNumberPoints(
+                NonEmptyVector.one(value),
+                attrs,
+                timeWindow
+              ),
               isMonotonic(descriptor),
               AggregationTemporality.Cumulative
             )

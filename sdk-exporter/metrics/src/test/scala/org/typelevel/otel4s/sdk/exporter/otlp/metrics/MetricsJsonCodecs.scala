@@ -19,6 +19,7 @@ package sdk
 package exporter.otlp
 package metrics
 
+import cats.data.NonEmptyVector
 import io.circe.Encoder
 import io.circe.Json
 import io.circe.syntax._
@@ -31,12 +32,6 @@ import org.typelevel.otel4s.sdk.metrics.data.PointData
 // the instances mimic Protobuf encoding
 private object MetricsJsonCodecs extends JsonCodecs {
 
-  implicit val longEncoder: Encoder[Long] =
-    Encoder.instance { a =>
-      if (a > Int.MaxValue || a < Int.MinValue) Json.fromString(a.toString)
-      else Json.fromLong(a)
-    }
-
   implicit val aggregationTemporalityJsonEncoder
       : Encoder[AggregationTemporality] =
     Encoder.instance {
@@ -48,7 +43,7 @@ private object MetricsJsonCodecs extends JsonCodecs {
     Encoder.instance { exemplar =>
       val value = exemplar match {
         case exemplar: ExemplarData.LongExemplar =>
-          Json.obj("asInt" := exemplar.value)
+          Json.obj("asInt" := exemplar.value.toString)
 
         case exemplar: ExemplarData.DoubleExemplar =>
           Json.obj("asDouble" := exemplar.value)
@@ -70,7 +65,7 @@ private object MetricsJsonCodecs extends JsonCodecs {
     Encoder.instance { point =>
       val value = point match {
         case number: PointData.LongNumber =>
-          Json.obj("asInt" := number.value)
+          Json.obj("asInt" := number.value.toString)
 
         case number: PointData.DoubleNumber =>
           Json.obj("asDouble" := number.value)
@@ -114,7 +109,7 @@ private object MetricsJsonCodecs extends JsonCodecs {
 
       Json
         .obj(
-          "dataPoints" := (sum.points: Vector[PointData.NumberPoint]),
+          "dataPoints" := (sum.points: NonEmptyVector[PointData.NumberPoint]),
           "aggregationTemporality" := sum.aggregationTemporality,
           "isMonotonic" := monotonic
         )
@@ -126,7 +121,7 @@ private object MetricsJsonCodecs extends JsonCodecs {
     Encoder.instance { gauge =>
       Json
         .obj(
-          "dataPoints" := (gauge.points: Vector[PointData.NumberPoint])
+          "dataPoints" := (gauge.points: NonEmptyVector[PointData.NumberPoint])
         )
         .dropEmptyValues
     }

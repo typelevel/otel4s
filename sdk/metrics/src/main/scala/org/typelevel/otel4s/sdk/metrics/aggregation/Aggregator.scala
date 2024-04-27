@@ -17,6 +17,7 @@
 package org.typelevel.otel4s.sdk.metrics.aggregation
 
 import cats.Applicative
+import cats.data.NonEmptyVector
 import cats.effect.Temporal
 import cats.effect.std.Random
 import org.typelevel.otel4s.Attributes
@@ -84,7 +85,7 @@ private[metrics] object Aggregator {
         resource: TelemetryResource,
         scope: InstrumentationScope,
         descriptor: MetricDescriptor,
-        points: Vector[Point],
+        points: NonEmptyVector[Point],
         temporality: AggregationTemporality
     ): F[MetricData]
   }
@@ -137,7 +138,7 @@ private[metrics] object Aggregator {
         resource: TelemetryResource,
         scope: InstrumentationScope,
         descriptor: MetricDescriptor,
-        measurements: Vector[AsynchronousMeasurement[A]],
+        measurements: NonEmptyVector[AsynchronousMeasurement[A]],
         temporality: AggregationTemporality
     ): F[MetricData]
   }

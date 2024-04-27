@@ -17,6 +17,7 @@
 package org.typelevel.otel4s.sdk.metrics.aggregation
 
 import cats.Applicative
+import cats.data.NonEmptyVector
 import cats.effect.Concurrent
 import cats.syntax.functor._
 import org.typelevel.otel4s.Attributes
@@ -86,7 +87,7 @@ private object LastValueAggregator {
         resource: TelemetryResource,
         scope: InstrumentationScope,
         descriptor: MetricDescriptor,
-        points: Vector[Point],
+        points: NonEmptyVector[Point],
         temporality: AggregationTemporality
     ): F[MetricData] =
       Concurrent[F].pure(
@@ -142,7 +143,7 @@ private object LastValueAggregator {
         resource: TelemetryResource,
         scope: InstrumentationScope,
         descriptor: MetricDescriptor,
-        measurements: Vector[AsynchronousMeasurement[A]],
+        measurements: NonEmptyVector[AsynchronousMeasurement[A]],
         temporality: AggregationTemporality
     ): F[MetricData] = {
       val points = measurements.map { m =>

@@ -16,6 +16,7 @@
 
 package org.typelevel.otel4s.sdk.metrics
 
+import cats.data.NonEmptyVector
 import cats.effect.IO
 import cats.mtl.Ask
 import munit.CatsEffectSuite
@@ -55,7 +56,7 @@ class SdkBatchCallbackSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
           unit,
           MetricPoints.sum(
             points = PointDataUtils.toNumberPoints(
-              Vector(value),
+              NonEmptyVector.one(value),
               attrs,
               window
             ),
@@ -72,7 +73,7 @@ class SdkBatchCallbackSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
           unit,
           MetricPoints.sum(
             points = PointDataUtils.toNumberPoints(
-              Vector(value),
+              NonEmptyVector.one(value),
               attrs,
               window
             ),
@@ -89,7 +90,7 @@ class SdkBatchCallbackSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
           unit,
           MetricPoints.gauge(
             points = PointDataUtils.toNumberPoints(
-              Vector(value),
+              NonEmptyVector.one(value),
               attrs,
               window
             )

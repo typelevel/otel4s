@@ -17,10 +17,17 @@
 package org.typelevel.otel4s
 package scalacheck
 
+import cats.data.NonEmptyVector
 import org.scalacheck.Arbitrary
 import org.scalacheck.Gen
 
 trait Gens {
+
+  def nonEmptyVector[A](gen: Gen[A]): Gen[NonEmptyVector[A]] =
+    for {
+      head <- gen
+      tail <- Gen.nonEmptyContainerOf[Vector, A](gen)
+    } yield NonEmptyVector(head, tail)
 
   val nonEmptyString: Gen[String] =
     for {

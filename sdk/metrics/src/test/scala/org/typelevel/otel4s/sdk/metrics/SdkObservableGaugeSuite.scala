@@ -16,6 +16,7 @@
 
 package org.typelevel.otel4s.sdk.metrics
 
+import cats.data.NonEmptyVector
 import cats.effect.IO
 import cats.mtl.Ask
 import munit.CatsEffectSuite
@@ -57,7 +58,7 @@ class SdkObservableGaugeSuite
           unit,
           MetricPoints.gauge(
             points = PointDataUtils.toNumberPoints(
-              Vector(value),
+              NonEmptyVector.one(value),
               attrs,
               window
             )

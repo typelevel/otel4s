@@ -17,6 +17,8 @@
 package org.typelevel.otel4s.sdk.metrics
 package scalacheck
 
+import cats.data.NonEmptyVector
+import cats.kernel.Order
 import org.scalacheck.Gen
 import org.typelevel.ci.CIString
 import org.typelevel.otel4s.metrics.BucketBoundaries
@@ -161,26 +163,32 @@ trait Gens extends org.typelevel.otel4s.sdk.scalacheck.Gens {
   val exemplarData: Gen[ExemplarData] =
     Gen.oneOf(longExemplarData, doubleExemplarData)
 
-  val longNumberPointData: Gen[PointData.LongNumber] =
+  def longNumberPointDataGen(gen: Gen[Long]): Gen[PointData.LongNumber] =
     for {
       window <- Gens.timeWindow
       attributes <- Gens.attributes
       exemplars <- Gen.listOfN(1, Gens.longExemplarData)
-      value <- Gen.long
+      value <- gen
     } yield PointData.longNumber(window, attributes, exemplars.toVector, value)
 
-  val doubleNumberPointData: Gen[PointData.DoubleNumber] =
+  def doubleNumberPointDataGen(gen: Gen[Double]): Gen[PointData.DoubleNumber] =
     for {
       window <- Gens.timeWindow
       attributes <- Gens.attributes
       exemplars <- Gen.listOfN(1, Gens.doubleExemplarData)
-      value <- Gen.double
+      value <- gen
     } yield PointData.doubleNumber(
       window,
       attributes,
       exemplars.toVector,
       value
     )
+
+  val longNumberPointData: Gen[PointData.LongNumber] =
+    longNumberPointDataGen(Gen.long)
+
+  val doubleNumberPointData: Gen[PointData.DoubleNumber] =
+    doubleNumberPointDataGen(Gen.double)
 
   val histogramPointData: Gen[PointData.Histogram] = {
     def stats(values: List[Double]): Option[PointData.Histogram.Stats] =
@@ -257,38 +265,43 @@ trait Gens extends org.typelevel.otel4s.sdk.scalacheck.Gens {
   // For delta monotonic sums, this means the reader SHOULD expect non-negative values.
   // For cumulative monotonic sums, this means the reader SHOULD expect values that are not less than the previous value.
   val sumMetricPoints: Gen[MetricPoints.Sum] = {
-    implicit val pointNumberOrd: Ordering[PointData.NumberPoint] =
-      Ordering.by {
+    implicit val pointNumberOrder: Order[PointData.NumberPoint] =
+      Order.by {
         case long: PointData.LongNumber     => long.value.toDouble
         case double: PointData.DoubleNumber => double.value
       }
 
     for {
-      points <- Gen.oneOf(
-        Gen.listOf(longNumberPointData),
-        Gen.listOf(doubleNumberPointData)
-      )
       isMonotonic <- Gen.oneOf(true, false)
       temporality <- Gens.aggregationTemporality
+      positiveOnly = isMonotonic && temporality == AggregationTemporality.Delta
+      points <- Gen.oneOf(
+        Gens.nonEmptyVector(
+          longNumberPointDataGen(
+            if (positiveOnly) Gen.posNum[Long] else Gen.long
+          )
+        ),
+        Gens.nonEmptyVector(
+          doubleNumberPointDataGen(
+            if (positiveOnly) Gen.posNum[Double] else Gen.double
+          )
+        )
+      )
     } yield {
       val values =
-        if (isMonotonic) {
-          temporality match {
-            case AggregationTemporality.Delta =>
-              points.filter {
-                case long: PointData.LongNumber     => long.value > 0
-                case double: PointData.DoubleNumber => double.value > 0.0
-              }
-
-            case AggregationTemporality.Cumulative =>
-              points.sorted[PointData.NumberPoint].distinctBy(_.value)
-          }
+        if (isMonotonic && temporality == AggregationTemporality.Cumulative) {
+          NonEmptyVector.fromVectorUnsafe(
+            points
+              .sorted[PointData.NumberPoint]
+              .toVector
+              .distinctBy(_.value)
+          )
         } else {
           points
         }
 
       MetricPoints.sum(
-        values.toVector,
+        values,
         isMonotonic,
         temporality
       )
@@ -298,16 +311,20 @@ trait Gens extends org.typelevel.otel4s.sdk.scalacheck.Gens {
   val gaugeMetricPoints: Gen[MetricPoints.Gauge] =
     for {
       points <- Gen.oneOf(
-        Gen.listOf(longNumberPointData),
-        Gen.listOf(doubleNumberPointData)
+        Gens.nonEmptyVector(longNumberPointData),
+        Gens.nonEmptyVector(doubleNumberPointData)
       )
-    } yield MetricPoints.gauge(points.toVector)
+    } yield MetricPoints.gauge(points)
 
   val histogramMetricPoints: Gen[MetricPoints.Histogram] =
     for {
+      point <- histogramPointData
       points <- Gen.listOf(histogramPointData)
       temporality <- Gens.aggregationTemporality
-    } yield MetricPoints.histogram(points.toVector, temporality)
+    } yield MetricPoints.histogram(
+      NonEmptyVector(point, points.toVector),
+      temporality
+    )
 
   val metricPoints: Gen[MetricPoints] =
     Gen.oneOf(sumMetricPoints, gaugeMetricPoints, histogramMetricPoints)

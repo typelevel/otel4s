@@ -226,7 +226,7 @@ private[metrics] final class MeterSharedState[
           result <- storages.traverse { storage =>
             storage.collect(resource, scope, timeWindow)
           }
-        } yield result.flatten.filter(_.nonEmpty)
+        } yield result.flatten
       }
     }
 

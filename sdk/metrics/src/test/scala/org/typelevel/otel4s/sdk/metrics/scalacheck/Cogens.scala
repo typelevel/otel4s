@@ -146,15 +146,15 @@ trait Cogens extends org.typelevel.otel4s.sdk.scalacheck.Cogens {
 
   implicit val sumMetricPointsCogen: Cogen[MetricPoints.Sum] =
     Cogen[(Vector[PointData], Boolean, AggregationTemporality)].contramap { s =>
-      (s.points, s.monotonic, s.aggregationTemporality)
+      (s.points.toVector, s.monotonic, s.aggregationTemporality)
     }
 
   implicit val gaugeMetricPointsCogen: Cogen[MetricPoints.Gauge] =
-    Cogen[Vector[PointData]].contramap(_.points)
+    Cogen[Vector[PointData]].contramap(_.points.toVector)
 
   implicit val histogramMetricPointsCogen: Cogen[MetricPoints.Histogram] =
     Cogen[(Vector[PointData], AggregationTemporality)].contramap { h =>
-      (h.points, h.aggregationTemporality)
+      (h.points.toVector, h.aggregationTemporality)
     }
 
   implicit val metricPointsCogen: Cogen[MetricPoints] =

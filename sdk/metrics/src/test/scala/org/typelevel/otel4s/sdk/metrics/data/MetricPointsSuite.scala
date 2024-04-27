@@ -34,16 +34,16 @@ class MetricPointsSuite extends DisciplineSuite {
       val expected = data match {
         case sum: MetricPoints.Sum =>
           "MetricPoints.Sum{" +
-            s"points=${sum.points.mkString("{", ",", "}")}, " +
+            s"points=${sum.points.toVector.mkString("{", ",", "}")}, " +
             s"monotonic=${sum.monotonic}, " +
             s"aggregationTemporality=${sum.aggregationTemporality}}"
 
         case gauge: MetricPoints.Gauge =>
-          s"MetricPoints.Gauge{points=${gauge.points.mkString("{", ",", "}")}}"
+          s"MetricPoints.Gauge{points=${gauge.points.toVector.mkString("{", ",", "}")}}"
 
         case histogram: MetricPoints.Histogram =>
           "MetricPoints.Histogram{" +
-            s"points=${histogram.points.mkString("{", ",", "}")}, " +
+            s"points=${histogram.points.toVector.mkString("{", ",", "}")}, " +
             s"aggregationTemporality=${histogram.aggregationTemporality}}"
       }
 

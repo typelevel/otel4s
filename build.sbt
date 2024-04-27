@@ -224,7 +224,6 @@ lazy val `sdk-common` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
 
 lazy val `sdk-metrics` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .crossType(CrossType.Pure)
-  .enablePlugins(NoPublishPlugin)
   .in(file("sdk/metrics"))
   .dependsOn(`sdk-common` % "compile->compile;test->test", `core-metrics`)
   .settings(
@@ -245,7 +244,6 @@ lazy val `sdk-metrics` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
 lazy val `sdk-metrics-testkit` =
   crossProject(JVMPlatform, JSPlatform, NativePlatform)
     .crossType(CrossType.Pure)
-    .enablePlugins(NoPublishPlugin)
     .in(file("sdk/metrics-testkit"))
     .dependsOn(`sdk-metrics`)
     .settings(
@@ -288,7 +286,6 @@ lazy val `sdk-trace-testkit` =
 
 lazy val `sdk-testkit` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .crossType(CrossType.Pure)
-  .enablePlugins(NoPublishPlugin)
   .in(file("sdk/testkit"))
   .dependsOn(core, `sdk-metrics-testkit`, `sdk-trace-testkit`)
   .settings(
@@ -303,6 +300,7 @@ lazy val sdk = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .dependsOn(
     core,
     `sdk-common`,
+    `sdk-metrics`,
     `sdk-trace` % "compile->compile;test->test",
     `sdk-trace-testkit` % Test
   )
@@ -411,7 +409,11 @@ lazy val `sdk-exporter-trace` =
 lazy val `sdk-exporter` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .crossType(CrossType.Pure)
   .in(file("sdk-exporter/all"))
-  .dependsOn(`sdk-exporter-common`, `sdk-exporter-trace`)
+  .dependsOn(
+    `sdk-exporter-common`,
+    `sdk-exporter-metrics`,
+    `sdk-exporter-trace`
+  )
   .settings(
     name := "otel4s-sdk-exporter"
   )

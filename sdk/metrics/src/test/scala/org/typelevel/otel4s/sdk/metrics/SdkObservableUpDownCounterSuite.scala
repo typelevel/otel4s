@@ -16,6 +16,7 @@
 
 package org.typelevel.otel4s.sdk.metrics
 
+import cats.data.NonEmptyVector
 import cats.effect.IO
 import cats.mtl.Ask
 import munit.CatsEffectSuite
@@ -58,7 +59,7 @@ class SdkObservableUpDownCounterSuite
           unit,
           MetricPoints.sum(
             points = PointDataUtils.toNumberPoints(
-              Vector(value),
+              NonEmptyVector.one(value),
               attrs,
               window
             ),

@@ -16,6 +16,8 @@
 
 package org.typelevel.otel4s.sdk.metrics.test
 
+import cats.data.NonEmptyVector
+import cats.syntax.foldable._
 import org.typelevel.otel4s.Attributes
 import org.typelevel.otel4s.metrics.BucketBoundaries
 import org.typelevel.otel4s.metrics.MeasurementValue
@@ -25,10 +27,10 @@ import org.typelevel.otel4s.sdk.metrics.data.TimeWindow
 object PointDataUtils {
 
   def toNumberPoints[A: MeasurementValue](
-      values: Vector[A],
+      values: NonEmptyVector[A],
       attributes: Attributes,
       timeWindow: TimeWindow
-  ): Vector[PointData.NumberPoint] =
+  ): NonEmptyVector[PointData.NumberPoint] =
     MeasurementValue[A] match {
       case MeasurementValue.LongMeasurementValue(cast) =>
         values.map { a =>
@@ -52,7 +54,7 @@ object PointDataUtils {
     }
 
   def toHistogramPoint[A](
-      values: Vector[A],
+      values: NonEmptyVector[A],
       attributes: Attributes,
       timeWindow: TimeWindow,
       boundaries: BucketBoundaries
@@ -60,12 +62,12 @@ object PointDataUtils {
     import N.mkNumericOps
 
     val stats: Option[PointData.Histogram.Stats] =
-      Option.when(values.nonEmpty)(
+      Some(
         PointData.Histogram.Stats(
-          sum = values.sum.toDouble,
-          min = values.min.toDouble,
-          max = values.max.toDouble,
-          count = values.size.toLong
+          sum = values.toVector.sum.toDouble,
+          min = values.toVector.min.toDouble,
+          max = values.toVector.max.toDouble,
+          count = values.size
         )
       )
 

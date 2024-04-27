@@ -151,7 +151,7 @@ private object MetricsProtoEncoder {
     case sum: MetricPoints.Sum =>
       Proto.Metric.Data.Sum(
         Proto.Sum(
-          sum.points.map(ProtoEncoder.encode(_)),
+          sum.points.toVector.map(ProtoEncoder.encode(_)),
           ProtoEncoder.encode(sum.aggregationTemporality),
           sum.monotonic
         )
@@ -159,13 +159,13 @@ private object MetricsProtoEncoder {
 
     case gauge: MetricPoints.Gauge =>
       Proto.Metric.Data.Gauge(
-        Proto.Gauge(gauge.points.map(ProtoEncoder.encode(_)))
+        Proto.Gauge(gauge.points.toVector.map(ProtoEncoder.encode(_)))
       )
 
     case histogram: MetricPoints.Histogram =>
       Proto.Metric.Data.Histogram(
         Proto.Histogram(
-          histogram.points.map(ProtoEncoder.encode(_)),
+          histogram.points.toVector.map(ProtoEncoder.encode(_)),
           ProtoEncoder.encode(histogram.aggregationTemporality)
         )
       )

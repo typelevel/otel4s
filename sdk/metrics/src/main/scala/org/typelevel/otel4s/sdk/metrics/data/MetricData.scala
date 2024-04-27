@@ -59,14 +59,6 @@ sealed trait MetricData {
     */
   def resource: TelemetryResource
 
-  /** Whether the measurements are empty.
-    */
-  final def isEmpty: Boolean = data.points.isEmpty
-
-  /** Whether the measurements are non empty.
-    */
-  final def nonEmpty: Boolean = !isEmpty
-
   override final def hashCode(): Int =
     Hash[MetricData].hash(this)
 

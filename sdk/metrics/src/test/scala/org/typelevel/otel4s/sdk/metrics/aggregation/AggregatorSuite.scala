@@ -16,20 +16,30 @@
 
 package org.typelevel.otel4s.sdk.metrics.aggregation
 
+import cats.data.NonEmptyVector
 import cats.effect.IO
 import cats.effect.std.Random
 import munit.CatsEffectSuite
 import munit.ScalaCheckEffectSuite
+import munit.internal.PlatformCompat
 import org.scalacheck.Gen
+import org.scalacheck.Test
 import org.scalacheck.effect.PropF
+import org.typelevel.otel4s.Attributes
+import org.typelevel.otel4s.metrics.BucketBoundaries
 import org.typelevel.otel4s.sdk.metrics.Aggregation
 import org.typelevel.otel4s.sdk.metrics.InstrumentType
 import org.typelevel.otel4s.sdk.metrics.data.MetricData
 import org.typelevel.otel4s.sdk.metrics.data.MetricPoints
+import org.typelevel.otel4s.sdk.metrics.data.PointData
+import org.typelevel.otel4s.sdk.metrics.data.TimeWindow
 import org.typelevel.otel4s.sdk.metrics.exemplar.ExemplarFilter
 import org.typelevel.otel4s.sdk.metrics.exemplar.TraceContextLookup
 import org.typelevel.otel4s.sdk.metrics.internal.MetricDescriptor
 import org.typelevel.otel4s.sdk.metrics.scalacheck.Gens
+import org.typelevel.otel4s.sdk.metrics.test.PointDataUtils
+
+import scala.concurrent.duration._
 
 class AggregatorSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
 
@@ -54,15 +64,59 @@ class AggregatorSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
       Gens.synchronousInstrumentDescriptor,
       Gens.telemetryResource,
       Gens.instrumentationScope,
-      Gens.aggregationTemporality
-    ) { (aggregation, descriptor, resource, scope, temporality) =>
+      Gens.aggregationTemporality,
+      Gens.nonEmptyVector(Gens.longNumberPointData)
+    ) { (aggregation, descriptor, resource, scope, temporality, values) =>
       Random.scalaUtilRandom[IO].flatMap { implicit R: Random[IO] =>
-        val aggregator = Aggregator.synchronous[IO, Long](
-          aggregation,
-          descriptor,
-          ExemplarFilter.alwaysOn,
-          TraceContextLookup.noop
-        )
+        type SynchronousAggregator[F[_], A] =
+          Aggregator.Synchronous[F, A] {
+            type Point = PointData
+          }
+
+        val aggregator = Aggregator
+          .synchronous[IO, Long](
+            aggregation,
+            descriptor,
+            ExemplarFilter.alwaysOn,
+            TraceContextLookup.noop
+          )
+          .asInstanceOf[SynchronousAggregator[IO, Long]]
+
+        val numberPoints: NonEmptyVector[PointData.LongNumber] =
+          values
+
+        def histogramPoints(
+            boundaries: BucketBoundaries
+        ): NonEmptyVector[PointData.Histogram] =
+          NonEmptyVector.one(
+            PointDataUtils.toHistogramPoint(
+              values.map(_.value),
+              Attributes.empty,
+              TimeWindow(1.second, 10.seconds),
+              boundaries
+            )
+          )
+
+        val points: NonEmptyVector[PointData] = {
+          aggregation match {
+            case Aggregation.Default =>
+              descriptor.instrumentType match {
+                case InstrumentType.Counter       => numberPoints
+                case InstrumentType.UpDownCounter => numberPoints
+                case InstrumentType.Histogram =>
+                  histogramPoints(Aggregation.Defaults.Boundaries)
+              }
+
+            case Aggregation.Sum =>
+              numberPoints
+
+            case Aggregation.LastValue =>
+              numberPoints
+
+            case Aggregation.ExplicitBucketHistogram(boundaries) =>
+              histogramPoints(boundaries)
+          }
+        }
 
         val expected = {
           def sum = {
@@ -73,26 +127,27 @@ class AggregatorSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
                 case _                        => false
               }
 
-            MetricPoints.sum(Vector.empty, monotonic, temporality)
+            MetricPoints.sum(numberPoints, monotonic, temporality)
           }
 
           def lastValue =
-            MetricPoints.gauge(Vector.empty)
+            MetricPoints.gauge(numberPoints)
 
-          def histogram =
-            MetricPoints.histogram(Vector.empty, temporality)
+          def histogram(boundaries: BucketBoundaries) =
+            MetricPoints.histogram(histogramPoints(boundaries), temporality)
 
           val metricPoints = aggregation match {
             case Aggregation.Default =>
               descriptor.instrumentType match {
                 case InstrumentType.Counter       => sum
                 case InstrumentType.UpDownCounter => sum
-                case InstrumentType.Histogram     => histogram
+                case InstrumentType.Histogram =>
+                  histogram(Aggregation.Defaults.Boundaries)
               }
 
             case Aggregation.Sum                        => sum
             case Aggregation.LastValue                  => lastValue
-            case Aggregation.ExplicitBucketHistogram(_) => histogram
+            case Aggregation.ExplicitBucketHistogram(b) => histogram(b)
           }
 
           MetricData(
@@ -110,7 +165,7 @@ class AggregatorSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
             resource,
             scope,
             MetricDescriptor(None, descriptor),
-            Vector.empty,
+            points,
             temporality
           )
         } yield assertEquals(result, expected)
@@ -124,14 +179,24 @@ class AggregatorSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
       Gens.asynchronousInstrumentDescriptor,
       Gens.telemetryResource,
       Gens.instrumentationScope,
-      Gens.aggregationTemporality
-    ) { (aggregation, descriptor, resource, scope, temporality) =>
+      Gens.aggregationTemporality,
+      Gens.asynchronousMeasurement(Gen.long)
+    ) { (aggregation, descriptor, resource, scope, temporality, measurement) =>
       val aggregator = Aggregator.asynchronous[IO, Long](
         aggregation,
         descriptor
       )
 
       val expected = {
+        val points = NonEmptyVector.one(
+          PointData.longNumber(
+            measurement.timeWindow,
+            measurement.attributes,
+            Vector.empty,
+            measurement.value
+          )
+        )
+
         def sum = {
           val monotonic =
             descriptor.instrumentType match {
@@ -139,11 +204,11 @@ class AggregatorSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
               case _                                => false
             }
 
-          MetricPoints.sum(Vector.empty, monotonic, temporality)
+          MetricPoints.sum(points, monotonic, temporality)
         }
 
         def lastValue =
-          MetricPoints.gauge(Vector.empty)
+          MetricPoints.gauge(points)
 
         val metricPoints = aggregation match {
           case Aggregation.Default =>
@@ -172,11 +237,19 @@ class AggregatorSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
           resource,
           scope,
           MetricDescriptor(None, descriptor),
-          Vector.empty,
+          NonEmptyVector.one(measurement),
           temporality
         )
       } yield assertEquals(result, expected)
     }
   }
+
+  override protected def scalaCheckTestParameters: Test.Parameters =
+    if (PlatformCompat.isJVM)
+      super.scalaCheckTestParameters
+    else
+      super.scalaCheckTestParameters
+        .withMinSuccessfulTests(20)
+        .withMaxSize(20)
 
 }

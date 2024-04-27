@@ -16,6 +16,7 @@
 
 package org.typelevel.otel4s.sdk.metrics.internal.storage
 
+import cats.data.NonEmptyVector
 import cats.effect.IO
 import cats.effect.std.Console
 import cats.effect.std.Random
@@ -87,7 +88,7 @@ class SynchronousStorageSuite
             descriptor.unit,
             MetricPoints.sum(
               PointDataUtils.toNumberPoints(
-                Vector(Vector.fill(repeat)(values).flatten.sum),
+                NonEmptyVector.one(Vector.fill(repeat)(values).flatten.sum),
                 attributes,
                 timeWindow
               ),
@@ -140,7 +141,7 @@ class SynchronousStorageSuite
             descriptor.unit,
             MetricPoints.sum(
               PointDataUtils.toNumberPoints(
-                Vector(values.sum),
+                NonEmptyVector.one(values.sum),
                 attributes,
                 TimeWindow(Duration.Zero, timeWindow.end)
               ),
@@ -199,7 +200,7 @@ class SynchronousStorageSuite
             descriptor.unit,
             MetricPoints.sum(
               PointDataUtils.toNumberPoints(
-                Vector(values.sum),
+                NonEmptyVector.one(values.sum),
                 Attributes.empty,
                 TimeWindow(Duration.Zero, timeWindow.end)
               ),
@@ -266,7 +267,7 @@ class SynchronousStorageSuite
             descriptor.unit,
             MetricPoints.sum(
               PointDataUtils.toNumberPoints(
-                Vector(values.sum),
+                NonEmptyVector.one(values.sum),
                 attrs,
                 TimeWindow(Duration.Zero, timeWindow.end)
               ),

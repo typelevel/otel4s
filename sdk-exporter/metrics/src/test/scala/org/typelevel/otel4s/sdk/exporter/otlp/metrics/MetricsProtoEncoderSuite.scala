@@ -37,7 +37,7 @@ class MetricsProtoEncoderSuite extends ScalaCheckSuite {
     Prop.forAll(Gens.exemplarData) { exemplar =>
       val value = exemplar match {
         case exemplar: ExemplarData.LongExemplar =>
-          Json.obj("asInt" := exemplar.value)
+          Json.obj("asInt" := exemplar.value.toString)
 
         case exemplar: ExemplarData.DoubleExemplar =>
           Json.obj("asDouble" := exemplar.value)
@@ -62,7 +62,7 @@ class MetricsProtoEncoderSuite extends ScalaCheckSuite {
     Prop.forAll(Gens.pointDataNumber) { point =>
       val value = point match {
         case number: PointData.LongNumber =>
-          Json.obj("asInt" := number.value)
+          Json.obj("asInt" := number.value.toString)
 
         case number: PointData.DoubleNumber =>
           Json.obj("asDouble" := number.value)

@@ -39,17 +39,19 @@ class LastValueAggregatorSuite
     with ScalaCheckEffectSuite {
 
   test("synchronous - aggregate with reset - return the last seen value") {
-    PropF.forAllF(Gen.listOf(Gen.long), Gens.attributes) { (values, attrs) =>
+    PropF.forAllF(
+      Gens.nonEmptyVector(Gen.long),
+      Gens.attributes
+    ) { (values, attrs) =>
       val aggregator =
         LastValueAggregator.synchronous[IO, Long]
 
       val timeWindow =
         TimeWindow(100.millis, 200.millis)
 
-      val expected =
-        values.lastOption.map { value =>
-          PointData.longNumber(timeWindow, attrs, Vector.empty, value)
-        }
+      val expected = Some(
+        PointData.longNumber(timeWindow, attrs, Vector.empty, values.last)
+      )
 
       for {
         accumulator <- aggregator.createAccumulator
@@ -66,17 +68,19 @@ class LastValueAggregatorSuite
   }
 
   test("synchronous - aggregate without reset - return the last stored value") {
-    PropF.forAllF(Gen.listOf(Gen.long), Gens.attributes) { (values, attrs) =>
+    PropF.forAllF(
+      Gens.nonEmptyVector(Gen.long),
+      Gens.attributes
+    ) { (values, attrs) =>
       val aggregator =
         LastValueAggregator.synchronous[IO, Long]
 
       val timeWindow =
         TimeWindow(100.millis, 200.millis)
 
-      val expected =
-        values.lastOption.map { value =>
-          PointData.longNumber(timeWindow, attrs, Vector.empty, value)
-        }
+      val expected = Some(
+        PointData.longNumber(timeWindow, attrs, Vector.empty, values.last)
+      )
 
       for {
         accumulator <- aggregator.createAccumulator
@@ -97,7 +101,7 @@ class LastValueAggregatorSuite
       Gens.telemetryResource,
       Gens.instrumentationScope,
       Gens.instrumentDescriptor,
-      Gen.listOf(Gens.longNumberPointData),
+      Gens.nonEmptyVector(Gens.longNumberPointData),
       Gens.aggregationTemporality
     ) { (resource, scope, descriptor, points, temporality) =>
       type LongAggregator = Aggregator.Synchronous[IO, Long] {
@@ -114,7 +118,7 @@ class LastValueAggregatorSuite
           name = descriptor.name.toString,
           description = descriptor.description,
           unit = descriptor.unit,
-          data = MetricPoints.gauge(points.toVector)
+          data = MetricPoints.gauge(points)
         )
 
       for {
@@ -122,7 +126,7 @@ class LastValueAggregatorSuite
           resource,
           scope,
           MetricDescriptor(None, descriptor),
-          points.toVector,
+          points,
           temporality
         )
       } yield assertEquals(metricData, expected)
@@ -145,7 +149,7 @@ class LastValueAggregatorSuite
       Gens.telemetryResource,
       Gens.instrumentationScope,
       Gens.instrumentDescriptor,
-      Gen.listOf(Gens.asynchronousMeasurement(Gen.long)),
+      Gens.nonEmptyVector(Gens.asynchronousMeasurement(Gen.long)),
       Gens.aggregationTemporality
     ) { (resource, scope, descriptor, measurements, temporality) =>
       val aggregator = LastValueAggregator.asynchronous[IO, Long]
@@ -161,7 +165,7 @@ class LastValueAggregatorSuite
           name = descriptor.name.toString,
           description = descriptor.description,
           unit = descriptor.unit,
-          data = MetricPoints.gauge(points.toVector)
+          data = MetricPoints.gauge(points)
         )
 
       for {
@@ -169,7 +173,7 @@ class LastValueAggregatorSuite
           resource,
           scope,
           MetricDescriptor(None, descriptor),
-          measurements.toVector,
+          measurements,
           temporality
         )
       } yield assertEquals(metricData, expected)

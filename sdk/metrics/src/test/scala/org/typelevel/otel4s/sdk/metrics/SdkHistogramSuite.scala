@@ -16,6 +16,7 @@
 
 package org.typelevel.otel4s.sdk.metrics
 
+import cats.data.NonEmptyVector
 import cats.effect.IO
 import cats.effect.testkit.TestControl
 import cats.mtl.Ask
@@ -110,9 +111,9 @@ class SdkHistogramSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
           description,
           unit,
           MetricPoints.histogram(
-            points = Vector(
+            points = NonEmptyVector.one(
               PointDataUtils.toHistogramPoint(
-                Vector(Numeric[A].fromInt(duration)),
+                NonEmptyVector.one(Numeric[A].fromInt(duration)),
                 attrs,
                 window,
                 Aggregation.Defaults.Boundaries
@@ -162,7 +163,7 @@ class SdkHistogramSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
       Gen.either(Gen.listOf(Gen.posNum[Long]), Gen.listOf(Gen.double))
     ) { (resource, scope, window, attrs, name, unit, description, values) =>
       def test[A: MeasurementValue: Numeric](values: Vector[A]): IO[Unit] = {
-        val expected = Option.when(values.nonEmpty)(
+        val expected = NonEmptyVector.fromVector(values).map { points =>
           MetricData(
             resource,
             scope,
@@ -170,9 +171,9 @@ class SdkHistogramSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
             description,
             unit,
             MetricPoints.histogram(
-              points = Vector(
+              points = NonEmptyVector.one(
                 PointDataUtils.toHistogramPoint(
-                  values,
+                  points,
                   attrs,
                   window,
                   Aggregation.Defaults.Boundaries
@@ -181,7 +182,7 @@ class SdkHistogramSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
               aggregationTemporality = AggregationTemporality.Cumulative
             )
           )
-        )
+        }
 
         for {
           state <- InMemoryMeterSharedState.create[IO](

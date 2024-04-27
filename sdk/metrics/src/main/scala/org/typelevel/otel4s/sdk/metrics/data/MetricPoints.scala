@@ -18,6 +18,8 @@ package org.typelevel.otel4s.sdk.metrics.data
 
 import cats.Hash
 import cats.Show
+import cats.data.NonEmptyVector
+import cats.syntax.foldable._
 
 /** A collection of metric data points.
   *
@@ -28,7 +30,7 @@ sealed trait MetricPoints {
 
   /** The collection of the metric [[PointData]]s.
     */
-  def points: Vector[PointData]
+  def points: NonEmptyVector[PointData]
 
   override final def hashCode(): Int =
     Hash[MetricPoints].hash(this)
@@ -54,7 +56,7 @@ object MetricPoints {
   sealed trait Sum extends MetricPoints {
     type Point <: PointData.NumberPoint
 
-    def points: Vector[Point]
+    def points: NonEmptyVector[Point]
 
     /** Whether the points are monotonic. If true, it means the data points are
       * nominally increasing.
@@ -74,7 +76,7 @@ object MetricPoints {
   sealed trait Gauge extends MetricPoints {
     type Point <: PointData.NumberPoint
 
-    def points: Vector[Point]
+    def points: NonEmptyVector[Point]
   }
 
   /** Histogram represents the type of a metric that is calculated by
@@ -85,7 +87,7 @@ object MetricPoints {
     *   [[https://opentelemetry.io/docs/specs/otel/metrics/data-model/#histogram]]
     */
   sealed trait Histogram extends MetricPoints {
-    def points: Vector[PointData.Histogram]
+    def points: NonEmptyVector[PointData.Histogram]
 
     /** The aggregation temporality of this aggregation.
       */
@@ -95,7 +97,7 @@ object MetricPoints {
   /** Creates a [[Sum]] with the given values.
     */
   def sum[A <: PointData.NumberPoint](
-      points: Vector[A],
+      points: NonEmptyVector[A],
       monotonic: Boolean,
       aggregationTemporality: AggregationTemporality
   ): Sum =
@@ -104,14 +106,14 @@ object MetricPoints {
   /** Creates a [[Gauge]] with the given values.
     */
   def gauge[A <: PointData.NumberPoint](
-      points: Vector[A]
+      points: NonEmptyVector[A]
   ): Gauge =
     GaugeImpl(points)
 
   /** Creates a [[Histogram]] with the given values.
     */
   def histogram(
-      points: Vector[PointData.Histogram],
+      points: NonEmptyVector[PointData.Histogram],
       aggregationTemporality: AggregationTemporality
   ): Histogram =
     HistogramImpl(points, aggregationTemporality)
@@ -119,14 +121,20 @@ object MetricPoints {
   implicit val metricPointsHash: Hash[MetricPoints] = {
     val sumHash: Hash[Sum] =
       Hash.by { s =>
-        (s.points: Vector[PointData], s.monotonic, s.aggregationTemporality)
+        (
+          s.points.toVector: Vector[PointData],
+          s.monotonic,
+          s.aggregationTemporality
+        )
       }
 
     val gaugeHash: Hash[Gauge] =
-      Hash.by(_.points: Vector[PointData])
+      Hash.by(_.points.toVector: Vector[PointData])
 
     val histogramHash: Hash[Histogram] =
-      Hash.by(h => (h.points: Vector[PointData], h.aggregationTemporality))
+      Hash.by(h =>
+        (h.points.toVector: Vector[PointData], h.aggregationTemporality)
+      )
 
     new Hash[MetricPoints] {
       def hash(x: MetricPoints): Int =
@@ -154,30 +162,33 @@ object MetricPoints {
     Show.show {
       case sum: Sum =>
         "MetricPoints.Sum{" +
-          s"points=${sum.points.mkString("{", ",", "}")}, " +
+          s"points=${(sum.points: NonEmptyVector[PointData]).mkString_("{", ",", "}")}, " +
           s"monotonic=${sum.monotonic}, " +
           s"aggregationTemporality=${sum.aggregationTemporality}}"
 
       case gauge: Gauge =>
-        s"MetricPoints.Gauge{points=${gauge.points.mkString("{", ",", "}")}}"
+        "MetricPoints.Gauge{" +
+          s"points=${(gauge.points: NonEmptyVector[PointData]).mkString_("{", ",", "}")}}"
 
       case h: Histogram =>
-        s"MetricPoints.Histogram{points=${h.points.mkString("{", ",", "}")}, aggregationTemporality=${h.aggregationTemporality}}"
+        "MetricPoints.Histogram{" +
+          s"points=${(h.points: NonEmptyVector[PointData]).mkString_("{", ",", "}")}, " +
+          s"aggregationTemporality=${h.aggregationTemporality}}"
     }
   }
 
   private final case class SumImpl[A <: PointData.NumberPoint](
-      points: Vector[A],
+      points: NonEmptyVector[A],
       monotonic: Boolean,
       aggregationTemporality: AggregationTemporality
   ) extends Sum { type Point = A }
 
   private final case class GaugeImpl[A <: PointData.NumberPoint](
-      points: Vector[A]
+      points: NonEmptyVector[A]
   ) extends Gauge { type Point = A }
 
   private final case class HistogramImpl(
-      points: Vector[PointData.Histogram],
+      points: NonEmptyVector[PointData.Histogram],
       aggregationTemporality: AggregationTemporality
   ) extends Histogram
 

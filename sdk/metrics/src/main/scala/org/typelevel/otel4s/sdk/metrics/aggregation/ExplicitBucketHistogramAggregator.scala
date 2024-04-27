@@ -17,6 +17,7 @@
 package org.typelevel.otel4s.sdk.metrics.aggregation
 
 import cats.FlatMap
+import cats.data.NonEmptyVector
 import cats.effect.Concurrent
 import cats.effect.Ref
 import cats.effect.Temporal
@@ -67,7 +68,7 @@ private final class ExplicitBucketHistogramAggregator[
       resource: TelemetryResource,
       scope: InstrumentationScope,
       descriptor: MetricDescriptor,
-      points: Vector[PointData.Histogram],
+      points: NonEmptyVector[PointData.Histogram],
       temporality: AggregationTemporality
   ): F[MetricData] =
     Concurrent[F].pure(

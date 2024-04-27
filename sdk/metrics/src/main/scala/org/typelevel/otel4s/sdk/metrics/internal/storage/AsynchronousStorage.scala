@@ -17,6 +17,7 @@
 package org.typelevel.otel4s.sdk.metrics.internal.storage
 
 import cats.Monad
+import cats.data.NonEmptyVector
 import cats.effect.Concurrent
 import cats.effect.Ref
 import cats.effect.Temporal
@@ -95,20 +96,23 @@ private final class AsynchronousStorage[
       scope: InstrumentationScope,
       timeWindow: TimeWindow
   ): F[Option[MetricData]] =
-    collector.collectPoints.flatMap {
-      case measurements if measurements.nonEmpty =>
-        aggregator
-          .toMetricData(
-            resource,
-            scope,
-            metricDescriptor,
-            measurements,
-            aggregationTemporality
-          )
-          .map(Some(_))
+    collector.collectPoints.flatMap { points =>
+      NonEmptyVector.fromVector(points) match {
+        case Some(measurements) =>
+          aggregator
+            .toMetricData(
+              resource,
+              scope,
+              metricDescriptor,
+              measurements,
+              aggregationTemporality
+            )
+            .map(Some(_))
 
-      case _ =>
-        Monad[F].pure(None)
+        case None =>
+          Monad[F].pure(None)
+
+      }
     }
 
   private def cardinalityWarning: F[Unit] =

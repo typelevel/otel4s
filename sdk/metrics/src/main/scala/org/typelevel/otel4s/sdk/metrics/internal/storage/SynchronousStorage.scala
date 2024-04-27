@@ -17,6 +17,7 @@
 package org.typelevel.otel4s.sdk.metrics.internal.storage
 
 import cats.Monad
+import cats.data.NonEmptyVector
 import cats.effect.Temporal
 import cats.effect.std.AtomicCell
 import cats.effect.std.Console
@@ -92,18 +93,21 @@ private final class SynchronousStorage[
     val isDelta = aggregationTemporality == AggregationTemporality.Delta
 
     def toMetricData(points: Vector[PointData]): F[Option[MetricData]] =
-      if (points.isEmpty)
-        Monad[F].pure(Option.empty[MetricData])
-      else
-        aggregator
-          .toMetricData(
-            resource,
-            scope,
-            metricDescriptor,
-            points,
-            aggregationTemporality
-          )
-          .map(Some(_))
+      NonEmptyVector.fromVector(points) match {
+        case Some(metricPoints) =>
+          aggregator
+            .toMetricData(
+              resource,
+              scope,
+              metricDescriptor,
+              metricPoints,
+              aggregationTemporality
+            )
+            .map(Some(_))
+
+        case None =>
+          Monad[F].pure(Option.empty[MetricData])
+      }
 
     for {
       points <- if (isDelta) collectDelta(window) else collectCumulative(window)

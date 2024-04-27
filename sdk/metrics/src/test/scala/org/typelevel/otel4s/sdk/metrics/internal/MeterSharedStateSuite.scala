@@ -17,6 +17,7 @@
 package org.typelevel.otel4s.sdk.metrics.internal
 
 import cats.data.NonEmptyList
+import cats.data.NonEmptyVector
 import cats.effect.IO
 import cats.effect.std.Random
 import cats.mtl.Ask
@@ -61,7 +62,7 @@ class MeterSharedStateSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
           case InstrumentType.Counter =>
             MetricPoints.sum(
               points = PointDataUtils.toNumberPoints(
-                Vector(value),
+                NonEmptyVector.one(value),
                 attributes,
                 timeWindow
               ),
@@ -72,7 +73,7 @@ class MeterSharedStateSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
           case InstrumentType.UpDownCounter =>
             MetricPoints.sum(
               PointDataUtils.toNumberPoints(
-                Vector(value),
+                NonEmptyVector.one(value),
                 attributes,
                 timeWindow
               ),
@@ -82,9 +83,9 @@ class MeterSharedStateSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
 
           case InstrumentType.Histogram =>
             MetricPoints.histogram(
-              Vector(
+              NonEmptyVector.one(
                 PointDataUtils.toHistogramPoint(
-                  Vector(value),
+                  NonEmptyVector.one(value),
                   attributes,
                   timeWindow,
                   Aggregation.Defaults.Boundaries
@@ -133,7 +134,7 @@ class MeterSharedStateSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
           case InstrumentType.ObservableCounter =>
             MetricPoints.sum(
               points = PointDataUtils.toNumberPoints(
-                Vector(value),
+                NonEmptyVector.one(value),
                 attributes,
                 timeWindow
               ),
@@ -144,7 +145,7 @@ class MeterSharedStateSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
           case InstrumentType.ObservableUpDownCounter =>
             MetricPoints.sum(
               PointDataUtils.toNumberPoints(
-                Vector(value),
+                NonEmptyVector.one(value),
                 attributes,
                 timeWindow
               ),
@@ -155,7 +156,7 @@ class MeterSharedStateSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
           case InstrumentType.ObservableGauge =>
             MetricPoints.gauge(
               PointDataUtils.toNumberPoints(
-                Vector(value),
+                NonEmptyVector.one(value),
                 attributes,
                 timeWindow
               )

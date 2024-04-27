@@ -16,6 +16,7 @@
 
 package org.typelevel.otel4s.sdk.metrics.aggregation
 
+import cats.data.NonEmptyVector
 import cats.effect.IO
 import cats.effect.SyncIO
 import cats.effect.std.Random
@@ -60,7 +61,7 @@ class SumAggregatorSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
 
   test("synchronous - aggregate with reset - return delta sum") {
     PropF.forAllF(
-      Gen.listOf(Gen.long),
+      Gens.nonEmptyVector(Gen.long),
       Gens.attributes,
       Gens.attributes,
       Gens.traceContext
@@ -78,17 +79,16 @@ class SumAggregatorSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
           PointData.longNumber(
             timeWindow,
             attributes,
-            values.lastOption.map { last =>
+            Vector(
               ExemplarData.long(
-                exemplarAttributes.filterNot(a =>
-                  attributes.get(a.key).isDefined
-                ),
+                exemplarAttributes
+                  .filterNot(a => attributes.get(a.key).isDefined),
                 Duration.Zero,
                 Some(traceContext),
-                last
+                values.last
               )
-            }.toVector,
-            values.sum
+            ),
+            values.toVector.sum
           )
 
         TestControl.executeEmbed {
@@ -106,7 +106,7 @@ class SumAggregatorSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
 
   test("synchronous - aggregate without reset - return cumulative sum") {
     PropF.forAllF(
-      Gen.listOf(Gen.long),
+      Gens.nonEmptyVector(Gen.long),
       Gens.attributes,
       Gens.attributes,
       Gens.traceContext
@@ -120,21 +120,20 @@ class SumAggregatorSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
         val timeWindow =
           TimeWindow(100.millis, 200.millis)
 
-        def expected(values: List[Long]): PointData.LongNumber =
+        def expected(values: NonEmptyVector[Long]): PointData.LongNumber =
           PointData.longNumber(
             timeWindow,
             attributes,
-            values.lastOption.map { last =>
+            Vector(
               ExemplarData.long(
-                exemplarAttributes.filterNot(a =>
-                  attributes.get(a.key).isDefined
-                ),
+                exemplarAttributes
+                  .filterNot(a => attributes.get(a.key).isDefined),
                 Duration.Zero,
                 Some(traceContext),
-                last
+                values.last
               )
-            }.toVector,
-            values.sum
+            ),
+            values.toVector.sum
           )
 
         TestControl.executeEmbed {
@@ -152,7 +151,7 @@ class SumAggregatorSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
             assertEquals(r1: Option[PointData], Some(expected(values)))
             assertEquals(
               r2: Option[PointData],
-              Some(expected(values ++ values))
+              Some(expected(values.concatNev(values)))
             )
           }
         }
@@ -165,7 +164,7 @@ class SumAggregatorSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
       Gens.telemetryResource,
       Gens.instrumentationScope,
       Gens.instrumentDescriptor,
-      Gen.listOf(Gens.longNumberPointData),
+      Gens.nonEmptyVector(Gens.longNumberPointData),
       Gens.aggregationTemporality
     ) { (resource, scope, descriptor, points, temporality) =>
       Random.javaUtilRandom[IO](random).flatMap { implicit R: Random[IO] =>
@@ -193,7 +192,7 @@ class SumAggregatorSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
             name = descriptor.name.toString,
             description = descriptor.description,
             unit = descriptor.unit,
-            data = MetricPoints.sum(points.toVector, monotonic, temporality)
+            data = MetricPoints.sum(points, monotonic, temporality)
           )
 
         for {
@@ -201,7 +200,7 @@ class SumAggregatorSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
             resource,
             scope,
             MetricDescriptor(None, descriptor),
-            points.toVector,
+            points,
             temporality
           )
         } yield assertEquals(metricData, expected)
@@ -228,7 +227,7 @@ class SumAggregatorSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
       Gens.telemetryResource,
       Gens.instrumentationScope,
       Gens.instrumentDescriptor,
-      Gen.listOf(Gens.asynchronousMeasurement(Gen.long)),
+      Gens.nonEmptyVector(Gens.asynchronousMeasurement(Gen.long)),
       Gens.aggregationTemporality
     ) { (resource, scope, descriptor, measurements, temporality) =>
       val aggregator = SumAggregator.asynchronous[IO, Long]
@@ -252,7 +251,7 @@ class SumAggregatorSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
           name = descriptor.name.toString,
           description = descriptor.description,
           unit = descriptor.unit,
-          data = MetricPoints.sum(points.toVector, monotonic, temporality)
+          data = MetricPoints.sum(points, monotonic, temporality)
         )
 
       for {
@@ -260,7 +259,7 @@ class SumAggregatorSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
           resource,
           scope,
           MetricDescriptor(None, descriptor),
-          measurements.toVector,
+          measurements,
           temporality
         )
       } yield assertEquals(metricData, expected)

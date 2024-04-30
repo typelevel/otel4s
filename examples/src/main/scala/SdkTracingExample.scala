@@ -19,7 +19,7 @@ import cats.effect._
 import cats.effect.std.Console
 import cats.syntax.all._
 import org.typelevel.otel4s.sdk.OpenTelemetrySdk
-import org.typelevel.otel4s.sdk.exporter.otlp.trace.autoconfigure.OtlpSpanExporterAutoConfigure
+import org.typelevel.otel4s.sdk.exporter.otlp.autoconfigure.OtlpExportersAutoConfigure
 import org.typelevel.otel4s.trace.SpanOps
 import org.typelevel.otel4s.trace.Tracer
 
@@ -46,8 +46,8 @@ object SdkTracingExample extends IOApp.Simple {
   def run: IO[Unit] =
     OpenTelemetrySdk
       .autoConfigured[IO](
-        _.addSpanExporterConfigurer(
-          OtlpSpanExporterAutoConfigure[IO]
+        _.addExportersConfigurer(
+          OtlpExportersAutoConfigure[IO]
         ) // register OTLP exporter configurer
       )
       .use { autoConfigured =>

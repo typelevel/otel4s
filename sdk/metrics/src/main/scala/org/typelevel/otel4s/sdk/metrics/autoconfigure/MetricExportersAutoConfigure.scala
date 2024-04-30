@@ -113,10 +113,10 @@ private final class MetricExportersAutoConfigure[F[_]: MonadThrow: Console](
          |and register the configurer via OpenTelemetrySdk:
          |
          |import org.typelevel.otel4s.sdk.OpenTelemetrySdk
-         |import org.typelevel.otel4s.sdk.exporter.otlp.metrics.autoconfigure.OtlpMetricExporterAutoConfigure
+         |import org.typelevel.otel4s.sdk.exporter.otlp.autoconfigure.OtlpExportersAutoConfigure
          |
          |OpenTelemetrySdk.autoConfigured[IO](
-         |  _.addMetricExporterConfigurer(OtlpMetricExporterAutoConfigure[IO])
+         |  _.addExportersConfigurer(OtlpExportersAutoConfigure[IO])
          |)
          |
          |or via SdkMetrics:

@@ -410,6 +410,7 @@ lazy val `sdk-exporter` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .crossType(CrossType.Pure)
   .in(file("sdk-exporter/all"))
   .dependsOn(
+    sdk,
     `sdk-exporter-common`,
     `sdk-exporter-metrics`,
     `sdk-exporter-trace`

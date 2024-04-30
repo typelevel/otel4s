@@ -39,17 +39,15 @@ Then use `OpenTelemetrySdk.autoConfigured` or `SdkTraces.autoConfigured` to auto
 ```scala mdoc:silent:reset
 import cats.effect.{IO, IOApp}
 import org.typelevel.otel4s.sdk.OpenTelemetrySdk
-import org.typelevel.otel4s.sdk.exporter.otlp.trace.autoconfigure.OtlpSpanExporterAutoConfigure
+import org.typelevel.otel4s.sdk.exporter.otlp.autoconfigure.OtlpExportersAutoConfigure
 import org.typelevel.otel4s.trace.TracerProvider
 
 object TelemetryApp extends IOApp.Simple {
 
   def run: IO[Unit] =
     OpenTelemetrySdk
-      .autoConfigured[IO](
-        _.addSpanExporterConfigurer(
-          OtlpSpanExporterAutoConfigure[IO]
-        ) // register OTLP exporter configurer
+      .autoConfigured[IO]( // register OTLP exporters configurer
+        _.addExportersConfigurer(OtlpExportersAutoConfigure[IO]) 
       )
       .use { autoConfigured =>
         val sdk = autoConfigured.sdk
@@ -78,7 +76,7 @@ third-party components cannot be loaded dynamically as OpenTelemetry Java does.
 Hence, the configurers must be registered manually:
 ```scala mdoc:silent
 OpenTelemetrySdk.autoConfigured[IO](
-  _.addSpanExporterConfigurer(OtlpSpanExporterAutoConfigure[IO])
+  _.addExportersConfigurer(OtlpExportersAutoConfigure[IO])
 )
 ```
 

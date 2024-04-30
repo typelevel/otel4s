@@ -26,28 +26,17 @@ import org.http4s.Headers
 import org.http4s.client.Client
 import org.typelevel.otel4s.sdk.autoconfigure.AutoConfigure
 import org.typelevel.otel4s.sdk.autoconfigure.Config
-import org.typelevel.otel4s.sdk.autoconfigure.ConfigurationError
-import org.typelevel.otel4s.sdk.exporter.otlp.HttpPayloadEncoding
+import org.typelevel.otel4s.sdk.exporter.otlp.Protocol
 import org.typelevel.otel4s.sdk.exporter.otlp.autoconfigure.OtlpHttpClientAutoConfigure
+import org.typelevel.otel4s.sdk.exporter.otlp.autoconfigure.ProtocolAutoConfigure
 import org.typelevel.otel4s.sdk.trace.data.SpanData
 import org.typelevel.otel4s.sdk.trace.exporter.SpanExporter
 
 /** Autoconfigures OTLP
   * [[org.typelevel.otel4s.sdk.trace.exporter.SpanExporter SpanExporter]].
   *
-  * The general configuration options:
-  * {{{
-  * | System property                    | Environment variable        | Description                                                                                                                                      |
-  * |------------------------------------|-----------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------|
-  * | otel.exporter.otlp.protocol        | OTEL_EXPORTER_OTLP_PROTOCOL | The transport protocol to use on OTLP trace, metric, and log requests. Options include `http/protobuf`, and `http/json`. Default is `http/json`. |
-  * }}}
-  *
-  * The traces-specific configuration options:
-  * {{{
-  * | System property                    | Environment variable               | Description                                                                                                                        |
-  * |------------------------------------|------------------------------------|------------------------------------------------------------------------------------------------------------------------------------|
-  * | otel.exporter.otlp.traces.protocol | OTEL_EXPORTER_OTLP_TRACES_PROTOCOL |The transport protocol to use on OTLP trace log requests. Options include `http/protobuf`, and `http/json`. Default is `http/json`. |                               |
-  * }}}
+  * @see
+  *   [[ProtocolAutoConfigure]] for OTLP protocol configuration
   *
   * @see
   *   [[OtlpHttpClientAutoConfigure]] for OTLP HTTP client configuration
@@ -60,32 +49,18 @@ private final class OtlpSpanExporterAutoConfigure[
 ](customClient: Option[Client[F]])
     extends AutoConfigure.WithHint[F, SpanExporter[F]](
       "OtlpSpanExporter",
-      OtlpSpanExporterAutoConfigure.ConfigKeys.All
+      Set.empty
     )
     with AutoConfigure.Named[F, SpanExporter[F]] {
 
-  import OtlpSpanExporterAutoConfigure.ConfigKeys
-  import OtlpSpanExporterAutoConfigure.Defaults
-  import OtlpSpanExporterAutoConfigure.Protocol
-
   def name: String = "otlp"
 
-  protected def fromConfig(config: Config): Resource[F, SpanExporter[F]] = {
-    import SpansProtoEncoder.spanDataToRequest
-    import SpansProtoEncoder.jsonPrinter
+  protected def fromConfig(config: Config): Resource[F, SpanExporter[F]] =
+    ProtocolAutoConfigure.traces[F].configure(config).flatMap {
+      case Protocol.Http(encoding) =>
+        import SpansProtoEncoder.spanDataToRequest
+        import SpansProtoEncoder.jsonPrinter
 
-    val protocol = config.get(ConfigKeys.TracesProtocol).flatMap {
-      case Some(value) =>
-        Right(value)
-
-      case None =>
-        config
-          .get(ConfigKeys.GeneralProtocol)
-          .map(_.getOrElse(Defaults.OtlpProtocol))
-    }
-
-    protocol match {
-      case Right(Protocol.Http(encoding)) =>
         val defaults = OtlpHttpClientAutoConfigure.Defaults(
           OtlpHttpSpanExporter.Defaults.Endpoint,
           OtlpHttpSpanExporter.Defaults.Endpoint.path.toString,
@@ -98,55 +73,11 @@ private final class OtlpSpanExporterAutoConfigure[
           .traces[F, SpanData](defaults, customClient)
           .configure(config)
           .map(client => new OtlpHttpSpanExporter[F](client))
-
-      case Left(e) =>
-        Resource.raiseError(e: Throwable)
-    }
-  }
-
-  private implicit val protocolReader: Config.Reader[Protocol] =
-    Config.Reader.decodeWithHint("Protocol") { s =>
-      s.trim.toLowerCase match {
-        case "http/json" =>
-          Right(Protocol.Http(HttpPayloadEncoding.Json))
-
-        case "http/protobuf" =>
-          Right(Protocol.Http(HttpPayloadEncoding.Protobuf))
-
-        case _ =>
-          Left(
-            ConfigurationError(
-              s"Unrecognized protocol [$s]. Supported options [http/json, http/protobuf]"
-            )
-          )
-      }
     }
 
 }
 
 object OtlpSpanExporterAutoConfigure {
-
-  private sealed trait Protocol
-  private object Protocol {
-    final case class Http(encoding: HttpPayloadEncoding) extends Protocol
-  }
-
-  private object ConfigKeys {
-    val GeneralProtocol: Config.Key[Protocol] =
-      Config.Key("otel.exporter.otlp.protocol")
-
-    val TracesProtocol: Config.Key[Protocol] =
-      Config.Key("otel.exporter.otlp.traces.protocol")
-
-    val All: Set[Config.Key[_]] = Set(
-      GeneralProtocol,
-      TracesProtocol
-    )
-  }
-
-  private object Defaults {
-    val OtlpProtocol: Protocol = Protocol.Http(HttpPayloadEncoding.Protobuf)
-  }
 
   /** Autoconfigures OTLP
     * [[org.typelevel.otel4s.sdk.trace.exporter.SpanExporter SpanExporter]].

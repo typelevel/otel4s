@@ -46,7 +46,7 @@ import scala.concurrent.duration._
   * @see
   *   [[https://opentelemetry.io/docs/concepts/sdk-configuration/otlp-exporter-configuration/]]
   */
-private final class OtlpHttpMetricExporter[F[_]: Applicative] private (
+private final class OtlpHttpMetricExporter[F[_]: Applicative] private[otlp] (
     client: OtlpHttpClient[F, MetricData],
     val aggregationTemporalitySelector: AggregationTemporalitySelector,
     val defaultAggregationSelector: AggregationSelector,

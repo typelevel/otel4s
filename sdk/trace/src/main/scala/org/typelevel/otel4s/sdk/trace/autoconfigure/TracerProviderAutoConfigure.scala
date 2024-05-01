@@ -81,21 +81,21 @@ private final class TracerProviderAutoConfigure[
       config: Config,
       exporters: Map[String, SpanExporter[F]]
   ): Resource[F, List[SpanProcessor[F]]] = {
-    val loggingExporter = SpanExportersAutoConfigure.Const.LoggingExporter
+    val consoleExporter = SpanExportersAutoConfigure.Const.ConsoleExporter
 
-    val logging = exporters.get(loggingExporter) match {
-      case Some(logging) => List(SimpleSpanProcessor(logging))
+    val console = exporters.get(consoleExporter) match {
+      case Some(console) => List(SimpleSpanProcessor(console))
       case None          => Nil
     }
 
-    val others = exporters.removed(loggingExporter)
+    val others = exporters.removed(consoleExporter)
     if (others.nonEmpty) {
       val exporter = others.values.toList.combineAll
       BatchSpanProcessorAutoConfigure[F](exporter)
         .configure(config)
-        .map(processor => logging :+ processor)
+        .map(processor => console :+ processor)
     } else {
-      Resource.pure(logging)
+      Resource.pure(console)
     }
   }
 }

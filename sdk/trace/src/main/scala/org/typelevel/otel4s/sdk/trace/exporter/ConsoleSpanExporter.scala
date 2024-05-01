@@ -29,10 +29,10 @@ import org.typelevel.otel4s.sdk.trace.data.SpanData
   *   use this exporter for debugging purposes because it may affect the
   *   performance
   */
-private final class LoggingSpanExporter[F[_]: Applicative: Console]
+private final class ConsoleSpanExporter[F[_]: Applicative: Console]
     extends SpanExporter[F] {
 
-  val name: String = "LoggingSpanExporter"
+  val name: String = "ConsoleSpanExporter"
 
   def exportSpans[G[_]: Foldable](spans: G[SpanData]): F[Unit] = {
     def log(span: SpanData): F[Unit] = {
@@ -43,7 +43,7 @@ private final class LoggingSpanExporter[F[_]: Applicative: Console]
         s"[tracer: ${scope.name}:${scope.version.getOrElse("")}] " +
         s"${span.attributes}"
 
-      Console[F].println(s"LoggingSpanExporter: $content")
+      Console[F].println(s"ConsoleSpanExporter: $content")
     }
 
     spans.traverse_(span => log(span))
@@ -53,9 +53,9 @@ private final class LoggingSpanExporter[F[_]: Applicative: Console]
 
 }
 
-object LoggingSpanExporter {
+object ConsoleSpanExporter {
 
   def apply[F[_]: Applicative: Console]: SpanExporter[F] =
-    new LoggingSpanExporter[F]
+    new ConsoleSpanExporter[F]
 
 }

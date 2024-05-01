@@ -161,19 +161,17 @@ class TracerProviderAutoConfigureSuite extends CatsEffectSuite {
     }
   }
 
-  test("logging exporter should use a dedicated SimpleSpanProcessor") {
+  test("console exporter should use a dedicated SimpleSpanProcessor") {
     val config = Config.ofProps(
       Map(
-        "otel.traces.exporter" -> "logging,custom",
+        "otel.traces.exporter" -> "console,custom",
         "otel.traces.sampler" -> "always_off"
       )
     )
 
-    val logging: SpanExporter[IO] = customExporter("LoggingExporter")
     val custom: SpanExporter[IO] = customExporter("CustomExporter")
 
     val configurers: Set[AutoConfigure.Named[IO, SpanExporter[IO]]] = Set(
-      AutoConfigure.Named.const("logging", logging),
       AutoConfigure.Named.const("custom", custom)
     )
 
@@ -182,7 +180,7 @@ class TracerProviderAutoConfigureSuite extends CatsEffectSuite {
         s"resource=${TelemetryResource.empty}, " +
         s"sampler=${Sampler.AlwaysOff}, " +
         "spanProcessor=SpanProcessor.Multi(" +
-        "SimpleSpanProcessor{exporter=LoggingSpanExporter, exportOnlySampled=true}, " +
+        "SimpleSpanProcessor{exporter=ConsoleSpanExporter, exportOnlySampled=true}, " +
         "BatchSpanProcessor{exporter=CustomExporter, scheduleDelay=5 seconds, exporterTimeout=30 seconds, maxQueueSize=2048, maxExportBatchSize=512}, " +
         "SpanStorage)}"
 

@@ -19,6 +19,7 @@ package org.typelevel.otel4s.oteljava.metrics
 import cats.effect.kernel.Async
 import io.opentelemetry.api.{OpenTelemetry => JOpenTelemetry}
 import org.typelevel.otel4s.metrics.MeterProvider
+import org.typelevel.otel4s.oteljava.context.AskContext
 
 trait Metrics[F[_]] {
   def meterProvider: MeterProvider[F]
@@ -26,7 +27,7 @@ trait Metrics[F[_]] {
 
 object Metrics {
 
-  def forAsync[F[_]: Async](jOtel: JOpenTelemetry): Metrics[F] =
+  def forAsync[F[_]: Async: AskContext](jOtel: JOpenTelemetry): Metrics[F] =
     new Metrics[F] {
       val meterProvider: MeterProvider[F] =
         new MeterProviderImpl[F](jOtel.getMeterProvider)

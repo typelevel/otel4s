@@ -42,7 +42,7 @@ class SdkHistogramSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
 
   private implicit val askContext: Ask[IO, Context] = Ask.const(Context.root)
 
-  test("allow only non-positive values") {
+  test("allow only non-negative values") {
     PropF.forAllF(
       Gens.telemetryResource,
       Gens.instrumentationScope,

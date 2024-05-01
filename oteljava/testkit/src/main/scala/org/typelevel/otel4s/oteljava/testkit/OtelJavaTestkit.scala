@@ -24,6 +24,7 @@ import io.opentelemetry.context.propagation.{
 }
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder
+import org.typelevel.otel4s.context.LocalProvider
 import org.typelevel.otel4s.context.propagation.ContextPropagators
 import org.typelevel.otel4s.metrics.MeterProvider
 import org.typelevel.otel4s.oteljava.context.Context
@@ -67,13 +68,15 @@ object OtelJavaTestkit {
         identity,
       textMapPropagators: Iterable[JTextMapPropagator] = Nil
   ): Resource[F, OtelJavaTestkit[F]] =
-    for {
-      metrics <- MetricsTestkit.inMemory(customizeMeterProviderBuilder)
-      traces <- TracesTestkit.inMemory(
-        customizeTracerProviderBuilder,
-        textMapPropagators
-      )
-    } yield new Impl[F](metrics, traces)
+    Resource.eval(LocalProvider[F, Context].local).flatMap { implicit local =>
+      for {
+        metrics <- MetricsTestkit.create(customizeMeterProviderBuilder)
+        traces <- TracesTestkit.inMemory(
+          customizeTracerProviderBuilder,
+          textMapPropagators
+        )(Async[F], LocalProvider.fromLocal(local))
+      } yield new Impl[F](metrics, traces)
+    }
 
   private final class Impl[F[_]](
       metrics: MetricsTestkit[F],

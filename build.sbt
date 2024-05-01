@@ -225,7 +225,10 @@ lazy val `sdk-common` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
 lazy val `sdk-metrics` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .crossType(CrossType.Pure)
   .in(file("sdk/metrics"))
-  .dependsOn(`sdk-common` % "compile->compile;test->test", `core-metrics`)
+  .dependsOn(
+    `sdk-common` % "compile->compile;test->test",
+    `core-metrics` % "compile->compile;test->test"
+  )
   .settings(
     name := "otel4s-sdk-metrics",
     startYear := Some(2024),
@@ -300,7 +303,8 @@ lazy val sdk = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .dependsOn(
     core,
     `sdk-common`,
-    `sdk-metrics`,
+    `sdk-metrics` % "compile->compile;test->test",
+    `sdk-metrics-testkit` % Test,
     `sdk-trace` % "compile->compile;test->test",
     `sdk-trace-testkit` % Test
   )
@@ -460,7 +464,10 @@ lazy val `oteljava-common-testkit` = project
 
 lazy val `oteljava-metrics` = project
   .in(file("oteljava/metrics"))
-  .dependsOn(`oteljava-common`, `core-metrics`.jvm)
+  .dependsOn(
+    `oteljava-common`,
+    `core-metrics`.jvm % "compile->compile;test->test"
+  )
   .settings(munitDependencies)
   .settings(
     name := "otel4s-oteljava-metrics",
@@ -521,7 +528,7 @@ lazy val oteljava = project
   .in(file("oteljava/all"))
   .dependsOn(
     core.jvm,
-    `oteljava-metrics`,
+    `oteljava-metrics` % "compile->compile;test->test",
     `oteljava-metrics-testkit` % Test,
     `oteljava-trace` % "compile->compile;test->test",
     `oteljava-trace-testkit` % Test

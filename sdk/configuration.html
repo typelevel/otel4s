@@ -127,9 +127,14 @@
   <ul class="nav-list">
     <li class="level1 nav-leaf"><a href="#common">Common</a></li>
     <li class="level1 nav-leaf"><a href="#telemetry-resource">Telemetry resource</a></li>
+    <li class="level1 nav-node"><a href="#metrics">Metrics</a></li>
+    <li class="level2 nav-leaf"><a href="#exporters-1">Exporters</a></li>
+    <li class="level2 nav-leaf"><a href="#otlp-exporter-1">OTLP exporter</a></li>
+    <li class="level2 nav-leaf"><a href="#period-metric-reader">Period metric reader</a></li>
+    <li class="level2 nav-leaf"><a href="#exemplar-filter">Exemplar filter</a></li>
     <li class="level1 nav-node"><a href="#tracing">Tracing</a></li>
-    <li class="level2 nav-leaf"><a href="#exporters">Exporters</a></li>
-    <li class="level2 nav-leaf"><a href="#otlp-exporter">OTLP exporter</a></li>
+    <li class="level2 nav-leaf"><a href="#exporters-2">Exporters</a></li>
+    <li class="level2 nav-leaf"><a href="#otlp-exporter-2">OTLP exporter</a></li>
     <li class="level2 nav-leaf"><a href="#propagators">Propagators</a></li>
     <li class="level2 nav-leaf"><a href="#batch-span-processor">Batch span processor</a></li>
     <li class="level2 nav-leaf"><a href="#sampler">Sampler</a></li>
@@ -214,9 +219,150 @@
           </tbody>
         </table>
         
+        <h2 id="metrics" class="section"><a class="anchor-link left" href="#metrics"><i class="icofont-laika link">&#xef71;</i></a>Metrics</h2>
+        
+        <h3 id="exporters-1" class="section"><a class="anchor-link left" href="#exporters-1"><i class="icofont-laika link">&#xef71;</i></a>Exporters</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>System property</th>
+              <th>Environment variable</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>otel.metrics.exporter</td>
+              <td>OTEL_METRICS_EXPORTER</td>
+              <td>List of exporters to be export metrics, separated by commas. <code>none</code> means no autoconfigured exporter. Default is <code>otlp</code>.</td>
+            </tr>
+          </tbody>
+        </table>
+        <p>Options supported out of the box:</p>
+        <ul>
+          <li><code>otlp</code> - requires <code>otel4s-sdk-exporter</code> dependency.</li>
+          <li><code>console</code> - prints metrics to stdout. It&#39;s mainly used for testing and debugging.</li>
+          <li><code>none</code> - means no autoconfigured exporter.</li>
+        </ul>
+        
+        <h3 id="otlp-exporter-1" class="section"><a class="anchor-link left" href="#otlp-exporter-1"><i class="icofont-laika link">&#xef71;</i></a>OTLP exporter</h3>
+        <p>The exporter can be configured by two sets of settings:</p>
+        <ul>
+          <li>global: <code>otel.expoter.otlp.{x}</code></li>
+          <li>target-specific: <code>otel.exporter.otlp.metrics.{x}</code></li>
+        </ul>
+        <p>Global properties can be used to configure span and metric exporters simultaneously.
+        Global <code>otel.exporter.otlp.endpoint</code> must be a <strong>base</strong> URL. The configurer automatically adds path (i.e. <code>v1/metrics</code>) to the URL.</p>
+        <p>Target-specific properties are prioritized. E.g. <code>otel.exporter.otlp.metrics.endpoint</code> is prioritized over <code>otel.exporter.otlp.endpoint</code>.</p>
+        <table>
+          <thead>
+            <tr>
+              <th>System property</th>
+              <th>Environment variable</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>otel.exporter.otlp.endpoint</td>
+              <td>OTEL_EXPORTER_OTLP_ENDPOINT</td>
+              <td>The OTLP traces, metrics, and logs endpoint to connect to. Must be a <strong>base</strong> URL with a scheme of either http or https based on the use of TLS. Default is <code>http://localhost:4318/</code>.</td>
+            </tr>
+            <tr>
+              <td>otel.exporter.otlp.headers</td>
+              <td>OTEL_EXPORTER_OTLP_HEADERS</td>
+              <td>Key-value pairs separated by commas to pass as request headers on OTLP trace, metric, and log requests.</td>
+            </tr>
+            <tr>
+              <td>otel.exporter.otlp.compression</td>
+              <td>OTEL_EXPORTER_OTLP_COMPRESSION</td>
+              <td>The compression type to use on OTLP trace, metric, and log requests. Options include gzip. By default, no compression will be used.</td>
+            </tr>
+            <tr>
+              <td>otel.exporter.otlp.timeout</td>
+              <td>OTEL_EXPORTER_OTLP_TIMEOUT</td>
+              <td>The maximum waiting time to send each OTLP trace, metric, and log batch. Default is <code>10 seconds</code>.</td>
+            </tr>
+            <tr>
+              <td><strong>Target specific:</strong></td>
+              <td></td>
+              <td></td>
+            </tr>
+            <tr>
+              <td>otel.exporter.otlp.metrics.endpoint</td>
+              <td>OTEL_EXPORTER_OTLP_METRICS_ENDPOINT</td>
+              <td>The OTLP metrics endpoint to connect to. Default is <code>http://localhost:4318/v1/metrics</code>.</td>
+            </tr>
+            <tr>
+              <td>otel.exporter.otlp.metrics.headers</td>
+              <td>OTEL_EXPORTER_OTLP_METRICS_HEADERS</td>
+              <td>Key-value pairs separated by commas to pass as request headers on OTLP trace requests.</td>
+            </tr>
+            <tr>
+              <td>otel.exporter.otlp.metrics.compression</td>
+              <td>OTEL_EXPORTER_OTLP_METRICS_COMPRESSION</td>
+              <td>The compression type to use on OTLP trace requests. Options include gzip. By default, no compression will be used.</td>
+            </tr>
+            <tr>
+              <td>otel.exporter.otlp.metrics.timeout</td>
+              <td>OTEL_EXPORTER_OTLP_METRICS_TIMEOUT</td>
+              <td>The maximum waiting time to send each OTLP trace batch. Default is <code>10 seconds</code>.</td>
+            </tr>
+          </tbody>
+        </table>
+        
+        <h3 id="period-metric-reader" class="section"><a class="anchor-link left" href="#period-metric-reader"><i class="icofont-laika link">&#xef71;</i></a>Period metric reader</h3>
+        <p>Period metric reader pushes metrics to the push-based exporters (e.g. OTLP) over a fixed interval.</p>
+        <table>
+          <thead>
+            <tr>
+              <th>System property</th>
+              <th>Environment variable</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>otel.metric.export.interval</td>
+              <td>OTEL_METRIC_EXPORT_INTERVAL</td>
+              <td>The time interval between the start of two export attempts. Default is <code>1 minute</code>.</td>
+            </tr>
+            <tr>
+              <td>otel.metric.export.timeout</td>
+              <td>OTEL_METRIC_EXPORT_TIMEOUT</td>
+              <td>Maximum allowed time to export data. Default is <code>30 seconds</code>.</td>
+            </tr>
+          </tbody>
+        </table>
+        
+        <h3 id="exemplar-filter" class="section"><a class="anchor-link left" href="#exemplar-filter"><i class="icofont-laika link">&#xef71;</i></a>Exemplar filter</h3>
+        <p>The exemplar filter decides whether the measurement will be recorded as an exemplar.</p>
+        <table>
+          <thead>
+            <tr>
+              <th>System property</th>
+              <th>Environment variable</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>otel.metrics.exemplar.filter</td>
+              <td>OTEL_METRICS_EXEMPLAR_FILTER</td>
+              <td>The exemplar filter to use. Default is <code>trace_based</code>.</td>
+            </tr>
+          </tbody>
+        </table>
+        <p>The following options for <code>otel.metrics.exemplar.filter</code> are supported:</p>
+        <ul>
+          <li><code>always_on</code> - all measurements eligible for being an exemplar.</li>
+          <li><code>always_off</code> - no measurements eligible for being an exemplar.</li>
+          <li><code>trace_based</code> - accepts measurements where there is a span in a context that is being sampled.</li>
+        </ul>
+        
         <h2 id="tracing" class="section"><a class="anchor-link left" href="#tracing"><i class="icofont-laika link">&#xef71;</i></a>Tracing</h2>
         
-        <h3 id="exporters" class="section"><a class="anchor-link left" href="#exporters"><i class="icofont-laika link">&#xef71;</i></a>Exporters</h3>
+        <h3 id="exporters-2" class="section"><a class="anchor-link left" href="#exporters-2"><i class="icofont-laika link">&#xef71;</i></a>Exporters</h3>
         <table>
           <thead>
             <tr>
@@ -236,17 +382,17 @@
         <p>Options supported out of the box:</p>
         <ul>
           <li><code>otlp</code> - requires <code>otel4s-sdk-exporter</code> dependency.</li>
-          <li><code>logging</code> - prints the name of the span along with its attributes to stdout. It&#39;s mainly used for testing and debugging.</li>
+          <li><code>console</code> - prints the name of the span along with its attributes to stdout. It&#39;s mainly used for testing and debugging.</li>
           <li><code>none</code> - means no autoconfigured exporter.</li>
         </ul>
         
-        <h3 id="otlp-exporter" class="section"><a class="anchor-link left" href="#otlp-exporter"><i class="icofont-laika link">&#xef71;</i></a>OTLP exporter</h3>
+        <h3 id="otlp-exporter-2" class="section"><a class="anchor-link left" href="#otlp-exporter-2"><i class="icofont-laika link">&#xef71;</i></a>OTLP exporter</h3>
         <p>The exporter can be configured by two sets of settings:</p>
         <ul>
           <li>global: <code>otel.expoter.otlp.{x}</code></li>
           <li>target-specific: <code>otel.exporter.otlp.traces.{x}</code></li>
         </ul>
-        <p>Global properties can be used to configure tracer and metric exporters simultaneously.
+        <p>Global properties can be used to configure span and metric exporters simultaneously.
         Global <code>otel.exporter.otlp.endpoint</code> must be a <strong>base</strong> URL. The configurer automatically adds path (i.e. <code>v1/traces</code>) to the URL.</p>
         <p>Target-specific properties are prioritized. E.g. <code>otel.exporter.otlp.traces.endpoint</code> is prioritized over <code>otel.exporter.otlp.endpoint</code>.</p>
         <table>

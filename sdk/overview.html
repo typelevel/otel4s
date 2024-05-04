@@ -130,6 +130,7 @@
     <li class="level1 nav-node"><a href="#limitations">Limitations</a></li>
     <li class="level2 nav-leaf"><a href="#no-autoload-of-third-party-components">No autoload of third-party components</a></li>
     <li class="level2 nav-leaf"><a href="#no-environment-aware-telemetry-resource">No environment-aware Telemetry Resource</a></li>
+    <li class="level2 nav-leaf"><a href="#metrics-missing-features">Metrics missing features</a></li>
   </ul>
 
   <p class="footer"></p>
@@ -140,7 +141,6 @@
 
         <h1 id="overview" class="title">Overview</h1>
         <p>SDK modules are implemented in Scala and available for all platforms: JVM, Scala Native, and Scala.js.
-        Currently, only <strong>tracing</strong> module is implemented.
         The implementation remains <strong>experimental</strong> and some functionality may be lacking.</p>
         
         <h2 id="getting-started" class="section"><a class="anchor-link left" href="#getting-started"><i class="icofont-laika link">&#xef71;</i></a>Getting Started</h2>
@@ -167,10 +167,11 @@
           <li>Add the <code>otel4s-sdk-exporter</code> library. Without the exporter, the application will crash</li>
         </ol>
         <hr>
-        <p>Then use <code>OpenTelemetrySdk.autoConfigured</code> or <code>SdkTraces.autoConfigured</code> to autoconfigure the SDK:</p>
+        <p>Then use <code>OpenTelemetrySdk.autoConfigured</code> to autoconfigure the SDK:</p>
         <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.{</span><span class="type-name">IO</span><span>, </span><span class="type-name">IOApp</span><span>}
 </span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">sdk</span><span>.</span><span class="type-name">OpenTelemetrySdk</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">sdk</span><span>.</span><span class="identifier">exporter</span><span>.</span><span class="identifier">otlp</span><span>.</span><span class="identifier">autoconfigure</span><span>.</span><span class="type-name">OtlpExportersAutoConfigure</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">metrics</span><span>.</span><span class="type-name">MeterProvider</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">trace</span><span>.</span><span class="type-name">TracerProvider</span><span>
 
 </span><span class="keyword">object</span><span> </span><span class="type-name">TelemetryApp</span><span> </span><span class="keyword">extends</span><span> </span><span class="type-name">IOApp</span><span>.</span><span class="type-name">Simple</span><span> {
@@ -182,10 +183,13 @@
       )
       .</span><span class="identifier">use</span><span> { </span><span class="identifier">autoConfigured</span><span> =&gt;
         </span><span class="keyword">val</span><span> </span><span class="identifier">sdk</span><span> = </span><span class="identifier">autoConfigured</span><span>.</span><span class="identifier">sdk</span><span>
-        </span><span class="identifier">program</span><span>(</span><span class="identifier">sdk</span><span>.</span><span class="identifier">tracerProvider</span><span>)
+        </span><span class="identifier">program</span><span>(</span><span class="identifier">sdk</span><span>.</span><span class="identifier">meterProvider</span><span>, </span><span class="identifier">sdk</span><span>.</span><span class="identifier">tracerProvider</span><span>)
       }
 
-  </span><span class="keyword">def</span><span> </span><span class="declaration-name">program</span><span>(</span><span class="identifier">tracerProvider</span><span>: </span><span class="type-name">TracerProvider</span><span>[</span><span class="type-name">IO</span><span>]): </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] =
+  </span><span class="keyword">def</span><span> </span><span class="declaration-name">program</span><span>(
+      </span><span class="identifier">meterProvider</span><span>: </span><span class="type-name">MeterProvider</span><span>[</span><span class="type-name">IO</span><span>], 
+      </span><span class="identifier">tracerProvider</span><span>: </span><span class="type-name">TracerProvider</span><span>[</span><span class="type-name">IO</span><span>]
+  ): </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] =
     ???
 }</span></code></pre>
         
@@ -208,6 +212,12 @@
         <p>OpenTelemetry Java can detect a large variety of environments (e.g. GCP, AWS ECS, etc) and add additional 
         environment-specific attributes to the Telemetry Resource.</p>
         <p>Otel4s SDK module does not support this yet. But we have a plan to provide this functionality in the future.</p>
+        
+        <h3 id="metrics-missing-features" class="section"><a class="anchor-link left" href="#metrics-missing-features"><i class="icofont-laika link">&#xef71;</i></a>Metrics missing features</h3>
+        <ul>
+          <li><code>Exponential Histogram</code> aggregation is not supported yet</li>
+          <li><code>Prometheus</code> exporter is not implemented yet</li>
+        </ul>
 
         
 <hr class="footer-rule"/>

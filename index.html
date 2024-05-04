@@ -129,6 +129,7 @@
     <li class="level1 nav-leaf"><a href="#features">Features</a></li>
     <li class="level1 nav-leaf"><a href="#status">Status</a></li>
     <li class="level1 nav-leaf"><a href="#modules-availability">Modules availability</a></li>
+    <li class="level1 nav-leaf"><a href="#how-to-choose-a-backend">How to choose a backend</a></li>
     <li class="level1 nav-leaf"><a href="#getting-started">Getting started</a></li>
     <li class="level1 nav-leaf"><a href="#examples">Examples</a></li>
     <li class="level1 nav-leaf"><a href="#the-noop-tracer">The Noop Tracer</a></li>
@@ -158,7 +159,7 @@
             instrumentation.</p>
           </li>
           <li>
-            <p>SDK modules provide working telemetry (only tracing, currently) for applications.
+            <p>SDK modules provide working telemetry for applications.
             SDK modules are implemented in Scala from scratch. Available for JVM, Scala.js, and Scala Native.
             The implementation remains <strong>experimental</strong> and some functionality may be lacking. </p>
           </li>
@@ -192,7 +193,7 @@
               <td>✅</td>
             </tr>
             <tr>
-              <td><code>otel4s-sdk</code> (tracing only)</td>
+              <td><code>otel4s-sdk</code></td>
               <td>✅</td>
               <td>✅</td>
               <td>✅</td>
@@ -205,6 +206,14 @@
             </tr>
           </tbody>
         </table>
+        
+        <h2 id="how-to-choose-a-backend" class="section"><a class="anchor-link left" href="#how-to-choose-a-backend"><i class="icofont-laika link">&#xef71;</i></a>How to choose a backend</h2>
+        <p>For most cases, <code>otel4s-oteljava</code> is the recommended backend, 
+        that utilizes <a href="https://github.com/open-telemetry/opentelemetry-java/tree/main/api/all">OpenTelemetry Java</a> library under the hood.
+        You can benefit from various integrations and low memory overhead.</p>
+        <p><code>otel4s-sdk</code> is an <strong>experimental</strong> implementation of the Open Telemetry specification in pure Scala
+        and available for all platforms: JVM, Scala.js, and Scala Native.
+        However, some features are missing, and the memory overhead may be noticeable.</p>
         
         <h2 id="getting-started" class="section"><a class="anchor-link left" href="#getting-started"><i class="icofont-laika link">&#xef71;</i></a>Getting started</h2>
         <p>If you develop an application and want to export the telemetry, use <code>otel4s-oteljava</code> module. 

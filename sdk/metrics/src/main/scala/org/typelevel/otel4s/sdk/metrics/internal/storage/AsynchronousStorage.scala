@@ -71,7 +71,7 @@ private final class AsynchronousStorage[
 
         if (points.contains(processed)) {
           Console[F].errorln(
-            s"Instrument [${metricDescriptor.sourceInstrument.name}] has recorded multiple values for the same attributes $processed"
+            s"AsynchronousStorage: instrument [${metricDescriptor.sourceInstrument.name}] has recorded multiple values for the same attributes $processed"
           )
         } else {
           val timeWindow = TimeWindow(start, measurement.timeWindow.end)
@@ -117,6 +117,7 @@ private final class AsynchronousStorage[
 
   private def cardinalityWarning: F[Unit] =
     MetricStorage.cardinalityWarning(
+      "AsynchronousStorage",
       metricDescriptor.sourceInstrument,
       maxCardinality
     )

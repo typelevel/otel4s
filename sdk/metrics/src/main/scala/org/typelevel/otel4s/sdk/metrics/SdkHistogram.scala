@@ -31,6 +31,7 @@ import org.typelevel.otel4s.metrics.Histogram
 import org.typelevel.otel4s.metrics.MeasurementValue
 import org.typelevel.otel4s.sdk.context.AskContext
 import org.typelevel.otel4s.sdk.context.Context
+import org.typelevel.otel4s.sdk.metrics.internal.Advice
 import org.typelevel.otel4s.sdk.metrics.internal.InstrumentDescriptor
 import org.typelevel.otel4s.sdk.metrics.internal.MeterSharedState
 import org.typelevel.otel4s.sdk.metrics.internal.storage.MetricStorage
@@ -120,6 +121,7 @@ private object SdkHistogram {
         name = CIString(name),
         description = description,
         unit = unit,
+        advice = boundaries.map(b => Advice(Some(b))),
         instrumentType = InstrumentType.Histogram
       )
 

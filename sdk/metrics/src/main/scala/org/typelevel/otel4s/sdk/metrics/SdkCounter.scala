@@ -96,6 +96,7 @@ private object SdkCounter {
         name = CIString(name),
         description = description,
         unit = unit,
+        advice = None,
         instrumentType = InstrumentType.Counter
       )
 

@@ -68,7 +68,7 @@ trait Gens extends org.typelevel.otel4s.sdk.scalacheck.Gens {
       name <- Gens.ciString
       description <- Gen.option(Gen.alphaNumStr)
       unit <- Gen.option(Gen.alphaNumStr)
-    } yield InstrumentDescriptor.synchronous(name, description, unit, tpe)
+    } yield InstrumentDescriptor.synchronous(name, description, unit, None, tpe)
 
   val asynchronousInstrumentDescriptor: Gen[InstrumentDescriptor.Asynchronous] =
     for {

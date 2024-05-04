@@ -92,6 +92,7 @@ private object SdkUpDownCounter {
         name = CIString(name),
         description = description,
         unit = unit,
+        advice = None,
         instrumentType = InstrumentType.UpDownCounter
       )
 

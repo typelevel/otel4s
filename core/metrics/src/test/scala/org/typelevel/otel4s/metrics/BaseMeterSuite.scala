@@ -109,7 +109,11 @@ abstract class BaseMeterSuite extends CatsEffectSuite {
 
   sdkTest("Histogram - record values") { sdk =>
     val values = List(1.0, 2.0, 3.0)
-    val expected = MetricData.histogram("histogram", values, Some(3.0))
+    val expected = MetricData.histogram(
+      "histogram",
+      values,
+      exemplarValue = Some(3.0)
+    )
 
     for {
       meter <- sdk.provider.get("meter")
@@ -136,6 +140,26 @@ abstract class BaseMeterSuite extends CatsEffectSuite {
         metrics <- sdk.collectMetrics
       } yield assertEquals(metrics, List(expected))
     }
+  }
+
+  sdkTest("Histogram - use explicit bucket boundaries") { sdk =>
+    val boundaries = BucketBoundaries(Vector(1.0, 2.0, 3.0))
+    val expected = MetricData.histogram(
+      name = "histogram",
+      values = List(1.0),
+      boundaries = boundaries,
+      exemplarValue = Some(1.0)
+    )
+
+    for {
+      meter <- sdk.provider.get("meter")
+      histogram <- meter
+        .histogram[Double]("histogram")
+        .withExplicitBucketBoundaries(boundaries)
+        .create
+      _ <- histogram.record(1.0)
+      metrics <- sdk.collectMetrics
+    } yield assertEquals(metrics, List(expected))
   }
 
   sdkTest("ObservableCounter - record values") { sdk =>
@@ -373,10 +397,9 @@ object BaseMeterSuite {
     def histogram(
         name: String,
         values: List[Double],
+        boundaries: BucketBoundaries = DefaultBoundaries,
         exemplarValue: Option[Double] = None
     ): MetricData = {
-      val boundaries = DefaultBoundaries
-
       val counts: Vector[Long] =
         values.foldLeft(Vector.fill(boundaries.length + 1)(0L)) {
           case (acc, value) =>

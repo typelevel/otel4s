@@ -41,6 +41,10 @@ private[metrics] sealed trait InstrumentDescriptor {
     */
   def unit: Option[String]
 
+  /** The advisory options influencing aggregation configuration parameters.
+    */
+  def advice: Option[Advice]
+
   /** The type of the instrument.
     */
   def instrumentType: InstrumentType
@@ -75,9 +79,10 @@ private[metrics] object InstrumentDescriptor {
       name: CIString,
       description: Option[String],
       unit: Option[String],
-      instrumentType: InstrumentType.Synchronous
+      advice: Option[Advice],
+      instrumentType: InstrumentType.Synchronous,
   ): InstrumentDescriptor.Synchronous =
-    SynchronousImpl(name, description, unit, instrumentType)
+    SynchronousImpl(name, description, unit, advice, instrumentType)
 
   /** Creates an [[InstrumentDescriptor]] for a asynchronous instrument.
     */
@@ -87,7 +92,7 @@ private[metrics] object InstrumentDescriptor {
       unit: Option[String],
       instrumentType: InstrumentType.Asynchronous
   ): InstrumentDescriptor.Asynchronous =
-    AsynchronousImpl(name, description, unit, instrumentType)
+    AsynchronousImpl(name, description, unit, None, instrumentType)
 
   implicit val instrumentDescriptorHash: Hash[InstrumentDescriptor] =
     Hash.by { descriptor =>
@@ -95,6 +100,7 @@ private[metrics] object InstrumentDescriptor {
         descriptor.name,
         descriptor.description,
         descriptor.unit,
+        descriptor.advice,
         descriptor.instrumentType
       )
     }
@@ -103,13 +109,15 @@ private[metrics] object InstrumentDescriptor {
     Show.show { descriptor =>
       val description = descriptor.description.foldMap(d => s"description=$d, ")
       val unit = descriptor.unit.foldMap(d => s"unit=$d, ")
-      s"InstrumentDescriptor{name=${descriptor.name}, $description${unit}type=${descriptor.instrumentType}}"
+      val advice = descriptor.advice.foldMap(a => s"advice=$a, ")
+      s"InstrumentDescriptor{name=${descriptor.name}, $description$unit${advice}type=${descriptor.instrumentType}}"
     }
 
   private final case class SynchronousImpl(
       name: CIString,
       description: Option[String],
       unit: Option[String],
+      advice: Option[Advice],
       instrumentType: InstrumentType.Synchronous
   ) extends InstrumentDescriptor.Synchronous
 
@@ -117,6 +125,7 @@ private[metrics] object InstrumentDescriptor {
       name: CIString,
       description: Option[String],
       unit: Option[String],
+      advice: Option[Advice],
       instrumentType: InstrumentType.Asynchronous
   ) extends InstrumentDescriptor.Asynchronous
 

@@ -18,10 +18,9 @@ package org.typelevel.otel4s.sdk.metrics.internal.storage
 
 import cats.Monad
 import cats.data.NonEmptyVector
-import cats.effect.Temporal
+import cats.effect.Concurrent
 import cats.effect.std.AtomicCell
 import cats.effect.std.Console
-import cats.effect.std.Random
 import cats.syntax.applicative._
 import cats.syntax.flatMap._
 import cats.syntax.functor._
@@ -37,8 +36,7 @@ import org.typelevel.otel4s.sdk.metrics.data.AggregationTemporality
 import org.typelevel.otel4s.sdk.metrics.data.MetricData
 import org.typelevel.otel4s.sdk.metrics.data.PointData
 import org.typelevel.otel4s.sdk.metrics.data.TimeWindow
-import org.typelevel.otel4s.sdk.metrics.exemplar.ExemplarFilter
-import org.typelevel.otel4s.sdk.metrics.exemplar.TraceContextLookup
+import org.typelevel.otel4s.sdk.metrics.exemplar.Reservoirs
 import org.typelevel.otel4s.sdk.metrics.internal.InstrumentDescriptor
 import org.typelevel.otel4s.sdk.metrics.internal.MetricDescriptor
 import org.typelevel.otel4s.sdk.metrics.internal.exporter.RegisteredReader
@@ -180,18 +178,14 @@ private object SynchronousStorage {
     * @param reader
     *   the reader the storage must use to collect metrics
     *
+    * @param reservoirs
+    *   the allocator of exemplar reservoirs
+    *
     * @param view
     *   the optional view associated with the instrument
     *
     * @param instrumentDescriptor
     *   the descriptor of the instrument
-    *
-    * @param exemplarFilter
-    *   used by the exemplar reservoir to filter the offered values
-    *
-    * @param traceContextLookup
-    *   used by the exemplar reservoir to extract tracing information from the
-    *   context
     *
     * @param aggregation
     *   the preferred aggregation
@@ -202,23 +196,17 @@ private object SynchronousStorage {
     * @tparam A
     *   the type of the values to store
     */
-  def create[F[_]: Temporal: Console: Random, A: MeasurementValue: Numeric](
+  def create[F[_]: Concurrent: Console, A: MeasurementValue: Numeric](
       reader: RegisteredReader[F],
+      reservoirs: Reservoirs[F],
       view: Option[View],
       instrumentDescriptor: InstrumentDescriptor.Synchronous,
-      exemplarFilter: ExemplarFilter,
-      traceContextLookup: TraceContextLookup,
       aggregation: Aggregation.Synchronous
   ): F[MetricStorage.Synchronous[F, A]] = {
     val descriptor = MetricDescriptor(view, instrumentDescriptor)
 
     val aggregator: Aggregator.Synchronous[F, A] =
-      Aggregator.synchronous(
-        aggregation,
-        instrumentDescriptor,
-        exemplarFilter,
-        traceContextLookup
-      )
+      Aggregator.synchronous(reservoirs, aggregation, instrumentDescriptor)
 
     val attributesProcessor =
       view.flatMap(_.attributesProcessor).getOrElse(AttributesProcessor.noop)

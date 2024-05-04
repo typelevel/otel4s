@@ -17,9 +17,8 @@
 package org.typelevel.otel4s.sdk.metrics.internal.storage
 
 import cats.Applicative
-import cats.effect.Temporal
+import cats.effect.Concurrent
 import cats.effect.std.Console
-import cats.effect.std.Random
 import cats.syntax.foldable._
 import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.Attributes
@@ -31,8 +30,7 @@ import org.typelevel.otel4s.sdk.context.Context
 import org.typelevel.otel4s.sdk.metrics.Aggregation
 import org.typelevel.otel4s.sdk.metrics.data.MetricData
 import org.typelevel.otel4s.sdk.metrics.data.TimeWindow
-import org.typelevel.otel4s.sdk.metrics.exemplar.ExemplarFilter
-import org.typelevel.otel4s.sdk.metrics.exemplar.TraceContextLookup
+import org.typelevel.otel4s.sdk.metrics.exemplar.Reservoirs
 import org.typelevel.otel4s.sdk.metrics.internal.AsynchronousMeasurement
 import org.typelevel.otel4s.sdk.metrics.internal.InstrumentDescriptor
 import org.typelevel.otel4s.sdk.metrics.internal.MetricDescriptor
@@ -174,7 +172,7 @@ private[metrics] object MetricStorage {
     *   the type of the values to store
     */
   def asynchronous[
-      F[_]: Temporal: Console: AskContext,
+      F[_]: Concurrent: Console: AskContext,
       A: MeasurementValue: Numeric
   ](
       reader: RegisteredReader[F],
@@ -194,18 +192,14 @@ private[metrics] object MetricStorage {
     * @param reader
     *   the reader the storage must use to collect metrics
     *
+    * @param reservoirs
+    *   the allocator of exemplar reservoirs
+    *
     * @param view
     *   the optional view associated with the instrument
     *
     * @param instrumentDescriptor
     *   the descriptor of the instrument
-    *
-    * @param exemplarFilter
-    *   used by the exemplar reservoir to filter the offered values
-    *
-    * @param traceContextLookup
-    *   used by the exemplar reservoir to extract tracing information from the
-    *   context
     *
     * @param aggregation
     *   the preferred aggregation
@@ -216,23 +210,18 @@ private[metrics] object MetricStorage {
     * @tparam A
     *   the type of the values to store
     */
-  def synchronous[
-      F[_]: Temporal: Console: Random,
-      A: MeasurementValue: Numeric
-  ](
+  def synchronous[F[_]: Concurrent: Console, A: MeasurementValue: Numeric](
       reader: RegisteredReader[F],
+      reservoirs: Reservoirs[F],
       view: Option[View],
       instrumentDescriptor: InstrumentDescriptor.Synchronous,
-      exemplarFilter: ExemplarFilter,
-      traceContextLookup: TraceContextLookup,
       aggregation: Aggregation.Synchronous
   ): F[Synchronous[F, A]] =
     SynchronousStorage.create(
       reader,
+      reservoirs,
       view,
       instrumentDescriptor,
-      exemplarFilter,
-      traceContextLookup,
       aggregation
     )
 

@@ -20,7 +20,6 @@ import cats.Applicative
 import cats.effect.Async
 import cats.effect.Concurrent
 import cats.effect.std.Console
-import cats.effect.std.Random
 import cats.mtl.Ask
 import cats.syntax.flatMap._
 import cats.syntax.functor._
@@ -28,8 +27,7 @@ import org.typelevel.otel4s.sdk.TelemetryResource
 import org.typelevel.otel4s.sdk.common.InstrumentationScope
 import org.typelevel.otel4s.sdk.context.Context
 import org.typelevel.otel4s.sdk.metrics.data.MetricData
-import org.typelevel.otel4s.sdk.metrics.exemplar.ExemplarFilter
-import org.typelevel.otel4s.sdk.metrics.exemplar.TraceContextLookup
+import org.typelevel.otel4s.sdk.metrics.exemplar.Reservoirs
 import org.typelevel.otel4s.sdk.metrics.exporter.AggregationTemporalitySelector
 import org.typelevel.otel4s.sdk.metrics.exporter.InMemoryMetricReader
 import org.typelevel.otel4s.sdk.metrics.exporter.MetricProducer
@@ -55,27 +53,21 @@ object InMemoryMeterSharedState {
       start: FiniteDuration,
       aggregationTemporalitySelector: AggregationTemporalitySelector =
         AggregationTemporalitySelector.alwaysCumulative
-  ): F[InMemoryMeterSharedState[F]] =
-    Random.scalaUtilRandom[F].flatMap { implicit R: Random[F] =>
-      implicit val askContext: Ask[F, Context] = Ask.const(Context.root)
+  ): F[InMemoryMeterSharedState[F]] = {
+    implicit val askContext: Ask[F, Context] = Ask.const(Context.root)
 
-      createReader(start, aggregationTemporalitySelector).flatMap { reader =>
-        MeterSharedState
-          .create[F](
-            resource,
-            scope,
-            start,
-            ExemplarFilter.alwaysOff,
-            TraceContextLookup.noop,
-            ViewRegistry(Vector.empty),
-            Vector(reader)
-          )
-          .map { state =>
-            InMemoryMeterSharedState(state, reader)
-          }
-      }
-
-    }
+    for {
+      reader <- createReader(start, aggregationTemporalitySelector)
+      state <- MeterSharedState.create[F](
+        resource,
+        scope,
+        start,
+        Reservoirs.alwaysOff,
+        ViewRegistry(Vector.empty),
+        Vector(reader)
+      )
+    } yield InMemoryMeterSharedState(state, reader)
+  }
 
   private def createReader[F[_]: Concurrent](
       start: FiniteDuration,

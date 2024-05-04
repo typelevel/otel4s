@@ -20,7 +20,6 @@ import cats.FlatMap
 import cats.data.NonEmptyVector
 import cats.effect.Concurrent
 import cats.effect.Ref
-import cats.effect.Temporal
 import cats.syntax.flatMap._
 import cats.syntax.functor._
 import org.typelevel.otel4s.Attributes
@@ -30,9 +29,8 @@ import org.typelevel.otel4s.sdk.TelemetryResource
 import org.typelevel.otel4s.sdk.common.InstrumentationScope
 import org.typelevel.otel4s.sdk.context.Context
 import org.typelevel.otel4s.sdk.metrics.data._
-import org.typelevel.otel4s.sdk.metrics.exemplar.ExemplarFilter
 import org.typelevel.otel4s.sdk.metrics.exemplar.ExemplarReservoir
-import org.typelevel.otel4s.sdk.metrics.exemplar.TraceContextLookup
+import org.typelevel.otel4s.sdk.metrics.exemplar.Reservoirs
 import org.typelevel.otel4s.sdk.metrics.internal.MetricDescriptor
 
 /** The histogram aggregation that aggregates values into the corresponding
@@ -49,10 +47,10 @@ import org.typelevel.otel4s.sdk.metrics.internal.MetricDescriptor
   */
 private final class ExplicitBucketHistogramAggregator[
     F[_]: Concurrent,
-    A: MeasurementValue
+    A: MeasurementValue: Numeric
 ](
-    boundaries: BucketBoundaries,
-    makeReservoir: F[ExemplarReservoir[F, A]]
+    reservoirs: Reservoirs[F],
+    boundaries: BucketBoundaries
 ) extends Aggregator.Synchronous[F, A] {
   import ExplicitBucketHistogramAggregator._
 
@@ -61,7 +59,7 @@ private final class ExplicitBucketHistogramAggregator[
   def createAccumulator: F[Aggregator.Accumulator[F, A, PointData.Histogram]] =
     for {
       state <- Concurrent[F].ref(emptyState(boundaries.length))
-      reservoir <- makeReservoir
+      reservoir <- reservoirs.histogramBucket(boundaries)
     } yield new Accumulator(state, boundaries, reservoir)
 
   def toMetricData(
@@ -87,15 +85,11 @@ private object ExplicitBucketHistogramAggregator {
 
   /** Creates a histogram aggregation with the given values.
     *
+    * @param reservoirs
+    *   the allocator of exemplar reservoirs
+    *
     * @param boundaries
     *   the bucket boundaries to aggregate values at
-    *
-    * @param filter
-    *   used by the exemplar reservoir to filter the offered values
-    *
-    * @param lookup
-    *   used by the exemplar reservoir to extract tracing information from the
-    *   context
     *
     * @tparam F
     *   the higher-kinded type of a polymorphic effect
@@ -103,17 +97,11 @@ private object ExplicitBucketHistogramAggregator {
     * @tparam A
     *   the type of the values to record
     */
-  def apply[F[_]: Temporal, A: MeasurementValue: Numeric](
-      boundaries: BucketBoundaries,
-      filter: ExemplarFilter,
-      lookup: TraceContextLookup
-  ): Aggregator.Synchronous[F, A] = {
-    val reservoir = ExemplarReservoir
-      .histogramBucket[F, A](boundaries, lookup)
-      .map(r => ExemplarReservoir.filtered(filter, r))
-
-    new ExplicitBucketHistogramAggregator[F, A](boundaries, reservoir)
-  }
+  def apply[F[_]: Concurrent, A: MeasurementValue: Numeric](
+      reservoirs: Reservoirs[F],
+      boundaries: BucketBoundaries
+  ): Aggregator.Synchronous[F, A] =
+    new ExplicitBucketHistogramAggregator[F, A](reservoirs, boundaries)
 
   private final case class State(
       sum: Double,

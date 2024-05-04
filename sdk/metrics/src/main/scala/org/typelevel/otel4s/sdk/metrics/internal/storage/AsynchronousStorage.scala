@@ -20,7 +20,6 @@ import cats.Monad
 import cats.data.NonEmptyVector
 import cats.effect.Concurrent
 import cats.effect.Ref
-import cats.effect.Temporal
 import cats.effect.std.Console
 import cats.mtl.Ask
 import cats.syntax.flatMap._
@@ -145,7 +144,7 @@ private object AsynchronousStorage {
     *   the type of the values to store
     */
   def create[
-      F[_]: Temporal: Console: AskContext,
+      F[_]: Concurrent: Console: AskContext,
       A: MeasurementValue: Numeric
   ](
       reader: RegisteredReader[F],

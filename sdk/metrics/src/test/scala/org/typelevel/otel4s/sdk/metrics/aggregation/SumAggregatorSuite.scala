@@ -35,8 +35,7 @@ import org.typelevel.otel4s.sdk.metrics.data.MetricData
 import org.typelevel.otel4s.sdk.metrics.data.MetricPoints
 import org.typelevel.otel4s.sdk.metrics.data.PointData
 import org.typelevel.otel4s.sdk.metrics.data.TimeWindow
-import org.typelevel.otel4s.sdk.metrics.exemplar.ExemplarFilter
-import org.typelevel.otel4s.sdk.metrics.exemplar.TraceContextLookup
+import org.typelevel.otel4s.sdk.metrics.exemplar.Reservoirs
 import org.typelevel.otel4s.sdk.metrics.internal.MetricDescriptor
 import org.typelevel.otel4s.sdk.metrics.scalacheck.Gens
 
@@ -48,11 +47,8 @@ class SumAggregatorSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
     .unique[SyncIO, TraceContext]("trace-context")
     .unsafeRunSync()
 
-  private val filter: ExemplarFilter =
-    ExemplarFilter.alwaysOn
-
-  private val contextLookup: TraceContextLookup =
-    _.get(traceContextKey)
+  private def reservoirs(implicit R: Random[IO]): Reservoirs[IO] =
+    Reservoirs.alwaysOn(_.get(traceContextKey))
 
   // we need to put all exemplar values into the first cell
   private val random = new java.util.Random {
@@ -68,9 +64,7 @@ class SumAggregatorSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
     ) { (values, exemplarAttributes, attributes, traceContext) =>
       Random.javaUtilRandom[IO](random).flatMap { implicit R: Random[IO] =>
         val ctx = Context.root.updated(traceContextKey, traceContext)
-
-        val aggregator =
-          SumAggregator.synchronous[IO, Long](1, filter, contextLookup)
+        val aggregator = SumAggregator.synchronous[IO, Long](reservoirs, 1)
 
         val timeWindow =
           TimeWindow(100.millis, 200.millis)
@@ -113,9 +107,7 @@ class SumAggregatorSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
     ) { (values, exemplarAttributes, attributes, traceContext) =>
       Random.javaUtilRandom[IO](random).flatMap { implicit R: Random[IO] =>
         val ctx = Context.root.updated(traceContextKey, traceContext)
-
-        val aggregator =
-          SumAggregator.synchronous[IO, Long](1, filter, contextLookup)
+        val aggregator = SumAggregator.synchronous[IO, Long](reservoirs, 1)
 
         val timeWindow =
           TimeWindow(100.millis, 200.millis)
@@ -174,7 +166,7 @@ class SumAggregatorSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
 
         val aggregator =
           SumAggregator
-            .synchronous[IO, Long](1, filter, contextLookup)
+            .synchronous[IO, Long](reservoirs, 1)
             .asInstanceOf[LongAggregator]
 
         val monotonic =

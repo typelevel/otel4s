@@ -49,8 +49,8 @@ class MetricStorageRegistrySuite
   test("warn about duplicates") {
     PropF.forAllF(Gens.instrumentDescriptor) { descriptor =>
       InMemoryConsole.create[IO].flatMap { implicit C: InMemoryConsole[IO] =>
-        val sourceDescriptor = MetricDescriptor(None, descriptor)
-        val duplicateDescriptor = MetricDescriptor(
+        val first = MetricDescriptor(None, descriptor)
+        val second = MetricDescriptor(
           Some(View.builder.withDescription("desc").build),
           descriptor
         )
@@ -61,15 +61,15 @@ class MetricStorageRegistrySuite
           List(
             Entry(
               Op.Errorln,
-              s"MetricStorageRegistry: found a duplicate $sourceDescriptor, source $duplicateDescriptor"
+              s"MetricStorageRegistry: found a duplicate. The $second has similar descriptors in the storage: $first."
             )
           )
         }
 
         for {
           registry <- MetricStorageRegistry.create[IO]
-          source <- registry.register(metricStorage(sourceDescriptor))
-          duplicate <- registry.register(metricStorage(duplicateDescriptor))
+          source <- registry.register(metricStorage(first))
+          duplicate <- registry.register(metricStorage(second))
           storages <- registry.storages
           _ <- C.entries.assertEquals(consoleEntries)
         } yield assertEquals(storages, Vector(source, duplicate))

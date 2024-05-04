@@ -160,6 +160,7 @@ private final class SynchronousStorage[
 
   private def cardinalityWarning: F[Unit] =
     MetricStorage.cardinalityWarning(
+      "SynchronousStorage",
       metricDescriptor.sourceInstrument,
       maxCardinality
     )

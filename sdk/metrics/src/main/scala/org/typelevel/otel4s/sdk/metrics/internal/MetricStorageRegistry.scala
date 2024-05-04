@@ -59,16 +59,17 @@ private[metrics] final class MetricStorageRegistry[
           val updated = map.updated(descriptor, storage)
 
           // run a duplicate check
-          map.find(_._1.name == descriptor.name) match {
-            case Some((duplicate, _)) =>
+          map.keySet.filter(_.name == descriptor.name) match {
+            case duplicates if duplicates.nonEmpty =>
               def warn: F[Unit] =
                 Console[F].errorln(
-                  s"MetricStorageRegistry: found a duplicate $duplicate, source $descriptor"
+                  "MetricStorageRegistry: found a duplicate. " +
+                    s"The $descriptor has similar descriptors in the storage: ${duplicates.mkString(", ")}."
                 )
 
               (updated, warn.as(storage))
 
-            case None =>
+            case _ =>
               (updated, MonadCancelThrow[F].pure(storage))
           }
       }

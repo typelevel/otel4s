@@ -128,6 +128,17 @@ private[metrics] object ExemplarReservoir {
         original.collectAndReset(attributes)
     }
 
+  /** Creates a reservoir that does not record measurements.
+    */
+  def noop[F[_]: Applicative, A]: ExemplarReservoir[F, A] =
+    new ExemplarReservoir[F, A] {
+      def offer(value: A, attributes: Attributes, context: Context): F[Unit] =
+        Applicative[F].unit
+
+      def collectAndReset(attributes: Attributes): F[Vector[Exemplar[A]]] =
+        Applicative[F].pure(Vector.empty)
+    }
+
   private def create[F[_]: Temporal, A](
       size: Int,
       cellSelector: CellSelector[F, A],

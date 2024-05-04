@@ -19,7 +19,6 @@ package org.typelevel.otel4s.sdk.metrics.internal
 import cats.data.NonEmptyList
 import cats.data.NonEmptyVector
 import cats.effect.IO
-import cats.effect.std.Random
 import cats.mtl.Ask
 import munit.CatsEffectSuite
 import munit.ScalaCheckEffectSuite
@@ -34,8 +33,7 @@ import org.typelevel.otel4s.sdk.metrics.InstrumentType
 import org.typelevel.otel4s.sdk.metrics.data.AggregationTemporality
 import org.typelevel.otel4s.sdk.metrics.data.MetricData
 import org.typelevel.otel4s.sdk.metrics.data.MetricPoints
-import org.typelevel.otel4s.sdk.metrics.exemplar.ExemplarFilter
-import org.typelevel.otel4s.sdk.metrics.exemplar.TraceContextLookup
+import org.typelevel.otel4s.sdk.metrics.exemplar.Reservoirs
 import org.typelevel.otel4s.sdk.metrics.exporter.AggregationTemporalitySelector
 import org.typelevel.otel4s.sdk.metrics.exporter.InMemoryMetricReader
 import org.typelevel.otel4s.sdk.metrics.exporter.MetricProducer
@@ -214,17 +212,14 @@ class MeterSharedStateSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
   ): IO[MeterSharedState[IO]] = {
     implicit val askContext: Ask[IO, Context] = Ask.const(Context.root)
 
-    Random.scalaUtilRandom[IO].flatMap { implicit R: Random[IO] =>
-      MeterSharedState.create[IO](
-        resource,
-        scope,
-        start,
-        ExemplarFilter.alwaysOff,
-        TraceContextLookup.noop,
-        ViewRegistry(Vector.empty),
-        Vector(reader)
-      )
-    }
+    MeterSharedState.create[IO](
+      resource,
+      scope,
+      start,
+      Reservoirs.alwaysOff,
+      ViewRegistry(Vector.empty),
+      Vector(reader)
+    )
   }
 
   private def emptyProducer: MetricProducer[IO] =

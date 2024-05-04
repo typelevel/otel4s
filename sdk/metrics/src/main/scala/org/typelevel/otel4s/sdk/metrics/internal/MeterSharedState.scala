@@ -16,12 +16,11 @@
 
 package org.typelevel.otel4s.sdk.metrics.internal
 
+import cats.effect.Concurrent
 import cats.effect.Ref
 import cats.effect.Resource
-import cats.effect.Temporal
 import cats.effect.std.Console
 import cats.effect.std.Mutex
-import cats.effect.std.Random
 import cats.syntax.flatMap._
 import cats.syntax.foldable._
 import cats.syntax.functor._
@@ -33,8 +32,7 @@ import org.typelevel.otel4s.sdk.context.AskContext
 import org.typelevel.otel4s.sdk.metrics.Aggregation
 import org.typelevel.otel4s.sdk.metrics.data.MetricData
 import org.typelevel.otel4s.sdk.metrics.data.TimeWindow
-import org.typelevel.otel4s.sdk.metrics.exemplar.ExemplarFilter
-import org.typelevel.otel4s.sdk.metrics.exemplar.TraceContextLookup
+import org.typelevel.otel4s.sdk.metrics.exemplar.Reservoirs
 import org.typelevel.otel4s.sdk.metrics.internal.exporter.RegisteredReader
 import org.typelevel.otel4s.sdk.metrics.internal.storage.MetricStorage
 import org.typelevel.otel4s.sdk.metrics.view.View
@@ -43,15 +41,14 @@ import org.typelevel.otel4s.sdk.metrics.view.ViewRegistry
 import scala.concurrent.duration.FiniteDuration
 
 private[metrics] final class MeterSharedState[
-    F[_]: Temporal: Random: Console: AskContext
+    F[_]: Concurrent: Console: AskContext
 ] private (
     mutex: Mutex[F],
     viewRegistry: ViewRegistry[F],
+    reservoirs: Reservoirs[F],
     resource: TelemetryResource,
     val scope: InstrumentationScope,
     startTimestamp: FiniteDuration,
-    exemplarFilter: ExemplarFilter,
-    traceContextLookup: TraceContextLookup,
     callbacks: Ref[F, Vector[CallbackRegistration[F]]],
     registries: Map[RegisteredReader[F], MetricStorageRegistry[F]]
 ) {
@@ -78,17 +75,16 @@ private[metrics] final class MeterSharedState[
       for {
         storage <- MetricStorage.synchronous(
           reader,
+          reservoirs,
           view,
           descriptor,
-          exemplarFilter,
-          traceContextLookup,
           aggregation
         )
         registered <- registry.register(storage)
         result <- registered match {
           // the storage may already be registered, so we need to reuse it
           case s: MetricStorage.Synchronous[F @unchecked, A @unchecked] =>
-            Temporal[F].pure(Vector(s))
+            Concurrent[F].pure(Vector(s))
 
           case other =>
             Console[F]
@@ -116,7 +112,7 @@ private[metrics] final class MeterSharedState[
                     make(reader, registry, aggregation, Some(view))
 
                   case _ =>
-                    Temporal[F].pure(
+                    Concurrent[F].pure(
                       Vector.empty[MetricStorage.Synchronous[F, A]]
                     )
                 }
@@ -161,7 +157,7 @@ private[metrics] final class MeterSharedState[
         result <- registered match {
           // the storage may already be registered, so we need to reuse it
           case s: MetricStorage.Asynchronous[F @unchecked, A @unchecked] =>
-            Temporal[F].pure(Vector(s))
+            Concurrent[F].pure(Vector(s))
 
           case other =>
             Console[F]
@@ -189,7 +185,7 @@ private[metrics] final class MeterSharedState[
                     make(reader, registry, aggregation, Some(view))
 
                   case _ =>
-                    Temporal[F].pure(
+                    Concurrent[F].pure(
                       Vector.empty[MetricStorage.Asynchronous[F, A]]
                     )
                 }
@@ -251,12 +247,11 @@ private[metrics] final class MeterSharedState[
 
 private[metrics] object MeterSharedState {
 
-  def create[F[_]: Temporal: Random: Console: AskContext](
+  def create[F[_]: Concurrent: Console: AskContext](
       resource: TelemetryResource,
       scope: InstrumentationScope,
       startTimestamp: FiniteDuration,
-      exemplarFilter: ExemplarFilter,
-      traceContextLookup: TraceContextLookup,
+      reservoirs: Reservoirs[F],
       viewRegistry: ViewRegistry[F],
       registeredReaders: Vector[RegisteredReader[F]]
   ): F[MeterSharedState[F]] =
@@ -269,11 +264,10 @@ private[metrics] object MeterSharedState {
     } yield new MeterSharedState(
       mutex,
       viewRegistry,
+      reservoirs,
       resource,
       scope,
       startTimestamp,
-      exemplarFilter,
-      traceContextLookup,
       callbacks,
       registries.toMap
     )

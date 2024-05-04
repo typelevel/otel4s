@@ -35,6 +35,7 @@ import org.typelevel.otel4s.sdk.context.AskContext
 import org.typelevel.otel4s.sdk.internal.ComponentRegistry
 import org.typelevel.otel4s.sdk.metrics.data.MetricData
 import org.typelevel.otel4s.sdk.metrics.exemplar.ExemplarFilter
+import org.typelevel.otel4s.sdk.metrics.exemplar.Reservoirs
 import org.typelevel.otel4s.sdk.metrics.exemplar.TraceContextLookup
 import org.typelevel.otel4s.sdk.metrics.exporter.MetricProducer
 import org.typelevel.otel4s.sdk.metrics.exporter.MetricReader
@@ -235,13 +236,14 @@ object SdkMeterProvider {
           ExemplarFilter.traceBased(traceContextLookup)
         )
 
+        val reservoirs = Reservoirs(filter, traceContextLookup)
+
         for {
           state <- MeterSharedState.create(
             resource,
             scope,
             startTimestamp,
-            filter,
-            traceContextLookup,
+            reservoirs,
             viewRegistry,
             readers
           )

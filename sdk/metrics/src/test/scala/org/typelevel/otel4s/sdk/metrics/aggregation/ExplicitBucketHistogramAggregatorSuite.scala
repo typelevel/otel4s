@@ -18,6 +18,7 @@ package org.typelevel.otel4s.sdk.metrics.aggregation
 
 import cats.effect.IO
 import cats.effect.SyncIO
+import cats.effect.std.Random
 import cats.effect.testkit.TestControl
 import cats.syntax.foldable._
 import munit.CatsEffectSuite
@@ -34,8 +35,7 @@ import org.typelevel.otel4s.sdk.metrics.data.MetricPoints
 import org.typelevel.otel4s.sdk.metrics.data.PointData
 import org.typelevel.otel4s.sdk.metrics.data.PointData.Histogram
 import org.typelevel.otel4s.sdk.metrics.data.TimeWindow
-import org.typelevel.otel4s.sdk.metrics.exemplar.ExemplarFilter
-import org.typelevel.otel4s.sdk.metrics.exemplar.TraceContextLookup
+import org.typelevel.otel4s.sdk.metrics.exemplar.Reservoirs
 import org.typelevel.otel4s.sdk.metrics.internal.MetricDescriptor
 import org.typelevel.otel4s.sdk.metrics.scalacheck.Gens
 
@@ -49,11 +49,8 @@ class ExplicitBucketHistogramAggregatorSuite
     .unique[SyncIO, TraceContext]("trace-context")
     .unsafeRunSync()
 
-  private val filter: ExemplarFilter =
-    ExemplarFilter.alwaysOn
-
-  private val contextLookup: TraceContextLookup =
-    _.get(traceContextKey)
+  private def reservoirs(implicit R: Random[IO]): Reservoirs[IO] =
+    Reservoirs.alwaysOn[IO](_.get(traceContextKey))
 
   test("aggregate with reset - return a snapshot and reset the state") {
     PropF.forAllF(
@@ -63,66 +60,64 @@ class ExplicitBucketHistogramAggregatorSuite
       Gens.attributes,
       Gens.traceContext
     ) { (values, boundaries, exemplarAttributes, attributes, traceContext) =>
-      val ctx = Context.root.updated(traceContextKey, traceContext)
+      Random.scalaUtilRandom[IO].flatMap { implicit R: Random[IO] =>
+        val ctx = Context.root.updated(traceContextKey, traceContext)
 
-      val aggregator =
-        ExplicitBucketHistogramAggregator[IO, Double](
-          boundaries,
-          filter,
-          contextLookup
-        )
+        val aggregator =
+          ExplicitBucketHistogramAggregator[IO, Double](reservoirs, boundaries)
 
-      val timeWindow =
-        TimeWindow(100.millis, 200.millis)
+        val timeWindow =
+          TimeWindow(100.millis, 200.millis)
 
-      val expected = {
-        val stats = makeStats(values)
-        val counts = makeCounts(values, boundaries)
+        val expected = {
+          val stats = makeStats(values)
+          val counts = makeCounts(values, boundaries)
 
-        val filteredAttributes =
-          exemplarAttributes.filterNot(a => attributes.get(a.key).isDefined)
+          val filteredAttributes =
+            exemplarAttributes.filterNot(a => attributes.get(a.key).isDefined)
 
-        val exemplars =
-          makeExemplarValues(values, boundaries).map { value =>
-            ExemplarData.double(
-              filteredAttributes,
-              Duration.Zero,
-              Some(traceContext),
-              value
-            )
+          val exemplars =
+            makeExemplarValues(values, boundaries).map { value =>
+              ExemplarData.double(
+                filteredAttributes,
+                Duration.Zero,
+                Some(traceContext),
+                value
+              )
+            }
+
+          PointData.histogram(
+            timeWindow,
+            attributes,
+            exemplars,
+            stats,
+            boundaries,
+            counts
+          )
+        }
+
+        val empty =
+          PointData.histogram(
+            timeWindow = timeWindow,
+            attributes = attributes,
+            exemplars = Vector.empty,
+            stats = None,
+            boundaries = boundaries,
+            counts = Vector.fill(boundaries.length + 1)(0L)
+          )
+
+        TestControl.executeEmbed {
+          for {
+            accumulator <- aggregator.createAccumulator
+            _ <- values.traverse_ { value =>
+              accumulator.record(value, exemplarAttributes, ctx)
+            }
+            r1 <- accumulator.aggregate(timeWindow, attributes, reset = true)
+            r2 <- accumulator.aggregate(timeWindow, attributes, reset = true)
+          } yield {
+            assertEquals(r1: Option[PointData], Some(expected))
+            assertEquals(r2: Option[PointData], Some(empty))
           }
-
-        PointData.histogram(
-          timeWindow,
-          attributes,
-          exemplars,
-          stats,
-          boundaries,
-          counts
-        )
-      }
-
-      val empty =
-        PointData.histogram(
-          timeWindow = timeWindow,
-          attributes = attributes,
-          exemplars = Vector.empty,
-          stats = None,
-          boundaries = boundaries,
-          counts = Vector.fill(boundaries.length + 1)(0L)
-        )
-
-      TestControl.executeEmbed {
-        for {
-          accumulator <- aggregator.createAccumulator
-          _ <- values.traverse_ { value =>
-            accumulator.record(value, exemplarAttributes, ctx)
-          }
-          r1 <- accumulator.aggregate(timeWindow, attributes, reset = true)
-          r2 <- accumulator.aggregate(timeWindow, attributes, reset = true)
-        } yield {
-          assertEquals(r1: Option[PointData], Some(expected))
-          assertEquals(r2: Option[PointData], Some(empty))
         }
       }
     }
@@ -136,59 +131,60 @@ class ExplicitBucketHistogramAggregatorSuite
       Gens.attributes,
       Gens.traceContext
     ) { (values, boundaries, exemplarAttributes, attributes, traceContext) =>
-      val ctx = Context.root.updated(traceContextKey, traceContext)
+      Random.scalaUtilRandom[IO].flatMap { implicit R: Random[IO] =>
+        val ctx = Context.root.updated(traceContextKey, traceContext)
 
-      val aggregator =
-        ExplicitBucketHistogramAggregator[IO, Double](
-          boundaries,
-          filter,
-          contextLookup
-        )
+        val aggregator =
+          ExplicitBucketHistogramAggregator[IO, Double](reservoirs, boundaries)
 
-      val timeWindow =
-        TimeWindow(100.millis, 200.millis)
+        val timeWindow =
+          TimeWindow(100.millis, 200.millis)
 
-      def expected(values: List[Double]) = {
-        val stats = makeStats(values)
-        val counts = makeCounts(values, boundaries)
+        def expected(values: List[Double]) = {
+          val stats = makeStats(values)
+          val counts = makeCounts(values, boundaries)
 
-        val filteredAttributes =
-          exemplarAttributes.filterNot(a => attributes.get(a.key).isDefined)
+          val filteredAttributes =
+            exemplarAttributes.filterNot(a => attributes.get(a.key).isDefined)
 
-        val exemplars =
-          makeExemplarValues(values, boundaries).map { value =>
-            ExemplarData.double(
-              filteredAttributes,
-              Duration.Zero,
-              Some(traceContext),
-              value
+          val exemplars =
+            makeExemplarValues(values, boundaries).map { value =>
+              ExemplarData.double(
+                filteredAttributes,
+                Duration.Zero,
+                Some(traceContext),
+                value
+              )
+            }
+
+          PointData.histogram(
+            timeWindow,
+            attributes,
+            exemplars,
+            stats,
+            boundaries,
+            counts
+          )
+        }
+
+        TestControl.executeEmbed {
+          for {
+            accumulator <- aggregator.createAccumulator
+            _ <- values.traverse_ { value =>
+              accumulator.record(value, exemplarAttributes, ctx)
+            }
+            r1 <- accumulator.aggregate(timeWindow, attributes, reset = false)
+            _ <- values.traverse_ { value =>
+              accumulator.record(value, exemplarAttributes, ctx)
+            }
+            r2 <- accumulator.aggregate(timeWindow, attributes, reset = false)
+          } yield {
+            assertEquals(r1: Option[PointData], Some(expected(values)))
+            assertEquals(
+              r2: Option[PointData],
+              Some(expected(values ++ values))
             )
           }
-
-        PointData.histogram(
-          timeWindow,
-          attributes,
-          exemplars,
-          stats,
-          boundaries,
-          counts
-        )
-      }
-
-      TestControl.executeEmbed {
-        for {
-          accumulator <- aggregator.createAccumulator
-          _ <- values.traverse_ { value =>
-            accumulator.record(value, exemplarAttributes, ctx)
-          }
-          r1 <- accumulator.aggregate(timeWindow, attributes, reset = false)
-          _ <- values.traverse_ { value =>
-            accumulator.record(value, exemplarAttributes, ctx)
-          }
-          r2 <- accumulator.aggregate(timeWindow, attributes, reset = false)
-        } yield {
-          assertEquals(r1: Option[PointData], Some(expected(values)))
-          assertEquals(r2: Option[PointData], Some(expected(values ++ values)))
         }
       }
     }
@@ -209,9 +205,8 @@ class ExplicitBucketHistogramAggregatorSuite
 
       val aggregator =
         ExplicitBucketHistogramAggregator[IO, Double](
-          boundaries,
-          filter,
-          contextLookup
+          Reservoirs.alwaysOff,
+          boundaries
         ).asInstanceOf[HistogramAggregator]
 
       val expected =

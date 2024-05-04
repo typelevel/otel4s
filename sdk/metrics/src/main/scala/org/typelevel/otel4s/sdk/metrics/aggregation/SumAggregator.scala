@@ -18,8 +18,7 @@ package org.typelevel.otel4s.sdk.metrics.aggregation
 
 import cats.Applicative
 import cats.data.NonEmptyVector
-import cats.effect.Temporal
-import cats.effect.std.Random
+import cats.effect.Concurrent
 import cats.syntax.flatMap._
 import cats.syntax.functor._
 import org.typelevel.otel4s.Attributes
@@ -32,9 +31,8 @@ import org.typelevel.otel4s.sdk.metrics.data.AggregationTemporality
 import org.typelevel.otel4s.sdk.metrics.data.MetricData
 import org.typelevel.otel4s.sdk.metrics.data.MetricPoints
 import org.typelevel.otel4s.sdk.metrics.data.TimeWindow
-import org.typelevel.otel4s.sdk.metrics.exemplar.ExemplarFilter
 import org.typelevel.otel4s.sdk.metrics.exemplar.ExemplarReservoir
-import org.typelevel.otel4s.sdk.metrics.exemplar.TraceContextLookup
+import org.typelevel.otel4s.sdk.metrics.exemplar.Reservoirs
 import org.typelevel.otel4s.sdk.metrics.internal.AsynchronousMeasurement
 import org.typelevel.otel4s.sdk.metrics.internal.MetricDescriptor
 import org.typelevel.otel4s.sdk.metrics.internal.utils.Adder
@@ -47,15 +45,11 @@ private object SumAggregator {
     * @see
     *   [[https://opentelemetry.io/docs/specs/otel/metrics/sdk/#sum-aggregation]]
     *
+    * @param reservoirs
+    *   the allocator of exemplar reservoirs
+    *
     * @param reservoirSize
     *   the maximum number of exemplars to preserve
-    *
-    * @param filter
-    *   used by the exemplar reservoir to filter the offered values
-    *
-    * @param lookup
-    *   used by the exemplar reservoir to extract tracing information from the
-    *   context
     *
     * @tparam F
     *   the higher-kinded type of a polymorphic effect
@@ -63,12 +57,11 @@ private object SumAggregator {
     * @tparam A
     *   the type of the values to record
     */
-  def synchronous[F[_]: Temporal: Random, A: MeasurementValue: Numeric](
-      reservoirSize: Int,
-      filter: ExemplarFilter,
-      lookup: TraceContextLookup
+  def synchronous[F[_]: Concurrent, A: MeasurementValue: Numeric](
+      reservoirs: Reservoirs[F],
+      reservoirSize: Int
   ): Aggregator.Synchronous[F, A] =
-    new Synchronous(reservoirSize, filter, lookup)
+    new Synchronous(reservoirs, reservoirSize)
 
   /** Creates a sum aggregator for asynchronous instruments.
     *
@@ -88,13 +81,10 @@ private object SumAggregator {
     new Asynchronous[F, A]
 
   private final class Synchronous[
-      F[_]: Temporal: Random,
+      F[_]: Concurrent,
       A: MeasurementValue: Numeric
-  ](
-      reservoirSize: Int,
-      filter: ExemplarFilter,
-      traceContextLookup: TraceContextLookup
-  ) extends Aggregator.Synchronous[F, A] {
+  ](reservoirs: Reservoirs[F], reservoirSize: Int)
+      extends Aggregator.Synchronous[F, A] {
 
     val target: Target[A] = Target[A]
 
@@ -103,7 +93,7 @@ private object SumAggregator {
     def createAccumulator: F[Aggregator.Accumulator[F, A, Point]] =
       for {
         adder <- Adder.create[F, A]
-        reservoir <- makeReservoir
+        reservoir <- reservoirs.fixedSize(reservoirSize)
       } yield new Accumulator(adder, reservoir)
 
     def toMetricData(
@@ -113,7 +103,7 @@ private object SumAggregator {
         points: NonEmptyVector[Point],
         temporality: AggregationTemporality
     ): F[MetricData] =
-      Temporal[F].pure(
+      Concurrent[F].pure(
         MetricData(
           resource,
           scope,
@@ -123,14 +113,6 @@ private object SumAggregator {
           MetricPoints.sum(points, isMonotonic(descriptor), temporality)
         )
       )
-
-    private def makeReservoir: F[ExemplarReservoir[F, A]] =
-      ExemplarReservoir
-        .fixedSize[F, A](
-          size = reservoirSize,
-          lookup = traceContextLookup
-        )
-        .map(r => ExemplarReservoir.filtered(filter, r))
 
     private class Accumulator(
         adder: Adder[F, A],

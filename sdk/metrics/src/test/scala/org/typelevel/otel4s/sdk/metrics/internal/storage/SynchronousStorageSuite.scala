@@ -19,7 +19,6 @@ package org.typelevel.otel4s.sdk.metrics.internal.storage
 import cats.data.NonEmptyVector
 import cats.effect.IO
 import cats.effect.std.Console
-import cats.effect.std.Random
 import cats.syntax.traverse._
 import munit.CatsEffectSuite
 import munit.ScalaCheckEffectSuite
@@ -34,8 +33,7 @@ import org.typelevel.otel4s.sdk.metrics.data.AggregationTemporality
 import org.typelevel.otel4s.sdk.metrics.data.MetricData
 import org.typelevel.otel4s.sdk.metrics.data.MetricPoints
 import org.typelevel.otel4s.sdk.metrics.data.TimeWindow
-import org.typelevel.otel4s.sdk.metrics.exemplar.ExemplarFilter
-import org.typelevel.otel4s.sdk.metrics.exemplar.TraceContextLookup
+import org.typelevel.otel4s.sdk.metrics.exemplar.Reservoirs
 import org.typelevel.otel4s.sdk.metrics.exporter.AggregationTemporalitySelector
 import org.typelevel.otel4s.sdk.metrics.exporter.InMemoryMetricReader
 import org.typelevel.otel4s.sdk.metrics.exporter.MetricProducer
@@ -312,25 +310,22 @@ class SynchronousStorageSuite
       start: FiniteDuration = Duration.Zero,
       aggregationTemporalitySelector: AggregationTemporalitySelector =
         AggregationTemporalitySelector.alwaysCumulative
-  ): IO[MetricStorage.Synchronous[IO, A]] =
-    Random.scalaUtilRandom[IO].flatMap { implicit R: Random[IO] =>
-      val inMemory = new InMemoryMetricReader[IO](
-        producer,
-        aggregationTemporalitySelector
+  ): IO[MetricStorage.Synchronous[IO, A]] = {
+    val inMemory = new InMemoryMetricReader[IO](
+      producer,
+      aggregationTemporalitySelector
+    )
+
+    RegisteredReader.create(start, inMemory).flatMap { reader =>
+      MetricStorage.synchronous[IO, A](
+        reader,
+        Reservoirs.alwaysOff,
+        view,
+        descriptor,
+        Aggregation.Sum
       )
-
-      RegisteredReader.create(start, inMemory).flatMap { reader =>
-        MetricStorage.synchronous[IO, A](
-          reader,
-          view,
-          descriptor,
-          ExemplarFilter.alwaysOff,
-          TraceContextLookup.noop,
-          Aggregation.Sum
-        )
-      }
-
     }
+  }
 
   private def isMonotonic(
       descriptor: InstrumentDescriptor.Synchronous

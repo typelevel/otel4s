@@ -14,21 +14,27 @@
  * limitations under the License.
  */
 
-package org.typelevel.otel4s
-package oteljava
-package metrics
+package org.typelevel.otel4s.oteljava.metrics
 
-import cats.effect.kernel.Async
-import io.opentelemetry.api.metrics.{MeterProvider => JMeterProvider}
-import org.typelevel.otel4s.metrics.MeterBuilder
-import org.typelevel.otel4s.metrics.MeterProvider
+import cats.effect.Sync
+import cats.mtl.Ask
+import cats.syntax.flatMap._
 import org.typelevel.otel4s.oteljava.context.AskContext
+import org.typelevel.otel4s.oteljava.context.Context
 
-private[oteljava] class MeterProviderImpl[F[_]: Async: AskContext](
-    jMeterProvider: JMeterProvider
-) extends MeterProvider[F] {
+private object ContextUtils {
 
-  def meter(name: String): MeterBuilder[F] =
-    MeterBuilderImpl(jMeterProvider, name)
+  def delayWithContext[F[_]: Sync: AskContext, A](f: () => A): F[A] =
+    Ask[F, Context].ask.flatMap { ctx =>
+      Sync[F].delay {
+        // make the current context active
+        val scope = ctx.underlying.makeCurrent()
+        try {
+          f()
+        } finally {
+          scope.close() // release the context
+        }
+      }
+    }
 
 }

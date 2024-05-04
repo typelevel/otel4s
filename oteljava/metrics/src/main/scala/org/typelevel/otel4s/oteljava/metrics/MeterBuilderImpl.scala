@@ -21,8 +21,9 @@ package metrics
 import cats.effect.kernel.Async
 import io.opentelemetry.api.metrics.{MeterProvider => JMeterProvider}
 import org.typelevel.otel4s.metrics._
+import org.typelevel.otel4s.oteljava.context.AskContext
 
-private[oteljava] case class MeterBuilderImpl[F[_]](
+private[oteljava] case class MeterBuilderImpl[F[_]: AskContext](
     jMeterProvider: JMeterProvider,
     name: String,
     version: Option[String] = None,

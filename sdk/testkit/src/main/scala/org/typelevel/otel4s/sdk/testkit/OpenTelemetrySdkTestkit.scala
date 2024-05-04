@@ -113,7 +113,7 @@ object OpenTelemetrySdkTestkit {
         }
 
       for {
-        metrics <- MetricsTestkit.inMemory(
+        metrics <- MetricsTestkit.create(
           customizeMeterProviderBuilder.compose[SdkMeterProvider.Builder[F]](
             _.withTraceContextLookup(traceContextLookup)
           ),

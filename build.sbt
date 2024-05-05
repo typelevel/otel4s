@@ -588,7 +588,7 @@ lazy val scalafix = tlScalafixProject
   )
   .inputSettings(
     crossScalaVersions := Seq(Scala213),
-    libraryDependencies += "org.typelevel" %% "otel4s-java" % "0.4.0",
+    libraryDependencies += "org.typelevel" %% "otel4s-oteljava" % "0.7.0",
     headerSources / excludeFilter := AllPassFilter
   )
   .inputConfigure(_.disablePlugins(ScalafixPlugin))

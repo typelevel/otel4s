@@ -1,4 +1,4 @@
-ThisBuild / tlBaseVersion := "0.7"
+ThisBuild / tlBaseVersion := "0.8"
 
 ThisBuild / organization := "org.typelevel"
 ThisBuild / organizationName := "Typelevel"
@@ -95,6 +95,7 @@ lazy val root = tlCrossRootProject
     `core-common`,
     `core-metrics`,
     `core-trace`,
+    `core-trace-experimental`,
     core,
     `sdk-common`,
     `sdk-metrics`,
@@ -185,6 +186,21 @@ lazy val `core-trace` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
     )
   )
   .settings(scalafixSettings)
+
+lazy val `core-trace-experimental` =
+  crossProject(JVMPlatform, JSPlatform, NativePlatform)
+    .crossType(CrossType.Pure)
+    .in(file("core/trace-experimental"))
+    .dependsOn(`core-trace`)
+    .settings(scalaReflectDependency)
+    .settings(munitDependencies)
+    .settings(
+      name := "otel4s-core-trace-experimental",
+      scalacOptions ++= {
+        if (tlIsScala3.value) Nil else Seq("-Ymacro-annotations")
+      }
+    )
+    .settings(scalafixSettings)
 
 lazy val core = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .crossType(CrossType.Pure)
@@ -691,6 +707,7 @@ lazy val unidocs = project
       `core-common`.jvm,
       `core-metrics`.jvm,
       `core-trace`.jvm,
+      `core-trace-experimental`.jvm,
       core.jvm,
       `sdk-common`.jvm,
       `sdk-metrics`.jvm,

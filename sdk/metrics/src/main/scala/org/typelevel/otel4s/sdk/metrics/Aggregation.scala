@@ -59,6 +59,7 @@ object Aggregation {
     *   - counter - [[sum]]
     *   - up down counter - [[sum]]
     *   - observable counter - [[sum]]
+    *   - gauge - [[lastValue]]
     *   - observable up down counter - [[sum]]
     *   - histogram - `explicitBucketHistogram`
     *   - observable gauge - [[lastValue]]
@@ -82,6 +83,7 @@ object Aggregation {
     * using the last seen measurement.
     *
     * Compatible instruments:
+    *   - [[org.typelevel.otel4s.metrics.Gauge Gauge]]
     *   - [[org.typelevel.otel4s.metrics.ObservableGauge ObservableGauge]]
     */
   def lastValue: Aggregation = LastValue
@@ -165,7 +167,7 @@ object Aggregation {
     )
 
     val LastValue: Set[InstrumentType] =
-      Set(InstrumentType.ObservableGauge)
+      Set(InstrumentType.Gauge, InstrumentType.ObservableGauge)
 
     val ExplicitBucketHistogram: Set[InstrumentType] =
       Set(InstrumentType.Counter, InstrumentType.Histogram)

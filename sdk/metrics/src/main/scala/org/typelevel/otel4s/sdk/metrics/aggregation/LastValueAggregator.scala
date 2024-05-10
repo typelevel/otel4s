@@ -19,6 +19,7 @@ package org.typelevel.otel4s.sdk.metrics.aggregation
 import cats.Applicative
 import cats.data.NonEmptyVector
 import cats.effect.Concurrent
+import cats.syntax.flatMap._
 import cats.syntax.functor._
 import org.typelevel.otel4s.Attributes
 import org.typelevel.otel4s.metrics.MeasurementValue
@@ -29,6 +30,8 @@ import org.typelevel.otel4s.sdk.metrics.data.AggregationTemporality
 import org.typelevel.otel4s.sdk.metrics.data.MetricData
 import org.typelevel.otel4s.sdk.metrics.data.MetricPoints
 import org.typelevel.otel4s.sdk.metrics.data.TimeWindow
+import org.typelevel.otel4s.sdk.metrics.exemplar.ExemplarReservoir
+import org.typelevel.otel4s.sdk.metrics.exemplar.Reservoirs
 import org.typelevel.otel4s.sdk.metrics.internal.AsynchronousMeasurement
 import org.typelevel.otel4s.sdk.metrics.internal.MetricDescriptor
 import org.typelevel.otel4s.sdk.metrics.internal.utils.Current
@@ -41,17 +44,23 @@ private object LastValueAggregator {
     * @see
     *   [[https://opentelemetry.io/docs/specs/otel/metrics/sdk/#last-value-aggregation]]
     *
+    * @param reservoirs
+    *   the allocator of exemplar reservoirs
+    *
+    * @param reservoirSize
+    *   the maximum number of exemplars to preserve
+    *
     * @tparam F
     *   the higher-kinded type of a polymorphic effect
     *
     * @tparam A
     *   the type of the values to record
     */
-  def synchronous[
-      F[_]: Concurrent,
-      A: MeasurementValue
-  ]: Aggregator.Synchronous[F, A] =
-    new Synchronous[F, A]
+  def synchronous[F[_]: Concurrent, A: MeasurementValue](
+      reservoirs: Reservoirs[F],
+      reservoirSize: Int
+  ): Aggregator.Synchronous[F, A] =
+    new Synchronous(reservoirs, reservoirSize)
 
   /** Creates a last value aggregator for asynchronous instruments.
     *
@@ -70,10 +79,10 @@ private object LastValueAggregator {
   ]: Aggregator.Asynchronous[F, A] =
     new Asynchronous[F, A]
 
-  private final class Synchronous[
-      F[_]: Concurrent,
-      A: MeasurementValue
-  ] extends Aggregator.Synchronous[F, A] {
+  private final class Synchronous[F[_]: Concurrent, A: MeasurementValue](
+      reservoirs: Reservoirs[F],
+      reservoirSize: Int
+  ) extends Aggregator.Synchronous[F, A] {
     val target: Target[A] = Target[A]
 
     type Point = target.Point
@@ -81,7 +90,8 @@ private object LastValueAggregator {
     def createAccumulator: F[Aggregator.Accumulator[F, A, Point]] =
       for {
         current <- Current.create[F, A]
-      } yield new Accumulator(current)
+        reservoir <- reservoirs.fixedSize(reservoirSize)
+      } yield new Accumulator(current, reservoir)
 
     def toMetricData(
         resource: TelemetryResource,
@@ -102,7 +112,8 @@ private object LastValueAggregator {
       )
 
     private class Accumulator(
-        current: Current[F, A]
+        current: Current[F, A],
+        reservoir: ExemplarReservoir[F, A]
     ) extends Aggregator.Accumulator[F, A, Point] {
 
       def aggregate(
@@ -110,19 +121,27 @@ private object LastValueAggregator {
           attributes: Attributes,
           reset: Boolean
       ): F[Option[Point]] =
-        current.get(reset).map { value =>
-          value.map { v =>
-            target.makePointData(
-              timeWindow,
-              attributes,
-              Vector.empty,
-              v
-            )
-          }
+        for {
+          value <- current.get(reset)
+          exemplars <- reservoir.collectAndReset(attributes)
+        } yield value.map { v =>
+          target.makePointData(
+            timeWindow,
+            attributes,
+            exemplars.map { e =>
+              target.makeExemplar(
+                e.filteredAttributes,
+                e.timestamp,
+                e.traceContext,
+                e.value
+              )
+            },
+            v
+          )
         }
 
       def record(value: A, attributes: Attributes, context: Context): F[Unit] =
-        current.set(value)
+        reservoir.offer(value, attributes, context) >> current.set(value)
     }
   }
 

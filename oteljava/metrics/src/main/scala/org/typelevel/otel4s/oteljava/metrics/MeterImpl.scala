@@ -37,6 +37,9 @@ private[oteljava] class MeterImpl[F[_]: Async: AskContext](jMeter: JMeter)
   ): UpDownCounter.Builder[F, A] =
     UpDownCounterBuilderImpl(jMeter, name)
 
+  def gauge[A: MeasurementValue](name: String): Gauge.Builder[F, A] =
+    GaugeBuilderImpl(jMeter, name)
+
   def observableGauge[A: MeasurementValue](
       name: String
   ): ObservableGauge.Builder[F, A] =

@@ -56,6 +56,15 @@ class NoopInstrumentBuilderSuite extends CatsEffectSuite {
     }
   }
 
+  test("create a noop Gauge") {
+    InMemoryConsole.create[IO].flatMap { implicit C: InMemoryConsole[IO] =>
+      for {
+        _ <- NoopInstrumentBuilder.gauge[IO, Long](incorrectName).create
+        _ <- C.entries.assertEquals(consoleEntries("Gauge"))
+      } yield ()
+    }
+  }
+
   test("create a noop ObservableCounter") {
     InMemoryConsole.create[IO].flatMap { implicit C: InMemoryConsole[IO] =>
       for {

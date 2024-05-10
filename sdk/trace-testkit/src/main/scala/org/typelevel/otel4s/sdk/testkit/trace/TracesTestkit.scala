@@ -29,7 +29,7 @@ import org.typelevel.otel4s.sdk.context.LocalContext
 import org.typelevel.otel4s.sdk.context.LocalContextProvider
 import org.typelevel.otel4s.sdk.trace.SdkTracerProvider
 import org.typelevel.otel4s.sdk.trace.data.SpanData
-import org.typelevel.otel4s.sdk.trace.processor.BatchSpanProcessor
+import org.typelevel.otel4s.sdk.trace.processor.SimpleSpanProcessor
 import org.typelevel.otel4s.sdk.trace.processor.SpanProcessor
 import org.typelevel.otel4s.trace.TracerProvider
 
@@ -69,7 +69,7 @@ object TracesTestkit {
     for {
       local <- Resource.eval(LocalProvider[F, Context].local)
       exporter <- Resource.eval(InMemorySpanExporter.create[F](None))
-      processor <- BatchSpanProcessor.builder(exporter).build
+      processor <- Resource.pure(SimpleSpanProcessor(exporter))
       tracerProvider <- Resource.eval(createTracerProvider(processor)(local))
     } yield new Impl(tracerProvider, processor, exporter)
   }

@@ -68,19 +68,23 @@ The Honeycomb [official guide](https://docs.honeycomb.io/getting-data-in/api-key
 First, you must create an account on the [Honeycomb website](https://ui.honeycomb.io/login).
 Once you have done this, log into your account and navigate to the environment settings page. There you can find a generated API key.
 
+Use a different environment for test, production, and local development. Each will have its own API Key. This organizes your data in Honeycomb.
+
 ### Honeycomb configuration
 
 The Honeycomb [official configuration guide](https://docs.honeycomb.io/getting-data-in/opentelemetry-overview/).
 
-In order to send metrics and traces to Honeycomb, the API key and dataset name need to be configured.
+In order to send metrics and traces to Honeycomb, the API key and metrics dataset name need to be configured.
 Since the API key is sensitive data, we advise providing them via environment variables:
 
 ```shell
-$ export OTEL_EXPORTER_OTLP_HEADERS="x-honeycomb-team=your-api-key,x-honeycomb-dataset=honeycomb-example"
+$ export OTEL_EXPORTER_OTLP_HEADERS="x-honeycomb-team=your-api-key,x-honeycomb-dataset=otel-metrics"
 ```
 
 1) `x-honeycomb-team` - the API key  
-2) `x-honeycomb-dataset` - the name of the dataset to send metrics to. We use `honeycomb-example` so both metrics and traces appear in the same dataset.
+2) `x-honeycomb-dataset` - the name of the dataset to send metrics to.
+
+Each service's traces will land in a dataset defined in 'otel.service.name'.
 
 **Note:** if the `x-honeycomb-dataset` header is not configured, the **metrics** will be sent to a dataset called `unknown_metrics`.
 

@@ -21,20 +21,12 @@ package data
 import cats.Show
 import cats.kernel.laws.discipline.HashTests
 import munit.DisciplineSuite
-import org.scalacheck.Arbitrary
-import org.scalacheck.Cogen
-import org.scalacheck.Gen
 import org.scalacheck.Prop
+import org.typelevel.otel4s.sdk.metrics.scalacheck.Arbitraries._
+import org.typelevel.otel4s.sdk.metrics.scalacheck.Cogens._
+import org.typelevel.otel4s.sdk.metrics.scalacheck.Gens
 
 class AggregationTemporalitySuite extends DisciplineSuite {
-
-  implicit val aggregationTemporalityArb: Arbitrary[AggregationTemporality] =
-    Arbitrary(
-      Gen.oneOf(AggregationTemporality.Delta, AggregationTemporality.Cumulative)
-    )
-
-  implicit val aggregationTemporalityCogen: Cogen[AggregationTemporality] =
-    Cogen[String].contramap(_.toString)
 
   checkAll(
     "AggregationTemporality.HashLaws",
@@ -42,7 +34,7 @@ class AggregationTemporalitySuite extends DisciplineSuite {
   )
 
   test("Show[AggregationTemporality]") {
-    Prop.forAll(aggregationTemporalityArb.arbitrary) { temporality =>
+    Prop.forAll(Gens.aggregationTemporality) { temporality =>
       val expected = temporality match {
         case AggregationTemporality.Delta      => "Delta"
         case AggregationTemporality.Cumulative => "Cumulative"

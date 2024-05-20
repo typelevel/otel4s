@@ -30,6 +30,7 @@ import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.AttributeKey
 import org.typelevel.otel4s.meta.InstrumentMeta
 import org.typelevel.otel4s.sdk.common.InstrumentationScope
+import org.typelevel.otel4s.sdk.test.NoopConsole
 import org.typelevel.otel4s.sdk.trace.data.SpanData
 import org.typelevel.otel4s.sdk.trace.exporter.InMemorySpanExporter
 import org.typelevel.otel4s.sdk.trace.exporter.SpanExporter
@@ -169,6 +170,12 @@ class SimpleSpanProcessorSuite
       ): IO[Unit] =
         noopBackend.addEvent(name, timestamp, attributes)
 
+      def addLink(
+          spanContext: SpanContext,
+          attributes: immutable.Iterable[Attribute[_]]
+      ): IO[Unit] =
+        noopBackend.addLink(spanContext, attributes)
+
       def recordException(
           exception: Throwable,
           attributes: immutable.Iterable[Attribute[_]]
@@ -181,10 +188,10 @@ class SimpleSpanProcessorSuite
       def setStatus(status: StatusCode, description: String): IO[Unit] =
         noopBackend.setStatus(status, description)
 
-      private[otel4s] def end: IO[Unit] =
+      def end: IO[Unit] =
         noopBackend.end
 
-      private[otel4s] def end(timestamp: FiniteDuration): IO[Unit] =
+      def end(timestamp: FiniteDuration): IO[Unit] =
         noopBackend.end(timestamp)
     }
   }

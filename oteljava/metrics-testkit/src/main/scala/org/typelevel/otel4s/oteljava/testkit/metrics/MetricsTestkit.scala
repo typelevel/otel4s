@@ -18,10 +18,13 @@ package org.typelevel.otel4s.oteljava.testkit.metrics
 
 import cats.effect.Async
 import cats.effect.Resource
+import cats.mtl.Ask
 import io.opentelemetry.sdk.metrics.SdkMeterProvider
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader
 import org.typelevel.otel4s.metrics.MeterProvider
+import org.typelevel.otel4s.oteljava.context.AskContext
+import org.typelevel.otel4s.oteljava.context.Context
 import org.typelevel.otel4s.oteljava.metrics.MeterProviderImpl
 
 import scala.jdk.CollectionConverters._
@@ -54,11 +57,22 @@ object MetricsTestkit {
 
   /** Creates [[MetricsTestkit]] that keeps metrics in-memory.
     *
+    * @note
+    *   the implementation does not record exemplars. Use `OtelJavaTestkit` if
+    *   you need to record exemplars.
+    *
     * @param customize
     *   the customization of the builder
     */
   def inMemory[F[_]: Async](
       customize: SdkMeterProviderBuilder => SdkMeterProviderBuilder = identity
+  ): Resource[F, MetricsTestkit[F]] = {
+    implicit val askContext: AskContext[F] = Ask.const(Context.root)
+    create[F](customize)
+  }
+
+  private[oteljava] def create[F[_]: Async: AskContext](
+      customize: SdkMeterProviderBuilder => SdkMeterProviderBuilder
   ): Resource[F, MetricsTestkit[F]] = {
 
     def createMetricReader =

@@ -30,6 +30,7 @@ import munit.internal.PlatformCompat
 import org.scalacheck.Test
 import org.scalacheck.effect.PropF
 import org.typelevel.otel4s.sdk.common.InstrumentationScope
+import org.typelevel.otel4s.sdk.test.NoopConsole
 import org.typelevel.otel4s.sdk.trace.data.EventData
 import org.typelevel.otel4s.sdk.trace.data.LinkData
 import org.typelevel.otel4s.sdk.trace.data.SpanData
@@ -86,6 +87,21 @@ class SdkSpanBackendSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
           _ <- assertIO(span.toSpanData.map(_.events), Vector.empty)
           _ <- span.addEvent(name, ts, attrs)
           _ <- assertIO(span.toSpanData.map(_.events), Vector(event))
+        } yield ()
+      }
+    }
+  }
+
+  test(".addLink(:SpanContext, :Attribute[_]*)") {
+    PropF.forAllF { (spanContext: SpanContext, attrs: Attributes) =>
+      val link = LinkData(spanContext, attrs)
+
+      TestControl.executeEmbed {
+        for {
+          span <- start()
+          _ <- assertIO(span.toSpanData.map(_.links), Vector.empty)
+          _ <- span.addLink(spanContext, attrs)
+          _ <- assertIO(span.toSpanData.map(_.links), Vector(link))
         } yield ()
       }
     }

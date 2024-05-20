@@ -141,6 +141,11 @@ object Span {
         attributes: immutable.Iterable[Attribute[_]]
     ): F[Unit]
 
+    def addLink(
+        spanContext: SpanContext,
+        attributes: immutable.Iterable[Attribute[_]]
+    ): F[Unit]
+
     def recordException(
         exception: Throwable,
         attributes: immutable.Iterable[Attribute[_]]
@@ -149,8 +154,8 @@ object Span {
     def setStatus(status: StatusCode): F[Unit]
     def setStatus(status: StatusCode, description: String): F[Unit]
 
-    private[otel4s] def end: F[Unit]
-    private[otel4s] def end(timestamp: FiniteDuration): F[Unit]
+    def end: F[Unit]
+    def end(timestamp: FiniteDuration): F[Unit]
 
     /** Modify the context `F` using the transformation `f`. */
     def mapK[G[_]](f: F ~> G): Backend[G] = new Backend.MappedK(this)(f)
@@ -206,6 +211,11 @@ object Span {
             attributes: immutable.Iterable[Attribute[_]]
         ): F[Unit] = unit
 
+        def addLink(
+            spanContext: SpanContext,
+            attributes: immutable.Iterable[Attribute[_]]
+        ): F[Unit] = unit
+
         def recordException(
             exception: Throwable,
             attributes: immutable.Iterable[Attribute[_]]
@@ -214,8 +224,8 @@ object Span {
         def setStatus(status: StatusCode): F[Unit] = unit
         def setStatus(status: StatusCode, description: String): F[Unit] = unit
 
-        private[otel4s] def end: F[Unit] = unit
-        private[otel4s] def end(timestamp: FiniteDuration): F[Unit] = unit
+        def end: F[Unit] = unit
+        def end(timestamp: FiniteDuration): F[Unit] = unit
       }
 
     /** Implementation for [[Backend.mapK]]. */
@@ -239,6 +249,11 @@ object Span {
           attributes: immutable.Iterable[Attribute[_]]
       ): G[Unit] =
         f(backend.addEvent(name, timestamp, attributes))
+      def addLink(
+          spanContext: SpanContext,
+          attributes: immutable.Iterable[Attribute[_]]
+      ): G[Unit] =
+        f(backend.addLink(spanContext, attributes))
       def recordException(
           exception: Throwable,
           attributes: immutable.Iterable[Attribute[_]]
@@ -248,8 +263,8 @@ object Span {
         f(backend.setStatus(status))
       def setStatus(status: StatusCode, description: String): G[Unit] =
         f(backend.setStatus(status, description))
-      private[otel4s] def end: G[Unit] = f(backend.end)
-      private[otel4s] def end(timestamp: FiniteDuration): G[Unit] =
+      def end: G[Unit] = f(backend.end)
+      def end(timestamp: FiniteDuration): G[Unit] =
         f(backend.end(timestamp))
     }
   }

@@ -125,6 +125,42 @@ private[otel4s] trait SpanMacro[F[_]] {
   ): F[Unit] =
     ${ SpanMacro.addEvent('self, 'name, 'timestamp, 'attributes) }
 
+  /** Adds a link to the span.
+    *
+    * Links are used to link spans in different traces. Used (for example) in
+    * batching operations, where a single batch handler processes multiple
+    * requests from different traces or the same trace.
+    *
+    * @param spanContext
+    *   the context of the linked span
+    *
+    * @param attributes
+    *   the set of attributes to associated with the link
+    */
+  inline def addLink(
+      spanContext: SpanContext,
+      attributes: Attribute[_]*
+  ): F[Unit] =
+    ${ SpanMacro.addLink('self, 'spanContext, 'attributes) }
+
+  /** Adds a link to the span.
+    *
+    * Links are used to link spans in different traces. Used (for example) in
+    * batching operations, where a single batch handler processes multiple
+    * requests from different traces or the same trace.
+    *
+    * @param spanContext
+    *   the context of the linked span
+    *
+    * @param attributes
+    *   the set of attributes to associated with the link
+    */
+  inline def addLink(
+      spanContext: SpanContext,
+      attributes: immutable.Iterable[Attribute[_]]
+  ): F[Unit] =
+    ${ SpanMacro.addLink('self, 'spanContext, 'attributes) }
+
   /** Records information about the `Throwable` to the span.
     *
     * @param exception
@@ -225,6 +261,17 @@ object SpanMacro {
     '{
       if ($span.backend.meta.isEnabled)
         $span.backend.addEvent($name, $timestamp, $attributes)
+      else $span.backend.meta.unit
+    }
+
+  def addLink[F[_]](
+      span: Expr[Span[F]],
+      spanContext: Expr[SpanContext],
+      attributes: Expr[immutable.Iterable[Attribute[_]]]
+  )(using Quotes, Type[F]) =
+    '{
+      if ($span.backend.meta.isEnabled)
+        $span.backend.addLink($spanContext, $attributes)
       else $span.backend.meta.unit
     }
 

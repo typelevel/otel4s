@@ -207,11 +207,11 @@ class OtlpHttpSpanExporterSuite
     val adapted = attributes.map { attribute =>
       val name = attribute.key.name
       attribute.key.`type` match {
-        case AttributeType.Double     => Attribute(name, 1.1)
-        case AttributeType.DoubleList => Attribute(name, List(1.1))
-        case AttributeType.Long       => Attribute(name, 1L)
-        case AttributeType.LongList   => Attribute(name, List(1L))
-        case _                        => attribute
+        case AttributeType.Double    => Attribute(name, 1.1)
+        case AttributeType.DoubleSeq => Attribute(name, Seq(1.1))
+        case AttributeType.Long      => Attribute(name, 1L)
+        case AttributeType.LongSeq   => Attribute(name, Seq(1L))
+        case _                       => attribute
       }
     }
 
@@ -224,20 +224,20 @@ class OtlpHttpSpanExporterSuite
     def primitive[A: Encoder](tpe: String): JaegerTag =
       JaegerTag(a.key.name, tpe, a.value.asInstanceOf[A].asJson)
 
-    def list[A: Encoder]: JaegerTag = {
-      val json = a.value.asInstanceOf[List[A]].map(_.asJson).asJson
+    def seq[A: Encoder]: JaegerTag = {
+      val json = a.value.asInstanceOf[Seq[A]].map(_.asJson).asJson
       JaegerTag(a.key.name, "string", json.noSpaces.asJson)
     }
 
     a.key.`type` match {
-      case AttributeType.Boolean     => primitive[Boolean]("bool")
-      case AttributeType.String      => primitive[String]("string")
-      case AttributeType.Double      => primitive[Double]("float64")
-      case AttributeType.Long        => primitive[Long]("int64")
-      case AttributeType.BooleanList => list[Boolean]
-      case AttributeType.StringList  => list[String]
-      case AttributeType.DoubleList  => list[Double]
-      case AttributeType.LongList    => list[Long]
+      case AttributeType.Boolean    => primitive[Boolean]("bool")
+      case AttributeType.String     => primitive[String]("string")
+      case AttributeType.Double     => primitive[Double]("float64")
+      case AttributeType.Long       => primitive[Long]("int64")
+      case AttributeType.BooleanSeq => seq[Boolean]
+      case AttributeType.StringSeq  => seq[String]
+      case AttributeType.DoubleSeq  => seq[Double]
+      case AttributeType.LongSeq    => seq[Long]
     }
   }
 

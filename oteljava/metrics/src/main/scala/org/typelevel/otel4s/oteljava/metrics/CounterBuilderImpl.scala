@@ -23,6 +23,7 @@ import io.opentelemetry.api.metrics.{Meter => JMeter}
 import org.typelevel.otel4s.meta.InstrumentMeta
 import org.typelevel.otel4s.metrics._
 import org.typelevel.otel4s.oteljava.AttributeConverters._
+import org.typelevel.otel4s.oteljava.context.AskContext
 
 import scala.collection.immutable
 
@@ -46,7 +47,7 @@ private[oteljava] case class CounterBuilderImpl[F[_], A](
 
 private[oteljava] object CounterBuilderImpl {
 
-  def apply[F[_]: Sync, A: MeasurementValue](
+  def apply[F[_]: Sync: AskContext, A: MeasurementValue](
       jMeter: JMeter,
       name: String
   ): Counter.Builder[F, A] =
@@ -66,7 +67,7 @@ private[oteljava] object CounterBuilderImpl {
     ): F[Counter[F, A]]
   }
 
-  private def longFactory[F[_]: Sync, A](
+  private def longFactory[F[_]: Sync: AskContext, A](
       jMeter: JMeter,
       cast: A => Long
   ): Factory[F, A] =
@@ -89,21 +90,25 @@ private[oteljava] object CounterBuilderImpl {
                 value: A,
                 attributes: immutable.Iterable[Attribute[_]]
             ): F[Unit] =
-              Sync[F].delay(
-                counter.add(cast(value), attributes.toJavaAttributes)
-              )
+              record(cast(value), attributes)
 
             def inc(attributes: immutable.Iterable[Attribute[_]]): F[Unit] =
-              Sync[F].delay(
-                counter.add(1L, attributes.toJavaAttributes)
-              )
+              record(1L, attributes)
+
+            private def record(
+                value: Long,
+                attributes: immutable.Iterable[Attribute[_]]
+            ): F[Unit] =
+              ContextUtils.delayWithContext { () =>
+                counter.add(value, attributes.toJavaAttributes)
+              }
           }
 
           Counter.fromBackend(backend)
         }
     }
 
-  private def doubleFactory[F[_]: Sync, A](
+  private def doubleFactory[F[_]: Sync: AskContext, A](
       jMeter: JMeter,
       cast: A => Double
   ): Factory[F, A] =
@@ -126,14 +131,18 @@ private[oteljava] object CounterBuilderImpl {
                 value: A,
                 attributes: immutable.Iterable[Attribute[_]]
             ): F[Unit] =
-              Sync[F].delay(
-                counter.add(cast(value), attributes.toJavaAttributes)
-              )
+              record(cast(value), attributes)
 
             def inc(attributes: immutable.Iterable[Attribute[_]]): F[Unit] =
-              Sync[F].delay(
-                counter.add(1.0, attributes.toJavaAttributes)
-              )
+              record(1.0, attributes)
+
+            private def record(
+                value: Double,
+                attributes: immutable.Iterable[Attribute[_]]
+            ): F[Unit] =
+              ContextUtils.delayWithContext { () =>
+                counter.add(value, attributes.toJavaAttributes)
+              }
           }
 
           Counter.fromBackend(backend)

@@ -1,4 +1,4 @@
-ThisBuild / tlBaseVersion := "0.5"
+ThisBuild / tlBaseVersion := "0.7"
 
 ThisBuild / organization := "org.typelevel"
 ThisBuild / organizationName := "Typelevel"
@@ -34,8 +34,8 @@ lazy val scalaNativeSettings = Def.settings(
   Test / envVars ++= Map("S2N_DONT_MLOCK" -> "1")
 )
 
-val Scala212 = "2.12.18"
-val Scala213 = "2.13.13"
+val Scala212 = "2.12.19"
+val Scala213 = "2.13.14"
 ThisBuild / crossScalaVersions := Seq(Scala213, "3.3.3")
 ThisBuild / scalaVersion := Scala213 // the default Scala
 
@@ -44,24 +44,27 @@ ThisBuild / githubWorkflowBuildPreamble ++= nativeBrewInstallWorkflowSteps.value
 val CatsVersion = "2.10.0"
 val CatsEffectVersion = "3.5.4"
 val CatsMtlVersion = "1.4.0"
-val FS2Version = "3.10.0"
-val MUnitVersion = "1.0.0-M11"
-val MUnitCatsEffectVersion = "2.0.0-M4"
+val FS2Version = "3.10.2"
+val MUnitVersion = "1.0.0-RC1"
+val MUnitScalaCheckVersion = "1.0.0-M11"
+val MUnitCatsEffectVersion = "2.0.0-RC1"
 val MUnitDisciplineVersion = "2.0.0-M3"
 val MUnitScalaCheckEffectVersion = "2.0.0-M2"
-val OpenTelemetryVersion = "1.36.0"
-val OpenTelemetryInstrumentationVersion = "2.2.0"
-val OpenTelemetrySemConvVersion = "1.23.1-alpha"
+val OpenTelemetryVersion = "1.38.0"
+val OpenTelemetryInstrumentationVersion = "2.3.0"
+val OpenTelemetryInstrumentationAlphaVersion = "2.2.0-alpha"
+val OpenTelemetrySemConvVersion = "1.25.0-alpha"
 val OpenTelemetryProtoVersion = "1.1.0-alpha"
 val PekkoStreamVersion = "1.0.2"
 val PekkoHttpVersion = "1.0.1"
 val PlatformVersion = "1.0.2"
 val ScodecVersion = "1.1.38"
 val VaultVersion = "3.5.0"
-val Http4sVersion = "0.23.26"
-val CirceVersion = "0.14.6"
+val Http4sVersion = "0.23.27"
+val CirceVersion = "0.14.7"
 val EpollcatVersion = "0.1.6"
 val ScalaPBCirceVersion = "0.15.1"
+val CaseInsensitiveVersion = "1.4.0"
 
 lazy val scalaReflectDependency = Def.settings(
   libraryDependencies ++= {
@@ -73,7 +76,7 @@ lazy val scalaReflectDependency = Def.settings(
 lazy val munitDependencies = Def.settings(
   libraryDependencies ++= Seq(
     "org.scalameta" %%% "munit" % MUnitVersion % Test,
-    "org.scalameta" %%% "munit-scalacheck" % MUnitVersion % Test,
+    "org.scalameta" %%% "munit-scalacheck" % MUnitScalaCheckVersion % Test,
     "org.typelevel" %%% "munit-cats-effect" % MUnitCatsEffectVersion % Test
   )
 )
@@ -95,11 +98,14 @@ lazy val root = tlCrossRootProject
     core,
     `sdk-common`,
     `sdk-metrics`,
+    `sdk-metrics-testkit`,
     `sdk-trace`,
     `sdk-trace-testkit`,
+    `sdk-testkit`,
     sdk,
     `sdk-exporter-common`,
     `sdk-exporter-proto`,
+    `sdk-exporter-metrics`,
     `sdk-exporter-trace`,
     `sdk-exporter`,
     `oteljava-common`,
@@ -110,7 +116,8 @@ lazy val root = tlCrossRootProject
     `oteljava-trace-testkit`,
     `oteljava-testkit`,
     oteljava,
-    semconv,
+    `semconv-stable`,
+    `semconv-experimental`,
     benchmarks,
     examples,
     unidocs
@@ -154,7 +161,9 @@ lazy val `core-metrics` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
     name := "otel4s-core-metrics",
     libraryDependencies ++= Seq(
       "org.typelevel" %%% "cats-effect-kernel" % CatsEffectVersion,
-      "org.typelevel" %%% "cats-effect-testkit" % CatsEffectVersion % Test
+      "org.typelevel" %%% "cats-effect-testkit" % CatsEffectVersion % Test,
+      "org.typelevel" %%% "cats-laws" % CatsVersion % Test,
+      "org.typelevel" %%% "discipline-munit" % MUnitDisciplineVersion % Test
     )
   )
   .settings(scalafixSettings)
@@ -194,7 +203,7 @@ lazy val `sdk-common` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .crossType(CrossType.Pure)
   .enablePlugins(BuildInfoPlugin)
   .in(file("sdk/common"))
-  .dependsOn(`core-common` % "compile->compile;test->test", semconv)
+  .dependsOn(`core-common` % "compile->compile;test->test", `semconv-stable`)
   .settings(
     name := "otel4s-sdk-common",
     startYear := Some(2023),
@@ -215,20 +224,36 @@ lazy val `sdk-common` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
 
 lazy val `sdk-metrics` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .crossType(CrossType.Pure)
-  .enablePlugins(NoPublishPlugin)
   .in(file("sdk/metrics"))
-  .dependsOn(`sdk-common`, `core-metrics`)
+  .dependsOn(
+    `sdk-common` % "compile->compile;test->test",
+    `core-metrics` % "compile->compile;test->test"
+  )
   .settings(
     name := "otel4s-sdk-metrics",
     startYear := Some(2024),
     libraryDependencies ++= Seq(
       "org.typelevel" %%% "cats-effect" % CatsEffectVersion,
+      "org.scodec" %%% "scodec-bits" % ScodecVersion,
+      "org.typelevel" %%% "case-insensitive" % CaseInsensitiveVersion,
       "org.typelevel" %%% "cats-laws" % CatsVersion % Test,
       "org.typelevel" %%% "discipline-munit" % MUnitDisciplineVersion % Test,
+      "org.typelevel" %%% "scalacheck-effect-munit" % MUnitScalaCheckEffectVersion % Test
     )
   )
   .settings(munitDependencies)
   .settings(scalafixSettings)
+
+lazy val `sdk-metrics-testkit` =
+  crossProject(JVMPlatform, JSPlatform, NativePlatform)
+    .crossType(CrossType.Pure)
+    .in(file("sdk/metrics-testkit"))
+    .dependsOn(`sdk-metrics`)
+    .settings(
+      name := "otel4s-sdk-metrics-testkit",
+      startYear := Some(2024)
+    )
+    .settings(scalafixSettings)
 
 lazy val `sdk-trace` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .crossType(CrossType.Pure)
@@ -262,13 +287,24 @@ lazy val `sdk-trace-testkit` =
     )
     .settings(scalafixSettings)
 
+lazy val `sdk-testkit` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
+  .crossType(CrossType.Pure)
+  .in(file("sdk/testkit"))
+  .dependsOn(core, `sdk-metrics-testkit`, `sdk-trace-testkit`)
+  .settings(
+    name := "otel4s-sdk-testkit",
+    startYear := Some(2024)
+  )
+  .settings(scalafixSettings)
+
 lazy val sdk = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .crossType(CrossType.Pure)
   .in(file("sdk/all"))
   .dependsOn(
     core,
     `sdk-common`,
-    `sdk-metrics`,
+    `sdk-metrics` % "compile->compile;test->test",
+    `sdk-metrics-testkit` % Test,
     `sdk-trace` % "compile->compile;test->test",
     `sdk-trace-testkit` % Test
   )
@@ -330,6 +366,26 @@ lazy val `sdk-exporter-common` =
     .settings(munitDependencies)
     .settings(scalafixSettings)
 
+lazy val `sdk-exporter-metrics` =
+  crossProject(JVMPlatform, JSPlatform, NativePlatform)
+    .crossType(CrossType.Pure)
+    .in(file("sdk-exporter/metrics"))
+    .enablePlugins(DockerComposeEnvPlugin)
+    .dependsOn(
+      `sdk-exporter-common` % "compile->compile;test->test",
+      `sdk-metrics` % "compile->compile;test->test"
+    )
+    .settings(
+      name := "otel4s-sdk-exporter-metrics",
+      startYear := Some(2024),
+      dockerComposeEnvFile := crossProjectBaseDirectory.value / "docker" / "docker-compose.yml"
+    )
+    .jsSettings(scalaJSLinkerSettings)
+    .nativeEnablePlugins(ScalaNativeBrewedConfigPlugin)
+    .nativeSettings(scalaNativeSettings)
+    .settings(munitDependencies)
+    .settings(scalafixSettings)
+
 lazy val `sdk-exporter-trace` =
   crossProject(JVMPlatform, JSPlatform, NativePlatform)
     .crossType(CrossType.Pure)
@@ -342,7 +398,11 @@ lazy val `sdk-exporter-trace` =
     .settings(
       name := "otel4s-sdk-exporter-trace",
       startYear := Some(2023),
-      dockerComposeEnvFile := crossProjectBaseDirectory.value / "docker" / "docker-compose.yml"
+      dockerComposeEnvFile := crossProjectBaseDirectory.value / "docker" / "docker-compose.yml",
+      Test / scalacOptions ++= {
+        // see https://github.com/circe/circe/issues/2162
+        if (tlIsScala3.value) Seq("-Xmax-inlines", "64") else Nil
+      }
     )
     .jsSettings(scalaJSLinkerSettings)
     .nativeEnablePlugins(ScalaNativeBrewedConfigPlugin)
@@ -353,7 +413,12 @@ lazy val `sdk-exporter-trace` =
 lazy val `sdk-exporter` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .crossType(CrossType.Pure)
   .in(file("sdk-exporter/all"))
-  .dependsOn(`sdk-exporter-common`, `sdk-exporter-trace`)
+  .dependsOn(
+    sdk,
+    `sdk-exporter-common`,
+    `sdk-exporter-metrics`,
+    `sdk-exporter-trace`
+  )
   .settings(
     name := "otel4s-sdk-exporter"
   )
@@ -399,7 +464,10 @@ lazy val `oteljava-common-testkit` = project
 
 lazy val `oteljava-metrics` = project
   .in(file("oteljava/metrics"))
-  .dependsOn(`oteljava-common`, `core-metrics`.jvm)
+  .dependsOn(
+    `oteljava-common`,
+    `core-metrics`.jvm % "compile->compile;test->test"
+  )
   .settings(munitDependencies)
   .settings(
     name := "otel4s-oteljava-metrics",
@@ -460,7 +528,7 @@ lazy val oteljava = project
   .in(file("oteljava/all"))
   .dependsOn(
     core.jvm,
-    `oteljava-metrics`,
+    `oteljava-metrics` % "compile->compile;test->test",
     `oteljava-metrics-testkit` % Test,
     `oteljava-trace` % "compile->compile;test->test",
     `oteljava-trace-testkit` % Test
@@ -476,24 +544,41 @@ lazy val oteljava = project
   .settings(munitDependencies)
   .settings(scalafixSettings)
 
-lazy val semconv = crossProject(JVMPlatform, JSPlatform, NativePlatform)
-  .crossType(CrossType.Pure)
-  .enablePlugins(BuildInfoPlugin)
-  .in(file("semconv"))
-  .dependsOn(`core-common`)
-  .settings(
-    name := "otel4s-semconv",
-    startYear := Some(2023),
-    // We use opentelemetry-semconv dependency to track releases of the OpenTelemetry semantic convention spec
-    libraryDependencies += "io.opentelemetry.semconv" % "opentelemetry-semconv" % OpenTelemetrySemConvVersion % "compile-internal" intransitive (),
-    buildInfoPackage := "org.typelevel.otel4s.semconv",
-    buildInfoOptions += sbtbuildinfo.BuildInfoOption.PackagePrivate,
-    buildInfoKeys := Seq[BuildInfoKey](
-      "openTelemetrySemanticConventionsVersion" -> OpenTelemetrySemConvVersion
+lazy val `semconv-stable` =
+  crossProject(JVMPlatform, JSPlatform, NativePlatform)
+    .crossType(CrossType.Pure)
+    .enablePlugins(BuildInfoPlugin)
+    .in(file("semconv/stable"))
+    .dependsOn(`core-common`)
+    .settings(
+      name := "otel4s-semconv",
+      startYear := Some(2023),
+      description := "Stable semantic conventions.",
+      // We use opentelemetry-semconv dependency to track releases of the OpenTelemetry semantic convention spec
+      libraryDependencies += "io.opentelemetry.semconv" % "opentelemetry-semconv" % OpenTelemetrySemConvVersion % "compile-internal" intransitive (),
+      buildInfoPackage := "org.typelevel.otel4s.semconv",
+      buildInfoOptions += sbtbuildinfo.BuildInfoOption.PackagePrivate,
+      buildInfoKeys := Seq[BuildInfoKey](
+        "openTelemetrySemanticConventionsVersion" -> OpenTelemetrySemConvVersion
+      )
     )
-  )
-  .settings(munitDependencies)
-  .settings(scalafixSettings)
+    .settings(munitDependencies)
+    .settings(scalafixSettings)
+
+lazy val `semconv-experimental` =
+  crossProject(JVMPlatform, JSPlatform, NativePlatform)
+    .crossType(CrossType.Pure)
+    .in(file("semconv/experimental"))
+    .dependsOn(`core-common`)
+    .settings(
+      name := "otel4s-semconv-experimental",
+      description := "Experimental (incubating) semantic conventions. Breaking changes expected. Library instrumentation SHOULD NOT depend on this.",
+      startYear := Some(2023),
+      // We use opentelemetry-semconv dependency to track releases of the OpenTelemetry semantic convention spec
+      libraryDependencies += "io.opentelemetry.semconv" % "opentelemetry-semconv-incubating" % OpenTelemetrySemConvVersion % "compile-internal" intransitive (),
+    )
+    .settings(munitDependencies)
+    .settings(scalafixSettings)
 
 lazy val scalafix = tlScalafixProject
   .rulesSettings(
@@ -563,10 +648,13 @@ lazy val docs = project
     libraryDependencies ++= Seq(
       "org.apache.pekko" %% "pekko-http" % PekkoHttpVersion,
       "io.opentelemetry" % "opentelemetry-sdk-extension-autoconfigure" % OpenTelemetryVersion,
-      "io.opentelemetry.instrumentation" % "opentelemetry-instrumentation-annotations" % OpenTelemetryInstrumentationVersion
+      "io.opentelemetry.instrumentation" % "opentelemetry-instrumentation-annotations" % OpenTelemetryInstrumentationVersion,
+      "io.opentelemetry.instrumentation" % "opentelemetry-runtime-telemetry-java8" % OpenTelemetryInstrumentationAlphaVersion,
+      "io.opentelemetry.instrumentation" % "opentelemetry-runtime-telemetry-java17" % OpenTelemetryInstrumentationAlphaVersion
     ),
     mdocVariables ++= Map(
-      "OPEN_TELEMETRY_VERSION" -> OpenTelemetryVersion
+      "OPEN_TELEMETRY_VERSION" -> OpenTelemetryVersion,
+      "OPEN_TELEMETRY_INSTRUMENTATION_ALPHA_VERSION" -> OpenTelemetryInstrumentationAlphaVersion
     ),
     laikaConfig := {
       import laika.config.{ChoiceConfig, Selections, SelectionConfig}
@@ -583,6 +671,11 @@ lazy val docs = project
             ChoiceConfig("sbt", "sbt"),
             ChoiceConfig("scala-cli", "Scala CLI"),
             ChoiceConfig("shell", "Shell")
+          ).withSeparateEbooks,
+          SelectionConfig(
+            "scala-version",
+            ChoiceConfig("scala-2", "Scala 2"),
+            ChoiceConfig("scala-3", "Scala 3")
           ).withSeparateEbooks
         )
       )
@@ -601,10 +694,13 @@ lazy val unidocs = project
       core.jvm,
       `sdk-common`.jvm,
       `sdk-metrics`.jvm,
+      `sdk-metrics-testkit`.jvm,
       `sdk-trace`.jvm,
       `sdk-trace-testkit`.jvm,
+      `sdk-testkit`.jvm,
       sdk.jvm,
       `sdk-exporter-common`.jvm,
+      `sdk-exporter-metrics`.jvm,
       `sdk-exporter-trace`.jvm,
       `sdk-exporter`.jvm,
       `oteljava-common`,
@@ -615,6 +711,7 @@ lazy val unidocs = project
       `oteljava-trace-testkit`,
       `oteljava-testkit`,
       oteljava,
-      semconv.jvm
+      `semconv-stable`.jvm,
+      `semconv-experimental`.jvm
     )
   )

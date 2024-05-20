@@ -14,7 +14,7 @@ Specification][otel spec] atop [Cats Effect][cats-effect].
   no-op implementations.  These are appropriate for library
   instrumentation.
 
-* SDK modules provide working telemetry (only tracing, currently) for applications.
+* SDK modules provide working telemetry for applications.
   SDK modules are implemented in Scala from scratch. Available for JVM, Scala.js, and Scala Native.
   The implementation remains **experimental** and some functionality may be lacking. 
 
@@ -30,11 +30,21 @@ it out and let us know what you think.
 
 ## Modules availability
 
-|      Module / Platform      | JVM | Scala Native | Scala.js |  
-|:---------------------------:|:---:|:------------:|:--------:|
-|        `otel4s-core`        |  ✅  |      ✅       |    ✅     |
-| `otel4s-sdk` (tracing only) |  ✅  |      ✅       |    ✅     |
-|      `otel4s-oteljava`      |  ✅  |      ❌       |    ❌     |
+| Module / Platform | JVM | Scala Native | Scala.js |  
+|:-----------------:|:---:|:------------:|:--------:|
+|   `otel4s-core`   |  ✅  |      ✅       |    ✅     |
+|   `otel4s-sdk`    |  ✅  |      ✅       |    ✅     |
+| `otel4s-oteljava` |  ✅  |      ❌       |    ❌     |
+
+## How to choose a backend
+
+For most cases, `otel4s-oteljava` is the recommended backend, 
+that utilizes [OpenTelemetry Java][opentelemetry-java] library under the hood.
+You can benefit from various integrations and low memory overhead.
+
+`otel4s-sdk` is an **experimental** implementation of the Open Telemetry specification in pure Scala
+and available for all platforms: JVM, Scala.js, and Scala Native.
+However, some features are missing, and the memory overhead may be noticeable.
 
 ## Getting started
 
@@ -78,6 +88,66 @@ Add directives to the `*.scala` file:
 
 * Start tracing your application with [Jaeger and Docker](examples/jaeger-docker/README.md)
 * Implement tracing and metrics with [Honeycomb](examples/honeycomb/README.md)
+
+## The Noop Tracer  
+
+If you use a library that supports otel4s (eg [Skunk](https://github.com/typelevel/skunk)) but do not want to use Open Telemetry, then you can place the [No-op Tracer](https://www.javadoc.io/doc/org.typelevel/otel4s-docs_2.13/latest/org/typelevel/otel4s/trace/Tracer$.html) into implicit scope.
+
+The no-op `Tracer` can be provided in the following ways:
+
+@:select(scala-version)
+
+@:choice(scala-2)
+
+By using the `import Tracer.Implicits.noop`:
+```scala mdoc:compile-only
+import cats.effect.IO
+import org.typelevel.otel4s.trace.Tracer
+
+def program[F[_]: Tracer]: F[Unit] = ???
+
+import Tracer.Implicits.noop
+val io: IO[Unit] = program[IO]
+```
+
+By defining an `implicit val`:
+
+```scala mdoc:compile-only
+import cats.effect.IO
+import org.typelevel.otel4s.trace.Tracer
+
+def program[F[_]: Tracer]: F[Unit] = ???
+
+implicit val tracer: Tracer[IO] = Tracer.noop
+val io: IO[Unit] = program[IO]
+```
+
+@:choice(scala-3)
+
+By using the `import Tracer.Implicits.noop`:
+```dotty
+import cats.effect.IO
+import org.typelevel.otel4s.trace.Tracer
+
+def program[F[_]](using Tracer[F]): F[Unit] = ???
+
+import Tracer.Implicits.noop
+val io: IO[Unit] = program[IO]
+```
+
+By defining a `given`:
+
+```dotty
+import cats.effect.IO
+import org.typelevel.otel4s.trace.Tracer
+
+def program[F[_]](using Tracer[F]): F[Unit] = ???
+
+given Tracer[IO] = Tracer.noop
+val io: IO[Unit] = program[IO]
+```
+
+@:@
 
 [cats-effect]: https://typelevel.org/cats-effect/
 [opentelemetry-java]: https://github.com/open-telemetry/opentelemetry-java/tree/main/api/all

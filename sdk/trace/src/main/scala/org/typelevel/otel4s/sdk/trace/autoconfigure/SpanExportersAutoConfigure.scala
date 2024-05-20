@@ -26,7 +26,7 @@ import cats.syntax.functor._
 import org.typelevel.otel4s.sdk.autoconfigure.AutoConfigure
 import org.typelevel.otel4s.sdk.autoconfigure.Config
 import org.typelevel.otel4s.sdk.autoconfigure.ConfigurationError
-import org.typelevel.otel4s.sdk.trace.exporter.LoggingSpanExporter
+import org.typelevel.otel4s.sdk.trace.exporter.ConsoleSpanExporter
 import org.typelevel.otel4s.sdk.trace.exporter.SpanExporter
 
 /** Autoconfigures [[SpanExporter]]s.
@@ -35,11 +35,11 @@ import org.typelevel.otel4s.sdk.trace.exporter.SpanExporter
   * {{{
   * | System property      | Environment variable | Description                                                                                   |
   * |----------------------|----------------------|-----------------------------------------------------------------------------------------------|
-  * | otel.traces.exporter | OTEL_TRACES_EXPORTER | The exporters to use. Use a comma-separated list for multiple propagators. Default is `otlp`. |
+  * | otel.traces.exporter | OTEL_TRACES_EXPORTER | The exporters to use. Use a comma-separated list for multiple exporters. Default is `otlp`. |
   * }}}
   *
   * @see
-  *   [[https://github.com/open-telemetry/opentelemetry-java/blob/main/sdk-extensions/autoconfigure/README.md#propagator]]
+  *   [[https://github.com/open-telemetry/opentelemetry-java/blob/main/sdk-extensions/autoconfigure/README.md#span-exporters]]
   */
 private final class SpanExportersAutoConfigure[F[_]: MonadThrow: Console](
     extra: Set[AutoConfigure.Named[F, SpanExporter[F]]]
@@ -54,7 +54,7 @@ private final class SpanExportersAutoConfigure[F[_]: MonadThrow: Console](
   private val configurers = {
     val default: Set[AutoConfigure.Named[F, SpanExporter[F]]] = Set(
       AutoConfigure.Named.const(Const.NoneExporter, SpanExporter.noop[F]),
-      AutoConfigure.Named.const(Const.LoggingExporter, LoggingSpanExporter[F])
+      AutoConfigure.Named.const(Const.ConsoleExporter, ConsoleSpanExporter[F])
     )
 
     default ++ extra
@@ -108,10 +108,10 @@ private final class SpanExportersAutoConfigure[F[_]: MonadThrow: Console](
         |and register the configurer via OpenTelemetrySdk:
         |
         |import org.typelevel.otel4s.sdk.OpenTelemetrySdk
-        |import org.typelevel.otel4s.sdk.exporter.otlp.trace.autoconfigure.OtlpSpanExporterAutoConfigure
+        |import org.typelevel.otel4s.sdk.exporter.otlp.autoconfigure.OtlpExportersAutoConfigure
         |
         |OpenTelemetrySdk.autoConfigured[IO](
-        |  _.addSpanExporterConfigurer(OtlpSpanExporterAutoConfigure[IO])
+        |  _.addExportersConfigurer(OtlpExporterAutoConfigure[IO])
         |)
         |
         |or via SdkTraces:
@@ -139,7 +139,7 @@ private[sdk] object SpanExportersAutoConfigure {
   private[trace] object Const {
     val OtlpExporter = "otlp"
     val NoneExporter = "none"
-    val LoggingExporter = "logging"
+    val ConsoleExporter = "console"
   }
 
   /** Autoconfigures [[SpanExporter]]s.
@@ -148,7 +148,7 @@ private[sdk] object SpanExportersAutoConfigure {
     * {{{
     * | System property      | Environment variable | Description                                                                                   |
     * |----------------------|----------------------|-----------------------------------------------------------------------------------------------|
-    * | otel.traces.exporter | OTEL_TRACES_EXPORTER | The exporters be use. Use a comma-separated list for multiple propagators. Default is `otlp`. |
+    * | otel.traces.exporter | OTEL_TRACES_EXPORTER | The exporters to use. Use a comma-separated list for multiple exporters. Default is `otlp`. |
     * }}}
     *
     * @see

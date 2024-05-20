@@ -125,8 +125,8 @@ receivers:
       http:
 
 exporters:
-  jaeger: # export received traces to Jaeger
-    endpoint: jaeger:14250
+  otlp/jaeger: # export received traces to Jaeger
+    endpoint: jaeger:4317
     tls:
       insecure: true
 
@@ -143,7 +143,7 @@ service:
     traces:
       receivers: [otlp]
       processors: [batch]
-      exporters: [jaeger]
+      exporters: [otlp/jaeger]
     metrics:
       receivers: [otlp]
       processors: [batch]

@@ -30,10 +30,10 @@ object AttributeType {
   case object String extends AttributeType[String]
   case object Long extends AttributeType[Long]
 
-  case object BooleanList extends AttributeType[List[Boolean]]
-  case object DoubleList extends AttributeType[List[Double]]
-  case object StringList extends AttributeType[List[String]]
-  case object LongList extends AttributeType[List[Long]]
+  case object BooleanSeq extends AttributeType[Seq[Boolean]]
+  case object DoubleSeq extends AttributeType[Seq[Double]]
+  case object StringSeq extends AttributeType[Seq[String]]
+  case object LongSeq extends AttributeType[Seq[Long]]
 
   implicit def attributeTypeHash[A]: Hash[AttributeType[A]] =
     Hash.fromUniversalHashCode

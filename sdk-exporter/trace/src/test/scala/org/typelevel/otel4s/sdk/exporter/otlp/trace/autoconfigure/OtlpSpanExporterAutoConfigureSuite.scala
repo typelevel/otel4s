@@ -93,7 +93,7 @@ class OtlpSpanExporterAutoConfigureSuite
       .attempt
       .map(_.leftMap(_.getMessage))
       .assertEquals(
-        Left("""Cannot autoconfigure [OtlpSpanExporter].
+        Left("""Cannot autoconfigure [Protocol].
                |Cause: Unrecognized protocol [grpc]. Supported options [http/json, http/protobuf].
                |Config:
                |1) `otel.exporter.otlp.protocol` - grpc

@@ -23,7 +23,7 @@ import cats.syntax.either._
 import munit.CatsEffectSuite
 import org.typelevel.otel4s.sdk.autoconfigure.AutoConfigure
 import org.typelevel.otel4s.sdk.autoconfigure.Config
-import org.typelevel.otel4s.sdk.trace.NoopConsole
+import org.typelevel.otel4s.sdk.test.NoopConsole
 import org.typelevel.otel4s.sdk.trace.data.SpanData
 import org.typelevel.otel4s.sdk.trace.exporter.SpanExporter
 
@@ -117,7 +117,7 @@ class SpanExportersAutoConfigureSuite extends CatsEffectSuite {
       .map(_.leftMap(_.getMessage))
       .assertEquals(
         Left("""Cannot autoconfigure [SpanExporters].
-            |Cause: Unrecognized value for [otel.traces.exporter]: aws-xray. Supported options [none, logging, otlp].
+            |Cause: Unrecognized value for [otel.traces.exporter]: aws-xray. Supported options [none, console, otlp].
             |Config:
             |1) `otel.traces.exporter` - aws-xray""".stripMargin)
       )

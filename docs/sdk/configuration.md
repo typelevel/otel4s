@@ -51,6 +51,66 @@ If not specified, SDK defaults the service name to `unknown_service:scala`.
 | otel.service.name                        | OTEL\\_SERVICE\\_NAME                            | Specify logical service name. Takes precedence over `service.name` defined with `otel.resource.attributes`. |
 | otel.experimental.resource.disabled-keys | OTEL\\_EXPERIMENTAL\\_RESOURCE\\_DISABLED\\_KEYS | Specify resource attribute keys that are filtered.                                                          |
 
+## Metrics
+
+### Exporters
+
+| System property       | Environment variable      | Description                                                                                                              |
+|-----------------------|---------------------------|--------------------------------------------------------------------------------------------------------------------------|
+| otel.metrics.exporter | OTEL\\_METRICS\\_EXPORTER | List of exporters to be export metrics, separated by commas. `none` means no autoconfigured exporter. Default is `otlp`. |
+
+
+Options supported out of the box:
+
+- `otlp` - requires `otel4s-sdk-exporter` dependency.
+- `console` - prints metrics to stdout. It's mainly used for testing and debugging.
+- `none` - means no autoconfigured exporter.
+
+### OTLP exporter
+
+The exporter can be configured by two sets of settings:
+- global: `otel.expoter.otlp.{x}`
+- target-specific: `otel.exporter.otlp.metrics.{x}`
+
+Global properties can be used to configure span and metric exporters simultaneously.
+Global `otel.exporter.otlp.endpoint` must be a **base** URL. The configurer automatically adds path (i.e. `v1/metrics`) to the URL.
+
+Target-specific properties are prioritized. E.g. `otel.exporter.otlp.metrics.endpoint` is prioritized over `otel.exporter.otlp.endpoint`.
+
+| System property                        | Environment variable                           | Description                                                                                                                                                                           |
+|----------------------------------------|------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| otel.exporter.otlp.endpoint            | OTEL\\_EXPORTER\\_OTLP\\_ENDPOINT              | The OTLP traces, metrics, and logs endpoint to connect to. Must be a **base** URL with a scheme of either http or https based on the use of TLS. Default is `http://localhost:4318/`. |
+| otel.exporter.otlp.headers             | OTEL\\_EXPORTER\\_OTLP\\_HEADERS               | Key-value pairs separated by commas to pass as request headers on OTLP trace, metric, and log requests.                                                                               |
+| otel.exporter.otlp.compression         | OTEL\\_EXPORTER\\_OTLP\\_COMPRESSION           | The compression type to use on OTLP trace, metric, and log requests. Options include gzip. By default, no compression will be used.                                                   |
+| otel.exporter.otlp.timeout             | OTEL\\_EXPORTER\\_OTLP\\_TIMEOUT               | The maximum waiting time to send each OTLP trace, metric, and log batch. Default is `10 seconds`.                                                                                     |
+| **Target specific:**                   |                                                |                                                                                                                                                                                       |
+| otel.exporter.otlp.metrics.endpoint    | OTEL\\_EXPORTER\\_OTLP\\_METRICS\\_ENDPOINT    | The OTLP metrics endpoint to connect to. Default is `http://localhost:4318/v1/metrics`.                                                                                               |
+| otel.exporter.otlp.metrics.headers     | OTEL\\_EXPORTER\\_OTLP\\_METRICS\\_HEADERS     | Key-value pairs separated by commas to pass as request headers on OTLP trace requests.                                                                                                |
+| otel.exporter.otlp.metrics.compression | OTEL\\_EXPORTER\\_OTLP\\_METRICS\\_COMPRESSION | The compression type to use on OTLP trace requests. Options include gzip. By default, no compression will be used.                                                                    |
+| otel.exporter.otlp.metrics.timeout     | OTEL\\_EXPORTER\\_OTLP\\_METRICS\\_TIMEOUT     | The maximum waiting time to send each OTLP trace batch. Default is `10 seconds`.                                                                                                      |
+
+### Period metric reader
+
+Period metric reader pushes metrics to the push-based exporters (e.g. OTLP) over a fixed interval.
+
+| System property             | Environment variable              | Description                                                                        |
+|-----------------------------|-----------------------------------|------------------------------------------------------------------------------------|
+| otel.metric.export.interval | OTEL\\_METRIC\\_EXPORT\\_INTERVAL | The time interval between the start of two export attempts. Default is `1 minute`. |
+| otel.metric.export.timeout  | OTEL\\_METRIC\\_EXPORT\\_TIMEOUT  | Maximum allowed time to export data. Default is `30 seconds`.                      |
+
+### Exemplar filter
+
+The exemplar filter decides whether the measurement will be recorded as an exemplar.
+
+| System property              | Environment variable               | Description                                           |
+|------------------------------|------------------------------------|-------------------------------------------------------|
+| otel.metrics.exemplar.filter | OTEL\\_METRICS\\_EXEMPLAR\\_FILTER | The exemplar filter to use. Default is `trace_based`. |
+
+The following options for `otel.metrics.exemplar.filter` are supported:
+- `always_on` - all measurements eligible for being an exemplar.
+- `always_off` - no measurements eligible for being an exemplar.
+- `trace_based` - accepts measurements where there is a span in a context that is being sampled.
+
 ## Tracing
 
 ### Exporters
@@ -63,7 +123,7 @@ If not specified, SDK defaults the service name to `unknown_service:scala`.
 Options supported out of the box:
 
 - `otlp` - requires `otel4s-sdk-exporter` dependency.
-- `logging` - prints the name of the span along with its attributes to stdout. It's mainly used for testing and debugging.
+- `console` - prints the name of the span along with its attributes to stdout. It's mainly used for testing and debugging.
 - `none` - means no autoconfigured exporter.
 
 ### OTLP exporter
@@ -72,7 +132,7 @@ The exporter can be configured by two sets of settings:
 - global: `otel.expoter.otlp.{x}`
 - target-specific: `otel.exporter.otlp.traces.{x}`
 
-Global properties can be used to configure tracer and metric exporters simultaneously.
+Global properties can be used to configure span and metric exporters simultaneously.
 Global `otel.exporter.otlp.endpoint` must be a **base** URL. The configurer automatically adds path (i.e. `v1/traces`) to the URL.
 
 Target-specific properties are prioritized. E.g. `otel.exporter.otlp.traces.endpoint` is prioritized over `otel.exporter.otlp.endpoint`.

@@ -22,8 +22,9 @@ import cats.effect.kernel.Async
 import io.opentelemetry.api.metrics.{MeterProvider => JMeterProvider}
 import org.typelevel.otel4s.metrics.MeterBuilder
 import org.typelevel.otel4s.metrics.MeterProvider
+import org.typelevel.otel4s.oteljava.context.AskContext
 
-private[oteljava] class MeterProviderImpl[F[_]: Async](
+private[oteljava] class MeterProviderImpl[F[_]: Async: AskContext](
     jMeterProvider: JMeterProvider
 ) extends MeterProvider[F] {
 

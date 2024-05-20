@@ -70,20 +70,20 @@ private[otlp] object ProtoEncoder {
     def primitive[A](lift: A => Value): Value =
       lift(att.value.asInstanceOf[A])
 
-    def list[A](lift: A => Value): Value.ArrayValue = {
-      val list = att.value.asInstanceOf[List[A]]
-      Value.ArrayValue(ArrayValue(list.map(value => AnyValue(lift(value)))))
+    def seq[A](lift: A => Value): Value.ArrayValue = {
+      val values = att.value.asInstanceOf[Seq[A]]
+      Value.ArrayValue(ArrayValue(values.map(value => AnyValue(lift(value)))))
     }
 
     val value = att.key.`type` match {
-      case AttributeType.Boolean     => primitive[Boolean](Value.BoolValue(_))
-      case AttributeType.Double      => primitive[Double](Value.DoubleValue(_))
-      case AttributeType.String      => primitive[String](Value.StringValue(_))
-      case AttributeType.Long        => primitive[Long](Value.IntValue(_))
-      case AttributeType.BooleanList => list[Boolean](Value.BoolValue(_))
-      case AttributeType.DoubleList  => list[Double](Value.DoubleValue(_))
-      case AttributeType.StringList  => list[String](Value.StringValue(_))
-      case AttributeType.LongList    => list[Long](Value.IntValue(_))
+      case AttributeType.Boolean => primitive[Boolean](Value.BoolValue.apply)
+      case AttributeType.Double  => primitive[Double](Value.DoubleValue.apply)
+      case AttributeType.String  => primitive[String](Value.StringValue.apply)
+      case AttributeType.Long    => primitive[Long](Value.IntValue.apply)
+      case AttributeType.BooleanSeq => seq[Boolean](Value.BoolValue.apply)
+      case AttributeType.DoubleSeq  => seq[Double](Value.DoubleValue.apply)
+      case AttributeType.StringSeq  => seq[String](Value.StringValue.apply)
+      case AttributeType.LongSeq    => seq[Long](Value.IntValue.apply)
     }
 
     KeyValue(att.key.name, Some(AnyValue(value)))

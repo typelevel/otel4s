@@ -17,19 +17,35 @@
 package org.typelevel.otel4s
 package scalacheck
 
+import cats.data.NonEmptyVector
 import org.scalacheck.Arbitrary
 import org.scalacheck.Gen
 
 trait Gens {
 
+  def nonEmptyVector[A](gen: Gen[A]): Gen[NonEmptyVector[A]] =
+    for {
+      head <- gen
+      tail <- Gen.nonEmptyContainerOf[Vector, A](gen)
+    } yield NonEmptyVector(head, tail)
+
   val nonEmptyString: Gen[String] =
-    Gen.alphaNumStr.suchThat(_.nonEmpty)
+    for {
+      id <- Gen.identifier
+      str <- Gen.stringOfN(5, Gen.alphaNumChar)
+    } yield id ++ str
+
+  val nonZeroLong: Gen[Long] =
+    Gen.oneOf(
+      Gen.choose(Long.MinValue, -1L),
+      Gen.choose(1L, Long.MaxValue)
+    )
 
   val attribute: Gen[Attribute[_]] = {
     implicit val stringArb: Arbitrary[String] =
       Arbitrary(nonEmptyString)
 
-    implicit def listArb[A: Arbitrary]: Arbitrary[List[A]] =
+    implicit def seqArb[A: Arbitrary]: Arbitrary[Seq[A]] =
       Arbitrary(Gen.nonEmptyListOf(Arbitrary.arbitrary[A]))
 
     def attribute[A: AttributeKey.KeySelect: Arbitrary]: Gen[Attribute[A]] =
@@ -43,20 +59,20 @@ trait Gens {
     val long: Gen[Attribute[Long]] = attribute[Long]
     val double: Gen[Attribute[Double]] = attribute[Double]
 
-    val stringList: Gen[Attribute[List[String]]] = attribute[List[String]]
-    val booleanList: Gen[Attribute[List[Boolean]]] = attribute[List[Boolean]]
-    val longList: Gen[Attribute[List[Long]]] = attribute[List[Long]]
-    val doubleList: Gen[Attribute[List[Double]]] = attribute[List[Double]]
+    val stringSeq: Gen[Attribute[Seq[String]]] = attribute[Seq[String]]
+    val booleanSeq: Gen[Attribute[Seq[Boolean]]] = attribute[Seq[Boolean]]
+    val longSeq: Gen[Attribute[Seq[Long]]] = attribute[Seq[Long]]
+    val doubleSeq: Gen[Attribute[Seq[Double]]] = attribute[Seq[Double]]
 
     Gen.oneOf(
       boolean,
       string,
       long,
       double,
-      stringList,
-      booleanList,
-      longList,
-      doubleList
+      stringSeq,
+      booleanSeq,
+      longSeq,
+      doubleSeq
     )
   }
 

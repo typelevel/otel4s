@@ -20,7 +20,12 @@ import org.scalacheck.Gen
 import org.typelevel.otel4s.sdk.TelemetryResource
 import org.typelevel.otel4s.sdk.common.InstrumentationScope
 
+import scala.concurrent.duration._
+
 trait Gens extends org.typelevel.otel4s.scalacheck.Gens {
+
+  val timestamp: Gen[FiniteDuration] =
+    Gen.chooseNum(1L, Long.MaxValue).map(_.nanos)
 
   val telemetryResource: Gen[TelemetryResource] =
     for {

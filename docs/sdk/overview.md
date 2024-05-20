@@ -1,7 +1,6 @@
 # Overview
 
 SDK modules are implemented in Scala and available for all platforms: JVM, Scala Native, and Scala.js.
-Currently, only **tracing** module is implemented.
 The implementation remains **experimental** and some functionality may be lacking.
 
 ## Getting Started
@@ -35,28 +34,30 @@ Add directives to the `*.scala` file:
 
 _______
 
-Then use `OpenTelemetrySdk.autoConfigured` or `SdkTraces.autoConfigured` to autoconfigure the SDK:
+Then use `OpenTelemetrySdk.autoConfigured` to autoconfigure the SDK:
 ```scala mdoc:silent:reset
 import cats.effect.{IO, IOApp}
 import org.typelevel.otel4s.sdk.OpenTelemetrySdk
-import org.typelevel.otel4s.sdk.exporter.otlp.trace.autoconfigure.OtlpSpanExporterAutoConfigure
+import org.typelevel.otel4s.sdk.exporter.otlp.autoconfigure.OtlpExportersAutoConfigure
+import org.typelevel.otel4s.metrics.MeterProvider
 import org.typelevel.otel4s.trace.TracerProvider
 
 object TelemetryApp extends IOApp.Simple {
 
   def run: IO[Unit] =
     OpenTelemetrySdk
-      .autoConfigured[IO](
-        _.addSpanExporterConfigurer(
-          OtlpSpanExporterAutoConfigure[IO]
-        ) // register OTLP exporter configurer
+      .autoConfigured[IO]( // register OTLP exporters configurer
+        _.addExportersConfigurer(OtlpExportersAutoConfigure[IO]) 
       )
       .use { autoConfigured =>
         val sdk = autoConfigured.sdk
-        program(sdk.tracerProvider)
+        program(sdk.meterProvider, sdk.tracerProvider)
       }
 
-  def program(tracerProvider: TracerProvider[IO]): IO[Unit] =
+  def program(
+      meterProvider: MeterProvider[IO], 
+      tracerProvider: TracerProvider[IO]
+  ): IO[Unit] =
     ???
 }
 ```
@@ -78,7 +79,7 @@ third-party components cannot be loaded dynamically as OpenTelemetry Java does.
 Hence, the configurers must be registered manually:
 ```scala mdoc:silent
 OpenTelemetrySdk.autoConfigured[IO](
-  _.addSpanExporterConfigurer(OtlpSpanExporterAutoConfigure[IO])
+  _.addExportersConfigurer(OtlpExportersAutoConfigure[IO])
 )
 ```
 
@@ -88,3 +89,8 @@ OpenTelemetry Java can detect a large variety of environments (e.g. GCP, AWS ECS
 environment-specific attributes to the Telemetry Resource.
 
 Otel4s SDK module does not support this yet. But we have a plan to provide this functionality in the future.
+
+### Metrics missing features
+
+- `Exponential Histogram` aggregation is not supported yet
+- `Prometheus` exporter is not implemented yet

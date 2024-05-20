@@ -30,10 +30,10 @@ class AttributeConvertersSuite extends FunSuite {
       Attribute("boolean", false),
       Attribute("long", 0L),
       Attribute("double", 0.0),
-      Attribute("strings", List("string 1", "string 2")),
-      Attribute("booleans", List(false, true)),
-      Attribute("longs", List(Long.MinValue, Long.MaxValue)),
-      Attribute("doubles", List(Double.MinValue, Double.MaxValue)),
+      Attribute("strings", Seq("string 1", "string 2")),
+      Attribute("booleans", Seq(false, true)),
+      Attribute("longs", Seq(Long.MinValue, Long.MaxValue)),
+      Attribute("doubles", Seq(Double.MinValue, Double.MaxValue)),
       Attribute("duplicate-key", "1"),
       Attribute("duplicate-key", 2L),
     )
@@ -62,7 +62,7 @@ class AttributeConvertersSuite extends FunSuite {
   }
 
   test("proper conversion to and from OpenTelemetry AttributeKey") {
-    val sKey = AttributeKey.stringList("key")
+    val sKey = AttributeKey.stringSeq("key")
     val jKey = JAttributeKey.stringArrayKey("key")
 
     // can't use `assertEquals` due to existential type

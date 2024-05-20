@@ -17,7 +17,7 @@ Specification][otel spec] atop [Cats Effect][cats-effect].
   no-op implementations.  These are appropriate for library
   instrumentation.
 
-* SDK modules provide working telemetry (only tracing, currently) for applications.
+* SDK modules provide working telemetry for applications.
   SDK modules are implemented in Scala from scratch. Available for JVM, Scala.js, and Scala Native.
   The implementation remains **experimental** and some functionality may be lacking.
 
@@ -33,11 +33,11 @@ it out and let us know what you think.
 
 ## Modules availability
 
-|      Module / Platform      | JVM | Scala Native | Scala.js |  
-|:---------------------------:|:---:|:------------:|:--------:|
-|        `otel4s-core`        |  ✅  |      ✅       |    ✅     |
-| `otel4s-sdk` (tracing only) |  ✅  |      ✅       |    ✅     |
-|      `otel4s-oteljava`      |  ✅  |      ❌       |    ❌     | 
+| Module / Platform | JVM | Scala Native | Scala.js |  
+|:-----------------:|:---:|:------------:|:--------:|
+|   `otel4s-core`   |  ✅  |      ✅       |    ✅     |
+|   `otel4s-sdk`    |  ✅  |      ✅       |    ✅     |
+| `otel4s-oteljava` |  ✅  |      ❌       |    ❌     | 
 
 ## Learn more
 

@@ -25,6 +25,7 @@ import cats.syntax.functor._
 import io.opentelemetry.api.metrics.{Meter => JMeter}
 import org.typelevel.otel4s.metrics._
 import org.typelevel.otel4s.oteljava.AttributeConverters._
+import org.typelevel.otel4s.oteljava.context.AskContext
 
 import scala.collection.immutable
 import scala.concurrent.duration.TimeUnit
@@ -56,7 +57,7 @@ private[oteljava] case class HistogramBuilderImpl[F[_], A](
 
 object HistogramBuilderImpl {
 
-  def apply[F[_]: Sync, A: MeasurementValue](
+  def apply[F[_]: Sync: AskContext, A: MeasurementValue](
       jMeter: JMeter,
       name: String
   ): Histogram.Builder[F, A] =
@@ -77,7 +78,7 @@ object HistogramBuilderImpl {
     ): F[Histogram[F, A]]
   }
 
-  private def longFactory[F[_]: Sync, A](
+  private def longFactory[F[_]: Sync: AskContext, A](
       jMeter: JMeter,
       cast: A => Long
   ): Factory[F, A] =
@@ -106,12 +107,7 @@ object HistogramBuilderImpl {
                 value: A,
                 attributes: immutable.Iterable[Attribute[_]]
             ): F[Unit] =
-              Sync[F].delay(
-                histogram.record(
-                  cast(value),
-                  attributes.toJavaAttributes
-                )
-              )
+              doRecord(cast(value), attributes)
 
             def recordDuration(
                 timeUnit: TimeUnit,
@@ -121,24 +117,28 @@ object HistogramBuilderImpl {
                 .makeCase(Sync[F].monotonic) { case (start, ec) =>
                   for {
                     end <- Sync[F].monotonic
-                    _ <- Sync[F].delay(
-                      histogram.record(
-                        (end - start).toUnit(timeUnit).toLong,
-                        (
-                          attributes ++ Histogram.causeAttributes(ec)
-                        ).toJavaAttributes
-                      )
+                    _ <- doRecord(
+                      (end - start).toUnit(timeUnit).toLong,
+                      attributes ++ Histogram.causeAttributes(ec)
                     )
                   } yield ()
                 }
                 .void
+
+            private def doRecord(
+                value: Long,
+                attributes: immutable.Iterable[Attribute[_]]
+            ): F[Unit] =
+              ContextUtils.delayWithContext { () =>
+                histogram.record(value, attributes.toJavaAttributes)
+              }
           }
 
           Histogram.fromBackend(backend)
         }
     }
 
-  private def doubleFactory[F[_]: Sync, A](
+  private def doubleFactory[F[_]: Sync: AskContext, A](
       jMeter: JMeter,
       cast: A => Double
   ): Factory[F, A] =
@@ -167,12 +167,7 @@ object HistogramBuilderImpl {
                 value: A,
                 attributes: immutable.Iterable[Attribute[_]]
             ): F[Unit] =
-              Sync[F].delay(
-                histogram.record(
-                  cast(value),
-                  attributes.toJavaAttributes
-                )
-              )
+              doRecord(cast(value), attributes)
 
             def recordDuration(
                 timeUnit: TimeUnit,
@@ -182,17 +177,21 @@ object HistogramBuilderImpl {
                 .makeCase(Sync[F].monotonic) { case (start, ec) =>
                   for {
                     end <- Sync[F].monotonic
-                    _ <- Sync[F].delay(
-                      histogram.record(
-                        (end - start).toUnit(timeUnit),
-                        (
-                          attributes ++ Histogram.causeAttributes(ec)
-                        ).toJavaAttributes
-                      )
+                    _ <- doRecord(
+                      (end - start).toUnit(timeUnit),
+                      attributes ++ Histogram.causeAttributes(ec)
                     )
                   } yield ()
                 }
                 .void
+
+            private def doRecord(
+                value: Double,
+                attributes: immutable.Iterable[Attribute[_]]
+            ): F[Unit] =
+              ContextUtils.delayWithContext { () =>
+                histogram.record(value, attributes.toJavaAttributes)
+              }
           }
 
           Histogram.fromBackend(backend)

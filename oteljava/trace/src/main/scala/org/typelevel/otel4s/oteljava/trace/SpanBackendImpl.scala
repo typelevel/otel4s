@@ -78,6 +78,18 @@ private[oteljava] class SpanBackendImpl[F[_]: Sync](
       ()
     }
 
+  def addLink(
+      spanContext: SpanContext,
+      attributes: immutable.Iterable[Attribute[_]]
+  ): F[Unit] =
+    Sync[F].delay {
+      jSpan.addLink(
+        SpanContextConversions.toJava(spanContext),
+        attributes.toJavaAttributes
+      )
+      ()
+    }
+
   def setStatus(status: StatusCode): F[Unit] =
     Sync[F].delay {
       jSpan.setStatus(toJStatus(status))
@@ -99,10 +111,10 @@ private[oteljava] class SpanBackendImpl[F[_]: Sync](
       ()
     }
 
-  private[otel4s] def end: F[Unit] =
+  def end: F[Unit] =
     Sync[F].realTime.flatMap(now => end(now))
 
-  private[otel4s] def end(timestamp: FiniteDuration): F[Unit] =
+  def end(timestamp: FiniteDuration): F[Unit] =
     Sync[F].delay(jSpan.end(timestamp.length, timestamp.unit))
 
 }

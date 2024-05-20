@@ -186,6 +186,10 @@ object SpanOps {
       */
     def apply[F[_]](span: Span[F], trace: F ~> F): Res[F] =
       Impl(span, trace)
+
+    /** Extracts [[Res.span `span`]] and [[Res.trace `trace`]] as a tuple. */
+    def unapply[F[_]](res: Res[F]): Some[(Span[F], F ~> F)] =
+      Some((res.span, res.trace))
   }
 
   /** Implementation for [[SpanOps.mapK]]. */

@@ -76,7 +76,6 @@ import scala.concurrent.duration._
   */
 object PekkoHttpExample extends IOApp.Simple {
 
-
   def run: IO[Unit] =
     IOLocal(Context.root).flatMap { implicit ioLocal: IOLocal[Context] =>
       implicit val local: Local[IO, Context] = localForIOLocal

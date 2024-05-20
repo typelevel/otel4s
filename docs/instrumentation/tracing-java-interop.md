@@ -56,7 +56,9 @@ import org.typelevel.otel4s.oteljava.OtelJava
 
 def program[F[_]: Async](implicit L: Local[F, Context]): F[Unit] = {
   Local[F, Context].ask
-    .flatMap(context => Async[F].unit)
+    .flatMap(context => Async[F].delay {
+      val _ = context // Do something with context
+    })
 }
 
 def run: IO[Unit] = {

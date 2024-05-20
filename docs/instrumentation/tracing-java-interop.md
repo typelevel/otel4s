@@ -50,7 +50,7 @@ The easiest way is to call `OtelJava#localContext`:
 ```scala mdoc:silent
 import cats.effect._
 import cats.mtl.Local
-import cats.syntax.functor._
+import cats.syntax.flatMap._
 import org.typelevel.otel4s.oteljava.context.Context
 import org.typelevel.otel4s.oteljava.OtelJava
 
@@ -59,11 +59,12 @@ def program[F[_]: Async](implicit L: Local[F, Context]): F[Unit] = {
     .flatMap(context => Async[F].unit)
 }
 
-def run: IO[Unit] = 
-  OtelJava.autoConfigured[IO]() { otel4s =>
-    implicit val local: Local[IO, Context] = otel4s.localContext
+def run: IO[Unit] = {
+  OtelJava.autoConfigured[IO]().use { otel4s =>
+    import otel4s.localContext
     program[IO]
   }
+}
 ```
 
 ## How to use Java SDK context with otel4s
@@ -193,23 +194,36 @@ Code instrumented using OpenTelemetry's Java API will work inside `blockingWithC
 
 When interopting with asynchronous Java APIs:
 
-```
-  def asyncWithContext[F[_]: Async, A](k: (Either[Throwable, A] => Unit) => F[Option[F[Unit]]])(implicit L: Local[F, Context]): F[A] =
-    Local[F, Context].ask.flatMap { ctx =>      // <1>
-      Async[F].async[A] { cb =>
-        Async[F].delay {
-          val jContext: JContext = ctx.underlying
-          val _ = jContext.makeCurrent()
-        }.flatMap(_ => k(cb))
+```scala mdoc:silent
+import scala.concurrent.ExecutionContext
+import cats.effect.Async
+
+// Ensure executing the callback happens on the same thread so Context is correctly propagated and then cleaned up
+def tracedContext(ctx: JContext): ExecutionContext =
+  new ExecutionContext {
+    def execute(runnable: Runnable): Unit = {
+      val scope = ctx.makeCurrent()
+      try {
+        runnable.run()
+      } finally {
+        scope.close()
       }
     }
+    def reportFailure(cause: Throwable): Unit =
+      cause.printStackTrace()
+  }
+  
+def asyncWithContext[F[_]: Async, A](k: (Either[Throwable, A] => Unit) => F[Option[F[Unit]]])(implicit L: Local[F, Context]): F[A] =
+  Local[F, Context].ask.flatMap { ctx =>
+    Async[F].evalOn(
+      Async[F].async[A](cb => k(cb)), 
+      tracedContext(ctx.underlying)
+    )
+  }
 ```
 
-Note that we rely on the async java code to clean up the `Context` threadlocal, 
-therefore the java async API you call must handle the OpenTelemetry `Context` threadlocal correctly.
-
-Java library instrumentations can be found [here](https://github.com/open-telemetry/opentelemetry-java-instrumentation), 
-or you can manually "wrap" their underlying threadpool using `io.opentelemetry.context.Context.wrap`.
+Note: If you're calling an asynchronous Java/Scala API, it's likely that they are using their own threadpools under the hood.
+In which case you probably want to configure them to propagate the Context i.e. using `io.opentelemetry.context.Context.wrap`.
 
 ## Pekko HTTP example
 

@@ -79,6 +79,15 @@ class MeterSharedStateSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
               aggregationTemporality = AggregationTemporality.Cumulative
             )
 
+          case InstrumentType.Gauge =>
+            MetricPoints.gauge(
+              PointDataUtils.toNumberPoints(
+                NonEmptyVector.one(value),
+                attributes,
+                timeWindow
+              )
+            )
+
           case InstrumentType.Histogram =>
             MetricPoints.histogram(
               NonEmptyVector.one(

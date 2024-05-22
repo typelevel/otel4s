@@ -88,6 +88,7 @@ class AggregationSuite extends DisciplineSuite {
 
       case lastValue @ Aggregation.LastValue =>
         val compatible: Set[InstrumentType] = Set(
+          InstrumentType.Gauge,
           InstrumentType.ObservableGauge
         )
 

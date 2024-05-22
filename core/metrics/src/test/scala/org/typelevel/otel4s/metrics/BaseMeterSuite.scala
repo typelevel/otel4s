@@ -65,6 +65,17 @@ abstract class BaseMeterSuite extends CatsEffectSuite {
     } yield assertEquals(metrics, List(expected))
   }
 
+  sdkTest("Gauge - record values") { sdk =>
+    val expected = MetricData.gauge("gauge", 1L, Some(1L))
+
+    for {
+      meter <- sdk.provider.get("meter")
+      gauge <- meter.gauge[Long]("gauge").create
+      _ <- gauge.record(1L)
+      metrics <- sdk.collectMetrics
+    } yield assertEquals(metrics, List(expected))
+  }
+
   sdkTest("UpDownCounter - record values") { sdk =>
     val expected = MetricData.sum("counter", monotonic = false, 3L, Some(3L))
 
@@ -376,7 +387,11 @@ object BaseMeterSuite {
         )
       )
 
-    def gauge(name: String, value: Long): MetricData =
+    def gauge(
+        name: String,
+        value: Long,
+        exemplarValue: Option[Long] = None
+    ): MetricData =
       MetricData(
         name,
         None,
@@ -388,7 +403,15 @@ object BaseMeterSuite {
               Duration.Zero,
               Attributes.empty,
               Left(value),
-              Vector.empty
+              exemplarValue.toVector.map { exemplar =>
+                Exemplar(
+                  Attributes.empty,
+                  Duration.Zero,
+                  Some(TraceId),
+                  Some(SpanId),
+                  Left(exemplar)
+                )
+              }
             )
           )
         )

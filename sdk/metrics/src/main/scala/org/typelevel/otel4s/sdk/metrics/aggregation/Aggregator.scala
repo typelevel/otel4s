@@ -48,6 +48,7 @@ private[metrics] object Aggregator {
     *   - Counter
     *   - UpDownCounter
     *   - Histogram
+    *   - Gauge
     *
     * @tparam F
     *   the higher-kinded type of a polymorphic effect
@@ -214,14 +215,14 @@ private[metrics] object Aggregator {
       aggregation: Aggregation.Synchronous,
       descriptor: InstrumentDescriptor.Synchronous
   ): Aggregator.Synchronous[F, A] = {
+    def fixedReservoirSize: Int =
+      Runtime.getRuntime.availableProcessors
+
     def sum: Aggregator.Synchronous[F, A] =
-      SumAggregator.synchronous(
-        reservoirs,
-        Runtime.getRuntime.availableProcessors
-      )
+      SumAggregator.synchronous(reservoirs, fixedReservoirSize)
 
     def lastValue: Aggregator.Synchronous[F, A] =
-      LastValueAggregator.synchronous[F, A]
+      LastValueAggregator.synchronous(reservoirs, fixedReservoirSize)
 
     def histogram(boundaries: BucketBoundaries): Aggregator.Synchronous[F, A] =
       ExplicitBucketHistogramAggregator(reservoirs, boundaries)
@@ -231,6 +232,7 @@ private[metrics] object Aggregator {
         descriptor.instrumentType match {
           case InstrumentType.Counter       => sum
           case InstrumentType.UpDownCounter => sum
+          case InstrumentType.Gauge         => lastValue
           case InstrumentType.Histogram =>
             val boundaries = descriptor.advice
               .flatMap(_.explicitBucketBoundaries)

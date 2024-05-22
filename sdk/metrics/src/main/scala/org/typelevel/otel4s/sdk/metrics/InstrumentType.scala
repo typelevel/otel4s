@@ -62,6 +62,7 @@ object InstrumentType {
   case object Counter extends Synchronous
   case object UpDownCounter extends Synchronous
   case object Histogram extends Synchronous
+  case object Gauge extends Synchronous
   case object ObservableCounter extends Asynchronous
   case object ObservableUpDownCounter extends Asynchronous
   case object ObservableGauge extends Asynchronous
@@ -70,6 +71,7 @@ object InstrumentType {
     Counter,
     UpDownCounter,
     Histogram,
+    Gauge,
     ObservableCounter,
     ObservableUpDownCounter,
     ObservableGauge

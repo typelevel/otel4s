@@ -91,6 +91,22 @@ class SdkMeterSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
     }
   }
 
+  test("create a noop Gauge when the name is invalid") {
+    PropF.forAllF(
+      Gens.telemetryResource,
+      Gens.instrumentationScope,
+      invalidNameGen
+    ) { (resource, scope, name) =>
+      InMemoryConsole.create[IO].flatMap { implicit C: InMemoryConsole[IO] =>
+        for {
+          meter <- createMeter(resource, scope)
+          gauge <- meter.gauge[Long](name).create
+          _ <- C.entries.assertEquals(consoleEntries("Gauge", name))
+        } yield assert(!gauge.backend.meta.isEnabled)
+      }
+    }
+  }
+
   test("create a noop ObservableCounter when the name is invalid") {
     PropF.forAllF(
       Gens.telemetryResource,

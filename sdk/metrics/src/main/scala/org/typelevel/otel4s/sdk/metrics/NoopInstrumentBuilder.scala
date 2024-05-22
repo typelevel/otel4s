@@ -22,6 +22,7 @@ import cats.effect.std.Console
 import cats.syntax.functor._
 import org.typelevel.otel4s.metrics.BucketBoundaries
 import org.typelevel.otel4s.metrics.Counter
+import org.typelevel.otel4s.metrics.Gauge
 import org.typelevel.otel4s.metrics.Histogram
 import org.typelevel.otel4s.metrics.Measurement
 import org.typelevel.otel4s.metrics.ObservableCounter
@@ -76,6 +77,20 @@ private object NoopInstrumentBuilder {
 
       def create: F[UpDownCounter[F, A]] =
         warn("UpDownCounter", name).as(UpDownCounter.noop)
+    }
+
+  def gauge[F[_]: Applicative: Console, A](
+      name: String
+  ): Gauge.Builder[F, A] =
+    new Gauge.Builder[F, A] {
+      def withUnit(unit: String): Gauge.Builder[F, A] =
+        this
+
+      def withDescription(description: String): Gauge.Builder[F, A] =
+        this
+
+      def create: F[Gauge[F, A]] =
+        warn("Gauge", name).as(Gauge.noop)
     }
 
   def observableGauge[F[_]: Applicative: Console, A](

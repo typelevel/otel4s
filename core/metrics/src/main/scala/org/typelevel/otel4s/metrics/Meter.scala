@@ -135,6 +135,37 @@ trait Meter[F[_]] {
       name: String
   ): UpDownCounter.Builder[F, A]
 
+  /** Creates a builder of [[Gauge]] instrument that records values of type `A`.
+    *
+    * The [[Gauge]] records non-additive values.
+    *
+    * @note
+    *   the `A` type must be provided explicitly, for example
+    *   `meter.gauge[Long]` or `meter.gauge[Double]`
+    *
+    * @example
+    *   {{{
+    * val meter: Meter[F] = ???
+    *
+    * val doubleGauge: F[Gauge[F, Double]] =
+    *   meter.gauge[Double]("double-gauge").create
+    *
+    * val longGauge: F[Gauge[F, Long]] =
+    *   meter.gauge[Long]("long-gauge").create
+    *   }}}
+    *
+    * @see
+    *   See [[upDownCounter]] to record additive values
+    *
+    * @param name
+    *   the name of the instrument
+    *
+    * @tparam A
+    *   the type of the measurement. [[scala.Long]] and [[scala.Double]] are
+    *   supported out of the box
+    */
+  def gauge[A: MeasurementValue](name: String): Gauge.Builder[F, A]
+
   /** Creates a builder of [[ObservableGauge]] instrument that collects values
     * of type `A` from the given callback.
     *
@@ -324,6 +355,13 @@ object Meter {
               description: String
           ): UpDownCounter.Builder[F, A] = this
           def create: F[UpDownCounter[F, A]] = F.pure(UpDownCounter.noop)
+        }
+
+      def gauge[A: MeasurementValue](name: String): Gauge.Builder[F, A] =
+        new Gauge.Builder[F, A] {
+          def withUnit(unit: String): Gauge.Builder[F, A] = this
+          def withDescription(description: String): Gauge.Builder[F, A] = this
+          def create: F[Gauge[F, A]] = F.pure(Gauge.noop)
         }
 
       def observableGauge[A: MeasurementValue](

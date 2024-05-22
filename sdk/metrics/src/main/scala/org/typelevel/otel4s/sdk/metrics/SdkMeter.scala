@@ -21,6 +21,7 @@ import cats.effect.MonadCancelThrow
 import cats.effect.std.Console
 import org.typelevel.otel4s.metrics.BatchCallback
 import org.typelevel.otel4s.metrics.Counter
+import org.typelevel.otel4s.metrics.Gauge
 import org.typelevel.otel4s.metrics.Histogram
 import org.typelevel.otel4s.metrics.MeasurementValue
 import org.typelevel.otel4s.metrics.Meter
@@ -67,6 +68,12 @@ private class SdkMeter[F[_]: MonadCancelThrow: Clock: Console: AskContext](
       SdkUpDownCounter.Builder(name, sharedState)
     else
       NoopInstrumentBuilder.upDownCounter(name)
+
+  def gauge[A: MeasurementValue](name: String): Gauge.Builder[F, A] =
+    if (SdkMeter.isValidName(name))
+      SdkGauge.Builder(name, sharedState)
+    else
+      NoopInstrumentBuilder.gauge(name)
 
   def observableGauge[A: MeasurementValue](
       name: String

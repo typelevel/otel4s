@@ -17,18 +17,23 @@
 package org.typelevel.otel4s.sdk.metrics.aggregation
 
 import cats.effect.IO
+import cats.effect.SyncIO
+import cats.effect.std.Random
+import cats.effect.testkit.TestControl
 import cats.syntax.foldable._
 import munit.CatsEffectSuite
 import munit.ScalaCheckEffectSuite
 import org.scalacheck.Gen
 import org.scalacheck.Test
 import org.scalacheck.effect.PropF
-import org.typelevel.otel4s.Attributes
 import org.typelevel.otel4s.sdk.context.Context
+import org.typelevel.otel4s.sdk.metrics.data.ExemplarData
+import org.typelevel.otel4s.sdk.metrics.data.ExemplarData.TraceContext
 import org.typelevel.otel4s.sdk.metrics.data.MetricData
 import org.typelevel.otel4s.sdk.metrics.data.MetricPoints
 import org.typelevel.otel4s.sdk.metrics.data.PointData
 import org.typelevel.otel4s.sdk.metrics.data.TimeWindow
+import org.typelevel.otel4s.sdk.metrics.exemplar.Reservoirs
 import org.typelevel.otel4s.sdk.metrics.internal.MetricDescriptor
 import org.typelevel.otel4s.sdk.metrics.scalacheck.Gens
 
@@ -38,31 +43,64 @@ class LastValueAggregatorSuite
     extends CatsEffectSuite
     with ScalaCheckEffectSuite {
 
+  private val traceContextKey = Context.Key
+    .unique[SyncIO, TraceContext]("trace-context")
+    .unsafeRunSync()
+
+  private def reservoirs(implicit R: Random[IO]): Reservoirs[IO] =
+    Reservoirs.alwaysOn(_.get(traceContextKey))
+
+  // we need to put all exemplar values into the first cell
+  private val random = new java.util.Random {
+    override def nextInt(bound: Int): Int = 0
+  }
+
   test("synchronous - aggregate with reset - return the last seen value") {
     PropF.forAllF(
       Gens.nonEmptyVector(Gen.long),
-      Gens.attributes
-    ) { (values, attrs) =>
-      val aggregator =
-        LastValueAggregator.synchronous[IO, Long]
+      Gens.attributes,
+      Gens.attributes,
+      Gens.traceContext
+    ) { (values, exemplarAttributes, attributes, traceContext) =>
+      Random.javaUtilRandom[IO](random).flatMap { implicit R: Random[IO] =>
+        val ctx = Context.root.updated(traceContextKey, traceContext)
 
-      val timeWindow =
-        TimeWindow(100.millis, 200.millis)
+        val aggregator =
+          LastValueAggregator.synchronous[IO, Long](reservoirs, 1)
 
-      val expected = Some(
-        PointData.longNumber(timeWindow, attrs, Vector.empty, values.last)
-      )
+        val timeWindow =
+          TimeWindow(100.millis, 200.millis)
 
-      for {
-        accumulator <- aggregator.createAccumulator
-        _ <- values.traverse_ { value =>
-          accumulator.record(value, Attributes.empty, Context.root)
+        val expected = Some(
+          PointData.longNumber(
+            timeWindow,
+            attributes,
+            Vector(
+              ExemplarData.long(
+                exemplarAttributes
+                  .filterNot(a => attributes.get(a.key).isDefined),
+                Duration.Zero,
+                Some(traceContext),
+                values.last
+              )
+            ),
+            values.last
+          )
+        )
+
+        TestControl.executeEmbed {
+          for {
+            accumulator <- aggregator.createAccumulator
+            _ <- values.traverse_ { value =>
+              accumulator.record(value, exemplarAttributes, ctx)
+            }
+            r1 <- accumulator.aggregate(timeWindow, attributes, reset = true)
+            r2 <- accumulator.aggregate(timeWindow, attributes, reset = true)
+          } yield {
+            assertEquals(r1: Option[PointData], expected)
+            assertEquals(r2: Option[PointData], None)
+          }
         }
-        r1 <- accumulator.aggregate(timeWindow, attrs, reset = true)
-        r2 <- accumulator.aggregate(timeWindow, attrs, reset = true)
-      } yield {
-        assertEquals(r1: Option[PointData], expected)
-        assertEquals(r2: Option[PointData], None)
       }
     }
   }
@@ -70,28 +108,52 @@ class LastValueAggregatorSuite
   test("synchronous - aggregate without reset - return the last stored value") {
     PropF.forAllF(
       Gens.nonEmptyVector(Gen.long),
-      Gens.attributes
-    ) { (values, attrs) =>
-      val aggregator =
-        LastValueAggregator.synchronous[IO, Long]
+      Gens.attributes,
+      Gens.attributes,
+      Gens.traceContext
+    ) { (values, exemplarAttributes, attributes, traceContext) =>
+      Random.javaUtilRandom[IO](random).flatMap { implicit R: Random[IO] =>
+        val ctx = Context.root.updated(traceContextKey, traceContext)
 
-      val timeWindow =
-        TimeWindow(100.millis, 200.millis)
+        val aggregator =
+          LastValueAggregator.synchronous[IO, Long](reservoirs, 1)
 
-      val expected = Some(
-        PointData.longNumber(timeWindow, attrs, Vector.empty, values.last)
-      )
+        val timeWindow =
+          TimeWindow(100.millis, 200.millis)
 
-      for {
-        accumulator <- aggregator.createAccumulator
-        _ <- values.traverse_ { value =>
-          accumulator.record(value, Attributes.empty, Context.root)
+        val expected = Some(
+          PointData.longNumber(
+            timeWindow,
+            attributes,
+            Vector(
+              ExemplarData.long(
+                exemplarAttributes
+                  .filterNot(a => attributes.get(a.key).isDefined),
+                Duration.Zero,
+                Some(traceContext),
+                values.last
+              )
+            ),
+            values.last
+          )
+        )
+
+        TestControl.executeEmbed {
+          for {
+            accumulator <- aggregator.createAccumulator
+            _ <- values.traverse_ { value =>
+              accumulator.record(value, exemplarAttributes, ctx)
+            }
+            r1 <- accumulator.aggregate(timeWindow, attributes, reset = false)
+            _ <- values.traverse_ { value =>
+              accumulator.record(value, exemplarAttributes, ctx)
+            }
+            r2 <- accumulator.aggregate(timeWindow, attributes, reset = false)
+          } yield {
+            assertEquals(r1: Option[PointData], expected)
+            assertEquals(r2: Option[PointData], expected)
+          }
         }
-        r1 <- accumulator.aggregate(timeWindow, attrs, reset = false)
-        r2 <- accumulator.aggregate(timeWindow, attrs, reset = false)
-      } yield {
-        assertEquals(r1: Option[PointData], expected)
-        assertEquals(r2: Option[PointData], expected)
       }
     }
   }
@@ -109,7 +171,9 @@ class LastValueAggregatorSuite
       }
 
       val aggregator =
-        LastValueAggregator.synchronous[IO, Long].asInstanceOf[LongAggregator]
+        LastValueAggregator
+          .synchronous[IO, Long](Reservoirs.alwaysOff, 1)
+          .asInstanceOf[LongAggregator]
 
       val expected =
         MetricData(

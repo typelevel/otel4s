@@ -22,21 +22,17 @@ import org.typelevel.otel4s.AttributeKey._
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/semantic-convention/templates/SemanticAttributes.scala.j2
 object ServiceAttributes {
 
-  /** Logical name of the service.
-    *
-    * @note
-    *   - MUST be the same for all instances of horizontally scaled services. If
-    *     the value was not specified, SDKs MUST fallback to `unknown_service:`
-    *     concatenated with <a
-    *     href="process.md#process">`process.executable.name`</a>, e.g.
-    *     `unknown_service:bash`. If `process.executable.name` is not available,
-    *     the value MUST be set to `unknown_service`.
-    */
+  /**
+  * Logical name of the service.
+  *
+  * @note 
+  *  - MUST be the same for all instances of horizontally scaled services. If the value was not specified, SDKs MUST fallback to `unknown_service:` concatenated with <a href="process.md">`process.executable.name`</a>, e.g. `unknown_service:bash`. If `process.executable.name` is not available, the value MUST be set to `unknown_service`.
+  */
   val ServiceName: AttributeKey[String] = string("service.name")
 
-  /** The version string of the service API or implementation. The format is not
-    * defined by these conventions.
-    */
+  /**
+  * The version string of the service API or implementation. The format is not defined by these conventions.
+  */
   val ServiceVersion: AttributeKey[String] = string("service.version")
 
 }

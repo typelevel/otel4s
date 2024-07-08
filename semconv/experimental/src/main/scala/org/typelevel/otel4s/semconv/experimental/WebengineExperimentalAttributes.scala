@@ -22,19 +22,19 @@ import org.typelevel.otel4s.AttributeKey._
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/semantic-convention/templates/SemanticAttributes.scala.j2
 object WebengineExperimentalAttributes {
 
-  /** Additional description of the web engine (e.g. detailed version and
-    * edition information).
-    */
-  val WebengineDescription: AttributeKey[String] = string(
-    "webengine.description"
-  )
+  /**
+  * Additional description of the web engine (e.g. detailed version and edition information).
+  */
+  val WebengineDescription: AttributeKey[String] = string("webengine.description")
 
-  /** The name of the web engine.
-    */
+  /**
+  * The name of the web engine.
+  */
   val WebengineName: AttributeKey[String] = string("webengine.name")
 
-  /** The version of the web engine.
-    */
+  /**
+  * The version of the web engine.
+  */
   val WebengineVersion: AttributeKey[String] = string("webengine.version")
 
 }

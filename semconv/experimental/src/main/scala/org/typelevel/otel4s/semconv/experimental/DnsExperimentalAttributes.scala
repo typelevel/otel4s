@@ -22,15 +22,12 @@ import org.typelevel.otel4s.AttributeKey._
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/semantic-convention/templates/SemanticAttributes.scala.j2
 object DnsExperimentalAttributes {
 
-  /** The name being queried.
-    *
-    * @note
-    *   - If the name field contains non-printable characters (below 32 or above
-    *     126), those characters should be represented as escaped base 10
-    *     integers (\DDD). Back slashes and quotes should be escaped. Tabs,
-    *     carriage returns, and line feeds should be converted to \t, \r, and \n
-    *     respectively.
-    */
+  /**
+  * The name being queried.
+  *
+  * @note 
+  *  - If the name field contains non-printable characters (below 32 or above 126), those characters should be represented as escaped base 10 integers (\DDD). Back slashes and quotes should be escaped. Tabs, carriage returns, and line feeds should be converted to \t, \r, and \n respectively.
+  */
   val DnsQuestionName: AttributeKey[String] = string("dns.question.name")
 
 }

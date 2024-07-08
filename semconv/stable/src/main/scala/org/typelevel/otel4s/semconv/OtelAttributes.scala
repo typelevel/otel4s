@@ -22,38 +22,34 @@ import org.typelevel.otel4s.AttributeKey._
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/semantic-convention/templates/SemanticAttributes.scala.j2
 object OtelAttributes {
 
-  /** The name of the instrumentation scope - (`InstrumentationScope.Name` in
-    * OTLP).
-    */
+  /**
+  * The name of the instrumentation scope - (`InstrumentationScope.Name` in OTLP).
+  */
   val OtelScopeName: AttributeKey[String] = string("otel.scope.name")
 
-  /** The version of the instrumentation scope - (`InstrumentationScope.Version`
-    * in OTLP).
-    */
+  /**
+  * The version of the instrumentation scope - (`InstrumentationScope.Version` in OTLP).
+  */
   val OtelScopeVersion: AttributeKey[String] = string("otel.scope.version")
 
-  /** Name of the code, either &quot;OK&quot; or &quot;ERROR&quot;. MUST NOT be
-    * set if the status code is UNSET.
-    */
+  /**
+  * Name of the code, either &quot;OK&quot; or &quot;ERROR&quot;. MUST NOT be set if the status code is UNSET.
+  */
   val OtelStatusCode: AttributeKey[String] = string("otel.status_code")
 
-  /** Description of the Status if it has a value, otherwise not set.
-    */
-  val OtelStatusDescription: AttributeKey[String] = string(
-    "otel.status_description"
-  )
+  /**
+  * Description of the Status if it has a value, otherwise not set.
+  */
+  val OtelStatusDescription: AttributeKey[String] = string("otel.status_description")
   // Enum definitions
-
-  /** Values for [[OtelStatusCode]].
-    */
+  
+  /**
+   * Values for [[OtelStatusCode]].
+   */
   abstract class OtelStatusCodeValue(val value: String)
   object OtelStatusCodeValue {
-
-    /** The operation has been validated by an Application developer or Operator
-      * to have completed successfully.
-      */
+    /** The operation has been validated by an Application developer or Operator to have completed successfully. */
     case object Ok extends OtelStatusCodeValue("OK")
-
     /** The operation contains an error. */
     case object Error extends OtelStatusCodeValue("ERROR")
   }

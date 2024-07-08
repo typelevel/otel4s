@@ -22,12 +22,14 @@ import org.typelevel.otel4s.AttributeKey._
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/semantic-convention/templates/SemanticAttributes.scala.j2
 object SessionExperimentalAttributes {
 
-  /** A unique id to identify a session.
-    */
+  /**
+  * A unique id to identify a session.
+  */
   val SessionId: AttributeKey[String] = string("session.id")
 
-  /** The previous `session.id` for this user, when known.
-    */
+  /**
+  * The previous `session.id` for this user, when known.
+  */
   val SessionPreviousId: AttributeKey[String] = string("session.previous_id")
 
 }

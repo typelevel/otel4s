@@ -22,11 +22,10 @@ import org.typelevel.otel4s.AttributeKey._
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/semantic-convention/templates/SemanticAttributes.scala.j2
 object PoolExperimentalAttributes {
 
-  /** The name of the connection pool; unique within the instrumented
-    * application. In case the connection pool implementation doesn't provide a
-    * name, instrumentation should use a combination of `server.address` and
-    * `server.port` attributes formatted as `server.address:server.port`.
-    */
+  /**
+  * Deprecated, use `db.client.connections.pool.name` instead.
+  */
+  @deprecated("Use `db.client.connections.pool.name` instead", "0.5.0")
   val PoolName: AttributeKey[String] = string("pool.name")
 
 }

@@ -22,10 +22,9 @@ import org.typelevel.otel4s.AttributeKey._
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/semantic-convention/templates/SemanticAttributes.scala.j2
 object UserAgentAttributes {
 
-  /** Value of the <a
-    * href="https://www.rfc-editor.org/rfc/rfc9110.html#field.user-agent">HTTP
-    * User-Agent</a> header sent by the client.
-    */
+  /**
+  * Value of the <a href="https://www.rfc-editor.org/rfc/rfc9110.html#field.user-agent">HTTP User-Agent</a> header sent by the client.
+  */
   val UserAgentOriginal: AttributeKey[String] = string("user_agent.original")
 
 }

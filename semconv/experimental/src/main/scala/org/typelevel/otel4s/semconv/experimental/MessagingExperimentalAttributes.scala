@@ -40,11 +40,6 @@ object MessagingExperimentalAttributes {
     */
   val MessagingClientId: AttributeKey[String] = string("messaging.client.id")
 
-  /** Deprecated, use `messaging.client.id` instead.
-    */
-  @deprecated("Use `messaging.client.id` instead", "0.5.0")
-  val MessagingClientId: AttributeKey[String] = string("messaging.client_id")
-
   /** A boolean that is true if the message destination is anonymous (could be
     * unnamed or have auto-generated name).
     */

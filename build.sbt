@@ -576,6 +576,7 @@ lazy val `semconv-experimental` =
       startYear := Some(2023),
       // We use opentelemetry-semconv dependency to track releases of the OpenTelemetry semantic convention spec
       libraryDependencies += "io.opentelemetry.semconv" % "opentelemetry-semconv-incubating" % OpenTelemetrySemConvVersion % "compile-internal" intransitive (),
+      mimaPreviousArtifacts := Set.empty
     )
     .settings(munitDependencies)
     .settings(scalafixSettings)

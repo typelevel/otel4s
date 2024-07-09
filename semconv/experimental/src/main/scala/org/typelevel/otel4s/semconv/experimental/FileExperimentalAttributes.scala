@@ -22,32 +22,30 @@ import org.typelevel.otel4s.AttributeKey._
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/semantic-convention/templates/SemanticAttributes.scala.j2
 object FileExperimentalAttributes {
 
-  /**
-  * Directory where the file is located. It should include the drive letter, when appropriate.
-  */
+  /** Directory where the file is located. It should include the drive letter,
+    * when appropriate.
+    */
   val FileDirectory: AttributeKey[String] = string("file.directory")
 
-  /**
-  * File extension, excluding the leading dot.
-  *
-  * @note 
-  *  - When the file name has multiple extensions (example.tar.gz), only the last one should be captured (&quot;gz&quot;, not &quot;tar.gz&quot;).
-  */
+  /** File extension, excluding the leading dot.
+    *
+    * @note
+    *   - When the file name has multiple extensions (example.tar.gz), only the
+    *     last one should be captured (&quot;gz&quot;, not &quot;tar.gz&quot;).
+    */
   val FileExtension: AttributeKey[String] = string("file.extension")
 
-  /**
-  * Name of the file including the extension, without the directory.
-  */
+  /** Name of the file including the extension, without the directory.
+    */
   val FileName: AttributeKey[String] = string("file.name")
 
-  /**
-  * Full path to the file, including the file name. It should include the drive letter, when appropriate.
-  */
+  /** Full path to the file, including the file name. It should include the
+    * drive letter, when appropriate.
+    */
   val FilePath: AttributeKey[String] = string("file.path")
 
-  /**
-  * File size in bytes.
-  */
+  /** File size in bytes.
+    */
   val FileSize: AttributeKey[Long] = long("file.size")
 
 }

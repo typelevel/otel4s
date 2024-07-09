@@ -22,48 +22,52 @@ import org.typelevel.otel4s.AttributeKey._
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/semantic-convention/templates/SemanticAttributes.scala.j2
 object LogExperimentalAttributes {
 
-  /**
-  * The basename of the file.
-  */
+  /** The basename of the file.
+    */
   val LogFileName: AttributeKey[String] = string("log.file.name")
 
-  /**
-  * The basename of the file, with symlinks resolved.
-  */
-  val LogFileNameResolved: AttributeKey[String] = string("log.file.name_resolved")
+  /** The basename of the file, with symlinks resolved.
+    */
+  val LogFileNameResolved: AttributeKey[String] = string(
+    "log.file.name_resolved"
+  )
 
-  /**
-  * The full path to the file.
-  */
+  /** The full path to the file.
+    */
   val LogFilePath: AttributeKey[String] = string("log.file.path")
 
-  /**
-  * The full path to the file, with symlinks resolved.
-  */
-  val LogFilePathResolved: AttributeKey[String] = string("log.file.path_resolved")
+  /** The full path to the file, with symlinks resolved.
+    */
+  val LogFilePathResolved: AttributeKey[String] = string(
+    "log.file.path_resolved"
+  )
 
-  /**
-  * The stream associated with the log. See below for a list of well-known values.
-  */
+  /** The stream associated with the log. See below for a list of well-known
+    * values.
+    */
   val LogIostream: AttributeKey[String] = string("log.iostream")
 
-  /**
-  * A unique identifier for the Log Record.
-  *
-  * @note 
-  *  - If an id is provided, other log records with the same id will be considered duplicates and can be removed safely. This means, that two distinguishable log records MUST have different values.
-The id MAY be an <a href="https://github.com/ulid/spec">Universally Unique Lexicographically Sortable Identifier (ULID)</a>, but other identifiers (e.g. UUID) may be used as needed.
-  */
+  /** A unique identifier for the Log Record.
+    *
+    * @note
+    *   - If an id is provided, other log records with the same id will be
+    *     considered duplicates and can be removed safely. This means, that two
+    *     distinguishable log records MUST have different values. The id MAY be
+    *     an <a href="https://github.com/ulid/spec">Universally Unique
+    *     Lexicographically Sortable Identifier (ULID)</a>, but other
+    *     identifiers (e.g. UUID) may be used as needed.
+    */
   val LogRecordUid: AttributeKey[String] = string("log.record.uid")
   // Enum definitions
-  
-  /**
-   * Values for [[LogIostream]].
-   */
+
+  /** Values for [[LogIostream]].
+    */
   abstract class LogIostreamValue(val value: String)
   object LogIostreamValue {
+
     /** Logs from stdout stream. */
     case object Stdout extends LogIostreamValue("stdout")
+
     /** Events from stderr stream. */
     case object Stderr extends LogIostreamValue("stderr")
   }

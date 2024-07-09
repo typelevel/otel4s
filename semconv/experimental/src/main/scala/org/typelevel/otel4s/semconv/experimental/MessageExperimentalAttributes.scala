@@ -22,40 +22,41 @@ import org.typelevel.otel4s.AttributeKey._
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/semantic-convention/templates/SemanticAttributes.scala.j2
 object MessageExperimentalAttributes {
 
-  /**
-  * Deprecated, use `rpc.message.compressed_size` instead.
-  */
+  /** Deprecated, use `rpc.message.compressed_size` instead.
+    */
   @deprecated("Use `rpc.message.compressed_size` instead", "0.5.0")
-  val MessageCompressedSize: AttributeKey[Long] = long("message.compressed_size")
+  val MessageCompressedSize: AttributeKey[Long] = long(
+    "message.compressed_size"
+  )
 
-  /**
-  * Deprecated, use `rpc.message.id` instead.
-  */
+  /** Deprecated, use `rpc.message.id` instead.
+    */
   @deprecated("Use `rpc.message.id` instead", "0.5.0")
   val MessageId: AttributeKey[Long] = long("message.id")
 
-  /**
-  * Deprecated, use `rpc.message.type` instead.
-  */
+  /** Deprecated, use `rpc.message.type` instead.
+    */
   @deprecated("Use `rpc.message.type` instead", "0.5.0")
   val MessageType: AttributeKey[String] = string("message.type")
 
-  /**
-  * Deprecated, use `rpc.message.uncompressed_size` instead.
-  */
+  /** Deprecated, use `rpc.message.uncompressed_size` instead.
+    */
   @deprecated("Use `rpc.message.uncompressed_size` instead", "0.5.0")
-  val MessageUncompressedSize: AttributeKey[Long] = long("message.uncompressed_size")
+  val MessageUncompressedSize: AttributeKey[Long] = long(
+    "message.uncompressed_size"
+  )
   // Enum definitions
-  
-  /**
-   * Values for [[MessageType]].
-   */
+
+  /** Values for [[MessageType]].
+    */
   @deprecated("Use `rpc.message.type` instead", "0.5.0")
   abstract class MessageTypeValue(val value: String)
   @annotation.nowarn("cat=deprecation")
   object MessageTypeValue {
+
     /** sent. */
     case object Sent extends MessageTypeValue("SENT")
+
     /** received. */
     case object Received extends MessageTypeValue("RECEIVED")
   }

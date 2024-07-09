@@ -22,59 +22,74 @@ import org.typelevel.otel4s.AttributeKey._
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/semantic-convention/templates/SemanticAttributes.scala.j2
 object TelemetryAttributes {
 
-  /**
-  * The language of the telemetry SDK.
-  */
-  val TelemetrySdkLanguage: AttributeKey[String] = string("telemetry.sdk.language")
+  /** The language of the telemetry SDK.
+    */
+  val TelemetrySdkLanguage: AttributeKey[String] = string(
+    "telemetry.sdk.language"
+  )
 
-  /**
-  * The name of the telemetry SDK as defined above.
-  *
-  * @note 
-  *  - The OpenTelemetry SDK MUST set the `telemetry.sdk.name` attribute to `opentelemetry`.
-If another SDK, like a fork or a vendor-provided implementation, is used, this SDK MUST set the
-`telemetry.sdk.name` attribute to the fully-qualified class or module name of this SDK's main entry point
-or another suitable identifier depending on the language.
-The identifier `opentelemetry` is reserved and MUST NOT be used in this case.
-All custom identifiers SHOULD be stable across different versions of an implementation.
-  */
+  /** The name of the telemetry SDK as defined above.
+    *
+    * @note
+    *   - The OpenTelemetry SDK MUST set the `telemetry.sdk.name` attribute to
+    *     `opentelemetry`. If another SDK, like a fork or a vendor-provided
+    *     implementation, is used, this SDK MUST set the `telemetry.sdk.name`
+    *     attribute to the fully-qualified class or module name of this SDK's
+    *     main entry point or another suitable identifier depending on the
+    *     language. The identifier `opentelemetry` is reserved and MUST NOT be
+    *     used in this case. All custom identifiers SHOULD be stable across
+    *     different versions of an implementation.
+    */
   val TelemetrySdkName: AttributeKey[String] = string("telemetry.sdk.name")
 
-  /**
-  * The version string of the telemetry SDK.
-  */
-  val TelemetrySdkVersion: AttributeKey[String] = string("telemetry.sdk.version")
+  /** The version string of the telemetry SDK.
+    */
+  val TelemetrySdkVersion: AttributeKey[String] = string(
+    "telemetry.sdk.version"
+  )
   // Enum definitions
-  
-  /**
-   * Values for [[TelemetrySdkLanguage]].
-   */
+
+  /** Values for [[TelemetrySdkLanguage]].
+    */
   abstract class TelemetrySdkLanguageValue(val value: String)
   object TelemetrySdkLanguageValue {
+
     /** cpp. */
     case object Cpp extends TelemetrySdkLanguageValue("cpp")
+
     /** dotnet. */
     case object Dotnet extends TelemetrySdkLanguageValue("dotnet")
+
     /** erlang. */
     case object Erlang extends TelemetrySdkLanguageValue("erlang")
+
     /** go. */
     case object Go extends TelemetrySdkLanguageValue("go")
+
     /** java. */
     case object Java extends TelemetrySdkLanguageValue("java")
+
     /** nodejs. */
     case object Nodejs extends TelemetrySdkLanguageValue("nodejs")
+
     /** php. */
     case object Php extends TelemetrySdkLanguageValue("php")
+
     /** python. */
     case object Python extends TelemetrySdkLanguageValue("python")
+
     /** ruby. */
     case object Ruby extends TelemetrySdkLanguageValue("ruby")
+
     /** rust. */
     case object Rust extends TelemetrySdkLanguageValue("rust")
+
     /** swift. */
     case object Swift extends TelemetrySdkLanguageValue("swift")
+
     /** webjs. */
     case object Webjs extends TelemetrySdkLanguageValue("webjs")
+
     /** scala. */
     case object Scala extends TelemetrySdkLanguageValue("scala")
   }

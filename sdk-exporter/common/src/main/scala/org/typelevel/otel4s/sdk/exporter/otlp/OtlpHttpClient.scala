@@ -99,7 +99,7 @@ private[otlp] final class OtlpHttpClient[F[_]: Temporal: Console, A] private (
 
     client
       .run(request)
-      .use(response => logBody(response).unlessA(response.status.isSuccess))
+      .use(response => logBody(response).unlessA(isSuccess(response.status)))
       .timeoutTo(
         config.timeout,
         Temporal[F].unit >> Temporal[F].raiseError(
@@ -115,11 +115,14 @@ private[otlp] final class OtlpHttpClient[F[_]: Temporal: Console, A] private (
       }
   }
 
+  private def isSuccess(status: Status): Boolean =
+    status.responseClass == Status.Successful
+
   private def logBody(response: Response[F]): F[Unit] =
     for {
       body <- response.bodyText.compile.string
       _ <- Console[F].println(
-        s"[OtlpHttpClient/${config.encoding}] the request failed with [${response.status}]. Body: $body"
+        s"[OtlpHttpClient/${config.encoding} ${config.endpoint}] the request failed with [${response.status}]. Body: $body"
       )
     } yield ()
 

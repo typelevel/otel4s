@@ -111,7 +111,11 @@ private final class OtlpHttpClientAutoConfigure[
         case None =>
           config
             .get(ConfigKeys.General.Endpoint)
-            .map(_.fold(defaults.endpoint)(_.addPath(defaults.apiPath)))
+            .map(
+              _.fold(defaults.endpoint)(
+                _.addPath(defaults.apiPath.stripPrefix("/"))
+              )
+            )
       }
 
     def tryLoad =

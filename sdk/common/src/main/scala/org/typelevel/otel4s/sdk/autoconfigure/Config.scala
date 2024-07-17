@@ -151,11 +151,17 @@ object Config {
 
     implicit val finiteDurationReader: Reader[FiniteDuration] =
       decodeWithHint("FiniteDuration") { string =>
-        Duration(string) match {
-          case duration: FiniteDuration =>
-            Right(duration)
-          case _ =>
-            Left(ConfigurationError("The duration must be finite"))
+        string.toIntOption match {
+          case Some(number) =>
+            Right(number.millis)
+
+          case None =>
+            Duration(string) match {
+              case duration: FiniteDuration =>
+                Right(duration)
+              case _ =>
+                Left(ConfigurationError("The duration must be finite"))
+            }
         }
       }
 

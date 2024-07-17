@@ -202,6 +202,18 @@ class ConfigSuite extends FunSuite {
     )
   }
 
+  test("get - duration from number (milliseconds) and string") {
+    val config = makeConfig(
+      Map(
+        "number" -> "15000",
+        "string" -> "15s"
+      )
+    )
+
+    assertEquals(config.get[FiniteDuration]("number"), Right(Some(15.seconds)))
+    assertEquals(config.get[FiniteDuration]("string"), Right(Some(15.seconds)))
+  }
+
   test("Config.Key - toString") {
     assertEquals(Config.Key("some-name").toString, "some-name")
   }

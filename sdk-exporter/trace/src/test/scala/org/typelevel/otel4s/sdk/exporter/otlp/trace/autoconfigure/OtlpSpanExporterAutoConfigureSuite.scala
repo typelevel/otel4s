@@ -19,6 +19,7 @@ package otlp.trace.autoconfigure
 
 import cats.effect.IO
 import cats.syntax.either._
+import cats.syntax.foldable._
 import munit.CatsEffectSuite
 import org.typelevel.otel4s.sdk.autoconfigure.Config
 
@@ -82,6 +83,31 @@ class OtlpSpanExporterAutoConfigureSuite
     OtlpSpanExporterAutoConfigure[IO]
       .configure(config)
       .use(exporter => IO(assertEquals(exporter.name, expected)))
+  }
+
+  test("load from the config - generate a valid endpoint") {
+    val endpoints = List(
+      "http://localhost:4318",
+      "http://localhost:4318/"
+    )
+
+    val expected =
+      "OtlpHttpSpanExporter{client=OtlpHttpClient{" +
+        "encoding=Protobuf, " +
+        "endpoint=http://localhost:4318/v1/traces, " +
+        "timeout=10 seconds, " +
+        "gzipCompression=false, " +
+        "headers={}}}"
+
+    endpoints.traverse_ { endpoint =>
+      val config = Config.ofProps(
+        Map("otel.exporter.otlp.endpoint" -> endpoint)
+      )
+
+      OtlpSpanExporterAutoConfigure[IO]
+        .configure(config)
+        .use(exporter => IO(assertEquals(exporter.name, expected)))
+    }
   }
 
   test("load from the config - unknown protocol - fail") {

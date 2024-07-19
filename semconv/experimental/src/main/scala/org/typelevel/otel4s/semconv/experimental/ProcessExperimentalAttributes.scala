@@ -53,11 +53,15 @@ object ProcessExperimentalAttributes {
     "process.context_switch_type"
   )
 
-  /** The CPU state for this data point. A process SHOULD be characterized
-    * <em>either</em> by data points with no `state` labels, <em>or only</em>
-    * data points with `state` labels.
+  /** The CPU state of the process.
     */
   val ProcessCpuState: AttributeKey[String] = string("process.cpu.state")
+
+  /** The date and time the process was created, in ISO 8601 format.
+    */
+  val ProcessCreationTime: AttributeKey[String] = string(
+    "process.creation.time"
+  )
 
   /** The name of the process executable. On Linux based systems, can be set to
     * the `Name` in `proc/[pid]/status`. On Windows, can be set to the base name
@@ -74,6 +78,25 @@ object ProcessExperimentalAttributes {
   val ProcessExecutablePath: AttributeKey[String] = string(
     "process.executable.path"
   )
+
+  /** The exit code of the process.
+    */
+  val ProcessExitCode: AttributeKey[Long] = long("process.exit.code")
+
+  /** The date and time the process exited, in ISO 8601 format.
+    */
+  val ProcessExitTime: AttributeKey[String] = string("process.exit.time")
+
+  /** The PID of the process's group leader. This is also the process group ID
+    * (PGID) of the process.
+    */
+  val ProcessGroupLeaderPid: AttributeKey[Long] = long(
+    "process.group_leader.pid"
+  )
+
+  /** Whether the process is connected to an interactive shell.
+    */
+  val ProcessInteractive: AttributeKey[Boolean] = boolean("process.interactive")
 
   /** The username of the user that owns the process.
     */
@@ -94,6 +117,16 @@ object ProcessExperimentalAttributes {
     */
   val ProcessPid: AttributeKey[Long] = long("process.pid")
 
+  /** The real user ID (RUID) of the process.
+    */
+  val ProcessRealUserId: AttributeKey[Long] = long("process.real_user.id")
+
+  /** The username of the real user of the process.
+    */
+  val ProcessRealUserName: AttributeKey[String] = string(
+    "process.real_user.name"
+  )
+
   /** An additional description about the runtime of the process, for example a
     * specific vendor customization of the runtime environment.
     */
@@ -112,6 +145,40 @@ object ProcessExperimentalAttributes {
   val ProcessRuntimeVersion: AttributeKey[String] = string(
     "process.runtime.version"
   )
+
+  /** The saved user ID (SUID) of the process.
+    */
+  val ProcessSavedUserId: AttributeKey[Long] = long("process.saved_user.id")
+
+  /** The username of the saved user.
+    */
+  val ProcessSavedUserName: AttributeKey[String] = string(
+    "process.saved_user.name"
+  )
+
+  /** The PID of the process's session leader. This is also the session ID (SID)
+    * of the process.
+    */
+  val ProcessSessionLeaderPid: AttributeKey[Long] = long(
+    "process.session_leader.pid"
+  )
+
+  /** The effective user ID (EUID) of the process.
+    */
+  val ProcessUserId: AttributeKey[Long] = long("process.user.id")
+
+  /** The username of the effective user of the process.
+    */
+  val ProcessUserName: AttributeKey[String] = string("process.user.name")
+
+  /** Virtual process identifier.
+    *
+    * @note
+    *   - The process ID within a PID namespace. This is not necessarily unique
+    *     across all processes on the host but it is unique within the process
+    *     namespace that the process exists within.
+    */
+  val ProcessVpid: AttributeKey[Long] = long("process.vpid")
   // Enum definitions
 
   /** Values for [[ProcessContextSwitchType]].

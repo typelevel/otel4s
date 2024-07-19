@@ -69,6 +69,12 @@ object K8sExperimentalAttributes {
     "k8s.container.restart_count"
   )
 
+  /** Last terminated reason of the Container.
+    */
+  val K8sContainerStatusLastTerminatedReason: AttributeKey[String] = string(
+    "k8s.container.status.last_terminated_reason"
+  )
+
   /** The name of the CronJob.
     */
   val K8sCronjobName: AttributeKey[String] = string("k8s.cronjob.name")

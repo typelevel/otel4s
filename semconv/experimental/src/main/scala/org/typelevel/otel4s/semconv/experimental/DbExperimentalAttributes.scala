@@ -59,18 +59,35 @@ object DbExperimentalAttributes {
     "db.cassandra.speculative_execution_count"
   )
 
-  /** The name of the primary Cassandra table that the operation is acting upon,
-    * including the keyspace name (if applicable).
+  /** Deprecated, use `db.collection.name` instead.
+    */
+  @deprecated("Use `db.collection.name` instead", "0.5.0")
+  val DbCassandraTable: AttributeKey[String] = string("db.cassandra.table")
+
+  /** The name of the connection pool; unique within the instrumented
+    * application. In case the connection pool implementation doesn't provide a
+    * name, instrumentation should use a combination of `server.address` and
+    * `server.port` attributes formatted as `server.address:server.port`.
+    */
+  val DbClientConnectionsPoolName: AttributeKey[String] = string(
+    "db.client.connections.pool.name"
+  )
+
+  /** The state of a connection in the pool
+    */
+  val DbClientConnectionsState: AttributeKey[String] = string(
+    "db.client.connections.state"
+  )
+
+  /** The name of a collection (table, container) within the database.
     *
     * @note
-    *   - This mirrors the db.sql.table attribute but references cassandra
-    *     rather than sql. It is not recommended to attempt any client-side
-    *     parsing of `db.statement` just to get this property, but it should be
-    *     set if it is provided by the library being instrumented. If the
-    *     operation is acting upon an anonymous table, or more than one table,
-    *     this value MUST NOT be set.
+    *   - If the collection name is parsed from the query, it SHOULD match the
+    *     value provided in the query and may be qualified with the schema and
+    *     database name. It is RECOMMENDED to capture the value as provided by
+    *     the application without attempting to do any case normalization.
     */
-  val DbCassandraTable: AttributeKey[String] = string("db.cassandra.table")
+  val DbCollectionName: AttributeKey[String] = string("db.collection.name")
 
   /** Deprecated, use `server.address`, `server.port` attributes instead.
     */
@@ -87,8 +104,9 @@ object DbExperimentalAttributes {
     "db.cosmosdb.connection_mode"
   )
 
-  /** Cosmos DB container name.
+  /** Deprecated, use `db.collection.name` instead.
     */
+  @deprecated("Use `db.collection.name` instead", "0.5.0")
   val DbCosmosdbContainer: AttributeKey[String] = string(
     "db.cosmosdb.container"
   )
@@ -127,9 +145,9 @@ object DbExperimentalAttributes {
     "db.elasticsearch.cluster.name"
   )
 
-  /** Deprecated, use `db.instance.id` instead.
+  /** Represents the human-readable identifier of the node/instance to which a
+    * request was routed.
     */
-  @deprecated("Use `db.instance.id` instead", "0.5.0")
   val DbElasticsearchNodeName: AttributeKey[String] = string(
     "db.elasticsearch.node.name"
   )
@@ -148,13 +166,13 @@ object DbExperimentalAttributes {
     "db.elasticsearch.path_parts"
   )
 
-  /** An identifier (address, unique name, or any other identifier) of the
-    * database instance that is executing queries or mutations on the current
-    * connection. This is useful in cases where the database is running in a
-    * clustered environment and the instrumentation is able to record the node
-    * executing the query. The client may obtain this value in databases like
-    * MySQL using queries like `select @@hostname`.
+  /** Deprecated, no general replacement at this time. For Elasticsearch, use
+    * `db.elasticsearch.node.name` instead.
     */
+  @deprecated(
+    "No general replacement at this time. for elasticsearch, use `db.elasticsearch.node.name` instead",
+    "0.5.0"
+  )
   val DbInstanceId: AttributeKey[String] = string("db.instance.id")
 
   /** Removed, no replacement at this time.
@@ -164,81 +182,103 @@ object DbExperimentalAttributes {
     "db.jdbc.driver_classname"
   )
 
-  /** The MongoDB collection being accessed within the database stated in
-    * `db.name`.
+  /** Deprecated, use `db.collection.name` instead.
     */
+  @deprecated("Use `db.collection.name` instead", "0.5.0")
   val DbMongodbCollection: AttributeKey[String] = string(
     "db.mongodb.collection"
   )
 
-  /** The Microsoft SQL Server <a
-    * href="https://docs.microsoft.com/sql/connect/jdbc/building-the-connection-url?view=sql-server-ver15">instance
-    * name</a> connecting to. This name is used to determine the port of a named
-    * instance.
-    *
-    * @note
-    *   - If setting a `db.mssql.instance_name`, `server.port` is no longer
-    *     required (but still recommended if non-standard).
+  /** Deprecated, SQL Server instance is now populated as a part of
+    * `db.namespace` attribute.
     */
+  @deprecated(
+    "Sql server instance is now populated as a part of `db.namespace` attribute",
+    "0.5.0"
+  )
   val DbMssqlInstanceName: AttributeKey[String] = string(
     "db.mssql.instance_name"
   )
 
-  /** This attribute is used to report the name of the database being accessed.
-    * For commands that switch the database, this should be set to the target
-    * database (even if the command fails).
-    *
-    * @note
-    *   - In some SQL databases, the database name to be used is called
-    *     &quot;schema name&quot;. In case there are multiple layers that could
-    *     be considered for database name (e.g. Oracle instance name and schema
-    *     name), the database name to be used is the more specific layer (e.g.
-    *     Oracle schema name).
+  /** Deprecated, use `db.namespace` instead.
     */
+  @deprecated("Use `db.namespace` instead", "0.5.0")
   val DbName: AttributeKey[String] = string("db.name")
 
-  /** The name of the operation being executed, e.g. the <a
-    * href="https://docs.mongodb.com/manual/reference/command/#database-operations">MongoDB
-    * command name</a> such as `findAndModify`, or the SQL keyword.
+  /** The name of the database, fully qualified within the server address and
+    * port.
     *
     * @note
-    *   - When setting this to an SQL keyword, it is not recommended to attempt
-    *     any client-side parsing of `db.statement` just to get this property,
-    *     but it should be set if the operation name is provided by the library
-    *     being instrumented. If the SQL statement has an ambiguous operation,
-    *     or performs more than one operation, this value may be omitted.
+    *   - If a database system has multiple namespace components, they SHOULD be
+    *     concatenated (potentially using database system specific conventions)
+    *     from most general to most specific namespace component, and more
+    *     specific namespaces SHOULD NOT be captured without the more general
+    *     namespaces, to ensure that &quot;startswith&quot; queries for the more
+    *     general namespaces will be valid. Semantic conventions for individual
+    *     database systems SHOULD document what `db.namespace` means in the
+    *     context of that system. It is RECOMMENDED to capture the value as
+    *     provided by the application without attempting to do any case
+    *     normalization.
     */
+  val DbNamespace: AttributeKey[String] = string("db.namespace")
+
+  /** Deprecated, use `db.operation.name` instead.
+    */
+  @deprecated("Use `db.operation.name` instead", "0.5.0")
   val DbOperation: AttributeKey[String] = string("db.operation")
 
-  /** The index of the database being accessed as used in the <a
-    * href="https://redis.io/commands/select">`SELECT` command</a>, provided as
-    * an integer. To be used instead of the generic `db.name` attribute.
-    */
-  val DbRedisDatabaseIndex: AttributeKey[Long] = long("db.redis.database_index")
-
-  /** The name of the primary table that the operation is acting upon, including
-    * the database name (if applicable).
+  /** The name of the operation or command being executed.
     *
     * @note
-    *   - It is not recommended to attempt any client-side parsing of
-    *     `db.statement` just to get this property, but it should be set if it
-    *     is provided by the library being instrumented. If the operation is
-    *     acting upon an anonymous table, or more than one table, this value
-    *     MUST NOT be set.
+    *   - It is RECOMMENDED to capture the value as provided by the application
+    *     without attempting to do any case normalization.
     */
+  val DbOperationName: AttributeKey[String] = string("db.operation.name")
+
+  /** The query parameters used in `db.query.text`, with `<key>` being the
+    * parameter name, and the attribute value being the parameter value.
+    *
+    * @note
+    *   - Query parameters should only be captured when `db.query.text` is
+    *     parameterized with placeholders. If a parameter has no name and
+    *     instead is referenced only by index, then `<key>` SHOULD be the
+    *     0-based index.
+    */
+  val DbQueryParameter: AttributeKey[String] = string("db.query.parameter")
+
+  /** The database query being executed.
+    */
+  val DbQueryText: AttributeKey[String] = string("db.query.text")
+
+  /** Deprecated, use `db.namespace` instead.
+    */
+  @deprecated("Use `db.namespace` instead", "0.5.0")
+  val DbRedisDatabaseIndex: AttributeKey[Long] = long("db.redis.database_index")
+
+  /** Deprecated, use `db.collection.name` instead.
+    */
+  @deprecated("Use `db.collection.name` instead", "0.5.0")
   val DbSqlTable: AttributeKey[String] = string("db.sql.table")
 
   /** The database statement being executed.
     */
+  @deprecated("The database statement being executed", "0.5.0")
   val DbStatement: AttributeKey[String] = string("db.statement")
 
-  /** An identifier for the database management system (DBMS) product being
-    * used. See below for a list of well-known identifiers.
+  /** The database management system (DBMS) product as identified by the client
+    * instrumentation.
+    *
+    * @note
+    *   - The actual DBMS may differ from the one identified by the client. For
+    *     example, when using PostgreSQL client libraries to connect to a
+    *     CockroachDB, the `db.system` is set to `postgresql` based on the
+    *     instrumentation's best knowledge.
     */
   val DbSystem: AttributeKey[String] = string("db.system")
 
-  /** Username for accessing the database.
+  /** Deprecated, no replacement at this time.
     */
+  @deprecated("No replacement at this time", "0.5.0")
   val DbUser: AttributeKey[String] = string("db.user")
   // Enum definitions
 
@@ -282,6 +322,18 @@ object DbExperimentalAttributes {
     /** local_serial. */
     case object LocalSerial
         extends DbCassandraConsistencyLevelValue("local_serial")
+  }
+
+  /** Values for [[DbClientConnectionsState]].
+    */
+  abstract class DbClientConnectionsStateValue(val value: String)
+  object DbClientConnectionsStateValue {
+
+    /** idle. */
+    case object Idle extends DbClientConnectionsStateValue("idle")
+
+    /** used. */
+    case object Used extends DbClientConnectionsStateValue("used")
   }
 
   /** Values for [[DbCosmosdbConnectionMode]].

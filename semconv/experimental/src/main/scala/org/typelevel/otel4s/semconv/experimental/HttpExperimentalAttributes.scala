@@ -22,6 +22,11 @@ import org.typelevel.otel4s.AttributeKey._
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/semantic-convention/templates/SemanticAttributes.scala.j2
 object HttpExperimentalAttributes {
 
+  /** Deprecated, use `client.address` instead.
+    */
+  @deprecated("Use `client.address` instead", "0.5.0")
+  val HttpClientIp: AttributeKey[String] = string("http.client_ip")
+
   /** State of the HTTP connection in the HTTP connection pool.
     */
   val HttpConnectionState: AttributeKey[String] = string(
@@ -32,6 +37,15 @@ object HttpExperimentalAttributes {
     */
   @deprecated("Use `network.protocol.name` instead", "0.5.0")
   val HttpFlavor: AttributeKey[String] = string("http.flavor")
+
+  /** Deprecated, use one of `server.address`, `client.address` or
+    * `http.request.header.host` instead, depending on the usage.
+    */
+  @deprecated(
+    "Use one of `server.address`, `client.address` or `http.request.header.host` instead, depending on the usage",
+    "0.5.0"
+  )
+  val HttpHost: AttributeKey[String] = string("http.host")
 
   /** Deprecated, use `http.request.method` instead.
     */
@@ -142,6 +156,13 @@ object HttpExperimentalAttributes {
     "http.request_content_length"
   )
 
+  /** Deprecated, use `http.request.body.size` instead.
+    */
+  @deprecated("Use `http.request.body.size` instead", "0.5.0")
+  val HttpRequestContentLengthUncompressed: AttributeKey[Long] = long(
+    "http.request_content_length_uncompressed"
+  )
+
   /** The size of the response payload body in bytes. This is the number of
     * bytes transferred excluding headers and is often, but not always, present
     * as the <a
@@ -197,6 +218,13 @@ object HttpExperimentalAttributes {
     "http.response_content_length"
   )
 
+  /** Deprecated, use `http.response.body.size` instead.
+    */
+  @deprecated("Use `http.response.body.size` instead", "0.5.0")
+  val HttpResponseContentLengthUncompressed: AttributeKey[Long] = long(
+    "http.response_content_length_uncompressed"
+  )
+
   /** The matched route, that is, the path template in the format used by the
     * respective server framework.
     *
@@ -217,6 +245,11 @@ object HttpExperimentalAttributes {
     */
   @deprecated("Use `url.scheme` instead", "0.5.0")
   val HttpScheme: AttributeKey[String] = string("http.scheme")
+
+  /** Deprecated, use `server.address` instead.
+    */
+  @deprecated("Use `server.address` instead", "0.5.0")
+  val HttpServerName: AttributeKey[String] = string("http.server_name")
 
   /** Deprecated, use `http.response.status_code` instead.
     */

@@ -53,7 +53,7 @@ val MUnitScalaCheckEffectVersion = "2.0.0-M2"
 val OpenTelemetryVersion = "1.40.0"
 val OpenTelemetryInstrumentationVersion = "2.6.0"
 val OpenTelemetryInstrumentationAlphaVersion = "2.5.0-alpha"
-val OpenTelemetrySemConvVersion = "1.25.0-alpha"
+val OpenTelemetrySemConvVersion = "1.26.0-alpha"
 val OpenTelemetryProtoVersion = "1.1.0-alpha"
 val PekkoStreamVersion = "1.0.3"
 val PekkoHttpVersion = "1.0.1"
@@ -576,6 +576,7 @@ lazy val `semconv-experimental` =
       startYear := Some(2023),
       // We use opentelemetry-semconv dependency to track releases of the OpenTelemetry semantic convention spec
       libraryDependencies += "io.opentelemetry.semconv" % "opentelemetry-semconv-incubating" % OpenTelemetrySemConvVersion % "compile-internal" intransitive (),
+      mimaPreviousArtifacts := Set.empty
     )
     .settings(munitDependencies)
     .settings(scalafixSettings)

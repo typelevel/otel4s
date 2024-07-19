@@ -36,8 +36,9 @@ object ExceptionAttributes {
     *     exception is thrown whether it will escape the scope of a span.
     *     However, it is trivial to know that an exception will escape, if one
     *     checks for an active exception just before ending the span, as done in
-    *     the <a href="#recording-an-exception">example for recording span
-    *     exceptions</a>.
+    *     the <a
+    *     href="https://opentelemetry.io/docs/specs/semconv/exceptions/exceptions-spans/#recording-an-exception">example
+    *     for recording span exceptions</a>.
     *   - It follows that an exception may still escape the scope of the span
     *     even if the `exception.escaped` attribute was not set or set to false,
     *     since the event might have been recorded at a time where it was not

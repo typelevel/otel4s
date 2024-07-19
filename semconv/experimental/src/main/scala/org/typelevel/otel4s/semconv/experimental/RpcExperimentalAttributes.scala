@@ -111,6 +111,31 @@ object RpcExperimentalAttributes {
     */
   val RpcJsonrpcVersion: AttributeKey[String] = string("rpc.jsonrpc.version")
 
+  /** Compressed size of the message in bytes.
+    */
+  val RpcMessageCompressedSize: AttributeKey[Long] = long(
+    "rpc.message.compressed_size"
+  )
+
+  /** MUST be calculated as two different counters starting from `1` one for
+    * sent messages and one for received message.
+    *
+    * @note
+    *   - This way we guarantee that the values will be consistent between
+    *     different implementations.
+    */
+  val RpcMessageId: AttributeKey[Long] = long("rpc.message.id")
+
+  /** Whether this is a received or sent message.
+    */
+  val RpcMessageType: AttributeKey[String] = string("rpc.message.type")
+
+  /** Uncompressed size of the message in bytes.
+    */
+  val RpcMessageUncompressedSize: AttributeKey[Long] = long(
+    "rpc.message.uncompressed_size"
+  )
+
   /** The name of the (logical) method being called, must be equal to the method
     * part in the span name.
     *
@@ -259,6 +284,18 @@ object RpcExperimentalAttributes {
 
     /** UNAUTHENTICATED. */
     case object Unauthenticated extends RpcGrpcStatusCodeValue(16)
+  }
+
+  /** Values for [[RpcMessageType]].
+    */
+  abstract class RpcMessageTypeValue(val value: String)
+  object RpcMessageTypeValue {
+
+    /** sent. */
+    case object Sent extends RpcMessageTypeValue("SENT")
+
+    /** received. */
+    case object Received extends RpcMessageTypeValue("RECEIVED")
   }
 
   /** Values for [[RpcSystem]].

@@ -22,6 +22,11 @@ import org.typelevel.otel4s.AttributeKey._
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/semantic-convention/templates/SemanticAttributes.scala.j2
 object NetExperimentalAttributes {
 
+  /** Deprecated, use `network.local.address`.
+    */
+  @deprecated("Use `network.local.address`", "0.5.0")
+  val NetHostIp: AttributeKey[String] = string("net.host.ip")
+
   /** Deprecated, use `server.address`.
     */
   @deprecated("Use `server.address`", "0.5.0")
@@ -31,6 +36,11 @@ object NetExperimentalAttributes {
     */
   @deprecated("Use `server.port`", "0.5.0")
   val NetHostPort: AttributeKey[Long] = long("net.host.port")
+
+  /** Deprecated, use `network.peer.address`.
+    */
+  @deprecated("Use `network.peer.address`", "0.5.0")
+  val NetPeerIp: AttributeKey[String] = string("net.peer.ip")
 
   /** Deprecated, use `server.address` on client spans and `client.address` on
     * server spans.

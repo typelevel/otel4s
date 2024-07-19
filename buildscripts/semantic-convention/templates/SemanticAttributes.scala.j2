@@ -38,10 +38,11 @@
 {{stablePkg}}.{{ root_namespace | to_camelcase(True) }}Attributes{{separator}}{{const_name}}
 {%- endmacro %}
 
+{%- set excluded_attributes_list = excluded_attributes.replace("\"", "").split(' ') %}
 {%- if filter != 'any' %}
-{%- set filtered_attributes = attributes_and_templates | select(filter) | list %}
+{%- set filtered_attributes = attributes_and_templates | rejectattr("fqn", "in", excluded_attributes) | select(filter) | list %}
 {%- else %}
-{%- set filtered_attributes = attributes_and_templates | list %}
+{%- set filtered_attributes = attributes_and_templates | rejectattr("fqn", "in", excluded_attributes) | list %}
 {%- endif %}
 
 {%- set filtered_enums = filtered_attributes | selectattr('is_enum', 'equalto', true) | list %}

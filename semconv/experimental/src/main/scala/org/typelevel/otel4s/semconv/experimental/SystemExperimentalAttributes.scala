@@ -28,9 +28,7 @@ object SystemExperimentalAttributes {
     "system.cpu.logical_number"
   )
 
-  /** The CPU state for this data point. A system's CPU SHOULD be characterized
-    * <em>either</em> by data points with no `state` labels, <em>or only</em>
-    * data points with `state` labels.
+  /** The state of the CPU
     */
   val SystemCpuState: AttributeKey[String] = string("system.cpu.state")
 

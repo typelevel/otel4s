@@ -38,7 +38,7 @@ object MessagingExperimentalAttributes {
 
   /** A unique identifier for the client that consumes or produces a message.
     */
-  val MessagingClientId: AttributeKey[String] = string("messaging.client_id")
+  val MessagingClientId: AttributeKey[String] = string("messaging.client.id")
 
   /** A boolean that is true if the message destination is anonymous (could be
     * unnamed or have auto-generated name).
@@ -116,6 +116,24 @@ object MessagingExperimentalAttributes {
     "messaging.eventhubs.message.enqueued_time"
   )
 
+  /** The ack deadline in seconds set for the modify ack deadline request.
+    */
+  val MessagingGcpPubsubMessageAckDeadline: AttributeKey[Long] = long(
+    "messaging.gcp_pubsub.message.ack_deadline"
+  )
+
+  /** The ack id for a given message.
+    */
+  val MessagingGcpPubsubMessageAckId: AttributeKey[String] = string(
+    "messaging.gcp_pubsub.message.ack_id"
+  )
+
+  /** The delivery attempt for a given message.
+    */
+  val MessagingGcpPubsubMessageDeliveryAttempt: AttributeKey[Long] = long(
+    "messaging.gcp_pubsub.message.delivery_attempt"
+  )
+
   /** The ordering key for a given message. If the attribute is not present, the
     * message does not have an ordering key.
     */
@@ -130,9 +148,9 @@ object MessagingExperimentalAttributes {
     "messaging.kafka.consumer.group"
   )
 
-  /** &quot;Deprecated, use `messaging.destination.partition.id` instead.&quot;
+  /** Deprecated, use `messaging.destination.partition.id` instead.
     */
-  @deprecated("'use `messaging.destination.partition.id` instead.'", "0.5.0")
+  @deprecated("Use `messaging.destination.partition.id` instead", "0.5.0")
   val MessagingKafkaDestinationPartition: AttributeKey[Long] = long(
     "messaging.kafka.destination.partition"
   )
@@ -196,12 +214,25 @@ object MessagingExperimentalAttributes {
     */
   val MessagingMessageId: AttributeKey[String] = string("messaging.message.id")
 
-  /** A string identifying the kind of messaging operation.
+  /** Deprecated, use `messaging.operation.type` instead.
+    */
+  @deprecated("Use `messaging.operation.type` instead", "0.5.0")
+  val MessagingOperation: AttributeKey[String] = string("messaging.operation")
+
+  /** The system-specific name of the messaging operation.
+    */
+  val MessagingOperationName: AttributeKey[String] = string(
+    "messaging.operation.name"
+  )
+
+  /** A string identifying the type of the messaging operation.
     *
     * @note
     *   - If a custom value is used, it MUST be of low cardinality.
     */
-  val MessagingOperation: AttributeKey[String] = string("messaging.operation")
+  val MessagingOperationType: AttributeKey[String] = string(
+    "messaging.operation.type"
+  )
 
   /** RabbitMQ message routing key.
     */
@@ -300,41 +331,46 @@ object MessagingExperimentalAttributes {
     "messaging.servicebus.message.enqueued_time"
   )
 
-  /** An identifier for the messaging system being used. See below for a list of
-    * well-known identifiers.
+  /** The messaging system as identified by the client instrumentation.
+    *
+    * @note
+    *   - The actual messaging system may differ from the one known by the
+    *     client. For example, when using Kafka client libraries to communicate
+    *     with Azure Event Hubs, the `messaging.system` is set to `kafka` based
+    *     on the instrumentation's best knowledge.
     */
   val MessagingSystem: AttributeKey[String] = string("messaging.system")
   // Enum definitions
 
-  /** Values for [[MessagingOperation]].
+  /** Values for [[MessagingOperationType]].
     */
-  abstract class MessagingOperationValue(val value: String)
-  object MessagingOperationValue {
+  abstract class MessagingOperationTypeValue(val value: String)
+  object MessagingOperationTypeValue {
 
     /** One or more messages are provided for publishing to an intermediary. If
       * a single message is published, the context of the &#34;Publish&#34; span
       * can be used as the creation context and no &#34;Create&#34; span needs
       * to be created.
       */
-    case object Publish extends MessagingOperationValue("publish")
+    case object Publish extends MessagingOperationTypeValue("publish")
 
     /** A message is created. &#34;Create&#34; spans always refer to a single
       * message and are used to provide a unique creation context for messages
       * in batch publishing scenarios.
       */
-    case object Create extends MessagingOperationValue("create")
+    case object Create extends MessagingOperationTypeValue("create")
 
     /** One or more messages are requested by a consumer. This operation refers
       * to pull-based scenarios, where consumers explicitly call methods of
       * messaging SDKs to receive messages.
       */
-    case object Receive extends MessagingOperationValue("receive")
+    case object Receive extends MessagingOperationTypeValue("receive")
 
     /** One or more messages are delivered to or processed by a consumer. */
-    case object Deliver extends MessagingOperationValue("process")
+    case object Deliver extends MessagingOperationTypeValue("process")
 
     /** One or more messages are settled. */
-    case object Settle extends MessagingOperationValue("settle")
+    case object Settle extends MessagingOperationTypeValue("settle")
   }
 
   /** Values for [[MessagingRocketmqConsumptionModel]].

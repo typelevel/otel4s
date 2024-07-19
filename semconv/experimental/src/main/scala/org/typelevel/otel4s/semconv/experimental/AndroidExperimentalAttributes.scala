@@ -29,8 +29,8 @@ object AndroidExperimentalAttributes {
     */
   val AndroidOsApiLevel: AttributeKey[String] = string("android.os.api_level")
 
-  /** This attribute represents the state the application has transitioned into
-    * at the occurrence of the event.
+  /** Deprecated use the `device.app.lifecycle` event definition including
+    * `android.state` as a payload field instead.
     *
     * @note
     *   - The Android lifecycle states are defined in <a

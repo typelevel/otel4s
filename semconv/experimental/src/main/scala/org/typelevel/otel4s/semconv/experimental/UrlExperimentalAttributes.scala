@@ -156,6 +156,12 @@ object UrlExperimentalAttributes {
     */
   val UrlSubdomain: AttributeKey[String] = string("url.subdomain")
 
+  /** The low-cardinality template of an <a
+    * href="https://www.rfc-editor.org/rfc/rfc3986#section-4.2">absolute path
+    * reference</a>.
+    */
+  val UrlTemplate: AttributeKey[String] = string("url.template")
+
   /** The effective top level domain (eTLD), also known as the domain suffix, is
     * the last part of the domain name. For example, the top level domain for
     * example.com is `com`.

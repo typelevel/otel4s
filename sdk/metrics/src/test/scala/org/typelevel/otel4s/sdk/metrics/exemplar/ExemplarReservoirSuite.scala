@@ -44,7 +44,7 @@ class ExemplarReservoirSuite
     _.get(traceContextKey)
 
   private val boundaries: BucketBoundaries =
-    BucketBoundaries(Vector(1.0, 5.0, 10.0))
+    BucketBoundaries(1.0, 5.0, 10.0)
 
   //
   // Fixed size

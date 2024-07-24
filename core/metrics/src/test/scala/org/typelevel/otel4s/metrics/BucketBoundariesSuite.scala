@@ -51,7 +51,7 @@ class BucketBoundariesSuite extends DisciplineSuite {
     interceptMessage[IllegalArgumentException](
       "requirement failed: bucket boundary cannot be NaN"
     )(
-      BucketBoundaries(Vector(1.0, 2.0, Double.NaN, 3.0))
+      BucketBoundaries(1.0, 2.0, Double.NaN, 3.0)
     )
   }
 
@@ -59,7 +59,7 @@ class BucketBoundariesSuite extends DisciplineSuite {
     interceptMessage[IllegalArgumentException](
       "requirement failed: bucket boundaries must be in increasing oder"
     )(
-      BucketBoundaries(Vector(1.0, 1.2, 0.5, 3.0))
+      BucketBoundaries(1.0, 1.2, 0.5, 3.0)
     )
   }
 
@@ -67,7 +67,7 @@ class BucketBoundariesSuite extends DisciplineSuite {
     interceptMessage[IllegalArgumentException](
       "requirement failed: first boundary cannot be -Inf"
     )(
-      BucketBoundaries(Vector(Double.NegativeInfinity))
+      BucketBoundaries(Double.NegativeInfinity)
     )
   }
 
@@ -75,7 +75,7 @@ class BucketBoundariesSuite extends DisciplineSuite {
     interceptMessage[IllegalArgumentException](
       "requirement failed: last boundary cannot be +Inf"
     )(
-      BucketBoundaries(Vector(Double.PositiveInfinity))
+      BucketBoundaries(Double.PositiveInfinity)
     )
   }
 

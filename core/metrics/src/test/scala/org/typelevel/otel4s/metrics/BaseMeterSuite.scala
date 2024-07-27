@@ -154,7 +154,7 @@ abstract class BaseMeterSuite extends CatsEffectSuite {
   }
 
   sdkTest("Histogram - use explicit bucket boundaries") { sdk =>
-    val boundaries = BucketBoundaries(Vector(1.0, 2.0, 3.0))
+    val boundaries = BucketBoundaries(1.0, 2.0, 3.0)
     val expected = MetricData.histogram(
       name = "histogram",
       values = List(1.0),
@@ -348,10 +348,8 @@ object BaseMeterSuite {
 
   object MetricData {
     private val DefaultBoundaries = BucketBoundaries(
-      Vector(
-        0.0, 5.0, 10.0, 25.0, 50.0, 75.0, 100.0, 250.0, 500.0, 750.0, 1000.0,
-        2500.0, 5000.0, 7500.0, 10000.0
-      )
+      0.0, 5.0, 10.0, 25.0, 50.0, 75.0, 100.0, 250.0, 500.0, 750.0, 1000.0,
+      2500.0, 5000.0, 7500.0, 10000.0
     )
 
     def sum(

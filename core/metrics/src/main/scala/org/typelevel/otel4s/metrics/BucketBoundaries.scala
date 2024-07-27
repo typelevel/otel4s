@@ -75,6 +75,20 @@ object BucketBoundaries {
     Impl(boundaries)
   }
 
+  /** Creates [[BucketBoundaries]] using the given `boundaries`.
+    *
+    * Throws an exception if any of the following rules is violated:
+    *   - the boundary cannot be `Double.NaN`
+    *   - the boundaries must be in increasing order
+    *   - first boundary cannot be `Double.NegativeInfinity`
+    *   - last boundary cannot be `Double.PositiveInfinity`
+    *
+    * @param boundaries
+    *   the bucket boundaries
+    */
+  def apply(boundaries: Double*): BucketBoundaries =
+    apply(boundaries.toVector)
+
   implicit val bucketBoundariesHash: Hash[BucketBoundaries] =
     Hash.by(_.boundaries)
 

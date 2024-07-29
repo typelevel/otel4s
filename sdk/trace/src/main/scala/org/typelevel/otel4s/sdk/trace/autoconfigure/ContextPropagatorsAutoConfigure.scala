@@ -141,6 +141,7 @@ private[sdk] object ContextPropagatorsAutoConfigure {
     *   - [[B3Propagator.singleHeader b3]]
     *   - [[B3Propagator.multipleHeaders b3multi]]
     *   - [[JaegerPropagator jaeger]]
+   *    - [[OtTracePropagator ottrace]]
     *
     * @see
     *   [[https://github.com/open-telemetry/opentelemetry-java/blob/main/sdk-extensions/autoconfigure/README.md#propagator]]

@@ -22,7 +22,9 @@ import org.typelevel.otel4s.baggage.Baggage
 import org.typelevel.otel4s.sdk.context.Context
 import org.typelevel.otel4s.sdk.trace.SdkContextKeys
 import org.typelevel.otel4s.sdk.trace.scalacheck.Gens
-import org.typelevel.otel4s.trace.SpanContext
+import org.typelevel.otel4s.trace.SpanContext.TraceId
+import org.typelevel.otel4s.trace.{SpanContext, TraceFlags, TraceState}
+import scodec.bits.ByteVector
 
 class OtTracePropagatorSuite extends ScalaCheckSuite {
 
@@ -60,7 +62,10 @@ class OtTracePropagatorSuite extends ScalaCheckSuite {
 
       val result = propagator.inject(context, Map.empty[String, String])
 
-      assertEquals(result.get("ot-tracer-traceid"), Some(ctx.traceIdHex))
+      assertEquals(
+        result.get("ot-tracer-traceid"),
+        Some(ctx.traceIdHex.substring(TraceId.Bytes))
+      )
       assertEquals(result.get("ot-tracer-spanid"), Some(ctx.spanIdHex))
       assertEquals(
         result.get("ot-tracer-sampled"),
@@ -78,7 +83,10 @@ class OtTracePropagatorSuite extends ScalaCheckSuite {
 
       val result = propagator.inject(context, Map.empty[String, String])
 
-      assertEquals(result.get("ot-tracer-traceid"), Some(ctx.traceIdHex))
+      assertEquals(
+        result.get("ot-tracer-traceid"),
+        Some(ctx.traceIdHex.substring(TraceId.Bytes))
+      )
       assertEquals(result.get("ot-tracer-spanid"), Some(ctx.spanIdHex))
       assertEquals(
         result.get("ot-tracer-sampled"),
@@ -87,7 +95,6 @@ class OtTracePropagatorSuite extends ScalaCheckSuite {
       baggage.asMap.foreach { case (key, entry) =>
         assertEquals(result.get(s"ot-baggage-$key"), Some(entry.value))
       }
-
     }
   }
 
@@ -98,6 +105,46 @@ class OtTracePropagatorSuite extends ScalaCheckSuite {
       val result = propagator.inject(context, Map.empty[String, String])
 
       assert(result.isEmpty)
+    }
+  }
+
+  test("inject - short trace id") {
+    val ctx = SpanContext(
+      traceId = ByteVector.fromValidHex("ff000000000000000000000000000041"),
+      spanId = ByteVector.fromValidHex("ff00000000000041"),
+      traceFlags = TraceFlags.Default,
+      traceState = TraceState.empty,
+      remote = true
+    )
+    val context =
+      Context.root.updated(SdkContextKeys.SpanContextKey, ctx)
+    val result = propagator.inject(context, Map.empty[String, String])
+
+    assertEquals(
+      result.get("ot-tracer-traceid"),
+      Some("0000000000000041")
+    )
+  }
+
+  test("inject - short trace id with gen") {
+    Prop.forAll(Gens.spanContext) { ctx =>
+      val shortId = ByteVector.fromValidHex(ctx.traceIdHex.take(16))
+
+      val remote = SpanContext(
+        traceId = shortId.padLeft(16),
+        spanId = ctx.spanId,
+        traceFlags = ctx.traceFlags,
+        traceState = ctx.traceState,
+        remote = true
+      )
+      val context = Context.root.updated(SdkContextKeys.SpanContextKey, remote)
+
+      val result = propagator.inject(context, Map.empty[String, String])
+
+      assertEquals(
+        result.get("ot-tracer-traceid"),
+        Some(shortId.toHex)
+      )
 
     }
   }
@@ -174,7 +221,6 @@ class OtTracePropagatorSuite extends ScalaCheckSuite {
       val result = propagator.extract(Context.root, carrier)
 
       assertEquals(getBaggage(result), Some(baggage))
-
     }
   }
 
@@ -189,18 +235,40 @@ class OtTracePropagatorSuite extends ScalaCheckSuite {
       val result = propagator.extract(Context.root, carrier)
 
       assertEquals(getBaggage(result), Some(baggage))
-
     }
   }
 
   test("extract - baggage is only extracted if there is a valid SpanContext") {
-    Prop.forAll(Gens.baggage) { case (baggage) =>
+    Prop.forAll(Gens.baggage) { baggage =>
       val carrier = toBaggageHeaders("ot-baggage-".capitalize, baggage)
 
       val result = propagator.extract(Context.root, carrier)
 
       assertEquals(getBaggage(result), None)
+    }
+  }
 
+  test("extract - short trace id") {
+    Prop.forAll(Gens.spanContext) { ctx =>
+      val shortTraceId = ctx.traceIdHex.take(16)
+
+      val carrier = Map(
+        "ot-tracer-traceid" -> shortTraceId,
+        "ot-tracer-spanid" -> ctx.spanIdHex,
+        "ot-tracer-sampled" -> String.valueOf(ctx.isSampled)
+      )
+
+      val result = propagator.extract(Context.root, carrier)
+
+      val expected = SpanContext(
+        traceId = ByteVector.fromValidHex(shortTraceId).padLeft(16),
+        spanId = ctx.spanId,
+        traceFlags = ctx.traceFlags,
+        traceState = ctx.traceState,
+        remote = true
+      )
+
+      assertEquals(getSpanContext(result), Some(expected))
     }
   }
 

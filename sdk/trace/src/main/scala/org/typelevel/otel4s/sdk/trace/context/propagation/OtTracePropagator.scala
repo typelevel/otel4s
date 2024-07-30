@@ -29,14 +29,12 @@ import org.typelevel.otel4s.trace.TraceFlags
 import org.typelevel.otel4s.trace.TraceState
 import scodec.bits.ByteVector
 
-import java.util.Locale
-
 private final class OtTracePropagator extends TextMapPropagator[Context] {
 
   import OtTracePropagator.Headers
   import OtTracePropagator.Const
 
-  override def fields: List[String] = List(
+  override val fields: List[String] = List(
     Headers.TraceId,
     Headers.SpanId,
     Headers.Sampled
@@ -55,7 +53,7 @@ private final class OtTracePropagator extends TextMapPropagator[Context] {
         .flatMap(_.toBooleanOption)
 
     } yield SpanContext(
-      traceId = traceId,
+      traceId = padLeft(traceId, SpanContext.TraceId.Bytes.toLong),
       spanId = spanId,
       traceFlags = if (sampled) TraceFlags.Sampled else TraceFlags.Default,
       traceState = TraceState.empty,
@@ -79,7 +77,7 @@ private final class OtTracePropagator extends TextMapPropagator[Context] {
           if (spanContext.isSampled) Const.IsSampled else Const.NotSampled
 
         val headers = Map(
-          Headers.TraceId -> spanContext.traceIdHex,
+          Headers.TraceId -> spanContext.traceIdHex.substring(TraceId.Bytes),
           Headers.SpanId -> spanContext.spanIdHex,
           Headers.Sampled -> sampled
         ) ++ encodeBaggage(
@@ -110,8 +108,7 @@ private final class OtTracePropagator extends TextMapPropagator[Context] {
     val prefixLength = Const.BaggagePrefix.length
 
     keys.foldLeft(Baggage.empty) {
-      case (baggage, key)
-          if key.toLowerCase(Locale.ROOT).startsWith(Const.BaggagePrefix) =>
+      case (baggage, key) if key.toLowerCase.startsWith(Const.BaggagePrefix) =>
         TextMapGetter[A]
           .get(carrier, key)
           .fold(baggage)(v => baggage.updated(key.drop(prefixLength), v))
@@ -125,6 +122,9 @@ private final class OtTracePropagator extends TextMapPropagator[Context] {
 
   private def isValidSpanId(value: ByteVector): Boolean =
     SpanId.isValid(value)
+
+  private def padLeft(input: ByteVector, expectedSize: Long): ByteVector =
+    if (input.size <= expectedSize) input.padLeft(expectedSize) else input
 }
 
 object OtTracePropagator {

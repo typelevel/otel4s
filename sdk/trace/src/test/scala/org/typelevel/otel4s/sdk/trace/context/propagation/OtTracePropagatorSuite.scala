@@ -22,8 +22,10 @@ import org.typelevel.otel4s.baggage.Baggage
 import org.typelevel.otel4s.sdk.context.Context
 import org.typelevel.otel4s.sdk.trace.SdkContextKeys
 import org.typelevel.otel4s.sdk.trace.scalacheck.Gens
+import org.typelevel.otel4s.trace.SpanContext
 import org.typelevel.otel4s.trace.SpanContext.TraceId
-import org.typelevel.otel4s.trace.{SpanContext, TraceFlags, TraceState}
+import org.typelevel.otel4s.trace.TraceFlags
+import org.typelevel.otel4s.trace.TraceState
 import scodec.bits.ByteVector
 
 class OtTracePropagatorSuite extends ScalaCheckSuite {

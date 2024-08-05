@@ -27,6 +27,7 @@ import org.typelevel.otel4s.sdk.autoconfigure.ConfigurationError
 import org.typelevel.otel4s.sdk.context.Context
 import org.typelevel.otel4s.sdk.trace.context.propagation.B3Propagator
 import org.typelevel.otel4s.sdk.trace.context.propagation.JaegerPropagator
+import org.typelevel.otel4s.sdk.trace.context.propagation.OtTracePropagator
 import org.typelevel.otel4s.sdk.trace.context.propagation.W3CBaggagePropagator
 import org.typelevel.otel4s.sdk.trace.context.propagation.W3CTraceContextPropagator
 
@@ -63,7 +64,8 @@ private final class ContextPropagatorsAutoConfigure[F[_]: MonadThrow](
       AutoConfigure.Named.const("baggage", W3CBaggagePropagator.default),
       AutoConfigure.Named.const("b3", B3Propagator.singleHeader),
       AutoConfigure.Named.const("b3multi", B3Propagator.multipleHeaders),
-      AutoConfigure.Named.const("jaeger", JaegerPropagator.default)
+      AutoConfigure.Named.const("jaeger", JaegerPropagator.default),
+      AutoConfigure.Named.const("ottrace", OtTracePropagator.default)
     )
 
     default ++ extra
@@ -139,6 +141,7 @@ private[sdk] object ContextPropagatorsAutoConfigure {
     *   - [[B3Propagator.singleHeader b3]]
     *   - [[B3Propagator.multipleHeaders b3multi]]
     *   - [[JaegerPropagator jaeger]]
+    *   - [[OtTracePropagator ottrace]]
     *
     * @see
     *   [[https://github.com/open-telemetry/opentelemetry-java/blob/main/sdk-extensions/autoconfigure/README.md#propagator]]

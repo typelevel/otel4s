@@ -200,7 +200,7 @@ lazy val core = crossProject(JVMPlatform, JSPlatform, NativePlatform)
 //
 
 lazy val `sdk-common` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
-  .crossType(CrossType.Pure)
+  .crossType(CrossType.Full)
   .enablePlugins(BuildInfoPlugin)
   .in(file("sdk/common"))
   .dependsOn(`core-common` % "compile->compile;test->test", `semconv-stable`)

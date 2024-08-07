@@ -23,3 +23,6 @@ metals.sbt
 
 # npm
 node_modules/
+
+# scala-cli
+.scala-build/

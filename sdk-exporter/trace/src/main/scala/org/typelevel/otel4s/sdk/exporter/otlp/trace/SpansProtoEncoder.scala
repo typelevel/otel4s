@@ -99,7 +99,8 @@ private object SpansProtoEncoder {
       SpanProto.Event(
         timeUnixNano = data.timestamp.toNanos,
         name = data.name,
-        attributes = ProtoEncoder.encode(data.attributes)
+        attributes = ProtoEncoder.encode(data.attributes.elements),
+        droppedAttributesCount = data.attributes.dropped
       )
   }
 
@@ -113,7 +114,8 @@ private object SpansProtoEncoder {
         traceId = ByteString.copyFrom(data.spanContext.traceId.toArray),
         spanId = ByteString.copyFrom(data.spanContext.spanId.toArray),
         traceState = traceState,
-        attributes = ProtoEncoder.encode(data.attributes),
+        attributes = ProtoEncoder.encode(data.attributes.elements),
+        droppedAttributesCount = data.attributes.dropped,
         flags = data.spanContext.traceFlags.toByte.toInt
       )
   }
@@ -135,9 +137,12 @@ private object SpansProtoEncoder {
       kind = ProtoEncoder.encode(span.kind),
       startTimeUnixNano = span.startTimestamp.toNanos,
       endTimeUnixNano = span.endTimestamp.map(_.toNanos).getOrElse(0L),
-      attributes = ProtoEncoder.encode(span.attributes),
-      events = span.events.map(event => ProtoEncoder.encode(event)),
-      links = span.links.map(link => ProtoEncoder.encode(link)),
+      attributes = ProtoEncoder.encode(span.attributes.elements),
+      droppedAttributesCount = span.attributes.dropped,
+      events = span.events.elements.map(ProtoEncoder.encode(_)),
+      droppedEventsCount = span.events.dropped,
+      links = span.links.elements.map(ProtoEncoder.encode(_)),
+      droppedLinksCount = span.links.dropped,
       status = Some(ProtoEncoder.encode(span.status))
     )
   }

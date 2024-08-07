@@ -32,6 +32,7 @@ import org.typelevel.otel4s.sdk.autoconfigure.AutoConfigure
 import org.typelevel.otel4s.sdk.autoconfigure.Config
 import org.typelevel.otel4s.sdk.context.Context
 import org.typelevel.otel4s.sdk.trace.SdkTracerProvider
+import org.typelevel.otel4s.sdk.trace.SpanLimits
 import org.typelevel.otel4s.sdk.trace.context.propagation.W3CBaggagePropagator
 import org.typelevel.otel4s.sdk.trace.context.propagation.W3CTraceContextPropagator
 import org.typelevel.otel4s.sdk.trace.data.LinkData
@@ -50,6 +51,7 @@ class TracerProviderAutoConfigureSuite extends CatsEffectSuite {
   private val DefaultProvider =
     providerToString(
       TelemetryResource.empty,
+      SpanLimits.default,
       Sampler.parentBased(Sampler.AlwaysOn)
     )
 
@@ -178,6 +180,7 @@ class TracerProviderAutoConfigureSuite extends CatsEffectSuite {
     val expected =
       "SdkTracerProvider{" +
         s"resource=${TelemetryResource.empty}, " +
+        s"spanLimits=${SpanLimits.default}, " +
         s"sampler=${Sampler.AlwaysOff}, " +
         "spanProcessor=SpanProcessor.Multi(" +
         "SimpleSpanProcessor{exporter=ConsoleSpanExporter, exportOnlySampled=true}, " +
@@ -221,11 +224,13 @@ class TracerProviderAutoConfigureSuite extends CatsEffectSuite {
 
   private def providerToString(
       resource: TelemetryResource = TelemetryResource.empty,
+      spanLimits: SpanLimits = SpanLimits.default,
       sampler: Sampler = Sampler.parentBased(Sampler.AlwaysOn),
       exporter: String = "SpanExporter.Noop"
   ) =
     "SdkTracerProvider{" +
       s"resource=$resource, " +
+      s"spanLimits=$spanLimits, " +
       s"sampler=$sampler, " +
       "spanProcessor=SpanProcessor.Multi(" +
       s"BatchSpanProcessor{exporter=$exporter, scheduleDelay=5 seconds, exporterTimeout=30 seconds, maxQueueSize=2048, maxExportBatchSize=512}, " +

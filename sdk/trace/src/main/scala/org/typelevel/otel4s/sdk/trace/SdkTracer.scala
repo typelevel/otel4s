@@ -64,7 +64,7 @@ private final class SdkTracer[F[_]: Temporal: Console] private[trace] (
       .getOrElseF(Tracer.raiseNoCurrentSpan)
 
   def spanBuilder(name: String): SpanBuilder[F] =
-    new SdkSpanBuilder[F](name, scopeInfo, sharedState, traceScope)
+    SdkSpanBuilder[F](name, scopeInfo, sharedState, traceScope)
 
   def childScope[A](parent: SpanContext)(fa: F[A]): F[A] =
     traceScope.childScope(parent).flatMap(trace => trace(fa))

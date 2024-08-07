@@ -95,13 +95,15 @@ class OtlpHttpSpanExporterSuite
           startTimestamp = now,
           endTimestamp = Some(now.plus(5.seconds)),
           status = sd.status,
-          attributes = adaptAttributes(sd.attributes),
-          events = sd.events.map { event =>
-            EventData(
-              event.name,
-              now.plus(2.seconds),
-              adaptAttributes(event.attributes)
-            )
+          attributes = sd.attributes.map(adaptAttributes),
+          events = sd.events.map {
+            _.map { event =>
+              EventData(
+                event.name,
+                now.plus(2.seconds),
+                event.attributes.map(adaptAttributes)
+              )
+            }
           },
           links = sd.links,
           instrumentationScope = sd.instrumentationScope,
@@ -118,7 +120,7 @@ class OtlpHttpSpanExporterSuite
               )
             }
 
-            val links = span.links.map { d =>
+            val links = span.links.elements.map { d =>
               JaegerRef(
                 "FOLLOWS_FROM",
                 d.spanContext.traceIdHex,
@@ -155,12 +157,14 @@ class OtlpHttpSpanExporterSuite
               List(Attribute("internal.span.format", "otlp"))
             ).flatten
 
-            span.attributes.map(a => toJaegerTag(a)).toList ++
+            span.attributes.elements.map(a => toJaegerTag(a)).toList ++
               extra.map(a => toJaegerTag(a))
           }
 
           val events =
-            span.events.map(d => JaegerLog(d.timestamp.toMicros)).toList
+            span.events.elements
+              .map(d => JaegerLog(d.timestamp.toMicros))
+              .toList
 
           val jaegerSpan = JaegerSpan(
             span.spanContext.traceIdHex,

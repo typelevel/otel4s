@@ -35,7 +35,7 @@ class LinkDataSuite extends DisciplineSuite {
   test("Show[LinkData]") {
     Prop.forAll(Gens.linkData) { data =>
       val expected =
-        show"LinkData{spanContext=${data.spanContext}, attributes=${data.attributes}}"
+        show"LinkData{spanContext=${data.spanContext}, attributes=${data.attributes.elements}}"
 
       assertEquals(Show[LinkData].show(data), expected)
     }

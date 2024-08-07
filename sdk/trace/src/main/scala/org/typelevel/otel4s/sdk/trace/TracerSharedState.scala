@@ -23,6 +23,7 @@ import org.typelevel.otel4s.sdk.trace.samplers.Sampler
 private final case class TracerSharedState[F[_]](
     idGenerator: IdGenerator[F],
     resource: TelemetryResource,
+    spanLimits: SpanLimits,
     sampler: Sampler,
     spanProcessor: SpanProcessor[F]
 )

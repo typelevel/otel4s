@@ -46,12 +46,12 @@ trait Cogens
 
   implicit val eventDataCogen: Cogen[EventData] =
     Cogen[(String, FiniteDuration, Attributes)].contramap { data =>
-      (data.name, data.timestamp, data.attributes)
+      (data.name, data.timestamp, data.attributes.elements)
     }
 
   implicit val linkDataCogen: Cogen[LinkData] =
     Cogen[(SpanContext, Attributes)].contramap { data =>
-      (data.spanContext, data.attributes)
+      (data.spanContext, data.attributes.elements)
     }
 
   implicit val statusDataCogen: Cogen[StatusData] =
@@ -83,9 +83,9 @@ trait Cogens
       spanData.startTimestamp,
       spanData.endTimestamp,
       spanData.status,
-      spanData.attributes,
-      spanData.events,
-      spanData.links,
+      spanData.attributes.elements,
+      spanData.events.elements,
+      spanData.links.elements,
       spanData.instrumentationScope,
       spanData.resource
     )

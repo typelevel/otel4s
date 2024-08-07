@@ -25,10 +25,10 @@ import cats.effect.std.Console
 import cats.syntax.flatMap._
 import cats.syntax.foldable._
 import cats.syntax.functor._
-import cats.syntax.semigroup._
 import cats.~>
 import org.typelevel.otel4s.sdk.common.InstrumentationScope
 import org.typelevel.otel4s.sdk.context.Context
+import org.typelevel.otel4s.sdk.trace.data.LimitedData
 import org.typelevel.otel4s.sdk.trace.data.LinkData
 import org.typelevel.otel4s.sdk.trace.samplers.SamplingResult
 import org.typelevel.otel4s.trace.Span
@@ -45,18 +45,17 @@ import scodec.bits.ByteVector
 import scala.collection.immutable
 import scala.concurrent.duration.FiniteDuration
 
-private final case class SdkSpanBuilder[F[_]: Temporal: Console](
+private final case class SdkSpanBuilder[F[_]: Temporal: Console] private (
     name: String,
     scopeInfo: InstrumentationScope,
     tracerSharedState: TracerSharedState[F],
     scope: TraceScope[F, Context],
-    parent: SdkSpanBuilder.Parent = SdkSpanBuilder.Parent.Propagate,
-    finalizationStrategy: SpanFinalizer.Strategy =
-      SpanFinalizer.Strategy.reportAbnormal,
-    kind: Option[SpanKind] = None,
-    links: Vector[LinkData] = Vector.empty,
-    attributes: Vector[Attribute[_]] = Vector.empty,
-    startTimestamp: Option[FiniteDuration] = None
+    links: LimitedData[LinkData, Vector[LinkData]],
+    attributes: LimitedData[Attribute[_], Attributes],
+    parent: SdkSpanBuilder.Parent,
+    finalizationStrategy: SpanFinalizer.Strategy,
+    kind: Option[SpanKind],
+    startTimestamp: Option[FiniteDuration]
 ) extends SpanBuilder[F] {
   import SdkSpanBuilder._
 
@@ -64,18 +63,30 @@ private final case class SdkSpanBuilder[F[_]: Temporal: Console](
     copy(kind = Some(spanKind))
 
   def addAttribute[A](attribute: Attribute[A]): SpanBuilder[F] =
-    copy(attributes = attributes :+ attribute)
+    copy(attributes = attributes.append(attribute))
 
   def addAttributes(
       attributes: immutable.Iterable[Attribute[_]]
   ): SpanBuilder[F] =
-    copy(attributes = this.attributes ++ attributes)
+    copy(attributes = this.attributes.appendAll(attributes.to(Attributes)))
 
   def addLink(
       spanContext: SpanContext,
       attributes: immutable.Iterable[Attribute[_]]
   ): SpanBuilder[F] =
-    copy(links = links :+ LinkData(spanContext, attributes.to(Attributes)))
+    copy(links =
+      links.append(
+        LinkData(
+          spanContext,
+          LimitedData
+            .attributes(
+              tracerSharedState.spanLimits.maxNumberOfAttributesPerLink,
+              tracerSharedState.spanLimits.maxAttributeValueLength
+            )
+            .appendAll(attributes.to(Attributes))
+        )
+      )
+    )
 
   def root: SpanBuilder[F] =
     copy(parent = Parent.Root)
@@ -139,7 +150,6 @@ private final case class SdkSpanBuilder[F[_]: Temporal: Console](
   private def start: F[Span.Backend[F]] = {
     val idGenerator = tracerSharedState.idGenerator
     val spanKind = kind.getOrElse(SpanKind.Internal)
-    val attrs = attributes.to(Attributes)
 
     def genTraceId(parent: Option[SpanContext]): F[ByteVector] =
       parent
@@ -155,8 +165,8 @@ private final case class SdkSpanBuilder[F[_]: Temporal: Console](
         traceId = traceId,
         name = name,
         spanKind = spanKind,
-        attributes = attrs,
-        parentLinks = links
+        attributes = attributes.elements,
+        parentLinks = links.elements
       )
 
     for {
@@ -191,8 +201,9 @@ private final case class SdkSpanBuilder[F[_]: Temporal: Console](
               resource = tracerSharedState.resource,
               kind = spanKind,
               parentContext = parentSpanContext,
+              spanLimits = tracerSharedState.spanLimits,
               processor = tracerSharedState.spanProcessor,
-              attributes = attrs |+| samplingResult.attributes,
+              attributes = attributes.appendAll(samplingResult.attributes),
               links = links,
               userStartTimestamp = startTimestamp
             )
@@ -239,4 +250,35 @@ private object SdkSpanBuilder {
     final case class Explicit(parent: SpanContext) extends Parent
   }
 
+  def apply[F[_]: Temporal: Console](
+      name: String,
+      scopeInfo: InstrumentationScope,
+      tracerSharedState: TracerSharedState[F],
+      scope: TraceScope[F, Context],
+      parent: SdkSpanBuilder.Parent = SdkSpanBuilder.Parent.Propagate,
+      finalizationStrategy: SpanFinalizer.Strategy =
+        SpanFinalizer.Strategy.reportAbnormal,
+      kind: Option[SpanKind] = None,
+      startTimestamp: Option[FiniteDuration] = None
+  ): SdkSpanBuilder[F] = {
+    val links = LimitedData.links(tracerSharedState.spanLimits.maxNumberOfLinks)
+    val attributes =
+      LimitedData.attributes(
+        tracerSharedState.spanLimits.maxNumberOfAttributes,
+        tracerSharedState.spanLimits.maxAttributeValueLength
+      )
+
+    new SdkSpanBuilder[F](
+      name,
+      scopeInfo,
+      tracerSharedState,
+      scope,
+      links,
+      attributes,
+      parent,
+      finalizationStrategy,
+      kind,
+      startTimestamp
+    )
+  }
 }

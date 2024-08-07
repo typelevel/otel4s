@@ -139,7 +139,7 @@ class SimpleSpanProcessorSuite
         IO(data.startTimestamp)
 
       def getAttribute[A](key: AttributeKey[A]): IO[Option[A]] =
-        IO(data.attributes.get(key).map(_.value))
+        IO(data.attributes.elements.get(key).map(_.value))
 
       // span.backend
 

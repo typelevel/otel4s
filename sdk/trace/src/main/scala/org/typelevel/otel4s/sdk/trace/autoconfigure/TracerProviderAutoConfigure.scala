@@ -60,11 +60,13 @@ private final class TracerProviderAutoConfigure[
       sampler <- samplerAutoConfigure.configure(config)
       exporters <- exporterAutoConfigure.configure(config)
       processors <- configureProcessors(config, exporters)
+      spanLimits <- SpanLimitsAutoConfigure[F].configure(config)
 
       tracerProviderBuilder = {
         val builder = SdkTracerProvider
           .builder[F]
           .withResource(resource)
+          .withSpanLimits(spanLimits)
           .withSampler(sampler)
           .addTextMapPropagators(contextPropagators.textMapPropagator)
 

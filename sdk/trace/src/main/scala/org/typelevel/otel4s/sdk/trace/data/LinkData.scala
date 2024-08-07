@@ -40,7 +40,7 @@ sealed trait LinkData {
 
   /** The [[Attributes]] associated with this link.
     */
-  def attributes: Attributes
+  def attributes: LimitedData[Attribute[_], Attributes]
 
   override final def hashCode(): Int =
     Hash[LinkData].hash(this)
@@ -62,15 +62,10 @@ object LinkData {
     * @param context
     *   the context of the span the link refers to
     */
-  def apply(context: SpanContext): LinkData =
-    Impl(context, Attributes.empty)
-
-  /** Creates a [[LinkData]] with the given `context`.
-    *
-    * @param context
-    *   the context of the span the link refers to
-    */
-  def apply(context: SpanContext, attributes: Attributes): LinkData =
+  def apply(
+      context: SpanContext,
+      attributes: LimitedData[Attribute[_], Attributes]
+  ): LinkData =
     Impl(context, attributes)
 
   implicit val linkDataHash: Hash[LinkData] =
@@ -78,12 +73,12 @@ object LinkData {
 
   implicit val linkDataShow: Show[LinkData] =
     Show.show { data =>
-      show"LinkData{spanContext=${data.spanContext}, attributes=${data.attributes}}"
+      show"LinkData{spanContext=${data.spanContext}, attributes=${data.attributes.elements}}"
     }
 
   private final case class Impl(
       spanContext: SpanContext,
-      attributes: Attributes
+      attributes: LimitedData[Attribute[_], Attributes]
   ) extends LinkData
 
 }

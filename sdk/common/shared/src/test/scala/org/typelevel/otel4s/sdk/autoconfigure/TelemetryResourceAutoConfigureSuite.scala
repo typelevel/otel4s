@@ -20,21 +20,27 @@ package autoconfigure
 
 import cats.effect.IO
 import munit.CatsEffectSuite
+import org.typelevel.otel4s.sdk.resource.TelemetryResourceDetector
 
 class TelemetryResourceAutoConfigureSuite extends CatsEffectSuite {
 
   test("load from an empty config - use default as a fallback") {
-    val config = Config(Map.empty, Map.empty, Map.empty)
-    TelemetryResourceAutoConfigure[IO].configure(config).use { resource =>
-      IO(assertEquals(resource, TelemetryResource.default))
-    }
+    val props = Map("otel.otel4s.resource.detectors" -> "none")
+    val config = Config.ofProps(props)
+
+    TelemetryResourceAutoConfigure[IO](Set.empty)
+      .configure(config)
+      .use { resource =>
+        IO(assertEquals(resource, TelemetryResource.default))
+      }
   }
 
   test("load from the config - use default as an initial resource") {
     val props = Map(
       "otel.service.name" -> "some-service",
       "otel.resource.attributes" -> "key1=val1,key2=val2,key3=val3",
-      "otel.experimental.resource.disabled-keys" -> "key1,val3,test,key3"
+      "otel.experimental.resource.disabled-keys" -> "key1,val3,test,key3",
+      "otel.otel4s.resource.detectors" -> "none"
     )
 
     val config = Config.ofProps(props)
@@ -48,8 +54,55 @@ class TelemetryResourceAutoConfigureSuite extends CatsEffectSuite {
       TelemetryResource(expectedAttributes)
     )
 
-    TelemetryResourceAutoConfigure[IO].configure(config).use { resource =>
-      IO(assertEquals(resource, expected))
+    TelemetryResourceAutoConfigure[IO](Set.empty)
+      .configure(config)
+      .use { resource =>
+        IO(assertEquals(resource, expected))
+      }
+  }
+
+  test("use default detectors") {
+    val config = Config(Map.empty, Map.empty, Map.empty)
+    TelemetryResourceAutoConfigure[IO](Set.empty)
+      .configure(config)
+      .use { resource =>
+        val service = Set("service.name")
+        val host = Set("host.arch", "host.name")
+
+        val telemetry = Set(
+          "telemetry.sdk.language",
+          "telemetry.sdk.name",
+          "telemetry.sdk.version"
+        )
+
+        val all =
+          host ++ service ++ telemetry
+
+        IO(assertEquals(resource.attributes.map(_.key.name).toSet, all))
+      }
+  }
+
+  test("use extra detectors") {
+    val props = Map("otel.otel4s.resource.detectors" -> "custom")
+    val config = Config(props, Map.empty, Map.empty)
+
+    val customResource =
+      TelemetryResource(Attributes(Attribute("custom", true)))
+
+    val detector = new TelemetryResourceDetector[IO] {
+      def name: String = "custom"
+      def detect: IO[Option[TelemetryResource]] = IO.pure(Some(customResource))
     }
+
+    TelemetryResourceAutoConfigure[IO](Set(detector))
+      .configure(config)
+      .use { resource =>
+        IO(
+          assertEquals(
+            resource,
+            TelemetryResource.default.mergeUnsafe(customResource)
+          )
+        )
+      }
   }
 }

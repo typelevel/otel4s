@@ -45,7 +45,12 @@ class SdkMetricsSuite extends CatsEffectSuite {
     "SdkMetrics{meterProvider=MeterProvider.Noop}"
 
   test("withConfig - use the given config") {
-    val config = Config.ofProps(Map("otel.metrics.exporter" -> "console"))
+    val config = Config.ofProps(
+      Map(
+        "otel.otel4s.resource.detectors" -> "none",
+        "otel.metrics.exporter" -> "console"
+      )
+    )
 
     SdkMetrics
       .autoConfigured[IO](_.withConfig(config))
@@ -121,7 +126,12 @@ class SdkMetricsSuite extends CatsEffectSuite {
   }
 
   test("addResourceCustomizer - customize a resource") {
-    val config = Config.ofProps(Map("otel.metrics.exporter" -> "console"))
+    val config = Config.ofProps(
+      Map(
+        "otel.otel4s.resource.detectors" -> "none",
+        "otel.metrics.exporter" -> "console"
+      )
+    )
 
     val default = TelemetryResource.default
     val withAttributes =
@@ -145,7 +155,10 @@ class SdkMetricsSuite extends CatsEffectSuite {
 
   test("addExporterConfigurer - support external configurers") {
     val config = Config.ofProps(
-      Map("otel.metrics.exporter" -> "custom-1,custom-2")
+      Map(
+        "otel.otel4s.resource.detectors" -> "none",
+        "otel.metrics.exporter" -> "custom-1,custom-2"
+      )
     )
 
     val exporter1: MetricExporter[IO] = customExporter("CustomExporter1")

@@ -56,7 +56,12 @@ class SdkTracesSuite extends CatsEffectSuite {
     "SdkTraces{tracerProvider=TracerProvider.Noop, propagators=ContextPropagators.Noop}"
 
   test("withConfig - use the given config") {
-    val config = Config.ofProps(Map("otel.traces.exporter" -> "none"))
+    val config = Config.ofProps(
+      Map(
+        "otel.otel4s.resource.detectors" -> "none",
+        "otel.traces.exporter" -> "none"
+      )
+    )
 
     SdkTraces
       .autoConfigured[IO](_.withConfig(config))
@@ -123,7 +128,12 @@ class SdkTracesSuite extends CatsEffectSuite {
   }
 
   test("addResourceCustomizer - customize a resource") {
-    val config = Config.ofProps(Map("otel.traces.exporter" -> "none"))
+    val config = Config.ofProps(
+      Map(
+        "otel.otel4s.resource.detectors" -> "none",
+        "otel.traces.exporter" -> "none"
+      )
+    )
 
     val default = TelemetryResource.default
     val withAttributes =
@@ -147,7 +157,10 @@ class SdkTracesSuite extends CatsEffectSuite {
 
   test("addExporterConfigurer - support external configurers") {
     val config = Config.ofProps(
-      Map("otel.traces.exporter" -> "custom-1,custom-2")
+      Map(
+        "otel.otel4s.resource.detectors" -> "none",
+        "otel.traces.exporter" -> "custom-1,custom-2"
+      )
     )
 
     def customExporter(exporterName: String): SpanExporter[IO] =
@@ -185,6 +198,7 @@ class SdkTracesSuite extends CatsEffectSuite {
   test("addSamplerConfigurer - support external configurers") {
     val config = Config.ofProps(
       Map(
+        "otel.otel4s.resource.detectors" -> "none",
         "otel.traces.exporter" -> "none",
         "otel.traces.sampler" -> "custom-sampler",
       )
@@ -218,6 +232,7 @@ class SdkTracesSuite extends CatsEffectSuite {
   test("addTextMapPropagatorConfigurer - support external configurers") {
     val config = Config.ofProps(
       Map(
+        "otel.otel4s.resource.detectors" -> "none",
         "otel.traces.exporter" -> "none",
         "otel.propagators" -> "tracecontext,custom-1,custom-2,baggage",
       )

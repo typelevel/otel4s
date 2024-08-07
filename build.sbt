@@ -1,4 +1,4 @@
-ThisBuild / tlBaseVersion := "0.8"
+ThisBuild / tlBaseVersion := "0.9"
 
 ThisBuild / organization := "org.typelevel"
 ThisBuild / organizationName := "Typelevel"
@@ -221,6 +221,7 @@ lazy val `sdk-common` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   )
   .settings(munitDependencies)
   .settings(scalafixSettings)
+  .jsSettings(scalaJSLinkerSettings)
 
 lazy val `sdk-metrics` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .crossType(CrossType.Pure)
@@ -243,6 +244,7 @@ lazy val `sdk-metrics` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   )
   .settings(munitDependencies)
   .settings(scalafixSettings)
+  .jsSettings(scalaJSLinkerSettings)
 
 lazy val `sdk-metrics-testkit` =
   crossProject(JVMPlatform, JSPlatform, NativePlatform)
@@ -275,6 +277,7 @@ lazy val `sdk-trace` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   )
   .settings(munitDependencies)
   .settings(scalafixSettings)
+  .jsSettings(scalaJSLinkerSettings)
 
 lazy val `sdk-trace-testkit` =
   crossProject(JVMPlatform, JSPlatform, NativePlatform)
@@ -313,6 +316,7 @@ lazy val sdk = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   )
   .settings(munitDependencies)
   .settings(scalafixSettings)
+  .jsSettings(scalaJSLinkerSettings)
 
 //
 // SDK exporter

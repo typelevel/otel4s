@@ -81,6 +81,11 @@ trait Gens {
       attributes <- Gen.listOf(attribute)
     } yield attributes.to(Attributes)
 
+  def attributes(n: Int): Gen[Attributes] =
+    for {
+      attributes <- Gen.listOfN(n, attribute)
+    } yield attributes.to(Attributes)
+
 }
 
 object Gens extends Gens

@@ -36,6 +36,7 @@ import org.typelevel.otel4s.trace.TracerProvider
 private class SdkTracerProvider[F[_]: Temporal: Parallel: Console](
     idGenerator: IdGenerator[F],
     resource: TelemetryResource,
+    spanLimits: SpanLimits,
     sampler: Sampler,
     propagators: ContextPropagators[Context],
     spanProcessors: List[SpanProcessor[F]],
@@ -47,6 +48,7 @@ private class SdkTracerProvider[F[_]: Temporal: Parallel: Console](
     TracerSharedState(
       idGenerator,
       resource,
+      spanLimits,
       sampler,
       SpanProcessor.of(spanProcessors: _*)
     )
@@ -55,7 +57,11 @@ private class SdkTracerProvider[F[_]: Temporal: Parallel: Console](
     new SdkTracerBuilder[F](propagators, traceScope, sharedState, storage, name)
 
   override def toString: String =
-    s"SdkTracerProvider{resource=$resource, sampler=$sampler, spanProcessor=${sharedState.spanProcessor}}"
+    "SdkTracerProvider{" +
+      s"resource=$resource, " +
+      s"spanLimits=$spanLimits, " +
+      s"sampler=$sampler, " +
+      s"spanProcessor=${sharedState.spanProcessor}}"
 
 }
 
@@ -104,6 +110,16 @@ object SdkTracerProvider {
       *   the [[TelemetryResource]] to merge the current one with
       */
     def addResource(resource: TelemetryResource): Builder[F]
+
+    /** Sets an initial [[SpanLimits]].
+      *
+      * The limits will be used for every
+      * [[org.typelevel.otel4s.trace.Span Span]].
+      *
+      * @param limits
+      *   the [[SpanLimits]] to use
+      */
+    def withSpanLimits(limits: SpanLimits): Builder[F]
 
     /** Sets a [[org.typelevel.otel4s.sdk.trace.samplers.Sampler Sampler]].
       *
@@ -161,6 +177,7 @@ object SdkTracerProvider {
     BuilderImpl[F](
       idGenerator = IdGenerator.random,
       resource = TelemetryResource.default,
+      spanLimits = SpanLimits.default,
       sampler = Sampler.parentBased(Sampler.AlwaysOn),
       propagators = Nil,
       spanProcessors = Nil
@@ -171,6 +188,7 @@ object SdkTracerProvider {
   ](
       idGenerator: IdGenerator[F],
       resource: TelemetryResource,
+      spanLimits: SpanLimits,
       sampler: Sampler,
       propagators: List[TextMapPropagator[Context]],
       spanProcessors: List[SpanProcessor[F]]
@@ -184,6 +202,9 @@ object SdkTracerProvider {
 
     def addResource(resource: TelemetryResource): Builder[F] =
       copy(resource = this.resource.mergeUnsafe(resource))
+
+    def withSpanLimits(limits: SpanLimits): Builder[F] =
+      copy(spanLimits = limits)
 
     def withSampler(sampler: Sampler): Builder[F] =
       copy(sampler = sampler)
@@ -201,6 +222,7 @@ object SdkTracerProvider {
         new SdkTracerProvider[F](
           idGenerator,
           resource,
+          spanLimits,
           sampler,
           ContextPropagators.of(propagators: _*),
           spanProcessors :+ storage,

@@ -44,7 +44,7 @@ sealed trait EventData {
 
   /** The attributes of the event.
     */
-  def attributes: Attributes
+  def attributes: LimitedData[Attribute[_], Attributes]
 
   override final def hashCode(): Int =
     Hash[EventData].hash(this)
@@ -76,7 +76,7 @@ object EventData {
   def apply(
       name: String,
       timestamp: FiniteDuration,
-      attributes: Attributes
+      attributes: LimitedData[Attribute[_], Attributes]
   ): EventData =
     Impl(name, timestamp, attributes)
 
@@ -96,6 +96,9 @@ object EventData {
     * @param attributes
     *   the attributes to associate with the event
     *
+    * @param limitAttributes
+    *   a method for limiting the event attributes
+    *
     * @param escaped
     *   should be set to true if the exception is recorded at a point where it
     *   is known that the exception is escaping the scope of the span
@@ -104,6 +107,7 @@ object EventData {
       timestamp: FiniteDuration,
       exception: Throwable,
       attributes: Attributes,
+      limitAttributes: Attributes => LimitedData[Attribute[_], Attributes],
       escaped: Boolean
   ): EventData = {
     val allAttributes = {
@@ -136,7 +140,7 @@ object EventData {
       builder.result()
     }
 
-    Impl(ExceptionEventName, timestamp, allAttributes)
+    Impl(ExceptionEventName, timestamp, limitAttributes(allAttributes))
   }
 
   implicit val eventDataHash: Hash[EventData] =
@@ -144,13 +148,13 @@ object EventData {
 
   implicit val eventDataShow: Show[EventData] =
     Show.show { data =>
-      show"EventData{name=${data.name}, timestamp=${data.timestamp}, attributes=${data.attributes}}"
+      show"EventData{name=${data.name}, timestamp=${data.timestamp}, attributes=${data.attributes.elements}}"
     }
 
   private final case class Impl(
       name: String,
       timestamp: FiniteDuration,
-      attributes: Attributes
+      attributes: LimitedData[Attribute[_], Attributes]
   ) extends EventData
 
 }

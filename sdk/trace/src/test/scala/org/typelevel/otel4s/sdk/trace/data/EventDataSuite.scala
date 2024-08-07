@@ -42,7 +42,7 @@ class EventDataSuite extends DisciplineSuite {
   test("Show[EventData]") {
     Prop.forAll(Gens.eventData) { data =>
       val expected =
-        show"EventData{name=${data.name}, timestamp=${data.timestamp}, attributes=${data.attributes}}"
+        show"EventData{name=${data.name}, timestamp=${data.timestamp}, attributes=${data.attributes.elements}}"
 
       assertEquals(Show[EventData].show(data), expected)
     }
@@ -70,11 +70,19 @@ class EventDataSuite extends DisciplineSuite {
       ) |+| attributes
 
       val data =
-        EventData.fromException(ts, exception, attributes, escaped = true)
+        EventData.fromException(
+          ts,
+          exception,
+          attributes,
+          LimitedData
+            .attributes(SpanLimits.default.maxNumberOfAttributesPerEvent)
+            .appendAll,
+          escaped = true
+        )
 
       assertEquals(data.name, "exception")
       assertEquals(data.timestamp, ts)
-      assertEquals(data.attributes, expectedAttributes)
+      assertEquals(data.attributes.elements, expectedAttributes)
     }
   }
 
@@ -92,11 +100,19 @@ class EventDataSuite extends DisciplineSuite {
       ) |+| attributes
 
       val data =
-        EventData.fromException(ts, exception, attributes, escaped = false)
+        EventData.fromException(
+          ts,
+          exception,
+          attributes,
+          LimitedData
+            .attributes(SpanLimits.default.maxNumberOfAttributesPerEvent)
+            .appendAll,
+          escaped = false
+        )
 
       assertEquals(data.name, "exception")
       assertEquals(data.timestamp, ts)
-      assertEquals(data.attributes, expectedAttributes)
+      assertEquals(data.attributes.elements, expectedAttributes)
     }
   }
 }

@@ -30,6 +30,7 @@ import org.typelevel.otel4s.meta.InstrumentMeta
 import org.typelevel.otel4s.sdk.common.InstrumentationScope
 import org.typelevel.otel4s.sdk.trace.SdkSpanBackend.MutableState
 import org.typelevel.otel4s.sdk.trace.data.EventData
+import org.typelevel.otel4s.sdk.trace.data.LimitedData
 import org.typelevel.otel4s.sdk.trace.data.LinkData
 import org.typelevel.otel4s.sdk.trace.data.SpanData
 import org.typelevel.otel4s.sdk.trace.data.StatusData
@@ -68,6 +69,7 @@ import scala.concurrent.duration.FiniteDuration
   *   the higher-kinded type of a polymorphic effect
   */
 private final class SdkSpanBackend[F[_]: Monad: Clock: Console] private (
+    spanLimits: SpanLimits,
     spanProcessor: SpanProcessor[F],
     immutableState: SdkSpanBackend.ImmutableState,
     mutableState: Ref[F, SdkSpanBackend.MutableState]
@@ -85,7 +87,7 @@ private final class SdkSpanBackend[F[_]: Monad: Clock: Console] private (
 
   def addAttributes(attributes: immutable.Iterable[Attribute[_]]): F[Unit] =
     updateState("addAttributes") { s =>
-      s.copy(attributes = s.attributes ++ attributes)
+      s.copy(attributes = s.attributes.appendAll(attributes.to(Attributes)))
     }.unlessA(attributes.isEmpty)
 
   def addEvent(
@@ -103,7 +105,13 @@ private final class SdkSpanBackend[F[_]: Monad: Clock: Console] private (
       attributes: immutable.Iterable[Attribute[_]]
   ): F[Unit] =
     addTimedEvent(
-      EventData(name, timestamp, attributes.to(Attributes))
+      EventData(
+        name,
+        timestamp,
+        LimitedData
+          .attributes(spanLimits.maxNumberOfAttributesPerEvent)
+          .appendAll(attributes.to(Attributes))
+      )
     )
 
   def addLink(
@@ -111,7 +119,16 @@ private final class SdkSpanBackend[F[_]: Monad: Clock: Console] private (
       attributes: immutable.Iterable[Attribute[_]]
   ): F[Unit] =
     updateState("addLink") { s =>
-      s.copy(links = s.links :+ LinkData(context, attributes.to(Attributes)))
+      s.copy(links =
+        s.links.append(
+          LinkData(
+            context,
+            LimitedData
+              .attributes(spanLimits.maxNumberOfAttributesPerLink)
+              .appendAll(attributes.to(Attributes))
+          )
+        )
+      )
     }.void
 
   def recordException(
@@ -125,6 +142,9 @@ private final class SdkSpanBackend[F[_]: Monad: Clock: Console] private (
           now,
           exception,
           attributes.to(Attributes),
+          LimitedData
+            .attributes(spanLimits.maxNumberOfAttributesPerEvent)
+            .appendAll,
           escaped = false
         )
       )
@@ -153,7 +173,7 @@ private final class SdkSpanBackend[F[_]: Monad: Clock: Console] private (
     } yield ()
 
   private def addTimedEvent(event: EventData): F[Unit] =
-    updateState("addEvent")(s => s.copy(events = s.events :+ event)).void
+    updateState("addEvent")(s => s.copy(events = s.events.append(event))).void
 
   // applies modifications while the span is still active
   // modifications are ignored when the span is ended
@@ -216,7 +236,7 @@ private final class SdkSpanBackend[F[_]: Monad: Clock: Console] private (
   def getAttribute[A](key: AttributeKey[A]): F[Option[A]] =
     for {
       state <- mutableState.get
-    } yield state.attributes.get(key).map(_.value)
+    } yield state.attributes.elements.get(key).map(_.value)
 
 }
 
@@ -262,9 +282,10 @@ private object SdkSpanBackend {
       resource: TelemetryResource,
       kind: SpanKind,
       parentContext: Option[SpanContext],
+      spanLimits: SpanLimits,
       processor: SpanProcessor[F],
-      attributes: Attributes,
-      links: Vector[LinkData],
+      attributes: LimitedData[Attribute[_], Attributes],
+      links: LimitedData[LinkData, Vector[LinkData]],
       userStartTimestamp: Option[FiniteDuration]
   ): F[SdkSpanBackend[F]] = {
     def immutableState(startTimestamp: FiniteDuration) =
@@ -282,14 +303,19 @@ private object SdkSpanBackend {
       status = StatusData.Unset,
       attributes = attributes,
       links = links,
-      events = Vector.empty,
+      events = LimitedData.events(spanLimits.maxNumberOfEvents),
       endTimestamp = None
     )
 
     for {
       start <- userStartTimestamp.fold(Clock[F].realTime)(_.pure)
       state <- Ref[F].of(mutableState)
-      backend = new SdkSpanBackend[F](processor, immutableState(start), state)
+      backend = new SdkSpanBackend[F](
+        spanLimits,
+        processor,
+        immutableState(start),
+        state
+      )
       _ <- processor.onStart(parentContext, backend)
     } yield backend
   }
@@ -308,9 +334,9 @@ private object SdkSpanBackend {
   private final case class MutableState(
       name: String,
       status: StatusData,
-      attributes: Attributes,
-      events: Vector[EventData],
-      links: Vector[LinkData],
+      attributes: LimitedData[Attribute[_], Attributes],
+      events: LimitedData[EventData, Vector[EventData]],
+      links: LimitedData[LinkData, Vector[LinkData]],
       endTimestamp: Option[FiniteDuration]
   )
 

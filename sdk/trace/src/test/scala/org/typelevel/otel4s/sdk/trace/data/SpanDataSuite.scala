@@ -49,9 +49,9 @@ class SpanDataSuite extends DisciplineSuite {
           endedEpoch +
           show"hasEnded=${data.hasEnded}, " +
           show"status=${data.status}, " +
-          show"attributes=${data.attributes}, " +
-          show"events=${data.events}, " +
-          show"links=${data.links}, " +
+          show"attributes=${data.attributes.elements}, " +
+          show"events=${data.events.elements}, " +
+          show"links=${data.links.elements}, " +
           show"instrumentationScope=${data.instrumentationScope}, " +
           show"resource=${data.resource}}"
 

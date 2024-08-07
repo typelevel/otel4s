@@ -67,15 +67,15 @@ sealed trait SpanData {
 
   /** The attributes associated with the span.
     */
-  def attributes: Attributes
+  def attributes: LimitedData[Attribute[_], Attributes]
 
   /** The events associated with the span.
     */
-  def events: Vector[EventData]
+  def events: LimitedData[EventData, Vector[EventData]]
 
   /** The links associated with the span.
     */
-  def links: Vector[LinkData]
+  def links: LimitedData[LinkData, Vector[LinkData]]
 
   /** The instrumentation scope associated with the span.
     */
@@ -151,9 +151,9 @@ object SpanData {
       startTimestamp: FiniteDuration,
       endTimestamp: Option[FiniteDuration],
       status: StatusData,
-      attributes: Attributes,
-      events: Vector[EventData],
-      links: Vector[LinkData],
+      attributes: LimitedData[Attribute[_], Attributes],
+      events: LimitedData[EventData, Vector[EventData]],
+      links: LimitedData[LinkData, Vector[LinkData]],
       instrumentationScope: InstrumentationScope,
       resource: TelemetryResource
   ): SpanData =
@@ -204,9 +204,9 @@ object SpanData {
         endTimestamp +
         show"hasEnded=${data.hasEnded}, " +
         show"status=${data.status}, " +
-        show"attributes=${data.attributes}, " +
-        show"events=${data.events}, " +
-        show"links=${data.links}, " +
+        show"attributes=${data.attributes.elements}, " +
+        show"events=${data.events.elements}, " +
+        show"links=${data.links.elements}, " +
         show"instrumentationScope=${data.instrumentationScope}, " +
         show"resource=${data.resource}}"
     }
@@ -219,9 +219,9 @@ object SpanData {
       startTimestamp: FiniteDuration,
       endTimestamp: Option[FiniteDuration],
       status: StatusData,
-      attributes: Attributes,
-      events: Vector[EventData],
-      links: Vector[LinkData],
+      attributes: LimitedData[Attribute[_], Attributes],
+      events: LimitedData[EventData, Vector[EventData]],
+      links: LimitedData[LinkData, Vector[LinkData]],
       instrumentationScope: InstrumentationScope,
       resource: TelemetryResource
   ) extends SpanData

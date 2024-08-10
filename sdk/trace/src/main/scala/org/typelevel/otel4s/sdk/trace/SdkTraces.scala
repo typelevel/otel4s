@@ -37,6 +37,7 @@ import org.typelevel.otel4s.sdk.autoconfigure.TelemetryResourceAutoConfigure
 import org.typelevel.otel4s.sdk.context.Context
 import org.typelevel.otel4s.sdk.context.LocalContext
 import org.typelevel.otel4s.sdk.context.LocalContextProvider
+import org.typelevel.otel4s.sdk.resource.TelemetryResourceDetector
 import org.typelevel.otel4s.sdk.trace.autoconfigure.ContextPropagatorsAutoConfigure
 import org.typelevel.otel4s.sdk.trace.autoconfigure.TracerProviderAutoConfigure
 import org.typelevel.otel4s.sdk.trace.exporter.SpanExporter
@@ -157,6 +158,19 @@ object SdkTraces {
           customizer: Customizer[TelemetryResource]
       ): Builder[F]
 
+      /** Adds the telemetry resource detector. Multiple detectors can be added,
+        * and the detected telemetry resources will be merged.
+        *
+        * By default, the following detectors are enabled:
+        *   - host: `host.arch`, `host.name`
+        *
+        * @param detector
+        *   the detector to add
+        */
+      def addResourceDetector(
+          detector: TelemetryResourceDetector[F]
+      ): Builder[F]
+
       /** Adds the exporter configurer. Can be used to register exporters that
         * aren't included in the SDK.
         *
@@ -216,6 +230,7 @@ object SdkTraces {
         propertiesCustomizers = Nil,
         resourceCustomizer = (a, _) => a,
         tracerProviderCustomizer = (a: SdkTracerProvider.Builder[F], _) => a,
+        resourceDetectors = Set.empty,
         exporterConfigurers = Set.empty,
         samplerConfigurers = Set.empty,
         textMapPropagatorConfigurers = Set.empty
@@ -229,6 +244,7 @@ object SdkTraces {
         propertiesCustomizers: List[Config => Map[String, String]],
         resourceCustomizer: Customizer[TelemetryResource],
         tracerProviderCustomizer: Customizer[SdkTracerProvider.Builder[F]],
+        resourceDetectors: Set[TelemetryResourceDetector[F]],
         exporterConfigurers: Set[AutoConfigure.Named[F, SpanExporter[F]]],
         samplerConfigurers: Set[AutoConfigure.Named[F, Sampler]],
         textMapPropagatorConfigurers: Set[
@@ -254,6 +270,11 @@ object SdkTraces {
       ): Builder[F] =
         copy(resourceCustomizer = merge(this.resourceCustomizer, customizer))
 
+      def addResourceDetector(
+          detector: TelemetryResourceDetector[F]
+      ): Builder[F] =
+        copy(resourceDetectors = this.resourceDetectors + detector)
+
       def addTracerProviderCustomizer(
           customizer: Customizer[SdkTracerProvider.Builder[F]]
       ): Builder[F] =
@@ -264,18 +285,18 @@ object SdkTraces {
       def addExporterConfigurer(
           configurer: AutoConfigure.Named[F, SpanExporter[F]]
       ): Builder[F] =
-        copy(exporterConfigurers = exporterConfigurers + configurer)
+        copy(exporterConfigurers = this.exporterConfigurers + configurer)
 
       def addSamplerConfigurer(
           configurer: AutoConfigure.Named[F, Sampler]
       ): Builder[F] =
-        copy(samplerConfigurers = samplerConfigurers + configurer)
+        copy(samplerConfigurers = this.samplerConfigurers + configurer)
 
       def addTextMapPropagatorConfigurer(
           configurer: AutoConfigure.Named[F, TextMapPropagator[Context]]
       ): Builder[F] =
         copy(textMapPropagatorConfigurers =
-          textMapPropagatorConfigurers + configurer
+          this.textMapPropagatorConfigurers + configurer
         )
 
       def build: Resource[F, SdkTraces[F]] = {
@@ -330,7 +351,7 @@ object SdkTraces {
         for {
           config <- Resource.eval(customConfig.fold(loadConfig)(Async[F].pure))
 
-          resource <- TelemetryResourceAutoConfigure[F]
+          resource <- TelemetryResourceAutoConfigure[F](resourceDetectors)
             .configure(config)
             .map(resourceCustomizer(_, config))
 

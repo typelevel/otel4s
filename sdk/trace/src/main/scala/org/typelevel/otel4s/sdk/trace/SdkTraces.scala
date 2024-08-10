@@ -163,6 +163,7 @@ object SdkTraces {
         *
         * By default, the following detectors are enabled:
         *   - host: `host.arch`, `host.name`
+        *   - os: `os.type`, `os.description`
         *
         * @param detector
         *   the detector to add

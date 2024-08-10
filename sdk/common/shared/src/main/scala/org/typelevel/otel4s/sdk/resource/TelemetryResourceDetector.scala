@@ -53,11 +53,12 @@ object TelemetryResourceDetector {
     *
     * Includes:
     *   - host detector
+    *   - os detector
     *
     * @tparam F
     *   the higher-kinded type of a polymorphic effect
     */
   def default[F[_]: Sync]: Set[TelemetryResourceDetector[F]] =
-    Set(HostDetector[F])
+    Set(HostDetector[F], OSDetector[F])
 
 }

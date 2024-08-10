@@ -68,6 +68,7 @@ class TelemetryResourceAutoConfigureSuite extends CatsEffectSuite {
       .use { resource =>
         val service = Set("service.name")
         val host = Set("host.arch", "host.name")
+        val os = Set("os.type", "os.description")
 
         val telemetry = Set(
           "telemetry.sdk.language",
@@ -76,7 +77,7 @@ class TelemetryResourceAutoConfigureSuite extends CatsEffectSuite {
         )
 
         val all =
-          host ++ service ++ telemetry
+          host ++ os ++ service ++ telemetry
 
         IO(assertEquals(resource.attributes.map(_.key.name).toSet, all))
       }

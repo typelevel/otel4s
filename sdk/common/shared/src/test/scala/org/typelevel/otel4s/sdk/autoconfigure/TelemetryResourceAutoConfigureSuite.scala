@@ -71,6 +71,24 @@ class TelemetryResourceAutoConfigureSuite extends CatsEffectSuite {
         val host = Set("host.arch", "host.name")
         val os = Set("os.type", "os.description")
 
+        val process =
+          if (PlatformCompat.isJS)
+            Set(
+              "process.executable.name",
+              "process.owner",
+              "process.command_args",
+              "process.executable.path",
+              "process.pid"
+            )
+          else if (PlatformCompat.isNative)
+            Set("process.pid")
+          else
+            Set(
+              "process.command_line",
+              "process.executable.path",
+              "process.pid"
+            )
+
         val runtime = {
           val name = "process.runtime.name"
           val version = "process.runtime.version"
@@ -87,7 +105,7 @@ class TelemetryResourceAutoConfigureSuite extends CatsEffectSuite {
         )
 
         val all =
-          host ++ os ++ runtime ++ service ++ telemetry
+          host ++ os ++ process ++ runtime ++ service ++ telemetry
 
         IO(assertEquals(resource.attributes.map(_.key.name).toSet, all))
       }

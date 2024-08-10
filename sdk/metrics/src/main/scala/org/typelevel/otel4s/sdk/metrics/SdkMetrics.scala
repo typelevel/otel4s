@@ -143,6 +143,9 @@ object SdkMetrics {
         * By default, the following detectors are enabled:
         *   - host: `host.arch`, `host.name`
         *   - os: `os.type`, `os.description`
+        *   - process: `process.command`, `process.command_args`,
+        *     `process.command_line`, `process.executable.name`,
+        *     `process.executable.path`, `process.pid`, `process.owner`
         *   - process_runtime: `process.runtime.name`,
         *     `process.runtime.version`, `process.runtime.description`
         *

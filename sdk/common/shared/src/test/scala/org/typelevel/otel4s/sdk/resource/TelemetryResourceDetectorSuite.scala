@@ -45,6 +45,33 @@ class TelemetryResourceDetectorSuite extends CatsEffectSuite {
     }
   }
 
+  test("ProcessDetector - detect pid, exe path, exe name") {
+    val keys =
+      if (PlatformCompat.isJS)
+        Set(
+          "process.executable.path",
+          "process.pid",
+          "process.executable.name",
+          "process.owner",
+          "process.command_args"
+        )
+      else if (PlatformCompat.isNative)
+        Set("process.pid")
+      else
+        Set(
+          "process.executable.path",
+          "process.pid",
+          "process.command_line"
+        )
+
+    for {
+      resource <- ProcessDetector[IO].detect
+    } yield {
+      assertEquals(resource.map(_.attributes.map(_.key.name).toSet), Some(keys))
+      assertEquals(resource.flatMap(_.schemaUrl), Some(SchemaUrls.Current))
+    }
+  }
+
   test("ProcessRuntimeDetector - detect name, version, and description") {
     val keys = {
       val name = "process.runtime.name"
@@ -63,9 +90,9 @@ class TelemetryResourceDetectorSuite extends CatsEffectSuite {
     }
   }
 
-  test("default - contain host, os, process_runtime detectors") {
+  test("default - contain host, os, process, process_runtime detectors") {
     val detectors = TelemetryResourceDetector.default[IO].map(_.name)
-    val expected = Set("host", "os", "process_runtime")
+    val expected = Set("host", "os", "process", "process_runtime")
 
     assertEquals(detectors.map(_.name), expected)
   }

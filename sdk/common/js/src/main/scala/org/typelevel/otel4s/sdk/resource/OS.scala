@@ -42,4 +42,12 @@ private object OS {
   @JSImport("os", "release")
   def release(): String = js.native
 
+  @js.native
+  @JSImport("os", "userInfo")
+  def userInfo(): UserInfo = js.native
+
+  @js.native
+  trait UserInfo extends js.Object {
+    def username: String = js.native
+  }
 }

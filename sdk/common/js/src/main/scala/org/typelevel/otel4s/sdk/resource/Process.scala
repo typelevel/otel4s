@@ -31,6 +31,26 @@ private object Process {
   def versions: Versions = js.native
 
   @js.native
+  @JSImport("process", "pid")
+  def pid: Int = js.native
+
+  @js.native
+  @JSImport("process", "title")
+  def title: String = js.native
+
+  @js.native
+  @JSImport("process", "execPath")
+  def execPath: String = js.native
+
+  @js.native
+  @JSImport("process", "argv")
+  def argv: js.Array[String] = js.native
+
+  @js.native
+  @JSImport("process", "execArgv")
+  def execArgv: js.Array[String] = js.native
+
+  @js.native
   trait Versions extends js.Object {
     def node: String = js.native
   }

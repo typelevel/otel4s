@@ -18,6 +18,7 @@ package org.typelevel.otel4s.sdk.resource
 
 import cats.effect.IO
 import munit.CatsEffectSuite
+import munit.internal.PlatformCompat
 import org.typelevel.otel4s.semconv.SchemaUrls
 
 class TelemetryResourceDetectorSuite extends CatsEffectSuite {
@@ -44,9 +45,27 @@ class TelemetryResourceDetectorSuite extends CatsEffectSuite {
     }
   }
 
-  test("default - contain host, os detectors") {
+  test("ProcessRuntimeDetector - detect name, version, and description") {
+    val keys = {
+      val name = "process.runtime.name"
+      val version = "process.runtime.version"
+      val description = "process.runtime.description"
+
+      if (PlatformCompat.isNative) Set(name, description)
+      else Set(name, version, description)
+    }
+
+    for {
+      resource <- ProcessRuntimeDetector[IO].detect
+    } yield {
+      assertEquals(resource.map(_.attributes.map(_.key.name).toSet), Some(keys))
+      assertEquals(resource.flatMap(_.schemaUrl), Some(SchemaUrls.Current))
+    }
+  }
+
+  test("default - contain host, os, process_runtime detectors") {
     val detectors = TelemetryResourceDetector.default[IO].map(_.name)
-    val expected = Set("host", "os")
+    val expected = Set("host", "os", "process_runtime")
 
     assertEquals(detectors.map(_.name), expected)
   }

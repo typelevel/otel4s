@@ -19,27 +19,20 @@ package org.typelevel.otel4s.sdk.resource
 import scala.scalajs.js
 import scala.scalajs.js.annotation.JSImport
 
-/** A mapping of the Node.js OS API.
+/** A mapping of the Node.js process API.
   *
   * @see
-  *   [[https://nodejs.org/api/os.html]]
+  *   [[https://nodejs.org/api/process.html]]
   */
-private object OS {
+private object Process {
 
   @js.native
-  @JSImport("os", "arch")
-  def arch(): String = js.native
+  @JSImport("process", "versions")
+  def versions: Versions = js.native
 
   @js.native
-  @JSImport("os", "hostname")
-  def hostname(): String = js.native
-
-  @js.native
-  @JSImport("os", "platform")
-  def platform(): String = js.native
-
-  @js.native
-  @JSImport("os", "release")
-  def release(): String = js.native
+  trait Versions extends js.Object {
+    def node: String = js.native
+  }
 
 }

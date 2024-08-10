@@ -50,7 +50,7 @@ If not specified, SDK defaults the service name to `unknown_service:scala`.
 | otel.resource.attributes                 | OTEL\\_RESOURCE\\_ATTRIBUTES                     | Specify resource attributes in the following format: `key1=val1,key2=val2,key3=val3`.                       |
 | otel.service.name                        | OTEL\\_SERVICE\\_NAME                            | Specify logical service name. Takes precedence over `service.name` defined with `otel.resource.attributes`. |
 | otel.experimental.resource.disabled-keys | OTEL\\_EXPERIMENTAL\\_RESOURCE\\_DISABLED\\_KEYS | Specify resource attribute keys that are filtered.                                                          |
-| otel.otel4s.resource.detectors           | OTEL\\_OTEL4S\\_RESOURCE\\_DETECTORS             | Specify resource detectors to use. Defaults to `host,os`.                                                   | 
+| otel.otel4s.resource.detectors           | OTEL\\_OTEL4S\\_RESOURCE\\_DETECTORS             | Specify resource detectors to use. Defaults to `host,os,process_runtime`.                                   | 
 
 ## Metrics
 

@@ -198,6 +198,8 @@ object OpenTelemetrySdk {
         * By default, the following detectors are enabled:
         *   - host: `host.arch`, `host.name`
         *   - os: `os.type`, `os.description`
+        *   - process_runtime: `process.runtime.name`,
+        *     `process.runtime.version`, `process.runtime.description`
         *
         * @param detector
         *   the detector to add

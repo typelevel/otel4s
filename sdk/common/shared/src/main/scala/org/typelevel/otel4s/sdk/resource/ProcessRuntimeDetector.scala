@@ -16,30 +16,28 @@
 
 package org.typelevel.otel4s.sdk.resource
 
-import scala.scalajs.js
-import scala.scalajs.js.annotation.JSImport
+import org.typelevel.otel4s.AttributeKey
 
-/** A mapping of the Node.js OS API.
+/** Detects runtime details such as name, version, and description.
   *
   * @see
-  *   [[https://nodejs.org/api/os.html]]
+  *   https://opentelemetry.io/docs/specs/semconv/resource/process/#process-runtimes
   */
-private object OS {
+object ProcessRuntimeDetector extends ProcessRuntimeDetectorPlatform {
 
-  @js.native
-  @JSImport("os", "arch")
-  def arch(): String = js.native
+  private[sdk] object Const {
+    val Name = "process_runtime"
+  }
 
-  @js.native
-  @JSImport("os", "hostname")
-  def hostname(): String = js.native
+  private[resource] object Keys {
+    val Name: AttributeKey[String] =
+      AttributeKey("process.runtime.name")
 
-  @js.native
-  @JSImport("os", "platform")
-  def platform(): String = js.native
+    val Version: AttributeKey[String] =
+      AttributeKey("process.runtime.version")
 
-  @js.native
-  @JSImport("os", "release")
-  def release(): String = js.native
+    val Description: AttributeKey[String] =
+      AttributeKey("process.runtime.description")
+  }
 
 }

@@ -16,25 +16,25 @@
 
 package org.typelevel.otel4s.sdk.resource
 
-import scala.scalajs.js
-import scala.scalajs.js.annotation.JSImport
+import org.typelevel.otel4s.AttributeKey
 
-private object OS {
+/** Detects OS type and description.
+  *
+  * @see
+  *   https://opentelemetry.io/docs/specs/semconv/resource/os/
+  */
+object OSDetector extends OSDetectorPlatform {
 
-  @js.native
-  @JSImport("os", "arch")
-  def arch(): String = js.native
+  private[sdk] object Const {
+    val Name = "os"
+  }
 
-  @js.native
-  @JSImport("os", "hostname")
-  def hostname(): String = js.native
+  private[resource] object Keys {
+    val Type: AttributeKey[String] =
+      AttributeKey[String]("os.type")
 
-  @js.native
-  @JSImport("os", "platform")
-  def platform(): String = js.native
-
-  @js.native
-  @JSImport("os", "release")
-  def release(): String = js.native
+    val Description: AttributeKey[String] =
+      AttributeKey[String]("os.description")
+  }
 
 }

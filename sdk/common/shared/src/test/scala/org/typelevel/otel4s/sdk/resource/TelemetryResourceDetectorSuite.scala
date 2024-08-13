@@ -33,9 +33,20 @@ class TelemetryResourceDetectorSuite extends CatsEffectSuite {
     }
   }
 
-  test("default - contain host detector") {
+  test("OSDetector - detect OS type and description") {
+    val keys = Set("os.type", "os.description")
+
+    for {
+      resource <- OSDetector[IO].detect
+    } yield {
+      assertEquals(resource.map(_.attributes.map(_.key.name).toSet), Some(keys))
+      assertEquals(resource.flatMap(_.schemaUrl), Some(SchemaUrls.Current))
+    }
+  }
+
+  test("default - contain host, os detectors") {
     val detectors = TelemetryResourceDetector.default[IO].map(_.name)
-    val expected = Set("host")
+    val expected = Set("host", "os")
 
     assertEquals(detectors.map(_.name), expected)
   }

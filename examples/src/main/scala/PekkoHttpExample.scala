@@ -70,7 +70,7 @@ import scala.concurrent.duration._
   *   run / fork := true,
   *   javaOptions += "-Dotel.java.global-autoconfigure.enabled=true",
   *   javaOptions += "-Dotel.service.name=pekko-otel4s",
-  *   javaAgents += "io.opentelemetry.javaagent" % "opentelemetry-javaagent" % "2.6.0" % Runtime
+  *   javaAgents += "io.opentelemetry.javaagent" % "opentelemetry-javaagent" % "2.7.0" % Runtime
   * )
   * }}}
   */

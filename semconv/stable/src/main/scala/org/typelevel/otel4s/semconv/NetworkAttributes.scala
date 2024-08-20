@@ -103,6 +103,9 @@ object NetworkAttributes {
 
     /** Unix domain socket. */
     case object Unix extends NetworkTransportValue("unix")
+
+    /** QUIC. */
+    case object Quic extends NetworkTransportValue("quic")
   }
 
   /** Values for [[NetworkType]].

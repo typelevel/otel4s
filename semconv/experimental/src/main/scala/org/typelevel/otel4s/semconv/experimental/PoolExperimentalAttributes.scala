@@ -22,9 +22,10 @@ import org.typelevel.otel4s.AttributeKey._
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/semantic-convention/templates/SemanticAttributes.scala.j2
 object PoolExperimentalAttributes {
 
-  /** Deprecated, use `db.client.connections.pool.name` instead.
-    */
-  @deprecated("Use `db.client.connections.pool.name` instead", "0.5.0")
+  /**
+  * Deprecated, use `db.client.connection.pool.name` instead.
+  */
+  @deprecated("Use `db.client.connection.pool.name` instead", "0.5.0")
   val PoolName: AttributeKey[String] = string("pool.name")
 
 }

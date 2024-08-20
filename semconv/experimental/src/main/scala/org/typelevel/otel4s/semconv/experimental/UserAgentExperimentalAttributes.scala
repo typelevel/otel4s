@@ -22,40 +22,26 @@ import org.typelevel.otel4s.AttributeKey._
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/semantic-convention/templates/SemanticAttributes.scala.j2
 object UserAgentExperimentalAttributes {
 
-  /** Name of the user-agent extracted from original. Usually refers to the
-    * browser's name.
-    *
-    * @note
-    *   - <a href="https://www.whatsmyua.info">Example</a> of extracting
-    *     browser's name from original string. In the case of using a user-agent
-    *     for non-browser products, such as microservices with multiple
-    *     names/versions inside the `user_agent.original`, the most significant
-    *     name SHOULD be selected. In such a scenario it should align with
-    *     `user_agent.version`
-    */
+  /**
+  * Name of the user-agent extracted from original. Usually refers to the browser's name.
+  *
+  * @note 
+  *  - <a href="https://www.whatsmyua.info">Example</a> of extracting browser's name from original string. In the case of using a user-agent for non-browser products, such as microservices with multiple names/versions inside the `user_agent.original`, the most significant name SHOULD be selected. In such a scenario it should align with `user_agent.version`
+  */
   val UserAgentName: AttributeKey[String] = string("user_agent.name")
 
-  /** Value of the <a
-    * href="https://www.rfc-editor.org/rfc/rfc9110.html#field.user-agent">HTTP
-    * User-Agent</a> header sent by the client.
-    */
-  @deprecated(
-    "use `org.typelevel.otel4s.semconv.attributes.UserAgentAttributes.UserAgentOriginal` instead.",
-    "0.5.0"
-  )
+  /**
+  * Value of the <a href="https://www.rfc-editor.org/rfc/rfc9110.html#field.user-agent">HTTP User-Agent</a> header sent by the client.
+  */
+  @deprecated("use `org.typelevel.otel4s.semconv.attributes.UserAgentAttributes.UserAgentOriginal` instead.", "0.5.0")
   val UserAgentOriginal: AttributeKey[String] = string("user_agent.original")
 
-  /** Version of the user-agent extracted from original. Usually refers to the
-    * browser's version
-    *
-    * @note
-    *   - <a href="https://www.whatsmyua.info">Example</a> of extracting
-    *     browser's version from original string. In the case of using a
-    *     user-agent for non-browser products, such as microservices with
-    *     multiple names/versions inside the `user_agent.original`, the most
-    *     significant version SHOULD be selected. In such a scenario it should
-    *     align with `user_agent.name`
-    */
+  /**
+  * Version of the user-agent extracted from original. Usually refers to the browser's version
+  *
+  * @note 
+  *  - <a href="https://www.whatsmyua.info">Example</a> of extracting browser's version from original string. In the case of using a user-agent for non-browser products, such as microservices with multiple names/versions inside the `user_agent.original`, the most significant version SHOULD be selected. In such a scenario it should align with `user_agent.name`
+  */
   val UserAgentVersion: AttributeKey[String] = string("user_agent.version")
 
 }

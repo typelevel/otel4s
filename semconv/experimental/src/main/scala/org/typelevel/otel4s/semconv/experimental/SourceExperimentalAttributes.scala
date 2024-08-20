@@ -22,19 +22,17 @@ import org.typelevel.otel4s.AttributeKey._
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/semantic-convention/templates/SemanticAttributes.scala.j2
 object SourceExperimentalAttributes {
 
-  /** Source address - domain name if available without reverse DNS lookup;
-    * otherwise, IP address or Unix domain socket name.
-    *
-    * @note
-    *   - When observed from the destination side, and when communicating
-    *     through an intermediary, `source.address` SHOULD represent the source
-    *     address behind any intermediaries, for example proxies, if it's
-    *     available.
-    */
+  /**
+  * Source address - domain name if available without reverse DNS lookup; otherwise, IP address or Unix domain socket name.
+  *
+  * @note 
+  *  - When observed from the destination side, and when communicating through an intermediary, `source.address` SHOULD represent the source address behind any intermediaries, for example proxies, if it's available.
+  */
   val SourceAddress: AttributeKey[String] = string("source.address")
 
-  /** Source port number
-    */
+  /**
+  * Source port number
+  */
   val SourcePort: AttributeKey[Long] = long("source.port")
 
 }

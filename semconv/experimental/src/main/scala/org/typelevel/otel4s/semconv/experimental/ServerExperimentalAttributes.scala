@@ -22,31 +22,22 @@ import org.typelevel.otel4s.AttributeKey._
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/semantic-convention/templates/SemanticAttributes.scala.j2
 object ServerExperimentalAttributes {
 
-  /** Server domain name if available without reverse DNS lookup; otherwise, IP
-    * address or Unix domain socket name.
-    *
-    * @note
-    *   - When observed from the client side, and when communicating through an
-    *     intermediary, `server.address` SHOULD represent the server address
-    *     behind any intermediaries, for example proxies, if it's available.
-    */
-  @deprecated(
-    "use `org.typelevel.otel4s.semconv.attributes.ServerAttributes.ServerAddress` instead.",
-    "0.5.0"
-  )
+  /**
+  * Server domain name if available without reverse DNS lookup; otherwise, IP address or Unix domain socket name.
+  *
+  * @note 
+  *  - When observed from the client side, and when communicating through an intermediary, `server.address` SHOULD represent the server address behind any intermediaries, for example proxies, if it's available.
+  */
+  @deprecated("use `org.typelevel.otel4s.semconv.attributes.ServerAttributes.ServerAddress` instead.", "0.5.0")
   val ServerAddress: AttributeKey[String] = string("server.address")
 
-  /** Server port number.
-    *
-    * @note
-    *   - When observed from the client side, and when communicating through an
-    *     intermediary, `server.port` SHOULD represent the server port behind
-    *     any intermediaries, for example proxies, if it's available.
-    */
-  @deprecated(
-    "use `org.typelevel.otel4s.semconv.attributes.ServerAttributes.ServerPort` instead.",
-    "0.5.0"
-  )
+  /**
+  * Server port number.
+  *
+  * @note 
+  *  - When observed from the client side, and when communicating through an intermediary, `server.port` SHOULD represent the server port behind any intermediaries, for example proxies, if it's available.
+  */
+  @deprecated("use `org.typelevel.otel4s.semconv.attributes.ServerAttributes.ServerPort` instead.", "0.5.0")
   val ServerPort: AttributeKey[Long] = long("server.port")
 
 }

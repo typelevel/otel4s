@@ -22,20 +22,19 @@ import org.typelevel.otel4s.AttributeKey._
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/semantic-convention/templates/SemanticAttributes.scala.j2
 object HerokuExperimentalAttributes {
 
-  /** Unique identifier for the application
-    */
+  /**
+  * Unique identifier for the application
+  */
   val HerokuAppId: AttributeKey[String] = string("heroku.app.id")
 
-  /** Commit hash for the current release
-    */
-  val HerokuReleaseCommit: AttributeKey[String] = string(
-    "heroku.release.commit"
-  )
+  /**
+  * Commit hash for the current release
+  */
+  val HerokuReleaseCommit: AttributeKey[String] = string("heroku.release.commit")
 
-  /** Time and date the release was created
-    */
-  val HerokuReleaseCreationTimestamp: AttributeKey[String] = string(
-    "heroku.release.creation_timestamp"
-  )
+  /**
+  * Time and date the release was created
+  */
+  val HerokuReleaseCreationTimestamp: AttributeKey[String] = string("heroku.release.creation_timestamp")
 
 }

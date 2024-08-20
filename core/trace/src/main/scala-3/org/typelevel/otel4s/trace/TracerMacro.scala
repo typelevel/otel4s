@@ -18,7 +18,6 @@ package org.typelevel.otel4s
 package trace
 
 import scala.collection.immutable
-import scala.quoted.*
 
 private[otel4s] trait TracerMacro[F[_]] {
   self: Tracer[F] =>
@@ -59,7 +58,7 @@ private[otel4s] trait TracerMacro[F[_]] {
       inline name: String,
       inline attributes: Attribute[_]*
   ): SpanOps[F] =
-    ${ TracerMacro.span('self, 'name, 'attributes) }
+    spanBuilder(name).addAttributes(attributes).build
 
   /** Creates a new child span. The span is automatically attached to a parent
     * span (based on the scope).
@@ -97,7 +96,7 @@ private[otel4s] trait TracerMacro[F[_]] {
       inline name: String,
       inline attributes: immutable.Iterable[Attribute[_]]
   ): SpanOps[F] =
-    ${ TracerMacro.span('self, 'name, 'attributes) }
+    spanBuilder(name).addAttributes(attributes).build
 
   /** Creates a new root span. Even if a parent span is available in the scope,
     * the span is created without a parent.
@@ -118,7 +117,7 @@ private[otel4s] trait TracerMacro[F[_]] {
       inline name: String,
       inline attributes: Attribute[_]*
   ): SpanOps[F] =
-    ${ TracerMacro.rootSpan('self, 'name, 'attributes) }
+    spanBuilder(name).addAttributes(attributes).root.build
 
   /** Creates a new root span. Even if a parent span is available in the scope,
     * the span is created without a parent.
@@ -139,32 +138,6 @@ private[otel4s] trait TracerMacro[F[_]] {
       inline name: String,
       inline attributes: immutable.Iterable[Attribute[_]]
   ): SpanOps[F] =
-    ${ TracerMacro.rootSpan('self, 'name, 'attributes) }
-
-}
-
-object TracerMacro {
-
-  def span[F[_]](
-      tracer: Expr[Tracer[F]],
-      name: Expr[String],
-      attributes: Expr[immutable.Iterable[Attribute[_]]]
-  )(using Quotes, Type[F]) =
-    '{
-      if ($tracer.meta.isEnabled)
-        $tracer.spanBuilder($name).addAttributes($attributes).build
-      else $tracer.meta.noopSpanBuilder.build
-    }
-
-  def rootSpan[F[_]](
-      tracer: Expr[Tracer[F]],
-      name: Expr[String],
-      attributes: Expr[immutable.Iterable[Attribute[_]]]
-  )(using Quotes, Type[F]) =
-    '{
-      if ($tracer.meta.isEnabled)
-        $tracer.spanBuilder($name).root.addAttributes($attributes).build
-      else $tracer.meta.noopSpanBuilder.build
-    }
+    spanBuilder(name).addAttributes(attributes).root.build
 
 }

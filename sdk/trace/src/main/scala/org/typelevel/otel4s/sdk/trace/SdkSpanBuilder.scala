@@ -26,6 +26,7 @@ import cats.syntax.flatMap._
 import cats.syntax.foldable._
 import cats.syntax.functor._
 import cats.~>
+import org.typelevel.otel4s.meta.InstrumentMeta
 import org.typelevel.otel4s.sdk.common.InstrumentationScope
 import org.typelevel.otel4s.sdk.context.Context
 import org.typelevel.otel4s.sdk.trace.data.LimitedData
@@ -42,65 +43,19 @@ import org.typelevel.otel4s.trace.TraceScope
 import org.typelevel.otel4s.trace.TraceState
 import scodec.bits.ByteVector
 
-import scala.collection.immutable
-import scala.concurrent.duration.FiniteDuration
-
 private final case class SdkSpanBuilder[F[_]: Temporal: Console] private (
     name: String,
     scopeInfo: InstrumentationScope,
+    state: SpanBuilder.State,
     tracerSharedState: TracerSharedState[F],
-    scope: TraceScope[F, Context],
-    links: LimitedData[LinkData, Vector[LinkData]],
-    attributes: LimitedData[Attribute[_], Attributes],
-    parent: SdkSpanBuilder.Parent,
-    finalizationStrategy: SpanFinalizer.Strategy,
-    kind: Option[SpanKind],
-    startTimestamp: Option[FiniteDuration]
+    scope: TraceScope[F, Context]
 ) extends SpanBuilder[F] {
-  import SdkSpanBuilder._
+  import SpanBuilder.Parent
 
-  def withSpanKind(spanKind: SpanKind): SpanBuilder[F] =
-    copy(kind = Some(spanKind))
+  val meta: InstrumentMeta[F] = InstrumentMeta.enabled[F]
 
-  def addAttribute[A](attribute: Attribute[A]): SpanBuilder[F] =
-    copy(attributes = attributes.append(attribute))
-
-  def addAttributes(
-      attributes: immutable.Iterable[Attribute[_]]
-  ): SpanBuilder[F] =
-    copy(attributes = this.attributes.appendAll(attributes.to(Attributes)))
-
-  def addLink(
-      spanContext: SpanContext,
-      attributes: immutable.Iterable[Attribute[_]]
-  ): SpanBuilder[F] =
-    copy(links =
-      links.append(
-        LinkData(
-          spanContext,
-          LimitedData
-            .attributes(
-              tracerSharedState.spanLimits.maxNumberOfAttributesPerLink,
-              tracerSharedState.spanLimits.maxAttributeValueLength
-            )
-            .appendAll(attributes.to(Attributes))
-        )
-      )
-    )
-
-  def root: SpanBuilder[F] =
-    copy(parent = Parent.Root)
-
-  def withParent(parent: SpanContext): SpanBuilder[F] =
-    copy(parent = Parent.Explicit(parent))
-
-  def withStartTimestamp(timestamp: FiniteDuration): SpanBuilder[F] =
-    copy(startTimestamp = Some(timestamp))
-
-  def withFinalizationStrategy(
-      strategy: SpanFinalizer.Strategy
-  ): SpanBuilder[F] =
-    copy(finalizationStrategy = strategy)
+  def modifyState(f: SpanBuilder.State => SpanBuilder.State): SpanBuilder[F] =
+    copy(state = f(state))
 
   def build: SpanOps[F] = new SpanOps[F] {
     def startUnmanaged: F[Span[F]] =
@@ -135,7 +90,7 @@ private final case class SdkSpanBuilder[F[_]: Temporal: Console] private (
 
     def release(backend: Span.Backend[F], ec: Resource.ExitCase): F[Unit] =
       for {
-        _ <- finalizationStrategy
+        _ <- state.finalizationStrategy
           .lift(ec)
           .foldMapM(SpanFinalizer.run(backend, _))
         _ <- backend.end
@@ -149,7 +104,29 @@ private final case class SdkSpanBuilder[F[_]: Temporal: Console] private (
 
   private def start: F[Span.Backend[F]] = {
     val idGenerator = tracerSharedState.idGenerator
-    val spanKind = kind.getOrElse(SpanKind.Internal)
+    val spanKind = state.spanKind.getOrElse(SpanKind.Internal)
+
+    val attributes = LimitedData
+      .attributes(
+        tracerSharedState.spanLimits.maxNumberOfAttributes,
+        tracerSharedState.spanLimits.maxAttributeValueLength
+      )
+      .appendAll(state.attributes)
+
+    val links = {
+      val linkAttributeLimits = LimitedData.attributes(
+        tracerSharedState.spanLimits.maxNumberOfAttributesPerLink,
+        tracerSharedState.spanLimits.maxAttributeValueLength
+      )
+
+      val links = state.links.map { case (ctx, attributes) =>
+        LinkData(ctx, linkAttributeLimits.appendAll(attributes))
+      }
+
+      LimitedData
+        .links(tracerSharedState.spanLimits.maxNumberOfLinks)
+        .appendAll(links)
+    }
 
     def genTraceId(parent: Option[SpanContext]): F[ByteVector] =
       parent
@@ -205,7 +182,7 @@ private final case class SdkSpanBuilder[F[_]: Temporal: Console] private (
               processor = tracerSharedState.spanProcessor,
               attributes = attributes.appendAll(samplingResult.attributes),
               links = links,
-              userStartTimestamp = startTimestamp
+              userStartTimestamp = state.startTimestamp
             )
             .widen
         }
@@ -214,7 +191,7 @@ private final case class SdkSpanBuilder[F[_]: Temporal: Console] private (
   }
 
   private def chooseParentSpanContext: F[Option[SpanContext]] =
-    parent match {
+    state.parent match {
       case Parent.Root             => Temporal[F].pure(None)
       case Parent.Propagate        => scope.current
       case Parent.Explicit(parent) => Temporal[F].pure(Some(parent))
@@ -243,42 +220,18 @@ private final case class SdkSpanBuilder[F[_]: Temporal: Console] private (
 
 private object SdkSpanBuilder {
 
-  sealed trait Parent
-  object Parent {
-    case object Propagate extends Parent
-    case object Root extends Parent
-    final case class Explicit(parent: SpanContext) extends Parent
-  }
-
   def apply[F[_]: Temporal: Console](
       name: String,
       scopeInfo: InstrumentationScope,
       tracerSharedState: TracerSharedState[F],
-      scope: TraceScope[F, Context],
-      parent: SdkSpanBuilder.Parent = SdkSpanBuilder.Parent.Propagate,
-      finalizationStrategy: SpanFinalizer.Strategy =
-        SpanFinalizer.Strategy.reportAbnormal,
-      kind: Option[SpanKind] = None,
-      startTimestamp: Option[FiniteDuration] = None
-  ): SdkSpanBuilder[F] = {
-    val links = LimitedData.links(tracerSharedState.spanLimits.maxNumberOfLinks)
-    val attributes =
-      LimitedData.attributes(
-        tracerSharedState.spanLimits.maxNumberOfAttributes,
-        tracerSharedState.spanLimits.maxAttributeValueLength
-      )
-
-    new SdkSpanBuilder[F](
+      scope: TraceScope[F, Context]
+  ): SdkSpanBuilder[F] =
+    SdkSpanBuilder(
       name,
       scopeInfo,
+      SpanBuilder.State.init,
       tracerSharedState,
-      scope,
-      links,
-      attributes,
-      parent,
-      finalizationStrategy,
-      kind,
-      startTimestamp
+      scope
     )
-  }
+
 }

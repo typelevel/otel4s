@@ -25,6 +25,7 @@ import cats.syntax.functor._
 import org.typelevel.otel4s.context.propagation.ContextPropagators
 import org.typelevel.otel4s.context.propagation.TextMapGetter
 import org.typelevel.otel4s.context.propagation.TextMapUpdater
+import org.typelevel.otel4s.meta.InstrumentMeta
 import org.typelevel.otel4s.sdk.common.InstrumentationScope
 import org.typelevel.otel4s.sdk.context.Context
 import org.typelevel.otel4s.sdk.trace.processor.SpanStorage
@@ -42,7 +43,7 @@ private final class SdkTracer[F[_]: Temporal: Console] private[trace] (
     storage: SpanStorage[F]
 ) extends Tracer[F] {
 
-  val meta: Tracer.Meta[F] = Tracer.Meta.enabled[F]
+  val meta: InstrumentMeta[F] = InstrumentMeta.enabled[F]
 
   def currentSpanContext: F[Option[SpanContext]] =
     traceScope.current.map(current => current.filter(_.isValid))

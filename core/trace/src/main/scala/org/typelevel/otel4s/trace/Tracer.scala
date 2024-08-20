@@ -45,7 +45,7 @@ trait Tracer[F[_]] extends TracerMacro[F] {
   /** The instrument's metadata. Indicates whether instrumentation is enabled or
     * not.
     */
-  def meta: Tracer.Meta[F]
+  def meta: InstrumentMeta[F]
 
   /** Returns the context of the current span when a span that is not no-op
     * exists in the local scope.
@@ -224,46 +224,6 @@ object Tracer {
 
   def apply[F[_]](implicit ev: Tracer[F]): Tracer[F] = ev
 
-  trait Meta[F[_]] extends InstrumentMeta[F] {
-    def noopSpanBuilder: SpanBuilder[F]
-
-    /** Modify the context `F` using an implicit [[KindTransformer]] from `F` to
-      * `G`.
-      */
-    def mapK[G[_]: MonadCancelThrow](implicit
-        F: MonadCancelThrow[F],
-        kt: KindTransformer[F, G]
-    ): Meta[G] =
-      new Meta.MappedK(this)
-  }
-
-  object Meta {
-
-    def enabled[F[_]: Applicative]: Meta[F] = make(true)
-    def disabled[F[_]: Applicative]: Meta[F] = make(false)
-
-    private def make[F[_]: Applicative](enabled: Boolean): Meta[F] =
-      new Meta[F] {
-        private val noopBackend = Span.Backend.noop[F]
-
-        val isEnabled: Boolean = enabled
-        val unit: F[Unit] = Applicative[F].unit
-        val noopSpanBuilder: SpanBuilder[F] =
-          SpanBuilder.noop(noopBackend)
-      }
-
-    /** Implementation for [[Meta.mapK]]. */
-    private class MappedK[F[_]: MonadCancelThrow, G[_]: MonadCancelThrow](
-        meta: Meta[F]
-    )(implicit kt: KindTransformer[F, G])
-        extends Meta[G] {
-      def noopSpanBuilder: SpanBuilder[G] =
-        meta.noopSpanBuilder.mapK[G]
-      def isEnabled: Boolean = meta.isEnabled
-      def unit: G[Unit] = kt.liftK(meta.unit)
-    }
-  }
-
   /** Creates a no-op implementation of the [[Tracer]].
     *
     * All tracing operations are no-op.
@@ -275,7 +235,7 @@ object Tracer {
     new Tracer[F] {
       private val noopBackend = Span.Backend.noop
       private val builder = SpanBuilder.noop(noopBackend)
-      val meta: Meta[F] = Meta.disabled
+      val meta: InstrumentMeta[F] = InstrumentMeta.disabled
       val currentSpanContext: F[Option[SpanContext]] = Applicative[F].pure(None)
       val currentSpanOrNoop: F[Span[F]] =
         Applicative[F].pure(Span.fromBackend(noopBackend))
@@ -294,7 +254,7 @@ object Tracer {
       tracer: Tracer[F]
   )(implicit kt: KindTransformer[F, G])
       extends Tracer[G] {
-    def meta: Meta[G] = tracer.meta.mapK[G]
+    def meta: InstrumentMeta[G] = tracer.meta.mapK[G]
     def currentSpanContext: G[Option[SpanContext]] =
       kt.liftK(tracer.currentSpanContext)
     def currentSpanOrNoop: G[Span[G]] =

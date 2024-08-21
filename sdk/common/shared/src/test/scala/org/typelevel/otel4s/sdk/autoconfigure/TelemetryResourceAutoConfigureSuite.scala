@@ -20,6 +20,7 @@ package autoconfigure
 
 import cats.effect.IO
 import munit.CatsEffectSuite
+import munit.internal.PlatformCompat
 import org.typelevel.otel4s.sdk.resource.TelemetryResourceDetector
 
 class TelemetryResourceAutoConfigureSuite extends CatsEffectSuite {
@@ -70,6 +71,15 @@ class TelemetryResourceAutoConfigureSuite extends CatsEffectSuite {
         val host = Set("host.arch", "host.name")
         val os = Set("os.type", "os.description")
 
+        val runtime = {
+          val name = "process.runtime.name"
+          val version = "process.runtime.version"
+          val description = "process.runtime.description"
+
+          if (PlatformCompat.isNative) Set(name, description)
+          else Set(name, version, description)
+        }
+
         val telemetry = Set(
           "telemetry.sdk.language",
           "telemetry.sdk.name",
@@ -77,7 +87,7 @@ class TelemetryResourceAutoConfigureSuite extends CatsEffectSuite {
         )
 
         val all =
-          host ++ os ++ service ++ telemetry
+          host ++ os ++ runtime ++ service ++ telemetry
 
         IO(assertEquals(resource.attributes.map(_.key.name).toSet, all))
       }

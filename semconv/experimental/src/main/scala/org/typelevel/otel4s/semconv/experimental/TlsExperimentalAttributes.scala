@@ -91,9 +91,9 @@ object TlsExperimentalAttributes {
     */
   val TlsClientNotBefore: AttributeKey[String] = string("tls.client.not_before")
 
-  /** Also called an SNI, this tells the server which hostname to which the
-    * client is attempting to connect to.
+  /** Deprecated, use `server.address` instead.
     */
+  @deprecated("Use `server.address` instead", "0.5.0")
   val TlsClientServerName: AttributeKey[String] = string(
     "tls.client.server_name"
   )

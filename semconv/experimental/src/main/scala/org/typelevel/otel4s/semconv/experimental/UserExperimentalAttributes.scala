@@ -20,11 +20,34 @@ import org.typelevel.otel4s.AttributeKey
 import org.typelevel.otel4s.AttributeKey._
 
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/semantic-convention/templates/SemanticAttributes.scala.j2
-object PoolExperimentalAttributes {
+object UserExperimentalAttributes {
 
-  /** Deprecated, use `db.client.connection.pool.name` instead.
+  /** User email address.
     */
-  @deprecated("Use `db.client.connection.pool.name` instead", "0.5.0")
-  val PoolName: AttributeKey[String] = string("pool.name")
+  val UserEmail: AttributeKey[String] = string("user.email")
+
+  /** User's full name
+    */
+  val UserFullName: AttributeKey[String] = string("user.full_name")
+
+  /** Unique user hash to correlate information for a user in anonymized form.
+    *
+    * @note
+    *   - Useful if `user.id` or `user.name` contain confidential information
+    *     and cannot be used.
+    */
+  val UserHash: AttributeKey[String] = string("user.hash")
+
+  /** Unique identifier of the user.
+    */
+  val UserId: AttributeKey[String] = string("user.id")
+
+  /** Short name or login/username of the user.
+    */
+  val UserName: AttributeKey[String] = string("user.name")
+
+  /** Array of user roles at the time of the event.
+    */
+  val UserRoles: AttributeKey[Seq[String]] = stringSeq("user.roles")
 
 }

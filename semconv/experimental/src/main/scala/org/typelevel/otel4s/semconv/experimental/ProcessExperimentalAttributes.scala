@@ -53,8 +53,9 @@ object ProcessExperimentalAttributes {
     "process.context_switch_type"
   )
 
-  /** The CPU state of the process.
+  /** Deprecated, use `cpu.mode` instead.
     */
+  @deprecated("Use `cpu.mode` instead", "0.5.0")
   val ProcessCpuState: AttributeKey[String] = string("process.cpu.state")
 
   /** The date and time the process was created, in ISO 8601 format.
@@ -134,8 +135,7 @@ object ProcessExperimentalAttributes {
     "process.runtime.description"
   )
 
-  /** The name of the runtime of this process. For compiled native binaries,
-    * this SHOULD be the name of the compiler.
+  /** The name of the runtime of this process.
     */
   val ProcessRuntimeName: AttributeKey[String] = string("process.runtime.name")
 
@@ -195,7 +195,9 @@ object ProcessExperimentalAttributes {
 
   /** Values for [[ProcessCpuState]].
     */
+  @deprecated("Use `cpu.mode` instead", "0.5.0")
   abstract class ProcessCpuStateValue(val value: String)
+  @annotation.nowarn("cat=deprecation")
   object ProcessCpuStateValue {
 
     /** system. */

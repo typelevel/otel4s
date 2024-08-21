@@ -40,6 +40,17 @@ object MessagingExperimentalAttributes {
     */
   val MessagingClientId: AttributeKey[String] = string("messaging.client.id")
 
+  /** The name of the consumer group with which a consumer is associated.
+    *
+    * @note
+    *   - Semantic conventions for individual messaging systems SHOULD document
+    *     whether `messaging.consumer.group.name` is applicable and what it
+    *     means in the context of that system.
+    */
+  val MessagingConsumerGroupName: AttributeKey[String] = string(
+    "messaging.consumer.group.name"
+  )
+
   /** A boolean that is true if the message destination is anonymous (could be
     * unnamed or have auto-generated name).
     */
@@ -65,6 +76,17 @@ object MessagingExperimentalAttributes {
     "messaging.destination.partition.id"
   )
 
+  /** The name of the destination subscription from which a message is consumed.
+    *
+    * @note
+    *   - Semantic conventions for individual messaging systems SHOULD document
+    *     whether `messaging.destination.subscription.name` is applicable and
+    *     what it means in the context of that system.
+    */
+  val MessagingDestinationSubscriptionName: AttributeKey[String] = string(
+    "messaging.destination.subscription.name"
+  )
+
   /** Low cardinality representation of the messaging destination name
     *
     * @note
@@ -85,26 +107,23 @@ object MessagingExperimentalAttributes {
     "messaging.destination.temporary"
   )
 
-  /** A boolean that is true if the publish message destination is anonymous
-    * (could be unnamed or have auto-generated name).
+  /** Deprecated, no replacement at this time.
     */
+  @deprecated("No replacement at this time", "0.5.0")
   val MessagingDestinationPublishAnonymous: AttributeKey[Boolean] = boolean(
     "messaging.destination_publish.anonymous"
   )
 
-  /** The name of the original destination the message was published to
-    *
-    * @note
-    *   - The name SHOULD uniquely identify a specific queue, topic, or other
-    *     entity within the broker. If the broker doesn't have such notion, the
-    *     original destination name SHOULD uniquely identify the broker.
+  /** Deprecated, no replacement at this time.
     */
+  @deprecated("No replacement at this time", "0.5.0")
   val MessagingDestinationPublishName: AttributeKey[String] = string(
     "messaging.destination_publish.name"
   )
 
-  /** The name of the consumer group the event consumer is associated with.
+  /** Deprecated, use `messaging.consumer.group.name` instead.
     */
+  @deprecated("Use `messaging.consumer.group.name` instead", "0.5.0")
   val MessagingEventhubsConsumerGroup: AttributeKey[String] = string(
     "messaging.eventhubs.consumer.group"
   )
@@ -141,9 +160,9 @@ object MessagingExperimentalAttributes {
     "messaging.gcp_pubsub.message.ordering_key"
   )
 
-  /** Name of the Kafka Consumer Group that is handling the message. Only
-    * applies to consumers, not producers.
+  /** Deprecated, use `messaging.consumer.group.name` instead.
     */
+  @deprecated("Use `messaging.consumer.group.name` instead", "0.5.0")
   val MessagingKafkaConsumerGroup: AttributeKey[String] = string(
     "messaging.kafka.consumer.group"
   )
@@ -169,8 +188,9 @@ object MessagingExperimentalAttributes {
     "messaging.kafka.message.key"
   )
 
-  /** The offset of a record in the corresponding Kafka partition.
+  /** Deprecated, use `messaging.kafka.offset` instead.
     */
+  @deprecated("Use `messaging.kafka.offset` instead", "0.5.0")
   val MessagingKafkaMessageOffset: AttributeKey[Long] = long(
     "messaging.kafka.message.offset"
   )
@@ -180,6 +200,10 @@ object MessagingExperimentalAttributes {
   val MessagingKafkaMessageTombstone: AttributeKey[Boolean] = boolean(
     "messaging.kafka.message.tombstone"
   )
+
+  /** The offset of a record in the corresponding Kafka partition.
+    */
+  val MessagingKafkaOffset: AttributeKey[Long] = long("messaging.kafka.offset")
 
   /** The size of the message body in bytes.
     *
@@ -246,9 +270,9 @@ object MessagingExperimentalAttributes {
     "messaging.rabbitmq.message.delivery_tag"
   )
 
-  /** Name of the RocketMQ producer/consumer group that is handling the message.
-    * The client type is identified by the SpanKind.
+  /** Deprecated, use `messaging.consumer.group.name` instead.
     */
+  @deprecated("Use `messaging.consumer.group.name` instead", "0.5.0")
   val MessagingRocketmqClientGroup: AttributeKey[String] = string(
     "messaging.rocketmq.client_group"
   )
@@ -305,10 +329,17 @@ object MessagingExperimentalAttributes {
     "messaging.rocketmq.namespace"
   )
 
-  /** The name of the subscription in the topic messages are received from.
+  /** Deprecated, use `messaging.servicebus.destination.subscription_name`
+    * instead.
     */
+  @deprecated(
+    "Use `messaging.servicebus.destination.subscription_name` instead",
+    "0.5.0"
+  )
   val MessagingServicebusDestinationSubscriptionName: AttributeKey[String] =
-    string("messaging.servicebus.destination.subscription_name")
+    string(
+      "messaging.servicebus.destination.subscription_name"
+    )
 
   /** Describes the <a
     * href="https://learn.microsoft.com/azure/service-bus-messaging/message-transfers-locks-settlement#peeklock">settlement
@@ -366,11 +397,14 @@ object MessagingExperimentalAttributes {
       */
     case object Receive extends MessagingOperationTypeValue("receive")
 
-    /** One or more messages are delivered to or processed by a consumer. */
-    case object Deliver extends MessagingOperationTypeValue("process")
+    /** One or more messages are processed by a consumer. */
+    case object Process extends MessagingOperationTypeValue("process")
 
     /** One or more messages are settled. */
     case object Settle extends MessagingOperationTypeValue("settle")
+
+    /** Deprecated. Use `process` instead. */
+    case object Deliver extends MessagingOperationTypeValue("deliver")
   }
 
   /** Values for [[MessagingRocketmqConsumptionModel]].
@@ -461,6 +495,9 @@ object MessagingExperimentalAttributes {
 
     /** Apache RocketMQ. */
     case object Rocketmq extends MessagingSystemValue("rocketmq")
+
+    /** Apache Pulsar. */
+    case object Pulsar extends MessagingSystemValue("pulsar")
   }
 
 }

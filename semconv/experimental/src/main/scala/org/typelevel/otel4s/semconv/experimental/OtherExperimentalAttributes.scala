@@ -22,15 +22,15 @@ import org.typelevel.otel4s.AttributeKey._
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/semantic-convention/templates/SemanticAttributes.scala.j2
 object OtherExperimentalAttributes {
 
-  /** Deprecated, use `db.client.connections.state` instead.
+  /** Deprecated, use `db.client.connection.state` instead.
     */
-  @deprecated("Use `db.client.connections.state` instead", "0.5.0")
+  @deprecated("Use `db.client.connection.state` instead", "0.5.0")
   val State: AttributeKey[String] = string("state")
   // Enum definitions
 
   /** Values for [[State]].
     */
-  @deprecated("Use `db.client.connections.state` instead", "0.5.0")
+  @deprecated("Use `db.client.connection.state` instead", "0.5.0")
   abstract class StateValue(val value: String)
   @annotation.nowarn("cat=deprecation")
   object StateValue {

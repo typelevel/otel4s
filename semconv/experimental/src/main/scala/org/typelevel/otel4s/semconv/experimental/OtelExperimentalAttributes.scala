@@ -22,14 +22,12 @@ import org.typelevel.otel4s.AttributeKey._
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/semantic-convention/templates/SemanticAttributes.scala.j2
 object OtelExperimentalAttributes {
 
-  /** None
-    */
-  @deprecated("None", "0.5.0")
+  /** */
+  @deprecated("", "0.5.0")
   val OtelLibraryName: AttributeKey[String] = string("otel.library.name")
 
-  /** None
-    */
-  @deprecated("None", "0.5.0")
+  /** */
+  @deprecated("", "0.5.0")
   val OtelLibraryVersion: AttributeKey[String] = string("otel.library.version")
 
   /** The name of the instrumentation scope - (`InstrumentationScope.Name` in

@@ -20,11 +20,41 @@ import org.typelevel.otel4s.AttributeKey
 import org.typelevel.otel4s.AttributeKey._
 
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/semantic-convention/templates/SemanticAttributes.scala.j2
-object PoolExperimentalAttributes {
+object CpuExperimentalAttributes {
 
-  /** Deprecated, use `db.client.connection.pool.name` instead.
+  /** The mode of the CPU
     */
-  @deprecated("Use `db.client.connection.pool.name` instead", "0.5.0")
-  val PoolName: AttributeKey[String] = string("pool.name")
+  val CpuMode: AttributeKey[String] = string("cpu.mode")
+  // Enum definitions
+
+  /** Values for [[CpuMode]].
+    */
+  abstract class CpuModeValue(val value: String)
+  object CpuModeValue {
+
+    /** user. */
+    case object User extends CpuModeValue("user")
+
+    /** system. */
+    case object System extends CpuModeValue("system")
+
+    /** nice. */
+    case object Nice extends CpuModeValue("nice")
+
+    /** idle. */
+    case object Idle extends CpuModeValue("idle")
+
+    /** iowait. */
+    case object Iowait extends CpuModeValue("iowait")
+
+    /** interrupt. */
+    case object Interrupt extends CpuModeValue("interrupt")
+
+    /** steal. */
+    case object Steal extends CpuModeValue("steal")
+
+    /** kernel. */
+    case object Kernel extends CpuModeValue("kernel")
+  }
 
 }

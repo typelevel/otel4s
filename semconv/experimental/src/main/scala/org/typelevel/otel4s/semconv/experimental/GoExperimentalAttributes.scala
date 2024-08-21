@@ -20,11 +20,27 @@ import org.typelevel.otel4s.AttributeKey
 import org.typelevel.otel4s.AttributeKey._
 
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/semantic-convention/templates/SemanticAttributes.scala.j2
-object PoolExperimentalAttributes {
+object GoExperimentalAttributes {
 
-  /** Deprecated, use `db.client.connection.pool.name` instead.
+  /** The type of memory.
     */
-  @deprecated("Use `db.client.connection.pool.name` instead", "0.5.0")
-  val PoolName: AttributeKey[String] = string("pool.name")
+  val GoMemoryType: AttributeKey[String] = string("go.memory.type")
+  // Enum definitions
+
+  /** Values for [[GoMemoryType]].
+    */
+  abstract class GoMemoryTypeValue(val value: String)
+  object GoMemoryTypeValue {
+
+    /** Memory allocated from the heap that is reserved for stack space, whether
+      * or not it is currently in-use.
+      */
+    case object Stack extends GoMemoryTypeValue("stack")
+
+    /** Memory used by the Go runtime, excluding other categories of memory
+      * usage described in this enumeration.
+      */
+    case object Other extends GoMemoryTypeValue("other")
+  }
 
 }

@@ -44,8 +44,9 @@ object ContainerExperimentalAttributes {
     "container.command_line"
   )
 
-  /** The CPU state for this data point.
+  /** Deprecated, use `cpu.mode` instead.
     */
+  @deprecated("Use `cpu.mode` instead", "0.5.0")
   val ContainerCpuState: AttributeKey[String] = string("container.cpu.state")
 
   /** Container ID. Usually a UUID, as for example used to <a
@@ -117,7 +118,9 @@ object ContainerExperimentalAttributes {
 
   /** Values for [[ContainerCpuState]].
     */
+  @deprecated("Use `cpu.mode` instead", "0.5.0")
   abstract class ContainerCpuStateValue(val value: String)
+  @annotation.nowarn("cat=deprecation")
   object ContainerCpuStateValue {
 
     /** When tasks of the cgroup are in user mode (Linux). When all container

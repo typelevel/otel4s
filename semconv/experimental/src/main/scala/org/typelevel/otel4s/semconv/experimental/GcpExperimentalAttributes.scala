@@ -22,6 +22,17 @@ import org.typelevel.otel4s.AttributeKey._
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/semantic-convention/templates/SemanticAttributes.scala.j2
 object GcpExperimentalAttributes {
 
+  /** Identifies the Google Cloud service for which the official client library
+    * is intended.
+    *
+    * @note
+    *   - Intended to be a stable identifier for Google Cloud client libraries
+    *     that is uniform across implementation languages. The value should be
+    *     derived from the canonical service domain for the service; for
+    *     example, 'foo.googleapis.com' should result in a value of 'foo'.
+    */
+  val GcpClientService: AttributeKey[String] = string("gcp.client.service")
+
   /** The name of the Cloud Run <a
     * href="https://cloud.google.com/run/docs/managing/job-executions">execution</a>
     * being run for the Job, as set by the <a

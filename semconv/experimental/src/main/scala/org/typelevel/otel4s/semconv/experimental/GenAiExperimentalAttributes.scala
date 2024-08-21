@@ -22,7 +22,7 @@ import org.typelevel.otel4s.AttributeKey._
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/semantic-convention/templates/SemanticAttributes.scala.j2
 object GenAiExperimentalAttributes {
 
-  /** The full response received from the LLM.
+  /** The full response received from the GenAI model.
     *
     * @note
     *   - It's RECOMMENDED to format completions as JSON string matching <a
@@ -31,7 +31,18 @@ object GenAiExperimentalAttributes {
     */
   val GenAiCompletion: AttributeKey[String] = string("gen_ai.completion")
 
-  /** The full prompt sent to an LLM.
+  /** The name of the operation being performed.
+    *
+    * @note
+    *   - If one of the predefined values applies, but specific system uses a
+    *     different name it's RECOMMENDED to document it in the semantic
+    *     conventions for specific GenAI system and use system-specific name in
+    *     the instrumentation. If a different name is not documented,
+    *     instrumentation libraries SHOULD use applicable predefined value.
+    */
+  val GenAiOperationName: AttributeKey[String] = string("gen_ai.operation.name")
+
+  /** The full prompt sent to the GenAI model.
     *
     * @note
     *   - It's RECOMMENDED to format prompts as JSON string matching <a
@@ -40,23 +51,46 @@ object GenAiExperimentalAttributes {
     */
   val GenAiPrompt: AttributeKey[String] = string("gen_ai.prompt")
 
-  /** The maximum number of tokens the LLM generates for a request.
+  /** The frequency penalty setting for the GenAI request.
+    */
+  val GenAiRequestFrequencyPenalty: AttributeKey[Double] = double(
+    "gen_ai.request.frequency_penalty"
+  )
+
+  /** The maximum number of tokens the model generates for a request.
     */
   val GenAiRequestMaxTokens: AttributeKey[Long] = long(
     "gen_ai.request.max_tokens"
   )
 
-  /** The name of the LLM a request is being made to.
+  /** The name of the GenAI model a request is being made to.
     */
   val GenAiRequestModel: AttributeKey[String] = string("gen_ai.request.model")
 
-  /** The temperature setting for the LLM request.
+  /** The presence penalty setting for the GenAI request.
+    */
+  val GenAiRequestPresencePenalty: AttributeKey[Double] = double(
+    "gen_ai.request.presence_penalty"
+  )
+
+  /** List of sequences that the model will use to stop generating further
+    * tokens.
+    */
+  val GenAiRequestStopSequences: AttributeKey[Seq[String]] = stringSeq(
+    "gen_ai.request.stop_sequences"
+  )
+
+  /** The temperature setting for the GenAI request.
     */
   val GenAiRequestTemperature: AttributeKey[Double] = double(
     "gen_ai.request.temperature"
   )
 
-  /** The top_p sampling setting for the LLM request.
+  /** The top_k sampling setting for the GenAI request.
+    */
+  val GenAiRequestTopK: AttributeKey[Double] = double("gen_ai.request.top_k")
+
+  /** The top_p sampling setting for the GenAI request.
     */
   val GenAiRequestTopP: AttributeKey[Double] = double("gen_ai.request.top_p")
 
@@ -71,32 +105,73 @@ object GenAiExperimentalAttributes {
     */
   val GenAiResponseId: AttributeKey[String] = string("gen_ai.response.id")
 
-  /** The name of the LLM a response was generated from.
+  /** The name of the model that generated the response.
     */
   val GenAiResponseModel: AttributeKey[String] = string("gen_ai.response.model")
 
-  /** The Generative AI product as identified by the client instrumentation.
+  /** The Generative AI product as identified by the client or server
+    * instrumentation.
     *
     * @note
+    *   - The `gen_ai.system` describes a family of GenAI models with specific
+    *     model identified by `gen_ai.request.model` and `gen_ai.response.model`
+    *     attributes.
     *   - The actual GenAI product may differ from the one identified by the
     *     client. For example, when using OpenAI client libraries to communicate
     *     with Mistral, the `gen_ai.system` is set to `openai` based on the
     *     instrumentation's best knowledge.
+    *   - For custom model, a custom friendly name SHOULD be used. If none of
+    *     these options apply, the `gen_ai.system` SHOULD be set to `_OTHER`.
     */
   val GenAiSystem: AttributeKey[String] = string("gen_ai.system")
 
-  /** The number of tokens used in the LLM response (completion).
+  /** The type of token being counted.
     */
+  val GenAiTokenType: AttributeKey[String] = string("gen_ai.token.type")
+
+  /** Deprecated, use `gen_ai.usage.output_tokens` instead.
+    */
+  @deprecated("Use `gen_ai.usage.output_tokens` instead", "0.5.0")
   val GenAiUsageCompletionTokens: AttributeKey[Long] = long(
     "gen_ai.usage.completion_tokens"
   )
 
-  /** The number of tokens used in the LLM prompt.
+  /** The number of tokens used in the GenAI input (prompt).
     */
+  val GenAiUsageInputTokens: AttributeKey[Long] = long(
+    "gen_ai.usage.input_tokens"
+  )
+
+  /** The number of tokens used in the GenAI response (completion).
+    */
+  val GenAiUsageOutputTokens: AttributeKey[Long] = long(
+    "gen_ai.usage.output_tokens"
+  )
+
+  /** Deprecated, use `gen_ai.usage.input_tokens` instead.
+    */
+  @deprecated("Use `gen_ai.usage.input_tokens` instead", "0.5.0")
   val GenAiUsagePromptTokens: AttributeKey[Long] = long(
     "gen_ai.usage.prompt_tokens"
   )
   // Enum definitions
+
+  /** Values for [[GenAiOperationName]].
+    */
+  abstract class GenAiOperationNameValue(val value: String)
+  object GenAiOperationNameValue {
+
+    /** Chat completion operation such as [OpenAI Chat
+      * API](https://platform.openai.com/docs/api-reference/chat).
+      */
+    case object Chat extends GenAiOperationNameValue("chat")
+
+    /** Text completions operation such as [OpenAI Completions API
+      * (Legacy)](https://platform.openai.com/docs/api-reference/completions).
+      */
+    case object TextCompletion
+        extends GenAiOperationNameValue("text_completion")
+  }
 
   /** Values for [[GenAiSystem]].
     */
@@ -105,6 +180,27 @@ object GenAiExperimentalAttributes {
 
     /** OpenAI. */
     case object Openai extends GenAiSystemValue("openai")
+
+    /** Vertex AI. */
+    case object VertexAi extends GenAiSystemValue("vertex_ai")
+
+    /** Anthropic. */
+    case object Anthropic extends GenAiSystemValue("anthropic")
+
+    /** Cohere. */
+    case object Cohere extends GenAiSystemValue("cohere")
+  }
+
+  /** Values for [[GenAiTokenType]].
+    */
+  abstract class GenAiTokenTypeValue(val value: String)
+  object GenAiTokenTypeValue {
+
+    /** Input tokens (prompt, input, etc.). */
+    case object Input extends GenAiTokenTypeValue("input")
+
+    /** Output tokens (completion, response, etc.). */
+    case object Completion extends GenAiTokenTypeValue("output")
   }
 
 }

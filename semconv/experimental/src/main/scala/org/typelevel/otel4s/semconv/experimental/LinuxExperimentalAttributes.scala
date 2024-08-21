@@ -20,11 +20,25 @@ import org.typelevel.otel4s.AttributeKey
 import org.typelevel.otel4s.AttributeKey._
 
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/semantic-convention/templates/SemanticAttributes.scala.j2
-object PoolExperimentalAttributes {
+object LinuxExperimentalAttributes {
 
-  /** Deprecated, use `db.client.connection.pool.name` instead.
+  /** The Linux Slab memory state
     */
-  @deprecated("Use `db.client.connection.pool.name` instead", "0.5.0")
-  val PoolName: AttributeKey[String] = string("pool.name")
+  val LinuxMemorySlabState: AttributeKey[String] = string(
+    "linux.memory.slab.state"
+  )
+  // Enum definitions
+
+  /** Values for [[LinuxMemorySlabState]].
+    */
+  abstract class LinuxMemorySlabStateValue(val value: String)
+  object LinuxMemorySlabStateValue {
+
+    /** reclaimable. */
+    case object Reclaimable extends LinuxMemorySlabStateValue("reclaimable")
+
+    /** unreclaimable. */
+    case object Unreclaimable extends LinuxMemorySlabStateValue("unreclaimable")
+  }
 
 }

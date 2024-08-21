@@ -66,15 +66,32 @@ object DbExperimentalAttributes {
 
   /** The name of the connection pool; unique within the instrumented
     * application. In case the connection pool implementation doesn't provide a
-    * name, instrumentation should use a combination of `server.address` and
-    * `server.port` attributes formatted as `server.address:server.port`.
+    * name, instrumentation SHOULD use a combination of parameters that would
+    * make the name unique, for example, combining attributes `server.address`,
+    * `server.port`, and `db.namespace`, formatted as
+    * `server.address:server.port/db.namespace`. Instrumentations that generate
+    * connection pool name following different patterns SHOULD document it.
     */
-  val DbClientConnectionsPoolName: AttributeKey[String] = string(
-    "db.client.connections.pool.name"
+  val DbClientConnectionPoolName: AttributeKey[String] = string(
+    "db.client.connection.pool.name"
   )
 
   /** The state of a connection in the pool
     */
+  val DbClientConnectionState: AttributeKey[String] = string(
+    "db.client.connection.state"
+  )
+
+  /** Deprecated, use `db.client.connection.pool.name` instead.
+    */
+  @deprecated("Use `db.client.connection.pool.name` instead", "0.5.0")
+  val DbClientConnectionsPoolName: AttributeKey[String] = string(
+    "db.client.connections.pool.name"
+  )
+
+  /** Deprecated, use `db.client.connection.state` instead.
+    */
+  @deprecated("Use `db.client.connection.state` instead", "0.5.0")
   val DbClientConnectionsState: AttributeKey[String] = string(
     "db.client.connections.state"
   )
@@ -82,10 +99,14 @@ object DbExperimentalAttributes {
   /** The name of a collection (table, container) within the database.
     *
     * @note
-    *   - If the collection name is parsed from the query, it SHOULD match the
-    *     value provided in the query and may be qualified with the schema and
-    *     database name. It is RECOMMENDED to capture the value as provided by
-    *     the application without attempting to do any case normalization.
+    *   - It is RECOMMENDED to capture the value as provided by the application
+    *     without attempting to do any case normalization. If the collection
+    *     name is parsed from the query text, it SHOULD be the first collection
+    *     name found in the query and it SHOULD match the value provided in the
+    *     query text including any schema and database name prefix. For batch
+    *     operations, if the individual operations are known to have the same
+    *     collection name then that collection name SHOULD be used, otherwise
+    *     `db.collection.name` SHOULD NOT be captured.
     */
   val DbCollectionName: AttributeKey[String] = string("db.collection.name")
 
@@ -139,8 +160,9 @@ object DbExperimentalAttributes {
     "db.cosmosdb.sub_status_code"
   )
 
-  /** Represents the identifier of an Elasticsearch cluster.
+  /** Deprecated, use `db.namespace` instead.
     */
+  @deprecated("Use `db.namespace` instead", "0.5.0")
   val DbElasticsearchClusterName: AttributeKey[String] = string(
     "db.elasticsearch.cluster.name"
   )
@@ -227,16 +249,33 @@ object DbExperimentalAttributes {
   @deprecated("Use `db.operation.name` instead", "0.5.0")
   val DbOperation: AttributeKey[String] = string("db.operation")
 
+  /** The number of queries included in a <a
+    * href="/docs/database/database-spans.md#batch-operations">batch
+    * operation</a>.
+    *
+    * @note
+    *   - Operations are only considered batches when they contain two or more
+    *     operations, and so `db.operation.batch.size` SHOULD never be `1`.
+    */
+  val DbOperationBatchSize: AttributeKey[Long] = long("db.operation.batch.size")
+
   /** The name of the operation or command being executed.
     *
     * @note
     *   - It is RECOMMENDED to capture the value as provided by the application
-    *     without attempting to do any case normalization.
+    *     without attempting to do any case normalization. If the operation name
+    *     is parsed from the query text, it SHOULD be the first operation name
+    *     found in the query. For batch operations, if the individual operations
+    *     are known to have the same operation name then that operation name
+    *     SHOULD be used prepended by `BATCH`, otherwise `db.operation.name`
+    *     SHOULD be `BATCH` or some other database system specific term if more
+    *     applicable.
     */
   val DbOperationName: AttributeKey[String] = string("db.operation.name")
 
-  /** The query parameters used in `db.query.text`, with `<key>` being the
-    * parameter name, and the attribute value being the parameter value.
+  /** A query parameter used in `db.query.text`, with `<key>` being the
+    * parameter name, and the attribute value being a string representation of
+    * the parameter value.
     *
     * @note
     *   - Query parameters should only be captured when `db.query.text` is
@@ -247,6 +286,19 @@ object DbExperimentalAttributes {
   val DbQueryParameter: AttributeKey[String] = string("db.query.parameter")
 
   /** The database query being executed.
+    *
+    * @note
+    *   - For sanitization see <a
+    *     href="../../docs/database/database-spans.md#sanitization-of-dbquerytext">Sanitization
+    *     of `db.query.text`</a>. For batch operations, if the individual
+    *     operations are known to have the same query text then that query text
+    *     SHOULD be used, otherwise all of the individual query texts SHOULD be
+    *     concatenated with separator `;` or some other database system specific
+    *     separator if more applicable. Even though parameterized query text can
+    *     potentially have sensitive data, by using a parameterized query the
+    *     user is giving a strong signal that any sensitive data will be passed
+    *     as parameter values, and the benefit to observability of capturing the
+    *     static part of the query text by default outweighs the risk.
     */
   val DbQueryText: AttributeKey[String] = string("db.query.text")
 
@@ -324,9 +376,23 @@ object DbExperimentalAttributes {
         extends DbCassandraConsistencyLevelValue("local_serial")
   }
 
+  /** Values for [[DbClientConnectionState]].
+    */
+  abstract class DbClientConnectionStateValue(val value: String)
+  object DbClientConnectionStateValue {
+
+    /** idle. */
+    case object Idle extends DbClientConnectionStateValue("idle")
+
+    /** used. */
+    case object Used extends DbClientConnectionStateValue("used")
+  }
+
   /** Values for [[DbClientConnectionsState]].
     */
+  @deprecated("Use `db.client.connection.state` instead", "0.5.0")
   abstract class DbClientConnectionsStateValue(val value: String)
+  @annotation.nowarn("cat=deprecation")
   object DbClientConnectionsStateValue {
 
     /** idle. */
@@ -408,71 +474,89 @@ object DbExperimentalAttributes {
     /** Some other SQL database. Fallback only. See notes. */
     case object OtherSql extends DbSystemValue("other_sql")
 
-    /** Microsoft SQL Server. */
-    case object Mssql extends DbSystemValue("mssql")
+    /** Adabas (Adaptable Database System). */
+    case object Adabas extends DbSystemValue("adabas")
 
-    /** Microsoft SQL Server Compact. */
-    case object Mssqlcompact extends DbSystemValue("mssqlcompact")
+    /** Deprecated, use `intersystems_cache` instead. */
+    case object Cache extends DbSystemValue("cache")
 
-    /** MySQL. */
-    case object Mysql extends DbSystemValue("mysql")
+    /** InterSystems Caché. */
+    case object IntersystemsCache extends DbSystemValue("intersystems_cache")
 
-    /** Oracle Database. */
-    case object Oracle extends DbSystemValue("oracle")
+    /** Apache Cassandra. */
+    case object Cassandra extends DbSystemValue("cassandra")
+
+    /** ClickHouse. */
+    case object Clickhouse extends DbSystemValue("clickhouse")
+
+    /** Deprecated, use `other_sql` instead. */
+    case object Cloudscape extends DbSystemValue("cloudscape")
+
+    /** CockroachDB. */
+    case object Cockroachdb extends DbSystemValue("cockroachdb")
+
+    /** Deprecated, no replacement at this time. */
+    case object Coldfusion extends DbSystemValue("coldfusion")
+
+    /** Microsoft Azure Cosmos DB. */
+    case object Cosmosdb extends DbSystemValue("cosmosdb")
+
+    /** Couchbase. */
+    case object Couchbase extends DbSystemValue("couchbase")
+
+    /** CouchDB. */
+    case object Couchdb extends DbSystemValue("couchdb")
 
     /** IBM Db2. */
     case object Db2 extends DbSystemValue("db2")
 
-    /** PostgreSQL. */
-    case object Postgresql extends DbSystemValue("postgresql")
+    /** Apache Derby. */
+    case object Derby extends DbSystemValue("derby")
 
-    /** Amazon Redshift. */
-    case object Redshift extends DbSystemValue("redshift")
-
-    /** Apache Hive. */
-    case object Hive extends DbSystemValue("hive")
-
-    /** Cloudscape. */
-    case object Cloudscape extends DbSystemValue("cloudscape")
-
-    /** HyperSQL DataBase. */
-    case object Hsqldb extends DbSystemValue("hsqldb")
-
-    /** Progress Database. */
-    case object Progress extends DbSystemValue("progress")
-
-    /** SAP MaxDB. */
-    case object Maxdb extends DbSystemValue("maxdb")
-
-    /** SAP HANA. */
-    case object Hanadb extends DbSystemValue("hanadb")
-
-    /** Ingres. */
-    case object Ingres extends DbSystemValue("ingres")
-
-    /** FirstSQL. */
-    case object Firstsql extends DbSystemValue("firstsql")
+    /** Amazon DynamoDB. */
+    case object Dynamodb extends DbSystemValue("dynamodb")
 
     /** EnterpriseDB. */
     case object Edb extends DbSystemValue("edb")
 
-    /** InterSystems Caché. */
-    case object Cache extends DbSystemValue("cache")
-
-    /** Adabas (Adaptable Database System). */
-    case object Adabas extends DbSystemValue("adabas")
-
-    /** Firebird. */
-    case object Firebird extends DbSystemValue("firebird")
-
-    /** Apache Derby. */
-    case object Derby extends DbSystemValue("derby")
+    /** Elasticsearch. */
+    case object Elasticsearch extends DbSystemValue("elasticsearch")
 
     /** FileMaker. */
     case object Filemaker extends DbSystemValue("filemaker")
 
+    /** Firebird. */
+    case object Firebird extends DbSystemValue("firebird")
+
+    /** Deprecated, use `other_sql` instead. */
+    case object Firstsql extends DbSystemValue("firstsql")
+
+    /** Apache Geode. */
+    case object Geode extends DbSystemValue("geode")
+
+    /** H2. */
+    case object H2 extends DbSystemValue("h2")
+
+    /** SAP HANA. */
+    case object Hanadb extends DbSystemValue("hanadb")
+
+    /** Apache HBase. */
+    case object Hbase extends DbSystemValue("hbase")
+
+    /** Apache Hive. */
+    case object Hive extends DbSystemValue("hive")
+
+    /** HyperSQL DataBase. */
+    case object Hsqldb extends DbSystemValue("hsqldb")
+
+    /** InfluxDB. */
+    case object Influxdb extends DbSystemValue("influxdb")
+
     /** Informix. */
     case object Informix extends DbSystemValue("informix")
+
+    /** Ingres. */
+    case object Ingres extends DbSystemValue("ingres")
 
     /** InstantDB. */
     case object Instantdb extends DbSystemValue("instantdb")
@@ -483,14 +567,56 @@ object DbExperimentalAttributes {
     /** MariaDB. */
     case object Mariadb extends DbSystemValue("mariadb")
 
+    /** SAP MaxDB. */
+    case object Maxdb extends DbSystemValue("maxdb")
+
+    /** Memcached. */
+    case object Memcached extends DbSystemValue("memcached")
+
+    /** MongoDB. */
+    case object Mongodb extends DbSystemValue("mongodb")
+
+    /** Microsoft SQL Server. */
+    case object Mssql extends DbSystemValue("mssql")
+
+    /** Deprecated, Microsoft SQL Server Compact is discontinued. */
+    case object Mssqlcompact extends DbSystemValue("mssqlcompact")
+
+    /** MySQL. */
+    case object Mysql extends DbSystemValue("mysql")
+
+    /** Neo4j. */
+    case object Neo4j extends DbSystemValue("neo4j")
+
     /** Netezza. */
     case object Netezza extends DbSystemValue("netezza")
+
+    /** OpenSearch. */
+    case object Opensearch extends DbSystemValue("opensearch")
+
+    /** Oracle Database. */
+    case object Oracle extends DbSystemValue("oracle")
 
     /** Pervasive PSQL. */
     case object Pervasive extends DbSystemValue("pervasive")
 
     /** PointBase. */
     case object Pointbase extends DbSystemValue("pointbase")
+
+    /** PostgreSQL. */
+    case object Postgresql extends DbSystemValue("postgresql")
+
+    /** Progress Database. */
+    case object Progress extends DbSystemValue("progress")
+
+    /** Redis. */
+    case object Redis extends DbSystemValue("redis")
+
+    /** Amazon Redshift. */
+    case object Redshift extends DbSystemValue("redshift")
+
+    /** Cloud Spanner. */
+    case object Spanner extends DbSystemValue("spanner")
 
     /** SQLite. */
     case object Sqlite extends DbSystemValue("sqlite")
@@ -501,65 +627,11 @@ object DbExperimentalAttributes {
     /** Teradata. */
     case object Teradata extends DbSystemValue("teradata")
 
-    /** Vertica. */
-    case object Vertica extends DbSystemValue("vertica")
-
-    /** H2. */
-    case object H2 extends DbSystemValue("h2")
-
-    /** ColdFusion IMQ. */
-    case object Coldfusion extends DbSystemValue("coldfusion")
-
-    /** Apache Cassandra. */
-    case object Cassandra extends DbSystemValue("cassandra")
-
-    /** Apache HBase. */
-    case object Hbase extends DbSystemValue("hbase")
-
-    /** MongoDB. */
-    case object Mongodb extends DbSystemValue("mongodb")
-
-    /** Redis. */
-    case object Redis extends DbSystemValue("redis")
-
-    /** Couchbase. */
-    case object Couchbase extends DbSystemValue("couchbase")
-
-    /** CouchDB. */
-    case object Couchdb extends DbSystemValue("couchdb")
-
-    /** Microsoft Azure Cosmos DB. */
-    case object Cosmosdb extends DbSystemValue("cosmosdb")
-
-    /** Amazon DynamoDB. */
-    case object Dynamodb extends DbSystemValue("dynamodb")
-
-    /** Neo4j. */
-    case object Neo4j extends DbSystemValue("neo4j")
-
-    /** Apache Geode. */
-    case object Geode extends DbSystemValue("geode")
-
-    /** Elasticsearch. */
-    case object Elasticsearch extends DbSystemValue("elasticsearch")
-
-    /** Memcached. */
-    case object Memcached extends DbSystemValue("memcached")
-
-    /** CockroachDB. */
-    case object Cockroachdb extends DbSystemValue("cockroachdb")
-
-    /** OpenSearch. */
-    case object Opensearch extends DbSystemValue("opensearch")
-
-    /** ClickHouse. */
-    case object Clickhouse extends DbSystemValue("clickhouse")
-
-    /** Cloud Spanner. */
-    case object Spanner extends DbSystemValue("spanner")
-
     /** Trino. */
     case object Trino extends DbSystemValue("trino")
+
+    /** Vertica. */
+    case object Vertica extends DbSystemValue("vertica")
   }
 
 }

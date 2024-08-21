@@ -62,7 +62,9 @@ object AwsExperimentalAttributes {
     * `GlobalSecondaryIndexUpdates` request field.
     */
   val AwsDynamodbGlobalSecondaryIndexUpdates: AttributeKey[Seq[String]] =
-    stringSeq("aws.dynamodb.global_secondary_index_updates")
+    stringSeq(
+      "aws.dynamodb.global_secondary_index_updates"
+    )
 
   /** The JSON-serialized value of each item of the `GlobalSecondaryIndexes`
     * request field

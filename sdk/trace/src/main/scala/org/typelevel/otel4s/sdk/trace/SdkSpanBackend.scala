@@ -74,7 +74,7 @@ private final class SdkSpanBackend[F[_]: Monad: Clock: Console] private (
 ) extends Span.Backend[F]
     with SpanRef[F] {
 
-  def meta: InstrumentMeta[F] =
+  val meta: InstrumentMeta[F] =
     InstrumentMeta.enabled
 
   def context: SpanContext =

@@ -57,7 +57,7 @@ private object SdkHistogram {
       name: String,
       storage: MetricStorage.Synchronous.Writeable[F, Primitive]
   ) extends Histogram.Backend[F, A] {
-    def meta: Histogram.Meta[F] = Histogram.Meta.enabled
+    val meta: Histogram.Meta[F] = Histogram.Meta.enabled
 
     def record(
         value: A,

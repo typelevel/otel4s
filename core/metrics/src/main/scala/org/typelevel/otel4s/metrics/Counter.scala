@@ -100,16 +100,6 @@ object Counter {
     def inc(attributes: immutable.Iterable[Attribute[_]]): F[Unit]
   }
 
-  trait LongBackend[F[_]] extends Backend[F, Long] {
-    final def inc(attributes: immutable.Iterable[Attribute[_]]): F[Unit] =
-      add(1L, attributes)
-  }
-
-  trait DoubleBackend[F[_]] extends Backend[F, Double] {
-    final def inc(attributes: immutable.Iterable[Attribute[_]]): F[Unit] =
-      add(1.0, attributes)
-  }
-
   def noop[F[_], A](implicit F: Applicative[F]): Counter[F, A] =
     new Counter[F, A] {
       val backend: Backend[F, A] =

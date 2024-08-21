@@ -108,22 +108,6 @@ object UpDownCounter {
     def dec(attributes: immutable.Iterable[Attribute[_]]): F[Unit]
   }
 
-  trait LongBackend[F[_]] extends Backend[F, Long] {
-    final def inc(attributes: immutable.Iterable[Attribute[_]]): F[Unit] =
-      add(1L, attributes)
-
-    final def dec(attributes: immutable.Iterable[Attribute[_]]): F[Unit] =
-      add(-1L, attributes)
-  }
-
-  trait DoubleBackend[F[_]] extends Backend[F, Double] {
-    final def inc(attributes: immutable.Iterable[Attribute[_]]): F[Unit] =
-      add(1.0, attributes)
-
-    final def dec(attributes: immutable.Iterable[Attribute[_]]): F[Unit] =
-      add(-1.0, attributes)
-  }
-
   def noop[F[_], A](implicit F: Applicative[F]): UpDownCounter[F, A] =
     new UpDownCounter[F, A] {
       val backend: UpDownCounter.Backend[F, A] =

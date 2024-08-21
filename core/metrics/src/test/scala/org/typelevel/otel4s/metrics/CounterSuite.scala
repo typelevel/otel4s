@@ -99,7 +99,7 @@ object CounterSuite {
       extends Counter[IO, Long] {
 
     val backend: Counter.Backend[IO, Long] =
-      new Counter.LongBackend[IO] {
+      new Counter.Backend[IO, Long] {
         val meta: InstrumentMeta[IO] = InstrumentMeta.enabled
 
         def add(
@@ -107,6 +107,9 @@ object CounterSuite {
             attributes: immutable.Iterable[Attribute[_]]
         ): IO[Unit] =
           ref.update(_.appended(Record(value, attributes.to(Attributes))))
+
+        def inc(attributes: immutable.Iterable[Attribute[_]]): IO[Unit] =
+          add(1L, attributes)
       }
 
     def records: IO[List[Record[Long]]] =

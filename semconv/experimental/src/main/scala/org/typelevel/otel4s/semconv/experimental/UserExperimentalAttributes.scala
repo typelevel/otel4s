@@ -20,22 +20,34 @@ import org.typelevel.otel4s.AttributeKey
 import org.typelevel.otel4s.AttributeKey._
 
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/semantic-convention/templates/SemanticAttributes.scala.j2
-object HerokuExperimentalAttributes {
+object UserExperimentalAttributes {
 
-  /** Unique identifier for the application
+  /** User email address.
     */
-  val HerokuAppId: AttributeKey[String] = string("heroku.app.id")
+  val UserEmail: AttributeKey[String] = string("user.email")
 
-  /** Commit hash for the current release
+  /** User's full name
     */
-  val HerokuReleaseCommit: AttributeKey[String] = string(
-    "heroku.release.commit"
-  )
+  val UserFullName: AttributeKey[String] = string("user.full_name")
 
-  /** Time and date the release was created
+  /** Unique user hash to correlate information for a user in anonymized form.
+    *
+    * @note
+    *   - Useful if `user.id` or `user.name` contain confidential information
+    *     and cannot be used.
     */
-  val HerokuReleaseCreationTimestamp: AttributeKey[String] = string(
-    "heroku.release.creation_timestamp"
-  )
+  val UserHash: AttributeKey[String] = string("user.hash")
+
+  /** Unique identifier of the user.
+    */
+  val UserId: AttributeKey[String] = string("user.id")
+
+  /** Short name or login/username of the user.
+    */
+  val UserName: AttributeKey[String] = string("user.name")
+
+  /** Array of user roles at the time of the event.
+    */
+  val UserRoles: AttributeKey[Seq[String]] = stringSeq("user.roles")
 
 }

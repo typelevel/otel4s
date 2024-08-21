@@ -22,48 +22,53 @@ import org.typelevel.otel4s.AttributeKey._
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/semantic-convention/templates/SemanticAttributes.scala.j2
 object DeploymentExperimentalAttributes {
 
-  /**
-  * 'Deprecated, use `deployment.environment.name` instead.'
-  */
+  /** 'Deprecated, use `deployment.environment.name` instead.'
+    */
   @deprecated("'use `deployment.environment.name` instead.'", "0.5.0")
-  val DeploymentEnvironment: AttributeKey[String] = string("deployment.environment")
+  val DeploymentEnvironment: AttributeKey[String] = string(
+    "deployment.environment"
+  )
 
-  /**
-  * Name of the <a href="https://wikipedia.org/wiki/Deployment_environment">deployment environment</a> (aka deployment tier).
-  *
-  * @note 
-  *  - `deployment.environment.name` does not affect the uniqueness constraints defined through
-the `service.namespace`, `service.name` and `service.instance.id` resource attributes.
-This implies that resources carrying the following attribute combinations MUST be
-considered to be identifying the same service:<li>`service.name=frontend`, `deployment.environment.name=production`</li>
-<li>`service.name=frontend`, `deployment.environment.name=staging`.</li>
+  /** Name of the <a
+    * href="https://wikipedia.org/wiki/Deployment_environment">deployment
+    * environment</a> (aka deployment tier).
+    *
+    * @note
+    *   - `deployment.environment.name` does not affect the uniqueness
+    *     constraints defined through the `service.namespace`, `service.name`
+    *     and `service.instance.id` resource attributes. This implies that
+    *     resources carrying the following attribute combinations MUST be
+    *     considered to be identifying the same
+    *     service:<li>`service.name=frontend`,
+    *     `deployment.environment.name=production`</li>
+    *     <li>`service.name=frontend`,
+    *     `deployment.environment.name=staging`.</li>
+    */
+  val DeploymentEnvironmentName: AttributeKey[String] = string(
+    "deployment.environment.name"
+  )
 
-  */
-  val DeploymentEnvironmentName: AttributeKey[String] = string("deployment.environment.name")
-
-  /**
-  * The id of the deployment.
-  */
+  /** The id of the deployment.
+    */
   val DeploymentId: AttributeKey[String] = string("deployment.id")
 
-  /**
-  * The name of the deployment.
-  */
+  /** The name of the deployment.
+    */
   val DeploymentName: AttributeKey[String] = string("deployment.name")
 
-  /**
-  * The status of the deployment.
-  */
+  /** The status of the deployment.
+    */
   val DeploymentStatus: AttributeKey[String] = string("deployment.status")
   // Enum definitions
-  
-  /**
-   * Values for [[DeploymentStatus]].
-   */
+
+  /** Values for [[DeploymentStatus]].
+    */
   abstract class DeploymentStatusValue(val value: String)
   object DeploymentStatusValue {
+
     /** failed. */
     case object Failed extends DeploymentStatusValue("failed")
+
     /** succeeded. */
     case object Succeeded extends DeploymentStatusValue("succeeded")
   }

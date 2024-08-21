@@ -20,22 +20,27 @@ import org.typelevel.otel4s.AttributeKey
 import org.typelevel.otel4s.AttributeKey._
 
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/semantic-convention/templates/SemanticAttributes.scala.j2
-object HerokuExperimentalAttributes {
+object GoExperimentalAttributes {
 
-  /** Unique identifier for the application
+  /** The type of memory.
     */
-  val HerokuAppId: AttributeKey[String] = string("heroku.app.id")
+  val GoMemoryType: AttributeKey[String] = string("go.memory.type")
+  // Enum definitions
 
-  /** Commit hash for the current release
+  /** Values for [[GoMemoryType]].
     */
-  val HerokuReleaseCommit: AttributeKey[String] = string(
-    "heroku.release.commit"
-  )
+  abstract class GoMemoryTypeValue(val value: String)
+  object GoMemoryTypeValue {
 
-  /** Time and date the release was created
-    */
-  val HerokuReleaseCreationTimestamp: AttributeKey[String] = string(
-    "heroku.release.creation_timestamp"
-  )
+    /** Memory allocated from the heap that is reserved for stack space, whether
+      * or not it is currently in-use.
+      */
+    case object Stack extends GoMemoryTypeValue("stack")
+
+    /** Memory used by the Go runtime, excluding other categories of memory
+      * usage described in this enumeration.
+      */
+    case object Other extends GoMemoryTypeValue("other")
+  }
 
 }

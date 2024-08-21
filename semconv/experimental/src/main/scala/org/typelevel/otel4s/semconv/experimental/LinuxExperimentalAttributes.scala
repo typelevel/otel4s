@@ -20,22 +20,25 @@ import org.typelevel.otel4s.AttributeKey
 import org.typelevel.otel4s.AttributeKey._
 
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/semantic-convention/templates/SemanticAttributes.scala.j2
-object HerokuExperimentalAttributes {
+object LinuxExperimentalAttributes {
 
-  /** Unique identifier for the application
+  /** The Linux Slab memory state
     */
-  val HerokuAppId: AttributeKey[String] = string("heroku.app.id")
-
-  /** Commit hash for the current release
-    */
-  val HerokuReleaseCommit: AttributeKey[String] = string(
-    "heroku.release.commit"
+  val LinuxMemorySlabState: AttributeKey[String] = string(
+    "linux.memory.slab.state"
   )
+  // Enum definitions
 
-  /** Time and date the release was created
+  /** Values for [[LinuxMemorySlabState]].
     */
-  val HerokuReleaseCreationTimestamp: AttributeKey[String] = string(
-    "heroku.release.creation_timestamp"
-  )
+  abstract class LinuxMemorySlabStateValue(val value: String)
+  object LinuxMemorySlabStateValue {
+
+    /** reclaimable. */
+    case object Reclaimable extends LinuxMemorySlabStateValue("reclaimable")
+
+    /** unreclaimable. */
+    case object Unreclaimable extends LinuxMemorySlabStateValue("unreclaimable")
+  }
 
 }

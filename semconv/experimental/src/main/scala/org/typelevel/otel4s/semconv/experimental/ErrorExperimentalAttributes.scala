@@ -22,36 +22,48 @@ import org.typelevel.otel4s.AttributeKey._
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/semantic-convention/templates/SemanticAttributes.scala.j2
 object ErrorExperimentalAttributes {
 
-  /**
-  * Describes a class of error the operation ended with.
-  *
-  * @note 
-  *  - The `error.type` SHOULD be predictable, and SHOULD have low cardinality.
-  *  - When `error.type` is set to a type (e.g., an exception type), its
-canonical class name identifying the type within the artifact SHOULD be used.
-  *  - Instrumentations SHOULD document the list of errors they report.
-  *  - The cardinality of `error.type` within one instrumentation library SHOULD be low.
-Telemetry consumers that aggregate data from multiple instrumentation libraries and applications
-should be prepared for `error.type` to have high cardinality at query time when no
-additional filters are applied.
-  *  - If the operation has completed successfully, instrumentations SHOULD NOT set `error.type`.
-  *  - If a specific domain defines its own set of error identifiers (such as HTTP or gRPC status codes),
-it's RECOMMENDED to:<li>Use a domain-specific attribute</li>
-<li>Set `error.type` to capture all errors, regardless of whether they are defined within the domain-specific set or not.</li>
-
-  */
-  @deprecated("use `org.typelevel.otel4s.semconv.attributes.ErrorAttributes.ErrorType` instead.", "0.5.0")
+  /** Describes a class of error the operation ended with.
+    *
+    * @note
+    *   - The `error.type` SHOULD be predictable, and SHOULD have low
+    *     cardinality.
+    *   - When `error.type` is set to a type (e.g., an exception type), its
+    *     canonical class name identifying the type within the artifact SHOULD
+    *     be used.
+    *   - Instrumentations SHOULD document the list of errors they report.
+    *   - The cardinality of `error.type` within one instrumentation library
+    *     SHOULD be low. Telemetry consumers that aggregate data from multiple
+    *     instrumentation libraries and applications should be prepared for
+    *     `error.type` to have high cardinality at query time when no additional
+    *     filters are applied.
+    *   - If the operation has completed successfully, instrumentations SHOULD
+    *     NOT set `error.type`.
+    *   - If a specific domain defines its own set of error identifiers (such as
+    *     HTTP or gRPC status codes), it's RECOMMENDED to:<li>Use a
+    *     domain-specific attribute</li> <li>Set `error.type` to capture all
+    *     errors, regardless of whether they are defined within the
+    *     domain-specific set or not.</li>
+    */
+  @deprecated(
+    "use `org.typelevel.otel4s.semconv.attributes.ErrorAttributes.ErrorType` instead.",
+    "0.5.0"
+  )
   val ErrorType: AttributeKey[String] = string("error.type")
   // Enum definitions
-  
-  /**
-   * Values for [[ErrorType]].
-   */
-  @deprecated("use `org.typelevel.otel4s.semconv.attributes.ErrorAttributes.ErrorTypeValue` instead.", "0.5.0")
+
+  /** Values for [[ErrorType]].
+    */
+  @deprecated(
+    "use `org.typelevel.otel4s.semconv.attributes.ErrorAttributes.ErrorTypeValue` instead.",
+    "0.5.0"
+  )
   abstract class ErrorTypeValue(val value: String)
   @annotation.nowarn("cat=deprecation")
   object ErrorTypeValue {
-    /** A fallback error value to be used when the instrumentation doesn&#39;t define a custom value. */
+
+    /** A fallback error value to be used when the instrumentation doesn&#39;t
+      * define a custom value.
+      */
     case object Other extends ErrorTypeValue("_OTHER")
   }
 

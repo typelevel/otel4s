@@ -121,7 +121,7 @@ object UpDownCounterSuite {
       extends UpDownCounter[IO, Long] {
 
     val backend: UpDownCounter.Backend[IO, Long] =
-      new UpDownCounter.LongBackend[IO] {
+      new UpDownCounter.Backend[IO, Long] {
         val meta: InstrumentMeta[IO] = InstrumentMeta.enabled
 
         def add(
@@ -129,6 +129,12 @@ object UpDownCounterSuite {
             attributes: immutable.Iterable[Attribute[_]]
         ): IO[Unit] =
           ref.update(_.appended(Record(value, attributes.to(Attributes))))
+
+        def inc(attributes: immutable.Iterable[Attribute[_]]): IO[Unit] =
+          add(1L, attributes)
+
+        def dec(attributes: immutable.Iterable[Attribute[_]]): IO[Unit] =
+          add(-1L, attributes)
       }
 
     def records: IO[List[Record[Long]]] =

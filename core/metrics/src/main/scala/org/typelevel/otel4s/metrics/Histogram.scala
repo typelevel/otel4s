@@ -97,24 +97,8 @@ object Histogram {
     def create: F[Histogram[F, A]]
   }
 
-  trait Meta[F[_]] extends InstrumentMeta[F] {
-    def resourceUnit: Resource[F, Unit]
-  }
-
-  object Meta {
-    def enabled[F[_]: Applicative]: Meta[F] = make(enabled = true)
-    def disabled[F[_]: Applicative]: Meta[F] = make(enabled = false)
-
-    private def make[F[_]: Applicative](enabled: Boolean): Meta[F] =
-      new Meta[F] {
-        val isEnabled: Boolean = enabled
-        val unit: F[Unit] = Applicative[F].unit
-        val resourceUnit: Resource[F, Unit] = Resource.unit
-      }
-  }
-
   trait Backend[F[_], A] {
-    def meta: Meta[F]
+    def meta: InstrumentMeta[F]
 
     /** Records a value with a set of attributes.
       *
@@ -177,7 +161,7 @@ object Histogram {
     new Histogram[F, A] {
       val backend: Backend[F, A] =
         new Backend[F, A] {
-          val meta: Meta[F] = Meta.disabled
+          val meta: InstrumentMeta[F] = InstrumentMeta.disabled
           def record(
               value: A,
               attributes: immutable.Iterable[Attribute[_]]
@@ -185,7 +169,7 @@ object Histogram {
           def recordDuration(
               timeUnit: TimeUnit,
               attributes: immutable.Iterable[Attribute[_]]
-          ): Resource[F, Unit] = meta.resourceUnit
+          ): Resource[F, Unit] = Resource.unit
         }
     }
 

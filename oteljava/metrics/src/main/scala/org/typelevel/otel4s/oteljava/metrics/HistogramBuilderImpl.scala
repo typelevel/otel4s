@@ -23,6 +23,7 @@ import cats.effect.kernel.Sync
 import cats.syntax.flatMap._
 import cats.syntax.functor._
 import io.opentelemetry.api.metrics.{Meter => JMeter}
+import org.typelevel.otel4s.meta.InstrumentMeta
 import org.typelevel.otel4s.metrics._
 import org.typelevel.otel4s.oteljava.AttributeConverters._
 import org.typelevel.otel4s.oteljava.context.AskContext
@@ -101,7 +102,7 @@ object HistogramBuilderImpl {
           val histogram = builder.ofLongs().build
 
           val backend = new Histogram.Backend[F, A] {
-            val meta: Histogram.Meta[F] = Histogram.Meta.enabled
+            val meta: InstrumentMeta[F] = InstrumentMeta.enabled
 
             def record(
                 value: A,
@@ -161,7 +162,7 @@ object HistogramBuilderImpl {
           val histogram = builder.build
 
           val backend = new Histogram.Backend[F, A] {
-            val meta: Histogram.Meta[F] = Histogram.Meta.enabled
+            val meta: InstrumentMeta[F] = InstrumentMeta.enabled
 
             def record(
                 value: A,

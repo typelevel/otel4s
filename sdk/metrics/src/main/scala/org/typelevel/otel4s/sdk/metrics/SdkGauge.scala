@@ -46,7 +46,7 @@ private object SdkGauge {
       cast: A => Primitive,
       storage: MetricStorage.Synchronous.Writeable[F, Primitive]
   ) extends Gauge.Backend[F, A] {
-    def meta: InstrumentMeta[F] = InstrumentMeta.enabled
+    val meta: InstrumentMeta[F] = InstrumentMeta.enabled
 
     def record(
         value: A,

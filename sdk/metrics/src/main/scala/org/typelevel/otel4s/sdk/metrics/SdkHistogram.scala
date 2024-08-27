@@ -26,6 +26,7 @@ import cats.syntax.functor._
 import org.typelevel.ci.CIString
 import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.Attributes
+import org.typelevel.otel4s.meta.InstrumentMeta
 import org.typelevel.otel4s.metrics.BucketBoundaries
 import org.typelevel.otel4s.metrics.Histogram
 import org.typelevel.otel4s.metrics.MeasurementValue
@@ -57,7 +58,7 @@ private object SdkHistogram {
       name: String,
       storage: MetricStorage.Synchronous.Writeable[F, Primitive]
   ) extends Histogram.Backend[F, A] {
-    val meta: Histogram.Meta[F] = Histogram.Meta.enabled
+    val meta: InstrumentMeta[F] = InstrumentMeta.enabled
 
     def record(
         value: A,

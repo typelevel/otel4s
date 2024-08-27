@@ -126,7 +126,7 @@ object HistogramMacro {
     '{
       if ($backend.meta.isEnabled)
         $backend.recordDuration($timeUnit, $attributes)
-      else $backend.meta.resourceUnit
+      else _root_.cats.effect.kernel.Resource.unit
     }
 
 }

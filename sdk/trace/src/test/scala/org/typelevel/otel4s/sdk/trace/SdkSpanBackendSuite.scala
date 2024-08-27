@@ -32,6 +32,7 @@ import org.scalacheck.effect.PropF
 import org.typelevel.otel4s.sdk.common.InstrumentationScope
 import org.typelevel.otel4s.sdk.test.NoopConsole
 import org.typelevel.otel4s.sdk.trace.data.EventData
+import org.typelevel.otel4s.sdk.trace.data.LimitedData
 import org.typelevel.otel4s.sdk.trace.data.LinkData
 import org.typelevel.otel4s.sdk.trace.data.SpanData
 import org.typelevel.otel4s.sdk.trace.data.StatusData
@@ -47,6 +48,8 @@ class SdkSpanBackendSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
 
   private implicit val noopConsole: Console[IO] = new NoopConsole[IO]
 
+  private val spanLimits = Defaults.spanLimits
+
   // Span.Backend methods
 
   test(".addAttributes(:Attribute[_]*)") {
@@ -54,24 +57,38 @@ class SdkSpanBackendSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
       val expected = attributes |+| nextAttributes
 
       for {
-        span <- start(attributes = attributes)
-        _ <- assertIO(span.toSpanData.map(_.attributes), attributes)
+        span <- start(
+          attributes = attributes,
+          spanLimits = SpanLimits.builder
+            .withMaxNumberOfAttributes(attributes.size + nextAttributes.size)
+            .build
+        )
+        _ <- assertIO(span.toSpanData.map(_.attributes.elements), attributes)
         _ <- span.addAttributes(nextAttributes)
-        _ <- assertIO(span.toSpanData.map(_.attributes), expected)
+        _ <- assertIO(span.toSpanData.map(_.attributes.elements), expected)
       } yield ()
     }
   }
 
   test(".addEvent(:String, :Attribute[_]*)") {
     PropF.forAllF { (name: String, attributes: Attributes) =>
-      val event = EventData(name, Duration.Zero, attributes)
+      val event = EventData(
+        name,
+        Duration.Zero,
+        LimitedData
+          .attributes(
+            spanLimits.maxNumberOfAttributesPerEvent,
+            spanLimits.maxAttributeValueLength
+          )
+          .appendAll(attributes)
+      )
 
       TestControl.executeEmbed {
         for {
           span <- start()
-          _ <- assertIO(span.toSpanData.map(_.events), Vector.empty)
+          _ <- assertIO(span.toSpanData.map(_.events.elements), Vector.empty)
           _ <- span.addEvent(name, attributes)
-          _ <- assertIO(span.toSpanData.map(_.events), Vector(event))
+          _ <- assertIO(span.toSpanData.map(_.events.elements), Vector(event))
         } yield ()
       }
     }
@@ -79,14 +96,23 @@ class SdkSpanBackendSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
 
   test(".addEvent(:String, :FiniteDuration, :Attribute[_]*)") {
     PropF.forAllF { (name: String, ts: FiniteDuration, attrs: Attributes) =>
-      val event = EventData(name, ts, attrs)
+      val event = EventData(
+        name,
+        ts,
+        LimitedData
+          .attributes(
+            spanLimits.maxNumberOfAttributesPerEvent,
+            spanLimits.maxAttributeValueLength
+          )
+          .appendAll(attrs)
+      )
 
       TestControl.executeEmbed {
         for {
           span <- start()
-          _ <- assertIO(span.toSpanData.map(_.events), Vector.empty)
+          _ <- assertIO(span.toSpanData.map(_.events.elements), Vector.empty)
           _ <- span.addEvent(name, ts, attrs)
-          _ <- assertIO(span.toSpanData.map(_.events), Vector(event))
+          _ <- assertIO(span.toSpanData.map(_.events.elements), Vector(event))
         } yield ()
       }
     }
@@ -94,14 +120,22 @@ class SdkSpanBackendSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
 
   test(".addLink(:SpanContext, :Attribute[_]*)") {
     PropF.forAllF { (spanContext: SpanContext, attrs: Attributes) =>
-      val link = LinkData(spanContext, attrs)
+      val link = LinkData(
+        spanContext,
+        LimitedData
+          .attributes(
+            spanLimits.maxNumberOfAttributesPerLink,
+            spanLimits.maxAttributeValueLength
+          )
+          .appendAll(attrs)
+      )
 
       TestControl.executeEmbed {
         for {
           span <- start()
-          _ <- assertIO(span.toSpanData.map(_.links), Vector.empty)
+          _ <- assertIO(span.toSpanData.map(_.links.elements), Vector.empty)
           _ <- span.addLink(spanContext, attrs)
-          _ <- assertIO(span.toSpanData.map(_.links), Vector(link))
+          _ <- assertIO(span.toSpanData.map(_.links.elements), Vector(link))
         } yield ()
       }
     }
@@ -124,16 +158,21 @@ class SdkSpanBackendSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
       val event = EventData.fromException(
         timestamp = Duration.Zero,
         exception = exception,
-        attributes = attributes,
+        attributes = LimitedData
+          .attributes(
+            spanLimits.maxNumberOfAttributesPerEvent,
+            spanLimits.maxAttributeValueLength
+          )
+          .appendAll(attributes),
         escaped = false
       )
 
       TestControl.executeEmbed {
         for {
           span <- start()
-          _ <- assertIO(span.toSpanData.map(_.events), Vector.empty)
+          _ <- assertIO(span.toSpanData.map(_.events.elements), Vector.empty)
           _ <- span.recordException(exception, attributes)
-          _ <- assertIO(span.toSpanData.map(_.events), Vector(event))
+          _ <- assertIO(span.toSpanData.map(_.events.elements), Vector(event))
         } yield ()
       }
     }
@@ -235,7 +274,12 @@ class SdkSpanBackendSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
       }
 
       for {
-        span <- start(attributes = init)
+        span <- start(
+          attributes = init,
+          spanLimits = SpanLimits.builder
+            .withMaxNumberOfAttributes(init.size + extraAttrs.size)
+            .build
+        )
 
         _ <- assertIO(
           init.toList.traverse(a => span.getAttribute(a.key)),
@@ -323,9 +367,15 @@ class SdkSpanBackendSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
             startTimestamp = userStartTimestamp.getOrElse(Duration.Zero),
             endTimestamp = end,
             status = StatusData.Unset,
-            attributes = attributes,
-            events = Vector.empty,
-            links = links,
+            attributes = LimitedData
+              .attributes(
+                spanLimits.maxNumberOfAttributes,
+                spanLimits.maxAttributeValueLength
+              )
+              .appendAll(attributes),
+            events = LimitedData.events(spanLimits.maxNumberOfEvents),
+            links =
+              LimitedData.links(spanLimits.maxNumberOfLinks).appendAll(links),
             instrumentationScope = scope,
             resource = Defaults.resource
           )
@@ -339,9 +389,15 @@ class SdkSpanBackendSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
               Defaults.resource,
               kind,
               parentCtx,
+              spanLimits,
               Defaults.spanProcessor,
-              attributes,
-              links,
+              LimitedData
+                .attributes(
+                  spanLimits.maxNumberOfAttributes,
+                  spanLimits.maxAttributeValueLength
+                )
+                .appendAll(attributes),
+              LimitedData.links(spanLimits.maxNumberOfLinks).appendAll(links),
               userStartTimestamp
             )
             _ <- assertIO(span.toSpanData, expected(None))
@@ -392,9 +448,14 @@ class SdkSpanBackendSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
           startTimestamp = Duration.Zero,
           endTimestamp = end,
           status = StatusData.Unset,
-          attributes = Defaults.attributes,
-          events = Vector.empty,
-          links = Vector.empty,
+          attributes = LimitedData
+            .attributes(
+              spanLimits.maxNumberOfAttributes,
+              spanLimits.maxAttributeValueLength
+            )
+            .appendAll(Defaults.attributes),
+          events = LimitedData.events(spanLimits.maxNumberOfEvents),
+          links = LimitedData.links(spanLimits.maxNumberOfLinks),
           instrumentationScope = Defaults.scope,
           resource = Defaults.resource
         )
@@ -452,6 +513,7 @@ class SdkSpanBackendSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
       kind: SpanKind = Defaults.kind,
       parentSpanContext: Option[SpanContext] = None,
       attributes: Attributes = Defaults.attributes,
+      spanLimits: SpanLimits = spanLimits,
       spanProcessor: SpanProcessor[IO] = Defaults.spanProcessor,
       links: Vector[LinkData] = Vector.empty,
       userStartTimestamp: Option[FiniteDuration] = None
@@ -463,9 +525,15 @@ class SdkSpanBackendSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
       resource = resource,
       kind = kind,
       parentContext = parentSpanContext,
+      spanLimits = spanLimits,
       processor = spanProcessor,
-      attributes = attributes,
-      links = links,
+      attributes = LimitedData
+        .attributes(
+          spanLimits.maxNumberOfAttributes,
+          spanLimits.maxAttributeValueLength
+        )
+        .appendAll(attributes),
+      links = LimitedData.links(spanLimits.maxNumberOfLinks).appendAll(links),
       userStartTimestamp = userStartTimestamp
     )
   }
@@ -477,6 +545,7 @@ class SdkSpanBackendSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
     val resource = TelemetryResource.default
     val kind = SpanKind.Client
     val attributes = Attributes.empty
+    val spanLimits = SpanLimits.default
     val spanProcessor = SpanProcessor.noop[IO]
   }
 

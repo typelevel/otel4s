@@ -27,6 +27,7 @@ import org.scalacheck.Arbitrary
 import org.scalacheck.Prop
 import org.scalacheck.Test
 import org.typelevel.otel4s.sdk.trace.data.EventData
+import org.typelevel.otel4s.sdk.trace.data.LimitedData
 import org.typelevel.otel4s.sdk.trace.data.LinkData
 import org.typelevel.otel4s.sdk.trace.data.SpanData
 import org.typelevel.otel4s.sdk.trace.data.StatusData
@@ -93,7 +94,8 @@ class SpansProtoEncoderSuite extends ScalaCheckSuite {
         .obj(
           "timeUnixNano" := eventData.timestamp.toNanos.toString,
           "name" := eventData.name,
-          "attributes" := eventData.attributes
+          "attributes" := eventData.attributes.elements,
+          "droppedAttributesCount" := eventData.attributes.dropped,
         )
         .dropNullValues
         .dropEmptyValues
@@ -107,13 +109,23 @@ class SpansProtoEncoderSuite extends ScalaCheckSuite {
 
     assertEquals(
       ProtoEncoder
-        .toJson(EventData("name", 1.nanos, Attributes.empty))
+        .toJson(
+          EventData("name", 1.nanos, LimitedData.attributes(100, Int.MaxValue))
+        )
         .noSpaces,
       """{"timeUnixNano":"1","name":"name"}"""
     )
 
     assertEquals(
-      ProtoEncoder.toJson(EventData("name", 1.nanos, attrs)).noSpaces,
+      ProtoEncoder
+        .toJson(
+          EventData(
+            "name",
+            1.nanos,
+            LimitedData.attributes(attrs.size, Int.MaxValue).appendAll(attrs)
+          )
+        )
+        .noSpaces,
       """{"timeUnixNano":"1","name":"name","attributes":[{"key":"key","value":{"stringValue":"value"}}]}"""
     )
   }
@@ -125,7 +137,8 @@ class SpansProtoEncoderSuite extends ScalaCheckSuite {
           "traceId" := link.spanContext.traceIdHex,
           "spanId" := link.spanContext.spanIdHex,
           "traceState" := link.spanContext.traceState,
-          "attributes" := link.attributes,
+          "attributes" := link.attributes.elements,
+          "droppedAttributesCount" := link.attributes.dropped,
           "flags" := encodeFlags(link.spanContext.traceFlags)
         )
         .dropNullValues
@@ -155,17 +168,28 @@ class SpansProtoEncoderSuite extends ScalaCheckSuite {
     )
 
     assertEquals(
-      ProtoEncoder.toJson(LinkData(ctx)).noSpaces,
+      ProtoEncoder
+        .toJson(LinkData(ctx, LimitedData.attributes(100, Int.MaxValue)))
+        .noSpaces,
       """{"traceId":"aae6750d58ff8148fa33894599afaaf2","spanId":"f676d76b0b3d4324","traceState":"k2=v2,k=v","flags":1}"""
     )
 
     assertEquals(
-      ProtoEncoder.toJson(LinkData(ctx, attrs)).noSpaces,
+      ProtoEncoder
+        .toJson(
+          LinkData(
+            ctx,
+            LimitedData.attributes(attrs.size, Int.MaxValue).appendAll(attrs)
+          )
+        )
+        .noSpaces,
       """{"traceId":"aae6750d58ff8148fa33894599afaaf2","spanId":"f676d76b0b3d4324","traceState":"k2=v2,k=v","attributes":[{"key":"key","value":{"stringValue":"value"}}],"flags":1}"""
     )
 
     assertEquals(
-      ProtoEncoder.toJson(LinkData(ctx2)).noSpaces,
+      ProtoEncoder
+        .toJson(LinkData(ctx2, LimitedData.attributes(100, Int.MaxValue)))
+        .noSpaces,
       """{"traceId":"aae6750d58ff8148fa33894599afaaf2","spanId":"f676d76b0b3d4324"}"""
     )
   }
@@ -186,9 +210,12 @@ class SpansProtoEncoderSuite extends ScalaCheckSuite {
           "kind" := span.kind,
           "startTimeUnixNano" := span.startTimestamp.toNanos.toString,
           "endTimeUnixNano" := span.endTimestamp.map(_.toNanos.toString),
-          "attributes" := span.attributes,
-          "events" := span.events,
-          "links" := span.links
+          "attributes" := span.attributes.elements,
+          "droppedAttributesCount" := span.attributes.dropped,
+          "events" := span.events.elements,
+          "droppedEventsCount" := span.events.dropped,
+          "links" := span.links.elements,
+          "droppedLinksCount" := span.links.dropped
         )
         .dropNullValues
         .dropEmptyValues

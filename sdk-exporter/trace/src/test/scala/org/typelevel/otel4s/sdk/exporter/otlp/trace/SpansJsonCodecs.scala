@@ -79,7 +79,8 @@ private object SpansJsonCodecs extends JsonCodecs {
         .obj(
           "timeUnixNano" := eventData.timestamp.toNanos.toString,
           "name" := eventData.name,
-          "attributes" := eventData.attributes
+          "attributes" := eventData.attributes.elements,
+          "droppedAttributesCount" := eventData.attributes.dropped
         )
         .dropEmptyValues
     }
@@ -91,7 +92,8 @@ private object SpansJsonCodecs extends JsonCodecs {
           "traceId" := link.spanContext.traceIdHex,
           "spanId" := link.spanContext.spanIdHex,
           "traceState" := link.spanContext.traceState,
-          "attributes" := link.attributes,
+          "attributes" := link.attributes.elements,
+          "droppedAttributesCount" := link.attributes.dropped,
           "flags" := encodeFlags(link.spanContext.traceFlags)
         )
         .dropNullValues
@@ -111,9 +113,12 @@ private object SpansJsonCodecs extends JsonCodecs {
           "kind" := span.kind,
           "startTimeUnixNano" := span.startTimestamp.toNanos.toString,
           "endTimeUnixNano" := span.endTimestamp.map(_.toNanos.toString),
-          "attributes" := span.attributes,
-          "events" := span.events,
-          "links" := span.links
+          "attributes" := span.attributes.elements,
+          "droppedAttributesCount" := span.attributes.dropped,
+          "events" := span.events.elements,
+          "droppedEventsCount" := span.events.dropped,
+          "links" := span.links.elements,
+          "droppedLinksCount" := span.links.dropped
         )
         .dropNullValues
         .dropEmptyValues

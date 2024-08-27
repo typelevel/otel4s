@@ -26,6 +26,7 @@ import org.typelevel.otel4s.sdk.context.Context
 import org.typelevel.otel4s.sdk.testkit.trace.TracesTestkit
 import org.typelevel.otel4s.sdk.trace.context.propagation.W3CTraceContextPropagator
 import org.typelevel.otel4s.sdk.trace.data.EventData
+import org.typelevel.otel4s.sdk.trace.data.LimitedData
 import org.typelevel.otel4s.sdk.trace.data.StatusData
 import org.typelevel.otel4s.sdk.trace.samplers.Sampler
 import org.typelevel.otel4s.trace.BaseTracerSuite
@@ -76,7 +77,7 @@ class SdkTracerSuite extends BaseTracerSuite[Context, Context.Key] {
         spans.map(_.underlying.status),
         List(StatusData(StatusCode.Error, "canceled"))
       )
-      assertEquals(spans.map(_.underlying.events.isEmpty), List(true))
+      assertEquals(spans.map(_.underlying.events.elements.isEmpty), List(true))
     }
   }
 
@@ -91,7 +92,11 @@ class SdkTracerSuite extends BaseTracerSuite[Context, Context.Key] {
       EventData.fromException(
         timestamp = timestamp,
         exception = exception,
-        attributes = Attributes.empty,
+        attributes = LimitedData
+          .attributes(
+            SpanLimits.default.maxNumberOfAttributesPerEvent,
+            SpanLimits.default.maxAttributeValueLength
+          ),
         escaped = false
       )
 
@@ -107,7 +112,7 @@ class SdkTracerSuite extends BaseTracerSuite[Context, Context.Key] {
           List(StatusData.Error(None))
         )
         assertEquals(
-          spans.map(_.underlying.events),
+          spans.map(_.underlying.events.elements),
           List(Vector(expected(now)))
         )
       }
@@ -167,7 +172,7 @@ class SdkTracerSuite extends BaseTracerSuite[Context, Context.Key] {
       def name: String = sd.name
       def spanContext: SpanContext = sd.spanContext
       def parentSpanContext: Option[SpanContext] = sd.parentSpanContext
-      def attributes: Attributes = sd.attributes
+      def attributes: Attributes = sd.attributes.elements
       def startTimestamp: FiniteDuration = sd.startTimestamp
       def endTimestamp: Option[FiniteDuration] = sd.endTimestamp
     }

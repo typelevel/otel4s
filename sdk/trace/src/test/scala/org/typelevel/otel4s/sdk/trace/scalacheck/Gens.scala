@@ -17,7 +17,10 @@
 package org.typelevel.otel4s.sdk.trace.scalacheck
 
 import org.scalacheck.Gen
+import org.typelevel.otel4s.Attribute
+import org.typelevel.otel4s.Attributes
 import org.typelevel.otel4s.sdk.trace.data.EventData
+import org.typelevel.otel4s.sdk.trace.data.LimitedData
 import org.typelevel.otel4s.sdk.trace.data.LinkData
 import org.typelevel.otel4s.sdk.trace.data.SpanData
 import org.typelevel.otel4s.sdk.trace.data.StatusData
@@ -41,17 +44,26 @@ trait Gens
       attributes <- Gens.attributes
     } yield SamplingResult(decision, attributes)
 
+  val limitedAttributes: Gen[LimitedData[Attribute[_], Attributes]] =
+    for {
+      attributes <- Gens.nonEmptyVector(Gens.attribute)
+      extraAttributes <- Gens.nonEmptyVector(Gens.attribute)
+      valueLengthLimit <- Gen.posNum[Int]
+    } yield LimitedData
+      .attributes(attributes.length, valueLengthLimit)
+      .appendAll((attributes ++: extraAttributes).toVector.to(Attributes))
+
   val eventData: Gen[EventData] =
     for {
       name <- Gens.nonEmptyString
       epoch <- Gens.timestamp
-      attributes <- Gens.attributes
+      attributes <- Gens.limitedAttributes
     } yield EventData(name, epoch, attributes)
 
   val linkData: Gen[LinkData] =
     for {
       spanContext <- Gens.spanContext
-      attributes <- Gens.attributes
+      attributes <- Gens.limitedAttributes
     } yield LinkData(spanContext, attributes)
 
   val statusData: Gen[StatusData] =
@@ -64,6 +76,22 @@ trait Gens
       )
     } yield data
 
+  val limitedEvents: Gen[LimitedData[EventData, Vector[EventData]]] =
+    for {
+      events <- Gens.nonEmptyVector(Gens.eventData)
+      extraEvents <- Gens.nonEmptyVector(Gens.eventData)
+    } yield LimitedData
+      .events(events.length)
+      .appendAll((events ++: extraEvents).toVector)
+
+  val limitedLinks: Gen[LimitedData[LinkData, Vector[LinkData]]] =
+    for {
+      links <- Gens.nonEmptyVector(Gens.linkData)
+      extraLinks <- Gens.nonEmptyVector(Gens.linkData)
+    } yield LimitedData
+      .links(links.length)
+      .appendAll((links ++: extraLinks).toVector)
+
   val spanData: Gen[SpanData] =
     for {
       name <- Gens.nonEmptyString
@@ -73,9 +101,9 @@ trait Gens
       startTimestamp <- Gens.timestamp
       endTimestamp <- Gen.option(Gens.timestamp)
       status <- Gens.statusData
-      attributes <- Gens.attributes
-      events <- Gen.listOf(Gens.eventData)
-      links <- Gen.listOf(Gens.linkData)
+      attributes <- Gens.limitedAttributes
+      events <- Gens.limitedEvents
+      links <- Gens.limitedLinks
       instrumentationScope <- Gens.instrumentationScope
       resource <- Gens.telemetryResource
     } yield SpanData(
@@ -87,8 +115,8 @@ trait Gens
       endTimestamp,
       status,
       attributes,
-      events.toVector,
-      links.toVector,
+      events,
+      links,
       instrumentationScope,
       resource
     )

@@ -58,11 +58,11 @@ class SdkSpanBuilderSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
         val builder = SdkSpanBuilder(name, scope, state, traceScope)
 
         assertEquals(builder.name, name)
-        assertEquals(builder.parent, SdkSpanBuilder.Parent.Propagate)
-        assertEquals(builder.kind, None)
-        assertEquals(builder.links.elements, Vector.empty)
-        assertEquals(builder.attributes.elements, Attributes.empty)
-        assertEquals(builder.startTimestamp, None)
+        assertEquals(builder.state.parent, SpanBuilder.Parent.Propagate)
+        assertEquals(builder.state.spanKind, None)
+        assertEquals(builder.state.links, Vector.empty)
+        assertEquals(builder.state.attributes, Attributes.empty)
+        assertEquals(builder.state.startTimestamp, None)
       }
     }
   }
@@ -99,11 +99,11 @@ class SdkSpanBuilderSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
 
             val withLinks = linkDataInput.items.foldLeft(withTimestamp) {
               (b, link) =>
-                b.addLink(link.spanContext, link.attributes.toSeq: _*)
+                b.addLink(link.spanContext, link.attributes.toSeq)
             }
 
             val withAttributes =
-              withLinks.addAttributes(attributes.toSeq: _*)
+              withLinks.addAttributes(attributes.toSeq)
 
             val withKind =
               withAttributes.withSpanKind(kind)

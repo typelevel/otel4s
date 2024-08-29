@@ -18,6 +18,7 @@ package org.typelevel.otel4s.meta
 
 import cats.Applicative
 import cats.~>
+import org.typelevel.otel4s.KindTransformer
 
 trait InstrumentMeta[F[_]] {
 
@@ -32,6 +33,12 @@ trait InstrumentMeta[F[_]] {
   /** Modify the context `F` using the transformation `f`. */
   def mapK[G[_]](f: F ~> G): InstrumentMeta[G] =
     new InstrumentMeta.MappedK(this)(f)
+
+  /** Modify the context `F` using an implicit [[KindTransformer]] from `F` to
+    * `G`.
+    */
+  def mapK[G[_]](implicit kt: KindTransformer[F, G]): InstrumentMeta[G] =
+    mapK(kt.liftK)
 }
 
 object InstrumentMeta {

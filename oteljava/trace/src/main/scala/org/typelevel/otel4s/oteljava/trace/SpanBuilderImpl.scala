@@ -26,66 +26,30 @@ import io.opentelemetry.api.trace.{SpanBuilder => JSpanBuilder}
 import io.opentelemetry.api.trace.{SpanKind => JSpanKind}
 import io.opentelemetry.api.trace.{Tracer => JTracer}
 import io.opentelemetry.context.{Context => JContext}
-import org.typelevel.otel4s.Attribute
-import org.typelevel.otel4s.Attributes
+import org.typelevel.otel4s.meta.InstrumentMeta
 import org.typelevel.otel4s.oteljava.AttributeConverters._
 import org.typelevel.otel4s.oteljava.context.Context
 import org.typelevel.otel4s.trace.Span
 import org.typelevel.otel4s.trace.SpanBuilder
 import org.typelevel.otel4s.trace.SpanContext
-import org.typelevel.otel4s.trace.SpanFinalizer
 import org.typelevel.otel4s.trace.SpanKind
 import org.typelevel.otel4s.trace.SpanOps
 import org.typelevel.otel4s.trace.TraceScope
 
-import scala.collection.immutable
-import scala.concurrent.duration.FiniteDuration
-
-private[oteljava] final case class SpanBuilderImpl[F[_]: Sync](
+private[oteljava] final case class SpanBuilderImpl[F[_]: Sync] private (
     jTracer: JTracer,
     name: String,
     runner: SpanRunner[F],
     scope: TraceScope[F, Context],
-    parent: SpanBuilderImpl.Parent = SpanBuilderImpl.Parent.Propagate,
-    finalizationStrategy: SpanFinalizer.Strategy =
-      SpanFinalizer.Strategy.reportAbnormal,
-    kind: Option[SpanKind] = None,
-    links: Seq[(SpanContext, Attributes)] = Nil,
-    attributes: Attributes = Attributes.empty,
-    startTimestamp: Option[FiniteDuration] = None
+    state: SpanBuilder.State
 ) extends SpanBuilder[F] {
+  import SpanBuilder.Parent
   import SpanBuilderImpl._
 
-  def withSpanKind(spanKind: SpanKind): SpanBuilder[F] =
-    copy(kind = Some(spanKind))
+  val meta: InstrumentMeta[F] = InstrumentMeta.enabled[F]
 
-  def addAttribute[A](attribute: Attribute[A]): SpanBuilder[F] =
-    copy(attributes = attributes + attribute)
-
-  def addAttributes(
-      attributes: immutable.Iterable[Attribute[_]]
-  ): SpanBuilder[F] =
-    copy(attributes = this.attributes ++ attributes)
-
-  def addLink(
-      spanContext: SpanContext,
-      attributes: immutable.Iterable[Attribute[_]]
-  ): SpanBuilder[F] =
-    copy(links = links :+ (spanContext, attributes.to(Attributes)))
-
-  def root: SpanBuilder[F] =
-    copy(parent = Parent.Root)
-
-  def withParent(parent: SpanContext): SpanBuilder[F] =
-    copy(parent = Parent.Explicit(parent))
-
-  def withStartTimestamp(timestamp: FiniteDuration): SpanBuilder[F] =
-    copy(startTimestamp = Some(timestamp))
-
-  def withFinalizationStrategy(
-      strategy: SpanFinalizer.Strategy
-  ): SpanBuilder[F] =
-    copy(finalizationStrategy = strategy)
+  def modifyState(f: SpanBuilder.State => SpanBuilder.State): SpanBuilder[F] =
+    copy(state = f(state))
 
   def build: SpanOps[F] = new SpanOps[F] {
     def startUnmanaged: F[Span[F]] =
@@ -103,12 +67,12 @@ private[oteljava] final case class SpanBuilderImpl[F[_]: Sync](
   private[trace] def makeJBuilder(parent: JContext): JSpanBuilder = {
     val b = jTracer
       .spanBuilder(name)
-      .setAllAttributes(attributes.toJava)
+      .setAllAttributes(state.attributes.toJava)
       .setParent(parent)
 
-    kind.foreach(k => b.setSpanKind(toJSpanKind(k)))
-    startTimestamp.foreach(d => b.setStartTimestamp(d.length, d.unit))
-    links.foreach { case (ctx, attributes) =>
+    state.spanKind.foreach(k => b.setSpanKind(toJSpanKind(k)))
+    state.startTimestamp.foreach(d => b.setStartTimestamp(d.length, d.unit))
+    state.links.foreach { case (ctx, attributes) =>
       b.addLink(
         SpanContextConversions.toJava(ctx),
         attributes.toJava
@@ -125,8 +89,8 @@ private[oteljava] final case class SpanBuilderImpl[F[_]: Sync](
       SpanRunner.RunnerContext(
         builder = makeJBuilder(parent),
         parent = parent,
-        hasStartTimestamp = startTimestamp.isDefined,
-        finalizationStrategy = finalizationStrategy
+        hasStartTimestamp = state.startTimestamp.isDefined,
+        finalizationStrategy = state.finalizationStrategy
       )
     }
 
@@ -140,7 +104,7 @@ private[oteljava] final case class SpanBuilderImpl[F[_]: Sync](
       Option(JSpan.fromContextOrNull(underlying)) match {
         // there is a valid span in the current context = child scope
         case Some(current) if current.getSpanContext.isValid =>
-          parent match {
+          state.parent match {
             case Parent.Root             => Some(JContext.root)
             case Parent.Propagate        => Some(underlying)
             case Parent.Explicit(parent) => Some(explicit(parent))
@@ -148,7 +112,7 @@ private[oteljava] final case class SpanBuilderImpl[F[_]: Sync](
 
         // there is no span in the current context = root scope
         case None =>
-          parent match {
+          state.parent match {
             case Parent.Root             => Some(underlying)
             case Parent.Propagate        => Some(underlying)
             case Parent.Explicit(parent) => Some(explicit(parent))
@@ -163,12 +127,19 @@ private[oteljava] final case class SpanBuilderImpl[F[_]: Sync](
 
 private[oteljava] object SpanBuilderImpl {
 
-  sealed trait Parent
-  private object Parent {
-    case object Propagate extends Parent
-    case object Root extends Parent
-    final case class Explicit(parent: SpanContext) extends Parent
-  }
+  def apply[F[_]: Sync](
+      jTracer: JTracer,
+      name: String,
+      runner: SpanRunner[F],
+      scope: TraceScope[F, Context]
+  ): SpanBuilder[F] =
+    SpanBuilderImpl(
+      jTracer,
+      name,
+      runner,
+      scope,
+      SpanBuilder.State.init
+    )
 
   private def toJSpanKind(spanKind: SpanKind): JSpanKind =
     spanKind match {
@@ -178,4 +149,5 @@ private[oteljava] object SpanBuilderImpl {
       case SpanKind.Producer => JSpanKind.PRODUCER
       case SpanKind.Consumer => JSpanKind.CONSUMER
     }
+
 }

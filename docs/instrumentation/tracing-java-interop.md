@@ -1,4 +1,4 @@
-# Tracing - interop with Java-instrumented libraries
+# Tracing | Interop with Java-instrumented libraries
 
 ## Glossary
 

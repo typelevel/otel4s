@@ -652,6 +652,7 @@ lazy val docs = project
   .settings(
     libraryDependencies ++= Seq(
       "org.apache.pekko" %% "pekko-http" % PekkoHttpVersion,
+      "org.http4s" %% "http4s-client" % Http4sVersion,
       "io.opentelemetry" % "opentelemetry-sdk-extension-autoconfigure" % OpenTelemetryVersion,
       "io.opentelemetry.instrumentation" % "opentelemetry-instrumentation-annotations" % OpenTelemetryInstrumentationVersion,
       "io.opentelemetry.instrumentation" % "opentelemetry-runtime-telemetry-java8" % OpenTelemetryInstrumentationAlphaVersion,
@@ -681,6 +682,11 @@ lazy val docs = project
             "scala-version",
             ChoiceConfig("scala-2", "Scala 2"),
             ChoiceConfig("scala-3", "Scala 3")
+          ).withSeparateEbooks,
+          SelectionConfig(
+            "otel-backend",
+            ChoiceConfig("oteljava", "OpenTelemetry Java"),
+            ChoiceConfig("sdk", "SDK")
           ).withSeparateEbooks
         )
       )

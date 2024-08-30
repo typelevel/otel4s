@@ -40,7 +40,8 @@ import java.nio.charset.StandardCharsets
   * | otel.resource.attributes                 | OTEL_RESOURCE_ATTRIBUTES                 | Specify resource attributes in the following format: key1=val1,key2=val2,key3=val3                         |
   * | otel.service.name                        | OTEL_SERVICE_NAME                        | Specify logical service name. Takes precedence over `service.name` defined with `otel.resource.attributes` |
   * | otel.experimental.resource.disabled-keys | OTEL_EXPERIMENTAL_RESOURCE_DISABLED_KEYS | Specify resource attribute keys that are filtered.                                                         |
-  * | otel.otel4s.resource.detectors           | OTEL_OTEL4S_RESOURCE_DETECTORS           | Specify resource detectors to use. Defaults to `host,os,process,process_runtime`.                          |
+  * | otel.otel4s.resource.detectors.enabled   | OTEL_OTEL4S_RESOURCE_DETECTORS_ENABLED   | Specify resource detectors to use. Defaults to `host,os,process,process_runtime`.                          |
+  * | otel.otel4s.resource.detectors.disabled  | OTEL_OTEL4S_RESOURCE_DETECTORS_DISABLED  | Specify resource detectors to disable.                                                                     |
   * }}}
   *
   * @see
@@ -75,7 +76,12 @@ private final class TelemetryResourceAutoConfigure[F[_]: Sync: Console](
         Sync[F].fromEither(fromEnv(config, disabledKeys))
       )
 
-      detectedResource <- fromDetectors(config, disabledKeys)
+      disabledDetectors <- Resource.eval(
+        Sync[F].fromEither(
+          config.getOrElse(ConfigKeys.DetectorsDisabled, Set.empty[String])
+        )
+      )
+      detectedResource <- fromDetectors(config, disabledKeys, disabledDetectors)
     } yield detectedResource.fold(envResource)(_.mergeUnsafe(envResource))
 
   private def fromEnv(
@@ -122,7 +128,8 @@ private final class TelemetryResourceAutoConfigure[F[_]: Sync: Console](
 
   private def fromDetectors(
       config: Config,
-      disabledKeys: Set[String]
+      disabledKeys: Set[String],
+      disabledDetectors: Set[String]
   ): Resource[F, Option[TelemetryResource]] = {
 
     def removeDisabledAttributes(resource: TelemetryResource) =
@@ -148,18 +155,18 @@ private final class TelemetryResourceAutoConfigure[F[_]: Sync: Console](
         case None =>
           Sync[F].raiseError(
             ConfigurationError.unrecognized(
-              ConfigKeys.Detectors.name,
+              ConfigKeys.DetectorsEnabled.name,
               name,
               detectors.map(_.name) + Const.NoneDetector
             )
           )
       }
 
-    config.getOrElse(ConfigKeys.Detectors, Defaults.Detectors) match {
+    config.getOrElse(ConfigKeys.DetectorsEnabled, Defaults.Detectors) match {
       case Right(n) if n.contains(Const.NoneDetector) && n.sizeIs > 1 =>
         Resource.raiseError(
           ConfigurationError(
-            s"[${ConfigKeys.Detectors}] contains '${Const.NoneDetector}' along with other detectors"
+            s"[${ConfigKeys.DetectorsEnabled}] contains '${Const.NoneDetector}' along with other detectors"
           ): Throwable
         )
 
@@ -168,7 +175,9 @@ private final class TelemetryResourceAutoConfigure[F[_]: Sync: Console](
 
       case Right(names) =>
         Resource.eval(
-          names.toList
+          names
+            .diff(disabledDetectors)
+            .toList
             .flatTraverse(detector => detect(detector).map(_.toList))
             .map(resources => resources.reduceOption(_ mergeUnsafe _))
         )
@@ -192,10 +201,19 @@ private[sdk] object TelemetryResourceAutoConfigure {
     val ServiceName: Config.Key[String] =
       Config.Key("otel.service.name")
 
-    val Detectors: Config.Key[Set[String]] =
-      Config.Key("otel.otel4s.resource.detectors")
+    val DetectorsEnabled: Config.Key[Set[String]] =
+      Config.Key("otel.otel4s.resource.detectors.enabled")
 
-    val All: Set[Config.Key[_]] = Set(DisabledKeys, Attributes, ServiceName)
+    val DetectorsDisabled: Config.Key[Set[String]] =
+      Config.Key("otel.otel4s.resource.detectors.disabled")
+
+    val All: Set[Config.Key[_]] = Set(
+      DisabledKeys,
+      Attributes,
+      ServiceName,
+      DetectorsEnabled,
+      DetectorsDisabled
+    )
   }
 
   private object Const {
@@ -220,7 +238,8 @@ private[sdk] object TelemetryResourceAutoConfigure {
     * | otel.resource.attributes                 | OTEL_RESOURCE_ATTRIBUTES                 | Specify resource attributes in the following format: key1=val1,key2=val2,key3=val3                         |
     * | otel.service.name                        | OTEL_SERVICE_NAME                        | Specify logical service name. Takes precedence over `service.name` defined with `otel.resource.attributes` |
     * | otel.experimental.resource.disabled-keys | OTEL_EXPERIMENTAL_RESOURCE_DISABLED_KEYS | Specify resource attribute keys that are filtered.                                                         |
-    * | otel.otel4s.resource.detectors           | OTEL_OTEL4S_RESOURCE_DETECTORS           | Specify resource detectors to use. Defaults to `host,os,process,process_runtime`.                          |
+    * | otel.otel4s.resource.detectors.enabled   | OTEL_OTEL4S_RESOURCE_DETECTORS_ENABLED   | Specify resource detectors to use. Defaults to `host,os,process,process_runtime`.                          |
+    * | otel.otel4s.resource.detectors.disabled  | OTEL_OTEL4S_RESOURCE_DETECTORS_DISABLED  | Specify resource detectors to disable.                                                                     |
     * }}}
     *
     * @see

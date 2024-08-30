@@ -47,7 +47,7 @@ class SdkMetricsSuite extends CatsEffectSuite {
   test("withConfig - use the given config") {
     val config = Config.ofProps(
       Map(
-        "otel.otel4s.resource.detectors" -> "none",
+        "otel.otel4s.resource.detectors.enabled" -> "none",
         "otel.metrics.exporter" -> "console"
       )
     )
@@ -128,7 +128,7 @@ class SdkMetricsSuite extends CatsEffectSuite {
   test("addResourceCustomizer - customize a resource") {
     val config = Config.ofProps(
       Map(
-        "otel.otel4s.resource.detectors" -> "none",
+        "otel.otel4s.resource.detectors.enabled" -> "none",
         "otel.metrics.exporter" -> "console"
       )
     )
@@ -156,7 +156,7 @@ class SdkMetricsSuite extends CatsEffectSuite {
   test("addExporterConfigurer - support external configurers") {
     val config = Config.ofProps(
       Map(
-        "otel.otel4s.resource.detectors" -> "none",
+        "otel.otel4s.resource.detectors.enabled" -> "none",
         "otel.metrics.exporter" -> "custom-1,custom-2"
       )
     )

@@ -39,7 +39,7 @@ import org.typelevel.otel4s.sdk.trace.exporter.SpanExporter
   * }}}
   *
   * @see
-  *   [[https://github.com/open-telemetry/opentelemetry-java/blob/main/sdk-extensions/autoconfigure/README.md#span-exporters]]
+  *   [[https://opentelemetry.io/docs/languages/java/configuration/#span-exporters]]
   */
 private final class SpanExportersAutoConfigure[F[_]: MonadThrow: Console](
     extra: Set[AutoConfigure.Named[F, SpanExporter[F]]]
@@ -152,7 +152,7 @@ private[sdk] object SpanExportersAutoConfigure {
     * }}}
     *
     * @see
-    *   [[https://github.com/open-telemetry/opentelemetry-java/blob/main/sdk-extensions/autoconfigure/README.md#span-exporters]]
+    *   [[https://opentelemetry.io/docs/languages/java/configuration/#span-exporters]]
     *
     * @param configurers
     *   the configurers to use

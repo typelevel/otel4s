@@ -151,6 +151,6 @@ val io: IO[Unit] = program[IO]
 
 [cats-effect]: https://typelevel.org/cats-effect/
 [opentelemetry-java]: https://github.com/open-telemetry/opentelemetry-java/tree/main/api/all
-[opentelemetry-java-autoconfigure]: https://github.com/open-telemetry/opentelemetry-java/blob/main/sdk-extensions/autoconfigure/README.md
+[opentelemetry-java-autoconfigure]: https://opentelemetry.io/docs/languages/java/configuration/
 [otel]: https://opentelemetry.io/
 [otel spec]: https://opentelemetry.io/docs/reference/specification/

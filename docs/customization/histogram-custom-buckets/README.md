@@ -53,7 +53,7 @@ Add directives to the `histogram-buckets.scala`:
 
 As mentioned above, we use `otel.service.name` system properties to configure the OpenTelemetry SDK.
 The SDK can be configured via environment variables too. Check the full list
-of [environment variable configurations](https://github.com/open-telemetry/opentelemetry-java/blob/main/sdk-extensions/autoconfigure/README.md)
+of [environment variable configurations](https://opentelemetry.io/docs/languages/java/configuration/)
 for more options.
 
 ### OpenTelemetry Autoconfigure extension customization

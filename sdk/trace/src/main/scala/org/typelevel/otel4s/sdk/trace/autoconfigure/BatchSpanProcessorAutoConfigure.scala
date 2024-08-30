@@ -41,7 +41,7 @@ import scala.concurrent.duration.FiniteDuration
   * }}}
   *
   * @see
-  *   [[https://github.com/open-telemetry/opentelemetry-java/blob/main/sdk-extensions/autoconfigure/README.md#batch-span-processor]]
+  *   [[https://opentelemetry.io/docs/languages/java/configuration/#batch-span-processor]]
   *
   * @param exporter
   *   the exporter to use with the configured batch span processor
@@ -125,7 +125,7 @@ private[sdk] object BatchSpanProcessorAutoConfigure {
     * }}}
     *
     * @see
-    *   [[https://github.com/open-telemetry/opentelemetry-java/blob/main/sdk-extensions/autoconfigure/README.md#batch-span-processor]]
+    *   [[https://opentelemetry.io/docs/languages/java/configuration/#batch-span-processor]]
     *
     * @param exporter
     *   the exporter to use with the configured batch span processor

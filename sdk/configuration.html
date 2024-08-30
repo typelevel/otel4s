@@ -140,6 +140,7 @@
     <li class="level2 nav-leaf"><a href="#propagators">Propagators</a></li>
     <li class="level2 nav-leaf"><a href="#batch-span-processor">Batch span processor</a></li>
     <li class="level2 nav-leaf"><a href="#sampler">Sampler</a></li>
+    <li class="level2 nav-leaf"><a href="#span-limits">Span limits</a></li>
   </ul>
 
   <p class="footer"></p>
@@ -552,6 +553,50 @@
           <li><code>parentbased_traceidratio</code>, where <code>otel.traces.sampler.arg</code> sets the ratio - respects its parent span&#39;s sampling decision, 
           but otherwise samples probabilistically based on the configured rate.</li>
         </ul>
+        
+        <h3 id="span-limits" class="section"><a class="anchor-link left" href="#span-limits"><i class="icofont-laika link">&#xef71;</i></a>Span limits</h3>
+        <p>These properties can be used to control the maximum size of spans by placing limits on attributes, events, and links.</p>
+        <table>
+          <thead>
+            <tr>
+              <th>System property</th>
+              <th>Environment variable</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>otel.span.attribute.count.limit</td>
+              <td>OTEL_SPAN_ATTRIBUTE_COUNT_LIMIT</td>
+              <td>The maximum allowed span attribute count. Default is <code>128</code>.</td>
+            </tr>
+            <tr>
+              <td>otel.span.event.count.limit</td>
+              <td>OTEL_SPAN_EVENT_COUNT_LIMIT</td>
+              <td>The maximum allowed span event count. Default is <code>128</code>.</td>
+            </tr>
+            <tr>
+              <td>otel.span.link.count.limit</td>
+              <td>OTEL_SPAN_LINK_COUNT_LIMIT</td>
+              <td>The maximum allowed span link count. Default is <code>128</code>.</td>
+            </tr>
+            <tr>
+              <td>otel.event.attribute.count.limit</td>
+              <td>OTEL_EVENT_ATTRIBUTE_COUNT_LIMIT</td>
+              <td>The maximum allowed attribute per span event count. Default is <code>128</code>.</td>
+            </tr>
+            <tr>
+              <td>otel.link.attribute.count.limit</td>
+              <td>OTEL_LINK_ATTRIBUTE_COUNT_LIMIT</td>
+              <td>The maximum allowed attribute per span link count. Default is <code>128</code>.</td>
+            </tr>
+            <tr>
+              <td>otel.span.attribute.value.length.limit</td>
+              <td>OTEL_SPAN_ATTRIBUTE_VALUE_LENGTH_LIMIT</td>
+              <td>The maximum allowed attribute value size. No limit by default.</td>
+            </tr>
+          </tbody>
+        </table>
 
         
 <hr class="footer-rule"/>

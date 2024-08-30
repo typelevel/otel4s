@@ -80,7 +80,7 @@ object OpenTelemetrySdk {
     * import org.typelevel.otel4s.sdk.OpenTelemetrySdk
     * import org.typelevel.otel4s.sdk.exporter.otlp.autoconfigure.OtlpExportersAutoConfigure
     *
-    * OpenTelemetrySdk.autoConfigured[IO](_.addExportersConfigurer(OtlpExporterAutoConfigure[IO]))
+    * OpenTelemetrySdk.autoConfigured[IO](_.addExportersConfigurer(OtlpExportersAutoConfigure[IO]))
     *   }}}
     *
     * @param customize
@@ -219,9 +219,9 @@ object OpenTelemetrySdk {
         *   and register the configurer manually:
         *   {{{
         * import org.typelevel.otel4s.sdk.OpenTelemetrySdk
-        * import org.typelevel.otel4s.sdk.exporter.otlp.autoconfigure.OtlpExporterAutoConfigure
+        * import org.typelevel.otel4s.sdk.exporter.otlp.autoconfigure.OtlpExportersAutoConfigure
         *
-        * OpenTelemetrySdk.autoConfigured[IO](_.addExporterConfigurer(OtlpExporterAutoConfigure[IO]))
+        * OpenTelemetrySdk.autoConfigured[IO](_.addExportersConfigurer(OtlpExportersAutoConfigure[IO]))
         *   }}}
         *
         * @param configurer

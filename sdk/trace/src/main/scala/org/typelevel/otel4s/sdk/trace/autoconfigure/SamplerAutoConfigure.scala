@@ -35,7 +35,7 @@ import org.typelevel.otel4s.sdk.trace.samplers.Sampler
   * }}}
   *
   * @see
-  *   [[https://github.com/open-telemetry/opentelemetry-java/blob/main/sdk-extensions/autoconfigure/README.md#sampler]]
+  *   [[https://opentelemetry.io/docs/languages/java/configuration/#sampler]]
   */
 private final class SamplerAutoConfigure[F[_]: MonadThrow](
     extra: Set[AutoConfigure.Named[F, Sampler]]
@@ -161,7 +161,7 @@ private[sdk] object SamplerAutoConfigure {
     *     the ratio
     *
     * @see
-    *   [[https://github.com/open-telemetry/opentelemetry-java/blob/main/sdk-extensions/autoconfigure/README.md#sampler]]
+    *   [[https://opentelemetry.io/docs/languages/java/configuration/#sampler]]
     */
   def apply[F[_]: MonadThrow](
       extra: Set[AutoConfigure.Named[F, Sampler]]

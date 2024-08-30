@@ -106,7 +106,7 @@ object OpenTelemetrySdk {
   /** The auto-configured [[OpenTelemetrySdk]].
     *
     * @see
-    *   [[https://github.com/open-telemetry/opentelemetry-java/blob/main/sdk-extensions/autoconfigure/README.md]]
+    *   [[https://typelevel.org/otel4s/sdk/configuration.html]]
     *
     * @tparam F
     *   the higher-kinded type of a polymorphic effect

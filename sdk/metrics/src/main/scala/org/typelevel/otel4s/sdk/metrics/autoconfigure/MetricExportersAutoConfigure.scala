@@ -39,7 +39,7 @@ import org.typelevel.otel4s.sdk.metrics.exporter.MetricExporter
   * }}}
   *
   * @see
-  *   [[https://github.com/open-telemetry/opentelemetry-java/blob/main/sdk-extensions/autoconfigure/README.md#metric-exporters]]
+  *   [[https://opentelemetry.io/docs/languages/java/configuration/#metric-exporters]]
   */
 private final class MetricExportersAutoConfigure[F[_]: MonadThrow: Console](
     extra: Set[AutoConfigure.Named[F, MetricExporter[F]]]
@@ -157,7 +157,7 @@ private[sdk] object MetricExportersAutoConfigure {
     * }}}
     *
     * @see
-    *   [[https://github.com/open-telemetry/opentelemetry-java/blob/main/sdk-extensions/autoconfigure/README.md#metric-exporters]]
+    *   [[https://opentelemetry.io/docs/languages/java/configuration/#metric-exporters]]
     *
     * @param configurers
     *   the configurers to use

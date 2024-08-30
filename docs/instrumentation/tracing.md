@@ -158,4 +158,4 @@ class InternalUserService[F[_]: Tracer](repo: UserRepository[F]) {
 ```
 
 [opentelemetry-java]: https://github.com/open-telemetry/opentelemetry-java
-[opentelemetry-java-autoconfigure]: https://github.com/open-telemetry/opentelemetry-java/blob/main/sdk-extensions/autoconfigure/README.md
+[opentelemetry-java-autoconfigure]: https://opentelemetry.io/docs/languages/java/configuration/

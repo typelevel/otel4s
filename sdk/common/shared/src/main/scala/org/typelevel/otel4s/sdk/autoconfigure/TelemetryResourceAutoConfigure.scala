@@ -44,7 +44,7 @@ import java.nio.charset.StandardCharsets
   * }}}
   *
   * @see
-  *   [[https://github.com/open-telemetry/opentelemetry-java/blob/main/sdk-extensions/autoconfigure/README.md#opentelemetry-resource]]
+  *   [[https://opentelemetry.io/docs/languages/java/configuration/#resources]]
   *
   * @param extraDetectors
   *   the extra detectors to use
@@ -223,7 +223,7 @@ private[sdk] object TelemetryResourceAutoConfigure {
     * }}}
     *
     * @see
-    *   [[https://github.com/open-telemetry/opentelemetry-java/blob/main/sdk-extensions/autoconfigure/README.md#opentelemetry-resource]]
+    *   [[https://opentelemetry.io/docs/languages/java/configuration/#resources]]
     *
     * @param extraDetectors
     *   the extra detectors to use

@@ -41,7 +41,7 @@ import org.typelevel.otel4s.sdk.trace.context.propagation.W3CTraceContextPropaga
   * }}}
   *
   * @see
-  *   [[https://github.com/open-telemetry/opentelemetry-java/blob/main/sdk-extensions/autoconfigure/README.md#propagator]]
+  *   [[https://opentelemetry.io/docs/languages/java/configuration/#propagators]]
   */
 private final class ContextPropagatorsAutoConfigure[F[_]: MonadThrow](
     extra: Set[AutoConfigure.Named[F, TextMapPropagator[Context]]]
@@ -144,7 +144,7 @@ private[sdk] object ContextPropagatorsAutoConfigure {
     *   - [[OtTracePropagator ottrace]]
     *
     * @see
-    *   [[https://github.com/open-telemetry/opentelemetry-java/blob/main/sdk-extensions/autoconfigure/README.md#propagator]]
+    *   [[https://opentelemetry.io/docs/languages/java/configuration/#propagators]]
     *
     * @param extra
     *   extra configurers to use

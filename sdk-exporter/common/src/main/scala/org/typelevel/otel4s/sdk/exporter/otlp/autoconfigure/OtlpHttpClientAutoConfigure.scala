@@ -64,7 +64,7 @@ import scala.concurrent.duration.FiniteDuration
   * }}}
   *
   * @see
-  *   [[https://github.com/open-telemetry/opentelemetry-java/blob/main/sdk-extensions/autoconfigure/README.md#otlp-exporter-span-metric-and-log-exporters]]
+  *   [[https://opentelemetry.io/docs/languages/java/configuration/#otlp-exporter-span-metric-and-log-exporters]]
   */
 private final class OtlpHttpClientAutoConfigure[
     F[_]: Async: Network: Compression: Console,

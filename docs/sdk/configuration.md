@@ -192,3 +192,16 @@ The following options for `otel.traces.sampler` are supported out of the box:
 - `parentbased_always_off` - respects its parent span's sampling decision, but otherwise never samples.
 - `parentbased_traceidratio`, where `otel.traces.sampler.arg` sets the ratio - respects its parent span's sampling decision, 
 but otherwise samples probabilistically based on the configured rate.
+
+### Span limits
+
+These properties can be used to control the maximum size of spans by placing limits on attributes, events, and links.
+
+| System property                          | Environment variable                             | Description                                                           |
+|------------------------------------------|--------------------------------------------------|-----------------------------------------------------------------------|
+| otel.span.attribute.count.limit          | OTEL\\_SPAN\\_ATTRIBUTE\\_COUNT\\_LIMIT          | The maximum allowed span attribute count. Default is `128`.           |
+| otel.span.event.count.limit              | OTEL\\_SPAN\\_EVENT\\_COUNT\\_LIMIT              | The maximum allowed span event count. Default is `128`.               |
+| otel.span.link.count.limit               | OTEL\\_SPAN\\_LINK\\_COUNT\\_LIMIT               | The maximum allowed span link count. Default is `128`.                |
+| otel.event.attribute.count.limit         | OTEL\\_EVENT\\_ATTRIBUTE\\_COUNT\\_LIMIT         | The maximum allowed attribute per span event count. Default is `128`. |
+| otel.link.attribute.count.limit          | OTEL\\_LINK\\_ATTRIBUTE\\_COUNT\\_LIMIT          | The maximum allowed attribute per span link count. Default is `128`.  |
+| otel.span.attribute.value.length.limit   | OTEL\\_SPAN\\_ATTRIBUTE\\_VALUE\\_LENGTH\\_LIMIT | The maximum allowed attribute value size. No limit by default.        |

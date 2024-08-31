@@ -50,7 +50,17 @@ If not specified, SDK defaults the service name to `unknown_service:scala`.
 | otel.resource.attributes                 | OTEL\\_RESOURCE\\_ATTRIBUTES                     | Specify resource attributes in the following format: `key1=val1,key2=val2,key3=val3`.                       |
 | otel.service.name                        | OTEL\\_SERVICE\\_NAME                            | Specify logical service name. Takes precedence over `service.name` defined with `otel.resource.attributes`. |
 | otel.experimental.resource.disabled-keys | OTEL\\_EXPERIMENTAL\\_RESOURCE\\_DISABLED\\_KEYS | Specify resource attribute keys that are filtered.                                                          |
-| otel.otel4s.resource.detectors           | OTEL\\_OTEL4S\\_RESOURCE\\_DETECTORS             | Specify resource detectors to use. Defaults to `host,os,process_runtime`.                                   | 
+| otel.otel4s.resource.detectors.enabled   | OTEL\\_OTEL4S\\_RESOURCE\\_DETECTORS\\_ENABLED   | Specify resource detectors to use. Defaults to `host,os,process,process_runtime`.                           | 
+| otel.otel4s.resource.detectors.disabled  | OTEL\\_OTEL4S\\_RESOURCE\\_DETECTORS\\_DISABLED  | Specify resource detectors to disable.                                                                      | 
+
+### Telemetry resource detectors
+
+`TelemetryResourceDetector` adds environment-aware attributes to the telemetry resource.
+For example, `HostDetector` will add `host.arch` and `host.name` attributes.
+By default, the following resource detectors are enabled: `host`, `os`, `process`, `process_runtime`.
+
+To disable all detectors, set `-Dotel.otel4s.resource.detectors.enabled=none`. 
+To disable some detectors, use `-Dotel.otel4s.resource.detectors.disabled=host,os,process`.
 
 ## Metrics
 

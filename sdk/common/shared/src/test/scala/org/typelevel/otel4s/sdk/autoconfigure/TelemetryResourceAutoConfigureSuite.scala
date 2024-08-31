@@ -26,7 +26,7 @@ import org.typelevel.otel4s.sdk.resource.TelemetryResourceDetector
 class TelemetryResourceAutoConfigureSuite extends CatsEffectSuite {
 
   test("load from an empty config - use default as a fallback") {
-    val props = Map("otel.otel4s.resource.detectors" -> "none")
+    val props = Map("otel.otel4s.resource.detectors.enabled" -> "none")
     val config = Config.ofProps(props)
 
     TelemetryResourceAutoConfigure[IO](Set.empty)
@@ -41,7 +41,7 @@ class TelemetryResourceAutoConfigureSuite extends CatsEffectSuite {
       "otel.service.name" -> "some-service",
       "otel.resource.attributes" -> "key1=val1,key2=val2,key3=val3",
       "otel.experimental.resource.disabled-keys" -> "key1,val3,test,key3",
-      "otel.otel4s.resource.detectors" -> "none"
+      "otel.otel4s.resource.detectors.enabled" -> "none"
     )
 
     val config = Config.ofProps(props)
@@ -112,7 +112,7 @@ class TelemetryResourceAutoConfigureSuite extends CatsEffectSuite {
   }
 
   test("use extra detectors") {
-    val props = Map("otel.otel4s.resource.detectors" -> "custom")
+    val props = Map("otel.otel4s.resource.detectors.enabled" -> "custom")
     val config = Config(props, Map.empty, Map.empty)
 
     val customResource =
@@ -132,6 +132,30 @@ class TelemetryResourceAutoConfigureSuite extends CatsEffectSuite {
             TelemetryResource.default.mergeUnsafe(customResource)
           )
         )
+      }
+  }
+
+  test("do not load disabled detectors") {
+    val props = Map(
+      "otel.otel4s.resource.detectors.disabled" -> "host,process,process_runtime"
+    )
+    val config = Config.ofProps(props)
+
+    TelemetryResourceAutoConfigure[IO](Set.empty)
+      .configure(config)
+      .use { resource =>
+        val service = Set("service.name")
+        val os = Set("os.type", "os.description")
+
+        val telemetry = Set(
+          "telemetry.sdk.language",
+          "telemetry.sdk.name",
+          "telemetry.sdk.version"
+        )
+
+        val all = os ++ service ++ telemetry
+
+        IO(assertEquals(resource.attributes.map(_.key.name).toSet, all))
       }
   }
 }

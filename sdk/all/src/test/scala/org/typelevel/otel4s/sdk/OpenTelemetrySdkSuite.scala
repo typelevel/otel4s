@@ -69,7 +69,7 @@ class OpenTelemetrySdkSuite extends CatsEffectSuite {
   test("withConfig - use the given config") {
     val config = Config.ofProps(
       Map(
-        "otel.otel4s.resource.detectors" -> "none",
+        "otel.otel4s.resource.detectors.enabled" -> "none",
         "otel.traces.exporter" -> "none",
         "otel.metrics.exporter" -> "none"
       )
@@ -125,7 +125,7 @@ class OpenTelemetrySdkSuite extends CatsEffectSuite {
   test("addTracerProviderCustomizer - customize tracer provider") {
     val config = Config.ofProps(
       Map(
-        "otel.otel4s.resource.detectors" -> "none",
+        "otel.otel4s.resource.detectors.enabled" -> "none",
         "otel.traces.exporter" -> "none",
         "otel.metrics.exporter" -> "none"
       )
@@ -147,7 +147,7 @@ class OpenTelemetrySdkSuite extends CatsEffectSuite {
   test("addResourceCustomizer - customize a resource") {
     val config = Config.ofProps(
       Map(
-        "otel.otel4s.resource.detectors" -> "none",
+        "otel.otel4s.resource.detectors.enabled" -> "none",
         "otel.traces.exporter" -> "none",
         "otel.metrics.exporter" -> "none"
       )
@@ -176,7 +176,7 @@ class OpenTelemetrySdkSuite extends CatsEffectSuite {
   test("addSpanExporterConfigurer - support external configurers") {
     val config = Config.ofProps(
       Map(
-        "otel.otel4s.resource.detectors" -> "none",
+        "otel.otel4s.resource.detectors.enabled" -> "none",
         "otel.traces.exporter" -> "custom-1,custom-2",
         "otel.metrics.exporter" -> "none"
       )
@@ -217,7 +217,7 @@ class OpenTelemetrySdkSuite extends CatsEffectSuite {
   test("addSamplerConfigurer - support external configurers") {
     val config = Config.ofProps(
       Map(
-        "otel.otel4s.resource.detectors" -> "none",
+        "otel.otel4s.resource.detectors.enabled" -> "none",
         "otel.traces.exporter" -> "none",
         "otel.metrics.exporter" -> "none",
         "otel.traces.sampler" -> "custom-sampler",
@@ -252,7 +252,7 @@ class OpenTelemetrySdkSuite extends CatsEffectSuite {
   test("addTextMapPropagatorConfigurer - support external configurers") {
     val config = Config.ofProps(
       Map(
-        "otel.otel4s.resource.detectors" -> "none",
+        "otel.otel4s.resource.detectors.enabled" -> "none",
         "otel.traces.exporter" -> "none",
         "otel.metrics.exporter" -> "none",
         "otel.propagators" -> "tracecontext,custom-1,custom-2,baggage",
@@ -297,7 +297,7 @@ class OpenTelemetrySdkSuite extends CatsEffectSuite {
   test("addMeterProviderCustomizer - customize meter provider") {
     val config = Config.ofProps(
       Map(
-        "otel.otel4s.resource.detectors" -> "none",
+        "otel.otel4s.resource.detectors.enabled" -> "none",
         "otel.traces.exporter" -> "none",
         "otel.metrics.exporter" -> "console"
       )
@@ -331,7 +331,7 @@ class OpenTelemetrySdkSuite extends CatsEffectSuite {
   test("addMeterExporterConfigurer - support external configurers") {
     val config = Config.ofProps(
       Map(
-        "otel.otel4s.resource.detectors" -> "none",
+        "otel.otel4s.resource.detectors.enabled" -> "none",
         "otel.traces.exporter" -> "none",
         "otel.metrics.exporter" -> "custom-1,custom-2"
       )

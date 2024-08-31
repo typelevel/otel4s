@@ -83,13 +83,6 @@ OpenTelemetrySdk.autoConfigured[IO](
 )
 ```
 
-### No environment-aware Telemetry Resource
-
-OpenTelemetry Java can detect a large variety of environments (e.g. GCP, AWS ECS, etc) and add additional 
-environment-specific attributes to the Telemetry Resource.
-
-Otel4s SDK module does not support this yet. But we have a plan to provide this functionality in the future.
-
 ### Metrics missing features
 
 - `Exponential Histogram` aggregation is not supported yet

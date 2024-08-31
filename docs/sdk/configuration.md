@@ -174,6 +174,7 @@ Options supported out of the box:
 - `b3` - [B3 Single](https://github.com/openzipkin/b3-propagation#single-header)
 - `b3multi` - [B3 Multi](https://github.com/openzipkin/b3-propagation#multiple-headers)
 - `jaeger` - [Jaeger](https://www.jaegertracing.io/docs/1.21/client-libraries/#propagation-format)
+- `ottrace` - [OpenTracing](https://opentracing.io/)
 
 ### Batch span processor
 

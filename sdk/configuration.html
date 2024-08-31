@@ -128,7 +128,8 @@
 
   <ul class="nav-list">
     <li class="level1 nav-leaf"><a href="#common">Common</a></li>
-    <li class="level1 nav-leaf"><a href="#telemetry-resource">Telemetry resource</a></li>
+    <li class="level1 nav-node"><a href="#telemetry-resource">Telemetry resource</a></li>
+    <li class="level2 nav-leaf"><a href="#telemetry-resource-detectors">Telemetry resource detectors</a></li>
     <li class="level1 nav-node"><a href="#metrics">Metrics</a></li>
     <li class="level2 nav-leaf"><a href="#exporters-1">Exporters</a></li>
     <li class="level2 nav-leaf"><a href="#otlp-exporter-1">OTLP exporter</a></li>
@@ -220,12 +221,24 @@
               <td>Specify resource attribute keys that are filtered.</td>
             </tr>
             <tr>
-              <td>otel.otel4s.resource.detectors</td>
-              <td>OTEL_OTEL4S_RESOURCE_DETECTORS</td>
-              <td>Specify resource detectors to use. Defaults to <code>host,os,process_runtime</code>.</td>
+              <td>otel.otel4s.resource.detectors.enabled</td>
+              <td>OTEL_OTEL4S_RESOURCE_DETECTORS_ENABLED</td>
+              <td>Specify resource detectors to use. Defaults to <code>host,os,process,process_runtime</code>.</td>
+            </tr>
+            <tr>
+              <td>otel.otel4s.resource.detectors.disabled</td>
+              <td>OTEL_OTEL4S_RESOURCE_DETECTORS_DISABLED</td>
+              <td>Specify resource detectors to disable.</td>
             </tr>
           </tbody>
         </table>
+        
+        <h3 id="telemetry-resource-detectors" class="section"><a class="anchor-link left" href="#telemetry-resource-detectors"><i class="icofont-laika link">&#xef71;</i></a>Telemetry resource detectors</h3>
+        <p><code>TelemetryResourceDetector</code> adds environment-aware attributes to the telemetry resource.
+        For example, <code>HostDetector</code> will add <code>host.arch</code> and <code>host.name</code> attributes.
+        By default, the following resource detectors are enabled: <code>host</code>, <code>os</code>, <code>process</code>, <code>process_runtime</code>.</p>
+        <p>To disable all detectors, set <code>-Dotel.otel4s.resource.detectors.enabled=none</code>. 
+        To disable some detectors, use <code>-Dotel.otel4s.resource.detectors.disabled=host,os,process</code>.</p>
         
         <h2 id="metrics" class="section"><a class="anchor-link left" href="#metrics"><i class="icofont-laika link">&#xef71;</i></a>Metrics</h2>
         

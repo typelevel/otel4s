@@ -74,6 +74,8 @@ private[propagation] object JavaPropagatorWrappers {
       Option(carrier)
         .fold(context)(underlying.extract(Context.wrap(context), _).underlying)
     }
+
+    override def toString: String = s"TextMapPropagatorWrapper{$underlying}"
   }
 
   class JTextMapPropagatorWrapper(val underlying: JTextMapPropagator)
@@ -101,5 +103,7 @@ private[propagation] object JavaPropagatorWrappers {
       )
       res
     }
+
+    override def toString: String = s"JTextMapPropagatorWrapper{$underlying}"
   }
 }

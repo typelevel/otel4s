@@ -108,6 +108,7 @@ lazy val root = tlCrossRootProject
     `sdk-exporter-metrics`,
     `sdk-exporter-trace`,
     `sdk-exporter`,
+    `sdk-contrib-aws-resource`,
     `sdk-contrib-aws-xray-propagator`,
     `oteljava-common`,
     `oteljava-common-testkit`,
@@ -437,6 +438,18 @@ lazy val `sdk-exporter` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
 // SDK contrib modules
 //
 
+lazy val `sdk-contrib-aws-resource` =
+  crossProject(JVMPlatform, JSPlatform, NativePlatform)
+    .crossType(CrossType.Pure)
+    .in(file("sdk-contrib/aws/resource"))
+    .dependsOn(`sdk-common`, `semconv-experimental` % Test)
+    .settings(
+      name := "otel4s-sdk-contrib-aws-resource",
+      startYear := Some(2024)
+    )
+    .settings(munitDependencies)
+    .settings(scalafixSettings)
+
 lazy val `sdk-contrib-aws-xray-propagator` =
   crossProject(JVMPlatform, JSPlatform, NativePlatform)
     .crossType(CrossType.Pure)
@@ -447,8 +460,7 @@ lazy val `sdk-contrib-aws-xray-propagator` =
     )
     .settings(
       name := "otel4s-sdk-contrib-aws-xray-propagator",
-      startYear := Some(2024),
-      mimaPreviousArtifacts ~= { _.filterNot(_.revision.startsWith("0.9")) }
+      startYear := Some(2024)
     )
     .settings(munitDependencies)
     .settings(scalafixSettings)
@@ -680,6 +692,7 @@ lazy val docs = project
     oteljava,
     sdk.jvm,
     `sdk-exporter`.jvm,
+    `sdk-contrib-aws-resource`.jvm,
     `sdk-contrib-aws-xray-propagator`.jvm
   )
   .settings(
@@ -753,6 +766,7 @@ lazy val unidocs = project
       `sdk-exporter-metrics`.jvm,
       `sdk-exporter-trace`.jvm,
       `sdk-exporter`.jvm,
+      `sdk-contrib-aws-resource`.jvm,
       `sdk-contrib-aws-xray-propagator`.jvm,
       `oteljava-common`,
       `oteljava-common-testkit`,

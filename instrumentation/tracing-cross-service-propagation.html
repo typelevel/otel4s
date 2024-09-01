@@ -408,14 +408,12 @@ mermaid.initialize({
 }</span></code></pre>
             <p>And wire it up:</p>
             <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">sdk</span><span>.</span><span class="type-name">OpenTelemetrySdk</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">sdk</span><span>.</span><span class="identifier">autoconfigure</span><span>.</span><span class="type-name">AutoConfigure</span><span>
 
 </span><span class="type-name">OpenTelemetrySdk</span><span>.</span><span class="identifier">autoConfigured</span><span>[</span><span class="type-name">IO</span><span>] { </span><span class="identifier">builder</span><span> =&gt;
-  </span><span class="identifier">builder</span><span>.</span><span class="identifier">addTextMapPropagatorConfigurer</span><span>(
-    </span><span class="type-name">AutoConfigure</span><span>.</span><span class="type-name">Named</span><span>.</span><span class="identifier">const</span><span>(</span><span class="string-literal">&quot;platform-id&quot;</span><span>, </span><span class="type-name">PlatformIdPropagator</span><span>)
+  </span><span class="identifier">builder</span><span>.</span><span class="identifier">addTracerProviderCustomizer</span><span>((</span><span class="identifier">b</span><span>, </span><span class="identifier">_</span><span>) =&gt;
+    </span><span class="identifier">b</span><span>.</span><span class="identifier">addTextMapPropagators</span><span>(</span><span class="type-name">PlatformIdPropagator</span><span>)
   )
 }</span></code></pre>
-            <p>And enable propagator via environment variable: <code>OTEL_PROPAGATORS=platform-id</code>.</p>
           </div>
         </div>
 

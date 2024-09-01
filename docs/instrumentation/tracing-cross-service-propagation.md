@@ -282,15 +282,12 @@ object PlatformIdPropagator extends TextMapPropagator[Context] {
 And wire it up:
 ```scala mdoc:silent
 import org.typelevel.otel4s.sdk.OpenTelemetrySdk
-import org.typelevel.otel4s.sdk.autoconfigure.AutoConfigure
 
 OpenTelemetrySdk.autoConfigured[IO] { builder =>
-  builder.addTextMapPropagatorConfigurer(
-    AutoConfigure.Named.const("platform-id", PlatformIdPropagator)
+  builder.addTracerProviderCustomizer((b, _) =>
+    b.addTextMapPropagators(PlatformIdPropagator)
   )
 }
 ```
-
-And enable propagator via environment variable: `OTEL_PROPAGATORS=platform-id`.
 
 @:@

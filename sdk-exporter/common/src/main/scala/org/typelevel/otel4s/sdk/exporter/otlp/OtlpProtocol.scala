@@ -17,20 +17,31 @@
 package org.typelevel.otel4s.sdk.exporter.otlp
 
 import cats.Show
+import cats.syntax.show._
 
-private[otlp] sealed trait HttpPayloadEncoding {
-  override def toString: String =
-    Show[HttpPayloadEncoding].show(this)
+sealed trait OtlpProtocol {
+  override final def toString: String =
+    Show[OtlpProtocol].show(this)
 }
 
-private[otlp] object HttpPayloadEncoding {
-  case object Json extends HttpPayloadEncoding
-  case object Protobuf extends HttpPayloadEncoding
+object OtlpProtocol {
 
-  implicit val httpPayloadEncodingShow: Show[HttpPayloadEncoding] =
+  def httpJson: OtlpProtocol =
+    Http(HttpPayloadEncoding.Json)
+
+  def httpProtobuf: OtlpProtocol =
+    Http(HttpPayloadEncoding.Protobuf)
+
+  def grpc: OtlpProtocol =
+    Grpc
+
+  implicit val otlpProtocolShow: Show[OtlpProtocol] =
     Show.show {
-      case Json     => "json"
-      case Protobuf => "protobuf"
+      case Grpc           => "grpc"
+      case Http(encoding) => show"http/$encoding"
     }
+
+  private[otlp] final case class Http(encoding: HttpPayloadEncoding) extends OtlpProtocol
+  private[otlp] case object Grpc extends OtlpProtocol
 
 }

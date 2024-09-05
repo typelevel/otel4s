@@ -360,6 +360,7 @@ lazy val `sdk-exporter-common` =
       name := "otel4s-sdk-exporter-common",
       startYear := Some(2023),
       libraryDependencies ++= Seq(
+        "co.fs2" %%% "fs2-scodec" % FS2Version,
         "org.http4s" %%% "http4s-ember-client" % Http4sVersion,
         "org.http4s" %%% "http4s-circe" % Http4sVersion,
         "io.github.scalapb-json" %%% "scalapb-circe" % ScalaPBCirceVersion,

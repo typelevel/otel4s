@@ -43,36 +43,72 @@ import org.typelevel.otel4s.trace.StatusCode
 import java.util.Locale
 import scala.concurrent.duration._
 
-class OtlpHttpSpanExporterSuite extends CatsEffectSuite with ScalaCheckEffectSuite with SuiteRuntimePlatform {
+class OtlpSpanExporterSuite extends CatsEffectSuite with ScalaCheckEffectSuite with SuiteRuntimePlatform {
 
-  import OtlpHttpSpanExporterSuite._
+  import OtlpSpanExporterSuite._
 
-  private implicit val encodingArbitrary: Arbitrary[HttpPayloadEncoding] =
-    Arbitrary(Gen.oneOf(HttpPayloadEncoding.Protobuf, HttpPayloadEncoding.Json))
+  private implicit val protocolArbitrary: Arbitrary[OtlpProtocol] =
+    Arbitrary(
+      Gen.oneOf(
+        OtlpProtocol.httpJson,
+        OtlpProtocol.httpProtobuf,
+        OtlpProtocol.grpc
+      )
+    )
+
+  private implicit val compressionArbitrary: Arbitrary[PayloadCompression] =
+    Arbitrary(
+      Gen.oneOf(
+        PayloadCompression.gzip,
+        PayloadCompression.none
+      )
+    )
 
   test("represent builder parameters in the name") {
-    PropF.forAllF { (encoding: HttpPayloadEncoding) =>
-      val enc = encoding match {
-        case HttpPayloadEncoding.Json     => "Json"
-        case HttpPayloadEncoding.Protobuf => "Protobuf"
-      }
-
+    PropF.forAllF { (protocol: OtlpProtocol, compression: PayloadCompression) =>
       val expected =
-        s"OtlpHttpSpanExporter{client=OtlpHttpClient{encoding=$enc, " +
+        s"OtlpSpanExporter{client=OtlpClient{protocol=$protocol, " +
           "endpoint=https://localhost:4318/api/v1/traces, " +
           "timeout=5 seconds, " +
-          "gzipCompression=true, " +
+          s"compression=$compression, " +
           "headers={X-Forwarded-For: 127.0.0.1}}}"
 
-      OtlpHttpSpanExporter
+      OtlpSpanExporter
         .builder[IO]
         .addHeaders(
           Headers(`X-Forwarded-For`(IpAddress.fromString("127.0.0.1")))
         )
         .withEndpoint(uri"https://localhost:4318/api/v1/traces")
         .withTimeout(5.seconds)
-        .withGzip
-        .withEncoding(encoding)
+        .withProtocol(protocol)
+        .withCompression(compression)
+        .build
+        .use { exporter =>
+          IO(assertEquals(exporter.name, expected))
+        }
+    }
+  }
+
+  test("change endpoint according to the protocol") {
+    PropF.forAllF { (protocol: OtlpProtocol) =>
+      val endpoint = protocol match {
+        case _: OtlpProtocol.Http =>
+          "http://localhost:4318/v1/traces"
+
+        case OtlpProtocol.Grpc =>
+          "http://localhost:4317/opentelemetry.proto.collector.trace.v1.TraceService/Export"
+      }
+
+      val expected =
+        s"OtlpSpanExporter{client=OtlpClient{protocol=$protocol, " +
+          s"endpoint=$endpoint, " +
+          "timeout=10 seconds, " +
+          "compression=none, " +
+          "headers={}}}"
+
+      OtlpSpanExporter
+        .builder[IO]
+        .withProtocol(protocol)
         .build
         .use { exporter =>
           IO(assertEquals(exporter.name, expected))
@@ -81,7 +117,7 @@ class OtlpHttpSpanExporterSuite extends CatsEffectSuite with ScalaCheckEffectSui
   }
 
   test("export spans") {
-    PropF.forAllF { (sd: SpanData, encoding: HttpPayloadEncoding) =>
+    PropF.forAllF { (sd: SpanData, protocol: OtlpProtocol, compression: PayloadCompression) =>
       IO.realTime.flatMap { now =>
         // we need to tweak end timestamps and attributes, so we recreate the span data
         val span = SpanData(
@@ -183,9 +219,10 @@ class OtlpHttpSpanExporterSuite extends CatsEffectSuite with ScalaCheckEffectSui
           JaegerResponse(List(jaegerTrace))
         }
 
-        OtlpHttpSpanExporter
+        OtlpSpanExporter
           .builder[IO]
-          .withEncoding(encoding)
+          .withProtocol(protocol)
+          .withCompression(compression)
           .withTimeout(20.seconds)
           .withRetryPolicy(
             RetryPolicy.builder
@@ -259,7 +296,7 @@ class OtlpHttpSpanExporterSuite extends CatsEffectSuite with ScalaCheckEffectSui
 
 }
 
-object OtlpHttpSpanExporterSuite {
+object OtlpSpanExporterSuite {
   case class JaegerRef(refType: String, traceID: String, spanID: String)
   case class JaegerTag(key: String, `type`: String, value: Json)
   case class JaegerLog(timestamp: Long)

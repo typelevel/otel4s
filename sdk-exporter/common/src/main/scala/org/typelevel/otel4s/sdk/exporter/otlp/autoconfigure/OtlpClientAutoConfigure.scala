@@ -37,7 +37,7 @@ import scalapb_circe.Printer
 
 import scala.concurrent.duration.FiniteDuration
 
-/** Autoconfigures [[OtlpHttpClient]].
+/** Autoconfigures [[OtlpClient]].
   *
   * Target-specific properties are prioritized. E.g. `otel.exporter.otlp.traces.endpoint` is prioritized over
   * `otel.exporter.otlp.endpoint`.
@@ -46,45 +46,68 @@ import scala.concurrent.duration.FiniteDuration
   * {{{
   * | System property                       | Environment variable                  | Description                                                                                                                                                                      |
   * |---------------------------------------|---------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+  * | otel.exporter.otlp.protocol           | OTEL_EXPORTER_OTLP_PROTOCOL           | The transport protocol to use. Options include `grpc`, `http/protobuf`, and `http/json`. Default is `http/protobuf`.                                                             |
   * | otel.exporter.otlp.endpoint           | OTEL_EXPORTER_OTLP_ENDPOINT           | The OTLP traces, metrics, and logs endpoint to connect to. Must be a URL with a scheme of either `http` or `https` based on the use of TLS. Default is `http://localhost:4318/`. |
   * | otel.exporter.otlp.headers            | OTEL_EXPORTER_OTLP_HEADERS            | Key-value pairs separated by commas to pass as request headers on OTLP trace, metric, and log requests.                                                                          |
   * | otel.exporter.otlp.compression        | OTEL_EXPORTER_OTLP_COMPRESSION        | The compression type to use on OTLP trace, metric, and log requests. Options include `gzip`. By default no compression will be used.                                             |
   * | otel.exporter.otlp.timeout            | OTEL_EXPORTER_OTLP_TIMEOUT            | The maximum waiting time to send each OTLP trace, metric, and log batch. Default is `10 seconds`.                                                                                |
   * }}}
   *
+  * The metrics-specific configuration options:
+  * {{{
+  * | System property                        | Environment variable                   | Description                                                                                                          |
+  * |----------------------------------------|----------------------------------------|----------------------------------------------------------------------------------------------------------------------|
+  * | otel.exporter.otlp.metrics.protocol    | OTEL_EXPORTER_OTLP_METRICS_PROTOCOL    | The transport protocol to use. Options include `grpc`, `http/protobuf`, and `http/json`. Default is `http/protobuf`. |
+  * | otel.exporter.otlp.metrics.headers     | OTEL_EXPORTER_OTLP_METRICS_HEADERS     | Key-value pairs separated by commas to pass as request headers on OTLP trace requests.                               |
+  * | otel.exporter.otlp.metrics.endpoint    | OTEL_EXPORTER_OTLP_METRICS_ENDPOINT    | The OTLP traces endpoint to connect to. Default is `http://localhost:4318/v1/metrics`.                               |
+  * | otel.exporter.otlp.metrics.compression | OTEL_EXPORTER_OTLP_METRICS_COMPRESSION | The compression type to use on OTLP trace requests. Options include `gzip`. By default no compression will be used.  |
+  * | otel.exporter.otlp.metrics.timeout     | OTEL_EXPORTER_OTLP_METRICS_TIMEOUT     | The maximum waiting time to send each OTLP trace batch. Default is `10 seconds`.                                     |
+  * }}}
+  *
   * The traces-specific configuration options:
   * {{{
-  * | System property                       | Environment variable                  | Description                                                                                                         |
-  * |---------------------------------------|---------------------------------------|---------------------------------------------------------------------------------------------------------------------|
-  * | otel.exporter.otlp.traces.headers     | OTEL_EXPORTER_OTLP_TRACES_HEADERS     | Key-value pairs separated by commas to pass as request headers on OTLP trace requests.                              |
-  * | otel.exporter.otlp.traces.endpoint    | OTEL_EXPORTER_OTLP_TRACES_ENDPOINT    | The OTLP traces endpoint to connect to. Default is `http://localhost:4318/v1/traces`.                               |
-  * | otel.exporter.otlp.traces.compression | OTEL_EXPORTER_OTLP_TRACES_COMPRESSION | The compression type to use on OTLP trace requests. Options include `gzip`. By default no compression will be used. |
-  * | otel.exporter.otlp.traces.timeout     | OTEL_EXPORTER_OTLP_TRACES_TIMEOUT     | The maximum waiting time to send each OTLP trace batch. Default is `10 seconds`.                                    |
+  * | System property                       | Environment variable                  | Description                                                                                                          |
+  * |---------------------------------------|---------------------------------------|----------------------------------------------------------------------------------------------------------------------|
+  * | otel.exporter.otlp.traces.protocol    | OTEL_EXPORTER_OTLP_TRACES_PROTOCOL    | The transport protocol to use. Options include `grpc`, `http/protobuf`, and `http/json`. Default is `http/protobuf`. |
+  * | otel.exporter.otlp.traces.headers     | OTEL_EXPORTER_OTLP_TRACES_HEADERS     | Key-value pairs separated by commas to pass as request headers on OTLP trace requests.                               |
+  * | otel.exporter.otlp.traces.endpoint    | OTEL_EXPORTER_OTLP_TRACES_ENDPOINT    | The OTLP traces endpoint to connect to. Default is `http://localhost:4318/v1/traces`.                                |
+  * | otel.exporter.otlp.traces.compression | OTEL_EXPORTER_OTLP_TRACES_COMPRESSION | The compression type to use on OTLP trace requests. Options include `gzip`. By default no compression will be used.  |
+  * | otel.exporter.otlp.traces.timeout     | OTEL_EXPORTER_OTLP_TRACES_TIMEOUT     | The maximum waiting time to send each OTLP trace batch. Default is `10 seconds`.                                     |
   * }}}
   *
   * @see
   *   [[https://opentelemetry.io/docs/languages/java/configuration/#otlp-exporter-span-metric-and-log-exporters]]
   */
-private final class OtlpHttpClientAutoConfigure[
+private final class OtlpClientAutoConfigure[
     F[_]: Async: Network: Compression: Console,
     A
 ](
-    specific: OtlpHttpClientAutoConfigure.ConfigKeys.Keys,
-    defaults: OtlpHttpClientAutoConfigure.Defaults,
+    specific: OtlpClientAutoConfigure.ConfigKeys.Keys,
+    defaults: OtlpClientAutoConfigure.Defaults,
     customClient: Option[Client[F]],
     configKeys: Set[Config.Key[_]]
 )(implicit encoder: ProtoEncoder.Message[List[A]], printer: Printer)
-    extends AutoConfigure.WithHint[F, OtlpHttpClient[F, A]](
-      "OtlpHttpClient",
+    extends AutoConfigure.WithHint[F, OtlpClient[F, A]](
+      "OtlpClient",
       configKeys
     ) {
 
-  import OtlpHttpClientAutoConfigure.{ConfigKeys, Defaults, PayloadCompression}
+  import OtlpClientAutoConfigure.{ConfigKeys, Defaults}
 
-  protected def fromConfig(
-      config: Config
-  ): Resource[F, OtlpHttpClient[F, A]] = {
+  private val protocols: Map[String, OtlpProtocol] =
+    Map(
+      "http/json" -> OtlpProtocol.httpJson,
+      "http/protobuf" -> OtlpProtocol.httpProtobuf,
+      "grpc" -> OtlpProtocol.grpc
+    )
 
+  private val compressions: Map[String, PayloadCompression] =
+    Map(
+      "gzip" -> PayloadCompression.gzip,
+      "none" -> PayloadCompression.none
+    )
+
+  protected def fromConfig(config: Config): Resource[F, OtlpClient[F, A]] = {
     def get[V: Config.Reader](
         select: ConfigKeys.Keys => Config.Key[V]
     ): Either[ConfigurationError, Option[V]] =
@@ -119,16 +142,17 @@ private final class OtlpHttpClientAutoConfigure[
 
     def tryLoad =
       for {
+        protocol <- getOrElse(_.Protocol, _.protocol)
         endpoint <- getEndpoint
         timeout <- getOrElse(_.Timeout, _.timeout)
         headers <- getOrElse(_.Headers, _.headers)
-        compression <- get(_.Compression)
-      } yield OtlpHttpClient.create(
-        defaults.encoding,
+        compression <- getOrElse(_.Compression, _.compression)
+      } yield OtlpClient.create(
+        protocol,
         endpoint,
-        timeout,
         headers,
-        compression.isDefined,
+        compression,
+        timeout,
         RetryPolicy.default,
         None,
         customClient
@@ -145,21 +169,6 @@ private final class OtlpHttpClientAutoConfigure[
       Uri.fromString(s).leftMap(e => ConfigurationError(e.message))
     }
 
-  private implicit val compressionReader: Config.Reader[PayloadCompression] =
-    Config.Reader.decodeWithHint("Compression") { s =>
-      s.trim.toLowerCase match {
-        case "gzip" =>
-          Right(PayloadCompression.Gzip)
-
-        case _ =>
-          Left(
-            ConfigurationError(
-              "Unrecognized compression. Supported options [gzip]"
-            )
-          )
-      }
-    }
-
   private implicit val headersReader: Config.Reader[Headers] =
     Config.Reader[Map[String, String]].map { value =>
       val headers = value.map { case (key, value) =>
@@ -167,21 +176,40 @@ private final class OtlpHttpClientAutoConfigure[
       }
       new Headers(headers.toList)
     }
+
+  private implicit val compressionReader: Config.Reader[PayloadCompression] =
+    Config.Reader.decodeWithHint("Compression") { s =>
+      compressions
+        .get(s.trim.toLowerCase)
+        .toRight(
+          ConfigurationError(
+            s"Unrecognized compression [$s]. Supported options [${compressions.keys.mkString(", ")}]"
+          )
+        )
+    }
+
+  private implicit val protocolReader: Config.Reader[OtlpProtocol] =
+    Config.Reader.decodeWithHint("Protocol") { s =>
+      protocols
+        .get(s.trim.toLowerCase)
+        .toRight(
+          ConfigurationError(
+            s"Unrecognized protocol [$s]. Supported options [${protocols.keys.mkString(", ")}]"
+          )
+        )
+    }
+
 }
 
-private[exporter] object OtlpHttpClientAutoConfigure {
+private[exporter] object OtlpClientAutoConfigure {
 
-  private sealed trait PayloadCompression
-  private object PayloadCompression {
-    case object Gzip extends PayloadCompression
-  }
-
-  final case class Defaults(
+  private[otlp] final case class Defaults(
+      protocol: OtlpProtocol,
       endpoint: Uri,
       apiPath: String,
       headers: Headers,
       timeout: FiniteDuration,
-      encoding: HttpPayloadEncoding
+      compression: PayloadCompression
   )
 
   private object ConfigKeys {
@@ -191,6 +219,8 @@ private[exporter] object OtlpHttpClientAutoConfigure {
     object Traces extends Keys("otel.exporter.otlp.traces")
 
     abstract class Keys(namespace: String) {
+      val Protocol: Config.Key[OtlpProtocol] =
+        Config.Key(s"$namespace.protocol")
       val Endpoint: Config.Key[Uri] =
         Config.Key(s"$namespace.endpoint")
       val Headers: Config.Key[Headers] =
@@ -200,11 +230,12 @@ private[exporter] object OtlpHttpClientAutoConfigure {
       val Timeout: Config.Key[FiniteDuration] =
         Config.Key(s"$namespace.timeout")
 
-      val All: Set[Config.Key[_]] = Set(Endpoint, Headers, Compression, Timeout)
+      val All: Set[Config.Key[_]] =
+        Set(Protocol, Endpoint, Headers, Compression, Timeout)
     }
   }
 
-  /** Autoconfigures [[OtlpHttpClient]] using `otel.exporter.otlp.metrics.{x}` and `otel.exporter.otlp.{x}` properties.
+  /** Autoconfigures [[OtlpClient]] using `otel.exporter.otlp.metrics.{x}` and `otel.exporter.otlp.{x}` properties.
     *
     * @param defaults
     *   the default values to use as a fallback when property is missing in the config
@@ -215,15 +246,15 @@ private[exporter] object OtlpHttpClientAutoConfigure {
   )(implicit
       encoder: ProtoEncoder.Message[List[A]],
       printer: Printer
-  ): AutoConfigure[F, OtlpHttpClient[F, A]] =
-    new OtlpHttpClientAutoConfigure[F, A](
+  ): AutoConfigure[F, OtlpClient[F, A]] =
+    new OtlpClientAutoConfigure[F, A](
       ConfigKeys.Metrics,
       defaults,
       customClient,
       ConfigKeys.General.All ++ ConfigKeys.Metrics.All
     )
 
-  /** Autoconfigures [[OtlpHttpClient]] using `otel.exporter.otlp.traces.{x}` and `otel.exporter.otlp.{x}` properties.
+  /** Autoconfigures [[OtlpClient]] using `otel.exporter.otlp.traces.{x}` and `otel.exporter.otlp.{x}` properties.
     *
     * @param defaults
     *   the default values to use as a fallback when property is missing in the config
@@ -234,8 +265,8 @@ private[exporter] object OtlpHttpClientAutoConfigure {
   )(implicit
       encoder: ProtoEncoder.Message[List[A]],
       printer: Printer
-  ): AutoConfigure[F, OtlpHttpClient[F, A]] =
-    new OtlpHttpClientAutoConfigure[F, A](
+  ): AutoConfigure[F, OtlpClient[F, A]] =
+    new OtlpClientAutoConfigure[F, A](
       ConfigKeys.Traces,
       defaults,
       customClient,

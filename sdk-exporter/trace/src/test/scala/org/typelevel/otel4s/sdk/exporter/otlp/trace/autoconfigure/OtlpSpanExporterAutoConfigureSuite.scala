@@ -29,11 +29,11 @@ class OtlpSpanExporterAutoConfigureSuite extends CatsEffectSuite with SuiteRunti
     val config = Config.ofProps(Map.empty)
 
     val expected =
-      "OtlpHttpSpanExporter{client=OtlpHttpClient{" +
-        "encoding=Protobuf, " +
+      "OtlpSpanExporter{client=OtlpClient{" +
+        "protocol=http/protobuf, " +
         "endpoint=http://localhost:4318/v1/traces, " +
         "timeout=10 seconds, " +
-        "gzipCompression=false, " +
+        "compression=none, " +
         "headers={}}}"
 
     OtlpSpanExporterAutoConfigure[IO]
@@ -50,11 +50,11 @@ class OtlpSpanExporterAutoConfigureSuite extends CatsEffectSuite with SuiteRunti
     )
 
     val expected =
-      "OtlpHttpSpanExporter{client=OtlpHttpClient{" +
-        "encoding=Protobuf, " +
+      "OtlpSpanExporter{client=OtlpClient{" +
+        "protocol=http/protobuf, " +
         "endpoint=http://localhost:4318/v1/traces, " +
         "timeout=10 seconds, " +
-        "gzipCompression=false, " +
+        "compression=none, " +
         "headers={}}}"
 
     OtlpSpanExporterAutoConfigure[IO]
@@ -71,11 +71,11 @@ class OtlpSpanExporterAutoConfigureSuite extends CatsEffectSuite with SuiteRunti
     )
 
     val expected =
-      "OtlpHttpSpanExporter{client=OtlpHttpClient{" +
-        "encoding=Json, " +
+      "OtlpSpanExporter{client=OtlpClient{" +
+        "protocol=http/json, " +
         "endpoint=http://localhost:4318/v1/traces, " +
         "timeout=10 seconds, " +
-        "gzipCompression=false, " +
+        "compression=none, " +
         "headers={}}}"
 
     OtlpSpanExporterAutoConfigure[IO]
@@ -90,11 +90,11 @@ class OtlpSpanExporterAutoConfigureSuite extends CatsEffectSuite with SuiteRunti
     )
 
     val expected =
-      "OtlpHttpSpanExporter{client=OtlpHttpClient{" +
-        "encoding=Protobuf, " +
+      "OtlpSpanExporter{client=OtlpClient{" +
+        "protocol=http/protobuf, " +
         "endpoint=http://localhost:4318/v1/traces, " +
         "timeout=10 seconds, " +
-        "gzipCompression=false, " +
+        "compression=none, " +
         "headers={}}}"
 
     endpoints.traverse_ { endpoint =>
@@ -109,7 +109,7 @@ class OtlpSpanExporterAutoConfigureSuite extends CatsEffectSuite with SuiteRunti
   }
 
   test("load from the config - unknown protocol - fail") {
-    val config = Config.ofProps(Map("otel.exporter.otlp.protocol" -> "grpc"))
+    val config = Config.ofProps(Map("otel.exporter.otlp.protocol" -> "mqtt"))
 
     OtlpSpanExporterAutoConfigure[IO]
       .configure(config)
@@ -117,11 +117,19 @@ class OtlpSpanExporterAutoConfigureSuite extends CatsEffectSuite with SuiteRunti
       .attempt
       .map(_.leftMap(_.getMessage))
       .assertEquals(
-        Left("""Cannot autoconfigure [Protocol].
-               |Cause: Unrecognized protocol [grpc]. Supported options [http/json, http/protobuf].
+        Left("""Cannot autoconfigure [OtlpClient].
+               |Cause: Unrecognized protocol [mqtt]. Supported options [http/json, http/protobuf, grpc].
                |Config:
-               |1) `otel.exporter.otlp.protocol` - grpc
-               |2) `otel.exporter.otlp.traces.protocol` - N/A""".stripMargin)
+               |1) `otel.exporter.otlp.compression` - N/A
+               |2) `otel.exporter.otlp.endpoint` - N/A
+               |3) `otel.exporter.otlp.headers` - N/A
+               |4) `otel.exporter.otlp.protocol` - mqtt
+               |5) `otel.exporter.otlp.timeout` - N/A
+               |6) `otel.exporter.otlp.traces.compression` - N/A
+               |7) `otel.exporter.otlp.traces.endpoint` - N/A
+               |8) `otel.exporter.otlp.traces.headers` - N/A
+               |9) `otel.exporter.otlp.traces.protocol` - N/A
+               |10) `otel.exporter.otlp.traces.timeout` - N/A""".stripMargin)
       )
   }
 

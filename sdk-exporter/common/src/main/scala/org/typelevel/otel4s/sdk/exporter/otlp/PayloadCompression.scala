@@ -18,19 +18,26 @@ package org.typelevel.otel4s.sdk.exporter.otlp
 
 import cats.Show
 
-private[otlp] sealed trait HttpPayloadEncoding {
+sealed trait PayloadCompression {
   override def toString: String =
-    Show[HttpPayloadEncoding].show(this)
+    Show[PayloadCompression].show(this)
 }
 
-private[otlp] object HttpPayloadEncoding {
-  case object Json extends HttpPayloadEncoding
-  case object Protobuf extends HttpPayloadEncoding
+object PayloadCompression {
 
-  implicit val httpPayloadEncodingShow: Show[HttpPayloadEncoding] =
-    Show.show {
-      case Json     => "json"
-      case Protobuf => "protobuf"
+  def gzip: PayloadCompression =
+    Gzip
+
+  def none: PayloadCompression =
+    NoCompression
+
+  implicit val payloadCompressionSHow: Show[PayloadCompression] =
+    Show {
+      case Gzip          => "gzip"
+      case NoCompression => "none"
     }
+
+  private[otlp] case object Gzip extends PayloadCompression
+  private[otlp] case object NoCompression extends PayloadCompression
 
 }

@@ -25,11 +25,9 @@ import org.http4s.Headers
 import org.http4s.client.Client
 import org.typelevel.otel4s.sdk.autoconfigure.AutoConfigure
 import org.typelevel.otel4s.sdk.autoconfigure.Config
-import org.typelevel.otel4s.sdk.exporter.otlp.Protocol
-import org.typelevel.otel4s.sdk.exporter.otlp.autoconfigure.OtlpHttpClientAutoConfigure
-import org.typelevel.otel4s.sdk.exporter.otlp.autoconfigure.ProtocolAutoConfigure
+import org.typelevel.otel4s.sdk.exporter.otlp.autoconfigure.OtlpClientAutoConfigure
 import org.typelevel.otel4s.sdk.exporter.otlp.metrics.MetricsProtoEncoder
-import org.typelevel.otel4s.sdk.exporter.otlp.metrics.OtlpHttpMetricExporter
+import org.typelevel.otel4s.sdk.exporter.otlp.metrics.OtlpMetricExporter
 import org.typelevel.otel4s.sdk.metrics.data.MetricData
 import org.typelevel.otel4s.sdk.metrics.exporter.AggregationSelector
 import org.typelevel.otel4s.sdk.metrics.exporter.AggregationTemporalitySelector
@@ -39,10 +37,7 @@ import org.typelevel.otel4s.sdk.metrics.exporter.MetricExporter
 /** Autoconfigures OTLP [[org.typelevel.otel4s.sdk.metrics.exporter.MetricExporter MetricExporter]].
   *
   * @see
-  *   [[ProtocolAutoConfigure]] for OTLP protocol configuration
-  *
-  * @see
-  *   [[OtlpHttpClientAutoConfigure]] for OTLP HTTP client configuration
+  *   [[OtlpClientAutoConfigure]] for OTLP client configuration
   *
   * @see
   *   [[https://opentelemetry.io/docs/languages/sdk-configuration/otlp-exporter/#otel_exporter_otlp_protocol]]
@@ -58,31 +53,31 @@ private final class OtlpMetricExporterAutoConfigure[
 
   def name: String = "otlp"
 
-  protected def fromConfig(config: Config): Resource[F, MetricExporter[F]] =
-    ProtocolAutoConfigure.metrics[F].configure(config).flatMap { case Protocol.Http(encoding) =>
-      import MetricsProtoEncoder.exportMetricsRequest
-      import MetricsProtoEncoder.jsonPrinter
+  protected def fromConfig(config: Config): Resource[F, MetricExporter[F]] = {
+    import MetricsProtoEncoder.exportMetricsRequest
+    import MetricsProtoEncoder.jsonPrinter
 
-      val defaults = OtlpHttpClientAutoConfigure.Defaults(
-        OtlpHttpMetricExporter.Defaults.Endpoint,
-        OtlpHttpMetricExporter.Defaults.Endpoint.path.toString,
-        Headers.empty,
-        OtlpHttpMetricExporter.Defaults.Timeout,
-        encoding
-      )
+    val defaults = OtlpClientAutoConfigure.Defaults(
+      OtlpMetricExporter.Defaults.Protocol,
+      OtlpMetricExporter.Defaults.HttpEndpoint,
+      OtlpMetricExporter.Defaults.HttpEndpoint.path.toString,
+      Headers.empty,
+      OtlpMetricExporter.Defaults.Timeout,
+      OtlpMetricExporter.Defaults.Compression
+    )
 
-      OtlpHttpClientAutoConfigure
-        .metrics[F, MetricData](defaults, customClient)
-        .configure(config)
-        .map { client =>
-          new OtlpHttpMetricExporter[F](
-            client,
-            AggregationTemporalitySelector.alwaysCumulative,
-            AggregationSelector.default,
-            CardinalityLimitSelector.default
-          )
-        }
-    }
+    OtlpClientAutoConfigure
+      .metrics[F, MetricData](defaults, customClient)
+      .configure(config)
+      .map { client =>
+        new OtlpMetricExporter[F](
+          client,
+          AggregationTemporalitySelector.alwaysCumulative,
+          AggregationSelector.default,
+          CardinalityLimitSelector.default
+        )
+      }
+  }
 
 }
 
@@ -92,7 +87,10 @@ object OtlpMetricExporterAutoConfigure {
     *
     * The configuration depends on the `otel.exporter.otlp.protocol` or `otel.exporter.otlp.metrics.protocol`.
     *
-    * The supported protocols: `http/json`, `http/protobuf`.
+    * Supported protocols:
+    *   - `grpc`
+    *   - `http/json`
+    *   - `http/protobuf`
     *
     * @see
     *   `OtlpHttpClientAutoConfigure` for the configuration details of the OTLP HTTP client
@@ -107,7 +105,10 @@ object OtlpMetricExporterAutoConfigure {
     *
     * The configuration depends on the `otel.exporter.otlp.protocol` or `otel.exporter.otlp.metrics.protocol`.
     *
-    * The supported protocols: `http/json`, `http/protobuf`.
+    * Supported protocols:
+    *   - `grpc`
+    *   - `http/json`
+    *   - `http/protobuf`
     *
     * @see
     *   `OtlpHttpClientAutoConfigure` for the configuration details of the OTLP HTTP client

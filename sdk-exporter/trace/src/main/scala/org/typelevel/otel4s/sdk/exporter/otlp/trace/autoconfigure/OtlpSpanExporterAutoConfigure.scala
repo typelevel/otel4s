@@ -26,19 +26,14 @@ import org.http4s.Headers
 import org.http4s.client.Client
 import org.typelevel.otel4s.sdk.autoconfigure.AutoConfigure
 import org.typelevel.otel4s.sdk.autoconfigure.Config
-import org.typelevel.otel4s.sdk.exporter.otlp.Protocol
-import org.typelevel.otel4s.sdk.exporter.otlp.autoconfigure.OtlpHttpClientAutoConfigure
-import org.typelevel.otel4s.sdk.exporter.otlp.autoconfigure.ProtocolAutoConfigure
+import org.typelevel.otel4s.sdk.exporter.otlp.autoconfigure.OtlpClientAutoConfigure
 import org.typelevel.otel4s.sdk.trace.data.SpanData
 import org.typelevel.otel4s.sdk.trace.exporter.SpanExporter
 
 /** Autoconfigures OTLP [[org.typelevel.otel4s.sdk.trace.exporter.SpanExporter SpanExporter]].
   *
   * @see
-  *   [[ProtocolAutoConfigure]] for OTLP protocol configuration
-  *
-  * @see
-  *   [[OtlpHttpClientAutoConfigure]] for OTLP HTTP client configuration
+  *   [[OtlpClientAutoConfigure]] for OTLP client configuration
   *
   * @see
   *   [[https://opentelemetry.io/docs/languages/sdk-configuration/otlp-exporter/#otel_exporter_otlp_protocol]]
@@ -54,24 +49,24 @@ private final class OtlpSpanExporterAutoConfigure[
 
   def name: String = "otlp"
 
-  protected def fromConfig(config: Config): Resource[F, SpanExporter[F]] =
-    ProtocolAutoConfigure.traces[F].configure(config).flatMap { case Protocol.Http(encoding) =>
-      import SpansProtoEncoder.spanDataToRequest
-      import SpansProtoEncoder.jsonPrinter
+  protected def fromConfig(config: Config): Resource[F, SpanExporter[F]] = {
+    import SpansProtoEncoder.spanDataToRequest
+    import SpansProtoEncoder.jsonPrinter
 
-      val defaults = OtlpHttpClientAutoConfigure.Defaults(
-        OtlpHttpSpanExporter.Defaults.Endpoint,
-        OtlpHttpSpanExporter.Defaults.Endpoint.path.toString,
-        Headers.empty,
-        OtlpHttpSpanExporter.Defaults.Timeout,
-        encoding
-      )
+    val defaults = OtlpClientAutoConfigure.Defaults(
+      OtlpSpanExporter.Defaults.Protocol,
+      OtlpSpanExporter.Defaults.HttpEndpoint,
+      OtlpSpanExporter.Defaults.HttpEndpoint.path.toString,
+      Headers.empty,
+      OtlpSpanExporter.Defaults.Timeout,
+      OtlpSpanExporter.Defaults.Compression
+    )
 
-      OtlpHttpClientAutoConfigure
-        .traces[F, SpanData](defaults, customClient)
-        .configure(config)
-        .map(client => new OtlpHttpSpanExporter[F](client))
-    }
+    OtlpClientAutoConfigure
+      .traces[F, SpanData](defaults, customClient)
+      .configure(config)
+      .map(client => new OtlpSpanExporter(client))
+  }
 
 }
 
@@ -81,7 +76,10 @@ object OtlpSpanExporterAutoConfigure {
     *
     * The configuration depends on the `otel.exporter.otlp.protocol` or `otel.exporter.otlp.traces.protocol`.
     *
-    * The supported protocols: `http/json`, `http/protobuf`.
+    * Supported protocols:
+    *   - `grpc`
+    *   - `http/json`
+    *   - `http/protobuf`
     *
     * @see
     *   `OtlpHttpClientAutoConfigure` for the configuration details of the OTLP HTTP client
@@ -95,7 +93,10 @@ object OtlpSpanExporterAutoConfigure {
     *
     * The configuration depends on the `otel.exporter.otlp.protocol` or `otel.exporter.otlp.traces.protocol`.
     *
-    * The supported protocols: `http/json`, `http/protobuf`.
+    * Supported protocols:
+    *   - `grpc`
+    *   - `http/json`
+    *   - `http/protobuf`
     *
     * @see
     *   `OtlpHttpClientAutoConfigure` for the configuration details of the OTLP HTTP client

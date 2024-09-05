@@ -35,18 +35,26 @@ import org.typelevel.otel4s.sdk.trace.exporter.SpanExporter
 
 import scala.concurrent.duration._
 
-/** Exports spans via HTTP. Supports `json` and `protobuf` encodings.
+/** Exports spans using underlying OTLP client.
+  *
+  * Supported protocols:
+  *   - `grpc`
+  *   - `http/json`
+  *   - `http/protobuf`
   *
   * @see
   *   [[https://opentelemetry.io/docs/specs/otel/protocol/exporter/]]
   *
   * @see
   *   [[https://opentelemetry.io/docs/concepts/sdk-configuration/otlp-exporter-configuration/]]
+  *
+  * @see
+  *   [[https://github.com/open-telemetry/opentelemetry-proto/blob/v1.3.2/opentelemetry/proto/collector/trace/v1/trace_service.proto]]
   */
-private final class OtlpHttpSpanExporter[F[_]: Applicative] private[otlp] (
-    client: OtlpHttpClient[F, SpanData]
+private final class OtlpSpanExporter[F[_]: Applicative] private[otlp] (
+    client: OtlpClient[F, SpanData]
 ) extends SpanExporter[F] {
-  val name: String = s"OtlpHttpSpanExporter{client=$client}"
+  val name: String = s"OtlpSpanExporter{client=$client}"
 
   def exportSpans[G[_]: Foldable](spans: G[SpanData]): F[Unit] =
     client.doExport(spans)
@@ -54,15 +62,17 @@ private final class OtlpHttpSpanExporter[F[_]: Applicative] private[otlp] (
   def flush: F[Unit] = Applicative[F].unit
 }
 
-object OtlpHttpSpanExporter {
+object OtlpSpanExporter {
 
   private[otlp] object Defaults {
-    val Endpoint: Uri = uri"http://localhost:4318/v1/traces"
+    val Protocol: OtlpProtocol = OtlpProtocol.httpProtobuf
+    val HttpEndpoint: Uri = uri"http://localhost:4318/v1/traces"
+    val GrpcEndpoint: Uri = uri"http://localhost:4317/opentelemetry.proto.collector.trace.v1.TraceService/Export"
     val Timeout: FiniteDuration = 10.seconds
-    val GzipCompression: Boolean = false
+    val Compression: PayloadCompression = PayloadCompression.none
   }
 
-  /** A builder of [[OtlpHttpSpanExporter]] */
+  /** A builder of [[OtlpSpanExporter]] */
   sealed trait Builder[F[_]] {
 
     /** Sets the OTLP endpoint to connect to.
@@ -79,14 +89,11 @@ object OtlpHttpSpanExporter {
       */
     def withTimeout(timeout: FiniteDuration): Builder[F]
 
-    /** Enables Gzip compression.
+    /** Sets the compression to use.
       *
-      * The compression is disabled by default.
+      * Default protocol is [[PayloadCompression.none]].
       */
-    def withGzip: Builder[F]
-
-    /** Disables Gzip compression. */
-    def withoutGzip: Builder[F]
+    def withCompression(compression: PayloadCompression): Builder[F]
 
     /** Adds headers to requests. */
     def addHeaders(headers: Headers): Builder[F]
@@ -103,9 +110,9 @@ object OtlpHttpSpanExporter {
 
     /** Configures the exporter to use the given encoding.
       *
-      * Default encoding is `Protobuf`.
+      * Default protocol is [[OtlpProtocol.httpProtobuf]].
       */
-    def withEncoding(encoding: HttpPayloadEncoding): Builder[F]
+    def withProtocol(protocol: OtlpProtocol): Builder[F]
 
     /** Configures the exporter to use the given client.
       *
@@ -117,22 +124,22 @@ object OtlpHttpSpanExporter {
       */
     def withClient(client: Client[F]): Builder[F]
 
-    /** Creates a [[OtlpHttpSpanExporter]] using the configuration of this builder.
+    /** Creates a [[OtlpSpanExporter]] using the configuration of this builder.
       */
     def build: Resource[F, SpanExporter[F]]
   }
 
-  /** Creates a [[Builder]] of [[OtlpHttpSpanExporter]] with the default configuration:
-    *   - encoding: `Protobuf`
+  /** Creates a [[Builder]] of [[OtlpSpanExporter]] with the default configuration:
+    *   - protocol: `http/protobuf`
     *   - endpoint: `http://localhost:4318/v1/traces`
     *   - timeout: `10 seconds`
     *   - retry policy: 5 exponential attempts, initial backoff is `1 second`, max backoff is `5 seconds`
     */
   def builder[F[_]: Async: Network: Compression: Console]: Builder[F] =
     BuilderImpl(
-      encoding = HttpPayloadEncoding.Protobuf,
-      endpoint = Defaults.Endpoint,
-      gzipCompression = Defaults.GzipCompression,
+      protocol = Defaults.Protocol,
+      endpoint = None,
+      compression = Defaults.Compression,
       timeout = Defaults.Timeout,
       headers = Headers.empty,
       retryPolicy = RetryPolicy.default,
@@ -143,9 +150,9 @@ object OtlpHttpSpanExporter {
   private final case class BuilderImpl[
       F[_]: Async: Network: Compression: Console
   ](
-      encoding: HttpPayloadEncoding,
-      endpoint: Uri,
-      gzipCompression: Boolean,
+      protocol: OtlpProtocol,
+      endpoint: Option[Uri],
+      compression: PayloadCompression,
       timeout: FiniteDuration,
       headers: Headers,
       retryPolicy: RetryPolicy,
@@ -157,16 +164,13 @@ object OtlpHttpSpanExporter {
       copy(timeout = timeout)
 
     def withEndpoint(endpoint: Uri): Builder[F] =
-      copy(endpoint = endpoint)
+      copy(endpoint = Some(endpoint))
 
     def addHeaders(headers: Headers): Builder[F] =
       copy(headers = this.headers ++ headers)
 
-    def withGzip: Builder[F] =
-      copy(gzipCompression = true)
-
-    def withoutGzip: Builder[F] =
-      copy(gzipCompression = false)
+    def withCompression(compression: PayloadCompression): Builder[F] =
+      copy(compression = compression)
 
     def withTLSContext(context: TLSContext[F]): Builder[F] =
       copy(tlsContext = Some(context))
@@ -174,8 +178,8 @@ object OtlpHttpSpanExporter {
     def withRetryPolicy(policy: RetryPolicy): Builder[F] =
       copy(retryPolicy = policy)
 
-    def withEncoding(encoding: HttpPayloadEncoding): Builder[F] =
-      copy(encoding = encoding)
+    def withProtocol(protocol: OtlpProtocol): Builder[F] =
+      copy(protocol = protocol)
 
     def withClient(client: Client[F]): Builder[F] =
       copy(client = Some(client))
@@ -184,18 +188,25 @@ object OtlpHttpSpanExporter {
       import SpansProtoEncoder.spanDataToRequest
       import SpansProtoEncoder.jsonPrinter
 
+      val endpoint = this.endpoint.getOrElse {
+        protocol match {
+          case _: OtlpProtocol.Http => Defaults.HttpEndpoint
+          case OtlpProtocol.Grpc    => Defaults.GrpcEndpoint
+        }
+      }
+
       for {
-        client <- OtlpHttpClient.create[F, SpanData](
-          encoding,
+        client <- OtlpClient.create[F, SpanData](
+          protocol,
           endpoint,
-          timeout,
           headers,
-          gzipCompression,
+          compression,
+          timeout,
           retryPolicy,
           tlsContext,
           client
         )
-      } yield new OtlpHttpSpanExporter[F](client)
+      } yield new OtlpSpanExporter[F](client)
     }
   }
 

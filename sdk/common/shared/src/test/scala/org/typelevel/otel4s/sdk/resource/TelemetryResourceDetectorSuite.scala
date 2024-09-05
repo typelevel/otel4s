@@ -19,73 +19,78 @@ package org.typelevel.otel4s.sdk.resource
 import cats.effect.IO
 import munit.CatsEffectSuite
 import munit.internal.PlatformCompat
+import org.typelevel.otel4s.AttributeKey
 import org.typelevel.otel4s.semconv.SchemaUrls
+import org.typelevel.otel4s.semconv.experimental.attributes.HostExperimentalAttributes._
+import org.typelevel.otel4s.semconv.experimental.attributes.OsExperimentalAttributes._
+import org.typelevel.otel4s.semconv.experimental.attributes.ProcessExperimentalAttributes._
 
 class TelemetryResourceDetectorSuite extends CatsEffectSuite {
 
   test("HostDetector - detect name and arch") {
-    val keys = Set("host.name", "host.arch")
+    val keys: Set[AttributeKey[_]] = Set(HostName, HostArch)
 
     for {
       resource <- HostDetector[IO].detect
     } yield {
-      assertEquals(resource.map(_.attributes.map(_.key.name).toSet), Some(keys))
+      assertEquals(resource.map(_.attributes.map(_.key).toSet), Some(keys))
       assertEquals(resource.flatMap(_.schemaUrl), Some(SchemaUrls.Current))
     }
   }
 
   test("OSDetector - detect OS type and description") {
-    val keys = Set("os.type", "os.description")
+    val keys: Set[AttributeKey[_]] = Set(OsType, OsDescription)
 
     for {
       resource <- OSDetector[IO].detect
     } yield {
-      assertEquals(resource.map(_.attributes.map(_.key.name).toSet), Some(keys))
+      assertEquals(resource.map(_.attributes.map(_.key).toSet), Some(keys))
       assertEquals(resource.flatMap(_.schemaUrl), Some(SchemaUrls.Current))
     }
   }
 
   test("ProcessDetector - detect pid, exe path, exe name") {
-    val keys =
+    val keys: Set[AttributeKey[_]] =
       if (PlatformCompat.isJS)
         Set(
-          "process.executable.path",
-          "process.pid",
-          "process.executable.name",
-          "process.owner",
-          "process.command_args"
+          ProcessExecutablePath,
+          ProcessExecutableName,
+          ProcessPid,
+          ProcessOwner,
+          ProcessCommandArgs
         )
       else if (PlatformCompat.isNative)
-        Set("process.pid")
+        Set(ProcessPid)
       else
         Set(
-          "process.executable.path",
-          "process.pid",
-          "process.command_line"
+          ProcessExecutablePath,
+          ProcessPid,
+          ProcessCommandLine
         )
 
     for {
       resource <- ProcessDetector[IO].detect
     } yield {
-      assertEquals(resource.map(_.attributes.map(_.key.name).toSet), Some(keys))
+      assertEquals(resource.map(_.attributes.map(_.key).toSet), Some(keys))
       assertEquals(resource.flatMap(_.schemaUrl), Some(SchemaUrls.Current))
     }
   }
 
   test("ProcessRuntimeDetector - detect name, version, and description") {
-    val keys = {
-      val name = "process.runtime.name"
-      val version = "process.runtime.version"
-      val description = "process.runtime.description"
-
-      if (PlatformCompat.isNative) Set(name, description)
-      else Set(name, version, description)
-    }
+    val keys: Set[AttributeKey[_]] =
+      if (PlatformCompat.isNative)
+        Set(ProcessRuntimeName, ProcessRuntimeDescription)
+      else
+        Set(
+          ProcessRuntimeName,
+          ProcessRuntimeVersion,
+          ProcessRuntimeDescription
+        )
 
     for {
       resource <- ProcessRuntimeDetector[IO].detect
     } yield {
-      assertEquals(resource.map(_.attributes.map(_.key.name).toSet), Some(keys))
+      assertEquals(resource.map(_.attributes.map(_.key).toSet), Some(keys))
       assertEquals(resource.flatMap(_.schemaUrl), Some(SchemaUrls.Current))
     }
   }

@@ -18,11 +18,7 @@ package org.typelevel.otel4s
 package metrics
 
 import cats.Applicative
-import cats.Monad
-import cats.effect.kernel.Clock
 import cats.effect.kernel.Resource
-import cats.syntax.flatMap._
-import cats.syntax.functor._
 import org.typelevel.otel4s.meta.InstrumentMeta
 
 import scala.collection.immutable
@@ -133,28 +129,6 @@ object Histogram {
         timeUnit: TimeUnit,
         attributes: immutable.Iterable[Attribute[_]]
     ): Resource[F, Unit]
-  }
-
-  abstract class DoubleBackend[F[_]: Monad: Clock] extends Backend[F, Double] {
-
-    final val unit: F[Unit] = Monad[F].unit
-
-    final def recordDuration(
-        timeUnit: TimeUnit,
-        attributes: immutable.Iterable[Attribute[_]]
-    ): Resource[F, Unit] =
-      Resource
-        .makeCase(Clock[F].monotonic) { case (start, ec) =>
-          for {
-            end <- Clock[F].monotonic
-            _ <- record(
-              (end - start).toUnit(timeUnit),
-              attributes ++ causeAttributes(ec)
-            )
-          } yield ()
-        }
-        .void
-
   }
 
   def noop[F[_], A](implicit F: Applicative[F]): Histogram[F, A] =

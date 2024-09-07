@@ -204,7 +204,7 @@ object JaegerPropagator {
     val BaggageHeaderEntryDelimiter = "\\s*=\\s*"
   }
 
-  /** Returns an instance of the W3CTraceContextPropagator.
+  /** Returns an instance of the JaegerPropagator.
     */
   def default: TextMapPropagator[Context] = Default
 

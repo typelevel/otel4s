@@ -108,6 +108,7 @@ lazy val root = tlCrossRootProject
     `sdk-exporter-metrics`,
     `sdk-exporter-trace`,
     `sdk-exporter`,
+    `sdk-contrib-aws-xray-propagator`,
     `oteljava-common`,
     `oteljava-common-testkit`,
     `oteljava-metrics`,
@@ -433,6 +434,27 @@ lazy val `sdk-exporter` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .settings(scalafixSettings)
 
 //
+// SDK contrib modules
+//
+
+lazy val `sdk-contrib-aws-xray-propagator` =
+  crossProject(JVMPlatform, JSPlatform, NativePlatform)
+    .crossType(CrossType.Pure)
+    .in(file("sdk-contrib/aws/xray-propagator"))
+    .dependsOn(
+      `sdk-trace` % "compile->compile;test->test",
+      `semconv-experimental` % Test
+    )
+    .settings(
+      name := "otel4s-sdk-contrib-aws-xray-propagator",
+      startYear := Some(2024),
+      mimaPreviousArtifacts ~= { _.filterNot(_.revision.startsWith("0.9")) }
+    )
+    .settings(munitDependencies)
+    .settings(scalafixSettings)
+    .jsSettings(scalaJSLinkerSettings)
+
+//
 // OpenTelemetry Java
 //
 
@@ -654,7 +676,12 @@ lazy val examples = project
 lazy val docs = project
   .in(file("site"))
   .enablePlugins(TypelevelSitePlugin)
-  .dependsOn(oteljava, sdk.jvm, `sdk-exporter`.jvm)
+  .dependsOn(
+    oteljava,
+    sdk.jvm,
+    `sdk-exporter`.jvm,
+    `sdk-contrib-aws-xray-propagator`.jvm
+  )
   .settings(
     libraryDependencies ++= Seq(
       "org.apache.pekko" %% "pekko-http" % PekkoHttpVersion,
@@ -693,6 +720,12 @@ lazy val docs = project
             "otel-backend",
             ChoiceConfig("oteljava", "OpenTelemetry Java"),
             ChoiceConfig("sdk", "SDK")
+          ).withSeparateEbooks,
+          SelectionConfig(
+            "sdk-entry-point",
+            ChoiceConfig("traces", "SdkTraces"),
+            ChoiceConfig("metrics", "SdkMetrics"),
+            ChoiceConfig("sdk", "OpenTelemetrySDK")
           ).withSeparateEbooks
         )
       )
@@ -720,6 +753,7 @@ lazy val unidocs = project
       `sdk-exporter-metrics`.jvm,
       `sdk-exporter-trace`.jvm,
       `sdk-exporter`.jvm,
+      `sdk-contrib-aws-xray-propagator`.jvm,
       `oteljava-common`,
       `oteljava-common-testkit`,
       `oteljava-metrics`,

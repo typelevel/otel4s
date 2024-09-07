@@ -112,7 +112,7 @@ object HistogramBuilderImpl {
 
             def recordDuration(
                 timeUnit: TimeUnit,
-                attributes: immutable.Iterable[Attribute[_]]
+                attributes: Resource.ExitCase => immutable.Iterable[Attribute[_]]
             ): Resource[F, Unit] =
               Resource
                 .makeCase(Sync[F].monotonic) { case (start, ec) =>
@@ -120,7 +120,7 @@ object HistogramBuilderImpl {
                     end <- Sync[F].monotonic
                     _ <- doRecord(
                       (end - start).toUnit(timeUnit).toLong,
-                      attributes ++ Histogram.causeAttributes(ec)
+                      attributes(ec)
                     )
                   } yield ()
                 }
@@ -172,7 +172,7 @@ object HistogramBuilderImpl {
 
             def recordDuration(
                 timeUnit: TimeUnit,
-                attributes: immutable.Iterable[Attribute[_]]
+                attributes: Resource.ExitCase => immutable.Iterable[Attribute[_]]
             ): Resource[F, Unit] =
               Resource
                 .makeCase(Sync[F].monotonic) { case (start, ec) =>
@@ -180,7 +180,7 @@ object HistogramBuilderImpl {
                     end <- Sync[F].monotonic
                     _ <- doRecord(
                       (end - start).toUnit(timeUnit),
-                      attributes ++ Histogram.causeAttributes(ec)
+                      attributes(ec)
                     )
                   } yield ()
                 }

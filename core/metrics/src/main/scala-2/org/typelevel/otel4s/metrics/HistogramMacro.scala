@@ -97,6 +97,41 @@ private[otel4s] trait HistogramMacro[F[_], A] {
   ): Resource[F, Unit] =
     macro HistogramMacro.recordDurationColl
 
+  /** Records duration of the given effect.
+    *
+    * @example
+    *   {{{
+    * val histogram: Histogram[F] = ???
+    * val attributeKey = AttributeKey.string("query_name")
+    *
+    * def attributes(queryName: String)(ec: Resource.ExitCase): Attributes = {
+    *  val ecAttributes = ec match {
+    *    case Resource.ExitCase.Succeeded  => Attributes.empty
+    *    case Resource.ExitCase.Errored(e) => Attributes(Attribute("error.type", e.getClass.getName))
+    *    case Resource.ExitCase.Canceled   => Attributes(Attribute("error.type", "canceled"))
+    *  }
+    *
+    *  ecAttributes :+ Attribute(attributeKey, queryName)
+    * }
+    *
+    * def findUser(name: String) =
+    *   histogram.recordDuration(TimeUnit.MILLISECONDS, attributes("find_user")).use { _ =>
+    *     db.findUser(name)
+    *    }
+    *   }}}
+    *
+    * @param timeUnit
+    *   the time unit of the duration measurement
+    *
+    * @param attributes
+    *   the function to build attributes to associate with the value
+    */
+  def recordDuration(
+      timeUnit: TimeUnit,
+      attributes: Resource.ExitCase => immutable.Iterable[Attribute[_]]
+  ): Resource[F, Unit] =
+    macro HistogramMacro.recordDurationFuncColl
+
 }
 
 object HistogramMacro {
@@ -132,6 +167,17 @@ object HistogramMacro {
   def recordDurationColl(c: blackbox.Context)(
       timeUnit: c.Expr[TimeUnit],
       attributes: c.Expr[immutable.Iterable[Attribute[_]]]
+  ): c.universe.Tree = {
+    import c.universe._
+    val backend = q"${c.prefix}.backend"
+    val meta = q"$backend.meta"
+
+    q"if ($meta.isEnabled) $backend.recordDuration($timeUnit, _ => $attributes) else _root_.cats.effect.kernel.Resource.unit"
+  }
+
+  def recordDurationFuncColl(c: blackbox.Context)(
+      timeUnit: c.Expr[TimeUnit],
+      attributes: c.Expr[Resource.ExitCase => immutable.Iterable[Attribute[_]]]
   ): c.universe.Tree = {
     import c.universe._
     val backend = q"${c.prefix}.backend"

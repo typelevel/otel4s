@@ -77,7 +77,7 @@ private[otel4s] trait HistogramMacro[F[_], A] {
       inline timeUnit: TimeUnit,
       inline attributes: Attribute[_]*
   ): Resource[F, Unit] =
-    ${ HistogramMacro.recordDuration('backend, 'timeUnit, 'attributes) }
+    recordDuration(timeUnit, _ => attributes)
 
   /** Records duration of the given effect.
     *
@@ -102,8 +102,42 @@ private[otel4s] trait HistogramMacro[F[_], A] {
       inline timeUnit: TimeUnit,
       inline attributes: immutable.Iterable[Attribute[_]]
   ): Resource[F, Unit] =
-    ${ HistogramMacro.recordDuration('backend, 'timeUnit, 'attributes) }
+    recordDuration(timeUnit, _ => attributes)
 
+  /** Records duration of the given effect.
+    *
+    * @example
+    *   {{{
+    * val histogram: Histogram[F] = ???
+    * val attributeKey = AttributeKey.string("query_name")
+    *
+    * def attributes(queryName: String)(ec: Resource.ExitCase): Attributes = {
+    *  val ecAttributes = ec match {
+    *    case Resource.ExitCase.Succeeded  => Attributes.empty
+    *    case Resource.ExitCase.Errored(e) => Attributes(Attribute("error.type", e.getClass.getName))
+    *    case Resource.ExitCase.Canceled   => Attributes(Attribute("error.type", "canceled"))
+    *  }
+    *
+    *  ecAttributes :+ Attribute(attributeKey, queryName)
+    * }
+    *
+    * def findUser(name: String) =
+    *   histogram.recordDuration(TimeUnit.MILLISECONDS, attributes("find_user")).use { _ =>
+    *     db.findUser(name)
+    *    }
+    *   }}}
+    *
+    * @param timeUnit
+    *   the time unit of the duration measurement
+    *
+    * @param attributes
+    *   the function to build attributes to associate with the value
+    */
+  inline def recordDuration(
+      inline timeUnit: TimeUnit,
+      inline attributes: Resource.ExitCase => immutable.Iterable[Attribute[_]]
+  ): Resource[F, Unit] =
+    ${ HistogramMacro.recordDuration('backend, 'timeUnit, 'attributes) }
 }
 
 object HistogramMacro {
@@ -121,7 +155,7 @@ object HistogramMacro {
   def recordDuration[F[_], A](
       backend: Expr[Histogram.Backend[F, A]],
       timeUnit: Expr[TimeUnit],
-      attributes: Expr[immutable.Iterable[Attribute[_]]]
+      attributes: Expr[Resource.ExitCase => immutable.Iterable[Attribute[_]]]
   )(using Quotes, Type[F], Type[A]) =
     '{
       if ($backend.meta.isEnabled)

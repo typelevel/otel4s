@@ -64,7 +64,7 @@ object TelemetryApp extends IOApp.Simple {
       .autoConfigured[IO]( 
         // register OTLP exporters configurer
         _.addExportersConfigurer(OtlpExportersAutoConfigure[IO])
-        // add AWS X-Ray Propagator propagator
+        // add AWS X-Ray Propagator
          .addTracerProviderCustomizer((b, _) => 
            b.addTextMapPropagators(AWSXRayPropagator())
          )
@@ -100,7 +100,7 @@ object TelemetryApp extends IOApp.Simple {
       .autoConfigured[IO]( 
         // register OTLP exporters configurer
         _.addExporterConfigurer(OtlpSpanExporterAutoConfigure[IO])
-        // add AWS X-Ray Propagator propagator
+        // add AWS X-Ray Propagator
          .addTracerProviderCustomizer((b, _) => 
            b.addTextMapPropagators(AWSXRayPropagator())
          )
@@ -118,4 +118,87 @@ object TelemetryApp extends IOApp.Simple {
 
 @:@
 
+## AWS Lambda
+
+AWS Lambda can [utilize][lambda-xray-envvars] `_X_AMZN_TRACE_ID` environment variable or 
+`com.amazonaws.xray.traceHeader` system property to set the X-Ray tracing header.
+
+Use `AWSXRayLambdaPropagator` in such a case.
+
+@:select(sdk-entry-point)
+
+@:choice(sdk)
+
+`OpenTelemetrySdk.autoConfigured` configures both `MeterProvider` and `TracerProvider`:
+
+```scala mdoc:silent:reset
+import cats.effect.{IO, IOApp}
+import org.typelevel.otel4s.metrics.MeterProvider
+import org.typelevel.otel4s.sdk.OpenTelemetrySdk
+import org.typelevel.otel4s.sdk.contrib.aws.context.propagation._
+import org.typelevel.otel4s.sdk.exporter.otlp.autoconfigure.OtlpExportersAutoConfigure
+import org.typelevel.otel4s.trace.TracerProvider
+
+object TelemetryApp extends IOApp.Simple {
+
+  def run: IO[Unit] =
+    OpenTelemetrySdk
+      .autoConfigured[IO]( 
+        // register OTLP exporters configurer
+        _.addExportersConfigurer(OtlpExportersAutoConfigure[IO])
+        // add AWS X-Ray Lambda Propagator
+         .addTracerProviderCustomizer((b, _) => 
+           b.addTextMapPropagators(AWSXRayLambdaPropagator())
+         )
+      )
+      .use { autoConfigured =>
+        val sdk = autoConfigured.sdk
+        program(sdk.meterProvider, sdk.tracerProvider)
+      }
+
+  def program(
+      meterProvider: MeterProvider[IO], 
+      tracerProvider: TracerProvider[IO]
+  ): IO[Unit] =
+    ???
+}
+```
+
+@:choice(traces)
+
+`SdkTraces` configures only `TracerProvider`:
+
+```scala mdoc:silent:reset
+import cats.effect.{IO, IOApp}
+import org.typelevel.otel4s.sdk.contrib.aws.context.propagation._
+import org.typelevel.otel4s.sdk.exporter.otlp.trace.autoconfigure.OtlpSpanExporterAutoConfigure
+import org.typelevel.otel4s.sdk.trace.SdkTraces
+import org.typelevel.otel4s.trace.TracerProvider
+
+object TelemetryApp extends IOApp.Simple {
+
+  def run: IO[Unit] =
+    SdkTraces
+      .autoConfigured[IO]( 
+        // register OTLP exporters configurer
+        _.addExporterConfigurer(OtlpSpanExporterAutoConfigure[IO])
+        // add AWS X-Ray Lambda Propagator
+         .addTracerProviderCustomizer((b, _) => 
+           b.addTextMapPropagators(AWSXRayLambdaPropagator())
+         )
+      )
+      .use { autoConfigured =>
+        program(autoConfigured.tracerProvider)
+      }
+
+  def program(
+      tracerProvider: TracerProvider[IO]
+  ): IO[Unit] =
+    ???
+}
+```
+
+@:@
+
 [xray-concepts]: https://docs.aws.amazon.com/xray/latest/devguide/xray-concepts.html#xray-concepts-tracingheader
+[lambda-xray-envvars]: https://docs.aws.amazon.com/lambda/latest/dg/configuration-envvars.html

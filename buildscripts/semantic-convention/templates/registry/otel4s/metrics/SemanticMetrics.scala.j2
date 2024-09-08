@@ -1,0 +1,129 @@
+{%- macro to_scala_key_type(attribute) -%}
+    {{ attribute.type | instantiated_type | map_text("scala_key_type") }}
+{%- endmacro %}
+
+{%- macro instrumentType(type) -%}
+{%- if type == "gauge" -%}Gauge[F, Long]
+{%- elif type == "counter" -%}Counter[F, Long]
+{%- elif type == "updowncounter" -%}UpDownCounter[F, Long]
+{%- elif type == "histogram" -%}Histogram[F, Double]
+{%- else %}{{ type }}
+{%- endif -%}
+{%- endmacro -%}
+
+{%- macro instrumentFactory(type) -%}
+{%- if type == "gauge" -%}gauge[Long]
+{%- elif type == "counter" -%}counter[Long]
+{%- elif type == "updowncounter" -%}upDownCounter[Long]
+{%- elif type == "histogram" -%}histogram[Double]
+{%- else %}{{ type }}
+{%- endif -%}
+{%- endmacro -%}
+
+{%- macro requirement(attribute) -%}
+{%- if attribute.requirement_level is mapping -%}
+{%- set level = attribute.requirement_level | first -%}
+{%- set apply = "(\"" ~ attribute.requirement_level[level] | trim ~ "\")" -%}
+{%- else -%}
+{%- set level = attribute.requirement_level -%}
+{%- set apply = "" -%}
+{%- endif -%}
+{%- if level == "required" -%} Requirement.required{{ apply }}
+{%- elif level == "recommended" -%} Requirement.recommended{{ apply }}
+{%- elif level == "conditionally_required" -%} Requirement.conditionallyRequired{{ apply }}
+{%- elif level == "opt_in" -%} Requirement.optIn{{ apply }}
+{%- else -%} _unknown_requirement_level_{{ attribute.requirement_level }}
+{%- endif -%}
+{%- endmacro -%}
+
+{%- macro stability(type) -%}
+{%- if type == "experimental" -%} Stability.experimental
+{%- elif type == "stable" -%} Stability.stable
+{%- else -%} _unknown_stability_type_{{ type }}
+{%- endif -%}
+{%- endmacro -%}
+
+{%- macro exampleValue(type, input) %}
+{%- if type == "int" -%} {{ input }}
+{%- elif type == "double" -%} {{ input }}
+{%- elif type == "boolean" -%} {{ input }}
+{%- elif type == "string" -%} "{{ input }}"
+{%- else -%} _unknown type_{{ input }}
+{%- endif -%}
+{% endmacro %}
+
+{%- set object_name = ctx.root_namespace | pascal_case ~ params.object_prefix ~ "Metrics" -%}
+
+/*
+ * Copyright 2024 Typelevel
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.typelevel.otel4s
+package semconv
+package metrics
+
+import org.typelevel.otel4s.metrics._
+
+// DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/metrics/SemanticMetrics.scala.j2
+object {{ object_name }} {
+
+  {% for metric in ctx.metrics | sort(attribute='metric_name') %}
+  {{ [metric.brief | replace('$', "$$"), concat_if("\n\n@note\n\n", metric.note)] | comment(indent=2) }}
+  {%- if metric is deprecated %}
+  @deprecated("{{ metric.deprecated }}", "")
+  {%- endif %}
+  object {{ metric.metric_name[ctx.root_namespace | length:] | pascal_case }} {
+
+    val Name = "{{ metric.metric_name }}"
+    val Description = "{{ metric.brief }}"
+    val Unit = "{{ metric.unit }}"
+    {% if metric.attributes | length > 0 %}
+    object AttributeSpecs {
+      {% for attribute in metric.attributes | sort(attribute='name') %}
+      {{ [attribute.brief | replace('$', "$$"), concat_if("\n\n@note\n\n", attribute.note)] | comment(indent=6) }}
+      {%- if attribute is deprecated %}
+      @deprecated("{{ attribute.deprecated }}", "")
+      {%- endif %}
+      val {{ attribute.name | camel_case }}: AttributeSpec[{{to_scala_key_type(attribute)}}] =
+        AttributeSpec(
+          AttributeKey("{{attribute.name}}"),
+          List(
+            {% for example in attribute.examples -%} {{ exampleValue(attribute.type | instantiated_type, example) }}, {% endfor %}
+          ),
+          {{ requirement(attribute) }},
+          {{ stability(attribute.stability) }}
+        )
+      {% endfor %}
+      val specs: List[AttributeSpec[_]] =
+        List({%- for attribute in metric.attributes | sort(attribute='name') %}
+          {{ attribute.name | camel_case }},{% endfor %}
+        )
+    }
+    {% endif %}
+    def create[F[_]: Meter]{% if metric.instrument == "histogram" %}(boundaries: BucketBoundaries){% endif %}: F[{{ instrumentType(metric.instrument) }}] =
+      Meter[F]
+        .{{ instrumentFactory(metric.instrument) }}(Name)
+        .withDescription(Description)
+        .withUnit(Unit)
+        {%- if metric.instrument == "histogram" %}
+        .withExplicitBucketBoundaries(boundaries)
+        .create
+        {% else %}
+        .create
+        {% endif %}
+  }
+  {% endfor %}
+
+}

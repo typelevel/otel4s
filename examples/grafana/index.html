@@ -255,7 +255,9 @@
   </span><span class="attribute-name">otlp</span><span>:
     </span><span class="attribute-name">protocols</span><span>: </span><span class="string-literal"># enable OpenTelemetry Protocol receiver, both gRPC and HTTP</span><span>
       </span><span class="attribute-name">grpc</span><span>:
+        </span><span class="attribute-name">endpoint</span><span>: </span><span class="number-literal">0.0</span><span>.0.0:4317
       </span><span class="attribute-name">http</span><span>:
+        </span><span class="attribute-name">endpoint</span><span>: </span><span class="number-literal">0.0</span><span>.0.0:4318
 
 </span><span class="attribute-name">exporters</span><span>:
   otlp/</span><span class="attribute-name">jaeger</span><span>: </span><span class="string-literal"># export received traces to Jaeger</span><span>

@@ -122,7 +122,9 @@ receivers:
   otlp:
     protocols: # enable OpenTelemetry Protocol receiver, both gRPC and HTTP
       grpc:
+        endpoint: 0.0.0.0:4317
       http:
+        endpoint: 0.0.0.0:4318
 
 exporters:
   otlp/jaeger: # export received traces to Jaeger

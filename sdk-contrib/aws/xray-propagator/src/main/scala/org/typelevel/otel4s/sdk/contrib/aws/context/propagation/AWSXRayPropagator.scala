@@ -28,7 +28,7 @@ import org.typelevel.otel4s.trace.TraceFlags
 import org.typelevel.otel4s.trace.TraceState
 import scodec.bits.ByteVector
 
-/** An example of the AWS Xray Tracing Header:
+/** An example of the AWS X-Ray Tracing Header:
   * {{{
   *   X-Amzn-Trace-Id: Root=1-5759e988-bd862e3fe1be46a994272793;Parent=53995c3f42cd8ad8;Sampled=1
   * }}}
@@ -156,7 +156,7 @@ private final class AWSXRayPropagator extends TextMapPropagator[Context] {
 object AWSXRayPropagator {
   private val Propagator = new AWSXRayPropagator
 
-  private object Headers {
+  private[propagation] object Headers {
     val TraceId = "X-Amzn-Trace-Id"
   }
 
@@ -181,7 +181,7 @@ object AWSXRayPropagator {
     * The propagator utilizes `X-Amzn-Trace-Id` header to extract and inject
     * tracing details.
     *
-    * An example of the AWS Xray Tracing Header:
+    * An example of the AWS X-Ray Tracing Header:
     * {{{
     *   X-Amzn-Trace-Id: Root=1-5759e988-bd862e3fe1be46a994272793;Parent=53995c3f42cd8ad8;Sampled=1
     * }}}

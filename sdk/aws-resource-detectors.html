@@ -6,7 +6,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="generator" content="Typelevel Laika + Helium Theme" />
-  <title>AWS | X-Ray propagator</title>
+  <title>AWS | Resource detectors</title>
   
   <meta name="author" content="Ross A. Baker"/>
   
@@ -112,8 +112,8 @@
     <li class="level1 nav-header">SDK</li>
     <li class="level2 nav-leaf"><a href="overview.html">Overview</a></li>
     <li class="level2 nav-leaf"><a href="configuration.html">Configuration</a></li>
-    <li class="level2 nav-leaf"><a href="aws-resource-detectors.html">AWS | Resource detectors</a></li>
-    <li class="level2 active nav-leaf"><a href="#">AWS | X-Ray propagator</a></li>
+    <li class="level2 active nav-leaf"><a href="#">AWS | Resource detectors</a></li>
+    <li class="level2 nav-leaf"><a href="aws-xray-propagator.html">AWS | X-Ray propagator</a></li>
     <li class="level1 nav-header">Examples</li>
     <li class="level2 nav-leaf"><a href="../examples/jaeger-docker/">Jaeger - collecting traces</a></li>
     <li class="level2 nav-leaf"><a href="../examples/honeycomb/">Honeycomb - metrics and traces</a></li>
@@ -126,11 +126,13 @@
 
       
 <nav id="page-nav">
-  <p class="header"><a href="#">AWS | X-Ray propagator</a></p>
+  <p class="header"><a href="#">AWS | Resource detectors</a></p>
 
   <ul class="nav-list">
+    <li class="level1 nav-node"><a href="#the-list-of-detectors">The list of detectors</a></li>
+    <li class="level2 nav-leaf"><a href="#_1-aws-lambda">1. aws-lambda</a></li>
     <li class="level1 nav-leaf"><a href="#getting-started">Getting Started</a></li>
-    <li class="level1 nav-leaf"><a href="#aws-lambda">AWS Lambda</a></li>
+    <li class="level1 nav-leaf"><a href="#configuration">Configuration</a></li>
   </ul>
 
   <p class="footer"></p>
@@ -139,11 +141,26 @@
 
       <main class="content">
 
-        <h1 id="aws-x-ray-propagator" class="title">AWS | X-Ray propagator</h1>
-        <p>The X-Ray propagator implements AWS X-Ray Trace Header <a href="https://docs.aws.amazon.com/xray/latest/devguide/xray-concepts.html#xray-concepts-tracingheader">propagation protocol</a>.
-        The propagator utilizes <code>X-Amzn-Trace-Id</code> header to extract and inject tracing details.
-        An example of the AWS X-Ray Tracing Header:</p>
-        <pre><code>X-Amzn-Trace-Id: Root=1-5759e988-bd862e3fe1be46a994272793;Parent=53995c3f42cd8ad8;Sampled=1</code></pre>
+        <h1 id="aws-resource-detectors" class="title">AWS | Resource detectors</h1>
+        <p>Resource detectors can add environment-specific attributes to the telemetry resource. 
+        AWS detectors are implemented as a third-party library, and you need to enable them manually.</p>
+        
+        <h2 id="the-list-of-detectors" class="section"><a class="anchor-link left" href="#the-list-of-detectors"><i class="icofont-laika link">&#xef71;</i></a>The list of detectors</h2>
+        
+        <h3 id="_1-aws-lambda" class="section"><a class="anchor-link left" href="#_1-aws-lambda"><i class="icofont-laika link">&#xef71;</i></a>1. aws-lambda</h3>
+        <p>The detector relies on the <code>AWS_REGION</code>, <code>AWS_LAMBDA_FUNCTION_NAME</code>, and <code>AWS_LAMBDA_FUNCTION_VERSION</code> environment variables
+        to configure the telemetry resource.
+        Either <code>AWS_LAMBDA_FUNCTION_NAME</code> or <code>AWS_LAMBDA_FUNCTION_VERSION</code> must be present.</p>
+        <p>Environment: </p>
+        <pre><code>AWS_REGION=eu-west-1
+AWS_LAMBDA_FUNCTION_NAME=function
+AWS_LAMBDA_FUNCTION_VERSION=0.0.1</code></pre>
+        <p>Detected resource: </p>
+        <pre><code>cloud.platform: aws_lambda
+cloud.provider: aws
+cloud.region: eu-west-1
+faas.name: function
+faas.version: 0.0.1</code></pre>
         
         <h2 id="getting-started" class="section"><a class="anchor-link left" href="#getting-started"><i class="icofont-laika link">&#xef71;</i></a>Getting Started</h2>
         <div class="tab-container" data-tab-group="build-tool">
@@ -156,20 +173,20 @@
             <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">libraryDependencies</span><span> ++= </span><span class="type-name">Seq</span><span>(
   </span><span class="string-literal">&quot;org.typelevel&quot;</span><span> %%% </span><span class="string-literal">&quot;otel4s-sdk&quot;</span><span> % </span><span class="string-literal">&quot;0.9.0&quot;</span><span>, </span><span class="comment">// &lt;1&gt;
 </span><span>  </span><span class="string-literal">&quot;org.typelevel&quot;</span><span> %%% </span><span class="string-literal">&quot;otel4s-sdk-exporter&quot;</span><span> % </span><span class="string-literal">&quot;0.9.0&quot;</span><span>, </span><span class="comment">// &lt;2&gt;
-</span><span>  </span><span class="string-literal">&quot;org.typelevel&quot;</span><span> %%% </span><span class="string-literal">&quot;otel4s-sdk-contrib-aws-xray-propagator&quot;</span><span> % </span><span class="string-literal">&quot;0.9.0&quot;</span><span> </span><span class="comment">// &lt;3&gt;
+</span><span>  </span><span class="string-literal">&quot;org.typelevel&quot;</span><span> %%% </span><span class="string-literal">&quot;otel4s-sdk-contrib-aws-resource&quot;</span><span> % </span><span class="string-literal">&quot;0.9.0&quot;</span><span> </span><span class="comment">// &lt;3&gt;
 </span><span>)</span></code></pre>
           </div>
           <div class="tab-content" data-choice-name="scala-cli">
             <p>Add directives to the <code>*.scala</code> file:</p>
             <pre class="keep-together pdf epub"><code class="nohighlight"><span class="comment">//&gt; using lib &quot;org.typelevel::otel4s-sdk::0.9.0&quot; // &lt;1&gt;
 //&gt; using lib &quot;org.typelevel::otel4s-sdk-exporter::0.9.0&quot; // &lt;2&gt;
-//&gt; using lib &quot;org.typelevel::otel4s-sdk-contrib-aws-xray-propagator::0.9.0&quot; // &lt;3&gt;</span></code></pre>
+//&gt; using lib &quot;org.typelevel::otel4s-sdk-contrib-aws-resource::0.9.0&quot; // &lt;3&gt;</span></code></pre>
           </div>
         </div>
         <ol class="arabic">
           <li>Add the <code>otel4s-sdk</code> library</li>
           <li>Add the <code>otel4s-sdk-exporter</code> library. Without the exporter, the application will crash</li>
-          <li>Add the <code>otel4s-sdk-contrib-aws-xray-propagator</code> library </li>
+          <li>Add the <code>otel4s-sdk-contrib-aws-resource</code> library </li>
         </ol>
         <hr>
         <p>Then autoconfigure the SDK:</p>
@@ -183,7 +200,7 @@
             <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.{</span><span class="type-name">IO</span><span>, </span><span class="type-name">IOApp</span><span>}
 </span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">metrics</span><span>.</span><span class="type-name">MeterProvider</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">sdk</span><span>.</span><span class="type-name">OpenTelemetrySdk</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">sdk</span><span>.</span><span class="identifier">contrib</span><span>.</span><span class="identifier">aws</span><span>.</span><span class="identifier">context</span><span>.</span><span class="identifier">propagation</span><span>.</span><span class="identifier">_</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">sdk</span><span>.</span><span class="identifier">contrib</span><span>.</span><span class="identifier">aws</span><span>.</span><span class="identifier">resource</span><span>.</span><span class="identifier">_</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">sdk</span><span>.</span><span class="identifier">exporter</span><span>.</span><span class="identifier">otlp</span><span>.</span><span class="identifier">autoconfigure</span><span>.</span><span class="type-name">OtlpExportersAutoConfigure</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">trace</span><span>.</span><span class="type-name">TracerProvider</span><span>
 
@@ -191,13 +208,11 @@
 
   </span><span class="keyword">def</span><span> </span><span class="declaration-name">run</span><span>: </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] =
     </span><span class="type-name">OpenTelemetrySdk</span><span>
-      .</span><span class="identifier">autoConfigured</span><span>[</span><span class="type-name">IO</span><span>]( 
+      .</span><span class="identifier">autoConfigured</span><span>[</span><span class="type-name">IO</span><span>](
         </span><span class="comment">// register OTLP exporters configurer
 </span><span>        </span><span class="identifier">_</span><span>.</span><span class="identifier">addExportersConfigurer</span><span>(</span><span class="type-name">OtlpExportersAutoConfigure</span><span>[</span><span class="type-name">IO</span><span>])
-        </span><span class="comment">// add AWS X-Ray Propagator
-</span><span>         .</span><span class="identifier">addTracerProviderCustomizer</span><span>((</span><span class="identifier">b</span><span>, </span><span class="identifier">_</span><span>) =&gt; 
-           </span><span class="identifier">b</span><span>.</span><span class="identifier">addTextMapPropagators</span><span>(</span><span class="type-name">AWSXRayPropagator</span><span>())
-         )
+        </span><span class="comment">// register AWS Lambda detector
+</span><span>         .</span><span class="identifier">addResourceDetector</span><span>(</span><span class="type-name">AWSLambdaDetector</span><span>[</span><span class="type-name">IO</span><span>])
       )
       .</span><span class="identifier">use</span><span> { </span><span class="identifier">autoConfigured</span><span> =&gt;
         </span><span class="keyword">val</span><span> </span><span class="identifier">sdk</span><span> = </span><span class="identifier">autoConfigured</span><span>.</span><span class="identifier">sdk</span><span>
@@ -205,16 +220,16 @@
       }
 
   </span><span class="keyword">def</span><span> </span><span class="declaration-name">program</span><span>(
-      </span><span class="identifier">meterProvider</span><span>: </span><span class="type-name">MeterProvider</span><span>[</span><span class="type-name">IO</span><span>], 
+      </span><span class="identifier">meterProvider</span><span>: </span><span class="type-name">MeterProvider</span><span>[</span><span class="type-name">IO</span><span>],
       </span><span class="identifier">tracerProvider</span><span>: </span><span class="type-name">TracerProvider</span><span>[</span><span class="type-name">IO</span><span>]
   ): </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] =
     ???
 }</span></code></pre>
           </div>
           <div class="tab-content" data-choice-name="traces">
-            <p><code>SdkTraces</code> configures only <code>TracerProvider</code>: </p>
+            <p><code>SdkTraces</code> configures only <code>TracerProvider</code>:</p>
             <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.{</span><span class="type-name">IO</span><span>, </span><span class="type-name">IOApp</span><span>}
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">sdk</span><span>.</span><span class="identifier">contrib</span><span>.</span><span class="identifier">aws</span><span>.</span><span class="identifier">context</span><span>.</span><span class="identifier">propagation</span><span>.</span><span class="identifier">_</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">sdk</span><span>.</span><span class="identifier">contrib</span><span>.</span><span class="identifier">aws</span><span>.</span><span class="identifier">resource</span><span>.</span><span class="identifier">_</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">sdk</span><span>.</span><span class="identifier">exporter</span><span>.</span><span class="identifier">otlp</span><span>.</span><span class="identifier">trace</span><span>.</span><span class="identifier">autoconfigure</span><span>.</span><span class="type-name">OtlpSpanExporterAutoConfigure</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">sdk</span><span>.</span><span class="identifier">trace</span><span>.</span><span class="type-name">SdkTraces</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">trace</span><span>.</span><span class="type-name">TracerProvider</span><span>
@@ -226,10 +241,8 @@
       .</span><span class="identifier">autoConfigured</span><span>[</span><span class="type-name">IO</span><span>]( 
         </span><span class="comment">// register OTLP exporters configurer
 </span><span>        </span><span class="identifier">_</span><span>.</span><span class="identifier">addExporterConfigurer</span><span>(</span><span class="type-name">OtlpSpanExporterAutoConfigure</span><span>[</span><span class="type-name">IO</span><span>])
-        </span><span class="comment">// add AWS X-Ray Propagator
-</span><span>         .</span><span class="identifier">addTracerProviderCustomizer</span><span>((</span><span class="identifier">b</span><span>, </span><span class="identifier">_</span><span>) =&gt; 
-           </span><span class="identifier">b</span><span>.</span><span class="identifier">addTextMapPropagators</span><span>(</span><span class="type-name">AWSXRayPropagator</span><span>())
-         )
+        </span><span class="comment">// register AWS Lambda detector
+</span><span>         .</span><span class="identifier">addResourceDetector</span><span>(</span><span class="type-name">AWSLambdaDetector</span><span>[</span><span class="type-name">IO</span><span>])
       )
       .</span><span class="identifier">use</span><span> { </span><span class="identifier">autoConfigured</span><span> =&gt;
         </span><span class="identifier">program</span><span>(</span><span class="identifier">autoConfigured</span><span>.</span><span class="identifier">tracerProvider</span><span>)
@@ -243,77 +256,27 @@
           </div>
         </div>
         
-        <h2 id="aws-lambda" class="section"><a class="anchor-link left" href="#aws-lambda"><i class="icofont-laika link">&#xef71;</i></a>AWS Lambda</h2>
-        <p>AWS Lambda can <a href="https://docs.aws.amazon.com/lambda/latest/dg/configuration-envvars.html">utilize</a> <code>_X_AMZN_TRACE_ID</code> environment variable or 
-        <code>com.amazonaws.xray.traceHeader</code> system property to set the X-Ray tracing header.</p>
-        <p>Use <code>AWSXRayLambdaPropagator</code> in such a case.</p>
-        <div class="tab-container" data-tab-group="sdk-entry-point">
+        <h2 id="configuration" class="section"><a class="anchor-link left" href="#configuration"><i class="icofont-laika link">&#xef71;</i></a>Configuration</h2>
+        <p>The <code>OpenTelemetrySdk.autoConfigured(...)</code> and <code>SdkTraces.autoConfigured(...)</code> rely on the environment variables and system properties to configure the SDK.
+        Check out the <a href="configuration.html#telemetry-resource-detectors">configuration details</a>.</p>
+        <p>There are several ways to configure the options:</p>
+        <div class="tab-container" data-tab-group="sdk-options-source">
           <ul class="tab-group">
-            <li class="tab active" data-choice-name="sdk"><a href="#">OpenTelemetrySDK</a></li>
-            <li class="tab" data-choice-name="traces"><a href="#">SdkTraces</a></li>
+            <li class="tab active" data-choice-name="sbt"><a href="#">sbt</a></li>
+            <li class="tab" data-choice-name="scala-cli"><a href="#">Scala CLI</a></li>
+            <li class="tab" data-choice-name="shell"><a href="#">Shell</a></li>
           </ul>
-          <div class="tab-content active" data-choice-name="sdk">
-            <p><code>OpenTelemetrySdk.autoConfigured</code> configures both <code>MeterProvider</code> and <code>TracerProvider</code>:</p>
-            <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.{</span><span class="type-name">IO</span><span>, </span><span class="type-name">IOApp</span><span>}
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">metrics</span><span>.</span><span class="type-name">MeterProvider</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">sdk</span><span>.</span><span class="type-name">OpenTelemetrySdk</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">sdk</span><span>.</span><span class="identifier">contrib</span><span>.</span><span class="identifier">aws</span><span>.</span><span class="identifier">context</span><span>.</span><span class="identifier">propagation</span><span>.</span><span class="identifier">_</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">sdk</span><span>.</span><span class="identifier">exporter</span><span>.</span><span class="identifier">otlp</span><span>.</span><span class="identifier">autoconfigure</span><span>.</span><span class="type-name">OtlpExportersAutoConfigure</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">trace</span><span>.</span><span class="type-name">TracerProvider</span><span>
-
-</span><span class="keyword">object</span><span> </span><span class="type-name">TelemetryApp</span><span> </span><span class="keyword">extends</span><span> </span><span class="type-name">IOApp</span><span>.</span><span class="type-name">Simple</span><span> {
-
-  </span><span class="keyword">def</span><span> </span><span class="declaration-name">run</span><span>: </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] =
-    </span><span class="type-name">OpenTelemetrySdk</span><span>
-      .</span><span class="identifier">autoConfigured</span><span>[</span><span class="type-name">IO</span><span>]( 
-        </span><span class="comment">// register OTLP exporters configurer
-</span><span>        </span><span class="identifier">_</span><span>.</span><span class="identifier">addExportersConfigurer</span><span>(</span><span class="type-name">OtlpExportersAutoConfigure</span><span>[</span><span class="type-name">IO</span><span>])
-        </span><span class="comment">// add AWS X-Ray Lambda Propagator
-</span><span>         .</span><span class="identifier">addTracerProviderCustomizer</span><span>((</span><span class="identifier">b</span><span>, </span><span class="identifier">_</span><span>) =&gt; 
-           </span><span class="identifier">b</span><span>.</span><span class="identifier">addTextMapPropagators</span><span>(</span><span class="type-name">AWSXRayLambdaPropagator</span><span>())
-         )
-      )
-      .</span><span class="identifier">use</span><span> { </span><span class="identifier">autoConfigured</span><span> =&gt;
-        </span><span class="keyword">val</span><span> </span><span class="identifier">sdk</span><span> = </span><span class="identifier">autoConfigured</span><span>.</span><span class="identifier">sdk</span><span>
-        </span><span class="identifier">program</span><span>(</span><span class="identifier">sdk</span><span>.</span><span class="identifier">meterProvider</span><span>, </span><span class="identifier">sdk</span><span>.</span><span class="identifier">tracerProvider</span><span>)
-      }
-
-  </span><span class="keyword">def</span><span> </span><span class="declaration-name">program</span><span>(
-      </span><span class="identifier">meterProvider</span><span>: </span><span class="type-name">MeterProvider</span><span>[</span><span class="type-name">IO</span><span>], 
-      </span><span class="identifier">tracerProvider</span><span>: </span><span class="type-name">TracerProvider</span><span>[</span><span class="type-name">IO</span><span>]
-  ): </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] =
-    ???
-}</span></code></pre>
+          <div class="tab-content active" data-choice-name="sbt">
+            <p>Add settings to the <code>build.sbt</code>:</p>
+            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">javaOptions</span><span> += </span><span class="string-literal">&quot;-Dotel.otel4s.resource.detectors.enabled=aws-lambda&quot;</span><span>
+</span><span class="identifier">envVars</span><span> ++= </span><span class="type-name">Map</span><span>(</span><span class="string-literal">&quot;OTEL_OTEL4S_RESOURCE_DETECTORS_ENABLE&quot;</span><span> -&gt; </span><span class="string-literal">&quot;aws-lambda&quot;</span><span>)</span></code></pre>
           </div>
-          <div class="tab-content" data-choice-name="traces">
-            <p><code>SdkTraces</code> configures only <code>TracerProvider</code>:</p>
-            <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.{</span><span class="type-name">IO</span><span>, </span><span class="type-name">IOApp</span><span>}
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">sdk</span><span>.</span><span class="identifier">contrib</span><span>.</span><span class="identifier">aws</span><span>.</span><span class="identifier">context</span><span>.</span><span class="identifier">propagation</span><span>.</span><span class="identifier">_</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">sdk</span><span>.</span><span class="identifier">exporter</span><span>.</span><span class="identifier">otlp</span><span>.</span><span class="identifier">trace</span><span>.</span><span class="identifier">autoconfigure</span><span>.</span><span class="type-name">OtlpSpanExporterAutoConfigure</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">sdk</span><span>.</span><span class="identifier">trace</span><span>.</span><span class="type-name">SdkTraces</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">trace</span><span>.</span><span class="type-name">TracerProvider</span><span>
-
-</span><span class="keyword">object</span><span> </span><span class="type-name">TelemetryApp</span><span> </span><span class="keyword">extends</span><span> </span><span class="type-name">IOApp</span><span>.</span><span class="type-name">Simple</span><span> {
-
-  </span><span class="keyword">def</span><span> </span><span class="declaration-name">run</span><span>: </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] =
-    </span><span class="type-name">SdkTraces</span><span>
-      .</span><span class="identifier">autoConfigured</span><span>[</span><span class="type-name">IO</span><span>]( 
-        </span><span class="comment">// register OTLP exporters configurer
-</span><span>        </span><span class="identifier">_</span><span>.</span><span class="identifier">addExporterConfigurer</span><span>(</span><span class="type-name">OtlpSpanExporterAutoConfigure</span><span>[</span><span class="type-name">IO</span><span>])
-        </span><span class="comment">// add AWS X-Ray Lambda Propagator
-</span><span>         .</span><span class="identifier">addTracerProviderCustomizer</span><span>((</span><span class="identifier">b</span><span>, </span><span class="identifier">_</span><span>) =&gt; 
-           </span><span class="identifier">b</span><span>.</span><span class="identifier">addTextMapPropagators</span><span>(</span><span class="type-name">AWSXRayLambdaPropagator</span><span>())
-         )
-      )
-      .</span><span class="identifier">use</span><span> { </span><span class="identifier">autoConfigured</span><span> =&gt;
-        </span><span class="identifier">program</span><span>(</span><span class="identifier">autoConfigured</span><span>.</span><span class="identifier">tracerProvider</span><span>)
-      }
-
-  </span><span class="keyword">def</span><span> </span><span class="declaration-name">program</span><span>(
-      </span><span class="identifier">tracerProvider</span><span>: </span><span class="type-name">TracerProvider</span><span>[</span><span class="type-name">IO</span><span>]
-  ): </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] =
-    ???
-}</span></code></pre>
+          <div class="tab-content" data-choice-name="scala-cli">
+            <p>Add directives to the <code>*.scala</code> file:</p>
+            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="comment">//&gt; using javaOpt -Dotel.otel4s.resource.detectors.enabled=aws-lambda</span></code></pre>
+          </div>
+          <div class="tab-content" data-choice-name="shell">
+            <pre class="keep-together pdf epub"><code class="nohighlight"><span>$ </span><span class="identifier">export</span><span> OTEL_OTEL4S_RESOURCE_DETECTORS_ENABLED=aws-lambda</span></code></pre>
           </div>
         </div>
 

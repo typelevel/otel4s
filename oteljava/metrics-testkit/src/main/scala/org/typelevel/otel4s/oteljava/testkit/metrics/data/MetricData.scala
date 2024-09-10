@@ -43,18 +43,15 @@ object MetricData {
 
   final case class LongGauge(points: List[PointData[Long]]) extends MetricData
 
-  final case class DoubleGauge(points: List[PointData[Double]])
-      extends MetricData
+  final case class DoubleGauge(points: List[PointData[Double]]) extends MetricData
 
   final case class LongSum(points: List[PointData[Long]]) extends MetricData
 
   final case class DoubleSum(points: List[PointData[Double]]) extends MetricData
 
-  final case class Summary(points: List[PointData[SummaryPointData]])
-      extends MetricData
+  final case class Summary(points: List[PointData[SummaryPointData]]) extends MetricData
 
-  final case class Histogram(points: List[PointData[HistogramPointData]])
-      extends MetricData
+  final case class Histogram(points: List[PointData[HistogramPointData]]) extends MetricData
 
   final case class ExponentialHistogram(
       points: List[PointData[HistogramPointData]]

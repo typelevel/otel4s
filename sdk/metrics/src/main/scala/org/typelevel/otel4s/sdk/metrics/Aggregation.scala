@@ -44,8 +44,7 @@ object Aggregation {
   private[metrics] object Defaults {
     // See https://opentelemetry.io/docs/specs/otel/metrics/sdk/#explicit-bucket-histogram-aggregation
     val Boundaries: BucketBoundaries = BucketBoundaries(
-      0d, 5d, 10d, 25d, 50d, 75d, 100d, 250d, 500d, 750d, 1000d, 2500d, 5000d,
-      7500d, 10000d
+      0d, 5d, 10d, 25d, 50d, 75d, 100d, 250d, 500d, 750d, 1000d, 2500d, 5000d, 7500d, 10000d
     )
   }
 
@@ -64,8 +63,7 @@ object Aggregation {
     */
   def default: Aggregation = Default
 
-  /** Aggregates measurements into
-    * [[org.typelevel.otel4s.sdk.metrics.data.MetricPoints.Sum MetricPoints.Sum]].
+  /** Aggregates measurements into [[org.typelevel.otel4s.sdk.metrics.data.MetricPoints.Sum MetricPoints.Sum]].
     *
     * Compatible instruments:
     *   - [[org.typelevel.otel4s.metrics.Counter Counter]]
@@ -76,9 +74,8 @@ object Aggregation {
     */
   def sum: Aggregation = Sum
 
-  /** Aggregates measurements into
-    * [[org.typelevel.otel4s.sdk.metrics.data.MetricPoints.Gauge MetricPoints.Gauge]]
-    * using the last seen measurement.
+  /** Aggregates measurements into [[org.typelevel.otel4s.sdk.metrics.data.MetricPoints.Gauge MetricPoints.Gauge]] using
+    * the last seen measurement.
     *
     * Compatible instruments:
     *   - [[org.typelevel.otel4s.metrics.Gauge Gauge]]
@@ -87,8 +84,8 @@ object Aggregation {
   def lastValue: Aggregation = LastValue
 
   /** Aggregates measurements into an explicit bucket
-    * [[org.typelevel.otel4s.sdk.metrics.data.MetricPoints.Histogram MetricPoints.Histogram]]
-    * using the default bucket boundaries.
+    * [[org.typelevel.otel4s.sdk.metrics.data.MetricPoints.Histogram MetricPoints.Histogram]] using the default bucket
+    * boundaries.
     *
     * Compatible instruments:
     *   - [[org.typelevel.otel4s.metrics.Counter Counter]]
@@ -98,8 +95,8 @@ object Aggregation {
     ExplicitBucketHistogram(Defaults.Boundaries)
 
   /** Aggregates measurements into an explicit bucket
-    * [[org.typelevel.otel4s.sdk.metrics.data.MetricPoints.Histogram MetricPoints.Histogram]]
-    * using the given bucket boundaries.
+    * [[org.typelevel.otel4s.sdk.metrics.data.MetricPoints.Histogram MetricPoints.Histogram]] using the given bucket
+    * boundaries.
     *
     * Compatible instruments:
     *   - [[org.typelevel.otel4s.metrics.Counter Counter]]
@@ -129,20 +126,11 @@ object Aggregation {
 
   private[metrics] case object Drop extends Aggregation(Compatability.Drop)
 
-  private[metrics] case object Default
-      extends Aggregation(Compatability.Default)
-      with Synchronous
-      with Asynchronous
+  private[metrics] case object Default extends Aggregation(Compatability.Default) with Synchronous with Asynchronous
 
-  private[metrics] case object Sum
-      extends Aggregation(Compatability.Sum)
-      with Synchronous
-      with Asynchronous
+  private[metrics] case object Sum extends Aggregation(Compatability.Sum) with Synchronous with Asynchronous
 
-  private[metrics] case object LastValue
-      extends Aggregation(Compatability.LastValue)
-      with Synchronous
-      with Asynchronous
+  private[metrics] case object LastValue extends Aggregation(Compatability.LastValue) with Synchronous with Asynchronous
 
   private[metrics] final case class ExplicitBucketHistogram(
       boundaries: BucketBoundaries

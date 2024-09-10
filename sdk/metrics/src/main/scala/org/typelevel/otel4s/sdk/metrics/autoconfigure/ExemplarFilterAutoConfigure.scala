@@ -116,8 +116,7 @@ private[sdk] object ExemplarFilterAutoConfigure {
     *   [[https://opentelemetry.io/docs/languages/java/configuration/#exemplars]]
     *
     * @param traceContextLookup
-    *   used by the exemplar reservoir to extract tracing information from the
-    *   context
+    *   used by the exemplar reservoir to extract tracing information from the context
     */
   def apply[F[_]: MonadThrow](
       traceContextLookup: TraceContextLookup

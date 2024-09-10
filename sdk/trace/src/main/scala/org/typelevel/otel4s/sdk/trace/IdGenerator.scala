@@ -42,8 +42,7 @@ trait IdGenerator[F[_]] {
     */
   def generateTraceId: F[ByteVector]
 
-  /** Whether it's safe to skip the ID validation: we are sure the generated ids
-    * are valid.
+  /** Whether it's safe to skip the ID validation: we are sure the generated ids are valid.
     */
   private[trace] def canSkipIdValidation: Boolean =
     false
@@ -53,14 +52,12 @@ object IdGenerator {
 
   private final val InvalidId = 0
 
-  /** Creates [[IdGenerator]] that uses [[cats.effect.std.Random]] under the
-    * hood.
+  /** Creates [[IdGenerator]] that uses [[cats.effect.std.Random]] under the hood.
     */
   def random[F[_]: Monad: Random]: IdGenerator[F] =
     new RandomIdGenerator[F]
 
-  private final class RandomIdGenerator[F[_]: Monad: Random]
-      extends IdGenerator[F] {
+  private final class RandomIdGenerator[F[_]: Monad: Random] extends IdGenerator[F] {
 
     def generateSpanId: F[ByteVector] =
       Random[F].nextLong

@@ -24,8 +24,7 @@ import scala.collection.immutable
 
 /** A `Counter` instrument that records values of type `A`.
   *
-  * The [[UpDownCounter]] is non-monotonic. This means the aggregated value can
-  * increase and decrease.
+  * The [[UpDownCounter]] is non-monotonic. This means the aggregated value can increase and decrease.
   *
   * @see
   *   See [[Counter]] for monotonic alternative
@@ -34,9 +33,8 @@ import scala.collection.immutable
   *   the higher-kinded type of a polymorphic effect
   *
   * @tparam A
-  *   the type of the values to record. The type must have an instance of
-  *   [[MeasurementValue]]. [[scala.Long]] and [[scala.Double]] are supported
-  *   out of the box.
+  *   the type of the values to record. The type must have an instance of [[MeasurementValue]]. [[scala.Long]] and
+  *   [[scala.Double]] are supported out of the box.
   */
 trait UpDownCounter[F[_], A] extends UpDownCounterMacro[F, A]
 
@@ -48,9 +46,8 @@ object UpDownCounter {
     *   the higher-kinded type of a polymorphic effect
     *
     * @tparam A
-    *   the type of the values to record. The type must have an instance of
-    *   [[MeasurementValue]]. [[scala.Long]] and [[scala.Double]] are supported
-    *   out of the box.
+    *   the type of the values to record. The type must have an instance of [[MeasurementValue]]. [[scala.Long]] and
+    *   [[scala.Double]] are supported out of the box.
     */
   trait Builder[F[_], A] {
 
@@ -74,8 +71,7 @@ object UpDownCounter {
       */
     def withDescription(description: String): Builder[F, A]
 
-    /** Creates an [[UpDownCounter]] with the given `unit` and `description` (if
-      * any).
+    /** Creates an [[UpDownCounter]] with the given `unit` and `description` (if any).
       */
     def create: F[UpDownCounter[F, A]]
   }

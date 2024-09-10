@@ -28,9 +28,8 @@ import org.typelevel.otel4s.sdk.metrics.data.MetricData
   */
 trait MetricProducer[F[_]] {
 
-  /** Produces metrics by collecting them from the SDK. If there are
-    * asynchronous instruments involved, their callback functions will be
-    * evaluated.
+  /** Produces metrics by collecting them from the SDK. If there are asynchronous instruments involved, their callback
+    * functions will be evaluated.
     */
   def produce: F[Vector[MetricData]]
 }

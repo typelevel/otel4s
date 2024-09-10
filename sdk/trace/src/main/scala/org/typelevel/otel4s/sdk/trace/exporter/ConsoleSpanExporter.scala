@@ -22,15 +22,12 @@ import cats.effect.std.Console
 import cats.syntax.foldable._
 import org.typelevel.otel4s.sdk.trace.data.SpanData
 
-/** Creates a span exporter that logs every span using
-  * [[cats.effect.std.Console]].
+/** Creates a span exporter that logs every span using [[cats.effect.std.Console]].
   *
   * @note
-  *   use this exporter for debugging purposes because it may affect the
-  *   performance
+  *   use this exporter for debugging purposes because it may affect the performance
   */
-private final class ConsoleSpanExporter[F[_]: Applicative: Console]
-    extends SpanExporter[F] {
+private final class ConsoleSpanExporter[F[_]: Applicative: Console] extends SpanExporter[F] {
 
   val name: String = "ConsoleSpanExporter"
 

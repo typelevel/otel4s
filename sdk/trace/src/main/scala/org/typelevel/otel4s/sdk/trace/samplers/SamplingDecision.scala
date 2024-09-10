@@ -31,18 +31,15 @@ object SamplingDecision {
 
   /** The span is not recorded, and all events and attributes will be dropped.
     */
-  case object Drop
-      extends SamplingDecision(isSampled = false, isRecording = false)
+  case object Drop extends SamplingDecision(isSampled = false, isRecording = false)
 
   /** The span is recorded, but the Sampled flag will not be set.
     */
-  case object RecordOnly
-      extends SamplingDecision(isSampled = false, isRecording = true)
+  case object RecordOnly extends SamplingDecision(isSampled = false, isRecording = true)
 
   /** The span is recorded, and the Sampled flag will be set.
     */
-  case object RecordAndSample
-      extends SamplingDecision(isSampled = true, isRecording = true)
+  case object RecordAndSample extends SamplingDecision(isSampled = true, isRecording = true)
 
   implicit val samplingDecisionHash: Hash[SamplingDecision] =
     Hash.fromUniversalHashCode

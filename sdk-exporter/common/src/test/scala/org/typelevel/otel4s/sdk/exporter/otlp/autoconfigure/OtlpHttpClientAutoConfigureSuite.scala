@@ -31,9 +31,7 @@ import scalapb_circe.Printer
 
 import scala.concurrent.duration._
 
-class OtlpHttpClientAutoConfigureSuite
-    extends CatsEffectSuite
-    with SuiteRuntimePlatform {
+class OtlpHttpClientAutoConfigureSuite extends CatsEffectSuite with SuiteRuntimePlatform {
 
   import OtlpHttpClientAutoConfigure.Defaults
 

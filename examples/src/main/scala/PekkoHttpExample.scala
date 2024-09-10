@@ -45,8 +45,7 @@ import org.typelevel.otel4s.trace.Tracer
 import scala.concurrent.Future
 import scala.concurrent.duration._
 
-/** This example relies on the OpenTelemetry Java agent. To make it work, add
-  * the following settings to your build:
+/** This example relies on the OpenTelemetry Java agent. To make it work, add the following settings to your build:
   *
   * add `sbt-javaagent` dependency to the `plugins.sbt`:
   *
@@ -81,25 +80,22 @@ object PekkoHttpExample extends IOApp.Simple {
       implicit val local: Local[IO, Context] = localForIOLocal
       val otelJava: OtelJava[IO] = OtelJava.local(GlobalOpenTelemetry.get())
 
-      otelJava.tracerProvider.get("com.example").flatMap {
-        implicit tracer: Tracer[IO] =>
-          createSystem.use { implicit actorSystem: ActorSystem =>
-            def bind: Future[Http.ServerBinding] =
-              Http().newServerAt("127.0.0.1", 9000).bindFlow(routes)
+      otelJava.tracerProvider.get("com.example").flatMap { implicit tracer: Tracer[IO] =>
+        createSystem.use { implicit actorSystem: ActorSystem =>
+          def bind: Future[Http.ServerBinding] =
+            Http().newServerAt("127.0.0.1", 9000).bindFlow(routes)
 
-            Resource
-              .make(IO.fromFuture(IO.delay(bind))) { b =>
-                IO.fromFuture(IO.delay(b.unbind())).void
-              }
-              .use(_ => IO.never)
-          }
+          Resource
+            .make(IO.fromFuture(IO.delay(bind))) { b =>
+              IO.fromFuture(IO.delay(b.unbind())).void
+            }
+            .use(_ => IO.never)
+        }
       }
     }
 
   private def createSystem: Resource[IO, ActorSystem] =
-    Resource.make(IO.delay(ActorSystem()))(system =>
-      IO.fromFuture(IO.delay(system.terminate())).void
-    )
+    Resource.make(IO.delay(ActorSystem()))(system => IO.fromFuture(IO.delay(system.terminate())).void)
 
   private def routes(implicit
       T: Tracer[IO],

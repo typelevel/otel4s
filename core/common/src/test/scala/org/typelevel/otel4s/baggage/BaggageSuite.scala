@@ -37,9 +37,7 @@ class BaggageSuite extends DisciplineSuite {
     Arbitrary(
       for {
         entries <- Gen.listOfN(5, keyValueGen)
-      } yield entries.foldLeft(Baggage.empty)((b, v) =>
-        b.updated(v._1, v._2, v._3)
-      )
+      } yield entries.foldLeft(Baggage.empty)((b, v) => b.updated(v._1, v._2, v._3))
     )
 
   private implicit val baggageCogen: Cogen[Baggage] =
@@ -64,23 +62,22 @@ class BaggageSuite extends DisciplineSuite {
   }
 
   test("update entries") {
-    Prop.forAll(keyValueGen, Gen.alphaNumStr) {
-      case ((key, value1, metadata), value2) =>
-        val entry1 = Baggage.Entry(value1, metadata.map(Baggage.Metadata(_)))
-        val baggage1 = Baggage.empty.updated(key, value1, metadata)
+    Prop.forAll(keyValueGen, Gen.alphaNumStr) { case ((key, value1, metadata), value2) =>
+      val entry1 = Baggage.Entry(value1, metadata.map(Baggage.Metadata(_)))
+      val baggage1 = Baggage.empty.updated(key, value1, metadata)
 
-        assertEquals(baggage1.asMap, Map(key -> entry1))
-        assertEquals(baggage1.size, 1)
-        assertEquals(baggage1.isEmpty, false)
-        assertEquals(baggage1.get(key), Some(entry1))
+      assertEquals(baggage1.asMap, Map(key -> entry1))
+      assertEquals(baggage1.size, 1)
+      assertEquals(baggage1.isEmpty, false)
+      assertEquals(baggage1.get(key), Some(entry1))
 
-        val entry2 = Baggage.Entry(value2, None)
-        val baggage2 = baggage1.updated(key, value2)
+      val entry2 = Baggage.Entry(value2, None)
+      val baggage2 = baggage1.updated(key, value2)
 
-        assertEquals(baggage2.asMap, Map(key -> entry2))
-        assertEquals(baggage2.size, 1)
-        assertEquals(baggage2.isEmpty, false)
-        assertEquals(baggage2.get(key), Some(entry2))
+      assertEquals(baggage2.asMap, Map(key -> entry2))
+      assertEquals(baggage2.size, 1)
+      assertEquals(baggage2.isEmpty, false)
+      assertEquals(baggage2.get(key), Some(entry2))
     }
   }
 
@@ -97,8 +94,8 @@ class BaggageSuite extends DisciplineSuite {
 
   test("Show[Baggage]") {
     Prop.forAll(Gen.listOfN(5, keyValueGen)) { entries =>
-      val baggage = entries.foldLeft(Baggage.empty) {
-        case (builder, (key, value, meta)) => builder.updated(key, value, meta)
+      val baggage = entries.foldLeft(Baggage.empty) { case (builder, (key, value, meta)) =>
+        builder.updated(key, value, meta)
       }
 
       val entriesString = entries

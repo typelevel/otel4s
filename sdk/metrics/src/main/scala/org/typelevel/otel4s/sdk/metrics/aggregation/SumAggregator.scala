@@ -39,8 +39,7 @@ import org.typelevel.otel4s.sdk.metrics.internal.utils.Adder
 
 private object SumAggregator {
 
-  /** Creates a sum aggregator for synchronous instruments. Calculates the
-    * arithmetic sum of the measurement values.
+  /** Creates a sum aggregator for synchronous instruments. Calculates the arithmetic sum of the measurement values.
     *
     * @see
     *   [[https://opentelemetry.io/docs/specs/otel/metrics/sdk/#sum-aggregation]]

@@ -27,9 +27,8 @@ import org.typelevel.otel4s.sdk.exporter.otlp.trace.autoconfigure.OtlpSpanExport
 
 object OtlpExportersAutoConfigure {
 
-  /** An OTLP configurers of
-    * [[org.typelevel.otel4s.sdk.metrics.exporter.MetricExporter MetricExporter]]
-    * and [[org.typelevel.otel4s.sdk.trace.exporter.SpanExporter SpanExporter]].
+  /** An OTLP configurers of [[org.typelevel.otel4s.sdk.metrics.exporter.MetricExporter MetricExporter]] and
+    * [[org.typelevel.otel4s.sdk.trace.exporter.SpanExporter SpanExporter]].
     */
   def apply[
       F[_]: Async: Network: Compression: Console
@@ -39,13 +38,11 @@ object OtlpExportersAutoConfigure {
       OtlpSpanExporterAutoConfigure[F]
     )
 
-  /** An OTLP configurers of
-    * [[org.typelevel.otel4s.sdk.metrics.exporter.MetricExporter MetricExporter]]
-    * and [[org.typelevel.otel4s.sdk.trace.exporter.SpanExporter SpanExporter]].
+  /** An OTLP configurers of [[org.typelevel.otel4s.sdk.metrics.exporter.MetricExporter MetricExporter]] and
+    * [[org.typelevel.otel4s.sdk.trace.exporter.SpanExporter SpanExporter]].
     *
     * @note
-    *   the 'timeout' and 'tlsContext' settings will be ignored. You must
-    *   preconfigure the client manually.
+    *   the 'timeout' and 'tlsContext' settings will be ignored. You must preconfigure the client manually.
     *
     * @example
     *   {{{

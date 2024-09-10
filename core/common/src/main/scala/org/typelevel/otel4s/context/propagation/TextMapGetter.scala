@@ -23,15 +23,12 @@ import scala.collection.generic.IsSeq
 
 /** Offers a way to get a string value associated with a given key.
   *
-  * A type class can be implemented for any data structure that stores key-value
-  * pairs.
+  * A type class can be implemented for any data structure that stores key-value pairs.
   *
-  * Implicit instances of `TextMapGetter` are provided for
-  * [[scala.collection.Map]] and [[scala.collection.Seq]] types. The behavior of
-  * `TextMapGetter[Seq[(String, String)]]` when duplicate keys are present is
-  * unspecified, and may change at any time. In particular, if the behavior of
-  * `Seq` types with duplicate keys is ever specified by open telemetry, the
-  * behavior of such implicit instances will be made to match the specification.
+  * Implicit instances of `TextMapGetter` are provided for [[scala.collection.Map]] and [[scala.collection.Seq]] types.
+  * The behavior of `TextMapGetter[Seq[(String, String)]]` when duplicate keys are present is unspecified, and may
+  * change at any time. In particular, if the behavior of `Seq` types with duplicate keys is ever specified by open
+  * telemetry, the behavior of such implicit instances will be made to match the specification.
   *
   * @see
   *   See [[TextMapUpdater]] to update values of an immutable carrier
@@ -53,13 +50,11 @@ trait TextMapGetter[A] {
     *   the key to get the value at
     *
     * @return
-    *   a [[scala.Some]] if the `key` is present in `carrier` and [[scala.None]]
-    *   otherwise
+    *   a [[scala.Some]] if the `key` is present in `carrier` and [[scala.None]] otherwise
     */
   def get(carrier: A, key: String): Option[String]
 
-  /** Returns a collection of all available keys in the given `carrier`. The
-    * collection SHOULD never return duplicates.
+  /** Returns a collection of all available keys in the given `carrier`. The collection SHOULD never return duplicates.
     *
     * @param carrier
     *   the carrier to get keys from

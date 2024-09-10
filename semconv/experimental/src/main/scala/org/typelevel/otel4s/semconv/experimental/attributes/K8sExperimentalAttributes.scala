@@ -26,42 +26,32 @@ object K8sExperimentalAttributes {
   val K8sClusterName: AttributeKey[String] =
     AttributeKey("k8s.cluster.name")
 
-  /** A pseudo-ID for the cluster, set to the UID of the `kube-system`
-    * namespace. <p>
+  /** A pseudo-ID for the cluster, set to the UID of the `kube-system` namespace. <p>
     * @note
-    *   <p> K8s doesn't have support for obtaining a cluster ID. If this is ever
-    *   added, we will recommend collecting the `k8s.cluster.uid` through the
-    *   official APIs. In the meantime, we are able to use the `uid` of the
-    *   `kube-system` namespace as a proxy for cluster ID. Read on for the
-    *   rationale. <p> Every object created in a K8s cluster is assigned a
-    *   distinct UID. The `kube-system` namespace is used by Kubernetes itself
-    *   and will exist for the lifetime of the cluster. Using the `uid` of the
-    *   `kube-system` namespace is a reasonable proxy for the K8s ClusterID as
-    *   it will only change if the cluster is rebuilt. Furthermore, Kubernetes
-    *   UIDs are UUIDs as standardized by <a
-    *   href="https://www.itu.int/ITU-T/studygroups/com17/oid.html">ISO/IEC
-    *   9834-8 and ITU-T X.667</a>. Which states: <p> <blockquote> If generated
-    *   according to one of the mechanisms defined in Rec. ITU-T X.667 | ISO/IEC
-    *   9834-8, a UUID is either guaranteed to be different from all other UUIDs
-    *   generated before 3603 A.D., or is extremely likely to be different
-    *   (depending on the mechanism chosen).</blockquote>
+    *   <p> K8s doesn't have support for obtaining a cluster ID. If this is ever added, we will recommend collecting the
+    *   `k8s.cluster.uid` through the official APIs. In the meantime, we are able to use the `uid` of the `kube-system`
+    *   namespace as a proxy for cluster ID. Read on for the rationale. <p> Every object created in a K8s cluster is
+    *   assigned a distinct UID. The `kube-system` namespace is used by Kubernetes itself and will exist for the
+    *   lifetime of the cluster. Using the `uid` of the `kube-system` namespace is a reasonable proxy for the K8s
+    *   ClusterID as it will only change if the cluster is rebuilt. Furthermore, Kubernetes UIDs are UUIDs as
+    *   standardized by <a href="https://www.itu.int/ITU-T/studygroups/com17/oid.html">ISO/IEC 9834-8 and ITU-T
+    *   X.667</a>. Which states: <p> <blockquote> If generated according to one of the mechanisms defined in Rec. ITU-T
+    *   X.667 | ISO/IEC 9834-8, a UUID is either guaranteed to be different from all other UUIDs generated before 3603
+    *   A.D., or is extremely likely to be different (depending on the mechanism chosen).</blockquote>
     *
-    * <p> Therefore, UIDs between clusters should be extremely unlikely to
-    * conflict.
+    * <p> Therefore, UIDs between clusters should be extremely unlikely to conflict.
     */
   val K8sClusterUid: AttributeKey[String] =
     AttributeKey("k8s.cluster.uid")
 
-  /** The name of the Container from Pod specification, must be unique within a
-    * Pod. Container runtime usually uses different globally unique name
-    * (`container.name`).
+  /** The name of the Container from Pod specification, must be unique within a Pod. Container runtime usually uses
+    * different globally unique name (`container.name`).
     */
   val K8sContainerName: AttributeKey[String] =
     AttributeKey("k8s.container.name")
 
-  /** Number of times the container was restarted. This attribute can be used to
-    * identify a particular container (running or stopped) within a container
-    * spec.
+  /** Number of times the container was restarted. This attribute can be used to identify a particular container
+    * (running or stopped) within a container spec.
     */
   val K8sContainerRestartCount: AttributeKey[Long] =
     AttributeKey("k8s.container.restart_count")
@@ -126,14 +116,13 @@ object K8sExperimentalAttributes {
   val K8sNodeUid: AttributeKey[String] =
     AttributeKey("k8s.node.uid")
 
-  /** The annotation key-value pairs placed on the Pod, the `<key>` being the
-    * annotation name, the value being the annotation value.
+  /** The annotation key-value pairs placed on the Pod, the `<key>` being the annotation name, the value being the
+    * annotation value.
     */
   val K8sPodAnnotation: AttributeKey[String] =
     AttributeKey("k8s.pod.annotation")
 
-  /** The label key-value pairs placed on the Pod, the `<key>` being the label
-    * name, the value being the label value.
+  /** The label key-value pairs placed on the Pod, the `<key>` being the label name, the value being the label value.
     */
   val K8sPodLabel: AttributeKey[String] =
     AttributeKey("k8s.pod.label")

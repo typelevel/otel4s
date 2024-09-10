@@ -24,8 +24,7 @@ trait BatchCallback[F[_]] {
 
   /** Constructs a batch callback.
     *
-    * Batch callbacks allow a single callback to observe measurements for
-    * multiple asynchronous instruments.
+    * Batch callbacks allow a single callback to observe measurements for multiple asynchronous instruments.
     *
     * The callback will be called when the instruments are being observed.
     *
@@ -68,8 +67,7 @@ trait BatchCallback[F[_]] {
 
   /** Constructs a batch callback.
     *
-    * Batch callbacks allow a single callback to observe measurements for
-    * multiple asynchronous instruments.
+    * Batch callbacks allow a single callback to observe measurements for multiple asynchronous instruments.
     *
     * The callback will be called when the instruments are being observed.
     *

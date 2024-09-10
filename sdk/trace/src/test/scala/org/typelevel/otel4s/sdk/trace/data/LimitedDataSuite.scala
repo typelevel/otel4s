@@ -34,9 +34,8 @@ class LimitedDataSuite extends ScalaCheckSuite {
       val data = LimitedData
         .attributes(150, Int.MaxValue)
         .appendAll(attributes)
-      val dataWithDropped = extraAttributes.foldLeft(data) {
-        (data, attribute) =>
-          data.append(attribute)
+      val dataWithDropped = extraAttributes.foldLeft(data) { (data, attribute) =>
+        data.append(attribute)
       }
 
       assertEquals(dataWithDropped.dropped, 150)

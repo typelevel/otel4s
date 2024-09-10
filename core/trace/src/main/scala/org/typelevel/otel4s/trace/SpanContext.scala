@@ -21,40 +21,33 @@ import cats.Show
 import cats.syntax.show._
 import scodec.bits.ByteVector
 
-/** A span context contains the state that must propagate to child spans and
-  * across process boundaries.
+/** A span context contains the state that must propagate to child spans and across process boundaries.
   *
-  * It contains the identifiers (a `trace_id` and `span_id`) associated with the
-  * span and a set of flags (currently only whether the context is sampled or
-  * not), as well as the remote flag.
+  * It contains the identifiers (a `trace_id` and `span_id`) associated with the span and a set of flags (currently only
+  * whether the context is sampled or not), as well as the remote flag.
   *
   * @see
   *   [[https://opentelemetry.io/docs/specs/otel/trace/api/#spancontext]]
   */
 sealed trait SpanContext {
 
-  /** Returns the trace identifier associated with this [[SpanContext]] as
-    * 16-byte vector.
+  /** Returns the trace identifier associated with this [[SpanContext]] as 16-byte vector.
     */
   def traceId: ByteVector
 
-  /** Returns the trace identifier associated with this [[SpanContext]] as 32
-    * character lowercase hex String.
+  /** Returns the trace identifier associated with this [[SpanContext]] as 32 character lowercase hex String.
     */
   def traceIdHex: String
 
-  /** Returns the span identifier associated with this [[SpanContext]] as 8-byte
-    * vector.
+  /** Returns the span identifier associated with this [[SpanContext]] as 8-byte vector.
     */
   def spanId: ByteVector
 
-  /** Returns the span identifier associated with this [[SpanContext]] as 16
-    * character lowercase hex String.
+  /** Returns the span identifier associated with this [[SpanContext]] as 16 character lowercase hex String.
     */
   def spanIdHex: String
 
-  /** Returns details about the trace associated with this [[SpanContext]] as an
-    * 8-bit field.
+  /** Returns details about the trace associated with this [[SpanContext]] as an 8-bit field.
     */
   def traceFlags: TraceFlags
 
@@ -71,8 +64,7 @@ sealed trait SpanContext {
     */
   def isValid: Boolean
 
-  /** Returns `true` if this [[SpanContext]] was propagated from a remote
-    * parent.
+  /** Returns `true` if this [[SpanContext]] was propagated from a remote parent.
     */
   def isRemote: Boolean
 
@@ -149,9 +141,8 @@ object SpanContext {
 
   /** Creates a new [[SpanContext]] with the given identifiers and options.
     *
-    * If the `traceId` or the `spanId` are invalid (ie. do not conform to the
-    * requirements for hexadecimal ids of the appropriate lengths), both will be
-    * replaced with the standard "invalid" versions (i.e. all '0's).
+    * If the `traceId` or the `spanId` are invalid (ie. do not conform to the requirements for hexadecimal ids of the
+    * appropriate lengths), both will be replaced with the standard "invalid" versions (i.e. all '0's).
     *
     * @param traceId
     *   the trace identifier of the span context
@@ -223,13 +214,11 @@ object SpanContext {
 
   /** Creates a new [[SpanContext]] with the given identifiers and options.
     *
-    * If the id validation isn't skipped and the `traceId` or the `spanId` are
-    * invalid (ie. do not conform to the requirements for hexadecimal ids of the
-    * appropriate lengths), both will be replaced with the standard "invalid"
+    * If the id validation isn't skipped and the `traceId` or the `spanId` are invalid (ie. do not conform to the
+    * requirements for hexadecimal ids of the appropriate lengths), both will be replaced with the standard "invalid"
     * versions (i.e. all '0's).
     *
-    * '''Note''': the method is for the internal use only. It is not supposed to
-    * be publicly available.
+    * '''Note''': the method is for the internal use only. It is not supposed to be publicly available.
     *
     * @see
     *   [[apply]]

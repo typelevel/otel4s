@@ -23,11 +23,9 @@ object EventExperimentalAttributes {
 
   /** Identifies the class / type of event. <p>
     * @note
-    *   <p> Event names are subject to the same rules as <a
-    *   href="/docs/general/attribute-naming.md">attribute names</a>. Notably,
-    *   event names are namespaced to avoid collisions and provide a clean
-    *   separation of semantics for events in separate domains like browser,
-    *   mobile, and kubernetes.
+    *   <p> Event names are subject to the same rules as <a href="/docs/general/attribute-naming.md">attribute
+    *   names</a>. Notably, event names are namespaced to avoid collisions and provide a clean separation of semantics
+    *   for events in separate domains like browser, mobile, and kubernetes.
     */
   val EventName: AttributeKey[String] =
     AttributeKey("event.name")

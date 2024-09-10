@@ -42,14 +42,13 @@ object DbExperimentalAttributes {
   val DbCassandraIdempotence: AttributeKey[Boolean] =
     AttributeKey("db.cassandra.idempotence")
 
-  /** The fetch size used for paging, i.e. how many rows will be returned at
-    * once.
+  /** The fetch size used for paging, i.e. how many rows will be returned at once.
     */
   val DbCassandraPageSize: AttributeKey[Long] =
     AttributeKey("db.cassandra.page_size")
 
-  /** The number of times a query was speculatively executed. Not set or `0` if
-    * the query was not executed speculatively.
+  /** The number of times a query was speculatively executed. Not set or `0` if the query was not executed
+    * speculatively.
     */
   val DbCassandraSpeculativeExecutionCount: AttributeKey[Long] =
     AttributeKey("db.cassandra.speculative_execution_count")
@@ -60,13 +59,11 @@ object DbExperimentalAttributes {
   val DbCassandraTable: AttributeKey[String] =
     AttributeKey("db.cassandra.table")
 
-  /** The name of the connection pool; unique within the instrumented
-    * application. In case the connection pool implementation doesn't provide a
-    * name, instrumentation SHOULD use a combination of parameters that would
-    * make the name unique, for example, combining attributes `server.address`,
-    * `server.port`, and `db.namespace`, formatted as
-    * `server.address:server.port/db.namespace`. Instrumentations that generate
-    * connection pool name following different patterns SHOULD document it.
+  /** The name of the connection pool; unique within the instrumented application. In case the connection pool
+    * implementation doesn't provide a name, instrumentation SHOULD use a combination of parameters that would make the
+    * name unique, for example, combining attributes `server.address`, `server.port`, and `db.namespace`, formatted as
+    * `server.address:server.port/db.namespace`. Instrumentations that generate connection pool name following different
+    * patterns SHOULD document it.
     */
   val DbClientConnectionPoolName: AttributeKey[String] =
     AttributeKey("db.client.connection.pool.name")
@@ -90,14 +87,11 @@ object DbExperimentalAttributes {
 
   /** The name of a collection (table, container) within the database. <p>
     * @note
-    *   <p> It is RECOMMENDED to capture the value as provided by the
-    *   application without attempting to do any case normalization. If the
-    *   collection name is parsed from the query text, it SHOULD be the first
-    *   collection name found in the query and it SHOULD match the value
-    *   provided in the query text including any schema and database name
-    *   prefix. For batch operations, if the individual operations are known to
-    *   have the same collection name then that collection name SHOULD be used,
-    *   otherwise `db.collection.name` SHOULD NOT be captured.
+    *   <p> It is RECOMMENDED to capture the value as provided by the application without attempting to do any case
+    *   normalization. If the collection name is parsed from the query text, it SHOULD be the first collection name
+    *   found in the query and it SHOULD match the value provided in the query text including any schema and database
+    *   name prefix. For batch operations, if the individual operations are known to have the same collection name then
+    *   that collection name SHOULD be used, otherwise `db.collection.name` SHOULD NOT be captured.
     */
   val DbCollectionName: AttributeKey[String] =
     AttributeKey("db.collection.name")
@@ -155,26 +149,23 @@ object DbExperimentalAttributes {
   val DbElasticsearchClusterName: AttributeKey[String] =
     AttributeKey("db.elasticsearch.cluster.name")
 
-  /** Represents the human-readable identifier of the node/instance to which a
-    * request was routed.
+  /** Represents the human-readable identifier of the node/instance to which a request was routed.
     */
   val DbElasticsearchNodeName: AttributeKey[String] =
     AttributeKey("db.elasticsearch.node.name")
 
   /** A dynamic value in the url path. <p>
     * @note
-    *   <p> Many Elasticsearch url paths allow dynamic values. These SHOULD be
-    *   recorded in span attributes in the format
-    *   `db.elasticsearch.path_parts.<key>`, where `<key>` is the url path part
-    *   name. The implementation SHOULD reference the <a
+    *   <p> Many Elasticsearch url paths allow dynamic values. These SHOULD be recorded in span attributes in the format
+    *   `db.elasticsearch.path_parts.<key>`, where `<key>` is the url path part name. The implementation SHOULD
+    *   reference the <a
     *   href="https://raw.githubusercontent.com/elastic/elasticsearch-specification/main/output/schema/schema.json">elasticsearch
     *   schema</a> in order to map the path part values to their names.
     */
   val DbElasticsearchPathParts: AttributeKey[String] =
     AttributeKey("db.elasticsearch.path_parts")
 
-  /** Deprecated, no general replacement at this time. For Elasticsearch, use
-    * `db.elasticsearch.node.name` instead.
+  /** Deprecated, no general replacement at this time. For Elasticsearch, use `db.elasticsearch.node.name` instead.
     */
   @deprecated(
     "Deprecated, no general replacement at this time. For Elasticsearch, use `db.elasticsearch.node.name` instead.",
@@ -195,8 +186,7 @@ object DbExperimentalAttributes {
   val DbMongodbCollection: AttributeKey[String] =
     AttributeKey("db.mongodb.collection")
 
-  /** Deprecated, SQL Server instance is now populated as a part of
-    * `db.namespace` attribute.
+  /** Deprecated, SQL Server instance is now populated as a part of `db.namespace` attribute.
     */
   @deprecated("Deprecated, no replacement at this time.", "")
   val DbMssqlInstanceName: AttributeKey[String] =
@@ -208,18 +198,14 @@ object DbExperimentalAttributes {
   val DbName: AttributeKey[String] =
     AttributeKey("db.name")
 
-  /** The name of the database, fully qualified within the server address and
-    * port. <p>
+  /** The name of the database, fully qualified within the server address and port. <p>
     * @note
-    *   <p> If a database system has multiple namespace components, they SHOULD
-    *   be concatenated (potentially using database system specific conventions)
-    *   from most general to most specific namespace component, and more
-    *   specific namespaces SHOULD NOT be captured without the more general
-    *   namespaces, to ensure that "startswith" queries for the more general
-    *   namespaces will be valid. Semantic conventions for individual database
-    *   systems SHOULD document what `db.namespace` means in the context of that
-    *   system. It is RECOMMENDED to capture the value as provided by the
-    *   application without attempting to do any case normalization.
+    *   <p> If a database system has multiple namespace components, they SHOULD be concatenated (potentially using
+    *   database system specific conventions) from most general to most specific namespace component, and more specific
+    *   namespaces SHOULD NOT be captured without the more general namespaces, to ensure that "startswith" queries for
+    *   the more general namespaces will be valid. Semantic conventions for individual database systems SHOULD document
+    *   what `db.namespace` means in the context of that system. It is RECOMMENDED to capture the value as provided by
+    *   the application without attempting to do any case normalization.
     */
   val DbNamespace: AttributeKey[String] =
     AttributeKey("db.namespace")
@@ -230,37 +216,31 @@ object DbExperimentalAttributes {
   val DbOperation: AttributeKey[String] =
     AttributeKey("db.operation")
 
-  /** The number of queries included in a <a
-    * href="/docs/database/database-spans.md#batch-operations">batch
+  /** The number of queries included in a <a href="/docs/database/database-spans.md#batch-operations">batch
     * operation</a>. <p>
     * @note
-    *   <p> Operations are only considered batches when they contain two or more
-    *   operations, and so `db.operation.batch.size` SHOULD never be `1`.
+    *   <p> Operations are only considered batches when they contain two or more operations, and so
+    *   `db.operation.batch.size` SHOULD never be `1`.
     */
   val DbOperationBatchSize: AttributeKey[Long] =
     AttributeKey("db.operation.batch.size")
 
   /** The name of the operation or command being executed. <p>
     * @note
-    *   <p> It is RECOMMENDED to capture the value as provided by the
-    *   application without attempting to do any case normalization. If the
-    *   operation name is parsed from the query text, it SHOULD be the first
-    *   operation name found in the query. For batch operations, if the
-    *   individual operations are known to have the same operation name then
-    *   that operation name SHOULD be used prepended by `BATCH `, otherwise
-    *   `db.operation.name` SHOULD be `BATCH` or some other database system
-    *   specific term if more applicable.
+    *   <p> It is RECOMMENDED to capture the value as provided by the application without attempting to do any case
+    *   normalization. If the operation name is parsed from the query text, it SHOULD be the first operation name found
+    *   in the query. For batch operations, if the individual operations are known to have the same operation name then
+    *   that operation name SHOULD be used prepended by `BATCH `, otherwise `db.operation.name` SHOULD be `BATCH` or
+    *   some other database system specific term if more applicable.
     */
   val DbOperationName: AttributeKey[String] =
     AttributeKey("db.operation.name")
 
-  /** A query parameter used in `db.query.text`, with `<key>` being the
-    * parameter name, and the attribute value being a string representation of
-    * the parameter value. <p>
+  /** A query parameter used in `db.query.text`, with `<key>` being the parameter name, and the attribute value being a
+    * string representation of the parameter value. <p>
     * @note
-    *   <p> Query parameters should only be captured when `db.query.text` is
-    *   parameterized with placeholders. If a parameter has no name and instead
-    *   is referenced only by index, then `<key>` SHOULD be the 0-based index.
+    *   <p> Query parameters should only be captured when `db.query.text` is parameterized with placeholders. If a
+    *   parameter has no name and instead is referenced only by index, then `<key>` SHOULD be the 0-based index.
     */
   val DbQueryParameter: AttributeKey[String] =
     AttributeKey("db.query.parameter")
@@ -268,16 +248,13 @@ object DbExperimentalAttributes {
   /** The database query being executed. <p>
     * @note
     *   <p> For sanitization see <a
-    *   href="../../docs/database/database-spans.md#sanitization-of-dbquerytext">Sanitization
-    *   of `db.query.text`</a>. For batch operations, if the individual
-    *   operations are known to have the same query text then that query text
-    *   SHOULD be used, otherwise all of the individual query texts SHOULD be
-    *   concatenated with separator `; ` or some other database system specific
-    *   separator if more applicable. Even though parameterized query text can
-    *   potentially have sensitive data, by using a parameterized query the user
-    *   is giving a strong signal that any sensitive data will be passed as
-    *   parameter values, and the benefit to observability of capturing the
-    *   static part of the query text by default outweighs the risk.
+    *   href="../../docs/database/database-spans.md#sanitization-of-dbquerytext">Sanitization of `db.query.text`</a>.
+    *   For batch operations, if the individual operations are known to have the same query text then that query text
+    *   SHOULD be used, otherwise all of the individual query texts SHOULD be concatenated with separator `; ` or some
+    *   other database system specific separator if more applicable. Even though parameterized query text can
+    *   potentially have sensitive data, by using a parameterized query the user is giving a strong signal that any
+    *   sensitive data will be passed as parameter values, and the benefit to observability of capturing the static part
+    *   of the query text by default outweighs the risk.
     */
   val DbQueryText: AttributeKey[String] =
     AttributeKey("db.query.text")
@@ -300,13 +277,11 @@ object DbExperimentalAttributes {
   val DbStatement: AttributeKey[String] =
     AttributeKey("db.statement")
 
-  /** The database management system (DBMS) product as identified by the client
-    * instrumentation. <p>
+  /** The database management system (DBMS) product as identified by the client instrumentation. <p>
     * @note
-    *   <p> The actual DBMS may differ from the one identified by the client.
-    *   For example, when using PostgreSQL client libraries to connect to a
-    *   CockroachDB, the `db.system` is set to `postgresql` based on the
-    *   instrumentation's best knowledge.
+    *   <p> The actual DBMS may differ from the one identified by the client. For example, when using PostgreSQL client
+    *   libraries to connect to a CockroachDB, the `db.system` is set to `postgresql` based on the instrumentation's
+    *   best knowledge.
     */
   val DbSystem: AttributeKey[String] =
     AttributeKey("db.system")
@@ -328,8 +303,7 @@ object DbExperimentalAttributes {
 
     /** each_quorum.
       */
-    case object EachQuorum
-        extends DbCassandraConsistencyLevelValue("each_quorum")
+    case object EachQuorum extends DbCassandraConsistencyLevelValue("each_quorum")
 
     /** quorum.
       */
@@ -337,8 +311,7 @@ object DbExperimentalAttributes {
 
     /** local_quorum.
       */
-    case object LocalQuorum
-        extends DbCassandraConsistencyLevelValue("local_quorum")
+    case object LocalQuorum extends DbCassandraConsistencyLevelValue("local_quorum")
 
     /** one.
       */
@@ -366,8 +339,7 @@ object DbExperimentalAttributes {
 
     /** local_serial.
       */
-    case object LocalSerial
-        extends DbCassandraConsistencyLevelValue("local_serial")
+    case object LocalSerial extends DbCassandraConsistencyLevelValue("local_serial")
   }
 
   /** Values for [[DbClientConnectionState]].
@@ -477,8 +449,7 @@ object DbExperimentalAttributes {
 
     /** execute_javascript.
       */
-    case object ExecuteJavascript
-        extends DbCosmosdbOperationTypeValue("ExecuteJavaScript")
+    case object ExecuteJavascript extends DbCosmosdbOperationTypeValue("ExecuteJavaScript")
   }
 
   /** Values for [[DbSystem]].

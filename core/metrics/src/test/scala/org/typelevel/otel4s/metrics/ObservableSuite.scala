@@ -31,9 +31,7 @@ class ObservableSuite extends CatsEffectSuite {
 
     for {
       _ <- new InMemoryObservableInstrumentBuilder[Double]
-        .createObservableWithCallback(instrument =>
-          instrument.record(2.0) *> instrument.record(3.0)
-        )
+        .createObservableWithCallback(instrument => instrument.record(2.0) *> instrument.record(3.0))
         .use { r =>
           for {
             _ <- r.observations.get.assertEquals(List.empty)
@@ -98,8 +96,7 @@ object ObservableSuite {
       })
   }
 
-  class InMemoryObservableInstrumentBuilder[A]
-      extends ObservableGauge.Builder[IO, A] {
+  class InMemoryObservableInstrumentBuilder[A] extends ObservableGauge.Builder[IO, A] {
 
     type Self = ObservableGauge.Builder[IO, A]
 

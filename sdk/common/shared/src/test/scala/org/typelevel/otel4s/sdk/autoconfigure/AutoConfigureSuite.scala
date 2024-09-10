@@ -62,8 +62,6 @@ class AutoConfigureSuite extends CatsEffectSuite {
     }
   }
 
-  private object Err
-      extends RuntimeException("Something went wrong")
-      with NoStackTrace
+  private object Err extends RuntimeException("Something went wrong") with NoStackTrace
 
 }

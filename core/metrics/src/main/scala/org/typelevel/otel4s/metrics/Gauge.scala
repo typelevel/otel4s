@@ -34,9 +34,8 @@ import scala.collection.immutable
   *   the higher-kinded type of a polymorphic effect
   *
   * @tparam A
-  *   the type of the values to record. The type must have an instance of
-  *   [[MeasurementValue]]. [[scala.Long]] and [[scala.Double]] are supported
-  *   out of the box.
+  *   the type of the values to record. The type must have an instance of [[MeasurementValue]]. [[scala.Long]] and
+  *   [[scala.Double]] are supported out of the box.
   */
 trait Gauge[F[_], A] extends GaugeMacro[F, A]
 
@@ -48,9 +47,8 @@ object Gauge {
     *   the higher-kinded type of a polymorphic effect
     *
     * @tparam A
-    *   the type of the values to record. The type must have an instance of
-    *   [[MeasurementValue]]. [[scala.Long]] and [[scala.Double]] are supported
-    *   out of the box.
+    *   the type of the values to record. The type must have an instance of [[MeasurementValue]]. [[scala.Long]] and
+    *   [[scala.Double]] are supported out of the box.
     */
   trait Builder[F[_], A] {
 

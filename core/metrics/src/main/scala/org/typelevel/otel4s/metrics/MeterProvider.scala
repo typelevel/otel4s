@@ -31,8 +31,8 @@ trait MeterProvider[F[_]] {
     *   }}}
     *
     * @param name
-    *   the name of the instrumentation scope, such as the instrumentation
-    *   library, package, or fully qualified class name
+    *   the name of the instrumentation scope, such as the instrumentation library, package, or fully qualified class
+    *   name
     */
   def get(name: String): F[Meter[F]] =
     meter(name).get
@@ -50,8 +50,8 @@ trait MeterProvider[F[_]] {
     *   }}}
     *
     * @param name
-    *   the name of the instrumentation scope, such as the instrumentation
-    *   library, package, or fully qualified class name
+    *   the name of the instrumentation scope, such as the instrumentation library, package, or fully qualified class
+    *   name
     */
   def meter(name: String): MeterBuilder[F]
 

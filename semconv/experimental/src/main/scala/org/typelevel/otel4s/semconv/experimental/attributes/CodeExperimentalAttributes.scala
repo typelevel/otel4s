@@ -21,40 +21,37 @@ import org.typelevel.otel4s.AttributeKey
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/attributes/experimental/SemanticAttributes.scala.j2
 object CodeExperimentalAttributes {
 
-  /** The column number in `code.filepath` best representing the operation. It
-    * SHOULD point within the code unit named in `code.function`.
+  /** The column number in `code.filepath` best representing the operation. It SHOULD point within the code unit named
+    * in `code.function`.
     */
   val CodeColumn: AttributeKey[Long] =
     AttributeKey("code.column")
 
-  /** The source code file name that identifies the code unit as uniquely as
-    * possible (preferably an absolute file path).
+  /** The source code file name that identifies the code unit as uniquely as possible (preferably an absolute file
+    * path).
     */
   val CodeFilepath: AttributeKey[String] =
     AttributeKey("code.filepath")
 
-  /** The method or function name, or equivalent (usually rightmost part of the
-    * code unit's name).
+  /** The method or function name, or equivalent (usually rightmost part of the code unit's name).
     */
   val CodeFunction: AttributeKey[String] =
     AttributeKey("code.function")
 
-  /** The line number in `code.filepath` best representing the operation. It
-    * SHOULD point within the code unit named in `code.function`.
+  /** The line number in `code.filepath` best representing the operation. It SHOULD point within the code unit named in
+    * `code.function`.
     */
   val CodeLineno: AttributeKey[Long] =
     AttributeKey("code.lineno")
 
-  /** The "namespace" within which `code.function` is defined. Usually the
-    * qualified class or module name, such that `code.namespace` + some
-    * separator + `code.function` form a unique identifier for the code unit.
+  /** The "namespace" within which `code.function` is defined. Usually the qualified class or module name, such that
+    * `code.namespace` + some separator + `code.function` form a unique identifier for the code unit.
     */
   val CodeNamespace: AttributeKey[String] =
     AttributeKey("code.namespace")
 
-  /** A stacktrace as a string in the natural representation for the language
-    * runtime. The representation is to be determined and documented by each
-    * language SIG.
+  /** A stacktrace as a string in the natural representation for the language runtime. The representation is to be
+    * determined and documented by each language SIG.
     */
   val CodeStacktrace: AttributeKey[String] =
     AttributeKey("code.stacktrace")

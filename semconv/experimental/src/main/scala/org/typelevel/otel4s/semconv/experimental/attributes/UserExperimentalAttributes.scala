@@ -31,11 +31,9 @@ object UserExperimentalAttributes {
   val UserFullName: AttributeKey[String] =
     AttributeKey("user.full_name")
 
-  /** Unique user hash to correlate information for a user in anonymized form.
-    * <p>
+  /** Unique user hash to correlate information for a user in anonymized form. <p>
     * @note
-    *   <p> Useful if `user.id` or `user.name` contain confidential information
-    *   and cannot be used.
+    *   <p> Useful if `user.id` or `user.name` contain confidential information and cannot be used.
     */
   val UserHash: AttributeKey[String] =
     AttributeKey("user.hash")

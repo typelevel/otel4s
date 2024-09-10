@@ -34,11 +34,9 @@ trait AutoConfigure[F[_], A] {
 
 object AutoConfigure {
 
-  /** A component that must be associated with a specific name. Can be used for
-    * ad-hoc loading.
+  /** A component that must be associated with a specific name. Can be used for ad-hoc loading.
     *
-    * See `PropagatorsAutoConfigure` and `SpanExportersAutoConfigure` for more
-    * examples.
+    * See `PropagatorsAutoConfigure` and `SpanExportersAutoConfigure` for more examples.
     *
     * @tparam F
     *   the higher-kinded type of a polymorphic effect
@@ -76,8 +74,8 @@ object AutoConfigure {
 
   }
 
-  /** If the component cannot be created due to an error, the meaningful debug
-    * information will be added to the exception.
+  /** If the component cannot be created due to an error, the meaningful debug information will be added to the
+    * exception.
     *
     * @param hint
     *   the name of the component. For example: Sampler, TelemetryResource
@@ -99,7 +97,7 @@ object AutoConfigure {
     final def configure(config: Config): Resource[F, A] =
       fromConfig(config).adaptError {
         case e: AutoConfigureError => e
-        case cause => AutoConfigureError(hint, cause, configKeys, config)
+        case cause                 => AutoConfigureError(hint, cause, configKeys, config)
       }
 
     protected def fromConfig(config: Config): Resource[F, A]

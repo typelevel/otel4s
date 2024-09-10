@@ -40,15 +40,13 @@ sealed trait MetricExporter[F[_]] {
 
   /** The preferred aggregation for the given instrument.
     *
-    * If no views are configured for a metric instrument, an aggregation
-    * provided by the selector will be used.
+    * If no views are configured for a metric instrument, an aggregation provided by the selector will be used.
     */
   def defaultAggregationSelector: AggregationSelector
 
   /** The preferred cardinality limit for the given instrument.
     *
-    * If no views are configured for a metric instrument, a limit provided by
-    * the selector will be used.
+    * If no views are configured for a metric instrument, a limit provided by the selector will be used.
     */
   def defaultCardinalityLimitSelector: CardinalityLimitSelector
 
@@ -80,8 +78,7 @@ object MetricExporter {
       */
     def exportMetrics[G[_]: Foldable](metrics: G[MetricData]): F[Unit]
 
-    /** Exports the collection of sampled `MetricData` that have not yet been
-      * exported.
+    /** Exports the collection of sampled `MetricData` that have not yet been exported.
       */
     def flush: F[Unit]
   }
@@ -99,8 +96,7 @@ object MetricExporter {
   def noop[F[_]: Applicative]: MetricExporter[F] =
     new Noop
 
-  private[metrics] final class Noop[F[_]: Applicative]
-      extends MetricExporter.Push[F] {
+  private[metrics] final class Noop[F[_]: Applicative] extends MetricExporter.Push[F] {
     val name: String = "MetricExporter.Noop"
 
     def aggregationTemporalitySelector: AggregationTemporalitySelector =

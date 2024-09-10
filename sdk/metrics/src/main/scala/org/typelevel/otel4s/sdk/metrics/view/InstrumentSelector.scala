@@ -20,8 +20,7 @@ package view
 import cats.Hash
 import cats.Show
 
-/** Instrument selection criteria for applying views registered via meter
-  * provider.
+/** Instrument selection criteria for applying views registered via meter provider.
   *
   * The predicate is built by the logical conjunction of the present properties.
   */
@@ -35,8 +34,7 @@ sealed trait InstrumentSelector {
 
   /** The required name of an instrument.
     *
-    * Instrument name may contain the wildcard characters `*` and `?` with the
-    * following matching criteria:
+    * Instrument name may contain the wildcard characters `*` and `?` with the following matching criteria:
     *   - `*` - matches 0 or more instances of any character
     *   - `?` - matches exactly one instance of any character
     *
@@ -98,8 +96,7 @@ object InstrumentSelector {
 
     /** Adds the given `name` as a predicate for an instrument.
       *
-      * Instrument name may contain the wildcard characters `*` and `?` with the
-      * following matching criteria:
+      * Instrument name may contain the wildcard characters `*` and `?` with the following matching criteria:
       *   - `*` - matches 0 or more instances of any character
       *   - `?` - matches exactly one instance of any character
       *
@@ -151,8 +148,7 @@ object InstrumentSelector {
       */
     def withMeterSchemaUrl(schemaUrl: String): Builder
 
-    /** Creates an [[InstrumentSelector]] with the configuration of this
-      * builder.
+    /** Creates an [[InstrumentSelector]] with the configuration of this builder.
       */
     def build: InstrumentSelector
   }

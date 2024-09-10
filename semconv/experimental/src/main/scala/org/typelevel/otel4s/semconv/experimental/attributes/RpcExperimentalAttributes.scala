@@ -21,59 +21,54 @@ import org.typelevel.otel4s.AttributeKey
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/attributes/experimental/SemanticAttributes.scala.j2
 object RpcExperimentalAttributes {
 
-  /** The <a href="https://connect.build/docs/protocol/#error-codes">error
-    * codes</a> of the Connect request. Error codes are always string values.
+  /** The <a href="https://connect.build/docs/protocol/#error-codes">error codes</a> of the Connect request. Error codes
+    * are always string values.
     */
   val RpcConnectRpcErrorCode: AttributeKey[String] =
     AttributeKey("rpc.connect_rpc.error_code")
 
-  /** Connect request metadata, `<key>` being the normalized Connect Metadata
-    * key (lowercase), the value being the metadata values. <p>
+  /** Connect request metadata, `<key>` being the normalized Connect Metadata key (lowercase), the value being the
+    * metadata values. <p>
     * @note
-    *   <p> Instrumentations SHOULD require an explicit configuration of which
-    *   metadata values are to be captured. Including all request metadata
-    *   values can be a security risk - explicit configuration helps avoid
-    *   leaking sensitive information.
+    *   <p> Instrumentations SHOULD require an explicit configuration of which metadata values are to be captured.
+    *   Including all request metadata values can be a security risk - explicit configuration helps avoid leaking
+    *   sensitive information.
     */
   val RpcConnectRpcRequestMetadata: AttributeKey[Seq[String]] =
     AttributeKey("rpc.connect_rpc.request.metadata")
 
-  /** Connect response metadata, `<key>` being the normalized Connect Metadata
-    * key (lowercase), the value being the metadata values. <p>
+  /** Connect response metadata, `<key>` being the normalized Connect Metadata key (lowercase), the value being the
+    * metadata values. <p>
     * @note
-    *   <p> Instrumentations SHOULD require an explicit configuration of which
-    *   metadata values are to be captured. Including all response metadata
-    *   values can be a security risk - explicit configuration helps avoid
-    *   leaking sensitive information.
+    *   <p> Instrumentations SHOULD require an explicit configuration of which metadata values are to be captured.
+    *   Including all response metadata values can be a security risk - explicit configuration helps avoid leaking
+    *   sensitive information.
     */
   val RpcConnectRpcResponseMetadata: AttributeKey[Seq[String]] =
     AttributeKey("rpc.connect_rpc.response.metadata")
 
-  /** gRPC request metadata, `<key>` being the normalized gRPC Metadata key
-    * (lowercase), the value being the metadata values. <p>
+  /** gRPC request metadata, `<key>` being the normalized gRPC Metadata key (lowercase), the value being the metadata
+    * values. <p>
     * @note
-    *   <p> Instrumentations SHOULD require an explicit configuration of which
-    *   metadata values are to be captured. Including all request metadata
-    *   values can be a security risk - explicit configuration helps avoid
-    *   leaking sensitive information.
+    *   <p> Instrumentations SHOULD require an explicit configuration of which metadata values are to be captured.
+    *   Including all request metadata values can be a security risk - explicit configuration helps avoid leaking
+    *   sensitive information.
     */
   val RpcGrpcRequestMetadata: AttributeKey[Seq[String]] =
     AttributeKey("rpc.grpc.request.metadata")
 
-  /** gRPC response metadata, `<key>` being the normalized gRPC Metadata key
-    * (lowercase), the value being the metadata values. <p>
+  /** gRPC response metadata, `<key>` being the normalized gRPC Metadata key (lowercase), the value being the metadata
+    * values. <p>
     * @note
-    *   <p> Instrumentations SHOULD require an explicit configuration of which
-    *   metadata values are to be captured. Including all response metadata
-    *   values can be a security risk - explicit configuration helps avoid
-    *   leaking sensitive information.
+    *   <p> Instrumentations SHOULD require an explicit configuration of which metadata values are to be captured.
+    *   Including all response metadata values can be a security risk - explicit configuration helps avoid leaking
+    *   sensitive information.
     */
   val RpcGrpcResponseMetadata: AttributeKey[Seq[String]] =
     AttributeKey("rpc.grpc.response.metadata")
 
-  /** The <a
-    * href="https://github.com/grpc/grpc/blob/v1.33.2/doc/statuscodes.md">numeric
-    * status code</a> of the gRPC request.
+  /** The <a href="https://github.com/grpc/grpc/blob/v1.33.2/doc/statuscodes.md">numeric status code</a> of the gRPC
+    * request.
     */
   val RpcGrpcStatusCode: AttributeKey[Long] =
     AttributeKey("rpc.grpc.status_code")
@@ -88,16 +83,15 @@ object RpcExperimentalAttributes {
   val RpcJsonrpcErrorMessage: AttributeKey[String] =
     AttributeKey("rpc.jsonrpc.error_message")
 
-  /** `id` property of request or response. Since protocol allows id to be int,
-    * string, `null` or missing (for notifications), value is expected to be
-    * cast to string for simplicity. Use empty string in case of `null` value.
+  /** `id` property of request or response. Since protocol allows id to be int, string, `null` or missing (for
+    * notifications), value is expected to be cast to string for simplicity. Use empty string in case of `null` value.
     * Omit entirely if this is a notification.
     */
   val RpcJsonrpcRequestId: AttributeKey[String] =
     AttributeKey("rpc.jsonrpc.request_id")
 
-  /** Protocol version as in `jsonrpc` property of request/response. Since
-    * JSON-RPC 1.0 doesn't specify this, the value can be omitted.
+  /** Protocol version as in `jsonrpc` property of request/response. Since JSON-RPC 1.0 doesn't specify this, the value
+    * can be omitted.
     */
   val RpcJsonrpcVersion: AttributeKey[String] =
     AttributeKey("rpc.jsonrpc.version")
@@ -107,11 +101,10 @@ object RpcExperimentalAttributes {
   val RpcMessageCompressedSize: AttributeKey[Long] =
     AttributeKey("rpc.message.compressed_size")
 
-  /** MUST be calculated as two different counters starting from `1` one for
-    * sent messages and one for received message. <p>
+  /** MUST be calculated as two different counters starting from `1` one for sent messages and one for received message.
+    * <p>
     * @note
-    *   <p> This way we guarantee that the values will be consistent between
-    *   different implementations.
+    *   <p> This way we guarantee that the values will be consistent between different implementations.
     */
   val RpcMessageId: AttributeKey[Long] =
     AttributeKey("rpc.message.id")
@@ -126,33 +119,26 @@ object RpcExperimentalAttributes {
   val RpcMessageUncompressedSize: AttributeKey[Long] =
     AttributeKey("rpc.message.uncompressed_size")
 
-  /** The name of the (logical) method being called, must be equal to the
-    * $$method part in the span name. <p>
+  /** The name of the (logical) method being called, must be equal to the $$method part in the span name. <p>
     * @note
-    *   <p> This is the logical name of the method from the RPC interface
-    *   perspective, which can be different from the name of any implementing
-    *   method/function. The `code.function` attribute may be used to store the
-    *   latter (e.g., method actually executing the call on the server side, RPC
-    *   client stub method on the client side).
+    *   <p> This is the logical name of the method from the RPC interface perspective, which can be different from the
+    *   name of any implementing method/function. The `code.function` attribute may be used to store the latter (e.g.,
+    *   method actually executing the call on the server side, RPC client stub method on the client side).
     */
   val RpcMethod: AttributeKey[String] =
     AttributeKey("rpc.method")
 
-  /** The full (logical) name of the service being called, including its package
-    * name, if applicable. <p>
+  /** The full (logical) name of the service being called, including its package name, if applicable. <p>
     * @note
-    *   <p> This is the logical name of the service from the RPC interface
-    *   perspective, which can be different from the name of any implementing
-    *   class. The `code.namespace` attribute may be used to store the latter
-    *   (despite the attribute name, it may include a class name; e.g., class
-    *   with method actually executing the call on the server side, RPC client
-    *   stub class on the client side).
+    *   <p> This is the logical name of the service from the RPC interface perspective, which can be different from the
+    *   name of any implementing class. The `code.namespace` attribute may be used to store the latter (despite the
+    *   attribute name, it may include a class name; e.g., class with method actually executing the call on the server
+    *   side, RPC client stub class on the client side).
     */
   val RpcService: AttributeKey[String] =
     AttributeKey("rpc.service")
 
-  /** A string identifying the remoting system. See below for a list of
-    * well-known identifiers.
+  /** A string identifying the remoting system. See below for a list of well-known identifiers.
     */
   val RpcSystem: AttributeKey[String] =
     AttributeKey("rpc.system")
@@ -172,13 +158,11 @@ object RpcExperimentalAttributes {
 
     /** invalid_argument.
       */
-    case object InvalidArgument
-        extends RpcConnectRpcErrorCodeValue("invalid_argument")
+    case object InvalidArgument extends RpcConnectRpcErrorCodeValue("invalid_argument")
 
     /** deadline_exceeded.
       */
-    case object DeadlineExceeded
-        extends RpcConnectRpcErrorCodeValue("deadline_exceeded")
+    case object DeadlineExceeded extends RpcConnectRpcErrorCodeValue("deadline_exceeded")
 
     /** not_found.
       */
@@ -186,23 +170,19 @@ object RpcExperimentalAttributes {
 
     /** already_exists.
       */
-    case object AlreadyExists
-        extends RpcConnectRpcErrorCodeValue("already_exists")
+    case object AlreadyExists extends RpcConnectRpcErrorCodeValue("already_exists")
 
     /** permission_denied.
       */
-    case object PermissionDenied
-        extends RpcConnectRpcErrorCodeValue("permission_denied")
+    case object PermissionDenied extends RpcConnectRpcErrorCodeValue("permission_denied")
 
     /** resource_exhausted.
       */
-    case object ResourceExhausted
-        extends RpcConnectRpcErrorCodeValue("resource_exhausted")
+    case object ResourceExhausted extends RpcConnectRpcErrorCodeValue("resource_exhausted")
 
     /** failed_precondition.
       */
-    case object FailedPrecondition
-        extends RpcConnectRpcErrorCodeValue("failed_precondition")
+    case object FailedPrecondition extends RpcConnectRpcErrorCodeValue("failed_precondition")
 
     /** aborted.
       */
@@ -214,8 +194,7 @@ object RpcExperimentalAttributes {
 
     /** unimplemented.
       */
-    case object Unimplemented
-        extends RpcConnectRpcErrorCodeValue("unimplemented")
+    case object Unimplemented extends RpcConnectRpcErrorCodeValue("unimplemented")
 
     /** internal.
       */
@@ -231,8 +210,7 @@ object RpcExperimentalAttributes {
 
     /** unauthenticated.
       */
-    case object Unauthenticated
-        extends RpcConnectRpcErrorCodeValue("unauthenticated")
+    case object Unauthenticated extends RpcConnectRpcErrorCodeValue("unauthenticated")
   }
 
   /** Values for [[RpcGrpcStatusCode]].

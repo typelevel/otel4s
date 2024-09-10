@@ -47,24 +47,23 @@ sealed trait LimitedData[A, S <: immutable.Iterable[A]] {
     */
   def elements: S
 
-  /** Appends an element to the container if the number of container elements
-    * has not reached the limit, otherwise drops the element.
+  /** Appends an element to the container if the number of container elements has not reached the limit, otherwise drops
+    * the element.
     *
     * @param a
     *   the element to append
     */
   def append(a: A): LimitedData[A, S]
 
-  /** Appends all given elements to the container up to the limit and drops the
-    * rest elements.
+  /** Appends all given elements to the container up to the limit and drops the rest elements.
     *
     * @param as
     *   the collection of elements to append
     */
   def appendAll(as: S): LimitedData[A, S]
 
-  /** Prepends all given elements to the container up to the limit and drops all
-    * elements that exceeds the limit (even if they already existed before).
+  /** Prepends all given elements to the container up to the limit and drops all elements that exceeds the limit (even
+    * if they already existed before).
     *
     * @param as
     *   the collection of elements to prepend
@@ -81,8 +80,7 @@ sealed trait LimitedData[A, S <: immutable.Iterable[A]] {
 
 object LimitedData {
 
-  implicit def limitedDataHash[A, S <: immutable.Iterable[A]: Hash]
-      : Hash[LimitedData[A, S]] =
+  implicit def limitedDataHash[A, S <: immutable.Iterable[A]: Hash]: Hash[LimitedData[A, S]] =
     Hash.by(events => (events.sizeLimit, events.dropped, events.elements))
 
   /** Created [[LimitedData]] with the collection of [[Attribute]] inside.

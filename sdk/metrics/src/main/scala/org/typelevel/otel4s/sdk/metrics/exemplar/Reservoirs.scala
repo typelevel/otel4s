@@ -25,8 +25,7 @@ import org.typelevel.otel4s.metrics.MeasurementValue
 
 private[metrics] sealed trait Reservoirs[F[_]] {
 
-  /** Creates a reservoir with fixed size that stores the given number of
-    * exemplars.
+  /** Creates a reservoir with fixed size that stores the given number of exemplars.
     *
     * @param size
     *   the maximum number of exemplars to preserve
@@ -36,8 +35,7 @@ private[metrics] sealed trait Reservoirs[F[_]] {
     */
   def fixedSize[A: MeasurementValue](size: Int): F[ExemplarReservoir[F, A]]
 
-  /** Creates a reservoir that preserves the latest seen measurement per
-    * histogram bucket.
+  /** Creates a reservoir that preserves the latest seen measurement per histogram bucket.
     *
     * @param boundaries
     *   the bucket boundaries of the histogram
@@ -59,8 +57,7 @@ private[metrics] object Reservoirs {
     *   used by the exemplar reservoir to filter the offered values
     *
     * @param lookup
-    *   used by the exemplar reservoir to extract tracing information from the
-    *   context
+    *   used by the exemplar reservoir to extract tracing information from the context
     *
     * @tparam F
     *   the higher-kinded type of a polymorphic effect
@@ -83,8 +80,7 @@ private[metrics] object Reservoirs {
   /** Creates [[Reservoirs]] that returns 'always-on' reservoirs.
     *
     * @param lookup
-    *   used by the exemplar reservoir to extract tracing information from the
-    *   context
+    *   used by the exemplar reservoir to extract tracing information from the context
     *
     * @tparam F
     *   the higher-kinded type of a polymorphic effect
@@ -105,8 +101,7 @@ private[metrics] object Reservoirs {
   /** Creates [[Reservoirs]] that returns filtered reservoirs.
     *
     * @param lookup
-    *   used by the exemplar reservoir to extract tracing information from the
-    *   context
+    *   used by the exemplar reservoir to extract tracing information from the context
     *
     * @tparam F
     *   the higher-kinded type of a polymorphic effect

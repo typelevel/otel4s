@@ -20,13 +20,11 @@ package resource
 
 import cats.effect.Sync
 
-/** A detector creates a resource with environment(platform)-specific
-  * attributes.
+/** A detector creates a resource with environment(platform)-specific attributes.
   *
   * @note
-  *   a detector that populates resource attributes according to OpenTelemetry
-  *   semantic conventions MUST ensure that the resource has a Schema URL set to
-  *   a value that matches the semantic conventions.
+  *   a detector that populates resource attributes according to OpenTelemetry semantic conventions MUST ensure that the
+  *   resource has a Schema URL set to a value that matches the semantic conventions.
   *
   * @see
   *   [[https://opentelemetry.io/docs/specs/otel/resource/sdk/#detecting-resource-information-from-the-environment]]

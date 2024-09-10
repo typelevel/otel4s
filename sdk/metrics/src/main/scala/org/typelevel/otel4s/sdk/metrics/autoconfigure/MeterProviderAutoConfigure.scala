@@ -45,8 +45,7 @@ import org.typelevel.otel4s.sdk.metrics.exporter.MetricExporter
   *   the resource to use
   *
   * @param traceContextLookup
-  *   used by the exemplar reservoir to extract tracing information from the
-  *   context
+  *   used by the exemplar reservoir to extract tracing information from the context
   *
   * @param customizer
   *   the function to customize the builder
@@ -101,8 +100,7 @@ private[sdk] object MeterProviderAutoConfigure {
 
   type Customizer[A] = (A, Config) => A
 
-  /** Autoconfigures
-    * [[org.typelevel.otel4s.metrics.MeterProvider MeterProvider]].
+  /** Autoconfigures [[org.typelevel.otel4s.metrics.MeterProvider MeterProvider]].
     *
     * @see
     *   [[MetricReadersAutoConfigure]]
@@ -117,8 +115,7 @@ private[sdk] object MeterProviderAutoConfigure {
     *   the resource to use
     *
     * @param traceContextLookup
-    *   used by the exemplar reservoir to extract tracing information from the
-    *   context
+    *   used by the exemplar reservoir to extract tracing information from the context
     *
     * @param meterProviderBuilderCustomizer
     *   the function to customize the builder

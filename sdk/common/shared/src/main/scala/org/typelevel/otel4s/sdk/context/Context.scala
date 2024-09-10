@@ -28,13 +28,11 @@ import cats.effect.kernel.Unique
   */
 sealed trait Context {
 
-  /** Retrieves the value associated with the given `key` from the context, if
-    * such a value exists.
+  /** Retrieves the value associated with the given `key` from the context, if such a value exists.
     */
   def get[A](key: Context.Key[A]): Option[A]
 
-  /** Creates a copy of this context with the given `value` associated with the
-    * given `key`.
+  /** Creates a copy of this context with the given `value` associated with the given `key`.
     */
   def updated[A](key: Context.Key[A], value: A): Context
 

@@ -25,8 +25,7 @@ import org.typelevel.otel4s.trace.Tracer
 
 import scala.concurrent.duration._
 
-/** This example relies on the otel4s tracing SDK. The SDK dependency is
-  * available for all platforms: JVM, Native, JS.
+/** This example relies on the otel4s tracing SDK. The SDK dependency is available for all platforms: JVM, Native, JS.
   *
   * Update definition of a project in the `build.sbt`:
   *

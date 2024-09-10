@@ -23,8 +23,7 @@ import org.typelevel.otel4s.sdk.metrics.data.AggregationTemporality
   */
 trait AggregationTemporalitySelector {
 
-  /** Returns preferred aggregation temporality for the given
-    * [[InstrumentType]].
+  /** Returns preferred aggregation temporality for the given [[InstrumentType]].
     */
   def select(instrumentType: InstrumentType): AggregationTemporality
 }
@@ -36,9 +35,8 @@ object AggregationTemporalitySelector {
   def alwaysCumulative: AggregationTemporalitySelector =
     _ => AggregationTemporality.Cumulative
 
-  /** Returns cumulative aggregation temporality for `UpDownCounter` and
-    * `ObservableUpDownCounter`, and delta aggregation temporality for any other
-    * instrument.
+  /** Returns cumulative aggregation temporality for `UpDownCounter` and `ObservableUpDownCounter`, and delta
+    * aggregation temporality for any other instrument.
     */
   def deltaPreferred: AggregationTemporalitySelector = {
     case InstrumentType.UpDownCounter =>
@@ -51,9 +49,8 @@ object AggregationTemporalitySelector {
       AggregationTemporality.Delta
   }
 
-  /** Returns cumulative aggregation temporality for `UpDownCounter`,
-    * `ObservableUpDownCounter`, `ObservableCounter`, and delta aggregation
-    * temporality for any other instrument.
+  /** Returns cumulative aggregation temporality for `UpDownCounter`, `ObservableUpDownCounter`, `ObservableCounter`,
+    * and delta aggregation temporality for any other instrument.
     */
   def lowMemory: AggregationTemporalitySelector = {
     case InstrumentType.UpDownCounter =>

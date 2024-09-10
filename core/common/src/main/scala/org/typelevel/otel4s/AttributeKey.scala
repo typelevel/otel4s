@@ -20,8 +20,7 @@ import cats.Hash
 import cats.Show
 import cats.syntax.show._
 
-/** The type of value that can be set with an implementation of this key is
-  * denoted by the type parameter.
+/** The type of value that can be set with an implementation of this key is denoted by the type parameter.
   *
   * @tparam A
   *   the type of value that can be set with the key
@@ -36,16 +35,14 @@ sealed trait AttributeKey[A] {
   final def apply(value: A): Attribute[A] = Attribute(this, value)
 
   /** @return
-    *   an [[`AttributeKey`]] of the same type as this key, with name
-    *   transformed by `f`
+    *   an [[`AttributeKey`]] of the same type as this key, with name transformed by `f`
     */
   final def transformName(f: String => String): AttributeKey[A] =
     new AttributeKey.Impl[A](f(name), `type`)
 }
 
 object AttributeKey {
-  private class Impl[A](val name: String, val `type`: AttributeType[A])
-      extends AttributeKey[A] {
+  private class Impl[A](val name: String, val `type`: AttributeType[A]) extends AttributeKey[A] {
 
     override final def toString: String =
       Show[AttributeKey[A]].show(this)

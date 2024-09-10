@@ -19,9 +19,7 @@ package sdk
 package exporter.otlp
 
 import io.circe.Json
-import io.opentelemetry.proto.common.v1.common.{
-  InstrumentationScope => ScopeProto
-}
+import io.opentelemetry.proto.common.v1.common.{InstrumentationScope => ScopeProto}
 import io.opentelemetry.proto.common.v1.common.AnyValue
 import io.opentelemetry.proto.common.v1.common.ArrayValue
 import io.opentelemetry.proto.common.v1.common.KeyValue
@@ -76,10 +74,10 @@ private[otlp] object ProtoEncoder {
     }
 
     val value = att.key.`type` match {
-      case AttributeType.Boolean => primitive[Boolean](Value.BoolValue.apply)
-      case AttributeType.Double  => primitive[Double](Value.DoubleValue.apply)
-      case AttributeType.String  => primitive[String](Value.StringValue.apply)
-      case AttributeType.Long    => primitive[Long](Value.IntValue.apply)
+      case AttributeType.Boolean    => primitive[Boolean](Value.BoolValue.apply)
+      case AttributeType.Double     => primitive[Double](Value.DoubleValue.apply)
+      case AttributeType.String     => primitive[String](Value.StringValue.apply)
+      case AttributeType.Long       => primitive[Long](Value.IntValue.apply)
       case AttributeType.BooleanSeq => seq[Boolean](Value.BoolValue.apply)
       case AttributeType.DoubleSeq  => seq[Double](Value.DoubleValue.apply)
       case AttributeType.StringSeq  => seq[String](Value.StringValue.apply)
@@ -89,17 +87,15 @@ private[otlp] object ProtoEncoder {
     KeyValue(att.key.name, Some(AnyValue(value)))
   }
 
-  implicit val attributesEncoder: ProtoEncoder[Attributes, Seq[KeyValue]] = {
-    attr => attr.toSeq.map(a => encode[Attribute[_], KeyValue](a))
+  implicit val attributesEncoder: ProtoEncoder[Attributes, Seq[KeyValue]] = { attr =>
+    attr.toSeq.map(a => encode[Attribute[_], KeyValue](a))
   }
 
-  implicit val telemetryResourceEncoder
-      : ProtoEncoder[TelemetryResource, ResourceProto] = { resource =>
+  implicit val telemetryResourceEncoder: ProtoEncoder[TelemetryResource, ResourceProto] = { resource =>
     ResourceProto(attributes = encode(resource.attributes))
   }
 
-  implicit val instrumentationScopeEncoder
-      : ProtoEncoder[InstrumentationScope, ScopeProto] = { scope =>
+  implicit val instrumentationScopeEncoder: ProtoEncoder[InstrumentationScope, ScopeProto] = { scope =>
     ScopeProto(
       name = scope.name,
       version = scope.version.getOrElse(""),

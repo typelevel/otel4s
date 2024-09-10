@@ -33,8 +33,7 @@ import org.typelevel.otel4s.sdk.metrics.exemplar.ExemplarReservoir
 import org.typelevel.otel4s.sdk.metrics.exemplar.Reservoirs
 import org.typelevel.otel4s.sdk.metrics.internal.MetricDescriptor
 
-/** The histogram aggregation that aggregates values into the corresponding
-  * buckets.
+/** The histogram aggregation that aggregates values into the corresponding buckets.
   *
   * @see
   *   [[https://opentelemetry.io/docs/specs/otel/metrics/sdk/#explicit-bucket-histogram-aggregation]]

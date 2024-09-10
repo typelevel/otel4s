@@ -82,9 +82,7 @@ class SdkTracerSuite extends BaseTracerSuite[Context, Context.Key] {
   }
 
   sdkTest("set error status on abnormal termination (exception)") { sdk =>
-    final case class Err(reason: String)
-        extends RuntimeException(reason)
-        with NoStackTrace
+    final case class Err(reason: String) extends RuntimeException(reason) with NoStackTrace
 
     val exception = Err("error")
 

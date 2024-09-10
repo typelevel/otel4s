@@ -41,8 +41,8 @@ sealed trait SpanLimits {
   /** The max number of attributes per link. */
   def maxNumberOfAttributesPerLink: Int
 
-  /** The max number of characters for string attribute values. For string array
-    * attribute values, applies to each entry individually.
+  /** The max number of characters for string attribute values. For string array attribute values, applies to each entry
+    * individually.
     */
   def maxAttributeValueLength: Int
 
@@ -88,8 +88,8 @@ object SpanLimits {
     /** Sets the max number of attributes per link. */
     def withMaxNumberOfAttributesPerLink(value: Int): Builder
 
-    /** Sets the max number of characters for string attribute values. For
-      * string array attribute values, applies to each entry individually.
+    /** Sets the max number of characters for string attribute values. For string array attribute values, applies to
+      * each entry individually.
       */
     def withMaxAttributeValueLength(value: Int): Builder
 

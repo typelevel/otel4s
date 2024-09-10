@@ -47,8 +47,7 @@ private[metrics] trait ExemplarReservoir[F[_], A] {
     */
   def offer(value: A, attributes: Attributes, context: Context): F[Unit]
 
-  /** Returns an collection of [[Exemplar]] for exporting from the current
-    * reservoir.
+  /** Returns an collection of [[Exemplar]] for exporting from the current reservoir.
     *
     * Clears the reservoir for the next sampling period.
     */
@@ -57,8 +56,7 @@ private[metrics] trait ExemplarReservoir[F[_], A] {
 
 private[metrics] object ExemplarReservoir {
 
-  /** Creates a reservoir with fixed size that stores the given number of
-    * exemplars.
+  /** Creates a reservoir with fixed size that stores the given number of exemplars.
     *
     * @param size
     *   the maximum number of exemplars to preserve
@@ -78,8 +76,7 @@ private[metrics] object ExemplarReservoir {
       reservoir <- create(size, selector, lookup)
     } yield reservoir
 
-  /** Creates a reservoir that preserves the latest seen measurement per
-    * histogram bucket.
+  /** Creates a reservoir that preserves the latest seen measurement per histogram bucket.
     *
     * @param boundaries
     *   the bucket boundaries of the histogram
@@ -100,8 +97,7 @@ private[metrics] object ExemplarReservoir {
       lookup
     )
 
-  /** Creates a proxy reservoir that records offered values that have passed the
-    * filter.
+  /** Creates a proxy reservoir that records offered values that have passed the filter.
     *
     * @param filter
     *   filters the offered values

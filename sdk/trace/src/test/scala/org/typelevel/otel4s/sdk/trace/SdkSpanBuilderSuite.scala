@@ -97,9 +97,8 @@ class SdkSpanBuilderSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
             val withTimestamp =
               startTimestamp.foldLeft(withParent)(_.withStartTimestamp(_))
 
-            val withLinks = linkDataInput.items.foldLeft(withTimestamp) {
-              (b, link) =>
-                b.addLink(link.spanContext, link.attributes.toSeq)
+            val withLinks = linkDataInput.items.foldLeft(withTimestamp) { (b, link) =>
+              b.addLink(link.spanContext, link.attributes.toSeq)
             }
 
             val withAttributes =
@@ -202,8 +201,7 @@ object SdkSpanBuilderSuite {
         attributes ++ extraAttributes.toVector.to(Attributes)
       )
 
-    private[trace] implicit val LinkDataInputArbitrary
-        : Arbitrary[LinkDataInput] =
+    private[trace] implicit val LinkDataInputArbitrary: Arbitrary[LinkDataInput] =
       Arbitrary(
         for {
           maxNumberOfAttributes <- Gen.choose(0, 100)

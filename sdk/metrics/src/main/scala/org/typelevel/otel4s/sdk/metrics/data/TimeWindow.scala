@@ -29,8 +29,7 @@ sealed trait TimeWindow {
     */
   def start: FiniteDuration
 
-  /** The end of the time window. In most cases represents the sampling
-    * (collection) time.
+  /** The end of the time window. In most cases represents the sampling (collection) time.
     */
   def end: FiniteDuration
 

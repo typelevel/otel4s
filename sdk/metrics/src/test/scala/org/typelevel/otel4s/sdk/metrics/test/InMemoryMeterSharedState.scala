@@ -51,8 +51,7 @@ object InMemoryMeterSharedState {
       resource: TelemetryResource,
       scope: InstrumentationScope,
       start: FiniteDuration,
-      aggregationTemporalitySelector: AggregationTemporalitySelector =
-        AggregationTemporalitySelector.alwaysCumulative
+      aggregationTemporalitySelector: AggregationTemporalitySelector = AggregationTemporalitySelector.alwaysCumulative
   ): F[InMemoryMeterSharedState[F]] = {
     implicit val askContext: Ask[F, Context] = Ask.const(Context.root)
 

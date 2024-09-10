@@ -47,8 +47,8 @@ sealed trait MetricPoints {
 
 object MetricPoints {
 
-  /** Sum represents the type of a numeric double scalar metric that is
-    * calculated as a sum of all reported measurements over a time interval.
+  /** Sum represents the type of a numeric double scalar metric that is calculated as a sum of all reported measurements
+    * over a time interval.
     *
     * @see
     *   [[https://opentelemetry.io/docs/specs/otel/metrics/data-model/#sums]]
@@ -58,8 +58,7 @@ object MetricPoints {
 
     def points: NonEmptyVector[Point]
 
-    /** Whether the points are monotonic. If true, it means the data points are
-      * nominally increasing.
+    /** Whether the points are monotonic. If true, it means the data points are nominally increasing.
       */
     def monotonic: Boolean
 
@@ -79,9 +78,8 @@ object MetricPoints {
     def points: NonEmptyVector[Point]
   }
 
-  /** Histogram represents the type of a metric that is calculated by
-    * aggregating as a histogram of all reported double measurements over a time
-    * interval.
+  /** Histogram represents the type of a metric that is calculated by aggregating as a histogram of all reported double
+    * measurements over a time interval.
     *
     * @see
     *   [[https://opentelemetry.io/docs/specs/otel/metrics/data-model/#histogram]]
@@ -132,9 +130,7 @@ object MetricPoints {
       Hash.by(_.points.toVector: Vector[PointData])
 
     val histogramHash: Hash[Histogram] =
-      Hash.by(h =>
-        (h.points.toVector: Vector[PointData], h.aggregationTemporality)
-      )
+      Hash.by(h => (h.points.toVector: Vector[PointData], h.aggregationTemporality))
 
     new Hash[MetricPoints] {
       def hash(x: MetricPoints): Int =

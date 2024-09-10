@@ -19,14 +19,11 @@ package org.typelevel.otel4s.oteljava.testkit.metrics.data
 import cats.Hash
 import cats.Show
 import cats.syntax.show._
-import io.opentelemetry.sdk.metrics.data.{
-  HistogramPointData => JHistogramPointData
-}
+import io.opentelemetry.sdk.metrics.data.{HistogramPointData => JHistogramPointData}
 
 import scala.jdk.CollectionConverters._
 
-/** A representation of the
-  * `io.opentelemetry.sdk.metrics.data.HistogramPointData`.
+/** A representation of the `io.opentelemetry.sdk.metrics.data.HistogramPointData`.
   */
 sealed trait HistogramPointData {
 
@@ -76,9 +73,7 @@ object HistogramPointData {
     Hash.by(p => (p.sum, p.count, p.boundaries, p.counts))
 
   implicit val histogramPointDataShow: Show[HistogramPointData] =
-    Show.show(p =>
-      show"HistogramPointData(${p.sum}, ${p.count}, ${p.boundaries}, ${p.counts})"
-    )
+    Show.show(p => show"HistogramPointData(${p.sum}, ${p.count}, ${p.boundaries}, ${p.counts})")
 
   final case class Impl(
       sum: Double,

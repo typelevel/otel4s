@@ -36,8 +36,7 @@ import org.typelevel.otel4s.sdk.metrics.exporter.AggregationTemporalitySelector
 import org.typelevel.otel4s.sdk.metrics.exporter.CardinalityLimitSelector
 import org.typelevel.otel4s.sdk.metrics.exporter.MetricExporter
 
-/** Autoconfigures OTLP
-  * [[org.typelevel.otel4s.sdk.metrics.exporter.MetricExporter MetricExporter]].
+/** Autoconfigures OTLP [[org.typelevel.otel4s.sdk.metrics.exporter.MetricExporter MetricExporter]].
   *
   * @see
   *   [[ProtocolAutoConfigure]] for OTLP protocol configuration
@@ -60,69 +59,61 @@ private final class OtlpMetricExporterAutoConfigure[
   def name: String = "otlp"
 
   protected def fromConfig(config: Config): Resource[F, MetricExporter[F]] =
-    ProtocolAutoConfigure.metrics[F].configure(config).flatMap {
-      case Protocol.Http(encoding) =>
-        import MetricsProtoEncoder.exportMetricsRequest
-        import MetricsProtoEncoder.jsonPrinter
+    ProtocolAutoConfigure.metrics[F].configure(config).flatMap { case Protocol.Http(encoding) =>
+      import MetricsProtoEncoder.exportMetricsRequest
+      import MetricsProtoEncoder.jsonPrinter
 
-        val defaults = OtlpHttpClientAutoConfigure.Defaults(
-          OtlpHttpMetricExporter.Defaults.Endpoint,
-          OtlpHttpMetricExporter.Defaults.Endpoint.path.toString,
-          Headers.empty,
-          OtlpHttpMetricExporter.Defaults.Timeout,
-          encoding
-        )
+      val defaults = OtlpHttpClientAutoConfigure.Defaults(
+        OtlpHttpMetricExporter.Defaults.Endpoint,
+        OtlpHttpMetricExporter.Defaults.Endpoint.path.toString,
+        Headers.empty,
+        OtlpHttpMetricExporter.Defaults.Timeout,
+        encoding
+      )
 
-        OtlpHttpClientAutoConfigure
-          .metrics[F, MetricData](defaults, customClient)
-          .configure(config)
-          .map { client =>
-            new OtlpHttpMetricExporter[F](
-              client,
-              AggregationTemporalitySelector.alwaysCumulative,
-              AggregationSelector.default,
-              CardinalityLimitSelector.default
-            )
-          }
+      OtlpHttpClientAutoConfigure
+        .metrics[F, MetricData](defaults, customClient)
+        .configure(config)
+        .map { client =>
+          new OtlpHttpMetricExporter[F](
+            client,
+            AggregationTemporalitySelector.alwaysCumulative,
+            AggregationSelector.default,
+            CardinalityLimitSelector.default
+          )
+        }
     }
 
 }
 
 object OtlpMetricExporterAutoConfigure {
 
-  /** Autoconfigures OTLP
-    * [[org.typelevel.otel4s.sdk.metrics.exporter.MetricExporter MetricExporter]].
+  /** Autoconfigures OTLP [[org.typelevel.otel4s.sdk.metrics.exporter.MetricExporter MetricExporter]].
     *
-    * The configuration depends on the `otel.exporter.otlp.protocol` or
-    * `otel.exporter.otlp.metrics.protocol`.
+    * The configuration depends on the `otel.exporter.otlp.protocol` or `otel.exporter.otlp.metrics.protocol`.
     *
     * The supported protocols: `http/json`, `http/protobuf`.
     *
     * @see
-    *   `OtlpHttpClientAutoConfigure` for the configuration details of the OTLP
-    *   HTTP client
+    *   `OtlpHttpClientAutoConfigure` for the configuration details of the OTLP HTTP client
     */
   def apply[
       F[_]: Async: Network: Compression: Console
   ]: AutoConfigure.Named[F, MetricExporter[F]] =
     new OtlpMetricExporterAutoConfigure[F](None)
 
-  /** Autoconfigures OTLP
-    * [[org.typelevel.otel4s.sdk.metrics.exporter.MetricExporter MetricExporter]]
-    * using the given client.
+  /** Autoconfigures OTLP [[org.typelevel.otel4s.sdk.metrics.exporter.MetricExporter MetricExporter]] using the given
+    * client.
     *
-    * The configuration depends on the `otel.exporter.otlp.protocol` or
-    * `otel.exporter.otlp.metrics.protocol`.
+    * The configuration depends on the `otel.exporter.otlp.protocol` or `otel.exporter.otlp.metrics.protocol`.
     *
     * The supported protocols: `http/json`, `http/protobuf`.
     *
     * @see
-    *   `OtlpHttpClientAutoConfigure` for the configuration details of the OTLP
-    *   HTTP client
+    *   `OtlpHttpClientAutoConfigure` for the configuration details of the OTLP HTTP client
     *
     * @note
-    *   the 'timeout' and 'tlsContext' settings will be ignored. You must
-    *   preconfigure the client manually.
+    *   the 'timeout' and 'tlsContext' settings will be ignored. You must preconfigure the client manually.
     *
     * @example
     *   {{{

@@ -23,9 +23,7 @@ import cats.effect.kernel.Resource
 import cats.effect.std.Dispatcher
 import cats.syntax.all._
 import io.opentelemetry.api.metrics.{Meter => JMeter}
-import io.opentelemetry.api.metrics.{
-  ObservableMeasurement => JObservableMeasurement
-}
+import io.opentelemetry.api.metrics.{ObservableMeasurement => JObservableMeasurement}
 import io.opentelemetry.api.metrics.DoubleGaugeBuilder
 import io.opentelemetry.api.metrics.ObservableDoubleMeasurement
 import io.opentelemetry.api.metrics.ObservableLongMeasurement

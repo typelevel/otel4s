@@ -22,17 +22,15 @@ import scala.collection.immutable
 private[otel4s] trait TracerMacro[F[_]] {
   self: Tracer[F] =>
 
-  /** Creates a new child span. The span is automatically attached to a parent
-    * span (based on the scope).
+  /** Creates a new child span. The span is automatically attached to a parent span (based on the scope).
     *
-    * The lifecycle of the span is managed automatically. That means the span is
-    * ended upon the finalization of a resource.
+    * The lifecycle of the span is managed automatically. That means the span is ended upon the finalization of a
+    * resource.
     *
     * The abnormal termination (error, cancelation) is recorded by
     * [[SpanFinalizer.Strategy.reportAbnormal default finalization strategy]].
     *
-    * To attach span to a specific parent, use [[childScope]] or
-    * [[SpanBuilder.withParent]].
+    * To attach span to a specific parent, use [[childScope]] or [[SpanBuilder.withParent]].
     *
     * @example
     *   attaching span to a specific parent
@@ -60,17 +58,15 @@ private[otel4s] trait TracerMacro[F[_]] {
   ): SpanOps[F] =
     spanBuilder(name).addAttributes(attributes).build
 
-  /** Creates a new child span. The span is automatically attached to a parent
-    * span (based on the scope).
+  /** Creates a new child span. The span is automatically attached to a parent span (based on the scope).
     *
-    * The lifecycle of the span is managed automatically. That means the span is
-    * ended upon the finalization of a resource.
+    * The lifecycle of the span is managed automatically. That means the span is ended upon the finalization of a
+    * resource.
     *
     * The abnormal termination (error, cancelation) is recorded by
     * [[SpanFinalizer.Strategy.reportAbnormal default finalization strategy]].
     *
-    * To attach span to a specific parent, use [[childScope]] or
-    * [[SpanBuilder.withParent]].
+    * To attach span to a specific parent, use [[childScope]] or [[SpanBuilder.withParent]].
     *
     * @example
     *   attaching span to a specific parent
@@ -98,11 +94,10 @@ private[otel4s] trait TracerMacro[F[_]] {
   ): SpanOps[F] =
     spanBuilder(name).addAttributes(attributes).build
 
-  /** Creates a new root span. Even if a parent span is available in the scope,
-    * the span is created without a parent.
+  /** Creates a new root span. Even if a parent span is available in the scope, the span is created without a parent.
     *
-    * The lifecycle of the span is managed automatically. That means the span is
-    * ended upon the finalization of a resource.
+    * The lifecycle of the span is managed automatically. That means the span is ended upon the finalization of a
+    * resource.
     *
     * The abnormal termination (error, cancelation) is recorded by
     * [[SpanFinalizer.Strategy.reportAbnormal default finalization strategy]].
@@ -119,11 +114,10 @@ private[otel4s] trait TracerMacro[F[_]] {
   ): SpanOps[F] =
     spanBuilder(name).addAttributes(attributes).root.build
 
-  /** Creates a new root span. Even if a parent span is available in the scope,
-    * the span is created without a parent.
+  /** Creates a new root span. Even if a parent span is available in the scope, the span is created without a parent.
     *
-    * The lifecycle of the span is managed automatically. That means the span is
-    * ended upon the finalization of a resource.
+    * The lifecycle of the span is managed automatically. That means the span is ended upon the finalization of a
+    * resource.
     *
     * The abnormal termination (error, cancelation) is recorded by
     * [[SpanFinalizer.Strategy.reportAbnormal default finalization strategy]].

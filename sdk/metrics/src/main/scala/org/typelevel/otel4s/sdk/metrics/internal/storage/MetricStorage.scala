@@ -51,8 +51,7 @@ private[metrics] trait MetricStorage[F[_]] {
   /** Collects the metrics from this storage.
     *
     * @note
-    *   if the aggregation temporality for the metric is `delta`, the state will
-    *   be reset.
+    *   if the aggregation temporality for the metric is `delta`, the state will be reset.
     *
     * @param resource
     *   the resource to associate the metrics with
@@ -93,9 +92,7 @@ private[metrics] object MetricStorage {
     * @tparam A
     *   the type of the values to store
     */
-  trait Synchronous[F[_], A]
-      extends MetricStorage[F]
-      with Synchronous.Writeable[F, A]
+  trait Synchronous[F[_], A] extends MetricStorage[F] with Synchronous.Writeable[F, A]
 
   object Synchronous {
 

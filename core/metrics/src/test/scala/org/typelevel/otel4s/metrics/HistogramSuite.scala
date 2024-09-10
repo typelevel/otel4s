@@ -110,8 +110,7 @@ object HistogramSuite {
 
   final case class Record[A](value: A, attributes: Attributes)
 
-  class InMemoryHistogram(ref: Ref[IO, List[Record[Double]]])
-      extends Histogram[IO, Double] {
+  class InMemoryHistogram(ref: Ref[IO, List[Record[Double]]]) extends Histogram[IO, Double] {
 
     val backend: Histogram.Backend[IO, Double] =
       new Histogram.Backend[IO, Double] {

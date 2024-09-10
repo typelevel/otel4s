@@ -33,9 +33,7 @@ import org.typelevel.otel4s.sdk.test.InMemoryConsole
 import scala.concurrent.duration._
 import scala.util.control.NoStackTrace
 
-class PeriodicMetricReaderSuite
-    extends CatsEffectSuite
-    with ScalaCheckEffectSuite {
+class PeriodicMetricReaderSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
 
   test("export metrics with a fixed interval") {
     PropF.forAllF { (metrics: List[MetricData]) =>

@@ -132,8 +132,7 @@ private object PeriodicMetricReader {
       exportTimeout: FiniteDuration
   )
 
-  /** Creates a period metric reader that collects and exports metrics with the
-    * given interval.
+  /** Creates a period metric reader that collects and exports metrics with the given interval.
     *
     * @param exporter
     *   the exporter to send the collected metrics to

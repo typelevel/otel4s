@@ -26,8 +26,7 @@ import org.typelevel.otel4s.sdk.TelemetryResource
 import org.typelevel.otel4s.sdk.resource.TelemetryResourceDetector
 import org.typelevel.otel4s.semconv.SchemaUrls
 
-private class AWSLambdaDetector[F[_]: Env: Monad]
-    extends TelemetryResourceDetector[F] {
+private class AWSLambdaDetector[F[_]: Env: Monad] extends TelemetryResourceDetector[F] {
 
   import AWSLambdaDetector.Const
   import AWSLambdaDetector.Keys
@@ -76,12 +75,10 @@ object AWSLambdaDetector {
     val FaasVersion: AttributeKey[String] = AttributeKey("faas.version")
   }
 
-  /** The detector relies on the `AWS_REGION`, `AWS_LAMBDA_FUNCTION_NAME`, and
-    * `AWS_LAMBDA_FUNCTION_VERSION` environment variables to configure the
-    * telemetry resource.
+  /** The detector relies on the `AWS_REGION`, `AWS_LAMBDA_FUNCTION_NAME`, and `AWS_LAMBDA_FUNCTION_VERSION` environment
+    * variables to configure the telemetry resource.
     *
-    * Either `AWS_LAMBDA_FUNCTION_NAME` or `AWS_LAMBDA_FUNCTION_VERSION` must be
-    * present.
+    * Either `AWS_LAMBDA_FUNCTION_NAME` or `AWS_LAMBDA_FUNCTION_VERSION` must be present.
     *
     * @example
     *   {{{

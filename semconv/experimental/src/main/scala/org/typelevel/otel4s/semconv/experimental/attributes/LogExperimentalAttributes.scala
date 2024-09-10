@@ -41,30 +41,26 @@ object LogExperimentalAttributes {
   val LogFilePathResolved: AttributeKey[String] =
     AttributeKey("log.file.path_resolved")
 
-  /** The stream associated with the log. See below for a list of well-known
-    * values.
+  /** The stream associated with the log. See below for a list of well-known values.
     */
   val LogIostream: AttributeKey[String] =
     AttributeKey("log.iostream")
 
   /** The complete orignal Log Record. <p>
     * @note
-    *   <p> This value MAY be added when processing a Log Record which was
-    *   originally transmitted as a string or equivalent data type AND the Body
-    *   field of the Log Record does not contain the same value. (e.g. a syslog
-    *   or a log record read from a file.)
+    *   <p> This value MAY be added when processing a Log Record which was originally transmitted as a string or
+    *   equivalent data type AND the Body field of the Log Record does not contain the same value. (e.g. a syslog or a
+    *   log record read from a file.)
     */
   val LogRecordOriginal: AttributeKey[String] =
     AttributeKey("log.record.original")
 
   /** A unique identifier for the Log Record. <p>
     * @note
-    *   <p> If an id is provided, other log records with the same id will be
-    *   considered duplicates and can be removed safely. This means, that two
-    *   distinguishable log records MUST have different values. The id MAY be an
-    *   <a href="https://github.com/ulid/spec">Universally Unique
-    *   Lexicographically Sortable Identifier (ULID)</a>, but other identifiers
-    *   (e.g. UUID) may be used as needed.
+    *   <p> If an id is provided, other log records with the same id will be considered duplicates and can be removed
+    *   safely. This means, that two distinguishable log records MUST have different values. The id MAY be an <a
+    *   href="https://github.com/ulid/spec">Universally Unique Lexicographically Sortable Identifier (ULID)</a>, but
+    *   other identifiers (e.g. UUID) may be used as needed.
     */
   val LogRecordUid: AttributeKey[String] =
     AttributeKey("log.record.uid")

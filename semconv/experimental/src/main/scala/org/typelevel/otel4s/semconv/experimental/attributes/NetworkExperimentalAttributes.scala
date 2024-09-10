@@ -21,8 +21,7 @@ import org.typelevel.otel4s.AttributeKey
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/attributes/experimental/SemanticAttributes.scala.j2
 object NetworkExperimentalAttributes {
 
-  /** The ISO 3166-1 alpha-2 2-character country code associated with the mobile
-    * carrier network.
+  /** The ISO 3166-1 alpha-2 2-character country code associated with the mobile carrier network.
     */
   val NetworkCarrierIcc: AttributeKey[String] =
     AttributeKey("network.carrier.icc")
@@ -42,9 +41,8 @@ object NetworkExperimentalAttributes {
   val NetworkCarrierName: AttributeKey[String] =
     AttributeKey("network.carrier.name")
 
-  /** This describes more details regarding the connection.type. It may be the
-    * type of cell technology connection, but it could be used for describing
-    * details about a wifi connection.
+  /** This describes more details regarding the connection.type. It may be the type of cell technology connection, but
+    * it could be used for describing details about a wifi connection.
     */
   val NetworkConnectionSubtype: AttributeKey[String] =
     AttributeKey("network.connection.subtype")
@@ -59,8 +57,7 @@ object NetworkExperimentalAttributes {
   val NetworkIoDirection: AttributeKey[String] =
     AttributeKey("network.io.direction")
 
-  /** Local address of the network connection - IP address or Unix domain socket
-    * name.
+  /** Local address of the network connection - IP address or Unix domain socket name.
     */
   @deprecated(
     "use `org.typelevel.otel4s.semconv.attributes.NetworkAttributes.NetworkLocalAddress` instead.",
@@ -78,8 +75,7 @@ object NetworkExperimentalAttributes {
   val NetworkLocalPort: AttributeKey[Long] =
     AttributeKey("network.local.port")
 
-  /** Peer address of the network connection - IP address or Unix domain socket
-    * name.
+  /** Peer address of the network connection - IP address or Unix domain socket name.
     */
   @deprecated(
     "use `org.typelevel.otel4s.semconv.attributes.NetworkAttributes.NetworkPeerAddress` instead.",
@@ -97,8 +93,7 @@ object NetworkExperimentalAttributes {
   val NetworkPeerPort: AttributeKey[Long] =
     AttributeKey("network.peer.port")
 
-  /** <a href="https://osi-model.com/application-layer/">OSI application
-    * layer</a> or non-OSI equivalent. <p>
+  /** <a href="https://osi-model.com/application-layer/">OSI application layer</a> or non-OSI equivalent. <p>
     * @note
     *   <p> The value SHOULD be normalized to lowercase.
     */
@@ -112,9 +107,8 @@ object NetworkExperimentalAttributes {
   /** The actual version of the protocol used for network communication. <p>
     * @note
     *   <p> If protocol version is subject to negotiation (for example using <a
-    *   href="https://www.rfc-editor.org/rfc/rfc7301.html">ALPN</a>), this
-    *   attribute SHOULD be set to the negotiated version. If the actual
-    *   protocol version is not known, this attribute SHOULD NOT be set.
+    *   href="https://www.rfc-editor.org/rfc/rfc7301.html">ALPN</a>), this attribute SHOULD be set to the negotiated
+    *   version. If the actual protocol version is not known, this attribute SHOULD NOT be set.
     */
   @deprecated(
     "use `org.typelevel.otel4s.semconv.attributes.NetworkAttributes.NetworkProtocolVersion` instead.",
@@ -123,15 +117,12 @@ object NetworkExperimentalAttributes {
   val NetworkProtocolVersion: AttributeKey[String] =
     AttributeKey("network.protocol.version")
 
-  /** <a href="https://osi-model.com/transport-layer/">OSI transport layer</a>
-    * or <a
-    * href="https://wikipedia.org/wiki/Inter-process_communication">inter-process
-    * communication method</a>. <p>
+  /** <a href="https://osi-model.com/transport-layer/">OSI transport layer</a> or <a
+    * href="https://wikipedia.org/wiki/Inter-process_communication">inter-process communication method</a>. <p>
     * @note
-    *   <p> The value SHOULD be normalized to lowercase. <p> Consider always
-    *   setting the transport when setting a port number, since a port number is
-    *   ambiguous without knowing the transport. For example different processes
-    *   could be listening on TCP port 12345 and UDP port 12345.
+    *   <p> The value SHOULD be normalized to lowercase. <p> Consider always setting the transport when setting a port
+    *   number, since a port number is ambiguous without knowing the transport. For example different processes could be
+    *   listening on TCP port 12345 and UDP port 12345.
     */
   @deprecated(
     "use `org.typelevel.otel4s.semconv.attributes.NetworkAttributes.NetworkTransport` instead.",
@@ -140,8 +131,7 @@ object NetworkExperimentalAttributes {
   val NetworkTransport: AttributeKey[String] =
     AttributeKey("network.transport")
 
-  /** <a href="https://osi-model.com/network-layer/">OSI network layer</a> or
-    * non-OSI equivalent. <p>
+  /** <a href="https://osi-model.com/network-layer/">OSI network layer</a> or non-OSI equivalent. <p>
     * @note
     *   <p> The value SHOULD be normalized to lowercase.
     */
@@ -183,8 +173,7 @@ object NetworkExperimentalAttributes {
 
     /** CDMA2000 1XRTT
       */
-    case object Cdma20001xrtt
-        extends NetworkConnectionSubtypeValue("cdma2000_1xrtt")
+    case object Cdma20001xrtt extends NetworkConnectionSubtypeValue("cdma2000_1xrtt")
 
     /** HSDPA
       */

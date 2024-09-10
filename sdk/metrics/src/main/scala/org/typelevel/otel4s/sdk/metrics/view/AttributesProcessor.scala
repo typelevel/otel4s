@@ -22,8 +22,8 @@ import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.Attributes
 import org.typelevel.otel4s.sdk.context.Context
 
-/** The AttributesProcessor can customize which attributes are to be reported as
-  * metric dimensions and add additional dimensions from the context.
+/** The AttributesProcessor can customize which attributes are to be reported as metric dimensions and add additional
+  * dimensions from the context.
   */
 private[metrics] sealed trait AttributesProcessor {
 
@@ -47,8 +47,7 @@ private[metrics] object AttributesProcessor {
     */
   def noop: AttributesProcessor = Noop
 
-  /** Creates an [[AttributesProcessor]] that retains attributes with the
-    * matching names.
+  /** Creates an [[AttributesProcessor]] that retains attributes with the matching names.
     *
     * @param retain
     *   the attribute keys to retain
@@ -56,8 +55,7 @@ private[metrics] object AttributesProcessor {
   def retain(retain: Set[String]): AttributesProcessor =
     new Retain(retain)
 
-  /** Creates an [[AttributesProcessor]] that retains attributes that match the
-    * predicate.
+  /** Creates an [[AttributesProcessor]] that retains attributes that match the predicate.
     *
     * @param predicate
     *   the predicate to match

@@ -29,9 +29,7 @@ import org.typelevel.otel4s.sdk.test.InMemoryConsole._
 import org.typelevel.otel4s.sdk.trace.data.SpanData
 import org.typelevel.otel4s.sdk.trace.scalacheck.Gens
 
-class ConsoleSpanExporterSuite
-    extends CatsEffectSuite
-    with ScalaCheckEffectSuite {
+class ConsoleSpanExporterSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
 
   test("span data is exported as a log which is printed to the console") {
     PropF.forAllF(Gen.listOf(Gens.spanData)) { spans =>

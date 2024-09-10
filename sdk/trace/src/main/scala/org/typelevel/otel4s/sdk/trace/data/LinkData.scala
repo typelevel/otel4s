@@ -33,8 +33,7 @@ import org.typelevel.otel4s.trace.SpanContext
   */
 sealed trait LinkData {
 
-  /** The [[org.typelevel.otel4s.trace.SpanContext SpanContext]] of the span
-    * this link refers to.
+  /** The [[org.typelevel.otel4s.trace.SpanContext SpanContext]] of the span this link refers to.
     */
   def spanContext: SpanContext
 

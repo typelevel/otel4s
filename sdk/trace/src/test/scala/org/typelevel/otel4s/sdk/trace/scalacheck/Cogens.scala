@@ -32,9 +32,7 @@ import org.typelevel.otel4s.trace.StatusCode
 
 import scala.concurrent.duration.FiniteDuration
 
-trait Cogens
-    extends org.typelevel.otel4s.sdk.scalacheck.Cogens
-    with org.typelevel.otel4s.trace.scalacheck.Cogens {
+trait Cogens extends org.typelevel.otel4s.sdk.scalacheck.Cogens with org.typelevel.otel4s.trace.scalacheck.Cogens {
 
   implicit val samplingDecisionCogen: Cogen[SamplingDecision] =
     Cogen[String].contramap(_.toString)

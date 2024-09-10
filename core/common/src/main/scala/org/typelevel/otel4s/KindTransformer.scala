@@ -28,8 +28,7 @@ import cats.effect.kernel.MonadCancelThrow
 import cats.effect.kernel.Resource
 import cats.~>
 
-/** A utility for transforming the higher-kinded type `F` to another
-  * higher-kinded type `G`.
+/** A utility for transforming the higher-kinded type `F` to another higher-kinded type `G`.
   */
 @annotation.implicitNotFound("No transformer defined from ${F} to ${G}")
 trait KindTransformer[F[_], G[_]] {
@@ -37,28 +36,25 @@ trait KindTransformer[F[_], G[_]] {
   /** A higher-kinded function that lifts the kind `F` into a `G`.
     *
     * @note
-    *   This method is usually best implemented by a `liftK` method on `G`'s
-    *   companion object.
+    *   This method is usually best implemented by a `liftK` method on `G`'s companion object.
     */
   val liftK: F ~> G
 
   /** Modify the context of `G[A]` using the natural transformation `f`.
     *
-    * This method is "limited" in the sense that while most `mapK` methods can
-    * modify the context using arbitrary transformations, this method can only
-    * modify the context using natural transformations.
+    * This method is "limited" in the sense that while most `mapK` methods can modify the context using arbitrary
+    * transformations, this method can only modify the context using natural transformations.
     *
     * @note
     *   This method is usually best implemented by a `mapK` method on `G`.
     */
   def limitedMapK[A](ga: G[A])(f: F ~> F): G[A]
 
-  /** Lifts a natural transformation from `F` to `F` into a natural
-    * transformation from `G` to `G`.
+  /** Lifts a natural transformation from `F` to `F` into a natural transformation from `G` to `G`.
     *
     * @note
-    *   Implementors SHOULD NOT override this method; the only reason it is not
-    *   final is for optimization of the identity case.
+    *   Implementors SHOULD NOT override this method; the only reason it is not final is for optimization of the
+    *   identity case.
     */
   def liftFunctionK(f: F ~> F): G ~> G =
     new (G ~> G) {
@@ -109,8 +105,7 @@ object KindTransformer {
         ga.mapK(f)
     }
 
-  implicit def resource[F[_]: MonadCancelThrow]
-      : KindTransformer[F, Resource[F, *]] =
+  implicit def resource[F[_]: MonadCancelThrow]: KindTransformer[F, Resource[F, *]] =
     new KindTransformer[F, Resource[F, *]] {
       val liftK: F ~> Resource[F, *] = Resource.liftK
       def limitedMapK[A](ga: Resource[F, A])(f: F ~> F): Resource[F, A] =

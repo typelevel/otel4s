@@ -22,19 +22,17 @@ trait Contextual[C] { outer =>
   /** The type of [[context.Key `Key`]] used by contexts of type `C`. */
   type Key[A] <: context.Key[A]
 
-  /** Retrieves the value associated with the given key from the context, if
-    * such a value exists.
+  /** Retrieves the value associated with the given key from the context, if such a value exists.
     */
   def get[A](ctx: C)(key: Key[A]): Option[A]
 
-  /** Retrieves the value associated with the given key from the context, if
-    * such a value exists; otherwise, returns the provided default value.
+  /** Retrieves the value associated with the given key from the context, if such a value exists; otherwise, returns the
+    * provided default value.
     */
   def getOrElse[A](ctx: C)(key: Key[A], default: => A): A =
     get(ctx)(key).getOrElse(default)
 
-  /** Creates a copy of this context with the given value associated with the
-    * given key.
+  /** Creates a copy of this context with the given value associated with the given key.
     */
   def updated[A](ctx: C)(key: Key[A], value: A): C
 
@@ -43,20 +41,18 @@ trait Contextual[C] { outer =>
 
   class ContextSyntax(ctx: C) {
 
-    /** Retrieves the value associated with the given key from the context, if
-      * such a value exists.
+    /** Retrieves the value associated with the given key from the context, if such a value exists.
       */
     def get[A](key: Key[A]): Option[A] =
       outer.get(ctx)(key)
 
-    /** Retrieves the value associated with the given key from the context, if
-      * such a value exists; otherwise, returns the provided default value.
+    /** Retrieves the value associated with the given key from the context, if such a value exists; otherwise, returns
+      * the provided default value.
       */
     def getOrElse[A](key: Key[A], default: => A): A =
       outer.getOrElse(ctx)(key, default)
 
-    /** Creates a copy of this context with the given value associated with the
-      * given key.
+    /** Creates a copy of this context with the given value associated with the given key.
       */
     def updated[A](key: Key[A], value: A): C =
       outer.updated(ctx)(key, value)
@@ -65,8 +61,7 @@ trait Contextual[C] { outer =>
 
 object Contextual {
 
-  /** A type alias for a [[`Contextual`]] explicitly parameterized by its
-    * [[Contextual.Key `Key`]] type.
+  /** A type alias for a [[`Contextual`]] explicitly parameterized by its [[Contextual.Key `Key`]] type.
     */
   type Keyed[C, K[X] <: Key[X]] = Contextual[C] { type Key[A] = K[A] }
 

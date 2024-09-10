@@ -20,9 +20,8 @@ package propagation
 import cats.effect.SyncIO
 import org.typelevel.otel4s.context.syntax._
 
-/** A [[TextMapPropagator]] that extracts a specified collection of fields and
-  * stores them in a context, and extracts them from a context later for
-  * injection. It does not interact with telemetry.
+/** A [[TextMapPropagator]] that extracts a specified collection of fields and stores them in a context, and extracts
+  * them from a context later for injection. It does not interact with telemetry.
   */
 final class PassThroughPropagator[Ctx, K[X] <: Key[X]] private (
     val fields: Iterable[String],
@@ -49,8 +48,7 @@ final class PassThroughPropagator[Ctx, K[X] <: Key[X]] private (
 }
 
 object PassThroughPropagator {
-  private def forDistinctFields[Ctx, K[X] <: Key[X]](fields: Seq[String])(
-      implicit
+  private def forDistinctFields[Ctx, K[X] <: Key[X]](fields: Seq[String])(implicit
       c: Contextual.Keyed[Ctx, K],
       kp: Key.Provider[SyncIO, K]
   ): TextMapPropagator[Ctx] =

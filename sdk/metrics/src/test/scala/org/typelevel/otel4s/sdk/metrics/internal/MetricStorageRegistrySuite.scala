@@ -29,9 +29,7 @@ import org.typelevel.otel4s.sdk.metrics.scalacheck.Gens
 import org.typelevel.otel4s.sdk.metrics.view.View
 import org.typelevel.otel4s.sdk.test.InMemoryConsole
 
-class MetricStorageRegistrySuite
-    extends CatsEffectSuite
-    with ScalaCheckEffectSuite {
+class MetricStorageRegistrySuite extends CatsEffectSuite with ScalaCheckEffectSuite {
 
   test("register a storage") {
     PropF.forAllF(Gens.instrumentDescriptor) { descriptor =>

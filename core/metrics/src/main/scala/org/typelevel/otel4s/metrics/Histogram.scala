@@ -26,18 +26,15 @@ import scala.concurrent.duration.TimeUnit
 
 /** A `Histogram` instrument that records values of type `A`.
   *
-  * [[Histogram]] metric data points convey a population of recorded
-  * measurements in a compressed format. A histogram bundles a set of events
-  * into divided populations with an overall event count and aggregate sum for
-  * all events.
+  * [[Histogram]] metric data points convey a population of recorded measurements in a compressed format. A histogram
+  * bundles a set of events into divided populations with an overall event count and aggregate sum for all events.
   *
   * @tparam F
   *   the higher-kinded type of a polymorphic effect
   *
   * @tparam A
-  *   the type of the values to record. The type must have an instance of
-  *   [[MeasurementValue]]. [[scala.Long]] and [[scala.Double]] are supported
-  *   out of the box.
+  *   the type of the values to record. The type must have an instance of [[MeasurementValue]]. [[scala.Long]] and
+  *   [[scala.Double]] are supported out of the box.
   */
 trait Histogram[F[_], A] extends HistogramMacro[F, A]
 
@@ -49,9 +46,8 @@ object Histogram {
     *   the higher-kinded type of a polymorphic effect
     *
     * @tparam A
-    *   the type of the values to record. The type must have an instance of
-    *   [[MeasurementValue]]. [[scala.Long]] and [[scala.Double]] are supported
-    *   out of the box.
+    *   the type of the values to record. The type must have an instance of [[MeasurementValue]]. [[scala.Long]] and
+    *   [[scala.Double]] are supported out of the box.
     */
   trait Builder[F[_], A] {
 
@@ -87,8 +83,7 @@ object Histogram {
         boundaries: BucketBoundaries
     ): Builder[F, A]
 
-    /** Creates a [[Histogram]] with the given `unit`, `description`, and
-      * `bucket boundaries` (if any).
+    /** Creates a [[Histogram]] with the given `unit`, `description`, and `bucket boundaries` (if any).
       */
     def create: F[Histogram[F, A]]
   }

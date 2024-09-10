@@ -47,9 +47,7 @@ import org.typelevel.otel4s.sdk.test.NoopConsole
 
 import scala.concurrent.duration._
 
-class AsynchronousStorageSuite
-    extends CatsEffectSuite
-    with ScalaCheckEffectSuite {
+class AsynchronousStorageSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
 
   private implicit val noopConsole: Console[IO] = new NoopConsole[IO]
   private implicit val askContext: Ask[IO, Context] = Ask.const(Context.root)
@@ -328,8 +326,7 @@ class AsynchronousStorageSuite
       producer: MetricProducer[IO] = emptyProducer,
       view: Option[View] = None,
       start: FiniteDuration = Duration.Zero,
-      aggregationTemporalitySelector: AggregationTemporalitySelector =
-        AggregationTemporalitySelector.alwaysCumulative
+      aggregationTemporalitySelector: AggregationTemporalitySelector = AggregationTemporalitySelector.alwaysCumulative
   ): IO[MetricStorage.Asynchronous[IO, A]] = {
     val inMemory = new InMemoryMetricReader[IO](
       producer,

@@ -73,15 +73,13 @@ object OtlpHttpMetricExporter {
 
     /** Sets the OTLP endpoint to connect to.
       *
-      * The endpoint must start with either `http://` or `https://`, and include
-      * the full HTTP path.
+      * The endpoint must start with either `http://` or `https://`, and include the full HTTP path.
       *
       * Default value is `http://localhost:4318/v1/metrics`.
       */
     def withEndpoint(endpoint: Uri): Builder[F]
 
-    /** Sets the maximum time to wait for the collector to process an exported
-      * batch of spans.
+    /** Sets the maximum time to wait for the collector to process an exported batch of spans.
       *
       * Default value is `10 seconds`.
       */
@@ -126,8 +124,7 @@ object OtlpHttpMetricExporter {
 
     /** Sets the default aggregation selector to use.
       *
-      * If no views are configured for a metric instrument, an aggregation
-      * provided by the selector will be used.
+      * If no views are configured for a metric instrument, an aggregation provided by the selector will be used.
       *
       * Default selector is
       * [[org.typelevel.otel4s.sdk.metrics.exporter.AggregationSelector.default AggregationSelector.default]].
@@ -138,8 +135,7 @@ object OtlpHttpMetricExporter {
 
     /** Sets the default cardinality limit selector to use.
       *
-      * If no views are configured for a metric instrument, a limit provided by
-      * the selector will be used.
+      * If no views are configured for a metric instrument, a limit provided by the selector will be used.
       *
       * Default selector is
       * [[org.typelevel.otel4s.sdk.metrics.exporter.CardinalityLimitSelector.default CardinalityLimitSelector.default]].
@@ -151,27 +147,23 @@ object OtlpHttpMetricExporter {
     /** Configures the exporter to use the given client.
       *
       * @note
-      *   the 'timeout' and 'tlsContext' settings will be ignored. You must
-      *   preconfigure the client manually.
+      *   the 'timeout' and 'tlsContext' settings will be ignored. You must preconfigure the client manually.
       *
       * @param client
       *   the custom http4s client to use
       */
     def withClient(client: Client[F]): Builder[F]
 
-    /** Creates a [[OtlpHttpMetricExporter]] using the configuration of this
-      * builder.
+    /** Creates a [[OtlpHttpMetricExporter]] using the configuration of this builder.
       */
     def build: Resource[F, MetricExporter.Push[F]]
   }
 
-  /** Creates a [[Builder]] of [[OtlpHttpMetricExporter]] with the default
-    * configuration:
+  /** Creates a [[Builder]] of [[OtlpHttpMetricExporter]] with the default configuration:
     *   - encoding: `Protobuf`
     *   - endpoint: `http://localhost:4318/v1/metrics`
     *   - timeout: `10 seconds`
-    *   - retry policy: 5 exponential attempts, initial backoff is `1 second`,
-    *     max backoff is `5 seconds`
+    *   - retry policy: 5 exponential attempts, initial backoff is `1 second`, max backoff is `5 seconds`
     */
   def builder[F[_]: Async: Network: Compression: Console]: Builder[F] =
     BuilderImpl(
@@ -181,8 +173,7 @@ object OtlpHttpMetricExporter {
       timeout = Defaults.Timeout,
       headers = Headers.empty,
       retryPolicy = RetryPolicy.default,
-      aggregationTemporalitySelector =
-        AggregationTemporalitySelector.alwaysCumulative,
+      aggregationTemporalitySelector = AggregationTemporalitySelector.alwaysCumulative,
       defaultAggregationSelector = AggregationSelector.default,
       defaultCardinalityLimitSelector = CardinalityLimitSelector.default,
       tlsContext = None,

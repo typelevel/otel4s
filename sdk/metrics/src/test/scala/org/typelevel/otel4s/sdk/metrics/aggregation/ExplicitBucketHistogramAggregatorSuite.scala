@@ -41,9 +41,7 @@ import org.typelevel.otel4s.sdk.metrics.scalacheck.Gens
 
 import scala.concurrent.duration._
 
-class ExplicitBucketHistogramAggregatorSuite
-    extends CatsEffectSuite
-    with ScalaCheckEffectSuite {
+class ExplicitBucketHistogramAggregatorSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
 
   private val traceContextKey = Context.Key
     .unique[SyncIO, TraceContext]("trace-context")
@@ -245,12 +243,11 @@ class ExplicitBucketHistogramAggregatorSuite
       values: List[Double],
       boundaries: BucketBoundaries
   ): Vector[Long] =
-    values.foldLeft(Vector.fill(boundaries.length + 1)(0L)) {
-      case (acc, value) =>
-        val i = boundaries.boundaries.indexWhere(b => value <= b)
-        val idx = if (i == -1) boundaries.length else i
+    values.foldLeft(Vector.fill(boundaries.length + 1)(0L)) { case (acc, value) =>
+      val i = boundaries.boundaries.indexWhere(b => value <= b)
+      val idx = if (i == -1) boundaries.length else i
 
-        acc.updated(idx, acc(idx) + 1L)
+      acc.updated(idx, acc(idx) + 1L)
     }
 
   // retains last exemplar for each bucket

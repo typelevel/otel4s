@@ -32,8 +32,7 @@ import org.typelevel.otel4s.sdk.metrics.data.PointData
 // the instances mimic Protobuf encoding
 private object MetricsJsonCodecs extends JsonCodecs {
 
-  implicit val aggregationTemporalityJsonEncoder
-      : Encoder[AggregationTemporality] =
+  implicit val aggregationTemporalityJsonEncoder: Encoder[AggregationTemporality] =
     Encoder.instance {
       case AggregationTemporality.Delta      => Json.fromInt(1)
       case AggregationTemporality.Cumulative => Json.fromInt(2)
@@ -126,8 +125,7 @@ private object MetricsJsonCodecs extends JsonCodecs {
         .dropEmptyValues
     }
 
-  implicit val histogramMetricPointsJsonEncoder
-      : Encoder[MetricPoints.Histogram] =
+  implicit val histogramMetricPointsJsonEncoder: Encoder[MetricPoints.Histogram] =
     Encoder.instance { histogram =>
       Json
         .obj(

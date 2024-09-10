@@ -20,8 +20,7 @@ import org.typelevel.otel4s.Attributes
 import org.typelevel.otel4s.metrics.MeasurementValue
 import org.typelevel.otel4s.sdk.context.Context
 
-/** Exemplar filters are used to pre-filter measurements before attempting to
-  * store them in a reservoir.
+/** Exemplar filters are used to pre-filter measurements before attempting to store them in a reservoir.
   *
   * @see
   *   [[https://opentelemetry.io/docs/specs/otel/metrics/sdk/#exemplarfilter]]
@@ -49,8 +48,7 @@ object ExemplarFilter {
     */
   def alwaysOff: ExemplarFilter = AlwaysOff
 
-  /** A filter that only accepts measurements where there is a span in a context
-    * that is being sampled.
+  /** A filter that only accepts measurements where there is a span in a context that is being sampled.
     */
   def traceBased(lookup: TraceContextLookup): ExemplarFilter =
     TraceBased(lookup)

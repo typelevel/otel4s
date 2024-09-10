@@ -27,16 +27,13 @@ object DeploymentExperimentalAttributes {
   val DeploymentEnvironment: AttributeKey[String] =
     AttributeKey("deployment.environment")
 
-  /** Name of the <a
-    * href="https://wikipedia.org/wiki/Deployment_environment">deployment
-    * environment</a> (aka deployment tier). <p>
+  /** Name of the <a href="https://wikipedia.org/wiki/Deployment_environment">deployment environment</a> (aka deployment
+    * tier). <p>
     * @note
-    *   <p> `deployment.environment.name` does not affect the uniqueness
-    *   constraints defined through the `service.namespace`, `service.name` and
-    *   `service.instance.id` resource attributes. This implies that resources
-    *   carrying the following attribute combinations MUST be considered to be
-    *   identifying the same service: <p> <ul> <li>`service.name=frontend`,
-    *   `deployment.environment.name=production` <li>`service.name=frontend`,
+    *   <p> `deployment.environment.name` does not affect the uniqueness constraints defined through the
+    *   `service.namespace`, `service.name` and `service.instance.id` resource attributes. This implies that resources
+    *   carrying the following attribute combinations MUST be considered to be identifying the same service: <p> <ul>
+    *   <li>`service.name=frontend`, `deployment.environment.name=production` <li>`service.name=frontend`,
     *   `deployment.environment.name=staging`. </ul>
     */
   val DeploymentEnvironmentName: AttributeKey[String] =

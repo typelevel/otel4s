@@ -45,8 +45,7 @@ object NetExperimentalAttributes {
   val NetPeerIp: AttributeKey[String] =
     AttributeKey("net.peer.ip")
 
-  /** Deprecated, use `server.address` on client spans and `client.address` on
-    * server spans.
+  /** Deprecated, use `server.address` on client spans and `client.address` on server spans.
     */
   @deprecated(
     "Replaced by `server.address` on client spans and `client.address` on server spans.",
@@ -55,8 +54,7 @@ object NetExperimentalAttributes {
   val NetPeerName: AttributeKey[String] =
     AttributeKey("net.peer.name")
 
-  /** Deprecated, use `server.port` on client spans and `client.port` on server
-    * spans.
+  /** Deprecated, use `server.port` on client spans and `client.port` on server spans.
     */
   @deprecated(
     "Replaced by `server.port` on client spans and `client.port` on server spans.",

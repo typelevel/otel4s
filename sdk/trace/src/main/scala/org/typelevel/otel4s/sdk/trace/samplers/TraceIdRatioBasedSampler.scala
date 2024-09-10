@@ -26,15 +26,12 @@ import scodec.bits.ByteVector
 
 /** The input `ratio` must be between 0 and 1.0.
   *
-  * 0.1 means only 10% of the incoming spans will be sampled, and 1.0 stands for
-  * 100%.
+  * 0.1 means only 10% of the incoming spans will be sampled, and 1.0 stands for 100%.
   *
-  * The ratio-based sampler must be deterministic, so it utilizes the Long value
-  * extracted from the trace id.
+  * The ratio-based sampler must be deterministic, so it utilizes the Long value extracted from the trace id.
   *
-  * The logic is the following: the sampling result will be
-  * [[SamplingResult.RecordAndSample]] if the extracted long value is lower than
-  * the upper bound limit (`ratio` * Long.MaxValue).
+  * The logic is the following: the sampling result will be [[SamplingResult.RecordAndSample]] if the extracted long
+  * value is lower than the upper bound limit (`ratio` * Long.MaxValue).
   *
   * @see
   *   [[https://opentelemetry.io/docs/specs/otel/trace/sdk/#traceidratiobased]]
@@ -70,15 +67,12 @@ private object TraceIdRatioBasedSampler {
     *
     * The ratio of sampling a trace is equal to that of the specified `ratio`.
     *
-    * 0.1 means only 10% of the incoming spans will be sampled, and 1.0 stands
-    * for 100%.
+    * 0.1 means only 10% of the incoming spans will be sampled, and 1.0 stands for 100%.
     *
-    * The ratio-based sampler must be deterministic, so it utilizes the Long
-    * value extracted from the trace id.
+    * The ratio-based sampler must be deterministic, so it utilizes the Long value extracted from the trace id.
     *
-    * The logic is the following: the sampling result will be
-    * [[SamplingResult.RecordAndSample]] if the extracted long value is lower
-    * than the upper bound limit (`ratio` * Long.MaxValue).
+    * The logic is the following: the sampling result will be [[SamplingResult.RecordAndSample]] if the extracted long
+    * value is lower than the upper bound limit (`ratio` * Long.MaxValue).
     *
     * @param ratio
     *   the desired ratio of sampling. Must be >= 0 and <= 1.0.

@@ -127,8 +127,7 @@ class MeterProviderAutoConfigureSuite extends CatsEffectSuite {
       config: Config,
       resource: TelemetryResource = TelemetryResource.empty,
       customizer: Customizer[SdkMeterProvider.Builder[IO]] = (a, _) => a,
-      exporterConfigurers: Set[AutoConfigure.Named[IO, MetricExporter[IO]]] =
-        Set.empty
+      exporterConfigurers: Set[AutoConfigure.Named[IO, MetricExporter[IO]]] = Set.empty
   )(f: MeterProvider[IO] => IO[A]): IO[A] =
     Resource.eval(Random.scalaUtilRandom[IO]).use { implicit random =>
       implicit val askContext: AskContext[IO] = Ask.const(Context.root)

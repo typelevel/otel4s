@@ -21,20 +21,17 @@ import org.typelevel.otel4s.AttributeKey
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/attributes/stable/SemanticAttributes.scala.j2
 object OtelAttributes {
 
-  /** The name of the instrumentation scope - (`InstrumentationScope.Name` in
-    * OTLP).
+  /** The name of the instrumentation scope - (`InstrumentationScope.Name` in OTLP).
     */
   val OtelScopeName: AttributeKey[String] =
     AttributeKey("otel.scope.name")
 
-  /** The version of the instrumentation scope - (`InstrumentationScope.Version`
-    * in OTLP).
+  /** The version of the instrumentation scope - (`InstrumentationScope.Version` in OTLP).
     */
   val OtelScopeVersion: AttributeKey[String] =
     AttributeKey("otel.scope.version")
 
-  /** Name of the code, either "OK" or "ERROR". MUST NOT be set if the status
-    * code is UNSET.
+  /** Name of the code, either "OK" or "ERROR". MUST NOT be set if the status code is UNSET.
     */
   val OtelStatusCode: AttributeKey[String] =
     AttributeKey("otel.status_code")
@@ -49,8 +46,7 @@ object OtelAttributes {
   abstract class OtelStatusCodeValue(val value: String)
   object OtelStatusCodeValue {
 
-    /** The operation has been validated by an Application developer or Operator
-      * to have completed successfully.
+    /** The operation has been validated by an Application developer or Operator to have completed successfully.
       */
     case object Ok extends OtelStatusCodeValue("OK")
 

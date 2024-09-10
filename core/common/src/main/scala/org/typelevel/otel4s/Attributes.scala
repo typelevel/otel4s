@@ -37,59 +37,51 @@ sealed trait Attributes
     with IterableOps[Attribute[_], immutable.Iterable, Attributes] {
 
   /** @return
-    *   an [[`Attribute`]] matching the given attribute name and type, or `None`
-    *   if not found.
+    *   an [[`Attribute`]] matching the given attribute name and type, or `None` if not found.
     */
   final def get[T: KeySelect](name: String): Option[Attribute[T]] =
     get(KeySelect[T].make(name))
 
   /** @return
-    *   an [[`Attribute`]] matching the given attribute key, or `None` if not
-    *   found
+    *   an [[`Attribute`]] matching the given attribute key, or `None` if not found
     */
   def get[T](key: AttributeKey[T]): Option[Attribute[T]]
 
-  /** Adds an [[`Attribute`]] with the given name and value to these
-    * `Attributes`, replacing any `Attribute` with the same name and type if one
-    * exists.
+  /** Adds an [[`Attribute`]] with the given name and value to these `Attributes`, replacing any `Attribute` with the
+    * same name and type if one exists.
     */
   final def added[T: KeySelect](name: String, value: T): Attributes =
     added(Attribute(name, value))
 
-  /** Adds an [[`Attribute`]] with the given key and value to these
-    * `Attributes`, replacing any `Attribute` with the same key if one exists.
+  /** Adds an [[`Attribute`]] with the given key and value to these `Attributes`, replacing any `Attribute` with the
+    * same key if one exists.
     */
   final def added[T](key: AttributeKey[T], value: T): Attributes =
     added(Attribute(key, value))
 
-  /** Adds the given [[`Attribute`]] to these `Attributes`, replacing any
-    * `Attribute` with the same key if one exists.
+  /** Adds the given [[`Attribute`]] to these `Attributes`, replacing any `Attribute` with the same key if one exists.
     */
   def added(attribute: Attribute[_]): Attributes
 
-  /** Adds the given [[`Attribute`]] to these `Attributes`, replacing any
-    * `Attribute` with the same key if one exists.
+  /** Adds the given [[`Attribute`]] to these `Attributes`, replacing any `Attribute` with the same key if one exists.
     */
   final def +(attribute: Attribute[_]): Attributes =
     added(attribute)
 
-  /** Invariant overload of
-    * [[scala.collection.IterableOps.concat `IterableOps#concat`]] that returns
-    * `Attributes` rather than `Iterable`.
+  /** Invariant overload of [[scala.collection.IterableOps.concat `IterableOps#concat`]] that returns `Attributes`
+    * rather than `Iterable`.
     *
-    * If multiple [[`Attribute`]]s in `this` and/or `that` have the same key,
-    * only the final one (according to `that`'s iterator) will be retained in
-    * the resulting `Attributes`.
+    * If multiple [[`Attribute`]]s in `this` and/or `that` have the same key, only the final one (according to `that`'s
+    * iterator) will be retained in the resulting `Attributes`.
     */
   def concat(that: IterableOnce[Attribute[_]]): Attributes =
     fromSpecific(this.view ++ that)
 
-  /** Invariant overload of [[scala.collection.IterableOps.++ `IterableOps#++`]]
-    * that returns `Attributes` rather than `Iterable`.
+  /** Invariant overload of [[scala.collection.IterableOps.++ `IterableOps#++`]] that returns `Attributes` rather than
+    * `Iterable`.
     *
-    * If multiple [[`Attribute`]]s in `this` and/or `that` have the same key,
-    * only the final one (according to `that`'s iterator) will be retained in
-    * the resulting `Attributes`.
+    * If multiple [[`Attribute`]]s in `this` and/or `that` have the same key, only the final one (according to `that`'s
+    * iterator) will be retained in the resulting `Attributes`.
     */
   final def ++(that: IterableOnce[Attribute[_]]): Attributes =
     concat(that)
@@ -109,8 +101,7 @@ sealed trait Attributes
       coll: IterableOnce[Attribute[_]]
   ): Attributes =
     attributesFactory.fromSpecific(coll)
-  override protected def newSpecificBuilder
-      : mutable.Builder[Attribute[_], Attributes] =
+  override protected def newSpecificBuilder: mutable.Builder[Attribute[_], Attributes] =
     attributesFactory.newBuilder
   override protected[this] def className: String = "Attributes"
 
@@ -133,8 +124,7 @@ object Attributes extends SpecificIterableFactory[Attribute[_], Attributes] {
   /** Creates [[Attributes]] with the given `attributes`.
     *
     * @note
-    *   if there are duplicated keys in the given `attributes`, only the last
-    *   occurrence will be retained.
+    *   if there are duplicated keys in the given `attributes`, only the last occurrence will be retained.
     *
     * @param attributes
     *   the attributes to use
@@ -153,8 +143,7 @@ object Attributes extends SpecificIterableFactory[Attribute[_], Attributes] {
   /** Creates [[Attributes]] from the given collection.
     *
     * @note
-    *   if there are duplicated keys in the given `attributes`, only the last
-    *   occurrence will be retained.
+    *   if there are duplicated keys in the given `attributes`, only the last occurrence will be retained.
     *
     * @param attributes
     *   the attributes to use
@@ -191,8 +180,7 @@ object Attributes extends SpecificIterableFactory[Attribute[_], Attributes] {
     /** Adds the attribute with the given `key` and `value` to the builder.
       *
       * @note
-      *   if the given `key` is already present in the builder, the value will
-      *   be overwritten with the given `value`.
+      *   if the given `key` is already present in the builder, the value will be overwritten with the given `value`.
       *
       * @param key
       *   the key of the attribute. Denotes the types of the `value`
@@ -205,12 +193,10 @@ object Attributes extends SpecificIterableFactory[Attribute[_], Attributes] {
       this
     }
 
-    /** Adds the attribute with the given `key` (created from `name`) and
-      * `value` to the builder.
+    /** Adds the attribute with the given `key` (created from `name`) and `value` to the builder.
       *
       * @note
-      *   if the given `key` is already present in the builder, the value will
-      *   be overwritten with the given `value`.
+      *   if the given `key` is already present in the builder, the value will be overwritten with the given `value`.
       *
       * @param name
       *   the name of the attribute's key
@@ -227,8 +213,8 @@ object Attributes extends SpecificIterableFactory[Attribute[_], Attributes] {
     /** Adds the given `attribute` to the builder.
       *
       * @note
-      *   if the key of the given `attribute` is already present in the builder,
-      *   the value will be overwritten with the corresponding given attribute.
+      *   if the key of the given `attribute` is already present in the builder, the value will be overwritten with the
+      *   corresponding given attribute.
       *
       * @param attribute
       *   the attribute to add
@@ -241,9 +227,8 @@ object Attributes extends SpecificIterableFactory[Attribute[_], Attributes] {
     /** Adds the given `attributes` to the builder.
       *
       * @note
-      *   if the keys of the given `attributes` are already present in the
-      *   builder, the values will be overwritten with the corresponding given
-      *   attributes.
+      *   if the keys of the given `attributes` are already present in the builder, the values will be overwritten with
+      *   the corresponding given attributes.
       *
       * @param attributes
       *   the attributes to add

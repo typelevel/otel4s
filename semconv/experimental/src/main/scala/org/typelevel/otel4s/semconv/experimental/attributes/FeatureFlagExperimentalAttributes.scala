@@ -31,16 +31,14 @@ object FeatureFlagExperimentalAttributes {
   val FeatureFlagProviderName: AttributeKey[String] =
     AttributeKey("feature_flag.provider_name")
 
-  /** SHOULD be a semantic identifier for a value. If one is unavailable, a
-    * stringified version of the value can be used. <p>
+  /** SHOULD be a semantic identifier for a value. If one is unavailable, a stringified version of the value can be
+    * used. <p>
     * @note
-    *   <p> A semantic identifier, commonly referred to as a variant, provides a
-    *   means for referring to a value without including the value itself. This
-    *   can provide additional context for understanding the meaning behind a
-    *   value. For example, the variant `red` maybe be used for the value
-    *   `#c05543`. <p> A stringified version of the value can be used in
-    *   situations where a semantic identifier is unavailable. String
-    *   representation of the value should be determined by the implementer.
+    *   <p> A semantic identifier, commonly referred to as a variant, provides a means for referring to a value without
+    *   including the value itself. This can provide additional context for understanding the meaning behind a value.
+    *   For example, the variant `red` maybe be used for the value `#c05543`. <p> A stringified version of the value can
+    *   be used in situations where a semantic identifier is unavailable. String representation of the value should be
+    *   determined by the implementer.
     */
   val FeatureFlagVariant: AttributeKey[String] =
     AttributeKey("feature_flag.variant")

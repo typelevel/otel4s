@@ -23,8 +23,8 @@ import org.typelevel.otel4s.metrics.BucketBoundaries
 
 /** A point in the metric data model.
   *
-  * A point represents the aggregation of measurements recorded with a
-  * particular set of [[Attributes]] over some time interval.
+  * A point represents the aggregation of measurements recorded with a particular set of [[Attributes]] over some time
+  * interval.
   *
   * @see
   *   [[https://opentelemetry.io/docs/specs/otel/metrics/data-model/#metric-points]]
@@ -89,9 +89,8 @@ object PointData {
     type Value = Double
   }
 
-  /** A population of recorded measurements. A histogram bundles a set of events
-    * into divided populations with an overall event count and aggregate sum for
-    * all events.
+  /** A population of recorded measurements. A histogram bundles a set of events into divided populations with an
+    * overall event count and aggregate sum for all events.
     *
     * @see
     *   [[https://opentelemetry.io/docs/specs/otel/metrics/data-model/#histogram]]
@@ -102,8 +101,7 @@ object PointData {
       */
     def exemplars: Vector[ExemplarData.DoubleExemplar]
 
-    /** The [[Histogram.Stats]] of the current measurement. `None` means the
-      * histogram is empty.
+    /** The [[Histogram.Stats]] of the current measurement. `None` means the histogram is empty.
       */
     def stats: Option[Histogram.Stats]
 

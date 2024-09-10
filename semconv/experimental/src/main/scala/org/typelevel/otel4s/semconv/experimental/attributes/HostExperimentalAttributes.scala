@@ -36,8 +36,8 @@ object HostExperimentalAttributes {
   val HostCpuFamily: AttributeKey[String] =
     AttributeKey("host.cpu.family")
 
-  /** Model identifier. It provides more granular information about the CPU,
-    * distinguishing it from other CPUs within the same family.
+  /** Model identifier. It provides more granular information about the CPU, distinguishing it from other CPUs within
+    * the same family.
     */
   val HostCpuModelId: AttributeKey[String] =
     AttributeKey("host.cpu.model.id")
@@ -54,23 +54,20 @@ object HostExperimentalAttributes {
 
   /** Processor manufacturer identifier. A maximum 12-character string. <p>
     * @note
-    *   <p> <a href="https://wiki.osdev.org/CPUID">CPUID</a> command returns the
-    *   vendor ID string in EBX, EDX and ECX registers. Writing these to memory
-    *   in this order results in a 12-character string.
+    *   <p> <a href="https://wiki.osdev.org/CPUID">CPUID</a> command returns the vendor ID string in EBX, EDX and ECX
+    *   registers. Writing these to memory in this order results in a 12-character string.
     */
   val HostCpuVendorId: AttributeKey[String] =
     AttributeKey("host.cpu.vendor.id")
 
-  /** Unique host ID. For Cloud, this must be the instance_id assigned by the
-    * cloud provider. For non-containerized systems, this should be the
-    * `machine-id`. See the table below for the sources to use to determine the
-    * `machine-id` based on operating system.
+  /** Unique host ID. For Cloud, this must be the instance_id assigned by the cloud provider. For non-containerized
+    * systems, this should be the `machine-id`. See the table below for the sources to use to determine the `machine-id`
+    * based on operating system.
     */
   val HostId: AttributeKey[String] =
     AttributeKey("host.id")
 
-  /** VM image ID or host OS image ID. For Cloud, this value is from the
-    * provider.
+  /** VM image ID or host OS image ID. For Cloud, this value is from the provider.
     */
   val HostImageId: AttributeKey[String] =
     AttributeKey("host.image.id")
@@ -88,8 +85,7 @@ object HostExperimentalAttributes {
 
   /** Available IP addresses of the host, excluding loopback interfaces. <p>
     * @note
-    *   <p> IPv4 Addresses MUST be specified in dotted-quad notation. IPv6
-    *   addresses MUST be specified in the <a
+    *   <p> IPv4 Addresses MUST be specified in dotted-quad notation. IPv6 addresses MUST be specified in the <a
     *   href="https://www.rfc-editor.org/rfc/rfc5952.html">RFC 5952</a> format.
     */
   val HostIp: AttributeKey[Seq[String]] =
@@ -98,16 +94,14 @@ object HostExperimentalAttributes {
   /** Available MAC addresses of the host, excluding loopback interfaces. <p>
     * @note
     *   <p> MAC Addresses MUST be represented in <a
-    *   href="https://standards.ieee.org/wp-content/uploads/import/documents/tutorials/eui.pdf">IEEE
-    *   RA hexadecimal form</a>: as hyphen-separated octets in uppercase
-    *   hexadecimal form from most to least significant.
+    *   href="https://standards.ieee.org/wp-content/uploads/import/documents/tutorials/eui.pdf">IEEE RA hexadecimal
+    *   form</a>: as hyphen-separated octets in uppercase hexadecimal form from most to least significant.
     */
   val HostMac: AttributeKey[Seq[String]] =
     AttributeKey("host.mac")
 
-  /** Name of the host. On Unix systems, it may contain what the hostname
-    * command returns, or the fully qualified hostname, or another name
-    * specified by the user.
+  /** Name of the host. On Unix systems, it may contain what the hostname command returns, or the fully qualified
+    * hostname, or another name specified by the user.
     */
   val HostName: AttributeKey[String] =
     AttributeKey("host.name")

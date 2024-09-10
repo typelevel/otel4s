@@ -330,8 +330,7 @@ object BaseMeterSuite {
         aggregationTemporality: AggregationTemporality
     ) extends MetricPoints
 
-    final case class Gauge(points: Vector[PointData.NumberPoint])
-        extends MetricPoints
+    final case class Gauge(points: Vector[PointData.NumberPoint]) extends MetricPoints
 
     final case class Histogram(
         points: Vector[PointData.Histogram],
@@ -348,8 +347,7 @@ object BaseMeterSuite {
 
   object MetricData {
     private val DefaultBoundaries = BucketBoundaries(
-      0.0, 5.0, 10.0, 25.0, 50.0, 75.0, 100.0, 250.0, 500.0, 750.0, 1000.0,
-      2500.0, 5000.0, 7500.0, 10000.0
+      0.0, 5.0, 10.0, 25.0, 50.0, 75.0, 100.0, 250.0, 500.0, 750.0, 1000.0, 2500.0, 5000.0, 7500.0, 10000.0
     )
 
     def sum(
@@ -422,12 +420,11 @@ object BaseMeterSuite {
         exemplarValue: Option[Double] = None
     ): MetricData = {
       val counts: Vector[Long] =
-        values.foldLeft(Vector.fill(boundaries.length + 1)(0L)) {
-          case (acc, value) =>
-            val i = boundaries.boundaries.indexWhere(b => value <= b)
-            val idx = if (i == -1) boundaries.length else i
+        values.foldLeft(Vector.fill(boundaries.length + 1)(0L)) { case (acc, value) =>
+          val i = boundaries.boundaries.indexWhere(b => value <= b)
+          val idx = if (i == -1) boundaries.length else i
 
-            acc.updated(idx, acc(idx) + 1L)
+          acc.updated(idx, acc(idx) + 1L)
         }
 
       MetricData(

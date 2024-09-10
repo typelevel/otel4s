@@ -24,8 +24,7 @@ import scodec.bits.ByteVector
 
 import scala.concurrent.duration.FiniteDuration
 
-/** An exemplar is a recorded value that associates
-  * [[ExemplarData.TraceContext]] (extracted from the
+/** An exemplar is a recorded value that associates [[ExemplarData.TraceContext]] (extracted from the
   * [[org.typelevel.otel4s.sdk.context.Context Context]]) to a metric event.
   *
   * It allows linking trace details with metrics.
@@ -36,8 +35,7 @@ import scala.concurrent.duration.FiniteDuration
 sealed trait ExemplarData {
   type Value
 
-  /** A set of filtered attributes that provide additional insight about the
-    * measurement.
+  /** A set of filtered attributes that provide additional insight about the measurement.
     */
   def filteredAttributes: Attributes
 
@@ -74,8 +72,8 @@ object ExemplarData {
 
   /** The trace information.
     *
-    * [[TraceContext]] is a minimal version of SpanContext. That way,
-    * `sdk-metrics` does not need to depend on the `core-trace`.
+    * [[TraceContext]] is a minimal version of SpanContext. That way, `sdk-metrics` does not need to depend on the
+    * `core-trace`.
     */
   sealed trait TraceContext {
     def traceId: ByteVector

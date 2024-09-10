@@ -73,12 +73,10 @@ object SdkTracerProvider {
 
     /** Sets an [[IdGenerator]].
       *
-      * [[IdGenerator]] will be used each time a
-      * [[org.typelevel.otel4s.trace.Span Span]] is started.
+      * [[IdGenerator]] will be used each time a [[org.typelevel.otel4s.trace.Span Span]] is started.
       *
       * @note
-      *   the id generator must be thread-safe and return immediately (no remote
-      *   calls, as contention free as possible).
+      *   the id generator must be thread-safe and return immediately (no remote calls, as contention free as possible).
       *
       * @param idGenerator
       *   the [[IdGenerator]] to use
@@ -89,8 +87,7 @@ object SdkTracerProvider {
       * [[org.typelevel.otel4s.trace.Tracer Tracer]].
       *
       * @note
-      *   on multiple subsequent calls, the resource from the last call will be
-      *   retained.
+      *   on multiple subsequent calls, the resource from the last call will be retained.
       *
       * @param resource
       *   the [[TelemetryResource]] to use
@@ -100,8 +97,7 @@ object SdkTracerProvider {
     /** Merges the given [[TelemetryResource]] with the current one.
       *
       * @note
-      *   if both resources have different non-empty `schemaUrl`, the merge will
-      *   fail.
+      *   if both resources have different non-empty `schemaUrl`, the merge will fail.
       *
       * @see
       *   [[TelemetryResource.mergeUnsafe]]
@@ -113,8 +109,7 @@ object SdkTracerProvider {
 
     /** Sets an initial [[SpanLimits]].
       *
-      * The limits will be used for every
-      * [[org.typelevel.otel4s.trace.Span Span]].
+      * The limits will be used for every [[org.typelevel.otel4s.trace.Span Span]].
       *
       * @param limits
       *   the [[SpanLimits]] to use
@@ -123,21 +118,18 @@ object SdkTracerProvider {
 
     /** Sets a [[org.typelevel.otel4s.sdk.trace.samplers.Sampler Sampler]].
       *
-      * The sampler will be called each time a
-      * [[org.typelevel.otel4s.trace.Span Span]] is started.
+      * The sampler will be called each time a [[org.typelevel.otel4s.trace.Span Span]] is started.
       *
       * @note
-      *   the sampler must be thread-safe and return immediately (no remote
-      *   calls, as contention free as possible).
+      *   the sampler must be thread-safe and return immediately (no remote calls, as contention free as possible).
       *
       * @param sampler
       *   the [[org.typelevel.otel4s.sdk.trace.samplers.Sampler Sampler]] to use
       */
     def withSampler(sampler: Sampler): Builder[F]
 
-    /** Adds
-      * [[org.typelevel.otel4s.context.propagation.TextMapPropagator TextMapPropagator]]s
-      * to use for the context propagation.
+    /** Adds [[org.typelevel.otel4s.context.propagation.TextMapPropagator TextMapPropagator]]s to use for the context
+      * propagation.
       *
       * @param propagators
       *   the propagators to add
@@ -146,25 +138,22 @@ object SdkTracerProvider {
         propagators: TextMapPropagator[Context]*
     ): Builder[F]
 
-    /** Adds a
-      * [[org.typelevel.otel4s.sdk.trace.processor.SpanProcessor SpanProcessor]]
-      * to the span processing pipeline that will be built.
+    /** Adds a [[org.typelevel.otel4s.sdk.trace.processor.SpanProcessor SpanProcessor]] to the span processing pipeline
+      * that will be built.
       *
-      * The span processor will be called each time a
-      * [[org.typelevel.otel4s.trace.Span Span]] is started or ended.
+      * The span processor will be called each time a [[org.typelevel.otel4s.trace.Span Span]] is started or ended.
       *
       * @note
-      *   the span processor must be thread-safe and return immediately (no
-      *   remote calls, as contention free as possible).
+      *   the span processor must be thread-safe and return immediately (no remote calls, as contention free as
+      *   possible).
       *
       * @param processor
       *   the span processor to add
       */
     def addSpanProcessor(processor: SpanProcessor[F]): Builder[F]
 
-    /** Creates a new
-      * [[org.typelevel.otel4s.trace.TracerProvider TracerProvider]] with the
-      * configuration of this builder.
+    /** Creates a new [[org.typelevel.otel4s.trace.TracerProvider TracerProvider]] with the configuration of this
+      * builder.
       */
     def build: F[TracerProvider[F]]
   }

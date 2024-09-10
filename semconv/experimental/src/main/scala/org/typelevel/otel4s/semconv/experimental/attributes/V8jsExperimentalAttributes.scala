@@ -79,8 +79,7 @@ object V8jsExperimentalAttributes {
 
     /** Large object memory space.
       */
-    case object LargeObjectSpace
-        extends V8jsHeapSpaceNameValue("large_object_space")
+    case object LargeObjectSpace extends V8jsHeapSpaceNameValue("large_object_space")
   }
 
 }

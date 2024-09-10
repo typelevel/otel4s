@@ -29,8 +29,7 @@ import org.typelevel.otel4s.sdk.metrics.exporter.MetricReader
 
 import scala.concurrent.duration._
 
-/** Autoconfigures
-  * [[org.typelevel.otel4s.sdk.metrics.exporter.MetricReader MetricReader]]s.
+/** Autoconfigures [[org.typelevel.otel4s.sdk.metrics.exporter.MetricReader MetricReader]]s.
   *
   * The configuration options:
   * {{{
@@ -130,8 +129,7 @@ private[sdk] object MetricReadersAutoConfigure {
     val ExportTimeout: FiniteDuration = 30.seconds
   }
 
-  /** Autoconfigures
-    * [[org.typelevel.otel4s.sdk.metrics.exporter.MetricReader MetricReader]]s.
+  /** Autoconfigures [[org.typelevel.otel4s.sdk.metrics.exporter.MetricReader MetricReader]]s.
     *
     * The configuration options:
     * {{{

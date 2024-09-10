@@ -38,11 +38,10 @@ private[metrics] final class MetricStorageRegistry[
 
   /** Registers a storage to this registry.
     *
-    * If a metric with compatible identity was previously registered, returns
-    * the previously registered storage.
+    * If a metric with compatible identity was previously registered, returns the previously registered storage.
     *
-    * If a metric with the same name (case-insensitive) but incompatible
-    * descriptor was previously registered, logs a diagnostic warning.
+    * If a metric with the same name (case-insensitive) but incompatible descriptor was previously registered, logs a
+    * diagnostic warning.
     *
     * @param storage
     *   the metric storage to register

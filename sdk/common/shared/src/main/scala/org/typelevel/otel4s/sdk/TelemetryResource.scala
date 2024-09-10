@@ -24,9 +24,8 @@ import org.typelevel.otel4s.sdk.TelemetryResource.ResourceInitializationError
 import org.typelevel.otel4s.semconv.attributes.ServiceAttributes
 import org.typelevel.otel4s.semconv.attributes.TelemetryAttributes
 
-/** [[TelemetryResource]] serves as a representation of a resource that captures
-  * essential identifying information regarding the entities associated with
-  * reported signals, such as statistics or traces.
+/** [[TelemetryResource]] serves as a representation of a resource that captures essential identifying information
+  * regarding the entities associated with reported signals, such as statistics or traces.
   *
   * @see
   *   [[https://opentelemetry.io/docs/specs/otel/overview/#resources]]
@@ -47,21 +46,17 @@ sealed trait TelemetryResource {
   /** Merges [[TelemetryResource]] into another [[TelemetryResource]].
     *
     * Schema URL merge outcomes:
-    *   - if `this` resource's schema URL is empty then the `other` resource's
-    *     schema URL will be selected
+    *   - if `this` resource's schema URL is empty then the `other` resource's schema URL will be selected
     *
-    *   - if `other` resource's schema URL is empty then `this` resource's
-    *     schema URL will be selected
+    *   - if `other` resource's schema URL is empty then `this` resource's schema URL will be selected
     *
-    *   - if `this` and `other` resources have the same non-empty schema URL
-    *     then this schema URL will be selected
+    *   - if `this` and `other` resources have the same non-empty schema URL then this schema URL will be selected
     *
-    *   - if `this` and `other` resources have different non-empty schema URLs
-    *     then the result will be a merge error
+    *   - if `this` and `other` resources have different non-empty schema URLs then the result will be a merge error
     *
     * @note
-    *   if the same attribute exists in both resources, the attribute from the
-    *   `other` [[TelemetryResource]] will be retained.
+    *   if the same attribute exists in both resources, the attribute from the `other` [[TelemetryResource]] will be
+    *   retained.
     *
     * @param other
     *   the other [[TelemetryResource]] to merge with
@@ -120,8 +115,7 @@ object TelemetryResource {
     case object SchemaUrlConflict extends ResourceInitializationError
   }
 
-  /** Creates a [[TelemetryResource]] with the given `attributes`. The
-    * `schemaUrl` will be `None.`
+  /** Creates a [[TelemetryResource]] with the given `attributes`. The `schemaUrl` will be `None.`
     *
     * @param attributes
     *   the attributes to associate with the resource
@@ -129,8 +123,7 @@ object TelemetryResource {
   def apply(attributes: Attributes): TelemetryResource =
     Impl(attributes, None)
 
-  /** Creates a [[TelemetryResource]] with the given `attributes` and
-    * `schemaUrl`.
+  /** Creates a [[TelemetryResource]] with the given `attributes` and `schemaUrl`.
     *
     * @param attributes
     *   the attributes to associate with the resource
@@ -145,19 +138,17 @@ object TelemetryResource {
 
   /** Returns an empty [[TelemetryResource]].
     *
-    * It is strongly recommended to start with [[TelemetryResource.default]]
-    * instead of this method to include SDK required attributes.
+    * It is strongly recommended to start with [[TelemetryResource.default]] instead of this method to include SDK
+    * required attributes.
     */
   def empty: TelemetryResource = Empty
 
-  /** Returns the default [[TelemetryResource]]. This resource contains the
-    * default attributes provided by the SDK.
+  /** Returns the default [[TelemetryResource]]. This resource contains the default attributes provided by the SDK.
     */
   def default: TelemetryResource = Default
 
   implicit val showResource: Show[TelemetryResource] =
-    r =>
-      show"TelemetryResource{attributes=${r.attributes}, schemaUrl=${r.schemaUrl}}"
+    r => show"TelemetryResource{attributes=${r.attributes}, schemaUrl=${r.schemaUrl}}"
 
   implicit val hashResource: Hash[TelemetryResource] =
     Hash.by(r => (r.attributes, r.schemaUrl))

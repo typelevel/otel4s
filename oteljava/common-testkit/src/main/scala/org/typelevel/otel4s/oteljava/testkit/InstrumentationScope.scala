@@ -19,14 +19,11 @@ package org.typelevel.otel4s.oteljava.testkit
 import cats.Hash
 import cats.Show
 import cats.syntax.show._
-import io.opentelemetry.sdk.common.{
-  InstrumentationScopeInfo => JInstrumentationScopeInfo
-}
+import io.opentelemetry.sdk.common.{InstrumentationScopeInfo => JInstrumentationScopeInfo}
 import org.typelevel.otel4s.Attributes
 import org.typelevel.otel4s.oteljava.AttributeConverters._
 
-/** A representation of the
-  * `io.opentelemetry.sdk.common.InstrumentationScopeInfo`.
+/** A representation of the `io.opentelemetry.sdk.common.InstrumentationScopeInfo`.
   */
 sealed trait InstrumentationScope {
 

@@ -53,13 +53,13 @@ trait Gens extends org.typelevel.otel4s.sdk.scalacheck.Gens {
     Gen.oneOf(InstrumentType.values)
 
   val synchronousInstrumentType: Gen[InstrumentType.Synchronous] =
-    Gen.oneOf(InstrumentType.values.collect {
-      case tpe: InstrumentType.Synchronous => tpe
+    Gen.oneOf(InstrumentType.values.collect { case tpe: InstrumentType.Synchronous =>
+      tpe
     })
 
   val asynchronousInstrumentType: Gen[InstrumentType.Asynchronous] =
-    Gen.oneOf(InstrumentType.values.collect {
-      case tpe: InstrumentType.Asynchronous => tpe
+    Gen.oneOf(InstrumentType.values.collect { case tpe: InstrumentType.Asynchronous =>
+      tpe
     })
 
   val synchronousInstrumentDescriptor: Gen[InstrumentDescriptor.Synchronous] =
@@ -86,8 +86,8 @@ trait Gens extends org.typelevel.otel4s.sdk.scalacheck.Gens {
         valueOpt: Option[String],
         f: InstrumentSelector.Builder => String => InstrumentSelector.Builder
     ): InstrumentSelector.Builder => InstrumentSelector.Builder =
-      valueOpt.fold((a: InstrumentSelector.Builder) => a) {
-        value => (a: InstrumentSelector.Builder) => f(a)(value)
+      valueOpt.fold((a: InstrumentSelector.Builder) => a) { value => (a: InstrumentSelector.Builder) =>
+        f(a)(value)
       }
 
     for {
@@ -205,12 +205,11 @@ trait Gens extends org.typelevel.otel4s.sdk.scalacheck.Gens {
         values: List[Double],
         boundaries: BucketBoundaries
     ): Vector[Long] =
-      values.foldLeft(Vector.fill(boundaries.length + 1)(0L)) {
-        case (acc, value) =>
-          val i = boundaries.boundaries.indexWhere(b => value <= b)
-          val idx = if (i == -1) boundaries.length else i
+      values.foldLeft(Vector.fill(boundaries.length + 1)(0L)) { case (acc, value) =>
+        val i = boundaries.boundaries.indexWhere(b => value <= b)
+        val idx = if (i == -1) boundaries.length else i
 
-          acc.updated(idx, acc(idx) + 1L)
+        acc.updated(idx, acc(idx) + 1L)
       }
 
     // retains last exemplar for each bucket

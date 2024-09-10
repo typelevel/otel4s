@@ -21,13 +21,11 @@ import org.typelevel.otel4s.AttributeKey
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/attributes/experimental/SemanticAttributes.scala.j2
 object DestinationExperimentalAttributes {
 
-  /** Destination address - domain name if available without reverse DNS lookup;
-    * otherwise, IP address or Unix domain socket name. <p>
+  /** Destination address - domain name if available without reverse DNS lookup; otherwise, IP address or Unix domain
+    * socket name. <p>
     * @note
-    *   <p> When observed from the source side, and when communicating through
-    *   an intermediary, `destination.address` SHOULD represent the destination
-    *   address behind any intermediaries, for example proxies, if it's
-    *   available.
+    *   <p> When observed from the source side, and when communicating through an intermediary, `destination.address`
+    *   SHOULD represent the destination address behind any intermediaries, for example proxies, if it's available.
     */
   val DestinationAddress: AttributeKey[String] =
     AttributeKey("destination.address")

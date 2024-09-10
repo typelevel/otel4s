@@ -29,8 +29,7 @@ object KleisliExample extends IOApp.Simple {
   def work[F[_]: Async: Tracer]: F[Unit] =
     Tracer[F].span("work").surround(Async[F].delay(println("I'm working")))
 
-  private def tracerResource[F[_]: Async: LocalContext]
-      : Resource[F, Tracer[F]] =
+  private def tracerResource[F[_]: Async: LocalContext]: Resource[F, Tracer[F]] =
     Resource
       .eval(Async[F].delay(GlobalOpenTelemetry.get))
       .map(OtelJava.local[F])

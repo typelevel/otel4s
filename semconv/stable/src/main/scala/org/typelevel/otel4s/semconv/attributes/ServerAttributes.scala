@@ -21,21 +21,18 @@ import org.typelevel.otel4s.AttributeKey
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/attributes/stable/SemanticAttributes.scala.j2
 object ServerAttributes {
 
-  /** Server domain name if available without reverse DNS lookup; otherwise, IP
-    * address or Unix domain socket name. <p>
+  /** Server domain name if available without reverse DNS lookup; otherwise, IP address or Unix domain socket name. <p>
     * @note
-    *   <p> When observed from the client side, and when communicating through
-    *   an intermediary, `server.address` SHOULD represent the server address
-    *   behind any intermediaries, for example proxies, if it's available.
+    *   <p> When observed from the client side, and when communicating through an intermediary, `server.address` SHOULD
+    *   represent the server address behind any intermediaries, for example proxies, if it's available.
     */
   val ServerAddress: AttributeKey[String] =
     AttributeKey("server.address")
 
   /** Server port number. <p>
     * @note
-    *   <p> When observed from the client side, and when communicating through
-    *   an intermediary, `server.port` SHOULD represent the server port behind
-    *   any intermediaries, for example proxies, if it's available.
+    *   <p> When observed from the client side, and when communicating through an intermediary, `server.port` SHOULD
+    *   represent the server port behind any intermediaries, for example proxies, if it's available.
     */
   val ServerPort: AttributeKey[Long] =
     AttributeKey("server.port")

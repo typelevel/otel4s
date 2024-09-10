@@ -135,9 +135,7 @@ class OpenTelemetrySdkSuite extends CatsEffectSuite {
 
     OpenTelemetrySdk
       .autoConfigured[IO](
-        _.withConfig(config).addTracerProviderCustomizer((t, _) =>
-          t.withSampler(sampler)
-        )
+        _.withConfig(config).addTracerProviderCustomizer((t, _) => t.withSampler(sampler))
       )
       .use { traces =>
         IO(assertEquals(traces.toString, sdkToString(sampler = sampler)))
@@ -314,9 +312,7 @@ class OpenTelemetrySdkSuite extends CatsEffectSuite {
 
     OpenTelemetrySdk
       .autoConfigured[IO](
-        _.withConfig(config).addMeterProviderCustomizer((t, _) =>
-          t.registerView(selector, view)
-        )
+        _.withConfig(config).addMeterProviderCustomizer((t, _) => t.registerView(selector, view))
       )
       .use { traces =>
         IO(

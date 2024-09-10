@@ -39,9 +39,7 @@ import org.typelevel.otel4s.sdk.test.InMemoryConsole
 
 import scala.concurrent.duration._
 
-class SdkObservableMeasurementSuite
-    extends CatsEffectSuite
-    with ScalaCheckEffectSuite {
+class SdkObservableMeasurementSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
 
   test("log an error when reader is unset") {
     PropF.forAllF(

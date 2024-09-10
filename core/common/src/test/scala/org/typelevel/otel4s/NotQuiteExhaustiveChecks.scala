@@ -20,8 +20,8 @@ import cats.laws.discipline.ExhaustiveCheck
 import cats.syntax.traverse._
 import org.scalacheck.util.Buildable
 
-/** [[cats.laws.discipline.ExhaustiveCheck]] instances that aren't actually
-  * exhaustive but are needed for laws testing of `TextMap` types.
+/** [[cats.laws.discipline.ExhaustiveCheck]] instances that aren't actually exhaustive but are needed for laws testing
+  * of `TextMap` types.
   */
 object NotQuiteExhaustiveChecks {
   implicit val notQuiteExhaustiveCheckString: ExhaustiveCheck[String] =

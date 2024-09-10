@@ -374,8 +374,7 @@ class SdkSpanBackendSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
               )
               .appendAll(attributes),
             events = LimitedData.events(spanLimits.maxNumberOfEvents),
-            links =
-              LimitedData.links(spanLimits.maxNumberOfLinks).appendAll(links),
+            links = LimitedData.links(spanLimits.maxNumberOfLinks).appendAll(links),
             instrumentationScope = scope,
             resource = Defaults.resource
           )

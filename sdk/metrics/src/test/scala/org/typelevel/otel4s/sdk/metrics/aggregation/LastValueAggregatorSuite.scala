@@ -39,9 +39,7 @@ import org.typelevel.otel4s.sdk.metrics.scalacheck.Gens
 
 import scala.concurrent.duration._
 
-class LastValueAggregatorSuite
-    extends CatsEffectSuite
-    with ScalaCheckEffectSuite {
+class LastValueAggregatorSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
 
   private val traceContextKey = Context.Key
     .unique[SyncIO, TraceContext]("trace-context")

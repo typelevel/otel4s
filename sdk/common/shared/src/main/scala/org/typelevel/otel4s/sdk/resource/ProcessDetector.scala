@@ -18,8 +18,7 @@ package org.typelevel.otel4s.sdk.resource
 
 import org.typelevel.otel4s.AttributeKey
 
-/** Detects process-specific parameters such as executable name, executable
-  * path, PID, and so on.
+/** Detects process-specific parameters such as executable name, executable path, PID, and so on.
   *
   * @see
   *   [[https://opentelemetry.io/docs/specs/semconv/resource/process/]]

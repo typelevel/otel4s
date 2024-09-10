@@ -178,8 +178,7 @@ object AWSXRayPropagator {
 
   /** Returns an instance of the AWSXRayPropagator.
     *
-    * The propagator utilizes `X-Amzn-Trace-Id` header to extract and inject
-    * tracing details.
+    * The propagator utilizes `X-Amzn-Trace-Id` header to extract and inject tracing details.
     *
     * An example of the AWS X-Ray Tracing Header:
     * {{{
@@ -198,8 +197,8 @@ object AWSXRayPropagator {
     */
   def apply(): TextMapPropagator[Context] = Propagator
 
-  /** Returns the named configurer `xray`. You can use it to dynamically enable
-    * AWS X-Ray propagator via environment variable or system properties.
+  /** Returns the named configurer `xray`. You can use it to dynamically enable AWS X-Ray propagator via environment
+    * variable or system properties.
     *
     * @example
     *   {{{

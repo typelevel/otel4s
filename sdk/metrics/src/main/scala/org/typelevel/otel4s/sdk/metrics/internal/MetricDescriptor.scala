@@ -58,8 +58,7 @@ private[metrics] sealed trait MetricDescriptor {
 
 private[metrics] object MetricDescriptor {
 
-  /** Creates a [[MetricDescriptor]] using the given `view` and
-    * `instrumentDescriptor`.
+  /** Creates a [[MetricDescriptor]] using the given `view` and `instrumentDescriptor`.
     *
     * The `name` and `description` from the `view` are prioritized.
     *

@@ -62,30 +62,29 @@ object TracingExample extends IOApp.Simple {
     OtelJava
       .autoConfigured[IO]()
       .evalMap { (otel4s: Otel4s[IO]) =>
-        otel4s.tracerProvider.get("example").flatMap {
-          implicit tracer: Tracer[IO] =>
-            tracer
-              .span("resource")
-              .resource
-              .use { case SpanOps.Res(span, trace) =>
-                trace {
-                  for {
-                    _ <- tracer.span("acquire").surround(IO.sleep(50.millis))
-                    _ <- tracer.span("use").surround {
-                      Work[IO].request(
-                        Map(
-                          "X-B3-TraceId" -> "80f198ee56343ba864fe8b2a57d3eff7",
-                          "X-B3-ParentSpanId" -> "05e3ac9a4f6e3b90",
-                          "X-B3-SpanId" -> "e457b5a2e4d86bd1",
-                          "X-B3-Sampled" -> "1"
-                        )
+        otel4s.tracerProvider.get("example").flatMap { implicit tracer: Tracer[IO] =>
+          tracer
+            .span("resource")
+            .resource
+            .use { case SpanOps.Res(span, trace) =>
+              trace {
+                for {
+                  _ <- tracer.span("acquire").surround(IO.sleep(50.millis))
+                  _ <- tracer.span("use").surround {
+                    Work[IO].request(
+                      Map(
+                        "X-B3-TraceId" -> "80f198ee56343ba864fe8b2a57d3eff7",
+                        "X-B3-ParentSpanId" -> "05e3ac9a4f6e3b90",
+                        "X-B3-SpanId" -> "e457b5a2e4d86bd1",
+                        "X-B3-Sampled" -> "1"
                       )
-                    }
-                    _ <- span.addEvent("event")
-                    _ <- tracer.span("release").surround(IO.sleep(100.millis))
-                  } yield ()
-                }
+                    )
+                  }
+                  _ <- span.addEvent("event")
+                  _ <- tracer.span("release").surround(IO.sleep(100.millis))
+                } yield ()
               }
+            }
         }
       }
       .use_

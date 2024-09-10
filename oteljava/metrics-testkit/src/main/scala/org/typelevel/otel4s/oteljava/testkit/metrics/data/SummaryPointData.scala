@@ -23,8 +23,7 @@ import io.opentelemetry.sdk.metrics.data.{SummaryPointData => JSummaryPointData}
 
 import scala.jdk.CollectionConverters._
 
-/** A representation of the
-  * `io.opentelemetry.sdk.metrics.data.SummaryPointData`.
+/** A representation of the `io.opentelemetry.sdk.metrics.data.SummaryPointData`.
   */
 sealed trait SummaryPointData {
 

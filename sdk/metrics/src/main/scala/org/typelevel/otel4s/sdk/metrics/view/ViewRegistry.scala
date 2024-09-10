@@ -53,9 +53,7 @@ private[metrics] final class ViewRegistry[F[_]: Monad: Console](
   ): Boolean = {
     selector.instrumentType.forall(tpe => descriptor.instrumentType == tpe) &&
     selector.instrumentUnit.forall(unit => descriptor.unit.contains(unit)) &&
-    selector.instrumentName.forall(n =>
-      ViewRegistry.toGlobPattern(n)(descriptor.name.toString)
-    ) &&
+    selector.instrumentName.forall(n => ViewRegistry.toGlobPattern(n)(descriptor.name.toString)) &&
     selector.meterName.forall(n => n == meterScope.name) &&
     selector.meterVersion.forall(v => meterScope.version.contains(v)) &&
     selector.meterSchemaUrl.forall(s => meterScope.schemaUrl.contains(s))
@@ -85,8 +83,7 @@ private[metrics] object ViewRegistry {
       globPattern.equalsIgnoreCase(s)
     }
 
-  /** Transforms the `input` to a regex by converting `*` to `.*`, `?` to `.`,
-    * and escaping other characters.
+  /** Transforms the `input` to a regex by converting `*` to `.*`, `?` to `.`, and escaping other characters.
     */
   private def makePattern(input: String): Pattern = {
     def quote(str: String): String =

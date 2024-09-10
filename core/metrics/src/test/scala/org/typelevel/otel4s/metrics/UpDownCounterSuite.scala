@@ -117,8 +117,7 @@ object UpDownCounterSuite {
 
   final case class Record[A](value: A, attributes: Attributes)
 
-  class InMemoryUpDownCounter(ref: Ref[IO, List[Record[Long]]])
-      extends UpDownCounter[IO, Long] {
+  class InMemoryUpDownCounter(ref: Ref[IO, List[Record[Long]]]) extends UpDownCounter[IO, Long] {
 
     val backend: UpDownCounter.Backend[IO, Long] =
       new UpDownCounter.Backend[IO, Long] {

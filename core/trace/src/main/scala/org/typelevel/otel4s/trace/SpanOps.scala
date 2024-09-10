@@ -24,14 +24,13 @@ import cats.~>
 
 trait SpanOps[F[_]] {
 
-  /** Creates a [[Span]]. The span requires to be ended '''explicitly''' by
-    * invoking `end`.
+  /** Creates a [[Span]]. The span requires to be ended '''explicitly''' by invoking `end`.
     *
-    * This strategy can be used when it's necessary to end a span outside of the
-    * scope (e.g. async callback). Make sure the span is ended properly.
+    * This strategy can be used when it's necessary to end a span outside of the scope (e.g. async callback). Make sure
+    * the span is ended properly.
     *
-    * If the start timestamp is not configured explicitly in a builder, the
-    * `Clock[F].realTime` is used to determine the timestamp.
+    * If the start timestamp is not configured explicitly in a builder, the `Clock[F].realTime` is used to determine the
+    * timestamp.
     *
     * Leaked span:
     * {{{
@@ -56,15 +55,14 @@ trait SpanOps[F[_]] {
     */
   def startUnmanaged: F[Span[F]]
 
-  /** Creates a [[Span]] and a [[cats.effect.kernel.Resource Resource]] for
-    * using it. Unlike [[startUnmanaged]], the lifecycle of the span is fully
-    * managed.
+  /** Creates a [[Span]] and a [[cats.effect.kernel.Resource Resource]] for using it. Unlike [[startUnmanaged]], the
+    * lifecycle of the span is fully managed.
     *
-    * The finalization strategy is determined by [[SpanFinalizer.Strategy]]. By
-    * default, the abnormal termination (error, cancelation) is recorded.
+    * The finalization strategy is determined by [[SpanFinalizer.Strategy]]. By default, the abnormal termination
+    * (error, cancelation) is recorded.
     *
-    * If the start timestamp is not configured explicitly in a builder, the
-    * `Clock[F].realTime` is used to determine the timestamp.
+    * If the start timestamp is not configured explicitly in a builder, the `Clock[F].realTime` is used to determine the
+    * timestamp.
     *
     * `Clock[F].realTime` is always used as the end timestamp.
     *
@@ -89,15 +87,14 @@ trait SpanOps[F[_]] {
     */
   def resource: Resource[F, SpanOps.Res[F]]
 
-  /** Creates and uses a [[Span]]. Unlike [[startUnmanaged]], the lifecycle of
-    * the span is fully managed. The span is started and passed to `f` to
-    * produce the effect, and ended when the effect completes.
+  /** Creates and uses a [[Span]]. Unlike [[startUnmanaged]], the lifecycle of the span is fully managed. The span is
+    * started and passed to `f` to produce the effect, and ended when the effect completes.
     *
-    * The finalization strategy is determined by [[SpanFinalizer.Strategy]]. By
-    * default, the abnormal termination (error, cancelation) is recorded.
+    * The finalization strategy is determined by [[SpanFinalizer.Strategy]]. By default, the abnormal termination
+    * (error, cancelation) is recorded.
     *
-    * If the start timestamp is not configured explicitly in a builder, the
-    * `Clock[F].realTime` is used to determine the timestamp.
+    * If the start timestamp is not configured explicitly in a builder, the `Clock[F].realTime` is used to determine the
+    * timestamp.
     *
     * `Clock[F].realTime` is always used as the end timestamp.
     *
@@ -128,8 +125,7 @@ trait SpanOps[F[_]] {
     */
   def use_ : F[Unit]
 
-  /** Starts a span, runs `fa` and ends the span once `fa` terminates, fails or
-    * gets interrupted.
+  /** Starts a span, runs `fa` and ends the span once `fa` terminates, fails or gets interrupted.
     *
     * A shortcut for:
     * {{{
@@ -143,8 +139,7 @@ trait SpanOps[F[_]] {
     */
   final def surround[A](fa: F[A]): F[A] = use(_ => fa)
 
-  /** Modify the context `F` using an implicit [[KindTransformer]] from `F` to
-    * `G`.
+  /** Modify the context `F` using an implicit [[KindTransformer]] from `F` to `G`.
     */
   def mapK[G[_]: MonadCancelThrow](implicit
       F: MonadCancelThrow[F],
@@ -155,34 +150,29 @@ trait SpanOps[F[_]] {
 
 object SpanOps {
 
-  /** The span and associated natural transformation [[`trace`]] provided and
-    * managed by a call to [[SpanOps.resource]]. In order to trace something in
-    * the span, it must be applied to [[`trace`]].
+  /** The span and associated natural transformation [[`trace`]] provided and managed by a call to [[SpanOps.resource]].
+    * In order to trace something in the span, it must be applied to [[`trace`]].
     */
   sealed trait Res[F[_]] {
 
     /** The managed span. */
     def span: Span[F]
 
-    /** A natural transformation that traces everything applied to it in the
-      * span. Note: anything not applied to this
+    /** A natural transformation that traces everything applied to it in the span. Note: anything not applied to this
       * [[cats.arrow.FunctionK FunctionK]] will not be traced.
       */
     def trace: F ~> F
 
-    /** Modify the context `F` using an implicit [[KindTransformer]] from `F` to
-      * `G`.
+    /** Modify the context `F` using an implicit [[KindTransformer]] from `F` to `G`.
       */
     def mapK[G[_]](implicit kt: KindTransformer[F, G]): Res[G] =
       Res(span.mapK[G], kt.liftFunctionK(trace))
   }
 
   object Res {
-    private[this] final case class Impl[F[_]](span: Span[F], trace: F ~> F)
-        extends Res[F]
+    private[this] final case class Impl[F[_]](span: Span[F], trace: F ~> F) extends Res[F]
 
-    /** Creates a [[Res]] from a managed span and a natural transformation for
-      * tracing operations in the span.
+    /** Creates a [[Res]] from a managed span and a natural transformation for tracing operations in the span.
       */
     def apply[F[_]](span: Span[F], trace: F ~> F): Res[F] =
       Impl(span, trace)

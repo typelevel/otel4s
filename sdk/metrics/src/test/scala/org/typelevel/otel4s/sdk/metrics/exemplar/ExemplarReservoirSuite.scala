@@ -32,9 +32,7 @@ import org.typelevel.otel4s.sdk.metrics.scalacheck.Arbitraries._
 
 import scala.concurrent.duration._
 
-class ExemplarReservoirSuite
-    extends CatsEffectSuite
-    with ScalaCheckEffectSuite {
+class ExemplarReservoirSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
 
   private val traceContextKey = Context.Key
     .unique[SyncIO, TraceContext]("trace-context")

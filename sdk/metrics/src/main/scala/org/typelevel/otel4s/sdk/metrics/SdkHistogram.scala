@@ -40,8 +40,7 @@ import org.typelevel.otel4s.sdk.metrics.internal.storage.MetricStorage
 import scala.collection.immutable
 import scala.concurrent.duration.TimeUnit
 
-/** A synchronous instrument that can be used to report arbitrary values that
-  * are likely to be statistically meaningful.
+/** A synchronous instrument that can be used to report arbitrary values that are likely to be statistically meaningful.
   *
   * @see
   *   [[https://opentelemetry.io/docs/specs/otel/metrics/api/#histogram]]

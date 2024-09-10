@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package org.typelevel.otel4s.semconv.attributes
+package org.typelevel.otel4s
+package semconv
+package attributes
 
-import org.typelevel.otel4s.AttributeKey
-
-// DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/attributes/stable/SemanticAttributes.scala.j2
+// DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/attributes/SemanticAttributes.scala.j2
 object TelemetryAttributes {
 
   /** The language of the telemetry SDK.

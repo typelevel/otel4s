@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package org.typelevel.otel4s.semconv.attributes
+package org.typelevel.otel4s
+package semconv
+package attributes
 
-import org.typelevel.otel4s.AttributeKey
-
-// DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/attributes/stable/SemanticAttributes.scala.j2
+// DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/attributes/SemanticAttributes.scala.j2
 object UrlAttributes {
 
   /** The <a href="https://www.rfc-editor.org/rfc/rfc3986#section-3.5">URI

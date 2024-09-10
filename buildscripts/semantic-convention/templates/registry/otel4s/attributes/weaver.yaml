@@ -1,8 +1,9 @@
 params:
   excluded_namespaces: ["ios", "aspnetcore", "signalr"]
+  excluded_stability: ["experimental", "deprecated"] # stable - ["experimental", "deprecated"]; experimental - []
   excluded_attributes: ["messaging.client_id"]
-  packages:
-    stable: "org.typelevel.otel4s.semconv.attributes"
+  object_prefix: "" # stable - "", experimental - "Experimental"
+  experimental: false # stable - false, experimental - true
 comment_formats:
   scaladoc:
     format: html
@@ -21,11 +22,11 @@ templates:
     filter: > 
       semconv_grouped_attributes({
         "exclude_root_namespace": $excluded_namespaces,
-        "exclude_stability": ["experimental", "deprecated"],
+        "exclude_stability": $excluded_stability,
         "exclude_deprecated": false
       })
     application_mode: each
-    file_name: "{{ctx.root_namespace | pascal_case}}Attributes.scala"
+    file_name: "{{ctx.root_namespace | pascal_case}}{{params.object_prefix}}Attributes.scala"
 text_maps:
   scala_key_type:
     int: Long

@@ -25,9 +25,17 @@ object SemanticConventionsGenerator {
       else
         s"$rootDir/semconv/stable/src/main/scala/org/typelevel/otel4s/semconv/attributes"
 
-    val target =
-      if (experimental) "otel4s/attributes/experimental"
-      else "otel4s/attributes/stable"
+    val target = "otel4s/attributes"
+
+    val params: List[String] =
+      if (experimental)
+        List(
+          "--param=excluded_stability=[]",
+          "--param=object_prefix=Experimental",
+          "--param=experimental=true"
+        )
+      else
+        Nil
 
     val buildDir = rootDir / "buildscripts" / "semantic-convention"
     val zip = buildDir / "semantic-conventions.zip"
@@ -53,9 +61,7 @@ object SemanticConventionsGenerator {
       "registry", "generate",
       "--registry=/home/weaver/source",
       "--templates=/home/weaver/templates",
-      target,
-      "/home/weaver/target/"
-    )
+    ) ++ params ++ List(target, "/home/weaver/target/")
     // format: on
 
     Process(command, rootDir).!

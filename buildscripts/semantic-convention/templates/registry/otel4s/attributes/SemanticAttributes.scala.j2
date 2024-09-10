@@ -2,7 +2,11 @@
     {{ attribute.type | instantiated_type | map_text("scala_key_type") }}
 {%- endmacro %}
 
-{%- set object_name = ctx.root_namespace | pascal_case ~ "Attributes" -%}
+{%- macro stable_ref(attribute) -%}
+    org.typelevel.otel4s.semconv.attributes.{{ ctx.root_namespace | pascal_case }}Attributes.{{ attribute.name | pascal_case }}
+{%- endmacro -%}
+
+{%- set object_name = ctx.root_namespace | pascal_case ~ params.object_prefix ~ "Attributes" -%}
 
 /*
  * Copyright 2023 Typelevel
@@ -20,32 +24,46 @@
  * limitations under the License.
  */
 
-package {{ params.packages.stable }}
+package org.typelevel.otel4s
+package semconv
+{%- if params.experimental == true %}
+package experimental.attributes
+{%- else %}
+package attributes
+{%- endif %}
 
-import org.typelevel.otel4s.AttributeKey
-
-// DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/attributes/stable/SemanticAttributes.scala.j2
+// DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/attributes/SemanticAttributes.scala.j2
 object {{ object_name }} {
 
-  {% for attribute in ctx.attributes | rejectattr("name", "in", params.excluded_attributes) %}{% if attribute is stable %}
+  {% for attribute in ctx.attributes | rejectattr("name", "in", params.excluded_attributes) %}{% if params.experimental == true or attribute is stable %}
   {{ [attribute.brief | replace('$', "$$"), concat_if("\n\n@note\n\n", attribute.note)] | comment(indent=2) }}
   {%- if attribute is deprecated %}
   @deprecated("{{ attribute.deprecated | replace('"', "'") | trim }}", "")
+  {%- elif params.experimental == true and attribute is stable %}
+  @deprecated(
+    "use `{{ stable_ref(attribute) }}` instead.",
+    ""
+  )
   {%- endif %}
   val {{ attribute.name | pascal_case }}: AttributeKey[{{to_scala_key_type(attribute)}}] =
     AttributeKey("{{attribute.name}}")
   {% endif %}{% endfor %}
 
-  {% for attribute in ctx.attributes %}{% if attribute is enum and attribute is stable %}
+  {% for attribute in ctx.attributes %}{% if attribute is enum and (params.experimental == true or attribute is stable) %}
   /**
     * Values for [[{{ attribute.name | pascal_case }}]].
     */
   {%- if attribute is deprecated %}
   @deprecated("{{ attribute.deprecated | replace('"', "'") | trim }}", "")
+  {%- elif params.experimental == true and attribute is stable %}
+  @deprecated(
+    "use `{{ stable_ref(attribute) }}` instead.",
+    ""
+  )
   {%- endif %}
   {%- set class_name = (attribute.name | pascal_case) ~ "Value" %}
   abstract class {{ class_name }}(val value: {{ to_scala_key_type(attribute) }})
-  {%- if attribute is deprecated %}
+  {%- if (attribute is deprecated) or (params.experimental == true and attribute is stable) %}
   @annotation.nowarn("cat=deprecation")
   {%- endif  %}
   object {{ class_name }} {

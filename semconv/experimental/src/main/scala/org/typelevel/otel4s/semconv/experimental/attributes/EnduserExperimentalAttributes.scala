@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package org.typelevel.otel4s.semconv.experimental.attributes
+package org.typelevel.otel4s
+package semconv
+package experimental.attributes
 
-import org.typelevel.otel4s.AttributeKey
-
-// DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/attributes/experimental/SemanticAttributes.scala.j2
+// DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/attributes/SemanticAttributes.scala.j2
 object EnduserExperimentalAttributes {
 
   /** Deprecated, use `user.id` instead.

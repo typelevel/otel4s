@@ -16,6 +16,7 @@
 
 package org.typelevel.otel4s
 package semconv
+package experimental
 package metrics
 
 import org.typelevel.otel4s.metrics._
@@ -66,9 +67,7 @@ object DnsExperimentalMetrics {
             "no_recovery",
             "java.net.UnknownHostException",
           ),
-          Requirement.conditionallyRequired(
-            "if and only if an error has occurred."
-          ),
+          Requirement.conditionallyRequired("if and only if an error has occurred."),
           Stability.stable
         )
 
@@ -79,9 +78,7 @@ object DnsExperimentalMetrics {
         )
     }
 
-    def create[F[_]: Meter](
-        boundaries: BucketBoundaries
-    ): F[Histogram[F, Double]] =
+    def create[F[_]: Meter](boundaries: BucketBoundaries): F[Histogram[F, Double]] =
       Meter[F]
         .histogram[Double](Name)
         .withDescription(Description)

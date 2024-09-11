@@ -56,9 +56,7 @@ object HttpMetrics {
             "server_certificate_invalid",
             "500",
           ),
-          Requirement.conditionallyRequired(
-            "If request has ended with an error."
-          ),
+          Requirement.conditionallyRequired("If request has ended with an error."),
           Stability.stable
         )
 
@@ -99,9 +97,7 @@ object HttpMetrics {
           List(
             200,
           ),
-          Requirement.conditionallyRequired(
-            "If and only if one was received/sent."
-          ),
+          Requirement.conditionallyRequired("If and only if one was received/sent."),
           Stability.stable
         )
 
@@ -116,9 +112,7 @@ object HttpMetrics {
             "http",
             "spdy",
           ),
-          Requirement.conditionallyRequired(
-            "If not `http` and `network.protocol.version` is set."
-          ),
+          Requirement.conditionallyRequired("If not `http` and `network.protocol.version` is set."),
           Stability.stable
         )
 
@@ -204,9 +198,7 @@ object HttpMetrics {
         )
     }
 
-    def create[F[_]: Meter](
-        boundaries: BucketBoundaries
-    ): F[Histogram[F, Double]] =
+    def create[F[_]: Meter](boundaries: BucketBoundaries): F[Histogram[F, Double]] =
       Meter[F]
         .histogram[Double](Name)
         .withDescription(Description)
@@ -249,9 +241,7 @@ object HttpMetrics {
             "server_certificate_invalid",
             "500",
           ),
-          Requirement.conditionallyRequired(
-            "If request has ended with an error."
-          ),
+          Requirement.conditionallyRequired("If request has ended with an error."),
           Stability.stable
         )
 
@@ -292,9 +282,7 @@ object HttpMetrics {
           List(
             200,
           ),
-          Requirement.conditionallyRequired(
-            "If and only if one was received/sent."
-          ),
+          Requirement.conditionallyRequired("If and only if one was received/sent."),
           Stability.stable
         )
 
@@ -326,9 +314,7 @@ object HttpMetrics {
             "http",
             "spdy",
           ),
-          Requirement.conditionallyRequired(
-            "If not `http` and `network.protocol.version` is set."
-          ),
+          Requirement.conditionallyRequired("If not `http` and `network.protocol.version` is set."),
           Stability.stable
         )
 
@@ -422,9 +408,7 @@ object HttpMetrics {
         )
     }
 
-    def create[F[_]: Meter](
-        boundaries: BucketBoundaries
-    ): F[Histogram[F, Double]] =
+    def create[F[_]: Meter](boundaries: BucketBoundaries): F[Histogram[F, Double]] =
       Meter[F]
         .histogram[Double](Name)
         .withDescription(Description)

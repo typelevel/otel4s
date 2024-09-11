@@ -16,6 +16,7 @@
 
 package org.typelevel.otel4s
 package semconv
+package experimental
 package metrics
 
 import org.typelevel.otel4s.metrics._
@@ -244,8 +245,7 @@ object JvmExperimentalMetrics {
   object CpuCount {
 
     val Name = "jvm.cpu.count"
-    val Description =
-      "Number of processors available to the Java virtual machine."
+    val Description = "Number of processors available to the Java virtual machine."
     val Unit = "{cpu}"
 
     def create[F[_]: Meter]: F[UpDownCounter[F, Long]] =
@@ -266,8 +266,7 @@ object JvmExperimentalMetrics {
   object CpuRecentUtilization {
 
     val Name = "jvm.cpu.recent_utilization"
-    val Description =
-      "Recent CPU utilization for the process as reported by the JVM."
+    val Description = "Recent CPU utilization for the process as reported by the JVM."
     val Unit = "1"
 
     def create[F[_]: Meter]: F[Gauge[F, Long]] =
@@ -345,9 +344,7 @@ object JvmExperimentalMetrics {
         )
     }
 
-    def create[F[_]: Meter](
-        boundaries: BucketBoundaries
-    ): F[Histogram[F, Double]] =
+    def create[F[_]: Meter](boundaries: BucketBoundaries): F[Histogram[F, Double]] =
       Meter[F]
         .histogram[Double](Name)
         .withDescription(Description)
@@ -586,8 +583,7 @@ object JvmExperimentalMetrics {
   object MemoryUsedAfterLastGc {
 
     val Name = "jvm.memory.used_after_last_gc"
-    val Description =
-      "Measure of memory used, as measured after the most recent garbage collection event on this pool."
+    val Description = "Measure of memory used, as measured after the most recent garbage collection event on this pool."
     val Unit = "By"
 
     object AttributeSpecs {
@@ -648,8 +644,7 @@ object JvmExperimentalMetrics {
   object SystemCpuLoad1m {
 
     val Name = "jvm.system.cpu.load_1m"
-    val Description =
-      "Average CPU load of the whole system for the last minute as reported by the JVM."
+    val Description = "Average CPU load of the whole system for the last minute as reported by the JVM."
     val Unit = "{run_queue_item}"
 
     def create[F[_]: Meter]: F[Gauge[F, Long]] =
@@ -670,8 +665,7 @@ object JvmExperimentalMetrics {
   object SystemCpuUtilization {
 
     val Name = "jvm.system.cpu.utilization"
-    val Description =
-      "Recent CPU utilization for the whole system as reported by the JVM."
+    val Description = "Recent CPU utilization for the whole system as reported by the JVM."
     val Unit = "1"
 
     def create[F[_]: Meter]: F[Gauge[F, Long]] =

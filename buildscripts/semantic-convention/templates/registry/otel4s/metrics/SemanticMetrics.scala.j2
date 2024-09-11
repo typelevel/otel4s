@@ -72,7 +72,12 @@
 
 package org.typelevel.otel4s
 package semconv
+{%- if params.experimental == true %}
+package experimental
 package metrics
+{%- else %}
+package metrics
+{%- endif %}
 
 import org.typelevel.otel4s.metrics._
 

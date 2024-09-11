@@ -16,6 +16,7 @@
 
 package org.typelevel.otel4s
 package semconv
+package experimental
 package metrics
 
 import org.typelevel.otel4s.metrics._
@@ -28,8 +29,7 @@ object DbExperimentalMetrics {
   object ClientConnectionCount {
 
     val Name = "db.client.connection.count"
-    val Description =
-      "The number of connections that are currently in state described by the `state` attribute"
+    val Description = "The number of connections that are currently in state described by the `state` attribute"
     val Unit = "{connection}"
 
     object AttributeSpecs {
@@ -110,9 +110,7 @@ object DbExperimentalMetrics {
         )
     }
 
-    def create[F[_]: Meter](
-        boundaries: BucketBoundaries
-    ): F[Histogram[F, Double]] =
+    def create[F[_]: Meter](boundaries: BucketBoundaries): F[Histogram[F, Double]] =
       Meter[F]
         .histogram[Double](Name)
         .withDescription(Description)
@@ -250,8 +248,7 @@ object DbExperimentalMetrics {
   object ClientConnectionPendingRequests {
 
     val Name = "db.client.connection.pending_requests"
-    val Description =
-      "The number of pending requests for an open connection, cumulative for the entire pool"
+    val Description = "The number of pending requests for an open connection, cumulative for the entire pool"
     val Unit = "{request}"
 
     object AttributeSpecs {
@@ -292,8 +289,7 @@ object DbExperimentalMetrics {
   object ClientConnectionTimeouts {
 
     val Name = "db.client.connection.timeouts"
-    val Description =
-      "The number of connection timeouts that have occurred trying to obtain a connection from the pool"
+    val Description = "The number of connection timeouts that have occurred trying to obtain a connection from the pool"
     val Unit = "{timeout}"
 
     object AttributeSpecs {
@@ -334,8 +330,7 @@ object DbExperimentalMetrics {
   object ClientConnectionUseTime {
 
     val Name = "db.client.connection.use_time"
-    val Description =
-      "The time between borrowing a connection and returning it to the pool"
+    val Description = "The time between borrowing a connection and returning it to the pool"
     val Unit = "s"
 
     object AttributeSpecs {
@@ -362,9 +357,7 @@ object DbExperimentalMetrics {
         )
     }
 
-    def create[F[_]: Meter](
-        boundaries: BucketBoundaries
-    ): F[Histogram[F, Double]] =
+    def create[F[_]: Meter](boundaries: BucketBoundaries): F[Histogram[F, Double]] =
       Meter[F]
         .histogram[Double](Name)
         .withDescription(Description)
@@ -379,8 +372,7 @@ object DbExperimentalMetrics {
   object ClientConnectionWaitTime {
 
     val Name = "db.client.connection.wait_time"
-    val Description =
-      "The time it took to obtain an open connection from the pool"
+    val Description = "The time it took to obtain an open connection from the pool"
     val Unit = "s"
 
     object AttributeSpecs {
@@ -407,9 +399,7 @@ object DbExperimentalMetrics {
         )
     }
 
-    def create[F[_]: Meter](
-        boundaries: BucketBoundaries
-    ): F[Histogram[F, Double]] =
+    def create[F[_]: Meter](boundaries: BucketBoundaries): F[Histogram[F, Double]] =
       Meter[F]
         .histogram[Double](Name)
         .withDescription(Description)
@@ -421,10 +411,7 @@ object DbExperimentalMetrics {
 
   /** Deprecated, use `db.client.connection.create_time` instead. Note: the unit also changed from `ms` to `s`.
     */
-  @deprecated(
-    "Replaced by `db.client.connection.create_time`. Note: the unit also changed from `ms` to `s`.",
-    ""
-  )
+  @deprecated("Replaced by `db.client.connection.create_time`. Note: the unit also changed from `ms` to `s`.", "")
   object ClientConnectionsCreateTime {
 
     val Name = "db.client.connections.create_time"
@@ -453,9 +440,7 @@ object DbExperimentalMetrics {
         )
     }
 
-    def create[F[_]: Meter](
-        boundaries: BucketBoundaries
-    ): F[Histogram[F, Double]] =
+    def create[F[_]: Meter](boundaries: BucketBoundaries): F[Histogram[F, Double]] =
       Meter[F]
         .histogram[Double](Name)
         .withDescription(Description)
@@ -588,8 +573,7 @@ object DbExperimentalMetrics {
   object ClientConnectionsPendingRequests {
 
     val Name = "db.client.connections.pending_requests"
-    val Description =
-      "Deprecated, use `db.client.connection.pending_requests` instead."
+    val Description = "Deprecated, use `db.client.connection.pending_requests` instead."
     val Unit = "{request}"
 
     object AttributeSpecs {
@@ -716,10 +700,7 @@ object DbExperimentalMetrics {
 
   /** Deprecated, use `db.client.connection.use_time` instead. Note: the unit also changed from `ms` to `s`.
     */
-  @deprecated(
-    "Replaced by `db.client.connection.use_time`. Note: the unit also changed from `ms` to `s`.",
-    ""
-  )
+  @deprecated("Replaced by `db.client.connection.use_time`. Note: the unit also changed from `ms` to `s`.", "")
   object ClientConnectionsUseTime {
 
     val Name = "db.client.connections.use_time"
@@ -748,9 +729,7 @@ object DbExperimentalMetrics {
         )
     }
 
-    def create[F[_]: Meter](
-        boundaries: BucketBoundaries
-    ): F[Histogram[F, Double]] =
+    def create[F[_]: Meter](boundaries: BucketBoundaries): F[Histogram[F, Double]] =
       Meter[F]
         .histogram[Double](Name)
         .withDescription(Description)
@@ -762,10 +741,7 @@ object DbExperimentalMetrics {
 
   /** Deprecated, use `db.client.connection.wait_time` instead. Note: the unit also changed from `ms` to `s`.
     */
-  @deprecated(
-    "Replaced by `db.client.connection.wait_time`. Note: the unit also changed from `ms` to `s`.",
-    ""
-  )
+  @deprecated("Replaced by `db.client.connection.wait_time`. Note: the unit also changed from `ms` to `s`.", "")
   object ClientConnectionsWaitTime {
 
     val Name = "db.client.connections.wait_time"
@@ -794,9 +770,7 @@ object DbExperimentalMetrics {
         )
     }
 
-    def create[F[_]: Meter](
-        boundaries: BucketBoundaries
-    ): F[Histogram[F, Double]] =
+    def create[F[_]: Meter](boundaries: BucketBoundaries): F[Histogram[F, Double]] =
       Meter[F]
         .histogram[Double](Name)
         .withDescription(Description)
@@ -912,9 +886,7 @@ object DbExperimentalMetrics {
             "server_certificate_invalid",
             "500",
           ),
-          Requirement.conditionallyRequired(
-            "If and only if the operation failed."
-          ),
+          Requirement.conditionallyRequired("If and only if the operation failed."),
           Stability.stable
         )
 
@@ -944,9 +916,7 @@ object DbExperimentalMetrics {
           List(
             65123,
           ),
-          Requirement.recommended(
-            "If and only if `network.peer.address` is set."
-          ),
+          Requirement.recommended("If and only if `network.peer.address` is set."),
           Stability.stable
         )
 
@@ -1000,9 +970,7 @@ object DbExperimentalMetrics {
         )
     }
 
-    def create[F[_]: Meter](
-        boundaries: BucketBoundaries
-    ): F[Histogram[F, Double]] =
+    def create[F[_]: Meter](boundaries: BucketBoundaries): F[Histogram[F, Double]] =
       Meter[F]
         .histogram[Double](Name)
         .withDescription(Description)

@@ -21,14 +21,13 @@ package experimental.attributes
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/attributes/SemanticAttributes.scala.j2
 object OsExperimentalAttributes {
 
-  /** Unique identifier for a particular build or compilation of the operating
-    * system.
+  /** Unique identifier for a particular build or compilation of the operating system.
     */
   val OsBuildId: AttributeKey[String] =
     AttributeKey("os.build_id")
 
-  /** Human readable (not intended to be parsed) OS version information, like
-    * e.g. reported by `ver` or `lsb_release -a` commands.
+  /** Human readable (not intended to be parsed) OS version information, like e.g. reported by `ver` or `lsb_release -a`
+    * commands.
     */
   val OsDescription: AttributeKey[String] =
     AttributeKey("os.description")

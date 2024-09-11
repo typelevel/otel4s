@@ -26,20 +26,17 @@ object CloudExperimentalAttributes {
   val CloudAccountId: AttributeKey[String] =
     AttributeKey("cloud.account.id")
 
-  /** Cloud regions often have multiple, isolated locations known as zones to
-    * increase availability. Availability zone represents the zone where the
-    * resource is running. <p>
+  /** Cloud regions often have multiple, isolated locations known as zones to increase availability. Availability zone
+    * represents the zone where the resource is running. <p>
     * @note
-    *   <p> Availability zones are called "zones" on Alibaba Cloud and Google
-    *   Cloud.
+    *   <p> Availability zones are called "zones" on Alibaba Cloud and Google Cloud.
     */
   val CloudAvailabilityZone: AttributeKey[String] =
     AttributeKey("cloud.availability_zone")
 
   /** The cloud platform in use. <p>
     * @note
-    *   <p> The prefix of the service SHOULD match the one specified in
-    *   `cloud.provider`.
+    *   <p> The prefix of the service SHOULD match the one specified in `cloud.provider`.
     */
   val CloudPlatform: AttributeKey[String] =
     AttributeKey("cloud.platform")
@@ -51,51 +48,37 @@ object CloudExperimentalAttributes {
 
   /** The geographical region the resource is running. <p>
     * @note
-    *   <p> Refer to your provider's docs to see the available regions, for
-    *   example <a
-    *   href="https://www.alibabacloud.com/help/doc-detail/40654.htm">Alibaba
-    *   Cloud regions</a>, <a
-    *   href="https://aws.amazon.com/about-aws/global-infrastructure/regions_az/">AWS
-    *   regions</a>, <a
-    *   href="https://azure.microsoft.com/global-infrastructure/geographies/">Azure
-    *   regions</a>, <a href="https://cloud.google.com/about/locations">Google
-    *   Cloud regions</a>, or <a
-    *   href="https://www.tencentcloud.com/document/product/213/6091">Tencent
-    *   Cloud regions</a>.
+    *   <p> Refer to your provider's docs to see the available regions, for example <a
+    *   href="https://www.alibabacloud.com/help/doc-detail/40654.htm">Alibaba Cloud regions</a>, <a
+    *   href="https://aws.amazon.com/about-aws/global-infrastructure/regions_az/">AWS regions</a>, <a
+    *   href="https://azure.microsoft.com/global-infrastructure/geographies/">Azure regions</a>, <a
+    *   href="https://cloud.google.com/about/locations">Google Cloud regions</a>, or <a
+    *   href="https://www.tencentcloud.com/document/product/213/6091">Tencent Cloud regions</a>.
     */
   val CloudRegion: AttributeKey[String] =
     AttributeKey("cloud.region")
 
-  /** Cloud provider-specific native identifier of the monitored cloud resource
-    * (e.g. an <a
-    * href="https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html">ARN</a>
-    * on AWS, a <a
-    * href="https://learn.microsoft.com/rest/api/resources/resources/get-by-id">fully
-    * qualified resource ID</a> on Azure, a <a
-    * href="https://cloud.google.com/apis/design/resource_names#full_resource_name">full
-    * resource name</a> on GCP) <p>
+  /** Cloud provider-specific native identifier of the monitored cloud resource (e.g. an <a
+    * href="https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html">ARN</a> on AWS, a <a
+    * href="https://learn.microsoft.com/rest/api/resources/resources/get-by-id">fully qualified resource ID</a> on
+    * Azure, a <a href="https://cloud.google.com/apis/design/resource_names#full_resource_name">full resource name</a>
+    * on GCP) <p>
     * @note
-    *   <p> On some cloud providers, it may not be possible to determine the
-    *   full ID at startup, so it may be necessary to set `cloud.resource_id` as
-    *   a span attribute instead. <p> The exact value to use for
-    *   `cloud.resource_id` depends on the cloud provider. The following
-    *   well-known definitions MUST be used if you set this attribute and they
-    *   apply: <p> <ul> <li><strong>AWS Lambda:</strong> The function <a
-    *   href="https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html">ARN</a>.
-    *   Take care not to use the "invoked ARN" directly but replace any <a
-    *   href="https://docs.aws.amazon.com/lambda/latest/dg/configuration-aliases.html">alias
-    *   suffix</a> with the resolved function version, as the same runtime
-    *   instance may be invocable with multiple different aliases.
-    *   <li><strong>GCP:</strong> The <a
-    *   href="https://cloud.google.com/iam/docs/full-resource-names">URI of the
+    *   <p> On some cloud providers, it may not be possible to determine the full ID at startup, so it may be necessary
+    *   to set `cloud.resource_id` as a span attribute instead. <p> The exact value to use for `cloud.resource_id`
+    *   depends on the cloud provider. The following well-known definitions MUST be used if you set this attribute and
+    *   they apply: <p> <ul> <li><strong>AWS Lambda:</strong> The function <a
+    *   href="https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html">ARN</a>. Take care not to use
+    *   the "invoked ARN" directly but replace any <a
+    *   href="https://docs.aws.amazon.com/lambda/latest/dg/configuration-aliases.html">alias suffix</a> with the
+    *   resolved function version, as the same runtime instance may be invocable with multiple different aliases.
+    *   <li><strong>GCP:</strong> The <a href="https://cloud.google.com/iam/docs/full-resource-names">URI of the
     *   resource</a> <li><strong>Azure:</strong> The <a
-    *   href="https://docs.microsoft.com/rest/api/resources/resources/get-by-id">Fully
-    *   Qualified Resource ID</a> of the invoked function, <em>not</em> the
-    *   function app, having the form
+    *   href="https://docs.microsoft.com/rest/api/resources/resources/get-by-id">Fully Qualified Resource ID</a> of the
+    *   invoked function, <em>not</em> the function app, having the form
     *   `/subscriptions/<SUBSCIPTION_GUID>/resourceGroups/<RG>/providers/Microsoft.Web/sites/<FUNCAPP>/functions/<FUNC>`.
-    *   This means that a span attribute MUST be used, as an Azure function app
-    *   can host multiple functions that would usually share a TracerProvider.
-    *   </ul>
+    *   This means that a span attribute MUST be used, as an Azure function app can host multiple functions that would
+    *   usually share a TracerProvider. </ul>
     */
   val CloudResourceId: AttributeKey[String] =
     AttributeKey("cloud.resource_id")
@@ -115,8 +98,7 @@ object CloudExperimentalAttributes {
 
     /** Red Hat OpenShift on Alibaba Cloud
       */
-    case object AlibabaCloudOpenshift
-        extends CloudPlatformValue("alibaba_cloud_openshift")
+    case object AlibabaCloudOpenshift extends CloudPlatformValue("alibaba_cloud_openshift")
 
     /** AWS Elastic Compute Cloud
       */
@@ -136,8 +118,7 @@ object CloudExperimentalAttributes {
 
     /** AWS Elastic Beanstalk
       */
-    case object AwsElasticBeanstalk
-        extends CloudPlatformValue("aws_elastic_beanstalk")
+    case object AwsElasticBeanstalk extends CloudPlatformValue("aws_elastic_beanstalk")
 
     /** AWS App Runner
       */
@@ -153,13 +134,11 @@ object CloudExperimentalAttributes {
 
     /** Azure Container Apps
       */
-    case object AzureContainerApps
-        extends CloudPlatformValue("azure_container_apps")
+    case object AzureContainerApps extends CloudPlatformValue("azure_container_apps")
 
     /** Azure Container Instances
       */
-    case object AzureContainerInstances
-        extends CloudPlatformValue("azure_container_instances")
+    case object AzureContainerInstances extends CloudPlatformValue("azure_container_instances")
 
     /** Azure Kubernetes Service
       */
@@ -179,13 +158,11 @@ object CloudExperimentalAttributes {
 
     /** Google Bare Metal Solution (BMS)
       */
-    case object GcpBareMetalSolution
-        extends CloudPlatformValue("gcp_bare_metal_solution")
+    case object GcpBareMetalSolution extends CloudPlatformValue("gcp_bare_metal_solution")
 
     /** Google Cloud Compute Engine (GCE)
       */
-    case object GcpComputeEngine
-        extends CloudPlatformValue("gcp_compute_engine")
+    case object GcpComputeEngine extends CloudPlatformValue("gcp_compute_engine")
 
     /** Google Cloud Run
       */
@@ -193,13 +170,11 @@ object CloudExperimentalAttributes {
 
     /** Google Cloud Kubernetes Engine (GKE)
       */
-    case object GcpKubernetesEngine
-        extends CloudPlatformValue("gcp_kubernetes_engine")
+    case object GcpKubernetesEngine extends CloudPlatformValue("gcp_kubernetes_engine")
 
     /** Google Cloud Functions (GCF)
       */
-    case object GcpCloudFunctions
-        extends CloudPlatformValue("gcp_cloud_functions")
+    case object GcpCloudFunctions extends CloudPlatformValue("gcp_cloud_functions")
 
     /** Google Cloud App Engine (GAE)
       */
@@ -211,8 +186,7 @@ object CloudExperimentalAttributes {
 
     /** Red Hat OpenShift on IBM Cloud
       */
-    case object IbmCloudOpenshift
-        extends CloudPlatformValue("ibm_cloud_openshift")
+    case object IbmCloudOpenshift extends CloudPlatformValue("ibm_cloud_openshift")
 
     /** Tencent Cloud Cloud Virtual Machine (CVM)
       */

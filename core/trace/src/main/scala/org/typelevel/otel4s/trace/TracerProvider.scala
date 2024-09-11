@@ -34,8 +34,8 @@ trait TracerProvider[F[_]] {
     *   }}}
     *
     * @param name
-    *   the name of the instrumentation scope, such as the instrumentation
-    *   library, package, or fully qualified class name
+    *   the name of the instrumentation scope, such as the instrumentation library, package, or fully qualified class
+    *   name
     */
   def get(name: String): F[Tracer[F]] =
     tracer(name).get
@@ -53,13 +53,12 @@ trait TracerProvider[F[_]] {
     *   }}}
     *
     * @param name
-    *   the name of the instrumentation scope, such as the instrumentation
-    *   library, package, or fully qualified class name
+    *   the name of the instrumentation scope, such as the instrumentation library, package, or fully qualified class
+    *   name
     */
   def tracer(name: String): TracerBuilder[F]
 
-  /** Modify the context `F` using an implicit [[KindTransformer]] from `F` to
-    * `G`.
+  /** Modify the context `F` using an implicit [[KindTransformer]] from `F` to `G`.
     */
   def mapK[G[_]: MonadCancelThrow](implicit
       F: MonadCancelThrow[F],

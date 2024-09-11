@@ -19,17 +19,15 @@ package org.typelevel.otel4s.context.propagation
 import cats.Monoid
 import cats.syntax.foldable._
 
-/** The process of propagating data across process boundaries involves injecting
-  * and extracting values in the form of text into carriers that travel in-band.
+/** The process of propagating data across process boundaries involves injecting and extracting values in the form of
+  * text into carriers that travel in-band.
   *
-  * The encoding used for this process is expected to conform to HTTP Header
-  * Field semantics, and values are commonly encoded as request headers for
-  * RPC/HTTP requests.
+  * The encoding used for this process is expected to conform to HTTP Header Field semantics, and values are commonly
+  * encoded as request headers for RPC/HTTP requests.
   *
-  * The carriers used for propagating the data are typically HTTP requests, and
-  * the process is often implemented using library-specific request
-  * interceptors. On the client side, values are injected into the carriers,
-  * while on the server side, values are extracted from them.
+  * The carriers used for propagating the data are typically HTTP requests, and the process is often implemented using
+  * library-specific request interceptors. On the client side, values are injected into the carriers, while on the
+  * server side, values are extracted from them.
   *
   * @tparam Ctx
   *   the context to use to extract or inject data
@@ -39,8 +37,7 @@ trait TextMapPropagator[Ctx] {
   /** The collection of propagation fields. */
   def fields: Iterable[String]
 
-  /** Extracts key-value pairs from the given `carrier` and adds them to the
-    * given context.
+  /** Extracts key-value pairs from the given `carrier` and adds them to the given context.
     *
     * @param ctx
     *   the context object to which the key-value pairs are added
@@ -56,11 +53,10 @@ trait TextMapPropagator[Ctx] {
     */
   def extract[A: TextMapGetter](ctx: Ctx, carrier: A): Ctx
 
-  /** Injects data from the context into a copy of the given immutable `carrier`
-    * for downstream consumers, for example as HTTP headers.
+  /** Injects data from the context into a copy of the given immutable `carrier` for downstream consumers, for example
+    * as HTTP headers.
     *
-    * This method is an extension to the OpenTelemetry specification to support
-    * immutable carrier types.
+    * This method is an extension to the OpenTelemetry specification to support immutable carrier types.
     *
     * @param ctx
     *   the context containing the value to be injected
@@ -79,8 +75,7 @@ trait TextMapPropagator[Ctx] {
 
 object TextMapPropagator {
 
-  /** Creates a [[TextMapPropagator]] which delegates injection and extraction
-    * to the provided propagators.
+  /** Creates a [[TextMapPropagator]] which delegates injection and extraction to the provided propagators.
     *
     * @example
     *   {{{

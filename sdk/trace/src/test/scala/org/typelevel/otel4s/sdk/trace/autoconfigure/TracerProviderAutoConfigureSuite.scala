@@ -198,8 +198,7 @@ class TracerProviderAutoConfigureSuite extends CatsEffectSuite {
       propagators: ContextPropagators[Context] = ContextPropagators.noop,
       customizer: Customizer[SdkTracerProvider.Builder[IO]] = (a, _) => a,
       samplerConfigurers: Set[AutoConfigure.Named[IO, Sampler]] = Set.empty,
-      exporterConfigurers: Set[AutoConfigure.Named[IO, SpanExporter[IO]]] =
-        Set.empty
+      exporterConfigurers: Set[AutoConfigure.Named[IO, SpanExporter[IO]]] = Set.empty
   )(f: TracerProvider[IO] => IO[A]): IO[A] =
     Resource.eval(LocalProvider[IO, Context].local).use { implicit local =>
       Resource.eval(Random.scalaUtilRandom[IO]).use { implicit random =>

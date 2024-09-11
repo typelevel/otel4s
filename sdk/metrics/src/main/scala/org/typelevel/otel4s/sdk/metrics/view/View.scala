@@ -53,8 +53,7 @@ sealed trait View {
     */
   private[metrics] def attributesProcessor: Option[AttributesProcessor]
 
-  /** The cardinality limit of this view - the maximum number of series for a
-    * metric.
+  /** The cardinality limit of this view - the maximum number of series for a metric.
     *
     * `None` means the MetricReader's default cardinality limit should be used.
     */
@@ -105,8 +104,7 @@ object View {
       */
     def addAttributeFilter(retain: Set[String]): Builder
 
-    /** Adds an attribute filter which retains attributes that satisfy the
-      * `filter`.
+    /** Adds an attribute filter which retains attributes that satisfy the `filter`.
       *
       * @param filter
       *   the filter to use
@@ -162,14 +160,10 @@ object View {
       copy(aggregation = Some(aggregation))
 
     def addAttributeFilter(retain: Set[String]): Builder =
-      copy(attributesProcessors =
-        attributesProcessors :+ AttributesProcessor.retain(retain)
-      )
+      copy(attributesProcessors = attributesProcessors :+ AttributesProcessor.retain(retain))
 
     def addAttributeFilter(filter: Attribute[_] => Boolean): Builder =
-      copy(attributesProcessors =
-        attributesProcessors :+ AttributesProcessor.attributePredicate(filter)
-      )
+      copy(attributesProcessors = attributesProcessors :+ AttributesProcessor.attributePredicate(filter))
 
     def withCardinalityLimit(limit: Int): Builder = {
       require(limit > 0, s"cardinality limit [$limit] must be positive")

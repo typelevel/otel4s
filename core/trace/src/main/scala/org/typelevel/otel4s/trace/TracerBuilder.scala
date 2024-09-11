@@ -41,8 +41,7 @@ trait TracerBuilder[F[_]] {
     */
   def get: F[Tracer[F]]
 
-  /** Modify the context `F` using an implicit [[KindTransformer]] from `F` to
-    * `G`.
+  /** Modify the context `F` using an implicit [[KindTransformer]] from `F` to `G`.
     */
   def mapK[G[_]: MonadCancelThrow](implicit
       F: MonadCancelThrow[F],

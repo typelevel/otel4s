@@ -24,8 +24,7 @@ import cats.syntax.functor._
 import org.typelevel.otel4s.metrics.BucketBoundaries
 import org.typelevel.otel4s.sdk.metrics.internal.utils.Adder
 
-/** Selects which [[ReservoirCell]] within the [[ExemplarReservoir]] should
-  * receive the measurements.
+/** Selects which [[ReservoirCell]] within the [[ExemplarReservoir]] should receive the measurements.
   *
   * @tparam F
   *   the higher-kinded type of a polymorphic effect

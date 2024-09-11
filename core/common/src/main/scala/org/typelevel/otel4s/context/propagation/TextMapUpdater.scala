@@ -22,15 +22,12 @@ import scala.collection.immutable.MapOps
 import scala.collection.immutable.SeqOps
 import scala.collection.immutable.SortedMapOps
 
-/** Offers a way to store a string value associated with a given key to an
-  * immutable carrier type.
+/** Offers a way to store a string value associated with a given key to an immutable carrier type.
   *
-  * Implicit instances of `TextMapUpdater` are provided for
-  * [[scala.collection.immutable.Map]] and [[scala.collection.immutable.Seq]]
-  * types.The behavior of `TextMapUpdater[Seq[(String, String)]]` when duplicate
-  * keys are present is unspecified, and may change at any time. In particular,
-  * if the behavior of `Seq` types with duplicate keys is ever specified by open
-  * telemetry, the behavior of such implicit instances will be made to match the
+  * Implicit instances of `TextMapUpdater` are provided for [[scala.collection.immutable.Map]] and
+  * [[scala.collection.immutable.Seq]] types.The behavior of `TextMapUpdater[Seq[(String, String)]]` when duplicate keys
+  * are present is unspecified, and may change at any time. In particular, if the behavior of `Seq` types with duplicate
+  * keys is ever specified by open telemetry, the behavior of such implicit instances will be made to match the
   * specification.
   *
   * @see
@@ -41,8 +38,7 @@ import scala.collection.immutable.SortedMapOps
   */
 trait TextMapUpdater[A] {
 
-  /** Updates a carrier with the given `key` associated with the given `value`.
-    * The original `carrier` is unmodified.
+  /** Updates a carrier with the given `key` associated with the given `value`. The original `carrier` is unmodified.
     *
     * '''Important:''' the carrier must to be '''immutable'''.
     *
@@ -61,28 +57,22 @@ trait TextMapUpdater[A] {
 object TextMapUpdater {
   def apply[A](implicit updater: TextMapUpdater[A]): TextMapUpdater[A] = updater
 
-  implicit def forMap[CC[x, +y] <: MapOps[x, y, CC, CC[x, y]]]
-      : TextMapUpdater[CC[String, String]] =
-    (carrier: CC[String, String], key: String, value: String) =>
-      carrier.updated(key, value)
+  implicit def forMap[CC[x, +y] <: MapOps[x, y, CC, CC[x, y]]]: TextMapUpdater[CC[String, String]] =
+    (carrier: CC[String, String], key: String, value: String) => carrier.updated(key, value)
 
   implicit def forSortedMap[
       CC[x, +y] <: Map[x, y] with SortedMapOps[x, y, CC, CC[x, y]]
   ]: TextMapUpdater[CC[String, String]] =
-    (carrier: CC[String, String], key: String, value: String) =>
-      carrier.updated(key, value)
+    (carrier: CC[String, String], key: String, value: String) => carrier.updated(key, value)
 
-  implicit def forSeq[CC[x] <: SeqOps[x, CC, CC[x]]]
-      : TextMapUpdater[CC[(String, String)]] =
-    (carrier: CC[(String, String)], key: String, value: String) =>
-      carrier.appended(key -> value)
+  implicit def forSeq[CC[x] <: SeqOps[x, CC, CC[x]]]: TextMapUpdater[CC[(String, String)]] =
+    (carrier: CC[(String, String)], key: String, value: String) => carrier.appended(key -> value)
 
   implicit val invariant: Invariant[TextMapUpdater] =
     new Invariant[TextMapUpdater] {
       override def imap[A, B](
           fa: TextMapUpdater[A]
       )(f: A => B)(g: B => A): TextMapUpdater[B] =
-        (carrier: B, key: String, value: String) =>
-          f(fa.updated(g(carrier), key, value))
+        (carrier: B, key: String, value: String) => f(fa.updated(g(carrier), key, value))
     }
 }

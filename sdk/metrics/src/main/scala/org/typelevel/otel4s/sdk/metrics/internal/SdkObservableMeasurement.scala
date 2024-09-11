@@ -33,8 +33,7 @@ import org.typelevel.otel4s.sdk.metrics.data.TimeWindow
 import org.typelevel.otel4s.sdk.metrics.internal.exporter.RegisteredReader
 import org.typelevel.otel4s.sdk.metrics.internal.storage.MetricStorage
 
-private[metrics] sealed trait SdkObservableMeasurement[F[_], A]
-    extends ObservableMeasurement[F, A] { self =>
+private[metrics] sealed trait SdkObservableMeasurement[F[_], A] extends ObservableMeasurement[F, A] { self =>
 
   /** The scope associated with this measurement.
     */

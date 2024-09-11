@@ -33,9 +33,7 @@ import org.typelevel.otel4s.sdk.metrics.scalacheck.Gens
 import org.typelevel.otel4s.sdk.metrics.test.InMemoryMeterSharedState
 import org.typelevel.otel4s.sdk.metrics.test.PointDataUtils
 
-class SdkObservableCounterSuite
-    extends CatsEffectSuite
-    with ScalaCheckEffectSuite {
+class SdkObservableCounterSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
 
   private implicit val askContext: Ask[IO, Context] = Ask.const(Context.root)
 

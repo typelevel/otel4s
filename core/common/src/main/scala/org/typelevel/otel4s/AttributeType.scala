@@ -19,8 +19,8 @@ package org.typelevel.otel4s
 import cats.Hash
 import cats.Show
 
-/** Represents all possible value types for an [[AttributeKey]] and hence the
-  * types of values that are allowed for [[Attribute]].
+/** Represents all possible value types for an [[AttributeKey]] and hence the types of values that are allowed for
+  * [[Attribute]].
   */
 sealed trait AttributeType[A] extends Product with Serializable
 

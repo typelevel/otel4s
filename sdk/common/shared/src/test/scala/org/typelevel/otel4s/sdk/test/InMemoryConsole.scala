@@ -25,8 +25,7 @@ import cats.syntax.all._
 
 import java.nio.charset.Charset
 
-class InMemoryConsole[F[_]: Sync](queue: Queue[F, InMemoryConsole.Entry])
-    extends Console[F] {
+class InMemoryConsole[F[_]: Sync](queue: Queue[F, InMemoryConsole.Entry]) extends Console[F] {
   import InMemoryConsole.Entry
   import InMemoryConsole.Op
 

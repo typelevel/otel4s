@@ -30,11 +30,10 @@ sealed trait ContextPropagators[Ctx] {
 
 object ContextPropagators {
 
-  /** Creates a [[ContextPropagators]] which can be used to extract and inject
-    * context in text payloads with the given [[TextMapPropagator]].
+  /** Creates a [[ContextPropagators]] which can be used to extract and inject context in text payloads with the given
+    * [[TextMapPropagator]].
     *
-    * If multiple text map propagators are passed, the combined (composite)
-    * TextMapPropagator instance will be created.
+    * If multiple text map propagators are passed, the combined (composite) TextMapPropagator instance will be created.
     *
     * It's a shortcut for:
     * {{{

@@ -58,8 +58,7 @@ object OpenTelemetrySdkTestkit {
 
   type Customizer[A] = A => A
 
-  /** Creates [[OpenTelemetrySdkTestkit]] that keeps spans and metrics
-    * in-memory.
+  /** Creates [[OpenTelemetrySdkTestkit]] that keeps spans and metrics in-memory.
     *
     * @param customizeMeterProviderBuilder
     *   the customization of the meter provider builder
@@ -74,27 +73,20 @@ object OpenTelemetrySdkTestkit {
     *   the preferred aggregation for the given instrument type
     *
     * @param defaultAggregationSelector
-    *   the preferred aggregation for the given instrument type. If no views are
-    *   configured for a metric instrument, an aggregation provided by the
-    *   selector will be used
+    *   the preferred aggregation for the given instrument type. If no views are configured for a metric instrument, an
+    *   aggregation provided by the selector will be used
     *
     * @param defaultCardinalityLimitSelector
-    *   the preferred cardinality limit for the given instrument type. If no
-    *   views are configured for a metric instrument, a limit provided by the
-    *   selector will be used
+    *   the preferred cardinality limit for the given instrument type. If no views are configured for a metric
+    *   instrument, a limit provided by the selector will be used
     */
   def inMemory[F[_]: Async: Parallel: Console: LocalContextProvider](
-      customizeMeterProviderBuilder: Customizer[SdkMeterProvider.Builder[F]] =
-        identity[SdkMeterProvider.Builder[F]],
-      customizeTracerProviderBuilder: Customizer[SdkTracerProvider.Builder[F]] =
-        identity[SdkTracerProvider.Builder[F]],
+      customizeMeterProviderBuilder: Customizer[SdkMeterProvider.Builder[F]] = identity[SdkMeterProvider.Builder[F]],
+      customizeTracerProviderBuilder: Customizer[SdkTracerProvider.Builder[F]] = identity[SdkTracerProvider.Builder[F]],
       textMapPropagators: Iterable[TextMapPropagator[Context]] = Nil,
-      aggregationTemporalitySelector: AggregationTemporalitySelector =
-        AggregationTemporalitySelector.alwaysCumulative,
-      defaultAggregationSelector: AggregationSelector =
-        AggregationSelector.default,
-      defaultCardinalityLimitSelector: CardinalityLimitSelector =
-        CardinalityLimitSelector.default
+      aggregationTemporalitySelector: AggregationTemporalitySelector = AggregationTemporalitySelector.alwaysCumulative,
+      defaultAggregationSelector: AggregationSelector = AggregationSelector.default,
+      defaultCardinalityLimitSelector: CardinalityLimitSelector = CardinalityLimitSelector.default
   ): Resource[F, OpenTelemetrySdkTestkit[F]] =
     Resource.eval(LocalProvider[F, Context].local).flatMap { implicit local =>
       val traceContextLookup: TraceContextLookup =

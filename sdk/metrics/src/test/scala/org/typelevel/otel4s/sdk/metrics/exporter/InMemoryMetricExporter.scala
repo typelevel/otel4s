@@ -50,12 +50,9 @@ object InMemoryMetricExporter {
 
   def create[F[_]: Concurrent](
       capacity: Option[Int],
-      aggregationTemporalitySelector: AggregationTemporalitySelector =
-        AggregationTemporalitySelector.alwaysCumulative,
-      defaultAggregationSelector: AggregationSelector =
-        AggregationSelector.default,
-      defaultCardinalityLimitSelector: CardinalityLimitSelector =
-        CardinalityLimitSelector.default
+      aggregationTemporalitySelector: AggregationTemporalitySelector = AggregationTemporalitySelector.alwaysCumulative,
+      defaultAggregationSelector: AggregationSelector = AggregationSelector.default,
+      defaultCardinalityLimitSelector: CardinalityLimitSelector = CardinalityLimitSelector.default
   ): F[InMemoryMetricExporter[F]] =
     for {
       queue <- capacity.fold(Queue.unbounded[F, MetricData])(Queue.bounded(_))

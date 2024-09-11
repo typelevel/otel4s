@@ -66,9 +66,7 @@ object SpanNode {
     val calculated = withDepth ++ acc
 
     val children =
-      nodesInDepth.flatMap(n =>
-        nodesByParent.getOrElse(Some(n.spanContext.spanIdHex), Nil)
-      )
+      nodesInDepth.flatMap(n => nodesByParent.getOrElse(Some(n.spanContext.spanIdHex), Nil))
 
     children match {
       case Nil =>

@@ -46,11 +46,9 @@ private object SpansProtoEncoder {
   implicit val jsonPrinter: Printer = new ProtoEncoder.JsonPrinter {
     private val EncodeAsHex = Set("trace_id", "span_id", "parent_span_id")
 
-    /** The `traceId` and `spanId` byte arrays are represented as
-      * case-insensitive hex-encoded strings; they are not base64-encoded as is
-      * defined in the standard Protobuf JSON Mapping. Hex encoding is used for
-      * traceId and spanId fields in all OTLP Protobuf messages, e.g., the Span,
-      * Link, LogRecord, etc. messages.
+    /** The `traceId` and `spanId` byte arrays are represented as case-insensitive hex-encoded strings; they are not
+      * base64-encoded as is defined in the standard Protobuf JSON Mapping. Hex encoding is used for traceId and spanId
+      * fields in all OTLP Protobuf messages, e.g., the Span, Link, LogRecord, etc. messages.
       *
       * @see
       *   [[https://github.com/open-telemetry/opentelemetry-proto/blob/v1.0.0/docs/specification.md#json-protobuf-encoding]]
@@ -86,38 +84,35 @@ private object SpansProtoEncoder {
     case SpanKind.Consumer => SpanProto.SpanKind.SPAN_KIND_CONSUMER
   }
 
-  implicit val statusDataEncoder: ProtoEncoder[StatusData, StatusProto] = {
-    data =>
-      StatusProto(
-        message = data.description.getOrElse(""),
-        code = ProtoEncoder.encode(data.status)
-      )
+  implicit val statusDataEncoder: ProtoEncoder[StatusData, StatusProto] = { data =>
+    StatusProto(
+      message = data.description.getOrElse(""),
+      code = ProtoEncoder.encode(data.status)
+    )
   }
 
-  implicit val eventDataEncoder: ProtoEncoder[EventData, SpanProto.Event] = {
-    data =>
-      SpanProto.Event(
-        timeUnixNano = data.timestamp.toNanos,
-        name = data.name,
-        attributes = ProtoEncoder.encode(data.attributes.elements),
-        droppedAttributesCount = data.attributes.dropped
-      )
+  implicit val eventDataEncoder: ProtoEncoder[EventData, SpanProto.Event] = { data =>
+    SpanProto.Event(
+      timeUnixNano = data.timestamp.toNanos,
+      name = data.name,
+      attributes = ProtoEncoder.encode(data.attributes.elements),
+      droppedAttributesCount = data.attributes.dropped
+    )
   }
 
-  implicit val linkDataEncoder: ProtoEncoder[LinkData, SpanProto.Link] = {
-    data =>
-      val traceState = data.spanContext.traceState.asMap
-        .map { case (key, value) => s"$key=$value" }
-        .mkString(",")
+  implicit val linkDataEncoder: ProtoEncoder[LinkData, SpanProto.Link] = { data =>
+    val traceState = data.spanContext.traceState.asMap
+      .map { case (key, value) => s"$key=$value" }
+      .mkString(",")
 
-      SpanProto.Link(
-        traceId = ByteString.copyFrom(data.spanContext.traceId.toArray),
-        spanId = ByteString.copyFrom(data.spanContext.spanId.toArray),
-        traceState = traceState,
-        attributes = ProtoEncoder.encode(data.attributes.elements),
-        droppedAttributesCount = data.attributes.dropped,
-        flags = data.spanContext.traceFlags.toByte.toInt
-      )
+    SpanProto.Link(
+      traceId = ByteString.copyFrom(data.spanContext.traceId.toArray),
+      spanId = ByteString.copyFrom(data.spanContext.spanId.toArray),
+      traceState = traceState,
+      attributes = ProtoEncoder.encode(data.attributes.elements),
+      droppedAttributesCount = data.attributes.dropped,
+      flags = data.spanContext.traceFlags.toByte.toInt
+    )
   }
 
   implicit val spanDataEncoder: ProtoEncoder[SpanData, SpanProto] = { span =>
@@ -147,8 +142,7 @@ private object SpansProtoEncoder {
     )
   }
 
-  implicit val spanDataToRequest
-      : ProtoEncoder[List[SpanData], ExportTraceServiceRequest] = { spans =>
+  implicit val spanDataToRequest: ProtoEncoder[List[SpanData], ExportTraceServiceRequest] = { spans =>
     val resourceSpans =
       spans
         .groupBy(_.resource)

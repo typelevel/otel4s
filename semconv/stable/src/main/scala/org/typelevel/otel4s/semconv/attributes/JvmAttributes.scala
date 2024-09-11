@@ -91,13 +91,12 @@ object JvmAttributes {
       */
     case object Blocked extends JvmThreadStateValue("blocked")
 
-    /** A thread that is waiting indefinitely for another thread to perform a
-      * particular action is in this state.
+    /** A thread that is waiting indefinitely for another thread to perform a particular action is in this state.
       */
     case object Waiting extends JvmThreadStateValue("waiting")
 
-    /** A thread that is waiting for another thread to perform an action for up
-      * to a specified waiting time is in this state.
+    /** A thread that is waiting for another thread to perform an action for up to a specified waiting time is in this
+      * state.
       */
     case object TimedWaiting extends JvmThreadStateValue("timed_waiting")
 

@@ -60,8 +60,7 @@ trait Sampler {
       parentLinks: Vector[LinkData]
   ): SamplingResult
 
-  /** The description of the [[Sampler]]. This may be displayed on debug pages
-    * or in the logs.
+  /** The description of the [[Sampler]]. This may be displayed on debug pages or in the logs.
     */
   def description: String
 
@@ -86,31 +85,27 @@ object Sampler {
   val AlwaysOff: Sampler =
     new Const(SamplingResult.Drop, "AlwaysOffSampler")
 
-  /** Returns a [[Sampler]] that always makes the same decision as the parent
-    * Span to whether or not to sample.
+  /** Returns a [[Sampler]] that always makes the same decision as the parent Span to whether or not to sample.
     *
-    * If there is no parent, the sampler uses the provided root [[Sampler]] to
-    * determine the sampling decision.
+    * If there is no parent, the sampler uses the provided root [[Sampler]] to determine the sampling decision.
     *
     * @param root
-    *   the [[Sampler]] which is used to make the sampling decisions if the
-    *   parent does not exist
+    *   the [[Sampler]] which is used to make the sampling decisions if the parent does not exist
     */
   def parentBased(root: Sampler): Sampler =
     parentBasedBuilder(root).build
 
-  /** Creates a [[ParentBasedSampler.Builder]] for parent-based sampler that
-    * enables configuration of the parent-based sampling strategy.
+  /** Creates a [[ParentBasedSampler.Builder]] for parent-based sampler that enables configuration of the parent-based
+    * sampling strategy.
     *
-    * The parent's sampling decision is used if a parent span exists, otherwise
-    * this strategy uses the root sampler's decision.
+    * The parent's sampling decision is used if a parent span exists, otherwise this strategy uses the root sampler's
+    * decision.
     *
-    * There are a several options available on the builder to control the
-    * precise behavior of how the decision will be made.
+    * There are a several options available on the builder to control the precise behavior of how the decision will be
+    * made.
     *
     * @param root
-    *   the [[Sampler]] which is used to make the sampling decisions if the
-    *   parent does not exist
+    *   the [[Sampler]] which is used to make the sampling decisions if the parent does not exist
     */
   def parentBasedBuilder(root: Sampler): ParentBasedSampler.Builder =
     ParentBasedSampler.builder(root)
@@ -119,12 +114,11 @@ object Sampler {
     *
     * The ratio of sampling a trace is equal to that of the specified ratio.
     *
-    * The algorithm used by the Sampler is undefined, notably it may or may not
-    * use parts of the trace ID when generating a sampling decision.
+    * The algorithm used by the Sampler is undefined, notably it may or may not use parts of the trace ID when
+    * generating a sampling decision.
     *
-    * Currently, only the ratio of traces that are sampled can be relied on, not
-    * how the sampled traces are determined. As such, it is recommended to only
-    * use this [[Sampler]] for root spans using [[parentBased]].
+    * Currently, only the ratio of traces that are sampled can be relied on, not how the sampled traces are determined.
+    * As such, it is recommended to only use this [[Sampler]] for root spans using [[parentBased]].
     *
     * @param ratio
     *   the desired ratio of sampling. Must be >= 0 and <= 1.0.

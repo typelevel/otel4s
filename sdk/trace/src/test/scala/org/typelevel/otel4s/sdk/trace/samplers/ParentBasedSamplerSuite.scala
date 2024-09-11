@@ -46,35 +46,34 @@ class ParentBasedSamplerSuite extends ScalaCheckSuite {
   }
 
   test("created with root sampler - returns correct sampling result") {
-    Prop.forAll(samplerChoiceGen, ShouldSampleInput.shouldSampleInputGen) {
-      (choice, input) =>
-        val sampler = Sampler.parentBased(choice.sampler)
+    Prop.forAll(samplerChoiceGen, ShouldSampleInput.shouldSampleInputGen) { (choice, input) =>
+      val sampler = Sampler.parentBased(choice.sampler)
 
-        val expected = input.parentContext match {
-          // valid remote parent
-          case Some(parent) if parent.isValid && parent.isRemote =>
-            if (parent.isSampled) SamplingResult.RecordAndSample
-            else SamplingResult.Drop
+      val expected = input.parentContext match {
+        // valid remote parent
+        case Some(parent) if parent.isValid && parent.isRemote =>
+          if (parent.isSampled) SamplingResult.RecordAndSample
+          else SamplingResult.Drop
 
-          // valid local parent
-          case Some(parent) if parent.isValid =>
-            if (parent.isSampled) SamplingResult.RecordAndSample
-            else SamplingResult.Drop
+        // valid local parent
+        case Some(parent) if parent.isValid =>
+          if (parent.isSampled) SamplingResult.RecordAndSample
+          else SamplingResult.Drop
 
-          case _ =>
-            choice.result
-        }
+        case _ =>
+          choice.result
+      }
 
-        val result = sampler.shouldSample(
-          input.parentContext,
-          input.traceId,
-          input.name,
-          input.spanKind,
-          input.attributes,
-          input.parentLinks
-        )
+      val result = sampler.shouldSample(
+        input.parentContext,
+        input.traceId,
+        input.name,
+        input.spanKind,
+        input.attributes,
+        input.parentLinks
+      )
 
-        assertEquals(result, expected)
+      assertEquals(result, expected)
     }
   }
 
@@ -166,10 +165,8 @@ class ParentBasedSamplerSuite extends ScalaCheckSuite {
   )
 
   object SamplerChoice {
-    case object AlwaysOn
-        extends SamplerChoice(Sampler.AlwaysOn, SamplingResult.RecordAndSample)
+    case object AlwaysOn extends SamplerChoice(Sampler.AlwaysOn, SamplingResult.RecordAndSample)
 
-    case object AlwaysOff
-        extends SamplerChoice(Sampler.AlwaysOff, SamplingResult.Drop)
+    case object AlwaysOff extends SamplerChoice(Sampler.AlwaysOff, SamplingResult.Drop)
   }
 }

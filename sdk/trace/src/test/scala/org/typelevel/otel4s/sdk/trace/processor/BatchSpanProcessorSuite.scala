@@ -32,9 +32,7 @@ import org.typelevel.otel4s.sdk.trace.exporter.InMemorySpanExporter
 import org.typelevel.otel4s.sdk.trace.exporter.SpanExporter
 import org.typelevel.otel4s.sdk.trace.scalacheck.Arbitraries._
 
-class BatchSpanProcessorSuite
-    extends CatsEffectSuite
-    with ScalaCheckEffectSuite {
+class BatchSpanProcessorSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
 
   private implicit val noopConsole: Console[IO] = new NoopConsole[IO]
 

@@ -31,8 +31,7 @@ object OtelExperimentalAttributes {
   val OtelLibraryVersion: AttributeKey[String] =
     AttributeKey("otel.library.version")
 
-  /** The name of the instrumentation scope - (`InstrumentationScope.Name` in
-    * OTLP).
+  /** The name of the instrumentation scope - (`InstrumentationScope.Name` in OTLP).
     */
   @deprecated(
     "use `org.typelevel.otel4s.semconv.attributes.OtelAttributes.OtelScopeName` instead.",
@@ -41,8 +40,7 @@ object OtelExperimentalAttributes {
   val OtelScopeName: AttributeKey[String] =
     AttributeKey("otel.scope.name")
 
-  /** The version of the instrumentation scope - (`InstrumentationScope.Version`
-    * in OTLP).
+  /** The version of the instrumentation scope - (`InstrumentationScope.Version` in OTLP).
     */
   @deprecated(
     "use `org.typelevel.otel4s.semconv.attributes.OtelAttributes.OtelScopeVersion` instead.",
@@ -51,8 +49,7 @@ object OtelExperimentalAttributes {
   val OtelScopeVersion: AttributeKey[String] =
     AttributeKey("otel.scope.version")
 
-  /** Name of the code, either "OK" or "ERROR". MUST NOT be set if the status
-    * code is UNSET.
+  /** Name of the code, either "OK" or "ERROR". MUST NOT be set if the status code is UNSET.
     */
   @deprecated(
     "use `org.typelevel.otel4s.semconv.attributes.OtelAttributes.OtelStatusCode` instead.",
@@ -80,8 +77,7 @@ object OtelExperimentalAttributes {
   @annotation.nowarn("cat=deprecation")
   object OtelStatusCodeValue {
 
-    /** The operation has been validated by an Application developer or Operator
-      * to have completed successfully.
+    /** The operation has been validated by an Application developer or Operator to have completed successfully.
       */
     case object Ok extends OtelStatusCodeValue("OK")
 

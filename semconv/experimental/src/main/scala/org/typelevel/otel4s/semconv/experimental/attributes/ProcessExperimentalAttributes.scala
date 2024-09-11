@@ -21,33 +21,28 @@ package experimental.attributes
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/attributes/SemanticAttributes.scala.j2
 object ProcessExperimentalAttributes {
 
-  /** The command used to launch the process (i.e. the command name). On Linux
-    * based systems, can be set to the zeroth string in `proc/[pid]/cmdline`. On
-    * Windows, can be set to the first parameter extracted from
-    * `GetCommandLineW`.
+  /** The command used to launch the process (i.e. the command name). On Linux based systems, can be set to the zeroth
+    * string in `proc/[pid]/cmdline`. On Windows, can be set to the first parameter extracted from `GetCommandLineW`.
     */
   val ProcessCommand: AttributeKey[String] =
     AttributeKey("process.command")
 
-  /** All the command arguments (including the command/executable itself) as
-    * received by the process. On Linux-based systems (and some other Unixoid
-    * systems supporting procfs), can be set according to the list of
-    * null-delimited strings extracted from `proc/[pid]/cmdline`. For libc-based
-    * executables, this would be the full argv vector passed to `main`.
+  /** All the command arguments (including the command/executable itself) as received by the process. On Linux-based
+    * systems (and some other Unixoid systems supporting procfs), can be set according to the list of null-delimited
+    * strings extracted from `proc/[pid]/cmdline`. For libc-based executables, this would be the full argv vector passed
+    * to `main`.
     */
   val ProcessCommandArgs: AttributeKey[Seq[String]] =
     AttributeKey("process.command_args")
 
-  /** The full command used to launch the process as a single string
-    * representing the full command. On Windows, can be set to the result of
-    * `GetCommandLineW`. Do not set this if you have to assemble it just for
-    * monitoring; use `process.command_args` instead.
+  /** The full command used to launch the process as a single string representing the full command. On Windows, can be
+    * set to the result of `GetCommandLineW`. Do not set this if you have to assemble it just for monitoring; use
+    * `process.command_args` instead.
     */
   val ProcessCommandLine: AttributeKey[String] =
     AttributeKey("process.command_line")
 
-  /** Specifies whether the context switches for this data point were voluntary
-    * or involuntary.
+  /** Specifies whether the context switches for this data point were voluntary or involuntary.
     */
   val ProcessContextSwitchType: AttributeKey[String] =
     AttributeKey("process.context_switch_type")
@@ -63,16 +58,14 @@ object ProcessExperimentalAttributes {
   val ProcessCreationTime: AttributeKey[String] =
     AttributeKey("process.creation.time")
 
-  /** The name of the process executable. On Linux based systems, can be set to
-    * the `Name` in `proc/[pid]/status`. On Windows, can be set to the base name
-    * of `GetProcessImageFileNameW`.
+  /** The name of the process executable. On Linux based systems, can be set to the `Name` in `proc/[pid]/status`. On
+    * Windows, can be set to the base name of `GetProcessImageFileNameW`.
     */
   val ProcessExecutableName: AttributeKey[String] =
     AttributeKey("process.executable.name")
 
-  /** The full path to the process executable. On Linux based systems, can be
-    * set to the target of `proc/[pid]/exe`. On Windows, can be set to the
-    * result of `GetProcessImageFileNameW`.
+  /** The full path to the process executable. On Linux based systems, can be set to the target of `proc/[pid]/exe`. On
+    * Windows, can be set to the result of `GetProcessImageFileNameW`.
     */
   val ProcessExecutablePath: AttributeKey[String] =
     AttributeKey("process.executable.path")
@@ -87,8 +80,7 @@ object ProcessExperimentalAttributes {
   val ProcessExitTime: AttributeKey[String] =
     AttributeKey("process.exit.time")
 
-  /** The PID of the process's group leader. This is also the process group ID
-    * (PGID) of the process.
+  /** The PID of the process's group leader. This is also the process group ID (PGID) of the process.
     */
   val ProcessGroupLeaderPid: AttributeKey[Long] =
     AttributeKey("process.group_leader.pid")
@@ -103,8 +95,8 @@ object ProcessExperimentalAttributes {
   val ProcessOwner: AttributeKey[String] =
     AttributeKey("process.owner")
 
-  /** The type of page fault for this data point. Type `major` is for major/hard
-    * page faults, and `minor` is for minor/soft page faults.
+  /** The type of page fault for this data point. Type `major` is for major/hard page faults, and `minor` is for
+    * minor/soft page faults.
     */
   val ProcessPagingFaultType: AttributeKey[String] =
     AttributeKey("process.paging.fault_type")
@@ -129,8 +121,8 @@ object ProcessExperimentalAttributes {
   val ProcessRealUserName: AttributeKey[String] =
     AttributeKey("process.real_user.name")
 
-  /** An additional description about the runtime of the process, for example a
-    * specific vendor customization of the runtime environment.
+  /** An additional description about the runtime of the process, for example a specific vendor customization of the
+    * runtime environment.
     */
   val ProcessRuntimeDescription: AttributeKey[String] =
     AttributeKey("process.runtime.description")
@@ -140,8 +132,7 @@ object ProcessExperimentalAttributes {
   val ProcessRuntimeName: AttributeKey[String] =
     AttributeKey("process.runtime.name")
 
-  /** The version of the runtime of this process, as returned by the runtime
-    * without modification.
+  /** The version of the runtime of this process, as returned by the runtime without modification.
     */
   val ProcessRuntimeVersion: AttributeKey[String] =
     AttributeKey("process.runtime.version")
@@ -156,8 +147,7 @@ object ProcessExperimentalAttributes {
   val ProcessSavedUserName: AttributeKey[String] =
     AttributeKey("process.saved_user.name")
 
-  /** The PID of the process's session leader. This is also the session ID (SID)
-    * of the process.
+  /** The PID of the process's session leader. This is also the session ID (SID) of the process.
     */
   val ProcessSessionLeaderPid: AttributeKey[Long] =
     AttributeKey("process.session_leader.pid")
@@ -174,9 +164,8 @@ object ProcessExperimentalAttributes {
 
   /** Virtual process identifier. <p>
     * @note
-    *   <p> The process ID within a PID namespace. This is not necessarily
-    *   unique across all processes on the host but it is unique within the
-    *   process namespace that the process exists within.
+    *   <p> The process ID within a PID namespace. This is not necessarily unique across all processes on the host but
+    *   it is unique within the process namespace that the process exists within.
     */
   val ProcessVpid: AttributeKey[Long] =
     AttributeKey("process.vpid")

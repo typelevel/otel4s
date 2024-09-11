@@ -24,11 +24,9 @@ import cats.syntax.show._
 
 /** Holds information about instrumentation scope.
   *
-  * Instrumentation scope is a logical unit of the application code with which
-  * emitted telemetry is associated. The most common approach is to use the
-  * instrumentation library as the scope, however other scopes are also common,
-  * e.g. a module, a package, or a class may be chosen as the instrumentation
-  * scope.
+  * Instrumentation scope is a logical unit of the application code with which emitted telemetry is associated. The most
+  * common approach is to use the instrumentation library as the scope, however other scopes are also common, e.g. a
+  * module, a package, or a class may be chosen as the instrumentation scope.
   *
   * @see
   *   [[https://opentelemetry.io/docs/specs/otel/glossary/#instrumentation-scope Instrumentation Scope spec]]
@@ -39,13 +37,11 @@ sealed trait InstrumentationScope {
     */
   def name: String
 
-  /** Returns the version of the instrumentation scope, or None if not
-    * available.
+  /** Returns the version of the instrumentation scope, or None if not available.
     */
   def version: Option[String]
 
-  /** Returns the URL of the schema used by this instrumentation scope, or None
-    * if not available.
+  /** Returns the URL of the schema used by this instrumentation scope, or None if not available.
     */
   def schemaUrl: Option[String]
 
@@ -90,16 +86,14 @@ object InstrumentationScope {
 
     /** Assigns the attributes to the scope.
       *
-      * '''Note''': if called multiple times, only the last specified attributes
-      * will be used.
+      * '''Note''': if called multiple times, only the last specified attributes will be used.
       *
       * @param attributes
       *   the attributes to assign
       */
     def withAttributes(attributes: Attributes): Builder
 
-    /** Creates an [[InstrumentationScope]] with the configuration of this
-      * builder.
+    /** Creates an [[InstrumentationScope]] with the configuration of this builder.
       */
     def build: InstrumentationScope
   }
@@ -124,8 +118,7 @@ object InstrumentationScope {
     *   the name of the instrumentation scope
     *
     * @param version
-    *   the version of the instrumentation scope if the scope has a version
-    *   (e.g. a library version)
+    *   the version of the instrumentation scope if the scope has a version (e.g. a library version)
     *
     * @param schemaUrl
     *   the Schema URL that should be recorded in the emitted telemetry

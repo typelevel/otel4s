@@ -21,9 +21,7 @@ import cats.Hash
 import cats.Show
 import cats.syntax.show._
 import io.opentelemetry.sdk.metrics.data.{Data => JData}
-import io.opentelemetry.sdk.metrics.data.{
-  HistogramPointData => JHistogramPointData
-}
+import io.opentelemetry.sdk.metrics.data.{HistogramPointData => JHistogramPointData}
 import io.opentelemetry.sdk.metrics.data.{MetricData => JMetricData}
 import io.opentelemetry.sdk.metrics.data.{PointData => JPointData}
 import io.opentelemetry.sdk.metrics.data.{SummaryPointData => JSummaryPointData}
@@ -154,9 +152,7 @@ object Metric {
     Hash.by(p => (p.name, p.description, p.unit, p.scope, p.resource, p.data))
 
   implicit val metricShow: Show[Metric] =
-    Show.show(p =>
-      show"Metric(${p.name}, ${p.description}, ${p.unit}, ${p.scope}, ${p.resource}, ${p.data})"
-    )
+    Show.show(p => show"Metric(${p.name}, ${p.description}, ${p.unit}, ${p.scope}, ${p.resource}, ${p.data})")
 
   final case class Impl(
       name: String,

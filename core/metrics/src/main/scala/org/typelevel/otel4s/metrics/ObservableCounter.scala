@@ -28,9 +28,8 @@ object ObservableCounter {
     *   the higher-kinded type of a polymorphic effect
     *
     * @tparam A
-    *   the type of the values to record. The type must have an instance of
-    *   [[MeasurementValue]]. [[scala.Long]] and [[scala.Double]] are supported
-    *   out of the box.
+    *   the type of the values to record. The type must have an instance of [[MeasurementValue]]. [[scala.Long]] and
+    *   [[scala.Double]] are supported out of the box.
     */
   trait Builder[F[_], A] {
 
@@ -54,8 +53,7 @@ object ObservableCounter {
       */
     def withDescription(description: String): Builder[F, A]
 
-    /** Creates an instrument with the given callback, using `unit` and
-      * `description` (if any).
+    /** Creates an instrument with the given callback, using `unit` and `description` (if any).
       *
       * The callback will be called when the instrument is being observed.
       *
@@ -71,14 +69,11 @@ object ObservableCounter {
         cb: ObservableMeasurement[F, A] => F[Unit]
     ): Resource[F, ObservableCounter]
 
-    /** Creates an asynchronous instrument based on an effect that produces a
-      * number of measurements.
+    /** Creates an asynchronous instrument based on an effect that produces a number of measurements.
       *
-      * The measurement effect will be evaluated when the instrument is being
-      * observed.
+      * The measurement effect will be evaluated when the instrument is being observed.
       *
-      * The measurement effect is expected to abide by the following
-      * restrictions:
+      * The measurement effect is expected to abide by the following restrictions:
       *   - Short-living and (ideally) non-blocking
       *   - Run in a finite amount of time
       *   - Safe to call repeatedly, across multiple threads
@@ -90,12 +85,11 @@ object ObservableCounter {
         measurements: F[Iterable[Measurement[A]]]
     ): Resource[F, ObservableCounter]
 
-    /** Creates an observer for this instrument to observe values from a
-      * [[BatchCallback]].
+    /** Creates an observer for this instrument to observe values from a [[BatchCallback]].
       *
       * @note
-      *   The observer '''must''' be registered via [[Meter.batchCallback]].
-      *   Values observed outside registered callbacks are ignored.
+      *   The observer '''must''' be registered via [[Meter.batchCallback]]. Values observed outside registered
+      *   callbacks are ignored.
       */
     def createObserver: F[ObservableMeasurement[F, A]]
   }

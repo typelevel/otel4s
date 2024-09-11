@@ -34,9 +34,8 @@ import java.{util => ju}
 import scala.collection.immutable
 import scala.jdk.CollectionConverters._
 
-/** This object provides extension methods that convert between Scala and Java
-  * `AttributeKey`s and `Attributes` using `toScala` and `toJava` extension
-  * methods, as well as a `toJavaAttributes` extension method that converts
+/** This object provides extension methods that convert between Scala and Java `AttributeKey`s and `Attributes` using
+  * `toScala` and `toJava` extension methods, as well as a `toJavaAttributes` extension method that converts
   * `immutable.Iterable[Attribute[_]]` to Java `Attributes`.
   *
   * {{{
@@ -55,15 +54,13 @@ import scala.jdk.CollectionConverters._
   */
 object AttributeConverters {
 
-  implicit final class AttributeKeyHasToJava(private val key: AttributeKey[_])
-      extends AnyVal {
+  implicit final class AttributeKeyHasToJava(private val key: AttributeKey[_]) extends AnyVal {
 
     /** Converts a Scala `AttributeKey` to a Java `AttributeKey`. */
     def toJava: JAttributeKey[_] = Explicit.toJava(key)
   }
 
-  implicit final class AttributesHasToJava(private val attributes: Attributes)
-      extends AnyVal {
+  implicit final class AttributesHasToJava(private val attributes: Attributes) extends AnyVal {
 
     /** Converts Scala `Attributes` to Java `Attributes`. */
     def toJava: JAttributes = Explicit.toJava(attributes)
@@ -73,21 +70,18 @@ object AttributeConverters {
       private val attributes: immutable.Iterable[Attribute[_]]
   ) extends AnyVal {
 
-    /** Converts an immutable collection of Scala `Attribute`s to Java
-      * `Attributes`.
+    /** Converts an immutable collection of Scala `Attribute`s to Java `Attributes`.
       */
     def toJavaAttributes: JAttributes = Explicit.toJavaAttributes(attributes)
   }
 
-  implicit final class AttributeKeyHasToScala(private val key: JAttributeKey[_])
-      extends AnyVal {
+  implicit final class AttributeKeyHasToScala(private val key: JAttributeKey[_]) extends AnyVal {
 
     /** Converts a Java `AttributeKey` to a Scala `AttributeKey`. */
     def toScala: AttributeKey[_] = Explicit.toScala(key)
   }
 
-  implicit final class AttributesHasToScala(private val attributes: JAttributes)
-      extends AnyVal {
+  implicit final class AttributesHasToScala(private val attributes: JAttributes) extends AnyVal {
 
     /** Converts Scala `Attributes` to Java `Attributes`. */
     def toScala: Attributes = Explicit.toScala(attributes)

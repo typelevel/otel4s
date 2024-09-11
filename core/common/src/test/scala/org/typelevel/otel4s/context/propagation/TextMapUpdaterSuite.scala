@@ -80,12 +80,11 @@ class TextMapUpdaterSuite extends FunSuite with DisciplineSuite {
   locally { // constrain `import NotQuiteExhaustiveChecks._` to a limited scope
     import NotQuiteExhaustiveChecks._
 
-    implicit def updaterEq[A: ExhaustiveCheck: Eq]: Eq[TextMapUpdater[A]] = {
-      (x, y) =>
-        ExhaustiveCheck[(A, String, String)].allValues
-          .forall { case (carrier, key, value) =>
-            x.updated(carrier, key, value) === y.updated(carrier, key, value)
-          }
+    implicit def updaterEq[A: ExhaustiveCheck: Eq]: Eq[TextMapUpdater[A]] = { (x, y) =>
+      ExhaustiveCheck[(A, String, String)].allValues
+        .forall { case (carrier, key, value) =>
+          x.updated(carrier, key, value) === y.updated(carrier, key, value)
+        }
     }
 
     test("TextMapUpdater is invariant") {

@@ -24,12 +24,8 @@ import cats.syntax.all._
 import io.opentelemetry.api.{OpenTelemetry => JOpenTelemetry}
 import io.opentelemetry.api.GlobalOpenTelemetry
 import io.opentelemetry.sdk.{OpenTelemetrySdk => JOpenTelemetrySdk}
-import io.opentelemetry.sdk.autoconfigure.{
-  AutoConfiguredOpenTelemetrySdk => AutoConfigOtelSdk
-}
-import io.opentelemetry.sdk.autoconfigure.{
-  AutoConfiguredOpenTelemetrySdkBuilder => AutoConfigOtelSdkBuilder
-}
+import io.opentelemetry.sdk.autoconfigure.{AutoConfiguredOpenTelemetrySdk => AutoConfigOtelSdk}
+import io.opentelemetry.sdk.autoconfigure.{AutoConfiguredOpenTelemetrySdkBuilder => AutoConfigOtelSdkBuilder}
 import io.opentelemetry.sdk.common.CompletableResultCode
 import org.typelevel.otel4s.Otel4s
 import org.typelevel.otel4s.context.LocalProvider
@@ -57,12 +53,11 @@ final class OtelJava[F[_]] private (
 
 object OtelJava {
 
-  /** Creates an [[org.typelevel.otel4s.Otel4s]] from a Java OpenTelemetry
-    * instance.
+  /** Creates an [[org.typelevel.otel4s.Otel4s]] from a Java OpenTelemetry instance.
     *
     * @param jOtel
-    *   A Java OpenTelemetry instance. It is the caller's responsibility to shut
-    *   this down. Failure to do so may result in lost metrics and traces.
+    *   A Java OpenTelemetry instance. It is the caller's responsibility to shut this down. Failure to do so may result
+    *   in lost metrics and traces.
     *
     * @return
     *   An effect of an [[org.typelevel.otel4s.Otel4s]] resource.
@@ -113,21 +108,18 @@ object OtelJava {
       acquire: F[JOpenTelemetrySdk]
   ): Resource[F, OtelJava[F]] =
     Resource
-      .make(acquire)(sdk =>
-        asyncFromCompletableResultCode(Sync[F].delay(sdk.shutdown()))
-      )
+      .make(acquire)(sdk => asyncFromCompletableResultCode(Sync[F].delay(sdk.shutdown())))
       .evalMap(forAsync[F])
 
-  /** Creates a [[cats.effect.Resource `Resource`]] of the automatic
-    * configuration of a Java `OpenTelemetrySdk` instance.
+  /** Creates a [[cats.effect.Resource `Resource`]] of the automatic configuration of a Java `OpenTelemetrySdk`
+    * instance.
     *
     * If you rely on
-    * [[https://opentelemetry.io/docs/instrumentation/java/automatic/ automatic instrumentation via Java agent]],
-    * you MUST NOT use this method and MUST use [[global]] instead.
+    * [[https://opentelemetry.io/docs/instrumentation/java/automatic/ automatic instrumentation via Java agent]], you
+    * MUST NOT use this method and MUST use [[global]] instead.
     *
     * @param customize
-    *   A function for customizing the auto-configured SDK builder. This
-    *   function MUST NOT call `setResultAsGlobal`.
+    *   A function for customizing the auto-configured SDK builder. This function MUST NOT call `setResultAsGlobal`.
     * @return
     *   An [[org.typelevel.otel4s.Otel4s]] resource.
     * @see
@@ -145,8 +137,7 @@ object OtelJava {
       }
     }
 
-  /** Creates an [[org.typelevel.otel4s.Otel4s]] from the global Java
-    * OpenTelemetry instance.
+  /** Creates an [[org.typelevel.otel4s.Otel4s]] from the global Java OpenTelemetry instance.
     *
     * @see
     *   [[autoConfigured]]

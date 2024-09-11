@@ -35,15 +35,12 @@ meterProvider
 """)
 trait Meter[F[_]] {
 
-  /** Creates a builder of [[Counter]] instrument that records values of type
-    * `A`.
+  /** Creates a builder of [[Counter]] instrument that records values of type `A`.
     *
-    * The [[Counter]] is monotonic. This means the aggregated value is nominally
-    * increasing.
+    * The [[Counter]] is monotonic. This means the aggregated value is nominally increasing.
     *
     * @note
-    *   the `A` type must be provided explicitly, for example
-    *   `meter.counter[Long]` or `meter.counter[Double]`
+    *   the `A` type must be provided explicitly, for example `meter.counter[Long]` or `meter.counter[Double]`
     *
     * @example
     *   {{{
@@ -63,22 +60,17 @@ trait Meter[F[_]] {
     *   the name of the instrument
     *
     * @tparam A
-    *   the type of the measurement. [[scala.Long]] and [[scala.Double]] are
-    *   supported out of the box
+    *   the type of the measurement. [[scala.Long]] and [[scala.Double]] are supported out of the box
     */
   def counter[A: MeasurementValue](name: String): Counter.Builder[F, A]
 
-  /** Creates a builder of [[Histogram]] instrument that records values of type
-    * `A`.
+  /** Creates a builder of [[Histogram]] instrument that records values of type `A`.
     *
-    * [[Histogram]] metric data points convey a population of recorded
-    * measurements in a compressed format. A histogram bundles a set of events
-    * into divided populations with an overall event count and aggregate sum for
-    * all events.
+    * [[Histogram]] metric data points convey a population of recorded measurements in a compressed format. A histogram
+    * bundles a set of events into divided populations with an overall event count and aggregate sum for all events.
     *
     * @note
-    *   the `A` type must be provided explicitly, for example
-    *   `meter.histogram[Long]` or `meter.histogram[Double]`
+    *   the `A` type must be provided explicitly, for example `meter.histogram[Long]` or `meter.histogram[Double]`
     *
     * @example
     *   {{{
@@ -95,20 +87,17 @@ trait Meter[F[_]] {
     *   the name of the instrument
     *
     * @tparam A
-    *   the type of the measurement. [[scala.Long]] and [[scala.Double]] are
-    *   supported out of the box
+    *   the type of the measurement. [[scala.Long]] and [[scala.Double]] are supported out of the box
     */
   def histogram[A: MeasurementValue](name: String): Histogram.Builder[F, A]
 
-  /** Creates a builder of [[UpDownCounter]] instrument that records values of
-    * type `A`.
+  /** Creates a builder of [[UpDownCounter]] instrument that records values of type `A`.
     *
-    * The [[UpDownCounter]] is non-monotonic. This means the aggregated value
-    * can increase and decrease.
+    * The [[UpDownCounter]] is non-monotonic. This means the aggregated value can increase and decrease.
     *
     * @note
-    *   the `A` type must be provided explicitly, for example
-    *   `meter.upDownCounter[Long]` or `meter.upDownCounter[Double]`
+    *   the `A` type must be provided explicitly, for example `meter.upDownCounter[Long]` or
+    *   `meter.upDownCounter[Double]`
     *
     * @example
     *   {{{
@@ -128,8 +117,7 @@ trait Meter[F[_]] {
     *   the name of the instrument
     *
     * @tparam A
-    *   the type of the measurement. [[scala.Long]] and [[scala.Double]] are
-    *   supported out of the box
+    *   the type of the measurement. [[scala.Long]] and [[scala.Double]] are supported out of the box
     */
   def upDownCounter[A: MeasurementValue](
       name: String
@@ -140,8 +128,7 @@ trait Meter[F[_]] {
     * The [[Gauge]] records non-additive values.
     *
     * @note
-    *   the `A` type must be provided explicitly, for example
-    *   `meter.gauge[Long]` or `meter.gauge[Double]`
+    *   the `A` type must be provided explicitly, for example `meter.gauge[Long]` or `meter.gauge[Double]`
     *
     * @example
     *   {{{
@@ -161,17 +148,15 @@ trait Meter[F[_]] {
     *   the name of the instrument
     *
     * @tparam A
-    *   the type of the measurement. [[scala.Long]] and [[scala.Double]] are
-    *   supported out of the box
+    *   the type of the measurement. [[scala.Long]] and [[scala.Double]] are supported out of the box
     */
   def gauge[A: MeasurementValue](name: String): Gauge.Builder[F, A]
 
-  /** Creates a builder of [[ObservableGauge]] instrument that collects values
-    * of type `A` from the given callback.
+  /** Creates a builder of [[ObservableGauge]] instrument that collects values of type `A` from the given callback.
     *
     * @note
-    *   the `A` type must be provided explicitly, for example
-    *   `meter.observableGauge[Long]` or `meter.observableGauge[Double]`
+    *   the `A` type must be provided explicitly, for example `meter.observableGauge[Long]` or
+    *   `meter.observableGauge[Double]`
     *
     * @example
     *   {{{
@@ -192,22 +177,19 @@ trait Meter[F[_]] {
     *   the name of the instrument
     *
     * @tparam A
-    *   the type of the measurement. [[scala.Long]] and [[scala.Double]] are
-    *   supported out of the box
+    *   the type of the measurement. [[scala.Long]] and [[scala.Double]] are supported out of the box
     */
   def observableGauge[A: MeasurementValue](
       name: String
   ): ObservableGauge.Builder[F, A]
 
-  /** Creates a builder of [[ObservableCounter]] instrument that collects values
-    * of type `A` from the given callback.
+  /** Creates a builder of [[ObservableCounter]] instrument that collects values of type `A` from the given callback.
     *
-    * The [[ObservableCounter]] is monotonic. This means the aggregated value is
-    * nominally increasing.
+    * The [[ObservableCounter]] is monotonic. This means the aggregated value is nominally increasing.
     *
     * @note
-    *   the `A` type must be provided explicitly, for example
-    *   `meter.observableCounter[Long]` or `meter.observableCounter[Double]`
+    *   the `A` type must be provided explicitly, for example `meter.observableCounter[Long]` or
+    *   `meter.observableCounter[Double]`
     *
     * @example
     *   {{{
@@ -231,22 +213,19 @@ trait Meter[F[_]] {
     *   the name of the instrument
     *
     * @tparam A
-    *   the type of the measurement. [[scala.Long]] and [[scala.Double]] are
-    *   supported out of the box
+    *   the type of the measurement. [[scala.Long]] and [[scala.Double]] are supported out of the box
     */
   def observableCounter[A: MeasurementValue](
       name: String
   ): ObservableCounter.Builder[F, A]
 
-  /** Creates a builder of [[ObservableUpDownCounter]] instrument that collects
-    * values of type `A` from the given callback.
+  /** Creates a builder of [[ObservableUpDownCounter]] instrument that collects values of type `A` from the given
+    * callback.
     *
-    * The [[ObservableUpDownCounter]] is non-monotonic. This means the
-    * aggregated value can increase and decrease.
+    * The [[ObservableUpDownCounter]] is non-monotonic. This means the aggregated value can increase and decrease.
     *
     * @note
-    *   the `A` type must be provided explicitly, for example
-    *   `meter.observableUpDownCounter[Long]` or
+    *   the `A` type must be provided explicitly, for example `meter.observableUpDownCounter[Long]` or
     *   `meter.observableUpDownCounter[Double]`
     *
     * @example
@@ -265,8 +244,8 @@ trait Meter[F[_]] {
     *   }}}
     *
     * @note
-    *   the `A` type must be provided explicitly, for example
-    *   `meter.observableCounter[Long]` or `meter.observableCounter[Double]`
+    *   the `A` type must be provided explicitly, for example `meter.observableCounter[Long]` or
+    *   `meter.observableCounter[Double]`
     *
     * @see
     *   See [[observableCounter]] for monotonic alternative
@@ -275,8 +254,7 @@ trait Meter[F[_]] {
     *   the name of the instrument
     *
     * @tparam A
-    *   the type of the measurement. [[scala.Long]] and [[scala.Double]] are
-    *   supported out of the box
+    *   the type of the measurement. [[scala.Long]] and [[scala.Double]] are supported out of the box
     */
   def observableUpDownCounter[A: MeasurementValue](
       name: String
@@ -284,8 +262,7 @@ trait Meter[F[_]] {
 
   /** Constructs a batch callback.
     *
-    * Batch callbacks allow a single callback to observe measurements for
-    * multiple asynchronous instruments.
+    * Batch callbacks allow a single callback to observe measurements for multiple asynchronous instruments.
     *
     * The callback will be called when the instruments are being observed.
     *
@@ -316,8 +293,7 @@ object Meter {
 
   /** Creates a no-op implementation of the [[Meter]].
     *
-    * All meter instruments ([[Counter]], [[Histogram]], etc) have no-op
-    * implementation too.
+    * All meter instruments ([[Counter]], [[Histogram]], etc) have no-op implementation too.
     *
     * @tparam F
     *   the higher-kinded type of a polymorphic effect

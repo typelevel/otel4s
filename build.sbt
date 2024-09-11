@@ -16,9 +16,7 @@ ThisBuild / tlSonatypeUseLegacyHost := false
 ThisBuild / tlSitePublishBranch := Some("main")
 
 lazy val scalafixSettings = Seq(
-  semanticdbOptions ++= Seq("-P:semanticdb:synthetics:on").filter(_ =>
-    !tlIsScala3.value
-  )
+  semanticdbOptions ++= Seq("-P:semanticdb:synthetics:on").filter(_ => !tlIsScala3.value)
 )
 
 lazy val scalaJSLinkerSettings = Def.settings(

@@ -21,9 +21,7 @@ import cats.effect.Async
 import cats.effect.Resource
 import cats.syntax.flatMap._
 import cats.syntax.functor._
-import io.opentelemetry.context.propagation.{
-  TextMapPropagator => JTextMapPropagator
-}
+import io.opentelemetry.context.propagation.{TextMapPropagator => JTextMapPropagator}
 import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter
 import io.opentelemetry.sdk.trace.SdkTracerProvider
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder
@@ -62,13 +60,12 @@ trait TracesTestkit[F[_]] {
     */
   def finishedSpans[A: FromSpanData]: F[List[A]]
 
-  /** The propagators used by the
-    * [[org.typelevel.otel4s.trace.TracerProvider TracerProvider]].
+  /** The propagators used by the [[org.typelevel.otel4s.trace.TracerProvider TracerProvider]].
     */
   def propagators: ContextPropagators[Context]
 
-  /** The [[org.typelevel.otel4s.oteljava.context.LocalContext LocalContext]]
-    * used by the [[org.typelevel.otel4s.trace.TracerProvider TracerProvider]].
+  /** The [[org.typelevel.otel4s.oteljava.context.LocalContext LocalContext]] used by the
+    * [[org.typelevel.otel4s.trace.TracerProvider TracerProvider]].
     */
   def localContext: LocalContext[F]
 }
@@ -84,8 +81,7 @@ object TracesTestkit {
     *   the propagators to use
     */
   def inMemory[F[_]: Async: LocalContextProvider](
-      customize: SdkTracerProviderBuilder => SdkTracerProviderBuilder =
-        identity,
+      customize: SdkTracerProviderBuilder => SdkTracerProviderBuilder = identity,
       textMapPropagators: Iterable[JTextMapPropagator] = Nil
   ): Resource[F, TracesTestkit[F]] = {
     def createSpanExporter =

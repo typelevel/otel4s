@@ -26,8 +26,7 @@ import cats.data.NonEmptyList
 import cats.syntax.all._
 import org.typelevel.otel4s.sdk.trace.data.SpanData
 
-/** An interface that allows different tracing services to export recorded data
-  * for sampled spans in their own format.
+/** An interface that allows different tracing services to export recorded data for sampled spans in their own format.
   *
   * @see
   *   [[https://opentelemetry.io/docs/specs/otel/trace/sdk/#span-exporter]]
@@ -39,8 +38,7 @@ trait SpanExporter[F[_]] {
 
   /** The name of the exporter.
     *
-    * It will be used in an exception to distinguish individual failures in the
-    * multi-error scenario.
+    * It will be used in an exception to distinguish individual failures in the multi-error scenario.
     *
     * @see
     *   [[org.typelevel.otel4s.sdk.trace.exporter.SpanExporter.ExporterFailure SpanExporter.ExporterFailure]]
@@ -50,27 +48,23 @@ trait SpanExporter[F[_]] {
     */
   def name: String
 
-  /** Called to export sampled
-    * [[org.typelevel.otel4s.sdk.trace.data.SpanData SpanData]].
+  /** Called to export sampled [[org.typelevel.otel4s.sdk.trace.data.SpanData SpanData]].
     *
     * @note
-    *   the export operations can be performed simultaneously depending on the
-    *   type of span processor being used. However, the batch span processor
-    *   will ensure that only one export can occur at a time.
+    *   the export operations can be performed simultaneously depending on the type of span processor being used.
+    *   However, the batch span processor will ensure that only one export can occur at a time.
     *
     * @param spans
     *   the sampled spans to be exported
     */
   def exportSpans[G[_]: Foldable](spans: G[SpanData]): F[Unit]
 
-  /** Exports the collection of sampled
-    * [[org.typelevel.otel4s.sdk.trace.data.SpanData SpanData]] that have not
-    * yet been exported.
+  /** Exports the collection of sampled [[org.typelevel.otel4s.sdk.trace.data.SpanData SpanData]] that have not yet been
+    * exported.
     *
     * @note
-    *   the export operations can be performed simultaneously depending on the
-    *   type of span processor being used. However, the batch span processor
-    *   will ensure that only one export can occur at a time.
+    *   the export operations can be performed simultaneously depending on the type of span processor being used.
+    *   However, the batch span processor will ensure that only one export can occur at a time.
     */
   def flush: F[Unit]
 
@@ -95,8 +89,7 @@ object SpanExporter {
   def noop[F[_]: Applicative]: SpanExporter[F] =
     new Noop
 
-  implicit def spanExporterMonoid[F[_]: MonadThrow: Parallel]
-      : Monoid[SpanExporter[F]] =
+  implicit def spanExporterMonoid[F[_]: MonadThrow: Parallel]: Monoid[SpanExporter[F]] =
     new Monoid[SpanExporter[F]] {
       val empty: SpanExporter[F] =
         noop[F]

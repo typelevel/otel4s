@@ -17,16 +17,10 @@
 package org.typelevel.otel4s.oteljava.context
 package propagation
 
-import io.opentelemetry.api.incubator.propagation.{
-  PassThroughPropagator => JPassThroughPropagator
-}
-import io.opentelemetry.context.propagation.{
-  ContextPropagators => JContextPropagators
-}
+import io.opentelemetry.api.incubator.propagation.{PassThroughPropagator => JPassThroughPropagator}
+import io.opentelemetry.context.propagation.{ContextPropagators => JContextPropagators}
 import io.opentelemetry.context.propagation.{TextMapGetter => JTextMapGetter}
-import io.opentelemetry.context.propagation.{
-  TextMapPropagator => JTextMapPropagator
-}
+import io.opentelemetry.context.propagation.{TextMapPropagator => JTextMapPropagator}
 import munit.ScalaCheckSuite
 import org.scalacheck.Arbitrary
 import org.scalacheck.Gen
@@ -147,124 +141,120 @@ class PropagatorConvertersProps extends ScalaCheckSuite {
   }
 
   property("Java TextMapPropagator and wrapper behavior equivalence") {
-    forAll {
-      (entries: Carrier, extraFields: Set[String], unpropagated: Carrier) =>
-        val tmp =
-          JPassThroughPropagator.create((entries.keySet ++ extraFields).asJava)
-        val wrapper = tmp.asScala
-        assertEquals(wrapper.fields.toSeq, tmp.fields().asScala.toSeq)
-        val toSkip = unpropagated.view
-          .filterKeys(k => !entries.contains(k) && !extraFields.contains(k))
-          .toMap
-        val extracted =
-          tmp.extract(Context.root.underlying, entries ++ toSkip, mkJTMG)
-        val wrapperExtracted =
-          wrapper.extract(Context.root, entries ++ toSkip)
-        var injected = Map.empty[String, String]
-        tmp.inject[Carrier](
-          extracted,
-          null,
-          (_, k, v) => injected = injected.updated(k, v)
-        )
-        val wrapperInjected =
-          wrapper.inject(wrapperExtracted, Map.empty[String, String])
-        assertEquals(wrapperInjected, injected)
+    forAll { (entries: Carrier, extraFields: Set[String], unpropagated: Carrier) =>
+      val tmp =
+        JPassThroughPropagator.create((entries.keySet ++ extraFields).asJava)
+      val wrapper = tmp.asScala
+      assertEquals(wrapper.fields.toSeq, tmp.fields().asScala.toSeq)
+      val toSkip = unpropagated.view
+        .filterKeys(k => !entries.contains(k) && !extraFields.contains(k))
+        .toMap
+      val extracted =
+        tmp.extract(Context.root.underlying, entries ++ toSkip, mkJTMG)
+      val wrapperExtracted =
+        wrapper.extract(Context.root, entries ++ toSkip)
+      var injected = Map.empty[String, String]
+      tmp.inject[Carrier](
+        extracted,
+        null,
+        (_, k, v) => injected = injected.updated(k, v)
+      )
+      val wrapperInjected =
+        wrapper.inject(wrapperExtracted, Map.empty[String, String])
+      assertEquals(wrapperInjected, injected)
     }
   }
   property("Scala TextMapPropagator and wrapper behavior equivalence") {
-    forAll {
-      (entries: Carrier, extraFields: Set[String], unpropagated: Carrier) =>
-        val tmp: TextMapPropagator[Context] =
-          PassThroughPropagator(entries.keySet ++ extraFields)
-        val wrapper = tmp.asJava
-        assertEquals(wrapper.fields().asScala.toSeq, tmp.fields.toSeq)
-        val toSkip = unpropagated.view
-          .filterKeys(k => !entries.contains(k) && !extraFields.contains(k))
-          .toMap
-        val extracted =
-          tmp.extract(Context.root, entries ++ toSkip)
-        val wrapperExtracted =
-          wrapper.extract(Context.root.underlying, entries ++ toSkip, mkJTMG)
-        val injected = tmp.inject(extracted, Map.empty[String, String])
-        var wrapperInjected = Map.empty[String, String]
-        wrapper.inject[Carrier](
-          wrapperExtracted,
-          null,
-          (_, k, v) => wrapperInjected = wrapperInjected.updated(k, v)
-        )
-        assertEquals(wrapperInjected, injected)
+    forAll { (entries: Carrier, extraFields: Set[String], unpropagated: Carrier) =>
+      val tmp: TextMapPropagator[Context] =
+        PassThroughPropagator(entries.keySet ++ extraFields)
+      val wrapper = tmp.asJava
+      assertEquals(wrapper.fields().asScala.toSeq, tmp.fields.toSeq)
+      val toSkip = unpropagated.view
+        .filterKeys(k => !entries.contains(k) && !extraFields.contains(k))
+        .toMap
+      val extracted =
+        tmp.extract(Context.root, entries ++ toSkip)
+      val wrapperExtracted =
+        wrapper.extract(Context.root.underlying, entries ++ toSkip, mkJTMG)
+      val injected = tmp.inject(extracted, Map.empty[String, String])
+      var wrapperInjected = Map.empty[String, String]
+      wrapper.inject[Carrier](
+        wrapperExtracted,
+        null,
+        (_, k, v) => wrapperInjected = wrapperInjected.updated(k, v)
+      )
+      assertEquals(wrapperInjected, injected)
     }
   }
 
   property("Java ContextPropagators and wrapper behavior equivalence") {
-    forAll {
-      (entries: Carrier, extraFields: Set[String], unpropagated: Carrier) =>
-        val cp = JContextPropagators.create(
-          JPassThroughPropagator.create((entries.keySet ++ extraFields).asJava)
+    forAll { (entries: Carrier, extraFields: Set[String], unpropagated: Carrier) =>
+      val cp = JContextPropagators.create(
+        JPassThroughPropagator.create((entries.keySet ++ extraFields).asJava)
+      )
+      val wrapper = cp.asScala
+      assertEquals(
+        wrapper.textMapPropagator.fields.toSeq,
+        cp.getTextMapPropagator.fields().asScala.toSeq
+      )
+      val toSkip = unpropagated.view
+        .filterKeys(k => !entries.contains(k) && !extraFields.contains(k))
+        .toMap
+      val extracted =
+        cp.getTextMapPropagator.extract(
+          Context.root.underlying,
+          entries ++ toSkip,
+          mkJTMG
         )
-        val wrapper = cp.asScala
-        assertEquals(
-          wrapper.textMapPropagator.fields.toSeq,
-          cp.getTextMapPropagator.fields().asScala.toSeq
+      val wrapperExtracted =
+        wrapper.textMapPropagator.extract(Context.root, entries ++ toSkip)
+      var injected = Map.empty[String, String]
+      cp.getTextMapPropagator.inject[Carrier](
+        extracted,
+        null,
+        (_, k, v) => injected = injected.updated(k, v)
+      )
+      val wrapperInjected =
+        wrapper.textMapPropagator.inject(
+          wrapperExtracted,
+          Map.empty[String, String]
         )
-        val toSkip = unpropagated.view
-          .filterKeys(k => !entries.contains(k) && !extraFields.contains(k))
-          .toMap
-        val extracted =
-          cp.getTextMapPropagator.extract(
-            Context.root.underlying,
-            entries ++ toSkip,
-            mkJTMG
-          )
-        val wrapperExtracted =
-          wrapper.textMapPropagator.extract(Context.root, entries ++ toSkip)
-        var injected = Map.empty[String, String]
-        cp.getTextMapPropagator.inject[Carrier](
-          extracted,
-          null,
-          (_, k, v) => injected = injected.updated(k, v)
-        )
-        val wrapperInjected =
-          wrapper.textMapPropagator.inject(
-            wrapperExtracted,
-            Map.empty[String, String]
-          )
-        assertEquals(wrapperInjected, injected)
+      assertEquals(wrapperInjected, injected)
     }
   }
   property("Scala ContextPropagators and wrapper behavior equivalence") {
-    forAll {
-      (entries: Carrier, extraFields: Set[String], unpropagated: Carrier) =>
-        val cp = ContextPropagators.of(
-          PassThroughPropagator[Context, Context.Key](
-            entries.keySet ++ extraFields
-          )
+    forAll { (entries: Carrier, extraFields: Set[String], unpropagated: Carrier) =>
+      val cp = ContextPropagators.of(
+        PassThroughPropagator[Context, Context.Key](
+          entries.keySet ++ extraFields
         )
-        val wrapper = cp.asJava
-        assertEquals(
-          wrapper.getTextMapPropagator.fields().asScala.toSeq,
-          cp.textMapPropagator.fields.toSeq
+      )
+      val wrapper = cp.asJava
+      assertEquals(
+        wrapper.getTextMapPropagator.fields().asScala.toSeq,
+        cp.textMapPropagator.fields.toSeq
+      )
+      val toSkip = unpropagated.view
+        .filterKeys(k => !entries.contains(k) && !extraFields.contains(k))
+        .toMap
+      val extracted =
+        cp.textMapPropagator.extract(Context.root, entries ++ toSkip)
+      val wrapperExtracted =
+        wrapper.getTextMapPropagator.extract(
+          Context.root.underlying,
+          entries ++ toSkip,
+          mkJTMG
         )
-        val toSkip = unpropagated.view
-          .filterKeys(k => !entries.contains(k) && !extraFields.contains(k))
-          .toMap
-        val extracted =
-          cp.textMapPropagator.extract(Context.root, entries ++ toSkip)
-        val wrapperExtracted =
-          wrapper.getTextMapPropagator.extract(
-            Context.root.underlying,
-            entries ++ toSkip,
-            mkJTMG
-          )
-        val injected =
-          cp.textMapPropagator.inject(extracted, Map.empty[String, String])
-        var wrapperInjected = Map.empty[String, String]
-        wrapper.getTextMapPropagator.inject[Carrier](
-          wrapperExtracted,
-          null,
-          (_, k, v) => wrapperInjected = wrapperInjected.updated(k, v)
-        )
-        assertEquals(wrapperInjected, injected)
+      val injected =
+        cp.textMapPropagator.inject(extracted, Map.empty[String, String])
+      var wrapperInjected = Map.empty[String, String]
+      wrapper.getTextMapPropagator.inject[Carrier](
+        wrapperExtracted,
+        null,
+        (_, k, v) => wrapperInjected = wrapperInjected.updated(k, v)
+      )
+      assertEquals(wrapperInjected, injected)
     }
   }
 }

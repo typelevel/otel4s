@@ -20,8 +20,7 @@ import cats.Hash
 import cats.Show
 import cats.syntax.show._
 
-/** A baggage can be used to attach log messages or debugging information to the
-  * context.
+/** A baggage can be used to attach log messages or debugging information to the context.
   *
   * @see
   *   [[https://opentelemetry.io/docs/specs/otel/baggage/api/]]
@@ -34,8 +33,7 @@ import cats.syntax.show._
   */
 sealed trait Baggage {
 
-  /** Returns the entry to which the specified key is mapped, or `None` if this
-    * map contains no mapping for the key.
+  /** Returns the entry to which the specified key is mapped, or `None` if this map contains no mapping for the key.
     */
   def get(key: String): Option[Baggage.Entry]
 

@@ -23,13 +23,11 @@ import org.typelevel.otel4s.sdk.trace.exporter.SpanExporter
   */
 sealed trait ExportersAutoConfigure[F[_]] {
 
-  /** Configures
-    * [[org.typelevel.otel4s.sdk.metrics.exporter.MetricExporter MetricExporter]].
+  /** Configures [[org.typelevel.otel4s.sdk.metrics.exporter.MetricExporter MetricExporter]].
     */
   def metricExporterAutoConfigure: AutoConfigure.Named[F, MetricExporter[F]]
 
-  /** Configures
-    * [[org.typelevel.otel4s.sdk.trace.exporter.SpanExporter SpanExporter]].
+  /** Configures [[org.typelevel.otel4s.sdk.trace.exporter.SpanExporter SpanExporter]].
     */
   def spanExporterAutoConfigure: AutoConfigure.Named[F, SpanExporter[F]]
 }

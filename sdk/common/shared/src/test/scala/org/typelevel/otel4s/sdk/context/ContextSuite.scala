@@ -53,10 +53,9 @@ class ContextSuite extends DisciplineSuite {
   }
 
   test("override values in the context") {
-    Prop.forAll(keyGen[String], Gen.alphaNumStr, Gen.alphaNumStr) {
-      case (key, value1, value2) =>
-        val ctx = Context.root.updated(key, value1).updated(key, value2)
-        assertEquals(ctx.get(key), Some(value2))
+    Prop.forAll(keyGen[String], Gen.alphaNumStr, Gen.alphaNumStr) { case (key, value1, value2) =>
+      val ctx = Context.root.updated(key, value1).updated(key, value2)
+      assertEquals(ctx.get(key), Some(value2))
     }
   }
 

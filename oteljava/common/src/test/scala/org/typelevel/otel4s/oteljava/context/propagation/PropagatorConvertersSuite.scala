@@ -16,9 +16,7 @@
 
 package org.typelevel.otel4s.oteljava.context.propagation
 
-import io.opentelemetry.api.incubator.propagation.{
-  PassThroughPropagator => JPassThroughPropagator
-}
+import io.opentelemetry.api.incubator.propagation.{PassThroughPropagator => JPassThroughPropagator}
 import munit.FunSuite
 import org.typelevel.otel4s.context.propagation.PassThroughPropagator
 import org.typelevel.otel4s.oteljava.context.Context

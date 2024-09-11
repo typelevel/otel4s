@@ -21,69 +21,58 @@ package experimental.attributes
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/attributes/SemanticAttributes.scala.j2
 object TlsExperimentalAttributes {
 
-  /** String indicating the <a
-    * href="https://datatracker.ietf.org/doc/html/rfc5246#appendix-A.5">cipher</a>
-    * used during the current connection. <p>
+  /** String indicating the <a href="https://datatracker.ietf.org/doc/html/rfc5246#appendix-A.5">cipher</a> used during
+    * the current connection. <p>
     * @note
-    *   <p> The values allowed for `tls.cipher` MUST be one of the
-    *   `Descriptions` of the <a
+    *   <p> The values allowed for `tls.cipher` MUST be one of the `Descriptions` of the <a
     *   href="https://www.iana.org/assignments/tls-parameters/tls-parameters.xhtml#table-tls-parameters-4">registered
     *   TLS Cipher Suits</a>.
     */
   val TlsCipher: AttributeKey[String] =
     AttributeKey("tls.cipher")
 
-  /** PEM-encoded stand-alone certificate offered by the client. This is usually
-    * mutually-exclusive of `client.certificate_chain` since this value also
-    * exists in that list.
+  /** PEM-encoded stand-alone certificate offered by the client. This is usually mutually-exclusive of
+    * `client.certificate_chain` since this value also exists in that list.
     */
   val TlsClientCertificate: AttributeKey[String] =
     AttributeKey("tls.client.certificate")
 
-  /** Array of PEM-encoded certificates that make up the certificate chain
-    * offered by the client. This is usually mutually-exclusive of
-    * `client.certificate` since that value should be the first certificate in
-    * the chain.
+  /** Array of PEM-encoded certificates that make up the certificate chain offered by the client. This is usually
+    * mutually-exclusive of `client.certificate` since that value should be the first certificate in the chain.
     */
   val TlsClientCertificateChain: AttributeKey[Seq[String]] =
     AttributeKey("tls.client.certificate_chain")
 
-  /** Certificate fingerprint using the MD5 digest of DER-encoded version of
-    * certificate offered by the client. For consistency with other hash values,
-    * this value should be formatted as an uppercase hash.
+  /** Certificate fingerprint using the MD5 digest of DER-encoded version of certificate offered by the client. For
+    * consistency with other hash values, this value should be formatted as an uppercase hash.
     */
   val TlsClientHashMd5: AttributeKey[String] =
     AttributeKey("tls.client.hash.md5")
 
-  /** Certificate fingerprint using the SHA1 digest of DER-encoded version of
-    * certificate offered by the client. For consistency with other hash values,
-    * this value should be formatted as an uppercase hash.
+  /** Certificate fingerprint using the SHA1 digest of DER-encoded version of certificate offered by the client. For
+    * consistency with other hash values, this value should be formatted as an uppercase hash.
     */
   val TlsClientHashSha1: AttributeKey[String] =
     AttributeKey("tls.client.hash.sha1")
 
-  /** Certificate fingerprint using the SHA256 digest of DER-encoded version of
-    * certificate offered by the client. For consistency with other hash values,
-    * this value should be formatted as an uppercase hash.
+  /** Certificate fingerprint using the SHA256 digest of DER-encoded version of certificate offered by the client. For
+    * consistency with other hash values, this value should be formatted as an uppercase hash.
     */
   val TlsClientHashSha256: AttributeKey[String] =
     AttributeKey("tls.client.hash.sha256")
 
-  /** Distinguished name of <a
-    * href="https://datatracker.ietf.org/doc/html/rfc5280#section-4.1.2.6">subject</a>
-    * of the issuer of the x.509 certificate presented by the client.
+  /** Distinguished name of <a href="https://datatracker.ietf.org/doc/html/rfc5280#section-4.1.2.6">subject</a> of the
+    * issuer of the x.509 certificate presented by the client.
     */
   val TlsClientIssuer: AttributeKey[String] =
     AttributeKey("tls.client.issuer")
 
-  /** A hash that identifies clients based on how they perform an SSL/TLS
-    * handshake.
+  /** A hash that identifies clients based on how they perform an SSL/TLS handshake.
     */
   val TlsClientJa3: AttributeKey[String] =
     AttributeKey("tls.client.ja3")
 
-  /** Date/Time indicating when client certificate is no longer considered
-    * valid.
+  /** Date/Time indicating when client certificate is no longer considered valid.
     */
   val TlsClientNotAfter: AttributeKey[String] =
     AttributeKey("tls.client.not_after")
@@ -99,8 +88,7 @@ object TlsExperimentalAttributes {
   val TlsClientServerName: AttributeKey[String] =
     AttributeKey("tls.client.server_name")
 
-  /** Distinguished name of subject of the x.509 certificate presented by the
-    * client.
+  /** Distinguished name of subject of the x.509 certificate presented by the client.
     */
   val TlsClientSubject: AttributeKey[String] =
     AttributeKey("tls.client.subject")
@@ -115,8 +103,7 @@ object TlsExperimentalAttributes {
   val TlsCurve: AttributeKey[String] =
     AttributeKey("tls.curve")
 
-  /** Boolean flag indicating if the TLS negotiation was successful and
-    * transitioned to an encrypted tunnel.
+  /** Boolean flag indicating if the TLS negotiation was successful and transitioned to an encrypted tunnel.
     */
   val TlsEstablished: AttributeKey[Boolean] =
     AttributeKey("tls.established")
@@ -128,79 +115,65 @@ object TlsExperimentalAttributes {
   val TlsNextProtocol: AttributeKey[String] =
     AttributeKey("tls.next_protocol")
 
-  /** Normalized lowercase protocol name parsed from original string of the
-    * negotiated <a
-    * href="https://www.openssl.org/docs/man1.1.1/man3/SSL_get_version.html#RETURN-VALUES">SSL/TLS
-    * protocol version</a>
+  /** Normalized lowercase protocol name parsed from original string of the negotiated <a
+    * href="https://www.openssl.org/docs/man1.1.1/man3/SSL_get_version.html#RETURN-VALUES">SSL/TLS protocol version</a>
     */
   val TlsProtocolName: AttributeKey[String] =
     AttributeKey("tls.protocol.name")
 
-  /** Numeric part of the version parsed from the original string of the
-    * negotiated <a
-    * href="https://www.openssl.org/docs/man1.1.1/man3/SSL_get_version.html#RETURN-VALUES">SSL/TLS
-    * protocol version</a>
+  /** Numeric part of the version parsed from the original string of the negotiated <a
+    * href="https://www.openssl.org/docs/man1.1.1/man3/SSL_get_version.html#RETURN-VALUES">SSL/TLS protocol version</a>
     */
   val TlsProtocolVersion: AttributeKey[String] =
     AttributeKey("tls.protocol.version")
 
-  /** Boolean flag indicating if this TLS connection was resumed from an
-    * existing TLS negotiation.
+  /** Boolean flag indicating if this TLS connection was resumed from an existing TLS negotiation.
     */
   val TlsResumed: AttributeKey[Boolean] =
     AttributeKey("tls.resumed")
 
-  /** PEM-encoded stand-alone certificate offered by the server. This is usually
-    * mutually-exclusive of `server.certificate_chain` since this value also
-    * exists in that list.
+  /** PEM-encoded stand-alone certificate offered by the server. This is usually mutually-exclusive of
+    * `server.certificate_chain` since this value also exists in that list.
     */
   val TlsServerCertificate: AttributeKey[String] =
     AttributeKey("tls.server.certificate")
 
-  /** Array of PEM-encoded certificates that make up the certificate chain
-    * offered by the server. This is usually mutually-exclusive of
-    * `server.certificate` since that value should be the first certificate in
-    * the chain.
+  /** Array of PEM-encoded certificates that make up the certificate chain offered by the server. This is usually
+    * mutually-exclusive of `server.certificate` since that value should be the first certificate in the chain.
     */
   val TlsServerCertificateChain: AttributeKey[Seq[String]] =
     AttributeKey("tls.server.certificate_chain")
 
-  /** Certificate fingerprint using the MD5 digest of DER-encoded version of
-    * certificate offered by the server. For consistency with other hash values,
-    * this value should be formatted as an uppercase hash.
+  /** Certificate fingerprint using the MD5 digest of DER-encoded version of certificate offered by the server. For
+    * consistency with other hash values, this value should be formatted as an uppercase hash.
     */
   val TlsServerHashMd5: AttributeKey[String] =
     AttributeKey("tls.server.hash.md5")
 
-  /** Certificate fingerprint using the SHA1 digest of DER-encoded version of
-    * certificate offered by the server. For consistency with other hash values,
-    * this value should be formatted as an uppercase hash.
+  /** Certificate fingerprint using the SHA1 digest of DER-encoded version of certificate offered by the server. For
+    * consistency with other hash values, this value should be formatted as an uppercase hash.
     */
   val TlsServerHashSha1: AttributeKey[String] =
     AttributeKey("tls.server.hash.sha1")
 
-  /** Certificate fingerprint using the SHA256 digest of DER-encoded version of
-    * certificate offered by the server. For consistency with other hash values,
-    * this value should be formatted as an uppercase hash.
+  /** Certificate fingerprint using the SHA256 digest of DER-encoded version of certificate offered by the server. For
+    * consistency with other hash values, this value should be formatted as an uppercase hash.
     */
   val TlsServerHashSha256: AttributeKey[String] =
     AttributeKey("tls.server.hash.sha256")
 
-  /** Distinguished name of <a
-    * href="https://datatracker.ietf.org/doc/html/rfc5280#section-4.1.2.6">subject</a>
-    * of the issuer of the x.509 certificate presented by the client.
+  /** Distinguished name of <a href="https://datatracker.ietf.org/doc/html/rfc5280#section-4.1.2.6">subject</a> of the
+    * issuer of the x.509 certificate presented by the client.
     */
   val TlsServerIssuer: AttributeKey[String] =
     AttributeKey("tls.server.issuer")
 
-  /** A hash that identifies servers based on how they perform an SSL/TLS
-    * handshake.
+  /** A hash that identifies servers based on how they perform an SSL/TLS handshake.
     */
   val TlsServerJa3s: AttributeKey[String] =
     AttributeKey("tls.server.ja3s")
 
-  /** Date/Time indicating when server certificate is no longer considered
-    * valid.
+  /** Date/Time indicating when server certificate is no longer considered valid.
     */
   val TlsServerNotAfter: AttributeKey[String] =
     AttributeKey("tls.server.not_after")
@@ -210,8 +183,7 @@ object TlsExperimentalAttributes {
   val TlsServerNotBefore: AttributeKey[String] =
     AttributeKey("tls.server.not_before")
 
-  /** Distinguished name of subject of the x.509 certificate presented by the
-    * server.
+  /** Distinguished name of subject of the x.509 certificate presented by the server.
     */
   val TlsServerSubject: AttributeKey[String] =
     AttributeKey("tls.server.subject")

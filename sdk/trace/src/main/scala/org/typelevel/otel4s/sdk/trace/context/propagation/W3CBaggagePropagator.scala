@@ -79,28 +79,24 @@ private final class W3CBaggagePropagator extends TextMapPropagator[Context] {
       .mkString(",")
 
   private def decode(headerContent: String): Baggage =
-    headerContent.split(Const.Delimiter).foldLeft(Baggage.empty) {
-      case (baggage, entry) =>
-        val parts = entry.split(Const.ValueDelimiter, 2)
-        if (parts.length == 2) {
-          val key = parts(0).trim
-          val value = parts(1).trim
+    headerContent.split(Const.Delimiter).foldLeft(Baggage.empty) { case (baggage, entry) =>
+      val parts = entry.split(Const.ValueDelimiter, 2)
+      if (parts.length == 2) {
+        val key = parts(0).trim
+        val value = parts(1).trim
 
-          if (isValidKey(key)) {
-            val entryParts = value.split(Const.MetadataDelimiter, 2)
-            if (entryParts.nonEmpty) {
-              val value = entryParts(0).trim
-              if (isValidValue(value)) {
-                val decoded = urlDecode(value)
-                val meta = entryParts
-                  .lift(1)
-                  .map(_.trim)
-                  .filter(_.nonEmpty)
-                  .map(urlDecode)
-                baggage.updated(key, decoded, meta)
-              } else {
-                baggage
-              }
+        if (isValidKey(key)) {
+          val entryParts = value.split(Const.MetadataDelimiter, 2)
+          if (entryParts.nonEmpty) {
+            val value = entryParts(0).trim
+            if (isValidValue(value)) {
+              val decoded = urlDecode(value)
+              val meta = entryParts
+                .lift(1)
+                .map(_.trim)
+                .filter(_.nonEmpty)
+                .map(urlDecode)
+              baggage.updated(key, decoded, meta)
             } else {
               baggage
             }
@@ -110,6 +106,9 @@ private final class W3CBaggagePropagator extends TextMapPropagator[Context] {
         } else {
           baggage
         }
+      } else {
+        baggage
+      }
     }
 
   private def urlEncode(input: String): String =
@@ -143,8 +142,7 @@ object W3CBaggagePropagator {
 
     // see https://datatracker.ietf.org/doc/html/rfc7230#section-3.2.6
     val AllowedKeyChars: Set[Char] =
-      Set('!', '#', '$', '%', '&', '\'', '*', '+', '-', '.', '^', '_', '`', '|',
-        '~') ++
+      Set('!', '#', '$', '%', '&', '\'', '*', '+', '-', '.', '^', '_', '`', '|', '~') ++
         ('0' to '9') ++
         ('a' to 'z') ++
         ('A' to 'Z')

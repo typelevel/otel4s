@@ -17,9 +17,7 @@
 package org.typelevel.otel4s.oteljava.metrics
 
 import cats.effect.kernel.Sync
-import io.opentelemetry.api.metrics.{
-  ObservableMeasurement => JObservableMeasurement
-}
+import io.opentelemetry.api.metrics.{ObservableMeasurement => JObservableMeasurement}
 import io.opentelemetry.api.metrics.ObservableDoubleMeasurement
 import io.opentelemetry.api.metrics.ObservableLongMeasurement
 import org.typelevel.otel4s.Attributes

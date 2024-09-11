@@ -24,8 +24,7 @@ import org.typelevel.otel4s.context.Contextual
   *
   * The implementation uses [[Local]] to propagate [[Ctx]] within the fibers.
   *
-  * The [[Ctx]] is a type-safe key-value storage. It may carry [[SpanContext]],
-  * baggage attributes, and so on.
+  * The [[Ctx]] is a type-safe key-value storage. It may carry [[SpanContext]], baggage attributes, and so on.
   *
   * In terms of the span propagation, there can be 3 scenarios:
   *   - the [[SpanContext]] is missing in the context
@@ -41,16 +40,14 @@ private[otel4s] sealed trait TraceScope[F[_], Ctx] {
     */
   def current: F[Option[SpanContext]]
 
-  /** Creates a new scope using the given `spanContext` context if the
-    * requirement are met.
+  /** Creates a new scope using the given `spanContext` context if the requirement are met.
     *
     * ==The propagation logic==
     *
-    * The propagation is based on the presence and the validity of the
-    * [[SpanContext]].
+    * The propagation is based on the presence and the validity of the [[SpanContext]].
     *
-    * All context values except for the [[SpanContext]] remains intact. To
-    * demonstrate that values remain intact, the context has some baggage data.
+    * All context values except for the [[SpanContext]] remains intact. To demonstrate that values remain intact, the
+    * context has some baggage data.
     *
     * ===The [[SpanContext]] is missing===
     *
@@ -71,8 +68,7 @@ private[otel4s] sealed trait TraceScope[F[_], Ctx] {
     *
     * ===The [[SpanContext]] is valid===
     *
-    * We override the existing span context with the given one. The baggage data
-    * remains.
+    * We override the existing span context with the given one. The baggage data remains.
     *
     * {{{
     * ┌──────────────────────────────────────────────┐       ┌──────────────────────────────────────────────┐
@@ -89,8 +85,7 @@ private[otel4s] sealed trait TraceScope[F[_], Ctx] {
     *
     * ===The [[SpanContext]] is invalid===
     *
-    * The propagation logic is no-op. We keep the context as is. The baggage
-    * data remains.
+    * The propagation logic is no-op. We keep the context as is. The baggage data remains.
     *
     * {{{
     * ┌──────────────────────────────────────────────┐       ┌──────────────────────────────────────────────┐
@@ -110,17 +105,14 @@ private[otel4s] sealed trait TraceScope[F[_], Ctx] {
     */
   def childScope(spanContext: SpanContext): F[F ~> F]
 
-  /** Creates a root scope. The difference with the [[childScope]] is that we
-    * override the whole [[Ctx]], rather then only a [[SpanContext]] within the
-    * context.
+  /** Creates a root scope. The difference with the [[childScope]] is that we override the whole [[Ctx]], rather then
+    * only a [[SpanContext]] within the context.
     *
     * ==The propagation logic==
     *
-    * The propagation is based on the presence and the validity of the
-    * [[SpanContext]].
+    * The propagation is based on the presence and the validity of the [[SpanContext]].
     *
-    * To demonstrate that the whole context may be replaced, the context has
-    * some baggage data.
+    * To demonstrate that the whole context may be replaced, the context has some baggage data.
     *
     * ===The [[SpanContext]] is missing===
     *
@@ -158,8 +150,7 @@ private[otel4s] sealed trait TraceScope[F[_], Ctx] {
     *
     * ===The [[SpanContext]] is invalid===
     *
-    * The current propagation strategy is no-op, so we keep the context as is.
-    * The baggage data remains.
+    * The current propagation strategy is no-op, so we keep the context as is. The baggage data remains.
     *
     * {{{
     * ┌──────────────────────────────────────────────┐       ┌──────────────────────────────────────────────┐
@@ -178,23 +169,21 @@ private[otel4s] sealed trait TraceScope[F[_], Ctx] {
 
   /** Creates a no-op scope.
     *
-    * No-op scope means the tracing operations are no-op and the spans created
-    * within this scope will not be exported anywhere.
+    * No-op scope means the tracing operations are no-op and the spans created within this scope will not be exported
+    * anywhere.
     *
-    * We use [[SpanContext.invalid]] as a mark that the propagation logic is
-    * no-op.
+    * We use [[SpanContext.invalid]] as a mark that the propagation logic is no-op.
     *
     * A shortcut for `childScope(SpanContext.invalid)`.
     *
     * ==The propagation logic==
     *
-    * All context values except for the [[SpanContext]] remains intact. To
-    * demonstrate that values remain intact, the context has some baggage data.
+    * All context values except for the [[SpanContext]] remains intact. To demonstrate that values remain intact, the
+    * context has some baggage data.
     *
     * ===The [[SpanContext]] is missing===
     *
-    * The scope is already root, so we keep the context as is. The baggage data
-    * remains.
+    * The scope is already root, so we keep the context as is. The baggage data remains.
     *
     * {{{
     * ┌───────────────────────┐        ┌──────────────────────────────────────────────┐
@@ -211,8 +200,7 @@ private[otel4s] sealed trait TraceScope[F[_], Ctx] {
     *
     * ===The [[SpanContext]] is valid===
     *
-    * There is a valid span, we forcefully use [[SpanContext.invalid]]. The
-    * baggage data remains.
+    * There is a valid span, we forcefully use [[SpanContext.invalid]]. The baggage data remains.
     *
     * {{{
     * ┌──────────────────────────────────────────────┐       ┌──────────────────────────────────────────────┐
@@ -229,8 +217,7 @@ private[otel4s] sealed trait TraceScope[F[_], Ctx] {
     *
     * ===The [[SpanContext]] is invalid===
     *
-    * The current propagation strategy is already no-op, so we keep the context
-    * as is. The baggage data remains.
+    * The current propagation strategy is already no-op, so we keep the context as is. The baggage data remains.
     *
     * {{{
     * ┌──────────────────────────────────────────────┐       ┌──────────────────────────────────────────────┐

@@ -22,18 +22,15 @@ import cats.kernel.Hash
 import scala.collection.immutable.ListMap
 import scala.collection.immutable.SeqMap
 
-/** An '''immutable''' representation of the key-value pairs defined by the W3C
-  * Trace Context specification.
+/** An '''immutable''' representation of the key-value pairs defined by the W3C Trace Context specification.
   *
-  * Trace state allows different vendors propagate additional information and
-  * interoperate with their legacy Id formats.
+  * Trace state allows different vendors propagate additional information and interoperate with their legacy Id formats.
   *
-  *   - Key is opaque string up to 256 characters printable. It MUST begin with
-  *     a lowercase letter, and can only contain lowercase letters a-z, digits
-  *     0-9, underscores _, dashes -, asterisks *, and forward slashes /.
+  *   - Key is opaque string up to 256 characters printable. It MUST begin with a lowercase letter, and can only contain
+  *     lowercase letters a-z, digits 0-9, underscores _, dashes -, asterisks *, and forward slashes /.
   *
-  *   - Value is opaque string up to 256 characters printable ASCII RFC0020
-  *     characters (i.e., the range 0x20 to 0x7E) except comma , and =.
+  *   - Value is opaque string up to 256 characters printable ASCII RFC0020 characters (i.e., the range 0x20 to 0x7E)
+  *     except comma , and =.
   *
   * @see
   *   [[https://opentelemetry.io/docs/specs/otel/trace/api/#tracestate]]
@@ -42,31 +39,26 @@ import scala.collection.immutable.SeqMap
   */
 sealed trait TraceState {
 
-  /** Returns the value to which the specified key is mapped, or `None` if this
-    * map contains no mapping for the key.
+  /** Returns the value to which the specified key is mapped, or `None` if this map contains no mapping for the key.
     *
     * @param key
     *   with which the specified value is to be associated
     */
   def get(key: String): Option[String]
 
-  /** Adds or updates the entry that has the given `key` if it is present. If
-    * either the key or the value is invalid, the entry will not be added.
+  /** Adds or updates the entry that has the given `key` if it is present. If either the key or the value is invalid,
+    * the entry will not be added.
     *
     * @param key
-    *   the key for the entry to be added. Key is an opaque string up to 256
-    *   characters printable. It MUST begin with a lowercase letter, and can
-    *   only contain lowercase letters a-z, digits 0-9, underscores _, dashes -,
-    *   asterisks *, and forward slashes /. For multi-tenant vendor scenarios,
-    *   an at sign (@) can be used to prefix the vendor name. The tenant id
-    *   (before the '@') is limited to 240 characters and the vendor id is
-    *   limited to 13 characters. If in the multi-tenant vendor format, then the
-    *   first character may additionally be numeric.
+    *   the key for the entry to be added. Key is an opaque string up to 256 characters printable. It MUST begin with a
+    *   lowercase letter, and can only contain lowercase letters a-z, digits 0-9, underscores _, dashes -, asterisks *,
+    *   and forward slashes /. For multi-tenant vendor scenarios, an at sign (@) can be used to prefix the vendor name.
+    *   The tenant id (before the '@') is limited to 240 characters and the vendor id is limited to 13 characters. If in
+    *   the multi-tenant vendor format, then the first character may additionally be numeric.
     *
     * @param value
-    *   the value for the entry to be added. Value is opaque string up to 256
-    *   characters printable ASCII RFC0020 characters (i.e., the range 0x20 to
-    *   0x7E) except comma , and =.
+    *   the value for the entry to be added. Value is opaque string up to 256 characters printable ASCII RFC0020
+    *   characters (i.e., the range 0x20 to 0x7E) except comma , and =.
     *
     * @return
     *   a new instance of [[TraceState]] with added entry
@@ -126,9 +118,8 @@ object TraceState {
 
   /** Creates [[TraceState]] from the given map.
     *
-    * '''Important''': the map entries will not be validated. Use this method
-    * when you 100% sure the entries are valid. For example, when you wrap
-    * OpenTelemetry Java trace state.
+    * '''Important''': the map entries will not be validated. Use this method when you 100% sure the entries are valid.
+    * For example, when you wrap OpenTelemetry Java trace state.
     */
   private[otel4s] def fromVectorUnsafe(
       entries: Vector[(String, String)]
@@ -172,14 +163,11 @@ object TraceState {
     private final val TenantIdMaxSize = 240
     private final val VendorIdSize = 13
 
-    /** Key is an opaque string up to 256 characters printable. It MUST begin
-      * with a lowercase letter, and can only contain lowercase letters a-z,
-      * digits 0-9, underscores _, dashes -, asterisks *, and forward slashes /.
-      * For multi-tenant vendor scenarios, an at sign (@) can be used to prefix
-      * the vendor name. The tenant id (before the '@') is limited to 240
-      * characters and the vendor id is limited to 13 characters. If in the
-      * multi-tenant vendor format, then the first character may additionally be
-      * numeric.
+    /** Key is an opaque string up to 256 characters printable. It MUST begin with a lowercase letter, and can only
+      * contain lowercase letters a-z, digits 0-9, underscores _, dashes -, asterisks *, and forward slashes /. For
+      * multi-tenant vendor scenarios, an at sign (@) can be used to prefix the vendor name. The tenant id (before the
+      * '@') is limited to 240 characters and the vendor id is limited to 13 characters. If in the multi-tenant vendor
+      * format, then the first character may additionally be numeric.
       *
       * @see
       *   [[https://opentelemetry.io/docs/specs/otel/trace/api/#tracestate]]
@@ -242,8 +230,8 @@ object TraceState {
         char == '*' ||
         char == '/'
 
-    /** Value is opaque string up to 256 characters printable ASCII RFC0020
-      * characters (i.e., the range 0x20 to 0x7E) except comma , and =.
+    /** Value is opaque string up to 256 characters printable ASCII RFC0020 characters (i.e., the range 0x20 to 0x7E)
+      * except comma , and =.
       */
     @inline def isValueValid(value: String): Boolean = {
       val length = value.length

@@ -91,14 +91,13 @@ class TextMapGetterSuite extends FunSuite with DisciplineSuite {
   locally { // constrain `import NotQuiteExhaustiveChecks._` to a limited scope
     import NotQuiteExhaustiveChecks._
 
-    implicit def getterEq[A: ExhaustiveCheck]: Eq[TextMapGetter[A]] = {
-      (x, y) =>
-        ExhaustiveCheck[(A, String)].allValues
-          .forall { case (carrier, key) =>
-            x.get(carrier, key) === y.get(carrier, key)
-          } &&
-        ExhaustiveCheck[A].allValues
-          .forall(carrier => x.keys(carrier).toSet === y.keys(carrier).toSet)
+    implicit def getterEq[A: ExhaustiveCheck]: Eq[TextMapGetter[A]] = { (x, y) =>
+      ExhaustiveCheck[(A, String)].allValues
+        .forall { case (carrier, key) =>
+          x.get(carrier, key) === y.get(carrier, key)
+        } &&
+      ExhaustiveCheck[A].allValues
+        .forall(carrier => x.keys(carrier).toSet === y.keys(carrier).toSet)
     }
 
     test("TextMapGetter is contravariant") {

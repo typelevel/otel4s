@@ -30,9 +30,8 @@ class V0_5_0Rewrites extends SemanticRule("V0_5_0Rewrites") {
       make("org" :: "typelevel" :: "otel4s" :: packages.toList: _*)
 
     def make(packages: String*): Term.Ref =
-      packages.tail.foldLeft(Term.Name(packages.head): Term.Ref) {
-        case (selector, pkg) =>
-          Term.Select(selector, Term.Name(pkg))
+      packages.tail.foldLeft(Term.Name(packages.head): Term.Ref) { case (selector, pkg) =>
+        Term.Select(selector, Term.Name(pkg))
       }
   }
 
@@ -134,8 +133,7 @@ class V0_5_0Rewrites extends SemanticRule("V0_5_0Rewrites") {
     object UpDownCounter extends MeterOpMatcher("upDownCounter", "Long")
     object ObservableGauge extends MeterOpMatcher("observableGauge", "Double")
     object ObservableCounter extends MeterOpMatcher("observableCounter", "Long")
-    object ObservableUpDownCounter
-        extends MeterOpMatcher("observableUpDownCounter", "Long")
+    object ObservableUpDownCounter extends MeterOpMatcher("observableUpDownCounter", "Long")
   }
 
 }

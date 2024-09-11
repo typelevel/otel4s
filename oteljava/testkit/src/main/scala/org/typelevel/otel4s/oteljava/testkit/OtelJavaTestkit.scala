@@ -19,9 +19,7 @@ package oteljava.testkit
 
 import cats.effect.Async
 import cats.effect.Resource
-import io.opentelemetry.context.propagation.{
-  TextMapPropagator => JTextMapPropagator
-}
+import io.opentelemetry.context.propagation.{TextMapPropagator => JTextMapPropagator}
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder
 import org.typelevel.otel4s.context.LocalProvider
@@ -62,10 +60,8 @@ object OtelJavaTestkit {
     *   the propagators to use
     */
   def inMemory[F[_]: Async: LocalContextProvider](
-      customizeMeterProviderBuilder: SdkMeterProviderBuilder => SdkMeterProviderBuilder =
-        identity,
-      customizeTracerProviderBuilder: SdkTracerProviderBuilder => SdkTracerProviderBuilder =
-        identity,
+      customizeMeterProviderBuilder: SdkMeterProviderBuilder => SdkMeterProviderBuilder = identity,
+      customizeTracerProviderBuilder: SdkTracerProviderBuilder => SdkTracerProviderBuilder = identity,
       textMapPropagators: Iterable[JTextMapPropagator] = Nil
   ): Resource[F, OtelJavaTestkit[F]] =
     Resource.eval(LocalProvider[F, Context].local).flatMap { implicit local =>

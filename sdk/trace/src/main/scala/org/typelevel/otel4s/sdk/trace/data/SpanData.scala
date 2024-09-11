@@ -29,8 +29,7 @@ import org.typelevel.otel4s.trace.SpanKind
 
 import scala.concurrent.duration.FiniteDuration
 
-/** Immutable representation of all data collected by the
-  * [[org.typelevel.otel4s.trace.Span Span]].
+/** Immutable representation of all data collected by the [[org.typelevel.otel4s.trace.Span Span]].
   *
   * @see
   *   [[https://opentelemetry.io/docs/specs/otel/trace/api/#span]]
@@ -113,8 +112,7 @@ object SpanData {
     *   the span context associated with the span
     *
     * @param parentSpanContext
-    *   an optional parent span context. Use `None` if there is no parent span
-    *   context
+    *   an optional parent span context. Use `None` if there is no parent span context
     *
     * @param kind
     *   the kind of the span

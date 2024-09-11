@@ -31,15 +31,13 @@ sealed trait MetricData {
 
   /** The name of the metric.
     *
-    * The name is typically the instrument name, but may be optionally
-    * overridden by a view.
+    * The name is typically the instrument name, but may be optionally overridden by a view.
     */
   def name: String
 
   /** The description of the metric.
     *
-    * The metric name is typically the instrument description, but may be
-    * optionally overridden by a view.
+    * The metric name is typically the instrument description, but may be optionally overridden by a view.
     */
   def description: Option[String]
 

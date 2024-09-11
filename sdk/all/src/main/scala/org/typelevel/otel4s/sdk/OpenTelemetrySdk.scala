@@ -70,8 +70,8 @@ object OpenTelemetrySdk {
   /** Autoconfigures [[OpenTelemetrySdk]] using [[AutoConfigured.Builder]].
     *
     * @note
-    *   the external components (e.g. OTLP exporter) must be registered
-    *   manually. Add the `otel4s-sdk-exporter` dependency to the sbt file:
+    *   the external components (e.g. OTLP exporter) must be registered manually. Add the `otel4s-sdk-exporter`
+    *   dependency to the sbt file:
     *   {{{
     * libraryDependencies += "org.typelevel" %%% "otel4s-sdk-exporter" % "x.x.x"
     *   }}}
@@ -87,8 +87,7 @@ object OpenTelemetrySdk {
     *   a function for customizing the auto-configured SDK builder
     */
   def autoConfigured[F[_]: Async: Parallel: Console: LocalContextProvider](
-      customize: AutoConfigured.Builder[F] => AutoConfigured.Builder[F] =
-        (a: AutoConfigured.Builder[F]) => a
+      customize: AutoConfigured.Builder[F] => AutoConfigured.Builder[F] = (a: AutoConfigured.Builder[F]) => a
   ): Resource[F, AutoConfigured[F]] =
     customize(AutoConfigured.builder[F]).build
 
@@ -135,25 +134,24 @@ object OpenTelemetrySdk {
       /** Sets the given config to use when resolving properties.
         *
         * @note
-        *   [[addPropertiesLoader]] and [[addPropertiesCustomizer]] will have no
-        *   effect if the custom config is provided.
+        *   [[addPropertiesLoader]] and [[addPropertiesCustomizer]] will have no effect if the custom config is
+        *   provided.
         *
         * @param config
         *   the config to use
         */
       def withConfig(config: Config): Builder[F]
 
-      /** Adds the properties loader. Multiple loaders will be added. The loaded
-        * properties will be merged with the default config. Loaded properties
-        * take precedence over the default ones.
+      /** Adds the properties loader. Multiple loaders will be added. The loaded properties will be merged with the
+        * default config. Loaded properties take precedence over the default ones.
         *
         * @param loader
         *   the additional loader to add
         */
       def addPropertiesLoader(loader: F[Map[String, String]]): Builder[F]
 
-      /** Adds the properties customizer. Multiple customizers can be added, and
-        * they will be applied in the order they were added.
+      /** Adds the properties customizer. Multiple customizers can be added, and they will be applied in the order they
+        * were added.
         *
         * @param customizer
         *   the customizer to add
@@ -162,8 +160,8 @@ object OpenTelemetrySdk {
           customizer: Config => Map[String, String]
       ): Builder[F]
 
-      /** Adds the meter provider builder customizer. Multiple customizers can
-        * be added, and they will be applied in the order they were added.
+      /** Adds the meter provider builder customizer. Multiple customizers can be added, and they will be applied in the
+        * order they were added.
         *
         * @param customizer
         *   the customizer to add
@@ -172,8 +170,8 @@ object OpenTelemetrySdk {
           customizer: Customizer[SdkMeterProvider.Builder[F]]
       ): Builder[F]
 
-      /** Adds the tracer provider builder customizer. Multiple customizers can
-        * be added, and they will be applied in the order they were added.
+      /** Adds the tracer provider builder customizer. Multiple customizers can be added, and they will be applied in
+        * the order they were added.
         *
         * @param customizer
         *   the customizer to add
@@ -182,8 +180,8 @@ object OpenTelemetrySdk {
           customizer: Customizer[SdkTracerProvider.Builder[F]]
       ): Builder[F]
 
-      /** Adds the telemetry resource customizer. Multiple customizers can be
-        * added, and they will be applied in the order they were added.
+      /** Adds the telemetry resource customizer. Multiple customizers can be added, and they will be applied in the
+        * order they were added.
         *
         * @param customizer
         *   the customizer to add
@@ -192,17 +190,15 @@ object OpenTelemetrySdk {
           customizer: Customizer[TelemetryResource]
       ): Builder[F]
 
-      /** Adds the telemetry resource detector. Multiple detectors can be added,
-        * and the detected telemetry resources will be merged.
+      /** Adds the telemetry resource detector. Multiple detectors can be added, and the detected telemetry resources
+        * will be merged.
         *
         * By default, the following detectors are enabled:
         *   - host: `host.arch`, `host.name`
         *   - os: `os.type`, `os.description`
-        *   - process: `process.command`, `process.command_args`,
-        *     `process.command_line`, `process.executable.name`,
+        *   - process: `process.command`, `process.command_args`, `process.command_line`, `process.executable.name`,
         *     `process.executable.path`, `process.pid`, `process.owner`
-        *   - process_runtime: `process.runtime.name`,
-        *     `process.runtime.version`, `process.runtime.description`
+        *   - process_runtime: `process.runtime.name`, `process.runtime.version`, `process.runtime.description`
         *
         * @param detector
         *   the detector to add
@@ -211,8 +207,8 @@ object OpenTelemetrySdk {
           detector: TelemetryResourceDetector[F]
       ): Builder[F]
 
-      /** Adds both metric and span exporter configurers. Can be used to
-        * register exporters that aren't included in the SDK.
+      /** Adds both metric and span exporter configurers. Can be used to register exporters that aren't included in the
+        * SDK.
         *
         * @example
         *   Add the `otel4s-sdk-exporter` dependency to the build file:
@@ -234,8 +230,7 @@ object OpenTelemetrySdk {
           configurer: ExportersAutoConfigure[F]
       ): Builder[F]
 
-      /** Adds the exporter configurer. Can be used to register exporters that
-        * aren't included in the SDK.
+      /** Adds the exporter configurer. Can be used to register exporters that aren't included in the SDK.
         *
         * @example
         *   Add the `otel4s-sdk-exporter` dependency to the build file:
@@ -257,8 +252,7 @@ object OpenTelemetrySdk {
           configurer: AutoConfigure.Named[F, MetricExporter[F]]
       ): Builder[F]
 
-      /** Adds the exporter configurer. Can be used to register exporters that
-        * aren't included in the SDK.
+      /** Adds the exporter configurer. Can be used to register exporters that aren't included in the SDK.
         *
         * @example
         *   Add the `otel4s-sdk-exporter` dependency to the build file:
@@ -280,8 +274,7 @@ object OpenTelemetrySdk {
           configurer: AutoConfigure.Named[F, SpanExporter[F]]
       ): Builder[F]
 
-      /** Adds the sampler configurer. Can be used to register samplers that
-        * aren't included in the SDK.
+      /** Adds the sampler configurer. Can be used to register samplers that aren't included in the SDK.
         *
         * @param configurer
         *   the configurer to add
@@ -290,8 +283,7 @@ object OpenTelemetrySdk {
           configurer: AutoConfigure.Named[F, Sampler]
       ): Builder[F]
 
-      /** Adds the text map propagator configurer. Can be used to register
-        * propagators that aren't included in the SDK.
+      /** Adds the text map propagator configurer. Can be used to register propagators that aren't included in the SDK.
         *
         * @param configurer
         *   the configurer to add
@@ -365,16 +357,12 @@ object OpenTelemetrySdk {
       def addMeterProviderCustomizer(
           customizer: Customizer[SdkMeterProvider.Builder[F]]
       ): Builder[F] =
-        copy(meterProviderCustomizer =
-          merge(this.meterProviderCustomizer, customizer)
-        )
+        copy(meterProviderCustomizer = merge(this.meterProviderCustomizer, customizer))
 
       def addTracerProviderCustomizer(
           customizer: Customizer[SdkTracerProvider.Builder[F]]
       ): Builder[F] =
-        copy(tracerProviderCustomizer =
-          merge(this.tracerProviderCustomizer, customizer)
-        )
+        copy(tracerProviderCustomizer = merge(this.tracerProviderCustomizer, customizer))
 
       def addResourceDetector(
           detector: TelemetryResourceDetector[F]
@@ -385,10 +373,8 @@ object OpenTelemetrySdk {
           configurer: ExportersAutoConfigure[F]
       ): Builder[F] =
         copy(
-          metricExporterConfigurers =
-            metricExporterConfigurers + configurer.metricExporterAutoConfigure,
-          spanExporterConfigurers =
-            spanExporterConfigurers + configurer.spanExporterAutoConfigure
+          metricExporterConfigurers = metricExporterConfigurers + configurer.metricExporterAutoConfigure,
+          spanExporterConfigurers = spanExporterConfigurers + configurer.spanExporterAutoConfigure
         )
 
       def addMetricExporterConfigurer(
@@ -409,18 +395,14 @@ object OpenTelemetrySdk {
       def addTextMapPropagatorConfigurer(
           configurer: AutoConfigure.Named[F, TextMapPropagator[Context]]
       ): Builder[F] =
-        copy(textMapPropagatorConfigurers =
-          textMapPropagatorConfigurers + configurer
-        )
+        copy(textMapPropagatorConfigurers = textMapPropagatorConfigurers + configurer)
 
       def build: Resource[F, AutoConfigured[F]] = {
         def loadConfig: F[Config] =
           for {
             props <- propertiesLoader
             config <- Config.load(props)
-          } yield propertiesCustomizers.foldLeft(config)((cfg, c) =>
-            cfg.withOverrides(c(cfg))
-          )
+          } yield propertiesCustomizers.foldLeft(config)((cfg, c) => cfg.withOverrides(c(cfg)))
 
         def loadNoop(config: Config): Resource[F, AutoConfigured[F]] =
           Resource.eval(

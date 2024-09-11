@@ -41,8 +41,7 @@ trait SpanBuilder[F[_]] extends SpanBuilderMacro[F] {
     */
   def modifyState(f: State => State): SpanBuilder[F]
 
-  /** Indicates that the span should be the root one and the scope parent should
-    * be ignored.
+  /** Indicates that the span should be the root one and the scope parent should be ignored.
     */
   def root: SpanBuilder[F] =
     modifyState(_.withParent(SpanBuilder.Parent.Root))
@@ -51,8 +50,7 @@ trait SpanBuilder[F[_]] extends SpanBuilderMacro[F] {
     */
   def build: SpanOps[F]
 
-  /** Modify the context `F` using an implicit [[KindTransformer]] from `F` to
-    * `G`.
+  /** Modify the context `F` using an implicit [[KindTransformer]] from `F` to `G`.
     */
   def mapK[G[_]: MonadCancelThrow](implicit
       F: MonadCancelThrow[F],
@@ -68,8 +66,7 @@ object SpanBuilder {
   sealed trait Parent
   object Parent {
 
-    /** Use the span context that is currently available in the scope as a
-      * parent (if any).
+    /** Use the span context that is currently available in the scope as a parent (if any).
       */
     def propagate: Parent = Propagate
 
@@ -86,8 +83,7 @@ object SpanBuilder {
 
     private[otel4s] case object Propagate extends Parent
     private[otel4s] case object Root extends Parent
-    private[otel4s] final case class Explicit(parent: SpanContext)
-        extends Parent
+    private[otel4s] final case class Explicit(parent: SpanContext) extends Parent
   }
 
   /** The state of the [[SpanBuilder]].
@@ -121,8 +117,7 @@ object SpanBuilder {
     /** Adds the given attribute to the state.
       *
       * @note
-      *   if the state previously contained a mapping for the key, the old value
-      *   is replaced by the specified value
+      *   if the state previously contained a mapping for the key, the old value is replaced by the specified value
       *
       * @param attribute
       *   the attribute to add
@@ -132,8 +127,8 @@ object SpanBuilder {
     /** Adds attributes to the state.
       *
       * @note
-      *   if the state previously contained a mapping for any of the keys, the
-      *   old values are replaced by the specified values
+      *   if the state previously contained a mapping for any of the keys, the old values are replaced by the specified
+      *   values
       *
       * @param attributes
       *   the set of attributes to add
@@ -170,8 +165,7 @@ object SpanBuilder {
     /** Sets an explicit start timestamp.
       *
       * @note
-      *   the timestamp should be based on `Clock[F].realTime`. Using
-      *   `Clock[F].monotonic` may lead to a missing span
+      *   the timestamp should be based on `Clock[F].realTime`. Using `Clock[F].monotonic` may lead to a missing span
       *
       * @param timestamp
       *   the explicit start timestamp from the epoch

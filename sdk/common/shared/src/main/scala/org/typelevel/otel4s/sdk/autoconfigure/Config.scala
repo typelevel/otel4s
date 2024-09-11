@@ -39,13 +39,11 @@ sealed trait Config {
     *   the type of a value
     *
     * @return
-    *   - `Left(ConfigurationError)` - when the key exists in the config but
-    *     cannot be decoded as `A`
+    *   - `Left(ConfigurationError)` - when the key exists in the config but cannot be decoded as `A`
     *
     *   - `Right(None)` - when the key does not exist in the config
     *
-    *   - `Right(Some(a))` - when the key exists in the config and successfully
-    *     decoded as `A`
+    *   - `Right(Some(a))` - when the key exists in the config and successfully decoded as `A`
     */
   def get[A: Config.Reader](key: String): Either[ConfigurationError, Option[A]]
 
@@ -75,13 +73,11 @@ sealed trait Config {
     *   the type of a value
     *
     * @return
-    *   - `Left(ConfigurationError)` - when the key exists in the config but
-    *     cannot be decoded as `A`
+    *   - `Left(ConfigurationError)` - when the key exists in the config but cannot be decoded as `A`
     *
     *   - `Right(None)` - when the key does not exist in the config
     *
-    *   - `Right(Some(a))` - when the key exists in the config and successfully
-    *     decoded as `A`
+    *   - `Right(Some(a))` - when the key exists in the config and successfully decoded as `A`
     */
   final def get[A: Config.Reader](
       key: Config.Key[A]
@@ -236,8 +232,7 @@ object Config {
 
   }
 
-  /** Creates a [[Config]] with the given properties. The keys of the properties
-    * will be normalized.
+  /** Creates a [[Config]] with the given properties. The keys of the properties will be normalized.
     *
     * The priorities of the values: system properties > env variables > default.
     *
@@ -270,8 +265,7 @@ object Config {
     Impl(default ++ env ++ props)
   }
 
-  /** Creates a [[Config]] with the given properties. The properties will be
-    * treated as the system props.
+  /** Creates a [[Config]] with the given properties. The properties will be treated as the system props.
     *
     * @param properties
     *   the properties to use
@@ -279,8 +273,7 @@ object Config {
   def ofProps(properties: Map[String, String]): Config =
     apply(properties, Map.empty, Map.empty)
 
-  /** Creates a [[Config]] by loading properties from the env variables and
-    * system props.
+  /** Creates a [[Config]] by loading properties from the env variables and system props.
     *
     * @param default
     *   the default properties
@@ -308,14 +301,12 @@ object Config {
 
   }
 
-  /** Normalizes a property key by converting to lower case and replacing "-"
-    * with ".".
+  /** Normalizes a property key by converting to lower case and replacing "-" with ".".
     */
   private def normalizePropertyKey(key: String): String =
     key.toLowerCase.replace("-", ".");
 
-  /** Normalizes an env variable key by converting to lower case and replacing
-    * "_" with ".".
+  /** Normalizes an env variable key by converting to lower case and replacing "_" with ".".
     */
   private def normalizeEnvVariableKey(key: String): String =
     key.toLowerCase.replace("_", ".")

@@ -32,8 +32,7 @@ import scodec.bits.ByteVector
 
 /** A B3 propagator.
   *
-  * The propagator extracts span details from the `single` and `multiple`
-  * headers.
+  * The propagator extracts span details from the `single` and `multiple` headers.
   *
   * The injection format depends on the provided `injector`.
   *
@@ -80,14 +79,13 @@ object B3Propagator {
         .unsafeRunSync()
   }
 
-  /** Returns a [[B3Propagator]] that injects span details into a single `b3`
-    * header.
+  /** Returns a [[B3Propagator]] that injects span details into a single `b3` header.
     */
   def singleHeader: TextMapPropagator[Context] =
     SingleHeader
 
-  /** Returns a [[B3Propagator]] that injects span details into multiple
-    * headers: `X-B3-TraceId`, `X-B3-SpanId`, `X-B3-Sampled`.
+  /** Returns a [[B3Propagator]] that injects span details into multiple headers: `X-B3-TraceId`, `X-B3-SpanId`,
+    * `X-B3-Sampled`.
     */
   def multipleHeaders: TextMapPropagator[Context] =
     MultipleHeaders

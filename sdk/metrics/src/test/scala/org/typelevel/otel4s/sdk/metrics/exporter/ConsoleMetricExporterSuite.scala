@@ -26,9 +26,7 @@ import org.typelevel.otel4s.sdk.metrics.scalacheck.Gens
 import org.typelevel.otel4s.sdk.test.InMemoryConsole
 import org.typelevel.otel4s.sdk.test.InMemoryConsole._
 
-class ConsoleMetricExporterSuite
-    extends CatsEffectSuite
-    with ScalaCheckEffectSuite {
+class ConsoleMetricExporterSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
 
   test("print metrics to the console") {
     PropF.forAllF(Gen.listOf(Gens.metricData)) { metrics =>

@@ -53,8 +53,7 @@ private[metrics] final class MeterSharedState[
     registries: Map[RegisteredReader[F], MetricStorageRegistry[F]]
 ) {
 
-  /** Creates a metric storage for the given descriptor of a synchronous
-    * instrument.
+  /** Creates a metric storage for the given descriptor of a synchronous instrument.
     *
     * @param descriptor
     *   a descriptor to create a storage for
@@ -127,8 +126,7 @@ private[metrics] final class MeterSharedState[
       }
   }
 
-  /** Creates an observable measurement for the given descriptor of an
-    * asynchronous instrument.
+  /** Creates an observable measurement for the given descriptor of an asynchronous instrument.
     *
     * @param descriptor
     *   a descriptor to create an observable measurement for
@@ -226,8 +224,7 @@ private[metrics] final class MeterSharedState[
       }
     }
 
-  /** Registers a callback and removes it from the state upon resource
-    * finalization.
+  /** Registers a callback and removes it from the state upon resource finalization.
     *
     * @param callback
     *   a callback to register

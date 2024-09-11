@@ -28,8 +28,7 @@ import scala.concurrent.duration.FiniteDuration
 
 /** An extended Span interface that provides access to internal state.
   *
-  * Since the span's internal state can be mutated during the lifetime, some
-  * operations are effectful.
+  * Since the span's internal state can be mutated during the lifetime, some operations are effectful.
   *
   * @tparam F
   *   the higher-kinded type of a polymorphic effect
@@ -39,8 +38,7 @@ trait SpanRef[F[_]] extends Span.Backend[F] {
   /** Returns the kind of the span. */
   def kind: SpanKind
 
-  /** Returns the instrumentation scope specified when creating the tracer which
-    * produced this span.
+  /** Returns the instrumentation scope specified when creating the tracer which produced this span.
     */
   def scopeInfo: InstrumentationScope
 
@@ -50,14 +48,12 @@ trait SpanRef[F[_]] extends Span.Backend[F] {
   /** Returns the name of the span.
     *
     * @note
-    *   the name of the span can be changed during the lifetime of the span by
-    *   using [[org.typelevel.otel4s.trace.Span.updateName Span.updateName]], so
-    *   this value cannot be cached.
+    *   the name of the span can be changed during the lifetime of the span by using
+    *   [[org.typelevel.otel4s.trace.Span.updateName Span.updateName]], so this value cannot be cached.
     */
   def name: F[String]
 
-  /** Returns an immutable instance of the [[data.SpanData SpanData]], for use
-    * in export.
+  /** Returns an immutable instance of the [[data.SpanData SpanData]], for use in export.
     */
   def toSpanData: F[SpanData]
 
@@ -70,14 +66,11 @@ trait SpanRef[F[_]] extends Span.Backend[F] {
     */
   def duration: F[FiniteDuration]
 
-  /** Returns the attribute value for the given `key`. Returns `None` if the key
-    * is absent in the storage.
+  /** Returns the attribute value for the given `key`. Returns `None` if the key is absent in the storage.
     *
     * @note
-    *   the attribute values can be changed during the lifetime of the span by
-    *   using
-    *   [[org.typelevel.otel4s.trace.Span.addAttribute Span.addAttribute]], so
-    *   this value cannot be cached.
+    *   the attribute values can be changed during the lifetime of the span by using
+    *   [[org.typelevel.otel4s.trace.Span.addAttribute Span.addAttribute]], so this value cannot be cached.
     */
   def getAttribute[A](key: AttributeKey[A]): F[Option[A]]
 

@@ -87,8 +87,7 @@ object SdkMeterProvider {
       * [[org.typelevel.otel4s.metrics.Meter Meter]].
       *
       * @note
-      *   on multiple subsequent calls, the resource from the last call will be
-      *   retained.
+      *   on multiple subsequent calls, the resource from the last call will be retained.
       *
       * @param resource
       *   the [[TelemetryResource]] to use
@@ -98,8 +97,7 @@ object SdkMeterProvider {
     /** Merges the given [[TelemetryResource]] with the current one.
       *
       * @note
-      *   if both resources have different non-empty `schemaUrl`, the merge will
-      *   fail.
+      *   if both resources have different non-empty `schemaUrl`, the merge will fail.
       *
       * @see
       *   [[TelemetryResource.mergeUnsafe]]
@@ -109,69 +107,51 @@ object SdkMeterProvider {
       */
     def addResource(resource: TelemetryResource): Builder[F]
 
-    /** Sets an
-      * [[org.typelevel.otel4s.sdk.metrics.exemplar.ExemplarFilter ExemplarFilter]]
-      * to be used by all metrics.
+    /** Sets an [[org.typelevel.otel4s.sdk.metrics.exemplar.ExemplarFilter ExemplarFilter]] to be used by all metrics.
       *
       * @param filter
-      *   the
-      *   [[org.typelevel.otel4s.sdk.metrics.exemplar.ExemplarFilter ExemplarFilter]]
-      *   to register
+      *   the [[org.typelevel.otel4s.sdk.metrics.exemplar.ExemplarFilter ExemplarFilter]] to register
       */
     private[sdk] def withExemplarFilter(filter: ExemplarFilter): Builder[F]
 
-    /** Sets a
-      * [[org.typelevel.otel4s.sdk.metrics.exemplar.TraceContextLookup TraceContextLookup]]
-      * to be used by exemplars.
+    /** Sets a [[org.typelevel.otel4s.sdk.metrics.exemplar.TraceContextLookup TraceContextLookup]] to be used by
+      * exemplars.
       *
       * @param lookup
-      *   the
-      *   [[org.typelevel.otel4s.sdk.metrics.exemplar.TraceContextLookup TraceContextLookup]]
-      *   to use
+      *   the [[org.typelevel.otel4s.sdk.metrics.exemplar.TraceContextLookup TraceContextLookup]] to use
       */
     private[sdk] def withTraceContextLookup(
         lookup: TraceContextLookup
     ): Builder[F]
 
-    /** Registers a [[org.typelevel.otel4s.sdk.metrics.view.View View]] for the
-      * given
+    /** Registers a [[org.typelevel.otel4s.sdk.metrics.view.View View]] for the given
       * [[org.typelevel.otel4s.sdk.metrics.view.InstrumentSelector InstrumentSelector]].
       *
-      * `View` affects aggregation and export of the instruments that match the
-      * given `selector`.
+      * `View` affects aggregation and export of the instruments that match the given `selector`.
       *
       * @param selector
-      *   the
-      *   [[org.typelevel.otel4s.sdk.metrics.view.InstrumentSelector InstrumentSelector]]
-      *   to filter instruments with
+      *   the [[org.typelevel.otel4s.sdk.metrics.view.InstrumentSelector InstrumentSelector]] to filter instruments with
       *
       * @param view
       *   the [[org.typelevel.otel4s.sdk.metrics.view.View View]] to register
       */
     def registerView(selector: InstrumentSelector, view: View): Builder[F]
 
-    /** Registers a
-      * [[org.typelevel.otel4s.sdk.metrics.exporter.MetricReader MetricReader]].
+    /** Registers a [[org.typelevel.otel4s.sdk.metrics.exporter.MetricReader MetricReader]].
       *
       * @param reader
-      *   the
-      *   [[org.typelevel.otel4s.sdk.metrics.exporter.MetricReader MetricReader]]
-      *   to register
+      *   the [[org.typelevel.otel4s.sdk.metrics.exporter.MetricReader MetricReader]] to register
       */
     private[sdk] def registerMetricReader(reader: MetricReader[F]): Builder[F]
 
-    /** Registers a
-      * [[org.typelevel.otel4s.sdk.metrics.exporter.MetricProducer MetricProducer]].
+    /** Registers a [[org.typelevel.otel4s.sdk.metrics.exporter.MetricProducer MetricProducer]].
       *
       * @param producer
-      *   the
-      *   [[org.typelevel.otel4s.sdk.metrics.exporter.MetricProducer MetricProducer]]
-      *   to register
+      *   the [[org.typelevel.otel4s.sdk.metrics.exporter.MetricProducer MetricProducer]] to register
       */
     def registerMetricProducer(producer: MetricProducer[F]): Builder[F]
 
-    /** Creates [[org.typelevel.otel4s.metrics.MeterProvider MeterProvider]]
-      * with the configuration of this builder.
+    /** Creates [[org.typelevel.otel4s.metrics.MeterProvider MeterProvider]] with the configuration of this builder.
       */
     def build: F[MeterProvider[F]]
   }

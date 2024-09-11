@@ -22,8 +22,7 @@ import scodec.bits.ByteVector
 
 /** A valid trace flags is a byte or 2 character lowercase hex (base16) String.
   *
-  * These options are propagated to all child spans. These determine features
-  * such as whether a Span should be traced.
+  * These options are propagated to all child spans. These determine features such as whether a Span should be traced.
   */
 sealed trait TraceFlags {
 
@@ -83,8 +82,7 @@ object TraceFlags {
     def toByte: Byte = byte
     def toHex: String = ByteVector.fromByte(byte).toHex
 
-    /** If set, the least significant bit denotes the caller may have recorded
-      * trace data.
+    /** If set, the least significant bit denotes the caller may have recorded trace data.
       */
     def isSampled: Boolean =
       (byte & TraceFlags.SampledMask) == TraceFlags.SampledMask

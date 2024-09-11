@@ -21,28 +21,25 @@ package experimental.attributes
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/attributes/SemanticAttributes.scala.j2
 object FaasExperimentalAttributes {
 
-  /** A boolean that is true if the serverless function is executed for the
-    * first time (aka cold-start).
+  /** A boolean that is true if the serverless function is executed for the first time (aka cold-start).
     */
   val FaasColdstart: AttributeKey[Boolean] =
     AttributeKey("faas.coldstart")
 
   /** A string containing the schedule period as <a
-    * href="https://docs.oracle.com/cd/E12058_01/doc/doc.1014/e12030/cron_expressions.htm">Cron
-    * Expression</a>.
+    * href="https://docs.oracle.com/cd/E12058_01/doc/doc.1014/e12030/cron_expressions.htm">Cron Expression</a>.
     */
   val FaasCron: AttributeKey[String] =
     AttributeKey("faas.cron")
 
-  /** The name of the source on which the triggering operation was performed.
-    * For example, in Cloud Storage or S3 corresponds to the bucket name, and in
-    * Cosmos DB to the database name.
+  /** The name of the source on which the triggering operation was performed. For example, in Cloud Storage or S3
+    * corresponds to the bucket name, and in Cosmos DB to the database name.
     */
   val FaasDocumentCollection: AttributeKey[String] =
     AttributeKey("faas.document.collection")
 
-  /** The document name/table subjected to the operation. For example, in Cloud
-    * Storage or S3 is the name of the file, and in Cosmos DB the table name.
+  /** The document name/table subjected to the operation. For example, in Cloud Storage or S3 is the name of the file,
+    * and in Cosmos DB the table name.
     */
   val FaasDocumentName: AttributeKey[String] =
     AttributeKey("faas.document.name")
@@ -53,17 +50,16 @@ object FaasExperimentalAttributes {
     AttributeKey("faas.document.operation")
 
   /** A string containing the time when the data was accessed in the <a
-    * href="https://www.iso.org/iso-8601-date-and-time-format.html">ISO 8601</a>
-    * format expressed in <a href="https://www.w3.org/TR/NOTE-datetime">UTC</a>.
+    * href="https://www.iso.org/iso-8601-date-and-time-format.html">ISO 8601</a> format expressed in <a
+    * href="https://www.w3.org/TR/NOTE-datetime">UTC</a>.
     */
   val FaasDocumentTime: AttributeKey[String] =
     AttributeKey("faas.document.time")
 
-  /** The execution environment ID as a string, that will be potentially reused
-    * for other invocations to the same function/function version. <p>
+  /** The execution environment ID as a string, that will be potentially reused for other invocations to the same
+    * function/function version. <p>
     * @note
-    *   <p> <ul> <li><strong>AWS Lambda:</strong> Use the (full) log stream
-    *   name. </ul>
+    *   <p> <ul> <li><strong>AWS Lambda:</strong> Use the (full) log stream name. </ul>
     */
   val FaasInstance: AttributeKey[String] =
     AttributeKey("faas.instance")
@@ -75,34 +71,29 @@ object FaasExperimentalAttributes {
 
   /** The name of the invoked function. <p>
     * @note
-    *   <p> SHOULD be equal to the `faas.name` resource attribute of the invoked
-    *   function.
+    *   <p> SHOULD be equal to the `faas.name` resource attribute of the invoked function.
     */
   val FaasInvokedName: AttributeKey[String] =
     AttributeKey("faas.invoked_name")
 
   /** The cloud provider of the invoked function. <p>
     * @note
-    *   <p> SHOULD be equal to the `cloud.provider` resource attribute of the
-    *   invoked function.
+    *   <p> SHOULD be equal to the `cloud.provider` resource attribute of the invoked function.
     */
   val FaasInvokedProvider: AttributeKey[String] =
     AttributeKey("faas.invoked_provider")
 
   /** The cloud region of the invoked function. <p>
     * @note
-    *   <p> SHOULD be equal to the `cloud.region` resource attribute of the
-    *   invoked function.
+    *   <p> SHOULD be equal to the `cloud.region` resource attribute of the invoked function.
     */
   val FaasInvokedRegion: AttributeKey[String] =
     AttributeKey("faas.invoked_region")
 
-  /** The amount of memory available to the serverless function converted to
-    * Bytes. <p>
+  /** The amount of memory available to the serverless function converted to Bytes. <p>
     * @note
-    *   <p> It's recommended to set this attribute since e.g. too little memory
-    *   can easily stop a Java AWS Lambda function from working correctly. On
-    *   AWS Lambda, the environment variable `AWS_LAMBDA_FUNCTION_MEMORY_SIZE`
+    *   <p> It's recommended to set this attribute since e.g. too little memory can easily stop a Java AWS Lambda
+    *   function from working correctly. On AWS Lambda, the environment variable `AWS_LAMBDA_FUNCTION_MEMORY_SIZE`
     *   provides this information (which must be multiplied by 1,048,576).
     */
   val FaasMaxMemory: AttributeKey[Long] =
@@ -110,27 +101,22 @@ object FaasExperimentalAttributes {
 
   /** The name of the single function that this runtime instance executes. <p>
     * @note
-    *   <p> This is the name of the function as configured/deployed on the FaaS
-    *   platform and is usually different from the name of the callback function
-    *   (which may be stored in the <a
-    *   href="/docs/general/attributes.md#source-code-attributes">`code.namespace`/`code.function`</a>
-    *   span attributes). <p> For some cloud providers, the above definition is
-    *   ambiguous. The following definition of function name MUST be used for
-    *   this attribute (and consequently the span name) for the listed cloud
-    *   providers/products: <p> <ul> <li><strong>Azure:</strong> The full name
-    *   `<FUNCAPP>/<FUNC>`, i.e., function app name followed by a forward slash
-    *   followed by the function name (this form can also be seen in the
-    *   resource JSON for the function). This means that a span attribute MUST
-    *   be used, as an Azure function app can host multiple functions that would
-    *   usually share a TracerProvider (see also the `cloud.resource_id`
-    *   attribute). </ul>
+    *   <p> This is the name of the function as configured/deployed on the FaaS platform and is usually different from
+    *   the name of the callback function (which may be stored in the <a
+    *   href="/docs/general/attributes.md#source-code-attributes">`code.namespace`/`code.function`</a> span attributes).
+    *   <p> For some cloud providers, the above definition is ambiguous. The following definition of function name MUST
+    *   be used for this attribute (and consequently the span name) for the listed cloud providers/products: <p> <ul>
+    *   <li><strong>Azure:</strong> The full name `<FUNCAPP>/<FUNC>`, i.e., function app name followed by a forward
+    *   slash followed by the function name (this form can also be seen in the resource JSON for the function). This
+    *   means that a span attribute MUST be used, as an Azure function app can host multiple functions that would
+    *   usually share a TracerProvider (see also the `cloud.resource_id` attribute). </ul>
     */
   val FaasName: AttributeKey[String] =
     AttributeKey("faas.name")
 
   /** A string containing the function invocation time in the <a
-    * href="https://www.iso.org/iso-8601-date-and-time-format.html">ISO 8601</a>
-    * format expressed in <a href="https://www.w3.org/TR/NOTE-datetime">UTC</a>.
+    * href="https://www.iso.org/iso-8601-date-and-time-format.html">ISO 8601</a> format expressed in <a
+    * href="https://www.w3.org/TR/NOTE-datetime">UTC</a>.
     */
   val FaasTime: AttributeKey[String] =
     AttributeKey("faas.time")
@@ -142,17 +128,13 @@ object FaasExperimentalAttributes {
 
   /** The immutable version of the function being executed. <p>
     * @note
-    *   <p> Depending on the cloud provider and platform, use: <p> <ul>
-    *   <li><strong>AWS Lambda:</strong> The <a
-    *   href="https://docs.aws.amazon.com/lambda/latest/dg/configuration-versions.html">function
-    *   version</a> (an integer represented as a decimal string).
-    *   <li><strong>Google Cloud Run (Services):</strong> The <a
-    *   href="https://cloud.google.com/run/docs/managing/revisions">revision</a>
-    *   (i.e., the function name plus the revision suffix). <li><strong>Google
-    *   Cloud Functions:</strong> The value of the <a
+    *   <p> Depending on the cloud provider and platform, use: <p> <ul> <li><strong>AWS Lambda:</strong> The <a
+    *   href="https://docs.aws.amazon.com/lambda/latest/dg/configuration-versions.html">function version</a> (an integer
+    *   represented as a decimal string). <li><strong>Google Cloud Run (Services):</strong> The <a
+    *   href="https://cloud.google.com/run/docs/managing/revisions">revision</a> (i.e., the function name plus the
+    *   revision suffix). <li><strong>Google Cloud Functions:</strong> The value of the <a
     *   href="https://cloud.google.com/functions/docs/env-var#runtime_environment_variables_set_automatically">`K_REVISION`
-    *   environment variable</a>. <li><strong>Azure Functions:</strong> Not
-    *   applicable. Do not set this attribute. </ul>
+    *   environment variable</a>. <li><strong>Azure Functions:</strong> Not applicable. Do not set this attribute. </ul>
     */
   val FaasVersion: AttributeKey[String] =
     AttributeKey("faas.version")
@@ -206,8 +188,7 @@ object FaasExperimentalAttributes {
   abstract class FaasTriggerValue(val value: String)
   object FaasTriggerValue {
 
-    /** A response to some data source operation such as a database or
-      * filesystem read/write
+    /** A response to some data source operation such as a database or filesystem read/write
       */
     case object Datasource extends FaasTriggerValue("datasource")
 
@@ -215,8 +196,7 @@ object FaasExperimentalAttributes {
       */
     case object Http extends FaasTriggerValue("http")
 
-    /** A function is set to be executed when messages are sent to a messaging
-      * system
+    /** A function is set to be executed when messages are sent to a messaging system
       */
     case object Pubsub extends FaasTriggerValue("pubsub")
 

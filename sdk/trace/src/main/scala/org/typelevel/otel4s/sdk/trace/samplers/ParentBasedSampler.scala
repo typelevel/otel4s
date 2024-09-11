@@ -24,8 +24,7 @@ import scodec.bits.ByteVector
 
 /** Sampler that uses the sampled flag of the parent Span, if present.
   *
-  * If the span has no parent, this Sampler will use the "root" sampler that it
-  * is built with.
+  * If the span has no parent, this Sampler will use the "root" sampler that it is built with.
   *
   * @see
   *   [[https://opentelemetry.io/docs/specs/otel/trace/sdk/#parentbased]]
@@ -77,18 +76,17 @@ private[samplers] final case class ParentBasedSampler private (
 
 object ParentBasedSampler {
 
-  /** Creates a [[Builder]] for the parent-based sampler that enables
-    * configuration of the parent-based sampling strategy.
+  /** Creates a [[Builder]] for the parent-based sampler that enables configuration of the parent-based sampling
+    * strategy.
     *
-    * The parent's sampling decision is used if a parent span exists, otherwise
-    * this strategy uses the root sampler's decision.
+    * The parent's sampling decision is used if a parent span exists, otherwise this strategy uses the root sampler's
+    * decision.
     *
-    * There are a several options available on the builder to control the
-    * precise behavior of how the decision will be made.
+    * There are a several options available on the builder to control the precise behavior of how the decision will be
+    * made.
     *
     * @param root
-    *   the [[Sampler]] which is used to make the sampling decisions if the
-    *   parent does not exist
+    *   the [[Sampler]] which is used to make the sampling decisions if the parent does not exist
     */
   def builder(root: Sampler): Builder =
     BuilderImpl(root, None, None, None, None)
@@ -97,34 +95,27 @@ object ParentBasedSampler {
     */
   sealed trait Builder {
 
-    /** Assigns the [[Sampler]] to use when there is a remote parent that was
-      * sampled.
+    /** Assigns the [[Sampler]] to use when there is a remote parent that was sampled.
       *
-      * If not set, defaults to always sampling if the remote parent was
-      * sampled.
+      * If not set, defaults to always sampling if the remote parent was sampled.
       */
     def withRemoteParentSampled(sampler: Sampler): Builder
 
-    /** Assigns the [[Sampler]] to use when there is a remote parent that was
-      * not sampled.
+    /** Assigns the [[Sampler]] to use when there is a remote parent that was not sampled.
       *
-      * If not set, defaults to never sampling when the remote parent isn't
-      * sampled.
+      * If not set, defaults to never sampling when the remote parent isn't sampled.
       */
     def withRemoteParentNotSampled(sampler: Sampler): Builder
 
-    /** Assigns the [[Sampler]] to use when there is a local parent that was
-      * sampled.
+    /** Assigns the [[Sampler]] to use when there is a local parent that was sampled.
       *
       * If not set, defaults to always sampling if the local parent was sampled.
       */
     def withLocalParentSampled(sampler: Sampler): Builder
 
-    /** Assigns the [[Sampler]] to use when there is a local parent that was not
-      * sampled.
+    /** Assigns the [[Sampler]] to use when there is a local parent that was not sampled.
       *
-      * If not set, defaults to never sampling when the local parent isn't
-      * sampled.
+      * If not set, defaults to never sampling when the local parent isn't sampled.
       */
     def withLocalParentNotSampled(sampler: Sampler): Builder
 

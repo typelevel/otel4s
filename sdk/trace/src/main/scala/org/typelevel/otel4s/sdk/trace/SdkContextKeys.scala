@@ -25,8 +25,8 @@ import org.typelevel.otel4s.trace.SpanContext
   */
 object SdkContextKeys {
 
-  /** The [[org.typelevel.otel4s.trace.SpanContext SpanContext]] is stored under
-    * this key in the [[org.typelevel.otel4s.sdk.context.Context Context]].
+  /** The [[org.typelevel.otel4s.trace.SpanContext SpanContext]] is stored under this key in the
+    * [[org.typelevel.otel4s.sdk.context.Context Context]].
     *
     * To retrieve the context use:
     * {{{
@@ -39,8 +39,8 @@ object SdkContextKeys {
       .unique[SyncIO, SpanContext]("otel4s-trace-span-context-key")
       .unsafeRunSync()
 
-  /** The [[org.typelevel.otel4s.baggage.Baggage Baggage]] is stored under this
-    * key in the [[org.typelevel.otel4s.sdk.context.Context Context]].
+  /** The [[org.typelevel.otel4s.baggage.Baggage Baggage]] is stored under this key in the
+    * [[org.typelevel.otel4s.sdk.context.Context Context]].
     *
     * To retrieve the baggage use:
     * {{{

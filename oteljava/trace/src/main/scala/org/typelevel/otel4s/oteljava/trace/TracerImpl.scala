@@ -83,7 +83,5 @@ private[oteljava] class TracerImpl[F[_]](
   }
 
   def propagate[C: TextMapUpdater](carrier: C): F[C] =
-    traceScope.contextReader(ctx =>
-      propagators.textMapPropagator.inject(ctx, carrier)
-    )
+    traceScope.contextReader(ctx => propagators.textMapPropagator.inject(ctx, carrier))
 }

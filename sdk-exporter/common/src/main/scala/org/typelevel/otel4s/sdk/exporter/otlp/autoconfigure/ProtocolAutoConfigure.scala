@@ -23,8 +23,7 @@ import org.typelevel.otel4s.sdk.autoconfigure.AutoConfigure
 import org.typelevel.otel4s.sdk.autoconfigure.Config
 import org.typelevel.otel4s.sdk.autoconfigure.ConfigurationError
 
-/** Autoconfigures OTLP
-  * [[org.typelevel.otel4s.sdk.exporter.otlp.Protocol Protocol]].
+/** Autoconfigures OTLP [[org.typelevel.otel4s.sdk.exporter.otlp.Protocol Protocol]].
   *
   * The general configuration options:
   * {{{
@@ -110,8 +109,7 @@ private[exporter] object ProtocolAutoConfigure {
     val OtlpProtocol: Protocol = Protocol.Http(HttpPayloadEncoding.Protobuf)
   }
 
-  /** Autoconfigures OTLP
-    * [[org.typelevel.otel4s.sdk.exporter.otlp.Protocol Protocol]].
+  /** Autoconfigures OTLP [[org.typelevel.otel4s.sdk.exporter.otlp.Protocol Protocol]].
     *
     * The general configuration options:
     * {{{
@@ -133,8 +131,7 @@ private[exporter] object ProtocolAutoConfigure {
   def metrics[F[_]: MonadThrow]: AutoConfigure[F, Protocol] =
     new ProtocolAutoConfigure[F](ConfigKeys.MetricsProtocol)
 
-  /** Autoconfigures OTLP
-    * [[org.typelevel.otel4s.sdk.exporter.otlp.Protocol Protocol]].
+  /** Autoconfigures OTLP [[org.typelevel.otel4s.sdk.exporter.otlp.Protocol Protocol]].
     *
     * The general configuration options:
     * {{{

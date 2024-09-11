@@ -29,8 +29,7 @@ import org.typelevel.otel4s.sdk.metrics.data.MetricData
 /** A metric exporter that logs every metric using [[cats.effect.std.Console]].
   *
   * @note
-  *   use this exporter for debugging purposes because it may affect the
-  *   performance
+  *   use this exporter for debugging purposes because it may affect the performance
   *
   * @tparam F
   *   the higher-kinded type of a polymorphic effect
@@ -66,8 +65,7 @@ private final class ConsoleMetricExporter[F[_]: Monad: Console](
 
 object ConsoleMetricExporter {
 
-  /** Creates a metric exporter that logs every metric using
-    * [[cats.effect.std.Console]].
+  /** Creates a metric exporter that logs every metric using [[cats.effect.std.Console]].
     *
     * @tparam F
     *   the higher-kinded type of a polymorphic effect
@@ -75,8 +73,7 @@ object ConsoleMetricExporter {
   def apply[F[_]: Monad: Console]: MetricExporter.Push[F] =
     apply(AggregationTemporalitySelector.alwaysCumulative)
 
-  /** Creates a metric exporter that logs every metric using
-    * [[cats.effect.std.Console]].
+  /** Creates a metric exporter that logs every metric using [[cats.effect.std.Console]].
     *
     * @param aggregationTemporalitySelector
     *   the aggregation temporality selector to use

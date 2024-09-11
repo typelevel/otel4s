@@ -48,8 +48,8 @@ class TraceStateSuite extends DisciplineSuite {
       rest <- Gen.stringOfN(StrMaxSize - 1, keyAllowedChars)
     } yield first +: rest
 
-  /** Value is opaque string up to 256 characters printable ASCII RFC0020
-    * characters (i.e., the range 0x20 to 0x7E) except comma , and =.
+  /** Value is opaque string up to 256 characters printable ASCII RFC0020 characters (i.e., the range 0x20 to 0x7E)
+    * except comma , and =.
     */
   private val valueGen: Gen[String] = {
     val comma = ','.toInt
@@ -71,9 +71,7 @@ class TraceStateSuite extends DisciplineSuite {
     Arbitrary(
       for {
         entries <- Gen.listOfN(5, keyValueGen)
-      } yield entries.foldLeft(TraceState.empty)((b, v) =>
-        b.updated(v._1, v._2)
-      )
+      } yield entries.foldLeft(TraceState.empty)((b, v) => b.updated(v._1, v._2))
     )
 
   private implicit val traceStateCogen: Cogen[TraceState] =
@@ -116,8 +114,8 @@ class TraceStateSuite extends DisciplineSuite {
 
   test("ignore 'put' once the limit of entries is reached") {
     Prop.forAll(Gen.listOfN(50, keyValueGen)) { entries =>
-      val state = entries.foldLeft(TraceState.empty) {
-        case (builder, (key, value)) => builder.updated(key, value)
+      val state = entries.foldLeft(TraceState.empty) { case (builder, (key, value)) =>
+        builder.updated(key, value)
       }
 
       assertEquals(state.asMap, entries.take(MaxEntries).toMap)
@@ -197,8 +195,8 @@ class TraceStateSuite extends DisciplineSuite {
 
   test("Show[TraceState]") {
     Prop.forAll(Gen.listOfN(5, keyValueGen)) { entries =>
-      val state = entries.foldLeft(TraceState.empty) {
-        case (builder, (key, value)) => builder.updated(key, value)
+      val state = entries.foldLeft(TraceState.empty) { case (builder, (key, value)) =>
+        builder.updated(key, value)
       }
 
       val entriesString = entries.reverse

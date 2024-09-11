@@ -34,8 +34,7 @@ import org.typelevel.otel4s.sdk.metrics.internal.CallbackRegistration
 import org.typelevel.otel4s.sdk.metrics.internal.InstrumentDescriptor
 import org.typelevel.otel4s.sdk.metrics.internal.MeterSharedState
 
-/** An asynchronous instrument that reports monotonically increasing value(s)
-  * when the instrument is being observed.
+/** An asynchronous instrument that reports monotonically increasing value(s) when the instrument is being observed.
   *
   * @see
   *   [[https://opentelemetry.io/docs/specs/otel/metrics/api/#asynchronous-counter]]

@@ -37,8 +37,7 @@ object OpentracingExperimentalAttributes {
       */
     case object ChildOf extends OpentracingRefTypeValue("child_of")
 
-    /** The parent Span doesn't depend in any way on the result of the child
-      * Span
+    /** The parent Span doesn't depend in any way on the result of the child Span
       */
     case object FollowsFrom extends OpentracingRefTypeValue("follows_from")
   }

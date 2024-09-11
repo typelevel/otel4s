@@ -21,8 +21,7 @@ package experimental.attributes
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/attributes/SemanticAttributes.scala.j2
 object TestExperimentalAttributes {
 
-  /** The fully qualified human readable name of the <a
-    * href="https://en.wikipedia.org/wiki/Test_case">test case</a>.
+  /** The fully qualified human readable name of the <a href="https://en.wikipedia.org/wiki/Test_case">test case</a>.
     */
   val TestCaseName: AttributeKey[String] =
     AttributeKey("test.case.name")
@@ -32,8 +31,7 @@ object TestExperimentalAttributes {
   val TestCaseResultStatus: AttributeKey[String] =
     AttributeKey("test.case.result.status")
 
-  /** The human readable name of a <a
-    * href="https://en.wikipedia.org/wiki/Test_suite">test suite</a>.
+  /** The human readable name of a <a href="https://en.wikipedia.org/wiki/Test_suite">test suite</a>.
     */
   val TestSuiteName: AttributeKey[String] =
     AttributeKey("test.suite.name")

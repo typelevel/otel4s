@@ -21,8 +21,7 @@ package attributes
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/attributes/SemanticAttributes.scala.j2
 object NetworkAttributes {
 
-  /** Local address of the network connection - IP address or Unix domain socket
-    * name.
+  /** Local address of the network connection - IP address or Unix domain socket name.
     */
   val NetworkLocalAddress: AttributeKey[String] =
     AttributeKey("network.local.address")
@@ -32,8 +31,7 @@ object NetworkAttributes {
   val NetworkLocalPort: AttributeKey[Long] =
     AttributeKey("network.local.port")
 
-  /** Peer address of the network connection - IP address or Unix domain socket
-    * name.
+  /** Peer address of the network connection - IP address or Unix domain socket name.
     */
   val NetworkPeerAddress: AttributeKey[String] =
     AttributeKey("network.peer.address")
@@ -43,8 +41,7 @@ object NetworkAttributes {
   val NetworkPeerPort: AttributeKey[Long] =
     AttributeKey("network.peer.port")
 
-  /** <a href="https://osi-model.com/application-layer/">OSI application
-    * layer</a> or non-OSI equivalent. <p>
+  /** <a href="https://osi-model.com/application-layer/">OSI application layer</a> or non-OSI equivalent. <p>
     * @note
     *   <p> The value SHOULD be normalized to lowercase.
     */
@@ -54,28 +51,23 @@ object NetworkAttributes {
   /** The actual version of the protocol used for network communication. <p>
     * @note
     *   <p> If protocol version is subject to negotiation (for example using <a
-    *   href="https://www.rfc-editor.org/rfc/rfc7301.html">ALPN</a>), this
-    *   attribute SHOULD be set to the negotiated version. If the actual
-    *   protocol version is not known, this attribute SHOULD NOT be set.
+    *   href="https://www.rfc-editor.org/rfc/rfc7301.html">ALPN</a>), this attribute SHOULD be set to the negotiated
+    *   version. If the actual protocol version is not known, this attribute SHOULD NOT be set.
     */
   val NetworkProtocolVersion: AttributeKey[String] =
     AttributeKey("network.protocol.version")
 
-  /** <a href="https://osi-model.com/transport-layer/">OSI transport layer</a>
-    * or <a
-    * href="https://wikipedia.org/wiki/Inter-process_communication">inter-process
-    * communication method</a>. <p>
+  /** <a href="https://osi-model.com/transport-layer/">OSI transport layer</a> or <a
+    * href="https://wikipedia.org/wiki/Inter-process_communication">inter-process communication method</a>. <p>
     * @note
-    *   <p> The value SHOULD be normalized to lowercase. <p> Consider always
-    *   setting the transport when setting a port number, since a port number is
-    *   ambiguous without knowing the transport. For example different processes
-    *   could be listening on TCP port 12345 and UDP port 12345.
+    *   <p> The value SHOULD be normalized to lowercase. <p> Consider always setting the transport when setting a port
+    *   number, since a port number is ambiguous without knowing the transport. For example different processes could be
+    *   listening on TCP port 12345 and UDP port 12345.
     */
   val NetworkTransport: AttributeKey[String] =
     AttributeKey("network.transport")
 
-  /** <a href="https://osi-model.com/network-layer/">OSI network layer</a> or
-    * non-OSI equivalent. <p>
+  /** <a href="https://osi-model.com/network-layer/">OSI network layer</a> or non-OSI equivalent. <p>
     * @note
     *   <p> The value SHOULD be normalized to lowercase.
     */

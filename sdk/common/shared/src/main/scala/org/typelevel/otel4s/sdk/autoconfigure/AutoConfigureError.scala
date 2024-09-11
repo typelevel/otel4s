@@ -40,9 +40,8 @@ object AutoConfigureError {
       cause
     )
 
-  /** Creates an [[AutoConfigureError]] with the given `hint` and `cause`. The
-    * debug information associated with the `configKeys` will be added to the
-    * message.
+  /** Creates an [[AutoConfigureError]] with the given `hint` and `cause`. The debug information associated with the
+    * `configKeys` will be added to the message.
     *
     * @param hint
     *   the name of the component

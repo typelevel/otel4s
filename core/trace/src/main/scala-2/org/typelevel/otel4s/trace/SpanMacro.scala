@@ -23,8 +23,8 @@ import scala.concurrent.duration.FiniteDuration
 private[otel4s] trait SpanMacro[F[_]] {
   self: Span[F] =>
 
-  /** Adds an attribute to the span. If the span previously contained a mapping
-    * for the key, the old value is replaced by the specified value.
+  /** Adds an attribute to the span. If the span previously contained a mapping for the key, the old value is replaced
+    * by the specified value.
     *
     * @param attribute
     *   the attribute to add to the span
@@ -32,8 +32,8 @@ private[otel4s] trait SpanMacro[F[_]] {
   def addAttribute[A](attribute: Attribute[A]): F[Unit] =
     macro SpanMacro.addAttribute[A]
 
-  /** Adds attributes to the span. If the span previously contained a mapping
-    * for any of the keys, the old values are replaced by the specified values.
+  /** Adds attributes to the span. If the span previously contained a mapping for any of the keys, the old values are
+    * replaced by the specified values.
     *
     * @param attributes
     *   the set of attributes to add to the span
@@ -41,8 +41,8 @@ private[otel4s] trait SpanMacro[F[_]] {
   def addAttributes(attributes: Attribute[_]*): F[Unit] =
     macro SpanMacro.addAttributes
 
-  /** Adds attributes to the span. If the span previously contained a mapping
-    * for any of the keys, the old values are replaced by the specified values.
+  /** Adds attributes to the span. If the span previously contained a mapping for any of the keys, the old values are
+    * replaced by the specified values.
     *
     * @param attributes
     *   the set of attributes to add to the span
@@ -50,8 +50,7 @@ private[otel4s] trait SpanMacro[F[_]] {
   def addAttributes(attributes: immutable.Iterable[Attribute[_]]): F[Unit] =
     macro SpanMacro.addAttributesColl
 
-  /** Adds an event to the span with the given attributes. The timestamp of the
-    * event will be the current time.
+  /** Adds an event to the span with the given attributes. The timestamp of the event will be the current time.
     *
     * @param name
     *   the name of the event
@@ -62,8 +61,7 @@ private[otel4s] trait SpanMacro[F[_]] {
   def addEvent(name: String, attributes: Attribute[_]*): F[Unit] =
     macro SpanMacro.addEvent
 
-  /** Adds an event to the span with the given attributes. The timestamp of the
-    * event will be the current time.
+  /** Adds an event to the span with the given attributes. The timestamp of the event will be the current time.
     *
     * @param name
     *   the name of the event
@@ -79,8 +77,8 @@ private[otel4s] trait SpanMacro[F[_]] {
 
   /** Adds an event to the span with the given attributes and timestamp.
     *
-    * '''Note''': the timestamp should be based on `Clock[F].realTime`. Using
-    * `Clock[F].monotonic` may lead to an incorrect data.
+    * '''Note''': the timestamp should be based on `Clock[F].realTime`. Using `Clock[F].monotonic` may lead to an
+    * incorrect data.
     *
     * @param name
     *   the name of the event
@@ -100,8 +98,8 @@ private[otel4s] trait SpanMacro[F[_]] {
 
   /** Adds an event to the span with the given attributes and timestamp.
     *
-    * '''Note''': the timestamp should be based on `Clock[F].realTime`. Using
-    * `Clock[F].monotonic` may lead to an incorrect data.
+    * '''Note''': the timestamp should be based on `Clock[F].realTime`. Using `Clock[F].monotonic` may lead to an
+    * incorrect data.
     *
     * @param name
     *   the name of the event
@@ -121,9 +119,8 @@ private[otel4s] trait SpanMacro[F[_]] {
 
   /** Adds a link to the span.
     *
-    * Links are used to link spans in different traces. Used (for example) in
-    * batching operations, where a single batch handler processes multiple
-    * requests from different traces or the same trace.
+    * Links are used to link spans in different traces. Used (for example) in batching operations, where a single batch
+    * handler processes multiple requests from different traces or the same trace.
     *
     * @param spanContext
     *   the context of the linked span
@@ -139,9 +136,8 @@ private[otel4s] trait SpanMacro[F[_]] {
 
   /** Adds a link to the span.
     *
-    * Links are used to link spans in different traces. Used (for example) in
-    * batching operations, where a single batch handler processes multiple
-    * requests from different traces or the same trace.
+    * Links are used to link spans in different traces. Used (for example) in batching operations, where a single batch
+    * handler processes multiple requests from different traces or the same trace.
     *
     * @param spanContext
     *   the context of the linked span
@@ -185,8 +181,7 @@ private[otel4s] trait SpanMacro[F[_]] {
 
   /** Sets the status to the span.
     *
-    * Only the value of the last call will be recorded, and implementations are
-    * free to ignore previous calls.
+    * Only the value of the last call will be recorded, and implementations are free to ignore previous calls.
     *
     * @param status
     *   the [[StatusCode]] to set
@@ -196,8 +191,7 @@ private[otel4s] trait SpanMacro[F[_]] {
 
   /** Sets the status to the span.
     *
-    * Only the value of the last call will be recorded, and implementations are
-    * free to ignore previous calls.
+    * Only the value of the last call will be recorded, and implementations are free to ignore previous calls.
     *
     * @param status
     *   the [[StatusCode]] to set

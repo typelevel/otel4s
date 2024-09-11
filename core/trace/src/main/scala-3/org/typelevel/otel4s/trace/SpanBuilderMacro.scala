@@ -23,9 +23,8 @@ import scala.quoted.*
 
 private[otel4s] trait SpanBuilderMacro[F[_]] { self: SpanBuilder[F] =>
 
-  /** Adds an attribute to the newly created span. If [[SpanBuilder]] previously
-    * contained a mapping for the key, the old value is replaced by the
-    * specified value.
+  /** Adds an attribute to the newly created span. If [[SpanBuilder]] previously contained a mapping for the key, the
+    * old value is replaced by the specified value.
     *
     * @param attribute
     *   the attribute to associate with the span
@@ -33,9 +32,8 @@ private[otel4s] trait SpanBuilderMacro[F[_]] { self: SpanBuilder[F] =>
   inline def addAttribute[A](inline attribute: Attribute[A]): SpanBuilder[F] =
     ${ SpanBuilderMacro.addAttribute('self, 'attribute) }
 
-  /** Adds attributes to the [[SpanBuilder]]. If the SpanBuilder previously
-    * contained a mapping for any of the keys, the old values are replaced by
-    * the specified values.
+  /** Adds attributes to the [[SpanBuilder]]. If the SpanBuilder previously contained a mapping for any of the keys, the
+    * old values are replaced by the specified values.
     *
     * @param attributes
     *   the set of attributes to associate with the span
@@ -43,9 +41,8 @@ private[otel4s] trait SpanBuilderMacro[F[_]] { self: SpanBuilder[F] =>
   inline def addAttributes(inline attributes: Attribute[_]*): SpanBuilder[F] =
     ${ SpanBuilderMacro.addAttributes('self, 'attributes) }
 
-  /** Adds attributes to the [[SpanBuilder]]. If the SpanBuilder previously
-    * contained a mapping for any of the keys, the old values are replaced by
-    * the specified values.
+  /** Adds attributes to the [[SpanBuilder]]. If the SpanBuilder previously contained a mapping for any of the keys, the
+    * old values are replaced by the specified values.
     *
     * @param attributes
     *   the set of attributes to associate with the span
@@ -57,9 +54,8 @@ private[otel4s] trait SpanBuilderMacro[F[_]] { self: SpanBuilder[F] =>
 
   /** Adds a link to the newly created span.
     *
-    * Links are used to link spans in different traces. Used (for example) in
-    * batching operations, where a single batch handler processes multiple
-    * requests from different traces or the same trace.
+    * Links are used to link spans in different traces. Used (for example) in batching operations, where a single batch
+    * handler processes multiple requests from different traces or the same trace.
     *
     * @param spanContext
     *   the context of the linked span
@@ -75,9 +71,8 @@ private[otel4s] trait SpanBuilderMacro[F[_]] { self: SpanBuilder[F] =>
 
   /** Adds a link to the newly created span.
     *
-    * Links are used to link spans in different traces. Used (for example) in
-    * batching operations, where a single batch handler processes multiple
-    * requests from different traces or the same trace.
+    * Links are used to link spans in different traces. Used (for example) in batching operations, where a single batch
+    * handler processes multiple requests from different traces or the same trace.
     *
     * @param spanContext
     *   the context of the linked span
@@ -105,8 +100,8 @@ private[otel4s] trait SpanBuilderMacro[F[_]] { self: SpanBuilder[F] =>
   ): SpanBuilder[F] =
     ${ SpanBuilderMacro.withFinalizationStrategy('self, 'strategy) }
 
-  /** Sets the [[SpanKind]] for the newly created span. If not called, the
-    * implementation will provide a default value [[SpanKind.Internal]].
+  /** Sets the [[SpanKind]] for the newly created span. If not called, the implementation will provide a default value
+    * [[SpanKind.Internal]].
     *
     * @param spanKind
     *   the kind of the newly created span
@@ -116,13 +111,11 @@ private[otel4s] trait SpanBuilderMacro[F[_]] { self: SpanBuilder[F] =>
 
   /** Sets an explicit start timestamp for the newly created span.
     *
-    * Use this method to specify an explicit start timestamp. If not called, the
-    * implementation will use the timestamp value from the method called on
-    * [[build]], which should be the default case.
+    * Use this method to specify an explicit start timestamp. If not called, the implementation will use the timestamp
+    * value from the method called on [[build]], which should be the default case.
     *
     * @note
-    *   the timestamp should be based on `Clock[F].realTime`. Using
-    *   `Clock[F].monotonic` may lead to a missing span.
+    *   the timestamp should be based on `Clock[F].realTime`. Using `Clock[F].monotonic` may lead to a missing span.
     *
     * @param timestamp
     *   the explicit start timestamp from the epoch
@@ -132,8 +125,8 @@ private[otel4s] trait SpanBuilderMacro[F[_]] { self: SpanBuilder[F] =>
   ): SpanBuilder[F] =
     ${ SpanBuilderMacro.withStartTimestamp('self, 'timestamp) }
 
-  /** Sets the parent to use from the specified [[SpanContext]]. If not set, the
-    * span that is currently available in the scope will be used as parent.
+  /** Sets the parent to use from the specified [[SpanContext]]. If not set, the span that is currently available in the
+    * scope will be used as parent.
     *
     * @note
     *   if called multiple times, only the last specified value will be used.

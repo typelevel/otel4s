@@ -28,9 +28,8 @@ import org.typelevel.otel4s.sdk.trace.SdkContextKeys
   *   X-Amzn-Trace-Id: Root=1-5759e988-bd862e3fe1be46a994272793;Parent=53995c3f42cd8ad8;Sampled=1
   * }}}
   *
-  * If the header is missing, the Lambda's `com.amazonaws.xray.traceHeader`
-  * system property or `_X_AMZN_TRACE_ID` environment variable will be used as a
-  * fallback.
+  * If the header is missing, the Lambda's `com.amazonaws.xray.traceHeader` system property or `_X_AMZN_TRACE_ID`
+  * environment variable will be used as a fallback.
   *
   * @see
   *   [[https://docs.aws.amazon.com/xray/latest/devguide/xray-concepts.html#xray-concepts-tracingheader]]
@@ -92,12 +91,10 @@ object AWSXRayLambdaPropagator {
 
   /** Returns an instance of the AWSXRayLambdaPropagator.
     *
-    * The propagator utilizes `X-Amzn-Trace-Id` header to extract and inject
-    * tracing details.
+    * The propagator utilizes `X-Amzn-Trace-Id` header to extract and inject tracing details.
     *
-    * If the header is missing, the Lambda's `com.amazonaws.xray.traceHeader`
-    * system property or `_X_AMZN_TRACE_ID` environment variable will be used as
-    * a fallback.
+    * If the header is missing, the Lambda's `com.amazonaws.xray.traceHeader` system property or `_X_AMZN_TRACE_ID`
+    * environment variable will be used as a fallback.
     *
     * An example of the AWS X-Ray Tracing Header:
     * {{{
@@ -115,9 +112,8 @@ object AWSXRayLambdaPropagator {
     */
   def apply(): TextMapPropagator[Context] = Propagator
 
-  /** Returns the named configurer `xray-lambda`. You can use it to dynamically
-    * enable AWS X-Ray lambda propagator via environment variable or system
-    * properties.
+  /** Returns the named configurer `xray-lambda`. You can use it to dynamically enable AWS X-Ray lambda propagator via
+    * environment variable or system properties.
     *
     * @example
     *   {{{

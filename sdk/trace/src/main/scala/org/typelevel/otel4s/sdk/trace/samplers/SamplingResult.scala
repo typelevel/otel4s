@@ -29,8 +29,7 @@ import org.typelevel.otel4s.trace.TraceState
   */
 sealed trait SamplingResult {
 
-  /** The decision on whether a span should be recorded, recorded and sampled or
-    * not recorded.
+  /** The decision on whether a span should be recorded, recorded and sampled or not recorded.
     */
   def decision: SamplingDecision
 
@@ -40,14 +39,12 @@ sealed trait SamplingResult {
 
   /** A modifier of the parent's TraceState.
     *
-    * It may return the same trace state that was provided originally, or an
-    * updated one.
+    * It may return the same trace state that was provided originally, or an updated one.
     *
     * @note
-    *   if updated returns an empty trace state, the trace state will be
-    *   cleared, so samplers should normally use
-    *   [[SamplingResult.TraceStateUpdater.Identity]] to return the passed-in
-    *   trace state if it's not intended to be changed.
+    *   if updated returns an empty trace state, the trace state will be cleared, so samplers should normally use
+    *   [[SamplingResult.TraceStateUpdater.Identity]] to return the passed-in trace state if it's not intended to be
+    *   changed.
     */
   def traceStateUpdater: SamplingResult.TraceStateUpdater
 
@@ -68,13 +65,11 @@ object SamplingResult {
 
   /** A modifier of the parent's TraceState.
     *
-    * It may return the same trace state that was provided originally, or an
-    * updated one.
+    * It may return the same trace state that was provided originally, or an updated one.
     *
     * @note
-    *   if an empty trace state is returned, the trace state will be cleared, so
-    *   the updater should normally return the passed-in trace state (via
-    *   [[TraceStateUpdater.Identity]]) if it's intended to be changed.
+    *   if an empty trace state is returned, the trace state will be cleared, so the updater should normally return the
+    *   passed-in trace state (via [[TraceStateUpdater.Identity]]) if it's intended to be changed.
     */
   sealed trait TraceStateUpdater {
     def update(state: TraceState): TraceState
@@ -88,8 +83,7 @@ object SamplingResult {
     }
 
     /** Returns the given trace state modified by the `modify` function. */
-    final case class Modifier(modify: TraceState => TraceState)
-        extends TraceStateUpdater {
+    final case class Modifier(modify: TraceState => TraceState) extends TraceStateUpdater {
       def update(state: TraceState): TraceState =
         modify(state)
     }
@@ -110,20 +104,20 @@ object SamplingResult {
       }
   }
 
-  /** The [[SamplingResult]] with the [[SamplingDecision.RecordAndSample]]
-    * decision, no attributes, and [[TraceStateUpdater.Identity]] updater.
+  /** The [[SamplingResult]] with the [[SamplingDecision.RecordAndSample]] decision, no attributes, and
+    * [[TraceStateUpdater.Identity]] updater.
     */
   val RecordAndSample: SamplingResult =
     fromDecision(SamplingDecision.RecordAndSample)
 
-  /** The [[SamplingResult]] with the [[SamplingDecision.RecordOnly]] decision,
-    * no attributes, and [[TraceStateUpdater.Identity]] updater.
+  /** The [[SamplingResult]] with the [[SamplingDecision.RecordOnly]] decision, no attributes, and
+    * [[TraceStateUpdater.Identity]] updater.
     */
   val RecordOnly: SamplingResult =
     fromDecision(SamplingDecision.RecordOnly)
 
-  /** The [[SamplingResult]] with the [[SamplingDecision.Drop]] decision, no
-    * attributes, and [[TraceStateUpdater.Identity]] updater.
+  /** The [[SamplingResult]] with the [[SamplingDecision.Drop]] decision, no attributes, and
+    * [[TraceStateUpdater.Identity]] updater.
     */
   val Drop: SamplingResult =
     fromDecision(SamplingDecision.Drop)
@@ -155,8 +149,7 @@ object SamplingResult {
     if (attributes.isEmpty) apply(decision)
     else Impl(decision, attributes, TraceStateUpdater.Identity)
 
-  /** Creates a [[SamplingResult]] with the given `decision`, `attributes`, and
-    * `traceStateUpdater`.
+  /** Creates a [[SamplingResult]] with the given `decision`, `attributes`, and `traceStateUpdater`.
     *
     * @param decision
     *   the [[SamplingDecision]] to associate with the result

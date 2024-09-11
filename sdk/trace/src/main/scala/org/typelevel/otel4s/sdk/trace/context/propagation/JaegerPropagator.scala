@@ -87,10 +87,9 @@ private final class JaegerPropagator extends TextMapPropagator[Context] {
 
     ctx.get(SdkContextKeys.BaggageKey) match {
       case Some(baggage) =>
-        baggage.asMap.foldLeft(withSpanContext) {
-          case (carrier, (key, entry)) =>
-            val k = Const.BaggagePrefix + key
-            TextMapUpdater[A].updated(carrier, k, urlEncode(entry.value))
+        baggage.asMap.foldLeft(withSpanContext) { case (carrier, (key, entry)) =>
+          val k = Const.BaggagePrefix + key
+          TextMapUpdater[A].updated(carrier, k, urlEncode(entry.value))
         }
 
       case None =>

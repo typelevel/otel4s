@@ -21,13 +21,11 @@ package experimental.attributes
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/attributes/SemanticAttributes.scala.j2
 object SourceExperimentalAttributes {
 
-  /** Source address - domain name if available without reverse DNS lookup;
-    * otherwise, IP address or Unix domain socket name. <p>
+  /** Source address - domain name if available without reverse DNS lookup; otherwise, IP address or Unix domain socket
+    * name. <p>
     * @note
-    *   <p> When observed from the destination side, and when communicating
-    *   through an intermediary, `source.address` SHOULD represent the source
-    *   address behind any intermediaries, for example proxies, if it's
-    *   available.
+    *   <p> When observed from the destination side, and when communicating through an intermediary, `source.address`
+    *   SHOULD represent the source address behind any intermediaries, for example proxies, if it's available.
     */
   val SourceAddress: AttributeKey[String] =
     AttributeKey("source.address")

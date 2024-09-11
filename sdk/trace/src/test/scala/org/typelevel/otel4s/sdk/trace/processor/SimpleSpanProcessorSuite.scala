@@ -43,9 +43,7 @@ import org.typelevel.otel4s.trace.StatusCode
 import scala.collection.immutable
 import scala.concurrent.duration.FiniteDuration
 
-class SimpleSpanProcessorSuite
-    extends CatsEffectSuite
-    with ScalaCheckEffectSuite {
+class SimpleSpanProcessorSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
 
   private implicit val noopConsole: Console[IO] = new NoopConsole[IO]
 

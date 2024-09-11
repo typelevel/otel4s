@@ -34,15 +34,14 @@ import org.typelevel.otel4s.trace.SpanContext
 
 import scala.concurrent.duration._
 
-/** Implementation of the [[SpanProcessor]] that batches spans exported by the
-  * SDK then pushes them to the exporter pipeline.
+/** Implementation of the [[SpanProcessor]] that batches spans exported by the SDK then pushes them to the exporter
+  * pipeline.
   *
-  * All spans reported by the SDK implementation are first added to a queue. If
-  * the queue is full (with a `config.maxQueueSize` maximum size), the incoming
-  * spans are dropped.
+  * All spans reported by the SDK implementation are first added to a queue. If the queue is full (with a
+  * `config.maxQueueSize` maximum size), the incoming spans are dropped.
   *
-  * Spans are exported either when there are `config.maxExportBatchSize` pending
-  * spans or `config.scheduleDelay` has passed since the last export attempt.
+  * Spans are exported either when there are `config.maxExportBatchSize` pending spans or `config.scheduleDelay` has
+  * passed since the last export attempt.
   *
   * @see
   *   [[https://opentelemetry.io/docs/specs/otel/trace/sdk/#batching-processor]]
@@ -196,23 +195,20 @@ object BatchSpanProcessor {
       */
     def withScheduleDelay(delay: FiniteDuration): Builder[F]
 
-    /** Sets the maximum time an export will be allowed to run before being
-      * cancelled.
+    /** Sets the maximum time an export will be allowed to run before being cancelled.
       *
       * Default value is `30 seconds`.
       */
     def withExporterTimeout(timeout: FiniteDuration): Builder[F]
 
-    /** Sets the maximum number of Spans that are kept in the queue before start
-      * dropping. More memory than this value may be allocated to optimize queue
-      * access.
+    /** Sets the maximum number of Spans that are kept in the queue before start dropping. More memory than this value
+      * may be allocated to optimize queue access.
       *
       * Default value is `2048`.
       */
     def withMaxQueueSize(maxQueueSize: Int): Builder[F]
 
-    /** Sets the maximum batch size for every export. This must be smaller or
-      * equal to `maxQueueSize`.
+    /** Sets the maximum batch size for every export. This must be smaller or equal to `maxQueueSize`.
       *
       * Default value is `512`.
       */
@@ -247,15 +243,13 @@ object BatchSpanProcessor {
   /** The configuration of the [[BatchSpanProcessor]].
     *
     * @param scheduleDelay
-    *   the maximum delay interval in milliseconds between two consecutive
-    *   exports
+    *   the maximum delay interval in milliseconds between two consecutive exports
     *
     * @param exporterTimeout
     *   how long the export can run before it is cancelled
     *
     * @param maxQueueSize
-    *   the maximum queue size. Once the the limit is reached new spans will be
-    *   dropped
+    *   the maximum queue size. Once the the limit is reached new spans will be dropped
     *
     * @param maxExportBatchSize
     *   the maximum batch size of every export

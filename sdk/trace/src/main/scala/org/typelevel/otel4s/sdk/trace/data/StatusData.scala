@@ -21,8 +21,7 @@ import cats.Show
 import cats.syntax.show._
 import org.typelevel.otel4s.trace.StatusCode
 
-/** Defines the status of a span by providing a standard status in conjunction
-  * with an optional description message.
+/** Defines the status of a span by providing a standard status in conjunction with an optional description message.
   *
   * @param status
   *   status code
@@ -51,8 +50,7 @@ sealed abstract class StatusData(val status: StatusCode) {
 
 object StatusData {
 
-  /** Indicates the successfully completed operation, validated by an
-    * application developer or operator.
+  /** Indicates the successfully completed operation, validated by an application developer or operator.
     */
   case object Ok extends StatusData(StatusCode.Ok) {
     def description: Option[String] = None
@@ -66,8 +64,7 @@ object StatusData {
 
   /** Indicates an occurred error.
     */
-  final case class Error(description: Option[String])
-      extends StatusData(StatusCode.Error)
+  final case class Error(description: Option[String]) extends StatusData(StatusCode.Error)
 
   /** Returns [[StatusData]] for the given `status`.
     */

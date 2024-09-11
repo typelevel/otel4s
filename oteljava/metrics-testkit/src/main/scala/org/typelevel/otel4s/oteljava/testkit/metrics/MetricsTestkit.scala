@@ -58,8 +58,7 @@ object MetricsTestkit {
   /** Creates [[MetricsTestkit]] that keeps metrics in-memory.
     *
     * @note
-    *   the implementation does not record exemplars. Use `OtelJavaTestkit` if
-    *   you need to record exemplars.
+    *   the implementation does not record exemplars. Use `OtelJavaTestkit` if you need to record exemplars.
     *
     * @param customize
     *   the customization of the builder

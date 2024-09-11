@@ -34,8 +34,7 @@ trait InstrumentMeta[F[_]] {
   def mapK[G[_]](f: F ~> G): InstrumentMeta[G] =
     new InstrumentMeta.MappedK(this)(f)
 
-  /** Modify the context `F` using an implicit [[KindTransformer]] from `F` to
-    * `G`.
+  /** Modify the context `F` using an implicit [[KindTransformer]] from `F` to `G`.
     */
   def mapK[G[_]](implicit kt: KindTransformer[F, G]): InstrumentMeta[G] =
     mapK(kt.liftK)
@@ -55,8 +54,7 @@ object InstrumentMeta {
       val unit: F[Unit] = Applicative[F].unit
     }
 
-  private class MappedK[F[_], G[_]](meta: InstrumentMeta[F])(f: F ~> G)
-      extends InstrumentMeta[G] {
+  private class MappedK[F[_], G[_]](meta: InstrumentMeta[F])(f: F ~> G) extends InstrumentMeta[G] {
     def isEnabled: Boolean = meta.isEnabled
     def unit: G[Unit] = f(meta.unit)
   }

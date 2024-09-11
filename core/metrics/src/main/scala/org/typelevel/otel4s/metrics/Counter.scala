@@ -24,8 +24,7 @@ import scala.collection.immutable
 
 /** A `Counter` instrument that records values of type `A`.
   *
-  * The [[Counter]] is monotonic. This means the aggregated value is nominally
-  * increasing.
+  * The [[Counter]] is monotonic. This means the aggregated value is nominally increasing.
   *
   * @see
   *   See [[UpDownCounter]] for non-monotonic alternative
@@ -34,9 +33,8 @@ import scala.collection.immutable
   *   the higher-kinded type of a polymorphic effect
   *
   * @tparam A
-  *   the type of the values to record. The type must have an instance of
-  *   [[MeasurementValue]]. [[scala.Long]] and [[scala.Double]] are supported
-  *   out of the box.
+  *   the type of the values to record. The type must have an instance of [[MeasurementValue]]. [[scala.Long]] and
+  *   [[scala.Double]] are supported out of the box.
   */
 trait Counter[F[_], A] extends CounterMacro[F, A]
 
@@ -48,9 +46,8 @@ object Counter {
     *   the higher-kinded type of a polymorphic effect
     *
     * @tparam A
-    *   the type of the values to record. The type must have an instance of
-    *   [[MeasurementValue]]. [[scala.Long]] and [[scala.Double]] are supported
-    *   out of the box.
+    *   the type of the values to record. The type must have an instance of [[MeasurementValue]]. [[scala.Long]] and
+    *   [[scala.Double]] are supported out of the box.
     */
   trait Builder[F[_], A] {
 

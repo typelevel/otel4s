@@ -43,13 +43,10 @@ import org.typelevel.otel4s.trace.StatusCode
 import scala.collection.immutable
 import scala.concurrent.duration.FiniteDuration
 
-/** The backend of the span that manages it's internal state. It has mutable and
-  * immutable states:
-  *   - immutable state - cannot be modified at any point of the span's
-  *     lifecycle, for example: span context, parent's span context, span kind,
-  *     and so on
-  *   - mutable state - can be modified during the lifecycle, for example: name,
-  *     attributes, events, etc
+/** The backend of the span that manages it's internal state. It has mutable and immutable states:
+  *   - immutable state - cannot be modified at any point of the span's lifecycle, for example: span context, parent's
+  *     span context, span kind, and so on
+  *   - mutable state - can be modified during the lifecycle, for example: name, attributes, events, etc
   *
   * All modifications of the mutable state are ignored once the span is ended.
   *
@@ -280,8 +277,8 @@ private object SdkSpanBackend {
     *   the collection of [[LinkData]] of the span
     *
     * @param userStartTimestamp
-    *   the explicit start timestamp. If `None` is passed the start time will be
-    *   calculated automatically (via `Clock[F].realTime`)
+    *   the explicit start timestamp. If `None` is passed the start time will be calculated automatically (via
+    *   `Clock[F].realTime`)
     */
   def start[F[_]: Temporal: Console](
       context: SpanContext,

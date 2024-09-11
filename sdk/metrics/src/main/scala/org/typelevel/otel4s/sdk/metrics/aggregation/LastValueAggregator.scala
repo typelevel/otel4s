@@ -38,8 +38,7 @@ import org.typelevel.otel4s.sdk.metrics.internal.utils.Current
 
 private object LastValueAggregator {
 
-  /** Creates a last value aggregator for synchronous instruments. Retains the
-    * last seen measurement.
+  /** Creates a last value aggregator for synchronous instruments. Retains the last seen measurement.
     *
     * @see
     *   [[https://opentelemetry.io/docs/specs/otel/metrics/sdk/#last-value-aggregation]]

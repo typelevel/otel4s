@@ -36,8 +36,7 @@ object Attribute {
   def apply[A: AttributeKey.KeySelect](name: String, value: A): Attribute[A] =
     Attribute(AttributeKey.KeySelect[A].make(name), value)
 
-  implicit val showAttribute: Show[Attribute[_]] = (a: Attribute[_]) =>
-    s"${show"${a.key}"}=${a.value}"
+  implicit val showAttribute: Show[Attribute[_]] = (a: Attribute[_]) => s"${show"${a.key}"}=${a.value}"
 
   implicit def hashAttribute[T: Hash]: Hash[Attribute[T]] =
     Hash.by(a => (a.key, a.value))

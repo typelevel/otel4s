@@ -31,13 +31,11 @@ object GoExperimentalAttributes {
   abstract class GoMemoryTypeValue(val value: String)
   object GoMemoryTypeValue {
 
-    /** Memory allocated from the heap that is reserved for stack space, whether
-      * or not it is currently in-use.
+    /** Memory allocated from the heap that is reserved for stack space, whether or not it is currently in-use.
       */
     case object Stack extends GoMemoryTypeValue("stack")
 
-    /** Memory used by the Go runtime, excluding other categories of memory
-      * usage described in this enumeration.
+    /** Memory used by the Go runtime, excluding other categories of memory usage described in this enumeration.
       */
     case object Other extends GoMemoryTypeValue("other")
   }

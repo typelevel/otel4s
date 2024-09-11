@@ -28,8 +28,7 @@ object StatusCode {
   /** The default status. */
   case object Unset extends StatusCode
 
-  /** The operation has been validated by an Application developers or Operator
-    * to have completed successfully.
+  /** The operation has been validated by an Application developers or Operator to have completed successfully.
     */
   case object Ok extends StatusCode
 

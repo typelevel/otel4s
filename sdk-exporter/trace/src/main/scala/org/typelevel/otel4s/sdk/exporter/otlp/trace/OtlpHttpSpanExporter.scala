@@ -67,15 +67,13 @@ object OtlpHttpSpanExporter {
 
     /** Sets the OTLP endpoint to connect to.
       *
-      * The endpoint must start with either `http://` or `https://`, and include
-      * the full HTTP path.
+      * The endpoint must start with either `http://` or `https://`, and include the full HTTP path.
       *
       * Default value is `http://localhost:4318/v1/traces`.
       */
     def withEndpoint(endpoint: Uri): Builder[F]
 
-    /** Sets the maximum time to wait for the collector to process an exported
-      * batch of spans.
+    /** Sets the maximum time to wait for the collector to process an exported batch of spans.
       *
       * Default value is `10 seconds`.
       */
@@ -112,27 +110,23 @@ object OtlpHttpSpanExporter {
     /** Configures the exporter to use the given client.
       *
       * @note
-      *   the 'timeout' and 'tlsContext' settings will be ignored. You must
-      *   preconfigure the client manually.
+      *   the 'timeout' and 'tlsContext' settings will be ignored. You must preconfigure the client manually.
       *
       * @param client
       *   the custom http4s client to use
       */
     def withClient(client: Client[F]): Builder[F]
 
-    /** Creates a [[OtlpHttpSpanExporter]] using the configuration of this
-      * builder.
+    /** Creates a [[OtlpHttpSpanExporter]] using the configuration of this builder.
       */
     def build: Resource[F, SpanExporter[F]]
   }
 
-  /** Creates a [[Builder]] of [[OtlpHttpSpanExporter]] with the default
-    * configuration:
+  /** Creates a [[Builder]] of [[OtlpHttpSpanExporter]] with the default configuration:
     *   - encoding: `Protobuf`
     *   - endpoint: `http://localhost:4318/v1/traces`
     *   - timeout: `10 seconds`
-    *   - retry policy: 5 exponential attempts, initial backoff is `1 second`,
-    *     max backoff is `5 seconds`
+    *   - retry policy: 5 exponential attempts, initial backoff is `1 second`, max backoff is `5 seconds`
     */
   def builder[F[_]: Async: Network: Compression: Console]: Builder[F] =
     BuilderImpl(

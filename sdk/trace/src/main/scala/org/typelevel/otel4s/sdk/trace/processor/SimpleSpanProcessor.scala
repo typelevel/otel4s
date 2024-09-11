@@ -25,12 +25,11 @@ import org.typelevel.otel4s.sdk.trace.data.SpanData
 import org.typelevel.otel4s.sdk.trace.exporter.SpanExporter
 import org.typelevel.otel4s.trace.SpanContext
 
-/** An implementation of the [[SpanProcessor]] that passes ended
-  * [[data.SpanData SpanData]] directly to the configured exporter.
+/** An implementation of the [[SpanProcessor]] that passes ended [[data.SpanData SpanData]] directly to the configured
+  * exporter.
   *
   * @note
-  *   this processor exports spans individually upon completion, resulting in a
-  *   single span per export request.
+  *   this processor exports spans individually upon completion, resulting in a single span per export request.
   *
   * @see
   *   [[https://opentelemetry.io/docs/specs/otel/trace/sdk/#simple-processor]]
@@ -70,8 +69,7 @@ final class SimpleSpanProcessor[F[_]: MonadThrow: Console] private (
 
 object SimpleSpanProcessor {
 
-  /** Creates a [[SimpleSpanProcessor]] that passes only '''sampled''' ended
-    * spans to the given `exporter`.
+  /** Creates a [[SimpleSpanProcessor]] that passes only '''sampled''' ended spans to the given `exporter`.
     *
     * @param exporter
     *   the [[exporter.SpanExporter SpanExporter]] to use
@@ -81,8 +79,7 @@ object SimpleSpanProcessor {
   ): SimpleSpanProcessor[F] =
     apply(exporter, exportOnlySampled = true)
 
-  /** Creates a [[SimpleSpanProcessor]] that passes ended spans to the given
-    * `exporter`.
+  /** Creates a [[SimpleSpanProcessor]] that passes ended spans to the given `exporter`.
     *
     * @param exporter
     *   the [[exporter.SpanExporter SpanExporter]] to use

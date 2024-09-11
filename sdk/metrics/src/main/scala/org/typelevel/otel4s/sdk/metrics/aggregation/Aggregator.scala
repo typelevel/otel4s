@@ -36,8 +36,7 @@ import org.typelevel.otel4s.sdk.metrics.internal.AsynchronousMeasurement
 import org.typelevel.otel4s.sdk.metrics.internal.InstrumentDescriptor
 import org.typelevel.otel4s.sdk.metrics.internal.MetricDescriptor
 
-/** Aggregators are responsible for holding aggregated values and taking a
-  * snapshot of these values upon export.
+/** Aggregators are responsible for holding aggregated values and taking a snapshot of these values upon export.
   *
   * @see
   *   [[https://opentelemetry.io/docs/specs/otel/metrics/sdk/#aggregation]]
@@ -102,8 +101,7 @@ private[metrics] object Aggregator {
     */
   trait Asynchronous[F[_], A] {
 
-    /** Returns a new delta aggregation by comparing two cumulative
-      * measurements.
+    /** Returns a new delta aggregation by comparing two cumulative measurements.
       *
       * @param previous
       *   the previously captured measurement
@@ -142,8 +140,7 @@ private[metrics] object Aggregator {
     ): F[MetricData]
   }
 
-  /** Records incoming raw values (measurements) and aggregates them into the
-    * `P` (PointData).
+  /** Records incoming raw values (measurements) and aggregates them into the `P` (PointData).
     *
     * Used by the synchronous instruments.
     *

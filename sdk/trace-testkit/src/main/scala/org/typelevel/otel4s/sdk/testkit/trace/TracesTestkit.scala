@@ -55,8 +55,7 @@ object TracesTestkit {
     *   the customization of the builder
     */
   def inMemory[F[_]: Async: Parallel: Console: LocalContextProvider](
-      customize: SdkTracerProvider.Builder[F] => SdkTracerProvider.Builder[F] =
-        (b: SdkTracerProvider.Builder[F]) => b
+      customize: SdkTracerProvider.Builder[F] => SdkTracerProvider.Builder[F] = (b: SdkTracerProvider.Builder[F]) => b
   ): Resource[F, TracesTestkit[F]] = {
     def createTracerProvider(
         processor: SpanProcessor[F]

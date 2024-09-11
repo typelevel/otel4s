@@ -580,21 +580,20 @@ class B3PropagatorSuite extends CatsEffectSuite with ScalaCheckSuite {
   }*/
 
   test("single - extract - single and multi headers - prioritize single") {
-    Prop.forAll(Gens.spanContext, Gens.traceId, Gens.spanId) {
-      (ctx, traceId, spanId) =>
-        val sampled = if (ctx.isSampled) "1" else "0"
-        val header = ctx.traceIdHex + "-" + ctx.spanIdHex + "-" + sampled
-        val carrier = Map(
-          Headers.Combined -> header,
-          Headers.TraceId -> traceId.toBase16,
-          Headers.SpanId -> spanId.toBase16,
-          Headers.Sampled -> sampled
-        )
+    Prop.forAll(Gens.spanContext, Gens.traceId, Gens.spanId) { (ctx, traceId, spanId) =>
+      val sampled = if (ctx.isSampled) "1" else "0"
+      val header = ctx.traceIdHex + "-" + ctx.spanIdHex + "-" + sampled
+      val carrier = Map(
+        Headers.Combined -> header,
+        Headers.TraceId -> traceId.toBase16,
+        Headers.SpanId -> spanId.toBase16,
+        Headers.Sampled -> sampled
+      )
 
-        val result = single.extract(Context.root, carrier)
-        val expected = asRemote(ctx)
+      val result = single.extract(Context.root, carrier)
+      val expected = asRemote(ctx)
 
-        assertEquals(getSpanContext(result), Some(expected))
+      assertEquals(getSpanContext(result), Some(expected))
     }
   }
 

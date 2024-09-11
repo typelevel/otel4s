@@ -23,8 +23,7 @@ import io.opentelemetry.api.metrics.{Meter => JMeter}
 import org.typelevel.otel4s.metrics._
 import org.typelevel.otel4s.oteljava.context.AskContext
 
-private[oteljava] class MeterImpl[F[_]: Async: AskContext](jMeter: JMeter)
-    extends Meter[F] {
+private[oteljava] class MeterImpl[F[_]: Async: AskContext](jMeter: JMeter) extends Meter[F] {
 
   def counter[A: MeasurementValue](name: String): Counter.Builder[F, A] =
     CounterBuilderImpl(jMeter, name)

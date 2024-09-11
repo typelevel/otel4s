@@ -34,13 +34,12 @@ import org.typelevel.otel4s.sdk.common.InstrumentationScope
   */
 private[sdk] sealed trait ComponentRegistry[F[_], A] {
 
-  /** Returns the component associated with the `name`, `version`, and
-    * `schemaUrl`.
+  /** Returns the component associated with the `name`, `version`, and `schemaUrl`.
     *
     * '''Note''': `attributes` are not part of component identity.
     *
-    * Behavior is undefined when different `attributes` are provided where
-    * `name`, `version`, and `schemaUrl` are identical.
+    * Behavior is undefined when different `attributes` are provided where `name`, `version`, and `schemaUrl` are
+    * identical.
     *
     * @param name
     *   the name to associate with a component
@@ -69,8 +68,8 @@ private[sdk] sealed trait ComponentRegistry[F[_], A] {
 
 private[sdk] object ComponentRegistry {
 
-  /** Creates a [[ComponentRegistry]] that uses `buildComponent` to build a
-    * component if it is not already present in the cache.
+  /** Creates a [[ComponentRegistry]] that uses `buildComponent` to build a component if it is not already present in
+    * the cache.
     *
     * @param buildComponent
     *   how to build a component

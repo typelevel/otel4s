@@ -72,12 +72,11 @@ object PointDataUtils {
       )
 
     val counts: Vector[Long] =
-      values.foldLeft(Vector.fill(boundaries.length + 1)(0L)) {
-        case (acc, value) =>
-          val i = boundaries.boundaries.indexWhere(b => value.toDouble <= b)
-          val idx = if (i == -1) boundaries.length else i
+      values.foldLeft(Vector.fill(boundaries.length + 1)(0L)) { case (acc, value) =>
+        val i = boundaries.boundaries.indexWhere(b => value.toDouble <= b)
+        val idx = if (i == -1) boundaries.length else i
 
-          acc.updated(idx, acc(idx) + 1L)
+        acc.updated(idx, acc(idx) + 1L)
       }
 
     PointData.histogram(

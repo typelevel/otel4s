@@ -141,24 +141,19 @@ private[sdk] object SamplerAutoConfigure {
     * | otel.traces.sampler.arg | OTEL_TRACES_SAMPLER_ARG | An argument to the configured tracer if supported, for example a ratio. |
     * }}}
     *
-    * The following options for `otel.traces.sampler` are supported out of the
-    * box:
+    * The following options for `otel.traces.sampler` are supported out of the box:
     *   - `always_on` - [[Sampler.AlwaysOn]]
     *
     *   - `always_off` - [[Sampler.AlwaysOff]]
     *
-    *   - `traceidratio` - [[Sampler.traceIdRatioBased]], where
+    *   - `traceidratio` - [[Sampler.traceIdRatioBased]], where `otel.traces.sampler.arg` sets the ratio
+    *
+    *   - `parentbased_always_on` - [[Sampler.parentBased]] with [[Sampler.AlwaysOn]]
+    *
+    *   - `parentbased_always_off` - [[Sampler.parentBased]] with [[Sampler.AlwaysOff]]
+    *
+    *   - `parentbased_traceidratio`- [[Sampler.parentBased]] with [[Sampler.traceIdRatioBased]], where
     *     `otel.traces.sampler.arg` sets the ratio
-    *
-    *   - `parentbased_always_on` - [[Sampler.parentBased]] with
-    *     [[Sampler.AlwaysOn]]
-    *
-    *   - `parentbased_always_off` - [[Sampler.parentBased]] with
-    *     [[Sampler.AlwaysOff]]
-    *
-    *   - `parentbased_traceidratio`- [[Sampler.parentBased]] with
-    *     [[Sampler.traceIdRatioBased]], where `otel.traces.sampler.arg` sets
-    *     the ratio
     *
     * @see
     *   [[https://opentelemetry.io/docs/languages/java/configuration/#sampler]]

@@ -52,8 +52,7 @@ val provider = LocalProvider[IO, ${Ctx}]
 """)
 trait LocalProvider[F[_], Ctx] {
 
-  /** Creates a [[cats.mtl.Local Local]] instance. The method is invoked once
-    * per creation of the Otel4s instance.
+  /** Creates a [[cats.mtl.Local Local]] instance. The method is invoked once per creation of the Otel4s instance.
     */
   def local: F[Local[F, Ctx]]
 }
@@ -62,8 +61,8 @@ object LocalProvider extends LocalProviderLowPriority {
 
   def apply[F[_], C](implicit ev: LocalProvider[F, C]): LocalProvider[F, C] = ev
 
-  /** Creates [[LocalProvider]] that derives [[cats.mtl.Local Local]] instance
-    * from the given [[cats.effect.IOLocal IOLocal]].
+  /** Creates [[LocalProvider]] that derives [[cats.mtl.Local Local]] instance from the given
+    * [[cats.effect.IOLocal IOLocal]].
     *
     * @param ioLocal
     *   the [[cats.effect.IOLocal IOLocal]] to use
@@ -86,8 +85,7 @@ object LocalProvider extends LocalProviderLowPriority {
       override def toString: String = "LocalProvider.fromIOLocal"
     }
 
-  /** Creates [[LocalProvider]] that returns the given [[cats.mtl.Local Local]]
-    * instance.
+  /** Creates [[LocalProvider]] that returns the given [[cats.mtl.Local Local]] instance.
     *
     * @param l
     *   the [[cats.mtl.Local Local]] to use
@@ -106,14 +104,13 @@ object LocalProvider extends LocalProviderLowPriority {
       override def toString: String = "LocalProvider.fromLocal"
     }
 
-  /** Creates [[LocalProvider]] that creates [[cats.effect.IOLocal IOLocal]]
-    * under the hood to derive the [[cats.mtl.Local Local]] instance.
+  /** Creates [[LocalProvider]] that creates [[cats.effect.IOLocal IOLocal]] under the hood to derive the
+    * [[cats.mtl.Local Local]] instance.
     *
     * @note
-    *   every invocation of the [[LocalProvider.local]] creates new
-    *   [[cats.effect.IOLocal IOLocal]]. If you want to use a custom
-    *   [[cats.effect.IOLocal IOLocal]] (e.g. to share it with other components)
-    *   use [[LocalProvider.fromIOLocal]].
+    *   every invocation of the [[LocalProvider.local]] creates new [[cats.effect.IOLocal IOLocal]]. If you want to use
+    *   a custom [[cats.effect.IOLocal IOLocal]] (e.g. to share it with other components) use
+    *   [[LocalProvider.fromIOLocal]].
     *
     * @tparam F
     *   the higher-kinded type of a polymorphic effect

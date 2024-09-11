@@ -206,7 +206,7 @@ private object AsynchronousStorage {
         aggregator: Aggregator.Asynchronous[F, A]
     ): F[Collector[F, A]] =
       aggregationTemporality match {
-        case AggregationTemporality.Delta => delta[F, A](reader, aggregator)
+        case AggregationTemporality.Delta      => delta[F, A](reader, aggregator)
         case AggregationTemporality.Cumulative => cumulative[F, A]
       }
 

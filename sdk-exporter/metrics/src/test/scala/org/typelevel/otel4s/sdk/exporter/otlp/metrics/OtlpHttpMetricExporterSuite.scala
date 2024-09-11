@@ -45,10 +45,7 @@ import org.typelevel.otel4s.sdk.metrics.scalacheck.Arbitraries._
 
 import scala.concurrent.duration._
 
-class OtlpHttpMetricExporterSuite
-    extends CatsEffectSuite
-    with ScalaCheckEffectSuite
-    with SuiteRuntimePlatform {
+class OtlpHttpMetricExporterSuite extends CatsEffectSuite with ScalaCheckEffectSuite with SuiteRuntimePlatform {
 
   import OtlpHttpMetricExporterSuite._
 
@@ -260,12 +257,11 @@ class OtlpHttpMetricExporterSuite
           attributes.map(a => attributeToPair(a)).toMap
 
         points.flatMap { point =>
-          val all = point.boundaries.boundaries.zipWithIndex.map {
-            case (boundary, idx) =>
-              PrometheusSeries(
-                const ++ attrs ++ Map("le" -> boundary.toString),
-                PrometheusValue(point.counts.take(idx + 1).sum.toString)
-              )
+          val all = point.boundaries.boundaries.zipWithIndex.map { case (boundary, idx) =>
+            PrometheusSeries(
+              const ++ attrs ++ Map("le" -> boundary.toString),
+              PrometheusValue(point.counts.take(idx + 1).sum.toString)
+            )
           }
 
           val inf = PrometheusSeries(

@@ -27,8 +27,7 @@ import cats.syntax.all._
 import org.typelevel.otel4s.sdk.trace.data.SpanData
 import org.typelevel.otel4s.trace.SpanContext
 
-/** The interface that tracer uses to invoke hooks when a span is started or
-  * ended.
+/** The interface that tracer uses to invoke hooks when a span is started or ended.
   *
   * @see
   *   [[https://opentelemetry.io/docs/specs/otel/trace/sdk/#span-processor]]
@@ -40,8 +39,7 @@ trait SpanProcessor[F[_]] {
 
   /** The name of the processor.
     *
-    * It will be used in an exception to distinguish individual failures in the
-    * multi-error scenario.
+    * It will be used in an exception to distinguish individual failures in the multi-error scenario.
     *
     * @see
     *   [[SpanProcessor.ProcessorFailure]]
@@ -53,8 +51,7 @@ trait SpanProcessor[F[_]] {
 
   /** Called when a span is started, if the `span.isRecording` returns true.
     *
-    * This method is called synchronously on the execution thread, should not
-    * throw or block the execution thread.
+    * This method is called synchronously on the execution thread, should not throw or block the execution thread.
     *
     * @param parentContext
     *   the optional parent [[trace.SpanContext SpanContext]]
@@ -72,8 +69,7 @@ trait SpanProcessor[F[_]] {
 
   /** Called when a span is ended, if the `span.isRecording` returns true.
     *
-    * This method is called synchronously on the execution thread, should not
-    * throw or block the execution thread.
+    * This method is called synchronously on the execution thread, should not throw or block the execution thread.
     *
     * @param span
     *   the ended span
@@ -96,8 +92,7 @@ trait SpanProcessor[F[_]] {
 
 object SpanProcessor {
 
-  /** Creates a [[SpanProcessor]] which delegates all processing to the
-    * processors in order.
+  /** Creates a [[SpanProcessor]] which delegates all processing to the processors in order.
     */
   def of[F[_]: MonadThrow: Parallel](
       processors: SpanProcessor[F]*
@@ -112,8 +107,7 @@ object SpanProcessor {
   def noop[F[_]: Applicative]: SpanProcessor[F] =
     new Noop
 
-  implicit def spanProcessorMonoid[F[_]: MonadThrow: Parallel]
-      : Monoid[SpanProcessor[F]] =
+  implicit def spanProcessorMonoid[F[_]: MonadThrow: Parallel]: Monoid[SpanProcessor[F]] =
     new Monoid[SpanProcessor[F]] {
       val empty: SpanProcessor[F] =
         noop[F]

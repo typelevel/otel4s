@@ -54,8 +54,8 @@ object SdkMetrics {
   /** Autoconfigures [[SdkMetrics]] using [[AutoConfigured.Builder]].
     *
     * @note
-    *   the external components (e.g. OTLP exporter) must be registered
-    *   manually. Add the `otel4s-sdk-exporter` dependency to the build file:
+    *   the external components (e.g. OTLP exporter) must be registered manually. Add the `otel4s-sdk-exporter`
+    *   dependency to the build file:
     *   {{{
     * libraryDependencies += "org.typelevel" %%% "otel4s-sdk-exporter" % "x.x.x"
     *   }}}
@@ -71,8 +71,7 @@ object SdkMetrics {
     *   a function for customizing the auto-configured SDK builder
     */
   def autoConfigured[F[_]: Async: Console](
-      customize: AutoConfigured.Builder[F] => AutoConfigured.Builder[F] =
-        (a: AutoConfigured.Builder[F]) => a
+      customize: AutoConfigured.Builder[F] => AutoConfigured.Builder[F] = (a: AutoConfigured.Builder[F]) => a
   ): Resource[F, SdkMetrics[F]] =
     customize(AutoConfigured.builder[F]).build
 
@@ -90,25 +89,24 @@ object SdkMetrics {
       /** Sets the given config to use when resolving properties.
         *
         * @note
-        *   [[addPropertiesLoader]] and [[addPropertiesCustomizer]] will have no
-        *   effect if the custom config is provided.
+        *   [[addPropertiesLoader]] and [[addPropertiesCustomizer]] will have no effect if the custom config is
+        *   provided.
         *
         * @param config
         *   the config to use
         */
       def withConfig(config: Config): Builder[F]
 
-      /** Adds the properties loader. Multiple loaders will be added. The loaded
-        * properties will be merged with the default config. Loaded properties
-        * take precedence over the default ones.
+      /** Adds the properties loader. Multiple loaders will be added. The loaded properties will be merged with the
+        * default config. Loaded properties take precedence over the default ones.
         *
         * @param loader
         *   the additional loader to add
         */
       def addPropertiesLoader(loader: F[Map[String, String]]): Builder[F]
 
-      /** Adds the properties customizer. Multiple customizers can be added, and
-        * they will be applied in the order they were added.
+      /** Adds the properties customizer. Multiple customizers can be added, and they will be applied in the order they
+        * were added.
         *
         * @param customizer
         *   the customizer to add
@@ -117,8 +115,8 @@ object SdkMetrics {
           customizer: Config => Map[String, String]
       ): Builder[F]
 
-      /** Adds the meter provider builder customizer. Multiple customizers can
-        * be added, and they will be applied in the order they were added.
+      /** Adds the meter provider builder customizer. Multiple customizers can be added, and they will be applied in the
+        * order they were added.
         *
         * @param customizer
         *   the customizer to add
@@ -127,8 +125,8 @@ object SdkMetrics {
           customizer: Customizer[SdkMeterProvider.Builder[F]]
       ): Builder[F]
 
-      /** Adds the telemetry resource customizer. Multiple customizers can be
-        * added, and they will be applied in the order they were added.
+      /** Adds the telemetry resource customizer. Multiple customizers can be added, and they will be applied in the
+        * order they were added.
         *
         * @param customizer
         *   the customizer to add
@@ -137,17 +135,15 @@ object SdkMetrics {
           customizer: Customizer[TelemetryResource]
       ): Builder[F]
 
-      /** Adds the telemetry resource detector. Multiple detectors can be added,
-        * and the detected telemetry resources will be merged.
+      /** Adds the telemetry resource detector. Multiple detectors can be added, and the detected telemetry resources
+        * will be merged.
         *
         * By default, the following detectors are enabled:
         *   - host: `host.arch`, `host.name`
         *   - os: `os.type`, `os.description`
-        *   - process: `process.command`, `process.command_args`,
-        *     `process.command_line`, `process.executable.name`,
+        *   - process: `process.command`, `process.command_args`, `process.command_line`, `process.executable.name`,
         *     `process.executable.path`, `process.pid`, `process.owner`
-        *   - process_runtime: `process.runtime.name`,
-        *     `process.runtime.version`, `process.runtime.description`
+        *   - process_runtime: `process.runtime.name`, `process.runtime.version`, `process.runtime.description`
         *
         * @param detector
         *   the detector to add
@@ -156,8 +152,7 @@ object SdkMetrics {
           detector: TelemetryResourceDetector[F]
       ): Builder[F]
 
-      /** Adds the exporter configurer. Can be used to register exporters that
-        * aren't included in the SDK.
+      /** Adds the exporter configurer. Can be used to register exporters that aren't included in the SDK.
         *
         * @example
         *   Add the `otel4s-sdk-exporter` dependency to the build file:
@@ -228,9 +223,7 @@ object SdkMetrics {
       def addMeterProviderCustomizer(
           customizer: Customizer[SdkMeterProvider.Builder[F]]
       ): Builder[F] =
-        copy(meterProviderCustomizer =
-          merge(this.meterProviderCustomizer, customizer)
-        )
+        copy(meterProviderCustomizer = merge(this.meterProviderCustomizer, customizer))
 
       def addResourceDetector(
           detector: TelemetryResourceDetector[F]
@@ -247,9 +240,7 @@ object SdkMetrics {
           for {
             props <- propertiesLoader
             config <- Config.load(props)
-          } yield propertiesCustomizers.foldLeft(config)((cfg, c) =>
-            cfg.withOverrides(c(cfg))
-          )
+          } yield propertiesCustomizers.foldLeft(config)((cfg, c) => cfg.withOverrides(c(cfg)))
 
         def loadNoop: Resource[F, SdkMetrics[F]] =
           Resource.eval(

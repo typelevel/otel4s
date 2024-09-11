@@ -21,16 +21,15 @@ package experimental.attributes
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/attributes/SemanticAttributes.scala.j2
 object FileExperimentalAttributes {
 
-  /** Directory where the file is located. It should include the drive letter,
-    * when appropriate.
+  /** Directory where the file is located. It should include the drive letter, when appropriate.
     */
   val FileDirectory: AttributeKey[String] =
     AttributeKey("file.directory")
 
   /** File extension, excluding the leading dot. <p>
     * @note
-    *   <p> When the file name has multiple extensions (example.tar.gz), only
-    *   the last one should be captured ("gz", not "tar.gz").
+    *   <p> When the file name has multiple extensions (example.tar.gz), only the last one should be captured ("gz", not
+    *   "tar.gz").
     */
   val FileExtension: AttributeKey[String] =
     AttributeKey("file.extension")
@@ -40,8 +39,7 @@ object FileExperimentalAttributes {
   val FileName: AttributeKey[String] =
     AttributeKey("file.name")
 
-  /** Full path to the file, including the file name. It should include the
-    * drive letter, when appropriate.
+  /** Full path to the file, including the file name. It should include the drive letter, when appropriate.
     */
   val FilePath: AttributeKey[String] =
     AttributeKey("file.path")

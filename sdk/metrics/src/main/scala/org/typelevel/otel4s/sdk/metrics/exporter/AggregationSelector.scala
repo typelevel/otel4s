@@ -31,15 +31,13 @@ trait AggregationSelector {
         forAsynchronous(asynchronous)
     }
 
-  /** Returns preferred [[Aggregation]] for the given
-    * [[InstrumentType.Synchronous]].
+  /** Returns preferred [[Aggregation]] for the given [[InstrumentType.Synchronous]].
     */
   def forSynchronous(
       instrumentType: InstrumentType.Synchronous
   ): Aggregation with Aggregation.Synchronous
 
-  /** Returns preferred [[Aggregation]] for the given
-    * [[InstrumentType.Asynchronous]].
+  /** Returns preferred [[Aggregation]] for the given [[InstrumentType.Asynchronous]].
     */
   def forAsynchronous(
       instrumentType: InstrumentType.Asynchronous

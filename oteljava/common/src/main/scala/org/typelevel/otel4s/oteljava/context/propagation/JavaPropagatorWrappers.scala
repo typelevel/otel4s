@@ -19,9 +19,7 @@ package propagation
 
 import io.opentelemetry.context.{Context => JContext}
 import io.opentelemetry.context.propagation.{TextMapGetter => JTextMapGetter}
-import io.opentelemetry.context.propagation.{
-  TextMapPropagator => JTextMapPropagator
-}
+import io.opentelemetry.context.propagation.{TextMapPropagator => JTextMapPropagator}
 import io.opentelemetry.context.propagation.{TextMapSetter => JTextMapSetter}
 import org.typelevel.otel4s.context.propagation.TextMapGetter
 import org.typelevel.otel4s.context.propagation.TextMapPropagator
@@ -32,8 +30,7 @@ import java.{util => ju}
 import scala.jdk.CollectionConverters._
 
 private[propagation] object JavaPropagatorWrappers {
-  class TextMapGetterWrapper[C](val underlying: TextMapGetter[C])
-      extends JTextMapGetter[C] {
+  class TextMapGetterWrapper[C](val underlying: TextMapGetter[C]) extends JTextMapGetter[C] {
     def keys(carrier: C): jl.Iterable[String] =
       underlying.keys(carrier).asJava
     def get(carrier: C /* may be `null` */, key: String): String =
@@ -42,16 +39,14 @@ private[propagation] object JavaPropagatorWrappers {
         .orNull
   }
 
-  class JTextMapGetterWrapper[C](val underlying: JTextMapGetter[C])
-      extends TextMapGetter[C] {
+  class JTextMapGetterWrapper[C](val underlying: JTextMapGetter[C]) extends TextMapGetter[C] {
     def get(carrier: C, key: String): Option[String] =
       Option(underlying.get(carrier, key) /* may return `null` */ )
     def keys(carrier: C): Iterable[String] =
       underlying.keys(carrier).asScala
   }
 
-  class TextMapPropagatorWrapper(val underlying: TextMapPropagator[Context])
-      extends JTextMapPropagator {
+  class TextMapPropagatorWrapper(val underlying: TextMapPropagator[Context]) extends JTextMapPropagator {
     def fields(): ju.Collection[String] =
       underlying.fields.asJavaCollection
     def inject[C](
@@ -78,8 +73,7 @@ private[propagation] object JavaPropagatorWrappers {
     override def toString: String = s"TextMapPropagatorWrapper{$underlying}"
   }
 
-  class JTextMapPropagatorWrapper(val underlying: JTextMapPropagator)
-      extends TextMapPropagator[Context] {
+  class JTextMapPropagatorWrapper(val underlying: JTextMapPropagator) extends TextMapPropagator[Context] {
     def fields: Iterable[String] =
       underlying.fields().asScala
     def extract[A](ctx: Context, carrier: A)(implicit

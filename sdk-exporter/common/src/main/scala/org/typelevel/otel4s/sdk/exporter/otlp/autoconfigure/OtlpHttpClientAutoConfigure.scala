@@ -39,8 +39,7 @@ import scala.concurrent.duration.FiniteDuration
 
 /** Autoconfigures [[OtlpHttpClient]].
   *
-  * Target-specific properties are prioritized. E.g.
-  * `otel.exporter.otlp.traces.endpoint` is prioritized over
+  * Target-specific properties are prioritized. E.g. `otel.exporter.otlp.traces.endpoint` is prioritized over
   * `otel.exporter.otlp.endpoint`.
   *
   * The general configuration options:
@@ -205,12 +204,10 @@ private[exporter] object OtlpHttpClientAutoConfigure {
     }
   }
 
-  /** Autoconfigures [[OtlpHttpClient]] using `otel.exporter.otlp.metrics.{x}`
-    * and `otel.exporter.otlp.{x}` properties.
+  /** Autoconfigures [[OtlpHttpClient]] using `otel.exporter.otlp.metrics.{x}` and `otel.exporter.otlp.{x}` properties.
     *
     * @param defaults
-    *   the default values to use as a fallback when property is missing in the
-    *   config
+    *   the default values to use as a fallback when property is missing in the config
     */
   def metrics[F[_]: Async: Network: Compression: Console, A](
       defaults: Defaults,
@@ -226,12 +223,10 @@ private[exporter] object OtlpHttpClientAutoConfigure {
       ConfigKeys.General.All ++ ConfigKeys.Metrics.All
     )
 
-  /** Autoconfigures [[OtlpHttpClient]] using `otel.exporter.otlp.traces.{x}`
-    * and `otel.exporter.otlp.{x}` properties.
+  /** Autoconfigures [[OtlpHttpClient]] using `otel.exporter.otlp.traces.{x}` and `otel.exporter.otlp.{x}` properties.
     *
     * @param defaults
-    *   the default values to use as a fallback when property is missing in the
-    *   config
+    *   the default values to use as a fallback when property is missing in the config
     */
   def traces[F[_]: Async: Network: Compression: Console, A](
       defaults: Defaults,

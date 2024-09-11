@@ -53,8 +53,7 @@ object MetricsTestkit {
   /** Creates [[MetricsTestkit]] that keeps metrics in-memory.
     *
     * @note
-    *   the implementation does not record exemplars. Use
-    *   `OpenTelemetrySdkTestkit` if you need to record exemplars.
+    *   the implementation does not record exemplars. Use `OpenTelemetrySdkTestkit` if you need to record exemplars.
     *
     * @param customize
     *   the customization of the builder
@@ -63,24 +62,18 @@ object MetricsTestkit {
     *   the preferred aggregation for the given instrument type
     *
     * @param defaultAggregationSelector
-    *   the preferred aggregation for the given instrument type. If no views are
-    *   configured for a metric instrument, an aggregation provided by the
-    *   selector will be used
+    *   the preferred aggregation for the given instrument type. If no views are configured for a metric instrument, an
+    *   aggregation provided by the selector will be used
     *
     * @param defaultCardinalityLimitSelector
-    *   the preferred cardinality limit for the given instrument type. If no
-    *   views are configured for a metric instrument, a limit provided by the
-    *   selector will be used
+    *   the preferred cardinality limit for the given instrument type. If no views are configured for a metric
+    *   instrument, a limit provided by the selector will be used
     */
   def inMemory[F[_]: Async: Console](
-      customize: SdkMeterProvider.Builder[F] => SdkMeterProvider.Builder[F] =
-        (b: SdkMeterProvider.Builder[F]) => b,
-      aggregationTemporalitySelector: AggregationTemporalitySelector =
-        AggregationTemporalitySelector.alwaysCumulative,
-      defaultAggregationSelector: AggregationSelector =
-        AggregationSelector.default,
-      defaultCardinalityLimitSelector: CardinalityLimitSelector =
-        CardinalityLimitSelector.default
+      customize: SdkMeterProvider.Builder[F] => SdkMeterProvider.Builder[F] = (b: SdkMeterProvider.Builder[F]) => b,
+      aggregationTemporalitySelector: AggregationTemporalitySelector = AggregationTemporalitySelector.alwaysCumulative,
+      defaultAggregationSelector: AggregationSelector = AggregationSelector.default,
+      defaultCardinalityLimitSelector: CardinalityLimitSelector = CardinalityLimitSelector.default
   ): Resource[F, MetricsTestkit[F]] = {
     implicit val askContext: AskContext[F] = Ask.const(Context.root)
 

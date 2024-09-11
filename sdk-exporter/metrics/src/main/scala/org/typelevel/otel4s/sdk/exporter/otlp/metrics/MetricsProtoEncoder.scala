@@ -43,11 +43,9 @@ private object MetricsProtoEncoder {
   implicit val jsonPrinter: Printer = new ProtoEncoder.JsonPrinter {
     private val EncodeAsHex = Set("trace_id", "span_id")
 
-    /** The `traceId` and `spanId` byte arrays are represented as
-      * case-insensitive hex-encoded strings; they are not base64-encoded as is
-      * defined in the standard Protobuf JSON Mapping. Hex encoding is used for
-      * traceId and spanId fields in all OTLP Protobuf messages, e.g., the Span,
-      * Link, LogRecord, etc. messages.
+    /** The `traceId` and `spanId` byte arrays are represented as case-insensitive hex-encoded strings; they are not
+      * base64-encoded as is defined in the standard Protobuf JSON Mapping. Hex encoding is used for traceId and spanId
+      * fields in all OTLP Protobuf messages, e.g., the Span, Link, LogRecord, etc. messages.
       *
       * @see
       *   [[https://github.com/open-telemetry/opentelemetry-proto/blob/v1.2.0/docs/specification.md#json-protobuf-encoding]]

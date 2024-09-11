@@ -28,8 +28,7 @@ import org.typelevel.otel4s.metrics.BucketBoundaries
   */
 private[metrics] sealed trait Advice {
 
-  /** The recommended set of bucket boundaries to use if the selected
-    * aggregation is `ExplicitBucketHistogram`.
+  /** The recommended set of bucket boundaries to use if the selected aggregation is `ExplicitBucketHistogram`.
     */
   def explicitBucketBoundaries: Option[BucketBoundaries]
 
@@ -51,8 +50,7 @@ private[metrics] object Advice {
   /** Creates an [[Advice]] with the given values.
     *
     * @param bucketBoundaries
-    *   the recommended set of bucket boundaries to use if the selected
-    *   aggregation is `explicit bucket histogram`
+    *   the recommended set of bucket boundaries to use if the selected aggregation is `explicit bucket histogram`
     */
   def apply(bucketBoundaries: Option[BucketBoundaries]): Advice =
     Impl(bucketBoundaries)

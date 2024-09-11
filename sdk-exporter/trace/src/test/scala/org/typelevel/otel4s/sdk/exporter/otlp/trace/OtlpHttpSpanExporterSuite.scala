@@ -43,10 +43,7 @@ import org.typelevel.otel4s.trace.StatusCode
 import java.util.Locale
 import scala.concurrent.duration._
 
-class OtlpHttpSpanExporterSuite
-    extends CatsEffectSuite
-    with ScalaCheckEffectSuite
-    with SuiteRuntimePlatform {
+class OtlpHttpSpanExporterSuite extends CatsEffectSuite with ScalaCheckEffectSuite with SuiteRuntimePlatform {
 
   import OtlpHttpSpanExporterSuite._
 

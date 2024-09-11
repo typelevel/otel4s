@@ -84,8 +84,7 @@ object EventData {
     *
     * The name of the even will be `exception`.
     *
-    * Exception details (name, message, and stacktrace) will be added to the
-    * attributes.
+    * Exception details (name, message, and stacktrace) will be added to the attributes.
     *
     * @param timestamp
     *   the timestamp of the event
@@ -97,8 +96,8 @@ object EventData {
     *   the attributes to associate with the event
     *
     * @param escaped
-    *   should be set to true if the exception is recorded at a point where it
-    *   is known that the exception is escaping the scope of the span
+    *   should be set to true if the exception is recorded at a point where it is known that the exception is escaping
+    *   the scope of the span
     */
   def fromException(
       timestamp: FiniteDuration,

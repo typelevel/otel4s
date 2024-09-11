@@ -23,22 +23,17 @@
 package org.typelevel.otel4s.oteljava.context
 package propagation
 
-import io.opentelemetry.context.propagation.{
-  ContextPropagators => JContextPropagators
-}
+import io.opentelemetry.context.propagation.{ContextPropagators => JContextPropagators}
 import io.opentelemetry.context.propagation.{TextMapGetter => JTextMapGetter}
-import io.opentelemetry.context.propagation.{
-  TextMapPropagator => JTextMapPropagator
-}
+import io.opentelemetry.context.propagation.{TextMapPropagator => JTextMapPropagator}
 import org.typelevel.otel4s.context.propagation.ContextPropagators
 import org.typelevel.otel4s.context.propagation.TextMapGetter
 import org.typelevel.otel4s.context.propagation.TextMapPropagator
 
 import scala.{unchecked => uc}
 
-/** This object provides `asScala` and `asJava` extension methods that convert
-  * between Scala and Java `TextMapGetter`s, `TextMapPropagator`s, and
-  * `ContextPropagators`.
+/** This object provides `asScala` and `asJava` extension methods that convert between Scala and Java `TextMapGetter`s,
+  * `TextMapPropagator`s, and `ContextPropagators`.
   *
   * {{{
   *   import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator
@@ -49,9 +44,8 @@ import scala.{unchecked => uc}
   *   val propagator: TextMapPropagator[Context] = W3CTraceContextPropagator.getInstance().asScala
   * }}}
   *
-  * The conversions return wrappers for the TextMap operators, and converting
-  * from a source type to a target type and back again will return the original
-  * source object. For example:
+  * The conversions return wrappers for the TextMap operators, and converting from a source type to a target type and
+  * back again will return the original source object. For example:
   *
   * {{{
   *   import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator
@@ -65,10 +59,9 @@ import scala.{unchecked => uc}
   *   assert(source eq other)
   * }}}
   *
-  * Currently, `ContextPropagators` for both Java and Scala are simple wrappers
-  * around a `TextMapPropagator` instance of the corresponding type.
-  * Consequently, conversions between `ContextPropagators` convert the
-  * `TextMapPropagator` and do not use a custom wrapper.
+  * Currently, `ContextPropagators` for both Java and Scala are simple wrappers around a `TextMapPropagator` instance of
+  * the corresponding type. Consequently, conversions between `ContextPropagators` convert the `TextMapPropagator` and
+  * do not use a custom wrapper.
   */
 object PropagatorConverters {
 
@@ -78,9 +71,8 @@ object PropagatorConverters {
 
     /** Converts a Scala `TextMapGetter` to a Java `TextMapGetter`.
       *
-      * The returned Java `TextMapGetter` is backed by the provided Scala
-      * `TextMapGetter` unless the Scala `TextMapGetter` was previously obtained
-      * from an implicit or explicit call of `asScala`, in which case the
+      * The returned Java `TextMapGetter` is backed by the provided Scala `TextMapGetter` unless the Scala
+      * `TextMapGetter` was previously obtained from an implicit or explicit call of `asScala`, in which case the
       * original Java `TextMapGetter` will be returned.
       */
     def asJava: JTextMapGetter[A] = Explicit.asJava(getter)
@@ -92,10 +84,9 @@ object PropagatorConverters {
 
     /** Converts a Scala `TextMapPropagator` to a Java `TextMapPropagator`.
       *
-      * The returned Java `TextMapPropagator` is backed by the provided Scala
-      * `TextMapPropagator`unless the Scala `TextMapPropagator` was previously
-      * obtained from an implicit or explicit call of `asScala`, in which case
-      * the original Java `TextMapPropagator` will be returned.
+      * The returned Java `TextMapPropagator` is backed by the provided Scala `TextMapPropagator`unless the Scala
+      * `TextMapPropagator` was previously obtained from an implicit or explicit call of `asScala`, in which case the
+      * original Java `TextMapPropagator` will be returned.
       */
     def asJava: JTextMapPropagator = Explicit.asJava(prop)
   }
@@ -114,9 +105,8 @@ object PropagatorConverters {
 
     /** Converts a Java `TextMapGetter` to a Scala `TextMapGetter`.
       *
-      * The returned Scala `TextMapGetter` is backed by the provided Java
-      * `TextMapGetter` unless the Java `TextMapGetter` was previously obtained
-      * from an implicit or explicit call of `asJava`, in which case the
+      * The returned Scala `TextMapGetter` is backed by the provided Java `TextMapGetter` unless the Java
+      * `TextMapGetter` was previously obtained from an implicit or explicit call of `asJava`, in which case the
       * original Scala `TextMapGetter` will be returned.
       */
     def asScala: TextMapGetter[A] = Explicit.asScala(getter)
@@ -128,10 +118,9 @@ object PropagatorConverters {
 
     /** Converts a Java `TextMapPropagator` to a Scala `TextMapPropagator`.
       *
-      * The returned Scala `TextMapPropagator` is backed by the provided Java
-      * `TextMapPropagator` unless the Java `TextMapPropagator` was previously
-      * obtained from an implicit or explicit call of `asJava`, in which case
-      * the original Scala `TextMapPropagator` will be returned.
+      * The returned Scala `TextMapPropagator` is backed by the provided Java `TextMapPropagator` unless the Java
+      * `TextMapPropagator` was previously obtained from an implicit or explicit call of `asJava`, in which case the
+      * original Scala `TextMapPropagator` will be returned.
       */
     def asScala: TextMapPropagator[Context] = Explicit.asScala(propagator)
   }
@@ -150,14 +139,14 @@ object PropagatorConverters {
     def asJava[A](getter: TextMapGetter[A]): JTextMapGetter[A] = getter match {
       case null                                  => null
       case wrapper: JTextMapGetterWrapper[A @uc] => wrapper.underlying
-      case _ => new TextMapGetterWrapper(getter)
+      case _                                     => new TextMapGetterWrapper(getter)
     }
 
     def asJava(propagator: TextMapPropagator[Context]): JTextMapPropagator =
       propagator match {
         case null                               => null
         case wrapper: JTextMapPropagatorWrapper => wrapper.underlying
-        case _ => new TextMapPropagatorWrapper(propagator)
+        case _                                  => new TextMapPropagatorWrapper(propagator)
       }
 
     def asJava(propagators: ContextPropagators[Context]): JContextPropagators =
@@ -166,14 +155,14 @@ object PropagatorConverters {
     def asScala[A](getter: JTextMapGetter[A]): TextMapGetter[A] = getter match {
       case null                                 => null
       case wrapper: TextMapGetterWrapper[A @uc] => wrapper.underlying
-      case _ => new JTextMapGetterWrapper(getter)
+      case _                                    => new JTextMapGetterWrapper(getter)
     }
 
     def asScala(propagator: JTextMapPropagator): TextMapPropagator[Context] =
       propagator match {
         case null                              => null
         case wrapper: TextMapPropagatorWrapper => wrapper.underlying
-        case _ => new JTextMapPropagatorWrapper(propagator)
+        case _                                 => new JTextMapPropagatorWrapper(propagator)
       }
 
     def asScala(propagators: JContextPropagators): ContextPropagators[Context] =

@@ -82,8 +82,7 @@ object SystemExperimentalAttributes {
   val SystemPagingType: AttributeKey[String] =
     AttributeKey("system.paging.type")
 
-  /** The process state, e.g., <a
-    * href="https://man7.org/linux/man-pages/man1/ps.1.html#PROCESS_STATE_CODES">Linux
+  /** The process state, e.g., <a href="https://man7.org/linux/man-pages/man1/ps.1.html#PROCESS_STATE_CODES">Linux
     * Process State Codes</a>
     */
   val SystemProcessStatus: AttributeKey[String] =

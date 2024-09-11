@@ -57,22 +57,17 @@ object InMemoryMetricReader {
     *   the preferred aggregation for the given instrument type
     *
     * @param defaultAggregationSelector
-    *   the preferred aggregation for the given instrument type. If no views are
-    *   configured for a metric instrument, an aggregation provided by the
-    *   selector will be used.
+    *   the preferred aggregation for the given instrument type. If no views are configured for a metric instrument, an
+    *   aggregation provided by the selector will be used.
     *
     * @param defaultCardinalityLimitSelector
-    *   the preferred cardinality limit for the given instrument type. If no
-    *   views are configured for a metric instrument, an aggregation provided by
-    *   the selector will be used.
+    *   the preferred cardinality limit for the given instrument type. If no views are configured for a metric
+    *   instrument, an aggregation provided by the selector will be used.
     */
   def create[F[_]: Concurrent](
-      aggregationTemporalitySelector: AggregationTemporalitySelector =
-        AggregationTemporalitySelector.alwaysCumulative,
-      defaultAggregationSelector: AggregationSelector =
-        AggregationSelector.default,
-      defaultCardinalityLimitSelector: CardinalityLimitSelector =
-        CardinalityLimitSelector.default
+      aggregationTemporalitySelector: AggregationTemporalitySelector = AggregationTemporalitySelector.alwaysCumulative,
+      defaultAggregationSelector: AggregationSelector = AggregationSelector.default,
+      defaultCardinalityLimitSelector: CardinalityLimitSelector = CardinalityLimitSelector.default
   ): F[InMemoryMetricReader[F]] =
     for {
       producers <- Ref.empty[F, Vector[MetricProducer[F]]]

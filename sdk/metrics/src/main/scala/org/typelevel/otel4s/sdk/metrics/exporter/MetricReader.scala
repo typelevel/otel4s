@@ -25,8 +25,7 @@ import org.typelevel.otel4s.sdk.metrics.data.MetricData
 
 import scala.concurrent.duration.FiniteDuration
 
-/** A reader of metrics that collects metrics from the associated metric
-  * producers.
+/** A reader of metrics that collects metrics from the associated metric producers.
   *
   * @see
   *   [[https://opentelemetry.io/docs/specs/otel/metrics/sdk/#metricreader]]
@@ -42,23 +41,21 @@ trait MetricReader[F[_]] {
 
   /** The preferred aggregation for the given instrument.
     *
-    * If no views are configured for a metric instrument, an aggregation
-    * provided by the selector will be used.
+    * If no views are configured for a metric instrument, an aggregation provided by the selector will be used.
     */
   def defaultAggregationSelector: AggregationSelector
 
   /** The preferred cardinality limit for the given instrument.
     *
-    * If no views are configured for a metric instrument, a limit provided by
-    * the selector will be used.
+    * If no views are configured for a metric instrument, a limit provided by the selector will be used.
     */
   def defaultCardinalityLimitSelector: CardinalityLimitSelector
 
   /** Sets the metric producer to be used by this reader.
     *
     * @note
-    *   this should only be called by the SDK and should be considered an
-    *   internal API. The producers can be configured only once.
+    *   this should only be called by the SDK and should be considered an internal API. The producers can be configured
+    *   only once.
     *
     * @param producers
     *   the producers to use to collect the metrics
@@ -69,16 +66,14 @@ trait MetricReader[F[_]] {
     */
   def collectAllMetrics: F[Vector[MetricData]]
 
-  /** Collects all metrics and sends them to the exporter. Flushes the exporter
-    * too.
+  /** Collects all metrics and sends them to the exporter. Flushes the exporter too.
     */
   def forceFlush: F[Unit]
 }
 
 object MetricReader {
 
-  /** Creates a period metric reader that collects and exports metrics with the
-    * given interval.
+  /** Creates a period metric reader that collects and exports metrics with the given interval.
     *
     * @param exporter
     *   the exporter to send the collected metrics to

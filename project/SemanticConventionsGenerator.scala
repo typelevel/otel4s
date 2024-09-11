@@ -7,18 +7,25 @@ object SemanticConventionsGenerator {
 
   // generates semantic conventions by using `otel/weaver` in docker
   def generate(version: String, rootDir: File): Unit = {
-    generateOne(version, rootDir, experimental = false)
-    generateOne(version, rootDir, experimental = true)
+    generateAttributes(version, rootDir)
+    generateMetrics(version, rootDir)
   }
 
-  private def generateOne(
+  private def generateAttributes(version: String, rootDir: File): Unit = {
+    generateAttributes(version, rootDir, experimental = false)
+    generateAttributes(version, rootDir, experimental = true)
+  }
+
+  private def generateMetrics(version: String, rootDir: File): Unit = {
+    generateMetrics(version, rootDir, experimental = false)
+    generateMetrics(version, rootDir, experimental = true)
+  }
+
+  private def generateAttributes(
       version: String,
       rootDir: File,
       experimental: Boolean
   ): Unit = {
-    val semanticConventionsRepoZip =
-      s"https://github.com/open-telemetry/semantic-conventions/archive/v$version.zip"
-
     val outputDir =
       if (experimental)
         s"$rootDir/semconv/experimental/src/main/scala/org/typelevel/otel4s/semconv/experimental/attributes"
@@ -36,6 +43,44 @@ object SemanticConventionsGenerator {
         )
       else
         Nil
+
+    invokeWeaverGenerator(version, rootDir, outputDir, target, Nil)
+  }
+
+  private def generateMetrics(
+      version: String,
+      rootDir: File,
+      experimental: Boolean
+  ): Unit = {
+    val outputDir =
+      if (experimental)
+        s"$rootDir/semconv/metrics/experimental/src/main/scala/org/typelevel/otel4s/semconv/experimental/metrics/"
+      else
+        s"$rootDir/semconv/metrics/stable/src/main/scala/org/typelevel/otel4s/semconv/metrics/"
+
+    val target = "otel4s/metrics"
+
+    val params: List[String] =
+      if (experimental)
+        List(
+          "--param=excluded_stability=[]",
+          "--param=object_prefix=Experimental"
+        )
+      else
+        Nil
+
+    invokeWeaverGenerator(version, rootDir, outputDir, target, params)
+  }
+
+  private def invokeWeaverGenerator(
+      version: String,
+      rootDir: File,
+      outputDir: String,
+      target: String,
+      params: List[String]
+  ): Unit = {
+    val semanticConventionsRepoZip =
+      s"https://github.com/open-telemetry/semantic-conventions/archive/v$version.zip"
 
     val buildDir = rootDir / "buildscripts" / "semantic-convention"
     val zip = buildDir / "semantic-conventions.zip"
@@ -66,4 +111,5 @@ object SemanticConventionsGenerator {
 
     Process(command, rootDir).!
   }
+
 }

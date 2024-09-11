@@ -118,6 +118,8 @@ lazy val root = tlCrossRootProject
     oteljava,
     `semconv-stable`,
     `semconv-experimental`,
+    `semconv-metrics-stable`,
+    `semconv-metrics-experimental`,
     benchmarks,
     examples,
     unidocs
@@ -584,6 +586,10 @@ lazy val oteljava = project
   .settings(munitDependencies)
   .settings(scalafixSettings)
 
+//
+// Semantic conventions
+//
+
 lazy val `semconv-stable` =
   crossProject(JVMPlatform, JSPlatform, NativePlatform)
     .crossType(CrossType.Pure)
@@ -620,6 +626,37 @@ lazy val `semconv-experimental` =
     )
     .settings(munitDependencies)
     .settings(scalafixSettings)
+
+lazy val `semconv-metrics-stable` =
+  crossProject(JVMPlatform, JSPlatform, NativePlatform)
+    .crossType(CrossType.Pure)
+    .in(file("semconv/metrics/stable"))
+    .dependsOn(`core-metrics`)
+    .settings(
+      name := "otel4s-semconv-metrics",
+      startYear := Some(2024),
+      description := "Stable semantic metrics.",
+    )
+    .settings(munitDependencies)
+    .settings(scalafixSettings)
+
+lazy val `semconv-metrics-experimental` =
+  crossProject(JVMPlatform, JSPlatform, NativePlatform)
+    .crossType(CrossType.Pure)
+    .in(file("semconv/metrics/experimental"))
+    .dependsOn(`core-metrics`, `semconv-metrics-stable`)
+    .settings(
+      name := "otel4s-semconv-metrics-experimental",
+      startYear := Some(2024),
+      description := "Experimental (incubating) semantic metrics. Breaking changes expected. Library instrumentation SHOULD NOT depend on this.",
+      mimaPreviousArtifacts := Set.empty
+    )
+    .settings(munitDependencies)
+    .settings(scalafixSettings)
+
+//
+//
+//
 
 lazy val scalafix = tlScalafixProject
   .rulesSettings(
@@ -775,6 +812,8 @@ lazy val unidocs = project
       `oteljava-testkit`,
       oteljava,
       `semconv-stable`.jvm,
-      `semconv-experimental`.jvm
+      `semconv-experimental`.jvm,
+      `semconv-metrics-stable`.jvm,
+      `semconv-metrics-experimental`.jvm
     )
   )

@@ -19,6 +19,7 @@ package semconv
 package metrics
 
 import org.typelevel.otel4s.metrics._
+import org.typelevel.otel4s.semconv.attributes._
 
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/metrics/SemanticMetrics.scala.j2
 object JvmMetrics {
@@ -146,7 +147,7 @@ object JvmMetrics {
         */
       val jvmGcAction: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("jvm.gc.action"),
+          JvmAttributes.JvmGcAction,
           List(
             "end of minor GC",
             "end of major GC",
@@ -162,7 +163,7 @@ object JvmMetrics {
         */
       val jvmGcName: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("jvm.gc.name"),
+          JvmAttributes.JvmGcName,
           List(
             "G1 Young Generation",
             "G1 Old Generation",
@@ -205,7 +206,7 @@ object JvmMetrics {
         */
       val jvmMemoryPoolName: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("jvm.memory.pool.name"),
+          JvmAttributes.JvmMemoryPoolName,
           List(
             "G1 Old Gen",
             "G1 Eden space",
@@ -219,7 +220,7 @@ object JvmMetrics {
         */
       val jvmMemoryType: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("jvm.memory.type"),
+          JvmAttributes.JvmMemoryType,
           List(
             "heap",
             "non_heap",
@@ -261,7 +262,7 @@ object JvmMetrics {
         */
       val jvmMemoryPoolName: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("jvm.memory.pool.name"),
+          JvmAttributes.JvmMemoryPoolName,
           List(
             "G1 Old Gen",
             "G1 Eden space",
@@ -275,7 +276,7 @@ object JvmMetrics {
         */
       val jvmMemoryType: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("jvm.memory.type"),
+          JvmAttributes.JvmMemoryType,
           List(
             "heap",
             "non_heap",
@@ -317,7 +318,7 @@ object JvmMetrics {
         */
       val jvmMemoryPoolName: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("jvm.memory.pool.name"),
+          JvmAttributes.JvmMemoryPoolName,
           List(
             "G1 Old Gen",
             "G1 Eden space",
@@ -331,7 +332,7 @@ object JvmMetrics {
         */
       val jvmMemoryType: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("jvm.memory.type"),
+          JvmAttributes.JvmMemoryType,
           List(
             "heap",
             "non_heap",
@@ -373,7 +374,7 @@ object JvmMetrics {
         */
       val jvmMemoryPoolName: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("jvm.memory.pool.name"),
+          JvmAttributes.JvmMemoryPoolName,
           List(
             "G1 Old Gen",
             "G1 Eden space",
@@ -387,7 +388,7 @@ object JvmMetrics {
         */
       val jvmMemoryType: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("jvm.memory.type"),
+          JvmAttributes.JvmMemoryType,
           List(
             "heap",
             "non_heap",
@@ -426,7 +427,7 @@ object JvmMetrics {
         */
       val jvmThreadDaemon: AttributeSpec[Boolean] =
         AttributeSpec(
-          AttributeKey("jvm.thread.daemon"),
+          JvmAttributes.JvmThreadDaemon,
           List(
           ),
           Requirement.recommended,
@@ -437,7 +438,7 @@ object JvmMetrics {
         */
       val jvmThreadState: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("jvm.thread.state"),
+          JvmAttributes.JvmThreadState,
           List(
             "runnable",
             "blocked",

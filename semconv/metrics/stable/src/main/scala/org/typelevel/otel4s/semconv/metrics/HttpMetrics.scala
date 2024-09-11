@@ -19,6 +19,7 @@ package semconv
 package metrics
 
 import org.typelevel.otel4s.metrics._
+import org.typelevel.otel4s.semconv.attributes._
 
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/metrics/SemanticMetrics.scala.j2
 object HttpMetrics {
@@ -49,7 +50,7 @@ object HttpMetrics {
         */
       val errorType: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("error.type"),
+          ErrorAttributes.ErrorType,
           List(
             "timeout",
             "java.net.UnknownHostException",
@@ -79,7 +80,7 @@ object HttpMetrics {
         */
       val httpRequestMethod: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("http.request.method"),
+          HttpAttributes.HttpRequestMethod,
           List(
             "GET",
             "POST",
@@ -93,7 +94,7 @@ object HttpMetrics {
         */
       val httpResponseStatusCode: AttributeSpec[Long] =
         AttributeSpec(
-          AttributeKey("http.response.status_code"),
+          HttpAttributes.HttpResponseStatusCode,
           List(
             200,
           ),
@@ -107,7 +108,7 @@ object HttpMetrics {
         */
       val networkProtocolName: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("network.protocol.name"),
+          NetworkAttributes.NetworkProtocolName,
           List(
             "http",
             "spdy",
@@ -124,7 +125,7 @@ object HttpMetrics {
         */
       val networkProtocolVersion: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("network.protocol.version"),
+          NetworkAttributes.NetworkProtocolVersion,
           List(
             "1.0",
             "1.1",
@@ -143,7 +144,7 @@ object HttpMetrics {
         */
       val serverAddress: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("server.address"),
+          ServerAttributes.ServerAddress,
           List(
             "example.com",
             "10.1.2.80",
@@ -161,7 +162,7 @@ object HttpMetrics {
         */
       val serverPort: AttributeSpec[Long] =
         AttributeSpec(
-          AttributeKey("server.port"),
+          ServerAttributes.ServerPort,
           List(
             80,
             8080,
@@ -176,7 +177,7 @@ object HttpMetrics {
         */
       val urlScheme: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("url.scheme"),
+          UrlAttributes.UrlScheme,
           List(
             "http",
             "https",
@@ -234,7 +235,7 @@ object HttpMetrics {
         */
       val errorType: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("error.type"),
+          ErrorAttributes.ErrorType,
           List(
             "timeout",
             "java.net.UnknownHostException",
@@ -264,7 +265,7 @@ object HttpMetrics {
         */
       val httpRequestMethod: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("http.request.method"),
+          HttpAttributes.HttpRequestMethod,
           List(
             "GET",
             "POST",
@@ -278,7 +279,7 @@ object HttpMetrics {
         */
       val httpResponseStatusCode: AttributeSpec[Long] =
         AttributeSpec(
-          AttributeKey("http.response.status_code"),
+          HttpAttributes.HttpResponseStatusCode,
           List(
             200,
           ),
@@ -294,7 +295,7 @@ object HttpMetrics {
         */
       val httpRoute: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("http.route"),
+          HttpAttributes.HttpRoute,
           List(
             "/users/:userID?",
             "{controller}/{action}/{id?}",
@@ -309,7 +310,7 @@ object HttpMetrics {
         */
       val networkProtocolName: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("network.protocol.name"),
+          NetworkAttributes.NetworkProtocolName,
           List(
             "http",
             "spdy",
@@ -326,7 +327,7 @@ object HttpMetrics {
         */
       val networkProtocolVersion: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("network.protocol.version"),
+          NetworkAttributes.NetworkProtocolVersion,
           List(
             "1.0",
             "1.1",
@@ -346,7 +347,7 @@ object HttpMetrics {
         */
       val serverAddress: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("server.address"),
+          ServerAttributes.ServerAddress,
           List(
             "example.com",
             "10.1.2.80",
@@ -365,7 +366,7 @@ object HttpMetrics {
         */
       val serverPort: AttributeSpec[Long] =
         AttributeSpec(
-          AttributeKey("server.port"),
+          ServerAttributes.ServerPort,
           List(
             80,
             8080,
@@ -385,7 +386,7 @@ object HttpMetrics {
         */
       val urlScheme: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("url.scheme"),
+          UrlAttributes.UrlScheme,
           List(
             "http",
             "https",

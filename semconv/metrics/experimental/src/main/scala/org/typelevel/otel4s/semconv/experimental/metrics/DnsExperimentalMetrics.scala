@@ -20,6 +20,8 @@ package experimental
 package metrics
 
 import org.typelevel.otel4s.metrics._
+import org.typelevel.otel4s.semconv.attributes._
+import org.typelevel.otel4s.semconv.experimental.attributes._
 
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/metrics/SemanticMetrics.scala.j2
 object DnsExperimentalMetrics {
@@ -42,7 +44,7 @@ object DnsExperimentalMetrics {
         */
       val dnsQuestionName: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("dns.question.name"),
+          DnsExperimentalAttributes.DnsQuestionName,
           List(
             "www.example.com",
             "dot.net",
@@ -61,7 +63,7 @@ object DnsExperimentalMetrics {
         */
       val errorType: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("error.type"),
+          ErrorAttributes.ErrorType,
           List(
             "host_not_found",
             "no_recovery",

@@ -631,7 +631,7 @@ lazy val `semconv-metrics-stable` =
   crossProject(JVMPlatform, JSPlatform, NativePlatform)
     .crossType(CrossType.Pure)
     .in(file("semconv/metrics/stable"))
-    .dependsOn(`core-metrics`)
+    .dependsOn(`core-metrics`, `semconv-stable`)
     .settings(
       name := "otel4s-semconv-metrics",
       startYear := Some(2024),
@@ -644,7 +644,7 @@ lazy val `semconv-metrics-experimental` =
   crossProject(JVMPlatform, JSPlatform, NativePlatform)
     .crossType(CrossType.Pure)
     .in(file("semconv/metrics/experimental"))
-    .dependsOn(`core-metrics`, `semconv-metrics-stable`)
+    .dependsOn(`core-metrics`, `semconv-metrics-stable`, `semconv-experimental`)
     .settings(
       name := "otel4s-semconv-metrics-experimental",
       startYear := Some(2024),

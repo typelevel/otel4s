@@ -172,12 +172,12 @@ final class BatchSpanProcessor[F[_]: Temporal: Console] private (
       .exportSpans(batch)
       .timeoutTo(
         config.exporterTimeout,
-        Console[F].error(
+        Console[F].errorln(
           s"BatchSpanProcessor: the export attempt has been canceled after [${config.exporterTimeout}]"
         )
       )
       .handleErrorWith { e =>
-        Console[F].error(
+        Console[F].errorln(
           s"BatchSpanProcessor: the export has failed: ${e.getMessage}\n${e.getStackTrace.mkString("\n")}\n"
         )
       }

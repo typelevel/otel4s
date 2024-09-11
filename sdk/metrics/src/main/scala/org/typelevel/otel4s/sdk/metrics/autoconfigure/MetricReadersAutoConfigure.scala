@@ -102,7 +102,7 @@ private final class MetricReadersAutoConfigure[F[_]: Temporal: Console](
     Resource
       .eval(
         exporters.traverse_ { exporter =>
-          Console[F].error(
+          Console[F].errorln(
             s"The pull-based exporter [$exporter] is not supported yet"
           )
         }

@@ -20,6 +20,7 @@ package experimental
 package metrics
 
 import org.typelevel.otel4s.metrics._
+import org.typelevel.otel4s.semconv.experimental.attributes._
 
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/metrics/SemanticMetrics.scala.j2
 object ProcessExperimentalMetrics {
@@ -38,7 +39,7 @@ object ProcessExperimentalMetrics {
         */
       val processContextSwitchType: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("process.context_switch_type"),
+          ProcessExperimentalAttributes.ProcessContextSwitchType,
           List(
           ),
           Requirement.recommended,
@@ -77,7 +78,7 @@ object ProcessExperimentalMetrics {
         */
       val cpuMode: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("cpu.mode"),
+          CpuExperimentalAttributes.CpuMode,
           List(
             "user",
             "system",
@@ -120,7 +121,7 @@ object ProcessExperimentalMetrics {
         */
       val cpuMode: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("cpu.mode"),
+          CpuExperimentalAttributes.CpuMode,
           List(
             "user",
             "system",
@@ -158,7 +159,7 @@ object ProcessExperimentalMetrics {
         */
       val diskIoDirection: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("disk.io.direction"),
+          DiskExperimentalAttributes.DiskIoDirection,
           List(
             "read",
           ),
@@ -229,7 +230,7 @@ object ProcessExperimentalMetrics {
         */
       val networkIoDirection: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("network.io.direction"),
+          NetworkExperimentalAttributes.NetworkIoDirection,
           List(
             "transmit",
           ),
@@ -284,7 +285,7 @@ object ProcessExperimentalMetrics {
         */
       val processPagingFaultType: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("process.paging.fault_type"),
+          ProcessExperimentalAttributes.ProcessPagingFaultType,
           List(
           ),
           Requirement.recommended,

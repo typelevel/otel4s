@@ -20,6 +20,8 @@ package experimental
 package metrics
 
 import org.typelevel.otel4s.metrics._
+import org.typelevel.otel4s.semconv.attributes._
+import org.typelevel.otel4s.semconv.experimental.attributes._
 
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/metrics/SemanticMetrics.scala.j2
 object SystemExperimentalMetrics {
@@ -38,7 +40,7 @@ object SystemExperimentalMetrics {
         */
       val systemCpuLogicalNumber: AttributeSpec[Long] =
         AttributeSpec(
-          AttributeKey("system.cpu.logical_number"),
+          SystemExperimentalAttributes.SystemCpuLogicalNumber,
           List(
             1,
           ),
@@ -113,7 +115,7 @@ object SystemExperimentalMetrics {
         */
       val cpuMode: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("cpu.mode"),
+          CpuExperimentalAttributes.CpuMode,
           List(
             "user",
             "system",
@@ -126,7 +128,7 @@ object SystemExperimentalMetrics {
         */
       val systemCpuLogicalNumber: AttributeSpec[Long] =
         AttributeSpec(
-          AttributeKey("system.cpu.logical_number"),
+          SystemExperimentalAttributes.SystemCpuLogicalNumber,
           List(
             1,
           ),
@@ -168,7 +170,7 @@ object SystemExperimentalMetrics {
         */
       val cpuMode: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("cpu.mode"),
+          CpuExperimentalAttributes.CpuMode,
           List(
             "user",
             "system",
@@ -181,7 +183,7 @@ object SystemExperimentalMetrics {
         */
       val systemCpuLogicalNumber: AttributeSpec[Long] =
         AttributeSpec(
-          AttributeKey("system.cpu.logical_number"),
+          SystemExperimentalAttributes.SystemCpuLogicalNumber,
           List(
             1,
           ),
@@ -218,7 +220,7 @@ object SystemExperimentalMetrics {
         */
       val diskIoDirection: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("disk.io.direction"),
+          DiskExperimentalAttributes.DiskIoDirection,
           List(
             "read",
           ),
@@ -230,7 +232,7 @@ object SystemExperimentalMetrics {
         */
       val systemDevice: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("system.device"),
+          SystemExperimentalAttributes.SystemDevice,
           List(
             "(identifier)",
           ),
@@ -275,7 +277,7 @@ object SystemExperimentalMetrics {
         */
       val systemDevice: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("system.device"),
+          SystemExperimentalAttributes.SystemDevice,
           List(
             "(identifier)",
           ),
@@ -311,7 +313,7 @@ object SystemExperimentalMetrics {
         */
       val diskIoDirection: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("disk.io.direction"),
+          DiskExperimentalAttributes.DiskIoDirection,
           List(
             "read",
           ),
@@ -323,7 +325,7 @@ object SystemExperimentalMetrics {
         */
       val systemDevice: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("system.device"),
+          SystemExperimentalAttributes.SystemDevice,
           List(
             "(identifier)",
           ),
@@ -366,7 +368,7 @@ object SystemExperimentalMetrics {
         */
       val diskIoDirection: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("disk.io.direction"),
+          DiskExperimentalAttributes.DiskIoDirection,
           List(
             "read",
           ),
@@ -378,7 +380,7 @@ object SystemExperimentalMetrics {
         */
       val systemDevice: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("system.device"),
+          SystemExperimentalAttributes.SystemDevice,
           List(
             "(identifier)",
           ),
@@ -415,7 +417,7 @@ object SystemExperimentalMetrics {
         */
       val diskIoDirection: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("disk.io.direction"),
+          DiskExperimentalAttributes.DiskIoDirection,
           List(
             "read",
           ),
@@ -427,7 +429,7 @@ object SystemExperimentalMetrics {
         */
       val systemDevice: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("system.device"),
+          SystemExperimentalAttributes.SystemDevice,
           List(
             "(identifier)",
           ),
@@ -464,7 +466,7 @@ object SystemExperimentalMetrics {
         */
       val systemDevice: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("system.device"),
+          SystemExperimentalAttributes.SystemDevice,
           List(
             "(identifier)",
           ),
@@ -476,7 +478,7 @@ object SystemExperimentalMetrics {
         */
       val systemFilesystemMode: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("system.filesystem.mode"),
+          SystemExperimentalAttributes.SystemFilesystemMode,
           List(
             "rw, ro",
           ),
@@ -488,7 +490,7 @@ object SystemExperimentalMetrics {
         */
       val systemFilesystemMountpoint: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("system.filesystem.mountpoint"),
+          SystemExperimentalAttributes.SystemFilesystemMountpoint,
           List(
             "/mnt/data",
           ),
@@ -500,7 +502,7 @@ object SystemExperimentalMetrics {
         */
       val systemFilesystemState: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("system.filesystem.state"),
+          SystemExperimentalAttributes.SystemFilesystemState,
           List(
             "used",
           ),
@@ -512,7 +514,7 @@ object SystemExperimentalMetrics {
         */
       val systemFilesystemType: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("system.filesystem.type"),
+          SystemExperimentalAttributes.SystemFilesystemType,
           List(
             "ext4",
           ),
@@ -552,7 +554,7 @@ object SystemExperimentalMetrics {
         */
       val systemDevice: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("system.device"),
+          SystemExperimentalAttributes.SystemDevice,
           List(
             "(identifier)",
           ),
@@ -564,7 +566,7 @@ object SystemExperimentalMetrics {
         */
       val systemFilesystemMode: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("system.filesystem.mode"),
+          SystemExperimentalAttributes.SystemFilesystemMode,
           List(
             "rw, ro",
           ),
@@ -576,7 +578,7 @@ object SystemExperimentalMetrics {
         */
       val systemFilesystemMountpoint: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("system.filesystem.mountpoint"),
+          SystemExperimentalAttributes.SystemFilesystemMountpoint,
           List(
             "/mnt/data",
           ),
@@ -588,7 +590,7 @@ object SystemExperimentalMetrics {
         */
       val systemFilesystemState: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("system.filesystem.state"),
+          SystemExperimentalAttributes.SystemFilesystemState,
           List(
             "used",
           ),
@@ -600,7 +602,7 @@ object SystemExperimentalMetrics {
         */
       val systemFilesystemType: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("system.filesystem.type"),
+          SystemExperimentalAttributes.SystemFilesystemType,
           List(
             "ext4",
           ),
@@ -671,7 +673,7 @@ object SystemExperimentalMetrics {
         */
       val linuxMemorySlabState: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("linux.memory.slab.state"),
+          LinuxExperimentalAttributes.LinuxMemorySlabState,
           List(
             "reclaimable",
             "unreclaimable",
@@ -751,7 +753,7 @@ object SystemExperimentalMetrics {
         */
       val systemMemoryState: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("system.memory.state"),
+          SystemExperimentalAttributes.SystemMemoryState,
           List(
             "free",
             "cached",
@@ -788,7 +790,7 @@ object SystemExperimentalMetrics {
         */
       val systemMemoryState: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("system.memory.state"),
+          SystemExperimentalAttributes.SystemMemoryState,
           List(
             "free",
             "cached",
@@ -830,7 +832,7 @@ object SystemExperimentalMetrics {
         */
       val networkTransport: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("network.transport"),
+          NetworkAttributes.NetworkTransport,
           List(
             "tcp",
             "udp",
@@ -843,7 +845,7 @@ object SystemExperimentalMetrics {
         */
       val systemDevice: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("system.device"),
+          SystemExperimentalAttributes.SystemDevice,
           List(
             "(identifier)",
           ),
@@ -855,7 +857,7 @@ object SystemExperimentalMetrics {
         */
       val systemNetworkState: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("system.network.state"),
+          SystemExperimentalAttributes.SystemNetworkState,
           List(
             "close_wait",
           ),
@@ -901,7 +903,7 @@ object SystemExperimentalMetrics {
         */
       val networkIoDirection: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("network.io.direction"),
+          NetworkExperimentalAttributes.NetworkIoDirection,
           List(
             "transmit",
           ),
@@ -913,7 +915,7 @@ object SystemExperimentalMetrics {
         */
       val systemDevice: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("system.device"),
+          SystemExperimentalAttributes.SystemDevice,
           List(
             "(identifier)",
           ),
@@ -958,7 +960,7 @@ object SystemExperimentalMetrics {
         */
       val networkIoDirection: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("network.io.direction"),
+          NetworkExperimentalAttributes.NetworkIoDirection,
           List(
             "transmit",
           ),
@@ -970,7 +972,7 @@ object SystemExperimentalMetrics {
         */
       val systemDevice: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("system.device"),
+          SystemExperimentalAttributes.SystemDevice,
           List(
             "(identifier)",
           ),
@@ -1007,7 +1009,7 @@ object SystemExperimentalMetrics {
         */
       val networkIoDirection: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("network.io.direction"),
+          NetworkExperimentalAttributes.NetworkIoDirection,
           List(
             "transmit",
           ),
@@ -1019,7 +1021,7 @@ object SystemExperimentalMetrics {
         */
       val systemDevice: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("system.device"),
+          SystemExperimentalAttributes.SystemDevice,
           List(
             "(identifier)",
           ),
@@ -1056,7 +1058,7 @@ object SystemExperimentalMetrics {
         */
       val networkIoDirection: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("network.io.direction"),
+          NetworkExperimentalAttributes.NetworkIoDirection,
           List(
             "transmit",
           ),
@@ -1068,7 +1070,7 @@ object SystemExperimentalMetrics {
         */
       val systemDevice: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("system.device"),
+          SystemExperimentalAttributes.SystemDevice,
           List(
             "(identifier)",
           ),
@@ -1105,7 +1107,7 @@ object SystemExperimentalMetrics {
         */
       val systemPagingType: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("system.paging.type"),
+          SystemExperimentalAttributes.SystemPagingType,
           List(
             "minor",
           ),
@@ -1141,7 +1143,7 @@ object SystemExperimentalMetrics {
         */
       val systemPagingDirection: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("system.paging.direction"),
+          SystemExperimentalAttributes.SystemPagingDirection,
           List(
             "in",
           ),
@@ -1153,7 +1155,7 @@ object SystemExperimentalMetrics {
         */
       val systemPagingType: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("system.paging.type"),
+          SystemExperimentalAttributes.SystemPagingType,
           List(
             "minor",
           ),
@@ -1191,7 +1193,7 @@ object SystemExperimentalMetrics {
         */
       val systemPagingState: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("system.paging.state"),
+          SystemExperimentalAttributes.SystemPagingState,
           List(
             "free",
           ),
@@ -1227,7 +1229,7 @@ object SystemExperimentalMetrics {
         */
       val systemPagingState: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("system.paging.state"),
+          SystemExperimentalAttributes.SystemPagingState,
           List(
             "free",
           ),
@@ -1265,7 +1267,7 @@ object SystemExperimentalMetrics {
         */
       val systemProcessStatus: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("system.process.status"),
+          SystemExperimentalAttributes.SystemProcessStatus,
           List(
             "running",
           ),

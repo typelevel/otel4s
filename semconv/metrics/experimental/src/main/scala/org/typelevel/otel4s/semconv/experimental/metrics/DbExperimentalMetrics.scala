@@ -20,6 +20,8 @@ package experimental
 package metrics
 
 import org.typelevel.otel4s.metrics._
+import org.typelevel.otel4s.semconv.attributes._
+import org.typelevel.otel4s.semconv.experimental.attributes._
 
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/metrics/SemanticMetrics.scala.j2
 object DbExperimentalMetrics {
@@ -42,7 +44,7 @@ object DbExperimentalMetrics {
         */
       val dbClientConnectionPoolName: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("db.client.connection.pool.name"),
+          DbExperimentalAttributes.DbClientConnectionPoolName,
           List(
             "myDataSource",
           ),
@@ -54,7 +56,7 @@ object DbExperimentalMetrics {
         */
       val dbClientConnectionState: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("db.client.connection.state"),
+          DbExperimentalAttributes.DbClientConnectionState,
           List(
             "idle",
           ),
@@ -96,7 +98,7 @@ object DbExperimentalMetrics {
         */
       val dbClientConnectionPoolName: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("db.client.connection.pool.name"),
+          DbExperimentalAttributes.DbClientConnectionPoolName,
           List(
             "myDataSource",
           ),
@@ -138,7 +140,7 @@ object DbExperimentalMetrics {
         */
       val dbClientConnectionPoolName: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("db.client.connection.pool.name"),
+          DbExperimentalAttributes.DbClientConnectionPoolName,
           List(
             "myDataSource",
           ),
@@ -179,7 +181,7 @@ object DbExperimentalMetrics {
         */
       val dbClientConnectionPoolName: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("db.client.connection.pool.name"),
+          DbExperimentalAttributes.DbClientConnectionPoolName,
           List(
             "myDataSource",
           ),
@@ -220,7 +222,7 @@ object DbExperimentalMetrics {
         */
       val dbClientConnectionPoolName: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("db.client.connection.pool.name"),
+          DbExperimentalAttributes.DbClientConnectionPoolName,
           List(
             "myDataSource",
           ),
@@ -261,7 +263,7 @@ object DbExperimentalMetrics {
         */
       val dbClientConnectionPoolName: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("db.client.connection.pool.name"),
+          DbExperimentalAttributes.DbClientConnectionPoolName,
           List(
             "myDataSource",
           ),
@@ -302,7 +304,7 @@ object DbExperimentalMetrics {
         */
       val dbClientConnectionPoolName: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("db.client.connection.pool.name"),
+          DbExperimentalAttributes.DbClientConnectionPoolName,
           List(
             "myDataSource",
           ),
@@ -343,7 +345,7 @@ object DbExperimentalMetrics {
         */
       val dbClientConnectionPoolName: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("db.client.connection.pool.name"),
+          DbExperimentalAttributes.DbClientConnectionPoolName,
           List(
             "myDataSource",
           ),
@@ -385,7 +387,7 @@ object DbExperimentalMetrics {
         */
       val dbClientConnectionPoolName: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("db.client.connection.pool.name"),
+          DbExperimentalAttributes.DbClientConnectionPoolName,
           List(
             "myDataSource",
           ),
@@ -426,7 +428,7 @@ object DbExperimentalMetrics {
       @deprecated("Replaced by `db.client.connection.pool.name`.", "")
       val dbClientConnectionsPoolName: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("db.client.connections.pool.name"),
+          DbExperimentalAttributes.DbClientConnectionsPoolName,
           List(
             "myDataSource",
           ),
@@ -466,7 +468,7 @@ object DbExperimentalMetrics {
       @deprecated("Replaced by `db.client.connection.pool.name`.", "")
       val dbClientConnectionsPoolName: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("db.client.connections.pool.name"),
+          DbExperimentalAttributes.DbClientConnectionsPoolName,
           List(
             "myDataSource",
           ),
@@ -505,7 +507,7 @@ object DbExperimentalMetrics {
       @deprecated("Replaced by `db.client.connection.pool.name`.", "")
       val dbClientConnectionsPoolName: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("db.client.connections.pool.name"),
+          DbExperimentalAttributes.DbClientConnectionsPoolName,
           List(
             "myDataSource",
           ),
@@ -544,7 +546,7 @@ object DbExperimentalMetrics {
       @deprecated("Replaced by `db.client.connection.pool.name`.", "")
       val dbClientConnectionsPoolName: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("db.client.connections.pool.name"),
+          DbExperimentalAttributes.DbClientConnectionsPoolName,
           List(
             "myDataSource",
           ),
@@ -583,7 +585,7 @@ object DbExperimentalMetrics {
       @deprecated("Replaced by `db.client.connection.pool.name`.", "")
       val dbClientConnectionsPoolName: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("db.client.connections.pool.name"),
+          DbExperimentalAttributes.DbClientConnectionsPoolName,
           List(
             "myDataSource",
           ),
@@ -622,7 +624,7 @@ object DbExperimentalMetrics {
       @deprecated("Replaced by `db.client.connection.pool.name`.", "")
       val dbClientConnectionsPoolName: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("db.client.connections.pool.name"),
+          DbExperimentalAttributes.DbClientConnectionsPoolName,
           List(
             "myDataSource",
           ),
@@ -661,7 +663,7 @@ object DbExperimentalMetrics {
       @deprecated("Replaced by `db.client.connection.pool.name`.", "")
       val dbClientConnectionsPoolName: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("db.client.connections.pool.name"),
+          DbExperimentalAttributes.DbClientConnectionsPoolName,
           List(
             "myDataSource",
           ),
@@ -674,7 +676,7 @@ object DbExperimentalMetrics {
       @deprecated("Replaced by `db.client.connection.state`.", "")
       val dbClientConnectionsState: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("db.client.connections.state"),
+          DbExperimentalAttributes.DbClientConnectionsState,
           List(
             "idle",
           ),
@@ -715,7 +717,7 @@ object DbExperimentalMetrics {
       @deprecated("Replaced by `db.client.connection.pool.name`.", "")
       val dbClientConnectionsPoolName: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("db.client.connections.pool.name"),
+          DbExperimentalAttributes.DbClientConnectionsPoolName,
           List(
             "myDataSource",
           ),
@@ -756,7 +758,7 @@ object DbExperimentalMetrics {
       @deprecated("Replaced by `db.client.connection.pool.name`.", "")
       val dbClientConnectionsPoolName: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("db.client.connections.pool.name"),
+          DbExperimentalAttributes.DbClientConnectionsPoolName,
           List(
             "myDataSource",
           ),
@@ -803,7 +805,7 @@ object DbExperimentalMetrics {
         */
       val dbCollectionName: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("db.collection.name"),
+          DbExperimentalAttributes.DbCollectionName,
           List(
             "public.users",
             "customers",
@@ -825,7 +827,7 @@ object DbExperimentalMetrics {
         */
       val dbNamespace: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("db.namespace"),
+          DbExperimentalAttributes.DbNamespace,
           List(
             "customers",
             "test.users",
@@ -844,7 +846,7 @@ object DbExperimentalMetrics {
         */
       val dbOperationName: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("db.operation.name"),
+          DbExperimentalAttributes.DbOperationName,
           List(
             "findAndModify",
             "HMSET",
@@ -864,7 +866,7 @@ object DbExperimentalMetrics {
         */
       val dbSystem: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("db.system"),
+          DbExperimentalAttributes.DbSystem,
           List(
           ),
           Requirement.required,
@@ -879,7 +881,7 @@ object DbExperimentalMetrics {
         */
       val errorType: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("error.type"),
+          ErrorAttributes.ErrorType,
           List(
             "timeout",
             "java.net.UnknownHostException",
@@ -899,7 +901,7 @@ object DbExperimentalMetrics {
         */
       val networkPeerAddress: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("network.peer.address"),
+          NetworkAttributes.NetworkPeerAddress,
           List(
             "10.1.2.80",
             "/tmp/my.sock",
@@ -912,7 +914,7 @@ object DbExperimentalMetrics {
         */
       val networkPeerPort: AttributeSpec[Long] =
         AttributeSpec(
-          AttributeKey("network.peer.port"),
+          NetworkAttributes.NetworkPeerPort,
           List(
             65123,
           ),
@@ -927,7 +929,7 @@ object DbExperimentalMetrics {
         */
       val serverAddress: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("server.address"),
+          ServerAttributes.ServerAddress,
           List(
             "example.com",
             "10.1.2.80",
@@ -944,7 +946,7 @@ object DbExperimentalMetrics {
         */
       val serverPort: AttributeSpec[Long] =
         AttributeSpec(
-          AttributeKey("server.port"),
+          ServerAttributes.ServerPort,
           List(
             80,
             8080,

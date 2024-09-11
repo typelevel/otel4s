@@ -20,6 +20,8 @@ package experimental
 package metrics
 
 import org.typelevel.otel4s.metrics._
+import org.typelevel.otel4s.semconv.attributes._
+import org.typelevel.otel4s.semconv.experimental.attributes._
 
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/metrics/SemanticMetrics.scala.j2
 object GenAiExperimentalMetrics {
@@ -42,7 +44,7 @@ object GenAiExperimentalMetrics {
         */
       val errorType: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("error.type"),
+          ErrorAttributes.ErrorType,
           List(
             "timeout",
             "java.net.UnknownHostException",
@@ -62,7 +64,7 @@ object GenAiExperimentalMetrics {
         */
       val genAiOperationName: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("gen_ai.operation.name"),
+          GenAiExperimentalAttributes.GenAiOperationName,
           List(
           ),
           Requirement.required,
@@ -73,7 +75,7 @@ object GenAiExperimentalMetrics {
         */
       val genAiRequestModel: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("gen_ai.request.model"),
+          GenAiExperimentalAttributes.GenAiRequestModel,
           List(
             "g",
             "p",
@@ -89,7 +91,7 @@ object GenAiExperimentalMetrics {
         */
       val genAiResponseModel: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("gen_ai.response.model"),
+          GenAiExperimentalAttributes.GenAiResponseModel,
           List(
             "gpt-4-0613",
           ),
@@ -108,7 +110,7 @@ object GenAiExperimentalMetrics {
         */
       val genAiSystem: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("gen_ai.system"),
+          GenAiExperimentalAttributes.GenAiSystem,
           List(
             "o",
             "p",
@@ -128,7 +130,7 @@ object GenAiExperimentalMetrics {
         */
       val serverAddress: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("server.address"),
+          ServerAttributes.ServerAddress,
           List(
             "example.com",
             "10.1.2.80",
@@ -145,7 +147,7 @@ object GenAiExperimentalMetrics {
         */
       val serverPort: AttributeSpec[Long] =
         AttributeSpec(
-          AttributeKey("server.port"),
+          ServerAttributes.ServerPort,
           List(
             80,
             8080,
@@ -196,7 +198,7 @@ object GenAiExperimentalMetrics {
         */
       val genAiOperationName: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("gen_ai.operation.name"),
+          GenAiExperimentalAttributes.GenAiOperationName,
           List(
           ),
           Requirement.required,
@@ -207,7 +209,7 @@ object GenAiExperimentalMetrics {
         */
       val genAiRequestModel: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("gen_ai.request.model"),
+          GenAiExperimentalAttributes.GenAiRequestModel,
           List(
             "g",
             "p",
@@ -223,7 +225,7 @@ object GenAiExperimentalMetrics {
         */
       val genAiResponseModel: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("gen_ai.response.model"),
+          GenAiExperimentalAttributes.GenAiResponseModel,
           List(
             "gpt-4-0613",
           ),
@@ -242,7 +244,7 @@ object GenAiExperimentalMetrics {
         */
       val genAiSystem: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("gen_ai.system"),
+          GenAiExperimentalAttributes.GenAiSystem,
           List(
             "o",
             "p",
@@ -259,7 +261,7 @@ object GenAiExperimentalMetrics {
         */
       val genAiTokenType: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("gen_ai.token.type"),
+          GenAiExperimentalAttributes.GenAiTokenType,
           List(
             "input",
             "output",
@@ -275,7 +277,7 @@ object GenAiExperimentalMetrics {
         */
       val serverAddress: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("server.address"),
+          ServerAttributes.ServerAddress,
           List(
             "example.com",
             "10.1.2.80",
@@ -292,7 +294,7 @@ object GenAiExperimentalMetrics {
         */
       val serverPort: AttributeSpec[Long] =
         AttributeSpec(
-          AttributeKey("server.port"),
+          ServerAttributes.ServerPort,
           List(
             80,
             8080,
@@ -342,7 +344,7 @@ object GenAiExperimentalMetrics {
         */
       val errorType: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("error.type"),
+          ErrorAttributes.ErrorType,
           List(
             "timeout",
             "java.net.UnknownHostException",
@@ -362,7 +364,7 @@ object GenAiExperimentalMetrics {
         */
       val genAiOperationName: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("gen_ai.operation.name"),
+          GenAiExperimentalAttributes.GenAiOperationName,
           List(
           ),
           Requirement.required,
@@ -373,7 +375,7 @@ object GenAiExperimentalMetrics {
         */
       val genAiRequestModel: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("gen_ai.request.model"),
+          GenAiExperimentalAttributes.GenAiRequestModel,
           List(
             "g",
             "p",
@@ -389,7 +391,7 @@ object GenAiExperimentalMetrics {
         */
       val genAiResponseModel: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("gen_ai.response.model"),
+          GenAiExperimentalAttributes.GenAiResponseModel,
           List(
             "gpt-4-0613",
           ),
@@ -408,7 +410,7 @@ object GenAiExperimentalMetrics {
         */
       val genAiSystem: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("gen_ai.system"),
+          GenAiExperimentalAttributes.GenAiSystem,
           List(
             "o",
             "p",
@@ -428,7 +430,7 @@ object GenAiExperimentalMetrics {
         */
       val serverAddress: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("server.address"),
+          ServerAttributes.ServerAddress,
           List(
             "example.com",
             "10.1.2.80",
@@ -445,7 +447,7 @@ object GenAiExperimentalMetrics {
         */
       val serverPort: AttributeSpec[Long] =
         AttributeSpec(
-          AttributeKey("server.port"),
+          ServerAttributes.ServerPort,
           List(
             80,
             8080,
@@ -496,7 +498,7 @@ object GenAiExperimentalMetrics {
         */
       val genAiOperationName: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("gen_ai.operation.name"),
+          GenAiExperimentalAttributes.GenAiOperationName,
           List(
           ),
           Requirement.required,
@@ -507,7 +509,7 @@ object GenAiExperimentalMetrics {
         */
       val genAiRequestModel: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("gen_ai.request.model"),
+          GenAiExperimentalAttributes.GenAiRequestModel,
           List(
             "g",
             "p",
@@ -523,7 +525,7 @@ object GenAiExperimentalMetrics {
         */
       val genAiResponseModel: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("gen_ai.response.model"),
+          GenAiExperimentalAttributes.GenAiResponseModel,
           List(
             "gpt-4-0613",
           ),
@@ -542,7 +544,7 @@ object GenAiExperimentalMetrics {
         */
       val genAiSystem: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("gen_ai.system"),
+          GenAiExperimentalAttributes.GenAiSystem,
           List(
             "o",
             "p",
@@ -562,7 +564,7 @@ object GenAiExperimentalMetrics {
         */
       val serverAddress: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("server.address"),
+          ServerAttributes.ServerAddress,
           List(
             "example.com",
             "10.1.2.80",
@@ -579,7 +581,7 @@ object GenAiExperimentalMetrics {
         */
       val serverPort: AttributeSpec[Long] =
         AttributeSpec(
-          AttributeKey("server.port"),
+          ServerAttributes.ServerPort,
           List(
             80,
             8080,
@@ -629,7 +631,7 @@ object GenAiExperimentalMetrics {
         */
       val genAiOperationName: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("gen_ai.operation.name"),
+          GenAiExperimentalAttributes.GenAiOperationName,
           List(
           ),
           Requirement.required,
@@ -640,7 +642,7 @@ object GenAiExperimentalMetrics {
         */
       val genAiRequestModel: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("gen_ai.request.model"),
+          GenAiExperimentalAttributes.GenAiRequestModel,
           List(
             "g",
             "p",
@@ -656,7 +658,7 @@ object GenAiExperimentalMetrics {
         */
       val genAiResponseModel: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("gen_ai.response.model"),
+          GenAiExperimentalAttributes.GenAiResponseModel,
           List(
             "gpt-4-0613",
           ),
@@ -675,7 +677,7 @@ object GenAiExperimentalMetrics {
         */
       val genAiSystem: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("gen_ai.system"),
+          GenAiExperimentalAttributes.GenAiSystem,
           List(
             "o",
             "p",
@@ -695,7 +697,7 @@ object GenAiExperimentalMetrics {
         */
       val serverAddress: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("server.address"),
+          ServerAttributes.ServerAddress,
           List(
             "example.com",
             "10.1.2.80",
@@ -712,7 +714,7 @@ object GenAiExperimentalMetrics {
         */
       val serverPort: AttributeSpec[Long] =
         AttributeSpec(
-          AttributeKey("server.port"),
+          ServerAttributes.ServerPort,
           List(
             80,
             8080,

@@ -20,6 +20,7 @@ package experimental
 package metrics
 
 import org.typelevel.otel4s.metrics._
+import org.typelevel.otel4s.semconv.experimental.attributes._
 
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/metrics/SemanticMetrics.scala.j2
 object ContainerExperimentalMetrics {
@@ -43,7 +44,7 @@ object ContainerExperimentalMetrics {
         */
       val cpuMode: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("cpu.mode"),
+          CpuExperimentalAttributes.CpuMode,
           List(
             "user",
             "system",
@@ -83,7 +84,7 @@ object ContainerExperimentalMetrics {
         */
       val diskIoDirection: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("disk.io.direction"),
+          DiskExperimentalAttributes.DiskIoDirection,
           List(
             "read",
           ),
@@ -95,7 +96,7 @@ object ContainerExperimentalMetrics {
         */
       val systemDevice: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("system.device"),
+          SystemExperimentalAttributes.SystemDevice,
           List(
             "(identifier)",
           ),
@@ -154,7 +155,7 @@ object ContainerExperimentalMetrics {
         */
       val networkIoDirection: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("network.io.direction"),
+          NetworkExperimentalAttributes.NetworkIoDirection,
           List(
             "transmit",
           ),
@@ -166,7 +167,7 @@ object ContainerExperimentalMetrics {
         */
       val systemDevice: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("system.device"),
+          SystemExperimentalAttributes.SystemDevice,
           List(
             "(identifier)",
           ),

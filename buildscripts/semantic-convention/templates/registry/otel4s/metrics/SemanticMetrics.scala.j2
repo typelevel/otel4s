@@ -52,6 +52,14 @@
 {%- endif -%}
 {% endmacro %}
 
+{%- macro attributeRef(attribute) -%}
+  {%- if attribute is stable -%}
+    {{ attribute.name.split(".")[0] | pascal_case }}Attributes.{{ attribute.name | pascal_case }}
+  {%- else -%}
+    {{ attribute.name.split(".")[0] | pascal_case }}ExperimentalAttributes.{{ attribute.name | pascal_case }}
+  {%- endif -%}
+{%- endmacro -%}
+
 {%- set object_name = ctx.root_namespace | pascal_case ~ params.object_prefix ~ "Metrics" -%}
 
 /*
@@ -80,6 +88,22 @@ package metrics
 {%- endif %}
 
 import org.typelevel.otel4s.metrics._
+{%- set required_imports = namespace(stable = false, experimental = false) -%}
+{%- for metric in ctx.metrics -%}
+  {% for attribute in metric.attributes %}
+    {%- if attribute is stable -%}
+      {%- set required_imports.stable = true -%}
+    {%- else -%}
+      {%- set required_imports.experimental = true -%}
+    {%- endif -%}
+  {%- endfor -%}
+{%- endfor -%}
+{%- if required_imports.stable == true %}
+import org.typelevel.otel4s.semconv.attributes._
+{%- endif %}
+{%- if required_imports.experimental == true %}
+import org.typelevel.otel4s.semconv.experimental.attributes._
+{%- endif %}
 
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/metrics/SemanticMetrics.scala.j2
 object {{ object_name }} {
@@ -103,7 +127,7 @@ object {{ object_name }} {
       {%- endif %}
       val {{ attribute.name | camel_case }}: AttributeSpec[{{to_scala_key_type(attribute)}}] =
         AttributeSpec(
-          AttributeKey("{{attribute.name}}"),
+          {{ attributeRef(attribute) }},
           List(
             {% for example in attribute.examples -%} {{ exampleValue(attribute.type | instantiated_type, example) }}, {% endfor %}
           ),

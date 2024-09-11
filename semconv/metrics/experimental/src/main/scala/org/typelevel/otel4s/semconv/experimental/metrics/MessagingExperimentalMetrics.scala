@@ -20,6 +20,8 @@ package experimental
 package metrics
 
 import org.typelevel.otel4s.metrics._
+import org.typelevel.otel4s.semconv.attributes._
+import org.typelevel.otel4s.semconv.experimental.attributes._
 
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/metrics/SemanticMetrics.scala.j2
 object MessagingExperimentalMetrics {
@@ -54,7 +56,7 @@ object MessagingExperimentalMetrics {
         */
       val errorType: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("error.type"),
+          ErrorAttributes.ErrorType,
           List(
             "amqp:decode-error",
             "KAFKA_STORAGE_ERROR",
@@ -71,7 +73,7 @@ object MessagingExperimentalMetrics {
         */
       val messagingConsumerGroupName: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("messaging.consumer.group.name"),
+          MessagingExperimentalAttributes.MessagingConsumerGroupName,
           List(
             "my-group",
             "indexer",
@@ -87,7 +89,7 @@ object MessagingExperimentalMetrics {
         */
       val messagingDestinationName: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("messaging.destination.name"),
+          MessagingExperimentalAttributes.MessagingDestinationName,
           List(
             "MyQueue",
             "MyTopic",
@@ -103,7 +105,7 @@ object MessagingExperimentalMetrics {
         */
       val messagingDestinationPartitionId: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("messaging.destination.partition.id"),
+          MessagingExperimentalAttributes.MessagingDestinationPartitionId,
           List(
             "1",
           ),
@@ -118,7 +120,7 @@ object MessagingExperimentalMetrics {
         */
       val messagingDestinationSubscriptionName: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("messaging.destination.subscription.name"),
+          MessagingExperimentalAttributes.MessagingDestinationSubscriptionName,
           List(
             "subscription-a",
           ),
@@ -134,7 +136,7 @@ object MessagingExperimentalMetrics {
         */
       val messagingDestinationTemplate: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("messaging.destination.template"),
+          MessagingExperimentalAttributes.MessagingDestinationTemplate,
           List(
             "/customers/{customerId}",
           ),
@@ -146,7 +148,7 @@ object MessagingExperimentalMetrics {
         */
       val messagingOperationName: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("messaging.operation.name"),
+          MessagingExperimentalAttributes.MessagingOperationName,
           List(
             "receive",
             "peek",
@@ -165,7 +167,7 @@ object MessagingExperimentalMetrics {
         */
       val messagingSystem: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("messaging.system"),
+          MessagingExperimentalAttributes.MessagingSystem,
           List(
           ),
           Requirement.required,
@@ -180,7 +182,7 @@ object MessagingExperimentalMetrics {
         */
       val serverAddress: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("server.address"),
+          ServerAttributes.ServerAddress,
           List(
             "example.com",
             "10.1.2.80",
@@ -197,7 +199,7 @@ object MessagingExperimentalMetrics {
         */
       val serverPort: AttributeSpec[Long] =
         AttributeSpec(
-          AttributeKey("server.port"),
+          ServerAttributes.ServerPort,
           List(
             80,
             8080,
@@ -259,7 +261,7 @@ object MessagingExperimentalMetrics {
         */
       val errorType: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("error.type"),
+          ErrorAttributes.ErrorType,
           List(
             "amqp:decode-error",
             "KAFKA_STORAGE_ERROR",
@@ -276,7 +278,7 @@ object MessagingExperimentalMetrics {
         */
       val messagingConsumerGroupName: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("messaging.consumer.group.name"),
+          MessagingExperimentalAttributes.MessagingConsumerGroupName,
           List(
             "my-group",
             "indexer",
@@ -292,7 +294,7 @@ object MessagingExperimentalMetrics {
         */
       val messagingDestinationName: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("messaging.destination.name"),
+          MessagingExperimentalAttributes.MessagingDestinationName,
           List(
             "MyQueue",
             "MyTopic",
@@ -308,7 +310,7 @@ object MessagingExperimentalMetrics {
         */
       val messagingDestinationPartitionId: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("messaging.destination.partition.id"),
+          MessagingExperimentalAttributes.MessagingDestinationPartitionId,
           List(
             "1",
           ),
@@ -323,7 +325,7 @@ object MessagingExperimentalMetrics {
         */
       val messagingDestinationSubscriptionName: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("messaging.destination.subscription.name"),
+          MessagingExperimentalAttributes.MessagingDestinationSubscriptionName,
           List(
             "subscription-a",
           ),
@@ -339,7 +341,7 @@ object MessagingExperimentalMetrics {
         */
       val messagingDestinationTemplate: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("messaging.destination.template"),
+          MessagingExperimentalAttributes.MessagingDestinationTemplate,
           List(
             "/customers/{customerId}",
           ),
@@ -351,7 +353,7 @@ object MessagingExperimentalMetrics {
         */
       val messagingOperationName: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("messaging.operation.name"),
+          MessagingExperimentalAttributes.MessagingOperationName,
           List(
             "send",
             "receive",
@@ -367,7 +369,7 @@ object MessagingExperimentalMetrics {
         */
       val messagingOperationType: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("messaging.operation.type"),
+          MessagingExperimentalAttributes.MessagingOperationType,
           List(
           ),
           Requirement.conditionallyRequired("If applicable."),
@@ -382,7 +384,7 @@ object MessagingExperimentalMetrics {
         */
       val messagingSystem: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("messaging.system"),
+          MessagingExperimentalAttributes.MessagingSystem,
           List(
           ),
           Requirement.required,
@@ -397,7 +399,7 @@ object MessagingExperimentalMetrics {
         */
       val serverAddress: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("server.address"),
+          ServerAttributes.ServerAddress,
           List(
             "example.com",
             "10.1.2.80",
@@ -414,7 +416,7 @@ object MessagingExperimentalMetrics {
         */
       val serverPort: AttributeSpec[Long] =
         AttributeSpec(
-          AttributeKey("server.port"),
+          ServerAttributes.ServerPort,
           List(
             80,
             8080,
@@ -477,7 +479,7 @@ object MessagingExperimentalMetrics {
         */
       val errorType: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("error.type"),
+          ErrorAttributes.ErrorType,
           List(
             "amqp:decode-error",
             "KAFKA_STORAGE_ERROR",
@@ -494,7 +496,7 @@ object MessagingExperimentalMetrics {
         */
       val messagingDestinationName: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("messaging.destination.name"),
+          MessagingExperimentalAttributes.MessagingDestinationName,
           List(
             "MyQueue",
             "MyTopic",
@@ -510,7 +512,7 @@ object MessagingExperimentalMetrics {
         */
       val messagingDestinationPartitionId: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("messaging.destination.partition.id"),
+          MessagingExperimentalAttributes.MessagingDestinationPartitionId,
           List(
             "1",
           ),
@@ -526,7 +528,7 @@ object MessagingExperimentalMetrics {
         */
       val messagingDestinationTemplate: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("messaging.destination.template"),
+          MessagingExperimentalAttributes.MessagingDestinationTemplate,
           List(
             "/customers/{customerId}",
           ),
@@ -538,7 +540,7 @@ object MessagingExperimentalMetrics {
         */
       val messagingOperationName: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("messaging.operation.name"),
+          MessagingExperimentalAttributes.MessagingOperationName,
           List(
             "send",
             "schedule",
@@ -556,7 +558,7 @@ object MessagingExperimentalMetrics {
         */
       val messagingSystem: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("messaging.system"),
+          MessagingExperimentalAttributes.MessagingSystem,
           List(
           ),
           Requirement.required,
@@ -571,7 +573,7 @@ object MessagingExperimentalMetrics {
         */
       val serverAddress: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("server.address"),
+          ServerAttributes.ServerAddress,
           List(
             "example.com",
             "10.1.2.80",
@@ -588,7 +590,7 @@ object MessagingExperimentalMetrics {
         */
       val serverPort: AttributeSpec[Long] =
         AttributeSpec(
-          AttributeKey("server.port"),
+          ServerAttributes.ServerPort,
           List(
             80,
             8080,
@@ -647,7 +649,7 @@ object MessagingExperimentalMetrics {
         */
       val errorType: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("error.type"),
+          ErrorAttributes.ErrorType,
           List(
             "amqp:decode-error",
             "KAFKA_STORAGE_ERROR",
@@ -664,7 +666,7 @@ object MessagingExperimentalMetrics {
         */
       val messagingConsumerGroupName: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("messaging.consumer.group.name"),
+          MessagingExperimentalAttributes.MessagingConsumerGroupName,
           List(
             "my-group",
             "indexer",
@@ -680,7 +682,7 @@ object MessagingExperimentalMetrics {
         */
       val messagingDestinationName: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("messaging.destination.name"),
+          MessagingExperimentalAttributes.MessagingDestinationName,
           List(
             "MyQueue",
             "MyTopic",
@@ -696,7 +698,7 @@ object MessagingExperimentalMetrics {
         */
       val messagingDestinationPartitionId: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("messaging.destination.partition.id"),
+          MessagingExperimentalAttributes.MessagingDestinationPartitionId,
           List(
             "1",
           ),
@@ -711,7 +713,7 @@ object MessagingExperimentalMetrics {
         */
       val messagingDestinationSubscriptionName: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("messaging.destination.subscription.name"),
+          MessagingExperimentalAttributes.MessagingDestinationSubscriptionName,
           List(
             "subscription-a",
           ),
@@ -727,7 +729,7 @@ object MessagingExperimentalMetrics {
         */
       val messagingDestinationTemplate: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("messaging.destination.template"),
+          MessagingExperimentalAttributes.MessagingDestinationTemplate,
           List(
             "/customers/{customerId}",
           ),
@@ -739,7 +741,7 @@ object MessagingExperimentalMetrics {
         */
       val messagingOperationName: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("messaging.operation.name"),
+          MessagingExperimentalAttributes.MessagingOperationName,
           List(
             "process",
             "consume",
@@ -757,7 +759,7 @@ object MessagingExperimentalMetrics {
         */
       val messagingSystem: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("messaging.system"),
+          MessagingExperimentalAttributes.MessagingSystem,
           List(
           ),
           Requirement.required,
@@ -772,7 +774,7 @@ object MessagingExperimentalMetrics {
         */
       val serverAddress: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("server.address"),
+          ServerAttributes.ServerAddress,
           List(
             "example.com",
             "10.1.2.80",
@@ -789,7 +791,7 @@ object MessagingExperimentalMetrics {
         */
       val serverPort: AttributeSpec[Long] =
         AttributeSpec(
-          AttributeKey("server.port"),
+          ServerAttributes.ServerPort,
           List(
             80,
             8080,
@@ -850,7 +852,7 @@ object MessagingExperimentalMetrics {
         */
       val errorType: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("error.type"),
+          ErrorAttributes.ErrorType,
           List(
             "amqp:decode-error",
             "KAFKA_STORAGE_ERROR",
@@ -864,7 +866,7 @@ object MessagingExperimentalMetrics {
         */
       val messagingOperationName: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("messaging.operation.name"),
+          MessagingExperimentalAttributes.MessagingOperationName,
           List(
             "ack",
             "nack",
@@ -882,7 +884,7 @@ object MessagingExperimentalMetrics {
         */
       val serverAddress: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("server.address"),
+          ServerAttributes.ServerAddress,
           List(
             "example.com",
             "10.1.2.80",
@@ -899,7 +901,7 @@ object MessagingExperimentalMetrics {
         */
       val serverPort: AttributeSpec[Long] =
         AttributeSpec(
-          AttributeKey("server.port"),
+          ServerAttributes.ServerPort,
           List(
             80,
             8080,
@@ -953,7 +955,7 @@ object MessagingExperimentalMetrics {
         */
       val errorType: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("error.type"),
+          ErrorAttributes.ErrorType,
           List(
             "amqp:decode-error",
             "KAFKA_STORAGE_ERROR",
@@ -967,7 +969,7 @@ object MessagingExperimentalMetrics {
         */
       val messagingOperationName: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("messaging.operation.name"),
+          MessagingExperimentalAttributes.MessagingOperationName,
           List(
             "ack",
             "nack",
@@ -985,7 +987,7 @@ object MessagingExperimentalMetrics {
         */
       val serverAddress: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("server.address"),
+          ServerAttributes.ServerAddress,
           List(
             "example.com",
             "10.1.2.80",
@@ -1002,7 +1004,7 @@ object MessagingExperimentalMetrics {
         */
       val serverPort: AttributeSpec[Long] =
         AttributeSpec(
-          AttributeKey("server.port"),
+          ServerAttributes.ServerPort,
           List(
             80,
             8080,
@@ -1057,7 +1059,7 @@ object MessagingExperimentalMetrics {
         */
       val errorType: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("error.type"),
+          ErrorAttributes.ErrorType,
           List(
             "amqp:decode-error",
             "KAFKA_STORAGE_ERROR",
@@ -1071,7 +1073,7 @@ object MessagingExperimentalMetrics {
         */
       val messagingOperationName: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("messaging.operation.name"),
+          MessagingExperimentalAttributes.MessagingOperationName,
           List(
             "ack",
             "nack",
@@ -1089,7 +1091,7 @@ object MessagingExperimentalMetrics {
         */
       val serverAddress: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("server.address"),
+          ServerAttributes.ServerAddress,
           List(
             "example.com",
             "10.1.2.80",
@@ -1106,7 +1108,7 @@ object MessagingExperimentalMetrics {
         */
       val serverPort: AttributeSpec[Long] =
         AttributeSpec(
-          AttributeKey("server.port"),
+          ServerAttributes.ServerPort,
           List(
             80,
             8080,
@@ -1160,7 +1162,7 @@ object MessagingExperimentalMetrics {
         */
       val errorType: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("error.type"),
+          ErrorAttributes.ErrorType,
           List(
             "amqp:decode-error",
             "KAFKA_STORAGE_ERROR",
@@ -1174,7 +1176,7 @@ object MessagingExperimentalMetrics {
         */
       val messagingOperationName: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("messaging.operation.name"),
+          MessagingExperimentalAttributes.MessagingOperationName,
           List(
             "ack",
             "nack",
@@ -1192,7 +1194,7 @@ object MessagingExperimentalMetrics {
         */
       val serverAddress: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("server.address"),
+          ServerAttributes.ServerAddress,
           List(
             "example.com",
             "10.1.2.80",
@@ -1209,7 +1211,7 @@ object MessagingExperimentalMetrics {
         */
       val serverPort: AttributeSpec[Long] =
         AttributeSpec(
-          AttributeKey("server.port"),
+          ServerAttributes.ServerPort,
           List(
             80,
             8080,
@@ -1264,7 +1266,7 @@ object MessagingExperimentalMetrics {
         */
       val errorType: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("error.type"),
+          ErrorAttributes.ErrorType,
           List(
             "amqp:decode-error",
             "KAFKA_STORAGE_ERROR",
@@ -1278,7 +1280,7 @@ object MessagingExperimentalMetrics {
         */
       val messagingOperationName: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("messaging.operation.name"),
+          MessagingExperimentalAttributes.MessagingOperationName,
           List(
             "ack",
             "nack",
@@ -1296,7 +1298,7 @@ object MessagingExperimentalMetrics {
         */
       val serverAddress: AttributeSpec[String] =
         AttributeSpec(
-          AttributeKey("server.address"),
+          ServerAttributes.ServerAddress,
           List(
             "example.com",
             "10.1.2.80",
@@ -1313,7 +1315,7 @@ object MessagingExperimentalMetrics {
         */
       val serverPort: AttributeSpec[Long] =
         AttributeSpec(
-          AttributeKey("server.port"),
+          ServerAttributes.ServerPort,
           List(
             80,
             8080,

@@ -16,6 +16,7 @@
 
 package org.typelevel.otel4s
 package semconv
+package experimental
 package metrics
 
 import org.typelevel.otel4s.metrics._
@@ -83,8 +84,7 @@ object SystemExperimentalMetrics {
   object CpuPhysicalCount {
 
     val Name = "system.cpu.physical.count"
-    val Description =
-      "Reports the number of actual physical processor cores on the hardware"
+    val Description = "Reports the number of actual physical processor cores on the hardware"
     val Unit = "{cpu}"
 
     def create[F[_]: Meter]: F[UpDownCounter[F, Long]] =
@@ -662,8 +662,7 @@ object SystemExperimentalMetrics {
   object LinuxMemorySlabUsage {
 
     val Name = "system.linux.memory.slab.usage"
-    val Description =
-      "Reports the memory used by the Linux kernel for managing caches of frequently used objects."
+    val Description = "Reports the memory used by the Linux kernel for managing caches of frequently used objects."
     val Unit = "By"
 
     object AttributeSpecs {
@@ -893,8 +892,7 @@ object SystemExperimentalMetrics {
   object NetworkDropped {
 
     val Name = "system.network.dropped"
-    val Description =
-      "Count of packets that are dropped or discarded even though there was no error"
+    val Description = "Count of packets that are dropped or discarded even though there was no error"
     val Unit = "{packet}"
 
     object AttributeSpecs {
@@ -1295,8 +1293,7 @@ object SystemExperimentalMetrics {
   object ProcessCreated {
 
     val Name = "system.process.created"
-    val Description =
-      "Total number of processes created over uptime of the host"
+    val Description = "Total number of processes created over uptime of the host"
     val Unit = "{process}"
 
     def create[F[_]: Meter]: F[Counter[F, Long]] =

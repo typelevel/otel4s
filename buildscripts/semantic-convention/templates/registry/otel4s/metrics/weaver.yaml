@@ -3,6 +3,7 @@ params:
   excluded_attributes: ["messaging.client_id"]
   excluded_stability: ["experimental", "deprecated"] # stable - ["experimental", "deprecated"]; experimental - []
   object_prefix: "" # stable - "", experimental - "Experimental"
+  experimental: false # stable - false, experimental - true
 comment_formats:
   scaladoc:
     format: html

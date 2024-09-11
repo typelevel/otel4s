@@ -64,7 +64,8 @@ object SemanticConventionsGenerator {
       if (experimental)
         List(
           "--param=excluded_stability=[]",
-          "--param=object_prefix=Experimental"
+          "--param=object_prefix=Experimental",
+          "--param=experimental=true"
         )
       else
         Nil

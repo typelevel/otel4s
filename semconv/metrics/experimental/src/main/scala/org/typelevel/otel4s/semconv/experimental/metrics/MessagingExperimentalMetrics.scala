@@ -16,6 +16,7 @@
 
 package org.typelevel.otel4s
 package semconv
+package experimental
 package metrics
 
 import org.typelevel.otel4s.metrics._
@@ -33,8 +34,7 @@ object MessagingExperimentalMetrics {
   object ClientConsumedMessages {
 
     val Name = "messaging.client.consumed.messages"
-    val Description =
-      "Number of messages that were delivered to the application."
+    val Description = "Number of messages that were delivered to the application."
     val Unit = "{message}"
 
     object AttributeSpecs {
@@ -60,9 +60,7 @@ object MessagingExperimentalMetrics {
             "KAFKA_STORAGE_ERROR",
             "channel-error",
           ),
-          Requirement.conditionallyRequired(
-            "If and only if the messaging operation has failed."
-          ),
+          Requirement.conditionallyRequired("If and only if the messaging operation has failed."),
           Stability.stable
         )
 
@@ -241,8 +239,7 @@ object MessagingExperimentalMetrics {
   object ClientOperationDuration {
 
     val Name = "messaging.client.operation.duration"
-    val Description =
-      "Duration of messaging operation initiated by a producer or consumer client."
+    val Description = "Duration of messaging operation initiated by a producer or consumer client."
     val Unit = "s"
 
     object AttributeSpecs {
@@ -268,9 +265,7 @@ object MessagingExperimentalMetrics {
             "KAFKA_STORAGE_ERROR",
             "channel-error",
           ),
-          Requirement.conditionallyRequired(
-            "If and only if the messaging operation has failed."
-          ),
+          Requirement.conditionallyRequired("If and only if the messaging operation has failed."),
           Stability.stable
         )
 
@@ -445,9 +440,7 @@ object MessagingExperimentalMetrics {
         )
     }
 
-    def create[F[_]: Meter](
-        boundaries: BucketBoundaries
-    ): F[Histogram[F, Double]] =
+    def create[F[_]: Meter](boundaries: BucketBoundaries): F[Histogram[F, Double]] =
       Meter[F]
         .histogram[Double](Name)
         .withDescription(Description)
@@ -464,8 +457,7 @@ object MessagingExperimentalMetrics {
   object ClientPublishedMessages {
 
     val Name = "messaging.client.published.messages"
-    val Description =
-      "Number of messages producer attempted to publish to the broker."
+    val Description = "Number of messages producer attempted to publish to the broker."
     val Unit = "{message}"
 
     object AttributeSpecs {
@@ -491,9 +483,7 @@ object MessagingExperimentalMetrics {
             "KAFKA_STORAGE_ERROR",
             "channel-error",
           ),
-          Requirement.conditionallyRequired(
-            "If and only if the messaging operation has failed."
-          ),
+          Requirement.conditionallyRequired("If and only if the messaging operation has failed."),
           Stability.stable
         )
 
@@ -663,9 +653,7 @@ object MessagingExperimentalMetrics {
             "KAFKA_STORAGE_ERROR",
             "channel-error",
           ),
-          Requirement.conditionallyRequired(
-            "If and only if the messaging operation has failed."
-          ),
+          Requirement.conditionallyRequired("If and only if the messaging operation has failed."),
           Stability.stable
         )
 
@@ -826,9 +814,7 @@ object MessagingExperimentalMetrics {
         )
     }
 
-    def create[F[_]: Meter](
-        boundaries: BucketBoundaries
-    ): F[Histogram[F, Double]] =
+    def create[F[_]: Meter](boundaries: BucketBoundaries): F[Histogram[F, Double]] =
       Meter[F]
         .histogram[Double](Name)
         .withDescription(Description)
@@ -844,8 +830,7 @@ object MessagingExperimentalMetrics {
   object ProcessMessages {
 
     val Name = "messaging.process.messages"
-    val Description =
-      "Deprecated. Use `messaging.client.consumed.messages` instead."
+    val Description = "Deprecated. Use `messaging.client.consumed.messages` instead."
     val Unit = "{message}"
 
     object AttributeSpecs {
@@ -871,9 +856,7 @@ object MessagingExperimentalMetrics {
             "KAFKA_STORAGE_ERROR",
             "channel-error",
           ),
-          Requirement.conditionallyRequired(
-            "If and only if the messaging operation has failed."
-          ),
+          Requirement.conditionallyRequired("If and only if the messaging operation has failed."),
           Stability.stable
         )
 
@@ -950,8 +933,7 @@ object MessagingExperimentalMetrics {
   object PublishDuration {
 
     val Name = "messaging.publish.duration"
-    val Description =
-      "Deprecated. Use `messaging.client.operation.duration` instead."
+    val Description = "Deprecated. Use `messaging.client.operation.duration` instead."
     val Unit = "s"
 
     object AttributeSpecs {
@@ -977,9 +959,7 @@ object MessagingExperimentalMetrics {
             "KAFKA_STORAGE_ERROR",
             "channel-error",
           ),
-          Requirement.conditionallyRequired(
-            "If and only if the messaging operation has failed."
-          ),
+          Requirement.conditionallyRequired("If and only if the messaging operation has failed."),
           Stability.stable
         )
 
@@ -1041,9 +1021,7 @@ object MessagingExperimentalMetrics {
         )
     }
 
-    def create[F[_]: Meter](
-        boundaries: BucketBoundaries
-    ): F[Histogram[F, Double]] =
+    def create[F[_]: Meter](boundaries: BucketBoundaries): F[Histogram[F, Double]] =
       Meter[F]
         .histogram[Double](Name)
         .withDescription(Description)
@@ -1059,8 +1037,7 @@ object MessagingExperimentalMetrics {
   object PublishMessages {
 
     val Name = "messaging.publish.messages"
-    val Description =
-      "Deprecated. Use `messaging.client.produced.messages` instead."
+    val Description = "Deprecated. Use `messaging.client.produced.messages` instead."
     val Unit = "{message}"
 
     object AttributeSpecs {
@@ -1086,9 +1063,7 @@ object MessagingExperimentalMetrics {
             "KAFKA_STORAGE_ERROR",
             "channel-error",
           ),
-          Requirement.conditionallyRequired(
-            "If and only if the messaging operation has failed."
-          ),
+          Requirement.conditionallyRequired("If and only if the messaging operation has failed."),
           Stability.stable
         )
 
@@ -1165,8 +1140,7 @@ object MessagingExperimentalMetrics {
   object ReceiveDuration {
 
     val Name = "messaging.receive.duration"
-    val Description =
-      "Deprecated. Use `messaging.client.operation.duration` instead."
+    val Description = "Deprecated. Use `messaging.client.operation.duration` instead."
     val Unit = "s"
 
     object AttributeSpecs {
@@ -1192,9 +1166,7 @@ object MessagingExperimentalMetrics {
             "KAFKA_STORAGE_ERROR",
             "channel-error",
           ),
-          Requirement.conditionallyRequired(
-            "If and only if the messaging operation has failed."
-          ),
+          Requirement.conditionallyRequired("If and only if the messaging operation has failed."),
           Stability.stable
         )
 
@@ -1256,9 +1228,7 @@ object MessagingExperimentalMetrics {
         )
     }
 
-    def create[F[_]: Meter](
-        boundaries: BucketBoundaries
-    ): F[Histogram[F, Double]] =
+    def create[F[_]: Meter](boundaries: BucketBoundaries): F[Histogram[F, Double]] =
       Meter[F]
         .histogram[Double](Name)
         .withDescription(Description)
@@ -1274,8 +1244,7 @@ object MessagingExperimentalMetrics {
   object ReceiveMessages {
 
     val Name = "messaging.receive.messages"
-    val Description =
-      "Deprecated. Use `messaging.client.consumed.messages` instead."
+    val Description = "Deprecated. Use `messaging.client.consumed.messages` instead."
     val Unit = "{message}"
 
     object AttributeSpecs {
@@ -1301,9 +1270,7 @@ object MessagingExperimentalMetrics {
             "KAFKA_STORAGE_ERROR",
             "channel-error",
           ),
-          Requirement.conditionallyRequired(
-            "If and only if the messaging operation has failed."
-          ),
+          Requirement.conditionallyRequired("If and only if the messaging operation has failed."),
           Stability.stable
         )
 

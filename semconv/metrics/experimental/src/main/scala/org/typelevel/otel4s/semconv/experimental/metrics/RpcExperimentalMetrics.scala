@@ -16,6 +16,7 @@
 
 package org.typelevel.otel4s
 package semconv
+package experimental
 package metrics
 
 import org.typelevel.otel4s.metrics._
@@ -34,9 +35,7 @@ object RpcExperimentalMetrics {
     val Description = "Measures the duration of outbound RPC."
     val Unit = "ms"
 
-    def create[F[_]: Meter](
-        boundaries: BucketBoundaries
-    ): F[Histogram[F, Double]] =
+    def create[F[_]: Meter](boundaries: BucketBoundaries): F[Histogram[F, Double]] =
       Meter[F]
         .histogram[Double](Name)
         .withDescription(Description)
@@ -53,13 +52,10 @@ object RpcExperimentalMetrics {
   object ClientRequestSize {
 
     val Name = "rpc.client.request.size"
-    val Description =
-      "Measures the size of RPC request messages (uncompressed)."
+    val Description = "Measures the size of RPC request messages (uncompressed)."
     val Unit = "By"
 
-    def create[F[_]: Meter](
-        boundaries: BucketBoundaries
-    ): F[Histogram[F, Double]] =
+    def create[F[_]: Meter](boundaries: BucketBoundaries): F[Histogram[F, Double]] =
       Meter[F]
         .histogram[Double](Name)
         .withDescription(Description)
@@ -80,9 +76,7 @@ object RpcExperimentalMetrics {
     val Description = "Measures the number of messages received per RPC."
     val Unit = "{count}"
 
-    def create[F[_]: Meter](
-        boundaries: BucketBoundaries
-    ): F[Histogram[F, Double]] =
+    def create[F[_]: Meter](boundaries: BucketBoundaries): F[Histogram[F, Double]] =
       Meter[F]
         .histogram[Double](Name)
         .withDescription(Description)
@@ -99,13 +93,10 @@ object RpcExperimentalMetrics {
   object ClientResponseSize {
 
     val Name = "rpc.client.response.size"
-    val Description =
-      "Measures the size of RPC response messages (uncompressed)."
+    val Description = "Measures the size of RPC response messages (uncompressed)."
     val Unit = "By"
 
-    def create[F[_]: Meter](
-        boundaries: BucketBoundaries
-    ): F[Histogram[F, Double]] =
+    def create[F[_]: Meter](boundaries: BucketBoundaries): F[Histogram[F, Double]] =
       Meter[F]
         .histogram[Double](Name)
         .withDescription(Description)
@@ -126,9 +117,7 @@ object RpcExperimentalMetrics {
     val Description = "Measures the number of messages sent per RPC."
     val Unit = "{count}"
 
-    def create[F[_]: Meter](
-        boundaries: BucketBoundaries
-    ): F[Histogram[F, Double]] =
+    def create[F[_]: Meter](boundaries: BucketBoundaries): F[Histogram[F, Double]] =
       Meter[F]
         .histogram[Double](Name)
         .withDescription(Description)
@@ -149,9 +138,7 @@ object RpcExperimentalMetrics {
     val Description = "Measures the duration of inbound RPC."
     val Unit = "ms"
 
-    def create[F[_]: Meter](
-        boundaries: BucketBoundaries
-    ): F[Histogram[F, Double]] =
+    def create[F[_]: Meter](boundaries: BucketBoundaries): F[Histogram[F, Double]] =
       Meter[F]
         .histogram[Double](Name)
         .withDescription(Description)
@@ -168,13 +155,10 @@ object RpcExperimentalMetrics {
   object ServerRequestSize {
 
     val Name = "rpc.server.request.size"
-    val Description =
-      "Measures the size of RPC request messages (uncompressed)."
+    val Description = "Measures the size of RPC request messages (uncompressed)."
     val Unit = "By"
 
-    def create[F[_]: Meter](
-        boundaries: BucketBoundaries
-    ): F[Histogram[F, Double]] =
+    def create[F[_]: Meter](boundaries: BucketBoundaries): F[Histogram[F, Double]] =
       Meter[F]
         .histogram[Double](Name)
         .withDescription(Description)
@@ -195,9 +179,7 @@ object RpcExperimentalMetrics {
     val Description = "Measures the number of messages received per RPC."
     val Unit = "{count}"
 
-    def create[F[_]: Meter](
-        boundaries: BucketBoundaries
-    ): F[Histogram[F, Double]] =
+    def create[F[_]: Meter](boundaries: BucketBoundaries): F[Histogram[F, Double]] =
       Meter[F]
         .histogram[Double](Name)
         .withDescription(Description)
@@ -214,13 +196,10 @@ object RpcExperimentalMetrics {
   object ServerResponseSize {
 
     val Name = "rpc.server.response.size"
-    val Description =
-      "Measures the size of RPC response messages (uncompressed)."
+    val Description = "Measures the size of RPC response messages (uncompressed)."
     val Unit = "By"
 
-    def create[F[_]: Meter](
-        boundaries: BucketBoundaries
-    ): F[Histogram[F, Double]] =
+    def create[F[_]: Meter](boundaries: BucketBoundaries): F[Histogram[F, Double]] =
       Meter[F]
         .histogram[Double](Name)
         .withDescription(Description)
@@ -241,9 +220,7 @@ object RpcExperimentalMetrics {
     val Description = "Measures the number of messages sent per RPC."
     val Unit = "{count}"
 
-    def create[F[_]: Meter](
-        boundaries: BucketBoundaries
-    ): F[Histogram[F, Double]] =
+    def create[F[_]: Meter](boundaries: BucketBoundaries): F[Histogram[F, Double]] =
       Meter[F]
         .histogram[Double](Name)
         .withDescription(Description)

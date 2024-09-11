@@ -16,6 +16,7 @@
 
 package org.typelevel.otel4s
 package semconv
+package experimental
 package metrics
 
 import org.typelevel.otel4s.metrics._
@@ -48,9 +49,7 @@ object GenAiExperimentalMetrics {
             "server_certificate_invalid",
             "500",
           ),
-          Requirement.conditionallyRequired(
-            "if the operation ended in an error"
-          ),
+          Requirement.conditionallyRequired("if the operation ended in an error"),
           Stability.stable
         )
 
@@ -168,9 +167,7 @@ object GenAiExperimentalMetrics {
         )
     }
 
-    def create[F[_]: Meter](
-        boundaries: BucketBoundaries
-    ): F[Histogram[F, Double]] =
+    def create[F[_]: Meter](boundaries: BucketBoundaries): F[Histogram[F, Double]] =
       Meter[F]
         .histogram[Double](Name)
         .withDescription(Description)
@@ -317,9 +314,7 @@ object GenAiExperimentalMetrics {
         )
     }
 
-    def create[F[_]: Meter](
-        boundaries: BucketBoundaries
-    ): F[Histogram[F, Double]] =
+    def create[F[_]: Meter](boundaries: BucketBoundaries): F[Histogram[F, Double]] =
       Meter[F]
         .histogram[Double](Name)
         .withDescription(Description)
@@ -334,8 +329,7 @@ object GenAiExperimentalMetrics {
   object ServerRequestDuration {
 
     val Name = "gen_ai.server.request.duration"
-    val Description =
-      "Generative AI server request duration such as time-to-last byte or last output token"
+    val Description = "Generative AI server request duration such as time-to-last byte or last output token"
     val Unit = "s"
 
     object AttributeSpecs {
@@ -355,9 +349,7 @@ object GenAiExperimentalMetrics {
             "server_certificate_invalid",
             "500",
           ),
-          Requirement.conditionallyRequired(
-            "if the operation ended in an error"
-          ),
+          Requirement.conditionallyRequired("if the operation ended in an error"),
           Stability.stable
         )
 
@@ -475,9 +467,7 @@ object GenAiExperimentalMetrics {
         )
     }
 
-    def create[F[_]: Meter](
-        boundaries: BucketBoundaries
-    ): F[Histogram[F, Double]] =
+    def create[F[_]: Meter](boundaries: BucketBoundaries): F[Histogram[F, Double]] =
       Meter[F]
         .histogram[Double](Name)
         .withDescription(Description)
@@ -492,8 +482,7 @@ object GenAiExperimentalMetrics {
   object ServerTimePerOutputToken {
 
     val Name = "gen_ai.server.time_per_output_token"
-    val Description =
-      "Time per output token generated after the first token for successful responses"
+    val Description = "Time per output token generated after the first token for successful responses"
     val Unit = "s"
 
     object AttributeSpecs {
@@ -611,9 +600,7 @@ object GenAiExperimentalMetrics {
         )
     }
 
-    def create[F[_]: Meter](
-        boundaries: BucketBoundaries
-    ): F[Histogram[F, Double]] =
+    def create[F[_]: Meter](boundaries: BucketBoundaries): F[Histogram[F, Double]] =
       Meter[F]
         .histogram[Double](Name)
         .withDescription(Description)
@@ -746,9 +733,7 @@ object GenAiExperimentalMetrics {
         )
     }
 
-    def create[F[_]: Meter](
-        boundaries: BucketBoundaries
-    ): F[Histogram[F, Double]] =
+    def create[F[_]: Meter](boundaries: BucketBoundaries): F[Histogram[F, Double]] =
       Meter[F]
         .histogram[Double](Name)
         .withDescription(Description)

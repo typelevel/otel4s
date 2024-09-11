@@ -16,6 +16,7 @@
 
 package org.typelevel.otel4s
 package semconv
+package experimental
 package metrics
 
 import org.typelevel.otel4s.metrics._
@@ -86,9 +87,7 @@ object FaasExperimentalMetrics {
         )
     }
 
-    def create[F[_]: Meter](
-        boundaries: BucketBoundaries
-    ): F[Histogram[F, Double]] =
+    def create[F[_]: Meter](boundaries: BucketBoundaries): F[Histogram[F, Double]] =
       Meter[F]
         .histogram[Double](Name)
         .withDescription(Description)
@@ -139,8 +138,7 @@ object FaasExperimentalMetrics {
   object InitDuration {
 
     val Name = "faas.init_duration"
-    val Description =
-      "Measures the duration of the function's initialization, such as a cold start"
+    val Description = "Measures the duration of the function's initialization, such as a cold start"
     val Unit = "s"
 
     object AttributeSpecs {
@@ -162,9 +160,7 @@ object FaasExperimentalMetrics {
         )
     }
 
-    def create[F[_]: Meter](
-        boundaries: BucketBoundaries
-    ): F[Histogram[F, Double]] =
+    def create[F[_]: Meter](boundaries: BucketBoundaries): F[Histogram[F, Double]] =
       Meter[F]
         .histogram[Double](Name)
         .withDescription(Description)
@@ -237,9 +233,7 @@ object FaasExperimentalMetrics {
         )
     }
 
-    def create[F[_]: Meter](
-        boundaries: BucketBoundaries
-    ): F[Histogram[F, Double]] =
+    def create[F[_]: Meter](boundaries: BucketBoundaries): F[Histogram[F, Double]] =
       Meter[F]
         .histogram[Double](Name)
         .withDescription(Description)
@@ -276,9 +270,7 @@ object FaasExperimentalMetrics {
         )
     }
 
-    def create[F[_]: Meter](
-        boundaries: BucketBoundaries
-    ): F[Histogram[F, Double]] =
+    def create[F[_]: Meter](boundaries: BucketBoundaries): F[Histogram[F, Double]] =
       Meter[F]
         .histogram[Double](Name)
         .withDescription(Description)
@@ -315,9 +307,7 @@ object FaasExperimentalMetrics {
         )
     }
 
-    def create[F[_]: Meter](
-        boundaries: BucketBoundaries
-    ): F[Histogram[F, Double]] =
+    def create[F[_]: Meter](boundaries: BucketBoundaries): F[Histogram[F, Double]] =
       Meter[F]
         .histogram[Double](Name)
         .withDescription(Description)

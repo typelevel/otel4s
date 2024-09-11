@@ -16,6 +16,7 @@
 
 package org.typelevel.otel4s
 package semconv
+package experimental
 package metrics
 
 import org.typelevel.otel4s.metrics._
@@ -154,8 +155,7 @@ object HttpExperimentalMetrics {
   object ClientConnectionDuration {
 
     val Name = "http.client.connection.duration"
-    val Description =
-      "The duration of the successfully established outbound HTTP connections."
+    val Description = "The duration of the successfully established outbound HTTP connections."
     val Unit = "s"
 
     object AttributeSpecs {
@@ -250,9 +250,7 @@ object HttpExperimentalMetrics {
         )
     }
 
-    def create[F[_]: Meter](
-        boundaries: BucketBoundaries
-    ): F[Histogram[F, Double]] =
+    def create[F[_]: Meter](boundaries: BucketBoundaries): F[Histogram[F, Double]] =
       Meter[F]
         .histogram[Double](Name)
         .withDescription(Description)
@@ -267,8 +265,7 @@ object HttpExperimentalMetrics {
   object ClientOpenConnections {
 
     val Name = "http.client.open_connections"
-    val Description =
-      "Number of outbound HTTP connections that are currently active or idle on the client."
+    val Description = "Number of outbound HTTP connections that are currently active or idle on the client."
     val Unit = "{connection}"
 
     object AttributeSpecs {
@@ -424,9 +421,7 @@ object HttpExperimentalMetrics {
             "server_certificate_invalid",
             "500",
           ),
-          Requirement.conditionallyRequired(
-            "If request has ended with an error."
-          ),
+          Requirement.conditionallyRequired("If request has ended with an error."),
           Stability.stable
         )
 
@@ -467,9 +462,7 @@ object HttpExperimentalMetrics {
           List(
             200,
           ),
-          Requirement.conditionallyRequired(
-            "If and only if one was received/sent."
-          ),
+          Requirement.conditionallyRequired("If and only if one was received/sent."),
           Stability.stable
         )
 
@@ -484,9 +477,7 @@ object HttpExperimentalMetrics {
             "http",
             "spdy",
           ),
-          Requirement.conditionallyRequired(
-            "If not `http` and `network.protocol.version` is set."
-          ),
+          Requirement.conditionallyRequired("If not `http` and `network.protocol.version` is set."),
           Stability.stable
         )
 
@@ -591,9 +582,7 @@ object HttpExperimentalMetrics {
         )
     }
 
-    def create[F[_]: Meter](
-        boundaries: BucketBoundaries
-    ): F[Histogram[F, Double]] =
+    def create[F[_]: Meter](boundaries: BucketBoundaries): F[Histogram[F, Double]] =
       Meter[F]
         .histogram[Double](Name)
         .withDescription(Description)
@@ -636,9 +625,7 @@ object HttpExperimentalMetrics {
             "server_certificate_invalid",
             "500",
           ),
-          Requirement.conditionallyRequired(
-            "If request has ended with an error."
-          ),
+          Requirement.conditionallyRequired("If request has ended with an error."),
           Stability.stable
         )
 
@@ -679,9 +666,7 @@ object HttpExperimentalMetrics {
           List(
             200,
           ),
-          Requirement.conditionallyRequired(
-            "If and only if one was received/sent."
-          ),
+          Requirement.conditionallyRequired("If and only if one was received/sent."),
           Stability.stable
         )
 
@@ -696,9 +681,7 @@ object HttpExperimentalMetrics {
             "http",
             "spdy",
           ),
-          Requirement.conditionallyRequired(
-            "If not `http` and `network.protocol.version` is set."
-          ),
+          Requirement.conditionallyRequired("If not `http` and `network.protocol.version` is set."),
           Stability.stable
         )
 
@@ -784,9 +767,7 @@ object HttpExperimentalMetrics {
         )
     }
 
-    def create[F[_]: Meter](
-        boundaries: BucketBoundaries
-    ): F[Histogram[F, Double]] =
+    def create[F[_]: Meter](boundaries: BucketBoundaries): F[Histogram[F, Double]] =
       Meter[F]
         .histogram[Double](Name)
         .withDescription(Description)
@@ -834,9 +815,7 @@ object HttpExperimentalMetrics {
             "server_certificate_invalid",
             "500",
           ),
-          Requirement.conditionallyRequired(
-            "If request has ended with an error."
-          ),
+          Requirement.conditionallyRequired("If request has ended with an error."),
           Stability.stable
         )
 
@@ -877,9 +856,7 @@ object HttpExperimentalMetrics {
           List(
             200,
           ),
-          Requirement.conditionallyRequired(
-            "If and only if one was received/sent."
-          ),
+          Requirement.conditionallyRequired("If and only if one was received/sent."),
           Stability.stable
         )
 
@@ -894,9 +871,7 @@ object HttpExperimentalMetrics {
             "http",
             "spdy",
           ),
-          Requirement.conditionallyRequired(
-            "If not `http` and `network.protocol.version` is set."
-          ),
+          Requirement.conditionallyRequired("If not `http` and `network.protocol.version` is set."),
           Stability.stable
         )
 
@@ -1001,9 +976,7 @@ object HttpExperimentalMetrics {
         )
     }
 
-    def create[F[_]: Meter](
-        boundaries: BucketBoundaries
-    ): F[Histogram[F, Double]] =
+    def create[F[_]: Meter](boundaries: BucketBoundaries): F[Histogram[F, Double]] =
       Meter[F]
         .histogram[Double](Name)
         .withDescription(Description)
@@ -1160,9 +1133,7 @@ object HttpExperimentalMetrics {
             "server_certificate_invalid",
             "500",
           ),
-          Requirement.conditionallyRequired(
-            "If request has ended with an error."
-          ),
+          Requirement.conditionallyRequired("If request has ended with an error."),
           Stability.stable
         )
 
@@ -1203,9 +1174,7 @@ object HttpExperimentalMetrics {
           List(
             200,
           ),
-          Requirement.conditionallyRequired(
-            "If and only if one was received/sent."
-          ),
+          Requirement.conditionallyRequired("If and only if one was received/sent."),
           Stability.stable
         )
 
@@ -1237,9 +1206,7 @@ object HttpExperimentalMetrics {
             "http",
             "spdy",
           ),
-          Requirement.conditionallyRequired(
-            "If not `http` and `network.protocol.version` is set."
-          ),
+          Requirement.conditionallyRequired("If not `http` and `network.protocol.version` is set."),
           Stability.stable
         )
 
@@ -1333,9 +1300,7 @@ object HttpExperimentalMetrics {
         )
     }
 
-    def create[F[_]: Meter](
-        boundaries: BucketBoundaries
-    ): F[Histogram[F, Double]] =
+    def create[F[_]: Meter](boundaries: BucketBoundaries): F[Histogram[F, Double]] =
       Meter[F]
         .histogram[Double](Name)
         .withDescription(Description)
@@ -1378,9 +1343,7 @@ object HttpExperimentalMetrics {
             "server_certificate_invalid",
             "500",
           ),
-          Requirement.conditionallyRequired(
-            "If request has ended with an error."
-          ),
+          Requirement.conditionallyRequired("If request has ended with an error."),
           Stability.stable
         )
 
@@ -1421,9 +1384,7 @@ object HttpExperimentalMetrics {
           List(
             200,
           ),
-          Requirement.conditionallyRequired(
-            "If and only if one was received/sent."
-          ),
+          Requirement.conditionallyRequired("If and only if one was received/sent."),
           Stability.stable
         )
 
@@ -1455,9 +1416,7 @@ object HttpExperimentalMetrics {
             "http",
             "spdy",
           ),
-          Requirement.conditionallyRequired(
-            "If not `http` and `network.protocol.version` is set."
-          ),
+          Requirement.conditionallyRequired("If not `http` and `network.protocol.version` is set."),
           Stability.stable
         )
 
@@ -1551,9 +1510,7 @@ object HttpExperimentalMetrics {
         )
     }
 
-    def create[F[_]: Meter](
-        boundaries: BucketBoundaries
-    ): F[Histogram[F, Double]] =
+    def create[F[_]: Meter](boundaries: BucketBoundaries): F[Histogram[F, Double]] =
       Meter[F]
         .histogram[Double](Name)
         .withDescription(Description)
@@ -1601,9 +1558,7 @@ object HttpExperimentalMetrics {
             "server_certificate_invalid",
             "500",
           ),
-          Requirement.conditionallyRequired(
-            "If request has ended with an error."
-          ),
+          Requirement.conditionallyRequired("If request has ended with an error."),
           Stability.stable
         )
 
@@ -1644,9 +1599,7 @@ object HttpExperimentalMetrics {
           List(
             200,
           ),
-          Requirement.conditionallyRequired(
-            "If and only if one was received/sent."
-          ),
+          Requirement.conditionallyRequired("If and only if one was received/sent."),
           Stability.stable
         )
 
@@ -1678,9 +1631,7 @@ object HttpExperimentalMetrics {
             "http",
             "spdy",
           ),
-          Requirement.conditionallyRequired(
-            "If not `http` and `network.protocol.version` is set."
-          ),
+          Requirement.conditionallyRequired("If not `http` and `network.protocol.version` is set."),
           Stability.stable
         )
 
@@ -1774,9 +1725,7 @@ object HttpExperimentalMetrics {
         )
     }
 
-    def create[F[_]: Meter](
-        boundaries: BucketBoundaries
-    ): F[Histogram[F, Double]] =
+    def create[F[_]: Meter](boundaries: BucketBoundaries): F[Histogram[F, Double]] =
       Meter[F]
         .histogram[Double](Name)
         .withDescription(Description)

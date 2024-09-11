@@ -67,7 +67,7 @@ private object SdkHistogram {
 
     def recordDuration(
         timeUnit: TimeUnit,
-        attributes: immutable.Iterable[Attribute[_]]
+        attributes: Resource.ExitCase => immutable.Iterable[Attribute[_]]
     ): Resource[F, Unit] =
       Resource
         .makeCase(Clock[F].monotonic) { case (start, ec) =>
@@ -75,7 +75,7 @@ private object SdkHistogram {
             end <- Clock[F].monotonic
             _ <- doRecord(
               castDuration((end - start).toUnit(timeUnit)),
-              (attributes ++ Histogram.causeAttributes(ec)).to(Attributes)
+              attributes(ec).to(Attributes)
             )
           } yield ()
         }

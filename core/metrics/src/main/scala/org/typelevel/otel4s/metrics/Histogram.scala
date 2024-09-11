@@ -118,11 +118,11 @@ object Histogram {
       *   the time unit of the duration measurement
       *
       * @param attributes
-      *   the set of attributes to associate with the value
+      *   the function to build set of attributes to associate with the value
       */
     def recordDuration(
         timeUnit: TimeUnit,
-        attributes: immutable.Iterable[Attribute[_]]
+        attributes: Resource.ExitCase => immutable.Iterable[Attribute[_]]
     ): Resource[F, Unit]
   }
 
@@ -137,7 +137,7 @@ object Histogram {
           ): F[Unit] = meta.unit
           def recordDuration(
               timeUnit: TimeUnit,
-              attributes: immutable.Iterable[Attribute[_]]
+              attributes: Resource.ExitCase => immutable.Iterable[Attribute[_]]
           ): Resource[F, Unit] = Resource.unit
         }
     }

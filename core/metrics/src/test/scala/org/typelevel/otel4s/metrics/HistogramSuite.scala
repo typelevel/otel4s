@@ -52,6 +52,9 @@ class HistogramSuite extends CatsEffectSuite {
       _ <- histogram
         .recordDuration(TimeUnit.SECONDS, allocateAttribute)
         .use_
+      _ <- histogram
+        .recordDuration(TimeUnit.SECONDS, _ => allocateAttribute)
+        .use_
     } yield assert(!allocated)
   }
 
@@ -124,7 +127,7 @@ object HistogramSuite {
 
         def recordDuration(
             timeUnit: TimeUnit,
-            attributes: immutable.Iterable[Attribute[_]]
+            attributes: Resource.ExitCase => immutable.Iterable[Attribute[_]]
         ): Resource[IO, Unit] =
           Resource
             .makeCase(IO.monotonic) { case (start, ec) =>
@@ -132,7 +135,7 @@ object HistogramSuite {
                 end <- IO.monotonic
                 _ <- record(
                   (end - start).toUnit(timeUnit),
-                  attributes ++ Histogram.causeAttributes(ec)
+                  attributes(ec)
                 )
               } yield ()
             }

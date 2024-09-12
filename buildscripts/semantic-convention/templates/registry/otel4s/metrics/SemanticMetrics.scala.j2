@@ -60,6 +60,10 @@
   {%- endif -%}
 {%- endmacro -%}
 
+{%- macro stableRef(metric) -%}
+  org.typelevel.otel4s.semconv.metrics.{{ ctx.root_namespace | pascal_case }}Metrics.{{ metric.metric_name[ctx.root_namespace | length:] | pascal_case }}
+{%- endmacro -%}
+
 {%- set object_name = ctx.root_namespace | pascal_case ~ params.object_prefix ~ "Metrics" -%}
 
 /*
@@ -112,6 +116,8 @@ object {{ object_name }} {
   {{ [metric.brief | replace('$', "$$"), concat_if("\n\n@note\n\n", metric.note)] | comment(indent=2) }}
   {%- if metric is deprecated %}
   @deprecated("{{ metric.deprecated }}", "")
+  {%- elif params.experimental == true and metric is stable %}
+  @deprecated("Use stable `{{ stableRef(metric) }}` instead.", "")
   {%- endif %}
   object {{ metric.metric_name[ctx.root_namespace | length:] | pascal_case }} {
 

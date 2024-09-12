@@ -193,6 +193,7 @@ object JvmExperimentalMetrics {
 
   /** Number of classes currently loaded.
     */
+  @deprecated("Use stable `org.typelevel.otel4s.semconv.metrics.JvmMetrics.ClassCount` instead.", "")
   object ClassCount {
 
     val Name = "jvm.class.count"
@@ -210,6 +211,7 @@ object JvmExperimentalMetrics {
 
   /** Number of classes loaded since JVM start.
     */
+  @deprecated("Use stable `org.typelevel.otel4s.semconv.metrics.JvmMetrics.ClassLoaded` instead.", "")
   object ClassLoaded {
 
     val Name = "jvm.class.loaded"
@@ -227,6 +229,7 @@ object JvmExperimentalMetrics {
 
   /** Number of classes unloaded since JVM start.
     */
+  @deprecated("Use stable `org.typelevel.otel4s.semconv.metrics.JvmMetrics.ClassUnloaded` instead.", "")
   object ClassUnloaded {
 
     val Name = "jvm.class.unloaded"
@@ -244,6 +247,7 @@ object JvmExperimentalMetrics {
 
   /** Number of processors available to the Java virtual machine.
     */
+  @deprecated("Use stable `org.typelevel.otel4s.semconv.metrics.JvmMetrics.CpuCount` instead.", "")
   object CpuCount {
 
     val Name = "jvm.cpu.count"
@@ -265,6 +269,7 @@ object JvmExperimentalMetrics {
     *   measurement (unlike `system.cpu.utilization`). <a
     *   href="https://docs.oracle.com/en/java/javase/17/docs/api/jdk.management/com/sun/management/OperatingSystemMXBean.html#getProcessCpuLoad()">Reference</a>.
     */
+  @deprecated("Use stable `org.typelevel.otel4s.semconv.metrics.JvmMetrics.CpuRecentUtilization` instead.", "")
   object CpuRecentUtilization {
 
     val Name = "jvm.cpu.recent_utilization"
@@ -282,6 +287,7 @@ object JvmExperimentalMetrics {
 
   /** CPU time used by the process as reported by the JVM.
     */
+  @deprecated("Use stable `org.typelevel.otel4s.semconv.metrics.JvmMetrics.CpuTime` instead.", "")
   object CpuTime {
 
     val Name = "jvm.cpu.time"
@@ -299,6 +305,7 @@ object JvmExperimentalMetrics {
 
   /** Duration of JVM garbage collection actions.
     */
+  @deprecated("Use stable `org.typelevel.otel4s.semconv.metrics.JvmMetrics.GcDuration` instead.", "")
   object GcDuration {
 
     val Name = "jvm.gc.duration"
@@ -358,6 +365,7 @@ object JvmExperimentalMetrics {
 
   /** Measure of memory committed.
     */
+  @deprecated("Use stable `org.typelevel.otel4s.semconv.metrics.JvmMetrics.MemoryCommitted` instead.", "")
   object MemoryCommitted {
 
     val Name = "jvm.memory.committed"
@@ -470,6 +478,7 @@ object JvmExperimentalMetrics {
 
   /** Measure of max obtainable memory.
     */
+  @deprecated("Use stable `org.typelevel.otel4s.semconv.metrics.JvmMetrics.MemoryLimit` instead.", "")
   object MemoryLimit {
 
     val Name = "jvm.memory.limit"
@@ -526,6 +535,7 @@ object JvmExperimentalMetrics {
 
   /** Measure of memory used.
     */
+  @deprecated("Use stable `org.typelevel.otel4s.semconv.metrics.JvmMetrics.MemoryUsed` instead.", "")
   object MemoryUsed {
 
     val Name = "jvm.memory.used"
@@ -582,6 +592,7 @@ object JvmExperimentalMetrics {
 
   /** Measure of memory used, as measured after the most recent garbage collection event on this pool.
     */
+  @deprecated("Use stable `org.typelevel.otel4s.semconv.metrics.JvmMetrics.MemoryUsedAfterLastGc` instead.", "")
   object MemoryUsedAfterLastGc {
 
     val Name = "jvm.memory.used_after_last_gc"
@@ -681,6 +692,7 @@ object JvmExperimentalMetrics {
 
   /** Number of executing platform threads.
     */
+  @deprecated("Use stable `org.typelevel.otel4s.semconv.metrics.JvmMetrics.ThreadCount` instead.", "")
   object ThreadCount {
 
     val Name = "jvm.thread.count"

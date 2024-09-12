@@ -596,6 +596,7 @@ object HttpExperimentalMetrics {
 
   /** Duration of HTTP client requests.
     */
+  @deprecated("Use stable `org.typelevel.otel4s.semconv.metrics.HttpMetrics.ClientRequestDuration` instead.", "")
   object ClientRequestDuration {
 
     val Name = "http.client.request.duration"
@@ -1314,6 +1315,7 @@ object HttpExperimentalMetrics {
 
   /** Duration of HTTP server requests.
     */
+  @deprecated("Use stable `org.typelevel.otel4s.semconv.metrics.HttpMetrics.ServerRequestDuration` instead.", "")
   object ServerRequestDuration {
 
     val Name = "http.server.request.duration"

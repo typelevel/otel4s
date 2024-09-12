@@ -274,10 +274,7 @@ object MessagingExperimentalAttributes {
 
   /** Deprecated, use `messaging.servicebus.destination.subscription_name` instead.
     */
-  @deprecated(
-    "Replaced by `messaging.servicebus.destination.subscription_name`.",
-    ""
-  )
+  @deprecated("Replaced by `messaging.servicebus.destination.subscription_name`.", "")
   val MessagingServicebusDestinationSubscriptionName: AttributeKey[String] =
     AttributeKey("messaging.servicebus.destination.subscription_name")
 

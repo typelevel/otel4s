@@ -25,13 +25,27 @@ import org.typelevel.otel4s.semconv.experimental.attributes._
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/metrics/SemanticMetrics.scala.j2
 object FaasExperimentalMetrics {
 
+  val specs: List[MetricSpec] = List(
+    Coldstarts,
+    CpuUsage,
+    Errors,
+    InitDuration,
+    Invocations,
+    InvokeDuration,
+    MemUsage,
+    NetIo,
+    Timeouts,
+  )
+
   /** Number of invocation cold starts
     */
-  object Coldstarts {
+  object Coldstarts extends MetricSpec {
 
-    val Name = "faas.coldstarts"
-    val Description = "Number of invocation cold starts"
-    val Unit = "{coldstart}"
+    val name: String = "faas.coldstarts"
+    val description: String = "Number of invocation cold starts"
+    val unit: String = "{coldstart}"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
@@ -54,20 +68,22 @@ object FaasExperimentalMetrics {
 
     def create[F[_]: Meter]: F[Counter[F, Long]] =
       Meter[F]
-        .counter[Long](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .counter[Long](name)
+        .withDescription(description)
+        .withUnit(unit)
         .create
 
   }
 
   /** Distribution of CPU usage per invocation
     */
-  object CpuUsage {
+  object CpuUsage extends MetricSpec {
 
-    val Name = "faas.cpu_usage"
-    val Description = "Distribution of CPU usage per invocation"
-    val Unit = "s"
+    val name: String = "faas.cpu_usage"
+    val description: String = "Distribution of CPU usage per invocation"
+    val unit: String = "s"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
@@ -90,9 +106,9 @@ object FaasExperimentalMetrics {
 
     def create[F[_]: Meter](boundaries: BucketBoundaries): F[Histogram[F, Double]] =
       Meter[F]
-        .histogram[Double](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .histogram[Double](name)
+        .withDescription(description)
+        .withUnit(unit)
         .withExplicitBucketBoundaries(boundaries)
         .create
 
@@ -100,11 +116,13 @@ object FaasExperimentalMetrics {
 
   /** Number of invocation errors
     */
-  object Errors {
+  object Errors extends MetricSpec {
 
-    val Name = "faas.errors"
-    val Description = "Number of invocation errors"
-    val Unit = "{error}"
+    val name: String = "faas.errors"
+    val description: String = "Number of invocation errors"
+    val unit: String = "{error}"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
@@ -127,20 +145,22 @@ object FaasExperimentalMetrics {
 
     def create[F[_]: Meter]: F[Counter[F, Long]] =
       Meter[F]
-        .counter[Long](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .counter[Long](name)
+        .withDescription(description)
+        .withUnit(unit)
         .create
 
   }
 
   /** Measures the duration of the function's initialization, such as a cold start
     */
-  object InitDuration {
+  object InitDuration extends MetricSpec {
 
-    val Name = "faas.init_duration"
-    val Description = "Measures the duration of the function's initialization, such as a cold start"
-    val Unit = "s"
+    val name: String = "faas.init_duration"
+    val description: String = "Measures the duration of the function's initialization, such as a cold start"
+    val unit: String = "s"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
@@ -163,9 +183,9 @@ object FaasExperimentalMetrics {
 
     def create[F[_]: Meter](boundaries: BucketBoundaries): F[Histogram[F, Double]] =
       Meter[F]
-        .histogram[Double](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .histogram[Double](name)
+        .withDescription(description)
+        .withUnit(unit)
         .withExplicitBucketBoundaries(boundaries)
         .create
 
@@ -173,11 +193,13 @@ object FaasExperimentalMetrics {
 
   /** Number of successful invocations
     */
-  object Invocations {
+  object Invocations extends MetricSpec {
 
-    val Name = "faas.invocations"
-    val Description = "Number of successful invocations"
-    val Unit = "{invocation}"
+    val name: String = "faas.invocations"
+    val description: String = "Number of successful invocations"
+    val unit: String = "{invocation}"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
@@ -200,20 +222,22 @@ object FaasExperimentalMetrics {
 
     def create[F[_]: Meter]: F[Counter[F, Long]] =
       Meter[F]
-        .counter[Long](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .counter[Long](name)
+        .withDescription(description)
+        .withUnit(unit)
         .create
 
   }
 
   /** Measures the duration of the function's logic execution
     */
-  object InvokeDuration {
+  object InvokeDuration extends MetricSpec {
 
-    val Name = "faas.invoke_duration"
-    val Description = "Measures the duration of the function's logic execution"
-    val Unit = "s"
+    val name: String = "faas.invoke_duration"
+    val description: String = "Measures the duration of the function's logic execution"
+    val unit: String = "s"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
@@ -236,9 +260,9 @@ object FaasExperimentalMetrics {
 
     def create[F[_]: Meter](boundaries: BucketBoundaries): F[Histogram[F, Double]] =
       Meter[F]
-        .histogram[Double](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .histogram[Double](name)
+        .withDescription(description)
+        .withUnit(unit)
         .withExplicitBucketBoundaries(boundaries)
         .create
 
@@ -246,11 +270,13 @@ object FaasExperimentalMetrics {
 
   /** Distribution of max memory usage per invocation
     */
-  object MemUsage {
+  object MemUsage extends MetricSpec {
 
-    val Name = "faas.mem_usage"
-    val Description = "Distribution of max memory usage per invocation"
-    val Unit = "By"
+    val name: String = "faas.mem_usage"
+    val description: String = "Distribution of max memory usage per invocation"
+    val unit: String = "By"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
@@ -273,9 +299,9 @@ object FaasExperimentalMetrics {
 
     def create[F[_]: Meter](boundaries: BucketBoundaries): F[Histogram[F, Double]] =
       Meter[F]
-        .histogram[Double](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .histogram[Double](name)
+        .withDescription(description)
+        .withUnit(unit)
         .withExplicitBucketBoundaries(boundaries)
         .create
 
@@ -283,11 +309,13 @@ object FaasExperimentalMetrics {
 
   /** Distribution of net I/O usage per invocation
     */
-  object NetIo {
+  object NetIo extends MetricSpec {
 
-    val Name = "faas.net_io"
-    val Description = "Distribution of net I/O usage per invocation"
-    val Unit = "By"
+    val name: String = "faas.net_io"
+    val description: String = "Distribution of net I/O usage per invocation"
+    val unit: String = "By"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
@@ -310,9 +338,9 @@ object FaasExperimentalMetrics {
 
     def create[F[_]: Meter](boundaries: BucketBoundaries): F[Histogram[F, Double]] =
       Meter[F]
-        .histogram[Double](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .histogram[Double](name)
+        .withDescription(description)
+        .withUnit(unit)
         .withExplicitBucketBoundaries(boundaries)
         .create
 
@@ -320,11 +348,13 @@ object FaasExperimentalMetrics {
 
   /** Number of invocation timeouts
     */
-  object Timeouts {
+  object Timeouts extends MetricSpec {
 
-    val Name = "faas.timeouts"
-    val Description = "Number of invocation timeouts"
-    val Unit = "{timeout}"
+    val name: String = "faas.timeouts"
+    val description: String = "Number of invocation timeouts"
+    val unit: String = "{timeout}"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
@@ -347,9 +377,9 @@ object FaasExperimentalMetrics {
 
     def create[F[_]: Meter]: F[Counter[F, Long]] =
       Meter[F]
-        .counter[Long](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .counter[Long](name)
+        .withDescription(description)
+        .withUnit(unit)
         .create
 
   }

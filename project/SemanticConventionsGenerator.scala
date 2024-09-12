@@ -17,8 +17,10 @@ object SemanticConventionsGenerator {
   }
 
   private def generateMetrics(version: String, rootDir: File): Unit = {
-    generateMetrics(version, rootDir, experimental = false)
-    generateMetrics(version, rootDir, experimental = true)
+    generateMetrics(version, rootDir, experimental = false, tests = false)
+    generateMetrics(version, rootDir, experimental = true, tests = false)
+    // only stable semantics require tests
+    generateMetrics(version, rootDir, experimental = false, tests = true)
   }
 
   private def generateAttributes(
@@ -44,21 +46,25 @@ object SemanticConventionsGenerator {
       else
         Nil
 
-    invokeWeaverGenerator(version, rootDir, outputDir, target, Nil)
+    invokeWeaverGenerator(version, rootDir, outputDir, target, params)
   }
 
   private def generateMetrics(
       version: String,
       rootDir: File,
-      experimental: Boolean
+      experimental: Boolean,
+      tests: Boolean
   ): Unit = {
+    val dir = if (tests) "test" else "main"
+
     val outputDir =
       if (experimental)
-        s"$rootDir/semconv/metrics/experimental/src/main/scala/org/typelevel/otel4s/semconv/experimental/metrics/"
+        s"$rootDir/semconv/metrics/experimental/src/$dir/scala/org/typelevel/otel4s/semconv/experimental/metrics/"
       else
-        s"$rootDir/semconv/metrics/stable/src/main/scala/org/typelevel/otel4s/semconv/metrics/"
+        s"$rootDir/semconv/metrics/stable/src/$dir/scala/org/typelevel/otel4s/semconv/metrics/"
 
-    val target = "otel4s/metrics"
+    val target =
+      if (tests) "otel4s/metrics-tests" else "otel4s/metrics"
 
     val params: List[String] =
       if (experimental)

@@ -24,22 +24,37 @@ import org.typelevel.otel4s.metrics._
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/metrics/SemanticMetrics.scala.j2
 object RpcExperimentalMetrics {
 
+  val specs: List[MetricSpec] = List(
+    ClientDuration,
+    ClientRequestSize,
+    ClientRequestsPerRpc,
+    ClientResponseSize,
+    ClientResponsesPerRpc,
+    ServerDuration,
+    ServerRequestSize,
+    ServerRequestsPerRpc,
+    ServerResponseSize,
+    ServerResponsesPerRpc,
+  )
+
   /** Measures the duration of outbound RPC. <p>
     * @note
     *   <p> While streaming RPCs may record this metric as start-of-batch to end-of-batch, it's hard to interpret in
     *   practice. <p> <strong>Streaming</strong>: N/A.
     */
-  object ClientDuration {
+  object ClientDuration extends MetricSpec {
 
-    val Name = "rpc.client.duration"
-    val Description = "Measures the duration of outbound RPC."
-    val Unit = "ms"
+    val name: String = "rpc.client.duration"
+    val description: String = "Measures the duration of outbound RPC."
+    val unit: String = "ms"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter](boundaries: BucketBoundaries): F[Histogram[F, Double]] =
       Meter[F]
-        .histogram[Double](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .histogram[Double](name)
+        .withDescription(description)
+        .withUnit(unit)
         .withExplicitBucketBoundaries(boundaries)
         .create
 
@@ -49,17 +64,19 @@ object RpcExperimentalMetrics {
     * @note
     *   <p> <strong>Streaming</strong>: Recorded per message in a streaming batch
     */
-  object ClientRequestSize {
+  object ClientRequestSize extends MetricSpec {
 
-    val Name = "rpc.client.request.size"
-    val Description = "Measures the size of RPC request messages (uncompressed)."
-    val Unit = "By"
+    val name: String = "rpc.client.request.size"
+    val description: String = "Measures the size of RPC request messages (uncompressed)."
+    val unit: String = "By"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter](boundaries: BucketBoundaries): F[Histogram[F, Double]] =
       Meter[F]
-        .histogram[Double](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .histogram[Double](name)
+        .withDescription(description)
+        .withUnit(unit)
         .withExplicitBucketBoundaries(boundaries)
         .create
 
@@ -70,17 +87,19 @@ object RpcExperimentalMetrics {
     *   <p> Should be 1 for all non-streaming RPCs. <p> <strong>Streaming</strong>: This metric is required for server
     *   and client streaming RPCs
     */
-  object ClientRequestsPerRpc {
+  object ClientRequestsPerRpc extends MetricSpec {
 
-    val Name = "rpc.client.requests_per_rpc"
-    val Description = "Measures the number of messages received per RPC."
-    val Unit = "{count}"
+    val name: String = "rpc.client.requests_per_rpc"
+    val description: String = "Measures the number of messages received per RPC."
+    val unit: String = "{count}"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter](boundaries: BucketBoundaries): F[Histogram[F, Double]] =
       Meter[F]
-        .histogram[Double](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .histogram[Double](name)
+        .withDescription(description)
+        .withUnit(unit)
         .withExplicitBucketBoundaries(boundaries)
         .create
 
@@ -90,17 +109,19 @@ object RpcExperimentalMetrics {
     * @note
     *   <p> <strong>Streaming</strong>: Recorded per response in a streaming batch
     */
-  object ClientResponseSize {
+  object ClientResponseSize extends MetricSpec {
 
-    val Name = "rpc.client.response.size"
-    val Description = "Measures the size of RPC response messages (uncompressed)."
-    val Unit = "By"
+    val name: String = "rpc.client.response.size"
+    val description: String = "Measures the size of RPC response messages (uncompressed)."
+    val unit: String = "By"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter](boundaries: BucketBoundaries): F[Histogram[F, Double]] =
       Meter[F]
-        .histogram[Double](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .histogram[Double](name)
+        .withDescription(description)
+        .withUnit(unit)
         .withExplicitBucketBoundaries(boundaries)
         .create
 
@@ -111,17 +132,19 @@ object RpcExperimentalMetrics {
     *   <p> Should be 1 for all non-streaming RPCs. <p> <strong>Streaming</strong>: This metric is required for server
     *   and client streaming RPCs
     */
-  object ClientResponsesPerRpc {
+  object ClientResponsesPerRpc extends MetricSpec {
 
-    val Name = "rpc.client.responses_per_rpc"
-    val Description = "Measures the number of messages sent per RPC."
-    val Unit = "{count}"
+    val name: String = "rpc.client.responses_per_rpc"
+    val description: String = "Measures the number of messages sent per RPC."
+    val unit: String = "{count}"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter](boundaries: BucketBoundaries): F[Histogram[F, Double]] =
       Meter[F]
-        .histogram[Double](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .histogram[Double](name)
+        .withDescription(description)
+        .withUnit(unit)
         .withExplicitBucketBoundaries(boundaries)
         .create
 
@@ -132,17 +155,19 @@ object RpcExperimentalMetrics {
     *   <p> While streaming RPCs may record this metric as start-of-batch to end-of-batch, it's hard to interpret in
     *   practice. <p> <strong>Streaming</strong>: N/A.
     */
-  object ServerDuration {
+  object ServerDuration extends MetricSpec {
 
-    val Name = "rpc.server.duration"
-    val Description = "Measures the duration of inbound RPC."
-    val Unit = "ms"
+    val name: String = "rpc.server.duration"
+    val description: String = "Measures the duration of inbound RPC."
+    val unit: String = "ms"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter](boundaries: BucketBoundaries): F[Histogram[F, Double]] =
       Meter[F]
-        .histogram[Double](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .histogram[Double](name)
+        .withDescription(description)
+        .withUnit(unit)
         .withExplicitBucketBoundaries(boundaries)
         .create
 
@@ -152,17 +177,19 @@ object RpcExperimentalMetrics {
     * @note
     *   <p> <strong>Streaming</strong>: Recorded per message in a streaming batch
     */
-  object ServerRequestSize {
+  object ServerRequestSize extends MetricSpec {
 
-    val Name = "rpc.server.request.size"
-    val Description = "Measures the size of RPC request messages (uncompressed)."
-    val Unit = "By"
+    val name: String = "rpc.server.request.size"
+    val description: String = "Measures the size of RPC request messages (uncompressed)."
+    val unit: String = "By"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter](boundaries: BucketBoundaries): F[Histogram[F, Double]] =
       Meter[F]
-        .histogram[Double](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .histogram[Double](name)
+        .withDescription(description)
+        .withUnit(unit)
         .withExplicitBucketBoundaries(boundaries)
         .create
 
@@ -173,17 +200,19 @@ object RpcExperimentalMetrics {
     *   <p> Should be 1 for all non-streaming RPCs. <p> <strong>Streaming</strong> : This metric is required for server
     *   and client streaming RPCs
     */
-  object ServerRequestsPerRpc {
+  object ServerRequestsPerRpc extends MetricSpec {
 
-    val Name = "rpc.server.requests_per_rpc"
-    val Description = "Measures the number of messages received per RPC."
-    val Unit = "{count}"
+    val name: String = "rpc.server.requests_per_rpc"
+    val description: String = "Measures the number of messages received per RPC."
+    val unit: String = "{count}"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter](boundaries: BucketBoundaries): F[Histogram[F, Double]] =
       Meter[F]
-        .histogram[Double](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .histogram[Double](name)
+        .withDescription(description)
+        .withUnit(unit)
         .withExplicitBucketBoundaries(boundaries)
         .create
 
@@ -193,17 +222,19 @@ object RpcExperimentalMetrics {
     * @note
     *   <p> <strong>Streaming</strong>: Recorded per response in a streaming batch
     */
-  object ServerResponseSize {
+  object ServerResponseSize extends MetricSpec {
 
-    val Name = "rpc.server.response.size"
-    val Description = "Measures the size of RPC response messages (uncompressed)."
-    val Unit = "By"
+    val name: String = "rpc.server.response.size"
+    val description: String = "Measures the size of RPC response messages (uncompressed)."
+    val unit: String = "By"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter](boundaries: BucketBoundaries): F[Histogram[F, Double]] =
       Meter[F]
-        .histogram[Double](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .histogram[Double](name)
+        .withDescription(description)
+        .withUnit(unit)
         .withExplicitBucketBoundaries(boundaries)
         .create
 
@@ -214,17 +245,19 @@ object RpcExperimentalMetrics {
     *   <p> Should be 1 for all non-streaming RPCs. <p> <strong>Streaming</strong>: This metric is required for server
     *   and client streaming RPCs
     */
-  object ServerResponsesPerRpc {
+  object ServerResponsesPerRpc extends MetricSpec {
 
-    val Name = "rpc.server.responses_per_rpc"
-    val Description = "Measures the number of messages sent per RPC."
-    val Unit = "{count}"
+    val name: String = "rpc.server.responses_per_rpc"
+    val description: String = "Measures the number of messages sent per RPC."
+    val unit: String = "{count}"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter](boundaries: BucketBoundaries): F[Histogram[F, Double]] =
       Meter[F]
-        .histogram[Double](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .histogram[Double](name)
+        .withDescription(description)
+        .withUnit(unit)
         .withExplicitBucketBoundaries(boundaries)
         .create
 

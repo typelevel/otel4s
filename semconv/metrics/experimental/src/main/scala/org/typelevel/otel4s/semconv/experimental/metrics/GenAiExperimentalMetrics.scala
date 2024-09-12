@@ -26,13 +26,23 @@ import org.typelevel.otel4s.semconv.experimental.attributes._
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/metrics/SemanticMetrics.scala.j2
 object GenAiExperimentalMetrics {
 
+  val specs: List[MetricSpec] = List(
+    ClientOperationDuration,
+    ClientTokenUsage,
+    ServerRequestDuration,
+    ServerTimePerOutputToken,
+    ServerTimeToFirstToken,
+  )
+
   /** GenAI operation duration
     */
-  object ClientOperationDuration {
+  object ClientOperationDuration extends MetricSpec {
 
-    val Name = "gen_ai.client.operation.duration"
-    val Description = "GenAI operation duration"
-    val Unit = "s"
+    val name: String = "gen_ai.client.operation.duration"
+    val description: String = "GenAI operation duration"
+    val unit: String = "s"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
@@ -171,9 +181,9 @@ object GenAiExperimentalMetrics {
 
     def create[F[_]: Meter](boundaries: BucketBoundaries): F[Histogram[F, Double]] =
       Meter[F]
-        .histogram[Double](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .histogram[Double](name)
+        .withDescription(description)
+        .withUnit(unit)
         .withExplicitBucketBoundaries(boundaries)
         .create
 
@@ -181,11 +191,13 @@ object GenAiExperimentalMetrics {
 
   /** Measures number of input and output tokens used
     */
-  object ClientTokenUsage {
+  object ClientTokenUsage extends MetricSpec {
 
-    val Name = "gen_ai.client.token.usage"
-    val Description = "Measures number of input and output tokens used"
-    val Unit = "{token}"
+    val name: String = "gen_ai.client.token.usage"
+    val description: String = "Measures number of input and output tokens used"
+    val unit: String = "{token}"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
@@ -318,9 +330,9 @@ object GenAiExperimentalMetrics {
 
     def create[F[_]: Meter](boundaries: BucketBoundaries): F[Histogram[F, Double]] =
       Meter[F]
-        .histogram[Double](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .histogram[Double](name)
+        .withDescription(description)
+        .withUnit(unit)
         .withExplicitBucketBoundaries(boundaries)
         .create
 
@@ -328,11 +340,13 @@ object GenAiExperimentalMetrics {
 
   /** Generative AI server request duration such as time-to-last byte or last output token
     */
-  object ServerRequestDuration {
+  object ServerRequestDuration extends MetricSpec {
 
-    val Name = "gen_ai.server.request.duration"
-    val Description = "Generative AI server request duration such as time-to-last byte or last output token"
-    val Unit = "s"
+    val name: String = "gen_ai.server.request.duration"
+    val description: String = "Generative AI server request duration such as time-to-last byte or last output token"
+    val unit: String = "s"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
@@ -471,9 +485,9 @@ object GenAiExperimentalMetrics {
 
     def create[F[_]: Meter](boundaries: BucketBoundaries): F[Histogram[F, Double]] =
       Meter[F]
-        .histogram[Double](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .histogram[Double](name)
+        .withDescription(description)
+        .withUnit(unit)
         .withExplicitBucketBoundaries(boundaries)
         .create
 
@@ -481,11 +495,13 @@ object GenAiExperimentalMetrics {
 
   /** Time per output token generated after the first token for successful responses
     */
-  object ServerTimePerOutputToken {
+  object ServerTimePerOutputToken extends MetricSpec {
 
-    val Name = "gen_ai.server.time_per_output_token"
-    val Description = "Time per output token generated after the first token for successful responses"
-    val Unit = "s"
+    val name: String = "gen_ai.server.time_per_output_token"
+    val description: String = "Time per output token generated after the first token for successful responses"
+    val unit: String = "s"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
@@ -604,9 +620,9 @@ object GenAiExperimentalMetrics {
 
     def create[F[_]: Meter](boundaries: BucketBoundaries): F[Histogram[F, Double]] =
       Meter[F]
-        .histogram[Double](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .histogram[Double](name)
+        .withDescription(description)
+        .withUnit(unit)
         .withExplicitBucketBoundaries(boundaries)
         .create
 
@@ -614,11 +630,13 @@ object GenAiExperimentalMetrics {
 
   /** Time to generate first token for successful responses
     */
-  object ServerTimeToFirstToken {
+  object ServerTimeToFirstToken extends MetricSpec {
 
-    val Name = "gen_ai.server.time_to_first_token"
-    val Description = "Time to generate first token for successful responses"
-    val Unit = "s"
+    val name: String = "gen_ai.server.time_to_first_token"
+    val description: String = "Time to generate first token for successful responses"
+    val unit: String = "s"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
@@ -737,9 +755,9 @@ object GenAiExperimentalMetrics {
 
     def create[F[_]: Meter](boundaries: BucketBoundaries): F[Histogram[F, Double]] =
       Meter[F]
-        .histogram[Double](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .histogram[Double](name)
+        .withDescription(description)
+        .withUnit(unit)
         .withExplicitBucketBoundaries(boundaries)
         .create
 

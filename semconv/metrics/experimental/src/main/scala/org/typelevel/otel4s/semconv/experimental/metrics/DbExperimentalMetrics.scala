@@ -26,13 +26,38 @@ import org.typelevel.otel4s.semconv.experimental.attributes._
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/metrics/SemanticMetrics.scala.j2
 object DbExperimentalMetrics {
 
+  @annotation.nowarn("cat=deprecation")
+  val specs: List[MetricSpec] = List(
+    ClientConnectionCount,
+    ClientConnectionCreateTime,
+    ClientConnectionIdleMax,
+    ClientConnectionIdleMin,
+    ClientConnectionMax,
+    ClientConnectionPendingRequests,
+    ClientConnectionTimeouts,
+    ClientConnectionUseTime,
+    ClientConnectionWaitTime,
+    ClientConnectionsCreateTime,
+    ClientConnectionsIdleMax,
+    ClientConnectionsIdleMin,
+    ClientConnectionsMax,
+    ClientConnectionsPendingRequests,
+    ClientConnectionsTimeouts,
+    ClientConnectionsUsage,
+    ClientConnectionsUseTime,
+    ClientConnectionsWaitTime,
+    ClientOperationDuration,
+  )
+
   /** The number of connections that are currently in state described by the `state` attribute
     */
-  object ClientConnectionCount {
+  object ClientConnectionCount extends MetricSpec {
 
-    val Name = "db.client.connection.count"
-    val Description = "The number of connections that are currently in state described by the `state` attribute"
-    val Unit = "{connection}"
+    val name: String = "db.client.connection.count"
+    val description: String = "The number of connections that are currently in state described by the `state` attribute"
+    val unit: String = "{connection}"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
@@ -73,20 +98,22 @@ object DbExperimentalMetrics {
 
     def create[F[_]: Meter]: F[UpDownCounter[F, Long]] =
       Meter[F]
-        .upDownCounter[Long](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .upDownCounter[Long](name)
+        .withDescription(description)
+        .withUnit(unit)
         .create
 
   }
 
   /** The time it took to create a new connection
     */
-  object ClientConnectionCreateTime {
+  object ClientConnectionCreateTime extends MetricSpec {
 
-    val Name = "db.client.connection.create_time"
-    val Description = "The time it took to create a new connection"
-    val Unit = "s"
+    val name: String = "db.client.connection.create_time"
+    val description: String = "The time it took to create a new connection"
+    val unit: String = "s"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
@@ -114,9 +141,9 @@ object DbExperimentalMetrics {
 
     def create[F[_]: Meter](boundaries: BucketBoundaries): F[Histogram[F, Double]] =
       Meter[F]
-        .histogram[Double](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .histogram[Double](name)
+        .withDescription(description)
+        .withUnit(unit)
         .withExplicitBucketBoundaries(boundaries)
         .create
 
@@ -124,11 +151,13 @@ object DbExperimentalMetrics {
 
   /** The maximum number of idle open connections allowed
     */
-  object ClientConnectionIdleMax {
+  object ClientConnectionIdleMax extends MetricSpec {
 
-    val Name = "db.client.connection.idle.max"
-    val Description = "The maximum number of idle open connections allowed"
-    val Unit = "{connection}"
+    val name: String = "db.client.connection.idle.max"
+    val description: String = "The maximum number of idle open connections allowed"
+    val unit: String = "{connection}"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
@@ -156,20 +185,22 @@ object DbExperimentalMetrics {
 
     def create[F[_]: Meter]: F[UpDownCounter[F, Long]] =
       Meter[F]
-        .upDownCounter[Long](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .upDownCounter[Long](name)
+        .withDescription(description)
+        .withUnit(unit)
         .create
 
   }
 
   /** The minimum number of idle open connections allowed
     */
-  object ClientConnectionIdleMin {
+  object ClientConnectionIdleMin extends MetricSpec {
 
-    val Name = "db.client.connection.idle.min"
-    val Description = "The minimum number of idle open connections allowed"
-    val Unit = "{connection}"
+    val name: String = "db.client.connection.idle.min"
+    val description: String = "The minimum number of idle open connections allowed"
+    val unit: String = "{connection}"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
@@ -197,20 +228,22 @@ object DbExperimentalMetrics {
 
     def create[F[_]: Meter]: F[UpDownCounter[F, Long]] =
       Meter[F]
-        .upDownCounter[Long](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .upDownCounter[Long](name)
+        .withDescription(description)
+        .withUnit(unit)
         .create
 
   }
 
   /** The maximum number of open connections allowed
     */
-  object ClientConnectionMax {
+  object ClientConnectionMax extends MetricSpec {
 
-    val Name = "db.client.connection.max"
-    val Description = "The maximum number of open connections allowed"
-    val Unit = "{connection}"
+    val name: String = "db.client.connection.max"
+    val description: String = "The maximum number of open connections allowed"
+    val unit: String = "{connection}"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
@@ -238,20 +271,22 @@ object DbExperimentalMetrics {
 
     def create[F[_]: Meter]: F[UpDownCounter[F, Long]] =
       Meter[F]
-        .upDownCounter[Long](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .upDownCounter[Long](name)
+        .withDescription(description)
+        .withUnit(unit)
         .create
 
   }
 
   /** The number of pending requests for an open connection, cumulative for the entire pool
     */
-  object ClientConnectionPendingRequests {
+  object ClientConnectionPendingRequests extends MetricSpec {
 
-    val Name = "db.client.connection.pending_requests"
-    val Description = "The number of pending requests for an open connection, cumulative for the entire pool"
-    val Unit = "{request}"
+    val name: String = "db.client.connection.pending_requests"
+    val description: String = "The number of pending requests for an open connection, cumulative for the entire pool"
+    val unit: String = "{request}"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
@@ -279,20 +314,23 @@ object DbExperimentalMetrics {
 
     def create[F[_]: Meter]: F[UpDownCounter[F, Long]] =
       Meter[F]
-        .upDownCounter[Long](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .upDownCounter[Long](name)
+        .withDescription(description)
+        .withUnit(unit)
         .create
 
   }
 
   /** The number of connection timeouts that have occurred trying to obtain a connection from the pool
     */
-  object ClientConnectionTimeouts {
+  object ClientConnectionTimeouts extends MetricSpec {
 
-    val Name = "db.client.connection.timeouts"
-    val Description = "The number of connection timeouts that have occurred trying to obtain a connection from the pool"
-    val Unit = "{timeout}"
+    val name: String = "db.client.connection.timeouts"
+    val description: String =
+      "The number of connection timeouts that have occurred trying to obtain a connection from the pool"
+    val unit: String = "{timeout}"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
@@ -320,20 +358,22 @@ object DbExperimentalMetrics {
 
     def create[F[_]: Meter]: F[Counter[F, Long]] =
       Meter[F]
-        .counter[Long](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .counter[Long](name)
+        .withDescription(description)
+        .withUnit(unit)
         .create
 
   }
 
   /** The time between borrowing a connection and returning it to the pool
     */
-  object ClientConnectionUseTime {
+  object ClientConnectionUseTime extends MetricSpec {
 
-    val Name = "db.client.connection.use_time"
-    val Description = "The time between borrowing a connection and returning it to the pool"
-    val Unit = "s"
+    val name: String = "db.client.connection.use_time"
+    val description: String = "The time between borrowing a connection and returning it to the pool"
+    val unit: String = "s"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
@@ -361,9 +401,9 @@ object DbExperimentalMetrics {
 
     def create[F[_]: Meter](boundaries: BucketBoundaries): F[Histogram[F, Double]] =
       Meter[F]
-        .histogram[Double](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .histogram[Double](name)
+        .withDescription(description)
+        .withUnit(unit)
         .withExplicitBucketBoundaries(boundaries)
         .create
 
@@ -371,11 +411,13 @@ object DbExperimentalMetrics {
 
   /** The time it took to obtain an open connection from the pool
     */
-  object ClientConnectionWaitTime {
+  object ClientConnectionWaitTime extends MetricSpec {
 
-    val Name = "db.client.connection.wait_time"
-    val Description = "The time it took to obtain an open connection from the pool"
-    val Unit = "s"
+    val name: String = "db.client.connection.wait_time"
+    val description: String = "The time it took to obtain an open connection from the pool"
+    val unit: String = "s"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
@@ -403,9 +445,9 @@ object DbExperimentalMetrics {
 
     def create[F[_]: Meter](boundaries: BucketBoundaries): F[Histogram[F, Double]] =
       Meter[F]
-        .histogram[Double](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .histogram[Double](name)
+        .withDescription(description)
+        .withUnit(unit)
         .withExplicitBucketBoundaries(boundaries)
         .create
 
@@ -414,12 +456,14 @@ object DbExperimentalMetrics {
   /** Deprecated, use `db.client.connection.create_time` instead. Note: the unit also changed from `ms` to `s`.
     */
   @deprecated("Replaced by `db.client.connection.create_time`. Note: the unit also changed from `ms` to `s`.", "")
-  object ClientConnectionsCreateTime {
+  object ClientConnectionsCreateTime extends MetricSpec {
 
-    val Name = "db.client.connections.create_time"
-    val Description =
+    val name: String = "db.client.connections.create_time"
+    val description: String =
       "Deprecated, use `db.client.connection.create_time` instead. Note: the unit also changed from `ms` to `s`."
-    val Unit = "ms"
+    val unit: String = "ms"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
@@ -444,9 +488,9 @@ object DbExperimentalMetrics {
 
     def create[F[_]: Meter](boundaries: BucketBoundaries): F[Histogram[F, Double]] =
       Meter[F]
-        .histogram[Double](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .histogram[Double](name)
+        .withDescription(description)
+        .withUnit(unit)
         .withExplicitBucketBoundaries(boundaries)
         .create
 
@@ -455,11 +499,13 @@ object DbExperimentalMetrics {
   /** Deprecated, use `db.client.connection.idle.max` instead.
     */
   @deprecated("Replaced by `db.client.connection.idle.max`.", "")
-  object ClientConnectionsIdleMax {
+  object ClientConnectionsIdleMax extends MetricSpec {
 
-    val Name = "db.client.connections.idle.max"
-    val Description = "Deprecated, use `db.client.connection.idle.max` instead."
-    val Unit = "{connection}"
+    val name: String = "db.client.connections.idle.max"
+    val description: String = "Deprecated, use `db.client.connection.idle.max` instead."
+    val unit: String = "{connection}"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
@@ -484,9 +530,9 @@ object DbExperimentalMetrics {
 
     def create[F[_]: Meter]: F[UpDownCounter[F, Long]] =
       Meter[F]
-        .upDownCounter[Long](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .upDownCounter[Long](name)
+        .withDescription(description)
+        .withUnit(unit)
         .create
 
   }
@@ -494,11 +540,13 @@ object DbExperimentalMetrics {
   /** Deprecated, use `db.client.connection.idle.min` instead.
     */
   @deprecated("Replaced by `db.client.connection.idle.min`.", "")
-  object ClientConnectionsIdleMin {
+  object ClientConnectionsIdleMin extends MetricSpec {
 
-    val Name = "db.client.connections.idle.min"
-    val Description = "Deprecated, use `db.client.connection.idle.min` instead."
-    val Unit = "{connection}"
+    val name: String = "db.client.connections.idle.min"
+    val description: String = "Deprecated, use `db.client.connection.idle.min` instead."
+    val unit: String = "{connection}"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
@@ -523,9 +571,9 @@ object DbExperimentalMetrics {
 
     def create[F[_]: Meter]: F[UpDownCounter[F, Long]] =
       Meter[F]
-        .upDownCounter[Long](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .upDownCounter[Long](name)
+        .withDescription(description)
+        .withUnit(unit)
         .create
 
   }
@@ -533,11 +581,13 @@ object DbExperimentalMetrics {
   /** Deprecated, use `db.client.connection.max` instead.
     */
   @deprecated("Replaced by `db.client.connection.max`.", "")
-  object ClientConnectionsMax {
+  object ClientConnectionsMax extends MetricSpec {
 
-    val Name = "db.client.connections.max"
-    val Description = "Deprecated, use `db.client.connection.max` instead."
-    val Unit = "{connection}"
+    val name: String = "db.client.connections.max"
+    val description: String = "Deprecated, use `db.client.connection.max` instead."
+    val unit: String = "{connection}"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
@@ -562,9 +612,9 @@ object DbExperimentalMetrics {
 
     def create[F[_]: Meter]: F[UpDownCounter[F, Long]] =
       Meter[F]
-        .upDownCounter[Long](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .upDownCounter[Long](name)
+        .withDescription(description)
+        .withUnit(unit)
         .create
 
   }
@@ -572,11 +622,13 @@ object DbExperimentalMetrics {
   /** Deprecated, use `db.client.connection.pending_requests` instead.
     */
   @deprecated("Replaced by `db.client.connection.pending_requests`.", "")
-  object ClientConnectionsPendingRequests {
+  object ClientConnectionsPendingRequests extends MetricSpec {
 
-    val Name = "db.client.connections.pending_requests"
-    val Description = "Deprecated, use `db.client.connection.pending_requests` instead."
-    val Unit = "{request}"
+    val name: String = "db.client.connections.pending_requests"
+    val description: String = "Deprecated, use `db.client.connection.pending_requests` instead."
+    val unit: String = "{request}"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
@@ -601,9 +653,9 @@ object DbExperimentalMetrics {
 
     def create[F[_]: Meter]: F[UpDownCounter[F, Long]] =
       Meter[F]
-        .upDownCounter[Long](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .upDownCounter[Long](name)
+        .withDescription(description)
+        .withUnit(unit)
         .create
 
   }
@@ -611,11 +663,13 @@ object DbExperimentalMetrics {
   /** Deprecated, use `db.client.connection.timeouts` instead.
     */
   @deprecated("Replaced by `db.client.connection.timeouts`.", "")
-  object ClientConnectionsTimeouts {
+  object ClientConnectionsTimeouts extends MetricSpec {
 
-    val Name = "db.client.connections.timeouts"
-    val Description = "Deprecated, use `db.client.connection.timeouts` instead."
-    val Unit = "{timeout}"
+    val name: String = "db.client.connections.timeouts"
+    val description: String = "Deprecated, use `db.client.connection.timeouts` instead."
+    val unit: String = "{timeout}"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
@@ -640,9 +694,9 @@ object DbExperimentalMetrics {
 
     def create[F[_]: Meter]: F[Counter[F, Long]] =
       Meter[F]
-        .counter[Long](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .counter[Long](name)
+        .withDescription(description)
+        .withUnit(unit)
         .create
 
   }
@@ -650,11 +704,13 @@ object DbExperimentalMetrics {
   /** Deprecated, use `db.client.connection.count` instead.
     */
   @deprecated("Replaced by `db.client.connection.count`.", "")
-  object ClientConnectionsUsage {
+  object ClientConnectionsUsage extends MetricSpec {
 
-    val Name = "db.client.connections.usage"
-    val Description = "Deprecated, use `db.client.connection.count` instead."
-    val Unit = "{connection}"
+    val name: String = "db.client.connections.usage"
+    val description: String = "Deprecated, use `db.client.connection.count` instead."
+    val unit: String = "{connection}"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
@@ -693,9 +749,9 @@ object DbExperimentalMetrics {
 
     def create[F[_]: Meter]: F[UpDownCounter[F, Long]] =
       Meter[F]
-        .upDownCounter[Long](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .upDownCounter[Long](name)
+        .withDescription(description)
+        .withUnit(unit)
         .create
 
   }
@@ -703,12 +759,14 @@ object DbExperimentalMetrics {
   /** Deprecated, use `db.client.connection.use_time` instead. Note: the unit also changed from `ms` to `s`.
     */
   @deprecated("Replaced by `db.client.connection.use_time`. Note: the unit also changed from `ms` to `s`.", "")
-  object ClientConnectionsUseTime {
+  object ClientConnectionsUseTime extends MetricSpec {
 
-    val Name = "db.client.connections.use_time"
-    val Description =
+    val name: String = "db.client.connections.use_time"
+    val description: String =
       "Deprecated, use `db.client.connection.use_time` instead. Note: the unit also changed from `ms` to `s`."
-    val Unit = "ms"
+    val unit: String = "ms"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
@@ -733,9 +791,9 @@ object DbExperimentalMetrics {
 
     def create[F[_]: Meter](boundaries: BucketBoundaries): F[Histogram[F, Double]] =
       Meter[F]
-        .histogram[Double](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .histogram[Double](name)
+        .withDescription(description)
+        .withUnit(unit)
         .withExplicitBucketBoundaries(boundaries)
         .create
 
@@ -744,12 +802,14 @@ object DbExperimentalMetrics {
   /** Deprecated, use `db.client.connection.wait_time` instead. Note: the unit also changed from `ms` to `s`.
     */
   @deprecated("Replaced by `db.client.connection.wait_time`. Note: the unit also changed from `ms` to `s`.", "")
-  object ClientConnectionsWaitTime {
+  object ClientConnectionsWaitTime extends MetricSpec {
 
-    val Name = "db.client.connections.wait_time"
-    val Description =
+    val name: String = "db.client.connections.wait_time"
+    val description: String =
       "Deprecated, use `db.client.connection.wait_time` instead. Note: the unit also changed from `ms` to `s`."
-    val Unit = "ms"
+    val unit: String = "ms"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
@@ -774,9 +834,9 @@ object DbExperimentalMetrics {
 
     def create[F[_]: Meter](boundaries: BucketBoundaries): F[Histogram[F, Double]] =
       Meter[F]
-        .histogram[Double](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .histogram[Double](name)
+        .withDescription(description)
+        .withUnit(unit)
         .withExplicitBucketBoundaries(boundaries)
         .create
 
@@ -786,11 +846,13 @@ object DbExperimentalMetrics {
     * @note
     *   <p> Batch operations SHOULD be recorded as a single operation.
     */
-  object ClientOperationDuration {
+  object ClientOperationDuration extends MetricSpec {
 
-    val Name = "db.client.operation.duration"
-    val Description = "Duration of database client operations."
-    val Unit = "s"
+    val name: String = "db.client.operation.duration"
+    val description: String = "Duration of database client operations."
+    val unit: String = "s"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
@@ -974,9 +1036,9 @@ object DbExperimentalMetrics {
 
     def create[F[_]: Meter](boundaries: BucketBoundaries): F[Histogram[F, Double]] =
       Meter[F]
-        .histogram[Double](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .histogram[Double](name)
+        .withDescription(description)
+        .withUnit(unit)
         .withExplicitBucketBoundaries(boundaries)
         .create
 

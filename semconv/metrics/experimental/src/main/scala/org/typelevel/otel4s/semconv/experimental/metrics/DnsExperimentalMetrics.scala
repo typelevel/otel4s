@@ -26,13 +26,19 @@ import org.typelevel.otel4s.semconv.experimental.attributes._
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/metrics/SemanticMetrics.scala.j2
 object DnsExperimentalMetrics {
 
+  val specs: List[MetricSpec] = List(
+    LookupDuration,
+  )
+
   /** Measures the time taken to perform a DNS lookup.
     */
-  object LookupDuration {
+  object LookupDuration extends MetricSpec {
 
-    val Name = "dns.lookup.duration"
-    val Description = "Measures the time taken to perform a DNS lookup."
-    val Unit = "s"
+    val name: String = "dns.lookup.duration"
+    val description: String = "Measures the time taken to perform a DNS lookup."
+    val unit: String = "s"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
@@ -82,9 +88,9 @@ object DnsExperimentalMetrics {
 
     def create[F[_]: Meter](boundaries: BucketBoundaries): F[Histogram[F, Double]] =
       Meter[F]
-        .histogram[Double](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .histogram[Double](name)
+        .withDescription(description)
+        .withUnit(unit)
         .withExplicitBucketBoundaries(boundaries)
         .create
 

@@ -47,19 +47,13 @@ object NetExperimentalAttributes {
 
   /** Deprecated, use `server.address` on client spans and `client.address` on server spans.
     */
-  @deprecated(
-    "Replaced by `server.address` on client spans and `client.address` on server spans.",
-    ""
-  )
+  @deprecated("Replaced by `server.address` on client spans and `client.address` on server spans.", "")
   val NetPeerName: AttributeKey[String] =
     AttributeKey("net.peer.name")
 
   /** Deprecated, use `server.port` on client spans and `client.port` on server spans.
     */
-  @deprecated(
-    "Replaced by `server.port` on client spans and `client.port` on server spans.",
-    ""
-  )
+  @deprecated("Replaced by `server.port` on client spans and `client.port` on server spans.", "")
   val NetPeerPort: AttributeKey[Long] =
     AttributeKey("net.peer.port")
 

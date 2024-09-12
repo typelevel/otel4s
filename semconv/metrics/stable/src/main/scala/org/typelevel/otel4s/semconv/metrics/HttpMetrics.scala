@@ -24,13 +24,20 @@ import org.typelevel.otel4s.semconv.attributes._
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/metrics/SemanticMetrics.scala.j2
 object HttpMetrics {
 
+  val specs: List[MetricSpec] = List(
+    ClientRequestDuration,
+    ServerRequestDuration,
+  )
+
   /** Duration of HTTP client requests.
     */
-  object ClientRequestDuration {
+  object ClientRequestDuration extends MetricSpec {
 
-    val Name = "http.client.request.duration"
-    val Description = "Duration of HTTP client requests."
-    val Unit = "s"
+    val name: String = "http.client.request.duration"
+    val description: String = "Duration of HTTP client requests."
+    val unit: String = "s"
+    val stability: Stability = Stability.stable
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
@@ -201,9 +208,9 @@ object HttpMetrics {
 
     def create[F[_]: Meter](boundaries: BucketBoundaries): F[Histogram[F, Double]] =
       Meter[F]
-        .histogram[Double](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .histogram[Double](name)
+        .withDescription(description)
+        .withUnit(unit)
         .withExplicitBucketBoundaries(boundaries)
         .create
 
@@ -211,11 +218,13 @@ object HttpMetrics {
 
   /** Duration of HTTP server requests.
     */
-  object ServerRequestDuration {
+  object ServerRequestDuration extends MetricSpec {
 
-    val Name = "http.server.request.duration"
-    val Description = "Duration of HTTP server requests."
-    val Unit = "s"
+    val name: String = "http.server.request.duration"
+    val description: String = "Duration of HTTP server requests."
+    val unit: String = "s"
+    val stability: Stability = Stability.stable
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
@@ -411,9 +420,9 @@ object HttpMetrics {
 
     def create[F[_]: Meter](boundaries: BucketBoundaries): F[Histogram[F, Double]] =
       Meter[F]
-        .histogram[Double](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .histogram[Double](name)
+        .withDescription(description)
+        .withUnit(unit)
         .withExplicitBucketBoundaries(boundaries)
         .create
 

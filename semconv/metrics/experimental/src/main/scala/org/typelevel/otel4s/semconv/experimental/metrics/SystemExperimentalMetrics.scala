@@ -26,13 +26,47 @@ import org.typelevel.otel4s.semconv.experimental.attributes._
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/metrics/SemanticMetrics.scala.j2
 object SystemExperimentalMetrics {
 
+  val specs: List[MetricSpec] = List(
+    CpuFrequency,
+    CpuLogicalCount,
+    CpuPhysicalCount,
+    CpuTime,
+    CpuUtilization,
+    DiskIo,
+    DiskIoTime,
+    DiskMerged,
+    DiskOperationTime,
+    DiskOperations,
+    FilesystemUsage,
+    FilesystemUtilization,
+    LinuxMemoryAvailable,
+    LinuxMemorySlabUsage,
+    MemoryLimit,
+    MemoryShared,
+    MemoryUsage,
+    MemoryUtilization,
+    NetworkConnections,
+    NetworkDropped,
+    NetworkErrors,
+    NetworkIo,
+    NetworkPackets,
+    PagingFaults,
+    PagingOperations,
+    PagingUsage,
+    PagingUtilization,
+    ProcessCount,
+    ProcessCreated,
+  )
+
   /** Reports the current frequency of the CPU in Hz
     */
-  object CpuFrequency {
+  object CpuFrequency extends MetricSpec {
 
-    val Name = "system.cpu.frequency"
-    val Description = "Reports the current frequency of the CPU in Hz"
-    val Unit = "{Hz}"
+    val name: String = "system.cpu.frequency"
+    val description: String = "Reports the current frequency of the CPU in Hz"
+    val unit: String = "{Hz}"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
@@ -56,55 +90,61 @@ object SystemExperimentalMetrics {
 
     def create[F[_]: Meter]: F[Gauge[F, Long]] =
       Meter[F]
-        .gauge[Long](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .gauge[Long](name)
+        .withDescription(description)
+        .withUnit(unit)
         .create
 
   }
 
   /** Reports the number of logical (virtual) processor cores created by the operating system to manage multitasking
     */
-  object CpuLogicalCount {
+  object CpuLogicalCount extends MetricSpec {
 
-    val Name = "system.cpu.logical.count"
-    val Description =
+    val name: String = "system.cpu.logical.count"
+    val description: String =
       "Reports the number of logical (virtual) processor cores created by the operating system to manage multitasking"
-    val Unit = "{cpu}"
+    val unit: String = "{cpu}"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter]: F[UpDownCounter[F, Long]] =
       Meter[F]
-        .upDownCounter[Long](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .upDownCounter[Long](name)
+        .withDescription(description)
+        .withUnit(unit)
         .create
 
   }
 
   /** Reports the number of actual physical processor cores on the hardware
     */
-  object CpuPhysicalCount {
+  object CpuPhysicalCount extends MetricSpec {
 
-    val Name = "system.cpu.physical.count"
-    val Description = "Reports the number of actual physical processor cores on the hardware"
-    val Unit = "{cpu}"
+    val name: String = "system.cpu.physical.count"
+    val description: String = "Reports the number of actual physical processor cores on the hardware"
+    val unit: String = "{cpu}"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter]: F[UpDownCounter[F, Long]] =
       Meter[F]
-        .upDownCounter[Long](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .upDownCounter[Long](name)
+        .withDescription(description)
+        .withUnit(unit)
         .create
 
   }
 
   /** Seconds each logical CPU spent on each mode
     */
-  object CpuTime {
+  object CpuTime extends MetricSpec {
 
-    val Name = "system.cpu.time"
-    val Description = "Seconds each logical CPU spent on each mode"
-    val Unit = "s"
+    val name: String = "system.cpu.time"
+    val description: String = "Seconds each logical CPU spent on each mode"
+    val unit: String = "s"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
@@ -145,21 +185,23 @@ object SystemExperimentalMetrics {
 
     def create[F[_]: Meter]: F[Counter[F, Long]] =
       Meter[F]
-        .counter[Long](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .counter[Long](name)
+        .withDescription(description)
+        .withUnit(unit)
         .create
 
   }
 
   /** Difference in system.cpu.time since the last measurement, divided by the elapsed time and number of logical CPUs
     */
-  object CpuUtilization {
+  object CpuUtilization extends MetricSpec {
 
-    val Name = "system.cpu.utilization"
-    val Description =
+    val name: String = "system.cpu.utilization"
+    val description: String =
       "Difference in system.cpu.time since the last measurement, divided by the elapsed time and number of logical CPUs"
-    val Unit = "1"
+    val unit: String = "1"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
@@ -200,19 +242,21 @@ object SystemExperimentalMetrics {
 
     def create[F[_]: Meter]: F[Gauge[F, Long]] =
       Meter[F]
-        .gauge[Long](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .gauge[Long](name)
+        .withDescription(description)
+        .withUnit(unit)
         .create
 
   }
 
   /** */
-  object DiskIo {
+  object DiskIo extends MetricSpec {
 
-    val Name = "system.disk.io"
-    val Description = ""
-    val Unit = "By"
+    val name: String = "system.disk.io"
+    val description: String = ""
+    val unit: String = "By"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
@@ -249,9 +293,9 @@ object SystemExperimentalMetrics {
 
     def create[F[_]: Meter]: F[Counter[F, Long]] =
       Meter[F]
-        .counter[Long](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .counter[Long](name)
+        .withDescription(description)
+        .withUnit(unit)
         .create
 
   }
@@ -265,11 +309,13 @@ object SystemExperimentalMetrics {
     *   href="https://learn.microsoft.com/archive/blogs/askcore/windows-performance-monitor-disk-counters-explained#windows-performance-monitor-disk-counters-explained">"Disk%
     *   Idle Time"</a> performance counter: `uptime * (100 - "Disk\% Idle Time") / 100` </ul>
     */
-  object DiskIoTime {
+  object DiskIoTime extends MetricSpec {
 
-    val Name = "system.disk.io_time"
-    val Description = "Time disk spent activated"
-    val Unit = "s"
+    val name: String = "system.disk.io_time"
+    val description: String = "Time disk spent activated"
+    val unit: String = "s"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
@@ -293,19 +339,21 @@ object SystemExperimentalMetrics {
 
     def create[F[_]: Meter]: F[Counter[F, Long]] =
       Meter[F]
-        .counter[Long](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .counter[Long](name)
+        .withDescription(description)
+        .withUnit(unit)
         .create
 
   }
 
   /** */
-  object DiskMerged {
+  object DiskMerged extends MetricSpec {
 
-    val Name = "system.disk.merged"
-    val Description = ""
-    val Unit = "{operation}"
+    val name: String = "system.disk.merged"
+    val description: String = ""
+    val unit: String = "{operation}"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
@@ -342,9 +390,9 @@ object SystemExperimentalMetrics {
 
     def create[F[_]: Meter]: F[Counter[F, Long]] =
       Meter[F]
-        .counter[Long](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .counter[Long](name)
+        .withDescription(description)
+        .withUnit(unit)
         .create
 
   }
@@ -356,60 +404,13 @@ object SystemExperimentalMetrics {
     *   href="https://www.kernel.org/doc/Documentation/ABI/testing/procfs-diskstats">procfs-diskstats</a> <li>Windows:
     *   "Avg. Disk sec/Read" perf counter multiplied by "Disk Reads/sec" perf counter (similar for Writes) </ul>
     */
-  object DiskOperationTime {
+  object DiskOperationTime extends MetricSpec {
 
-    val Name = "system.disk.operation_time"
-    val Description = "Sum of the time each operation took to complete"
-    val Unit = "s"
-
-    object AttributeSpecs {
-
-      /** The disk IO operation direction.
-        */
-      val diskIoDirection: AttributeSpec[String] =
-        AttributeSpec(
-          DiskExperimentalAttributes.DiskIoDirection,
-          List(
-            "read",
-          ),
-          Requirement.recommended,
-          Stability.experimental
-        )
-
-      /** The device identifier
-        */
-      val systemDevice: AttributeSpec[String] =
-        AttributeSpec(
-          SystemExperimentalAttributes.SystemDevice,
-          List(
-            "(identifier)",
-          ),
-          Requirement.recommended,
-          Stability.experimental
-        )
-
-      val specs: List[AttributeSpec[_]] =
-        List(
-          diskIoDirection,
-          systemDevice,
-        )
-    }
-
-    def create[F[_]: Meter]: F[Counter[F, Long]] =
-      Meter[F]
-        .counter[Long](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
-        .create
-
-  }
-
-  /** */
-  object DiskOperations {
-
-    val Name = "system.disk.operations"
-    val Description = ""
-    val Unit = "{operation}"
+    val name: String = "system.disk.operation_time"
+    val description: String = "Sum of the time each operation took to complete"
+    val unit: String = "s"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
@@ -446,19 +447,72 @@ object SystemExperimentalMetrics {
 
     def create[F[_]: Meter]: F[Counter[F, Long]] =
       Meter[F]
-        .counter[Long](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .counter[Long](name)
+        .withDescription(description)
+        .withUnit(unit)
         .create
 
   }
 
   /** */
-  object FilesystemUsage {
+  object DiskOperations extends MetricSpec {
 
-    val Name = "system.filesystem.usage"
-    val Description = ""
-    val Unit = "By"
+    val name: String = "system.disk.operations"
+    val description: String = ""
+    val unit: String = "{operation}"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
+
+    object AttributeSpecs {
+
+      /** The disk IO operation direction.
+        */
+      val diskIoDirection: AttributeSpec[String] =
+        AttributeSpec(
+          DiskExperimentalAttributes.DiskIoDirection,
+          List(
+            "read",
+          ),
+          Requirement.recommended,
+          Stability.experimental
+        )
+
+      /** The device identifier
+        */
+      val systemDevice: AttributeSpec[String] =
+        AttributeSpec(
+          SystemExperimentalAttributes.SystemDevice,
+          List(
+            "(identifier)",
+          ),
+          Requirement.recommended,
+          Stability.experimental
+        )
+
+      val specs: List[AttributeSpec[_]] =
+        List(
+          diskIoDirection,
+          systemDevice,
+        )
+    }
+
+    def create[F[_]: Meter]: F[Counter[F, Long]] =
+      Meter[F]
+        .counter[Long](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+  }
+
+  /** */
+  object FilesystemUsage extends MetricSpec {
+
+    val name: String = "system.filesystem.usage"
+    val description: String = ""
+    val unit: String = "By"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
@@ -534,19 +588,21 @@ object SystemExperimentalMetrics {
 
     def create[F[_]: Meter]: F[UpDownCounter[F, Long]] =
       Meter[F]
-        .upDownCounter[Long](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .upDownCounter[Long](name)
+        .withDescription(description)
+        .withUnit(unit)
         .create
 
   }
 
   /** */
-  object FilesystemUtilization {
+  object FilesystemUtilization extends MetricSpec {
 
-    val Name = "system.filesystem.utilization"
-    val Description = ""
-    val Unit = "1"
+    val name: String = "system.filesystem.utilization"
+    val description: String = ""
+    val unit: String = "1"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
@@ -622,9 +678,9 @@ object SystemExperimentalMetrics {
 
     def create[F[_]: Meter]: F[Gauge[F, Long]] =
       Meter[F]
-        .gauge[Long](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .gauge[Long](name)
+        .withDescription(description)
+        .withUnit(unit)
         .create
 
   }
@@ -637,18 +693,20 @@ object SystemExperimentalMetrics {
     *   href="https://superuser.com/a/980821">here</a>. See also `MemAvailable` in <a
     *   href="https://man7.org/linux/man-pages/man5/proc.5.html">/proc/meminfo</a>.
     */
-  object LinuxMemoryAvailable {
+  object LinuxMemoryAvailable extends MetricSpec {
 
-    val Name = "system.linux.memory.available"
-    val Description =
+    val name: String = "system.linux.memory.available"
+    val description: String =
       "An estimate of how much memory is available for starting new applications, without causing swapping"
-    val Unit = "By"
+    val unit: String = "By"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter]: F[UpDownCounter[F, Long]] =
       Meter[F]
-        .upDownCounter[Long](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .upDownCounter[Long](name)
+        .withDescription(description)
+        .withUnit(unit)
         .create
 
   }
@@ -661,11 +719,14 @@ object SystemExperimentalMetrics {
     *   href="https://blogs.oracle.com/linux/post/understanding-linux-kernel-memory-statistics">Slab allocator</a> and
     *   `Slab` in <a href="https://man7.org/linux/man-pages/man5/proc.5.html">/proc/meminfo</a>.
     */
-  object LinuxMemorySlabUsage {
+  object LinuxMemorySlabUsage extends MetricSpec {
 
-    val Name = "system.linux.memory.slab.usage"
-    val Description = "Reports the memory used by the Linux kernel for managing caches of frequently used objects."
-    val Unit = "By"
+    val name: String = "system.linux.memory.slab.usage"
+    val description: String =
+      "Reports the memory used by the Linux kernel for managing caches of frequently used objects."
+    val unit: String = "By"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
@@ -690,9 +751,9 @@ object SystemExperimentalMetrics {
 
     def create[F[_]: Meter]: F[UpDownCounter[F, Long]] =
       Meter[F]
-        .upDownCounter[Long](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .upDownCounter[Long](name)
+        .withDescription(description)
+        .withUnit(unit)
         .create
 
   }
@@ -701,17 +762,19 @@ object SystemExperimentalMetrics {
     * @note
     *   <p> Its value SHOULD equal the sum of `system.memory.state` over all states.
     */
-  object MemoryLimit {
+  object MemoryLimit extends MetricSpec {
 
-    val Name = "system.memory.limit"
-    val Description = "Total memory available in the system."
-    val Unit = "By"
+    val name: String = "system.memory.limit"
+    val description: String = "Total memory available in the system."
+    val unit: String = "By"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter]: F[UpDownCounter[F, Long]] =
       Meter[F]
-        .upDownCounter[Long](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .upDownCounter[Long](name)
+        .withDescription(description)
+        .withUnit(unit)
         .create
 
   }
@@ -721,17 +784,19 @@ object SystemExperimentalMetrics {
     *   <p> Equivalent of `shared` from <a href="https://man7.org/linux/man-pages/man1/free.1.html">`free` command</a>
     *   or `Shmem` from <a href="https://man7.org/linux/man-pages/man5/proc.5.html">`/proc/meminfo`</a>"
     */
-  object MemoryShared {
+  object MemoryShared extends MetricSpec {
 
-    val Name = "system.memory.shared"
-    val Description = "Shared memory used (mostly by tmpfs)."
-    val Unit = "By"
+    val name: String = "system.memory.shared"
+    val description: String = "Shared memory used (mostly by tmpfs)."
+    val unit: String = "By"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter]: F[UpDownCounter[F, Long]] =
       Meter[F]
-        .upDownCounter[Long](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .upDownCounter[Long](name)
+        .withDescription(description)
+        .withUnit(unit)
         .create
 
   }
@@ -741,11 +806,13 @@ object SystemExperimentalMetrics {
     *   <p> The sum over all `system.memory.state` values SHOULD equal the total memory available on the system, that is
     *   `system.memory.limit`.
     */
-  object MemoryUsage {
+  object MemoryUsage extends MetricSpec {
 
-    val Name = "system.memory.usage"
-    val Description = "Reports memory in use by state."
-    val Unit = "By"
+    val name: String = "system.memory.usage"
+    val description: String = "Reports memory in use by state."
+    val unit: String = "By"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
@@ -770,19 +837,21 @@ object SystemExperimentalMetrics {
 
     def create[F[_]: Meter]: F[UpDownCounter[F, Long]] =
       Meter[F]
-        .upDownCounter[Long](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .upDownCounter[Long](name)
+        .withDescription(description)
+        .withUnit(unit)
         .create
 
   }
 
   /** */
-  object MemoryUtilization {
+  object MemoryUtilization extends MetricSpec {
 
-    val Name = "system.memory.utilization"
-    val Description = ""
-    val Unit = "1"
+    val name: String = "system.memory.utilization"
+    val description: String = ""
+    val unit: String = "1"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
@@ -807,19 +876,21 @@ object SystemExperimentalMetrics {
 
     def create[F[_]: Meter]: F[Gauge[F, Long]] =
       Meter[F]
-        .gauge[Long](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .gauge[Long](name)
+        .withDescription(description)
+        .withUnit(unit)
         .create
 
   }
 
   /** */
-  object NetworkConnections {
+  object NetworkConnections extends MetricSpec {
 
-    val Name = "system.network.connections"
-    val Description = ""
-    val Unit = "{connection}"
+    val name: String = "system.network.connections"
+    val description: String = ""
+    val unit: String = "{connection}"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
@@ -875,9 +946,9 @@ object SystemExperimentalMetrics {
 
     def create[F[_]: Meter]: F[UpDownCounter[F, Long]] =
       Meter[F]
-        .upDownCounter[Long](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .upDownCounter[Long](name)
+        .withDescription(description)
+        .withUnit(unit)
         .create
 
   }
@@ -891,11 +962,13 @@ object SystemExperimentalMetrics {
     *   from <a href="https://docs.microsoft.com/windows/win32/api/netioapi/nf-netioapi-getifentry2">`GetIfEntry2`</a>
     *   </ul>
     */
-  object NetworkDropped {
+  object NetworkDropped extends MetricSpec {
 
-    val Name = "system.network.dropped"
-    val Description = "Count of packets that are dropped or discarded even though there was no error"
-    val Unit = "{packet}"
+    val name: String = "system.network.dropped"
+    val description: String = "Count of packets that are dropped or discarded even though there was no error"
+    val unit: String = "{packet}"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
@@ -932,9 +1005,9 @@ object SystemExperimentalMetrics {
 
     def create[F[_]: Meter]: F[Counter[F, Long]] =
       Meter[F]
-        .counter[Long](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .counter[Long](name)
+        .withDescription(description)
+        .withUnit(unit)
         .create
 
   }
@@ -948,60 +1021,13 @@ object SystemExperimentalMetrics {
     *   from <a href="https://docs.microsoft.com/windows/win32/api/netioapi/nf-netioapi-getifentry2">`GetIfEntry2`</a>.
     *   </ul>
     */
-  object NetworkErrors {
+  object NetworkErrors extends MetricSpec {
 
-    val Name = "system.network.errors"
-    val Description = "Count of network errors detected"
-    val Unit = "{error}"
-
-    object AttributeSpecs {
-
-      /** The network IO operation direction.
-        */
-      val networkIoDirection: AttributeSpec[String] =
-        AttributeSpec(
-          NetworkExperimentalAttributes.NetworkIoDirection,
-          List(
-            "transmit",
-          ),
-          Requirement.recommended,
-          Stability.experimental
-        )
-
-      /** The device identifier
-        */
-      val systemDevice: AttributeSpec[String] =
-        AttributeSpec(
-          SystemExperimentalAttributes.SystemDevice,
-          List(
-            "(identifier)",
-          ),
-          Requirement.recommended,
-          Stability.experimental
-        )
-
-      val specs: List[AttributeSpec[_]] =
-        List(
-          networkIoDirection,
-          systemDevice,
-        )
-    }
-
-    def create[F[_]: Meter]: F[Counter[F, Long]] =
-      Meter[F]
-        .counter[Long](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
-        .create
-
-  }
-
-  /** */
-  object NetworkIo {
-
-    val Name = "system.network.io"
-    val Description = ""
-    val Unit = "By"
+    val name: String = "system.network.errors"
+    val description: String = "Count of network errors detected"
+    val unit: String = "{error}"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
@@ -1038,19 +1064,21 @@ object SystemExperimentalMetrics {
 
     def create[F[_]: Meter]: F[Counter[F, Long]] =
       Meter[F]
-        .counter[Long](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .counter[Long](name)
+        .withDescription(description)
+        .withUnit(unit)
         .create
 
   }
 
   /** */
-  object NetworkPackets {
+  object NetworkIo extends MetricSpec {
 
-    val Name = "system.network.packets"
-    val Description = ""
-    val Unit = "{packet}"
+    val name: String = "system.network.io"
+    val description: String = ""
+    val unit: String = "By"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
@@ -1087,19 +1115,72 @@ object SystemExperimentalMetrics {
 
     def create[F[_]: Meter]: F[Counter[F, Long]] =
       Meter[F]
-        .counter[Long](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .counter[Long](name)
+        .withDescription(description)
+        .withUnit(unit)
         .create
 
   }
 
   /** */
-  object PagingFaults {
+  object NetworkPackets extends MetricSpec {
 
-    val Name = "system.paging.faults"
-    val Description = ""
-    val Unit = "{fault}"
+    val name: String = "system.network.packets"
+    val description: String = ""
+    val unit: String = "{packet}"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
+
+    object AttributeSpecs {
+
+      /** The network IO operation direction.
+        */
+      val networkIoDirection: AttributeSpec[String] =
+        AttributeSpec(
+          NetworkExperimentalAttributes.NetworkIoDirection,
+          List(
+            "transmit",
+          ),
+          Requirement.recommended,
+          Stability.experimental
+        )
+
+      /** The device identifier
+        */
+      val systemDevice: AttributeSpec[String] =
+        AttributeSpec(
+          SystemExperimentalAttributes.SystemDevice,
+          List(
+            "(identifier)",
+          ),
+          Requirement.recommended,
+          Stability.experimental
+        )
+
+      val specs: List[AttributeSpec[_]] =
+        List(
+          networkIoDirection,
+          systemDevice,
+        )
+    }
+
+    def create[F[_]: Meter]: F[Counter[F, Long]] =
+      Meter[F]
+        .counter[Long](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+  }
+
+  /** */
+  object PagingFaults extends MetricSpec {
+
+    val name: String = "system.paging.faults"
+    val description: String = ""
+    val unit: String = "{fault}"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
@@ -1123,19 +1204,21 @@ object SystemExperimentalMetrics {
 
     def create[F[_]: Meter]: F[Counter[F, Long]] =
       Meter[F]
-        .counter[Long](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .counter[Long](name)
+        .withDescription(description)
+        .withUnit(unit)
         .create
 
   }
 
   /** */
-  object PagingOperations {
+  object PagingOperations extends MetricSpec {
 
-    val Name = "system.paging.operations"
-    val Description = ""
-    val Unit = "{operation}"
+    val name: String = "system.paging.operations"
+    val description: String = ""
+    val unit: String = "{operation}"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
@@ -1172,20 +1255,22 @@ object SystemExperimentalMetrics {
 
     def create[F[_]: Meter]: F[Counter[F, Long]] =
       Meter[F]
-        .counter[Long](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .counter[Long](name)
+        .withDescription(description)
+        .withUnit(unit)
         .create
 
   }
 
   /** Unix swap or windows pagefile usage
     */
-  object PagingUsage {
+  object PagingUsage extends MetricSpec {
 
-    val Name = "system.paging.usage"
-    val Description = "Unix swap or windows pagefile usage"
-    val Unit = "By"
+    val name: String = "system.paging.usage"
+    val description: String = "Unix swap or windows pagefile usage"
+    val unit: String = "By"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
@@ -1209,19 +1294,21 @@ object SystemExperimentalMetrics {
 
     def create[F[_]: Meter]: F[UpDownCounter[F, Long]] =
       Meter[F]
-        .upDownCounter[Long](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .upDownCounter[Long](name)
+        .withDescription(description)
+        .withUnit(unit)
         .create
 
   }
 
   /** */
-  object PagingUtilization {
+  object PagingUtilization extends MetricSpec {
 
-    val Name = "system.paging.utilization"
-    val Description = ""
-    val Unit = "1"
+    val name: String = "system.paging.utilization"
+    val description: String = ""
+    val unit: String = "1"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
@@ -1245,20 +1332,22 @@ object SystemExperimentalMetrics {
 
     def create[F[_]: Meter]: F[Gauge[F, Long]] =
       Meter[F]
-        .gauge[Long](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .gauge[Long](name)
+        .withDescription(description)
+        .withUnit(unit)
         .create
 
   }
 
   /** Total number of processes in each state
     */
-  object ProcessCount {
+  object ProcessCount extends MetricSpec {
 
-    val Name = "system.process.count"
-    val Description = "Total number of processes in each state"
-    val Unit = "{process}"
+    val name: String = "system.process.count"
+    val description: String = "Total number of processes in each state"
+    val unit: String = "{process}"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
@@ -1283,26 +1372,28 @@ object SystemExperimentalMetrics {
 
     def create[F[_]: Meter]: F[UpDownCounter[F, Long]] =
       Meter[F]
-        .upDownCounter[Long](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .upDownCounter[Long](name)
+        .withDescription(description)
+        .withUnit(unit)
         .create
 
   }
 
   /** Total number of processes created over uptime of the host
     */
-  object ProcessCreated {
+  object ProcessCreated extends MetricSpec {
 
-    val Name = "system.process.created"
-    val Description = "Total number of processes created over uptime of the host"
-    val Unit = "{process}"
+    val name: String = "system.process.created"
+    val description: String = "Total number of processes created over uptime of the host"
+    val unit: String = "{process}"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter]: F[Counter[F, Long]] =
       Meter[F]
-        .counter[Long](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .counter[Long](name)
+        .withDescription(description)
+        .withUnit(unit)
         .create
 
   }

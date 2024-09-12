@@ -26,13 +26,38 @@ import org.typelevel.otel4s.semconv.experimental.attributes._
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/metrics/SemanticMetrics.scala.j2
 object JvmExperimentalMetrics {
 
+  @annotation.nowarn("cat=deprecation")
+  val specs: List[MetricSpec] = List(
+    BufferCount,
+    BufferMemoryLimit,
+    BufferMemoryUsage,
+    BufferMemoryUsed,
+    ClassCount,
+    ClassLoaded,
+    ClassUnloaded,
+    CpuCount,
+    CpuRecentUtilization,
+    CpuTime,
+    GcDuration,
+    MemoryCommitted,
+    MemoryInit,
+    MemoryLimit,
+    MemoryUsed,
+    MemoryUsedAfterLastGc,
+    SystemCpuLoad1m,
+    SystemCpuUtilization,
+    ThreadCount,
+  )
+
   /** Number of buffers in the pool.
     */
-  object BufferCount {
+  object BufferCount extends MetricSpec {
 
-    val Name = "jvm.buffer.count"
-    val Description = "Number of buffers in the pool."
-    val Unit = "{buffer}"
+    val name: String = "jvm.buffer.count"
+    val description: String = "Number of buffers in the pool."
+    val unit: String = "{buffer}"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
@@ -60,20 +85,22 @@ object JvmExperimentalMetrics {
 
     def create[F[_]: Meter]: F[UpDownCounter[F, Long]] =
       Meter[F]
-        .upDownCounter[Long](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .upDownCounter[Long](name)
+        .withDescription(description)
+        .withUnit(unit)
         .create
 
   }
 
   /** Measure of total memory capacity of buffers.
     */
-  object BufferMemoryLimit {
+  object BufferMemoryLimit extends MetricSpec {
 
-    val Name = "jvm.buffer.memory.limit"
-    val Description = "Measure of total memory capacity of buffers."
-    val Unit = "By"
+    val name: String = "jvm.buffer.memory.limit"
+    val description: String = "Measure of total memory capacity of buffers."
+    val unit: String = "By"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
@@ -101,9 +128,9 @@ object JvmExperimentalMetrics {
 
     def create[F[_]: Meter]: F[UpDownCounter[F, Long]] =
       Meter[F]
-        .upDownCounter[Long](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .upDownCounter[Long](name)
+        .withDescription(description)
+        .withUnit(unit)
         .create
 
   }
@@ -111,11 +138,13 @@ object JvmExperimentalMetrics {
   /** Deprecated, use `jvm.buffer.memory.used` instead.
     */
   @deprecated("Replaced by `jvm.buffer.memory.used`.", "")
-  object BufferMemoryUsage {
+  object BufferMemoryUsage extends MetricSpec {
 
-    val Name = "jvm.buffer.memory.usage"
-    val Description = "Deprecated, use `jvm.buffer.memory.used` instead."
-    val Unit = "By"
+    val name: String = "jvm.buffer.memory.usage"
+    val description: String = "Deprecated, use `jvm.buffer.memory.used` instead."
+    val unit: String = "By"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
@@ -143,20 +172,22 @@ object JvmExperimentalMetrics {
 
     def create[F[_]: Meter]: F[UpDownCounter[F, Long]] =
       Meter[F]
-        .upDownCounter[Long](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .upDownCounter[Long](name)
+        .withDescription(description)
+        .withUnit(unit)
         .create
 
   }
 
   /** Measure of memory used by buffers.
     */
-  object BufferMemoryUsed {
+  object BufferMemoryUsed extends MetricSpec {
 
-    val Name = "jvm.buffer.memory.used"
-    val Description = "Measure of memory used by buffers."
-    val Unit = "By"
+    val name: String = "jvm.buffer.memory.used"
+    val description: String = "Measure of memory used by buffers."
+    val unit: String = "By"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
@@ -184,9 +215,9 @@ object JvmExperimentalMetrics {
 
     def create[F[_]: Meter]: F[UpDownCounter[F, Long]] =
       Meter[F]
-        .upDownCounter[Long](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .upDownCounter[Long](name)
+        .withDescription(description)
+        .withUnit(unit)
         .create
 
   }
@@ -194,17 +225,19 @@ object JvmExperimentalMetrics {
   /** Number of classes currently loaded.
     */
   @deprecated("Use stable `org.typelevel.otel4s.semconv.metrics.JvmMetrics.ClassCount` instead.", "")
-  object ClassCount {
+  object ClassCount extends MetricSpec {
 
-    val Name = "jvm.class.count"
-    val Description = "Number of classes currently loaded."
-    val Unit = "{class}"
+    val name: String = "jvm.class.count"
+    val description: String = "Number of classes currently loaded."
+    val unit: String = "{class}"
+    val stability: Stability = Stability.stable
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter]: F[UpDownCounter[F, Long]] =
       Meter[F]
-        .upDownCounter[Long](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .upDownCounter[Long](name)
+        .withDescription(description)
+        .withUnit(unit)
         .create
 
   }
@@ -212,17 +245,19 @@ object JvmExperimentalMetrics {
   /** Number of classes loaded since JVM start.
     */
   @deprecated("Use stable `org.typelevel.otel4s.semconv.metrics.JvmMetrics.ClassLoaded` instead.", "")
-  object ClassLoaded {
+  object ClassLoaded extends MetricSpec {
 
-    val Name = "jvm.class.loaded"
-    val Description = "Number of classes loaded since JVM start."
-    val Unit = "{class}"
+    val name: String = "jvm.class.loaded"
+    val description: String = "Number of classes loaded since JVM start."
+    val unit: String = "{class}"
+    val stability: Stability = Stability.stable
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter]: F[Counter[F, Long]] =
       Meter[F]
-        .counter[Long](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .counter[Long](name)
+        .withDescription(description)
+        .withUnit(unit)
         .create
 
   }
@@ -230,17 +265,19 @@ object JvmExperimentalMetrics {
   /** Number of classes unloaded since JVM start.
     */
   @deprecated("Use stable `org.typelevel.otel4s.semconv.metrics.JvmMetrics.ClassUnloaded` instead.", "")
-  object ClassUnloaded {
+  object ClassUnloaded extends MetricSpec {
 
-    val Name = "jvm.class.unloaded"
-    val Description = "Number of classes unloaded since JVM start."
-    val Unit = "{class}"
+    val name: String = "jvm.class.unloaded"
+    val description: String = "Number of classes unloaded since JVM start."
+    val unit: String = "{class}"
+    val stability: Stability = Stability.stable
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter]: F[Counter[F, Long]] =
       Meter[F]
-        .counter[Long](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .counter[Long](name)
+        .withDescription(description)
+        .withUnit(unit)
         .create
 
   }
@@ -248,17 +285,19 @@ object JvmExperimentalMetrics {
   /** Number of processors available to the Java virtual machine.
     */
   @deprecated("Use stable `org.typelevel.otel4s.semconv.metrics.JvmMetrics.CpuCount` instead.", "")
-  object CpuCount {
+  object CpuCount extends MetricSpec {
 
-    val Name = "jvm.cpu.count"
-    val Description = "Number of processors available to the Java virtual machine."
-    val Unit = "{cpu}"
+    val name: String = "jvm.cpu.count"
+    val description: String = "Number of processors available to the Java virtual machine."
+    val unit: String = "{cpu}"
+    val stability: Stability = Stability.stable
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter]: F[UpDownCounter[F, Long]] =
       Meter[F]
-        .upDownCounter[Long](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .upDownCounter[Long](name)
+        .withDescription(description)
+        .withUnit(unit)
         .create
 
   }
@@ -270,17 +309,19 @@ object JvmExperimentalMetrics {
     *   href="https://docs.oracle.com/en/java/javase/17/docs/api/jdk.management/com/sun/management/OperatingSystemMXBean.html#getProcessCpuLoad()">Reference</a>.
     */
   @deprecated("Use stable `org.typelevel.otel4s.semconv.metrics.JvmMetrics.CpuRecentUtilization` instead.", "")
-  object CpuRecentUtilization {
+  object CpuRecentUtilization extends MetricSpec {
 
-    val Name = "jvm.cpu.recent_utilization"
-    val Description = "Recent CPU utilization for the process as reported by the JVM."
-    val Unit = "1"
+    val name: String = "jvm.cpu.recent_utilization"
+    val description: String = "Recent CPU utilization for the process as reported by the JVM."
+    val unit: String = "1"
+    val stability: Stability = Stability.stable
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter]: F[Gauge[F, Long]] =
       Meter[F]
-        .gauge[Long](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .gauge[Long](name)
+        .withDescription(description)
+        .withUnit(unit)
         .create
 
   }
@@ -288,17 +329,19 @@ object JvmExperimentalMetrics {
   /** CPU time used by the process as reported by the JVM.
     */
   @deprecated("Use stable `org.typelevel.otel4s.semconv.metrics.JvmMetrics.CpuTime` instead.", "")
-  object CpuTime {
+  object CpuTime extends MetricSpec {
 
-    val Name = "jvm.cpu.time"
-    val Description = "CPU time used by the process as reported by the JVM."
-    val Unit = "s"
+    val name: String = "jvm.cpu.time"
+    val description: String = "CPU time used by the process as reported by the JVM."
+    val unit: String = "s"
+    val stability: Stability = Stability.stable
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter]: F[Counter[F, Long]] =
       Meter[F]
-        .counter[Long](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .counter[Long](name)
+        .withDescription(description)
+        .withUnit(unit)
         .create
 
   }
@@ -306,11 +349,13 @@ object JvmExperimentalMetrics {
   /** Duration of JVM garbage collection actions.
     */
   @deprecated("Use stable `org.typelevel.otel4s.semconv.metrics.JvmMetrics.GcDuration` instead.", "")
-  object GcDuration {
+  object GcDuration extends MetricSpec {
 
-    val Name = "jvm.gc.duration"
-    val Description = "Duration of JVM garbage collection actions."
-    val Unit = "s"
+    val name: String = "jvm.gc.duration"
+    val description: String = "Duration of JVM garbage collection actions."
+    val unit: String = "s"
+    val stability: Stability = Stability.stable
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
@@ -355,9 +400,9 @@ object JvmExperimentalMetrics {
 
     def create[F[_]: Meter](boundaries: BucketBoundaries): F[Histogram[F, Double]] =
       Meter[F]
-        .histogram[Double](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .histogram[Double](name)
+        .withDescription(description)
+        .withUnit(unit)
         .withExplicitBucketBoundaries(boundaries)
         .create
 
@@ -366,11 +411,13 @@ object JvmExperimentalMetrics {
   /** Measure of memory committed.
     */
   @deprecated("Use stable `org.typelevel.otel4s.semconv.metrics.JvmMetrics.MemoryCommitted` instead.", "")
-  object MemoryCommitted {
+  object MemoryCommitted extends MetricSpec {
 
-    val Name = "jvm.memory.committed"
-    val Description = "Measure of memory committed."
-    val Unit = "By"
+    val name: String = "jvm.memory.committed"
+    val description: String = "Measure of memory committed."
+    val unit: String = "By"
+    val stability: Stability = Stability.stable
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
@@ -413,20 +460,22 @@ object JvmExperimentalMetrics {
 
     def create[F[_]: Meter]: F[UpDownCounter[F, Long]] =
       Meter[F]
-        .upDownCounter[Long](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .upDownCounter[Long](name)
+        .withDescription(description)
+        .withUnit(unit)
         .create
 
   }
 
   /** Measure of initial memory requested.
     */
-  object MemoryInit {
+  object MemoryInit extends MetricSpec {
 
-    val Name = "jvm.memory.init"
-    val Description = "Measure of initial memory requested."
-    val Unit = "By"
+    val name: String = "jvm.memory.init"
+    val description: String = "Measure of initial memory requested."
+    val unit: String = "By"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
@@ -469,9 +518,9 @@ object JvmExperimentalMetrics {
 
     def create[F[_]: Meter]: F[UpDownCounter[F, Long]] =
       Meter[F]
-        .upDownCounter[Long](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .upDownCounter[Long](name)
+        .withDescription(description)
+        .withUnit(unit)
         .create
 
   }
@@ -479,11 +528,13 @@ object JvmExperimentalMetrics {
   /** Measure of max obtainable memory.
     */
   @deprecated("Use stable `org.typelevel.otel4s.semconv.metrics.JvmMetrics.MemoryLimit` instead.", "")
-  object MemoryLimit {
+  object MemoryLimit extends MetricSpec {
 
-    val Name = "jvm.memory.limit"
-    val Description = "Measure of max obtainable memory."
-    val Unit = "By"
+    val name: String = "jvm.memory.limit"
+    val description: String = "Measure of max obtainable memory."
+    val unit: String = "By"
+    val stability: Stability = Stability.stable
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
@@ -526,9 +577,9 @@ object JvmExperimentalMetrics {
 
     def create[F[_]: Meter]: F[UpDownCounter[F, Long]] =
       Meter[F]
-        .upDownCounter[Long](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .upDownCounter[Long](name)
+        .withDescription(description)
+        .withUnit(unit)
         .create
 
   }
@@ -536,11 +587,13 @@ object JvmExperimentalMetrics {
   /** Measure of memory used.
     */
   @deprecated("Use stable `org.typelevel.otel4s.semconv.metrics.JvmMetrics.MemoryUsed` instead.", "")
-  object MemoryUsed {
+  object MemoryUsed extends MetricSpec {
 
-    val Name = "jvm.memory.used"
-    val Description = "Measure of memory used."
-    val Unit = "By"
+    val name: String = "jvm.memory.used"
+    val description: String = "Measure of memory used."
+    val unit: String = "By"
+    val stability: Stability = Stability.stable
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
@@ -583,9 +636,9 @@ object JvmExperimentalMetrics {
 
     def create[F[_]: Meter]: F[UpDownCounter[F, Long]] =
       Meter[F]
-        .upDownCounter[Long](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .upDownCounter[Long](name)
+        .withDescription(description)
+        .withUnit(unit)
         .create
 
   }
@@ -593,11 +646,14 @@ object JvmExperimentalMetrics {
   /** Measure of memory used, as measured after the most recent garbage collection event on this pool.
     */
   @deprecated("Use stable `org.typelevel.otel4s.semconv.metrics.JvmMetrics.MemoryUsedAfterLastGc` instead.", "")
-  object MemoryUsedAfterLastGc {
+  object MemoryUsedAfterLastGc extends MetricSpec {
 
-    val Name = "jvm.memory.used_after_last_gc"
-    val Description = "Measure of memory used, as measured after the most recent garbage collection event on this pool."
-    val Unit = "By"
+    val name: String = "jvm.memory.used_after_last_gc"
+    val description: String =
+      "Measure of memory used, as measured after the most recent garbage collection event on this pool."
+    val unit: String = "By"
+    val stability: Stability = Stability.stable
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
@@ -640,9 +696,9 @@ object JvmExperimentalMetrics {
 
     def create[F[_]: Meter]: F[UpDownCounter[F, Long]] =
       Meter[F]
-        .upDownCounter[Long](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .upDownCounter[Long](name)
+        .withDescription(description)
+        .withUnit(unit)
         .create
 
   }
@@ -654,17 +710,19 @@ object JvmExperimentalMetrics {
     *   `system.cpu.utilization`). <a
     *   href="https://docs.oracle.com/en/java/javase/17/docs/api/java.management/java/lang/management/OperatingSystemMXBean.html#getSystemLoadAverage()">Reference</a>.
     */
-  object SystemCpuLoad1m {
+  object SystemCpuLoad1m extends MetricSpec {
 
-    val Name = "jvm.system.cpu.load_1m"
-    val Description = "Average CPU load of the whole system for the last minute as reported by the JVM."
-    val Unit = "{run_queue_item}"
+    val name: String = "jvm.system.cpu.load_1m"
+    val description: String = "Average CPU load of the whole system for the last minute as reported by the JVM."
+    val unit: String = "{run_queue_item}"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter]: F[Gauge[F, Long]] =
       Meter[F]
-        .gauge[Long](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .gauge[Long](name)
+        .withDescription(description)
+        .withUnit(unit)
         .create
 
   }
@@ -675,17 +733,19 @@ object JvmExperimentalMetrics {
     *   measurement (unlike `system.cpu.utilization`). <a
     *   href="https://docs.oracle.com/en/java/javase/17/docs/api/jdk.management/com/sun/management/OperatingSystemMXBean.html#getCpuLoad()">Reference</a>.
     */
-  object SystemCpuUtilization {
+  object SystemCpuUtilization extends MetricSpec {
 
-    val Name = "jvm.system.cpu.utilization"
-    val Description = "Recent CPU utilization for the whole system as reported by the JVM."
-    val Unit = "1"
+    val name: String = "jvm.system.cpu.utilization"
+    val description: String = "Recent CPU utilization for the whole system as reported by the JVM."
+    val unit: String = "1"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter]: F[Gauge[F, Long]] =
       Meter[F]
-        .gauge[Long](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .gauge[Long](name)
+        .withDescription(description)
+        .withUnit(unit)
         .create
 
   }
@@ -693,11 +753,13 @@ object JvmExperimentalMetrics {
   /** Number of executing platform threads.
     */
   @deprecated("Use stable `org.typelevel.otel4s.semconv.metrics.JvmMetrics.ThreadCount` instead.", "")
-  object ThreadCount {
+  object ThreadCount extends MetricSpec {
 
-    val Name = "jvm.thread.count"
-    val Description = "Number of executing platform threads."
-    val Unit = "{thread}"
+    val name: String = "jvm.thread.count"
+    val description: String = "Number of executing platform threads."
+    val unit: String = "{thread}"
+    val stability: Stability = Stability.stable
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
@@ -734,9 +796,9 @@ object JvmExperimentalMetrics {
 
     def create[F[_]: Meter]: F[UpDownCounter[F, Long]] =
       Meter[F]
-        .upDownCounter[Long](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .upDownCounter[Long](name)
+        .withDescription(description)
+        .withUnit(unit)
         .create
 
   }

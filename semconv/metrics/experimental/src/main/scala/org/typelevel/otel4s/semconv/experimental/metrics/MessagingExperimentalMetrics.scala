@@ -26,6 +26,19 @@ import org.typelevel.otel4s.semconv.experimental.attributes._
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/metrics/SemanticMetrics.scala.j2
 object MessagingExperimentalMetrics {
 
+  @annotation.nowarn("cat=deprecation")
+  val specs: List[MetricSpec] = List(
+    ClientConsumedMessages,
+    ClientOperationDuration,
+    ClientPublishedMessages,
+    ProcessDuration,
+    ProcessMessages,
+    PublishDuration,
+    PublishMessages,
+    ReceiveDuration,
+    ReceiveMessages,
+  )
+
   /** Number of messages that were delivered to the application. <p>
     * @note
     *   <p> Records the number of messages pulled from the broker or number of messages dispatched to the application in
@@ -33,11 +46,13 @@ object MessagingExperimentalMetrics {
     *   processing operations are both instrumented for a single message delivery, this counter is incremented when the
     *   message is received and not reported when it is processed.
     */
-  object ClientConsumedMessages {
+  object ClientConsumedMessages extends MetricSpec {
 
-    val Name = "messaging.client.consumed.messages"
-    val Description = "Number of messages that were delivered to the application."
-    val Unit = "{message}"
+    val name: String = "messaging.client.consumed.messages"
+    val description: String = "Number of messages that were delivered to the application."
+    val unit: String = "{message}"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
@@ -226,9 +241,9 @@ object MessagingExperimentalMetrics {
 
     def create[F[_]: Meter]: F[Counter[F, Long]] =
       Meter[F]
-        .counter[Long](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .counter[Long](name)
+        .withDescription(description)
+        .withUnit(unit)
         .create
 
   }
@@ -238,11 +253,13 @@ object MessagingExperimentalMetrics {
     *   <p> This metric SHOULD NOT be used to report processing duration - processing duration is reported in
     *   `messaging.process.duration` metric.
     */
-  object ClientOperationDuration {
+  object ClientOperationDuration extends MetricSpec {
 
-    val Name = "messaging.client.operation.duration"
-    val Description = "Duration of messaging operation initiated by a producer or consumer client."
-    val Unit = "s"
+    val name: String = "messaging.client.operation.duration"
+    val description: String = "Duration of messaging operation initiated by a producer or consumer client."
+    val unit: String = "s"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
@@ -444,9 +461,9 @@ object MessagingExperimentalMetrics {
 
     def create[F[_]: Meter](boundaries: BucketBoundaries): F[Histogram[F, Double]] =
       Meter[F]
-        .histogram[Double](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .histogram[Double](name)
+        .withDescription(description)
+        .withUnit(unit)
         .withExplicitBucketBoundaries(boundaries)
         .create
 
@@ -456,11 +473,13 @@ object MessagingExperimentalMetrics {
     * @note
     *   <p> This metric MUST NOT count messages that were created haven't yet been attempted to be published.
     */
-  object ClientPublishedMessages {
+  object ClientPublishedMessages extends MetricSpec {
 
-    val Name = "messaging.client.published.messages"
-    val Description = "Number of messages producer attempted to publish to the broker."
-    val Unit = "{message}"
+    val name: String = "messaging.client.published.messages"
+    val description: String = "Number of messages producer attempted to publish to the broker."
+    val unit: String = "{message}"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
@@ -615,9 +634,9 @@ object MessagingExperimentalMetrics {
 
     def create[F[_]: Meter]: F[Counter[F, Long]] =
       Meter[F]
-        .counter[Long](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .counter[Long](name)
+        .withDescription(description)
+        .withUnit(unit)
         .create
 
   }
@@ -626,11 +645,13 @@ object MessagingExperimentalMetrics {
     * @note
     *   <p> This metric MUST be reported for operations with `messaging.operation.type` that matches `process`.
     */
-  object ProcessDuration {
+  object ProcessDuration extends MetricSpec {
 
-    val Name = "messaging.process.duration"
-    val Description = "Duration of processing operation."
-    val Unit = "s"
+    val name: String = "messaging.process.duration"
+    val description: String = "Duration of processing operation."
+    val unit: String = "s"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
@@ -818,9 +839,9 @@ object MessagingExperimentalMetrics {
 
     def create[F[_]: Meter](boundaries: BucketBoundaries): F[Histogram[F, Double]] =
       Meter[F]
-        .histogram[Double](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .histogram[Double](name)
+        .withDescription(description)
+        .withUnit(unit)
         .withExplicitBucketBoundaries(boundaries)
         .create
 
@@ -829,11 +850,13 @@ object MessagingExperimentalMetrics {
   /** Deprecated. Use `messaging.client.consumed.messages` instead.
     */
   @deprecated("Replaced by `messaging.client.consumed.messages`.", "")
-  object ProcessMessages {
+  object ProcessMessages extends MetricSpec {
 
-    val Name = "messaging.process.messages"
-    val Description = "Deprecated. Use `messaging.client.consumed.messages` instead."
-    val Unit = "{message}"
+    val name: String = "messaging.process.messages"
+    val description: String = "Deprecated. Use `messaging.client.consumed.messages` instead."
+    val unit: String = "{message}"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
@@ -922,9 +945,9 @@ object MessagingExperimentalMetrics {
 
     def create[F[_]: Meter]: F[Counter[F, Long]] =
       Meter[F]
-        .counter[Long](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .counter[Long](name)
+        .withDescription(description)
+        .withUnit(unit)
         .create
 
   }
@@ -932,11 +955,13 @@ object MessagingExperimentalMetrics {
   /** Deprecated. Use `messaging.client.operation.duration` instead.
     */
   @deprecated("Replaced by `messaging.client.operation.duration`.", "")
-  object PublishDuration {
+  object PublishDuration extends MetricSpec {
 
-    val Name = "messaging.publish.duration"
-    val Description = "Deprecated. Use `messaging.client.operation.duration` instead."
-    val Unit = "s"
+    val name: String = "messaging.publish.duration"
+    val description: String = "Deprecated. Use `messaging.client.operation.duration` instead."
+    val unit: String = "s"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
@@ -1025,9 +1050,9 @@ object MessagingExperimentalMetrics {
 
     def create[F[_]: Meter](boundaries: BucketBoundaries): F[Histogram[F, Double]] =
       Meter[F]
-        .histogram[Double](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .histogram[Double](name)
+        .withDescription(description)
+        .withUnit(unit)
         .withExplicitBucketBoundaries(boundaries)
         .create
 
@@ -1036,11 +1061,13 @@ object MessagingExperimentalMetrics {
   /** Deprecated. Use `messaging.client.produced.messages` instead.
     */
   @deprecated("Replaced by `messaging.client.produced.messages`.", "")
-  object PublishMessages {
+  object PublishMessages extends MetricSpec {
 
-    val Name = "messaging.publish.messages"
-    val Description = "Deprecated. Use `messaging.client.produced.messages` instead."
-    val Unit = "{message}"
+    val name: String = "messaging.publish.messages"
+    val description: String = "Deprecated. Use `messaging.client.produced.messages` instead."
+    val unit: String = "{message}"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
@@ -1129,9 +1156,9 @@ object MessagingExperimentalMetrics {
 
     def create[F[_]: Meter]: F[Counter[F, Long]] =
       Meter[F]
-        .counter[Long](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .counter[Long](name)
+        .withDescription(description)
+        .withUnit(unit)
         .create
 
   }
@@ -1139,11 +1166,13 @@ object MessagingExperimentalMetrics {
   /** Deprecated. Use `messaging.client.operation.duration` instead.
     */
   @deprecated("Replaced by `messaging.client.operation.duration`.", "")
-  object ReceiveDuration {
+  object ReceiveDuration extends MetricSpec {
 
-    val Name = "messaging.receive.duration"
-    val Description = "Deprecated. Use `messaging.client.operation.duration` instead."
-    val Unit = "s"
+    val name: String = "messaging.receive.duration"
+    val description: String = "Deprecated. Use `messaging.client.operation.duration` instead."
+    val unit: String = "s"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
@@ -1232,9 +1261,9 @@ object MessagingExperimentalMetrics {
 
     def create[F[_]: Meter](boundaries: BucketBoundaries): F[Histogram[F, Double]] =
       Meter[F]
-        .histogram[Double](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .histogram[Double](name)
+        .withDescription(description)
+        .withUnit(unit)
         .withExplicitBucketBoundaries(boundaries)
         .create
 
@@ -1243,11 +1272,13 @@ object MessagingExperimentalMetrics {
   /** Deprecated. Use `messaging.client.consumed.messages` instead.
     */
   @deprecated("Replaced by `messaging.client.consumed.messages`.", "")
-  object ReceiveMessages {
+  object ReceiveMessages extends MetricSpec {
 
-    val Name = "messaging.receive.messages"
-    val Description = "Deprecated. Use `messaging.client.consumed.messages` instead."
-    val Unit = "{message}"
+    val name: String = "messaging.receive.messages"
+    val description: String = "Deprecated. Use `messaging.client.consumed.messages` instead."
+    val unit: String = "{message}"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
@@ -1336,9 +1367,9 @@ object MessagingExperimentalMetrics {
 
     def create[F[_]: Meter]: F[Counter[F, Long]] =
       Meter[F]
-        .counter[Long](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .counter[Long](name)
+        .withDescription(description)
+        .withUnit(unit)
         .create
 
   }

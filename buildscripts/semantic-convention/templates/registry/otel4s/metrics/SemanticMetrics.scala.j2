@@ -2,6 +2,10 @@
     {{ attribute.type | instantiated_type | map_text("scala_key_type") }}
 {%- endmacro %}
 
+{%- macro objectName(metric) -%}
+  {{ metric.metric_name[ctx.root_namespace | length:] | pascal_case }}
+{%- endmacro -%}
+
 {%- macro instrumentType(type) -%}
 {%- if type == "gauge" -%}Gauge[F, Long]
 {%- elif type == "counter" -%}Counter[F, Long]
@@ -112,6 +116,20 @@ import org.typelevel.otel4s.semconv.experimental.attributes._
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/metrics/SemanticMetrics.scala.j2
 object {{ object_name }} {
 
+  {% set ns = namespace(has_deprecation = false) -%}
+  {%- for metric in ctx.metrics -%}
+    {%- if (metric is deprecated) or (params.experimental == true and metric is stable) -%}
+      {%- set ns.has_deprecation = true -%}
+    {%- endif -%}
+  {%- endfor -%}
+
+  {%- if ns.has_deprecation %}
+  @annotation.nowarn("cat=deprecation")
+  {%- endif %}
+  val specs: List[MetricSpec] = List({%- for metric in ctx.metrics | sort(attribute='metric_name') %}
+    {{ objectName(metric) }},{% endfor %}
+  )
+
   {% for metric in ctx.metrics | sort(attribute='metric_name') %}
   {{ [metric.brief | replace('$', "$$"), concat_if("\n\n@note\n\n", metric.note)] | comment(indent=2) }}
   {%- if metric is deprecated %}
@@ -119,11 +137,14 @@ object {{ object_name }} {
   {%- elif params.experimental == true and metric is stable %}
   @deprecated("Use stable `{{ stableRef(metric) }}` instead.", "")
   {%- endif %}
-  object {{ metric.metric_name[ctx.root_namespace | length:] | pascal_case }} {
+  object {{ objectName(metric) }} extends MetricSpec {
 
-    val Name = "{{ metric.metric_name }}"
-    val Description = "{{ metric.brief }}"
-    val Unit = "{{ metric.unit }}"
+    val name: String = "{{ metric.metric_name }}"
+    val description: String = "{{ metric.brief }}"
+    val unit: String = "{{ metric.unit }}"
+    val stability: Stability = {{ stability(metric.stability) }}
+    val attributeSpecs: List[AttributeSpec[_]] = {% if metric.attributes | length > 0 %}AttributeSpecs.specs{% else %}Nil{% endif %}
+
     {% if metric.attributes | length > 0 %}
     object AttributeSpecs {
       {% for attribute in metric.attributes | sort(attribute='name') %}
@@ -149,9 +170,9 @@ object {{ object_name }} {
     {% endif %}
     def create[F[_]: Meter]{% if metric.instrument == "histogram" %}(boundaries: BucketBoundaries){% endif %}: F[{{ instrumentType(metric.instrument) }}] =
       Meter[F]
-        .{{ instrumentFactory(metric.instrument) }}(Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .{{ instrumentFactory(metric.instrument) }}(name)
+        .withDescription(description)
+        .withUnit(unit)
         {%- if metric.instrument == "histogram" %}
         .withExplicitBucketBoundaries(boundaries)
         .create

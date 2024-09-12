@@ -26,13 +26,29 @@ import org.typelevel.otel4s.semconv.experimental.attributes._
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/metrics/SemanticMetrics.scala.j2
 object HttpExperimentalMetrics {
 
+  @annotation.nowarn("cat=deprecation")
+  val specs: List[MetricSpec] = List(
+    ClientActiveRequests,
+    ClientConnectionDuration,
+    ClientOpenConnections,
+    ClientRequestBodySize,
+    ClientRequestDuration,
+    ClientResponseBodySize,
+    ServerActiveRequests,
+    ServerRequestBodySize,
+    ServerRequestDuration,
+    ServerResponseBodySize,
+  )
+
   /** Number of active HTTP requests.
     */
-  object ClientActiveRequests {
+  object ClientActiveRequests extends MetricSpec {
 
-    val Name = "http.client.active_requests"
-    val Description = "Number of active HTTP requests."
-    val Unit = "{request}"
+    val name: String = "http.client.active_requests"
+    val description: String = "Number of active HTTP requests."
+    val unit: String = "{request}"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
@@ -145,20 +161,22 @@ object HttpExperimentalMetrics {
 
     def create[F[_]: Meter]: F[UpDownCounter[F, Long]] =
       Meter[F]
-        .upDownCounter[Long](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .upDownCounter[Long](name)
+        .withDescription(description)
+        .withUnit(unit)
         .create
 
   }
 
   /** The duration of the successfully established outbound HTTP connections.
     */
-  object ClientConnectionDuration {
+  object ClientConnectionDuration extends MetricSpec {
 
-    val Name = "http.client.connection.duration"
-    val Description = "The duration of the successfully established outbound HTTP connections."
-    val Unit = "s"
+    val name: String = "http.client.connection.duration"
+    val description: String = "The duration of the successfully established outbound HTTP connections."
+    val unit: String = "s"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
@@ -254,9 +272,9 @@ object HttpExperimentalMetrics {
 
     def create[F[_]: Meter](boundaries: BucketBoundaries): F[Histogram[F, Double]] =
       Meter[F]
-        .histogram[Double](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .histogram[Double](name)
+        .withDescription(description)
+        .withUnit(unit)
         .withExplicitBucketBoundaries(boundaries)
         .create
 
@@ -264,11 +282,13 @@ object HttpExperimentalMetrics {
 
   /** Number of outbound HTTP connections that are currently active or idle on the client.
     */
-  object ClientOpenConnections {
+  object ClientOpenConnections extends MetricSpec {
 
-    val Name = "http.client.open_connections"
-    val Description = "Number of outbound HTTP connections that are currently active or idle on the client."
-    val Unit = "{connection}"
+    val name: String = "http.client.open_connections"
+    val description: String = "Number of outbound HTTP connections that are currently active or idle on the client."
+    val unit: String = "{connection}"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
@@ -378,9 +398,9 @@ object HttpExperimentalMetrics {
 
     def create[F[_]: Meter]: F[UpDownCounter[F, Long]] =
       Meter[F]
-        .upDownCounter[Long](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .upDownCounter[Long](name)
+        .withDescription(description)
+        .withUnit(unit)
         .create
 
   }
@@ -392,11 +412,13 @@ object HttpExperimentalMetrics {
     *   href="https://www.rfc-editor.org/rfc/rfc9110.html#field.content-length">Content-Length</a> header. For requests
     *   using transport encoding, this should be the compressed size.
     */
-  object ClientRequestBodySize {
+  object ClientRequestBodySize extends MetricSpec {
 
-    val Name = "http.client.request.body.size"
-    val Description = "Size of HTTP client request bodies."
-    val Unit = "By"
+    val name: String = "http.client.request.body.size"
+    val description: String = "Size of HTTP client request bodies."
+    val unit: String = "By"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
@@ -586,9 +608,9 @@ object HttpExperimentalMetrics {
 
     def create[F[_]: Meter](boundaries: BucketBoundaries): F[Histogram[F, Double]] =
       Meter[F]
-        .histogram[Double](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .histogram[Double](name)
+        .withDescription(description)
+        .withUnit(unit)
         .withExplicitBucketBoundaries(boundaries)
         .create
 
@@ -597,11 +619,13 @@ object HttpExperimentalMetrics {
   /** Duration of HTTP client requests.
     */
   @deprecated("Use stable `org.typelevel.otel4s.semconv.metrics.HttpMetrics.ClientRequestDuration` instead.", "")
-  object ClientRequestDuration {
+  object ClientRequestDuration extends MetricSpec {
 
-    val Name = "http.client.request.duration"
-    val Description = "Duration of HTTP client requests."
-    val Unit = "s"
+    val name: String = "http.client.request.duration"
+    val description: String = "Duration of HTTP client requests."
+    val unit: String = "s"
+    val stability: Stability = Stability.stable
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
@@ -772,9 +796,9 @@ object HttpExperimentalMetrics {
 
     def create[F[_]: Meter](boundaries: BucketBoundaries): F[Histogram[F, Double]] =
       Meter[F]
-        .histogram[Double](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .histogram[Double](name)
+        .withDescription(description)
+        .withUnit(unit)
         .withExplicitBucketBoundaries(boundaries)
         .create
 
@@ -787,11 +811,13 @@ object HttpExperimentalMetrics {
     *   href="https://www.rfc-editor.org/rfc/rfc9110.html#field.content-length">Content-Length</a> header. For requests
     *   using transport encoding, this should be the compressed size.
     */
-  object ClientResponseBodySize {
+  object ClientResponseBodySize extends MetricSpec {
 
-    val Name = "http.client.response.body.size"
-    val Description = "Size of HTTP client response bodies."
-    val Unit = "By"
+    val name: String = "http.client.response.body.size"
+    val description: String = "Size of HTTP client response bodies."
+    val unit: String = "By"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
@@ -981,9 +1007,9 @@ object HttpExperimentalMetrics {
 
     def create[F[_]: Meter](boundaries: BucketBoundaries): F[Histogram[F, Double]] =
       Meter[F]
-        .histogram[Double](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .histogram[Double](name)
+        .withDescription(description)
+        .withUnit(unit)
         .withExplicitBucketBoundaries(boundaries)
         .create
 
@@ -991,11 +1017,13 @@ object HttpExperimentalMetrics {
 
   /** Number of active HTTP server requests.
     */
-  object ServerActiveRequests {
+  object ServerActiveRequests extends MetricSpec {
 
-    val Name = "http.server.active_requests"
-    val Description = "Number of active HTTP server requests."
-    val Unit = "{request}"
+    val name: String = "http.server.active_requests"
+    val description: String = "Number of active HTTP server requests."
+    val unit: String = "{request}"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
@@ -1091,9 +1119,9 @@ object HttpExperimentalMetrics {
 
     def create[F[_]: Meter]: F[UpDownCounter[F, Long]] =
       Meter[F]
-        .upDownCounter[Long](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .upDownCounter[Long](name)
+        .withDescription(description)
+        .withUnit(unit)
         .create
 
   }
@@ -1105,11 +1133,13 @@ object HttpExperimentalMetrics {
     *   href="https://www.rfc-editor.org/rfc/rfc9110.html#field.content-length">Content-Length</a> header. For requests
     *   using transport encoding, this should be the compressed size.
     */
-  object ServerRequestBodySize {
+  object ServerRequestBodySize extends MetricSpec {
 
-    val Name = "http.server.request.body.size"
-    val Description = "Size of HTTP server request bodies."
-    val Unit = "By"
+    val name: String = "http.server.request.body.size"
+    val description: String = "Size of HTTP server request bodies."
+    val unit: String = "By"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
@@ -1305,9 +1335,9 @@ object HttpExperimentalMetrics {
 
     def create[F[_]: Meter](boundaries: BucketBoundaries): F[Histogram[F, Double]] =
       Meter[F]
-        .histogram[Double](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .histogram[Double](name)
+        .withDescription(description)
+        .withUnit(unit)
         .withExplicitBucketBoundaries(boundaries)
         .create
 
@@ -1316,11 +1346,13 @@ object HttpExperimentalMetrics {
   /** Duration of HTTP server requests.
     */
   @deprecated("Use stable `org.typelevel.otel4s.semconv.metrics.HttpMetrics.ServerRequestDuration` instead.", "")
-  object ServerRequestDuration {
+  object ServerRequestDuration extends MetricSpec {
 
-    val Name = "http.server.request.duration"
-    val Description = "Duration of HTTP server requests."
-    val Unit = "s"
+    val name: String = "http.server.request.duration"
+    val description: String = "Duration of HTTP server requests."
+    val unit: String = "s"
+    val stability: Stability = Stability.stable
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
@@ -1516,9 +1548,9 @@ object HttpExperimentalMetrics {
 
     def create[F[_]: Meter](boundaries: BucketBoundaries): F[Histogram[F, Double]] =
       Meter[F]
-        .histogram[Double](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .histogram[Double](name)
+        .withDescription(description)
+        .withUnit(unit)
         .withExplicitBucketBoundaries(boundaries)
         .create
 
@@ -1531,11 +1563,13 @@ object HttpExperimentalMetrics {
     *   href="https://www.rfc-editor.org/rfc/rfc9110.html#field.content-length">Content-Length</a> header. For requests
     *   using transport encoding, this should be the compressed size.
     */
-  object ServerResponseBodySize {
+  object ServerResponseBodySize extends MetricSpec {
 
-    val Name = "http.server.response.body.size"
-    val Description = "Size of HTTP server response bodies."
-    val Unit = "By"
+    val name: String = "http.server.response.body.size"
+    val description: String = "Size of HTTP server response bodies."
+    val unit: String = "By"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
@@ -1731,9 +1765,9 @@ object HttpExperimentalMetrics {
 
     def create[F[_]: Meter](boundaries: BucketBoundaries): F[Histogram[F, Double]] =
       Meter[F]
-        .histogram[Double](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .histogram[Double](name)
+        .withDescription(description)
+        .withUnit(unit)
         .withExplicitBucketBoundaries(boundaries)
         .create
 

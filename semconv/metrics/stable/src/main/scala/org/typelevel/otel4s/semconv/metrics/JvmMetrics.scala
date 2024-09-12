@@ -24,70 +24,93 @@ import org.typelevel.otel4s.semconv.attributes._
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/metrics/SemanticMetrics.scala.j2
 object JvmMetrics {
 
+  val specs: List[MetricSpec] = List(
+    ClassCount,
+    ClassLoaded,
+    ClassUnloaded,
+    CpuCount,
+    CpuRecentUtilization,
+    CpuTime,
+    GcDuration,
+    MemoryCommitted,
+    MemoryLimit,
+    MemoryUsed,
+    MemoryUsedAfterLastGc,
+    ThreadCount,
+  )
+
   /** Number of classes currently loaded.
     */
-  object ClassCount {
+  object ClassCount extends MetricSpec {
 
-    val Name = "jvm.class.count"
-    val Description = "Number of classes currently loaded."
-    val Unit = "{class}"
+    val name: String = "jvm.class.count"
+    val description: String = "Number of classes currently loaded."
+    val unit: String = "{class}"
+    val stability: Stability = Stability.stable
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter]: F[UpDownCounter[F, Long]] =
       Meter[F]
-        .upDownCounter[Long](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .upDownCounter[Long](name)
+        .withDescription(description)
+        .withUnit(unit)
         .create
 
   }
 
   /** Number of classes loaded since JVM start.
     */
-  object ClassLoaded {
+  object ClassLoaded extends MetricSpec {
 
-    val Name = "jvm.class.loaded"
-    val Description = "Number of classes loaded since JVM start."
-    val Unit = "{class}"
+    val name: String = "jvm.class.loaded"
+    val description: String = "Number of classes loaded since JVM start."
+    val unit: String = "{class}"
+    val stability: Stability = Stability.stable
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter]: F[Counter[F, Long]] =
       Meter[F]
-        .counter[Long](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .counter[Long](name)
+        .withDescription(description)
+        .withUnit(unit)
         .create
 
   }
 
   /** Number of classes unloaded since JVM start.
     */
-  object ClassUnloaded {
+  object ClassUnloaded extends MetricSpec {
 
-    val Name = "jvm.class.unloaded"
-    val Description = "Number of classes unloaded since JVM start."
-    val Unit = "{class}"
+    val name: String = "jvm.class.unloaded"
+    val description: String = "Number of classes unloaded since JVM start."
+    val unit: String = "{class}"
+    val stability: Stability = Stability.stable
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter]: F[Counter[F, Long]] =
       Meter[F]
-        .counter[Long](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .counter[Long](name)
+        .withDescription(description)
+        .withUnit(unit)
         .create
 
   }
 
   /** Number of processors available to the Java virtual machine.
     */
-  object CpuCount {
+  object CpuCount extends MetricSpec {
 
-    val Name = "jvm.cpu.count"
-    val Description = "Number of processors available to the Java virtual machine."
-    val Unit = "{cpu}"
+    val name: String = "jvm.cpu.count"
+    val description: String = "Number of processors available to the Java virtual machine."
+    val unit: String = "{cpu}"
+    val stability: Stability = Stability.stable
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter]: F[UpDownCounter[F, Long]] =
       Meter[F]
-        .upDownCounter[Long](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .upDownCounter[Long](name)
+        .withDescription(description)
+        .withUnit(unit)
         .create
 
   }
@@ -98,45 +121,51 @@ object JvmMetrics {
     *   measurement (unlike `system.cpu.utilization`). <a
     *   href="https://docs.oracle.com/en/java/javase/17/docs/api/jdk.management/com/sun/management/OperatingSystemMXBean.html#getProcessCpuLoad()">Reference</a>.
     */
-  object CpuRecentUtilization {
+  object CpuRecentUtilization extends MetricSpec {
 
-    val Name = "jvm.cpu.recent_utilization"
-    val Description = "Recent CPU utilization for the process as reported by the JVM."
-    val Unit = "1"
+    val name: String = "jvm.cpu.recent_utilization"
+    val description: String = "Recent CPU utilization for the process as reported by the JVM."
+    val unit: String = "1"
+    val stability: Stability = Stability.stable
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter]: F[Gauge[F, Long]] =
       Meter[F]
-        .gauge[Long](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .gauge[Long](name)
+        .withDescription(description)
+        .withUnit(unit)
         .create
 
   }
 
   /** CPU time used by the process as reported by the JVM.
     */
-  object CpuTime {
+  object CpuTime extends MetricSpec {
 
-    val Name = "jvm.cpu.time"
-    val Description = "CPU time used by the process as reported by the JVM."
-    val Unit = "s"
+    val name: String = "jvm.cpu.time"
+    val description: String = "CPU time used by the process as reported by the JVM."
+    val unit: String = "s"
+    val stability: Stability = Stability.stable
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter]: F[Counter[F, Long]] =
       Meter[F]
-        .counter[Long](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .counter[Long](name)
+        .withDescription(description)
+        .withUnit(unit)
         .create
 
   }
 
   /** Duration of JVM garbage collection actions.
     */
-  object GcDuration {
+  object GcDuration extends MetricSpec {
 
-    val Name = "jvm.gc.duration"
-    val Description = "Duration of JVM garbage collection actions."
-    val Unit = "s"
+    val name: String = "jvm.gc.duration"
+    val description: String = "Duration of JVM garbage collection actions."
+    val unit: String = "s"
+    val stability: Stability = Stability.stable
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
@@ -181,9 +210,9 @@ object JvmMetrics {
 
     def create[F[_]: Meter](boundaries: BucketBoundaries): F[Histogram[F, Double]] =
       Meter[F]
-        .histogram[Double](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .histogram[Double](name)
+        .withDescription(description)
+        .withUnit(unit)
         .withExplicitBucketBoundaries(boundaries)
         .create
 
@@ -191,11 +220,13 @@ object JvmMetrics {
 
   /** Measure of memory committed.
     */
-  object MemoryCommitted {
+  object MemoryCommitted extends MetricSpec {
 
-    val Name = "jvm.memory.committed"
-    val Description = "Measure of memory committed."
-    val Unit = "By"
+    val name: String = "jvm.memory.committed"
+    val description: String = "Measure of memory committed."
+    val unit: String = "By"
+    val stability: Stability = Stability.stable
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
@@ -238,20 +269,22 @@ object JvmMetrics {
 
     def create[F[_]: Meter]: F[UpDownCounter[F, Long]] =
       Meter[F]
-        .upDownCounter[Long](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .upDownCounter[Long](name)
+        .withDescription(description)
+        .withUnit(unit)
         .create
 
   }
 
   /** Measure of max obtainable memory.
     */
-  object MemoryLimit {
+  object MemoryLimit extends MetricSpec {
 
-    val Name = "jvm.memory.limit"
-    val Description = "Measure of max obtainable memory."
-    val Unit = "By"
+    val name: String = "jvm.memory.limit"
+    val description: String = "Measure of max obtainable memory."
+    val unit: String = "By"
+    val stability: Stability = Stability.stable
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
@@ -294,20 +327,22 @@ object JvmMetrics {
 
     def create[F[_]: Meter]: F[UpDownCounter[F, Long]] =
       Meter[F]
-        .upDownCounter[Long](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .upDownCounter[Long](name)
+        .withDescription(description)
+        .withUnit(unit)
         .create
 
   }
 
   /** Measure of memory used.
     */
-  object MemoryUsed {
+  object MemoryUsed extends MetricSpec {
 
-    val Name = "jvm.memory.used"
-    val Description = "Measure of memory used."
-    val Unit = "By"
+    val name: String = "jvm.memory.used"
+    val description: String = "Measure of memory used."
+    val unit: String = "By"
+    val stability: Stability = Stability.stable
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
@@ -350,20 +385,23 @@ object JvmMetrics {
 
     def create[F[_]: Meter]: F[UpDownCounter[F, Long]] =
       Meter[F]
-        .upDownCounter[Long](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .upDownCounter[Long](name)
+        .withDescription(description)
+        .withUnit(unit)
         .create
 
   }
 
   /** Measure of memory used, as measured after the most recent garbage collection event on this pool.
     */
-  object MemoryUsedAfterLastGc {
+  object MemoryUsedAfterLastGc extends MetricSpec {
 
-    val Name = "jvm.memory.used_after_last_gc"
-    val Description = "Measure of memory used, as measured after the most recent garbage collection event on this pool."
-    val Unit = "By"
+    val name: String = "jvm.memory.used_after_last_gc"
+    val description: String =
+      "Measure of memory used, as measured after the most recent garbage collection event on this pool."
+    val unit: String = "By"
+    val stability: Stability = Stability.stable
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
@@ -406,20 +444,22 @@ object JvmMetrics {
 
     def create[F[_]: Meter]: F[UpDownCounter[F, Long]] =
       Meter[F]
-        .upDownCounter[Long](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .upDownCounter[Long](name)
+        .withDescription(description)
+        .withUnit(unit)
         .create
 
   }
 
   /** Number of executing platform threads.
     */
-  object ThreadCount {
+  object ThreadCount extends MetricSpec {
 
-    val Name = "jvm.thread.count"
-    val Description = "Number of executing platform threads."
-    val Unit = "{thread}"
+    val name: String = "jvm.thread.count"
+    val description: String = "Number of executing platform threads."
+    val unit: String = "{thread}"
+    val stability: Stability = Stability.stable
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
@@ -456,9 +496,9 @@ object JvmMetrics {
 
     def create[F[_]: Meter]: F[UpDownCounter[F, Long]] =
       Meter[F]
-        .upDownCounter[Long](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .upDownCounter[Long](name)
+        .withDescription(description)
+        .withUnit(unit)
         .create
 
   }

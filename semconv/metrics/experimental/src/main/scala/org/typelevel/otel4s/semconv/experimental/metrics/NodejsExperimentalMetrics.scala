@@ -24,22 +24,35 @@ import org.typelevel.otel4s.metrics._
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/metrics/SemanticMetrics.scala.j2
 object NodejsExperimentalMetrics {
 
+  val specs: List[MetricSpec] = List(
+    EventloopDelayMax,
+    EventloopDelayMean,
+    EventloopDelayMin,
+    EventloopDelayP50,
+    EventloopDelayP90,
+    EventloopDelayP99,
+    EventloopDelayStddev,
+    EventloopUtilization,
+  )
+
   /** Event loop maximum delay. <p>
     * @note
     *   <p> Value can be retrieved from value `histogram.max` of <a
     *   href="https://nodejs.org/api/perf_hooks.html#perf_hooksmonitoreventloopdelayoptions">`perf_hooks.monitorEventLoopDelay([options])`</a>
     */
-  object EventloopDelayMax {
+  object EventloopDelayMax extends MetricSpec {
 
-    val Name = "nodejs.eventloop.delay.max"
-    val Description = "Event loop maximum delay."
-    val Unit = "s"
+    val name: String = "nodejs.eventloop.delay.max"
+    val description: String = "Event loop maximum delay."
+    val unit: String = "s"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter]: F[Gauge[F, Long]] =
       Meter[F]
-        .gauge[Long](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .gauge[Long](name)
+        .withDescription(description)
+        .withUnit(unit)
         .create
 
   }
@@ -49,17 +62,19 @@ object NodejsExperimentalMetrics {
     *   <p> Value can be retrieved from value `histogram.mean` of <a
     *   href="https://nodejs.org/api/perf_hooks.html#perf_hooksmonitoreventloopdelayoptions">`perf_hooks.monitorEventLoopDelay([options])`</a>
     */
-  object EventloopDelayMean {
+  object EventloopDelayMean extends MetricSpec {
 
-    val Name = "nodejs.eventloop.delay.mean"
-    val Description = "Event loop mean delay."
-    val Unit = "s"
+    val name: String = "nodejs.eventloop.delay.mean"
+    val description: String = "Event loop mean delay."
+    val unit: String = "s"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter]: F[Gauge[F, Long]] =
       Meter[F]
-        .gauge[Long](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .gauge[Long](name)
+        .withDescription(description)
+        .withUnit(unit)
         .create
 
   }
@@ -69,17 +84,19 @@ object NodejsExperimentalMetrics {
     *   <p> Value can be retrieved from value `histogram.min` of <a
     *   href="https://nodejs.org/api/perf_hooks.html#perf_hooksmonitoreventloopdelayoptions">`perf_hooks.monitorEventLoopDelay([options])`</a>
     */
-  object EventloopDelayMin {
+  object EventloopDelayMin extends MetricSpec {
 
-    val Name = "nodejs.eventloop.delay.min"
-    val Description = "Event loop minimum delay."
-    val Unit = "s"
+    val name: String = "nodejs.eventloop.delay.min"
+    val description: String = "Event loop minimum delay."
+    val unit: String = "s"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter]: F[Gauge[F, Long]] =
       Meter[F]
-        .gauge[Long](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .gauge[Long](name)
+        .withDescription(description)
+        .withUnit(unit)
         .create
 
   }
@@ -89,17 +106,19 @@ object NodejsExperimentalMetrics {
     *   <p> Value can be retrieved from value `histogram.percentile(50)` of <a
     *   href="https://nodejs.org/api/perf_hooks.html#perf_hooksmonitoreventloopdelayoptions">`perf_hooks.monitorEventLoopDelay([options])`</a>
     */
-  object EventloopDelayP50 {
+  object EventloopDelayP50 extends MetricSpec {
 
-    val Name = "nodejs.eventloop.delay.p50"
-    val Description = "Event loop 50 percentile delay."
-    val Unit = "s"
+    val name: String = "nodejs.eventloop.delay.p50"
+    val description: String = "Event loop 50 percentile delay."
+    val unit: String = "s"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter]: F[Gauge[F, Long]] =
       Meter[F]
-        .gauge[Long](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .gauge[Long](name)
+        .withDescription(description)
+        .withUnit(unit)
         .create
 
   }
@@ -109,17 +128,19 @@ object NodejsExperimentalMetrics {
     *   <p> Value can be retrieved from value `histogram.percentile(90)` of <a
     *   href="https://nodejs.org/api/perf_hooks.html#perf_hooksmonitoreventloopdelayoptions">`perf_hooks.monitorEventLoopDelay([options])`</a>
     */
-  object EventloopDelayP90 {
+  object EventloopDelayP90 extends MetricSpec {
 
-    val Name = "nodejs.eventloop.delay.p90"
-    val Description = "Event loop 90 percentile delay."
-    val Unit = "s"
+    val name: String = "nodejs.eventloop.delay.p90"
+    val description: String = "Event loop 90 percentile delay."
+    val unit: String = "s"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter]: F[Gauge[F, Long]] =
       Meter[F]
-        .gauge[Long](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .gauge[Long](name)
+        .withDescription(description)
+        .withUnit(unit)
         .create
 
   }
@@ -129,17 +150,19 @@ object NodejsExperimentalMetrics {
     *   <p> Value can be retrieved from value `histogram.percentile(99)` of <a
     *   href="https://nodejs.org/api/perf_hooks.html#perf_hooksmonitoreventloopdelayoptions">`perf_hooks.monitorEventLoopDelay([options])`</a>
     */
-  object EventloopDelayP99 {
+  object EventloopDelayP99 extends MetricSpec {
 
-    val Name = "nodejs.eventloop.delay.p99"
-    val Description = "Event loop 99 percentile delay."
-    val Unit = "s"
+    val name: String = "nodejs.eventloop.delay.p99"
+    val description: String = "Event loop 99 percentile delay."
+    val unit: String = "s"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter]: F[Gauge[F, Long]] =
       Meter[F]
-        .gauge[Long](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .gauge[Long](name)
+        .withDescription(description)
+        .withUnit(unit)
         .create
 
   }
@@ -149,17 +172,19 @@ object NodejsExperimentalMetrics {
     *   <p> Value can be retrieved from value `histogram.stddev` of <a
     *   href="https://nodejs.org/api/perf_hooks.html#perf_hooksmonitoreventloopdelayoptions">`perf_hooks.monitorEventLoopDelay([options])`</a>
     */
-  object EventloopDelayStddev {
+  object EventloopDelayStddev extends MetricSpec {
 
-    val Name = "nodejs.eventloop.delay.stddev"
-    val Description = "Event loop standard deviation delay."
-    val Unit = "s"
+    val name: String = "nodejs.eventloop.delay.stddev"
+    val description: String = "Event loop standard deviation delay."
+    val unit: String = "s"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter]: F[Gauge[F, Long]] =
       Meter[F]
-        .gauge[Long](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .gauge[Long](name)
+        .withDescription(description)
+        .withUnit(unit)
         .create
 
   }
@@ -170,17 +195,19 @@ object NodejsExperimentalMetrics {
     *   href="https://nodejs.org/api/perf_hooks.html#performanceeventlooputilizationutilization1-utilization2">`performance.eventLoopUtilization([utilization1[,
     *   utilization2]])`</a>
     */
-  object EventloopUtilization {
+  object EventloopUtilization extends MetricSpec {
 
-    val Name = "nodejs.eventloop.utilization"
-    val Description = "Event loop utilization."
-    val Unit = "1"
+    val name: String = "nodejs.eventloop.utilization"
+    val description: String = "Event loop utilization."
+    val unit: String = "1"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter]: F[Gauge[F, Long]] =
       Meter[F]
-        .gauge[Long](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .gauge[Long](name)
+        .withDescription(description)
+        .withUnit(unit)
         .create
 
   }

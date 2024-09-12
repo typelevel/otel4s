@@ -25,15 +25,24 @@ import org.typelevel.otel4s.semconv.experimental.attributes._
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/metrics/SemanticMetrics.scala.j2
 object ContainerExperimentalMetrics {
 
+  val specs: List[MetricSpec] = List(
+    CpuTime,
+    DiskIo,
+    MemoryUsage,
+    NetworkIo,
+  )
+
   /** Total CPU time consumed <p>
     * @note
     *   <p> Total CPU time consumed by the specific container on all available CPU cores
     */
-  object CpuTime {
+  object CpuTime extends MetricSpec {
 
-    val Name = "container.cpu.time"
-    val Description = "Total CPU time consumed"
-    val Unit = "s"
+    val name: String = "container.cpu.time"
+    val description: String = "Total CPU time consumed"
+    val unit: String = "s"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
@@ -61,9 +70,9 @@ object ContainerExperimentalMetrics {
 
     def create[F[_]: Meter]: F[Counter[F, Long]] =
       Meter[F]
-        .counter[Long](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .counter[Long](name)
+        .withDescription(description)
+        .withUnit(unit)
         .create
 
   }
@@ -72,11 +81,13 @@ object ContainerExperimentalMetrics {
     * @note
     *   <p> The total number of bytes read/written successfully (aggregated from all disks).
     */
-  object DiskIo {
+  object DiskIo extends MetricSpec {
 
-    val Name = "container.disk.io"
-    val Description = "Disk bytes for the container."
-    val Unit = "By"
+    val name: String = "container.disk.io"
+    val description: String = "Disk bytes for the container."
+    val unit: String = "By"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
@@ -113,9 +124,9 @@ object ContainerExperimentalMetrics {
 
     def create[F[_]: Meter]: F[Counter[F, Long]] =
       Meter[F]
-        .counter[Long](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .counter[Long](name)
+        .withDescription(description)
+        .withUnit(unit)
         .create
 
   }
@@ -124,17 +135,19 @@ object ContainerExperimentalMetrics {
     * @note
     *   <p> Memory usage of the container.
     */
-  object MemoryUsage {
+  object MemoryUsage extends MetricSpec {
 
-    val Name = "container.memory.usage"
-    val Description = "Memory usage of the container."
-    val Unit = "By"
+    val name: String = "container.memory.usage"
+    val description: String = "Memory usage of the container."
+    val unit: String = "By"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter]: F[Counter[F, Long]] =
       Meter[F]
-        .counter[Long](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .counter[Long](name)
+        .withDescription(description)
+        .withUnit(unit)
         .create
 
   }
@@ -143,11 +156,13 @@ object ContainerExperimentalMetrics {
     * @note
     *   <p> The number of bytes sent/received on all network interfaces by the container.
     */
-  object NetworkIo {
+  object NetworkIo extends MetricSpec {
 
-    val Name = "container.network.io"
-    val Description = "Network bytes for the container."
-    val Unit = "By"
+    val name: String = "container.network.io"
+    val description: String = "Network bytes for the container."
+    val unit: String = "By"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
@@ -184,9 +199,9 @@ object ContainerExperimentalMetrics {
 
     def create[F[_]: Meter]: F[Counter[F, Long]] =
       Meter[F]
-        .counter[Long](Name)
-        .withDescription(Description)
-        .withUnit(Unit)
+        .counter[Long](name)
+        .withDescription(description)
+        .withUnit(unit)
         .create
 
   }

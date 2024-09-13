@@ -287,6 +287,11 @@
           </thead>
           <tbody>
             <tr>
+              <td>otel.exporter.otlp.protocol</td>
+              <td>OTEL_EXPORTER_OTLP_PROTOCOL</td>
+              <td>The transport protocol to use. Options include <code>grpc</code>, <code>http/protobuf</code>, and <code>http/json</code>. Default is <code>http/protobuf</code>.</td>
+            </tr>
+            <tr>
               <td>otel.exporter.otlp.endpoint</td>
               <td>OTEL_EXPORTER_OTLP_ENDPOINT</td>
               <td>The OTLP traces, metrics, and logs endpoint to connect to. Must be a <strong>base</strong> URL with a scheme of either http or https based on the use of TLS. Default is <code>http://localhost:4318/</code>.</td>
@@ -310,6 +315,11 @@
               <td><strong>Target specific:</strong></td>
               <td></td>
               <td></td>
+            </tr>
+            <tr>
+              <td>otel.exporter.otlp.metrics.protocol</td>
+              <td>OTEL_EXPORTER_OTLP_METRICS_PROTOCOL</td>
+              <td>The transport protocol to use. Options include <code>grpc</code>, <code>http/protobuf</code>, and <code>http/json</code>. Default is <code>http/protobuf</code>.</td>
             </tr>
             <tr>
               <td>otel.exporter.otlp.metrics.endpoint</td>
@@ -428,6 +438,11 @@
           </thead>
           <tbody>
             <tr>
+              <td>otel.exporter.otlp.protocol</td>
+              <td>OTEL_EXPORTER_OTLP_PROTOCOL</td>
+              <td>The transport protocol to use. Options include <code>grpc</code>, <code>http/protobuf</code>, and <code>http/json</code>. Default is <code>http/protobuf</code>.</td>
+            </tr>
+            <tr>
               <td>otel.exporter.otlp.endpoint</td>
               <td>OTEL_EXPORTER_OTLP_ENDPOINT</td>
               <td>The OTLP traces, metrics, and logs endpoint to connect to. Must be a <strong>base</strong> URL with a scheme of either http or https based on the use of TLS. Default is <code>http://localhost:4318/</code>.</td>
@@ -451,6 +466,11 @@
               <td><strong>Target specific:</strong></td>
               <td></td>
               <td></td>
+            </tr>
+            <tr>
+              <td>otel.exporter.otlp.metrics.protocol</td>
+              <td>OTEL_EXPORTER_OTLP_TRACES_PROTOCOL</td>
+              <td>The transport protocol to use. Options include <code>grpc</code>, <code>http/protobuf</code>, and <code>http/json</code>. Default is <code>http/protobuf</code>.</td>
             </tr>
             <tr>
               <td>otel.exporter.otlp.traces.endpoint</td>

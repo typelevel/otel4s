@@ -450,6 +450,7 @@ lazy val `sdk-contrib-aws-resource` =
       libraryDependencies ++= Seq(
         "org.http4s" %%% "http4s-ember-client" % Http4sVersion,
         "org.http4s" %%% "http4s-circe" % Http4sVersion,
+        "io.circe" %%% "circe-parser" % CirceVersion,
         "org.http4s" %%% "http4s-dsl" % Http4sVersion % Test
       )
     )

@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-package org.typelevel.otel4s.sdk.exporter.otlp.metrics
+package org.typelevel.otel4s.sdk.exporter.otlp
+package metrics
 
 import cats.data.NonEmptyVector
 import cats.effect.IO
@@ -36,7 +37,6 @@ import org.typelevel.otel4s.AttributeType
 import org.typelevel.otel4s.Attributes
 import org.typelevel.otel4s.sdk.exporter.RetryPolicy
 import org.typelevel.otel4s.sdk.exporter.SuiteRuntimePlatform
-import org.typelevel.otel4s.sdk.exporter.otlp.HttpPayloadEncoding
 import org.typelevel.otel4s.sdk.metrics.data.AggregationTemporality
 import org.typelevel.otel4s.sdk.metrics.data.MetricData
 import org.typelevel.otel4s.sdk.metrics.data.MetricPoints
@@ -45,36 +45,72 @@ import org.typelevel.otel4s.sdk.metrics.scalacheck.Arbitraries._
 
 import scala.concurrent.duration._
 
-class OtlpHttpMetricExporterSuite extends CatsEffectSuite with ScalaCheckEffectSuite with SuiteRuntimePlatform {
+class OtlpMetricExporterSuite extends CatsEffectSuite with ScalaCheckEffectSuite with SuiteRuntimePlatform {
 
-  import OtlpHttpMetricExporterSuite._
+  import OtlpMetricExporterSuite._
 
-  private implicit val encodingArbitrary: Arbitrary[HttpPayloadEncoding] =
-    Arbitrary(Gen.oneOf(HttpPayloadEncoding.Protobuf, HttpPayloadEncoding.Json))
+  private implicit val protocolArbitrary: Arbitrary[OtlpProtocol] =
+    Arbitrary(
+      Gen.oneOf(
+        OtlpProtocol.httpJson,
+        OtlpProtocol.httpProtobuf,
+        OtlpProtocol.grpc
+      )
+    )
+
+  private implicit val compressionArbitrary: Arbitrary[PayloadCompression] =
+    Arbitrary(
+      Gen.oneOf(
+        PayloadCompression.gzip,
+        PayloadCompression.none
+      )
+    )
 
   test("represent builder parameters in the name") {
-    PropF.forAllF { (encoding: HttpPayloadEncoding) =>
-      val enc = encoding match {
-        case HttpPayloadEncoding.Json     => "Json"
-        case HttpPayloadEncoding.Protobuf => "Protobuf"
-      }
-
+    PropF.forAllF { (protocol: OtlpProtocol, compression: PayloadCompression) =>
       val expected =
-        s"OtlpHttpMetricExporter{client=OtlpHttpClient{encoding=$enc, " +
+        s"OtlpMetricExporter{client=OtlpClient{protocol=$protocol, " +
           "endpoint=https://localhost:4318/api/v1/metrics, " +
           "timeout=5 seconds, " +
-          "gzipCompression=true, " +
+          s"compression=$compression, " +
           "headers={X-Forwarded-For: 127.0.0.1}}}"
 
-      OtlpHttpMetricExporter
+      OtlpMetricExporter
         .builder[IO]
         .addHeaders(
           Headers(`X-Forwarded-For`(IpAddress.fromString("127.0.0.1")))
         )
         .withEndpoint(uri"https://localhost:4318/api/v1/metrics")
         .withTimeout(5.seconds)
-        .withGzip
-        .withEncoding(encoding)
+        .withProtocol(protocol)
+        .withCompression(compression)
+        .build
+        .use { exporter =>
+          IO(assertEquals(exporter.name, expected))
+        }
+    }
+  }
+
+  test("change endpoint according to the protocol") {
+    PropF.forAllF { (protocol: OtlpProtocol) =>
+      val endpoint = protocol match {
+        case _: OtlpProtocol.Http =>
+          "http://localhost:4318/v1/metrics"
+
+        case OtlpProtocol.Grpc =>
+          "http://localhost:4317/opentelemetry.proto.collector.metrics.v1.MetricsService/Export"
+      }
+
+      val expected =
+        s"OtlpMetricExporter{client=OtlpClient{protocol=$protocol, " +
+          s"endpoint=$endpoint, " +
+          "timeout=10 seconds, " +
+          "compression=none, " +
+          "headers={}}}"
+
+      OtlpMetricExporter
+        .builder[IO]
+        .withProtocol(protocol)
         .build
         .use { exporter =>
           IO(assertEquals(exporter.name, expected))
@@ -83,7 +119,7 @@ class OtlpHttpMetricExporterSuite extends CatsEffectSuite with ScalaCheckEffectS
   }
 
   test("export metrics") {
-    PropF.forAllF { (md: MetricData, encoding: HttpPayloadEncoding) =>
+    PropF.forAllF { (md: MetricData, protocol: OtlpProtocol, compression: PayloadCompression) =>
       val metric = MetricData(
         md.resource,
         md.instrumentationScope,
@@ -133,10 +169,19 @@ class OtlpHttpMetricExporterSuite extends CatsEffectSuite with ScalaCheckEffectS
         }
       }
 
-      OtlpHttpMetricExporter
+      val endpoint = protocol match {
+        case _: OtlpProtocol.Http =>
+          uri"http://localhost:44318/v1/metrics"
+
+        case OtlpProtocol.Grpc =>
+          uri"http://localhost:44317/opentelemetry.proto.collector.metrics.v1.MetricsService/Export"
+      }
+
+      OtlpMetricExporter
         .builder[IO]
-        .withEncoding(encoding)
-        .withEndpoint(uri"http://localhost:44318/v1/metrics")
+        .withProtocol(protocol)
+        .withCompression(compression)
+        .withEndpoint(endpoint)
         .withTimeout(20.seconds)
         .withRetryPolicy(
           RetryPolicy.builder
@@ -176,10 +221,10 @@ class OtlpHttpMetricExporterSuite extends CatsEffectSuite with ScalaCheckEffectS
             for {
               body <- response.as[String]
               _ <- IO.println(
-                s"Cannot retrieve metrics due. Status ${response.status} body ${body}"
+                s"Cannot retrieve metrics due. Status ${response.status} body $body"
               )
             } yield new RuntimeException(
-              s"Cannot retrieve metrics due. Status ${response.status} body ${body}"
+              s"Cannot retrieve metrics due. Status ${response.status} body $body"
             )
           }
           .handleErrorWith { error =>
@@ -370,7 +415,7 @@ class OtlpHttpMetricExporterSuite extends CatsEffectSuite with ScalaCheckEffectS
 
 }
 
-object OtlpHttpMetricExporterSuite {
+object OtlpMetricExporterSuite {
 
   implicit val prometheusValueDecoder: Decoder[PrometheusValue] =
     Decoder.instance { cursor =>

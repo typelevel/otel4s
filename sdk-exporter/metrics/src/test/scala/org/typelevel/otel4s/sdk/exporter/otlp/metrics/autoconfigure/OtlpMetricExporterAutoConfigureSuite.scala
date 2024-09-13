@@ -29,11 +29,11 @@ class OtlpMetricExporterAutoConfigureSuite extends CatsEffectSuite with SuiteRun
     val config = Config.ofProps(Map.empty)
 
     val expected =
-      "OtlpHttpMetricExporter{client=OtlpHttpClient{" +
-        "encoding=Protobuf, " +
+      "OtlpMetricExporter{client=OtlpClient{" +
+        "protocol=http/protobuf, " +
         "endpoint=http://localhost:4318/v1/metrics, " +
         "timeout=10 seconds, " +
-        "gzipCompression=false, " +
+        "compression=none, " +
         "headers={}}}"
 
     OtlpMetricExporterAutoConfigure[IO]
@@ -50,11 +50,11 @@ class OtlpMetricExporterAutoConfigureSuite extends CatsEffectSuite with SuiteRun
     )
 
     val expected =
-      "OtlpHttpMetricExporter{client=OtlpHttpClient{" +
-        "encoding=Protobuf, " +
+      "OtlpMetricExporter{client=OtlpClient{" +
+        "protocol=http/protobuf, " +
         "endpoint=http://localhost:4318/v1/metrics, " +
         "timeout=10 seconds, " +
-        "gzipCompression=false, " +
+        "compression=none, " +
         "headers={}}}"
 
     OtlpMetricExporterAutoConfigure[IO]
@@ -71,11 +71,11 @@ class OtlpMetricExporterAutoConfigureSuite extends CatsEffectSuite with SuiteRun
     )
 
     val expected =
-      "OtlpHttpMetricExporter{client=OtlpHttpClient{" +
-        "encoding=Json, " +
+      "OtlpMetricExporter{client=OtlpClient{" +
+        "protocol=http/json, " +
         "endpoint=http://localhost:4318/v1/metrics, " +
         "timeout=10 seconds, " +
-        "gzipCompression=false, " +
+        "compression=none, " +
         "headers={}}}"
 
     OtlpMetricExporterAutoConfigure[IO]
@@ -90,11 +90,11 @@ class OtlpMetricExporterAutoConfigureSuite extends CatsEffectSuite with SuiteRun
     )
 
     val expected =
-      "OtlpHttpMetricExporter{client=OtlpHttpClient{" +
-        "encoding=Protobuf, " +
+      "OtlpMetricExporter{client=OtlpClient{" +
+        "protocol=http/protobuf, " +
         "endpoint=http://localhost:4318/v1/metrics, " +
         "timeout=10 seconds, " +
-        "gzipCompression=false, " +
+        "compression=none, " +
         "headers={}}}"
 
     endpoints.traverse_ { endpoint =>
@@ -109,7 +109,7 @@ class OtlpMetricExporterAutoConfigureSuite extends CatsEffectSuite with SuiteRun
   }
 
   test("load from the config - unknown protocol - fail") {
-    val config = Config.ofProps(Map("otel.exporter.otlp.protocol" -> "grpc"))
+    val config = Config.ofProps(Map("otel.exporter.otlp.protocol" -> "mqtt"))
 
     OtlpMetricExporterAutoConfigure[IO]
       .configure(config)
@@ -117,11 +117,19 @@ class OtlpMetricExporterAutoConfigureSuite extends CatsEffectSuite with SuiteRun
       .attempt
       .map(_.leftMap(_.getMessage))
       .assertEquals(
-        Left("""Cannot autoconfigure [Protocol].
-               |Cause: Unrecognized protocol [grpc]. Supported options [http/json, http/protobuf].
+        Left("""Cannot autoconfigure [OtlpClient].
+               |Cause: Unrecognized protocol [mqtt]. Supported options [http/json, http/protobuf, grpc].
                |Config:
-               |1) `otel.exporter.otlp.metrics.protocol` - N/A
-               |2) `otel.exporter.otlp.protocol` - grpc""".stripMargin)
+               |1) `otel.exporter.otlp.compression` - N/A
+               |2) `otel.exporter.otlp.endpoint` - N/A
+               |3) `otel.exporter.otlp.headers` - N/A
+               |4) `otel.exporter.otlp.metrics.compression` - N/A
+               |5) `otel.exporter.otlp.metrics.endpoint` - N/A
+               |6) `otel.exporter.otlp.metrics.headers` - N/A
+               |7) `otel.exporter.otlp.metrics.protocol` - N/A
+               |8) `otel.exporter.otlp.metrics.timeout` - N/A
+               |9) `otel.exporter.otlp.protocol` - mqtt
+               |10) `otel.exporter.otlp.timeout` - N/A""".stripMargin)
       )
   }
 

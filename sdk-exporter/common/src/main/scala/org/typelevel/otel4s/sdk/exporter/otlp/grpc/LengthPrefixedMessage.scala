@@ -14,10 +14,23 @@
  * limitations under the License.
  */
 
-package org.typelevel.otel4s.sdk.exporter.otlp
+package org.typelevel.otel4s.sdk.exporter.otlp.grpc
 
-private[exporter] sealed trait Protocol
+import scodec._
+import scodec.bits._
+import scodec.codecs._
 
-private[exporter] object Protocol {
-  final case class Http(encoding: HttpPayloadEncoding) extends Protocol
+private[otlp] final case class LengthPrefixedMessage(
+    compressed: Boolean,
+    message: ByteVector
+)
+
+private[otlp] object LengthPrefixedMessage {
+
+  val codec: scodec.Codec[LengthPrefixedMessage] =
+    (
+      uint8.xmap[Boolean](_ == 1, compressed => if (compressed) 1 else 0) ::
+        variableSizeBytesLong(uint32, bytes)
+    ).as[LengthPrefixedMessage]
+
 }

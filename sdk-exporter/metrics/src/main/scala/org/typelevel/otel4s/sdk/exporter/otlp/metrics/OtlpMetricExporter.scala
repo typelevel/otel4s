@@ -38,21 +38,29 @@ import org.typelevel.otel4s.sdk.metrics.exporter.MetricExporter
 
 import scala.concurrent.duration._
 
-/** Exports metrics via HTTP. Support `json` and `protobuf` encoding.
+/** Exports metrics via HTTP.
+  *
+  * Supported protocols:
+  *   - `grpc`
+  *   - `http/json`
+  *   - `http/protobuf`
   *
   * @see
   *   [[https://opentelemetry.io/docs/specs/otel/protocol/exporter/]]
   *
   * @see
   *   [[https://opentelemetry.io/docs/concepts/sdk-configuration/otlp-exporter-configuration/]]
+  *
+  * @see
+  *   [[https://github.com/open-telemetry/opentelemetry-proto/blob/v1.3.2/opentelemetry/proto/collector/metrics/v1/metrics_service.proto]]
   */
-private final class OtlpHttpMetricExporter[F[_]: Applicative] private[otlp] (
-    client: OtlpHttpClient[F, MetricData],
+private final class OtlpMetricExporter[F[_]: Applicative] private[otlp] (
+    client: OtlpClient[F, MetricData],
     val aggregationTemporalitySelector: AggregationTemporalitySelector,
     val defaultAggregationSelector: AggregationSelector,
     val defaultCardinalityLimitSelector: CardinalityLimitSelector
 ) extends MetricExporter.Push[F] {
-  val name: String = s"OtlpHttpMetricExporter{client=$client}"
+  val name: String = s"OtlpMetricExporter{client=$client}"
 
   def exportMetrics[G[_]: Foldable](metrics: G[MetricData]): F[Unit] =
     client.doExport(metrics)
@@ -60,15 +68,17 @@ private final class OtlpHttpMetricExporter[F[_]: Applicative] private[otlp] (
   def flush: F[Unit] = Applicative[F].unit
 }
 
-object OtlpHttpMetricExporter {
+object OtlpMetricExporter {
 
   private[otlp] object Defaults {
-    val Endpoint: Uri = uri"http://localhost:4318/v1/metrics"
+    val Protocol: OtlpProtocol = OtlpProtocol.httpProtobuf
+    val HttpEndpoint: Uri = uri"http://localhost:4318/v1/metrics"
+    val GrpcEndpoint: Uri = uri"http://localhost:4317/opentelemetry.proto.collector.metrics.v1.MetricsService/Export"
     val Timeout: FiniteDuration = 10.seconds
-    val GzipCompression: Boolean = false
+    val Compression: PayloadCompression = PayloadCompression.none
   }
 
-  /** A builder of [[OtlpHttpMetricExporter]] */
+  /** A builder of [[OtlpMetricExporter]] */
   sealed trait Builder[F[_]] {
 
     /** Sets the OTLP endpoint to connect to.
@@ -85,14 +95,11 @@ object OtlpHttpMetricExporter {
       */
     def withTimeout(timeout: FiniteDuration): Builder[F]
 
-    /** Enables Gzip compression.
+    /** Sets the compression to use.
       *
-      * The compression is disabled by default.
+      * Default protocol is [[PayloadCompression.none]].
       */
-    def withGzip: Builder[F]
-
-    /** Disables Gzip compression. */
-    def withoutGzip: Builder[F]
+    def withCompression(compression: PayloadCompression): Builder[F]
 
     /** Adds headers to requests. */
     def addHeaders(headers: Headers): Builder[F]
@@ -109,9 +116,9 @@ object OtlpHttpMetricExporter {
 
     /** Configures the exporter to use the given encoding.
       *
-      * Default encoding is `Protobuf`.
+      * Default protocol is [[OtlpProtocol.httpProtobuf]].
       */
-    def withEncoding(encoding: HttpPayloadEncoding): Builder[F]
+    def withProtocol(protocol: OtlpProtocol): Builder[F]
 
     /** Sets the aggregation temporality selector to use.
       *
@@ -154,12 +161,12 @@ object OtlpHttpMetricExporter {
       */
     def withClient(client: Client[F]): Builder[F]
 
-    /** Creates a [[OtlpHttpMetricExporter]] using the configuration of this builder.
+    /** Creates a [[OtlpMetricExporter]] using the configuration of this builder.
       */
     def build: Resource[F, MetricExporter.Push[F]]
   }
 
-  /** Creates a [[Builder]] of [[OtlpHttpMetricExporter]] with the default configuration:
+  /** Creates a [[Builder]] of [[OtlpMetricExporter]] with the default configuration:
     *   - encoding: `Protobuf`
     *   - endpoint: `http://localhost:4318/v1/metrics`
     *   - timeout: `10 seconds`
@@ -167,9 +174,9 @@ object OtlpHttpMetricExporter {
     */
   def builder[F[_]: Async: Network: Compression: Console]: Builder[F] =
     BuilderImpl(
-      encoding = HttpPayloadEncoding.Protobuf,
-      endpoint = Defaults.Endpoint,
-      gzipCompression = Defaults.GzipCompression,
+      protocol = Defaults.Protocol,
+      endpoint = None,
+      compression = Defaults.Compression,
       timeout = Defaults.Timeout,
       headers = Headers.empty,
       retryPolicy = RetryPolicy.default,
@@ -183,9 +190,9 @@ object OtlpHttpMetricExporter {
   private final case class BuilderImpl[
       F[_]: Async: Network: Compression: Console
   ](
-      encoding: HttpPayloadEncoding,
-      endpoint: Uri,
-      gzipCompression: Boolean,
+      protocol: OtlpProtocol,
+      endpoint: Option[Uri],
+      compression: PayloadCompression,
       timeout: FiniteDuration,
       headers: Headers,
       retryPolicy: RetryPolicy,
@@ -200,16 +207,13 @@ object OtlpHttpMetricExporter {
       copy(timeout = timeout)
 
     def withEndpoint(endpoint: Uri): Builder[F] =
-      copy(endpoint = endpoint)
+      copy(endpoint = Some(endpoint))
 
     def addHeaders(headers: Headers): Builder[F] =
       copy(headers = this.headers ++ headers)
 
-    def withGzip: Builder[F] =
-      copy(gzipCompression = true)
-
-    def withoutGzip: Builder[F] =
-      copy(gzipCompression = false)
+    def withCompression(compression: PayloadCompression): Builder[F] =
+      copy(compression = compression)
 
     def withTLSContext(context: TLSContext[F]): Builder[F] =
       copy(tlsContext = Some(context))
@@ -217,8 +221,8 @@ object OtlpHttpMetricExporter {
     def withRetryPolicy(policy: RetryPolicy): Builder[F] =
       copy(retryPolicy = policy)
 
-    def withEncoding(encoding: HttpPayloadEncoding): Builder[F] =
-      copy(encoding = encoding)
+    def withProtocol(protocol: OtlpProtocol): Builder[F] =
+      copy(protocol = protocol)
 
     def withAggregationTemporalitySelector(
         selector: AggregationTemporalitySelector
@@ -242,18 +246,25 @@ object OtlpHttpMetricExporter {
       import MetricsProtoEncoder.exportMetricsRequest
       import MetricsProtoEncoder.jsonPrinter
 
+      val endpoint = this.endpoint.getOrElse {
+        protocol match {
+          case _: OtlpProtocol.Http => Defaults.HttpEndpoint
+          case OtlpProtocol.Grpc    => Defaults.GrpcEndpoint
+        }
+      }
+
       for {
-        client <- OtlpHttpClient.create[F, MetricData](
-          encoding,
+        client <- OtlpClient.create[F, MetricData](
+          protocol,
           endpoint,
-          timeout,
           headers,
-          gzipCompression,
+          compression,
+          timeout,
           retryPolicy,
           tlsContext,
           client
         )
-      } yield new OtlpHttpMetricExporter[F](
+      } yield new OtlpMetricExporter[F](
         client,
         aggregationTemporalitySelector,
         defaultAggregationSelector,

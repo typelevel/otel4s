@@ -14,23 +14,13 @@
  * limitations under the License.
  */
 
-package org.typelevel.otel4s.sdk.exporter.otlp
+package org.typelevel.otel4s.sdk.exporter.otlp.grpc
 
-import cats.Show
+import cats.syntax.foldable._
 
-private[otlp] sealed trait HttpPayloadEncoding {
-  override def toString: String =
-    Show[HttpPayloadEncoding].show(this)
-}
-
-private[otlp] object HttpPayloadEncoding {
-  case object Json extends HttpPayloadEncoding
-  case object Protobuf extends HttpPayloadEncoding
-
-  implicit val httpPayloadEncodingShow: Show[HttpPayloadEncoding] =
-    Show.show {
-      case Json     => "json"
-      case Protobuf => "protobuf"
-    }
-
-}
+private[otlp] final case class GrpcStatusException(
+    status: Int,
+    message: Option[String]
+) extends RuntimeException(
+      s"Grpc error: status [$status]${message.foldMap(m => s", message [$m]")}"
+    )

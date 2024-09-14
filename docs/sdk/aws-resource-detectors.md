@@ -45,7 +45,7 @@ AWSLambdaDetector[IO].detect.unsafeRunSync().foreach { resource =>
 println("```")
 ```
 
-### 3. aws-ec2
+### 2. aws-ec2
 
 The detector fetches instance metadata from the `http://169.254.169.254` endpoint.
 See [AWS documentation](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instancedata-data-retrieval.html) for more
@@ -99,6 +99,51 @@ println("```")
 println("Detected resource: ")
 println("```")
 AWSEC2Detector[IO](uri"", client).detect.unsafeRunSync().foreach { resource =>
+  resource.attributes.toList.sortBy(_.key.name).foreach { attribute =>
+    println(attribute.key.name + ": " + attribute.value)
+  }
+}
+println("```")
+```
+
+### 4. aws-beanstalk
+
+The detector parses environment details from the `/var/elasticbeanstalk/xray/environment.conf` file to configure the telemetry resource.
+
+Expected configuration attributes:
+- `deployment_id`
+- `version_label`
+- `environment_name`
+
+```scala mdoc:reset:passthrough
+import cats.effect.IO
+import cats.effect.unsafe.implicits.global
+import fs2.io.file.Files
+import io.circe.Json
+import io.circe.syntax._
+import org.typelevel.otel4s.sdk.contrib.aws.resource._
+
+val content = Json.obj(
+  "deployment_id" := 2,
+  "version_label" := "1.1",
+  "environment_name" := "production-eu-west"
+).noSpaces
+
+println("The content of the `/var/elasticbeanstalk/xray/environment.conf` file: ")
+println("```json")
+println(content)
+println("```")
+
+println("Detected resource: ")
+println("```yaml")
+val detected = Files[IO].tempFile.use { path =>
+  for {
+    _ <- fs2.Stream(content).through(fs2.text.utf8.encode).through(Files[IO].writeAll(path)).compile.drain
+    r <- AWSBeanstalkDetector[IO](path).detect
+  } yield r
+}.unsafeRunSync()
+
+detected.foreach { resource =>
   resource.attributes.toList.sortBy(_.key.name).foreach { attribute =>
     println(attribute.key.name + ": " + attribute.value)
   }
@@ -167,6 +212,8 @@ object TelemetryApp extends IOApp.Simple {
          .addResourceDetector(AWSLambdaDetector[IO])
         // register AWS EC2 detector
          .addResourceDetector(AWSEC2Detector[IO])
+        // register AWS Beanstalk detector
+         .addResourceDetector(AWSBeanstalkDetector[IO])
       )
       .use { autoConfigured =>
         val sdk = autoConfigured.sdk
@@ -203,6 +250,8 @@ object TelemetryApp extends IOApp.Simple {
          .addResourceDetector(AWSLambdaDetector[IO])
         // register AWS EC2 detector
          .addResourceDetector(AWSEC2Detector[IO])
+        // register AWS Beanstalk detector
+         .addResourceDetector(AWSBeanstalkDetector[IO])
       )
       .use { autoConfigured =>
         program(autoConfigured.tracerProvider)
@@ -231,8 +280,8 @@ There are several ways to configure the options:
 Add settings to the `build.sbt`:
 
 ```scala
-javaOptions += "-Dotel.otel4s.resource.detectors.enabled=aws-lambda,aws-ec2"
-envVars ++= Map("OTEL_OTEL4S_RESOURCE_DETECTORS_ENABLE" -> "aws-lambda,aws-ec2")
+javaOptions += "-Dotel.otel4s.resource.detectors.enabled=aws-lambda,aws-ec2,aws-beanstalk"
+envVars ++= Map("OTEL_OTEL4S_RESOURCE_DETECTORS_ENABLE" -> "aws-lambda,aws-ec2,aws-beanstalk")
 ```
 
 @:choice(scala-cli)
@@ -240,12 +289,12 @@ envVars ++= Map("OTEL_OTEL4S_RESOURCE_DETECTORS_ENABLE" -> "aws-lambda,aws-ec2")
 Add directives to the `*.scala` file:
 
 ```scala
-//> using javaOpt -Dotel.otel4s.resource.detectors.enabled=aws-lambda,aws-ec2
+//> using javaOpt -Dotel.otel4s.resource.detectors.enabled=aws-lambda,aws-ec2,aws-beanstalk
 ```
 
 @:choice(shell)
 
 ```shell
-$ export OTEL_OTEL4S_RESOURCE_DETECTORS_ENABLED=aws-lambda,aws-ec2
+$ export OTEL_OTEL4S_RESOURCE_DETECTORS_ENABLED=aws-lambda,aws-ec2,aws-beanstalk
 ```
 @:@

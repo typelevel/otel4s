@@ -131,7 +131,8 @@
   <ul class="nav-list">
     <li class="level1 nav-node"><a href="#the-list-of-detectors">The list of detectors</a></li>
     <li class="level2 nav-leaf"><a href="#_1-aws-lambda">1. aws-lambda</a></li>
-    <li class="level2 nav-leaf"><a href="#_3-aws-ec2">3. aws-ec2</a></li>
+    <li class="level2 nav-leaf"><a href="#_2-aws-ec2">2. aws-ec2</a></li>
+    <li class="level2 nav-leaf"><a href="#_4-aws-beanstalk">4. aws-beanstalk</a></li>
     <li class="level1 nav-leaf"><a href="#getting-started">Getting Started</a></li>
     <li class="level1 nav-leaf"><a href="#configuration">Configuration</a></li>
   </ul>
@@ -163,7 +164,7 @@ cloud.region: eu-west-1
 faas.name: function
 faas.version: 0.0.1</code></pre>
         
-        <h3 id="_3-aws-ec2" class="section"><a class="anchor-link left" href="#_3-aws-ec2"><i class="icofont-laika link">&#xef71;</i></a>3. aws-ec2</h3>
+        <h3 id="_2-aws-ec2" class="section"><a class="anchor-link left" href="#_2-aws-ec2"><i class="icofont-laika link">&#xef71;</i></a>2. aws-ec2</h3>
         <p>The detector fetches instance metadata from the <code>http://169.254.169.254</code> endpoint.
         See <a href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instancedata-data-retrieval.html">AWS documentation</a> for more
         details.</p>
@@ -191,6 +192,23 @@ host.id: i-abc321de
 host.image.id: ami-abc123de
 host.name: ip-10-0-0-1.eu-west-1.compute.internal
 host.type: t3.small</code></pre>
+        
+        <h3 id="_4-aws-beanstalk" class="section"><a class="anchor-link left" href="#_4-aws-beanstalk"><i class="icofont-laika link">&#xef71;</i></a>4. aws-beanstalk</h3>
+        <p>The detector parses environment details from the <code>/var/elasticbeanstalk/xray/environment.conf</code> file to configure the telemetry resource.</p>
+        <p>Expected configuration attributes:</p>
+        <ul>
+          <li><code>deployment_id</code></li>
+          <li><code>version_label</code></li>
+          <li><code>environment_name</code></li>
+        </ul>
+        <p>The content of the <code>/var/elasticbeanstalk/xray/environment.conf</code> file: </p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span>{</span><span class="attribute-name">&quot;deployment_id&quot;</span><span>:</span><span class="number-literal">2</span><span>,</span><span class="attribute-name">&quot;version_label&quot;</span><span>:</span><span class="string-literal">&quot;1.1&quot;</span><span>,</span><span class="attribute-name">&quot;environment_name&quot;</span><span>:</span><span class="string-literal">&quot;production-eu-west&quot;</span><span>}</span></code></pre>
+        <p>Detected resource: </p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="attribute-name">cloud.platform</span><span>: </span><span class="string-literal">aws_elastic_beanstalk</span><span>
+</span><span class="attribute-name">cloud.provider</span><span>: </span><span class="string-literal">aws</span><span>
+</span><span class="attribute-name">service.instance.id</span><span>: </span><span class="number-literal">2</span><span>
+</span><span class="attribute-name">service.namespace</span><span>: </span><span class="string-literal">production-eu-west</span><span>
+</span><span class="attribute-name">service.version</span><span>: </span><span class="number-literal">1.1</span></code></pre>
         
         <h2 id="getting-started" class="section"><a class="anchor-link left" href="#getting-started"><i class="icofont-laika link">&#xef71;</i></a>Getting Started</h2>
         <div class="tab-container" data-tab-group="build-tool">
@@ -245,6 +263,8 @@ host.type: t3.small</code></pre>
 </span><span>         .</span><span class="identifier">addResourceDetector</span><span>(</span><span class="type-name">AWSLambdaDetector</span><span>[</span><span class="type-name">IO</span><span>])
         </span><span class="comment">// register AWS EC2 detector
 </span><span>         .</span><span class="identifier">addResourceDetector</span><span>(</span><span class="type-name">AWSEC2Detector</span><span>[</span><span class="type-name">IO</span><span>])
+        </span><span class="comment">// register AWS Beanstalk detector
+</span><span>         .</span><span class="identifier">addResourceDetector</span><span>(</span><span class="type-name">AWSBeanstalkDetector</span><span>[</span><span class="type-name">IO</span><span>])
       )
       .</span><span class="identifier">use</span><span> { </span><span class="identifier">autoConfigured</span><span> =&gt;
         </span><span class="keyword">val</span><span> </span><span class="identifier">sdk</span><span> = </span><span class="identifier">autoConfigured</span><span>.</span><span class="identifier">sdk</span><span>
@@ -277,6 +297,8 @@ host.type: t3.small</code></pre>
 </span><span>         .</span><span class="identifier">addResourceDetector</span><span>(</span><span class="type-name">AWSLambdaDetector</span><span>[</span><span class="type-name">IO</span><span>])
         </span><span class="comment">// register AWS EC2 detector
 </span><span>         .</span><span class="identifier">addResourceDetector</span><span>(</span><span class="type-name">AWSEC2Detector</span><span>[</span><span class="type-name">IO</span><span>])
+        </span><span class="comment">// register AWS Beanstalk detector
+</span><span>         .</span><span class="identifier">addResourceDetector</span><span>(</span><span class="type-name">AWSBeanstalkDetector</span><span>[</span><span class="type-name">IO</span><span>])
       )
       .</span><span class="identifier">use</span><span> { </span><span class="identifier">autoConfigured</span><span> =&gt;
         </span><span class="identifier">program</span><span>(</span><span class="identifier">autoConfigured</span><span>.</span><span class="identifier">tracerProvider</span><span>)
@@ -302,15 +324,15 @@ host.type: t3.small</code></pre>
           </ul>
           <div class="tab-content active" data-choice-name="sbt">
             <p>Add settings to the <code>build.sbt</code>:</p>
-            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">javaOptions</span><span> += </span><span class="string-literal">&quot;-Dotel.otel4s.resource.detectors.enabled=aws-lambda,aws-ec2&quot;</span><span>
-</span><span class="identifier">envVars</span><span> ++= </span><span class="type-name">Map</span><span>(</span><span class="string-literal">&quot;OTEL_OTEL4S_RESOURCE_DETECTORS_ENABLE&quot;</span><span> -&gt; </span><span class="string-literal">&quot;aws-lambda,aws-ec2&quot;</span><span>)</span></code></pre>
+            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">javaOptions</span><span> += </span><span class="string-literal">&quot;-Dotel.otel4s.resource.detectors.enabled=aws-lambda,aws-ec2,aws-beanstalk&quot;</span><span>
+</span><span class="identifier">envVars</span><span> ++= </span><span class="type-name">Map</span><span>(</span><span class="string-literal">&quot;OTEL_OTEL4S_RESOURCE_DETECTORS_ENABLE&quot;</span><span> -&gt; </span><span class="string-literal">&quot;aws-lambda,aws-ec2,aws-beanstalk&quot;</span><span>)</span></code></pre>
           </div>
           <div class="tab-content" data-choice-name="scala-cli">
             <p>Add directives to the <code>*.scala</code> file:</p>
-            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="comment">//&gt; using javaOpt -Dotel.otel4s.resource.detectors.enabled=aws-lambda,aws-ec2</span></code></pre>
+            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="comment">//&gt; using javaOpt -Dotel.otel4s.resource.detectors.enabled=aws-lambda,aws-ec2,aws-beanstalk</span></code></pre>
           </div>
           <div class="tab-content" data-choice-name="shell">
-            <pre class="keep-together pdf epub"><code class="nohighlight"><span>$ </span><span class="identifier">export</span><span> OTEL_OTEL4S_RESOURCE_DETECTORS_ENABLED=aws-lambda,aws-ec</span><span class="number-literal">2</span></code></pre>
+            <pre class="keep-together pdf epub"><code class="nohighlight"><span>$ </span><span class="identifier">export</span><span> OTEL_OTEL4S_RESOURCE_DETECTORS_ENABLED=aws-lambda,aws-ec</span><span class="number-literal">2</span><span>,aws-beanstalk</span></code></pre>
           </div>
         </div>
 

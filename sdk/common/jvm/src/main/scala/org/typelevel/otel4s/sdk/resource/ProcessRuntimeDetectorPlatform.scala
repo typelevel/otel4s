@@ -43,11 +43,14 @@ private[resource] trait ProcessRuntimeDetectorPlatform {
       } yield {
         val attributes = Attributes.newBuilder
 
-        runtimeName.foreach(name => attributes.addOne(Keys.Name(name)))
-        runtimeVersion.foreach(name => attributes.addOne(Keys.Version(name)))
-        (vmVendor, vmName, vmVersion).mapN { (vendor, name, version) =>
-          attributes.addOne(Keys.Description(s"$vendor $name $version"))
-        }
+        val description =
+          (vmVendor, vmName, vmVersion).mapN { (vendor, name, version) =>
+            s"$vendor $name $version"
+          }
+
+        attributes.addAll(Keys.Name.maybe(runtimeName))
+        attributes.addAll(Keys.Version.maybe(runtimeVersion))
+        attributes.addAll(Keys.Description.maybe(description))
 
         Some(TelemetryResource(attributes.result(), Some(SchemaUrls.Current)))
       }

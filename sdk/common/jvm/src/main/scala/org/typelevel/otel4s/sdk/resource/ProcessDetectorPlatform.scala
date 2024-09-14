@@ -49,7 +49,7 @@ private[resource] trait ProcessDetectorPlatform { self: ProcessDetector.type =>
       } yield {
         val builder = Attributes.newBuilder
 
-        getPid(runtime).foreach(pid => builder.addOne(Keys.Pid(pid)))
+        builder.addAll(Keys.Pid.maybe(getPid(runtime)))
 
         javaHomeOpt.foreach { javaHome =>
           val exePath = executablePath(javaHome, osNameOpt)

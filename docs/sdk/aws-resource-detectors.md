@@ -36,7 +36,7 @@ envEntries.foreach { case (k, v) => println(s"${k.replace("_", "_")}=$v") }
 println("```")
 
 println("Detected resource: ")
-println("```")
+println("```yaml")
 AWSLambdaDetector[IO].detect.unsafeRunSync().foreach { resource =>
   resource.attributes.toList.sortBy(_.key.name).foreach { attribute =>
     println(attribute.key.name + ": " + attribute.value)
@@ -97,8 +97,110 @@ println(hostname)
 println("```")
 
 println("Detected resource: ")
-println("```")
+println("```yaml")
 AWSEC2Detector[IO](uri"", client).detect.unsafeRunSync().foreach { resource =>
+  resource.attributes.toList.sortBy(_.key.name).foreach { attribute =>
+    println(attribute.key.name + ": " + attribute.value)
+  }
+}
+println("```")
+```
+
+### 3. aws-ecs
+
+The detector fetches ECS container and task metadata.
+The base URI is obtained from `ECS_CONTAINER_METADATA_URI_V4` or `ECS_CONTAINER_METADATA_URI` env variable.
+
+See [AWS documentation](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task-metadata-endpoint-v4.html) for more
+details.
+
+```scala mdoc:reset:passthrough
+import cats.effect.IO
+import cats.effect.std.Env
+import cats.effect.unsafe.implicits.global
+import io.circe.Json
+import io.circe.syntax._
+import org.http4s._
+import org.http4s.circe.jsonEncoder
+import org.http4s.client.Client
+import org.http4s.dsl.io._
+import org.typelevel.otel4s.sdk.contrib.aws.resource._
+import scala.collection.immutable
+
+val envEntries = Map(
+  "ECS_CONTAINER_METADATA_URI_V4" -> "http://169.254.170.2/v4/5fb8fcdd-29f2-490f-8229-c1269d11a9d9"
+)
+
+implicit val env: Env[IO] = new Env[IO] {
+  def get(name: String): IO[Option[String]] = IO.pure(envEntries.get(name))
+  def entries: IO[immutable.Iterable[(String, String)]] = IO.pure(envEntries)
+}
+
+val accountId = "1234567890"
+val region = "eu-west-1"
+val taskId = "5e1b...86980"
+val family = "service-production"
+val cluster = "production"
+val revision = "11"
+val taskArn = s"arn:aws:ecs:$region:$accountId:task/$cluster/$taskId"
+
+val container = Json.obj(
+  "DockerId" := "83b2af5973dc...ee1e1",
+  "Name" := "server",
+  "DockerName" := s"ecs-$family-$revision-server-e4e7efbceda7b7c68601",
+  "Image" := s"$accountId.dkr.ecr.$region.amazonaws.com/internal/repository:8abab2a5",
+  "ImageID" := "sha256:7382b7779e6038...11f2d7d522d",
+  "DesiredStatus" := "RUNNING",
+  "CreatedAt" := "2024-09-12T18:08:55.593944224Z",
+  "StartedAt" := "2024-09-12T18:08:56.524454503Z",
+  "Type" := "NORMAL",
+  "Health" := Json.obj("status" := "HEALTHY"),
+  "LogDriver" := "awslogs",
+  "LogOptions" := Json.obj(
+    "awslogs-group" := s"/ecs/$cluster/service",
+    "awslogs-region" := region,
+    "awslogs-stream" := s"ecs/server/$taskId"
+  ),
+  "ContainerARN" := s"$taskArn/1a1c23fe-1718-4eed-9833-c3dc2dad712c"
+)
+
+val task = Json.obj(
+  "Cluster" := cluster,
+  "TaskARN" := taskArn,
+  "Family" := family,
+  "Revision" := revision,
+  "DesiredStatus" := "RUNNING",
+  "KnownStatus" := "RUNNING",
+  "PullStartedAt" := "2024-09-12T18:08:55.307387715Z",
+  "PullStoppedAt" := "2024-09-12T18:08:55.564707417Z",
+  "AvailabilityZone" := "eu-west-1a",
+  "LaunchType" := "EC2",
+  "VPCID" := "vpc-123",
+  "ServiceName" := "service"
+)
+
+val client = Client.fromHttpApp[IO](
+  HttpRoutes
+    .of[IO] {
+      case GET -> Root / "v4" / "5fb8fcdd-29f2-490f-8229-c1269d11a9d9"          => Ok(container)
+      case GET -> Root / "v4" / "5fb8fcdd-29f2-490f-8229-c1269d11a9d9" / "task" => Ok(task)
+    }
+    .orNotFound
+)
+
+println("The `http://169.254.170.2/v4/5fb8fcdd-29f2-490f-8229-c1269d11a9d9` response: ")
+println("```json")
+println(container)
+println("```")
+
+println("The `http://169.254.170.2/v4/5fb8fcdd-29f2-490f-8229-c1269d11a9d9/task` response:")
+println("```json")
+println(task)
+println("```")
+
+println("Detected resource: ")
+println("```yaml")
+AWSECSDetector[IO](client).detect.unsafeRunSync().foreach { resource =>
   resource.attributes.toList.sortBy(_.key.name).foreach { attribute =>
     println(attribute.key.name + ": " + attribute.value)
   }
@@ -212,6 +314,8 @@ object TelemetryApp extends IOApp.Simple {
          .addResourceDetector(AWSLambdaDetector[IO])
         // register AWS EC2 detector
          .addResourceDetector(AWSEC2Detector[IO])
+        // register AWS ECS detector
+         .addResourceDetector(AWSECSDetector[IO])
         // register AWS Beanstalk detector
          .addResourceDetector(AWSBeanstalkDetector[IO])
       )
@@ -250,6 +354,8 @@ object TelemetryApp extends IOApp.Simple {
          .addResourceDetector(AWSLambdaDetector[IO])
         // register AWS EC2 detector
          .addResourceDetector(AWSEC2Detector[IO])
+        // register AWS ECS detector
+         .addResourceDetector(AWSECSDetector[IO])
         // register AWS Beanstalk detector
          .addResourceDetector(AWSBeanstalkDetector[IO])
       )
@@ -280,8 +386,8 @@ There are several ways to configure the options:
 Add settings to the `build.sbt`:
 
 ```scala
-javaOptions += "-Dotel.otel4s.resource.detectors.enabled=aws-lambda,aws-ec2,aws-beanstalk"
-envVars ++= Map("OTEL_OTEL4S_RESOURCE_DETECTORS_ENABLE" -> "aws-lambda,aws-ec2,aws-beanstalk")
+javaOptions += "-Dotel.otel4s.resource.detectors.enabled=aws-lambda,aws-ec2,aws-ecs,aws-beanstalk"
+envVars ++= Map("OTEL_OTEL4S_RESOURCE_DETECTORS_ENABLE" -> "aws-lambda,aws-ec2,aws-ecs,aws-beanstalk")
 ```
 
 @:choice(scala-cli)
@@ -289,12 +395,12 @@ envVars ++= Map("OTEL_OTEL4S_RESOURCE_DETECTORS_ENABLE" -> "aws-lambda,aws-ec2,a
 Add directives to the `*.scala` file:
 
 ```scala
-//> using javaOpt -Dotel.otel4s.resource.detectors.enabled=aws-lambda,aws-ec2,aws-beanstalk
+//> using javaOpt -Dotel.otel4s.resource.detectors.enabled=aws-lambda,aws-ec2,aws-ecs,aws-beanstalk
 ```
 
 @:choice(shell)
 
 ```shell
-$ export OTEL_OTEL4S_RESOURCE_DETECTORS_ENABLED=aws-lambda,aws-ec2,aws-beanstalk
+$ export OTEL_OTEL4S_RESOURCE_DETECTORS_ENABLED=aws-lambda,aws-ec2,aws-ecs,aws-beanstalk
 ```
 @:@

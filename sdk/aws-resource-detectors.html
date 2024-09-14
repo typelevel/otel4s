@@ -132,6 +132,7 @@
     <li class="level1 nav-node"><a href="#the-list-of-detectors">The list of detectors</a></li>
     <li class="level2 nav-leaf"><a href="#_1-aws-lambda">1. aws-lambda</a></li>
     <li class="level2 nav-leaf"><a href="#_2-aws-ec2">2. aws-ec2</a></li>
+    <li class="level2 nav-leaf"><a href="#_3-aws-ecs">3. aws-ecs</a></li>
     <li class="level2 nav-leaf"><a href="#_4-aws-beanstalk">4. aws-beanstalk</a></li>
     <li class="level1 nav-leaf"><a href="#getting-started">Getting Started</a></li>
     <li class="level1 nav-leaf"><a href="#configuration">Configuration</a></li>
@@ -158,11 +159,11 @@
 AWS_LAMBDA_FUNCTION_NAME=function
 AWS_LAMBDA_FUNCTION_VERSION=0.0.1</code></pre>
         <p>Detected resource: </p>
-        <pre><code>cloud.platform: aws_lambda
-cloud.provider: aws
-cloud.region: eu-west-1
-faas.name: function
-faas.version: 0.0.1</code></pre>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="attribute-name">cloud.platform</span><span>: </span><span class="string-literal">aws_lambda</span><span>
+</span><span class="attribute-name">cloud.provider</span><span>: </span><span class="string-literal">aws</span><span>
+</span><span class="attribute-name">cloud.region</span><span>: </span><span class="string-literal">eu-west-1</span><span>
+</span><span class="attribute-name">faas.name</span><span>: </span><span class="string-literal">function</span><span>
+</span><span class="attribute-name">faas.version</span><span>: </span><span class="number-literal">0.0</span><span>.1</span></code></pre>
         
         <h3 id="_2-aws-ec2" class="section"><a class="anchor-link left" href="#_2-aws-ec2"><i class="icofont-laika link">&#xef71;</i></a>2. aws-ec2</h3>
         <p>The detector fetches instance metadata from the <code>http://169.254.169.254</code> endpoint.
@@ -183,15 +184,80 @@ faas.version: 0.0.1</code></pre>
         <p>The <code>http://169.254.169.254/latest/meta-data/hostname</code> response:</p>
         <pre><code>ip-10-0-0-1.eu-west-1.compute.internal</code></pre>
         <p>Detected resource: </p>
-        <pre><code>cloud.account.id: 1234567890
-cloud.availability_zone: eu-west-1a
-cloud.platform: aws_ec2
-cloud.provider: aws
-cloud.region: eu-west-1
-host.id: i-abc321de
-host.image.id: ami-abc123de
-host.name: ip-10-0-0-1.eu-west-1.compute.internal
-host.type: t3.small</code></pre>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="attribute-name">cloud.account.id</span><span>: </span><span class="number-literal">1234567890</span><span>
+</span><span class="attribute-name">cloud.availability_zone</span><span>: </span><span class="string-literal">eu-west-1a</span><span>
+</span><span class="attribute-name">cloud.platform</span><span>: </span><span class="string-literal">aws_ec2</span><span>
+</span><span class="attribute-name">cloud.provider</span><span>: </span><span class="string-literal">aws</span><span>
+</span><span class="attribute-name">cloud.region</span><span>: </span><span class="string-literal">eu-west-1</span><span>
+</span><span class="attribute-name">host.id</span><span>: </span><span class="string-literal">i-abc321de</span><span>
+</span><span class="attribute-name">host.image.id</span><span>: </span><span class="string-literal">ami-abc123de</span><span>
+</span><span class="attribute-name">host.name</span><span>: </span><span class="string-literal">ip-10-0-0-1.eu-west-1.compute.internal</span><span>
+</span><span class="attribute-name">host.type</span><span>: </span><span class="string-literal">t3.small</span></code></pre>
+        
+        <h3 id="_3-aws-ecs" class="section"><a class="anchor-link left" href="#_3-aws-ecs"><i class="icofont-laika link">&#xef71;</i></a>3. aws-ecs</h3>
+        <p>The detector fetches ECS container and task metadata.
+        The base URI is obtained from <code>ECS_CONTAINER_METADATA_URI_V4</code> or <code>ECS_CONTAINER_METADATA_URI</code> env variable.</p>
+        <p>See <a href="https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task-metadata-endpoint-v4.html">AWS documentation</a> for more
+        details.</p>
+        <p>The <code>http://169.254.170.2/v4/5fb8fcdd-29f2-490f-8229-c1269d11a9d9</code> response: </p>
+        <pre><code class="nohighlight"><span>{
+  </span><span class="attribute-name">&quot;DockerId&quot;</span><span> : </span><span class="string-literal">&quot;83b2af5973dc...ee1e1&quot;</span><span>,
+  </span><span class="attribute-name">&quot;Name&quot;</span><span> : </span><span class="string-literal">&quot;server&quot;</span><span>,
+  </span><span class="attribute-name">&quot;DockerName&quot;</span><span> : </span><span class="string-literal">&quot;ecs-service-production-11-server-e4e7efbceda7b7c68601&quot;</span><span>,
+  </span><span class="attribute-name">&quot;Image&quot;</span><span> : </span><span class="string-literal">&quot;1234567890.dkr.ecr.eu-west-1.amazonaws.com/internal/repository:8abab2a5&quot;</span><span>,
+  </span><span class="attribute-name">&quot;ImageID&quot;</span><span> : </span><span class="string-literal">&quot;sha256:7382b7779e6038...11f2d7d522d&quot;</span><span>,
+  </span><span class="attribute-name">&quot;DesiredStatus&quot;</span><span> : </span><span class="string-literal">&quot;RUNNING&quot;</span><span>,
+  </span><span class="attribute-name">&quot;CreatedAt&quot;</span><span> : </span><span class="string-literal">&quot;2024-09-12T18:08:55.593944224Z&quot;</span><span>,
+  </span><span class="attribute-name">&quot;StartedAt&quot;</span><span> : </span><span class="string-literal">&quot;2024-09-12T18:08:56.524454503Z&quot;</span><span>,
+  </span><span class="attribute-name">&quot;Type&quot;</span><span> : </span><span class="string-literal">&quot;NORMAL&quot;</span><span>,
+  </span><span class="attribute-name">&quot;Health&quot;</span><span> : {
+    </span><span class="attribute-name">&quot;status&quot;</span><span> : </span><span class="string-literal">&quot;HEALTHY&quot;</span><span>
+  },
+  </span><span class="attribute-name">&quot;LogDriver&quot;</span><span> : </span><span class="string-literal">&quot;awslogs&quot;</span><span>,
+  </span><span class="attribute-name">&quot;LogOptions&quot;</span><span> : {
+    </span><span class="attribute-name">&quot;awslogs-group&quot;</span><span> : </span><span class="string-literal">&quot;/ecs/production/service&quot;</span><span>,
+    </span><span class="attribute-name">&quot;awslogs-region&quot;</span><span> : </span><span class="string-literal">&quot;eu-west-1&quot;</span><span>,
+    </span><span class="attribute-name">&quot;awslogs-stream&quot;</span><span> : </span><span class="string-literal">&quot;ecs/server/5e1b...86980&quot;</span><span>
+  },
+  </span><span class="attribute-name">&quot;ContainerARN&quot;</span><span> : </span><span class="string-literal">&quot;arn:aws:ecs:eu-west-1:1234567890:task/production/5e1b...86980/1a1c23fe-1718-4eed-9833-c3dc2dad712c&quot;</span><span>
+}</span></code></pre>
+        <p>The <code>http://169.254.170.2/v4/5fb8fcdd-29f2-490f-8229-c1269d11a9d9/task</code> response:</p>
+        <pre><code class="nohighlight"><span>{
+  </span><span class="attribute-name">&quot;Cluster&quot;</span><span> : </span><span class="string-literal">&quot;production&quot;</span><span>,
+  </span><span class="attribute-name">&quot;TaskARN&quot;</span><span> : </span><span class="string-literal">&quot;arn:aws:ecs:eu-west-1:1234567890:task/production/5e1b...86980&quot;</span><span>,
+  </span><span class="attribute-name">&quot;Family&quot;</span><span> : </span><span class="string-literal">&quot;service-production&quot;</span><span>,
+  </span><span class="attribute-name">&quot;Revision&quot;</span><span> : </span><span class="string-literal">&quot;11&quot;</span><span>,
+  </span><span class="attribute-name">&quot;DesiredStatus&quot;</span><span> : </span><span class="string-literal">&quot;RUNNING&quot;</span><span>,
+  </span><span class="attribute-name">&quot;KnownStatus&quot;</span><span> : </span><span class="string-literal">&quot;RUNNING&quot;</span><span>,
+  </span><span class="attribute-name">&quot;PullStartedAt&quot;</span><span> : </span><span class="string-literal">&quot;2024-09-12T18:08:55.307387715Z&quot;</span><span>,
+  </span><span class="attribute-name">&quot;PullStoppedAt&quot;</span><span> : </span><span class="string-literal">&quot;2024-09-12T18:08:55.564707417Z&quot;</span><span>,
+  </span><span class="attribute-name">&quot;AvailabilityZone&quot;</span><span> : </span><span class="string-literal">&quot;eu-west-1a&quot;</span><span>,
+  </span><span class="attribute-name">&quot;LaunchType&quot;</span><span> : </span><span class="string-literal">&quot;EC2&quot;</span><span>,
+  </span><span class="attribute-name">&quot;VPCID&quot;</span><span> : </span><span class="string-literal">&quot;vpc-123&quot;</span><span>,
+  </span><span class="attribute-name">&quot;ServiceName&quot;</span><span> : </span><span class="string-literal">&quot;service&quot;</span><span>
+}</span></code></pre>
+        <p>Detected resource: </p>
+        <pre><code class="nohighlight"><span class="attribute-name">aws.ecs.cluster.arn</span><span>: </span><span class="string-literal">arn:aws:ecs:eu-west-1:1234567890:cluster/production</span><span>
+</span><span class="attribute-name">aws.ecs.container.arn</span><span>: </span><span class="string-literal">arn:aws:ecs:eu-west-1:1234567890:task/production/5e1b...86980/1a1c23fe-1718-4eed-9833-c3dc2dad712c</span><span>
+</span><span class="attribute-name">aws.ecs.container.image.id</span><span>: </span><span class="string-literal">sha256:7382b7779e6038...11f2d7d522d</span><span>
+</span><span class="attribute-name">aws.ecs.launchtype</span><span>: </span><span class="string-literal">EC2</span><span>
+</span><span class="attribute-name">aws.ecs.task.arn</span><span>: </span><span class="string-literal">arn:aws:ecs:eu-west-1:1234567890:task/production/5e1b...86980</span><span>
+</span><span class="attribute-name">aws.ecs.task.family</span><span>: </span><span class="string-literal">service-production</span><span>
+</span><span class="attribute-name">aws.ecs.task.revision</span><span>: </span><span class="number-literal">11</span><span>
+</span><span class="attribute-name">aws.log.group.arns</span><span>: </span><span class="string-literal">List(arn:aws:logs:eu-west-1:1234567890:log-group:/ecs/production/service)</span><span>
+</span><span class="attribute-name">aws.log.group.names</span><span>: </span><span class="string-literal">List(/ecs/production/service)</span><span>
+</span><span class="attribute-name">aws.log.stream.arns</span><span>: </span><span class="string-literal">List(arn:aws:logs:eu-west-1:1234567890:log-group:/ecs/production/service:log-stream:ecs/server/5e1b...86980)</span><span>
+</span><span class="attribute-name">aws.log.stream.names</span><span>: </span><span class="string-literal">List(ecs/server/5e1b...86980)</span><span>
+</span><span class="attribute-name">cloud.account.id</span><span>: </span><span class="number-literal">1234567890</span><span>
+</span><span class="attribute-name">cloud.availability_zone</span><span>: </span><span class="string-literal">eu-west-1a</span><span>
+</span><span class="attribute-name">cloud.platform</span><span>: </span><span class="string-literal">aws_ecs</span><span>
+</span><span class="attribute-name">cloud.provider</span><span>: </span><span class="string-literal">aws</span><span>
+</span><span class="attribute-name">cloud.region</span><span>: </span><span class="string-literal">eu-west-1</span><span>
+</span><span class="attribute-name">cloud.resource_id</span><span>: </span><span class="string-literal">arn:aws:ecs:eu-west-1:1234567890:task/production/5e1b...86980/1a1c23fe-1718-4eed-9833-c3dc2dad712c</span><span>
+</span><span class="attribute-name">container.id</span><span>: </span><span class="string-literal">83b2af5973dc...ee1e1</span><span>
+</span><span class="attribute-name">container.image.name</span><span>: </span><span class="number-literal">1234567890</span><span>.dkr.ecr.eu-west-1.amazonaws.com/internal/repository
+</span><span class="attribute-name">container.image.tags</span><span>: </span><span class="string-literal">List(8abab2a5)</span><span>
+</span><span class="attribute-name">container.name</span><span>: </span><span class="string-literal">ecs-service-production-11-server-e4e7efbceda7b7c68601</span></code></pre>
         
         <h3 id="_4-aws-beanstalk" class="section"><a class="anchor-link left" href="#_4-aws-beanstalk"><i class="icofont-laika link">&#xef71;</i></a>4. aws-beanstalk</h3>
         <p>The detector parses environment details from the <code>/var/elasticbeanstalk/xray/environment.conf</code> file to configure the telemetry resource.</p>
@@ -263,6 +329,8 @@ host.type: t3.small</code></pre>
 </span><span>         .</span><span class="identifier">addResourceDetector</span><span>(</span><span class="type-name">AWSLambdaDetector</span><span>[</span><span class="type-name">IO</span><span>])
         </span><span class="comment">// register AWS EC2 detector
 </span><span>         .</span><span class="identifier">addResourceDetector</span><span>(</span><span class="type-name">AWSEC2Detector</span><span>[</span><span class="type-name">IO</span><span>])
+        </span><span class="comment">// register AWS ECS detector
+</span><span>         .</span><span class="identifier">addResourceDetector</span><span>(</span><span class="type-name">AWSECSDetector</span><span>[</span><span class="type-name">IO</span><span>])
         </span><span class="comment">// register AWS Beanstalk detector
 </span><span>         .</span><span class="identifier">addResourceDetector</span><span>(</span><span class="type-name">AWSBeanstalkDetector</span><span>[</span><span class="type-name">IO</span><span>])
       )
@@ -297,6 +365,8 @@ host.type: t3.small</code></pre>
 </span><span>         .</span><span class="identifier">addResourceDetector</span><span>(</span><span class="type-name">AWSLambdaDetector</span><span>[</span><span class="type-name">IO</span><span>])
         </span><span class="comment">// register AWS EC2 detector
 </span><span>         .</span><span class="identifier">addResourceDetector</span><span>(</span><span class="type-name">AWSEC2Detector</span><span>[</span><span class="type-name">IO</span><span>])
+        </span><span class="comment">// register AWS ECS detector
+</span><span>         .</span><span class="identifier">addResourceDetector</span><span>(</span><span class="type-name">AWSECSDetector</span><span>[</span><span class="type-name">IO</span><span>])
         </span><span class="comment">// register AWS Beanstalk detector
 </span><span>         .</span><span class="identifier">addResourceDetector</span><span>(</span><span class="type-name">AWSBeanstalkDetector</span><span>[</span><span class="type-name">IO</span><span>])
       )
@@ -324,15 +394,15 @@ host.type: t3.small</code></pre>
           </ul>
           <div class="tab-content active" data-choice-name="sbt">
             <p>Add settings to the <code>build.sbt</code>:</p>
-            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">javaOptions</span><span> += </span><span class="string-literal">&quot;-Dotel.otel4s.resource.detectors.enabled=aws-lambda,aws-ec2,aws-beanstalk&quot;</span><span>
-</span><span class="identifier">envVars</span><span> ++= </span><span class="type-name">Map</span><span>(</span><span class="string-literal">&quot;OTEL_OTEL4S_RESOURCE_DETECTORS_ENABLE&quot;</span><span> -&gt; </span><span class="string-literal">&quot;aws-lambda,aws-ec2,aws-beanstalk&quot;</span><span>)</span></code></pre>
+            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">javaOptions</span><span> += </span><span class="string-literal">&quot;-Dotel.otel4s.resource.detectors.enabled=aws-lambda,aws-ec2,aws-ecs,aws-beanstalk&quot;</span><span>
+</span><span class="identifier">envVars</span><span> ++= </span><span class="type-name">Map</span><span>(</span><span class="string-literal">&quot;OTEL_OTEL4S_RESOURCE_DETECTORS_ENABLE&quot;</span><span> -&gt; </span><span class="string-literal">&quot;aws-lambda,aws-ec2,aws-ecs,aws-beanstalk&quot;</span><span>)</span></code></pre>
           </div>
           <div class="tab-content" data-choice-name="scala-cli">
             <p>Add directives to the <code>*.scala</code> file:</p>
-            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="comment">//&gt; using javaOpt -Dotel.otel4s.resource.detectors.enabled=aws-lambda,aws-ec2,aws-beanstalk</span></code></pre>
+            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="comment">//&gt; using javaOpt -Dotel.otel4s.resource.detectors.enabled=aws-lambda,aws-ec2,aws-ecs,aws-beanstalk</span></code></pre>
           </div>
           <div class="tab-content" data-choice-name="shell">
-            <pre class="keep-together pdf epub"><code class="nohighlight"><span>$ </span><span class="identifier">export</span><span> OTEL_OTEL4S_RESOURCE_DETECTORS_ENABLED=aws-lambda,aws-ec</span><span class="number-literal">2</span><span>,aws-beanstalk</span></code></pre>
+            <pre class="keep-together pdf epub"><code class="nohighlight"><span>$ </span><span class="identifier">export</span><span> OTEL_OTEL4S_RESOURCE_DETECTORS_ENABLED=aws-lambda,aws-ec</span><span class="number-literal">2</span><span>,aws-ecs,aws-beanstalk</span></code></pre>
           </div>
         </div>
 

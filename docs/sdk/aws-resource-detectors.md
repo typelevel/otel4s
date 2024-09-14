@@ -1,6 +1,6 @@
 # AWS | Resource detectors
 
-Resource detectors can add environment-specific attributes to the telemetry resource. 
+Resource detectors can add environment-specific attributes to the telemetry resource.
 AWS detectors are implemented as a third-party library, and you need to enable them manually.
 
 ## The list of detectors
@@ -38,6 +38,67 @@ println("```")
 println("Detected resource: ")
 println("```")
 AWSLambdaDetector[IO].detect.unsafeRunSync().foreach { resource =>
+  resource.attributes.toList.sortBy(_.key.name).foreach { attribute =>
+    println(attribute.key.name + ": " + attribute.value)
+  }
+}
+println("```")
+```
+
+### 3. aws-ec2
+
+The detector fetches instance metadata from the `http://169.254.169.254` endpoint.
+See [AWS documentation](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instancedata-data-retrieval.html) for more
+details.
+
+```scala mdoc:reset:passthrough
+import cats.effect.IO
+import cats.effect.unsafe.implicits.global
+import io.circe.Json
+import io.circe.syntax._
+import org.http4s._
+import org.http4s.circe.jsonEncoder
+import org.http4s.client.Client
+import org.http4s.dsl.io._
+import org.http4s.syntax.literals._
+import org.typelevel.otel4s.sdk.contrib.aws.resource._
+
+val hostname = "ip-10-0-0-1.eu-west-1.compute.internal"
+val metadata = Json.obj(
+  "accountId" := "1234567890",
+  "architecture" := "x86_64",
+  "availabilityZone" := "eu-west-1a",
+  "imageId" := "ami-abc123de",
+  "instanceId" := "i-abc321de",
+  "instanceType" := "t3.small",
+  "privateIp" := "10.0.0.1",
+  "region" := "eu-west-1",
+  "version" := "2017-09-30"
+)
+
+val client = Client.fromHttpApp[IO](
+  HttpRoutes
+    .of[IO] {
+      case GET -> Root / "latest" / "meta-data" / "hostname" => Ok(hostname)
+      case GET -> Root / "latest" / "dynamic" / "instance-identity" / "document" => Ok(metadata)
+      case PUT -> Root / "latest" / "api" / "token" => Ok("token")
+    }
+    .orNotFound
+)
+
+println("The `http://169.254.169.254/latest/dynamic/instance-identity/document` response: ")
+println("```json")
+println(metadata)
+println("```")
+
+println("The `http://169.254.169.254/latest/meta-data/hostname` response:")
+println("```")
+println(hostname)
+println("```")
+
+println("Detected resource: ")
+println("```")
+AWSEC2Detector[IO](uri"", client).detect.unsafeRunSync().foreach { resource =>
   resource.attributes.toList.sortBy(_.key.name).foreach { attribute =>
     println(attribute.key.name + ": " + attribute.value)
   }
@@ -104,6 +165,8 @@ object TelemetryApp extends IOApp.Simple {
         _.addExportersConfigurer(OtlpExportersAutoConfigure[IO])
         // register AWS Lambda detector
          .addResourceDetector(AWSLambdaDetector[IO])
+        // register AWS EC2 detector
+         .addResourceDetector(AWSEC2Detector[IO])
       )
       .use { autoConfigured =>
         val sdk = autoConfigured.sdk
@@ -138,6 +201,8 @@ object TelemetryApp extends IOApp.Simple {
         _.addExporterConfigurer(OtlpSpanExporterAutoConfigure[IO])
         // register AWS Lambda detector
          .addResourceDetector(AWSLambdaDetector[IO])
+        // register AWS EC2 detector
+         .addResourceDetector(AWSEC2Detector[IO])
       )
       .use { autoConfigured =>
         program(autoConfigured.tracerProvider)
@@ -166,8 +231,8 @@ There are several ways to configure the options:
 Add settings to the `build.sbt`:
 
 ```scala
-javaOptions += "-Dotel.otel4s.resource.detectors.enabled=aws-lambda"
-envVars ++= Map("OTEL_OTEL4S_RESOURCE_DETECTORS_ENABLE" -> "aws-lambda")
+javaOptions += "-Dotel.otel4s.resource.detectors.enabled=aws-lambda,aws-ec2"
+envVars ++= Map("OTEL_OTEL4S_RESOURCE_DETECTORS_ENABLE" -> "aws-lambda,aws-ec2")
 ```
 
 @:choice(scala-cli)
@@ -175,12 +240,12 @@ envVars ++= Map("OTEL_OTEL4S_RESOURCE_DETECTORS_ENABLE" -> "aws-lambda")
 Add directives to the `*.scala` file:
 
 ```scala
-//> using javaOpt -Dotel.otel4s.resource.detectors.enabled=aws-lambda
+//> using javaOpt -Dotel.otel4s.resource.detectors.enabled=aws-lambda,aws-ec2
 ```
 
 @:choice(shell)
 
 ```shell
-$ export OTEL_OTEL4S_RESOURCE_DETECTORS_ENABLED=aws-lambda
+$ export OTEL_OTEL4S_RESOURCE_DETECTORS_ENABLED=aws-lambda,aws-ec2
 ```
 @:@

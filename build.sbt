@@ -446,10 +446,18 @@ lazy val `sdk-contrib-aws-resource` =
     .dependsOn(`sdk-common`, `semconv-experimental` % Test)
     .settings(
       name := "otel4s-sdk-contrib-aws-resource",
-      startYear := Some(2024)
+      startYear := Some(2024),
+      libraryDependencies ++= Seq(
+        "org.http4s" %%% "http4s-ember-client" % Http4sVersion,
+        "org.http4s" %%% "http4s-circe" % Http4sVersion,
+        "org.http4s" %%% "http4s-dsl" % Http4sVersion % Test
+      )
     )
     .settings(munitDependencies)
     .settings(scalafixSettings)
+    .jsSettings(scalaJSLinkerSettings)
+    .nativeEnablePlugins(ScalaNativeBrewedConfigPlugin)
+    .nativeSettings(scalaNativeSettings)
 
 lazy val `sdk-contrib-aws-xray-propagator` =
   crossProject(JVMPlatform, JSPlatform, NativePlatform)
@@ -735,6 +743,7 @@ lazy val docs = project
     libraryDependencies ++= Seq(
       "org.apache.pekko" %% "pekko-http" % PekkoHttpVersion,
       "org.http4s" %% "http4s-client" % Http4sVersion,
+      "org.http4s" %% "http4s-dsl" % Http4sVersion,
       "io.opentelemetry" % "opentelemetry-sdk-extension-autoconfigure" % OpenTelemetryVersion,
       "io.opentelemetry.instrumentation" % "opentelemetry-instrumentation-annotations" % OpenTelemetryInstrumentationVersion,
       "io.opentelemetry.instrumentation" % "opentelemetry-runtime-telemetry-java8" % OpenTelemetryInstrumentationAlphaVersion,

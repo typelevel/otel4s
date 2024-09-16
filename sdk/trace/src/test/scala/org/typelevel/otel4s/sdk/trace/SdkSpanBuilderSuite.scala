@@ -132,7 +132,7 @@ class SdkSpanBuilderSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
       for {
         traceScope <- createTraceScope
         inMemory <- InMemorySpanExporter.create[IO](None)
-        state <- createState(inMemory, sampler = Sampler.AlwaysOff)
+        state <- createState(inMemory, sampler = Sampler.alwaysOff)
         builder = SdkSpanBuilder(name, scope, state, traceScope)
         span <- builder.build.use(IO.pure)
         spans <- inMemory.finishedSpans
@@ -153,7 +153,7 @@ class SdkSpanBuilderSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
   private def createState(
       exporter: SpanExporter[IO],
       spanLimits: SpanLimits = SpanLimits.default,
-      sampler: Sampler = Sampler.AlwaysOn
+      sampler: Sampler[IO] = Sampler.alwaysOn
   ): IO[TracerSharedState[IO]] =
     Random.scalaUtilRandom[IO].map { implicit random =>
       TracerSharedState(

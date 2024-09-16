@@ -199,9 +199,7 @@ object SdkTraces {
         * @param configurer
         *   the configurer to add
         */
-      def addSamplerConfigurer(
-          configurer: AutoConfigure.Named[F, Sampler]
-      ): Builder[F]
+      def addSamplerConfigurer(configurer: AutoConfigure.Named[F, Sampler[F]]): Builder[F]
 
       /** Adds the text map propagator configurer. Can be used to register propagators that aren't included in the SDK.
         *
@@ -244,7 +242,7 @@ object SdkTraces {
         tracerProviderCustomizer: Customizer[SdkTracerProvider.Builder[F]],
         resourceDetectors: Set[TelemetryResourceDetector[F]],
         exporterConfigurers: Set[AutoConfigure.Named[F, SpanExporter[F]]],
-        samplerConfigurers: Set[AutoConfigure.Named[F, Sampler]],
+        samplerConfigurers: Set[AutoConfigure.Named[F, Sampler[F]]],
         textMapPropagatorConfigurers: Set[
           AutoConfigure.Named[F, TextMapPropagator[Context]]
         ]
@@ -283,9 +281,7 @@ object SdkTraces {
       ): Builder[F] =
         copy(exporterConfigurers = this.exporterConfigurers + configurer)
 
-      def addSamplerConfigurer(
-          configurer: AutoConfigure.Named[F, Sampler]
-      ): Builder[F] =
+      def addSamplerConfigurer(configurer: AutoConfigure.Named[F, Sampler[F]]): Builder[F] =
         copy(samplerConfigurers = this.samplerConfigurers + configurer)
 
       def addTextMapPropagatorConfigurer(

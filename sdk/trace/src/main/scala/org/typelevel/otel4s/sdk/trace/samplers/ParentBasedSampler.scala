@@ -17,6 +17,7 @@
 package org.typelevel.otel4s
 package sdk.trace.samplers
 
+import cats.Applicative
 import org.typelevel.otel4s.sdk.trace.data.LinkData
 import org.typelevel.otel4s.trace.SpanContext
 import org.typelevel.otel4s.trace.SpanKind
@@ -29,13 +30,13 @@ import scodec.bits.ByteVector
   * @see
   *   [[https://opentelemetry.io/docs/specs/otel/trace/sdk/#parentbased]]
   */
-private[samplers] final case class ParentBasedSampler private (
-    root: Sampler,
-    remoteParentSampled: Sampler,
-    remoteParentNotSampled: Sampler,
-    localParentSampled: Sampler,
-    localParentNotSampled: Sampler
-) extends Sampler {
+private[samplers] final case class ParentBasedSampler[F[_]] private (
+    root: Sampler[F],
+    remoteParentSampled: Sampler[F],
+    remoteParentNotSampled: Sampler[F],
+    localParentSampled: Sampler[F],
+    localParentNotSampled: Sampler[F]
+) extends Sampler[F] {
 
   def shouldSample(
       parentContext: Option[SpanContext],
@@ -44,7 +45,7 @@ private[samplers] final case class ParentBasedSampler private (
       spanKind: SpanKind,
       attributes: Attributes,
       parentLinks: Vector[LinkData]
-  ): SamplingResult = {
+  ): F[SamplingResult] = {
     val sampler = parentContext.filter(_.isValid) match {
       case Some(ctx) if ctx.isRemote =>
         if (ctx.isSampled) remoteParentSampled else remoteParentNotSampled
@@ -88,68 +89,68 @@ object ParentBasedSampler {
     * @param root
     *   the [[Sampler]] which is used to make the sampling decisions if the parent does not exist
     */
-  def builder(root: Sampler): Builder =
+  def builder[F[_]: Applicative](root: Sampler[F]): Builder[F] =
     BuilderImpl(root, None, None, None, None)
 
   /** A builder for creating parent-based sampler.
     */
-  sealed trait Builder {
+  sealed trait Builder[F[_]] {
 
     /** Assigns the [[Sampler]] to use when there is a remote parent that was sampled.
       *
       * If not set, defaults to always sampling if the remote parent was sampled.
       */
-    def withRemoteParentSampled(sampler: Sampler): Builder
+    def withRemoteParentSampled(sampler: Sampler[F]): Builder[F]
 
     /** Assigns the [[Sampler]] to use when there is a remote parent that was not sampled.
       *
       * If not set, defaults to never sampling when the remote parent isn't sampled.
       */
-    def withRemoteParentNotSampled(sampler: Sampler): Builder
+    def withRemoteParentNotSampled(sampler: Sampler[F]): Builder[F]
 
     /** Assigns the [[Sampler]] to use when there is a local parent that was sampled.
       *
       * If not set, defaults to always sampling if the local parent was sampled.
       */
-    def withLocalParentSampled(sampler: Sampler): Builder
+    def withLocalParentSampled(sampler: Sampler[F]): Builder[F]
 
     /** Assigns the [[Sampler]] to use when there is a local parent that was not sampled.
       *
       * If not set, defaults to never sampling when the local parent isn't sampled.
       */
-    def withLocalParentNotSampled(sampler: Sampler): Builder
+    def withLocalParentNotSampled(sampler: Sampler[F]): Builder[F]
 
     /** Creates a parent-based sampler using the configuration of this builder.
       */
-    def build: Sampler
+    def build: Sampler[F]
   }
 
-  private final case class BuilderImpl(
-      root: Sampler,
-      remoteParentSampled: Option[Sampler],
-      remoteParentNotSampled: Option[Sampler],
-      localParentSampled: Option[Sampler],
-      localParentNotSampled: Option[Sampler]
-  ) extends Builder {
-    def withRemoteParentSampled(sampler: Sampler): Builder =
+  private final case class BuilderImpl[F[_]: Applicative](
+      root: Sampler[F],
+      remoteParentSampled: Option[Sampler[F]],
+      remoteParentNotSampled: Option[Sampler[F]],
+      localParentSampled: Option[Sampler[F]],
+      localParentNotSampled: Option[Sampler[F]]
+  ) extends Builder[F] {
+    def withRemoteParentSampled(sampler: Sampler[F]): Builder[F] =
       copy(remoteParentSampled = Some(sampler))
 
-    def withRemoteParentNotSampled(sampler: Sampler): Builder =
+    def withRemoteParentNotSampled(sampler: Sampler[F]): Builder[F] =
       copy(remoteParentNotSampled = Some(sampler))
 
-    def withLocalParentSampled(sampler: Sampler): Builder =
+    def withLocalParentSampled(sampler: Sampler[F]): Builder[F] =
       copy(localParentSampled = Some(sampler))
 
-    def withLocalParentNotSampled(sampler: Sampler): Builder =
+    def withLocalParentNotSampled(sampler: Sampler[F]): Builder[F] =
       copy(localParentNotSampled = Some(sampler))
 
-    def build: Sampler =
+    def build: Sampler[F] =
       ParentBasedSampler(
         root,
-        remoteParentSampled.getOrElse(Sampler.AlwaysOn),
-        remoteParentNotSampled.getOrElse(Sampler.AlwaysOff),
-        localParentSampled.getOrElse(Sampler.AlwaysOn),
-        localParentNotSampled.getOrElse(Sampler.AlwaysOff)
+        remoteParentSampled.getOrElse(Sampler.alwaysOn),
+        remoteParentNotSampled.getOrElse(Sampler.alwaysOff),
+        localParentSampled.getOrElse(Sampler.alwaysOn),
+        localParentNotSampled.getOrElse(Sampler.alwaysOff)
       )
   }
 }

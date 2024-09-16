@@ -38,27 +38,24 @@ import org.typelevel.otel4s.sdk.trace.samplers.Sampler
   *   [[https://opentelemetry.io/docs/languages/java/configuration/#sampler]]
   */
 private final class SamplerAutoConfigure[F[_]: MonadThrow](
-    extra: Set[AutoConfigure.Named[F, Sampler]]
-) extends AutoConfigure.WithHint[F, Sampler](
-      "Sampler",
-      SamplerAutoConfigure.ConfigKeys.All
-    ) {
+    extra: Set[AutoConfigure.Named[F, Sampler[F]]]
+) extends AutoConfigure.WithHint[F, Sampler[F]]("Sampler", SamplerAutoConfigure.ConfigKeys.All) {
 
   import SamplerAutoConfigure.ConfigKeys
   import SamplerAutoConfigure.Defaults
 
   private val configurers = {
-    val default: Set[AutoConfigure.Named[F, Sampler]] = Set(
-      AutoConfigure.Named.const("always_on", Sampler.AlwaysOn),
-      AutoConfigure.Named.const("always_off", Sampler.AlwaysOff),
+    val default: Set[AutoConfigure.Named[F, Sampler[F]]] = Set(
+      AutoConfigure.Named.const("always_on", Sampler.alwaysOn),
+      AutoConfigure.Named.const("always_off", Sampler.alwaysOff),
       traceIdRatioSampler("traceidratio")(identity),
       AutoConfigure.Named.const(
         "parentbased_always_on",
-        Sampler.parentBased(Sampler.AlwaysOn)
+        Sampler.parentBased(Sampler.alwaysOn)
       ),
       AutoConfigure.Named.const(
         "parentbased_always_off",
-        Sampler.parentBased(Sampler.AlwaysOff)
+        Sampler.parentBased(Sampler.alwaysOff)
       ),
       traceIdRatioSampler("parentbased_traceidratio")(Sampler.parentBased)
     )
@@ -66,7 +63,7 @@ private final class SamplerAutoConfigure[F[_]: MonadThrow](
     default ++ extra
   }
 
-  def fromConfig(config: Config): Resource[F, Sampler] =
+  def fromConfig(config: Config): Resource[F, Sampler[F]] =
     config.getOrElse(ConfigKeys.Sampler, Defaults.Sampler) match {
       case Right(name) =>
         configurers.find(_.name == name) match {
@@ -89,11 +86,11 @@ private final class SamplerAutoConfigure[F[_]: MonadThrow](
 
   private def traceIdRatioSampler(
       samplerName: String
-  )(make: Sampler => Sampler): AutoConfigure.Named[F, Sampler] =
-    new AutoConfigure.Named[F, Sampler] {
+  )(make: Sampler[F] => Sampler[F]): AutoConfigure.Named[F, Sampler[F]] =
+    new AutoConfigure.Named[F, Sampler[F]] {
       def name: String = samplerName
 
-      def configure(config: Config): Resource[F, Sampler] = {
+      def configure(config: Config): Resource[F, Sampler[F]] = {
         val attempt = config
           .getOrElse(ConfigKeys.SamplerArg, Defaults.Ratio)
           .flatMap { ratio =>
@@ -111,7 +108,6 @@ private final class SamplerAutoConfigure[F[_]: MonadThrow](
           case Right(sampler) => Resource.pure(make(sampler))
           case Left(error)    => Resource.raiseError(error: Throwable)
         }
-
       }
     }
 
@@ -142,15 +138,15 @@ private[sdk] object SamplerAutoConfigure {
     * }}}
     *
     * The following options for `otel.traces.sampler` are supported out of the box:
-    *   - `always_on` - [[Sampler.AlwaysOn]]
+    *   - `always_on` - [[Sampler.alwaysOn]]
     *
-    *   - `always_off` - [[Sampler.AlwaysOff]]
+    *   - `always_off` - [[Sampler.alwaysOff]]
     *
     *   - `traceidratio` - [[Sampler.traceIdRatioBased]], where `otel.traces.sampler.arg` sets the ratio
     *
-    *   - `parentbased_always_on` - [[Sampler.parentBased]] with [[Sampler.AlwaysOn]]
+    *   - `parentbased_always_on` - [[Sampler.parentBased]] with [[Sampler.alwaysOn]]
     *
-    *   - `parentbased_always_off` - [[Sampler.parentBased]] with [[Sampler.AlwaysOff]]
+    *   - `parentbased_always_off` - [[Sampler.parentBased]] with [[Sampler.alwaysOff]]
     *
     *   - `parentbased_traceidratio`- [[Sampler.parentBased]] with [[Sampler.traceIdRatioBased]], where
     *     `otel.traces.sampler.arg` sets the ratio
@@ -158,9 +154,7 @@ private[sdk] object SamplerAutoConfigure {
     * @see
     *   [[https://opentelemetry.io/docs/languages/java/configuration/#sampler]]
     */
-  def apply[F[_]: MonadThrow](
-      extra: Set[AutoConfigure.Named[F, Sampler]]
-  ): AutoConfigure[F, Sampler] =
+  def apply[F[_]: MonadThrow](extra: Set[AutoConfigure.Named[F, Sampler[F]]]): AutoConfigure[F, Sampler[F]] =
     new SamplerAutoConfigure[F](extra)
 
 }

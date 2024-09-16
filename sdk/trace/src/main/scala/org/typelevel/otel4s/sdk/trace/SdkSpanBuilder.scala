@@ -133,10 +133,7 @@ private final case class SdkSpanBuilder[F[_]: Temporal: Console] private (
         .filter(_.isValid)
         .fold(idGenerator.generateTraceId)(ctx => Temporal[F].pure(ctx.traceId))
 
-    def sample(
-        parent: Option[SpanContext],
-        traceId: ByteVector
-    ): SamplingResult =
+    def sample(parent: Option[SpanContext], traceId: ByteVector): F[SamplingResult] =
       tracerSharedState.sampler.shouldSample(
         parentContext = parent,
         traceId = traceId,
@@ -151,8 +148,8 @@ private final case class SdkSpanBuilder[F[_]: Temporal: Console] private (
       spanId <- idGenerator.generateSpanId
       traceId <- genTraceId(parentSpanContext)
 
+      samplingResult <- sample(parentSpanContext, traceId)
       backend <- {
-        val samplingResult = sample(parentSpanContext, traceId)
         val samplingDecision = samplingResult.decision
 
         val traceFlags =

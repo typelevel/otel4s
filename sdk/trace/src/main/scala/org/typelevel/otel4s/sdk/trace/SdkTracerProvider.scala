@@ -37,7 +37,7 @@ private class SdkTracerProvider[F[_]: Temporal: Parallel: Console](
     idGenerator: IdGenerator[F],
     resource: TelemetryResource,
     spanLimits: SpanLimits,
-    sampler: Sampler,
+    sampler: Sampler[F],
     propagators: ContextPropagators[Context],
     spanProcessors: List[SpanProcessor[F]],
     traceScope: TraceScope[F, Context],
@@ -126,7 +126,7 @@ object SdkTracerProvider {
       * @param sampler
       *   the [[org.typelevel.otel4s.sdk.trace.samplers.Sampler Sampler]] to use
       */
-    def withSampler(sampler: Sampler): Builder[F]
+    def withSampler(sampler: Sampler[F]): Builder[F]
 
     /** Adds [[org.typelevel.otel4s.context.propagation.TextMapPropagator TextMapPropagator]]s to use for the context
       * propagation.
@@ -134,9 +134,7 @@ object SdkTracerProvider {
       * @param propagators
       *   the propagators to add
       */
-    def addTextMapPropagators(
-        propagators: TextMapPropagator[Context]*
-    ): Builder[F]
+    def addTextMapPropagators(propagators: TextMapPropagator[Context]*): Builder[F]
 
     /** Adds a [[org.typelevel.otel4s.sdk.trace.processor.SpanProcessor SpanProcessor]] to the span processing pipeline
       * that will be built.
@@ -167,7 +165,7 @@ object SdkTracerProvider {
       idGenerator = IdGenerator.random,
       resource = TelemetryResource.default,
       spanLimits = SpanLimits.default,
-      sampler = Sampler.parentBased(Sampler.AlwaysOn),
+      sampler = Sampler.parentBased(Sampler.alwaysOn),
       propagators = Nil,
       spanProcessors = Nil
     )
@@ -178,7 +176,7 @@ object SdkTracerProvider {
       idGenerator: IdGenerator[F],
       resource: TelemetryResource,
       spanLimits: SpanLimits,
-      sampler: Sampler,
+      sampler: Sampler[F],
       propagators: List[TextMapPropagator[Context]],
       spanProcessors: List[SpanProcessor[F]]
   ) extends Builder[F] {
@@ -195,7 +193,7 @@ object SdkTracerProvider {
     def withSpanLimits(limits: SpanLimits): Builder[F] =
       copy(spanLimits = limits)
 
-    def withSampler(sampler: Sampler): Builder[F] =
+    def withSampler(sampler: Sampler[F]): Builder[F] =
       copy(sampler = sampler)
 
     def addTextMapPropagators(

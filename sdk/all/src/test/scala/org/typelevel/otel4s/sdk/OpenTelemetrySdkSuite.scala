@@ -56,7 +56,7 @@ class OpenTelemetrySdkSuite extends CatsEffectSuite {
   private val DefaultSdk =
     sdkToString(
       TelemetryResource.default,
-      sampler = Sampler.parentBased(Sampler.AlwaysOn)
+      sampler = Sampler.parentBased(Sampler.alwaysOn)
     )
 
   private val NoopSdk =
@@ -131,7 +131,7 @@ class OpenTelemetrySdkSuite extends CatsEffectSuite {
       )
     )
 
-    val sampler = Sampler.AlwaysOff
+    val sampler = Sampler.alwaysOff[IO]
 
     OpenTelemetrySdk
       .autoConfigured[IO](
@@ -222,7 +222,7 @@ class OpenTelemetrySdkSuite extends CatsEffectSuite {
       )
     )
 
-    val sampler: Sampler = new Sampler {
+    val sampler: Sampler[IO] = new Sampler[IO] {
       def shouldSample(
           parentContext: Option[SpanContext],
           traceId: ByteVector,
@@ -230,8 +230,8 @@ class OpenTelemetrySdkSuite extends CatsEffectSuite {
           spanKind: SpanKind,
           attributes: Attributes,
           parentLinks: Vector[LinkData]
-      ): SamplingResult =
-        SamplingResult.Drop
+      ): IO[SamplingResult] =
+        IO.pure(SamplingResult.Drop)
 
       def description: String = "CustomSampler"
     }
@@ -389,7 +389,7 @@ class OpenTelemetrySdkSuite extends CatsEffectSuite {
   private def sdkToString(
       resource: TelemetryResource = TelemetryResource.default,
       spanLimits: SpanLimits = SpanLimits.default,
-      sampler: Sampler = Sampler.parentBased(Sampler.AlwaysOn),
+      sampler: Sampler[IO] = Sampler.parentBased(Sampler.alwaysOn),
       propagators: ContextPropagators[Context] = ContextPropagators.of(
         W3CTraceContextPropagator.default,
         W3CBaggagePropagator.default

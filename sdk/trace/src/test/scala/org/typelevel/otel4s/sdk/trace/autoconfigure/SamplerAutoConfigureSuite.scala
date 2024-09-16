@@ -33,12 +33,12 @@ import scodec.bits.ByteVector
 
 class SamplerAutoConfigureSuite extends CatsEffectSuite {
 
-  private val default = Sampler.parentBased(Sampler.AlwaysOn)
+  private val default = Sampler.parentBased[IO](Sampler.alwaysOn)
 
   test("load from an empty config - load default") {
     val config = Config(Map.empty, Map.empty, Map.empty)
     SamplerAutoConfigure[IO](Set.empty).configure(config).use { sampler =>
-      IO(assertEquals(sampler, default))
+      IO(assertEquals(sampler.toString, default.toString))
     }
   }
 
@@ -46,7 +46,7 @@ class SamplerAutoConfigureSuite extends CatsEffectSuite {
     val props = Map("otel.traces.sampler" -> "")
     val config = Config(props, Map.empty, Map.empty)
     SamplerAutoConfigure[IO](Set.empty).configure(config).use { sampler =>
-      IO(assertEquals(sampler, default))
+      IO(assertEquals(sampler.toString, default.toString))
     }
   }
 
@@ -54,7 +54,7 @@ class SamplerAutoConfigureSuite extends CatsEffectSuite {
     val props = Map("otel.traces.sampler" -> "always_on")
     val config = Config(props, Map.empty, Map.empty)
     SamplerAutoConfigure[IO](Set.empty).configure(config).use { sampler =>
-      IO(assertEquals(sampler, Sampler.AlwaysOn))
+      IO(assertEquals(sampler.toString, Sampler.alwaysOn[IO].toString))
     }
   }
 
@@ -62,7 +62,7 @@ class SamplerAutoConfigureSuite extends CatsEffectSuite {
     val props = Map("otel.traces.sampler" -> "always_off")
     val config = Config(props, Map.empty, Map.empty)
     SamplerAutoConfigure[IO](Set.empty).configure(config).use { sampler =>
-      IO(assertEquals(sampler, Sampler.AlwaysOff))
+      IO(assertEquals(sampler.toString, Sampler.alwaysOff[IO].toString))
     }
   }
 
@@ -70,7 +70,7 @@ class SamplerAutoConfigureSuite extends CatsEffectSuite {
     val props = Map("otel.traces.sampler" -> "traceidratio")
     val config = Config(props, Map.empty, Map.empty)
     SamplerAutoConfigure[IO](Set.empty).configure(config).use { sampler =>
-      IO(assertEquals(sampler, Sampler.traceIdRatioBased(1.0)))
+      IO(assertEquals(sampler.toString, Sampler.traceIdRatioBased[IO](1.0).toString))
     }
   }
 
@@ -81,7 +81,7 @@ class SamplerAutoConfigureSuite extends CatsEffectSuite {
     )
     val config = Config(props, Map.empty, Map.empty)
     SamplerAutoConfigure[IO](Set.empty).configure(config).use { sampler =>
-      IO(assertEquals(sampler, Sampler.traceIdRatioBased(0.1)))
+      IO(assertEquals(sampler.toString, Sampler.traceIdRatioBased[IO](0.1).toString))
     }
   }
 
@@ -112,7 +112,7 @@ class SamplerAutoConfigureSuite extends CatsEffectSuite {
     val props = Map("otel.traces.sampler" -> "parentbased_always_on")
     val config = Config(props, Map.empty, Map.empty)
     SamplerAutoConfigure[IO](Set.empty).configure(config).use { sampler =>
-      IO(assertEquals(sampler, Sampler.parentBased(Sampler.AlwaysOn)))
+      IO(assertEquals(sampler.toString, Sampler.parentBased[IO](Sampler.alwaysOn).toString))
     }
   }
 
@@ -120,16 +120,16 @@ class SamplerAutoConfigureSuite extends CatsEffectSuite {
     val props = Map("otel.traces.sampler" -> "parentbased_always_off")
     val config = Config(props, Map.empty, Map.empty)
     SamplerAutoConfigure[IO](Set.empty).configure(config).use { sampler =>
-      IO(assertEquals(sampler, Sampler.parentBased(Sampler.AlwaysOff)))
+      IO(assertEquals(sampler.toString, Sampler.parentBased[IO](Sampler.alwaysOff).toString))
     }
   }
 
   test("load from the config - parentbased_traceidratio - use default ratio") {
     val props = Map("otel.traces.sampler" -> "parentbased_traceidratio")
     val config = Config(props, Map.empty, Map.empty)
-    val expected = Sampler.parentBased(Sampler.traceIdRatioBased(1.0))
+    val expected = Sampler.parentBased[IO](Sampler.traceIdRatioBased(1.0))
     SamplerAutoConfigure[IO](Set.empty).configure(config).use { sampler =>
-      IO(assertEquals(sampler, expected))
+      IO(assertEquals(sampler.toString, expected.toString))
     }
   }
 
@@ -139,9 +139,9 @@ class SamplerAutoConfigureSuite extends CatsEffectSuite {
       "otel.traces.sampler.arg" -> "0.1"
     )
     val config = Config(props, Map.empty, Map.empty)
-    val expected = Sampler.parentBased(Sampler.traceIdRatioBased(0.1))
+    val expected = Sampler.parentBased[IO](Sampler.traceIdRatioBased(0.1))
     SamplerAutoConfigure[IO](Set.empty).configure(config).use { sampler =>
-      IO(assertEquals(sampler, expected))
+      IO(assertEquals(sampler.toString, expected.toString))
     }
   }
 
@@ -149,7 +149,7 @@ class SamplerAutoConfigureSuite extends CatsEffectSuite {
     val props = Map("otel.traces.sampler" -> "custom-sampler")
     val config = Config.ofProps(props)
 
-    val customSampler: Sampler = new Sampler {
+    val customSampler: Sampler[IO] = new Sampler[IO] {
       def shouldSample(
           parentContext: Option[SpanContext],
           traceId: ByteVector,
@@ -157,23 +157,21 @@ class SamplerAutoConfigureSuite extends CatsEffectSuite {
           spanKind: SpanKind,
           attributes: Attributes,
           parentLinks: Vector[LinkData]
-      ): SamplingResult =
-        SamplingResult.Drop
+      ): IO[SamplingResult] =
+        IO.pure(SamplingResult.Drop)
 
       def description: String = "SomeCustomSampler"
     }
 
-    val custom: AutoConfigure.Named[IO, Sampler] =
+    val custom: AutoConfigure.Named[IO, Sampler[IO]] =
       AutoConfigure.Named.const("custom-sampler", customSampler)
 
     SamplerAutoConfigure[IO](Set(custom)).configure(config).use { sampler =>
-      IO(assertEquals(sampler, customSampler))
+      IO(assertEquals(sampler.toString, customSampler.toString))
     }
   }
 
-  test(
-    "load from the config - parentbased_traceidratio - fail when ratio is incorrect"
-  ) {
+  test("load from the config - parentbased_traceidratio - fail when ratio is incorrect") {
     val props = Map(
       "otel.traces.sampler" -> "parentbased_traceidratio",
       "otel.traces.sampler.arg" -> "-0.1"

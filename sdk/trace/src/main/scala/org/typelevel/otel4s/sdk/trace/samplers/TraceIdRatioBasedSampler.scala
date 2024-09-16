@@ -19,6 +19,7 @@ package sdk
 package trace
 package samplers
 
+import cats.Applicative
 import org.typelevel.otel4s.sdk.trace.data.LinkData
 import org.typelevel.otel4s.trace.SpanContext
 import org.typelevel.otel4s.trace.SpanKind
@@ -36,10 +37,10 @@ import scodec.bits.ByteVector
   * @see
   *   [[https://opentelemetry.io/docs/specs/otel/trace/sdk/#traceidratiobased]]
   */
-private final case class TraceIdRatioBasedSampler private (
+private final case class TraceIdRatioBasedSampler[F[_]: Applicative] private (
     ratio: Double,
     idUpperBound: Long
-) extends Sampler {
+) extends Sampler[F] {
 
   def shouldSample(
       parentContext: Option[SpanContext],
@@ -48,11 +49,13 @@ private final case class TraceIdRatioBasedSampler private (
       spanKind: SpanKind,
       attributes: Attributes,
       parentLinks: Vector[LinkData]
-  ): SamplingResult =
-    if (math.abs(traceIdRandomPart(traceId)) < idUpperBound)
-      SamplingResult.RecordAndSample
-    else
-      SamplingResult.Drop
+  ): F[SamplingResult] =
+    Applicative[F].pure {
+      if (math.abs(traceIdRandomPart(traceId)) < idUpperBound)
+        SamplingResult.RecordAndSample
+      else
+        SamplingResult.Drop
+    }
 
   private def traceIdRandomPart(traceId: ByteVector): Long =
     traceId.drop(8).toLong()
@@ -77,7 +80,7 @@ private object TraceIdRatioBasedSampler {
     * @param ratio
     *   the desired ratio of sampling. Must be >= 0 and <= 1.0.
     */
-  def create(ratio: Double): Sampler = {
+  def create[F[_]: Applicative](ratio: Double): Sampler[F] = {
     require(ratio >= 0 && ratio <= 1.0, "ratio must be >= 0 and <= 1.0")
 
     val idUpperBound =

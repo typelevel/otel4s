@@ -279,9 +279,7 @@ object OpenTelemetrySdk {
         * @param configurer
         *   the configurer to add
         */
-      def addSamplerConfigurer(
-          configurer: AutoConfigure.Named[F, Sampler]
-      ): Builder[F]
+      def addSamplerConfigurer(configurer: AutoConfigure.Named[F, Sampler[F]]): Builder[F]
 
       /** Adds the text map propagator configurer. Can be used to register propagators that aren't included in the SDK.
         *
@@ -330,7 +328,7 @@ object OpenTelemetrySdk {
           AutoConfigure.Named[F, MetricExporter[F]]
         ],
         spanExporterConfigurers: Set[AutoConfigure.Named[F, SpanExporter[F]]],
-        samplerConfigurers: Set[AutoConfigure.Named[F, Sampler]],
+        samplerConfigurers: Set[AutoConfigure.Named[F, Sampler[F]]],
         textMapPropagatorConfigurers: Set[
           AutoConfigure.Named[F, TextMapPropagator[Context]]
         ]
@@ -387,9 +385,7 @@ object OpenTelemetrySdk {
       ): Builder[F] =
         copy(spanExporterConfigurers = spanExporterConfigurers + configurer)
 
-      def addSamplerConfigurer(
-          configurer: AutoConfigure.Named[F, Sampler]
-      ): Builder[F] =
+      def addSamplerConfigurer(configurer: AutoConfigure.Named[F, Sampler[F]]): Builder[F] =
         copy(samplerConfigurers = samplerConfigurers + configurer)
 
       def addTextMapPropagatorConfigurer(

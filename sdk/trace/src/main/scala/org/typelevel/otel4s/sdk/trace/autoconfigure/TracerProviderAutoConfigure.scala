@@ -42,7 +42,7 @@ private final class TracerProviderAutoConfigure[
     resource: TelemetryResource,
     contextPropagators: ContextPropagators[Context],
     customizer: Customizer[SdkTracerProvider.Builder[F]],
-    samplerConfigurers: Set[AutoConfigure.Named[F, Sampler]],
+    samplerConfigurers: Set[AutoConfigure.Named[F, Sampler[F]]],
     exporterConfigurers: Set[AutoConfigure.Named[F, SpanExporter[F]]]
 ) extends AutoConfigure.WithHint[F, TracerProvider[F]](
       "TracerProvider",
@@ -136,7 +136,7 @@ private[sdk] object TracerProviderAutoConfigure {
       resource: TelemetryResource,
       contextPropagators: ContextPropagators[Context],
       tracerProviderBuilderCustomizer: Customizer[SdkTracerProvider.Builder[F]],
-      samplerConfigurers: Set[AutoConfigure.Named[F, Sampler]],
+      samplerConfigurers: Set[AutoConfigure.Named[F, Sampler[F]]],
       exporterConfigurers: Set[AutoConfigure.Named[F, SpanExporter[F]]]
   ): AutoConfigure[F, TracerProvider[F]] =
     new TracerProviderAutoConfigure[F](

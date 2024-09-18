@@ -1,4 +1,4 @@
-package org.typelevel.otel4s.sdk.contrib.aws
+package org.typelevel.otel4s.sdk.trace.contrib.aws
 
 import cats.*
 import cats.effect.*
@@ -9,13 +9,14 @@ import org.typelevel.otel4s.trace.SpanContext.{SpanId, TraceId}
 import scodec.bits.ByteVector
 
 object AwsXRayIdGenerator {
-  def apply[F[_] : Applicative : Clock : Random]: AwsXRayIdGenerator[F] = new AwsXRayIdGenerator
+  def apply[F[_] : Monad : Clock : Random]: AwsXRayIdGenerator[F] = new AwsXRayIdGenerator
 }
 
-class AwsXRayIdGenerator[F[_] : Applicative : Clock : Random] extends IdGenerator[F] {
+class AwsXRayIdGenerator[F[_] : Monad : Clock : Random] extends IdGenerator[F] {
   override def generateSpanId: F[ByteVector] =
     Random[F]
       .nextLong
+      .iterateUntil(_ != 0L)
       .map(SpanId.fromLong)
 
   override def generateTraceId: F[ByteVector] =
@@ -25,4 +26,6 @@ class AwsXRayIdGenerator[F[_] : Applicative : Clock : Random] extends IdGenerato
     ).mapN { case (timestampSecs, hiRandom, lowRandom) =>
       TraceId.fromLongs(timestampSecs << 32 | hiRandom, lowRandom)
     }
+
+  override private[trace] val canSkipIdValidation: Boolean = true
 }

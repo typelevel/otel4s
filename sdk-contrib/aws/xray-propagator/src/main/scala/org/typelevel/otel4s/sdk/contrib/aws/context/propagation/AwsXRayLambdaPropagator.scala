@@ -37,13 +37,13 @@ import org.typelevel.otel4s.sdk.trace.SdkContextKeys
   * @see
   *   [[https://docs.aws.amazon.com/lambda/latest/dg/configuration-envvars.html]]
   */
-private final class AWSXRayLambdaPropagator private[propagation] (
+private final class AwsXRayLambdaPropagator private[propagation] (
     getProp: String => Option[String],
     getEnv: String => Option[String]
 ) extends TextMapPropagator[Context] {
-  import AWSXRayLambdaPropagator.Const
+  import AwsXRayLambdaPropagator.Const
 
-  private val propagator = AWSXRayPropagator()
+  private val propagator = AwsXRayPropagator()
 
   def fields: Iterable[String] = propagator.fields
 
@@ -62,7 +62,7 @@ private final class AWSXRayLambdaPropagator private[propagation] (
           case Some(header) =>
             propagator.extract(
               ctx,
-              Map(AWSXRayPropagator.Headers.TraceId -> header)
+              Map(AwsXRayPropagator.Headers.TraceId -> header)
             )
 
           case None =>
@@ -74,13 +74,13 @@ private final class AWSXRayLambdaPropagator private[propagation] (
   def inject[A: TextMapUpdater](ctx: Context, carrier: A): A =
     propagator.inject(ctx, carrier)
 
-  override def toString: String = "AWSXRayLambdaPropagator"
+  override def toString: String = "AwsXRayLambdaPropagator"
 
 }
 
-object AWSXRayLambdaPropagator {
+object AwsXRayLambdaPropagator {
   private val Propagator =
-    new AWSXRayLambdaPropagator(sys.props.get, sys.env.get)
+    new AwsXRayLambdaPropagator(sys.props.get, sys.env.get)
 
   private object Const {
     val name = "xray-lambda"
@@ -89,7 +89,7 @@ object AWSXRayLambdaPropagator {
     val TraceHeaderSystemProp = "com.amazonaws.xray.traceHeader"
   }
 
-  /** Returns an instance of the AWSXRayLambdaPropagator.
+  /** Returns an instance of the AwsXRayLambdaPropagator.
     *
     * The propagator utilizes `X-Amzn-Trace-Id` header to extract and inject tracing details.
     *
@@ -104,7 +104,7 @@ object AWSXRayLambdaPropagator {
     * @example
     *   {{{
     * OpenTelemetrySdk.autoConfigured[IO](
-    *   _.addTracerProviderCustomizer((b, _) => b.addTextMapPropagators(AWSXRayLambdaPropagator())
+    *   _.addTracerProviderCustomizer((b, _) => b.addTextMapPropagators(AwsXRayLambdaPropagator())
     * )
     *   }}}
     * @see
@@ -118,7 +118,7 @@ object AWSXRayLambdaPropagator {
     * @example
     *   {{{
     * OpenTelemetrySdk.autoConfigured[IO](
-    *   _.addTextMapPropagatorConfigurer(AWSXRayLambdaPropagator.configurer[IO])
+    *   _.addTextMapPropagatorConfigurer(AwsXRayLambdaPropagator.configurer[IO])
     * )
     *   }}}
     *

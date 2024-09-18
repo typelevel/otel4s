@@ -37,7 +37,7 @@ println("```")
 
 println("Detected resource: ")
 println("```yaml")
-AWSLambdaDetector[IO].detect.unsafeRunSync().foreach { resource =>
+AwsLambdaDetector[IO].detect.unsafeRunSync().foreach { resource =>
   resource.attributes.toList.sortBy(_.key.name).foreach { attribute =>
     println(attribute.key.name + ": " + attribute.value)
   }
@@ -98,7 +98,7 @@ println("```")
 
 println("Detected resource: ")
 println("```yaml")
-AWSEC2Detector[IO](uri"", client).detect.unsafeRunSync().foreach { resource =>
+AwsEc2Detector[IO](uri"", client).detect.unsafeRunSync().foreach { resource =>
   resource.attributes.toList.sortBy(_.key.name).foreach { attribute =>
     println(attribute.key.name + ": " + attribute.value)
   }
@@ -200,7 +200,7 @@ println("```")
 
 println("Detected resource: ")
 println("```yaml")
-AWSECSDetector[IO](client).detect.unsafeRunSync().foreach { resource =>
+AwsEcsDetector[IO](client).detect.unsafeRunSync().foreach { resource =>
   resource.attributes.toList.sortBy(_.key.name).foreach { attribute =>
     println(attribute.key.name + ": " + attribute.value)
   }
@@ -241,7 +241,7 @@ println("```yaml")
 val detected = Files[IO].tempFile.use { path =>
   for {
     _ <- fs2.Stream(content).through(fs2.text.utf8.encode).through(Files[IO].writeAll(path)).compile.drain
-    r <- AWSBeanstalkDetector[IO](path).detect
+    r <- AwsBeanstalkDetector[IO](path).detect
   } yield r
 }.unsafeRunSync()
 
@@ -311,13 +311,13 @@ object TelemetryApp extends IOApp.Simple {
         // register OTLP exporters configurer
         _.addExportersConfigurer(OtlpExportersAutoConfigure[IO])
         // register AWS Lambda detector
-         .addResourceDetector(AWSLambdaDetector[IO])
+         .addResourceDetector(AwsLambdaDetector[IO])
         // register AWS EC2 detector
-         .addResourceDetector(AWSEC2Detector[IO])
+         .addResourceDetector(AwsEc2Detector[IO])
         // register AWS ECS detector
-         .addResourceDetector(AWSECSDetector[IO])
+         .addResourceDetector(AwsEcsDetector[IO])
         // register AWS Beanstalk detector
-         .addResourceDetector(AWSBeanstalkDetector[IO])
+         .addResourceDetector(AwsBeanstalkDetector[IO])
       )
       .use { autoConfigured =>
         val sdk = autoConfigured.sdk
@@ -351,13 +351,13 @@ object TelemetryApp extends IOApp.Simple {
         // register OTLP exporters configurer
         _.addExporterConfigurer(OtlpSpanExporterAutoConfigure[IO])
         // register AWS Lambda detector
-         .addResourceDetector(AWSLambdaDetector[IO])
+         .addResourceDetector(AwsLambdaDetector[IO])
         // register AWS EC2 detector
-         .addResourceDetector(AWSEC2Detector[IO])
+         .addResourceDetector(AwsEc2Detector[IO])
         // register AWS ECS detector
-         .addResourceDetector(AWSECSDetector[IO])
+         .addResourceDetector(AwsEcsDetector[IO])
         // register AWS Beanstalk detector
-         .addResourceDetector(AWSBeanstalkDetector[IO])
+         .addResourceDetector(AwsBeanstalkDetector[IO])
       )
       .use { autoConfigured =>
         program(autoConfigured.tracerProvider)

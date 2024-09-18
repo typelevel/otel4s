@@ -35,7 +35,7 @@ import org.typelevel.otel4s.semconv.experimental.attributes.ContainerExperimenta
 
 import scala.collection.immutable
 
-class AWSECSDetectorSuite extends CatsEffectSuite {
+class AwsEcsDetectorSuite extends CatsEffectSuite {
 
   private val containerMetadataUrl = "http://169.254.170.2/v4/5fb8fcdd-29f2-490f-8229-c1269d11a9d9"
 
@@ -134,24 +134,24 @@ class AWSECSDetectorSuite extends CatsEffectSuite {
       Some(SchemaUrls.Current)
     )
 
-    AWSECSDetector[IO](client).detect.assertEquals(Some(expected))
+    AwsEcsDetector[IO](client).detect.assertEquals(Some(expected))
   }
 
   test("return None when metadata response is unparsable") {
     implicit val env: Env[IO] = constEnv("ECS_CONTAINER_METADATA_URI_V4" -> containerMetadataUrl)
     val client = Client.fromHttpApp(mockServer(Json.obj(), Json.obj()))
-    AWSECSDetector[IO](client).detect.assertEquals(None)
+    AwsEcsDetector[IO](client).detect.assertEquals(None)
   }
 
   test("return None when the endpoint is unavailable exist") {
     implicit val env: Env[IO] = constEnv("ECS_CONTAINER_METADATA_URI_V4" -> containerMetadataUrl)
     val client = Client.fromHttpApp(HttpApp.notFound[IO])
-    AWSECSDetector[IO](client).detect.assertEquals(None)
+    AwsEcsDetector[IO](client).detect.assertEquals(None)
   }
 
   test("return None when both ECS_CONTAINER_METADATA_URI and ECS_CONTAINER_METADATA_URI_V4 are undefined") {
     implicit val env: Env[IO] = constEnv()
-    AWSECSDetector[IO].detect.assertEquals(None)
+    AwsEcsDetector[IO].detect.assertEquals(None)
   }
 
   private def constEnv(pairs: (String, String)*): Env[IO] =

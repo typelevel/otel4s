@@ -36,9 +36,9 @@ import scodec.bits.ByteVector
   * @see
   *   [[https://docs.aws.amazon.com/xray/latest/devguide/xray-concepts.html#xray-concepts-tracingheader]]
   */
-private final class AWSXRayPropagator extends TextMapPropagator[Context] {
-  import AWSXRayPropagator.Const
-  import AWSXRayPropagator.Headers
+private final class AwsXRayPropagator extends TextMapPropagator[Context] {
+  import AwsXRayPropagator.Const
+  import AwsXRayPropagator.Headers
 
   val fields: List[String] = List(Headers.TraceId)
 
@@ -149,12 +149,12 @@ private final class AWSXRayPropagator extends TextMapPropagator[Context] {
       case _                => None
     }
 
-  override def toString: String = "AWSXRayPropagator"
+  override def toString: String = "AwsXRayPropagator"
 
 }
 
-object AWSXRayPropagator {
-  private val Propagator = new AWSXRayPropagator
+object AwsXRayPropagator {
+  private val Propagator = new AwsXRayPropagator
 
   private[propagation] object Headers {
     val TraceId = "X-Amzn-Trace-Id"
@@ -176,7 +176,7 @@ object AWSXRayPropagator {
     val NotSampled = "0"
   }
 
-  /** Returns an instance of the AWSXRayPropagator.
+  /** Returns an instance of the AwsXRayPropagator.
     *
     * The propagator utilizes `X-Amzn-Trace-Id` header to extract and inject tracing details.
     *
@@ -188,7 +188,7 @@ object AWSXRayPropagator {
     * @example
     *   {{{
     * OpenTelemetrySdk.autoConfigured[IO](
-    *   _.addTracerProviderCustomizer((b, _) => b.addTextMapPropagators(AWSXRayPropagator())
+    *   _.addTracerProviderCustomizer((b, _) => b.addTextMapPropagators(AwsXRayPropagator())
     * )
     *   }}}
     *
@@ -203,7 +203,7 @@ object AWSXRayPropagator {
     * @example
     *   {{{
     * OpenTelemetrySdk.autoConfigured[IO](
-    *   _.addTextMapPropagatorConfigurer(AWSXRayPropagator.configurer[IO])
+    *   _.addTextMapPropagatorConfigurer(AwsXRayPropagator.configurer[IO])
     * )
     *   }}}
     *

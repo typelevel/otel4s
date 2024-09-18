@@ -32,13 +32,13 @@ import org.typelevel.otel4s.sdk.resource.TelemetryResourceDetector
 import org.typelevel.otel4s.semconv.SchemaUrls
 import org.typelevel.otel4s.semconv.attributes.ServiceAttributes
 
-private class AWSBeanstalkDetector[F[_]: Concurrent: Files: Console] private (
+private class AwsBeanstalkDetector[F[_]: Concurrent: Files: Console] private (
     path: Path
 ) extends TelemetryResourceDetector[F] {
 
-  import AWSBeanstalkDetector.Const
-  import AWSBeanstalkDetector.Keys
-  import AWSBeanstalkDetector.Metadata
+  import AwsBeanstalkDetector.Const
+  import AwsBeanstalkDetector.Keys
+  import AwsBeanstalkDetector.Metadata
 
   def name: String = Const.Name
 
@@ -47,7 +47,7 @@ private class AWSBeanstalkDetector[F[_]: Concurrent: Files: Console] private (
       .exists(path)
       .ifM(
         parseFile,
-        Console[F].errorln(s"AWSBeanstalkDetector: config file doesn't exist at path $path").as(None)
+        Console[F].errorln(s"AwsBeanstalkDetector: config file doesn't exist at path $path").as(None)
       )
 
   private def parseFile: F[Option[TelemetryResource]] =
@@ -56,7 +56,7 @@ private class AWSBeanstalkDetector[F[_]: Concurrent: Files: Console] private (
       resource <- io.circe.parser
         .decode[Metadata](content)
         .fold(
-          e => Console[F].errorln(show"AWSBeanstalkDetector: cannot parse metadata from $path. $e").as(None),
+          e => Console[F].errorln(show"AwsBeanstalkDetector: cannot parse metadata from $path. $e").as(None),
           m => Concurrent[F].pure(Some(build(m)))
         )
     } yield resource
@@ -76,7 +76,7 @@ private class AWSBeanstalkDetector[F[_]: Concurrent: Files: Console] private (
 
 }
 
-object AWSBeanstalkDetector {
+object AwsBeanstalkDetector {
 
   private object Const {
     val Name = "aws-beanstalk"
@@ -122,7 +122,7 @@ object AWSBeanstalkDetector {
     *     // register OTLP exporters configurer
     *     _.addExportersConfigurer(OtlpExportersAutoConfigure[IO])
     *     // register AWS Beanstalk detector
-    *      .addResourceDetector(AWSBeanstalkDetector[IO])
+    *      .addResourceDetector(AwsBeanstalkDetector[IO])
     *   )
     *   .use { autoConfigured =>
     *     val sdk = autoConfigured.sdk
@@ -131,7 +131,7 @@ object AWSBeanstalkDetector {
     *   }}}
     */
   def apply[F[_]: Concurrent: Files: Console]: TelemetryResourceDetector[F] =
-    new AWSBeanstalkDetector[F](Path(Const.ConfigFilePath))
+    new AwsBeanstalkDetector[F](Path(Const.ConfigFilePath))
 
   /** The detector parses environment details from the file at the given `path`.
     *
@@ -147,7 +147,7 @@ object AWSBeanstalkDetector {
     *     // register OTLP exporters configurer
     *     _.addExportersConfigurer(OtlpExportersAutoConfigure[IO])
     *     // register AWS Beanstalk detector
-    *      .addResourceDetector(AWSBeanstalkDetector[IO])
+    *      .addResourceDetector(AwsBeanstalkDetector[IO])
     *   )
     *   .use { autoConfigured =>
     *     val sdk = autoConfigured.sdk
@@ -156,6 +156,6 @@ object AWSBeanstalkDetector {
     *   }}}
     */
   def apply[F[_]: Concurrent: Files: Console](path: Path): TelemetryResourceDetector[F] =
-    new AWSBeanstalkDetector[F](path)
+    new AwsBeanstalkDetector[F](path)
 
 }

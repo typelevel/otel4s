@@ -26,10 +26,10 @@ import org.typelevel.otel4s.sdk.TelemetryResource
 import org.typelevel.otel4s.sdk.resource.TelemetryResourceDetector
 import org.typelevel.otel4s.semconv.SchemaUrls
 
-private class AWSLambdaDetector[F[_]: Env: Monad] extends TelemetryResourceDetector[F] {
+private class AwsLambdaDetector[F[_]: Env: Monad] extends TelemetryResourceDetector[F] {
 
-  import AWSLambdaDetector.Const
-  import AWSLambdaDetector.Keys
+  import AwsLambdaDetector.Const
+  import AwsLambdaDetector.Keys
 
   def name: String = Const.Name
 
@@ -59,7 +59,7 @@ private class AWSLambdaDetector[F[_]: Env: Monad] extends TelemetryResourceDetec
     }
 }
 
-object AWSLambdaDetector {
+object AwsLambdaDetector {
 
   private object Const {
     val Name = "aws-lambda"
@@ -87,7 +87,7 @@ object AWSLambdaDetector {
     *     // register OTLP exporters configurer
     *     _.addExportersConfigurer(OtlpExportersAutoConfigure[IO])
     *     // register AWS Lambda detector
-    *      .addResourceDetector(AWSLambdaDetector[IO])
+    *      .addResourceDetector(AwsLambdaDetector[IO])
     *   )
     *   .use { autoConfigured =>
     *     val sdk = autoConfigured.sdk
@@ -96,6 +96,6 @@ object AWSLambdaDetector {
     *   }}}
     */
   def apply[F[_]: Env: Monad]: TelemetryResourceDetector[F] =
-    new AWSLambdaDetector[F]
+    new AwsLambdaDetector[F]
 
 }

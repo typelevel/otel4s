@@ -326,13 +326,13 @@ AWS_LAMBDA_FUNCTION_VERSION=0.0.1</code></pre>
         </span><span class="comment">// register OTLP exporters configurer
 </span><span>        </span><span class="identifier">_</span><span>.</span><span class="identifier">addExportersConfigurer</span><span>(</span><span class="type-name">OtlpExportersAutoConfigure</span><span>[</span><span class="type-name">IO</span><span>])
         </span><span class="comment">// register AWS Lambda detector
-</span><span>         .</span><span class="identifier">addResourceDetector</span><span>(</span><span class="type-name">AWSLambdaDetector</span><span>[</span><span class="type-name">IO</span><span>])
+</span><span>         .</span><span class="identifier">addResourceDetector</span><span>(</span><span class="type-name">AwsLambdaDetector</span><span>[</span><span class="type-name">IO</span><span>])
         </span><span class="comment">// register AWS EC2 detector
-</span><span>         .</span><span class="identifier">addResourceDetector</span><span>(</span><span class="type-name">AWSEC2Detector</span><span>[</span><span class="type-name">IO</span><span>])
+</span><span>         .</span><span class="identifier">addResourceDetector</span><span>(</span><span class="type-name">AwsEc2Detector</span><span>[</span><span class="type-name">IO</span><span>])
         </span><span class="comment">// register AWS ECS detector
-</span><span>         .</span><span class="identifier">addResourceDetector</span><span>(</span><span class="type-name">AWSECSDetector</span><span>[</span><span class="type-name">IO</span><span>])
+</span><span>         .</span><span class="identifier">addResourceDetector</span><span>(</span><span class="type-name">AwsEcsDetector</span><span>[</span><span class="type-name">IO</span><span>])
         </span><span class="comment">// register AWS Beanstalk detector
-</span><span>         .</span><span class="identifier">addResourceDetector</span><span>(</span><span class="type-name">AWSBeanstalkDetector</span><span>[</span><span class="type-name">IO</span><span>])
+</span><span>         .</span><span class="identifier">addResourceDetector</span><span>(</span><span class="type-name">AwsBeanstalkDetector</span><span>[</span><span class="type-name">IO</span><span>])
       )
       .</span><span class="identifier">use</span><span> { </span><span class="identifier">autoConfigured</span><span> =&gt;
         </span><span class="keyword">val</span><span> </span><span class="identifier">sdk</span><span> = </span><span class="identifier">autoConfigured</span><span>.</span><span class="identifier">sdk</span><span>
@@ -362,13 +362,13 @@ AWS_LAMBDA_FUNCTION_VERSION=0.0.1</code></pre>
         </span><span class="comment">// register OTLP exporters configurer
 </span><span>        </span><span class="identifier">_</span><span>.</span><span class="identifier">addExporterConfigurer</span><span>(</span><span class="type-name">OtlpSpanExporterAutoConfigure</span><span>[</span><span class="type-name">IO</span><span>])
         </span><span class="comment">// register AWS Lambda detector
-</span><span>         .</span><span class="identifier">addResourceDetector</span><span>(</span><span class="type-name">AWSLambdaDetector</span><span>[</span><span class="type-name">IO</span><span>])
+</span><span>         .</span><span class="identifier">addResourceDetector</span><span>(</span><span class="type-name">AwsLambdaDetector</span><span>[</span><span class="type-name">IO</span><span>])
         </span><span class="comment">// register AWS EC2 detector
-</span><span>         .</span><span class="identifier">addResourceDetector</span><span>(</span><span class="type-name">AWSEC2Detector</span><span>[</span><span class="type-name">IO</span><span>])
+</span><span>         .</span><span class="identifier">addResourceDetector</span><span>(</span><span class="type-name">AwsEc2Detector</span><span>[</span><span class="type-name">IO</span><span>])
         </span><span class="comment">// register AWS ECS detector
-</span><span>         .</span><span class="identifier">addResourceDetector</span><span>(</span><span class="type-name">AWSECSDetector</span><span>[</span><span class="type-name">IO</span><span>])
+</span><span>         .</span><span class="identifier">addResourceDetector</span><span>(</span><span class="type-name">AwsEcsDetector</span><span>[</span><span class="type-name">IO</span><span>])
         </span><span class="comment">// register AWS Beanstalk detector
-</span><span>         .</span><span class="identifier">addResourceDetector</span><span>(</span><span class="type-name">AWSBeanstalkDetector</span><span>[</span><span class="type-name">IO</span><span>])
+</span><span>         .</span><span class="identifier">addResourceDetector</span><span>(</span><span class="type-name">AwsBeanstalkDetector</span><span>[</span><span class="type-name">IO</span><span>])
       )
       .</span><span class="identifier">use</span><span> { </span><span class="identifier">autoConfigured</span><span> =&gt;
         </span><span class="identifier">program</span><span>(</span><span class="identifier">autoConfigured</span><span>.</span><span class="identifier">tracerProvider</span><span>)

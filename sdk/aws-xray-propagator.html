@@ -196,7 +196,7 @@
 </span><span>        </span><span class="identifier">_</span><span>.</span><span class="identifier">addExportersConfigurer</span><span>(</span><span class="type-name">OtlpExportersAutoConfigure</span><span>[</span><span class="type-name">IO</span><span>])
         </span><span class="comment">// add AWS X-Ray Propagator
 </span><span>         .</span><span class="identifier">addTracerProviderCustomizer</span><span>((</span><span class="identifier">b</span><span>, </span><span class="identifier">_</span><span>) =&gt; 
-           </span><span class="identifier">b</span><span>.</span><span class="identifier">addTextMapPropagators</span><span>(</span><span class="type-name">AWSXRayPropagator</span><span>())
+           </span><span class="identifier">b</span><span>.</span><span class="identifier">addTextMapPropagators</span><span>(</span><span class="type-name">AwsXRayPropagator</span><span>())
          )
       )
       .</span><span class="identifier">use</span><span> { </span><span class="identifier">autoConfigured</span><span> =&gt;
@@ -228,7 +228,7 @@
 </span><span>        </span><span class="identifier">_</span><span>.</span><span class="identifier">addExporterConfigurer</span><span>(</span><span class="type-name">OtlpSpanExporterAutoConfigure</span><span>[</span><span class="type-name">IO</span><span>])
         </span><span class="comment">// add AWS X-Ray Propagator
 </span><span>         .</span><span class="identifier">addTracerProviderCustomizer</span><span>((</span><span class="identifier">b</span><span>, </span><span class="identifier">_</span><span>) =&gt; 
-           </span><span class="identifier">b</span><span>.</span><span class="identifier">addTextMapPropagators</span><span>(</span><span class="type-name">AWSXRayPropagator</span><span>())
+           </span><span class="identifier">b</span><span>.</span><span class="identifier">addTextMapPropagators</span><span>(</span><span class="type-name">AwsXRayPropagator</span><span>())
          )
       )
       .</span><span class="identifier">use</span><span> { </span><span class="identifier">autoConfigured</span><span> =&gt;
@@ -246,7 +246,7 @@
         <h2 id="aws-lambda" class="section"><a class="anchor-link left" href="#aws-lambda"><i class="icofont-laika link">&#xef71;</i></a>AWS Lambda</h2>
         <p>AWS Lambda can <a href="https://docs.aws.amazon.com/lambda/latest/dg/configuration-envvars.html">utilize</a> <code>_X_AMZN_TRACE_ID</code> environment variable or 
         <code>com.amazonaws.xray.traceHeader</code> system property to set the X-Ray tracing header.</p>
-        <p>Use <code>AWSXRayLambdaPropagator</code> in such a case.</p>
+        <p>Use <code>AwsXRayLambdaPropagator</code> in such a case.</p>
         <div class="tab-container" data-tab-group="sdk-entry-point">
           <ul class="tab-group">
             <li class="tab active" data-choice-name="sdk"><a href="#">OpenTelemetrySDK</a></li>
@@ -270,7 +270,7 @@
 </span><span>        </span><span class="identifier">_</span><span>.</span><span class="identifier">addExportersConfigurer</span><span>(</span><span class="type-name">OtlpExportersAutoConfigure</span><span>[</span><span class="type-name">IO</span><span>])
         </span><span class="comment">// add AWS X-Ray Lambda Propagator
 </span><span>         .</span><span class="identifier">addTracerProviderCustomizer</span><span>((</span><span class="identifier">b</span><span>, </span><span class="identifier">_</span><span>) =&gt; 
-           </span><span class="identifier">b</span><span>.</span><span class="identifier">addTextMapPropagators</span><span>(</span><span class="type-name">AWSXRayLambdaPropagator</span><span>())
+           </span><span class="identifier">b</span><span>.</span><span class="identifier">addTextMapPropagators</span><span>(</span><span class="type-name">AwsXRayLambdaPropagator</span><span>())
          )
       )
       .</span><span class="identifier">use</span><span> { </span><span class="identifier">autoConfigured</span><span> =&gt;
@@ -302,7 +302,7 @@
 </span><span>        </span><span class="identifier">_</span><span>.</span><span class="identifier">addExporterConfigurer</span><span>(</span><span class="type-name">OtlpSpanExporterAutoConfigure</span><span>[</span><span class="type-name">IO</span><span>])
         </span><span class="comment">// add AWS X-Ray Lambda Propagator
 </span><span>         .</span><span class="identifier">addTracerProviderCustomizer</span><span>((</span><span class="identifier">b</span><span>, </span><span class="identifier">_</span><span>) =&gt; 
-           </span><span class="identifier">b</span><span>.</span><span class="identifier">addTextMapPropagators</span><span>(</span><span class="type-name">AWSXRayLambdaPropagator</span><span>())
+           </span><span class="identifier">b</span><span>.</span><span class="identifier">addTextMapPropagators</span><span>(</span><span class="type-name">AwsXRayLambdaPropagator</span><span>())
          )
       )
       .</span><span class="identifier">use</span><span> { </span><span class="identifier">autoConfigured</span><span> =&gt;

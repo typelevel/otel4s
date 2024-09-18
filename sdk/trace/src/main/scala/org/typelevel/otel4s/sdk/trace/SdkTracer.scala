@@ -28,7 +28,6 @@ import org.typelevel.otel4s.context.propagation.TextMapUpdater
 import org.typelevel.otel4s.meta.InstrumentMeta
 import org.typelevel.otel4s.sdk.common.InstrumentationScope
 import org.typelevel.otel4s.sdk.context.Context
-import org.typelevel.otel4s.sdk.trace.processor.SpanStorage
 import org.typelevel.otel4s.trace.Span
 import org.typelevel.otel4s.trace.SpanBuilder
 import org.typelevel.otel4s.trace.SpanContext
@@ -39,8 +38,7 @@ private final class SdkTracer[F[_]: Temporal: Console] private[trace] (
     scopeInfo: InstrumentationScope,
     propagators: ContextPropagators[Context],
     sharedState: TracerSharedState[F],
-    traceScope: TraceScope[F, Context],
-    storage: SpanStorage[F]
+    traceScope: TraceScope[F, Context]
 ) extends Tracer[F] {
 
   val meta: InstrumentMeta[F] = InstrumentMeta.enabled[F]
@@ -49,10 +47,9 @@ private final class SdkTracer[F[_]: Temporal: Console] private[trace] (
     traceScope.current.map(current => current.filter(_.isValid))
 
   private[this] def currentBackend: OptionT[F, Span.Backend[F]] =
-    OptionT(traceScope.current)
-      .semiflatMap { ctx =>
-        OptionT(storage.get(ctx)).getOrElse(Span.Backend.propagating(ctx))
-      }
+    OptionT(traceScope.current).semiflatMap { ctx =>
+      OptionT(sharedState.spanStorage.get(ctx)).getOrElse(Span.Backend.propagating(ctx))
+    }
 
   def currentSpanOrNoop: F[Span[F]] =
     currentBackend

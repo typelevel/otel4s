@@ -68,6 +68,7 @@ import scala.concurrent.duration.FiniteDuration
 private final class SdkSpanBackend[F[_]: Monad: Clock: Console] private (
     spanLimits: SpanLimits,
     spanProcessor: SpanProcessor[F],
+    spanStorage: SpanStorage[F],
     immutableState: SdkSpanBackend.ImmutableState,
     mutableState: Ref[F, SdkSpanBackend.MutableState]
 ) extends Span.Backend[F]
@@ -174,6 +175,7 @@ private final class SdkSpanBackend[F[_]: Monad: Clock: Console] private (
   def end(timestamp: FiniteDuration): F[Unit] =
     for {
       updated <- updateState("end")(s => s.copy(endTimestamp = Some(timestamp)))
+      _ <- spanStorage.remove(this)
       _ <- toSpanData.flatMap(span => spanProcessor.onEnd(span)).whenA(updated)
     } yield ()
 
@@ -270,6 +272,9 @@ private object SdkSpanBackend {
     * @param processor
     *   the [[SpanProcessor]] to call on span's start and end
     *
+    * @param spanStorage
+    *   the `SpanStorage` to store the span at
+    *
     * @param attributes
     *   the [[Attributes]] of the span
     *
@@ -289,6 +294,7 @@ private object SdkSpanBackend {
       parentContext: Option[SpanContext],
       spanLimits: SpanLimits,
       processor: SpanProcessor[F],
+      spanStorage: SpanStorage[F],
       attributes: LimitedData[Attribute[_], Attributes],
       links: LimitedData[LinkData, Vector[LinkData]],
       userStartTimestamp: Option[FiniteDuration]
@@ -315,12 +321,8 @@ private object SdkSpanBackend {
     for {
       start <- userStartTimestamp.fold(Clock[F].realTime)(_.pure)
       state <- Ref[F].of(mutableState)
-      backend = new SdkSpanBackend[F](
-        spanLimits,
-        processor,
-        immutableState(start),
-        state
-      )
+      backend = new SdkSpanBackend[F](spanLimits, processor, spanStorage, immutableState(start), state)
+      _ <- spanStorage.add(backend)
       _ <- processor.onStart(parentContext, backend)
     } yield backend
   }

@@ -177,6 +177,7 @@ private final case class SdkSpanBuilder[F[_]: Temporal: Console] private (
               parentContext = parentSpanContext,
               spanLimits = tracerSharedState.spanLimits,
               processor = tracerSharedState.spanProcessor,
+              spanStorage = tracerSharedState.spanStorage,
               attributes = attributes.appendAll(samplingResult.attributes),
               links = links,
               userStartTimestamp = state.startTimestamp

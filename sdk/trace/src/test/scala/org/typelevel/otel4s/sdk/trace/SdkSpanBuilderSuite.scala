@@ -155,14 +155,17 @@ class SdkSpanBuilderSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
       spanLimits: SpanLimits = SpanLimits.default,
       sampler: Sampler[IO] = Sampler.alwaysOn
   ): IO[TracerSharedState[IO]] =
-    Random.scalaUtilRandom[IO].map { implicit random =>
-      TracerSharedState(
-        IdGenerator.random[IO],
-        TelemetryResource.default,
-        spanLimits,
-        sampler,
-        SimpleSpanProcessor(exporter)
-      )
+    Random.scalaUtilRandom[IO].flatMap { implicit random =>
+      SpanStorage.create[IO].map { spanStorage =>
+        TracerSharedState(
+          IdGenerator.random[IO],
+          TelemetryResource.default,
+          spanLimits,
+          sampler,
+          SimpleSpanProcessor(exporter),
+          spanStorage
+        )
+      }
     }
 
   override protected def scalaCheckTestParameters: Test.Parameters =

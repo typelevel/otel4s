@@ -106,6 +106,7 @@ lazy val root = tlCrossRootProject
     `sdk-exporter-metrics`,
     `sdk-exporter-trace`,
     `sdk-exporter`,
+    `sdk-contrib-aws-xray`,
     `sdk-contrib-aws-resource`,
     `sdk-contrib-aws-xray-propagator`,
     `oteljava-common`,
@@ -471,6 +472,19 @@ lazy val `sdk-contrib-aws-xray-propagator` =
     .settings(
       name := "otel4s-sdk-contrib-aws-xray-propagator",
       startYear := Some(2024)
+    )
+    .settings(munitDependencies)
+    .settings(scalafixSettings)
+    .jsSettings(scalaJSLinkerSettings)
+
+lazy val `sdk-contrib-aws-xray` =
+  crossProject(JVMPlatform, JSPlatform, NativePlatform)
+    .crossType(CrossType.Pure)
+    .in(file("sdk-contrib/aws/xray"))
+    .dependsOn(`sdk-trace` % "compile->compile;test->test")
+    .settings(
+      name := "otel4s-sdk-contrib-aws-xray",
+      startYear := Some(2024),
     )
     .settings(munitDependencies)
     .settings(scalafixSettings)

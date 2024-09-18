@@ -1,33 +1,47 @@
+/*
+ * Copyright 2024 Typelevel
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.typelevel.otel4s.sdk.trace.contrib.aws
 
 import cats.MonadThrow
-import cats.effect.*
-import cats.effect.std.*
+import cats.effect._
+import cats.effect.std._
 import cats.effect.testkit.TestControl
-import cats.syntax.all.*
-import munit.{CatsEffectSuite, ScalaCheckEffectSuite}
-import org.scalacheck.*
+import cats.syntax.all._
+import munit.CatsEffectSuite
+import munit.ScalaCheckEffectSuite
+import org.scalacheck._
 import org.scalacheck.effect.PropF
-import org.typelevel.otel4s.trace.SpanContext.{SpanId, TraceId}
+import org.typelevel.otel4s.trace.SpanContext._
 import scodec.bits.ByteVector
 
-import scala.concurrent.duration.*
+import scala.concurrent.duration._
 
-class AwsXRayIdGeneratorSuite
-  extends CatsEffectSuite
-    with ScalaCheckEffectSuite {
+class AwsXRayIdGeneratorSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
 
-  /**
-   * Generate an arbitrary list of delays representing the times between pairs of
-   * calls to {{{AwsXRayIdGenerator[IO].generateTraceId}}}
-   */
+  /** Generate an arbitrary list of delays representing the times between pairs of calls to
+    * {{{AwsXRayIdGenerator[IO].generateTraceId}}}
+    */
   private val genTimeline: Gen[List[FiniteDuration]] =
-    Gen.posNum[Int]
+    Gen
+      .posNum[Int]
       .flatMap(Gen.listOfN(_, Gen.choose(0.seconds, 1.second)))
 
   test("Trace IDs should be a combination of the current timestamp with random numbers") {
-    PropF.forAllNoShrinkF(Gen.long, genTimeline) { (seed: Long,
-                                                    timeline: List[FiniteDuration]) =>
+    PropF.forAllNoShrinkF(Gen.long, genTimeline) { (seed: Long, timeline: List[FiniteDuration]) =>
       IntermittentlyZeroRandom[IO](seed).flatMap { controlRandom =>
         IntermittentlyZeroRandom[IO](seed).flatMap { implicit testRandom =>
           val expecteds: IO[List[ByteVector]] =
@@ -35,7 +49,7 @@ class AwsXRayIdGeneratorSuite
               .scanLeft(0.millis)(_ + _) // convert delays to absolute timestamps
               .traverse { now =>
                 for {
-                  hiRandom <- controlRandom.nextInt.map(_ & 0xFFFFFFFFL)
+                  hiRandom <- controlRandom.nextInt.map(_ & 0xffffffffL)
                   lowRandom <- controlRandom.nextLong
                 } yield TraceId.fromLongs(now.toSeconds << 32 | hiRandom, lowRandom)
               }
@@ -85,21 +99,22 @@ class AwsXRayIdGeneratorSuite
 }
 
 object IntermittentlyZeroRandom {
-  def apply[F[_] : Sync](seed: Long): F[Random[F]] =
+  def apply[F[_]: Sync](seed: Long): F[Random[F]] =
     Random.scalaUtilRandomSeedLong[F](seed).map(new IntermittentlyZeroRandom[F](_))
 }
 
-class IntermittentlyZeroRandom[F[_] : MonadThrow](actualRandom: Random[F]) extends UnimplementedRandom[F] {
-  override def nextDouble: F[Double] = actualRandom.nextBoolean.ifM(0D.pure[F], actualRandom.nextDouble)
-  override def nextFloat: F[Float] = actualRandom.nextBoolean.ifM(0F.pure[F], actualRandom.nextFloat)
-  override def nextGaussian: F[Double] = actualRandom.nextBoolean.ifM(0D.pure[F], actualRandom.nextGaussian)
+class IntermittentlyZeroRandom[F[_]: MonadThrow](actualRandom: Random[F]) extends UnimplementedRandom[F] {
+  override def nextDouble: F[Double] = actualRandom.nextBoolean.ifM(0d.pure[F], actualRandom.nextDouble)
+  override def nextFloat: F[Float] = actualRandom.nextBoolean.ifM(0f.pure[F], actualRandom.nextFloat)
+  override def nextGaussian: F[Double] = actualRandom.nextBoolean.ifM(0d.pure[F], actualRandom.nextGaussian)
   override def nextInt: F[Int] = actualRandom.nextBoolean.ifM(0.pure[F], actualRandom.nextInt)
   override def nextIntBounded(n: Int): F[Int] = actualRandom.nextBoolean.ifM(0.pure[F], actualRandom.nextIntBounded(n))
   override def nextLong: F[Long] = actualRandom.nextBoolean.ifM(0L.pure[F], actualRandom.nextLong)
-  override def nextLongBounded(n: Long): F[Long] = actualRandom.nextBoolean.ifM(0L.pure[F], actualRandom.nextLongBounded(n))
+  override def nextLongBounded(n: Long): F[Long] =
+    actualRandom.nextBoolean.ifM(0L.pure[F], actualRandom.nextLongBounded(n))
 }
 
-class UnimplementedRandom[F[_] : MonadThrow] extends Random[F] {
+class UnimplementedRandom[F[_]: MonadThrow] extends Random[F] {
   private def notImplemented[A]: F[A] = (new NotImplementedError).raiseError[F, A]
 
   override def betweenDouble(minInclusive: Double, maxExclusive: Double): F[Double] = notImplemented

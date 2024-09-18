@@ -34,7 +34,7 @@ import org.typelevel.otel4s.semconv.SchemaUrls
 import org.typelevel.otel4s.semconv.experimental.attributes.CloudExperimentalAttributes._
 import org.typelevel.otel4s.semconv.experimental.attributes.HostExperimentalAttributes._
 
-class AWSEC2DetectorSuite extends CatsEffectSuite {
+class AwsEc2DetectorSuite extends CatsEffectSuite {
 
   test("parse metadata response and add attributes") {
     val accountId = "1234567890"
@@ -74,17 +74,17 @@ class AWSEC2DetectorSuite extends CatsEffectSuite {
       Some(SchemaUrls.Current)
     )
 
-    AWSEC2Detector[IO](uri"", client).detect.assertEquals(Some(expected))
+    AwsEc2Detector[IO](uri"", client).detect.assertEquals(Some(expected))
   }
 
   test("return None when metadata response is unparsable") {
     val client = Client.fromHttpApp(mockServer(Json.obj(), "", ""))
-    AWSEC2Detector[IO](uri"", client).detect.assertEquals(None)
+    AwsEc2Detector[IO](uri"", client).detect.assertEquals(None)
   }
 
   test("return None when the endpoint is unavailable exist") {
     val client = Client.fromHttpApp(HttpApp.notFound[IO])
-    AWSEC2Detector[IO](uri"", client).detect.assertEquals(None)
+    AwsEc2Detector[IO](uri"", client).detect.assertEquals(None)
   }
 
   private def mockServer(metadata: Json, hostname: String, token: String): HttpApp[IO] = {

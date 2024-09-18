@@ -66,7 +66,7 @@ object TelemetryApp extends IOApp.Simple {
         _.addExportersConfigurer(OtlpExportersAutoConfigure[IO])
         // add AWS X-Ray Propagator
          .addTracerProviderCustomizer((b, _) => 
-           b.addTextMapPropagators(AWSXRayPropagator())
+           b.addTextMapPropagators(AwsXRayPropagator())
          )
       )
       .use { autoConfigured =>
@@ -102,7 +102,7 @@ object TelemetryApp extends IOApp.Simple {
         _.addExporterConfigurer(OtlpSpanExporterAutoConfigure[IO])
         // add AWS X-Ray Propagator
          .addTracerProviderCustomizer((b, _) => 
-           b.addTextMapPropagators(AWSXRayPropagator())
+           b.addTextMapPropagators(AwsXRayPropagator())
          )
       )
       .use { autoConfigured =>
@@ -123,7 +123,7 @@ object TelemetryApp extends IOApp.Simple {
 AWS Lambda can [utilize][lambda-xray-envvars] `_X_AMZN_TRACE_ID` environment variable or 
 `com.amazonaws.xray.traceHeader` system property to set the X-Ray tracing header.
 
-Use `AWSXRayLambdaPropagator` in such a case.
+Use `AwsXRayLambdaPropagator` in such a case.
 
 @:select(sdk-entry-point)
 
@@ -148,7 +148,7 @@ object TelemetryApp extends IOApp.Simple {
         _.addExportersConfigurer(OtlpExportersAutoConfigure[IO])
         // add AWS X-Ray Lambda Propagator
          .addTracerProviderCustomizer((b, _) => 
-           b.addTextMapPropagators(AWSXRayLambdaPropagator())
+           b.addTextMapPropagators(AwsXRayLambdaPropagator())
          )
       )
       .use { autoConfigured =>
@@ -184,7 +184,7 @@ object TelemetryApp extends IOApp.Simple {
         _.addExporterConfigurer(OtlpSpanExporterAutoConfigure[IO])
         // add AWS X-Ray Lambda Propagator
          .addTracerProviderCustomizer((b, _) => 
-           b.addTextMapPropagators(AWSXRayLambdaPropagator())
+           b.addTextMapPropagators(AwsXRayLambdaPropagator())
          )
       )
       .use { autoConfigured =>

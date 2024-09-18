@@ -30,7 +30,7 @@ import org.typelevel.otel4s.semconv.attributes.ServiceAttributes
 import org.typelevel.otel4s.semconv.experimental.attributes.CloudExperimentalAttributes._
 import org.typelevel.otel4s.semconv.experimental.attributes.ServiceExperimentalAttributes._
 
-class AWSBeanstalkDetectorSuite extends CatsEffectSuite {
+class AwsBeanstalkDetectorSuite extends CatsEffectSuite {
 
   test("parse config file and add attributes") {
     Files[IO].tempFile.use { path =>
@@ -57,7 +57,7 @@ class AWSBeanstalkDetectorSuite extends CatsEffectSuite {
 
       for {
         _ <- write(content.noSpaces, path)
-        r <- AWSBeanstalkDetector[IO](path).detect
+        r <- AwsBeanstalkDetector[IO](path).detect
       } yield assertEquals(r, Some(expected))
     }
   }
@@ -74,19 +74,19 @@ class AWSBeanstalkDetectorSuite extends CatsEffectSuite {
 
       for {
         _ <- write("{}", path)
-        r <- AWSBeanstalkDetector[IO](path).detect
+        r <- AwsBeanstalkDetector[IO](path).detect
       } yield assertEquals(r, Some(expected))
     }
   }
 
   test("return None when config file is unparsable") {
     Files[IO].tempFile.use { path =>
-      AWSBeanstalkDetector[IO](path).detect.assertEquals(None)
+      AwsBeanstalkDetector[IO](path).detect.assertEquals(None)
     }
   }
 
   test("return None when the config file doesn't exist") {
-    AWSBeanstalkDetector[IO].detect.assertEquals(None)
+    AwsBeanstalkDetector[IO].detect.assertEquals(None)
   }
 
   private def write(content: String, path: Path): IO[Unit] =

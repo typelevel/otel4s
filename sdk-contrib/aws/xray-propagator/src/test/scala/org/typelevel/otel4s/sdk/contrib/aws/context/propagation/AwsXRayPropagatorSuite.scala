@@ -23,9 +23,9 @@ import org.typelevel.otel4s.sdk.trace.SdkContextKeys
 import org.typelevel.otel4s.sdk.trace.scalacheck.Gens
 import org.typelevel.otel4s.trace.SpanContext
 
-class AWSXRayLambdaPropagatorSuite extends ScalaCheckSuite {
+class AwsXRayPropagatorSuite extends ScalaCheckSuite {
 
-  private val propagator = AWSXRayLambdaPropagator()
+  private val propagator = AwsXRayPropagator()
 
   //
   // Common
@@ -36,7 +36,7 @@ class AWSXRayLambdaPropagatorSuite extends ScalaCheckSuite {
   }
 
   test("toString") {
-    assertEquals(propagator.toString, "AWSXRayLambdaPropagator")
+    assertEquals(propagator.toString, "AwsXRayPropagator")
   }
 
   //
@@ -69,7 +69,7 @@ class AWSXRayLambdaPropagatorSuite extends ScalaCheckSuite {
   }
 
   //
-  // Extract (common)
+  // Extract
   //
 
   test("extract - empty context") {
@@ -138,40 +138,6 @@ class AWSXRayLambdaPropagatorSuite extends ScalaCheckSuite {
       )
       val result = propagator.extract(Context.root, carrier)
       assertEquals(getSpanContext(result), None)
-    }
-  }
-
-  //
-  // Extract (lambda-specific scenarios)
-  //
-
-  test("extract - use env variable when input is empty") {
-    Prop.forAll(Gens.spanContext) { ctx =>
-      val props = Map.empty[String, String]
-      val env = Map("_X_AMZN_TRACE_ID" -> toTraceId(ctx))
-      val propagator = new AWSXRayLambdaPropagator(props.get, env.get)
-      val result = propagator.extract(Context.root, Map.empty[String, String])
-      assertEquals(getSpanContext(result), Some(asRemote(ctx)))
-    }
-  }
-
-  test("extract - use sys prop when input is empty") {
-    Prop.forAll(Gens.spanContext) { ctx =>
-      val props = Map("com.amazonaws.xray.traceHeader" -> toTraceId(ctx))
-      val env = Map.empty[String, String]
-      val propagator = new AWSXRayLambdaPropagator(props.get, env.get)
-      val result = propagator.extract(Context.root, Map.empty[String, String])
-      assertEquals(getSpanContext(result), Some(asRemote(ctx)))
-    }
-  }
-
-  test("extract - prioritize sys prop over env variable when input is empty") {
-    Prop.forAll(Gens.spanContext, Gens.spanContext) { (ctx1, ctx2) =>
-      val props = Map("com.amazonaws.xray.traceHeader" -> toTraceId(ctx1))
-      val env = Map("_X_AMZN_TRACE_ID" -> toTraceId(ctx2))
-      val propagator = new AWSXRayLambdaPropagator(props.get, env.get)
-      val result = propagator.extract(Context.root, Map.empty[String, String])
-      assertEquals(getSpanContext(result), Some(asRemote(ctx1)))
     }
   }
 

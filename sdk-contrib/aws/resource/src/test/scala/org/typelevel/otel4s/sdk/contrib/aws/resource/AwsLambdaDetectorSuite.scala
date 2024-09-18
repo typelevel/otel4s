@@ -27,7 +27,7 @@ import org.typelevel.otel4s.semconv.experimental.attributes.FaasExperimentalAttr
 
 import scala.collection.immutable
 
-class AWSLambdaDetectorSuite extends CatsEffectSuite {
+class AwsLambdaDetectorSuite extends CatsEffectSuite {
 
   test("add only defined attributes") {
     implicit val env: Env[IO] =
@@ -42,7 +42,7 @@ class AWSLambdaDetectorSuite extends CatsEffectSuite {
       Some(SchemaUrls.Current)
     )
 
-    AWSLambdaDetector[IO].detect.assertEquals(Some(expected))
+    AwsLambdaDetector[IO].detect.assertEquals(Some(expected))
   }
 
   test("add all attributes") {
@@ -63,13 +63,13 @@ class AWSLambdaDetectorSuite extends CatsEffectSuite {
       Some(SchemaUrls.Current)
     )
 
-    AWSLambdaDetector[IO].detect.assertEquals(Some(expected))
+    AwsLambdaDetector[IO].detect.assertEquals(Some(expected))
   }
 
   test("return None when both NAME and VERSION are undefined") {
     implicit val env: Env[IO] = constEnv("AWS_REGION" -> "eu-west-1")
 
-    AWSLambdaDetector[IO].detect.assertEquals(None)
+    AwsLambdaDetector[IO].detect.assertEquals(None)
   }
 
   private def constEnv(pairs: (String, String)*): Env[IO] =

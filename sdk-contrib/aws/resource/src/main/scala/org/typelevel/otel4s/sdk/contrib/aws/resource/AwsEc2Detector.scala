@@ -43,14 +43,14 @@ import org.typelevel.otel4s.semconv.SchemaUrls
 
 import scala.concurrent.duration._
 
-private class AWSEC2Detector[F[_]: Async: Network: Console] private (
+private class AwsEc2Detector[F[_]: Async: Network: Console] private (
     baseUri: Uri,
     customClient: Option[Client[F]]
 ) extends TelemetryResourceDetector[F] {
 
-  import AWSEC2Detector.Const
-  import AWSEC2Detector.Keys
-  import AWSEC2Detector.IdentityMetadata
+  import AwsEc2Detector.Const
+  import AwsEc2Detector.Keys
+  import AwsEc2Detector.IdentityMetadata
 
   def name: String = Const.Name
 
@@ -58,7 +58,7 @@ private class AWSEC2Detector[F[_]: Async: Network: Console] private (
     mkClient.use { client =>
       retrieve(client).handleErrorWith { e =>
         Console[F]
-          .errorln(s"AWSEC2Detector: cannot retrieve metadata from $baseUri due to ${e.getMessage}")
+          .errorln(s"AwsEc2Detector: cannot retrieve metadata from $baseUri due to ${e.getMessage}")
           .as(None)
       }
     }
@@ -126,7 +126,7 @@ private class AWSEC2Detector[F[_]: Async: Network: Console] private (
 
 }
 
-object AWSEC2Detector {
+object AwsEc2Detector {
 
   private object Const {
     val Name = "aws-ec2"
@@ -180,7 +180,7 @@ object AWSEC2Detector {
     *     // register OTLP exporters configurer
     *     _.addExportersConfigurer(OtlpExportersAutoConfigure[IO])
     *     // register AWS EC2 detector
-    *      .addResourceDetector(AWSEC2Detector[IO])
+    *      .addResourceDetector(AwsEc2Detector[IO])
     *   )
     *   .use { autoConfigured =>
     *     val sdk = autoConfigured.sdk
@@ -192,7 +192,7 @@ object AWSEC2Detector {
     *   [[https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instancedata-data-retrieval.html]]
     */
   def apply[F[_]: Async: Network: Console]: TelemetryResourceDetector[F] =
-    new AWSEC2Detector[F](Const.MetadataEndpoint, None)
+    new AwsEc2Detector[F](Const.MetadataEndpoint, None)
 
   /** The detector fetches instance metadata from the given `baseUri` using the given `client`.
     *
@@ -203,7 +203,7 @@ object AWSEC2Detector {
     *     // register OTLP exporters configurer
     *     _.addExportersConfigurer(OtlpExportersAutoConfigure[IO])
     *     // register AWS EC2 detector
-    *      .addResourceDetector(AWSEC2Detector[IO])
+    *      .addResourceDetector(AwsEc2Detector[IO])
     *   )
     *   .use { autoConfigured =>
     *     val sdk = autoConfigured.sdk
@@ -215,6 +215,6 @@ object AWSEC2Detector {
     *   [[https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instancedata-data-retrieval.html]]
     */
   def apply[F[_]: Async: Network: Console](baseUri: Uri, client: Client[F]): TelemetryResourceDetector[F] =
-    new AWSEC2Detector[F](baseUri, Some(client))
+    new AwsEc2Detector[F](baseUri, Some(client))
 
 }

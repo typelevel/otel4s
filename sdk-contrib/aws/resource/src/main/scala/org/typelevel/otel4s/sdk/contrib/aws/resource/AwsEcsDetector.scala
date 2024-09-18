@@ -38,14 +38,14 @@ import org.typelevel.otel4s.semconv.SchemaUrls
 
 import scala.concurrent.duration._
 
-private class AWSECSDetector[F[_]: Async: Network: Env: Console] private (
+private class AwsEcsDetector[F[_]: Async: Network: Env: Console] private (
     customClient: Option[Client[F]]
 ) extends TelemetryResourceDetector[F] {
 
-  import AWSECSDetector.Const
-  import AWSECSDetector.Keys
-  import AWSECSDetector.ContainerMetadata
-  import AWSECSDetector.TaskMetadata
+  import AwsEcsDetector.Const
+  import AwsEcsDetector.Keys
+  import AwsEcsDetector.ContainerMetadata
+  import AwsEcsDetector.TaskMetadata
 
   private implicit val containerDecoder: EntityDecoder[F, ContainerMetadata] = accumulatingJsonOf
   private implicit val taskDecoder: EntityDecoder[F, TaskMetadata] = accumulatingJsonOf
@@ -59,7 +59,7 @@ private class AWSECSDetector[F[_]: Async: Network: Env: Console] private (
           mkClient.use { client =>
             retrieve(client, uri).handleErrorWith { e =>
               Console[F]
-                .errorln(s"AWSECSDetector: cannot retrieve metadata from $uri due to ${e.getMessage}")
+                .errorln(s"AwsEcsDetector: cannot retrieve metadata from $uri due to ${e.getMessage}")
                 .as(None)
             }
           }
@@ -149,7 +149,7 @@ private class AWSECSDetector[F[_]: Async: Network: Env: Console] private (
   }
 }
 
-object AWSECSDetector {
+object AwsEcsDetector {
 
   private object Const {
     val Name = "aws-ecs"
@@ -195,7 +195,7 @@ object AWSECSDetector {
     *     // register OTLP exporters configurer
     *     _.addExportersConfigurer(OtlpExportersAutoConfigure[IO])
     *     // register AWS ECS detector
-    *      .addResourceDetector(AWSECSDetector[IO])
+    *      .addResourceDetector(AwsEcsDetector[IO])
     *   )
     *   .use { autoConfigured =>
     *     val sdk = autoConfigured.sdk
@@ -210,7 +210,7 @@ object AWSECSDetector {
     *   [[https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task-metadata-endpoint-v4.html]]
     */
   def apply[F[_]: Async: Network: Env: Console]: TelemetryResourceDetector[F] =
-    new AWSECSDetector[F](None)
+    new AwsEcsDetector[F](None)
 
   /** The detector fetches ECS container and task metadata using the given `client`.
     *
@@ -223,7 +223,7 @@ object AWSECSDetector {
     *     // register OTLP exporters configurer
     *     _.addExportersConfigurer(OtlpExportersAutoConfigure[IO])
     *     // register AWS ECS detector
-    *      .addResourceDetector(AWSECSDetector[IO])
+    *      .addResourceDetector(AwsEcsDetector[IO])
     *   )
     *   .use { autoConfigured =>
     *     val sdk = autoConfigured.sdk
@@ -238,7 +238,7 @@ object AWSECSDetector {
     *   [[https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task-metadata-endpoint-v4.html]]
     */
   def apply[F[_]: Async: Network: Env: Console](client: Client[F]): TelemetryResourceDetector[F] =
-    new AWSECSDetector[F](Some(client))
+    new AwsEcsDetector[F](Some(client))
 
   private final case class ContainerMetadata(
       dockerId: String,

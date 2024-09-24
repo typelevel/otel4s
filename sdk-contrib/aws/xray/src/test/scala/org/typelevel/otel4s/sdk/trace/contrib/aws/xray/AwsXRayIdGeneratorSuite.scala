@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.typelevel.otel4s.sdk.trace.contrib.aws
+package org.typelevel.otel4s.sdk.trace.contrib.aws.xray
 
 import cats.MonadThrow
 import cats.effect._

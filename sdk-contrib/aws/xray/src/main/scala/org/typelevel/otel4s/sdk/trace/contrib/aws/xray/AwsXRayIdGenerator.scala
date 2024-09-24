@@ -19,7 +19,7 @@
  * which was originally based on https://github.com/open-telemetry/opentelemetry-java-contrib/blob/eece7e8ef04170fb463ddf692f61d4527b50febf/aws-xray/src/main/java/io/opentelemetry/contrib/awsxray/AwsXrayIdGenerator.java
  * SPDX-License-Identifier: Apache-2.0
  */
-package org.typelevel.otel4s.sdk.trace.contrib.aws
+package org.typelevel.otel4s.sdk.trace.contrib.aws.xray
 
 import cats._
 import cats.effect._
@@ -30,9 +30,39 @@ import org.typelevel.otel4s.trace.SpanContext._
 import scodec.bits.ByteVector
 
 object AwsXRayIdGenerator {
+
+  /** Generates trace IDs that are compatible with AWS X-Ray tracing spec.
+    *
+    * @example
+    *   {{{
+    * Random.scalaUtilRandom[IO].flatMap { implicit random =>
+    *   OpenTelemetrySdk
+    *     .autoConfigured[IO](
+    *       // register OTLP exporters configurer
+    *       _.addExportersConfigurer(OtlpExportersAutoConfigure[IO])
+    *       // set AWS X-Ray ID generator
+    *        .addTracerProviderCustomizer((b, _) => b.withIdGenerator(AwsXRayIdGenerator[IO]))
+    *     )
+    *     .use { autoConfigured =>
+    *       val sdk = autoConfigured.sdk
+    *       ???
+    *     }
+    * }
+    *   }}}
+    *
+    * @see
+    *   [[https://docs.aws.amazon.com/xray/latest/devguide/xray-api-sendingdata.html#xray-api-traceids]]
+    */
   def apply[F[_]: Monad: Clock: Random]: AwsXRayIdGenerator[F] = new AwsXRayIdGenerator
 }
 
+/** Generates trace IDs that are compatible with AWS X-Ray tracing spec.
+  *
+  * According to the X-Ray spec, the first 32 bits of the trace ID represent the Unix epoch time in seconds.
+  *
+  * @see
+  *   [[https://docs.aws.amazon.com/xray/latest/devguide/xray-api-sendingdata.html#xray-api-traceids]]
+  */
 class AwsXRayIdGenerator[F[_]: Monad: Clock: Random] extends IdGenerator[F] {
   override def generateSpanId: F[ByteVector] =
     Random[F].nextLong

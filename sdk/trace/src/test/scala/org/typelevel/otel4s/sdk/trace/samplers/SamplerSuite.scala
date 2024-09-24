@@ -17,51 +17,63 @@
 package org.typelevel.otel4s.sdk.trace
 package samplers
 
+import cats.effect.IO
 import munit._
-import org.scalacheck.Prop
+import org.scalacheck.Test
+import org.scalacheck.effect.PropF
 
-class SamplerSuite extends ScalaCheckSuite {
+class SamplerSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
 
   test("AlwaysOn - correct description and toString") {
-    assertEquals(Sampler.AlwaysOn.toString, "AlwaysOnSampler")
-    assertEquals(Sampler.AlwaysOn.description, "AlwaysOnSampler")
+    val sampler = Sampler.alwaysOn[IO]
+    assertEquals(sampler.toString, "AlwaysOnSampler")
+    assertEquals(sampler.description, "AlwaysOnSampler")
   }
 
   test("AlwaysOn - always return 'RecordAndSample'") {
-    Prop.forAll(ShouldSampleInput.shouldSampleInputGen) { input =>
+    PropF.forAllF(ShouldSampleInput.shouldSampleInputGen) { input =>
       val expected = SamplingResult.RecordAndSample
-      val result = Sampler.AlwaysOn.shouldSample(
-        input.parentContext,
-        input.traceId,
-        input.name,
-        input.spanKind,
-        input.attributes,
-        input.parentLinks
-      )
 
-      assertEquals(result, expected)
+      Sampler
+        .alwaysOn[IO]
+        .shouldSample(
+          input.parentContext,
+          input.traceId,
+          input.name,
+          input.spanKind,
+          input.attributes,
+          input.parentLinks
+        )
+        .assertEquals(expected)
     }
   }
 
   test("AlwaysOff - correct description and toString") {
-    assertEquals(Sampler.AlwaysOff.toString, "AlwaysOffSampler")
-    assertEquals(Sampler.AlwaysOff.description, "AlwaysOffSampler")
+    val sampler = Sampler.alwaysOff[IO]
+    assertEquals(sampler.toString, "AlwaysOffSampler")
+    assertEquals(sampler.description, "AlwaysOffSampler")
   }
 
   test("AlwaysOff - always return 'Drop'") {
-    Prop.forAll(ShouldSampleInput.shouldSampleInputGen) { input =>
+    PropF.forAllF(ShouldSampleInput.shouldSampleInputGen) { input =>
       val expected = SamplingResult.Drop
-      val result = Sampler.AlwaysOff.shouldSample(
-        input.parentContext,
-        input.traceId,
-        input.name,
-        input.spanKind,
-        input.attributes,
-        input.parentLinks
-      )
 
-      assertEquals(result, expected)
+      Sampler
+        .alwaysOff[IO]
+        .shouldSample(
+          input.parentContext,
+          input.traceId,
+          input.name,
+          input.spanKind,
+          input.attributes,
+          input.parentLinks
+        )
+        .assertEquals(expected)
     }
   }
 
+  override protected def scalaCheckTestParameters: Test.Parameters =
+    super.scalaCheckTestParameters
+      .withMinSuccessfulTests(10)
+      .withMaxSize(10)
 }

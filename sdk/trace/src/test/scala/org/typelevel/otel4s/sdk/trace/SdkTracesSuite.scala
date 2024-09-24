@@ -50,7 +50,7 @@ class SdkTracesSuite extends CatsEffectSuite {
     tracesToString(
       TelemetryResource.default,
       SpanLimits.default,
-      Sampler.parentBased(Sampler.AlwaysOn)
+      Sampler.parentBased(Sampler.alwaysOn)
     )
 
   private val NoopTraces =
@@ -114,7 +114,7 @@ class SdkTracesSuite extends CatsEffectSuite {
   test("addTracerProviderCustomizer - customize tracer provider") {
     val config = Config.ofProps(Map("otel.traces.exporter" -> "none"))
 
-    val sampler = Sampler.AlwaysOff
+    val sampler = Sampler.alwaysOff[IO]
     val resource = TelemetryResource.default
     val spanLimits = SpanLimits.default
 
@@ -211,7 +211,7 @@ class SdkTracesSuite extends CatsEffectSuite {
       )
     )
 
-    val sampler: Sampler = new Sampler {
+    val sampler: Sampler[IO] = new Sampler[IO] {
       def shouldSample(
           parentContext: Option[SpanContext],
           traceId: ByteVector,
@@ -219,8 +219,8 @@ class SdkTracesSuite extends CatsEffectSuite {
           spanKind: SpanKind,
           attributes: Attributes,
           parentLinks: Vector[LinkData]
-      ): SamplingResult =
-        SamplingResult.Drop
+      ): IO[SamplingResult] =
+        IO.pure(SamplingResult.Drop)
 
       def description: String = "CustomSampler"
     }
@@ -283,7 +283,7 @@ class SdkTracesSuite extends CatsEffectSuite {
   private def tracesToString(
       resource: TelemetryResource = TelemetryResource.default,
       spanLimits: SpanLimits = SpanLimits.default,
-      sampler: Sampler = Sampler.parentBased(Sampler.AlwaysOn),
+      sampler: Sampler[IO] = Sampler.parentBased(Sampler.alwaysOn),
       propagators: ContextPropagators[Context] = ContextPropagators.of(
         W3CTraceContextPropagator.default,
         W3CBaggagePropagator.default

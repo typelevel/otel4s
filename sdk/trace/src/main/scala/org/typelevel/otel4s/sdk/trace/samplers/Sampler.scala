@@ -19,6 +19,7 @@ package sdk
 package trace
 package samplers
 
+import cats.Applicative
 import org.typelevel.otel4s.sdk.trace.data.LinkData
 import org.typelevel.otel4s.trace.SpanContext
 import org.typelevel.otel4s.trace.SpanKind
@@ -29,7 +30,7 @@ import scodec.bits.ByteVector
   * @see
   *   [[https://opentelemetry.io/docs/specs/otel/trace/sdk/#sampler]]
   */
-trait Sampler {
+trait Sampler[F[_]] {
 
   /** Called during span creation to make a sampling result.
     *
@@ -58,7 +59,7 @@ trait Sampler {
       spanKind: SpanKind,
       attributes: Attributes,
       parentLinks: Vector[LinkData]
-  ): SamplingResult
+  ): F[SamplingResult]
 
   /** The description of the [[Sampler]]. This may be displayed on debug pages or in the logs.
     */
@@ -74,7 +75,7 @@ object Sampler {
     * @see
     *   [[https://opentelemetry.io/docs/specs/otel/trace/sdk/#alwayson]]
     */
-  val AlwaysOn: Sampler =
+  def alwaysOn[F[_]: Applicative]: Sampler[F] =
     new Const(SamplingResult.RecordAndSample, "AlwaysOnSampler")
 
   /** Always returns the [[SamplingResult.Drop]].
@@ -82,7 +83,7 @@ object Sampler {
     * @see
     *   [[https://opentelemetry.io/docs/specs/otel/trace/sdk/#alwaysoff]]
     */
-  val AlwaysOff: Sampler =
+  def alwaysOff[F[_]: Applicative]: Sampler[F] =
     new Const(SamplingResult.Drop, "AlwaysOffSampler")
 
   /** Returns a [[Sampler]] that always makes the same decision as the parent Span to whether or not to sample.
@@ -92,7 +93,7 @@ object Sampler {
     * @param root
     *   the [[Sampler]] which is used to make the sampling decisions if the parent does not exist
     */
-  def parentBased(root: Sampler): Sampler =
+  def parentBased[F[_]: Applicative](root: Sampler[F]): Sampler[F] =
     parentBasedBuilder(root).build
 
   /** Creates a [[ParentBasedSampler.Builder]] for parent-based sampler that enables configuration of the parent-based
@@ -107,7 +108,7 @@ object Sampler {
     * @param root
     *   the [[Sampler]] which is used to make the sampling decisions if the parent does not exist
     */
-  def parentBasedBuilder(root: Sampler): ParentBasedSampler.Builder =
+  def parentBasedBuilder[F[_]: Applicative](root: Sampler[F]): ParentBasedSampler.Builder[F] =
     ParentBasedSampler.builder(root)
 
   /** Creates a new ratio-based sampler.
@@ -123,13 +124,14 @@ object Sampler {
     * @param ratio
     *   the desired ratio of sampling. Must be >= 0 and <= 1.0.
     */
-  def traceIdRatioBased(ratio: Double): Sampler =
+  def traceIdRatioBased[F[_]: Applicative](ratio: Double): Sampler[F] =
     TraceIdRatioBasedSampler.create(ratio)
 
-  private final class Const(
+  private final class Const[F[_]: Applicative](
       result: SamplingResult,
       val description: String
-  ) extends Sampler {
+  ) extends Sampler[F] {
+    private val decision = Applicative[F].pure(result)
     def shouldSample(
         parentContext: Option[SpanContext],
         traceId: ByteVector,
@@ -137,8 +139,8 @@ object Sampler {
         spanKind: SpanKind,
         attributes: Attributes,
         parentLinks: Vector[LinkData]
-    ): SamplingResult =
-      result
+    ): F[SamplingResult] =
+      decision
   }
 
 }

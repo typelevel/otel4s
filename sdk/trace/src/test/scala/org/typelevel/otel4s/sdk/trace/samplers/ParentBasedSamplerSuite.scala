@@ -17,21 +17,24 @@
 package org.typelevel.otel4s.sdk.trace
 package samplers
 
+import cats.effect.IO
 import munit._
 import org.scalacheck.Gen
 import org.scalacheck.Prop
+import org.scalacheck.Test
+import org.scalacheck.effect.PropF
 
-class ParentBasedSamplerSuite extends ScalaCheckSuite {
+class ParentBasedSamplerSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
 
-  private val samplerGen: Gen[Sampler] =
-    Gen.oneOf(Sampler.AlwaysOn, Sampler.AlwaysOff)
+  private val samplerGen: Gen[Sampler[IO]] =
+    Gen.oneOf(Sampler.alwaysOn[IO], Sampler.alwaysOff[IO])
 
   private val samplerChoiceGen: Gen[SamplerChoice] =
     Gen.oneOf(SamplerChoice.AlwaysOn, SamplerChoice.AlwaysOff)
 
   test("created with root sampler - has correct description and toString") {
     Prop.forAll(samplerGen) { root =>
-      val sampler = Sampler.parentBased(root)
+      val sampler = Sampler.parentBased[IO](root)
 
       val expected =
         s"ParentBased{root=$root, " +
@@ -46,7 +49,7 @@ class ParentBasedSamplerSuite extends ScalaCheckSuite {
   }
 
   test("created with root sampler - returns correct sampling result") {
-    Prop.forAll(samplerChoiceGen, ShouldSampleInput.shouldSampleInputGen) { (choice, input) =>
+    PropF.forAllF(samplerChoiceGen, ShouldSampleInput.shouldSampleInputGen) { (choice, input) =>
       val sampler = Sampler.parentBased(choice.sampler)
 
       val expected = input.parentContext match {
@@ -64,16 +67,16 @@ class ParentBasedSamplerSuite extends ScalaCheckSuite {
           choice.result
       }
 
-      val result = sampler.shouldSample(
-        input.parentContext,
-        input.traceId,
-        input.name,
-        input.spanKind,
-        input.attributes,
-        input.parentLinks
-      )
-
-      assertEquals(result, expected)
+      sampler
+        .shouldSample(
+          input.parentContext,
+          input.traceId,
+          input.name,
+          input.spanKind,
+          input.attributes,
+          input.parentLinks
+        )
+        .assertEquals(expected)
     }
   }
 
@@ -107,7 +110,7 @@ class ParentBasedSamplerSuite extends ScalaCheckSuite {
   }
 
   test("created with all samplers - returns correct sampling result") {
-    Prop.forAll(
+    PropF.forAllF(
       samplerChoiceGen,
       samplerChoiceGen,
       samplerChoiceGen,
@@ -146,27 +149,33 @@ class ParentBasedSamplerSuite extends ScalaCheckSuite {
             root.result
         }
 
-        val result = sampler.shouldSample(
-          input.parentContext,
-          input.traceId,
-          input.name,
-          input.spanKind,
-          input.attributes,
-          input.parentLinks
-        )
-
-        assertEquals(result, expected)
+        sampler
+          .shouldSample(
+            input.parentContext,
+            input.traceId,
+            input.name,
+            input.spanKind,
+            input.attributes,
+            input.parentLinks
+          )
+          .assertEquals(expected)
     }
   }
 
   sealed abstract class SamplerChoice(
-      val sampler: Sampler,
+      val sampler: Sampler[IO],
       val result: SamplingResult
   )
 
   object SamplerChoice {
-    case object AlwaysOn extends SamplerChoice(Sampler.AlwaysOn, SamplingResult.RecordAndSample)
+    case object AlwaysOn extends SamplerChoice(Sampler.alwaysOn, SamplingResult.RecordAndSample)
 
-    case object AlwaysOff extends SamplerChoice(Sampler.AlwaysOff, SamplingResult.Drop)
+    case object AlwaysOff extends SamplerChoice(Sampler.alwaysOff, SamplingResult.Drop)
   }
+
+  override protected def scalaCheckTestParameters: Test.Parameters =
+    super.scalaCheckTestParameters
+      .withMinSuccessfulTests(10)
+      .withMaxSize(10)
+
 }

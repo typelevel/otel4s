@@ -52,7 +52,7 @@ class TracerProviderAutoConfigureSuite extends CatsEffectSuite {
     providerToString(
       TelemetryResource.empty,
       SpanLimits.default,
-      Sampler.parentBased(Sampler.AlwaysOn)
+      Sampler.parentBased(Sampler.alwaysOn)
     )
 
   test("load default") {
@@ -65,7 +65,7 @@ class TracerProviderAutoConfigureSuite extends CatsEffectSuite {
 
   test("customize tracer provider") {
     val config = Config.ofProps(Map("otel.traces.exporter" -> "none"))
-    val sampler = Sampler.AlwaysOff
+    val sampler = Sampler.alwaysOff[IO]
 
     configure(config, customizer = (b, _) => b.withSampler(sampler)) { p =>
       IO(assertEquals(p.toString, providerToString(sampler = sampler)))
@@ -114,7 +114,7 @@ class TracerProviderAutoConfigureSuite extends CatsEffectSuite {
       )
     )
 
-    val sampler: Sampler = new Sampler {
+    val sampler: Sampler[IO] = new Sampler[IO] {
       def shouldSample(
           parentContext: Option[SpanContext],
           traceId: ByteVector,
@@ -122,13 +122,13 @@ class TracerProviderAutoConfigureSuite extends CatsEffectSuite {
           spanKind: SpanKind,
           attributes: Attributes,
           parentLinks: Vector[LinkData]
-      ): SamplingResult =
-        SamplingResult.Drop
+      ): IO[SamplingResult] =
+        IO.pure(SamplingResult.Drop)
 
       def description: String = "CustomSampler"
     }
 
-    val configurers: Set[AutoConfigure.Named[IO, Sampler]] = Set(
+    val configurers: Set[AutoConfigure.Named[IO, Sampler[IO]]] = Set(
       AutoConfigure.Named.const("custom-sampler", sampler)
     )
 
@@ -181,7 +181,7 @@ class TracerProviderAutoConfigureSuite extends CatsEffectSuite {
       "SdkTracerProvider{" +
         s"resource=${TelemetryResource.empty}, " +
         s"spanLimits=${SpanLimits.default}, " +
-        s"sampler=${Sampler.AlwaysOff}, " +
+        s"sampler=${Sampler.alwaysOff[IO]}, " +
         "spanProcessor=SpanProcessor.Multi(" +
         "SimpleSpanProcessor{exporter=ConsoleSpanExporter, exportOnlySampled=true}, " +
         "BatchSpanProcessor{exporter=CustomExporter, scheduleDelay=5 seconds, exporterTimeout=30 seconds, maxQueueSize=2048, maxExportBatchSize=512}, " +
@@ -197,7 +197,7 @@ class TracerProviderAutoConfigureSuite extends CatsEffectSuite {
       resource: TelemetryResource = TelemetryResource.empty,
       propagators: ContextPropagators[Context] = ContextPropagators.noop,
       customizer: Customizer[SdkTracerProvider.Builder[IO]] = (a, _) => a,
-      samplerConfigurers: Set[AutoConfigure.Named[IO, Sampler]] = Set.empty,
+      samplerConfigurers: Set[AutoConfigure.Named[IO, Sampler[IO]]] = Set.empty,
       exporterConfigurers: Set[AutoConfigure.Named[IO, SpanExporter[IO]]] = Set.empty
   )(f: TracerProvider[IO] => IO[A]): IO[A] =
     Resource.eval(LocalProvider[IO, Context].local).use { implicit local =>
@@ -224,7 +224,7 @@ class TracerProviderAutoConfigureSuite extends CatsEffectSuite {
   private def providerToString(
       resource: TelemetryResource = TelemetryResource.empty,
       spanLimits: SpanLimits = SpanLimits.default,
-      sampler: Sampler = Sampler.parentBased(Sampler.AlwaysOn),
+      sampler: Sampler[IO] = Sampler.parentBased(Sampler.alwaysOn),
       exporter: String = "SpanExporter.Noop"
   ) =
     "SdkTracerProvider{" +

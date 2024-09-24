@@ -120,7 +120,7 @@ class SdkTracerSuite extends BaseTracerSuite[Context, Context.Key] {
 
   sdkTest(
     "keep propagating non-recording spans, but don't record them",
-    _.withSampler(Sampler.AlwaysOff)
+    _.withSampler(Sampler.alwaysOff)
   ) { sdk =>
     for {
       tracer <- sdk.provider.get("tracer")

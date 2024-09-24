@@ -38,16 +38,24 @@ private[resource] trait OSDetectorPlatform { self: OSDetector.type =>
         nameOpt <- Sync[F].delay(sys.props.get("os.name"))
         versionOpt <- Sync[F].delay(sys.props.get("os.version"))
       } yield {
-        val tpe = nameOpt.flatMap(nameToType).map(Keys.Type(_))
+        val builder = Attributes.newBuilder
 
-        val description = versionOpt
-          .zip(nameOpt)
-          .map { case (version, name) =>
-            Keys.Description(name + " " + version)
-          }
-          .orElse(nameOpt.map(Keys.Description(_)))
+        val tpe = Keys.Type.maybe(nameOpt.flatMap(nameToType))
 
-        val attributes = tpe.to(Attributes) ++ description.to(Attributes)
+        val description = {
+          val value = versionOpt
+            .zip(nameOpt)
+            .map { case (version, name) => name + " " + version }
+            .orElse(nameOpt)
+
+          Keys.Description.maybe(value)
+        }
+
+        builder.addAll(tpe)
+        builder.addAll(description)
+
+        val attributes = builder.result()
+
         Option.when(attributes.nonEmpty)(
           TelemetryResource(attributes, Some(SchemaUrls.Current))
         )

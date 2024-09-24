@@ -86,14 +86,14 @@ private class AwsEcsDetector[F[_]: Async: Network: Env: Console] private (
     builder.addOne(Keys.CloudPlatform, Const.CloudPlatform)
     builder.addOne(Keys.CloudResourceId, container.containerArn)
     builder.addOne(Keys.CloudAvailabilityZones, task.availabilityZone)
-    regionOpt.foreach(region => builder.addOne(Keys.CloudRegion, region))
-    accountIdOpt.foreach(accountId => builder.addOne(Keys.CloudAccountId, accountId))
+    builder.addAll(Keys.CloudRegion.maybe(regionOpt))
+    builder.addAll(Keys.CloudAccountId.maybe(accountIdOpt))
 
     // container
     builder.addOne(Keys.ContainerId, container.dockerId)
     builder.addOne(Keys.ContainerName, container.dockerName)
-    imageNameOpt.foreach(name => builder.addOne(Keys.ContainerImageName, name))
-    imageTagOpt.foreach(tag => builder.addOne(Keys.ContainerImageTags, Seq(tag)))
+    builder.addAll(Keys.ContainerImageName.maybe(imageNameOpt))
+    builder.addAll(Keys.ContainerImageTags.maybe(imageTagOpt.map(Seq(_))))
 
     // aws
     builder.addOne(Keys.AwsLogGroupNames, Seq(container.logOptions.group))

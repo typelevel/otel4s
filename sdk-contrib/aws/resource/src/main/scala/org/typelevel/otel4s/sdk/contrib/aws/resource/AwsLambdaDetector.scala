@@ -51,9 +51,9 @@ private class AwsLambdaDetector[F[_]: Env: Monad] extends TelemetryResourceDetec
       builder.addOne(Keys.CloudProvider, Const.CloudProvider)
       builder.addOne(Keys.CloudPlatform, Const.CloudPlatform)
 
-      region.foreach(r => builder.addOne(Keys.CloudRegion, r))
-      functionName.foreach(name => builder.addOne(Keys.FaasName, name))
-      functionVersion.foreach(v => builder.addOne(Keys.FaasVersion, v))
+      builder.addAll(Keys.CloudRegion.maybe(region))
+      builder.addAll(Keys.FaasName.maybe(functionName))
+      builder.addAll(Keys.FaasVersion.maybe(functionVersion))
 
       TelemetryResource(builder.result(), Some(SchemaUrls.Current))
     }

@@ -35,6 +35,11 @@ sealed trait AttributeKey[A] {
   final def apply(value: A): Attribute[A] = Attribute(this, value)
 
   /** @return
+    *   an [[`Attribute`]] associating this key with the given value if the value is defined
+    */
+  final def maybe(value: Option[A]): Option[Attribute[A]] = value.map(apply)
+
+  /** @return
     *   an [[`AttributeKey`]] of the same type as this key, with name transformed by `f`
     */
   final def transformName(f: String => String): AttributeKey[A] =

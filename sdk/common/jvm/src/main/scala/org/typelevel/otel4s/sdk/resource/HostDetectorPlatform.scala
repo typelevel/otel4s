@@ -36,15 +36,16 @@ private[resource] trait HostDetectorPlatform { self: HostDetector.type =>
 
     def detect: F[Option[TelemetryResource]] =
       for {
-        hostOpt <- Sync[F]
-          .blocking(InetAddress.getLocalHost.getHostName)
-          .redeem(_ => None, Some(_))
-
-        archOpt <- Sync[F].delay(sys.props.get("os.arch"))
+        host <- Sync[F].blocking(InetAddress.getLocalHost.getHostName).redeem(_ => None, Some(_))
+        arch <- Sync[F].delay(sys.props.get("os.arch"))
       } yield {
-        val host = hostOpt.map(Keys.Host(_))
-        val arch = archOpt.map(Keys.Arch(_))
-        val attributes = host.to(Attributes) ++ arch.to(Attributes)
+        val builder = Attributes.newBuilder
+
+        builder.addAll(Keys.Host.maybe(host))
+        builder.addAll(Keys.Arch.maybe(arch))
+
+        val attributes = builder.result()
+
         Option.when(attributes.nonEmpty)(
           TelemetryResource(attributes, Some(SchemaUrls.Current))
         )

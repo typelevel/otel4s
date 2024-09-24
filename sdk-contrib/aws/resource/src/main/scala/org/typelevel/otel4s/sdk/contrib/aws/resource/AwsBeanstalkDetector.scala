@@ -67,9 +67,9 @@ private class AwsBeanstalkDetector[F[_]: Concurrent: Files: Console] private (
     builder.addOne(Keys.CloudProvider, Const.CloudProvider)
     builder.addOne(Keys.CloudPlatform, Const.CloudPlatform)
 
-    metadata.deploymentId.foreach(id => builder.addOne(Keys.ServiceInstanceId, id.toString))
-    metadata.versionLabel.foreach(v => builder.addOne(Keys.ServiceVersion, v))
-    metadata.environmentName.foreach(n => builder.addOne(Keys.ServiceNamespace, n))
+    builder.addAll(Keys.ServiceInstanceId.maybe(metadata.deploymentId.map(_.toString)))
+    builder.addAll(Keys.ServiceVersion.maybe(metadata.versionLabel))
+    builder.addAll(Keys.ServiceNamespace.maybe(metadata.environmentName))
 
     TelemetryResource(builder.result(), Some(SchemaUrls.Current))
   }

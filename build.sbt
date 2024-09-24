@@ -106,8 +106,8 @@ lazy val root = tlCrossRootProject
     `sdk-exporter-metrics`,
     `sdk-exporter-trace`,
     `sdk-exporter`,
-    `sdk-contrib-aws-xray`,
     `sdk-contrib-aws-resource`,
+    `sdk-contrib-aws-xray`,
     `sdk-contrib-aws-xray-propagator`,
     `oteljava-common`,
     `oteljava-common-testkit`,
@@ -752,6 +752,7 @@ lazy val docs = project
     sdk.jvm,
     `sdk-exporter`.jvm,
     `sdk-contrib-aws-resource`.jvm,
+    `sdk-contrib-aws-xray`.jvm,
     `sdk-contrib-aws-xray-propagator`.jvm
   )
   .settings(
@@ -827,6 +828,7 @@ lazy val unidocs = project
       `sdk-exporter-trace`.jvm,
       `sdk-exporter`.jvm,
       `sdk-contrib-aws-resource`.jvm,
+      `sdk-contrib-aws-xray`.jvm,
       `sdk-contrib-aws-xray-propagator`.jvm,
       `oteljava-common`,
       `oteljava-common-testkit`,

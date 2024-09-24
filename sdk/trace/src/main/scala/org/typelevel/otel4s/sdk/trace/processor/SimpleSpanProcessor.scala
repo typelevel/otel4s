@@ -37,7 +37,7 @@ import org.typelevel.otel4s.trace.SpanContext
   * @tparam F
   *   the higher-kinded type of a polymorphic effect
   */
-final class SimpleSpanProcessor[F[_]: MonadThrow: Console] private (
+private final class SimpleSpanProcessor[F[_]: MonadThrow: Console] private (
     exporter: SpanExporter[F],
     exportOnlySampled: Boolean
 ) extends SpanProcessor[F] {
@@ -74,9 +74,7 @@ object SimpleSpanProcessor {
     * @param exporter
     *   the [[exporter.SpanExporter SpanExporter]] to use
     */
-  def apply[F[_]: MonadThrow: Console](
-      exporter: SpanExporter[F]
-  ): SimpleSpanProcessor[F] =
+  def apply[F[_]: MonadThrow: Console](exporter: SpanExporter[F]): SpanProcessor[F] =
     apply(exporter, exportOnlySampled = true)
 
   /** Creates a [[SimpleSpanProcessor]] that passes ended spans to the given `exporter`.
@@ -87,10 +85,7 @@ object SimpleSpanProcessor {
     * @param exportOnlySampled
     *   whether to export only sampled spans
     */
-  def apply[F[_]: MonadThrow: Console](
-      exporter: SpanExporter[F],
-      exportOnlySampled: Boolean
-  ): SimpleSpanProcessor[F] =
+  def apply[F[_]: MonadThrow: Console](exporter: SpanExporter[F], exportOnlySampled: Boolean): SpanProcessor[F] =
     new SimpleSpanProcessor[F](exporter, exportOnlySampled)
 
 }

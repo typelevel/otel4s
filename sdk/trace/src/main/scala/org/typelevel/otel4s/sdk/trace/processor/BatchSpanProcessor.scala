@@ -49,7 +49,7 @@ import scala.concurrent.duration._
   * @tparam F
   *   the higher-kinded type of a polymorphic effect
   */
-final class BatchSpanProcessor[F[_]: Temporal: Console] private (
+private final class BatchSpanProcessor[F[_]: Temporal: Console] private (
     queue: Queue[F, SpanData],
     signal: CountDownLatch[F],
     state: Ref[F, BatchSpanProcessor.State],
@@ -110,11 +110,7 @@ final class BatchSpanProcessor[F[_]: Temporal: Console] private (
       // wait either for:
       // 1) the signal - it means the queue has enough spans
       // 2) the timeout - it means we can export all remaining spans
-      def pollMore(
-          now: FiniteDuration,
-          nextExportTime: FiniteDuration,
-          currentBatchSize: Int
-      ): F[Unit] = {
+      def pollMore(now: FiniteDuration, nextExportTime: FiniteDuration, currentBatchSize: Int): F[Unit] = {
         val pollWaitTime = nextExportTime - now
         val spansNeeded = config.maxExportBatchSize - currentBatchSize
 
@@ -148,8 +144,7 @@ final class BatchSpanProcessor[F[_]: Temporal: Console] private (
           // two reasons to export:
           // 1) the current batch size exceeds the limit
           // 2) the worker is behind the scheduled export time
-          val canExport =
-            batch.size >= config.maxExportBatchSize || now >= nextExportTime
+          val canExport = batch.size >= config.maxExportBatchSize || now >= nextExportTime
 
           if (canExport) doExport(now, batch)
           else pollMore(now, nextExportTime, batch.size)
@@ -216,7 +211,7 @@ object BatchSpanProcessor {
 
     /** Creates a [[BatchSpanProcessor]] with the configuration of this builder.
       */
-    def build: Resource[F, BatchSpanProcessor[F]]
+    def build: Resource[F, SpanProcessor[F]]
   }
 
   /** Create a [[Builder]] for [[BatchSpanProcessor]].
@@ -249,7 +244,7 @@ object BatchSpanProcessor {
     *   how long the export can run before it is cancelled
     *
     * @param maxQueueSize
-    *   the maximum queue size. Once the the limit is reached new spans will be dropped
+    *   the maximum queue size. Once the limit is reached new spans will be dropped
     *
     * @param maxExportBatchSize
     *   the maximum batch size of every export
@@ -287,7 +282,7 @@ object BatchSpanProcessor {
     def withMaxExportBatchSize(maxExportBatchSize: Int): Builder[F] =
       copy(maxExportBatchSize = maxExportBatchSize)
 
-    def build: Resource[F, BatchSpanProcessor[F]] = {
+    def build: Resource[F, SpanProcessor[F]] = {
       val config = Config(
         scheduleDelay,
         exporterTimeout,
@@ -311,7 +306,7 @@ object BatchSpanProcessor {
 
       for {
         processor <- Resource.eval(create)
-        _ <- Resource.make(Temporal[F].unit)(_ => processor.exportAll)
+        _ <- Resource.onFinalize(processor.exportAll)
         _ <- processor.worker.background
       } yield processor
     }

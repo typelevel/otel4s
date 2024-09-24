@@ -25,8 +25,10 @@ import org.typelevel.otel4s.sdk.autoconfigure.AutoConfigure
 import org.typelevel.otel4s.sdk.autoconfigure.Config
 import org.typelevel.otel4s.sdk.trace.exporter.SpanExporter
 import org.typelevel.otel4s.sdk.trace.processor.BatchSpanProcessor
+import org.typelevel.otel4s.sdk.trace.processor.SpanProcessor
 
 import scala.concurrent.duration.FiniteDuration
+import scala.util.chaining._
 
 /** Autoconfigures [[BatchSpanProcessor]].
   *
@@ -48,41 +50,27 @@ import scala.concurrent.duration.FiniteDuration
   */
 private final class BatchSpanProcessorAutoConfigure[F[_]: Temporal: Console](
     exporter: SpanExporter[F]
-) extends AutoConfigure.WithHint[F, BatchSpanProcessor[F]](
+) extends AutoConfigure.WithHint[F, SpanProcessor[F]](
       "BatchSpanProcessor",
       BatchSpanProcessorAutoConfigure.ConfigKeys.All
     ) {
 
   import BatchSpanProcessorAutoConfigure.ConfigKeys
 
-  def fromConfig(config: Config): Resource[F, BatchSpanProcessor[F]] = {
+  def fromConfig(config: Config): Resource[F, SpanProcessor[F]] = {
     def configure =
       for {
         scheduleDelay <- config.get(ConfigKeys.ScheduleDelay)
         maxQueueSize <- config.get(ConfigKeys.MaxQueueSize)
         maxExportBatchSize <- config.get(ConfigKeys.MaxExportBatchSize)
         exporterTimeout <- config.get(ConfigKeys.ExporterTimeout)
-      } yield {
-        val builder = BatchSpanProcessor.builder(exporter)
-
-        val withScheduleDelay =
-          scheduleDelay.foldLeft(builder)(_.withScheduleDelay(_))
-
-        val withMaxQueueSize =
-          maxQueueSize.foldLeft(withScheduleDelay)(_.withMaxQueueSize(_))
-
-        val withMaxExportBatchSize =
-          maxExportBatchSize.foldLeft(withMaxQueueSize)(
-            _.withMaxExportBatchSize(_)
-          )
-
-        val withExporterTimeout =
-          exporterTimeout.foldLeft(withMaxExportBatchSize)(
-            _.withExporterTimeout(_)
-          )
-
-        withExporterTimeout.build
-      }
+      } yield BatchSpanProcessor
+        .builder(exporter)
+        .pipe(b => scheduleDelay.foldLeft(b)(_.withScheduleDelay(_)))
+        .pipe(b => maxQueueSize.foldLeft(b)(_.withMaxQueueSize(_)))
+        .pipe(b => maxExportBatchSize.foldLeft(b)(_.withMaxExportBatchSize(_)))
+        .pipe(b => exporterTimeout.foldLeft(b)(_.withExporterTimeout(_)))
+        .build
 
     Resource.suspend(
       Temporal[F]
@@ -130,9 +118,7 @@ private[sdk] object BatchSpanProcessorAutoConfigure {
     * @param exporter
     *   the exporter to use with the configured batch span processor
     */
-  def apply[F[_]: Temporal: Console](
-      exporter: SpanExporter[F]
-  ): AutoConfigure[F, BatchSpanProcessor[F]] =
+  def apply[F[_]: Temporal: Console](exporter: SpanExporter[F]): AutoConfigure[F, SpanProcessor[F]] =
     new BatchSpanProcessorAutoConfigure[F](exporter)
 
 }

@@ -32,7 +32,7 @@ lazy val scalaNativeSettings = Def.settings(
   Test / envVars ++= Map("S2N_DONT_MLOCK" -> "1")
 )
 
-val Scala212 = "2.12.19"
+val Scala212 = "2.12.20"
 val Scala213 = "2.13.15"
 ThisBuild / crossScalaVersions := Seq(Scala213, "3.3.3")
 ThisBuild / scalaVersion := Scala213 // the default Scala

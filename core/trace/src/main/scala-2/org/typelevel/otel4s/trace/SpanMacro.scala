@@ -223,7 +223,12 @@ object SpanMacro {
       attributes: c.Expr[Attribute[_]]*
   ): c.universe.Tree = {
     import c.universe._
-    addAttributesColl(c)(c.Expr(q"_root_.scala.Seq(..$attributes)"))
+
+    if (attributes.nonEmpty) {
+      addAttributesColl(c)(c.Expr(q"_root_.scala.Seq(..$attributes)"))
+    } else {
+      q"${c.prefix}.backend.meta.unit"
+    }
   }
 
   def addAttributesColl(c: blackbox.Context)(

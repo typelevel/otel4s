@@ -58,6 +58,8 @@ private final class BatchSpanProcessor[F[_]: Temporal: Console] private (
 ) extends SpanProcessor[F] {
   import BatchSpanProcessor.State
 
+  private val unit = Temporal[F].unit
+
   val name: String = "BatchSpanProcessor{" +
     s"exporter=${exporter.name}, " +
     s"scheduleDelay=${config.scheduleDelay}, " +
@@ -69,29 +71,27 @@ private final class BatchSpanProcessor[F[_]: Temporal: Console] private (
   val isEndRequired: Boolean = true
 
   def onStart(parentContext: Option[SpanContext], span: SpanRef[F]): F[Unit] =
-    Temporal[F].unit
+    unit
 
-  def onEnd(span: SpanData): F[Unit] = {
-    val canExport = span.spanContext.isSampled
+  def onEnd(span: SpanData): F[Unit] =
+    if (span.spanContext.isSampled) {
+      // if 'spansNeeded' is defined, it means the worker is waiting for a certain number of spans
+      // and it waits for the 'signal'-latch to be released
+      // hence, if the queue size is >= than the number of needed spans, the latch can be released
+      def notifyWorker: F[Unit] =
+        for {
+          queueSize <- queue.size
+          state <- state.get
+          _ <- if (state.spansNeeded.exists(needed => queueSize >= needed)) signal.release else unit
+        } yield ()
 
-    // if 'spansNeeded' is defined, it means the worker is waiting for a certain number of spans
-    // and it waits for the 'signal'-latch to be released
-    // hence, if the queue size is >= than the number of needed spans, the latch can be released
-    def notifyWorker: F[Unit] =
-      (queue.size, state.get)
-        .mapN { (queueSize, state) =>
-          state.spansNeeded.exists(needed => queueSize >= needed)
-        }
-        .ifM(signal.release, Temporal[F].unit)
-
-    def enqueue =
       for {
         offered <- queue.tryOffer(span)
-        _ <- notifyWorker.whenA(offered)
+        _ <- if (offered) notifyWorker else unit
       } yield ()
-
-    enqueue.whenA(canExport)
-  }
+    } else {
+      unit
+    }
 
   def forceFlush: F[Unit] =
     exportAll
@@ -117,12 +117,14 @@ private final class BatchSpanProcessor[F[_]: Temporal: Console] private (
         val request =
           for {
             _ <- state.update(_.copy(spansNeeded = Some(spansNeeded)))
-            _ <- signal.await.timeoutTo(pollWaitTime, Temporal[F].unit)
+            _ <- signal.await.timeoutTo(pollWaitTime, unit)
           } yield ()
 
-        poll(request)
-          .guarantee(state.update(_.copy(spansNeeded = None)))
-          .whenA(pollWaitTime > Duration.Zero)
+        if (pollWaitTime > Duration.Zero) {
+          poll(request).guarantee(state.update(_.copy(spansNeeded = None)))
+        } else {
+          unit
+        }
       }
 
       for {

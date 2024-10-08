@@ -23,7 +23,6 @@ import org.typelevel.otel4s.Attributes
 import org.typelevel.otel4s.context.propagation.ContextPropagators
 import org.typelevel.otel4s.sdk.common.InstrumentationScope
 import org.typelevel.otel4s.sdk.context.Context
-import org.typelevel.otel4s.sdk.trace.processor.SpanStorage
 import org.typelevel.otel4s.trace.TraceScope
 import org.typelevel.otel4s.trace.Tracer
 import org.typelevel.otel4s.trace.TracerBuilder
@@ -32,7 +31,6 @@ private final case class SdkTracerBuilder[F[_]: Temporal: Console](
     propagators: ContextPropagators[Context],
     traceScope: TraceScope[F, Context],
     sharedState: TracerSharedState[F],
-    storage: SpanStorage[F],
     name: String,
     version: Option[String] = None,
     schemaUrl: Option[String] = None
@@ -50,8 +48,7 @@ private final case class SdkTracerBuilder[F[_]: Temporal: Console](
         InstrumentationScope(name, version, schemaUrl, Attributes.empty),
         propagators,
         sharedState,
-        traceScope,
-        storage
+        traceScope
       )
     )
 }

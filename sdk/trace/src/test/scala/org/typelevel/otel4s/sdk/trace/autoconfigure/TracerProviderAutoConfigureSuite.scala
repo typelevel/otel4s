@@ -184,8 +184,7 @@ class TracerProviderAutoConfigureSuite extends CatsEffectSuite {
         s"sampler=${Sampler.alwaysOff[IO]}, " +
         "spanProcessor=SpanProcessor.Multi(" +
         "SimpleSpanProcessor{exporter=ConsoleSpanExporter, exportOnlySampled=true}, " +
-        "BatchSpanProcessor{exporter=CustomExporter, scheduleDelay=5 seconds, exporterTimeout=30 seconds, maxQueueSize=2048, maxExportBatchSize=512}, " +
-        "SpanStorage)}"
+        "BatchSpanProcessor{exporter=CustomExporter, scheduleDelay=5 seconds, exporterTimeout=30 seconds, maxQueueSize=2048, maxExportBatchSize=512})}"
 
     configure(config, exporterConfigurers = configurers) { provider =>
       IO(assertEquals(provider.toString, expected))
@@ -231,8 +230,6 @@ class TracerProviderAutoConfigureSuite extends CatsEffectSuite {
       s"resource=$resource, " +
       s"spanLimits=$spanLimits, " +
       s"sampler=$sampler, " +
-      "spanProcessor=SpanProcessor.Multi(" +
-      s"BatchSpanProcessor{exporter=$exporter, scheduleDelay=5 seconds, exporterTimeout=30 seconds, maxQueueSize=2048, maxExportBatchSize=512}, " +
-      "SpanStorage)}"
+      s"spanProcessor=BatchSpanProcessor{exporter=$exporter, scheduleDelay=5 seconds, exporterTimeout=30 seconds, maxQueueSize=2048, maxExportBatchSize=512}}"
 
 }

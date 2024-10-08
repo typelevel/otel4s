@@ -27,7 +27,6 @@ import org.typelevel.otel4s.context.propagation.TextMapPropagator
 import org.typelevel.otel4s.sdk.context.Context
 import org.typelevel.otel4s.sdk.context.LocalContext
 import org.typelevel.otel4s.sdk.trace.processor.SpanProcessor
-import org.typelevel.otel4s.sdk.trace.processor.SpanStorage
 import org.typelevel.otel4s.sdk.trace.samplers.Sampler
 import org.typelevel.otel4s.trace.TraceScope
 import org.typelevel.otel4s.trace.TracerBuilder
@@ -50,11 +49,12 @@ private class SdkTracerProvider[F[_]: Temporal: Parallel: Console](
       resource,
       spanLimits,
       sampler,
-      SpanProcessor.of(spanProcessors: _*)
+      SpanProcessor.of(spanProcessors: _*),
+      storage
     )
 
   def tracer(name: String): TracerBuilder[F] =
-    new SdkTracerBuilder[F](propagators, traceScope, sharedState, storage, name)
+    new SdkTracerBuilder[F](propagators, traceScope, sharedState, name)
 
   override def toString: String =
     "SdkTracerProvider{" +
@@ -212,7 +212,7 @@ object SdkTracerProvider {
           spanLimits,
           sampler,
           ContextPropagators.of(propagators: _*),
-          spanProcessors :+ storage,
+          spanProcessors,
           SdkTraceScope.fromLocal[F],
           storage
         )

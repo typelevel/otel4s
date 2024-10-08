@@ -15,13 +15,10 @@
  */
 
 package org.typelevel.otel4s.sdk.trace
-package processor
 
-import cats.Applicative
 import cats.effect.Concurrent
-import cats.effect.Ref
+import cats.effect.std.MapRef
 import cats.syntax.functor._
-import org.typelevel.otel4s.sdk.trace.data.SpanData
 import org.typelevel.otel4s.trace.SpanContext
 
 /** The span storage is used to keep the references of the active SpanRefs.
@@ -32,30 +29,23 @@ import org.typelevel.otel4s.trace.SpanContext
   * @tparam F
   *   the higher-kinded type of a polymorphic effect
   */
-private[trace] class SpanStorage[F[_]: Applicative] private (
-    storage: Ref[F, Map[SpanContext, SpanRef[F]]]
-) extends SpanProcessor[F] {
-  val name: String = "SpanStorage"
+private class SpanStorage[F[_]] private (
+    storage: MapRef[F, SpanContext, Option[SpanRef[F]]]
+) {
 
-  def isStartRequired: Boolean = true
-  def isEndRequired: Boolean = true
+  def add(span: SpanRef[F]): F[Unit] =
+    storage(span.context).set(Some(span))
 
-  def onStart(parentContext: Option[SpanContext], span: SpanRef[F]): F[Unit] =
-    storage.update(_.updated(span.context, span))
-
-  def onEnd(span: SpanData): F[Unit] =
-    storage.update(_.removed(span.spanContext))
+  def remove(span: SpanRef[F]): F[Unit] =
+    storage(span.context).set(None)
 
   def get(context: SpanContext): F[Option[SpanRef[F]]] =
-    storage.get.map(_.get(context))
-
-  def forceFlush: F[Unit] =
-    Applicative[F].unit
+    storage(context).get
 }
 
-private[trace] object SpanStorage {
+private object SpanStorage {
   def create[F[_]: Concurrent]: F[SpanStorage[F]] =
     for {
-      storage <- Ref[F].of(Map.empty[SpanContext, SpanRef[F]])
+      storage <- MapRef.ofShardedImmutableMap[F, SpanContext, SpanRef[F]](Runtime.getRuntime.availableProcessors())
     } yield new SpanStorage[F](storage)
 }

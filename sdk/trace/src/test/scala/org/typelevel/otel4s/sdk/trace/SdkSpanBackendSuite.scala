@@ -381,6 +381,7 @@ class SdkSpanBackendSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
 
         TestControl.executeEmbed {
           for {
+            spanStorage <- SpanStorage.create[IO]
             span <- SdkSpanBackend.start[IO](
               ctx,
               name,
@@ -390,6 +391,7 @@ class SdkSpanBackendSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
               parentCtx,
               spanLimits,
               Defaults.spanProcessor,
+              spanStorage,
               LimitedData
                 .attributes(
                   spanLimits.maxNumberOfAttributes,
@@ -516,7 +518,7 @@ class SdkSpanBackendSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
       spanProcessor: SpanProcessor[IO] = Defaults.spanProcessor,
       links: Vector[LinkData] = Vector.empty,
       userStartTimestamp: Option[FiniteDuration] = None
-  ): IO[SdkSpanBackend[IO]] = {
+  ): IO[SdkSpanBackend[IO]] = SpanStorage.create[IO].flatMap { spanStorage =>
     SdkSpanBackend.start[IO](
       context = context,
       name = name,
@@ -526,6 +528,7 @@ class SdkSpanBackendSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
       parentContext = parentSpanContext,
       spanLimits = spanLimits,
       processor = spanProcessor,
+      spanStorage = spanStorage,
       attributes = LimitedData
         .attributes(
           spanLimits.maxNumberOfAttributes,

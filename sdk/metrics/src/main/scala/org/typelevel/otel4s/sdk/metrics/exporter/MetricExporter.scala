@@ -91,7 +91,9 @@ object MetricExporter {
     * @tparam F
     *   the higher-kinded type of a polymorphic effect
     */
-  trait Pull[F[_]] extends MetricExporter[F]
+  trait Pull[F[_]] extends MetricExporter[F] {
+    def metricReader: MetricReader[F]
+  }
 
   def noop[F[_]: Applicative]: MetricExporter[F] =
     new Noop

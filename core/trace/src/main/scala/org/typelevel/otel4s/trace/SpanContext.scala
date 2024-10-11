@@ -203,7 +203,7 @@ object SpanContext {
 
   implicit val spanContextShow: Show[SpanContext] =
     Show.show { ctx =>
-      show"SpanContext{" +
+      "SpanContext{" +
         show"traceId=${ctx.traceIdHex}, " +
         show"spanId=${ctx.spanIdHex}, " +
         show"traceFlags=${ctx.traceFlags}, " +

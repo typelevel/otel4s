@@ -112,7 +112,7 @@ class SpanContextSuite extends DisciplineSuite {
 
   test("Show[SpanContext]") {
     Prop.forAll(Gens.spanContext) { ctx =>
-      val expected = show"SpanContext{" +
+      val expected = "SpanContext{" +
         show"traceId=${ctx.traceIdHex}, " +
         show"spanId=${ctx.spanIdHex}, " +
         show"traceFlags=${ctx.traceFlags}, " +

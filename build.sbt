@@ -32,7 +32,7 @@ lazy val scalaNativeSettings = Def.settings(
   Test / envVars ++= Map("S2N_DONT_MLOCK" -> "1")
 )
 
-val Scala212 = "2.12.19"
+val Scala212 = "2.12.20"
 val Scala213 = "2.13.15"
 ThisBuild / crossScalaVersions := Seq(Scala213, "3.3.4")
 ThisBuild / scalaVersion := Scala213 // the default Scala
@@ -702,7 +702,7 @@ lazy val scalafix = tlScalafixProject
   )
   .outputConfigure(_.dependsOn(oteljava).disablePlugins(ScalafixPlugin))
   .testsSettings(
-    crossScalaVersions := Seq(Scala212),
+    scalaVersion := _root_.scalafix.sbt.BuildInfo.scala212,
     startYear := Some(2024)
   )
 

@@ -40,27 +40,6 @@ class MetricReadersAutoConfigureSuite extends CatsEffectSuite {
       .use(readers => IO(assertEquals(readers, Vector.empty)))
   }
 
-  test("ignore pull-based exporters") {
-    val config = Config(Map.empty, Map.empty, Map.empty)
-
-    val exporter = new MetricExporter.Pull[IO] {
-      def name: String = "CustomExporter"
-
-      def aggregationTemporalitySelector: AggregationTemporalitySelector =
-        AggregationTemporalitySelector.alwaysCumulative
-
-      def defaultAggregationSelector: AggregationSelector =
-        AggregationSelector.default
-
-      def defaultCardinalityLimitSelector: CardinalityLimitSelector =
-        CardinalityLimitSelector.default
-    }
-
-    MetricReadersAutoConfigure[IO](Set(exporter))
-      .configure(config)
-      .use(readers => IO(assertEquals(readers, Vector.empty)))
-  }
-
   test("load from an empty config - push exporter - use periodic reader") {
     val config = Config(Map.empty, Map.empty, Map.empty)
 

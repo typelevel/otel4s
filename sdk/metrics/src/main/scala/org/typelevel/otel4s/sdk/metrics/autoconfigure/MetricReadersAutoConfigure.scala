@@ -19,8 +19,6 @@ package org.typelevel.otel4s.sdk.metrics.autoconfigure
 import cats.effect.Resource
 import cats.effect.Temporal
 import cats.effect.std.Console
-import cats.syntax.foldable._
-import cats.syntax.functor._
 import cats.syntax.traverse._
 import org.typelevel.otel4s.sdk.autoconfigure.AutoConfigure
 import org.typelevel.otel4s.sdk.autoconfigure.Config
@@ -99,15 +97,7 @@ private final class MetricReadersAutoConfigure[F[_]: Temporal: Console](
   private def configurePull(
       exporters: Vector[MetricExporter.Pull[F]]
   ): Resource[F, Vector[MetricReader[F]]] =
-    Resource
-      .eval(
-        exporters.traverse_ { exporter =>
-          Console[F].errorln(
-            s"The pull-based exporter [$exporter] is not supported yet"
-          )
-        }
-      )
-      .as(Vector.empty)
+    Resource.pure(exporters.map(_.metricReader))
 
 }
 

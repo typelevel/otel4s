@@ -193,7 +193,7 @@ object SpanData {
       val endTimestamp =
         data.endTimestamp.foldMap(ts => show"endTimestamp=$ts, ")
 
-      show"SpanData{" +
+      "SpanData{" +
         show"name=${data.name}, " +
         show"spanContext=${data.spanContext}, " +
         show"parentSpanContext=${data.parentSpanContext}, " +

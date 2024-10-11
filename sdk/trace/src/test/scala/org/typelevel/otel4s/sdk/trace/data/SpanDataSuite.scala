@@ -40,7 +40,7 @@ class SpanDataSuite extends DisciplineSuite {
       val endedEpoch = data.endTimestamp.foldMap(ts => show"endTimestamp=$ts, ")
 
       val expected =
-        show"SpanData{" +
+        "SpanData{" +
           show"name=${data.name}, " +
           show"spanContext=${data.spanContext}, " +
           show"parentSpanContext=${data.parentSpanContext}, " +

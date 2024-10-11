@@ -47,7 +47,7 @@ private[otlp] object GrpcCodecs {
         }
       }
 
-    _.through(lpmDecoder).through(decompress).through(entityDecoder)
+    s => s.through(lpmDecoder).through(decompress).through(entityDecoder)
   }
 
   def encode[F[_]: RaiseThrowable: Compression, A](
@@ -63,12 +63,13 @@ private[otlp] object GrpcCodecs {
     val lpmEncoder: Pipe[F, LengthPrefixedMessage, Byte] =
       StreamEncoder.once(LengthPrefixedMessage.codec).toPipeByte
 
-    _.through(entityEncoder)
-      .through(compression)
-      .chunks
-      .foldMonoid
-      .map(chunks => LengthPrefixedMessage(gzip, chunks.toByteVector))
-      .through(lpmEncoder)
+    s =>
+      s.through(entityEncoder)
+        .through(compression)
+        .chunks
+        .foldMonoid
+        .map(chunks => LengthPrefixedMessage(gzip, chunks.toByteVector))
+        .through(lpmEncoder)
   }
 
 }

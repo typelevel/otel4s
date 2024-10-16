@@ -62,7 +62,7 @@ val Http4sVersion = "0.23.28"
 val CirceVersion = "0.14.8"
 val EpollcatVersion = "0.1.6"
 val ScalaPBCirceVersion = "0.15.1"
-val CaseInsensitiveVersion = "1.4.0"
+val CaseInsensitiveVersion = "1.4.2"
 
 lazy val scalaReflectDependency = Def.settings(
   libraryDependencies ++= {

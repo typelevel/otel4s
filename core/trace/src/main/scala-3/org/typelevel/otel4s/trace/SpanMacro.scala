@@ -230,7 +230,7 @@ object SpanMacro {
       attributes: Expr[immutable.Iterable[Attribute[_]]]
   )(using Quotes, Type[F]) =
     '{
-      if ($span.backend.meta.isEnabled)
+      if ($span.backend.meta.isEnabled && $attributes.nonEmpty)
         $span.backend.addAttributes($attributes)
       else $span.backend.meta.unit
     }

@@ -153,7 +153,11 @@ object SpanBuilderMacro {
       attributes: c.Expr[Attribute[_]]*
   ): c.universe.Tree = {
     import c.universe._
-    whenEnabled(c)(q"_.addAttributes(_root_.scala.Seq(..$attributes))")
+    if (attributes.nonEmpty) {
+      whenEnabled(c)(q"_.addAttributes(_root_.scala.Seq(..$attributes))")
+    } else {
+      c.prefix.tree
+    }
   }
 
   def addAttributesColl(c: blackbox.Context)(

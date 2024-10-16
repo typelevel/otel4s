@@ -277,14 +277,22 @@ class SpanBuilderSuite extends FunSuite {
     assertEquals(result.state, expected)
   }
 
+  test("addAttributes: eliminate empty varargs calls") {
+    val builder = InMemoryBuilder(InstrumentMeta.enabled, SpanBuilder.State.init)
+    val result = builder.addAttributes().asInstanceOf[InMemoryBuilder]
+
+    assertEquals(result.modifications, 0)
+  }
+
   case class InMemoryBuilder(
       meta: InstrumentMeta[IO],
-      state: SpanBuilder.State
+      state: SpanBuilder.State,
+      modifications: Int = 0
   ) extends SpanBuilder[IO] {
     def modifyState(
         f: SpanBuilder.State => SpanBuilder.State
     ): SpanBuilder[IO] =
-      copy(state = f(state))
+      copy(state = f(state), modifications = modifications + 1)
 
     def build: SpanOps[IO] =
       ???

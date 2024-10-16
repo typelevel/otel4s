@@ -131,7 +131,7 @@ object {{ object_name }} {
   )
 
   {% for metric in ctx.metrics | sort(attribute='metric_name') %}
-  {{ [metric.brief | replace('$', "$$"), concat_if("\n\n@note\n\n", metric.note)] | comment(indent=2) }}
+  {{ [metric.brief, concat_if("\n\n@note\n\n", metric.note)] | comment(indent=2) | replace('$', "$$") }}
   {%- if metric is deprecated %}
   @deprecated("{{ metric.deprecated }}", "")
   {%- elif params.experimental == true and metric is stable %}
@@ -148,7 +148,7 @@ object {{ object_name }} {
     {% if metric.attributes | length > 0 %}
     object AttributeSpecs {
       {% for attribute in metric.attributes | sort(attribute='name') %}
-      {{ [attribute.brief | replace('$', "$$"), concat_if("\n\n@note\n\n", attribute.note)] | comment(indent=6) }}
+      {{ [attribute.brief, concat_if("\n\n@note\n\n", attribute.note)] | comment(indent=6) | replace('$', "$$")}}
       {%- if attribute is deprecated %}
       @deprecated("{{ attribute.deprecated }}", "")
       {%- endif %}

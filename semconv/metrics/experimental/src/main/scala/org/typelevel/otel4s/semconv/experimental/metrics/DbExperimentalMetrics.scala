@@ -278,12 +278,12 @@ object DbExperimentalMetrics {
 
   }
 
-  /** The number of pending requests for an open connection, cumulative for the entire pool
+  /** The number of current pending requests for an open connection
     */
   object ClientConnectionPendingRequests extends MetricSpec {
 
     val name: String = "db.client.connection.pending_requests"
-    val description: String = "The number of pending requests for an open connection, cumulative for the entire pool"
+    val description: String = "The number of current pending requests for an open connection"
     val unit: String = "{request}"
     val stability: Stability = Stability.experimental
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
@@ -863,7 +863,7 @@ object DbExperimentalMetrics {
         *   found in the query and it SHOULD match the value provided in the query text including any schema and
         *   database name prefix. For batch operations, if the individual operations are known to have the same
         *   collection name then that collection name SHOULD be used, otherwise `db.collection.name` SHOULD NOT be
-        *   captured.
+        *   captured. This attribute has stability level RELEASE CANDIDATE.
         */
       val dbCollectionName: AttributeSpec[String] =
         AttributeSpec(
@@ -885,7 +885,8 @@ object DbExperimentalMetrics {
         *   specific namespaces SHOULD NOT be captured without the more general namespaces, to ensure that "startswith"
         *   queries for the more general namespaces will be valid. Semantic conventions for individual database systems
         *   SHOULD document what `db.namespace` means in the context of that system. It is RECOMMENDED to capture the
-        *   value as provided by the application without attempting to do any case normalization.
+        *   value as provided by the application without attempting to do any case normalization. This attribute has
+        *   stability level RELEASE CANDIDATE.
         */
       val dbNamespace: AttributeSpec[String] =
         AttributeSpec(
@@ -904,7 +905,8 @@ object DbExperimentalMetrics {
         *   normalization. If the operation name is parsed from the query text, it SHOULD be the first operation name
         *   found in the query. For batch operations, if the individual operations are known to have the same operation
         *   name then that operation name SHOULD be used prepended by `BATCH `, otherwise `db.operation.name` SHOULD be
-        *   `BATCH` or some other database system specific term if more applicable.
+        *   `BATCH` or some other database system specific term if more applicable. This attribute has stability level
+        *   RELEASE CANDIDATE.
         */
       val dbOperationName: AttributeSpec[String] =
         AttributeSpec(
@@ -920,11 +922,31 @@ object DbExperimentalMetrics {
           Stability.experimental
         )
 
+      /** Database response status code. <p>
+        * @note
+        *   <p> The status code returned by the database. Usually it represents an error code, but may also represent
+        *   partial success, warning, or differentiate between various types of successful outcomes. Semantic
+        *   conventions for individual database systems SHOULD document what `db.response.status_code` means in the
+        *   context of that system. This attribute has stability level RELEASE CANDIDATE.
+        */
+      val dbResponseStatusCode: AttributeSpec[String] =
+        AttributeSpec(
+          DbExperimentalAttributes.DbResponseStatusCode,
+          List(
+            "102",
+            "ORA-17002",
+            "08P01",
+            "404",
+          ),
+          Requirement.conditionallyRequired("If the operation failed and status code is available."),
+          Stability.experimental
+        )
+
       /** The database management system (DBMS) product as identified by the client instrumentation. <p>
         * @note
         *   <p> The actual DBMS may differ from the one identified by the client. For example, when using PostgreSQL
         *   client libraries to connect to a CockroachDB, the `db.system` is set to `postgresql` based on the
-        *   instrumentation's best knowledge.
+        *   instrumentation's best knowledge. This attribute has stability level RELEASE CANDIDATE.
         */
       val dbSystem: AttributeSpec[String] =
         AttributeSpec(
@@ -937,9 +959,11 @@ object DbExperimentalMetrics {
 
       /** Describes a class of error the operation ended with. <p>
         * @note
-        *   <p> The `error.type` SHOULD match the error code returned by the database or the client library, the
-        *   canonical name of exception that occurred, or another low-cardinality error identifier. Instrumentations
-        *   SHOULD document the list of errors they report.
+        *   <p> The `error.type` SHOULD match the `db.response.status_code` returned by the database or the client
+        *   library, or the canonical name of exception that occurred. When using canonical exception type name,
+        *   instrumentation SHOULD do the best effort to report the most relevant type. For example, if the original
+        *   exception is wrapped into a generic one, the original exception SHOULD be preferred. Instrumentations SHOULD
+        *   document how `error.type` is populated.
         */
       val errorType: AttributeSpec[String] =
         AttributeSpec(
@@ -1025,6 +1049,7 @@ object DbExperimentalMetrics {
           dbCollectionName,
           dbNamespace,
           dbOperationName,
+          dbResponseStatusCode,
           dbSystem,
           errorType,
           networkPeerAddress,

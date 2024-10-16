@@ -84,7 +84,7 @@ object TlsExperimentalAttributes {
 
   /** Deprecated, use `server.address` instead.
     */
-  @deprecated("Replaced by `server.address.", "")
+  @deprecated("Replaced by `server.address`.", "")
   val TlsClientServerName: AttributeKey[String] =
     AttributeKey("tls.client.server_name")
 

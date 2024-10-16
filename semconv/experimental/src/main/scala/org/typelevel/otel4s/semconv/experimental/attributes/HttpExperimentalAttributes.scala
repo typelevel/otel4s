@@ -130,9 +130,9 @@ object HttpExperimentalAttributes {
   val HttpRequestSize: AttributeKey[Long] =
     AttributeKey("http.request.size")
 
-  /** Deprecated, use `http.request.header.content-length` instead.
+  /** Deprecated, use `http.request.header.<key>` instead.
     */
-  @deprecated("Replaced by `http.request.header.content-length`.", "")
+  @deprecated("Replaced by `http.request.header.<key>`.", "")
   val HttpRequestContentLength: AttributeKey[Long] =
     AttributeKey("http.request_content_length")
 
@@ -181,9 +181,9 @@ object HttpExperimentalAttributes {
   val HttpResponseStatusCode: AttributeKey[Long] =
     AttributeKey("http.response.status_code")
 
-  /** Deprecated, use `http.response.header.content-length` instead.
+  /** Deprecated, use `http.response.header.<key>` instead.
     */
-  @deprecated("Replaced by `http.response.header.content-length`.", "")
+  @deprecated("Replaced by `http.response.header.<key>`.", "")
   val HttpResponseContentLength: AttributeKey[Long] =
     AttributeKey("http.response_content_length")
 

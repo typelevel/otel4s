@@ -1,5 +1,5 @@
 params:
-  excluded_namespaces: ["ios", "aspnetcore", "signalr", "kestrel", "veightjs", "go"]
+  excluded_namespaces: ["ios", "aspnetcore", "signalr", "kestrel", "veightjs", "go", "dotnet"]
   excluded_attributes: ["messaging.client_id"]
   excluded_stability: ["experimental", "deprecated"] # stable - ["experimental", "deprecated"]; experimental - []
   object_prefix: "" # stable - "", experimental - "Experimental"

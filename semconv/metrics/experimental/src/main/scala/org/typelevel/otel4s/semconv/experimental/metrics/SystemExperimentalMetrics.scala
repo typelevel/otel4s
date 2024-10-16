@@ -34,9 +34,11 @@ object SystemExperimentalMetrics {
     CpuUtilization,
     DiskIo,
     DiskIoTime,
+    DiskLimit,
     DiskMerged,
     DiskOperationTime,
     DiskOperations,
+    FilesystemLimit,
     FilesystemUsage,
     FilesystemUtilization,
     LinuxMemoryAvailable,
@@ -346,6 +348,45 @@ object SystemExperimentalMetrics {
 
   }
 
+  /** The total storage capacity of the disk
+    */
+  object DiskLimit extends MetricSpec {
+
+    val name: String = "system.disk.limit"
+    val description: String = "The total storage capacity of the disk"
+    val unit: String = "By"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
+
+    object AttributeSpecs {
+
+      /** The device identifier
+        */
+      val systemDevice: AttributeSpec[String] =
+        AttributeSpec(
+          SystemExperimentalAttributes.SystemDevice,
+          List(
+            "(identifier)",
+          ),
+          Requirement.recommended,
+          Stability.experimental
+        )
+
+      val specs: List[AttributeSpec[_]] =
+        List(
+          systemDevice,
+        )
+    }
+
+    def create[F[_]: Meter]: F[UpDownCounter[F, Long]] =
+      Meter[F]
+        .upDownCounter[Long](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+  }
+
   /** */
   object DiskMerged extends MetricSpec {
 
@@ -505,24 +546,108 @@ object SystemExperimentalMetrics {
 
   }
 
-  /** */
-  object FilesystemUsage extends MetricSpec {
+  /** The total storage capacity of the filesystem
+    */
+  object FilesystemLimit extends MetricSpec {
 
-    val name: String = "system.filesystem.usage"
-    val description: String = ""
+    val name: String = "system.filesystem.limit"
+    val description: String = "The total storage capacity of the filesystem"
     val unit: String = "By"
     val stability: Stability = Stability.experimental
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
-      /** The device identifier
+      /** Identifier for the device where the filesystem resides.
         */
       val systemDevice: AttributeSpec[String] =
         AttributeSpec(
           SystemExperimentalAttributes.SystemDevice,
           List(
-            "(identifier)",
+            "/dev/sda",
+            "\network-drive",
+          ),
+          Requirement.recommended,
+          Stability.experimental
+        )
+
+      /** The filesystem mode
+        */
+      val systemFilesystemMode: AttributeSpec[String] =
+        AttributeSpec(
+          SystemExperimentalAttributes.SystemFilesystemMode,
+          List(
+            "rw, ro",
+          ),
+          Requirement.recommended,
+          Stability.experimental
+        )
+
+      /** The filesystem mount path
+        */
+      val systemFilesystemMountpoint: AttributeSpec[String] =
+        AttributeSpec(
+          SystemExperimentalAttributes.SystemFilesystemMountpoint,
+          List(
+            "/mnt/data",
+          ),
+          Requirement.recommended,
+          Stability.experimental
+        )
+
+      /** The filesystem type
+        */
+      val systemFilesystemType: AttributeSpec[String] =
+        AttributeSpec(
+          SystemExperimentalAttributes.SystemFilesystemType,
+          List(
+            "ext4",
+          ),
+          Requirement.recommended,
+          Stability.experimental
+        )
+
+      val specs: List[AttributeSpec[_]] =
+        List(
+          systemDevice,
+          systemFilesystemMode,
+          systemFilesystemMountpoint,
+          systemFilesystemType,
+        )
+    }
+
+    def create[F[_]: Meter]: F[UpDownCounter[F, Long]] =
+      Meter[F]
+        .upDownCounter[Long](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+  }
+
+  /** Reports a filesystem's space usage across different states. <p>
+    * @note
+    *   <p> The sum of all `system.filesystem.usage` values over the different `system.filesystem.state` attributes
+    *   SHOULD equal the total storage capacity of the filesystem, that is `system.filesystem.limit`.
+    */
+  object FilesystemUsage extends MetricSpec {
+
+    val name: String = "system.filesystem.usage"
+    val description: String = "Reports a filesystem's space usage across different states."
+    val unit: String = "By"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
+
+    object AttributeSpecs {
+
+      /** Identifier for the device where the filesystem resides.
+        */
+      val systemDevice: AttributeSpec[String] =
+        AttributeSpec(
+          SystemExperimentalAttributes.SystemDevice,
+          List(
+            "/dev/sda",
+            "\network-drive",
           ),
           Requirement.recommended,
           Stability.experimental
@@ -606,13 +731,14 @@ object SystemExperimentalMetrics {
 
     object AttributeSpecs {
 
-      /** The device identifier
+      /** Identifier for the device where the filesystem resides.
         */
       val systemDevice: AttributeSpec[String] =
         AttributeSpec(
           SystemExperimentalAttributes.SystemDevice,
           List(
-            "(identifier)",
+            "/dev/sda",
+            "\network-drive",
           ),
           Requirement.recommended,
           Stability.experimental

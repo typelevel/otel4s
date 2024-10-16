@@ -163,4 +163,46 @@ object K8sExperimentalAttributes {
   val K8sStatefulsetUid: AttributeKey[String] =
     AttributeKey("k8s.statefulset.uid")
 
+  /** The name of the K8s volume.
+    */
+  val K8sVolumeName: AttributeKey[String] =
+    AttributeKey("k8s.volume.name")
+
+  /** The type of the K8s volume.
+    */
+  val K8sVolumeType: AttributeKey[String] =
+    AttributeKey("k8s.volume.type")
+
+  /** Values for [[K8sVolumeType]].
+    */
+  abstract class K8sVolumeTypeValue(val value: String)
+  object K8sVolumeTypeValue {
+
+    /** A <a
+      * href="https://v1-29.docs.kubernetes.io/docs/concepts/storage/volumes/#persistentvolumeclaim">persistentVolumeClaim</a>
+      * volume
+      */
+    case object PersistentVolumeClaim extends K8sVolumeTypeValue("persistentVolumeClaim")
+
+    /** A <a href="https://v1-29.docs.kubernetes.io/docs/concepts/storage/volumes/#configmap">configMap</a> volume
+      */
+    case object ConfigMap extends K8sVolumeTypeValue("configMap")
+
+    /** A <a href="https://v1-29.docs.kubernetes.io/docs/concepts/storage/volumes/#downwardapi">downwardAPI</a> volume
+      */
+    case object DownwardApi extends K8sVolumeTypeValue("downwardAPI")
+
+    /** An <a href="https://v1-29.docs.kubernetes.io/docs/concepts/storage/volumes/#emptydir">emptyDir</a> volume
+      */
+    case object EmptyDir extends K8sVolumeTypeValue("emptyDir")
+
+    /** A <a href="https://v1-29.docs.kubernetes.io/docs/concepts/storage/volumes/#secret">secret</a> volume
+      */
+    case object Secret extends K8sVolumeTypeValue("secret")
+
+    /** A <a href="https://v1-29.docs.kubernetes.io/docs/concepts/storage/volumes/#local">local</a> volume
+      */
+    case object Local extends K8sVolumeTypeValue("local")
+  }
+
 }

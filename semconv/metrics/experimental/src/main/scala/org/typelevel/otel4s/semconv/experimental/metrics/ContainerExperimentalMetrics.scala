@@ -27,6 +27,7 @@ object ContainerExperimentalMetrics {
 
   val specs: List[MetricSpec] = List(
     CpuTime,
+    CpuUsage,
     DiskIo,
     MemoryUsage,
     NetworkIo,
@@ -58,7 +59,9 @@ object ContainerExperimentalMetrics {
             "user",
             "system",
           ),
-          Requirement.optIn,
+          Requirement.conditionallyRequired(
+            "Required if mode is available, i.e. metrics coming from the Docker Stats API."
+          ),
           Stability.experimental
         )
 
@@ -71,6 +74,53 @@ object ContainerExperimentalMetrics {
     def create[F[_]: Meter]: F[Counter[F, Long]] =
       Meter[F]
         .counter[Long](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+  }
+
+  /** Container's CPU usage, measured in cpus. Range from 0 to the number of allocatable CPUs <p>
+    * @note
+    *   <p> CPU usage of the specific container on all available CPU cores, averaged over the sample window
+    */
+  object CpuUsage extends MetricSpec {
+
+    val name: String = "container.cpu.usage"
+    val description: String = "Container's CPU usage, measured in cpus. Range from 0 to the number of allocatable CPUs"
+    val unit: String = "{cpu}"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
+
+    object AttributeSpecs {
+
+      /** The CPU mode for this data point. A container's CPU metric SHOULD be characterized <em>either</em> by data
+        * points with no `mode` labels, <em>or only</em> data points with `mode` labels. <p>
+        * @note
+        *   <p> Following states SHOULD be used: `user`, `system`, `kernel`
+        */
+      val cpuMode: AttributeSpec[String] =
+        AttributeSpec(
+          CpuExperimentalAttributes.CpuMode,
+          List(
+            "user",
+            "system",
+          ),
+          Requirement.conditionallyRequired(
+            "Required if mode is available, i.e. metrics coming from the Docker Stats API."
+          ),
+          Stability.experimental
+        )
+
+      val specs: List[AttributeSpec[_]] =
+        List(
+          cpuMode,
+        )
+    }
+
+    def create[F[_]: Meter]: F[Gauge[F, Long]] =
+      Meter[F]
+        .gauge[Long](name)
         .withDescription(description)
         .withUnit(unit)
         .create

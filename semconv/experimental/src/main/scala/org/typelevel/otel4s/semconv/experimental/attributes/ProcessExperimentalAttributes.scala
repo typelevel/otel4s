@@ -21,6 +21,14 @@ package experimental.attributes
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/attributes/SemanticAttributes.scala.j2
 object ProcessExperimentalAttributes {
 
+  /** Length of the process.command_args array <p>
+    * @note
+    *   <p> This field can be useful for querying or performing bucket analysis on how many arguments were provided to
+    *   start a process. More arguments may be an indication of suspicious activity.
+    */
+  val ProcessArgsCount: AttributeKey[Long] =
+    AttributeKey("process.args_count")
+
   /** The command used to launch the process (i.e. the command name). On Linux based systems, can be set to the zeroth
     * string in `proc/[pid]/cmdline`. On Windows, can be set to the first parameter extracted from `GetCommandLineW`.
     */
@@ -57,6 +65,21 @@ object ProcessExperimentalAttributes {
     */
   val ProcessCreationTime: AttributeKey[String] =
     AttributeKey("process.creation.time")
+
+  /** The GNU build ID as found in the `.note.gnu.build-id` ELF section (hex string).
+    */
+  val ProcessExecutableBuildIdGnu: AttributeKey[String] =
+    AttributeKey("process.executable.build_id.gnu")
+
+  /** The Go build ID as retrieved by `go tool buildid <go executable>`.
+    */
+  val ProcessExecutableBuildIdGo: AttributeKey[String] =
+    AttributeKey("process.executable.build_id.go")
+
+  /** Profiling specific build ID for executables. See the OTel specification for Profiles for more information.
+    */
+  val ProcessExecutableBuildIdProfiling: AttributeKey[String] =
+    AttributeKey("process.executable.build_id.profiling")
 
   /** The name of the process executable. On Linux based systems, can be set to the `Name` in `proc/[pid]/status`. On
     * Windows, can be set to the base name of `GetProcessImageFileNameW`.
@@ -152,6 +175,14 @@ object ProcessExperimentalAttributes {
   val ProcessSessionLeaderPid: AttributeKey[Long] =
     AttributeKey("process.session_leader.pid")
 
+  /** Process title (proctitle) <p>
+    * @note
+    *   <p> In many Unix-like systems, process title (proctitle), is the string that represents the name or command line
+    *   of a running process, displayed by system monitoring tools like ps, top, and htop.
+    */
+  val ProcessTitle: AttributeKey[String] =
+    AttributeKey("process.title")
+
   /** The effective user ID (EUID) of the process.
     */
   val ProcessUserId: AttributeKey[Long] =
@@ -169,6 +200,11 @@ object ProcessExperimentalAttributes {
     */
   val ProcessVpid: AttributeKey[Long] =
     AttributeKey("process.vpid")
+
+  /** The working directory of the process.
+    */
+  val ProcessWorkingDirectory: AttributeKey[String] =
+    AttributeKey("process.working_directory")
 
   /** Values for [[ProcessContextSwitchType]].
     */

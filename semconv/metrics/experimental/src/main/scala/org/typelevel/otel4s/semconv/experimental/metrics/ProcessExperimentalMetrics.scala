@@ -36,6 +36,7 @@ object ProcessExperimentalMetrics {
     OpenFileDescriptorCount,
     PagingFaults,
     ThreadCount,
+    Uptime,
   )
 
   /** Number of times the process has been context switched.
@@ -351,6 +352,28 @@ object ProcessExperimentalMetrics {
     def create[F[_]: Meter]: F[UpDownCounter[F, Long]] =
       Meter[F]
         .upDownCounter[Long](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+  }
+
+  /** The time the process has been running. <p>
+    * @note
+    *   <p> Instrumentations SHOULD use counter with type `double` and measure uptime with at least millisecond
+    *   precision
+    */
+  object Uptime extends MetricSpec {
+
+    val name: String = "process.uptime"
+    val description: String = "The time the process has been running."
+    val unit: String = "s"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
+
+    def create[F[_]: Meter]: F[Counter[F, Long]] =
+      Meter[F]
+        .counter[Long](name)
         .withDescription(description)
         .withUnit(unit)
         .create

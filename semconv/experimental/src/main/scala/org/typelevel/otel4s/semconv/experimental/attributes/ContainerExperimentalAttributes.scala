@@ -29,12 +29,12 @@ object ContainerExperimentalAttributes {
   val ContainerCommand: AttributeKey[String] =
     AttributeKey("container.command")
 
-  /** All the command arguments (including the command/executable itself) run by the container. [2]
+  /** All the command arguments (including the command/executable itself) run by the container.
     */
   val ContainerCommandArgs: AttributeKey[Seq[String]] =
     AttributeKey("container.command_args")
 
-  /** The full command run by the container as a single string representing the full command. [2]
+  /** The full command run by the container as a single string representing the full command.
     */
   val ContainerCommandLine: AttributeKey[String] =
     AttributeKey("container.command_line")
@@ -45,8 +45,26 @@ object ContainerExperimentalAttributes {
   val ContainerCpuState: AttributeKey[String] =
     AttributeKey("container.cpu.state")
 
+  /** The name of the CSI (<a href="https://github.com/container-storage-interface/spec">Container Storage
+    * Interface</a>) plugin used by the volume. <p>
+    * @note
+    *   <p> This can sometimes be referred to as a "driver" in CSI implementations. This should represent the `name`
+    *   field of the GetPluginInfo RPC.
+    */
+  val ContainerCsiPluginName: AttributeKey[String] =
+    AttributeKey("container.csi.plugin.name")
+
+  /** The unique volume ID returned by the CSI (<a href="https://github.com/container-storage-interface/spec">Container
+    * Storage Interface</a>) plugin. <p>
+    * @note
+    *   <p> This can sometimes be referred to as a "volume handle" in CSI implementations. This should represent the
+    *   `Volume.volume_id` field in CSI spec.
+    */
+  val ContainerCsiVolumeId: AttributeKey[String] =
+    AttributeKey("container.csi.volume.id")
+
   /** Container ID. Usually a UUID, as for example used to <a
-    * href="https://docs.docker.com/engine/reference/run/#container-identification">identify Docker containers</a>. The
+    * href="https://docs.docker.com/engine/containers/run/#container-identification">identify Docker containers</a>. The
     * UUID might be abbreviated.
     */
   val ContainerId: AttributeKey[String] =

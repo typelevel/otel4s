@@ -21,13 +21,15 @@ package experimental.attributes
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/attributes/SemanticAttributes.scala.j2
 object OtelExperimentalAttributes {
 
-  /** */
-  @deprecated("use the `otel.scope.name` attribute.", "")
+  /** Deprecated. Use the `otel.scope.name` attribute
+    */
+  @deprecated("Use the `otel.scope.name` attribute.", "")
   val OtelLibraryName: AttributeKey[String] =
     AttributeKey("otel.library.name")
 
-  /** */
-  @deprecated("use the `otel.scope.version` attribute.", "")
+  /** Deprecated. Use the `otel.scope.version` attribute.
+    */
+  @deprecated("Use the `otel.scope.version` attribute.", "")
   val OtelLibraryVersion: AttributeKey[String] =
     AttributeKey("otel.library.version")
 

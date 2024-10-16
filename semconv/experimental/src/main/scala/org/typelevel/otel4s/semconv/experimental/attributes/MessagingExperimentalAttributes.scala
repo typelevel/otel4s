@@ -272,9 +272,9 @@ object MessagingExperimentalAttributes {
   val MessagingRocketmqNamespace: AttributeKey[String] =
     AttributeKey("messaging.rocketmq.namespace")
 
-  /** Deprecated, use `messaging.servicebus.destination.subscription_name` instead.
+  /** Deprecated, use `messaging.destination.subscription.name` instead.
     */
-  @deprecated("Replaced by `messaging.servicebus.destination.subscription_name`.", "")
+  @deprecated("Replaced by `messaging.destination.subscription.name`.", "")
   val MessagingServicebusDestinationSubscriptionName: AttributeKey[String] =
     AttributeKey("messaging.servicebus.destination.subscription_name")
 
@@ -309,15 +309,15 @@ object MessagingExperimentalAttributes {
   abstract class MessagingOperationTypeValue(val value: String)
   object MessagingOperationTypeValue {
 
-    /** One or more messages are provided for publishing to an intermediary. If a single message is published, the
-      * context of the "Publish" span can be used as the creation context and no "Create" span needs to be created.
-      */
-    case object Publish extends MessagingOperationTypeValue("publish")
-
     /** A message is created. "Create" spans always refer to a single message and are used to provide a unique creation
-      * context for messages in batch publishing scenarios.
+      * context for messages in batch sending scenarios.
       */
     case object Create extends MessagingOperationTypeValue("create")
+
+    /** One or more messages are provided for sending to an intermediary. If a single message is sent, the context of
+      * the "Send" span can be used as the creation context and no "Create" span needs to be created.
+      */
+    case object Send extends MessagingOperationTypeValue("send")
 
     /** One or more messages are requested by a consumer. This operation refers to pull-based scenarios, where consumers
       * explicitly call methods of messaging SDKs to receive messages.
@@ -335,6 +335,10 @@ object MessagingExperimentalAttributes {
     /** Deprecated. Use `process` instead.
       */
     case object Deliver extends MessagingOperationTypeValue("deliver")
+
+    /** Deprecated. Use `send` instead.
+      */
+    case object Publish extends MessagingOperationTypeValue("publish")
   }
 
   /** Values for [[MessagingRocketmqConsumptionModel]].

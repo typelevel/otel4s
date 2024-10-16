@@ -91,14 +91,15 @@ object DbExperimentalAttributes {
     *   normalization. If the collection name is parsed from the query text, it SHOULD be the first collection name
     *   found in the query and it SHOULD match the value provided in the query text including any schema and database
     *   name prefix. For batch operations, if the individual operations are known to have the same collection name then
-    *   that collection name SHOULD be used, otherwise `db.collection.name` SHOULD NOT be captured.
+    *   that collection name SHOULD be used, otherwise `db.collection.name` SHOULD NOT be captured. This attribute has
+    *   stability level RELEASE CANDIDATE.
     */
   val DbCollectionName: AttributeKey[String] =
     AttributeKey("db.collection.name")
 
   /** Deprecated, use `server.address`, `server.port` attributes instead.
     */
-  @deprecated("'Replaced by `server.address` and `server.port`.'", "")
+  @deprecated("Replaced by `server.address` and `server.port`.", "")
   val DbConnectionString: AttributeKey[String] =
     AttributeKey("db.connection_string")
 
@@ -118,7 +119,7 @@ object DbExperimentalAttributes {
   val DbCosmosdbContainer: AttributeKey[String] =
     AttributeKey("db.cosmosdb.container")
 
-  /** CosmosDB Operation Type.
+  /** Cosmos DB Operation Type.
     */
   val DbCosmosdbOperationType: AttributeKey[String] =
     AttributeKey("db.cosmosdb.operation_type")
@@ -133,8 +134,9 @@ object DbExperimentalAttributes {
   val DbCosmosdbRequestContentLength: AttributeKey[Long] =
     AttributeKey("db.cosmosdb.request_content_length")
 
-  /** Cosmos DB status code.
+  /** Deprecated, use `db.response.status_code` instead.
     */
+  @deprecated("Replaced by `db.response.status_code`.", "")
   val DbCosmosdbStatusCode: AttributeKey[Long] =
     AttributeKey("db.cosmosdb.status_code")
 
@@ -205,7 +207,8 @@ object DbExperimentalAttributes {
     *   namespaces SHOULD NOT be captured without the more general namespaces, to ensure that "startswith" queries for
     *   the more general namespaces will be valid. Semantic conventions for individual database systems SHOULD document
     *   what `db.namespace` means in the context of that system. It is RECOMMENDED to capture the value as provided by
-    *   the application without attempting to do any case normalization.
+    *   the application without attempting to do any case normalization. This attribute has stability level RELEASE
+    *   CANDIDATE.
     */
   val DbNamespace: AttributeKey[String] =
     AttributeKey("db.namespace")
@@ -216,11 +219,10 @@ object DbExperimentalAttributes {
   val DbOperation: AttributeKey[String] =
     AttributeKey("db.operation")
 
-  /** The number of queries included in a <a href="/docs/database/database-spans.md#batch-operations">batch
-    * operation</a>. <p>
+  /** The number of queries included in a batch operation. <p>
     * @note
     *   <p> Operations are only considered batches when they contain two or more operations, and so
-    *   `db.operation.batch.size` SHOULD never be `1`.
+    *   `db.operation.batch.size` SHOULD never be `1`. This attribute has stability level RELEASE CANDIDATE.
     */
   val DbOperationBatchSize: AttributeKey[Long] =
     AttributeKey("db.operation.batch.size")
@@ -231,7 +233,8 @@ object DbExperimentalAttributes {
     *   normalization. If the operation name is parsed from the query text, it SHOULD be the first operation name found
     *   in the query. For batch operations, if the individual operations are known to have the same operation name then
     *   that operation name SHOULD be used prepended by `BATCH `, otherwise `db.operation.name` SHOULD be `BATCH` or
-    *   some other database system specific term if more applicable.
+    *   some other database system specific term if more applicable. This attribute has stability level RELEASE
+    *   CANDIDATE.
     */
   val DbOperationName: AttributeKey[String] =
     AttributeKey("db.operation.name")
@@ -240,7 +243,8 @@ object DbExperimentalAttributes {
     * string representation of the parameter value. <p>
     * @note
     *   <p> Query parameters should only be captured when `db.query.text` is parameterized with placeholders. If a
-    *   parameter has no name and instead is referenced only by index, then `<key>` SHOULD be the 0-based index.
+    *   parameter has no name and instead is referenced only by index, then `<key>` SHOULD be the 0-based index. This
+    *   attribute has stability level RELEASE CANDIDATE.
     */
   val DbQueryParameter: AttributeKey[String] =
     AttributeKey("db.query.parameter")
@@ -254,7 +258,7 @@ object DbExperimentalAttributes {
     *   other database system specific separator if more applicable. Even though parameterized query text can
     *   potentially have sensitive data, by using a parameterized query the user is giving a strong signal that any
     *   sensitive data will be passed as parameter values, and the benefit to observability of capturing the static part
-    *   of the query text by default outweighs the risk.
+    *   of the query text by default outweighs the risk. This attribute has stability level RELEASE CANDIDATE.
     */
   val DbQueryText: AttributeKey[String] =
     AttributeKey("db.query.text")
@@ -264,6 +268,16 @@ object DbExperimentalAttributes {
   @deprecated("Replaced by `db.namespace`.", "")
   val DbRedisDatabaseIndex: AttributeKey[Long] =
     AttributeKey("db.redis.database_index")
+
+  /** Database response status code. <p>
+    * @note
+    *   <p> The status code returned by the database. Usually it represents an error code, but may also represent
+    *   partial success, warning, or differentiate between various types of successful outcomes. Semantic conventions
+    *   for individual database systems SHOULD document what `db.response.status_code` means in the context of that
+    *   system. This attribute has stability level RELEASE CANDIDATE.
+    */
+  val DbResponseStatusCode: AttributeKey[String] =
+    AttributeKey("db.response.status_code")
 
   /** Deprecated, use `db.collection.name` instead.
     */
@@ -281,7 +295,7 @@ object DbExperimentalAttributes {
     * @note
     *   <p> The actual DBMS may differ from the one identified by the client. For example, when using PostgreSQL client
     *   libraries to connect to a CockroachDB, the `db.system` is set to `postgresql` based on the instrumentation's
-    *   best knowledge.
+    *   best knowledge. This attribute has stability level RELEASE CANDIDATE.
     */
   val DbSystem: AttributeKey[String] =
     AttributeKey("db.system")
@@ -391,65 +405,65 @@ object DbExperimentalAttributes {
   abstract class DbCosmosdbOperationTypeValue(val value: String)
   object DbCosmosdbOperationTypeValue {
 
-    /** invalid.
+    /** batch.
       */
-    case object Invalid extends DbCosmosdbOperationTypeValue("Invalid")
+    case object Batch extends DbCosmosdbOperationTypeValue("batch")
 
     /** create.
       */
-    case object Create extends DbCosmosdbOperationTypeValue("Create")
-
-    /** patch.
-      */
-    case object Patch extends DbCosmosdbOperationTypeValue("Patch")
-
-    /** read.
-      */
-    case object Read extends DbCosmosdbOperationTypeValue("Read")
-
-    /** read_feed.
-      */
-    case object ReadFeed extends DbCosmosdbOperationTypeValue("ReadFeed")
+    case object Create extends DbCosmosdbOperationTypeValue("create")
 
     /** delete.
       */
-    case object Delete extends DbCosmosdbOperationTypeValue("Delete")
-
-    /** replace.
-      */
-    case object Replace extends DbCosmosdbOperationTypeValue("Replace")
+    case object Delete extends DbCosmosdbOperationTypeValue("delete")
 
     /** execute.
       */
-    case object Execute extends DbCosmosdbOperationTypeValue("Execute")
-
-    /** query.
-      */
-    case object Query extends DbCosmosdbOperationTypeValue("Query")
-
-    /** head.
-      */
-    case object Head extends DbCosmosdbOperationTypeValue("Head")
-
-    /** head_feed.
-      */
-    case object HeadFeed extends DbCosmosdbOperationTypeValue("HeadFeed")
-
-    /** upsert.
-      */
-    case object Upsert extends DbCosmosdbOperationTypeValue("Upsert")
-
-    /** batch.
-      */
-    case object Batch extends DbCosmosdbOperationTypeValue("Batch")
-
-    /** query_plan.
-      */
-    case object QueryPlan extends DbCosmosdbOperationTypeValue("QueryPlan")
+    case object Execute extends DbCosmosdbOperationTypeValue("execute")
 
     /** execute_javascript.
       */
-    case object ExecuteJavascript extends DbCosmosdbOperationTypeValue("ExecuteJavaScript")
+    case object ExecuteJavascript extends DbCosmosdbOperationTypeValue("execute_javascript")
+
+    /** invalid.
+      */
+    case object Invalid extends DbCosmosdbOperationTypeValue("invalid")
+
+    /** head.
+      */
+    case object Head extends DbCosmosdbOperationTypeValue("head")
+
+    /** head_feed.
+      */
+    case object HeadFeed extends DbCosmosdbOperationTypeValue("head_feed")
+
+    /** patch.
+      */
+    case object Patch extends DbCosmosdbOperationTypeValue("patch")
+
+    /** query.
+      */
+    case object Query extends DbCosmosdbOperationTypeValue("query")
+
+    /** query_plan.
+      */
+    case object QueryPlan extends DbCosmosdbOperationTypeValue("query_plan")
+
+    /** read.
+      */
+    case object Read extends DbCosmosdbOperationTypeValue("read")
+
+    /** read_feed.
+      */
+    case object ReadFeed extends DbCosmosdbOperationTypeValue("read_feed")
+
+    /** replace.
+      */
+    case object Replace extends DbCosmosdbOperationTypeValue("replace")
+
+    /** upsert.
+      */
+    case object Upsert extends DbCosmosdbOperationTypeValue("upsert")
   }
 
   /** Values for [[DbSystem]].
@@ -581,7 +595,7 @@ object DbExperimentalAttributes {
       */
     case object Interbase extends DbSystemValue("interbase")
 
-    /** MariaDB
+    /** MariaDB (This value has stability level RELEASE CANDIDATE)
       */
     case object Mariadb extends DbSystemValue("mariadb")
 
@@ -597,7 +611,7 @@ object DbExperimentalAttributes {
       */
     case object Mongodb extends DbSystemValue("mongodb")
 
-    /** Microsoft SQL Server
+    /** Microsoft SQL Server (This value has stability level RELEASE CANDIDATE)
       */
     case object Mssql extends DbSystemValue("mssql")
 
@@ -605,7 +619,7 @@ object DbExperimentalAttributes {
       */
     case object Mssqlcompact extends DbSystemValue("mssqlcompact")
 
-    /** MySQL
+    /** MySQL (This value has stability level RELEASE CANDIDATE)
       */
     case object Mysql extends DbSystemValue("mysql")
 
@@ -633,7 +647,7 @@ object DbExperimentalAttributes {
       */
     case object Pointbase extends DbSystemValue("pointbase")
 
-    /** PostgreSQL
+    /** PostgreSQL (This value has stability level RELEASE CANDIDATE)
       */
     case object Postgresql extends DbSystemValue("postgresql")
 

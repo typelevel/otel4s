@@ -20,6 +20,7 @@ package experimental
 package metrics
 
 import org.typelevel.otel4s.metrics._
+import org.typelevel.otel4s.semconv.experimental.attributes._
 
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/metrics/SemanticMetrics.scala.j2
 object NodejsExperimentalMetrics {
@@ -32,6 +33,7 @@ object NodejsExperimentalMetrics {
     EventloopDelayP90,
     EventloopDelayP99,
     EventloopDelayStddev,
+    EventloopTime,
     EventloopUtilization,
   )
 
@@ -189,9 +191,51 @@ object NodejsExperimentalMetrics {
 
   }
 
+  /** Cumulative duration of time the event loop has been in each state. <p>
+    * @note
+    *   <p> Value can be retrieved from <a
+    *   href="https://nodejs.org/api/perf_hooks.html#performanceeventlooputilizationutilization1-utilization2">`performance.eventLoopUtilization([utilization1[,
+    *   utilization2]])`</a>
+    */
+  object EventloopTime extends MetricSpec {
+
+    val name: String = "nodejs.eventloop.time"
+    val description: String = "Cumulative duration of time the event loop has been in each state."
+    val unit: String = "s"
+    val stability: Stability = Stability.experimental
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
+
+    object AttributeSpecs {
+
+      /** The state of event loop time.
+        */
+      val nodejsEventloopState: AttributeSpec[String] =
+        AttributeSpec(
+          NodejsExperimentalAttributes.NodejsEventloopState,
+          List(
+          ),
+          Requirement.required,
+          Stability.experimental
+        )
+
+      val specs: List[AttributeSpec[_]] =
+        List(
+          nodejsEventloopState,
+        )
+    }
+
+    def create[F[_]: Meter]: F[Counter[F, Long]] =
+      Meter[F]
+        .counter[Long](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+  }
+
   /** Event loop utilization. <p>
     * @note
-    *   <p> The value range is [0.0,1.0] and can be retrieved from value <a
+    *   <p> The value range is [0.0, 1.0] and can be retrieved from <a
     *   href="https://nodejs.org/api/perf_hooks.html#performanceeventlooputilizationutilization1-utilization2">`performance.eventLoopUtilization([utilization1[,
     *   utilization2]])`</a>
     */

@@ -21,13 +21,31 @@ package experimental.attributes
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/attributes/SemanticAttributes.scala.j2
 object GenAiExperimentalAttributes {
 
-  /** The full response received from the GenAI model. <p>
-    * @note
-    *   <p> It's RECOMMENDED to format completions as JSON string matching <a
-    *   href="https://platform.openai.com/docs/guides/text-generation">OpenAI messages format</a>
+  /** Deprecated, use Event API to report completions contents.
     */
+  @deprecated("Removed, no replacement at this time.", "")
   val GenAiCompletion: AttributeKey[String] =
     AttributeKey("gen_ai.completion")
+
+  /** The response format that is requested.
+    */
+  val GenAiOpenaiRequestResponseFormat: AttributeKey[String] =
+    AttributeKey("gen_ai.openai.request.response_format")
+
+  /** Requests with same seed value more likely to return same result.
+    */
+  val GenAiOpenaiRequestSeed: AttributeKey[Long] =
+    AttributeKey("gen_ai.openai.request.seed")
+
+  /** The service tier requested. May be a specific tier, detault, or auto.
+    */
+  val GenAiOpenaiRequestServiceTier: AttributeKey[String] =
+    AttributeKey("gen_ai.openai.request.service_tier")
+
+  /** The service tier used for the response.
+    */
+  val GenAiOpenaiResponseServiceTier: AttributeKey[String] =
+    AttributeKey("gen_ai.openai.response.service_tier")
 
   /** The name of the operation being performed. <p>
     * @note
@@ -39,11 +57,9 @@ object GenAiExperimentalAttributes {
   val GenAiOperationName: AttributeKey[String] =
     AttributeKey("gen_ai.operation.name")
 
-  /** The full prompt sent to the GenAI model. <p>
-    * @note
-    *   <p> It's RECOMMENDED to format prompts as JSON string matching <a
-    *   href="https://platform.openai.com/docs/guides/text-generation">OpenAI messages format</a>
+  /** Deprecated, use Event API to report prompt contents.
     */
+  @deprecated("Removed, no replacement at this time.", "")
   val GenAiPrompt: AttributeKey[String] =
     AttributeKey("gen_ai.prompt")
 
@@ -139,6 +155,38 @@ object GenAiExperimentalAttributes {
   @deprecated("Replaced by `gen_ai.usage.input_tokens` attribute.", "")
   val GenAiUsagePromptTokens: AttributeKey[Long] =
     AttributeKey("gen_ai.usage.prompt_tokens")
+
+  /** Values for [[GenAiOpenaiRequestResponseFormat]].
+    */
+  abstract class GenAiOpenaiRequestResponseFormatValue(val value: String)
+  object GenAiOpenaiRequestResponseFormatValue {
+
+    /** Text response format
+      */
+    case object Text extends GenAiOpenaiRequestResponseFormatValue("text")
+
+    /** JSON object response format
+      */
+    case object JsonObject extends GenAiOpenaiRequestResponseFormatValue("json_object")
+
+    /** JSON schema response format
+      */
+    case object JsonSchema extends GenAiOpenaiRequestResponseFormatValue("json_schema")
+  }
+
+  /** Values for [[GenAiOpenaiRequestServiceTier]].
+    */
+  abstract class GenAiOpenaiRequestServiceTierValue(val value: String)
+  object GenAiOpenaiRequestServiceTierValue {
+
+    /** The system will utilize scale tier credits until they are exhausted.
+      */
+    case object Auto extends GenAiOpenaiRequestServiceTierValue("auto")
+
+    /** The system will utilize the default scale tier.
+      */
+    case object Default extends GenAiOpenaiRequestServiceTierValue("default")
+  }
 
   /** Values for [[GenAiOperationName]].
     */

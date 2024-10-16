@@ -35,12 +35,15 @@ object AndroidExperimentalAttributes {
     *   href="https://developer.android.com/guide/components/activities/activity-lifecycle#lc">Activity lifecycle
     *   callbacks</a>, and from which the `OS identifiers` are derived.
     */
+  @deprecated("Replaced by `device.app.lifecycle`.", "")
   val AndroidState: AttributeKey[String] =
     AttributeKey("android.state")
 
   /** Values for [[AndroidState]].
     */
+  @deprecated("Replaced by `device.app.lifecycle`.", "")
   abstract class AndroidStateValue(val value: String)
+  @annotation.nowarn("cat=deprecation")
   object AndroidStateValue {
 
     /** Any time before Activity.onResume() or, if the app has no Activity, Context.startService() has been called in

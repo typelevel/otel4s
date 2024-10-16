@@ -36,7 +36,7 @@ package attributes
 object {{ object_name }} {
 
   {% for attribute in ctx.attributes | rejectattr("name", "in", params.excluded_attributes) %}{% if params.experimental == true or attribute is stable %}
-  {{ [attribute.brief | replace('$', "$$"), concat_if("\n\n@note\n\n", attribute.note)] | comment(indent=2) }}
+  {{ [attribute.brief, concat_if("\n\n@note\n\n", attribute.note)] | comment(indent=2) | replace('$', "$$") }}
   {%- if attribute is deprecated %}
   @deprecated("{{ attribute.deprecated | replace('"', "'") | trim }}", "")
   {%- elif params.experimental == true and attribute is stable %}

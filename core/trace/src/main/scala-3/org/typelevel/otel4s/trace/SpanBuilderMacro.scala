@@ -159,7 +159,7 @@ object SpanBuilderMacro {
       attributes: Expr[immutable.Iterable[Attribute[_]]]
   )(using Quotes, Type[F]) =
     '{
-      if ($builder.meta.isEnabled)
+      if ($builder.meta.isEnabled && $attributes.nonEmpty)
         $builder.modifyState(_.addAttributes($attributes))
       else $builder
     }

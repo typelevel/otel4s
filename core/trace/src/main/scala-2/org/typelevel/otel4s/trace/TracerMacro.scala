@@ -137,7 +137,11 @@ object TracerMacro {
       attributes: c.Expr[Attribute[_]]*
   ): c.universe.Tree = {
     import c.universe._
-    spanColl(c)(name, c.Expr(q"_root_.scala.Seq(..$attributes)"))
+    if (attributes.nonEmpty) {
+      spanColl(c)(name, c.Expr(q"_root_.scala.Seq(..$attributes)"))
+    } else {
+      q"${c.prefix}.spanBuilder($name).build"
+    }
   }
 
   def spanColl(c: blackbox.Context)(
@@ -153,7 +157,11 @@ object TracerMacro {
       attributes: c.Expr[Attribute[_]]*
   ): c.universe.Tree = {
     import c.universe._
-    rootSpanColl(c)(name, c.Expr(q"_root_.scala.Seq(..$attributes)"))
+    if (attributes.nonEmpty) {
+      rootSpanColl(c)(name, c.Expr(q"_root_.scala.Seq(..$attributes)"))
+    } else {
+      q"${c.prefix}.spanBuilder($name).root.build"
+    }
   }
 
   def rootSpanColl(c: blackbox.Context)(

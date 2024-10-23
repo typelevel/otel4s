@@ -15,6 +15,9 @@ ThisBuild / tlSonatypeUseLegacyHost := false
 // publish website from this branch
 ThisBuild / tlSitePublishBranch := Some("main")
 
+// VM runs out of memory when linking multiple targets concurrently, hence limit it
+Global / concurrentRestrictions += Tags.limit(NativeTags.Link, 1)
+
 lazy val scalafixSettings = Seq(
   semanticdbOptions ++= Seq("-P:semanticdb:synthetics:on").filter(_ => !tlIsScala3.value)
 )

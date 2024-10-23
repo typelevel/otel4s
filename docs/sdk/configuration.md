@@ -74,6 +74,7 @@ To disable some detectors, use `-Dotel.otel4s.resource.detectors.disabled=host,o
 Options supported out of the box:
 
 - `otlp` - requires `otel4s-sdk-exporter` dependency.
+- `prometheus` - requires `otel4s-sdk-exporter-prometheus` dependency.
 - `console` - prints metrics to stdout. It's mainly used for testing and debugging.
 - `none` - means no autoconfigured exporter.
 
@@ -101,6 +102,20 @@ Target-specific properties are prioritized. E.g. `otel.exporter.otlp.metrics.end
 | otel.exporter.otlp.metrics.headers     | OTEL\\_EXPORTER\\_OTLP\\_METRICS\\_HEADERS     | Key-value pairs separated by commas to pass as request headers on OTLP trace requests.                                                                                                |
 | otel.exporter.otlp.metrics.compression | OTEL\\_EXPORTER\\_OTLP\\_METRICS\\_COMPRESSION | The compression type to use on OTLP trace requests. Options include gzip. By default, no compression will be used.                                                                    |
 | otel.exporter.otlp.metrics.timeout     | OTEL\\_EXPORTER\\_OTLP\\_METRICS\\_TIMEOUT     | The maximum waiting time to send each OTLP trace batch. Default is `10 seconds`.                                                                                                      |
+
+### Prometheus exporter
+
+The exporter launches an HTTP server which responds to the HTTP requests with Prometheus metrics in the appropriate format. 
+
+| System property                              | Environment variable                                  | Description                                                                              |
+|----------------------------------------------|-------------------------------------------------------|------------------------------------------------------------------------------------------|
+| otel.exporter.prometheus.host                | OTEL\\_EXPORTER\\_PROMETHEUS\_HOST                    | The host that metrics are served on. Default is `localhost`.                             |
+| otel.exporter.prometheus.port                | OTEL\\_EXPORTER\\_PROMETHEUS\_PORT                    | The port that metrics are served on. Default is `9464`.                                  |
+| otel.exporter.prometheus.default.aggregation | OTEL\\_EXPORTER\\_PROMETHEUS\_DEFAULT\\_AGGREGATION   | Default aggregation as a function of instrument kind. Default is `default`.              |
+| otel.exporter.prometheus.without.units       | OTEL\\_EXPORTER\\_PROMETHEUS\_WITHOUT\\_UNITS         | If metrics are produced without a unit suffix. Default is `false`.                       |
+| otel.exporter.prometheus.without.type.suffix | OTEL\\_EXPORTER\\_PROMETHEUS\_WITHOUT\\_TYPE\\_SUFFIX | If metrics are produced without a type suffix. Default is `false`.                       |
+| otel.exporter.prometheus.without.scope.info  | OTEL\\_EXPORTER\\_PROMETHEUS\_WITHOUT\\_SCOPE\\_INFO  | If metrics are produced without a scope info metric or scope labels. Default is `false`. |
+| otel.exporter.prometheus.without.target.info | OTEL\\_EXPORTER\\_PROMETHEUS\_WITHOUT\\_TARGET\\_INFO | If metrics are produced without a target info metric. Default is `false`.                |
 
 ### Period metric reader
 

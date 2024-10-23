@@ -208,7 +208,7 @@ object PrometheusMetricExporter {
           .build
           .evalTap { _ =>
             val consoleMsg =
-              s"PrometheusMetricsExporter: launched Prometheus server at $host:$port, writer options: $writerConfig"
+              s"PrometheusMetricsExporter: launched Prometheus server at $host:$port/metrics, writer options: $writerConfig"
             Console[F].println(consoleMsg)
           }
           .as(exporter)

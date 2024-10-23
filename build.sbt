@@ -104,6 +104,7 @@ lazy val root = tlCrossRootProject
     `sdk-exporter-common`,
     `sdk-exporter-proto`,
     `sdk-exporter-metrics`,
+    `sdk-exporter-prometheus`,
     `sdk-exporter-trace`,
     `sdk-exporter`,
     `sdk-contrib-aws-resource`,
@@ -391,6 +392,27 @@ lazy val `sdk-exporter-metrics` =
       name := "otel4s-sdk-exporter-metrics",
       startYear := Some(2024),
       dockerComposeEnvFile := crossProjectBaseDirectory.value / "docker" / "docker-compose.yml"
+    )
+    .jsSettings(scalaJSLinkerSettings)
+    .nativeEnablePlugins(ScalaNativeBrewedConfigPlugin)
+    .nativeSettings(scalaNativeSettings)
+    .settings(munitDependencies)
+    .settings(scalafixSettings)
+
+lazy val `sdk-exporter-prometheus` =
+  crossProject(JVMPlatform, JSPlatform, NativePlatform)
+    .crossType(CrossType.Pure)
+    .in(file("sdk-exporter/prometheus"))
+    .dependsOn(
+      `sdk-exporter-common` % "compile->compile;test->test",
+      `sdk-metrics` % "compile->compile;test->test"
+    )
+    .settings(
+      name := "otel4s-sdk-exporter-prometheus",
+      startYear := Some(2024),
+      libraryDependencies ++= Seq(
+        "org.http4s" %%% "http4s-ember-server" % Http4sVersion
+      )
     )
     .jsSettings(scalaJSLinkerSettings)
     .nativeEnablePlugins(ScalaNativeBrewedConfigPlugin)
@@ -825,6 +847,7 @@ lazy val unidocs = project
       sdk.jvm,
       `sdk-exporter-common`.jvm,
       `sdk-exporter-metrics`.jvm,
+      `sdk-exporter-prometheus`.jvm,
       `sdk-exporter-trace`.jvm,
       `sdk-exporter`.jvm,
       `sdk-contrib-aws-resource`.jvm,

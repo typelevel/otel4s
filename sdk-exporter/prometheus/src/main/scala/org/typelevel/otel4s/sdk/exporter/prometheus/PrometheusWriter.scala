@@ -18,6 +18,7 @@ package org.typelevel.otel4s.sdk.exporter.prometheus
 
 import cats.Foldable
 import cats.MonadThrow
+import cats.Show
 import cats.data.NonEmptyVector
 import cats.effect.std.Console
 import cats.syntax.applicative._
@@ -41,7 +42,6 @@ import org.typelevel.otel4s.sdk.common.InstrumentationScope
 import org.typelevel.otel4s.sdk.exporter.prometheus.PrometheusConverter.convertLabelName
 import org.typelevel.otel4s.sdk.exporter.prometheus.PrometheusConverter.convertName
 import org.typelevel.otel4s.sdk.exporter.prometheus.PrometheusConverter.convertUnitName
-import org.typelevel.otel4s.sdk.exporter.prometheus.PrometheusMetricExporter.Defaults
 import org.typelevel.otel4s.sdk.exporter.prometheus.PrometheusTextRecord.PrometheusTextPoint
 import org.typelevel.otel4s.sdk.metrics.data.AggregationTemporality
 import org.typelevel.otel4s.sdk.metrics.data.MetricData
@@ -75,59 +75,135 @@ object PrometheusWriter {
   private val PosInf = "+Inf"
   private val NegInf = "-Inf"
 
+  /** The writer's configuration.
+    *
+    * @see
+    *   [[https://opentelemetry.io/docs/specs/otel/metrics/sdk_exporters/prometheus/#configuration]]
+    */
   sealed trait Config {
-    def noUnits: Boolean
-    def noTypeSuffixes: Boolean
-    def disabledScopeInfo: Boolean
-    def disabledTargetInfo: Boolean
 
-    def withUnits: Config
-    def withoutUnits: Config
-    def withTypeSuffixes: Config
-    def withoutTypeSuffixes: Config
-    def enableScopeInfo: Config
-    def disableScopeInfo: Config
-    def enableTargetInfo: Config
-    def disableTargetInfo: Config
+    /** Whether a unit suffix won't be added to the metric name.
+      */
+    def unitSuffixDisabled: Boolean
+
+    /** Whether a type suffix won't be added to the metric name.
+      */
+    def typeSuffixDisabled: Boolean
+
+    /** Whether the instrumentation scope attributes won't be added to the `otel_scope_info` metric.
+      */
+    def scopeInfoDisabled: Boolean
+
+    /** Whether the telemetry resource attributes won't be added to the `target_info` metric.
+      */
+    def targetInfoDisabled: Boolean
+
+    /** A unit suffix will be added to the metric name.
+      *
+      * For example, `_seconds` suffix will be added to the histogram metrics.
+      */
+    def withUnitSuffix: Config
+
+    /** A unit suffix won't be added to the metric name.
+      */
+    def withoutUnitSuffix: Config
+
+    /** A type suffix will be added to the metric name.
+      *
+      * For example, `_total` suffix will be added to the counter.
+      */
+    def withTypeSuffix: Config
+
+    /** A type suffix won't be added to the metric name.
+      */
+    def withoutTypeSuffix: Config
+
+    /** The instrumentation scope attributes will be added to the `otel_scope_info` metric. The `otel_scope_name` and
+      * `otel_scope_version` labels will be added to the instrument metrics:
+      *
+      * {{{
+      * otel_scope_info{otel_scope_name="meter", otel_scope_version="v0.1.0"}
+      * counter_total{otel_scope_name="meter", otel_scope_version="v0.1.0"} 12
+      * }}}
+      *
+      * @see
+      *   [[https://opentelemetry.io/docs/specs/otel/compatibility/prometheus_and_openmetrics/#instrumentation-scope-1]]
+      */
+    def withScopeInfo: Config
+
+    /** The instrumentation scope attributes won't be added to the `otel_scope_info` metric.
+      */
+    def withoutScopeInfo: Config
+
+    /** The telemetry resource attributes will be added to the `target_info` metric:
+      * {{{
+      * target_info{telemetry_sdk_name="otel4s"} 1
+      * }}}
+      *
+      * @see
+      *   [[https://opentelemetry.io/docs/specs/otel/compatibility/prometheus_and_openmetrics/#resource-attributes-1]]
+      */
+    def withTargetInfo: Config
+
+    /** The telemetry resource attributes won't be added to the `target_info` metric.
+      */
+    def withoutTargetInfo: Config
+
+    override final def toString: String = Show[PrometheusWriter.Config].show(this)
   }
 
   object Config {
+
+    /** The default writer configuration:
+      *   - A unit suffix (e.g. `_seconds`) will be added to the metric name
+      *   - A type suffix (e.g. `_total`) will be added to the metric name
+      *   - Instrumentation scope attributes will be added to the `otel_scope_info` metric
+      *   - Telemetry resource attributes will be added to the `target_info` metric
+      */
     val default: Config = ConfigImpl(
-      noUnits = Defaults.WithoutUnits,
-      noTypeSuffixes = Defaults.WithoutTypeSuffixes,
-      disabledScopeInfo = Defaults.DisableScopeInfo,
-      disabledTargetInfo = Defaults.DisableTargetInfo
+      unitSuffixDisabled = false,
+      typeSuffixDisabled = false,
+      scopeInfoDisabled = false,
+      targetInfoDisabled = false
     )
 
     private final case class ConfigImpl(
-        noUnits: Boolean,
-        noTypeSuffixes: Boolean,
-        disabledScopeInfo: Boolean,
-        disabledTargetInfo: Boolean
+        unitSuffixDisabled: Boolean,
+        typeSuffixDisabled: Boolean,
+        scopeInfoDisabled: Boolean,
+        targetInfoDisabled: Boolean
     ) extends Config {
-      def withUnits: Config =
-        copy(noUnits = false)
+      def withUnitSuffix: Config =
+        copy(unitSuffixDisabled = false)
 
-      def withoutUnits: Config =
-        copy(noUnits = true)
+      def withoutUnitSuffix: Config =
+        copy(unitSuffixDisabled = true)
 
-      def withTypeSuffixes: Config =
-        copy(noTypeSuffixes = false)
+      def withTypeSuffix: Config =
+        copy(typeSuffixDisabled = false)
 
-      def withoutTypeSuffixes: Config =
-        copy(noTypeSuffixes = true)
+      def withoutTypeSuffix: Config =
+        copy(typeSuffixDisabled = true)
 
-      def enableScopeInfo: Config =
-        copy(disabledScopeInfo = false)
+      def withScopeInfo: Config =
+        copy(scopeInfoDisabled = false)
 
-      def disableScopeInfo: Config =
-        copy(disabledScopeInfo = true)
+      def withoutScopeInfo: Config =
+        copy(scopeInfoDisabled = true)
 
-      def enableTargetInfo: Config =
-        copy(disabledTargetInfo = false)
+      def withTargetInfo: Config =
+        copy(targetInfoDisabled = false)
 
-      def disableTargetInfo: Config =
-        copy(disabledTargetInfo = true)
+      def withoutTargetInfo: Config =
+        copy(targetInfoDisabled = true)
+    }
+
+    implicit val configShow: Show[Config] = Show.show { config =>
+      "PrometheusWriter.Config{" +
+        s"unitSuffixDisabled=${config.unitSuffixDisabled}, " +
+        s"typeSuffixDisabled=${config.typeSuffixDisabled}, " +
+        s"scopeInfoDisabled=${config.scopeInfoDisabled}, " +
+        s"targetInfoDisabled=${config.targetInfoDisabled}}"
     }
 
   }
@@ -215,7 +291,7 @@ object PrometheusWriter {
     ): F[MetricAggregate] = {
       F.fromEither {
         metric.unit
-          .filter(_ => !config.noUnits)
+          .filter(_ => !config.unitSuffixDisabled)
           .map(convertUnitName)
           .fold(convertName(metric.name)) {
             _.flatMap(convertName(metric.name, _))
@@ -226,8 +302,8 @@ object PrometheusWriter {
           case Some(group) if group.prometheusType == prometheusType =>
             val updatedGroup = group.copy(metrics = group.metrics :+ metric)
             aggregate
-              .tryAddScope(metric.instrumentationScope, config.disabledScopeInfo)
-              .tryUpdateResource(metric.resource, config.disabledTargetInfo)
+              .tryAddScope(metric.instrumentationScope, config.scopeInfoDisabled)
+              .tryUpdateResource(metric.resource, config.targetInfoDisabled)
               .addOrUpdateGroup(prometheusName, updatedGroup)
               .pure[F]
           case None =>
@@ -239,8 +315,8 @@ object PrometheusWriter {
             )
 
             aggregate
-              .tryAddScope(metric.instrumentationScope, config.disabledScopeInfo)
-              .tryUpdateResource(metric.resource, config.disabledTargetInfo)
+              .tryAddScope(metric.instrumentationScope, config.scopeInfoDisabled)
+              .tryUpdateResource(metric.resource, config.targetInfoDisabled)
               .addOrUpdateGroup(prometheusName, newGroup)
               .pure[F]
           case Some(group) =>
@@ -324,7 +400,7 @@ object PrometheusWriter {
     }
 
     private def serializeSums(metricGroup: MetricGroup): Either[Throwable, String] = {
-      val typeSuffix = if (config.noTypeSuffixes) "" else "_total"
+      val typeSuffix = if (config.typeSuffixDisabled) "" else "_total"
       serializeSumsOrGauges(metricGroup, typeSuffix.some)
     }
 
@@ -402,7 +478,7 @@ object PrometheusWriter {
     }
 
     private def prepareScopeLabels(scope: InstrumentationScope): ListMap[String, String] = {
-      if (config.disabledScopeInfo) {
+      if (config.scopeInfoDisabled) {
         ListMap.empty
       } else {
         ListMap(ScopeInfoNameLabel -> scope.name) ++ scope.version.map(v => ScopeInfoVersionLabel -> v).toMap

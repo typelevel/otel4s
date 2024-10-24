@@ -16,11 +16,14 @@
 
 package org.typelevel.otel4s.sdk.exporter.prometheus
 
+import cats.Show
 import cats.data.NonEmptyVector
 import cats.effect.IO
 import cats.effect.std.Console
 import cats.syntax.option._
 import munit.CatsEffectSuite
+import munit.ScalaCheckEffectSuite
+import org.scalacheck.Prop
 import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.Attributes
 import org.typelevel.otel4s.metrics.BucketBoundaries
@@ -33,8 +36,9 @@ import org.typelevel.otel4s.sdk.metrics.scalacheck.Gens
 import org.typelevel.otel4s.sdk.test.InMemoryConsole
 
 import java.nio.charset.StandardCharsets
+import scala.util.chaining._
 
-class PrometheusWriterSuite extends CatsEffectSuite {
+class PrometheusWriterSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
 
   test("write MetricData with monotonic MetricPoints.Sum") {
     val expected =
@@ -95,7 +99,7 @@ class PrometheusWriterSuite extends CatsEffectSuite {
       )
     )
 
-    writeAndCompare(metrics, expected, Config.default.withoutTypeSuffixes)
+    writeAndCompare(metrics, expected, Config.default.withoutTypeSuffix)
   }
 
   test("write MetricData with non-monotonic MetricPoints.Sum") {
@@ -235,7 +239,7 @@ class PrometheusWriterSuite extends CatsEffectSuite {
       )
     )
 
-    writeAndCompare(metrics, expected, Config.default.withoutUnits)
+    writeAndCompare(metrics, expected, Config.default.withoutUnitSuffix)
   }
 
   test("rename invalid metric names") {
@@ -377,7 +381,7 @@ class PrometheusWriterSuite extends CatsEffectSuite {
       )
     )
 
-    writeAndCompare(metrics, expected, Config.default.disableTargetInfo)
+    writeAndCompare(metrics, expected, Config.default.withoutTargetInfo)
   }
 
   test("write result without scope_info when it is disabled") {
@@ -402,7 +406,7 @@ class PrometheusWriterSuite extends CatsEffectSuite {
       )
     )
 
-    writeAndCompare(metrics, expected, Config.default.disableScopeInfo)
+    writeAndCompare(metrics, expected, Config.default.withoutScopeInfo)
   }
 
   test("write result without scope_info and target_info when they are disabled") {
@@ -425,7 +429,7 @@ class PrometheusWriterSuite extends CatsEffectSuite {
       )
     )
 
-    writeAndCompare(metrics, expected, Config.default.disableScopeInfo.disableTargetInfo)
+    writeAndCompare(metrics, expected, Config.default.withoutScopeInfo.withoutTargetInfo)
   }
 
   test("write multiple scopes") {
@@ -854,7 +858,7 @@ class PrometheusWriterSuite extends CatsEffectSuite {
 
     InMemoryConsole.create[IO].flatMap { implicit C: InMemoryConsole[IO] =>
       for {
-        _ <- writeAndCompare(metrics, expectedText, Config.default.withoutUnits)
+        _ <- writeAndCompare(metrics, expectedText, Config.default.withoutUnitSuffix)
         _ <- C.entries.assertEquals(expectedConsoleEntries)
       } yield ()
     }
@@ -963,6 +967,33 @@ class PrometheusWriterSuite extends CatsEffectSuite {
     )
 
     writeAndCompare(metrics, expected)
+  }
+
+  test("Show[PrometheusWriter.Config]") {
+    Prop.forAll { (withUnits: Boolean, withTypes: Boolean, withScopeInfo: Boolean, withTargetInfo: Boolean) =>
+      val config = PrometheusWriter.Config.default
+        .pipe(cfg => if (withUnits) cfg.withUnitSuffix else cfg.withoutUnitSuffix)
+        .pipe(cfg => if (withTypes) cfg.withTypeSuffix else cfg.withoutTypeSuffix)
+        .pipe(cfg => if (withScopeInfo) cfg.withScopeInfo else cfg.withoutScopeInfo)
+        .pipe(cfg => if (withTargetInfo) cfg.withTargetInfo else cfg.withoutTargetInfo)
+
+      val expected = "PrometheusWriter.Config{" +
+        s"unitSuffixDisabled=${!withUnits}, " +
+        s"typeSuffixDisabled=${!withTypes}, " +
+        s"scopeInfoDisabled=${!withScopeInfo}, " +
+        s"targetInfoDisabled=${!withTargetInfo}}"
+
+      assertEquals(Show[PrometheusWriter.Config].show(config), expected)
+      assertEquals(config.toString, expected)
+    }
+  }
+
+  test("PrometheusWriter.Config default values") {
+    val config = PrometheusWriter.Config.default
+    assert(!config.unitSuffixDisabled)
+    assert(!config.typeSuffixDisabled)
+    assert(!config.scopeInfoDisabled)
+    assert(!config.targetInfoDisabled)
   }
 
   private def getTimeWindow: TimeWindow =

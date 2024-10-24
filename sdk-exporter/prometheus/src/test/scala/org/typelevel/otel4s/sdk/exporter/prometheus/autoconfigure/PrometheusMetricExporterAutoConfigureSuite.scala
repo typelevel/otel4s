@@ -35,11 +35,11 @@ class PrometheusMetricExporterAutoConfigureSuite extends CatsEffectSuite with Su
         Entry(
           Op.Println,
           "PrometheusMetricsExporter: launched Prometheus server at localhost:9464, " +
-            "metric options: {" +
-            "withoutUnits=false, " +
-            "withoutTypeSuffixes=false, " +
-            "disableScopeInfo=false, " +
-            "disableTargetInfo=false}"
+            "writer options: PrometheusWriter.Config{" +
+            "unitSuffixDisabled=false, " +
+            "typeSuffixDisabled=false, " +
+            "scopeInfoDisabled=false, " +
+            "targetInfoDisabled=false}"
         )
       )
     }
@@ -61,9 +61,9 @@ class PrometheusMetricExporterAutoConfigureSuite extends CatsEffectSuite with Su
         "otel.exporter.prometheus.port" -> "",
         "otel.exporter.prometheus.default.aggregation" -> "",
         "otel.exporter.prometheus.without.units" -> "",
-        "otel.exporter.prometheus.without.type.suffixes" -> "",
-        "otel.exporter.prometheus.disable.scope.info" -> "",
-        "otel.exporter.prometheus.disable.target.info" -> ""
+        "otel.exporter.prometheus.without.type.suffix" -> "",
+        "otel.exporter.prometheus.without.scope.info" -> "",
+        "otel.exporter.prometheus.without.target.info" -> ""
       )
     )
 
@@ -74,11 +74,11 @@ class PrometheusMetricExporterAutoConfigureSuite extends CatsEffectSuite with Su
         Entry(
           Op.Println,
           "PrometheusMetricsExporter: launched Prometheus server at localhost:9464, " +
-            "metric options: {" +
-            "withoutUnits=false, " +
-            "withoutTypeSuffixes=false, " +
-            "disableScopeInfo=false, " +
-            "disableTargetInfo=false}"
+            "writer options: PrometheusWriter.Config{" +
+            "unitSuffixDisabled=false, " +
+            "typeSuffixDisabled=false, " +
+            "scopeInfoDisabled=false, " +
+            "targetInfoDisabled=false}"
         )
       )
     }
@@ -99,9 +99,9 @@ class PrometheusMetricExporterAutoConfigureSuite extends CatsEffectSuite with Su
         "otel.exporter.prometheus.host" -> "127.0.0.2",
         "otel.exporter.prometheus.port" -> "9465",
         "otel.exporter.prometheus.without.units" -> "true",
-        "otel.exporter.prometheus.without.type.suffixes" -> "true",
-        "otel.exporter.prometheus.disable.scope.info" -> "true",
-        "otel.exporter.prometheus.disable.target.info" -> "true"
+        "otel.exporter.prometheus.without.type.suffix" -> "true",
+        "otel.exporter.prometheus.without.scope.info" -> "true",
+        "otel.exporter.prometheus.without.target.info" -> "true"
       )
     )
 
@@ -112,11 +112,11 @@ class PrometheusMetricExporterAutoConfigureSuite extends CatsEffectSuite with Su
         Entry(
           Op.Println,
           "PrometheusMetricsExporter: launched Prometheus server at 127.0.0.2:9465, " +
-            "metric options: {" +
-            "withoutUnits=true, " +
-            "withoutTypeSuffixes=true, " +
-            "disableScopeInfo=true, " +
-            "disableTargetInfo=true}"
+            "writer options: PrometheusWriter.Config{" +
+            "unitSuffixDisabled=true, " +
+            "typeSuffixDisabled=true, " +
+            "scopeInfoDisabled=true, " +
+            "targetInfoDisabled=true}"
         )
       )
     }
@@ -146,11 +146,11 @@ class PrometheusMetricExporterAutoConfigureSuite extends CatsEffectSuite with Su
              |Cause: $error.
              |Config:
              |1) `otel.exporter.prometheus.default.aggregation` - unspecified
-             |2) `otel.exporter.prometheus.disable.scope.info` - N/A
-             |3) `otel.exporter.prometheus.disable.target.info` - N/A
-             |4) `otel.exporter.prometheus.host` - N/A
-             |5) `otel.exporter.prometheus.port` - N/A
-             |6) `otel.exporter.prometheus.without.type.suffixes` - N/A
+             |2) `otel.exporter.prometheus.host` - N/A
+             |3) `otel.exporter.prometheus.port` - N/A
+             |4) `otel.exporter.prometheus.without.scope.info` - N/A
+             |5) `otel.exporter.prometheus.without.target.info` - N/A
+             |6) `otel.exporter.prometheus.without.type.suffix` - N/A
              |7) `otel.exporter.prometheus.without.units` - N/A""".stripMargin
         )
       )

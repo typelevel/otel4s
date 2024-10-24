@@ -30,6 +30,8 @@ import org.typelevel.otel4s.sdk.autoconfigure.ConfigurationError
 import org.typelevel.otel4s.sdk.metrics.exporter.AggregationSelector
 import org.typelevel.otel4s.sdk.metrics.exporter.MetricExporter
 
+import scala.util.chaining._
+
 /** Autoconfigures Prometheus [[MetricExporter]].
   *
   * The configuration options:
@@ -40,9 +42,9 @@ import org.typelevel.otel4s.sdk.metrics.exporter.MetricExporter
   * | otel.exporter.prometheus.port                    | OTEL_EXPORTER_PROMETHEUS_PORT                    | The port that metrics are served on. Default is `9464`.                                  |
   * | otel.exporter.prometheus.default.aggregation     | OTEL_EXPORTER_PROMETHEUS_DEFAULT_AGGREGATION     | Default aggregation as a function of instrument kind. Default is `default`.              |
   * | otel.exporter.prometheus.without.units           | OTEL_EXPORTER_PROMETHEUS_WITHOUT_UNITS           | If metrics are produced without a unit suffix. Default is `false`.                       |
-  * | otel.exporter.prometheus.without.type.suffixes   | OTEL_EXPORTER_PROMETHEUS_WITHOUT_TYPE_SUFFIXES   | If metrics are produced without a type suffix. Default is `false`.                       |
-  * | otel.exporter.prometheus.disable.scope.info      | OTEL_EXPORTER_PROMETHEUS_DISABLE_SCOPE_INFO      | If metrics are produced without a scope info metric or scope labels. Default is `false`. |
-  * | otel.exporter.prometheus.disable.target.info     | OTEL_EXPORTER_PROMETHEUS_DISABLE_TARGET_INFO     | If metrics are produced without a target info metric. Default is `false`.                |
+  * | otel.exporter.prometheus.without.type.suffix     | OTEL_EXPORTER_PROMETHEUS_WITHOUT_TYPE_SUFFIX     | If metrics are produced without a type suffix. Default is `false`.                       |
+  * | otel.exporter.prometheus.without.scope.info      | OTEL_EXPORTER_PROMETHEUS_WITHOUT_SCOPE_INFO      | If metrics are produced without a scope info metric or scope labels. Default is `false`. |
+  * | otel.exporter.prometheus.without.target.info     | OTEL_EXPORTER_PROMETHEUS_WITHOUT_TARGET_INFO     | If metrics are produced without a target info metric. Default is `false`.                |
   * }}}
   *
   * @see
@@ -60,6 +62,8 @@ private final class PrometheusMetricExporterAutoConfigure[
   import PrometheusMetricExporter.Defaults
   import PrometheusMetricExporterAutoConfigure.ConfigKeys
 
+  private val defaultConfig = PrometheusWriter.Config.default
+
   def name: String = "prometheus"
 
   protected def fromConfig(config: Config): Resource[F, MetricExporter[F]] =
@@ -69,22 +73,24 @@ private final class PrometheusMetricExporterAutoConfigure[
       defaultAggregation <- F
         .fromEither(config.getOrElse(ConfigKeys.DefaultAggregation, AggregationSelector.default))
         .toResource
-      withoutUnits <- F.fromEither(config.getOrElse(ConfigKeys.WithoutUnits, Defaults.WithoutUnits)).toResource
+      withoutUnits <- F
+        .fromEither(config.getOrElse(ConfigKeys.WithoutUnits, defaultConfig.unitSuffixDisabled))
+        .toResource
       withoutTypeSuffixes <- F
-        .fromEither(config.getOrElse(ConfigKeys.WithoutTypeSuffixes, Defaults.WithoutTypeSuffixes))
+        .fromEither(config.getOrElse(ConfigKeys.WithoutTypeSuffixes, defaultConfig.typeSuffixDisabled))
         .toResource
-      disableScopeInfo <- F
-        .fromEither(config.getOrElse(ConfigKeys.DisableScopeInfo, Defaults.DisableScopeInfo))
+      withoutScopeInfo <- F
+        .fromEither(config.getOrElse(ConfigKeys.WithoutScopeInfo, defaultConfig.scopeInfoDisabled))
         .toResource
-      disableTargetInfo <- F
-        .fromEither(config.getOrElse(ConfigKeys.DisableTargetInfo, Defaults.DisableTargetInfo))
+      withoutTargetInfo <- F
+        .fromEither(config.getOrElse(ConfigKeys.WithoutTargetInfo, defaultConfig.targetInfoDisabled))
         .toResource
       exporter <- PrometheusMetricExporter
         .serverBuilder[F]
         .withHost(host)
         .withPort(port)
         .withDefaultAggregationSelector(defaultAggregation)
-        .withWriterConfig(mkWriterConfig(withoutUnits, withoutTypeSuffixes, disableScopeInfo, disableTargetInfo))
+        .withWriterConfig(mkWriterConfig(withoutUnits, withoutTypeSuffixes, withoutScopeInfo, withoutTargetInfo))
         .build
     } yield exporter
 
@@ -112,22 +118,14 @@ private final class PrometheusMetricExporterAutoConfigure[
   private def mkWriterConfig(
       withoutUnits: Boolean,
       withoutTypeSuffixes: Boolean,
-      disableScopeInfo: Boolean,
-      disableTargetInfo: Boolean
-  ): PrometheusWriter.Config = {
-    val config = PrometheusWriter.Config.default
-    val configWithUnitsFlag = if (withoutUnits) config.withoutUnits else config.withUnits
-    val configWithTypeSuffixesFlag =
-      if (withoutTypeSuffixes) configWithUnitsFlag.withoutTypeSuffixes
-      else configWithUnitsFlag.withTypeSuffixes
-
-    val configWithScopeInfoFlag =
-      if (disableScopeInfo) configWithTypeSuffixesFlag.disableScopeInfo
-      else configWithTypeSuffixesFlag.enableScopeInfo
-
-    if (disableTargetInfo) configWithScopeInfoFlag.disableTargetInfo
-    else configWithScopeInfoFlag.enableTargetInfo
-  }
+      withoutScopeInfo: Boolean,
+      withoutTargetInfo: Boolean
+  ): PrometheusWriter.Config =
+    PrometheusWriter.Config.default
+      .pipe(c => if (withoutUnits) c.withoutUnitSuffix else c.withUnitSuffix)
+      .pipe(c => if (withoutTypeSuffixes) c.withoutTypeSuffix else c.withTypeSuffix)
+      .pipe(c => if (withoutScopeInfo) c.withoutScopeInfo else c.withScopeInfo)
+      .pipe(c => if (withoutTargetInfo) c.withoutTargetInfo else c.withTargetInfo)
 
 }
 
@@ -147,16 +145,16 @@ object PrometheusMetricExporterAutoConfigure {
       Config.Key("otel.exporter.prometheus.without.units")
 
     val WithoutTypeSuffixes: Config.Key[Boolean] =
-      Config.Key("otel.exporter.prometheus.without.type.suffixes")
+      Config.Key("otel.exporter.prometheus.without.type.suffix")
 
-    val DisableScopeInfo: Config.Key[Boolean] =
-      Config.Key("otel.exporter.prometheus.disable.scope.info")
+    val WithoutScopeInfo: Config.Key[Boolean] =
+      Config.Key("otel.exporter.prometheus.without.scope.info")
 
-    val DisableTargetInfo: Config.Key[Boolean] =
-      Config.Key("otel.exporter.prometheus.disable.target.info")
+    val WithoutTargetInfo: Config.Key[Boolean] =
+      Config.Key("otel.exporter.prometheus.without.target.info")
 
     val All: Set[Config.Key[_]] =
-      Set(Host, Port, DefaultAggregation, WithoutUnits, WithoutTypeSuffixes, DisableScopeInfo, DisableTargetInfo)
+      Set(Host, Port, DefaultAggregation, WithoutUnits, WithoutTypeSuffixes, WithoutScopeInfo, WithoutTargetInfo)
   }
 
   /** Returns [[org.typelevel.otel4s.sdk.autoconfigure.AutoConfigure.Named]] that configures Prometheus
@@ -170,9 +168,9 @@ object PrometheusMetricExporterAutoConfigure {
     * | otel.exporter.prometheus.port                    | OTEL_EXPORTER_PROMETHEUS_PORT                    | The port that metrics are served on. Default is `9464`.                                  |
     * | otel.exporter.prometheus.default.aggregation     | OTEL_EXPORTER_PROMETHEUS_DEFAULT_AGGREGATION     | Default aggregation as a function of instrument kind. Default is `default`.              |
     * | otel.exporter.prometheus.without.units           | OTEL_EXPORTER_PROMETHEUS_WITHOUT_UNITS           | If metrics are produced without a unit suffix. Default is `false`.                       |
-    * | otel.exporter.prometheus.without.type.suffixes   | OTEL_EXPORTER_PROMETHEUS_WITHOUT_TYPE_SUFFIXES   | If metrics are produced without a type suffix. Default is `false`.                       |
-    * | otel.exporter.prometheus.disable.scope.info      | OTEL_EXPORTER_PROMETHEUS_DISABLE_SCOPE_INFO      | If metrics are produced without a scope info metric or scope labels. Default is `false`. |
-    * | otel.exporter.prometheus.disable.target.info     | OTEL_EXPORTER_PROMETHEUS_DISABLE_TARGET_INFO     | If metrics are produced without a target info metric. Default is `false`.                |
+    * | otel.exporter.prometheus.without.type.suffix     | OTEL_EXPORTER_PROMETHEUS_WITHOUT_TYPE_SUFFIX     | If metrics are produced without a type suffix. Default is `false`.                       |
+    * | otel.exporter.prometheus.without.scope.info      | OTEL_EXPORTER_PROMETHEUS_WITHOUT_SCOPE_INFO      | If metrics are produced without a scope info metric or scope labels. Default is `false`. |
+    * | otel.exporter.prometheus.without.target.info     | OTEL_EXPORTER_PROMETHEUS_WITHOUT_TARGET_INFO     | If metrics are produced without a target info metric. Default is `false`.                |
     * }}}
     *
     * @see

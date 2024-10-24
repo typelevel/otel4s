@@ -97,10 +97,6 @@ object PrometheusMetricExporter {
   private[prometheus] object Defaults {
     val Host: Host = host"localhost"
     val Port: Port = port"9464"
-    val WithoutUnits = false
-    val WithoutTypeSuffixes = false
-    val DisableScopeInfo = false
-    val DisableTargetInfo = false
   }
 
   /** Builder for [[PrometheusMetricExporter]] */
@@ -204,13 +200,6 @@ object PrometheusMetricExporter {
         val routes = PrometheusHttpRoutes
           .routes[F](exporter, writerConfig)
 
-        val metricOptions =
-          "{" +
-            s"withoutUnits=${writerConfig.noUnits}, " +
-            s"withoutTypeSuffixes=${writerConfig.noTypeSuffixes}, " +
-            s"disableScopeInfo=${writerConfig.disabledScopeInfo}, " +
-            s"disableTargetInfo=${writerConfig.disabledTargetInfo}}"
-
         EmberServerBuilder
           .default[F]
           .withHost(host)
@@ -219,8 +208,7 @@ object PrometheusMetricExporter {
           .build
           .evalTap { _ =>
             val consoleMsg =
-              s"PrometheusMetricsExporter: launched Prometheus server at $host:$port, " +
-                s"metric options: $metricOptions"
+              s"PrometheusMetricsExporter: launched Prometheus server at $host:$port, writer options: $writerConfig"
             Console[F].println(consoleMsg)
           }
           .as(exporter)

@@ -32,7 +32,9 @@ lazy val scalaJSLinkerSettings = Def.settings(
 lazy val scalaNativeSettings = Def.settings(
   libraryDependencies += "com.armanbilge" %%% "epollcat" % EpollcatVersion % Test,
   Test / nativeBrewFormulas ++= Set("s2n", "utf8proc"),
-  Test / envVars ++= Map("S2N_DONT_MLOCK" -> "1")
+  Test / envVars ++= Map("S2N_DONT_MLOCK" -> "1"),
+  // the SN artifacts could be quite large and exceed the CI disk space limit
+  githubWorkflowArtifactUpload := false
 )
 
 val Scala212 = "2.12.20"

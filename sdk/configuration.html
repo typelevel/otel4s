@@ -112,6 +112,7 @@
     <li class="level1 nav-header">SDK</li>
     <li class="level2 nav-leaf"><a href="overview.html">Overview</a></li>
     <li class="level2 active nav-leaf"><a href="#">Configuration</a></li>
+    <li class="level2 nav-leaf"><a href="prometheus-exporter.html">Prometheus Exporter</a></li>
     <li class="level2 nav-leaf"><a href="aws-resource-detectors.html">AWS | Resource detectors</a></li>
     <li class="level2 nav-leaf"><a href="aws-xray.html">AWS | X-Ray ID Generator</a></li>
     <li class="level2 nav-leaf"><a href="aws-xray-propagator.html">AWS | X-Ray propagator</a></li>
@@ -136,6 +137,7 @@
     <li class="level1 nav-node"><a href="#metrics">Metrics</a></li>
     <li class="level2 nav-leaf"><a href="#exporters-1">Exporters</a></li>
     <li class="level2 nav-leaf"><a href="#otlp-exporter-1">OTLP exporter</a></li>
+    <li class="level2 nav-leaf"><a href="#prometheus-exporter">Prometheus exporter</a></li>
     <li class="level2 nav-leaf"><a href="#period-metric-reader">Period metric reader</a></li>
     <li class="level2 nav-leaf"><a href="#exemplar-filter">Exemplar filter</a></li>
     <li class="level1 nav-node"><a href="#tracing">Tracing</a></li>
@@ -265,6 +267,7 @@
         <p>Options supported out of the box:</p>
         <ul>
           <li><code>otlp</code> - requires <code>otel4s-sdk-exporter</code> dependency.</li>
+          <li><code>prometheus</code> - requires <code>otel4s-sdk-exporter-prometheus</code> dependency.</li>
           <li><code>console</code> - prints metrics to stdout. It&#39;s mainly used for testing and debugging.</li>
           <li><code>none</code> - means no autoconfigured exporter.</li>
         </ul>
@@ -341,6 +344,55 @@
               <td>otel.exporter.otlp.metrics.timeout</td>
               <td>OTEL_EXPORTER_OTLP_METRICS_TIMEOUT</td>
               <td>The maximum waiting time to send each OTLP trace batch. Default is <code>10 seconds</code>.</td>
+            </tr>
+          </tbody>
+        </table>
+        
+        <h3 id="prometheus-exporter" class="section"><a class="anchor-link left" href="#prometheus-exporter"><i class="icofont-laika link">&#xef71;</i></a>Prometheus exporter</h3>
+        <p>The exporter launches an HTTP server which responds to the HTTP requests with Prometheus metrics in the appropriate format. </p>
+        <table>
+          <thead>
+            <tr>
+              <th>System property</th>
+              <th>Environment variable</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>otel.exporter.prometheus.host</td>
+              <td>OTEL_EXPORTER_PROMETHEUS_HOST</td>
+              <td>The host that metrics are served on. Default is <code>localhost</code>.</td>
+            </tr>
+            <tr>
+              <td>otel.exporter.prometheus.port</td>
+              <td>OTEL_EXPORTER_PROMETHEUS_PORT</td>
+              <td>The port that metrics are served on. Default is <code>9464</code>.</td>
+            </tr>
+            <tr>
+              <td>otel.exporter.prometheus.default.aggregation</td>
+              <td>OTEL_EXPORTER_PROMETHEUS_DEFAULT_AGGREGATION</td>
+              <td>Default aggregation as a function of instrument kind. Default is <code>default</code>.</td>
+            </tr>
+            <tr>
+              <td>otel.exporter.prometheus.without.units</td>
+              <td>OTEL_EXPORTER_PROMETHEUS_WITHOUT_UNITS</td>
+              <td>If metrics are produced without a unit suffix. Default is <code>false</code>.</td>
+            </tr>
+            <tr>
+              <td>otel.exporter.prometheus.without.type.suffix</td>
+              <td>OTEL_EXPORTER_PROMETHEUS_WITHOUT_TYPE_SUFFIX</td>
+              <td>If metrics are produced without a type suffix. Default is <code>false</code>.</td>
+            </tr>
+            <tr>
+              <td>otel.exporter.prometheus.without.scope.info</td>
+              <td>OTEL_EXPORTER_PROMETHEUS_WITHOUT_SCOPE_INFO</td>
+              <td>If metrics are produced without a scope info metric or scope labels. Default is <code>false</code>.</td>
+            </tr>
+            <tr>
+              <td>otel.exporter.prometheus.without.target.info</td>
+              <td>OTEL_EXPORTER_PROMETHEUS_WITHOUT_TARGET_INFO</td>
+              <td>If metrics are produced without a target info metric. Default is <code>false</code>.</td>
             </tr>
           </tbody>
         </table>

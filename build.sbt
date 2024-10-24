@@ -776,6 +776,7 @@ lazy val docs = project
     oteljava,
     sdk.jvm,
     `sdk-exporter`.jvm,
+    `sdk-exporter-prometheus`.jvm,
     `sdk-contrib-aws-resource`.jvm,
     `sdk-contrib-aws-xray`.jvm,
     `sdk-contrib-aws-xray-propagator`.jvm

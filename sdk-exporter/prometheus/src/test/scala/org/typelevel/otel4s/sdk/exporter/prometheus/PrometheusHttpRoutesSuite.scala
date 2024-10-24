@@ -20,6 +20,7 @@ import cats.effect.IO
 import munit.CatsEffectSuite
 import org.http4s.Headers
 import org.http4s.HttpRoutes
+import org.http4s.MediaRange
 import org.http4s.MediaType
 import org.http4s.Method
 import org.http4s.Request
@@ -55,6 +56,23 @@ class PrometheusHttpRoutesSuite extends CatsEffectSuite with SuiteRuntimePlatfor
         response <- routes.orNotFound
           .run(
             Request(method = Method.HEAD, uri = uri"/")
+          )
+        body <- response.body.compile.toList
+      } yield {
+        assertEquals(response.status, Status.Ok)
+        assertEquals(body.isEmpty, true)
+      }
+    }
+  }
+
+  test("respond with a text on GET request and wildcard accept") {
+    PrometheusMetricExporter.builder[IO].build.flatMap { exporter =>
+      val routes: HttpRoutes[IO] = PrometheusHttpRoutes.routes(exporter, PrometheusWriter.Config.default)
+
+      for {
+        response <- routes.orNotFound
+          .run(
+            Request(method = Method.HEAD, uri = uri"/", headers = Headers(Accept(MediaRange.`*/*`)))
           )
         body <- response.body.compile.toList
       } yield {

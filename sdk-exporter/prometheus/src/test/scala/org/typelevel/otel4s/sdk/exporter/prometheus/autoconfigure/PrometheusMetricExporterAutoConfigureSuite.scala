@@ -34,7 +34,7 @@ class PrometheusMetricExporterAutoConfigureSuite extends CatsEffectSuite with Su
       List(
         Entry(
           Op.Println,
-          "PrometheusMetricsExporter: launched Prometheus server at localhost:9464, " +
+          "PrometheusMetricsExporter: launched Prometheus server at localhost:9464/metrics, " +
             "writer options: PrometheusWriter.Config{" +
             "unitSuffixDisabled=false, " +
             "typeSuffixDisabled=false, " +
@@ -73,7 +73,7 @@ class PrometheusMetricExporterAutoConfigureSuite extends CatsEffectSuite with Su
       List(
         Entry(
           Op.Println,
-          "PrometheusMetricsExporter: launched Prometheus server at localhost:9464, " +
+          "PrometheusMetricsExporter: launched Prometheus server at localhost:9464/metrics, " +
             "writer options: PrometheusWriter.Config{" +
             "unitSuffixDisabled=false, " +
             "typeSuffixDisabled=false, " +
@@ -111,7 +111,7 @@ class PrometheusMetricExporterAutoConfigureSuite extends CatsEffectSuite with Su
       List(
         Entry(
           Op.Println,
-          "PrometheusMetricsExporter: launched Prometheus server at 127.0.0.2:9465, " +
+          "PrometheusMetricsExporter: launched Prometheus server at 127.0.0.2:9465/metrics, " +
             "writer options: PrometheusWriter.Config{" +
             "unitSuffixDisabled=true, " +
             "typeSuffixDisabled=true, " +

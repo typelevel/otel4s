@@ -57,6 +57,9 @@ trait PrometheusWriter[F[_]] {
   def write[G[_]: Foldable](metrics: G[MetricData]): Stream[F, Byte]
 }
 
+/** @see
+  *   [[https://github.com/prometheus/docs/blob/main/content/docs/instrumenting/exposition_formats.md]]
+  */
 object PrometheusWriter {
 
   private val TargetInfoName = "target_info"

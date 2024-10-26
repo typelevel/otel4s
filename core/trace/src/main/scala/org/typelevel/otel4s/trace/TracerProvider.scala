@@ -69,6 +69,8 @@ trait TracerProvider[F[_]] {
 
 object TracerProvider {
 
+  def apply[F[_]](implicit ev: TracerProvider[F]): TracerProvider[F] = ev
+
   /** Creates a no-op implementation of the [[TracerProvider]].
     *
     * A [[TracerBuilder]] has no-op implementation too.

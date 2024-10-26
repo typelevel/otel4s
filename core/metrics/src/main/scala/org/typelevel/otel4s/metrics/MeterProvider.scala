@@ -59,6 +59,8 @@ trait MeterProvider[F[_]] {
 
 object MeterProvider {
 
+  def apply[F[_]](implicit ev: MeterProvider[F]): MeterProvider[F] = ev
+
   /** Creates a no-op implementation of the [[MeterProvider]].
     *
     * A [[MeterBuilder]] has no-op implementation too.

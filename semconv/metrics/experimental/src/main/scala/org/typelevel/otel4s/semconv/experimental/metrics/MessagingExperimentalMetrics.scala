@@ -19,6 +19,7 @@ package semconv
 package experimental
 package metrics
 
+import cats.effect.Resource
 import org.typelevel.otel4s.metrics._
 import org.typelevel.otel4s.semconv.attributes._
 import org.typelevel.otel4s.semconv.experimental.attributes._
@@ -240,12 +241,28 @@ object MessagingExperimentalMetrics {
         )
     }
 
-    def create[F[_]: Meter]: F[Counter[F, Long]] =
+    def create[F[_]: Meter, A: MeasurementValue]: F[Counter[F, A]] =
       Meter[F]
-        .counter[Long](name)
+        .counter[A](name)
         .withDescription(description)
         .withUnit(unit)
         .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableCounter] =
+      Meter[F]
+        .observableCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
 
   }
 
@@ -460,9 +477,9 @@ object MessagingExperimentalMetrics {
         )
     }
 
-    def create[F[_]: Meter](boundaries: BucketBoundaries): F[Histogram[F, Double]] =
+    def create[F[_]: Meter, A: MeasurementValue](boundaries: BucketBoundaries): F[Histogram[F, A]] =
       Meter[F]
-        .histogram[Double](name)
+        .histogram[A](name)
         .withDescription(description)
         .withUnit(unit)
         .withExplicitBucketBoundaries(boundaries)
@@ -632,12 +649,28 @@ object MessagingExperimentalMetrics {
         )
     }
 
-    def create[F[_]: Meter]: F[Counter[F, Long]] =
+    def create[F[_]: Meter, A: MeasurementValue]: F[Counter[F, A]] =
       Meter[F]
-        .counter[Long](name)
+        .counter[A](name)
         .withDescription(description)
         .withUnit(unit)
         .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableCounter] =
+      Meter[F]
+        .observableCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
 
   }
 
@@ -804,12 +837,28 @@ object MessagingExperimentalMetrics {
         )
     }
 
-    def create[F[_]: Meter]: F[Counter[F, Long]] =
+    def create[F[_]: Meter, A: MeasurementValue]: F[Counter[F, A]] =
       Meter[F]
-        .counter[Long](name)
+        .counter[A](name)
         .withDescription(description)
         .withUnit(unit)
         .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableCounter] =
+      Meter[F]
+        .observableCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
 
   }
 
@@ -1009,9 +1058,9 @@ object MessagingExperimentalMetrics {
         )
     }
 
-    def create[F[_]: Meter](boundaries: BucketBoundaries): F[Histogram[F, Double]] =
+    def create[F[_]: Meter, A: MeasurementValue](boundaries: BucketBoundaries): F[Histogram[F, A]] =
       Meter[F]
-        .histogram[Double](name)
+        .histogram[A](name)
         .withDescription(description)
         .withUnit(unit)
         .withExplicitBucketBoundaries(boundaries)
@@ -1115,12 +1164,28 @@ object MessagingExperimentalMetrics {
         )
     }
 
-    def create[F[_]: Meter]: F[Counter[F, Long]] =
+    def create[F[_]: Meter, A: MeasurementValue]: F[Counter[F, A]] =
       Meter[F]
-        .counter[Long](name)
+        .counter[A](name)
         .withDescription(description)
         .withUnit(unit)
         .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableCounter] =
+      Meter[F]
+        .observableCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
 
   }
 
@@ -1220,9 +1285,9 @@ object MessagingExperimentalMetrics {
         )
     }
 
-    def create[F[_]: Meter](boundaries: BucketBoundaries): F[Histogram[F, Double]] =
+    def create[F[_]: Meter, A: MeasurementValue](boundaries: BucketBoundaries): F[Histogram[F, A]] =
       Meter[F]
-        .histogram[Double](name)
+        .histogram[A](name)
         .withDescription(description)
         .withUnit(unit)
         .withExplicitBucketBoundaries(boundaries)
@@ -1326,12 +1391,28 @@ object MessagingExperimentalMetrics {
         )
     }
 
-    def create[F[_]: Meter]: F[Counter[F, Long]] =
+    def create[F[_]: Meter, A: MeasurementValue]: F[Counter[F, A]] =
       Meter[F]
-        .counter[Long](name)
+        .counter[A](name)
         .withDescription(description)
         .withUnit(unit)
         .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableCounter] =
+      Meter[F]
+        .observableCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
 
   }
 
@@ -1431,9 +1512,9 @@ object MessagingExperimentalMetrics {
         )
     }
 
-    def create[F[_]: Meter](boundaries: BucketBoundaries): F[Histogram[F, Double]] =
+    def create[F[_]: Meter, A: MeasurementValue](boundaries: BucketBoundaries): F[Histogram[F, A]] =
       Meter[F]
-        .histogram[Double](name)
+        .histogram[A](name)
         .withDescription(description)
         .withUnit(unit)
         .withExplicitBucketBoundaries(boundaries)
@@ -1537,12 +1618,28 @@ object MessagingExperimentalMetrics {
         )
     }
 
-    def create[F[_]: Meter]: F[Counter[F, Long]] =
+    def create[F[_]: Meter, A: MeasurementValue]: F[Counter[F, A]] =
       Meter[F]
-        .counter[Long](name)
+        .counter[A](name)
         .withDescription(description)
         .withUnit(unit)
         .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableCounter] =
+      Meter[F]
+        .observableCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
 
   }
 

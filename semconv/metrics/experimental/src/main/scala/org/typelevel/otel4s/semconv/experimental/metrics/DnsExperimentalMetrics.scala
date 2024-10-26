@@ -86,9 +86,9 @@ object DnsExperimentalMetrics {
         )
     }
 
-    def create[F[_]: Meter](boundaries: BucketBoundaries): F[Histogram[F, Double]] =
+    def create[F[_]: Meter, A: MeasurementValue](boundaries: BucketBoundaries): F[Histogram[F, A]] =
       Meter[F]
-        .histogram[Double](name)
+        .histogram[A](name)
         .withDescription(description)
         .withUnit(unit)
         .withExplicitBucketBoundaries(boundaries)

@@ -7,19 +7,35 @@
 {%- endmacro -%}
 
 {%- macro instrumentType(type) -%}
-{%- if type == "gauge" -%}Gauge[F, Long]
-{%- elif type == "counter" -%}Counter[F, Long]
-{%- elif type == "updowncounter" -%}UpDownCounter[F, Long]
-{%- elif type == "histogram" -%}Histogram[F, Double]
+{%- if type == "gauge" -%}Gauge[F, A]
+{%- elif type == "counter" -%}Counter[F, A]
+{%- elif type == "updowncounter" -%}UpDownCounter[F, A]
+{%- elif type == "histogram" -%}Histogram[F, A]
 {%- else %}{{ type }}
 {%- endif -%}
 {%- endmacro -%}
 
 {%- macro instrumentFactory(type) -%}
-{%- if type == "gauge" -%}gauge[Long]
-{%- elif type == "counter" -%}counter[Long]
-{%- elif type == "updowncounter" -%}upDownCounter[Long]
-{%- elif type == "histogram" -%}histogram[Double]
+{%- if type == "gauge" -%}gauge[A]
+{%- elif type == "counter" -%}counter[A]
+{%- elif type == "updowncounter" -%}upDownCounter[A]
+{%- elif type == "histogram" -%}histogram[A]
+{%- else %}{{ type }}
+{%- endif -%}
+{%- endmacro -%}
+
+{%- macro observableInstrumentType(type) -%}
+{%- if type == "gauge" -%}ObservableGauge
+{%- elif type == "counter" -%}ObservableCounter
+{%- elif type == "updowncounter" -%}ObservableUpDownCounter
+{%- else %}{{ type }}
+{%- endif -%}
+{%- endmacro -%}
+
+{%- macro observableInstrumentFactory(type) -%}
+{%- if type == "gauge" -%}observableGauge[A]
+{%- elif type == "counter" -%}observableCounter[A]
+{%- elif type == "updowncounter" -%}observableUpDownCounter[A]
 {%- else %}{{ type }}
 {%- endif -%}
 {%- endmacro -%}
@@ -95,9 +111,11 @@ package metrics
 package metrics
 {%- endif %}
 
-import org.typelevel.otel4s.metrics._
-{%- set required_imports = namespace(stable = false, experimental = false) -%}
+{%- set required_imports = namespace(cats_effect = false, stable = false, experimental = false) -%}
 {%- for metric in ctx.metrics -%}
+  {%- if metric.instrument != "histogram" -%}
+    {%- set required_imports.cats_effect = true -%}
+  {%- endif -%}
   {% for attribute in metric.attributes %}
     {%- if attribute is stable -%}
       {%- set required_imports.stable = true -%}
@@ -105,7 +123,12 @@ import org.typelevel.otel4s.metrics._
       {%- set required_imports.experimental = true -%}
     {%- endif -%}
   {%- endfor -%}
-{%- endfor -%}
+{%- endfor %}
+
+{% if required_imports.cats_effect == true %}
+import cats.effect.Resource
+{%- endif %}
+import org.typelevel.otel4s.metrics._
 {%- if required_imports.stable == true %}
 import org.typelevel.otel4s.semconv.attributes._
 {%- endif %}
@@ -168,7 +191,7 @@ object {{ object_name }} {
         )
     }
     {% endif %}
-    def create[F[_]: Meter]{% if metric.instrument == "histogram" %}(boundaries: BucketBoundaries){% endif %}: F[{{ instrumentType(metric.instrument) }}] =
+    def create[F[_]: Meter, A: MeasurementValue]{% if metric.instrument == "histogram" %}(boundaries: BucketBoundaries){% endif %}: F[{{ instrumentType(metric.instrument) }}] =
       Meter[F]
         .{{ instrumentFactory(metric.instrument) }}(name)
         .withDescription(description)
@@ -179,6 +202,23 @@ object {{ object_name }} {
         {% else %}
         .create
         {% endif %}
+    {% if metric.instrument != "histogram" %}
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .{{ observableInstrumentFactory(metric.instrument) }}(name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, {{ observableInstrumentType(metric.instrument) }}] =
+      Meter[F]
+        .{{ observableInstrumentFactory(metric.instrument) }}(name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+    {% endif %}
   }
   {% endfor %}
 

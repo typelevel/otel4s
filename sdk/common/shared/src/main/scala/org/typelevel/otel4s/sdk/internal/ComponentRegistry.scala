@@ -24,7 +24,7 @@ import cats.effect.std.AtomicCell
 import cats.syntax.functor._
 import org.typelevel.otel4s.sdk.common.InstrumentationScope
 
-/** A registry that caches components by `key`, `version`, and `schemaUrl`.
+/** A registry that caches components by `key`, `version`, `schemaUrl`, and `attributes`.
   *
   * @tparam F
   *   the higher-kinded type of a polymorphic effect
@@ -34,12 +34,7 @@ import org.typelevel.otel4s.sdk.common.InstrumentationScope
   */
 private[sdk] sealed trait ComponentRegistry[F[_], A] {
 
-  /** Returns the component associated with the `name`, `version`, and `schemaUrl`.
-    *
-    * '''Note''': `attributes` are not part of component identity.
-    *
-    * Behavior is undefined when different `attributes` are provided where `name`, `version`, and `schemaUrl` are
-    * identical.
+  /** Returns the component associated with the `name`, `version`, `schemaUrl`, and `attributes`.
     *
     * @param name
     *   the name to associate with a component
@@ -53,12 +48,7 @@ private[sdk] sealed trait ComponentRegistry[F[_], A] {
     * @param attributes
     *   the attributes to associate with a component
     */
-  def get(
-      name: String,
-      version: Option[String],
-      schemaUrl: Option[String],
-      attributes: Attributes
-  ): F[A]
+  def get(name: String, version: Option[String], schemaUrl: Option[String], attributes: Attributes): F[A]
 
   /** Returns the collection of the registered components.
     */
@@ -80,44 +70,28 @@ private[sdk] object ComponentRegistry {
     * @tparam A
     *   the type of the component
     */
-  def create[F[_]: Concurrent, A](
-      buildComponent: InstrumentationScope => F[A]
-  ): F[ComponentRegistry[F, A]] =
+  def create[F[_]: Concurrent, A](buildComponent: InstrumentationScope => F[A]): F[ComponentRegistry[F, A]] =
     for {
-      cache <- AtomicCell[F].of(Map.empty[Key, A])
+      cache <- AtomicCell[F].of(Map.empty[InstrumentationScope, A])
     } yield new Impl(cache, buildComponent)
 
-  private final case class Key(
-      name: String,
-      version: Option[String],
-      schemaUrl: Option[String]
-  )
-
   private final class Impl[F[_]: Applicative, A](
-      cache: AtomicCell[F, Map[Key, A]],
+      cache: AtomicCell[F, Map[InstrumentationScope, A]],
       buildComponent: InstrumentationScope => F[A]
   ) extends ComponentRegistry[F, A] {
 
-    def get(
-        name: String,
-        version: Option[String],
-        schemaUrl: Option[String],
-        attributes: Attributes
-    ): F[A] =
+    def get(name: String, version: Option[String], schemaUrl: Option[String], attributes: Attributes): F[A] =
       cache.evalModify { cache =>
-        val key = Key(name, version, schemaUrl)
+        val scope = InstrumentationScope(name, version, schemaUrl, attributes)
 
-        cache.get(key) match {
+        cache.get(scope) match {
           case Some(component) =>
             Applicative[F].pure((cache, component))
 
           case None =>
-            val scope =
-              InstrumentationScope(name, version, schemaUrl, attributes)
-
             for {
               component <- buildComponent(scope)
-            } yield (cache.updated(key, component), component)
+            } yield (cache.updated(scope, component), component)
         }
       }
 

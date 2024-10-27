@@ -30,12 +30,14 @@ class ComponentRegistrySuite extends CatsEffectSuite {
 
   registryTest("get cached values (by name only)") { registry =>
     for {
+      v0 <- registry.get(name, None, None, Attributes.empty)
       v1 <- registry.get(name, None, None, Attributes.empty)
       v2 <- registry.get(name, None, None, attributes)
       v3 <- registry.get(name, Some(version), None, attributes)
       v4 <- registry.get(name, Some(version), Some(schemaUrl), attributes)
     } yield {
-      assertEquals(v1, v2)
+      assertEquals(v0, v1)
+      assertNotEquals(v1, v2)
       assertNotEquals(v1, v3)
       assertNotEquals(v2, v3)
       assertNotEquals(v1, v4)
@@ -45,11 +47,13 @@ class ComponentRegistrySuite extends CatsEffectSuite {
 
   registryTest("get cached values (by name and version)") { registry =>
     for {
+      v0 <- registry.get(name, Some(version), None, Attributes.empty)
       v1 <- registry.get(name, Some(version), None, Attributes.empty)
       v2 <- registry.get(name, Some(version), None, attributes)
       v3 <- registry.get(name, Some(version), Some(schemaUrl), attributes)
     } yield {
-      assertEquals(v1, v2)
+      assertEquals(v0, v1)
+      assertNotEquals(v1, v2)
       assertNotEquals(v1, v3)
       assertNotEquals(v2, v3)
     }
@@ -57,14 +61,23 @@ class ComponentRegistrySuite extends CatsEffectSuite {
 
   registryTest("get cached values (by name, version, and schema)") { registry =>
     for {
+      v0 <- registry.get(name, Some(version), Some(schemaUrl), Attributes.empty)
       v1 <- registry.get(name, Some(version), Some(schemaUrl), Attributes.empty)
+      v2 <- registry.get(name, Some(version), Some(schemaUrl), attributes)
+    } yield {
+      assertEquals(v0, v1)
+      assertNotEquals(v1, v2)
+    }
+  }
+
+  registryTest("get cached values (by name, version, schema, and attributes)") { registry =>
+    for {
+      v1 <- registry.get(name, Some(version), Some(schemaUrl), attributes)
       v2 <- registry.get(name, Some(version), Some(schemaUrl), attributes)
     } yield assertEquals(v1, v2)
   }
 
-  private def registryTest(
-      name: String
-  )(body: ComponentRegistry[IO, TestComponent] => IO[Unit]): Unit =
+  private def registryTest(name: String)(body: ComponentRegistry[IO, TestComponent] => IO[Unit]): Unit =
     test(name) {
       for {
         registry <- ComponentRegistry.create(_ => IO.pure(new TestComponent()))

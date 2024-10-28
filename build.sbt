@@ -45,7 +45,7 @@ ThisBuild / scalaVersion := Scala213 // the default Scala
 ThisBuild / githubWorkflowBuildPreamble ++= nativeBrewInstallWorkflowSteps.value
 
 val CatsVersion = "2.11.0"
-val CatsEffectVersion = "3.5.4"
+val CatsEffectVersion = "3.5.5"
 val CatsMtlVersion = "1.4.0"
 val FS2Version = "3.11.0"
 val MUnitVersion = "1.0.0"

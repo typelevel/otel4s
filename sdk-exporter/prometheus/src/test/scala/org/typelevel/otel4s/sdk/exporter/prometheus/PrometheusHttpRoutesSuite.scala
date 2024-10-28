@@ -65,6 +65,23 @@ class PrometheusHttpRoutesSuite extends CatsEffectSuite with SuiteRuntimePlatfor
     }
   }
 
+  test("respond with a text on GET request and text/plain accept") {
+    PrometheusMetricExporter.builder[IO].build.flatMap { exporter =>
+      val routes: HttpRoutes[IO] = PrometheusHttpRoutes.routes(exporter, PrometheusWriter.Config.default)
+
+      routes.orNotFound
+        .run(
+          Request(method = Method.GET, uri = uri"/", headers = Headers(Accept(MediaType.text.plain)))
+        )
+        .flatMap { response =>
+          IO {
+            assertEquals(response.status, Status.Ok)
+            assertEquals(response.contentType.exists(_.mediaType.isText), true)
+          }
+        }
+    }
+  }
+
   test("respond with a text on GET request and wildcard accept") {
     PrometheusMetricExporter.builder[IO].build.flatMap { exporter =>
       val routes: HttpRoutes[IO] = PrometheusHttpRoutes.routes(exporter, PrometheusWriter.Config.default)

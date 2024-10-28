@@ -65,7 +65,7 @@ class PrometheusHttpRoutesSuite extends CatsEffectSuite with SuiteRuntimePlatfor
     }
   }
 
-  test("respond with a text on GET request and wildcard accept") {
+  test("respond with an empty body on HEAD request and wildcard accept") {
     PrometheusMetricExporter.builder[IO].build.flatMap { exporter =>
       val routes: HttpRoutes[IO] = PrometheusHttpRoutes.routes(exporter, PrometheusWriter.Config.default)
 

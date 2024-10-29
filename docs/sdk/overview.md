@@ -86,4 +86,3 @@ OpenTelemetrySdk.autoConfigured[IO](
 ### Metrics missing features
 
 - `Exponential Histogram` aggregation is not supported yet
-- `Prometheus` exporter is not implemented yet

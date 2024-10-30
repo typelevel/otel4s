@@ -114,11 +114,11 @@ private[metrics] object ExemplarReservoir {
   ): ExemplarReservoir[F, A] =
     new ExemplarReservoir[F, A] {
       def offer(value: A, attributes: Attributes, context: Context): F[Unit] =
-        original
-          .offer(value, attributes, context)
-          .whenA(
-            filter.shouldSample(value, attributes, context)
-          )
+        if (filter.shouldSample(value, attributes, context)) {
+          original.offer(value, attributes, context)
+        } else {
+          Applicative[F].unit
+        }
 
       def collectAndReset(attributes: Attributes): F[Vector[Exemplar[A]]] =
         original.collectAndReset(attributes)

@@ -16,7 +16,6 @@
 
 package org.typelevel.otel4s.sdk.metrics.exporter
 
-import cats.Applicative
 import cats.Foldable
 import cats.Monad
 import cats.effect.std.Console
@@ -60,7 +59,7 @@ private final class ConsoleMetricExporter[F[_]: Monad: Console](
     doExport.whenA(metrics.nonEmpty)
   }
 
-  def flush: F[Unit] = Applicative[F].unit
+  def flush: F[Unit] = Monad[F].unit
 }
 
 object ConsoleMetricExporter {

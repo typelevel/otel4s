@@ -84,9 +84,13 @@ private final class SdkSpanBackend[F[_]: Monad: Clock: Console] private (
     updateState("updateName")(_.copy(name = name)).void
 
   def addAttributes(attributes: immutable.Iterable[Attribute[_]]): F[Unit] =
-    updateState("addAttributes") { s =>
-      s.copy(attributes = s.attributes.appendAll(attributes.to(Attributes)))
-    }.unlessA(attributes.isEmpty)
+    if (attributes.nonEmpty) {
+      updateState("addAttributes") { s =>
+        s.copy(attributes = s.attributes.appendAll(attributes.to(Attributes)))
+      }.void
+    } else {
+      Monad[F].unit
+    }
 
   def addEvent(
       name: String,
@@ -193,11 +197,11 @@ private final class SdkSpanBackend[F[_]: Monad: Clock: Console] private (
         else (update(state), true)
       }
       .flatTap { modified =>
-        Console[F]
-          .println(
-            s"SdkSpanBackend: calling [$method] on the ended span $context"
-          )
-          .unlessA(modified)
+        if (modified) {
+          Monad[F].unit
+        } else {
+          Console[F].println(s"SdkSpanBackend: calling [$method] on the ended span $context")
+        }
       }
 
   // SpanRef interfaces

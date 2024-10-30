@@ -21,7 +21,6 @@ import cats.effect.Concurrent
 import cats.effect.Ref
 import cats.effect.Resource
 import cats.effect.std.Console
-import cats.syntax.applicative._
 import cats.syntax.flatMap._
 import cats.syntax.foldable._
 import cats.syntax.functor._
@@ -117,17 +116,14 @@ private[metrics] object SdkObservableMeasurement {
           v => !cast(v).isNaN
       }
 
-    def withActiveReader(
-        reader: RegisteredReader[F],
-        timeWindow: TimeWindow
-    ): Resource[F, Unit] =
+    def withActiveReader(reader: RegisteredReader[F], timeWindow: TimeWindow): Resource[F, Unit] =
       Resource.make(stateRef.set(State.WithReader(reader, timeWindow))) { _ =>
         stateRef.set(State.Empty())
       }
 
     def record(value: A, attributes: Attributes): F[Unit] =
-      stateRef.get
-        .flatMap {
+      if (isValid(value)) {
+        stateRef.get.flatMap {
           case State.Empty() =>
             Console[F].errorln(
               "SdkObservableMeasurement: " +
@@ -143,7 +139,9 @@ private[metrics] object SdkObservableMeasurement {
               .filter(_.reader == reader)
               .traverse_(storage => storage.record(measurement))
         }
-        .whenA(isValid(value))
+      } else {
+        Monad[F].unit
+      }
 
     def hasStorages: Boolean = storages.nonEmpty
   }

@@ -18,7 +18,6 @@ package org.typelevel.otel4s.sdk.metrics.internal
 
 import cats.data.NonEmptyList
 import cats.effect.MonadCancelThrow
-import cats.syntax.applicative._
 import cats.syntax.foldable._
 import org.typelevel.otel4s.sdk.metrics.data.TimeWindow
 import org.typelevel.otel4s.sdk.metrics.internal.exporter.RegisteredReader
@@ -39,14 +38,14 @@ private[metrics] final class CallbackRegistration[F[_]: MonadCancelThrow](
     * @param timeWindow
     *   the time window of the measurement
     */
-  def invokeCallback(
-      reader: RegisteredReader[F],
-      timeWindow: TimeWindow
-  ): F[Unit] =
-    measurements
-      .traverse_(_.withActiveReader(reader, timeWindow))
-      .surround(callback)
-      .whenA(hasStorages)
+  def invokeCallback(reader: RegisteredReader[F], timeWindow: TimeWindow): F[Unit] =
+    if (hasStorages) {
+      measurements
+        .traverse_(_.withActiveReader(reader, timeWindow))
+        .surround(callback)
+    } else {
+      MonadCancelThrow[F].unit
+    }
 
   override def toString: String =
     s"CallbackRegistration{instrumentDescriptors=${measurements.map(_.descriptor).mkString_("[", ", ", "]")}"

@@ -21,7 +21,6 @@ import cats.data.NonEmptyVector
 import cats.effect.Concurrent
 import cats.effect.std.AtomicCell
 import cats.effect.std.Console
-import cats.syntax.applicative._
 import cats.syntax.flatMap._
 import cats.syntax.functor._
 import cats.syntax.traverse._
@@ -45,19 +44,13 @@ import org.typelevel.otel4s.sdk.metrics.view.View
 
 /** Stores aggregated metrics for synchronous instruments.
   */
-private final class SynchronousStorage[
-    F[_]: Monad: Console,
-    A: MeasurementValue
-](
+private final class SynchronousStorage[F[_]: Monad: Console, A: MeasurementValue](
     reader: RegisteredReader[F],
     val metricDescriptor: MetricDescriptor,
     aggregator: SynchronousStorage.SynchronousAggregator[F, A],
     attributesProcessor: AttributesProcessor,
     maxCardinality: Int,
-    accumulators: AtomicCell[
-      F,
-      Map[Attributes, Aggregator.Accumulator[F, A, PointData]]
-    ]
+    accumulators: AtomicCell[F, Map[Attributes, Aggregator.Accumulator[F, A, PointData]]]
 ) extends MetricStorage.Synchronous[F, A] {
 
   private val aggregationTemporality =
@@ -73,21 +66,17 @@ private final class SynchronousStorage[
         v => !cast(v).isNaN
     }
 
-  def record(
-      value: A,
-      attributes: Attributes,
-      context: Context
-  ): F[Unit] =
-    (for {
-      handle <- getHandle(attributes, context)
-      _ <- handle.record(value, attributes, context)
-    } yield ()).whenA(isValid(value))
+  def record(value: A, attributes: Attributes, context: Context): F[Unit] =
+    if (isValid(value)) {
+      for {
+        handle <- getHandle(attributes, context)
+        _ <- handle.record(value, attributes, context)
+      } yield ()
+    } else {
+      Monad[F].unit
+    }
 
-  def collect(
-      resource: TelemetryResource,
-      scope: InstrumentationScope,
-      window: TimeWindow
-  ): F[Option[MetricData]] = {
+  def collect(resource: TelemetryResource, scope: InstrumentationScope, window: TimeWindow): F[Option[MetricData]] = {
     val isDelta = aggregationTemporality == AggregationTemporality.Delta
 
     def toMetricData(points: Vector[PointData]): F[Option[MetricData]] =
@@ -131,30 +120,34 @@ private final class SynchronousStorage[
       }
     } yield points.flatten
 
-  private def getHandle(
-      attributes: Attributes,
-      context: Context
-  ): F[Aggregator.Accumulator[F, A, PointData]] =
-    accumulators.evalModify { map =>
+  private def getHandle(attributes: Attributes, context: Context): F[Aggregator.Accumulator[F, A, PointData]] =
+    accumulators.get.flatMap { map =>
       val processed = attributesProcessor.process(attributes, context)
-
-      def create(attrs: Attributes) =
-        for {
-          accumulator <- aggregator.createAccumulator
-        } yield (map.updated(attrs, accumulator), accumulator)
-
       map.get(processed) match {
         case Some(handle) =>
-          Monad[F].pure((map, handle))
-
-        case None if map.sizeIs >= maxCardinality =>
-          val overflowed = attributes.added(MetricStorage.OverflowAttribute)
-          cardinalityWarning >> map
-            .get(overflowed)
-            .fold(create(overflowed))(a => Monad[F].pure((map, a)))
+          Monad[F].pure(handle)
 
         case None =>
-          create(processed)
+          accumulators.evalModify { map =>
+            def create(attrs: Attributes) =
+              for {
+                accumulator <- aggregator.createAccumulator
+              } yield (map.updated(attrs, accumulator), accumulator)
+
+            map.get(processed) match {
+              case Some(handle) =>
+                Monad[F].pure((map, handle))
+
+              case None if map.sizeIs >= maxCardinality =>
+                val overflowed = attributes.added(MetricStorage.OverflowAttribute)
+                cardinalityWarning >> map
+                  .get(overflowed)
+                  .fold(create(overflowed))(a => Monad[F].pure((map, a)))
+
+              case None =>
+                create(processed)
+            }
+          }
       }
     }
 

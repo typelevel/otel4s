@@ -216,7 +216,7 @@ private[metrics] final class MeterSharedState[
 
         for {
           _ <- currentCallbacks.traverse_(_.invokeCallback(reader, timeWindow))
-          storages <- registries.get(reader).foldMapA(_.storages)
+          storages <- registries.get(reader).foldMapM(_.storages)
           result <- storages.traverse { storage =>
             storage.collect(resource, scope, timeWindow)
           }

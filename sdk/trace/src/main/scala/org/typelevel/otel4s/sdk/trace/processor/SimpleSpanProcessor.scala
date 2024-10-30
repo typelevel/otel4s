@@ -19,7 +19,6 @@ package processor
 
 import cats.MonadThrow
 import cats.effect.std.Console
-import cats.syntax.applicative._
 import cats.syntax.applicativeError._
 import org.typelevel.otel4s.sdk.trace.data.SpanData
 import org.typelevel.otel4s.sdk.trace.exporter.SpanExporter
@@ -53,7 +52,7 @@ private final class SimpleSpanProcessor[F[_]: MonadThrow: Console] private (
 
   def onEnd(span: SpanData): F[Unit] = {
     val canExport = !exportOnlySampled || span.spanContext.isSampled
-    doExport(span).whenA(canExport)
+    if (canExport) doExport(span) else MonadThrow[F].unit
   }
 
   private def doExport(span: SpanData): F[Unit] =

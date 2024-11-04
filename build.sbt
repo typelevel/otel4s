@@ -44,6 +44,35 @@ ThisBuild / scalaVersion := Scala213 // the default Scala
 
 ThisBuild / githubWorkflowBuildPreamble ++= nativeBrewInstallWorkflowSteps.value
 
+ThisBuild / mergifyStewardConfig := None
+ThisBuild / mergifyLabelPaths := Map(
+  "module:core" -> file("core"),
+  "module:sdk" -> file("sdk"),
+  "module:sdk:exporter" -> file("sdk-exporter"),
+  "module:sdk:contrib:aws" -> file("sdk-contrib/aws"),
+  "module:oteljava" -> file("oteljava"),
+  "module:semconv" -> file("semconv"),
+  "documentation" -> file("docs")
+)
+
+ThisBuild / mergifyPrRules ++= Seq(
+  MergifyPrRule(
+    "Label metrics PRs",
+    List(MergifyCondition.Custom("files~=/(metrics)/")),
+    List(MergifyAction.Label(add = List("metrics")))
+  ),
+  MergifyPrRule(
+    "Label trace PRs",
+    List(MergifyCondition.Custom("files~=/(trace)/")),
+    List(MergifyAction.Label(add = List("trace")))
+  ),
+  MergifyPrRule(
+    "Label Scala Steward PRs",
+    List(MergifyCondition.Custom("author=typelevel-steward[bot]")),
+    List(MergifyAction.Label(add = List("dependencies")))
+  )
+)
+
 val CatsVersion = "2.11.0"
 val CatsEffectVersion = "3.5.5"
 val CatsMtlVersion = "1.4.0"
@@ -749,7 +778,7 @@ lazy val benchmarks = project
 lazy val examples = project
   .enablePlugins(NoPublishPlugin, JavaAgent)
   .in(file("examples"))
-  .dependsOn(core.jvm, oteljava, sdk.jvm, `sdk-exporter`.jvm)
+  .dependsOn(core.jvm, oteljava, sdk.jvm, `sdk-exporter`.jvm, `sdk-exporter-prometheus`.jvm)
   .settings(
     name := "otel4s-examples",
     libraryDependencies ++= Seq(

@@ -27,6 +27,7 @@ import cats.syntax.show._
   */
 sealed trait AttributeKey[A] {
   def name: String
+
   def `type`: AttributeType[A]
 
   /** @return

@@ -46,6 +46,7 @@ final class OtelJava[F[_]] private (
     val tracerProvider: TracerProvider[F],
 )(implicit val localContext: LocalContext[F])
     extends Otel4s[F] {
+
   type Ctx = Context
 
   override def toString: String = s"OtelJava{$underlying}"

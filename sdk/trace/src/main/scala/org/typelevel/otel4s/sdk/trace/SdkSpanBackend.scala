@@ -188,9 +188,7 @@ private final class SdkSpanBackend[F[_]: Monad: Clock: Console] private (
 
   // applies modifications while the span is still active
   // modifications are ignored when the span is ended
-  private def updateState(
-      method: String
-  )(update: MutableState => MutableState): F[Boolean] =
+  private def updateState(method: String)(update: MutableState => MutableState): F[Boolean] =
     mutableState
       .modify { state =>
         if (state.endTimestamp.isDefined) (state, false)

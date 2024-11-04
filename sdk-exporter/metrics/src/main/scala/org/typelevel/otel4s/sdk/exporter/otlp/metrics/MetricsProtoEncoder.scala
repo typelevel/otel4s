@@ -40,29 +40,30 @@ import scodec.bits.ByteVector
   *   [[https://github.com/open-telemetry/opentelemetry-proto/blob/v1.2.0/opentelemetry/proto/metrics/v1/metrics.proto]]
   */
 private object MetricsProtoEncoder {
-  implicit val jsonPrinter: Printer = new ProtoEncoder.JsonPrinter {
-    private val EncodeAsHex = Set("trace_id", "span_id")
+  implicit val jsonPrinter: Printer =
+    new ProtoEncoder.JsonPrinter {
+      private val EncodeAsHex = Set("trace_id", "span_id")
 
-    /** The `traceId` and `spanId` byte arrays are represented as case-insensitive hex-encoded strings; they are not
-      * base64-encoded as is defined in the standard Protobuf JSON Mapping. Hex encoding is used for traceId and spanId
-      * fields in all OTLP Protobuf messages, e.g., the Span, Link, LogRecord, etc. messages.
-      *
-      * @see
-      *   [[https://github.com/open-telemetry/opentelemetry-proto/blob/v1.2.0/docs/specification.md#json-protobuf-encoding]]
-      */
-    override def serializeSingleValue(
-        fd: FieldDescriptor,
-        value: PValue,
-        formattingLongAsNumber: Boolean
-    ): Json = {
-      value match {
-        case PByteString(bs) if EncodeAsHex.contains(fd.name) =>
-          Json.fromString(ByteVector(bs.toByteArray()).toHex)
-        case _ =>
-          super.serializeSingleValue(fd, value, formattingLongAsNumber)
+      /** The `traceId` and `spanId` byte arrays are represented as case-insensitive hex-encoded strings; they are not
+        * base64-encoded as is defined in the standard Protobuf JSON Mapping. Hex encoding is used for traceId and
+        * spanId fields in all OTLP Protobuf messages, e.g., the Span, Link, LogRecord, etc. messages.
+        *
+        * @see
+        *   [[https://github.com/open-telemetry/opentelemetry-proto/blob/v1.2.0/docs/specification.md#json-protobuf-encoding]]
+        */
+      override def serializeSingleValue(
+          fd: FieldDescriptor,
+          value: PValue,
+          formattingLongAsNumber: Boolean
+      ): Json = {
+        value match {
+          case PByteString(bs) if EncodeAsHex.contains(fd.name) =>
+            Json.fromString(ByteVector(bs.toByteArray()).toHex)
+          case _ =>
+            super.serializeSingleValue(fd, value, formattingLongAsNumber)
+        }
       }
     }
-  }
 
   implicit val aggregationTemporalityEncoder: ProtoEncoder[
     AggregationTemporality,

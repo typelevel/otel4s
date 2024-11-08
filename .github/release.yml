@@ -1,0 +1,30 @@
+changelog:
+  categories:
+    - title: Core
+      labels:
+        - 'module:core'
+    - title: SDK
+      labels:
+        - 'module:sdk'
+    - title: SDK exporter
+      labels:
+        - 'module:sdk:exporter'
+    - title: SDK Contrib AWS
+      labels:
+        - 'module:sdk:contrib:aws'
+    - title: Semantic Conventions
+      labels:
+        - 'module:semconv'
+    - title: OtelJava
+      labels:
+        - 'module:oteljava'
+    - title: Documentation
+      labels:
+        - 'documentation'
+    - title: Dependencies
+      labels:
+        - 'dependencies'
+    # Not for published notes, just to make sure we don't forget any accidentally unlabeled PRs
+    - title: Uncategorized
+      labels:
+        - '*'

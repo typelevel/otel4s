@@ -19,15 +19,16 @@ package org.typelevel.otel4s.oteljava.trace
 import cats.effect.IO
 import cats.effect.Resource
 import cats.effect.testkit.TestControl
-import io.opentelemetry.api.common.{Attributes => JAttributes}
+import io.opentelemetry.api.common.{AttributeKey => JAttributeKey}
 import io.opentelemetry.api.trace.StatusCode
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo
+import io.opentelemetry.sdk.internal.AttributesMap
 import io.opentelemetry.sdk.testing.time.TestClock
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder
 import io.opentelemetry.sdk.trace.SpanLimits
+import io.opentelemetry.sdk.trace.data.ExceptionEventData
 import io.opentelemetry.sdk.trace.data.StatusData
-import io.opentelemetry.sdk.trace.internal.data.ExceptionEventData
 import org.typelevel.otel4s.Attributes
 import org.typelevel.otel4s.context.propagation.TextMapPropagator
 import org.typelevel.otel4s.oteljava.AttributeConverters._
@@ -38,6 +39,8 @@ import org.typelevel.otel4s.trace.BaseTracerSuite
 import org.typelevel.otel4s.trace.SpanContext
 import org.typelevel.otel4s.trace.TracerProvider
 
+import java.io.PrintWriter
+import java.io.StringWriter
 import java.time.Instant
 import scala.concurrent.duration._
 import scala.jdk.CollectionConverters._
@@ -91,14 +94,27 @@ class TracerSuite extends BaseTracerSuite[Context, Context.Key] {
     "set error status on abnormal termination (exception)",
     _.setClock(TestClock.create(Instant.ofEpochMilli(1L)))
   ) { sdk =>
+    val limits = SpanLimits.getDefault
     val exception = new RuntimeException("error") with NoStackTrace
+
+    val stringWriter = new StringWriter()
+    val printWriter = new PrintWriter(stringWriter)
+    exception.printStackTrace(printWriter)
+
+    val attributes = AttributesMap.create(
+      limits.getMaxNumberOfAttributes.toLong,
+      limits.getMaxAttributeValueLength
+    )
+
+    attributes.put(JAttributeKey.stringKey("exception.message"), exception.getMessage)
+    attributes.put(JAttributeKey.stringKey("exception.stacktrace"), stringWriter.toString)
 
     def expected(epoch: Long) =
       ExceptionEventData.create(
-        SpanLimits.getDefault,
         epoch,
         exception,
-        JAttributes.empty()
+        attributes,
+        attributes.size()
       )
 
     TestControl.executeEmbed {

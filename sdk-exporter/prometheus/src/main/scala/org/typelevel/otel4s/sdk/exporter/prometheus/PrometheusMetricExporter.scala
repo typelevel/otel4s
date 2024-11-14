@@ -30,6 +30,8 @@ import org.http4s.server.Router
 import org.typelevel.otel4s.sdk.metrics.data.MetricData
 import org.typelevel.otel4s.sdk.metrics.exporter._
 
+import scala.concurrent.duration.FiniteDuration
+
 /** Exports metrics on request (pull based).
   *
   * @see
@@ -97,6 +99,7 @@ object PrometheusMetricExporter {
   private[prometheus] object Defaults {
     val Host: Host = host"localhost"
     val Port: Port = port"9464"
+    val ShutdownTimeout: FiniteDuration = FiniteDuration(10, "seconds")
   }
 
   /** Builder for [[PrometheusMetricExporter]] */
@@ -120,6 +123,9 @@ object PrometheusMetricExporter {
 
     /** Sets the port that metrics are served on. */
     def withPort(port: Port): HttpServerBuilder[F]
+
+    /** Sets the port that metrics are served on. */
+    def withShutdownTimeout(shutdownTimeout: FiniteDuration): HttpServerBuilder[F]
 
     /** Sets the default aggregation selector to use. */
     def withDefaultAggregationSelector(
@@ -150,6 +156,7 @@ object PrometheusMetricExporter {
     new HttpServerBuilderImpl[F](
       host = Defaults.Host,
       port = Defaults.Port,
+      shutdownTimeout = Defaults.ShutdownTimeout,
       defaultAggregationSelector = AggregationSelector.default,
       writerConfig = PrometheusWriter.Config.default
     )
@@ -174,6 +181,7 @@ object PrometheusMetricExporter {
   private final case class HttpServerBuilderImpl[F[_]: Async: Network: Compression: Console](
       host: Host,
       port: Port,
+      shutdownTimeout: FiniteDuration,
       defaultAggregationSelector: AggregationSelector,
       writerConfig: PrometheusWriter.Config
   ) extends HttpServerBuilder[F] {
@@ -182,6 +190,9 @@ object PrometheusMetricExporter {
 
     def withPort(port: Port): HttpServerBuilder[F] =
       copy(port = port)
+
+    def withShutdownTimeout(shutdowntimeout: FiniteDuration): HttpServerBuilder[F] =
+      copy(shutdownTimeout = shutdownTimeout)
 
     def withDefaultAggregationSelector(
         selector: AggregationSelector
@@ -204,6 +215,7 @@ object PrometheusMetricExporter {
           .default[F]
           .withHost(host)
           .withPort(port)
+          .withShutdownTimeout(shutdownTimeout)
           .withHttpApp(Router("metrics" -> routes).orNotFound)
           .build
           .evalTap { _ =>

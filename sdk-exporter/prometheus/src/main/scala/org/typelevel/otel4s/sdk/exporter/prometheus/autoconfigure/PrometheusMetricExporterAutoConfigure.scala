@@ -30,6 +30,7 @@ import org.typelevel.otel4s.sdk.autoconfigure.ConfigurationError
 import org.typelevel.otel4s.sdk.metrics.exporter.AggregationSelector
 import org.typelevel.otel4s.sdk.metrics.exporter.MetricExporter
 
+import scala.concurrent.duration.FiniteDuration
 import scala.util.chaining._
 
 /** Autoconfigures Prometheus [[MetricExporter]].
@@ -45,6 +46,7 @@ import scala.util.chaining._
   * | otel.exporter.prometheus.without.type.suffix     | OTEL_EXPORTER_PROMETHEUS_WITHOUT_TYPE_SUFFIX     | If metrics are produced without a type suffix. Default is `false`.                       |
   * | otel.exporter.prometheus.without.scope.info      | OTEL_EXPORTER_PROMETHEUS_WITHOUT_SCOPE_INFO      | If metrics are produced without a scope info metric or scope labels. Default is `false`. |
   * | otel.exporter.prometheus.without.target.info     | OTEL_EXPORTER_PROMETHEUS_WITHOUT_TARGET_INFO     | If metrics are produced without a target info metric. Default is `false`.                |
+  * | otel.exporter.prometheus.shutdown.timeout        | OTEL_EXPORTER_PROMETHEUS_SHUTDOWN_TIMEOUT        | The time to wait for provider to do any cleanup required. Default is `10 seconds`.       |
   * }}}
   *
   * @see
@@ -85,10 +87,14 @@ private final class PrometheusMetricExporterAutoConfigure[
       withoutTargetInfo <- F
         .fromEither(config.getOrElse(ConfigKeys.WithoutTargetInfo, defaultConfig.targetInfoDisabled))
         .toResource
+      shutdownTimeout <- F
+        .fromEither(config.getOrElse(ConfigKeys.ShutdownTimeout, Defaults.ShutdownTimeout))
+        .toResource
       exporter <- PrometheusMetricExporter
         .serverBuilder[F]
         .withHost(host)
         .withPort(port)
+        .withShutdownTimeout(shutdownTimeout)
         .withDefaultAggregationSelector(defaultAggregation)
         .withWriterConfig(mkWriterConfig(withoutUnits, withoutTypeSuffixes, withoutScopeInfo, withoutTargetInfo))
         .build
@@ -153,8 +159,20 @@ object PrometheusMetricExporterAutoConfigure {
     val WithoutTargetInfo: Config.Key[Boolean] =
       Config.Key("otel.exporter.prometheus.without.target.info")
 
+    val ShutdownTimeout: Config.Key[FiniteDuration] =
+      Config.Key("otel.exporter.prometheus.shutdown.timeout")
+
     val All: Set[Config.Key[_]] =
-      Set(Host, Port, DefaultAggregation, WithoutUnits, WithoutTypeSuffixes, WithoutScopeInfo, WithoutTargetInfo)
+      Set(
+        Host,
+        Port,
+        DefaultAggregation,
+        WithoutUnits,
+        WithoutTypeSuffixes,
+        WithoutScopeInfo,
+        WithoutTargetInfo,
+        ShutdownTimeout
+      )
   }
 
   /** Returns [[org.typelevel.otel4s.sdk.autoconfigure.AutoConfigure.Named]] that configures Prometheus

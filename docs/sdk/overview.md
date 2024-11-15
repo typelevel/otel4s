@@ -1,6 +1,7 @@
 # Overview
 
-SDK modules are implemented in Scala and available for all platforms: JVM, Scala Native, and Scala.js.
+SDK modules are an alternative to the [otel4s-oteljava](../oteljava/overview.md) implementation.
+All modules are implemented in Scala and available for all platforms: JVM, Scala Native, and Scala.js.
 The implementation remains **experimental** and some functionality may be lacking.
 
 ## Getting Started

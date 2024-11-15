@@ -124,7 +124,7 @@ object PrometheusMetricExporter {
     /** Sets the port that metrics are served on. */
     def withPort(port: Port): HttpServerBuilder[F]
 
-    /** Sets the port that metrics are served on. */
+    /** Sets the shutdown timeout of the HTTP server. */
     def withShutdownTimeout(shutdownTimeout: FiniteDuration): HttpServerBuilder[F]
 
     /** Sets the default aggregation selector to use. */

@@ -349,7 +349,7 @@
         </table>
         
         <h3 id="prometheus-exporter" class="section"><a class="anchor-link left" href="#prometheus-exporter"><i class="icofont-laika link">&#xef71;</i></a>Prometheus exporter</h3>
-        <p>The exporter launches an HTTP server which responds to the HTTP requests with Prometheus metrics in the appropriate format. </p>
+        <p>The exporter launches an HTTP server which responds to the HTTP requests with Prometheus metrics in the appropriate format.</p>
         <table>
           <thead>
             <tr>
@@ -393,6 +393,11 @@
               <td>otel.exporter.prometheus.without.target.info</td>
               <td>OTEL_EXPORTER_PROMETHEUS_WITHOUT_TARGET_INFO</td>
               <td>If metrics are produced without a target info metric. Default is <code>false</code>.</td>
+            </tr>
+            <tr>
+              <td>otel.exporter.prometheus.shutdown.timeout</td>
+              <td>OTEL_EXPORTER_PROMETHEUS_SHUTDOWN_TIMEOUT</td>
+              <td>The time to wait for provider to do any cleanup required. Default is <code>10 seconds</code>.</td>
             </tr>
           </tbody>
         </table>

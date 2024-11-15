@@ -59,6 +59,7 @@ class PrometheusMetricExporterAutoConfigureSuite extends CatsEffectSuite with Su
       Map(
         "otel.exporter.prometheus.host" -> "",
         "otel.exporter.prometheus.port" -> "",
+        "otel.exporter.prometheus.shutdown.timeout" -> "",
         "otel.exporter.prometheus.default.aggregation" -> "",
         "otel.exporter.prometheus.without.units" -> "",
         "otel.exporter.prometheus.without.type.suffix" -> "",
@@ -98,6 +99,7 @@ class PrometheusMetricExporterAutoConfigureSuite extends CatsEffectSuite with Su
       Map(
         "otel.exporter.prometheus.host" -> "127.0.0.2",
         "otel.exporter.prometheus.port" -> "9465",
+        "otel.exporter.prometheus.shutdown.timeout" -> "10000",
         "otel.exporter.prometheus.without.units" -> "true",
         "otel.exporter.prometheus.without.type.suffix" -> "true",
         "otel.exporter.prometheus.without.scope.info" -> "true",
@@ -148,10 +150,11 @@ class PrometheusMetricExporterAutoConfigureSuite extends CatsEffectSuite with Su
              |1) `otel.exporter.prometheus.default.aggregation` - unspecified
              |2) `otel.exporter.prometheus.host` - N/A
              |3) `otel.exporter.prometheus.port` - N/A
-             |4) `otel.exporter.prometheus.without.scope.info` - N/A
-             |5) `otel.exporter.prometheus.without.target.info` - N/A
-             |6) `otel.exporter.prometheus.without.type.suffix` - N/A
-             |7) `otel.exporter.prometheus.without.units` - N/A""".stripMargin
+             |4) `otel.exporter.prometheus.shutdown.timeout` - N/A
+             |5) `otel.exporter.prometheus.without.scope.info` - N/A
+             |6) `otel.exporter.prometheus.without.target.info` - N/A
+             |7) `otel.exporter.prometheus.without.type.suffix` - N/A
+             |8) `otel.exporter.prometheus.without.units` - N/A""".stripMargin
         )
       )
   }

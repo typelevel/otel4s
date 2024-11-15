@@ -1,3 +1,5 @@
+import com.typesafe.tools.mima.core._
+
 ThisBuild / tlBaseVersion := "0.11"
 
 ThisBuild / organization := "org.typelevel"
@@ -446,6 +448,18 @@ lazy val `sdk-exporter-prometheus` =
       startYear := Some(2024),
       libraryDependencies ++= Seq(
         "org.http4s" %%% "http4s-ember-server" % Http4sVersion
+      ),
+      mimaBinaryIssueFilters ++= Seq(
+        // see #838
+        ProblemFilters.exclude[DirectMissingMethodProblem](
+          "org.typelevel.otel4s.sdk.exporter.prometheus.PrometheusMetricExporter#HttpServerBuilderImpl.*"
+        ),
+        ProblemFilters.exclude[IncompatibleResultTypeProblem](
+          "org.typelevel.otel4s.sdk.exporter.prometheus.PrometheusMetricExporter#HttpServerBuilderImpl.*"
+        ),
+        ProblemFilters.exclude[ReversedMissingMethodProblem](
+          "org.typelevel.otel4s.sdk.exporter.prometheus.PrometheusMetricExporter#HttpServerBuilder.withShutdownTimeout"
+        )
       )
     )
     .jsSettings(scalaJSLinkerSettings)

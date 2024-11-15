@@ -105,7 +105,7 @@ Target-specific properties are prioritized. E.g. `otel.exporter.otlp.metrics.end
 
 ### Prometheus exporter
 
-The exporter launches an HTTP server which responds to the HTTP requests with Prometheus metrics in the appropriate format. 
+The exporter launches an HTTP server which responds to the HTTP requests with Prometheus metrics in the appropriate format.
 
 | System property                              | Environment variable                                  | Description                                                                              |
 |----------------------------------------------|-------------------------------------------------------|------------------------------------------------------------------------------------------|
@@ -116,6 +116,7 @@ The exporter launches an HTTP server which responds to the HTTP requests with Pr
 | otel.exporter.prometheus.without.type.suffix | OTEL\\_EXPORTER\\_PROMETHEUS\_WITHOUT\\_TYPE\\_SUFFIX | If metrics are produced without a type suffix. Default is `false`.                       |
 | otel.exporter.prometheus.without.scope.info  | OTEL\\_EXPORTER\\_PROMETHEUS\_WITHOUT\\_SCOPE\\_INFO  | If metrics are produced without a scope info metric or scope labels. Default is `false`. |
 | otel.exporter.prometheus.without.target.info | OTEL\\_EXPORTER\\_PROMETHEUS\_WITHOUT\\_TARGET\\_INFO | If metrics are produced without a target info metric. Default is `false`.                |
+| otel.exporter.prometheus.shutdown.timeout    | OTEL\\_EXPORTER\\_PROMETHEUS\_SHUTDOWN\\_TIMEOUT      | The time to wait for provider to do any cleanup required. Default is `10 seconds`.       |
 
 ### Period metric reader
 

@@ -189,6 +189,7 @@ object PrometheusMetricExporterAutoConfigure {
     * | otel.exporter.prometheus.without.type.suffix     | OTEL_EXPORTER_PROMETHEUS_WITHOUT_TYPE_SUFFIX     | If metrics are produced without a type suffix. Default is `false`.                       |
     * | otel.exporter.prometheus.without.scope.info      | OTEL_EXPORTER_PROMETHEUS_WITHOUT_SCOPE_INFO      | If metrics are produced without a scope info metric or scope labels. Default is `false`. |
     * | otel.exporter.prometheus.without.target.info     | OTEL_EXPORTER_PROMETHEUS_WITHOUT_TARGET_INFO     | If metrics are produced without a target info metric. Default is `false`.                |
+    * | otel.exporter.prometheus.shutdown.timeout        | OTEL_EXPORTER_PROMETHEUS_SHUTDOWN_TIMEOUT        | The time to wait for provider to do any cleanup required. Default is `10 seconds`.       |
     * }}}
     *
     * @see

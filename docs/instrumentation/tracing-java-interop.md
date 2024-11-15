@@ -45,29 +45,28 @@ To mitigate this limitation, the context must be shared manually.
 ## Before we start
 
 Since we need to manually modify the context we need direct access to `Local[F, Context]`. 
-It can be constructed in the following way:
+The easiest way is to call `OtelJava#localContext`:
 
 ```scala mdoc:silent
 import cats.effect._
 import cats.mtl.Local
-import cats.syntax.functor._
-import org.typelevel.otel4s.instances.local._ // brings Local derived from IOLocal
+import cats.syntax.flatMap._
 import org.typelevel.otel4s.oteljava.context.Context
 import org.typelevel.otel4s.oteljava.OtelJava
-import io.opentelemetry.api.GlobalOpenTelemetry
 
-def createOtel4s[F[_]: Async](implicit L: Local[F, Context]): F[OtelJava[F]] =
-  Async[F].delay(GlobalOpenTelemetry.get).map(OtelJava.local[F])
-
-def program[F[_]: Async](otel4s: OtelJava[F])(implicit L: Local[F, Context]): F[Unit] = {
-  val _ = (otel4s, L) // both OtelJava and Local[F, Context] are available here
-  Async[F].unit
+def program[F[_]: Async](implicit L: Local[F, Context]): F[Unit] = {
+  Local[F, Context].ask
+    .flatMap(context => Async[F].delay {
+      val _ = context // Do something with context
+    })
 }
 
-val run: IO[Unit] =
-  IOLocal(Context.root).flatMap { implicit ioLocal: IOLocal[Context] =>
-    createOtel4s[IO].flatMap(otel4s => program(otel4s))
+def run: IO[Unit] = {
+  OtelJava.autoConfigured[IO]().use { otel4s =>
+    import otel4s.localContext
+    program[IO]
   }
+}
 ```
 
 ## How to use Java SDK context with otel4s
@@ -144,7 +143,8 @@ When you invoke the `gen-random-name` endpoint, the spans will be structured in 
 ## How to use otel4s context with Java SDK
 
 To interoperate with Java libraries that rely on the Java SDK context, you need to activate the context manually.
-The following utility method allows you to extract the current otel4s context and set it into the ThreadLocal variable:
+
+The following utility function will run a blocking call
 
 ```scala mdoc:silent:reset
 import cats.effect.Sync
@@ -153,13 +153,13 @@ import cats.syntax.flatMap._
 import org.typelevel.otel4s.oteljava.context.Context
 import io.opentelemetry.context.{Context => JContext}
 
-def useJContext[F[_]: Sync, A](use: JContext => A)(implicit L: Local[F, Context]): F[A] = 
-  Local[F, Context].ask.flatMap { ctx => // <1>
-    Sync[F].delay {
+def blockingWithContext[F[_]: Sync, A](use: => A)(implicit L: Local[F, Context]): F[A] = 
+  Local[F, Context].ask.flatMap { ctx =>      // <1>
+    Sync[F].blocking {
       val jContext: JContext = ctx.underlying // <2>
-      val scope = jContext.makeCurrent() // <3>
+      val scope = jContext.makeCurrent()      // <3>
       try {
-        use(jContext)
+        use
       } finally {
         scope.close()
       }
@@ -171,15 +171,14 @@ def useJContext[F[_]: Sync, A](use: JContext => A)(implicit L: Local[F, Context]
 2) `ctx.underlying` - unwrap otel4s context and get `JContext`  
 3) `jContext.makeCurrent()` - activate `JContext` within the current thread
 
-**Note:** we use `Sync[F].delay` to handle the side effects.
-Depending on your use case, you may prefer `Sync[F].interruptible` or `Sync[F].blocking`.
+Similarly you can write functions for `Sync[F].interruptible` or `Sync[F].delay`.
  
 Now we can run a slightly modified original 'problematic' example:
 ```scala
 tracer.span("test").use { span => // start 'test' span using otel4s
-  IO.println(s"Otel4s ctx: ${span.context}") >> useJContext[IO, Unit] { _ =>
+  IO.println(s"Otel4s ctx: ${span.context}") >> blockingWithContext {
     val jSpanContext = JSpan.current().getSpanContext // get a span from the ThreadLocal variable
-     println(s"Java ctx: $jSpanContext") 
+    println(s"Java ctx: $jSpanContext") 
   }
 }
 ```
@@ -190,8 +189,43 @@ Java ctx: {traceId=06f5d9112efbe711947ebbded1287a30, spanId=26ed80c398cc039f, ..
 Otel4s ctx: {traceId=06f5d9112efbe711947ebbded1287a30, spanId=26ed80c398cc039f, ...}
 ```
 
-As we can see, the tracing information is in sync now,
-and you can use Java-instrumented libraries within the `useJContext` block. 
+As we can see, the tracing information is now available in ThreadLocal now too.
+Code instrumented using OpenTelemetry's Java API will work inside `blockingWithContext`.
+
+### Calling asynchronous code
+
+When interopting with asynchronous Java APIs:
+
+```scala mdoc:silent
+import scala.concurrent.ExecutionContext
+import cats.effect.Async
+
+// Ensure executing the callback happens on the same thread so Context is correctly propagated and then cleaned up
+def tracedContext(ctx: JContext): ExecutionContext =
+  new ExecutionContext {
+    def execute(runnable: Runnable): Unit = {
+      val scope = ctx.makeCurrent()
+      try {
+        runnable.run()
+      } finally {
+        scope.close()
+      }
+    }
+    def reportFailure(cause: Throwable): Unit =
+      cause.printStackTrace()
+  }
+  
+def asyncWithContext[F[_]: Async, A](k: (Either[Throwable, A] => Unit) => F[Option[F[Unit]]])(implicit L: Local[F, Context]): F[A] =
+  Local[F, Context].ask.flatMap { ctx =>
+    Async[F].evalOn(
+      Async[F].async[A](cb => k(cb)), 
+      tracedContext(ctx.underlying)
+    )
+  }
+```
+
+Note: If you're calling an asynchronous Java/Scala API, it's likely that they are using their own threadpools under the hood.
+In which case you probably want to configure them to propagate the Context i.e. using `io.opentelemetry.context.Context.wrap`.
 
 ## Pekko HTTP example
 

@@ -76,7 +76,7 @@ def test: IO[Unit] =
 // here you can use an assertion mechanism from your favorite testing framework
 def assertMetrics(metrics: List[MetricData], expected: List[TelemetryMetric]): IO[Unit] =
   IO {
-    assert(metrics.map(TelemetryMetric.fromMetricData) == expected)
+    assert(metrics.sortBy(_.name).map(TelemetryMetric.fromMetricData) == expected)
   }
   
 // a minimized representation of the MetricData to simplify testing

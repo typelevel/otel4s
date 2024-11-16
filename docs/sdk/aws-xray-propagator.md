@@ -28,9 +28,9 @@ libraryDependencies ++= Seq(
 Add directives to the `*.scala` file:
 
 ```scala
-//> using lib "org.typelevel::otel4s-sdk::@VERSION@" // <1>
-//> using lib "org.typelevel::otel4s-sdk-exporter::@VERSION@" // <2>
-//> using lib "org.typelevel::otel4s-sdk-contrib-aws-xray-propagator::@VERSION@" // <3>
+//> using dep "org.typelevel::otel4s-sdk::@VERSION@" // <1>
+//> using dep "org.typelevel::otel4s-sdk-exporter::@VERSION@" // <2>
+//> using dep "org.typelevel::otel4s-sdk-contrib-aws-xray-propagator::@VERSION@" // <3>
 ```
 
 @:@

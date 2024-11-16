@@ -29,12 +29,12 @@ javaOptions += "-Dotel.exporter.otlp.endpoint=http://localhost:4317" // <6>
 Add directives to the `grafana.scala`:
 ```scala
 //> using scala 3.3.0
-//> using lib "org.typelevel::otel4s-oteljava:@VERSION@" // <1>
-//> using lib "io.opentelemetry:opentelemetry-exporter-otlp:@OPEN_TELEMETRY_VERSION@" // <2>
-//> using lib "io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:@OPEN_TELEMETRY_VERSION@" // <3>
-//> using `java-opt` "-Dotel.java.global-autoconfigure.enabled=true"       // <4>
-//> using `java-opt` "-Dotel.service.name=grafana-example"                 // <5>
-//> using `java-opt` "-Dotel.exporter.otlp.endpoint=http://localhost:4317" // <6>
+//> using dep "org.typelevel::otel4s-oteljava:@VERSION@" // <1>
+//> using dep "io.opentelemetry:opentelemetry-exporter-otlp:@OPEN_TELEMETRY_VERSION@" // <2>
+//> using dep "io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:@OPEN_TELEMETRY_VERSION@" // <3>
+//> using javaOpt "-Dotel.java.global-autoconfigure.enabled=true"       // <4>
+//> using javaOpt "-Dotel.service.name=grafana-example"                 // <5>
+//> using javaOpt "-Dotel.exporter.otlp.endpoint=http://localhost:4317" // <6>
 ```
 
 @:@

@@ -30,12 +30,12 @@ javaOptions += "-Dotel.metrics.exporter=none"                  // <6>
 
 Add directives to the `tracing.scala`:
 ```scala
-//> using lib "org.typelevel::otel4s-oteljava:@VERSION@" // <1>
-//> using lib "io.opentelemetry:opentelemetry-exporter-otlp:@OPEN_TELEMETRY_VERSION@" // <2>
-//> using lib "io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:@OPEN_TELEMETRY_VERSION@" // <3>
-//> using `java-opt` "-Dotel.java.global-autoconfigure.enabled=true" // <4>
-//> using `java-opt` "-Dotel.service.name=jaeger-example"            // <5>
-//> using `java-opt` "-Dotel.metrics.exporter=none"                  // <6>
+//> using dep "org.typelevel::otel4s-oteljava:@VERSION@" // <1>
+//> using dep "io.opentelemetry:opentelemetry-exporter-otlp:@OPEN_TELEMETRY_VERSION@" // <2>
+//> using dep "io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:@OPEN_TELEMETRY_VERSION@" // <3>
+//> using javaOpt "-Dotel.java.global-autoconfigure.enabled=true" // <4>
+//> using javaOpt "-Dotel.service.name=jaeger-example"            // <5>
+//> using javaOpt "-Dotel.metrics.exporter=none"                  // <6>
 ```
 
 @:@

@@ -819,6 +819,7 @@ lazy val docs = project
   .enablePlugins(TypelevelSitePlugin)
   .dependsOn(
     oteljava,
+    `oteljava-testkit`,
     sdk.jvm,
     `sdk-exporter`.jvm,
     `sdk-exporter-prometheus`.jvm,

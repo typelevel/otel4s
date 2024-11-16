@@ -824,7 +824,8 @@ lazy val docs = project
     `sdk-exporter-prometheus`.jvm,
     `sdk-contrib-aws-resource`.jvm,
     `sdk-contrib-aws-xray`.jvm,
-    `sdk-contrib-aws-xray-propagator`.jvm
+    `sdk-contrib-aws-xray-propagator`.jvm,
+    `sdk-testkit`.jvm
   )
   .settings(
     libraryDependencies ++= Seq(

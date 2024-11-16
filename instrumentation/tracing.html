@@ -103,12 +103,14 @@
     <li class="level1 nav-leaf"><a href="../ecosystem.html">Ecosystem</a></li>
     <li class="level1 nav-header">Instrumentation</li>
     <li class="level2 nav-leaf"><a href="metrics.html">Metrics</a></li>
-    <li class="level2 nav-leaf"><a href="metrics-jvm-runtime.html">Metrics | JVM Runtime</a></li>
     <li class="level2 active nav-leaf"><a href="#">Tracing</a></li>
     <li class="level2 nav-leaf"><a href="tracing-cross-service-propagation.html">Tracing | Cross-service propagation</a></li>
-    <li class="level2 nav-leaf"><a href="tracing-java-interop.html">Tracing | Interop with Java-instrumented libraries</a></li>
     <li class="level1 nav-header">Customization</li>
     <li class="level2 nav-leaf"><a href="../customization/histogram-custom-buckets/">Histogram custom buckets</a></li>
+    <li class="level1 nav-header">OtelJava</li>
+    <li class="level2 nav-leaf"><a href="../oteljava/overview.html">Overview</a></li>
+    <li class="level2 nav-leaf"><a href="../oteljava/metrics-jvm-runtime.html">Metrics | JVM Runtime</a></li>
+    <li class="level2 nav-leaf"><a href="../oteljava/tracing-java-interop.html">Tracing | Interop with Java-instrumented libraries</a></li>
     <li class="level1 nav-header">SDK</li>
     <li class="level2 nav-leaf"><a href="../sdk/overview.html">Overview</a></li>
     <li class="level2 nav-leaf"><a href="../sdk/configuration.html">Configuration</a></li>
@@ -144,12 +146,12 @@
       <main class="content">
 
         <h1 id="tracing" class="title">Tracing</h1>
-        <p><code>Tracer</code> is an entry point to the tracing capabilities and instrumentation. 
-        It provides various functionalities for creating and managing spans, 
+        <p><code>Tracer</code> is an entry point to the tracing capabilities and instrumentation.
+        It provides various functionalities for creating and managing spans,
         extracting context from carriers, propagating context downstream, and more.</p>
         
         <h3 id="how-to-get-the-tracer" class="section"><a class="anchor-link left" href="#how-to-get-the-tracer"><i class="icofont-laika link">&#xef71;</i></a>How to get the <code>Tracer</code></h3>
-        <p>Currently, <code>otel4s</code> has a backend built on top of <a href="https://github.com/open-telemetry/opentelemetry-java">OpenTelemetry Java</a>. 
+        <p>Currently, <code>otel4s</code> has a backend built on top of <a href="https://github.com/open-telemetry/opentelemetry-java">OpenTelemetry Java</a>.
         Add the following configuration to the favorite build tool:</p>
         <div class="tab-container" data-tab-group="build-tool">
           <ul class="tab-group">
@@ -174,28 +176,33 @@
           </div>
         </div>
         <ol class="arabic">
-          <li>Add the <code>otel4s-oteljava</code> library<br></li>
-          <li>Add an OpenTelemetry exporter. Without the exporter, the application will crash<br></li>
-          <li>Add an OpenTelemetry autoconfigure extension<br></li>
-          <li>Enable OpenTelemetry SDK <a href="https://opentelemetry.io/docs/languages/java/configuration/">autoconfigure mode</a><br></li>
+          <li>Add the <code>otel4s-oteljava</code> library</li>
+          <li>Add an OpenTelemetry exporter. Without the exporter, the application will crash</li>
+          <li>Add an OpenTelemetry autoconfigure extension</li>
+          <li>Enable OpenTelemetry SDK <a href="https://opentelemetry.io/docs/languages/java/configuration/">autoconfigure mode</a></li>
         </ol>
         <p>Once the build configuration is up-to-date, the <code>Tracer</code> can be created:</p>
         <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.</span><span class="type-name">IO</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">trace</span><span>.</span><span class="type-name">Tracer</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="type-name">OtelJava</span><span>
 
-</span><span class="type-name">OtelJava</span><span>.</span><span class="identifier">autoConfigured</span><span>[</span><span class="type-name">IO</span><span>]()
-  .</span><span class="identifier">evalMap</span><span> { </span><span class="identifier">otel4s</span><span> =&gt;
-    </span><span class="identifier">otel4s</span><span>.</span><span class="identifier">tracerProvider</span><span>.</span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;com.service&quot;</span><span>).</span><span class="identifier">flatMap</span><span> { </span><span class="keyword">implicit</span><span> </span><span class="identifier">tracer</span><span>: </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">IO</span><span>] =&gt;
-      </span><span class="keyword">val</span><span> </span><span class="identifier">_</span><span> = </span><span class="identifier">tracer</span><span> </span><span class="comment">// use tracer here
-</span><span>      ???
-    }
-  }</span></code></pre>
+</span><span class="type-name">OtelJava</span><span>.</span><span class="identifier">autoConfigured</span><span>[</span><span class="type-name">IO</span><span>]().</span><span class="identifier">evalMap</span><span> { </span><span class="identifier">otel4s</span><span> =&gt;
+  </span><span class="identifier">otel4s</span><span>.</span><span class="identifier">tracerProvider</span><span>.</span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;com.service&quot;</span><span>).</span><span class="identifier">flatMap</span><span> { </span><span class="keyword">implicit</span><span> </span><span class="identifier">tracer</span><span>: </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">IO</span><span>] =&gt;
+    </span><span class="keyword">val</span><span> </span><span class="identifier">_</span><span> = </span><span class="identifier">tracer</span><span> </span><span class="comment">// use tracer here
+</span><span>    ???
+  }
+}</span></code></pre>
+        <div class="callout warning">
+          <i class="icofont-laika warning">&#xf026;</i>
+          <p><code>OtelJava.autoConfigured</code> creates an <strong>isolated</strong> <strong>non-global</strong> instance.
+          If you create multiple instances, those instances won&#39;t interoperate (i.e. be able to see each others spans).</p>
+        </div>
         
         <h3 id="creating-a-span" class="section"><a class="anchor-link left" href="#creating-a-span"><i class="icofont-laika link">&#xef71;</i></a>Creating a span</h3>
-        <p>You can use the <code>span</code> or <code>spanBuilder</code> API to create a new span. </p>
-        <p>The tracer automatically determines whether to create a child span or a root span based on the presence of a valid parent in the tracing context. 
-        If a valid parent is available, the new span becomes a child of it.  Otherwise, it becomes a root span. </p>
+        <p>You can use the <code>span</code> or <code>spanBuilder</code> API to create a new span.</p>
+        <p>The tracer automatically determines whether to create a child span or a root span based on the presence of a valid
+        parent in the tracing context.
+        If a valid parent is available, the new span becomes a child of it. Otherwise, it becomes a root span.</p>
         <p>Here&#39;s how you can do it:</p>
         <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="type-name">Monad</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.</span><span class="type-name">Ref</span><span>
@@ -206,42 +213,43 @@
 
 </span><span class="keyword">case</span><span> </span><span class="keyword">class</span><span> </span><span class="type-name">User</span><span>(</span><span class="identifier">email</span><span>: </span><span class="type-name">String</span><span>)
 
-</span><span class="keyword">class</span><span> </span><span class="type-name">UserRepository</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>]: </span><span class="type-name">Monad</span><span>: </span><span class="type-name">Tracer</span><span>](</span><span class="identifier">storage</span><span>: </span><span class="type-name">Ref</span><span>[</span><span class="type-name">F</span><span>, </span><span class="type-name">Map</span><span>[</span><span class="type-name">Long</span><span>, </span><span class="type-name">User</span><span>]]) {
-  
+</span><span class="keyword">class</span><span> </span><span class="type-name">UserRepository</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>] : </span><span class="type-name">Monad</span><span> : </span><span class="type-name">Tracer</span><span>](</span><span class="identifier">storage</span><span>: </span><span class="type-name">Ref</span><span>[</span><span class="type-name">F</span><span>, </span><span class="type-name">Map</span><span>[</span><span class="type-name">Long</span><span>, </span><span class="type-name">User</span><span>]]) {
+
   </span><span class="keyword">def</span><span> </span><span class="declaration-name">findUser</span><span>(</span><span class="identifier">userId</span><span>: </span><span class="type-name">Long</span><span>): </span><span class="type-name">F</span><span>[</span><span class="type-name">Option</span><span>[</span><span class="type-name">User</span><span>]] =
     </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">span</span><span>(</span><span class="string-literal">&quot;find-user&quot;</span><span>, </span><span class="type-name">Attribute</span><span>(</span><span class="string-literal">&quot;user_id&quot;</span><span>, </span><span class="identifier">userId</span><span>)).</span><span class="identifier">use</span><span> { </span><span class="identifier">span</span><span> =&gt;
       </span><span class="keyword">for</span><span> {
         </span><span class="identifier">current</span><span> &lt;- </span><span class="identifier">storage</span><span>.</span><span class="identifier">get</span><span>
-        </span><span class="identifier">user</span><span>    &lt;- </span><span class="type-name">Monad</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">pure</span><span>(</span><span class="identifier">current</span><span>.</span><span class="identifier">get</span><span>(</span><span class="identifier">userId</span><span>))
-        </span><span class="identifier">_</span><span>       &lt;- </span><span class="identifier">span</span><span>.</span><span class="identifier">addAttribute</span><span>(</span><span class="type-name">Attribute</span><span>(</span><span class="string-literal">&quot;user_exists&quot;</span><span>, </span><span class="identifier">user</span><span>.</span><span class="identifier">isDefined</span><span>))
+        </span><span class="identifier">user</span><span> &lt;- </span><span class="type-name">Monad</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">pure</span><span>(</span><span class="identifier">current</span><span>.</span><span class="identifier">get</span><span>(</span><span class="identifier">userId</span><span>))
+        </span><span class="identifier">_</span><span> &lt;- </span><span class="identifier">span</span><span>.</span><span class="identifier">addAttribute</span><span>(</span><span class="type-name">Attribute</span><span>(</span><span class="string-literal">&quot;user_exists&quot;</span><span>, </span><span class="identifier">user</span><span>.</span><span class="identifier">isDefined</span><span>))
       } </span><span class="keyword">yield</span><span> </span><span class="identifier">user</span><span>
     }
-  
+
 }</span></code></pre>
         
         <h3 id="starting-a-root-span" class="section"><a class="anchor-link left" href="#starting-a-root-span"><i class="icofont-laika link">&#xef71;</i></a>Starting a root span</h3>
-        <p>A root span is a span that is not a child of any other span. 
-        You can use <code>Tracer[F].rootScope</code> to wrap an existing effect or <code>Tracer[F].rootSpan</code> to explicitly start a new root span:</p>
+        <p>A root span is a span that is not a child of any other span.
+        You can use <code>Tracer[F].rootScope</code> to wrap an existing effect or <code>Tracer[F].rootSpan</code> to explicitly start a new root
+        span:</p>
         <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="type-name">Monad</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">syntax</span><span>.</span><span class="identifier">flatMap</span><span>.</span><span class="identifier">_</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">syntax</span><span>.</span><span class="identifier">functor</span><span>.</span><span class="identifier">_</span><span>
 
-</span><span class="keyword">class</span><span> </span><span class="type-name">UserRequestHandler</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>]: </span><span class="type-name">Tracer</span><span>: </span><span class="type-name">Monad</span><span>](</span><span class="identifier">repo</span><span>: </span><span class="type-name">UserRepository</span><span>[</span><span class="type-name">F</span><span>]) {
+</span><span class="keyword">class</span><span> </span><span class="type-name">UserRequestHandler</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>] : </span><span class="type-name">Tracer</span><span> : </span><span class="type-name">Monad</span><span>](</span><span class="identifier">repo</span><span>: </span><span class="type-name">UserRepository</span><span>[</span><span class="type-name">F</span><span>]) {
   </span><span class="keyword">private</span><span> </span><span class="keyword">val</span><span> </span><span class="type-name">SystemUserId</span><span> = -</span><span class="number-literal">1L</span><span>
 
   </span><span class="keyword">def</span><span> </span><span class="declaration-name">handleUser</span><span>(</span><span class="identifier">userId</span><span>: </span><span class="type-name">Long</span><span>): </span><span class="type-name">F</span><span>[</span><span class="type-name">Unit</span><span>] =
     </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">rootScope</span><span>(</span><span class="identifier">activateUser</span><span>(</span><span class="identifier">userId</span><span>))
-    
+
   </span><span class="keyword">def</span><span> </span><span class="declaration-name">handleUserInternal</span><span>(</span><span class="identifier">userId</span><span>: </span><span class="type-name">Long</span><span>): </span><span class="type-name">F</span><span>[</span><span class="type-name">Unit</span><span>] =
     </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">rootSpan</span><span>(</span><span class="string-literal">&quot;handle-user&quot;</span><span>).</span><span class="identifier">surround</span><span>(</span><span class="identifier">activateUser</span><span>(</span><span class="identifier">userId</span><span>))
-    
+
   </span><span class="keyword">private</span><span> </span><span class="keyword">def</span><span> </span><span class="declaration-name">activateUser</span><span>(</span><span class="identifier">userId</span><span>: </span><span class="type-name">Long</span><span>): </span><span class="type-name">F</span><span>[</span><span class="type-name">Unit</span><span>] =
     </span><span class="keyword">for</span><span> {
       </span><span class="identifier">systemUser</span><span> &lt;- </span><span class="identifier">repo</span><span>.</span><span class="identifier">findUser</span><span>(</span><span class="type-name">SystemUserId</span><span>)
-      </span><span class="identifier">user</span><span>       &lt;- </span><span class="identifier">repo</span><span>.</span><span class="identifier">findUser</span><span>(</span><span class="identifier">userId</span><span>)
-      </span><span class="identifier">_</span><span>          &lt;- </span><span class="identifier">activate</span><span>(</span><span class="identifier">systemUser</span><span>, </span><span class="identifier">user</span><span>)
+      </span><span class="identifier">user</span><span> &lt;- </span><span class="identifier">repo</span><span>.</span><span class="identifier">findUser</span><span>(</span><span class="identifier">userId</span><span>)
+      </span><span class="identifier">_</span><span> &lt;- </span><span class="identifier">activate</span><span>(</span><span class="identifier">systemUser</span><span>, </span><span class="identifier">user</span><span>)
     } </span><span class="keyword">yield</span><span> ()
-    
+
   </span><span class="keyword">private</span><span> </span><span class="keyword">def</span><span> </span><span class="declaration-name">activate</span><span>(</span><span class="identifier">systemUser</span><span>: </span><span class="type-name">Option</span><span>[</span><span class="type-name">User</span><span>], </span><span class="identifier">target</span><span>: </span><span class="type-name">Option</span><span>[</span><span class="type-name">User</span><span>]): </span><span class="type-name">F</span><span>[</span><span class="type-name">Unit</span><span>] = {
     </span><span class="keyword">val</span><span> </span><span class="identifier">_</span><span> = (</span><span class="identifier">systemUser</span><span>, </span><span class="identifier">target</span><span>) </span><span class="comment">// some processing logic
 </span><span>    </span><span class="type-name">Monad</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">unit</span><span>
@@ -261,13 +269,13 @@
   &gt; find-user { user_id = 123 }</code></pre>
         
         <h3 id="running-effect-without-tracing" class="section"><a class="anchor-link left" href="#running-effect-without-tracing"><i class="icofont-laika link">&#xef71;</i></a>Running effect without tracing</h3>
-        <p>If you want to disable tracing for a specific section of the effect, you can use the <code>Tracer[F].noopScope</code>. 
+        <p>If you want to disable tracing for a specific section of the effect, you can use the <code>Tracer[F].noopScope</code>.
         This creates a no-op scope where tracing operations have no effect:</p>
-        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">class</span><span> </span><span class="type-name">InternalUserService</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>]: </span><span class="type-name">Tracer</span><span>](</span><span class="identifier">repo</span><span>: </span><span class="type-name">UserRepository</span><span>[</span><span class="type-name">F</span><span>]) {
-  
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">class</span><span> </span><span class="type-name">InternalUserService</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>] : </span><span class="type-name">Tracer</span><span>](</span><span class="identifier">repo</span><span>: </span><span class="type-name">UserRepository</span><span>[</span><span class="type-name">F</span><span>]) {
+
   </span><span class="keyword">def</span><span> </span><span class="declaration-name">findUserInternal</span><span>(</span><span class="identifier">userId</span><span>: </span><span class="type-name">Long</span><span>): </span><span class="type-name">F</span><span>[</span><span class="type-name">Option</span><span>[</span><span class="type-name">User</span><span>]] =
     </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">noopScope</span><span>(</span><span class="identifier">repo</span><span>.</span><span class="identifier">findUser</span><span>(</span><span class="identifier">userId</span><span>))
-  
+
 }</span></code></pre>
 
         

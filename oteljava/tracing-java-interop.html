@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+  
+  <head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="generator" content="Typelevel Laika + Helium Theme" />
+  <title>Tracing | Interop with Java-instrumented libraries</title>
+  
+  <meta name="author" content="Ross A. Baker"/>
+  
+  
+  <meta name="description" content="docs"/>
+  
+  
+  
+  <link rel="icon" sizes="32x32" type="image/png" href="https://typelevel.org/img/favicon.png"/>
+  
+  
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:400,700">
+  
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Fira+Mono:500">
+  
+  <link rel="stylesheet" type="text/css" href="../helium/site/icofont.min.css" />
+    <link rel="stylesheet" type="text/css" href="../helium/site/laika-helium.css" />
+  <script src="../helium/site/laika-helium.js"></script>
+  
+  
+  <script> /* for avoiding page load transitions */ </script>
+</head>
+
+  <body>
+
+    <header id="top-bar" class="light-default dark-default">
+
+  <div class="row">
+    <a id="nav-icon">
+      <i class="icofont-laika navigationMenu" title="Navigation">&#xefa2;</i>
+    </a>
+    
+    
+  </div>
+
+  <a class="image-link" href="https://typelevel.org"><img src="https://typelevel.org/img/logo.svg"></a>
+
+  <div class="row links">
+    
+    <a class="icon-link svg-link" href="https://www.javadoc.io/doc/org.typelevel/otel4s-docs_2.13/0.11.1/"><span class="api" title="API"><svg class="svg-icon" width="100%" height="100%" viewBox="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg" xml:space="preserve" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+  <g class="svg-shape">
+    <path d="M75,47.5c13.246,0 24,10.754 24,24c0,13.246 -10.754,24 -24,24c-13.246,0 -24,-10.754 -24,-24c0,-13.246 10.754,-24 24,-24Zm-50,-0c13.246,-0 24,10.754 24,24c0,13.246 -10.754,24 -24,24c-13.246,-0 -24,-10.754 -24,-24c0,-13.246 10.754,-24 24,-24Zm2.705,16.735l7.239,0l0.622,-4.904l-21.833,0l-0,4.904l7.589,0l0,22.067l6.383,0l-0,-22.067Zm58.076,7.265c-0,-8.757 -3.698,-14.166 -10.781,-14.166c-7.083,-0 -10.781,5.604 -10.781,14.166c0,8.757 3.698,14.166 10.781,14.166c7.083,0 10.781,-5.604 10.781,-14.166Zm-6.539,0c0,6.538 -1.128,9.496 -4.242,9.496c-2.997,0 -4.242,-2.88 -4.242,-9.496c-0,-6.616 1.206,-9.496 4.242,-9.496c3.036,-0 4.242,2.88 4.242,9.496Zm-29.242,-67c13.246,0 24,10.754 24,24c0,13.246 -10.754,24 -24,24c-13.246,0 -24,-10.754 -24,-24c0,-13.246 10.754,-24 24,-24Zm0.512,9.834c-7.122,-0 -12.609,5.098 -12.609,14.127c-0,9.263 5.215,14.205 12.532,14.205c4.164,0 7.083,-1.634 9.068,-3.658l-2.88,-3.697c-1.518,1.206 -3.153,2.413 -5.838,2.413c-3.697,-0 -6.266,-2.763 -6.266,-9.263c-0,-6.616 2.724,-9.379 6.149,-9.379c2.102,-0 3.892,0.778 5.371,1.984l3.113,-3.775c-2.257,-1.868 -4.748,-2.957 -8.64,-2.957Z"/>
+  </g>
+</svg></span></a>
+    
+    <a class="icon-link svg-link" href="https://github.com/typelevel/otel4s"><span class="github" title="Source Code"><svg class="svg-icon" width="100%" height="100%" viewBox="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg" xml:space="preserve" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+  <g class="svg-shape">
+    <path d="M49.995,1c-27.609,-0 -49.995,22.386 -49.995,50.002c-0,22.09 14.325,40.83 34.194,47.444c2.501,0.458 3.413,-1.086 3.413,-2.412c0,-1.185 -0.043,-4.331 -0.067,-8.503c-13.908,3.021 -16.843,-6.704 -16.843,-6.704c-2.274,-5.773 -5.552,-7.311 -5.552,-7.311c-4.54,-3.103 0.344,-3.042 0.344,-3.042c5.018,0.356 7.658,5.154 7.658,5.154c4.46,7.64 11.704,5.433 14.552,4.156c0.454,-3.232 1.744,-5.436 3.174,-6.685c-11.102,-1.262 -22.775,-5.553 -22.775,-24.713c-0,-5.457 1.949,-9.92 5.147,-13.416c-0.516,-1.265 -2.231,-6.348 0.488,-13.233c0,0 4.199,-1.344 13.751,5.126c3.988,-1.108 8.266,-1.663 12.518,-1.682c4.245,0.019 8.523,0.574 12.517,1.682c9.546,-6.47 13.736,-5.126 13.736,-5.126c2.728,6.885 1.013,11.968 0.497,13.233c3.204,3.496 5.141,7.959 5.141,13.416c0,19.209 -11.691,23.436 -22.83,24.673c1.795,1.544 3.394,4.595 3.394,9.26c0,6.682 -0.061,12.076 -0.061,13.715c0,1.338 0.899,2.894 3.438,2.406c19.853,-6.627 34.166,-25.354 34.166,-47.438c-0,-27.616 -22.389,-50.002 -50.005,-50.002"/>
+  </g>
+</svg></span></a>
+    
+    <a class="icon-link glyph-link" href="https://discord.gg/XF3CXcMzqD"><i class="icofont-laika chat" title="Chat">&#xeed5;</i></a>
+    
+    <a class="icon-link svg-link" href="https://fosstodon.org/@typelevel"><span class="mastodon" title="Mastodon"><svg class="svg-icon" width="100%" height="100%" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg">
+  <g class="svg-shape">
+    <path d="M11.19 12.195c2.016-.24 3.77-1.475 3.99-2.603.348-1.778.32-4.339.32-4.339 0-3.47-2.286-4.488-2.286-4.488C12.062.238 10.083.017 8.027 0h-.05C5.92.017 3.942.238 2.79.765c0 0-2.285 1.017-2.285 4.488l-.002.662c-.004.64-.007 1.35.011 2.091.083 3.394.626 6.74 3.78 7.57 1.454.383 2.703.463 3.709.408 1.823-.1 2.847-.647 2.847-.647l-.06-1.317s-1.303.41-2.767.36c-1.45-.05-2.98-.156-3.215-1.928a3.614 3.614 0 0 1-.033-.496s1.424.346 3.228.428c1.103.05 2.137-.064 3.188-.189zm1.613-2.47H11.13v-4.08c0-.859-.364-1.295-1.091-1.295-.804 0-1.207.517-1.207 1.541v2.233H7.168V5.89c0-1.024-.403-1.541-1.207-1.541-.727 0-1.091.436-1.091 1.296v4.079H3.197V5.522c0-.859.22-1.541.66-2.046.456-.505 1.052-.764 1.793-.764.856 0 1.504.328 1.933.983L8 4.39l.417-.695c.429-.655 1.077-.983 1.934-.983.74 0 1.336.259 1.791.764.442.505.661 1.187.661 2.046v4.203z"/>
+  </g>
+</svg></span></a>
+    
+  </div>  
+
+</header>
+    
+    <nav id="sidebar">
+
+  <div class="row">
+    
+    <a class="icon-link svg-link" href="https://www.javadoc.io/doc/org.typelevel/otel4s-docs_2.13/0.11.1/"><span class="api" title="API"><svg class="svg-icon" width="100%" height="100%" viewBox="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg" xml:space="preserve" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+  <g class="svg-shape">
+    <path d="M75,47.5c13.246,0 24,10.754 24,24c0,13.246 -10.754,24 -24,24c-13.246,0 -24,-10.754 -24,-24c0,-13.246 10.754,-24 24,-24Zm-50,-0c13.246,-0 24,10.754 24,24c0,13.246 -10.754,24 -24,24c-13.246,-0 -24,-10.754 -24,-24c0,-13.246 10.754,-24 24,-24Zm2.705,16.735l7.239,0l0.622,-4.904l-21.833,0l-0,4.904l7.589,0l0,22.067l6.383,0l-0,-22.067Zm58.076,7.265c-0,-8.757 -3.698,-14.166 -10.781,-14.166c-7.083,-0 -10.781,5.604 -10.781,14.166c0,8.757 3.698,14.166 10.781,14.166c7.083,0 10.781,-5.604 10.781,-14.166Zm-6.539,0c0,6.538 -1.128,9.496 -4.242,9.496c-2.997,0 -4.242,-2.88 -4.242,-9.496c-0,-6.616 1.206,-9.496 4.242,-9.496c3.036,-0 4.242,2.88 4.242,9.496Zm-29.242,-67c13.246,0 24,10.754 24,24c0,13.246 -10.754,24 -24,24c-13.246,0 -24,-10.754 -24,-24c0,-13.246 10.754,-24 24,-24Zm0.512,9.834c-7.122,-0 -12.609,5.098 -12.609,14.127c-0,9.263 5.215,14.205 12.532,14.205c4.164,0 7.083,-1.634 9.068,-3.658l-2.88,-3.697c-1.518,1.206 -3.153,2.413 -5.838,2.413c-3.697,-0 -6.266,-2.763 -6.266,-9.263c-0,-6.616 2.724,-9.379 6.149,-9.379c2.102,-0 3.892,0.778 5.371,1.984l3.113,-3.775c-2.257,-1.868 -4.748,-2.957 -8.64,-2.957Z"/>
+  </g>
+</svg></span></a>
+    
+    <a class="icon-link svg-link" href="https://github.com/typelevel/otel4s"><span class="github" title="Source Code"><svg class="svg-icon" width="100%" height="100%" viewBox="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg" xml:space="preserve" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+  <g class="svg-shape">
+    <path d="M49.995,1c-27.609,-0 -49.995,22.386 -49.995,50.002c-0,22.09 14.325,40.83 34.194,47.444c2.501,0.458 3.413,-1.086 3.413,-2.412c0,-1.185 -0.043,-4.331 -0.067,-8.503c-13.908,3.021 -16.843,-6.704 -16.843,-6.704c-2.274,-5.773 -5.552,-7.311 -5.552,-7.311c-4.54,-3.103 0.344,-3.042 0.344,-3.042c5.018,0.356 7.658,5.154 7.658,5.154c4.46,7.64 11.704,5.433 14.552,4.156c0.454,-3.232 1.744,-5.436 3.174,-6.685c-11.102,-1.262 -22.775,-5.553 -22.775,-24.713c-0,-5.457 1.949,-9.92 5.147,-13.416c-0.516,-1.265 -2.231,-6.348 0.488,-13.233c0,0 4.199,-1.344 13.751,5.126c3.988,-1.108 8.266,-1.663 12.518,-1.682c4.245,0.019 8.523,0.574 12.517,1.682c9.546,-6.47 13.736,-5.126 13.736,-5.126c2.728,6.885 1.013,11.968 0.497,13.233c3.204,3.496 5.141,7.959 5.141,13.416c0,19.209 -11.691,23.436 -22.83,24.673c1.795,1.544 3.394,4.595 3.394,9.26c0,6.682 -0.061,12.076 -0.061,13.715c0,1.338 0.899,2.894 3.438,2.406c19.853,-6.627 34.166,-25.354 34.166,-47.438c-0,-27.616 -22.389,-50.002 -50.005,-50.002"/>
+  </g>
+</svg></span></a>
+    
+    <a class="icon-link glyph-link" href="https://discord.gg/XF3CXcMzqD"><i class="icofont-laika chat" title="Chat">&#xeed5;</i></a>
+    
+    <a class="icon-link svg-link" href="https://fosstodon.org/@typelevel"><span class="mastodon" title="Mastodon"><svg class="svg-icon" width="100%" height="100%" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg">
+  <g class="svg-shape">
+    <path d="M11.19 12.195c2.016-.24 3.77-1.475 3.99-2.603.348-1.778.32-4.339.32-4.339 0-3.47-2.286-4.488-2.286-4.488C12.062.238 10.083.017 8.027 0h-.05C5.92.017 3.942.238 2.79.765c0 0-2.285 1.017-2.285 4.488l-.002.662c-.004.64-.007 1.35.011 2.091.083 3.394.626 6.74 3.78 7.57 1.454.383 2.703.463 3.709.408 1.823-.1 2.847-.647 2.847-.647l-.06-1.317s-1.303.41-2.767.36c-1.45-.05-2.98-.156-3.215-1.928a3.614 3.614 0 0 1-.033-.496s1.424.346 3.228.428c1.103.05 2.137-.064 3.188-.189zm1.613-2.47H11.13v-4.08c0-.859-.364-1.295-1.091-1.295-.804 0-1.207.517-1.207 1.541v2.233H7.168V5.89c0-1.024-.403-1.541-1.207-1.541-.727 0-1.091.436-1.091 1.296v4.079H3.197V5.522c0-.859.22-1.541.66-2.046.456-.505 1.052-.764 1.793-.764.856 0 1.504.328 1.933.983L8 4.39l.417-.695c.429-.655 1.077-.983 1.934-.983.74 0 1.336.259 1.791.764.442.505.661 1.187.661 2.046v4.203z"/>
+  </g>
+</svg></span></a>
+    
+  </div>
+
+  <ul class="nav-list">
+    <li class="level1 nav-leaf"><a href="../">otel4s</a></li>
+    <li class="level1 nav-leaf"><a href="../modules-structure.html">Modules structure</a></li>
+    <li class="level1 nav-leaf"><a href="../tracing-context-propagation.html">Tracing context propagation</a></li>
+    <li class="level1 nav-leaf"><a href="../ecosystem.html">Ecosystem</a></li>
+    <li class="level1 nav-header">Instrumentation</li>
+    <li class="level2 nav-leaf"><a href="../instrumentation/metrics.html">Metrics</a></li>
+    <li class="level2 nav-leaf"><a href="../instrumentation/tracing.html">Tracing</a></li>
+    <li class="level2 nav-leaf"><a href="../instrumentation/tracing-cross-service-propagation.html">Tracing | Cross-service propagation</a></li>
+    <li class="level1 nav-header">Customization</li>
+    <li class="level2 nav-leaf"><a href="../customization/histogram-custom-buckets/">Histogram custom buckets</a></li>
+    <li class="level1 nav-header">OtelJava</li>
+    <li class="level2 nav-leaf"><a href="overview.html">Overview</a></li>
+    <li class="level2 nav-leaf"><a href="metrics-jvm-runtime.html">Metrics | JVM Runtime</a></li>
+    <li class="level2 active nav-leaf"><a href="#">Tracing | Interop with Java-instrumented libraries</a></li>
+    <li class="level1 nav-header">SDK</li>
+    <li class="level2 nav-leaf"><a href="../sdk/overview.html">Overview</a></li>
+    <li class="level2 nav-leaf"><a href="../sdk/configuration.html">Configuration</a></li>
+    <li class="level2 nav-leaf"><a href="../sdk/prometheus-exporter.html">Prometheus Exporter</a></li>
+    <li class="level2 nav-leaf"><a href="../sdk/aws-resource-detectors.html">AWS | Resource detectors</a></li>
+    <li class="level2 nav-leaf"><a href="../sdk/aws-xray.html">AWS | X-Ray ID Generator</a></li>
+    <li class="level2 nav-leaf"><a href="../sdk/aws-xray-propagator.html">AWS | X-Ray propagator</a></li>
+    <li class="level1 nav-header">Examples</li>
+    <li class="level2 nav-leaf"><a href="../examples/jaeger-docker/">Jaeger - collecting traces</a></li>
+    <li class="level2 nav-leaf"><a href="../examples/honeycomb/">Honeycomb - metrics and traces</a></li>
+    <li class="level2 nav-leaf"><a href="../examples/grafana/">Grafana - All-in-one</a></li>
+  </ul>
+
+</nav>
+
+    <div id="container">
+
+      
+<nav id="page-nav">
+  <p class="header"><a href="#">Tracing | Interop with Java-instrumented libraries</a></p>
+
+  <ul class="nav-list">
+    <li class="level1 nav-leaf"><a href="#glossary">Glossary</a></li>
+    <li class="level1 nav-leaf"><a href="#the-problem">The problem</a></li>
+    <li class="level1 nav-leaf"><a href="#before-we-start">Before we start</a></li>
+    <li class="level1 nav-leaf"><a href="#how-to-use-java-sdk-context-with-otel4s">How to use Java SDK context with otel4s</a></li>
+    <li class="level1 nav-leaf"><a href="#how-to-use-otel4s-context-with-java-sdk">How to use otel4s context with Java SDK</a></li>
+    <li class="level1 nav-leaf"><a href="#pekko-http-example">Pekko HTTP example</a></li>
+  </ul>
+
+  <p class="footer"></p>
+</nav>
+
+
+      <main class="content">
+
+        <h1 id="tracing-interop-with-java-instrumented-libraries" class="title">Tracing | Interop with Java-instrumented libraries</h1>
+        
+        <h2 id="glossary" class="section"><a class="anchor-link left" href="#glossary"><i class="icofont-laika link">&#xef71;</i></a>Glossary</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><a href="https://github.com/typelevel/otel4s/blob/main/java/common/src/main/scala/org/typelevel/otel4s/java/context/Context.scala">Context</a></td>
+              <td>otel4s context that carries tracing information (spans, etc)</td>
+            </tr>
+            <tr>
+              <td><a href="https://typelevel.org/cats-mtl/mtl-classes/local.html">Local［F, Context］</a></td>
+              <td>The context carrier tool within the effect environment</td>
+            </tr>
+            <tr>
+              <td><a href="https://github.com/open-telemetry/opentelemetry-java">Java SDK</a></td>
+              <td>The OpenTelemetry library for Java</td>
+            </tr>
+            <tr>
+              <td><a href="https://github.com/open-telemetry/opentelemetry-java/blob/v1.31.0/context/src/main/java/io/opentelemetry/context/Context.java">JContext</a></td>
+              <td>Alias for <code>io.opentelemetry.context.Context</code></td>
+            </tr>
+            <tr>
+              <td><a href="https://github.com/open-telemetry/opentelemetry-java/blob/v1.31.0/api/all/src/main/java/io/opentelemetry/api/trace/Span.java">JSpan</a></td>
+              <td>Alias for <code>io.opentelemetry.api.trace.Span</code></td>
+            </tr>
+          </tbody>
+        </table>
+        
+        <h2 id="the-problem" class="section"><a class="anchor-link left" href="#the-problem"><i class="icofont-laika link">&#xef71;</i></a>The problem</h2>
+        <p><a href="https://github.com/open-telemetry/opentelemetry-java">OpenTelemetry Java SDK</a> and otel4s rely on different context manipulation approaches, 
+        which aren&#39;t interoperable out of the box. 
+        Java SDK utilizes ThreadLocal variables to share tracing information, 
+        otel4s, on the other hand, uses <a href="https://typelevel.org/cats-mtl/mtl-classes/local.html">Local</a>.</p>
+        <p>Let&#39;s take a look at example below:</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.</span><span class="type-name">IO</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">trace</span><span>.</span><span class="type-name">Tracer</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">io</span><span>.</span><span class="identifier">opentelemetry</span><span>.</span><span class="identifier">api</span><span>.</span><span class="identifier">trace</span><span>.{</span><span class="type-name">Span</span><span> =&gt; </span><span class="type-name">JSpan</span><span>}
+
+</span><span class="keyword">def</span><span> </span><span class="declaration-name">test</span><span>(</span><span class="keyword">implicit</span><span> </span><span class="identifier">tracer</span><span>: </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">IO</span><span>]): </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] =
+  </span><span class="identifier">tracer</span><span>.</span><span class="identifier">span</span><span>(</span><span class="string-literal">&quot;test&quot;</span><span>).</span><span class="identifier">use</span><span> { </span><span class="identifier">span</span><span> =&gt; </span><span class="comment">// start &#39;test&#39; span using otel4s
+</span><span>    </span><span class="keyword">val</span><span> </span><span class="identifier">jSpanContext</span><span> = </span><span class="type-name">JSpan</span><span>.</span><span class="identifier">current</span><span>().</span><span class="identifier">getSpanContext</span><span> </span><span class="comment">// get a span from a ThreadLocal var
+</span><span>    </span><span class="type-name">IO</span><span>.</span><span class="identifier">println</span><span>(</span><span class="string-literal">s&quot;Java ctx: </span><span class="substitution">$jSpanContext</span><span class="string-literal">&quot;</span><span>) &gt;&gt; </span><span class="type-name">IO</span><span>.</span><span class="identifier">println</span><span>(</span><span class="string-literal">s&quot;Otel4s ctx: </span><span class="substitution">${span.context}</span><span class="string-literal">&quot;</span><span>)
+  }</span></code></pre>
+        <p>The output will be:</p>
+        <pre><code>Java ctx: {traceId=00000000000000000000000000000000, spanId=0000000000000000, ...}
+Otel4s ctx: {traceId=318854a5bd6ac0dd7b0a926f89c97ecb, spanId=925ad3a126cec272, ...}</code></pre>
+        <p>Here we try to get the current <code>JSpan</code> within the effect. 
+        Unfortunately, due to different context manipulation approaches, 
+        the context operated by otel4s isn&#39;t visible to the Java SDK.</p>
+        <p>To mitigate this limitation, the context must be shared manually.</p>
+        
+        <h2 id="before-we-start" class="section"><a class="anchor-link left" href="#before-we-start"><i class="icofont-laika link">&#xef71;</i></a>Before we start</h2>
+        <p>Since we need to manually modify the context we need direct access to <code>Local[F, Context]</code>. 
+        It can be constructed in the following way:</p>
+        <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.</span><span class="identifier">_</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">mtl</span><span>.</span><span class="type-name">Local</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">syntax</span><span>.</span><span class="identifier">functor</span><span>.</span><span class="identifier">_</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">instances</span><span>.</span><span class="identifier">local</span><span>.</span><span class="identifier">_</span><span> </span><span class="comment">// brings Local derived from IOLocal
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="identifier">context</span><span>.</span><span class="type-name">Context</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="type-name">OtelJava</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">io</span><span>.</span><span class="identifier">opentelemetry</span><span>.</span><span class="identifier">api</span><span>.</span><span class="type-name">GlobalOpenTelemetry</span><span>
+
+</span><span class="keyword">def</span><span> </span><span class="declaration-name">createOtel4s</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>]: </span><span class="type-name">Async</span><span>](</span><span class="keyword">implicit</span><span> </span><span class="type-name">L</span><span>: </span><span class="type-name">Local</span><span>[</span><span class="type-name">F</span><span>, </span><span class="type-name">Context</span><span>]): </span><span class="type-name">F</span><span>[</span><span class="type-name">OtelJava</span><span>[</span><span class="type-name">F</span><span>]] =
+  </span><span class="type-name">Async</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">delay</span><span>(</span><span class="type-name">GlobalOpenTelemetry</span><span>.</span><span class="identifier">get</span><span>).</span><span class="identifier">map</span><span>(</span><span class="type-name">OtelJava</span><span>.</span><span class="identifier">local</span><span>[</span><span class="type-name">F</span><span>])
+
+</span><span class="keyword">def</span><span> </span><span class="declaration-name">program</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>]: </span><span class="type-name">Async</span><span>](</span><span class="identifier">otel4s</span><span>: </span><span class="type-name">OtelJava</span><span>[</span><span class="type-name">F</span><span>])(</span><span class="keyword">implicit</span><span> </span><span class="type-name">L</span><span>: </span><span class="type-name">Local</span><span>[</span><span class="type-name">F</span><span>, </span><span class="type-name">Context</span><span>]): </span><span class="type-name">F</span><span>[</span><span class="type-name">Unit</span><span>] = {
+  </span><span class="keyword">val</span><span> </span><span class="identifier">_</span><span> = (</span><span class="identifier">otel4s</span><span>, </span><span class="type-name">L</span><span>) </span><span class="comment">// both OtelJava and Local[F, Context] are available here
+</span><span>  </span><span class="type-name">Async</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">unit</span><span>
+}
+
+</span><span class="keyword">val</span><span> </span><span class="identifier">run</span><span>: </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] =
+  </span><span class="type-name">IOLocal</span><span>(</span><span class="type-name">Context</span><span>.</span><span class="identifier">root</span><span>).</span><span class="identifier">flatMap</span><span> { </span><span class="keyword">implicit</span><span> </span><span class="identifier">ioLocal</span><span>: </span><span class="type-name">IOLocal</span><span>[</span><span class="type-name">Context</span><span>] =&gt;
+    </span><span class="identifier">createOtel4s</span><span>[</span><span class="type-name">IO</span><span>].</span><span class="identifier">flatMap</span><span>(</span><span class="identifier">otel4s</span><span> =&gt; </span><span class="identifier">program</span><span>(</span><span class="identifier">otel4s</span><span>))
+  }</span></code></pre>
+        
+        <h2 id="how-to-use-java-sdk-context-with-otel4s" class="section"><a class="anchor-link left" href="#how-to-use-java-sdk-context-with-otel4s"><i class="icofont-laika link">&#xef71;</i></a>How to use Java SDK context with otel4s</h2>
+        <p>There are several scenarios when you want to run an effect with an explicit Java SDK context. 
+        For example, when you need to materialize an effect inside <a href="https://pekko.apache.org/docs/pekko-http/current">Pekko HTTP</a> request handler.</p>
+        <p>To make it work, we can define a utility method:</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">mtl</span><span>.</span><span class="type-name">Local</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="identifier">context</span><span>.</span><span class="type-name">Context</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">io</span><span>.</span><span class="identifier">opentelemetry</span><span>.</span><span class="identifier">context</span><span>.{</span><span class="type-name">Context</span><span> =&gt; </span><span class="type-name">JContext</span><span>}
+
+</span><span class="keyword">def</span><span> </span><span class="declaration-name">withJContext</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>], </span><span class="type-name">A</span><span>](</span><span class="identifier">ctx</span><span>: </span><span class="type-name">JContext</span><span>)(</span><span class="identifier">fa</span><span>: </span><span class="type-name">F</span><span>[</span><span class="type-name">A</span><span>])(</span><span class="keyword">implicit</span><span> </span><span class="type-name">L</span><span>: </span><span class="type-name">Local</span><span>[</span><span class="type-name">F</span><span>, </span><span class="type-name">Context</span><span>]): </span><span class="type-name">F</span><span>[</span><span class="type-name">A</span><span>] =
+  </span><span class="type-name">Local</span><span>[</span><span class="type-name">F</span><span>, </span><span class="type-name">Context</span><span>].</span><span class="identifier">scope</span><span>(</span><span class="identifier">fa</span><span>)(</span><span class="type-name">Context</span><span>.</span><span class="identifier">wrap</span><span>(</span><span class="identifier">ctx</span><span>))</span></code></pre>
+        <p>1) <code>Context.wrap(ctx)</code> - creates otel4s context from the <code>JContext</code><br>
+        2) <code>Local[F, Context].scope</code> - sets the given context as an active environment for the effect <code>fa</code></p>
+        <hr>
+        <p>Let&#39;s say you use <a href="https://pekko.apache.org/docs/pekko-http/current">Pekko HTTP</a> and want to materialize an <code>IO</code> using the current tracing context: </p>
+        <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.{</span><span class="type-name">Async</span><span>, </span><span class="type-name">IO</span><span>}
+</span><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.</span><span class="identifier">std</span><span>.</span><span class="type-name">Random</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.</span><span class="identifier">syntax</span><span>.</span><span class="identifier">temporal</span><span>.</span><span class="identifier">_</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.</span><span class="identifier">unsafe</span><span>.</span><span class="identifier">implicits</span><span>.</span><span class="identifier">global</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">mtl</span><span>.</span><span class="type-name">Local</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">syntax</span><span>.</span><span class="identifier">all</span><span>.</span><span class="identifier">_</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">apache</span><span>.</span><span class="identifier">pekko</span><span>.</span><span class="identifier">http</span><span>.</span><span class="identifier">scaladsl</span><span>.</span><span class="identifier">model</span><span>.</span><span class="type-name">StatusCodes</span><span>.</span><span class="type-name">OK</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">apache</span><span>.</span><span class="identifier">pekko</span><span>.</span><span class="identifier">http</span><span>.</span><span class="identifier">scaladsl</span><span>.</span><span class="identifier">server</span><span>.</span><span class="type-name">Directives</span><span>.</span><span class="identifier">_</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">apache</span><span>.</span><span class="identifier">pekko</span><span>.</span><span class="identifier">http</span><span>.</span><span class="identifier">scaladsl</span><span>.</span><span class="identifier">server</span><span>.</span><span class="type-name">Route</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="type-name">Attribute</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">trace</span><span>.</span><span class="type-name">Tracer</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="identifier">context</span><span>.</span><span class="type-name">Context</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">io</span><span>.</span><span class="identifier">opentelemetry</span><span>.</span><span class="identifier">instrumentation</span><span>.</span><span class="identifier">annotations</span><span>.</span><span class="type-name">WithSpan</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">io</span><span>.</span><span class="identifier">opentelemetry</span><span>.</span><span class="identifier">context</span><span>.{</span><span class="type-name">Context</span><span> =&gt; </span><span class="type-name">JContext</span><span>}
+</span><span class="keyword">import</span><span> </span><span class="identifier">scala</span><span>.</span><span class="identifier">concurrent</span><span>.</span><span class="identifier">duration</span><span>.</span><span class="identifier">_</span><span>
+
+</span><span class="keyword">def</span><span> </span><span class="declaration-name">route</span><span>(</span><span class="keyword">implicit</span><span> </span><span class="type-name">T</span><span>: </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">IO</span><span>], </span><span class="type-name">L</span><span>: </span><span class="type-name">Local</span><span>[</span><span class="type-name">IO</span><span>, </span><span class="type-name">Context</span><span>]): </span><span class="type-name">Route</span><span> = 
+  </span><span class="identifier">path</span><span>(</span><span class="string-literal">&quot;gen-random-name&quot;</span><span>) {
+    </span><span class="identifier">get</span><span> {
+      </span><span class="identifier">complete</span><span> {
+        </span><span class="type-name">OK</span><span> -&gt; </span><span class="identifier">generateRandomName</span><span>(</span><span class="identifier">length</span><span> = </span><span class="number-literal">10</span><span>)
+      }
+    }
+  }
+
+</span><span class="annotation">@WithSpan</span><span>(</span><span class="string-literal">&quot;generate-random-name&quot;</span><span>)
+</span><span class="keyword">def</span><span> </span><span class="declaration-name">generateRandomName</span><span>(</span><span class="identifier">length</span><span>: </span><span class="type-name">Int</span><span>)(</span><span class="keyword">implicit</span><span> </span><span class="type-name">T</span><span>: </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">IO</span><span>], </span><span class="type-name">L</span><span>: </span><span class="type-name">Local</span><span>[</span><span class="type-name">IO</span><span>, </span><span class="type-name">Context</span><span>]): </span><span class="type-name">String</span><span> =
+  </span><span class="identifier">withJContext</span><span>(</span><span class="type-name">JContext</span><span>.</span><span class="identifier">current</span><span>())(</span><span class="identifier">generate</span><span>[</span><span class="type-name">IO</span><span>](</span><span class="identifier">length</span><span>)).</span><span class="identifier">unsafeRunSync</span><span>()
+
+</span><span class="keyword">def</span><span> </span><span class="declaration-name">generate</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>]: </span><span class="type-name">Async</span><span>: </span><span class="type-name">Tracer</span><span>](</span><span class="identifier">length</span><span>: </span><span class="type-name">Int</span><span>): </span><span class="type-name">F</span><span>[</span><span class="type-name">String</span><span>] =
+  </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">span</span><span>(</span><span class="string-literal">&quot;generate&quot;</span><span>, </span><span class="type-name">Attribute</span><span>(</span><span class="string-literal">&quot;length&quot;</span><span>, </span><span class="identifier">length</span><span>.</span><span class="identifier">toLong</span><span>)).</span><span class="identifier">surround</span><span> {
+    </span><span class="keyword">for</span><span> {
+      </span><span class="identifier">random</span><span> &lt;- </span><span class="type-name">Random</span><span>.</span><span class="identifier">scalaUtilRandom</span><span>[</span><span class="type-name">F</span><span>]
+      </span><span class="identifier">delay</span><span>  &lt;- </span><span class="identifier">random</span><span>.</span><span class="identifier">betweenInt</span><span>(</span><span class="number-literal">100</span><span>, </span><span class="number-literal">2000</span><span>)
+      </span><span class="identifier">chars</span><span>  &lt;- </span><span class="identifier">random</span><span>.</span><span class="identifier">nextAlphaNumeric</span><span>.</span><span class="identifier">replicateA</span><span>(</span><span class="identifier">length</span><span>).</span><span class="identifier">delayBy</span><span>(</span><span class="identifier">delay</span><span>.</span><span class="identifier">millis</span><span>)
+    } </span><span class="keyword">yield</span><span> </span><span class="identifier">chars</span><span>.</span><span class="identifier">mkString</span><span>
+  }
+
+</span><span class="keyword">def</span><span> </span><span class="declaration-name">withJContext</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>], </span><span class="type-name">A</span><span>](</span><span class="identifier">ctx</span><span>: </span><span class="type-name">JContext</span><span>)(</span><span class="identifier">fa</span><span>: </span><span class="type-name">F</span><span>[</span><span class="type-name">A</span><span>])(</span><span class="keyword">implicit</span><span> </span><span class="type-name">L</span><span>: </span><span class="type-name">Local</span><span>[</span><span class="type-name">F</span><span>, </span><span class="type-name">Context</span><span>]): </span><span class="type-name">F</span><span>[</span><span class="type-name">A</span><span>] =
+  </span><span class="type-name">Local</span><span>[</span><span class="type-name">F</span><span>, </span><span class="type-name">Context</span><span>].</span><span class="identifier">scope</span><span>(</span><span class="identifier">fa</span><span>)(</span><span class="type-name">Context</span><span>.</span><span class="identifier">wrap</span><span>(</span><span class="identifier">ctx</span><span>))</span></code></pre>
+        <p>When you invoke the <code>gen-random-name</code> endpoint, the spans will be structured in the following way:</p>
+        <pre><code>&gt; GET { http.method = GET, http.target = /gen-random-name, ... }
+  &gt; generate-random-name 
+    &gt; generate { length = 10 } </code></pre>
+        
+        <h2 id="how-to-use-otel4s-context-with-java-sdk" class="section"><a class="anchor-link left" href="#how-to-use-otel4s-context-with-java-sdk"><i class="icofont-laika link">&#xef71;</i></a>How to use otel4s context with Java SDK</h2>
+        <p>To interoperate with Java libraries that rely on the Java SDK context, you need to activate the context manually.
+        The following utility method allows you to extract the current otel4s context and set it into the ThreadLocal variable:</p>
+        <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.</span><span class="type-name">Sync</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">mtl</span><span>.</span><span class="type-name">Local</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">syntax</span><span>.</span><span class="identifier">flatMap</span><span>.</span><span class="identifier">_</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="identifier">context</span><span>.</span><span class="type-name">Context</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">io</span><span>.</span><span class="identifier">opentelemetry</span><span>.</span><span class="identifier">context</span><span>.{</span><span class="type-name">Context</span><span> =&gt; </span><span class="type-name">JContext</span><span>}
+
+</span><span class="keyword">def</span><span> </span><span class="declaration-name">useJContext</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>]: </span><span class="type-name">Sync</span><span>, </span><span class="type-name">A</span><span>](</span><span class="identifier">use</span><span>: </span><span class="type-name">JContext</span><span> =&gt; </span><span class="type-name">A</span><span>)(</span><span class="keyword">implicit</span><span> </span><span class="type-name">L</span><span>: </span><span class="type-name">Local</span><span>[</span><span class="type-name">F</span><span>, </span><span class="type-name">Context</span><span>]): </span><span class="type-name">F</span><span>[</span><span class="type-name">A</span><span>] = 
+  </span><span class="type-name">Local</span><span>[</span><span class="type-name">F</span><span>, </span><span class="type-name">Context</span><span>].</span><span class="identifier">ask</span><span>.</span><span class="identifier">flatMap</span><span> { </span><span class="identifier">ctx</span><span> =&gt; </span><span class="comment">// &lt;1&gt;
+</span><span>    </span><span class="type-name">Sync</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">delay</span><span> {
+      </span><span class="keyword">val</span><span> </span><span class="identifier">jContext</span><span>: </span><span class="type-name">JContext</span><span> = </span><span class="identifier">ctx</span><span>.</span><span class="identifier">underlying</span><span> </span><span class="comment">// &lt;2&gt;
+</span><span>      </span><span class="keyword">val</span><span> </span><span class="identifier">scope</span><span> = </span><span class="identifier">jContext</span><span>.</span><span class="identifier">makeCurrent</span><span>() </span><span class="comment">// &lt;3&gt;
+</span><span>      </span><span class="keyword">try</span><span> {
+        </span><span class="identifier">use</span><span>(</span><span class="identifier">jContext</span><span>)
+      } </span><span class="keyword">finally</span><span> {
+        </span><span class="identifier">scope</span><span>.</span><span class="identifier">close</span><span>()
+      }
+    }
+  }</span></code></pre>
+        <p>1) <code>Local[F, Context].ask</code> - get the current otel4s context<br>
+        2) <code>ctx.underlying</code> - unwrap otel4s context and get <code>JContext</code><br>
+        3) <code>jContext.makeCurrent()</code> - activate <code>JContext</code> within the current thread</p>
+        <p><strong>Note:</strong> we use <code>Sync[F].delay</code> to handle the side effects.
+        Depending on your use case, you may prefer <code>Sync[F].interruptible</code> or <code>Sync[F].blocking</code>.</p>
+        <p>Now we can run a slightly modified original &#39;problematic&#39; example:</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">tracer</span><span>.</span><span class="identifier">span</span><span>(</span><span class="string-literal">&quot;test&quot;</span><span>).</span><span class="identifier">use</span><span> { </span><span class="identifier">span</span><span> =&gt; </span><span class="comment">// start &#39;test&#39; span using otel4s
+</span><span>  </span><span class="type-name">IO</span><span>.</span><span class="identifier">println</span><span>(</span><span class="string-literal">s&quot;Otel4s ctx: </span><span class="substitution">${span.context}</span><span class="string-literal">&quot;</span><span>) &gt;&gt; </span><span class="identifier">useJContext</span><span>[</span><span class="type-name">IO</span><span>, </span><span class="type-name">Unit</span><span>] { </span><span class="identifier">_</span><span> =&gt;
+    </span><span class="keyword">val</span><span> </span><span class="identifier">jSpanContext</span><span> = </span><span class="type-name">JSpan</span><span>.</span><span class="identifier">current</span><span>().</span><span class="identifier">getSpanContext</span><span> </span><span class="comment">// get a span from the ThreadLocal variable
+</span><span>     </span><span class="identifier">println</span><span>(</span><span class="string-literal">s&quot;Java ctx: </span><span class="substitution">$jSpanContext</span><span class="string-literal">&quot;</span><span>) 
+  }
+}</span></code></pre>
+        <p>The output will be:</p>
+        <pre><code>Java ctx: {traceId=06f5d9112efbe711947ebbded1287a30, spanId=26ed80c398cc039f, ...}
+Otel4s ctx: {traceId=06f5d9112efbe711947ebbded1287a30, spanId=26ed80c398cc039f, ...}</code></pre>
+        <p>As we can see, the tracing information is in sync now,
+        and you can use Java-instrumented libraries within the <code>useJContext</code> block. </p>
+        
+        <h2 id="pekko-http-example" class="section"><a class="anchor-link left" href="#pekko-http-example"><i class="icofont-laika link">&#xef71;</i></a>Pekko HTTP example</h2>
+        <p><a href="https://github.com/typelevel/otel4s/blob/main/examples/src/main/scala/PekkoHttpExample.scala">PekkoHttpExample</a> is a complete example that shows how to use otel4s
+        with OpenTelemetry Java SDK instrumented libraries.</p>
+
+        
+<hr class="footer-rule"/>
+<footer>
+  otel4s is a <a href="https://typelevel.org/">Typelevel</a> project distributed under the <a href="https://www.apache.org/licenses/LICENSE-2.0.txt">Apache-2.0</a> license.
+</footer>
+
+
+      </main>
+
+    </div>
+
+  </body>
+
+</html>

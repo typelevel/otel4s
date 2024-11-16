@@ -160,12 +160,12 @@
           <div class="tab-content active" data-choice-name="sbt">
             <p>Add settings to the <code>build.sbt</code>:</p>
             <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">libraryDependencies</span><span> ++= </span><span class="type-name">Seq</span><span>(
-  </span><span class="string-literal">&quot;org.typelevel&quot;</span><span> %%% </span><span class="string-literal">&quot;otel4s-oteljava-testkit&quot;</span><span> % </span><span class="string-literal">&quot;0.11.1&quot;</span><span> % </span><span class="type-name">Test</span><span>, </span><span class="comment">// &lt;1&gt;
+  </span><span class="string-literal">&quot;org.typelevel&quot;</span><span> %% </span><span class="string-literal">&quot;otel4s-oteljava-testkit&quot;</span><span> % </span><span class="string-literal">&quot;0.11.1&quot;</span><span> % </span><span class="type-name">Test</span><span>, </span><span class="comment">// &lt;1&gt;
 </span><span>)</span></code></pre>
           </div>
           <div class="tab-content" data-choice-name="scala-cli">
             <p>Add directives to the <code>*.scala</code> file:</p>
-            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="comment">//&gt; using test.dep &quot;org.typelevel::otel4s-oteljava-testkit::0.11.1&quot; // &lt;1&gt;</span></code></pre>
+            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="comment">//&gt; using test.dep &quot;org.typelevel::otel4s-oteljava-testkit:0.11.1&quot; // &lt;1&gt;</span></code></pre>
           </div>
         </div>
         <ol class="arabic">
@@ -214,7 +214,7 @@
 </span><span class="comment">// here you can use an assertion mechanism from your favorite testing framework
 </span><span class="keyword">def</span><span> </span><span class="declaration-name">assertMetrics</span><span>(</span><span class="identifier">metrics</span><span>: </span><span class="type-name">List</span><span>[</span><span class="type-name">Metric</span><span>], </span><span class="identifier">expected</span><span>: </span><span class="type-name">List</span><span>[</span><span class="type-name">TelemetryMetric</span><span>]): </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] =
   </span><span class="type-name">IO</span><span> {
-    </span><span class="identifier">assert</span><span>(</span><span class="identifier">metrics</span><span>.</span><span class="identifier">map</span><span>(</span><span class="type-name">TelemetryMetric</span><span>.</span><span class="identifier">fromMetric</span><span>) == </span><span class="identifier">expected</span><span>)
+    </span><span class="identifier">assert</span><span>(</span><span class="identifier">metrics</span><span>.</span><span class="identifier">sortBy</span><span>(</span><span class="identifier">_</span><span>.</span><span class="identifier">name</span><span>).</span><span class="identifier">map</span><span>(</span><span class="type-name">TelemetryMetric</span><span>.</span><span class="identifier">fromMetric</span><span>) == </span><span class="identifier">expected</span><span>)
   }
   
 </span><span class="comment">// a minimized representation of the MetricData to simplify testing

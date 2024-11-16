@@ -214,7 +214,7 @@
 </span><span class="comment">// here you can use an assertion mechanism from your favorite testing framework
 </span><span class="keyword">def</span><span> </span><span class="declaration-name">assertMetrics</span><span>(</span><span class="identifier">metrics</span><span>: </span><span class="type-name">List</span><span>[</span><span class="type-name">MetricData</span><span>], </span><span class="identifier">expected</span><span>: </span><span class="type-name">List</span><span>[</span><span class="type-name">TelemetryMetric</span><span>]): </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] =
   </span><span class="type-name">IO</span><span> {
-    </span><span class="identifier">assert</span><span>(</span><span class="identifier">metrics</span><span>.</span><span class="identifier">map</span><span>(</span><span class="type-name">TelemetryMetric</span><span>.</span><span class="identifier">fromMetricData</span><span>) == </span><span class="identifier">expected</span><span>)
+    </span><span class="identifier">assert</span><span>(</span><span class="identifier">metrics</span><span>.</span><span class="identifier">sortBy</span><span>(</span><span class="identifier">_</span><span>.</span><span class="identifier">name</span><span>).</span><span class="identifier">map</span><span>(</span><span class="type-name">TelemetryMetric</span><span>.</span><span class="identifier">fromMetricData</span><span>) == </span><span class="identifier">expected</span><span>)
   }
   
 </span><span class="comment">// a minimized representation of the MetricData to simplify testing

@@ -57,8 +57,8 @@ libraryDependencies ++= Seq(
 Add directives to the `*.scala` file:
 
 ```scala
-//> using lib "org.typelevel::otel4s-sdk::@VERSION@" // <1>
-//> using lib "org.typelevel::otel4s-sdk-exporter-prometheus::@VERSION@" // <2>
+//> using dep "org.typelevel::otel4s-sdk::@VERSION@" // <1>
+//> using dep "org.typelevel::otel4s-sdk-exporter-prometheus::@VERSION@" // <2>
 ```
 
 @:@

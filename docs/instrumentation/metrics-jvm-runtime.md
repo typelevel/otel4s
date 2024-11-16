@@ -27,8 +27,8 @@ libraryDependencies ++= Seq(
 Add directives to the `*.scala` file:
 
 ```scala
-//> using lib "org.typelevel::otel4s-oteljava:@VERSION@" // <1>
-//> using lib "io.opentelemetry.instrumentation:opentelemetry-runtime-telemetry-java8:@OPEN_TELEMETRY_INSTRUMENTATION_ALPHA_VERSION@" // <2>
+//> using dep "org.typelevel::otel4s-oteljava:@VERSION@" // <1>
+//> using dep "io.opentelemetry.instrumentation:opentelemetry-runtime-telemetry-java8:@OPEN_TELEMETRY_INSTRUMENTATION_ALPHA_VERSION@" // <2>
 ```
 
 @:@
@@ -103,8 +103,8 @@ libraryDependencies ++= Seq(
 Add directives to the `*.scala` file:
 
 ```scala
-//> using lib "org.typelevel::otel4s-oteljava:@VERSION@" // <1>
-//> using lib "io.opentelemetry.instrumentation:opentelemetry-runtime-telemetry-java17:@OPEN_TELEMETRY_INSTRUMENTATION_ALPHA_VERSION@" // <2>
+//> using dep "org.typelevel::otel4s-oteljava:@VERSION@" // <1>
+//> using dep "io.opentelemetry.instrumentation:opentelemetry-runtime-telemetry-java17:@OPEN_TELEMETRY_INSTRUMENTATION_ALPHA_VERSION@" // <2>
 ```
 
 @:@

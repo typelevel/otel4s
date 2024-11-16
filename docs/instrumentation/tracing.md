@@ -29,10 +29,10 @@ javaOptions += "-Dotel.java.global-autoconfigure.enabled=true" // <4>
 Add directives to the `*.scala` file:
 
 ```scala
-//> using lib "org.typelevel::otel4s-oteljava:@VERSION@" // <1>
-//> using lib "io.opentelemetry:opentelemetry-exporter-otlp:@OPEN_TELEMETRY_VERSION@" // <2>
-//> using lib "io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:@OPEN_TELEMETRY_VERSION@" // <3>
-//> using `java-opt` "-Dotel.java.global-autoconfigure.enabled=true" // <4>
+//> using dep "org.typelevel::otel4s-oteljava:@VERSION@" // <1>
+//> using dep "io.opentelemetry:opentelemetry-exporter-otlp:@OPEN_TELEMETRY_VERSION@" // <2>
+//> using dep "io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:@OPEN_TELEMETRY_VERSION@" // <3>
+//> using javaOpt "-Dotel.java.global-autoconfigure.enabled=true" // <4>
 ```
 
 @:@

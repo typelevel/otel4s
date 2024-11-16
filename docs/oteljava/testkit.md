@@ -15,7 +15,7 @@ Add settings to the `build.sbt`:
 
 ```scala
 libraryDependencies ++= Seq(
-  "org.typelevel" %%% "otel4s-oteljava-testkit" % "@VERSION@" % Test, // <1>
+  "org.typelevel" %% "otel4s-oteljava-testkit" % "@VERSION@" % Test, // <1>
 )
 ```
 
@@ -24,7 +24,7 @@ libraryDependencies ++= Seq(
 Add directives to the `*.scala` file:
 
 ```scala
-//> using test.dep "org.typelevel::otel4s-oteljava-testkit::@VERSION@" // <1>
+//> using test.dep "org.typelevel::otel4s-oteljava-testkit:@VERSION@" // <1>
 ```
 
 @:@

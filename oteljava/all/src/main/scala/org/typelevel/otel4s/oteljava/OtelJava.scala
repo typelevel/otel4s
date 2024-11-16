@@ -118,6 +118,10 @@ object OtelJava {
     * [[https://opentelemetry.io/docs/instrumentation/java/automatic/ automatic instrumentation via Java agent]], you
     * MUST NOT use this method and MUST use [[global]] instead.
     *
+    * @note
+    *   `OtelJava.autoConfigured` creates an '''isolated''' '''non-global''' instance. If you create multiple instances,
+    *   those instances won't interoperate (i.e. be able to see each others spans).
+    *
     * @param customize
     *   A function for customizing the auto-configured SDK builder. This function MUST NOT call `setResultAsGlobal`.
     * @return

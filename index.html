@@ -142,7 +142,7 @@
     <li class="level1 nav-leaf"><a href="#how-to-choose-a-backend">How to choose a backend</a></li>
     <li class="level1 nav-leaf"><a href="#getting-started">Getting started</a></li>
     <li class="level1 nav-leaf"><a href="#examples">Examples</a></li>
-    <li class="level1 nav-leaf"><a href="#the-noop-tracer">The Noop Tracer</a></li>
+    <li class="level1 nav-leaf"><a href="#the-noop-tracer-and-meter">The noop Tracer and Meter</a></li>
   </ul>
 
   <p class="footer"></p>
@@ -161,21 +161,54 @@
         <h2 id="features" class="section"><a class="anchor-link left" href="#features"><i class="icofont-laika link">&#xef71;</i></a>Features</h2>
         <ul>
           <li>
-            <p>otel4s provides APIs and implementations for metrics and tracing.</p>
+            <p><strong>Simple and idiomatic metrics and tracing API</strong></p>
+            <p>Provides a user-friendly and idiomatic API for telemetry, designed with Typelevel ecosystem best practices.
+            Intuitive interfaces for <a href="instrumentation/metrics.html">metrics</a>, <a href="instrumentation/tracing.html">tracing</a>, 
+            and context propagation.</p>
           </li>
           <li>
-            <p>Core modules for JVM, Scala.js, and Scala Native offer an API with
-            no-op implementations.  These are appropriate for library
-            instrumentation.</p>
+            <p><strong>Minimal overhead</strong></p>
+            <p>The library utilizes metaprogramming techniques to reduce runtime costs and allocations.
+            <strong>Near-zero</strong> overhead when telemetry is disabled,
+            ensuring production performance is unaffected when tracing or metrics collection is not required.</p>
           </li>
           <li>
-            <p>SDK modules provide working telemetry for applications.
-            SDK modules are implemented in Scala from scratch. Available for JVM, Scala.js, and Scala Native.
-            The implementation remains <strong>experimental</strong> and some functionality may be lacking. </p>
+            <p><strong>Modularity</strong></p>
+            <p>A modular architecture allows to include only the required components:</p>
+            <ol class="arabic">
+              <li>Core modules: designed for library instrumentation, offering a lightweight dependency footprint</li>
+              <li>Selective integration: use only the metrics or tracing functionality without requiring the other</li>
+            </ol>
           </li>
           <li>
-            <p><a href="https://github.com/open-telemetry/opentelemetry-java/tree/main/api/all">opentelemetry-java</a> backend provided for the
-            JVM.  This provides working telemetry for applications.</p>
+            <p><strong>Cross-platform</strong></p>
+            <p>All modules are available for Scala 2.13 and Scala 3.
+            Core modules are available on all platforms: JVM, Scala.js, and Scala Native.</p>
+          </li>
+          <li>
+            <p><strong>OpenTelemetry Java SDK backend</strong></p>
+            <p>The <a href="oteljava/overview.html">backend</a> utilizes <a href="https://opentelemetry.io/docs/languages/java/">OpenTelemetry Java SDK</a> under the hood, 
+            offering production-ready telemetry:</p>
+            <ol class="arabic">
+              <li>Low memory overhead</li>
+              <li>Extensive <a href="https://opentelemetry.io/docs/languages/java/instrumentation/">instrumentation ecosystem</a></li>
+              <li>Well-tested implementation</li>
+            </ol>
+          </li>
+          <li>
+            <p><strong>SDK backend</strong></p>
+            <p><a href="sdk/overview.html">SDK backend</a> is implemented in Scala from scratch. Available for JVM, Scala.js, and Scala Native.
+            While the implementation is compliant with the OpenTelemetry specification,
+            it remains <strong>experimental</strong> and some functionality may be lacking.</p>
+          </li>
+          <li>
+            <p><strong>Testkit</strong></p>
+            <p>A testkit simplifies the validation of telemetry behavior in the applications and libraries:</p>
+            <ol class="arabic">
+              <li>Framework-agnostic, works with any test framework, for example weaver, munit, scalatest</li>
+              <li>Ideal for testing of the instrumented applications in end-to-end or unit tests</li>
+              <li>Available for <a href="oteljava/testkit.html">OpenTelemetry Java</a> and <a href="sdk/testkit.html">SDK</a> backends</li>
+            </ol>
           </li>
         </ul>
         
@@ -219,7 +252,7 @@
         
         <h2 id="how-to-choose-a-backend" class="section"><a class="anchor-link left" href="#how-to-choose-a-backend"><i class="icofont-laika link">&#xef71;</i></a>How to choose a backend</h2>
         <p>For most cases, <code>otel4s-oteljava</code> is the recommended backend, 
-        that utilizes <a href="https://github.com/open-telemetry/opentelemetry-java/tree/main/api/all">OpenTelemetry Java</a> library under the hood.
+        that utilizes <a href="https://opentelemetry.io/docs/languages/java/">OpenTelemetry Java</a> library under the hood.
         You can benefit from various integrations and low memory overhead.</p>
         <p><code>otel4s-sdk</code> is an <strong>experimental</strong> implementation of the Open Telemetry specification in pure Scala
         and available for all platforms: JVM, Scala.js, and Scala Native.
@@ -256,6 +289,39 @@
           <li>Add an OpenTelemetry autoconfigure extension<br></li>
           <li>Enable OpenTelemetry SDK <a href="https://opentelemetry.io/docs/languages/java/configuration/">autoconfigure mode</a><br></li>
         </ol>
+        <p>Then, the instance can be materialized:</p>
+        <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.{</span><span class="type-name">IO</span><span>, </span><span class="type-name">IOApp</span><span>}
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">metrics</span><span>.</span><span class="type-name">MeterProvider</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="type-name">OtelJava</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">trace</span><span>.</span><span class="type-name">TracerProvider</span><span>
+
+</span><span class="keyword">object</span><span> </span><span class="type-name">Main</span><span> </span><span class="keyword">extends</span><span> </span><span class="type-name">IOApp</span><span>.</span><span class="type-name">Simple</span><span> {
+  </span><span class="keyword">def</span><span> </span><span class="declaration-name">run</span><span>: </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] =
+    </span><span class="type-name">OtelJava</span><span>.</span><span class="identifier">autoConfigured</span><span>[</span><span class="type-name">IO</span><span>]().</span><span class="identifier">use</span><span> { </span><span class="identifier">otel4s</span><span> =&gt;
+      </span><span class="identifier">program</span><span>(</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">meterProvider</span><span>, </span><span class="identifier">otel4s</span><span>.</span><span class="identifier">tracerProvider</span><span>)
+    }
+
+  </span><span class="keyword">def</span><span> </span><span class="declaration-name">program</span><span>(
+      </span><span class="identifier">meterProvider</span><span>: </span><span class="type-name">MeterProvider</span><span>[</span><span class="type-name">IO</span><span>],
+      </span><span class="identifier">tracerProvider</span><span>: </span><span class="type-name">TracerProvider</span><span>[</span><span class="type-name">IO</span><span>]
+  ): </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] =
+    </span><span class="keyword">for</span><span> {
+      </span><span class="identifier">meter</span><span> &lt;- </span><span class="identifier">meterProvider</span><span>.</span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;service&quot;</span><span>)
+      </span><span class="identifier">tracer</span><span> &lt;- </span><span class="identifier">tracerProvider</span><span>.</span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;service&quot;</span><span>)
+
+      </span><span class="comment">// create a counter and increment its value
+</span><span>      </span><span class="identifier">counter</span><span> &lt;- </span><span class="identifier">meter</span><span>.</span><span class="identifier">counter</span><span>[</span><span class="type-name">Long</span><span>](</span><span class="string-literal">&quot;counter&quot;</span><span>).</span><span class="identifier">create</span><span>
+      </span><span class="identifier">_</span><span> &lt;- </span><span class="identifier">counter</span><span>.</span><span class="identifier">inc</span><span>()
+
+      </span><span class="comment">// create and materialize a span
+</span><span>      </span><span class="identifier">_</span><span> &lt;- </span><span class="identifier">tracer</span><span>.</span><span class="identifier">span</span><span>(</span><span class="string-literal">&quot;span&quot;</span><span>).</span><span class="identifier">surround</span><span>(</span><span class="type-name">IO</span><span>.</span><span class="identifier">unit</span><span>)
+    } </span><span class="keyword">yield</span><span> ()
+}</span></code></pre>
+        <div class="callout warning">
+          <i class="icofont-laika warning">&#xf026;</i>
+          <p><code>OtelJava.autoConfigured</code> creates an <strong>isolated</strong> <strong>non-global</strong> instance.
+          If you create multiple instances, those instances won&#39;t interoperate (i.e. be able to see each others spans).</p>
+        </div>
         
         <h2 id="examples" class="section"><a class="anchor-link left" href="#examples"><i class="icofont-laika link">&#xef71;</i></a>Examples</h2>
         <ul>
@@ -263,16 +329,17 @@
           <li>Implement tracing and metrics with <a href="examples/honeycomb/">Honeycomb</a></li>
         </ul>
         
-        <h2 id="the-noop-tracer" class="section"><a class="anchor-link left" href="#the-noop-tracer"><i class="icofont-laika link">&#xef71;</i></a>The Noop Tracer</h2>
-        <p>If you use a library that supports otel4s (eg <a href="https://github.com/typelevel/skunk">Skunk</a>) but do not want to use Open Telemetry, then you can place the <a href="https://www.javadoc.io/doc/org.typelevel/otel4s-docs_2.13/latest/org/typelevel/otel4s/trace/Tracer$.html">No-op Tracer</a> into implicit scope.</p>
-        <p>The no-op <code>Tracer</code> can be provided in the following ways:</p>
+        <h2 id="the-noop-tracer-and-meter" class="section"><a class="anchor-link left" href="#the-noop-tracer-and-meter"><i class="icofont-laika link">&#xef71;</i></a>The noop Tracer and Meter</h2>
+        <p>If you use a library that supports otel4s (eg <a href="https://github.com/typelevel/skunk">Skunk</a>) but do not want to use Open Telemetry, 
+        then you can place the <a href="https://www.javadoc.io/doc/org.typelevel/otel4s-docs_2.13/latest/org/typelevel/otel4s/trace/Tracer$.html">No-op Tracer</a> into implicit scope.</p>
+        <p>The no-op <code>Tracer</code> or <code>Meter</code> can be provided in the following ways:</p>
         <div class="tab-container" data-tab-group="scala-version">
           <ul class="tab-group">
             <li class="tab active" data-choice-name="scala-2"><a href="#">Scala 2</a></li>
             <li class="tab" data-choice-name="scala-3"><a href="#">Scala 3</a></li>
           </ul>
           <div class="tab-content active" data-choice-name="scala-2">
-            <p>By using the <code>import Tracer.Implicits.noop</code>:</p>
+            <p>By using the <code>import Tracer.Implicits.noop</code> and <code>import Meter.Implicits.noop</code>:</p>
             <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.</span><span class="type-name">IO</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">trace</span><span>.</span><span class="type-name">Tracer</span><span>
 
@@ -282,28 +349,32 @@
 </span><span class="keyword">val</span><span> </span><span class="identifier">io</span><span>: </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] = </span><span class="identifier">program</span><span>[</span><span class="type-name">IO</span><span>]</span></code></pre>
             <p>By defining an <code>implicit val</code>:</p>
             <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.</span><span class="type-name">IO</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">metrics</span><span>.</span><span class="type-name">Meter</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">trace</span><span>.</span><span class="type-name">Tracer</span><span>
 
-</span><span class="keyword">def</span><span> </span><span class="declaration-name">program</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>]: </span><span class="type-name">Tracer</span><span>]: </span><span class="type-name">F</span><span>[</span><span class="type-name">Unit</span><span>] = ???
+</span><span class="keyword">def</span><span> </span><span class="declaration-name">program</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>]: </span><span class="type-name">Meter</span><span>: </span><span class="type-name">Tracer</span><span>]: </span><span class="type-name">F</span><span>[</span><span class="type-name">Unit</span><span>] = ???
 
+</span><span class="keyword">implicit</span><span> </span><span class="keyword">val</span><span> </span><span class="identifier">meter</span><span>: </span><span class="type-name">Meter</span><span>[</span><span class="type-name">IO</span><span>] = </span><span class="type-name">Meter</span><span>.</span><span class="identifier">noop</span><span>
 </span><span class="keyword">implicit</span><span> </span><span class="keyword">val</span><span> </span><span class="identifier">tracer</span><span>: </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">IO</span><span>] = </span><span class="type-name">Tracer</span><span>.</span><span class="identifier">noop</span><span>
 </span><span class="keyword">val</span><span> </span><span class="identifier">io</span><span>: </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] = </span><span class="identifier">program</span><span>[</span><span class="type-name">IO</span><span>]</span></code></pre>
           </div>
           <div class="tab-content" data-choice-name="scala-3">
-            <p>By using the <code>import Tracer.Implicits.noop</code>:</p>
+            <p>By using the <code>import Tracer.Implicits.noop</code> and <code>import Meter.Implicits.noop</code>:</p>
             <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.</span><span class="type-name">IO</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">trace</span><span>.</span><span class="type-name">Tracer</span><span>
 
-</span><span class="keyword">def</span><span> </span><span class="declaration-name">program</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>]](</span><span class="keyword">using</span><span> </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">F</span><span>]): </span><span class="type-name">F</span><span>[</span><span class="type-name">Unit</span><span>] = ???
+</span><span class="keyword">def</span><span> </span><span class="declaration-name">program</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>]](</span><span class="keyword">using</span><span> </span><span class="type-name">Meter</span><span>[</span><span class="type-name">F</span><span>], </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">F</span><span>]): </span><span class="type-name">F</span><span>[</span><span class="type-name">Unit</span><span>] = ???
 
 </span><span class="keyword">import</span><span> </span><span class="type-name">Tracer</span><span>.</span><span class="type-name">Implicits</span><span>.</span><span class="identifier">noop</span><span>
 </span><span class="keyword">val</span><span> </span><span class="identifier">io</span><span>: </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] = </span><span class="identifier">program</span><span>[</span><span class="type-name">IO</span><span>]</span></code></pre>
             <p>By defining a <code>given</code>:</p>
             <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.</span><span class="type-name">IO</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">metrics</span><span>.</span><span class="type-name">Meter</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">trace</span><span>.</span><span class="type-name">Tracer</span><span>
 
-</span><span class="keyword">def</span><span> </span><span class="declaration-name">program</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>]](</span><span class="keyword">using</span><span> </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">F</span><span>]): </span><span class="type-name">F</span><span>[</span><span class="type-name">Unit</span><span>] = ???
+</span><span class="keyword">def</span><span> </span><span class="declaration-name">program</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>]](</span><span class="keyword">using</span><span> </span><span class="type-name">Meter</span><span>[</span><span class="type-name">F</span><span>], </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">F</span><span>]): </span><span class="type-name">F</span><span>[</span><span class="type-name">Unit</span><span>] = ???
 
+</span><span class="keyword">given</span><span> </span><span class="type-name">Meter</span><span>[</span><span class="type-name">IO</span><span>] = </span><span class="type-name">Meter</span><span>.</span><span class="identifier">noop</span><span>
 </span><span class="keyword">given</span><span> </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">IO</span><span>] = </span><span class="type-name">Tracer</span><span>.</span><span class="identifier">noop</span><span>
 </span><span class="keyword">val</span><span> </span><span class="identifier">io</span><span>: </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] = </span><span class="identifier">program</span><span>[</span><span class="type-name">IO</span><span>]</span></code></pre>
           </div>

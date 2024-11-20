@@ -111,7 +111,7 @@ val kleisli: Kleisli[IO, Context, Unit] =
 val run: IO[Unit] = kleisli.run(Context.root)
 ```
 
-## Limitations 
+## Limitations
 
 The current encoding of [cats.effect.Resource][resource] is incompatible with `Local` semantics.
 For example, it's impossible to trace different stages of the resource (e.g. acquire, use, release) **and** 

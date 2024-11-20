@@ -20,10 +20,10 @@ Defines the interfaces: [Tracer][tracer-github],
 [Meter][meter-github], and others. 
 It also offers no-op implementations.
 
-### 2) `otel4s-sdk` - under development, not published yet
+### 2) `otel4s-sdk` 
 
 The implementation of Open Telemetry specification written purely in Scala. 
-Will be available for all platforms: JVM, Scala Native, Scala.js. 
+Available for all platforms: JVM, Scala Native, Scala.js. 
 
 ### 3) `otel4s-oteljava` 
 

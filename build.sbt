@@ -66,7 +66,7 @@ ThisBuild / mergifyPrRules ++= Seq(
   MergifyPrRule(
     "Label trace PRs",
     List(MergifyCondition.Custom("files~=/(trace)/")),
-    List(MergifyAction.Label(add = List("trace")))
+    List(MergifyAction.Label(add = List("tracing")))
   ),
   MergifyPrRule(
     "Label Scala Steward PRs",

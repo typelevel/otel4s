@@ -76,7 +76,7 @@ pull_request_rules:
   actions:
     label:
       add:
-      - trace
+      - tracing
       remove: []
 - name: Label Scala Steward PRs
   conditions:

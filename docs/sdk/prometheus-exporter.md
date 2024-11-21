@@ -3,7 +3,7 @@
 The exporter exports metrics in a prometheus-compatible format, so Prometheus can scrape metrics from the HTTP server.
 You can either allow exporter to launch its own server or add Prometheus routes to the existing one. 
 
-An example of output (e.g. `curl http://localhost:9464/metrics`):
+An example of output (e.g. `curl -H "Accept:text/plain" http://localhost:9464/metrics`):
 ```scala mdoc:passthrough
 import cats.effect.IO
 import cats.effect.unsafe.implicits.global

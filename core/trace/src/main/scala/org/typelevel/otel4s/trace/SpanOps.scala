@@ -37,7 +37,7 @@ trait SpanOps[F[_]] {
     * val tracer: Tracer[F] = ???
     * val leaked: F[Unit] =
     *   tracer.spanBuilder("manual-span").build.startUnmanaged.flatMap { span =>
-    *     span.setStatus(Status.Ok, "all good")
+    *     span.setStatus(StatusCode.Ok, "all good")
     *   }
     * }}}
     *
@@ -46,9 +46,29 @@ trait SpanOps[F[_]] {
     * val tracer: Tracer[F] = ???
     * val ok: F[Unit] =
     *   tracer.spanBuilder("manual-span").build.startUnmanaged.flatMap { span =>
-    *     span.setStatus(Status.Ok, "all good") >> span.end
+    *     span.setStatus(StatusCode.Ok, "all good") >> span.end
     *   }
     * }}}
+    *
+    * @note
+    *   the span started by the [[startUnmanaged]] isn't propagated automatically. Consider the following example:
+    *   {{{
+    * Tracer[F].span("auto").use { span =>
+    *   Tracer[F].span("unmanaged").startUnmanaged.flatMap { unmanagedSpan => // child of the 'auto' span
+    *     Tracer[F].span("child-1").use(span => ...) // 'child-1' is the child of the 'auto', not 'unmanaged'
+    *   }
+    * }
+    *   }}}
+    *   you must use `Tracer[F].childScope` to explicitly enable automated propagation:
+    *   {{{
+    * Tracer[F].span("auto").use { span =>
+    *   Tracer[F].span("unmanaged").startUnmanaged.flatMap { unmanagedSpan =>
+    *     Tracer[F].childScope(unmanagedSpan.context) {
+    *       Tracer[F].span("child-1").use(span => ...) // 'child-1' is the child of the 'unmanaged'
+    *     }
+    *   }
+    * }
+    *   }}}
     *
     * @see
     *   [[use]], [[use_]], [[surround]], or [[resource]] for a managed lifecycle
@@ -81,7 +101,7 @@ trait SpanOps[F[_]] {
     *       // `res.trace` encloses its contents within the "resource-span"
     *       // span; anything not applied to `res.include` will not end up in
     *       // the span
-    *       res.trace(res.span.setStatus(Status.Ok, "all good"))
+    *       res.trace(res.span.setStatus(StatusCode.Ok, "all good"))
     *     }
     *   }}}
     */
@@ -105,7 +125,7 @@ trait SpanOps[F[_]] {
     * val tracer: Tracer[F] = ???
     * val ok: F[Unit] =
     *   tracer.spanBuilder("auto-span").build.use { span =>
-    *     span.setStatus(Status.Ok, "all good")
+    *     span.setStatus(StatusCode.Ok, "all good")
     *   }
     *   }}}
     */

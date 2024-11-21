@@ -25,6 +25,24 @@
   <link rel="stylesheet" type="text/css" href="../helium/site/icofont.min.css" />
     <link rel="stylesheet" type="text/css" href="../helium/site/laika-helium.css" />
   <script src="../helium/site/laika-helium.js"></script>
+    <script type="module">
+
+import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+const dark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+mermaid.initialize({ 
+  startOnLoad: true,
+  theme: "base",
+  themeVariables: {
+    'darkMode': dark,
+    'primaryColor': dark ? '#f4f8fa' : '#f4f8fa', 
+    'primaryTextColor': dark ? '#385a70' : '#385a70',
+    'primaryBorderColor': dark ? '#8ebac7' : '#8ebac7',
+    'lineColor': dark ? '#385a70' : '#385a70',
+    'background': dark ? '#ffffff' : '#ffffff',
+  }
+});
+
+</script>
   
   
   <script> /* for avoiding page load transitions */ </script>
@@ -139,6 +157,7 @@
     <li class="level1 nav-leaf"><a href="#creating-a-span">Creating a span</a></li>
     <li class="level1 nav-leaf"><a href="#starting-a-root-span">Starting a root span</a></li>
     <li class="level1 nav-leaf"><a href="#running-effect-without-tracing">Running effect without tracing</a></li>
+    <li class="level1 nav-leaf"><a href="#starting-an-unmanaged-span">Starting an unmanaged span</a></li>
   </ul>
 
   <p class="footer"></p>
@@ -215,7 +234,7 @@
 
 </span><span class="keyword">case</span><span> </span><span class="keyword">class</span><span> </span><span class="type-name">User</span><span>(</span><span class="identifier">email</span><span>: </span><span class="type-name">String</span><span>)
 
-</span><span class="keyword">class</span><span> </span><span class="type-name">UserRepository</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>] : </span><span class="type-name">Monad</span><span> : </span><span class="type-name">Tracer</span><span>](</span><span class="identifier">storage</span><span>: </span><span class="type-name">Ref</span><span>[</span><span class="type-name">F</span><span>, </span><span class="type-name">Map</span><span>[</span><span class="type-name">Long</span><span>, </span><span class="type-name">User</span><span>]]) {
+</span><span class="keyword">class</span><span> </span><span class="type-name">UserRepository</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>]: </span><span class="type-name">Monad</span><span>: </span><span class="type-name">Tracer</span><span>](</span><span class="identifier">storage</span><span>: </span><span class="type-name">Ref</span><span>[</span><span class="type-name">F</span><span>, </span><span class="type-name">Map</span><span>[</span><span class="type-name">Long</span><span>, </span><span class="type-name">User</span><span>]]) {
 
   </span><span class="keyword">def</span><span> </span><span class="declaration-name">findUser</span><span>(</span><span class="identifier">userId</span><span>: </span><span class="type-name">Long</span><span>): </span><span class="type-name">F</span><span>[</span><span class="type-name">Option</span><span>[</span><span class="type-name">User</span><span>]] =
     </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">span</span><span>(</span><span class="string-literal">&quot;find-user&quot;</span><span>, </span><span class="type-name">Attribute</span><span>(</span><span class="string-literal">&quot;user_id&quot;</span><span>, </span><span class="identifier">userId</span><span>)).</span><span class="identifier">use</span><span> { </span><span class="identifier">span</span><span> =&gt;
@@ -236,7 +255,7 @@
 </span><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">syntax</span><span>.</span><span class="identifier">flatMap</span><span>.</span><span class="identifier">_</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">syntax</span><span>.</span><span class="identifier">functor</span><span>.</span><span class="identifier">_</span><span>
 
-</span><span class="keyword">class</span><span> </span><span class="type-name">UserRequestHandler</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>] : </span><span class="type-name">Tracer</span><span> : </span><span class="type-name">Monad</span><span>](</span><span class="identifier">repo</span><span>: </span><span class="type-name">UserRepository</span><span>[</span><span class="type-name">F</span><span>]) {
+</span><span class="keyword">class</span><span> </span><span class="type-name">UserRequestHandler</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>]: </span><span class="type-name">Tracer</span><span>: </span><span class="type-name">Monad</span><span>](</span><span class="identifier">repo</span><span>: </span><span class="type-name">UserRepository</span><span>[</span><span class="type-name">F</span><span>]) {
   </span><span class="keyword">private</span><span> </span><span class="keyword">val</span><span> </span><span class="type-name">SystemUserId</span><span> = -</span><span class="number-literal">1L</span><span>
 
   </span><span class="keyword">def</span><span> </span><span class="declaration-name">handleUser</span><span>(</span><span class="identifier">userId</span><span>: </span><span class="type-name">Long</span><span>): </span><span class="type-name">F</span><span>[</span><span class="type-name">Unit</span><span>] =
@@ -261,24 +280,93 @@
         <ol class="arabic">
           <li><code>Tracer[F].rootScope(activateUser(userId))</code> will create two <strong>independent root</strong> spans:</li>
         </ol>
-        <pre><code>&gt; find-user { user_id = -1 }  
-&gt; find-user { user_id = 123 }</code></pre>
+        <pre class="mermaid">gantt
+    dateFormat HH:mm:ss
+    axisFormat %H:%M:%S
+
+    section Spans
+    find-user { user_id = -1 }     :done, a3, 00:00:00, 00:00:10
+    find-user { user_id = 123 }    :done, a2, 00:00:00, 00:00:10</pre>
         <ol class="arabic">
           <li><code>Tracer[F].rootSpan(&quot;handle-user&quot;).surround(activateUser(userId))</code> will create two <strong>child</strong> spans:</li>
         </ol>
-        <pre><code>&gt; handle-user  
-  &gt; find-user { user_id = -1 }  
-  &gt; find-user { user_id = 123 }</code></pre>
+        <pre class="mermaid">gantt
+    dateFormat HH:mm:ss
+    axisFormat %H:%M:%S
+
+    section Spans
+    handle-user                    :done, a1, 00:00:00, 00:00:10
+    find-user { user_id = -1 }     :done, a3, 00:00:01, 00:00:10
+    find-user { user_id = 123 }    :done, a2, 00:00:01, 00:00:10</pre>
         
         <h3 id="running-effect-without-tracing" class="section"><a class="anchor-link left" href="#running-effect-without-tracing"><i class="icofont-laika link">&#xef71;</i></a>Running effect without tracing</h3>
         <p>If you want to disable tracing for a specific section of the effect, you can use the <code>Tracer[F].noopScope</code>.
         This creates a no-op scope where tracing operations have no effect:</p>
-        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">class</span><span> </span><span class="type-name">InternalUserService</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>] : </span><span class="type-name">Tracer</span><span>](</span><span class="identifier">repo</span><span>: </span><span class="type-name">UserRepository</span><span>[</span><span class="type-name">F</span><span>]) {
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">class</span><span> </span><span class="type-name">InternalUserService</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>]: </span><span class="type-name">Tracer</span><span>](</span><span class="identifier">repo</span><span>: </span><span class="type-name">UserRepository</span><span>[</span><span class="type-name">F</span><span>]) {
 
   </span><span class="keyword">def</span><span> </span><span class="declaration-name">findUserInternal</span><span>(</span><span class="identifier">userId</span><span>: </span><span class="type-name">Long</span><span>): </span><span class="type-name">F</span><span>[</span><span class="type-name">Option</span><span>[</span><span class="type-name">User</span><span>]] =
     </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">noopScope</span><span>(</span><span class="identifier">repo</span><span>.</span><span class="identifier">findUser</span><span>(</span><span class="identifier">userId</span><span>))
 
 }</span></code></pre>
+        
+        <h3 id="starting-an-unmanaged-span" class="section"><a class="anchor-link left" href="#starting-an-unmanaged-span"><i class="icofont-laika link">&#xef71;</i></a>Starting an unmanaged span</h3>
+        <p>The <code>Tracer[F].span(...)</code> automatically manages the lifecycle of the span. <code>Tracer[F].span(&quot;...&quot;).startUnmanaged</code> 
+        creates a span that must be ended <strong>manually</strong> by invoking <code>end</code>. This strategy can be used when it&#39;s necessary 
+        to end a span outside the scope (e.g. async callback). </p>
+        <p>A few limitations:</p>
+        <p><strong>1. An unfinished span remains active indefinitely</strong></p>
+        <p>In the following example, the unmanaged span has never been terminated:</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">trace</span><span>.</span><span class="type-name">StatusCode</span><span>
+
+</span><span class="keyword">def</span><span> </span><span class="declaration-name">leaked</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>]: </span><span class="type-name">Monad</span><span>: </span><span class="type-name">Tracer</span><span>]: </span><span class="type-name">F</span><span>[</span><span class="type-name">Unit</span><span>] =
+  </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">spanBuilder</span><span>(</span><span class="string-literal">&quot;manual-span&quot;</span><span>).</span><span class="identifier">build</span><span>.</span><span class="identifier">startUnmanaged</span><span>.</span><span class="identifier">flatMap</span><span> { </span><span class="identifier">span</span><span> =&gt;
+    </span><span class="identifier">span</span><span>.</span><span class="identifier">setStatus</span><span>(</span><span class="type-name">StatusCode</span><span>.</span><span class="type-name">Ok</span><span>, </span><span class="string-literal">&quot;all good&quot;</span><span>)
+  }</span></code></pre>
+        <p>Properly ended span:</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">def</span><span> </span><span class="declaration-name">ok</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>]: </span><span class="type-name">Monad</span><span>: </span><span class="type-name">Tracer</span><span>]: </span><span class="type-name">F</span><span>[</span><span class="type-name">Unit</span><span>] =
+  </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">spanBuilder</span><span>(</span><span class="string-literal">&quot;manual-span&quot;</span><span>).</span><span class="identifier">build</span><span>.</span><span class="identifier">startUnmanaged</span><span>.</span><span class="identifier">flatMap</span><span> { </span><span class="identifier">span</span><span> =&gt;
+    </span><span class="identifier">span</span><span>.</span><span class="identifier">setStatus</span><span>(</span><span class="type-name">StatusCode</span><span>.</span><span class="type-name">Ok</span><span>, </span><span class="string-literal">&quot;all good&quot;</span><span>) &gt;&gt; </span><span class="identifier">span</span><span>.</span><span class="identifier">end</span><span>
+  }</span></code></pre>
+        <hr>
+        <p><strong>2. The span isn&#39;t propagated automatically</strong></p>
+        <p>Consider the following example:</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">def</span><span> </span><span class="declaration-name">nonPropagated</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>]: </span><span class="type-name">Monad</span><span>: </span><span class="type-name">Tracer</span><span>]: </span><span class="type-name">F</span><span>[</span><span class="type-name">Unit</span><span>] = 
+  </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">span</span><span>(</span><span class="string-literal">&quot;auto&quot;</span><span>).</span><span class="identifier">surround</span><span> {
+    </span><span class="comment">// &#39;unmanaged&#39; is the child of the &#39;auto&#39; span
+</span><span>    </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">span</span><span>(</span><span class="string-literal">&quot;unmanaged&quot;</span><span>).</span><span class="identifier">startUnmanaged</span><span>.</span><span class="identifier">flatMap</span><span> { </span><span class="identifier">unmanaged</span><span> =&gt;
+      </span><span class="comment">// &#39;child-1&#39; is the child of the &#39;auto&#39;, not &#39;unmanaged&#39;  
+</span><span>      </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">span</span><span>(</span><span class="string-literal">&quot;child-1&quot;</span><span>).</span><span class="identifier">use_</span><span> &gt;&gt; </span><span class="identifier">unmanaged</span><span>.</span><span class="identifier">end</span><span>
+    }
+  }</span></code></pre>
+        <p>The structure is:</p>
+        <pre class="mermaid">gantt
+    dateFormat HH:mm:ss
+    axisFormat %H:%M:%S
+
+    section Spans
+    auto (root)                    :done, a1, 00:00:00, 00:00:10
+    unmanaged (child of &#39;auto&#39;)    :done, a2, 00:00:02, 00:00:09
+    child-1 (child of &#39;auto&#39;)      :done, a3, 00:00:02, 00:00:08</pre>
+        <p>Use <code>Tracer[F].childScope</code> to create a child of the unmanaged span: </p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">def</span><span> </span><span class="declaration-name">propagated</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>]: </span><span class="type-name">Monad</span><span>: </span><span class="type-name">Tracer</span><span>]: </span><span class="type-name">F</span><span>[</span><span class="type-name">Unit</span><span>] = 
+  </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">span</span><span>(</span><span class="string-literal">&quot;auto&quot;</span><span>).</span><span class="identifier">surround</span><span> {
+    </span><span class="comment">// &#39;unmanaged&#39; is the child of the &#39;auto&#39; span
+</span><span>    </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">span</span><span>(</span><span class="string-literal">&quot;unmanaged&quot;</span><span>).</span><span class="identifier">startUnmanaged</span><span>.</span><span class="identifier">flatMap</span><span> { </span><span class="identifier">unmanaged</span><span> =&gt; 
+      </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">childScope</span><span>(</span><span class="identifier">unmanaged</span><span>.</span><span class="identifier">context</span><span>) {
+        </span><span class="comment">// &#39;child-1&#39; is the child of the &#39;unmanaged&#39; span
+</span><span>        </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">span</span><span>(</span><span class="string-literal">&quot;child-1&quot;</span><span>).</span><span class="identifier">use_</span><span> &gt;&gt; </span><span class="identifier">unmanaged</span><span>.</span><span class="identifier">end</span><span>
+      }
+    }
+  }</span></code></pre>
+        <p>The structure is:</p>
+        <pre class="mermaid">gantt
+    dateFormat HH:mm:ss
+    axisFormat %H:%M:%S
+
+    section Spans
+    auto (root)                         :done, a1, 00:00:00, 00:00:10
+    unmanaged (child of &#39;auto&#39;)         :done, a2, 00:00:02, 00:00:09
+    child-1 (child of &#39;unmanaged&#39;)      :done, a3, 00:00:03, 00:00:08</pre>
 
         
 <hr class="footer-rule"/>

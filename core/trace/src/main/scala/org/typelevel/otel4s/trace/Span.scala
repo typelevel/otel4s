@@ -73,7 +73,8 @@ trait Span[F[_]] extends SpanMacro[F] {
 
   /** Updates the name of the [[Span]].
     *
-    * '''Note''': if used, this will override the name provided via the [[SpanBuilder]].
+    * @note
+    *   if used, this will override the name provided via the [[SpanBuilder]].
     *
     * '''Caution''': upon this update, any sampling behavior based on span's name will depend on the implementation.
     *
@@ -96,8 +97,8 @@ trait Span[F[_]] extends SpanMacro[F] {
     *
     * Only the timing of the first end call for a given span will be recorded, the subsequent calls will be ignored.
     *
-    * '''Note''': the timestamp should be based on `Clock[F].realTime`. Using `Clock[F].monotonic` may lead to a missing
-    * span.
+    * @note
+    *   the timestamp should be based on `Clock[F].realTime`. Using `Clock[F].monotonic` may lead to a missing span.
     *
     * @param timestamp
     *   the explicit timestamp from the epoch

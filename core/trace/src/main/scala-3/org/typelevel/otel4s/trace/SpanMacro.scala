@@ -83,8 +83,8 @@ private[otel4s] trait SpanMacro[F[_]] {
 
   /** Adds an event to the span with the given attributes and timestamp.
     *
-    * '''Note''': the timestamp should be based on `Clock[F].realTime`. Using `Clock[F].monotonic` may lead to an
-    * incorrect data.
+    * @note
+    *   the timestamp should be based on `Clock[F].realTime`. Using `Clock[F].monotonic` may lead to an incorrect data.
     *
     * @param name
     *   the name of the event
@@ -104,8 +104,8 @@ private[otel4s] trait SpanMacro[F[_]] {
 
   /** Adds an event to the span with the given attributes and timestamp.
     *
-    * '''Note''': the timestamp should be based on `Clock[F].realTime`. Using `Clock[F].monotonic` may lead to an
-    * incorrect data.
+    * @note
+    *   the timestamp should be based on `Clock[F].realTime`. Using `Clock[F].monotonic` may lead to an incorrect data.
     *
     * @param name
     *   the name of the event

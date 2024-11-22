@@ -86,7 +86,8 @@ object InstrumentationScope {
 
     /** Assigns the attributes to the scope.
       *
-      * '''Note''': if called multiple times, only the last specified attributes will be used.
+      * @note
+      *   if called multiple times, only the last specified attributes will be used.
       *
       * @param attributes
       *   the attributes to assign

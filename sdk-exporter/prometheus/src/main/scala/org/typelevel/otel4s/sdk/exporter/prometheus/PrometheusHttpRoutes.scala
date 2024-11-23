@@ -43,7 +43,14 @@ object PrometheusHttpRoutes {
 
     val routes: HttpRoutes[F] = HttpRoutes.of {
       case Request(GET, _, _, headers, _, _) =>
-        if (headers.get[Accept].forall(_.values.exists(_.mediaRange.satisfies(MediaRange.`text/*`)))) {
+        if (
+          headers
+            .get[Accept]
+            .forall(
+              _.values
+                .exists(v => v.mediaRange.equals(MediaRange.`*/*`) || v.mediaRange.satisfies(MediaRange.`text/*`))
+            )
+        ) {
           for {
             metrics <- exporter.metricReader.collectAllMetrics
           } yield Response().withEntity(writer.write(metrics)).withHeaders("Content-Type" -> writer.contentType)

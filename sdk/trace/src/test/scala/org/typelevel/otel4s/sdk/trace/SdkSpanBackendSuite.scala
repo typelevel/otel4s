@@ -484,23 +484,15 @@ class SdkSpanBackendSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
     }
   }
 
-  private def startEndRecorder(
-      start: Queue[IO, SpanData],
-      end: Queue[IO, SpanData]
-  ): SpanProcessor[IO] =
+  private def startEndRecorder(start: Queue[IO, SpanData], end: Queue[IO, SpanData]): SpanProcessor[IO] =
     new SpanProcessor[IO] {
       val name: String = "InMemorySpanProcessor"
-      val isStartRequired: Boolean = true
-      val isEndRequired: Boolean = true
 
-      def onStart(
-          parentContext: Option[SpanContext],
-          span: SpanRef[IO]
-      ): IO[Unit] =
-        span.toSpanData.flatMap(d => start.offer(d))
+      val onStart: SpanProcessor.OnStart[IO] =
+        (_, span) => span.toSpanData.flatMap(d => start.offer(d))
 
-      def onEnd(span: SpanData): IO[Unit] =
-        end.offer(span)
+      val onEnd: SpanProcessor.OnEnd[IO] =
+        end.offer(_)
 
       def forceFlush: IO[Unit] =
         IO.unit

@@ -90,9 +90,7 @@ private final case class SdkSpanBuilder[F[_]: Temporal: Console] private (
 
     def release(backend: Span.Backend[F], ec: Resource.ExitCase): F[Unit] =
       for {
-        _ <- state.finalizationStrategy
-          .lift(ec)
-          .foldMapM(SpanFinalizer.run(backend, _))
+        _ <- state.finalizationStrategy.lift(ec).foldMapM(SpanFinalizer.run(backend, _))
         _ <- backend.end
       } yield ()
 

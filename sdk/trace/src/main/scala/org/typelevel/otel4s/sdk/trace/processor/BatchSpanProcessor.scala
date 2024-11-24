@@ -30,7 +30,6 @@ import cats.effect.syntax.temporal._
 import cats.syntax.all._
 import org.typelevel.otel4s.sdk.trace.data.SpanData
 import org.typelevel.otel4s.sdk.trace.exporter.SpanExporter
-import org.typelevel.otel4s.trace.SpanContext
 
 import scala.concurrent.duration._
 
@@ -67,13 +66,10 @@ private final class BatchSpanProcessor[F[_]: Temporal: Console] private (
     s"maxQueueSize=${config.maxQueueSize}, " +
     s"maxExportBatchSize=${config.maxExportBatchSize}}"
 
-  val isStartRequired: Boolean = false
-  val isEndRequired: Boolean = true
+  val onStart: SpanProcessor.OnStart[F] =
+    SpanProcessor.OnStart.noop
 
-  def onStart(parentContext: Option[SpanContext], span: SpanRef[F]): F[Unit] =
-    unit
-
-  def onEnd(span: SpanData): F[Unit] =
+  val onEnd: SpanProcessor.OnEnd[F] = { (span: SpanData) =>
     if (span.spanContext.isSampled) {
       // if 'spansNeeded' is defined, it means the worker is waiting for a certain number of spans
       // and it waits for the 'signal'-latch to be released
@@ -92,6 +88,7 @@ private final class BatchSpanProcessor[F[_]: Temporal: Console] private (
     } else {
       unit
     }
+  }
 
   def forceFlush: F[Unit] =
     exportAll

@@ -158,9 +158,7 @@ object SdkTracerProvider {
 
   /** Creates a new [[Builder]] with default configuration.
     */
-  def builder[
-      F[_]: Temporal: Parallel: Random: LocalContext: Console
-  ]: Builder[F] =
+  def builder[F[_]: Temporal: Parallel: Random: LocalContext: Console]: Builder[F] =
     BuilderImpl[F](
       idGenerator = IdGenerator.random,
       resource = TelemetryResource.default,
@@ -170,9 +168,7 @@ object SdkTracerProvider {
       spanProcessors = Nil
     )
 
-  private final case class BuilderImpl[
-      F[_]: Temporal: Parallel: LocalContext: Console
-  ](
+  private final case class BuilderImpl[F[_]: Temporal: Parallel: LocalContext: Console](
       idGenerator: IdGenerator[F],
       resource: TelemetryResource,
       spanLimits: SpanLimits,

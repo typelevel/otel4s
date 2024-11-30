@@ -1,6 +1,6 @@
 import com.typesafe.tools.mima.core._
 
-ThisBuild / tlBaseVersion := "0.11"
+ThisBuild / tlBaseVersion := "0.12"
 
 ThisBuild / organization := "org.typelevel"
 ThisBuild / organizationName := "Typelevel"
@@ -376,6 +376,28 @@ lazy val `sdk-exporter-proto` =
       Compile / PB.targets ++= Seq(
         scalapb.gen(grpc = false) -> (Compile / sourceManaged).value / "scalapb"
       ),
+      Compile / PB.generate := {
+        val files = (Compile / PB.generate).value
+
+        files.filter(_.isFile).foreach { file =>
+          val content = IO.read(file)
+
+          // see: https://github.com/scalapb/ScalaPB/issues/1778
+          val updated = content
+            .replaceAll(
+              """(?m)^object (\w+) extends _root_\.scalapb\.GeneratedEnumCompanion\[\w+\]""",
+              "private[exporter] object $1 extends _root_.scalapb.GeneratedEnumCompanion[$1]"
+            )
+            .replaceAll(
+              """(?m)^object (\w+) extends _root_\.scalapb\.GeneratedFileObject""",
+              "private[exporter] object $1 extends _root_.scalapb.GeneratedFileObject"
+            )
+
+          IO.write(file, updated)
+        }
+
+        files
+      },
       scalacOptions := {
         val opts = scalacOptions.value
         if (tlIsScala3.value) opts.filterNot(_ == "-Wvalue-discard") else opts
@@ -383,8 +405,29 @@ lazy val `sdk-exporter-proto` =
       // We use open-telemetry protobuf spec to generate models
       // See https://scalapb.github.io/docs/third-party-protos/#there-is-a-library-on-maven-with-the-protos-and-possibly-generated-java-code
       libraryDependencies ++= Seq(
+        "com.thesamet.scalapb" %% "scalapb-runtime" % scalapb.compiler.Version.scalapbVersion % "protobuf",
         "io.opentelemetry.proto" % "opentelemetry-proto" % OpenTelemetryProtoVersion % "protobuf-src" intransitive ()
       )
+    )
+    .jvmSettings(
+      // scalafix settings to ensure there are no public classes in the module
+      // run scalafix against generated sources
+      Compile / ScalafixPlugin.autoImport.scalafix / unmanagedSources := (Compile / managedSources).value,
+      // run scalafix only on scala 2.13
+      scalafixOnCompile := !tlIsScala3.value,
+      // read scalafix rules from a shared folder
+      ScalafixConfig / sourceDirectory := {
+        if (tlIsScala3.value) {
+          (ScalafixConfig / sourceDirectory).value
+        } else {
+          baseDirectory.value.getParentFile / "src" / "scalafix"
+        }
+      },
+      // required by scalafix rules
+      libraryDependencies ++= {
+        if (tlIsScala3.value) Nil
+        else Seq("ch.epfl.scala" %% "scalafix-core" % _root_.scalafix.sbt.BuildInfo.scalafixVersion % ScalafixConfig)
+      }
     )
     .settings(scalafixSettings)
 

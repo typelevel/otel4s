@@ -20,11 +20,11 @@ package exporter.otlp.metrics
 
 import com.google.protobuf.ByteString
 import io.circe.Json
-import io.opentelemetry.proto.collector.metrics.v1.metrics_service.ExportMetricsServiceRequest
-import io.opentelemetry.proto.metrics.v1.{metrics => Proto}
-import io.opentelemetry.proto.metrics.v1.metrics.ResourceMetrics
-import io.opentelemetry.proto.metrics.v1.metrics.ScopeMetrics
 import org.typelevel.otel4s.sdk.exporter.otlp.ProtoEncoder
+import org.typelevel.otel4s.sdk.exporter.proto.{metrics => Proto}
+import org.typelevel.otel4s.sdk.exporter.proto.metrics.ResourceMetrics
+import org.typelevel.otel4s.sdk.exporter.proto.metrics.ScopeMetrics
+import org.typelevel.otel4s.sdk.exporter.proto.metrics_service.ExportMetricsServiceRequest
 import org.typelevel.otel4s.sdk.metrics.data.AggregationTemporality
 import org.typelevel.otel4s.sdk.metrics.data.ExemplarData
 import org.typelevel.otel4s.sdk.metrics.data.MetricData

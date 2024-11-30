@@ -19,12 +19,12 @@ package sdk
 package exporter.otlp
 
 import io.circe.Json
-import io.opentelemetry.proto.common.v1.common.{InstrumentationScope => ScopeProto}
-import io.opentelemetry.proto.common.v1.common.AnyValue
-import io.opentelemetry.proto.common.v1.common.ArrayValue
-import io.opentelemetry.proto.common.v1.common.KeyValue
-import io.opentelemetry.proto.resource.v1.resource.{Resource => ResourceProto}
 import org.typelevel.otel4s.sdk.common.InstrumentationScope
+import org.typelevel.otel4s.sdk.exporter.proto.common.{InstrumentationScope => ScopeProto}
+import org.typelevel.otel4s.sdk.exporter.proto.common.AnyValue
+import org.typelevel.otel4s.sdk.exporter.proto.common.ArrayValue
+import org.typelevel.otel4s.sdk.exporter.proto.common.KeyValue
+import org.typelevel.otel4s.sdk.exporter.proto.resource.{Resource => ResourceProto}
 import scalapb.GeneratedMessage
 import scalapb_circe.Printer
 

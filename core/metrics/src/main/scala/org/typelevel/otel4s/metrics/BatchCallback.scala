@@ -51,7 +51,7 @@ trait BatchCallback[F[_]] {
     *   }}}
     *
     * @param callback
-    *   the callback to to observe values on-demand
+    *   the callback to observe values on-demand
     *
     * @param observable
     *   the instrument for which the callback may observe values

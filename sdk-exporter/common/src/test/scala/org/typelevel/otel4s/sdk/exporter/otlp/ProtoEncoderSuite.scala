@@ -19,7 +19,6 @@ package org.typelevel.otel4s.sdk.exporter.otlp
 import io.circe.Encoder
 import io.circe.Json
 import io.circe.syntax._
-import io.opentelemetry.proto.common.v1.common.KeyValue
 import munit.ScalaCheckSuite
 import org.scalacheck.Arbitrary
 import org.scalacheck.Prop
@@ -29,6 +28,7 @@ import org.typelevel.otel4s.AttributeType
 import org.typelevel.otel4s.Attributes
 import org.typelevel.otel4s.sdk.TelemetryResource
 import org.typelevel.otel4s.sdk.common.InstrumentationScope
+import org.typelevel.otel4s.sdk.exporter.proto.common.KeyValue
 import org.typelevel.otel4s.sdk.scalacheck.Arbitraries._
 import scalapb_circe.Printer
 

@@ -32,7 +32,6 @@ import fs2.Stream
 import fs2.compression.Compression
 import fs2.io.net.Network
 import fs2.io.net.tls.TLSContext
-import io.opentelemetry.proto.collector.trace.v1.trace_service.ExportTraceServiceResponse
 import org.http4s.ContentCoding
 import org.http4s.EntityEncoder
 import org.http4s.Header
@@ -57,6 +56,7 @@ import org.typelevel.otel4s.sdk.exporter.RetryPolicy
 import org.typelevel.otel4s.sdk.exporter.otlp.grpc.GrpcCodecs
 import org.typelevel.otel4s.sdk.exporter.otlp.grpc.GrpcHeaders
 import org.typelevel.otel4s.sdk.exporter.otlp.grpc.GrpcStatusException
+import org.typelevel.otel4s.sdk.exporter.proto.trace_service.ExportTraceServiceResponse
 import scalapb_circe.Printer
 import scodec.Attempt
 import scodec.DecodeResult

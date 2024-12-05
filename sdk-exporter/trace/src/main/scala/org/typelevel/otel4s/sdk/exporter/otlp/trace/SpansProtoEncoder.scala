@@ -21,11 +21,11 @@ package trace
 
 import com.google.protobuf.ByteString
 import io.circe.Json
-import io.opentelemetry.proto.collector.trace.v1.trace_service.ExportTraceServiceRequest
-import io.opentelemetry.proto.trace.v1.trace.{Span => SpanProto}
-import io.opentelemetry.proto.trace.v1.trace.{Status => StatusProto}
-import io.opentelemetry.proto.trace.v1.trace.ResourceSpans
-import io.opentelemetry.proto.trace.v1.trace.ScopeSpans
+import org.typelevel.otel4s.sdk.exporter.proto.trace.{Span => SpanProto}
+import org.typelevel.otel4s.sdk.exporter.proto.trace.{Status => StatusProto}
+import org.typelevel.otel4s.sdk.exporter.proto.trace.ResourceSpans
+import org.typelevel.otel4s.sdk.exporter.proto.trace.ScopeSpans
+import org.typelevel.otel4s.sdk.exporter.proto.trace_service.ExportTraceServiceRequest
 import org.typelevel.otel4s.sdk.trace.data.EventData
 import org.typelevel.otel4s.sdk.trace.data.LinkData
 import org.typelevel.otel4s.sdk.trace.data.SpanData

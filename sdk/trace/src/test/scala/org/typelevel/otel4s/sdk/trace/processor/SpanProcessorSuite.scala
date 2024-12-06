@@ -20,8 +20,6 @@ import cats.data.NonEmptyList
 import cats.effect.IO
 import munit.FunSuite
 import org.typelevel.otel4s.sdk.trace.SpanRef
-import org.typelevel.otel4s.sdk.trace.data.SpanData
-import org.typelevel.otel4s.trace.SpanContext
 
 class SpanProcessorSuite extends FunSuite {
 
@@ -136,26 +134,10 @@ class SpanProcessorSuite extends FunSuite {
       flush: IO[Unit] = IO.unit,
   ): SpanProcessor[IO] =
     new SpanProcessor[IO] {
-      def name: String =
-        processorName
-
-      def onStart(
-          parentContext: Option[SpanContext],
-          span: SpanRef[IO]
-      ): IO[Unit] =
-        start
-
-      def isStartRequired: Boolean =
-        false
-
-      def onEnd(span: SpanData): IO[Unit] =
-        end
-
-      def isEndRequired: Boolean =
-        false
-
-      def forceFlush: IO[Unit] =
-        flush
+      def name: String = processorName
+      def onStart: SpanProcessor.OnStart[IO] = (_, _) => start
+      def onEnd: SpanProcessor.OnEnd[IO] = _ => end
+      def forceFlush: IO[Unit] = flush
     }
 
 }

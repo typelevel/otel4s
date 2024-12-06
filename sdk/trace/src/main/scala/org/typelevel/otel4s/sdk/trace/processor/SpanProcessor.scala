@@ -51,36 +51,19 @@ trait SpanProcessor[F[_]] {
 
   /** Called when a span is started, if the `span.isRecording` returns true.
     *
-    * This method is called synchronously on the execution thread, should not throw or block the execution thread.
+    * The handler is called synchronously on the execution thread, should not throw or block the execution thread.
     *
-    * @param parentContext
-    *   the optional parent [[trace.SpanContext SpanContext]]
-    *
-    * @param span
-    *   the started span
+    * Use [[SpanProcessor.OnStart.noop]] to define a noop operation if start events aren't required by the processor.
     */
-  def onStart(parentContext: Option[SpanContext], span: SpanRef[F]): F[Unit]
-
-  /** Whether the [[SpanProcessor]] requires start events.
-    *
-    * If true, the [[onStart]] will be called upon the start of a span.
-    */
-  def isStartRequired: Boolean
+  def onStart: SpanProcessor.OnStart[F]
 
   /** Called when a span is ended, if the `span.isRecording` returns true.
     *
-    * This method is called synchronously on the execution thread, should not throw or block the execution thread.
+    * The handler is called synchronously on the execution thread, should not throw or block the execution thread.
     *
-    * @param span
-    *   the ended span
+    * Use [[SpanProcessor.OnStart.noop]] to define a noop operation if end events aren't required by the processor.
     */
-  def onEnd(span: SpanData): F[Unit]
-
-  /** Whether the [[SpanProcessor]] requires end events.
-    *
-    * If true, the [[onEnd]] will be called upon the end of a span.
-    */
-  def isEndRequired: Boolean
+  def onEnd: SpanProcessor.OnEnd[F]
 
   /** Processes all pending spans (if any).
     */
@@ -92,11 +75,68 @@ trait SpanProcessor[F[_]] {
 
 object SpanProcessor {
 
+  /** Evaluated when a span is started.
+    *
+    * @see
+    *   [[https://opentelemetry.io/docs/specs/otel/trace/sdk/#onstart]]
+    */
+  trait OnStart[F[_]] {
+
+    /** Called when a span is started, if the `span.isRecording` returns true.
+      *
+      * This method is called synchronously on the execution thread, should not throw or block the execution thread.
+      *
+      * @param parentContext
+      *   the optional parent [[trace.SpanContext SpanContext]]
+      *
+      * @param span
+      *   the started span
+      */
+    def apply(parentContext: Option[SpanContext], span: SpanRef[F]): F[Unit]
+  }
+
+  object OnStart {
+
+    def noop[F[_]: Applicative]: OnStart[F] =
+      new Noop
+
+    private[SpanProcessor] final class Noop[F[_]: Applicative] extends OnStart[F] {
+      private val unit: F[Unit] = Applicative[F].unit
+      def apply(parentContext: Option[SpanContext], span: SpanRef[F]): F[Unit] = unit
+    }
+  }
+
+  /** Evaluated when a span is ended.
+    *
+    * @see
+    *   [[https://opentelemetry.io/docs/specs/otel/trace/sdk/#onendspan]]
+    */
+  trait OnEnd[F[_]] {
+
+    /** Called when a span is ended, if the `span.isRecording` returns true.
+      *
+      * This method is called synchronously on the execution thread, should not throw or block the execution thread.
+      *
+      * @param span
+      *   the ended span
+      */
+    def apply(span: SpanData): F[Unit]
+  }
+
+  object OnEnd {
+
+    def noop[F[_]: Applicative]: OnEnd[F] =
+      new Noop
+
+    private[SpanProcessor] final class Noop[F[_]: Applicative] extends OnEnd[F] {
+      private val unit: F[Unit] = Applicative[F].unit
+      def apply(span: SpanData): F[Unit] = unit
+    }
+  }
+
   /** Creates a [[SpanProcessor]] which delegates all processing to the processors in order.
     */
-  def of[F[_]: MonadThrow: Parallel](
-      processors: SpanProcessor[F]*
-  ): SpanProcessor[F] =
+  def of[F[_]: MonadThrow: Parallel](processors: SpanProcessor[F]*): SpanProcessor[F] =
     if (processors.sizeIs == 1) processors.head
     else processors.combineAll
 
@@ -161,55 +201,54 @@ object SpanProcessor {
 
   private final class Noop[F[_]: Applicative] extends SpanProcessor[F] {
     val name: String = "SpanProcessor.Noop"
-
-    def isStartRequired: Boolean = false
-    def isEndRequired: Boolean = false
-
-    def onStart(parentCtx: Option[SpanContext], span: SpanRef[F]): F[Unit] =
-      Applicative[F].unit
-
-    def onEnd(span: SpanData): F[Unit] =
-      Applicative[F].unit
-
-    def forceFlush: F[Unit] =
-      Applicative[F].unit
+    val onStart: OnStart[F] = OnStart.noop
+    val onEnd: OnEnd[F] = OnEnd.noop
+    val forceFlush: F[Unit] = Applicative[F].unit
   }
 
   private final case class Multi[F[_]: MonadThrow: Parallel](
       processors: NonEmptyList[SpanProcessor[F]]
   ) extends SpanProcessor[F] {
-    private val startOnly: List[SpanProcessor[F]] =
-      processors.filter(_.isStartRequired)
-
-    private val endOnly: List[SpanProcessor[F]] =
-      processors.filter(_.isEndRequired)
-
     val name: String =
       s"SpanProcessor.Multi(${processors.map(_.name).mkString_(", ")})"
 
-    def isStartRequired: Boolean = startOnly.nonEmpty
-    def isEndRequired: Boolean = endOnly.nonEmpty
+    /** We use 'traverse' instead of 'parTraverse' due to:
+      *
+      * If multiple SpanProcessors are registered, their OnStart callbacks are invoked in the order they have been
+      * registered.
+      *
+      * Source: https://opentelemetry.io/docs/specs/otel/trace/sdk/#onstart
+      */
+    val onStart: OnStart[F] = {
+      val start = processors.filterNot(_.onStart.isInstanceOf[OnStart.Noop[F]])
 
-    def onStart(parentCtx: Option[SpanContext], span: SpanRef[F]): F[Unit] =
-      startOnly
-        .parTraverse { p =>
-          p.onStart(parentCtx, span).attempt.tupleLeft(p.name)
-        }
-        .flatMap(attempts => handleAttempts(attempts))
+      if (start.nonEmpty) { (parentContext, span) =>
+        start
+          .traverse(p => p.onStart(parentContext, span).attempt.tupleLeft(p.name))
+          .flatMap(attempts => handleAttempts(attempts))
+      } else {
+        OnStart.noop
+      }
+    }
 
-    def onEnd(span: SpanData): F[Unit] =
-      endOnly
-        .parTraverse(p => p.onEnd(span).attempt.tupleLeft(p.name))
-        .flatMap(attempts => handleAttempts(attempts))
+    val onEnd: OnEnd[F] = {
+      val end = processors.filterNot(_.onEnd.isInstanceOf[OnEnd.Noop[F]])
+
+      if (end.nonEmpty) { span =>
+        end
+          .parTraverse(p => p.onEnd(span).attempt.tupleLeft(p.name))
+          .flatMap(attempts => handleAttempts(attempts))
+      } else {
+        OnEnd.noop
+      }
+    }
 
     def forceFlush: F[Unit] =
       processors
         .parTraverse(p => p.forceFlush.attempt.tupleLeft(p.name))
         .flatMap(attempts => handleAttempts(attempts.toList))
 
-    private def handleAttempts(
-        results: List[(String, Either[Throwable, Unit])]
-    ): F[Unit] = {
+    private def handleAttempts(results: List[(String, Either[Throwable, Unit])]): F[Unit] = {
       val failures = results.collect { case (processor, Left(failure)) =>
         ProcessorFailure(processor, failure)
       }

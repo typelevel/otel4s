@@ -22,7 +22,6 @@ import cats.effect.std.Console
 import cats.syntax.applicativeError._
 import org.typelevel.otel4s.sdk.trace.data.SpanData
 import org.typelevel.otel4s.sdk.trace.exporter.SpanExporter
-import org.typelevel.otel4s.trace.SpanContext
 
 /** An implementation of the [[SpanProcessor]] that passes ended [[data.SpanData SpanData]] directly to the configured
   * exporter.
@@ -44,13 +43,10 @@ private final class SimpleSpanProcessor[F[_]: MonadThrow: Console] private (
   val name: String =
     s"SimpleSpanProcessor{exporter=${exporter.name}, exportOnlySampled=$exportOnlySampled}"
 
-  val isStartRequired: Boolean = false
-  val isEndRequired: Boolean = true
+  val onStart: SpanProcessor.OnStart[F] =
+    SpanProcessor.OnStart.noop
 
-  def onStart(parentContext: Option[SpanContext], span: SpanRef[F]): F[Unit] =
-    MonadThrow[F].unit
-
-  def onEnd(span: SpanData): F[Unit] = {
+  val onEnd: SpanProcessor.OnEnd[F] = { (span: SpanData) =>
     val canExport = !exportOnlySampled || span.spanContext.isSampled
     if (canExport) doExport(span) else MonadThrow[F].unit
   }

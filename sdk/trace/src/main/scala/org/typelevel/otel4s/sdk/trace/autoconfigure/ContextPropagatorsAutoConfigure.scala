@@ -16,8 +16,8 @@
 
 package org.typelevel.otel4s.sdk.trace.autoconfigure
 
-import cats.MonadThrow
 import cats.data.NonEmptyList
+import cats.effect.MonadCancelThrow
 import cats.effect.Resource
 import org.typelevel.otel4s.context.propagation.ContextPropagators
 import org.typelevel.otel4s.context.propagation.TextMapPropagator
@@ -43,7 +43,7 @@ import org.typelevel.otel4s.sdk.trace.context.propagation.W3CTraceContextPropaga
   * @see
   *   [[https://opentelemetry.io/docs/languages/java/configuration/#propagators]]
   */
-private final class ContextPropagatorsAutoConfigure[F[_]: MonadThrow](
+private final class ContextPropagatorsAutoConfigure[F[_]: MonadCancelThrow](
     extra: Set[AutoConfigure.Named[F, TextMapPropagator[Context]]]
 ) extends AutoConfigure.WithHint[F, ContextPropagators[Context]](
       "ContextPropagators",
@@ -73,7 +73,7 @@ private final class ContextPropagatorsAutoConfigure[F[_]: MonadThrow](
 
   def fromConfig(config: Config): Resource[F, ContextPropagators[Context]] = {
     val values = config.getOrElse(ConfigKeys.Propagators, Set.empty[String])
-    Resource.eval(MonadThrow[F].fromEither(values)).flatMap {
+    Resource.eval(MonadCancelThrow[F].fromEither(values)).flatMap {
       case names if names.contains(Const.NonePropagator) && names.sizeIs > 1 =>
         Resource.raiseError(
           ConfigurationError(
@@ -149,7 +149,7 @@ private[sdk] object ContextPropagatorsAutoConfigure {
     * @param extra
     *   extra configurers to use
     */
-  def apply[F[_]: MonadThrow](
+  def apply[F[_]: MonadCancelThrow](
       extra: Set[AutoConfigure.Named[F, TextMapPropagator[Context]]]
   ): AutoConfigure[F, ContextPropagators[Context]] =
     new ContextPropagatorsAutoConfigure[F](extra)

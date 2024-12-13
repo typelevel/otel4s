@@ -27,7 +27,7 @@ object ContextStorageExample extends IOApp.Simple {
   def run: IO[Unit] = {
     implicit val provider: LocalProvider[IO, Context] = IOLocalContextStorage.localProvider[IO]
     OtelJava.autoConfigured[IO]().use { otelJava =>
-      otelJava.tracerProvider.tracer("").get.flatMap { tracer =>
+      otelJava.tracerProvider.tracer("com.service").get.flatMap { tracer =>
         tracer.span("test").use { span => // start 'test' span using otel4s
           val jSpanContext = JSpan.current().getSpanContext // get a span from a ThreadLocal var
           IO.println(s"jCtx: ${jSpanContext}, Otel4s ctx: ${span.context}")

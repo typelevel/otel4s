@@ -16,7 +16,7 @@
 
 package org.typelevel.otel4s.sdk.autoconfigure
 
-import cats.MonadThrow
+import cats.effect.MonadCancelThrow
 import cats.effect.Resource
 import cats.syntax.monadError._
 
@@ -89,7 +89,7 @@ object AutoConfigure {
     * @tparam A
     *   the type of the component
     */
-  abstract class WithHint[F[_]: MonadThrow, A](
+  abstract class WithHint[F[_]: MonadCancelThrow, A](
       hint: String,
       configKeys: Set[Config.Key[_]]
   ) extends AutoConfigure[F, A] {

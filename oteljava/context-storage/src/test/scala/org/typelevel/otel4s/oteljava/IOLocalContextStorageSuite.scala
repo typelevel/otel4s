@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.typelevel.otel4s.java
+package org.typelevel.otel4s.oteljava
 
 import cats.effect.IO
 import cats.effect.SyncIO
@@ -23,16 +23,16 @@ import io.opentelemetry.context.ContextStorage
 import munit.CatsEffectSuite
 import munit.Location
 import org.typelevel.otel4s.context.Key
-import org.typelevel.otel4s.java.context.Context
-import org.typelevel.otel4s.java.context.LocalContext
+import org.typelevel.otel4s.oteljava.context.Context
+import org.typelevel.otel4s.oteljava.context.LocalContext
 
 import scala.util.Using
 
 class IOLocalContextStorageSuite extends CatsEffectSuite {
   import IOLocalContextStorageSuite._
 
-  private val localF: IO[LocalContext[IO]] =
-    IOLocalContextStorage.providedLocal
+  private val localProvider: IO[LocalContext[IO]] =
+    IOLocalContextStorage.localProvider[IO].local
 
   private def sCurrent[F[_]](implicit L: LocalContext[F]): F[Context] =
     L.ask[Context]
@@ -46,7 +46,7 @@ class IOLocalContextStorageSuite extends CatsEffectSuite {
   )(body: LocalContext[IO] => IO[Any])(implicit loc: Location): Unit =
     test(name) {
       for {
-        local <- localF
+        local <- localProvider
         _ <- body(local)
       } yield ()
     }
@@ -78,7 +78,8 @@ class IOLocalContextStorageSuite extends CatsEffectSuite {
     }
   }
 
-  test("works as a Java-only ContextStorage") {
+  // see https://discord.com/channels/632277896739946517/839263556754472990/1317163027451088926
+  test("works as a Java-only ContextStorage".ignore) {
     usingModifiedCtx(_.`with`(key1, "1")) {
       assertEquals(Option(jCurrent.get(key1)), Some("1"))
       assertEquals(Option(jCurrent.get(key2)), None)

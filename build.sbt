@@ -705,12 +705,11 @@ lazy val `oteljava-testkit` = project
 
 lazy val `oteljava-context-storage` = project
   .in(file("oteljava/context-storage"))
-  .dependsOn(`java-common`)
+  .dependsOn(`oteljava-common`)
   .settings(munitDependencies)
   .settings(
-    name := "otel4s-java-context-storage",
+    name := "otel4s-oteljava-context-storage",
     libraryDependencies ++= Seq(
-      "org.typelevel" %%% "cats-effect" % CatsEffectVersion,
       "org.typelevel" %%% "cats-effect-testkit" % CatsEffectVersion % Test,
     ),
     Test / javaOptions ++= Seq(
@@ -974,6 +973,7 @@ lazy val unidocs = project
       `oteljava-trace`,
       `oteljava-trace-testkit`,
       `oteljava-testkit`,
+      `oteljava-context-storage`,
       oteljava,
       `semconv-stable`.jvm,
       `semconv-experimental`.jvm,

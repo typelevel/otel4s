@@ -1,0 +1,39 @@
+params:
+  excluded_namespaces: ["ios", "aspnetcore", "signalr", "dotnet"]
+  excluded_stability: ["experimental", "deprecated"] # stable - ["experimental", "deprecated"]; experimental - []
+  excluded_attributes: ["messaging.client_id"]
+  object_prefix: "" # stable - "", experimental - "Experimental"
+  experimental: false # stable - false, experimental - true
+comment_formats:
+  scaladoc:
+    format: html
+    header: "/**"
+    prefix: "  * "
+    footer: "  */"
+    old_style_paragraph: true
+    omit_closing_li: true
+    inline_code_snippet: "`{{code}}`"
+    block_code_snippet: "{{{\n{{code}}}\n}}}"
+    trim: true
+    remove_trailing_dots: false
+default_comment_format: scaladoc
+templates:
+  - pattern: SemanticAttributes.scala.j2
+    filter: > 
+      semconv_grouped_attributes({
+        "exclude_root_namespace": $excluded_namespaces,
+        "exclude_stability": $excluded_stability,
+        "exclude_deprecated": false
+      })
+    application_mode: each
+    file_name: "{{ctx.root_namespace | pascal_case}}{{params.object_prefix}}Attributes.scala"
+text_maps:
+  scala_key_type:
+    int: Long
+    double: Double
+    boolean: Boolean
+    string: String
+    string[]: Seq[String]
+    int[]: Seq[Long]
+    double[]: Seq[Double]
+    boolean[]: Seq[Boolean]

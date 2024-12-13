@@ -21,7 +21,7 @@ import cats.effect.implicits._
 import cats.implicits._
 import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.Otel4s
-import org.typelevel.otel4s.java.OtelJava
+import org.typelevel.otel4s.oteljava.OtelJava
 import org.typelevel.otel4s.trace.Tracer
 
 import scala.concurrent.duration._
@@ -37,8 +37,7 @@ trait InstitutionServiceClient[F[_]] {
   def getUserIds(institutionId: String): F[List[String]]
 }
 
-/** An interface to compose the getUserIds and readUser methods to get all Users
-  * from a single institution.
+/** An interface to compose the getUserIds and readUser methods to get all Users from a single institution.
   */
 trait UsersAlg[F[_]] {
   def getAllUsersForInstitution(institutionId: String): F[List[User]]
@@ -46,11 +45,10 @@ trait UsersAlg[F[_]] {
 
 /** User Database Mock
   *
-  * This database implementation returns a single user out while waiting 30
-  * milliseconds to simulate some time passing. The Tracer[F].span is used to
-  * span over the simulated database call. Note that `span.addAttribute` is used
-  * inside of the `.use` to add another attribute to the span with a value that
-  * we only know at the time of running the database read.
+  * This database implementation returns a single user out while waiting 30 milliseconds to simulate some time passing.
+  * The Tracer[F].span is used to span over the simulated database call. Note that `span.addAttribute` is used inside of
+  * the `.use` to add another attribute to the span with a value that we only know at the time of running the database
+  * read.
   */
 object UserDatabase {
   def mockDBQuery[F[_]: Temporal]: F[User] =
@@ -58,21 +56,19 @@ object UserDatabase {
 
   def apply[F[_]: Tracer: Temporal]: UserDatabase[F] = new UserDatabase[F] {
     def readUser(userId: String): F[User] =
-      Tracer[F].span("Read User from DB", Attribute("userId", userId)).use {
-        span =>
-          mockDBQuery[F].flatTap { user =>
-            span
-              .addAttribute(Attribute("User", user.name))
-          }
+      Tracer[F].span("Read User from DB", Attribute("userId", userId)).use { span =>
+        mockDBQuery[F].flatTap { user =>
+          span
+            .addAttribute(Attribute("User", user.name))
+        }
       }
   }
 }
 
 /** Institution Service Client (Mock Http)
   *
-  * This client implementation returns a list of ids out while waiting 110
-  * milliseconds to simulate some time passing. The Tracer[F].span is used to
-  * span over the http client call.
+  * This client implementation returns a list of ids out while waiting 110 milliseconds to simulate some time passing.
+  * The Tracer[F].span is used to span over the http client call.
   */
 
 object InstitutionServiceClient {
@@ -96,11 +92,10 @@ object InstitutionServiceClient {
 
 /** UserIds Algebra
   *
-  * This implementation composes our two methods from the separate traits into a
-  * method that gives us the list of users for an institution. Note that in this
-  * we will have a list of the same user repeated because of how the mocking
-  * above works. The end result of this is we have a span named "Get users for
-  * institution" that has 3 children spans (one for each id in getUserIds).
+  * This implementation composes our two methods from the separate traits into a method that gives us the list of users
+  * for an institution. Note that in this we will have a list of the same user repeated because of how the mocking above
+  * works. The end result of this is we have a span named "Get users for institution" that has 3 children spans (one for
+  * each id in getUserIds).
   */
 object UserIdsAlg {
   def apply[F[_]: Tracer: Temporal](
@@ -120,14 +115,14 @@ object TraceExample extends IOApp.Simple {
 
   /** Run Method
     *
-    * This run methods creates a span over the resource taking 50 milliseconds
-    * to acquire and then 100 to shutdown, but in the middle are the child spans
-    * from our UserIdsAlg.
+    * This run methods creates a span over the resource taking 50 milliseconds to acquire and then 100 to shutdown, but
+    * in the middle are the child spans from our UserIdsAlg.
     */
-  def run: IO[Unit] = {
-    OtelJava.global.flatMap { (otel4s: Otel4s[IO]) =>
-      otel4s.tracerProvider.tracer("TraceExample").get.flatMap {
-        implicit tracer: Tracer[IO] =>
+  def run: IO[Unit] =
+    OtelJava
+      .autoConfigured[IO]()
+      .evalMap { (otel4s: Otel4s[IO]) =>
+        otel4s.tracerProvider.tracer("TraceExample").get.flatMap { implicit tracer: Tracer[IO] =>
           val userIdAlg = UserIdsAlg.apply[IO](
             InstitutionServiceClient.apply[IO],
             UserDatabase.apply[IO]
@@ -148,7 +143,7 @@ object TraceExample extends IOApp.Simple {
                 _ <- tracer.span("release").surround(IO.sleep(100.millis))
               } yield ()
             }
+        }
       }
-    }
-  }
+      .use_
 }

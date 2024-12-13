@@ -18,6 +18,7 @@ package org.typelevel.otel4s
 
 import cats.Functor
 import cats.Monad
+import cats.arrow.FunctionK
 import cats.data.EitherT
 import cats.data.IorT
 import cats.data.Kleisli
@@ -27,8 +28,7 @@ import cats.effect.kernel.MonadCancelThrow
 import cats.effect.kernel.Resource
 import cats.~>
 
-/** A utility for transforming the higher-kinded type `F` to another
-  * higher-kinded type `G`.
+/** A utility for transforming the higher-kinded type `F` to another higher-kinded type `G`.
   */
 @annotation.implicitNotFound("No transformer defined from ${F} to ${G}")
 trait KindTransformer[F[_], G[_]] {
@@ -36,32 +36,40 @@ trait KindTransformer[F[_], G[_]] {
   /** A higher-kinded function that lifts the kind `F` into a `G`.
     *
     * @note
-    *   This method is usually best implemented by a `liftK` method on `G`'s
-    *   companion object.
+    *   This method is usually best implemented by a `liftK` method on `G`'s companion object.
     */
   val liftK: F ~> G
 
   /** Modify the context of `G[A]` using the natural transformation `f`.
     *
-    * This method is "limited" in the sense that while most `mapK` methods can
-    * modify the context using arbitrary transformations, this method can only
-    * modify the context using natural transformations.
+    * This method is "limited" in the sense that while most `mapK` methods can modify the context using arbitrary
+    * transformations, this method can only modify the context using natural transformations.
     *
     * @note
     *   This method is usually best implemented by a `mapK` method on `G`.
     */
   def limitedMapK[A](ga: G[A])(f: F ~> F): G[A]
 
-  /** Lifts a natural transformation from `F` to `F` into a natural
-    * transformation from `G` to `G`.
+  /** Lifts a natural transformation from `F` to `F` into a natural transformation from `G` to `G`.
+    *
+    * @note
+    *   Implementors SHOULD NOT override this method; the only reason it is not final is for optimization of the
+    *   identity case.
     */
-  final def liftFunctionK(f: F ~> F): G ~> G =
+  def liftFunctionK(f: F ~> F): G ~> G =
     new (G ~> G) {
       def apply[A](ga: G[A]): G[A] = limitedMapK(ga)(f)
     }
 }
 
 object KindTransformer {
+  implicit def id[F[_]]: KindTransformer[F, F] =
+    new KindTransformer[F, F] {
+      val liftK: F ~> F = FunctionK.id
+      def limitedMapK[A](ga: F[A])(f: F ~> F): F[A] = f(ga)
+      override def liftFunctionK(f: F ~> F): F ~> F = f
+    }
+
   implicit def optionT[F[_]: Functor]: KindTransformer[F, OptionT[F, *]] =
     new KindTransformer[F, OptionT[F, *]] {
       val liftK: F ~> OptionT[F, *] = OptionT.liftK
@@ -97,8 +105,7 @@ object KindTransformer {
         ga.mapK(f)
     }
 
-  implicit def resource[F[_]: MonadCancelThrow]
-      : KindTransformer[F, Resource[F, *]] =
+  implicit def resource[F[_]: MonadCancelThrow]: KindTransformer[F, Resource[F, *]] =
     new KindTransformer[F, Resource[F, *]] {
       val liftK: F ~> Resource[F, *] = Resource.liftK
       def limitedMapK[A](ga: Resource[F, A])(f: F ~> F): Resource[F, A] =

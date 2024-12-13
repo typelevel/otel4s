@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Typelevel
+ * Copyright 2023 Typelevel
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,20 +14,57 @@
  * limitations under the License.
  */
 
-package org.typelevel.otel4s.sdk.trace.samplers
+package org.typelevel.otel4s.sdk.trace
+package samplers
 
+import cats.Show
+import cats.kernel.laws.discipline.HashTests
 import munit._
+import org.scalacheck.Prop
+import org.typelevel.otel4s.sdk.trace.scalacheck.Arbitraries
+import org.typelevel.otel4s.sdk.trace.scalacheck.Cogens
+import org.typelevel.otel4s.sdk.trace.scalacheck.Gens
 
-class SamplingDecisionSuite extends FunSuite {
-  test("Drop should have isSampled = false") {
-    assertEquals(SamplingDecision.Drop.isSampled, false)
+class SamplingDecisionSuite extends DisciplineSuite {
+  import Cogens.samplingDecisionCogen
+  import Arbitraries.samplingDecisionArbitrary
+
+  checkAll("SamplingDecision.HashLaws", HashTests[SamplingDecision].hash)
+
+  property("is sampled") {
+    Prop.forAll(Gens.samplingDecision) { decision =>
+      val expected = decision match {
+        case SamplingDecision.Drop            => false
+        case SamplingDecision.RecordOnly      => false
+        case SamplingDecision.RecordAndSample => true
+      }
+
+      assertEquals(decision.isSampled, expected)
+    }
   }
 
-  test("RecordOnly should have isSampled = false") {
-    assertEquals(SamplingDecision.RecordOnly.isSampled, false)
+  property("is recording") {
+    Prop.forAll(Gens.samplingDecision) { decision =>
+      val expected = decision match {
+        case SamplingDecision.Drop            => false
+        case SamplingDecision.RecordOnly      => true
+        case SamplingDecision.RecordAndSample => true
+      }
+
+      assertEquals(decision.isRecording, expected)
+    }
   }
 
-  test("RecordAndSample should have isSampled = true") {
-    assertEquals(SamplingDecision.RecordAndSample.isSampled, true)
+  property("Show[SamplingDecision]") {
+    Prop.forAll(Gens.samplingDecision) { decision =>
+      val expected = decision match {
+        case SamplingDecision.Drop            => "Drop"
+        case SamplingDecision.RecordOnly      => "RecordOnly"
+        case SamplingDecision.RecordAndSample => "RecordAndSample"
+      }
+
+      assertEquals(Show[SamplingDecision].show(decision), expected)
+    }
   }
+
 }

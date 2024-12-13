@@ -28,20 +28,18 @@ import org.typelevel.vault.Vault
   */
 final class VaultContext private (vault: Vault) {
 
-  /** Retrieves the value associated with the given key from the context, if
-    * such a value exists.
+  /** Retrieves the value associated with the given key from the context, if such a value exists.
     */
   def get[A](key: VaultContext.Key[A]): Option[A] =
     vault.lookup(key.underlying)
 
-  /** Retrieves the value associated with the given key from the context, if
-    * such a value exists; otherwise, returns the provided default value.
+  /** Retrieves the value associated with the given key from the context, if such a value exists; otherwise, returns the
+    * provided default value.
     */
   def getOrElse[A](key: VaultContext.Key[A], default: => A): A =
     get(key).getOrElse(default)
 
-  /** Creates a copy of this context with the given value associated with the
-    * given key.
+  /** Creates a copy of this context with the given value associated with the given key.
     */
   def updated[A](key: VaultContext.Key[A], value: A): VaultContext =
     new VaultContext(vault.insert(key.underlying, value))

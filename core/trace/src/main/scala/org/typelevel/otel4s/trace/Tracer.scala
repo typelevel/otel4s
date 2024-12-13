@@ -18,8 +18,12 @@ package org.typelevel.otel4s
 package trace
 
 import cats.Applicative
+import cats.ApplicativeThrow
 import cats.effect.kernel.MonadCancelThrow
+import cats.syntax.functor._
 import cats.~>
+import org.typelevel.otel4s.context.propagation.TextMapGetter
+import org.typelevel.otel4s.context.propagation.TextMapUpdater
 import org.typelevel.otel4s.meta.InstrumentMeta
 
 @annotation.implicitNotFound("""
@@ -38,25 +42,37 @@ tracerProvider
 """)
 trait Tracer[F[_]] extends TracerMacro[F] {
 
-  /** The instrument's metadata. Indicates whether instrumentation is enabled or
-    * not.
+  /** The instrument's metadata. Indicates whether instrumentation is enabled or not.
     */
-  def meta: Tracer.Meta[F]
+  def meta: InstrumentMeta[F]
 
-  /** Returns the context of a span when it is available in the scope.
+  /** Returns the context of the current span when a span that is not no-op exists in the local scope.
     */
   def currentSpanContext: F[Option[SpanContext]]
 
-  /** Creates a new [[SpanBuilder]]. The builder can be used to make a fully
-    * customized [[Span]].
+  /** @return
+    *   the current span if one exists in the local scope, or a no-op span otherwise
+    */
+  def currentSpanOrNoop: F[Span[F]]
+
+  /** @return
+    *   the current span if one exists in the local scope (even if it's a no-op span), or raises an error in `F`
+    *   otherwise
+    *
+    * @throws java.lang.IllegalStateException
+    *   when called while not inside a span, indicating programmer error
+    */
+  def currentSpanOrThrow: F[Span[F]]
+
+  /** Creates a new [[SpanBuilder]]. The builder can be used to make a fully customized [[Span]].
     *
     * @param name
     *   the name of the span
     */
   def spanBuilder(name: String): SpanBuilder[F]
 
-  /** Creates a new tracing scope with a custom parent. A newly created non-root
-    * span will be a child of the given `parent`.
+  /** Creates a new tracing scope with a custom parent. A newly created non-root span will be a child of the given
+    * `parent`.
     *
     * @example
     *   {{{
@@ -73,8 +89,8 @@ trait Tracer[F[_]] extends TracerMacro[F] {
     */
   def childScope[A](parent: SpanContext)(fa: F[A]): F[A]
 
-  /** Creates a new tracing scope if the given `parent` is defined. A newly
-    * created non-root span will be a child of the given `parent`.
+  /** Creates a new tracing scope if the given `parent` is defined. A newly created non-root span will be a child of the
+    * given `parent`.
     *
     * @see
     *   [[childScope]]
@@ -90,16 +106,14 @@ trait Tracer[F[_]] extends TracerMacro[F] {
         fa
     }
 
-  /** Creates a new tracing scope if a parent can be extracted from the given
-    * `carrier`. A newly created non-root span will be a child of the extracted
-    * parent.
+  /** Creates a new tracing scope if a parent can be extracted from the given `carrier`. A newly created non-root span
+    * will be a child of the extracted parent.
     *
-    * If the context cannot be extracted from the `carrier`, the given effect
-    * `fa` will be executed within the '''root''' span.
+    * If the context cannot be extracted from the `carrier`, the given effect `fa` will be executed within the
+    * '''root''' span.
     *
-    * To make the propagation and extraction work, you need to configure the
-    * OpenTelemetry SDK. For example, you can use `OTEL_PROPAGATORS` environment
-    * variable. See the official
+    * To make the propagation and extraction work, you need to configure the OpenTelemetry SDK. For example, you can use
+    * `OTEL_PROPAGATORS` environment variable. See the official
     * [[https://opentelemetry.io/docs/reference/specification/sdk-environment-variables/#general-sdk-configuration SDK configuration guide]].
     *
     * ==Examples==
@@ -131,11 +145,10 @@ trait Tracer[F[_]] extends TracerMacro[F] {
     */
   def joinOrRoot[A, C: TextMapGetter](carrier: C)(fa: F[A]): F[A]
 
-  /** Creates a new root tracing scope. The parent span will not be available
-    * inside. Thus, a span created inside of the scope will be a root one.
+  /** Creates a new root tracing scope. The parent span will not be available inside. Thus, a span created inside of the
+    * scope will be a root one.
     *
-    * Can be useful, when an effect needs to be executed in the background and
-    * the parent tracing info is not needed.
+    * Can be useful, when an effect needs to be executed in the background and the parent tracing info is not needed.
     *
     * @example
     *   the parent is not propagated:
@@ -153,8 +166,7 @@ trait Tracer[F[_]] extends TracerMacro[F] {
     */
   def rootScope[A](fa: F[A]): F[A]
 
-  /** Creates a no-op tracing scope. The tracing operations inside of the scope
-    * are no-op.
+  /** Creates a no-op tracing scope. The tracing operations inside of the scope are no-op.
     *
     * @example
     *   the parent is not propagated:
@@ -179,15 +191,13 @@ trait Tracer[F[_]] extends TracerMacro[F] {
     * @tparam C
     *   the type of the carrier
     * @return
-    *   a copy of the immutable carrier with this tracer's context appended to
-    *   it
+    *   a copy of the immutable carrier with this tracer's context appended to it
     * @see
-    *   [[org.typelevel.otel4s.TextMapPropagator.injected TextMapPropagator#injected]]
+    *   [[org.typelevel.otel4s.context.propagation.TextMapPropagator.inject TextMapPropagator#inject]]
     */
   def propagate[C: TextMapUpdater](carrier: C): F[C]
 
-  /** Modify the context `F` using an implicit [[KindTransformer]] from `F` to
-    * `G`.
+  /** Modify the context `F` using an implicit [[KindTransformer]] from `F` to `G`.
     */
   def mapK[G[_]: MonadCancelThrow](implicit
       F: MonadCancelThrow[F],
@@ -197,48 +207,12 @@ trait Tracer[F[_]] extends TracerMacro[F] {
 }
 
 object Tracer {
+  private[otel4s] def raiseNoCurrentSpan[F[_]](implicit
+      F: ApplicativeThrow[F]
+  ): F[Span[F]] =
+    F.raiseError(new IllegalStateException("not inside a span"))
 
   def apply[F[_]](implicit ev: Tracer[F]): Tracer[F] = ev
-
-  trait Meta[F[_]] extends InstrumentMeta[F] {
-    def noopSpanBuilder: SpanBuilder[F]
-
-    /** Modify the context `F` using an implicit [[KindTransformer]] from `F` to
-      * `G`.
-      */
-    def mapK[G[_]: MonadCancelThrow](implicit
-        F: MonadCancelThrow[F],
-        kt: KindTransformer[F, G]
-    ): Meta[G] =
-      new Meta.MappedK(this)
-  }
-
-  object Meta {
-
-    def enabled[F[_]: Applicative]: Meta[F] = make(true)
-    def disabled[F[_]: Applicative]: Meta[F] = make(false)
-
-    private def make[F[_]: Applicative](enabled: Boolean): Meta[F] =
-      new Meta[F] {
-        private val noopBackend = Span.Backend.noop[F]
-
-        val isEnabled: Boolean = enabled
-        val unit: F[Unit] = Applicative[F].unit
-        val noopSpanBuilder: SpanBuilder[F] =
-          SpanBuilder.noop(noopBackend)
-      }
-
-    /** Implementation for [[Meta.mapK]]. */
-    private class MappedK[F[_]: MonadCancelThrow, G[_]: MonadCancelThrow](
-        meta: Meta[F]
-    )(implicit kt: KindTransformer[F, G])
-        extends Meta[G] {
-      def noopSpanBuilder: SpanBuilder[G] =
-        meta.noopSpanBuilder.mapK[G]
-      def isEnabled: Boolean = meta.isEnabled
-      def unit: G[Unit] = kt.liftK(meta.unit)
-    }
-  }
 
   /** Creates a no-op implementation of the [[Tracer]].
     *
@@ -251,8 +225,11 @@ object Tracer {
     new Tracer[F] {
       private val noopBackend = Span.Backend.noop
       private val builder = SpanBuilder.noop(noopBackend)
-      val meta: Meta[F] = Meta.disabled
+      val meta: InstrumentMeta[F] = InstrumentMeta.disabled
       val currentSpanContext: F[Option[SpanContext]] = Applicative[F].pure(None)
+      val currentSpanOrNoop: F[Span[F]] =
+        Applicative[F].pure(Span.fromBackend(noopBackend))
+      def currentSpanOrThrow: F[Span[F]] = currentSpanOrNoop
       def rootScope[A](fa: F[A]): F[A] = fa
       def noopScope[A](fa: F[A]): F[A] = fa
       def childScope[A](parent: SpanContext)(fa: F[A]): F[A] = fa
@@ -267,9 +244,13 @@ object Tracer {
       tracer: Tracer[F]
   )(implicit kt: KindTransformer[F, G])
       extends Tracer[G] {
-    def meta: Meta[G] = tracer.meta.mapK[G]
+    def meta: InstrumentMeta[G] = tracer.meta.mapK[G]
     def currentSpanContext: G[Option[SpanContext]] =
       kt.liftK(tracer.currentSpanContext)
+    def currentSpanOrNoop: G[Span[G]] =
+      kt.liftK(tracer.currentSpanOrNoop.map(_.mapK[G]))
+    def currentSpanOrThrow: G[Span[G]] =
+      kt.liftK(tracer.currentSpanOrThrow.map(_.mapK[G]))
     def spanBuilder(name: String): SpanBuilder[G] =
       tracer.spanBuilder(name).mapK[G]
     def childScope[A](parent: SpanContext)(ga: G[A]): G[A] =

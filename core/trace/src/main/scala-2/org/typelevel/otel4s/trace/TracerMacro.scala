@@ -17,20 +17,20 @@
 package org.typelevel.otel4s
 package trace
 
+import scala.collection.immutable
+
 private[otel4s] trait TracerMacro[F[_]] {
   self: Tracer[F] =>
 
-  /** Creates a new child span. The span is automatically attached to a parent
-    * span (based on the scope).
+  /** Creates a new child span. The span is automatically attached to a parent span (based on the scope).
     *
-    * The lifecycle of the span is managed automatically. That means the span is
-    * ended upon the finalization of a resource.
+    * The lifecycle of the span is managed automatically. That means the span is ended upon the finalization of a
+    * resource.
     *
     * The abnormal termination (error, cancelation) is recorded by
     * [[SpanFinalizer.Strategy.reportAbnormal default finalization strategy]].
     *
-    * To attach span to a specific parent, use [[childScope]] or
-    * [[SpanBuilder.withParent]].
+    * To attach span to a specific parent, use [[childScope]] or [[SpanBuilder.withParent]].
     *
     * @example
     *   attaching span to a specific parent
@@ -38,7 +38,7 @@ private[otel4s] trait TracerMacro[F[_]] {
     * val tracer: Tracer[F] = ???
     * val span: Span[F] = ???
     * val customParent: SpanOps[F] = tracer
-    *   .spanBuilder("custom-parent")
+    *   .spanBuilder("custom-parent", Attribute("key", "value"))
     *   .withParent(span.context)
     *   .build
     *   }}}
@@ -55,11 +55,46 @@ private[otel4s] trait TracerMacro[F[_]] {
   def span(name: String, attributes: Attribute[_]*): SpanOps[F] =
     macro TracerMacro.span
 
-  /** Creates a new root span. Even if a parent span is available in the scope,
-    * the span is created without a parent.
+  /** Creates a new child span. The span is automatically attached to a parent span (based on the scope).
     *
-    * The lifecycle of the span is managed automatically. That means the span is
-    * ended upon the finalization of a resource.
+    * The lifecycle of the span is managed automatically. That means the span is ended upon the finalization of a
+    * resource.
+    *
+    * The abnormal termination (error, cancelation) is recorded by
+    * [[SpanFinalizer.Strategy.reportAbnormal default finalization strategy]].
+    *
+    * To attach span to a specific parent, use [[childScope]] or [[SpanBuilder.withParent]].
+    *
+    * @example
+    *   attaching span to a specific parent
+    *   {{{
+    * val tracer: Tracer[F] = ???
+    * val span: Span[F] = ???
+    * val customParent: SpanOps[F] = tracer
+    *   .spanBuilder("custom-parent", Attributes(Attribute("key", "value")))
+    *   .withParent(span.context)
+    *   .build
+    *   }}}
+    *
+    * @see
+    *   [[spanBuilder]] to make a fully manual span (explicit end)
+    *
+    * @param name
+    *   the name of the span
+    *
+    * @param attributes
+    *   the set of attributes to associate with the span
+    */
+  def span(
+      name: String,
+      attributes: immutable.Iterable[Attribute[_]]
+  ): SpanOps[F] =
+    macro TracerMacro.spanColl
+
+  /** Creates a new root span. Even if a parent span is available in the scope, the span is created without a parent.
+    *
+    * The lifecycle of the span is managed automatically. That means the span is ended upon the finalization of a
+    * resource.
     *
     * The abnormal termination (error, cancelation) is recorded by
     * [[SpanFinalizer.Strategy.reportAbnormal default finalization strategy]].
@@ -72,6 +107,26 @@ private[otel4s] trait TracerMacro[F[_]] {
     */
   def rootSpan(name: String, attributes: Attribute[_]*): SpanOps[F] =
     macro TracerMacro.rootSpan
+
+  /** Creates a new root span. Even if a parent span is available in the scope, the span is created without a parent.
+    *
+    * The lifecycle of the span is managed automatically. That means the span is ended upon the finalization of a
+    * resource.
+    *
+    * The abnormal termination (error, cancelation) is recorded by
+    * [[SpanFinalizer.Strategy.reportAbnormal default finalization strategy]].
+    *
+    * @param name
+    *   the name of the span
+    *
+    * @param attributes
+    *   the set of attributes to associate with the span
+    */
+  def rootSpan(
+      name: String,
+      attributes: immutable.Iterable[Attribute[_]]
+  ): SpanOps[F] =
+    macro TracerMacro.rootSpanColl
 }
 
 object TracerMacro {
@@ -82,8 +137,19 @@ object TracerMacro {
       attributes: c.Expr[Attribute[_]]*
   ): c.universe.Tree = {
     import c.universe._
-    val meta = q"${c.prefix}.meta"
-    q"(if ($meta.isEnabled) ${c.prefix}.spanBuilder($name).addAttributes(..$attributes) else $meta.noopSpanBuilder).build"
+    if (attributes.nonEmpty) {
+      spanColl(c)(name, c.Expr(q"_root_.scala.Seq(..$attributes)"))
+    } else {
+      q"${c.prefix}.spanBuilder($name).build"
+    }
+  }
+
+  def spanColl(c: blackbox.Context)(
+      name: c.Expr[String],
+      attributes: c.Expr[immutable.Iterable[Attribute[_]]]
+  ): c.universe.Tree = {
+    import c.universe._
+    q"${c.prefix}.spanBuilder($name).addAttributes($attributes).build"
   }
 
   def rootSpan(c: blackbox.Context)(
@@ -91,8 +157,19 @@ object TracerMacro {
       attributes: c.Expr[Attribute[_]]*
   ): c.universe.Tree = {
     import c.universe._
-    val meta = q"${c.prefix}.meta"
-    q"(if ($meta.isEnabled) ${c.prefix}.spanBuilder($name).root.addAttributes(..$attributes) else $meta.noopSpanBuilder).build"
+    if (attributes.nonEmpty) {
+      rootSpanColl(c)(name, c.Expr(q"_root_.scala.Seq(..$attributes)"))
+    } else {
+      q"${c.prefix}.spanBuilder($name).root.build"
+    }
+  }
+
+  def rootSpanColl(c: blackbox.Context)(
+      name: c.Expr[String],
+      attributes: c.Expr[immutable.Iterable[Attribute[_]]]
+  ): c.universe.Tree = {
+    import c.universe._
+    q"${c.prefix}.spanBuilder($name).root.addAttributes($attributes).build"
   }
 
 }

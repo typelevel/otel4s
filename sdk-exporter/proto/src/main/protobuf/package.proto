@@ -1,0 +1,43 @@
+syntax = "proto3";
+
+package opentelemetry.proto;
+
+import "scalapb/scalapb.proto";
+
+// OpenTelemetry proto models are defined at https://github.com/open-telemetry/opentelemetry-proto.
+// By default, generated models are public, which makes them accessible on the classpath.
+//
+// This poses a significant problem because opentelemetry-proto may introduce binary-breaking changes.
+// As a result, any updates to the opentelemetry-proto can cause otel4s-sdk-exporter-proto to break binary compatibility.
+//
+// That's why we must generate them package-private.
+//
+// See: https://github.com/scalapb/ScalaPB/issues/1778, https://github.com/typelevel/otel4s/pull/860
+//
+// Docs:
+// https://scalapb.github.io/docs/faq/#how-do-i-mark-a-generated-case-class-private
+// https://scalapb.github.io/docs/customizations/#auxiliary-options
+option (scalapb.options) = {
+  scope: PACKAGE
+
+  // override the package, so we can access the models
+  package_name: "org.typelevel.otel4s.sdk.exporter.proto"
+
+  aux_message_options: [
+    {
+      target: "*"
+      options: {
+        annotations: "private[exporter]"
+        companion_annotations: "private[exporter]"
+      }
+    }
+  ]
+  aux_enum_options: [
+    {
+      target: "*"
+      options: {
+        base_annotations: "private[exporter]"
+      }
+    }
+  ]
+};

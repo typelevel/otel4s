@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Typelevel
+ * Copyright 2023 Typelevel
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,23 +16,35 @@
 
 package org.typelevel.otel4s.sdk.trace.samplers
 
+import cats.Hash
+import cats.Show
+
 /** A decision on whether a span should be recorded, sampled, or dropped.
   */
-sealed abstract class SamplingDecision(val isSampled: Boolean)
-    extends Product
+sealed abstract class SamplingDecision(
+    val isSampled: Boolean,
+    val isRecording: Boolean
+) extends Product
     with Serializable
 
 object SamplingDecision {
 
   /** The span is not recorded, and all events and attributes will be dropped.
     */
-  case object Drop extends SamplingDecision(false)
+  case object Drop extends SamplingDecision(isSampled = false, isRecording = false)
 
   /** The span is recorded, but the Sampled flag will not be set.
     */
-  case object RecordOnly extends SamplingDecision(false)
+  case object RecordOnly extends SamplingDecision(isSampled = false, isRecording = true)
 
   /** The span is recorded, and the Sampled flag will be set.
     */
-  case object RecordAndSample extends SamplingDecision(true)
+  case object RecordAndSample extends SamplingDecision(isSampled = true, isRecording = true)
+
+  implicit val samplingDecisionHash: Hash[SamplingDecision] =
+    Hash.fromUniversalHashCode
+
+  implicit val samplingDecisionShow: Show[SamplingDecision] =
+    Show.fromToString
+
 }

@@ -22,7 +22,7 @@ Configure the project using your favorite tool:
 Add settings to the `build.sbt`:
 ```scala
 libraryDependencies ++= Seq(
-  "org.typelevel" %% "otel4s-java" % "@VERSION@", // <1>
+  "org.typelevel" %% "otel4s-oteljava" % "@VERSION@", // <1>
   "io.opentelemetry" % "opentelemetry-exporter-otlp" % "@OPEN_TELEMETRY_VERSION@" % Runtime, // <2>
   "io.opentelemetry" % "opentelemetry-sdk-extension-autoconfigure" % "@OPEN_TELEMETRY_VERSION@" % Runtime // <3>
 )
@@ -36,12 +36,12 @@ javaOptions += "-Dotel.exporter.otlp.endpoint=https://api.honeycomb.io/"  // <6>
 
 Add directives to the `tracing.scala`:
 ```scala
-//> using lib "org.typelevel::otel4s-java:@VERSION@" // <1>
-//> using lib "io.opentelemetry:opentelemetry-exporter-otlp:@OPEN_TELEMETRY_VERSION@" // <2>
-//> using lib "io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:@OPEN_TELEMETRY_VERSION@" // <3>
-//> using `java-opt` "-Dotel.java.global-autoconfigure.enabled=true"            // <4>
-//> using `java-opt` "-Dotel.service.name=honeycomb-example"                    // <5>
-//> using `java-opt` "-Dotel.exporter.otlp.endpoint=https://api.honeycomb.io/"  // <6>
+//> using dep "org.typelevel::otel4s-oteljava:@VERSION@" // <1>
+//> using dep "io.opentelemetry:opentelemetry-exporter-otlp:@OPEN_TELEMETRY_VERSION@" // <2>
+//> using dep "io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:@OPEN_TELEMETRY_VERSION@" // <3>
+//> using javaOpt "-Dotel.java.global-autoconfigure.enabled=true"            // <4>
+//> using javaOpt "-Dotel.service.name=honeycomb-example"                    // <5>
+//> using javaOpt "-Dotel.exporter.otlp.endpoint=https://api.honeycomb.io/"  // <6>
 ```
 
 @:@
@@ -58,7 +58,7 @@ Add directives to the `tracing.scala`:
 As mentioned above, we use `otel.java.global-autoconfigure.enabled` and `otel.service.name` system properties to configure the
 OpenTelemetry SDK.
 The SDK can be configured via environment variables too. Check the full list
-of [environment variable configurations](https://github.com/open-telemetry/opentelemetry-java/blob/main/sdk-extensions/autoconfigure/README.md)
+of [environment variable configurations](https://opentelemetry.io/docs/languages/java/configuration)
 for more options.
 
 ### Acquiring a Honeycomb API key
@@ -68,19 +68,23 @@ The Honeycomb [official guide](https://docs.honeycomb.io/getting-data-in/api-key
 First, you must create an account on the [Honeycomb website](https://ui.honeycomb.io/login).
 Once you have done this, log into your account and navigate to the environment settings page. There you can find a generated API key.
 
+Use a different environment for test, production, and local development. Each will have its own API Key. This organizes your data in Honeycomb.
+
 ### Honeycomb configuration
 
 The Honeycomb [official configuration guide](https://docs.honeycomb.io/getting-data-in/opentelemetry-overview/).
 
-In order to send metrics and traces to Honeycomb, the API key and dataset name need to be configured.
+In order to send metrics and traces to Honeycomb, the API key and metrics dataset name need to be configured.
 Since the API key is sensitive data, we advise providing them via environment variables:
 
 ```shell
-$ export OTEL_EXPORTER_OTLP_HEADERS="x-honeycomb-team=your-api-key,x-honeycomb-dataset=honeycomb-example"
+$ export OTEL_EXPORTER_OTLP_HEADERS="x-honeycomb-team=your-api-key,x-honeycomb-dataset=otel-metrics"
 ```
 
 1) `x-honeycomb-team` - the API key  
-2) `x-honeycomb-dataset` - the name of the dataset to send metrics to. We use `honeycomb-example` so both metrics and traces appear in the same dataset.
+2) `x-honeycomb-dataset` - the name of the dataset to send metrics to.
+
+Each service's traces will land in a dataset defined in 'otel.service.name'.
 
 **Note:** if the `x-honeycomb-dataset` header is not configured, the **metrics** will be sent to a dataset called `unknown_metrics`.
 
@@ -94,7 +98,7 @@ import cats.effect.std.Console
 import cats.effect.std.Random
 import cats.syntax.all._
 import org.typelevel.otel4s.{Attribute, AttributeKey}
-import org.typelevel.otel4s.java.OtelJava
+import org.typelevel.otel4s.oteljava.OtelJava
 import org.typelevel.otel4s.metrics.Histogram
 import org.typelevel.otel4s.trace.Tracer
 
@@ -105,7 +109,7 @@ trait Work[F[_]] {
 }
 
 object Work {
-  def apply[F[_] : Async : Tracer : Console](histogram: Histogram[F, Double]): Work[F] =
+  def apply[F[_]: Async: Tracer: Console](histogram: Histogram[F, Double]): Work[F] =
     new Work[F] {
       def doWork: F[Unit] =
         Tracer[F].span("Work.DoWork").use { span =>
@@ -135,16 +139,19 @@ object Work {
 
 object TracingExample extends IOApp.Simple {
   def run: IO[Unit] = {
-    OtelJava.global.flatMap { otel4s =>
-      otel4s.tracerProvider.get("com.service.runtime")
-        .flatMap { implicit tracer: Tracer[IO] =>
-          for {
-            meter <- otel4s.meterProvider.get("com.service.runtime")
-            histogram <- meter.histogram("work.execution.duration").create
-            _ <- Work[IO](histogram).doWork
-          } yield ()
-        }
-    }
+    OtelJava
+      .autoConfigured[IO]()
+      .evalMap { otel4s =>
+        otel4s.tracerProvider.get("com.service.runtime")
+          .flatMap { implicit tracer: Tracer[IO] =>
+            for {
+              meter <- otel4s.meterProvider.get("com.service.runtime")
+              histogram <- meter.histogram[Double]("work.execution.duration").create
+              _ <- Work[IO](histogram).doWork
+            } yield ()
+          }
+      }
+      .use_
   }
 }
 ```

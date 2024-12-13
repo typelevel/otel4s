@@ -22,6 +22,8 @@ import cats.effect.Ref
 import munit.CatsEffectSuite
 import org.typelevel.otel4s.meta.InstrumentMeta
 
+import scala.collection.immutable
+
 class UpDownCounterSuite extends CatsEffectSuite {
   import UpDownCounterSuite._
 
@@ -35,10 +37,14 @@ class UpDownCounterSuite extends CatsEffectSuite {
       List(Attribute("key", "value"))
     }
 
+    // test varargs and Iterable overloads
     for {
       _ <- counter.add(1L, allocateAttribute: _*)
+      _ <- counter.add(1L, allocateAttribute)
       _ <- counter.inc(allocateAttribute: _*)
+      _ <- counter.inc(allocateAttribute)
       _ <- counter.dec(allocateAttribute: _*)
+      _ <- counter.dec(allocateAttribute)
     } yield assert(!allocated)
   }
 
@@ -47,14 +53,15 @@ class UpDownCounterSuite extends CatsEffectSuite {
 
     val expected =
       List(
-        Record(1L, Seq(attribute)),
-        Record(2L, Nil),
-        Record(3L, Seq(attribute, attribute))
+        Record(1L, Attributes(attribute)),
+        Record(2L, Attributes.empty),
+        Record(3L, Attributes(attribute, attribute))
       )
 
+    // test varargs and Iterable overloads
     for {
       counter <- inMemoryUpDownCounter
-      _ <- counter.add(1L, attribute)
+      _ <- counter.add(1L, Attributes(attribute))
       _ <- counter.add(2L)
       _ <- counter.add(3L, attribute, attribute)
       records <- counter.records
@@ -66,14 +73,15 @@ class UpDownCounterSuite extends CatsEffectSuite {
 
     val expected =
       List(
-        Record(1L, Seq(attribute)),
-        Record(1L, Nil),
-        Record(1L, Seq(attribute, attribute))
+        Record(1L, Attributes(attribute)),
+        Record(1L, Attributes.empty),
+        Record(1L, Attributes(attribute, attribute))
       )
 
+    // test varargs and Iterable overloads
     for {
       counter <- inMemoryUpDownCounter
-      _ <- counter.inc(attribute)
+      _ <- counter.inc(Attributes(attribute))
       _ <- counter.inc()
       _ <- counter.inc(attribute, attribute)
       records <- counter.records
@@ -85,14 +93,15 @@ class UpDownCounterSuite extends CatsEffectSuite {
 
     val expected =
       List(
-        Record(-1L, Seq(attribute)),
-        Record(-1L, Nil),
-        Record(-1L, Seq(attribute, attribute))
+        Record(-1L, Attributes(attribute)),
+        Record(-1L, Attributes.empty),
+        Record(-1L, Attributes(attribute, attribute))
       )
 
+    // test varargs and Iterable overloads
     for {
       counter <- inMemoryUpDownCounter
-      _ <- counter.dec(attribute)
+      _ <- counter.dec(Attributes(attribute))
       _ <- counter.dec()
       _ <- counter.dec(attribute, attribute)
       records <- counter.records
@@ -106,17 +115,25 @@ class UpDownCounterSuite extends CatsEffectSuite {
 
 object UpDownCounterSuite {
 
-  final case class Record[A](value: A, attributes: Seq[Attribute[_]])
+  final case class Record[A](value: A, attributes: Attributes)
 
-  class InMemoryUpDownCounter(ref: Ref[IO, List[Record[Long]]])
-      extends UpDownCounter[IO, Long] {
+  class InMemoryUpDownCounter(ref: Ref[IO, List[Record[Long]]]) extends UpDownCounter[IO, Long] {
 
     val backend: UpDownCounter.Backend[IO, Long] =
-      new UpDownCounter.LongBackend[IO] {
+      new UpDownCounter.Backend[IO, Long] {
         val meta: InstrumentMeta[IO] = InstrumentMeta.enabled
 
-        def add(value: Long, attributes: Attribute[_]*): IO[Unit] =
-          ref.update(_.appended(Record(value, attributes)))
+        def add(
+            value: Long,
+            attributes: immutable.Iterable[Attribute[_]]
+        ): IO[Unit] =
+          ref.update(_.appended(Record(value, attributes.to(Attributes))))
+
+        def inc(attributes: immutable.Iterable[Attribute[_]]): IO[Unit] =
+          add(1L, attributes)
+
+        def dec(attributes: immutable.Iterable[Attribute[_]]): IO[Unit] =
+          add(-1L, attributes)
       }
 
     def records: IO[List[Record[Long]]] =

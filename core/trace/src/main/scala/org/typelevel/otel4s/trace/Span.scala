@@ -21,6 +21,7 @@ import cats.Applicative
 import cats.~>
 import org.typelevel.otel4s.meta.InstrumentMeta
 
+import scala.collection.immutable
 import scala.concurrent.duration.FiniteDuration
 
 /** The API to trace an operation.
@@ -28,16 +29,15 @@ import scala.concurrent.duration.FiniteDuration
   * There are two types of span lifecycle managements: manual and auto.
   *
   * ==Manual==
-  * A manual span requires to be ended '''explicitly''' by invoking `end`. This
-  * strategy can be used when it's necessary to end a span outside of the scope
-  * (e.g. async callback). Make sure the span is ended properly.
+  * A manual span requires to be ended '''explicitly''' by invoking `end`. This strategy can be used when it's necessary
+  * to end a span outside of the scope (e.g. async callback). Make sure the span is ended properly.
   *
   * Leaked span:
   * {{{
   * val tracer: Tracer[F] = ???
   * val leaked: F[Unit] =
   *   tracer.spanBuilder("manual-span").build.startUnmanaged.flatMap { span =>
-  *     span.setStatus(Status.Ok, "all good")
+  *     span.setStatus(StatusCode.Ok, "all good")
   *   }
   * }}}
   *
@@ -46,21 +46,20 @@ import scala.concurrent.duration.FiniteDuration
   * val tracer: Tracer[F] = ???
   * val ok: F[Unit] =
   *   tracer.spanBuilder("manual-span").build.startUnmanaged.flatMap { span =>
-  *     span.setStatus(Status.Ok, "all good") >> span.end
+  *     span.setStatus(StatusCode.Ok, "all good") >> span.end
   *   }
   * }}}
   *
   * ==Auto==
-  * Unlike the manual one, the auto strategy has a fully managed lifecycle. That
-  * means the span is started upon resource allocation and ended upon
-  * finalization.
+  * Unlike the manual one, the auto strategy has a fully managed lifecycle. That means the span is started upon resource
+  * allocation and ended upon finalization.
   *
   * Automatically ended span:
   * {{{
   * val tracer: Tracer[F] = ???
   * val ok: F[Unit] =
   *   tracer.spanBuilder("auto-span").build.use { span =>
-  *     span.setStatus(Status.Ok, "all good")
+  *     span.setStatus(StatusCode.Ok, "all good")
   *   }
   * }}}
   */
@@ -74,11 +73,10 @@ trait Span[F[_]] extends SpanMacro[F] {
 
   /** Updates the name of the [[Span]].
     *
-    * '''Note''': if used, this will override the name provided via the
-    * [[SpanBuilder]].
+    * @note
+    *   if used, this will override the name provided via the [[SpanBuilder]].
     *
-    * '''Caution''': upon this update, any sampling behavior based on span's
-    * name will depend on the implementation.
+    * '''Caution''': upon this update, any sampling behavior based on span's name will depend on the implementation.
     *
     * @param name
     *   the new name of the span
@@ -88,8 +86,7 @@ trait Span[F[_]] extends SpanMacro[F] {
 
   /** Marks the end of [[Span]] execution.
     *
-    * Only the timing of the first end call for a given span will be recorded,
-    * the subsequent calls will be ignored.
+    * Only the timing of the first end call for a given span will be recorded, the subsequent calls will be ignored.
     *
     * The end timestamp is based on the `Clock[F].realTime`.
     */
@@ -98,11 +95,10 @@ trait Span[F[_]] extends SpanMacro[F] {
 
   /** Marks the end of [[Span]] execution with the specified timestamp.
     *
-    * Only the timing of the first end call for a given span will be recorded,
-    * the subsequent calls will be ignored.
+    * Only the timing of the first end call for a given span will be recorded, the subsequent calls will be ignored.
     *
-    * '''Note''': the timestamp should be based on `Clock[F].realTime`. Using
-    * `Clock[F].monotonic` may lead to a missing span.
+    * @note
+    *   the timestamp should be based on `Clock[F].realTime`. Using `Clock[F].monotonic` may lead to a missing span.
     *
     * @param timestamp
     *   the explicit timestamp from the epoch
@@ -113,8 +109,7 @@ trait Span[F[_]] extends SpanMacro[F] {
   /** Modify the context `F` using the transformation `f`. */
   def mapK[G[_]](f: F ~> G): Span[G] = Span.fromBackend(backend.mapK(f))
 
-  /** Modify the context `F` using an implicit [[KindTransformer]] from `F` to
-    * `G`.
+  /** Modify the context `F` using an implicit [[KindTransformer]] from `F` to `G`.
     */
   final def mapK[G[_]](implicit kt: KindTransformer[F, G]): Span[G] =
     mapK(kt.liftK)
@@ -128,96 +123,139 @@ object Span {
 
     def updateName(name: String): F[Unit]
 
-    def addAttributes(attributes: Attribute[_]*): F[Unit]
-    def addEvent(name: String, attributes: Attribute[_]*): F[Unit]
+    def addAttributes(attributes: immutable.Iterable[Attribute[_]]): F[Unit]
+    def addEvent(
+        name: String,
+        attributes: immutable.Iterable[Attribute[_]]
+    ): F[Unit]
 
     def addEvent(
         name: String,
         timestamp: FiniteDuration,
-        attributes: Attribute[_]*
+        attributes: immutable.Iterable[Attribute[_]]
+    ): F[Unit]
+
+    def addLink(
+        spanContext: SpanContext,
+        attributes: immutable.Iterable[Attribute[_]]
     ): F[Unit]
 
     def recordException(
         exception: Throwable,
-        attributes: Attribute[_]*
+        attributes: immutable.Iterable[Attribute[_]]
     ): F[Unit]
 
-    def setStatus(status: Status): F[Unit]
-    def setStatus(status: Status, description: String): F[Unit]
+    def setStatus(status: StatusCode): F[Unit]
+    def setStatus(status: StatusCode, description: String): F[Unit]
 
-    private[otel4s] def end: F[Unit]
-    private[otel4s] def end(timestamp: FiniteDuration): F[Unit]
+    def end: F[Unit]
+    def end(timestamp: FiniteDuration): F[Unit]
 
     /** Modify the context `F` using the transformation `f`. */
     def mapK[G[_]](f: F ~> G): Backend[G] = new Backend.MappedK(this)(f)
 
-    /** Modify the context `F` using an implicit [[KindTransformer]] from `F` to
-      * `G`.
+    /** Modify the context `F` using an implicit [[KindTransformer]] from `F` to `G`.
       */
     final def mapK[G[_]](implicit kt: KindTransformer[F, G]): Backend[G] =
       mapK(kt.liftK)
   }
 
   object Backend {
+
+    /** Returns a non-recording backend that holds the provided [[SpanContext]] but all operations have no effect. The
+      * span will not be exported and all tracing operations are no-op, but it can be used to propagate a valid
+      * [[SpanContext]] downstream.
+      *
+      * @param context
+      *   the context to propagate
+      */
+    private[otel4s] def propagating[F[_]: Applicative](
+        context: SpanContext
+    ): Backend[F] =
+      make(InstrumentMeta.enabled, context)
+
     def noop[F[_]: Applicative]: Backend[F] =
+      make(InstrumentMeta.disabled, SpanContext.invalid)
+
+    private def make[F[_]: Applicative](
+        m: InstrumentMeta[F],
+        ctx: SpanContext
+    ): Backend[F] =
       new Backend[F] {
         private val unit = Applicative[F].unit
 
-        val meta: InstrumentMeta[F] = InstrumentMeta.disabled
-        val context: SpanContext = SpanContext.invalid
+        val meta: InstrumentMeta[F] = m
+        val context: SpanContext = ctx
 
         def updateName(name: String): F[Unit] = unit
 
-        def addAttributes(attributes: Attribute[_]*): F[Unit] = unit
-        def addEvent(name: String, attributes: Attribute[_]*): F[Unit] = unit
+        def addAttributes(
+            attributes: immutable.Iterable[Attribute[_]]
+        ): F[Unit] = unit
+        def addEvent(
+            name: String,
+            attributes: immutable.Iterable[Attribute[_]]
+        ): F[Unit] = unit
 
         def addEvent(
             name: String,
             timestamp: FiniteDuration,
-            attributes: Attribute[_]*
+            attributes: immutable.Iterable[Attribute[_]]
+        ): F[Unit] = unit
+
+        def addLink(
+            spanContext: SpanContext,
+            attributes: immutable.Iterable[Attribute[_]]
         ): F[Unit] = unit
 
         def recordException(
             exception: Throwable,
-            attributes: Attribute[_]*
+            attributes: immutable.Iterable[Attribute[_]]
         ): F[Unit] = unit
 
-        def setStatus(status: Status): F[Unit] = unit
-        def setStatus(status: Status, description: String): F[Unit] = unit
+        def setStatus(status: StatusCode): F[Unit] = unit
+        def setStatus(status: StatusCode, description: String): F[Unit] = unit
 
-        private[otel4s] def end: F[Unit] = unit
-        private[otel4s] def end(timestamp: FiniteDuration): F[Unit] = unit
+        def end: F[Unit] = unit
+        def end(timestamp: FiniteDuration): F[Unit] = unit
       }
 
     /** Implementation for [[Backend.mapK]]. */
-    private class MappedK[F[_], G[_]](backend: Backend[F])(f: F ~> G)
-        extends Backend[G] {
+    private class MappedK[F[_], G[_]](backend: Backend[F])(f: F ~> G) extends Backend[G] {
       def meta: InstrumentMeta[G] =
         backend.meta.mapK(f)
       def context: SpanContext = backend.context
       def updateName(name: String): G[Unit] =
         f(backend.updateName(name))
-      def addAttributes(attributes: Attribute[_]*): G[Unit] =
-        f(backend.addAttributes(attributes: _*))
-      def addEvent(name: String, attributes: Attribute[_]*): G[Unit] =
-        f(backend.addEvent(name, attributes: _*))
+      def addAttributes(attributes: immutable.Iterable[Attribute[_]]): G[Unit] =
+        f(backend.addAttributes(attributes))
+      def addEvent(
+          name: String,
+          attributes: immutable.Iterable[Attribute[_]]
+      ): G[Unit] =
+        f(backend.addEvent(name, attributes))
       def addEvent(
           name: String,
           timestamp: FiniteDuration,
-          attributes: Attribute[_]*
+          attributes: immutable.Iterable[Attribute[_]]
       ): G[Unit] =
-        f(backend.addEvent(name, timestamp, attributes: _*))
+        f(backend.addEvent(name, timestamp, attributes))
+      def addLink(
+          spanContext: SpanContext,
+          attributes: immutable.Iterable[Attribute[_]]
+      ): G[Unit] =
+        f(backend.addLink(spanContext, attributes))
       def recordException(
           exception: Throwable,
-          attributes: Attribute[_]*
+          attributes: immutable.Iterable[Attribute[_]]
       ): G[Unit] =
-        f(backend.recordException(exception, attributes: _*))
-      def setStatus(status: Status): G[Unit] =
+        f(backend.recordException(exception, attributes))
+      def setStatus(status: StatusCode): G[Unit] =
         f(backend.setStatus(status))
-      def setStatus(status: Status, description: String): G[Unit] =
+      def setStatus(status: StatusCode, description: String): G[Unit] =
         f(backend.setStatus(status, description))
-      private[otel4s] def end: G[Unit] = f(backend.end)
-      private[otel4s] def end(timestamp: FiniteDuration): G[Unit] =
+      def end: G[Unit] = f(backend.end)
+      def end(timestamp: FiniteDuration): G[Unit] =
         f(backend.end(timestamp))
     }
   }

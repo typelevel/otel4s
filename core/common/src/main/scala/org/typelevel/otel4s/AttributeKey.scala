@@ -20,8 +20,7 @@ import cats.Hash
 import cats.Show
 import cats.syntax.show._
 
-/** The type of value that can be set with an implementation of this key is
-  * denoted by the type parameter.
+/** The type of value that can be set with an implementation of this key is denoted by the type parameter.
   *
   * @tparam A
   *   the type of value that can be set with the key
@@ -29,11 +28,26 @@ import cats.syntax.show._
 sealed trait AttributeKey[A] {
   def name: String
   def `type`: AttributeType[A]
+
+  /** @return
+    *   an [[`Attribute`]] associating this key with the given value
+    */
+  final def apply(value: A): Attribute[A] = Attribute(this, value)
+
+  /** @return
+    *   an [[`Attribute`]] associating this key with the given value if the value is defined
+    */
+  final def maybe(value: Option[A]): Option[Attribute[A]] = value.map(apply)
+
+  /** @return
+    *   an [[`AttributeKey`]] of the same type as this key, with name transformed by `f`
+    */
+  final def transformName(f: String => String): AttributeKey[A] =
+    new AttributeKey.Impl[A](f(name), `type`)
 }
 
 object AttributeKey {
-  private class Impl[A](val name: String, val `type`: AttributeType[A])
-      extends AttributeKey[A] {
+  private class Impl[A](val name: String, val `type`: AttributeType[A]) extends AttributeKey[A] {
 
     override final def toString: String =
       Show[AttributeKey[A]].show(this)
@@ -50,6 +64,43 @@ object AttributeKey {
       }
   }
 
+  @annotation.implicitNotFound("""
+Could not find the `KeySelect` for ${A}. The `KeySelect` is defined for the following types:
+String, Boolean, Long, Double, Seq[String], Seq[Boolean], Seq[Long], Seq[Double].
+""")
+  sealed trait KeySelect[A] {
+    def make(name: String): AttributeKey[A]
+  }
+
+  object KeySelect {
+    def apply[A](implicit ev: KeySelect[A]): KeySelect[A] = ev
+
+    implicit val stringKey: KeySelect[String] = instance(AttributeKey.string)
+    implicit val booleanKey: KeySelect[Boolean] = instance(AttributeKey.boolean)
+    implicit val longKey: KeySelect[Long] = instance(AttributeKey.long)
+    implicit val doubleKey: KeySelect[Double] = instance(AttributeKey.double)
+
+    implicit val stringSeqKey: KeySelect[Seq[String]] =
+      instance(AttributeKey.stringSeq)
+
+    implicit val booleanSeqKey: KeySelect[Seq[Boolean]] =
+      instance(AttributeKey.booleanSeq)
+
+    implicit val longSeqKey: KeySelect[Seq[Long]] =
+      instance(AttributeKey.longSeq)
+
+    implicit val doubleSeqKey: KeySelect[Seq[Double]] =
+      instance(AttributeKey.doubleSeq)
+
+    private def instance[A](f: String => AttributeKey[A]): KeySelect[A] =
+      new KeySelect[A] {
+        def make(name: String): AttributeKey[A] = f(name)
+      }
+  }
+
+  def apply[A: KeySelect](name: String): AttributeKey[A] =
+    KeySelect[A].make(name)
+
   def string(name: String): AttributeKey[String] =
     new Impl(name, AttributeType.String)
 
@@ -62,22 +113,25 @@ object AttributeKey {
   def double(name: String): AttributeKey[Double] =
     new Impl(name, AttributeType.Double)
 
-  def stringList(name: String): AttributeKey[List[String]] =
-    new Impl(name, AttributeType.StringList)
+  def stringSeq(name: String): AttributeKey[Seq[String]] =
+    new Impl(name, AttributeType.StringSeq)
 
-  def booleanList(name: String): AttributeKey[List[Boolean]] =
-    new Impl(name, AttributeType.BooleanList)
+  def booleanSeq(name: String): AttributeKey[Seq[Boolean]] =
+    new Impl(name, AttributeType.BooleanSeq)
 
-  def longList(name: String): AttributeKey[List[Long]] =
-    new Impl(name, AttributeType.LongList)
+  def longSeq(name: String): AttributeKey[Seq[Long]] =
+    new Impl(name, AttributeType.LongSeq)
 
-  def doubleList(name: String): AttributeKey[List[Double]] =
-    new Impl(name, AttributeType.DoubleList)
+  def doubleSeq(name: String): AttributeKey[Seq[Double]] =
+    new Impl(name, AttributeType.DoubleSeq)
 
   implicit def attributeKeyHash[A]: Hash[AttributeKey[A]] =
     Hash.by(key => (key.name, key.`type`))
 
   implicit def attributeKeyShow[A]: Show[AttributeKey[A]] =
     Show.show(key => show"${key.`type`}(${key.name})")
+
+  implicit val attributeKeyExistentialHash: Hash[AttributeKey[_]] =
+    Hash.by(key => (key.name, key.`type`))
 
 }

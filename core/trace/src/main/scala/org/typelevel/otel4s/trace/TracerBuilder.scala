@@ -18,6 +18,8 @@ package org.typelevel.otel4s
 package trace
 
 import cats.Applicative
+import cats.effect.kernel.MonadCancelThrow
+import cats.syntax.functor._
 
 trait TracerBuilder[F[_]] {
 
@@ -39,6 +41,13 @@ trait TracerBuilder[F[_]] {
     */
   def get: F[Tracer[F]]
 
+  /** Modify the context `F` using an implicit [[KindTransformer]] from `F` to `G`.
+    */
+  def mapK[G[_]: MonadCancelThrow](implicit
+      F: MonadCancelThrow[F],
+      kt: KindTransformer[F, G]
+  ): TracerBuilder[G] =
+    new TracerBuilder.MappedK(this)
 }
 
 object TracerBuilder {
@@ -56,4 +65,17 @@ object TracerBuilder {
       def withSchemaUrl(schemaUrl: String): TracerBuilder[F] = this
       def get: F[Tracer[F]] = F.pure(Tracer.noop)
     }
+
+  private class MappedK[F[_]: MonadCancelThrow, G[_]: MonadCancelThrow](
+      builder: TracerBuilder[F]
+  )(implicit
+      kt: KindTransformer[F, G]
+  ) extends TracerBuilder[G] {
+    def withVersion(version: String): TracerBuilder[G] =
+      new MappedK(builder.withVersion(version))
+    def withSchemaUrl(schemaUrl: String): TracerBuilder[G] =
+      new MappedK(builder.withSchemaUrl(schemaUrl))
+    def get: G[Tracer[G]] =
+      kt.liftK(builder.get.map(_.mapK[G]))
+  }
 }

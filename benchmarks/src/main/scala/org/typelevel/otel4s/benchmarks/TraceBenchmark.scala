@@ -17,84 +17,124 @@
 package org.typelevel.otel4s.benchmarks
 
 import cats.effect.IO
+import cats.effect.Resource
 import cats.effect.unsafe.implicits.global
-import io.opentelemetry.sdk.OpenTelemetrySdk
-import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter
-import io.opentelemetry.sdk.trace.SdkTracerProvider
-import io.opentelemetry.sdk.trace.`export`.SimpleSpanProcessor
 import org.openjdk.jmh.annotations._
-import org.typelevel.otel4s.java.OtelJava
 import org.typelevel.otel4s.trace.Tracer
 
 import java.util.concurrent.TimeUnit
 
+// benchmarks/Jmh/run org.typelevel.otel4s.benchmarks.TraceBenchmark -prof gc
 @State(Scope.Thread)
 @BenchmarkMode(Array(Mode.Throughput))
 @OutputTimeUnit(TimeUnit.SECONDS)
+@Fork(2)
+@Measurement(iterations = 40, time = 1)
+@Warmup(iterations = 5, time = 1)
 class TraceBenchmark {
 
   import TraceBenchmark._
+
+  @Param(Array("noop", "oteljava", "sdk"))
+  var backend: String = _
+  var tracer: Tracer[IO] = _
+  var finalizer: IO[Unit] = _
 
   @Benchmark
   def pure(): Unit =
     IO.unit.unsafeRunSync()
 
   @Benchmark
-  def noop(ctx: NoopTracer): Unit = {
-    import ctx._
+  def span(): Unit =
     tracer.span("span").use_.unsafeRunSync()
-  }
 
   @Benchmark
-  def inMemoryDisabled(ctx: InMemoryTracer): Unit = {
-    import ctx._
-    tracer
-      .noopScope(
-        tracer.span("span").use_
-      )
-      .unsafeRunSync()
-  }
+  def noopScope(): Unit =
+    tracer.noopScope(tracer.span("span").use_).unsafeRunSync()
 
   @Benchmark
-  def inMemoryEnabled(ctx: InMemoryTracer): Unit = {
-    import ctx._
-    tracer
-      .rootScope(
-        tracer.span("span").use_
-      )
-      .unsafeRunSync()
-  }
+  def rootScope(): Unit =
+    tracer.rootScope(tracer.span("span").use_).unsafeRunSync()
+
+  @Setup(Level.Trial)
+  def setup(): Unit =
+    backend match {
+      case "noop" =>
+        tracer = noopTracer
+        finalizer = IO.unit
+
+      case "oteljava" =>
+        val (t, release) = otelJavaTracer.allocated.unsafeRunSync()
+
+        tracer = t
+        finalizer = release
+
+      case "sdk" =>
+        val (t, release) = sdkTracer.allocated.unsafeRunSync()
+
+        tracer = t
+        finalizer = release
+
+      case other =>
+        sys.error(s"unknown backend [$other]")
+    }
+
+  @TearDown(Level.Trial)
+  def cleanup(): Unit =
+    finalizer.unsafeRunSync()
 }
 
 object TraceBenchmark {
-  @State(Scope.Benchmark)
-  class NoopTracer {
-    implicit val tracer: Tracer[IO] = Tracer.noop
+
+  private def otelJavaTracer: Resource[IO, Tracer[IO]] = {
+    import io.opentelemetry.sdk.OpenTelemetrySdk
+    import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter
+    import io.opentelemetry.sdk.trace.SdkTracerProvider
+    import io.opentelemetry.sdk.trace.`export`.BatchSpanProcessor
+    import org.typelevel.otel4s.oteljava.OtelJava
+
+    def exporter = InMemorySpanExporter.create()
+
+    def builder = SdkTracerProvider
+      .builder()
+      .addSpanProcessor(BatchSpanProcessor.builder(exporter).build())
+
+    def tracerProvider: SdkTracerProvider =
+      builder.build()
+
+    def otel = OpenTelemetrySdk
+      .builder()
+      .setTracerProvider(tracerProvider)
+      .build()
+
+    OtelJava
+      .resource[IO](IO(otel))
+      .evalMap(_.tracerProvider.tracer("trace-benchmark").get)
   }
 
-  @State(Scope.Benchmark)
-  class InMemoryTracer {
-    private def makeTracer: IO[Tracer[IO]] = {
-      val exporter = InMemorySpanExporter.create()
+  private def sdkTracer: Resource[IO, Tracer[IO]] = {
+    import cats.effect.std.Random
+    import org.typelevel.otel4s.context.LocalProvider
+    import org.typelevel.otel4s.sdk.context.Context
+    import org.typelevel.otel4s.sdk.testkit.trace.InMemorySpanExporter
+    import org.typelevel.otel4s.sdk.trace.SdkTracerProvider
+    import org.typelevel.otel4s.sdk.trace.processor.BatchSpanProcessor
 
-      val builder = SdkTracerProvider
-        .builder()
-        .addSpanProcessor(SimpleSpanProcessor.create(exporter))
-
-      val tracerProvider: SdkTracerProvider =
-        builder.build()
-
-      val otel = OpenTelemetrySdk
-        .builder()
-        .setTracerProvider(tracerProvider)
-        .build()
-
-      OtelJava.forAsync(otel).flatMap {
-        _.tracerProvider.tracer("trace-benchmark").get
+    Resource.eval(InMemorySpanExporter.create[IO](None)).flatMap { exporter =>
+      BatchSpanProcessor.builder(exporter).build.evalMap { processor =>
+        Random.scalaUtilRandom[IO].flatMap { implicit random =>
+          LocalProvider[IO, Context].local.flatMap { implicit local =>
+            for {
+              tracerProvider <- SdkTracerProvider.builder[IO].addSpanProcessor(processor).build
+              tracer <- tracerProvider.get("trace-benchmark")
+            } yield tracer
+          }
+        }
       }
     }
-
-    implicit val tracer: Tracer[IO] =
-      makeTracer.unsafeRunSync()
   }
+
+  private def noopTracer: Tracer[IO] =
+    Tracer.noop
+
 }

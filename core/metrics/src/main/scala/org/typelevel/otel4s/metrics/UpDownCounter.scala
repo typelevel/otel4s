@@ -20,23 +20,61 @@ package metrics
 import cats.Applicative
 import org.typelevel.otel4s.meta.InstrumentMeta
 
+import scala.collection.immutable
+
 /** A `Counter` instrument that records values of type `A`.
   *
-  * The [[UpDownCounter]] is non-monotonic. This means the aggregated value can
-  * increase and decrease.
+  * The [[UpDownCounter]] is non-monotonic. This means the aggregated value can increase and decrease.
   *
   * @see
   *   See [[Counter]] for monotonic alternative
   *
   * @tparam F
   *   the higher-kinded type of a polymorphic effect
+  *
   * @tparam A
-  *   the type of the values to record. OpenTelemetry specification expects `A`
-  *   to be either [[scala.Long]] or [[scala.Double]]
+  *   the type of the values to record. The type must have an instance of [[MeasurementValue]]. [[scala.Long]] and
+  *   [[scala.Double]] are supported out of the box.
   */
 trait UpDownCounter[F[_], A] extends UpDownCounterMacro[F, A]
 
 object UpDownCounter {
+
+  /** A builder of [[UpDownCounter]].
+    *
+    * @tparam F
+    *   the higher-kinded type of a polymorphic effect
+    *
+    * @tparam A
+    *   the type of the values to record. The type must have an instance of [[MeasurementValue]]. [[scala.Long]] and
+    *   [[scala.Double]] are supported out of the box.
+    */
+  trait Builder[F[_], A] {
+
+    /** Sets the unit of measure for this counter.
+      *
+      * @see
+      *   [[https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/api.md#instrument-unit Instrument Unit]]
+      *
+      * @param unit
+      *   the measurement unit. Must be 63 or fewer ASCII characters.
+      */
+    def withUnit(unit: String): Builder[F, A]
+
+    /** Sets the description for this counter.
+      *
+      * @see
+      *   [[https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/api.md#instrument-description Instrument Description]]
+      *
+      * @param description
+      *   the description
+      */
+    def withDescription(description: String): Builder[F, A]
+
+    /** Creates an [[UpDownCounter]] with the given `unit` and `description` (if any).
+      */
+    def create: F[UpDownCounter[F, A]]
+  }
 
   trait Backend[F[_], A] {
     def meta: InstrumentMeta[F]
@@ -49,37 +87,21 @@ object UpDownCounter {
       * @param attributes
       *   the set of attributes to associate with the value
       */
-    def add(value: A, attributes: Attribute[_]*): F[Unit]
+    def add(value: A, attributes: immutable.Iterable[Attribute[_]]): F[Unit]
 
     /** Increments a counter by one.
       *
       * @param attributes
       *   the set of attributes to associate with the value
       */
-    def inc(attributes: Attribute[_]*): F[Unit]
+    def inc(attributes: immutable.Iterable[Attribute[_]]): F[Unit]
 
     /** Decrements a counter by one.
       *
       * @param attributes
       *   the set of attributes to associate with the value
       */
-    def dec(attributes: Attribute[_]*): F[Unit]
-  }
-
-  trait LongBackend[F[_]] extends Backend[F, Long] {
-    final def inc(attributes: Attribute[_]*): F[Unit] =
-      add(1L, attributes: _*)
-
-    final def dec(attributes: Attribute[_]*): F[Unit] =
-      add(-1L, attributes: _*)
-  }
-
-  trait DoubleBackend[F[_]] extends Backend[F, Double] {
-    final def inc(attributes: Attribute[_]*): F[Unit] =
-      add(1.0, attributes: _*)
-
-    final def dec(attributes: Attribute[_]*): F[Unit] =
-      add(-1.0, attributes: _*)
+    def dec(attributes: immutable.Iterable[Attribute[_]]): F[Unit]
   }
 
   def noop[F[_], A](implicit F: Applicative[F]): UpDownCounter[F, A] =
@@ -87,10 +109,22 @@ object UpDownCounter {
       val backend: UpDownCounter.Backend[F, A] =
         new UpDownCounter.Backend[F, A] {
           val meta: InstrumentMeta[F] = InstrumentMeta.disabled
-          def add(value: A, attributes: Attribute[_]*): F[Unit] = meta.unit
-          def inc(attributes: Attribute[_]*): F[Unit] = meta.unit
-          def dec(attributes: Attribute[_]*): F[Unit] = meta.unit
+          def add(
+              value: A,
+              attributes: immutable.Iterable[Attribute[_]]
+          ): F[Unit] = meta.unit
+          def inc(attributes: immutable.Iterable[Attribute[_]]): F[Unit] =
+            meta.unit
+          def dec(attributes: immutable.Iterable[Attribute[_]]): F[Unit] =
+            meta.unit
         }
+    }
+
+  private[otel4s] def fromBackend[F[_], A](
+      b: Backend[F, A]
+  ): UpDownCounter[F, A] =
+    new UpDownCounter[F, A] {
+      def backend: Backend[F, A] = b
     }
 
 }

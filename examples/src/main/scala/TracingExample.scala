@@ -20,7 +20,8 @@ import cats.effect.IOApp
 import cats.effect.std.Console
 import cats.syntax.all._
 import org.typelevel.otel4s.Otel4s
-import org.typelevel.otel4s.java.OtelJava
+import org.typelevel.otel4s.oteljava.OtelJava
+import org.typelevel.otel4s.trace.SpanOps
 import org.typelevel.otel4s.trace.Tracer
 
 import scala.concurrent.duration._
@@ -57,15 +58,16 @@ object Work {
 }
 
 object TracingExample extends IOApp.Simple {
-  def run: IO[Unit] = {
-    OtelJava.global.flatMap { (otel4s: Otel4s[IO]) =>
-      otel4s.tracerProvider.tracer("example").get.flatMap {
-        implicit tracer: Tracer[IO] =>
+  def run: IO[Unit] =
+    OtelJava
+      .autoConfigured[IO]()
+      .evalMap { (otel4s: Otel4s[IO]) =>
+        otel4s.tracerProvider.get("example").flatMap { implicit tracer: Tracer[IO] =>
           tracer
             .span("resource")
             .resource
-            .use { res =>
-              res.trace {
+            .use { case SpanOps.Res(span, trace) =>
+              trace {
                 for {
                   _ <- tracer.span("acquire").surround(IO.sleep(50.millis))
                   _ <- tracer.span("use").surround {
@@ -78,12 +80,12 @@ object TracingExample extends IOApp.Simple {
                       )
                     )
                   }
-                  _ <- res.span.addEvent("event")
+                  _ <- span.addEvent("event")
                   _ <- tracer.span("release").surround(IO.sleep(100.millis))
                 } yield ()
               }
             }
+        }
       }
-    }
-  }
+      .use_
 }

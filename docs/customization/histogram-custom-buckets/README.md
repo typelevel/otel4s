@@ -1,7 +1,7 @@
 # Histogram custom buckets
 
 By default, OpenTelemetry use the following boundary values for histogram
-bucketing: {0, 5, 10, 25, 50, 75, 100, 250, 500, 750, 1000, 2500, 5000, 7500, 10000}.
+bucketing:［0, 5, 10, 25, 50, 75, 100, 250, 500, 750, 1000, 2500, 5000, 7500, 10000］.
 
 In some cases, these boundaries don't represent the distribution of the values. For example, we expect that HTTP server
 latency should be somewhere between 100ms and 1s. Therefore, 2.5, 5, 7.5, and 10 seconds buckets are redundant.
@@ -23,7 +23,7 @@ Add settings to the `build.sbt`:
 
 ```scala
 libraryDependencies ++= Seq(
-  "org.typelevel" %% "otel4s-java" % "@VERSION@", // <1>
+  "org.typelevel" %% "otel4s-oteljava" % "@VERSION@", // <1>
   "io.opentelemetry" % "opentelemetry-exporter-otlp" % "@OPEN_TELEMETRY_VERSION@" % Runtime, // <2>
   "io.opentelemetry" % "opentelemetry-sdk-extension-autoconfigure" % "@OPEN_TELEMETRY_VERSION@" % Runtime // <3>
 )
@@ -36,10 +36,10 @@ javaOptions += "-Dotel.service.name=histogram-buckets-example" // <4>
 Add directives to the `histogram-buckets.scala`:
 
 ```scala
-//> using lib "org.typelevel::otel4s-java:@VERSION@" // <1>
-//> using lib "io.opentelemetry:opentelemetry-exporter-otlp:@OPEN_TELEMETRY_VERSION@" // <2>
-//> using lib "io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:@OPEN_TELEMETRY_VERSION@" // <3>
-//> using `java-opt` "-Dotel.service.name=histogram-buckets-example" // <4>
+//> using dep "org.typelevel::otel4s-oteljava:@VERSION@" // <1>
+//> using dep "io.opentelemetry:opentelemetry-exporter-otlp:@OPEN_TELEMETRY_VERSION@" // <2>
+//> using dep "io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:@OPEN_TELEMETRY_VERSION@" // <3>
+//> using javaOpt "-Dotel.service.name=histogram-buckets-example" // <4>
 ```
 
 @:@
@@ -53,7 +53,7 @@ Add directives to the `histogram-buckets.scala`:
 
 As mentioned above, we use `otel.service.name` system properties to configure the OpenTelemetry SDK.
 The SDK can be configured via environment variables too. Check the full list
-of [environment variable configurations](https://github.com/open-telemetry/opentelemetry-java/blob/main/sdk-extensions/autoconfigure/README.md)
+of [environment variable configurations](https://opentelemetry.io/docs/languages/java/configuration/)
 for more options.
 
 ### OpenTelemetry Autoconfigure extension customization
@@ -88,7 +88,7 @@ To select multiple instruments, a wildcard pattern can be used: `service.*.durat
 
 The view determines how the selected instruments should be changed or aggregated.
 
-In our particular case, we create a histogram view with custom buckets: {.005, .01, .025, .05, .075, .1, .25, .5}.
+In our particular case, we create a histogram view with custom buckets:［.005, .01, .025, .05, .075, .1, .25, .5］.
 
 ```scala mdoc:silent
 import io.opentelemetry.sdk.metrics.{Aggregation, View}
@@ -117,13 +117,12 @@ import cats.effect.std.Random
 import cats.syntax.flatMap._
 import cats.syntax.functor._
 import cats.syntax.parallel._
-import io.opentelemetry.sdk.OpenTelemetrySdk
-import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk
 import io.opentelemetry.sdk.metrics.Aggregation
 import io.opentelemetry.sdk.metrics.InstrumentSelector
 import io.opentelemetry.sdk.metrics.InstrumentType
 import io.opentelemetry.sdk.metrics.View
-import org.typelevel.otel4s.java.OtelJava
+import org.typelevel.otel4s.oteljava.context.LocalContextProvider
+import org.typelevel.otel4s.oteljava.OtelJava
 import org.typelevel.otel4s.metrics.Histogram
 
 import java.util.concurrent.TimeUnit
@@ -131,7 +130,7 @@ import scala.concurrent.duration._
 
 object HistogramBucketsExample extends IOApp.Simple {
 
-  def work[F[_] : Temporal : Console](
+  def work[F[_]: Temporal: Console](
     histogram: Histogram[F, Double], 
     random: Random[F]
   ): F[Unit] =
@@ -145,15 +144,13 @@ object HistogramBucketsExample extends IOApp.Simple {
         )
     } yield ()
 
-  def program[F[_] : Async : LiftIO : Parallel : Console]: F[Unit] =
-    Resource
-      .eval(configureSdk[F])
-      .evalMap(OtelJava.forAsync[F])
+  def program[F[_]: Async: LocalContextProvider: Parallel: Console]: F[Unit] =
+    configureSdk[F]
       .evalMap(_.meterProvider.get("histogram-example"))
       .use { meter =>
         for {
           random <- Random.scalaUtilRandom[F]
-          histogram <- meter.histogram("service.work.duration").create
+          histogram <- meter.histogram[Double]("service.work.duration").create
           _ <- work[F](histogram, random).parReplicateA_(50)
         } yield ()
       }
@@ -161,32 +158,30 @@ object HistogramBucketsExample extends IOApp.Simple {
   def run: IO[Unit] =
     program[IO]
 
-  private def configureSdk[F[_] : Sync]: F[OpenTelemetrySdk] = Sync[F].delay {
-    AutoConfiguredOpenTelemetrySdk
-      .builder()
-      .addMeterProviderCustomizer { (meterProviderBuilder, _) =>
-        meterProviderBuilder
-          .registerView(
-            InstrumentSelector
-              .builder()
-              .setName("service.work.duration")
-              .setType(InstrumentType.HISTOGRAM)
-              .build(),
-            View
-              .builder()
-              .setName("service.work.duration")
-              .setAggregation(
-                Aggregation.explicitBucketHistogram(
-                  java.util.Arrays.asList(.005, .01, .025, .05, .075, .1, .25, .5)
+  private def configureSdk[F[_]: Async: LocalContextProvider]: Resource[F, OtelJava[F]] =
+    OtelJava.autoConfigured { sdkBuilder =>
+      sdkBuilder
+        .addMeterProviderCustomizer { (meterProviderBuilder, _) =>
+          meterProviderBuilder
+            .registerView(
+              InstrumentSelector
+                .builder()
+                .setName("service.work.duration")
+                .setType(InstrumentType.HISTOGRAM)
+                .build(),
+              View
+                .builder()
+                .setName("service.work.duration")
+                .setAggregation(
+                  Aggregation.explicitBucketHistogram(
+                    java.util.Arrays.asList(.005, .01, .025, .05, .075, .1, .25, .5)
+                  )
                 )
-              )
-              .build()
-          )
-      }
-      .setResultAsGlobal
-      .build()
-      .getOpenTelemetrySdk
-  }
+                .build()
+            )
+        }
+        .setResultAsGlobal
+    }
 }
 ```
 

@@ -1,0 +1,225 @@
+{%- macro to_scala_key_type(attribute) -%}
+    {{ attribute.type | instantiated_type | map_text("scala_key_type") }}
+{%- endmacro %}
+
+{%- macro objectName(metric) -%}
+  {{ metric.metric_name[ctx.root_namespace | length:] | pascal_case }}
+{%- endmacro -%}
+
+{%- macro instrumentType(type) -%}
+{%- if type == "gauge" -%}Gauge[F, A]
+{%- elif type == "counter" -%}Counter[F, A]
+{%- elif type == "updowncounter" -%}UpDownCounter[F, A]
+{%- elif type == "histogram" -%}Histogram[F, A]
+{%- else %}{{ type }}
+{%- endif -%}
+{%- endmacro -%}
+
+{%- macro instrumentFactory(type) -%}
+{%- if type == "gauge" -%}gauge[A]
+{%- elif type == "counter" -%}counter[A]
+{%- elif type == "updowncounter" -%}upDownCounter[A]
+{%- elif type == "histogram" -%}histogram[A]
+{%- else %}{{ type }}
+{%- endif -%}
+{%- endmacro -%}
+
+{%- macro observableInstrumentType(type) -%}
+{%- if type == "gauge" -%}ObservableGauge
+{%- elif type == "counter" -%}ObservableCounter
+{%- elif type == "updowncounter" -%}ObservableUpDownCounter
+{%- else %}{{ type }}
+{%- endif -%}
+{%- endmacro -%}
+
+{%- macro observableInstrumentFactory(type) -%}
+{%- if type == "gauge" -%}observableGauge[A]
+{%- elif type == "counter" -%}observableCounter[A]
+{%- elif type == "updowncounter" -%}observableUpDownCounter[A]
+{%- else %}{{ type }}
+{%- endif -%}
+{%- endmacro -%}
+
+{%- macro requirement(attribute) -%}
+{%- if attribute.requirement_level is mapping -%}
+{%- set level = attribute.requirement_level | first -%}
+{%- set apply = "(\"" ~ attribute.requirement_level[level] | trim ~ "\")" -%}
+{%- else -%}
+{%- set level = attribute.requirement_level -%}
+{%- set apply = "" -%}
+{%- endif -%}
+{%- if level == "required" -%} Requirement.required{{ apply }}
+{%- elif level == "recommended" -%} Requirement.recommended{{ apply }}
+{%- elif level == "conditionally_required" -%} Requirement.conditionallyRequired{{ apply }}
+{%- elif level == "opt_in" -%} Requirement.optIn{{ apply }}
+{%- else -%} _unknown_requirement_level_{{ attribute.requirement_level }}
+{%- endif -%}
+{%- endmacro -%}
+
+{%- macro stability(type) -%}
+{%- if type == "experimental" -%} Stability.experimental
+{%- elif type == "stable" -%} Stability.stable
+{%- else -%} _unknown_stability_type_{{ type }}
+{%- endif -%}
+{%- endmacro -%}
+
+{%- macro exampleValue(type, input) %}
+{%- if type == "int" -%} {{ input }}
+{%- elif type == "double" -%} {{ input }}
+{%- elif type == "boolean" -%} {{ input }}
+{%- elif type == "string" -%} "{{ input }}"
+{%- else -%} _unknown type_{{ input }}
+{%- endif -%}
+{% endmacro %}
+
+{%- macro attributeRef(attribute) -%}
+  {%- if attribute is stable -%}
+    {{ attribute.name.split(".")[0] | pascal_case }}Attributes.{{ attribute.name | pascal_case }}
+  {%- else -%}
+    {{ attribute.name.split(".")[0] | pascal_case }}ExperimentalAttributes.{{ attribute.name | pascal_case }}
+  {%- endif -%}
+{%- endmacro -%}
+
+{%- macro stableRef(metric) -%}
+  org.typelevel.otel4s.semconv.metrics.{{ ctx.root_namespace | pascal_case }}Metrics.{{ metric.metric_name[ctx.root_namespace | length:] | pascal_case }}
+{%- endmacro -%}
+
+{%- set object_name = ctx.root_namespace | pascal_case ~ params.object_prefix ~ "Metrics" -%}
+
+/*
+ * Copyright 2024 Typelevel
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.typelevel.otel4s
+package semconv
+{%- if params.experimental == true %}
+package experimental
+package metrics
+{%- else %}
+package metrics
+{%- endif %}
+
+{%- set required_imports = namespace(cats_effect = false, stable = false, experimental = false) -%}
+{%- for metric in ctx.metrics -%}
+  {%- if metric.instrument != "histogram" -%}
+    {%- set required_imports.cats_effect = true -%}
+  {%- endif -%}
+  {% for attribute in metric.attributes %}
+    {%- if attribute is stable -%}
+      {%- set required_imports.stable = true -%}
+    {%- else -%}
+      {%- set required_imports.experimental = true -%}
+    {%- endif -%}
+  {%- endfor -%}
+{%- endfor %}
+
+{% if required_imports.cats_effect == true %}
+import cats.effect.Resource
+{%- endif %}
+import org.typelevel.otel4s.metrics._
+{%- if required_imports.stable == true %}
+import org.typelevel.otel4s.semconv.attributes._
+{%- endif %}
+{%- if required_imports.experimental == true %}
+import org.typelevel.otel4s.semconv.experimental.attributes._
+{%- endif %}
+
+// DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/metrics/SemanticMetrics.scala.j2
+object {{ object_name }} {
+
+  {% set ns = namespace(has_deprecation = false) -%}
+  {%- for metric in ctx.metrics -%}
+    {%- if (metric is deprecated) or (params.experimental == true and metric is stable) -%}
+      {%- set ns.has_deprecation = true -%}
+    {%- endif -%}
+  {%- endfor -%}
+
+  {%- if ns.has_deprecation %}
+  @annotation.nowarn("cat=deprecation")
+  {%- endif %}
+  val specs: List[MetricSpec] = List({%- for metric in ctx.metrics | sort(attribute='metric_name') %}
+    {{ objectName(metric) }},{% endfor %}
+  )
+
+  {% for metric in ctx.metrics | sort(attribute='metric_name') %}
+  {{ [metric.brief, concat_if("\n\n@note\n\n", metric.note)] | comment(indent=2) | replace('$', "$$") }}
+  {%- if metric is deprecated %}
+  @deprecated("{{ metric.deprecated }}", "")
+  {%- elif params.experimental == true and metric is stable %}
+  @deprecated("Use stable `{{ stableRef(metric) }}` instead.", "")
+  {%- endif %}
+  object {{ objectName(metric) }} extends MetricSpec {
+
+    val name: String = "{{ metric.metric_name }}"
+    val description: String = "{{ metric.brief }}"
+    val unit: String = "{{ metric.unit }}"
+    val stability: Stability = {{ stability(metric.stability) }}
+    val attributeSpecs: List[AttributeSpec[_]] = {% if metric.attributes | length > 0 %}AttributeSpecs.specs{% else %}Nil{% endif %}
+
+    {% if metric.attributes | length > 0 %}
+    object AttributeSpecs {
+      {% for attribute in metric.attributes | sort(attribute='name') %}
+      {{ [attribute.brief, concat_if("\n\n@note\n\n", attribute.note)] | comment(indent=6) | replace('$', "$$")}}
+      {%- if attribute is deprecated %}
+      @deprecated("{{ attribute.deprecated }}", "")
+      {%- endif %}
+      val {{ attribute.name | camel_case }}: AttributeSpec[{{to_scala_key_type(attribute)}}] =
+        AttributeSpec(
+          {{ attributeRef(attribute) }},
+          List(
+            {% for example in attribute.examples -%} {{ exampleValue(attribute.type | instantiated_type, example) }}, {% endfor %}
+          ),
+          {{ requirement(attribute) }},
+          {{ stability(attribute.stability) }}
+        )
+      {% endfor %}
+      val specs: List[AttributeSpec[_]] =
+        List({%- for attribute in metric.attributes | sort(attribute='name') %}
+          {{ attribute.name | camel_case }},{% endfor %}
+        )
+    }
+    {% endif %}
+    def create[F[_]: Meter, A: MeasurementValue]{% if metric.instrument == "histogram" %}(boundaries: BucketBoundaries){% endif %}: F[{{ instrumentType(metric.instrument) }}] =
+      Meter[F]
+        .{{ instrumentFactory(metric.instrument) }}(name)
+        .withDescription(description)
+        .withUnit(unit)
+        {%- if metric.instrument == "histogram" %}
+        .withExplicitBucketBoundaries(boundaries)
+        .create
+        {% else %}
+        .create
+        {% endif %}
+    {% if metric.instrument != "histogram" %}
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .{{ observableInstrumentFactory(metric.instrument) }}(name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, {{ observableInstrumentType(metric.instrument) }}] =
+      Meter[F]
+        .{{ observableInstrumentFactory(metric.instrument) }}(name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+    {% endif %}
+  }
+  {% endfor %}
+
+}

@@ -16,7 +16,9 @@
 
 package org.typelevel.otel4s.metrics
 
+import cats.Applicative
 import org.typelevel.otel4s.Attribute
+import org.typelevel.otel4s.Attributes
 
 trait ObservableMeasurement[F[_], A] {
 
@@ -28,5 +30,26 @@ trait ObservableMeasurement[F[_], A] {
     * @param attributes
     *   the set of attributes to associate with the value
     */
-  def record(value: A, attributes: Attribute[_]*): F[Unit]
+  final def record(value: A, attributes: Attribute[_]*): F[Unit] =
+    record(value, attributes.to(Attributes))
+
+  /** Records a value with a set of attributes.
+    *
+    * @param value
+    *   the value to record
+    *
+    * @param attributes
+    *   the set of attributes to associate with the value
+    */
+  def record(value: A, attributes: Attributes): F[Unit]
+}
+
+object ObservableMeasurement {
+
+  def noop[F[_]: Applicative, A]: ObservableMeasurement[F, A] =
+    new ObservableMeasurement[F, A] {
+      def record(value: A, attributes: Attributes): F[Unit] =
+        Applicative[F].unit
+    }
+
 }

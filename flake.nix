@@ -10,7 +10,7 @@
       let
         pkgs = import nixpkgs {
           inherit system;
-          overlays = [ typelevel-nix.overlay ];
+          overlays = [ typelevel-nix.overlays.default ];
         };
       in
       {
@@ -21,6 +21,7 @@
             jdk.package = pkgs.jdk8;
             nodejs.enable = true;
             native.enable = true;
+            native.libraries = [ pkgs.zlib pkgs.s2n ];
           };
         };
       }

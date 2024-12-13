@@ -19,7 +19,8 @@ package metrics
 
 import cats.effect.kernel.Resource
 
-import scala.concurrent.duration._
+import scala.collection.immutable
+import scala.concurrent.duration.*
 import scala.quoted.*
 
 private[otel4s] trait HistogramMacro[F[_], A] {
@@ -36,6 +37,20 @@ private[otel4s] trait HistogramMacro[F[_], A] {
   inline def record(
       inline value: A,
       inline attributes: Attribute[_]*
+  ): F[Unit] =
+    ${ HistogramMacro.record('backend, 'value, 'attributes) }
+
+  /** Records a value with a set of attributes.
+    *
+    * @param value
+    *   the value to record
+    *
+    * @param attributes
+    *   the set of attributes to associate with the value
+    */
+  inline def record(
+      inline value: A,
+      inline attributes: immutable.Iterable[Attribute[_]]
   ): F[Unit] =
     ${ HistogramMacro.record('backend, 'value, 'attributes) }
 
@@ -62,8 +77,67 @@ private[otel4s] trait HistogramMacro[F[_], A] {
       inline timeUnit: TimeUnit,
       inline attributes: Attribute[_]*
   ): Resource[F, Unit] =
-    ${ HistogramMacro.recordDuration('backend, 'timeUnit, 'attributes) }
+    recordDuration(timeUnit, _ => attributes)
 
+  /** Records duration of the given effect.
+    *
+    * @example
+    *   {{{
+    * val histogram: Histogram[F] = ???
+    * val attributeKey = AttributeKey.string("query_name")
+    *
+    * def findUser(name: String) =
+    *   histogram.recordDuration(TimeUnit.MILLISECONDS, Attributes(Attribute(attributeKey, "find_user"))).use { _ =>
+    *     db.findUser(name)
+    *   }
+    *   }}}
+    *
+    * @param timeUnit
+    *   the time unit of the duration measurement
+    *
+    * @param attributes
+    *   the set of attributes to associate with the value
+    */
+  inline def recordDuration(
+      inline timeUnit: TimeUnit,
+      inline attributes: immutable.Iterable[Attribute[_]]
+  ): Resource[F, Unit] =
+    recordDuration(timeUnit, _ => attributes)
+
+  /** Records duration of the given effect.
+    *
+    * @example
+    *   {{{
+    * val histogram: Histogram[F] = ???
+    * val attributeKey = AttributeKey.string("query_name")
+    *
+    * def attributes(queryName: String)(ec: Resource.ExitCase): Attributes = {
+    *  val ecAttributes = ec match {
+    *    case Resource.ExitCase.Succeeded  => Attributes.empty
+    *    case Resource.ExitCase.Errored(e) => Attributes(Attribute("error.type", e.getClass.getName))
+    *    case Resource.ExitCase.Canceled   => Attributes(Attribute("error.type", "canceled"))
+    *  }
+    *
+    *  ecAttributes :+ Attribute(attributeKey, queryName)
+    * }
+    *
+    * def findUser(name: String) =
+    *   histogram.recordDuration(TimeUnit.MILLISECONDS, attributes("find_user")).use { _ =>
+    *     db.findUser(name)
+    *    }
+    *   }}}
+    *
+    * @param timeUnit
+    *   the time unit of the duration measurement
+    *
+    * @param attributes
+    *   the function to build attributes to associate with the value
+    */
+  inline def recordDuration(
+      inline timeUnit: TimeUnit,
+      inline attributes: Resource.ExitCase => immutable.Iterable[Attribute[_]]
+  ): Resource[F, Unit] =
+    ${ HistogramMacro.recordDuration('backend, 'timeUnit, 'attributes) }
 }
 
 object HistogramMacro {
@@ -71,22 +145,22 @@ object HistogramMacro {
   def record[F[_], A](
       backend: Expr[Histogram.Backend[F, A]],
       value: Expr[A],
-      attributes: Expr[Seq[Attribute[_]]]
+      attributes: Expr[immutable.Iterable[Attribute[_]]]
   )(using Quotes, Type[F], Type[A]) =
     '{
-      if ($backend.meta.isEnabled) $backend.record($value, $attributes*)
+      if ($backend.meta.isEnabled) $backend.record($value, $attributes)
       else $backend.meta.unit
     }
 
   def recordDuration[F[_], A](
       backend: Expr[Histogram.Backend[F, A]],
       timeUnit: Expr[TimeUnit],
-      attributes: Expr[Seq[Attribute[_]]]
+      attributes: Expr[Resource.ExitCase => immutable.Iterable[Attribute[_]]]
   )(using Quotes, Type[F], Type[A]) =
     '{
       if ($backend.meta.isEnabled)
-        $backend.recordDuration($timeUnit, $attributes*)
-      else $backend.meta.resourceUnit
+        $backend.recordDuration($timeUnit, $attributes)
+      else _root_.cats.effect.kernel.Resource.unit
     }
 
 }

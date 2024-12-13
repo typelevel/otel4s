@@ -19,7 +19,7 @@ package metrics
 
 import cats.effect.IO
 import cats.effect.Ref
-import cats.effect.kernel.Resource
+import cats.effect.Resource
 import cats.syntax.all._
 import munit.CatsEffectSuite
 
@@ -31,9 +31,7 @@ class ObservableSuite extends CatsEffectSuite {
 
     for {
       _ <- new InMemoryObservableInstrumentBuilder[Double]
-        .createWithCallback(instrument =>
-          instrument.record(2.0) *> instrument.record(3.0)
-        )
+        .createObservableWithCallback(instrument => instrument.record(2.0) *> instrument.record(3.0))
         .use { r =>
           for {
             _ <- r.observations.get.assertEquals(List.empty)
@@ -52,13 +50,13 @@ class ObservableSuite extends CatsEffectSuite {
     for {
       counter <- Ref.of[IO, Int](0)
       _ <- new InMemoryObservableInstrumentBuilder[Int]
-        .create(
+        .createObservable(
           counter
             .getAndUpdate(_ + 1)
             .map(x =>
               List(
-                Measurement(x, List(Attribute("thing", "a"))),
-                Measurement(x, List(Attribute("thing", "b")))
+                Measurement(x, Attribute("thing", "a")),
+                Measurement(x, Attribute("thing", "b"))
               )
             )
         )
@@ -93,23 +91,21 @@ object ObservableSuite {
   ) {
     def run: IO[Unit] =
       callback(new ObservableMeasurement[IO, A] {
-        def record(value: A, attributes: Attribute[_]*): IO[Unit] =
-          observations.update(Record(value, attributes) :: _)
+        def record(value: A, attributes: Attributes): IO[Unit] =
+          observations.update(Record(value, attributes.toSeq) :: _)
       })
   }
 
-  class InMemoryObservableInstrumentBuilder[A]
-      extends ObservableInstrumentBuilder[IO, A, InMemoryObservable[A]] {
+  class InMemoryObservableInstrumentBuilder[A] extends ObservableGauge.Builder[IO, A] {
 
-    type Self =
-      ObservableInstrumentBuilder[IO, A, InMemoryObservable[A]]
+    type Self = ObservableGauge.Builder[IO, A]
 
     def withUnit(unit: String): Self = this
 
     def withDescription(description: String): Self = this
 
-    def create(
-        measurements: IO[List[Measurement[A]]]
+    def createObservable(
+        measurements: IO[Iterable[Measurement[A]]]
     ): Resource[IO, InMemoryObservable[A]] =
       Resource
         .eval(Ref.of[IO, List[Record[A]]](List.empty))
@@ -117,19 +113,31 @@ object ObservableSuite {
           InMemoryObservable[A](
             recorder =>
               measurements.flatMap(
-                _.traverse_(x => recorder.record(x.value, x.attributes: _*))
+                _.toList.traverse_(x => recorder.record(x.value, x.attributes))
               ),
             obs
           )
         )
 
-    def createWithCallback(
+    def createObservableWithCallback(
         cb: ObservableMeasurement[IO, A] => IO[Unit]
     ): Resource[IO, InMemoryObservable[A]] =
       Resource
         .eval(Ref.of[IO, List[Record[A]]](List.empty))
         .map(obs => InMemoryObservable[A](cb, obs))
 
+    def createWithCallback(
+        cb: ObservableMeasurement[IO, A] => IO[Unit]
+    ): Resource[IO, ObservableGauge] =
+      createObservableWithCallback(cb).as(new ObservableGauge {})
+
+    def create(
+        measurements: IO[Iterable[Measurement[A]]]
+    ): Resource[IO, ObservableGauge] =
+      createObservable(measurements).as(new ObservableGauge {})
+
+    def createObserver: IO[ObservableMeasurement[IO, A]] =
+      IO.pure(ObservableMeasurement.noop)
   }
 
 }

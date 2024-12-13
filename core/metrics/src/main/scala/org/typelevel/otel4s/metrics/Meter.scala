@@ -35,90 +35,255 @@ meterProvider
 """)
 trait Meter[F[_]] {
 
-  /** Creates a builder of [[Counter]] instrument that records [[scala.Long]]
-    * values.
+  /** Creates a builder of [[Counter]] instrument that records values of type `A`.
     *
-    * The [[Counter]] is monotonic. This means the aggregated value is nominally
-    * increasing.
+    * The [[Counter]] is monotonic. This means the aggregated value is nominally increasing.
+    *
+    * @note
+    *   the `A` type must be provided explicitly, for example `meter.counter[Long]` or `meter.counter[Double]`
+    *
+    * @example
+    *   {{{
+    * val meter: Meter[F] = ???
+    *
+    * val doubleCounter: F[Counter[F, Double]] =
+    *   meter.counter[Double]("double-counter").create
+    *
+    * val longCounter: F[Counter[F, Long]] =
+    *   meter.counter[Long]("long-counter").create
+    *   }}}
     *
     * @see
     *   See [[upDownCounter]] for non-monotonic alternative
     *
     * @param name
     *   the name of the instrument
-    */
-  def counter(name: String): SyncInstrumentBuilder[F, Counter[F, Long]]
-
-  /** Creates a builder of [[Histogram]] instrument that records
-    * [[scala.Double]] values.
     *
-    * [[Histogram]] metric data points convey a population of recorded
-    * measurements in a compressed format. A histogram bundles a set of events
-    * into divided populations with an overall event count and aggregate sum for
-    * all events.
+    * @tparam A
+    *   the type of the measurement. [[scala.Long]] and [[scala.Double]] are supported out of the box
+    */
+  def counter[A: MeasurementValue](name: String): Counter.Builder[F, A]
+
+  /** Creates a builder of [[Histogram]] instrument that records values of type `A`.
+    *
+    * [[Histogram]] metric data points convey a population of recorded measurements in a compressed format. A histogram
+    * bundles a set of events into divided populations with an overall event count and aggregate sum for all events.
+    *
+    * @note
+    *   the `A` type must be provided explicitly, for example `meter.histogram[Long]` or `meter.histogram[Double]`
+    *
+    * @example
+    *   {{{
+    * val meter: Meter[F] = ???
+    *
+    * val doubleHistogram: F[Histogram[F, Double]] =
+    *   meter.histogram[Double]("double-histogram").create
+    *
+    * val longHistogram: F[Histogram[F, Long]] =
+    *   meter.histogram[Long]("long-histogram").create
+    *   }}}
     *
     * @param name
     *   the name of the instrument
-    */
-  def histogram(name: String): SyncInstrumentBuilder[F, Histogram[F, Double]]
-
-  /** Creates a builder of [[UpDownCounter]] instrument that records
-    * [[scala.Long]] values.
     *
-    * The [[UpDownCounter]] is non-monotonic. This means the aggregated value
-    * can increase and decrease.
+    * @tparam A
+    *   the type of the measurement. [[scala.Long]] and [[scala.Double]] are supported out of the box
+    */
+  def histogram[A: MeasurementValue](name: String): Histogram.Builder[F, A]
+
+  /** Creates a builder of [[UpDownCounter]] instrument that records values of type `A`.
+    *
+    * The [[UpDownCounter]] is non-monotonic. This means the aggregated value can increase and decrease.
+    *
+    * @note
+    *   the `A` type must be provided explicitly, for example `meter.upDownCounter[Long]` or
+    *   `meter.upDownCounter[Double]`
+    *
+    * @example
+    *   {{{
+    * val meter: Meter[F] = ???
+    *
+    * val doubleUpDownCounter: F[UpDownCounter[F, Double]] =
+    *   meter.upDownCounter[Double]("double-up-down-counter").create
+    *
+    * val longUpDownCounter: F[UpDownCounter[F, Long]] =
+    *   meter.upDownCounter[Long]("long-up-down-counter").create
+    *   }}}
     *
     * @see
     *   See [[counter]] for monotonic alternative
     *
     * @param name
     *   the name of the instrument
+    *
+    * @tparam A
+    *   the type of the measurement. [[scala.Long]] and [[scala.Double]] are supported out of the box
     */
-  def upDownCounter(
+  def upDownCounter[A: MeasurementValue](
       name: String
-  ): SyncInstrumentBuilder[F, UpDownCounter[F, Long]]
+  ): UpDownCounter.Builder[F, A]
 
-  /** Creates a builder of [[ObservableGauge]] instrument that collects
-    * [[scala.Double]] values from the given callback.
+  /** Creates a builder of [[Gauge]] instrument that records values of type `A`.
+    *
+    * The [[Gauge]] records non-additive values.
+    *
+    * @note
+    *   the `A` type must be provided explicitly, for example `meter.gauge[Long]` or `meter.gauge[Double]`
+    *
+    * @example
+    *   {{{
+    * val meter: Meter[F] = ???
+    *
+    * val doubleGauge: F[Gauge[F, Double]] =
+    *   meter.gauge[Double]("double-gauge").create
+    *
+    * val longGauge: F[Gauge[F, Long]] =
+    *   meter.gauge[Long]("long-gauge").create
+    *   }}}
+    *
+    * @see
+    *   See [[upDownCounter]] to record additive values
     *
     * @param name
     *   the name of the instrument
-    */
-  def observableGauge(
-      name: String
-  ): ObservableInstrumentBuilder[F, Double, ObservableGauge]
-
-  /** Creates a builder of [[ObservableCounter]] instrument that collects
-    * [[scala.Long]] values from the given callback.
     *
-    * The [[ObservableCounter]] is monotonic. This means the aggregated value is
-    * nominally increasing.
+    * @tparam A
+    *   the type of the measurement. [[scala.Long]] and [[scala.Double]] are supported out of the box
+    */
+  def gauge[A: MeasurementValue](name: String): Gauge.Builder[F, A]
+
+  /** Creates a builder of [[ObservableGauge]] instrument that collects values of type `A` from the given callback.
+    *
+    * @note
+    *   the `A` type must be provided explicitly, for example `meter.observableGauge[Long]` or
+    *   `meter.observableGauge[Double]`
+    *
+    * @example
+    *   {{{
+    * val meter: Meter[F] = ???
+    *
+    * val doubleGauge: Resource[F, ObservableGauge] =
+    *   meter
+    *     .observableGauge[Double]("double-gauge")
+    *     .create(Sync[F].delay(List(Measurement(1.0))))
+    *
+    * val longGauge: Resource[F, ObservableGauge] =
+    *   meter
+    *     .observableGauge[Long]("long-gauge")
+    *     .create(Sync[F].delay(List(Measurement(1L))))
+    *   }}}
+    *
+    * @param name
+    *   the name of the instrument
+    *
+    * @tparam A
+    *   the type of the measurement. [[scala.Long]] and [[scala.Double]] are supported out of the box
+    */
+  def observableGauge[A: MeasurementValue](
+      name: String
+  ): ObservableGauge.Builder[F, A]
+
+  /** Creates a builder of [[ObservableCounter]] instrument that collects values of type `A` from the given callback.
+    *
+    * The [[ObservableCounter]] is monotonic. This means the aggregated value is nominally increasing.
+    *
+    * @note
+    *   the `A` type must be provided explicitly, for example `meter.observableCounter[Long]` or
+    *   `meter.observableCounter[Double]`
+    *
+    * @example
+    *   {{{
+    * val meter: Meter[F] = ???
+    *
+    * val doubleObservableCounter: Resource[F, ObservableCounter] =
+    *   meter
+    *     .observableCounter[Double]("double-counter")
+    *     .create(Sync[F].delay(List(Measurement(1.0))))
+    *
+    * val longObservableCounter: Resource[F, ObservableCounter] =
+    *   meter
+    *     .observableCounter[Long]("long-counter")
+    *     .create(Sync[F].delay(List(Measurement(1L))))
+    *   }}}
     *
     * @see
     *   See [[observableUpDownCounter]] for non-monotonic alternative
     *
     * @param name
     *   the name of the instrument
-    */
-  def observableCounter(
-      name: String
-  ): ObservableInstrumentBuilder[F, Long, ObservableCounter]
-
-  /** Creates a builder of [[ObservableUpDownCounter]] instrument that collects
-    * [[scala.Long]] values from the given callback.
     *
-    * The [[ObservableUpDownCounter]] is non-monotonic. This means the
-    * aggregated value can increase and decrease.
+    * @tparam A
+    *   the type of the measurement. [[scala.Long]] and [[scala.Double]] are supported out of the box
+    */
+  def observableCounter[A: MeasurementValue](
+      name: String
+  ): ObservableCounter.Builder[F, A]
+
+  /** Creates a builder of [[ObservableUpDownCounter]] instrument that collects values of type `A` from the given
+    * callback.
+    *
+    * The [[ObservableUpDownCounter]] is non-monotonic. This means the aggregated value can increase and decrease.
+    *
+    * @note
+    *   the `A` type must be provided explicitly, for example `meter.observableUpDownCounter[Long]` or
+    *   `meter.observableUpDownCounter[Double]`
+    *
+    * @example
+    *   {{{
+    * val meter: Meter[F] = ???
+    *
+    * val doubleObservableUpDownCounter: Resource[F, ObservableUpDownCounter] =
+    *   meter
+    *     .observableUpDownCounter[Double]("double-up-down-counter")
+    *     .create(Sync[F].delay(List(Measurement(1.0))))
+    *
+    * val longObservableUpDownCounter: Resource[F, ObservableUpDownCounter] =
+    *   meter
+    *     .observableUpDownCounter[Long]("long-up-down-counter")
+    *     .create(Sync[F].delay(List(Measurement(1L))))
+    *   }}}
+    *
+    * @note
+    *   the `A` type must be provided explicitly, for example `meter.observableCounter[Long]` or
+    *   `meter.observableCounter[Double]`
     *
     * @see
     *   See [[observableCounter]] for monotonic alternative
     *
     * @param name
     *   the name of the instrument
+    *
+    * @tparam A
+    *   the type of the measurement. [[scala.Long]] and [[scala.Double]] are supported out of the box
     */
-  def observableUpDownCounter(
+  def observableUpDownCounter[A: MeasurementValue](
       name: String
-  ): ObservableInstrumentBuilder[F, Long, ObservableUpDownCounter]
+  ): ObservableUpDownCounter.Builder[F, A]
+
+  /** Constructs a batch callback.
+    *
+    * Batch callbacks allow a single callback to observe measurements for multiple asynchronous instruments.
+    *
+    * The callback will be called when the instruments are being observed.
+    *
+    * @example
+    *   {{{
+    * val meter: Meter[F] = ???
+    * val server: F[Unit] = ??? // runs the server
+    *
+    * val background: Resource[F, Unit] =
+    *   meter.batchCallback.of(
+    *     meter.observableCounter[Long]("counter").createObserver,
+    *     meter.observableUpDownCounter[Double]("up-down-counter").createObserver,
+    *     meter.observableGauge[Double]("gauge").createObserver
+    *   ) { (counter, upDownCounter, gauge) =>
+    *     counter.record(1L) *> upDownCounter.record(2.0) *> gauge.record(3.0)
+    *   }
+    *
+    * background.surround(server) // register batch callback and run the server
+    *   }}}
+    */
+  def batchCallback: BatchCallback[F]
 
 }
 
@@ -128,95 +293,116 @@ object Meter {
 
   /** Creates a no-op implementation of the [[Meter]].
     *
-    * All meter instruments ([[Counter]], [[Histogram]], etc) have no-op
-    * implementation too.
+    * All meter instruments ([[Counter]], [[Histogram]], etc) have no-op implementation too.
     *
     * @tparam F
     *   the higher-kinded type of a polymorphic effect
     */
   def noop[F[_]](implicit F: Applicative[F]): Meter[F] =
     new Meter[F] {
-      def counter(name: String): SyncInstrumentBuilder[F, Counter[F, Long]] =
-        new SyncInstrumentBuilder[F, Counter[F, Long]] {
-          type Self = this.type
-          def withUnit(unit: String): Self = this
-          def withDescription(description: String): Self = this
-          def create: F[Counter[F, Long]] = F.pure(Counter.noop)
+      def counter[A: MeasurementValue](
+          name: String
+      ): Counter.Builder[F, A] =
+        new Counter.Builder[F, A] {
+          def withUnit(unit: String): Counter.Builder[F, A] = this
+          def withDescription(description: String): Counter.Builder[F, A] = this
+          def create: F[Counter[F, A]] = F.pure(Counter.noop)
         }
 
-      def histogram(
+      def histogram[A: MeasurementValue](
           name: String
-      ): SyncInstrumentBuilder[F, Histogram[F, Double]] =
-        new SyncInstrumentBuilder[F, Histogram[F, Double]] {
-          type Self = this.type
-          def withUnit(unit: String): Self = this
-          def withDescription(description: String): Self = this
-          def create: F[Histogram[F, Double]] = F.pure(Histogram.noop)
+      ): Histogram.Builder[F, A] =
+        new Histogram.Builder[F, A] {
+          def withUnit(unit: String): Histogram.Builder[F, A] = this
+          def withDescription(description: String): Histogram.Builder[F, A] =
+            this
+          def withExplicitBucketBoundaries(
+              boundaries: BucketBoundaries
+          ): Histogram.Builder[F, A] = this
+          def create: F[Histogram[F, A]] = F.pure(Histogram.noop)
         }
 
-      def upDownCounter(
+      def upDownCounter[A: MeasurementValue](
           name: String
-      ): SyncInstrumentBuilder[F, UpDownCounter[F, Long]] =
-        new SyncInstrumentBuilder[F, UpDownCounter[F, Long]] {
-          type Self = this.type
-
-          def withUnit(unit: String): Self = this
-          def withDescription(description: String): Self = this
-          def create: F[UpDownCounter[F, Long]] = F.pure(UpDownCounter.noop)
+      ): UpDownCounter.Builder[F, A] =
+        new UpDownCounter.Builder[F, A] {
+          def withUnit(unit: String): UpDownCounter.Builder[F, A] = this
+          def withDescription(
+              description: String
+          ): UpDownCounter.Builder[F, A] = this
+          def create: F[UpDownCounter[F, A]] = F.pure(UpDownCounter.noop)
         }
-      def observableGauge(
-          name: String
-      ): ObservableInstrumentBuilder[F, Double, ObservableGauge] =
-        new ObservableInstrumentBuilder[F, Double, ObservableGauge] {
-          type Self = this.type
 
-          def withUnit(unit: String): Self = this
-          def withDescription(description: String): Self = this
-          def create(
-              measurements: F[List[Measurement[Double]]]
+      def gauge[A: MeasurementValue](name: String): Gauge.Builder[F, A] =
+        new Gauge.Builder[F, A] {
+          def withUnit(unit: String): Gauge.Builder[F, A] = this
+          def withDescription(description: String): Gauge.Builder[F, A] = this
+          def create: F[Gauge[F, A]] = F.pure(Gauge.noop)
+        }
+
+      def observableGauge[A: MeasurementValue](
+          name: String
+      ): ObservableGauge.Builder[F, A] =
+        new ObservableGauge.Builder[F, A] {
+          def withUnit(unit: String): ObservableGauge.Builder[F, A] = this
+          def withDescription(
+              description: String
+          ): ObservableGauge.Builder[F, A] = this
+          def createWithCallback(
+              cb: ObservableMeasurement[F, A] => F[Unit]
           ): Resource[F, ObservableGauge] =
             Resource.pure(new ObservableGauge {})
-          def createWithCallback(
-              cb: ObservableMeasurement[F, Double] => F[Unit]
+          def create(
+              measurements: F[Iterable[Measurement[A]]]
           ): Resource[F, ObservableGauge] =
             Resource.pure(new ObservableGauge {})
+          def createObserver: F[ObservableMeasurement[F, A]] =
+            Applicative[F].pure(ObservableMeasurement.noop)
         }
 
-      def observableCounter(
+      def observableCounter[A: MeasurementValue](
           name: String
-      ): ObservableInstrumentBuilder[F, Long, ObservableCounter] =
-        new ObservableInstrumentBuilder[F, Long, ObservableCounter] {
-          type Self = this.type
-
-          def withUnit(unit: String): Self = this
-          def withDescription(description: String): Self = this
-          def create(
-              measurements: F[List[Measurement[Long]]]
+      ): ObservableCounter.Builder[F, A] =
+        new ObservableCounter.Builder[F, A] {
+          def withUnit(unit: String): ObservableCounter.Builder[F, A] = this
+          def withDescription(
+              description: String
+          ): ObservableCounter.Builder[F, A] = this
+          def createWithCallback(
+              cb: ObservableMeasurement[F, A] => F[Unit]
           ): Resource[F, ObservableCounter] =
             Resource.pure(new ObservableCounter {})
-          def createWithCallback(
-              cb: ObservableMeasurement[F, Long] => F[Unit]
+          def create(
+              measurements: F[Iterable[Measurement[A]]]
           ): Resource[F, ObservableCounter] =
             Resource.pure(new ObservableCounter {})
+          def createObserver: F[ObservableMeasurement[F, A]] =
+            Applicative[F].pure(ObservableMeasurement.noop)
         }
 
-      def observableUpDownCounter(
+      def observableUpDownCounter[A: MeasurementValue](
           name: String
-      ): ObservableInstrumentBuilder[F, Long, ObservableUpDownCounter] =
-        new ObservableInstrumentBuilder[F, Long, ObservableUpDownCounter] {
-          type Self = this.type
-
-          def withUnit(unit: String): Self = this
-          def withDescription(description: String): Self = this
-          def create(
-              measurements: F[List[Measurement[Long]]]
-          ): Resource[F, ObservableUpDownCounter] =
-            Resource.pure(new ObservableUpDownCounter {})
+      ): ObservableUpDownCounter.Builder[F, A] =
+        new ObservableUpDownCounter.Builder[F, A] {
+          def withUnit(unit: String): ObservableUpDownCounter.Builder[F, A] =
+            this
+          def withDescription(
+              description: String
+          ): ObservableUpDownCounter.Builder[F, A] = this
           def createWithCallback(
-              cb: ObservableMeasurement[F, Long] => F[Unit]
+              cb: ObservableMeasurement[F, A] => F[Unit]
           ): Resource[F, ObservableUpDownCounter] =
             Resource.pure(new ObservableUpDownCounter {})
+          def create(
+              measurements: F[Iterable[Measurement[A]]]
+          ): Resource[F, ObservableUpDownCounter] =
+            Resource.pure(new ObservableUpDownCounter {})
+          def createObserver: F[ObservableMeasurement[F, A]] =
+            Applicative[F].pure(ObservableMeasurement.noop)
         }
+
+      val batchCallback: BatchCallback[F] =
+        BatchCallback.noop
     }
 
   object Implicits {

@@ -21,101 +21,36 @@ import cats.Applicative
 import cats.arrow.FunctionK
 import cats.effect.kernel.MonadCancelThrow
 import cats.effect.kernel.Resource
+import org.typelevel.otel4s.meta.InstrumentMeta
+import org.typelevel.otel4s.trace.SpanFinalizer.Strategy
 
+import scala.collection.immutable
 import scala.concurrent.duration.FiniteDuration
 
-trait SpanBuilder[F[_]] {
+trait SpanBuilder[F[_]] extends SpanBuilderMacro[F] {
+  import SpanBuilder.State
 
-  /** Adds an attribute to the newly created span. If [[SpanBuilder]] previously
-    * contained a mapping for the key, the old value is replaced by the
-    * specified value.
-    *
-    * @param attribute
-    *   the attribute to associate with the span
+  /** The instrument's metadata. Indicates whether instrumentation is enabled.
     */
-  def addAttribute[A](attribute: Attribute[A]): SpanBuilder[F]
+  def meta: InstrumentMeta[F]
 
-  /** Adds attributes to the [[SpanBuilder]]. If the SpanBuilder previously
-    * contained a mapping for any of the keys, the old values are replaced by
-    * the specified values.
+  /** Modifies the state using `f` and returns the modified builder.
     *
-    * @param attributes
-    *   the set of attributes to associate with the span
+    * @param f
+    *   the modification function
     */
-  def addAttributes(attributes: Attribute[_]*): SpanBuilder[F]
+  def modifyState(f: State => State): SpanBuilder[F]
 
-  /** Adds a link to the newly created span.
-    *
-    * Links are used to link spans in different traces. Used (for example) in
-    * batching operations, where a single batch handler processes multiple
-    * requests from different traces or the same trace.
-    *
-    * @param spanContext
-    *   the context of the linked span
-    *
-    * @param attributes
-    *   the set of attributes to associate with the link
+  /** Indicates that the span should be the root one and the scope parent should be ignored.
     */
-  def addLink(
-      spanContext: SpanContext,
-      attributes: Attribute[_]*
-  ): SpanBuilder[F]
+  def root: SpanBuilder[F] =
+    modifyState(_.withParent(SpanBuilder.Parent.Root))
 
-  /** Sets the finalization strategy for the newly created span.
-    *
-    * The span finalizers are executed upon resource finalization.
-    *
-    * The default strategy is [[SpanFinalizer.Strategy.reportAbnormal]].
-    *
-    * @param strategy
-    *   the strategy to apply upon span finalization
+  /** Creates [[SpanOps]] using the current state of the builder.
     */
-  def withFinalizationStrategy(strategy: SpanFinalizer.Strategy): SpanBuilder[F]
-
-  /** Sets the [[SpanKind]] for the newly created span. If not called, the
-    * implementation will provide a default value [[SpanKind.Internal]].
-    *
-    * @param spanKind
-    *   the kind of the newly created span
-    */
-  def withSpanKind(spanKind: SpanKind): SpanBuilder[F]
-
-  /** Sets an explicit start timestamp for the newly created span.
-    *
-    * Use this method to specify an explicit start timestamp. If not called, the
-    * implementation will use the timestamp value from the method called on
-    * [[build]], which should be the default case.
-    *
-    * '''Note''': the timestamp should be based on `Clock[F].realTime`. Using
-    * `Clock[F].monotonic` may lead to a missing span.
-    *
-    * @param timestamp
-    *   the explicit start timestamp from the epoch
-    */
-  def withStartTimestamp(timestamp: FiniteDuration): SpanBuilder[F]
-
-  /** Indicates that the span should be the root one and the scope parent should
-    * be ignored.
-    */
-  def root: SpanBuilder[F]
-
-  /** Sets the parent to use from the specified [[SpanContext]]. If not set, the
-    * span that is currently available in the scope will be used as parent.
-    *
-    * '''Note''': if called multiple times, only the last specified value will
-    * be used.
-    *
-    * '''Note''': the previous call of [[root]] will be ignored.
-    *
-    * @param parent
-    *   the span context to use as a parent
-    */
-  def withParent(parent: SpanContext): SpanBuilder[F]
-
   def build: SpanOps[F]
 
-  /** Modify the context `F` using an implicit [[KindTransformer]] from `F` to
-    * `G`.
+  /** Modify the context `F` using an implicit [[KindTransformer]] from `F` to `G`.
     */
   def mapK[G[_]: MonadCancelThrow](implicit
       F: MonadCancelThrow[F],
@@ -126,28 +61,179 @@ trait SpanBuilder[F[_]] {
 
 object SpanBuilder {
 
+  /** The parent selection strategy.
+    */
+  sealed trait Parent
+  object Parent {
+
+    /** Use the span context that is currently available in the scope as a parent (if any).
+      */
+    def propagate: Parent = Propagate
+
+    /** A span must be the root one.
+      */
+    def root: Parent = Root
+
+    /** Use the given `parent` span context as a parent.
+      *
+      * @param parent
+      *   the parent to use
+      */
+    def explicit(parent: SpanContext): Parent = Explicit(parent)
+
+    private[otel4s] case object Propagate extends Parent
+    private[otel4s] case object Root extends Parent
+    private[otel4s] final case class Explicit(parent: SpanContext) extends Parent
+  }
+
+  /** The state of the [[SpanBuilder]].
+    */
+  sealed trait State {
+
+    /** The [[Attributes]] added to the state.
+      */
+    def attributes: Attributes
+
+    /** The links added to the state.
+      */
+    def links: Vector[(SpanContext, Attributes)]
+
+    /** The parent selection strategy.
+      */
+    def parent: Parent
+
+    /** The selected [[SpanFinalizer.Strategy finalization strategy]].
+      */
+    def finalizationStrategy: SpanFinalizer.Strategy
+
+    /** The selected [[SpanKind span kind]].
+      */
+    def spanKind: Option[SpanKind]
+
+    /** The [[Attributes]] added to the state.
+      */
+    def startTimestamp: Option[FiniteDuration]
+
+    /** Adds the given attribute to the state.
+      *
+      * @note
+      *   if the state previously contained a mapping for the key, the old value is replaced by the specified value
+      *
+      * @param attribute
+      *   the attribute to add
+      */
+    def addAttribute[A](attribute: Attribute[A]): State
+
+    /** Adds attributes to the state.
+      *
+      * @note
+      *   if the state previously contained a mapping for any of the keys, the old values are replaced by the specified
+      *   values
+      *
+      * @param attributes
+      *   the set of attributes to add
+      */
+    def addAttributes(attributes: immutable.Iterable[Attribute[_]]): State
+
+    /** Adds a link to the state.
+      *
+      * @param spanContext
+      *   the context of the linked span
+      *
+      * @param attributes
+      *   the set of attributes to associate with the link
+      */
+    def addLink(
+        spanContext: SpanContext,
+        attributes: immutable.Iterable[Attribute[_]]
+    ): State
+
+    /** Sets the finalization strategy.
+      *
+      * @param strategy
+      *   the strategy to use
+      */
+    def withFinalizationStrategy(strategy: SpanFinalizer.Strategy): State
+
+    /** Sets the [[SpanKind]].
+      *
+      * @param spanKind
+      *   the kind to use
+      */
+    def withSpanKind(spanKind: SpanKind): State
+
+    /** Sets an explicit start timestamp.
+      *
+      * @note
+      *   the timestamp should be based on `Clock[F].realTime`. Using `Clock[F].monotonic` may lead to a missing span
+      *
+      * @param timestamp
+      *   the explicit start timestamp from the epoch
+      */
+    def withStartTimestamp(timestamp: FiniteDuration): State
+
+    /** Sets the parent to use.
+      *
+      * @param parent
+      *   the parent to use
+      */
+    def withParent(parent: Parent): State
+  }
+
+  object State {
+    private val Init =
+      Impl(
+        attributes = Attributes.empty,
+        links = Vector.empty,
+        finalizationStrategy = SpanFinalizer.Strategy.reportAbnormal,
+        spanKind = None,
+        startTimestamp = None,
+        parent = Parent.Propagate
+      )
+
+    def init: State =
+      Init
+
+    private final case class Impl(
+        attributes: Attributes,
+        links: Vector[(SpanContext, Attributes)],
+        finalizationStrategy: SpanFinalizer.Strategy,
+        spanKind: Option[SpanKind],
+        startTimestamp: Option[FiniteDuration],
+        parent: Parent
+    ) extends State {
+
+      def addAttribute[A](attribute: Attribute[A]): State =
+        copy(attributes = this.attributes + attribute)
+
+      def addAttributes(attributes: immutable.Iterable[Attribute[_]]): State =
+        copy(attributes = this.attributes ++ attributes)
+
+      def addLink(
+          spanContext: SpanContext,
+          attributes: immutable.Iterable[Attribute[_]]
+      ): State =
+        copy(links = this.links :+ (spanContext, attributes.to(Attributes)))
+
+      def withFinalizationStrategy(strategy: Strategy): State =
+        copy(finalizationStrategy = strategy)
+
+      def withSpanKind(spanKind: SpanKind): State =
+        copy(spanKind = Some(spanKind))
+
+      def withStartTimestamp(timestamp: FiniteDuration): State =
+        copy(startTimestamp = Some(timestamp))
+
+      def withParent(parent: Parent): State =
+        copy(parent = parent)
+    }
+  }
+
   def noop[F[_]: Applicative](back: Span.Backend[F]): SpanBuilder[F] =
     new SpanBuilder[F] {
       private val span: Span[F] = Span.fromBackend(back)
-
-      def addAttribute[A](attribute: Attribute[A]): SpanBuilder[F] = this
-
-      def addAttributes(attributes: Attribute[_]*): SpanBuilder[F] = this
-
-      def addLink(ctx: SpanContext, attributes: Attribute[_]*): SpanBuilder[F] =
-        this
-
-      def root: SpanBuilder[F] = this
-
-      def withFinalizationStrategy(
-          strategy: SpanFinalizer.Strategy
-      ): SpanBuilder[F] = this
-
-      def withParent(parent: SpanContext): SpanBuilder[F] = this
-
-      def withSpanKind(spanKind: SpanKind): SpanBuilder[F] = this
-
-      def withStartTimestamp(timestamp: FiniteDuration): SpanBuilder[F] = this
+      val meta: InstrumentMeta[F] = InstrumentMeta.disabled
+      def modifyState(f: State => State): SpanBuilder[F] = this
 
       def build: SpanOps[F] = new SpanOps[F] {
         def startUnmanaged: F[Span[F]] =
@@ -167,26 +253,13 @@ object SpanBuilder {
       builder: SpanBuilder[F]
   )(implicit kt: KindTransformer[F, G])
       extends SpanBuilder[G] {
-    def addAttribute[A](attribute: Attribute[A]): SpanBuilder[G] =
-      new MappedK(builder.addAttribute(attribute))
-    def addAttributes(attributes: Attribute[_]*): SpanBuilder[G] =
-      new MappedK(builder.addAttributes(attributes: _*))
-    def addLink(
-        spanContext: SpanContext,
-        attributes: Attribute[_]*
-    ): SpanBuilder[G] =
-      new MappedK(builder.addLink(spanContext, attributes: _*))
-    def withFinalizationStrategy(
-        strategy: SpanFinalizer.Strategy
-    ): SpanBuilder[G] =
-      new MappedK(builder.withFinalizationStrategy(strategy))
-    def withSpanKind(spanKind: SpanKind): SpanBuilder[G] =
-      new MappedK(builder.withSpanKind(spanKind))
-    def withStartTimestamp(timestamp: FiniteDuration): SpanBuilder[G] =
-      new MappedK(builder.withStartTimestamp(timestamp))
-    def root: SpanBuilder[G] = new MappedK(builder.root)
-    def withParent(parent: SpanContext): SpanBuilder[G] =
-      new MappedK(builder.withParent(parent))
-    def build: SpanOps[G] = builder.build.mapK[G]
+    def meta: InstrumentMeta[G] =
+      builder.meta.mapK[G]
+
+    def modifyState(f: State => State): SpanBuilder[G] =
+      builder.modifyState(f).mapK[G]
+
+    def build: SpanOps[G] =
+      builder.build.mapK[G]
   }
 }

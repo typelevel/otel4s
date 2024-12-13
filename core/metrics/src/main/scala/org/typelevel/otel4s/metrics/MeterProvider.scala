@@ -31,8 +31,8 @@ trait MeterProvider[F[_]] {
     *   }}}
     *
     * @param name
-    *   the name of the instrumentation scope, such as the instrumentation
-    *   library, package, or fully qualified class name
+    *   the name of the instrumentation scope, such as the instrumentation library, package, or fully qualified class
+    *   name
     */
   def get(name: String): F[Meter[F]] =
     meter(name).get
@@ -50,14 +50,16 @@ trait MeterProvider[F[_]] {
     *   }}}
     *
     * @param name
-    *   the name of the instrumentation scope, such as the instrumentation
-    *   library, package, or fully qualified class name
+    *   the name of the instrumentation scope, such as the instrumentation library, package, or fully qualified class
+    *   name
     */
   def meter(name: String): MeterBuilder[F]
 
 }
 
 object MeterProvider {
+
+  def apply[F[_]](implicit ev: MeterProvider[F]): MeterProvider[F] = ev
 
   /** Creates a no-op implementation of the [[MeterProvider]].
     *
@@ -70,5 +72,7 @@ object MeterProvider {
     new MeterProvider[F] {
       def meter(name: String): MeterBuilder[F] =
         MeterBuilder.noop
+      override def toString: String =
+        "MeterProvider.Noop"
     }
 }

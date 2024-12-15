@@ -18,7 +18,6 @@ package org.typelevel.otel4s.sdk.trace
 
 import cats.effect.IO
 import cats.effect.IOLocal
-import org.typelevel.otel4s.instances.local._
 import org.typelevel.otel4s.sdk.context.Context
 import org.typelevel.otel4s.trace.TraceScope
 import org.typelevel.otel4s.trace.TraceScopeSuite
@@ -26,7 +25,7 @@ import org.typelevel.otel4s.trace.TraceScopeSuite
 class SdkTraceScopeSuite extends TraceScopeSuite[Context, Context.Key] {
 
   protected def createTraceScope: IO[TraceScope[IO, Context]] =
-    IOLocal(Context.root).map { implicit ioLocal =>
+    IOLocal(Context.root).map(_.asLocal).map { implicit local =>
       SdkTraceScope.fromLocal[IO]
     }
 

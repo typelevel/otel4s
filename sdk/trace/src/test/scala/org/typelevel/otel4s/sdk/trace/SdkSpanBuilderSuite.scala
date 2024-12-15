@@ -26,7 +26,6 @@ import org.scalacheck.Gen
 import org.scalacheck.Test
 import org.scalacheck.effect.PropF
 import org.typelevel.otel4s.Attributes
-import org.typelevel.otel4s.instances.local._
 import org.typelevel.otel4s.sdk.TelemetryResource
 import org.typelevel.otel4s.sdk.common.InstrumentationScope
 import org.typelevel.otel4s.sdk.context.Context
@@ -146,7 +145,7 @@ class SdkSpanBuilderSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
   }
 
   private def createTraceScope: IO[TraceScope[IO, Context]] =
-    IOLocal(Context.root).map { implicit ioLocal =>
+    IOLocal(Context.root).map(_.asLocal).map { implicit local =>
       SdkTraceScope.fromLocal[IO]
     }
 

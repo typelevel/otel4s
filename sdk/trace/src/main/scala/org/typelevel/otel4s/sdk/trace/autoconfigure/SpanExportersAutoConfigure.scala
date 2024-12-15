@@ -16,8 +16,8 @@
 
 package org.typelevel.otel4s.sdk.trace.autoconfigure
 
-import cats.MonadThrow
 import cats.data.NonEmptyList
+import cats.effect.MonadCancelThrow
 import cats.effect.Resource
 import cats.effect.std.Console
 import cats.syntax.applicative._
@@ -41,7 +41,7 @@ import org.typelevel.otel4s.sdk.trace.exporter.SpanExporter
   * @see
   *   [[https://opentelemetry.io/docs/languages/java/configuration/#span-exporters]]
   */
-private final class SpanExportersAutoConfigure[F[_]: MonadThrow: Console](
+private final class SpanExportersAutoConfigure[F[_]: MonadCancelThrow: Console](
     extra: Set[AutoConfigure.Named[F, SpanExporter[F]]]
 ) extends AutoConfigure.WithHint[F, Map[String, SpanExporter[F]]](
       "SpanExporters",
@@ -62,7 +62,7 @@ private final class SpanExportersAutoConfigure[F[_]: MonadThrow: Console](
 
   def fromConfig(config: Config): Resource[F, Map[String, SpanExporter[F]]] = {
     val values = config.getOrElse(ConfigKeys.Exporter, Set.empty[String])
-    Resource.eval(MonadThrow[F].fromEither(values)).flatMap {
+    Resource.eval(MonadCancelThrow[F].fromEither(values)).flatMap {
       case names if names.contains(Const.NoneExporter) && names.sizeIs > 1 =>
         Resource.raiseError(
           ConfigurationError(
@@ -157,7 +157,7 @@ private[sdk] object SpanExportersAutoConfigure {
     * @param configurers
     *   the configurers to use
     */
-  def apply[F[_]: MonadThrow: Console](
+  def apply[F[_]: MonadCancelThrow: Console](
       configurers: Set[AutoConfigure.Named[F, SpanExporter[F]]]
   ): AutoConfigure[F, Map[String, SpanExporter[F]]] =
     new SpanExportersAutoConfigure[F](configurers)

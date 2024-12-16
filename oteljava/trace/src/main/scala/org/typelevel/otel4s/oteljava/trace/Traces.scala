@@ -17,43 +17,79 @@
 package org.typelevel.otel4s
 package oteljava.trace
 
-import cats.effect.IOLocal
-import cats.effect.LiftIO
 import cats.effect.Sync
+import cats.syntax.flatMap._
+import cats.syntax.functor._
 import io.opentelemetry.api.{OpenTelemetry => JOpenTelemetry}
+import io.opentelemetry.api.GlobalOpenTelemetry
+import org.typelevel.otel4s.context.LocalProvider
 import org.typelevel.otel4s.context.propagation.ContextPropagators
-import org.typelevel.otel4s.instances.local._
 import org.typelevel.otel4s.oteljava.context.Context
 import org.typelevel.otel4s.oteljava.context.LocalContext
+import org.typelevel.otel4s.oteljava.context.LocalContextProvider
+import org.typelevel.otel4s.oteljava.context.propagation.PropagatorConverters._
 import org.typelevel.otel4s.trace.TracerProvider
 
-trait Traces[F[_]] {
+/** The configured tracing module.
+  *
+  * @tparam F
+  *   the higher-kinded type of a polymorphic effect
+  */
+sealed trait Traces[F[_]] {
+
+  /** The [[org.typelevel.otel4s.trace.TracerProvider TracerProvider]].
+    */
   def tracerProvider: TracerProvider[F]
+
+  /** The propagators used by the [[org.typelevel.otel4s.trace.TracerProvider TracerProvider]].
+    */
+  def propagators: ContextPropagators[Context]
+
+  /** The [[org.typelevel.otel4s.oteljava.context.LocalContext LocalContext]] used by the
+    * [[org.typelevel.otel4s.trace.TracerProvider TracerProvider]].
+    */
+  def localContext: LocalContext[F]
+
 }
 
 object Traces {
 
-  def local[F[_]: Sync: LocalContext](
-      jOtel: JOpenTelemetry,
-      propagators: ContextPropagators[Context]
-  ): Traces[F] = {
+  /** Creates a [[org.typelevel.otel4s.oteljava.trace.Traces]] from the global Java OpenTelemetry instance.
+    */
+  def global[F[_]: Sync: LocalContextProvider]: F[Traces[F]] =
+    Sync[F].delay(GlobalOpenTelemetry.get).flatMap(fromJOpenTelemetry[F])
+
+  /** Creates a [[org.typelevel.otel4s.oteljava.trace.Traces]] from a Java OpenTelemetry instance.
+    *
+    * @param jOtel
+    *   A Java OpenTelemetry instance. It is the caller's responsibility to shut this down. Failure to do so may result
+    *   in lost metrics and traces.
+    */
+  def fromJOpenTelemetry[F[_]: Sync: LocalContextProvider](jOtel: JOpenTelemetry): F[Traces[F]] =
+    LocalProvider[F, Context].local.map(implicit l => create[F](jOtel))
+
+  /** Creates a [[org.typelevel.otel4s.oteljava.trace.Traces]] from a Java OpenTelemetry instance using the given
+    * `Local` instance.
+    *
+    * @param jOtel
+    *   A Java OpenTelemetry instance. It is the caller's responsibility to shut this down. Failure to do so may result
+    *   in lost metrics and traces.
+    */
+  private[oteljava] def create[F[_]: Sync: LocalContext](jOtel: JOpenTelemetry): Traces[F] = {
+    val propagators = jOtel.getPropagators.asScala
     val provider = TracerProviderImpl.local(
       jOtel.getTracerProvider,
       propagators,
       TraceScopeImpl.fromLocal[F]
     )
-    new Traces[F] {
-      def tracerProvider: TracerProvider[F] = provider
-    }
+    new Impl(provider, propagators, implicitly)
   }
 
-  def ioLocal[F[_]: LiftIO: Sync](
-      jOtel: JOpenTelemetry,
-      propagators: ContextPropagators[Context]
-  ): F[Traces[F]] =
-    IOLocal(Context.root)
-      .map { implicit ioLocal: IOLocal[Context] =>
-        local(jOtel, propagators)
-      }
-      .to[F]
+  private final class Impl[F[_]](
+      val tracerProvider: TracerProvider[F],
+      val propagators: ContextPropagators[Context],
+      val localContext: LocalContext[F]
+  ) extends Traces[F] {
+    override def toString: String = s"Traces{tracerProvider=$tracerProvider, propagators=$propagators}"
+  }
 }

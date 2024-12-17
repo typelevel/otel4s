@@ -36,9 +36,7 @@ class LocalProviderSuite extends CatsEffectSuite {
 
   test("lift LocalProvider from implicit Local (1)") {
     IOLocal(VaultContext.root).map { ioLocal =>
-      import org.typelevel.otel4s.instances.local.localForIOLocal
-      implicit val local: Local[IO, VaultContext] =
-        localForIOLocal(implicitly, implicitly, ioLocal)
+      implicit val local: Local[IO, VaultContext] = ioLocal.asLocal
 
       assertEquals(
         LocalProvider[IO, VaultContext].toString,

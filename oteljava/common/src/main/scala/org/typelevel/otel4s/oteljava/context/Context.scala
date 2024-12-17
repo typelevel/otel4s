@@ -80,7 +80,7 @@ object Context {
     Wrapped(context)
 
   /** The root [[`Context`]], from which all other contexts are derived. */
-  val root: Context = wrap(JContext.root())
+  lazy val root: Context = wrap(JContext.root())
 
   implicit object Contextual extends context.Contextual[Context] {
     type Key[A] = Context.Key[A]

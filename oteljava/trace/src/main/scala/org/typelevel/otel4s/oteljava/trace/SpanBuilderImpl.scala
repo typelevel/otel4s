@@ -59,7 +59,7 @@ private[oteljava] final case class SpanBuilderImpl[F[_]: Sync] private (
       Resource.eval(runnerContext).flatMap(ctx => runner.start(ctx))
 
     override def use[A](f: Span[F] => F[A]): F[A] =
-      resource.use { res => res.trace(f(res.span)) }
+      resource.use(res => res.trace(Sync[F].defer(f(res.span))))
 
     override def use_ : F[Unit] = use(_ => Sync[F].unit)
   }

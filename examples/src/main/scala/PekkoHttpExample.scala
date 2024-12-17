@@ -37,7 +37,6 @@ import org.apache.pekko.util.ByteString
 import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.oteljava.OtelJava
 import org.typelevel.otel4s.oteljava.context.Context
-import org.typelevel.otel4s.oteljava.context.LocalContext
 import org.typelevel.otel4s.trace.Tracer
 
 import scala.concurrent.Future

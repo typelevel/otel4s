@@ -60,7 +60,7 @@ def program[F[_]: Async](otel4s: OtelJava[F])(implicit L: Local[F, Context]): F[
 
 val run: IO[Unit] =
   OtelJava.global[IO].flatMap { otel4s =>
-    implicit val local: Local[IO, Context] = otel4s.localContext
+    import otel4s.localContext
     program(otel4s)
   }
 ```

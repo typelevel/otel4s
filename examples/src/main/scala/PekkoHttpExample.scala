@@ -75,7 +75,7 @@ object PekkoHttpExample extends IOApp.Simple {
 
   def run: IO[Unit] =
     OtelJava.global[IO].flatMap { otelJava =>
-      implicit val local: LocalContext[IO] = otelJava.localContext
+      import otelJava.localContext
 
       otelJava.tracerProvider.get("com.example").flatMap { implicit tracer: Tracer[IO] =>
         createSystem.use { implicit actorSystem: ActorSystem =>

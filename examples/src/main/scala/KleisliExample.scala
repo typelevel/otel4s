@@ -19,7 +19,6 @@ import cats.effect.Async
 import cats.effect.IO
 import cats.effect.IOApp
 import cats.effect.Resource
-import io.opentelemetry.api.GlobalOpenTelemetry
 import org.typelevel.otel4s.oteljava.OtelJava
 import org.typelevel.otel4s.oteljava.context.Context
 import org.typelevel.otel4s.oteljava.context.LocalContext
@@ -30,10 +29,7 @@ object KleisliExample extends IOApp.Simple {
     Tracer[F].span("work").surround(Async[F].delay(println("I'm working")))
 
   private def tracerResource[F[_]: Async: LocalContext]: Resource[F, Tracer[F]] =
-    Resource
-      .eval(Async[F].delay(GlobalOpenTelemetry.get))
-      .map(OtelJava.local[F])
-      .evalMap(_.tracerProvider.get("kleisli-example"))
+    Resource.eval(OtelJava.global[F]).evalMap(_.tracerProvider.get("kleisli-example"))
 
   def run: IO[Unit] =
     tracerResource[Kleisli[IO, Context, *]]

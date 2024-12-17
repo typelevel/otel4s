@@ -17,7 +17,6 @@
 import cats.effect.Async
 import cats.effect.IO
 import cats.effect.IOApp
-import cats.effect.IOLocal
 import cats.effect.Resource
 import cats.effect.Sync
 import cats.effect.std.Random
@@ -26,7 +25,6 @@ import cats.mtl.Local
 import cats.syntax.applicative._
 import cats.syntax.flatMap._
 import cats.syntax.functor._
-import io.opentelemetry.api.GlobalOpenTelemetry
 import io.opentelemetry.context.{Context => JContext}
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.apache.pekko.actor.ActorSystem
@@ -37,7 +35,6 @@ import org.apache.pekko.http.scaladsl.server.Directives._
 import org.apache.pekko.http.scaladsl.server.Route
 import org.apache.pekko.util.ByteString
 import org.typelevel.otel4s.Attribute
-import org.typelevel.otel4s.instances.local._
 import org.typelevel.otel4s.oteljava.OtelJava
 import org.typelevel.otel4s.oteljava.context.Context
 import org.typelevel.otel4s.trace.Tracer
@@ -76,9 +73,8 @@ import scala.concurrent.duration._
 object PekkoHttpExample extends IOApp.Simple {
 
   def run: IO[Unit] =
-    IOLocal(Context.root).flatMap { implicit ioLocal: IOLocal[Context] =>
-      implicit val local: Local[IO, Context] = localForIOLocal
-      val otelJava: OtelJava[IO] = OtelJava.local(GlobalOpenTelemetry.get())
+    OtelJava.global[IO].flatMap { otelJava =>
+      import otelJava.localContext
 
       otelJava.tracerProvider.get("com.example").flatMap { implicit tracer: Tracer[IO] =>
         createSystem.use { implicit actorSystem: ActorSystem =>

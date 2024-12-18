@@ -16,7 +16,7 @@
 
 package org.typelevel.otel4s.sdk.trace.autoconfigure
 
-import cats.MonadThrow
+import cats.effect.MonadCancelThrow
 import cats.effect.Resource
 import cats.syntax.either._
 import org.typelevel.otel4s.sdk.autoconfigure.AutoConfigure
@@ -37,7 +37,7 @@ import org.typelevel.otel4s.sdk.trace.samplers.Sampler
   * @see
   *   [[https://opentelemetry.io/docs/languages/java/configuration/#sampler]]
   */
-private final class SamplerAutoConfigure[F[_]: MonadThrow](
+private final class SamplerAutoConfigure[F[_]: MonadCancelThrow](
     extra: Set[AutoConfigure.Named[F, Sampler[F]]]
 ) extends AutoConfigure.WithHint[F, Sampler[F]]("Sampler", SamplerAutoConfigure.ConfigKeys.All) {
 
@@ -154,7 +154,7 @@ private[sdk] object SamplerAutoConfigure {
     * @see
     *   [[https://opentelemetry.io/docs/languages/java/configuration/#sampler]]
     */
-  def apply[F[_]: MonadThrow](extra: Set[AutoConfigure.Named[F, Sampler[F]]]): AutoConfigure[F, Sampler[F]] =
+  def apply[F[_]: MonadCancelThrow](extra: Set[AutoConfigure.Named[F, Sampler[F]]]): AutoConfigure[F, Sampler[F]] =
     new SamplerAutoConfigure[F](extra)
 
 }

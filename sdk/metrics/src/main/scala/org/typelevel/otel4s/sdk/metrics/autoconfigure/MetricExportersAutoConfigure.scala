@@ -16,8 +16,8 @@
 
 package org.typelevel.otel4s.sdk.metrics.autoconfigure
 
-import cats.MonadThrow
 import cats.data.NonEmptyList
+import cats.effect.MonadCancelThrow
 import cats.effect.Resource
 import cats.effect.std.Console
 import cats.syntax.applicative._
@@ -41,7 +41,7 @@ import org.typelevel.otel4s.sdk.metrics.exporter.MetricExporter
   * @see
   *   [[https://opentelemetry.io/docs/languages/java/configuration/#metric-exporters]]
   */
-private final class MetricExportersAutoConfigure[F[_]: MonadThrow: Console](
+private final class MetricExportersAutoConfigure[F[_]: MonadCancelThrow: Console](
     extra: Set[AutoConfigure.Named[F, MetricExporter[F]]]
 ) extends AutoConfigure.WithHint[F, Map[String, MetricExporter[F]]](
       "MetricExporters",
@@ -64,7 +64,7 @@ private final class MetricExportersAutoConfigure[F[_]: MonadThrow: Console](
       config: Config
   ): Resource[F, Map[String, MetricExporter[F]]] = {
     val values = config.getOrElse(ConfigKeys.Exporter, Set.empty[String])
-    Resource.eval(MonadThrow[F].fromEither(values)).flatMap {
+    Resource.eval(MonadCancelThrow[F].fromEither(values)).flatMap {
       case names if names.contains(Const.NoneExporter) && names.sizeIs > 1 =>
         Resource.raiseError(
           ConfigurationError(
@@ -162,7 +162,7 @@ private[sdk] object MetricExportersAutoConfigure {
     * @param configurers
     *   the configurers to use
     */
-  def apply[F[_]: MonadThrow: Console](
+  def apply[F[_]: MonadCancelThrow: Console](
       configurers: Set[AutoConfigure.Named[F, MetricExporter[F]]]
   ): AutoConfigure[F, Map[String, MetricExporter[F]]] =
     new MetricExportersAutoConfigure[F](configurers)

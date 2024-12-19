@@ -16,7 +16,7 @@
 
 package org.typelevel.otel4s.sdk.trace.autoconfigure
 
-import cats.MonadThrow
+import cats.effect.MonadCancelThrow
 import cats.effect.Resource
 import org.typelevel.otel4s.sdk.autoconfigure.AutoConfigure
 import org.typelevel.otel4s.sdk.autoconfigure.Config
@@ -39,7 +39,7 @@ import org.typelevel.otel4s.sdk.trace.SpanLimits
   * @see
   *   [[https://opentelemetry.io/docs/specs/otel/configuration/sdk-environment-variables/#span-limits]]
   */
-private final class SpanLimitsAutoConfigure[F[_]: MonadThrow]
+private final class SpanLimitsAutoConfigure[F[_]: MonadCancelThrow]
     extends AutoConfigure.WithHint[F, SpanLimits](
       "SpanLimits",
       SpanLimitsAutoConfigure.ConfigKeys.All
@@ -100,7 +100,7 @@ private final class SpanLimitsAutoConfigure[F[_]: MonadThrow]
         withMaxAttributeValueLength.build
       }
 
-    Resource.eval(MonadThrow[F].fromEither(configure))
+    Resource.eval(MonadCancelThrow[F].fromEither(configure))
   }
 }
 
@@ -153,7 +153,7 @@ private[sdk] object SpanLimitsAutoConfigure {
     * @see
     *   [[https://opentelemetry.io/docs/specs/otel/configuration/sdk-environment-variables/#span-limits]]
     */
-  def apply[F[_]: MonadThrow]: AutoConfigure[F, SpanLimits] =
+  def apply[F[_]: MonadCancelThrow]: AutoConfigure[F, SpanLimits] =
     new SpanLimitsAutoConfigure[F]
 
 }

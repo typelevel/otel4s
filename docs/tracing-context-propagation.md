@@ -33,7 +33,6 @@ You can find both examples below and choose which one suits your requirements.
 import cats.effect._
 import cats.mtl.Local
 import cats.syntax.flatMap._
-import org.typelevel.otel4s.instances.local._ // brings Local derived from IOLocal
 import org.typelevel.otel4s.oteljava.context.Context
 import org.typelevel.otel4s.oteljava.OtelJava
 import io.opentelemetry.api.GlobalOpenTelemetry
@@ -47,7 +46,7 @@ def program[F[_]: Async](otel4s: OtelJava[F]): F[Unit] = {
 }
 
 val run: IO[Unit] =
-  IOLocal(Context.root).flatMap { implicit ioLocal: IOLocal[Context] =>
+  IOLocal(Context.root).map(_.asLocal).flatMap { implicit local: Local[IO, Context] =>
     createOtel4s[IO].flatMap(otel4s => program(otel4s))
   }
 ```

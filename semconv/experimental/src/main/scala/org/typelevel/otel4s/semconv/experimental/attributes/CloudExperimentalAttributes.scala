@@ -67,7 +67,7 @@ object CloudExperimentalAttributes {
     *   <p> On some cloud providers, it may not be possible to determine the full ID at startup, so it may be necessary
     *   to set `cloud.resource_id` as a span attribute instead. <p> The exact value to use for `cloud.resource_id`
     *   depends on the cloud provider. The following well-known definitions MUST be used if you set this attribute and
-    *   they apply: <p> <ul> <li><strong>AWS Lambda:</strong> The function <a
+    *   they apply: <ul> <li><strong>AWS Lambda:</strong> The function <a
     *   href="https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html">ARN</a>. Take care not to use
     *   the "invoked ARN" directly but replace any <a
     *   href="https://docs.aws.amazon.com/lambda/latest/dg/configuration-aliases.html">alias suffix</a> with the

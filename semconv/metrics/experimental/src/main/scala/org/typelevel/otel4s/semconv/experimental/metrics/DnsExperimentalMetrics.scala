@@ -37,7 +37,7 @@ object DnsExperimentalMetrics {
     val name: String = "dns.lookup.duration"
     val description: String = "Measures the time taken to perform a DNS lookup."
     val unit: String = "s"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -56,7 +56,7 @@ object DnsExperimentalMetrics {
             "dot.net",
           ),
           Requirement.required,
-          Stability.experimental
+          Stability.development
         )
 
       /** Describes the error the DNS lookup failed with. <p>

@@ -32,7 +32,7 @@ object DeploymentExperimentalAttributes {
     * @note
     *   <p> `deployment.environment.name` does not affect the uniqueness constraints defined through the
     *   `service.namespace`, `service.name` and `service.instance.id` resource attributes. This implies that resources
-    *   carrying the following attribute combinations MUST be considered to be identifying the same service: <p> <ul>
+    *   carrying the following attribute combinations MUST be considered to be identifying the same service: <ul>
     *   <li>`service.name=frontend`, `deployment.environment.name=production` <li>`service.name=frontend`,
     *   `deployment.environment.name=staging`. </ul>
     */

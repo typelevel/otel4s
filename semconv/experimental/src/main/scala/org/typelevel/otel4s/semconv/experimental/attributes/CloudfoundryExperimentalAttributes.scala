@@ -32,7 +32,7 @@ object CloudfoundryExperimentalAttributes {
   /** The index of the application instance. 0 when just one instance is active. <p>
     * @note
     *   <p> CloudFoundry defines the `instance_id` in the <a
-    *   href="https://github.com/cloudfoundry/loggregator-api#v2-envelope">Loggegator v2 envelope</a>. It is used for
+    *   href="https://github.com/cloudfoundry/loggregator-api#v2-envelope">Loggregator v2 envelope</a>. It is used for
     *   logs and metrics emitted by CloudFoundry. It is supposed to contain the application instance index for
     *   applications deployed on the runtime. <p> Application instrumentation should use the value from environment
     *   variable `CF_INSTANCE_INDEX`.

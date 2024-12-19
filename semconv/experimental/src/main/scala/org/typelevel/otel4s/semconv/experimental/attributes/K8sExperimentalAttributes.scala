@@ -35,11 +35,10 @@ object K8sExperimentalAttributes {
     *   lifetime of the cluster. Using the `uid` of the `kube-system` namespace is a reasonable proxy for the K8s
     *   ClusterID as it will only change if the cluster is rebuilt. Furthermore, Kubernetes UIDs are UUIDs as
     *   standardized by <a href="https://www.itu.int/ITU-T/studygroups/com17/oid.html">ISO/IEC 9834-8 and ITU-T
-    *   X.667</a>. Which states: <p> <blockquote> If generated according to one of the mechanisms defined in Rec. ITU-T
+    *   X.667</a>. Which states: <blockquote> If generated according to one of the mechanisms defined in Rec. ITU-T
     *   X.667 | ISO/IEC 9834-8, a UUID is either guaranteed to be different from all other UUIDs generated before 3603
-    *   A.D., or is extremely likely to be different (depending on the mechanism chosen).</blockquote>
-    *
-    * <p> Therefore, UIDs between clusters should be extremely unlikely to conflict.
+    *   A.D., or is extremely likely to be different (depending on the mechanism chosen).</blockquote> <p> Therefore,
+    *   UIDs between clusters should be extremely unlikely to conflict.
     */
   val K8sClusterUid: AttributeKey[String] =
     AttributeKey("k8s.cluster.uid")

@@ -32,7 +32,7 @@ object ServiceExperimentalAttributes {
     *   5 and SHOULD use the following UUID as the namespace: `4d63009a-8d0f-11ee-aad7-4c796ed8e320`. <p> UUIDs are
     *   typically recommended, as only an opaque value for the purposes of identifying a service instance is needed.
     *   Similar to what can be seen in the man page for the <a
-    *   href="https://www.freedesktop.org/software/systemd/man/machine-id.html">`/etc/machine-id`</a> file, the
+    *   href="https://www.freedesktop.org/software/systemd/man/latest/machine-id.html">`/etc/machine-id`</a> file, the
     *   underlying data, such as pod name and namespace should be treated as confidential, being the user's choice to
     *   expose it or not via another resource attribute. <p> For applications running behind an application server (like
     *   unicorn), we do not recommend using one identifier for all processes participating in the application. Instead,

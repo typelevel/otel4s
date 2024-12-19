@@ -37,7 +37,7 @@ object GenAiExperimentalAttributes {
   val GenAiOpenaiRequestSeed: AttributeKey[Long] =
     AttributeKey("gen_ai.openai.request.seed")
 
-  /** The service tier requested. May be a specific tier, detault, or auto.
+  /** The service tier requested. May be a specific tier, default, or auto.
     */
   val GenAiOpenaiRequestServiceTier: AttributeKey[String] =
     AttributeKey("gen_ai.openai.request.service_tier")
@@ -46,6 +46,11 @@ object GenAiExperimentalAttributes {
     */
   val GenAiOpenaiResponseServiceTier: AttributeKey[String] =
     AttributeKey("gen_ai.openai.response.service_tier")
+
+  /** A fingerprint to track any eventual change in the Generative AI environment.
+    */
+  val GenAiOpenaiResponseSystemFingerprint: AttributeKey[String] =
+    AttributeKey("gen_ai.openai.response.system_fingerprint")
 
   /** The name of the operation being performed. <p>
     * @note
@@ -62,6 +67,14 @@ object GenAiExperimentalAttributes {
   @deprecated("Removed, no replacement at this time.", "")
   val GenAiPrompt: AttributeKey[String] =
     AttributeKey("gen_ai.prompt")
+
+  /** The encoding formats requested in an embeddings operation, if specified. <p>
+    * @note
+    *   <p> In some GenAI systems the encoding formats are called embedding types. Also, some GenAI systems only accept
+    *   a single format per request.
+    */
+  val GenAiRequestEncodingFormats: AttributeKey[Seq[String]] =
+    AttributeKey("gen_ai.request.encoding_formats")
 
   /** The frequency penalty setting for the GenAI request.
     */
@@ -202,6 +215,11 @@ object GenAiExperimentalAttributes {
       * Completions API (Legacy)</a>
       */
     case object TextCompletion extends GenAiOperationNameValue("text_completion")
+
+    /** Embeddings operation such as <a href="https://platform.openai.com/docs/api-reference/embeddings/create">OpenAI
+      * Create embeddings API</a>
+      */
+    case object Embeddings extends GenAiOperationNameValue("embeddings")
   }
 
   /** Values for [[GenAiSystem]].
@@ -224,6 +242,18 @@ object GenAiExperimentalAttributes {
     /** Cohere
       */
     case object Cohere extends GenAiSystemValue("cohere")
+
+    /** Azure AI Inference
+      */
+    case object AzAiInference extends GenAiSystemValue("az.ai.inference")
+
+    /** IBM Watsonx AI
+      */
+    case object IbmWatsonxAi extends GenAiSystemValue("ibm.watsonx.ai")
+
+    /** AWS Bedrock
+      */
+    case object AwsBedrock extends GenAiSystemValue("aws.bedrock")
   }
 
   /** Values for [[GenAiTokenType]].

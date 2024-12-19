@@ -88,10 +88,9 @@ object DbExperimentalAttributes {
   /** The name of a collection (table, container) within the database. <p>
     * @note
     *   <p> It is RECOMMENDED to capture the value as provided by the application without attempting to do any case
-    *   normalization. If the collection name is parsed from the query text, it SHOULD be the first collection name
-    *   found in the query and it SHOULD match the value provided in the query text including any schema and database
-    *   name prefix. For batch operations, if the individual operations are known to have the same collection name then
-    *   that collection name SHOULD be used, otherwise `db.collection.name` SHOULD NOT be captured. This attribute has
+    *   normalization. <p> The collection name SHOULD NOT be extracted from `db.query.text`, unless the query format is
+    *   known to only ever have a single collection name present. <p> For batch operations, if the individual operations
+    *   are known to have the same collection name then that collection name SHOULD be used. <p> This attribute has
     *   stability level RELEASE CANDIDATE.
     */
   val DbCollectionName: AttributeKey[String] =
@@ -113,23 +112,39 @@ object DbExperimentalAttributes {
   val DbCosmosdbConnectionMode: AttributeKey[String] =
     AttributeKey("db.cosmosdb.connection_mode")
 
+  /** Account or request <a href="https://learn.microsoft.com/azure/cosmos-db/consistency-levels">consistency level</a>.
+    */
+  val DbCosmosdbConsistencyLevel: AttributeKey[String] =
+    AttributeKey("db.cosmosdb.consistency_level")
+
   /** Deprecated, use `db.collection.name` instead.
     */
   @deprecated("Replaced by `db.collection.name`.", "")
   val DbCosmosdbContainer: AttributeKey[String] =
     AttributeKey("db.cosmosdb.container")
 
-  /** Cosmos DB Operation Type.
+  /** Deprecated, no replacement at this time.
     */
+  @deprecated("No replacement at this time.", "")
   val DbCosmosdbOperationType: AttributeKey[String] =
     AttributeKey("db.cosmosdb.operation_type")
 
-  /** RU consumed for that operation
+  /** List of regions contacted during operation in the order that they were contacted. If there is more than one region
+    * listed, it indicates that the operation was performed on multiple regions i.e. cross-regional call. <p>
+    * @note
+    *   <p> Region name matches the format of `displayName` in <a
+    *   href="https://learn.microsoft.com/rest/api/subscription/subscriptions/list-locations?view=rest-subscription-2021-10-01&tabs=HTTP#location">Azure
+    *   Location API</a>
+    */
+  val DbCosmosdbRegionsContacted: AttributeKey[Seq[String]] =
+    AttributeKey("db.cosmosdb.regions_contacted")
+
+  /** Request units consumed for the operation.
     */
   val DbCosmosdbRequestCharge: AttributeKey[Double] =
     AttributeKey("db.cosmosdb.request_charge")
 
-  /** Request payload size in bytes
+  /** Request payload size in bytes.
     */
   val DbCosmosdbRequestContentLength: AttributeKey[Long] =
     AttributeKey("db.cosmosdb.request_content_length")
@@ -230,24 +245,43 @@ object DbExperimentalAttributes {
   /** The name of the operation or command being executed. <p>
     * @note
     *   <p> It is RECOMMENDED to capture the value as provided by the application without attempting to do any case
-    *   normalization. If the operation name is parsed from the query text, it SHOULD be the first operation name found
-    *   in the query. For batch operations, if the individual operations are known to have the same operation name then
-    *   that operation name SHOULD be used prepended by `BATCH `, otherwise `db.operation.name` SHOULD be `BATCH` or
-    *   some other database system specific term if more applicable. This attribute has stability level RELEASE
-    *   CANDIDATE.
+    *   normalization. <p> The operation name SHOULD NOT be extracted from `db.query.text`, unless the query format is
+    *   known to only ever have a single operation name present. <p> For batch operations, if the individual operations
+    *   are known to have the same operation name then that operation name SHOULD be used prepended by `BATCH `,
+    *   otherwise `db.operation.name` SHOULD be `BATCH` or some other database system specific term if more applicable.
+    *   <p> This attribute has stability level RELEASE CANDIDATE.
     */
   val DbOperationName: AttributeKey[String] =
     AttributeKey("db.operation.name")
 
-  /** A query parameter used in `db.query.text`, with `<key>` being the parameter name, and the attribute value being a
-    * string representation of the parameter value. <p>
+  /** A database operation parameter, with `<key>` being the parameter name, and the attribute value being a string
+    * representation of the parameter value. <p>
     * @note
-    *   <p> Query parameters should only be captured when `db.query.text` is parameterized with placeholders. If a
-    *   parameter has no name and instead is referenced only by index, then `<key>` SHOULD be the 0-based index. This
-    *   attribute has stability level RELEASE CANDIDATE.
+    *   <p> If a parameter has no name and instead is referenced only by index, then `<key>` SHOULD be the 0-based
+    *   index. If `db.query.text` is also captured, then `db.operation.parameter.<key>` SHOULD match up with the
+    *   parameterized placeholders present in `db.query.text`. This attribute has stability level RELEASE CANDIDATE.
     */
+  val DbOperationParameter: AttributeKey[String] =
+    AttributeKey("db.operation.parameter")
+
+  /** A query parameter used in `db.query.text`, with `<key>` being the parameter name, and the attribute value being a
+    * string representation of the parameter value.
+    */
+  @deprecated("Replaced by `db.operation.parameter`.", "")
   val DbQueryParameter: AttributeKey[String] =
     AttributeKey("db.query.parameter")
+
+  /** Low cardinality representation of a database query text. <p>
+    * @note
+    *   <p> `db.query.summary` provides static summary of the query text. It describes a class of database queries and
+    *   is useful as a grouping key, especially when analyzing telemetry for database calls involving complex queries.
+    *   Summary may be available to the instrumentation through instrumentation hooks or other means. If it is not
+    *   available, instrumentations that support query parsing SHOULD generate a summary following <a
+    *   href="../../docs/database/database-spans.md#generating-a-summary-of-the-query-text">Generating query summary</a>
+    *   section. This attribute has stability level RELEASE CANDIDATE.
+    */
+  val DbQuerySummary: AttributeKey[String] =
+    AttributeKey("db.query.summary")
 
   /** The database query being executed. <p>
     * @note
@@ -268,6 +302,11 @@ object DbExperimentalAttributes {
   @deprecated("Replaced by `db.namespace`.", "")
   val DbRedisDatabaseIndex: AttributeKey[Long] =
     AttributeKey("db.redis.database_index")
+
+  /** Number of rows returned by the operation.
+    */
+  val DbResponseReturnedRows: AttributeKey[Long] =
+    AttributeKey("db.response.returned_rows")
 
   /** Database response status code. <p>
     * @note
@@ -391,7 +430,7 @@ object DbExperimentalAttributes {
   abstract class DbCosmosdbConnectionModeValue(val value: String)
   object DbCosmosdbConnectionModeValue {
 
-    /** Gateway (HTTP) connections mode
+    /** Gateway (HTTP) connection.
       */
     case object Gateway extends DbCosmosdbConnectionModeValue("gateway")
 
@@ -400,9 +439,37 @@ object DbExperimentalAttributes {
     case object Direct extends DbCosmosdbConnectionModeValue("direct")
   }
 
+  /** Values for [[DbCosmosdbConsistencyLevel]].
+    */
+  abstract class DbCosmosdbConsistencyLevelValue(val value: String)
+  object DbCosmosdbConsistencyLevelValue {
+
+    /** strong.
+      */
+    case object Strong extends DbCosmosdbConsistencyLevelValue("Strong")
+
+    /** bounded_staleness.
+      */
+    case object BoundedStaleness extends DbCosmosdbConsistencyLevelValue("BoundedStaleness")
+
+    /** session.
+      */
+    case object Session extends DbCosmosdbConsistencyLevelValue("Session")
+
+    /** eventual.
+      */
+    case object Eventual extends DbCosmosdbConsistencyLevelValue("Eventual")
+
+    /** consistent_prefix.
+      */
+    case object ConsistentPrefix extends DbCosmosdbConsistencyLevelValue("ConsistentPrefix")
+  }
+
   /** Values for [[DbCosmosdbOperationType]].
     */
+  @deprecated("No replacement at this time.", "")
   abstract class DbCosmosdbOperationTypeValue(val value: String)
+  @annotation.nowarn("cat=deprecation")
   object DbCosmosdbOperationTypeValue {
 
     /** batch.

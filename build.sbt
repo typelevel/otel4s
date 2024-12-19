@@ -76,7 +76,7 @@ ThisBuild / mergifyPrRules ++= Seq(
 )
 
 val CatsVersion = "2.11.0"
-val CatsEffectVersion = "3.5.7"
+val CatsEffectVersion = "3.6-28f8f29"
 val CatsMtlVersion = "1.4.0"
 val FS2Version = "3.11.0"
 val MUnitVersion = "1.0.0"
@@ -153,7 +153,7 @@ lazy val root = tlCrossRootProject
     `oteljava-trace`,
     `oteljava-trace-testkit`,
     `oteljava-testkit`,
-    oteljava,
+    `oteljava-context-storage`,
     `semconv-stable`,
     `semconv-experimental`,
     `semconv-metrics-stable`,
@@ -703,6 +703,23 @@ lazy val `oteljava-testkit` = project
   )
   .settings(scalafixSettings)
 
+lazy val `oteljava-context-storage` = project
+  .in(file("oteljava/context-storage"))
+  .dependsOn(`oteljava-common`)
+  .settings(munitDependencies)
+  .settings(
+    name := "otel4s-oteljava-context-storage",
+    libraryDependencies ++= Seq(
+      "org.typelevel" %%% "cats-effect-testkit" % CatsEffectVersion % Test,
+    ),
+    Test / javaOptions ++= Seq(
+      "-Dotel.java.global-autoconfigure.enabled=true",
+      "-Dcats.effect.ioLocalPropagation=true",
+    ),
+    Test / fork := true,
+  )
+  .settings(scalafixSettings)
+
 lazy val oteljava = project
   .in(file("oteljava/all"))
   .dependsOn(
@@ -710,7 +727,8 @@ lazy val oteljava = project
     `oteljava-metrics` % "compile->compile;test->test",
     `oteljava-metrics-testkit` % Test,
     `oteljava-trace` % "compile->compile;test->test",
-    `oteljava-trace-testkit` % Test
+    `oteljava-trace-testkit` % Test,
+    `oteljava-context-storage`
   )
   .settings(
     name := "otel4s-oteljava",
@@ -850,6 +868,7 @@ lazy val examples = project
     javaAgents += "io.opentelemetry.javaagent" % "opentelemetry-javaagent" % OpenTelemetryInstrumentationVersion % Runtime,
     run / fork := true,
     javaOptions += "-Dotel.java.global-autoconfigure.enabled=true",
+    javaOptions += "-Dcats.effect.ioLocalPropagation=true",
     envVars ++= Map(
       "OTEL_PROPAGATORS" -> "b3multi",
       "OTEL_SERVICE_NAME" -> "Trace Example"
@@ -954,6 +973,7 @@ lazy val unidocs = project
       `oteljava-trace`,
       `oteljava-trace-testkit`,
       `oteljava-testkit`,
+      `oteljava-context-storage`,
       oteljava,
       `semconv-stable`.jvm,
       `semconv-experimental`.jvm,

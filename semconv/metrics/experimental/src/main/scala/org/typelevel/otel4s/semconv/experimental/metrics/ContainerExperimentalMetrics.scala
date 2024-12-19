@@ -32,6 +32,7 @@ object ContainerExperimentalMetrics {
     DiskIo,
     MemoryUsage,
     NetworkIo,
+    Uptime,
   )
 
   /** Total CPU time consumed <p>
@@ -43,7 +44,7 @@ object ContainerExperimentalMetrics {
     val name: String = "container.cpu.time"
     val description: String = "Total CPU time consumed"
     val unit: String = "s"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -63,7 +64,7 @@ object ContainerExperimentalMetrics {
           Requirement.conditionallyRequired(
             "Required if mode is available, i.e. metrics coming from the Docker Stats API."
           ),
-          Stability.experimental
+          Stability.development
         )
 
       val specs: List[AttributeSpec[_]] =
@@ -106,7 +107,7 @@ object ContainerExperimentalMetrics {
     val name: String = "container.cpu.usage"
     val description: String = "Container's CPU usage, measured in cpus. Range from 0 to the number of allocatable CPUs"
     val unit: String = "{cpu}"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -126,7 +127,7 @@ object ContainerExperimentalMetrics {
           Requirement.conditionallyRequired(
             "Required if mode is available, i.e. metrics coming from the Docker Stats API."
           ),
-          Stability.experimental
+          Stability.development
         )
 
       val specs: List[AttributeSpec[_]] =
@@ -169,7 +170,7 @@ object ContainerExperimentalMetrics {
     val name: String = "container.disk.io"
     val description: String = "Disk bytes for the container."
     val unit: String = "By"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -183,7 +184,7 @@ object ContainerExperimentalMetrics {
             "read",
           ),
           Requirement.recommended,
-          Stability.experimental
+          Stability.development
         )
 
       /** The device identifier
@@ -195,7 +196,7 @@ object ContainerExperimentalMetrics {
             "(identifier)",
           ),
           Requirement.recommended,
-          Stability.experimental
+          Stability.development
         )
 
       val specs: List[AttributeSpec[_]] =
@@ -239,7 +240,7 @@ object ContainerExperimentalMetrics {
     val name: String = "container.memory.usage"
     val description: String = "Memory usage of the container."
     val unit: String = "By"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter, A: MeasurementValue]: F[Counter[F, A]] =
@@ -276,10 +277,23 @@ object ContainerExperimentalMetrics {
     val name: String = "container.network.io"
     val description: String = "Network bytes for the container."
     val unit: String = "By"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
+
+      /** The network interface name.
+        */
+      val networkInterfaceName: AttributeSpec[String] =
+        AttributeSpec(
+          NetworkExperimentalAttributes.NetworkInterfaceName,
+          List(
+            "lo",
+            "eth0",
+          ),
+          Requirement.recommended,
+          Stability.development
+        )
 
       /** The network IO operation direction.
         */
@@ -290,25 +304,13 @@ object ContainerExperimentalMetrics {
             "transmit",
           ),
           Requirement.recommended,
-          Stability.experimental
-        )
-
-      /** The device identifier
-        */
-      val systemDevice: AttributeSpec[String] =
-        AttributeSpec(
-          SystemExperimentalAttributes.SystemDevice,
-          List(
-            "(identifier)",
-          ),
-          Requirement.recommended,
-          Stability.experimental
+          Stability.development
         )
 
       val specs: List[AttributeSpec[_]] =
         List(
+          networkInterfaceName,
           networkIoDirection,
-          systemDevice,
         )
     }
 
@@ -331,6 +333,45 @@ object ContainerExperimentalMetrics {
     ): Resource[F, ObservableCounter] =
       Meter[F]
         .observableCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** The time the container has been running <p>
+    * @note
+    *   <p> Instrumentations SHOULD use a gauge with type `double` and measure uptime in seconds as a floating point
+    *   number with the highest precision available. The actual accuracy would depend on the instrumentation and
+    *   operating system.
+    */
+  object Uptime extends MetricSpec {
+
+    val name: String = "container.uptime"
+    val description: String = "The time the container has been running"
+    val unit: String = "s"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[Gauge[F, A]] =
+      Meter[F]
+        .gauge[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableGauge[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableGauge] =
+      Meter[F]
+        .observableGauge[A](name)
         .withDescription(description)
         .withUnit(unit)
         .createWithCallback(callback)

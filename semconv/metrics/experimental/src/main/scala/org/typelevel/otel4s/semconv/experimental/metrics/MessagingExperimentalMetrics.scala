@@ -53,7 +53,7 @@ object MessagingExperimentalMetrics {
     val name: String = "messaging.client.consumed.messages"
     val description: String = "Number of messages that were delivered to the application."
     val unit: String = "{message}"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -67,9 +67,9 @@ object MessagingExperimentalMetrics {
         *   multiple instrumentation libraries and applications should be prepared for `error.type` to have high
         *   cardinality at query time when no additional filters are applied. <p> If the operation has completed
         *   successfully, instrumentations SHOULD NOT set `error.type`. <p> If a specific domain defines its own set of
-        *   error identifiers (such as HTTP or gRPC status codes), it's RECOMMENDED to: <p> <ul> <li>Use a
-        *   domain-specific attribute <li>Set `error.type` to capture all errors, regardless of whether they are defined
-        *   within the domain-specific set or not. </ul>
+        *   error identifiers (such as HTTP or gRPC status codes), it's RECOMMENDED to: <ul> <li>Use a domain-specific
+        *   attribute <li>Set `error.type` to capture all errors, regardless of whether they are defined within the
+        *   domain-specific set or not. </ul>
         */
       val errorType: AttributeSpec[String] =
         AttributeSpec(
@@ -96,7 +96,7 @@ object MessagingExperimentalMetrics {
             "indexer",
           ),
           Requirement.conditionallyRequired("if applicable."),
-          Stability.experimental
+          Stability.development
         )
 
       /** The message destination name <p>
@@ -114,7 +114,7 @@ object MessagingExperimentalMetrics {
           Requirement.conditionallyRequired(
             "if and only if `messaging.destination.name` is known to have low cardinality. Otherwise, `messaging.destination.template` MAY be populated."
           ),
-          Stability.experimental
+          Stability.development
         )
 
       /** The identifier of the partition messages are sent to or received from, unique within the
@@ -127,7 +127,7 @@ object MessagingExperimentalMetrics {
             "1",
           ),
           Requirement.recommended,
-          Stability.experimental
+          Stability.development
         )
 
       /** The name of the destination subscription from which a message is consumed. <p>
@@ -142,7 +142,7 @@ object MessagingExperimentalMetrics {
             "subscription-a",
           ),
           Requirement.conditionallyRequired("if applicable."),
-          Stability.experimental
+          Stability.development
         )
 
       /** Low cardinality representation of the messaging destination name <p>
@@ -158,7 +158,7 @@ object MessagingExperimentalMetrics {
             "/customers/{customerId}",
           ),
           Requirement.conditionallyRequired("if available."),
-          Stability.experimental
+          Stability.development
         )
 
       /** The system-specific name of the messaging operation.
@@ -173,7 +173,7 @@ object MessagingExperimentalMetrics {
             "consume",
           ),
           Requirement.required,
-          Stability.experimental
+          Stability.development
         )
 
       /** The messaging system as identified by the client instrumentation. <p>
@@ -188,7 +188,7 @@ object MessagingExperimentalMetrics {
           List(
           ),
           Requirement.required,
-          Stability.experimental
+          Stability.development
         )
 
       /** Server domain name if available without reverse DNS lookup; otherwise, IP address or Unix domain socket name.
@@ -276,7 +276,7 @@ object MessagingExperimentalMetrics {
     val name: String = "messaging.client.operation.duration"
     val description: String = "Duration of messaging operation initiated by a producer or consumer client."
     val unit: String = "s"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -290,9 +290,9 @@ object MessagingExperimentalMetrics {
         *   multiple instrumentation libraries and applications should be prepared for `error.type` to have high
         *   cardinality at query time when no additional filters are applied. <p> If the operation has completed
         *   successfully, instrumentations SHOULD NOT set `error.type`. <p> If a specific domain defines its own set of
-        *   error identifiers (such as HTTP or gRPC status codes), it's RECOMMENDED to: <p> <ul> <li>Use a
-        *   domain-specific attribute <li>Set `error.type` to capture all errors, regardless of whether they are defined
-        *   within the domain-specific set or not. </ul>
+        *   error identifiers (such as HTTP or gRPC status codes), it's RECOMMENDED to: <ul> <li>Use a domain-specific
+        *   attribute <li>Set `error.type` to capture all errors, regardless of whether they are defined within the
+        *   domain-specific set or not. </ul>
         */
       val errorType: AttributeSpec[String] =
         AttributeSpec(
@@ -319,7 +319,7 @@ object MessagingExperimentalMetrics {
             "indexer",
           ),
           Requirement.conditionallyRequired("if applicable."),
-          Stability.experimental
+          Stability.development
         )
 
       /** The message destination name <p>
@@ -337,7 +337,7 @@ object MessagingExperimentalMetrics {
           Requirement.conditionallyRequired(
             "if and only if `messaging.destination.name` is known to have low cardinality. Otherwise, `messaging.destination.template` MAY be populated."
           ),
-          Stability.experimental
+          Stability.development
         )
 
       /** The identifier of the partition messages are sent to or received from, unique within the
@@ -350,7 +350,7 @@ object MessagingExperimentalMetrics {
             "1",
           ),
           Requirement.recommended,
-          Stability.experimental
+          Stability.development
         )
 
       /** The name of the destination subscription from which a message is consumed. <p>
@@ -365,7 +365,7 @@ object MessagingExperimentalMetrics {
             "subscription-a",
           ),
           Requirement.conditionallyRequired("if applicable."),
-          Stability.experimental
+          Stability.development
         )
 
       /** Low cardinality representation of the messaging destination name <p>
@@ -381,7 +381,7 @@ object MessagingExperimentalMetrics {
             "/customers/{customerId}",
           ),
           Requirement.conditionallyRequired("if available."),
-          Stability.experimental
+          Stability.development
         )
 
       /** The system-specific name of the messaging operation.
@@ -395,7 +395,7 @@ object MessagingExperimentalMetrics {
             "ack",
           ),
           Requirement.required,
-          Stability.experimental
+          Stability.development
         )
 
       /** A string identifying the type of the messaging operation. <p>
@@ -408,7 +408,7 @@ object MessagingExperimentalMetrics {
           List(
           ),
           Requirement.conditionallyRequired("If applicable."),
-          Stability.experimental
+          Stability.development
         )
 
       /** The messaging system as identified by the client instrumentation. <p>
@@ -423,7 +423,7 @@ object MessagingExperimentalMetrics {
           List(
           ),
           Requirement.required,
-          Stability.experimental
+          Stability.development
         )
 
       /** Server domain name if available without reverse DNS lookup; otherwise, IP address or Unix domain socket name.
@@ -495,7 +495,7 @@ object MessagingExperimentalMetrics {
     val name: String = "messaging.client.published.messages"
     val description: String = "Deprecated. Use `messaging.client.sent.messages` instead."
     val unit: String = "{message}"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -509,9 +509,9 @@ object MessagingExperimentalMetrics {
         *   multiple instrumentation libraries and applications should be prepared for `error.type` to have high
         *   cardinality at query time when no additional filters are applied. <p> If the operation has completed
         *   successfully, instrumentations SHOULD NOT set `error.type`. <p> If a specific domain defines its own set of
-        *   error identifiers (such as HTTP or gRPC status codes), it's RECOMMENDED to: <p> <ul> <li>Use a
-        *   domain-specific attribute <li>Set `error.type` to capture all errors, regardless of whether they are defined
-        *   within the domain-specific set or not. </ul>
+        *   error identifiers (such as HTTP or gRPC status codes), it's RECOMMENDED to: <ul> <li>Use a domain-specific
+        *   attribute <li>Set `error.type` to capture all errors, regardless of whether they are defined within the
+        *   domain-specific set or not. </ul>
         */
       val errorType: AttributeSpec[String] =
         AttributeSpec(
@@ -540,7 +540,7 @@ object MessagingExperimentalMetrics {
           Requirement.conditionallyRequired(
             "if and only if `messaging.destination.name` is known to have low cardinality. Otherwise, `messaging.destination.template` MAY be populated."
           ),
-          Stability.experimental
+          Stability.development
         )
 
       /** The identifier of the partition messages are sent to or received from, unique within the
@@ -553,7 +553,7 @@ object MessagingExperimentalMetrics {
             "1",
           ),
           Requirement.recommended,
-          Stability.experimental
+          Stability.development
         )
 
       /** Low cardinality representation of the messaging destination name <p>
@@ -569,7 +569,7 @@ object MessagingExperimentalMetrics {
             "/customers/{customerId}",
           ),
           Requirement.conditionallyRequired("if available."),
-          Stability.experimental
+          Stability.development
         )
 
       /** The system-specific name of the messaging operation.
@@ -583,7 +583,7 @@ object MessagingExperimentalMetrics {
             "send",
           ),
           Requirement.required,
-          Stability.experimental
+          Stability.development
         )
 
       /** The messaging system as identified by the client instrumentation. <p>
@@ -598,7 +598,7 @@ object MessagingExperimentalMetrics {
           List(
           ),
           Requirement.required,
-          Stability.experimental
+          Stability.development
         )
 
       /** Server domain name if available without reverse DNS lookup; otherwise, IP address or Unix domain socket name.
@@ -683,7 +683,7 @@ object MessagingExperimentalMetrics {
     val name: String = "messaging.client.sent.messages"
     val description: String = "Number of messages producer attempted to send to the broker."
     val unit: String = "{message}"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -697,9 +697,9 @@ object MessagingExperimentalMetrics {
         *   multiple instrumentation libraries and applications should be prepared for `error.type` to have high
         *   cardinality at query time when no additional filters are applied. <p> If the operation has completed
         *   successfully, instrumentations SHOULD NOT set `error.type`. <p> If a specific domain defines its own set of
-        *   error identifiers (such as HTTP or gRPC status codes), it's RECOMMENDED to: <p> <ul> <li>Use a
-        *   domain-specific attribute <li>Set `error.type` to capture all errors, regardless of whether they are defined
-        *   within the domain-specific set or not. </ul>
+        *   error identifiers (such as HTTP or gRPC status codes), it's RECOMMENDED to: <ul> <li>Use a domain-specific
+        *   attribute <li>Set `error.type` to capture all errors, regardless of whether they are defined within the
+        *   domain-specific set or not. </ul>
         */
       val errorType: AttributeSpec[String] =
         AttributeSpec(
@@ -728,7 +728,7 @@ object MessagingExperimentalMetrics {
           Requirement.conditionallyRequired(
             "if and only if `messaging.destination.name` is known to have low cardinality. Otherwise, `messaging.destination.template` MAY be populated."
           ),
-          Stability.experimental
+          Stability.development
         )
 
       /** The identifier of the partition messages are sent to or received from, unique within the
@@ -741,7 +741,7 @@ object MessagingExperimentalMetrics {
             "1",
           ),
           Requirement.recommended,
-          Stability.experimental
+          Stability.development
         )
 
       /** Low cardinality representation of the messaging destination name <p>
@@ -757,7 +757,7 @@ object MessagingExperimentalMetrics {
             "/customers/{customerId}",
           ),
           Requirement.conditionallyRequired("if available."),
-          Stability.experimental
+          Stability.development
         )
 
       /** The system-specific name of the messaging operation.
@@ -771,7 +771,7 @@ object MessagingExperimentalMetrics {
             "enqueue",
           ),
           Requirement.required,
-          Stability.experimental
+          Stability.development
         )
 
       /** The messaging system as identified by the client instrumentation. <p>
@@ -786,7 +786,7 @@ object MessagingExperimentalMetrics {
           List(
           ),
           Requirement.required,
-          Stability.experimental
+          Stability.development
         )
 
       /** Server domain name if available without reverse DNS lookup; otherwise, IP address or Unix domain socket name.
@@ -871,7 +871,7 @@ object MessagingExperimentalMetrics {
     val name: String = "messaging.process.duration"
     val description: String = "Duration of processing operation."
     val unit: String = "s"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -885,9 +885,9 @@ object MessagingExperimentalMetrics {
         *   multiple instrumentation libraries and applications should be prepared for `error.type` to have high
         *   cardinality at query time when no additional filters are applied. <p> If the operation has completed
         *   successfully, instrumentations SHOULD NOT set `error.type`. <p> If a specific domain defines its own set of
-        *   error identifiers (such as HTTP or gRPC status codes), it's RECOMMENDED to: <p> <ul> <li>Use a
-        *   domain-specific attribute <li>Set `error.type` to capture all errors, regardless of whether they are defined
-        *   within the domain-specific set or not. </ul>
+        *   error identifiers (such as HTTP or gRPC status codes), it's RECOMMENDED to: <ul> <li>Use a domain-specific
+        *   attribute <li>Set `error.type` to capture all errors, regardless of whether they are defined within the
+        *   domain-specific set or not. </ul>
         */
       val errorType: AttributeSpec[String] =
         AttributeSpec(
@@ -914,7 +914,7 @@ object MessagingExperimentalMetrics {
             "indexer",
           ),
           Requirement.conditionallyRequired("if applicable."),
-          Stability.experimental
+          Stability.development
         )
 
       /** The message destination name <p>
@@ -932,7 +932,7 @@ object MessagingExperimentalMetrics {
           Requirement.conditionallyRequired(
             "if and only if `messaging.destination.name` is known to have low cardinality. Otherwise, `messaging.destination.template` MAY be populated."
           ),
-          Stability.experimental
+          Stability.development
         )
 
       /** The identifier of the partition messages are sent to or received from, unique within the
@@ -945,7 +945,7 @@ object MessagingExperimentalMetrics {
             "1",
           ),
           Requirement.recommended,
-          Stability.experimental
+          Stability.development
         )
 
       /** The name of the destination subscription from which a message is consumed. <p>
@@ -960,7 +960,7 @@ object MessagingExperimentalMetrics {
             "subscription-a",
           ),
           Requirement.conditionallyRequired("if applicable."),
-          Stability.experimental
+          Stability.development
         )
 
       /** Low cardinality representation of the messaging destination name <p>
@@ -976,7 +976,7 @@ object MessagingExperimentalMetrics {
             "/customers/{customerId}",
           ),
           Requirement.conditionallyRequired("if available."),
-          Stability.experimental
+          Stability.development
         )
 
       /** The system-specific name of the messaging operation.
@@ -990,7 +990,7 @@ object MessagingExperimentalMetrics {
             "handle",
           ),
           Requirement.required,
-          Stability.experimental
+          Stability.development
         )
 
       /** The messaging system as identified by the client instrumentation. <p>
@@ -1005,7 +1005,7 @@ object MessagingExperimentalMetrics {
           List(
           ),
           Requirement.required,
-          Stability.experimental
+          Stability.development
         )
 
       /** Server domain name if available without reverse DNS lookup; otherwise, IP address or Unix domain socket name.
@@ -1076,7 +1076,7 @@ object MessagingExperimentalMetrics {
     val name: String = "messaging.process.messages"
     val description: String = "Deprecated. Use `messaging.client.consumed.messages` instead."
     val unit: String = "{message}"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -1090,9 +1090,9 @@ object MessagingExperimentalMetrics {
         *   multiple instrumentation libraries and applications should be prepared for `error.type` to have high
         *   cardinality at query time when no additional filters are applied. <p> If the operation has completed
         *   successfully, instrumentations SHOULD NOT set `error.type`. <p> If a specific domain defines its own set of
-        *   error identifiers (such as HTTP or gRPC status codes), it's RECOMMENDED to: <p> <ul> <li>Use a
-        *   domain-specific attribute <li>Set `error.type` to capture all errors, regardless of whether they are defined
-        *   within the domain-specific set or not. </ul>
+        *   error identifiers (such as HTTP or gRPC status codes), it's RECOMMENDED to: <ul> <li>Use a domain-specific
+        *   attribute <li>Set `error.type` to capture all errors, regardless of whether they are defined within the
+        *   domain-specific set or not. </ul>
         */
       val errorType: AttributeSpec[String] =
         AttributeSpec(
@@ -1117,7 +1117,7 @@ object MessagingExperimentalMetrics {
             "send",
           ),
           Requirement.required,
-          Stability.experimental
+          Stability.development
         )
 
       /** Server domain name if available without reverse DNS lookup; otherwise, IP address or Unix domain socket name.
@@ -1197,7 +1197,7 @@ object MessagingExperimentalMetrics {
     val name: String = "messaging.publish.duration"
     val description: String = "Deprecated. Use `messaging.client.operation.duration` instead."
     val unit: String = "s"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -1211,9 +1211,9 @@ object MessagingExperimentalMetrics {
         *   multiple instrumentation libraries and applications should be prepared for `error.type` to have high
         *   cardinality at query time when no additional filters are applied. <p> If the operation has completed
         *   successfully, instrumentations SHOULD NOT set `error.type`. <p> If a specific domain defines its own set of
-        *   error identifiers (such as HTTP or gRPC status codes), it's RECOMMENDED to: <p> <ul> <li>Use a
-        *   domain-specific attribute <li>Set `error.type` to capture all errors, regardless of whether they are defined
-        *   within the domain-specific set or not. </ul>
+        *   error identifiers (such as HTTP or gRPC status codes), it's RECOMMENDED to: <ul> <li>Use a domain-specific
+        *   attribute <li>Set `error.type` to capture all errors, regardless of whether they are defined within the
+        *   domain-specific set or not. </ul>
         */
       val errorType: AttributeSpec[String] =
         AttributeSpec(
@@ -1238,7 +1238,7 @@ object MessagingExperimentalMetrics {
             "send",
           ),
           Requirement.required,
-          Stability.experimental
+          Stability.development
         )
 
       /** Server domain name if available without reverse DNS lookup; otherwise, IP address or Unix domain socket name.
@@ -1303,7 +1303,7 @@ object MessagingExperimentalMetrics {
     val name: String = "messaging.publish.messages"
     val description: String = "Deprecated. Use `messaging.client.produced.messages` instead."
     val unit: String = "{message}"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -1317,9 +1317,9 @@ object MessagingExperimentalMetrics {
         *   multiple instrumentation libraries and applications should be prepared for `error.type` to have high
         *   cardinality at query time when no additional filters are applied. <p> If the operation has completed
         *   successfully, instrumentations SHOULD NOT set `error.type`. <p> If a specific domain defines its own set of
-        *   error identifiers (such as HTTP or gRPC status codes), it's RECOMMENDED to: <p> <ul> <li>Use a
-        *   domain-specific attribute <li>Set `error.type` to capture all errors, regardless of whether they are defined
-        *   within the domain-specific set or not. </ul>
+        *   error identifiers (such as HTTP or gRPC status codes), it's RECOMMENDED to: <ul> <li>Use a domain-specific
+        *   attribute <li>Set `error.type` to capture all errors, regardless of whether they are defined within the
+        *   domain-specific set or not. </ul>
         */
       val errorType: AttributeSpec[String] =
         AttributeSpec(
@@ -1344,7 +1344,7 @@ object MessagingExperimentalMetrics {
             "send",
           ),
           Requirement.required,
-          Stability.experimental
+          Stability.development
         )
 
       /** Server domain name if available without reverse DNS lookup; otherwise, IP address or Unix domain socket name.
@@ -1424,7 +1424,7 @@ object MessagingExperimentalMetrics {
     val name: String = "messaging.receive.duration"
     val description: String = "Deprecated. Use `messaging.client.operation.duration` instead."
     val unit: String = "s"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -1438,9 +1438,9 @@ object MessagingExperimentalMetrics {
         *   multiple instrumentation libraries and applications should be prepared for `error.type` to have high
         *   cardinality at query time when no additional filters are applied. <p> If the operation has completed
         *   successfully, instrumentations SHOULD NOT set `error.type`. <p> If a specific domain defines its own set of
-        *   error identifiers (such as HTTP or gRPC status codes), it's RECOMMENDED to: <p> <ul> <li>Use a
-        *   domain-specific attribute <li>Set `error.type` to capture all errors, regardless of whether they are defined
-        *   within the domain-specific set or not. </ul>
+        *   error identifiers (such as HTTP or gRPC status codes), it's RECOMMENDED to: <ul> <li>Use a domain-specific
+        *   attribute <li>Set `error.type` to capture all errors, regardless of whether they are defined within the
+        *   domain-specific set or not. </ul>
         */
       val errorType: AttributeSpec[String] =
         AttributeSpec(
@@ -1465,7 +1465,7 @@ object MessagingExperimentalMetrics {
             "send",
           ),
           Requirement.required,
-          Stability.experimental
+          Stability.development
         )
 
       /** Server domain name if available without reverse DNS lookup; otherwise, IP address or Unix domain socket name.
@@ -1530,7 +1530,7 @@ object MessagingExperimentalMetrics {
     val name: String = "messaging.receive.messages"
     val description: String = "Deprecated. Use `messaging.client.consumed.messages` instead."
     val unit: String = "{message}"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -1544,9 +1544,9 @@ object MessagingExperimentalMetrics {
         *   multiple instrumentation libraries and applications should be prepared for `error.type` to have high
         *   cardinality at query time when no additional filters are applied. <p> If the operation has completed
         *   successfully, instrumentations SHOULD NOT set `error.type`. <p> If a specific domain defines its own set of
-        *   error identifiers (such as HTTP or gRPC status codes), it's RECOMMENDED to: <p> <ul> <li>Use a
-        *   domain-specific attribute <li>Set `error.type` to capture all errors, regardless of whether they are defined
-        *   within the domain-specific set or not. </ul>
+        *   error identifiers (such as HTTP or gRPC status codes), it's RECOMMENDED to: <ul> <li>Use a domain-specific
+        *   attribute <li>Set `error.type` to capture all errors, regardless of whether they are defined within the
+        *   domain-specific set or not. </ul>
         */
       val errorType: AttributeSpec[String] =
         AttributeSpec(
@@ -1571,7 +1571,7 @@ object MessagingExperimentalMetrics {
             "send",
           ),
           Requirement.required,
-          Stability.experimental
+          Stability.development
         )
 
       /** Server domain name if available without reverse DNS lookup; otherwise, IP address or Unix domain socket name.

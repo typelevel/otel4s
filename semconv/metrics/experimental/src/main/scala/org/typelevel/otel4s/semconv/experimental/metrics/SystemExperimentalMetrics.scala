@@ -59,6 +59,7 @@ object SystemExperimentalMetrics {
     PagingUtilization,
     ProcessCount,
     ProcessCreated,
+    Uptime,
   )
 
   /** Reports the current frequency of the CPU in Hz
@@ -68,7 +69,7 @@ object SystemExperimentalMetrics {
     val name: String = "system.cpu.frequency"
     val description: String = "Reports the current frequency of the CPU in Hz"
     val unit: String = "{Hz}"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -82,7 +83,7 @@ object SystemExperimentalMetrics {
             1,
           ),
           Requirement.recommended,
-          Stability.experimental
+          Stability.development
         )
 
       val specs: List[AttributeSpec[_]] =
@@ -124,7 +125,7 @@ object SystemExperimentalMetrics {
     val description: String =
       "Reports the number of logical (virtual) processor cores created by the operating system to manage multitasking"
     val unit: String = "{cpu}"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
@@ -159,7 +160,7 @@ object SystemExperimentalMetrics {
     val name: String = "system.cpu.physical.count"
     val description: String = "Reports the number of actual physical processor cores on the hardware"
     val unit: String = "{cpu}"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
@@ -194,7 +195,7 @@ object SystemExperimentalMetrics {
     val name: String = "system.cpu.time"
     val description: String = "Seconds each logical CPU spent on each mode"
     val unit: String = "s"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -212,7 +213,7 @@ object SystemExperimentalMetrics {
             "system",
           ),
           Requirement.recommended,
-          Stability.experimental
+          Stability.development
         )
 
       /** The logical CPU number [0..n-1]
@@ -224,7 +225,7 @@ object SystemExperimentalMetrics {
             1,
           ),
           Requirement.recommended,
-          Stability.experimental
+          Stability.development
         )
 
       val specs: List[AttributeSpec[_]] =
@@ -267,7 +268,7 @@ object SystemExperimentalMetrics {
     val description: String =
       "Difference in system.cpu.time since the last measurement, divided by the elapsed time and number of logical CPUs"
     val unit: String = "1"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -285,7 +286,7 @@ object SystemExperimentalMetrics {
             "system",
           ),
           Requirement.recommended,
-          Stability.experimental
+          Stability.development
         )
 
       /** The logical CPU number [0..n-1]
@@ -297,7 +298,7 @@ object SystemExperimentalMetrics {
             1,
           ),
           Requirement.recommended,
-          Stability.experimental
+          Stability.development
         )
 
       val specs: List[AttributeSpec[_]] =
@@ -338,7 +339,7 @@ object SystemExperimentalMetrics {
     val name: String = "system.disk.io"
     val description: String = ""
     val unit: String = "By"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -352,7 +353,7 @@ object SystemExperimentalMetrics {
             "read",
           ),
           Requirement.recommended,
-          Stability.experimental
+          Stability.development
         )
 
       /** The device identifier
@@ -364,7 +365,7 @@ object SystemExperimentalMetrics {
             "(identifier)",
           ),
           Requirement.recommended,
-          Stability.experimental
+          Stability.development
         )
 
       val specs: List[AttributeSpec[_]] =
@@ -402,7 +403,7 @@ object SystemExperimentalMetrics {
   /** Time disk spent activated <p>
     * @note
     *   <p> The real elapsed time ("wall clock") used in the I/O path (time from operations running in parallel are not
-    *   counted). Measured as: <p> <ul> <li>Linux: Field 13 from <a
+    *   counted). Measured as: <ul> <li>Linux: Field 13 from <a
     *   href="https://www.kernel.org/doc/Documentation/ABI/testing/procfs-diskstats">procfs-diskstats</a> <li>Windows:
     *   The complement of <a
     *   href="https://learn.microsoft.com/archive/blogs/askcore/windows-performance-monitor-disk-counters-explained#windows-performance-monitor-disk-counters-explained">"Disk%
@@ -413,7 +414,7 @@ object SystemExperimentalMetrics {
     val name: String = "system.disk.io_time"
     val description: String = "Time disk spent activated"
     val unit: String = "s"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -427,7 +428,7 @@ object SystemExperimentalMetrics {
             "(identifier)",
           ),
           Requirement.recommended,
-          Stability.experimental
+          Stability.development
         )
 
       val specs: List[AttributeSpec[_]] =
@@ -468,7 +469,7 @@ object SystemExperimentalMetrics {
     val name: String = "system.disk.limit"
     val description: String = "The total storage capacity of the disk"
     val unit: String = "By"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -482,7 +483,7 @@ object SystemExperimentalMetrics {
             "(identifier)",
           ),
           Requirement.recommended,
-          Stability.experimental
+          Stability.development
         )
 
       val specs: List[AttributeSpec[_]] =
@@ -522,7 +523,7 @@ object SystemExperimentalMetrics {
     val name: String = "system.disk.merged"
     val description: String = ""
     val unit: String = "{operation}"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -536,7 +537,7 @@ object SystemExperimentalMetrics {
             "read",
           ),
           Requirement.recommended,
-          Stability.experimental
+          Stability.development
         )
 
       /** The device identifier
@@ -548,7 +549,7 @@ object SystemExperimentalMetrics {
             "(identifier)",
           ),
           Requirement.recommended,
-          Stability.experimental
+          Stability.development
         )
 
       val specs: List[AttributeSpec[_]] =
@@ -586,7 +587,7 @@ object SystemExperimentalMetrics {
   /** Sum of the time each operation took to complete <p>
     * @note
     *   <p> Because it is the sum of time each request took, parallel-issued requests each contribute to make the count
-    *   grow. Measured as: <p> <ul> <li>Linux: Fields 7 & 11 from <a
+    *   grow. Measured as: <ul> <li>Linux: Fields 7 & 11 from <a
     *   href="https://www.kernel.org/doc/Documentation/ABI/testing/procfs-diskstats">procfs-diskstats</a> <li>Windows:
     *   "Avg. Disk sec/Read" perf counter multiplied by "Disk Reads/sec" perf counter (similar for Writes) </ul>
     */
@@ -595,7 +596,7 @@ object SystemExperimentalMetrics {
     val name: String = "system.disk.operation_time"
     val description: String = "Sum of the time each operation took to complete"
     val unit: String = "s"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -609,7 +610,7 @@ object SystemExperimentalMetrics {
             "read",
           ),
           Requirement.recommended,
-          Stability.experimental
+          Stability.development
         )
 
       /** The device identifier
@@ -621,7 +622,7 @@ object SystemExperimentalMetrics {
             "(identifier)",
           ),
           Requirement.recommended,
-          Stability.experimental
+          Stability.development
         )
 
       val specs: List[AttributeSpec[_]] =
@@ -662,7 +663,7 @@ object SystemExperimentalMetrics {
     val name: String = "system.disk.operations"
     val description: String = ""
     val unit: String = "{operation}"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -676,7 +677,7 @@ object SystemExperimentalMetrics {
             "read",
           ),
           Requirement.recommended,
-          Stability.experimental
+          Stability.development
         )
 
       /** The device identifier
@@ -688,7 +689,7 @@ object SystemExperimentalMetrics {
             "(identifier)",
           ),
           Requirement.recommended,
-          Stability.experimental
+          Stability.development
         )
 
       val specs: List[AttributeSpec[_]] =
@@ -730,7 +731,7 @@ object SystemExperimentalMetrics {
     val name: String = "system.filesystem.limit"
     val description: String = "The total storage capacity of the filesystem"
     val unit: String = "By"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -745,7 +746,7 @@ object SystemExperimentalMetrics {
             "\network-drive",
           ),
           Requirement.recommended,
-          Stability.experimental
+          Stability.development
         )
 
       /** The filesystem mode
@@ -757,7 +758,7 @@ object SystemExperimentalMetrics {
             "rw, ro",
           ),
           Requirement.recommended,
-          Stability.experimental
+          Stability.development
         )
 
       /** The filesystem mount path
@@ -769,7 +770,7 @@ object SystemExperimentalMetrics {
             "/mnt/data",
           ),
           Requirement.recommended,
-          Stability.experimental
+          Stability.development
         )
 
       /** The filesystem type
@@ -781,7 +782,7 @@ object SystemExperimentalMetrics {
             "ext4",
           ),
           Requirement.recommended,
-          Stability.experimental
+          Stability.development
         )
 
       val specs: List[AttributeSpec[_]] =
@@ -828,7 +829,7 @@ object SystemExperimentalMetrics {
     val name: String = "system.filesystem.usage"
     val description: String = "Reports a filesystem's space usage across different states."
     val unit: String = "By"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -843,7 +844,7 @@ object SystemExperimentalMetrics {
             "\network-drive",
           ),
           Requirement.recommended,
-          Stability.experimental
+          Stability.development
         )
 
       /** The filesystem mode
@@ -855,7 +856,7 @@ object SystemExperimentalMetrics {
             "rw, ro",
           ),
           Requirement.recommended,
-          Stability.experimental
+          Stability.development
         )
 
       /** The filesystem mount path
@@ -867,7 +868,7 @@ object SystemExperimentalMetrics {
             "/mnt/data",
           ),
           Requirement.recommended,
-          Stability.experimental
+          Stability.development
         )
 
       /** The filesystem state
@@ -879,7 +880,7 @@ object SystemExperimentalMetrics {
             "used",
           ),
           Requirement.recommended,
-          Stability.experimental
+          Stability.development
         )
 
       /** The filesystem type
@@ -891,7 +892,7 @@ object SystemExperimentalMetrics {
             "ext4",
           ),
           Requirement.recommended,
-          Stability.experimental
+          Stability.development
         )
 
       val specs: List[AttributeSpec[_]] =
@@ -935,7 +936,7 @@ object SystemExperimentalMetrics {
     val name: String = "system.filesystem.utilization"
     val description: String = ""
     val unit: String = "1"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -950,7 +951,7 @@ object SystemExperimentalMetrics {
             "\network-drive",
           ),
           Requirement.recommended,
-          Stability.experimental
+          Stability.development
         )
 
       /** The filesystem mode
@@ -962,7 +963,7 @@ object SystemExperimentalMetrics {
             "rw, ro",
           ),
           Requirement.recommended,
-          Stability.experimental
+          Stability.development
         )
 
       /** The filesystem mount path
@@ -974,7 +975,7 @@ object SystemExperimentalMetrics {
             "/mnt/data",
           ),
           Requirement.recommended,
-          Stability.experimental
+          Stability.development
         )
 
       /** The filesystem state
@@ -986,7 +987,7 @@ object SystemExperimentalMetrics {
             "used",
           ),
           Requirement.recommended,
-          Stability.experimental
+          Stability.development
         )
 
       /** The filesystem type
@@ -998,7 +999,7 @@ object SystemExperimentalMetrics {
             "ext4",
           ),
           Requirement.recommended,
-          Stability.experimental
+          Stability.development
         )
 
       val specs: List[AttributeSpec[_]] =
@@ -1050,7 +1051,7 @@ object SystemExperimentalMetrics {
     val description: String =
       "An estimate of how much memory is available for starting new applications, without causing swapping"
     val unit: String = "By"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
@@ -1092,7 +1093,7 @@ object SystemExperimentalMetrics {
     val description: String =
       "Reports the memory used by the Linux kernel for managing caches of frequently used objects."
     val unit: String = "By"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -1107,7 +1108,7 @@ object SystemExperimentalMetrics {
             "unreclaimable",
           ),
           Requirement.recommended,
-          Stability.experimental
+          Stability.development
         )
 
       val specs: List[AttributeSpec[_]] =
@@ -1150,7 +1151,7 @@ object SystemExperimentalMetrics {
     val name: String = "system.memory.limit"
     val description: String = "Total memory available in the system."
     val unit: String = "By"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
@@ -1188,7 +1189,7 @@ object SystemExperimentalMetrics {
     val name: String = "system.memory.shared"
     val description: String = "Shared memory used (mostly by tmpfs)."
     val unit: String = "By"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
@@ -1226,7 +1227,7 @@ object SystemExperimentalMetrics {
     val name: String = "system.memory.usage"
     val description: String = "Reports memory in use by state."
     val unit: String = "By"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -1241,7 +1242,7 @@ object SystemExperimentalMetrics {
             "cached",
           ),
           Requirement.recommended,
-          Stability.experimental
+          Stability.development
         )
 
       val specs: List[AttributeSpec[_]] =
@@ -1281,7 +1282,7 @@ object SystemExperimentalMetrics {
     val name: String = "system.memory.utilization"
     val description: String = ""
     val unit: String = "1"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -1296,7 +1297,7 @@ object SystemExperimentalMetrics {
             "cached",
           ),
           Requirement.recommended,
-          Stability.experimental
+          Stability.development
         )
 
       val specs: List[AttributeSpec[_]] =
@@ -1336,12 +1337,25 @@ object SystemExperimentalMetrics {
     val name: String = "system.network.connections"
     val description: String = ""
     val unit: String = "{connection}"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
-      /** <a href="https://osi-model.com/transport-layer/">OSI transport layer</a> or <a
+      /** The network interface name.
+        */
+      val networkInterfaceName: AttributeSpec[String] =
+        AttributeSpec(
+          NetworkExperimentalAttributes.NetworkInterfaceName,
+          List(
+            "lo",
+            "eth0",
+          ),
+          Requirement.recommended,
+          Stability.development
+        )
+
+      /** <a href="https://wikipedia.org/wiki/Transport_layer">OSI transport layer</a> or <a
         * href="https://wikipedia.org/wiki/Inter-process_communication">inter-process communication method</a>. <p>
         * @note
         *   <p> The value SHOULD be normalized to lowercase. <p> Consider always setting the transport when setting a
@@ -1359,18 +1373,6 @@ object SystemExperimentalMetrics {
           Stability.stable
         )
 
-      /** The device identifier
-        */
-      val systemDevice: AttributeSpec[String] =
-        AttributeSpec(
-          SystemExperimentalAttributes.SystemDevice,
-          List(
-            "(identifier)",
-          ),
-          Requirement.recommended,
-          Stability.experimental
-        )
-
       /** A stateless protocol MUST NOT set this attribute
         */
       val systemNetworkState: AttributeSpec[String] =
@@ -1380,13 +1382,13 @@ object SystemExperimentalMetrics {
             "close_wait",
           ),
           Requirement.recommended,
-          Stability.experimental
+          Stability.development
         )
 
       val specs: List[AttributeSpec[_]] =
         List(
+          networkInterfaceName,
           networkTransport,
-          systemDevice,
           systemNetworkState,
         )
     }
@@ -1418,7 +1420,7 @@ object SystemExperimentalMetrics {
 
   /** Count of packets that are dropped or discarded even though there was no error <p>
     * @note
-    *   <p> Measured as: <p> <ul> <li>Linux: the `drop` column in `/proc/dev/net` (<a
+    *   <p> Measured as: <ul> <li>Linux: the `drop` column in `/proc/dev/net` (<a
     *   href="https://web.archive.org/web/20180321091318/http://www.onlamp.com/pub/a/linux/2000/11/16/LinuxAdmin.html">source</a>)
     *   <li>Windows: <a
     *   href="https://docs.microsoft.com/windows/win32/api/netioapi/ns-netioapi-mib_if_row2">`InDiscards`/`OutDiscards`</a>
@@ -1430,10 +1432,23 @@ object SystemExperimentalMetrics {
     val name: String = "system.network.dropped"
     val description: String = "Count of packets that are dropped or discarded even though there was no error"
     val unit: String = "{packet}"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
+
+      /** The network interface name.
+        */
+      val networkInterfaceName: AttributeSpec[String] =
+        AttributeSpec(
+          NetworkExperimentalAttributes.NetworkInterfaceName,
+          List(
+            "lo",
+            "eth0",
+          ),
+          Requirement.recommended,
+          Stability.development
+        )
 
       /** The network IO operation direction.
         */
@@ -1444,25 +1459,13 @@ object SystemExperimentalMetrics {
             "transmit",
           ),
           Requirement.recommended,
-          Stability.experimental
-        )
-
-      /** The device identifier
-        */
-      val systemDevice: AttributeSpec[String] =
-        AttributeSpec(
-          SystemExperimentalAttributes.SystemDevice,
-          List(
-            "(identifier)",
-          ),
-          Requirement.recommended,
-          Stability.experimental
+          Stability.development
         )
 
       val specs: List[AttributeSpec[_]] =
         List(
+          networkInterfaceName,
           networkIoDirection,
-          systemDevice,
         )
     }
 
@@ -1493,7 +1496,7 @@ object SystemExperimentalMetrics {
 
   /** Count of network errors detected <p>
     * @note
-    *   <p> Measured as: <p> <ul> <li>Linux: the `errs` column in `/proc/dev/net` (<a
+    *   <p> Measured as: <ul> <li>Linux: the `errs` column in `/proc/dev/net` (<a
     *   href="https://web.archive.org/web/20180321091318/http://www.onlamp.com/pub/a/linux/2000/11/16/LinuxAdmin.html">source</a>).
     *   <li>Windows: <a
     *   href="https://docs.microsoft.com/windows/win32/api/netioapi/ns-netioapi-mib_if_row2">`InErrors`/`OutErrors`</a>
@@ -1505,10 +1508,23 @@ object SystemExperimentalMetrics {
     val name: String = "system.network.errors"
     val description: String = "Count of network errors detected"
     val unit: String = "{error}"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
+
+      /** The network interface name.
+        */
+      val networkInterfaceName: AttributeSpec[String] =
+        AttributeSpec(
+          NetworkExperimentalAttributes.NetworkInterfaceName,
+          List(
+            "lo",
+            "eth0",
+          ),
+          Requirement.recommended,
+          Stability.development
+        )
 
       /** The network IO operation direction.
         */
@@ -1519,25 +1535,13 @@ object SystemExperimentalMetrics {
             "transmit",
           ),
           Requirement.recommended,
-          Stability.experimental
-        )
-
-      /** The device identifier
-        */
-      val systemDevice: AttributeSpec[String] =
-        AttributeSpec(
-          SystemExperimentalAttributes.SystemDevice,
-          List(
-            "(identifier)",
-          ),
-          Requirement.recommended,
-          Stability.experimental
+          Stability.development
         )
 
       val specs: List[AttributeSpec[_]] =
         List(
+          networkInterfaceName,
           networkIoDirection,
-          systemDevice,
         )
     }
 
@@ -1572,10 +1576,23 @@ object SystemExperimentalMetrics {
     val name: String = "system.network.io"
     val description: String = ""
     val unit: String = "By"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
+
+      /** The network interface name.
+        */
+      val networkInterfaceName: AttributeSpec[String] =
+        AttributeSpec(
+          NetworkExperimentalAttributes.NetworkInterfaceName,
+          List(
+            "lo",
+            "eth0",
+          ),
+          Requirement.recommended,
+          Stability.development
+        )
 
       /** The network IO operation direction.
         */
@@ -1586,25 +1603,13 @@ object SystemExperimentalMetrics {
             "transmit",
           ),
           Requirement.recommended,
-          Stability.experimental
-        )
-
-      /** The device identifier
-        */
-      val systemDevice: AttributeSpec[String] =
-        AttributeSpec(
-          SystemExperimentalAttributes.SystemDevice,
-          List(
-            "(identifier)",
-          ),
-          Requirement.recommended,
-          Stability.experimental
+          Stability.development
         )
 
       val specs: List[AttributeSpec[_]] =
         List(
+          networkInterfaceName,
           networkIoDirection,
-          systemDevice,
         )
     }
 
@@ -1639,7 +1644,7 @@ object SystemExperimentalMetrics {
     val name: String = "system.network.packets"
     val description: String = ""
     val unit: String = "{packet}"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -1653,7 +1658,7 @@ object SystemExperimentalMetrics {
             "transmit",
           ),
           Requirement.recommended,
-          Stability.experimental
+          Stability.development
         )
 
       /** The device identifier
@@ -1665,7 +1670,7 @@ object SystemExperimentalMetrics {
             "(identifier)",
           ),
           Requirement.recommended,
-          Stability.experimental
+          Stability.development
         )
 
       val specs: List[AttributeSpec[_]] =
@@ -1706,7 +1711,7 @@ object SystemExperimentalMetrics {
     val name: String = "system.paging.faults"
     val description: String = ""
     val unit: String = "{fault}"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -1720,7 +1725,7 @@ object SystemExperimentalMetrics {
             "minor",
           ),
           Requirement.recommended,
-          Stability.experimental
+          Stability.development
         )
 
       val specs: List[AttributeSpec[_]] =
@@ -1760,7 +1765,7 @@ object SystemExperimentalMetrics {
     val name: String = "system.paging.operations"
     val description: String = ""
     val unit: String = "{operation}"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -1774,7 +1779,7 @@ object SystemExperimentalMetrics {
             "in",
           ),
           Requirement.recommended,
-          Stability.experimental
+          Stability.development
         )
 
       /** The memory paging type
@@ -1786,7 +1791,7 @@ object SystemExperimentalMetrics {
             "minor",
           ),
           Requirement.recommended,
-          Stability.experimental
+          Stability.development
         )
 
       val specs: List[AttributeSpec[_]] =
@@ -1828,10 +1833,22 @@ object SystemExperimentalMetrics {
     val name: String = "system.paging.usage"
     val description: String = "Unix swap or windows pagefile usage"
     val unit: String = "By"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
+
+      /** Unique identifier for the device responsible for managing paging operations.
+        */
+      val systemDevice: AttributeSpec[String] =
+        AttributeSpec(
+          SystemExperimentalAttributes.SystemDevice,
+          List(
+            "/dev/dm-0",
+          ),
+          Requirement.recommended,
+          Stability.development
+        )
 
       /** The memory paging state
         */
@@ -1842,11 +1859,12 @@ object SystemExperimentalMetrics {
             "free",
           ),
           Requirement.recommended,
-          Stability.experimental
+          Stability.development
         )
 
       val specs: List[AttributeSpec[_]] =
         List(
+          systemDevice,
           systemPagingState,
         )
     }
@@ -1882,10 +1900,22 @@ object SystemExperimentalMetrics {
     val name: String = "system.paging.utilization"
     val description: String = ""
     val unit: String = "1"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
+
+      /** Unique identifier for the device responsible for managing paging operations.
+        */
+      val systemDevice: AttributeSpec[String] =
+        AttributeSpec(
+          SystemExperimentalAttributes.SystemDevice,
+          List(
+            "/dev/dm-0",
+          ),
+          Requirement.recommended,
+          Stability.development
+        )
 
       /** The memory paging state
         */
@@ -1896,11 +1926,12 @@ object SystemExperimentalMetrics {
             "free",
           ),
           Requirement.recommended,
-          Stability.experimental
+          Stability.development
         )
 
       val specs: List[AttributeSpec[_]] =
         List(
+          systemDevice,
           systemPagingState,
         )
     }
@@ -1937,7 +1968,7 @@ object SystemExperimentalMetrics {
     val name: String = "system.process.count"
     val description: String = "Total number of processes in each state"
     val unit: String = "{process}"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -1952,7 +1983,7 @@ object SystemExperimentalMetrics {
             "running",
           ),
           Requirement.recommended,
-          Stability.experimental
+          Stability.development
         )
 
       val specs: List[AttributeSpec[_]] =
@@ -1993,7 +2024,7 @@ object SystemExperimentalMetrics {
     val name: String = "system.process.created"
     val description: String = "Total number of processes created over uptime of the host"
     val unit: String = "{process}"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter, A: MeasurementValue]: F[Counter[F, A]] =
@@ -2015,6 +2046,45 @@ object SystemExperimentalMetrics {
     ): Resource[F, ObservableCounter] =
       Meter[F]
         .observableCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** The time the system has been running <p>
+    * @note
+    *   <p> Instrumentations SHOULD use a gauge with type `double` and measure uptime in seconds as a floating point
+    *   number with the highest precision available. The actual accuracy would depend on the instrumentation and
+    *   operating system.
+    */
+  object Uptime extends MetricSpec {
+
+    val name: String = "system.uptime"
+    val description: String = "The time the system has been running"
+    val unit: String = "s"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[Gauge[F, A]] =
+      Meter[F]
+        .gauge[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableGauge[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableGauge] =
+      Meter[F]
+        .observableGauge[A](name)
         .withDescription(description)
         .withUnit(unit)
         .createWithCallback(callback)

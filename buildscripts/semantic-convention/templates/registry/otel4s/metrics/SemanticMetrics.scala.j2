@@ -57,7 +57,8 @@
 {%- endmacro -%}
 
 {%- macro stability(type) -%}
-{%- if type == "experimental" -%} Stability.experimental
+{%- if type == "development" -%} Stability.development
+{%- elif not type -%} Stability.development
 {%- elif type == "stable" -%} Stability.stable
 {%- else -%} _unknown_stability_type_{{ type }}
 {%- endif -%}
@@ -68,7 +69,11 @@
 {%- elif type == "double" -%} {{ input }}
 {%- elif type == "boolean" -%} {{ input }}
 {%- elif type == "string" -%} "{{ input }}"
-{%- else -%} _unknown type_{{ input }}
+{%- elif type == "int[]" -%} Seq({{ input | join(', ') }})
+{%- elif type == "double[]" -%} Seq({{ input | join(', ') }})
+{%- elif type == "boolean[]" -%} Seq({{ input | join(', ') }})
+{%- elif type == "string[]" -%} Seq({{ input | map('tojson') | join(', ') }})
+{%- else -%} _unknown type_{{ type }}_{{ input }}
 {%- endif -%}
 {% endmacro %}
 
@@ -132,7 +137,7 @@ import org.typelevel.otel4s.metrics._
 {%- if required_imports.stable == true %}
 import org.typelevel.otel4s.semconv.attributes._
 {%- endif %}
-{%- if required_imports.experimental == true %}
+{%- if required_imports.experimental == true and params.experimental == true %}
 import org.typelevel.otel4s.semconv.experimental.attributes._
 {%- endif %}
 
@@ -161,16 +166,20 @@ object {{ object_name }} {
   @deprecated("Use stable `{{ stableRef(metric) }}` instead.", "")
   {%- endif %}
   object {{ objectName(metric) }} extends MetricSpec {
-
+    {%- if params.experimental == true -%}
+    {%- set metric_attributes = metric.attributes %}
+    {% else %}
+    {%- set metric_attributes = metric.attributes | selectattr("stability", "equalto", "stable") | list %}
+    {% endif %}
     val name: String = "{{ metric.metric_name }}"
     val description: String = "{{ metric.brief }}"
     val unit: String = "{{ metric.unit }}"
     val stability: Stability = {{ stability(metric.stability) }}
-    val attributeSpecs: List[AttributeSpec[_]] = {% if metric.attributes | length > 0 %}AttributeSpecs.specs{% else %}Nil{% endif %}
+    val attributeSpecs: List[AttributeSpec[_]] = {% if metric_attributes | length > 0 %}AttributeSpecs.specs{% else %}Nil{% endif %}
 
-    {% if metric.attributes | length > 0 %}
+    {% if metric_attributes | length > 0 %}
     object AttributeSpecs {
-      {% for attribute in metric.attributes | sort(attribute='name') %}
+      {% for attribute in metric_attributes | sort(attribute='name') %}
       {{ [attribute.brief, concat_if("\n\n@note\n\n", attribute.note)] | comment(indent=6) | replace('$', "$$")}}
       {%- if attribute is deprecated %}
       @deprecated("{{ attribute.deprecated }}", "")
@@ -186,7 +195,7 @@ object {{ object_name }} {
         )
       {% endfor %}
       val specs: List[AttributeSpec[_]] =
-        List({%- for attribute in metric.attributes | sort(attribute='name') %}
+        List({%- for attribute in metric_attributes | sort(attribute='name') %}
           {{ attribute.name | camel_case }},{% endfor %}
         )
     }

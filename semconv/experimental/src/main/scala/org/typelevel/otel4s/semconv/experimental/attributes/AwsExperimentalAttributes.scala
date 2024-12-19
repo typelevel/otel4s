@@ -235,7 +235,7 @@ object AwsExperimentalAttributes {
     * @note
     *   <p> The `copy_source` attribute applies to S3 copy operations and corresponds to the `--copy-source` parameter
     *   of the <a href="https://docs.aws.amazon.com/cli/latest/reference/s3api/copy-object.html">copy-object operation
-    *   within the S3 API</a>. This applies in particular to the following operations: <p> <ul> <li><a
+    *   within the S3 API</a>. This applies in particular to the following operations: <ul> <li><a
     *   href="https://docs.aws.amazon.com/cli/latest/reference/s3api/copy-object.html">copy-object</a> <li><a
     *   href="https://docs.aws.amazon.com/cli/latest/reference/s3api/upload-part-copy.html">upload-part-copy</a> </ul>
     */
@@ -257,7 +257,7 @@ object AwsExperimentalAttributes {
     * href="https://docs.aws.amazon.com/cli/latest/reference/s3api/index.html">S3 API</a> operations. <p>
     * @note
     *   <p> The `key` attribute is applicable to all object-related S3 operations, i.e. that require the object key as a
-    *   mandatory parameter. This applies in particular to the following operations: <p> <ul> <li><a
+    *   mandatory parameter. This applies in particular to the following operations: <ul> <li><a
     *   href="https://docs.aws.amazon.com/cli/latest/reference/s3api/copy-object.html">copy-object</a> <li><a
     *   href="https://docs.aws.amazon.com/cli/latest/reference/s3api/delete-object.html">delete-object</a> <li><a
     *   href="https://docs.aws.amazon.com/cli/latest/reference/s3api/get-object.html">get-object</a> <li><a
@@ -295,7 +295,7 @@ object AwsExperimentalAttributes {
     * @note
     *   <p> The `upload_id` attribute applies to S3 multipart-upload operations and corresponds to the `--upload-id`
     *   parameter of the <a href="https://docs.aws.amazon.com/cli/latest/reference/s3api/index.html">S3 API</a>
-    *   multipart operations. This applies in particular to the following operations: <p> <ul> <li><a
+    *   multipart operations. This applies in particular to the following operations: <ul> <li><a
     *   href="https://docs.aws.amazon.com/cli/latest/reference/s3api/abort-multipart-upload.html">abort-multipart-upload</a>
     *   <li><a
     *   href="https://docs.aws.amazon.com/cli/latest/reference/s3api/complete-multipart-upload.html">complete-multipart-upload</a>

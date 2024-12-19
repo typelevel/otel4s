@@ -47,7 +47,7 @@ object RpcExperimentalMetrics {
     val name: String = "rpc.client.duration"
     val description: String = "Measures the duration of outbound RPC."
     val unit: String = "ms"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter, A: MeasurementValue](boundaries: BucketBoundaries): F[Histogram[F, A]] =
@@ -69,7 +69,7 @@ object RpcExperimentalMetrics {
     val name: String = "rpc.client.request.size"
     val description: String = "Measures the size of RPC request messages (uncompressed)."
     val unit: String = "By"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter, A: MeasurementValue](boundaries: BucketBoundaries): F[Histogram[F, A]] =
@@ -92,7 +92,7 @@ object RpcExperimentalMetrics {
     val name: String = "rpc.client.requests_per_rpc"
     val description: String = "Measures the number of messages received per RPC."
     val unit: String = "{count}"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter, A: MeasurementValue](boundaries: BucketBoundaries): F[Histogram[F, A]] =
@@ -114,7 +114,7 @@ object RpcExperimentalMetrics {
     val name: String = "rpc.client.response.size"
     val description: String = "Measures the size of RPC response messages (uncompressed)."
     val unit: String = "By"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter, A: MeasurementValue](boundaries: BucketBoundaries): F[Histogram[F, A]] =
@@ -137,7 +137,7 @@ object RpcExperimentalMetrics {
     val name: String = "rpc.client.responses_per_rpc"
     val description: String = "Measures the number of messages sent per RPC."
     val unit: String = "{count}"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter, A: MeasurementValue](boundaries: BucketBoundaries): F[Histogram[F, A]] =
@@ -160,7 +160,7 @@ object RpcExperimentalMetrics {
     val name: String = "rpc.server.duration"
     val description: String = "Measures the duration of inbound RPC."
     val unit: String = "ms"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter, A: MeasurementValue](boundaries: BucketBoundaries): F[Histogram[F, A]] =
@@ -182,7 +182,7 @@ object RpcExperimentalMetrics {
     val name: String = "rpc.server.request.size"
     val description: String = "Measures the size of RPC request messages (uncompressed)."
     val unit: String = "By"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter, A: MeasurementValue](boundaries: BucketBoundaries): F[Histogram[F, A]] =
@@ -205,7 +205,7 @@ object RpcExperimentalMetrics {
     val name: String = "rpc.server.requests_per_rpc"
     val description: String = "Measures the number of messages received per RPC."
     val unit: String = "{count}"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter, A: MeasurementValue](boundaries: BucketBoundaries): F[Histogram[F, A]] =
@@ -227,7 +227,7 @@ object RpcExperimentalMetrics {
     val name: String = "rpc.server.response.size"
     val description: String = "Measures the size of RPC response messages (uncompressed)."
     val unit: String = "By"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter, A: MeasurementValue](boundaries: BucketBoundaries): F[Histogram[F, A]] =
@@ -250,7 +250,7 @@ object RpcExperimentalMetrics {
     val name: String = "rpc.server.responses_per_rpc"
     val description: String = "Measures the number of messages sent per RPC."
     val unit: String = "{count}"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter, A: MeasurementValue](boundaries: BucketBoundaries): F[Histogram[F, A]] =

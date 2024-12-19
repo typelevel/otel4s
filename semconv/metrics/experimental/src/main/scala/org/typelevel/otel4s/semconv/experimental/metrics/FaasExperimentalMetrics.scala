@@ -45,7 +45,7 @@ object FaasExperimentalMetrics {
     val name: String = "faas.coldstarts"
     val description: String = "Number of invocation cold starts"
     val unit: String = "{coldstart}"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -58,7 +58,7 @@ object FaasExperimentalMetrics {
           List(
           ),
           Requirement.recommended,
-          Stability.experimental
+          Stability.development
         )
 
       val specs: List[AttributeSpec[_]] =
@@ -99,7 +99,7 @@ object FaasExperimentalMetrics {
     val name: String = "faas.cpu_usage"
     val description: String = "Distribution of CPU usage per invocation"
     val unit: String = "s"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -112,7 +112,7 @@ object FaasExperimentalMetrics {
           List(
           ),
           Requirement.recommended,
-          Stability.experimental
+          Stability.development
         )
 
       val specs: List[AttributeSpec[_]] =
@@ -138,7 +138,7 @@ object FaasExperimentalMetrics {
     val name: String = "faas.errors"
     val description: String = "Number of invocation errors"
     val unit: String = "{error}"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -151,7 +151,7 @@ object FaasExperimentalMetrics {
           List(
           ),
           Requirement.recommended,
-          Stability.experimental
+          Stability.development
         )
 
       val specs: List[AttributeSpec[_]] =
@@ -192,7 +192,7 @@ object FaasExperimentalMetrics {
     val name: String = "faas.init_duration"
     val description: String = "Measures the duration of the function's initialization, such as a cold start"
     val unit: String = "s"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -205,7 +205,7 @@ object FaasExperimentalMetrics {
           List(
           ),
           Requirement.recommended,
-          Stability.experimental
+          Stability.development
         )
 
       val specs: List[AttributeSpec[_]] =
@@ -231,7 +231,7 @@ object FaasExperimentalMetrics {
     val name: String = "faas.invocations"
     val description: String = "Number of successful invocations"
     val unit: String = "{invocation}"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -244,7 +244,7 @@ object FaasExperimentalMetrics {
           List(
           ),
           Requirement.recommended,
-          Stability.experimental
+          Stability.development
         )
 
       val specs: List[AttributeSpec[_]] =
@@ -285,7 +285,7 @@ object FaasExperimentalMetrics {
     val name: String = "faas.invoke_duration"
     val description: String = "Measures the duration of the function's logic execution"
     val unit: String = "s"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -298,7 +298,7 @@ object FaasExperimentalMetrics {
           List(
           ),
           Requirement.recommended,
-          Stability.experimental
+          Stability.development
         )
 
       val specs: List[AttributeSpec[_]] =
@@ -324,7 +324,7 @@ object FaasExperimentalMetrics {
     val name: String = "faas.mem_usage"
     val description: String = "Distribution of max memory usage per invocation"
     val unit: String = "By"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -337,7 +337,7 @@ object FaasExperimentalMetrics {
           List(
           ),
           Requirement.recommended,
-          Stability.experimental
+          Stability.development
         )
 
       val specs: List[AttributeSpec[_]] =
@@ -363,7 +363,7 @@ object FaasExperimentalMetrics {
     val name: String = "faas.net_io"
     val description: String = "Distribution of net I/O usage per invocation"
     val unit: String = "By"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -376,7 +376,7 @@ object FaasExperimentalMetrics {
           List(
           ),
           Requirement.recommended,
-          Stability.experimental
+          Stability.development
         )
 
       val specs: List[AttributeSpec[_]] =
@@ -402,7 +402,7 @@ object FaasExperimentalMetrics {
     val name: String = "faas.timeouts"
     val description: String = "Number of invocation timeouts"
     val unit: String = "{timeout}"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -415,7 +415,7 @@ object FaasExperimentalMetrics {
           List(
           ),
           Requirement.recommended,
-          Stability.experimental
+          Stability.development
         )
 
       val specs: List[AttributeSpec[_]] =

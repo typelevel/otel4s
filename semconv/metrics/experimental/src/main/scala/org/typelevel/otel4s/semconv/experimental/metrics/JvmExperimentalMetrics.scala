@@ -57,7 +57,7 @@ object JvmExperimentalMetrics {
     val name: String = "jvm.buffer.count"
     val description: String = "Number of buffers in the pool."
     val unit: String = "{buffer}"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -75,7 +75,7 @@ object JvmExperimentalMetrics {
             "direct",
           ),
           Requirement.recommended,
-          Stability.experimental
+          Stability.development
         )
 
       val specs: List[AttributeSpec[_]] =
@@ -116,7 +116,7 @@ object JvmExperimentalMetrics {
     val name: String = "jvm.buffer.memory.limit"
     val description: String = "Measure of total memory capacity of buffers."
     val unit: String = "By"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -134,7 +134,7 @@ object JvmExperimentalMetrics {
             "direct",
           ),
           Requirement.recommended,
-          Stability.experimental
+          Stability.development
         )
 
       val specs: List[AttributeSpec[_]] =
@@ -176,7 +176,7 @@ object JvmExperimentalMetrics {
     val name: String = "jvm.buffer.memory.usage"
     val description: String = "Deprecated, use `jvm.buffer.memory.used` instead."
     val unit: String = "By"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -194,7 +194,7 @@ object JvmExperimentalMetrics {
             "direct",
           ),
           Requirement.recommended,
-          Stability.experimental
+          Stability.development
         )
 
       val specs: List[AttributeSpec[_]] =
@@ -235,7 +235,7 @@ object JvmExperimentalMetrics {
     val name: String = "jvm.buffer.memory.used"
     val description: String = "Measure of memory used by buffers."
     val unit: String = "By"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -253,7 +253,7 @@ object JvmExperimentalMetrics {
             "direct",
           ),
           Requirement.recommended,
-          Stability.experimental
+          Stability.development
         )
 
       val specs: List[AttributeSpec[_]] =
@@ -651,7 +651,7 @@ object JvmExperimentalMetrics {
     val name: String = "jvm.memory.init"
     val description: String = "Measure of initial memory requested."
     val unit: String = "By"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -956,7 +956,7 @@ object JvmExperimentalMetrics {
     val name: String = "jvm.system.cpu.load_1m"
     val description: String = "Average CPU load of the whole system for the last minute as reported by the JVM."
     val unit: String = "{run_queue_item}"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter, A: MeasurementValue]: F[Gauge[F, A]] =
@@ -995,7 +995,7 @@ object JvmExperimentalMetrics {
     val name: String = "jvm.system.cpu.utilization"
     val description: String = "Recent CPU utilization for the whole system as reported by the JVM."
     val unit: String = "1"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter, A: MeasurementValue]: F[Gauge[F, A]] =

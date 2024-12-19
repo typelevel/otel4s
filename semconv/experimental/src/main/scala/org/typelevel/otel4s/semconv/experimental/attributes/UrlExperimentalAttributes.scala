@@ -52,12 +52,22 @@ object UrlExperimentalAttributes {
     * href="https://www.rfc-editor.org/rfc/rfc3986">RFC3986</a> <p>
     * @note
     *   <p> For network calls, URL usually has `scheme://host[:port][path][?query][#fragment]` format, where the
-    *   fragment is not transmitted over HTTP, but if it is known, it SHOULD be included nevertheless. `url.full` MUST
-    *   NOT contain credentials passed via URL in form of `https://username:password@www.example.com/`. In such case
-    *   username and password SHOULD be redacted and attribute's value SHOULD be
-    *   `https://REDACTED:REDACTED@www.example.com/`. `url.full` SHOULD capture the absolute URL when it is available
-    *   (or can be reconstructed). Sensitive content provided in `url.full` SHOULD be scrubbed when instrumentations can
-    *   identify it.
+    *   fragment is not transmitted over HTTP, but if it is known, it SHOULD be included nevertheless. <p> `url.full`
+    *   MUST NOT contain credentials passed via URL in form of `https://username:password@www.example.com/`. In such
+    *   case username and password SHOULD be redacted and attribute's value SHOULD be
+    *   `https://REDACTED:REDACTED@www.example.com/`. <p> `url.full` SHOULD capture the absolute URL when it is
+    *   available (or can be reconstructed). <p> Sensitive content provided in `url.full` SHOULD be scrubbed when
+    *   instrumentations can identify it. <p>
+    *
+    * Query string values for the following keys SHOULD be redacted by default and replaced by the value `REDACTED`:
+    * <ul> <li><a
+    * href="https://docs.aws.amazon.com/AmazonS3/latest/userguide/RESTAuthentication.html#RESTAuthenticationQueryStringAuth">`AWSAccessKeyId`</a>
+    * <li><a
+    * href="https://docs.aws.amazon.com/AmazonS3/latest/userguide/RESTAuthentication.html#RESTAuthenticationQueryStringAuth">`Signature`</a>
+    * <li><a href="https://learn.microsoft.com/azure/storage/common/storage-sas-overview#sas-token">`sig`</a> <li><a
+    * href="https://cloud.google.com/storage/docs/access-control/signed-urls">`X-Goog-Signature`</a> </ul> <p> This list
+    * is subject to change over time. <p> When a query string value is redacted, the query string key SHOULD still be
+    * preserved, e.g. `https://www.example.com/path?color=blue&sig=REDACTED`.
     */
   @deprecated(
     "use `org.typelevel.otel4s.semconv.attributes.UrlAttributes.UrlFull` instead.",
@@ -94,7 +104,17 @@ object UrlExperimentalAttributes {
 
   /** The <a href="https://www.rfc-editor.org/rfc/rfc3986#section-3.4">URI query</a> component <p>
     * @note
-    *   <p> Sensitive content provided in `url.query` SHOULD be scrubbed when instrumentations can identify it.
+    *   <p> Sensitive content provided in `url.query` SHOULD be scrubbed when instrumentations can identify it. <p>
+    *
+    * Query string values for the following keys SHOULD be redacted by default and replaced by the value `REDACTED`:
+    * <ul> <li><a
+    * href="https://docs.aws.amazon.com/AmazonS3/latest/userguide/RESTAuthentication.html#RESTAuthenticationQueryStringAuth">`AWSAccessKeyId`</a>
+    * <li><a
+    * href="https://docs.aws.amazon.com/AmazonS3/latest/userguide/RESTAuthentication.html#RESTAuthenticationQueryStringAuth">`Signature`</a>
+    * <li><a href="https://learn.microsoft.com/azure/storage/common/storage-sas-overview#sas-token">`sig`</a> <li><a
+    * href="https://cloud.google.com/storage/docs/access-control/signed-urls">`X-Goog-Signature`</a> </ul> <p> This list
+    * is subject to change over time. <p> When a query string value is redacted, the query string key SHOULD still be
+    * preserved, e.g. `q=OpenTelemetry&sig=REDACTED`.
     */
   @deprecated(
     "use `org.typelevel.otel4s.semconv.attributes.UrlAttributes.UrlQuery` instead.",

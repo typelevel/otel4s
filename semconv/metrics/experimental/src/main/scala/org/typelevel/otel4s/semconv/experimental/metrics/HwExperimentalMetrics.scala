@@ -41,7 +41,7 @@ object HwExperimentalMetrics {
     val name: String = "hw.energy"
     val description: String = "Energy consumed by the component"
     val unit: String = "J"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -55,7 +55,7 @@ object HwExperimentalMetrics {
             "win32battery_battery_testsysa33_1",
           ),
           Requirement.required,
-          Stability.experimental
+          Stability.development
         )
 
       /** An easily-recognizable name for the hardware component
@@ -67,7 +67,7 @@ object HwExperimentalMetrics {
             "eth0",
           ),
           Requirement.recommended,
-          Stability.experimental
+          Stability.development
         )
 
       /** Unique identifier of the parent component (typically the `hw.id` attribute of the enclosure, or disk
@@ -80,7 +80,7 @@ object HwExperimentalMetrics {
             "dellStorage_perc_0",
           ),
           Requirement.recommended,
-          Stability.experimental
+          Stability.development
         )
 
       /** Type of the component <p>
@@ -95,7 +95,7 @@ object HwExperimentalMetrics {
           List(
           ),
           Requirement.required,
-          Stability.experimental
+          Stability.development
         )
 
       val specs: List[AttributeSpec[_]] =
@@ -139,7 +139,7 @@ object HwExperimentalMetrics {
     val name: String = "hw.errors"
     val description: String = "Number of errors encountered by the component"
     val unit: String = "{error}"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -172,7 +172,7 @@ object HwExperimentalMetrics {
             "win32battery_battery_testsysa33_1",
           ),
           Requirement.required,
-          Stability.experimental
+          Stability.development
         )
 
       /** An easily-recognizable name for the hardware component
@@ -184,7 +184,7 @@ object HwExperimentalMetrics {
             "eth0",
           ),
           Requirement.recommended,
-          Stability.experimental
+          Stability.development
         )
 
       /** Unique identifier of the parent component (typically the `hw.id` attribute of the enclosure, or disk
@@ -197,7 +197,7 @@ object HwExperimentalMetrics {
             "dellStorage_perc_0",
           ),
           Requirement.recommended,
-          Stability.experimental
+          Stability.development
         )
 
       /** Type of the component <p>
@@ -212,7 +212,7 @@ object HwExperimentalMetrics {
           List(
           ),
           Requirement.required,
-          Stability.experimental
+          Stability.development
         )
 
       val specs: List[AttributeSpec[_]] =
@@ -259,7 +259,7 @@ object HwExperimentalMetrics {
     val name: String = "hw.power"
     val description: String = "Instantaneous power consumed by the component"
     val unit: String = "W"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -273,7 +273,7 @@ object HwExperimentalMetrics {
             "win32battery_battery_testsysa33_1",
           ),
           Requirement.required,
-          Stability.experimental
+          Stability.development
         )
 
       /** An easily-recognizable name for the hardware component
@@ -285,7 +285,7 @@ object HwExperimentalMetrics {
             "eth0",
           ),
           Requirement.recommended,
-          Stability.experimental
+          Stability.development
         )
 
       /** Unique identifier of the parent component (typically the `hw.id` attribute of the enclosure, or disk
@@ -298,7 +298,7 @@ object HwExperimentalMetrics {
             "dellStorage_perc_0",
           ),
           Requirement.recommended,
-          Stability.experimental
+          Stability.development
         )
 
       /** Type of the component <p>
@@ -313,7 +313,7 @@ object HwExperimentalMetrics {
           List(
           ),
           Requirement.required,
-          Stability.experimental
+          Stability.development
         )
 
       val specs: List[AttributeSpec[_]] =
@@ -363,7 +363,7 @@ object HwExperimentalMetrics {
     val name: String = "hw.status"
     val description: String = "Operational status: `1` (true) or `0` (false) for each of the possible states"
     val unit: String = "1"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -377,7 +377,7 @@ object HwExperimentalMetrics {
             "win32battery_battery_testsysa33_1",
           ),
           Requirement.required,
-          Stability.experimental
+          Stability.development
         )
 
       /** An easily-recognizable name for the hardware component
@@ -389,7 +389,7 @@ object HwExperimentalMetrics {
             "eth0",
           ),
           Requirement.recommended,
-          Stability.experimental
+          Stability.development
         )
 
       /** Unique identifier of the parent component (typically the `hw.id` attribute of the enclosure, or disk
@@ -402,7 +402,7 @@ object HwExperimentalMetrics {
             "dellStorage_perc_0",
           ),
           Requirement.recommended,
-          Stability.experimental
+          Stability.development
         )
 
       /** The current state of the component
@@ -413,7 +413,7 @@ object HwExperimentalMetrics {
           List(
           ),
           Requirement.required,
-          Stability.experimental
+          Stability.development
         )
 
       /** Type of the component <p>
@@ -428,7 +428,7 @@ object HwExperimentalMetrics {
           List(
           ),
           Requirement.required,
-          Stability.experimental
+          Stability.development
         )
 
       val specs: List[AttributeSpec[_]] =

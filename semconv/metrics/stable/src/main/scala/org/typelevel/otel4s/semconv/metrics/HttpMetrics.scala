@@ -109,7 +109,7 @@ object HttpMetrics {
           Stability.stable
         )
 
-      /** <a href="https://osi-model.com/application-layer/">OSI application layer</a> or non-OSI equivalent. <p>
+      /** <a href="https://wikipedia.org/wiki/Application_layer">OSI application layer</a> or non-OSI equivalent. <p>
         * @note
         *   <p> The value SHOULD be normalized to lowercase.
         */
@@ -313,7 +313,7 @@ object HttpMetrics {
           Stability.stable
         )
 
-      /** <a href="https://osi-model.com/application-layer/">OSI application layer</a> or non-OSI equivalent. <p>
+      /** <a href="https://wikipedia.org/wiki/Application_layer">OSI application layer</a> or non-OSI equivalent. <p>
         * @note
         *   <p> The value SHOULD be normalized to lowercase.
         */
@@ -350,7 +350,7 @@ object HttpMetrics {
       /** Name of the local HTTP server that received the request. <p>
         * @note
         *   <p> See <a href="/docs/http/http-spans.md#setting-serveraddress-and-serverport-attributes">Setting
-        *   `server.address` and `server.port` attributes</a>. <p> <blockquote> <strong>Warning</strong> Since this
+        *   `server.address` and `server.port` attributes</a>. <blockquote> <strong>Warning</strong> Since this
         *   attribute is based on HTTP headers, opting in to it may allow an attacker to trigger cardinality limits,
         *   degrading the usefulness of the metric.</blockquote>
         */
@@ -369,7 +369,7 @@ object HttpMetrics {
       /** Port of the local HTTP server that received the request. <p>
         * @note
         *   <p> See <a href="/docs/http/http-spans.md#setting-serveraddress-and-serverport-attributes">Setting
-        *   `server.address` and `server.port` attributes</a>. <p> <blockquote> <strong>Warning</strong> Since this
+        *   `server.address` and `server.port` attributes</a>. <blockquote> <strong>Warning</strong> Since this
         *   attribute is based on HTTP headers, opting in to it may allow an attacker to trigger cardinality limits,
         *   degrading the usefulness of the metric.</blockquote>
         */

@@ -23,8 +23,8 @@ sealed trait Stability
 object Stability {
 
   def stable: Stability = Stable
-  def experimental: Stability = Experimental
+  def development: Stability = Development
 
   private case object Stable extends Stability
-  private case object Experimental extends Stability
+  private case object Development extends Stability
 }

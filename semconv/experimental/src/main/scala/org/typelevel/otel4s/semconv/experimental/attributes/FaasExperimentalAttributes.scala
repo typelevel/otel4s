@@ -59,7 +59,7 @@ object FaasExperimentalAttributes {
   /** The execution environment ID as a string, that will be potentially reused for other invocations to the same
     * function/function version. <p>
     * @note
-    *   <p> <ul> <li><strong>AWS Lambda:</strong> Use the (full) log stream name. </ul>
+    *   <ul> <li><strong>AWS Lambda:</strong> Use the (full) log stream name. </ul>
     */
   val FaasInstance: AttributeKey[String] =
     AttributeKey("faas.instance")
@@ -105,7 +105,7 @@ object FaasExperimentalAttributes {
     *   the name of the callback function (which may be stored in the <a
     *   href="/docs/general/attributes.md#source-code-attributes">`code.namespace`/`code.function`</a> span attributes).
     *   <p> For some cloud providers, the above definition is ambiguous. The following definition of function name MUST
-    *   be used for this attribute (and consequently the span name) for the listed cloud providers/products: <p> <ul>
+    *   be used for this attribute (and consequently the span name) for the listed cloud providers/products: <ul>
     *   <li><strong>Azure:</strong> The full name `<FUNCAPP>/<FUNC>`, i.e., function app name followed by a forward
     *   slash followed by the function name (this form can also be seen in the resource JSON for the function). This
     *   means that a span attribute MUST be used, as an Azure function app can host multiple functions that would
@@ -128,7 +128,7 @@ object FaasExperimentalAttributes {
 
   /** The immutable version of the function being executed. <p>
     * @note
-    *   <p> Depending on the cloud provider and platform, use: <p> <ul> <li><strong>AWS Lambda:</strong> The <a
+    *   <p> Depending on the cloud provider and platform, use: <ul> <li><strong>AWS Lambda:</strong> The <a
     *   href="https://docs.aws.amazon.com/lambda/latest/dg/configuration-versions.html">function version</a> (an integer
     *   represented as a decimal string). <li><strong>Google Cloud Run (Services):</strong> The <a
     *   href="https://cloud.google.com/run/docs/managing/revisions">revision</a> (i.e., the function name plus the

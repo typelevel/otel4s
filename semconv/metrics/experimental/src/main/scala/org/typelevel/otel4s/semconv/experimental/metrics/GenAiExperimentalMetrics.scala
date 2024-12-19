@@ -41,7 +41,7 @@ object GenAiExperimentalMetrics {
     val name: String = "gen_ai.client.operation.duration"
     val description: String = "GenAI operation duration"
     val unit: String = "s"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -78,7 +78,7 @@ object GenAiExperimentalMetrics {
           List(
           ),
           Requirement.required,
-          Stability.experimental
+          Stability.development
         )
 
       /** The name of the GenAI model a request is being made to.
@@ -93,8 +93,8 @@ object GenAiExperimentalMetrics {
             "-",
             "4",
           ),
-          Requirement.required,
-          Stability.experimental
+          Requirement.conditionallyRequired("If available."),
+          Stability.development
         )
 
       /** The name of the model that generated the response.
@@ -106,7 +106,7 @@ object GenAiExperimentalMetrics {
             "gpt-4-0613",
           ),
           Requirement.recommended,
-          Stability.experimental
+          Stability.development
         )
 
       /** The Generative AI product as identified by the client or server instrumentation. <p>
@@ -130,7 +130,7 @@ object GenAiExperimentalMetrics {
             "i",
           ),
           Requirement.required,
-          Stability.experimental
+          Stability.development
         )
 
       /** GenAI server address. <p>
@@ -196,7 +196,7 @@ object GenAiExperimentalMetrics {
     val name: String = "gen_ai.client.token.usage"
     val description: String = "Measures number of input and output tokens used"
     val unit: String = "{token}"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -214,7 +214,7 @@ object GenAiExperimentalMetrics {
           List(
           ),
           Requirement.required,
-          Stability.experimental
+          Stability.development
         )
 
       /** The name of the GenAI model a request is being made to.
@@ -229,8 +229,8 @@ object GenAiExperimentalMetrics {
             "-",
             "4",
           ),
-          Requirement.required,
-          Stability.experimental
+          Requirement.conditionallyRequired("If available."),
+          Stability.development
         )
 
       /** The name of the model that generated the response.
@@ -242,7 +242,7 @@ object GenAiExperimentalMetrics {
             "gpt-4-0613",
           ),
           Requirement.recommended,
-          Stability.experimental
+          Stability.development
         )
 
       /** The Generative AI product as identified by the client or server instrumentation. <p>
@@ -266,7 +266,7 @@ object GenAiExperimentalMetrics {
             "i",
           ),
           Requirement.required,
-          Stability.experimental
+          Stability.development
         )
 
       /** The type of token being counted.
@@ -279,7 +279,7 @@ object GenAiExperimentalMetrics {
             "output",
           ),
           Requirement.required,
-          Stability.experimental
+          Stability.development
         )
 
       /** GenAI server address. <p>
@@ -345,7 +345,7 @@ object GenAiExperimentalMetrics {
     val name: String = "gen_ai.server.request.duration"
     val description: String = "Generative AI server request duration such as time-to-last byte or last output token"
     val unit: String = "s"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -382,7 +382,7 @@ object GenAiExperimentalMetrics {
           List(
           ),
           Requirement.required,
-          Stability.experimental
+          Stability.development
         )
 
       /** The name of the GenAI model a request is being made to.
@@ -397,8 +397,8 @@ object GenAiExperimentalMetrics {
             "-",
             "4",
           ),
-          Requirement.required,
-          Stability.experimental
+          Requirement.conditionallyRequired("If available."),
+          Stability.development
         )
 
       /** The name of the model that generated the response.
@@ -410,7 +410,7 @@ object GenAiExperimentalMetrics {
             "gpt-4-0613",
           ),
           Requirement.recommended,
-          Stability.experimental
+          Stability.development
         )
 
       /** The Generative AI product as identified by the client or server instrumentation. <p>
@@ -434,7 +434,7 @@ object GenAiExperimentalMetrics {
             "i",
           ),
           Requirement.required,
-          Stability.experimental
+          Stability.development
         )
 
       /** GenAI server address. <p>
@@ -500,7 +500,7 @@ object GenAiExperimentalMetrics {
     val name: String = "gen_ai.server.time_per_output_token"
     val description: String = "Time per output token generated after the first token for successful responses"
     val unit: String = "s"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -518,7 +518,7 @@ object GenAiExperimentalMetrics {
           List(
           ),
           Requirement.required,
-          Stability.experimental
+          Stability.development
         )
 
       /** The name of the GenAI model a request is being made to.
@@ -533,8 +533,8 @@ object GenAiExperimentalMetrics {
             "-",
             "4",
           ),
-          Requirement.required,
-          Stability.experimental
+          Requirement.conditionallyRequired("If available."),
+          Stability.development
         )
 
       /** The name of the model that generated the response.
@@ -546,7 +546,7 @@ object GenAiExperimentalMetrics {
             "gpt-4-0613",
           ),
           Requirement.recommended,
-          Stability.experimental
+          Stability.development
         )
 
       /** The Generative AI product as identified by the client or server instrumentation. <p>
@@ -570,7 +570,7 @@ object GenAiExperimentalMetrics {
             "i",
           ),
           Requirement.required,
-          Stability.experimental
+          Stability.development
         )
 
       /** GenAI server address. <p>
@@ -635,7 +635,7 @@ object GenAiExperimentalMetrics {
     val name: String = "gen_ai.server.time_to_first_token"
     val description: String = "Time to generate first token for successful responses"
     val unit: String = "s"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -653,7 +653,7 @@ object GenAiExperimentalMetrics {
           List(
           ),
           Requirement.required,
-          Stability.experimental
+          Stability.development
         )
 
       /** The name of the GenAI model a request is being made to.
@@ -668,8 +668,8 @@ object GenAiExperimentalMetrics {
             "-",
             "4",
           ),
-          Requirement.required,
-          Stability.experimental
+          Requirement.conditionallyRequired("If available."),
+          Stability.development
         )
 
       /** The name of the model that generated the response.
@@ -681,7 +681,7 @@ object GenAiExperimentalMetrics {
             "gpt-4-0613",
           ),
           Requirement.recommended,
-          Stability.experimental
+          Stability.development
         )
 
       /** The Generative AI product as identified by the client or server instrumentation. <p>
@@ -705,7 +705,7 @@ object GenAiExperimentalMetrics {
             "i",
           ),
           Requirement.required,
-          Stability.experimental
+          Stability.development
         )
 
       /** GenAI server address. <p>

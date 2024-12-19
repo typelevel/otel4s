@@ -41,7 +41,7 @@ object NetworkAttributes {
   val NetworkPeerPort: AttributeKey[Long] =
     AttributeKey("network.peer.port")
 
-  /** <a href="https://osi-model.com/application-layer/">OSI application layer</a> or non-OSI equivalent. <p>
+  /** <a href="https://wikipedia.org/wiki/Application_layer">OSI application layer</a> or non-OSI equivalent. <p>
     * @note
     *   <p> The value SHOULD be normalized to lowercase.
     */
@@ -57,7 +57,7 @@ object NetworkAttributes {
   val NetworkProtocolVersion: AttributeKey[String] =
     AttributeKey("network.protocol.version")
 
-  /** <a href="https://osi-model.com/transport-layer/">OSI transport layer</a> or <a
+  /** <a href="https://wikipedia.org/wiki/Transport_layer">OSI transport layer</a> or <a
     * href="https://wikipedia.org/wiki/Inter-process_communication">inter-process communication method</a>. <p>
     * @note
     *   <p> The value SHOULD be normalized to lowercase. <p> Consider always setting the transport when setting a port
@@ -67,7 +67,7 @@ object NetworkAttributes {
   val NetworkTransport: AttributeKey[String] =
     AttributeKey("network.transport")
 
-  /** <a href="https://osi-model.com/network-layer/">OSI network layer</a> or non-OSI equivalent. <p>
+  /** <a href="https://wikipedia.org/wiki/Network_layer">OSI network layer</a> or non-OSI equivalent. <p>
     * @note
     *   <p> The value SHOULD be normalized to lowercase.
     */

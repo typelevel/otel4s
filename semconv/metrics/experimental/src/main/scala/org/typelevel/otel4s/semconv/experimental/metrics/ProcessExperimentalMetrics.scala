@@ -47,7 +47,7 @@ object ProcessExperimentalMetrics {
     val name: String = "process.context_switches"
     val description: String = "Number of times the process has been context switched."
     val unit: String = "{count}"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -60,7 +60,7 @@ object ProcessExperimentalMetrics {
           List(
           ),
           Requirement.recommended,
-          Stability.experimental
+          Stability.development
         )
 
       val specs: List[AttributeSpec[_]] =
@@ -101,7 +101,7 @@ object ProcessExperimentalMetrics {
     val name: String = "process.cpu.time"
     val description: String = "Total CPU seconds broken down by different states."
     val unit: String = "s"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -119,7 +119,7 @@ object ProcessExperimentalMetrics {
             "system",
           ),
           Requirement.recommended,
-          Stability.experimental
+          Stability.development
         )
 
       val specs: List[AttributeSpec[_]] =
@@ -162,7 +162,7 @@ object ProcessExperimentalMetrics {
     val description: String =
       "Difference in process.cpu.time since the last measurement, divided by the elapsed time and number of CPUs available to the process."
     val unit: String = "1"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -180,7 +180,7 @@ object ProcessExperimentalMetrics {
             "system",
           ),
           Requirement.recommended,
-          Stability.experimental
+          Stability.development
         )
 
       val specs: List[AttributeSpec[_]] =
@@ -221,7 +221,7 @@ object ProcessExperimentalMetrics {
     val name: String = "process.disk.io"
     val description: String = "Disk bytes transferred."
     val unit: String = "By"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -235,7 +235,7 @@ object ProcessExperimentalMetrics {
             "read",
           ),
           Requirement.recommended,
-          Stability.experimental
+          Stability.development
         )
 
       val specs: List[AttributeSpec[_]] =
@@ -276,7 +276,7 @@ object ProcessExperimentalMetrics {
     val name: String = "process.memory.usage"
     val description: String = "The amount of physical memory in use."
     val unit: String = "By"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
@@ -311,7 +311,7 @@ object ProcessExperimentalMetrics {
     val name: String = "process.memory.virtual"
     val description: String = "The amount of committed virtual memory."
     val unit: String = "By"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
@@ -346,7 +346,7 @@ object ProcessExperimentalMetrics {
     val name: String = "process.network.io"
     val description: String = "Network bytes transferred."
     val unit: String = "By"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -360,7 +360,7 @@ object ProcessExperimentalMetrics {
             "transmit",
           ),
           Requirement.recommended,
-          Stability.experimental
+          Stability.development
         )
 
       val specs: List[AttributeSpec[_]] =
@@ -401,7 +401,7 @@ object ProcessExperimentalMetrics {
     val name: String = "process.open_file_descriptor.count"
     val description: String = "Number of file descriptors in use by the process."
     val unit: String = "{count}"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
@@ -436,7 +436,7 @@ object ProcessExperimentalMetrics {
     val name: String = "process.paging.faults"
     val description: String = "Number of page faults the process has made."
     val unit: String = "{fault}"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -450,7 +450,7 @@ object ProcessExperimentalMetrics {
           List(
           ),
           Requirement.recommended,
-          Stability.experimental
+          Stability.development
         )
 
       val specs: List[AttributeSpec[_]] =
@@ -491,7 +491,7 @@ object ProcessExperimentalMetrics {
     val name: String = "process.thread.count"
     val description: String = "Process threads count."
     val unit: String = "{thread}"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
@@ -521,36 +521,37 @@ object ProcessExperimentalMetrics {
 
   /** The time the process has been running. <p>
     * @note
-    *   <p> Instrumentations SHOULD use counter with type `double` and measure uptime with at least millisecond
-    *   precision
+    *   <p> Instrumentations SHOULD use a gauge with type `double` and measure uptime in seconds as a floating point
+    *   number with the highest precision available. The actual accuracy would depend on the instrumentation and
+    *   operating system.
     */
   object Uptime extends MetricSpec {
 
     val name: String = "process.uptime"
     val description: String = "The time the process has been running."
     val unit: String = "s"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = Nil
 
-    def create[F[_]: Meter, A: MeasurementValue]: F[Counter[F, A]] =
+    def create[F[_]: Meter, A: MeasurementValue]: F[Gauge[F, A]] =
       Meter[F]
-        .counter[A](name)
+        .gauge[A](name)
         .withDescription(description)
         .withUnit(unit)
         .create
 
     def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
       Meter[F]
-        .observableCounter[A](name)
+        .observableGauge[A](name)
         .withDescription(description)
         .withUnit(unit)
         .createObserver
 
     def createWithCallback[F[_]: Meter, A: MeasurementValue](
         callback: ObservableMeasurement[F, A] => F[Unit]
-    ): Resource[F, ObservableCounter] =
+    ): Resource[F, ObservableGauge] =
       Meter[F]
-        .observableCounter[A](name)
+        .observableGauge[A](name)
         .withDescription(description)
         .withUnit(unit)
         .createWithCallback(callback)

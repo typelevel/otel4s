@@ -48,7 +48,7 @@ object HttpExperimentalMetrics {
     val name: String = "http.client.active_requests"
     val description: String = "Number of active HTTP requests."
     val unit: String = "{request}"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -147,7 +147,7 @@ object HttpExperimentalMetrics {
             "/users?id={id}",
           ),
           Requirement.conditionallyRequired("If available."),
-          Stability.experimental
+          Stability.development
         )
 
       val specs: List[AttributeSpec[_]] =
@@ -192,7 +192,7 @@ object HttpExperimentalMetrics {
     val name: String = "http.client.connection.duration"
     val description: String = "The duration of the successfully established outbound HTTP connections."
     val unit: String = "s"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -304,7 +304,7 @@ object HttpExperimentalMetrics {
     val name: String = "http.client.open_connections"
     val description: String = "Number of outbound HTTP connections that are currently active or idle on the client."
     val unit: String = "{connection}"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -319,7 +319,7 @@ object HttpExperimentalMetrics {
             "idle",
           ),
           Requirement.required,
-          Stability.experimental
+          Stability.development
         )
 
       /** Peer address of the network connection - IP address or Unix domain socket name.
@@ -450,7 +450,7 @@ object HttpExperimentalMetrics {
     val name: String = "http.client.request.body.size"
     val description: String = "Size of HTTP client request bodies."
     val unit: String = "By"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -523,7 +523,7 @@ object HttpExperimentalMetrics {
           Stability.stable
         )
 
-      /** <a href="https://osi-model.com/application-layer/">OSI application layer</a> or non-OSI equivalent. <p>
+      /** <a href="https://wikipedia.org/wiki/Application_layer">OSI application layer</a> or non-OSI equivalent. <p>
         * @note
         *   <p> The value SHOULD be normalized to lowercase.
         */
@@ -622,7 +622,7 @@ object HttpExperimentalMetrics {
             "/users?id={id}",
           ),
           Requirement.conditionallyRequired("If available."),
-          Stability.experimental
+          Stability.development
         )
 
       val specs: List[AttributeSpec[_]] =
@@ -730,7 +730,7 @@ object HttpExperimentalMetrics {
           Stability.stable
         )
 
-      /** <a href="https://osi-model.com/application-layer/">OSI application layer</a> or non-OSI equivalent. <p>
+      /** <a href="https://wikipedia.org/wiki/Application_layer">OSI application layer</a> or non-OSI equivalent. <p>
         * @note
         *   <p> The value SHOULD be normalized to lowercase.
         */
@@ -814,6 +814,24 @@ object HttpExperimentalMetrics {
           Stability.stable
         )
 
+      /** The low-cardinality template of an <a href="https://www.rfc-editor.org/rfc/rfc3986#section-4.2">absolute path
+        * reference</a>. <p>
+        * @note
+        *   <p> The `url.template` MUST have low cardinality. It is not usually available on HTTP clients, but may be
+        *   known by the application or specialized HTTP instrumentation.
+        */
+      val urlTemplate: AttributeSpec[String] =
+        AttributeSpec(
+          UrlExperimentalAttributes.UrlTemplate,
+          List(
+            "/users/{id}",
+            "/users/:id",
+            "/users?id={id}",
+          ),
+          Requirement.optIn,
+          Stability.development
+        )
+
       val specs: List[AttributeSpec[_]] =
         List(
           errorType,
@@ -824,6 +842,7 @@ object HttpExperimentalMetrics {
           serverAddress,
           serverPort,
           urlScheme,
+          urlTemplate,
         )
     }
 
@@ -849,7 +868,7 @@ object HttpExperimentalMetrics {
     val name: String = "http.client.response.body.size"
     val description: String = "Size of HTTP client response bodies."
     val unit: String = "By"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -922,7 +941,7 @@ object HttpExperimentalMetrics {
           Stability.stable
         )
 
-      /** <a href="https://osi-model.com/application-layer/">OSI application layer</a> or non-OSI equivalent. <p>
+      /** <a href="https://wikipedia.org/wiki/Application_layer">OSI application layer</a> or non-OSI equivalent. <p>
         * @note
         *   <p> The value SHOULD be normalized to lowercase.
         */
@@ -1021,7 +1040,7 @@ object HttpExperimentalMetrics {
             "/users?id={id}",
           ),
           Requirement.conditionallyRequired("If available."),
-          Stability.experimental
+          Stability.development
         )
 
       val specs: List[AttributeSpec[_]] =
@@ -1055,7 +1074,7 @@ object HttpExperimentalMetrics {
     val name: String = "http.server.active_requests"
     val description: String = "Number of active HTTP server requests."
     val unit: String = "{request}"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -1092,7 +1111,7 @@ object HttpExperimentalMetrics {
       /** Name of the local HTTP server that received the request. <p>
         * @note
         *   <p> See <a href="/docs/http/http-spans.md#setting-serveraddress-and-serverport-attributes">Setting
-        *   `server.address` and `server.port` attributes</a>. <p> <blockquote> <strong>Warning</strong> Since this
+        *   `server.address` and `server.port` attributes</a>. <blockquote> <strong>Warning</strong> Since this
         *   attribute is based on HTTP headers, opting in to it may allow an attacker to trigger cardinality limits,
         *   degrading the usefulness of the metric.</blockquote>
         */
@@ -1111,7 +1130,7 @@ object HttpExperimentalMetrics {
       /** Port of the local HTTP server that received the request. <p>
         * @note
         *   <p> See <a href="/docs/http/http-spans.md#setting-serveraddress-and-serverport-attributes">Setting
-        *   `server.address` and `server.port` attributes</a>. <p> <blockquote> <strong>Warning</strong> Since this
+        *   `server.address` and `server.port` attributes</a>. <blockquote> <strong>Warning</strong> Since this
         *   attribute is based on HTTP headers, opting in to it may allow an attacker to trigger cardinality limits,
         *   degrading the usefulness of the metric.</blockquote>
         */
@@ -1187,7 +1206,7 @@ object HttpExperimentalMetrics {
     val name: String = "http.server.request.body.size"
     val description: String = "Size of HTTP server request bodies."
     val unit: String = "By"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -1277,7 +1296,7 @@ object HttpExperimentalMetrics {
           Stability.stable
         )
 
-      /** <a href="https://osi-model.com/application-layer/">OSI application layer</a> or non-OSI equivalent. <p>
+      /** <a href="https://wikipedia.org/wiki/Application_layer">OSI application layer</a> or non-OSI equivalent. <p>
         * @note
         *   <p> The value SHOULD be normalized to lowercase.
         */
@@ -1314,7 +1333,7 @@ object HttpExperimentalMetrics {
       /** Name of the local HTTP server that received the request. <p>
         * @note
         *   <p> See <a href="/docs/http/http-spans.md#setting-serveraddress-and-serverport-attributes">Setting
-        *   `server.address` and `server.port` attributes</a>. <p> <blockquote> <strong>Warning</strong> Since this
+        *   `server.address` and `server.port` attributes</a>. <blockquote> <strong>Warning</strong> Since this
         *   attribute is based on HTTP headers, opting in to it may allow an attacker to trigger cardinality limits,
         *   degrading the usefulness of the metric.</blockquote>
         */
@@ -1333,7 +1352,7 @@ object HttpExperimentalMetrics {
       /** Port of the local HTTP server that received the request. <p>
         * @note
         *   <p> See <a href="/docs/http/http-spans.md#setting-serveraddress-and-serverport-attributes">Setting
-        *   `server.address` and `server.port` attributes</a>. <p> <blockquote> <strong>Warning</strong> Since this
+        *   `server.address` and `server.port` attributes</a>. <blockquote> <strong>Warning</strong> Since this
         *   attribute is based on HTTP headers, opting in to it may allow an attacker to trigger cardinality limits,
         *   degrading the usefulness of the metric.</blockquote>
         */
@@ -1368,6 +1387,23 @@ object HttpExperimentalMetrics {
           Stability.stable
         )
 
+      /** Specifies the category of synthetic traffic, such as tests or bots. <p>
+        * @note
+        *   <p> This attribute MAY be derived from the contents of the `user_agent.original` attribute. Components that
+        *   populate the attribute are responsible for determining what they consider to be synthetic bot or test
+        *   traffic. This attribute can either be set for self-identification purposes, or on telemetry detected to be
+        *   generated as a result of a synthetic request. This attribute is useful for distinguishing between genuine
+        *   client traffic and synthetic traffic generated by bots or tests.
+        */
+      val userAgentSyntheticType: AttributeSpec[String] =
+        AttributeSpec(
+          UserAgentExperimentalAttributes.UserAgentSyntheticType,
+          List(
+          ),
+          Requirement.optIn,
+          Stability.development
+        )
+
       val specs: List[AttributeSpec[_]] =
         List(
           errorType,
@@ -1379,6 +1415,7 @@ object HttpExperimentalMetrics {
           serverAddress,
           serverPort,
           urlScheme,
+          userAgentSyntheticType,
         )
     }
 
@@ -1490,7 +1527,7 @@ object HttpExperimentalMetrics {
           Stability.stable
         )
 
-      /** <a href="https://osi-model.com/application-layer/">OSI application layer</a> or non-OSI equivalent. <p>
+      /** <a href="https://wikipedia.org/wiki/Application_layer">OSI application layer</a> or non-OSI equivalent. <p>
         * @note
         *   <p> The value SHOULD be normalized to lowercase.
         */
@@ -1527,7 +1564,7 @@ object HttpExperimentalMetrics {
       /** Name of the local HTTP server that received the request. <p>
         * @note
         *   <p> See <a href="/docs/http/http-spans.md#setting-serveraddress-and-serverport-attributes">Setting
-        *   `server.address` and `server.port` attributes</a>. <p> <blockquote> <strong>Warning</strong> Since this
+        *   `server.address` and `server.port` attributes</a>. <blockquote> <strong>Warning</strong> Since this
         *   attribute is based on HTTP headers, opting in to it may allow an attacker to trigger cardinality limits,
         *   degrading the usefulness of the metric.</blockquote>
         */
@@ -1546,7 +1583,7 @@ object HttpExperimentalMetrics {
       /** Port of the local HTTP server that received the request. <p>
         * @note
         *   <p> See <a href="/docs/http/http-spans.md#setting-serveraddress-and-serverport-attributes">Setting
-        *   `server.address` and `server.port` attributes</a>. <p> <blockquote> <strong>Warning</strong> Since this
+        *   `server.address` and `server.port` attributes</a>. <blockquote> <strong>Warning</strong> Since this
         *   attribute is based on HTTP headers, opting in to it may allow an attacker to trigger cardinality limits,
         *   degrading the usefulness of the metric.</blockquote>
         */
@@ -1581,6 +1618,23 @@ object HttpExperimentalMetrics {
           Stability.stable
         )
 
+      /** Specifies the category of synthetic traffic, such as tests or bots. <p>
+        * @note
+        *   <p> This attribute MAY be derived from the contents of the `user_agent.original` attribute. Components that
+        *   populate the attribute are responsible for determining what they consider to be synthetic bot or test
+        *   traffic. This attribute can either be set for self-identification purposes, or on telemetry detected to be
+        *   generated as a result of a synthetic request. This attribute is useful for distinguishing between genuine
+        *   client traffic and synthetic traffic generated by bots or tests.
+        */
+      val userAgentSyntheticType: AttributeSpec[String] =
+        AttributeSpec(
+          UserAgentExperimentalAttributes.UserAgentSyntheticType,
+          List(
+          ),
+          Requirement.optIn,
+          Stability.development
+        )
+
       val specs: List[AttributeSpec[_]] =
         List(
           errorType,
@@ -1592,6 +1646,7 @@ object HttpExperimentalMetrics {
           serverAddress,
           serverPort,
           urlScheme,
+          userAgentSyntheticType,
         )
     }
 
@@ -1617,7 +1672,7 @@ object HttpExperimentalMetrics {
     val name: String = "http.server.response.body.size"
     val description: String = "Size of HTTP server response bodies."
     val unit: String = "By"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -1707,7 +1762,7 @@ object HttpExperimentalMetrics {
           Stability.stable
         )
 
-      /** <a href="https://osi-model.com/application-layer/">OSI application layer</a> or non-OSI equivalent. <p>
+      /** <a href="https://wikipedia.org/wiki/Application_layer">OSI application layer</a> or non-OSI equivalent. <p>
         * @note
         *   <p> The value SHOULD be normalized to lowercase.
         */
@@ -1744,7 +1799,7 @@ object HttpExperimentalMetrics {
       /** Name of the local HTTP server that received the request. <p>
         * @note
         *   <p> See <a href="/docs/http/http-spans.md#setting-serveraddress-and-serverport-attributes">Setting
-        *   `server.address` and `server.port` attributes</a>. <p> <blockquote> <strong>Warning</strong> Since this
+        *   `server.address` and `server.port` attributes</a>. <blockquote> <strong>Warning</strong> Since this
         *   attribute is based on HTTP headers, opting in to it may allow an attacker to trigger cardinality limits,
         *   degrading the usefulness of the metric.</blockquote>
         */
@@ -1763,7 +1818,7 @@ object HttpExperimentalMetrics {
       /** Port of the local HTTP server that received the request. <p>
         * @note
         *   <p> See <a href="/docs/http/http-spans.md#setting-serveraddress-and-serverport-attributes">Setting
-        *   `server.address` and `server.port` attributes</a>. <p> <blockquote> <strong>Warning</strong> Since this
+        *   `server.address` and `server.port` attributes</a>. <blockquote> <strong>Warning</strong> Since this
         *   attribute is based on HTTP headers, opting in to it may allow an attacker to trigger cardinality limits,
         *   degrading the usefulness of the metric.</blockquote>
         */
@@ -1798,6 +1853,23 @@ object HttpExperimentalMetrics {
           Stability.stable
         )
 
+      /** Specifies the category of synthetic traffic, such as tests or bots. <p>
+        * @note
+        *   <p> This attribute MAY be derived from the contents of the `user_agent.original` attribute. Components that
+        *   populate the attribute are responsible for determining what they consider to be synthetic bot or test
+        *   traffic. This attribute can either be set for self-identification purposes, or on telemetry detected to be
+        *   generated as a result of a synthetic request. This attribute is useful for distinguishing between genuine
+        *   client traffic and synthetic traffic generated by bots or tests.
+        */
+      val userAgentSyntheticType: AttributeSpec[String] =
+        AttributeSpec(
+          UserAgentExperimentalAttributes.UserAgentSyntheticType,
+          List(
+          ),
+          Requirement.optIn,
+          Stability.development
+        )
+
       val specs: List[AttributeSpec[_]] =
         List(
           errorType,
@@ -1809,6 +1881,7 @@ object HttpExperimentalMetrics {
           serverAddress,
           serverPort,
           urlScheme,
+          userAgentSyntheticType,
         )
     }
 

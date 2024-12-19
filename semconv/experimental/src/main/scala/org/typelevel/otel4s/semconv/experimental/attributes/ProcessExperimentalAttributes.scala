@@ -78,6 +78,12 @@ object ProcessExperimentalAttributes {
 
   /** Profiling specific build ID for executables. See the OTel specification for Profiles for more information.
     */
+  val ProcessExecutableBuildIdHtlhash: AttributeKey[String] =
+    AttributeKey("process.executable.build_id.htlhash")
+
+  /** "Deprecated, use `process.executable.build_id.htlhash` instead."
+    */
+  @deprecated("Replaced by `process.executable.build_id.htlhash`", "")
   val ProcessExecutableBuildIdProfiling: AttributeKey[String] =
     AttributeKey("process.executable.build_id.profiling")
 
@@ -112,6 +118,15 @@ object ProcessExperimentalAttributes {
     */
   val ProcessInteractive: AttributeKey[Boolean] =
     AttributeKey("process.interactive")
+
+  /** The control group associated with the process. <p>
+    * @note
+    *   <p> Control groups (cgroups) are a kernel feature used to organize and manage process resources. This attribute
+    *   provides the path(s) to the cgroup(s) associated with the process, which should match the contents of the <a
+    *   href="https://man7.org/linux/man-pages/man7/cgroups.7.html">/proc/<PID>/cgroup</a> file.
+    */
+  val ProcessLinuxCgroup: AttributeKey[String] =
+    AttributeKey("process.linux.cgroup")
 
   /** The username of the user that owns the process.
     */

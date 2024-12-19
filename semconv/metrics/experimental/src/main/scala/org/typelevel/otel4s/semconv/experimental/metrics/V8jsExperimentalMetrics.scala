@@ -45,7 +45,7 @@ object V8jsExperimentalMetrics {
     val name: String = "v8js.gc.duration"
     val description: String = "Garbage collection duration."
     val unit: String = "s"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -58,7 +58,7 @@ object V8jsExperimentalMetrics {
           List(
           ),
           Requirement.required,
-          Stability.experimental
+          Stability.development
         )
 
       val specs: List[AttributeSpec[_]] =
@@ -87,7 +87,7 @@ object V8jsExperimentalMetrics {
     val name: String = "v8js.heap.space.available_size"
     val description: String = "Heap space available size."
     val unit: String = "By"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -103,7 +103,7 @@ object V8jsExperimentalMetrics {
           List(
           ),
           Requirement.required,
-          Stability.experimental
+          Stability.development
         )
 
       val specs: List[AttributeSpec[_]] =
@@ -147,7 +147,7 @@ object V8jsExperimentalMetrics {
     val name: String = "v8js.heap.space.physical_size"
     val description: String = "Committed size of a heap space."
     val unit: String = "By"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -163,7 +163,7 @@ object V8jsExperimentalMetrics {
           List(
           ),
           Requirement.required,
-          Stability.experimental
+          Stability.development
         )
 
       val specs: List[AttributeSpec[_]] =
@@ -207,7 +207,7 @@ object V8jsExperimentalMetrics {
     val name: String = "v8js.memory.heap.limit"
     val description: String = "Total heap memory size pre-allocated."
     val unit: String = "By"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -223,7 +223,7 @@ object V8jsExperimentalMetrics {
           List(
           ),
           Requirement.required,
-          Stability.experimental
+          Stability.development
         )
 
       val specs: List[AttributeSpec[_]] =
@@ -267,7 +267,7 @@ object V8jsExperimentalMetrics {
     val name: String = "v8js.memory.heap.used"
     val description: String = "Heap Memory size allocated."
     val unit: String = "By"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -283,7 +283,7 @@ object V8jsExperimentalMetrics {
           List(
           ),
           Requirement.required,
-          Stability.experimental
+          Stability.development
         )
 
       val specs: List[AttributeSpec[_]] =

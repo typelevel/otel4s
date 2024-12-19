@@ -76,7 +76,7 @@ ThisBuild / mergifyPrRules ++= Seq(
 )
 
 val CatsVersion = "2.11.0"
-val CatsEffectVersion = "3.6-28f8f29"
+val CatsEffectVersion = "3.6-d5f779e-20241219T080448Z-SNAPSHOT"
 val CatsMtlVersion = "1.4.0"
 val FS2Version = "3.11.0"
 val MUnitVersion = "1.0.0"
@@ -714,7 +714,7 @@ lazy val `oteljava-context-storage` = project
     ),
     Test / javaOptions ++= Seq(
       "-Dotel.java.global-autoconfigure.enabled=true",
-      "-Dcats.effect.ioLocalPropagation=true",
+      "-Dcats.effect.trackFiberContext=true",
     ),
     Test / fork := true,
   )
@@ -868,7 +868,7 @@ lazy val examples = project
     javaAgents += "io.opentelemetry.javaagent" % "opentelemetry-javaagent" % OpenTelemetryInstrumentationVersion % Runtime,
     run / fork := true,
     javaOptions += "-Dotel.java.global-autoconfigure.enabled=true",
-    javaOptions += "-Dcats.effect.ioLocalPropagation=true",
+    javaOptions += "-Dcats.effect.trackFiberContext=true",
     envVars ++= Map(
       "OTEL_PROPAGATORS" -> "b3multi",
       "OTEL_SERVICE_NAME" -> "Trace Example"

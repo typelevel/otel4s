@@ -138,10 +138,6 @@
     <li class="level1 nav-leaf"><a href="#project-setup">Project setup</a></li>
     <li class="level1 nav-leaf"><a href="#opentelemetry-sdk-configuration">OpenTelemetry SDK configuration</a></li>
     <li class="level1 nav-leaf"><a href="#observability-stack-configuration">Observability stack configuration</a></li>
-    <li class="level1 nav-node"><a href="#configuration-files">Configuration files</a></li>
-    <li class="level2 nav-leaf"><a href="#config-otel-collector-config-yaml">./config/otel-collector-config.yaml</a></li>
-    <li class="level2 nav-leaf"><a href="#config-prometheus-yml">./config/prometheus.yml</a></li>
-    <li class="level2 nav-leaf"><a href="#config-jaeger-ui-json">./config/jaeger-ui.json</a></li>
     <li class="level1 nav-leaf"><a href="#application-example">Application example</a></li>
     <li class="level1 nav-leaf"><a href="#run-the-application">Run the application</a></li>
     <li class="level1 nav-leaf"><a href="#setup-your-metrics-dashboard">Setup your metrics dashboard</a></li>
@@ -206,117 +202,17 @@
         <p>Use the following <code>docker-compose.yaml</code> file:</p>
         <pre><code class="nohighlight"><span class="attribute-name">version</span><span>: </span><span class="string-literal">&#39;3.7&#39;</span><span>
 </span><span class="attribute-name">services</span><span>:
-  </span><span class="attribute-name">otel-collector</span><span>: </span><span class="string-literal"># receives application metrics and traces via gRPC or HTTP protocol</span><span>
-    </span><span class="attribute-name">image</span><span>: </span><span class="string-literal">otel/opentelemetry-collector-contrib</span><span>
-    </span><span class="attribute-name">command</span><span>: </span><span class="string-literal">[--config=/etc/otel-collector-config.yaml]</span><span>
-    </span><span class="attribute-name">volumes</span><span>:
-      - </span><span class="string-literal">&quot;./config/otel-collector-config.yaml:/etc/otel-collector-config.yaml&quot;</span><span>
-    </span><span class="attribute-name">ports</span><span>:
-      - </span><span class="string-literal">&quot;8888:8888&quot;</span><span> </span><span class="comment"># Prometheus metrics exposed by the collector
-</span><span>      - </span><span class="string-literal">&quot;8889:8889&quot;</span><span> </span><span class="comment"># Prometheus exporter metrics
-</span><span>      - </span><span class="string-literal">&quot;4317:4317&quot;</span><span> </span><span class="comment"># OTLP gRPC receiver
-</span><span>      - </span><span class="string-literal">&quot;4318:4318&quot;</span><span> </span><span class="comment"># OTLP http receiver
-</span><span>    </span><span class="attribute-name">networks</span><span>:
-      - </span><span class="string-literal">static-network</span><span>
-
-  </span><span class="attribute-name">jaeger</span><span>: </span><span class="string-literal"># stores traces received from the OpenTelemetry Collector </span><span>
-    </span><span class="attribute-name">image</span><span>: </span><span class="string-literal">jaegertracing/all-in-one:latest</span><span>
-    </span><span class="attribute-name">volumes</span><span>:
-      - </span><span class="string-literal">&quot;./config/jaeger-ui.json:/etc/jaeger/jaeger-ui.json&quot;</span><span>
-    </span><span class="attribute-name">command</span><span>: </span><span class="string-literal">--query.ui-config /etc/jaeger/jaeger-ui.json</span><span>
-    </span><span class="attribute-name">environment</span><span>:
-      - </span><span class="string-literal">METRICS_STORAGE_TYPE=prometheus</span><span>
-      - </span><span class="string-literal">PROMETHEUS_SERVER_URL=http://prometheus:9090</span><span>
-    </span><span class="attribute-name">ports</span><span>:
-      - </span><span class="string-literal">&quot;14250:14250&quot;</span><span>
-      - </span><span class="string-literal">&quot;16685:16685&quot;</span><span> </span><span class="comment"># GRPC
-</span><span>      - </span><span class="string-literal">&quot;16686:16686&quot;</span><span> </span><span class="comment"># UI
-</span><span>    </span><span class="attribute-name">networks</span><span>:
-      - </span><span class="string-literal">static-network</span><span>
-
-  </span><span class="attribute-name">prometheus</span><span>: </span><span class="string-literal"># scrapes metrics from the OpenTelemetry Collector</span><span>
-    </span><span class="attribute-name">image</span><span>: </span><span class="string-literal">prom/prometheus:latest</span><span>
-    </span><span class="attribute-name">volumes</span><span>:
-      - </span><span class="string-literal">&quot;./config/prometheus.yml:/etc/prometheus/prometheus.yml&quot;</span><span>
-    </span><span class="attribute-name">ports</span><span>:
-      - </span><span class="string-literal">&quot;9090:9090&quot;</span><span>
-    </span><span class="attribute-name">networks</span><span>:
-      - </span><span class="string-literal">static-network</span><span>
-
-  </span><span class="attribute-name">grafana</span><span>: </span><span class="string-literal"># queries Jaeger and Prometheus to visualize traces and metrics</span><span>
-    </span><span class="attribute-name">image</span><span>: </span><span class="string-literal">grafana/grafana-oss</span><span>
-    </span><span class="attribute-name">restart</span><span>: </span><span class="string-literal">unless-stopped</span><span>
+  </span><span class="attribute-name">otel-lgtm</span><span>:
+    </span><span class="attribute-name">image</span><span>: </span><span class="string-literal">grafana/otel-lgtm</span><span>
     </span><span class="attribute-name">ports</span><span>:
       - </span><span class="string-literal">&quot;3000:3000&quot;</span><span>
+      - </span><span class="string-literal">&quot;4317:4317&quot;</span><span>
+      - </span><span class="string-literal">&quot;4318:4318&quot;</span><span>
     </span><span class="attribute-name">networks</span><span>:
       - </span><span class="string-literal">static-network</span><span>
 
 </span><span class="attribute-name">networks</span><span>:
   static-network:</span></code></pre>
-        
-        <h3 id="configuration-files" class="section"><a class="anchor-link left" href="#configuration-files"><i class="icofont-laika link">&#xef71;</i></a>Configuration files</h3>
-        
-        <h4 id="config-otel-collector-config-yaml" class="section"><a class="anchor-link left" href="#config-otel-collector-config-yaml"><i class="icofont-laika link">&#xef71;</i></a>./config/otel-collector-config.yaml</h4>
-        <p>OpenTelemetry Collector configuration: receivers, exporters, and processing pipelines.</p>
-        <pre><code class="nohighlight"><span class="attribute-name">receivers</span><span>:
-  </span><span class="attribute-name">otlp</span><span>:
-    </span><span class="attribute-name">protocols</span><span>: </span><span class="string-literal"># enable OpenTelemetry Protocol receiver, both gRPC and HTTP</span><span>
-      </span><span class="attribute-name">grpc</span><span>:
-        </span><span class="attribute-name">endpoint</span><span>: </span><span class="number-literal">0.0</span><span>.0.0:4317
-      </span><span class="attribute-name">http</span><span>:
-        </span><span class="attribute-name">endpoint</span><span>: </span><span class="number-literal">0.0</span><span>.0.0:4318
-
-</span><span class="attribute-name">exporters</span><span>:
-  otlp/</span><span class="attribute-name">jaeger</span><span>: </span><span class="string-literal"># export received traces to Jaeger</span><span>
-    </span><span class="attribute-name">endpoint</span><span>: </span><span class="string-literal">jaeger:4317</span><span>
-    </span><span class="attribute-name">tls</span><span>:
-      </span><span class="attribute-name">insecure</span><span>: </span><span class="boolean-literal">true</span><span>
-
-  </span><span class="attribute-name">prometheus</span><span>: </span><span class="string-literal"># run Prometheus exporter server on port 8889, so Prometheus can scrape the metrics  </span><span>
-    </span><span class="attribute-name">endpoint</span><span>: </span><span class="number-literal">0.0</span><span>.0.0:8889
-    </span><span class="attribute-name">send_timestamps</span><span>: </span><span class="boolean-literal">true</span><span>
-
-</span><span class="attribute-name">processors</span><span>:
-  </span><span class="attribute-name">batch</span><span>:
-    </span><span class="attribute-name">timeout</span><span>: </span><span class="string-literal">10s</span><span>
-
-</span><span class="attribute-name">service</span><span>:
-  </span><span class="attribute-name">pipelines</span><span>:
-    </span><span class="attribute-name">traces</span><span>:
-      </span><span class="attribute-name">receivers</span><span>: </span><span class="string-literal">[otlp]</span><span>
-      </span><span class="attribute-name">processors</span><span>: </span><span class="string-literal">[batch]</span><span>
-      </span><span class="attribute-name">exporters</span><span>: </span><span class="string-literal">[otlp/jaeger]</span><span>
-    </span><span class="attribute-name">metrics</span><span>:
-      </span><span class="attribute-name">receivers</span><span>: </span><span class="string-literal">[otlp]</span><span>
-      </span><span class="attribute-name">processors</span><span>: </span><span class="string-literal">[batch]</span><span>
-      </span><span class="attribute-name">exporters</span><span>: </span><span class="string-literal">[prometheus]</span></code></pre>
-        
-        <h4 id="config-prometheus-yml" class="section"><a class="anchor-link left" href="#config-prometheus-yml"><i class="icofont-laika link">&#xef71;</i></a>./config/prometheus.yml</h4>
-        <p>Prometheus server configuration: scrape interval and targets. </p>
-        <pre><code class="nohighlight"><span class="attribute-name">global</span><span>:
-  </span><span class="attribute-name">scrape_interval</span><span>: </span><span class="string-literal">15s</span><span> </span><span class="comment"># Set the scrape interval to every 15 seconds. Default is every 1 minute.
-</span><span>  </span><span class="attribute-name">evaluation_interval</span><span>: </span><span class="string-literal">15s</span><span> </span><span class="comment"># Evaluate rules every 15 seconds. The default is every 1 minute.
-</span><span>
-</span><span class="attribute-name">scrape_configs</span><span>:
-  </span><span class="comment"># The job name is added as a label `job=&lt;job_name&gt;` to any timeseries scraped from this config.
-</span><span>  - </span><span class="attribute-name">job_name</span><span>: </span><span class="string-literal">&quot;prometheus&quot;</span><span> </span><span class="comment"># scrape prometheus itself to collect the internal metrics (e.g. scrape stats, etc)
-</span><span>    </span><span class="attribute-name">static_configs</span><span>:
-      - </span><span class="attribute-name">targets</span><span>: </span><span class="string-literal">[&quot;localhost:9090&quot;]</span><span>
-
-  - </span><span class="attribute-name">job_name</span><span>: </span><span class="string-literal">&quot;otel-collector&quot;</span><span> </span><span class="comment"># scrape metrics from the OpenTelemetry collector
-</span><span>    </span><span class="attribute-name">static_configs</span><span>:
-      - </span><span class="attribute-name">targets</span><span>: </span><span class="string-literal">[&quot;otel-collector:8889&quot;]</span></code></pre>
-        
-        <h4 id="config-jaeger-ui-json" class="section"><a class="anchor-link left" href="#config-jaeger-ui-json"><i class="icofont-laika link">&#xef71;</i></a>./config/jaeger-ui.json</h4>
-        <p>Jaeger configuration: enable <a href="https://www.jaegertracing.io/docs/1.48/spm/">Service Performance Monitor (SPM)</a>. </p>
-        <pre class="keep-together pdf epub"><code class="nohighlight"><span>{
-  </span><span class="attribute-name">&quot;monitor&quot;</span><span>: {
-    </span><span class="attribute-name">&quot;menuEnabled&quot;</span><span>: </span><span class="boolean-literal">true</span><span>
-  },
-  </span><span class="attribute-name">&quot;dependencies&quot;</span><span>: {
-    </span><span class="attribute-name">&quot;menuEnabled&quot;</span><span>: </span><span class="boolean-literal">true</span><span>
-  }
-}</span></code></pre>
         
         <h3 id="application-example" class="section"><a class="anchor-link left" href="#application-example"><i class="icofont-laika link">&#xef71;</i></a>Application example</h3>
         <p>Example service mocking a call to a remote API: here the remote API returns apples or bananas.

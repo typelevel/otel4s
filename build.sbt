@@ -903,6 +903,8 @@ lazy val docs = project
       "OPEN_TELEMETRY_VERSION" -> OpenTelemetryVersion,
       "OPEN_TELEMETRY_INSTRUMENTATION_ALPHA_VERSION" -> OpenTelemetryInstrumentationAlphaVersion
     ),
+    run / fork := true,
+    javaOptions += "-Dcats.effect.trackFiberContext=true",
     laikaConfig := {
       import laika.config.{ChoiceConfig, Selections, SelectionConfig}
 

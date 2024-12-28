@@ -19,6 +19,7 @@ package org.typelevel.otel4s.oteljava
 import cats.effect.IOLocal
 import cats.effect.LiftIO
 import cats.effect.MonadCancelThrow
+import cats.effect.unsafe.IORuntime
 import cats.mtl.Local
 import io.opentelemetry.context.{Context => JContext}
 import io.opentelemetry.context.ContextStorage
@@ -35,7 +36,20 @@ import org.typelevel.otel4s.oteljava.context.LocalContext
   */
 class IOLocalContextStorage(_ioLocal: () => IOLocal[Context]) extends ContextStorage {
   private[this] implicit lazy val ioLocal: IOLocal[Context] = _ioLocal()
-  private[this] lazy val unsafeThreadLocal = ioLocal.unsafeThreadLocal()
+  private[this] lazy val unsafeThreadLocal: ThreadLocal[Context] = {
+    val fiberLocal = ioLocal.unsafeThreadLocal()
+
+    new ThreadLocal[Context] {
+      override def initialValue(): Context =
+        Context.root
+
+      override def get(): Context =
+        if (IORuntime.isUnderFiberContext()) fiberLocal.get() else super.get()
+
+      override def set(value: Context): Unit =
+        if (IORuntime.isUnderFiberContext()) fiberLocal.set(value) else super.set(value)
+    }
+  }
 
   @inline private[this] def unsafeCurrent: Context =
     unsafeThreadLocal.get()
@@ -82,7 +96,7 @@ object IOLocalContextStorage {
             } else {
               F.raiseError(
                 new IllegalStateException(
-                  "IOLocal propagation must be enabled with: -Dcats.effect.ioLocalPropagation=true"
+                  "IOLocal propagation must be enabled with: -Dcats.effect.trackFiberContext=true"
                 )
               )
             }

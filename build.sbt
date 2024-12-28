@@ -76,7 +76,7 @@ ThisBuild / mergifyPrRules ++= Seq(
 )
 
 val CatsVersion = "2.11.0"
-val CatsEffectVersion = "3.6-28f8f29"
+val CatsEffectVersion = "3.6.0-RC1"
 val CatsMtlVersion = "1.4.0"
 val FS2Version = "3.11.0"
 val MUnitVersion = "1.0.0"
@@ -713,8 +713,7 @@ lazy val `oteljava-context-storage` = project
       "org.typelevel" %%% "cats-effect-testkit" % CatsEffectVersion % Test,
     ),
     Test / javaOptions ++= Seq(
-      "-Dotel.java.global-autoconfigure.enabled=true",
-      "-Dcats.effect.ioLocalPropagation=true",
+      "-Dcats.effect.trackFiberContext=true",
     ),
     Test / fork := true,
   )
@@ -728,7 +727,6 @@ lazy val oteljava = project
     `oteljava-metrics-testkit` % Test,
     `oteljava-trace` % "compile->compile;test->test",
     `oteljava-trace-testkit` % Test,
-    `oteljava-context-storage`
   )
   .settings(
     name := "otel4s-oteljava",
@@ -853,7 +851,7 @@ lazy val benchmarks = project
 lazy val examples = project
   .enablePlugins(NoPublishPlugin, JavaAgent)
   .in(file("examples"))
-  .dependsOn(core.jvm, oteljava, sdk.jvm, `sdk-exporter`.jvm, `sdk-exporter-prometheus`.jvm)
+  .dependsOn(core.jvm, oteljava, `oteljava-context-storage`, sdk.jvm, `sdk-exporter`.jvm, `sdk-exporter-prometheus`.jvm)
   .settings(
     name := "otel4s-examples",
     libraryDependencies ++= Seq(
@@ -868,7 +866,7 @@ lazy val examples = project
     javaAgents += "io.opentelemetry.javaagent" % "opentelemetry-javaagent" % OpenTelemetryInstrumentationVersion % Runtime,
     run / fork := true,
     javaOptions += "-Dotel.java.global-autoconfigure.enabled=true",
-    javaOptions += "-Dcats.effect.ioLocalPropagation=true",
+    javaOptions += "-Dcats.effect.trackFiberContext=true",
     envVars ++= Map(
       "OTEL_PROPAGATORS" -> "b3multi",
       "OTEL_SERVICE_NAME" -> "Trace Example"
@@ -881,6 +879,7 @@ lazy val docs = project
   .enablePlugins(TypelevelSitePlugin)
   .dependsOn(
     oteljava,
+    `oteljava-context-storage`,
     `oteljava-testkit`,
     sdk.jvm,
     `sdk-exporter`.jvm,

@@ -78,8 +78,7 @@ class IOLocalContextStorageSuite extends CatsEffectSuite {
     }
   }
 
-  // see https://discord.com/channels/632277896739946517/839263556754472990/1317163027451088926
-  test("works as a Java-only ContextStorage".ignore) {
+  test("works as a Java-only ContextStorage") {
     usingModifiedCtx(_.`with`(key1, "1")) {
       assertEquals(Option(jCurrent.get(key1)), Some("1"))
       assertEquals(Option(jCurrent.get(key2)), None)

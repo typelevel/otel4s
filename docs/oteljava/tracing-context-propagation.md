@@ -45,6 +45,7 @@ Add directives to the `*.scala` file:
 You need to use `IOLocalContextStorage.localProvider[IO]` to provide the global context storage, backed by `IOLocal`:
 ```scala mdoc:silent
 import cats.effect.IO
+import cats.effect.IOApp
 import io.opentelemetry.api.trace.{Span => JSpan}
 import org.typelevel.otel4s.context.LocalProvider
 import org.typelevel.otel4s.oteljava.IOLocalContextStorage
@@ -52,21 +53,23 @@ import org.typelevel.otel4s.oteljava.OtelJava
 import org.typelevel.otel4s.oteljava.context.Context
 import org.typelevel.otel4s.trace.Tracer
 
-def program(tracer: Tracer[IO]): IO[Unit] =
-  tracer.span("test").use { span => // start 'test' span using otel4s
-    println(s"jctx   : ${JSpan.current().getSpanContext}") // get a span from a ThreadLocal var
-    IO.println(s"otel4s: ${span.context}")
-  }
-
-def run: IO[Unit] = {
-  implicit val provider: LocalProvider[IO, Context] = 
-    IOLocalContextStorage.localProvider[IO]
-
-  OtelJava.autoConfigured[IO]().use { otelJava =>
-    otelJava.tracerProvider.tracer("com.service").get.flatMap { tracer =>
-      program(tracer)
+object Main extends IOApp.Simple {
+  def program(tracer: Tracer[IO]): IO[Unit] =
+    tracer.span("test").use { span => // start 'test' span using otel4s
+      println(s"jctx: ${JSpan.current().getSpanContext}") // get a span from a ThreadLocal var
+      IO.println(s"otel4s: ${span.context}")
     }
-  }
+
+  def run: IO[Unit] = {
+    implicit val provider: LocalProvider[IO, Context] =
+      IOLocalContextStorage.localProvider[IO]
+
+    OtelJava.autoConfigured[IO]().use { otelJava =>
+      otelJava.tracerProvider.tracer("com.service").get.flatMap { tracer =>
+        program(tracer)
+      }
+    }
+  } 
 }
 ```
 

@@ -62,129 +62,17 @@ Use the following `docker-compose.yaml` file:
 ```yaml
 version: '3.7'
 services:
-  otel-collector: # receives application metrics and traces via gRPC or HTTP protocol
-    image: otel/opentelemetry-collector-contrib
-    command: [--config=/etc/otel-collector-config.yaml]
-    volumes:
-      - "./config/otel-collector-config.yaml:/etc/otel-collector-config.yaml"
-    ports:
-      - "8888:8888" # Prometheus metrics exposed by the collector
-      - "8889:8889" # Prometheus exporter metrics
-      - "4317:4317" # OTLP gRPC receiver
-      - "4318:4318" # OTLP http receiver
-    networks:
-      - static-network
-
-  jaeger: # stores traces received from the OpenTelemetry Collector 
-    image: jaegertracing/all-in-one:latest
-    volumes:
-      - "./config/jaeger-ui.json:/etc/jaeger/jaeger-ui.json"
-    command: --query.ui-config /etc/jaeger/jaeger-ui.json
-    environment:
-      - METRICS_STORAGE_TYPE=prometheus
-      - PROMETHEUS_SERVER_URL=http://prometheus:9090
-    ports:
-      - "14250:14250"
-      - "16685:16685" # GRPC
-      - "16686:16686" # UI
-    networks:
-      - static-network
-
-  prometheus: # scrapes metrics from the OpenTelemetry Collector
-    image: prom/prometheus:latest
-    volumes:
-      - "./config/prometheus.yml:/etc/prometheus/prometheus.yml"
-    ports:
-      - "9090:9090"
-    networks:
-      - static-network
-
-  grafana: # queries Jaeger and Prometheus to visualize traces and metrics
-    image: grafana/grafana-oss
-    restart: unless-stopped
+  otel-lgtm:
+    image: grafana/otel-lgtm
     ports:
       - "3000:3000"
+      - "4317:4317"
+      - "4318:4318"
     networks:
       - static-network
 
 networks:
   static-network:
-```
-
-### Configuration files
-
-#### ./config/otel-collector-config.yaml
-
-OpenTelemetry Collector configuration: receivers, exporters, and processing pipelines.
-
-```yml
-receivers:
-  otlp:
-    protocols: # enable OpenTelemetry Protocol receiver, both gRPC and HTTP
-      grpc:
-        endpoint: 0.0.0.0:4317
-      http:
-        endpoint: 0.0.0.0:4318
-
-exporters:
-  otlp/jaeger: # export received traces to Jaeger
-    endpoint: jaeger:4317
-    tls:
-      insecure: true
-
-  prometheus: # run Prometheus exporter server on port 8889, so Prometheus can scrape the metrics  
-    endpoint: 0.0.0.0:8889
-    send_timestamps: true
-
-processors:
-  batch:
-    timeout: 10s
-
-service:
-  pipelines:
-    traces:
-      receivers: [otlp]
-      processors: [batch]
-      exporters: [otlp/jaeger]
-    metrics:
-      receivers: [otlp]
-      processors: [batch]
-      exporters: [prometheus]
-```
-
-#### ./config/prometheus.yml
-
-Prometheus server configuration: scrape interval and targets. 
-
-```yml
-global:
-  scrape_interval: 15s # Set the scrape interval to every 15 seconds. Default is every 1 minute.
-  evaluation_interval: 15s # Evaluate rules every 15 seconds. The default is every 1 minute.
-
-scrape_configs:
-  # The job name is added as a label `job=<job_name>` to any timeseries scraped from this config.
-  - job_name: "prometheus" # scrape prometheus itself to collect the internal metrics (e.g. scrape stats, etc)
-    static_configs:
-      - targets: ["localhost:9090"]
-
-  - job_name: "otel-collector" # scrape metrics from the OpenTelemetry collector
-    static_configs:
-      - targets: ["otel-collector:8889"]
-```
-
-#### ./config/jaeger-ui.json
-
-Jaeger configuration: enable [Service Performance Monitor (SPM)](https://www.jaegertracing.io/docs/1.48/spm/). 
-
-```json
-{
-  "monitor": {
-    "menuEnabled": true
-  },
-  "dependencies": {
-    "menuEnabled": true
-  }
-}
 ```
 
 ### Application example

@@ -34,7 +34,6 @@ import org.typelevel.otel4s.metrics.MeterProvider
 import org.typelevel.otel4s.oteljava.context.Context
 import org.typelevel.otel4s.oteljava.context.LocalContext
 import org.typelevel.otel4s.oteljava.context.LocalContextProvider
-import org.typelevel.otel4s.oteljava.context.propagation.PropagatorConverters._
 import org.typelevel.otel4s.oteljava.metrics.Metrics
 import org.typelevel.otel4s.oteljava.trace.Traces
 import org.typelevel.otel4s.trace.TracerProvider
@@ -52,64 +51,6 @@ final class OtelJava[F[_]] private (
 }
 
 object OtelJava {
-
-  /** Creates an [[org.typelevel.otel4s.Otel4s]] from a Java OpenTelemetry instance.
-    *
-    * @param jOtel
-    *   A Java OpenTelemetry instance. It is the caller's responsibility to shut this down. Failure to do so may result
-    *   in lost metrics and traces.
-    *
-    * @return
-    *   An effect of an [[org.typelevel.otel4s.Otel4s]] resource.
-    */
-  def forAsync[F[_]: Async: LocalContextProvider](
-      jOtel: JOpenTelemetry
-  ): F[OtelJava[F]] =
-    LocalProvider[F, Context].local.map { implicit l =>
-      local[F](jOtel)
-    }
-
-  def local[F[_]: Async: LocalContext](
-      jOtel: JOpenTelemetry
-  ): OtelJava[F] = {
-    val contextPropagators = jOtel.getPropagators.asScala
-
-    val metrics = Metrics.forAsync(jOtel)
-    val traces = Traces.local(jOtel, contextPropagators)
-    new OtelJava[F](
-      jOtel,
-      contextPropagators,
-      metrics.meterProvider,
-      traces.tracerProvider,
-    )
-  }
-
-  /** Creates a no-op implementation of the [[OtelJava]].
-    */
-  def noop[F[_]: Applicative: LocalContextProvider]: F[OtelJava[F]] =
-    for {
-      local <- LocalProvider[F, Context].local
-    } yield new OtelJava(
-      JOpenTelemetry.noop(),
-      ContextPropagators.noop,
-      MeterProvider.noop,
-      TracerProvider.noop
-    )(local)
-
-  /** Lifts the acquisition of a Java OpenTelemetrySdk instance to a Resource.
-    *
-    * @param acquire
-    *   OpenTelemetrySdk resource
-    *
-    * @return
-    *   An [[org.typelevel.otel4s.Otel4s]] resource.
-    */
-  def resource[F[_]: Async: LocalContextProvider](
-      acquire: F[JOpenTelemetrySdk]
-  ): Resource[F, OtelJava[F]] =
-    Resource
-      .make(acquire)(sdk => asyncFromCompletableResultCode(Sync[F].delay(sdk.shutdown())))
-      .evalMap(forAsync[F])
 
   /** Creates a [[cats.effect.Resource `Resource`]] of the automatic configuration of a Java `OpenTelemetrySdk`
     * instance.
@@ -147,7 +88,67 @@ object OtelJava {
     *   [[autoConfigured]]
     */
   def global[F[_]: Async: LocalContextProvider]: F[OtelJava[F]] =
-    Sync[F].delay(GlobalOpenTelemetry.get).flatMap(forAsync[F])
+    Sync[F].delay(GlobalOpenTelemetry.get).flatMap(fromJOpenTelemetry[F])
+
+  /** Lifts the acquisition of a Java OpenTelemetrySdk instance to a Resource. The acquired SDK will be shutdown upon
+    * release.
+    *
+    * @param acquire
+    *   OpenTelemetrySdk resource
+    *
+    * @return
+    *   An [[org.typelevel.otel4s.Otel4s]] resource.
+    */
+  def resource[F[_]: Async: LocalContextProvider](acquire: F[JOpenTelemetrySdk]): Resource[F, OtelJava[F]] =
+    Resource
+      .make(acquire)(sdk => asyncFromCompletableResultCode(Sync[F].delay(sdk.shutdown())))
+      .evalMap(fromJOpenTelemetry[F])
+
+  /** Creates an [[org.typelevel.otel4s.Otel4s]] from a Java OpenTelemetry instance.
+    *
+    * @param jOtel
+    *   A Java OpenTelemetry instance. It is the caller's responsibility to shut this down. Failure to do so may result
+    *   in lost metrics and traces.
+    *
+    * @return
+    *   An effect of an [[org.typelevel.otel4s.Otel4s]] resource.
+    */
+  def fromJOpenTelemetry[F[_]: Async: LocalContextProvider](jOtel: JOpenTelemetry): F[OtelJava[F]] =
+    LocalProvider[F, Context].local.map { implicit l =>
+      create[F](jOtel)
+    }
+
+  /** Creates a no-op implementation of the [[OtelJava]].
+    */
+  def noop[F[_]: Applicative: LocalContextProvider]: F[OtelJava[F]] =
+    for {
+      local <- LocalProvider[F, Context].local
+    } yield new OtelJava(
+      JOpenTelemetry.noop(),
+      ContextPropagators.noop,
+      MeterProvider.noop,
+      TracerProvider.noop
+    )(local)
+
+  /** Creates an [[org.typelevel.otel4s.Otel4s]] from a Java OpenTelemetry instance using the given `Local` instance.
+    *
+    * @param jOtel
+    *   A Java OpenTelemetry instance. It is the caller's responsibility to shut this down. Failure to do so may result
+    *   in lost metrics and traces.
+    *
+    * @return
+    *   An effect of an [[org.typelevel.otel4s.Otel4s]] resource.
+    */
+  private def create[F[_]: Async: LocalContext](jOtel: JOpenTelemetry): OtelJava[F] = {
+    val metrics = Metrics.create(jOtel)
+    val traces = Traces.create(jOtel)
+    new OtelJava[F](
+      jOtel,
+      traces.propagators,
+      metrics.meterProvider,
+      traces.tracerProvider,
+    )
+  }
 
   private[this] def asyncFromCompletableResultCode[F[_]](
       codeF: F[CompletableResultCode],

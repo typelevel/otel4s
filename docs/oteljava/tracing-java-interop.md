@@ -50,14 +50,8 @@ It can be constructed in the following way:
 ```scala mdoc:silent
 import cats.effect._
 import cats.mtl.Local
-import cats.syntax.functor._
-import org.typelevel.otel4s.instances.local._ // brings Local derived from IOLocal
 import org.typelevel.otel4s.oteljava.context.Context
 import org.typelevel.otel4s.oteljava.OtelJava
-import io.opentelemetry.api.GlobalOpenTelemetry
-
-def createOtel4s[F[_]: Async](implicit L: Local[F, Context]): F[OtelJava[F]] =
-  Async[F].delay(GlobalOpenTelemetry.get).map(OtelJava.local[F])
 
 def program[F[_]: Async](otel4s: OtelJava[F])(implicit L: Local[F, Context]): F[Unit] = {
   val _ = (otel4s, L) // both OtelJava and Local[F, Context] are available here
@@ -65,8 +59,9 @@ def program[F[_]: Async](otel4s: OtelJava[F])(implicit L: Local[F, Context]): F[
 }
 
 val run: IO[Unit] =
-  IOLocal(Context.root).flatMap { implicit ioLocal: IOLocal[Context] =>
-    createOtel4s[IO].flatMap(otel4s => program(otel4s))
+  OtelJava.global[IO].flatMap { otel4s =>
+    import otel4s.localContext
+    program(otel4s)
   }
 ```
 

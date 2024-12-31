@@ -25,7 +25,7 @@ class OtelJavaSuite extends CatsEffectSuite {
   test("OtelJava toString returns useful info") {
     val testSdk: JOpenTelemetrySdk = JOpenTelemetrySdk.builder().build()
     OtelJava
-      .forAsync[IO](testSdk)
+      .fromJOpenTelemetry[IO](testSdk)
       .map(testOtel4s => {
         val res = testOtel4s.toString()
         assert(clue(res).contains("OpenTelemetrySdk"))

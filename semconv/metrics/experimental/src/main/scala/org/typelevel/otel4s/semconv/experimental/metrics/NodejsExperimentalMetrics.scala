@@ -48,7 +48,7 @@ object NodejsExperimentalMetrics {
     val name: String = "nodejs.eventloop.delay.max"
     val description: String = "Event loop maximum delay."
     val unit: String = "s"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter, A: MeasurementValue]: F[Gauge[F, A]] =
@@ -86,7 +86,7 @@ object NodejsExperimentalMetrics {
     val name: String = "nodejs.eventloop.delay.mean"
     val description: String = "Event loop mean delay."
     val unit: String = "s"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter, A: MeasurementValue]: F[Gauge[F, A]] =
@@ -124,7 +124,7 @@ object NodejsExperimentalMetrics {
     val name: String = "nodejs.eventloop.delay.min"
     val description: String = "Event loop minimum delay."
     val unit: String = "s"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter, A: MeasurementValue]: F[Gauge[F, A]] =
@@ -162,7 +162,7 @@ object NodejsExperimentalMetrics {
     val name: String = "nodejs.eventloop.delay.p50"
     val description: String = "Event loop 50 percentile delay."
     val unit: String = "s"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter, A: MeasurementValue]: F[Gauge[F, A]] =
@@ -200,7 +200,7 @@ object NodejsExperimentalMetrics {
     val name: String = "nodejs.eventloop.delay.p90"
     val description: String = "Event loop 90 percentile delay."
     val unit: String = "s"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter, A: MeasurementValue]: F[Gauge[F, A]] =
@@ -238,7 +238,7 @@ object NodejsExperimentalMetrics {
     val name: String = "nodejs.eventloop.delay.p99"
     val description: String = "Event loop 99 percentile delay."
     val unit: String = "s"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter, A: MeasurementValue]: F[Gauge[F, A]] =
@@ -276,7 +276,7 @@ object NodejsExperimentalMetrics {
     val name: String = "nodejs.eventloop.delay.stddev"
     val description: String = "Event loop standard deviation delay."
     val unit: String = "s"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter, A: MeasurementValue]: F[Gauge[F, A]] =
@@ -315,7 +315,7 @@ object NodejsExperimentalMetrics {
     val name: String = "nodejs.eventloop.time"
     val description: String = "Cumulative duration of time the event loop has been in each state."
     val unit: String = "s"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -328,7 +328,7 @@ object NodejsExperimentalMetrics {
           List(
           ),
           Requirement.required,
-          Stability.experimental
+          Stability.development
         )
 
       val specs: List[AttributeSpec[_]] =
@@ -373,7 +373,7 @@ object NodejsExperimentalMetrics {
     val name: String = "nodejs.eventloop.utilization"
     val description: String = "Event loop utilization."
     val unit: String = "1"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter, A: MeasurementValue]: F[Gauge[F, A]] =

@@ -21,6 +21,7 @@ package metrics
 
 import cats.effect.Resource
 import org.typelevel.otel4s.metrics._
+import org.typelevel.otel4s.semconv.experimental.attributes._
 
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/metrics/SemanticMetrics.scala.j2
 object K8sExperimentalMetrics {
@@ -29,9 +30,15 @@ object K8sExperimentalMetrics {
     NodeCpuTime,
     NodeCpuUsage,
     NodeMemoryUsage,
+    NodeNetworkErrors,
+    NodeNetworkIo,
+    NodeUptime,
     PodCpuTime,
     PodCpuUsage,
     PodMemoryUsage,
+    PodNetworkErrors,
+    PodNetworkIo,
+    PodUptime,
   )
 
   /** Total CPU time consumed <p>
@@ -43,7 +50,7 @@ object K8sExperimentalMetrics {
     val name: String = "k8s.node.cpu.time"
     val description: String = "Total CPU time consumed"
     val unit: String = "s"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter, A: MeasurementValue]: F[Counter[F, A]] =
@@ -80,7 +87,7 @@ object K8sExperimentalMetrics {
     val name: String = "k8s.node.cpu.usage"
     val description: String = "Node's CPU usage, measured in cpus. Range from 0 to the number of allocatable CPUs"
     val unit: String = "{cpu}"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter, A: MeasurementValue]: F[Gauge[F, A]] =
@@ -117,7 +124,184 @@ object K8sExperimentalMetrics {
     val name: String = "k8s.node.memory.usage"
     val description: String = "Memory usage of the Node"
     val unit: String = "By"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[Gauge[F, A]] =
+      Meter[F]
+        .gauge[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableGauge[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableGauge] =
+      Meter[F]
+        .observableGauge[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** Node network errors
+    */
+  object NodeNetworkErrors extends MetricSpec {
+
+    val name: String = "k8s.node.network.errors"
+    val description: String = "Node network errors"
+    val unit: String = "{error}"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
+
+    object AttributeSpecs {
+
+      /** The network interface name.
+        */
+      val networkInterfaceName: AttributeSpec[String] =
+        AttributeSpec(
+          NetworkExperimentalAttributes.NetworkInterfaceName,
+          List(
+            "lo",
+            "eth0",
+          ),
+          Requirement.recommended,
+          Stability.development
+        )
+
+      /** The network IO operation direction.
+        */
+      val networkIoDirection: AttributeSpec[String] =
+        AttributeSpec(
+          NetworkExperimentalAttributes.NetworkIoDirection,
+          List(
+            "transmit",
+          ),
+          Requirement.recommended,
+          Stability.development
+        )
+
+      val specs: List[AttributeSpec[_]] =
+        List(
+          networkInterfaceName,
+          networkIoDirection,
+        )
+    }
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[Counter[F, A]] =
+      Meter[F]
+        .counter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableCounter] =
+      Meter[F]
+        .observableCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** Network bytes for the Node
+    */
+  object NodeNetworkIo extends MetricSpec {
+
+    val name: String = "k8s.node.network.io"
+    val description: String = "Network bytes for the Node"
+    val unit: String = "By"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
+
+    object AttributeSpecs {
+
+      /** The network interface name.
+        */
+      val networkInterfaceName: AttributeSpec[String] =
+        AttributeSpec(
+          NetworkExperimentalAttributes.NetworkInterfaceName,
+          List(
+            "lo",
+            "eth0",
+          ),
+          Requirement.recommended,
+          Stability.development
+        )
+
+      /** The network IO operation direction.
+        */
+      val networkIoDirection: AttributeSpec[String] =
+        AttributeSpec(
+          NetworkExperimentalAttributes.NetworkIoDirection,
+          List(
+            "transmit",
+          ),
+          Requirement.recommended,
+          Stability.development
+        )
+
+      val specs: List[AttributeSpec[_]] =
+        List(
+          networkInterfaceName,
+          networkIoDirection,
+        )
+    }
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[Counter[F, A]] =
+      Meter[F]
+        .counter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableCounter] =
+      Meter[F]
+        .observableCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** The time the Node has been running <p>
+    * @note
+    *   <p> Instrumentations SHOULD use a gauge with type `double` and measure uptime in seconds as a floating point
+    *   number with the highest precision available. The actual accuracy would depend on the instrumentation and
+    *   operating system.
+    */
+  object NodeUptime extends MetricSpec {
+
+    val name: String = "k8s.node.uptime"
+    val description: String = "The time the Node has been running"
+    val unit: String = "s"
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter, A: MeasurementValue]: F[Gauge[F, A]] =
@@ -154,7 +338,7 @@ object K8sExperimentalMetrics {
     val name: String = "k8s.pod.cpu.time"
     val description: String = "Total CPU time consumed"
     val unit: String = "s"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter, A: MeasurementValue]: F[Counter[F, A]] =
@@ -191,7 +375,7 @@ object K8sExperimentalMetrics {
     val name: String = "k8s.pod.cpu.usage"
     val description: String = "Pod's CPU usage, measured in cpus. Range from 0 to the number of allocatable CPUs"
     val unit: String = "{cpu}"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter, A: MeasurementValue]: F[Gauge[F, A]] =
@@ -228,7 +412,184 @@ object K8sExperimentalMetrics {
     val name: String = "k8s.pod.memory.usage"
     val description: String = "Memory usage of the Pod"
     val unit: String = "By"
-    val stability: Stability = Stability.experimental
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[Gauge[F, A]] =
+      Meter[F]
+        .gauge[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableGauge[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableGauge] =
+      Meter[F]
+        .observableGauge[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** Pod network errors
+    */
+  object PodNetworkErrors extends MetricSpec {
+
+    val name: String = "k8s.pod.network.errors"
+    val description: String = "Pod network errors"
+    val unit: String = "{error}"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
+
+    object AttributeSpecs {
+
+      /** The network interface name.
+        */
+      val networkInterfaceName: AttributeSpec[String] =
+        AttributeSpec(
+          NetworkExperimentalAttributes.NetworkInterfaceName,
+          List(
+            "lo",
+            "eth0",
+          ),
+          Requirement.recommended,
+          Stability.development
+        )
+
+      /** The network IO operation direction.
+        */
+      val networkIoDirection: AttributeSpec[String] =
+        AttributeSpec(
+          NetworkExperimentalAttributes.NetworkIoDirection,
+          List(
+            "transmit",
+          ),
+          Requirement.recommended,
+          Stability.development
+        )
+
+      val specs: List[AttributeSpec[_]] =
+        List(
+          networkInterfaceName,
+          networkIoDirection,
+        )
+    }
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[Counter[F, A]] =
+      Meter[F]
+        .counter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableCounter] =
+      Meter[F]
+        .observableCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** Network bytes for the Pod
+    */
+  object PodNetworkIo extends MetricSpec {
+
+    val name: String = "k8s.pod.network.io"
+    val description: String = "Network bytes for the Pod"
+    val unit: String = "By"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
+
+    object AttributeSpecs {
+
+      /** The network interface name.
+        */
+      val networkInterfaceName: AttributeSpec[String] =
+        AttributeSpec(
+          NetworkExperimentalAttributes.NetworkInterfaceName,
+          List(
+            "lo",
+            "eth0",
+          ),
+          Requirement.recommended,
+          Stability.development
+        )
+
+      /** The network IO operation direction.
+        */
+      val networkIoDirection: AttributeSpec[String] =
+        AttributeSpec(
+          NetworkExperimentalAttributes.NetworkIoDirection,
+          List(
+            "transmit",
+          ),
+          Requirement.recommended,
+          Stability.development
+        )
+
+      val specs: List[AttributeSpec[_]] =
+        List(
+          networkInterfaceName,
+          networkIoDirection,
+        )
+    }
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[Counter[F, A]] =
+      Meter[F]
+        .counter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableCounter] =
+      Meter[F]
+        .observableCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** The time the Pod has been running <p>
+    * @note
+    *   <p> Instrumentations SHOULD use a gauge with type `double` and measure uptime in seconds as a floating point
+    *   number with the highest precision available. The actual accuracy would depend on the instrumentation and
+    *   operating system.
+    */
+  object PodUptime extends MetricSpec {
+
+    val name: String = "k8s.pod.uptime"
+    val description: String = "The time the Pod has been running"
+    val unit: String = "s"
+    val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter, A: MeasurementValue]: F[Gauge[F, A]] =

@@ -17,7 +17,6 @@
 import cats.effect.Async
 import cats.effect.IO
 import cats.effect.IOApp
-import cats.effect.IOLocal
 import cats.effect.Resource
 import cats.effect.Sync
 import cats.effect.std.Random
@@ -26,7 +25,6 @@ import cats.mtl.Local
 import cats.syntax.applicative._
 import cats.syntax.flatMap._
 import cats.syntax.functor._
-import io.opentelemetry.api.GlobalOpenTelemetry
 import io.opentelemetry.context.{Context => JContext}
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.apache.pekko.actor.ActorSystem
@@ -37,7 +35,6 @@ import org.apache.pekko.http.scaladsl.server.Directives._
 import org.apache.pekko.http.scaladsl.server.Route
 import org.apache.pekko.util.ByteString
 import org.typelevel.otel4s.Attribute
-import org.typelevel.otel4s.instances.local._
 import org.typelevel.otel4s.oteljava.OtelJava
 import org.typelevel.otel4s.oteljava.context.Context
 import org.typelevel.otel4s.trace.Tracer
@@ -62,23 +59,22 @@ import scala.concurrent.duration._
   *     "org.typelevel"                   %% "otel4s-oteljava"                           % "0.5.0",
   *     "org.apache.pekko"                %% "pekko-stream"                              % "1.1.2",
   *     "org.apache.pekko"                %% "pekko-http"                                % "1.1.0",
-  *     "io.opentelemetry.instrumentation" % "opentelemetry-instrumentation-annotations" % "2.10.0",
-  *     "io.opentelemetry"                 % "opentelemetry-exporter-otlp"               % "1.44.1" % Runtime,
-  *     "io.opentelemetry"                 % "opentelemetry-sdk-extension-autoconfigure" % "1.44.1" % Runtime
+  *     "io.opentelemetry.instrumentation" % "opentelemetry-instrumentation-annotations" % "2.11.0",
+  *     "io.opentelemetry"                 % "opentelemetry-exporter-otlp"               % "1.45.0" % Runtime,
+  *     "io.opentelemetry"                 % "opentelemetry-sdk-extension-autoconfigure" % "1.45.0" % Runtime
   *   )
   *   run / fork := true,
   *   javaOptions += "-Dotel.java.global-autoconfigure.enabled=true",
   *   javaOptions += "-Dotel.service.name=pekko-otel4s",
-  *   javaAgents += "io.opentelemetry.javaagent" % "opentelemetry-javaagent" % "2.10.0" % Runtime
+  *   javaAgents += "io.opentelemetry.javaagent" % "opentelemetry-javaagent" % "2.11.0" % Runtime
   * )
   * }}}
   */
 object PekkoHttpExample extends IOApp.Simple {
 
   def run: IO[Unit] =
-    IOLocal(Context.root).flatMap { implicit ioLocal: IOLocal[Context] =>
-      implicit val local: Local[IO, Context] = localForIOLocal
-      val otelJava: OtelJava[IO] = OtelJava.local(GlobalOpenTelemetry.get())
+    OtelJava.global[IO].flatMap { otelJava =>
+      import otelJava.localContext
 
       otelJava.tracerProvider.get("com.example").flatMap { implicit tracer: Tracer[IO] =>
         createSystem.use { implicit actorSystem: ActorSystem =>

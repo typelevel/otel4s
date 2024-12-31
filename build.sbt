@@ -28,7 +28,9 @@ lazy val scalaJSLinkerSettings = Def.settings(
   scalaJSLinkerConfig ~= (_.withESFeatures(
     _.withESVersion(org.scalajs.linker.interface.ESVersion.ES2018)
   )),
-  Test / scalaJSLinkerConfig ~= (_.withModuleKind(ModuleKind.CommonJSModule))
+  Test / scalaJSLinkerConfig ~= (_.withModuleKind(ModuleKind.CommonJSModule)),
+  // the JS artifacts could be quite large and exceed the CI disk space limit
+  githubWorkflowArtifactUpload := false
 )
 
 lazy val scalaNativeSettings = Def.settings(
@@ -154,7 +156,7 @@ lazy val root = tlCrossRootProject
     `oteljava-trace`,
     `oteljava-trace-testkit`,
     `oteljava-testkit`,
-    oteljava,
+    `oteljava-context-storage`,
     `semconv-stable`,
     `semconv-experimental`,
     `semconv-metrics-stable`,
@@ -722,6 +724,22 @@ lazy val `oteljava-testkit` = project
   )
   .settings(scalafixSettings)
 
+lazy val `oteljava-context-storage` = project
+  .in(file("oteljava/context-storage"))
+  .dependsOn(`oteljava-common`)
+  .settings(munitDependencies)
+  .settings(
+    name := "otel4s-oteljava-context-storage",
+    libraryDependencies ++= Seq(
+      "org.typelevel" %%% "cats-effect-testkit" % CatsEffectVersion % Test,
+    ),
+    Test / javaOptions ++= Seq(
+      "-Dcats.effect.trackFiberContext=true",
+    ),
+    Test / fork := true,
+  )
+  .settings(scalafixSettings)
+
 lazy val oteljava = project
   .in(file("oteljava/all"))
   .dependsOn(
@@ -854,7 +872,7 @@ lazy val benchmarks = project
 lazy val examples = project
   .enablePlugins(NoPublishPlugin, JavaAgent)
   .in(file("examples"))
-  .dependsOn(core.jvm, oteljava, sdk.jvm, `sdk-exporter`.jvm, `sdk-exporter-prometheus`.jvm)
+  .dependsOn(core.jvm, oteljava, `oteljava-context-storage`, sdk.jvm, `sdk-exporter`.jvm, `sdk-exporter-prometheus`.jvm)
   .settings(
     name := "otel4s-examples",
     libraryDependencies ++= Seq(
@@ -869,6 +887,7 @@ lazy val examples = project
     javaAgents += "io.opentelemetry.javaagent" % "opentelemetry-javaagent" % OpenTelemetryInstrumentationVersion % Runtime,
     run / fork := true,
     javaOptions += "-Dotel.java.global-autoconfigure.enabled=true",
+    javaOptions += "-Dcats.effect.trackFiberContext=true",
     envVars ++= Map(
       "OTEL_PROPAGATORS" -> "b3multi",
       "OTEL_SERVICE_NAME" -> "Trace Example"
@@ -881,6 +900,7 @@ lazy val docs = project
   .enablePlugins(TypelevelSitePlugin)
   .dependsOn(
     oteljava,
+    `oteljava-context-storage`,
     `oteljava-testkit`,
     `instrumentation-metrics`.jvm,
     sdk.jvm,
@@ -905,6 +925,8 @@ lazy val docs = project
       "OPEN_TELEMETRY_VERSION" -> OpenTelemetryVersion,
       "OPEN_TELEMETRY_INSTRUMENTATION_ALPHA_VERSION" -> OpenTelemetryInstrumentationAlphaVersion
     ),
+    run / fork := true,
+    javaOptions += "-Dcats.effect.trackFiberContext=true",
     laikaConfig := {
       import laika.config.{ChoiceConfig, Selections, SelectionConfig}
 
@@ -975,6 +997,7 @@ lazy val unidocs = project
       `oteljava-trace`,
       `oteljava-trace-testkit`,
       `oteljava-testkit`,
+      `oteljava-context-storage`,
       oteljava,
       `semconv-stable`.jvm,
       `semconv-experimental`.jvm,

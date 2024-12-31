@@ -130,7 +130,7 @@ object LocalProvider extends LocalProviderLowPriority {
 
   /** Cats Effect 3.6 introduced `IOLocal#asLocal`. However, we need a variation for a polymorphic type.
     */
-  private def localForIOLocal[F[_]: MonadCancelThrow: LiftIO, Ctx](ioLocal: IOLocal[Ctx]): Local[F, Ctx] =
+  private[otel4s] def localForIOLocal[F[_]: MonadCancelThrow: LiftIO, Ctx](ioLocal: IOLocal[Ctx]): Local[F, Ctx] =
     new Local[F, Ctx] {
       def applicative: Applicative[F] =
         Applicative[F]

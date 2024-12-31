@@ -726,7 +726,7 @@ lazy val oteljava = project
     `oteljava-metrics` % "compile->compile;test->test",
     `oteljava-metrics-testkit` % Test,
     `oteljava-trace` % "compile->compile;test->test",
-    `oteljava-trace-testkit` % Test,
+    `oteljava-trace-testkit` % Test
   )
   .settings(
     name := "otel4s-oteljava",

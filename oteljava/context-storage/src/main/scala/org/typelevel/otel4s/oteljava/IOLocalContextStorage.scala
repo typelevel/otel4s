@@ -100,10 +100,11 @@ object IOLocalContextStorage {
                 )
               )
             }
-          case _ =>
+          case other =>
             F.raiseError(
               new IllegalStateException(
-                "IOLocalContextStorage is not configured for use as the ContextStorageProvider"
+                s"IOLocalContextStorage is not configured for use as the ContextStorageProvider. " +
+                  s"The current storage: ${other.getClass.getName}."
               )
             )
         }

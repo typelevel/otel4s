@@ -28,7 +28,9 @@ lazy val scalaJSLinkerSettings = Def.settings(
   scalaJSLinkerConfig ~= (_.withESFeatures(
     _.withESVersion(org.scalajs.linker.interface.ESVersion.ES2018)
   )),
-  Test / scalaJSLinkerConfig ~= (_.withModuleKind(ModuleKind.CommonJSModule))
+  Test / scalaJSLinkerConfig ~= (_.withModuleKind(ModuleKind.CommonJSModule)),
+  // the JS artifacts could be quite large and exceed the CI disk space limit
+  githubWorkflowArtifactUpload := false
 )
 
 lazy val scalaNativeSettings = Def.settings(

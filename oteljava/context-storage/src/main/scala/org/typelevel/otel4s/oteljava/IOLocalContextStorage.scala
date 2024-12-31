@@ -25,7 +25,6 @@ import io.opentelemetry.context.{Context => JContext}
 import io.opentelemetry.context.ContextStorage
 import io.opentelemetry.context.Scope
 import org.typelevel.otel4s.context.LocalProvider
-import org.typelevel.otel4s.instances.local._
 import org.typelevel.otel4s.oteljava.context.Context
 import org.typelevel.otel4s.oteljava.context.LocalContext
 
@@ -35,7 +34,7 @@ import org.typelevel.otel4s.oteljava.context.LocalContext
   * and stay in sync as long as effects are threaded properly.
   */
 class IOLocalContextStorage(_ioLocal: () => IOLocal[Context]) extends ContextStorage {
-  private[this] implicit lazy val ioLocal: IOLocal[Context] = _ioLocal()
+  private[this] lazy val ioLocal: IOLocal[Context] = _ioLocal()
   private[this] lazy val unsafeThreadLocal: ThreadLocal[Context] = {
     val fiberLocal = ioLocal.unsafeThreadLocal()
 
@@ -67,7 +66,7 @@ class IOLocalContextStorage(_ioLocal: () => IOLocal[Context]) extends ContextSto
     *   a [[cats.mtl.Local `Local`]] of a [[org.typelevel.otel4s.oteljava.context.Context `Context`]] that reflects the
     *   state of the backing `IOLocal`
     */
-  def local[F[_]: MonadCancelThrow: LiftIO]: LocalContext[F] = implicitly
+  def local[F[_]: MonadCancelThrow: LiftIO]: LocalContext[F] = LocalProvider.localForIOLocal(ioLocal)
 }
 
 object IOLocalContextStorage {

@@ -121,6 +121,7 @@ mermaid.initialize({
     <li class="level1 nav-leaf"><a href="ecosystem.html">Ecosystem</a></li>
     <li class="level1 nav-header">Instrumentation</li>
     <li class="level2 nav-leaf"><a href="instrumentation/metrics.html">Metrics</a></li>
+    <li class="level2 nav-leaf"><a href="instrumentation/metrics-cats-effect-io-runtime.html">Metrics | Cats Effect IO runtime</a></li>
     <li class="level2 nav-leaf"><a href="instrumentation/tracing.html">Tracing</a></li>
     <li class="level2 nav-leaf"><a href="instrumentation/tracing-cross-service-propagation.html">Tracing | Cross-service propagation</a></li>
     <li class="level1 nav-header">Customization</li>
@@ -188,7 +189,6 @@ mermaid.initialize({
         <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.</span><span class="identifier">_</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">mtl</span><span>.</span><span class="type-name">Local</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">syntax</span><span>.</span><span class="identifier">flatMap</span><span>.</span><span class="identifier">_</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">instances</span><span>.</span><span class="identifier">local</span><span>.</span><span class="identifier">_</span><span> </span><span class="comment">// brings Local derived from IOLocal
 </span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="identifier">context</span><span>.</span><span class="type-name">Context</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="type-name">OtelJava</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">io</span><span>.</span><span class="identifier">opentelemetry</span><span>.</span><span class="identifier">api</span><span>.</span><span class="type-name">GlobalOpenTelemetry</span><span>
@@ -202,7 +202,7 @@ mermaid.initialize({
 }
 
 </span><span class="keyword">val</span><span> </span><span class="identifier">run</span><span>: </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] =
-  </span><span class="type-name">IOLocal</span><span>(</span><span class="type-name">Context</span><span>.</span><span class="identifier">root</span><span>).</span><span class="identifier">flatMap</span><span> { </span><span class="keyword">implicit</span><span> </span><span class="identifier">ioLocal</span><span>: </span><span class="type-name">IOLocal</span><span>[</span><span class="type-name">Context</span><span>] =&gt;
+  </span><span class="type-name">IOLocal</span><span>(</span><span class="type-name">Context</span><span>.</span><span class="identifier">root</span><span>).</span><span class="identifier">map</span><span>(</span><span class="identifier">_</span><span>.</span><span class="identifier">asLocal</span><span>).</span><span class="identifier">flatMap</span><span> { </span><span class="keyword">implicit</span><span> </span><span class="identifier">local</span><span>: </span><span class="type-name">Local</span><span>[</span><span class="type-name">IO</span><span>, </span><span class="type-name">Context</span><span>] =&gt;
     </span><span class="identifier">createOtel4s</span><span>[</span><span class="type-name">IO</span><span>].</span><span class="identifier">flatMap</span><span>(</span><span class="identifier">otel4s</span><span> =&gt; </span><span class="identifier">program</span><span>(</span><span class="identifier">otel4s</span><span>))
   }</span></code></pre>
         <p>If you don&#39;t need direct access to the <code>IOLocal</code> instance, there is also a shortcut <code>OtelJava.fromJOpenTelemetry</code>:</p>

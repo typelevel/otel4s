@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="en">
+  
+  <head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="generator" content="Typelevel Laika + Helium Theme" />
+  <title>Metrics | Cats Effect IO runtime</title>
+  
+  <meta name="author" content="Ross A. Baker"/>
+  
+  
+  <meta name="description" content="docs"/>
+  
+  
+  
+  <link rel="icon" sizes="32x32" type="image/png" href="https://typelevel.org/img/favicon.png"/>
+  
+  
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:400,700">
+  
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Fira+Mono:500">
+  
+  <link rel="stylesheet" type="text/css" href="../helium/site/icofont.min.css" />
+    <link rel="stylesheet" type="text/css" href="../helium/site/laika-helium.css" />
+  <script src="../helium/site/laika-helium.js"></script>
+  
+  
+  <script> /* for avoiding page load transitions */ </script>
+</head>
+
+  <body>
+
+    <header id="top-bar" class="light-default dark-default">
+
+  <div class="row">
+    <a id="nav-icon">
+      <i class="icofont-laika navigationMenu" title="Navigation">&#xefa2;</i>
+    </a>
+    
+    
+  </div>
+
+  <a class="image-link" href="https://typelevel.org"><img src="https://typelevel.org/img/logo.svg"></a>
+
+  <div class="row links">
+    
+    <a class="icon-link svg-link" href="https://www.javadoc.io/doc/org.typelevel/otel4s-docs_2.13/0.11.2/"><span class="api" title="API"><svg class="svg-icon" width="100%" height="100%" viewBox="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg" xml:space="preserve" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+  <g class="svg-shape">
+    <path d="M75,47.5c13.246,0 24,10.754 24,24c0,13.246 -10.754,24 -24,24c-13.246,0 -24,-10.754 -24,-24c0,-13.246 10.754,-24 24,-24Zm-50,-0c13.246,-0 24,10.754 24,24c0,13.246 -10.754,24 -24,24c-13.246,-0 -24,-10.754 -24,-24c0,-13.246 10.754,-24 24,-24Zm2.705,16.735l7.239,0l0.622,-4.904l-21.833,0l-0,4.904l7.589,0l0,22.067l6.383,0l-0,-22.067Zm58.076,7.265c-0,-8.757 -3.698,-14.166 -10.781,-14.166c-7.083,-0 -10.781,5.604 -10.781,14.166c0,8.757 3.698,14.166 10.781,14.166c7.083,0 10.781,-5.604 10.781,-14.166Zm-6.539,0c0,6.538 -1.128,9.496 -4.242,9.496c-2.997,0 -4.242,-2.88 -4.242,-9.496c-0,-6.616 1.206,-9.496 4.242,-9.496c3.036,-0 4.242,2.88 4.242,9.496Zm-29.242,-67c13.246,0 24,10.754 24,24c0,13.246 -10.754,24 -24,24c-13.246,0 -24,-10.754 -24,-24c0,-13.246 10.754,-24 24,-24Zm0.512,9.834c-7.122,-0 -12.609,5.098 -12.609,14.127c-0,9.263 5.215,14.205 12.532,14.205c4.164,0 7.083,-1.634 9.068,-3.658l-2.88,-3.697c-1.518,1.206 -3.153,2.413 -5.838,2.413c-3.697,-0 -6.266,-2.763 -6.266,-9.263c-0,-6.616 2.724,-9.379 6.149,-9.379c2.102,-0 3.892,0.778 5.371,1.984l3.113,-3.775c-2.257,-1.868 -4.748,-2.957 -8.64,-2.957Z"/>
+  </g>
+</svg></span></a>
+    
+    <a class="icon-link svg-link" href="https://github.com/typelevel/otel4s"><span class="github" title="Source Code"><svg class="svg-icon" width="100%" height="100%" viewBox="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg" xml:space="preserve" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+  <g class="svg-shape">
+    <path d="M49.995,1c-27.609,-0 -49.995,22.386 -49.995,50.002c-0,22.09 14.325,40.83 34.194,47.444c2.501,0.458 3.413,-1.086 3.413,-2.412c0,-1.185 -0.043,-4.331 -0.067,-8.503c-13.908,3.021 -16.843,-6.704 -16.843,-6.704c-2.274,-5.773 -5.552,-7.311 -5.552,-7.311c-4.54,-3.103 0.344,-3.042 0.344,-3.042c5.018,0.356 7.658,5.154 7.658,5.154c4.46,7.64 11.704,5.433 14.552,4.156c0.454,-3.232 1.744,-5.436 3.174,-6.685c-11.102,-1.262 -22.775,-5.553 -22.775,-24.713c-0,-5.457 1.949,-9.92 5.147,-13.416c-0.516,-1.265 -2.231,-6.348 0.488,-13.233c0,0 4.199,-1.344 13.751,5.126c3.988,-1.108 8.266,-1.663 12.518,-1.682c4.245,0.019 8.523,0.574 12.517,1.682c9.546,-6.47 13.736,-5.126 13.736,-5.126c2.728,6.885 1.013,11.968 0.497,13.233c3.204,3.496 5.141,7.959 5.141,13.416c0,19.209 -11.691,23.436 -22.83,24.673c1.795,1.544 3.394,4.595 3.394,9.26c0,6.682 -0.061,12.076 -0.061,13.715c0,1.338 0.899,2.894 3.438,2.406c19.853,-6.627 34.166,-25.354 34.166,-47.438c-0,-27.616 -22.389,-50.002 -50.005,-50.002"/>
+  </g>
+</svg></span></a>
+    
+    <a class="icon-link glyph-link" href="https://discord.gg/XF3CXcMzqD"><i class="icofont-laika chat" title="Chat">&#xeed5;</i></a>
+    
+    <a class="icon-link svg-link" href="https://fosstodon.org/@typelevel"><span class="mastodon" title="Mastodon"><svg class="svg-icon" width="100%" height="100%" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg">
+  <g class="svg-shape">
+    <path d="M11.19 12.195c2.016-.24 3.77-1.475 3.99-2.603.348-1.778.32-4.339.32-4.339 0-3.47-2.286-4.488-2.286-4.488C12.062.238 10.083.017 8.027 0h-.05C5.92.017 3.942.238 2.79.765c0 0-2.285 1.017-2.285 4.488l-.002.662c-.004.64-.007 1.35.011 2.091.083 3.394.626 6.74 3.78 7.57 1.454.383 2.703.463 3.709.408 1.823-.1 2.847-.647 2.847-.647l-.06-1.317s-1.303.41-2.767.36c-1.45-.05-2.98-.156-3.215-1.928a3.614 3.614 0 0 1-.033-.496s1.424.346 3.228.428c1.103.05 2.137-.064 3.188-.189zm1.613-2.47H11.13v-4.08c0-.859-.364-1.295-1.091-1.295-.804 0-1.207.517-1.207 1.541v2.233H7.168V5.89c0-1.024-.403-1.541-1.207-1.541-.727 0-1.091.436-1.091 1.296v4.079H3.197V5.522c0-.859.22-1.541.66-2.046.456-.505 1.052-.764 1.793-.764.856 0 1.504.328 1.933.983L8 4.39l.417-.695c.429-.655 1.077-.983 1.934-.983.74 0 1.336.259 1.791.764.442.505.661 1.187.661 2.046v4.203z"/>
+  </g>
+</svg></span></a>
+    
+  </div>  
+
+</header>
+    
+    <nav id="sidebar">
+
+  <div class="row">
+    
+    <a class="icon-link svg-link" href="https://www.javadoc.io/doc/org.typelevel/otel4s-docs_2.13/0.11.2/"><span class="api" title="API"><svg class="svg-icon" width="100%" height="100%" viewBox="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg" xml:space="preserve" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+  <g class="svg-shape">
+    <path d="M75,47.5c13.246,0 24,10.754 24,24c0,13.246 -10.754,24 -24,24c-13.246,0 -24,-10.754 -24,-24c0,-13.246 10.754,-24 24,-24Zm-50,-0c13.246,-0 24,10.754 24,24c0,13.246 -10.754,24 -24,24c-13.246,-0 -24,-10.754 -24,-24c0,-13.246 10.754,-24 24,-24Zm2.705,16.735l7.239,0l0.622,-4.904l-21.833,0l-0,4.904l7.589,0l0,22.067l6.383,0l-0,-22.067Zm58.076,7.265c-0,-8.757 -3.698,-14.166 -10.781,-14.166c-7.083,-0 -10.781,5.604 -10.781,14.166c0,8.757 3.698,14.166 10.781,14.166c7.083,0 10.781,-5.604 10.781,-14.166Zm-6.539,0c0,6.538 -1.128,9.496 -4.242,9.496c-2.997,0 -4.242,-2.88 -4.242,-9.496c-0,-6.616 1.206,-9.496 4.242,-9.496c3.036,-0 4.242,2.88 4.242,9.496Zm-29.242,-67c13.246,0 24,10.754 24,24c0,13.246 -10.754,24 -24,24c-13.246,0 -24,-10.754 -24,-24c0,-13.246 10.754,-24 24,-24Zm0.512,9.834c-7.122,-0 -12.609,5.098 -12.609,14.127c-0,9.263 5.215,14.205 12.532,14.205c4.164,0 7.083,-1.634 9.068,-3.658l-2.88,-3.697c-1.518,1.206 -3.153,2.413 -5.838,2.413c-3.697,-0 -6.266,-2.763 -6.266,-9.263c-0,-6.616 2.724,-9.379 6.149,-9.379c2.102,-0 3.892,0.778 5.371,1.984l3.113,-3.775c-2.257,-1.868 -4.748,-2.957 -8.64,-2.957Z"/>
+  </g>
+</svg></span></a>
+    
+    <a class="icon-link svg-link" href="https://github.com/typelevel/otel4s"><span class="github" title="Source Code"><svg class="svg-icon" width="100%" height="100%" viewBox="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg" xml:space="preserve" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+  <g class="svg-shape">
+    <path d="M49.995,1c-27.609,-0 -49.995,22.386 -49.995,50.002c-0,22.09 14.325,40.83 34.194,47.444c2.501,0.458 3.413,-1.086 3.413,-2.412c0,-1.185 -0.043,-4.331 -0.067,-8.503c-13.908,3.021 -16.843,-6.704 -16.843,-6.704c-2.274,-5.773 -5.552,-7.311 -5.552,-7.311c-4.54,-3.103 0.344,-3.042 0.344,-3.042c5.018,0.356 7.658,5.154 7.658,5.154c4.46,7.64 11.704,5.433 14.552,4.156c0.454,-3.232 1.744,-5.436 3.174,-6.685c-11.102,-1.262 -22.775,-5.553 -22.775,-24.713c-0,-5.457 1.949,-9.92 5.147,-13.416c-0.516,-1.265 -2.231,-6.348 0.488,-13.233c0,0 4.199,-1.344 13.751,5.126c3.988,-1.108 8.266,-1.663 12.518,-1.682c4.245,0.019 8.523,0.574 12.517,1.682c9.546,-6.47 13.736,-5.126 13.736,-5.126c2.728,6.885 1.013,11.968 0.497,13.233c3.204,3.496 5.141,7.959 5.141,13.416c0,19.209 -11.691,23.436 -22.83,24.673c1.795,1.544 3.394,4.595 3.394,9.26c0,6.682 -0.061,12.076 -0.061,13.715c0,1.338 0.899,2.894 3.438,2.406c19.853,-6.627 34.166,-25.354 34.166,-47.438c-0,-27.616 -22.389,-50.002 -50.005,-50.002"/>
+  </g>
+</svg></span></a>
+    
+    <a class="icon-link glyph-link" href="https://discord.gg/XF3CXcMzqD"><i class="icofont-laika chat" title="Chat">&#xeed5;</i></a>
+    
+    <a class="icon-link svg-link" href="https://fosstodon.org/@typelevel"><span class="mastodon" title="Mastodon"><svg class="svg-icon" width="100%" height="100%" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg">
+  <g class="svg-shape">
+    <path d="M11.19 12.195c2.016-.24 3.77-1.475 3.99-2.603.348-1.778.32-4.339.32-4.339 0-3.47-2.286-4.488-2.286-4.488C12.062.238 10.083.017 8.027 0h-.05C5.92.017 3.942.238 2.79.765c0 0-2.285 1.017-2.285 4.488l-.002.662c-.004.64-.007 1.35.011 2.091.083 3.394.626 6.74 3.78 7.57 1.454.383 2.703.463 3.709.408 1.823-.1 2.847-.647 2.847-.647l-.06-1.317s-1.303.41-2.767.36c-1.45-.05-2.98-.156-3.215-1.928a3.614 3.614 0 0 1-.033-.496s1.424.346 3.228.428c1.103.05 2.137-.064 3.188-.189zm1.613-2.47H11.13v-4.08c0-.859-.364-1.295-1.091-1.295-.804 0-1.207.517-1.207 1.541v2.233H7.168V5.89c0-1.024-.403-1.541-1.207-1.541-.727 0-1.091.436-1.091 1.296v4.079H3.197V5.522c0-.859.22-1.541.66-2.046.456-.505 1.052-.764 1.793-.764.856 0 1.504.328 1.933.983L8 4.39l.417-.695c.429-.655 1.077-.983 1.934-.983.74 0 1.336.259 1.791.764.442.505.661 1.187.661 2.046v4.203z"/>
+  </g>
+</svg></span></a>
+    
+  </div>
+
+  <ul class="nav-list">
+    <li class="level1 nav-leaf"><a href="../">otel4s</a></li>
+    <li class="level1 nav-leaf"><a href="../modules-structure.html">Modules structure</a></li>
+    <li class="level1 nav-leaf"><a href="../tracing-context-propagation.html">Tracing context propagation</a></li>
+    <li class="level1 nav-leaf"><a href="../ecosystem.html">Ecosystem</a></li>
+    <li class="level1 nav-header">Instrumentation</li>
+    <li class="level2 nav-leaf"><a href="metrics.html">Metrics</a></li>
+    <li class="level2 active nav-leaf"><a href="#">Metrics | Cats Effect IO runtime</a></li>
+    <li class="level2 nav-leaf"><a href="tracing.html">Tracing</a></li>
+    <li class="level2 nav-leaf"><a href="tracing-cross-service-propagation.html">Tracing | Cross-service propagation</a></li>
+    <li class="level1 nav-header">Customization</li>
+    <li class="level2 nav-leaf"><a href="../customization/histogram-custom-buckets/">Histogram custom buckets</a></li>
+    <li class="level1 nav-header">OtelJava</li>
+    <li class="level2 nav-leaf"><a href="../oteljava/overview.html">Overview</a></li>
+    <li class="level2 nav-leaf"><a href="../oteljava/metrics-jvm-runtime.html">Metrics | JVM Runtime</a></li>
+    <li class="level2 nav-leaf"><a href="../oteljava/tracing-java-interop.html">Tracing | Interop with Java-instrumented libraries</a></li>
+    <li class="level2 nav-leaf"><a href="../oteljava/testkit.html">Testkit</a></li>
+    <li class="level1 nav-header">SDK</li>
+    <li class="level2 nav-leaf"><a href="../sdk/overview.html">Overview</a></li>
+    <li class="level2 nav-leaf"><a href="../sdk/configuration.html">Configuration</a></li>
+    <li class="level2 nav-leaf"><a href="../sdk/prometheus-exporter.html">Prometheus Exporter</a></li>
+    <li class="level2 nav-leaf"><a href="../sdk/testkit.html">Testkit</a></li>
+    <li class="level2 nav-leaf"><a href="../sdk/aws-resource-detectors.html">AWS | Resource detectors</a></li>
+    <li class="level2 nav-leaf"><a href="../sdk/aws-xray.html">AWS | X-Ray ID Generator</a></li>
+    <li class="level2 nav-leaf"><a href="../sdk/aws-xray-propagator.html">AWS | X-Ray propagator</a></li>
+    <li class="level1 nav-header">Examples</li>
+    <li class="level2 nav-leaf"><a href="../examples/jaeger-docker/">Jaeger - collecting traces</a></li>
+    <li class="level2 nav-leaf"><a href="../examples/honeycomb/">Honeycomb - metrics and traces</a></li>
+    <li class="level2 nav-leaf"><a href="../examples/grafana/">Grafana - All-in-one</a></li>
+  </ul>
+
+</nav>
+
+    <div id="container">
+
+      
+<nav id="page-nav">
+  <p class="header"><a href="#">Metrics | Cats Effect IO runtime</a></p>
+
+  <ul class="nav-list">
+    <li class="level1 nav-node"><a href="#available-metrics">Available metrics</a></li>
+    <li class="level2 nav-leaf"><a href="#cpu-starvation-1">CPU Starvation</a></li>
+    <li class="level2 nav-leaf"><a href="#work-stealing-thread-pool-compute-1">Work-stealing thread pool - compute</a></li>
+    <li class="level2 nav-leaf"><a href="#work-stealing-thread-pool-thread-1">Work-stealing thread pool - thread</a></li>
+    <li class="level2 nav-leaf"><a href="#work-stealing-thread-pool-local-queue-1">Work-stealing thread pool - local queue</a></li>
+    <li class="level2 nav-leaf"><a href="#work-stealing-thread-pool-timer-heap-1">Work-stealing thread pool - timer heap</a></li>
+    <li class="level2 nav-leaf"><a href="#work-stealing-thread-pool-poller-1">Work-stealing thread pool - poller</a></li>
+    <li class="level1 nav-leaf"><a href="#getting-started">Getting started</a></li>
+    <li class="level1 nav-leaf"><a href="#registering-metrics-collectors">Registering metrics collectors</a></li>
+    <li class="level1 nav-node"><a href="#customization">Customization</a></li>
+    <li class="level2 nav-leaf"><a href="#cpu-starvation-2">CPU Starvation</a></li>
+    <li class="level2 nav-leaf"><a href="#work-stealing-thread-pool-compute-2">Work-stealing thread pool - compute</a></li>
+    <li class="level2 nav-leaf"><a href="#work-stealing-thread-pool-thread-2">Work-stealing thread pool - thread</a></li>
+    <li class="level2 nav-leaf"><a href="#work-stealing-thread-pool-local-queue-2">Work-stealing thread pool - local queue</a></li>
+    <li class="level2 nav-leaf"><a href="#work-stealing-thread-pool-timer-heap-2">Work-stealing thread pool - timer heap</a></li>
+    <li class="level2 nav-leaf"><a href="#work-stealing-thread-pool-poller-2">Work-stealing thread pool - poller</a></li>
+  </ul>
+
+  <p class="footer"></p>
+</nav>
+
+
+      <main class="content">
+
+        <h1 id="metrics-cats-effect-io-runtime" class="title">Metrics | Cats Effect IO runtime</h1>
+        
+        <h2 id="available-metrics" class="section"><a class="anchor-link left" href="#available-metrics"><i class="icofont-laika link">&#xef71;</i></a>Available metrics</h2>
+        
+        <h3 id="cpu-starvation-1" class="section"><a class="anchor-link left" href="#cpu-starvation-1"><i class="icofont-laika link">&#xef71;</i></a>CPU Starvation</h3>
+        <p><strong>Platforms</strong>: JVM, Scala.js, Scala Native.</p>
+        <p>These metrics could help identify performance bottlenecks caused by an overloaded compute pool, 
+        excessive task scheduling, or lack of CPU resources.</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Description</th>
+              <th>Unit</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>cats.effect.runtime.cpu.starvation.clock.drift.current</td>
+              <td>The current CPU drift in milliseconds.</td>
+              <td>ms</td>
+            </tr>
+            <tr>
+              <td>cats.effect.runtime.cpu.starvation.clock.drift.max</td>
+              <td>The max CPU drift in milliseconds.</td>
+              <td>ms</td>
+            </tr>
+            <tr>
+              <td>cats.effect.runtime.cpu.starvation.count</td>
+              <td>The number of CPU starvation events.</td>
+              <td>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        
+        <h3 id="work-stealing-thread-pool-compute-1" class="section"><a class="anchor-link left" href="#work-stealing-thread-pool-compute-1"><i class="icofont-laika link">&#xef71;</i></a>Work-stealing thread pool - compute</h3>
+        <p><strong>Platforms</strong>: JVM.</p>
+        <p><strong>Built-in attributes</strong>:</p>
+        <ul>
+          <li><code>pool.id</code> - the id of the work-stealing thread pool</li>
+        </ul>
+        <p>These metrics provide insights about fibers and threads within the compute pool.
+        They help diagnose load distribution, identify bottlenecks, and monitor the pool’s efficiency in handling tasks.</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Description</th>
+              <th>Unit</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>cats.effect.runtime.wstp.compute.fiber.enqueued.count</td>
+              <td>The total number of fibers enqueued on all local queues.</td>
+              <td>{fiber}</td>
+            </tr>
+            <tr>
+              <td>cats.effect.runtime.wstp.compute.fiber.suspended.count</td>
+              <td>The number of fibers which are currently asynchronously suspended.</td>
+              <td>{fiber}</td>
+            </tr>
+            <tr>
+              <td>cats.effect.runtime.wstp.compute.thread.active.count</td>
+              <td>The number of active worker thread instances currently executing fibers on the compute thread pool.</td>
+              <td>{thread}</td>
+            </tr>
+            <tr>
+              <td>cats.effect.runtime.wstp.compute.thread.blocked.count</td>
+              <td>The number of worker thread instances that can run blocking actions on the compute thread pool.</td>
+              <td>{thread}</td>
+            </tr>
+            <tr>
+              <td>cats.effect.runtime.wstp.compute.thread.count</td>
+              <td>The number of worker thread instances backing the work-stealing thread pool (WSTP).</td>
+              <td>{thread}</td>
+            </tr>
+            <tr>
+              <td>cats.effect.runtime.wstp.compute.thread.searching.count</td>
+              <td>The number of worker thread instances currently searching for fibers to steal from other worker threads.</td>
+              <td>{thread}</td>
+            </tr>
+          </tbody>
+        </table>
+        
+        <h3 id="work-stealing-thread-pool-thread-1" class="section"><a class="anchor-link left" href="#work-stealing-thread-pool-thread-1"><i class="icofont-laika link">&#xef71;</i></a>Work-stealing thread pool - thread</h3>
+        <p><strong>Platforms</strong>: JVM.</p>
+        <p><strong>Built-in attributes</strong>:</p>
+        <ul>
+          <li><code>pool.id</code> - the id of the work-stealing thread pool the worker is used by</li>
+          <li><code>worker.index</code> - the index of the worker thread</li>
+          <li>
+            <code>thread.event</code> - the thread event 
+            <ul>
+              <li><code>parked</code> - a thread is parked</li>
+              <li><code>polled</code> - a thread is polled for I/O events </li>
+              <li><code>blocked</code> - a thread is switched to a blocking thread and been replaced</li>
+              <li><code>respawn</code> - a thread is replaced by a newly spawned thread</li>
+            </ul>
+          </li>
+        </ul>
+        <p>These metrics provide detailed information about threads state within the compute pool. </p>
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Description</th>
+              <th>Unit</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>cats.effect.runtime.wstp.worker.thread.event.count</td>
+              <td>The total number of events that happened to this WorkerThread.</td>
+              <td>{event}</td>
+            </tr>
+            <tr>
+              <td>cats.effect.runtime.wstp.worker.thread.idle.duration</td>
+              <td>The total amount of time in nanoseconds that this WorkerThread has been idle.</td>
+              <td>ns</td>
+            </tr>
+          </tbody>
+        </table>
+        
+        <h3 id="work-stealing-thread-pool-local-queue-1" class="section"><a class="anchor-link left" href="#work-stealing-thread-pool-local-queue-1"><i class="icofont-laika link">&#xef71;</i></a>Work-stealing thread pool - local queue</h3>
+        <p><strong>Platforms</strong>: JVM.</p>
+        <p><strong>Built-in attributes</strong>:</p>
+        <ul>
+          <li><code>pool.id</code> - the id of the work-stealing thread pool the queue is used by</li>
+          <li><code>worker.index</code> - the index of the worker thread the queue is used by</li>
+        </ul>
+        <p>These metrics provide a detailed view of fiber distribution within the pool. They help diagnose 
+        load imbalances and system inefficiency.</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Description</th>
+              <th>Unit</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>cats.effect.runtime.wstp.worker.localqueue.fiber.count</td>
+              <td>The total number of fibers enqueued during the lifetime of the local queue.</td>
+              <td>{fiber}</td>
+            </tr>
+            <tr>
+              <td>cats.effect.runtime.wstp.worker.localqueue.fiber.enqueued.count</td>
+              <td>The current number of enqueued fibers.</td>
+              <td>{fiber}</td>
+            </tr>
+            <tr>
+              <td>cats.effect.runtime.wstp.worker.localqueue.fiber.spillover.count</td>
+              <td>The total number of fibers spilt over to the external queue.</td>
+              <td>{fiber}</td>
+            </tr>
+            <tr>
+              <td>cats.effect.runtime.wstp.worker.localqueue.fiber.steal_attempt.count</td>
+              <td>The total number of successful steal attempts by other worker threads.</td>
+              <td>{fiber}</td>
+            </tr>
+            <tr>
+              <td>cats.effect.runtime.wstp.worker.localqueue.fiber.stolen.count</td>
+              <td>The total number of stolen fibers by other worker threads.</td>
+              <td>{fiber}</td>
+            </tr>
+          </tbody>
+        </table>
+        
+        <h3 id="work-stealing-thread-pool-timer-heap-1" class="section"><a class="anchor-link left" href="#work-stealing-thread-pool-timer-heap-1"><i class="icofont-laika link">&#xef71;</i></a>Work-stealing thread pool - timer heap</h3>
+        <p><strong>Platforms</strong>: JVM.</p>
+        <p><strong>Built-in attributes</strong>:</p>
+        <ul>
+          <li><code>pool.id</code> - the id of the work-stealing thread pool the timer heap is used by</li>
+          <li><code>worker.index</code> - the index of the worker thread the timer heap is used by</li>
+          <li>
+            <code>timer.state</code> - the state of the timer
+            <ul>
+              <li><code>executed</code> - the successfully executed timer</li>
+              <li><code>scheduled</code> - the scheduled timer</li>
+              <li><code>canceled</code> - the canceled timer</li>
+            </ul>
+          </li>
+        </ul>
+        <p>These metrics provide a detailed view of timer stats within the pool. </p>
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Description</th>
+              <th>Unit</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>cats.effect.runtime.wstp.worker.timerheap.next.due</td>
+              <td>Returns the time in nanoseconds till the next due to fire.</td>
+              <td>ns</td>
+            </tr>
+            <tr>
+              <td>cats.effect.runtime.wstp.worker.timerheap.outstanding.count</td>
+              <td>The current number of the outstanding timers, that remain to be executed.</td>
+              <td>{timer}</td>
+            </tr>
+            <tr>
+              <td>cats.effect.runtime.wstp.worker.timerheap.packed.count</td>
+              <td>The total number of times the heap packed itself to remove canceled timers.</td>
+              <td>{event}</td>
+            </tr>
+            <tr>
+              <td>cats.effect.runtime.wstp.worker.timerheap.timer.count</td>
+              <td>The total number of the timers per state.</td>
+              <td>{timer}</td>
+            </tr>
+          </tbody>
+        </table>
+        
+        <h3 id="work-stealing-thread-pool-poller-1" class="section"><a class="anchor-link left" href="#work-stealing-thread-pool-poller-1"><i class="icofont-laika link">&#xef71;</i></a>Work-stealing thread pool - poller</h3>
+        <p><strong>Platforms</strong>: JVM.</p>
+        <p><strong>Built-in attributes</strong>:</p>
+        <ul>
+          <li><code>pool.id</code> - the id of the work-stealing thread pool the poller is used by</li>
+          <li><code>worker.index</code> - the index of the worker thread the poller is used by</li>
+          <li>
+            <code>poller.operation</code> - the operation performed by the poller
+            <ul>
+              <li><code>accept</code></li>
+              <li><code>connect</code> </li>
+              <li><code>read</code></li>
+              <li><code>write</code> </li>
+            </ul>
+          </li>
+          <li>
+            <code>poller.operation.status</code> - the status of the operation
+            <ul>
+              <li><code>submitted</code> - the operation has been submitted</li>
+              <li><code>succeeded</code> - the operation has errored</li>
+              <li><code>errored</code> - the operation has errored</li>
+              <li><code>canceled</code> - the operation has been canceled</li>
+            </ul>
+          </li>
+        </ul>
+        <p>These metrics provide a detailed view of poller stats within the pool. </p>
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Description</th>
+              <th>Unit</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>cats.effect.runtime.wstp.worker.poller.operation.count</td>
+              <td>The total number of the operations per category and outcome.</td>
+              <td>{operation}</td>
+            </tr>
+            <tr>
+              <td>cats.effect.runtime.wstp.worker.poller.operation.outstanding.count</td>
+              <td>The current number of outstanding operations per category and outcome.</td>
+              <td>{operation}</td>
+            </tr>
+          </tbody>
+        </table>
+        
+        <h2 id="getting-started" class="section"><a class="anchor-link left" href="#getting-started"><i class="icofont-laika link">&#xef71;</i></a>Getting started</h2>
+        <p>Add the following configuration to the favorite build tool:</p>
+        <div class="tab-container" data-tab-group="build-tool">
+          <ul class="tab-group">
+            <li class="tab active" data-choice-name="sbt"><a href="#">sbt</a></li>
+            <li class="tab" data-choice-name="scala-cli"><a href="#">Scala CLI</a></li>
+          </ul>
+          <div class="tab-content active" data-choice-name="sbt">
+            <p>Add settings to the <code>build.sbt</code>:</p>
+            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">libraryDependencies</span><span> ++= </span><span class="type-name">Seq</span><span>(
+  </span><span class="string-literal">&quot;org.typelevel&quot;</span><span> %%% </span><span class="string-literal">&quot;otel4s-instrumentation-metrics&quot;</span><span> % </span><span class="string-literal">&quot;0.11.2&quot;</span><span> </span><span class="comment">// &lt;1&gt;
+</span><span>)</span></code></pre>
+          </div>
+          <div class="tab-content" data-choice-name="scala-cli">
+            <p>Add directives to the <code>*.scala</code> file:</p>
+            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="comment">//&gt; using dep &quot;org.typelevel::otel4s-instrumentation-metrics::0.11.2&quot; // &lt;1&gt;</span></code></pre>
+          </div>
+        </div>
+        <ol class="arabic">
+          <li>Add the <code>otel4s-instrumentation-metrics</code> library</li>
+        </ol>
+        
+        <h2 id="registering-metrics-collectors" class="section"><a class="anchor-link left" href="#registering-metrics-collectors"><i class="icofont-laika link">&#xef71;</i></a>Registering metrics collectors</h2>
+        <p><code>IORuntimeMetrics.register</code> takes care of the metrics lifecycle management.<br></p>
+        <div class="tab-container" data-tab-group="otel-backend">
+          <ul class="tab-group">
+            <li class="tab active" data-choice-name="oteljava"><a href="#">OpenTelemetry Java</a></li>
+            <li class="tab" data-choice-name="sdk"><a href="#">SDK</a></li>
+          </ul>
+          <div class="tab-content active" data-choice-name="oteljava">
+            <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.</span><span class="identifier">_</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">instrumentation</span><span>.</span><span class="identifier">ce</span><span>.</span><span class="type-name">IORuntimeMetrics</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">metrics</span><span>.</span><span class="type-name">MeterProvider</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">trace</span><span>.</span><span class="type-name">TracerProvider</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="type-name">OtelJava</span><span>
+
+</span><span class="keyword">object</span><span> </span><span class="type-name">Main</span><span> </span><span class="keyword">extends</span><span> </span><span class="type-name">IOApp</span><span>.</span><span class="type-name">Simple</span><span> {
+
+  </span><span class="keyword">def</span><span> </span><span class="declaration-name">run</span><span>: </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] =
+    </span><span class="type-name">OtelJava</span><span>.</span><span class="identifier">autoConfigured</span><span>[</span><span class="type-name">IO</span><span>]().</span><span class="identifier">use</span><span> { </span><span class="identifier">otel4s</span><span> =&gt;
+      </span><span class="keyword">implicit</span><span> </span><span class="keyword">val</span><span> </span><span class="identifier">mp</span><span>: </span><span class="type-name">MeterProvider</span><span>[</span><span class="type-name">IO</span><span>] = </span><span class="identifier">otel4s</span><span>.</span><span class="identifier">meterProvider</span><span>
+      </span><span class="type-name">IORuntimeMetrics</span><span>
+        .</span><span class="identifier">register</span><span>[</span><span class="type-name">IO</span><span>](</span><span class="identifier">runtime</span><span>.</span><span class="identifier">metrics</span><span>, </span><span class="type-name">IORuntimeMetrics</span><span>.</span><span class="type-name">Config</span><span>.</span><span class="keyword">default</span><span>)
+        .</span><span class="identifier">surround</span><span> {
+          </span><span class="identifier">program</span><span>(</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">meterProvider</span><span>, </span><span class="identifier">otel4s</span><span>.</span><span class="identifier">tracerProvider</span><span>)
+        }
+    }
+
+  </span><span class="keyword">def</span><span> </span><span class="declaration-name">program</span><span>(
+      </span><span class="identifier">meterProvider</span><span>: </span><span class="type-name">MeterProvider</span><span>[</span><span class="type-name">IO</span><span>],
+      </span><span class="identifier">tracerProvider</span><span>: </span><span class="type-name">TracerProvider</span><span>[</span><span class="type-name">IO</span><span>]
+  ): </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] = {
+    </span><span class="keyword">val</span><span> </span><span class="identifier">_</span><span> = (</span><span class="identifier">meterProvider</span><span>, </span><span class="identifier">tracerProvider</span><span>)
+    </span><span class="type-name">IO</span><span>.</span><span class="identifier">unit</span><span>
+  }
+
+}</span></code></pre>
+          </div>
+          <div class="tab-content" data-choice-name="sdk">
+            <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.</span><span class="identifier">_</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">instrumentation</span><span>.</span><span class="identifier">ce</span><span>.</span><span class="type-name">IORuntimeMetrics</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">metrics</span><span>.</span><span class="type-name">MeterProvider</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">trace</span><span>.</span><span class="type-name">TracerProvider</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">sdk</span><span>.</span><span class="type-name">OpenTelemetrySdk</span><span>
+
+</span><span class="keyword">object</span><span> </span><span class="type-name">Main</span><span> </span><span class="keyword">extends</span><span> </span><span class="type-name">IOApp</span><span>.</span><span class="type-name">Simple</span><span> {
+
+  </span><span class="keyword">def</span><span> </span><span class="declaration-name">run</span><span>: </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] =
+    </span><span class="type-name">OpenTelemetrySdk</span><span>.</span><span class="identifier">autoConfigured</span><span>[</span><span class="type-name">IO</span><span>]().</span><span class="identifier">use</span><span> { </span><span class="identifier">autoConfigured</span><span> =&gt;
+      </span><span class="keyword">val</span><span> </span><span class="identifier">sdk</span><span> = </span><span class="identifier">autoConfigured</span><span>.</span><span class="identifier">sdk</span><span>
+      </span><span class="keyword">implicit</span><span> </span><span class="keyword">val</span><span> </span><span class="identifier">mp</span><span>: </span><span class="type-name">MeterProvider</span><span>[</span><span class="type-name">IO</span><span>] = </span><span class="identifier">sdk</span><span>.</span><span class="identifier">meterProvider</span><span>
+      </span><span class="type-name">IORuntimeMetrics</span><span>
+        .</span><span class="identifier">register</span><span>[</span><span class="type-name">IO</span><span>](</span><span class="identifier">runtime</span><span>.</span><span class="identifier">metrics</span><span>, </span><span class="type-name">IORuntimeMetrics</span><span>.</span><span class="type-name">Config</span><span>.</span><span class="keyword">default</span><span>)
+        .</span><span class="identifier">surround</span><span> {
+          </span><span class="identifier">program</span><span>(</span><span class="identifier">sdk</span><span>.</span><span class="identifier">meterProvider</span><span>, </span><span class="identifier">sdk</span><span>.</span><span class="identifier">tracerProvider</span><span>)
+        }
+    }
+
+  </span><span class="keyword">def</span><span> </span><span class="declaration-name">program</span><span>(
+      </span><span class="identifier">meterProvider</span><span>: </span><span class="type-name">MeterProvider</span><span>[</span><span class="type-name">IO</span><span>],
+      </span><span class="identifier">tracerProvider</span><span>: </span><span class="type-name">TracerProvider</span><span>[</span><span class="type-name">IO</span><span>]
+  ): </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] = {
+    </span><span class="keyword">val</span><span> </span><span class="identifier">_</span><span> = (</span><span class="identifier">meterProvider</span><span>, </span><span class="identifier">tracerProvider</span><span>)
+    </span><span class="type-name">IO</span><span>.</span><span class="identifier">unit</span><span>
+  }
+
+}</span></code></pre>
+          </div>
+        </div>
+        
+        <h2 id="customization" class="section"><a class="anchor-link left" href="#customization"><i class="icofont-laika link">&#xef71;</i></a>Customization</h2>
+        <p>The behavior of the <code>IORuntimeMetrics.register</code> can be customized via <code>IORuntimeMetrics.Config</code>.</p>
+        
+        <h3 id="cpu-starvation-2" class="section"><a class="anchor-link left" href="#cpu-starvation-2"><i class="icofont-laika link">&#xef71;</i></a>CPU Starvation</h3>
+        <p>To disable CPU starvation metrics:</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">val</span><span> </span><span class="identifier">config</span><span>: </span><span class="type-name">IORuntimeMetrics</span><span>.</span><span class="type-name">Config</span><span> = {
+  </span><span class="keyword">import</span><span> </span><span class="type-name">IORuntimeMetrics</span><span>.</span><span class="type-name">Config</span><span>.</span><span class="identifier">_</span><span>
+  </span><span class="type-name">IORuntimeMetrics</span><span>.</span><span class="type-name">Config</span><span>(
+    </span><span class="type-name">CpuStarvationConfig</span><span>.</span><span class="identifier">disabled</span><span>, </span><span class="comment">// disable CPU starvation metrics 
+</span><span>    </span><span class="type-name">WorkStealingThreadPoolConfig</span><span>.</span><span class="identifier">enabled</span><span>
+  )
+}
+
+</span><span class="type-name">IORuntimeMetrics</span><span>.</span><span class="identifier">register</span><span>[</span><span class="type-name">IO</span><span>](</span><span class="identifier">runtime</span><span>.</span><span class="identifier">metrics</span><span>, </span><span class="identifier">config</span><span>)</span></code></pre>
+        <p>To attach attributes to CPU starvation metrics:</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">val</span><span> </span><span class="identifier">config</span><span>: </span><span class="type-name">IORuntimeMetrics</span><span>.</span><span class="type-name">Config</span><span> = {
+  </span><span class="keyword">import</span><span> </span><span class="type-name">IORuntimeMetrics</span><span>.</span><span class="type-name">Config</span><span>.</span><span class="identifier">_</span><span>
+  </span><span class="type-name">IORuntimeMetrics</span><span>.</span><span class="type-name">Config</span><span>(
+    </span><span class="type-name">CpuStarvationConfig</span><span>.</span><span class="identifier">enabled</span><span>(
+      </span><span class="type-name">Attributes</span><span>(</span><span class="type-name">Attribute</span><span>(</span><span class="string-literal">&quot;key&quot;</span><span>, </span><span class="string-literal">&quot;value&quot;</span><span>)) </span><span class="comment">// the attributes
+</span><span>    ), 
+    </span><span class="type-name">WorkStealingThreadPoolConfig</span><span>.</span><span class="identifier">enabled</span><span>
+  )
+}
+
+</span><span class="type-name">IORuntimeMetrics</span><span>.</span><span class="identifier">register</span><span>[</span><span class="type-name">IO</span><span>](</span><span class="identifier">runtime</span><span>.</span><span class="identifier">metrics</span><span>, </span><span class="identifier">config</span><span>)</span></code></pre>
+        
+        <h3 id="work-stealing-thread-pool-compute-2" class="section"><a class="anchor-link left" href="#work-stealing-thread-pool-compute-2"><i class="icofont-laika link">&#xef71;</i></a>Work-stealing thread pool - compute</h3>
+        <p>To disable worker metrics:</p>
+        <pre><code class="nohighlight"><span class="keyword">val</span><span> </span><span class="identifier">config</span><span>: </span><span class="type-name">IORuntimeMetrics</span><span>.</span><span class="type-name">Config</span><span> = {
+  </span><span class="keyword">import</span><span> </span><span class="type-name">IORuntimeMetrics</span><span>.</span><span class="type-name">Config</span><span>.</span><span class="identifier">_</span><span>
+  </span><span class="keyword">import</span><span> </span><span class="type-name">WorkStealingThreadPoolConfig</span><span>.</span><span class="identifier">_</span><span>
+
+  </span><span class="type-name">IORuntimeMetrics</span><span>.</span><span class="type-name">Config</span><span>(
+    </span><span class="type-name">CpuStarvationConfig</span><span>.</span><span class="identifier">enabled</span><span>,
+    </span><span class="type-name">WorkStealingThreadPoolConfig</span><span>(
+      </span><span class="type-name">ComputeConfig</span><span>.</span><span class="identifier">disabled</span><span>, </span><span class="comment">// disable compute metrics
+</span><span>      </span><span class="type-name">WorkStealingThreadPoolConfig</span><span>.</span><span class="type-name">WorkerThreadsConfig</span><span>.</span><span class="identifier">enabled</span><span>
+    )
+  )
+}
+
+</span><span class="type-name">IORuntimeMetrics</span><span>.</span><span class="identifier">register</span><span>[</span><span class="type-name">IO</span><span>](</span><span class="identifier">runtime</span><span>.</span><span class="identifier">metrics</span><span>, </span><span class="identifier">config</span><span>)</span></code></pre>
+        <p>To attach attributes to compute metrics:</p>
+        <pre><code class="nohighlight"><span class="keyword">val</span><span> </span><span class="identifier">config</span><span>: </span><span class="type-name">IORuntimeMetrics</span><span>.</span><span class="type-name">Config</span><span> = {
+  </span><span class="keyword">import</span><span> </span><span class="type-name">IORuntimeMetrics</span><span>.</span><span class="type-name">Config</span><span>.</span><span class="identifier">_</span><span>
+  </span><span class="keyword">import</span><span> </span><span class="type-name">WorkStealingThreadPoolConfig</span><span>.</span><span class="identifier">_</span><span>
+
+  </span><span class="type-name">IORuntimeMetrics</span><span>.</span><span class="type-name">Config</span><span>(
+    </span><span class="type-name">CpuStarvationConfig</span><span>.</span><span class="identifier">enabled</span><span>,
+    </span><span class="type-name">WorkStealingThreadPoolConfig</span><span>(
+      </span><span class="type-name">ComputeConfig</span><span>.</span><span class="identifier">enabled</span><span>(
+        </span><span class="type-name">Attributes</span><span>(</span><span class="type-name">Attribute</span><span>(</span><span class="string-literal">&quot;key&quot;</span><span>, </span><span class="string-literal">&quot;value&quot;</span><span>)) </span><span class="comment">// attributes
+</span><span>      ),
+      </span><span class="type-name">WorkStealingThreadPoolConfig</span><span>.</span><span class="type-name">WorkerThreadsConfig</span><span>.</span><span class="identifier">enabled</span><span>
+    )
+  )
+}
+
+</span><span class="type-name">IORuntimeMetrics</span><span>.</span><span class="identifier">register</span><span>[</span><span class="type-name">IO</span><span>](</span><span class="identifier">runtime</span><span>.</span><span class="identifier">metrics</span><span>, </span><span class="identifier">config</span><span>)</span></code></pre>
+        
+        <h3 id="work-stealing-thread-pool-thread-2" class="section"><a class="anchor-link left" href="#work-stealing-thread-pool-thread-2"><i class="icofont-laika link">&#xef71;</i></a>Work-stealing thread pool - thread</h3>
+        <p>To disable thread metrics:</p>
+        <pre><code class="nohighlight"><span class="keyword">val</span><span> </span><span class="identifier">config</span><span>: </span><span class="type-name">IORuntimeMetrics</span><span>.</span><span class="type-name">Config</span><span> = {
+  </span><span class="keyword">import</span><span> </span><span class="type-name">IORuntimeMetrics</span><span>.</span><span class="type-name">Config</span><span>.</span><span class="identifier">_</span><span>
+  </span><span class="keyword">import</span><span> </span><span class="type-name">WorkStealingThreadPoolConfig</span><span>.</span><span class="identifier">_</span><span>
+
+  </span><span class="type-name">IORuntimeMetrics</span><span>.</span><span class="type-name">Config</span><span>(
+    </span><span class="type-name">CpuStarvationConfig</span><span>.</span><span class="identifier">enabled</span><span>,
+    </span><span class="type-name">WorkStealingThreadPoolConfig</span><span>(
+      </span><span class="type-name">ComputeConfig</span><span>.</span><span class="identifier">enabled</span><span>,
+      </span><span class="type-name">WorkerThreadsConfig</span><span>(
+        </span><span class="type-name">WorkerThreadsConfig</span><span>.</span><span class="type-name">ThreadConfig</span><span>.</span><span class="identifier">disabled</span><span>, </span><span class="comment">// disable worker thread metrics
+</span><span>        </span><span class="type-name">WorkerThreadsConfig</span><span>.</span><span class="type-name">LocalQueueConfig</span><span>.</span><span class="identifier">enabled</span><span>,
+        </span><span class="type-name">WorkerThreadsConfig</span><span>.</span><span class="type-name">TimerHeapConfig</span><span>.</span><span class="identifier">enabled</span><span>,
+        </span><span class="type-name">WorkerThreadsConfig</span><span>.</span><span class="type-name">PollerConfig</span><span>.</span><span class="identifier">enabled</span><span>
+      )
+    )
+  )
+}
+
+</span><span class="type-name">IORuntimeMetrics</span><span>.</span><span class="identifier">register</span><span>[</span><span class="type-name">IO</span><span>](</span><span class="identifier">runtime</span><span>.</span><span class="identifier">metrics</span><span>, </span><span class="identifier">config</span><span>)</span></code></pre>
+        <p>To attach attributes to thread metrics:</p>
+        <pre><code class="nohighlight"><span class="keyword">val</span><span> </span><span class="identifier">config</span><span>: </span><span class="type-name">IORuntimeMetrics</span><span>.</span><span class="type-name">Config</span><span> = {
+  </span><span class="keyword">import</span><span> </span><span class="type-name">IORuntimeMetrics</span><span>.</span><span class="type-name">Config</span><span>.</span><span class="identifier">_</span><span>
+  </span><span class="keyword">import</span><span> </span><span class="type-name">WorkStealingThreadPoolConfig</span><span>.</span><span class="identifier">_</span><span>
+
+  </span><span class="type-name">IORuntimeMetrics</span><span>.</span><span class="type-name">Config</span><span>(
+    </span><span class="type-name">CpuStarvationConfig</span><span>.</span><span class="identifier">enabled</span><span>,
+    </span><span class="type-name">WorkStealingThreadPoolConfig</span><span>(
+      </span><span class="type-name">ComputeConfig</span><span>.</span><span class="identifier">enabled</span><span>,
+      </span><span class="type-name">WorkerThreadsConfig</span><span>(
+        </span><span class="type-name">WorkerThreadsConfig</span><span>.</span><span class="type-name">ThreadConfig</span><span>.</span><span class="identifier">enabled</span><span>(
+          </span><span class="type-name">Attributes</span><span>(</span><span class="type-name">Attribute</span><span>(</span><span class="string-literal">&quot;key&quot;</span><span>, </span><span class="string-literal">&quot;value&quot;</span><span>)) </span><span class="comment">// the attributes
+</span><span>        ),
+        </span><span class="type-name">WorkerThreadsConfig</span><span>.</span><span class="type-name">LocalQueueConfig</span><span>.</span><span class="identifier">enabled</span><span>,
+        </span><span class="type-name">WorkerThreadsConfig</span><span>.</span><span class="type-name">TimerHeapConfig</span><span>.</span><span class="identifier">enabled</span><span>,
+        </span><span class="type-name">WorkerThreadsConfig</span><span>.</span><span class="type-name">PollerConfig</span><span>.</span><span class="identifier">enabled</span><span>
+      )
+    )
+  )
+}
+
+</span><span class="type-name">IORuntimeMetrics</span><span>.</span><span class="identifier">register</span><span>[</span><span class="type-name">IO</span><span>](</span><span class="identifier">runtime</span><span>.</span><span class="identifier">metrics</span><span>, </span><span class="identifier">config</span><span>)</span></code></pre>
+        
+        <h3 id="work-stealing-thread-pool-local-queue-2" class="section"><a class="anchor-link left" href="#work-stealing-thread-pool-local-queue-2"><i class="icofont-laika link">&#xef71;</i></a>Work-stealing thread pool - local queue</h3>
+        <p>To disable local queue metrics:</p>
+        <pre><code class="nohighlight"><span class="keyword">val</span><span> </span><span class="identifier">config</span><span>: </span><span class="type-name">IORuntimeMetrics</span><span>.</span><span class="type-name">Config</span><span> = {
+  </span><span class="keyword">import</span><span> </span><span class="type-name">IORuntimeMetrics</span><span>.</span><span class="type-name">Config</span><span>.</span><span class="identifier">_</span><span>
+  </span><span class="keyword">import</span><span> </span><span class="type-name">WorkStealingThreadPoolConfig</span><span>.</span><span class="identifier">_</span><span>
+
+  </span><span class="type-name">IORuntimeMetrics</span><span>.</span><span class="type-name">Config</span><span>(
+    </span><span class="type-name">CpuStarvationConfig</span><span>.</span><span class="identifier">enabled</span><span>,
+    </span><span class="type-name">WorkStealingThreadPoolConfig</span><span>(
+      </span><span class="type-name">ComputeConfig</span><span>.</span><span class="identifier">enabled</span><span>,
+      </span><span class="type-name">WorkerThreadsConfig</span><span>(
+        </span><span class="type-name">WorkerThreadsConfig</span><span>.</span><span class="type-name">ThreadConfig</span><span>.</span><span class="identifier">enabled</span><span>,
+        </span><span class="type-name">WorkerThreadsConfig</span><span>.</span><span class="type-name">LocalQueueConfig</span><span>.</span><span class="identifier">disabled</span><span>, </span><span class="comment">// disable local queue metrics
+</span><span>        </span><span class="type-name">WorkerThreadsConfig</span><span>.</span><span class="type-name">TimerHeapConfig</span><span>.</span><span class="identifier">enabled</span><span>,
+        </span><span class="type-name">WorkerThreadsConfig</span><span>.</span><span class="type-name">PollerConfig</span><span>.</span><span class="identifier">enabled</span><span>
+      )
+    )
+  )
+}
+
+</span><span class="type-name">IORuntimeMetrics</span><span>.</span><span class="identifier">register</span><span>[</span><span class="type-name">IO</span><span>](</span><span class="identifier">runtime</span><span>.</span><span class="identifier">metrics</span><span>, </span><span class="identifier">config</span><span>)</span></code></pre>
+        <p>To attach attributes to local queue metrics:</p>
+        <pre><code class="nohighlight"><span class="keyword">val</span><span> </span><span class="identifier">config</span><span>: </span><span class="type-name">IORuntimeMetrics</span><span>.</span><span class="type-name">Config</span><span> = {
+  </span><span class="keyword">import</span><span> </span><span class="type-name">IORuntimeMetrics</span><span>.</span><span class="type-name">Config</span><span>.</span><span class="identifier">_</span><span>
+  </span><span class="keyword">import</span><span> </span><span class="type-name">WorkStealingThreadPoolConfig</span><span>.</span><span class="identifier">_</span><span>
+
+  </span><span class="type-name">IORuntimeMetrics</span><span>.</span><span class="type-name">Config</span><span>(
+    </span><span class="type-name">CpuStarvationConfig</span><span>.</span><span class="identifier">enabled</span><span>,
+    </span><span class="type-name">WorkStealingThreadPoolConfig</span><span>(
+      </span><span class="type-name">ComputeConfig</span><span>.</span><span class="identifier">enabled</span><span>,
+      </span><span class="type-name">WorkerThreadsConfig</span><span>(
+        </span><span class="type-name">WorkerThreadsConfig</span><span>.</span><span class="type-name">ThreadConfig</span><span>.</span><span class="identifier">enabled</span><span>,
+        </span><span class="type-name">WorkerThreadsConfig</span><span>.</span><span class="type-name">LocalQueueConfig</span><span>.</span><span class="identifier">enabled</span><span>(
+          </span><span class="type-name">Attributes</span><span>(</span><span class="type-name">Attribute</span><span>(</span><span class="string-literal">&quot;key&quot;</span><span>, </span><span class="string-literal">&quot;value&quot;</span><span>)) </span><span class="comment">// the attributes
+</span><span>        ),
+        </span><span class="type-name">WorkerThreadsConfig</span><span>.</span><span class="type-name">TimerHeapConfig</span><span>.</span><span class="identifier">enabled</span><span>,
+        </span><span class="type-name">WorkerThreadsConfig</span><span>.</span><span class="type-name">PollerConfig</span><span>.</span><span class="identifier">enabled</span><span>
+      )
+    )
+  )
+}
+
+</span><span class="type-name">IORuntimeMetrics</span><span>.</span><span class="identifier">register</span><span>[</span><span class="type-name">IO</span><span>](</span><span class="identifier">runtime</span><span>.</span><span class="identifier">metrics</span><span>, </span><span class="identifier">config</span><span>)</span></code></pre>
+        
+        <h3 id="work-stealing-thread-pool-timer-heap-2" class="section"><a class="anchor-link left" href="#work-stealing-thread-pool-timer-heap-2"><i class="icofont-laika link">&#xef71;</i></a>Work-stealing thread pool - timer heap</h3>
+        <p>To disable timer heap metrics:</p>
+        <pre><code class="nohighlight"><span class="keyword">val</span><span> </span><span class="identifier">config</span><span>: </span><span class="type-name">IORuntimeMetrics</span><span>.</span><span class="type-name">Config</span><span> = {
+  </span><span class="keyword">import</span><span> </span><span class="type-name">IORuntimeMetrics</span><span>.</span><span class="type-name">Config</span><span>.</span><span class="identifier">_</span><span>
+  </span><span class="keyword">import</span><span> </span><span class="type-name">WorkStealingThreadPoolConfig</span><span>.</span><span class="identifier">_</span><span>
+
+  </span><span class="type-name">IORuntimeMetrics</span><span>.</span><span class="type-name">Config</span><span>(
+    </span><span class="type-name">CpuStarvationConfig</span><span>.</span><span class="identifier">enabled</span><span>,
+    </span><span class="type-name">WorkStealingThreadPoolConfig</span><span>(
+      </span><span class="type-name">ComputeConfig</span><span>.</span><span class="identifier">enabled</span><span>,
+      </span><span class="type-name">WorkerThreadsConfig</span><span>(
+        </span><span class="type-name">WorkerThreadsConfig</span><span>.</span><span class="type-name">ThreadConfig</span><span>.</span><span class="identifier">enabled</span><span>,
+        </span><span class="type-name">WorkerThreadsConfig</span><span>.</span><span class="type-name">LocalQueueConfig</span><span>.</span><span class="identifier">enabled</span><span>,
+        </span><span class="type-name">WorkerThreadsConfig</span><span>.</span><span class="type-name">TimerHeapConfig</span><span>.</span><span class="identifier">enabled</span><span>, </span><span class="comment">// disable timer heap metrics
+</span><span>        </span><span class="type-name">WorkerThreadsConfig</span><span>.</span><span class="type-name">PollerConfig</span><span>.</span><span class="identifier">enabled</span><span>
+      )
+    )
+  )
+}
+
+</span><span class="type-name">IORuntimeMetrics</span><span>.</span><span class="identifier">register</span><span>[</span><span class="type-name">IO</span><span>](</span><span class="identifier">runtime</span><span>.</span><span class="identifier">metrics</span><span>, </span><span class="identifier">config</span><span>)</span></code></pre>
+        <p>To attach attributes to timer heap metrics:</p>
+        <pre><code class="nohighlight"><span class="keyword">val</span><span> </span><span class="identifier">config</span><span>: </span><span class="type-name">IORuntimeMetrics</span><span>.</span><span class="type-name">Config</span><span> = {
+  </span><span class="keyword">import</span><span> </span><span class="type-name">IORuntimeMetrics</span><span>.</span><span class="type-name">Config</span><span>.</span><span class="identifier">_</span><span>
+  </span><span class="keyword">import</span><span> </span><span class="type-name">WorkStealingThreadPoolConfig</span><span>.</span><span class="identifier">_</span><span>
+
+  </span><span class="type-name">IORuntimeMetrics</span><span>.</span><span class="type-name">Config</span><span>(
+    </span><span class="type-name">CpuStarvationConfig</span><span>.</span><span class="identifier">enabled</span><span>,
+    </span><span class="type-name">WorkStealingThreadPoolConfig</span><span>(
+      </span><span class="type-name">ComputeConfig</span><span>.</span><span class="identifier">enabled</span><span>,
+      </span><span class="type-name">WorkerThreadsConfig</span><span>(
+        </span><span class="type-name">WorkerThreadsConfig</span><span>.</span><span class="type-name">ThreadConfig</span><span>.</span><span class="identifier">enabled</span><span>,
+        </span><span class="type-name">WorkerThreadsConfig</span><span>.</span><span class="type-name">LocalQueueConfig</span><span>.</span><span class="identifier">enabled</span><span>,
+        </span><span class="type-name">WorkerThreadsConfig</span><span>.</span><span class="type-name">TimerHeapConfig</span><span>.</span><span class="identifier">enabled</span><span>(
+          </span><span class="type-name">Attributes</span><span>(</span><span class="type-name">Attribute</span><span>(</span><span class="string-literal">&quot;key&quot;</span><span>, </span><span class="string-literal">&quot;value&quot;</span><span>)) </span><span class="comment">// the attributes
+</span><span>        ),
+        </span><span class="type-name">WorkerThreadsConfig</span><span>.</span><span class="type-name">PollerConfig</span><span>.</span><span class="identifier">enabled</span><span>
+      )
+    )
+  )
+}
+
+</span><span class="type-name">IORuntimeMetrics</span><span>.</span><span class="identifier">register</span><span>[</span><span class="type-name">IO</span><span>](</span><span class="identifier">runtime</span><span>.</span><span class="identifier">metrics</span><span>, </span><span class="identifier">config</span><span>)</span></code></pre>
+        
+        <h3 id="work-stealing-thread-pool-poller-2" class="section"><a class="anchor-link left" href="#work-stealing-thread-pool-poller-2"><i class="icofont-laika link">&#xef71;</i></a>Work-stealing thread pool - poller</h3>
+        <p>To disable poller metrics:</p>
+        <pre><code class="nohighlight"><span class="keyword">val</span><span> </span><span class="identifier">config</span><span>: </span><span class="type-name">IORuntimeMetrics</span><span>.</span><span class="type-name">Config</span><span> = {
+  </span><span class="keyword">import</span><span> </span><span class="type-name">IORuntimeMetrics</span><span>.</span><span class="type-name">Config</span><span>.</span><span class="identifier">_</span><span>
+  </span><span class="keyword">import</span><span> </span><span class="type-name">WorkStealingThreadPoolConfig</span><span>.</span><span class="identifier">_</span><span>
+  
+  </span><span class="type-name">IORuntimeMetrics</span><span>.</span><span class="type-name">Config</span><span>(
+    </span><span class="type-name">CpuStarvationConfig</span><span>.</span><span class="identifier">enabled</span><span>,
+    </span><span class="type-name">WorkStealingThreadPoolConfig</span><span>(
+      </span><span class="type-name">ComputeConfig</span><span>.</span><span class="identifier">enabled</span><span>,
+      </span><span class="type-name">WorkerThreadsConfig</span><span>(
+        </span><span class="type-name">WorkerThreadsConfig</span><span>.</span><span class="type-name">ThreadConfig</span><span>.</span><span class="identifier">enabled</span><span>,
+        </span><span class="type-name">WorkerThreadsConfig</span><span>.</span><span class="type-name">LocalQueueConfig</span><span>.</span><span class="identifier">enabled</span><span>,
+        </span><span class="type-name">WorkerThreadsConfig</span><span>.</span><span class="type-name">TimerHeapConfig</span><span>.</span><span class="identifier">enabled</span><span>,
+        </span><span class="type-name">WorkerThreadsConfig</span><span>.</span><span class="type-name">PollerConfig</span><span>.</span><span class="identifier">disabled</span><span> </span><span class="comment">// disable poller metrics
+</span><span>      )
+    )
+  )
+}
+
+</span><span class="type-name">IORuntimeMetrics</span><span>.</span><span class="identifier">register</span><span>[</span><span class="type-name">IO</span><span>](</span><span class="identifier">runtime</span><span>.</span><span class="identifier">metrics</span><span>, </span><span class="identifier">config</span><span>)</span></code></pre>
+        <p>To attach attributes to poller metrics:</p>
+        <pre><code class="nohighlight"><span class="keyword">val</span><span> </span><span class="identifier">config</span><span>: </span><span class="type-name">IORuntimeMetrics</span><span>.</span><span class="type-name">Config</span><span> = {
+  </span><span class="keyword">import</span><span> </span><span class="type-name">IORuntimeMetrics</span><span>.</span><span class="type-name">Config</span><span>.</span><span class="identifier">_</span><span>
+  </span><span class="keyword">import</span><span> </span><span class="type-name">WorkStealingThreadPoolConfig</span><span>.</span><span class="identifier">_</span><span>
+
+  </span><span class="type-name">IORuntimeMetrics</span><span>.</span><span class="type-name">Config</span><span>(
+    </span><span class="type-name">CpuStarvationConfig</span><span>.</span><span class="identifier">enabled</span><span>,
+    </span><span class="type-name">WorkStealingThreadPoolConfig</span><span>(
+      </span><span class="type-name">ComputeConfig</span><span>.</span><span class="identifier">enabled</span><span>,
+      </span><span class="type-name">WorkerThreadsConfig</span><span>(
+        </span><span class="type-name">WorkerThreadsConfig</span><span>.</span><span class="type-name">ThreadConfig</span><span>.</span><span class="identifier">enabled</span><span>,
+        </span><span class="type-name">WorkerThreadsConfig</span><span>.</span><span class="type-name">LocalQueueConfig</span><span>.</span><span class="identifier">enabled</span><span>,
+        </span><span class="type-name">WorkerThreadsConfig</span><span>.</span><span class="type-name">TimerHeapConfig</span><span>.</span><span class="identifier">enabled</span><span>,
+        </span><span class="type-name">WorkerThreadsConfig</span><span>.</span><span class="type-name">PollerConfig</span><span>.</span><span class="identifier">enabled</span><span>(
+          </span><span class="type-name">Attributes</span><span>(</span><span class="type-name">Attribute</span><span>(</span><span class="string-literal">&quot;key&quot;</span><span>, </span><span class="string-literal">&quot;value&quot;</span><span>)) </span><span class="comment">// the attributes
+</span><span>        )
+      )
+    )
+  )
+}
+
+</span><span class="type-name">IORuntimeMetrics</span><span>.</span><span class="identifier">register</span><span>[</span><span class="type-name">IO</span><span>](</span><span class="identifier">runtime</span><span>.</span><span class="identifier">metrics</span><span>, </span><span class="identifier">config</span><span>)</span></code></pre>
+
+        
+<hr class="footer-rule"/>
+<footer>
+  otel4s is a <a href="https://typelevel.org/">Typelevel</a> project distributed under the <a href="https://www.apache.org/licenses/LICENSE-2.0.txt">Apache-2.0</a> license.
+</footer>
+
+
+      </main>
+
+    </div>
+
+  </body>
+
+</html>

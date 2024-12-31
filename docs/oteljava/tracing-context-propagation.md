@@ -56,7 +56,7 @@ import org.typelevel.otel4s.trace.Tracer
 object Main extends IOApp.Simple {
   def program(tracer: Tracer[IO]): IO[Unit] =
     tracer.span("test").use { span => // start 'test' span using otel4s
-      println(s"jctx: ${JSpan.current().getSpanContext}") // get a span from a ThreadLocal var
+      println(s"jctx: ${JSpan.current().getSpanContext}") // get a span from a ThreadLocal
       IO.println(s"otel4s: ${span.context}")
     }
 

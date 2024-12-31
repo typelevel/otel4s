@@ -287,6 +287,13 @@ object Main extends IOApp.Simple {
 
 @:@
 
+## Grafana dashboard
+
+You can use a Grafana [dashboard][grafana-dashboard] to visualize collected metrics.
+
+@:image(grafana_dashboard.png) {
+  alt = Grafana Dashboard
+}
 
 ## Customization
 
@@ -571,3 +578,5 @@ val config: IORuntimeMetrics.Config = {
 
 IORuntimeMetrics.register[IO](runtime.metrics, config)
 ```
+
+[grafana-dashboard]: https://grafana.com/grafana/dashboards/21487-cats-effect-runtime-metrics/

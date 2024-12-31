@@ -21,7 +21,6 @@ import cats.effect.IOLocal
 import cats.effect.LiftIO
 import cats.effect.MonadCancelThrow
 import cats.mtl.Local
-import org.typelevel.otel4s.instances.local._
 
 /** A utility class to simplify the creation of the [[cats.mtl.Local Local]].
   *
@@ -73,15 +72,9 @@ object LocalProvider extends LocalProviderLowPriority {
     * @tparam Ctx
     *   the type of the context
     */
-  def fromIOLocal[F[_]: MonadCancelThrow: LiftIO, Ctx](
-      ioLocal: IOLocal[Ctx]
-  ): LocalProvider[F, Ctx] =
+  def fromIOLocal[F[_]: MonadCancelThrow: LiftIO, Ctx](ioLocal: IOLocal[Ctx]): LocalProvider[F, Ctx] =
     new LocalProvider[F, Ctx] {
-      val local: F[Local[F, Ctx]] =
-        MonadCancelThrow[F].pure(
-          localForIOLocal[F, Ctx](implicitly, implicitly, ioLocal)
-        )
-
+      val local: F[Local[F, Ctx]] = MonadCancelThrow[F].pure(localForIOLocal[F, Ctx](ioLocal))
       override def toString: String = "LocalProvider.fromIOLocal"
     }
 
@@ -96,9 +89,7 @@ object LocalProvider extends LocalProviderLowPriority {
     * @tparam Ctx
     *   the type of the context
     */
-  def fromLocal[F[_]: Applicative, Ctx](
-      l: Local[F, Ctx]
-  ): LocalProvider[F, Ctx] =
+  def fromLocal[F[_]: Applicative, Ctx](l: Local[F, Ctx]): LocalProvider[F, Ctx] =
     new LocalProvider[F, Ctx] {
       val local: F[Local[F, Ctx]] = Applicative[F].pure(l)
       override def toString: String = "LocalProvider.fromLocal"
@@ -118,16 +109,11 @@ object LocalProvider extends LocalProviderLowPriority {
     * @tparam Ctx
     *   the type of the context
     */
-  def fromLiftIO[
-      F[_]: MonadCancelThrow: LiftIO,
-      Ctx: Contextual
-  ]: LocalProvider[F, Ctx] =
+  def fromLiftIO[F[_]: MonadCancelThrow: LiftIO, Ctx: Contextual]: LocalProvider[F, Ctx] =
     new LocalProvider[F, Ctx] {
       def local: F[Local[F, Ctx]] =
         IOLocal(Contextual[Ctx].root)
-          .map { implicit ioLocal: IOLocal[Ctx] =>
-            localForIOLocal[F, Ctx](implicitly, implicitly, ioLocal)
-          }
+          .map(ioLocal => localForIOLocal[F, Ctx](ioLocal))
           .to[F]
 
       override def toString: String = "LocalProvider.fromLiftIO"
@@ -139,19 +125,25 @@ object LocalProvider extends LocalProviderLowPriority {
   ](implicit ioLocal: IOLocal[Ctx]): LocalProvider[F, Ctx] =
     LocalProvider.fromIOLocal(ioLocal)
 
-  implicit def liftFromLocal[
-      F[_]: Applicative,
-      Ctx
-  ](implicit local: Local[F, Ctx]): LocalProvider[F, Ctx] =
+  implicit def liftFromLocal[F[_]: Applicative, Ctx](implicit local: Local[F, Ctx]): LocalProvider[F, Ctx] =
     LocalProvider.fromLocal(local)
+
+  /** Cats Effect 3.6 introduced `IOLocal#asLocal`. However, we need a variation for a polymorphic type.
+    */
+  private def localForIOLocal[F[_]: MonadCancelThrow: LiftIO, Ctx](ioLocal: IOLocal[Ctx]): Local[F, Ctx] =
+    new Local[F, Ctx] {
+      def applicative: Applicative[F] =
+        Applicative[F]
+      def ask[E2 >: Ctx]: F[E2] =
+        MonadCancelThrow[F].widen[Ctx, E2](ioLocal.get.to[F])
+      def local[A](fa: F[A])(f: Ctx => Ctx): F[A] =
+        MonadCancelThrow[F].bracket(ioLocal.modify(e => (f(e), e)).to[F])(_ => fa)(ioLocal.set(_).to[F])
+    }
 }
 
 sealed trait LocalProviderLowPriority { self: LocalProvider.type =>
 
-  implicit def liftFromLiftIO[
-      F[_]: MonadCancelThrow: LiftIO,
-      Ctx: Contextual
-  ]: LocalProvider[F, Ctx] =
+  implicit def liftFromLiftIO[F[_]: MonadCancelThrow: LiftIO, Ctx: Contextual]: LocalProvider[F, Ctx] =
     LocalProvider.fromLiftIO
 
 }

@@ -132,6 +132,7 @@ lazy val root = tlCrossRootProject
     `core-metrics`,
     `core-trace`,
     core,
+    `instrumentation-metrics`,
     `sdk-common`,
     `sdk-metrics`,
     `sdk-metrics-testkit`,
@@ -234,6 +235,24 @@ lazy val core = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .dependsOn(`core-common`, `core-metrics`, `core-trace`)
   .settings(
     name := "otel4s-core"
+  )
+  .settings(scalafixSettings)
+
+//
+// Instrumentation
+//
+
+lazy val `instrumentation-metrics` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
+  .crossType(CrossType.Full)
+  .in(file("instrumentation/metrics"))
+  .dependsOn(`core-metrics`, `core-common` % "test->test", `sdk-metrics-testkit` % Test)
+  .settings(munitDependencies)
+  .settings(
+    name := "otel4s-instrumentation-metrics",
+    startYear := Some(2024),
+    libraryDependencies ++= Seq(
+      "org.typelevel" %%% "scalacheck-effect-munit" % MUnitScalaCheckEffectVersion % Test
+    )
   )
   .settings(scalafixSettings)
 
@@ -883,6 +902,7 @@ lazy val docs = project
     oteljava,
     `oteljava-context-storage`,
     `oteljava-testkit`,
+    `instrumentation-metrics`.jvm,
     sdk.jvm,
     `sdk-exporter`.jvm,
     `sdk-exporter-prometheus`.jvm,
@@ -954,6 +974,7 @@ lazy val unidocs = project
       `core-metrics`.jvm,
       `core-trace`.jvm,
       core.jvm,
+      `instrumentation-metrics`.jvm,
       `sdk-common`.jvm,
       `sdk-metrics`.jvm,
       `sdk-metrics-testkit`.jvm,

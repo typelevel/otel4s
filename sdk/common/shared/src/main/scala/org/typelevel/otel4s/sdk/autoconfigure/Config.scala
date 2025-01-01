@@ -278,9 +278,9 @@ object Config {
     * @param default
     *   the default properties
     */
-  def load[F[_]: Sync](default: Map[String, String]): F[Config] =
+  def load[F[_]: Sync: Env](default: Map[String, String]): F[Config] =
     for {
-      envVars <- Env.make[F].entries
+      envVars <- Env[F].entries
       systemProps <- Sync[F].delay(sys.props.toMap)
     } yield apply(systemProps, envVars.toMap, default)
 

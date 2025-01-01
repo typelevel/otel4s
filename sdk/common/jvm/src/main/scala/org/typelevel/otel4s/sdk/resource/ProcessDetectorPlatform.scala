@@ -17,6 +17,7 @@
 package org.typelevel.otel4s.sdk.resource
 
 import cats.effect.Sync
+import cats.effect.std.SystemProperties
 import cats.syntax.flatMap._
 import cats.syntax.functor._
 import org.typelevel.otel4s.Attributes
@@ -34,18 +35,18 @@ private[resource] trait ProcessDetectorPlatform { self: ProcessDetector.type =>
   private val JarFilePattern =
     Pattern.compile("^\\S+\\.(jar|war)", Pattern.CASE_INSENSITIVE)
 
-  def apply[F[_]: Sync]: TelemetryResourceDetector[F] =
+  def apply[F[_]: Sync: SystemProperties]: TelemetryResourceDetector[F] =
     new Detector[F]
 
-  private class Detector[F[_]: Sync] extends TelemetryResourceDetector[F] {
+  private class Detector[F[_]: Sync: SystemProperties] extends TelemetryResourceDetector[F] {
     def name: String = Const.Name
 
     def detect: F[Option[TelemetryResource]] =
       for {
         runtime <- Sync[F].delay(ManagementFactory.getRuntimeMXBean)
-        javaHomeOpt <- Sync[F].delay(sys.props.get("java.home"))
-        osNameOpt <- Sync[F].delay(sys.props.get("os.name"))
-        javaCommandOpt <- Sync[F].delay(sys.props.get("sun.java.command"))
+        javaHomeOpt <- SystemProperties[F].get("java.home")
+        osNameOpt <- SystemProperties[F].get("os.name")
+        javaCommandOpt <- SystemProperties[F].get("sun.java.command")
       } yield {
         val builder = Attributes.newBuilder
 

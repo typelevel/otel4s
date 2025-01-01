@@ -16,7 +16,8 @@
 
 package org.typelevel.otel4s.sdk.resource
 
-import cats.effect.Sync
+import cats.Monad
+import cats.effect.std.SystemProperties
 import cats.syntax.apply._
 import cats.syntax.flatMap._
 import cats.syntax.functor._
@@ -27,19 +28,19 @@ import org.typelevel.otel4s.semconv.SchemaUrls
 private[resource] trait ProcessRuntimeDetectorPlatform {
   self: ProcessRuntimeDetector.type =>
 
-  def apply[F[_]: Sync]: TelemetryResourceDetector[F] =
+  def apply[F[_]: Monad: SystemProperties]: TelemetryResourceDetector[F] =
     new Detector[F]
 
-  private class Detector[F[_]: Sync] extends TelemetryResourceDetector[F] {
+  private class Detector[F[_]: Monad: SystemProperties] extends TelemetryResourceDetector[F] {
     def name: String = Const.Name
 
     def detect: F[Option[TelemetryResource]] =
       for {
-        runtimeName <- Sync[F].delay(sys.props.get("java.runtime.name"))
-        runtimeVersion <- Sync[F].delay(sys.props.get("java.runtime.version"))
-        vmVendor <- Sync[F].delay(sys.props.get("java.vm.vendor"))
-        vmName <- Sync[F].delay(sys.props.get("java.vm.name"))
-        vmVersion <- Sync[F].delay(sys.props.get("java.vm.version"))
+        runtimeName <- SystemProperties[F].get("java.runtime.name")
+        runtimeVersion <- SystemProperties[F].get("java.runtime.version")
+        vmVendor <- SystemProperties[F].get("java.vm.vendor")
+        vmName <- SystemProperties[F].get("java.vm.name")
+        vmVersion <- SystemProperties[F].get("java.vm.version")
       } yield {
         val attributes = Attributes.newBuilder
 

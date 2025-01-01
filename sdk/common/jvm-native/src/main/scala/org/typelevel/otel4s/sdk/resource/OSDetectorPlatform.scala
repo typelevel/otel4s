@@ -16,7 +16,8 @@
 
 package org.typelevel.otel4s.sdk.resource
 
-import cats.effect.Sync
+import cats.Monad
+import cats.effect.std.SystemProperties
 import cats.syntax.flatMap._
 import cats.syntax.functor._
 import org.typelevel.otel4s.Attributes
@@ -27,16 +28,16 @@ import java.util.Locale
 
 private[resource] trait OSDetectorPlatform { self: OSDetector.type =>
 
-  def apply[F[_]: Sync]: TelemetryResourceDetector[F] =
+  def apply[F[_]: Monad: SystemProperties]: TelemetryResourceDetector[F] =
     new Detector[F]
 
-  private class Detector[F[_]: Sync] extends TelemetryResourceDetector[F] {
+  private class Detector[F[_]: Monad: SystemProperties] extends TelemetryResourceDetector[F] {
     def name: String = Const.Name
 
     def detect: F[Option[TelemetryResource]] =
       for {
-        nameOpt <- Sync[F].delay(sys.props.get("os.name"))
-        versionOpt <- Sync[F].delay(sys.props.get("os.version"))
+        nameOpt <- SystemProperties[F].get("os.name")
+        versionOpt <- SystemProperties[F].get("os.version")
       } yield {
         val builder = Attributes.newBuilder
 

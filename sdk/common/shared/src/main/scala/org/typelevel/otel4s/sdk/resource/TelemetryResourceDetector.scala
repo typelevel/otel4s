@@ -19,6 +19,7 @@ package sdk
 package resource
 
 import cats.effect.Sync
+import cats.effect.std.SystemProperties
 
 /** A detector creates a resource with environment(platform)-specific attributes.
   *
@@ -58,12 +59,14 @@ object TelemetryResourceDetector {
     * @tparam F
     *   the higher-kinded type of a polymorphic effect
     */
-  def default[F[_]: Sync]: Set[TelemetryResourceDetector[F]] =
+  def default[F[_]: Sync: SystemProperties]: Set[TelemetryResourceDetector[F]] = {
+    val _ = SystemProperties[F]
     Set(
       HostDetector[F],
       OSDetector[F],
       ProcessDetector[F],
       ProcessRuntimeDetector[F]
     )
+  }
 
 }

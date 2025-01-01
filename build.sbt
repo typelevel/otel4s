@@ -157,6 +157,7 @@ lazy val root = tlCrossRootProject
     `oteljava-trace-testkit`,
     `oteljava-testkit`,
     `oteljava-context-storage`,
+    oteljava,
     `semconv-stable`,
     `semconv-experimental`,
     `semconv-metrics-stable`,

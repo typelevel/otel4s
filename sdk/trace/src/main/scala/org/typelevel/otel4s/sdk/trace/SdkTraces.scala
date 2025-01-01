@@ -21,6 +21,7 @@ import cats.Parallel
 import cats.effect.Async
 import cats.effect.Resource
 import cats.effect.std.Console
+import cats.effect.std.Env
 import cats.effect.std.Random
 import cats.effect.std.SystemProperties
 import cats.mtl.Local
@@ -87,7 +88,7 @@ object SdkTraces {
     * @param customize
     *   a function for customizing the auto-configured SDK builder
     */
-  def autoConfigured[F[_]: Async: Parallel: SystemProperties: Console: LocalContextProvider](
+  def autoConfigured[F[_]: Async: Parallel: Env: SystemProperties: Console: LocalContextProvider](
       customize: AutoConfigured.Builder[F] => AutoConfigured.Builder[F] = (a: AutoConfigured.Builder[F]) => a
   ): Resource[F, SdkTraces[F]] =
     customize(AutoConfigured.builder[F]).build
@@ -132,9 +133,7 @@ object SdkTraces {
         * @param customizer
         *   the customizer to add
         */
-      def addPropertiesCustomizer(
-          customizer: Config => Map[String, String]
-      ): Builder[F]
+      def addPropertiesCustomizer(customizer: Config => Map[String, String]): Builder[F]
 
       /** Adds the tracer provider builder customizer. Multiple customizers can be added, and they will be applied in
         * the order they were added.
@@ -142,9 +141,7 @@ object SdkTraces {
         * @param customizer
         *   the customizer to add
         */
-      def addTracerProviderCustomizer(
-          customizer: Customizer[SdkTracerProvider.Builder[F]]
-      ): Builder[F]
+      def addTracerProviderCustomizer(customizer: Customizer[SdkTracerProvider.Builder[F]]): Builder[F]
 
       /** Adds the telemetry resource customizer. Multiple customizers can be added, and they will be applied in the
         * order they were added.
@@ -152,9 +149,7 @@ object SdkTraces {
         * @param customizer
         *   the customizer to add
         */
-      def addResourceCustomizer(
-          customizer: Customizer[TelemetryResource]
-      ): Builder[F]
+      def addResourceCustomizer(customizer: Customizer[TelemetryResource]): Builder[F]
 
       /** Adds the telemetry resource detector. Multiple detectors can be added, and the detected telemetry resources
         * will be merged.
@@ -169,9 +164,7 @@ object SdkTraces {
         * @param detector
         *   the detector to add
         */
-      def addResourceDetector(
-          detector: TelemetryResourceDetector[F]
-      ): Builder[F]
+      def addResourceDetector(detector: TelemetryResourceDetector[F]): Builder[F]
 
       /** Adds the exporter configurer. Can be used to register exporters that aren't included in the SDK.
         *
@@ -191,9 +184,7 @@ object SdkTraces {
         * @param configurer
         *   the configurer to add
         */
-      def addExporterConfigurer(
-          configurer: AutoConfigure.Named[F, SpanExporter[F]]
-      ): Builder[F]
+      def addExporterConfigurer(configurer: AutoConfigure.Named[F, SpanExporter[F]]): Builder[F]
 
       /** Adds the sampler configurer. Can be used to register samplers that aren't included in the SDK.
         *
@@ -207,9 +198,7 @@ object SdkTraces {
         * @param configurer
         *   the configurer to add
         */
-      def addTextMapPropagatorConfigurer(
-          configurer: AutoConfigure.Named[F, TextMapPropagator[Context]]
-      ): Builder[F]
+      def addTextMapPropagatorConfigurer(configurer: AutoConfigure.Named[F, TextMapPropagator[Context]]): Builder[F]
 
       /** Creates [[SdkTraces]] using the configuration of this builder.
         */
@@ -218,7 +207,7 @@ object SdkTraces {
 
     /** Creates a [[Builder]].
       */
-    def builder[F[_]: Async: Parallel: SystemProperties: Console: LocalContextProvider]: Builder[F] =
+    def builder[F[_]: Async: Parallel: Env: SystemProperties: Console: LocalContextProvider]: Builder[F] =
       BuilderImpl(
         customConfig = None,
         propertiesLoader = Async[F].pure(Map.empty),
@@ -231,7 +220,7 @@ object SdkTraces {
         textMapPropagatorConfigurers = Set.empty
       )
 
-    private final case class BuilderImpl[F[_]: Async: Parallel: SystemProperties: Console: LocalContextProvider](
+    private final case class BuilderImpl[F[_]: Async: Parallel: Env: SystemProperties: Console: LocalContextProvider](
         customConfig: Option[Config],
         propertiesLoader: F[Map[String, String]],
         propertiesCustomizers: List[Config => Map[String, String]],
@@ -240,50 +229,34 @@ object SdkTraces {
         resourceDetectors: Set[TelemetryResourceDetector[F]],
         exporterConfigurers: Set[AutoConfigure.Named[F, SpanExporter[F]]],
         samplerConfigurers: Set[AutoConfigure.Named[F, Sampler[F]]],
-        textMapPropagatorConfigurers: Set[
-          AutoConfigure.Named[F, TextMapPropagator[Context]]
-        ]
+        textMapPropagatorConfigurers: Set[AutoConfigure.Named[F, TextMapPropagator[Context]]]
     ) extends Builder[F] {
 
       def withConfig(config: Config): Builder[F] =
         copy(customConfig = Some(config))
 
-      def addPropertiesLoader(
-          loader: F[Map[String, String]]
-      ): Builder[F] =
+      def addPropertiesLoader(loader: F[Map[String, String]]): Builder[F] =
         copy(propertiesLoader = (this.propertiesLoader, loader).mapN(_ ++ _))
 
-      def addPropertiesCustomizer(
-          customizer: Config => Map[String, String]
-      ): Builder[F] =
+      def addPropertiesCustomizer(customizer: Config => Map[String, String]): Builder[F] =
         copy(propertiesCustomizers = this.propertiesCustomizers :+ customizer)
 
-      def addResourceCustomizer(
-          customizer: Customizer[TelemetryResource]
-      ): Builder[F] =
+      def addResourceCustomizer(customizer: Customizer[TelemetryResource]): Builder[F] =
         copy(resourceCustomizer = merge(this.resourceCustomizer, customizer))
 
-      def addResourceDetector(
-          detector: TelemetryResourceDetector[F]
-      ): Builder[F] =
+      def addResourceDetector(detector: TelemetryResourceDetector[F]): Builder[F] =
         copy(resourceDetectors = this.resourceDetectors + detector)
 
-      def addTracerProviderCustomizer(
-          customizer: Customizer[SdkTracerProvider.Builder[F]]
-      ): Builder[F] =
+      def addTracerProviderCustomizer(customizer: Customizer[SdkTracerProvider.Builder[F]]): Builder[F] =
         copy(tracerProviderCustomizer = merge(this.tracerProviderCustomizer, customizer))
 
-      def addExporterConfigurer(
-          configurer: AutoConfigure.Named[F, SpanExporter[F]]
-      ): Builder[F] =
+      def addExporterConfigurer(configurer: AutoConfigure.Named[F, SpanExporter[F]]): Builder[F] =
         copy(exporterConfigurers = this.exporterConfigurers + configurer)
 
       def addSamplerConfigurer(configurer: AutoConfigure.Named[F, Sampler[F]]): Builder[F] =
         copy(samplerConfigurers = this.samplerConfigurers + configurer)
 
-      def addTextMapPropagatorConfigurer(
-          configurer: AutoConfigure.Named[F, TextMapPropagator[Context]]
-      ): Builder[F] =
+      def addTextMapPropagatorConfigurer(configurer: AutoConfigure.Named[F, TextMapPropagator[Context]]): Builder[F] =
         copy(textMapPropagatorConfigurers = this.textMapPropagatorConfigurers + configurer)
 
       def build: Resource[F, SdkTraces[F]] = {

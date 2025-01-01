@@ -20,6 +20,7 @@ import cats.Applicative
 import cats.effect.Async
 import cats.effect.Resource
 import cats.effect.std.Console
+import cats.effect.std.Env
 import cats.effect.std.Random
 import cats.effect.std.SystemProperties
 import cats.mtl.Ask
@@ -71,7 +72,7 @@ object SdkMetrics {
     * @param customize
     *   a function for customizing the auto-configured SDK builder
     */
-  def autoConfigured[F[_]: Async: SystemProperties: Console](
+  def autoConfigured[F[_]: Async: Env: SystemProperties: Console](
       customize: AutoConfigured.Builder[F] => AutoConfigured.Builder[F] = (a: AutoConfigured.Builder[F]) => a
   ): Resource[F, SdkMetrics[F]] =
     customize(AutoConfigured.builder[F]).build
@@ -112,9 +113,7 @@ object SdkMetrics {
         * @param customizer
         *   the customizer to add
         */
-      def addPropertiesCustomizer(
-          customizer: Config => Map[String, String]
-      ): Builder[F]
+      def addPropertiesCustomizer(customizer: Config => Map[String, String]): Builder[F]
 
       /** Adds the meter provider builder customizer. Multiple customizers can be added, and they will be applied in the
         * order they were added.
@@ -122,9 +121,7 @@ object SdkMetrics {
         * @param customizer
         *   the customizer to add
         */
-      def addMeterProviderCustomizer(
-          customizer: Customizer[SdkMeterProvider.Builder[F]]
-      ): Builder[F]
+      def addMeterProviderCustomizer(customizer: Customizer[SdkMeterProvider.Builder[F]]): Builder[F]
 
       /** Adds the telemetry resource customizer. Multiple customizers can be added, and they will be applied in the
         * order they were added.
@@ -132,9 +129,7 @@ object SdkMetrics {
         * @param customizer
         *   the customizer to add
         */
-      def addResourceCustomizer(
-          customizer: Customizer[TelemetryResource]
-      ): Builder[F]
+      def addResourceCustomizer(customizer: Customizer[TelemetryResource]): Builder[F]
 
       /** Adds the telemetry resource detector. Multiple detectors can be added, and the detected telemetry resources
         * will be merged.
@@ -149,9 +144,7 @@ object SdkMetrics {
         * @param detector
         *   the detector to add
         */
-      def addResourceDetector(
-          detector: TelemetryResourceDetector[F]
-      ): Builder[F]
+      def addResourceDetector(detector: TelemetryResourceDetector[F]): Builder[F]
 
       /** Adds the exporter configurer. Can be used to register exporters that aren't included in the SDK.
         *
@@ -171,9 +164,7 @@ object SdkMetrics {
         * @param configurer
         *   the configurer to add
         */
-      def addExporterConfigurer(
-          configurer: AutoConfigure.Named[F, MetricExporter[F]]
-      ): Builder[F]
+      def addExporterConfigurer(configurer: AutoConfigure.Named[F, MetricExporter[F]]): Builder[F]
 
       /** Creates [[SdkMetrics]] using the configuration of this builder.
         */
@@ -182,7 +173,7 @@ object SdkMetrics {
 
     /** Creates a [[Builder]].
       */
-    def builder[F[_]: Async: SystemProperties: Console]: Builder[F] =
+    def builder[F[_]: Async: Env: SystemProperties: Console]: Builder[F] =
       BuilderImpl(
         customConfig = None,
         propertiesLoader = Async[F].pure(Map.empty),
@@ -193,7 +184,7 @@ object SdkMetrics {
         exporterConfigurers = Set.empty
       )
 
-    private final case class BuilderImpl[F[_]: Async: SystemProperties: Console](
+    private final case class BuilderImpl[F[_]: Async: Env: SystemProperties: Console](
         customConfig: Option[Config],
         propertiesLoader: F[Map[String, String]],
         propertiesCustomizers: List[Config => Map[String, String]],
@@ -206,34 +197,22 @@ object SdkMetrics {
       def withConfig(config: Config): Builder[F] =
         copy(customConfig = Some(config))
 
-      def addPropertiesLoader(
-          loader: F[Map[String, String]]
-      ): Builder[F] =
+      def addPropertiesLoader(loader: F[Map[String, String]]): Builder[F] =
         copy(propertiesLoader = (this.propertiesLoader, loader).mapN(_ ++ _))
 
-      def addPropertiesCustomizer(
-          customizer: Config => Map[String, String]
-      ): Builder[F] =
+      def addPropertiesCustomizer(customizer: Config => Map[String, String]): Builder[F] =
         copy(propertiesCustomizers = this.propertiesCustomizers :+ customizer)
 
-      def addResourceCustomizer(
-          customizer: Customizer[TelemetryResource]
-      ): Builder[F] =
+      def addResourceCustomizer(customizer: Customizer[TelemetryResource]): Builder[F] =
         copy(resourceCustomizer = merge(this.resourceCustomizer, customizer))
 
-      def addMeterProviderCustomizer(
-          customizer: Customizer[SdkMeterProvider.Builder[F]]
-      ): Builder[F] =
+      def addMeterProviderCustomizer(customizer: Customizer[SdkMeterProvider.Builder[F]]): Builder[F] =
         copy(meterProviderCustomizer = merge(this.meterProviderCustomizer, customizer))
 
-      def addResourceDetector(
-          detector: TelemetryResourceDetector[F]
-      ): Builder[F] =
+      def addResourceDetector(detector: TelemetryResourceDetector[F]): Builder[F] =
         copy(resourceDetectors = this.resourceDetectors + detector)
 
-      def addExporterConfigurer(
-          configurer: AutoConfigure.Named[F, MetricExporter[F]]
-      ): Builder[F] =
+      def addExporterConfigurer(configurer: AutoConfigure.Named[F, MetricExporter[F]]): Builder[F] =
         copy(exporterConfigurers = this.exporterConfigurers + configurer)
 
       def build: Resource[F, SdkMetrics[F]] = {

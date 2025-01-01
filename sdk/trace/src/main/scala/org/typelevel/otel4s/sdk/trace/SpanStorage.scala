@@ -46,6 +46,6 @@ private class SpanStorage[F[_]] private (
 private object SpanStorage {
   def create[F[_]: Concurrent]: F[SpanStorage[F]] =
     for {
-      storage <- MapRef.ofShardedImmutableMap[F, SpanContext, SpanRef[F]](Runtime.getRuntime.availableProcessors())
+      storage <- MapRef[F, SpanContext, SpanRef[F]]
     } yield new SpanStorage[F](storage)
 }

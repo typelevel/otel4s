@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.typelevel.otel4s.oteljava
+package org.typelevel.otel4s.oteljava.context
 
 import cats.effect.IO
 import cats.effect.SyncIO
@@ -23,8 +23,6 @@ import io.opentelemetry.context.ContextStorage
 import munit.CatsEffectSuite
 import munit.Location
 import org.typelevel.otel4s.context.Key
-import org.typelevel.otel4s.oteljava.context.Context
-import org.typelevel.otel4s.oteljava.context.LocalContext
 
 import scala.util.Using
 

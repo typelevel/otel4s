@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.typelevel.otel4s.oteljava
+package org.typelevel.otel4s.oteljava.context
 
 import cats.effect.IOLocal
 import cats.effect.LiftIO
@@ -25,8 +25,6 @@ import io.opentelemetry.context.{Context => JContext}
 import io.opentelemetry.context.ContextStorage
 import io.opentelemetry.context.Scope
 import org.typelevel.otel4s.context.LocalProvider
-import org.typelevel.otel4s.oteljava.context.Context
-import org.typelevel.otel4s.oteljava.context.LocalContext
 
 /** A `ContextStorage` backed by an [[cats.effect.IOLocal `IOLocal`]] of a
   * [[org.typelevel.otel4s.oteljava.context.Context `Context`]] that also provides [[cats.mtl.Local `Local`]] instances

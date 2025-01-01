@@ -21,6 +21,7 @@ import cats.effect.Async
 import cats.effect.Resource
 import cats.effect.std.Console
 import cats.effect.std.Random
+import cats.effect.std.SystemProperties
 import cats.mtl.Ask
 import cats.syntax.apply._
 import cats.syntax.flatMap._
@@ -70,7 +71,7 @@ object SdkMetrics {
     * @param customize
     *   a function for customizing the auto-configured SDK builder
     */
-  def autoConfigured[F[_]: Async: Console](
+  def autoConfigured[F[_]: Async: SystemProperties: Console](
       customize: AutoConfigured.Builder[F] => AutoConfigured.Builder[F] = (a: AutoConfigured.Builder[F]) => a
   ): Resource[F, SdkMetrics[F]] =
     customize(AutoConfigured.builder[F]).build
@@ -181,7 +182,7 @@ object SdkMetrics {
 
     /** Creates a [[Builder]].
       */
-    def builder[F[_]: Async: Console]: Builder[F] =
+    def builder[F[_]: Async: SystemProperties: Console]: Builder[F] =
       BuilderImpl(
         customConfig = None,
         propertiesLoader = Async[F].pure(Map.empty),
@@ -192,7 +193,7 @@ object SdkMetrics {
         exporterConfigurers = Set.empty
       )
 
-    private final case class BuilderImpl[F[_]: Async: Console](
+    private final case class BuilderImpl[F[_]: Async: SystemProperties: Console](
         customConfig: Option[Config],
         propertiesLoader: F[Map[String, String]],
         propertiesCustomizers: List[Config => Map[String, String]],

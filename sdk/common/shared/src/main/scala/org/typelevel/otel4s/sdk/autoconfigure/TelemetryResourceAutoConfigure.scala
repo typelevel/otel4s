@@ -21,6 +21,7 @@ package autoconfigure
 import cats.effect.Resource
 import cats.effect.Sync
 import cats.effect.std.Console
+import cats.effect.std.SystemProperties
 import cats.syntax.applicativeError._
 import cats.syntax.either._
 import cats.syntax.functor._
@@ -50,7 +51,7 @@ import java.nio.charset.StandardCharsets
   * @param extraDetectors
   *   the extra detectors to use
   */
-private final class TelemetryResourceAutoConfigure[F[_]: Sync: Console](
+private final class TelemetryResourceAutoConfigure[F[_]: Sync: SystemProperties: Console](
     extraDetectors: Set[TelemetryResourceDetector[F]]
 ) extends AutoConfigure.WithHint[F, TelemetryResource](
       "TelemetryResource",
@@ -248,7 +249,7 @@ private[sdk] object TelemetryResourceAutoConfigure {
     * @param extraDetectors
     *   the extra detectors to use
     */
-  def apply[F[_]: Sync: Console](
+  def apply[F[_]: Sync: SystemProperties: Console](
       extraDetectors: Set[TelemetryResourceDetector[F]]
   ): AutoConfigure[F, TelemetryResource] =
     new TelemetryResourceAutoConfigure[F](extraDetectors)

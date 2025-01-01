@@ -17,6 +17,7 @@
 package org.typelevel.otel4s.sdk.resource
 
 import cats.effect.Sync
+import cats.effect.std.SystemProperties
 import cats.syntax.applicativeError._
 import cats.syntax.flatMap._
 import cats.syntax.functor._
@@ -28,16 +29,16 @@ import java.net.InetAddress
 
 private[resource] trait HostDetectorPlatform { self: HostDetector.type =>
 
-  def apply[F[_]: Sync]: TelemetryResourceDetector[F] =
+  def apply[F[_]: Sync: SystemProperties]: TelemetryResourceDetector[F] =
     new Detector[F]
 
-  private class Detector[F[_]: Sync] extends TelemetryResourceDetector[F] {
+  private class Detector[F[_]: Sync: SystemProperties] extends TelemetryResourceDetector[F] {
     def name: String = Const.Name
 
     def detect: F[Option[TelemetryResource]] =
       for {
         host <- Sync[F].blocking(InetAddress.getLocalHost.getHostName).redeem(_ => None, Some(_))
-        arch <- Sync[F].delay(sys.props.get("os.arch"))
+        arch <- SystemProperties[F].get("os.arch")
       } yield {
         val builder = Attributes.newBuilder
 

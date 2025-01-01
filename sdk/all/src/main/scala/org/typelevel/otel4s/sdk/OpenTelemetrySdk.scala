@@ -22,6 +22,7 @@ import cats.effect.Async
 import cats.effect.Resource
 import cats.effect.std.Console
 import cats.effect.std.Random
+import cats.effect.std.SystemProperties
 import cats.syntax.apply._
 import cats.syntax.flatMap._
 import cats.syntax.functor._
@@ -86,7 +87,7 @@ object OpenTelemetrySdk {
     * @param customize
     *   a function for customizing the auto-configured SDK builder
     */
-  def autoConfigured[F[_]: Async: Parallel: Console: LocalContextProvider](
+  def autoConfigured[F[_]: Async: Parallel: SystemProperties: Console: LocalContextProvider](
       customize: AutoConfigured.Builder[F] => AutoConfigured.Builder[F] = (a: AutoConfigured.Builder[F]) => a
   ): Resource[F, AutoConfigured[F]] =
     customize(AutoConfigured.builder[F]).build
@@ -297,9 +298,7 @@ object OpenTelemetrySdk {
 
     /** Creates a [[Builder]].
       */
-    def builder[
-        F[_]: Async: Parallel: Console: LocalContextProvider
-    ]: Builder[F] =
+    def builder[F[_]: Async: Parallel: SystemProperties: Console: LocalContextProvider]: Builder[F] =
       BuilderImpl(
         customConfig = None,
         propertiesLoader = Async[F].pure(Map.empty),
@@ -314,9 +313,7 @@ object OpenTelemetrySdk {
         textMapPropagatorConfigurers = Set.empty
       )
 
-    private final case class BuilderImpl[
-        F[_]: Async: Parallel: Console: LocalContextProvider
-    ](
+    private final case class BuilderImpl[F[_]: Async: Parallel: SystemProperties: Console: LocalContextProvider](
         customConfig: Option[Config],
         propertiesLoader: F[Map[String, String]],
         propertiesCustomizers: List[Config => Map[String, String]],

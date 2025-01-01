@@ -14,14 +14,13 @@
  * limitations under the License.
  */
 
-package org.typelevel.otel4s.oteljava
+package org.typelevel.otel4s.oteljava.context
 
 import cats.effect.IOLocal
 import cats.effect.SyncIO
 import cats.syntax.all._
 import io.opentelemetry.context.ContextStorage
 import io.opentelemetry.context.ContextStorageProvider
-import org.typelevel.otel4s.oteljava.context.Context
 
 object IOLocalContextStorageProvider {
   private lazy val localContext: IOLocal[Context] =

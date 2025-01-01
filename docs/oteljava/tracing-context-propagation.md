@@ -48,9 +48,9 @@ import cats.effect.IO
 import cats.effect.IOApp
 import io.opentelemetry.api.trace.{Span => JSpan}
 import org.typelevel.otel4s.context.LocalProvider
-import org.typelevel.otel4s.oteljava.IOLocalContextStorage
 import org.typelevel.otel4s.oteljava.OtelJava
 import org.typelevel.otel4s.oteljava.context.Context
+import org.typelevel.otel4s.oteljava.context.IOLocalContextStorage
 import org.typelevel.otel4s.trace.Tracer
 
 object Main extends IOApp.Simple {

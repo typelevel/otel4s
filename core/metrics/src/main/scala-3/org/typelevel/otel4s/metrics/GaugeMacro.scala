@@ -60,9 +60,6 @@ object GaugeMacro {
       value: Expr[A],
       attributes: Expr[immutable.Iterable[Attribute[_]]]
   )(using Quotes, Type[F], Type[A]) =
-    '{
-      if ($backend.meta.isEnabled) $backend.record($value, $attributes)
-      else $backend.meta.unit
-    }
+    '{ $backend.meta.ifEnabled($backend.record($value, $attributes)) }
 
 }

@@ -21,6 +21,7 @@ package trace
 
 import cats.effect.IO
 import com.comcast.ip4s.IpAddress
+import fs2.io.compression._
 import io.circe.Encoder
 import io.circe.Json
 import munit._
@@ -43,7 +44,7 @@ import org.typelevel.otel4s.trace.StatusCode
 import java.util.Locale
 import scala.concurrent.duration._
 
-class OtlpSpanExporterSuite extends CatsEffectSuite with ScalaCheckEffectSuite with SuiteRuntimePlatform {
+class OtlpSpanExporterSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
 
   import OtlpSpanExporterSuite._
 

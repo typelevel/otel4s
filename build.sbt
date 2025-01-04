@@ -34,7 +34,6 @@ lazy val scalaJSLinkerSettings = Def.settings(
 )
 
 lazy val scalaNativeSettings = Def.settings(
-  libraryDependencies += "com.armanbilge" %%% "epollcat" % EpollcatVersion % Test,
   Test / nativeBrewFormulas ++= Set("s2n", "utf8proc"),
   Test / envVars ++= Map("S2N_DONT_MLOCK" -> "1"),
   // the SN artifacts could be quite large and exceed the CI disk space limit
@@ -80,7 +79,7 @@ ThisBuild / mergifyPrRules ++= Seq(
 val CatsVersion = "2.11.0"
 val CatsEffectVersion = "3.6.0-RC1"
 val CatsMtlVersion = "1.4.0"
-val FS2Version = "3.11.0"
+val FS2Version = "3.12.0-RC1"
 val MUnitVersion = "1.0.0"
 val MUnitScalaCheckVersion = "1.0.0-M11"
 val MUnitCatsEffectVersion = "2.0.0"
@@ -98,7 +97,6 @@ val ScodecVersion = "1.1.38"
 val VaultVersion = "3.6.0"
 val Http4sVersion = "0.23.30"
 val CirceVersion = "0.14.8"
-val EpollcatVersion = "0.1.6"
 val ScalaPBCirceVersion = "0.15.1"
 val CaseInsensitiveVersion = "1.4.2"
 
@@ -466,6 +464,7 @@ lazy val `sdk-exporter-common` =
       startYear := Some(2023),
       libraryDependencies ++= Seq(
         "co.fs2" %%% "fs2-scodec" % FS2Version,
+        "co.fs2" %%% "fs2-io" % FS2Version,
         "org.http4s" %%% "http4s-ember-client" % Http4sVersion,
         "org.http4s" %%% "http4s-circe" % Http4sVersion,
         "io.github.scalapb-json" %%% "scalapb-circe" % ScalaPBCirceVersion,
@@ -584,9 +583,10 @@ lazy val `sdk-contrib-aws-resource` =
       name := "otel4s-sdk-contrib-aws-resource",
       startYear := Some(2024),
       libraryDependencies ++= Seq(
+        "co.fs2" %%% "fs2-io" % FS2Version,
+        "io.circe" %%% "circe-parser" % CirceVersion,
         "org.http4s" %%% "http4s-ember-client" % Http4sVersion,
         "org.http4s" %%% "http4s-circe" % Http4sVersion,
-        "io.circe" %%% "circe-parser" % CirceVersion,
         "org.http4s" %%% "http4s-dsl" % Http4sVersion % Test
       )
     )

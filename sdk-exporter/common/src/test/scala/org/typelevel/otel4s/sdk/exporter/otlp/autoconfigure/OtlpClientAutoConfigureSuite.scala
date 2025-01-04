@@ -21,6 +21,7 @@ package autoconfigure
 import cats.effect.IO
 import cats.syntax.either._
 import cats.syntax.traverse._
+import fs2.io.compression._
 import munit.CatsEffectSuite
 import org.http4s.Headers
 import org.http4s.Uri
@@ -30,7 +31,7 @@ import scalapb_circe.Printer
 
 import scala.concurrent.duration._
 
-class OtlpClientAutoConfigureSuite extends CatsEffectSuite with SuiteRuntimePlatform {
+class OtlpClientAutoConfigureSuite extends CatsEffectSuite {
 
   import OtlpClientAutoConfigure.Defaults
 

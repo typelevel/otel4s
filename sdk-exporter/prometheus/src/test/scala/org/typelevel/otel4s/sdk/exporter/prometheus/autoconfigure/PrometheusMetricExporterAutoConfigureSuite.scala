@@ -18,12 +18,12 @@ package org.typelevel.otel4s.sdk.exporter.prometheus.autoconfigure
 
 import cats.effect.IO
 import cats.syntax.either._
+import fs2.io.compression._
 import munit.CatsEffectSuite
 import org.typelevel.otel4s.sdk.autoconfigure.Config
-import org.typelevel.otel4s.sdk.exporter.SuiteRuntimePlatform
 import org.typelevel.otel4s.sdk.test.InMemoryConsole
 
-class PrometheusMetricExporterAutoConfigureSuite extends CatsEffectSuite with SuiteRuntimePlatform {
+class PrometheusMetricExporterAutoConfigureSuite extends CatsEffectSuite {
 
   test("load from an empty config - load default") {
     val config = Config.ofProps(Map.empty)

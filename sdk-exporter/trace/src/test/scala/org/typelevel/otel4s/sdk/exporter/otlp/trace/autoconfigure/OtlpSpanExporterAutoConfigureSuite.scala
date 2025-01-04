@@ -20,10 +20,11 @@ package otlp.trace.autoconfigure
 import cats.effect.IO
 import cats.syntax.either._
 import cats.syntax.foldable._
+import fs2.io.compression._
 import munit.CatsEffectSuite
 import org.typelevel.otel4s.sdk.autoconfigure.Config
 
-class OtlpSpanExporterAutoConfigureSuite extends CatsEffectSuite with SuiteRuntimePlatform {
+class OtlpSpanExporterAutoConfigureSuite extends CatsEffectSuite {
 
   test("load from the config - empty config - load default") {
     val config = Config.ofProps(Map.empty)

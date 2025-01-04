@@ -21,6 +21,7 @@ import cats.data.NonEmptyVector
 import cats.effect.IO
 import cats.syntax.foldable._
 import com.comcast.ip4s.IpAddress
+import fs2.io.compression._
 import io.circe.Decoder
 import munit.CatsEffectSuite
 import munit.ScalaCheckEffectSuite
@@ -36,7 +37,6 @@ import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.AttributeType
 import org.typelevel.otel4s.Attributes
 import org.typelevel.otel4s.sdk.exporter.RetryPolicy
-import org.typelevel.otel4s.sdk.exporter.SuiteRuntimePlatform
 import org.typelevel.otel4s.sdk.metrics.data.AggregationTemporality
 import org.typelevel.otel4s.sdk.metrics.data.MetricData
 import org.typelevel.otel4s.sdk.metrics.data.MetricPoints
@@ -45,7 +45,7 @@ import org.typelevel.otel4s.sdk.metrics.scalacheck.Arbitraries._
 
 import scala.concurrent.duration._
 
-class OtlpMetricExporterSuite extends CatsEffectSuite with ScalaCheckEffectSuite with SuiteRuntimePlatform {
+class OtlpMetricExporterSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
 
   import OtlpMetricExporterSuite._
 

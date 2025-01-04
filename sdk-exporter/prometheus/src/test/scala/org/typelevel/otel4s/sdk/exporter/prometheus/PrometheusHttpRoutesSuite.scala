@@ -17,6 +17,7 @@
 package org.typelevel.otel4s.sdk.exporter.prometheus
 
 import cats.effect.IO
+import fs2.io.compression._
 import munit.CatsEffectSuite
 import org.http4s.Headers
 import org.http4s.HttpRoutes
@@ -27,9 +28,8 @@ import org.http4s.Request
 import org.http4s.Status
 import org.http4s.headers.Accept
 import org.http4s.implicits._
-import org.typelevel.otel4s.sdk.exporter.SuiteRuntimePlatform
 
-class PrometheusHttpRoutesSuite extends CatsEffectSuite with SuiteRuntimePlatform {
+class PrometheusHttpRoutesSuite extends CatsEffectSuite {
 
   test("respond with a text on GET request") {
     PrometheusMetricExporter.builder[IO].build.flatMap { exporter =>

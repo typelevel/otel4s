@@ -263,9 +263,7 @@ object SpanBuilderMacro {
     *
     * That way, we have exactly one if-else statement.
     */
-  private def whenEnabled(
-      c: blackbox.Context
-  )(modify: c.universe.Tree): c.universe.Tree = {
+  private def whenEnabled(c: blackbox.Context)(modify: c.universe.Tree): c.universe.Tree = {
     import c.universe._
 
     object Matchers {
@@ -316,7 +314,8 @@ object SpanBuilderMacro {
            else builder
          """
 
-      case _ =>
+      case other =>
+        println("tree: " + other)
         q"""
            val builder = ${c.prefix}
            if (builder.meta.isEnabled) builder.modifyState($modify)

@@ -48,7 +48,7 @@ private final class SdkTracer[F[_]: Temporal: Console] private[trace] (
 
   private[this] def currentBackend: OptionT[F, Span.Backend[F]] =
     OptionT(traceScope.current).semiflatMap { ctx =>
-      OptionT(sharedState.spanStorage.get(ctx)).getOrElse(Span.Backend.propagating(ctx))
+      OptionT(sharedState.spanStorage.get(ctx)).getOrElse(Span.Backend.propagating(meta, ctx))
     }
 
   def currentSpanOrNoop: F[Span[F]] =

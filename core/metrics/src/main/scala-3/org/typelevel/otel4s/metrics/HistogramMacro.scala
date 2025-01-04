@@ -147,10 +147,7 @@ object HistogramMacro {
       value: Expr[A],
       attributes: Expr[immutable.Iterable[Attribute[_]]]
   )(using Quotes, Type[F], Type[A]) =
-    '{
-      if ($backend.meta.isEnabled) $backend.record($value, $attributes)
-      else $backend.meta.unit
-    }
+    '{ $backend.meta.ifEnabled($backend.record($value, $attributes)) }
 
   def recordDuration[F[_], A](
       backend: Expr[Histogram.Backend[F, A]],
@@ -158,9 +155,10 @@ object HistogramMacro {
       attributes: Expr[Resource.ExitCase => immutable.Iterable[Attribute[_]]]
   )(using Quotes, Type[F], Type[A]) =
     '{
-      if ($backend.meta.isEnabled)
-        $backend.recordDuration($timeUnit, $attributes)
-      else _root_.cats.effect.kernel.Resource.unit
+      _root_.cats.effect.kernel.Resource.eval($backend.meta.isEnabled).flatMap { isEnabled =>
+        if (isEnabled) $backend.recordDuration($timeUnit, $attributes)
+        else _root_.cats.effect.kernel.Resource.unit
+      }
     }
 
 }

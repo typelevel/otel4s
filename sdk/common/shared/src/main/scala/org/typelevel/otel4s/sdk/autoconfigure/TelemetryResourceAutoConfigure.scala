@@ -40,7 +40,7 @@ import java.nio.charset.StandardCharsets
   * |------------------------------------------|------------------------------------------|------------------------------------------------------------------------------------------------------------|
   * | otel.resource.attributes                 | OTEL_RESOURCE_ATTRIBUTES                 | Specify resource attributes in the following format: key1=val1,key2=val2,key3=val3                         |
   * | otel.service.name                        | OTEL_SERVICE_NAME                        | Specify logical service name. Takes precedence over `service.name` defined with `otel.resource.attributes` |
-  * | otel.experimental.resource.disabled-keys | OTEL_EXPERIMENTAL_RESOURCE_DISABLED_KEYS | Specify resource attribute keys that are filtered.                                                         |
+  * | otel.resource.disabled.keys              | OTEL_RESOURCE_DISABLED_KEYS              | Specify resource attribute keys that are filtered.                                                         |
   * | otel.otel4s.resource.detectors.enabled   | OTEL_OTEL4S_RESOURCE_DETECTORS_ENABLED   | Specify resource detectors to use. Defaults to `host,os,process,process_runtime`.                          |
   * | otel.otel4s.resource.detectors.disabled  | OTEL_OTEL4S_RESOURCE_DETECTORS_DISABLED  | Specify resource detectors to disable.                                                                     |
   * }}}
@@ -194,7 +194,7 @@ private[sdk] object TelemetryResourceAutoConfigure {
 
   private object ConfigKeys {
     val DisabledKeys: Config.Key[Set[String]] =
-      Config.Key("otel.experimental.resource.disabled.keys")
+      Config.Key("otel.resource.disabled.keys")
 
     val Attributes: Config.Key[Map[String, String]] =
       Config.Key("otel.resource.attributes")
@@ -238,7 +238,7 @@ private[sdk] object TelemetryResourceAutoConfigure {
     * |------------------------------------------|------------------------------------------|------------------------------------------------------------------------------------------------------------|
     * | otel.resource.attributes                 | OTEL_RESOURCE_ATTRIBUTES                 | Specify resource attributes in the following format: key1=val1,key2=val2,key3=val3                         |
     * | otel.service.name                        | OTEL_SERVICE_NAME                        | Specify logical service name. Takes precedence over `service.name` defined with `otel.resource.attributes` |
-    * | otel.experimental.resource.disabled-keys | OTEL_EXPERIMENTAL_RESOURCE_DISABLED_KEYS | Specify resource attribute keys that are filtered.                                                         |
+    * | otel.resource.disabled.keys              | OTEL_RESOURCE_DISABLED_KEYS              | Specify resource attribute keys that are filtered.                                                         |
     * | otel.otel4s.resource.detectors.enabled   | OTEL_OTEL4S_RESOURCE_DETECTORS_ENABLED   | Specify resource detectors to use. Defaults to `host,os,process,process_runtime`.                          |
     * | otel.otel4s.resource.detectors.disabled  | OTEL_OTEL4S_RESOURCE_DETECTORS_DISABLED  | Specify resource detectors to disable.                                                                     |
     * }}}

@@ -40,7 +40,7 @@ class TelemetryResourceAutoConfigureSuite extends CatsEffectSuite {
     val props = Map(
       "otel.service.name" -> "some-service",
       "otel.resource.attributes" -> "key1=val1,key2=val2,key3=val3",
-      "otel.experimental.resource.disabled-keys" -> "key1,val3,test,key3",
+      "otel.resource.disabled.keys" -> "key1,val3,test,key3",
       "otel.otel4s.resource.detectors.enabled" -> "none"
     )
 

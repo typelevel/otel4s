@@ -1,2 +1,4 @@
 # Reformat with maxColumn = 120
 0afcd5d8cef3c3698c1f10471d4593e22f7c8eb4
+# Scala Steward: Reformat with scalafmt 3.8.5
+fd9b3858cfbfe088cc95d333850ac232fefa763f

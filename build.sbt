@@ -41,7 +41,7 @@ lazy val scalaNativeSettings = Def.settings(
 )
 
 val Scala212 = "2.12.20"
-val Scala213 = "2.13.15"
+val Scala213 = "2.13.16"
 ThisBuild / crossScalaVersions := Seq(Scala213, "3.3.4")
 ThisBuild / scalaVersion := Scala213 // the default Scala
 
@@ -86,7 +86,7 @@ val MUnitCatsEffectVersion = "2.0.0"
 val MUnitDisciplineVersion = "2.0.0-M3"
 val MUnitScalaCheckEffectVersion = "2.0.0-M2"
 val OpenTelemetryVersion = "1.46.0"
-val OpenTelemetryInstrumentationVersion = "2.11.0"
+val OpenTelemetryInstrumentationVersion = "2.12.0"
 val OpenTelemetryInstrumentationAlphaVersion = "2.10.0-alpha"
 val OpenTelemetrySemConvVersion = "1.29.0-alpha"
 val OpenTelemetryProtoVersion = "1.5.0-alpha"

@@ -19,7 +19,6 @@ package org.typelevel.otel4s.oteljava.context
 import cats.effect.IOLocal
 import cats.effect.LiftIO
 import cats.effect.MonadCancelThrow
-import cats.effect.unsafe.IORuntime
 import cats.mtl.Local
 import io.opentelemetry.context.{Context => JContext}
 import io.opentelemetry.context.ContextStorage
@@ -31,22 +30,12 @@ import org.typelevel.otel4s.context.LocalProvider
   * that reflect the state of the backing `IOLocal`. Usage of `Local` and `ContextStorage` methods will be consistent
   * and stay in sync as long as effects are threaded properly.
   */
-class IOLocalContextStorage(_ioLocal: () => IOLocal[Context]) extends ContextStorage {
+class IOLocalContextStorage(
+    _ioLocal: () => IOLocal[Context],
+    _unsafeThreadLocal: () => ThreadLocal[Context]
+) extends ContextStorage {
   private[this] lazy val ioLocal: IOLocal[Context] = _ioLocal()
-  private[this] lazy val unsafeThreadLocal: ThreadLocal[Context] = {
-    val fiberLocal = ioLocal.unsafeThreadLocal()
-
-    new ThreadLocal[Context] {
-      override def initialValue(): Context =
-        Context.root
-
-      override def get(): Context =
-        if (IORuntime.isUnderFiberContext()) fiberLocal.get() else super.get()
-
-      override def set(value: Context): Unit =
-        if (IORuntime.isUnderFiberContext()) fiberLocal.set(value) else super.set(value)
-    }
-  }
+  private[this] lazy val unsafeThreadLocal: ThreadLocal[Context] = _unsafeThreadLocal()
 
   @inline private[this] def unsafeCurrent: Context =
     unsafeThreadLocal.get()
@@ -69,6 +58,9 @@ class IOLocalContextStorage(_ioLocal: () => IOLocal[Context]) extends ContextSto
 
 object IOLocalContextStorage {
 
+  private val AgentContextStorageClass =
+    "io.opentelemetry.javaagent.instrumentation.opentelemetryapi.context.AgentContextStorage"
+
   /** Returns a [[cats.mtl.Local `Local`]] of a [[org.typelevel.otel4s.oteljava.context.Context `Context`]] if an
     * [[`IOLocalContextStorage`]] is configured to be used as the `ContextStorage` for the Java otel library.
     *
@@ -88,15 +80,11 @@ object IOLocalContextStorage {
       def local: F[Local[F, Context]] =
         ContextStorage.get() match {
           case storage: IOLocalContextStorage =>
-            if (IOLocal.isPropagating) {
-              F.pure(storage.local)
-            } else {
-              F.raiseError(
-                new IllegalStateException(
-                  "IOLocal propagation must be enabled with: -Dcats.effect.trackFiberContext=true"
-                )
-              )
-            }
+            whenPropagationEnabled(storage.local)
+
+          case other if other.getClass.getName == AgentContextStorageClass =>
+            whenPropagationEnabled(agentLocal)
+
           case other =>
             F.raiseError(
               new IllegalStateException(
@@ -105,6 +93,30 @@ object IOLocalContextStorage {
               )
             )
         }
+
+      private def agentLocal: Local[F, Context] = {
+        val ioLocal = IOLocalContextStorageProvider.localContext
+        val threadLocal = IOLocalContextStorageProvider.threadLocalJContext
+
+        registerFiberThreadLocalContext(threadLocal)
+
+        LocalProvider.localForIOLocal(ioLocal)
+      }
+
+      private def whenPropagationEnabled[A](whenEnabled: => A): F[A] =
+        if (IOLocal.isPropagating) {
+          F.pure(whenEnabled)
+        } else {
+          F.raiseError(
+            new IllegalStateException(
+              "IOLocal propagation must be enabled with: -Dcats.effect.trackFiberContext=true"
+            )
+          )
+        }
     }
+
+  /** The method is instrumented by the OTeL Java agent to capture the provided thread local. It must be public.
+    */
+  def registerFiberThreadLocalContext(threadLocal: ThreadLocal[JContext]): Unit = ()
 
 }

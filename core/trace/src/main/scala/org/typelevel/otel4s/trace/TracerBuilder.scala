@@ -23,14 +23,14 @@ import cats.syntax.functor._
 
 trait TracerBuilder[F[_]] {
 
-  /** Assigns a version to the resulting Meter.
+  /** Assigns a version to the resulting Tracer.
     *
     * @param version
     *   the version of the instrumentation scope
     */
   def withVersion(version: String): TracerBuilder[F]
 
-  /** Assigns an OpenTelemetry schema URL to the resulting Meter.
+  /** Assigns an OpenTelemetry schema URL to the resulting Tracer.
     *
     * @param schemaUrl
     *   the URL of the OpenTelemetry schema

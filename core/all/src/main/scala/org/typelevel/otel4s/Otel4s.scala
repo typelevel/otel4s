@@ -16,20 +16,25 @@
 
 package org.typelevel.otel4s
 
+import cats.mtl.Local
 import org.typelevel.otel4s.context.propagation.ContextPropagators
 import org.typelevel.otel4s.metrics.MeterProvider
 import org.typelevel.otel4s.trace.TracerProvider
 
 trait Otel4s[F[_]] {
+
+  /** The type of context used by telemetry components. */
   type Ctx
 
+  /** The [[cats.mtl.Local `Local`]] context. */
+  implicit def localContext: Local[F, Ctx]
+
+  /** The registered propagators. */
   def propagators: ContextPropagators[Ctx]
 
-  /** A registry for creating named meters.
-    */
+  /** A registry for creating named meters. */
   def meterProvider: MeterProvider[F]
 
-  /** An entry point of the tracing API.
-    */
+  /** An entry point of the tracing API. */
   def tracerProvider: TracerProvider[F]
 }

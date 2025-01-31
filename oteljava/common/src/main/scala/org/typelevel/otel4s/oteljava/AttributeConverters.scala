@@ -108,7 +108,9 @@ object AttributeConverters {
     ): JAttributes = {
       val builder = JAttributes.builder
 
-      attributes.foreach { case Attribute(key, value) =>
+      attributes.foreach { attribute =>
+        val key = attribute.key
+        val value = attribute.value
         key.`type` match {
           case AttributeType.String =>
             builder.put(key.name, value.asInstanceOf[String])

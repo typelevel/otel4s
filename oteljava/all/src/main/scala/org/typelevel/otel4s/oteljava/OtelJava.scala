@@ -28,9 +28,11 @@ import io.opentelemetry.sdk.autoconfigure.{AutoConfiguredOpenTelemetrySdk => Aut
 import io.opentelemetry.sdk.autoconfigure.{AutoConfiguredOpenTelemetrySdkBuilder => AutoConfigOtelSdkBuilder}
 import io.opentelemetry.sdk.common.CompletableResultCode
 import org.typelevel.otel4s.Otel4s
+import org.typelevel.otel4s.baggage.BaggageManager
 import org.typelevel.otel4s.context.LocalProvider
 import org.typelevel.otel4s.context.propagation.ContextPropagators
 import org.typelevel.otel4s.metrics.MeterProvider
+import org.typelevel.otel4s.oteljava.baggage.BaggageManagerImpl
 import org.typelevel.otel4s.oteljava.context.Context
 import org.typelevel.otel4s.oteljava.context.LocalContext
 import org.typelevel.otel4s.oteljava.context.LocalContextProvider
@@ -46,6 +48,8 @@ final class OtelJava[F[_]] private (
 )(implicit val localContext: LocalContext[F])
     extends Otel4s[F] {
   type Ctx = Context
+
+  val baggageManager: BaggageManager[F] = BaggageManagerImpl.fromLocal
 
   override def toString: String = s"OtelJava{$underlying}"
 }

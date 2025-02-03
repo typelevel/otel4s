@@ -57,6 +57,20 @@ sealed trait Baggage {
     *
     * @param value
     *   the value for the entry to associate with the key
+    *
+    * @param metadata
+    *   the optional metadata to associate with the key
+    */
+  final def updated(key: String, value: String, metadata: String): Baggage =
+    updated(key, value, Some(metadata))
+
+  /** Adds or updates the entry that has the given `key` if it is present.
+    *
+    * @param key
+    *   the key for the entry
+    *
+    * @param value
+    *   the value for the entry to associate with the key
     */
   final def updated(key: String, value: String): Baggage =
     updated(key, value, None)

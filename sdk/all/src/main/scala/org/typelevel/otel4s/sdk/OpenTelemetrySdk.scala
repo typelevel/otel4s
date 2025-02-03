@@ -28,6 +28,7 @@ import cats.syntax.apply._
 import cats.syntax.flatMap._
 import cats.syntax.functor._
 import org.typelevel.otel4s.Otel4s
+import org.typelevel.otel4s.baggage.BaggageManager
 import org.typelevel.otel4s.context.LocalProvider
 import org.typelevel.otel4s.context.propagation.ContextPropagators
 import org.typelevel.otel4s.context.propagation.TextMapPropagator
@@ -37,6 +38,7 @@ import org.typelevel.otel4s.sdk.autoconfigure.CommonConfigKeys
 import org.typelevel.otel4s.sdk.autoconfigure.Config
 import org.typelevel.otel4s.sdk.autoconfigure.ExportersAutoConfigure
 import org.typelevel.otel4s.sdk.autoconfigure.TelemetryResourceAutoConfigure
+import org.typelevel.otel4s.sdk.baggage.SdkBaggageManager
 import org.typelevel.otel4s.sdk.context.Context
 import org.typelevel.otel4s.sdk.context.LocalContext
 import org.typelevel.otel4s.sdk.context.LocalContextProvider
@@ -62,6 +64,8 @@ final class OpenTelemetrySdk[F[_]] private (
     extends Otel4s[F] {
 
   type Ctx = Context
+
+  val baggageManager: BaggageManager[F] = SdkBaggageManager.fromLocal
 
   override def toString: String =
     s"OpenTelemetrySdk{meterProvider=$meterProvider, tracerProvider=$tracerProvider, propagators=$propagators}"

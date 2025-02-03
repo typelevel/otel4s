@@ -18,8 +18,11 @@ package org.typelevel.otel4s.sdk.trace
 
 import cats.effect.SyncIO
 import org.typelevel.otel4s.baggage.Baggage
+import org.typelevel.otel4s.sdk.baggage.SdkBaggageManager
 import org.typelevel.otel4s.sdk.context.Context
 import org.typelevel.otel4s.trace.SpanContext
+
+import scala.annotation.unchecked.uncheckedStable
 
 /** The keys that can be used by a third-party integrations.
   */
@@ -48,9 +51,7 @@ object SdkContextKeys {
     *   val baggage: Option[Baggage] = context.get(SdkContextKeys.BaggageKey)
     * }}}
     */
-  val BaggageKey: Context.Key[Baggage] =
-    Context.Key
-      .unique[SyncIO, Baggage]("otel4s-trace-baggage-key")
-      .unsafeRunSync()
+  @uncheckedStable
+  def BaggageKey: Context.Key[Baggage] = SdkBaggageManager.BaggageKey
 
 }

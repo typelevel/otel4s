@@ -632,7 +632,7 @@ lazy val `sdk-contrib-aws-xray` =
 lazy val `oteljava-common` = project
   .in(file("oteljava/common"))
   .enablePlugins(BuildInfoPlugin)
-  .dependsOn(`core-common`.jvm)
+  .dependsOn(`core-common`.jvm % "compile->compile;test->test")
   .settings(munitDependencies)
   .settings(
     name := "otel4s-oteljava-common",

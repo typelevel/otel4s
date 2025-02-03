@@ -17,6 +17,7 @@
 package org.typelevel.otel4s
 
 import cats.mtl.Local
+import org.typelevel.otel4s.baggage.BaggageManager
 import org.typelevel.otel4s.context.propagation.ContextPropagators
 import org.typelevel.otel4s.metrics.MeterProvider
 import org.typelevel.otel4s.trace.TracerProvider
@@ -37,4 +38,7 @@ trait Otel4s[F[_]] {
 
   /** An entry point of the tracing API. */
   def tracerProvider: TracerProvider[F]
+
+  /** A utility for accessing and modifying [[baggage.Baggage `Baggage`]]. */
+  def baggageManager: BaggageManager[F]
 }

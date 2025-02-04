@@ -32,6 +32,12 @@ sealed trait Context {
     */
   def get[A](key: Context.Key[A]): Option[A]
 
+  /** Retrieves the value associated with the given key from the context, if such a value exists; otherwise, returns the
+    * provided default value.
+    */
+  def getOrElse[A](key: Context.Key[A], default: => A): A =
+    get(key).getOrElse(default)
+
   /** Creates a copy of this context with the given `value` associated with the given `key`.
     */
   def updated[A](key: Context.Key[A], value: A): Context

@@ -39,8 +39,8 @@ sealed trait Attributes
   /** @return
     *   an [[`Attribute`]] matching the given attribute name and type, or `None` if not found.
     */
-  final def get[T: KeySelect](name: String): Option[Attribute[T]] =
-    get(KeySelect[T].make(name))
+  final def get[T](name: String)(implicit k: KeySelect[T]): Option[Attribute[k.Out]] =
+    get(k.make(name))
 
   /** @return
     *   an [[`Attribute`]] matching the given attribute key, or `None` if not found
@@ -204,9 +204,9 @@ object Attributes extends SpecificIterableFactory[Attribute[_], Attributes] {
       * @param value
       *   the value of the attribute
       */
-    def addOne[A: KeySelect](name: String, value: A): this.type = {
-      val key = KeySelect[A].make(name)
-      builder.addOne(key.name -> Attribute(key, value))
+    def addOne[A](name: String, value: A)(implicit k: KeySelect[A]): this.type = {
+      val att = Attribute[A](name, value)
+      builder.addOne(att.key.name -> att)
       this
     }
 

@@ -48,11 +48,11 @@ trait Gens {
     implicit def seqArb[A: Arbitrary]: Arbitrary[Seq[A]] =
       Arbitrary(Gen.nonEmptyListOf(Arbitrary.arbitrary[A]))
 
-    def attribute[A: AttributeKey.KeySelect: Arbitrary]: Gen[Attribute[A]] =
+    def attribute[A: AttributeKey.KeySelect.Id: Arbitrary]: Gen[Attribute[A]] =
       for {
         key <- nonEmptyString
         value <- Arbitrary.arbitrary[A]
-      } yield Attribute(key, value)
+      } yield Attribute(name = key, value)
 
     val string: Gen[Attribute[String]] = attribute[String]
     val boolean: Gen[Attribute[Boolean]] = attribute[Boolean]

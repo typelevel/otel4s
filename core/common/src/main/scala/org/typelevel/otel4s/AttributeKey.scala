@@ -26,7 +26,11 @@ import cats.syntax.show._
   *   the type of value that can be set with the key
   */
 sealed trait AttributeKey[A] {
+
+  /** The name of the attribute key. */
   def name: String
+
+  /** The type of the attribute value. */
   def `type`: AttributeType[A]
 
   /** @return
@@ -69,37 +73,73 @@ Could not find the `KeySelect` for ${A}. The `KeySelect` is defined for the foll
 String, Boolean, Long, Double, Seq[String], Seq[Boolean], Seq[Long], Seq[Double].
 """)
   sealed trait KeySelect[A] {
-    def make(name: String): AttributeKey[A]
+    type Out
+    def make(name: String): AttributeKey[Out]
+    def get(a: A): Out
   }
 
   object KeySelect {
-    def apply[A](implicit ev: KeySelect[A]): KeySelect[A] = ev
 
-    implicit val stringKey: KeySelect[String] = instance(AttributeKey.string)
-    implicit val booleanKey: KeySelect[Boolean] = instance(AttributeKey.boolean)
-    implicit val longKey: KeySelect[Long] = instance(AttributeKey.long)
-    implicit val doubleKey: KeySelect[Double] = instance(AttributeKey.double)
+    /** An `KeySelect` that has identical attribute value and attribute key types.
+      *
+      * @tparam A
+      *   the type of the attribute value that can be used with this key, one of [[AttributeType]]
+      */
+    sealed trait Id[A] extends KeySelect[A] {
+      type Out = A
+      final def get(a: A): A = a
+    }
 
-    implicit val stringSeqKey: KeySelect[Seq[String]] =
-      instance(AttributeKey.stringSeq)
+    /** A projected instance of the `KeySelect`.
+      *
+      * @tparam A
+      *   the type of the attribute value that can be used with this key
+      *
+      * @tparam Key
+      *   the type of the attribute key, one of [[AttributeType]]
+      */
+    sealed trait Projection[A, Key] extends KeySelect[A] {
+      type Out = Key
+    }
 
-    implicit val booleanSeqKey: KeySelect[Seq[Boolean]] =
-      instance(AttributeKey.booleanSeq)
+    /** The lense instance allows using custom types as an attribute input.
+      *
+      * @example
+      *   {{{
+      * case class UserId(id: Int)
+      * implicit val userIdKeySelect: KeySelect.Projection[UserId, Long] = KeySelect.projection(_.id.toLong)
+      * val attribute = Attribute("key", UserId(1)) // the derived type is `Attribute[Long]`
+      *   }}}
+      *
+      * @tparam A
+      *   the type of the attribute value
+      *
+      * @tparam Key
+      *   the type of the attribute key, one of [[AttributeType]]
+      */
+    def projection[A, Key](f: A => Key)(implicit select: KeySelect.Id[Key]): KeySelect.Projection[A, Key] =
+      new Projection[A, Key] {
+        def make(name: String): AttributeKey[Out] = select.make(name)
+        def get(a: A): Key = f(a)
+      }
 
-    implicit val longSeqKey: KeySelect[Seq[Long]] =
-      instance(AttributeKey.longSeq)
+    implicit val stringKey: KeySelect.Id[String] = instance(AttributeKey.string)
+    implicit val booleanKey: KeySelect.Id[Boolean] = instance(AttributeKey.boolean)
+    implicit val longKey: KeySelect.Id[Long] = instance(AttributeKey.long)
+    implicit val doubleKey: KeySelect.Id[Double] = instance(AttributeKey.double)
+    implicit val stringSeqKey: KeySelect.Id[Seq[String]] = instance(AttributeKey.stringSeq)
+    implicit val booleanSeqKey: KeySelect.Id[Seq[Boolean]] = instance(AttributeKey.booleanSeq)
+    implicit val longSeqKey: KeySelect.Id[Seq[Long]] = instance(AttributeKey.longSeq)
+    implicit val doubleSeqKey: KeySelect.Id[Seq[Double]] = instance(AttributeKey.doubleSeq)
 
-    implicit val doubleSeqKey: KeySelect[Seq[Double]] =
-      instance(AttributeKey.doubleSeq)
-
-    private def instance[A](f: String => AttributeKey[A]): KeySelect[A] =
-      new KeySelect[A] {
+    private def instance[A](f: String => AttributeKey[A]): KeySelect.Id[A] =
+      new KeySelect.Id[A] {
         def make(name: String): AttributeKey[A] = f(name)
       }
   }
 
-  def apply[A: KeySelect](name: String): AttributeKey[A] =
-    KeySelect[A].make(name)
+  def apply[A](name: String)(implicit select: KeySelect[A]): AttributeKey[select.Out] =
+    select.make(name)
 
   def string(name: String): AttributeKey[String] =
     new Impl(name, AttributeType.String)

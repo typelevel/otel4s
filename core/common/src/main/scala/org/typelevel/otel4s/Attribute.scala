@@ -77,14 +77,22 @@ object Attribute {
     * val boolSeqAttribute: Attribute[Seq[Boolean]] = Attribute("key", Seq(false))
     *   }}}
     *
+    * @example
+    *   a projected attribute type:
+    *   {{{
+    * case class UserId(id: Int)
+    * implicit val userIdKeySelect: KeySelect.Projection[UserId, Long] = KeySelect.projection(_.id.toLong)
+    * val attribute = Attribute("key", UserId(1)) // the derived type is `Attribute[Long]`
+    *   }}}
+    *
     * @param name
     *   the key name of an attribute
     *
     * @param value
     *   the value of an attribute
     */
-  def apply[A: AttributeKey.KeySelect](name: String, value: A): Attribute[A] =
-    Impl(AttributeKey.KeySelect[A].make(name), value)
+  def apply[A](name: String, value: A)(implicit select: AttributeKey.KeySelect[A]): Attribute[select.Out] =
+    Impl(select.make(name), select.get(value))
 
   implicit val showAttribute: Show[Attribute[_]] = (a: Attribute[_]) => s"${show"${a.key}"}=${a.value}"
 

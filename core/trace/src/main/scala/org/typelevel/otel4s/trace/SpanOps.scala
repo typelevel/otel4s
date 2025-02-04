@@ -86,23 +86,102 @@ trait SpanOps[F[_]] {
     *
     * `Clock[F].realTime` is always used as the end timestamp.
     *
+    * @note
+    *   the name of the method can create a false perception of the behavior. However, the span started by the
+    *   [[resource]] '''isn't propagated automatically''' to the resource closure. The propagation doesn't work because
+    *   `Resource` abstraction is leaky regarding the fiber context propagation. The context:
+    *   [[https://github.com/typelevel/otel4s/issues/194]].
+    *
+    * Consider the following example:
+    * {{{
+    * Tracer[F].span("my-resource-span").resource.use { case SpanOps.Res(span, trace) =>
+    *   Tracer[F].currentSpanContext // returns `None`
+    * }
+    * }}}
+    * you must evaluate the inner effect within the `trace` to propagate span details:
+    * {{{
+    * Tracer[F].span("my-resource-span").resource.use { case SpanOps.Res(span, trace) =>
+    *   trace(Tracer[F].currentSpanContext) // returns `Some(SpanContext{traceId="...", spanId="...", ...})`
+    * }
+    * }}}
+    *
+    * `res.trace` encloses its contents within the "resource-span" span; anything not applied to `res.trace` will not
+    * end up in the span.
+    *
     * @see
     *   default finalization strategy [[SpanFinalizer.Strategy.reportAbnormal]]
+    *
     * @see
     *   [[SpanOps.Res]] for the semantics and usage of the resource's value
+    *
+    * @see
+    *   Tracing documentation [[https://typelevel.org/otel4s/instrumentation/tracing.html#tracing-a-resource]]
+    *
     * @example
+    *   Resource tracing:
     *   {{{
-    * val tracer: Tracer[F] = ???
-    * val ok: F[Unit] =
-    *   tracer.spanBuilder("resource-span")
-    *     .build
-    *     .resource
-    *     .use { res =>
-    *       // `res.trace` encloses its contents within the "resource-span"
-    *       // span; anything not applied to `res.include` will not end up in
-    *       // the span
-    *       res.trace(res.span.setStatus(StatusCode.Ok, "all good"))
-    *     }
+    * class Connection[F[_]]
+    *
+    * def createConnection[F[_]: Async: Tracer]: Resource[F, Connection[F]] =
+    *   Resource.make(
+    *     Tracer[F].span("connection#acquire").surround(Async[F].pure(new Connection[F]))
+    *   )(_ => Tracer[F].span("connection#release").surround(Async[F].unit))
+    *
+    * def useConnection[F[_]: Async: Tracer](c: Connection[F]): F[Unit] =
+    *   Tracer[F].span("use").surround(Async[F].sleep(5.seconds))
+    *
+    * (for {
+    *   r <- Tracer[F].span("resource").resource
+    *   c <- createConnection[F].mapK(r.trace)
+    * } yield (r, c)).use { case (res, connection) =>
+    *   res.trace(Tracer[F].span("connection#use").surround(useConnection(connection)))
+    * }
+    *   }}}
+    *   The result spans:
+    *   {{{
+    * > resource
+    *   > connection#acquire
+    *   > connection#use
+    *     > use
+    *   > connection#release
+    *   }}}
+    *
+    * @example
+    *   Trace acquire and release steps:
+    *   {{{
+    * class Transactor[F[_]]
+    * class Redis[F[_]]
+    *
+    * def createTransactor[F[_]: Async: Tracer]: Resource[F, Transactor[F]] =
+    *   Resource.make(
+    *     Tracer[F].span("transactor#acquire").surround(Async[F].pure(new Transactor[F]))
+    *   )(_ => Tracer[F].span("transactor#release").surround(Async[F].sleep(300.millis)))
+    *
+    * def createRedis[F[_]: Async: Tracer]: Resource[F, Redis[F]] =
+    *   Resource.make(
+    *     Tracer[F].span("redis#acquire").surround(Async[F].pure(new Redis[F]).delayBy(200.millis))
+    *   )(_ => Tracer[F].span("redis#release").surround(Async[F].sleep(100.millis)))
+    *
+    * def components[F[_]: Async: Tracer]: Resource[F, (Transactor[F], Redis[F])] =
+    *   for {
+    *     r <- Tracer[F].span("app_lifecycle").resource
+    *     tx <- createTransactor[F].mapK(r.trace)
+    *     redis <- createRedis[F].mapK(r.trace)
+    *   } yield (tx, redis)
+    *
+    * def run[F[_]: Async: Tracer]: F[Unit] =
+    *   components[F].use { case (transactor, redis) =>
+    *     Tracer[F].span("app_run").surround(Async[F].sleep(200.millis))
+    *   }
+    *   }}}
+    *   `app_run` isn't linked to the `app_lifecycle` span in any way. The result spans:
+    *   {{{
+    * > app_lifecycle
+    *   > transactor#acquire
+    *   > redis#acquire
+    *   > redis#release
+    *   > transactor#release
+    * > app_run
     *   }}}
     */
   def resource: Resource[F, SpanOps.Res[F]]
@@ -120,6 +199,10 @@ trait SpanOps[F[_]] {
     *
     * @see
     *   default finalization strategy [[SpanFinalizer.Strategy.reportAbnormal]]
+    *
+    * @see
+    *   Tracing documentation [[https://typelevel.org/otel4s/instrumentation/tracing.html#creating-a-span]]
+    *
     * @example
     *   {{{
     * val tracer: Tracer[F] = ???
@@ -178,8 +261,24 @@ object SpanOps {
     /** The managed span. */
     def span: Span[F]
 
-    /** A natural transformation that traces everything applied to it in the span. Note: anything not applied to this
-      * [[cats.arrow.FunctionK FunctionK]] will not be traced.
+    /** A natural transformation that traces everything applied to it in the span.
+      *
+      * Consider the following example:
+      * {{{
+      * Tracer[F].span("my-resource-span").resource.use { case SpanOps.Res(span, trace) =>
+      *   Tracer[F].currentSpanContext // returns `None`
+      * }
+      * }}}
+      * you must evaluate the inner effect within the `trace` to propagate span details:
+      * {{{
+      * Tracer[F].span("my-resource-span").resource.use { case SpanOps.Res(span, trace) =>
+      *   trace(Tracer[F].currentSpanContext) // returns `Some(SpanContext{traceId="...", spanId="...", ...})`
+      * }
+      * }}}
+      * `trace` encloses its contents within the "resource-span" span.
+      *
+      * @note
+      *   anything not applied to this [[cats.arrow.FunctionK FunctionK]] will not be traced.
       */
     def trace: F ~> F
 

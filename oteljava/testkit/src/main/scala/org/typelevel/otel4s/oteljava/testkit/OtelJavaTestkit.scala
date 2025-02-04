@@ -22,9 +22,11 @@ import cats.effect.Resource
 import io.opentelemetry.context.propagation.{TextMapPropagator => JTextMapPropagator}
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder
+import org.typelevel.otel4s.baggage.BaggageManager
 import org.typelevel.otel4s.context.LocalProvider
 import org.typelevel.otel4s.context.propagation.ContextPropagators
 import org.typelevel.otel4s.metrics.MeterProvider
+import org.typelevel.otel4s.oteljava.baggage.BaggageManagerImpl
 import org.typelevel.otel4s.oteljava.context.Context
 import org.typelevel.otel4s.oteljava.context.LocalContext
 import org.typelevel.otel4s.oteljava.context.LocalContextProvider
@@ -41,6 +43,8 @@ sealed abstract class OtelJavaTestkit[F[_]] private (implicit
     with TracesTestkit[F] {
 
   type Ctx = Context
+
+  val baggageManager: BaggageManager[F] = BaggageManagerImpl.fromLocal
 
   override def toString: String =
     s"OtelJavaTestkit{meterProvider=$meterProvider, tracerProvider=$tracerProvider, propagators=$propagators}"

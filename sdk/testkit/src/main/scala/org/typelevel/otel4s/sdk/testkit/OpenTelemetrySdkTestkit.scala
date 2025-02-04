@@ -21,10 +21,12 @@ import cats.effect.Async
 import cats.effect.Resource
 import cats.effect.std.Console
 import org.typelevel.otel4s.Otel4s
+import org.typelevel.otel4s.baggage.BaggageManager
 import org.typelevel.otel4s.context.LocalProvider
 import org.typelevel.otel4s.context.propagation.ContextPropagators
 import org.typelevel.otel4s.context.propagation.TextMapPropagator
 import org.typelevel.otel4s.metrics.MeterProvider
+import org.typelevel.otel4s.sdk.baggage.SdkBaggageManager
 import org.typelevel.otel4s.sdk.context.Context
 import org.typelevel.otel4s.sdk.context.LocalContext
 import org.typelevel.otel4s.sdk.context.LocalContextProvider
@@ -49,6 +51,8 @@ sealed abstract class OpenTelemetrySdkTestkit[F[_]] private (implicit
     with TracesTestkit[F] {
 
   type Ctx = Context
+
+  val baggageManager: BaggageManager[F] = SdkBaggageManager.fromLocal
 
   override def toString: String =
     s"OpenTelemetrySdkTestkit{meterProvider=$meterProvider, tracerProvider=$tracerProvider, propagators=$propagators}"

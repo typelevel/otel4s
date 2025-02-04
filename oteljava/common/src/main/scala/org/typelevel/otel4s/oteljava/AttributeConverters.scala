@@ -44,7 +44,7 @@ import scala.jdk.CollectionConverters._
   *   import org.typelevel.otel4s.oteljava.AttributeConverters._
   *
   *   val attributes: Attributes =
-  *     io.opentelemetry.api.common.Attributes.builder()
+  *     JAttributes.builder()
   *       .put("key", "value")
   *       .build()
   *       .toScala

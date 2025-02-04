@@ -22,19 +22,69 @@ import cats.syntax.show._
 
 /** Represents the key-value attribute.
   *
-  * @param key
-  *   the key of the attribute. Denotes the types of the `value`
-  * @param value
-  *   the value of the attribute
   * @tparam A
   *   the type of the attribute's value. One of [[AttributeType]]
+  *
+  * @see
+  *   [[https://opentelemetry.io/docs/specs/otel/common/#attribute]]
   */
-final case class Attribute[A](key: AttributeKey[A], value: A)
+sealed trait Attribute[A] {
+
+  /** The key of the attribute. Denotes the types of the `value`.
+    */
+  def key: AttributeKey[A]
+
+  /** The value of the attribute.
+    */
+  def value: A
+
+  override final def hashCode(): Int =
+    Hash[Attribute[_]].hash(this)
+
+  override final def equals(obj: Any): Boolean =
+    obj match {
+      case other: Attribute[_] =>
+        Hash[Attribute[_]].eqv(this, other)
+      case _ =>
+        false
+    }
+
+  override final def toString: String =
+    Show[Attribute[_]].show(this)
+
+}
 
 object Attribute {
 
+  /** Creates an attribute with the given key and value.
+    *
+    * @example
+    *   {{{
+    * val stringAttribute: Attribute[String] = Attribute(AttributeKey[String]("key"), "string")
+    * val longAttribute: Attribute[Long] = Attribute(AttributeKey[Long]("key"), 1L)
+    * val boolSeqAttribute: Attribute[Seq[Boolean]] = Attribute(AttributeKey[Seq[Boolean]]("key"), Seq(false))
+    *   }}}
+    */
+  def apply[A](key: AttributeKey[A], value: A): Attribute[A] =
+    Impl(key, value)
+
+  /** Creates an attribute with the given name and value. The type is derived automatically from the value type.
+    *
+    * @example
+    *   {{{
+    * val stringAttribute: Attribute[String] = Attribute("key", "string")
+    * val longAttribute: Attribute[Long] = Attribute("key", 1L)
+    * val boolSeqAttribute: Attribute[Seq[Boolean]] = Attribute("key", Seq(false))
+    *   }}}
+    *
+    * @param name
+    *   the key name of an attribute
+    *
+    * @param value
+    *   the value of an attribute
+    */
   def apply[A: AttributeKey.KeySelect](name: String, value: A): Attribute[A] =
-    Attribute(AttributeKey.KeySelect[A].make(name), value)
+    Impl(AttributeKey.KeySelect[A].make(name), value)
 
   implicit val showAttribute: Show[Attribute[_]] = (a: Attribute[_]) => s"${show"${a.key}"}=${a.value}"
 
@@ -45,4 +95,6 @@ object Attribute {
     implicit val hashAny: Hash[Any] = Hash.fromUniversalHashCode
     Hash.by(a => (a.key, a.value))
   }
+
+  private final case class Impl[A](key: AttributeKey[A], value: A) extends Attribute[A]
 }

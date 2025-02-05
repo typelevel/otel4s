@@ -42,7 +42,7 @@ private[sdk] object SdkBaggageManager {
       .unsafeRunSync()
 
   private def baggageFromContext(context: Context): Baggage =
-    context.get(BaggageKey).getOrElse(Baggage.empty)
+    context.getOrElse(BaggageKey, Baggage.empty)
 
   def fromLocal[F[_]: LocalContext]: BaggageManager[F] =
     new SdkBaggageManager[F]

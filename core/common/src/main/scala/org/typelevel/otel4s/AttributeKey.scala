@@ -26,18 +26,62 @@ import cats.syntax.show._
   *   the type of value that can be set with the key
   */
 sealed trait AttributeKey[A] {
+  import AttributeKey.Focus
+
+  /** The name of the attribute key. */
   def name: String
+
+  /** The type of the attribute value. */
   def `type`: AttributeType[A]
 
   /** @return
     *   an [[`Attribute`]] associating this key with the given value
     */
-  final def apply(value: A): Attribute[A] = Attribute(this, value)
+  final def apply(value: A): Attribute[A] =
+    Attribute(this, value)
+
+  /** Creates an [[Attribute]] with the focused value.
+    *
+    * @example
+    *   {{{
+    * case class UserId(id: Int)
+    * implicit val userIdFocus: AttributeKey.Focus[UserId, Long] = _.id.toLong
+    *
+    * val userIdKey = AttributeKey[Long]("user.id")
+    *
+    * val attribute: Attribute[Long] = userIdKey(UserId(1))
+    * val attribute: Attribute[Long] = Attribute("key", UserId(1))
+    *   }}}
+    *
+    * @return
+    *   an [[`Attribute`]] associating this key with the given value
+    */
+  final def apply[In](value: In)(implicit focus: Focus[In, A]): Attribute[A] =
+    Attribute(this, focus(value))
 
   /** @return
     *   an [[`Attribute`]] associating this key with the given value if the value is defined
     */
-  final def maybe(value: Option[A]): Option[Attribute[A]] = value.map(apply)
+  final def maybe(value: Option[A]): Option[Attribute[A]] =
+    value.map(apply)
+
+  /** Creates an [[Attribute]] with the focused value if the given option is non-empty.
+    *
+    * @example
+    *   {{{
+    * case class UserId(id: Int)
+    * implicit val userIdFocus: AttributeKey.Focus[UserId, Long] = _.id.toLong
+    *
+    * val userIdKey = AttributeKey[Long]("user.id")
+    *
+    * val attribute: Option[Attribute[Long]] = userIdKey.maybe(Some(UserId(1)))
+    *   }}}
+    *
+    * @return
+    *   an [[`Attribute`]] associating this key with the given value
+    */
+  final def maybe[In](value: Option[In])(implicit focus: Focus[In, A]): Option[Attribute[A]] =
+    value.map(apply[In])
 
   /** @return
     *   an [[`AttributeKey`]] of the same type as this key, with name transformed by `f`
@@ -62,6 +106,34 @@ object AttributeKey {
         case _ =>
           false
       }
+  }
+
+  /** Allows creating an attribute from an arbitrary type:
+    *
+    * @example
+    *   {{{
+    * case class UserId(id: Int)
+    * implicit val userIdFocus: AttributeKey.Focus[UserId, Long] = _.id.toLong
+    *
+    * val userIdKey = AttributeKey[Long]("user.id")
+    *
+    * val attribute: Attribute[Long] = userIdKey(UserId(1))
+    * val attribute: Attribute[Long] = Attribute("key", UserId(1))
+    *   }}}
+    *
+    * @tparam Value
+    *   the type of the value
+    *
+    * @tparam Key
+    *   the type of the key, one of [[AttributeType]]
+    */
+  @annotation.implicitNotFound("Could not find the `AttributeKey.Focus` for value ${Value} and key ${Key}.")
+  trait Focus[Value, Key] {
+    def apply(in: Value): Key
+  }
+
+  object Focus {
+    implicit def id[A]: Focus[A, A] = a => a
   }
 
   @annotation.implicitNotFound("""

@@ -144,7 +144,7 @@ class ObservableSuite extends CatsEffectSuite {
           .withUnit("unit")
           .withDescription("description")
           .createWithCallback(
-            _.record(1234, Attribute[Boolean]("is_false", true))
+            _.record(1234, Attribute("is_false", true))
           )
           .use(_ =>
             sdk

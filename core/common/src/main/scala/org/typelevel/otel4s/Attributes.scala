@@ -50,7 +50,10 @@ sealed trait Attributes
   /** Adds an [[`Attribute`]] with the given name and value to these `Attributes`, replacing any `Attribute` with the
     * same name and type if one exists.
     */
-  final def added[T: KeySelect](name: String, value: T): Attributes =
+  final def added[T, Key](name: String, value: T)(implicit
+      focus: AttributeKey.Focus[T, Key],
+      select: KeySelect[Key]
+  ): Attributes =
     added(Attribute(name, value))
 
   /** Adds an [[`Attribute`]] with the given key and value to these `Attributes`, replacing any `Attribute` with the
@@ -204,9 +207,12 @@ object Attributes extends SpecificIterableFactory[Attribute[_], Attributes] {
       * @param value
       *   the value of the attribute
       */
-    def addOne[A: KeySelect](name: String, value: A): this.type = {
-      val key = KeySelect[A].make(name)
-      builder.addOne(key.name -> Attribute(key, value))
+    def addOne[A, Key](name: String, value: A)(implicit
+        focus: AttributeKey.Focus[A, Key],
+        select: KeySelect[Key]
+    ): this.type = {
+      val key = KeySelect[Key].make(name)
+      builder.addOne(key.name -> key(value))
       this
     }
 

@@ -53,4 +53,22 @@ class AttributeSuite extends FunSuite {
     assertEquals(attributes.get[String]("user.id").map(_.value), Some("1"))
   }
 
+  test("implicitly materialize an attribute using Attribute.Make") {
+    case class AssetId(id: Int)
+
+    implicit val assetIdFocus: AttributeKey.Focus[AssetId, Long] =
+      _.id.toLong
+
+    implicit val userIdAttribute: Attribute.Make[UserId] =
+      Attribute.Make.named("user.id")
+
+    implicit val assetIdAttribute: Attribute.Make[AssetId] =
+      Attribute.Make.named("asset.id")
+
+    val attributes = Attributes(UserId("321"), AssetId(123))
+
+    assertEquals(attributes.get[String]("user.id").map(_.value), Some("321"))
+    assertEquals(attributes.get[Long]("asset.id").map(_.value), Some(123L))
+  }
+
 }

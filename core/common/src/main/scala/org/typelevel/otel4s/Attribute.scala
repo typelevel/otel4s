@@ -56,6 +56,55 @@ sealed trait Attribute[A] {
 
 object Attribute {
 
+  /** Allows an implicit conversion of `A` to `Attribute`.
+    *
+    * @tparam A
+    *   the type of the value
+    */
+  sealed trait Make[A] {
+    type Key
+    def make(a: A): Attribute[Key]
+  }
+
+  object Make {
+    type Aux[A, K] = Make[A] { type Key = K }
+
+    /** Creates a [[Make]] with a const name.
+      *
+      * @example
+      *   {{{
+      * case class UserId(id: Int)
+      * object UserId {
+      *   implicit val userIdFocus: AttributeKey.Focus[UserId, Long] =
+      *     _.id.toLong
+      *   implicit val userIdAttribute: Attribute.Make[UserId] =
+      *     Attribute.Make.named("user.id")
+      * }
+      *
+      * val userId = UserId(123)
+      *
+      * val attributes = Attributes(userId) // implicitly converted to Attribute[Long]
+      *   }}}
+      *
+      * @param name
+      *   the name of the attribute
+      *
+      * @tparam A
+      *   the type of the value
+      *
+      * @tparam K
+      *   the type of the key
+      */
+    def named[A, K](name: String)(implicit
+        focus: AttributeKey.Focus[A, K],
+        select: AttributeKey.KeySelect[K]
+    ): Make.Aux[A, K] =
+      new Make[A] {
+        type Key = K
+        def make(a: A): Attribute[Key] = Attribute(name, a)
+      }
+  }
+
   /** Creates an attribute with the given key and value.
     *
     * @example
@@ -96,6 +145,9 @@ object Attribute {
       select: AttributeKey.KeySelect[Key]
   ): Attribute[Key] =
     AttributeKey.KeySelect[Key].make(name).apply(value)
+
+  implicit def materialize[A](value: A)(implicit ev: Make[A]): Attribute[ev.Key] =
+    ev.make(value)
 
   implicit val showAttribute: Show[Attribute[_]] = (a: Attribute[_]) => s"${show"${a.key}"}=${a.value}"
 

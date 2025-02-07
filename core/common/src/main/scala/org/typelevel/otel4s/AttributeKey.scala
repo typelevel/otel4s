@@ -26,18 +26,63 @@ import cats.syntax.show._
   *   the type of value that can be set with the key
   */
 sealed trait AttributeKey[A] {
+  import Attribute.From
+
+  /** The name of the attribute key. */
   def name: String
+
+  /** The type of the attribute value. */
   def `type`: AttributeType[A]
 
   /** @return
     *   an [[`Attribute`]] associating this key with the given value
     */
-  final def apply(value: A): Attribute[A] = Attribute(this, value)
+  final def apply(value: A): Attribute[A] =
+    Attribute(this, value)
+
+  /** Creates an [[Attribute]] with the focused value.
+    *
+    * @example
+    *   {{{
+    * case class UserId(id: Int)
+    * implicit val userIdFrom: Attribute.From[UserId, Long] = _.id.toLong
+    *
+    * val userIdKey = AttributeKey[Long]("user.id")
+    *
+    * val attribute: Attribute[Long] = userIdKey(UserId(1))
+    * val attribute: Attribute[Long] = Attribute.from(userIdKey, UserId(1))
+    * val attribute: Attribute[Long] = Attribute.from("user.id", UserId(1))
+    *   }}}
+    *
+    * @return
+    *   an [[`Attribute`]] associating this key with the given value
+    */
+  final def apply[In](value: In)(implicit from: From[In, A]): Attribute[A] =
+    Attribute(this, from(value))
 
   /** @return
     *   an [[`Attribute`]] associating this key with the given value if the value is defined
     */
-  final def maybe(value: Option[A]): Option[Attribute[A]] = value.map(apply)
+  final def maybe(value: Option[A]): Option[Attribute[A]] =
+    value.map(apply)
+
+  /** Creates an [[Attribute]] with the focused value if the given option is non-empty.
+    *
+    * @example
+    *   {{{
+    * case class UserId(id: Int)
+    * implicit val userIdFrom: Attribute.From[UserId, Long] = _.id.toLong
+    *
+    * val userIdKey = AttributeKey[Long]("user.id")
+    *
+    * val attribute: Option[Attribute[Long]] = userIdKey.maybe(Some(UserId(1)))
+    *   }}}
+    *
+    * @return
+    *   an [[`Attribute`]] associating this key with the given value
+    */
+  final def maybe[In](value: Option[In])(implicit from: From[In, A]): Option[Attribute[A]] =
+    value.map(apply[In])
 
   /** @return
     *   an [[`AttributeKey`]] of the same type as this key, with name transformed by `f`

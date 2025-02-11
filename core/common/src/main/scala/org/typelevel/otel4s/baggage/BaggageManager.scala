@@ -18,7 +18,21 @@ package org.typelevel.otel4s.baggage
 
 import cats.mtl.Local
 
-/** A utility for accessing and modifying [[`Baggage`]]. */
+/** A utility for accessing and modifying [[`Baggage`]].
+  *
+  * @example
+  *   {{{
+  * val baggageManager: BaggageManager[F] = ???
+  *
+  * val io =
+  *   for {
+  *     id <- BaggageManager[F].getValue("user_id")
+  *     _  <- Console[F].println("user_id: " + id)
+  *   } yield ()
+  *
+  * BaggageManager[F].local(io)(_.updated("user_id", "uid"))
+  *   }}}
+  */
 trait BaggageManager[F[_]] extends Local[F, Baggage] {
 
   /** @return the current `Baggage` */
@@ -37,4 +51,8 @@ trait BaggageManager[F[_]] extends Local[F, Baggage] {
     */
   def getValue(key: String): F[Option[String]] =
     reader(_.get(key).map(_.value))
+}
+
+object BaggageManager {
+  def apply[F[_]](implicit ev: BaggageManager[F]): BaggageManager[F] = ev
 }

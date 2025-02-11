@@ -85,7 +85,8 @@ val MUnitScalaCheckVersion = "1.0.0-M11"
 val MUnitCatsEffectVersion = "2.0.0"
 val MUnitDisciplineVersion = "2.0.0-M3"
 val MUnitScalaCheckEffectVersion = "2.0.0-M2"
-val OpenTelemetryVersion = "1.46.0"
+val OpenTelemetryVersion = "1.47.0"
+val OpenTelemetryVersionAlpha = s"$OpenTelemetryVersion-alpha"
 val OpenTelemetryInstrumentationVersion = "2.12.0"
 val OpenTelemetryInstrumentationAlphaVersion = "2.10.0-alpha"
 val OpenTelemetrySemConvVersion = "1.29.0-alpha"
@@ -641,7 +642,8 @@ lazy val `oteljava-common` = project
       "org.typelevel" %%% "cats-mtl" % CatsMtlVersion,
       "io.opentelemetry" % "opentelemetry-api" % OpenTelemetryVersion,
       "org.typelevel" %%% "cats-effect-testkit" % CatsEffectVersion % Test,
-      "io.opentelemetry" % "opentelemetry-sdk-testing" % OpenTelemetryVersion % Test
+      "io.opentelemetry" % "opentelemetry-api-incubator" % OpenTelemetryVersionAlpha % Test,
+      "io.opentelemetry" % "opentelemetry-sdk-testing" % OpenTelemetryVersion % Test,
     ),
     buildInfoPackage := "org.typelevel.otel4s.oteljava",
     buildInfoOptions += sbtbuildinfo.BuildInfoOption.PackagePrivate,

@@ -85,6 +85,96 @@ object Attribute {
     implicit def id[A]: From[A, A] = a => a
   }
 
+  /** Allows creating an [[Attribute]] from an arbitrary type `A`.
+    *
+    * @example
+    *   {{{
+    * case class UserId(id: Int)
+    *
+    * implicit val userIdAttributeFrom: Attribute.From[UserId, Long] =
+    *   _.id.toLong
+    *
+    * implicit val userIdAttributeMake: Attribute.Make[UserId, Long] =
+    *   Attribute.Make.const("user.id")
+    *
+    * val attribute: Attribute[Long] = Attribute.from(UserId(1))
+    *   }}}
+    *
+    * @tparam A
+    *   the type of the value
+    *
+    * @tparam Key
+    *   type of the attribute key
+    */
+  trait Make[A, Key] {
+    def make(a: A): Attribute[Key]
+  }
+
+  object Make {
+
+    /** Creates a [[Make]] instance with a const name.
+      *
+      * @example
+      *   {{{
+      * case class UserId(id: Int)
+      * object UserId {
+      *   val UserIdKey: AttributeKey[Long] = AttributeKey("user.id")
+      *   implicit val userIdAttributeFrom: Attribute.From[UserId, Long] =
+      *     _.id.toLong
+      *   implicit val userIdAttributeMake: Attribute.Make[UserId, Long] =
+      *     Attribute.Make.const(UserIdKey)
+      * }
+      *
+      * val userId = UserId(123)
+      *
+      * val attribute: Attribute[Long] = Attribute.from(userId)
+      *   }}}
+      *
+      * @param key
+      *   the key of the attribute
+      *
+      * @tparam A
+      *   the type of the value
+      *
+      * @tparam Key
+      *   the type of the key
+      */
+    def const[A, Key](key: AttributeKey[Key])(implicit from: Attribute.From[A, Key]): Make[A, Key] =
+      (value: A) => Attribute.from(key, value)
+
+    /** Creates a [[Make]] instance with a const name.
+      *
+      * @example
+      *   {{{
+      * case class UserId(id: Int)
+      * object UserId {
+      *   implicit val userIdAttributeFrom: Attribute.From[UserId, Long] =
+      *     _.id.toLong
+      *   implicit val userIdAttributeMake: Attribute.Make[UserId, Long] =
+      *     Attribute.Make.const("user.id")
+      * }
+      *
+      * val userId = UserId(123)
+      *
+      * val attribute: Attribute[Long] = Attribute.from(userId)
+      *   }}}
+      *
+      * @param name
+      *   the name of the attribute
+      *
+      * @tparam A
+      *   the type of the value
+      *
+      * @tparam Key
+      *   the type of the key
+      */
+    def const[A, Key](name: String)(implicit
+        from: Attribute.From[A, Key],
+        select: AttributeKey.KeySelect[Key]
+    ): Make[A, Key] =
+      (a: A) => Attribute.from(name, a)
+  }
+
   /** Creates an attribute with the given key and value.
     *
     * @example
@@ -154,6 +244,27 @@ object Attribute {
       select: AttributeKey.KeySelect[Key]
   ): Attribute[Key] =
     Impl(select.make(name), from(value))
+
+  /** Creates an [[Attribute]] from the given value using an implicit [[Make]] instance.
+    *
+    * @example
+    *   {{{
+    * case class UserId(id: Int)
+    *
+    * implicit val userIdAttributeFrom: Attribute.From[UserId, Long] =
+    *   _.id.toLong
+    *
+    * implicit val userIdAttributeMake: Attribute.Make[UserId, Long] =
+    *   Attribute.Make.const("user.id")
+    *
+    * val attribute: Attribute[Long] = Attribute.from(UserId(1))
+    *   }}}
+    *
+    * @param value
+    *   the value of an attribute
+    */
+  def from[A, Key](value: A)(implicit make: Make[A, Key]): Attribute[Key] =
+    make.make(value)
 
   implicit val showAttribute: Show[Attribute[_]] = (a: Attribute[_]) => s"${show"${a.key}"}=${a.value}"
 

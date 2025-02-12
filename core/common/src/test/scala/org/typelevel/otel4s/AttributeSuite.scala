@@ -47,4 +47,28 @@ class AttributeSuite extends FunSuite {
     assertEquals(builder.result(), expected)
   }
 
+  test("use implicit Attribute.Make to create an attribute") {
+    case class AssetId(id: Int)
+
+    val assetIdKey: AttributeKey[Long] = AttributeKey("asset.id")
+
+    implicit val assetIdFrom: Attribute.From[AssetId, Long] =
+      _.id.toLong
+
+    implicit val userIdAttributeMake: Attribute.Make[UserId, String] =
+      Attribute.Make.const("user.id")
+
+    implicit val assetIdAttributeMake: Attribute.Make[AssetId, Long] =
+      Attribute.Make.const(assetIdKey)
+
+    val builder = Attributes.newBuilder
+    builder += Attribute.from(UserId("321"))
+    builder ++= Option(Attribute.from(AssetId(123)))
+
+    val attributes = builder.result()
+
+    assertEquals(attributes.get[String]("user.id").map(_.value), Some("321"))
+    assertEquals(attributes.get[Long]("asset.id").map(_.value), Some(123L))
+  }
+
 }

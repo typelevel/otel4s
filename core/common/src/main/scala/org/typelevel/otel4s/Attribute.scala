@@ -56,6 +56,35 @@ sealed trait Attribute[A] {
 
 object Attribute {
 
+  /** Allows creating an attribute value from an arbitrary type:
+    *
+    * @example
+    *   {{{
+    * case class UserId(id: Int)
+    * implicit val userIdFrom: Attribute.From[UserId, Long] = _.id.toLong
+    *
+    * val userIdKey = AttributeKey[Long]("user.id")
+    *
+    * val attribute: Attribute[Long] = userIdKey(UserId(1))
+    * val attribute: Attribute[Long] = Attribute.from(userIdKey, UserId(1))
+    * val attribute: Attribute[Long] = Attribute.from("user.id", UserId(1))
+    *   }}}
+    *
+    * @tparam Value
+    *   the type of the value
+    *
+    * @tparam Key
+    *   the type of the key, one of [[AttributeType]]
+    */
+  @annotation.implicitNotFound("Could not find the `Attribute.From` for value ${Value} and key ${Key}.")
+  trait From[Value, Key] {
+    def apply(in: Value): Key
+  }
+
+  object From {
+    implicit def id[A]: From[A, A] = a => a
+  }
+
   /** Creates an attribute with the given key and value.
     *
     * @example
@@ -85,6 +114,46 @@ object Attribute {
     */
   def apply[A: AttributeKey.KeySelect](name: String, value: A): Attribute[A] =
     Impl(AttributeKey.KeySelect[A].make(name), value)
+
+  /** Creates an attribute with the given name and value.
+    *
+    * @example
+    *   {{{
+    * case class UserId(id: Int)
+    * implicit val userIdKeyFrom: Attribute.From[UserId, Long] = _.id.toLong
+    * val userIdKey = AttributeKey[Long]("user.id")
+    * val attribute: Attribute[Long] = Attribute.from(userIdKey, UserId(1))
+    *   }}}
+    *
+    * @param key
+    *   the key of an attribute
+    *
+    * @param value
+    *   the value of an attribute
+    */
+  def from[A, Key](key: AttributeKey[Key], value: A)(implicit from: From[A, Key]): Attribute[Key] =
+    Impl(key, from(value))
+
+  /** Creates an attribute with the given name and value.
+    *
+    * @example
+    *   {{{
+    * case class UserId(id: Int)
+    * implicit val userIdKeyFrom: Attribute.From[UserId, Long] = _.id.toLong
+    * val attribute: Attribute[Long] = Attribute.from("user.id", UserId(1))
+    *   }}}
+    *
+    * @param name
+    *   the key name of an attribute
+    *
+    * @param value
+    *   the value of an attribute
+    */
+  def from[A, Key](name: String, value: A)(implicit
+      from: From[A, Key],
+      select: AttributeKey.KeySelect[Key]
+  ): Attribute[Key] =
+    Impl(select.make(name), from(value))
 
   implicit val showAttribute: Show[Attribute[_]] = (a: Attribute[_]) => s"${show"${a.key}"}=${a.value}"
 

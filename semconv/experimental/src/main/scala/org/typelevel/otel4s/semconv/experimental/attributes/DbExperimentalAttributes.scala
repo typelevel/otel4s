@@ -89,7 +89,8 @@ object DbExperimentalAttributes {
   val DbClientConnectionsState: AttributeKey[String] =
     AttributeKey("db.client.connections.state")
 
-  /** The name of a collection (table, container) within the database. <p>
+  /** The name of a collection (table, container) within the database.
+    *
     * @note
     *   <p> It is RECOMMENDED to capture the value as provided by the application without attempting to do any case
     *   normalization. <p> The collection name SHOULD NOT be extracted from `db.query.text`, unless the query format is
@@ -216,7 +217,8 @@ object DbExperimentalAttributes {
   val DbName: AttributeKey[String] =
     AttributeKey("db.name")
 
-  /** The name of the database, fully qualified within the server address and port. <p>
+  /** The name of the database, fully qualified within the server address and port.
+    *
     * @note
     *   <p> If a database system has multiple namespace components, they SHOULD be concatenated (potentially using
     *   database system specific conventions) from most general to most specific namespace component, and more specific
@@ -234,7 +236,8 @@ object DbExperimentalAttributes {
   val DbOperation: AttributeKey[String] =
     AttributeKey("db.operation")
 
-  /** The number of queries included in a batch operation. <p>
+  /** The number of queries included in a batch operation.
+    *
     * @note
     *   <p> Operations are only considered batches when they contain two or more operations, and so
     *   `db.operation.batch.size` SHOULD never be `1`.
@@ -242,7 +245,8 @@ object DbExperimentalAttributes {
   val DbOperationBatchSize: AttributeKey[Long] =
     AttributeKey("db.operation.batch.size")
 
-  /** The name of the operation or command being executed. <p>
+  /** The name of the operation or command being executed.
+    *
     * @note
     *   <p> It is RECOMMENDED to capture the value as provided by the application without attempting to do any case
     *   normalization. <p> The operation name SHOULD NOT be extracted from `db.query.text`, unless the query format is
@@ -254,7 +258,8 @@ object DbExperimentalAttributes {
     AttributeKey("db.operation.name")
 
   /** A database operation parameter, with `<key>` being the parameter name, and the attribute value being a string
-    * representation of the parameter value. <p>
+    * representation of the parameter value.
+    *
     * @note
     *   <p> If a parameter has no name and instead is referenced only by index, then `<key>` SHOULD be the 0-based
     *   index. If `db.query.text` is also captured, then `db.operation.parameter.<key>` SHOULD match up with the
@@ -270,7 +275,8 @@ object DbExperimentalAttributes {
   val DbQueryParameter: AttributeKey[String] =
     AttributeKey("db.query.parameter")
 
-  /** Low cardinality representation of a database query text. <p>
+  /** Low cardinality representation of a database query text.
+    *
     * @note
     *   <p> `db.query.summary` provides static summary of the query text. It describes a class of database queries and
     *   is useful as a grouping key, especially when analyzing telemetry for database calls involving complex queries.
@@ -282,7 +288,8 @@ object DbExperimentalAttributes {
   val DbQuerySummary: AttributeKey[String] =
     AttributeKey("db.query.summary")
 
-  /** The database query being executed. <p>
+  /** The database query being executed.
+    *
     * @note
     *   <p> For sanitization see <a
     *   href="../../docs/database/database-spans.md#sanitization-of-dbquerytext">Sanitization of `db.query.text`</a>.
@@ -307,7 +314,8 @@ object DbExperimentalAttributes {
   val DbResponseReturnedRows: AttributeKey[Long] =
     AttributeKey("db.response.returned_rows")
 
-  /** Database response status code. <p>
+  /** Database response status code.
+    *
     * @note
     *   <p> The status code returned by the database. Usually it represents an error code, but may also represent
     *   partial success, warning, or differentiate between various types of successful outcomes. Semantic conventions
@@ -335,7 +343,8 @@ object DbExperimentalAttributes {
   val DbSystem: AttributeKey[String] =
     AttributeKey("db.system")
 
-  /** The database management system (DBMS) product as identified by the client instrumentation. <p>
+  /** The database management system (DBMS) product as identified by the client instrumentation.
+    *
     * @note
     *   <p> The actual DBMS may differ from the one identified by the client. For example, when using PostgreSQL client
     *   libraries to connect to a CockroachDB, the `db.system.name` is set to `postgresql` based on the

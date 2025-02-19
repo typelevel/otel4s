@@ -26,7 +26,8 @@ object K8sExperimentalAttributes {
   val K8sClusterName: AttributeKey[String] =
     AttributeKey("k8s.cluster.name")
 
-  /** A pseudo-ID for the cluster, set to the UID of the `kube-system` namespace. <p>
+  /** A pseudo-ID for the cluster, set to the UID of the `kube-system` namespace.
+    *
     * @note
     *   <p> K8s doesn't have support for obtaining a cluster ID. If this is ever added, we will recommend collecting the
     *   `k8s.cluster.uid` through the official APIs. In the meantime, we are able to use the `uid` of the `kube-system`
@@ -105,7 +106,8 @@ object K8sExperimentalAttributes {
   val K8sNamespaceName: AttributeKey[String] =
     AttributeKey("k8s.namespace.name")
 
-  /** The phase of the K8s namespace. <p>
+  /** The phase of the K8s namespace.
+    *
     * @note
     *   <p> This attribute aligns with the `phase` field of the <a
     *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#namespacestatus-v1-core">K8s

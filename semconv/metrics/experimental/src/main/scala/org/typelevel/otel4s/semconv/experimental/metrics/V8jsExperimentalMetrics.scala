@@ -34,7 +34,8 @@ object V8jsExperimentalMetrics {
     MemoryHeapUsed,
   )
 
-  /** Garbage collection duration. <p>
+  /** Garbage collection duration.
+    *
     * @note
     *   <p> The values can be retrieve from <a
     *   href="https://nodejs.org/api/perf_hooks.html#performanceobserverobserveoptions">`perf_hooks.PerformanceObserver(...).observe({
@@ -77,7 +78,8 @@ object V8jsExperimentalMetrics {
 
   }
 
-  /** Heap space available size. <p>
+  /** Heap space available size.
+    *
     * @note
     *   <p> Value can be retrieved from value `space_available_size` of <a
     *   href="https://nodejs.org/api/v8.html#v8getheapspacestatistics">`v8.getHeapSpaceStatistics()`</a>
@@ -92,7 +94,8 @@ object V8jsExperimentalMetrics {
 
     object AttributeSpecs {
 
-      /** The name of the space type of heap memory. <p>
+      /** The name of the space type of heap memory.
+        *
         * @note
         *   <p> Value can be retrieved from value `space_name` of <a
         *   href="https://nodejs.org/api/v8.html#v8getheapspacestatistics">`v8.getHeapSpaceStatistics()`</a>
@@ -137,7 +140,8 @@ object V8jsExperimentalMetrics {
 
   }
 
-  /** Committed size of a heap space. <p>
+  /** Committed size of a heap space.
+    *
     * @note
     *   <p> Value can be retrieved from value `physical_space_size` of <a
     *   href="https://nodejs.org/api/v8.html#v8getheapspacestatistics">`v8.getHeapSpaceStatistics()`</a>
@@ -152,7 +156,8 @@ object V8jsExperimentalMetrics {
 
     object AttributeSpecs {
 
-      /** The name of the space type of heap memory. <p>
+      /** The name of the space type of heap memory.
+        *
         * @note
         *   <p> Value can be retrieved from value `space_name` of <a
         *   href="https://nodejs.org/api/v8.html#v8getheapspacestatistics">`v8.getHeapSpaceStatistics()`</a>
@@ -197,7 +202,8 @@ object V8jsExperimentalMetrics {
 
   }
 
-  /** Total heap memory size pre-allocated. <p>
+  /** Total heap memory size pre-allocated.
+    *
     * @note
     *   <p> The value can be retrieved from value `space_size` of <a
     *   href="https://nodejs.org/api/v8.html#v8getheapspacestatistics">`v8.getHeapSpaceStatistics()`</a>
@@ -212,7 +218,8 @@ object V8jsExperimentalMetrics {
 
     object AttributeSpecs {
 
-      /** The name of the space type of heap memory. <p>
+      /** The name of the space type of heap memory.
+        *
         * @note
         *   <p> Value can be retrieved from value `space_name` of <a
         *   href="https://nodejs.org/api/v8.html#v8getheapspacestatistics">`v8.getHeapSpaceStatistics()`</a>
@@ -257,7 +264,8 @@ object V8jsExperimentalMetrics {
 
   }
 
-  /** Heap Memory size allocated. <p>
+  /** Heap Memory size allocated.
+    *
     * @note
     *   <p> The value can be retrieved from value `space_used_size` of <a
     *   href="https://nodejs.org/api/v8.html#v8getheapspacestatistics">`v8.getHeapSpaceStatistics()`</a>
@@ -272,7 +280,8 @@ object V8jsExperimentalMetrics {
 
     object AttributeSpecs {
 
-      /** The name of the space type of heap memory. <p>
+      /** The name of the space type of heap memory.
+        *
         * @note
         *   <p> Value can be retrieved from value `space_name` of <a
         *   href="https://nodejs.org/api/v8.html#v8getheapspacestatistics">`v8.getHeapSpaceStatistics()`</a>

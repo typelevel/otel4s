@@ -21,7 +21,8 @@ package attributes
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/attributes/SemanticAttributes.scala.j2
 object ErrorAttributes {
 
-  /** Describes a class of error the operation ended with. <p>
+  /** Describes a class of error the operation ended with.
+    *
     * @note
     *   <p> The `error.type` SHOULD be predictable, and SHOULD have low cardinality. <p> When `error.type` is set to a
     *   type (e.g., an exception type), its canonical class name identifying the type within the artifact SHOULD be

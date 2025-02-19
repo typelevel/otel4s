@@ -28,7 +28,8 @@ object DeploymentExperimentalAttributes {
     AttributeKey("deployment.environment")
 
   /** Name of the <a href="https://wikipedia.org/wiki/Deployment_environment">deployment environment</a> (aka deployment
-    * tier). <p>
+    * tier).
+    *
     * @note
     *   <p> `deployment.environment.name` does not affect the uniqueness constraints defined through the
     *   `service.namespace`, `service.name` and `service.instance.id` resource attributes. This implies that resources

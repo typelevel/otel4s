@@ -180,7 +180,8 @@ object JvmMetrics {
 
   }
 
-  /** Recent CPU utilization for the process as reported by the JVM. <p>
+  /** Recent CPU utilization for the process as reported by the JVM.
+    *
     * @note
     *   <p> The value range is [0.0,1.0]. This utilization is not defined as being for the specific interval since last
     *   measurement (unlike `system.cpu.utilization`). <a
@@ -266,7 +267,8 @@ object JvmMetrics {
 
     object AttributeSpecs {
 
-      /** Name of the garbage collector action. <p>
+      /** Name of the garbage collector action.
+        *
         * @note
         *   <p> Garbage collector action is generally obtained via <a
         *   href="https://docs.oracle.com/en/java/javase/11/docs/api/jdk.management/com/sun/management/GarbageCollectionNotificationInfo.html#getGcAction()">GarbageCollectionNotificationInfo#getGcAction()</a>.
@@ -282,7 +284,8 @@ object JvmMetrics {
           Stability.stable
         )
 
-      /** Name of the garbage collector. <p>
+      /** Name of the garbage collector.
+        *
         * @note
         *   <p> Garbage collector name is generally obtained via <a
         *   href="https://docs.oracle.com/en/java/javase/11/docs/api/jdk.management/com/sun/management/GarbageCollectionNotificationInfo.html#getGcName()">GarbageCollectionNotificationInfo#getGcName()</a>.
@@ -327,7 +330,8 @@ object JvmMetrics {
 
     object AttributeSpecs {
 
-      /** Name of the memory pool. <p>
+      /** Name of the memory pool.
+        *
         * @note
         *   <p> Pool names are generally obtained via <a
         *   href="https://docs.oracle.com/en/java/javase/11/docs/api/java.management/java/lang/management/MemoryPoolMXBean.html#getName()">MemoryPoolMXBean#getName()</a>.
@@ -401,7 +405,8 @@ object JvmMetrics {
 
     object AttributeSpecs {
 
-      /** Name of the memory pool. <p>
+      /** Name of the memory pool.
+        *
         * @note
         *   <p> Pool names are generally obtained via <a
         *   href="https://docs.oracle.com/en/java/javase/11/docs/api/java.management/java/lang/management/MemoryPoolMXBean.html#getName()">MemoryPoolMXBean#getName()</a>.
@@ -475,7 +480,8 @@ object JvmMetrics {
 
     object AttributeSpecs {
 
-      /** Name of the memory pool. <p>
+      /** Name of the memory pool.
+        *
         * @note
         *   <p> Pool names are generally obtained via <a
         *   href="https://docs.oracle.com/en/java/javase/11/docs/api/java.management/java/lang/management/MemoryPoolMXBean.html#getName()">MemoryPoolMXBean#getName()</a>.
@@ -550,7 +556,8 @@ object JvmMetrics {
 
     object AttributeSpecs {
 
-      /** Name of the memory pool. <p>
+      /** Name of the memory pool.
+        *
         * @note
         *   <p> Pool names are generally obtained via <a
         *   href="https://docs.oracle.com/en/java/javase/11/docs/api/java.management/java/lang/management/MemoryPoolMXBean.html#getName()">MemoryPoolMXBean#getName()</a>.

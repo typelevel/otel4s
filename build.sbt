@@ -86,10 +86,11 @@ val MUnitCatsEffectVersion = "2.0.0"
 val MUnitDisciplineVersion = "2.0.0-M3"
 val MUnitScalaCheckEffectVersion = "2.0.0-M2"
 val OpenTelemetryVersion = "1.47.0"
-val OpenTelemetryVersionAlpha = s"$OpenTelemetryVersion-alpha"
+val OpenTelemetryAlphaVersion = s"$OpenTelemetryVersion-alpha"
 val OpenTelemetryInstrumentationVersion = "2.13.0"
 val OpenTelemetryInstrumentationAlphaVersion = "2.10.0-alpha"
 val OpenTelemetrySemConvVersion = "1.30.0"
+val OpenTelemetrySemConvAlphaVersion = s"$OpenTelemetrySemConvVersion-alpha"
 val OpenTelemetryProtoVersion = "1.5.0-alpha"
 val PekkoStreamVersion = "1.1.3"
 val PekkoHttpVersion = "1.1.0"
@@ -642,7 +643,7 @@ lazy val `oteljava-common` = project
       "org.typelevel" %%% "cats-mtl" % CatsMtlVersion,
       "io.opentelemetry" % "opentelemetry-api" % OpenTelemetryVersion,
       "org.typelevel" %%% "cats-effect-testkit" % CatsEffectVersion % Test,
-      "io.opentelemetry" % "opentelemetry-api-incubator" % OpenTelemetryVersionAlpha % Test,
+      "io.opentelemetry" % "opentelemetry-api-incubator" % OpenTelemetryAlphaVersion % Test,
       "io.opentelemetry" % "opentelemetry-sdk-testing" % OpenTelemetryVersion % Test,
     ),
     buildInfoPackage := "org.typelevel.otel4s.oteljava",
@@ -798,7 +799,7 @@ lazy val `semconv-experimental` =
       description := "Experimental (incubating) semantic conventions. Breaking changes expected. Library instrumentation SHOULD NOT depend on this.",
       startYear := Some(2023),
       // We use opentelemetry-semconv dependency to track releases of the OpenTelemetry semantic convention spec
-      libraryDependencies += "io.opentelemetry.semconv" % "opentelemetry-semconv-incubating" % OpenTelemetrySemConvVersion % "compile-internal" intransitive (),
+      libraryDependencies += "io.opentelemetry.semconv" % "opentelemetry-semconv-incubating" % OpenTelemetrySemConvAlphaVersion % "compile-internal" intransitive (),
       mimaPreviousArtifacts := Set.empty
     )
     .settings(munitDependencies)

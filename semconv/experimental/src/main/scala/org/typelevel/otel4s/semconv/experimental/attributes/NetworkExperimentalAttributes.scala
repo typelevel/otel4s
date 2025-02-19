@@ -41,7 +41,8 @@ object NetworkExperimentalAttributes {
   val NetworkCarrierName: AttributeKey[String] =
     AttributeKey("network.carrier.name")
 
-  /** The state of network connection <p>
+  /** The state of network connection
+    *
     * @note
     *   <p> Connection states are defined as part of the <a
     *   href="https://datatracker.ietf.org/doc/html/rfc9293#section-3.3.2">rfc9293</a>
@@ -106,7 +107,8 @@ object NetworkExperimentalAttributes {
   val NetworkPeerPort: AttributeKey[Long] =
     AttributeKey("network.peer.port")
 
-  /** <a href="https://wikipedia.org/wiki/Application_layer">OSI application layer</a> or non-OSI equivalent. <p>
+  /** <a href="https://wikipedia.org/wiki/Application_layer">OSI application layer</a> or non-OSI equivalent.
+    *
     * @note
     *   <p> The value SHOULD be normalized to lowercase.
     */
@@ -117,7 +119,8 @@ object NetworkExperimentalAttributes {
   val NetworkProtocolName: AttributeKey[String] =
     AttributeKey("network.protocol.name")
 
-  /** The actual version of the protocol used for network communication. <p>
+  /** The actual version of the protocol used for network communication.
+    *
     * @note
     *   <p> If protocol version is subject to negotiation (for example using <a
     *   href="https://www.rfc-editor.org/rfc/rfc7301.html">ALPN</a>), this attribute SHOULD be set to the negotiated
@@ -131,7 +134,8 @@ object NetworkExperimentalAttributes {
     AttributeKey("network.protocol.version")
 
   /** <a href="https://wikipedia.org/wiki/Transport_layer">OSI transport layer</a> or <a
-    * href="https://wikipedia.org/wiki/Inter-process_communication">inter-process communication method</a>. <p>
+    * href="https://wikipedia.org/wiki/Inter-process_communication">inter-process communication method</a>.
+    *
     * @note
     *   <p> The value SHOULD be normalized to lowercase. <p> Consider always setting the transport when setting a port
     *   number, since a port number is ambiguous without knowing the transport. For example different processes could be
@@ -144,7 +148,8 @@ object NetworkExperimentalAttributes {
   val NetworkTransport: AttributeKey[String] =
     AttributeKey("network.transport")
 
-  /** <a href="https://wikipedia.org/wiki/Network_layer">OSI network layer</a> or non-OSI equivalent. <p>
+  /** <a href="https://wikipedia.org/wiki/Network_layer">OSI network layer</a> or non-OSI equivalent.
+    *
     * @note
     *   <p> The value SHOULD be normalized to lowercase.
     */

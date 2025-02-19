@@ -22,7 +22,8 @@ package experimental.attributes
 object TlsExperimentalAttributes {
 
   /** String indicating the <a href="https://datatracker.ietf.org/doc/html/rfc5246#appendix-A.5">cipher</a> used during
-    * the current connection. <p>
+    * the current connection.
+    *
     * @note
     *   <p> The values allowed for `tls.cipher` MUST be one of the `Descriptions` of the <a
     *   href="https://www.iana.org/assignments/tls-parameters/tls-parameters.xhtml#table-tls-parameters-4">registered

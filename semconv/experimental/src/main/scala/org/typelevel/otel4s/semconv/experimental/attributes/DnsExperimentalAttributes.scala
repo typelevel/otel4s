@@ -21,7 +21,8 @@ package experimental.attributes
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/attributes/SemanticAttributes.scala.j2
 object DnsExperimentalAttributes {
 
-  /** The name being queried. <p>
+  /** The name being queried.
+    *
     * @note
     *   <p> If the name field contains non-printable characters (below 32 or above 126), those characters should be
     *   represented as escaped base 10 integers (\DDD). Back slashes and quotes should be escaped. Tabs, carriage

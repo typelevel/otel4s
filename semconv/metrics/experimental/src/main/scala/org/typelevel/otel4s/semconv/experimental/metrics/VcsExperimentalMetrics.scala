@@ -68,7 +68,8 @@ object VcsExperimentalMetrics {
         )
 
       /** The human readable name of the repository. It SHOULD NOT include any additional identifier like Group/SubGroup
-        * in GitLab or organization in GitHub. <p>
+        * in GitLab or organization in GitHub.
+        *
         * @note
         *   <p> Due to it only being the name, it can clash with forks of the same repository if collecting telemetry
         *   across multiple orgs or groups in the same backends.
@@ -87,7 +88,8 @@ object VcsExperimentalMetrics {
       /** The <a
         * href="https://support.google.com/webmasters/answer/10347851?hl=en#:~:text=A%20canonical%20URL%20is%20the,Google%20chooses%20one%20as%20canonical.">canonical
         * URL</a> of the repository providing the complete HTTP(S) address in order to locate and identify the
-        * repository through a browser. <p>
+        * repository through a browser.
+        *
         * @note
         *   <p> In Git Version Control Systems, the canonical URL SHOULD NOT include the `.git` extension.
         */
@@ -163,7 +165,8 @@ object VcsExperimentalMetrics {
         )
 
       /** The name of the <a href="https://git-scm.com/docs/gitglossary#def_ref">reference</a> such as
-        * <strong>branch</strong> or <strong>tag</strong> in the repository. <p>
+        * <strong>branch</strong> or <strong>tag</strong> in the repository.
+        *
         * @note
         *   <p> `head` refers to where you are right now; the current reference at a given time.
         */
@@ -179,7 +182,8 @@ object VcsExperimentalMetrics {
         )
 
       /** The human readable name of the repository. It SHOULD NOT include any additional identifier like Group/SubGroup
-        * in GitLab or organization in GitHub. <p>
+        * in GitLab or organization in GitHub.
+        *
         * @note
         *   <p> Due to it only being the name, it can clash with forks of the same repository if collecting telemetry
         *   across multiple orgs or groups in the same backends.
@@ -198,7 +202,8 @@ object VcsExperimentalMetrics {
       /** The <a
         * href="https://support.google.com/webmasters/answer/10347851?hl=en#:~:text=A%20canonical%20URL%20is%20the,Google%20chooses%20one%20as%20canonical.">canonical
         * URL</a> of the repository providing the complete HTTP(S) address in order to locate and identify the
-        * repository through a browser. <p>
+        * repository through a browser.
+        *
         * @note
         *   <p> In Git Version Control Systems, the canonical URL SHOULD NOT include the `.git` extension.
         */
@@ -262,7 +267,8 @@ object VcsExperimentalMetrics {
     object AttributeSpecs {
 
       /** The name of the <a href="https://git-scm.com/docs/gitglossary#def_ref">reference</a> such as
-        * <strong>branch</strong> or <strong>tag</strong> in the repository. <p>
+        * <strong>branch</strong> or <strong>tag</strong> in the repository.
+        *
         * @note
         *   <p> `base` refers to the starting point of a change. For example, `main` would be the base reference of type
         *   branch if you've created a new reference of type branch from it and created new commits.
@@ -279,7 +285,8 @@ object VcsExperimentalMetrics {
         )
 
       /** The revision, literally <a href="https://www.merriam-webster.com/dictionary/revision">revised version</a>, The
-        * revision most often refers to a commit object in Git, or a revision number in SVN. <p>
+        * revision most often refers to a commit object in Git, or a revision number in SVN.
+        *
         * @note
         *   <p> `base` refers to the starting point of a change. For example, `main` would be the base reference of type
         *   branch if you've created a new reference of type branch from it and created new commits. The revision can be
@@ -305,7 +312,8 @@ object VcsExperimentalMetrics {
         )
 
       /** The name of the <a href="https://git-scm.com/docs/gitglossary#def_ref">reference</a> such as
-        * <strong>branch</strong> or <strong>tag</strong> in the repository. <p>
+        * <strong>branch</strong> or <strong>tag</strong> in the repository.
+        *
         * @note
         *   <p> `head` refers to where you are right now; the current reference at a given time.
         */
@@ -321,7 +329,8 @@ object VcsExperimentalMetrics {
         )
 
       /** The revision, literally <a href="https://www.merriam-webster.com/dictionary/revision">revised version</a>, The
-        * revision most often refers to a commit object in Git, or a revision number in SVN. <p>
+        * revision most often refers to a commit object in Git, or a revision number in SVN.
+        *
         * @note
         *   <p> `head` refers to where you are right now; the current reference at a given time.The revision can be a
         *   full <a href="https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.186-5.pdf">hash value (see glossary)</a>, of
@@ -346,7 +355,8 @@ object VcsExperimentalMetrics {
         )
 
       /** The human readable name of the repository. It SHOULD NOT include any additional identifier like Group/SubGroup
-        * in GitLab or organization in GitHub. <p>
+        * in GitLab or organization in GitHub.
+        *
         * @note
         *   <p> Due to it only being the name, it can clash with forks of the same repository if collecting telemetry
         *   across multiple orgs or groups in the same backends.
@@ -365,7 +375,8 @@ object VcsExperimentalMetrics {
       /** The <a
         * href="https://support.google.com/webmasters/answer/10347851?hl=en#:~:text=A%20canonical%20URL%20is%20the,Google%20chooses%20one%20as%20canonical.">canonical
         * URL</a> of the repository providing the complete HTTP(S) address in order to locate and identify the
-        * repository through a browser. <p>
+        * repository through a browser.
+        *
         * @note
         *   <p> In Git Version Control Systems, the canonical URL SHOULD NOT include the `.git` extension.
         */
@@ -431,7 +442,8 @@ object VcsExperimentalMetrics {
     object AttributeSpecs {
 
       /** The name of the <a href="https://git-scm.com/docs/gitglossary#def_ref">reference</a> such as
-        * <strong>branch</strong> or <strong>tag</strong> in the repository. <p>
+        * <strong>branch</strong> or <strong>tag</strong> in the repository.
+        *
         * @note
         *   <p> `base` refers to the starting point of a change. For example, `main` would be the base reference of type
         *   branch if you've created a new reference of type branch from it and created new commits.
@@ -448,7 +460,8 @@ object VcsExperimentalMetrics {
         )
 
       /** The revision, literally <a href="https://www.merriam-webster.com/dictionary/revision">revised version</a>, The
-        * revision most often refers to a commit object in Git, or a revision number in SVN. <p>
+        * revision most often refers to a commit object in Git, or a revision number in SVN.
+        *
         * @note
         *   <p> `base` refers to the starting point of a change. For example, `main` would be the base reference of type
         *   branch if you've created a new reference of type branch from it and created new commits. The revision can be
@@ -474,7 +487,8 @@ object VcsExperimentalMetrics {
         )
 
       /** The name of the <a href="https://git-scm.com/docs/gitglossary#def_ref">reference</a> such as
-        * <strong>branch</strong> or <strong>tag</strong> in the repository. <p>
+        * <strong>branch</strong> or <strong>tag</strong> in the repository.
+        *
         * @note
         *   <p> `head` refers to where you are right now; the current reference at a given time.
         */
@@ -490,7 +504,8 @@ object VcsExperimentalMetrics {
         )
 
       /** The revision, literally <a href="https://www.merriam-webster.com/dictionary/revision">revised version</a>, The
-        * revision most often refers to a commit object in Git, or a revision number in SVN. <p>
+        * revision most often refers to a commit object in Git, or a revision number in SVN.
+        *
         * @note
         *   <p> `head` refers to where you are right now; the current reference at a given time.The revision can be a
         *   full <a href="https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.186-5.pdf">hash value (see glossary)</a>, of
@@ -515,7 +530,8 @@ object VcsExperimentalMetrics {
         )
 
       /** The human readable name of the repository. It SHOULD NOT include any additional identifier like Group/SubGroup
-        * in GitLab or organization in GitHub. <p>
+        * in GitLab or organization in GitHub.
+        *
         * @note
         *   <p> Due to it only being the name, it can clash with forks of the same repository if collecting telemetry
         *   across multiple orgs or groups in the same backends.
@@ -534,7 +550,8 @@ object VcsExperimentalMetrics {
       /** The <a
         * href="https://support.google.com/webmasters/answer/10347851?hl=en#:~:text=A%20canonical%20URL%20is%20the,Google%20chooses%20one%20as%20canonical.">canonical
         * URL</a> of the repository providing the complete HTTP(S) address in order to locate and identify the
-        * repository through a browser. <p>
+        * repository through a browser.
+        *
         * @note
         *   <p> In Git Version Control Systems, the canonical URL SHOULD NOT include the `.git` extension.
         */
@@ -598,7 +615,8 @@ object VcsExperimentalMetrics {
     object AttributeSpecs {
 
       /** The human readable name of the repository. It SHOULD NOT include any additional identifier like Group/SubGroup
-        * in GitLab or organization in GitHub. <p>
+        * in GitLab or organization in GitHub.
+        *
         * @note
         *   <p> Due to it only being the name, it can clash with forks of the same repository if collecting telemetry
         *   across multiple orgs or groups in the same backends.
@@ -617,7 +635,8 @@ object VcsExperimentalMetrics {
       /** The <a
         * href="https://support.google.com/webmasters/answer/10347851?hl=en#:~:text=A%20canonical%20URL%20is%20the,Google%20chooses%20one%20as%20canonical.">canonical
         * URL</a> of the repository providing the complete HTTP(S) address in order to locate and identify the
-        * repository through a browser. <p>
+        * repository through a browser.
+        *
         * @note
         *   <p> In Git Version Control Systems, the canonical URL SHOULD NOT include the `.git` extension.
         */
@@ -690,7 +709,8 @@ object VcsExperimentalMetrics {
         )
 
       /** The human readable name of the repository. It SHOULD NOT include any additional identifier like Group/SubGroup
-        * in GitLab or organization in GitHub. <p>
+        * in GitLab or organization in GitHub.
+        *
         * @note
         *   <p> Due to it only being the name, it can clash with forks of the same repository if collecting telemetry
         *   across multiple orgs or groups in the same backends.
@@ -709,7 +729,8 @@ object VcsExperimentalMetrics {
       /** The <a
         * href="https://support.google.com/webmasters/answer/10347851?hl=en#:~:text=A%20canonical%20URL%20is%20the,Google%20chooses%20one%20as%20canonical.">canonical
         * URL</a> of the repository providing the complete HTTP(S) address in order to locate and identify the
-        * repository through a browser. <p>
+        * repository through a browser.
+        *
         * @note
         *   <p> In Git Version Control Systems, the canonical URL SHOULD NOT include the `.git` extension.
         */
@@ -758,7 +779,7 @@ object VcsExperimentalMetrics {
   }
 
   /** The number of lines added/removed in a ref (branch) relative to the ref from the `vcs.ref.base.name` attribute.
-    * <p>
+    *
     * @note
     *   <p> This metric should be reported for each `vcs.line_change.type` value. For example if a ref added 3 lines and
     *   removed 2 lines, instrumentation SHOULD report two measurements: 3 and 2 (both positive numbers). If number of
@@ -803,7 +824,8 @@ object VcsExperimentalMetrics {
         )
 
       /** The name of the <a href="https://git-scm.com/docs/gitglossary#def_ref">reference</a> such as
-        * <strong>branch</strong> or <strong>tag</strong> in the repository. <p>
+        * <strong>branch</strong> or <strong>tag</strong> in the repository.
+        *
         * @note
         *   <p> `base` refers to the starting point of a change. For example, `main` would be the base reference of type
         *   branch if you've created a new reference of type branch from it and created new commits.
@@ -819,7 +841,8 @@ object VcsExperimentalMetrics {
           Stability.development
         )
 
-      /** The type of the <a href="https://git-scm.com/docs/gitglossary#def_ref">reference</a> in the repository. <p>
+      /** The type of the <a href="https://git-scm.com/docs/gitglossary#def_ref">reference</a> in the repository.
+        *
         * @note
         *   <p> `base` refers to the starting point of a change. For example, `main` would be the base reference of type
         *   branch if you've created a new reference of type branch from it and created new commits.
@@ -836,7 +859,8 @@ object VcsExperimentalMetrics {
         )
 
       /** The name of the <a href="https://git-scm.com/docs/gitglossary#def_ref">reference</a> such as
-        * <strong>branch</strong> or <strong>tag</strong> in the repository. <p>
+        * <strong>branch</strong> or <strong>tag</strong> in the repository.
+        *
         * @note
         *   <p> `head` refers to where you are right now; the current reference at a given time.
         */
@@ -851,7 +875,8 @@ object VcsExperimentalMetrics {
           Stability.development
         )
 
-      /** The type of the <a href="https://git-scm.com/docs/gitglossary#def_ref">reference</a> in the repository. <p>
+      /** The type of the <a href="https://git-scm.com/docs/gitglossary#def_ref">reference</a> in the repository.
+        *
         * @note
         *   <p> `head` refers to where you are right now; the current reference at a given time.
         */
@@ -867,7 +892,8 @@ object VcsExperimentalMetrics {
         )
 
       /** The human readable name of the repository. It SHOULD NOT include any additional identifier like Group/SubGroup
-        * in GitLab or organization in GitHub. <p>
+        * in GitLab or organization in GitHub.
+        *
         * @note
         *   <p> Due to it only being the name, it can clash with forks of the same repository if collecting telemetry
         *   across multiple orgs or groups in the same backends.
@@ -886,7 +912,8 @@ object VcsExperimentalMetrics {
       /** The <a
         * href="https://support.google.com/webmasters/answer/10347851?hl=en#:~:text=A%20canonical%20URL%20is%20the,Google%20chooses%20one%20as%20canonical.">canonical
         * URL</a> of the repository providing the complete HTTP(S) address in order to locate and identify the
-        * repository through a browser. <p>
+        * repository through a browser.
+        *
         * @note
         *   <p> In Git Version Control Systems, the canonical URL SHOULD NOT include the `.git` extension.
         */
@@ -940,7 +967,7 @@ object VcsExperimentalMetrics {
   }
 
   /** The number of revisions (commits) a ref (branch) is ahead/behind the branch from the `vcs.ref.base.name` attribute
-    * <p>
+    *
     * @note
     *   <p> This metric should be reported for each `vcs.revision_delta.direction` value. For example if branch `a` is 3
     *   commits behind and 2 commits ahead of `trunk`, instrumentation SHOULD report two measurements: 3 and 2 (both
@@ -971,7 +998,8 @@ object VcsExperimentalMetrics {
         )
 
       /** The name of the <a href="https://git-scm.com/docs/gitglossary#def_ref">reference</a> such as
-        * <strong>branch</strong> or <strong>tag</strong> in the repository. <p>
+        * <strong>branch</strong> or <strong>tag</strong> in the repository.
+        *
         * @note
         *   <p> `base` refers to the starting point of a change. For example, `main` would be the base reference of type
         *   branch if you've created a new reference of type branch from it and created new commits.
@@ -987,7 +1015,8 @@ object VcsExperimentalMetrics {
           Stability.development
         )
 
-      /** The type of the <a href="https://git-scm.com/docs/gitglossary#def_ref">reference</a> in the repository. <p>
+      /** The type of the <a href="https://git-scm.com/docs/gitglossary#def_ref">reference</a> in the repository.
+        *
         * @note
         *   <p> `base` refers to the starting point of a change. For example, `main` would be the base reference of type
         *   branch if you've created a new reference of type branch from it and created new commits.
@@ -1004,7 +1033,8 @@ object VcsExperimentalMetrics {
         )
 
       /** The name of the <a href="https://git-scm.com/docs/gitglossary#def_ref">reference</a> such as
-        * <strong>branch</strong> or <strong>tag</strong> in the repository. <p>
+        * <strong>branch</strong> or <strong>tag</strong> in the repository.
+        *
         * @note
         *   <p> `head` refers to where you are right now; the current reference at a given time.
         */
@@ -1019,7 +1049,8 @@ object VcsExperimentalMetrics {
           Stability.development
         )
 
-      /** The type of the <a href="https://git-scm.com/docs/gitglossary#def_ref">reference</a> in the repository. <p>
+      /** The type of the <a href="https://git-scm.com/docs/gitglossary#def_ref">reference</a> in the repository.
+        *
         * @note
         *   <p> `head` refers to where you are right now; the current reference at a given time.
         */
@@ -1035,7 +1066,8 @@ object VcsExperimentalMetrics {
         )
 
       /** The human readable name of the repository. It SHOULD NOT include any additional identifier like Group/SubGroup
-        * in GitLab or organization in GitHub. <p>
+        * in GitLab or organization in GitHub.
+        *
         * @note
         *   <p> Due to it only being the name, it can clash with forks of the same repository if collecting telemetry
         *   across multiple orgs or groups in the same backends.
@@ -1054,7 +1086,8 @@ object VcsExperimentalMetrics {
       /** The <a
         * href="https://support.google.com/webmasters/answer/10347851?hl=en#:~:text=A%20canonical%20URL%20is%20the,Google%20chooses%20one%20as%20canonical.">canonical
         * URL</a> of the repository providing the complete HTTP(S) address in order to locate and identify the
-        * repository through a browser. <p>
+        * repository through a browser.
+        *
         * @note
         *   <p> In Git Version Control Systems, the canonical URL SHOULD NOT include the `.git` extension.
         */
@@ -1135,7 +1168,8 @@ object VcsExperimentalMetrics {
     object AttributeSpecs {
 
       /** The name of the <a href="https://git-scm.com/docs/gitglossary#def_ref">reference</a> such as
-        * <strong>branch</strong> or <strong>tag</strong> in the repository. <p>
+        * <strong>branch</strong> or <strong>tag</strong> in the repository.
+        *
         * @note
         *   <p> `head` refers to where you are right now; the current reference at a given time.
         */
@@ -1150,7 +1184,8 @@ object VcsExperimentalMetrics {
           Stability.development
         )
 
-      /** The type of the <a href="https://git-scm.com/docs/gitglossary#def_ref">reference</a> in the repository. <p>
+      /** The type of the <a href="https://git-scm.com/docs/gitglossary#def_ref">reference</a> in the repository.
+        *
         * @note
         *   <p> `head` refers to where you are right now; the current reference at a given time.
         */
@@ -1166,7 +1201,8 @@ object VcsExperimentalMetrics {
         )
 
       /** The human readable name of the repository. It SHOULD NOT include any additional identifier like Group/SubGroup
-        * in GitLab or organization in GitHub. <p>
+        * in GitLab or organization in GitHub.
+        *
         * @note
         *   <p> Due to it only being the name, it can clash with forks of the same repository if collecting telemetry
         *   across multiple orgs or groups in the same backends.
@@ -1185,7 +1221,8 @@ object VcsExperimentalMetrics {
       /** The <a
         * href="https://support.google.com/webmasters/answer/10347851?hl=en#:~:text=A%20canonical%20URL%20is%20the,Google%20chooses%20one%20as%20canonical.">canonical
         * URL</a> of the repository providing the complete HTTP(S) address in order to locate and identify the
-        * repository through a browser. <p>
+        * repository through a browser.
+        *
         * @note
         *   <p> In Git Version Control Systems, the canonical URL SHOULD NOT include the `.git` extension.
         */

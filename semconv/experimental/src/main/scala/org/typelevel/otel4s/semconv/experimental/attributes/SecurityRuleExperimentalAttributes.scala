@@ -41,7 +41,8 @@ object SecurityRuleExperimentalAttributes {
   val SecurityRuleName: AttributeKey[String] =
     AttributeKey("security_rule.name")
 
-  /** Reference URL to additional information about the rule used to generate this event. <p>
+  /** Reference URL to additional information about the rule used to generate this event.
+    *
     * @note
     *   <p> The URL can point to the vendor’s documentation about the rule. If that’s not available, it can also be a
     *   link to a more general page describing this type of alert.

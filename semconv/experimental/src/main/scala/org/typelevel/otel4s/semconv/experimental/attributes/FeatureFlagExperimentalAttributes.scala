@@ -52,7 +52,8 @@ object FeatureFlagExperimentalAttributes {
   val FeatureFlagSetId: AttributeKey[String] =
     AttributeKey("feature_flag.set.id")
 
-  /** A semantic identifier for an evaluated flag value. <p>
+  /** A semantic identifier for an evaluated flag value.
+    *
     * @note
     *   <p> A semantic identifier, commonly referred to as a variant, provides a means for referring to a value without
     *   including the value itself. This can provide additional context for understanding the meaning behind a value.

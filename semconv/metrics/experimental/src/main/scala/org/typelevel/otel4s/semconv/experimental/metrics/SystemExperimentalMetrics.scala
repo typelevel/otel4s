@@ -117,7 +117,8 @@ object SystemExperimentalMetrics {
 
   }
 
-  /** Reports the number of logical (virtual) processor cores created by the operating system to manage multitasking <p>
+  /** Reports the number of logical (virtual) processor cores created by the operating system to manage multitasking
+    *
     * @note
     *   <p> Calculated by multiplying the number of sockets by the number of cores per socket, and then by the number of
     *   threads per core
@@ -156,7 +157,8 @@ object SystemExperimentalMetrics {
 
   }
 
-  /** Reports the number of actual physical processor cores on the hardware <p>
+  /** Reports the number of actual physical processor cores on the hardware
+    *
     * @note
     *   <p> Calculated by multiplying the number of sockets by the number of cores per socket
     */
@@ -206,7 +208,8 @@ object SystemExperimentalMetrics {
     object AttributeSpecs {
 
       /** The CPU mode for this data point. A system's CPU SHOULD be characterized <em>either</em> by data points with
-        * no `mode` labels, <em>or only</em> data points with `mode` labels. <p>
+        * no `mode` labels, <em>or only</em> data points with `mode` labels.
+        *
         * @note
         *   <p> Following states SHOULD be used: `user`, `system`, `nice`, `idle`, `iowait`, `interrupt`, `steal`
         */
@@ -279,7 +282,8 @@ object SystemExperimentalMetrics {
     object AttributeSpecs {
 
       /** The CPU mode for this data point. A system's CPU SHOULD be characterized <em>either</em> by data points with
-        * no `mode` labels, <em>or only</em> data points with `mode` labels. <p>
+        * no `mode` labels, <em>or only</em> data points with `mode` labels.
+        *
         * @note
         *   <p> Following modes SHOULD be used: `user`, `system`, `nice`, `idle`, `iowait`, `interrupt`, `steal`
         */
@@ -405,7 +409,8 @@ object SystemExperimentalMetrics {
 
   }
 
-  /** Time disk spent activated <p>
+  /** Time disk spent activated
+    *
     * @note
     *   <p> The real elapsed time ("wall clock") used in the I/O path (time from operations running in parallel are not
     *   counted). Measured as: <ul> <li>Linux: Field 13 from <a
@@ -589,7 +594,8 @@ object SystemExperimentalMetrics {
 
   }
 
-  /** Sum of the time each operation took to complete <p>
+  /** Sum of the time each operation took to complete
+    *
     * @note
     *   <p> Because it is the sum of time each request took, parallel-issued requests each contribute to make the count
     *   grow. Measured as: <ul> <li>Linux: Fields 7 & 11 from <a
@@ -824,7 +830,8 @@ object SystemExperimentalMetrics {
 
   }
 
-  /** Reports a filesystem's space usage across different states. <p>
+  /** Reports a filesystem's space usage across different states.
+    *
     * @note
     *   <p> The sum of all `system.filesystem.usage` values over the different `system.filesystem.state` attributes
     *   SHOULD equal the total storage capacity of the filesystem, that is `system.filesystem.limit`.
@@ -1042,7 +1049,8 @@ object SystemExperimentalMetrics {
 
   }
 
-  /** An estimate of how much memory is available for starting new applications, without causing swapping <p>
+  /** An estimate of how much memory is available for starting new applications, without causing swapping
+    *
     * @note
     *   <p> This is an alternative to `system.memory.usage` metric with `state=free`. Linux starting from 3.14 exports
     *   "available" memory. It takes "free" memory as a baseline, and then factors in kernel-specific values. This is
@@ -1084,7 +1092,8 @@ object SystemExperimentalMetrics {
 
   }
 
-  /** Reports the memory used by the Linux kernel for managing caches of frequently used objects. <p>
+  /** Reports the memory used by the Linux kernel for managing caches of frequently used objects.
+    *
     * @note
     *   <p> The sum over the `reclaimable` and `unreclaimable` state values in `linux.memory.slab.usage` SHOULD be equal
     *   to the total slab memory available on the system. Note that the total slab memory is not constant and may vary
@@ -1147,7 +1156,8 @@ object SystemExperimentalMetrics {
 
   }
 
-  /** Total memory available in the system. <p>
+  /** Total memory available in the system.
+    *
     * @note
     *   <p> Its value SHOULD equal the sum of `system.memory.state` over all states.
     */
@@ -1184,7 +1194,8 @@ object SystemExperimentalMetrics {
 
   }
 
-  /** Shared memory used (mostly by tmpfs). <p>
+  /** Shared memory used (mostly by tmpfs).
+    *
     * @note
     *   <p> Equivalent of `shared` from <a href="https://man7.org/linux/man-pages/man1/free.1.html">`free` command</a>
     *   or `Shmem` from <a href="https://man7.org/linux/man-pages/man5/proc.5.html">`/proc/meminfo`</a>"
@@ -1222,7 +1233,8 @@ object SystemExperimentalMetrics {
 
   }
 
-  /** Reports memory in use by state. <p>
+  /** Reports memory in use by state.
+    *
     * @note
     *   <p> The sum over all `system.memory.state` values SHOULD equal the total memory available on the system, that is
     *   `system.memory.limit`.
@@ -1347,7 +1359,8 @@ object SystemExperimentalMetrics {
 
     object AttributeSpecs {
 
-      /** The state of network connection <p>
+      /** The state of network connection
+        *
         * @note
         *   <p> Connection states are defined as part of the <a
         *   href="https://datatracker.ietf.org/doc/html/rfc9293#section-3.3.2">rfc9293</a>
@@ -1376,7 +1389,8 @@ object SystemExperimentalMetrics {
         )
 
       /** <a href="https://wikipedia.org/wiki/Transport_layer">OSI transport layer</a> or <a
-        * href="https://wikipedia.org/wiki/Inter-process_communication">inter-process communication method</a>. <p>
+        * href="https://wikipedia.org/wiki/Inter-process_communication">inter-process communication method</a>.
+        *
         * @note
         *   <p> The value SHOULD be normalized to lowercase. <p> Consider always setting the transport when setting a
         *   port number, since a port number is ambiguous without knowing the transport. For example different processes
@@ -1426,7 +1440,8 @@ object SystemExperimentalMetrics {
 
   }
 
-  /** Count of packets that are dropped or discarded even though there was no error <p>
+  /** Count of packets that are dropped or discarded even though there was no error
+    *
     * @note
     *   <p> Measured as: <ul> <li>Linux: the `drop` column in `/proc/dev/net` (<a
     *   href="https://web.archive.org/web/20180321091318/http://www.onlamp.com/pub/a/linux/2000/11/16/LinuxAdmin.html">source</a>)
@@ -1502,7 +1517,8 @@ object SystemExperimentalMetrics {
 
   }
 
-  /** Count of network errors detected <p>
+  /** Count of network errors detected
+    *
     * @note
     *   <p> Measured as: <ul> <li>Linux: the `errs` column in `/proc/dev/net` (<a
     *   href="https://web.archive.org/web/20180321091318/http://www.onlamp.com/pub/a/linux/2000/11/16/LinuxAdmin.html">source</a>).
@@ -2060,7 +2076,8 @@ object SystemExperimentalMetrics {
 
   }
 
-  /** The time the system has been running <p>
+  /** The time the system has been running
+    *
     * @note
     *   <p> Instrumentations SHOULD use a gauge with type `double` and measure uptime in seconds as a floating point
     *   number with the highest precision available. The actual accuracy would depend on the instrumentation and

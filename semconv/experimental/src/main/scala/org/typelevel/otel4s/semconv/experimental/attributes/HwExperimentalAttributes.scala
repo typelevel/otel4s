@@ -41,7 +41,8 @@ object HwExperimentalAttributes {
   val HwState: AttributeKey[String] =
     AttributeKey("hw.state")
 
-  /** Type of the component <p>
+  /** Type of the component
+    *
     * @note
     *   <p> Describes the category of the hardware component for which `hw.state` is being reported. For example,
     *   `hw.type=temperature` along with `hw.state=degraded` would indicate that the temperature of the hardware

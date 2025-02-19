@@ -21,7 +21,8 @@ package experimental.attributes
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/attributes/SemanticAttributes.scala.j2
 object GcpExperimentalAttributes {
 
-  /** Identifies the Google Cloud service for which the official client library is intended. <p>
+  /** Identifies the Google Cloud service for which the official client library is intended.
+    *
     * @note
     *   <p> Intended to be a stable identifier for Google Cloud client libraries that is uniform across implementation
     *   languages. The value should be derived from the canonical service domain for the service; for example,

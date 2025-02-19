@@ -21,7 +21,8 @@ package experimental.attributes
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/attributes/SemanticAttributes.scala.j2
 object CloudfoundryExperimentalAttributes {
 
-  /** The guid of the application. <p>
+  /** The guid of the application.
+    *
     * @note
     *   <p> Application instrumentation should use the value from environment variable
     *   `VCAP_APPLICATION.application_id`. This is the same value as reported by `cf app <app-name> --guid`.
@@ -29,7 +30,8 @@ object CloudfoundryExperimentalAttributes {
   val CloudfoundryAppId: AttributeKey[String] =
     AttributeKey("cloudfoundry.app.id")
 
-  /** The index of the application instance. 0 when just one instance is active. <p>
+  /** The index of the application instance. 0 when just one instance is active.
+    *
     * @note
     *   <p> CloudFoundry defines the `instance_id` in the <a
     *   href="https://github.com/cloudfoundry/loggregator-api#v2-envelope">Loggregator v2 envelope</a>. It is used for
@@ -40,7 +42,8 @@ object CloudfoundryExperimentalAttributes {
   val CloudfoundryAppInstanceId: AttributeKey[String] =
     AttributeKey("cloudfoundry.app.instance.id")
 
-  /** The name of the application. <p>
+  /** The name of the application.
+    *
     * @note
     *   <p> Application instrumentation should use the value from environment variable
     *   `VCAP_APPLICATION.application_name`. This is the same value as reported by `cf apps`.
@@ -48,7 +51,8 @@ object CloudfoundryExperimentalAttributes {
   val CloudfoundryAppName: AttributeKey[String] =
     AttributeKey("cloudfoundry.app.name")
 
-  /** The guid of the CloudFoundry org the application is running in. <p>
+  /** The guid of the CloudFoundry org the application is running in.
+    *
     * @note
     *   <p> Application instrumentation should use the value from environment variable `VCAP_APPLICATION.org_id`. This
     *   is the same value as reported by `cf org <org-name> --guid`.
@@ -56,7 +60,8 @@ object CloudfoundryExperimentalAttributes {
   val CloudfoundryOrgId: AttributeKey[String] =
     AttributeKey("cloudfoundry.org.id")
 
-  /** The name of the CloudFoundry organization the app is running in. <p>
+  /** The name of the CloudFoundry organization the app is running in.
+    *
     * @note
     *   <p> Application instrumentation should use the value from environment variable `VCAP_APPLICATION.org_name`. This
     *   is the same value as reported by `cf orgs`.
@@ -64,7 +69,8 @@ object CloudfoundryExperimentalAttributes {
   val CloudfoundryOrgName: AttributeKey[String] =
     AttributeKey("cloudfoundry.org.name")
 
-  /** The UID identifying the process. <p>
+  /** The UID identifying the process.
+    *
     * @note
     *   <p> Application instrumentation should use the value from environment variable `VCAP_APPLICATION.process_id`. It
     *   is supposed to be equal to `VCAP_APPLICATION.app_id` for applications deployed to the runtime. For system
@@ -73,7 +79,8 @@ object CloudfoundryExperimentalAttributes {
   val CloudfoundryProcessId: AttributeKey[String] =
     AttributeKey("cloudfoundry.process.id")
 
-  /** The type of process. <p>
+  /** The type of process.
+    *
     * @note
     *   <p> CloudFoundry applications can consist of multiple jobs. Usually the main process will be of type `web`.
     *   There can be additional background tasks or side-cars with different process types.
@@ -81,7 +88,8 @@ object CloudfoundryExperimentalAttributes {
   val CloudfoundryProcessType: AttributeKey[String] =
     AttributeKey("cloudfoundry.process.type")
 
-  /** The guid of the CloudFoundry space the application is running in. <p>
+  /** The guid of the CloudFoundry space the application is running in.
+    *
     * @note
     *   <p> Application instrumentation should use the value from environment variable `VCAP_APPLICATION.space_id`. This
     *   is the same value as reported by `cf space <space-name> --guid`.
@@ -89,7 +97,8 @@ object CloudfoundryExperimentalAttributes {
   val CloudfoundrySpaceId: AttributeKey[String] =
     AttributeKey("cloudfoundry.space.id")
 
-  /** The name of the CloudFoundry space the application is running in. <p>
+  /** The name of the CloudFoundry space the application is running in.
+    *
     * @note
     *   <p> Application instrumentation should use the value from environment variable `VCAP_APPLICATION.space_name`.
     *   This is the same value as reported by `cf spaces`.
@@ -97,7 +106,8 @@ object CloudfoundryExperimentalAttributes {
   val CloudfoundrySpaceName: AttributeKey[String] =
     AttributeKey("cloudfoundry.space.name")
 
-  /** A guid or another name describing the event source. <p>
+  /** A guid or another name describing the event source.
+    *
     * @note
     *   <p> CloudFoundry defines the `source_id` in the <a
     *   href="https://github.com/cloudfoundry/loggregator-api#v2-envelope">Loggregator v2 envelope</a>. It is used for
@@ -109,7 +119,8 @@ object CloudfoundryExperimentalAttributes {
   val CloudfoundrySystemId: AttributeKey[String] =
     AttributeKey("cloudfoundry.system.id")
 
-  /** A guid describing the concrete instance of the event source. <p>
+  /** A guid describing the concrete instance of the event source.
+    *
     * @note
     *   <p> CloudFoundry defines the `instance_id` in the <a
     *   href="https://github.com/cloudfoundry/loggregator-api#v2-envelope">Loggregator v2 envelope</a>. It is used for

@@ -44,7 +44,8 @@ object AzureExperimentalMetrics {
 
     object AttributeSpecs {
 
-      /** Name of the database host. <p>
+      /** Name of the database host.
+        *
         * @note
         *   <p> When observed from the client side, and when communicating through an intermediary, `server.address`
         *   SHOULD represent the server address behind any intermediaries, for example proxies, if it's available.
@@ -61,7 +62,8 @@ object AzureExperimentalMetrics {
           Stability.stable
         )
 
-      /** Server port number. <p>
+      /** Server port number.
+        *
         * @note
         *   <p> When observed from the client side, and when communicating through an intermediary, `server.port` SHOULD
         *   represent the server port behind any intermediaries, for example proxies, if it's available.
@@ -143,7 +145,8 @@ object AzureExperimentalMetrics {
         )
 
       /** List of regions contacted during operation in the order that they were contacted. If there is more than one
-        * region listed, it indicates that the operation was performed on multiple regions i.e. cross-regional call. <p>
+        * region listed, it indicates that the operation was performed on multiple regions i.e. cross-regional call.
+        *
         * @note
         *   <p> Region name matches the format of `displayName` in <a
         *   href="https://learn.microsoft.com/rest/api/subscription/subscriptions/list-locations?view=rest-subscription-2021-10-01&tabs=HTTP#location">Azure
@@ -172,7 +175,8 @@ object AzureExperimentalMetrics {
           Stability.development
         )
 
-      /** Cosmos DB container name. <p>
+      /** Cosmos DB container name.
+        *
         * @note
         *   <p> It is RECOMMENDED to capture the value as provided by the application without attempting to do any case
         *   normalization. <p> The collection name SHOULD NOT be extracted from `db.query.text`, unless the query format
@@ -187,7 +191,7 @@ object AzureExperimentalMetrics {
             "customers",
           ),
           Requirement.conditionallyRequired("If available."),
-          _unknown_stability_type_release_candidate
+          Stability.releaseCandidate
         )
 
       /** The name of the database, fully qualified within the server address and port.
@@ -200,10 +204,11 @@ object AzureExperimentalMetrics {
             "test.users",
           ),
           Requirement.conditionallyRequired("If available."),
-          _unknown_stability_type_release_candidate
+          Stability.releaseCandidate
         )
 
-      /** The name of the operation or command being executed. <p>
+      /** The name of the operation or command being executed.
+        *
         * @note
         *   <p> It is RECOMMENDED to capture the value as provided by the application without attempting to do any case
         *   normalization. <p> The operation name SHOULD NOT be extracted from `db.query.text`, unless the query format
@@ -223,10 +228,11 @@ object AzureExperimentalMetrics {
           Requirement.conditionallyRequired(
             "If readily available and if there is a single operation name that describes the database call. The operation name MAY be parsed from the query text, in which case it SHOULD be the single operation name found in the query."
           ),
-          _unknown_stability_type_release_candidate
+          Stability.releaseCandidate
         )
 
-      /** Database response status code. <p>
+      /** Database response status code.
+        *
         * @note
         *   <p> The status code returned by the database. Usually it represents an error code, but may also represent
         *   partial success, warning, or differentiate between various types of successful outcomes. Semantic
@@ -243,10 +249,11 @@ object AzureExperimentalMetrics {
             "404",
           ),
           Requirement.conditionallyRequired("If the operation failed and status code is available."),
-          _unknown_stability_type_release_candidate
+          Stability.releaseCandidate
         )
 
-      /** Describes a class of error the operation ended with. <p>
+      /** Describes a class of error the operation ended with.
+        *
         * @note
         *   <p> The `error.type` SHOULD match the `db.response.status_code` returned by the database or the client
         *   library, or the canonical name of exception that occurred. When using canonical exception type name,
@@ -267,7 +274,8 @@ object AzureExperimentalMetrics {
           Stability.stable
         )
 
-      /** Name of the database host. <p>
+      /** Name of the database host.
+        *
         * @note
         *   <p> When observed from the client side, and when communicating through an intermediary, `server.address`
         *   SHOULD represent the server address behind any intermediaries, for example proxies, if it's available.
@@ -284,7 +292,8 @@ object AzureExperimentalMetrics {
           Stability.stable
         )
 
-      /** Server port number. <p>
+      /** Server port number.
+        *
         * @note
         *   <p> When observed from the client side, and when communicating through an intermediary, `server.port` SHOULD
         *   represent the server port behind any intermediaries, for example proxies, if it's available.

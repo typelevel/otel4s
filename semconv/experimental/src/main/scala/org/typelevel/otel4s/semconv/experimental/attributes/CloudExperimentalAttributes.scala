@@ -27,14 +27,16 @@ object CloudExperimentalAttributes {
     AttributeKey("cloud.account.id")
 
   /** Cloud regions often have multiple, isolated locations known as zones to increase availability. Availability zone
-    * represents the zone where the resource is running. <p>
+    * represents the zone where the resource is running.
+    *
     * @note
     *   <p> Availability zones are called "zones" on Alibaba Cloud and Google Cloud.
     */
   val CloudAvailabilityZone: AttributeKey[String] =
     AttributeKey("cloud.availability_zone")
 
-  /** The cloud platform in use. <p>
+  /** The cloud platform in use.
+    *
     * @note
     *   <p> The prefix of the service SHOULD match the one specified in `cloud.provider`.
     */
@@ -46,7 +48,8 @@ object CloudExperimentalAttributes {
   val CloudProvider: AttributeKey[String] =
     AttributeKey("cloud.provider")
 
-  /** The geographical region the resource is running. <p>
+  /** The geographical region the resource is running.
+    *
     * @note
     *   <p> Refer to your provider's docs to see the available regions, for example <a
     *   href="https://www.alibabacloud.com/help/doc-detail/40654.htm">Alibaba Cloud regions</a>, <a
@@ -62,7 +65,8 @@ object CloudExperimentalAttributes {
     * href="https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html">ARN</a> on AWS, a <a
     * href="https://learn.microsoft.com/rest/api/resources/resources/get-by-id">fully qualified resource ID</a> on
     * Azure, a <a href="https://cloud.google.com/apis/design/resource_names#full_resource_name">full resource name</a>
-    * on GCP) <p>
+    * on GCP)
+    *
     * @note
     *   <p> On some cloud providers, it may not be possible to determine the full ID at startup, so it may be necessary
     *   to set `cloud.resource_id` as a span attribute instead. <p> The exact value to use for `cloud.resource_id`

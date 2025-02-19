@@ -21,7 +21,8 @@ package experimental.attributes
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/attributes/SemanticAttributes.scala.j2
 object UserAgentExperimentalAttributes {
 
-  /** Name of the user-agent extracted from original. Usually refers to the browser's name. <p>
+  /** Name of the user-agent extracted from original. Usually refers to the browser's name.
+    *
     * @note
     *   <p> <a href="https://www.whatsmyua.info">Example</a> of extracting browser's name from original string. In the
     *   case of using a user-agent for non-browser products, such as microservices with multiple names/versions inside
@@ -41,7 +42,8 @@ object UserAgentExperimentalAttributes {
   val UserAgentOriginal: AttributeKey[String] =
     AttributeKey("user_agent.original")
 
-  /** Specifies the category of synthetic traffic, such as tests or bots. <p>
+  /** Specifies the category of synthetic traffic, such as tests or bots.
+    *
     * @note
     *   <p> This attribute MAY be derived from the contents of the `user_agent.original` attribute. Components that
     *   populate the attribute are responsible for determining what they consider to be synthetic bot or test traffic.
@@ -52,7 +54,8 @@ object UserAgentExperimentalAttributes {
   val UserAgentSyntheticType: AttributeKey[String] =
     AttributeKey("user_agent.synthetic.type")
 
-  /** Version of the user-agent extracted from original. Usually refers to the browser's version <p>
+  /** Version of the user-agent extracted from original. Usually refers to the browser's version
+    *
     * @note
     *   <p> <a href="https://www.whatsmyua.info">Example</a> of extracting browser's version from original string. In
     *   the case of using a user-agent for non-browser products, such as microservices with multiple names/versions

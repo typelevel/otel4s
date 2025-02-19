@@ -41,7 +41,8 @@ object MessagingExperimentalMetrics {
     ReceiveMessages,
   )
 
-  /** Number of messages that were delivered to the application. <p>
+  /** Number of messages that were delivered to the application.
+    *
     * @note
     *   <p> Records the number of messages pulled from the broker or number of messages dispatched to the application in
     *   push-based scenarios. The metric SHOULD be reported once per message delivery. For example, if receiving and
@@ -58,7 +59,8 @@ object MessagingExperimentalMetrics {
 
     object AttributeSpecs {
 
-      /** Describes a class of error the operation ended with. <p>
+      /** Describes a class of error the operation ended with.
+        *
         * @note
         *   <p> The `error.type` SHOULD be predictable, and SHOULD have low cardinality. <p> When `error.type` is set to
         *   a type (e.g., an exception type), its canonical class name identifying the type within the artifact SHOULD
@@ -83,7 +85,8 @@ object MessagingExperimentalMetrics {
           Stability.stable
         )
 
-      /** The name of the consumer group with which a consumer is associated. <p>
+      /** The name of the consumer group with which a consumer is associated.
+        *
         * @note
         *   <p> Semantic conventions for individual messaging systems SHOULD document whether
         *   `messaging.consumer.group.name` is applicable and what it means in the context of that system.
@@ -99,7 +102,8 @@ object MessagingExperimentalMetrics {
           Stability.development
         )
 
-      /** The message destination name <p>
+      /** The message destination name
+        *
         * @note
         *   <p> Destination name SHOULD uniquely identify a specific queue, topic or other entity within the broker. If
         *   the broker doesn't have such notion, the destination name SHOULD uniquely identify the broker.
@@ -130,7 +134,8 @@ object MessagingExperimentalMetrics {
           Stability.development
         )
 
-      /** The name of the destination subscription from which a message is consumed. <p>
+      /** The name of the destination subscription from which a message is consumed.
+        *
         * @note
         *   <p> Semantic conventions for individual messaging systems SHOULD document whether
         *   `messaging.destination.subscription.name` is applicable and what it means in the context of that system.
@@ -145,7 +150,8 @@ object MessagingExperimentalMetrics {
           Stability.development
         )
 
-      /** Low cardinality representation of the messaging destination name <p>
+      /** Low cardinality representation of the messaging destination name
+        *
         * @note
         *   <p> Destination names could be constructed from templates. An example would be a destination name involving
         *   a user name or product id. Although the destination name in this case is of high cardinality, the underlying
@@ -176,7 +182,8 @@ object MessagingExperimentalMetrics {
           Stability.development
         )
 
-      /** The messaging system as identified by the client instrumentation. <p>
+      /** The messaging system as identified by the client instrumentation.
+        *
         * @note
         *   <p> The actual messaging system may differ from the one known by the client. For example, when using Kafka
         *   client libraries to communicate with Azure Event Hubs, the `messaging.system` is set to `kafka` based on the
@@ -192,7 +199,7 @@ object MessagingExperimentalMetrics {
         )
 
       /** Server domain name if available without reverse DNS lookup; otherwise, IP address or Unix domain socket name.
-        * <p>
+        *
         * @note
         *   <p> Server domain name of the broker if available without reverse DNS lookup; otherwise, IP address or Unix
         *   domain socket name.
@@ -209,7 +216,8 @@ object MessagingExperimentalMetrics {
           Stability.stable
         )
 
-      /** Server port number. <p>
+      /** Server port number.
+        *
         * @note
         *   <p> When observed from the client side, and when communicating through an intermediary, `server.port` SHOULD
         *   represent the server port behind any intermediaries, for example proxies, if it's available.
@@ -266,7 +274,8 @@ object MessagingExperimentalMetrics {
 
   }
 
-  /** Duration of messaging operation initiated by a producer or consumer client. <p>
+  /** Duration of messaging operation initiated by a producer or consumer client.
+    *
     * @note
     *   <p> This metric SHOULD NOT be used to report processing duration - processing duration is reported in
     *   `messaging.process.duration` metric.
@@ -281,7 +290,8 @@ object MessagingExperimentalMetrics {
 
     object AttributeSpecs {
 
-      /** Describes a class of error the operation ended with. <p>
+      /** Describes a class of error the operation ended with.
+        *
         * @note
         *   <p> The `error.type` SHOULD be predictable, and SHOULD have low cardinality. <p> When `error.type` is set to
         *   a type (e.g., an exception type), its canonical class name identifying the type within the artifact SHOULD
@@ -306,7 +316,8 @@ object MessagingExperimentalMetrics {
           Stability.stable
         )
 
-      /** The name of the consumer group with which a consumer is associated. <p>
+      /** The name of the consumer group with which a consumer is associated.
+        *
         * @note
         *   <p> Semantic conventions for individual messaging systems SHOULD document whether
         *   `messaging.consumer.group.name` is applicable and what it means in the context of that system.
@@ -322,7 +333,8 @@ object MessagingExperimentalMetrics {
           Stability.development
         )
 
-      /** The message destination name <p>
+      /** The message destination name
+        *
         * @note
         *   <p> Destination name SHOULD uniquely identify a specific queue, topic or other entity within the broker. If
         *   the broker doesn't have such notion, the destination name SHOULD uniquely identify the broker.
@@ -353,7 +365,8 @@ object MessagingExperimentalMetrics {
           Stability.development
         )
 
-      /** The name of the destination subscription from which a message is consumed. <p>
+      /** The name of the destination subscription from which a message is consumed.
+        *
         * @note
         *   <p> Semantic conventions for individual messaging systems SHOULD document whether
         *   `messaging.destination.subscription.name` is applicable and what it means in the context of that system.
@@ -368,7 +381,8 @@ object MessagingExperimentalMetrics {
           Stability.development
         )
 
-      /** Low cardinality representation of the messaging destination name <p>
+      /** Low cardinality representation of the messaging destination name
+        *
         * @note
         *   <p> Destination names could be constructed from templates. An example would be a destination name involving
         *   a user name or product id. Although the destination name in this case is of high cardinality, the underlying
@@ -398,7 +412,8 @@ object MessagingExperimentalMetrics {
           Stability.development
         )
 
-      /** A string identifying the type of the messaging operation. <p>
+      /** A string identifying the type of the messaging operation.
+        *
         * @note
         *   <p> If a custom value is used, it MUST be of low cardinality.
         */
@@ -411,7 +426,8 @@ object MessagingExperimentalMetrics {
           Stability.development
         )
 
-      /** The messaging system as identified by the client instrumentation. <p>
+      /** The messaging system as identified by the client instrumentation.
+        *
         * @note
         *   <p> The actual messaging system may differ from the one known by the client. For example, when using Kafka
         *   client libraries to communicate with Azure Event Hubs, the `messaging.system` is set to `kafka` based on the
@@ -427,7 +443,7 @@ object MessagingExperimentalMetrics {
         )
 
       /** Server domain name if available without reverse DNS lookup; otherwise, IP address or Unix domain socket name.
-        * <p>
+        *
         * @note
         *   <p> Server domain name of the broker if available without reverse DNS lookup; otherwise, IP address or Unix
         *   domain socket name.
@@ -444,7 +460,8 @@ object MessagingExperimentalMetrics {
           Stability.stable
         )
 
-      /** Server port number. <p>
+      /** Server port number.
+        *
         * @note
         *   <p> When observed from the client side, and when communicating through an intermediary, `server.port` SHOULD
         *   represent the server port behind any intermediaries, for example proxies, if it's available.
@@ -500,7 +517,8 @@ object MessagingExperimentalMetrics {
 
     object AttributeSpecs {
 
-      /** Describes a class of error the operation ended with. <p>
+      /** Describes a class of error the operation ended with.
+        *
         * @note
         *   <p> The `error.type` SHOULD be predictable, and SHOULD have low cardinality. <p> When `error.type` is set to
         *   a type (e.g., an exception type), its canonical class name identifying the type within the artifact SHOULD
@@ -525,7 +543,8 @@ object MessagingExperimentalMetrics {
           Stability.stable
         )
 
-      /** The message destination name <p>
+      /** The message destination name
+        *
         * @note
         *   <p> Destination name SHOULD uniquely identify a specific queue, topic or other entity within the broker. If
         *   the broker doesn't have such notion, the destination name SHOULD uniquely identify the broker.
@@ -556,7 +575,8 @@ object MessagingExperimentalMetrics {
           Stability.development
         )
 
-      /** Low cardinality representation of the messaging destination name <p>
+      /** Low cardinality representation of the messaging destination name
+        *
         * @note
         *   <p> Destination names could be constructed from templates. An example would be a destination name involving
         *   a user name or product id. Although the destination name in this case is of high cardinality, the underlying
@@ -586,7 +606,8 @@ object MessagingExperimentalMetrics {
           Stability.development
         )
 
-      /** The messaging system as identified by the client instrumentation. <p>
+      /** The messaging system as identified by the client instrumentation.
+        *
         * @note
         *   <p> The actual messaging system may differ from the one known by the client. For example, when using Kafka
         *   client libraries to communicate with Azure Event Hubs, the `messaging.system` is set to `kafka` based on the
@@ -602,7 +623,7 @@ object MessagingExperimentalMetrics {
         )
 
       /** Server domain name if available without reverse DNS lookup; otherwise, IP address or Unix domain socket name.
-        * <p>
+        *
         * @note
         *   <p> Server domain name of the broker if available without reverse DNS lookup; otherwise, IP address or Unix
         *   domain socket name.
@@ -619,7 +640,8 @@ object MessagingExperimentalMetrics {
           Stability.stable
         )
 
-      /** Server port number. <p>
+      /** Server port number.
+        *
         * @note
         *   <p> When observed from the client side, and when communicating through an intermediary, `server.port` SHOULD
         *   represent the server port behind any intermediaries, for example proxies, if it's available.
@@ -674,7 +696,8 @@ object MessagingExperimentalMetrics {
 
   }
 
-  /** Number of messages producer attempted to send to the broker. <p>
+  /** Number of messages producer attempted to send to the broker.
+    *
     * @note
     *   <p> This metric MUST NOT count messages that were created but haven't yet been sent.
     */
@@ -688,7 +711,8 @@ object MessagingExperimentalMetrics {
 
     object AttributeSpecs {
 
-      /** Describes a class of error the operation ended with. <p>
+      /** Describes a class of error the operation ended with.
+        *
         * @note
         *   <p> The `error.type` SHOULD be predictable, and SHOULD have low cardinality. <p> When `error.type` is set to
         *   a type (e.g., an exception type), its canonical class name identifying the type within the artifact SHOULD
@@ -713,7 +737,8 @@ object MessagingExperimentalMetrics {
           Stability.stable
         )
 
-      /** The message destination name <p>
+      /** The message destination name
+        *
         * @note
         *   <p> Destination name SHOULD uniquely identify a specific queue, topic or other entity within the broker. If
         *   the broker doesn't have such notion, the destination name SHOULD uniquely identify the broker.
@@ -744,7 +769,8 @@ object MessagingExperimentalMetrics {
           Stability.development
         )
 
-      /** Low cardinality representation of the messaging destination name <p>
+      /** Low cardinality representation of the messaging destination name
+        *
         * @note
         *   <p> Destination names could be constructed from templates. An example would be a destination name involving
         *   a user name or product id. Although the destination name in this case is of high cardinality, the underlying
@@ -774,7 +800,8 @@ object MessagingExperimentalMetrics {
           Stability.development
         )
 
-      /** The messaging system as identified by the client instrumentation. <p>
+      /** The messaging system as identified by the client instrumentation.
+        *
         * @note
         *   <p> The actual messaging system may differ from the one known by the client. For example, when using Kafka
         *   client libraries to communicate with Azure Event Hubs, the `messaging.system` is set to `kafka` based on the
@@ -790,7 +817,7 @@ object MessagingExperimentalMetrics {
         )
 
       /** Server domain name if available without reverse DNS lookup; otherwise, IP address or Unix domain socket name.
-        * <p>
+        *
         * @note
         *   <p> Server domain name of the broker if available without reverse DNS lookup; otherwise, IP address or Unix
         *   domain socket name.
@@ -807,7 +834,8 @@ object MessagingExperimentalMetrics {
           Stability.stable
         )
 
-      /** Server port number. <p>
+      /** Server port number.
+        *
         * @note
         *   <p> When observed from the client side, and when communicating through an intermediary, `server.port` SHOULD
         *   represent the server port behind any intermediaries, for example proxies, if it's available.
@@ -862,7 +890,8 @@ object MessagingExperimentalMetrics {
 
   }
 
-  /** Duration of processing operation. <p>
+  /** Duration of processing operation.
+    *
     * @note
     *   <p> This metric MUST be reported for operations with `messaging.operation.type` that matches `process`.
     */
@@ -876,7 +905,8 @@ object MessagingExperimentalMetrics {
 
     object AttributeSpecs {
 
-      /** Describes a class of error the operation ended with. <p>
+      /** Describes a class of error the operation ended with.
+        *
         * @note
         *   <p> The `error.type` SHOULD be predictable, and SHOULD have low cardinality. <p> When `error.type` is set to
         *   a type (e.g., an exception type), its canonical class name identifying the type within the artifact SHOULD
@@ -901,7 +931,8 @@ object MessagingExperimentalMetrics {
           Stability.stable
         )
 
-      /** The name of the consumer group with which a consumer is associated. <p>
+      /** The name of the consumer group with which a consumer is associated.
+        *
         * @note
         *   <p> Semantic conventions for individual messaging systems SHOULD document whether
         *   `messaging.consumer.group.name` is applicable and what it means in the context of that system.
@@ -917,7 +948,8 @@ object MessagingExperimentalMetrics {
           Stability.development
         )
 
-      /** The message destination name <p>
+      /** The message destination name
+        *
         * @note
         *   <p> Destination name SHOULD uniquely identify a specific queue, topic or other entity within the broker. If
         *   the broker doesn't have such notion, the destination name SHOULD uniquely identify the broker.
@@ -948,7 +980,8 @@ object MessagingExperimentalMetrics {
           Stability.development
         )
 
-      /** The name of the destination subscription from which a message is consumed. <p>
+      /** The name of the destination subscription from which a message is consumed.
+        *
         * @note
         *   <p> Semantic conventions for individual messaging systems SHOULD document whether
         *   `messaging.destination.subscription.name` is applicable and what it means in the context of that system.
@@ -963,7 +996,8 @@ object MessagingExperimentalMetrics {
           Stability.development
         )
 
-      /** Low cardinality representation of the messaging destination name <p>
+      /** Low cardinality representation of the messaging destination name
+        *
         * @note
         *   <p> Destination names could be constructed from templates. An example would be a destination name involving
         *   a user name or product id. Although the destination name in this case is of high cardinality, the underlying
@@ -993,7 +1027,8 @@ object MessagingExperimentalMetrics {
           Stability.development
         )
 
-      /** The messaging system as identified by the client instrumentation. <p>
+      /** The messaging system as identified by the client instrumentation.
+        *
         * @note
         *   <p> The actual messaging system may differ from the one known by the client. For example, when using Kafka
         *   client libraries to communicate with Azure Event Hubs, the `messaging.system` is set to `kafka` based on the
@@ -1009,7 +1044,7 @@ object MessagingExperimentalMetrics {
         )
 
       /** Server domain name if available without reverse DNS lookup; otherwise, IP address or Unix domain socket name.
-        * <p>
+        *
         * @note
         *   <p> Server domain name of the broker if available without reverse DNS lookup; otherwise, IP address or Unix
         *   domain socket name.
@@ -1026,7 +1061,8 @@ object MessagingExperimentalMetrics {
           Stability.stable
         )
 
-      /** Server port number. <p>
+      /** Server port number.
+        *
         * @note
         *   <p> When observed from the client side, and when communicating through an intermediary, `server.port` SHOULD
         *   represent the server port behind any intermediaries, for example proxies, if it's available.
@@ -1081,7 +1117,8 @@ object MessagingExperimentalMetrics {
 
     object AttributeSpecs {
 
-      /** Describes a class of error the operation ended with. <p>
+      /** Describes a class of error the operation ended with.
+        *
         * @note
         *   <p> The `error.type` SHOULD be predictable, and SHOULD have low cardinality. <p> When `error.type` is set to
         *   a type (e.g., an exception type), its canonical class name identifying the type within the artifact SHOULD
@@ -1121,7 +1158,7 @@ object MessagingExperimentalMetrics {
         )
 
       /** Server domain name if available without reverse DNS lookup; otherwise, IP address or Unix domain socket name.
-        * <p>
+        *
         * @note
         *   <p> Server domain name of the broker if available without reverse DNS lookup; otherwise, IP address or Unix
         *   domain socket name.
@@ -1138,7 +1175,8 @@ object MessagingExperimentalMetrics {
           Stability.stable
         )
 
-      /** Server port number. <p>
+      /** Server port number.
+        *
         * @note
         *   <p> When observed from the client side, and when communicating through an intermediary, `server.port` SHOULD
         *   represent the server port behind any intermediaries, for example proxies, if it's available.
@@ -1202,7 +1240,8 @@ object MessagingExperimentalMetrics {
 
     object AttributeSpecs {
 
-      /** Describes a class of error the operation ended with. <p>
+      /** Describes a class of error the operation ended with.
+        *
         * @note
         *   <p> The `error.type` SHOULD be predictable, and SHOULD have low cardinality. <p> When `error.type` is set to
         *   a type (e.g., an exception type), its canonical class name identifying the type within the artifact SHOULD
@@ -1242,7 +1281,7 @@ object MessagingExperimentalMetrics {
         )
 
       /** Server domain name if available without reverse DNS lookup; otherwise, IP address or Unix domain socket name.
-        * <p>
+        *
         * @note
         *   <p> Server domain name of the broker if available without reverse DNS lookup; otherwise, IP address or Unix
         *   domain socket name.
@@ -1259,7 +1298,8 @@ object MessagingExperimentalMetrics {
           Stability.stable
         )
 
-      /** Server port number. <p>
+      /** Server port number.
+        *
         * @note
         *   <p> When observed from the client side, and when communicating through an intermediary, `server.port` SHOULD
         *   represent the server port behind any intermediaries, for example proxies, if it's available.
@@ -1308,7 +1348,8 @@ object MessagingExperimentalMetrics {
 
     object AttributeSpecs {
 
-      /** Describes a class of error the operation ended with. <p>
+      /** Describes a class of error the operation ended with.
+        *
         * @note
         *   <p> The `error.type` SHOULD be predictable, and SHOULD have low cardinality. <p> When `error.type` is set to
         *   a type (e.g., an exception type), its canonical class name identifying the type within the artifact SHOULD
@@ -1348,7 +1389,7 @@ object MessagingExperimentalMetrics {
         )
 
       /** Server domain name if available without reverse DNS lookup; otherwise, IP address or Unix domain socket name.
-        * <p>
+        *
         * @note
         *   <p> Server domain name of the broker if available without reverse DNS lookup; otherwise, IP address or Unix
         *   domain socket name.
@@ -1365,7 +1406,8 @@ object MessagingExperimentalMetrics {
           Stability.stable
         )
 
-      /** Server port number. <p>
+      /** Server port number.
+        *
         * @note
         *   <p> When observed from the client side, and when communicating through an intermediary, `server.port` SHOULD
         *   represent the server port behind any intermediaries, for example proxies, if it's available.
@@ -1429,7 +1471,8 @@ object MessagingExperimentalMetrics {
 
     object AttributeSpecs {
 
-      /** Describes a class of error the operation ended with. <p>
+      /** Describes a class of error the operation ended with.
+        *
         * @note
         *   <p> The `error.type` SHOULD be predictable, and SHOULD have low cardinality. <p> When `error.type` is set to
         *   a type (e.g., an exception type), its canonical class name identifying the type within the artifact SHOULD
@@ -1469,7 +1512,7 @@ object MessagingExperimentalMetrics {
         )
 
       /** Server domain name if available without reverse DNS lookup; otherwise, IP address or Unix domain socket name.
-        * <p>
+        *
         * @note
         *   <p> Server domain name of the broker if available without reverse DNS lookup; otherwise, IP address or Unix
         *   domain socket name.
@@ -1486,7 +1529,8 @@ object MessagingExperimentalMetrics {
           Stability.stable
         )
 
-      /** Server port number. <p>
+      /** Server port number.
+        *
         * @note
         *   <p> When observed from the client side, and when communicating through an intermediary, `server.port` SHOULD
         *   represent the server port behind any intermediaries, for example proxies, if it's available.
@@ -1535,7 +1579,8 @@ object MessagingExperimentalMetrics {
 
     object AttributeSpecs {
 
-      /** Describes a class of error the operation ended with. <p>
+      /** Describes a class of error the operation ended with.
+        *
         * @note
         *   <p> The `error.type` SHOULD be predictable, and SHOULD have low cardinality. <p> When `error.type` is set to
         *   a type (e.g., an exception type), its canonical class name identifying the type within the artifact SHOULD
@@ -1575,7 +1620,7 @@ object MessagingExperimentalMetrics {
         )
 
       /** Server domain name if available without reverse DNS lookup; otherwise, IP address or Unix domain socket name.
-        * <p>
+        *
         * @note
         *   <p> Server domain name of the broker if available without reverse DNS lookup; otherwise, IP address or Unix
         *   domain socket name.
@@ -1592,7 +1637,8 @@ object MessagingExperimentalMetrics {
           Stability.stable
         )
 
-      /** Server port number. <p>
+      /** Server port number.
+        *
         * @note
         *   <p> When observed from the client side, and when communicating through an intermediary, `server.port` SHOULD
         *   represent the server port behind any intermediaries, for example proxies, if it's available.

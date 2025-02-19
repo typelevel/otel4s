@@ -60,6 +60,7 @@
 {%- if type == "development" -%} Stability.development
 {%- elif not type -%} Stability.development
 {%- elif type == "stable" -%} Stability.stable
+{%- elif type == "release_candidate" -%} Stability.releaseCandidate
 {%- else -%} _unknown_stability_type_{{ type }}
 {%- endif -%}
 {%- endmacro -%}
@@ -109,7 +110,7 @@
 
 package org.typelevel.otel4s
 package semconv
-{%- if params.experimental == true %}
+{%- if params.stable_only == false %}
 package experimental
 package metrics
 {%- else %}
@@ -137,7 +138,7 @@ import org.typelevel.otel4s.metrics._
 {%- if required_imports.stable == true %}
 import org.typelevel.otel4s.semconv.attributes._
 {%- endif %}
-{%- if required_imports.experimental == true and params.experimental == true %}
+{%- if required_imports.experimental == true and params.stable_only == false %}
 import org.typelevel.otel4s.semconv.experimental.attributes._
 {%- endif %}
 
@@ -146,7 +147,7 @@ object {{ object_name }} {
 
   {% set ns = namespace(has_deprecation = false) -%}
   {%- for metric in ctx.metrics -%}
-    {%- if (metric is deprecated) or (params.experimental == true and metric is stable) -%}
+    {%- if (metric is deprecated) or (params.stable_only == false and metric is stable) -%}
       {%- set ns.has_deprecation = true -%}
     {%- endif -%}
   {%- endfor -%}
@@ -161,12 +162,12 @@ object {{ object_name }} {
   {% for metric in ctx.metrics | sort(attribute='metric_name') %}
   {{ [metric.brief, concat_if("\n\n@note\n\n", metric.note)] | comment(indent=2) | replace('$', "$$") }}
   {%- if metric is deprecated %}
-  @deprecated("{{ metric.deprecated }}", "")
-  {%- elif params.experimental == true and metric is stable %}
+  @deprecated("{{ metric.deprecated.note }}", "")
+  {%- elif params.stable_only == false and metric is stable %}
   @deprecated("Use stable `{{ stableRef(metric) }}` instead.", "")
   {%- endif %}
   object {{ objectName(metric) }} extends MetricSpec {
-    {%- if params.experimental == true -%}
+    {%- if params.stable_only == false -%}
     {%- set metric_attributes = metric.attributes %}
     {% else %}
     {%- set metric_attributes = metric.attributes | selectattr("stability", "equalto", "stable") | list %}
@@ -182,7 +183,7 @@ object {{ object_name }} {
       {% for attribute in metric_attributes | sort(attribute='name') %}
       {{ [attribute.brief, concat_if("\n\n@note\n\n", attribute.note)] | comment(indent=6) | replace('$', "$$")}}
       {%- if attribute is deprecated %}
-      @deprecated("{{ attribute.deprecated }}", "")
+      @deprecated("{{ attribute.deprecated.note }}", "")
       {%- endif %}
       val {{ attribute.name | camel_case }}: AttributeSpec[{{to_scala_key_type(attribute)}}] =
         AttributeSpec(

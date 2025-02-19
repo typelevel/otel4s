@@ -46,7 +46,8 @@ object LogExperimentalAttributes {
   val LogIostream: AttributeKey[String] =
     AttributeKey("log.iostream")
 
-  /** The complete original Log Record. <p>
+  /** The complete original Log Record.
+    *
     * @note
     *   <p> This value MAY be added when processing a Log Record which was originally transmitted as a string or
     *   equivalent data type AND the Body field of the Log Record does not contain the same value. (e.g. a syslog or a
@@ -55,7 +56,8 @@ object LogExperimentalAttributes {
   val LogRecordOriginal: AttributeKey[String] =
     AttributeKey("log.record.original")
 
-  /** A unique identifier for the Log Record. <p>
+  /** A unique identifier for the Log Record.
+    *
     * @note
     *   <p> If an id is provided, other log records with the same id will be considered duplicates and can be removed
     *   safely. This means, that two distinguishable log records MUST have different values. The id MAY be an <a

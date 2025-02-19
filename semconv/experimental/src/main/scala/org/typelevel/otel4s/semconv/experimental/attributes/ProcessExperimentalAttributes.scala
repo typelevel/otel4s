@@ -21,7 +21,8 @@ package experimental.attributes
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/attributes/SemanticAttributes.scala.j2
 object ProcessExperimentalAttributes {
 
-  /** Length of the process.command_args array <p>
+  /** Length of the process.command_args array
+    *
     * @note
     *   <p> This field can be useful for querying or performing bucket analysis on how many arguments were provided to
     *   start a process. More arguments may be an indication of suspicious activity.
@@ -119,7 +120,8 @@ object ProcessExperimentalAttributes {
   val ProcessInteractive: AttributeKey[Boolean] =
     AttributeKey("process.interactive")
 
-  /** The control group associated with the process. <p>
+  /** The control group associated with the process.
+    *
     * @note
     *   <p> Control groups (cgroups) are a kernel feature used to organize and manage process resources. This attribute
     *   provides the path(s) to the cgroup(s) associated with the process, which should match the contents of the <a
@@ -190,7 +192,8 @@ object ProcessExperimentalAttributes {
   val ProcessSessionLeaderPid: AttributeKey[Long] =
     AttributeKey("process.session_leader.pid")
 
-  /** Process title (proctitle) <p>
+  /** Process title (proctitle)
+    *
     * @note
     *   <p> In many Unix-like systems, process title (proctitle), is the string that represents the name or command line
     *   of a running process, displayed by system monitoring tools like ps, top, and htop.
@@ -208,7 +211,8 @@ object ProcessExperimentalAttributes {
   val ProcessUserName: AttributeKey[String] =
     AttributeKey("process.user.name")
 
-  /** Virtual process identifier. <p>
+  /** Virtual process identifier.
+    *
     * @note
     *   <p> The process ID within a PID namespace. This is not necessarily unique across all processes on the host but
     *   it is unique within the process namespace that the process exists within.

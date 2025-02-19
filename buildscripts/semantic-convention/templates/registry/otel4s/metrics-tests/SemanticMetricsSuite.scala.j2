@@ -18,7 +18,7 @@
 
 package org.typelevel.otel4s
 package semconv
-{%- if params.experimental == true %}
+{%- if params.stable_only == false %}
 package experimental
 package metrics
 {%- else %}

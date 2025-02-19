@@ -57,7 +57,8 @@ object FaasExperimentalAttributes {
     AttributeKey("faas.document.time")
 
   /** The execution environment ID as a string, that will be potentially reused for other invocations to the same
-    * function/function version. <p>
+    * function/function version.
+    *
     * @note
     *   <ul> <li><strong>AWS Lambda:</strong> Use the (full) log stream name. </ul>
     */
@@ -69,28 +70,32 @@ object FaasExperimentalAttributes {
   val FaasInvocationId: AttributeKey[String] =
     AttributeKey("faas.invocation_id")
 
-  /** The name of the invoked function. <p>
+  /** The name of the invoked function.
+    *
     * @note
     *   <p> SHOULD be equal to the `faas.name` resource attribute of the invoked function.
     */
   val FaasInvokedName: AttributeKey[String] =
     AttributeKey("faas.invoked_name")
 
-  /** The cloud provider of the invoked function. <p>
+  /** The cloud provider of the invoked function.
+    *
     * @note
     *   <p> SHOULD be equal to the `cloud.provider` resource attribute of the invoked function.
     */
   val FaasInvokedProvider: AttributeKey[String] =
     AttributeKey("faas.invoked_provider")
 
-  /** The cloud region of the invoked function. <p>
+  /** The cloud region of the invoked function.
+    *
     * @note
     *   <p> SHOULD be equal to the `cloud.region` resource attribute of the invoked function.
     */
   val FaasInvokedRegion: AttributeKey[String] =
     AttributeKey("faas.invoked_region")
 
-  /** The amount of memory available to the serverless function converted to Bytes. <p>
+  /** The amount of memory available to the serverless function converted to Bytes.
+    *
     * @note
     *   <p> It's recommended to set this attribute since e.g. too little memory can easily stop a Java AWS Lambda
     *   function from working correctly. On AWS Lambda, the environment variable `AWS_LAMBDA_FUNCTION_MEMORY_SIZE`
@@ -99,7 +104,8 @@ object FaasExperimentalAttributes {
   val FaasMaxMemory: AttributeKey[Long] =
     AttributeKey("faas.max_memory")
 
-  /** The name of the single function that this runtime instance executes. <p>
+  /** The name of the single function that this runtime instance executes.
+    *
     * @note
     *   <p> This is the name of the function as configured/deployed on the FaaS platform and is usually different from
     *   the name of the callback function (which may be stored in the <a
@@ -126,7 +132,8 @@ object FaasExperimentalAttributes {
   val FaasTrigger: AttributeKey[String] =
     AttributeKey("faas.trigger")
 
-  /** The immutable version of the function being executed. <p>
+  /** The immutable version of the function being executed.
+    *
     * @note
     *   <p> Depending on the cloud provider and platform, use: <ul> <li><strong>AWS Lambda:</strong> The <a
     *   href="https://docs.aws.amazon.com/lambda/latest/dg/configuration-versions.html">function version</a> (an integer

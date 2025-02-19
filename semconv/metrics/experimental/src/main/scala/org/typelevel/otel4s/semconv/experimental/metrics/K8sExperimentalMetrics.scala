@@ -66,7 +66,8 @@ object K8sExperimentalMetrics {
     StatefulsetUpdatedPods,
   )
 
-  /** The number of actively running jobs for a cronjob <p>
+  /** The number of actively running jobs for a cronjob
+    *
     * @note
     *   <p> This metric aligns with the `active` field of the <a
     *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#cronjobstatus-v1-batch">K8s
@@ -106,7 +107,8 @@ object K8sExperimentalMetrics {
 
   }
 
-  /** Number of nodes that are running at least 1 daemon pod and are supposed to run the daemon pod <p>
+  /** Number of nodes that are running at least 1 daemon pod and are supposed to run the daemon pod
+    *
     * @note
     *   <p> This metric aligns with the `currentNumberScheduled` field of the <a
     *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#daemonsetstatus-v1-apps">K8s
@@ -147,7 +149,8 @@ object K8sExperimentalMetrics {
 
   }
 
-  /** Number of nodes that should be running the daemon pod (including nodes currently running the daemon pod) <p>
+  /** Number of nodes that should be running the daemon pod (including nodes currently running the daemon pod)
+    *
     * @note
     *   <p> This metric aligns with the `desiredNumberScheduled` field of the <a
     *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#daemonsetstatus-v1-apps">K8s
@@ -188,7 +191,8 @@ object K8sExperimentalMetrics {
 
   }
 
-  /** Number of nodes that are running the daemon pod, but are not supposed to run the daemon pod <p>
+  /** Number of nodes that are running the daemon pod, but are not supposed to run the daemon pod
+    *
     * @note
     *   <p> This metric aligns with the `numberMisscheduled` field of the <a
     *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#daemonsetstatus-v1-apps">K8s
@@ -229,7 +233,8 @@ object K8sExperimentalMetrics {
 
   }
 
-  /** Number of nodes that should be running the daemon pod and have one or more of the daemon pod running and ready <p>
+  /** Number of nodes that should be running the daemon pod and have one or more of the daemon pod running and ready
+    *
     * @note
     *   <p> This metric aligns with the `numberReady` field of the <a
     *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#daemonsetstatus-v1-apps">K8s
@@ -270,7 +275,8 @@ object K8sExperimentalMetrics {
 
   }
 
-  /** Total number of available replica pods (ready for at least minReadySeconds) targeted by this deployment <p>
+  /** Total number of available replica pods (ready for at least minReadySeconds) targeted by this deployment
+    *
     * @note
     *   <p> This metric aligns with the `availableReplicas` field of the <a
     *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#deploymentstatus-v1-apps">K8s
@@ -311,7 +317,8 @@ object K8sExperimentalMetrics {
 
   }
 
-  /** Number of desired replica pods in this deployment <p>
+  /** Number of desired replica pods in this deployment
+    *
     * @note
     *   <p> This metric aligns with the `replicas` field of the <a
     *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#deploymentspec-v1-apps">K8s
@@ -351,7 +358,8 @@ object K8sExperimentalMetrics {
 
   }
 
-  /** Current number of replica pods managed by this horizontal pod autoscaler, as last seen by the autoscaler <p>
+  /** Current number of replica pods managed by this horizontal pod autoscaler, as last seen by the autoscaler
+    *
     * @note
     *   <p> This metric aligns with the `currentReplicas` field of the <a
     *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#horizontalpodautoscalerstatus-v2-autoscaling">K8s
@@ -391,7 +399,8 @@ object K8sExperimentalMetrics {
 
   }
 
-  /** Desired number of replica pods managed by this horizontal pod autoscaler, as last calculated by the autoscaler <p>
+  /** Desired number of replica pods managed by this horizontal pod autoscaler, as last calculated by the autoscaler
+    *
     * @note
     *   <p> This metric aligns with the `desiredReplicas` field of the <a
     *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#horizontalpodautoscalerstatus-v2-autoscaling">K8s
@@ -431,7 +440,8 @@ object K8sExperimentalMetrics {
 
   }
 
-  /** The upper limit for the number of replica pods to which the autoscaler can scale up <p>
+  /** The upper limit for the number of replica pods to which the autoscaler can scale up
+    *
     * @note
     *   <p> This metric aligns with the `maxReplicas` field of the <a
     *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#horizontalpodautoscalerspec-v2-autoscaling">K8s
@@ -470,7 +480,8 @@ object K8sExperimentalMetrics {
 
   }
 
-  /** The lower limit for the number of replica pods to which the autoscaler can scale down <p>
+  /** The lower limit for the number of replica pods to which the autoscaler can scale down
+    *
     * @note
     *   <p> This metric aligns with the `minReplicas` field of the <a
     *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#horizontalpodautoscalerspec-v2-autoscaling">K8s
@@ -509,7 +520,8 @@ object K8sExperimentalMetrics {
 
   }
 
-  /** The number of pending and actively running pods for a job <p>
+  /** The number of pending and actively running pods for a job
+    *
     * @note
     *   <p> This metric aligns with the `active` field of the <a
     *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#jobstatus-v1-batch">K8s
@@ -549,7 +561,8 @@ object K8sExperimentalMetrics {
 
   }
 
-  /** The desired number of successfully finished pods the job should be run with <p>
+  /** The desired number of successfully finished pods the job should be run with
+    *
     * @note
     *   <p> This metric aligns with the `completions` field of the <a
     *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#jobspec-v1-batch">K8s JobSpec</a>.
@@ -589,7 +602,8 @@ object K8sExperimentalMetrics {
 
   }
 
-  /** The number of pods which reached phase Failed for a job <p>
+  /** The number of pods which reached phase Failed for a job
+    *
     * @note
     *   <p> This metric aligns with the `failed` field of the <a
     *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#jobstatus-v1-batch">K8s
@@ -629,7 +643,8 @@ object K8sExperimentalMetrics {
 
   }
 
-  /** The max desired number of pods the job should run at any given time <p>
+  /** The max desired number of pods the job should run at any given time
+    *
     * @note
     *   <p> This metric aligns with the `parallelism` field of the [K8s
     *   JobSpec](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#jobspec-v1-batch. <p> This metric
@@ -668,7 +683,8 @@ object K8sExperimentalMetrics {
 
   }
 
-  /** The number of pods which reached phase Succeeded for a job <p>
+  /** The number of pods which reached phase Succeeded for a job
+    *
     * @note
     *   <p> This metric aligns with the `succeeded` field of the <a
     *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#jobstatus-v1-batch">K8s
@@ -708,7 +724,8 @@ object K8sExperimentalMetrics {
 
   }
 
-  /** Describes number of K8s namespaces that are currently in a given phase. <p>
+  /** Describes number of K8s namespaces that are currently in a given phase.
+    *
     * @note
     *   <p> This metric SHOULD, at a minimum, be reported against a <a
     *   href="../resource/k8s.md#namespace">`k8s.namespace`</a> resource.
@@ -723,7 +740,8 @@ object K8sExperimentalMetrics {
 
     object AttributeSpecs {
 
-      /** The phase of the K8s namespace. <p>
+      /** The phase of the K8s namespace.
+        *
         * @note
         *   <p> This attribute aligns with the `phase` field of the <a
         *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#namespacestatus-v1-core">K8s
@@ -771,7 +789,8 @@ object K8sExperimentalMetrics {
 
   }
 
-  /** Total CPU time consumed <p>
+  /** Total CPU time consumed
+    *
     * @note
     *   <p> Total CPU time consumed by the specific Node on all available CPU cores
     */
@@ -808,7 +827,8 @@ object K8sExperimentalMetrics {
 
   }
 
-  /** Node's CPU usage, measured in cpus. Range from 0 to the number of allocatable CPUs <p>
+  /** Node's CPU usage, measured in cpus. Range from 0 to the number of allocatable CPUs
+    *
     * @note
     *   <p> CPU usage of the specific Node on all available CPU cores, averaged over the sample window
     */
@@ -845,7 +865,8 @@ object K8sExperimentalMetrics {
 
   }
 
-  /** Memory usage of the Node <p>
+  /** Memory usage of the Node
+    *
     * @note
     *   <p> Total memory usage of the Node
     */
@@ -1020,7 +1041,8 @@ object K8sExperimentalMetrics {
 
   }
 
-  /** The time the Node has been running <p>
+  /** The time the Node has been running
+    *
     * @note
     *   <p> Instrumentations SHOULD use a gauge with type `double` and measure uptime in seconds as a floating point
     *   number with the highest precision available. The actual accuracy would depend on the instrumentation and
@@ -1059,7 +1081,8 @@ object K8sExperimentalMetrics {
 
   }
 
-  /** Total CPU time consumed <p>
+  /** Total CPU time consumed
+    *
     * @note
     *   <p> Total CPU time consumed by the specific Pod on all available CPU cores
     */
@@ -1096,7 +1119,8 @@ object K8sExperimentalMetrics {
 
   }
 
-  /** Pod's CPU usage, measured in cpus. Range from 0 to the number of allocatable CPUs <p>
+  /** Pod's CPU usage, measured in cpus. Range from 0 to the number of allocatable CPUs
+    *
     * @note
     *   <p> CPU usage of the specific Pod on all available CPU cores, averaged over the sample window
     */
@@ -1133,7 +1157,8 @@ object K8sExperimentalMetrics {
 
   }
 
-  /** Memory usage of the Pod <p>
+  /** Memory usage of the Pod
+    *
     * @note
     *   <p> Total memory usage of the Pod
     */
@@ -1308,7 +1333,8 @@ object K8sExperimentalMetrics {
 
   }
 
-  /** The time the Pod has been running <p>
+  /** The time the Pod has been running
+    *
     * @note
     *   <p> Instrumentations SHOULD use a gauge with type `double` and measure uptime in seconds as a floating point
     *   number with the highest precision available. The actual accuracy would depend on the instrumentation and
@@ -1347,7 +1373,8 @@ object K8sExperimentalMetrics {
 
   }
 
-  /** Total number of available replica pods (ready for at least minReadySeconds) targeted by this replicaset <p>
+  /** Total number of available replica pods (ready for at least minReadySeconds) targeted by this replicaset
+    *
     * @note
     *   <p> This metric aligns with the `availableReplicas` field of the <a
     *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#replicasetstatus-v1-apps">K8s
@@ -1388,7 +1415,8 @@ object K8sExperimentalMetrics {
 
   }
 
-  /** Number of desired replica pods in this replicaset <p>
+  /** Number of desired replica pods in this replicaset
+    *
     * @note
     *   <p> This metric aligns with the `replicas` field of the <a
     *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#replicasetspec-v1-apps">K8s
@@ -1429,7 +1457,8 @@ object K8sExperimentalMetrics {
   }
 
   /** Total number of available replica pods (ready for at least minReadySeconds) targeted by this replication
-    * controller <p>
+    * controller
+    *
     * @note
     *   <p> This metric aligns with the `availableReplicas` field of the <a
     *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#replicationcontrollerstatus-v1-core">K8s
@@ -1469,7 +1498,8 @@ object K8sExperimentalMetrics {
 
   }
 
-  /** Number of desired replica pods in this replication controller <p>
+  /** Number of desired replica pods in this replication controller
+    *
     * @note
     *   <p> This metric aligns with the `replicas` field of the <a
     *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#replicationcontrollerspec-v1-core">K8s
@@ -1509,7 +1539,8 @@ object K8sExperimentalMetrics {
   }
 
   /** The number of replica pods created by the statefulset controller from the statefulset version indicated by
-    * currentRevision <p>
+    * currentRevision
+    *
     * @note
     *   <p> This metric aligns with the `currentReplicas` field of the <a
     *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#statefulsetstatus-v1-apps">K8s
@@ -1550,7 +1581,8 @@ object K8sExperimentalMetrics {
 
   }
 
-  /** Number of desired replica pods in this statefulset <p>
+  /** Number of desired replica pods in this statefulset
+    *
     * @note
     *   <p> This metric aligns with the `replicas` field of the <a
     *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#statefulsetspec-v1-apps">K8s
@@ -1590,7 +1622,8 @@ object K8sExperimentalMetrics {
 
   }
 
-  /** The number of replica pods created for this statefulset with a Ready Condition <p>
+  /** The number of replica pods created for this statefulset with a Ready Condition
+    *
     * @note
     *   <p> This metric aligns with the `readyReplicas` field of the <a
     *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#statefulsetstatus-v1-apps">K8s
@@ -1631,7 +1664,8 @@ object K8sExperimentalMetrics {
   }
 
   /** Number of replica pods created by the statefulset controller from the statefulset version indicated by
-    * updateRevision <p>
+    * updateRevision
+    *
     * @note
     *   <p> This metric aligns with the `updatedReplicas` field of the <a
     *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#statefulsetstatus-v1-apps">K8s

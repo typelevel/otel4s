@@ -37,7 +37,8 @@ object RpcExperimentalMetrics {
     ServerResponsesPerRpc,
   )
 
-  /** Measures the duration of outbound RPC. <p>
+  /** Measures the duration of outbound RPC.
+    *
     * @note
     *   <p> While streaming RPCs may record this metric as start-of-batch to end-of-batch, it's hard to interpret in
     *   practice. <p> <strong>Streaming</strong>: N/A.
@@ -60,7 +61,8 @@ object RpcExperimentalMetrics {
 
   }
 
-  /** Measures the size of RPC request messages (uncompressed). <p>
+  /** Measures the size of RPC request messages (uncompressed).
+    *
     * @note
     *   <p> <strong>Streaming</strong>: Recorded per message in a streaming batch
     */
@@ -82,7 +84,8 @@ object RpcExperimentalMetrics {
 
   }
 
-  /** Measures the number of messages received per RPC. <p>
+  /** Measures the number of messages received per RPC.
+    *
     * @note
     *   <p> Should be 1 for all non-streaming RPCs. <p> <strong>Streaming</strong>: This metric is required for server
     *   and client streaming RPCs
@@ -105,7 +108,8 @@ object RpcExperimentalMetrics {
 
   }
 
-  /** Measures the size of RPC response messages (uncompressed). <p>
+  /** Measures the size of RPC response messages (uncompressed).
+    *
     * @note
     *   <p> <strong>Streaming</strong>: Recorded per response in a streaming batch
     */
@@ -127,7 +131,8 @@ object RpcExperimentalMetrics {
 
   }
 
-  /** Measures the number of messages sent per RPC. <p>
+  /** Measures the number of messages sent per RPC.
+    *
     * @note
     *   <p> Should be 1 for all non-streaming RPCs. <p> <strong>Streaming</strong>: This metric is required for server
     *   and client streaming RPCs
@@ -150,7 +155,8 @@ object RpcExperimentalMetrics {
 
   }
 
-  /** Measures the duration of inbound RPC. <p>
+  /** Measures the duration of inbound RPC.
+    *
     * @note
     *   <p> While streaming RPCs may record this metric as start-of-batch to end-of-batch, it's hard to interpret in
     *   practice. <p> <strong>Streaming</strong>: N/A.
@@ -173,7 +179,8 @@ object RpcExperimentalMetrics {
 
   }
 
-  /** Measures the size of RPC request messages (uncompressed). <p>
+  /** Measures the size of RPC request messages (uncompressed).
+    *
     * @note
     *   <p> <strong>Streaming</strong>: Recorded per message in a streaming batch
     */
@@ -195,7 +202,8 @@ object RpcExperimentalMetrics {
 
   }
 
-  /** Measures the number of messages received per RPC. <p>
+  /** Measures the number of messages received per RPC.
+    *
     * @note
     *   <p> Should be 1 for all non-streaming RPCs. <p> <strong>Streaming</strong> : This metric is required for server
     *   and client streaming RPCs
@@ -218,7 +226,8 @@ object RpcExperimentalMetrics {
 
   }
 
-  /** Measures the size of RPC response messages (uncompressed). <p>
+  /** Measures the size of RPC response messages (uncompressed).
+    *
     * @note
     *   <p> <strong>Streaming</strong>: Recorded per response in a streaming batch
     */
@@ -240,7 +249,8 @@ object RpcExperimentalMetrics {
 
   }
 
-  /** Measures the number of messages sent per RPC. <p>
+  /** Measures the number of messages sent per RPC.
+    *
     * @note
     *   <p> Should be 1 for all non-streaming RPCs. <p> <strong>Streaming</strong>: This metric is required for server
     *   and client streaming RPCs

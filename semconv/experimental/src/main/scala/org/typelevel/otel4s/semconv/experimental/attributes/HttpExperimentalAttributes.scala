@@ -63,7 +63,8 @@ object HttpExperimentalAttributes {
     AttributeKey("http.request.body.size")
 
   /** HTTP request headers, `<key>` being the normalized HTTP Header name (lowercase), the value being the header
-    * values. <p>
+    * values.
+    *
     * @note
     *   <p> Instrumentations SHOULD require an explicit configuration of which headers are to be captured. Including all
     *   request headers can be a security risk - explicit configuration helps avoid leaking sensitive information. The
@@ -79,7 +80,8 @@ object HttpExperimentalAttributes {
   val HttpRequestHeader: AttributeKey[Seq[String]] =
     AttributeKey("http.request.header")
 
-  /** HTTP request method. <p>
+  /** HTTP request method.
+    *
     * @note
     *   <p> HTTP request method value SHOULD be "known" to the instrumentation. By default, this convention defines
     *   "known" methods as the ones listed in <a
@@ -111,7 +113,8 @@ object HttpExperimentalAttributes {
   val HttpRequestMethodOriginal: AttributeKey[String] =
     AttributeKey("http.request.method_original")
 
-  /** The ordinal number of request resending attempt (for any reason, including redirects). <p>
+  /** The ordinal number of request resending attempt (for any reason, including redirects).
+    *
     * @note
     *   <p> The resend count SHOULD be updated each time an HTTP request gets resent by the client, regardless of what
     *   was the cause of the resending (e.g. redirection, authorization failure, 503 Server Unavailable, network issues,
@@ -151,7 +154,8 @@ object HttpExperimentalAttributes {
     AttributeKey("http.response.body.size")
 
   /** HTTP response headers, `<key>` being the normalized HTTP Header name (lowercase), the value being the header
-    * values. <p>
+    * values.
+    *
     * @note
     *   <p> Instrumentations SHOULD require an explicit configuration of which headers are to be captured. Including all
     *   response headers can be a security risk - explicit configuration helps avoid leaking sensitive information.
@@ -193,7 +197,8 @@ object HttpExperimentalAttributes {
   val HttpResponseContentLengthUncompressed: AttributeKey[Long] =
     AttributeKey("http.response_content_length_uncompressed")
 
-  /** The matched route, that is, the path template in the format used by the respective server framework. <p>
+  /** The matched route, that is, the path template in the format used by the respective server framework.
+    *
     * @note
     *   <p> MUST NOT be populated when this is not supported by the HTTP server framework as the route attribute should
     *   have low-cardinality and the URI path can NOT substitute it. SHOULD include the <a

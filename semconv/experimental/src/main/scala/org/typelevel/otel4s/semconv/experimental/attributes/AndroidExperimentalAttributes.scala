@@ -29,7 +29,7 @@ object AndroidExperimentalAttributes {
     AttributeKey("android.os.api_level")
 
   /** Deprecated use the `device.app.lifecycle` event definition including `android.state` as a payload field instead.
-    * <p>
+    *
     * @note
     *   <p> The Android lifecycle states are defined in <a
     *   href="https://developer.android.com/guide/components/activities/activity-lifecycle#lc">Activity lifecycle

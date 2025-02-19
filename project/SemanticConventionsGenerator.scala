@@ -3,7 +3,7 @@ import scala.sys.process._
 
 object SemanticConventionsGenerator {
 
-  private val generatorVersion = "v0.12.0"
+  private val generatorVersion = "v0.13.2"
 
   // generates semantic conventions by using `otel/weaver` in docker
   def generate(version: String, rootDir: File): Unit = {
@@ -39,9 +39,8 @@ object SemanticConventionsGenerator {
     val params: List[String] =
       if (experimental)
         List(
-          "--param=excluded_stability=[]",
           "--param=object_prefix=Experimental",
-          "--param=experimental=true"
+          "--param=stable_only=false"
         )
       else
         Nil
@@ -69,9 +68,8 @@ object SemanticConventionsGenerator {
     val params: List[String] =
       if (experimental)
         List(
-          "--param=excluded_stability=[]",
           "--param=object_prefix=Experimental",
-          "--param=experimental=true"
+          "--param=stable_only=false"
         )
       else
         Nil

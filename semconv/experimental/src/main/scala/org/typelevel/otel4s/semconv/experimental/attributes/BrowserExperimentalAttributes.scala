@@ -21,7 +21,8 @@ package experimental.attributes
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/attributes/SemanticAttributes.scala.j2
 object BrowserExperimentalAttributes {
 
-  /** Array of brand name and version separated by a space <p>
+  /** Array of brand name and version separated by a space
+    *
     * @note
     *   <p> This value is intended to be taken from the <a href="https://wicg.github.io/ua-client-hints/#interface">UA
     *   client hints API</a> (`navigator.userAgentData.brands`).
@@ -29,14 +30,16 @@ object BrowserExperimentalAttributes {
   val BrowserBrands: AttributeKey[Seq[String]] =
     AttributeKey("browser.brands")
 
-  /** Preferred language of the user using the browser <p>
+  /** Preferred language of the user using the browser
+    *
     * @note
     *   <p> This value is intended to be taken from the Navigator API `navigator.language`.
     */
   val BrowserLanguage: AttributeKey[String] =
     AttributeKey("browser.language")
 
-  /** A boolean that is true if the browser is running on a mobile device <p>
+  /** A boolean that is true if the browser is running on a mobile device
+    *
     * @note
     *   <p> This value is intended to be taken from the <a href="https://wicg.github.io/ua-client-hints/#interface">UA
     *   client hints API</a> (`navigator.userAgentData.mobile`). If unavailable, this attribute SHOULD be left unset.
@@ -44,7 +47,8 @@ object BrowserExperimentalAttributes {
   val BrowserMobile: AttributeKey[Boolean] =
     AttributeKey("browser.mobile")
 
-  /** The platform on which the browser is running <p>
+  /** The platform on which the browser is running
+    *
     * @note
     *   <p> This value is intended to be taken from the <a href="https://wicg.github.io/ua-client-hints/#interface">UA
     *   client hints API</a> (`navigator.userAgentData.platform`). If unavailable, the legacy `navigator.platform` API

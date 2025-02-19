@@ -21,7 +21,8 @@ package experimental.attributes
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/attributes/SemanticAttributes.scala.j2
 object DeviceExperimentalAttributes {
 
-  /** A unique identifier representing the device <p>
+  /** A unique identifier representing the device
+    *
     * @note
     *   <p> The device identifier MUST only be defined using the values outlined below. This value is not an advertising
     *   identifier and MUST NOT be used as such. On iOS (Swift or Objective-C), this value MUST be equal to the <a
@@ -35,7 +36,8 @@ object DeviceExperimentalAttributes {
   val DeviceId: AttributeKey[String] =
     AttributeKey("device.id")
 
-  /** The name of the device manufacturer <p>
+  /** The name of the device manufacturer
+    *
     * @note
     *   <p> The Android OS provides this field via <a
     *   href="https://developer.android.com/reference/android/os/Build#MANUFACTURER">Build</a>. iOS apps SHOULD hardcode
@@ -44,7 +46,8 @@ object DeviceExperimentalAttributes {
   val DeviceManufacturer: AttributeKey[String] =
     AttributeKey("device.manufacturer")
 
-  /** The model identifier for the device <p>
+  /** The model identifier for the device
+    *
     * @note
     *   <p> It's recommended this value represents a machine-readable version of the model identifier rather than the
     *   market or consumer-friendly name of the device.
@@ -52,7 +55,8 @@ object DeviceExperimentalAttributes {
   val DeviceModelIdentifier: AttributeKey[String] =
     AttributeKey("device.model.identifier")
 
-  /** The marketing name for the device model <p>
+  /** The marketing name for the device model
+    *
     * @note
     *   <p> It's recommended this value represents a human-readable version of the device model rather than a
     *   machine-readable alternative.

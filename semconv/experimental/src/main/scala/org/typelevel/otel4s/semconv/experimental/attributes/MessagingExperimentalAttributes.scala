@@ -21,7 +21,8 @@ package experimental.attributes
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/attributes/SemanticAttributes.scala.j2
 object MessagingExperimentalAttributes {
 
-  /** The number of messages sent, received, or processed in the scope of the batching operation. <p>
+  /** The number of messages sent, received, or processed in the scope of the batching operation.
+    *
     * @note
     *   <p> Instrumentations SHOULD NOT set `messaging.batch.message_count` on spans that operate with a single message.
     *   When a messaging client library supports both batch and single-message API for the same operation,
@@ -36,7 +37,8 @@ object MessagingExperimentalAttributes {
   val MessagingClientId: AttributeKey[String] =
     AttributeKey("messaging.client.id")
 
-  /** The name of the consumer group with which a consumer is associated. <p>
+  /** The name of the consumer group with which a consumer is associated.
+    *
     * @note
     *   <p> Semantic conventions for individual messaging systems SHOULD document whether
     *   `messaging.consumer.group.name` is applicable and what it means in the context of that system.
@@ -49,7 +51,8 @@ object MessagingExperimentalAttributes {
   val MessagingDestinationAnonymous: AttributeKey[Boolean] =
     AttributeKey("messaging.destination.anonymous")
 
-  /** The message destination name <p>
+  /** The message destination name
+    *
     * @note
     *   <p> Destination name SHOULD uniquely identify a specific queue, topic or other entity within the broker. If the
     *   broker doesn't have such notion, the destination name SHOULD uniquely identify the broker.
@@ -63,7 +66,8 @@ object MessagingExperimentalAttributes {
   val MessagingDestinationPartitionId: AttributeKey[String] =
     AttributeKey("messaging.destination.partition.id")
 
-  /** The name of the destination subscription from which a message is consumed. <p>
+  /** The name of the destination subscription from which a message is consumed.
+    *
     * @note
     *   <p> Semantic conventions for individual messaging systems SHOULD document whether
     *   `messaging.destination.subscription.name` is applicable and what it means in the context of that system.
@@ -71,7 +75,8 @@ object MessagingExperimentalAttributes {
   val MessagingDestinationSubscriptionName: AttributeKey[String] =
     AttributeKey("messaging.destination.subscription.name")
 
-  /** Low cardinality representation of the messaging destination name <p>
+  /** Low cardinality representation of the messaging destination name
+    *
     * @note
     *   <p> Destination names could be constructed from templates. An example would be a destination name involving a
     *   user name or product id. Although the destination name in this case is of high cardinality, the underlying
@@ -143,7 +148,8 @@ object MessagingExperimentalAttributes {
 
   /** Message keys in Kafka are used for grouping alike messages to ensure they're processed on the same partition. They
     * differ from `messaging.message.id` in that they're not unique. If the key is `null`, the attribute MUST NOT be
-    * set. <p>
+    * set.
+    *
     * @note
     *   <p> If the key type is not string, it's string representation has to be supplied for the attribute. If the key
     *   has no unambiguous, canonical string form, don't include its value.
@@ -167,7 +173,8 @@ object MessagingExperimentalAttributes {
   val MessagingKafkaOffset: AttributeKey[Long] =
     AttributeKey("messaging.kafka.offset")
 
-  /** The size of the message body in bytes. <p>
+  /** The size of the message body in bytes.
+    *
     * @note
     *   <p> This can refer to both the compressed or uncompressed body size. If both sizes are known, the uncompressed
     *   body size should be used.
@@ -181,7 +188,8 @@ object MessagingExperimentalAttributes {
   val MessagingMessageConversationId: AttributeKey[String] =
     AttributeKey("messaging.message.conversation_id")
 
-  /** The size of the message body and metadata in bytes. <p>
+  /** The size of the message body and metadata in bytes.
+    *
     * @note
     *   <p> This can refer to both the compressed or uncompressed size. If both sizes are known, the uncompressed size
     *   should be used.
@@ -205,7 +213,8 @@ object MessagingExperimentalAttributes {
   val MessagingOperationName: AttributeKey[String] =
     AttributeKey("messaging.operation.name")
 
-  /** A string identifying the type of the messaging operation. <p>
+  /** A string identifying the type of the messaging operation.
+    *
     * @note
     *   <p> If a custom value is used, it MUST be of low cardinality.
     */
@@ -295,7 +304,8 @@ object MessagingExperimentalAttributes {
   val MessagingServicebusMessageEnqueuedTime: AttributeKey[Long] =
     AttributeKey("messaging.servicebus.message.enqueued_time")
 
-  /** The messaging system as identified by the client instrumentation. <p>
+  /** The messaging system as identified by the client instrumentation.
+    *
     * @note
     *   <p> The actual messaging system may differ from the one known by the client. For example, when using Kafka
     *   client libraries to communicate with Azure Event Hubs, the `messaging.system` is set to `kafka` based on the

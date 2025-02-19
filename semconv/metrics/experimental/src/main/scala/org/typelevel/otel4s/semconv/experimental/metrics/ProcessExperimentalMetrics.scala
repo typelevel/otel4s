@@ -107,7 +107,8 @@ object ProcessExperimentalMetrics {
     object AttributeSpecs {
 
       /** A process SHOULD be characterized <em>either</em> by data points with no `mode` labels, <em>or only</em> data
-        * points with `mode` labels. <p>
+        * points with `mode` labels.
+        *
         * @note
         *   <p> Following states SHOULD be used: `user`, `system`, `wait`
         */
@@ -168,7 +169,8 @@ object ProcessExperimentalMetrics {
     object AttributeSpecs {
 
       /** A process SHOULD be characterized <em>either</em> by data points with no `mode` labels, <em>or only</em> data
-        * points with `mode` labels. <p>
+        * points with `mode` labels.
+        *
         * @note
         *   <p> Following states SHOULD be used: `user`, `system`, `wait`
         */
@@ -519,7 +521,8 @@ object ProcessExperimentalMetrics {
 
   }
 
-  /** The time the process has been running. <p>
+  /** The time the process has been running.
+    *
     * @note
     *   <p> Instrumentations SHOULD use a gauge with type `double` and measure uptime in seconds as a floating point
     *   number with the highest precision available. The actual accuracy would depend on the instrumentation and

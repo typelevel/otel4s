@@ -1051,7 +1051,8 @@ object DbExperimentalMetrics {
 
     object AttributeSpecs {
 
-      /** Name of the database host. <p>
+      /** Name of the database host.
+        *
         * @note
         *   <p> When observed from the client side, and when communicating through an intermediary, `server.address`
         *   SHOULD represent the server address behind any intermediaries, for example proxies, if it's available.
@@ -1068,7 +1069,8 @@ object DbExperimentalMetrics {
           Stability.stable
         )
 
-      /** Server port number. <p>
+      /** Server port number.
+        *
         * @note
         *   <p> When observed from the client side, and when communicating through an intermediary, `server.port` SHOULD
         *   represent the server port behind any intermediaries, for example proxies, if it's available.
@@ -1132,7 +1134,8 @@ object DbExperimentalMetrics {
 
     object AttributeSpecs {
 
-      /** Cosmos DB container name. <p>
+      /** Cosmos DB container name.
+        *
         * @note
         *   <p> It is RECOMMENDED to capture the value as provided by the application without attempting to do any case
         *   normalization. <p> The collection name SHOULD NOT be extracted from `db.query.text`, unless the query format
@@ -1147,7 +1150,7 @@ object DbExperimentalMetrics {
             "customers",
           ),
           Requirement.conditionallyRequired("If available."),
-          _unknown_stability_type_release_candidate
+          Stability.releaseCandidate
         )
 
       /** Deprecated, use `cosmosdb.consistency.level` instead.
@@ -1204,10 +1207,11 @@ object DbExperimentalMetrics {
             "test.users",
           ),
           Requirement.conditionallyRequired("If available."),
-          _unknown_stability_type_release_candidate
+          Stability.releaseCandidate
         )
 
-      /** The name of the operation or command being executed. <p>
+      /** The name of the operation or command being executed.
+        *
         * @note
         *   <p> It is RECOMMENDED to capture the value as provided by the application without attempting to do any case
         *   normalization. <p> The operation name SHOULD NOT be extracted from `db.query.text`, unless the query format
@@ -1227,7 +1231,7 @@ object DbExperimentalMetrics {
           Requirement.conditionallyRequired(
             "If readily available and if there is a single operation name that describes the database call. The operation name MAY be parsed from the query text, in which case it SHOULD be the single operation name found in the query."
           ),
-          _unknown_stability_type_release_candidate
+          Stability.releaseCandidate
         )
 
       val specs: List[AttributeSpec[_]] =
@@ -1251,7 +1255,8 @@ object DbExperimentalMetrics {
 
   }
 
-  /** Duration of database client operations. <p>
+  /** Duration of database client operations.
+    *
     * @note
     *   <p> Batch operations SHOULD be recorded as a single operation.
     */
@@ -1260,12 +1265,13 @@ object DbExperimentalMetrics {
     val name: String = "db.client.operation.duration"
     val description: String = "Duration of database client operations."
     val unit: String = "s"
-    val stability: Stability = _unknown_stability_type_release_candidate
+    val stability: Stability = Stability.releaseCandidate
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
-      /** The name of a collection (table, container) within the database. <p>
+      /** The name of a collection (table, container) within the database.
+        *
         * @note
         *   <p> It is RECOMMENDED to capture the value as provided by the application without attempting to do any case
         *   normalization. <p> The collection name SHOULD NOT be extracted from `db.query.text`, unless the query format
@@ -1282,10 +1288,11 @@ object DbExperimentalMetrics {
           Requirement.conditionallyRequired(
             "If readily available and if a database call is performed on a single collection. The collection name MAY be parsed from the query text, in which case it SHOULD be the single collection name in the query."
           ),
-          _unknown_stability_type_release_candidate
+          Stability.releaseCandidate
         )
 
-      /** The name of the database, fully qualified within the server address and port. <p>
+      /** The name of the database, fully qualified within the server address and port.
+        *
         * @note
         *   <p> If a database system has multiple namespace components, they SHOULD be concatenated (potentially using
         *   database system specific conventions) from most general to most specific namespace component, and more
@@ -1302,10 +1309,11 @@ object DbExperimentalMetrics {
             "test.users",
           ),
           Requirement.conditionallyRequired("If available."),
-          _unknown_stability_type_release_candidate
+          Stability.releaseCandidate
         )
 
-      /** The name of the operation or command being executed. <p>
+      /** The name of the operation or command being executed.
+        *
         * @note
         *   <p> It is RECOMMENDED to capture the value as provided by the application without attempting to do any case
         *   normalization. <p> The operation name SHOULD NOT be extracted from `db.query.text`, unless the query format
@@ -1325,10 +1333,11 @@ object DbExperimentalMetrics {
           Requirement.conditionallyRequired(
             "If readily available and if there is a single operation name that describes the database call. The operation name MAY be parsed from the query text, in which case it SHOULD be the single operation name found in the query."
           ),
-          _unknown_stability_type_release_candidate
+          Stability.releaseCandidate
         )
 
-      /** Low cardinality representation of a database query text. <p>
+      /** Low cardinality representation of a database query text.
+        *
         * @note
         *   <p> `db.query.summary` provides static summary of the query text. It describes a class of database queries
         *   and is useful as a grouping key, especially when analyzing telemetry for database calls involving complex
@@ -1346,10 +1355,11 @@ object DbExperimentalMetrics {
             "get user by id",
           ),
           Requirement.recommended("if readily available or if instrumentation supports query summarization."),
-          _unknown_stability_type_release_candidate
+          Stability.releaseCandidate
         )
 
-      /** The database query being executed. <p>
+      /** The database query being executed.
+        *
         * @note
         *   <p> For sanitization see <a
         *   href="../../docs/database/database-spans.md#sanitization-of-dbquerytext">Sanitization of
@@ -1368,10 +1378,11 @@ object DbExperimentalMetrics {
             "SET mykey ?",
           ),
           Requirement.optIn,
-          _unknown_stability_type_release_candidate
+          Stability.releaseCandidate
         )
 
-      /** Database response status code. <p>
+      /** Database response status code.
+        *
         * @note
         *   <p> The status code returned by the database. Usually it represents an error code, but may also represent
         *   partial success, warning, or differentiate between various types of successful outcomes. Semantic
@@ -1388,10 +1399,11 @@ object DbExperimentalMetrics {
             "404",
           ),
           Requirement.conditionallyRequired("If the operation failed and status code is available."),
-          _unknown_stability_type_release_candidate
+          Stability.releaseCandidate
         )
 
-      /** The database management system (DBMS) product as identified by the client instrumentation. <p>
+      /** The database management system (DBMS) product as identified by the client instrumentation.
+        *
         * @note
         *   <p> The actual DBMS may differ from the one identified by the client. For example, when using PostgreSQL
         *   client libraries to connect to a CockroachDB, the `db.system.name` is set to `postgresql` based on the
@@ -1403,10 +1415,11 @@ object DbExperimentalMetrics {
           List(
           ),
           Requirement.required,
-          _unknown_stability_type_release_candidate
+          Stability.releaseCandidate
         )
 
-      /** Describes a class of error the operation ended with. <p>
+      /** Describes a class of error the operation ended with.
+        *
         * @note
         *   <p> The `error.type` SHOULD match the `db.response.status_code` returned by the database or the client
         *   library, or the canonical name of exception that occurred. When using canonical exception type name,
@@ -1427,7 +1440,8 @@ object DbExperimentalMetrics {
           Stability.stable
         )
 
-      /** Peer address of the database node where the operation was performed. <p>
+      /** Peer address of the database node where the operation was performed.
+        *
         * @note
         *   <p> Semantic conventions for individual database systems SHOULD document whether `network.peer.*` attributes
         *   are applicable. Network peer address and port are useful when the application interacts with individual
@@ -1457,7 +1471,8 @@ object DbExperimentalMetrics {
           Stability.stable
         )
 
-      /** Name of the database host. <p>
+      /** Name of the database host.
+        *
         * @note
         *   <p> When observed from the client side, and when communicating through an intermediary, `server.address`
         *   SHOULD represent the server address behind any intermediaries, for example proxies, if it's available.
@@ -1474,7 +1489,8 @@ object DbExperimentalMetrics {
           Stability.stable
         )
 
-      /** Server port number. <p>
+      /** Server port number.
+        *
         * @note
         *   <p> When observed from the client side, and when communicating through an intermediary, `server.port` SHOULD
         *   represent the server port behind any intermediaries, for example proxies, if it's available.
@@ -1532,7 +1548,8 @@ object DbExperimentalMetrics {
 
     object AttributeSpecs {
 
-      /** The name of a collection (table, container) within the database. <p>
+      /** The name of a collection (table, container) within the database.
+        *
         * @note
         *   <p> It is RECOMMENDED to capture the value as provided by the application without attempting to do any case
         *   normalization. <p> The collection name SHOULD NOT be extracted from `db.query.text`, unless the query format
@@ -1549,10 +1566,11 @@ object DbExperimentalMetrics {
           Requirement.conditionallyRequired(
             "If readily available and if a database call is performed on a single collection. The collection name MAY be parsed from the query text, in which case it SHOULD be the single collection name in the query."
           ),
-          _unknown_stability_type_release_candidate
+          Stability.releaseCandidate
         )
 
-      /** The name of the database, fully qualified within the server address and port. <p>
+      /** The name of the database, fully qualified within the server address and port.
+        *
         * @note
         *   <p> If a database system has multiple namespace components, they SHOULD be concatenated (potentially using
         *   database system specific conventions) from most general to most specific namespace component, and more
@@ -1569,10 +1587,11 @@ object DbExperimentalMetrics {
             "test.users",
           ),
           Requirement.conditionallyRequired("If available."),
-          _unknown_stability_type_release_candidate
+          Stability.releaseCandidate
         )
 
-      /** The name of the operation or command being executed. <p>
+      /** The name of the operation or command being executed.
+        *
         * @note
         *   <p> It is RECOMMENDED to capture the value as provided by the application without attempting to do any case
         *   normalization. <p> The operation name SHOULD NOT be extracted from `db.query.text`, unless the query format
@@ -1592,10 +1611,11 @@ object DbExperimentalMetrics {
           Requirement.conditionallyRequired(
             "If readily available and if there is a single operation name that describes the database call. The operation name MAY be parsed from the query text, in which case it SHOULD be the single operation name found in the query."
           ),
-          _unknown_stability_type_release_candidate
+          Stability.releaseCandidate
         )
 
-      /** Low cardinality representation of a database query text. <p>
+      /** Low cardinality representation of a database query text.
+        *
         * @note
         *   <p> `db.query.summary` provides static summary of the query text. It describes a class of database queries
         *   and is useful as a grouping key, especially when analyzing telemetry for database calls involving complex
@@ -1613,10 +1633,11 @@ object DbExperimentalMetrics {
             "get user by id",
           ),
           Requirement.recommended("if readily available or if instrumentation supports query summarization."),
-          _unknown_stability_type_release_candidate
+          Stability.releaseCandidate
         )
 
-      /** The database query being executed. <p>
+      /** The database query being executed.
+        *
         * @note
         *   <p> For sanitization see <a
         *   href="../../docs/database/database-spans.md#sanitization-of-dbquerytext">Sanitization of
@@ -1635,10 +1656,11 @@ object DbExperimentalMetrics {
             "SET mykey ?",
           ),
           Requirement.optIn,
-          _unknown_stability_type_release_candidate
+          Stability.releaseCandidate
         )
 
-      /** Database response status code. <p>
+      /** Database response status code.
+        *
         * @note
         *   <p> The status code returned by the database. Usually it represents an error code, but may also represent
         *   partial success, warning, or differentiate between various types of successful outcomes. Semantic
@@ -1655,10 +1677,11 @@ object DbExperimentalMetrics {
             "404",
           ),
           Requirement.conditionallyRequired("If the operation failed and status code is available."),
-          _unknown_stability_type_release_candidate
+          Stability.releaseCandidate
         )
 
-      /** The database management system (DBMS) product as identified by the client instrumentation. <p>
+      /** The database management system (DBMS) product as identified by the client instrumentation.
+        *
         * @note
         *   <p> The actual DBMS may differ from the one identified by the client. For example, when using PostgreSQL
         *   client libraries to connect to a CockroachDB, the `db.system.name` is set to `postgresql` based on the
@@ -1670,10 +1693,11 @@ object DbExperimentalMetrics {
           List(
           ),
           Requirement.required,
-          _unknown_stability_type_release_candidate
+          Stability.releaseCandidate
         )
 
-      /** Describes a class of error the operation ended with. <p>
+      /** Describes a class of error the operation ended with.
+        *
         * @note
         *   <p> The `error.type` SHOULD match the `db.response.status_code` returned by the database or the client
         *   library, or the canonical name of exception that occurred. When using canonical exception type name,
@@ -1694,7 +1718,8 @@ object DbExperimentalMetrics {
           Stability.stable
         )
 
-      /** Peer address of the database node where the operation was performed. <p>
+      /** Peer address of the database node where the operation was performed.
+        *
         * @note
         *   <p> Semantic conventions for individual database systems SHOULD document whether `network.peer.*` attributes
         *   are applicable. Network peer address and port are useful when the application interacts with individual
@@ -1724,7 +1749,8 @@ object DbExperimentalMetrics {
           Stability.stable
         )
 
-      /** Name of the database host. <p>
+      /** Name of the database host.
+        *
         * @note
         *   <p> When observed from the client side, and when communicating through an intermediary, `server.address`
         *   SHOULD represent the server address behind any intermediaries, for example proxies, if it's available.
@@ -1741,7 +1767,8 @@ object DbExperimentalMetrics {
           Stability.stable
         )
 
-      /** Server port number. <p>
+      /** Server port number.
+        *
         * @note
         *   <p> When observed from the client side, and when communicating through an intermediary, `server.port` SHOULD
         *   represent the server port behind any intermediaries, for example proxies, if it's available.

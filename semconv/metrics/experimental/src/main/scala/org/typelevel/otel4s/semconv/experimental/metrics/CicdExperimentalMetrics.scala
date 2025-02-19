@@ -164,7 +164,8 @@ object CicdExperimentalMetrics {
           Stability.development
         )
 
-      /** Describes a class of error the operation ended with. <p>
+      /** Describes a class of error the operation ended with.
+        *
         * @note
         *   <p> The `error.type` SHOULD be predictable, and SHOULD have low cardinality. <p> When `error.type` is set to
         *   a type (e.g., an exception type), its canonical class name identifying the type within the artifact SHOULD
@@ -209,7 +210,8 @@ object CicdExperimentalMetrics {
 
   }
 
-  /** The number of errors encountered in pipeline runs (eg. compile, test failures). <p>
+  /** The number of errors encountered in pipeline runs (eg. compile, test failures).
+    *
     * @note
     *   <p> There might be errors in a pipeline run that are non fatal (eg. they are suppressed) or in a parallel stage
     *   multiple stages could have a fatal error. This means that this error count might not be the same as the count of
@@ -240,7 +242,8 @@ object CicdExperimentalMetrics {
           Stability.development
         )
 
-      /** Describes a class of error the operation ended with. <p>
+      /** Describes a class of error the operation ended with.
+        *
         * @note
         *   <p> The `error.type` SHOULD be predictable, and SHOULD have low cardinality. <p> When `error.type` is set to
         *   a type (e.g., an exception type), its canonical class name identifying the type within the artifact SHOULD
@@ -298,7 +301,8 @@ object CicdExperimentalMetrics {
 
   }
 
-  /** The number of errors in a component of the CICD system (eg. controller, scheduler, agent). <p>
+  /** The number of errors in a component of the CICD system (eg. controller, scheduler, agent).
+    *
     * @note
     *   <p> Errors in pipeline run execution are explicitly excluded. Ie a test failure is not counted in this metric.
     */
@@ -327,7 +331,8 @@ object CicdExperimentalMetrics {
           Stability.development
         )
 
-      /** Describes a class of error the operation ended with. <p>
+      /** Describes a class of error the operation ended with.
+        *
         * @note
         *   <p> The `error.type` SHOULD be predictable, and SHOULD have low cardinality. <p> When `error.type` is set to
         *   a type (e.g., an exception type), its canonical class name identifying the type within the artifact SHOULD

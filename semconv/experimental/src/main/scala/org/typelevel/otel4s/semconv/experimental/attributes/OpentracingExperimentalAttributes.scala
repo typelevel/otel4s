@@ -21,7 +21,8 @@ package experimental.attributes
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/attributes/SemanticAttributes.scala.j2
 object OpentracingExperimentalAttributes {
 
-  /** Parent-child Reference type <p>
+  /** Parent-child Reference type
+    *
     * @note
     *   <p> The causal relationship between a child Span and a parent Span.
     */

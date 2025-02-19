@@ -21,7 +21,8 @@ package experimental.attributes
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/attributes/SemanticAttributes.scala.j2
 object TelemetryExperimentalAttributes {
 
-  /** The name of the auto instrumentation agent or distribution, if used. <p>
+  /** The name of the auto instrumentation agent or distribution, if used.
+    *
     * @note
     *   <p> Official auto instrumentation agents and distributions SHOULD set the `telemetry.distro.name` attribute to a
     *   string starting with `opentelemetry-`, e.g. `opentelemetry-java-instrumentation`.
@@ -43,7 +44,8 @@ object TelemetryExperimentalAttributes {
   val TelemetrySdkLanguage: AttributeKey[String] =
     AttributeKey("telemetry.sdk.language")
 
-  /** The name of the telemetry SDK as defined above. <p>
+  /** The name of the telemetry SDK as defined above.
+    *
     * @note
     *   <p> The OpenTelemetry SDK MUST set the `telemetry.sdk.name` attribute to `opentelemetry`. If another SDK, like a
     *   fork or a vendor-provided implementation, is used, this SDK MUST set the `telemetry.sdk.name` attribute to the

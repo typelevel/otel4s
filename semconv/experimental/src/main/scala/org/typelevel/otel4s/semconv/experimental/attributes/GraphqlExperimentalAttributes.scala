@@ -21,7 +21,8 @@ package experimental.attributes
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/attributes/SemanticAttributes.scala.j2
 object GraphqlExperimentalAttributes {
 
-  /** The GraphQL document being executed. <p>
+  /** The GraphQL document being executed.
+    *
     * @note
     *   <p> The value may be sanitized to exclude sensitive information.
     */

@@ -26,7 +26,8 @@ object V8jsExperimentalAttributes {
   val V8jsGcType: AttributeKey[String] =
     AttributeKey("v8js.gc.type")
 
-  /** The name of the space type of heap memory. <p>
+  /** The name of the space type of heap memory.
+    *
     * @note
     *   <p> Value can be retrieved from value `space_name` of <a
     *   href="https://nodejs.org/api/v8.html#v8getheapspacestatistics">`v8.getHeapSpaceStatistics()`</a>

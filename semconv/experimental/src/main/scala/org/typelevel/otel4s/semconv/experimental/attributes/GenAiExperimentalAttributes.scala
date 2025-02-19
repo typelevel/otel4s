@@ -53,7 +53,8 @@ object GenAiExperimentalAttributes {
   val GenAiOpenaiResponseSystemFingerprint: AttributeKey[String] =
     AttributeKey("gen_ai.openai.response.system_fingerprint")
 
-  /** The name of the operation being performed. <p>
+  /** The name of the operation being performed.
+    *
     * @note
     *   <p> If one of the predefined values applies, but specific system uses a different name it's RECOMMENDED to
     *   document it in the semantic conventions for specific GenAI system and use system-specific name in the
@@ -69,7 +70,8 @@ object GenAiExperimentalAttributes {
   val GenAiPrompt: AttributeKey[String] =
     AttributeKey("gen_ai.prompt")
 
-  /** The encoding formats requested in an embeddings operation, if specified. <p>
+  /** The encoding formats requested in an embeddings operation, if specified.
+    *
     * @note
     *   <p> In some GenAI systems the encoding formats are called embedding types. Also, some GenAI systems only accept
     *   a single format per request.
@@ -137,7 +139,8 @@ object GenAiExperimentalAttributes {
   val GenAiResponseModel: AttributeKey[String] =
     AttributeKey("gen_ai.response.model")
 
-  /** The Generative AI product as identified by the client or server instrumentation. <p>
+  /** The Generative AI product as identified by the client or server instrumentation.
+    *
     * @note
     *   <p> The `gen_ai.system` describes a family of GenAI models with specific model identified by
     *   `gen_ai.request.model` and `gen_ai.response.model` attributes. <p> The actual GenAI product may differ from the

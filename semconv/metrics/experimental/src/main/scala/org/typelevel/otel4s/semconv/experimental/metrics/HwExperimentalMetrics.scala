@@ -83,7 +83,8 @@ object HwExperimentalMetrics {
           Stability.development
         )
 
-      /** Type of the component <p>
+      /** Type of the component
+        *
         * @note
         *   <p> Describes the category of the hardware component for which `hw.state` is being reported. For example,
         *   `hw.type=temperature` along with `hw.state=degraded` would indicate that the temperature of the hardware
@@ -144,7 +145,8 @@ object HwExperimentalMetrics {
 
     object AttributeSpecs {
 
-      /** The type of error encountered by the component <p>
+      /** The type of error encountered by the component
+        *
         * @note
         *   <p> The `error.type` SHOULD match the error code reported by the component, the canonical name of the error,
         *   or another low-cardinality error identifier. Instrumentations SHOULD document the list of errors they
@@ -200,7 +202,8 @@ object HwExperimentalMetrics {
           Stability.development
         )
 
-      /** Type of the component <p>
+      /** Type of the component
+        *
         * @note
         *   <p> Describes the category of the hardware component for which `hw.state` is being reported. For example,
         *   `hw.type=temperature` along with `hw.state=degraded` would indicate that the temperature of the hardware
@@ -250,7 +253,8 @@ object HwExperimentalMetrics {
 
   }
 
-  /** Instantaneous power consumed by the component <p>
+  /** Instantaneous power consumed by the component
+    *
     * @note
     *   <p> It is recommended to report `hw.energy` instead of `hw.power` when possible.
     */
@@ -301,7 +305,8 @@ object HwExperimentalMetrics {
           Stability.development
         )
 
-      /** Type of the component <p>
+      /** Type of the component
+        *
         * @note
         *   <p> Describes the category of the hardware component for which `hw.state` is being reported. For example,
         *   `hw.type=temperature` along with `hw.state=degraded` would indicate that the temperature of the hardware
@@ -350,7 +355,8 @@ object HwExperimentalMetrics {
 
   }
 
-  /** Operational status: `1` (true) or `0` (false) for each of the possible states <p>
+  /** Operational status: `1` (true) or `0` (false) for each of the possible states
+    *
     * @note
     *   <p> `hw.status` is currently specified as an <em>UpDownCounter</em> but would ideally be represented using a <a
     *   href="https://github.com/prometheus/OpenMetrics/blob/v1.0.0/specification/OpenMetrics.md#stateset"><em>StateSet</em>
@@ -416,7 +422,8 @@ object HwExperimentalMetrics {
           Stability.development
         )
 
-      /** Type of the component <p>
+      /** Type of the component
+        *
         * @note
         *   <p> Describes the category of the hardware component for which `hw.state` is being reported. For example,
         *   `hw.type=temperature` along with `hw.state=degraded` would indicate that the temperature of the hardware

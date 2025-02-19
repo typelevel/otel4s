@@ -22,7 +22,8 @@ package experimental.attributes
 object OciExperimentalAttributes {
 
   /** The digest of the OCI image manifest. For container images specifically is the digest by which the container image
-    * is known. <p>
+    * is known.
+    *
     * @note
     *   <p> Follows <a href="https://github.com/opencontainers/image-spec/blob/main/manifest.md">OCI Image Manifest
     *   Specification</a>, and specifically the <a

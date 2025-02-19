@@ -35,7 +35,8 @@ object ContainerExperimentalMetrics {
     Uptime,
   )
 
-  /** Total CPU time consumed <p>
+  /** Total CPU time consumed
+    *
     * @note
     *   <p> Total CPU time consumed by the specific container on all available CPU cores
     */
@@ -50,7 +51,8 @@ object ContainerExperimentalMetrics {
     object AttributeSpecs {
 
       /** The CPU mode for this data point. A container's CPU metric SHOULD be characterized <em>either</em> by data
-        * points with no `mode` labels, <em>or only</em> data points with `mode` labels. <p>
+        * points with no `mode` labels, <em>or only</em> data points with `mode` labels.
+        *
         * @note
         *   <p> Following states SHOULD be used: `user`, `system`, `kernel`
         */
@@ -98,7 +100,8 @@ object ContainerExperimentalMetrics {
 
   }
 
-  /** Container's CPU usage, measured in cpus. Range from 0 to the number of allocatable CPUs <p>
+  /** Container's CPU usage, measured in cpus. Range from 0 to the number of allocatable CPUs
+    *
     * @note
     *   <p> CPU usage of the specific container on all available CPU cores, averaged over the sample window
     */
@@ -113,7 +116,8 @@ object ContainerExperimentalMetrics {
     object AttributeSpecs {
 
       /** The CPU mode for this data point. A container's CPU metric SHOULD be characterized <em>either</em> by data
-        * points with no `mode` labels, <em>or only</em> data points with `mode` labels. <p>
+        * points with no `mode` labels, <em>or only</em> data points with `mode` labels.
+        *
         * @note
         *   <p> Following states SHOULD be used: `user`, `system`, `kernel`
         */
@@ -161,7 +165,8 @@ object ContainerExperimentalMetrics {
 
   }
 
-  /** Disk bytes for the container. <p>
+  /** Disk bytes for the container.
+    *
     * @note
     *   <p> The total number of bytes read/written successfully (aggregated from all disks).
     */
@@ -231,7 +236,8 @@ object ContainerExperimentalMetrics {
 
   }
 
-  /** Memory usage of the container. <p>
+  /** Memory usage of the container.
+    *
     * @note
     *   <p> Memory usage of the container.
     */
@@ -268,7 +274,8 @@ object ContainerExperimentalMetrics {
 
   }
 
-  /** Network bytes for the container. <p>
+  /** Network bytes for the container.
+    *
     * @note
     *   <p> The number of bytes sent/received on all network interfaces by the container.
     */
@@ -339,7 +346,8 @@ object ContainerExperimentalMetrics {
 
   }
 
-  /** The time the container has been running <p>
+  /** The time the container has been running
+    *
     * @note
     *   <p> Instrumentations SHOULD use a gauge with type `double` and measure uptime in seconds as a floating point
     *   number with the highest precision available. The actual accuracy would depend on the instrumentation and

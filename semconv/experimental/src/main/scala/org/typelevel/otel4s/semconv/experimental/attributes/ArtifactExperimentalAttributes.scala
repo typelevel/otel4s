@@ -30,8 +30,9 @@ object ArtifactExperimentalAttributes {
     AttributeKey("artifact.attestation.filename")
 
   /** The full <a href="https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.186-5.pdf">hash value (see glossary)</a>, of
-    * the built attestation. Some envelopes in the software attestation space also refer to this as the <a
-    * href="https://github.com/in-toto/attestation/blob/main/spec/README.md#in-toto-attestation-framework-spec">digest</a>.
+    * the built attestation. Some envelopes in the <a
+    * href="https://github.com/in-toto/attestation/tree/main/spec">software attestation space</a> also refer to this as
+    * the <strong>digest</strong>.
     */
   val ArtifactAttestationHash: AttributeKey[String] =
     AttributeKey("artifact.attestation.hash")
@@ -42,7 +43,8 @@ object ArtifactExperimentalAttributes {
     AttributeKey("artifact.attestation.id")
 
   /** The human readable file name of the artifact, typically generated during build and release processes. Often
-    * includes the package name and version in the file name. <p>
+    * includes the package name and version in the file name.
+    *
     * @note
     *   <p> This file name can also act as the <a href="https://slsa.dev/spec/v1.0/terminology#package-model">Package
     *   Name</a> in cases where the package ecosystem maps accordingly. Additionally, the artifact <a
@@ -53,7 +55,8 @@ object ArtifactExperimentalAttributes {
     AttributeKey("artifact.filename")
 
   /** The full <a href="https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.186-5.pdf">hash value (see glossary)</a>, often
-    * found in checksum.txt on a release of the artifact and used to verify package integrity. <p>
+    * found in checksum.txt on a release of the artifact and used to verify package integrity.
+    *
     * @note
     *   <p> The specific algorithm used to create the cryptographic hash value is not defined. In situations where an
     *   artifact has multiple cryptographic hashes, it is up to the implementer to choose which hash value to set here;

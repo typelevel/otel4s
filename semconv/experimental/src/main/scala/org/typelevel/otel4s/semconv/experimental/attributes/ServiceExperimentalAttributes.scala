@@ -21,7 +21,8 @@ package experimental.attributes
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/attributes/SemanticAttributes.scala.j2
 object ServiceExperimentalAttributes {
 
-  /** The string ID of the service instance. <p>
+  /** The string ID of the service instance.
+    *
     * @note
     *   <p> MUST be unique for each instance of the same `service.namespace,service.name` pair (in other words
     *   `service.namespace,service.name,service.instance.id` triplet MUST be globally unique). The ID helps to
@@ -46,7 +47,8 @@ object ServiceExperimentalAttributes {
   val ServiceInstanceId: AttributeKey[String] =
     AttributeKey("service.instance.id")
 
-  /** Logical name of the service. <p>
+  /** Logical name of the service.
+    *
     * @note
     *   <p> MUST be the same for all instances of horizontally scaled services. If the value was not specified, SDKs
     *   MUST fallback to `unknown_service:` concatenated with <a href="process.md">`process.executable.name`</a>, e.g.
@@ -60,7 +62,8 @@ object ServiceExperimentalAttributes {
   val ServiceName: AttributeKey[String] =
     AttributeKey("service.name")
 
-  /** A namespace for `service.name`. <p>
+  /** A namespace for `service.name`.
+    *
     * @note
     *   <p> A string value having a meaning that helps to distinguish a group of services, for example the team name
     *   that owns a group of services. `service.name` is expected to be unique within the same namespace. If

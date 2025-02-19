@@ -41,14 +41,16 @@ object NetworkAttributes {
   val NetworkPeerPort: AttributeKey[Long] =
     AttributeKey("network.peer.port")
 
-  /** <a href="https://wikipedia.org/wiki/Application_layer">OSI application layer</a> or non-OSI equivalent. <p>
+  /** <a href="https://wikipedia.org/wiki/Application_layer">OSI application layer</a> or non-OSI equivalent.
+    *
     * @note
     *   <p> The value SHOULD be normalized to lowercase.
     */
   val NetworkProtocolName: AttributeKey[String] =
     AttributeKey("network.protocol.name")
 
-  /** The actual version of the protocol used for network communication. <p>
+  /** The actual version of the protocol used for network communication.
+    *
     * @note
     *   <p> If protocol version is subject to negotiation (for example using <a
     *   href="https://www.rfc-editor.org/rfc/rfc7301.html">ALPN</a>), this attribute SHOULD be set to the negotiated
@@ -58,7 +60,8 @@ object NetworkAttributes {
     AttributeKey("network.protocol.version")
 
   /** <a href="https://wikipedia.org/wiki/Transport_layer">OSI transport layer</a> or <a
-    * href="https://wikipedia.org/wiki/Inter-process_communication">inter-process communication method</a>. <p>
+    * href="https://wikipedia.org/wiki/Inter-process_communication">inter-process communication method</a>.
+    *
     * @note
     *   <p> The value SHOULD be normalized to lowercase. <p> Consider always setting the transport when setting a port
     *   number, since a port number is ambiguous without knowing the transport. For example different processes could be
@@ -67,7 +70,8 @@ object NetworkAttributes {
   val NetworkTransport: AttributeKey[String] =
     AttributeKey("network.transport")
 
-  /** <a href="https://wikipedia.org/wiki/Network_layer">OSI network layer</a> or non-OSI equivalent. <p>
+  /** <a href="https://wikipedia.org/wiki/Network_layer">OSI network layer</a> or non-OSI equivalent.
+    *
     * @note
     *   <p> The value SHOULD be normalized to lowercase.
     */

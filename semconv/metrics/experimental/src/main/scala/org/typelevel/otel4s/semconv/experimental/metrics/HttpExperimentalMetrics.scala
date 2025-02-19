@@ -53,7 +53,8 @@ object HttpExperimentalMetrics {
 
     object AttributeSpecs {
 
-      /** HTTP request method. <p>
+      /** HTTP request method.
+        *
         * @note
         *   <p> HTTP request method value SHOULD be "known" to the instrumentation. By default, this convention defines
         *   "known" methods as the ones listed in <a
@@ -83,7 +84,7 @@ object HttpExperimentalMetrics {
         )
 
       /** Server domain name if available without reverse DNS lookup; otherwise, IP address or Unix domain socket name.
-        * <p>
+        *
         * @note
         *   <p> When observed from the client side, and when communicating through an intermediary, `server.address`
         *   SHOULD represent the server address behind any intermediaries, for example proxies, if it's available.
@@ -101,7 +102,8 @@ object HttpExperimentalMetrics {
         )
 
       /** Port identifier of the <a href="https://www.rfc-editor.org/rfc/rfc9110.html#name-uri-origin">"URI origin"</a>
-        * HTTP request is sent to. <p>
+        * HTTP request is sent to.
+        *
         * @note
         *   <p> When observed from the client side, and when communicating through an intermediary, `server.port` SHOULD
         *   represent the server port behind any intermediaries, for example proxies, if it's available.
@@ -133,7 +135,8 @@ object HttpExperimentalMetrics {
         )
 
       /** The low-cardinality template of an <a href="https://www.rfc-editor.org/rfc/rfc3986#section-4.2">absolute path
-        * reference</a>. <p>
+        * reference</a>.
+        *
         * @note
         *   <p> The `url.template` MUST have low cardinality. It is not usually available on HTTP clients, but may be
         *   known by the application or specialized HTTP instrumentation.
@@ -210,7 +213,8 @@ object HttpExperimentalMetrics {
           Stability.stable
         )
 
-      /** The actual version of the protocol used for network communication. <p>
+      /** The actual version of the protocol used for network communication.
+        *
         * @note
         *   <p> If protocol version is subject to negotiation (for example using <a
         *   href="https://www.rfc-editor.org/rfc/rfc7301.html">ALPN</a>), this attribute SHOULD be set to the negotiated
@@ -228,7 +232,7 @@ object HttpExperimentalMetrics {
         )
 
       /** Server domain name if available without reverse DNS lookup; otherwise, IP address or Unix domain socket name.
-        * <p>
+        *
         * @note
         *   <p> When observed from the client side, and when communicating through an intermediary, `server.address`
         *   SHOULD represent the server address behind any intermediaries, for example proxies, if it's available.
@@ -246,7 +250,8 @@ object HttpExperimentalMetrics {
         )
 
       /** Port identifier of the <a href="https://www.rfc-editor.org/rfc/rfc9110.html#name-uri-origin">"URI origin"</a>
-        * HTTP request is sent to. <p>
+        * HTTP request is sent to.
+        *
         * @note
         *   <p> When observed from the client side, and when communicating through an intermediary, `server.port` SHOULD
         *   represent the server port behind any intermediaries, for example proxies, if it's available.
@@ -335,7 +340,8 @@ object HttpExperimentalMetrics {
           Stability.stable
         )
 
-      /** The actual version of the protocol used for network communication. <p>
+      /** The actual version of the protocol used for network communication.
+        *
         * @note
         *   <p> If protocol version is subject to negotiation (for example using <a
         *   href="https://www.rfc-editor.org/rfc/rfc7301.html">ALPN</a>), this attribute SHOULD be set to the negotiated
@@ -353,7 +359,7 @@ object HttpExperimentalMetrics {
         )
 
       /** Server domain name if available without reverse DNS lookup; otherwise, IP address or Unix domain socket name.
-        * <p>
+        *
         * @note
         *   <p> When observed from the client side, and when communicating through an intermediary, `server.address`
         *   SHOULD represent the server address behind any intermediaries, for example proxies, if it's available.
@@ -371,7 +377,8 @@ object HttpExperimentalMetrics {
         )
 
       /** Port identifier of the <a href="https://www.rfc-editor.org/rfc/rfc9110.html#name-uri-origin">"URI origin"</a>
-        * HTTP request is sent to. <p>
+        * HTTP request is sent to.
+        *
         * @note
         *   <p> When observed from the client side, and when communicating through an intermediary, `server.port` SHOULD
         *   represent the server port behind any intermediaries, for example proxies, if it's available.
@@ -438,7 +445,8 @@ object HttpExperimentalMetrics {
 
   }
 
-  /** Size of HTTP client request bodies. <p>
+  /** Size of HTTP client request bodies.
+    *
     * @note
     *   <p> The size of the request payload body in bytes. This is the number of bytes transferred excluding headers and
     *   is often, but not always, present as the <a
@@ -455,7 +463,8 @@ object HttpExperimentalMetrics {
 
     object AttributeSpecs {
 
-      /** Describes a class of error the operation ended with. <p>
+      /** Describes a class of error the operation ended with.
+        *
         * @note
         *   <p> If the request fails with an error before response status code was sent or received, `error.type` SHOULD
         *   be set to exception type (its fully-qualified class name, if applicable) or a component-specific low
@@ -482,7 +491,8 @@ object HttpExperimentalMetrics {
           Stability.stable
         )
 
-      /** HTTP request method. <p>
+      /** HTTP request method.
+        *
         * @note
         *   <p> HTTP request method value SHOULD be "known" to the instrumentation. By default, this convention defines
         *   "known" methods as the ones listed in <a
@@ -523,7 +533,8 @@ object HttpExperimentalMetrics {
           Stability.stable
         )
 
-      /** <a href="https://wikipedia.org/wiki/Application_layer">OSI application layer</a> or non-OSI equivalent. <p>
+      /** <a href="https://wikipedia.org/wiki/Application_layer">OSI application layer</a> or non-OSI equivalent.
+        *
         * @note
         *   <p> The value SHOULD be normalized to lowercase.
         */
@@ -538,7 +549,8 @@ object HttpExperimentalMetrics {
           Stability.stable
         )
 
-      /** The actual version of the protocol used for network communication. <p>
+      /** The actual version of the protocol used for network communication.
+        *
         * @note
         *   <p> If protocol version is subject to negotiation (for example using <a
         *   href="https://www.rfc-editor.org/rfc/rfc7301.html">ALPN</a>), this attribute SHOULD be set to the negotiated
@@ -558,7 +570,8 @@ object HttpExperimentalMetrics {
         )
 
       /** Host identifier of the <a href="https://www.rfc-editor.org/rfc/rfc9110.html#name-uri-origin">"URI origin"</a>
-        * HTTP request is sent to. <p>
+        * HTTP request is sent to.
+        *
         * @note
         *   <p> If an HTTP client request is explicitly made to an IP address, e.g. `http://x.x.x.x:8080`, then
         *   `server.address` SHOULD be the IP address `x.x.x.x`. A DNS lookup SHOULD NOT be used.
@@ -576,7 +589,8 @@ object HttpExperimentalMetrics {
         )
 
       /** Port identifier of the <a href="https://www.rfc-editor.org/rfc/rfc9110.html#name-uri-origin">"URI origin"</a>
-        * HTTP request is sent to. <p>
+        * HTTP request is sent to.
+        *
         * @note
         *   <p> When observed from the client side, and when communicating through an intermediary, `server.port` SHOULD
         *   represent the server port behind any intermediaries, for example proxies, if it's available.
@@ -608,7 +622,8 @@ object HttpExperimentalMetrics {
         )
 
       /** The low-cardinality template of an <a href="https://www.rfc-editor.org/rfc/rfc3986#section-4.2">absolute path
-        * reference</a>. <p>
+        * reference</a>.
+        *
         * @note
         *   <p> The `url.template` MUST have low cardinality. It is not usually available on HTTP clients, but may be
         *   known by the application or specialized HTTP instrumentation.
@@ -662,7 +677,8 @@ object HttpExperimentalMetrics {
 
     object AttributeSpecs {
 
-      /** Describes a class of error the operation ended with. <p>
+      /** Describes a class of error the operation ended with.
+        *
         * @note
         *   <p> If the request fails with an error before response status code was sent or received, `error.type` SHOULD
         *   be set to exception type (its fully-qualified class name, if applicable) or a component-specific low
@@ -689,7 +705,8 @@ object HttpExperimentalMetrics {
           Stability.stable
         )
 
-      /** HTTP request method. <p>
+      /** HTTP request method.
+        *
         * @note
         *   <p> HTTP request method value SHOULD be "known" to the instrumentation. By default, this convention defines
         *   "known" methods as the ones listed in <a
@@ -730,7 +747,8 @@ object HttpExperimentalMetrics {
           Stability.stable
         )
 
-      /** <a href="https://wikipedia.org/wiki/Application_layer">OSI application layer</a> or non-OSI equivalent. <p>
+      /** <a href="https://wikipedia.org/wiki/Application_layer">OSI application layer</a> or non-OSI equivalent.
+        *
         * @note
         *   <p> The value SHOULD be normalized to lowercase.
         */
@@ -745,7 +763,8 @@ object HttpExperimentalMetrics {
           Stability.stable
         )
 
-      /** The actual version of the protocol used for network communication. <p>
+      /** The actual version of the protocol used for network communication.
+        *
         * @note
         *   <p> If protocol version is subject to negotiation (for example using <a
         *   href="https://www.rfc-editor.org/rfc/rfc7301.html">ALPN</a>), this attribute SHOULD be set to the negotiated
@@ -765,7 +784,8 @@ object HttpExperimentalMetrics {
         )
 
       /** Host identifier of the <a href="https://www.rfc-editor.org/rfc/rfc9110.html#name-uri-origin">"URI origin"</a>
-        * HTTP request is sent to. <p>
+        * HTTP request is sent to.
+        *
         * @note
         *   <p> If an HTTP client request is explicitly made to an IP address, e.g. `http://x.x.x.x:8080`, then
         *   `server.address` SHOULD be the IP address `x.x.x.x`. A DNS lookup SHOULD NOT be used.
@@ -783,7 +803,8 @@ object HttpExperimentalMetrics {
         )
 
       /** Port identifier of the <a href="https://www.rfc-editor.org/rfc/rfc9110.html#name-uri-origin">"URI origin"</a>
-        * HTTP request is sent to. <p>
+        * HTTP request is sent to.
+        *
         * @note
         *   <p> When observed from the client side, and when communicating through an intermediary, `server.port` SHOULD
         *   represent the server port behind any intermediaries, for example proxies, if it's available.
@@ -815,7 +836,8 @@ object HttpExperimentalMetrics {
         )
 
       /** The low-cardinality template of an <a href="https://www.rfc-editor.org/rfc/rfc3986#section-4.2">absolute path
-        * reference</a>. <p>
+        * reference</a>.
+        *
         * @note
         *   <p> The `url.template` MUST have low cardinality. It is not usually available on HTTP clients, but may be
         *   known by the application or specialized HTTP instrumentation.
@@ -856,7 +878,8 @@ object HttpExperimentalMetrics {
 
   }
 
-  /** Size of HTTP client response bodies. <p>
+  /** Size of HTTP client response bodies.
+    *
     * @note
     *   <p> The size of the response payload body in bytes. This is the number of bytes transferred excluding headers
     *   and is often, but not always, present as the <a
@@ -873,7 +896,8 @@ object HttpExperimentalMetrics {
 
     object AttributeSpecs {
 
-      /** Describes a class of error the operation ended with. <p>
+      /** Describes a class of error the operation ended with.
+        *
         * @note
         *   <p> If the request fails with an error before response status code was sent or received, `error.type` SHOULD
         *   be set to exception type (its fully-qualified class name, if applicable) or a component-specific low
@@ -900,7 +924,8 @@ object HttpExperimentalMetrics {
           Stability.stable
         )
 
-      /** HTTP request method. <p>
+      /** HTTP request method.
+        *
         * @note
         *   <p> HTTP request method value SHOULD be "known" to the instrumentation. By default, this convention defines
         *   "known" methods as the ones listed in <a
@@ -941,7 +966,8 @@ object HttpExperimentalMetrics {
           Stability.stable
         )
 
-      /** <a href="https://wikipedia.org/wiki/Application_layer">OSI application layer</a> or non-OSI equivalent. <p>
+      /** <a href="https://wikipedia.org/wiki/Application_layer">OSI application layer</a> or non-OSI equivalent.
+        *
         * @note
         *   <p> The value SHOULD be normalized to lowercase.
         */
@@ -956,7 +982,8 @@ object HttpExperimentalMetrics {
           Stability.stable
         )
 
-      /** The actual version of the protocol used for network communication. <p>
+      /** The actual version of the protocol used for network communication.
+        *
         * @note
         *   <p> If protocol version is subject to negotiation (for example using <a
         *   href="https://www.rfc-editor.org/rfc/rfc7301.html">ALPN</a>), this attribute SHOULD be set to the negotiated
@@ -976,7 +1003,8 @@ object HttpExperimentalMetrics {
         )
 
       /** Host identifier of the <a href="https://www.rfc-editor.org/rfc/rfc9110.html#name-uri-origin">"URI origin"</a>
-        * HTTP request is sent to. <p>
+        * HTTP request is sent to.
+        *
         * @note
         *   <p> If an HTTP client request is explicitly made to an IP address, e.g. `http://x.x.x.x:8080`, then
         *   `server.address` SHOULD be the IP address `x.x.x.x`. A DNS lookup SHOULD NOT be used.
@@ -994,7 +1022,8 @@ object HttpExperimentalMetrics {
         )
 
       /** Port identifier of the <a href="https://www.rfc-editor.org/rfc/rfc9110.html#name-uri-origin">"URI origin"</a>
-        * HTTP request is sent to. <p>
+        * HTTP request is sent to.
+        *
         * @note
         *   <p> When observed from the client side, and when communicating through an intermediary, `server.port` SHOULD
         *   represent the server port behind any intermediaries, for example proxies, if it's available.
@@ -1026,7 +1055,8 @@ object HttpExperimentalMetrics {
         )
 
       /** The low-cardinality template of an <a href="https://www.rfc-editor.org/rfc/rfc3986#section-4.2">absolute path
-        * reference</a>. <p>
+        * reference</a>.
+        *
         * @note
         *   <p> The `url.template` MUST have low cardinality. It is not usually available on HTTP clients, but may be
         *   known by the application or specialized HTTP instrumentation.
@@ -1079,7 +1109,8 @@ object HttpExperimentalMetrics {
 
     object AttributeSpecs {
 
-      /** HTTP request method. <p>
+      /** HTTP request method.
+        *
         * @note
         *   <p> HTTP request method value SHOULD be "known" to the instrumentation. By default, this convention defines
         *   "known" methods as the ones listed in <a
@@ -1108,7 +1139,8 @@ object HttpExperimentalMetrics {
           Stability.stable
         )
 
-      /** Name of the local HTTP server that received the request. <p>
+      /** Name of the local HTTP server that received the request.
+        *
         * @note
         *   <p> See <a href="/docs/http/http-spans.md#setting-serveraddress-and-serverport-attributes">Setting
         *   `server.address` and `server.port` attributes</a>. <blockquote> <strong>Warning</strong> Since this
@@ -1127,7 +1159,8 @@ object HttpExperimentalMetrics {
           Stability.stable
         )
 
-      /** Port of the local HTTP server that received the request. <p>
+      /** Port of the local HTTP server that received the request.
+        *
         * @note
         *   <p> See <a href="/docs/http/http-spans.md#setting-serveraddress-and-serverport-attributes">Setting
         *   `server.address` and `server.port` attributes</a>. <blockquote> <strong>Warning</strong> Since this
@@ -1194,7 +1227,8 @@ object HttpExperimentalMetrics {
 
   }
 
-  /** Size of HTTP server request bodies. <p>
+  /** Size of HTTP server request bodies.
+    *
     * @note
     *   <p> The size of the request payload body in bytes. This is the number of bytes transferred excluding headers and
     *   is often, but not always, present as the <a
@@ -1211,7 +1245,8 @@ object HttpExperimentalMetrics {
 
     object AttributeSpecs {
 
-      /** Describes a class of error the operation ended with. <p>
+      /** Describes a class of error the operation ended with.
+        *
         * @note
         *   <p> If the request fails with an error before response status code was sent or received, `error.type` SHOULD
         *   be set to exception type (its fully-qualified class name, if applicable) or a component-specific low
@@ -1238,7 +1273,8 @@ object HttpExperimentalMetrics {
           Stability.stable
         )
 
-      /** HTTP request method. <p>
+      /** HTTP request method.
+        *
         * @note
         *   <p> HTTP request method value SHOULD be "known" to the instrumentation. By default, this convention defines
         *   "known" methods as the ones listed in <a
@@ -1279,7 +1315,8 @@ object HttpExperimentalMetrics {
           Stability.stable
         )
 
-      /** The matched route, that is, the path template in the format used by the respective server framework. <p>
+      /** The matched route, that is, the path template in the format used by the respective server framework.
+        *
         * @note
         *   <p> MUST NOT be populated when this is not supported by the HTTP server framework as the route attribute
         *   should have low-cardinality and the URI path can NOT substitute it. SHOULD include the <a
@@ -1296,7 +1333,8 @@ object HttpExperimentalMetrics {
           Stability.stable
         )
 
-      /** <a href="https://wikipedia.org/wiki/Application_layer">OSI application layer</a> or non-OSI equivalent. <p>
+      /** <a href="https://wikipedia.org/wiki/Application_layer">OSI application layer</a> or non-OSI equivalent.
+        *
         * @note
         *   <p> The value SHOULD be normalized to lowercase.
         */
@@ -1311,7 +1349,8 @@ object HttpExperimentalMetrics {
           Stability.stable
         )
 
-      /** The actual version of the protocol used for network communication. <p>
+      /** The actual version of the protocol used for network communication.
+        *
         * @note
         *   <p> If protocol version is subject to negotiation (for example using <a
         *   href="https://www.rfc-editor.org/rfc/rfc7301.html">ALPN</a>), this attribute SHOULD be set to the negotiated
@@ -1330,7 +1369,8 @@ object HttpExperimentalMetrics {
           Stability.stable
         )
 
-      /** Name of the local HTTP server that received the request. <p>
+      /** Name of the local HTTP server that received the request.
+        *
         * @note
         *   <p> See <a href="/docs/http/http-spans.md#setting-serveraddress-and-serverport-attributes">Setting
         *   `server.address` and `server.port` attributes</a>. <blockquote> <strong>Warning</strong> Since this
@@ -1349,7 +1389,8 @@ object HttpExperimentalMetrics {
           Stability.stable
         )
 
-      /** Port of the local HTTP server that received the request. <p>
+      /** Port of the local HTTP server that received the request.
+        *
         * @note
         *   <p> See <a href="/docs/http/http-spans.md#setting-serveraddress-and-serverport-attributes">Setting
         *   `server.address` and `server.port` attributes</a>. <blockquote> <strong>Warning</strong> Since this
@@ -1369,7 +1410,8 @@ object HttpExperimentalMetrics {
         )
 
       /** The <a href="https://www.rfc-editor.org/rfc/rfc3986#section-3.1">URI scheme</a> component identifying the used
-        * protocol. <p>
+        * protocol.
+        *
         * @note
         *   <p> The scheme of the original client request, if known (e.g. from <a
         *   href="https://developer.mozilla.org/docs/Web/HTTP/Headers/Forwarded#proto">Forwarded#proto</a>, <a
@@ -1387,7 +1429,8 @@ object HttpExperimentalMetrics {
           Stability.stable
         )
 
-      /** Specifies the category of synthetic traffic, such as tests or bots. <p>
+      /** Specifies the category of synthetic traffic, such as tests or bots.
+        *
         * @note
         *   <p> This attribute MAY be derived from the contents of the `user_agent.original` attribute. Components that
         *   populate the attribute are responsible for determining what they consider to be synthetic bot or test
@@ -1442,7 +1485,8 @@ object HttpExperimentalMetrics {
 
     object AttributeSpecs {
 
-      /** Describes a class of error the operation ended with. <p>
+      /** Describes a class of error the operation ended with.
+        *
         * @note
         *   <p> If the request fails with an error before response status code was sent or received, `error.type` SHOULD
         *   be set to exception type (its fully-qualified class name, if applicable) or a component-specific low
@@ -1469,7 +1513,8 @@ object HttpExperimentalMetrics {
           Stability.stable
         )
 
-      /** HTTP request method. <p>
+      /** HTTP request method.
+        *
         * @note
         *   <p> HTTP request method value SHOULD be "known" to the instrumentation. By default, this convention defines
         *   "known" methods as the ones listed in <a
@@ -1510,7 +1555,8 @@ object HttpExperimentalMetrics {
           Stability.stable
         )
 
-      /** The matched route, that is, the path template in the format used by the respective server framework. <p>
+      /** The matched route, that is, the path template in the format used by the respective server framework.
+        *
         * @note
         *   <p> MUST NOT be populated when this is not supported by the HTTP server framework as the route attribute
         *   should have low-cardinality and the URI path can NOT substitute it. SHOULD include the <a
@@ -1527,7 +1573,8 @@ object HttpExperimentalMetrics {
           Stability.stable
         )
 
-      /** <a href="https://wikipedia.org/wiki/Application_layer">OSI application layer</a> or non-OSI equivalent. <p>
+      /** <a href="https://wikipedia.org/wiki/Application_layer">OSI application layer</a> or non-OSI equivalent.
+        *
         * @note
         *   <p> The value SHOULD be normalized to lowercase.
         */
@@ -1542,7 +1589,8 @@ object HttpExperimentalMetrics {
           Stability.stable
         )
 
-      /** The actual version of the protocol used for network communication. <p>
+      /** The actual version of the protocol used for network communication.
+        *
         * @note
         *   <p> If protocol version is subject to negotiation (for example using <a
         *   href="https://www.rfc-editor.org/rfc/rfc7301.html">ALPN</a>), this attribute SHOULD be set to the negotiated
@@ -1561,7 +1609,8 @@ object HttpExperimentalMetrics {
           Stability.stable
         )
 
-      /** Name of the local HTTP server that received the request. <p>
+      /** Name of the local HTTP server that received the request.
+        *
         * @note
         *   <p> See <a href="/docs/http/http-spans.md#setting-serveraddress-and-serverport-attributes">Setting
         *   `server.address` and `server.port` attributes</a>. <blockquote> <strong>Warning</strong> Since this
@@ -1580,7 +1629,8 @@ object HttpExperimentalMetrics {
           Stability.stable
         )
 
-      /** Port of the local HTTP server that received the request. <p>
+      /** Port of the local HTTP server that received the request.
+        *
         * @note
         *   <p> See <a href="/docs/http/http-spans.md#setting-serveraddress-and-serverport-attributes">Setting
         *   `server.address` and `server.port` attributes</a>. <blockquote> <strong>Warning</strong> Since this
@@ -1600,7 +1650,8 @@ object HttpExperimentalMetrics {
         )
 
       /** The <a href="https://www.rfc-editor.org/rfc/rfc3986#section-3.1">URI scheme</a> component identifying the used
-        * protocol. <p>
+        * protocol.
+        *
         * @note
         *   <p> The scheme of the original client request, if known (e.g. from <a
         *   href="https://developer.mozilla.org/docs/Web/HTTP/Headers/Forwarded#proto">Forwarded#proto</a>, <a
@@ -1618,7 +1669,8 @@ object HttpExperimentalMetrics {
           Stability.stable
         )
 
-      /** Specifies the category of synthetic traffic, such as tests or bots. <p>
+      /** Specifies the category of synthetic traffic, such as tests or bots.
+        *
         * @note
         *   <p> This attribute MAY be derived from the contents of the `user_agent.original` attribute. Components that
         *   populate the attribute are responsible for determining what they consider to be synthetic bot or test
@@ -1660,7 +1712,8 @@ object HttpExperimentalMetrics {
 
   }
 
-  /** Size of HTTP server response bodies. <p>
+  /** Size of HTTP server response bodies.
+    *
     * @note
     *   <p> The size of the response payload body in bytes. This is the number of bytes transferred excluding headers
     *   and is often, but not always, present as the <a
@@ -1677,7 +1730,8 @@ object HttpExperimentalMetrics {
 
     object AttributeSpecs {
 
-      /** Describes a class of error the operation ended with. <p>
+      /** Describes a class of error the operation ended with.
+        *
         * @note
         *   <p> If the request fails with an error before response status code was sent or received, `error.type` SHOULD
         *   be set to exception type (its fully-qualified class name, if applicable) or a component-specific low
@@ -1704,7 +1758,8 @@ object HttpExperimentalMetrics {
           Stability.stable
         )
 
-      /** HTTP request method. <p>
+      /** HTTP request method.
+        *
         * @note
         *   <p> HTTP request method value SHOULD be "known" to the instrumentation. By default, this convention defines
         *   "known" methods as the ones listed in <a
@@ -1745,7 +1800,8 @@ object HttpExperimentalMetrics {
           Stability.stable
         )
 
-      /** The matched route, that is, the path template in the format used by the respective server framework. <p>
+      /** The matched route, that is, the path template in the format used by the respective server framework.
+        *
         * @note
         *   <p> MUST NOT be populated when this is not supported by the HTTP server framework as the route attribute
         *   should have low-cardinality and the URI path can NOT substitute it. SHOULD include the <a
@@ -1762,7 +1818,8 @@ object HttpExperimentalMetrics {
           Stability.stable
         )
 
-      /** <a href="https://wikipedia.org/wiki/Application_layer">OSI application layer</a> or non-OSI equivalent. <p>
+      /** <a href="https://wikipedia.org/wiki/Application_layer">OSI application layer</a> or non-OSI equivalent.
+        *
         * @note
         *   <p> The value SHOULD be normalized to lowercase.
         */
@@ -1777,7 +1834,8 @@ object HttpExperimentalMetrics {
           Stability.stable
         )
 
-      /** The actual version of the protocol used for network communication. <p>
+      /** The actual version of the protocol used for network communication.
+        *
         * @note
         *   <p> If protocol version is subject to negotiation (for example using <a
         *   href="https://www.rfc-editor.org/rfc/rfc7301.html">ALPN</a>), this attribute SHOULD be set to the negotiated
@@ -1796,7 +1854,8 @@ object HttpExperimentalMetrics {
           Stability.stable
         )
 
-      /** Name of the local HTTP server that received the request. <p>
+      /** Name of the local HTTP server that received the request.
+        *
         * @note
         *   <p> See <a href="/docs/http/http-spans.md#setting-serveraddress-and-serverport-attributes">Setting
         *   `server.address` and `server.port` attributes</a>. <blockquote> <strong>Warning</strong> Since this
@@ -1815,7 +1874,8 @@ object HttpExperimentalMetrics {
           Stability.stable
         )
 
-      /** Port of the local HTTP server that received the request. <p>
+      /** Port of the local HTTP server that received the request.
+        *
         * @note
         *   <p> See <a href="/docs/http/http-spans.md#setting-serveraddress-and-serverport-attributes">Setting
         *   `server.address` and `server.port` attributes</a>. <blockquote> <strong>Warning</strong> Since this
@@ -1835,7 +1895,8 @@ object HttpExperimentalMetrics {
         )
 
       /** The <a href="https://www.rfc-editor.org/rfc/rfc3986#section-3.1">URI scheme</a> component identifying the used
-        * protocol. <p>
+        * protocol.
+        *
         * @note
         *   <p> The scheme of the original client request, if known (e.g. from <a
         *   href="https://developer.mozilla.org/docs/Web/HTTP/Headers/Forwarded#proto">Forwarded#proto</a>, <a
@@ -1853,7 +1914,8 @@ object HttpExperimentalMetrics {
           Stability.stable
         )
 
-      /** Specifies the category of synthetic traffic, such as tests or bots. <p>
+      /** Specifies the category of synthetic traffic, such as tests or bots.
+        *
         * @note
         *   <p> This attribute MAY be derived from the contents of the `user_agent.original` attribute. Components that
         *   populate the attribute are responsible for determining what they consider to be synthetic bot or test

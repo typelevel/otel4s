@@ -21,14 +21,16 @@ package experimental.attributes
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/attributes/SemanticAttributes.scala.j2
 object FileExperimentalAttributes {
 
-  /** Time when the file was last accessed, in ISO 8601 format. <p>
+  /** Time when the file was last accessed, in ISO 8601 format.
+    *
     * @note
     *   <p> This attribute might not be supported by some file systems — NFS, FAT32, in embedded OS, etc.
     */
   val FileAccessed: AttributeKey[String] =
     AttributeKey("file.accessed")
 
-  /** Array of file attributes. <p>
+  /** Array of file attributes.
+    *
     * @note
     *   <p> Attributes names depend on the OS or file system. Here’s a non-exhaustive list of values expected for this
     *   attribute: `archive`, `compressed`, `directory`, `encrypted`, `execute`, `hidden`, `immutable`, `journaled`,
@@ -37,7 +39,8 @@ object FileExperimentalAttributes {
   val FileAttributes: AttributeKey[Seq[String]] =
     AttributeKey("file.attributes")
 
-  /** Time when the file attributes or metadata was last changed, in ISO 8601 format. <p>
+  /** Time when the file attributes or metadata was last changed, in ISO 8601 format.
+    *
     * @note
     *   <p> `file.changed` captures the time when any of the file's properties or attributes (including the content) are
     *   changed, while `file.modified` captures the timestamp when the file content is modified.
@@ -45,7 +48,8 @@ object FileExperimentalAttributes {
   val FileChanged: AttributeKey[String] =
     AttributeKey("file.changed")
 
-  /** Time when the file was created, in ISO 8601 format. <p>
+  /** Time when the file was created, in ISO 8601 format.
+    *
     * @note
     *   <p> This attribute might not be supported by some file systems — NFS, FAT32, in embedded OS, etc.
     */
@@ -57,7 +61,8 @@ object FileExperimentalAttributes {
   val FileDirectory: AttributeKey[String] =
     AttributeKey("file.directory")
 
-  /** File extension, excluding the leading dot. <p>
+  /** File extension, excluding the leading dot.
+    *
     * @note
     *   <p> When the file name has multiple extensions (example.tar.gz), only the last one should be captured ("gz", not
     *   "tar.gz").
@@ -65,7 +70,8 @@ object FileExperimentalAttributes {
   val FileExtension: AttributeKey[String] =
     AttributeKey("file.extension")
 
-  /** Name of the fork. A fork is additional data associated with a filesystem object. <p>
+  /** Name of the fork. A fork is additional data associated with a filesystem object.
+    *
     * @note
     *   <p> On Linux, a resource fork is used to store additional data with a filesystem object. A file always has at
     *   least one fork for the data portion, and additional forks may exist. On NTFS, this is analogous to an Alternate
@@ -128,7 +134,8 @@ object FileExperimentalAttributes {
   val FileSize: AttributeKey[Long] =
     AttributeKey("file.size")
 
-  /** Path to the target of a symbolic link. <p>
+  /** Path to the target of a symbolic link.
+    *
     * @note
     *   <p> This attribute is only applicable to symbolic links.
     */

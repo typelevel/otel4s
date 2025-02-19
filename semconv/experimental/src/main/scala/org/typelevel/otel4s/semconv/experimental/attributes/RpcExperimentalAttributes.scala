@@ -28,7 +28,8 @@ object RpcExperimentalAttributes {
     AttributeKey("rpc.connect_rpc.error_code")
 
   /** Connect request metadata, `<key>` being the normalized Connect Metadata key (lowercase), the value being the
-    * metadata values. <p>
+    * metadata values.
+    *
     * @note
     *   <p> Instrumentations SHOULD require an explicit configuration of which metadata values are to be captured.
     *   Including all request metadata values can be a security risk - explicit configuration helps avoid leaking
@@ -38,7 +39,8 @@ object RpcExperimentalAttributes {
     AttributeKey("rpc.connect_rpc.request.metadata")
 
   /** Connect response metadata, `<key>` being the normalized Connect Metadata key (lowercase), the value being the
-    * metadata values. <p>
+    * metadata values.
+    *
     * @note
     *   <p> Instrumentations SHOULD require an explicit configuration of which metadata values are to be captured.
     *   Including all response metadata values can be a security risk - explicit configuration helps avoid leaking
@@ -48,7 +50,8 @@ object RpcExperimentalAttributes {
     AttributeKey("rpc.connect_rpc.response.metadata")
 
   /** gRPC request metadata, `<key>` being the normalized gRPC Metadata key (lowercase), the value being the metadata
-    * values. <p>
+    * values.
+    *
     * @note
     *   <p> Instrumentations SHOULD require an explicit configuration of which metadata values are to be captured.
     *   Including all request metadata values can be a security risk - explicit configuration helps avoid leaking
@@ -58,7 +61,8 @@ object RpcExperimentalAttributes {
     AttributeKey("rpc.grpc.request.metadata")
 
   /** gRPC response metadata, `<key>` being the normalized gRPC Metadata key (lowercase), the value being the metadata
-    * values. <p>
+    * values.
+    *
     * @note
     *   <p> Instrumentations SHOULD require an explicit configuration of which metadata values are to be captured.
     *   Including all response metadata values can be a security risk - explicit configuration helps avoid leaking
@@ -102,7 +106,7 @@ object RpcExperimentalAttributes {
     AttributeKey("rpc.message.compressed_size")
 
   /** MUST be calculated as two different counters starting from `1` one for sent messages and one for received message.
-    * <p>
+    *
     * @note
     *   <p> This way we guarantee that the values will be consistent between different implementations.
     */
@@ -119,16 +123,18 @@ object RpcExperimentalAttributes {
   val RpcMessageUncompressedSize: AttributeKey[Long] =
     AttributeKey("rpc.message.uncompressed_size")
 
-  /** The name of the (logical) method being called, must be equal to the $$method part in the span name. <p>
+  /** The name of the (logical) method being called, must be equal to the $$method part in the span name.
+    *
     * @note
     *   <p> This is the logical name of the method from the RPC interface perspective, which can be different from the
-    *   name of any implementing method/function. The `code.function` attribute may be used to store the latter (e.g.,
-    *   method actually executing the call on the server side, RPC client stub method on the client side).
+    *   name of any implementing method/function. The `code.function.name` attribute may be used to store the latter
+    *   (e.g., method actually executing the call on the server side, RPC client stub method on the client side).
     */
   val RpcMethod: AttributeKey[String] =
     AttributeKey("rpc.method")
 
-  /** The full (logical) name of the service being called, including its package name, if applicable. <p>
+  /** The full (logical) name of the service being called, including its package name, if applicable.
+    *
     * @note
     *   <p> This is the logical name of the service from the RPC interface perspective, which can be different from the
     *   name of any implementing class. The `code.namespace` attribute may be used to store the latter (despite the

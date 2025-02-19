@@ -26,7 +26,7 @@
 
 package org.typelevel.otel4s
 package semconv
-{%- if params.experimental == true %}
+{%- if params.stable_only == false %}
 package experimental.attributes
 {%- else %}
 package attributes
@@ -35,11 +35,11 @@ package attributes
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/attributes/SemanticAttributes.scala.j2
 object {{ object_name }} {
 
-  {% for attribute in ctx.attributes | rejectattr("name", "in", params.excluded_attributes) %}{% if params.experimental == true or attribute is stable %}
+  {% for attribute in ctx.attributes | rejectattr("name", "in", params.excluded_attributes) %}{% if params.stable_only == false or attribute is stable %}
   {{ [attribute.brief, concat_if("\n\n@note\n\n", attribute.note)] | comment(indent=2) | replace('$', "$$") }}
   {%- if attribute is deprecated %}
-  @deprecated("{{ attribute.deprecated | replace('"', "'") | trim }}", "")
-  {%- elif params.experimental == true and attribute is stable %}
+  @deprecated("{{ attribute.deprecated.note | replace('"', "'") | trim }}", "")
+  {%- elif params.stable_only == false and attribute is stable %}
   @deprecated(
     "use `{{ stable_ref(attribute) }}` instead.",
     ""
@@ -49,13 +49,13 @@ object {{ object_name }} {
     AttributeKey("{{attribute.name}}")
   {% endif %}{% endfor %}
 
-  {% for attribute in ctx.attributes %}{% if attribute is enum and (params.experimental == true or attribute is stable) %}
+  {% for attribute in ctx.attributes %}{% if attribute is enum and (params.stable_only == false or attribute is stable) %}
   /**
     * Values for [[{{ attribute.name | pascal_case }}]].
     */
   {%- if attribute is deprecated %}
-  @deprecated("{{ attribute.deprecated | replace('"', "'") | trim }}", "")
-  {%- elif params.experimental == true and attribute is stable %}
+  @deprecated("{{ attribute.deprecated.note | replace('"', "'") | trim }}", "")
+  {%- elif params.stable_only == false and attribute is stable %}
   @deprecated(
     "use `{{ stable_ref(attribute) }}` instead.",
     ""
@@ -63,7 +63,7 @@ object {{ object_name }} {
   {%- endif %}
   {%- set class_name = (attribute.name | pascal_case) ~ "Value" %}
   abstract class {{ class_name }}(val value: {{ to_scala_key_type(attribute) }})
-  {%- if (attribute is deprecated) or (params.experimental == true and attribute is stable) %}
+  {%- if (attribute is deprecated) or (params.stable_only == false and attribute is stable) %}
   @annotation.nowarn("cat=deprecation")
   {%- endif  %}
   object {{ class_name }} {

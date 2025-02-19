@@ -52,7 +52,8 @@ object HostExperimentalAttributes {
   val HostCpuStepping: AttributeKey[String] =
     AttributeKey("host.cpu.stepping")
 
-  /** Processor manufacturer identifier. A maximum 12-character string. <p>
+  /** Processor manufacturer identifier. A maximum 12-character string.
+    *
     * @note
     *   <p> <a href="https://wiki.osdev.org/CPUID">CPUID</a> command returns the vendor ID string in EBX, EDX and ECX
     *   registers. Writing these to memory in this order results in a 12-character string.
@@ -83,7 +84,8 @@ object HostExperimentalAttributes {
   val HostImageVersion: AttributeKey[String] =
     AttributeKey("host.image.version")
 
-  /** Available IP addresses of the host, excluding loopback interfaces. <p>
+  /** Available IP addresses of the host, excluding loopback interfaces.
+    *
     * @note
     *   <p> IPv4 Addresses MUST be specified in dotted-quad notation. IPv6 addresses MUST be specified in the <a
     *   href="https://www.rfc-editor.org/rfc/rfc5952.html">RFC 5952</a> format.
@@ -91,7 +93,8 @@ object HostExperimentalAttributes {
   val HostIp: AttributeKey[Seq[String]] =
     AttributeKey("host.ip")
 
-  /** Available MAC addresses of the host, excluding loopback interfaces. <p>
+  /** Available MAC addresses of the host, excluding loopback interfaces.
+    *
     * @note
     *   <p> MAC Addresses MUST be represented in <a
     *   href="https://standards.ieee.org/wp-content/uploads/import/documents/tutorials/eui.pdf">IEEE RA hexadecimal

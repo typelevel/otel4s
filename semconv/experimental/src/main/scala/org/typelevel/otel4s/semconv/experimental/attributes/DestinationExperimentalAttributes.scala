@@ -22,7 +22,8 @@ package experimental.attributes
 object DestinationExperimentalAttributes {
 
   /** Destination address - domain name if available without reverse DNS lookup; otherwise, IP address or Unix domain
-    * socket name. <p>
+    * socket name.
+    *
     * @note
     *   <p> When observed from the source side, and when communicating through an intermediary, `destination.address`
     *   SHOULD represent the destination address behind any intermediaries, for example proxies, if it's available.

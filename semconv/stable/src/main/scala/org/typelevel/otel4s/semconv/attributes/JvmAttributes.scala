@@ -21,7 +21,8 @@ package attributes
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/attributes/SemanticAttributes.scala.j2
 object JvmAttributes {
 
-  /** Name of the garbage collector action. <p>
+  /** Name of the garbage collector action.
+    *
     * @note
     *   <p> Garbage collector action is generally obtained via <a
     *   href="https://docs.oracle.com/en/java/javase/11/docs/api/jdk.management/com/sun/management/GarbageCollectionNotificationInfo.html#getGcAction()">GarbageCollectionNotificationInfo#getGcAction()</a>.
@@ -29,7 +30,8 @@ object JvmAttributes {
   val JvmGcAction: AttributeKey[String] =
     AttributeKey("jvm.gc.action")
 
-  /** Name of the garbage collector. <p>
+  /** Name of the garbage collector.
+    *
     * @note
     *   <p> Garbage collector name is generally obtained via <a
     *   href="https://docs.oracle.com/en/java/javase/11/docs/api/jdk.management/com/sun/management/GarbageCollectionNotificationInfo.html#getGcName()">GarbageCollectionNotificationInfo#getGcName()</a>.
@@ -37,7 +39,8 @@ object JvmAttributes {
   val JvmGcName: AttributeKey[String] =
     AttributeKey("jvm.gc.name")
 
-  /** Name of the memory pool. <p>
+  /** Name of the memory pool.
+    *
     * @note
     *   <p> Pool names are generally obtained via <a
     *   href="https://docs.oracle.com/en/java/javase/11/docs/api/java.management/java/lang/management/MemoryPoolMXBean.html#getName()">MemoryPoolMXBean#getName()</a>.

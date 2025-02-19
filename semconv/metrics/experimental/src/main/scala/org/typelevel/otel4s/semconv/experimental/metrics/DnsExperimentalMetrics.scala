@@ -42,7 +42,8 @@ object DnsExperimentalMetrics {
 
     object AttributeSpecs {
 
-      /** The name being queried. <p>
+      /** The name being queried.
+        *
         * @note
         *   <p> If the name field contains non-printable characters (below 32 or above 126), those characters should be
         *   represented as escaped base 10 integers (\DDD). Back slashes and quotes should be escaped. Tabs, carriage
@@ -59,7 +60,8 @@ object DnsExperimentalMetrics {
           Stability.development
         )
 
-      /** Describes the error the DNS lookup failed with. <p>
+      /** Describes the error the DNS lookup failed with.
+        *
         * @note
         *   <p> Instrumentations SHOULD use error code such as one of errors reported by `getaddrinfo`(<a
         *   href="https://man7.org/linux/man-pages/man3/getaddrinfo.3.html">Linux or other POSIX systems</a> / <a

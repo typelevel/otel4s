@@ -26,7 +26,8 @@ object K8sExperimentalAttributes {
   val K8sClusterName: AttributeKey[String] =
     AttributeKey("k8s.cluster.name")
 
-  /** A pseudo-ID for the cluster, set to the UID of the `kube-system` namespace. <p>
+  /** A pseudo-ID for the cluster, set to the UID of the `kube-system` namespace.
+    *
     * @note
     *   <p> K8s doesn't have support for obtaining a cluster ID. If this is ever added, we will recommend collecting the
     *   `k8s.cluster.uid` through the official APIs. In the meantime, we are able to use the `uid` of the `kube-system`
@@ -105,6 +106,16 @@ object K8sExperimentalAttributes {
   val K8sNamespaceName: AttributeKey[String] =
     AttributeKey("k8s.namespace.name")
 
+  /** The phase of the K8s namespace.
+    *
+    * @note
+    *   <p> This attribute aligns with the `phase` field of the <a
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#namespacestatus-v1-core">K8s
+    *   NamespaceStatus</a>
+    */
+  val K8sNamespacePhase: AttributeKey[String] =
+    AttributeKey("k8s.namespace.phase")
+
   /** The name of the Node.
     */
   val K8sNodeName: AttributeKey[String] =
@@ -172,34 +183,50 @@ object K8sExperimentalAttributes {
   val K8sVolumeType: AttributeKey[String] =
     AttributeKey("k8s.volume.type")
 
+  /** Values for [[K8sNamespacePhase]].
+    */
+  abstract class K8sNamespacePhaseValue(val value: String)
+  object K8sNamespacePhaseValue {
+
+    /** Active namespace phase as described by <a
+      * href="https://pkg.go.dev/k8s.io/api@v0.31.3/core/v1#NamespacePhase">K8s API</a>
+      */
+    case object Active extends K8sNamespacePhaseValue("active")
+
+    /** Terminating namespace phase as described by <a
+      * href="https://pkg.go.dev/k8s.io/api@v0.31.3/core/v1#NamespacePhase">K8s API</a>
+      */
+    case object Terminating extends K8sNamespacePhaseValue("terminating")
+  }
+
   /** Values for [[K8sVolumeType]].
     */
   abstract class K8sVolumeTypeValue(val value: String)
   object K8sVolumeTypeValue {
 
     /** A <a
-      * href="https://v1-29.docs.kubernetes.io/docs/concepts/storage/volumes/#persistentvolumeclaim">persistentVolumeClaim</a>
+      * href="https://v1-30.docs.kubernetes.io/docs/concepts/storage/volumes/#persistentvolumeclaim">persistentVolumeClaim</a>
       * volume
       */
     case object PersistentVolumeClaim extends K8sVolumeTypeValue("persistentVolumeClaim")
 
-    /** A <a href="https://v1-29.docs.kubernetes.io/docs/concepts/storage/volumes/#configmap">configMap</a> volume
+    /** A <a href="https://v1-30.docs.kubernetes.io/docs/concepts/storage/volumes/#configmap">configMap</a> volume
       */
     case object ConfigMap extends K8sVolumeTypeValue("configMap")
 
-    /** A <a href="https://v1-29.docs.kubernetes.io/docs/concepts/storage/volumes/#downwardapi">downwardAPI</a> volume
+    /** A <a href="https://v1-30.docs.kubernetes.io/docs/concepts/storage/volumes/#downwardapi">downwardAPI</a> volume
       */
     case object DownwardApi extends K8sVolumeTypeValue("downwardAPI")
 
-    /** An <a href="https://v1-29.docs.kubernetes.io/docs/concepts/storage/volumes/#emptydir">emptyDir</a> volume
+    /** An <a href="https://v1-30.docs.kubernetes.io/docs/concepts/storage/volumes/#emptydir">emptyDir</a> volume
       */
     case object EmptyDir extends K8sVolumeTypeValue("emptyDir")
 
-    /** A <a href="https://v1-29.docs.kubernetes.io/docs/concepts/storage/volumes/#secret">secret</a> volume
+    /** A <a href="https://v1-30.docs.kubernetes.io/docs/concepts/storage/volumes/#secret">secret</a> volume
       */
     case object Secret extends K8sVolumeTypeValue("secret")
 
-    /** A <a href="https://v1-29.docs.kubernetes.io/docs/concepts/storage/volumes/#local">local</a> volume
+    /** A <a href="https://v1-30.docs.kubernetes.io/docs/concepts/storage/volumes/#local">local</a> volume
       */
     case object Local extends K8sVolumeTypeValue("local")
   }

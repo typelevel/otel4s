@@ -41,7 +41,8 @@ object HttpMetrics {
 
     object AttributeSpecs {
 
-      /** Describes a class of error the operation ended with. <p>
+      /** Describes a class of error the operation ended with.
+        *
         * @note
         *   <p> If the request fails with an error before response status code was sent or received, `error.type` SHOULD
         *   be set to exception type (its fully-qualified class name, if applicable) or a component-specific low
@@ -68,7 +69,8 @@ object HttpMetrics {
           Stability.stable
         )
 
-      /** HTTP request method. <p>
+      /** HTTP request method.
+        *
         * @note
         *   <p> HTTP request method value SHOULD be "known" to the instrumentation. By default, this convention defines
         *   "known" methods as the ones listed in <a
@@ -109,7 +111,8 @@ object HttpMetrics {
           Stability.stable
         )
 
-      /** <a href="https://wikipedia.org/wiki/Application_layer">OSI application layer</a> or non-OSI equivalent. <p>
+      /** <a href="https://wikipedia.org/wiki/Application_layer">OSI application layer</a> or non-OSI equivalent.
+        *
         * @note
         *   <p> The value SHOULD be normalized to lowercase.
         */
@@ -124,7 +127,8 @@ object HttpMetrics {
           Stability.stable
         )
 
-      /** The actual version of the protocol used for network communication. <p>
+      /** The actual version of the protocol used for network communication.
+        *
         * @note
         *   <p> If protocol version is subject to negotiation (for example using <a
         *   href="https://www.rfc-editor.org/rfc/rfc7301.html">ALPN</a>), this attribute SHOULD be set to the negotiated
@@ -144,7 +148,8 @@ object HttpMetrics {
         )
 
       /** Host identifier of the <a href="https://www.rfc-editor.org/rfc/rfc9110.html#name-uri-origin">"URI origin"</a>
-        * HTTP request is sent to. <p>
+        * HTTP request is sent to.
+        *
         * @note
         *   <p> If an HTTP client request is explicitly made to an IP address, e.g. `http://x.x.x.x:8080`, then
         *   `server.address` SHOULD be the IP address `x.x.x.x`. A DNS lookup SHOULD NOT be used.
@@ -162,7 +167,8 @@ object HttpMetrics {
         )
 
       /** Port identifier of the <a href="https://www.rfc-editor.org/rfc/rfc9110.html#name-uri-origin">"URI origin"</a>
-        * HTTP request is sent to. <p>
+        * HTTP request is sent to.
+        *
         * @note
         *   <p> When observed from the client side, and when communicating through an intermediary, `server.port` SHOULD
         *   represent the server port behind any intermediaries, for example proxies, if it's available.
@@ -228,7 +234,8 @@ object HttpMetrics {
 
     object AttributeSpecs {
 
-      /** Describes a class of error the operation ended with. <p>
+      /** Describes a class of error the operation ended with.
+        *
         * @note
         *   <p> If the request fails with an error before response status code was sent or received, `error.type` SHOULD
         *   be set to exception type (its fully-qualified class name, if applicable) or a component-specific low
@@ -255,7 +262,8 @@ object HttpMetrics {
           Stability.stable
         )
 
-      /** HTTP request method. <p>
+      /** HTTP request method.
+        *
         * @note
         *   <p> HTTP request method value SHOULD be "known" to the instrumentation. By default, this convention defines
         *   "known" methods as the ones listed in <a
@@ -296,7 +304,8 @@ object HttpMetrics {
           Stability.stable
         )
 
-      /** The matched route, that is, the path template in the format used by the respective server framework. <p>
+      /** The matched route, that is, the path template in the format used by the respective server framework.
+        *
         * @note
         *   <p> MUST NOT be populated when this is not supported by the HTTP server framework as the route attribute
         *   should have low-cardinality and the URI path can NOT substitute it. SHOULD include the <a
@@ -313,7 +322,8 @@ object HttpMetrics {
           Stability.stable
         )
 
-      /** <a href="https://wikipedia.org/wiki/Application_layer">OSI application layer</a> or non-OSI equivalent. <p>
+      /** <a href="https://wikipedia.org/wiki/Application_layer">OSI application layer</a> or non-OSI equivalent.
+        *
         * @note
         *   <p> The value SHOULD be normalized to lowercase.
         */
@@ -328,7 +338,8 @@ object HttpMetrics {
           Stability.stable
         )
 
-      /** The actual version of the protocol used for network communication. <p>
+      /** The actual version of the protocol used for network communication.
+        *
         * @note
         *   <p> If protocol version is subject to negotiation (for example using <a
         *   href="https://www.rfc-editor.org/rfc/rfc7301.html">ALPN</a>), this attribute SHOULD be set to the negotiated
@@ -347,7 +358,8 @@ object HttpMetrics {
           Stability.stable
         )
 
-      /** Name of the local HTTP server that received the request. <p>
+      /** Name of the local HTTP server that received the request.
+        *
         * @note
         *   <p> See <a href="/docs/http/http-spans.md#setting-serveraddress-and-serverport-attributes">Setting
         *   `server.address` and `server.port` attributes</a>. <blockquote> <strong>Warning</strong> Since this
@@ -366,7 +378,8 @@ object HttpMetrics {
           Stability.stable
         )
 
-      /** Port of the local HTTP server that received the request. <p>
+      /** Port of the local HTTP server that received the request.
+        *
         * @note
         *   <p> See <a href="/docs/http/http-spans.md#setting-serveraddress-and-serverport-attributes">Setting
         *   `server.address` and `server.port` attributes</a>. <blockquote> <strong>Warning</strong> Since this
@@ -386,7 +399,8 @@ object HttpMetrics {
         )
 
       /** The <a href="https://www.rfc-editor.org/rfc/rfc3986#section-3.1">URI scheme</a> component identifying the used
-        * protocol. <p>
+        * protocol.
+        *
         * @note
         *   <p> The scheme of the original client request, if known (e.g. from <a
         *   href="https://developer.mozilla.org/docs/Web/HTTP/Headers/Forwarded#proto">Forwarded#proto</a>, <a

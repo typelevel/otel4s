@@ -21,7 +21,8 @@ package attributes
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/attributes/SemanticAttributes.scala.j2
 object ServiceAttributes {
 
-  /** Logical name of the service. <p>
+  /** Logical name of the service.
+    *
     * @note
     *   <p> MUST be the same for all instances of horizontally scaled services. If the value was not specified, SDKs
     *   MUST fallback to `unknown_service:` concatenated with <a href="process.md">`process.executable.name`</a>, e.g.

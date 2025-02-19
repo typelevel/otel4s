@@ -69,6 +69,10 @@ object ProfileExperimentalAttributes {
     /** <a href="https://wikipedia.org/wiki/V8_(JavaScript_engine)">V8JS</a>
       */
     case object V8js extends ProfileFrameTypeValue("v8js")
+
+    /** <a href="https://en.wikipedia.org/wiki/BEAM_(Erlang_virtual_machine)">Erlang</a>
+      */
+    case object Beam extends ProfileFrameTypeValue("beam")
   }
 
 }

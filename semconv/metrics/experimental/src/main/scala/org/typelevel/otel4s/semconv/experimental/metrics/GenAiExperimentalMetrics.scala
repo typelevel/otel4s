@@ -46,7 +46,8 @@ object GenAiExperimentalMetrics {
 
     object AttributeSpecs {
 
-      /** Describes a class of error the operation ended with. <p>
+      /** Describes a class of error the operation ended with.
+        *
         * @note
         *   <p> The `error.type` SHOULD match the error code returned by the Generative AI provider or the client
         *   library, the canonical name of exception that occurred, or another low-cardinality error identifier.
@@ -65,7 +66,8 @@ object GenAiExperimentalMetrics {
           Stability.stable
         )
 
-      /** The name of the operation being performed. <p>
+      /** The name of the operation being performed.
+        *
         * @note
         *   <p> If one of the predefined values applies, but specific system uses a different name it's RECOMMENDED to
         *   document it in the semantic conventions for specific GenAI system and use system-specific name in the
@@ -109,14 +111,16 @@ object GenAiExperimentalMetrics {
           Stability.development
         )
 
-      /** The Generative AI product as identified by the client or server instrumentation. <p>
+      /** The Generative AI product as identified by the client or server instrumentation.
+        *
         * @note
         *   <p> The `gen_ai.system` describes a family of GenAI models with specific model identified by
         *   `gen_ai.request.model` and `gen_ai.response.model` attributes. <p> The actual GenAI product may differ from
-        *   the one identified by the client. For example, when using OpenAI client libraries to communicate with
-        *   Mistral, the `gen_ai.system` is set to `openai` based on the instrumentation's best knowledge. <p> For
-        *   custom model, a custom friendly name SHOULD be used. If none of these options apply, the `gen_ai.system`
-        *   SHOULD be set to `_OTHER`.
+        *   the one identified by the client. Multiple systems, including Azure OpenAI and Gemini, are accessible by
+        *   OpenAI client libraries. In such cases, the `gen_ai.system` is set to `openai` based on the
+        *   instrumentation's best knowledge, instead of the actual system. The `server.address` attribute may help
+        *   identify the actual system in use for `openai`. <p> For custom model, a custom friendly name SHOULD be used.
+        *   If none of these options apply, the `gen_ai.system` SHOULD be set to `_OTHER`.
         */
       val genAiSystem: AttributeSpec[String] =
         AttributeSpec(
@@ -133,7 +137,8 @@ object GenAiExperimentalMetrics {
           Stability.development
         )
 
-      /** GenAI server address. <p>
+      /** GenAI server address.
+        *
         * @note
         *   <p> When observed from the client side, and when communicating through an intermediary, `server.address`
         *   SHOULD represent the server address behind any intermediaries, for example proxies, if it's available.
@@ -150,7 +155,8 @@ object GenAiExperimentalMetrics {
           Stability.stable
         )
 
-      /** GenAI server port. <p>
+      /** GenAI server port.
+        *
         * @note
         *   <p> When observed from the client side, and when communicating through an intermediary, `server.port` SHOULD
         *   represent the server port behind any intermediaries, for example proxies, if it's available.
@@ -201,7 +207,8 @@ object GenAiExperimentalMetrics {
 
     object AttributeSpecs {
 
-      /** The name of the operation being performed. <p>
+      /** The name of the operation being performed.
+        *
         * @note
         *   <p> If one of the predefined values applies, but specific system uses a different name it's RECOMMENDED to
         *   document it in the semantic conventions for specific GenAI system and use system-specific name in the
@@ -245,14 +252,16 @@ object GenAiExperimentalMetrics {
           Stability.development
         )
 
-      /** The Generative AI product as identified by the client or server instrumentation. <p>
+      /** The Generative AI product as identified by the client or server instrumentation.
+        *
         * @note
         *   <p> The `gen_ai.system` describes a family of GenAI models with specific model identified by
         *   `gen_ai.request.model` and `gen_ai.response.model` attributes. <p> The actual GenAI product may differ from
-        *   the one identified by the client. For example, when using OpenAI client libraries to communicate with
-        *   Mistral, the `gen_ai.system` is set to `openai` based on the instrumentation's best knowledge. <p> For
-        *   custom model, a custom friendly name SHOULD be used. If none of these options apply, the `gen_ai.system`
-        *   SHOULD be set to `_OTHER`.
+        *   the one identified by the client. Multiple systems, including Azure OpenAI and Gemini, are accessible by
+        *   OpenAI client libraries. In such cases, the `gen_ai.system` is set to `openai` based on the
+        *   instrumentation's best knowledge, instead of the actual system. The `server.address` attribute may help
+        *   identify the actual system in use for `openai`. <p> For custom model, a custom friendly name SHOULD be used.
+        *   If none of these options apply, the `gen_ai.system` SHOULD be set to `_OTHER`.
         */
       val genAiSystem: AttributeSpec[String] =
         AttributeSpec(
@@ -282,7 +291,8 @@ object GenAiExperimentalMetrics {
           Stability.development
         )
 
-      /** GenAI server address. <p>
+      /** GenAI server address.
+        *
         * @note
         *   <p> When observed from the client side, and when communicating through an intermediary, `server.address`
         *   SHOULD represent the server address behind any intermediaries, for example proxies, if it's available.
@@ -299,7 +309,8 @@ object GenAiExperimentalMetrics {
           Stability.stable
         )
 
-      /** GenAI server port. <p>
+      /** GenAI server port.
+        *
         * @note
         *   <p> When observed from the client side, and when communicating through an intermediary, `server.port` SHOULD
         *   represent the server port behind any intermediaries, for example proxies, if it's available.
@@ -350,7 +361,8 @@ object GenAiExperimentalMetrics {
 
     object AttributeSpecs {
 
-      /** Describes a class of error the operation ended with. <p>
+      /** Describes a class of error the operation ended with.
+        *
         * @note
         *   <p> The `error.type` SHOULD match the error code returned by the Generative AI service, the canonical name
         *   of exception that occurred, or another low-cardinality error identifier. Instrumentations SHOULD document
@@ -369,7 +381,8 @@ object GenAiExperimentalMetrics {
           Stability.stable
         )
 
-      /** The name of the operation being performed. <p>
+      /** The name of the operation being performed.
+        *
         * @note
         *   <p> If one of the predefined values applies, but specific system uses a different name it's RECOMMENDED to
         *   document it in the semantic conventions for specific GenAI system and use system-specific name in the
@@ -413,14 +426,16 @@ object GenAiExperimentalMetrics {
           Stability.development
         )
 
-      /** The Generative AI product as identified by the client or server instrumentation. <p>
+      /** The Generative AI product as identified by the client or server instrumentation.
+        *
         * @note
         *   <p> The `gen_ai.system` describes a family of GenAI models with specific model identified by
         *   `gen_ai.request.model` and `gen_ai.response.model` attributes. <p> The actual GenAI product may differ from
-        *   the one identified by the client. For example, when using OpenAI client libraries to communicate with
-        *   Mistral, the `gen_ai.system` is set to `openai` based on the instrumentation's best knowledge. <p> For
-        *   custom model, a custom friendly name SHOULD be used. If none of these options apply, the `gen_ai.system`
-        *   SHOULD be set to `_OTHER`.
+        *   the one identified by the client. Multiple systems, including Azure OpenAI and Gemini, are accessible by
+        *   OpenAI client libraries. In such cases, the `gen_ai.system` is set to `openai` based on the
+        *   instrumentation's best knowledge, instead of the actual system. The `server.address` attribute may help
+        *   identify the actual system in use for `openai`. <p> For custom model, a custom friendly name SHOULD be used.
+        *   If none of these options apply, the `gen_ai.system` SHOULD be set to `_OTHER`.
         */
       val genAiSystem: AttributeSpec[String] =
         AttributeSpec(
@@ -437,7 +452,8 @@ object GenAiExperimentalMetrics {
           Stability.development
         )
 
-      /** GenAI server address. <p>
+      /** GenAI server address.
+        *
         * @note
         *   <p> When observed from the client side, and when communicating through an intermediary, `server.address`
         *   SHOULD represent the server address behind any intermediaries, for example proxies, if it's available.
@@ -454,7 +470,8 @@ object GenAiExperimentalMetrics {
           Stability.stable
         )
 
-      /** GenAI server port. <p>
+      /** GenAI server port.
+        *
         * @note
         *   <p> When observed from the client side, and when communicating through an intermediary, `server.port` SHOULD
         *   represent the server port behind any intermediaries, for example proxies, if it's available.
@@ -505,7 +522,8 @@ object GenAiExperimentalMetrics {
 
     object AttributeSpecs {
 
-      /** The name of the operation being performed. <p>
+      /** The name of the operation being performed.
+        *
         * @note
         *   <p> If one of the predefined values applies, but specific system uses a different name it's RECOMMENDED to
         *   document it in the semantic conventions for specific GenAI system and use system-specific name in the
@@ -549,14 +567,16 @@ object GenAiExperimentalMetrics {
           Stability.development
         )
 
-      /** The Generative AI product as identified by the client or server instrumentation. <p>
+      /** The Generative AI product as identified by the client or server instrumentation.
+        *
         * @note
         *   <p> The `gen_ai.system` describes a family of GenAI models with specific model identified by
         *   `gen_ai.request.model` and `gen_ai.response.model` attributes. <p> The actual GenAI product may differ from
-        *   the one identified by the client. For example, when using OpenAI client libraries to communicate with
-        *   Mistral, the `gen_ai.system` is set to `openai` based on the instrumentation's best knowledge. <p> For
-        *   custom model, a custom friendly name SHOULD be used. If none of these options apply, the `gen_ai.system`
-        *   SHOULD be set to `_OTHER`.
+        *   the one identified by the client. Multiple systems, including Azure OpenAI and Gemini, are accessible by
+        *   OpenAI client libraries. In such cases, the `gen_ai.system` is set to `openai` based on the
+        *   instrumentation's best knowledge, instead of the actual system. The `server.address` attribute may help
+        *   identify the actual system in use for `openai`. <p> For custom model, a custom friendly name SHOULD be used.
+        *   If none of these options apply, the `gen_ai.system` SHOULD be set to `_OTHER`.
         */
       val genAiSystem: AttributeSpec[String] =
         AttributeSpec(
@@ -573,7 +593,8 @@ object GenAiExperimentalMetrics {
           Stability.development
         )
 
-      /** GenAI server address. <p>
+      /** GenAI server address.
+        *
         * @note
         *   <p> When observed from the client side, and when communicating through an intermediary, `server.address`
         *   SHOULD represent the server address behind any intermediaries, for example proxies, if it's available.
@@ -590,7 +611,8 @@ object GenAiExperimentalMetrics {
           Stability.stable
         )
 
-      /** GenAI server port. <p>
+      /** GenAI server port.
+        *
         * @note
         *   <p> When observed from the client side, and when communicating through an intermediary, `server.port` SHOULD
         *   represent the server port behind any intermediaries, for example proxies, if it's available.
@@ -640,7 +662,8 @@ object GenAiExperimentalMetrics {
 
     object AttributeSpecs {
 
-      /** The name of the operation being performed. <p>
+      /** The name of the operation being performed.
+        *
         * @note
         *   <p> If one of the predefined values applies, but specific system uses a different name it's RECOMMENDED to
         *   document it in the semantic conventions for specific GenAI system and use system-specific name in the
@@ -684,14 +707,16 @@ object GenAiExperimentalMetrics {
           Stability.development
         )
 
-      /** The Generative AI product as identified by the client or server instrumentation. <p>
+      /** The Generative AI product as identified by the client or server instrumentation.
+        *
         * @note
         *   <p> The `gen_ai.system` describes a family of GenAI models with specific model identified by
         *   `gen_ai.request.model` and `gen_ai.response.model` attributes. <p> The actual GenAI product may differ from
-        *   the one identified by the client. For example, when using OpenAI client libraries to communicate with
-        *   Mistral, the `gen_ai.system` is set to `openai` based on the instrumentation's best knowledge. <p> For
-        *   custom model, a custom friendly name SHOULD be used. If none of these options apply, the `gen_ai.system`
-        *   SHOULD be set to `_OTHER`.
+        *   the one identified by the client. Multiple systems, including Azure OpenAI and Gemini, are accessible by
+        *   OpenAI client libraries. In such cases, the `gen_ai.system` is set to `openai` based on the
+        *   instrumentation's best knowledge, instead of the actual system. The `server.address` attribute may help
+        *   identify the actual system in use for `openai`. <p> For custom model, a custom friendly name SHOULD be used.
+        *   If none of these options apply, the `gen_ai.system` SHOULD be set to `_OTHER`.
         */
       val genAiSystem: AttributeSpec[String] =
         AttributeSpec(
@@ -708,7 +733,8 @@ object GenAiExperimentalMetrics {
           Stability.development
         )
 
-      /** GenAI server address. <p>
+      /** GenAI server address.
+        *
         * @note
         *   <p> When observed from the client side, and when communicating through an intermediary, `server.address`
         *   SHOULD represent the server address behind any intermediaries, for example proxies, if it's available.
@@ -725,7 +751,8 @@ object GenAiExperimentalMetrics {
           Stability.stable
         )
 
-      /** GenAI server port. <p>
+      /** GenAI server port.
+        *
         * @note
         *   <p> When observed from the client side, and when communicating through an intermediary, `server.port` SHOULD
         *   represent the server port behind any intermediaries, for example proxies, if it's available.

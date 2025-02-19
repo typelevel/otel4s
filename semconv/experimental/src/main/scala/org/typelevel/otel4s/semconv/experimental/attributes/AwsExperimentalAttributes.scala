@@ -177,15 +177,22 @@ object AwsExperimentalAttributes {
   val AwsEksClusterArn: AttributeKey[String] =
     AttributeKey("aws.eks.cluster.arn")
 
+  /** The AWS extended request ID as returned in the response header `x-amz-id-2`.
+    */
+  val AwsExtendedRequestId: AttributeKey[String] =
+    AttributeKey("aws.extended_request_id")
+
   /** The full invoked ARN as provided on the `Context` passed to the function (`Lambda-Runtime-Invoked-Function-Arn`
-    * header on the `/runtime/invocation/next` applicable). <p>
+    * header on the `/runtime/invocation/next` applicable).
+    *
     * @note
     *   <p> This may be different from `cloud.resource_id` if an alias is involved.
     */
   val AwsLambdaInvokedArn: AttributeKey[String] =
     AttributeKey("aws.lambda.invoked_arn")
 
-  /** The Amazon Resource Name(s) (ARN) of the AWS log group(s). <p>
+  /** The Amazon Resource Name(s) (ARN) of the AWS log group(s).
+    *
     * @note
     *   <p> See the <a
     *   href="https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/iam-access-control-overview-cwl.html#CWL_ARN_Format">log
@@ -194,7 +201,8 @@ object AwsExperimentalAttributes {
   val AwsLogGroupArns: AttributeKey[Seq[String]] =
     AttributeKey("aws.log.group.arns")
 
-  /** The name(s) of the AWS log group(s) an application is writing to. <p>
+  /** The name(s) of the AWS log group(s) an application is writing to.
+    *
     * @note
     *   <p> Multiple log groups must be supported for cases like multi-container applications, where a single
     *   application has sidecar containers, and each write to their own log group.
@@ -202,7 +210,8 @@ object AwsExperimentalAttributes {
   val AwsLogGroupNames: AttributeKey[Seq[String]] =
     AttributeKey("aws.log.group.names")
 
-  /** The ARN(s) of the AWS log stream(s). <p>
+  /** The ARN(s) of the AWS log stream(s).
+    *
     * @note
     *   <p> See the <a
     *   href="https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/iam-access-control-overview-cwl.html#CWL_ARN_Format">log
@@ -217,13 +226,15 @@ object AwsExperimentalAttributes {
   val AwsLogStreamNames: AttributeKey[Seq[String]] =
     AttributeKey("aws.log.stream.names")
 
-  /** The AWS request ID as returned in the response headers `x-amz-request-id` or `x-amz-requestid`.
+  /** The AWS request ID as returned in the response headers `x-amzn-requestid`, `x-amzn-request-id` or
+    * `x-amz-request-id`.
     */
   val AwsRequestId: AttributeKey[String] =
     AttributeKey("aws.request_id")
 
   /** The S3 bucket name the request refers to. Corresponds to the `--bucket` parameter of the <a
-    * href="https://docs.aws.amazon.com/cli/latest/reference/s3api/index.html">S3 API</a> operations. <p>
+    * href="https://docs.aws.amazon.com/cli/latest/reference/s3api/index.html">S3 API</a> operations.
+    *
     * @note
     *   <p> The `bucket` attribute is applicable to all S3 operations that reference a bucket, i.e. that require the
     *   bucket name as a mandatory parameter. This applies to almost all S3 operations except `list-buckets`.
@@ -231,7 +242,8 @@ object AwsExperimentalAttributes {
   val AwsS3Bucket: AttributeKey[String] =
     AttributeKey("aws.s3.bucket")
 
-  /** The source object (in the form `bucket`/`key`) for the copy operation. <p>
+  /** The source object (in the form `bucket`/`key`) for the copy operation.
+    *
     * @note
     *   <p> The `copy_source` attribute applies to S3 copy operations and corresponds to the `--copy-source` parameter
     *   of the <a href="https://docs.aws.amazon.com/cli/latest/reference/s3api/copy-object.html">copy-object operation
@@ -242,7 +254,8 @@ object AwsExperimentalAttributes {
   val AwsS3CopySource: AttributeKey[String] =
     AttributeKey("aws.s3.copy_source")
 
-  /** The delete request container that specifies the objects to be deleted. <p>
+  /** The delete request container that specifies the objects to be deleted.
+    *
     * @note
     *   <p> The `delete` attribute is only applicable to the <a
     *   href="https://docs.aws.amazon.com/cli/latest/reference/s3api/delete-object.html">delete-object</a> operation.
@@ -254,7 +267,8 @@ object AwsExperimentalAttributes {
     AttributeKey("aws.s3.delete")
 
   /** The S3 object key the request refers to. Corresponds to the `--key` parameter of the <a
-    * href="https://docs.aws.amazon.com/cli/latest/reference/s3api/index.html">S3 API</a> operations. <p>
+    * href="https://docs.aws.amazon.com/cli/latest/reference/s3api/index.html">S3 API</a> operations.
+    *
     * @note
     *   <p> The `key` attribute is applicable to all object-related S3 operations, i.e. that require the object key as a
     *   mandatory parameter. This applies in particular to the following operations: <ul> <li><a
@@ -279,7 +293,8 @@ object AwsExperimentalAttributes {
     AttributeKey("aws.s3.key")
 
   /** The part number of the part being uploaded in a multipart-upload operation. This is a positive integer between 1
-    * and 10,000. <p>
+    * and 10,000.
+    *
     * @note
     *   <p> The `part_number` attribute is only applicable to the <a
     *   href="https://docs.aws.amazon.com/cli/latest/reference/s3api/upload-part.html">upload-part</a> and <a
@@ -291,7 +306,8 @@ object AwsExperimentalAttributes {
   val AwsS3PartNumber: AttributeKey[Long] =
     AttributeKey("aws.s3.part_number")
 
-  /** Upload ID that identifies the multipart upload. <p>
+  /** Upload ID that identifies the multipart upload.
+    *
     * @note
     *   <p> The `upload_id` attribute applies to S3 multipart-upload operations and corresponds to the `--upload-id`
     *   parameter of the <a href="https://docs.aws.amazon.com/cli/latest/reference/s3api/index.html">S3 API</a>

@@ -38,7 +38,8 @@ object NodejsExperimentalMetrics {
     EventloopUtilization,
   )
 
-  /** Event loop maximum delay. <p>
+  /** Event loop maximum delay.
+    *
     * @note
     *   <p> Value can be retrieved from value `histogram.max` of <a
     *   href="https://nodejs.org/api/perf_hooks.html#perf_hooksmonitoreventloopdelayoptions">`perf_hooks.monitorEventLoopDelay([options])`</a>
@@ -76,7 +77,8 @@ object NodejsExperimentalMetrics {
 
   }
 
-  /** Event loop mean delay. <p>
+  /** Event loop mean delay.
+    *
     * @note
     *   <p> Value can be retrieved from value `histogram.mean` of <a
     *   href="https://nodejs.org/api/perf_hooks.html#perf_hooksmonitoreventloopdelayoptions">`perf_hooks.monitorEventLoopDelay([options])`</a>
@@ -114,7 +116,8 @@ object NodejsExperimentalMetrics {
 
   }
 
-  /** Event loop minimum delay. <p>
+  /** Event loop minimum delay.
+    *
     * @note
     *   <p> Value can be retrieved from value `histogram.min` of <a
     *   href="https://nodejs.org/api/perf_hooks.html#perf_hooksmonitoreventloopdelayoptions">`perf_hooks.monitorEventLoopDelay([options])`</a>
@@ -152,7 +155,8 @@ object NodejsExperimentalMetrics {
 
   }
 
-  /** Event loop 50 percentile delay. <p>
+  /** Event loop 50 percentile delay.
+    *
     * @note
     *   <p> Value can be retrieved from value `histogram.percentile(50)` of <a
     *   href="https://nodejs.org/api/perf_hooks.html#perf_hooksmonitoreventloopdelayoptions">`perf_hooks.monitorEventLoopDelay([options])`</a>
@@ -190,7 +194,8 @@ object NodejsExperimentalMetrics {
 
   }
 
-  /** Event loop 90 percentile delay. <p>
+  /** Event loop 90 percentile delay.
+    *
     * @note
     *   <p> Value can be retrieved from value `histogram.percentile(90)` of <a
     *   href="https://nodejs.org/api/perf_hooks.html#perf_hooksmonitoreventloopdelayoptions">`perf_hooks.monitorEventLoopDelay([options])`</a>
@@ -228,7 +233,8 @@ object NodejsExperimentalMetrics {
 
   }
 
-  /** Event loop 99 percentile delay. <p>
+  /** Event loop 99 percentile delay.
+    *
     * @note
     *   <p> Value can be retrieved from value `histogram.percentile(99)` of <a
     *   href="https://nodejs.org/api/perf_hooks.html#perf_hooksmonitoreventloopdelayoptions">`perf_hooks.monitorEventLoopDelay([options])`</a>
@@ -266,7 +272,8 @@ object NodejsExperimentalMetrics {
 
   }
 
-  /** Event loop standard deviation delay. <p>
+  /** Event loop standard deviation delay.
+    *
     * @note
     *   <p> Value can be retrieved from value `histogram.stddev` of <a
     *   href="https://nodejs.org/api/perf_hooks.html#perf_hooksmonitoreventloopdelayoptions">`perf_hooks.monitorEventLoopDelay([options])`</a>
@@ -304,7 +311,8 @@ object NodejsExperimentalMetrics {
 
   }
 
-  /** Cumulative duration of time the event loop has been in each state. <p>
+  /** Cumulative duration of time the event loop has been in each state.
+    *
     * @note
     *   <p> Value can be retrieved from <a
     *   href="https://nodejs.org/api/perf_hooks.html#performanceeventlooputilizationutilization1-utilization2">`performance.eventLoopUtilization([utilization1[,
@@ -362,7 +370,8 @@ object NodejsExperimentalMetrics {
 
   }
 
-  /** Event loop utilization. <p>
+  /** Event loop utilization.
+    *
     * @note
     *   <p> The value range is [0.0, 1.0] and can be retrieved from <a
     *   href="https://nodejs.org/api/perf_hooks.html#performanceeventlooputilizationutilization1-utilization2">`performance.eventLoopUtilization([utilization1[,

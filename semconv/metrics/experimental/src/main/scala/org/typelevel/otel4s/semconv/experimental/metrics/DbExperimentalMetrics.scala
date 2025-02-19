@@ -1038,19 +1038,21 @@ object DbExperimentalMetrics {
 
   }
 
-  /** Number of active client instances
+  /** Deprecated, use `azure.cosmosdb.client.active_instance.count` instead.
     */
+  @deprecated("Replaced by `azure.cosmosdb.client.active_instance.count`.", "")
   object ClientCosmosdbActiveInstanceCount extends MetricSpec {
 
     val name: String = "db.client.cosmosdb.active_instance.count"
-    val description: String = "Number of active client instances"
+    val description: String = "Deprecated, use `azure.cosmosdb.client.active_instance.count` instead."
     val unit: String = "{instance}"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
-      /** Name of the database host. <p>
+      /** Name of the database host.
+        *
         * @note
         *   <p> When observed from the client side, and when communicating through an intermediary, `server.address`
         *   SHOULD represent the server address behind any intermediaries, for example proxies, if it's available.
@@ -1067,7 +1069,8 @@ object DbExperimentalMetrics {
           Stability.stable
         )
 
-      /** Server port number. <p>
+      /** Server port number.
+        *
         * @note
         *   <p> When observed from the client side, and when communicating through an intermediary, `server.port` SHOULD
         *   represent the server port behind any intermediaries, for example proxies, if it's available.
@@ -1118,26 +1121,26 @@ object DbExperimentalMetrics {
 
   }
 
-  /** <a href="https://learn.microsoft.com/azure/cosmos-db/request-units">Request charge</a> consumed by the operation
+  /** Deprecated, use `azure.cosmosdb.client.operation.request_charge` instead.
     */
+  @deprecated("Replaced by `azure.cosmosdb.client.operation.request_charge`.", "")
   object ClientCosmosdbOperationRequestCharge extends MetricSpec {
 
     val name: String = "db.client.cosmosdb.operation.request_charge"
-    val description: String =
-      "[Request charge](https://learn.microsoft.com/azure/cosmos-db/request-units) consumed by the operation"
+    val description: String = "Deprecated, use `azure.cosmosdb.client.operation.request_charge` instead."
     val unit: String = "{request_unit}"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
-      /** Cosmos DB container name. <p>
+      /** Cosmos DB container name.
+        *
         * @note
         *   <p> It is RECOMMENDED to capture the value as provided by the application without attempting to do any case
         *   normalization. <p> The collection name SHOULD NOT be extracted from `db.query.text`, unless the query format
         *   is known to only ever have a single collection name present. <p> For batch operations, if the individual
-        *   operations are known to have the same collection name then that collection name SHOULD be used. <p> This
-        *   attribute has stability level RELEASE CANDIDATE.
+        *   operations are known to have the same collection name then that collection name SHOULD be used.
         */
       val dbCollectionName: AttributeSpec[String] =
         AttributeSpec(
@@ -1147,12 +1150,12 @@ object DbExperimentalMetrics {
             "customers",
           ),
           Requirement.conditionallyRequired("If available."),
-          Stability.development
+          Stability.releaseCandidate
         )
 
-      /** Account or request <a href="https://learn.microsoft.com/azure/cosmos-db/consistency-levels">consistency
-        * level</a>.
+      /** Deprecated, use `cosmosdb.consistency.level` instead.
         */
+      @deprecated("Replaced by `azure.cosmosdb.consistency.level`.", "")
       val dbCosmosdbConsistencyLevel: AttributeSpec[String] =
         AttributeSpec(
           DbExperimentalAttributes.DbCosmosdbConsistencyLevel,
@@ -1167,13 +1170,9 @@ object DbExperimentalMetrics {
           Stability.development
         )
 
-      /** List of regions contacted during operation in the order that they were contacted. If there is more than one
-        * region listed, it indicates that the operation was performed on multiple regions i.e. cross-regional call. <p>
-        * @note
-        *   <p> Region name matches the format of `displayName` in <a
-        *   href="https://learn.microsoft.com/rest/api/subscription/subscriptions/list-locations?view=rest-subscription-2021-10-01&tabs=HTTP#location">Azure
-        *   Location API</a>
+      /** Deprecated, use `azure.cosmosdb.operation.contacted_regions` instead.
         */
+      @deprecated("Replaced by `azure.cosmosdb.operation.contacted_regions`.", "")
       val dbCosmosdbRegionsContacted: AttributeSpec[Seq[String]] =
         AttributeSpec(
           DbExperimentalAttributes.DbCosmosdbRegionsContacted,
@@ -1184,8 +1183,9 @@ object DbExperimentalMetrics {
           Stability.development
         )
 
-      /** Cosmos DB sub status code.
+      /** Deprecated, use `azure.cosmosdb.response.sub_status_code` instead.
         */
+      @deprecated("Replaced by `azure.cosmosdb.response.sub_status_code`.", "")
       val dbCosmosdbSubStatusCode: AttributeSpec[Long] =
         AttributeSpec(
           DbExperimentalAttributes.DbCosmosdbSubStatusCode,
@@ -1207,17 +1207,18 @@ object DbExperimentalMetrics {
             "test.users",
           ),
           Requirement.conditionallyRequired("If available."),
-          Stability.development
+          Stability.releaseCandidate
         )
 
-      /** The name of the operation or command being executed. <p>
+      /** The name of the operation or command being executed.
+        *
         * @note
         *   <p> It is RECOMMENDED to capture the value as provided by the application without attempting to do any case
         *   normalization. <p> The operation name SHOULD NOT be extracted from `db.query.text`, unless the query format
         *   is known to only ever have a single operation name present. <p> For batch operations, if the individual
         *   operations are known to have the same operation name then that operation name SHOULD be used prepended by
         *   `BATCH `, otherwise `db.operation.name` SHOULD be `BATCH` or some other database system specific term if
-        *   more applicable. <p> This attribute has stability level RELEASE CANDIDATE.
+        *   more applicable.
         */
       val dbOperationName: AttributeSpec[String] =
         AttributeSpec(
@@ -1230,84 +1231,7 @@ object DbExperimentalMetrics {
           Requirement.conditionallyRequired(
             "If readily available and if there is a single operation name that describes the database call. The operation name MAY be parsed from the query text, in which case it SHOULD be the single operation name found in the query."
           ),
-          Stability.development
-        )
-
-      /** Database response status code. <p>
-        * @note
-        *   <p> The status code returned by the database. Usually it represents an error code, but may also represent
-        *   partial success, warning, or differentiate between various types of successful outcomes. Semantic
-        *   conventions for individual database systems SHOULD document what `db.response.status_code` means in the
-        *   context of that system. This attribute has stability level RELEASE CANDIDATE.
-        */
-      val dbResponseStatusCode: AttributeSpec[String] =
-        AttributeSpec(
-          DbExperimentalAttributes.DbResponseStatusCode,
-          List(
-            "102",
-            "ORA-17002",
-            "08P01",
-            "404",
-          ),
-          Requirement.conditionallyRequired("If the operation failed and status code is available."),
-          Stability.development
-        )
-
-      /** Describes a class of error the operation ended with. <p>
-        * @note
-        *   <p> The `error.type` SHOULD match the `db.response.status_code` returned by the database or the client
-        *   library, or the canonical name of exception that occurred. When using canonical exception type name,
-        *   instrumentation SHOULD do the best effort to report the most relevant type. For example, if the original
-        *   exception is wrapped into a generic one, the original exception SHOULD be preferred. Instrumentations SHOULD
-        *   document how `error.type` is populated.
-        */
-      val errorType: AttributeSpec[String] =
-        AttributeSpec(
-          ErrorAttributes.ErrorType,
-          List(
-            "timeout",
-            "java.net.UnknownHostException",
-            "server_certificate_invalid",
-            "500",
-          ),
-          Requirement.conditionallyRequired("If and only if the operation failed."),
-          Stability.stable
-        )
-
-      /** Name of the database host. <p>
-        * @note
-        *   <p> When observed from the client side, and when communicating through an intermediary, `server.address`
-        *   SHOULD represent the server address behind any intermediaries, for example proxies, if it's available.
-        */
-      val serverAddress: AttributeSpec[String] =
-        AttributeSpec(
-          ServerAttributes.ServerAddress,
-          List(
-            "example.com",
-            "10.1.2.80",
-            "/tmp/my.sock",
-          ),
-          Requirement.recommended,
-          Stability.stable
-        )
-
-      /** Server port number. <p>
-        * @note
-        *   <p> When observed from the client side, and when communicating through an intermediary, `server.port` SHOULD
-        *   represent the server port behind any intermediaries, for example proxies, if it's available.
-        */
-      val serverPort: AttributeSpec[Long] =
-        AttributeSpec(
-          ServerAttributes.ServerPort,
-          List(
-            80,
-            8080,
-            443,
-          ),
-          Requirement.conditionallyRequired(
-            "If using a port other than the default port for this DBMS and if `server.address` is set."
-          ),
-          Stability.stable
+          Stability.releaseCandidate
         )
 
       val specs: List[AttributeSpec[_]] =
@@ -1318,10 +1242,6 @@ object DbExperimentalMetrics {
           dbCosmosdbSubStatusCode,
           dbNamespace,
           dbOperationName,
-          dbResponseStatusCode,
-          errorType,
-          serverAddress,
-          serverPort,
         )
     }
 
@@ -1335,7 +1255,8 @@ object DbExperimentalMetrics {
 
   }
 
-  /** Duration of database client operations. <p>
+  /** Duration of database client operations.
+    *
     * @note
     *   <p> Batch operations SHOULD be recorded as a single operation.
     */
@@ -1344,18 +1265,18 @@ object DbExperimentalMetrics {
     val name: String = "db.client.operation.duration"
     val description: String = "Duration of database client operations."
     val unit: String = "s"
-    val stability: Stability = Stability.development
+    val stability: Stability = Stability.releaseCandidate
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
-      /** The name of a collection (table, container) within the database. <p>
+      /** The name of a collection (table, container) within the database.
+        *
         * @note
         *   <p> It is RECOMMENDED to capture the value as provided by the application without attempting to do any case
         *   normalization. <p> The collection name SHOULD NOT be extracted from `db.query.text`, unless the query format
         *   is known to only ever have a single collection name present. <p> For batch operations, if the individual
-        *   operations are known to have the same collection name then that collection name SHOULD be used. <p> This
-        *   attribute has stability level RELEASE CANDIDATE.
+        *   operations are known to have the same collection name then that collection name SHOULD be used.
         */
       val dbCollectionName: AttributeSpec[String] =
         AttributeSpec(
@@ -1367,18 +1288,18 @@ object DbExperimentalMetrics {
           Requirement.conditionallyRequired(
             "If readily available and if a database call is performed on a single collection. The collection name MAY be parsed from the query text, in which case it SHOULD be the single collection name in the query."
           ),
-          Stability.development
+          Stability.releaseCandidate
         )
 
-      /** The name of the database, fully qualified within the server address and port. <p>
+      /** The name of the database, fully qualified within the server address and port.
+        *
         * @note
         *   <p> If a database system has multiple namespace components, they SHOULD be concatenated (potentially using
         *   database system specific conventions) from most general to most specific namespace component, and more
         *   specific namespaces SHOULD NOT be captured without the more general namespaces, to ensure that "startswith"
         *   queries for the more general namespaces will be valid. Semantic conventions for individual database systems
         *   SHOULD document what `db.namespace` means in the context of that system. It is RECOMMENDED to capture the
-        *   value as provided by the application without attempting to do any case normalization. This attribute has
-        *   stability level RELEASE CANDIDATE.
+        *   value as provided by the application without attempting to do any case normalization.
         */
       val dbNamespace: AttributeSpec[String] =
         AttributeSpec(
@@ -1388,17 +1309,18 @@ object DbExperimentalMetrics {
             "test.users",
           ),
           Requirement.conditionallyRequired("If available."),
-          Stability.development
+          Stability.releaseCandidate
         )
 
-      /** The name of the operation or command being executed. <p>
+      /** The name of the operation or command being executed.
+        *
         * @note
         *   <p> It is RECOMMENDED to capture the value as provided by the application without attempting to do any case
         *   normalization. <p> The operation name SHOULD NOT be extracted from `db.query.text`, unless the query format
         *   is known to only ever have a single operation name present. <p> For batch operations, if the individual
         *   operations are known to have the same operation name then that operation name SHOULD be used prepended by
         *   `BATCH `, otherwise `db.operation.name` SHOULD be `BATCH` or some other database system specific term if
-        *   more applicable. <p> This attribute has stability level RELEASE CANDIDATE.
+        *   more applicable.
         */
       val dbOperationName: AttributeSpec[String] =
         AttributeSpec(
@@ -1411,17 +1333,18 @@ object DbExperimentalMetrics {
           Requirement.conditionallyRequired(
             "If readily available and if there is a single operation name that describes the database call. The operation name MAY be parsed from the query text, in which case it SHOULD be the single operation name found in the query."
           ),
-          Stability.development
+          Stability.releaseCandidate
         )
 
-      /** Low cardinality representation of a database query text. <p>
+      /** Low cardinality representation of a database query text.
+        *
         * @note
         *   <p> `db.query.summary` provides static summary of the query text. It describes a class of database queries
         *   and is useful as a grouping key, especially when analyzing telemetry for database calls involving complex
         *   queries. Summary may be available to the instrumentation through instrumentation hooks or other means. If it
         *   is not available, instrumentations that support query parsing SHOULD generate a summary following <a
         *   href="../../docs/database/database-spans.md#generating-a-summary-of-the-query-text">Generating query
-        *   summary</a> section. This attribute has stability level RELEASE CANDIDATE.
+        *   summary</a> section.
         */
       val dbQuerySummary: AttributeSpec[String] =
         AttributeSpec(
@@ -1432,10 +1355,11 @@ object DbExperimentalMetrics {
             "get user by id",
           ),
           Requirement.recommended("if readily available or if instrumentation supports query summarization."),
-          Stability.development
+          Stability.releaseCandidate
         )
 
-      /** The database query being executed. <p>
+      /** The database query being executed.
+        *
         * @note
         *   <p> For sanitization see <a
         *   href="../../docs/database/database-spans.md#sanitization-of-dbquerytext">Sanitization of
@@ -1444,8 +1368,7 @@ object DbExperimentalMetrics {
         *   with separator `; ` or some other database system specific separator if more applicable. Even though
         *   parameterized query text can potentially have sensitive data, by using a parameterized query the user is
         *   giving a strong signal that any sensitive data will be passed as parameter values, and the benefit to
-        *   observability of capturing the static part of the query text by default outweighs the risk. This attribute
-        *   has stability level RELEASE CANDIDATE.
+        *   observability of capturing the static part of the query text by default outweighs the risk.
         */
       val dbQueryText: AttributeSpec[String] =
         AttributeSpec(
@@ -1455,15 +1378,16 @@ object DbExperimentalMetrics {
             "SET mykey ?",
           ),
           Requirement.optIn,
-          Stability.development
+          Stability.releaseCandidate
         )
 
-      /** Database response status code. <p>
+      /** Database response status code.
+        *
         * @note
         *   <p> The status code returned by the database. Usually it represents an error code, but may also represent
         *   partial success, warning, or differentiate between various types of successful outcomes. Semantic
         *   conventions for individual database systems SHOULD document what `db.response.status_code` means in the
-        *   context of that system. This attribute has stability level RELEASE CANDIDATE.
+        *   context of that system.
         */
       val dbResponseStatusCode: AttributeSpec[String] =
         AttributeSpec(
@@ -1475,25 +1399,27 @@ object DbExperimentalMetrics {
             "404",
           ),
           Requirement.conditionallyRequired("If the operation failed and status code is available."),
-          Stability.development
+          Stability.releaseCandidate
         )
 
-      /** The database management system (DBMS) product as identified by the client instrumentation. <p>
+      /** The database management system (DBMS) product as identified by the client instrumentation.
+        *
         * @note
         *   <p> The actual DBMS may differ from the one identified by the client. For example, when using PostgreSQL
-        *   client libraries to connect to a CockroachDB, the `db.system` is set to `postgresql` based on the
-        *   instrumentation's best knowledge. This attribute has stability level RELEASE CANDIDATE.
+        *   client libraries to connect to a CockroachDB, the `db.system.name` is set to `postgresql` based on the
+        *   instrumentation's best knowledge.
         */
-      val dbSystem: AttributeSpec[String] =
+      val dbSystemName: AttributeSpec[String] =
         AttributeSpec(
-          DbExperimentalAttributes.DbSystem,
+          DbExperimentalAttributes.DbSystemName,
           List(
           ),
           Requirement.required,
-          Stability.development
+          Stability.releaseCandidate
         )
 
-      /** Describes a class of error the operation ended with. <p>
+      /** Describes a class of error the operation ended with.
+        *
         * @note
         *   <p> The `error.type` SHOULD match the `db.response.status_code` returned by the database or the client
         *   library, or the canonical name of exception that occurred. When using canonical exception type name,
@@ -1514,7 +1440,8 @@ object DbExperimentalMetrics {
           Stability.stable
         )
 
-      /** Peer address of the database node where the operation was performed. <p>
+      /** Peer address of the database node where the operation was performed.
+        *
         * @note
         *   <p> Semantic conventions for individual database systems SHOULD document whether `network.peer.*` attributes
         *   are applicable. Network peer address and port are useful when the application interacts with individual
@@ -1544,7 +1471,8 @@ object DbExperimentalMetrics {
           Stability.stable
         )
 
-      /** Name of the database host. <p>
+      /** Name of the database host.
+        *
         * @note
         *   <p> When observed from the client side, and when communicating through an intermediary, `server.address`
         *   SHOULD represent the server address behind any intermediaries, for example proxies, if it's available.
@@ -1561,7 +1489,8 @@ object DbExperimentalMetrics {
           Stability.stable
         )
 
-      /** Server port number. <p>
+      /** Server port number.
+        *
         * @note
         *   <p> When observed from the client side, and when communicating through an intermediary, `server.port` SHOULD
         *   represent the server port behind any intermediaries, for example proxies, if it's available.
@@ -1588,7 +1517,7 @@ object DbExperimentalMetrics {
           dbQuerySummary,
           dbQueryText,
           dbResponseStatusCode,
-          dbSystem,
+          dbSystemName,
           errorType,
           networkPeerAddress,
           networkPeerPort,
@@ -1619,13 +1548,13 @@ object DbExperimentalMetrics {
 
     object AttributeSpecs {
 
-      /** The name of a collection (table, container) within the database. <p>
+      /** The name of a collection (table, container) within the database.
+        *
         * @note
         *   <p> It is RECOMMENDED to capture the value as provided by the application without attempting to do any case
         *   normalization. <p> The collection name SHOULD NOT be extracted from `db.query.text`, unless the query format
         *   is known to only ever have a single collection name present. <p> For batch operations, if the individual
-        *   operations are known to have the same collection name then that collection name SHOULD be used. <p> This
-        *   attribute has stability level RELEASE CANDIDATE.
+        *   operations are known to have the same collection name then that collection name SHOULD be used.
         */
       val dbCollectionName: AttributeSpec[String] =
         AttributeSpec(
@@ -1637,18 +1566,18 @@ object DbExperimentalMetrics {
           Requirement.conditionallyRequired(
             "If readily available and if a database call is performed on a single collection. The collection name MAY be parsed from the query text, in which case it SHOULD be the single collection name in the query."
           ),
-          Stability.development
+          Stability.releaseCandidate
         )
 
-      /** The name of the database, fully qualified within the server address and port. <p>
+      /** The name of the database, fully qualified within the server address and port.
+        *
         * @note
         *   <p> If a database system has multiple namespace components, they SHOULD be concatenated (potentially using
         *   database system specific conventions) from most general to most specific namespace component, and more
         *   specific namespaces SHOULD NOT be captured without the more general namespaces, to ensure that "startswith"
         *   queries for the more general namespaces will be valid. Semantic conventions for individual database systems
         *   SHOULD document what `db.namespace` means in the context of that system. It is RECOMMENDED to capture the
-        *   value as provided by the application without attempting to do any case normalization. This attribute has
-        *   stability level RELEASE CANDIDATE.
+        *   value as provided by the application without attempting to do any case normalization.
         */
       val dbNamespace: AttributeSpec[String] =
         AttributeSpec(
@@ -1658,17 +1587,18 @@ object DbExperimentalMetrics {
             "test.users",
           ),
           Requirement.conditionallyRequired("If available."),
-          Stability.development
+          Stability.releaseCandidate
         )
 
-      /** The name of the operation or command being executed. <p>
+      /** The name of the operation or command being executed.
+        *
         * @note
         *   <p> It is RECOMMENDED to capture the value as provided by the application without attempting to do any case
         *   normalization. <p> The operation name SHOULD NOT be extracted from `db.query.text`, unless the query format
         *   is known to only ever have a single operation name present. <p> For batch operations, if the individual
         *   operations are known to have the same operation name then that operation name SHOULD be used prepended by
         *   `BATCH `, otherwise `db.operation.name` SHOULD be `BATCH` or some other database system specific term if
-        *   more applicable. <p> This attribute has stability level RELEASE CANDIDATE.
+        *   more applicable.
         */
       val dbOperationName: AttributeSpec[String] =
         AttributeSpec(
@@ -1681,17 +1611,18 @@ object DbExperimentalMetrics {
           Requirement.conditionallyRequired(
             "If readily available and if there is a single operation name that describes the database call. The operation name MAY be parsed from the query text, in which case it SHOULD be the single operation name found in the query."
           ),
-          Stability.development
+          Stability.releaseCandidate
         )
 
-      /** Low cardinality representation of a database query text. <p>
+      /** Low cardinality representation of a database query text.
+        *
         * @note
         *   <p> `db.query.summary` provides static summary of the query text. It describes a class of database queries
         *   and is useful as a grouping key, especially when analyzing telemetry for database calls involving complex
         *   queries. Summary may be available to the instrumentation through instrumentation hooks or other means. If it
         *   is not available, instrumentations that support query parsing SHOULD generate a summary following <a
         *   href="../../docs/database/database-spans.md#generating-a-summary-of-the-query-text">Generating query
-        *   summary</a> section. This attribute has stability level RELEASE CANDIDATE.
+        *   summary</a> section.
         */
       val dbQuerySummary: AttributeSpec[String] =
         AttributeSpec(
@@ -1702,10 +1633,11 @@ object DbExperimentalMetrics {
             "get user by id",
           ),
           Requirement.recommended("if readily available or if instrumentation supports query summarization."),
-          Stability.development
+          Stability.releaseCandidate
         )
 
-      /** The database query being executed. <p>
+      /** The database query being executed.
+        *
         * @note
         *   <p> For sanitization see <a
         *   href="../../docs/database/database-spans.md#sanitization-of-dbquerytext">Sanitization of
@@ -1714,8 +1646,7 @@ object DbExperimentalMetrics {
         *   with separator `; ` or some other database system specific separator if more applicable. Even though
         *   parameterized query text can potentially have sensitive data, by using a parameterized query the user is
         *   giving a strong signal that any sensitive data will be passed as parameter values, and the benefit to
-        *   observability of capturing the static part of the query text by default outweighs the risk. This attribute
-        *   has stability level RELEASE CANDIDATE.
+        *   observability of capturing the static part of the query text by default outweighs the risk.
         */
       val dbQueryText: AttributeSpec[String] =
         AttributeSpec(
@@ -1725,15 +1656,16 @@ object DbExperimentalMetrics {
             "SET mykey ?",
           ),
           Requirement.optIn,
-          Stability.development
+          Stability.releaseCandidate
         )
 
-      /** Database response status code. <p>
+      /** Database response status code.
+        *
         * @note
         *   <p> The status code returned by the database. Usually it represents an error code, but may also represent
         *   partial success, warning, or differentiate between various types of successful outcomes. Semantic
         *   conventions for individual database systems SHOULD document what `db.response.status_code` means in the
-        *   context of that system. This attribute has stability level RELEASE CANDIDATE.
+        *   context of that system.
         */
       val dbResponseStatusCode: AttributeSpec[String] =
         AttributeSpec(
@@ -1745,25 +1677,27 @@ object DbExperimentalMetrics {
             "404",
           ),
           Requirement.conditionallyRequired("If the operation failed and status code is available."),
-          Stability.development
+          Stability.releaseCandidate
         )
 
-      /** The database management system (DBMS) product as identified by the client instrumentation. <p>
+      /** The database management system (DBMS) product as identified by the client instrumentation.
+        *
         * @note
         *   <p> The actual DBMS may differ from the one identified by the client. For example, when using PostgreSQL
-        *   client libraries to connect to a CockroachDB, the `db.system` is set to `postgresql` based on the
-        *   instrumentation's best knowledge. This attribute has stability level RELEASE CANDIDATE.
+        *   client libraries to connect to a CockroachDB, the `db.system.name` is set to `postgresql` based on the
+        *   instrumentation's best knowledge.
         */
-      val dbSystem: AttributeSpec[String] =
+      val dbSystemName: AttributeSpec[String] =
         AttributeSpec(
-          DbExperimentalAttributes.DbSystem,
+          DbExperimentalAttributes.DbSystemName,
           List(
           ),
           Requirement.required,
-          Stability.development
+          Stability.releaseCandidate
         )
 
-      /** Describes a class of error the operation ended with. <p>
+      /** Describes a class of error the operation ended with.
+        *
         * @note
         *   <p> The `error.type` SHOULD match the `db.response.status_code` returned by the database or the client
         *   library, or the canonical name of exception that occurred. When using canonical exception type name,
@@ -1784,7 +1718,8 @@ object DbExperimentalMetrics {
           Stability.stable
         )
 
-      /** Peer address of the database node where the operation was performed. <p>
+      /** Peer address of the database node where the operation was performed.
+        *
         * @note
         *   <p> Semantic conventions for individual database systems SHOULD document whether `network.peer.*` attributes
         *   are applicable. Network peer address and port are useful when the application interacts with individual
@@ -1814,7 +1749,8 @@ object DbExperimentalMetrics {
           Stability.stable
         )
 
-      /** Name of the database host. <p>
+      /** Name of the database host.
+        *
         * @note
         *   <p> When observed from the client side, and when communicating through an intermediary, `server.address`
         *   SHOULD represent the server address behind any intermediaries, for example proxies, if it's available.
@@ -1831,7 +1767,8 @@ object DbExperimentalMetrics {
           Stability.stable
         )
 
-      /** Server port number. <p>
+      /** Server port number.
+        *
         * @note
         *   <p> When observed from the client side, and when communicating through an intermediary, `server.port` SHOULD
         *   represent the server port behind any intermediaries, for example proxies, if it's available.
@@ -1858,7 +1795,7 @@ object DbExperimentalMetrics {
           dbQuerySummary,
           dbQueryText,
           dbResponseStatusCode,
-          dbSystem,
+          dbSystemName,
           errorType,
           networkPeerAddress,
           networkPeerPort,

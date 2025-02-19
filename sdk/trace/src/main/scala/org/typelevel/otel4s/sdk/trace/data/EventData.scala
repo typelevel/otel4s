@@ -99,6 +99,7 @@ object EventData {
     *   should be set to true if the exception is recorded at a point where it is known that the exception is escaping
     *   the scope of the span
     */
+  @annotation.nowarn
   def fromException(
       timestamp: FiniteDuration,
       exception: Throwable,

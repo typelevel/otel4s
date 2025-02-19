@@ -32,8 +32,9 @@ object GenAiExperimentalAttributes {
   val GenAiOpenaiRequestResponseFormat: AttributeKey[String] =
     AttributeKey("gen_ai.openai.request.response_format")
 
-  /** Requests with same seed value more likely to return same result.
+  /** Deprecated, use `gen_ai.request.seed`.
     */
+  @deprecated("Replaced by `gen_ai.request.seed` attribute.", "")
   val GenAiOpenaiRequestSeed: AttributeKey[Long] =
     AttributeKey("gen_ai.openai.request.seed")
 
@@ -52,7 +53,8 @@ object GenAiExperimentalAttributes {
   val GenAiOpenaiResponseSystemFingerprint: AttributeKey[String] =
     AttributeKey("gen_ai.openai.response.system_fingerprint")
 
-  /** The name of the operation being performed. <p>
+  /** The name of the operation being performed.
+    *
     * @note
     *   <p> If one of the predefined values applies, but specific system uses a different name it's RECOMMENDED to
     *   document it in the semantic conventions for specific GenAI system and use system-specific name in the
@@ -68,7 +70,8 @@ object GenAiExperimentalAttributes {
   val GenAiPrompt: AttributeKey[String] =
     AttributeKey("gen_ai.prompt")
 
-  /** The encoding formats requested in an embeddings operation, if specified. <p>
+  /** The encoding formats requested in an embeddings operation, if specified.
+    *
     * @note
     *   <p> In some GenAI systems the encoding formats are called embedding types. Also, some GenAI systems only accept
     *   a single format per request.
@@ -95,6 +98,11 @@ object GenAiExperimentalAttributes {
     */
   val GenAiRequestPresencePenalty: AttributeKey[Double] =
     AttributeKey("gen_ai.request.presence_penalty")
+
+  /** Requests with same seed value more likely to return same result.
+    */
+  val GenAiRequestSeed: AttributeKey[Long] =
+    AttributeKey("gen_ai.request.seed")
 
   /** List of sequences that the model will use to stop generating further tokens.
     */
@@ -131,13 +139,16 @@ object GenAiExperimentalAttributes {
   val GenAiResponseModel: AttributeKey[String] =
     AttributeKey("gen_ai.response.model")
 
-  /** The Generative AI product as identified by the client or server instrumentation. <p>
+  /** The Generative AI product as identified by the client or server instrumentation.
+    *
     * @note
     *   <p> The `gen_ai.system` describes a family of GenAI models with specific model identified by
     *   `gen_ai.request.model` and `gen_ai.response.model` attributes. <p> The actual GenAI product may differ from the
-    *   one identified by the client. For example, when using OpenAI client libraries to communicate with Mistral, the
-    *   `gen_ai.system` is set to `openai` based on the instrumentation's best knowledge. <p> For custom model, a custom
-    *   friendly name SHOULD be used. If none of these options apply, the `gen_ai.system` SHOULD be set to `_OTHER`.
+    *   one identified by the client. Multiple systems, including Azure OpenAI and Gemini, are accessible by OpenAI
+    *   client libraries. In such cases, the `gen_ai.system` is set to `openai` based on the instrumentation's best
+    *   knowledge, instead of the actual system. The `server.address` attribute may help identify the actual system in
+    *   use for `openai`. <p> For custom model, a custom friendly name SHOULD be used. If none of these options apply,
+    *   the `gen_ai.system` SHOULD be set to `_OTHER`.
     */
   val GenAiSystem: AttributeKey[String] =
     AttributeKey("gen_ai.system")
@@ -235,6 +246,10 @@ object GenAiExperimentalAttributes {
       */
     case object VertexAi extends GenAiSystemValue("vertex_ai")
 
+    /** Gemini
+      */
+    case object Gemini extends GenAiSystemValue("gemini")
+
     /** Anthropic
       */
     case object Anthropic extends GenAiSystemValue("anthropic")
@@ -247,6 +262,10 @@ object GenAiExperimentalAttributes {
       */
     case object AzAiInference extends GenAiSystemValue("az.ai.inference")
 
+    /** Azure OpenAI
+      */
+    case object AzAiOpenai extends GenAiSystemValue("az.ai.openai")
+
     /** IBM Watsonx AI
       */
     case object IbmWatsonxAi extends GenAiSystemValue("ibm.watsonx.ai")
@@ -254,6 +273,26 @@ object GenAiExperimentalAttributes {
     /** AWS Bedrock
       */
     case object AwsBedrock extends GenAiSystemValue("aws.bedrock")
+
+    /** Perplexity
+      */
+    case object Perplexity extends GenAiSystemValue("perplexity")
+
+    /** xAI
+      */
+    case object Xai extends GenAiSystemValue("xai")
+
+    /** DeepSeek
+      */
+    case object Deepseek extends GenAiSystemValue("deepseek")
+
+    /** Groq
+      */
+    case object Groq extends GenAiSystemValue("groq")
+
+    /** Mistral AI
+      */
+    case object MistralAi extends GenAiSystemValue("mistral_ai")
   }
 
   /** Values for [[GenAiTokenType]].

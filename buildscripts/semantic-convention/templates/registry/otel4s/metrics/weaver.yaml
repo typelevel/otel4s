@@ -1,9 +1,8 @@
 params:
   excluded_namespaces: ["ios", "aspnetcore", "signalr", "kestrel", "veightjs", "go", "dotnet"]
   excluded_attributes: ["messaging.client_id"]
-  excluded_stability: ["experimental", "deprecated"] # stable - ["experimental", "deprecated"]; experimental - []
   object_prefix: "" # stable - "", experimental - "Experimental"
-  experimental: false # stable - false, experimental - true
+  stable_only: true # stable - true, experimental - false
 comment_formats:
   scaladoc:
     format: html
@@ -22,8 +21,8 @@ templates:
     filter: >
       semconv_grouped_metrics({
         "exclude_root_namespace": $excluded_namespaces,
-        "exclude_stability": $excluded_stability,
-        "exclude_deprecated": false
+        "exclude_deprecated": false,
+        "stable_only": $stable_only
       })
     application_mode: each
     file_name: "{{ctx.root_namespace | pascal_case}}{{params.object_prefix}}Metrics.scala"

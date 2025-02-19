@@ -19,28 +19,11 @@ package semconv
 package experimental.attributes
 
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/attributes/SemanticAttributes.scala.j2
-object OpentracingExperimentalAttributes {
+object ElasticsearchExperimentalAttributes {
 
-  /** Parent-child Reference type
-    *
-    * @note
-    *   <p> The causal relationship between a child Span and a parent Span.
+  /** Represents the human-readable identifier of the node/instance to which a request was routed.
     */
-  val OpentracingRefType: AttributeKey[String] =
-    AttributeKey("opentracing.ref_type")
-
-  /** Values for [[OpentracingRefType]].
-    */
-  abstract class OpentracingRefTypeValue(val value: String)
-  object OpentracingRefTypeValue {
-
-    /** The parent Span depends on the child Span in some capacity
-      */
-    case object ChildOf extends OpentracingRefTypeValue("child_of")
-
-    /** The parent Span doesn't depend in any way on the result of the child Span
-      */
-    case object FollowsFrom extends OpentracingRefTypeValue("follows_from")
-  }
+  val ElasticsearchNodeName: AttributeKey[String] =
+    AttributeKey("elasticsearch.node.name")
 
 }

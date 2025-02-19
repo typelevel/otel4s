@@ -21,7 +21,8 @@ package experimental.attributes
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/attributes/SemanticAttributes.scala.j2
 object ContainerExperimentalAttributes {
 
-  /** The command used to run the container (i.e. the command name). <p>
+  /** The command used to run the container (i.e. the command name).
+    *
     * @note
     *   <p> If using embedded credentials or sensitive data, it is recommended to remove them to prevent potential
     *   leakage.
@@ -46,7 +47,8 @@ object ContainerExperimentalAttributes {
     AttributeKey("container.cpu.state")
 
   /** The name of the CSI (<a href="https://github.com/container-storage-interface/spec">Container Storage
-    * Interface</a>) plugin used by the volume. <p>
+    * Interface</a>) plugin used by the volume.
+    *
     * @note
     *   <p> This can sometimes be referred to as a "driver" in CSI implementations. This should represent the `name`
     *   field of the GetPluginInfo RPC.
@@ -55,7 +57,8 @@ object ContainerExperimentalAttributes {
     AttributeKey("container.csi.plugin.name")
 
   /** The unique volume ID returned by the CSI (<a href="https://github.com/container-storage-interface/spec">Container
-    * Storage Interface</a>) plugin. <p>
+    * Storage Interface</a>) plugin.
+    *
     * @note
     *   <p> This can sometimes be referred to as a "volume handle" in CSI implementations. This should represent the
     *   `Volume.volume_id` field in CSI spec.
@@ -70,14 +73,15 @@ object ContainerExperimentalAttributes {
   val ContainerId: AttributeKey[String] =
     AttributeKey("container.id")
 
-  /** Runtime specific image identifier. Usually a hash algorithm followed by a UUID. <p>
+  /** Runtime specific image identifier. Usually a hash algorithm followed by a UUID.
+    *
     * @note
     *   <p> Docker defines a sha256 of the image id; `container.image.id` corresponds to the `Image` field from the
     *   Docker container inspect <a
     *   href="https://docs.docker.com/engine/api/v1.43/#tag/Container/operation/ContainerInspect">API</a> endpoint. K8s
-    *   defines a link to the container registry repository with digest `"imageID": "registry.azurecr.io
-    *   /namespace/service/dockerfile@sha256:bdeabd40c3a8a492eaf9e8e44d0ebbb84bac7ee25ac0cf8a7159d25f62555625"`. The ID
-    *   is assigned by the container runtime and can vary in different environments. Consider using
+    *   defines a link to the container registry repository with digest
+    *   `"imageID": "registry.azurecr.io /namespace/service/dockerfile@sha256:bdeabd40c3a8a492eaf9e8e44d0ebbb84bac7ee25ac0cf8a7159d25f62555625"`.
+    *   The ID is assigned by the container runtime and can vary in different environments. Consider using
     *   `oci.manifest.digest` if it is important to identify the same image in different environments/runtimes.
     */
   val ContainerImageId: AttributeKey[String] =
@@ -88,7 +92,8 @@ object ContainerExperimentalAttributes {
   val ContainerImageName: AttributeKey[String] =
     AttributeKey("container.image.name")
 
-  /** Repo digests of the container image as provided by the container runtime. <p>
+  /** Repo digests of the container image as provided by the container runtime.
+    *
     * @note
     *   <p> <a href="https://docs.docker.com/engine/api/v1.43/#tag/Image/operation/ImageInspect">Docker</a> and <a
     *   href="https://github.com/kubernetes/cri-api/blob/c75ef5b473bbe2d0a4fc92f82235efd665ea8e9f/pkg/apis/runtime/v1/api.proto#L1237-L1238">CRI</a>

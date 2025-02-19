@@ -27,7 +27,8 @@ object UrlAttributes {
     AttributeKey("url.fragment")
 
   /** Absolute URL describing a network resource according to <a
-    * href="https://www.rfc-editor.org/rfc/rfc3986">RFC3986</a> <p>
+    * href="https://www.rfc-editor.org/rfc/rfc3986">RFC3986</a>
+    *
     * @note
     *   <p> For network calls, URL usually has `scheme://host[:port][path][?query][#fragment]` format, where the
     *   fragment is not transmitted over HTTP, but if it is known, it SHOULD be included nevertheless. <p> `url.full`
@@ -50,14 +51,16 @@ object UrlAttributes {
   val UrlFull: AttributeKey[String] =
     AttributeKey("url.full")
 
-  /** The <a href="https://www.rfc-editor.org/rfc/rfc3986#section-3.3">URI path</a> component <p>
+  /** The <a href="https://www.rfc-editor.org/rfc/rfc3986#section-3.3">URI path</a> component
+    *
     * @note
     *   <p> Sensitive content provided in `url.path` SHOULD be scrubbed when instrumentations can identify it.
     */
   val UrlPath: AttributeKey[String] =
     AttributeKey("url.path")
 
-  /** The <a href="https://www.rfc-editor.org/rfc/rfc3986#section-3.4">URI query</a> component <p>
+  /** The <a href="https://www.rfc-editor.org/rfc/rfc3986#section-3.4">URI query</a> component
+    *
     * @note
     *   <p> Sensitive content provided in `url.query` SHOULD be scrubbed when instrumentations can identify it. <p>
     *

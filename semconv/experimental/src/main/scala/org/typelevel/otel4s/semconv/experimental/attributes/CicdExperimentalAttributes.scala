@@ -26,10 +26,20 @@ object CicdExperimentalAttributes {
   val CicdPipelineName: AttributeKey[String] =
     AttributeKey("cicd.pipeline.name")
 
+  /** The result of a pipeline run.
+    */
+  val CicdPipelineResult: AttributeKey[String] =
+    AttributeKey("cicd.pipeline.result")
+
   /** The unique identifier of a pipeline run within a CI/CD system.
     */
   val CicdPipelineRunId: AttributeKey[String] =
     AttributeKey("cicd.pipeline.run.id")
+
+  /** The pipeline run goes through these states during its lifecycle.
+    */
+  val CicdPipelineRunState: AttributeKey[String] =
+    AttributeKey("cicd.pipeline.run.state")
 
   /** The human readable name of a task within a pipeline. Task here most closely aligns with a <a
     * href="https://wikipedia.org/wiki/Pipeline_(computing)">computing process</a> in a pipeline. Other terms for tasks
@@ -54,6 +64,66 @@ object CicdExperimentalAttributes {
   val CicdPipelineTaskType: AttributeKey[String] =
     AttributeKey("cicd.pipeline.task.type")
 
+  /** The name of a component of the CICD system.
+    */
+  val CicdSystemComponent: AttributeKey[String] =
+    AttributeKey("cicd.system.component")
+
+  /** The state of a CICD worker / agent.
+    */
+  val CicdWorkerState: AttributeKey[String] =
+    AttributeKey("cicd.worker.state")
+
+  /** Values for [[CicdPipelineResult]].
+    */
+  abstract class CicdPipelineResultValue(val value: String)
+  object CicdPipelineResultValue {
+
+    /** The pipeline run finished successfully.
+      */
+    case object Success extends CicdPipelineResultValue("success")
+
+    /** The pipeline run did not finish successfully, eg. due to a compile error or a failing test. Such failures are
+      * usually detected by non-zero exit codes of the tools executed in the pipeline run.
+      */
+    case object Failure extends CicdPipelineResultValue("failure")
+
+    /** The pipeline run failed due to an error in the CICD system, eg. due to the worker being killed.
+      */
+    case object Error extends CicdPipelineResultValue("error")
+
+    /** A timeout caused the pipeline run to be interrupted.
+      */
+    case object Timeout extends CicdPipelineResultValue("timeout")
+
+    /** The pipeline run was cancelled, eg. by a user manually cancelling the pipeline run.
+      */
+    case object Cancellation extends CicdPipelineResultValue("cancellation")
+
+    /** The pipeline run was skipped, eg. due to a precondition not being met.
+      */
+    case object Skip extends CicdPipelineResultValue("skip")
+  }
+
+  /** Values for [[CicdPipelineRunState]].
+    */
+  abstract class CicdPipelineRunStateValue(val value: String)
+  object CicdPipelineRunStateValue {
+
+    /** The run pending state spans from the event triggering the pipeline run until the execution of the run starts
+      * (eg. time spent in a queue, provisioning agents, creating run resources).
+      */
+    case object Pending extends CicdPipelineRunStateValue("pending")
+
+    /** The executing state spans the execution of any run tasks (eg. build, test).
+      */
+    case object Executing extends CicdPipelineRunStateValue("executing")
+
+    /** The finalizing state spans from when the run has finished executing (eg. cleanup of run resources).
+      */
+    case object Finalizing extends CicdPipelineRunStateValue("finalizing")
+  }
+
   /** Values for [[CicdPipelineTaskType]].
     */
   abstract class CicdPipelineTaskTypeValue(val value: String)
@@ -70,6 +140,25 @@ object CicdExperimentalAttributes {
     /** deploy
       */
     case object Deploy extends CicdPipelineTaskTypeValue("deploy")
+  }
+
+  /** Values for [[CicdWorkerState]].
+    */
+  abstract class CicdWorkerStateValue(val value: String)
+  object CicdWorkerStateValue {
+
+    /** The worker is not performing work for the CICD system. It is available to the CICD system to perform work on
+      * (online / idle).
+      */
+    case object Available extends CicdWorkerStateValue("available")
+
+    /** The worker is performing work for the CICD system.
+      */
+    case object Busy extends CicdWorkerStateValue("busy")
+
+    /** The worker is not available to the CICD system (disconnected / down).
+      */
+    case object Offline extends CicdWorkerStateValue("offline")
   }
 
 }

@@ -188,6 +188,14 @@ object CloudExperimentalAttributes {
       */
     case object IbmCloudOpenshift extends CloudPlatformValue("ibm_cloud_openshift")
 
+    /** Compute on Oracle Cloud Infrastructure (OCI)
+      */
+    case object OracleCloudCompute extends CloudPlatformValue("oracle_cloud_compute")
+
+    /** Kubernetes Engine (OKE) on Oracle Cloud Infrastructure (OCI)
+      */
+    case object OracleCloudOke extends CloudPlatformValue("oracle_cloud_oke")
+
     /** Tencent Cloud Cloud Virtual Machine (CVM)
       */
     case object TencentCloudCvm extends CloudPlatformValue("tencent_cloud_cvm")
@@ -229,6 +237,10 @@ object CloudExperimentalAttributes {
     /** IBM Cloud
       */
     case object IbmCloud extends CloudProviderValue("ibm_cloud")
+
+    /** Oracle Cloud Infrastructure (OCI)
+      */
+    case object OracleCloud extends CloudProviderValue("oracle_cloud")
 
     /** Tencent Cloud
       */

@@ -21,35 +21,39 @@ package experimental.attributes
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/attributes/SemanticAttributes.scala.j2
 object DbExperimentalAttributes {
 
-  /** The consistency level of the query. Based on consistency values from <a
-    * href="https://docs.datastax.com/en/cassandra-oss/3.0/cassandra/dml/dmlConfigConsistency.html">CQL</a>.
+  /** Deprecated, use `cassandra.consistency.level` instead.
     */
+  @deprecated("Replaced by `cassandra.consistency.level`.", "")
   val DbCassandraConsistencyLevel: AttributeKey[String] =
     AttributeKey("db.cassandra.consistency_level")
 
-  /** The data center of the coordinating node for a query.
+  /** Deprecated, use `cassandra.coordinator.dc` instead.
     */
+  @deprecated("Replaced by `cassandra.coordinator.dc`.", "")
   val DbCassandraCoordinatorDc: AttributeKey[String] =
     AttributeKey("db.cassandra.coordinator.dc")
 
-  /** The ID of the coordinating node for a query.
+  /** Deprecated, use `cassandra.coordinator.id` instead.
     */
+  @deprecated("Replaced by `cassandra.coordinator.id`.", "")
   val DbCassandraCoordinatorId: AttributeKey[String] =
     AttributeKey("db.cassandra.coordinator.id")
 
-  /** Whether or not the query is idempotent.
+  /** Deprecated, use `cassandra.query.idempotent` instead.
     */
+  @deprecated("Replaced by `cassandra.query.idempotent`.", "")
   val DbCassandraIdempotence: AttributeKey[Boolean] =
     AttributeKey("db.cassandra.idempotence")
 
-  /** The fetch size used for paging, i.e. how many rows will be returned at once.
+  /** Deprecated, use `cassandra.page.size` instead.
     */
+  @deprecated("Replaced by `cassandra.page.size`.", "")
   val DbCassandraPageSize: AttributeKey[Long] =
     AttributeKey("db.cassandra.page_size")
 
-  /** The number of times a query was speculatively executed. Not set or `0` if the query was not executed
-    * speculatively.
+  /** Deprecated, use `cassandra.speculative_execution.count` instead.
     */
+  @deprecated("Replaced by `cassandra.speculative_execution.count`.", "")
   val DbCassandraSpeculativeExecutionCount: AttributeKey[Long] =
     AttributeKey("db.cassandra.speculative_execution_count")
 
@@ -90,8 +94,7 @@ object DbExperimentalAttributes {
     *   <p> It is RECOMMENDED to capture the value as provided by the application without attempting to do any case
     *   normalization. <p> The collection name SHOULD NOT be extracted from `db.query.text`, unless the query format is
     *   known to only ever have a single collection name present. <p> For batch operations, if the individual operations
-    *   are known to have the same collection name then that collection name SHOULD be used. <p> This attribute has
-    *   stability level RELEASE CANDIDATE.
+    *   are known to have the same collection name then that collection name SHOULD be used.
     */
   val DbCollectionName: AttributeKey[String] =
     AttributeKey("db.collection.name")
@@ -102,18 +105,21 @@ object DbExperimentalAttributes {
   val DbConnectionString: AttributeKey[String] =
     AttributeKey("db.connection_string")
 
-  /** Unique Cosmos client instance id.
+  /** Deprecated, use `azure.client.id` instead.
     */
+  @deprecated("Replaced by `azure.client.id`.", "")
   val DbCosmosdbClientId: AttributeKey[String] =
     AttributeKey("db.cosmosdb.client_id")
 
-  /** Cosmos client connection mode.
+  /** Deprecated, use `azure.cosmosdb.connection.mode` instead.
     */
+  @deprecated("Replaced by `azure.cosmosdb.connection.mode`.", "")
   val DbCosmosdbConnectionMode: AttributeKey[String] =
     AttributeKey("db.cosmosdb.connection_mode")
 
-  /** Account or request <a href="https://learn.microsoft.com/azure/cosmos-db/consistency-levels">consistency level</a>.
+  /** Deprecated, use `cosmosdb.consistency.level` instead.
     */
+  @deprecated("Replaced by `azure.cosmosdb.consistency.level`.", "")
   val DbCosmosdbConsistencyLevel: AttributeKey[String] =
     AttributeKey("db.cosmosdb.consistency_level")
 
@@ -129,23 +135,21 @@ object DbExperimentalAttributes {
   val DbCosmosdbOperationType: AttributeKey[String] =
     AttributeKey("db.cosmosdb.operation_type")
 
-  /** List of regions contacted during operation in the order that they were contacted. If there is more than one region
-    * listed, it indicates that the operation was performed on multiple regions i.e. cross-regional call. <p>
-    * @note
-    *   <p> Region name matches the format of `displayName` in <a
-    *   href="https://learn.microsoft.com/rest/api/subscription/subscriptions/list-locations?view=rest-subscription-2021-10-01&tabs=HTTP#location">Azure
-    *   Location API</a>
+  /** Deprecated, use `azure.cosmosdb.operation.contacted_regions` instead.
     */
+  @deprecated("Replaced by `azure.cosmosdb.operation.contacted_regions`.", "")
   val DbCosmosdbRegionsContacted: AttributeKey[Seq[String]] =
     AttributeKey("db.cosmosdb.regions_contacted")
 
-  /** Request units consumed for the operation.
+  /** Deprecated, use `azure.cosmosdb.operation.request_charge` instead.
     */
+  @deprecated("Replaced by `azure.cosmosdb.operation.request_charge`.", "")
   val DbCosmosdbRequestCharge: AttributeKey[Double] =
     AttributeKey("db.cosmosdb.request_charge")
 
-  /** Request payload size in bytes.
+  /** Deprecated, use `azure.cosmosdb.request.body.size` instead.
     */
+  @deprecated("Replaced by `azure.cosmosdb.request.body.size`.", "")
   val DbCosmosdbRequestContentLength: AttributeKey[Long] =
     AttributeKey("db.cosmosdb.request_content_length")
 
@@ -155,8 +159,9 @@ object DbExperimentalAttributes {
   val DbCosmosdbStatusCode: AttributeKey[Long] =
     AttributeKey("db.cosmosdb.status_code")
 
-  /** Cosmos DB sub status code.
+  /** Deprecated, use `azure.cosmosdb.response.sub_status_code` instead.
     */
+  @deprecated("Replaced by `azure.cosmosdb.response.sub_status_code`.", "")
   val DbCosmosdbSubStatusCode: AttributeKey[Long] =
     AttributeKey("db.cosmosdb.sub_status_code")
 
@@ -166,19 +171,15 @@ object DbExperimentalAttributes {
   val DbElasticsearchClusterName: AttributeKey[String] =
     AttributeKey("db.elasticsearch.cluster.name")
 
-  /** Represents the human-readable identifier of the node/instance to which a request was routed.
+  /** Deprecated, use `elasticsearch.node.name` instead.
     */
+  @deprecated("Replaced by `elasticsearch.node.name`.", "")
   val DbElasticsearchNodeName: AttributeKey[String] =
     AttributeKey("db.elasticsearch.node.name")
 
-  /** A dynamic value in the url path. <p>
-    * @note
-    *   <p> Many Elasticsearch url paths allow dynamic values. These SHOULD be recorded in span attributes in the format
-    *   `db.elasticsearch.path_parts.<key>`, where `<key>` is the url path part name. The implementation SHOULD
-    *   reference the <a
-    *   href="https://raw.githubusercontent.com/elastic/elasticsearch-specification/main/output/schema/schema.json">elasticsearch
-    *   schema</a> in order to map the path part values to their names.
+  /** Deprecated, use `db.operation.parameter` instead.
     */
+  @deprecated("Replaced by `db.operation.parameter`.", "")
   val DbElasticsearchPathParts: AttributeKey[String] =
     AttributeKey("db.elasticsearch.path_parts")
 
@@ -222,8 +223,7 @@ object DbExperimentalAttributes {
     *   namespaces SHOULD NOT be captured without the more general namespaces, to ensure that "startswith" queries for
     *   the more general namespaces will be valid. Semantic conventions for individual database systems SHOULD document
     *   what `db.namespace` means in the context of that system. It is RECOMMENDED to capture the value as provided by
-    *   the application without attempting to do any case normalization. This attribute has stability level RELEASE
-    *   CANDIDATE.
+    *   the application without attempting to do any case normalization.
     */
   val DbNamespace: AttributeKey[String] =
     AttributeKey("db.namespace")
@@ -237,7 +237,7 @@ object DbExperimentalAttributes {
   /** The number of queries included in a batch operation. <p>
     * @note
     *   <p> Operations are only considered batches when they contain two or more operations, and so
-    *   `db.operation.batch.size` SHOULD never be `1`. This attribute has stability level RELEASE CANDIDATE.
+    *   `db.operation.batch.size` SHOULD never be `1`.
     */
   val DbOperationBatchSize: AttributeKey[Long] =
     AttributeKey("db.operation.batch.size")
@@ -249,7 +249,6 @@ object DbExperimentalAttributes {
     *   known to only ever have a single operation name present. <p> For batch operations, if the individual operations
     *   are known to have the same operation name then that operation name SHOULD be used prepended by `BATCH `,
     *   otherwise `db.operation.name` SHOULD be `BATCH` or some other database system specific term if more applicable.
-    *   <p> This attribute has stability level RELEASE CANDIDATE.
     */
   val DbOperationName: AttributeKey[String] =
     AttributeKey("db.operation.name")
@@ -259,7 +258,7 @@ object DbExperimentalAttributes {
     * @note
     *   <p> If a parameter has no name and instead is referenced only by index, then `<key>` SHOULD be the 0-based
     *   index. If `db.query.text` is also captured, then `db.operation.parameter.<key>` SHOULD match up with the
-    *   parameterized placeholders present in `db.query.text`. This attribute has stability level RELEASE CANDIDATE.
+    *   parameterized placeholders present in `db.query.text`.
     */
   val DbOperationParameter: AttributeKey[String] =
     AttributeKey("db.operation.parameter")
@@ -278,7 +277,7 @@ object DbExperimentalAttributes {
     *   Summary may be available to the instrumentation through instrumentation hooks or other means. If it is not
     *   available, instrumentations that support query parsing SHOULD generate a summary following <a
     *   href="../../docs/database/database-spans.md#generating-a-summary-of-the-query-text">Generating query summary</a>
-    *   section. This attribute has stability level RELEASE CANDIDATE.
+    *   section.
     */
   val DbQuerySummary: AttributeKey[String] =
     AttributeKey("db.query.summary")
@@ -292,7 +291,7 @@ object DbExperimentalAttributes {
     *   other database system specific separator if more applicable. Even though parameterized query text can
     *   potentially have sensitive data, by using a parameterized query the user is giving a strong signal that any
     *   sensitive data will be passed as parameter values, and the benefit to observability of capturing the static part
-    *   of the query text by default outweighs the risk. This attribute has stability level RELEASE CANDIDATE.
+    *   of the query text by default outweighs the risk.
     */
   val DbQueryText: AttributeKey[String] =
     AttributeKey("db.query.text")
@@ -313,7 +312,7 @@ object DbExperimentalAttributes {
     *   <p> The status code returned by the database. Usually it represents an error code, but may also represent
     *   partial success, warning, or differentiate between various types of successful outcomes. Semantic conventions
     *   for individual database systems SHOULD document what `db.response.status_code` means in the context of that
-    *   system. This attribute has stability level RELEASE CANDIDATE.
+    *   system.
     */
   val DbResponseStatusCode: AttributeKey[String] =
     AttributeKey("db.response.status_code")
@@ -330,14 +329,20 @@ object DbExperimentalAttributes {
   val DbStatement: AttributeKey[String] =
     AttributeKey("db.statement")
 
+  /** Deprecated, use `db.system.name` instead.
+    */
+  @deprecated("Replaced by `db.system.name`.", "")
+  val DbSystem: AttributeKey[String] =
+    AttributeKey("db.system")
+
   /** The database management system (DBMS) product as identified by the client instrumentation. <p>
     * @note
     *   <p> The actual DBMS may differ from the one identified by the client. For example, when using PostgreSQL client
-    *   libraries to connect to a CockroachDB, the `db.system` is set to `postgresql` based on the instrumentation's
-    *   best knowledge. This attribute has stability level RELEASE CANDIDATE.
+    *   libraries to connect to a CockroachDB, the `db.system.name` is set to `postgresql` based on the
+    *   instrumentation's best knowledge.
     */
-  val DbSystem: AttributeKey[String] =
-    AttributeKey("db.system")
+  val DbSystemName: AttributeKey[String] =
+    AttributeKey("db.system.name")
 
   /** Deprecated, no replacement at this time.
     */
@@ -347,7 +352,9 @@ object DbExperimentalAttributes {
 
   /** Values for [[DbCassandraConsistencyLevel]].
     */
+  @deprecated("Replaced by `cassandra.consistency.level`.", "")
   abstract class DbCassandraConsistencyLevelValue(val value: String)
+  @annotation.nowarn("cat=deprecation")
   object DbCassandraConsistencyLevelValue {
 
     /** all.
@@ -427,7 +434,9 @@ object DbExperimentalAttributes {
 
   /** Values for [[DbCosmosdbConnectionMode]].
     */
+  @deprecated("Replaced by `azure.cosmosdb.connection.mode`.", "")
   abstract class DbCosmosdbConnectionModeValue(val value: String)
+  @annotation.nowarn("cat=deprecation")
   object DbCosmosdbConnectionModeValue {
 
     /** Gateway (HTTP) connection.
@@ -441,7 +450,9 @@ object DbExperimentalAttributes {
 
   /** Values for [[DbCosmosdbConsistencyLevel]].
     */
+  @deprecated("Replaced by `azure.cosmosdb.consistency.level`.", "")
   abstract class DbCosmosdbConsistencyLevelValue(val value: String)
+  @annotation.nowarn("cat=deprecation")
   object DbCosmosdbConsistencyLevelValue {
 
     /** strong.
@@ -535,7 +546,9 @@ object DbExperimentalAttributes {
 
   /** Values for [[DbSystem]].
     */
+  @deprecated("Replaced by `db.system.name`.", "")
   abstract class DbSystemValue(val value: String)
+  @annotation.nowarn("cat=deprecation")
   object DbSystemValue {
 
     /** Some other SQL database. Fallback only. See notes.
@@ -753,6 +766,176 @@ object DbExperimentalAttributes {
     /** Vertica
       */
     case object Vertica extends DbSystemValue("vertica")
+  }
+
+  /** Values for [[DbSystemName]].
+    */
+  abstract class DbSystemNameValue(val value: String)
+  object DbSystemNameValue {
+
+    /** Some other SQL database. Fallback only.
+      */
+    case object OtherSql extends DbSystemNameValue("other_sql")
+
+    /** <a href="https://documentation.softwareag.com/?pf=adabas">Adabas (Adaptable Database System)</a>
+      */
+    case object SoftwareagAdabas extends DbSystemNameValue("softwareag.adabas")
+
+    /** <a href="https://www.actian.com/databases/ingres/">Actian Ingres</a>
+      */
+    case object ActianIngres extends DbSystemNameValue("actian.ingres")
+
+    /** <a href="https://aws.amazon.com/pm/dynamodb/">Amazon DynamoDB</a>
+      */
+    case object AwsDynamodb extends DbSystemNameValue("aws.dynamodb")
+
+    /** <a href="https://aws.amazon.com/redshift/">Amazon Redshift</a>
+      */
+    case object AwsRedshift extends DbSystemNameValue("aws.redshift")
+
+    /** <a href="https://learn.microsoft.com/azure/cosmos-db">Azure Cosmos DB</a>
+      */
+    case object AzureCosmosdb extends DbSystemNameValue("azure.cosmosdb")
+
+    /** <a href="https://www.intersystems.com/products/cache/">InterSystems Caché</a>
+      */
+    case object IntersystemsCache extends DbSystemNameValue("intersystems.cache")
+
+    /** <a href="https://cassandra.apache.org/">Apache Cassandra</a>
+      */
+    case object Cassandra extends DbSystemNameValue("cassandra")
+
+    /** <a href="https://clickhouse.com/">ClickHouse</a>
+      */
+    case object Clickhouse extends DbSystemNameValue("clickhouse")
+
+    /** <a href="https://www.cockroachlabs.com/">CockroachDB</a>
+      */
+    case object Cockroachdb extends DbSystemNameValue("cockroachdb")
+
+    /** <a href="https://www.couchbase.com/">Couchbase</a>
+      */
+    case object Couchbase extends DbSystemNameValue("couchbase")
+
+    /** <a href="https://couchdb.apache.org/">Apache CouchDB</a>
+      */
+    case object Couchdb extends DbSystemNameValue("couchdb")
+
+    /** <a href="https://db.apache.org/derby/">Apache Derby</a>
+      */
+    case object Derby extends DbSystemNameValue("derby")
+
+    /** <a href="https://www.elastic.co/elasticsearch">Elasticsearch</a>
+      */
+    case object Elasticsearch extends DbSystemNameValue("elasticsearch")
+
+    /** <a href="https://www.firebirdsql.org/">Firebird</a>
+      */
+    case object Firebirdsql extends DbSystemNameValue("firebirdsql")
+
+    /** <a href="https://cloud.google.com/spanner">Google Cloud Spanner</a>
+      */
+    case object GcpSpanner extends DbSystemNameValue("gcp.spanner")
+
+    /** <a href="https://geode.apache.org/">Apache Geode</a>
+      */
+    case object Geode extends DbSystemNameValue("geode")
+
+    /** <a href="https://h2database.com/">H2 Database</a>
+      */
+    case object H2database extends DbSystemNameValue("h2database")
+
+    /** <a href="https://hbase.apache.org/">Apache HBase</a>
+      */
+    case object Hbase extends DbSystemNameValue("hbase")
+
+    /** <a href="https://hive.apache.org/">Apache Hive</a>
+      */
+    case object Hive extends DbSystemNameValue("hive")
+
+    /** <a href="https://hsqldb.org/">HyperSQL Database</a>
+      */
+    case object Hsqldb extends DbSystemNameValue("hsqldb")
+
+    /** <a href="https://www.ibm.com/db2">IBM Db2</a>
+      */
+    case object IbmDb2 extends DbSystemNameValue("ibm.db2")
+
+    /** <a href="https://www.ibm.com/products/informix">IBM Informix</a>
+      */
+    case object IbmInformix extends DbSystemNameValue("ibm.informix")
+
+    /** <a href="https://www.ibm.com/products/netezza">IBM Netezza</a>
+      */
+    case object IbmNetezza extends DbSystemNameValue("ibm.netezza")
+
+    /** <a href="https://www.influxdata.com/">InfluxDB</a>
+      */
+    case object Influxdb extends DbSystemNameValue("influxdb")
+
+    /** <a href="https://www.instantdb.com/">Instant</a>
+      */
+    case object Instantdb extends DbSystemNameValue("instantdb")
+
+    /** <a href="https://mariadb.org/">MariaDB</a>
+      */
+    case object Mariadb extends DbSystemNameValue("mariadb")
+
+    /** <a href="https://memcached.org/">Memcached</a>
+      */
+    case object Memcached extends DbSystemNameValue("memcached")
+
+    /** <a href="https://www.mongodb.com/">MongoDB</a>
+      */
+    case object Mongodb extends DbSystemNameValue("mongodb")
+
+    /** <a href="https://www.microsoft.com/sql-server">Microsoft SQL Server</a>
+      */
+    case object MicrosoftSqlServer extends DbSystemNameValue("microsoft.sql_server")
+
+    /** <a href="https://www.mysql.com/">MySQL</a>
+      */
+    case object Mysql extends DbSystemNameValue("mysql")
+
+    /** <a href="https://neo4j.com/">Neo4j</a>
+      */
+    case object Neo4j extends DbSystemNameValue("neo4j")
+
+    /** <a href="https://opensearch.org/">OpenSearch</a>
+      */
+    case object Opensearch extends DbSystemNameValue("opensearch")
+
+    /** <a href="https://www.oracle.com/database/">Oracle Database</a>
+      */
+    case object OracleDb extends DbSystemNameValue("oracle.db")
+
+    /** <a href="https://www.postgresql.org/">PostgreSQL</a>
+      */
+    case object Postgresql extends DbSystemNameValue("postgresql")
+
+    /** <a href="https://redis.io/">Redis</a>
+      */
+    case object Redis extends DbSystemNameValue("redis")
+
+    /** <a href="https://www.sap.com/products/technology-platform/hana/what-is-sap-hana.html">SAP HANA</a>
+      */
+    case object SapHana extends DbSystemNameValue("sap.hana")
+
+    /** <a href="https://maxdb.sap.com/">SAP MaxDB</a>
+      */
+    case object SapMaxdb extends DbSystemNameValue("sap.maxdb")
+
+    /** <a href="https://www.sqlite.org/">SQLite</a>
+      */
+    case object Sqlite extends DbSystemNameValue("sqlite")
+
+    /** <a href="https://www.teradata.com/">Teradata</a>
+      */
+    case object Teradata extends DbSystemNameValue("teradata")
+
+    /** <a href="https://trino.io/">Trino</a>
+      */
+    case object Trino extends DbSystemNameValue("trino")
   }
 
 }

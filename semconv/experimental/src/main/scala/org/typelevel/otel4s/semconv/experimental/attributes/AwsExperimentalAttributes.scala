@@ -177,6 +177,11 @@ object AwsExperimentalAttributes {
   val AwsEksClusterArn: AttributeKey[String] =
     AttributeKey("aws.eks.cluster.arn")
 
+  /** The AWS extended request ID as returned in the response header `x-amz-id-2`.
+    */
+  val AwsExtendedRequestId: AttributeKey[String] =
+    AttributeKey("aws.extended_request_id")
+
   /** The full invoked ARN as provided on the `Context` passed to the function (`Lambda-Runtime-Invoked-Function-Arn`
     * header on the `/runtime/invocation/next` applicable). <p>
     * @note
@@ -217,7 +222,8 @@ object AwsExperimentalAttributes {
   val AwsLogStreamNames: AttributeKey[Seq[String]] =
     AttributeKey("aws.log.stream.names")
 
-  /** The AWS request ID as returned in the response headers `x-amz-request-id` or `x-amz-requestid`.
+  /** The AWS request ID as returned in the response headers `x-amzn-requestid`, `x-amzn-request-id` or
+    * `x-amz-request-id`.
     */
   val AwsRequestId: AttributeKey[String] =
     AttributeKey("aws.request_id")

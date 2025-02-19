@@ -75,9 +75,9 @@ object ContainerExperimentalAttributes {
     *   <p> Docker defines a sha256 of the image id; `container.image.id` corresponds to the `Image` field from the
     *   Docker container inspect <a
     *   href="https://docs.docker.com/engine/api/v1.43/#tag/Container/operation/ContainerInspect">API</a> endpoint. K8s
-    *   defines a link to the container registry repository with digest `"imageID": "registry.azurecr.io
-    *   /namespace/service/dockerfile@sha256:bdeabd40c3a8a492eaf9e8e44d0ebbb84bac7ee25ac0cf8a7159d25f62555625"`. The ID
-    *   is assigned by the container runtime and can vary in different environments. Consider using
+    *   defines a link to the container registry repository with digest
+    *   `"imageID": "registry.azurecr.io /namespace/service/dockerfile@sha256:bdeabd40c3a8a492eaf9e8e44d0ebbb84bac7ee25ac0cf8a7159d25f62555625"`.
+    *   The ID is assigned by the container runtime and can vary in different environments. Consider using
     *   `oci.manifest.digest` if it is important to identify the same image in different environments/runtimes.
     */
   val ContainerImageId: AttributeKey[String] =

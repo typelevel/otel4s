@@ -117,7 +117,10 @@ object SystemExperimentalMetrics {
 
   }
 
-  /** Reports the number of logical (virtual) processor cores created by the operating system to manage multitasking
+  /** Reports the number of logical (virtual) processor cores created by the operating system to manage multitasking <p>
+    * @note
+    *   <p> Calculated by multiplying the number of sockets by the number of cores per socket, and then by the number of
+    *   threads per core
     */
   object CpuLogicalCount extends MetricSpec {
 
@@ -153,7 +156,9 @@ object SystemExperimentalMetrics {
 
   }
 
-  /** Reports the number of actual physical processor cores on the hardware
+  /** Reports the number of actual physical processor cores on the hardware <p>
+    * @note
+    *   <p> Calculated by multiplying the number of sockets by the number of cores per socket
     */
   object CpuPhysicalCount extends MetricSpec {
 
@@ -1342,6 +1347,21 @@ object SystemExperimentalMetrics {
 
     object AttributeSpecs {
 
+      /** The state of network connection <p>
+        * @note
+        *   <p> Connection states are defined as part of the <a
+        *   href="https://datatracker.ietf.org/doc/html/rfc9293#section-3.3.2">rfc9293</a>
+        */
+      val networkConnectionState: AttributeSpec[String] =
+        AttributeSpec(
+          NetworkExperimentalAttributes.NetworkConnectionState,
+          List(
+            "close_wait",
+          ),
+          Requirement.recommended,
+          Stability.development
+        )
+
       /** The network interface name.
         */
       val networkInterfaceName: AttributeSpec[String] =
@@ -1373,23 +1393,11 @@ object SystemExperimentalMetrics {
           Stability.stable
         )
 
-      /** A stateless protocol MUST NOT set this attribute
-        */
-      val systemNetworkState: AttributeSpec[String] =
-        AttributeSpec(
-          SystemExperimentalAttributes.SystemNetworkState,
-          List(
-            "close_wait",
-          ),
-          Requirement.recommended,
-          Stability.development
-        )
-
       val specs: List[AttributeSpec[_]] =
         List(
+          networkConnectionState,
           networkInterfaceName,
           networkTransport,
-          systemNetworkState,
         )
     }
 

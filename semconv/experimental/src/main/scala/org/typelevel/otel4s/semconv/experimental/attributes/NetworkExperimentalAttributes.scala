@@ -41,6 +41,14 @@ object NetworkExperimentalAttributes {
   val NetworkCarrierName: AttributeKey[String] =
     AttributeKey("network.carrier.name")
 
+  /** The state of network connection <p>
+    * @note
+    *   <p> Connection states are defined as part of the <a
+    *   href="https://datatracker.ietf.org/doc/html/rfc9293#section-3.3.2">rfc9293</a>
+    */
+  val NetworkConnectionState: AttributeKey[String] =
+    AttributeKey("network.connection.state")
+
   /** This describes more details regarding the connection.type. It may be the type of cell technology connection, but
     * it could be used for describing details about a wifi connection.
     */
@@ -146,6 +154,56 @@ object NetworkExperimentalAttributes {
   )
   val NetworkType: AttributeKey[String] =
     AttributeKey("network.type")
+
+  /** Values for [[NetworkConnectionState]].
+    */
+  abstract class NetworkConnectionStateValue(val value: String)
+  object NetworkConnectionStateValue {
+
+    /** closed.
+      */
+    case object Closed extends NetworkConnectionStateValue("closed")
+
+    /** close_wait.
+      */
+    case object CloseWait extends NetworkConnectionStateValue("close_wait")
+
+    /** closing.
+      */
+    case object Closing extends NetworkConnectionStateValue("closing")
+
+    /** established.
+      */
+    case object Established extends NetworkConnectionStateValue("established")
+
+    /** fin_wait_1.
+      */
+    case object FinWait1 extends NetworkConnectionStateValue("fin_wait_1")
+
+    /** fin_wait_2.
+      */
+    case object FinWait2 extends NetworkConnectionStateValue("fin_wait_2")
+
+    /** last_ack.
+      */
+    case object LastAck extends NetworkConnectionStateValue("last_ack")
+
+    /** listen.
+      */
+    case object Listen extends NetworkConnectionStateValue("listen")
+
+    /** syn_received.
+      */
+    case object SynReceived extends NetworkConnectionStateValue("syn_received")
+
+    /** syn_sent.
+      */
+    case object SynSent extends NetworkConnectionStateValue("syn_sent")
+
+    /** time_wait.
+      */
+    case object TimeWait extends NetworkConnectionStateValue("time_wait")
+  }
 
   /** Values for [[NetworkConnectionSubtype]].
     */

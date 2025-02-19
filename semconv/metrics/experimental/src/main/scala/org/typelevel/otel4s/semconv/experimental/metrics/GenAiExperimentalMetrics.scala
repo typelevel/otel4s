@@ -113,10 +113,11 @@ object GenAiExperimentalMetrics {
         * @note
         *   <p> The `gen_ai.system` describes a family of GenAI models with specific model identified by
         *   `gen_ai.request.model` and `gen_ai.response.model` attributes. <p> The actual GenAI product may differ from
-        *   the one identified by the client. For example, when using OpenAI client libraries to communicate with
-        *   Mistral, the `gen_ai.system` is set to `openai` based on the instrumentation's best knowledge. <p> For
-        *   custom model, a custom friendly name SHOULD be used. If none of these options apply, the `gen_ai.system`
-        *   SHOULD be set to `_OTHER`.
+        *   the one identified by the client. Multiple systems, including Azure OpenAI and Gemini, are accessible by
+        *   OpenAI client libraries. In such cases, the `gen_ai.system` is set to `openai` based on the
+        *   instrumentation's best knowledge, instead of the actual system. The `server.address` attribute may help
+        *   identify the actual system in use for `openai`. <p> For custom model, a custom friendly name SHOULD be used.
+        *   If none of these options apply, the `gen_ai.system` SHOULD be set to `_OTHER`.
         */
       val genAiSystem: AttributeSpec[String] =
         AttributeSpec(
@@ -249,10 +250,11 @@ object GenAiExperimentalMetrics {
         * @note
         *   <p> The `gen_ai.system` describes a family of GenAI models with specific model identified by
         *   `gen_ai.request.model` and `gen_ai.response.model` attributes. <p> The actual GenAI product may differ from
-        *   the one identified by the client. For example, when using OpenAI client libraries to communicate with
-        *   Mistral, the `gen_ai.system` is set to `openai` based on the instrumentation's best knowledge. <p> For
-        *   custom model, a custom friendly name SHOULD be used. If none of these options apply, the `gen_ai.system`
-        *   SHOULD be set to `_OTHER`.
+        *   the one identified by the client. Multiple systems, including Azure OpenAI and Gemini, are accessible by
+        *   OpenAI client libraries. In such cases, the `gen_ai.system` is set to `openai` based on the
+        *   instrumentation's best knowledge, instead of the actual system. The `server.address` attribute may help
+        *   identify the actual system in use for `openai`. <p> For custom model, a custom friendly name SHOULD be used.
+        *   If none of these options apply, the `gen_ai.system` SHOULD be set to `_OTHER`.
         */
       val genAiSystem: AttributeSpec[String] =
         AttributeSpec(
@@ -417,10 +419,11 @@ object GenAiExperimentalMetrics {
         * @note
         *   <p> The `gen_ai.system` describes a family of GenAI models with specific model identified by
         *   `gen_ai.request.model` and `gen_ai.response.model` attributes. <p> The actual GenAI product may differ from
-        *   the one identified by the client. For example, when using OpenAI client libraries to communicate with
-        *   Mistral, the `gen_ai.system` is set to `openai` based on the instrumentation's best knowledge. <p> For
-        *   custom model, a custom friendly name SHOULD be used. If none of these options apply, the `gen_ai.system`
-        *   SHOULD be set to `_OTHER`.
+        *   the one identified by the client. Multiple systems, including Azure OpenAI and Gemini, are accessible by
+        *   OpenAI client libraries. In such cases, the `gen_ai.system` is set to `openai` based on the
+        *   instrumentation's best knowledge, instead of the actual system. The `server.address` attribute may help
+        *   identify the actual system in use for `openai`. <p> For custom model, a custom friendly name SHOULD be used.
+        *   If none of these options apply, the `gen_ai.system` SHOULD be set to `_OTHER`.
         */
       val genAiSystem: AttributeSpec[String] =
         AttributeSpec(
@@ -553,10 +556,11 @@ object GenAiExperimentalMetrics {
         * @note
         *   <p> The `gen_ai.system` describes a family of GenAI models with specific model identified by
         *   `gen_ai.request.model` and `gen_ai.response.model` attributes. <p> The actual GenAI product may differ from
-        *   the one identified by the client. For example, when using OpenAI client libraries to communicate with
-        *   Mistral, the `gen_ai.system` is set to `openai` based on the instrumentation's best knowledge. <p> For
-        *   custom model, a custom friendly name SHOULD be used. If none of these options apply, the `gen_ai.system`
-        *   SHOULD be set to `_OTHER`.
+        *   the one identified by the client. Multiple systems, including Azure OpenAI and Gemini, are accessible by
+        *   OpenAI client libraries. In such cases, the `gen_ai.system` is set to `openai` based on the
+        *   instrumentation's best knowledge, instead of the actual system. The `server.address` attribute may help
+        *   identify the actual system in use for `openai`. <p> For custom model, a custom friendly name SHOULD be used.
+        *   If none of these options apply, the `gen_ai.system` SHOULD be set to `_OTHER`.
         */
       val genAiSystem: AttributeSpec[String] =
         AttributeSpec(
@@ -688,10 +692,11 @@ object GenAiExperimentalMetrics {
         * @note
         *   <p> The `gen_ai.system` describes a family of GenAI models with specific model identified by
         *   `gen_ai.request.model` and `gen_ai.response.model` attributes. <p> The actual GenAI product may differ from
-        *   the one identified by the client. For example, when using OpenAI client libraries to communicate with
-        *   Mistral, the `gen_ai.system` is set to `openai` based on the instrumentation's best knowledge. <p> For
-        *   custom model, a custom friendly name SHOULD be used. If none of these options apply, the `gen_ai.system`
-        *   SHOULD be set to `_OTHER`.
+        *   the one identified by the client. Multiple systems, including Azure OpenAI and Gemini, are accessible by
+        *   OpenAI client libraries. In such cases, the `gen_ai.system` is set to `openai` based on the
+        *   instrumentation's best knowledge, instead of the actual system. The `server.address` attribute may help
+        *   identify the actual system in use for `openai`. <p> For custom model, a custom friendly name SHOULD be used.
+        *   If none of these options apply, the `gen_ai.system` SHOULD be set to `_OTHER`.
         */
       val genAiSystem: AttributeSpec[String] =
         AttributeSpec(

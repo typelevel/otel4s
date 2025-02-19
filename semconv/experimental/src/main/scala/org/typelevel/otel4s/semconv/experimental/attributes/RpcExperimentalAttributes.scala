@@ -122,8 +122,8 @@ object RpcExperimentalAttributes {
   /** The name of the (logical) method being called, must be equal to the $$method part in the span name. <p>
     * @note
     *   <p> This is the logical name of the method from the RPC interface perspective, which can be different from the
-    *   name of any implementing method/function. The `code.function` attribute may be used to store the latter (e.g.,
-    *   method actually executing the call on the server side, RPC client stub method on the client side).
+    *   name of any implementing method/function. The `code.function.name` attribute may be used to store the latter
+    *   (e.g., method actually executing the call on the server side, RPC client stub method on the client side).
     */
   val RpcMethod: AttributeKey[String] =
     AttributeKey("rpc.method")

@@ -62,8 +62,9 @@ object SystemExperimentalAttributes {
   val SystemMemoryState: AttributeKey[String] =
     AttributeKey("system.memory.state")
 
-  /** A stateless protocol MUST NOT set this attribute
+  /** Deprecated, use `network.connection.state` instead.
     */
+  @deprecated("Removed, report network connection state with `network.connection.state` attribute", "")
   val SystemNetworkState: AttributeKey[String] =
     AttributeKey("system.network.state")
 
@@ -206,7 +207,9 @@ object SystemExperimentalAttributes {
 
   /** Values for [[SystemNetworkState]].
     */
+  @deprecated("Removed, report network connection state with `network.connection.state` attribute", "")
   abstract class SystemNetworkStateValue(val value: String)
+  @annotation.nowarn("cat=deprecation")
   object SystemNetworkStateValue {
 
     /** close.

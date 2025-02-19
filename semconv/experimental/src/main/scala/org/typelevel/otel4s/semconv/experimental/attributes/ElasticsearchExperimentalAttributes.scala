@@ -19,12 +19,11 @@ package semconv
 package experimental.attributes
 
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/attributes/SemanticAttributes.scala.j2
-object EventExperimentalAttributes {
+object ElasticsearchExperimentalAttributes {
 
-  /** Identifies the class / type of event.
+  /** Represents the human-readable identifier of the node/instance to which a request was routed.
     */
-  @deprecated("Replaced by EventName top-level field on the LogRecord", "")
-  val EventName: AttributeKey[String] =
-    AttributeKey("event.name")
+  val ElasticsearchNodeName: AttributeKey[String] =
+    AttributeKey("elasticsearch.node.name")
 
 }

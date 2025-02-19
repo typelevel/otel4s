@@ -44,7 +44,10 @@ object VcsExperimentalAttributes {
     AttributeKey("vcs.line_change.type")
 
   /** The name of the <a href="https://git-scm.com/docs/gitglossary#def_ref">reference</a> such as
-    * <strong>branch</strong> or <strong>tag</strong> in the repository.
+    * <strong>branch</strong> or <strong>tag</strong> in the repository. <p>
+    * @note
+    *   <p> `base` refers to the starting point of a change. For example, `main` would be the base reference of type
+    *   branch if you've created a new reference of type branch from it and created new commits.
     */
   val VcsRefBaseName: AttributeKey[String] =
     AttributeKey("vcs.ref.base.name")
@@ -52,8 +55,10 @@ object VcsExperimentalAttributes {
   /** The revision, literally <a href="https://www.merriam-webster.com/dictionary/revision">revised version</a>, The
     * revision most often refers to a commit object in Git, or a revision number in SVN. <p>
     * @note
-    *   <p> The revision can be a full <a href="https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.186-5.pdf">hash value
-    *   (see glossary)</a>, of the recorded change to a ref within a repository pointing to a commit <a
+    *   <p> `base` refers to the starting point of a change. For example, `main` would be the base reference of type
+    *   branch if you've created a new reference of type branch from it and created new commits. The revision can be a
+    *   full <a href="https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.186-5.pdf">hash value (see glossary)</a>, of the
+    *   recorded change to a ref within a repository pointing to a commit <a
     *   href="https://git-scm.com/docs/git-commit">commit</a> object. It does not necessarily have to be a hash; it can
     *   simply define a <a href="https://svnbook.red-bean.com/en/1.7/svn.tour.revs.specifiers.html">revision number</a>
     *   which is an integer that is monotonically increasing. In cases where it is identical to the `ref.base.name`, it
@@ -63,13 +68,18 @@ object VcsExperimentalAttributes {
   val VcsRefBaseRevision: AttributeKey[String] =
     AttributeKey("vcs.ref.base.revision")
 
-  /** The type of the <a href="https://git-scm.com/docs/gitglossary#def_ref">reference</a> in the repository.
+  /** The type of the <a href="https://git-scm.com/docs/gitglossary#def_ref">reference</a> in the repository. <p>
+    * @note
+    *   <p> `base` refers to the starting point of a change. For example, `main` would be the base reference of type
+    *   branch if you've created a new reference of type branch from it and created new commits.
     */
   val VcsRefBaseType: AttributeKey[String] =
     AttributeKey("vcs.ref.base.type")
 
   /** The name of the <a href="https://git-scm.com/docs/gitglossary#def_ref">reference</a> such as
-    * <strong>branch</strong> or <strong>tag</strong> in the repository.
+    * <strong>branch</strong> or <strong>tag</strong> in the repository. <p>
+    * @note
+    *   <p> `head` refers to where you are right now; the current reference at a given time.
     */
   val VcsRefHeadName: AttributeKey[String] =
     AttributeKey("vcs.ref.head.name")
@@ -77,8 +87,9 @@ object VcsExperimentalAttributes {
   /** The revision, literally <a href="https://www.merriam-webster.com/dictionary/revision">revised version</a>, The
     * revision most often refers to a commit object in Git, or a revision number in SVN. <p>
     * @note
-    *   <p> The revision can be a full <a href="https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.186-5.pdf">hash value
-    *   (see glossary)</a>, of the recorded change to a ref within a repository pointing to a commit <a
+    *   <p> `head` refers to where you are right now; the current reference at a given time.The revision can be a full
+    *   <a href="https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.186-5.pdf">hash value (see glossary)</a>, of the
+    *   recorded change to a ref within a repository pointing to a commit <a
     *   href="https://git-scm.com/docs/git-commit">commit</a> object. It does not necessarily have to be a hash; it can
     *   simply define a <a href="https://svnbook.red-bean.com/en/1.7/svn.tour.revs.specifiers.html">revision number</a>
     *   which is an integer that is monotonically increasing. In cases where it is identical to the `ref.head.name`, it
@@ -88,7 +99,9 @@ object VcsExperimentalAttributes {
   val VcsRefHeadRevision: AttributeKey[String] =
     AttributeKey("vcs.ref.head.revision")
 
-  /** The type of the <a href="https://git-scm.com/docs/gitglossary#def_ref">reference</a> in the repository.
+  /** The type of the <a href="https://git-scm.com/docs/gitglossary#def_ref">reference</a> in the repository. <p>
+    * @note
+    *   <p> `head` refers to where you are right now; the current reference at a given time.
     */
   val VcsRefHeadType: AttributeKey[String] =
     AttributeKey("vcs.ref.head.type")
@@ -110,6 +123,15 @@ object VcsExperimentalAttributes {
   val VcsRepositoryChangeTitle: AttributeKey[String] =
     AttributeKey("vcs.repository.change.title")
 
+  /** The human readable name of the repository. It SHOULD NOT include any additional identifier like Group/SubGroup in
+    * GitLab or organization in GitHub. <p>
+    * @note
+    *   <p> Due to it only being the name, it can clash with forks of the same repository if collecting telemetry across
+    *   multiple orgs or groups in the same backends.
+    */
+  val VcsRepositoryName: AttributeKey[String] =
+    AttributeKey("vcs.repository.name")
+
   /** Deprecated, use `vcs.ref.head.name` instead.
     */
   @deprecated("Deprecated, use `vcs.ref.head.name` instead.", "")
@@ -128,8 +150,12 @@ object VcsExperimentalAttributes {
   val VcsRepositoryRefType: AttributeKey[String] =
     AttributeKey("vcs.repository.ref.type")
 
-  /** The <a href="https://wikipedia.org/wiki/URL">URL</a> of the repository providing the complete address in order to
-    * locate and identify the repository.
+  /** The <a
+    * href="https://support.google.com/webmasters/answer/10347851?hl=en#:~:text=A%20canonical%20URL%20is%20the,Google%20chooses%20one%20as%20canonical.">canonical
+    * URL</a> of the repository providing the complete HTTP(S) address in order to locate and identify the repository
+    * through a browser. <p>
+    * @note
+    *   <p> In Git Version Control Systems, the canonical URL SHOULD NOT include the `.git` extension.
     */
   val VcsRepositoryUrlFull: AttributeKey[String] =
     AttributeKey("vcs.repository.url.full")

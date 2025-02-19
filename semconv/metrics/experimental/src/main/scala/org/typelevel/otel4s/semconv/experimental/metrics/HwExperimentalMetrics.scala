@@ -353,7 +353,7 @@ object HwExperimentalMetrics {
   /** Operational status: `1` (true) or `0` (false) for each of the possible states <p>
     * @note
     *   <p> `hw.status` is currently specified as an <em>UpDownCounter</em> but would ideally be represented using a <a
-    *   href="https://github.com/OpenObservability/OpenMetrics/blob/main/specification/OpenMetrics.md#stateset"><em>StateSet</em>
+    *   href="https://github.com/prometheus/OpenMetrics/blob/v1.0.0/specification/OpenMetrics.md#stateset"><em>StateSet</em>
     *   as defined in OpenMetrics</a>. This semantic convention will be updated once <em>StateSet</em> is specified in
     *   OpenTelemetry. This planned change is not expected to have any consequence on the way users query their
     *   timeseries backend to retrieve the values of `hw.status` over time.

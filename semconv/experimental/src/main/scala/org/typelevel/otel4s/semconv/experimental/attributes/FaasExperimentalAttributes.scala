@@ -103,13 +103,13 @@ object FaasExperimentalAttributes {
     * @note
     *   <p> This is the name of the function as configured/deployed on the FaaS platform and is usually different from
     *   the name of the callback function (which may be stored in the <a
-    *   href="/docs/general/attributes.md#source-code-attributes">`code.namespace`/`code.function`</a> span attributes).
-    *   <p> For some cloud providers, the above definition is ambiguous. The following definition of function name MUST
-    *   be used for this attribute (and consequently the span name) for the listed cloud providers/products: <ul>
-    *   <li><strong>Azure:</strong> The full name `<FUNCAPP>/<FUNC>`, i.e., function app name followed by a forward
-    *   slash followed by the function name (this form can also be seen in the resource JSON for the function). This
-    *   means that a span attribute MUST be used, as an Azure function app can host multiple functions that would
-    *   usually share a TracerProvider (see also the `cloud.resource_id` attribute). </ul>
+    *   href="/docs/general/attributes.md#source-code-attributes">`code.namespace`/`code.function.name`</a> span
+    *   attributes). <p> For some cloud providers, the above definition is ambiguous. The following definition of
+    *   function name MUST be used for this attribute (and consequently the span name) for the listed cloud
+    *   providers/products: <ul> <li><strong>Azure:</strong> The full name `<FUNCAPP>/<FUNC>`, i.e., function app name
+    *   followed by a forward slash followed by the function name (this form can also be seen in the resource JSON for
+    *   the function). This means that a span attribute MUST be used, as an Azure function app can host multiple
+    *   functions that would usually share a TracerProvider (see also the `cloud.resource_id` attribute). </ul>
     */
   val FaasName: AttributeKey[String] =
     AttributeKey("faas.name")

@@ -163,8 +163,7 @@ class SdkSpanBackendSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
             spanLimits.maxNumberOfAttributesPerEvent,
             spanLimits.maxAttributeValueLength
           )
-          .appendAll(attributes),
-        escaped = false
+          .appendAll(attributes)
       )
 
       TestControl.executeEmbed {

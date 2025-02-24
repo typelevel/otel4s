@@ -161,6 +161,9 @@ mermaid.initialize({
     <li class="level1 nav-leaf"><a href="#starting-a-root-span">Starting a root span</a></li>
     <li class="level1 nav-leaf"><a href="#running-effect-without-tracing">Running effect without tracing</a></li>
     <li class="level1 nav-leaf"><a href="#starting-an-unmanaged-span">Starting an unmanaged span</a></li>
+    <li class="level1 nav-node"><a href="#tracing-a-resource">Tracing a resource</a></li>
+    <li class="level2 nav-leaf"><a href="#structured-spans">Structured spans</a></li>
+    <li class="level2 nav-leaf"><a href="#acquire-and-release-spans">Acquire and release spans</a></li>
   </ul>
 
   <p class="footer"></p>
@@ -287,8 +290,9 @@ mermaid.initialize({
     dateFormat HH:mm:ss
     axisFormat %H:%M:%S
 
-    section Spans
-    find-user { user_id = -1 }     :done, a3, 00:00:00, 00:00:10
+    section Span 1
+    find-user { user_id = -1 }     :done, a1, 00:00:00, 00:00:10
+    section Span 2
     find-user { user_id = 123 }    :done, a2, 00:00:00, 00:00:10</pre>
         <ol class="arabic">
           <li><code>Tracer[F].rootSpan(&quot;handle-user&quot;).surround(activateUser(userId))</code> will create two <strong>child</strong> spans:</li>
@@ -370,6 +374,111 @@ mermaid.initialize({
     auto (root)                         :done, a1, 00:00:00, 00:00:10
     unmanaged (child of &#39;auto&#39;)         :done, a2, 00:00:02, 00:00:09
     child-1 (child of &#39;unmanaged&#39;)      :done, a3, 00:00:03, 00:00:08</pre>
+        
+        <h3 id="tracing-a-resource" class="section"><a class="anchor-link left" href="#tracing-a-resource"><i class="icofont-laika link">&#xef71;</i></a>Tracing a resource</h3>
+        <p>You can use <code>Tracer[F].span(&quot;resource&quot;).resource</code> to create a managed span.</p>
+        <div class="callout warning">
+          <i class="icofont-laika warning">&#xf026;</i>
+          <p>The span started by the <code>.resource</code> <strong>isn&#39;t propagated automatically</strong> to the resource closure.
+          The propagation doesn&#39;t work because <code>Resource</code> abstraction is leaky regarding the fiber context propagation.
+          Check out the <a href="https://github.com/typelevel/otel4s/issues/194">context</a>.</p>
+        </div>
+        <p>Consider the following example:</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.</span><span class="identifier">_</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">syntax</span><span>.</span><span class="identifier">functor</span><span>.</span><span class="identifier">_</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">trace</span><span>.{</span><span class="type-name">Tracer</span><span>, </span><span class="type-name">SpanOps</span><span>}
+
+</span><span class="keyword">def</span><span> </span><span class="declaration-name">withResource</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>]: </span><span class="type-name">Async</span><span>: </span><span class="type-name">Tracer</span><span>]: </span><span class="type-name">F</span><span>[</span><span class="type-name">Unit</span><span>] =
+  </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">span</span><span>(</span><span class="string-literal">&quot;my-resource-span&quot;</span><span>).</span><span class="identifier">resource</span><span>.</span><span class="identifier">use</span><span> { </span><span class="keyword">case</span><span> </span><span class="type-name">SpanOps</span><span>.</span><span class="type-name">Res</span><span>(</span><span class="identifier">_</span><span>, </span><span class="identifier">_</span><span>) =&gt;
+    </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">currentSpanContext</span><span>.</span><span class="identifier">void</span><span> </span><span class="comment">// returns `None`
+</span><span>  }</span></code></pre>
+        <p>you must evaluate the inner effect within the <code>trace</code> to propagate span details:</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">def</span><span> </span><span class="declaration-name">withResource</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>]: </span><span class="type-name">Async</span><span>: </span><span class="type-name">Tracer</span><span>]: </span><span class="type-name">F</span><span>[</span><span class="type-name">Unit</span><span>] =
+  </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">span</span><span>(</span><span class="string-literal">&quot;my-resource-span&quot;</span><span>).</span><span class="identifier">resource</span><span>.</span><span class="identifier">use</span><span> { </span><span class="keyword">case</span><span> </span><span class="type-name">SpanOps</span><span>.</span><span class="type-name">Res</span><span>(</span><span class="identifier">_</span><span>, </span><span class="identifier">trace</span><span>) =&gt;
+    </span><span class="identifier">trace</span><span>(</span><span class="type-name">Tracer</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">currentSpanContext</span><span>).</span><span class="identifier">void</span><span> </span><span class="comment">// returns `Some(SpanContext{traceId=&quot;...&quot;, })`
+</span><span>  }</span></code></pre>
+        
+        <h4 id="structured-spans" class="section"><a class="anchor-link left" href="#structured-spans"><i class="icofont-laika link">&#xef71;</i></a>Structured spans</h4>
+        <p>You can achieve structured spans in the following way:</p>
+        <pre><code class="nohighlight"><span class="keyword">class</span><span> </span><span class="type-name">Connection</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>]: </span><span class="type-name">Tracer</span><span>] {
+  </span><span class="keyword">def</span><span> </span><span class="declaration-name">use</span><span>[</span><span class="type-name">A</span><span>](</span><span class="identifier">f</span><span>: </span><span class="type-name">Connection</span><span>[</span><span class="type-name">F</span><span>] =&gt; </span><span class="type-name">F</span><span>[</span><span class="type-name">A</span><span>]): </span><span class="type-name">F</span><span>[</span><span class="type-name">A</span><span>] =
+    </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">span</span><span>(</span><span class="string-literal">&quot;use_conn&quot;</span><span>).</span><span class="identifier">surround</span><span>(</span><span class="identifier">f</span><span>(</span><span class="keyword">this</span><span>))
+}
+
+</span><span class="keyword">object</span><span> </span><span class="type-name">Connection</span><span> {
+  </span><span class="keyword">def</span><span> </span><span class="declaration-name">create</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>]: </span><span class="type-name">Async</span><span>: </span><span class="type-name">Tracer</span><span>]: </span><span class="type-name">Resource</span><span>[</span><span class="type-name">F</span><span>, </span><span class="type-name">Connection</span><span>[</span><span class="type-name">F</span><span>]] = 
+    </span><span class="type-name">Resource</span><span>.</span><span class="identifier">make</span><span>(
+      </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">span</span><span>(</span><span class="string-literal">&quot;acquire&quot;</span><span>).</span><span class="identifier">surround</span><span>(</span><span class="type-name">Async</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">pure</span><span>(</span><span class="keyword">new</span><span> </span><span class="type-name">Connection</span><span>[</span><span class="type-name">F</span><span>]))
+    )(</span><span class="identifier">_</span><span> =&gt; </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">span</span><span>(</span><span class="string-literal">&quot;release&quot;</span><span>).</span><span class="identifier">surround</span><span>(</span><span class="type-name">Async</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">unit</span><span>))
+}
+
+</span><span class="keyword">class</span><span> </span><span class="type-name">App</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>]: </span><span class="type-name">Async</span><span>: </span><span class="type-name">Tracer</span><span>] {
+  </span><span class="keyword">def</span><span> </span><span class="declaration-name">withConnection</span><span>[</span><span class="type-name">A</span><span>](</span><span class="identifier">f</span><span>: </span><span class="type-name">Connection</span><span>[</span><span class="type-name">F</span><span>] =&gt; </span><span class="type-name">F</span><span>[</span><span class="type-name">A</span><span>]): </span><span class="type-name">F</span><span>[</span><span class="type-name">A</span><span>] =
+    (</span><span class="keyword">for</span><span> {
+      </span><span class="identifier">r</span><span> &lt;- </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">span</span><span>(</span><span class="string-literal">&quot;resource&quot;</span><span>).</span><span class="identifier">resource</span><span>
+      </span><span class="identifier">c</span><span> &lt;- </span><span class="type-name">Connection</span><span>.</span><span class="identifier">create</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">mapK</span><span>(</span><span class="identifier">r</span><span>.</span><span class="identifier">trace</span><span>)
+    } </span><span class="keyword">yield</span><span> (</span><span class="identifier">r</span><span>, </span><span class="identifier">c</span><span>)).</span><span class="identifier">use</span><span> { </span><span class="keyword">case</span><span> (</span><span class="identifier">res</span><span>, </span><span class="identifier">connection</span><span>) =&gt;
+      </span><span class="identifier">res</span><span>.</span><span class="identifier">trace</span><span>(</span><span class="type-name">Tracer</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">span</span><span>(</span><span class="string-literal">&quot;use&quot;</span><span>).</span><span class="identifier">surround</span><span>(</span><span class="identifier">connection</span><span>.</span><span class="identifier">use</span><span>(</span><span class="identifier">f</span><span>)))
+    }  
+}</span></code></pre>
+        <p>The spans structure is:</p>
+        <pre class="mermaid">gantt
+    dateFormat HH:mm:ss
+    axisFormat %H:%M:%S
+
+    section Spans
+    resource        :done, a1, 00:00:00, 00:00:10
+    acquire         :done, a2, 00:00:00, 00:00:03
+    use             :done, a3, 00:00:03, 00:00:08
+    use_conn        :done, a4, 00:00:04, 00:00:08
+    release         :done, a5, 00:00:08, 00:00:10</pre>
+        
+        <h4 id="acquire-and-release-spans" class="section"><a class="anchor-link left" href="#acquire-and-release-spans"><i class="icofont-laika link">&#xef71;</i></a>Acquire and release spans</h4>
+        <p>You can also use <code>res.trace</code> in combination with <code>Resource#mapK</code> to trace the acquire and release steps of a resource:</p>
+        <pre><code class="nohighlight"><span class="keyword">class</span><span> </span><span class="type-name">Transactor</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>]]
+</span><span class="keyword">class</span><span> </span><span class="type-name">Redis</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>]]
+
+</span><span class="keyword">def</span><span> </span><span class="declaration-name">createTransactor</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>]: </span><span class="type-name">Async</span><span>: </span><span class="type-name">Tracer</span><span>]: </span><span class="type-name">Resource</span><span>[</span><span class="type-name">F</span><span>, </span><span class="type-name">Transactor</span><span>[</span><span class="type-name">F</span><span>]] =
+  </span><span class="type-name">Resource</span><span>.</span><span class="identifier">make</span><span>(
+    </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">span</span><span>(</span><span class="string-literal">&quot;transactor#acquire&quot;</span><span>).</span><span class="identifier">surround</span><span>(</span><span class="type-name">Async</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">pure</span><span>(</span><span class="keyword">new</span><span> </span><span class="type-name">Transactor</span><span>[</span><span class="type-name">F</span><span>]))
+  )(</span><span class="identifier">_</span><span> =&gt; </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">span</span><span>(</span><span class="string-literal">&quot;transactor#release&quot;</span><span>).</span><span class="identifier">surround</span><span>(</span><span class="type-name">Async</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">unit</span><span>))
+  
+</span><span class="keyword">def</span><span> </span><span class="declaration-name">createRedis</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>]: </span><span class="type-name">Async</span><span>: </span><span class="type-name">Tracer</span><span>]: </span><span class="type-name">Resource</span><span>[</span><span class="type-name">F</span><span>, </span><span class="type-name">Redis</span><span>[</span><span class="type-name">F</span><span>]] =
+  </span><span class="type-name">Resource</span><span>.</span><span class="identifier">make</span><span>(
+    </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">span</span><span>(</span><span class="string-literal">&quot;redis#acquire&quot;</span><span>).</span><span class="identifier">surround</span><span>(</span><span class="type-name">Async</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">pure</span><span>(</span><span class="keyword">new</span><span> </span><span class="type-name">Redis</span><span>[</span><span class="type-name">F</span><span>]))
+  )(</span><span class="identifier">_</span><span> =&gt; </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">span</span><span>(</span><span class="string-literal">&quot;redis#release&quot;</span><span>).</span><span class="identifier">surround</span><span>(</span><span class="type-name">Async</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">unit</span><span>))
+  
+</span><span class="keyword">def</span><span> </span><span class="declaration-name">components</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>]: </span><span class="type-name">Async</span><span>: </span><span class="type-name">Tracer</span><span>]: </span><span class="type-name">Resource</span><span>[</span><span class="type-name">F</span><span>, (</span><span class="type-name">Transactor</span><span>[</span><span class="type-name">F</span><span>], </span><span class="type-name">Redis</span><span>[</span><span class="type-name">F</span><span>])] =
+  </span><span class="keyword">for</span><span> {
+    </span><span class="identifier">r</span><span> &lt;- </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">span</span><span>(</span><span class="string-literal">&quot;app_lifecycle&quot;</span><span>).</span><span class="identifier">resource</span><span>
+    </span><span class="identifier">tx</span><span> &lt;- </span><span class="identifier">createTransactor</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">mapK</span><span>(</span><span class="identifier">r</span><span>.</span><span class="identifier">trace</span><span>)
+    </span><span class="identifier">redis</span><span> &lt;- </span><span class="identifier">createRedis</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">mapK</span><span>(</span><span class="identifier">r</span><span>.</span><span class="identifier">trace</span><span>)
+  } </span><span class="keyword">yield</span><span> (</span><span class="identifier">tx</span><span>, </span><span class="identifier">redis</span><span>)
+
+</span><span class="keyword">def</span><span> </span><span class="declaration-name">run</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>]: </span><span class="type-name">Async</span><span>: </span><span class="type-name">Tracer</span><span>]: </span><span class="type-name">F</span><span>[</span><span class="type-name">Unit</span><span>] =
+  </span><span class="identifier">components</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">use</span><span> { </span><span class="keyword">case</span><span> (</span><span class="identifier">_</span><span> </span><span class="comment">/*transactor*/</span><span>, </span><span class="identifier">_</span><span> </span><span class="comment">/*redis*/</span><span>) =&gt;
+    </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">span</span><span>(</span><span class="string-literal">&quot;app_run&quot;</span><span>).</span><span class="identifier">surround</span><span>(</span><span class="type-name">Async</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">unit</span><span>)
+  }</span></code></pre>
+        <p>The spans structure is:</p>
+        <pre class="mermaid">gantt
+    dateFormat HH:mm:ss
+    axisFormat %H:%M:%S
+
+    section app_lifecycle
+    app_lifecycle      :done, a1, 00:00:00, 00:00:26
+    transactor#acquire :done, a2, 00:00:00, 00:00:06
+    redis#acquire      :done, a3, 00:00:06, 00:00:10
+    redis#release      :done, a4, 00:00:15, 00:00:19
+    transactor#release :done, a5, 00:00:19, 00:00:26
+    
+    section app_run
+    app_run           :done, a6, 00:00:10, 00:00:15</pre>
+        <p>Both <code>app_run</code> and <code>app_lifecycle</code> are unique and <strong>not linked</strong> to each other.</p>
+        <div class="callout warning">
+          <i class="icofont-laika warning">&#xf026;</i>
+          <p>The <code>app_lifecycle</code> span remains active until the resource is released. 
+          If created at app startup, its duration matches the application&#39;s lifetime. </p>
+        </div>
 
         
 <hr class="footer-rule"/>

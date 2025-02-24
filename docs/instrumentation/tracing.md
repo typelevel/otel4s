@@ -141,8 +141,9 @@ gantt
     dateFormat HH:mm:ss
     axisFormat %H:%M:%S
 
-    section Spans
-    find-user { user_id = -1 }     :done, a3, 00:00:00, 00:00:10
+    section Span 1
+    find-user { user_id = -1 }     :done, a1, 00:00:00, 00:00:10
+    section Span 2
     find-user { user_id = 123 }    :done, a2, 00:00:00, 00:00:10
 ```
 
@@ -254,6 +255,137 @@ gantt
     unmanaged (child of 'auto')         :done, a2, 00:00:02, 00:00:09
     child-1 (child of 'unmanaged')      :done, a3, 00:00:03, 00:00:08
 ```
+
+
+### Tracing a resource
+
+You can use `Tracer[F].span("resource").resource` to create a managed span.
+
+@:callout(warning)
+
+The span started by the `.resource` **isn't propagated automatically** to the resource closure.
+The propagation doesn't work because `Resource` abstraction is leaky regarding the fiber context propagation.
+Check out the [context](https://github.com/typelevel/otel4s/issues/194).
+
+@:@
+
+Consider the following example:
+```scala mdoc:silent:reset
+import cats.effect._
+import cats.syntax.functor._
+import org.typelevel.otel4s.trace.{Tracer, SpanOps}
+
+def withResource[F[_]: Async: Tracer]: F[Unit] =
+  Tracer[F].span("my-resource-span").resource.use { case SpanOps.Res(_, _) =>
+    Tracer[F].currentSpanContext.void // returns `None`
+  }
+```
+you must evaluate the inner effect within the `trace` to propagate span details:
+```scala mdoc:compile-only
+def withResource[F[_]: Async: Tracer]: F[Unit] =
+  Tracer[F].span("my-resource-span").resource.use { case SpanOps.Res(_, trace) =>
+    trace(Tracer[F].currentSpanContext).void // returns `Some(SpanContext{traceId="...", })`
+  }
+```
+
+
+#### Structured spans
+
+You can achieve structured spans in the following way:
+
+```scala mdoc:silent
+class Connection[F[_]: Tracer] {
+  def use[A](f: Connection[F] => F[A]): F[A] =
+    Tracer[F].span("use_conn").surround(f(this))
+}
+
+object Connection {
+  def create[F[_]: Async: Tracer]: Resource[F, Connection[F]] = 
+    Resource.make(
+      Tracer[F].span("acquire").surround(Async[F].pure(new Connection[F]))
+    )(_ => Tracer[F].span("release").surround(Async[F].unit))
+}
+
+class App[F[_]: Async: Tracer] {
+  def withConnection[A](f: Connection[F] => F[A]): F[A] =
+    (for {
+      r <- Tracer[F].span("resource").resource
+      c <- Connection.create[F].mapK(r.trace)
+    } yield (r, c)).use { case (res, connection) =>
+      res.trace(Tracer[F].span("use").surround(connection.use(f)))
+    }  
+}
+```
+
+The spans structure is:
+```mermaid
+gantt
+    dateFormat HH:mm:ss
+    axisFormat %H:%M:%S
+
+    section Spans
+    resource        :done, a1, 00:00:00, 00:00:10
+    acquire         :done, a2, 00:00:00, 00:00:03
+    use             :done, a3, 00:00:03, 00:00:08
+    use_conn        :done, a4, 00:00:04, 00:00:08
+    release         :done, a5, 00:00:08, 00:00:10
+```
+
+#### Acquire and release spans 
+
+You can also use `res.trace` in combination with `Resource#mapK` to trace the acquire and release steps of a resource:
+```scala mdoc:compile-only
+class Transactor[F[_]]
+class Redis[F[_]]
+
+def createTransactor[F[_]: Async: Tracer]: Resource[F, Transactor[F]] =
+  Resource.make(
+    Tracer[F].span("transactor#acquire").surround(Async[F].pure(new Transactor[F]))
+  )(_ => Tracer[F].span("transactor#release").surround(Async[F].unit))
+  
+def createRedis[F[_]: Async: Tracer]: Resource[F, Redis[F]] =
+  Resource.make(
+    Tracer[F].span("redis#acquire").surround(Async[F].pure(new Redis[F]))
+  )(_ => Tracer[F].span("redis#release").surround(Async[F].unit))
+  
+def components[F[_]: Async: Tracer]: Resource[F, (Transactor[F], Redis[F])] =
+  for {
+    r <- Tracer[F].span("app_lifecycle").resource
+    tx <- createTransactor[F].mapK(r.trace)
+    redis <- createRedis[F].mapK(r.trace)
+  } yield (tx, redis)
+
+def run[F[_]: Async: Tracer]: F[Unit] =
+  components[F].use { case (_ /*transactor*/, _ /*redis*/) =>
+    Tracer[F].span("app_run").surround(Async[F].unit)
+  }
+```
+
+The spans structure is:
+```mermaid
+gantt
+    dateFormat HH:mm:ss
+    axisFormat %H:%M:%S
+
+    section app_lifecycle
+    app_lifecycle      :done, a1, 00:00:00, 00:00:26
+    transactor#acquire :done, a2, 00:00:00, 00:00:06
+    redis#acquire      :done, a3, 00:00:06, 00:00:10
+    redis#release      :done, a4, 00:00:15, 00:00:19
+    transactor#release :done, a5, 00:00:19, 00:00:26
+    
+    section app_run
+    app_run           :done, a6, 00:00:10, 00:00:15
+```
+
+Both `app_run` and `app_lifecycle` are unique and **not linked** to each other.
+
+@:callout(warning)
+
+The `app_lifecycle` span remains active until the resource is released. 
+If created at app startup, its duration matches the application's lifetime. 
+
+@:@
 
 [opentelemetry-java]: https://github.com/open-telemetry/opentelemetry-java
 

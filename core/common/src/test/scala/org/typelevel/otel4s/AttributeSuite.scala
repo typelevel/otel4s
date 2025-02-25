@@ -19,8 +19,8 @@ package org.typelevel.otel4s
 import munit.FunSuite
 
 class AttributeSuite extends FunSuite {
+  import AttributeSuite._
 
-  private case class UserId(id: String)
   private val userIdKey: AttributeKey[String] = AttributeKey("user.id")
   private implicit val userIdFrom: Attribute.From[UserId, String] = _.id
 
@@ -47,6 +47,31 @@ class AttributeSuite extends FunSuite {
     assertEquals(builder.result(), expected)
   }
 
+  test("use implicit From to create integer primitive attributes") {
+    val longKey = AttributeKey[Long]("number")
+    val seqLongKey = AttributeKey[Seq[Long]]("seq")
+    val longAttribute = Attribute("number", 1L)
+    val seqLongAttribute = Attribute("seq", Seq(1L, 2L, 3L))
+
+    val oneI: Int = 1
+    val oneS: Short = 1
+    val oneB: Byte = 1
+
+    assertEquals(longKey.maybe(Some(oneI)), Some(longAttribute))
+    assertEquals(longKey.maybe(Some(oneS)), Some(longAttribute))
+    assertEquals(longKey.maybe(Some(oneB)), Some(longAttribute))
+    assertEquals(seqLongKey(Seq[Int](1, 2, 3)), seqLongAttribute)
+    assertEquals(seqLongKey(Seq[Short](1, 2, 3)), seqLongAttribute)
+    assertEquals(seqLongKey(Seq[Byte](1, 2, 3)), seqLongAttribute)
+  }
+
+  test("derive implicit From for Seq of existing From instance") {
+    val key = AttributeKey[Seq[String]]("key")
+    val expected = Attribute("key", Seq("1", "2"))
+
+    assertEquals(key(Seq(UserId("1"), UserId("2"))), expected)
+  }
+
   test("use implicit Attribute.Make to create an attribute") {
     case class AssetId(id: Int)
 
@@ -71,4 +96,8 @@ class AttributeSuite extends FunSuite {
     assertEquals(attributes.get[Long]("asset.id").map(_.value), Some(123L))
   }
 
+}
+
+private object AttributeSuite {
+  final case class UserId(id: String)
 }

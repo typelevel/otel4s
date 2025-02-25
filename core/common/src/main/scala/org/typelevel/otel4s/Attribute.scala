@@ -77,12 +77,32 @@ object Attribute {
     *   the type of the key, one of [[AttributeType]]
     */
   @annotation.implicitNotFound("Could not find the `Attribute.From` for value ${Value} and key ${Key}.")
-  trait From[Value, Key] {
+  trait From[-Value, Key] {
+
+    /** Transforms the given value into one that can be used in an `Attribute`. */
     def apply(in: Value): Key
   }
 
-  object From {
+  object From extends LowPriorityFromImplicits {
     implicit def id[A]: From[A, A] = a => a
+
+    implicit val longFromInt: From[Int, Long] = _.toLong
+    implicit val longFromShort: From[Short, Long] = _.toLong
+    implicit val longFromByte: From[Byte, Long] = _.toLong
+    implicit val seqLongFromSeqInt: From[Seq[Int], Seq[Long]] = _.map(_.toLong)
+    implicit val seqLongFromSeqShort: From[Seq[Short], Seq[Long]] = _.map(_.toLong)
+    implicit val seqLongFromSeqByte: From[Seq[Byte], Seq[Long]] = _.map(_.toLong)
+
+    /** Derives a `From` instance for a `Seq` of given type from a `From` instance for that type. */
+    def deriveForSeq[Value, Key](implicit
+        from: From[Value, Key]
+    ): From[Seq[Value], Seq[Key]] = _.map(from(_))
+  }
+
+  sealed abstract class LowPriorityFromImplicits {
+    implicit def seqTypeFromType[Value, Key](implicit
+        from: From[Value, Key]
+    ): From[Seq[Value], Seq[Key]] = From.deriveForSeq
   }
 
   /** Allows creating an [[Attribute]] from an arbitrary type `A`.

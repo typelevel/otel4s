@@ -94,17 +94,11 @@ object EventData {
     *
     * @param attributes
     *   the attributes to associate with the event
-    *
-    * @param escaped
-    *   should be set to true if the exception is recorded at a point where it is known that the exception is escaping
-    *   the scope of the span
     */
-  @annotation.nowarn
   def fromException(
       timestamp: FiniteDuration,
       exception: Throwable,
-      attributes: LimitedData[Attribute[_], Attributes],
-      escaped: Boolean
+      attributes: LimitedData[Attribute[_], Attributes]
   ): EventData = {
     val exceptionAttributes = {
       val builder = Attributes.newBuilder
@@ -130,7 +124,6 @@ object EventData {
         )
       }
 
-      builder.addOne(ExceptionAttributes.ExceptionEscaped, escaped)
       builder.result()
     }
 

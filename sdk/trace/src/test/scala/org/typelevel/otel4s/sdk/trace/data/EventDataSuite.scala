@@ -65,8 +65,7 @@ class EventDataSuite extends DisciplineSuite {
       val expectedAttributes = Attributes(
         Attribute("exception.type", exception.getClass.getName),
         Attribute("exception.message", exception.getMessage),
-        Attribute("exception.stacktrace", stringWriter.toString),
-        Attribute("exception.escaped", true)
+        Attribute("exception.stacktrace", stringWriter.toString)
       ) |+| attributes
 
       val data =
@@ -78,8 +77,7 @@ class EventDataSuite extends DisciplineSuite {
               SpanLimits.default.maxNumberOfAttributesPerEvent,
               SpanLimits.default.maxAttributeValueLength
             )
-            .appendAll(attributes),
-          escaped = true
+            .appendAll(attributes)
         )
 
       assertEquals(data.name, "exception")
@@ -97,8 +95,7 @@ class EventDataSuite extends DisciplineSuite {
       exception.printStackTrace(printWriter)
 
       val expectedAttributes = Attributes(
-        Attribute("exception.type", exception.getClass.getName),
-        Attribute("exception.escaped", false)
+        Attribute("exception.type", exception.getClass.getName)
       ) |+| attributes
 
       val data =
@@ -110,8 +107,7 @@ class EventDataSuite extends DisciplineSuite {
               SpanLimits.default.maxNumberOfAttributesPerEvent,
               SpanLimits.default.maxAttributeValueLength
             )
-            .appendAll(attributes),
-          escaped = false
+            .appendAll(attributes)
         )
 
       assertEquals(data.name, "exception")

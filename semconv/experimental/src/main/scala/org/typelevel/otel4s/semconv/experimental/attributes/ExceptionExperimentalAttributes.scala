@@ -21,15 +21,6 @@ package experimental.attributes
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/attributes/SemanticAttributes.scala.j2
 object ExceptionExperimentalAttributes {
 
-  /** Indicates that the exception is escaping the scope of the span.
-    */
-  @deprecated(
-    "It's no longer recommended to record exceptions that are handled and do not escape the scope of a span.",
-    ""
-  )
-  val ExceptionEscaped: AttributeKey[Boolean] =
-    AttributeKey("exception.escaped")
-
   /** The exception message.
     */
   @deprecated(

@@ -154,8 +154,7 @@ private final class SdkSpanBackend[F[_]: Monad: Clock: Console] private (
               spanLimits.maxNumberOfAttributesPerEvent,
               spanLimits.maxAttributeValueLength
             )
-            .appendAll(attributes.to(Attributes)),
-          escaped = false
+            .appendAll(attributes.to(Attributes))
         )
       )
     } yield ()

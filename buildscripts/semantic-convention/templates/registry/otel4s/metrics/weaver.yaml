@@ -1,6 +1,6 @@
 params:
   excluded_namespaces: ["ios", "aspnetcore", "signalr", "kestrel", "veightjs", "go", "dotnet"]
-  excluded_attributes: ["messaging.client_id"]
+  excluded_attributes: ["messaging.client_id", "exception.escaped"]
   object_prefix: "" # stable - "", experimental - "Experimental"
   stable_only: true # stable - true, experimental - false
 comment_formats:

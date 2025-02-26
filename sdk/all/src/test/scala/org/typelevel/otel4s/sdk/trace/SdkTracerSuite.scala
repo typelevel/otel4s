@@ -90,12 +90,10 @@ class SdkTracerSuite extends BaseTracerSuite[Context, Context.Key] {
       EventData.fromException(
         timestamp = timestamp,
         exception = exception,
-        attributes = LimitedData
-          .attributes(
-            SpanLimits.default.maxNumberOfAttributesPerEvent,
-            SpanLimits.default.maxAttributeValueLength
-          ),
-        escaped = false
+        attributes = LimitedData.attributes(
+          SpanLimits.default.maxNumberOfAttributesPerEvent,
+          SpanLimits.default.maxAttributeValueLength
+        )
       )
 
     TestControl.executeEmbed {

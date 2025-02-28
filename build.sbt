@@ -77,7 +77,7 @@ ThisBuild / mergifyPrRules ++= Seq(
 )
 
 val CatsVersion = "2.11.0"
-val CatsEffectVersion = "3.6.0-RC1"
+val CatsEffectVersion = "3.6.0-RC2"
 val CatsMtlVersion = "1.4.0"
 val FS2Version = "3.12.0-RC1"
 val MUnitVersion = "1.0.0"

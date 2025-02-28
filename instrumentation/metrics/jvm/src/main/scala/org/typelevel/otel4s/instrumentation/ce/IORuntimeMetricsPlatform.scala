@@ -20,7 +20,7 @@ import cats.Show
 import cats.effect.Resource
 import cats.effect.Sync
 import cats.effect.unsafe.metrics.{IORuntimeMetrics => CatsIORuntimeMetrics}
-import cats.effect.unsafe.metrics.WorkStealingPoolMetrics
+import cats.effect.unsafe.metrics.WorkStealingThreadPoolMetrics
 import cats.effect.unsafe.metrics.WorkerThreadMetrics
 import cats.syntax.applicative._
 import cats.syntax.flatMap._
@@ -863,7 +863,7 @@ private[ce] trait IORuntimeMetricsPlatform {
 
   private def computeMetrics[F[_]: Sync: Meter](
       poolId: String,
-      metrics: WorkStealingPoolMetrics,
+      metrics: WorkStealingThreadPoolMetrics,
       extraAttributes: Attributes
   ): Resource[F, Unit] = {
     val prefix = s"${Const.MeterNamespace}.wstp.compute"

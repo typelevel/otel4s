@@ -217,7 +217,7 @@ class IORuntimeMetricsSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
   private val pollerMetrics = List(
     Metric(
       "cats.effect.runtime.wstp.worker.poller.operation.outstanding.count",
-      Some("The current number of outstanding operations per category and outcome."),
+      Some("The current number of outstanding operations per category."),
       Some("{operation}")
     ),
     Metric(

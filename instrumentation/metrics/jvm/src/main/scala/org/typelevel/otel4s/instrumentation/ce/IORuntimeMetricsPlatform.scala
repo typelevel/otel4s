@@ -1117,7 +1117,7 @@ private[ce] trait IORuntimeMetricsPlatform {
     Meter[F].batchCallback.of(
       Meter[F]
         .observableUpDownCounter[Long](s"$prefix.operation.outstanding.count")
-        .withDescription("The current number of outstanding operations per category and outcome.")
+        .withDescription("The current number of outstanding operations per category.")
         .withUnit("{operation}")
         .createObserver,
       Meter[F]
@@ -1125,7 +1125,7 @@ private[ce] trait IORuntimeMetricsPlatform {
         .withDescription("The total number of the operations per category and outcome.")
         .withUnit("{operation}")
         .createObserver
-    ) { (operationCount, operationOutstanding) =>
+    ) { (operationOutstanding, operationCount) =>
       metrics.traverse_ { workerMetrics =>
         val attributes = Attributes(
           Attribute("pool.id", poolId),

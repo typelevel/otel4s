@@ -11,18 +11,11 @@ ThisBuild / developers := List(
 )
 ThisBuild / startYear := Some(2022)
 
-// publish to s01.oss.sonatype.org (set to true to publish to oss.sonatype.org instead)
-ThisBuild / tlSonatypeUseLegacyHost := false
-
 // publish website from this branch
 ThisBuild / tlSitePublishBranch := Some("main")
 
 // VM runs out of memory when linking multiple targets concurrently, hence limit it
 Global / concurrentRestrictions += Tags.limit(NativeTags.Link, 1)
-
-lazy val scalafixSettings = Seq(
-  semanticdbOptions ++= Seq("-P:semanticdb:synthetics:on").filter(_ => !tlIsScala3.value)
-)
 
 lazy val scalaJSLinkerSettings = Def.settings(
   scalaJSLinkerConfig ~= (_.withESFeatures(
@@ -167,7 +160,7 @@ lazy val root = tlCrossRootProject
     unidocs
   )
   .configureRoot(
-    _.aggregate(scalafix.componentProjectReferences: _*)
+    _.aggregate(scalafix.componentProjectReferences *)
   )
   .settings(name := "otel4s")
 
@@ -193,7 +186,6 @@ lazy val `core-common` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
       "lgbt.princess" %%% "platform" % PlatformVersion % Test
     )
   )
-  .settings(scalafixSettings)
 
 lazy val `core-metrics` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .crossType(CrossType.Pure)
@@ -210,7 +202,6 @@ lazy val `core-metrics` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
       "org.typelevel" %%% "discipline-munit" % MUnitDisciplineVersion % Test
     )
   )
-  .settings(scalafixSettings)
 
 lazy val `core-trace` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .crossType(CrossType.Pure)
@@ -228,7 +219,6 @@ lazy val `core-trace` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
       "org.typelevel" %%% "scalacheck-effect-munit" % MUnitScalaCheckEffectVersion % Test
     )
   )
-  .settings(scalafixSettings)
 
 lazy val core = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .crossType(CrossType.Pure)
@@ -237,7 +227,6 @@ lazy val core = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .settings(
     name := "otel4s-core"
   )
-  .settings(scalafixSettings)
 
 //
 // Instrumentation
@@ -255,7 +244,6 @@ lazy val `instrumentation-metrics` = crossProject(JVMPlatform, JSPlatform, Nativ
       "org.typelevel" %%% "scalacheck-effect-munit" % MUnitScalaCheckEffectVersion % Test
     )
   )
-  .settings(scalafixSettings)
 
 //
 // SDK
@@ -286,7 +274,6 @@ lazy val `sdk-common` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
     )
   )
   .settings(munitDependencies)
-  .settings(scalafixSettings)
   .jsSettings(scalaJSLinkerSettings)
 
 lazy val `sdk-metrics` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
@@ -309,7 +296,6 @@ lazy val `sdk-metrics` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
     )
   )
   .settings(munitDependencies)
-  .settings(scalafixSettings)
   .jsSettings(scalaJSLinkerSettings)
 
 lazy val `sdk-metrics-testkit` =
@@ -321,7 +307,6 @@ lazy val `sdk-metrics-testkit` =
       name := "otel4s-sdk-metrics-testkit",
       startYear := Some(2024)
     )
-    .settings(scalafixSettings)
 
 lazy val `sdk-trace` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .crossType(CrossType.Pure)
@@ -342,7 +327,6 @@ lazy val `sdk-trace` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
     ),
   )
   .settings(munitDependencies)
-  .settings(scalafixSettings)
   .jsSettings(scalaJSLinkerSettings)
 
 lazy val `sdk-trace-testkit` =
@@ -354,7 +338,6 @@ lazy val `sdk-trace-testkit` =
       name := "otel4s-sdk-trace-testkit",
       startYear := Some(2024)
     )
-    .settings(scalafixSettings)
 
 lazy val `sdk-testkit` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .crossType(CrossType.Pure)
@@ -364,7 +347,6 @@ lazy val `sdk-testkit` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
     name := "otel4s-sdk-testkit",
     startYear := Some(2024)
   )
-  .settings(scalafixSettings)
 
 lazy val sdk = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .crossType(CrossType.Pure)
@@ -381,7 +363,6 @@ lazy val sdk = crossProject(JVMPlatform, JSPlatform, NativePlatform)
     name := "otel4s-sdk"
   )
   .settings(munitDependencies)
-  .settings(scalafixSettings)
   .jsSettings(scalaJSLinkerSettings)
 
 //
@@ -451,7 +432,6 @@ lazy val `sdk-exporter-proto` =
         else Seq("ch.epfl.scala" %% "scalafix-core" % _root_.scalafix.sbt.BuildInfo.scalafixVersion % ScalafixConfig)
       }
     )
-    .settings(scalafixSettings)
 
 lazy val `sdk-exporter-common` =
   crossProject(JVMPlatform, JSPlatform, NativePlatform)
@@ -479,7 +459,6 @@ lazy val `sdk-exporter-common` =
     .nativeEnablePlugins(ScalaNativeBrewedConfigPlugin)
     .nativeSettings(scalaNativeSettings)
     .settings(munitDependencies)
-    .settings(scalafixSettings)
 
 lazy val `sdk-exporter-metrics` =
   crossProject(JVMPlatform, JSPlatform, NativePlatform)
@@ -499,7 +478,6 @@ lazy val `sdk-exporter-metrics` =
     .nativeEnablePlugins(ScalaNativeBrewedConfigPlugin)
     .nativeSettings(scalaNativeSettings)
     .settings(munitDependencies)
-    .settings(scalafixSettings)
 
 lazy val `sdk-exporter-prometheus` =
   crossProject(JVMPlatform, JSPlatform, NativePlatform)
@@ -532,7 +510,6 @@ lazy val `sdk-exporter-prometheus` =
     .nativeEnablePlugins(ScalaNativeBrewedConfigPlugin)
     .nativeSettings(scalaNativeSettings)
     .settings(munitDependencies)
-    .settings(scalafixSettings)
 
 lazy val `sdk-exporter-trace` =
   crossProject(JVMPlatform, JSPlatform, NativePlatform)
@@ -556,7 +533,6 @@ lazy val `sdk-exporter-trace` =
     .nativeEnablePlugins(ScalaNativeBrewedConfigPlugin)
     .nativeSettings(scalaNativeSettings)
     .settings(munitDependencies)
-    .settings(scalafixSettings)
 
 lazy val `sdk-exporter` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .crossType(CrossType.Pure)
@@ -570,7 +546,6 @@ lazy val `sdk-exporter` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .settings(
     name := "otel4s-sdk-exporter"
   )
-  .settings(scalafixSettings)
 
 //
 // SDK contrib modules
@@ -593,7 +568,6 @@ lazy val `sdk-contrib-aws-resource` =
       )
     )
     .settings(munitDependencies)
-    .settings(scalafixSettings)
     .jsSettings(scalaJSLinkerSettings)
     .nativeEnablePlugins(ScalaNativeBrewedConfigPlugin)
     .nativeSettings(scalaNativeSettings)
@@ -611,7 +585,6 @@ lazy val `sdk-contrib-aws-xray-propagator` =
       startYear := Some(2024)
     )
     .settings(munitDependencies)
-    .settings(scalafixSettings)
     .jsSettings(scalaJSLinkerSettings)
 
 lazy val `sdk-contrib-aws-xray` =
@@ -624,7 +597,6 @@ lazy val `sdk-contrib-aws-xray` =
       startYear := Some(2024),
     )
     .settings(munitDependencies)
-    .settings(scalafixSettings)
     .jsSettings(scalaJSLinkerSettings)
 
 //
@@ -652,7 +624,6 @@ lazy val `oteljava-common` = project
       "openTelemetrySdkVersion" -> OpenTelemetryVersion
     )
   )
-  .settings(scalafixSettings)
 
 lazy val `oteljava-common-testkit` = project
   .in(file("oteljava/common-testkit"))
@@ -664,7 +635,6 @@ lazy val `oteljava-common-testkit` = project
     ),
     startYear := Some(2024)
   )
-  .settings(scalafixSettings)
 
 lazy val `oteljava-metrics` = project
   .in(file("oteljava/metrics"))
@@ -679,7 +649,6 @@ lazy val `oteljava-metrics` = project
       "io.opentelemetry" % "opentelemetry-sdk-testing" % OpenTelemetryVersion % Test
     )
   )
-  .settings(scalafixSettings)
 
 lazy val `oteljava-metrics-testkit` = project
   .in(file("oteljava/metrics-testkit"))
@@ -689,7 +658,6 @@ lazy val `oteljava-metrics-testkit` = project
     name := "otel4s-oteljava-metrics-testkit",
     startYear := Some(2024)
   )
-  .settings(scalafixSettings)
 
 lazy val `oteljava-trace` = project
   .in(file("oteljava/trace"))
@@ -707,7 +675,6 @@ lazy val `oteljava-trace` = project
       "co.fs2" %% "fs2-core" % FS2Version % Test,
     ),
   )
-  .settings(scalafixSettings)
 
 lazy val `oteljava-trace-testkit` = project
   .in(file("oteljava/trace-testkit"))
@@ -717,7 +684,6 @@ lazy val `oteljava-trace-testkit` = project
     name := "otel4s-oteljava-trace-testkit",
     startYear := Some(2024)
   )
-  .settings(scalafixSettings)
 
 lazy val `oteljava-testkit` = project
   .in(file("oteljava/testkit"))
@@ -726,7 +692,6 @@ lazy val `oteljava-testkit` = project
     name := "otel4s-oteljava-testkit",
     startYear := Some(2024)
   )
-  .settings(scalafixSettings)
 
 lazy val `oteljava-context-storage` = project
   .in(file("oteljava/context-storage"))
@@ -742,7 +707,6 @@ lazy val `oteljava-context-storage` = project
     ),
     Test / fork := true,
   )
-  .settings(scalafixSettings)
 
 lazy val oteljava = project
   .in(file("oteljava/all"))
@@ -762,7 +726,6 @@ lazy val oteljava = project
     )
   )
   .settings(munitDependencies)
-  .settings(scalafixSettings)
 
 //
 // Semantic conventions
@@ -787,7 +750,6 @@ lazy val `semconv-stable` =
       )
     )
     .settings(munitDependencies)
-    .settings(scalafixSettings)
 
 lazy val `semconv-experimental` =
   crossProject(JVMPlatform, JSPlatform, NativePlatform)
@@ -803,7 +765,6 @@ lazy val `semconv-experimental` =
       mimaPreviousArtifacts := Set.empty
     )
     .settings(munitDependencies)
-    .settings(scalafixSettings)
 
 lazy val `semconv-metrics-stable` =
   crossProject(JVMPlatform, JSPlatform, NativePlatform)
@@ -816,7 +777,6 @@ lazy val `semconv-metrics-stable` =
       description := "Stable semantic metrics.",
     )
     .settings(munitDependencies)
-    .settings(scalafixSettings)
 
 lazy val `semconv-metrics-experimental` =
   crossProject(JVMPlatform, JSPlatform, NativePlatform)
@@ -830,7 +790,6 @@ lazy val `semconv-metrics-experimental` =
       mimaPreviousArtifacts := Set.empty
     )
     .settings(munitDependencies)
-    .settings(scalafixSettings)
 
 //
 //
@@ -871,7 +830,6 @@ lazy val benchmarks = project
       "io.opentelemetry" % "opentelemetry-sdk-testing" % OpenTelemetryVersion
     )
   )
-  .settings(scalafixSettings)
 
 lazy val examples = project
   .enablePlugins(NoPublishPlugin, JavaAgent)
@@ -897,7 +855,6 @@ lazy val examples = project
       "OTEL_SERVICE_NAME" -> "Trace Example"
     )
   )
-  .settings(scalafixSettings)
 
 lazy val docs = project
   .in(file("site"))

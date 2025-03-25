@@ -20,12 +20,11 @@ import cats.effect.IOLocal
 import cats.effect.SyncIO
 import cats.effect.unsafe.IORuntime
 import cats.syntax.all._
-import io.opentelemetry.context.{Context => JContext}
 import io.opentelemetry.context.ContextStorage
 import io.opentelemetry.context.ContextStorageProvider
 
 object IOLocalContextStorageProvider {
-  private[context] lazy val localContext: IOLocal[Context] =
+  private lazy val localContext: IOLocal[Context] =
     IOLocal[Context](Context.root)
       .syncStep(100)
       .flatMap(
@@ -37,7 +36,7 @@ object IOLocalContextStorageProvider {
       )
       .unsafeRunSync()
 
-  private[context] lazy val threadLocalContext: ThreadLocal[Context] =
+  private lazy val threadLocalContext: ThreadLocal[Context] =
     new ThreadLocal[Context] {
       private val fiberLocal = localContext.unsafeThreadLocal()
 
@@ -49,18 +48,6 @@ object IOLocalContextStorageProvider {
 
       override def set(value: Context): Unit =
         if (IORuntime.isUnderFiberContext()) fiberLocal.set(value) else super.set(value)
-    }
-
-  private[context] lazy val threadLocalJContext: ThreadLocal[JContext] =
-    new ThreadLocal[JContext] {
-      override def initialValue(): JContext =
-        JContext.root()
-
-      override def get(): JContext =
-        threadLocalContext.get().underlying
-
-      override def set(value: JContext): Unit =
-        threadLocalContext.set(Context.wrap(value))
     }
 
 }

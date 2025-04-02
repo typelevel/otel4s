@@ -26,6 +26,7 @@ import org.typelevel.otel4s.semconv.experimental.attributes._
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/metrics/SemanticMetrics.scala.j2
 object K8sExperimentalMetrics {
 
+  @annotation.nowarn("cat=deprecation")
   val specs: List[MetricSpec] = List(
     CronjobActiveJobs,
     DaemonsetCurrentScheduledNodes,
@@ -60,6 +61,8 @@ object K8sExperimentalMetrics {
     ReplicasetDesiredPods,
     ReplicationControllerAvailablePods,
     ReplicationControllerDesiredPods,
+    ReplicationcontrollerAvailablePods,
+    ReplicationcontrollerDesiredPods,
     StatefulsetCurrentPods,
     StatefulsetDesiredPods,
     StatefulsetReadyPods,
@@ -363,7 +366,8 @@ object K8sExperimentalMetrics {
     * @note
     *   <p> This metric aligns with the `currentReplicas` field of the <a
     *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#horizontalpodautoscalerstatus-v2-autoscaling">K8s
-    *   HorizontalPodAutoscalerStatus</a>
+    *   HorizontalPodAutoscalerStatus</a> <p> This metric SHOULD, at a minimum, be reported against a <a
+    *   href="../resource/k8s.md#horizontalpodautoscaler">`k8s.hpa`</a> resource.
     */
   object HpaCurrentPods extends MetricSpec {
 
@@ -404,7 +408,8 @@ object K8sExperimentalMetrics {
     * @note
     *   <p> This metric aligns with the `desiredReplicas` field of the <a
     *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#horizontalpodautoscalerstatus-v2-autoscaling">K8s
-    *   HorizontalPodAutoscalerStatus</a>
+    *   HorizontalPodAutoscalerStatus</a> <p> This metric SHOULD, at a minimum, be reported against a <a
+    *   href="../resource/k8s.md#horizontalpodautoscaler">`k8s.hpa`</a> resource.
     */
   object HpaDesiredPods extends MetricSpec {
 
@@ -445,7 +450,8 @@ object K8sExperimentalMetrics {
     * @note
     *   <p> This metric aligns with the `maxReplicas` field of the <a
     *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#horizontalpodautoscalerspec-v2-autoscaling">K8s
-    *   HorizontalPodAutoscalerSpec</a>
+    *   HorizontalPodAutoscalerSpec</a> <p> This metric SHOULD, at a minimum, be reported against a <a
+    *   href="../resource/k8s.md#horizontalpodautoscaler">`k8s.hpa`</a> resource.
     */
   object HpaMaxPods extends MetricSpec {
 
@@ -485,7 +491,8 @@ object K8sExperimentalMetrics {
     * @note
     *   <p> This metric aligns with the `minReplicas` field of the <a
     *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#horizontalpodautoscalerspec-v2-autoscaling">K8s
-    *   HorizontalPodAutoscalerSpec</a>
+    *   HorizontalPodAutoscalerSpec</a> <p> This metric SHOULD, at a minimum, be reported against a <a
+    *   href="../resource/k8s.md#horizontalpodautoscaler">`k8s.hpa`</a> resource.
     */
   object HpaMinPods extends MetricSpec {
 
@@ -646,9 +653,10 @@ object K8sExperimentalMetrics {
   /** The max desired number of pods the job should run at any given time
     *
     * @note
-    *   <p> This metric aligns with the `parallelism` field of the [K8s
-    *   JobSpec](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#jobspec-v1-batch. <p> This metric
-    *   SHOULD, at a minimum, be reported against a <a href="../resource/k8s.md#job">`k8s.job`</a> resource.
+    *   <p> This metric aligns with the `parallelism` field of the <a
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#jobspec-v1-batch">K8s JobSpec</a>.
+    *   <p> This metric SHOULD, at a minimum, be reported against a <a href="../resource/k8s.md#job">`k8s.job`</a>
+    *   resource.
     */
   object JobMaxParallelPods extends MetricSpec {
 
@@ -1456,17 +1464,102 @@ object K8sExperimentalMetrics {
 
   }
 
+  /** Deprecated, use `k8s.replicationcontroller.available_pods` instead.
+    *
+    * @note
+    *   <p> This metric aligns with the `availableReplicas` field of the <a
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#replicationcontrollerstatus-v1-core">K8s
+    *   ReplicationControllerStatus</a> <p> This metric SHOULD, at a minimum, be reported against a <a
+    *   href="../resource/k8s.md#replicationcontroller">`k8s.replicationcontroller`</a> resource.
+    */
+  @deprecated("Replaced by `k8s.replicationcontroller.available_pods`.", "")
+  object ReplicationControllerAvailablePods extends MetricSpec {
+
+    val name: String = "k8s.replication_controller.available_pods"
+    val description: String = "Deprecated, use `k8s.replicationcontroller.available_pods` instead."
+    val unit: String = "{pod}"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
+      Meter[F]
+        .upDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableUpDownCounter] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** Deprecated, use `k8s.replicationcontroller.desired_pods` instead.
+    *
+    * @note
+    *   <p> This metric aligns with the `replicas` field of the <a
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#replicationcontrollerspec-v1-core">K8s
+    *   ReplicationControllerSpec</a> <p> This metric SHOULD, at a minimum, be reported against a <a
+    *   href="../resource/k8s.md#replicationcontroller">`k8s.replicationcontroller`</a> resource.
+    */
+  @deprecated("Replaced by `k8s.replicationcontroller.desired_pods`.", "")
+  object ReplicationControllerDesiredPods extends MetricSpec {
+
+    val name: String = "k8s.replication_controller.desired_pods"
+    val description: String = "Deprecated, use `k8s.replicationcontroller.desired_pods` instead."
+    val unit: String = "{pod}"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
+      Meter[F]
+        .upDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableUpDownCounter] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
   /** Total number of available replica pods (ready for at least minReadySeconds) targeted by this replication
     * controller
     *
     * @note
     *   <p> This metric aligns with the `availableReplicas` field of the <a
     *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#replicationcontrollerstatus-v1-core">K8s
-    *   ReplicationControllerStatus</a>
+    *   ReplicationControllerStatus</a> <p> This metric SHOULD, at a minimum, be reported against a <a
+    *   href="../resource/k8s.md#replicationcontroller">`k8s.replicationcontroller`</a> resource.
     */
-  object ReplicationControllerAvailablePods extends MetricSpec {
+  object ReplicationcontrollerAvailablePods extends MetricSpec {
 
-    val name: String = "k8s.replication_controller.available_pods"
+    val name: String = "k8s.replicationcontroller.available_pods"
     val description: String =
       "Total number of available replica pods (ready for at least minReadySeconds) targeted by this replication controller"
     val unit: String = "{pod}"
@@ -1503,11 +1596,12 @@ object K8sExperimentalMetrics {
     * @note
     *   <p> This metric aligns with the `replicas` field of the <a
     *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#replicationcontrollerspec-v1-core">K8s
-    *   ReplicationControllerSpec</a>
+    *   ReplicationControllerSpec</a> <p> This metric SHOULD, at a minimum, be reported against a <a
+    *   href="../resource/k8s.md#replicationcontroller">`k8s.replicationcontroller`</a> resource.
     */
-  object ReplicationControllerDesiredPods extends MetricSpec {
+  object ReplicationcontrollerDesiredPods extends MetricSpec {
 
-    val name: String = "k8s.replication_controller.desired_pods"
+    val name: String = "k8s.replicationcontroller.desired_pods"
     val description: String = "Number of desired replica pods in this replication controller"
     val unit: String = "{pod}"
     val stability: Stability = Stability.development

@@ -21,11 +21,24 @@ package experimental.attributes
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/attributes/SemanticAttributes.scala.j2
 object EnduserExperimentalAttributes {
 
-  /** Deprecated, use `user.id` instead.
+  /** Unique identifier of an end user in the system. It maybe a username, email address, or other identifier.
+    *
+    * @note
+    *   <p> Unique identifier of an end user in the system. <blockquote> [!Warning] This field contains sensitive (PII)
+    *   information.</blockquote>
     */
-  @deprecated("Replaced by `user.id` attribute.", "")
   val EnduserId: AttributeKey[String] =
     AttributeKey("enduser.id")
+
+  /** Pseudonymous identifier of an end user. This identifier should be a random value that is not directly linked or
+    * associated with the end user's actual identity.
+    *
+    * @note
+    *   <p> Pseudonymous identifier of an end user. <blockquote> [!Warning] This field contains sensitive (linkable PII)
+    *   information.</blockquote>
+    */
+  val EnduserPseudoId: AttributeKey[String] =
+    AttributeKey("enduser.pseudo.id")
 
   /** Deprecated, use `user.roles` instead.
     */

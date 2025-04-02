@@ -179,9 +179,7 @@ object AzureExperimentalMetrics {
         *
         * @note
         *   <p> It is RECOMMENDED to capture the value as provided by the application without attempting to do any case
-        *   normalization. <p> The collection name SHOULD NOT be extracted from `db.query.text`, unless the query format
-        *   is known to only ever have a single collection name present. <p> For batch operations, if the individual
-        *   operations are known to have the same collection name then that collection name SHOULD be used.
+        *   normalization.
         */
       val dbCollectionName: AttributeSpec[String] =
         AttributeSpec(
@@ -211,11 +209,12 @@ object AzureExperimentalMetrics {
         *
         * @note
         *   <p> It is RECOMMENDED to capture the value as provided by the application without attempting to do any case
-        *   normalization. <p> The operation name SHOULD NOT be extracted from `db.query.text`, unless the query format
-        *   is known to only ever have a single operation name present. <p> For batch operations, if the individual
-        *   operations are known to have the same operation name then that operation name SHOULD be used prepended by
-        *   `BATCH `, otherwise `db.operation.name` SHOULD be `BATCH` or some other database system specific term if
-        *   more applicable.
+        *   normalization. <p> The operation name SHOULD NOT be extracted from `db.query.text`, when the database system
+        *   supports cross-table queries in non-batch operations. <p> If spaces can occur in the operation name,
+        *   multiple consecutive spaces SHOULD be normalized to a single space. <p> For batch operations, if the
+        *   individual operations are known to have the same operation name then that operation name SHOULD be used
+        *   prepended by `BATCH `, otherwise `db.operation.name` SHOULD be `BATCH` or some other database system
+        *   specific term if more applicable.
         */
       val dbOperationName: AttributeSpec[String] =
         AttributeSpec(
@@ -225,9 +224,7 @@ object AzureExperimentalMetrics {
             "HMSET",
             "SELECT",
           ),
-          Requirement.conditionallyRequired(
-            "If readily available and if there is a single operation name that describes the database call. The operation name MAY be parsed from the query text, in which case it SHOULD be the single operation name found in the query."
-          ),
+          Requirement.conditionallyRequired("If readily available."),
           Stability.releaseCandidate
         )
 

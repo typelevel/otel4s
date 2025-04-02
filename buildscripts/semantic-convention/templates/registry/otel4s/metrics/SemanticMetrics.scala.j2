@@ -173,7 +173,7 @@ object {{ object_name }} {
     {%- set metric_attributes = metric.attributes | selectattr("stability", "equalto", "stable") | list %}
     {% endif %}
     val name: String = "{{ metric.metric_name }}"
-    val description: String = "{{ metric.brief }}"
+    val description: String = "{{ metric.brief | replace('\n', "") }}"
     val unit: String = "{{ metric.unit }}"
     val stability: Stability = {{ stability(metric.stability) }}
     val attributeSpecs: List[AttributeSpec[_]] = {% if metric_attributes | length > 0 %}AttributeSpecs.specs{% else %}Nil{% endif %}

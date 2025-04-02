@@ -21,14 +21,30 @@ package experimental.attributes
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/attributes/SemanticAttributes.scala.j2
 object GenAiExperimentalAttributes {
 
+  /** Free-form description of the GenAI agent provided by the application.
+    */
+  val GenAiAgentDescription: AttributeKey[String] =
+    AttributeKey("gen_ai.agent.description")
+
+  /** The unique identifier of the GenAI agent.
+    */
+  val GenAiAgentId: AttributeKey[String] =
+    AttributeKey("gen_ai.agent.id")
+
+  /** Human-readable name of the GenAI agent provided by the application.
+    */
+  val GenAiAgentName: AttributeKey[String] =
+    AttributeKey("gen_ai.agent.name")
+
   /** Deprecated, use Event API to report completions contents.
     */
   @deprecated("Removed, no replacement at this time.", "")
   val GenAiCompletion: AttributeKey[String] =
     AttributeKey("gen_ai.completion")
 
-  /** The response format that is requested.
+  /** Deprecated, use `gen_ai.output.type`.
     */
+  @deprecated("Replaced by `gen_ai.output.type`.", "")
   val GenAiOpenaiRequestResponseFormat: AttributeKey[String] =
     AttributeKey("gen_ai.openai.request.response_format")
 
@@ -64,11 +80,27 @@ object GenAiExperimentalAttributes {
   val GenAiOperationName: AttributeKey[String] =
     AttributeKey("gen_ai.operation.name")
 
+  /** Represents the content type requested by the client.
+    *
+    * @note
+    *   <p> This attribute SHOULD be used when the client requests output of a specific type. The model may return zero
+    *   or more outputs of this type. This attribute specifies the output modality and not the actual output format. For
+    *   example, if an image is requested, the actual output could be a URL pointing to an image file. Additional output
+    *   format details may be recorded in the future in the `gen_ai.output.{type}.*` attributes.
+    */
+  val GenAiOutputType: AttributeKey[String] =
+    AttributeKey("gen_ai.output.type")
+
   /** Deprecated, use Event API to report prompt contents.
     */
   @deprecated("Removed, no replacement at this time.", "")
   val GenAiPrompt: AttributeKey[String] =
     AttributeKey("gen_ai.prompt")
+
+  /** The target number of candidate completions to return.
+    */
+  val GenAiRequestChoiceCount: AttributeKey[Long] =
+    AttributeKey("gen_ai.request.choice.count")
 
   /** The encoding formats requested in an embeddings operation, if specified.
     *
@@ -158,6 +190,29 @@ object GenAiExperimentalAttributes {
   val GenAiTokenType: AttributeKey[String] =
     AttributeKey("gen_ai.token.type")
 
+  /** The tool call identifier.
+    */
+  val GenAiToolCallId: AttributeKey[String] =
+    AttributeKey("gen_ai.tool.call.id")
+
+  /** Name of the tool utilized by the agent.
+    */
+  val GenAiToolName: AttributeKey[String] =
+    AttributeKey("gen_ai.tool.name")
+
+  /** Type of the tool utilized by the agent
+    *
+    * @note
+    *   <p> Extension: A tool executed on the agent-side to directly call external APIs, bridging the gap between the
+    *   agent and real-world systems. Agent-side operations involve actions that are performed by the agent on the
+    *   server or within the agent's controlled environment. Function: A tool executed on the client-side, where the
+    *   agent generates parameters for a predefined function, and the client executes the logic. Client-side operations
+    *   are actions taken on the user's end or within the client application. Datastore: A tool used by the agent to
+    *   access and query structured or unstructured external data for retrieval-augmented tasks or knowledge updates.
+    */
+  val GenAiToolType: AttributeKey[String] =
+    AttributeKey("gen_ai.tool.type")
+
   /** Deprecated, use `gen_ai.usage.output_tokens` instead.
     */
   @deprecated("Replaced by `gen_ai.usage.output_tokens` attribute.", "")
@@ -182,7 +237,9 @@ object GenAiExperimentalAttributes {
 
   /** Values for [[GenAiOpenaiRequestResponseFormat]].
     */
+  @deprecated("Replaced by `gen_ai.output.type`.", "")
   abstract class GenAiOpenaiRequestResponseFormatValue(val value: String)
+  @annotation.nowarn("cat=deprecation")
   object GenAiOpenaiRequestResponseFormatValue {
 
     /** Text response format
@@ -231,6 +288,36 @@ object GenAiExperimentalAttributes {
       * Create embeddings API</a>
       */
     case object Embeddings extends GenAiOperationNameValue("embeddings")
+
+    /** Create GenAI agent
+      */
+    case object CreateAgent extends GenAiOperationNameValue("create_agent")
+
+    /** Execute a tool
+      */
+    case object ExecuteTool extends GenAiOperationNameValue("execute_tool")
+  }
+
+  /** Values for [[GenAiOutputType]].
+    */
+  abstract class GenAiOutputTypeValue(val value: String)
+  object GenAiOutputTypeValue {
+
+    /** Plain text
+      */
+    case object Text extends GenAiOutputTypeValue("text")
+
+    /** JSON object with known or unknown schema
+      */
+    case object Json extends GenAiOutputTypeValue("json")
+
+    /** Image
+      */
+    case object Image extends GenAiOutputTypeValue("image")
+
+    /** Speech
+      */
+    case object Speech extends GenAiOutputTypeValue("speech")
   }
 
   /** Values for [[GenAiSystem]].
@@ -307,6 +394,10 @@ object GenAiExperimentalAttributes {
     /** Output tokens (completion, response, etc.)
       */
     case object Completion extends GenAiTokenTypeValue("output")
+
+    /** Output tokens (completion, response, etc.)
+      */
+    case object Output extends GenAiTokenTypeValue("output")
   }
 
 }

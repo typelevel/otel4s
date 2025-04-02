@@ -88,8 +88,8 @@ object ProcessExperimentalAttributes {
   val ProcessExecutableBuildIdProfiling: AttributeKey[String] =
     AttributeKey("process.executable.build_id.profiling")
 
-  /** The name of the process executable. On Linux based systems, can be set to the `Name` in `proc/[pid]/status`. On
-    * Windows, can be set to the base name of `GetProcessImageFileNameW`.
+  /** The name of the process executable. On Linux based systems, this SHOULD be set to the base name of the target of
+    * `/proc/[pid]/exe`. On Windows, this SHOULD be set to the base name of `GetProcessImageFileNameW`.
     */
   val ProcessExecutableName: AttributeKey[String] =
     AttributeKey("process.executable.name")

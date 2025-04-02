@@ -37,7 +37,7 @@ object V8jsExperimentalMetrics {
   /** Garbage collection duration.
     *
     * @note
-    *   <p> The values can be retrieve from <a
+    *   <p> The values can be retrieved from <a
     *   href="https://nodejs.org/api/perf_hooks.html#performanceobserverobserveoptions">`perf_hooks.PerformanceObserver(...).observe({
     *   entryTypes: ['gc'] })`</a>
     */

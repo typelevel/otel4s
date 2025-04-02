@@ -21,6 +21,11 @@ package experimental.attributes
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/attributes/SemanticAttributes.scala.j2
 object CpuExperimentalAttributes {
 
+  /** The logical CPU number [0..n-1]
+    */
+  val CpuLogicalNumber: AttributeKey[Long] =
+    AttributeKey("cpu.logical_number")
+
   /** The mode of the CPU
     */
   val CpuMode: AttributeKey[String] =

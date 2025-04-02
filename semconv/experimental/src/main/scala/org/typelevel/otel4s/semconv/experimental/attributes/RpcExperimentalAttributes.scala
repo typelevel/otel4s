@@ -21,8 +21,8 @@ package experimental.attributes
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/attributes/SemanticAttributes.scala.j2
 object RpcExperimentalAttributes {
 
-  /** The <a href="https://connect.build/docs/protocol/#error-codes">error codes</a> of the Connect request. Error codes
-    * are always string values.
+  /** The <a href="https://connectrpc.com//docs/protocol/#error-codes">error codes</a> of the Connect request. Error
+    * codes are always string values.
     */
   val RpcConnectRpcErrorCode: AttributeKey[String] =
     AttributeKey("rpc.connect_rpc.error_code")

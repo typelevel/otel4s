@@ -93,9 +93,9 @@ object DbExperimentalAttributes {
     *
     * @note
     *   <p> It is RECOMMENDED to capture the value as provided by the application without attempting to do any case
-    *   normalization. <p> The collection name SHOULD NOT be extracted from `db.query.text`, unless the query format is
-    *   known to only ever have a single collection name present. <p> For batch operations, if the individual operations
-    *   are known to have the same collection name then that collection name SHOULD be used.
+    *   normalization. <p> The collection name SHOULD NOT be extracted from `db.query.text`, when the database system
+    *   supports cross-table queries in non-batch operations. <p> For batch operations, if the individual operations are
+    *   known to have the same collection name then that collection name SHOULD be used.
     */
   val DbCollectionName: AttributeKey[String] =
     AttributeKey("db.collection.name")
@@ -249,10 +249,12 @@ object DbExperimentalAttributes {
     *
     * @note
     *   <p> It is RECOMMENDED to capture the value as provided by the application without attempting to do any case
-    *   normalization. <p> The operation name SHOULD NOT be extracted from `db.query.text`, unless the query format is
-    *   known to only ever have a single operation name present. <p> For batch operations, if the individual operations
-    *   are known to have the same operation name then that operation name SHOULD be used prepended by `BATCH `,
-    *   otherwise `db.operation.name` SHOULD be `BATCH` or some other database system specific term if more applicable.
+    *   normalization. <p> The operation name SHOULD NOT be extracted from `db.query.text`, when the database system
+    *   supports cross-table queries in non-batch operations. <p> If spaces can occur in the operation name, multiple
+    *   consecutive spaces SHOULD be normalized to a single space. <p> For batch operations, if the individual
+    *   operations are known to have the same operation name then that operation name SHOULD be used prepended by
+    *   `BATCH `, otherwise `db.operation.name` SHOULD be `BATCH` or some other database system specific term if more
+    *   applicable.
     */
   val DbOperationName: AttributeKey[String] =
     AttributeKey("db.operation.name")
@@ -263,7 +265,8 @@ object DbExperimentalAttributes {
     * @note
     *   <p> If a parameter has no name and instead is referenced only by index, then `<key>` SHOULD be the 0-based
     *   index. If `db.query.text` is also captured, then `db.operation.parameter.<key>` SHOULD match up with the
-    *   parameterized placeholders present in `db.query.text`.
+    *   parameterized placeholders present in `db.query.text`. `db.operation.parameter.<key>` SHOULD NOT be captured on
+    *   batch operations.
     */
   val DbOperationParameter: AttributeKey[String] =
     AttributeKey("db.operation.parameter")
@@ -282,7 +285,7 @@ object DbExperimentalAttributes {
     *   is useful as a grouping key, especially when analyzing telemetry for database calls involving complex queries.
     *   Summary may be available to the instrumentation through instrumentation hooks or other means. If it is not
     *   available, instrumentations that support query parsing SHOULD generate a summary following <a
-    *   href="../../docs/database/database-spans.md#generating-a-summary-of-the-query-text">Generating query summary</a>
+    *   href="../database/database-spans.md#generating-a-summary-of-the-query-text">Generating query summary</a>
     *   section.
     */
   val DbQuerySummary: AttributeKey[String] =
@@ -291,14 +294,13 @@ object DbExperimentalAttributes {
   /** The database query being executed.
     *
     * @note
-    *   <p> For sanitization see <a
-    *   href="../../docs/database/database-spans.md#sanitization-of-dbquerytext">Sanitization of `db.query.text`</a>.
-    *   For batch operations, if the individual operations are known to have the same query text then that query text
-    *   SHOULD be used, otherwise all of the individual query texts SHOULD be concatenated with separator `; ` or some
-    *   other database system specific separator if more applicable. Even though parameterized query text can
-    *   potentially have sensitive data, by using a parameterized query the user is giving a strong signal that any
-    *   sensitive data will be passed as parameter values, and the benefit to observability of capturing the static part
-    *   of the query text by default outweighs the risk.
+    *   <p> For sanitization see <a href="../database/database-spans.md#sanitization-of-dbquerytext">Sanitization of
+    *   `db.query.text`</a>. For batch operations, if the individual operations are known to have the same query text
+    *   then that query text SHOULD be used, otherwise all of the individual query texts SHOULD be concatenated with
+    *   separator `; ` or some other database system specific separator if more applicable. Even though parameterized
+    *   query text can potentially have sensitive data, by using a parameterized query the user is giving a strong
+    *   signal that any sensitive data will be passed as parameter values, and the benefit to observability of capturing
+    *   the static part of the query text by default outweighs the risk.
     */
   val DbQueryText: AttributeKey[String] =
     AttributeKey("db.query.text")
@@ -325,9 +327,9 @@ object DbExperimentalAttributes {
   val DbResponseStatusCode: AttributeKey[String] =
     AttributeKey("db.response.status_code")
 
-  /** Deprecated, use `db.collection.name` instead.
+  /** Deprecated, use `db.collection.name` instead, but only if not extracting the value from `db.query.text`.
     */
-  @deprecated("Replaced by `db.collection.name`.", "")
+  @deprecated("Replaced by `db.collection.name`, but only if not extracting the value from `db.query.text`.", "")
   val DbSqlTable: AttributeKey[String] =
     AttributeKey("db.sql.table")
 
@@ -336,6 +338,16 @@ object DbExperimentalAttributes {
   @deprecated("Replaced by `db.query.text`.", "")
   val DbStatement: AttributeKey[String] =
     AttributeKey("db.statement")
+
+  /** The name of a stored procedure within the database.
+    *
+    * @note
+    *   <p> It is RECOMMENDED to capture the value as provided by the application without attempting to do any case
+    *   normalization. <p> For batch operations, if the individual operations are known to have the same stored
+    *   procedure name then that stored procedure name SHOULD be used.
+    */
+  val DbStoredProcedureName: AttributeKey[String] =
+    AttributeKey("db.stored_procedure.name")
 
   /** Deprecated, use `db.system.name` instead.
     */

@@ -43,6 +43,16 @@ object VcsExperimentalAttributes {
   val VcsLineChangeType: AttributeKey[String] =
     AttributeKey("vcs.line_change.type")
 
+  /** The group owner within the version control system.
+    */
+  val VcsOwnerName: AttributeKey[String] =
+    AttributeKey("vcs.owner.name")
+
+  /** The name of the version control system provider.
+    */
+  val VcsProviderName: AttributeKey[String] =
+    AttributeKey("vcs.provider.name")
+
   /** The name of the <a href="https://git-scm.com/docs/gitglossary#def_ref">reference</a> such as
     * <strong>branch</strong> or <strong>tag</strong> in the repository.
     *
@@ -211,6 +221,28 @@ object VcsExperimentalAttributes {
     /** How many lines were removed.
       */
     case object Removed extends VcsLineChangeTypeValue("removed")
+  }
+
+  /** Values for [[VcsProviderName]].
+    */
+  abstract class VcsProviderNameValue(val value: String)
+  object VcsProviderNameValue {
+
+    /** <a href="https://github.com">GitHub</a>
+      */
+    case object Github extends VcsProviderNameValue("github")
+
+    /** <a href="https://gitlab.com">GitLab</a>
+      */
+    case object Gitlab extends VcsProviderNameValue("gitlab")
+
+    /** <a href="https://gitea.io">Gitea</a>
+      */
+    case object Gittea extends VcsProviderNameValue("gittea")
+
+    /** <a href="https://bitbucket.org">Bitbucket</a>
+      */
+    case object Bitbucket extends VcsProviderNameValue("bitbucket")
   }
 
   /** Values for [[VcsRefBaseType]].

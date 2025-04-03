@@ -30,6 +30,10 @@ object HwExperimentalMetrics {
   val specs: List[MetricSpec] = List(
     Energy,
     Errors,
+    HostAmbientTemperature,
+    HostEnergy,
+    HostHeatingMargin,
+    HostPower,
     Power,
     Status,
   )
@@ -247,6 +251,347 @@ object HwExperimentalMetrics {
     ): Resource[F, ObservableCounter] =
       Meter[F]
         .observableCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** Ambient (external) temperature of the physical host
+    */
+  object HostAmbientTemperature extends MetricSpec {
+
+    val name: String = "hw.host.ambient_temperature"
+    val description: String = "Ambient (external) temperature of the physical host"
+    val unit: String = "Cel"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
+
+    object AttributeSpecs {
+
+      /** An identifier for the hardware component, unique within the monitored host
+        */
+      val hwId: AttributeSpec[String] =
+        AttributeSpec(
+          HwExperimentalAttributes.HwId,
+          List(
+            "win32battery_battery_testsysa33_1",
+          ),
+          Requirement.required,
+          Stability.development
+        )
+
+      /** An easily-recognizable name for the hardware component
+        */
+      val hwName: AttributeSpec[String] =
+        AttributeSpec(
+          HwExperimentalAttributes.HwName,
+          List(
+            "eth0",
+          ),
+          Requirement.recommended,
+          Stability.development
+        )
+
+      /** Unique identifier of the parent component (typically the `hw.id` attribute of the enclosure, or disk
+        * controller)
+        */
+      val hwParent: AttributeSpec[String] =
+        AttributeSpec(
+          HwExperimentalAttributes.HwParent,
+          List(
+            "dellStorage_perc_0",
+          ),
+          Requirement.recommended,
+          Stability.development
+        )
+
+      val specs: List[AttributeSpec[_]] =
+        List(
+          hwId,
+          hwName,
+          hwParent,
+        )
+    }
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[Gauge[F, A]] =
+      Meter[F]
+        .gauge[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableGauge[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableGauge] =
+      Meter[F]
+        .observableGauge[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** Total energy consumed by the entire physical host, in joules
+    *
+    * @note
+    *   <p> The overall energy usage of a host MUST be reported using the specific `hw.host.energy` and `hw.host.power`
+    *   metrics <strong>only</strong>, instead of the generic `hw.energy` and `hw.power` described in the previous
+    *   section, to prevent summing up overlapping values.
+    */
+  object HostEnergy extends MetricSpec {
+
+    val name: String = "hw.host.energy"
+    val description: String = "Total energy consumed by the entire physical host, in joules"
+    val unit: String = "J"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
+
+    object AttributeSpecs {
+
+      /** An identifier for the hardware component, unique within the monitored host
+        */
+      val hwId: AttributeSpec[String] =
+        AttributeSpec(
+          HwExperimentalAttributes.HwId,
+          List(
+            "win32battery_battery_testsysa33_1",
+          ),
+          Requirement.required,
+          Stability.development
+        )
+
+      /** An easily-recognizable name for the hardware component
+        */
+      val hwName: AttributeSpec[String] =
+        AttributeSpec(
+          HwExperimentalAttributes.HwName,
+          List(
+            "eth0",
+          ),
+          Requirement.recommended,
+          Stability.development
+        )
+
+      /** Unique identifier of the parent component (typically the `hw.id` attribute of the enclosure, or disk
+        * controller)
+        */
+      val hwParent: AttributeSpec[String] =
+        AttributeSpec(
+          HwExperimentalAttributes.HwParent,
+          List(
+            "dellStorage_perc_0",
+          ),
+          Requirement.recommended,
+          Stability.development
+        )
+
+      val specs: List[AttributeSpec[_]] =
+        List(
+          hwId,
+          hwName,
+          hwParent,
+        )
+    }
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[Counter[F, A]] =
+      Meter[F]
+        .counter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableCounter] =
+      Meter[F]
+        .observableCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** By how many degrees Celsius the temperature of the physical host can be increased, before reaching a warning
+    * threshold on one of the internal sensors
+    */
+  object HostHeatingMargin extends MetricSpec {
+
+    val name: String = "hw.host.heating_margin"
+    val description: String =
+      "By how many degrees Celsius the temperature of the physical host can be increased, before reaching a warning threshold on one of the internal sensors"
+    val unit: String = "Cel"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
+
+    object AttributeSpecs {
+
+      /** An identifier for the hardware component, unique within the monitored host
+        */
+      val hwId: AttributeSpec[String] =
+        AttributeSpec(
+          HwExperimentalAttributes.HwId,
+          List(
+            "win32battery_battery_testsysa33_1",
+          ),
+          Requirement.required,
+          Stability.development
+        )
+
+      /** An easily-recognizable name for the hardware component
+        */
+      val hwName: AttributeSpec[String] =
+        AttributeSpec(
+          HwExperimentalAttributes.HwName,
+          List(
+            "eth0",
+          ),
+          Requirement.recommended,
+          Stability.development
+        )
+
+      /** Unique identifier of the parent component (typically the `hw.id` attribute of the enclosure, or disk
+        * controller)
+        */
+      val hwParent: AttributeSpec[String] =
+        AttributeSpec(
+          HwExperimentalAttributes.HwParent,
+          List(
+            "dellStorage_perc_0",
+          ),
+          Requirement.recommended,
+          Stability.development
+        )
+
+      val specs: List[AttributeSpec[_]] =
+        List(
+          hwId,
+          hwName,
+          hwParent,
+        )
+    }
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[Gauge[F, A]] =
+      Meter[F]
+        .gauge[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableGauge[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableGauge] =
+      Meter[F]
+        .observableGauge[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** Instantaneous power consumed by the entire physical host in Watts (`hw.host.energy` is preferred)
+    *
+    * @note
+    *   <p> The overall energy usage of a host MUST be reported using the specific `hw.host.energy` and `hw.host.power`
+    *   metrics <strong>only</strong>, instead of the generic `hw.energy` and `hw.power` described in the previous
+    *   section, to prevent summing up overlapping values.
+    */
+  object HostPower extends MetricSpec {
+
+    val name: String = "hw.host.power"
+    val description: String =
+      "Instantaneous power consumed by the entire physical host in Watts (`hw.host.energy` is preferred)"
+    val unit: String = "W"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
+
+    object AttributeSpecs {
+
+      /** An identifier for the hardware component, unique within the monitored host
+        */
+      val hwId: AttributeSpec[String] =
+        AttributeSpec(
+          HwExperimentalAttributes.HwId,
+          List(
+            "win32battery_battery_testsysa33_1",
+          ),
+          Requirement.required,
+          Stability.development
+        )
+
+      /** An easily-recognizable name for the hardware component
+        */
+      val hwName: AttributeSpec[String] =
+        AttributeSpec(
+          HwExperimentalAttributes.HwName,
+          List(
+            "eth0",
+          ),
+          Requirement.recommended,
+          Stability.development
+        )
+
+      /** Unique identifier of the parent component (typically the `hw.id` attribute of the enclosure, or disk
+        * controller)
+        */
+      val hwParent: AttributeSpec[String] =
+        AttributeSpec(
+          HwExperimentalAttributes.HwParent,
+          List(
+            "dellStorage_perc_0",
+          ),
+          Requirement.recommended,
+          Stability.development
+        )
+
+      val specs: List[AttributeSpec[_]] =
+        List(
+          hwId,
+          hwName,
+          hwParent,
+        )
+    }
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[Gauge[F, A]] =
+      Meter[F]
+        .gauge[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableGauge[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableGauge] =
+      Meter[F]
+        .observableGauge[A](name)
         .withDescription(description)
         .withUnit(unit)
         .createWithCallback(callback)

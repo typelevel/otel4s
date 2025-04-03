@@ -91,6 +91,16 @@ object K8sExperimentalAttributes {
   val K8sDeploymentUid: AttributeKey[String] =
     AttributeKey("k8s.deployment.uid")
 
+  /** The name of the horizontal pod autoscaler.
+    */
+  val K8sHpaName: AttributeKey[String] =
+    AttributeKey("k8s.hpa.name")
+
+  /** The UID of the horizontal pod autoscaler.
+    */
+  val K8sHpaUid: AttributeKey[String] =
+    AttributeKey("k8s.hpa.uid")
+
   /** The name of the Job.
     */
   val K8sJobName: AttributeKey[String] =
@@ -162,6 +172,26 @@ object K8sExperimentalAttributes {
     */
   val K8sReplicasetUid: AttributeKey[String] =
     AttributeKey("k8s.replicaset.uid")
+
+  /** The name of the replication controller.
+    */
+  val K8sReplicationcontrollerName: AttributeKey[String] =
+    AttributeKey("k8s.replicationcontroller.name")
+
+  /** The UID of the replication controller.
+    */
+  val K8sReplicationcontrollerUid: AttributeKey[String] =
+    AttributeKey("k8s.replicationcontroller.uid")
+
+  /** The name of the resource quota.
+    */
+  val K8sResourcequotaName: AttributeKey[String] =
+    AttributeKey("k8s.resourcequota.name")
+
+  /** The UID of the resource quota.
+    */
+  val K8sResourcequotaUid: AttributeKey[String] =
+    AttributeKey("k8s.resourcequota.uid")
 
   /** The name of the StatefulSet.
     */

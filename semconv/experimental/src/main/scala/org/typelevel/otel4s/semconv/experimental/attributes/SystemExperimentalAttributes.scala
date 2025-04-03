@@ -21,7 +21,7 @@ package experimental.attributes
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/attributes/SemanticAttributes.scala.j2
 object SystemExperimentalAttributes {
 
-  /** The logical CPU number [0..n-1]
+  /** Deprecated, use `cpu.logical_number` instead.
     */
   val SystemCpuLogicalNumber: AttributeKey[Long] =
     AttributeKey("system.cpu.logical_number")

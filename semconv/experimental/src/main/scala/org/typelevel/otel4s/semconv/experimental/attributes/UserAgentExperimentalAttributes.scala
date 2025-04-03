@@ -42,6 +42,25 @@ object UserAgentExperimentalAttributes {
   val UserAgentOriginal: AttributeKey[String] =
     AttributeKey("user_agent.original")
 
+  /** Human readable operating system name.
+    *
+    * @note
+    *   <p> For mapping user agent strings to OS names, libraries such as <a
+    *   href="https://github.com/ua-parser">ua-parser</a> can be utilized.
+    */
+  val UserAgentOsName: AttributeKey[String] =
+    AttributeKey("user_agent.os.name")
+
+  /** The version string of the operating system as defined in <a
+    * href="/docs/resource/README.md#version-attributes">Version Attributes</a>.
+    *
+    * @note
+    *   <p> For mapping user agent strings to OS versions, libraries such as <a
+    *   href="https://github.com/ua-parser">ua-parser</a> can be utilized.
+    */
+  val UserAgentOsVersion: AttributeKey[String] =
+    AttributeKey("user_agent.os.version")
+
   /** Specifies the category of synthetic traffic, such as tests or bots.
     *
     * @note

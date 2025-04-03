@@ -27,6 +27,7 @@ import org.typelevel.otel4s.semconv.experimental.attributes._
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/metrics/SemanticMetrics.scala.j2
 object SystemExperimentalMetrics {
 
+  @annotation.nowarn("cat=deprecation")
   val specs: List[MetricSpec] = List(
     CpuFrequency,
     CpuLogicalCount,
@@ -62,35 +63,16 @@ object SystemExperimentalMetrics {
     Uptime,
   )
 
-  /** Reports the current frequency of the CPU in Hz
+  /** Deprecated. Use `cpu.frequency` instead.
     */
+  @deprecated("Replaced by `cpu.frequency`.", "")
   object CpuFrequency extends MetricSpec {
 
     val name: String = "system.cpu.frequency"
-    val description: String = "Reports the current frequency of the CPU in Hz"
+    val description: String = "Deprecated. Use `cpu.frequency` instead."
     val unit: String = "{Hz}"
     val stability: Stability = Stability.development
-    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
-
-    object AttributeSpecs {
-
-      /** The logical CPU number [0..n-1]
-        */
-      val systemCpuLogicalNumber: AttributeSpec[Long] =
-        AttributeSpec(
-          SystemExperimentalAttributes.SystemCpuLogicalNumber,
-          List(
-            1,
-          ),
-          Requirement.recommended,
-          Stability.development
-        )
-
-      val specs: List[AttributeSpec[_]] =
-        List(
-          systemCpuLogicalNumber,
-        )
-    }
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter, A: MeasurementValue]: F[Gauge[F, A]] =
       Meter[F]
@@ -195,53 +177,16 @@ object SystemExperimentalMetrics {
 
   }
 
-  /** Seconds each logical CPU spent on each mode
+  /** Deprecated. Use `cpu.time` instead.
     */
+  @deprecated("Replaced by `cpu.time`.", "")
   object CpuTime extends MetricSpec {
 
     val name: String = "system.cpu.time"
-    val description: String = "Seconds each logical CPU spent on each mode"
+    val description: String = "Deprecated. Use `cpu.time` instead."
     val unit: String = "s"
     val stability: Stability = Stability.development
-    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
-
-    object AttributeSpecs {
-
-      /** The CPU mode for this data point. A system's CPU SHOULD be characterized <em>either</em> by data points with
-        * no `mode` labels, <em>or only</em> data points with `mode` labels.
-        *
-        * @note
-        *   <p> Following states SHOULD be used: `user`, `system`, `nice`, `idle`, `iowait`, `interrupt`, `steal`
-        */
-      val cpuMode: AttributeSpec[String] =
-        AttributeSpec(
-          CpuExperimentalAttributes.CpuMode,
-          List(
-            "user",
-            "system",
-          ),
-          Requirement.recommended,
-          Stability.development
-        )
-
-      /** The logical CPU number [0..n-1]
-        */
-      val systemCpuLogicalNumber: AttributeSpec[Long] =
-        AttributeSpec(
-          SystemExperimentalAttributes.SystemCpuLogicalNumber,
-          List(
-            1,
-          ),
-          Requirement.recommended,
-          Stability.development
-        )
-
-      val specs: List[AttributeSpec[_]] =
-        List(
-          cpuMode,
-          systemCpuLogicalNumber,
-        )
-    }
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter, A: MeasurementValue]: F[Counter[F, A]] =
       Meter[F]
@@ -268,54 +213,16 @@ object SystemExperimentalMetrics {
 
   }
 
-  /** Difference in system.cpu.time since the last measurement, divided by the elapsed time and number of logical CPUs
+  /** Deprecated. Use `cpu.utilization` instead.
     */
+  @deprecated("Replaced by `cpu.utilization`.", "")
   object CpuUtilization extends MetricSpec {
 
     val name: String = "system.cpu.utilization"
-    val description: String =
-      "Difference in system.cpu.time since the last measurement, divided by the elapsed time and number of logical CPUs"
+    val description: String = "Deprecated. Use `cpu.utilization` instead."
     val unit: String = "1"
     val stability: Stability = Stability.development
-    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
-
-    object AttributeSpecs {
-
-      /** The CPU mode for this data point. A system's CPU SHOULD be characterized <em>either</em> by data points with
-        * no `mode` labels, <em>or only</em> data points with `mode` labels.
-        *
-        * @note
-        *   <p> Following modes SHOULD be used: `user`, `system`, `nice`, `idle`, `iowait`, `interrupt`, `steal`
-        */
-      val cpuMode: AttributeSpec[String] =
-        AttributeSpec(
-          CpuExperimentalAttributes.CpuMode,
-          List(
-            "user",
-            "system",
-          ),
-          Requirement.recommended,
-          Stability.development
-        )
-
-      /** The logical CPU number [0..n-1]
-        */
-      val systemCpuLogicalNumber: AttributeSpec[Long] =
-        AttributeSpec(
-          SystemExperimentalAttributes.SystemCpuLogicalNumber,
-          List(
-            1,
-          ),
-          Requirement.recommended,
-          Stability.development
-        )
-
-      val specs: List[AttributeSpec[_]] =
-        List(
-          cpuMode,
-          systemCpuLogicalNumber,
-        )
-    }
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter, A: MeasurementValue]: F[Gauge[F, A]] =
       Meter[F]

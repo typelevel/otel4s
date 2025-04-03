@@ -1,6 +1,6 @@
 params:
   excluded_namespaces: ["ios", "aspnetcore", "signalr", "kestrel", "veightjs", "go", "dotnet"]
-  excluded_attributes: ["messaging.client_id", "exception.escaped"]
+  excluded_metrics: ["k8s.replication_controller.desired_pods", "k8s.replication_controller.available_pods"]
   object_prefix: "" # stable - "", experimental - "Experimental"
   stable_only: true # stable - true, experimental - false
 comment_formats:

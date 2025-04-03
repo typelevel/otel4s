@@ -67,6 +67,35 @@ object VcsExperimentalMetrics {
           Stability.development
         )
 
+      /** The group owner within the version control system.
+        */
+      val vcsOwnerName: AttributeSpec[String] =
+        AttributeSpec(
+          VcsExperimentalAttributes.VcsOwnerName,
+          List(
+            "my-org",
+            "myteam",
+            "business-unit",
+          ),
+          Requirement.recommended,
+          Stability.development
+        )
+
+      /** The name of the version control system provider.
+        */
+      val vcsProviderName: AttributeSpec[String] =
+        AttributeSpec(
+          VcsExperimentalAttributes.VcsProviderName,
+          List(
+            "github",
+            "gitlab",
+            "gittea",
+            "bitbucket",
+          ),
+          Requirement.optIn,
+          Stability.development
+        )
+
       /** The human readable name of the repository. It SHOULD NOT include any additional identifier like Group/SubGroup
         * in GitLab or organization in GitHub.
         *
@@ -107,6 +136,8 @@ object VcsExperimentalMetrics {
       val specs: List[AttributeSpec[_]] =
         List(
           vcsChangeState,
+          vcsOwnerName,
+          vcsProviderName,
           vcsRepositoryName,
           vcsRepositoryUrlFull,
         )
@@ -164,6 +195,35 @@ object VcsExperimentalMetrics {
           Stability.development
         )
 
+      /** The group owner within the version control system.
+        */
+      val vcsOwnerName: AttributeSpec[String] =
+        AttributeSpec(
+          VcsExperimentalAttributes.VcsOwnerName,
+          List(
+            "my-org",
+            "myteam",
+            "business-unit",
+          ),
+          Requirement.recommended,
+          Stability.development
+        )
+
+      /** The name of the version control system provider.
+        */
+      val vcsProviderName: AttributeSpec[String] =
+        AttributeSpec(
+          VcsExperimentalAttributes.VcsProviderName,
+          List(
+            "github",
+            "gitlab",
+            "gittea",
+            "bitbucket",
+          ),
+          Requirement.optIn,
+          Stability.development
+        )
+
       /** The name of the <a href="https://git-scm.com/docs/gitglossary#def_ref">reference</a> such as
         * <strong>branch</strong> or <strong>tag</strong> in the repository.
         *
@@ -221,6 +281,8 @@ object VcsExperimentalMetrics {
       val specs: List[AttributeSpec[_]] =
         List(
           vcsChangeState,
+          vcsOwnerName,
+          vcsProviderName,
           vcsRefHeadName,
           vcsRepositoryName,
           vcsRepositoryUrlFull,
@@ -265,6 +327,35 @@ object VcsExperimentalMetrics {
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
+
+      /** The group owner within the version control system.
+        */
+      val vcsOwnerName: AttributeSpec[String] =
+        AttributeSpec(
+          VcsExperimentalAttributes.VcsOwnerName,
+          List(
+            "my-org",
+            "myteam",
+            "business-unit",
+          ),
+          Requirement.recommended,
+          Stability.development
+        )
+
+      /** The name of the version control system provider.
+        */
+      val vcsProviderName: AttributeSpec[String] =
+        AttributeSpec(
+          VcsExperimentalAttributes.VcsProviderName,
+          List(
+            "github",
+            "gitlab",
+            "gittea",
+            "bitbucket",
+          ),
+          Requirement.optIn,
+          Stability.development
+        )
 
       /** The name of the <a href="https://git-scm.com/docs/gitglossary#def_ref">reference</a> such as
         * <strong>branch</strong> or <strong>tag</strong> in the repository.
@@ -393,6 +484,8 @@ object VcsExperimentalMetrics {
 
       val specs: List[AttributeSpec[_]] =
         List(
+          vcsOwnerName,
+          vcsProviderName,
           vcsRefBaseName,
           vcsRefBaseRevision,
           vcsRefHeadName,
@@ -441,6 +534,35 @@ object VcsExperimentalMetrics {
 
     object AttributeSpecs {
 
+      /** The group owner within the version control system.
+        */
+      val vcsOwnerName: AttributeSpec[String] =
+        AttributeSpec(
+          VcsExperimentalAttributes.VcsOwnerName,
+          List(
+            "my-org",
+            "myteam",
+            "business-unit",
+          ),
+          Requirement.recommended,
+          Stability.development
+        )
+
+      /** The name of the version control system provider.
+        */
+      val vcsProviderName: AttributeSpec[String] =
+        AttributeSpec(
+          VcsExperimentalAttributes.VcsProviderName,
+          List(
+            "github",
+            "gitlab",
+            "gittea",
+            "bitbucket",
+          ),
+          Requirement.optIn,
+          Stability.development
+        )
+
       /** The name of the <a href="https://git-scm.com/docs/gitglossary#def_ref">reference</a> such as
         * <strong>branch</strong> or <strong>tag</strong> in the repository.
         *
@@ -568,6 +690,8 @@ object VcsExperimentalMetrics {
 
       val specs: List[AttributeSpec[_]] =
         List(
+          vcsOwnerName,
+          vcsProviderName,
           vcsRefBaseName,
           vcsRefBaseRevision,
           vcsRefHeadName,
@@ -614,6 +738,35 @@ object VcsExperimentalMetrics {
 
     object AttributeSpecs {
 
+      /** The group owner within the version control system.
+        */
+      val vcsOwnerName: AttributeSpec[String] =
+        AttributeSpec(
+          VcsExperimentalAttributes.VcsOwnerName,
+          List(
+            "my-org",
+            "myteam",
+            "business-unit",
+          ),
+          Requirement.recommended,
+          Stability.development
+        )
+
+      /** The name of the version control system provider.
+        */
+      val vcsProviderName: AttributeSpec[String] =
+        AttributeSpec(
+          VcsExperimentalAttributes.VcsProviderName,
+          List(
+            "github",
+            "gitlab",
+            "gittea",
+            "bitbucket",
+          ),
+          Requirement.optIn,
+          Stability.development
+        )
+
       /** The human readable name of the repository. It SHOULD NOT include any additional identifier like Group/SubGroup
         * in GitLab or organization in GitHub.
         *
@@ -653,6 +806,8 @@ object VcsExperimentalMetrics {
 
       val specs: List[AttributeSpec[_]] =
         List(
+          vcsOwnerName,
+          vcsProviderName,
           vcsRepositoryName,
           vcsRepositoryUrlFull,
         )
@@ -694,6 +849,35 @@ object VcsExperimentalMetrics {
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
+
+      /** The group owner within the version control system.
+        */
+      val vcsOwnerName: AttributeSpec[String] =
+        AttributeSpec(
+          VcsExperimentalAttributes.VcsOwnerName,
+          List(
+            "my-org",
+            "myteam",
+            "business-unit",
+          ),
+          Requirement.recommended,
+          Stability.development
+        )
+
+      /** The name of the version control system provider.
+        */
+      val vcsProviderName: AttributeSpec[String] =
+        AttributeSpec(
+          VcsExperimentalAttributes.VcsProviderName,
+          List(
+            "github",
+            "gitlab",
+            "gittea",
+            "bitbucket",
+          ),
+          Requirement.optIn,
+          Stability.development
+        )
 
       /** The type of the <a href="https://git-scm.com/docs/gitglossary#def_ref">reference</a> in the repository.
         */
@@ -747,6 +931,8 @@ object VcsExperimentalMetrics {
 
       val specs: List[AttributeSpec[_]] =
         List(
+          vcsOwnerName,
+          vcsProviderName,
           vcsRefType,
           vcsRepositoryName,
           vcsRepositoryUrlFull,
@@ -820,6 +1006,35 @@ object VcsExperimentalMetrics {
             "removed",
           ),
           Requirement.required,
+          Stability.development
+        )
+
+      /** The group owner within the version control system.
+        */
+      val vcsOwnerName: AttributeSpec[String] =
+        AttributeSpec(
+          VcsExperimentalAttributes.VcsOwnerName,
+          List(
+            "my-org",
+            "myteam",
+            "business-unit",
+          ),
+          Requirement.recommended,
+          Stability.development
+        )
+
+      /** The name of the version control system provider.
+        */
+      val vcsProviderName: AttributeSpec[String] =
+        AttributeSpec(
+          VcsExperimentalAttributes.VcsProviderName,
+          List(
+            "github",
+            "gitlab",
+            "gittea",
+            "bitbucket",
+          ),
+          Requirement.optIn,
           Stability.development
         )
 
@@ -932,6 +1147,8 @@ object VcsExperimentalMetrics {
         List(
           vcsChangeId,
           vcsLineChangeType,
+          vcsOwnerName,
+          vcsProviderName,
           vcsRefBaseName,
           vcsRefBaseType,
           vcsRefHeadName,
@@ -994,6 +1211,35 @@ object VcsExperimentalMetrics {
             "123",
           ),
           Requirement.conditionallyRequired("if a change is associate with the ref."),
+          Stability.development
+        )
+
+      /** The group owner within the version control system.
+        */
+      val vcsOwnerName: AttributeSpec[String] =
+        AttributeSpec(
+          VcsExperimentalAttributes.VcsOwnerName,
+          List(
+            "my-org",
+            "myteam",
+            "business-unit",
+          ),
+          Requirement.recommended,
+          Stability.development
+        )
+
+      /** The name of the version control system provider.
+        */
+      val vcsProviderName: AttributeSpec[String] =
+        AttributeSpec(
+          VcsExperimentalAttributes.VcsProviderName,
+          List(
+            "github",
+            "gitlab",
+            "gittea",
+            "bitbucket",
+          ),
+          Requirement.optIn,
           Stability.development
         )
 
@@ -1118,6 +1364,8 @@ object VcsExperimentalMetrics {
       val specs: List[AttributeSpec[_]] =
         List(
           vcsChangeId,
+          vcsOwnerName,
+          vcsProviderName,
           vcsRefBaseName,
           vcsRefBaseType,
           vcsRefHeadName,
@@ -1166,6 +1414,35 @@ object VcsExperimentalMetrics {
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
+
+      /** The group owner within the version control system.
+        */
+      val vcsOwnerName: AttributeSpec[String] =
+        AttributeSpec(
+          VcsExperimentalAttributes.VcsOwnerName,
+          List(
+            "my-org",
+            "myteam",
+            "business-unit",
+          ),
+          Requirement.recommended,
+          Stability.development
+        )
+
+      /** The name of the version control system provider.
+        */
+      val vcsProviderName: AttributeSpec[String] =
+        AttributeSpec(
+          VcsExperimentalAttributes.VcsProviderName,
+          List(
+            "github",
+            "gitlab",
+            "gittea",
+            "bitbucket",
+          ),
+          Requirement.optIn,
+          Stability.development
+        )
 
       /** The name of the <a href="https://git-scm.com/docs/gitglossary#def_ref">reference</a> such as
         * <strong>branch</strong> or <strong>tag</strong> in the repository.
@@ -1239,6 +1516,8 @@ object VcsExperimentalMetrics {
 
       val specs: List[AttributeSpec[_]] =
         List(
+          vcsOwnerName,
+          vcsProviderName,
           vcsRefHeadName,
           vcsRefHeadType,
           vcsRepositoryName,
@@ -1279,7 +1558,45 @@ object VcsExperimentalMetrics {
     val description: String = "The number of repositories in an organization."
     val unit: String = "{repository}"
     val stability: Stability = Stability.development
-    val attributeSpecs: List[AttributeSpec[_]] = Nil
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
+
+    object AttributeSpecs {
+
+      /** The group owner within the version control system.
+        */
+      val vcsOwnerName: AttributeSpec[String] =
+        AttributeSpec(
+          VcsExperimentalAttributes.VcsOwnerName,
+          List(
+            "my-org",
+            "myteam",
+            "business-unit",
+          ),
+          Requirement.recommended,
+          Stability.development
+        )
+
+      /** The name of the version control system provider.
+        */
+      val vcsProviderName: AttributeSpec[String] =
+        AttributeSpec(
+          VcsExperimentalAttributes.VcsProviderName,
+          List(
+            "github",
+            "gitlab",
+            "gittea",
+            "bitbucket",
+          ),
+          Requirement.optIn,
+          Stability.development
+        )
+
+      val specs: List[AttributeSpec[_]] =
+        List(
+          vcsOwnerName,
+          vcsProviderName,
+        )
+    }
 
     def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
       Meter[F]

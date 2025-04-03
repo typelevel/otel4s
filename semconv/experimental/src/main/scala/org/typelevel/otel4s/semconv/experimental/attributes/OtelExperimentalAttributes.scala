@@ -21,6 +21,32 @@ package experimental.attributes
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/attributes/SemanticAttributes.scala.j2
 object OtelExperimentalAttributes {
 
+  /** A name uniquely identifying the instance of the OpenTelemetry component within its containing SDK instance.
+    *
+    * @note
+    *   <p> Implementations SHOULD ensure a low cardinality for this attribute, even across application or SDK restarts.
+    *   E.g. implementations MUST NOT use UUIDs as values for this attribute. <p> Implementations MAY achieve these
+    *   goals by following a `<otel.component.type>/<instance-counter>` pattern, e.g. `batching_span_processor/0`.
+    *   Hereby `otel.component.type` refers to the corresponding attribute value of the component. <p> The value of
+    *   `instance-counter` MAY be automatically assigned by the component and uniqueness within the enclosing SDK
+    *   instance MUST be guaranteed. For example, `<instance-counter>` MAY be implemented by using a monotonically
+    *   increasing counter (starting with `0`), which is incremented every time an instance of the given component type
+    *   is started. <p> With this implementation, for example the first Batching Span Processor would have
+    *   `batching_span_processor/0` as `otel.component.name`, the second one `batching_span_processor/1` and so on.
+    *   These values will therefore be reused in the case of an application restart.
+    */
+  val OtelComponentName: AttributeKey[String] =
+    AttributeKey("otel.component.name")
+
+  /** A name identifying the type of the OpenTelemetry component.
+    *
+    * @note
+    *   <p> If none of the standardized values apply, implementations SHOULD use the language-defined name of the type.
+    *   E.g. for Java the fully qualified classname SHOULD be used in this case.
+    */
+  val OtelComponentType: AttributeKey[String] =
+    AttributeKey("otel.component.type")
+
   /** Deprecated. Use the `otel.scope.name` attribute
     */
   @deprecated("Use the `otel.scope.name` attribute.", "")
@@ -51,6 +77,11 @@ object OtelExperimentalAttributes {
   val OtelScopeVersion: AttributeKey[String] =
     AttributeKey("otel.scope.version")
 
+  /** The result value of the sampler for this span
+    */
+  val OtelSpanSamplingResult: AttributeKey[String] =
+    AttributeKey("otel.span.sampling_result")
+
   /** Name of the code, either "OK" or "ERROR". MUST NOT be set if the status code is UNSET.
     */
   @deprecated(
@@ -68,6 +99,70 @@ object OtelExperimentalAttributes {
   )
   val OtelStatusDescription: AttributeKey[String] =
     AttributeKey("otel.status_description")
+
+  /** Values for [[OtelComponentType]].
+    */
+  abstract class OtelComponentTypeValue(val value: String)
+  object OtelComponentTypeValue {
+
+    /** The builtin SDK Batching Span Processor
+      */
+    case object BatchingSpanProcessor extends OtelComponentTypeValue("batching_span_processor")
+
+    /** The builtin SDK Simple Span Processor
+      */
+    case object SimpleSpanProcessor extends OtelComponentTypeValue("simple_span_processor")
+
+    /** The builtin SDK Batching LogRecord Processor
+      */
+    case object BatchingLogProcessor extends OtelComponentTypeValue("batching_log_processor")
+
+    /** The builtin SDK Simple LogRecord Processor
+      */
+    case object SimpleLogProcessor extends OtelComponentTypeValue("simple_log_processor")
+
+    /** OTLP span exporter over gRPC with protobuf serialization
+      */
+    case object OtlpGrpcSpanExporter extends OtelComponentTypeValue("otlp_grpc_span_exporter")
+
+    /** OTLP span exporter over HTTP with protobuf serialization
+      */
+    case object OtlpHttpSpanExporter extends OtelComponentTypeValue("otlp_http_span_exporter")
+
+    /** OTLP span exporter over HTTP with JSON serialization
+      */
+    case object OtlpHttpJsonSpanExporter extends OtelComponentTypeValue("otlp_http_json_span_exporter")
+
+    /** OTLP LogRecord exporter over gRPC with protobuf serialization
+      */
+    case object OtlpGrpcLogExporter extends OtelComponentTypeValue("otlp_grpc_log_exporter")
+
+    /** OTLP LogRecord exporter over HTTP with protobuf serialization
+      */
+    case object OtlpHttpLogExporter extends OtelComponentTypeValue("otlp_http_log_exporter")
+
+    /** OTLP LogRecord exporter over HTTP with JSON serialization
+      */
+    case object OtlpHttpJsonLogExporter extends OtelComponentTypeValue("otlp_http_json_log_exporter")
+  }
+
+  /** Values for [[OtelSpanSamplingResult]].
+    */
+  abstract class OtelSpanSamplingResultValue(val value: String)
+  object OtelSpanSamplingResultValue {
+
+    /** The span is not sampled and not recording
+      */
+    case object Drop extends OtelSpanSamplingResultValue("DROP")
+
+    /** The span is not sampled, but recording
+      */
+    case object RecordOnly extends OtelSpanSamplingResultValue("RECORD_ONLY")
+
+    /** The span is sampled and recording
+      */
+    case object RecordAndSample extends OtelSpanSamplingResultValue("RECORD_AND_SAMPLE")
+  }
 
   /** Values for [[OtelStatusCode]].
     */

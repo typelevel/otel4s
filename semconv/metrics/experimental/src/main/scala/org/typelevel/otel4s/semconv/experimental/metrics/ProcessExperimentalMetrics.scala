@@ -46,7 +46,7 @@ object ProcessExperimentalMetrics {
 
     val name: String = "process.context_switches"
     val description: String = "Number of times the process has been context switched."
-    val unit: String = "{count}"
+    val unit: String = "{context_switch}"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
@@ -402,7 +402,7 @@ object ProcessExperimentalMetrics {
 
     val name: String = "process.open_file_descriptor.count"
     val description: String = "Number of file descriptors in use by the process."
-    val unit: String = "{count}"
+    val unit: String = "{file_descriptor}"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = Nil
 

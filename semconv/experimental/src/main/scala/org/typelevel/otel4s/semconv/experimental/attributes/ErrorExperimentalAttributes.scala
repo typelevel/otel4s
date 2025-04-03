@@ -21,6 +21,17 @@ package experimental.attributes
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/attributes/SemanticAttributes.scala.j2
 object ErrorExperimentalAttributes {
 
+  /** A message providing more detail about an error in human-readable form.
+    *
+    * @note
+    *   <p> `error.message` should provide additional context and detail about an error. It is NOT RECOMMENDED to
+    *   duplicate the value of `error.type` in `error.message`. It is also NOT RECOMMENDED to duplicate the value of
+    *   `exception.message` in `error.message`. <p> `error.message` is NOT RECOMMENDED for metrics or spans due to its
+    *   unbounded cardinality and overlap with span status.
+    */
+  val ErrorMessage: AttributeKey[String] =
+    AttributeKey("error.message")
+
   /** Describes a class of error the operation ended with.
     *
     * @note

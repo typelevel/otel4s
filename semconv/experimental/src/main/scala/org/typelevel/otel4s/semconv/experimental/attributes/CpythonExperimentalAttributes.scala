@@ -19,20 +19,29 @@ package semconv
 package experimental.attributes
 
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/attributes/SemanticAttributes.scala.j2
-object OciExperimentalAttributes {
+object CpythonExperimentalAttributes {
 
-  /** The digest of the OCI image manifest. For container images specifically is the digest by which the container image
-    * is known.
-    *
-    * @note
-    *   <p> Follows <a href="https://github.com/opencontainers/image-spec/blob/main/manifest.md">OCI Image Manifest
-    *   Specification</a>, and specifically the <a
-    *   href="https://github.com/opencontainers/image-spec/blob/main/descriptor.md#digests">Digest property</a>. An
-    *   example can be found in <a
-    *   href="https://github.com/opencontainers/image-spec/blob/main/manifest.md#example-image-manifest">Example Image
-    *   Manifest</a>.
+  /** Value of the garbage collector collection generation.
     */
-  val OciManifestDigest: AttributeKey[String] =
-    AttributeKey("oci.manifest.digest")
+  val CpythonGcGeneration: AttributeKey[Long] =
+    AttributeKey("cpython.gc.generation")
+
+  /** Values for [[CpythonGcGeneration]].
+    */
+  abstract class CpythonGcGenerationValue(val value: Long)
+  object CpythonGcGenerationValue {
+
+    /** Generation 0
+      */
+    case object Generation0 extends CpythonGcGenerationValue(0)
+
+    /** Generation 1
+      */
+    case object Generation1 extends CpythonGcGenerationValue(1)
+
+    /** Generation 2
+      */
+    case object Generation2 extends CpythonGcGenerationValue(2)
+  }
 
 }

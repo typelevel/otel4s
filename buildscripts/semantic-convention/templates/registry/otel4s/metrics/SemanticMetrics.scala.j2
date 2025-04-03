@@ -146,7 +146,7 @@ import org.typelevel.otel4s.semconv.experimental.attributes._
 object {{ object_name }} {
 
   {% set ns = namespace(has_deprecation = false) -%}
-  {%- for metric in ctx.metrics -%}
+  {%- for metric in ctx.metrics | rejectattr("metric_name", "in", params.excluded_metrics) -%}
     {%- if (metric is deprecated) or (params.stable_only == false and metric is stable) -%}
       {%- set ns.has_deprecation = true -%}
     {%- endif -%}
@@ -155,11 +155,11 @@ object {{ object_name }} {
   {%- if ns.has_deprecation %}
   @annotation.nowarn("cat=deprecation")
   {%- endif %}
-  val specs: List[MetricSpec] = List({%- for metric in ctx.metrics | sort(attribute='metric_name') %}
+  val specs: List[MetricSpec] = List({%- for metric in ctx.metrics | rejectattr("metric_name", "in", params.excluded_metrics) | sort(attribute='metric_name') %}
     {{ objectName(metric) }},{% endfor %}
   )
 
-  {% for metric in ctx.metrics | sort(attribute='metric_name') %}
+  {% for metric in ctx.metrics | rejectattr("metric_name", "in", params.excluded_metrics) | sort(attribute='metric_name') %}
   {{ [metric.brief, concat_if("\n\n@note\n\n", metric.note)] | comment(indent=2) | replace('$', "$$") }}
   {%- if metric is deprecated %}
   @deprecated("{{ metric.deprecated.note }}", "")
@@ -173,7 +173,7 @@ object {{ object_name }} {
     {%- set metric_attributes = metric.attributes | selectattr("stability", "equalto", "stable") | list %}
     {% endif %}
     val name: String = "{{ metric.metric_name }}"
-    val description: String = "{{ metric.brief }}"
+    val description: String = "{{ metric.brief | replace('\n', "") }}"
     val unit: String = "{{ metric.unit }}"
     val stability: Stability = {{ stability(metric.stability) }}
     val attributeSpecs: List[AttributeSpec[_]] = {% if metric_attributes | length > 0 %}AttributeSpecs.specs{% else %}Nil{% endif %}

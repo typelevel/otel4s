@@ -17,6 +17,15 @@ ThisBuild / tlSitePublishBranch := Some("main")
 // VM runs out of memory when linking multiple targets concurrently, hence limit it
 Global / concurrentRestrictions += Tags.limit(NativeTags.Link, 1)
 
+Global / tlCommandAliases ++= Map(
+  "generateSemanticConventions" -> List(
+    "root/semanticConventionsGenerate",
+    "headerCreateAll",
+    "scalafixAll",
+    "scalafmtAll"
+  )
+)
+
 lazy val scalaJSLinkerSettings = Def.settings(
   scalaJSLinkerConfig ~= (_.withESFeatures(
     _.withESVersion(org.scalajs.linker.interface.ESVersion.ES2018)
@@ -82,7 +91,7 @@ val OpenTelemetryVersion = "1.48.0"
 val OpenTelemetryAlphaVersion = s"$OpenTelemetryVersion-alpha"
 val OpenTelemetryInstrumentationVersion = "2.14.0"
 val OpenTelemetryInstrumentationAlphaVersion = "2.10.0-alpha"
-val OpenTelemetrySemConvVersion = "1.30.0"
+val OpenTelemetrySemConvVersion = "1.32.0"
 val OpenTelemetrySemConvAlphaVersion = s"$OpenTelemetrySemConvVersion-alpha"
 val OpenTelemetryProtoVersion = "1.5.0-alpha"
 val PekkoStreamVersion = "1.1.3"
@@ -110,8 +119,7 @@ lazy val munitDependencies = Def.settings(
   )
 )
 
-lazy val semanticConventionsGenerate =
-  taskKey[Unit]("Generate semantic conventions")
+lazy val semanticConventionsGenerate = taskKey[Unit]("Generate semantic conventions")
 semanticConventionsGenerate := {
   SemanticConventionsGenerator.generate(
     OpenTelemetrySemConvVersion.stripSuffix("-alpha"),

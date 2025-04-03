@@ -132,7 +132,7 @@ object UrlExperimentalAttributes {
   /** The highest registered url domain, stripped of the subdomain.
     *
     * @note
-    *   <p> This value can be determined precisely with the <a href="http://publicsuffix.org">public suffix list</a>.
+    *   <p> This value can be determined precisely with the <a href="https://publicsuffix.org/">public suffix list</a>.
     *   For example, the registered domain for `foo.example.com` is `example.com`. Trying to approximate this by simply
     *   taking the last two labels will not work well for TLDs such as `co.uk`.
     */
@@ -171,7 +171,7 @@ object UrlExperimentalAttributes {
     * example, the top level domain for example.com is `com`.
     *
     * @note
-    *   <p> This value can be determined precisely with the <a href="http://publicsuffix.org">public suffix list</a>.
+    *   <p> This value can be determined precisely with the <a href="https://publicsuffix.org/">public suffix list</a>.
     */
   val UrlTopLevelDomain: AttributeKey[String] =
     AttributeKey("url.top_level_domain")

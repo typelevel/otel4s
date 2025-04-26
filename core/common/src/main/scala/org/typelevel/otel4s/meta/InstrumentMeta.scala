@@ -21,25 +21,12 @@ import org.typelevel.otel4s.KindTransformer
 
 sealed trait InstrumentMeta[F[_]] {
 
-  def isEnabled: F[Boolean]
+
 
   /** A no-op effect.
     */
   def unit: F[Unit]
 
-  // todo: define Scala 3 version and use inline transparent
-  def whenEnabled(f: => F[Unit]): F[Unit]
-
-  def whenEnabledOrElse[A](whenEnabled: => F[A], whenDisabled: => F[A]): F[A]
-
-  /** Modify the context `F` using the transformation `f`. */
-  def mapK[G[_]: Monad](f: F ~> G): InstrumentMeta[G] =
-    new InstrumentMeta.MappedK(this)(f)
-
-  /** Modify the context `F` using an implicit [[KindTransformer]] from `F` to `G`.
-    */
-  def mapK[G[_]: Monad](implicit kt: KindTransformer[F, G]): InstrumentMeta[G] =
-    mapK(kt.liftK)
 }
 
 object InstrumentMeta {
@@ -48,40 +35,73 @@ object InstrumentMeta {
     /** Indicates whether instrumentation is enabled or not.
      */
     def isEnabled: F[Boolean]
+
+    // todo: define Scala 3 version and use inline transparent
+    def whenEnabled(f: => F[Unit]): F[Unit]
+
+    /** Modify the context `F` using the transformation `f`. */
+    def mapK[G[_]: Monad](f: F ~> G): InstrumentMeta.Dynamic[G] =
+      new Dynamic.MappedK(this)(f)
+
+    /** Modify the context `F` using an implicit [[KindTransformer]] from `F` to `G`.
+     */
+    def mapK[G[_]: Monad](implicit kt: KindTransformer[F, G]): InstrumentMeta.Dynamic[G] =
+      mapK(kt.liftK)
+  }
+
+  object Dynamic {
+    def enabled[F[_]: Applicative]: Dynamic[F] =
+      new Dynamic[F] {
+        val isEnabled: F[Boolean] = Applicative[F].pure(true)
+        val unit: F[Unit] = Applicative[F].unit
+        def whenEnabled(f: => F[Unit]): F[Unit] = f
+      }
+
+    def disabled[F[_]: Applicative]: Dynamic[F] =
+      new Dynamic[F] {
+        val isEnabled: F[Boolean] = Applicative[F].pure(false)
+        val unit: F[Unit] = Applicative[F].unit
+        def whenEnabled(f: => F[Unit]): F[Unit] = unit
+      }
+
+    private class MappedK[F[_], G[_]: Monad](meta: InstrumentMeta.Dynamic[F])(f: F ~> G) extends Dynamic[G] {
+      def isEnabled: G[Boolean] = f(meta.isEnabled)
+      def unit: G[Unit] = f(meta.unit)
+      def whenEnabled(f: => G[Unit]): G[Unit] = Monad[G].ifM(isEnabled)(f, Monad[G].unit)
+    }
   }
 
   sealed trait Static[F[_]] extends InstrumentMeta[F] {
     /** Indicates whether instrumentation is enabled or not.
      */
-    def isEnabledSync: Boolean
+    def isEnabled: Boolean
 
     /** Modify the context `F` using the transformation `f`. */
-    override def mapK[G[_]: Monad](f: F ~> G): InstrumentMeta.Static[G] =
+    def mapK[G[_]: Monad](f: F ~> G): InstrumentMeta.Static[G] =
       new Static.MappedK(this)(f)
 
     /** Modify the context `F` using an implicit [[KindTransformer]] from `F` to `G`.
      */
-    override def mapK[G[_]: Monad](implicit kt: KindTransformer[F, G]): InstrumentMeta.Static[G] =
+    def mapK[G[_]: Monad](implicit kt: KindTransformer[F, G]): InstrumentMeta.Static[G] =
       mapK(kt.liftK)
   }
 
   object Static {
+    def enabled[F[_]: Applicative] : Static[F] =
+      new Static[F] {
+        val isEnabled: Boolean = true
+        val unit: F[Unit] = Applicative[F].unit
+      }
+
     def disabled[F[_]: Applicative]: Static[F] =
       new Static[F] {
-        val isEnabledSync: Boolean = false
-        val isEnabled: F[Boolean] = Applicative[F].pure(false)
+        val isEnabled: Boolean = false
         val unit: F[Unit] = Applicative[F].unit
-        def whenEnabled(f: => F[Unit]): F[Unit] = unit
-        def whenEnabledOrElse[A](whenEnabled: => F[A], whenDisabled: => F[A]): F[A] = whenDisabled
       }
 
     private class MappedK[F[_], G[_]: Monad](meta: Static[F])(f: F ~> G) extends Static[G] {
-      def isEnabledSync: Boolean = meta.isEnabledSync
-      def isEnabled: G[Boolean] = f(meta.isEnabled)
+      def isEnabled: Boolean = meta.isEnabled
       def unit: G[Unit] = f(meta.unit)
-      def whenEnabled(f: => G[Unit]): G[Unit] = Monad[G].ifM(isEnabled)(f, Monad[G].unit)
-      def whenEnabledOrElse[A](whenEnabled: => G[A], whenDisabled: => G[A]): G[A] =
-        Monad[G].ifM(isEnabled)(whenEnabled, whenDisabled)
     }
   }
 
@@ -104,11 +124,4 @@ object InstrumentMeta {
       def whenEnabledOrElse[A](whenEnabled: => F[A], whenDisabled: => F[A]): F[A] = whenDisabled
     }
 
-  private class MappedK[F[_], G[_]: Monad](meta: InstrumentMeta[F])(f: F ~> G) extends InstrumentMeta[G] {
-    def isEnabled: G[Boolean] = f(meta.isEnabled)
-    def unit: G[Unit] = f(meta.unit)
-    def whenEnabled(f: => G[Unit]): G[Unit] = Monad[G].ifM(isEnabled)(f, Monad[G].unit)
-    def whenEnabledOrElse[A](whenEnabled: => G[A], whenDisabled: => G[A]): G[A] =
-      Monad[G].ifM(isEnabled)(whenEnabled, whenDisabled)
-  }
 }

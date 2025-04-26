@@ -20,15 +20,15 @@ import munit.FunSuite
 
 class InstrumentMetaSuite extends FunSuite {
 
-  test("enabled") {
-    val enabled = InstrumentMeta.enabled[cats.Id]
+  test("static - enabled") {
+    val enabled = InstrumentMeta.Static.enabled[cats.Id]
 
     assertEquals(enabled.unit, ())
     assertEquals(enabled.isEnabled, true)
   }
 
-  test("disabled") {
-    val disabled = InstrumentMeta.disabled[cats.Id]
+  test("static - disabled") {
+    val disabled = InstrumentMeta.Static.disabled[cats.Id]
 
     assertEquals(disabled.unit, ())
     assertEquals(disabled.isEnabled, false)

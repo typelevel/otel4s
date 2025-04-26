@@ -17,12 +17,12 @@
 package org.typelevel.otel4s
 package trace
 
-import cats.Monad
+import cats.Applicative
 import cats.Semigroup
 import cats.data.NonEmptyList
-import cats.effect.Resource
+import cats.effect.kernel.Resource
+import cats.syntax.applicative._
 import cats.syntax.foldable._
-import cats.syntax.flatMap._
 import cats.syntax.semigroup._
 
 import scala.collection.immutable
@@ -99,7 +99,7 @@ object SpanFinalizer {
       new Multiple(NonEmptyList.of(left, right))
   }
 
-  private[otel4s] def run[F[_]: Monad](
+  private[otel4s] def run[F[_]: Applicative](
       backend: Span.Backend[F],
       finalizer: SpanFinalizer
   ): F[Unit] = {
@@ -122,7 +122,7 @@ object SpanFinalizer {
           m.finalizers.traverse_(strategy => loop(strategy))
       }
 
-    backend.meta.isEnabled.ifM(loop(finalizer), Monad[F].unit)
+    loop(finalizer).whenA(backend.meta.isEnabled)
   }
 
 }

@@ -51,7 +51,7 @@ private object SdkCounter {
       name: String,
       storage: MetricStorage.Synchronous.Writeable[F, Primitive]
   ) extends Counter.Backend[F, A] {
-    val meta: InstrumentMeta[F] = InstrumentMeta.enabled
+    val meta: InstrumentMeta.Dynamic[F] = InstrumentMeta.Dynamic.enabled
 
     def add(value: A, attributes: immutable.Iterable[Attribute[_]]): F[Unit] =
       record(cast(value), attributes)

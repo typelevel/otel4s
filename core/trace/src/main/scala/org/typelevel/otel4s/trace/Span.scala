@@ -117,7 +117,7 @@ trait Span[F[_]] extends SpanMacro[F] {
 object Span {
 
   trait Backend[F[_]] {
-    def meta: InstrumentMeta[F]
+    def meta: InstrumentMeta.Static[F]
     def context: SpanContext
 
     def updateName(name: String): F[Unit]
@@ -168,20 +168,23 @@ object Span {
       * @param context
       *   the context to propagate
       */
-    private[otel4s] def propagating[F[_]: Applicative](meta: InstrumentMeta[F], context: SpanContext): Backend[F] =
+    private[otel4s] def propagating[F[_]: Applicative](
+        meta: InstrumentMeta.Static[F],
+        context: SpanContext
+    ): Backend[F] =
       make(meta, context)
 
     def noop[F[_]: Applicative]: Backend[F] =
-      make(InstrumentMeta.disabled, SpanContext.invalid)
+      make(InstrumentMeta.Static.disabled, SpanContext.invalid)
 
     private def make[F[_]: Applicative](
-        m: InstrumentMeta[F],
+        m: InstrumentMeta.Static[F],
         ctx: SpanContext
     ): Backend[F] =
       new Backend[F] {
         private val unit = Applicative[F].unit
 
-        val meta: InstrumentMeta[F] = m
+        val meta: InstrumentMeta.Static[F] = m
         val context: SpanContext = ctx
 
         def updateName(name: String): F[Unit] = unit
@@ -202,7 +205,7 @@ object Span {
 
     /** Implementation for [[Backend.mapK]]. */
     private class MappedK[F[_], G[_]: Monad](backend: Backend[F])(f: F ~> G) extends Backend[G] {
-      def meta: InstrumentMeta[G] =
+      def meta: InstrumentMeta.Static[G] =
         backend.meta.mapK(f)
       def context: SpanContext = backend.context
       def updateName(name: String): G[Unit] =

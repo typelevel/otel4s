@@ -84,7 +84,7 @@ private[oteljava] object CounterBuilderImpl {
           val counter = builder.build()
 
           val backend = new Counter.Backend[F, A] {
-            val meta: InstrumentMeta[F] = InstrumentMeta.enabled
+            val meta: InstrumentMeta.Dynamic[F] = InstrumentMeta.Dynamic.enabled
 
             def add(
                 value: A,
@@ -125,7 +125,7 @@ private[oteljava] object CounterBuilderImpl {
           val counter = builder.ofDoubles().build()
 
           val backend = new Counter.Backend[F, A] {
-            val meta: InstrumentMeta[F] = InstrumentMeta.enabled
+            val meta: InstrumentMeta.Dynamic[F] = InstrumentMeta.Dynamic.enabled
 
             def add(
                 value: A,

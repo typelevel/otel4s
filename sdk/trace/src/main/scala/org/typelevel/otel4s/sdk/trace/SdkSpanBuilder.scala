@@ -167,7 +167,7 @@ private final case class SdkSpanBuilder[F[_]: Temporal: Console] private (
           createSpanContext(traceId, spanId, traceFlags, traceState)
 
         if (!samplingDecision.isRecording) {
-          Temporal[F].pure(Span.Backend.propagating(meta, spanContext))
+          Temporal[F].pure(Span.Backend.propagating(InstrumentMeta.Static.enabled, spanContext))
         } else {
           SdkSpanBackend
             .start[F](

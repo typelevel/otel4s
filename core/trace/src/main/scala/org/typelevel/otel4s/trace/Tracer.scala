@@ -44,7 +44,7 @@ trait Tracer[F[_]] extends TracerMacro[F] {
 
   /** The instrument's metadata. Indicates whether instrumentation is enabled or not.
     */
-  def meta: InstrumentMeta[F]
+  def meta: InstrumentMeta.Dynamic[F]
 
   /** Returns the context of the current span when a span that is not no-op exists in the local scope.
     */
@@ -225,7 +225,7 @@ object Tracer {
     new Tracer[F] {
       private val noopBackend = Span.Backend.noop
       private val builder = SpanBuilder.noop(noopBackend)
-      val meta: InstrumentMeta[F] = InstrumentMeta.disabled
+      val meta: InstrumentMeta.Dynamic[F] = InstrumentMeta.Dynamic.disabled
       val currentSpanContext: F[Option[SpanContext]] = Applicative[F].pure(None)
       val currentSpanOrNoop: F[Span[F]] =
         Applicative[F].pure(Span.fromBackend(noopBackend))
@@ -244,7 +244,7 @@ object Tracer {
       tracer: Tracer[F]
   )(implicit kt: KindTransformer[F, G])
       extends Tracer[G] {
-    def meta: InstrumentMeta[G] = tracer.meta.mapK[G]
+    def meta: InstrumentMeta.Dynamic[G] = tracer.meta.mapK[G]
     def currentSpanContext: G[Option[SpanContext]] =
       kt.liftK(tracer.currentSpanContext)
     def currentSpanOrNoop: G[Span[G]] =

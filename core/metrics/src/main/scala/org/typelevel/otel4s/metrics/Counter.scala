@@ -77,7 +77,7 @@ object Counter {
   }
 
   trait Backend[F[_], A] {
-    def meta: InstrumentMeta[F]
+    def meta: InstrumentMeta.Dynamic[F]
 
     /** Records a value with a set of attributes.
       *
@@ -101,7 +101,7 @@ object Counter {
     new Counter[F, A] {
       val backend: Backend[F, A] =
         new Backend[F, A] {
-          val meta: InstrumentMeta[F] = InstrumentMeta.disabled
+          val meta: InstrumentMeta.Dynamic[F] = InstrumentMeta.Dynamic.disabled
           def add(
               value: A,
               attributes: immutable.Iterable[Attribute[_]]

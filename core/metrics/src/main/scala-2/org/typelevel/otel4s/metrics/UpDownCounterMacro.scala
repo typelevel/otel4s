@@ -97,7 +97,7 @@ object UpDownCounterMacro {
     val backend = q"${c.prefix}.backend"
     val meta = q"$backend.meta"
 
-    q"$meta.ifEnabled($backend.add($value, $attributes))"
+    q"$meta.whenEnabled($backend.add($value, $attributes))"
   }
 
   def inc(c: blackbox.Context)(
@@ -114,7 +114,7 @@ object UpDownCounterMacro {
     val backend = q"${c.prefix}.backend"
     val meta = q"$backend.meta"
 
-    q"$meta.ifEnabled($backend.inc($attributes))"
+    q"$meta.whenEnabled($backend.inc($attributes))"
   }
 
   def dec(c: blackbox.Context)(
@@ -131,7 +131,7 @@ object UpDownCounterMacro {
     val backend = q"${c.prefix}.backend"
     val meta = q"$backend.meta"
 
-    q"$meta.ifEnabled($backend.dec($attributes))"
+    q"$meta.whenEnabled($backend.dec($attributes))"
   }
 
 }

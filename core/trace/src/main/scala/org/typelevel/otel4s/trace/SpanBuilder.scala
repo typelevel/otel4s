@@ -32,7 +32,7 @@ trait SpanBuilder[F[_]] extends SpanBuilderMacro[F] {
 
   /** The instrument's metadata. Indicates whether instrumentation is enabled.
     */
-  def meta: InstrumentMeta[F]
+  def meta: InstrumentMeta.Static[F]
 
   /** Modifies the state using `f` and returns the modified builder.
     *
@@ -232,7 +232,7 @@ object SpanBuilder {
   def noop[F[_]: Applicative](back: Span.Backend[F]): SpanBuilder[F] =
     new SpanBuilder[F] {
       private val span: Span[F] = Span.fromBackend(back)
-      val meta: InstrumentMeta[F] = InstrumentMeta.disabled
+      val meta: InstrumentMeta.Static[F] = InstrumentMeta.Static.disabled
       def modifyState(f: State => State): SpanBuilder[F] = this
 
       def build: SpanOps[F] = new SpanOps[F] {
@@ -253,7 +253,7 @@ object SpanBuilder {
       builder: SpanBuilder[F]
   )(implicit kt: KindTransformer[F, G])
       extends SpanBuilder[G] {
-    def meta: InstrumentMeta[G] =
+    def meta: InstrumentMeta.Static[G] =
       builder.meta.mapK[G]
 
     def modifyState(f: State => State): SpanBuilder[G] =

@@ -153,7 +153,7 @@ object HistogramMacro {
     val backend = q"${c.prefix}.backend"
     val meta = q"$backend.meta"
 
-    q"$meta.ifEnabled($backend.record($value, $attributes))"
+    q"$meta.whenEnabled($backend.record($value, $attributes))"
   }
 
   def recordDuration(c: blackbox.Context)(

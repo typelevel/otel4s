@@ -216,7 +216,7 @@ object SpanMacro {
     val meta = q"$backend.meta"
     val scalaList = q"_root_.scala.List"
 
-    q"$meta.ifEnabled($backend.addAttributes($scalaList($attribute)))"
+    q"$meta.whenEnabled($backend.addAttributes($scalaList($attribute)))"
   }
 
   def addAttributes(c: blackbox.Context)(
@@ -239,7 +239,7 @@ object SpanMacro {
     val backend = q"${c.prefix}.backend"
     val meta = q"$backend.meta"
 
-    q"$meta.ifEnabled($backend.addAttributes($attributes))"
+    q"$meta.whenEnabled($backend.addAttributes($attributes))"
   }
 
   def addEvent(c: blackbox.Context)(
@@ -259,7 +259,7 @@ object SpanMacro {
     val backend = q"${c.prefix}.backend"
     val meta = q"$backend.meta"
 
-    q"$meta.ifEnabled($backend.addEvent($name, $attributes))"
+    q"$meta.whenEnabled($backend.addEvent($name, $attributes))"
   }
 
   def addLink(c: blackbox.Context)(
@@ -279,7 +279,7 @@ object SpanMacro {
     val backend = q"${c.prefix}.backend"
     val meta = q"$backend.meta"
 
-    q"$meta.ifEnabled($backend.addLink($spanContext, $attributes))"
+    q"$meta.whenEnabled($backend.addLink($spanContext, $attributes))"
   }
 
   def addEventWithTimestamp(c: blackbox.Context)(
@@ -305,7 +305,7 @@ object SpanMacro {
     val backend = q"${c.prefix}.backend"
     val meta = q"$backend.meta"
 
-    q"$meta.ifEnabled($backend.addEvent($name, $timestamp, $attributes))"
+    q"$meta.whenEnabled($backend.addEvent($name, $timestamp, $attributes))"
   }
 
   def recordException(c: blackbox.Context)(
@@ -328,7 +328,7 @@ object SpanMacro {
     val backend = q"${c.prefix}.backend"
     val meta = q"$backend.meta"
 
-    q"$meta.ifEnabled($backend.recordException($exception, $attributes))"
+    q"$meta.whenEnabled($backend.recordException($exception, $attributes))"
   }
 
   def setStatus(c: blackbox.Context)(
@@ -339,7 +339,7 @@ object SpanMacro {
     val backend = q"${c.prefix}.backend"
     val meta = q"$backend.meta"
 
-    q"$meta.ifEnabled($backend.setStatus($status))"
+    q"$meta.whenEnabled($backend.setStatus($status))"
   }
 
   def setStatusWithDescription(c: blackbox.Context)(
@@ -351,7 +351,7 @@ object SpanMacro {
     val backend = q"${c.prefix}.backend"
     val meta = q"$backend.meta"
 
-    q"$meta.ifEnabled($backend.setStatus($status, $description))"
+    q"$meta.whenEnabled($backend.setStatus($status, $description))"
   }
 
 }

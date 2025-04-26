@@ -81,7 +81,7 @@ object CounterMacro {
     val backend = q"${c.prefix}.backend"
     val meta = q"$backend.meta"
 
-    q"$meta.ifEnabled($backend.add($value, $attributes))"
+    q"$meta.whenEnabled($backend.add($value, $attributes))"
   }
 
   def inc(c: blackbox.Context)(
@@ -98,7 +98,7 @@ object CounterMacro {
     val backend = q"${c.prefix}.backend"
     val meta = q"$backend.meta"
 
-    q"$meta.ifEnabled($backend.inc($attributes))"
+    q"$meta.whenEnabled($backend.inc($attributes))"
   }
 
 }

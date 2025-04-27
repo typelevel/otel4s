@@ -41,7 +41,7 @@ private final class SdkTracer[F[_]: Temporal: Console] private[trace] (
     traceScope: TraceScope[F, Context]
 ) extends Tracer[F] {
 
-  def meta: InstrumentMeta.Dynamic[F] = sharedState.meta
+  def meta: InstrumentMeta.Dynamic[F] =sharedState.meta
 
   def currentSpanContext: F[Option[SpanContext]] =
     traceScope.current.map(current => current.filter(_.isValid))

@@ -24,6 +24,7 @@ import cats.effect.std.Random
 import cats.syntax.functor._
 import org.typelevel.otel4s.context.propagation.ContextPropagators
 import org.typelevel.otel4s.context.propagation.TextMapPropagator
+import org.typelevel.otel4s.meta.InstrumentMeta
 import org.typelevel.otel4s.sdk.context.Context
 import org.typelevel.otel4s.sdk.context.LocalContext
 import org.typelevel.otel4s.sdk.trace.processor.SpanProcessor
@@ -50,7 +51,8 @@ private class SdkTracerProvider[F[_]: Temporal: Parallel: Console](
       spanLimits,
       sampler,
       SpanProcessor.of(spanProcessors: _*),
-      storage
+      storage,
+      InstrumentMeta.enabled
     )
 
   def tracer(name: String): TracerBuilder[F] =

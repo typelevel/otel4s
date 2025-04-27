@@ -17,7 +17,9 @@
 package org.typelevel.otel4s
 package trace
 
-import cats.{Applicative, Monad, ~>}
+import cats.Applicative
+import cats.Monad
+import cats.~>
 import org.typelevel.otel4s.meta.InstrumentMeta
 
 import scala.collection.immutable

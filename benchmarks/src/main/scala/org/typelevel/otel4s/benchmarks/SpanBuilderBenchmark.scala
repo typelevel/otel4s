@@ -20,9 +20,6 @@ import cats.effect.IO
 import cats.effect.Resource
 import cats.effect.unsafe.implicits.global
 import org.openjdk.jmh.annotations._
-import org.typelevel.otel4s.trace.{SpanBuilder, SpanContext, Tracer}
-import java.util.concurrent.TimeUnit
-
 import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.trace.SpanBuilder
 import org.typelevel.otel4s.trace.SpanContext

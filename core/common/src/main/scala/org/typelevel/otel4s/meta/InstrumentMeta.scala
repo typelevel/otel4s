@@ -16,7 +16,9 @@
 
 package org.typelevel.otel4s.meta
 
-import cats.{Applicative, Monad, ~>}
+import cats.Applicative
+import cats.Monad
+import cats.~>
 import org.typelevel.otel4s.KindTransformer
 
 object InstrumentMeta {

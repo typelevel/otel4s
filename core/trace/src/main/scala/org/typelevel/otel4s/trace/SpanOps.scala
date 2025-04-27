@@ -17,7 +17,6 @@
 package org.typelevel.otel4s
 package trace
 
-import cats.Monad
 import cats.effect.kernel.MonadCancelThrow
 import cats.effect.kernel.Resource
 import cats.syntax.functor._
@@ -285,7 +284,7 @@ object SpanOps {
 
     /** Modify the context `F` using an implicit [[KindTransformer]] from `F` to `G`.
       */
-    def mapK[G[_]: Monad](implicit kt: KindTransformer[F, G]): Res[G] =
+    def mapK[G[_]](implicit kt: KindTransformer[F, G]): Res[G] =
       Res(span.mapK[G], kt.liftFunctionK(trace))
   }
 

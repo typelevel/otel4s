@@ -63,8 +63,8 @@ class SpanBuilderSuite extends FunSuite {
     // test varargs and Iterable overloads
     tracer
       .spanBuilder("span")
+      .addAttribute(attribute)
       .addAttributes(attribute, attribute)
-      .addAttribute(Attribute("k", "v"))
       .addAttributes(attributes)
       .addLink(spanContext, attribute, attribute)
       .addLink(spanContext, attributes)

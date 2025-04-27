@@ -147,11 +147,10 @@ object SpanBuilderMacro {
   def addAttribute[F[_], A](
       builder: Expr[SpanBuilder[F]],
       attribute: Expr[Attribute[A]]
-  )(using Quotes, Type[F], Type[A]) = {
+  )(using Quotes, Type[F], Type[A]) =
     '{
       $builder.modifyState(_.addAttributes(List($attribute)))
     }
-  }
 
   def addAttributes[F[_]](
       builder: Expr[SpanBuilder[F]],

@@ -55,9 +55,10 @@ private object SdkHistogram {
       cast: A => Primitive,
       castDuration: Double => Primitive,
       name: String,
-      storage: MetricStorage.Synchronous.Writeable[F, Primitive]
+      storage: MetricStorage.Synchronous.Writeable[F, Primitive],
+      instrumentMeta: InstrumentMeta.Dynamic[F]
   ) extends Histogram.Backend[F, A] {
-    val meta: InstrumentMeta.Dynamic[F] = InstrumentMeta.Dynamic.enabled
+    def meta: InstrumentMeta.Dynamic[F] = instrumentMeta
 
     def record(
         value: A,
@@ -131,7 +132,7 @@ private object SdkHistogram {
             .registerMetricStorage[Long](descriptor)
             .map { storage =>
               Histogram.fromBackend(
-                new Backend[F, A, Long](cast, _.toLong, name, storage)
+                new Backend[F, A, Long](cast, _.toLong, name, storage, sharedState.meta)
               )
             }
 
@@ -140,7 +141,7 @@ private object SdkHistogram {
             .registerMetricStorage[Double](descriptor)
             .map { storage =>
               Histogram.fromBackend(
-                new Backend[F, A, Double](cast, identity, name, storage)
+                new Backend[F, A, Double](cast, identity, name, storage, sharedState.meta)
               )
             }
       }

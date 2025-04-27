@@ -16,9 +16,10 @@
 
 package org.typelevel.otel4s.meta
 
-import munit.FunSuite
+import cats.effect.IO
+import munit.CatsEffectSuite
 
-class InstrumentMetaSuite extends FunSuite {
+class InstrumentMetaSuite extends CatsEffectSuite {
 
   test("static - enabled") {
     val enabled = InstrumentMeta.Static.enabled[cats.Id]
@@ -34,4 +35,23 @@ class InstrumentMetaSuite extends FunSuite {
     assertEquals(disabled.isEnabled, false)
   }
 
+  test("dynamic - enabled") {
+    val meta = InstrumentMeta.Dynamic.enabled[IO]
+
+    for {
+      _ <- assertIO_(meta.unit)
+      _ <- assertIO(meta.isEnabled, true)
+      _ <- assertIO(IO.ref(false).flatMap(r => meta.whenEnabled(r.set(true)) >> r.get), true)
+    } yield ()
+  }
+
+  test("dynamic - disabled") {
+    val meta = InstrumentMeta.Dynamic.disabled[IO]
+
+    for {
+      _ <- assertIO_(meta.unit)
+      _ <- assertIO(meta.isEnabled, false)
+      _ <- assertIO(IO.ref(false).flatMap(r => meta.whenEnabled(r.set(true)) >> r.get), false)
+    } yield ()
+  }
 }

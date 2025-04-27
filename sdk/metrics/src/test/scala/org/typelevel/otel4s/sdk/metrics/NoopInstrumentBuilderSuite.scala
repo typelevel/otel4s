@@ -30,7 +30,8 @@ class NoopInstrumentBuilderSuite extends CatsEffectSuite {
       for {
         counter <- NoopInstrumentBuilder.counter[IO, Long](incorrectName).create
         _ <- C.entries.assertEquals(consoleEntries("Counter"))
-      } yield assert(!counter.backend.meta.isEnabled)
+        enabled <- counter.backend.meta.isEnabled
+      } yield assert(!enabled)
     }
   }
 
@@ -41,7 +42,8 @@ class NoopInstrumentBuilderSuite extends CatsEffectSuite {
           .histogram[IO, Long](incorrectName)
           .create
         _ <- C.entries.assertEquals(consoleEntries("Histogram"))
-      } yield assert(!histogram.backend.meta.isEnabled)
+        enabled <- histogram.backend.meta.isEnabled
+      } yield assert(!enabled)
     }
   }
 
@@ -52,16 +54,18 @@ class NoopInstrumentBuilderSuite extends CatsEffectSuite {
           .upDownCounter[IO, Long](incorrectName)
           .create
         _ <- C.entries.assertEquals(consoleEntries("UpDownCounter"))
-      } yield assert(!upDownCounter.backend.meta.isEnabled)
+        enabled <- upDownCounter.backend.meta.isEnabled
+      } yield assert(!enabled)
     }
   }
 
   test("create a noop Gauge") {
     InMemoryConsole.create[IO].flatMap { implicit C: InMemoryConsole[IO] =>
       for {
-        _ <- NoopInstrumentBuilder.gauge[IO, Long](incorrectName).create
+        gauge <- NoopInstrumentBuilder.gauge[IO, Long](incorrectName).create
         _ <- C.entries.assertEquals(consoleEntries("Gauge"))
-      } yield ()
+        enabled <- gauge.backend.meta.isEnabled
+      } yield assert(!enabled)
     }
   }
 

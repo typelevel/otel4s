@@ -17,7 +17,6 @@
 package org.typelevel.otel4s
 package trace
 
-import cats.Applicative
 import cats.effect.IO
 import munit.CatsEffectSuite
 import org.typelevel.otel4s.context.propagation.TextMapGetter
@@ -35,13 +34,11 @@ class TracerSuite extends CatsEffectSuite {
 
     def text = {
       allocated = true
-      sys.error("text")
       "text"
     }
 
     def status = {
       allocated = true
-      sys.error("status")
       StatusCode.Ok
     }
 
@@ -53,20 +50,18 @@ class TracerSuite extends CatsEffectSuite {
 
     def attribute: List[Attribute[String]] = {
       allocated = true
-      sys.error("attribute")
       List(Attribute("key", "value"))
     }
 
     def exception = {
       allocated = true
-      sys.error("exc")
       new RuntimeException("exception")
     }
 
     // test varargs and Iterable overloads
     for {
       _ <- tracer.span("span", attribute: _*).use { span =>
-        /*for {
+        for {
           _ <- span.addAttributes(attribute: _*)
           _ <- span.addAttributes(attribute)
           _ <- span.addEvent(text, attribute: _*)
@@ -77,10 +72,9 @@ class TracerSuite extends CatsEffectSuite {
           _ <- span.recordException(exception, attribute)
           _ <- span.setStatus(status)
           _ <- span.setStatus(status, text)
-        } yield ()*/
-        IO.unit
+        } yield ()
       }
-      /*_ <- tracer.span("span", attribute).use_
+      _ <- tracer.span("span", attribute).use_
       _ <- tracer.rootSpan("span", attribute: _*).use { span =>
         for {
           _ <- span.addAttributes(attribute: _*)
@@ -95,7 +89,7 @@ class TracerSuite extends CatsEffectSuite {
           _ <- span.setStatus(status, text)
         } yield ()
       }
-      _ <- tracer.rootSpan("span", attribute).use_*/
+      _ <- tracer.rootSpan("span", attribute).use_
     } yield assert(!allocated)
   }
 
@@ -157,7 +151,7 @@ class TracerSuite extends CatsEffectSuite {
 
     def ops: Vector[BuilderOp] = builderOps.result()
 
-    def meta: InstrumentMeta[F] = InstrumentMeta.enabled[F]
+    def meta: InstrumentMeta.Dynamic[F] = InstrumentMeta.Dynamic.enabled[F]
 
     def modifyState(f: SpanBuilder.State => SpanBuilder.State): SpanBuilder[F] = {
       state = f(state)

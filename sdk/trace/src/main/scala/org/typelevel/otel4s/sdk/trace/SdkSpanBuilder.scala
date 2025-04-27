@@ -54,7 +54,7 @@ private final case class SdkSpanBuilder[F[_]: Temporal: Console] private (
 ) extends SpanBuilder[F] {
   import SpanBuilder.Parent
 
-  def meta: InstrumentMeta[F] = tracerSharedState.meta
+  def meta: InstrumentMeta.Dynamic[F] = tracerSharedState.meta
 
   def modifyState(f: SpanBuilder.State => SpanBuilder.State): SpanBuilder[F] =
     copy(stateModifiers = this.stateModifiers :+ f)

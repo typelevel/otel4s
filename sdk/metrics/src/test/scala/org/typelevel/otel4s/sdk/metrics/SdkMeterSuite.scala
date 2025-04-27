@@ -54,7 +54,8 @@ class SdkMeterSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
           meter <- createMeter(resource, scope)
           counter <- meter.counter[Long](name).create
           _ <- C.entries.assertEquals(consoleEntries("Counter", name))
-        } yield assert(!counter.backend.meta.isEnabled)
+          enabled <- counter.backend.meta.isEnabled
+        } yield assert(!enabled)
       }
     }
   }
@@ -70,7 +71,8 @@ class SdkMeterSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
           meter <- createMeter(resource, scope)
           counter <- meter.upDownCounter[Long](name).create
           _ <- C.entries.assertEquals(consoleEntries("UpDownCounter", name))
-        } yield assert(!counter.backend.meta.isEnabled)
+          enabled <- counter.backend.meta.isEnabled
+        } yield assert(!enabled)
       }
     }
   }
@@ -86,7 +88,8 @@ class SdkMeterSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
           meter <- createMeter(resource, scope)
           histogram <- meter.histogram[Long](name).create
           _ <- C.entries.assertEquals(consoleEntries("Histogram", name))
-        } yield assert(!histogram.backend.meta.isEnabled)
+          enabled <- histogram.backend.meta.isEnabled
+        } yield assert(!enabled)
       }
     }
   }
@@ -102,7 +105,8 @@ class SdkMeterSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
           meter <- createMeter(resource, scope)
           gauge <- meter.gauge[Long](name).create
           _ <- C.entries.assertEquals(consoleEntries("Gauge", name))
-        } yield assert(!gauge.backend.meta.isEnabled)
+          enabled <- gauge.backend.meta.isEnabled
+        } yield assert(!enabled)
       }
     }
   }

@@ -17,6 +17,7 @@
 package org.typelevel.otel4s
 package trace
 
+import cats.Applicative
 import cats.effect.IO
 import munit.CatsEffectSuite
 import org.typelevel.otel4s.context.propagation.TextMapGetter
@@ -44,7 +45,6 @@ class TracerSuite extends CatsEffectSuite {
 
     def timestamp = {
       allocated = true
-      sys.error("timestamp")
       100.millis
     }
 
@@ -141,7 +141,7 @@ class TracerSuite extends CatsEffectSuite {
     case object Build extends BuilderOp
   }
 
-  private final class ProxyBuilder[F[_]: cats.Monad](
+  private final class ProxyBuilder[F[_]: Applicative](
       name: String,
       var underlying: SpanBuilder[F]
   ) extends SpanBuilder[F] {
@@ -166,7 +166,7 @@ class TracerSuite extends CatsEffectSuite {
     }
   }
 
-  private class ProxyTracer[F[_]: cats.Monad](underlying: Tracer[F]) extends Tracer[F] {
+  private class ProxyTracer[F[_]: Applicative](underlying: Tracer[F]) extends Tracer[F] {
     private val proxyBuilders = Vector.newBuilder[ProxyBuilder[F]]
 
     def meta: InstrumentMeta.Dynamic[F] = InstrumentMeta.Dynamic.enabled[F]

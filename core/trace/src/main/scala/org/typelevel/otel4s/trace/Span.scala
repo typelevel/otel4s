@@ -18,7 +18,6 @@ package org.typelevel.otel4s
 package trace
 
 import cats.Applicative
-import cats.Monad
 import cats.~>
 import org.typelevel.otel4s.meta.InstrumentMeta
 
@@ -108,11 +107,11 @@ trait Span[F[_]] extends SpanMacro[F] {
     backend.end(timestamp)
 
   /** Modify the context `F` using the transformation `f`. */
-  def mapK[G[_]: Monad](f: F ~> G): Span[G] = Span.fromBackend(backend.mapK(f))
+  def mapK[G[_]](f: F ~> G): Span[G] = Span.fromBackend(backend.mapK(f))
 
   /** Modify the context `F` using an implicit [[KindTransformer]] from `F` to `G`.
     */
-  final def mapK[G[_]: Monad](implicit kt: KindTransformer[F, G]): Span[G] =
+  final def mapK[G[_]](implicit kt: KindTransformer[F, G]): Span[G] =
     mapK(kt.liftK)
 }
 
@@ -153,11 +152,11 @@ object Span {
     def end(timestamp: FiniteDuration): F[Unit]
 
     /** Modify the context `F` using the transformation `f`. */
-    def mapK[G[_]: Monad](f: F ~> G): Backend[G] = new Backend.MappedK(this)(f)
+    def mapK[G[_]](f: F ~> G): Backend[G] = new Backend.MappedK(this)(f)
 
     /** Modify the context `F` using an implicit [[KindTransformer]] from `F` to `G`.
       */
-    final def mapK[G[_]: Monad](implicit kt: KindTransformer[F, G]): Backend[G] =
+    final def mapK[G[_]](implicit kt: KindTransformer[F, G]): Backend[G] =
       mapK(kt.liftK)
   }
 
@@ -206,7 +205,7 @@ object Span {
       }
 
     /** Implementation for [[Backend.mapK]]. */
-    private class MappedK[F[_], G[_]: Monad](backend: Backend[F])(f: F ~> G) extends Backend[G] {
+    private class MappedK[F[_], G[_]](backend: Backend[F])(f: F ~> G) extends Backend[G] {
       def meta: InstrumentMeta.Static[G] =
         backend.meta.mapK(f)
       def context: SpanContext = backend.context

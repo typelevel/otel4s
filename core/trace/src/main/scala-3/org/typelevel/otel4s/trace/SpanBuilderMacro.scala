@@ -156,8 +156,11 @@ object SpanBuilderMacro {
       builder: Expr[SpanBuilder[F]],
       attributes: Expr[immutable.Iterable[Attribute[_]]]
   )(using Quotes, Type[F]) =
-    '{
-      $builder.modifyState(_.addAttributes($attributes))
+    (attributes: @unchecked) match {
+      case Varargs(args) if args.isEmpty =>
+        builder
+      case other =>
+        '{ $builder.modifyState(_.addAttributes($attributes)) }
     }
 
   def addLink[F[_]](

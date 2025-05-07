@@ -66,7 +66,7 @@ private[oteljava] class TracerImpl[F[_]](
     }.flatten
 
   def spanBuilder(name: String): SpanBuilder[F] =
-    SpanBuilderImpl[F](jTracer, name, runner, traceScope)
+    SpanBuilderImpl[F](jTracer, name, meta, runner, traceScope)
 
   def childScope[A](parent: SpanContext)(fa: F[A]): F[A] =
     traceScope.childScope(parent).flatMap(trace => trace(fa))

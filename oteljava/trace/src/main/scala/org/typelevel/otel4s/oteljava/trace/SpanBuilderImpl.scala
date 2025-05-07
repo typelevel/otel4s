@@ -39,17 +39,16 @@ import org.typelevel.otel4s.trace.TraceScope
 private[oteljava] final case class SpanBuilderImpl[F[_]: Sync] private (
     jTracer: JTracer,
     name: String,
+    meta: InstrumentMeta[F],
     runner: SpanRunner[F],
     scope: TraceScope[F, Context],
-    state: SpanBuilder.State
+    stateModifier: SpanBuilder.State => SpanBuilder.State
 ) extends SpanBuilder[F] {
   import SpanBuilder.Parent
   import SpanBuilderImpl._
 
-  val meta: InstrumentMeta[F] = InstrumentMeta.enabled[F]
-
   def modifyState(f: SpanBuilder.State => SpanBuilder.State): SpanBuilder[F] =
-    copy(state = f(state))
+    copy(stateModifier = this.stateModifier.andThen(f))
 
   def build: SpanOps[F] = new SpanOps[F] {
     def startUnmanaged: F[Span[F]] =
@@ -64,7 +63,7 @@ private[oteljava] final case class SpanBuilderImpl[F[_]: Sync] private (
     override def use_ : F[Unit] = use(_ => Sync[F].unit)
   }
 
-  private[trace] def makeJBuilder(parent: JContext): JSpanBuilder = {
+  private[trace] def makeJBuilder(state: SpanBuilder.State, parent: JContext): JSpanBuilder = {
     val b = jTracer
       .spanBuilder(name)
       .setAllAttributes(state.attributes.toJava)
@@ -84,17 +83,18 @@ private[oteljava] final case class SpanBuilderImpl[F[_]: Sync] private (
 
   private def runnerContext: F[Option[SpanRunner.RunnerContext]] =
     for {
-      parentOpt <- parentContext
+      state <- Sync[F].delay(stateModifier(SpanBuilder.State.init))
+      parentOpt <- parentContext(state)
     } yield parentOpt.map { parent =>
       SpanRunner.RunnerContext(
-        builder = makeJBuilder(parent),
+        builder = makeJBuilder(state, parent),
         parent = parent,
         hasStartTimestamp = state.startTimestamp.isDefined,
         finalizationStrategy = state.finalizationStrategy
       )
     }
 
-  private def parentContext: F[Option[JContext]] =
+  private def parentContext(state: SpanBuilder.State): F[Option[JContext]] =
     scope.contextReader { case Context.Wrapped(underlying) =>
       def explicit(parent: SpanContext) =
         JSpan
@@ -130,15 +130,17 @@ private[oteljava] object SpanBuilderImpl {
   def apply[F[_]: Sync](
       jTracer: JTracer,
       name: String,
+      meta: InstrumentMeta[F],
       runner: SpanRunner[F],
       scope: TraceScope[F, Context]
   ): SpanBuilder[F] =
     SpanBuilderImpl(
       jTracer,
       name,
+      meta,
       runner,
       scope,
-      SpanBuilder.State.init
+      identity
     )
 
   private def toJSpanKind(spanKind: SpanKind): JSpanKind =

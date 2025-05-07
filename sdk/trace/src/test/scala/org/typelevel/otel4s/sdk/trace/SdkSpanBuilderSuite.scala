@@ -26,6 +26,7 @@ import org.scalacheck.Gen
 import org.scalacheck.Test
 import org.scalacheck.effect.PropF
 import org.typelevel.otel4s.Attributes
+import org.typelevel.otel4s.meta.InstrumentMeta
 import org.typelevel.otel4s.sdk.TelemetryResource
 import org.typelevel.otel4s.sdk.common.InstrumentationScope
 import org.typelevel.otel4s.sdk.context.Context
@@ -52,16 +53,17 @@ class SdkSpanBuilderSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
       for {
         traceScope <- createTraceScope
         inMemory <- InMemorySpanExporter.create[IO](None)
-        state <- createState(inMemory)
+        tracerState <- createState(inMemory)
       } yield {
-        val builder = SdkSpanBuilder(name, scope, state, traceScope)
+        val builder = SdkSpanBuilder(name, scope, tracerState, traceScope)
+        val state = builder.mkState
 
         assertEquals(builder.name, name)
-        assertEquals(builder.state.parent, SpanBuilder.Parent.Propagate)
-        assertEquals(builder.state.spanKind, None)
-        assertEquals(builder.state.links, Vector.empty)
-        assertEquals(builder.state.attributes, Attributes.empty)
-        assertEquals(builder.state.startTimestamp, None)
+        assertEquals(state.parent, SpanBuilder.Parent.Propagate)
+        assertEquals(state.spanKind, None)
+        assertEquals(state.links, Vector.empty)
+        assertEquals(state.attributes, Attributes.empty)
+        assertEquals(state.startTimestamp, None)
       }
     }
   }
@@ -162,7 +164,8 @@ class SdkSpanBuilderSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
           spanLimits,
           sampler,
           SimpleSpanProcessor(exporter),
-          spanStorage
+          spanStorage,
+          InstrumentMeta.enabled
         )
       }
     }

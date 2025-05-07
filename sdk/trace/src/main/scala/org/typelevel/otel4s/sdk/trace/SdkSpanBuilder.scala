@@ -46,20 +46,20 @@ import scodec.bits.ByteVector
 private final case class SdkSpanBuilder[F[_]: Temporal: Console] private (
     name: String,
     scopeInfo: InstrumentationScope,
-    state: SpanBuilder.State,
     tracerSharedState: TracerSharedState[F],
-    scope: TraceScope[F, Context]
+    scope: TraceScope[F, Context],
+    stateModifier: SpanBuilder.State => SpanBuilder.State
 ) extends SpanBuilder[F] {
   import SpanBuilder.Parent
 
-  val meta: InstrumentMeta[F] = InstrumentMeta.enabled[F]
+  def meta: InstrumentMeta[F] = tracerSharedState.meta
 
   def modifyState(f: SpanBuilder.State => SpanBuilder.State): SpanBuilder[F] =
-    copy(state = f(state))
+    copy(stateModifier = this.stateModifier.andThen(f))
 
   def build: SpanOps[F] = new SpanOps[F] {
     def startUnmanaged: F[Span[F]] =
-      start.map(backend => Span.fromBackend(backend))
+      start(mkState).map(backend => Span.fromBackend(backend))
 
     def resource: Resource[F, SpanOps.Res[F]] =
       startAsRes
@@ -85,8 +85,10 @@ private final case class SdkSpanBuilder[F[_]: Temporal: Console] private (
     }
 
   private def startManaged: Resource[F, (Span.Backend[F], F ~> F)] = {
+    val state = mkState
+
     def acquire: F[Span.Backend[F]] =
-      start
+      start(state)
 
     def release(backend: Span.Backend[F], ec: Resource.ExitCase): F[Unit] =
       for {
@@ -100,7 +102,7 @@ private final case class SdkSpanBuilder[F[_]: Temporal: Console] private (
     } yield (backend, nt)
   }
 
-  private def start: F[Span.Backend[F]] = {
+  private def start(state: SpanBuilder.State): F[Span.Backend[F]] = {
     val idGenerator = tracerSharedState.idGenerator
     val spanKind = state.spanKind.getOrElse(SpanKind.Internal)
 
@@ -142,7 +144,7 @@ private final case class SdkSpanBuilder[F[_]: Temporal: Console] private (
       )
 
     for {
-      parentSpanContext <- chooseParentSpanContext
+      parentSpanContext <- chooseParentSpanContext(state)
       spanId <- idGenerator.generateSpanId
       traceId <- genTraceId(parentSpanContext)
 
@@ -186,7 +188,7 @@ private final case class SdkSpanBuilder[F[_]: Temporal: Console] private (
     } yield backend
   }
 
-  private def chooseParentSpanContext: F[Option[SpanContext]] =
+  private def chooseParentSpanContext(state: SpanBuilder.State): F[Option[SpanContext]] =
     state.parent match {
       case Parent.Root             => Temporal[F].pure(None)
       case Parent.Propagate        => scope.current
@@ -212,6 +214,9 @@ private final case class SdkSpanBuilder[F[_]: Temporal: Console] private (
       SpanContext(traceId, spanId, flags, state, remote = false)
     }
 
+  private[sdk] def mkState: SpanBuilder.State =
+    stateModifier(SpanBuilder.State.init)
+
 }
 
 private object SdkSpanBuilder {
@@ -225,9 +230,9 @@ private object SdkSpanBuilder {
     SdkSpanBuilder(
       name,
       scopeInfo,
-      SpanBuilder.State.init,
       tracerSharedState,
-      scope
+      scope,
+      identity
     )
 
 }

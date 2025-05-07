@@ -54,4 +54,22 @@ class InstrumentMetaSuite extends CatsEffectSuite {
       _ <- assertIO(IO.ref(false).flatMap(r => meta.whenEnabled(r.set(true)) >> r.get), false)
     } yield ()
   }
+
+  test("dynamic - from") {
+    for {
+      enabled <- IO.ref(false)
+      meta = InstrumentMeta.Dynamic.from[IO](enabled.get)
+
+      // disabled
+      _ <- assertIO_(meta.unit)
+      _ <- assertIO(meta.isEnabled, false)
+      _ <- assertIO(IO.ref(false).flatMap(r => meta.whenEnabled(r.set(true)) >> r.get), false)
+
+      // enabled
+      _ <- enabled.set(true)
+      _ <- assertIO_(meta.unit)
+      _ <- assertIO(meta.isEnabled, true)
+      _ <- assertIO(IO.ref(false).flatMap(r => meta.whenEnabled(r.set(true)) >> r.get), true)
+    } yield ()
+  }
 }

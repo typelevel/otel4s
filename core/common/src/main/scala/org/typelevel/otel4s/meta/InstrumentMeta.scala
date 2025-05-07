@@ -33,7 +33,8 @@ object InstrumentMeta {
       */
     def unit: F[Unit]
 
-    // todo: define Scala 3 version and use inline transparent
+    /** Runs `f` only when the instrument is enabled. A shortcut for `Monad[F].ifM(isEnabled)(f, unit)`.
+      */
     def whenEnabled(f: => F[Unit]): F[Unit]
 
     /** Modify the context `F` using the transformation `f`. */
@@ -47,6 +48,13 @@ object InstrumentMeta {
   }
 
   object Dynamic {
+
+    private[otel4s] def from[F[_]: Monad](enabled: F[Boolean]): Dynamic[F] =
+      new Dynamic[F] {
+        def isEnabled: F[Boolean] = enabled
+        def unit: F[Unit] = Monad[F].unit
+        def whenEnabled(f: => F[Unit]): F[Unit] = Monad[F].ifM(isEnabled)(f, unit)
+      }
 
     private[otel4s] def enabled[F[_]: Applicative]: Dynamic[F] =
       new Dynamic[F] {

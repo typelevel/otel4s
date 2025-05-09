@@ -65,7 +65,7 @@ object SpanSuite {
   private class OpsBackend(state: Ref[IO, Vector[BackendOp]]) extends Span.Backend[IO] {
     import BackendOp._
 
-    val meta: InstrumentMeta[IO] = InstrumentMeta.enabled
+    val meta: InstrumentMeta.Static[IO] = InstrumentMeta.Static.enabled
 
     def context: SpanContext = ???
 

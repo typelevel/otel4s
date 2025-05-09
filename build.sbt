@@ -44,7 +44,7 @@ lazy val scalaNativeSettings = Def.settings(
 
 val Scala212 = "2.12.20"
 val Scala213 = "2.13.16"
-ThisBuild / crossScalaVersions := Seq(Scala213, "3.3.5")
+ThisBuild / crossScalaVersions := Seq(Scala213, "3.3.6")
 ThisBuild / scalaVersion := Scala213 // the default Scala
 
 ThisBuild / githubWorkflowBuildPreamble ++= nativeBrewInstallWorkflowSteps.value

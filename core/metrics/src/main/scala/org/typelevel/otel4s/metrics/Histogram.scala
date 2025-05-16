@@ -17,7 +17,7 @@
 package org.typelevel.otel4s
 package metrics
 
-import cats.{Applicative, Functor}
+import cats.Applicative
 import cats.effect.MonadCancelThrow
 import cats.effect.kernel.Resource
 import cats.implicits.toFunctorOps

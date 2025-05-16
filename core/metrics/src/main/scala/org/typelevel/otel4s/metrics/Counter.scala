@@ -17,7 +17,8 @@
 package org.typelevel.otel4s
 package metrics
 
-import cats.Applicative
+import cats.implicits.toFunctorOps
+import cats.{Applicative, Functor}
 import org.typelevel.otel4s.meta.InstrumentMeta
 
 import scala.collection.immutable
@@ -74,6 +75,29 @@ object Counter {
     /** Creates a [[Counter]] with the given `unit` and `description` (if any).
       */
     def create: F[Counter[F, A]]
+
+    /** Modify the context `F` using an implicit [[KindTransformer]] from `F` to `G`.
+      */
+    def mapK[G[_]](implicit functor: Functor[F], kt: KindTransformer[F, G]): Builder[G, A] =
+      new Builder.MappedK[F, G, A](this)
+  }
+
+  object Builder {
+
+    private class MappedK[F[_]: Functor, G[_], A](inner: Builder[F, A])(implicit kt: KindTransformer[F, G])
+        extends Builder[G, A] {
+
+      override def withUnit(unit: String): MappedK[F, G, A] = new MappedK(inner.withUnit(unit))
+
+      override def withDescription(description: String): MappedK[F, G, A] = new MappedK(
+        inner.withDescription(description)
+      )
+
+      override def create: G[Counter[G, A]] =
+        kt.liftK(inner.create.map { counter =>
+          Counter.fromBackend(counter.backend.mapK)
+        })
+    }
   }
 
   trait Backend[F[_], A] {
@@ -95,6 +119,23 @@ object Counter {
       *   the set of attributes to associate with the value
       */
     def inc(attributes: immutable.Iterable[Attribute[_]]): F[Unit]
+
+    /** Modify the context `F` using an implicit [[KindTransformer]] from `F` to `G`.
+      */
+    def mapK[G[_]](implicit kt: KindTransformer[F, G]): Backend[G, A] = new Backend.MappedK[F, G, A](this)
+  }
+
+  object Backend {
+    private class MappedK[F[_], G[_], A](inner: Backend[F, A])(implicit kt: KindTransformer[F, G])
+        extends Backend[G, A] {
+      override def meta: InstrumentMeta[G] = inner.meta.mapK
+
+      override def add(value: A, attributes: immutable.Iterable[Attribute[?]]): G[Unit] =
+        kt.liftK(inner.add(value, attributes))
+
+      override def inc(attributes: immutable.Iterable[Attribute[?]]): G[Unit] =
+        kt.liftK(inner.inc(attributes))
+    }
   }
 
   def noop[F[_], A](implicit F: Applicative[F]): Counter[F, A] =

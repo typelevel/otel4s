@@ -17,8 +17,10 @@
 package org.typelevel.otel4s
 package metrics
 
-import cats.Applicative
+import cats.{Applicative, Functor}
+import cats.effect.MonadCancelThrow
 import cats.effect.kernel.Resource
+import cats.implicits.toFunctorOps
 import org.typelevel.otel4s.meta.InstrumentMeta
 
 import scala.collection.immutable
@@ -86,6 +88,32 @@ object Histogram {
     /** Creates a [[Histogram]] with the given `unit`, `description`, and `bucket boundaries` (if any).
       */
     def create: F[Histogram[F, A]]
+
+    /** Modify the context `F` using an implicit [[KindTransformer]] from `F` to `G`.
+      */
+    def mapK[G[_]: MonadCancelThrow](implicit mct: MonadCancelThrow[F], kt: KindTransformer[F, G]): Builder[G, A] =
+      new Builder.MappedK[F, G, A](this)
+  }
+
+  object Builder {
+    private class MappedK[F[_]: MonadCancelThrow, G[_]: MonadCancelThrow, A](inner: Builder[F, A])(implicit
+        kt: KindTransformer[F, G]
+    ) extends Builder[G, A] {
+
+      override def withUnit(unit: String): MappedK[F, G, A] =
+        new MappedK(inner.withUnit(unit))
+
+      override def withDescription(description: String): MappedK[F, G, A] =
+        new MappedK(inner.withDescription(description))
+
+      override def withExplicitBucketBoundaries(boundaries: BucketBoundaries): MappedK[F, G, A] =
+        new MappedK(inner.withExplicitBucketBoundaries(boundaries))
+
+      override def create: G[Histogram[G, A]] =
+        kt.liftK(inner.create.map { histogram =>
+          Histogram.fromBackend[G, A](histogram.backend.mapK[G])
+        })
+    }
   }
 
   trait Backend[F[_], A] {
@@ -124,6 +152,27 @@ object Histogram {
         timeUnit: TimeUnit,
         attributes: Resource.ExitCase => immutable.Iterable[Attribute[_]]
     ): Resource[F, Unit]
+
+    /** Modify the context `F` using an implicit [[KindTransformer]] from `F` to `G`. */
+    def mapK[G[_]: MonadCancelThrow](implicit mct: MonadCancelThrow[F], kt: KindTransformer[F, G]): Backend[G, A] =
+      new Backend.MappedK[F, G, A](this)
+  }
+
+  object Backend {
+    private class MappedK[F[_]: MonadCancelThrow, G[_]: MonadCancelThrow, A](inner: Backend[F, A])(implicit
+        kt: KindTransformer[F, G]
+    ) extends Backend[G, A] {
+      def meta: InstrumentMeta[G] = inner.meta.mapK[G]
+
+      def record(value: A, attributes: immutable.Iterable[Attribute[?]]): G[Unit] =
+        kt.liftK(inner.record(value, attributes))
+
+      def recordDuration(
+          timeUnit: TimeUnit,
+          attributes: Resource.ExitCase => immutable.Iterable[Attribute[?]]
+      ): Resource[G, Unit] =
+        inner.recordDuration(timeUnit, attributes).mapK(kt.liftK)
+    }
   }
 
   def noop[F[_], A](implicit F: Applicative[F]): Histogram[F, A] =

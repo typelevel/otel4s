@@ -17,8 +17,7 @@
 package org.typelevel.otel4s.metrics
 
 import cats.Applicative
-import org.typelevel.otel4s.Attribute
-import org.typelevel.otel4s.Attributes
+import org.typelevel.otel4s.{Attribute, Attributes, KindTransformer}
 
 trait ObservableMeasurement[F[_], A] {
 
@@ -42,6 +41,11 @@ trait ObservableMeasurement[F[_], A] {
     *   the set of attributes to associate with the value
     */
   def record(value: A, attributes: Attributes): F[Unit]
+
+  /** Modify the context `F` using an implicit [[KindTransformer]] from `F` to `G`.
+    */
+  def mapK[G[_]](implicit kt: KindTransformer[F, G]): ObservableMeasurement[G, A] =
+    new ObservableMeasurement.MappedK(this)
 }
 
 object ObservableMeasurement {
@@ -52,4 +56,10 @@ object ObservableMeasurement {
         Applicative[F].unit
     }
 
+  private class MappedK[F[_], G[_], A](observableMeasurement: ObservableMeasurement[F, A])(implicit
+      kt: KindTransformer[F, G]
+  ) extends ObservableMeasurement[G, A] {
+    override def record(value: A, attributes: Attributes): G[Unit] =
+      kt.liftK(observableMeasurement.record(value, attributes))
+  }
 }

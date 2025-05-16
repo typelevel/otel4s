@@ -17,7 +17,8 @@
 package org.typelevel.otel4s.metrics
 
 import cats.Applicative
-import cats.effect.kernel.Resource
+import cats.effect.kernel.{MonadCancelThrow, Resource}
+import org.typelevel.otel4s.KindTransformer
 
 @annotation.implicitNotFound("""
 Could not find the `Meter` for ${F}. `Meter` can be one of the following:
@@ -285,6 +286,14 @@ trait Meter[F[_]] {
     */
   def batchCallback: BatchCallback[F]
 
+  /** Modify the context `F` using an implicit [[KindTransformer]] from `F` to `G`.
+    */
+  def mapK[G[_]: MonadCancelThrow](implicit
+      mct: MonadCancelThrow[F],
+      kt: KindTransformer[F, G],
+      tk: KindTransformer[G, F]
+  ): Meter[G] =
+    new Meter.MappedK[F, G](this)
 }
 
 object Meter {
@@ -404,6 +413,36 @@ object Meter {
       val batchCallback: BatchCallback[F] =
         BatchCallback.noop
     }
+
+  /** Implementation for [[Meter.mapK]]. */
+  private class MappedK[F[_]: MonadCancelThrow, G[_]: MonadCancelThrow](
+      meter: Meter[F]
+  )(implicit kt: KindTransformer[F, G], tk: KindTransformer[G, F])
+      extends Meter[G] {
+    override def counter[A: MeasurementValue](name: String): Counter.Builder[G, A] =
+      meter.counter(name).mapK[G]
+
+    override def histogram[A: MeasurementValue](name: String): Histogram.Builder[G, A] =
+      meter.histogram(name).mapK[G]
+
+    override def upDownCounter[A: MeasurementValue](name: String): UpDownCounter.Builder[G, A] =
+      meter.upDownCounter(name).mapK[G]
+
+    override def gauge[A: MeasurementValue](name: String): Gauge.Builder[G, A] =
+      meter.gauge(name).mapK[G]
+
+    override def observableGauge[A: MeasurementValue](name: String): ObservableGauge.Builder[G, A] =
+      meter.observableGauge(name).mapK[G]
+
+    override def observableCounter[A: MeasurementValue](name: String): ObservableCounter.Builder[G, A] =
+      meter.observableCounter(name).mapK[G]
+
+    override def observableUpDownCounter[A: MeasurementValue](name: String): ObservableUpDownCounter.Builder[G, A] =
+      meter.observableUpDownCounter(name).mapK[G]
+
+    override def batchCallback: BatchCallback[G] =
+      meter.batchCallback.mapK[G]
+  }
 
   object Implicits {
     implicit def noop[F[_]: Applicative]: Meter[F] = Meter.noop

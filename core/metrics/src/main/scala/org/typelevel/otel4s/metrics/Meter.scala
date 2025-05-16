@@ -17,7 +17,8 @@
 package org.typelevel.otel4s.metrics
 
 import cats.Applicative
-import cats.effect.kernel.{MonadCancelThrow, Resource}
+import cats.effect.kernel.MonadCancelThrow
+import cats.effect.kernel.Resource
 import org.typelevel.otel4s.KindTransformer
 
 @annotation.implicitNotFound("""

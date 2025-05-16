@@ -17,8 +17,9 @@
 package org.typelevel.otel4s
 package metrics
 
+import cats.Applicative
+import cats.Functor
 import cats.implicits.toFunctorOps
-import cats.{Applicative, Functor}
 import org.typelevel.otel4s.meta.InstrumentMeta
 
 import scala.collection.immutable

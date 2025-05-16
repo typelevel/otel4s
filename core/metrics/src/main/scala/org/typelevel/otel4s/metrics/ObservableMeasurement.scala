@@ -17,7 +17,9 @@
 package org.typelevel.otel4s.metrics
 
 import cats.Applicative
-import org.typelevel.otel4s.{Attribute, Attributes, KindTransformer}
+import org.typelevel.otel4s.Attribute
+import org.typelevel.otel4s.Attributes
+import org.typelevel.otel4s.KindTransformer
 
 trait ObservableMeasurement[F[_], A] {
 

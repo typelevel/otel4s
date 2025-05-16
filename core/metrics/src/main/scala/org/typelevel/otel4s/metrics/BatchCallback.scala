@@ -17,7 +17,8 @@
 package org.typelevel.otel4s.metrics
 
 import cats.Apply
-import cats.effect.{MonadCancelThrow, Resource}
+import cats.effect.MonadCancelThrow
+import cats.effect.Resource
 import cats.syntax.apply._
 import org.typelevel.otel4s.KindTransformer
 

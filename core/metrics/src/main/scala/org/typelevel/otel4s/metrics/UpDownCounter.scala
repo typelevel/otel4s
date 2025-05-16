@@ -126,12 +126,12 @@ object UpDownCounter {
     def dec(attributes: immutable.Iterable[Attribute[_]]): F[Unit]
 
     /** Modify the context `F` using an implicit [[KindTransformer]] from `F` to `G`. */
-    def mapK[G[_]](implicit functor: Functor[F], kt: KindTransformer[F, G]): Backend[G, A] =
+    def mapK[G[_]](implicit kt: KindTransformer[F, G]): Backend[G, A] =
       new Backend.MappedK[F, G, A](this)
   }
 
   object Backend {
-    private class MappedK[F[_]: Functor, G[_], A](inner: Backend[F, A])(implicit kt: KindTransformer[F, G])
+    private class MappedK[F[_], G[_], A](inner: Backend[F, A])(implicit kt: KindTransformer[F, G])
         extends Backend[G, A] {
       def meta: InstrumentMeta[G] = inner.meta.mapK
 

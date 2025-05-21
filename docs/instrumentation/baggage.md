@@ -73,10 +73,10 @@ def printBaggage(implicit bm: BaggageManager[IO]): IO[Unit] =
 import org.typelevel.otel4s.baggage.Baggage
 
 def withUserId[A](fa: IO[A])(implicit bm: BaggageManager[IO]): IO[A] =
-  bm.local(fa)(b => b.updated("user-id", "12345"))
+  bm.local(b => b.updated("user-id", "12345"))(fa)
 
 def withScopedBaggage[A](fa: IO[A])(implicit bm: BaggageManager[IO]): IO[A] =
-  bm.scope(fa)(Baggage.empty.updated("request-id", "req-abc"))
+  bm.scope(Baggage.empty.updated("request-id", "req-abc"))(fa)
 ```
 
 ### Retrieving a specific baggage entry

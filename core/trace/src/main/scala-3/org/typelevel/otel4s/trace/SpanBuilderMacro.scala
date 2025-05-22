@@ -149,19 +149,18 @@ object SpanBuilderMacro {
       attribute: Expr[Attribute[A]]
   )(using Quotes, Type[F], Type[A]) =
     '{
-      if ($builder.meta.isEnabled)
-        $builder.modifyState(_.addAttributes(List($attribute)))
-      else $builder
+      $builder.modifyState(_.addAttributes(List($attribute)))
     }
 
   def addAttributes[F[_]](
       builder: Expr[SpanBuilder[F]],
       attributes: Expr[immutable.Iterable[Attribute[_]]]
   )(using Quotes, Type[F]) =
-    '{
-      if ($builder.meta.isEnabled && $attributes.nonEmpty)
-        $builder.modifyState(_.addAttributes($attributes))
-      else $builder
+    (attributes: @unchecked) match {
+      case Varargs(args) if args.isEmpty =>
+        builder
+      case other =>
+        '{ $builder.modifyState(_.addAttributes($attributes)) }
     }
 
   def addLink[F[_]](
@@ -170,9 +169,7 @@ object SpanBuilderMacro {
       attributes: Expr[immutable.Iterable[Attribute[_]]]
   )(using Quotes, Type[F]) =
     '{
-      if ($builder.meta.isEnabled)
-        $builder.modifyState(_.addLink($spanContext, $attributes))
-      else $builder
+      $builder.modifyState(_.addLink($spanContext, $attributes))
     }
 
   def withFinalizationStrategy[F[_]](
@@ -180,9 +177,7 @@ object SpanBuilderMacro {
       strategy: Expr[SpanFinalizer.Strategy]
   )(using Quotes, Type[F]) =
     '{
-      if ($builder.meta.isEnabled)
-        $builder.modifyState(_.withFinalizationStrategy($strategy))
-      else $builder
+      $builder.modifyState(_.withFinalizationStrategy($strategy))
     }
 
   def withSpanKind[F[_]](
@@ -190,9 +185,7 @@ object SpanBuilderMacro {
       kind: Expr[SpanKind]
   )(using Quotes, Type[F]) =
     '{
-      if ($builder.meta.isEnabled)
-        $builder.modifyState(_.withSpanKind($kind))
-      else $builder
+      $builder.modifyState(_.withSpanKind($kind))
     }
 
   def withStartTimestamp[F[_]](
@@ -200,9 +193,7 @@ object SpanBuilderMacro {
       timestamp: Expr[FiniteDuration]
   )(using Quotes, Type[F]) =
     '{
-      if ($builder.meta.isEnabled)
-        $builder.modifyState(_.withStartTimestamp($timestamp))
-      else $builder
+      $builder.modifyState(_.withStartTimestamp($timestamp))
     }
 
   def withParent[F[_]](
@@ -210,14 +201,11 @@ object SpanBuilderMacro {
       parent: Expr[SpanContext]
   )(using Quotes, Type[F]) =
     '{
-      if ($builder.meta.isEnabled)
-        $builder.modifyState(
-          _.withParent(
-            _root_.org.typelevel.otel4s.trace.SpanBuilder.Parent
-              .explicit($parent)
-          )
+      $builder.modifyState(
+        _.withParent(
+          _root_.org.typelevel.otel4s.trace.SpanBuilder.Parent.explicit($parent)
         )
-      else $builder
+      )
     }
 
 }

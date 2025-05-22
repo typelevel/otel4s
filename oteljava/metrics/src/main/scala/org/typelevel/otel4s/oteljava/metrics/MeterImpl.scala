@@ -20,24 +20,25 @@ package metrics
 
 import cats.effect.kernel.Async
 import io.opentelemetry.api.metrics.{Meter => JMeter}
+import org.typelevel.otel4s.meta.InstrumentMeta
 import org.typelevel.otel4s.metrics._
 import org.typelevel.otel4s.oteljava.context.AskContext
 
 private[oteljava] class MeterImpl[F[_]: Async: AskContext](jMeter: JMeter) extends Meter[F] {
 
+  val meta: InstrumentMeta.Dynamic[F] = InstrumentMeta.Dynamic.enabled
+
   def counter[A: MeasurementValue](name: String): Counter.Builder[F, A] =
-    CounterBuilderImpl(jMeter, name)
+    CounterBuilderImpl(jMeter, name, meta)
 
   def histogram[A: MeasurementValue](name: String): Histogram.Builder[F, A] =
-    HistogramBuilderImpl(jMeter, name)
+    HistogramBuilderImpl(jMeter, name, meta)
 
-  def upDownCounter[A: MeasurementValue](
-      name: String
-  ): UpDownCounter.Builder[F, A] =
-    UpDownCounterBuilderImpl(jMeter, name)
+  def upDownCounter[A: MeasurementValue](name: String): UpDownCounter.Builder[F, A] =
+    UpDownCounterBuilderImpl(jMeter, name, meta)
 
   def gauge[A: MeasurementValue](name: String): Gauge.Builder[F, A] =
-    GaugeBuilderImpl(jMeter, name)
+    GaugeBuilderImpl(jMeter, name, meta)
 
   def observableGauge[A: MeasurementValue](
       name: String

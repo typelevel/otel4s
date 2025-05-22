@@ -78,7 +78,7 @@ object Gauge {
   }
 
   trait Backend[F[_], A] {
-    def meta: InstrumentMeta[F]
+    def meta: InstrumentMeta.Dynamic[F]
 
     /** Records a value with a set of attributes.
       *
@@ -96,7 +96,7 @@ object Gauge {
     new Gauge[F, A] {
       val backend: Backend[F, A] =
         new Backend[F, A] {
-          val meta: InstrumentMeta[F] = InstrumentMeta.disabled
+          val meta: InstrumentMeta.Dynamic[F] = InstrumentMeta.Dynamic.disabled
           def record(
               value: A,
               attributes: immutable.Iterable[Attribute[_]]

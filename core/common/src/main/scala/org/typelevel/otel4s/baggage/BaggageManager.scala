@@ -81,7 +81,7 @@ object BaggageManager {
   implicit def bmAsExplicitLocal[F[_]](bm: BaggageManager[F]): Local[F, Baggage] =
     asLocal(bm)
 
-  @deprecated("BaggageManager no longer extends Local", since = "1.13.0")
+  @deprecated("BaggageManager no longer extends Local", since = "0.13.0")
   implicit def bmAsImplicitLocal[F[_]](implicit bm: BaggageManager[F]): Local[F, Baggage] =
     asLocal(bm)
 }

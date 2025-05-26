@@ -162,6 +162,12 @@ private object SumAggregator {
     ): AsynchronousMeasurement[A] =
       current.copy(value = Numeric[A].minus(current.value, previous.value))
 
+    def combine(
+        previous: AsynchronousMeasurement[A],
+        current: AsynchronousMeasurement[A]
+    ): AsynchronousMeasurement[A] =
+      current.copy(value = Numeric[A].plus(previous.value, current.value))
+
     def toMetricData(
         resource: TelemetryResource,
         scope: InstrumentationScope,

@@ -157,6 +157,12 @@ private object LastValueAggregator {
     ): AsynchronousMeasurement[A] =
       current
 
+    def combine(
+        previous: AsynchronousMeasurement[A],
+        current: AsynchronousMeasurement[A]
+    ): AsynchronousMeasurement[A] =
+      current
+
     def toMetricData(
         resource: TelemetryResource,
         scope: InstrumentationScope,

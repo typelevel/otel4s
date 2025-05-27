@@ -37,6 +37,8 @@ private object NoopInstrumentBuilder {
       name: String
   ): Counter.Builder[F, A] =
     new Counter.Builder[F, A] {
+      val noopCounter = Counter.noop[F, A]
+
       def withUnit(unit: String): Counter.Builder[F, A] =
         this
 
@@ -44,13 +46,15 @@ private object NoopInstrumentBuilder {
         this
 
       def create: F[Counter[F, A]] =
-        warn("Counter", name).as(Counter.noop)
+        warn("Counter", name).as(noopCounter)
     }
 
   def histogram[F[_]: Applicative: Console, A](
       name: String
   ): Histogram.Builder[F, A] =
     new Histogram.Builder[F, A] {
+      val noopHistogram = Histogram.noop[F, A]
+
       def withUnit(unit: String): Histogram.Builder[F, A] =
         this
 
@@ -62,13 +66,15 @@ private object NoopInstrumentBuilder {
       ): Histogram.Builder[F, A] = this
 
       def create: F[Histogram[F, A]] =
-        warn("Histogram", name).as(Histogram.noop)
+        warn("Histogram", name).as(noopHistogram)
     }
 
   def upDownCounter[F[_]: Applicative: Console, A](
       name: String
   ): UpDownCounter.Builder[F, A] =
     new UpDownCounter.Builder[F, A] {
+      val noopUpDownCounter = UpDownCounter.noop[F, A]
+
       def withUnit(unit: String): UpDownCounter.Builder[F, A] =
         this
 
@@ -76,13 +82,15 @@ private object NoopInstrumentBuilder {
         this
 
       def create: F[UpDownCounter[F, A]] =
-        warn("UpDownCounter", name).as(UpDownCounter.noop)
+        warn("UpDownCounter", name).as(noopUpDownCounter)
     }
 
   def gauge[F[_]: Applicative: Console, A](
       name: String
   ): Gauge.Builder[F, A] =
     new Gauge.Builder[F, A] {
+      val noopGauge = Gauge.noop[F, A]
+
       def withUnit(unit: String): Gauge.Builder[F, A] =
         this
 
@@ -90,7 +98,7 @@ private object NoopInstrumentBuilder {
         this
 
       def create: F[Gauge[F, A]] =
-        warn("Gauge", name).as(Gauge.noop)
+        warn("Gauge", name).as(noopGauge)
     }
 
   def observableGauge[F[_]: Applicative: Console, A](
@@ -149,7 +157,7 @@ private object NoopInstrumentBuilder {
         warn.as(ObservableMeasurement.noop)
 
       private def createNoop: Resource[F, ObservableCounter] =
-        Resource.eval(warn).as(new ObservableCounter {})
+        Resource.eval(warn).as(ObservableCounter.noop)
 
       private def warn: F[Unit] =
         NoopInstrumentBuilder.warn("ObservableCounter", name)
@@ -181,7 +189,7 @@ private object NoopInstrumentBuilder {
         warn.as(ObservableMeasurement.noop)
 
       private def createNoop: Resource[F, ObservableUpDownCounter] =
-        Resource.eval(warn).as(new ObservableUpDownCounter {})
+        Resource.eval(warn).as(ObservableUpDownCounter.noop)
 
       private def warn: F[Unit] =
         NoopInstrumentBuilder.warn("ObservableUpDownCounter", name)

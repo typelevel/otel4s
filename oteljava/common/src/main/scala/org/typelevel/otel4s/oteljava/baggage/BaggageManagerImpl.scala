@@ -28,16 +28,17 @@ private final class BaggageManagerImpl[F[_]] private (implicit localContext: Loc
     extends BaggageManager[F] {
   import BaggageManagerImpl.jBaggageFromContext
 
-  protected[BaggageManager] def applicative: Applicative[F] = localContext.applicative
+  protected def applicative: Applicative[F] =
+    localContext.applicative
   def current: F[Baggage] =
     localContext.reader(jBaggageFromContext(_).toScala)
-  def modifiedScope[A](f: Baggage => Baggage)(fa: F[A]): F[A] =
+  def local[A](f: Baggage => Baggage)(fa: F[A]): F[A] =
     localContext.local(fa) { ctx =>
       val jCtx = ctx.underlying
       val updated = f(JBaggage.fromContext(jCtx).toScala).toJava
       Context.wrap(jCtx.`with`(updated))
     }
-  def replacedScope[A](baggage: Baggage)(fa: F[A]): F[A] =
+  def scope[A](baggage: Baggage)(fa: F[A]): F[A] =
     localContext.local(fa)(_.map(_.`with`(baggage.toJava)))
   override def get(key: String): F[Option[Baggage.Entry]] =
     localContext.reader { ctx =>

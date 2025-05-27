@@ -17,7 +17,10 @@
 package org.typelevel.otel4s.baggage
 
 import cats.effect.IO
+import cats.mtl.Local
 import munit.CatsEffectSuite
+
+import scala.annotation.nowarn
 
 abstract class BaggageManagerSuite extends CatsEffectSuite {
   protected def baggageManager: IO[BaggageManager[IO]]
@@ -25,15 +28,15 @@ abstract class BaggageManagerSuite extends CatsEffectSuite {
   protected final def testManager(name: String)(f: BaggageManager[IO] => IO[Unit]): Unit =
     test(name)(baggageManager.flatMap(f))
 
-  testManager(".current consistent with .replacedScope") { m =>
+  testManager(".current consistent with .scope") { m =>
     val b1 = Baggage.empty
       .updated("key", "value")
       .updated("foo", "bar", "baz")
-    m.replacedScope(b1)(m.current.map(assertEquals(_, b1)))
+    m.scope(b1)(m.current.map(assertEquals(_, b1)))
   }
 
-  testManager(".current consistent with .modifiedScope") { m =>
-    m.modifiedScope(_.updated("key", "value").updated("foo", "bar", "baz")) {
+  testManager(".current consistent with .local") { m =>
+    m.local(_.updated("key", "value").updated("foo", "bar", "baz")) {
       for (baggage <- m.current)
         yield {
           assertEquals(baggage.get("key"), Some(Baggage.Entry("value", None)))
@@ -46,7 +49,7 @@ abstract class BaggageManagerSuite extends CatsEffectSuite {
   }
 
   testManager(".get consistent with .current") { m =>
-    val check = m.replacedScope(_) {
+    val check = m.scope(_: Baggage) {
       for {
         baggage <- m.current
         v1 <- m.get("key")
@@ -56,16 +59,16 @@ abstract class BaggageManagerSuite extends CatsEffectSuite {
         assertEquals(v2, baggage.get("foo"))
       }
     }
-    check(Baggage.empty)
-    check(
-      Baggage.empty
-        .updated("key", "value")
-        .updated("foo", "bar", "baz")
-    )
+    check(Baggage.empty) >>
+      check(
+        Baggage.empty
+          .updated("key", "value")
+          .updated("foo", "bar", "baz")
+      )
   }
 
   testManager(".getValue consistent with .current") { m =>
-    val check = m.replacedScope(_) {
+    val check = m.scope(_: Baggage) {
       for {
         baggage <- m.current
         v1 <- m.getValue("key")
@@ -75,11 +78,22 @@ abstract class BaggageManagerSuite extends CatsEffectSuite {
         assertEquals(v2, baggage.get("foo").map(_.value))
       }
     }
-    check(Baggage.empty)
-    check(
-      Baggage.empty
-        .updated("key", "value")
-        .updated("foo", "bar", "baz")
-    )
+    check(Baggage.empty) >>
+      check(
+        Baggage.empty
+          .updated("key", "value")
+          .updated("foo", "bar", "baz")
+      )
+  }
+
+  testManager("deprecated as Local") { implicit m =>
+    @nowarn("cat=deprecation")
+    def test(): IO[Unit] = {
+      val _ = m: Local[IO, Baggage]
+
+      m.local(IO.unit)(_.updated("key", "value")) >>
+        m.scope(IO.unit)(Baggage.empty)
+    }
+    test()
   }
 }

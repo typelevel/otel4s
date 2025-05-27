@@ -19,8 +19,6 @@ package org.typelevel.otel4s.baggage
 import cats.Applicative
 import cats.mtl.Local
 
-import scala.language.implicitConversions
-
 /** A utility for accessing and modifying [[`Baggage`]].
   *
   * @example
@@ -39,10 +37,13 @@ import scala.language.implicitConversions
 trait BaggageManager[F[_]] {
 
   // TODO: remove after finishing migrating away from Local
-  protected[BaggageManager] def applicative: Applicative[F]
+  protected def applicative: Applicative[F]
 
   /** @return the current scope's `Baggage` */
   def current: F[Baggage]
+
+  @deprecated("BaggageManager no longer extends Local. Use `current` instead", since = "0.13.0")
+  final def ask[E2 >: Baggage]: F[E2] = applicative.widen(current)
 
   /** @return
     *   the [[Baggage.Entry entry]] to which the specified key is mapped, or `None` if the current `Baggage` contains no
@@ -57,31 +58,29 @@ trait BaggageManager[F[_]] {
   def getValue(key: String): F[Option[String]]
 
   /** Creates a new scope in which a modified version of the current `Baggage` is used. */
-  def modifiedScope[A](modify: Baggage => Baggage)(fa: F[A]): F[A]
+  def local[A](modify: Baggage => Baggage)(fa: F[A]): F[A]
+
+  @deprecated("BaggageManager no longer extends Local. Reverse parameter list order", since = "0.13.0")
+  final def local[A](fa: F[A])(modify: Baggage => Baggage): F[A] =
+    local(modify)(fa)
 
   /** Creates a new scope in which the given `Baggage` is used. */
-  def replacedScope[A](baggage: Baggage)(fa: F[A]): F[A]
+  def scope[A](baggage: Baggage)(fa: F[A]): F[A]
+
+  @deprecated("BaggageManager no longer extends Local. Reverse parameter list order", since = "0.13.0")
+  final def scope[A](fa: F[A])(baggage: Baggage): F[A] =
+    scope(baggage)(fa)
 }
 
 object BaggageManager {
   def apply[F[_]](implicit ev: BaggageManager[F]): BaggageManager[F] = ev
 
-  private[this] def asLocal[F[_]](bm: BaggageManager[F]): Local[F, Baggage] =
+  @deprecated("BaggageManager no longer extends Local", since = "0.13.0")
+  implicit def asExplicitLocal[F[_]](bm: BaggageManager[F]): Local[F, Baggage] =
     new Local[F, Baggage] {
       def applicative: Applicative[F] = bm.applicative
       def ask[E2 >: Baggage]: F[E2] = applicative.widen(bm.current)
       def local[A](fa: F[A])(f: Baggage => Baggage): F[A] =
-        bm.modifiedScope(f)(fa)
+        bm.local(f)(fa)
     }
-
-  @deprecated(
-    "BaggageManager no longer extends Local. Use `current`, `modifiedScope` and `replacedScope`",
-    since = "1.13.0"
-  )
-  implicit def bmAsExplicitLocal[F[_]](bm: BaggageManager[F]): Local[F, Baggage] =
-    asLocal(bm)
-
-  @deprecated("BaggageManager no longer extends Local", since = "1.13.0")
-  implicit def bmAsImplicitLocal[F[_]](implicit bm: BaggageManager[F]): Local[F, Baggage] =
-    asLocal(bm)
 }

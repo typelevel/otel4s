@@ -39,7 +39,7 @@ import org.typelevel.otel4s.trace.TraceScope
 private[oteljava] final case class SpanBuilderImpl[F[_]: Sync] private (
     jTracer: JTracer,
     name: String,
-    meta: InstrumentMeta[F],
+    meta: InstrumentMeta.Dynamic[F],
     runner: SpanRunner[F],
     scope: TraceScope[F, Context],
     stateModifier: SpanBuilder.State => SpanBuilder.State
@@ -130,7 +130,7 @@ private[oteljava] object SpanBuilderImpl {
   def apply[F[_]: Sync](
       jTracer: JTracer,
       name: String,
-      meta: InstrumentMeta[F],
+      meta: InstrumentMeta.Dynamic[F],
       runner: SpanRunner[F],
       scope: TraceScope[F, Context]
   ): SpanBuilder[F] =

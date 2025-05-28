@@ -16,15 +16,16 @@
 
 package org.typelevel.otel4s
 
+import cats.Applicative
 import cats.Functor
-import cats.Monad
+import cats.Monoid
 import cats.arrow.FunctionK
 import cats.data.EitherT
 import cats.data.IorT
 import cats.data.Kleisli
 import cats.data.OptionT
-import cats.data.StateT
-import cats.effect.kernel.MonadCancelThrow
+import cats.data.WriterT
+import cats.effect.kernel.MonadCancel
 import cats.effect.kernel.Resource
 import cats.~>
 
@@ -98,14 +99,14 @@ object KindTransformer {
         ga.mapK(f)
     }
 
-  implicit def stateT[F[_]: Monad, S]: KindTransformer[F, StateT[F, S, *]] =
-    new KindTransformer[F, StateT[F, S, *]] {
-      val liftK: F ~> StateT[F, S, *] = StateT.liftK
-      def limitedMapK[A](ga: StateT[F, S, A])(f: F ~> F): StateT[F, S, A] =
+  implicit def writerT[F[_]: Applicative, L: Monoid]: KindTransformer[F, WriterT[F, L, *]] =
+    new KindTransformer[F, WriterT[F, L, *]] {
+      val liftK: F ~> WriterT[F, L, *] = WriterT.liftK
+      def limitedMapK[A](ga: WriterT[F, L, A])(f: F ~> F): WriterT[F, L, A] =
         ga.mapK(f)
     }
 
-  implicit def resource[F[_]: MonadCancelThrow]: KindTransformer[F, Resource[F, *]] =
+  implicit def resource[F[_]](implicit F: MonadCancel[F, _]): KindTransformer[F, Resource[F, *]] =
     new KindTransformer[F, Resource[F, *]] {
       val liftK: F ~> Resource[F, *] = Resource.liftK
       def limitedMapK[A](ga: Resource[F, A])(f: F ~> F): Resource[F, A] =

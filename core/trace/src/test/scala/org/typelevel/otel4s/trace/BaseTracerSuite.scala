@@ -20,7 +20,7 @@ import cats.data.EitherT
 import cats.data.IorT
 import cats.data.Kleisli
 import cats.data.OptionT
-import cats.data.StateT
+import cats.data.WriterT
 import cats.effect.IO
 import cats.effect.MonadCancelThrow
 import cats.effect.Resource
@@ -976,26 +976,26 @@ abstract class BaseTracerSuite[Ctx, K[X] <: Key[X]](implicit
     }
   }
 
-  sdkTest("nested SpanOps#surround for mapK[StateT[IO, Int, *]]") { sdk =>
+  sdkTest("nested SpanOps#surround for mapK[WriterT[IO, Int, *]]") { sdk =>
     TestControl.executeEmbed {
       for {
         now <- IO.monotonic.delayBy(1.second) // otherwise returns 0
         tracerIO <- sdk.provider.get("tracer")
-        tracer = tracerIO.mapK[StateT[IO, Int, *]]
+        tracer = tracerIO.mapK[WriterT[IO, Int, *]]
         _ <- tracer
           .span("outer")
           .surround {
             for {
-              _ <- StateT.liftF(IO.sleep(NestedSurround.preBodyDuration))
+              _ <- WriterT.liftF[IO, Int, Unit](IO.sleep(NestedSurround.preBodyDuration))
               _ <- tracer
                 .span("body-1")
-                .surround(StateT.liftF(IO.sleep(NestedSurround.body1Duration)))
+                .surround(WriterT.liftF(IO.sleep(NestedSurround.body1Duration)))
               _ <- tracer
                 .span("body-2")
-                .surround(StateT.liftF(IO.sleep(NestedSurround.body2Duration)))
+                .surround(WriterT.liftF(IO.sleep(NestedSurround.body2Duration)))
             } yield ()
           }
-          .run(0)
+          .run
         spans <- sdk.finishedSpans
         tree <- IO.pure(treeOf(spans))
       } yield assertEquals(tree, List(NestedSurround.expected(now)))

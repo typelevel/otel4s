@@ -94,4 +94,6 @@ object ObservableCounter {
     def createObserver: F[ObservableMeasurement[F, A]]
   }
 
+  val noop: ObservableCounter = new ObservableCounter {}
+
 }

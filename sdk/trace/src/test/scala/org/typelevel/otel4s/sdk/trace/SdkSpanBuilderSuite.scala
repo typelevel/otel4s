@@ -165,7 +165,7 @@ class SdkSpanBuilderSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
           sampler,
           SimpleSpanProcessor(exporter),
           spanStorage,
-          InstrumentMeta.enabled
+          InstrumentMeta.Dynamic.enabled
         )
       }
     }

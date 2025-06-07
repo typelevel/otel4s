@@ -26,31 +26,35 @@ import org.typelevel.otel4s.oteljava.context.LocalContext
 
 private final class BaggageManagerImpl[F[_]] private (implicit localContext: LocalContext[F])
     extends BaggageManager[F] {
-  def applicative: Applicative[F] = localContext.applicative
-  def ask[E2 >: Baggage]: F[E2] =
-    localContext.reader { ctx =>
-      Option(JBaggage.fromContextOrNull(ctx.underlying))
-        .fold(Baggage.empty)(_.toScala)
-    }
-  def local[A](fa: F[A])(f: Baggage => Baggage): F[A] =
+  import BaggageManagerImpl.jBaggageFromContext
+
+  protected def applicative: Applicative[F] =
+    localContext.applicative
+  def current: F[Baggage] =
+    localContext.reader(jBaggageFromContext(_).toScala)
+  def local[A](f: Baggage => Baggage)(fa: F[A]): F[A] =
     localContext.local(fa) { ctx =>
       val jCtx = ctx.underlying
-      val jBaggage = JBaggage.fromContext(jCtx)
-      val updated = f(jBaggage.toScala).toJava
+      val updated = f(JBaggage.fromContext(jCtx).toScala).toJava
       Context.wrap(jCtx.`with`(updated))
     }
+  def scope[A](baggage: Baggage)(fa: F[A]): F[A] =
+    localContext.local(fa)(_.map(_.`with`(baggage.toJava)))
   override def get(key: String): F[Option[Baggage.Entry]] =
     localContext.reader { ctx =>
-      Option(JBaggage.fromContext(ctx.underlying).getEntry(key))
+      Option(jBaggageFromContext(ctx).getEntry(key))
         .map(_.toScala)
     }
   override def getValue(key: String): F[Option[String]] =
     localContext.reader { ctx =>
-      Option(JBaggage.fromContext(ctx.underlying).getEntryValue(key))
+      Option(jBaggageFromContext(ctx).getEntryValue(key))
     }
 }
 
 private[oteljava] object BaggageManagerImpl {
+  private def jBaggageFromContext(context: Context): JBaggage =
+    JBaggage.fromContext(context.underlying)
+
   def fromLocal[F[_]: LocalContext]: BaggageManager[F] =
     new BaggageManagerImpl[F]
 }

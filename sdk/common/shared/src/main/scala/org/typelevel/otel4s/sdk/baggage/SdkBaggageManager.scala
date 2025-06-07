@@ -26,13 +26,20 @@ import org.typelevel.otel4s.sdk.context.LocalContext
 private final class SdkBaggageManager[F[_]](implicit localContext: LocalContext[F]) extends BaggageManager[F] {
   import SdkBaggageManager._
 
-  def applicative: Applicative[F] = localContext.applicative
-  def ask[E2 >: Baggage]: F[E2] =
+  protected def applicative: Applicative[F] =
+    localContext.applicative
+  def current: F[Baggage] =
     localContext.reader(baggageFromContext)
-  def local[A](fa: F[A])(f: Baggage => Baggage): F[A] =
+  def local[A](f: Baggage => Baggage)(fa: F[A]): F[A] =
     localContext.local(fa) { ctx =>
       ctx.updated(BaggageKey, f(baggageFromContext(ctx)))
     }
+  def scope[A](baggage: Baggage)(fa: F[A]): F[A] =
+    localContext.local(fa)(_.updated(BaggageKey, baggage))
+  def get(key: String): F[Option[Baggage.Entry]] =
+    localContext.reader(baggageFromContext(_).get(key))
+  def getValue(key: String): F[Option[String]] =
+    localContext.reader(baggageFromContext(_).get(key).map(_.value))
 }
 
 private[sdk] object SdkBaggageManager {

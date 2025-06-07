@@ -60,8 +60,8 @@ import scala.concurrent.duration._
   *     "org.apache.pekko"                %% "pekko-stream"                              % "1.1.3",
   *     "org.apache.pekko"                %% "pekko-http"                                % "1.2.0",
   *     "io.opentelemetry.instrumentation" % "opentelemetry-instrumentation-annotations" % "2.16.0",
-  *     "io.opentelemetry"                 % "opentelemetry-exporter-otlp"               % "1.49.0" % Runtime,
-  *     "io.opentelemetry"                 % "opentelemetry-sdk-extension-autoconfigure" % "1.49.0" % Runtime
+  *     "io.opentelemetry"                 % "opentelemetry-exporter-otlp"               % "1.51.0" % Runtime,
+  *     "io.opentelemetry"                 % "opentelemetry-sdk-extension-autoconfigure" % "1.51.0" % Runtime
   *   )
   *   run / fork := true,
   *   javaOptions += "-Dotel.java.global-autoconfigure.enabled=true",

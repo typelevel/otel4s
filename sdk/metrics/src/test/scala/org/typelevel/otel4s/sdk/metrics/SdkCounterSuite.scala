@@ -34,6 +34,8 @@ import org.typelevel.otel4s.sdk.metrics.test.InMemoryMeterSharedState
 import org.typelevel.otel4s.sdk.metrics.test.PointDataUtils
 import org.typelevel.otel4s.sdk.test.InMemoryConsole
 
+import scala.concurrent.duration._
+
 class SdkCounterSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
 
   private implicit val askContext: Ask[IO, Context] = Ask.const(Context.root)
@@ -190,6 +192,20 @@ class SdkCounterSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
         case Left(longs)    => test[Long](longs.toVector)
         case Right(doubles) => test[Double](doubles.toVector)
       }
+    }
+  }
+
+  test("mapK for SdkCounter.Builder") {
+    PropF.forAllF(
+      Gens.telemetryResource,
+      Gens.instrumentationScope,
+      Gens.nonEmptyString
+    ) { (resource, scope, name) =>
+      for {
+        state <- InMemoryMeterSharedState.create[IO](resource, scope, 0.seconds)
+        builder = SdkCounter.Builder[IO, Long](name, state.state, None, None)
+        mappedBuilder = builder.mapK[IO]
+      } yield assert(mappedBuilder != null)
     }
   }
 

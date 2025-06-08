@@ -17,8 +17,10 @@
 package org.typelevel.otel4s.metrics
 
 import cats.Apply
+import cats.effect.MonadCancelThrow
 import cats.effect.Resource
 import cats.syntax.apply._
+import org.typelevel.otel4s.KindTransformer
 
 trait BatchCallback[F[_]] {
 
@@ -286,6 +288,14 @@ trait BatchCallback[F[_]] {
         )
       }
 
+  /** Modify the context `F` using an implicit [[KindTransformer]] from `F` to `G`.
+    */
+  def mapK[G[_]: MonadCancelThrow](implicit
+      mct: MonadCancelThrow[F],
+      kt: KindTransformer[F, G],
+      tk: KindTransformer[G, F]
+  ): BatchCallback[G] =
+    new BatchCallback.MappedK[F, G](this)
 }
 
 object BatchCallback {
@@ -299,5 +309,17 @@ object BatchCallback {
       ): Resource[F, Unit] =
         Resource.unit
     }
+
+  /** Implementation for [[BatchCallback.mapK]]. */
+  private class MappedK[F[_]: MonadCancelThrow, G[_]: MonadCancelThrow](
+      batchCallback: BatchCallback[F]
+  )(implicit kt: KindTransformer[F, G], tk: KindTransformer[G, F])
+      extends BatchCallback[G] {
+    override def apply(
+        callback: G[Unit],
+        observable: ObservableMeasurement[G, ?],
+        rest: ObservableMeasurement[G, ?]*
+    ): Resource[G, Unit] = batchCallback.apply(tk.liftK(callback), observable.mapK, rest.map(_.mapK) *).mapK(kt.liftK)
+  }
 
 }

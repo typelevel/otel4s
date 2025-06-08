@@ -16,7 +16,10 @@
 
 package org.typelevel.otel4s.metrics
 
+import cats.effect.MonadCancelThrow
 import cats.effect.Resource
+import cats.implicits.toFunctorOps
+import org.typelevel.otel4s.KindTransformer
 
 trait ObservableCounter
 
@@ -92,6 +95,40 @@ object ObservableCounter {
       *   callbacks are ignored.
       */
     def createObserver: F[ObservableMeasurement[F, A]]
+
+    /** Modify the context `F` using an implicit [[KindTransformer]] from `F` to `G`.
+      */
+    def mapK[G[_]: MonadCancelThrow](implicit
+        mct: MonadCancelThrow[F],
+        kt: KindTransformer[F, G],
+        tk: KindTransformer[G, F]
+    ): Builder[G, A] =
+      new Builder.MappedK(this)
   }
 
+  object Builder {
+    private class MappedK[F[_]: MonadCancelThrow, G[_]: MonadCancelThrow, A](inner: Builder[F, A])(implicit
+        kt: KindTransformer[F, G],
+        tk: KindTransformer[G, F]
+    ) extends Builder[G, A] {
+
+      override def withUnit(unit: String): MappedK[F, G, A] =
+        new MappedK(inner.withUnit(unit))
+
+      override def withDescription(description: String): MappedK[F, G, A] =
+        new MappedK(inner.withDescription(description))
+
+      override def createWithCallback(cb: ObservableMeasurement[G, A] => G[Unit]): Resource[G, ObservableCounter] = {
+        val adaptedCallback: ObservableMeasurement[F, A] => F[Unit] = obs => tk.liftK(cb(obs.mapK[G]))
+
+        inner.createWithCallback(adaptedCallback).mapK(kt.liftK)
+      }
+
+      override def create(measurements: G[Iterable[Measurement[A]]]): Resource[G, ObservableCounter] =
+        inner.create(tk.liftK(measurements)).mapK(kt.liftK)
+
+      override def createObserver: G[ObservableMeasurement[G, A]] =
+        kt.liftK(inner.createObserver.map(_.mapK[G]))
+    }
+  }
 }

@@ -117,7 +117,7 @@ object HistogramSuite {
 
     val backend: Histogram.Backend[IO, Double] =
       new Histogram.Backend[IO, Double] {
-        val meta: InstrumentMeta[IO] = InstrumentMeta.enabled
+        val meta: InstrumentMeta.Dynamic[IO] = InstrumentMeta.Dynamic.enabled
 
         def record(
             value: Double,

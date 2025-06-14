@@ -94,9 +94,13 @@ object DbExperimentalAttributes {
     * @note
     *   <p> It is RECOMMENDED to capture the value as provided by the application without attempting to do any case
     *   normalization. <p> The collection name SHOULD NOT be extracted from `db.query.text`, when the database system
-    *   supports cross-table queries in non-batch operations. <p> For batch operations, if the individual operations are
-    *   known to have the same collection name then that collection name SHOULD be used.
+    *   supports query text with multiple collections in non-batch operations. <p> For batch operations, if the
+    *   individual operations are known to have the same collection name then that collection name SHOULD be used.
     */
+  @deprecated(
+    "use `org.typelevel.otel4s.semconv.attributes.DbAttributes.DbCollectionName` instead.",
+    ""
+  )
   val DbCollectionName: AttributeKey[String] =
     AttributeKey("db.collection.name")
 
@@ -132,7 +136,7 @@ object DbExperimentalAttributes {
 
   /** Deprecated, no replacement at this time.
     */
-  @deprecated("No replacement at this time.", "")
+  @deprecated("Removed, no replacement at this time.", "")
   val DbCosmosdbOperationType: AttributeKey[String] =
     AttributeKey("db.cosmosdb.operation_type")
 
@@ -187,7 +191,7 @@ object DbExperimentalAttributes {
   /** Deprecated, no general replacement at this time. For Elasticsearch, use `db.elasticsearch.node.name` instead.
     */
   @deprecated(
-    "Deprecated, no general replacement at this time. For Elasticsearch, use `db.elasticsearch.node.name` instead.",
+    "Removed, no general replacement at this time. For Elasticsearch, use `db.elasticsearch.node.name` instead.",
     ""
   )
   val DbInstanceId: AttributeKey[String] =
@@ -195,7 +199,7 @@ object DbExperimentalAttributes {
 
   /** Removed, no replacement at this time.
     */
-  @deprecated("Removed as not used.", "")
+  @deprecated("Removed, no replacement at this time.", "")
   val DbJdbcDriverClassname: AttributeKey[String] =
     AttributeKey("db.jdbc.driver_classname")
 
@@ -207,7 +211,7 @@ object DbExperimentalAttributes {
 
   /** Deprecated, SQL Server instance is now populated as a part of `db.namespace` attribute.
     */
-  @deprecated("Deprecated, no replacement at this time.", "")
+  @deprecated("Removed, no replacement at this time.", "")
   val DbMssqlInstanceName: AttributeKey[String] =
     AttributeKey("db.mssql.instance_name")
 
@@ -220,13 +224,16 @@ object DbExperimentalAttributes {
   /** The name of the database, fully qualified within the server address and port.
     *
     * @note
-    *   <p> If a database system has multiple namespace components, they SHOULD be concatenated (potentially using
-    *   database system specific conventions) from most general to most specific namespace component, and more specific
-    *   namespaces SHOULD NOT be captured without the more general namespaces, to ensure that "startswith" queries for
-    *   the more general namespaces will be valid. Semantic conventions for individual database systems SHOULD document
-    *   what `db.namespace` means in the context of that system. It is RECOMMENDED to capture the value as provided by
-    *   the application without attempting to do any case normalization.
+    *   <p> If a database system has multiple namespace components, they SHOULD be concatenated from the most general to
+    *   the most specific namespace component, using `|` as a separator between the components. Any missing components
+    *   (and their associated separators) SHOULD be omitted. Semantic conventions for individual database systems SHOULD
+    *   document what `db.namespace` means in the context of that system. It is RECOMMENDED to capture the value as
+    *   provided by the application without attempting to do any case normalization.
     */
+  @deprecated(
+    "use `org.typelevel.otel4s.semconv.attributes.DbAttributes.DbNamespace` instead.",
+    ""
+  )
   val DbNamespace: AttributeKey[String] =
     AttributeKey("db.namespace")
 
@@ -242,6 +249,10 @@ object DbExperimentalAttributes {
     *   <p> Operations are only considered batches when they contain two or more operations, and so
     *   `db.operation.batch.size` SHOULD never be `1`.
     */
+  @deprecated(
+    "use `org.typelevel.otel4s.semconv.attributes.DbAttributes.DbOperationBatchSize` instead.",
+    ""
+  )
   val DbOperationBatchSize: AttributeKey[Long] =
     AttributeKey("db.operation.batch.size")
 
@@ -250,12 +261,16 @@ object DbExperimentalAttributes {
     * @note
     *   <p> It is RECOMMENDED to capture the value as provided by the application without attempting to do any case
     *   normalization. <p> The operation name SHOULD NOT be extracted from `db.query.text`, when the database system
-    *   supports cross-table queries in non-batch operations. <p> If spaces can occur in the operation name, multiple
-    *   consecutive spaces SHOULD be normalized to a single space. <p> For batch operations, if the individual
-    *   operations are known to have the same operation name then that operation name SHOULD be used prepended by
-    *   `BATCH `, otherwise `db.operation.name` SHOULD be `BATCH` or some other database system specific term if more
-    *   applicable.
+    *   supports query text with multiple operations in non-batch operations. <p> If spaces can occur in the operation
+    *   name, multiple consecutive spaces SHOULD be normalized to a single space. <p> For batch operations, if the
+    *   individual operations are known to have the same operation name then that operation name SHOULD be used
+    *   prepended by `BATCH `, otherwise `db.operation.name` SHOULD be `BATCH` or some other database system specific
+    *   term if more applicable.
     */
+  @deprecated(
+    "use `org.typelevel.otel4s.semconv.attributes.DbAttributes.DbOperationName` instead.",
+    ""
+  )
   val DbOperationName: AttributeKey[String] =
     AttributeKey("db.operation.name")
 
@@ -263,45 +278,60 @@ object DbExperimentalAttributes {
     * representation of the parameter value.
     *
     * @note
-    *   <p> If a parameter has no name and instead is referenced only by index, then `<key>` SHOULD be the 0-based
-    *   index. If `db.query.text` is also captured, then `db.operation.parameter.<key>` SHOULD match up with the
-    *   parameterized placeholders present in `db.query.text`. `db.operation.parameter.<key>` SHOULD NOT be captured on
-    *   batch operations.
+    *   <p> For example, a client-side maximum number of rows to read from the database MAY be recorded as the
+    *   `db.operation.parameter.max_rows` attribute. <p> `db.query.text` parameters SHOULD be captured using
+    *   `db.query.parameter.<key>` instead of `db.operation.parameter.<key>`.
     */
   val DbOperationParameter: AttributeKey[String] =
     AttributeKey("db.operation.parameter")
 
-  /** A query parameter used in `db.query.text`, with `<key>` being the parameter name, and the attribute value being a
-    * string representation of the parameter value.
+  /** A database query parameter, with `<key>` being the parameter name, and the attribute value being a string
+    * representation of the parameter value.
+    *
+    * @note
+    *   <p> If a query parameter has no name and instead is referenced only by index, then `<key>` SHOULD be the 0-based
+    *   index. <p> `db.query.parameter.<key>` SHOULD match up with the parameterized placeholders present in
+    *   `db.query.text`. <p> `db.query.parameter.<key>` SHOULD NOT be captured on batch operations. <p> Examples: <ul>
+    *   <li>For a query `SELECT * FROM users where username =  %s` with the parameter `"jdoe"`, the attribute
+    *   `db.query.parameter.0` SHOULD be set to `"jdoe"`. <li>For a query
+    *   `"SELECT * FROM users WHERE username = %(username)s;` with parameter `username = "jdoe"`, the attribute
+    *   `db.query.parameter.username` SHOULD be set to `"jdoe"`. </ul>
     */
-  @deprecated("Replaced by `db.operation.parameter`.", "")
   val DbQueryParameter: AttributeKey[String] =
     AttributeKey("db.query.parameter")
 
-  /** Low cardinality representation of a database query text.
+  /** Low cardinality summary of a database query.
     *
     * @note
-    *   <p> `db.query.summary` provides static summary of the query text. It describes a class of database queries and
-    *   is useful as a grouping key, especially when analyzing telemetry for database calls involving complex queries.
-    *   Summary may be available to the instrumentation through instrumentation hooks or other means. If it is not
-    *   available, instrumentations that support query parsing SHOULD generate a summary following <a
-    *   href="../database/database-spans.md#generating-a-summary-of-the-query-text">Generating query summary</a>
-    *   section.
+    *   <p> The query summary describes a class of database queries and is useful as a grouping key, especially when
+    *   analyzing telemetry for database calls involving complex queries. <p> Summary may be available to the
+    *   instrumentation through instrumentation hooks or other means. If it is not available, instrumentations that
+    *   support query parsing SHOULD generate a summary following <a
+    *   href="/docs/database/database-spans.md#generating-a-summary-of-the-query">Generating query summary</a> section.
     */
+  @deprecated(
+    "use `org.typelevel.otel4s.semconv.attributes.DbAttributes.DbQuerySummary` instead.",
+    ""
+  )
   val DbQuerySummary: AttributeKey[String] =
     AttributeKey("db.query.summary")
 
   /** The database query being executed.
     *
     * @note
-    *   <p> For sanitization see <a href="../database/database-spans.md#sanitization-of-dbquerytext">Sanitization of
+    *   <p> For sanitization see <a href="/docs/database/database-spans.md#sanitization-of-dbquerytext">Sanitization of
     *   `db.query.text`</a>. For batch operations, if the individual operations are known to have the same query text
     *   then that query text SHOULD be used, otherwise all of the individual query texts SHOULD be concatenated with
-    *   separator `; ` or some other database system specific separator if more applicable. Even though parameterized
-    *   query text can potentially have sensitive data, by using a parameterized query the user is giving a strong
-    *   signal that any sensitive data will be passed as parameter values, and the benefit to observability of capturing
-    *   the static part of the query text by default outweighs the risk.
+    *   separator `; ` or some other database system specific separator if more applicable. Parameterized query text
+    *   SHOULD NOT be sanitized. Even though parameterized query text can potentially have sensitive data, by using a
+    *   parameterized query the user is giving a strong signal that any sensitive data will be passed as parameter
+    *   values, and the benefit to observability of capturing the static part of the query text by default outweighs the
+    *   risk.
     */
+  @deprecated(
+    "use `org.typelevel.otel4s.semconv.attributes.DbAttributes.DbQueryText` instead.",
+    ""
+  )
   val DbQueryText: AttributeKey[String] =
     AttributeKey("db.query.text")
 
@@ -324,10 +354,14 @@ object DbExperimentalAttributes {
     *   for individual database systems SHOULD document what `db.response.status_code` means in the context of that
     *   system.
     */
+  @deprecated(
+    "use `org.typelevel.otel4s.semconv.attributes.DbAttributes.DbResponseStatusCode` instead.",
+    ""
+  )
   val DbResponseStatusCode: AttributeKey[String] =
     AttributeKey("db.response.status_code")
 
-  /** Deprecated, use `db.collection.name` instead, but only if not extracting the value from `db.query.text`.
+  /** Deprecated, use `db.collection.name` instead.
     */
   @deprecated("Replaced by `db.collection.name`, but only if not extracting the value from `db.query.text`.", "")
   val DbSqlTable: AttributeKey[String] =
@@ -346,6 +380,10 @@ object DbExperimentalAttributes {
     *   normalization. <p> For batch operations, if the individual operations are known to have the same stored
     *   procedure name then that stored procedure name SHOULD be used.
     */
+  @deprecated(
+    "use `org.typelevel.otel4s.semconv.attributes.DbAttributes.DbStoredProcedureName` instead.",
+    ""
+  )
   val DbStoredProcedureName: AttributeKey[String] =
     AttributeKey("db.stored_procedure.name")
 
@@ -362,12 +400,16 @@ object DbExperimentalAttributes {
     *   libraries to connect to a CockroachDB, the `db.system.name` is set to `postgresql` based on the
     *   instrumentation's best knowledge.
     */
+  @deprecated(
+    "use `org.typelevel.otel4s.semconv.attributes.DbAttributes.DbSystemName` instead.",
+    ""
+  )
   val DbSystemName: AttributeKey[String] =
     AttributeKey("db.system.name")
 
   /** Deprecated, no replacement at this time.
     */
-  @deprecated("No replacement at this time.", "")
+  @deprecated("Removed, no replacement at this time.", "")
   val DbUser: AttributeKey[String] =
     AttributeKey("db.user")
 
@@ -499,7 +541,7 @@ object DbExperimentalAttributes {
 
   /** Values for [[DbCosmosdbOperationType]].
     */
-  @deprecated("No replacement at this time.", "")
+  @deprecated("Removed, no replacement at this time.", "")
   abstract class DbCosmosdbOperationTypeValue(val value: String)
   @annotation.nowarn("cat=deprecation")
   object DbCosmosdbOperationTypeValue {
@@ -696,7 +738,7 @@ object DbExperimentalAttributes {
       */
     case object Interbase extends DbSystemValue("interbase")
 
-    /** MariaDB (This value has stability level RELEASE CANDIDATE)
+    /** MariaDB
       */
     case object Mariadb extends DbSystemValue("mariadb")
 
@@ -712,7 +754,7 @@ object DbExperimentalAttributes {
       */
     case object Mongodb extends DbSystemValue("mongodb")
 
-    /** Microsoft SQL Server (This value has stability level RELEASE CANDIDATE)
+    /** Microsoft SQL Server
       */
     case object Mssql extends DbSystemValue("mssql")
 
@@ -720,7 +762,7 @@ object DbExperimentalAttributes {
       */
     case object Mssqlcompact extends DbSystemValue("mssqlcompact")
 
-    /** MySQL (This value has stability level RELEASE CANDIDATE)
+    /** MySQL
       */
     case object Mysql extends DbSystemValue("mysql")
 
@@ -748,7 +790,7 @@ object DbExperimentalAttributes {
       */
     case object Pointbase extends DbSystemValue("pointbase")
 
-    /** PostgreSQL (This value has stability level RELEASE CANDIDATE)
+    /** PostgreSQL
       */
     case object Postgresql extends DbSystemValue("postgresql")
 
@@ -791,7 +833,12 @@ object DbExperimentalAttributes {
 
   /** Values for [[DbSystemName]].
     */
+  @deprecated(
+    "use `org.typelevel.otel4s.semconv.attributes.DbAttributes.DbSystemName` instead.",
+    ""
+  )
   abstract class DbSystemNameValue(val value: String)
+  @annotation.nowarn("cat=deprecation")
   object DbSystemNameValue {
 
     /** Some other SQL database. Fallback only.

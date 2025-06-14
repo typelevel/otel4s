@@ -42,13 +42,13 @@ object EnduserExperimentalAttributes {
 
   /** Deprecated, use `user.roles` instead.
     */
-  @deprecated("Replaced by `user.roles` attribute.", "")
+  @deprecated("Use `user.roles` attribute instead.", "")
   val EnduserRole: AttributeKey[String] =
     AttributeKey("enduser.role")
 
   /** Deprecated, no replacement at this time.
     */
-  @deprecated("Removed.", "")
+  @deprecated("Removed, no replacement at this time.", "")
   val EnduserScope: AttributeKey[String] =
     AttributeKey("enduser.scope")
 

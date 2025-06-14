@@ -48,7 +48,9 @@ object CloudExperimentalAttributes {
   val CloudProvider: AttributeKey[String] =
     AttributeKey("cloud.provider")
 
-  /** The geographical region the resource is running.
+  /** The geographical region within a cloud provider. When associated with a resource, this attribute specifies the
+    * region where the resource operates. When calling services or APIs deployed on a cloud, this attribute identifies
+    * the region where the called destination is deployed.
     *
     * @note
     *   <p> Refer to your provider's docs to see the available regions, for example <a

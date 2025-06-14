@@ -67,11 +67,15 @@ object HttpExperimentalAttributes {
     *
     * @note
     *   <p> Instrumentations SHOULD require an explicit configuration of which headers are to be captured. Including all
-    *   request headers can be a security risk - explicit configuration helps avoid leaking sensitive information. The
-    *   `User-Agent` header is already captured in the `user_agent.original` attribute. Users MAY explicitly configure
-    *   instrumentations to capture them even though it is not recommended. The attribute value MUST consist of either
-    *   multiple header values as an array of strings or a single-item array containing a possibly comma-concatenated
-    *   string, depending on the way the HTTP library provides access to headers.
+    *   request headers can be a security risk - explicit configuration helps avoid leaking sensitive information. <p>
+    *   The `User-Agent` header is already captured in the `user_agent.original` attribute. Users MAY explicitly
+    *   configure instrumentations to capture them even though it is not recommended. <p> The attribute value MUST
+    *   consist of either multiple header values as an array of strings or a single-item array containing a possibly
+    *   comma-concatenated string, depending on the way the HTTP library provides access to headers. <p> Examples: <ul>
+    *   <li>A header `Content-Type: application/json` SHOULD be recorded as the `http.request.header.content-type`
+    *   attribute with value `["application/json"]`. <li>A header `X-Forwarded-For: 1.2.3.4, 1.2.3.5` SHOULD be recorded
+    *   as the `http.request.header.x-forwarded-for` attribute with value `["1.2.3.4", "1.2.3.5"]` or
+    *   `["1.2.3.4, 1.2.3.5"]` depending on the HTTP library. </ul>
     */
   @deprecated(
     "use `org.typelevel.otel4s.semconv.attributes.HttpAttributes.HttpRequestHeader` instead.",
@@ -133,9 +137,9 @@ object HttpExperimentalAttributes {
   val HttpRequestSize: AttributeKey[Long] =
     AttributeKey("http.request.size")
 
-  /** Deprecated, use `http.request.header.<key>` instead.
+  /** Deprecated, use `http.request.header.content-length` instead.
     */
-  @deprecated("Replaced by `http.request.header.<key>`.", "")
+  @deprecated("Replaced by `http.request.header.content-length`.", "")
   val HttpRequestContentLength: AttributeKey[Long] =
     AttributeKey("http.request_content_length")
 
@@ -158,10 +162,14 @@ object HttpExperimentalAttributes {
     *
     * @note
     *   <p> Instrumentations SHOULD require an explicit configuration of which headers are to be captured. Including all
-    *   response headers can be a security risk - explicit configuration helps avoid leaking sensitive information.
-    *   Users MAY explicitly configure instrumentations to capture them even though it is not recommended. The attribute
-    *   value MUST consist of either multiple header values as an array of strings or a single-item array containing a
-    *   possibly comma-concatenated string, depending on the way the HTTP library provides access to headers.
+    *   response headers can be a security risk - explicit configuration helps avoid leaking sensitive information. <p>
+    *   Users MAY explicitly configure instrumentations to capture them even though it is not recommended. <p> The
+    *   attribute value MUST consist of either multiple header values as an array of strings or a single-item array
+    *   containing a possibly comma-concatenated string, depending on the way the HTTP library provides access to
+    *   headers. <p> Examples: <ul> <li>A header `Content-Type: application/json` header SHOULD be recorded as the
+    *   `http.request.response.content-type` attribute with value `["application/json"]`. <li>A header
+    *   `My-custom-header: abc, def` header SHOULD be recorded as the `http.response.header.my-custom-header` attribute
+    *   with value `["abc", "def"]` or `["abc, def"]` depending on the HTTP library. </ul>
     */
   @deprecated(
     "use `org.typelevel.otel4s.semconv.attributes.HttpAttributes.HttpResponseHeader` instead.",
@@ -185,15 +193,15 @@ object HttpExperimentalAttributes {
   val HttpResponseStatusCode: AttributeKey[Long] =
     AttributeKey("http.response.status_code")
 
-  /** Deprecated, use `http.response.header.<key>` instead.
+  /** Deprecated, use `http.response.header.content-length` instead.
     */
-  @deprecated("Replaced by `http.response.header.<key>`.", "")
+  @deprecated("hp.response.header.content-length", "")
   val HttpResponseContentLength: AttributeKey[Long] =
     AttributeKey("http.response_content_length")
 
   /** Deprecated, use `http.response.body.size` instead.
     */
-  @deprecated("Replace by `http.response.body.size`.", "")
+  @deprecated("Replaced by `http.response.body.size`.", "")
   val HttpResponseContentLengthUncompressed: AttributeKey[Long] =
     AttributeKey("http.response_content_length_uncompressed")
 
@@ -213,7 +221,7 @@ object HttpExperimentalAttributes {
 
   /** Deprecated, use `url.scheme` instead.
     */
-  @deprecated("Replaced by `url.scheme` instead.", "")
+  @deprecated("Replaced by `url.scheme`.", "")
   val HttpScheme: AttributeKey[String] =
     AttributeKey("http.scheme")
 
@@ -231,7 +239,7 @@ object HttpExperimentalAttributes {
 
   /** Deprecated, use `url.path` and `url.query` instead.
     */
-  @deprecated("Split to `url.path` and `url.query.", "")
+  @deprecated("Split to `url.path` and `url.query`.", "")
   val HttpTarget: AttributeKey[String] =
     AttributeKey("http.target")
 

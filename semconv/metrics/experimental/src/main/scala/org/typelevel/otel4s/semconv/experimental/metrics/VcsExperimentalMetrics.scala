@@ -89,7 +89,7 @@ object VcsExperimentalMetrics {
           List(
             "github",
             "gitlab",
-            "gittea",
+            "gitea",
             "bitbucket",
           ),
           Requirement.optIn,
@@ -217,7 +217,7 @@ object VcsExperimentalMetrics {
           List(
             "github",
             "gitlab",
-            "gittea",
+            "gitea",
             "bitbucket",
           ),
           Requirement.optIn,
@@ -350,7 +350,7 @@ object VcsExperimentalMetrics {
           List(
             "github",
             "gitlab",
-            "gittea",
+            "gitea",
             "bitbucket",
           ),
           Requirement.optIn,
@@ -556,7 +556,7 @@ object VcsExperimentalMetrics {
           List(
             "github",
             "gitlab",
-            "gittea",
+            "gitea",
             "bitbucket",
           ),
           Requirement.optIn,
@@ -760,7 +760,7 @@ object VcsExperimentalMetrics {
           List(
             "github",
             "gitlab",
-            "gittea",
+            "gitea",
             "bitbucket",
           ),
           Requirement.optIn,
@@ -872,7 +872,7 @@ object VcsExperimentalMetrics {
           List(
             "github",
             "gitlab",
-            "gittea",
+            "gitea",
             "bitbucket",
           ),
           Requirement.optIn,
@@ -1031,7 +1031,7 @@ object VcsExperimentalMetrics {
           List(
             "github",
             "gitlab",
-            "gittea",
+            "gitea",
             "bitbucket",
           ),
           Requirement.optIn,
@@ -1236,7 +1236,7 @@ object VcsExperimentalMetrics {
           List(
             "github",
             "gitlab",
-            "gittea",
+            "gitea",
             "bitbucket",
           ),
           Requirement.optIn,
@@ -1437,7 +1437,7 @@ object VcsExperimentalMetrics {
           List(
             "github",
             "gitlab",
-            "gittea",
+            "gitea",
             "bitbucket",
           ),
           Requirement.optIn,
@@ -1584,7 +1584,7 @@ object VcsExperimentalMetrics {
           List(
             "github",
             "gitlab",
-            "gittea",
+            "gitea",
             "bitbucket",
           ),
           Requirement.optIn,

@@ -39,6 +39,7 @@ object JvmExperimentalMetrics {
     CpuCount,
     CpuRecentUtilization,
     CpuTime,
+    FileDescriptorCount,
     GcDuration,
     MemoryCommitted,
     MemoryInit,
@@ -512,6 +513,41 @@ object JvmExperimentalMetrics {
 
   }
 
+  /** Number of open file descriptors as reported by the JVM.
+    */
+  object FileDescriptorCount extends MetricSpec {
+
+    val name: String = "jvm.file_descriptor.count"
+    val description: String = "Number of open file descriptors as reported by the JVM."
+    val unit: String = "{file_descriptor}"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
+      Meter[F]
+        .upDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableUpDownCounter] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
   /** Duration of JVM garbage collection actions.
     */
   @deprecated("Use stable `org.typelevel.otel4s.semconv.metrics.JvmMetrics.GcDuration` instead.", "")
@@ -542,6 +578,23 @@ object JvmExperimentalMetrics {
           Stability.stable
         )
 
+      /** Name of the garbage collector cause.
+        *
+        * @note
+        *   <p> Garbage collector cause is generally obtained via <a
+        *   href="https://docs.oracle.com/en/java/javase/11/docs/api/jdk.management/com/sun/management/GarbageCollectionNotificationInfo.html#getGcCause()">GarbageCollectionNotificationInfo#getGcCause()</a>.
+        */
+      val jvmGcCause: AttributeSpec[String] =
+        AttributeSpec(
+          JvmExperimentalAttributes.JvmGcCause,
+          List(
+            "System.gc()",
+            "Allocation Failure",
+          ),
+          Requirement.optIn,
+          Stability.development
+        )
+
       /** Name of the garbage collector.
         *
         * @note
@@ -562,6 +615,7 @@ object JvmExperimentalMetrics {
       val specs: List[AttributeSpec[_]] =
         List(
           jvmGcAction,
+          jvmGcCause,
           jvmGcName,
         )
     }

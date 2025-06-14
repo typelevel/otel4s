@@ -26,11 +26,15 @@ object HttpAttributes {
     *
     * @note
     *   <p> Instrumentations SHOULD require an explicit configuration of which headers are to be captured. Including all
-    *   request headers can be a security risk - explicit configuration helps avoid leaking sensitive information. The
-    *   `User-Agent` header is already captured in the `user_agent.original` attribute. Users MAY explicitly configure
-    *   instrumentations to capture them even though it is not recommended. The attribute value MUST consist of either
-    *   multiple header values as an array of strings or a single-item array containing a possibly comma-concatenated
-    *   string, depending on the way the HTTP library provides access to headers.
+    *   request headers can be a security risk - explicit configuration helps avoid leaking sensitive information. <p>
+    *   The `User-Agent` header is already captured in the `user_agent.original` attribute. Users MAY explicitly
+    *   configure instrumentations to capture them even though it is not recommended. <p> The attribute value MUST
+    *   consist of either multiple header values as an array of strings or a single-item array containing a possibly
+    *   comma-concatenated string, depending on the way the HTTP library provides access to headers. <p> Examples: <ul>
+    *   <li>A header `Content-Type: application/json` SHOULD be recorded as the `http.request.header.content-type`
+    *   attribute with value `["application/json"]`. <li>A header `X-Forwarded-For: 1.2.3.4, 1.2.3.5` SHOULD be recorded
+    *   as the `http.request.header.x-forwarded-for` attribute with value `["1.2.3.4", "1.2.3.5"]` or
+    *   `["1.2.3.4, 1.2.3.5"]` depending on the HTTP library. </ul>
     */
   val HttpRequestHeader: AttributeKey[Seq[String]] =
     AttributeKey("http.request.header")
@@ -75,10 +79,14 @@ object HttpAttributes {
     *
     * @note
     *   <p> Instrumentations SHOULD require an explicit configuration of which headers are to be captured. Including all
-    *   response headers can be a security risk - explicit configuration helps avoid leaking sensitive information.
-    *   Users MAY explicitly configure instrumentations to capture them even though it is not recommended. The attribute
-    *   value MUST consist of either multiple header values as an array of strings or a single-item array containing a
-    *   possibly comma-concatenated string, depending on the way the HTTP library provides access to headers.
+    *   response headers can be a security risk - explicit configuration helps avoid leaking sensitive information. <p>
+    *   Users MAY explicitly configure instrumentations to capture them even though it is not recommended. <p> The
+    *   attribute value MUST consist of either multiple header values as an array of strings or a single-item array
+    *   containing a possibly comma-concatenated string, depending on the way the HTTP library provides access to
+    *   headers. <p> Examples: <ul> <li>A header `Content-Type: application/json` header SHOULD be recorded as the
+    *   `http.request.response.content-type` attribute with value `["application/json"]`. <li>A header
+    *   `My-custom-header: abc, def` header SHOULD be recorded as the `http.response.header.my-custom-header` attribute
+    *   with value `["abc", "def"]` or `["abc, def"]` depending on the HTTP library. </ul>
     */
   val HttpResponseHeader: AttributeKey[Seq[String]] =
     AttributeKey("http.response.header")

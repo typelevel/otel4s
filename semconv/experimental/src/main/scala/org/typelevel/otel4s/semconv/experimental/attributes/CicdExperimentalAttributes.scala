@@ -21,6 +21,11 @@ package experimental.attributes
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/attributes/SemanticAttributes.scala.j2
 object CicdExperimentalAttributes {
 
+  /** The kind of action a pipeline run is performing.
+    */
+  val CicdPipelineActionName: AttributeKey[String] =
+    AttributeKey("cicd.pipeline.action.name")
+
   /** The human readable name of the pipeline within a CI/CD system.
     */
   val CicdPipelineName: AttributeKey[String] =
@@ -59,6 +64,11 @@ object CicdExperimentalAttributes {
   val CicdPipelineTaskRunId: AttributeKey[String] =
     AttributeKey("cicd.pipeline.task.run.id")
 
+  /** The result of a task run.
+    */
+  val CicdPipelineTaskRunResult: AttributeKey[String] =
+    AttributeKey("cicd.pipeline.task.run.result")
+
   /** The <a href="https://wikipedia.org/wiki/URL">URL</a> of the pipeline task run, providing the complete address in
     * order to locate and identify the pipeline task run.
     */
@@ -75,10 +85,44 @@ object CicdExperimentalAttributes {
   val CicdSystemComponent: AttributeKey[String] =
     AttributeKey("cicd.system.component")
 
+  /** The unique identifier of a worker within a CICD system.
+    */
+  val CicdWorkerId: AttributeKey[String] =
+    AttributeKey("cicd.worker.id")
+
+  /** The name of a worker within a CICD system.
+    */
+  val CicdWorkerName: AttributeKey[String] =
+    AttributeKey("cicd.worker.name")
+
   /** The state of a CICD worker / agent.
     */
   val CicdWorkerState: AttributeKey[String] =
     AttributeKey("cicd.worker.state")
+
+  /** The <a href="https://wikipedia.org/wiki/URL">URL</a> of the worker, providing the complete address in order to
+    * locate and identify the worker.
+    */
+  val CicdWorkerUrlFull: AttributeKey[String] =
+    AttributeKey("cicd.worker.url.full")
+
+  /** Values for [[CicdPipelineActionName]].
+    */
+  abstract class CicdPipelineActionNameValue(val value: String)
+  object CicdPipelineActionNameValue {
+
+    /** The pipeline run is executing a build.
+      */
+    case object Build extends CicdPipelineActionNameValue("BUILD")
+
+    /** The pipeline run is executing.
+      */
+    case object Run extends CicdPipelineActionNameValue("RUN")
+
+    /** The pipeline run is executing a sync.
+      */
+    case object Sync extends CicdPipelineActionNameValue("SYNC")
+  }
 
   /** Values for [[CicdPipelineResult]].
     */
@@ -128,6 +172,37 @@ object CicdExperimentalAttributes {
     /** The finalizing state spans from when the run has finished executing (eg. cleanup of run resources).
       */
     case object Finalizing extends CicdPipelineRunStateValue("finalizing")
+  }
+
+  /** Values for [[CicdPipelineTaskRunResult]].
+    */
+  abstract class CicdPipelineTaskRunResultValue(val value: String)
+  object CicdPipelineTaskRunResultValue {
+
+    /** The task run finished successfully.
+      */
+    case object Success extends CicdPipelineTaskRunResultValue("success")
+
+    /** The task run did not finish successfully, eg. due to a compile error or a failing test. Such failures are
+      * usually detected by non-zero exit codes of the tools executed in the task run.
+      */
+    case object Failure extends CicdPipelineTaskRunResultValue("failure")
+
+    /** The task run failed due to an error in the CICD system, eg. due to the worker being killed.
+      */
+    case object Error extends CicdPipelineTaskRunResultValue("error")
+
+    /** A timeout caused the task run to be interrupted.
+      */
+    case object Timeout extends CicdPipelineTaskRunResultValue("timeout")
+
+    /** The task run was cancelled, eg. by a user manually cancelling the task run.
+      */
+    case object Cancellation extends CicdPipelineTaskRunResultValue("cancellation")
+
+    /** The task run was skipped, eg. due to a precondition not being met.
+      */
+    case object Skip extends CicdPipelineTaskRunResultValue("skip")
   }
 
   /** Values for [[CicdPipelineTaskType]].

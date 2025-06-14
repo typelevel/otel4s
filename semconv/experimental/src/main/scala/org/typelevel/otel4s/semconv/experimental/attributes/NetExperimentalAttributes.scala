@@ -95,7 +95,7 @@ object NetExperimentalAttributes {
 
   /** Deprecated, no replacement at this time.
     */
-  @deprecated("Removed.", "")
+  @deprecated("Removed. No replacement at this time.", "")
   val NetSockPeerName: AttributeKey[String] =
     AttributeKey("net.sock.peer.name")
 

@@ -42,7 +42,7 @@ object ContainerExperimentalAttributes {
 
   /** Deprecated, use `cpu.mode` instead.
     */
-  @deprecated("Replaced by `cpu.mode`", "")
+  @deprecated("Replaced by `cpu.mode`.", "")
   val ContainerCpuState: AttributeKey[String] =
     AttributeKey("container.cpu.state")
 
@@ -110,6 +110,10 @@ object ContainerExperimentalAttributes {
     AttributeKey("container.image.tags")
 
   /** Container labels, `<key>` being the label name, the value being the label value.
+    *
+    * @note
+    *   <p> For example, a docker container label `app` with value `nginx` SHOULD be recorded as the
+    *   `container.label.app` attribute with value `"nginx"`.
     */
   val ContainerLabel: AttributeKey[String] =
     AttributeKey("container.label")
@@ -132,7 +136,7 @@ object ContainerExperimentalAttributes {
 
   /** Values for [[ContainerCpuState]].
     */
-  @deprecated("Replaced by `cpu.mode`", "")
+  @deprecated("Replaced by `cpu.mode`.", "")
   abstract class ContainerCpuStateValue(val value: String)
   @annotation.nowarn("cat=deprecation")
   object ContainerCpuStateValue {

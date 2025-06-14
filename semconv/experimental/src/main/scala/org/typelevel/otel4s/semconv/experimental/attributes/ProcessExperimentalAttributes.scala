@@ -39,14 +39,15 @@ object ProcessExperimentalAttributes {
   /** All the command arguments (including the command/executable itself) as received by the process. On Linux-based
     * systems (and some other Unixoid systems supporting procfs), can be set according to the list of null-delimited
     * strings extracted from `proc/[pid]/cmdline`. For libc-based executables, this would be the full argv vector passed
-    * to `main`.
+    * to `main`. SHOULD NOT be collected by default unless there is sanitization that excludes sensitive data.
     */
   val ProcessCommandArgs: AttributeKey[Seq[String]] =
     AttributeKey("process.command_args")
 
   /** The full command used to launch the process as a single string representing the full command. On Windows, can be
     * set to the result of `GetCommandLineW`. Do not set this if you have to assemble it just for monitoring; use
-    * `process.command_args` instead.
+    * `process.command_args` instead. SHOULD NOT be collected by default unless there is sanitization that excludes
+    * sensitive data.
     */
   val ProcessCommandLine: AttributeKey[String] =
     AttributeKey("process.command_line")
@@ -58,7 +59,7 @@ object ProcessExperimentalAttributes {
 
   /** Deprecated, use `cpu.mode` instead.
     */
-  @deprecated("Replaced by `cpu.mode`", "")
+  @deprecated("Replaced by `cpu.mode`.", "")
   val ProcessCpuState: AttributeKey[String] =
     AttributeKey("process.cpu.state")
 
@@ -66,6 +67,18 @@ object ProcessExperimentalAttributes {
     */
   val ProcessCreationTime: AttributeKey[String] =
     AttributeKey("process.creation.time")
+
+  /** Process environment variables, <key> being the environment variable name, the value being the environment variable
+    * value.
+    *
+    * @note
+    *   <p> Examples: <ul> <li>an environment variable `USER` with value `"ubuntu"` SHOULD be recorded as the
+    *   `process.environment_variable.USER` attribute with value `"ubuntu"`. <li>an environment variable `PATH` with
+    *   value `"/usr/local/bin:/usr/bin"` SHOULD be recorded as the `process.environment_variable.PATH` attribute with
+    *   value `"/usr/local/bin:/usr/bin"`. </ul>
+    */
+  val ProcessEnvironmentVariable: AttributeKey[String] =
+    AttributeKey("process.environment_variable")
 
   /** The GNU build ID as found in the `.note.gnu.build-id` ELF section (hex string).
     */
@@ -84,7 +97,7 @@ object ProcessExperimentalAttributes {
 
   /** "Deprecated, use `process.executable.build_id.htlhash` instead."
     */
-  @deprecated("Replaced by `process.executable.build_id.htlhash`", "")
+  @deprecated("Replaced by `process.executable.build_id.htlhash`.", "")
   val ProcessExecutableBuildIdProfiling: AttributeKey[String] =
     AttributeKey("process.executable.build_id.profiling")
 
@@ -241,7 +254,7 @@ object ProcessExperimentalAttributes {
 
   /** Values for [[ProcessCpuState]].
     */
-  @deprecated("Replaced by `cpu.mode`", "")
+  @deprecated("Replaced by `cpu.mode`.", "")
   abstract class ProcessCpuStateValue(val value: String)
   @annotation.nowarn("cat=deprecation")
   object ProcessCpuStateValue {

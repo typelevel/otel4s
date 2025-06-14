@@ -38,14 +38,9 @@ object AndroidExperimentalAttributes {
   val AndroidOsApiLevel: AttributeKey[String] =
     AttributeKey("android.os.api_level")
 
-  /** Deprecated. Use `android.app.state` instead.
-    *
-    * @note
-    *   <p> The Android lifecycle states are defined in <a
-    *   href="https://developer.android.com/guide/components/activities/activity-lifecycle#lc">Activity lifecycle
-    *   callbacks</a>, and from which the `OS identifiers` are derived.
+  /** Deprecated. Use `android.app.state` body field instead.
     */
-  @deprecated("Renamed to `android.app.state`", "")
+  @deprecated("Use `android.app.state` body field instead.", "")
   val AndroidState: AttributeKey[String] =
     AttributeKey("android.state")
 
@@ -72,7 +67,7 @@ object AndroidExperimentalAttributes {
 
   /** Values for [[AndroidState]].
     */
-  @deprecated("Renamed to `android.app.state`", "")
+  @deprecated("Use `android.app.state` body field instead.", "")
   abstract class AndroidStateValue(val value: String)
   @annotation.nowarn("cat=deprecation")
   object AndroidStateValue {

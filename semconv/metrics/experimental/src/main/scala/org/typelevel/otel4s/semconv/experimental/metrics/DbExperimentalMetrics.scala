@@ -555,7 +555,7 @@ object DbExperimentalMetrics {
 
   /** Deprecated, use `db.client.connection.create_time` instead. Note: the unit also changed from `ms` to `s`.
     */
-  @deprecated("Replaced by `db.client.connection.create_time`. Note: the unit also changed from `ms` to `s`.", "")
+  @deprecated("Replaced by `db.client.connection.create_time` with unit `s`.", "")
   object ClientConnectionsCreateTime extends MetricSpec {
 
     val name: String = "db.client.connections.create_time"
@@ -954,7 +954,7 @@ object DbExperimentalMetrics {
 
   /** Deprecated, use `db.client.connection.use_time` instead. Note: the unit also changed from `ms` to `s`.
     */
-  @deprecated("Replaced by `db.client.connection.use_time`. Note: the unit also changed from `ms` to `s`.", "")
+  @deprecated("Replaced by `db.client.connection.use_time` with unit `s`.", "")
   object ClientConnectionsUseTime extends MetricSpec {
 
     val name: String = "db.client.connections.use_time"
@@ -997,7 +997,7 @@ object DbExperimentalMetrics {
 
   /** Deprecated, use `db.client.connection.wait_time` instead. Note: the unit also changed from `ms` to `s`.
     */
-  @deprecated("Replaced by `db.client.connection.wait_time`. Note: the unit also changed from `ms` to `s`.", "")
+  @deprecated("Replaced by `db.client.connection.wait_time` with unit `s`.", "")
   object ClientConnectionsWaitTime extends MetricSpec {
 
     val name: String = "db.client.connections.wait_time"
@@ -1139,18 +1139,19 @@ object DbExperimentalMetrics {
         * @note
         *   <p> It is RECOMMENDED to capture the value as provided by the application without attempting to do any case
         *   normalization. <p> The collection name SHOULD NOT be extracted from `db.query.text`, when the database
-        *   system supports cross-table queries in non-batch operations. <p> For batch operations, if the individual
-        *   operations are known to have the same collection name then that collection name SHOULD be used.
+        *   system supports query text with multiple collections in non-batch operations. <p> For batch operations, if
+        *   the individual operations are known to have the same collection name then that collection name SHOULD be
+        *   used.
         */
       val dbCollectionName: AttributeSpec[String] =
         AttributeSpec(
-          DbExperimentalAttributes.DbCollectionName,
+          DbAttributes.DbCollectionName,
           List(
             "public.users",
             "customers",
           ),
           Requirement.conditionallyRequired("If available."),
-          Stability.releaseCandidate
+          Stability.stable
         )
 
       /** Deprecated, use `cosmosdb.consistency.level` instead.
@@ -1201,13 +1202,13 @@ object DbExperimentalMetrics {
         */
       val dbNamespace: AttributeSpec[String] =
         AttributeSpec(
-          DbExperimentalAttributes.DbNamespace,
+          DbAttributes.DbNamespace,
           List(
             "customers",
             "test.users",
           ),
           Requirement.conditionallyRequired("If available."),
-          Stability.releaseCandidate
+          Stability.stable
         )
 
       /** The name of the operation or command being executed.
@@ -1215,15 +1216,15 @@ object DbExperimentalMetrics {
         * @note
         *   <p> It is RECOMMENDED to capture the value as provided by the application without attempting to do any case
         *   normalization. <p> The operation name SHOULD NOT be extracted from `db.query.text`, when the database system
-        *   supports cross-table queries in non-batch operations. <p> If spaces can occur in the operation name,
-        *   multiple consecutive spaces SHOULD be normalized to a single space. <p> For batch operations, if the
-        *   individual operations are known to have the same operation name then that operation name SHOULD be used
-        *   prepended by `BATCH `, otherwise `db.operation.name` SHOULD be `BATCH` or some other database system
-        *   specific term if more applicable.
+        *   supports query text with multiple operations in non-batch operations. <p> If spaces can occur in the
+        *   operation name, multiple consecutive spaces SHOULD be normalized to a single space. <p> For batch
+        *   operations, if the individual operations are known to have the same operation name then that operation name
+        *   SHOULD be used prepended by `BATCH `, otherwise `db.operation.name` SHOULD be `BATCH` or some other database
+        *   system specific term if more applicable.
         */
       val dbOperationName: AttributeSpec[String] =
         AttributeSpec(
-          DbExperimentalAttributes.DbOperationName,
+          DbAttributes.DbOperationName,
           List(
             "findAndModify",
             "HMSET",
@@ -1232,7 +1233,7 @@ object DbExperimentalMetrics {
           Requirement.conditionallyRequired(
             "If readily available and if there is a single operation name that describes the database call. The operation name MAY be parsed from the query text, in which case it SHOULD be the single operation name found in the query."
           ),
-          Stability.releaseCandidate
+          Stability.stable
         )
 
       val specs: List[AttributeSpec[_]] =
@@ -1261,12 +1262,13 @@ object DbExperimentalMetrics {
     * @note
     *   <p> Batch operations SHOULD be recorded as a single operation.
     */
+  @deprecated("Use stable `org.typelevel.otel4s.semconv.metrics.DbMetrics.ClientOperationDuration` instead.", "")
   object ClientOperationDuration extends MetricSpec {
 
     val name: String = "db.client.operation.duration"
     val description: String = "Duration of database client operations."
     val unit: String = "s"
-    val stability: Stability = Stability.releaseCandidate
+    val stability: Stability = Stability.stable
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -1276,12 +1278,13 @@ object DbExperimentalMetrics {
         * @note
         *   <p> It is RECOMMENDED to capture the value as provided by the application without attempting to do any case
         *   normalization. <p> The collection name SHOULD NOT be extracted from `db.query.text`, when the database
-        *   system supports cross-table queries in non-batch operations. <p> For batch operations, if the individual
-        *   operations are known to have the same collection name then that collection name SHOULD be used.
+        *   system supports query text with multiple collections in non-batch operations. <p> For batch operations, if
+        *   the individual operations are known to have the same collection name then that collection name SHOULD be
+        *   used.
         */
       val dbCollectionName: AttributeSpec[String] =
         AttributeSpec(
-          DbExperimentalAttributes.DbCollectionName,
+          DbAttributes.DbCollectionName,
           List(
             "public.users",
             "customers",
@@ -1289,28 +1292,27 @@ object DbExperimentalMetrics {
           Requirement.conditionallyRequired(
             "If readily available and if a database call is performed on a single collection."
           ),
-          Stability.releaseCandidate
+          Stability.stable
         )
 
       /** The name of the database, fully qualified within the server address and port.
         *
         * @note
-        *   <p> If a database system has multiple namespace components, they SHOULD be concatenated (potentially using
-        *   database system specific conventions) from most general to most specific namespace component, and more
-        *   specific namespaces SHOULD NOT be captured without the more general namespaces, to ensure that "startswith"
-        *   queries for the more general namespaces will be valid. Semantic conventions for individual database systems
-        *   SHOULD document what `db.namespace` means in the context of that system. It is RECOMMENDED to capture the
-        *   value as provided by the application without attempting to do any case normalization.
+        *   <p> If a database system has multiple namespace components, they SHOULD be concatenated from the most
+        *   general to the most specific namespace component, using `|` as a separator between the components. Any
+        *   missing components (and their associated separators) SHOULD be omitted. Semantic conventions for individual
+        *   database systems SHOULD document what `db.namespace` means in the context of that system. It is RECOMMENDED
+        *   to capture the value as provided by the application without attempting to do any case normalization.
         */
       val dbNamespace: AttributeSpec[String] =
         AttributeSpec(
-          DbExperimentalAttributes.DbNamespace,
+          DbAttributes.DbNamespace,
           List(
             "customers",
             "test.users",
           ),
           Requirement.conditionallyRequired("If available."),
-          Stability.releaseCandidate
+          Stability.stable
         )
 
       /** The name of the operation or command being executed.
@@ -1318,15 +1320,15 @@ object DbExperimentalMetrics {
         * @note
         *   <p> It is RECOMMENDED to capture the value as provided by the application without attempting to do any case
         *   normalization. <p> The operation name SHOULD NOT be extracted from `db.query.text`, when the database system
-        *   supports cross-table queries in non-batch operations. <p> If spaces can occur in the operation name,
-        *   multiple consecutive spaces SHOULD be normalized to a single space. <p> For batch operations, if the
-        *   individual operations are known to have the same operation name then that operation name SHOULD be used
-        *   prepended by `BATCH `, otherwise `db.operation.name` SHOULD be `BATCH` or some other database system
-        *   specific term if more applicable.
+        *   supports query text with multiple operations in non-batch operations. <p> If spaces can occur in the
+        *   operation name, multiple consecutive spaces SHOULD be normalized to a single space. <p> For batch
+        *   operations, if the individual operations are known to have the same operation name then that operation name
+        *   SHOULD be used prepended by `BATCH `, otherwise `db.operation.name` SHOULD be `BATCH` or some other database
+        *   system specific term if more applicable.
         */
       val dbOperationName: AttributeSpec[String] =
         AttributeSpec(
-          DbExperimentalAttributes.DbOperationName,
+          DbAttributes.DbOperationName,
           List(
             "findAndModify",
             "HMSET",
@@ -1335,51 +1337,54 @@ object DbExperimentalMetrics {
           Requirement.conditionallyRequired(
             "If readily available and if there is a single operation name that describes the database call."
           ),
-          Stability.releaseCandidate
+          Stability.stable
         )
 
-      /** Low cardinality representation of a database query text.
+      /** Low cardinality summary of a database query.
         *
         * @note
-        *   <p> `db.query.summary` provides static summary of the query text. It describes a class of database queries
-        *   and is useful as a grouping key, especially when analyzing telemetry for database calls involving complex
-        *   queries. Summary may be available to the instrumentation through instrumentation hooks or other means. If it
-        *   is not available, instrumentations that support query parsing SHOULD generate a summary following <a
-        *   href="../database/database-spans.md#generating-a-summary-of-the-query-text">Generating query summary</a>
+        *   <p> The query summary describes a class of database queries and is useful as a grouping key, especially when
+        *   analyzing telemetry for database calls involving complex queries. <p> Summary may be available to the
+        *   instrumentation through instrumentation hooks or other means. If it is not available, instrumentations that
+        *   support query parsing SHOULD generate a summary following <a
+        *   href="/docs/database/database-spans.md#generating-a-summary-of-the-query">Generating query summary</a>
         *   section.
         */
       val dbQuerySummary: AttributeSpec[String] =
         AttributeSpec(
-          DbExperimentalAttributes.DbQuerySummary,
+          DbAttributes.DbQuerySummary,
           List(
             "SELECT wuser_table",
             "INSERT shipping_details SELECT orders",
             "get user by id",
           ),
-          Requirement.recommended("if readily available or if instrumentation supports query summarization."),
-          Stability.releaseCandidate
+          Requirement.recommended(
+            "if available through instrumentation hooks or if the instrumentation supports generating a query summary."
+          ),
+          Stability.stable
         )
 
       /** The database query being executed.
         *
         * @note
-        *   <p> For sanitization see <a href="../database/database-spans.md#sanitization-of-dbquerytext">Sanitization of
-        *   `db.query.text`</a>. For batch operations, if the individual operations are known to have the same query
+        *   <p> For sanitization see <a href="/docs/database/database-spans.md#sanitization-of-dbquerytext">Sanitization
+        *   of `db.query.text`</a>. For batch operations, if the individual operations are known to have the same query
         *   text then that query text SHOULD be used, otherwise all of the individual query texts SHOULD be concatenated
-        *   with separator `; ` or some other database system specific separator if more applicable. Even though
-        *   parameterized query text can potentially have sensitive data, by using a parameterized query the user is
-        *   giving a strong signal that any sensitive data will be passed as parameter values, and the benefit to
-        *   observability of capturing the static part of the query text by default outweighs the risk.
+        *   with separator `; ` or some other database system specific separator if more applicable. Parameterized query
+        *   text SHOULD NOT be sanitized. Even though parameterized query text can potentially have sensitive data, by
+        *   using a parameterized query the user is giving a strong signal that any sensitive data will be passed as
+        *   parameter values, and the benefit to observability of capturing the static part of the query text by default
+        *   outweighs the risk.
         */
       val dbQueryText: AttributeSpec[String] =
         AttributeSpec(
-          DbExperimentalAttributes.DbQueryText,
+          DbAttributes.DbQueryText,
           List(
             "SELECT * FROM wuser_table where username = ?",
             "SET mykey ?",
           ),
           Requirement.optIn,
-          Stability.releaseCandidate
+          Stability.stable
         )
 
       /** Database response status code.
@@ -1392,7 +1397,7 @@ object DbExperimentalMetrics {
         */
       val dbResponseStatusCode: AttributeSpec[String] =
         AttributeSpec(
-          DbExperimentalAttributes.DbResponseStatusCode,
+          DbAttributes.DbResponseStatusCode,
           List(
             "102",
             "ORA-17002",
@@ -1400,7 +1405,7 @@ object DbExperimentalMetrics {
             "404",
           ),
           Requirement.conditionallyRequired("If the operation failed and status code is available."),
-          Stability.releaseCandidate
+          Stability.stable
         )
 
       /** The name of a stored procedure within the database.
@@ -1412,12 +1417,12 @@ object DbExperimentalMetrics {
         */
       val dbStoredProcedureName: AttributeSpec[String] =
         AttributeSpec(
-          DbExperimentalAttributes.DbStoredProcedureName,
+          DbAttributes.DbStoredProcedureName,
           List(
             "GetCustomer",
           ),
-          Requirement.recommended("If operation represents a stored procedure execution."),
-          Stability.releaseCandidate
+          Requirement.recommended("If operation applies to a specific stored procedure."),
+          Stability.stable
         )
 
       /** The database management system (DBMS) product as identified by the client instrumentation.
@@ -1429,11 +1434,11 @@ object DbExperimentalMetrics {
         */
       val dbSystemName: AttributeSpec[String] =
         AttributeSpec(
-          DbExperimentalAttributes.DbSystemName,
+          DbAttributes.DbSystemName,
           List(
           ),
           Requirement.required,
-          Stability.releaseCandidate
+          Stability.stable
         )
 
       /** Describes a class of error the operation ended with.
@@ -1572,12 +1577,13 @@ object DbExperimentalMetrics {
         * @note
         *   <p> It is RECOMMENDED to capture the value as provided by the application without attempting to do any case
         *   normalization. <p> The collection name SHOULD NOT be extracted from `db.query.text`, when the database
-        *   system supports cross-table queries in non-batch operations. <p> For batch operations, if the individual
-        *   operations are known to have the same collection name then that collection name SHOULD be used.
+        *   system supports query text with multiple collections in non-batch operations. <p> For batch operations, if
+        *   the individual operations are known to have the same collection name then that collection name SHOULD be
+        *   used.
         */
       val dbCollectionName: AttributeSpec[String] =
         AttributeSpec(
-          DbExperimentalAttributes.DbCollectionName,
+          DbAttributes.DbCollectionName,
           List(
             "public.users",
             "customers",
@@ -1585,28 +1591,27 @@ object DbExperimentalMetrics {
           Requirement.conditionallyRequired(
             "If readily available and if a database call is performed on a single collection."
           ),
-          Stability.releaseCandidate
+          Stability.stable
         )
 
       /** The name of the database, fully qualified within the server address and port.
         *
         * @note
-        *   <p> If a database system has multiple namespace components, they SHOULD be concatenated (potentially using
-        *   database system specific conventions) from most general to most specific namespace component, and more
-        *   specific namespaces SHOULD NOT be captured without the more general namespaces, to ensure that "startswith"
-        *   queries for the more general namespaces will be valid. Semantic conventions for individual database systems
-        *   SHOULD document what `db.namespace` means in the context of that system. It is RECOMMENDED to capture the
-        *   value as provided by the application without attempting to do any case normalization.
+        *   <p> If a database system has multiple namespace components, they SHOULD be concatenated from the most
+        *   general to the most specific namespace component, using `|` as a separator between the components. Any
+        *   missing components (and their associated separators) SHOULD be omitted. Semantic conventions for individual
+        *   database systems SHOULD document what `db.namespace` means in the context of that system. It is RECOMMENDED
+        *   to capture the value as provided by the application without attempting to do any case normalization.
         */
       val dbNamespace: AttributeSpec[String] =
         AttributeSpec(
-          DbExperimentalAttributes.DbNamespace,
+          DbAttributes.DbNamespace,
           List(
             "customers",
             "test.users",
           ),
           Requirement.conditionallyRequired("If available."),
-          Stability.releaseCandidate
+          Stability.stable
         )
 
       /** The name of the operation or command being executed.
@@ -1614,15 +1619,15 @@ object DbExperimentalMetrics {
         * @note
         *   <p> It is RECOMMENDED to capture the value as provided by the application without attempting to do any case
         *   normalization. <p> The operation name SHOULD NOT be extracted from `db.query.text`, when the database system
-        *   supports cross-table queries in non-batch operations. <p> If spaces can occur in the operation name,
-        *   multiple consecutive spaces SHOULD be normalized to a single space. <p> For batch operations, if the
-        *   individual operations are known to have the same operation name then that operation name SHOULD be used
-        *   prepended by `BATCH `, otherwise `db.operation.name` SHOULD be `BATCH` or some other database system
-        *   specific term if more applicable.
+        *   supports query text with multiple operations in non-batch operations. <p> If spaces can occur in the
+        *   operation name, multiple consecutive spaces SHOULD be normalized to a single space. <p> For batch
+        *   operations, if the individual operations are known to have the same operation name then that operation name
+        *   SHOULD be used prepended by `BATCH `, otherwise `db.operation.name` SHOULD be `BATCH` or some other database
+        *   system specific term if more applicable.
         */
       val dbOperationName: AttributeSpec[String] =
         AttributeSpec(
-          DbExperimentalAttributes.DbOperationName,
+          DbAttributes.DbOperationName,
           List(
             "findAndModify",
             "HMSET",
@@ -1631,51 +1636,54 @@ object DbExperimentalMetrics {
           Requirement.conditionallyRequired(
             "If readily available and if there is a single operation name that describes the database call."
           ),
-          Stability.releaseCandidate
+          Stability.stable
         )
 
-      /** Low cardinality representation of a database query text.
+      /** Low cardinality summary of a database query.
         *
         * @note
-        *   <p> `db.query.summary` provides static summary of the query text. It describes a class of database queries
-        *   and is useful as a grouping key, especially when analyzing telemetry for database calls involving complex
-        *   queries. Summary may be available to the instrumentation through instrumentation hooks or other means. If it
-        *   is not available, instrumentations that support query parsing SHOULD generate a summary following <a
-        *   href="../database/database-spans.md#generating-a-summary-of-the-query-text">Generating query summary</a>
+        *   <p> The query summary describes a class of database queries and is useful as a grouping key, especially when
+        *   analyzing telemetry for database calls involving complex queries. <p> Summary may be available to the
+        *   instrumentation through instrumentation hooks or other means. If it is not available, instrumentations that
+        *   support query parsing SHOULD generate a summary following <a
+        *   href="/docs/database/database-spans.md#generating-a-summary-of-the-query">Generating query summary</a>
         *   section.
         */
       val dbQuerySummary: AttributeSpec[String] =
         AttributeSpec(
-          DbExperimentalAttributes.DbQuerySummary,
+          DbAttributes.DbQuerySummary,
           List(
             "SELECT wuser_table",
             "INSERT shipping_details SELECT orders",
             "get user by id",
           ),
-          Requirement.recommended("if readily available or if instrumentation supports query summarization."),
-          Stability.releaseCandidate
+          Requirement.recommended(
+            "if available through instrumentation hooks or if the instrumentation supports generating a query summary."
+          ),
+          Stability.stable
         )
 
       /** The database query being executed.
         *
         * @note
-        *   <p> For sanitization see <a href="../database/database-spans.md#sanitization-of-dbquerytext">Sanitization of
-        *   `db.query.text`</a>. For batch operations, if the individual operations are known to have the same query
+        *   <p> For sanitization see <a href="/docs/database/database-spans.md#sanitization-of-dbquerytext">Sanitization
+        *   of `db.query.text`</a>. For batch operations, if the individual operations are known to have the same query
         *   text then that query text SHOULD be used, otherwise all of the individual query texts SHOULD be concatenated
-        *   with separator `; ` or some other database system specific separator if more applicable. Even though
-        *   parameterized query text can potentially have sensitive data, by using a parameterized query the user is
-        *   giving a strong signal that any sensitive data will be passed as parameter values, and the benefit to
-        *   observability of capturing the static part of the query text by default outweighs the risk.
+        *   with separator `; ` or some other database system specific separator if more applicable. Parameterized query
+        *   text SHOULD NOT be sanitized. Even though parameterized query text can potentially have sensitive data, by
+        *   using a parameterized query the user is giving a strong signal that any sensitive data will be passed as
+        *   parameter values, and the benefit to observability of capturing the static part of the query text by default
+        *   outweighs the risk.
         */
       val dbQueryText: AttributeSpec[String] =
         AttributeSpec(
-          DbExperimentalAttributes.DbQueryText,
+          DbAttributes.DbQueryText,
           List(
             "SELECT * FROM wuser_table where username = ?",
             "SET mykey ?",
           ),
           Requirement.optIn,
-          Stability.releaseCandidate
+          Stability.stable
         )
 
       /** Database response status code.
@@ -1688,7 +1696,7 @@ object DbExperimentalMetrics {
         */
       val dbResponseStatusCode: AttributeSpec[String] =
         AttributeSpec(
-          DbExperimentalAttributes.DbResponseStatusCode,
+          DbAttributes.DbResponseStatusCode,
           List(
             "102",
             "ORA-17002",
@@ -1696,7 +1704,7 @@ object DbExperimentalMetrics {
             "404",
           ),
           Requirement.conditionallyRequired("If the operation failed and status code is available."),
-          Stability.releaseCandidate
+          Stability.stable
         )
 
       /** The database management system (DBMS) product as identified by the client instrumentation.
@@ -1708,11 +1716,11 @@ object DbExperimentalMetrics {
         */
       val dbSystemName: AttributeSpec[String] =
         AttributeSpec(
-          DbExperimentalAttributes.DbSystemName,
+          DbAttributes.DbSystemName,
           List(
           ),
           Requirement.required,
-          Stability.releaseCandidate
+          Stability.stable
         )
 
       /** Describes a class of error the operation ended with.

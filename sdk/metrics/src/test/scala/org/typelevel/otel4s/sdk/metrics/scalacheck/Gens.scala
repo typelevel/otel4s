@@ -31,7 +31,6 @@ import org.typelevel.otel4s.sdk.metrics.data.TimeWindow
 import org.typelevel.otel4s.sdk.metrics.internal.AsynchronousMeasurement
 import org.typelevel.otel4s.sdk.metrics.internal.InstrumentDescriptor
 import org.typelevel.otel4s.sdk.metrics.view.InstrumentSelector
-import scodec.bits.ByteVector
 
 import scala.concurrent.duration._
 
@@ -118,31 +117,6 @@ trait Gens extends org.typelevel.otel4s.sdk.scalacheck.Gens {
       start <- Gen.chooseNum(1, Int.MaxValue)
       delta <- Gen.choose(1, 100)
     } yield TimeWindow(start.millis, start.millis + delta.seconds)
-
-  val traceContext: Gen[ExemplarData.TraceContext] = {
-    val nonZeroLong: Gen[Long] =
-      Gen.oneOf(
-        Gen.choose(Long.MinValue, -1L),
-        Gen.choose(1L, Long.MaxValue)
-      )
-
-    val traceIdGen: Gen[ByteVector] =
-      for {
-        hi <- Gen.long
-        lo <- nonZeroLong
-      } yield ByteVector.fromLong(hi, 8) ++ ByteVector.fromLong(lo, 8)
-
-    val spanIdGen: Gen[ByteVector] =
-      for {
-        value <- nonZeroLong
-      } yield ByteVector.fromLong(value, 8)
-
-    for {
-      traceId <- traceIdGen
-      spanId <- spanIdGen
-      sampled <- Gen.oneOf(true, false)
-    } yield ExemplarData.TraceContext(traceId, spanId, sampled)
-  }
 
   val longExemplarData: Gen[ExemplarData.LongExemplar] =
     for {

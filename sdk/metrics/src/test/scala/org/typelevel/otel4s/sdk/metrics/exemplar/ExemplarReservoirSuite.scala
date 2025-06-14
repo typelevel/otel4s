@@ -27,7 +27,7 @@ import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.Attributes
 import org.typelevel.otel4s.metrics.BucketBoundaries
 import org.typelevel.otel4s.sdk.context.Context
-import org.typelevel.otel4s.sdk.metrics.data.ExemplarData.TraceContext
+import org.typelevel.otel4s.sdk.context.TraceContext
 import org.typelevel.otel4s.sdk.metrics.scalacheck.Arbitraries._
 
 import scala.concurrent.duration._
@@ -38,7 +38,7 @@ class ExemplarReservoirSuite extends CatsEffectSuite with ScalaCheckEffectSuite 
     .unique[SyncIO, TraceContext]("trace-context")
     .unsafeRunSync()
 
-  private val contextLookup: TraceContextLookup =
+  private val contextLookup: TraceContext.Lookup =
     _.get(traceContextKey)
 
   private val boundaries: BucketBoundaries =

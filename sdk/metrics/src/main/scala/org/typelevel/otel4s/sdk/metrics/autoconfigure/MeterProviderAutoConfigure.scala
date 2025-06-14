@@ -25,9 +25,9 @@ import org.typelevel.otel4s.sdk.TelemetryResource
 import org.typelevel.otel4s.sdk.autoconfigure.AutoConfigure
 import org.typelevel.otel4s.sdk.autoconfigure.Config
 import org.typelevel.otel4s.sdk.context.AskContext
+import org.typelevel.otel4s.sdk.context.TraceContext
 import org.typelevel.otel4s.sdk.metrics.SdkMeterProvider
 import org.typelevel.otel4s.sdk.metrics.autoconfigure.MeterProviderAutoConfigure.Customizer
-import org.typelevel.otel4s.sdk.metrics.exemplar.TraceContextLookup
 import org.typelevel.otel4s.sdk.metrics.exporter.MetricExporter
 
 /** Autoconfigures [[org.typelevel.otel4s.metrics.MeterProvider MeterProvider]].
@@ -57,7 +57,7 @@ private final class MeterProviderAutoConfigure[
     F[_]: Temporal: Random: Console: AskContext
 ](
     resource: TelemetryResource,
-    traceContextLookup: TraceContextLookup,
+    traceContextLookup: TraceContext.Lookup,
     customizer: Customizer[SdkMeterProvider.Builder[F]],
     exporterConfigurers: Set[AutoConfigure.Named[F, MetricExporter[F]]]
 ) extends AutoConfigure.WithHint[F, MeterProvider[F]](
@@ -125,7 +125,7 @@ private[sdk] object MeterProviderAutoConfigure {
     */
   def apply[F[_]: Temporal: Random: Console: AskContext](
       resource: TelemetryResource,
-      traceContextLookup: TraceContextLookup,
+      traceContextLookup: TraceContext.Lookup,
       meterProviderBuilderCustomizer: Customizer[SdkMeterProvider.Builder[F]],
       exporterConfigurers: Set[AutoConfigure.Named[F, MetricExporter[F]]]
   ): AutoConfigure[F, MeterProvider[F]] =

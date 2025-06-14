@@ -28,8 +28,8 @@ import org.scalacheck.Test
 import org.scalacheck.effect.PropF
 import org.typelevel.otel4s.metrics.BucketBoundaries
 import org.typelevel.otel4s.sdk.context.Context
+import org.typelevel.otel4s.sdk.context.TraceContext
 import org.typelevel.otel4s.sdk.metrics.data.ExemplarData
-import org.typelevel.otel4s.sdk.metrics.data.ExemplarData.TraceContext
 import org.typelevel.otel4s.sdk.metrics.data.MetricData
 import org.typelevel.otel4s.sdk.metrics.data.MetricPoints
 import org.typelevel.otel4s.sdk.metrics.data.PointData

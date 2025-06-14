@@ -22,6 +22,7 @@ import cats.effect.std.Random
 import cats.syntax.functor._
 import org.typelevel.otel4s.metrics.BucketBoundaries
 import org.typelevel.otel4s.metrics.MeasurementValue
+import org.typelevel.otel4s.sdk.context.TraceContext
 
 private[metrics] sealed trait Reservoirs[F[_]] {
 
@@ -64,13 +65,13 @@ private[metrics] object Reservoirs {
     */
   def apply[F[_]: Temporal: Random](
       filter: ExemplarFilter,
-      lookup: TraceContextLookup
+      lookup: TraceContext.Lookup
   ): Reservoirs[F] = {
     def isAlwaysOn =
       filter == ExemplarFilter.alwaysOn
 
     def isAlwaysOff =
-      filter == ExemplarFilter.alwaysOff || lookup == TraceContextLookup.noop
+      filter == ExemplarFilter.alwaysOff || lookup == TraceContext.Lookup.Noop
 
     if (isAlwaysOn) alwaysOn[F](lookup)
     else if (isAlwaysOff) alwaysOff[F]
@@ -86,7 +87,7 @@ private[metrics] object Reservoirs {
     *   the higher-kinded type of a polymorphic effect
     */
   def alwaysOn[F[_]: Temporal: Random](
-      lookup: TraceContextLookup
+      lookup: TraceContext.Lookup
   ): Reservoirs[F] =
     new AlwaysOn[F](lookup)
 
@@ -108,12 +109,12 @@ private[metrics] object Reservoirs {
     */
   def filtered[F[_]: Temporal: Random](
       filter: ExemplarFilter,
-      lookup: TraceContextLookup
+      lookup: TraceContext.Lookup
   ): Reservoirs[F] =
     new Filtered[F](filter, lookup)
 
   private final class AlwaysOn[F[_]: Temporal: Random](
-      lookup: TraceContextLookup
+      lookup: TraceContext.Lookup
   ) extends Reservoirs[F] {
     def fixedSize[A: MeasurementValue](
         size: Int
@@ -138,7 +139,7 @@ private[metrics] object Reservoirs {
 
   private final class Filtered[F[_]: Temporal: Random](
       filter: ExemplarFilter,
-      lookup: TraceContextLookup
+      lookup: TraceContext.Lookup
   ) extends Reservoirs[F] {
     def fixedSize[A: MeasurementValue](
         size: Int

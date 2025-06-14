@@ -34,8 +34,8 @@ import org.typelevel.otel4s.sdk.autoconfigure.CommonConfigKeys
 import org.typelevel.otel4s.sdk.autoconfigure.Config
 import org.typelevel.otel4s.sdk.autoconfigure.TelemetryResourceAutoConfigure
 import org.typelevel.otel4s.sdk.context.Context
+import org.typelevel.otel4s.sdk.context.TraceContext
 import org.typelevel.otel4s.sdk.metrics.autoconfigure.MeterProviderAutoConfigure
-import org.typelevel.otel4s.sdk.metrics.exemplar.TraceContextLookup
 import org.typelevel.otel4s.sdk.metrics.exporter.MetricExporter
 import org.typelevel.otel4s.sdk.resource.TelemetryResourceDetector
 
@@ -241,7 +241,7 @@ object SdkMetrics {
             val meterProviderConfigure =
               MeterProviderAutoConfigure[F](
                 resource,
-                TraceContextLookup.noop,
+                TraceContext.Lookup.noop,
                 meterProviderCustomizer,
                 exporterConfigurers
               )

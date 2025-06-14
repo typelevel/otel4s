@@ -17,6 +17,7 @@
 package org.typelevel.otel4s.sdk.data
 
 import munit.ScalaCheckSuite
+import org.scalacheck.Arbitrary
 import org.scalacheck.Gen
 import org.scalacheck.Prop
 import org.typelevel.otel4s.Attribute
@@ -80,7 +81,7 @@ class LimitedDataSuite extends ScalaCheckSuite {
     Prop.forAll(
       Gen.posNum[Int],
       Gens.nonEmptyString,
-      Gens.nonEmptyVector(Gen.oneOf(true, false)),
+      Gens.nonEmptyVector(Arbitrary.arbitrary[Boolean]),
       Gens.nonEmptyVector(Gen.double),
       Gens.nonEmptyVector(Gens.nonEmptyString),
       Gens.nonEmptyVector(Gen.long)

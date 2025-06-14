@@ -32,11 +32,11 @@ import org.typelevel.otel4s.metrics.MeterProvider
 import org.typelevel.otel4s.sdk.TelemetryResource
 import org.typelevel.otel4s.sdk.common.InstrumentationScope
 import org.typelevel.otel4s.sdk.context.AskContext
+import org.typelevel.otel4s.sdk.context.TraceContext
 import org.typelevel.otel4s.sdk.internal.ComponentRegistry
 import org.typelevel.otel4s.sdk.metrics.data.MetricData
 import org.typelevel.otel4s.sdk.metrics.exemplar.ExemplarFilter
 import org.typelevel.otel4s.sdk.metrics.exemplar.Reservoirs
-import org.typelevel.otel4s.sdk.metrics.exemplar.TraceContextLookup
 import org.typelevel.otel4s.sdk.metrics.exporter.MetricProducer
 import org.typelevel.otel4s.sdk.metrics.exporter.MetricReader
 import org.typelevel.otel4s.sdk.metrics.internal.MeterSharedState
@@ -114,14 +114,13 @@ object SdkMeterProvider {
       */
     private[sdk] def withExemplarFilter(filter: ExemplarFilter): Builder[F]
 
-    /** Sets a [[org.typelevel.otel4s.sdk.metrics.exemplar.TraceContextLookup TraceContextLookup]] to be used by
-      * exemplars.
+    /** Sets a [[org.typelevel.otel4s.sdk.context.TraceContext.Lookup TraceContext.Lookup]] to be used by exemplars.
       *
       * @param lookup
-      *   the [[org.typelevel.otel4s.sdk.metrics.exemplar.TraceContextLookup TraceContextLookup]] to use
+      *   the [[org.typelevel.otel4s.sdk.context.TraceContext.Lookup TraceContext.Lookup]] to use
       */
     private[sdk] def withTraceContextLookup(
-        lookup: TraceContextLookup
+        lookup: TraceContext.Lookup
     ): Builder[F]
 
     /** Registers a [[org.typelevel.otel4s.sdk.metrics.view.View View]] for the given
@@ -162,7 +161,7 @@ object SdkMeterProvider {
     BuilderImpl(
       resource = TelemetryResource.default,
       exemplarFilter = None,
-      traceContextLookup = TraceContextLookup.noop,
+      traceContextLookup = TraceContext.Lookup.noop,
       registeredViews = Vector.empty,
       metricReaders = Vector.empty,
       metricProducers = Vector.empty
@@ -173,7 +172,7 @@ object SdkMeterProvider {
   ](
       resource: TelemetryResource,
       exemplarFilter: Option[ExemplarFilter],
-      traceContextLookup: TraceContextLookup,
+      traceContextLookup: TraceContext.Lookup,
       registeredViews: Vector[RegisteredView],
       metricReaders: Vector[MetricReader[F]],
       metricProducers: Vector[MetricProducer[F]]
@@ -188,7 +187,7 @@ object SdkMeterProvider {
     def withExemplarFilter(filter: ExemplarFilter): Builder[F] =
       copy(exemplarFilter = Some(filter))
 
-    def withTraceContextLookup(lookup: TraceContextLookup): Builder[F] =
+    def withTraceContextLookup(lookup: TraceContext.Lookup): Builder[F] =
       copy(traceContextLookup = lookup)
 
     def registerView(selector: InstrumentSelector, view: View): Builder[F] =

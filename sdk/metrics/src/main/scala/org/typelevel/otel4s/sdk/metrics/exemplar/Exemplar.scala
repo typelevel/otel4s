@@ -17,7 +17,7 @@
 package org.typelevel.otel4s.sdk.metrics.exemplar
 
 import org.typelevel.otel4s.Attributes
-import org.typelevel.otel4s.sdk.metrics.data.ExemplarData
+import org.typelevel.otel4s.sdk.context.TraceContext
 
 import scala.concurrent.duration.FiniteDuration
 
@@ -26,6 +26,6 @@ import scala.concurrent.duration.FiniteDuration
 private[exemplar] final case class Exemplar[A](
     filteredAttributes: Attributes,
     timestamp: FiniteDuration,
-    traceContext: Option[ExemplarData.TraceContext],
+    traceContext: Option[TraceContext],
     value: A
 )

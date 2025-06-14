@@ -20,13 +20,13 @@ import cats.effect.IO
 import cats.syntax.either._
 import munit.CatsEffectSuite
 import org.typelevel.otel4s.sdk.autoconfigure.Config
+import org.typelevel.otel4s.sdk.context.TraceContext
 import org.typelevel.otel4s.sdk.metrics.exemplar.ExemplarFilter
-import org.typelevel.otel4s.sdk.metrics.exemplar.TraceContextLookup
 
 class ExemplarFilterAutoConfigureSuite extends CatsEffectSuite {
 
   private val lookup =
-    TraceContextLookup.noop
+    TraceContext.Lookup.noop
 
   private val configurer =
     ExemplarFilterAutoConfigure[IO](lookup)

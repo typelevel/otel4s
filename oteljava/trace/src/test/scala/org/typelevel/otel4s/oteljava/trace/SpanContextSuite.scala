@@ -18,6 +18,7 @@ package org.typelevel.otel4s.oteljava.trace
 
 import io.opentelemetry.api.trace.{SpanContext => JSpanContext}
 import munit.ScalaCheckSuite
+import org.scalacheck.Arbitrary
 import org.scalacheck.Gen
 import org.scalacheck.Prop
 import org.typelevel.otel4s.trace.SpanContext
@@ -49,7 +50,7 @@ class SpanContextSuite extends ScalaCheckSuite {
       traceId <- traceIdGen
       spanId <- spanIdGen
       traceFlags <- Gen.oneOf(TraceFlags.Sampled, TraceFlags.Default)
-      remote <- Gen.oneOf(true, false)
+      remote <- Arbitrary.arbitrary[Boolean]
     } yield SpanContext(traceId, spanId, traceFlags, TraceState.empty, remote)
 
   test("SpanContext.invalid satisfies the specification") {

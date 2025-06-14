@@ -16,12 +16,15 @@
 
 package org.typelevel.otel4s.sdk.scalacheck
 
+import org.scalacheck.Arbitrary
 import org.scalacheck.Gen
 import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.Attributes
 import org.typelevel.otel4s.sdk.TelemetryResource
 import org.typelevel.otel4s.sdk.common.InstrumentationScope
+import org.typelevel.otel4s.sdk.context.TraceContext
 import org.typelevel.otel4s.sdk.data.LimitedData
+import scodec.bits.ByteVector
 
 import scala.concurrent.duration._
 
@@ -52,6 +55,17 @@ trait Gens extends org.typelevel.otel4s.scalacheck.Gens {
     } yield LimitedData
       .attributes(attributes.length, valueLengthLimit)
       .appendAll((attributes ++: extraAttributes).toVector.to(Attributes))
+
+  val traceContext: Gen[TraceContext] =
+    for {
+      traceId <- Gen.zip(Gen.long, nonZeroLong)
+      spanId <- nonZeroLong
+      sampled <- Arbitrary.arbitrary[Boolean]
+    } yield TraceContext(
+      ByteVector.fromLong(traceId._1, 8) ++ ByteVector.fromLong(traceId._2, 8),
+      ByteVector.fromLong(spanId, 8),
+      sampled
+    )
 
 }
 

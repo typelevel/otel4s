@@ -16,6 +16,7 @@
 
 package org.typelevel.otel4s.trace.scalacheck
 
+import org.scalacheck.Arbitrary
 import org.scalacheck.Gen
 import org.typelevel.otel4s.baggage.Baggage
 import org.typelevel.otel4s.trace.SpanContext
@@ -66,7 +67,7 @@ trait Gens extends org.typelevel.otel4s.scalacheck.Gens {
       traceId <- Gens.traceId
       spanId <- Gens.spanId
       traceFlags <- Gens.traceFlags
-      remote <- Gen.oneOf(true, false)
+      remote <- Arbitrary.arbitrary[Boolean]
     } yield SpanContext(traceId, spanId, traceFlags, TraceState.empty, remote)
 
   val spanKind: Gen[SpanKind] =

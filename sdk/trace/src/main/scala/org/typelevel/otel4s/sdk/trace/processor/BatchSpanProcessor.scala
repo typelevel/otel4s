@@ -45,6 +45,9 @@ import scala.concurrent.duration._
   * @see
   *   [[https://opentelemetry.io/docs/specs/otel/trace/sdk/#batching-processor]]
   *
+  * @see
+  *   [[https://opentelemetry.io/docs/languages/java/configuration/#properties-traces]]
+  *
   * @tparam F
   *   the higher-kinded type of a polymorphic effect
   */

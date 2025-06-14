@@ -203,6 +203,10 @@ object SdkTracerProvider {
       copy(spanProcessors = this.spanProcessors :+ processor)
 
     def build: F[TracerProvider[F]] =
+      if (spanProcessors.isEmpty) Temporal[F].pure(TracerProvider.noop)
+      else create
+
+    private def create: F[TracerProvider[F]] =
       SpanStorage.create[F].map { storage =>
         new SdkTracerProvider[F](
           idGenerator,

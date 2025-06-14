@@ -25,6 +25,7 @@ import cats.syntax.show._
 import munit.DisciplineSuite
 import org.scalacheck.Gen
 import org.scalacheck.Prop
+import org.typelevel.otel4s.sdk.data.LimitedData
 import org.typelevel.otel4s.sdk.trace.scalacheck.Arbitraries
 import org.typelevel.otel4s.sdk.trace.scalacheck.Cogens
 import org.typelevel.otel4s.sdk.trace.scalacheck.Gens

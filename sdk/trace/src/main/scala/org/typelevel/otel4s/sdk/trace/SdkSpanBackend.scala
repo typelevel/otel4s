@@ -28,9 +28,9 @@ import cats.syntax.flatMap._
 import cats.syntax.functor._
 import org.typelevel.otel4s.meta.InstrumentMeta
 import org.typelevel.otel4s.sdk.common.InstrumentationScope
+import org.typelevel.otel4s.sdk.data.LimitedData
 import org.typelevel.otel4s.sdk.trace.SdkSpanBackend.MutableState
 import org.typelevel.otel4s.sdk.trace.data.EventData
-import org.typelevel.otel4s.sdk.trace.data.LimitedData
 import org.typelevel.otel4s.sdk.trace.data.LinkData
 import org.typelevel.otel4s.sdk.trace.data.SpanData
 import org.typelevel.otel4s.sdk.trace.data.StatusData
@@ -317,7 +317,7 @@ private object SdkSpanBackend {
       status = StatusData.Unset,
       attributes = attributes,
       links = links,
-      events = LimitedData.events(spanLimits.maxNumberOfEvents),
+      events = LimitedData.vector[EventData](spanLimits.maxNumberOfEvents),
       endTimestamp = None
     )
 

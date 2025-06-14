@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.typelevel.otel4s.sdk.trace.data
+package org.typelevel.otel4s.sdk.data
 
 import cats.Hash
 import cats.Semigroup
@@ -135,26 +135,13 @@ object LimitedData {
     )
   }
 
-  /** Created [[LimitedData]] with the vector of [[LinkData]] inside.
+  /** Created [[LimitedData]] with the vector of `A` inside.
     *
     * @param sizeLimit
     *   The limit for container elements
     */
-  def links(sizeLimit: Int): LimitedData[LinkData, Vector[LinkData]] =
-    Impl[LinkData, Vector[LinkData]](
-      sizeLimit,
-      Vector.empty,
-      _ splitAt _,
-      Vector(_)
-    )
-
-  /** Created [[LimitedData]] with the vector of [[EventData]] inside.
-    *
-    * @param sizeLimit
-    *   The limit for container elements
-    */
-  def events(sizeLimit: Int): LimitedData[EventData, Vector[EventData]] =
-    Impl[EventData, Vector[EventData]](
+  def vector[A](sizeLimit: Int): LimitedData[A, Vector[A]] =
+    Impl[A, Vector[A]](
       sizeLimit,
       Vector.empty,
       _ splitAt _,

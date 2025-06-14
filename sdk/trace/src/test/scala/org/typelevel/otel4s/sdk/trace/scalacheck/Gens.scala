@@ -17,10 +17,8 @@
 package org.typelevel.otel4s.sdk.trace.scalacheck
 
 import org.scalacheck.Gen
-import org.typelevel.otel4s.Attribute
-import org.typelevel.otel4s.Attributes
+import org.typelevel.otel4s.sdk.data.LimitedData
 import org.typelevel.otel4s.sdk.trace.data.EventData
-import org.typelevel.otel4s.sdk.trace.data.LimitedData
 import org.typelevel.otel4s.sdk.trace.data.LinkData
 import org.typelevel.otel4s.sdk.trace.data.SpanData
 import org.typelevel.otel4s.sdk.trace.data.StatusData
@@ -41,15 +39,6 @@ trait Gens extends org.typelevel.otel4s.sdk.scalacheck.Gens with org.typelevel.o
       decision <- Gens.samplingDecision
       attributes <- Gens.attributes
     } yield SamplingResult(decision, attributes)
-
-  val limitedAttributes: Gen[LimitedData[Attribute[_], Attributes]] =
-    for {
-      attributes <- Gens.nonEmptyVector(Gens.attribute)
-      extraAttributes <- Gens.nonEmptyVector(Gens.attribute)
-      valueLengthLimit <- Gen.posNum[Int]
-    } yield LimitedData
-      .attributes(attributes.length, valueLengthLimit)
-      .appendAll((attributes ++: extraAttributes).toVector.to(Attributes))
 
   val eventData: Gen[EventData] =
     for {
@@ -79,7 +68,7 @@ trait Gens extends org.typelevel.otel4s.sdk.scalacheck.Gens with org.typelevel.o
       events <- Gens.nonEmptyVector(Gens.eventData)
       extraEvents <- Gens.nonEmptyVector(Gens.eventData)
     } yield LimitedData
-      .events(events.length)
+      .vector[EventData](events.length)
       .appendAll((events ++: extraEvents).toVector)
 
   val limitedLinks: Gen[LimitedData[LinkData, Vector[LinkData]]] =
@@ -87,7 +76,7 @@ trait Gens extends org.typelevel.otel4s.sdk.scalacheck.Gens with org.typelevel.o
       links <- Gens.nonEmptyVector(Gens.linkData)
       extraLinks <- Gens.nonEmptyVector(Gens.linkData)
     } yield LimitedData
-      .links(links.length)
+      .vector[LinkData](links.length)
       .appendAll((links ++: extraLinks).toVector)
 
   val spanData: Gen[SpanData] =

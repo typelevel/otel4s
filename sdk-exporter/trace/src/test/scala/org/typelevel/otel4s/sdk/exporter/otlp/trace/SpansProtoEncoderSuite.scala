@@ -26,8 +26,8 @@ import munit._
 import org.scalacheck.Arbitrary
 import org.scalacheck.Prop
 import org.scalacheck.Test
+import org.typelevel.otel4s.sdk.data.LimitedData
 import org.typelevel.otel4s.sdk.trace.data.EventData
-import org.typelevel.otel4s.sdk.trace.data.LimitedData
 import org.typelevel.otel4s.sdk.trace.data.LinkData
 import org.typelevel.otel4s.sdk.trace.data.SpanData
 import org.typelevel.otel4s.sdk.trace.data.StatusData

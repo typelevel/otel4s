@@ -30,9 +30,9 @@ import munit.internal.PlatformCompat
 import org.scalacheck.Test
 import org.scalacheck.effect.PropF
 import org.typelevel.otel4s.sdk.common.InstrumentationScope
+import org.typelevel.otel4s.sdk.data.LimitedData
 import org.typelevel.otel4s.sdk.test.NoopConsole
 import org.typelevel.otel4s.sdk.trace.data.EventData
-import org.typelevel.otel4s.sdk.trace.data.LimitedData
 import org.typelevel.otel4s.sdk.trace.data.LinkData
 import org.typelevel.otel4s.sdk.trace.data.SpanData
 import org.typelevel.otel4s.sdk.trace.data.StatusData
@@ -372,8 +372,8 @@ class SdkSpanBackendSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
                 spanLimits.maxAttributeValueLength
               )
               .appendAll(attributes),
-            events = LimitedData.events(spanLimits.maxNumberOfEvents),
-            links = LimitedData.links(spanLimits.maxNumberOfLinks).appendAll(links),
+            events = LimitedData.vector[EventData](spanLimits.maxNumberOfEvents),
+            links = LimitedData.vector[LinkData](spanLimits.maxNumberOfLinks).appendAll(links),
             instrumentationScope = scope,
             resource = Defaults.resource
           )
@@ -397,7 +397,7 @@ class SdkSpanBackendSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
                   spanLimits.maxAttributeValueLength
                 )
                 .appendAll(attributes),
-              LimitedData.links(spanLimits.maxNumberOfLinks).appendAll(links),
+              LimitedData.vector[LinkData](spanLimits.maxNumberOfLinks).appendAll(links),
               userStartTimestamp
             )
             _ <- assertIO(span.toSpanData, expected(None))
@@ -454,8 +454,8 @@ class SdkSpanBackendSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
               spanLimits.maxAttributeValueLength
             )
             .appendAll(Defaults.attributes),
-          events = LimitedData.events(spanLimits.maxNumberOfEvents),
-          links = LimitedData.links(spanLimits.maxNumberOfLinks),
+          events = LimitedData.vector[EventData](spanLimits.maxNumberOfEvents),
+          links = LimitedData.vector[LinkData](spanLimits.maxNumberOfLinks),
           instrumentationScope = Defaults.scope,
           resource = Defaults.resource
         )
@@ -526,7 +526,7 @@ class SdkSpanBackendSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
           spanLimits.maxAttributeValueLength
         )
         .appendAll(attributes),
-      links = LimitedData.links(spanLimits.maxNumberOfLinks).appendAll(links),
+      links = LimitedData.vector[LinkData](spanLimits.maxNumberOfLinks).appendAll(links),
       userStartTimestamp = userStartTimestamp
     )
   }

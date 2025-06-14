@@ -29,7 +29,7 @@ import cats.~>
 import org.typelevel.otel4s.meta.InstrumentMeta
 import org.typelevel.otel4s.sdk.common.InstrumentationScope
 import org.typelevel.otel4s.sdk.context.Context
-import org.typelevel.otel4s.sdk.trace.data.LimitedData
+import org.typelevel.otel4s.sdk.data.LimitedData
 import org.typelevel.otel4s.sdk.trace.data.LinkData
 import org.typelevel.otel4s.sdk.trace.samplers.SamplingResult
 import org.typelevel.otel4s.trace.Span
@@ -124,7 +124,7 @@ private final case class SdkSpanBuilder[F[_]: Temporal: Console] private (
       }
 
       LimitedData
-        .links(tracerSharedState.spanLimits.maxNumberOfLinks)
+        .vector[LinkData](tracerSharedState.spanLimits.maxNumberOfLinks)
         .appendAll(links)
     }
 

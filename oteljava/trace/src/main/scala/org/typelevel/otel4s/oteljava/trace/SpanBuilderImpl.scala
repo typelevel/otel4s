@@ -42,13 +42,13 @@ private[oteljava] final case class SpanBuilderImpl[F[_]: Sync] private (
     meta: InstrumentMeta[F],
     runner: SpanRunner[F],
     scope: TraceScope[F, Context],
-    stateModifier: SpanBuilder.State => SpanBuilder.State
+    stateModifiers: Vector[SpanBuilder.State => SpanBuilder.State]
 ) extends SpanBuilder[F] {
   import SpanBuilder.Parent
   import SpanBuilderImpl._
 
   def modifyState(f: SpanBuilder.State => SpanBuilder.State): SpanBuilder[F] =
-    copy(stateModifier = this.stateModifier.andThen(f))
+    copy(stateModifiers = this.stateModifiers :+ f)
 
   def build: SpanOps[F] = new SpanOps[F] {
     def startUnmanaged: F[Span[F]] =
@@ -83,7 +83,7 @@ private[oteljava] final case class SpanBuilderImpl[F[_]: Sync] private (
 
   private def runnerContext: F[Option[SpanRunner.RunnerContext]] =
     for {
-      state <- Sync[F].delay(stateModifier(SpanBuilder.State.init))
+      state <- Sync[F].delay(stateModifiers.foldLeft(SpanBuilder.State.init)((s, f) => f(s)))
       parentOpt <- parentContext(state)
     } yield parentOpt.map { parent =>
       SpanRunner.RunnerContext(
@@ -140,7 +140,7 @@ private[oteljava] object SpanBuilderImpl {
       meta,
       runner,
       scope,
-      identity
+      Vector.empty
     )
 
   private def toJSpanKind(spanKind: SpanKind): JSpanKind =

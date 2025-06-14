@@ -48,14 +48,14 @@ private final case class SdkSpanBuilder[F[_]: Temporal: Console] private (
     scopeInfo: InstrumentationScope,
     tracerSharedState: TracerSharedState[F],
     scope: TraceScope[F, Context],
-    stateModifier: SpanBuilder.State => SpanBuilder.State
+    stateModifiers: Vector[SpanBuilder.State => SpanBuilder.State]
 ) extends SpanBuilder[F] {
   import SpanBuilder.Parent
 
   def meta: InstrumentMeta[F] = tracerSharedState.meta
 
   def modifyState(f: SpanBuilder.State => SpanBuilder.State): SpanBuilder[F] =
-    copy(stateModifier = this.stateModifier.andThen(f))
+    copy(stateModifiers = this.stateModifiers :+ f)
 
   def build: SpanOps[F] = new SpanOps[F] {
     def startUnmanaged: F[Span[F]] =
@@ -215,7 +215,7 @@ private final case class SdkSpanBuilder[F[_]: Temporal: Console] private (
     }
 
   private[sdk] def mkState: SpanBuilder.State =
-    stateModifier(SpanBuilder.State.init)
+    stateModifiers.foldLeft(SpanBuilder.State.init)((s, f) => f(s))
 
 }
 
@@ -232,7 +232,7 @@ private object SdkSpanBuilder {
       scopeInfo,
       tracerSharedState,
       scope,
-      identity
+      Vector.empty
     )
 
 }

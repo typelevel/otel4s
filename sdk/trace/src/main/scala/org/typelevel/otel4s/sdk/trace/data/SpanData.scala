@@ -24,6 +24,7 @@ import cats.Show
 import cats.syntax.foldable._
 import cats.syntax.show._
 import org.typelevel.otel4s.sdk.common.InstrumentationScope
+import org.typelevel.otel4s.sdk.data.LimitedData
 import org.typelevel.otel4s.trace.SpanContext
 import org.typelevel.otel4s.trace.SpanKind
 

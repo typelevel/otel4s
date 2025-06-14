@@ -21,6 +21,7 @@ package trace.data
 import cats.Hash
 import cats.Show
 import cats.syntax.show._
+import org.typelevel.otel4s.sdk.data.LimitedData
 import org.typelevel.otel4s.semconv.attributes.ExceptionAttributes
 
 import java.io.PrintWriter

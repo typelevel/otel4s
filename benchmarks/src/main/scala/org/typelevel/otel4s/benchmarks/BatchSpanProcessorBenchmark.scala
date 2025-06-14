@@ -150,7 +150,8 @@ object BatchSpanProcessorBenchmark {
       import org.typelevel.otel4s.sdk.TelemetryResource
       import org.typelevel.otel4s.sdk.common.InstrumentationScope
       import org.typelevel.otel4s.sdk.trace.IdGenerator
-      import org.typelevel.otel4s.sdk.trace.data.{LimitedData, SpanData, StatusData}
+      import org.typelevel.otel4s.sdk.data.LimitedData
+      import org.typelevel.otel4s.sdk.trace.data.{SpanData, StatusData}
       import org.typelevel.otel4s.sdk.trace.exporter.SpanExporter
       import org.typelevel.otel4s.sdk.trace.processor.BatchSpanProcessor
 
@@ -174,8 +175,8 @@ object BatchSpanProcessorBenchmark {
           endTimestamp = None,
           status = StatusData.Ok,
           attributes = LimitedData.attributes(Int.MaxValue, 1024),
-          events = LimitedData.events(Int.MaxValue),
-          links = LimitedData.links(Int.MaxValue),
+          events = LimitedData.vector(Int.MaxValue),
+          links = LimitedData.vector(Int.MaxValue),
           instrumentationScope = InstrumentationScope.empty,
           resource = TelemetryResource.empty
         )

@@ -68,24 +68,18 @@ private final class AsynchronousStorage[
         val processed =
           attributesProcessor.process(measurement.attributes, context)
 
-        if (points.contains(processed)) {
-          Console[F].errorln(
-            s"AsynchronousStorage: instrument [${metricDescriptor.sourceInstrument.name}] has recorded multiple values for the same attributes $processed"
+        val timeWindow = TimeWindow(start, measurement.timeWindow.end)
+        if (points.sizeIs >= maxCardinality) {
+          cardinalityWarning >> collector.record(
+            measurement.copy(
+              attributes = processed.added(MetricStorage.OverflowAttribute),
+              timeWindow = timeWindow
+            )
           )
         } else {
-          val timeWindow = TimeWindow(start, measurement.timeWindow.end)
-          if (points.sizeIs >= maxCardinality) {
-            cardinalityWarning >> collector.record(
-              measurement.copy(
-                attributes = processed.added(MetricStorage.OverflowAttribute),
-                timeWindow = timeWindow
-              )
-            )
-          } else {
-            collector.record(
-              measurement.copy(attributes = processed, timeWindow = timeWindow)
-            )
-          }
+          collector.record(
+            measurement.copy(attributes = processed, timeWindow = timeWindow)
+          )
         }
       }
     } yield ()
@@ -207,7 +201,7 @@ private object AsynchronousStorage {
     ): F[Collector[F, A]] =
       aggregationTemporality match {
         case AggregationTemporality.Delta      => delta[F, A](reader, aggregator)
-        case AggregationTemporality.Cumulative => cumulative[F, A]
+        case AggregationTemporality.Cumulative => cumulative[F, A](aggregator)
       }
 
     private def delta[F[_]: Concurrent, A](
@@ -219,10 +213,12 @@ private object AsynchronousStorage {
         lastPoints <- Ref.of(Map.empty[Attributes, AsynchronousMeasurement[A]])
       } yield new Delta(reader, aggregator, points, lastPoints)
 
-    private def cumulative[F[_]: Concurrent, A]: F[Collector[F, A]] =
+    private def cumulative[F[_]: Concurrent, A](
+        aggregator: Aggregator.Asynchronous[F, A]
+    ): F[Collector[F, A]] =
       for {
         points <- Ref.of(Map.empty[Attributes, AsynchronousMeasurement[A]])
-      } yield new Cumulative(points)
+      } yield new Cumulative(aggregator, points)
 
     private final class Delta[F[_]: Monad, A](
         reader: RegisteredReader[F],
@@ -234,7 +230,12 @@ private object AsynchronousStorage {
         reader.lastCollectTimestamp
 
       def record(measurement: AsynchronousMeasurement[A]): F[Unit] =
-        pointsRef.update(_.updated(measurement.attributes, measurement))
+        pointsRef.update { points =>
+          points.updatedWith(measurement.attributes) {
+            case Some(previous) => Some(aggregator.combine(previous, measurement))
+            case None           => Some(measurement)
+          }
+        }
 
       def currentPoints: F[Map[Attributes, AsynchronousMeasurement[A]]] =
         pointsRef.get
@@ -254,14 +255,20 @@ private object AsynchronousStorage {
     }
 
     private final class Cumulative[F[_]: Monad, A](
-        pointsRef: Ref[F, Map[Attributes, AsynchronousMeasurement[A]]]
+        aggregator: Aggregator.Asynchronous[F, A],
+        pointsRef: Ref[F, Map[Attributes, AsynchronousMeasurement[A]]],
     ) extends Collector[F, A] {
 
       def startTimestamp(m: AsynchronousMeasurement[A]): F[FiniteDuration] =
         Monad[F].pure(m.timeWindow.start)
 
       def record(measurement: AsynchronousMeasurement[A]): F[Unit] =
-        pointsRef.update(_.updated(measurement.attributes, measurement))
+        pointsRef.update { points =>
+          points.updatedWith(measurement.attributes) {
+            case Some(previous) => Some(aggregator.combine(previous, measurement))
+            case None           => Some(measurement)
+          }
+        }
 
       def currentPoints: F[Map[Attributes, AsynchronousMeasurement[A]]] =
         pointsRef.get

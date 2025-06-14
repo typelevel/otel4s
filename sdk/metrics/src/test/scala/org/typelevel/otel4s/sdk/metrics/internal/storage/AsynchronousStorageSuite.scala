@@ -52,7 +52,7 @@ class AsynchronousStorageSuite extends CatsEffectSuite with ScalaCheckEffectSuit
   private implicit val noopConsole: Console[IO] = new NoopConsole[IO]
   private implicit val askContext: Ask[IO, Context] = Ask.const(Context.root)
 
-  test("duplicate attributes - keep the first one") {
+  test("duplicate attributes - combine") {
     PropF.forAllF(
       Gens.asynchronousInstrumentDescriptor,
       Gens.telemetryResource,
@@ -71,7 +71,7 @@ class AsynchronousStorageSuite extends CatsEffectSuite with ScalaCheckEffectSuit
             descriptor.unit,
             MetricPoints.sum(
               PointDataUtils.toNumberPoints(
-                NonEmptyVector.one(points.head),
+                NonEmptyVector.one(points.reduce(Numeric[A].plus(_, _))),
                 attributes,
                 timeWindow
               ),
@@ -203,7 +203,7 @@ class AsynchronousStorageSuite extends CatsEffectSuite with ScalaCheckEffectSuit
 
           _ <- storage
             .collect(resource, scope, timeWindow)
-            .assertEquals(Some(expected(Numeric[A].zero)))
+            .assertEquals(Some(expected(value)))
         } yield ()
       }
 

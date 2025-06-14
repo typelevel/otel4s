@@ -186,9 +186,9 @@ abstract class BaseMeterSuite extends CatsEffectSuite {
   }
 
   sdkTest(
-    "ObservableCounter - multiple values for same attributes - retain first"
+    "ObservableCounter - multiple values for same attributes - combine values"
   ) { sdk =>
-    val expected = MetricData.sum("counter", monotonic = true, 1L)
+    val expected = MetricData.sum("counter", monotonic = true, 6L)
 
     for {
       meter <- sdk.provider.get("meter")
@@ -214,16 +214,16 @@ abstract class BaseMeterSuite extends CatsEffectSuite {
   }
 
   sdkTest(
-    "ObservableUpDownCounter - multiple values for same attributes - retain first"
+    "ObservableUpDownCounter - multiple values for same attributes - combine values"
   ) { sdk =>
-    val expected = MetricData.sum("counter", monotonic = false, 1L)
+    val expected = MetricData.sum("counter", monotonic = false, 2L)
 
     for {
       meter <- sdk.provider.get("meter")
       metrics <- meter
         .observableUpDownCounter[Long]("counter")
         .createWithCallback { cb =>
-          cb.record(1L) >> cb.record(2L) >> cb.record(3L)
+          cb.record(1L) >> cb.record(2L) >> cb.record(3L) >> cb.record(-4L)
         }
         .surround(sdk.collectMetrics)
     } yield assertEquals(metrics, List(expected))
@@ -242,9 +242,9 @@ abstract class BaseMeterSuite extends CatsEffectSuite {
   }
 
   sdkTest(
-    "ObservableGauge - multiple values for same attributes - retain first"
+    "ObservableGauge - multiple values for same attributes - retain last"
   ) { sdk =>
-    val expected = MetricData.gauge("gauge", 1L)
+    val expected = MetricData.gauge("gauge", 3L)
 
     for {
       meter <- sdk.provider.get("meter")

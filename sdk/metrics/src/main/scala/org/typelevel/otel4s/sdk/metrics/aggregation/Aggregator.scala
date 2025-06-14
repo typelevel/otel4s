@@ -114,6 +114,19 @@ private[metrics] object Aggregator {
         current: AsynchronousMeasurement[A]
     ): AsynchronousMeasurement[A]
 
+    /** Returns a combined measurement. It is used to combine multiple measurements recorded within the same callback.
+      *
+      * @param previous
+      *   the previously captured measurement within the same callback
+      *
+      * @param current
+      *   the newly captured measurement within the same callback
+      */
+    def combine(
+        previous: AsynchronousMeasurement[A],
+        current: AsynchronousMeasurement[A]
+    ): AsynchronousMeasurement[A]
+
     /** Returns the `MetricData` using the given values.
       *
       * @param resource

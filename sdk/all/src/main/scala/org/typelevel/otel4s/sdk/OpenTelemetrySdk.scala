@@ -42,10 +42,9 @@ import org.typelevel.otel4s.sdk.baggage.SdkBaggageManager
 import org.typelevel.otel4s.sdk.context.Context
 import org.typelevel.otel4s.sdk.context.LocalContext
 import org.typelevel.otel4s.sdk.context.LocalContextProvider
+import org.typelevel.otel4s.sdk.context.TraceContext
 import org.typelevel.otel4s.sdk.metrics.SdkMeterProvider
 import org.typelevel.otel4s.sdk.metrics.autoconfigure.MeterProviderAutoConfigure
-import org.typelevel.otel4s.sdk.metrics.data.ExemplarData
-import org.typelevel.otel4s.sdk.metrics.exemplar.TraceContextLookup
 import org.typelevel.otel4s.sdk.metrics.exporter.MetricExporter
 import org.typelevel.otel4s.sdk.resource.TelemetryResourceDetector
 import org.typelevel.otel4s.sdk.trace.SdkContextKeys
@@ -377,14 +376,14 @@ object OpenTelemetrySdk {
         ): Resource[F, AutoConfigured[F]] = {
           def makeLocalContext = LocalProvider[F, Context].local
 
-          val traceContextLookup: TraceContextLookup =
-            new TraceContextLookup {
-              def get(context: Context): Option[ExemplarData.TraceContext] =
+          val traceContextLookup: TraceContext.Lookup =
+            new TraceContext.Lookup {
+              def get(context: Context): Option[TraceContext] =
                 context
                   .get(SdkContextKeys.SpanContextKey)
                   .filter(_.isValid)
                   .map { ctx =>
-                    ExemplarData.TraceContext(
+                    TraceContext(
                       ctx.traceId,
                       ctx.spanId,
                       ctx.isSampled

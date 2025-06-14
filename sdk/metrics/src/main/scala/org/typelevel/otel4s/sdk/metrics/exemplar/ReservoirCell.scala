@@ -22,7 +22,7 @@ import cats.syntax.flatMap._
 import cats.syntax.functor._
 import org.typelevel.otel4s.Attributes
 import org.typelevel.otel4s.sdk.context.Context
-import org.typelevel.otel4s.sdk.metrics.data.ExemplarData
+import org.typelevel.otel4s.sdk.context.TraceContext
 
 import scala.concurrent.duration.FiniteDuration
 
@@ -30,7 +30,7 @@ import scala.concurrent.duration.FiniteDuration
   */
 private[exemplar] final class ReservoirCell[F[_]: Temporal, A] private (
     stateRef: Ref[F, Option[ReservoirCell.State[A]]],
-    lookup: TraceContextLookup
+    lookup: TraceContext.Lookup
 ) {
 
   /** Record the given `value` (measurement) to the cell.
@@ -74,12 +74,12 @@ private[exemplar] object ReservoirCell {
   private final case class State[A](
       value: A,
       attributes: Attributes,
-      traceContext: Option[ExemplarData.TraceContext],
+      traceContext: Option[TraceContext],
       recordTime: FiniteDuration
   )
 
   def create[F[_]: Temporal, A](
-      lookup: TraceContextLookup
+      lookup: TraceContext.Lookup
   ): F[ReservoirCell[F, A]] =
     for {
       stateRef <- Temporal[F].ref(Option.empty[State[A]])

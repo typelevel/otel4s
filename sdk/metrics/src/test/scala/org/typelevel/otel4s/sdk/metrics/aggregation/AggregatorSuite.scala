@@ -27,6 +27,7 @@ import org.scalacheck.Test
 import org.scalacheck.effect.PropF
 import org.typelevel.otel4s.Attributes
 import org.typelevel.otel4s.metrics.BucketBoundaries
+import org.typelevel.otel4s.sdk.context.TraceContext
 import org.typelevel.otel4s.sdk.metrics.Aggregation
 import org.typelevel.otel4s.sdk.metrics.InstrumentType
 import org.typelevel.otel4s.sdk.metrics.data.MetricData
@@ -34,7 +35,6 @@ import org.typelevel.otel4s.sdk.metrics.data.MetricPoints
 import org.typelevel.otel4s.sdk.metrics.data.PointData
 import org.typelevel.otel4s.sdk.metrics.data.TimeWindow
 import org.typelevel.otel4s.sdk.metrics.exemplar.Reservoirs
-import org.typelevel.otel4s.sdk.metrics.exemplar.TraceContextLookup
 import org.typelevel.otel4s.sdk.metrics.internal.MetricDescriptor
 import org.typelevel.otel4s.sdk.metrics.scalacheck.Gens
 import org.typelevel.otel4s.sdk.metrics.test.PointDataUtils
@@ -75,7 +75,7 @@ class AggregatorSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
 
         val aggregator = Aggregator
           .synchronous[IO, Long](
-            Reservoirs.alwaysOn(TraceContextLookup.noop),
+            Reservoirs.alwaysOn(TraceContext.Lookup.noop),
             aggregation,
             descriptor
           )

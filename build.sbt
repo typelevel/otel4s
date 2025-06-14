@@ -186,6 +186,7 @@ lazy val `core-common` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
       "org.typelevel" %%% "cats-core" % CatsVersion,
       "org.typelevel" %%% "cats-effect" % CatsEffectVersion,
       "org.typelevel" %%% "cats-mtl" % CatsMtlVersion,
+      "org.scodec" %%% "scodec-bits" % ScodecVersion,
       "org.typelevel" %%% "vault" % VaultVersion % Test,
       "org.typelevel" %%% "cats-laws" % CatsVersion % Test,
       "org.typelevel" %%% "cats-mtl-laws" % CatsMtlVersion % Test,

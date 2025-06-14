@@ -203,17 +203,20 @@ object SdkTracerProvider {
       copy(spanProcessors = this.spanProcessors :+ processor)
 
     def build: F[TracerProvider[F]] =
-      SpanStorage.create[F].map { storage =>
-        new SdkTracerProvider[F](
-          idGenerator,
-          resource,
-          spanLimits,
-          sampler,
-          ContextPropagators.of(propagators: _*),
-          spanProcessors,
-          SdkTraceScope.fromLocal[F],
-          storage
-        )
-      }
+      if (spanProcessors.isEmpty)
+        Temporal[F].pure(TracerProvider.noop)
+      else
+        SpanStorage.create[F].map { storage =>
+          new SdkTracerProvider[F](
+            idGenerator,
+            resource,
+            spanLimits,
+            sampler,
+            ContextPropagators.of(propagators: _*),
+            spanProcessors,
+            SdkTraceScope.fromLocal[F],
+            storage
+          )
+        }
   }
 }

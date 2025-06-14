@@ -42,6 +42,25 @@ object GenAiExperimentalAttributes {
   val GenAiCompletion: AttributeKey[String] =
     AttributeKey("gen_ai.completion")
 
+  /** The unique identifier for a conversation (session, thread), used to store and correlate messages within this
+    * conversation.
+    */
+  val GenAiConversationId: AttributeKey[String] =
+    AttributeKey("gen_ai.conversation.id")
+
+  /** The data source identifier.
+    *
+    * @note
+    *   <p> Data sources are used by AI agents and RAG applications to store grounding data. A data source may be an
+    *   external database, object store, document collection, website, or any other storage system used by the GenAI
+    *   agent or application. The `gen_ai.data_source.id` SHOULD match the identifier used by the GenAI system rather
+    *   than a name specific to the external storage, such as a database or object store. Semantic conventions
+    *   referencing `gen_ai.data_source.id` MAY also leverage additional attributes, such as `db.*`, to further identify
+    *   and describe the data source.
+    */
+  val GenAiDataSourceId: AttributeKey[String] =
+    AttributeKey("gen_ai.data_source.id")
+
   /** Deprecated, use `gen_ai.output.type`.
     */
   @deprecated("Replaced by `gen_ai.output.type`.", "")
@@ -50,7 +69,7 @@ object GenAiExperimentalAttributes {
 
   /** Deprecated, use `gen_ai.request.seed`.
     */
-  @deprecated("Replaced by `gen_ai.request.seed` attribute.", "")
+  @deprecated("Replaced by `gen_ai.request.seed`.", "")
   val GenAiOpenaiRequestSeed: AttributeKey[Long] =
     AttributeKey("gen_ai.openai.request.seed")
 
@@ -195,6 +214,11 @@ object GenAiExperimentalAttributes {
   val GenAiToolCallId: AttributeKey[String] =
     AttributeKey("gen_ai.tool.call.id")
 
+  /** The tool description.
+    */
+  val GenAiToolDescription: AttributeKey[String] =
+    AttributeKey("gen_ai.tool.description")
+
   /** Name of the tool utilized by the agent.
     */
   val GenAiToolName: AttributeKey[String] =
@@ -215,7 +239,7 @@ object GenAiExperimentalAttributes {
 
   /** Deprecated, use `gen_ai.usage.output_tokens` instead.
     */
-  @deprecated("Replaced by `gen_ai.usage.output_tokens` attribute.", "")
+  @deprecated("Replaced by `gen_ai.usage.output_tokens`.", "")
   val GenAiUsageCompletionTokens: AttributeKey[Long] =
     AttributeKey("gen_ai.usage.completion_tokens")
 
@@ -231,7 +255,7 @@ object GenAiExperimentalAttributes {
 
   /** Deprecated, use `gen_ai.usage.input_tokens` instead.
     */
-  @deprecated("Replaced by `gen_ai.usage.input_tokens` attribute.", "")
+  @deprecated("Replaced by `gen_ai.usage.input_tokens`.", "")
   val GenAiUsagePromptTokens: AttributeKey[Long] =
     AttributeKey("gen_ai.usage.prompt_tokens")
 
@@ -279,6 +303,11 @@ object GenAiExperimentalAttributes {
       */
     case object Chat extends GenAiOperationNameValue("chat")
 
+    /** Multimodal content generation operation such as <a href="https://ai.google.dev/api/generate-content">Gemini
+      * Generate Content</a>
+      */
+    case object GenerateContent extends GenAiOperationNameValue("generate_content")
+
     /** Text completions operation such as <a href="https://platform.openai.com/docs/api-reference/completions">OpenAI
       * Completions API (Legacy)</a>
       */
@@ -292,6 +321,10 @@ object GenAiExperimentalAttributes {
     /** Create GenAI agent
       */
     case object CreateAgent extends GenAiOperationNameValue("create_agent")
+
+    /** Invoke GenAI agent
+      */
+    case object InvokeAgent extends GenAiOperationNameValue("invoke_agent")
 
     /** Execute a tool
       */
@@ -328,6 +361,18 @@ object GenAiExperimentalAttributes {
     /** OpenAI
       */
     case object Openai extends GenAiSystemValue("openai")
+
+    /** Any Google generative AI endpoint
+      */
+    case object GcpGenAi extends GenAiSystemValue("gcp.gen_ai")
+
+    /** Vertex AI
+      */
+    case object GcpVertexAi extends GenAiSystemValue("gcp.vertex_ai")
+
+    /** Gemini
+      */
+    case object GcpGemini extends GenAiSystemValue("gcp.gemini")
 
     /** Vertex AI
       */

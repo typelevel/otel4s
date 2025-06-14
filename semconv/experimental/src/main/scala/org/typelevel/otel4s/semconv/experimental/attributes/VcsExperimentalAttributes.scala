@@ -129,13 +129,13 @@ object VcsExperimentalAttributes {
 
   /** Deprecated, use `vcs.change.id` instead.
     */
-  @deprecated("Deprecated, use `vcs.change.id` instead.", "")
+  @deprecated("Replaced by `vcs.change.id`.", "")
   val VcsRepositoryChangeId: AttributeKey[String] =
     AttributeKey("vcs.repository.change.id")
 
   /** Deprecated, use `vcs.change.title` instead.
     */
-  @deprecated("Deprecated, use `vcs.change.title` instead.", "")
+  @deprecated("Replaced by `vcs.change.title`.", "")
   val VcsRepositoryChangeTitle: AttributeKey[String] =
     AttributeKey("vcs.repository.change.title")
 
@@ -151,19 +151,19 @@ object VcsExperimentalAttributes {
 
   /** Deprecated, use `vcs.ref.head.name` instead.
     */
-  @deprecated("Deprecated, use `vcs.ref.head.name` instead.", "")
+  @deprecated("Replaced by `vcs.ref.head.name`.", "")
   val VcsRepositoryRefName: AttributeKey[String] =
     AttributeKey("vcs.repository.ref.name")
 
   /** Deprecated, use `vcs.ref.head.revision` instead.
     */
-  @deprecated("Deprecated, use `vcs.ref.head.revision` instead.", "")
+  @deprecated("Replaced by `vcs.ref.head.revision`.", "")
   val VcsRepositoryRefRevision: AttributeKey[String] =
     AttributeKey("vcs.repository.ref.revision")
 
   /** Deprecated, use `vcs.ref.head.type` instead.
     */
-  @deprecated("Deprecated, use `vcs.ref.head.type` instead.", "")
+  @deprecated("Replaced by `vcs.ref.head.type`.", "")
   val VcsRepositoryRefType: AttributeKey[String] =
     AttributeKey("vcs.repository.ref.type")
 
@@ -236,9 +236,13 @@ object VcsExperimentalAttributes {
       */
     case object Gitlab extends VcsProviderNameValue("gitlab")
 
-    /** <a href="https://gitea.io">Gitea</a>
+    /** Deprecated, use `gitea` instead.
       */
     case object Gittea extends VcsProviderNameValue("gittea")
+
+    /** <a href="https://gitea.io">Gitea</a>
+      */
+    case object Gitea extends VcsProviderNameValue("gitea")
 
     /** <a href="https://bitbucket.org">Bitbucket</a>
       */
@@ -289,7 +293,7 @@ object VcsExperimentalAttributes {
 
   /** Values for [[VcsRepositoryRefType]].
     */
-  @deprecated("Deprecated, use `vcs.ref.head.type` instead.", "")
+  @deprecated("Replaced by `vcs.ref.head.type`.", "")
   abstract class VcsRepositoryRefTypeValue(val value: String)
   @annotation.nowarn("cat=deprecation")
   object VcsRepositoryRefTypeValue {

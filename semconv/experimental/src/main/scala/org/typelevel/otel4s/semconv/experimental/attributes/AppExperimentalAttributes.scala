@@ -43,4 +43,30 @@ object AppExperimentalAttributes {
   val AppInstallationId: AttributeKey[String] =
     AttributeKey("app.installation.id")
 
+  /** The x (horizontal) coordinate of a screen coordinate, in screen pixels.
+    */
+  val AppScreenCoordinateX: AttributeKey[Long] =
+    AttributeKey("app.screen.coordinate.x")
+
+  /** The y (vertical) component of a screen coordinate, in screen pixels.
+    */
+  val AppScreenCoordinateY: AttributeKey[Long] =
+    AttributeKey("app.screen.coordinate.y")
+
+  /** An identifier that uniquely differentiates this widget from other widgets in the same application.
+    *
+    * @note
+    *   <p> A widget is an application component, typically an on-screen visual GUI element.
+    */
+  val AppWidgetId: AttributeKey[String] =
+    AttributeKey("app.widget.id")
+
+  /** The name of an application widget.
+    *
+    * @note
+    *   <p> A widget is an application component, typically an on-screen visual GUI element.
+    */
+  val AppWidgetName: AttributeKey[String] =
+    AttributeKey("app.widget.name")
+
 }

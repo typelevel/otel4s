@@ -61,6 +61,27 @@ object K8sExperimentalAttributes {
   val K8sContainerStatusLastTerminatedReason: AttributeKey[String] =
     AttributeKey("k8s.container.status.last_terminated_reason")
 
+  /** The cronjob annotation placed on the CronJob, the `<key>` being the annotation name, the value being the
+    * annotation value.
+    *
+    * @note
+    *   <p> Examples: <ul> <li>An annotation `retries` with value `4` SHOULD be recorded as the
+    *   `k8s.cronjob.annotation.retries` attribute with value `"4"`. <li>An annotation `data` with empty string value
+    *   SHOULD be recorded as the `k8s.cronjob.annotation.data` attribute with value `""`. </ul>
+    */
+  val K8sCronjobAnnotation: AttributeKey[String] =
+    AttributeKey("k8s.cronjob.annotation")
+
+  /** The label placed on the CronJob, the `<key>` being the label name, the value being the label value.
+    *
+    * @note
+    *   <p> Examples: <ul> <li>A label `type` with value `weekly` SHOULD be recorded as the `k8s.cronjob.label.type`
+    *   attribute with value `"weekly"`. <li>A label `automated` with empty string value SHOULD be recorded as the
+    *   `k8s.cronjob.label.automated` attribute with value `""`. </ul>
+    */
+  val K8sCronjobLabel: AttributeKey[String] =
+    AttributeKey("k8s.cronjob.label")
+
   /** The name of the CronJob.
     */
   val K8sCronjobName: AttributeKey[String] =
@@ -71,6 +92,22 @@ object K8sExperimentalAttributes {
   val K8sCronjobUid: AttributeKey[String] =
     AttributeKey("k8s.cronjob.uid")
 
+  /** The annotation key-value pairs placed on the DaemonSet.
+    *
+    * @note
+    *   <p> The `<key>` being the annotation name, the value being the annotation value, even if the value is empty.
+    */
+  val K8sDaemonsetAnnotation: AttributeKey[String] =
+    AttributeKey("k8s.daemonset.annotation")
+
+  /** The label key-value pairs placed on the DaemonSet.
+    *
+    * @note
+    *   <p> The `<key>` being the label name, the value being the label value, even if the value is empty.
+    */
+  val K8sDaemonsetLabel: AttributeKey[String] =
+    AttributeKey("k8s.daemonset.label")
+
   /** The name of the DaemonSet.
     */
   val K8sDaemonsetName: AttributeKey[String] =
@@ -80,6 +117,22 @@ object K8sExperimentalAttributes {
     */
   val K8sDaemonsetUid: AttributeKey[String] =
     AttributeKey("k8s.daemonset.uid")
+
+  /** The annotation key-value pairs placed on the Deployment.
+    *
+    * @note
+    *   <p> The `<key>` being the annotation name, the value being the annotation value, even if the value is empty.
+    */
+  val K8sDeploymentAnnotation: AttributeKey[String] =
+    AttributeKey("k8s.deployment.annotation")
+
+  /** The label key-value pairs placed on the Deployment.
+    *
+    * @note
+    *   <p> The `<key>` being the label name, the value being the label value, even if the value is empty.
+    */
+  val K8sDeploymentLabel: AttributeKey[String] =
+    AttributeKey("k8s.deployment.label")
 
   /** The name of the Deployment.
     */
@@ -101,6 +154,22 @@ object K8sExperimentalAttributes {
   val K8sHpaUid: AttributeKey[String] =
     AttributeKey("k8s.hpa.uid")
 
+  /** The annotation key-value pairs placed on the Job.
+    *
+    * @note
+    *   <p> The `<key>` being the annotation name, the value being the annotation value, even if the value is empty.
+    */
+  val K8sJobAnnotation: AttributeKey[String] =
+    AttributeKey("k8s.job.annotation")
+
+  /** The label key-value pairs placed on the Job.
+    *
+    * @note
+    *   <p> The `<key>` being the label name, the value being the label value, even if the value is empty.
+    */
+  val K8sJobLabel: AttributeKey[String] =
+    AttributeKey("k8s.job.label")
+
   /** The name of the Job.
     */
   val K8sJobName: AttributeKey[String] =
@@ -110,6 +179,22 @@ object K8sExperimentalAttributes {
     */
   val K8sJobUid: AttributeKey[String] =
     AttributeKey("k8s.job.uid")
+
+  /** The annotation key-value pairs placed on the Namespace.
+    *
+    * @note
+    *   <p> The `<key>` being the annotation name, the value being the annotation value, even if the value is empty.
+    */
+  val K8sNamespaceAnnotation: AttributeKey[String] =
+    AttributeKey("k8s.namespace.annotation")
+
+  /** The label key-value pairs placed on the Namespace.
+    *
+    * @note
+    *   <p> The `<key>` being the label name, the value being the label value, even if the value is empty.
+    */
+  val K8sNamespaceLabel: AttributeKey[String] =
+    AttributeKey("k8s.namespace.label")
 
   /** The name of the namespace that the pod is running in.
     */
@@ -126,6 +211,28 @@ object K8sExperimentalAttributes {
   val K8sNamespacePhase: AttributeKey[String] =
     AttributeKey("k8s.namespace.phase")
 
+  /** The annotation placed on the Node, the `<key>` being the annotation name, the value being the annotation value,
+    * even if the value is empty.
+    *
+    * @note
+    *   <p> Examples: <ul> <li>An annotation `node.alpha.kubernetes.io/ttl` with value `0` SHOULD be recorded as the
+    *   `k8s.node.annotation.node.alpha.kubernetes.io/ttl` attribute with value `"0"`. <li>An annotation `data` with
+    *   empty string value SHOULD be recorded as the `k8s.node.annotation.data` attribute with value `""`. </ul>
+    */
+  val K8sNodeAnnotation: AttributeKey[String] =
+    AttributeKey("k8s.node.annotation")
+
+  /** The label placed on the Node, the `<key>` being the label name, the value being the label value, even if the value
+    * is empty.
+    *
+    * @note
+    *   <p> Examples: <ul> <li>A label `kubernetes.io/arch` with value `arm64` SHOULD be recorded as the
+    *   `k8s.node.label.kubernetes.io/arch` attribute with value `"arm64"`. <li>A label `data` with empty string value
+    *   SHOULD be recorded as the `k8s.node.label.data` attribute with value `""`. </ul>
+    */
+  val K8sNodeLabel: AttributeKey[String] =
+    AttributeKey("k8s.node.label")
+
   /** The name of the Node.
     */
   val K8sNodeName: AttributeKey[String] =
@@ -136,13 +243,25 @@ object K8sExperimentalAttributes {
   val K8sNodeUid: AttributeKey[String] =
     AttributeKey("k8s.node.uid")
 
-  /** The annotation key-value pairs placed on the Pod, the `<key>` being the annotation name, the value being the
-    * annotation value.
+  /** The annotation placed on the Pod, the `<key>` being the annotation name, the value being the annotation value.
+    *
+    * @note
+    *   <p> Examples: <ul> <li>An annotation `kubernetes.io/enforce-mountable-secrets` with value `true` SHOULD be
+    *   recorded as the `k8s.pod.annotation.kubernetes.io/enforce-mountable-secrets` attribute with value `"true"`.
+    *   <li>An annotation `mycompany.io/arch` with value `x64` SHOULD be recorded as the
+    *   `k8s.pod.annotation.mycompany.io/arch` attribute with value `"x64"`. <li>An annotation `data` with empty string
+    *   value SHOULD be recorded as the `k8s.pod.annotation.data` attribute with value `""`. </ul>
     */
   val K8sPodAnnotation: AttributeKey[String] =
     AttributeKey("k8s.pod.annotation")
 
-  /** The label key-value pairs placed on the Pod, the `<key>` being the label name, the value being the label value.
+  /** The label placed on the Pod, the `<key>` being the label name, the value being the label value.
+    *
+    * @note
+    *   <p> Examples: <ul> <li>A label `app` with value `my-app` SHOULD be recorded as the `k8s.pod.label.app` attribute
+    *   with value `"my-app"`. <li>A label `mycompany.io/arch` with value `x64` SHOULD be recorded as the
+    *   `k8s.pod.label.mycompany.io/arch` attribute with value `"x64"`. <li>A label `data` with empty string value
+    *   SHOULD be recorded as the `k8s.pod.label.data` attribute with value `""`. </ul>
     */
   val K8sPodLabel: AttributeKey[String] =
     AttributeKey("k8s.pod.label")
@@ -162,6 +281,22 @@ object K8sExperimentalAttributes {
     */
   val K8sPodUid: AttributeKey[String] =
     AttributeKey("k8s.pod.uid")
+
+  /** The annotation key-value pairs placed on the ReplicaSet.
+    *
+    * @note
+    *   <p> The `<key>` being the annotation name, the value being the annotation value, even if the value is empty.
+    */
+  val K8sReplicasetAnnotation: AttributeKey[String] =
+    AttributeKey("k8s.replicaset.annotation")
+
+  /** The label key-value pairs placed on the ReplicaSet.
+    *
+    * @note
+    *   <p> The `<key>` being the label name, the value being the label value, even if the value is empty.
+    */
+  val K8sReplicasetLabel: AttributeKey[String] =
+    AttributeKey("k8s.replicaset.label")
 
   /** The name of the ReplicaSet.
     */
@@ -192,6 +327,22 @@ object K8sExperimentalAttributes {
     */
   val K8sResourcequotaUid: AttributeKey[String] =
     AttributeKey("k8s.resourcequota.uid")
+
+  /** The annotation key-value pairs placed on the StatefulSet.
+    *
+    * @note
+    *   <p> The `<key>` being the annotation name, the value being the annotation value, even if the value is empty.
+    */
+  val K8sStatefulsetAnnotation: AttributeKey[String] =
+    AttributeKey("k8s.statefulset.annotation")
+
+  /** The label key-value pairs placed on the StatefulSet.
+    *
+    * @note
+    *   <p> The `<key>` being the label name, the value being the label value, even if the value is empty.
+    */
+  val K8sStatefulsetLabel: AttributeKey[String] =
+    AttributeKey("k8s.statefulset.label")
 
   /** The name of the StatefulSet.
     */

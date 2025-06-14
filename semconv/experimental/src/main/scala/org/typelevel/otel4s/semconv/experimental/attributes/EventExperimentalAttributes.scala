@@ -23,7 +23,7 @@ object EventExperimentalAttributes {
 
   /** Identifies the class / type of event.
     */
-  @deprecated("Replaced by EventName top-level field on the LogRecord", "")
+  @deprecated("Replaced by EventName top-level field on the LogRecord.", "")
   val EventName: AttributeKey[String] =
     AttributeKey("event.name")
 

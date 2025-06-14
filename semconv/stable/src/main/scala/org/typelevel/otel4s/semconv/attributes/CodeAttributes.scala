@@ -16,25 +16,15 @@
 
 package org.typelevel.otel4s
 package semconv
-package experimental.attributes
+package attributes
 
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/attributes/SemanticAttributes.scala.j2
-object CodeExperimentalAttributes {
-
-  /** Deprecated, use `code.column.number`
-    */
-  @deprecated("Replaced by `code.column.number`.", "")
-  val CodeColumn: AttributeKey[Long] =
-    AttributeKey("code.column")
+object CodeAttributes {
 
   /** The column number in `code.file.path` best representing the operation. It SHOULD point within the code unit named
     * in `code.function.name`. This attribute MUST NOT be used on the Profile signal since the data is already captured
     * in 'message Line'. This constraint is imposed to prevent redundancy and maintain data integrity.
     */
-  @deprecated(
-    "use `org.typelevel.otel4s.semconv.attributes.CodeAttributes.CodeColumnNumber` instead.",
-    ""
-  )
   val CodeColumnNumber: AttributeKey[Long] =
     AttributeKey("code.column.number")
 
@@ -42,24 +32,8 @@ object CodeExperimentalAttributes {
     * path). This attribute MUST NOT be used on the Profile signal since the data is already captured in 'message
     * Function'. This constraint is imposed to prevent redundancy and maintain data integrity.
     */
-  @deprecated(
-    "use `org.typelevel.otel4s.semconv.attributes.CodeAttributes.CodeFilePath` instead.",
-    ""
-  )
   val CodeFilePath: AttributeKey[String] =
     AttributeKey("code.file.path")
-
-  /** Deprecated, use `code.file.path` instead
-    */
-  @deprecated("Replaced by `code.file.path`.", "")
-  val CodeFilepath: AttributeKey[String] =
-    AttributeKey("code.filepath")
-
-  /** Deprecated, use `code.function.name` instead
-    */
-  @deprecated("Value should be included in `code.function.name` which is expected to be a fully-qualified name.", "")
-  val CodeFunction: AttributeKey[String] =
-    AttributeKey("code.function")
 
   /** The method or function fully-qualified name without arguments. The value should fit the natural representation of
     * the language runtime, which is also likely the same used within `code.stacktrace` attribute value. This attribute
@@ -76,10 +50,6 @@ object CodeExperimentalAttributes {
     *   `OpenTelemetry.Ctx.new` <li>Erlang: `opentelemetry_ctx:new` <li>Rust: `playground::my_module::my_cool_func`
     *   <li>C function: `fopen` </ul>
     */
-  @deprecated(
-    "use `org.typelevel.otel4s.semconv.attributes.CodeAttributes.CodeFunctionName` instead.",
-    ""
-  )
   val CodeFunctionName: AttributeKey[String] =
     AttributeKey("code.function.name")
 
@@ -87,34 +57,14 @@ object CodeExperimentalAttributes {
     * `code.function.name`. This attribute MUST NOT be used on the Profile signal since the data is already captured in
     * 'message Line'. This constraint is imposed to prevent redundancy and maintain data integrity.
     */
-  @deprecated(
-    "use `org.typelevel.otel4s.semconv.attributes.CodeAttributes.CodeLineNumber` instead.",
-    ""
-  )
   val CodeLineNumber: AttributeKey[Long] =
     AttributeKey("code.line.number")
-
-  /** Deprecated, use `code.line.number` instead
-    */
-  @deprecated("Replaced by `code.line.number`.", "")
-  val CodeLineno: AttributeKey[Long] =
-    AttributeKey("code.lineno")
-
-  /** Deprecated, namespace is now included into `code.function.name`
-    */
-  @deprecated("Value should be included in `code.function.name` which is expected to be a fully-qualified name.", "")
-  val CodeNamespace: AttributeKey[String] =
-    AttributeKey("code.namespace")
 
   /** A stacktrace as a string in the natural representation for the language runtime. The representation is identical
     * to <a href="/docs/exceptions/exceptions-spans.md#stacktrace-representation">`exception.stacktrace`</a>. This
     * attribute MUST NOT be used on the Profile signal since the data is already captured in 'message Location'. This
     * constraint is imposed to prevent redundancy and maintain data integrity.
     */
-  @deprecated(
-    "use `org.typelevel.otel4s.semconv.attributes.CodeAttributes.CodeStacktrace` instead.",
-    ""
-  )
   val CodeStacktrace: AttributeKey[String] =
     AttributeKey("code.stacktrace")
 

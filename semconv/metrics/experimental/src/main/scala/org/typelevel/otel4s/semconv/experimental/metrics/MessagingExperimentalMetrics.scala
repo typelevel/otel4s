@@ -1335,13 +1335,13 @@ object MessagingExperimentalMetrics {
 
   }
 
-  /** Deprecated. Use `messaging.client.produced.messages` instead.
+  /** Deprecated. Use `messaging.client.sent.messages` instead.
     */
-  @deprecated("Replaced by `messaging.client.produced.messages`.", "")
+  @deprecated("Replaced by `messaging.client.sent.messages`.", "")
   object PublishMessages extends MetricSpec {
 
     val name: String = "messaging.publish.messages"
-    val description: String = "Deprecated. Use `messaging.client.produced.messages` instead."
+    val description: String = "Deprecated. Use `messaging.client.sent.messages` instead."
     val unit: String = "{message}"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs

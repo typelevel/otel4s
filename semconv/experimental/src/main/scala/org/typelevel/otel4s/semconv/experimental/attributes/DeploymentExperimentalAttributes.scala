@@ -23,7 +23,7 @@ object DeploymentExperimentalAttributes {
 
   /** 'Deprecated, use `deployment.environment.name` instead.'
     */
-  @deprecated("Deprecated, use `deployment.environment.name` instead.", "")
+  @deprecated("Replaced by `deployment.environment.name`.", "")
   val DeploymentEnvironment: AttributeKey[String] =
     AttributeKey("deployment.environment")
 

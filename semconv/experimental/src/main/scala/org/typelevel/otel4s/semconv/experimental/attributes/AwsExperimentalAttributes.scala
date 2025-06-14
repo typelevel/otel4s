@@ -21,6 +21,20 @@ package experimental.attributes
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/attributes/SemanticAttributes.scala.j2
 object AwsExperimentalAttributes {
 
+  /** The unique identifier of the AWS Bedrock Guardrail. A <a
+    * href="https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails.html">guardrail</a> helps safeguard and
+    * prevent unwanted behavior from model responses or user messages.
+    */
+  val AwsBedrockGuardrailId: AttributeKey[String] =
+    AttributeKey("aws.bedrock.guardrail.id")
+
+  /** The unique identifier of the AWS Bedrock Knowledge base. A <a
+    * href="https://docs.aws.amazon.com/bedrock/latest/userguide/knowledge-base.html">knowledge base</a> is a bank of
+    * information that can be queried by models to generate more relevant responses and augment prompts.
+    */
+  val AwsBedrockKnowledgeBaseId: AttributeKey[String] =
+    AttributeKey("aws.bedrock.knowledge_base.id")
+
   /** The JSON-serialized value of each item in the `AttributeDefinitions` request field.
     */
   val AwsDynamodbAttributeDefinitions: AttributeKey[Seq[String]] =
@@ -182,6 +196,14 @@ object AwsExperimentalAttributes {
   val AwsExtendedRequestId: AttributeKey[String] =
     AttributeKey("aws.extended_request_id")
 
+  /** The name of the AWS Kinesis <a href="https://docs.aws.amazon.com/streams/latest/dev/introduction.html">stream</a>
+    * the request refers to. Corresponds to the `--stream-name` parameter of the Kinesis <a
+    * href="https://docs.aws.amazon.com/cli/latest/reference/kinesis/describe-stream.html">describe-stream</a>
+    * operation.
+    */
+  val AwsKinesisStreamName: AttributeKey[String] =
+    AttributeKey("aws.kinesis.stream_name")
+
   /** The full invoked ARN as provided on the `Context` passed to the function (`Lambda-Runtime-Invoked-Function-Arn`
     * header on the `/runtime/invocation/next` applicable).
     *
@@ -190,6 +212,16 @@ object AwsExperimentalAttributes {
     */
   val AwsLambdaInvokedArn: AttributeKey[String] =
     AttributeKey("aws.lambda.invoked_arn")
+
+  /** The UUID of the <a
+    * href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-lambda-eventsourcemapping.html">AWS
+    * Lambda EvenSource Mapping</a>. An event source is mapped to a lambda function. It's contents are read by Lambda
+    * and used to trigger a function. This isn't available in the lambda execution context or the lambda runtime
+    * environtment. This is going to be populated by the AWS SDK for each language when that UUID is present. Some of
+    * these operations are Create/Delete/Get/List/Update EventSourceMapping.
+    */
+  val AwsLambdaResourceMappingId: AttributeKey[String] =
+    AttributeKey("aws.lambda.resource_mapping.id")
 
   /** The Amazon Resource Name(s) (ARN) of the AWS log group(s).
     *
@@ -321,6 +353,34 @@ object AwsExperimentalAttributes {
     */
   val AwsS3UploadId: AttributeKey[String] =
     AttributeKey("aws.s3.upload_id")
+
+  /** The ARN of the Secret stored in the Secrets Mangger
+    */
+  val AwsSecretsmanagerSecretArn: AttributeKey[String] =
+    AttributeKey("aws.secretsmanager.secret.arn")
+
+  /** The ARN of the AWS SNS Topic. An Amazon SNS <a
+    * href="https://docs.aws.amazon.com/sns/latest/dg/sns-create-topic.html">topic</a> is a logical access point that
+    * acts as a communication channel.
+    */
+  val AwsSnsTopicArn: AttributeKey[String] =
+    AttributeKey("aws.sns.topic.arn")
+
+  /** The URL of the AWS SQS Queue. It's a unique identifier for a queue in Amazon Simple Queue Service (SQS) and is
+    * used to access the queue and perform actions on it.
+    */
+  val AwsSqsQueueUrl: AttributeKey[String] =
+    AttributeKey("aws.sqs.queue.url")
+
+  /** The ARN of the AWS Step Functions Activity.
+    */
+  val AwsStepFunctionsActivityArn: AttributeKey[String] =
+    AttributeKey("aws.step_functions.activity.arn")
+
+  /** The ARN of the AWS Step Functions State Machine.
+    */
+  val AwsStepFunctionsStateMachineArn: AttributeKey[String] =
+    AttributeKey("aws.step_functions.state_machine.arn")
 
   /** Values for [[AwsEcsLaunchtype]].
     */

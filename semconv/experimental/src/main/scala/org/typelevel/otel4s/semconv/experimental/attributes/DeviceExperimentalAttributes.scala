@@ -35,7 +35,7 @@ object DeviceExperimentalAttributes {
     *   likely result in rejection from both Google Play and App Store. However, it may be appropriate for specific
     *   enterprise scenarios, such as kiosk devices or enterprise-managed devices, with appropriate compliance
     *   clearance. Any instrumentation providing this identifier MUST implement it as an opt-in feature. <p> See <a
-    *   href="/docs/attributes-registry/app.md#app-installation-id">`app.installation.id`</a> for a more
+    *   href="/docs/registry/attributes/app.md#app-installation-id">`app.installation.id`</a> for a more
     *   privacy-preserving alternative.</blockquote>
     */
   val DeviceId: AttributeKey[String] =

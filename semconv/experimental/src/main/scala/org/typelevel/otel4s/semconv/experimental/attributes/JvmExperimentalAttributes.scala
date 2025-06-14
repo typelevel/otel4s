@@ -43,6 +43,15 @@ object JvmExperimentalAttributes {
   val JvmGcAction: AttributeKey[String] =
     AttributeKey("jvm.gc.action")
 
+  /** Name of the garbage collector cause.
+    *
+    * @note
+    *   <p> Garbage collector cause is generally obtained via <a
+    *   href="https://docs.oracle.com/en/java/javase/11/docs/api/jdk.management/com/sun/management/GarbageCollectionNotificationInfo.html#getGcCause()">GarbageCollectionNotificationInfo#getGcCause()</a>.
+    */
+  val JvmGcCause: AttributeKey[String] =
+    AttributeKey("jvm.gc.cause")
+
   /** Name of the garbage collector.
     *
     * @note

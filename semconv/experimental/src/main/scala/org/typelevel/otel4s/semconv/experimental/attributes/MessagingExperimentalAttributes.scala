@@ -93,13 +93,13 @@ object MessagingExperimentalAttributes {
 
   /** Deprecated, no replacement at this time.
     */
-  @deprecated("No replacement at this time.", "")
+  @deprecated("Removed. No replacement at this time.", "")
   val MessagingDestinationPublishAnonymous: AttributeKey[Boolean] =
     AttributeKey("messaging.destination_publish.anonymous")
 
   /** Deprecated, no replacement at this time.
     */
-  @deprecated("No replacement at this time.", "")
+  @deprecated("Removed. No replacement at this time.", "")
   val MessagingDestinationPublishName: AttributeKey[String] =
     AttributeKey("messaging.destination_publish.name")
 

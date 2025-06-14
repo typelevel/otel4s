@@ -33,7 +33,8 @@ object RpcExperimentalAttributes {
     * @note
     *   <p> Instrumentations SHOULD require an explicit configuration of which metadata values are to be captured.
     *   Including all request metadata values can be a security risk - explicit configuration helps avoid leaking
-    *   sensitive information.
+    *   sensitive information. <p> For example, a property `my-custom-key` with value `["1.2.3.4", "1.2.3.5"]` SHOULD be
+    *   recorded as the `rpc.connect_rpc.request.metadata.my-custom-key` attribute with value `["1.2.3.4", "1.2.3.5"]`
     */
   val RpcConnectRpcRequestMetadata: AttributeKey[Seq[String]] =
     AttributeKey("rpc.connect_rpc.request.metadata")
@@ -44,7 +45,8 @@ object RpcExperimentalAttributes {
     * @note
     *   <p> Instrumentations SHOULD require an explicit configuration of which metadata values are to be captured.
     *   Including all response metadata values can be a security risk - explicit configuration helps avoid leaking
-    *   sensitive information.
+    *   sensitive information. <p> For example, a property `my-custom-key` with value `"attribute_value"` SHOULD be
+    *   recorded as the `rpc.connect_rpc.response.metadata.my-custom-key` attribute with value `["attribute_value"]`
     */
   val RpcConnectRpcResponseMetadata: AttributeKey[Seq[String]] =
     AttributeKey("rpc.connect_rpc.response.metadata")
@@ -55,7 +57,8 @@ object RpcExperimentalAttributes {
     * @note
     *   <p> Instrumentations SHOULD require an explicit configuration of which metadata values are to be captured.
     *   Including all request metadata values can be a security risk - explicit configuration helps avoid leaking
-    *   sensitive information.
+    *   sensitive information. <p> For example, a property `my-custom-key` with value `["1.2.3.4", "1.2.3.5"]` SHOULD be
+    *   recorded as `rpc.grpc.request.metadata.my-custom-key` attribute with value `["1.2.3.4", "1.2.3.5"]`
     */
   val RpcGrpcRequestMetadata: AttributeKey[Seq[String]] =
     AttributeKey("rpc.grpc.request.metadata")
@@ -66,7 +69,8 @@ object RpcExperimentalAttributes {
     * @note
     *   <p> Instrumentations SHOULD require an explicit configuration of which metadata values are to be captured.
     *   Including all response metadata values can be a security risk - explicit configuration helps avoid leaking
-    *   sensitive information.
+    *   sensitive information. <p> For example, a property `my-custom-key` with value `["attribute_value"]` SHOULD be
+    *   recorded as the `rpc.grpc.response.metadata.my-custom-key` attribute with value `["attribute_value"]`
     */
   val RpcGrpcResponseMetadata: AttributeKey[Seq[String]] =
     AttributeKey("rpc.grpc.response.metadata")

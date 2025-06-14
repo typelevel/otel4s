@@ -183,26 +183,26 @@ object AzureExperimentalMetrics {
         */
       val dbCollectionName: AttributeSpec[String] =
         AttributeSpec(
-          DbExperimentalAttributes.DbCollectionName,
+          DbAttributes.DbCollectionName,
           List(
             "public.users",
             "customers",
           ),
           Requirement.conditionallyRequired("If available."),
-          Stability.releaseCandidate
+          Stability.stable
         )
 
       /** The name of the database, fully qualified within the server address and port.
         */
       val dbNamespace: AttributeSpec[String] =
         AttributeSpec(
-          DbExperimentalAttributes.DbNamespace,
+          DbAttributes.DbNamespace,
           List(
             "customers",
             "test.users",
           ),
           Requirement.conditionallyRequired("If available."),
-          Stability.releaseCandidate
+          Stability.stable
         )
 
       /** The name of the operation or command being executed.
@@ -210,22 +210,22 @@ object AzureExperimentalMetrics {
         * @note
         *   <p> It is RECOMMENDED to capture the value as provided by the application without attempting to do any case
         *   normalization. <p> The operation name SHOULD NOT be extracted from `db.query.text`, when the database system
-        *   supports cross-table queries in non-batch operations. <p> If spaces can occur in the operation name,
-        *   multiple consecutive spaces SHOULD be normalized to a single space. <p> For batch operations, if the
-        *   individual operations are known to have the same operation name then that operation name SHOULD be used
-        *   prepended by `BATCH `, otherwise `db.operation.name` SHOULD be `BATCH` or some other database system
-        *   specific term if more applicable.
+        *   supports query text with multiple operations in non-batch operations. <p> If spaces can occur in the
+        *   operation name, multiple consecutive spaces SHOULD be normalized to a single space. <p> For batch
+        *   operations, if the individual operations are known to have the same operation name then that operation name
+        *   SHOULD be used prepended by `BATCH `, otherwise `db.operation.name` SHOULD be `BATCH` or some other database
+        *   system specific term if more applicable.
         */
       val dbOperationName: AttributeSpec[String] =
         AttributeSpec(
-          DbExperimentalAttributes.DbOperationName,
+          DbAttributes.DbOperationName,
           List(
             "findAndModify",
             "HMSET",
             "SELECT",
           ),
-          Requirement.conditionallyRequired("If readily available."),
-          Stability.releaseCandidate
+          Requirement.required,
+          Stability.stable
         )
 
       /** Database response status code.
@@ -238,7 +238,7 @@ object AzureExperimentalMetrics {
         */
       val dbResponseStatusCode: AttributeSpec[String] =
         AttributeSpec(
-          DbExperimentalAttributes.DbResponseStatusCode,
+          DbAttributes.DbResponseStatusCode,
           List(
             "102",
             "ORA-17002",
@@ -246,7 +246,7 @@ object AzureExperimentalMetrics {
             "404",
           ),
           Requirement.conditionallyRequired("If the operation failed and status code is available."),
-          Stability.releaseCandidate
+          Stability.stable
         )
 
       /** Describes a class of error the operation ended with.

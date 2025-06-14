@@ -49,13 +49,13 @@ object OtelExperimentalAttributes {
 
   /** Deprecated. Use the `otel.scope.name` attribute
     */
-  @deprecated("Use the `otel.scope.name` attribute.", "")
+  @deprecated("Replaced by `otel.scope.name`.", "")
   val OtelLibraryName: AttributeKey[String] =
     AttributeKey("otel.library.name")
 
   /** Deprecated. Use the `otel.scope.version` attribute.
     */
-  @deprecated("Use the `otel.scope.version` attribute.", "")
+  @deprecated("Replaced by `otel.scope.version`.", "")
   val OtelLibraryVersion: AttributeKey[String] =
     AttributeKey("otel.library.version")
 
@@ -105,19 +105,19 @@ object OtelExperimentalAttributes {
   abstract class OtelComponentTypeValue(val value: String)
   object OtelComponentTypeValue {
 
-    /** The builtin SDK Batching Span Processor
+    /** The builtin SDK batching span processor
       */
     case object BatchingSpanProcessor extends OtelComponentTypeValue("batching_span_processor")
 
-    /** The builtin SDK Simple Span Processor
+    /** The builtin SDK simple span processor
       */
     case object SimpleSpanProcessor extends OtelComponentTypeValue("simple_span_processor")
 
-    /** The builtin SDK Batching LogRecord Processor
+    /** The builtin SDK batching log record processor
       */
     case object BatchingLogProcessor extends OtelComponentTypeValue("batching_log_processor")
 
-    /** The builtin SDK Simple LogRecord Processor
+    /** The builtin SDK simple log record processor
       */
     case object SimpleLogProcessor extends OtelComponentTypeValue("simple_log_processor")
 
@@ -133,17 +133,33 @@ object OtelExperimentalAttributes {
       */
     case object OtlpHttpJsonSpanExporter extends OtelComponentTypeValue("otlp_http_json_span_exporter")
 
-    /** OTLP LogRecord exporter over gRPC with protobuf serialization
+    /** OTLP log record exporter over gRPC with protobuf serialization
       */
     case object OtlpGrpcLogExporter extends OtelComponentTypeValue("otlp_grpc_log_exporter")
 
-    /** OTLP LogRecord exporter over HTTP with protobuf serialization
+    /** OTLP log record exporter over HTTP with protobuf serialization
       */
     case object OtlpHttpLogExporter extends OtelComponentTypeValue("otlp_http_log_exporter")
 
-    /** OTLP LogRecord exporter over HTTP with JSON serialization
+    /** OTLP log record exporter over HTTP with JSON serialization
       */
     case object OtlpHttpJsonLogExporter extends OtelComponentTypeValue("otlp_http_json_log_exporter")
+
+    /** The builtin SDK periodically exporting metric reader
+      */
+    case object PeriodicMetricReader extends OtelComponentTypeValue("periodic_metric_reader")
+
+    /** OTLP metric exporter over gRPC with protobuf serialization
+      */
+    case object OtlpGrpcMetricExporter extends OtelComponentTypeValue("otlp_grpc_metric_exporter")
+
+    /** OTLP metric exporter over HTTP with protobuf serialization
+      */
+    case object OtlpHttpMetricExporter extends OtelComponentTypeValue("otlp_http_metric_exporter")
+
+    /** OTLP metric exporter over HTTP with JSON serialization
+      */
+    case object OtlpHttpJsonMetricExporter extends OtelComponentTypeValue("otlp_http_json_metric_exporter")
   }
 
   /** Values for [[OtelSpanSamplingResult]].

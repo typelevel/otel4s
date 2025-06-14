@@ -28,7 +28,7 @@ object SystemExperimentalAttributes {
 
   /** Deprecated, use `cpu.mode` instead.
     */
-  @deprecated("Replaced by `cpu.mode`", "")
+  @deprecated("Replaced by `cpu.mode`.", "")
   val SystemCpuState: AttributeKey[String] =
     AttributeKey("system.cpu.state")
 
@@ -64,7 +64,7 @@ object SystemExperimentalAttributes {
 
   /** Deprecated, use `network.connection.state` instead.
     */
-  @deprecated("Removed, report network connection state with `network.connection.state` attribute", "")
+  @deprecated("Replaced by `network.connection.state`.", "")
   val SystemNetworkState: AttributeKey[String] =
     AttributeKey("system.network.state")
 
@@ -97,7 +97,7 @@ object SystemExperimentalAttributes {
 
   /** Values for [[SystemCpuState]].
     */
-  @deprecated("Replaced by `cpu.mode`", "")
+  @deprecated("Replaced by `cpu.mode`.", "")
   abstract class SystemCpuStateValue(val value: String)
   @annotation.nowarn("cat=deprecation")
   object SystemCpuStateValue {
@@ -207,7 +207,7 @@ object SystemExperimentalAttributes {
 
   /** Values for [[SystemNetworkState]].
     */
-  @deprecated("Removed, report network connection state with `network.connection.state` attribute", "")
+  @deprecated("Replaced by `network.connection.state`.", "")
   abstract class SystemNetworkStateValue(val value: String)
   @annotation.nowarn("cat=deprecation")
   object SystemNetworkStateValue {

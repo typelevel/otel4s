@@ -17,8 +17,11 @@
 package org.typelevel.otel4s.sdk.scalacheck
 
 import org.scalacheck.Gen
+import org.typelevel.otel4s.Attribute
+import org.typelevel.otel4s.Attributes
 import org.typelevel.otel4s.sdk.TelemetryResource
 import org.typelevel.otel4s.sdk.common.InstrumentationScope
+import org.typelevel.otel4s.sdk.data.LimitedData
 
 import scala.concurrent.duration._
 
@@ -40,6 +43,15 @@ trait Gens extends org.typelevel.otel4s.scalacheck.Gens {
       schemaUrl <- Gen.option(nonEmptyString)
       attributes <- Gens.attributes
     } yield InstrumentationScope(name, version, schemaUrl, attributes)
+
+  val limitedAttributes: Gen[LimitedData[Attribute[_], Attributes]] =
+    for {
+      attributes <- Gens.nonEmptyVector(Gens.attribute)
+      extraAttributes <- Gens.nonEmptyVector(Gens.attribute)
+      valueLengthLimit <- Gen.posNum[Int]
+    } yield LimitedData
+      .attributes(attributes.length, valueLengthLimit)
+      .appendAll((attributes ++: extraAttributes).toVector.to(Attributes))
 
 }
 

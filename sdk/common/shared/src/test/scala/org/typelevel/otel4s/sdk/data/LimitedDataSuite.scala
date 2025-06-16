@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.typelevel.otel4s.sdk.trace.data
+package org.typelevel.otel4s.sdk.data
 
 import munit.ScalaCheckSuite
 import org.scalacheck.Gen
@@ -22,7 +22,7 @@ import org.scalacheck.Prop
 import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.AttributeKey
 import org.typelevel.otel4s.Attributes
-import org.typelevel.otel4s.trace.scalacheck.Gens
+import org.typelevel.otel4s.sdk.scalacheck.Gens
 
 class LimitedDataSuite extends ScalaCheckSuite {
 

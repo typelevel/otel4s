@@ -43,19 +43,21 @@ import org.typelevel.otel4s.trace.TraceScope
 import org.typelevel.otel4s.trace.TraceState
 import scodec.bits.ByteVector
 
+import scala.collection.immutable.Queue
+
 private final case class SdkSpanBuilder[F[_]: Temporal: Console] private (
     name: String,
     scopeInfo: InstrumentationScope,
     tracerSharedState: TracerSharedState[F],
     scope: TraceScope[F, Context],
-    stateModifier: SpanBuilder.State => SpanBuilder.State
+    stateModifiers: Queue[SpanBuilder.State => SpanBuilder.State]
 ) extends SpanBuilder[F] {
   import SpanBuilder.Parent
 
   def meta: InstrumentMeta[F] = tracerSharedState.meta
 
   def modifyState(f: SpanBuilder.State => SpanBuilder.State): SpanBuilder[F] =
-    copy(stateModifier = this.stateModifier.andThen(f))
+    copy(stateModifiers = this.stateModifiers :+ f)
 
   def build: SpanOps[F] = new SpanOps[F] {
     def startUnmanaged: F[Span[F]] =
@@ -215,7 +217,7 @@ private final case class SdkSpanBuilder[F[_]: Temporal: Console] private (
     }
 
   private[sdk] def mkState: SpanBuilder.State =
-    stateModifier(SpanBuilder.State.init)
+    stateModifiers.foldLeft(SpanBuilder.State.init)((s, f) => f(s))
 
 }
 
@@ -232,7 +234,7 @@ private object SdkSpanBuilder {
       scopeInfo,
       tracerSharedState,
       scope,
-      identity
+      Queue.empty
     )
 
 }

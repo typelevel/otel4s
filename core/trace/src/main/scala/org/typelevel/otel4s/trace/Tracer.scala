@@ -244,7 +244,7 @@ object Tracer {
       tracer: Tracer[F]
   )(implicit kt: KindTransformer[F, G])
       extends Tracer[G] {
-    def meta: InstrumentMeta.Dynamic[G] = tracer.meta.mapK[G]
+    val meta: InstrumentMeta.Dynamic[G] = tracer.meta.mapK[G]
     def currentSpanContext: G[Option[SpanContext]] =
       kt.liftK(tracer.currentSpanContext)
     def currentSpanOrNoop: G[Span[G]] =

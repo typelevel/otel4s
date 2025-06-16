@@ -253,7 +253,7 @@ object SpanBuilder {
       builder: SpanBuilder[F]
   )(implicit kt: KindTransformer[F, G])
       extends SpanBuilder[G] {
-    def meta: InstrumentMeta.Dynamic[G] =
+    val meta: InstrumentMeta.Dynamic[G] =
       builder.meta.mapK[G]
 
     def modifyState(f: State => State): SpanBuilder[G] =

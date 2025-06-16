@@ -206,7 +206,7 @@ object Span {
 
     /** Implementation for [[Backend.mapK]]. */
     private class MappedK[F[_], G[_]](backend: Backend[F])(f: F ~> G) extends Backend[G] {
-      def meta: InstrumentMeta.Static[G] =
+      val meta: InstrumentMeta.Static[G] =
         backend.meta.mapK(f)
       def context: SpanContext = backend.context
       def updateName(name: String): G[Unit] =

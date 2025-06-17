@@ -21,8 +21,8 @@ import cats.effect.Resource
 import org.typelevel.otel4s.sdk.autoconfigure.AutoConfigure
 import org.typelevel.otel4s.sdk.autoconfigure.Config
 import org.typelevel.otel4s.sdk.autoconfigure.ConfigurationError
+import org.typelevel.otel4s.sdk.context.TraceContext
 import org.typelevel.otel4s.sdk.metrics.exemplar.ExemplarFilter
-import org.typelevel.otel4s.sdk.metrics.exemplar.TraceContextLookup
 
 /** Autoconfigures an [[ExemplarFilter]].
   *
@@ -42,7 +42,7 @@ import org.typelevel.otel4s.sdk.metrics.exemplar.TraceContextLookup
   *   [[https://opentelemetry.io/docs/languages/java/configuration/#exemplars]]
   */
 private final class ExemplarFilterAutoConfigure[F[_]: MonadCancelThrow](
-    lookup: TraceContextLookup
+    lookup: TraceContext.Lookup
 ) extends AutoConfigure.WithHint[F, ExemplarFilter](
       "ExemplarFilter",
       ExemplarFilterAutoConfigure.ConfigKeys.All
@@ -119,7 +119,7 @@ private[sdk] object ExemplarFilterAutoConfigure {
     *   used by the exemplar reservoir to extract tracing information from the context
     */
   def apply[F[_]: MonadCancelThrow](
-      traceContextLookup: TraceContextLookup
+      traceContextLookup: TraceContext.Lookup
   ): AutoConfigure[F, ExemplarFilter] =
     new ExemplarFilterAutoConfigure[F](traceContextLookup)
 

@@ -30,10 +30,9 @@ import org.typelevel.otel4s.sdk.baggage.SdkBaggageManager
 import org.typelevel.otel4s.sdk.context.Context
 import org.typelevel.otel4s.sdk.context.LocalContext
 import org.typelevel.otel4s.sdk.context.LocalContextProvider
+import org.typelevel.otel4s.sdk.context.TraceContext
 import org.typelevel.otel4s.sdk.metrics.SdkMeterProvider
-import org.typelevel.otel4s.sdk.metrics.data.ExemplarData
 import org.typelevel.otel4s.sdk.metrics.data.MetricData
-import org.typelevel.otel4s.sdk.metrics.exemplar.TraceContextLookup
 import org.typelevel.otel4s.sdk.metrics.exporter.AggregationSelector
 import org.typelevel.otel4s.sdk.metrics.exporter.AggregationTemporalitySelector
 import org.typelevel.otel4s.sdk.metrics.exporter.CardinalityLimitSelector
@@ -93,14 +92,14 @@ object OpenTelemetrySdkTestkit {
       defaultCardinalityLimitSelector: CardinalityLimitSelector = CardinalityLimitSelector.default
   ): Resource[F, OpenTelemetrySdkTestkit[F]] =
     Resource.eval(LocalProvider[F, Context].local).flatMap { implicit local =>
-      val traceContextLookup: TraceContextLookup =
-        new TraceContextLookup {
-          def get(context: Context): Option[ExemplarData.TraceContext] =
+      val traceContextLookup: TraceContext.Lookup =
+        new TraceContext.Lookup {
+          def get(context: Context): Option[TraceContext] =
             context
               .get(SdkContextKeys.SpanContextKey)
               .filter(_.isValid)
               .map { ctx =>
-                ExemplarData.TraceContext(
+                TraceContext(
                   ctx.traceId,
                   ctx.spanId,
                   ctx.isSampled

@@ -20,12 +20,12 @@ import cats.Hash
 import cats.Show
 import cats.syntax.foldable._
 import org.typelevel.otel4s.Attributes
-import scodec.bits.ByteVector
+import org.typelevel.otel4s.sdk.context.TraceContext
 
 import scala.concurrent.duration.FiniteDuration
 
-/** An exemplar is a recorded value that associates [[ExemplarData.TraceContext]] (extracted from the
-  * [[org.typelevel.otel4s.sdk.context.Context Context]]) to a metric event.
+/** An exemplar is a recorded value that associates [[org.typelevel.otel4s.sdk.context.TraceContext TraceContext]]
+  * (extracted from the [[org.typelevel.otel4s.sdk.context.Context Context]]) to a metric event.
   *
   * It allows linking trace details with metrics.
   *
@@ -45,7 +45,7 @@ sealed trait ExemplarData {
 
   /** The trace associated with a recording.
     */
-  def traceContext: Option[ExemplarData.TraceContext]
+  def traceContext: Option[TraceContext]
 
   /** The recorded value.
     */
@@ -69,57 +69,6 @@ object ExemplarData {
   sealed trait LongExemplar extends ExemplarData { type Value = Long }
 
   sealed trait DoubleExemplar extends ExemplarData { type Value = Double }
-
-  /** The trace information.
-    *
-    * [[TraceContext]] is a minimal version of SpanContext. That way, `sdk-metrics` does not need to depend on the
-    * `core-trace`.
-    */
-  sealed trait TraceContext {
-    def traceId: ByteVector
-    def spanId: ByteVector
-    def isSampled: Boolean
-
-    override final def hashCode(): Int =
-      Hash[TraceContext].hash(this)
-
-    override final def equals(obj: Any): Boolean =
-      obj match {
-        case other: TraceContext => Hash[TraceContext].eqv(this, other)
-        case _                   => false
-      }
-
-    override final def toString: String =
-      Show[TraceContext].show(this)
-  }
-
-  object TraceContext {
-
-    /** Creates a [[TraceContext]] with the given `traceId` and `spanId`.
-      */
-    def apply(
-        traceId: ByteVector,
-        spanId: ByteVector,
-        sampled: Boolean
-    ): TraceContext =
-      Impl(traceId, spanId, sampled)
-
-    implicit val traceContextShow: Show[TraceContext] =
-      Show.show { c =>
-        s"TraceContext{traceId=${c.traceId.toHex}, spanId=${c.spanId.toHex}, isSampled=${c.isSampled}}"
-      }
-
-    implicit val traceContextHash: Hash[TraceContext] = {
-      implicit val byteVectorHash: Hash[ByteVector] = Hash.fromUniversalHashCode
-      Hash.by(c => (c.traceId, c.spanId, c.isSampled))
-    }
-
-    private final case class Impl(
-        traceId: ByteVector,
-        spanId: ByteVector,
-        isSampled: Boolean
-    ) extends TraceContext
-  }
 
   /** Creates a [[LongExemplar]] with the given values.
     */

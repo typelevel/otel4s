@@ -20,6 +20,7 @@ import org.scalacheck.Cogen
 import org.typelevel.otel4s.Attributes
 import org.typelevel.otel4s.sdk.TelemetryResource
 import org.typelevel.otel4s.sdk.common.InstrumentationScope
+import org.typelevel.otel4s.sdk.context.TraceContext
 
 trait Cogens extends org.typelevel.otel4s.scalacheck.Cogens {
 
@@ -32,6 +33,9 @@ trait Cogens extends org.typelevel.otel4s.scalacheck.Cogens {
     Cogen[(String, Option[String], Option[String], Attributes)].contramap { s =>
       (s.name, s.version, s.schemaUrl, s.attributes)
     }
+
+  implicit val traceContextCogen: Cogen[TraceContext] =
+    Cogen[(String, String, Boolean)].contramap(c => (c.traceId.toHex, c.spanId.toHex, c.isSampled))
 
 }
 

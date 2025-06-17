@@ -19,6 +19,7 @@ package org.typelevel.otel4s.sdk.scalacheck
 import org.scalacheck.Arbitrary
 import org.typelevel.otel4s.sdk.TelemetryResource
 import org.typelevel.otel4s.sdk.common.InstrumentationScope
+import org.typelevel.otel4s.sdk.context.TraceContext
 
 trait Arbitraries extends org.typelevel.otel4s.scalacheck.Arbitraries {
 
@@ -27,6 +28,9 @@ trait Arbitraries extends org.typelevel.otel4s.scalacheck.Arbitraries {
 
   implicit val instrumentationScopeArbitrary: Arbitrary[InstrumentationScope] =
     Arbitrary(Gens.instrumentationScope)
+
+  implicit val traceContextArbitrary: Arbitrary[TraceContext] =
+    Arbitrary(Gens.traceContext)
 
 }
 

@@ -23,6 +23,7 @@ import org.typelevel.otel4s.Attributes
 import org.typelevel.otel4s.metrics.BucketBoundaries
 import org.typelevel.otel4s.sdk.TelemetryResource
 import org.typelevel.otel4s.sdk.common.InstrumentationScope
+import org.typelevel.otel4s.sdk.context.TraceContext
 import org.typelevel.otel4s.sdk.metrics.data.AggregationTemporality
 import org.typelevel.otel4s.sdk.metrics.data.ExemplarData
 import org.typelevel.otel4s.sdk.metrics.data.MetricData
@@ -76,15 +77,12 @@ trait Cogens extends org.typelevel.otel4s.sdk.scalacheck.Cogens {
   implicit val timeWindowCogen: Cogen[TimeWindow] =
     Cogen[(FiniteDuration, FiniteDuration)].contramap(w => (w.start, w.end))
 
-  implicit val traceContextCogen: Cogen[ExemplarData.TraceContext] =
-    Cogen[(String, String)].contramap(c => (c.traceId.toHex, c.spanId.toHex))
-
   implicit val exemplarDataCogen: Cogen[ExemplarData] =
     Cogen[
       (
           Attributes,
           FiniteDuration,
-          Option[ExemplarData.TraceContext],
+          Option[TraceContext],
           Either[Long, Double]
       )
     ].contramap { e =>

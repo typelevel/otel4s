@@ -29,6 +29,7 @@ import org.typelevel.otel4s.Attributes
 import org.typelevel.otel4s.metrics.BucketBoundaries
 import org.typelevel.otel4s.metrics.MeasurementValue
 import org.typelevel.otel4s.sdk.context.Context
+import org.typelevel.otel4s.sdk.context.TraceContext
 
 /** The exemplar reservoir of samples.
   *
@@ -69,7 +70,7 @@ private[metrics] object ExemplarReservoir {
     */
   def fixedSize[F[_]: Temporal: Random, A](
       size: Int,
-      lookup: TraceContextLookup
+      lookup: TraceContext.Lookup
   ): F[ExemplarReservoir[F, A]] =
     for {
       selector <- CellSelector.random[F, A]
@@ -89,7 +90,7 @@ private[metrics] object ExemplarReservoir {
     */
   def histogramBucket[F[_]: Temporal, A: Numeric](
       boundaries: BucketBoundaries,
-      lookup: TraceContextLookup
+      lookup: TraceContext.Lookup
   ): F[ExemplarReservoir[F, A]] =
     create(
       boundaries.length + 1,
@@ -138,7 +139,7 @@ private[metrics] object ExemplarReservoir {
   private def create[F[_]: Temporal, A](
       size: Int,
       cellSelector: CellSelector[F, A],
-      lookup: TraceContextLookup
+      lookup: TraceContext.Lookup
   ): F[ExemplarReservoir[F, A]] =
     for {
       cells <- ReservoirCell.create[F, A](lookup).replicateA(size)

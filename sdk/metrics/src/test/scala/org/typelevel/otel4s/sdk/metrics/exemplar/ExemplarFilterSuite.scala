@@ -21,7 +21,7 @@ import munit.ScalaCheckSuite
 import org.scalacheck.Gen
 import org.scalacheck.Prop
 import org.typelevel.otel4s.sdk.context.Context
-import org.typelevel.otel4s.sdk.metrics.data.ExemplarData
+import org.typelevel.otel4s.sdk.context.TraceContext
 import org.typelevel.otel4s.sdk.metrics.scalacheck.Gens
 
 class ExemplarFilterSuite extends ScalaCheckSuite {
@@ -30,7 +30,7 @@ class ExemplarFilterSuite extends ScalaCheckSuite {
     Gen.either(Gen.long, Gen.double)
 
   private val traceContextKey = Context.Key
-    .unique[SyncIO, ExemplarData.TraceContext]("trace-context")
+    .unique[SyncIO, TraceContext]("trace-context")
     .unsafeRunSync()
 
   test("alwaysOn - allow all values") {
@@ -58,7 +58,7 @@ class ExemplarFilterSuite extends ScalaCheckSuite {
   }
 
   test("traceBased - forbid all values when TraceContextLookup is noop") {
-    val filter = ExemplarFilter.traceBased(TraceContextLookup.noop)
+    val filter = ExemplarFilter.traceBased(TraceContext.Lookup.noop)
 
     Prop.forAll(valueGen, Gens.attributes) {
       case (Left(value), attributes) =>

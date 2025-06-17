@@ -19,6 +19,7 @@ package org.typelevel.otel4s.sdk.metrics.exemplar
 import org.typelevel.otel4s.Attributes
 import org.typelevel.otel4s.metrics.MeasurementValue
 import org.typelevel.otel4s.sdk.context.Context
+import org.typelevel.otel4s.sdk.context.TraceContext
 
 /** Exemplar filters are used to pre-filter measurements before attempting to store them in a reservoir.
   *
@@ -50,7 +51,7 @@ object ExemplarFilter {
 
   /** A filter that only accepts measurements where there is a span in a context that is being sampled.
     */
-  def traceBased(lookup: TraceContextLookup): ExemplarFilter =
+  def traceBased(lookup: TraceContext.Lookup): ExemplarFilter =
     TraceBased(lookup)
 
   private final case class Const(decision: Boolean) extends ExemplarFilter {
@@ -63,7 +64,7 @@ object ExemplarFilter {
   }
 
   private final case class TraceBased(
-      lookup: TraceContextLookup
+      lookup: TraceContext.Lookup
   ) extends ExemplarFilter {
     def shouldSample[A: MeasurementValue](
         value: A,

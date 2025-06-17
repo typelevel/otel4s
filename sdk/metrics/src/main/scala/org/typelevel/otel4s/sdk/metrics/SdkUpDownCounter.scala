@@ -49,9 +49,8 @@ private object SdkUpDownCounter {
   ](
       cast: A => Primitive,
       storage: MetricStorage.Synchronous.Writeable[F, Primitive],
-      instrumentMeta: InstrumentMeta.Dynamic[F]
+      val meta: InstrumentMeta.Dynamic[F]
   ) extends UpDownCounter.Backend[F, A] {
-    def meta: InstrumentMeta.Dynamic[F] = instrumentMeta
 
     def add(value: A, attributes: immutable.Iterable[Attribute[_]]): F[Unit] =
       record(cast(value), attributes)

@@ -86,7 +86,7 @@ private[oteljava] object GaugeBuilderImpl {
           val gauge = builder.ofLongs().build()
 
           val backend = new Gauge.Backend[F, A] {
-            def meta: InstrumentMeta.Dynamic[F] = instrumentMeta
+            val meta: InstrumentMeta.Dynamic[F] = instrumentMeta
 
             def record(
                 value: A,
@@ -119,7 +119,7 @@ private[oteljava] object GaugeBuilderImpl {
           val gauge = builder.build()
 
           val backend = new Gauge.Backend[F, A] {
-            def meta: InstrumentMeta.Dynamic[F] = instrumentMeta
+            val meta: InstrumentMeta.Dynamic[F] = instrumentMeta
 
             def record(
                 value: A,

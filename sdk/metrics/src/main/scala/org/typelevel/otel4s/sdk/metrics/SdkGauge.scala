@@ -45,9 +45,8 @@ private object SdkGauge {
   private final class Backend[F[_]: Monad: AskContext, A, Primitive](
       cast: A => Primitive,
       storage: MetricStorage.Synchronous.Writeable[F, Primitive],
-      instrumentMeta: InstrumentMeta.Dynamic[F]
+      val meta: InstrumentMeta.Dynamic[F]
   ) extends Gauge.Backend[F, A] {
-    def meta: InstrumentMeta.Dynamic[F] = instrumentMeta
 
     def record(
         value: A,

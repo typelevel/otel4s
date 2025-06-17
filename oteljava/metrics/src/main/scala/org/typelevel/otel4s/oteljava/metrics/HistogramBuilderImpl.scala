@@ -104,7 +104,7 @@ object HistogramBuilderImpl {
           val histogram = builder.ofLongs().build
 
           val backend = new Histogram.Backend[F, A] {
-            def meta: InstrumentMeta.Dynamic[F] = instrumentMeta
+            val meta: InstrumentMeta.Dynamic[F] = instrumentMeta
 
             def record(
                 value: A,
@@ -165,7 +165,7 @@ object HistogramBuilderImpl {
           val histogram = builder.build
 
           val backend = new Histogram.Backend[F, A] {
-            def meta: InstrumentMeta.Dynamic[F] = instrumentMeta
+            val meta: InstrumentMeta.Dynamic[F] = instrumentMeta
 
             def record(
                 value: A,

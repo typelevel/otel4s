@@ -85,7 +85,7 @@ private[oteljava] object UpDownCounterBuilderImpl {
           val counter = builder.build()
 
           val backend = new UpDownCounter.Backend[F, A] {
-            def meta: InstrumentMeta.Dynamic[F] = instrumentMeta
+            val meta: InstrumentMeta.Dynamic[F] = instrumentMeta
 
             def add(
                 value: A,
@@ -130,7 +130,7 @@ private[oteljava] object UpDownCounterBuilderImpl {
           val counter = builder.ofDoubles().build()
 
           val backend = new UpDownCounter.Backend[F, A] {
-            def meta: InstrumentMeta.Dynamic[F] = instrumentMeta
+            val meta: InstrumentMeta.Dynamic[F] = instrumentMeta
 
             def add(
                 value: A,

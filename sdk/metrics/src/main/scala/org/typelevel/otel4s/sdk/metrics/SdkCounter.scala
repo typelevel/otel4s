@@ -49,9 +49,9 @@ private object SdkCounter {
   ](
       cast: A => Primitive,
       name: String,
-      storage: MetricStorage.Synchronous.Writeable[F, Primitive]
+      storage: MetricStorage.Synchronous.Writeable[F, Primitive],
+      val meta: InstrumentMeta.Dynamic[F]
   ) extends Counter.Backend[F, A] {
-    val meta: InstrumentMeta[F] = InstrumentMeta.enabled
 
     def add(value: A, attributes: immutable.Iterable[Attribute[_]]): F[Unit] =
       record(cast(value), attributes)
@@ -106,7 +106,7 @@ private object SdkCounter {
             .registerMetricStorage[Long](descriptor)
             .map { storage =>
               Counter.fromBackend(
-                new Backend[F, A, Long](cast, name, storage)
+                new Backend[F, A, Long](cast, name, storage, sharedState.meta)
               )
             }
 
@@ -115,7 +115,7 @@ private object SdkCounter {
             .registerMetricStorage[Double](descriptor)
             .map { storage =>
               Counter.fromBackend(
-                new Backend[F, A, Double](cast, name, storage)
+                new Backend[F, A, Double](cast, name, storage, sharedState.meta)
               )
             }
       }

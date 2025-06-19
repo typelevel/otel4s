@@ -153,7 +153,7 @@ object HistogramMacro {
     val backend = q"${c.prefix}.backend"
     val meta = q"$backend.meta"
 
-    q"if ($meta.isEnabled) $backend.record($value, $attributes) else $meta.unit"
+    q"$meta.whenEnabled($backend.record($value, $attributes))"
   }
 
   def recordDuration(c: blackbox.Context)(
@@ -172,7 +172,12 @@ object HistogramMacro {
     val backend = q"${c.prefix}.backend"
     val meta = q"$backend.meta"
 
-    q"if ($meta.isEnabled) $backend.recordDuration($timeUnit, _ => $attributes) else _root_.cats.effect.kernel.Resource.unit"
+    q"""
+       _root_.cats.effect.kernel.Resource.eval($meta.isEnabled).flatMap { isEnabled =>
+         if (isEnabled) $backend.recordDuration($timeUnit, _ => $attributes)
+         else _root_.cats.effect.kernel.Resource.unit
+       }
+     """
   }
 
   def recordDurationFuncColl(c: blackbox.Context)(
@@ -183,7 +188,12 @@ object HistogramMacro {
     val backend = q"${c.prefix}.backend"
     val meta = q"$backend.meta"
 
-    q"if ($meta.isEnabled) $backend.recordDuration($timeUnit, $attributes) else _root_.cats.effect.kernel.Resource.unit"
+    q"""
+       _root_.cats.effect.kernel.Resource.eval($meta.isEnabled).flatMap { isEnabled =>
+         if (isEnabled) $backend.recordDuration($timeUnit, $attributes)
+         else _root_.cats.effect.kernel.Resource.unit
+       }
+     """
   }
 
 }

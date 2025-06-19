@@ -48,14 +48,15 @@ private[oteljava] object UpDownCounterBuilderImpl {
 
   def apply[F[_]: Sync: AskContext, A: MeasurementValue](
       jMeter: JMeter,
-      name: String
+      name: String,
+      meta: InstrumentMeta.Dynamic[F]
   ): UpDownCounter.Builder[F, A] =
     MeasurementValue[A] match {
       case MeasurementValue.LongMeasurementValue(cast) =>
-        UpDownCounterBuilderImpl(longFactory(jMeter, cast), name)
+        UpDownCounterBuilderImpl(longFactory(jMeter, cast, meta), name)
 
       case MeasurementValue.DoubleMeasurementValue(cast) =>
-        UpDownCounterBuilderImpl(doubleFactory(jMeter, cast), name)
+        UpDownCounterBuilderImpl(doubleFactory(jMeter, cast, meta), name)
     }
 
   private[oteljava] trait Factory[F[_], A] {
@@ -68,7 +69,8 @@ private[oteljava] object UpDownCounterBuilderImpl {
 
   private def longFactory[F[_]: Sync: AskContext, A](
       jMeter: JMeter,
-      cast: A => Long
+      cast: A => Long,
+      instrumentMeta: InstrumentMeta.Dynamic[F]
   ): Factory[F, A] =
     new Factory[F, A] {
       def create(
@@ -83,7 +85,7 @@ private[oteljava] object UpDownCounterBuilderImpl {
           val counter = builder.build()
 
           val backend = new UpDownCounter.Backend[F, A] {
-            val meta: InstrumentMeta[F] = InstrumentMeta.enabled
+            val meta: InstrumentMeta.Dynamic[F] = instrumentMeta
 
             def add(
                 value: A,
@@ -112,7 +114,8 @@ private[oteljava] object UpDownCounterBuilderImpl {
 
   private def doubleFactory[F[_]: Sync: AskContext, A](
       jMeter: JMeter,
-      cast: A => Double
+      cast: A => Double,
+      instrumentMeta: InstrumentMeta.Dynamic[F]
   ): Factory[F, A] =
     new Factory[F, A] {
       def create(
@@ -127,7 +130,7 @@ private[oteljava] object UpDownCounterBuilderImpl {
           val counter = builder.ofDoubles().build()
 
           val backend = new UpDownCounter.Backend[F, A] {
-            val meta: InstrumentMeta[F] = InstrumentMeta.enabled
+            val meta: InstrumentMeta.Dynamic[F] = instrumentMeta
 
             def add(
                 value: A,

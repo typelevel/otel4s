@@ -99,7 +99,7 @@ object CounterSuite {
 
     val backend: Counter.Backend[IO, Long] =
       new Counter.Backend[IO, Long] {
-        val meta: InstrumentMeta[IO] = InstrumentMeta.enabled
+        val meta: InstrumentMeta.Dynamic[IO] = InstrumentMeta.Dynamic.enabled
 
         def add(
             value: Long,

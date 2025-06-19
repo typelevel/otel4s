@@ -121,7 +121,7 @@ object UpDownCounterSuite {
 
     val backend: UpDownCounter.Backend[IO, Long] =
       new UpDownCounter.Backend[IO, Long] {
-        val meta: InstrumentMeta[IO] = InstrumentMeta.enabled
+        val meta: InstrumentMeta.Dynamic[IO] = InstrumentMeta.Dynamic.enabled
 
         def add(
             value: Long,

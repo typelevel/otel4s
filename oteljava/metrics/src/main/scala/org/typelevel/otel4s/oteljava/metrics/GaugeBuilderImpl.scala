@@ -49,14 +49,15 @@ private[oteljava] object GaugeBuilderImpl {
 
   def apply[F[_]: Sync: AskContext, A: MeasurementValue](
       jMeter: JMeter,
-      name: String
+      name: String,
+      meta: InstrumentMeta.Dynamic[F]
   ): Gauge.Builder[F, A] =
     MeasurementValue[A] match {
       case MeasurementValue.LongMeasurementValue(cast) =>
-        GaugeBuilderImpl(longFactory(jMeter, cast), name)
+        GaugeBuilderImpl(longFactory(jMeter, cast, meta), name)
 
       case MeasurementValue.DoubleMeasurementValue(cast) =>
-        GaugeBuilderImpl(doubleFactory(jMeter, cast), name)
+        GaugeBuilderImpl(doubleFactory(jMeter, cast, meta), name)
     }
 
   private[oteljava] trait Factory[F[_], A] {
@@ -69,7 +70,8 @@ private[oteljava] object GaugeBuilderImpl {
 
   private def longFactory[F[_]: Sync: AskContext, A](
       jMeter: JMeter,
-      cast: A => Long
+      cast: A => Long,
+      instrumentMeta: InstrumentMeta.Dynamic[F]
   ): Factory[F, A] =
     new Factory[F, A] {
       def create(
@@ -84,7 +86,7 @@ private[oteljava] object GaugeBuilderImpl {
           val gauge = builder.ofLongs().build()
 
           val backend = new Gauge.Backend[F, A] {
-            val meta: InstrumentMeta[F] = InstrumentMeta.enabled
+            val meta: InstrumentMeta.Dynamic[F] = instrumentMeta
 
             def record(
                 value: A,
@@ -101,7 +103,8 @@ private[oteljava] object GaugeBuilderImpl {
 
   private def doubleFactory[F[_]: Sync: AskContext, A](
       jMeter: JMeter,
-      cast: A => Double
+      cast: A => Double,
+      instrumentMeta: InstrumentMeta.Dynamic[F]
   ): Factory[F, A] =
     new Factory[F, A] {
       def create(
@@ -116,7 +119,7 @@ private[oteljava] object GaugeBuilderImpl {
           val gauge = builder.build()
 
           val backend = new Gauge.Backend[F, A] {
-            val meta: InstrumentMeta[F] = InstrumentMeta.enabled
+            val meta: InstrumentMeta.Dynamic[F] = instrumentMeta
 
             def record(
                 value: A,

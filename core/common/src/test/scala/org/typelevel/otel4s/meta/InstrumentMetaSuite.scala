@@ -16,22 +16,60 @@
 
 package org.typelevel.otel4s.meta
 
-import munit.FunSuite
+import cats.effect.IO
+import munit.CatsEffectSuite
 
-class InstrumentMetaSuite extends FunSuite {
+class InstrumentMetaSuite extends CatsEffectSuite {
 
-  test("enabled") {
-    val disabled = InstrumentMeta.enabled[cats.Id]
+  test("static - enabled") {
+    val enabled = InstrumentMeta.Static.enabled[cats.Id]
 
-    assertEquals(disabled.unit, ())
-    assertEquals(disabled.isEnabled, true)
+    assertEquals(enabled.unit, ())
+    assertEquals(enabled.isEnabled, true)
   }
 
-  test("disabled") {
-    val disabled = InstrumentMeta.disabled[cats.Id]
+  test("static - disabled") {
+    val disabled = InstrumentMeta.Static.disabled[cats.Id]
 
     assertEquals(disabled.unit, ())
     assertEquals(disabled.isEnabled, false)
   }
 
+  test("dynamic - enabled") {
+    val meta = InstrumentMeta.Dynamic.enabled[IO]
+
+    for {
+      _ <- assertIO_(meta.unit)
+      _ <- assertIO(meta.isEnabled, true)
+      _ <- assertIO(IO.ref(false).flatMap(r => meta.whenEnabled(r.set(true)) >> r.get), true)
+    } yield ()
+  }
+
+  test("dynamic - disabled") {
+    val meta = InstrumentMeta.Dynamic.disabled[IO]
+
+    for {
+      _ <- assertIO_(meta.unit)
+      _ <- assertIO(meta.isEnabled, false)
+      _ <- assertIO(IO.ref(false).flatMap(r => meta.whenEnabled(r.set(true)) >> r.get), false)
+    } yield ()
+  }
+
+  test("dynamic - from") {
+    for {
+      enabled <- IO.ref(false)
+      meta = InstrumentMeta.Dynamic.from[IO](enabled.get)
+
+      // disabled
+      _ <- assertIO_(meta.unit)
+      _ <- assertIO(meta.isEnabled, false)
+      _ <- assertIO(IO.ref(false).flatMap(r => meta.whenEnabled(r.set(true)) >> r.get), false)
+
+      // enabled
+      _ <- enabled.set(true)
+      _ <- assertIO_(meta.unit)
+      _ <- assertIO(meta.isEnabled, true)
+      _ <- assertIO(IO.ref(false).flatMap(r => meta.whenEnabled(r.set(true)) >> r.get), true)
+    } yield ()
+  }
 }

@@ -118,7 +118,7 @@ trait Span[F[_]] extends SpanMacro[F] {
 object Span {
 
   trait Backend[F[_]] {
-    def meta: InstrumentMeta[F]
+    def meta: InstrumentMeta.Static[F]
     def context: SpanContext
 
     def updateName(name: String): F[Unit]
@@ -170,48 +170,32 @@ object Span {
       *   the context to propagate
       */
     private[otel4s] def propagating[F[_]: Applicative](
+        meta: InstrumentMeta.Static[F],
         context: SpanContext
     ): Backend[F] =
-      make(InstrumentMeta.enabled, context)
+      make(meta, context)
 
     def noop[F[_]: Applicative]: Backend[F] =
-      make(InstrumentMeta.disabled, SpanContext.invalid)
+      make(InstrumentMeta.Static.disabled, SpanContext.invalid)
 
     private def make[F[_]: Applicative](
-        m: InstrumentMeta[F],
+        m: InstrumentMeta.Static[F],
         ctx: SpanContext
     ): Backend[F] =
       new Backend[F] {
         private val unit = Applicative[F].unit
 
-        val meta: InstrumentMeta[F] = m
+        val meta: InstrumentMeta.Static[F] = m
         val context: SpanContext = ctx
 
         def updateName(name: String): F[Unit] = unit
+        def addAttributes(attributes: immutable.Iterable[Attribute[_]]): F[Unit] = unit
+        def addEvent(name: String, attributes: immutable.Iterable[Attribute[_]]): F[Unit] = unit
+        def addEvent(name: String, timestamp: FiniteDuration, attributes: immutable.Iterable[Attribute[_]]): F[Unit] =
+          unit
 
-        def addAttributes(
-            attributes: immutable.Iterable[Attribute[_]]
-        ): F[Unit] = unit
-        def addEvent(
-            name: String,
-            attributes: immutable.Iterable[Attribute[_]]
-        ): F[Unit] = unit
-
-        def addEvent(
-            name: String,
-            timestamp: FiniteDuration,
-            attributes: immutable.Iterable[Attribute[_]]
-        ): F[Unit] = unit
-
-        def addLink(
-            spanContext: SpanContext,
-            attributes: immutable.Iterable[Attribute[_]]
-        ): F[Unit] = unit
-
-        def recordException(
-            exception: Throwable,
-            attributes: immutable.Iterable[Attribute[_]]
-        ): F[Unit] = unit
+        def addLink(spanContext: SpanContext, attributes: immutable.Iterable[Attribute[_]]): F[Unit] = unit
+        def recordException(exception: Throwable, attributes: immutable.Iterable[Attribute[_]]): F[Unit] = unit
 
         def setStatus(status: StatusCode): F[Unit] = unit
         def setStatus(status: StatusCode, description: String): F[Unit] = unit
@@ -222,7 +206,7 @@ object Span {
 
     /** Implementation for [[Backend.mapK]]. */
     private class MappedK[F[_], G[_]](backend: Backend[F])(f: F ~> G) extends Backend[G] {
-      def meta: InstrumentMeta[G] =
+      val meta: InstrumentMeta.Static[G] =
         backend.meta.mapK(f)
       def context: SpanContext = backend.context
       def updateName(name: String): G[Unit] =

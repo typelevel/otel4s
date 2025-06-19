@@ -74,7 +74,7 @@ abstract class BaseSpanBuilderSuite extends CatsEffectSuite {
       .build
 
     for {
-      _ <- IO(assert(!builder.meta.isEnabled))
+      _ <- builder.meta.isEnabled.assertEquals(false)
       _ <- ops.use_
     } yield assert(!allocated)
   }
@@ -157,7 +157,7 @@ abstract class BaseSpanBuilderSuite extends CatsEffectSuite {
     val ops = b.build
 
     for {
-      _ <- IO(assert(!builder.meta.isEnabled))
+      _ <- builder.meta.isEnabled.assertEquals(false)
       _ <- ops.use_
     } yield assert(!allocated)
   }
@@ -239,7 +239,7 @@ abstract class BaseSpanBuilderSuite extends CatsEffectSuite {
       .build
 
     for {
-      _ <- IO(assert(!builder.meta.isEnabled))
+      _ <- builder.meta.isEnabled.assertEquals(false)
       _ <- ops.use_
     } yield assert(!allocated)
   }
@@ -252,7 +252,7 @@ abstract class BaseSpanBuilderSuite extends CatsEffectSuite {
     }
 
     for {
-      _ <- IO(assert(builder.meta.isEnabled))
+      _ <- builder.meta.isEnabled.assertEquals(true)
       _ <- r.build.use_
     } yield ()
   }

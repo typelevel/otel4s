@@ -44,9 +44,9 @@ private object SdkGauge {
 
   private final class Backend[F[_]: Monad: AskContext, A, Primitive](
       cast: A => Primitive,
-      storage: MetricStorage.Synchronous.Writeable[F, Primitive]
+      storage: MetricStorage.Synchronous.Writeable[F, Primitive],
+      val meta: InstrumentMeta.Dynamic[F]
   ) extends Gauge.Backend[F, A] {
-    val meta: InstrumentMeta[F] = InstrumentMeta.enabled
 
     def record(
         value: A,
@@ -90,7 +90,7 @@ private object SdkGauge {
             .registerMetricStorage[Long](descriptor)
             .map { storage =>
               Gauge.fromBackend(
-                new Backend[F, A, Long](cast, storage)
+                new Backend[F, A, Long](cast, storage, sharedState.meta)
               )
             }
 
@@ -99,7 +99,7 @@ private object SdkGauge {
             .registerMetricStorage[Double](descriptor)
             .map { storage =>
               Gauge.fromBackend(
-                new Backend[F, A, Double](cast, storage)
+                new Backend[F, A, Double](cast, storage, sharedState.meta)
               )
             }
       }

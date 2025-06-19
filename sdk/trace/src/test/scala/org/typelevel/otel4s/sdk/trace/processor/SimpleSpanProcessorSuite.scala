@@ -141,7 +141,7 @@ class SimpleSpanProcessorSuite extends CatsEffectSuite with ScalaCheckEffectSuit
 
       // span.backend
 
-      val meta: InstrumentMeta[IO] =
+      val meta: InstrumentMeta.Static[IO] =
         noopBackend.meta
 
       val context: SpanContext =

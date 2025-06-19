@@ -52,7 +52,7 @@ private class SdkTracerProvider[F[_]: Temporal: Parallel: Console](
       sampler,
       SpanProcessor.of(spanProcessors: _*),
       storage,
-      InstrumentMeta.enabled
+      InstrumentMeta.Dynamic.enabled
     )
 
   def tracer(name: String): TracerBuilder[F] =

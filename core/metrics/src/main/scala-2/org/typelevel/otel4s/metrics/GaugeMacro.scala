@@ -65,7 +65,7 @@ object GaugeMacro {
     val backend = q"${c.prefix}.backend"
     val meta = q"$backend.meta"
 
-    q"if ($meta.isEnabled) $backend.record($value, $attributes) else $meta.unit"
+    q"$meta.whenEnabled($backend.record($value, $attributes))"
   }
 
 }

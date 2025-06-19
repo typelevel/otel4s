@@ -263,9 +263,7 @@ object SpanBuilderMacro {
     *
     * That way, we have exactly one if-else statement.
     */
-  private def whenEnabled(
-      c: blackbox.Context
-  )(modify: c.universe.Tree): c.universe.Tree = {
+  private def whenEnabled(c: blackbox.Context)(modify: c.universe.Tree): c.universe.Tree = {
     import c.universe._
 
     object Matchers {
@@ -273,13 +271,9 @@ object SpanBuilderMacro {
         def unapply(tree: Tree): Option[(Tree, Tree)] =
           tree match {
             case Typed(
-                  Block(
-                    List(ValDef(_, TermName("builder"), _, left0)),
-                    If(
-                      q"builder.meta.isEnabled",
-                      Apply(q"builder.modifyState", List(left)),
-                      q"builder"
-                    )
+                  Apply(
+                    Select(left0, TermName("modifyState")),
+                    List(left)
                   ),
                   _ // the type, e.g. org.typelevel.otel4s.trace.SpanBuilder[*]
                 ) =>
@@ -310,18 +304,10 @@ object SpanBuilderMacro {
 
     val next = c.prefix.tree match {
       case Matchers.ChainBuilder(src, Matchers.ModifyState(self)) =>
-        q"""
-           val builder = $src
-           if (builder.meta.isEnabled) builder.modifyState($self.andThen($modify))
-           else builder
-         """
+        q"""$src.modifyState($self.andThen($modify))"""
 
       case _ =>
-        q"""
-           val builder = ${c.prefix}
-           if (builder.meta.isEnabled) builder.modifyState($modify)
-           else builder
-         """
+        q"""${c.prefix}.modifyState($modify)"""
     }
 
     next

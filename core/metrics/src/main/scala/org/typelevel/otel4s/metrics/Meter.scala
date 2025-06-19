@@ -18,6 +18,7 @@ package org.typelevel.otel4s.metrics
 
 import cats.Applicative
 import cats.effect.kernel.Resource
+import org.typelevel.otel4s.meta.InstrumentMeta
 
 @annotation.implicitNotFound("""
 Could not find the `Meter` for ${F}. `Meter` can be one of the following:
@@ -34,6 +35,10 @@ meterProvider
   .flatMap { implicit meter: Meter[IO] => ??? }
 """)
 trait Meter[F[_]] {
+
+  /** The instrument's metadata. Indicates whether instrumentation is enabled.
+    */
+  def meta: InstrumentMeta.Dynamic[F]
 
   /** Creates a builder of [[Counter]] instrument that records values of type `A`.
     *
@@ -300,6 +305,8 @@ object Meter {
     */
   def noop[F[_]](implicit F: Applicative[F]): Meter[F] =
     new Meter[F] {
+      val meta: InstrumentMeta.Dynamic[F] = InstrumentMeta.Dynamic.disabled
+
       def counter[A: MeasurementValue](
           name: String
       ): Counter.Builder[F, A] =

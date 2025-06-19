@@ -89,27 +89,18 @@ object UpDownCounterMacro {
       value: Expr[A],
       attributes: Expr[immutable.Iterable[Attribute[_]]]
   )(using Quotes, Type[F], Type[A]) =
-    '{
-      if ($backend.meta.isEnabled) $backend.add($value, $attributes)
-      else $backend.meta.unit
-    }
+    '{ $backend.meta.whenEnabled($backend.add($value, $attributes)) }
 
   def inc[F[_], A](
       backend: Expr[UpDownCounter.Backend[F, A]],
       attributes: Expr[immutable.Iterable[Attribute[_]]]
   )(using Quotes, Type[F], Type[A]) =
-    '{
-      if ($backend.meta.isEnabled) $backend.inc($attributes)
-      else $backend.meta.unit
-    }
+    '{ $backend.meta.whenEnabled($backend.inc($attributes)) }
 
   def dec[F[_], A](
       backend: Expr[UpDownCounter.Backend[F, A]],
       attributes: Expr[immutable.Iterable[Attribute[_]]]
   )(using Quotes, Type[F], Type[A]) =
-    '{
-      if ($backend.meta.isEnabled) $backend.dec($attributes)
-      else $backend.meta.unit
-    }
+    '{ $backend.meta.whenEnabled($backend.dec($attributes)) }
 
 }

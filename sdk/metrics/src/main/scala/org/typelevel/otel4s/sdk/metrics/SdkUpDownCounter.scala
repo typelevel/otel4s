@@ -48,9 +48,9 @@ private object SdkUpDownCounter {
       Primitive: Numeric
   ](
       cast: A => Primitive,
-      storage: MetricStorage.Synchronous.Writeable[F, Primitive]
+      storage: MetricStorage.Synchronous.Writeable[F, Primitive],
+      val meta: InstrumentMeta.Dynamic[F]
   ) extends UpDownCounter.Backend[F, A] {
-    val meta: InstrumentMeta[F] = InstrumentMeta.enabled
 
     def add(value: A, attributes: immutable.Iterable[Attribute[_]]): F[Unit] =
       record(cast(value), attributes)
@@ -102,7 +102,7 @@ private object SdkUpDownCounter {
             .registerMetricStorage[Long](descriptor)
             .map { storage =>
               UpDownCounter.fromBackend(
-                new Backend[F, A, Long](cast, storage)
+                new Backend[F, A, Long](cast, storage, sharedState.meta)
               )
             }
 
@@ -111,7 +111,7 @@ private object SdkUpDownCounter {
             .registerMetricStorage[Double](descriptor)
             .map { storage =>
               UpDownCounter.fromBackend(
-                new Backend[F, A, Double](cast, storage)
+                new Backend[F, A, Double](cast, storage, sharedState.meta)
               )
             }
       }

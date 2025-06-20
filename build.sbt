@@ -687,11 +687,15 @@ lazy val `oteljava-trace` = project
 
 lazy val `oteljava-trace-testkit` = project
   .in(file("oteljava/trace-testkit"))
-  .dependsOn(`oteljava-trace`, `oteljava-common-testkit`)
+  .dependsOn(`oteljava-trace`, `oteljava-common-testkit`, `oteljava-context-storage`)
   .settings(munitDependencies)
   .settings(
     name := "otel4s-oteljava-trace-testkit",
-    startYear := Some(2024)
+    startYear := Some(2024),
+    Test / javaOptions ++= Seq(
+      "-Dcats.effect.trackFiberContext=true",
+    ),
+    Test / fork := true,
   )
 
 lazy val `oteljava-testkit` = project

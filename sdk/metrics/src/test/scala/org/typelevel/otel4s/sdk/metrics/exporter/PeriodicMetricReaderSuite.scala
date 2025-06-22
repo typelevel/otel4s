@@ -63,6 +63,9 @@ class PeriodicMetricReaderSuite extends CatsEffectSuite with ScalaCheckEffectSui
             } yield ()
           }
 
+          // should export metrics upon finalization
+          _ <- exporter.exportedMetrics.assertEquals(metrics)
+
           // outside of the periodic reader lifecycle, should be empty
           _ <- IO.sleep(15.seconds)
           _ <- exporter.exportedMetrics.assertEquals(Nil)

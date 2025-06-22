@@ -81,7 +81,7 @@ Options supported out of the box:
 ### OTLP exporter
 
 The exporter can be configured by two sets of settings:
-- global: `otel.expoter.otlp.{x}`
+- global: `otel.exporter.otlp.{x}`
 - target-specific: `otel.exporter.otlp.metrics.{x}`
 
 Global properties can be used to configure span and metric exporters simultaneously.
@@ -158,7 +158,7 @@ Options supported out of the box:
 ### OTLP exporter
 
 The exporter can be configured by two sets of settings:
-- global: `otel.expoter.otlp.{x}`
+- global: `otel.exporter.otlp.{x}`
 - target-specific: `otel.exporter.otlp.traces.{x}`
 
 Global properties can be used to configure span and metric exporters simultaneously.

@@ -158,6 +158,7 @@ private object PeriodicMetricReader {
         exporter,
         Config(interval, timeout)
       )
+      _ <- Resource.onFinalize(reader.forceFlush)
       _ <- reader.worker.background
     } yield reader
 

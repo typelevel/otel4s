@@ -138,7 +138,8 @@ abstract class BaseMeterSuite extends CatsEffectSuite {
     val duration = 100.nanos
     val expected = MetricData.histogram(
       "histogram",
-      List(duration.toNanos.toDouble)
+      List(duration.toNanos.toDouble),
+      exemplarValue = Some(100.00)
     )
 
     TestControl.executeEmbed {

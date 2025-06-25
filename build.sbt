@@ -736,7 +736,11 @@ lazy val oteljava = project
       "io.opentelemetry" % "opentelemetry-sdk" % OpenTelemetryVersion,
       "io.opentelemetry" % "opentelemetry-sdk-extension-autoconfigure" % OpenTelemetryVersion,
       "io.opentelemetry" % "opentelemetry-sdk-testing" % OpenTelemetryVersion % Test
-    )
+    ),
+    Test / javaOptions ++= Seq(
+      "-Dcats.effect.trackFiberContext=true",
+    ),
+    Test / fork := true,
   )
   .settings(munitDependencies)
 

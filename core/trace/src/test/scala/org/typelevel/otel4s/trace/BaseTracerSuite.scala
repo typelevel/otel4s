@@ -847,12 +847,12 @@ abstract class BaseTracerSuite[Ctx, K[X] <: Key[X]](implicit
     }
   }
 
-  sdkTest("nested SpanOps#surround for mapK[IO]") { sdk =>
+  sdkTest("nested SpanOps#surround for liftTo[IO]") { sdk =>
     TestControl.executeEmbed {
       for {
         now <- IO.monotonic.delayBy(1.second) // otherwise returns 0
         tracerIO <- sdk.provider.get("tracer")
-        tracer = tracerIO.mapK[IO]
+        tracer = tracerIO.liftTo[IO]
         _ <- tracer
           .span("outer")
           .surround {
@@ -872,12 +872,12 @@ abstract class BaseTracerSuite[Ctx, K[X] <: Key[X]](implicit
     }
   }
 
-  sdkTest("nested SpanOps#surround for mapK[OptionT[IO, *]]") { sdk =>
+  sdkTest("nested SpanOps#surround for liftTo[OptionT[IO, *]]") { sdk =>
     TestControl.executeEmbed {
       for {
         now <- IO.monotonic.delayBy(1.second) // otherwise returns 0
         tracerIO <- sdk.provider.get("tracer")
-        tracer = tracerIO.mapK[OptionT[IO, *]]
+        tracer = tracerIO.liftTo[OptionT[IO, *]]
         _ <- tracer
           .span("outer")
           .surround {
@@ -898,12 +898,12 @@ abstract class BaseTracerSuite[Ctx, K[X] <: Key[X]](implicit
     }
   }
 
-  sdkTest("nested SpanOps#surround for mapK[EitherT[IO, String, *]]") { sdk =>
+  sdkTest("nested SpanOps#surround for liftTo[EitherT[IO, String, *]]") { sdk =>
     TestControl.executeEmbed {
       for {
         now <- IO.monotonic.delayBy(1.second) // otherwise returns 0
         tracerIO <- sdk.provider.get("tracer")
-        tracer = tracerIO.mapK[EitherT[IO, String, *]]
+        tracer = tracerIO.liftTo[EitherT[IO, String, *]]
         _ <- tracer
           .span("outer")
           .surround {
@@ -924,12 +924,12 @@ abstract class BaseTracerSuite[Ctx, K[X] <: Key[X]](implicit
     }
   }
 
-  sdkTest("nested SpanOps#surround for mapK[IorT[IO, String, *]]") { sdk =>
+  sdkTest("nested SpanOps#surround for liftTo[IorT[IO, String, *]]") { sdk =>
     TestControl.executeEmbed {
       for {
         now <- IO.monotonic.delayBy(1.second) // otherwise returns 0
         tracerIO <- sdk.provider.get("tracer")
-        tracer = tracerIO.mapK[IorT[IO, String, *]]
+        tracer = tracerIO.liftTo[IorT[IO, String, *]]
         _ <- tracer
           .span("outer")
           .surround {
@@ -950,12 +950,12 @@ abstract class BaseTracerSuite[Ctx, K[X] <: Key[X]](implicit
     }
   }
 
-  sdkTest("nested SpanOps#surround for mapK[Kleisli[IO, String, *]]") { sdk =>
+  sdkTest("nested SpanOps#surround for liftTo[Kleisli[IO, String, *]]") { sdk =>
     TestControl.executeEmbed {
       for {
         now <- IO.monotonic.delayBy(1.second) // otherwise returns 0
         tracerIO <- sdk.provider.get("tracer")
-        tracer = tracerIO.mapK[Kleisli[IO, String, *]]
+        tracer = tracerIO.liftTo[Kleisli[IO, String, *]]
         _ <- tracer
           .span("outer")
           .surround {
@@ -976,12 +976,12 @@ abstract class BaseTracerSuite[Ctx, K[X] <: Key[X]](implicit
     }
   }
 
-  sdkTest("nested SpanOps#surround for mapK[WriterT[IO, Int, *]]") { sdk =>
+  sdkTest("nested SpanOps#surround for liftTo[WriterT[IO, Int, *]]") { sdk =>
     TestControl.executeEmbed {
       for {
         now <- IO.monotonic.delayBy(1.second) // otherwise returns 0
         tracerIO <- sdk.provider.get("tracer")
-        tracer = tracerIO.mapK[WriterT[IO, Int, *]]
+        tracer = tracerIO.liftTo[WriterT[IO, Int, *]]
         _ <- tracer
           .span("outer")
           .surround {
@@ -1002,12 +1002,12 @@ abstract class BaseTracerSuite[Ctx, K[X] <: Key[X]](implicit
     }
   }
 
-  sdkTest("nested SpanOps#surround for mapK[Resource[IO, *]]") { sdk =>
+  sdkTest("nested SpanOps#surround for liftTo[Resource[IO, *]]") { sdk =>
     TestControl.executeEmbed {
       for {
         now <- IO.monotonic.delayBy(1.second) // otherwise returns 0
         tracerIO <- sdk.provider.get("tracer")
-        tracer = tracerIO.mapK[Resource[IO, *]]
+        tracer = tracerIO.liftTo[Resource[IO, *]]
         _ <- tracer
           .span("outer")
           .surround {

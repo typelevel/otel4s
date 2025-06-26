@@ -60,11 +60,17 @@ trait TracerProvider[F[_]] {
 
   /** Modify the context `F` using an implicit [[KindTransformer]] from `F` to `G`.
     */
-  def mapK[G[_]: MonadCancelThrow](implicit
+  def liftTo[G[_]: MonadCancelThrow](implicit
       F: MonadCancelThrow[F],
       kt: KindTransformer[F, G]
   ): TracerProvider[G] =
-    new TracerProvider.MappedK(this)
+    new TracerProvider.Lifted(this)
+
+  @deprecated("use `liftTo` instead", since = "otel4s 0.14.0")
+  def mapK[G[_]: MonadCancelThrow](implicit
+      F: MonadCancelThrow[F],
+      kt: KindTransformer[F, G]
+  ): TracerProvider[G] = liftTo[G]
 }
 
 object TracerProvider {
@@ -86,13 +92,13 @@ object TracerProvider {
         "TracerProvider.Noop"
     }
 
-  private class MappedK[F[_]: MonadCancelThrow, G[_]: MonadCancelThrow](
+  private class Lifted[F[_]: MonadCancelThrow, G[_]: MonadCancelThrow](
       provider: TracerProvider[F]
   )(implicit kt: KindTransformer[F, G])
       extends TracerProvider[G] {
     override def get(name: String): G[Tracer[G]] =
-      kt.liftK(provider.get(name).map(_.mapK[G]))
+      kt.liftK(provider.get(name).map(_.liftTo[G]))
     def tracer(name: String): TracerBuilder[G] =
-      provider.tracer(name).mapK[G]
+      provider.tracer(name).liftTo[G]
   }
 }

@@ -148,7 +148,7 @@ trait LogRecordBuilder[F[_], Ctx] {
 
   /** Modify the context `F` using an implicit [[KindTransformer]] from `F` to `G`.
     */
-  def mapK[G[_]](implicit G: Monad[G], kt: KindTransformer[F, G]): LogRecordBuilder[G, Ctx] =
+  def liftTo[G[_]](implicit G: Monad[G], kt: KindTransformer[F, G]): LogRecordBuilder[G, Ctx] =
     new LogRecordBuilder.MappedK(this)
 
 }
@@ -181,40 +181,40 @@ object LogRecordBuilder {
     val meta: InstrumentMeta.Dynamic[G] = builder.meta.mapK[G]
 
     def withTimestamp(timestamp: FiniteDuration): LogRecordBuilder[G, Ctx] =
-      builder.withTimestamp(timestamp).mapK
+      builder.withTimestamp(timestamp).liftTo
 
     def withTimestamp(timestamp: Instant): LogRecordBuilder[G, Ctx] =
-      builder.withTimestamp(timestamp).mapK
+      builder.withTimestamp(timestamp).liftTo
 
     def withObservedTimestamp(timestamp: FiniteDuration): LogRecordBuilder[G, Ctx] =
-      builder.withObservedTimestamp(timestamp).mapK
+      builder.withObservedTimestamp(timestamp).liftTo
 
     def withObservedTimestamp(timestamp: Instant): LogRecordBuilder[G, Ctx] =
-      builder.withObservedTimestamp(timestamp).mapK
+      builder.withObservedTimestamp(timestamp).liftTo
 
     def withContext(context: Ctx): LogRecordBuilder[G, Ctx] =
-      builder.withContext(context).mapK
+      builder.withContext(context).liftTo
 
     def withSeverity(severity: Severity): LogRecordBuilder[G, Ctx] =
-      builder.withSeverity(severity).mapK
+      builder.withSeverity(severity).liftTo
 
     def withSeverityText(severityText: String): LogRecordBuilder[G, Ctx] =
-      builder.withSeverityText(severityText).mapK
+      builder.withSeverityText(severityText).liftTo
 
     def withBody(body: AnyValue): LogRecordBuilder[G, Ctx] =
-      builder.withBody(body).mapK
+      builder.withBody(body).liftTo
 
     def withEventName(eventName: String): LogRecordBuilder[G, Ctx] =
-      builder.withEventName(eventName).mapK
+      builder.withEventName(eventName).liftTo
 
     def addAttribute[A](attribute: Attribute[A]): LogRecordBuilder[G, Ctx] =
-      builder.addAttribute(attribute).mapK
+      builder.addAttribute(attribute).liftTo
 
     def addAttributes(attributes: Attribute[_]*): LogRecordBuilder[G, Ctx] =
-      builder.addAttributes(attributes).mapK
+      builder.addAttributes(attributes).liftTo
 
     def addAttributes(attributes: immutable.Iterable[Attribute[_]]): LogRecordBuilder[G, Ctx] =
-      builder.addAttributes(attributes).mapK
+      builder.addAttributes(attributes).liftTo
 
     def emit: G[Unit] =
       kt.liftK(builder.emit)

@@ -46,7 +46,7 @@ trait Logger[F[_], Ctx] {
 
   /** Modify the context `F` using an implicit [[KindTransformer]] from `F` to `G`.
     */
-  def mapK[G[_]: Monad](implicit kt: KindTransformer[F, G]): Logger[G, Ctx] =
+  def liftTo[G[_]: Monad](implicit kt: KindTransformer[F, G]): Logger[G, Ctx] =
     new Logger.MappedK(this)
 }
 
@@ -66,13 +66,13 @@ object Logger {
       val logRecordBuilder: LogRecordBuilder[F, Ctx] = LogRecordBuilder.noop[F, Ctx]
     }
 
-  /** Implementation for [[Logger.mapK]]. */
+  /** Implementation for [[Logger.liftTo]]. */
   private class MappedK[F[_], G[_]: Monad, Ctx](
       logger: Logger[F, Ctx]
   )(implicit kt: KindTransformer[F, G])
       extends Logger[G, Ctx] {
     val meta: InstrumentMeta.Dynamic[G] = logger.meta.mapK[G]
-    def logRecordBuilder: LogRecordBuilder[G, Ctx] = logger.logRecordBuilder.mapK
+    def logRecordBuilder: LogRecordBuilder[G, Ctx] = logger.logRecordBuilder.liftTo
   }
 
   object Implicits {

@@ -64,7 +64,7 @@ trait LoggerProvider[F[_], Ctx] {
 
   /** Modify the context `F` using an implicit [[KindTransformer]] from `F` to `G`.
     */
-  def mapK[G[_]](implicit F: Functor[F], G: Monad[G], kt: KindTransformer[F, G]): LoggerProvider[G, Ctx] =
+  def liftTo[G[_]](implicit F: Functor[F], G: Monad[G], kt: KindTransformer[F, G]): LoggerProvider[G, Ctx] =
     new LoggerProvider.MappedK(this)
 }
 
@@ -92,8 +92,8 @@ object LoggerProvider {
   )(implicit kt: KindTransformer[F, G])
       extends LoggerProvider[G, Ctx] {
     override def get(name: String): G[Logger[G, Ctx]] =
-      kt.liftK(provider.get(name).map(_.mapK[G]))
+      kt.liftK(provider.get(name).map(_.liftTo[G]))
     def logger(name: String): LoggerBuilder[G, Ctx] =
-      provider.logger(name).mapK[G]
+      provider.logger(name).liftTo[G]
   }
 }

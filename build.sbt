@@ -369,7 +369,11 @@ lazy val sdk = crossProject(JVMPlatform, JSPlatform, NativePlatform)
     `sdk-trace-testkit` % Test
   )
   .settings(
-    name := "otel4s-sdk"
+    name := "otel4s-sdk",
+    Test / javaOptions ++= Seq(
+      "-Dcats.effect.trackFiberContext=true",
+    ),
+    Test / fork := true,
   )
   .settings(munitDependencies)
   .jsSettings(scalaJSLinkerSettings)

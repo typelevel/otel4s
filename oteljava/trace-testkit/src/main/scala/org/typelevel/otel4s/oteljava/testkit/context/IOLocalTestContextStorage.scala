@@ -27,7 +27,7 @@ import org.typelevel.otel4s.oteljava.context.IOLocalContextStorage
 
 object IOLocalTestContextStorage {
 
-  def localProvider[F[_]: Console: LiftIO](implicit F: MonadCancelThrow[F]): LocalProvider[F, Context] =
+  def localProvider[F[_]: MonadCancelThrow: Console: LiftIO]: LocalProvider[F, Context] =
     new LocalProvider[F, Context] {
       val delegate = IOLocalContextStorage.localProvider[F]
 

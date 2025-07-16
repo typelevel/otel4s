@@ -22,7 +22,6 @@ import org.typelevel.scalaccompat.annotation.threadUnsafe3
 
 import java.nio.ByteBuffer
 import java.util.Base64
-import scala.collection.immutable
 
 /** Represents `any` type.
   *

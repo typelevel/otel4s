@@ -78,7 +78,7 @@ object AnyValue {
   }
 
   sealed trait ListValue extends AnyValue {
-    def value: immutable.Iterable[AnyValue]
+    def value: Seq[AnyValue]
   }
 
   sealed trait MapValue extends AnyValue {
@@ -114,7 +114,7 @@ object AnyValue {
 
   /** Creates an [[AnyValue]] from the given list of values.
     */
-  def list(values: immutable.Iterable[AnyValue]): ListValue =
+  def list(values: Seq[AnyValue]): ListValue =
     ListValueImpl(values)
 
   /** Creates a key-value list (map) of [[AnyValue]] from the given map.
@@ -181,7 +181,7 @@ object AnyValue {
   private[otel4s] final case class ByteArrayValueImpl(bytes: Array[Byte]) extends ByteArrayValue {
     def value: ByteBuffer = ByteBuffer.wrap(bytes).asReadOnlyBuffer()
   }
-  private[otel4s] final case class ListValueImpl(value: immutable.Iterable[AnyValue]) extends ListValue
+  private[otel4s] final case class ListValueImpl(value: Seq[AnyValue]) extends ListValue
   private[otel4s] final case class MapValueImpl(value: Map[String, AnyValue]) extends MapValue
   private[otel4s] case object EmptyValueImpl extends EmptyValue
 

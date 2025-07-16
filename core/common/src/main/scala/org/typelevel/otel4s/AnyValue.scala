@@ -136,7 +136,7 @@ object AnyValue {
       case ByteArrayValueImpl(value) => java.util.Arrays.hashCode(value)
       case ListValueImpl(values)     => values.map(hash).hashCode()
       case MapValueImpl(values)      => values.map { case (k, v) => (k, hash(v)) }.hashCode()
-      case x: EmptyValue             => System.identityHashCode(x)
+      case _: EmptyValue             => System.identityHashCode(EmptyValueImpl)
     }
 
     def eqv(x: AnyValue, y: AnyValue): Boolean = (x, y) match {

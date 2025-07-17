@@ -210,6 +210,7 @@ lazy val `core-logs` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .settings(munitDependencies)
   .settings(
     name := "otel4s-core-logs",
+    startYear := Some(2025),
     libraryDependencies ++= Seq(
       "org.typelevel" %%% "cats-laws" % CatsVersion % Test,
       "org.typelevel" %%% "discipline-munit" % MUnitDisciplineVersion % Test

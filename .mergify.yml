@@ -78,6 +78,14 @@ pull_request_rules:
       add:
       - tracing
       remove: []
+- name: Label logs PRs
+  conditions:
+  - files~=/(logs)/
+  actions:
+    label:
+      add:
+      - logs
+      remove: []
 - name: Label Scala Steward PRs
   conditions:
   - author=typelevel-steward[bot]

@@ -72,6 +72,11 @@ ThisBuild / mergifyPrRules ++= Seq(
     List(MergifyAction.Label(add = List("tracing")))
   ),
   MergifyPrRule(
+    "Label logs PRs",
+    List(MergifyCondition.Custom("files~=/(logs)/")),
+    List(MergifyAction.Label(add = List("logs")))
+  ),
+  MergifyPrRule(
     "Label Scala Steward PRs",
     List(MergifyCondition.Custom("author=typelevel-steward[bot]")),
     List(MergifyAction.Label(add = List("dependencies")))
@@ -130,6 +135,7 @@ semanticConventionsGenerate := {
 lazy val root = tlCrossRootProject
   .aggregate(
     `core-common`,
+    `core-logs`,
     `core-metrics`,
     `core-trace`,
     core,
@@ -194,6 +200,21 @@ lazy val `core-common` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
       "org.typelevel" %%% "discipline-munit" % MUnitDisciplineVersion % Test,
       "lgbt.princess" %%% "platform" % PlatformVersion % Test
     )
+  )
+
+lazy val `core-logs` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
+  .crossType(CrossType.Pure)
+  .in(file("core/logs"))
+  .enablePlugins(NoPublishPlugin)
+  .dependsOn(`core-common`)
+  .settings(munitDependencies)
+  .settings(
+    name := "otel4s-core-logs",
+    libraryDependencies ++= Seq(
+      "org.typelevel" %%% "cats-laws" % CatsVersion % Test,
+      "org.typelevel" %%% "discipline-munit" % MUnitDisciplineVersion % Test
+    ),
+    mimaPreviousArtifacts := Set.empty
   )
 
 lazy val `core-metrics` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
@@ -941,6 +962,7 @@ lazy val unidocs = project
     name := "otel4s-docs",
     ScalaUnidoc / unidoc / unidocProjectFilter := inProjects(
       `core-common`.jvm,
+      `core-logs`.jvm,
       `core-metrics`.jvm,
       `core-trace`.jvm,
       core.jvm,

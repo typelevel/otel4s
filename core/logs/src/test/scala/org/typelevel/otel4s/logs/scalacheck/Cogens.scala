@@ -22,7 +22,7 @@ import org.typelevel.otel4s.logs.Severity
 trait Cogens {
 
   implicit val severityCogen: Cogen[Severity] =
-    Cogen[Int].contramap(_.severity)
+    Cogen[Int].contramap(_.value)
 
 }
 

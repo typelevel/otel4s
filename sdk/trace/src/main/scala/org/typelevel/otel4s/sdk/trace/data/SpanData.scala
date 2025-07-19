@@ -89,7 +89,7 @@ sealed trait SpanData {
     */
   final def hasEnded: Boolean = endTimestamp.isDefined
 
-  override final def hashCode(): Int =
+  override final lazy val hashCode: Int =
     Hash[SpanData].hash(this)
 
   override final def equals(obj: Any): Boolean =

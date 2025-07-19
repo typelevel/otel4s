@@ -42,7 +42,7 @@ private[metrics] sealed trait MetricDescriptor {
     */
   def sourceInstrument: InstrumentDescriptor
 
-  override final def hashCode(): Int =
+  override final lazy val hashCode: Int =
     Hash[MetricDescriptor].hash(this)
 
   override final def equals(obj: Any): Boolean =

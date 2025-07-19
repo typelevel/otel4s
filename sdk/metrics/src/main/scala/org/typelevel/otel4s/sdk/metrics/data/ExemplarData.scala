@@ -51,7 +51,7 @@ sealed trait ExemplarData {
     */
   def value: Value
 
-  override final def hashCode(): Int =
+  override final lazy val hashCode: Int =
     Hash[ExemplarData].hash(this)
 
   override final def equals(obj: Any): Boolean =

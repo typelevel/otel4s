@@ -133,8 +133,8 @@ object AnyValue {
       case LongValueImpl(value)      => Hash[Long].hash(value)
       case DoubleValueImpl(value)    => Hash[Double].hash(value)
       case ByteArrayValueImpl(value) => java.util.Arrays.hashCode(value)
-      case ListValueImpl(values)     => values.map(hash).hashCode()
-      case MapValueImpl(values)      => values.map { case (k, v) => (k, hash(v)) }.hashCode()
+      case ListValueImpl(values)     => values.map(hash).hashCode
+      case MapValueImpl(values)      => values.map { case (k, v) => (k, hash(v)) }.hashCode
       case _: EmptyValue             => System.identityHashCode(EmptyValueImpl)
     }
 

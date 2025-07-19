@@ -57,7 +57,7 @@ sealed trait MetricData {
     */
   def resource: TelemetryResource
 
-  override final def hashCode(): Int =
+  override final lazy val hashCode: Int =
     Hash[MetricData].hash(this)
 
   override final def equals(obj: Any): Boolean =

@@ -46,7 +46,7 @@ sealed trait SpanLimits {
     */
   def maxAttributeValueLength: Int
 
-  override final def hashCode(): Int =
+  override final lazy val hashCode: Int =
     Hash[SpanLimits].hash(this)
 
   override final def equals(obj: Any): Boolean =

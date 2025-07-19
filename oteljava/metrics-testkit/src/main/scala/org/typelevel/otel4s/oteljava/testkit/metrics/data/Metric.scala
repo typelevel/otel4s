@@ -28,6 +28,7 @@ import io.opentelemetry.sdk.metrics.data.{SummaryPointData => JSummaryPointData}
 import io.opentelemetry.sdk.metrics.data.DoublePointData
 import io.opentelemetry.sdk.metrics.data.LongPointData
 import io.opentelemetry.sdk.metrics.data.MetricDataType
+import org.typelevel.scalaccompat.annotation.threadUnsafe3
 
 import scala.jdk.CollectionConverters._
 
@@ -47,7 +48,8 @@ sealed trait Metric {
 
   def data: MetricData
 
-  override def hashCode(): Int =
+  @threadUnsafe3
+  override lazy val hashCode: Int =
     Hash[Metric].hash(this)
 
   override def toString: String =

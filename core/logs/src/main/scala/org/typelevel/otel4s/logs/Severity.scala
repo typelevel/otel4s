@@ -33,7 +33,7 @@ import cats.Show
   */
 sealed abstract class Severity(val value: Int, val name: String) {
 
-  override final def hashCode(): Int =
+  override final lazy val hashCode: Int =
     Hash[Severity].hash(this)
 
   override final def equals(obj: Any): Boolean =

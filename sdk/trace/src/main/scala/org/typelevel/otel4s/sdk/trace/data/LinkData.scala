@@ -42,7 +42,7 @@ sealed trait LinkData {
     */
   def attributes: LimitedData[Attribute[_], Attributes]
 
-  override final def hashCode(): Int =
+  override final lazy val hashCode: Int =
     Hash[LinkData].hash(this)
 
   override final def equals(obj: Any): Boolean =

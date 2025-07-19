@@ -68,7 +68,7 @@ sealed trait SpanContext {
     */
   def isRemote: Boolean
 
-  override final def hashCode(): Int =
+  override final lazy val hashCode: Int =
     Hash[SpanContext].hash(this)
 
   override final def equals(obj: Any): Boolean =

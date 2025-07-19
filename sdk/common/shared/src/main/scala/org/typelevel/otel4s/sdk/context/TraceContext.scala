@@ -39,7 +39,7 @@ sealed trait TraceContext {
     */
   def isSampled: Boolean
 
-  override final def hashCode(): Int =
+  override final lazy val hashCode: Int =
     Hash[TraceContext].hash(this)
 
   override final def equals(obj: Any): Boolean =

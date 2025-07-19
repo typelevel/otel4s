@@ -35,7 +35,7 @@ sealed abstract class StatusData(val status: StatusCode) {
     */
   def description: Option[String]
 
-  override final def hashCode(): Int =
+  override final lazy val hashCode: Int =
     Hash[StatusData].hash(this)
 
   override final def equals(obj: Any): Boolean =

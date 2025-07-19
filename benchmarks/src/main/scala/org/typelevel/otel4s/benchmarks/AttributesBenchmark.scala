@@ -35,7 +35,7 @@ class AttributesBenchmark {
 
   @Benchmark
   def java_computeHashCode(): Unit = {
-    for (a <- jAttributes) { a.hashCode() }
+    for (a <- jAttributes) { a.hashCode }
   }
 
   @Benchmark
@@ -69,7 +69,7 @@ class AttributesBenchmark {
   @Benchmark
   def otel4s_computeHashCode(): Unit = {
     for (a <- attributes) {
-      a.hashCode()
+      a.hashCode
     }
   }
 

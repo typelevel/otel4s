@@ -35,7 +35,7 @@ sealed trait HistogramPointData {
 
   def counts: List[Long]
 
-  override def hashCode(): Int =
+  override lazy val hashCode: Int =
     Hash[HistogramPointData].hash(this)
 
   override def toString: String =

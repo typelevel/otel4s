@@ -20,6 +20,7 @@ package metrics.data
 import cats.Hash
 import cats.Show
 import cats.syntax.show._
+import org.typelevel.scalaccompat.annotation.threadUnsafe3
 import io.opentelemetry.sdk.metrics.data.{Data => JData}
 import io.opentelemetry.sdk.metrics.data.{HistogramPointData => JHistogramPointData}
 import io.opentelemetry.sdk.metrics.data.{MetricData => JMetricData}
@@ -47,7 +48,8 @@ sealed trait Metric {
 
   def data: MetricData
 
-  override def hashCode(): Int =
+  @threadUnsafe3
+  override lazy val hashCode: Int =
     Hash[Metric].hash(this)
 
   override def toString: String =

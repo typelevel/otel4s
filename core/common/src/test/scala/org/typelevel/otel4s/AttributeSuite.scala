@@ -96,6 +96,18 @@ class AttributeSuite extends FunSuite {
     assertEquals(attributes.get[Long]("asset.id").map(_.value), Some(123L))
   }
 
+  test("user implicit Attributes.Make to create attributes") {
+    case class User(id: Long, group: String)
+
+    implicit val userAttributesMake: Attributes.Make[User] =
+      user => Attributes(Attribute("user.id", user.id), Attribute("user.group", user.group))
+
+    val attributes = Attributes.from(User(123L, "admin"))
+
+    assertEquals(attributes.get[Long]("user.id").map(_.value), Some(123L))
+    assertEquals(attributes.get[String]("user.group").map(_.value), Some("admin"))
+  }
+
 }
 
 private object AttributeSuite {

@@ -19,6 +19,7 @@ package org.typelevel.otel4s.trace
 import cats.Hash
 import cats.Show
 import cats.syntax.show._
+import org.typelevel.scalaccompat.annotation.threadUnsafe3
 import scodec.bits.ByteVector
 
 /** A span context contains the state that must propagate to child spans and across process boundaries.
@@ -68,7 +69,8 @@ sealed trait SpanContext {
     */
   def isRemote: Boolean
 
-  override final def hashCode(): Int =
+  @threadUnsafe3
+  override final lazy val hashCode: Int =
     Hash[SpanContext].hash(this)
 
   override final def equals(obj: Any): Boolean =

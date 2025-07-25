@@ -20,6 +20,7 @@ package sdk.context
 import cats.Hash
 import cats.Show
 import cats.effect.kernel.Unique
+import org.typelevel.scalaccompat.annotation.threadUnsafe3
 
 /** A type-safe immutable storage.
   *
@@ -61,7 +62,8 @@ object Context {
       private[context] val unique: Unique.Token
   ) extends context.Key[A] {
 
-    override def hashCode(): Int = Hash[Key[A]].hash(this)
+    @threadUnsafe3
+    override lazy val hashCode: Int = Hash[Key[A]].hash(this)
 
     override def equals(obj: Any): Boolean =
       obj match {

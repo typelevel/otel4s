@@ -18,6 +18,7 @@ package org.typelevel.otel4s.trace
 
 import cats.Hash
 import cats.Show
+import org.typelevel.scalaccompat.annotation.threadUnsafe3
 import scodec.bits.ByteVector
 
 /** A valid trace flags is a byte or 2 character lowercase hex (base16) String.
@@ -38,7 +39,8 @@ sealed trait TraceFlags {
     */
   def isSampled: Boolean
 
-  override final def hashCode(): Int =
+  @threadUnsafe3
+  override final lazy val hashCode: Int =
     Hash[TraceFlags].hash(this)
 
   override final def equals(obj: Any): Boolean =

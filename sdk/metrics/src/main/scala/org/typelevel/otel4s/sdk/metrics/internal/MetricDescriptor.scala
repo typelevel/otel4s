@@ -21,6 +21,7 @@ import cats.kernel.Hash
 import cats.syntax.foldable._
 import org.typelevel.ci.CIString
 import org.typelevel.otel4s.sdk.metrics.view.View
+import org.typelevel.scalaccompat.annotation.threadUnsafe3
 
 /** Describes a metric that will be output.
   */
@@ -42,7 +43,8 @@ private[metrics] sealed trait MetricDescriptor {
     */
   def sourceInstrument: InstrumentDescriptor
 
-  override final def hashCode(): Int =
+  @threadUnsafe3
+  override final lazy val hashCode: Int =
     Hash[MetricDescriptor].hash(this)
 
   override final def equals(obj: Any): Boolean =

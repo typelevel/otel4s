@@ -38,7 +38,7 @@ sealed trait TraceFlags {
     */
   def isSampled: Boolean
 
-  override final lazy val hashCode: Int =
+  override final def hashCode(): Int =
     Hash[TraceFlags].hash(this)
 
   override final def equals(obj: Any): Boolean =

@@ -72,7 +72,7 @@ sealed trait TelemetryResource {
     */
   def mergeUnsafe(other: TelemetryResource): TelemetryResource
 
-  override final lazy val hashCode: Int =
+  override final def hashCode(): Int =
     Hash[TelemetryResource].hash(this)
 
   override final def equals(obj: Any): Boolean =

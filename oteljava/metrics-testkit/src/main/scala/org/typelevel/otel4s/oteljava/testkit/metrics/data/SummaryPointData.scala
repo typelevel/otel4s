@@ -33,7 +33,7 @@ sealed trait SummaryPointData {
 
   def values: List[QuantileData]
 
-  override lazy val hashCode: Int =
+  override def hashCode(): Int =
     Hash[SummaryPointData].hash(this)
 
   override def toString: String =

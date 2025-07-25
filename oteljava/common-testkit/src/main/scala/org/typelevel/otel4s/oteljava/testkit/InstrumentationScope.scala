@@ -35,7 +35,7 @@ sealed trait InstrumentationScope {
 
   def attributes: Attributes
 
-  override final lazy val hashCode: Int =
+  override final def hashCode(): Int =
     Hash[InstrumentationScope].hash(this)
 
   override final def equals(obj: Any): Boolean =

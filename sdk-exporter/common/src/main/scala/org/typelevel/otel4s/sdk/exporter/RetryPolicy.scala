@@ -42,7 +42,7 @@ sealed trait RetryPolicy {
     */
   def backoffMultiplier: Double
 
-  override final lazy val hashCode: Int =
+  override final def hashCode(): Int =
     Hash[RetryPolicy].hash(this)
 
   override final def equals(obj: Any): Boolean =

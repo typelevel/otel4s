@@ -26,7 +26,7 @@ sealed trait BucketBoundaries {
 
   final def length: Int = boundaries.length
 
-  override final lazy val hashCode: Int =
+  override final def hashCode(): Int =
     Hash[BucketBoundaries].hash(this)
 
   override final def equals(obj: Any): Boolean =

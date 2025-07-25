@@ -39,7 +39,7 @@ sealed trait PointData {
     */
   def attributes: Attributes
 
-  override final lazy val hashCode: Int =
+  override final def hashCode(): Int =
     Hash[PointData].hash(this)
 
   override final def equals(obj: Any): Boolean =
@@ -131,7 +131,7 @@ object PointData {
       /** The total population of points in the histogram. */
       def count: Long
 
-      override final lazy val hashCode: Int =
+      override final def hashCode(): Int =
         Hash[Stats].hash(this)
 
       override final def equals(obj: Any): Boolean =

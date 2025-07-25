@@ -33,7 +33,7 @@ sealed trait TimeWindow {
     */
   def end: FiniteDuration
 
-  override final lazy val hashCode: Int =
+  override final def hashCode(): Int =
     Hash[TimeWindow].hash(this)
 
   override final def equals(obj: Any): Boolean =

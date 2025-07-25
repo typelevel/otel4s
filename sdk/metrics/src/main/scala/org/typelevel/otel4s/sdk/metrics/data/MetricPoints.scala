@@ -32,7 +32,7 @@ sealed trait MetricPoints {
     */
   def points: NonEmptyVector[PointData]
 
-  override final lazy val hashCode: Int =
+  override final def hashCode(): Int =
     Hash[MetricPoints].hash(this)
 
   override final def equals(obj: Any): Boolean =

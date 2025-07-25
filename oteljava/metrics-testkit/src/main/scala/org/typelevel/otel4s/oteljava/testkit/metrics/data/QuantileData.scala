@@ -29,7 +29,7 @@ sealed trait QuantileData {
 
   def value: Double
 
-  override lazy val hashCode: Int =
+  override def hashCode(): Int =
     Hash[QuantileData].hash(this)
 
   override def toString: String =

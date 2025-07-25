@@ -32,7 +32,7 @@ private[metrics] sealed trait Advice {
     */
   def explicitBucketBoundaries: Option[BucketBoundaries]
 
-  override final lazy val hashCode: Int =
+  override final def hashCode(): Int =
     Hash[Advice].hash(this)
 
   override final def equals(obj: Any): Boolean =

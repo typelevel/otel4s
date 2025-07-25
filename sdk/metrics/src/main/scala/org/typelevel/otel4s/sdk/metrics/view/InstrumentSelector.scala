@@ -69,7 +69,7 @@ sealed trait InstrumentSelector {
   override final def toString: String =
     Show[InstrumentSelector].show(this)
 
-  override final lazy val hashCode: Int =
+  override final def hashCode(): Int =
     Hash[InstrumentSelector].hash(this)
 
   override final def equals(obj: Any): Boolean =

@@ -48,7 +48,7 @@ sealed trait SamplingResult {
     */
   def traceStateUpdater: SamplingResult.TraceStateUpdater
 
-  override final lazy val hashCode: Int =
+  override final def hashCode(): Int =
     Hash[SamplingResult].hash(this)
 
   override final def equals(obj: Any): Boolean =

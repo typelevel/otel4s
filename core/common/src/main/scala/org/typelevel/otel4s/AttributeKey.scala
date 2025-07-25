@@ -19,7 +19,6 @@ package org.typelevel.otel4s
 import cats.Hash
 import cats.Show
 import cats.syntax.show._
-import org.typelevel.scalaccompat.annotation.threadUnsafe3
 
 /** The type of value that can be set with an implementation of this key is denoted by the type parameter.
   *
@@ -98,8 +97,7 @@ object AttributeKey {
     override final def toString: String =
       Show[AttributeKey[A]].show(this)
 
-    @threadUnsafe3
-    override final lazy val hashCode: Int =
+    override final def hashCode(): Int =
       Hash[AttributeKey[A]].hash(this)
 
     override final def equals(obj: Any): Boolean =

@@ -91,7 +91,7 @@ sealed trait Baggage {
   /** Returns a map representation of this baggage. */
   def asMap: Map[String, Baggage.Entry]
 
-  override final lazy val hashCode: Int =
+  override final def hashCode(): Int =
     Hash[Baggage].hash(this)
 
   override final def equals(obj: Any): Boolean =
@@ -114,7 +114,7 @@ object Baggage {
   sealed trait Metadata {
     def value: String
 
-    override final lazy val hashCode: Int =
+    override final def hashCode(): Int =
       Hash[Metadata].hash(this)
 
     override final def equals(obj: Any): Boolean =
@@ -149,7 +149,7 @@ object Baggage {
       */
     def metadata: Option[Metadata]
 
-    override final lazy val hashCode: Int =
+    override final def hashCode(): Int =
       Hash[Entry].hash(this)
 
     override final def equals(obj: Any): Boolean =

@@ -23,7 +23,7 @@ import cats.syntax.show._
 sealed trait MetricData {
   def points: List[PointData[_]]
 
-  override final lazy val hashCode: Int =
+  override final def hashCode(): Int =
     Hash[MetricData].hash(this)
 
   override final def toString: String =

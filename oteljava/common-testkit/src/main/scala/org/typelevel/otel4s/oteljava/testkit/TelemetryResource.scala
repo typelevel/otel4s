@@ -31,7 +31,7 @@ sealed trait TelemetryResource {
 
   def schemaUrl: Option[String]
 
-  override final lazy val hashCode: Int =
+  override final def hashCode(): Int =
     Hash[TelemetryResource].hash(this)
 
   override final def toString: String =

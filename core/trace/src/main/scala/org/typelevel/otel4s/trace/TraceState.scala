@@ -18,7 +18,6 @@ package org.typelevel.otel4s.trace
 
 import cats.Show
 import cats.kernel.Hash
-import org.typelevel.scalaccompat.annotation.threadUnsafe3
 
 import scala.collection.immutable.ListMap
 import scala.collection.immutable.SeqMap
@@ -84,8 +83,7 @@ sealed trait TraceState {
   /** Returns a map representation of this state. */
   def asMap: SeqMap[String, String]
 
-  @threadUnsafe3
-  override final lazy val hashCode: Int =
+  override final def hashCode(): Int =
     Hash[TraceState].hash(this)
 
   override final def equals(obj: Any): Boolean =

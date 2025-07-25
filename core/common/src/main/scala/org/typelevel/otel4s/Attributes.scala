@@ -21,7 +21,6 @@ import cats.Monoid
 import cats.Show
 import cats.syntax.show._
 import org.typelevel.otel4s.AttributeKey.KeySelect
-import org.typelevel.scalaccompat.annotation.threadUnsafe3
 
 import scala.collection.IterableOps
 import scala.collection.SpecificIterableFactory
@@ -106,8 +105,7 @@ sealed trait Attributes
     attributesFactory.newBuilder
   override protected[this] def className: String = "Attributes"
 
-  @threadUnsafe3
-  override lazy val hashCode: Int =
+  override def hashCode(): Int =
     Hash[Attributes].hash(this)
 
   override def equals(obj: Any): Boolean =

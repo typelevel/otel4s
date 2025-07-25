@@ -47,7 +47,7 @@ sealed trait EventData {
     */
   def attributes: LimitedData[Attribute[_], Attributes]
 
-  override final lazy val hashCode: Int =
+  override final def hashCode(): Int =
     Hash[EventData].hash(this)
 
   override final def equals(obj: Any): Boolean =

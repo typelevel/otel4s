@@ -61,7 +61,7 @@ object Context {
       private[context] val unique: Unique.Token
   ) extends context.Key[A] {
 
-    override lazy val hashCode: Int = Hash[Key[A]].hash(this)
+    override def hashCode(): Int = Hash[Key[A]].hash(this)
 
     override def equals(obj: Any): Boolean =
       obj match {

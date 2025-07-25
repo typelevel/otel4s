@@ -21,6 +21,7 @@ package common
 import cats.Hash
 import cats.Show
 import cats.syntax.show._
+import org.typelevel.scalaccompat.annotation.threadUnsafe3
 
 /** Holds information about instrumentation scope.
   *
@@ -49,7 +50,8 @@ sealed trait InstrumentationScope {
     */
   def attributes: Attributes
 
-  override final def hashCode(): Int =
+  @threadUnsafe3
+  override final lazy val hashCode: Int =
     Hash[InstrumentationScope].hash(this)
 
   override final def equals(obj: Any): Boolean =

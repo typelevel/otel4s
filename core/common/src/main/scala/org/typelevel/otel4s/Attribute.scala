@@ -19,6 +19,7 @@ package org.typelevel.otel4s
 import cats.Hash
 import cats.Show
 import cats.syntax.show._
+import org.typelevel.scalaccompat.annotation.threadUnsafe3
 
 /** Represents the key-value attribute.
   *
@@ -38,7 +39,8 @@ sealed trait Attribute[A] {
     */
   def value: A
 
-  override final def hashCode(): Int =
+  @threadUnsafe3
+  override final lazy val hashCode: Int =
     Hash[Attribute[_]].hash(this)
 
   override final def equals(obj: Any): Boolean =

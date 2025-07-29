@@ -123,6 +123,25 @@ sealed trait Attributes
 object Attributes extends SpecificIterableFactory[Attribute[_], Attributes] {
   private val Empty = new MapAttributes(Map.empty)
 
+  /** Allows creating [[Attributes]] from an arbitrary type `A`.
+    *
+    * @example
+    *   {{{
+    * case class User(id: Long, group: String)
+    *
+    * implicit val userAttributesMake: Attributes.Make[User] =
+    *   user => Attributes(Attribute("user.id", user.id), Attribute("user.group", user.group))
+    *
+    * val attributes: Attributes = Attributes.from(User(1L, "admin"))
+    *   }}}
+    *
+    * @tparam A
+    *   the type of the value
+    */
+  trait Make[A] {
+    def make(a: A): Attributes
+  }
+
   /** Creates [[Attributes]] with the given `attributes`.
     *
     * @note
@@ -155,6 +174,21 @@ object Attributes extends SpecificIterableFactory[Attribute[_], Attributes] {
       case a: Attributes => a
       case other         => (newBuilder ++= other).result()
     }
+
+  /** Creates [[Attributes]] from the given value using an implicit [[Make]] instance.
+    *
+    * @example
+    *   {{{
+    * case class User(id: Long, group: String)
+    *
+    * implicit val userAttributesMake: Attributes.Make[User] =
+    *   user => Attributes(Attribute("user.id", user.id), Attribute("user.group", user.group))
+    *
+    * val attributes: Attributes = Attributes.from(User(1L, "admin"))
+    *   }}}
+    */
+  def from[A](value: A)(implicit make: Make[A]): Attributes =
+    make.make(value)
 
   implicit val showAttributes: Show[Attributes] = Show.show { attributes =>
     attributes.view

@@ -110,6 +110,15 @@ trait LogRecordBuilder[F[_], Ctx] {
     */
   def withBody(body: AnyValue): LogRecordBuilder[F, Ctx]
 
+  /** Sets the event name, which identifies the class or type of the event.
+    *
+    * This name should uniquely identify the event structure (both attributes and body).
+    *
+    * @note
+    *   on multiple subsequent calls, the value from the last call will be retained
+    */
+  def withEventName(eventName: String): LogRecordBuilder[F, Ctx]
+
   /** Adds the given attribute to the builder.
     *
     * @note
@@ -155,6 +164,7 @@ object LogRecordBuilder {
       def withSeverity(severity: Severity): LogRecordBuilder[F, Ctx] = this
       def withSeverityText(severityText: String): LogRecordBuilder[F, Ctx] = this
       def withBody(body: AnyValue): LogRecordBuilder[F, Ctx] = this
+      def withEventName(eventName: String): LogRecordBuilder[F, Ctx] = this
       def addAttribute[A](attribute: Attribute[A]): LogRecordBuilder[F, Ctx] = this
       def addAttributes(attributes: Attribute[_]*): LogRecordBuilder[F, Ctx] = this
       def addAttributes(attributes: immutable.Iterable[Attribute[_]]): LogRecordBuilder[F, Ctx] = this
@@ -191,6 +201,9 @@ object LogRecordBuilder {
 
     def withBody(body: AnyValue): LogRecordBuilder[G, Ctx] =
       builder.withBody(body).mapK
+
+    def withEventName(eventName: String): LogRecordBuilder[G, Ctx] =
+      builder.withEventName(eventName).mapK
 
     def addAttribute[A](attribute: Attribute[A]): LogRecordBuilder[G, Ctx] =
       builder.addAttribute(attribute).mapK

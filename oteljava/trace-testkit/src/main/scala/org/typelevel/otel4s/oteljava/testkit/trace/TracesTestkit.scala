@@ -55,10 +55,14 @@ trait TracesTestkit[F[_]] {
     * TracesTestkit[F].finishedSpans[SpanData] // OpenTelemetry Java models
     *   }}}
     *
-    * @note
-    *   each invocation cleans up the internal buffer.
+    * @see
+    *   [[resetSpans]] to reset the internal buffer
     */
   def finishedSpans[A: FromSpanData]: F[List[A]]
+
+  /** Resets the internal buffer.
+    */
+  def resetSpans: F[Unit]
 
   /** The propagators used by the [[org.typelevel.otel4s.trace.TracerProvider TracerProvider]].
     */
@@ -137,6 +141,8 @@ object TracesTestkit {
         result <- Async[F].delay(exporter.getFinishedSpanItems)
       } yield result.asScala.toList.map(FromSpanData[A].from)
 
+    def resetSpans: F[Unit] =
+      Async[F].delay(exporter.reset())
   }
 
 }

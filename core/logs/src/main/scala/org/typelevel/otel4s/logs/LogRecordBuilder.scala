@@ -146,6 +146,8 @@ trait LogRecordBuilder[F[_], Ctx] {
     */
   def emit: F[Unit]
 
+  /** Modify the context `F` using an implicit [[KindTransformer]] from `F` to `G`.
+    */
   def mapK[G[_]](implicit G: Monad[G], kt: KindTransformer[F, G]): LogRecordBuilder[G, Ctx] =
     new LogRecordBuilder.MappedK(this)
 

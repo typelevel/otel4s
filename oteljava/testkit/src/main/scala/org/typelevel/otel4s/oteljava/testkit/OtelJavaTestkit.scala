@@ -86,6 +86,7 @@ object OtelJavaTestkit {
     def tracerProvider: TracerProvider[F] = traces.tracerProvider
     def propagators: ContextPropagators[Context] = traces.propagators
     def finishedSpans[A: FromSpanData]: F[List[A]] = traces.finishedSpans
+    def resetSpans: F[Unit] = traces.resetSpans
     def collectMetrics[A: FromMetricData]: F[List[A]] = metrics.collectMetrics
   }
 

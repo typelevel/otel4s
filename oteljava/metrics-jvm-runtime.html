@@ -266,7 +266,7 @@
   ): </span><span class="type-name">Resource</span><span>[</span><span class="type-name">F</span><span>, </span><span class="type-name">Unit</span><span>] = {
     </span><span class="keyword">val</span><span> </span><span class="identifier">acquire</span><span> = </span><span class="type-name">Sync</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">delay</span><span>(</span><span class="type-name">RuntimeMetrics</span><span>.</span><span class="identifier">create</span><span>(</span><span class="identifier">openTelemetry</span><span>))
 
-    </span><span class="type-name">Resource</span><span>.</span><span class="identifier">make</span><span>(</span><span class="identifier">acquire</span><span>)(</span><span class="identifier">r</span><span> =&gt; </span><span class="type-name">Sync</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">delay</span><span>(</span><span class="identifier">r</span><span>.</span><span class="identifier">close</span><span>())).</span><span class="identifier">void</span><span>
+    </span><span class="type-name">Resource</span><span>.</span><span class="identifier">fromAutoCloseable</span><span>(</span><span class="identifier">acquire</span><span>).</span><span class="identifier">void</span><span>
   }
 
 }</span></code></pre>

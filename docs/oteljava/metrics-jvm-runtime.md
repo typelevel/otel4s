@@ -138,7 +138,7 @@ object Service extends IOApp.Simple {
   ): Resource[F, Unit] = {
     val acquire = Sync[F].delay(RuntimeMetrics.create(openTelemetry))
 
-    Resource.make(acquire)(r => Sync[F].delay(r.close())).void
+    Resource.fromAutoCloseable(acquire).void
   }
 
 }

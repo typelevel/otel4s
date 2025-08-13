@@ -28,7 +28,7 @@ private final case class SdkMeterBuilder[F[_]: Functor](
     name: String,
     version: Option[String] = None,
     schemaUrl: Option[String] = None
-) extends MeterBuilder[F] {
+) extends MeterBuilder.Unsealed[F] {
 
   def withVersion(version: String): MeterBuilder[F] =
     copy(version = Option(version))

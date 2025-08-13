@@ -59,7 +59,7 @@ private final class PrometheusMetricExporterAutoConfigure[
       "PrometheusMetricExporter",
       PrometheusMetricExporterAutoConfigure.ConfigKeys.All
     )
-    with AutoConfigure.Named[F, MetricExporter[F]] {
+    with AutoConfigure.Named.Unsealed[F, MetricExporter[F]] {
 
   import PrometheusMetricExporter.Defaults
   import PrometheusMetricExporterAutoConfigure.ConfigKeys

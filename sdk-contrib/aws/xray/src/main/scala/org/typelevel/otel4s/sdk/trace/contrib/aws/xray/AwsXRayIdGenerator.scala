@@ -63,7 +63,7 @@ object AwsXRayIdGenerator {
   * @see
   *   [[https://docs.aws.amazon.com/xray/latest/devguide/xray-api-sendingdata.html#xray-api-traceids]]
   */
-class AwsXRayIdGenerator[F[_]: Monad: Clock: Random] extends IdGenerator[F] {
+class AwsXRayIdGenerator[F[_]: Monad: Clock: Random] extends IdGenerator.Unsealed[F] {
   override def generateSpanId: F[ByteVector] =
     Random[F].nextLong
       .iterateUntil(_ != 0L)

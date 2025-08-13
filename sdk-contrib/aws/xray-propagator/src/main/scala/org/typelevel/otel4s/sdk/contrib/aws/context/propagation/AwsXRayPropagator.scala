@@ -36,7 +36,7 @@ import scodec.bits.ByteVector
   * @see
   *   [[https://docs.aws.amazon.com/xray/latest/devguide/xray-concepts.html#xray-concepts-tracingheader]]
   */
-private final class AwsXRayPropagator extends TextMapPropagator[Context] {
+private final class AwsXRayPropagator extends TextMapPropagator.Unsealed[Context] {
   import AwsXRayPropagator.Const
   import AwsXRayPropagator.Headers
 

@@ -38,7 +38,7 @@ private[oteljava] case class HistogramBuilderImpl[F[_], A](
     unit: Option[String] = None,
     description: Option[String] = None,
     boundaries: Option[BucketBoundaries] = None
-) extends Histogram.Builder[F, A] {
+) extends Histogram.Builder.Unsealed[F, A] {
 
   def withUnit(unit: String): Histogram.Builder[F, A] =
     copy(unit = Option(unit))
@@ -103,7 +103,7 @@ object HistogramBuilderImpl {
           )
           val histogram = builder.ofLongs().build
 
-          val backend = new Histogram.Backend[F, A] {
+          val backend = new Histogram.Backend.Unsealed[F, A] {
             val meta: InstrumentMeta.Dynamic[F] = instrumentMeta
 
             def record(
@@ -164,7 +164,7 @@ object HistogramBuilderImpl {
           )
           val histogram = builder.build
 
-          val backend = new Histogram.Backend[F, A] {
+          val backend = new Histogram.Backend.Unsealed[F, A] {
             val meta: InstrumentMeta.Dynamic[F] = instrumentMeta
 
             def record(

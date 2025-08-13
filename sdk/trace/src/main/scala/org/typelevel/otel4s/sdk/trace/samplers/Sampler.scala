@@ -30,7 +30,7 @@ import scodec.bits.ByteVector
   * @see
   *   [[https://opentelemetry.io/docs/specs/otel/trace/sdk/#sampler]]
   */
-trait Sampler[F[_]] {
+sealed trait Sampler[F[_]] {
 
   /** Called during span creation to make a sampling result.
     *
@@ -69,6 +69,7 @@ trait Sampler[F[_]] {
 }
 
 object Sampler {
+  private[otel4s] trait Unsealed[F[_]] extends Sampler[F]
 
   /** Always returns the [[SamplingResult.RecordAndSample]].
     *

@@ -57,7 +57,7 @@ private final class BatchSpanProcessor[F[_]: Temporal: Console] private (
     state: Ref[F, BatchSpanProcessor.State],
     exporter: SpanExporter[F],
     config: BatchSpanProcessor.Config
-) extends SpanProcessor[F] {
+) extends SpanProcessor.Unsealed[F] {
   import BatchSpanProcessor.State
 
   private val unit = Temporal[F].unit
@@ -184,7 +184,7 @@ private final class BatchSpanProcessor[F[_]: Temporal: Console] private (
 object BatchSpanProcessor {
 
   /** Builder for [[BatchSpanProcessor]]. */
-  trait Builder[F[_]] {
+  sealed trait Builder[F[_]] {
 
     /** Sets the delay interval between two consecutive exports.
       *

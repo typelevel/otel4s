@@ -35,7 +35,7 @@ import org.typelevel.otel4s.sdk.metrics.data.MetricData
   */
 private final class ConsoleMetricExporter[F[_]: Monad: Console](
     val aggregationTemporalitySelector: AggregationTemporalitySelector
-) extends MetricExporter.Push[F] {
+) extends MetricExporter.Push.Unsealed[F] {
 
   val name: String = "ConsoleMetricExporter"
 

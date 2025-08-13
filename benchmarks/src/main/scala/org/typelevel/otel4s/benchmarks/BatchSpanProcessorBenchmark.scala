@@ -155,7 +155,7 @@ object BatchSpanProcessorBenchmark {
       import org.typelevel.otel4s.sdk.trace.exporter.SpanExporter
       import org.typelevel.otel4s.sdk.trace.processor.BatchSpanProcessor
 
-      val exporter: SpanExporter[IO] = new SpanExporter[IO] {
+      val exporter: SpanExporter[IO] = new SpanExporter.Unsealed[IO] {
         def name: String = s"DelayExporter($delay)"
         def exportSpans[G[_]: Foldable](spans: G[SpanData]): IO[Unit] = IO.sleep(delay)
         def flush: IO[Unit] = IO.unit

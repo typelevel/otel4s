@@ -24,7 +24,7 @@ import cats.Show
   * @note
   *   Implementations MUST treat different instances as non-equal.
   */
-trait Key[A] {
+sealed trait Key[A] {
 
   /** The debug name of the key. */
   val name: String
@@ -33,19 +33,21 @@ trait Key[A] {
 }
 
 object Key {
+  private[otel4s] trait Unsealed[A] extends Key[A]
 
   /** Something that provides context keys.
     *
     * @tparam K
     *   the type of keys
     */
-  trait Provider[F[_], K[X] <: Key[X]] {
+  sealed trait Provider[F[_], K[X] <: Key[X]] {
 
     /** Creates a unique key with the given (debug) name. */
     def uniqueKey[A](name: String): F[K[A]]
   }
 
   object Provider {
+    private[otel4s] trait Unsealed[F[_], K[X] <: Key[X]] extends Provider[F, K]
 
     /** Summons a [[`Provider`]] that is available implicitly. */
     def apply[F[_], K[X] <: Key[X]](implicit

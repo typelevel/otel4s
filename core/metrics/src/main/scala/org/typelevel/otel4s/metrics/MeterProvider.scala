@@ -20,7 +20,7 @@ import cats.Applicative
 
 /** A registry for creating named [[Meter]].
   */
-trait MeterProvider[F[_]] {
+sealed trait MeterProvider[F[_]] {
 
   /** Creates a named [[Meter]].
     *
@@ -58,6 +58,7 @@ trait MeterProvider[F[_]] {
 }
 
 object MeterProvider {
+  private[otel4s] trait Unsealed[F[_]] extends MeterProvider[F]
 
   def apply[F[_]](implicit ev: MeterProvider[F]): MeterProvider[F] = ev
 

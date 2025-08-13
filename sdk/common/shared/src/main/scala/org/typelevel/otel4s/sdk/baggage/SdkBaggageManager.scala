@@ -23,7 +23,7 @@ import org.typelevel.otel4s.baggage.BaggageManager
 import org.typelevel.otel4s.sdk.context.Context
 import org.typelevel.otel4s.sdk.context.LocalContext
 
-private final class SdkBaggageManager[F[_]](implicit localContext: LocalContext[F]) extends BaggageManager[F] {
+private final class SdkBaggageManager[F[_]](implicit localContext: LocalContext[F]) extends BaggageManager.Unsealed[F] {
   import SdkBaggageManager._
 
   protected def applicative: Applicative[F] =

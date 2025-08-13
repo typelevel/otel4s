@@ -45,9 +45,9 @@ import org.typelevel.otel4s.trace.TracerProvider
 
 sealed abstract class OpenTelemetrySdkTestkit[F[_]] private (implicit
     val localContext: LocalContext[F]
-) extends Otel4s[F]
-    with MetricsTestkit[F]
-    with TracesTestkit[F] {
+) extends Otel4s.Unsealed[F]
+    with MetricsTestkit.Unsealed[F]
+    with TracesTestkit.Unsealed[F] {
 
   type Ctx = Context
 
@@ -93,7 +93,7 @@ object OpenTelemetrySdkTestkit {
   ): Resource[F, OpenTelemetrySdkTestkit[F]] =
     Resource.eval(LocalProvider[F, Context].local).flatMap { implicit local =>
       val traceContextLookup: TraceContext.Lookup =
-        new TraceContext.Lookup {
+        new TraceContext.Lookup.Unsealed {
           def get(context: Context): Option[TraceContext] =
             context
               .get(SdkContextKeys.SpanContextKey)

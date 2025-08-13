@@ -27,7 +27,7 @@ import org.typelevel.otel4s.sdk.trace.data.SpanData
   * @note
   *   use this exporter for debugging purposes because it may affect the performance
   */
-private final class ConsoleSpanExporter[F[_]: Applicative: Console] extends SpanExporter[F] {
+private final class ConsoleSpanExporter[F[_]: Applicative: Console] extends SpanExporter.Unsealed[F] {
 
   val name: String = "ConsoleSpanExporter"
 

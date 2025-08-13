@@ -69,7 +69,7 @@ object MetricExporter {
     * @tparam F
     *   the higher-kinded type of a polymorphic effect
     */
-  trait Push[F[_]] extends MetricExporter[F] {
+  sealed trait Push[F[_]] extends MetricExporter[F] {
 
     /** Exports the sampled `MetricData`.
       *
@@ -83,6 +83,10 @@ object MetricExporter {
     def flush: F[Unit]
   }
 
+  object Push {
+    private[otel4s] trait Unsealed[F[_]] extends Push[F]
+  }
+
   /** A pull based interface for exporting `MetricData`.
     *
     * Implementation examples:
@@ -91,8 +95,12 @@ object MetricExporter {
     * @tparam F
     *   the higher-kinded type of a polymorphic effect
     */
-  trait Pull[F[_]] extends MetricExporter[F] {
+  sealed trait Pull[F[_]] extends MetricExporter[F] {
     def metricReader: MetricReader[F]
+  }
+
+  object Pull {
+    private[otel4s] trait Unsealed[F[_]] extends Pull[F]
   }
 
   def noop[F[_]: Applicative]: MetricExporter[F] =

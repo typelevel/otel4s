@@ -35,7 +35,7 @@ import org.typelevel.otel4s.trace.SpanContext
   * @tparam F
   *   the higher-kinded type of a polymorphic effect
   */
-trait SpanProcessor[F[_]] {
+sealed trait SpanProcessor[F[_]] {
 
   /** The name of the processor.
     *
@@ -74,6 +74,7 @@ trait SpanProcessor[F[_]] {
 }
 
 object SpanProcessor {
+  private[otel4s] trait Unsealed[F[_]] extends SpanProcessor[F]
 
   /** Evaluated when a span is started.
     *

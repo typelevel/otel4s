@@ -20,7 +20,7 @@ import cats.Apply
 import cats.effect.Resource
 import cats.syntax.apply._
 
-trait BatchCallback[F[_]] {
+sealed trait BatchCallback[F[_]] {
 
   /** Constructs a batch callback.
     *
@@ -289,6 +289,7 @@ trait BatchCallback[F[_]] {
 }
 
 object BatchCallback {
+  private[otel4s] trait Unsealed[F[_]] extends BatchCallback[F]
 
   def noop[F[_]]: BatchCallback[F] =
     new BatchCallback[F] {

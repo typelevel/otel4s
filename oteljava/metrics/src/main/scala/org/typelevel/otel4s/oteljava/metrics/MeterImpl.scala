@@ -24,7 +24,7 @@ import org.typelevel.otel4s.meta.InstrumentMeta
 import org.typelevel.otel4s.metrics._
 import org.typelevel.otel4s.oteljava.context.AskContext
 
-private[oteljava] class MeterImpl[F[_]: Async: AskContext](jMeter: JMeter) extends Meter[F] {
+private[oteljava] class MeterImpl[F[_]: Async: AskContext](jMeter: JMeter) extends Meter.Unsealed[F] {
 
   val meta: InstrumentMeta.Dynamic[F] = InstrumentMeta.Dynamic.enabled
 

@@ -54,7 +54,7 @@ private class PeriodicMetricReader[F[_]: Temporal: Console] private (
     metricProducers: Ref[F, Vector[MetricProducer[F]]],
     exporter: MetricExporter.Push[F],
     config: PeriodicMetricReader.Config
-) extends MetricReader[F] {
+) extends MetricReader.Unsealed[F] {
 
   def defaultAggregationSelector: AggregationSelector =
     exporter.defaultAggregationSelector

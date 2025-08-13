@@ -219,7 +219,7 @@ trait SpanOps[F[_]] {
     * A shortcut for:
     * {{{
     * val tracer: Tracer[F] = ???
-    * val ops: SpanOps.Aux[F, Span[F]] = tracer.spanBuilder("auto-span").build
+    * val ops: SpanOps[F] = tracer.spanBuilder("auto-span").build
     * ops.use(_ => F.unit) <-> ops.use_
     * }}}
     *
@@ -233,7 +233,7 @@ trait SpanOps[F[_]] {
     * A shortcut for:
     * {{{
     * val tracer: Tracer[F] = ???
-    * val ops: SpanOps.Aux[F, Span[F]] = tracer.spanBuilder("auto-span").build
+    * val ops: SpanOps[F] = tracer.spanBuilder("auto-span").build
     * ops.use(_ => fa) <-> ops.surround(fa)
     * }}}
     *

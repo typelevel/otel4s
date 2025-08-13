@@ -84,7 +84,7 @@ object MetricExporter {
   }
 
   object Push {
-    private[otel4s] trait Unsealed[F[_]] extends Push[F]
+    private[sdk] trait Unsealed[F[_]] extends Push[F]
   }
 
   /** A pull based interface for exporting `MetricData`.
@@ -100,7 +100,7 @@ object MetricExporter {
   }
 
   object Pull {
-    private[otel4s] trait Unsealed[F[_]] extends Pull[F]
+    private[sdk] trait Unsealed[F[_]] extends Pull[F]
   }
 
   def noop[F[_]: Applicative]: MetricExporter[F] =

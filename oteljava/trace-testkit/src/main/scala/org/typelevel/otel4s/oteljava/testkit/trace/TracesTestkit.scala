@@ -75,7 +75,7 @@ sealed trait TracesTestkit[F[_]] {
 }
 
 object TracesTestkit {
-  private[otel4s] trait Unsealed[F[_]] extends TracesTestkit[F]
+  private[oteljava] trait Unsealed[F[_]] extends TracesTestkit[F]
 
   /** Creates [[TracesTestkit]] that keeps spans in-memory.
     *

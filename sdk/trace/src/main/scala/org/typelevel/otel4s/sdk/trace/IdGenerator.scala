@@ -49,7 +49,7 @@ sealed trait IdGenerator[F[_]] {
 }
 
 object IdGenerator {
-  private[otel4s] trait Unsealed[F[_]] extends IdGenerator[F]
+  private[sdk] trait Unsealed[F[_]] extends IdGenerator[F]
 
   private final val InvalidId = 0
 

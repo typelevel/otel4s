@@ -54,7 +54,7 @@ sealed trait MetricsTestkit[F[_]] {
 }
 
 object MetricsTestkit {
-  private[otel4s] trait Unsealed[F[_]] extends MetricsTestkit[F]
+  private[oteljava] trait Unsealed[F[_]] extends MetricsTestkit[F]
 
   /** Creates [[MetricsTestkit]] that keeps metrics in-memory.
     *

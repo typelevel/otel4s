@@ -69,7 +69,7 @@ sealed trait Sampler[F[_]] {
 }
 
 object Sampler {
-  private[otel4s] trait Unsealed[F[_]] extends Sampler[F]
+  private[sdk] trait Unsealed[F[_]] extends Sampler[F]
 
   /** Always returns the [[SamplingResult.RecordAndSample]].
     *

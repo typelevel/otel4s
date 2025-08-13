@@ -35,5 +35,5 @@ sealed trait MetricProducer[F[_]] {
 }
 
 object MetricProducer {
-  private[otel4s] trait Unsealed[F[_]] extends MetricProducer[F]
+  private[sdk] trait Unsealed[F[_]] extends MetricProducer[F]
 }

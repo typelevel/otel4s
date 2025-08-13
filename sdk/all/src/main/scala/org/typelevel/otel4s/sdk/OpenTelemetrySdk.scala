@@ -377,7 +377,7 @@ object OpenTelemetrySdk {
           def makeLocalContext = LocalProvider[F, Context].local
 
           val traceContextLookup: TraceContext.Lookup =
-            new TraceContext.Lookup.Unsealed {
+            new TraceContext.Lookup {
               def get(context: Context): Option[TraceContext] =
                 context
                   .get(SdkContextKeys.SpanContextKey)

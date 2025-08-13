@@ -202,7 +202,7 @@ class SimpleSpanProcessorSuite extends CatsEffectSuite with ScalaCheckEffectSuit
   private class FailingExporter(
       exporterName: String,
       onExport: Throwable
-  ) extends SpanExporter[IO] {
+  ) extends SpanExporter.Unsealed[IO] {
     def name: String = exporterName
 
     def exportSpans[G[_]: Foldable](spans: G[SpanData]): IO[Unit] =

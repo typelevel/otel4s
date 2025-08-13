@@ -76,7 +76,7 @@ object IOLocalContextStorage {
     *   }}}
     */
   def localProvider[F[_]: Console: LiftIO](implicit F: MonadCancelThrow[F]): LocalProvider[F, Context] =
-    new LocalProvider[F, Context] {
+    new LocalProvider.Unsealed[F, Context] {
       def local: F[Local[F, Context]] =
         ContextStorage.get() match {
           case storage: IOLocalContextStorage =>

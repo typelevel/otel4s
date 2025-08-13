@@ -52,7 +52,7 @@ import org.typelevel.otel4s.sdk.metrics.data.PointData.LongNumber
 
 import scala.collection.immutable.ListMap
 
-trait PrometheusWriter[F[_]] {
+sealed trait PrometheusWriter[F[_]] {
   def contentType: String
   def write[G[_]: Foldable](metrics: G[MetricData]): Stream[F, Byte]
 }

@@ -32,7 +32,7 @@ private[oteljava] case class UpDownCounterBuilderImpl[F[_], A](
     name: String,
     unit: Option[String] = None,
     description: Option[String] = None
-) extends UpDownCounter.Builder[F, A] {
+) extends UpDownCounter.Builder.Unsealed[F, A] {
 
   def withUnit(unit: String): UpDownCounter.Builder[F, A] =
     copy(unit = Option(unit))
@@ -84,7 +84,7 @@ private[oteljava] object UpDownCounterBuilderImpl {
           description.foreach(builder.setDescription)
           val counter = builder.build()
 
-          val backend = new UpDownCounter.Backend[F, A] {
+          val backend = new UpDownCounter.Backend.Unsealed[F, A] {
             val meta: InstrumentMeta.Dynamic[F] = instrumentMeta
 
             def add(
@@ -129,7 +129,7 @@ private[oteljava] object UpDownCounterBuilderImpl {
           description.foreach(builder.setDescription)
           val counter = builder.ofDoubles().build()
 
-          val backend = new UpDownCounter.Backend[F, A] {
+          val backend = new UpDownCounter.Backend.Unsealed[F, A] {
             val meta: InstrumentMeta.Dynamic[F] = instrumentMeta
 
             def add(

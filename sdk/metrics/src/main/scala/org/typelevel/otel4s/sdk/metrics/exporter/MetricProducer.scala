@@ -26,10 +26,14 @@ import org.typelevel.otel4s.sdk.metrics.data.MetricData
   * @tparam F
   *   the higher-kinded type of a polymorphic effect
   */
-trait MetricProducer[F[_]] {
+sealed trait MetricProducer[F[_]] {
 
   /** Produces metrics by collecting them from the SDK. If there are asynchronous instruments involved, their callback
     * functions will be evaluated.
     */
   def produce: F[Vector[MetricData]]
+}
+
+object MetricProducer {
+  private[otel4s] trait Unsealed[F[_]] extends MetricProducer[F]
 }

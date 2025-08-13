@@ -26,7 +26,7 @@ import org.typelevel.otel4s.metrics.ObservableMeasurement
 
 private final class BatchCallbackImpl[F[_]: Async](
     jMeter: JMeter
-) extends BatchCallback[F] {
+) extends BatchCallback.Unsealed[F] {
 
   def apply(
       callback: F[Unit],

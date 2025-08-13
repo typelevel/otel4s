@@ -49,7 +49,7 @@ val provider = LocalProvider[${F}, ${Ctx}]
 
 val provider = LocalProvider[IO, ${Ctx}]
 """)
-trait LocalProvider[F[_], Ctx] {
+sealed trait LocalProvider[F[_], Ctx] {
 
   /** Creates a [[cats.mtl.Local Local]] instance. The method is invoked once per creation of the Otel4s instance.
     */
@@ -57,6 +57,7 @@ trait LocalProvider[F[_], Ctx] {
 }
 
 object LocalProvider extends LocalProviderLowPriority {
+  private[otel4s] trait Unsealed[F[_], Ctx] extends LocalProvider[F, Ctx]
 
   def apply[F[_], C](implicit ev: LocalProvider[F, C]): LocalProvider[F, C] = ev
 

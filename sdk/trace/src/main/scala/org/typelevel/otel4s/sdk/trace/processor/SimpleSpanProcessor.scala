@@ -38,7 +38,7 @@ import org.typelevel.otel4s.sdk.trace.exporter.SpanExporter
 private final class SimpleSpanProcessor[F[_]: MonadThrow: Console] private (
     exporter: SpanExporter[F],
     exportOnlySampled: Boolean
-) extends SpanProcessor[F] {
+) extends SpanProcessor.Unsealed[F] {
 
   val name: String =
     s"SimpleSpanProcessor{exporter=${exporter.name}, exportOnlySampled=$exportOnlySampled}"

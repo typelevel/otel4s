@@ -25,6 +25,7 @@ import cats.syntax.flatMap._
 import cats.syntax.foldable._
 import cats.syntax.functor._
 import org.typelevel.ci.CIString
+import org.typelevel.otel4s.Attributes
 import org.typelevel.otel4s.metrics.Measurement
 import org.typelevel.otel4s.metrics.MeasurementValue
 import org.typelevel.otel4s.metrics.ObservableGauge
@@ -49,7 +50,7 @@ private object SdkObservableGauge {
       sharedState: MeterSharedState[F],
       unit: Option[String] = None,
       description: Option[String] = None
-  ) extends ObservableGauge.Builder[F, A] {
+  ) extends ObservableGauge.Builder.Unsealed[F, A] {
 
     def withUnit(unit: String): ObservableGauge.Builder[F, A] =
       copy(unit = Some(unit))
@@ -68,13 +69,14 @@ private object SdkObservableGauge {
             sharedState
               .registerObservableMeasurement[Long](descriptor)
               .map { observable =>
-                val callback = cb { (value, attributes) =>
-                  observable.record(cast(value), attributes)
+                val measurement = new ObservableMeasurement.Unsealed[F, A] {
+                  def record(value: A, attributes: Attributes): F[Unit] =
+                    observable.record(cast(value), attributes)
                 }
 
                 new CallbackRegistration[F](
                   NonEmptyList.one(observable),
-                  callback
+                  cb(measurement)
                 )
               }
 
@@ -82,13 +84,14 @@ private object SdkObservableGauge {
             sharedState
               .registerObservableMeasurement[Double](descriptor)
               .map { observable =>
-                val callback = cb { (value, attributes) =>
-                  observable.record(cast(value), attributes)
+                val measurement = new ObservableMeasurement.Unsealed[F, A] {
+                  def record(value: A, attributes: Attributes): F[Unit] =
+                    observable.record(cast(value), attributes)
                 }
 
                 new CallbackRegistration[F](
                   NonEmptyList.one(observable),
-                  callback
+                  cb(measurement)
                 )
               }
         }
@@ -96,7 +99,7 @@ private object SdkObservableGauge {
       for {
         cr <- Resource.eval(makeCallbackRegistration)
         _ <- sharedState.withCallback(cr)
-      } yield new ObservableGauge {}
+      } yield ObservableGauge.noop
     }
 
     def create(

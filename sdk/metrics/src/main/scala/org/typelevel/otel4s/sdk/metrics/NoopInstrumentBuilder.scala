@@ -36,7 +36,7 @@ private object NoopInstrumentBuilder {
   def counter[F[_]: Applicative: Console, A](
       name: String
   ): Counter.Builder[F, A] =
-    new Counter.Builder[F, A] {
+    new Counter.Builder.Unsealed[F, A] {
       val noopCounter = Counter.noop[F, A]
 
       def withUnit(unit: String): Counter.Builder[F, A] =
@@ -52,7 +52,7 @@ private object NoopInstrumentBuilder {
   def histogram[F[_]: Applicative: Console, A](
       name: String
   ): Histogram.Builder[F, A] =
-    new Histogram.Builder[F, A] {
+    new Histogram.Builder.Unsealed[F, A] {
       val noopHistogram = Histogram.noop[F, A]
 
       def withUnit(unit: String): Histogram.Builder[F, A] =
@@ -72,7 +72,7 @@ private object NoopInstrumentBuilder {
   def upDownCounter[F[_]: Applicative: Console, A](
       name: String
   ): UpDownCounter.Builder[F, A] =
-    new UpDownCounter.Builder[F, A] {
+    new UpDownCounter.Builder.Unsealed[F, A] {
       val noopUpDownCounter = UpDownCounter.noop[F, A]
 
       def withUnit(unit: String): UpDownCounter.Builder[F, A] =
@@ -88,7 +88,7 @@ private object NoopInstrumentBuilder {
   def gauge[F[_]: Applicative: Console, A](
       name: String
   ): Gauge.Builder[F, A] =
-    new Gauge.Builder[F, A] {
+    new Gauge.Builder.Unsealed[F, A] {
       val noopGauge = Gauge.noop[F, A]
 
       def withUnit(unit: String): Gauge.Builder[F, A] =
@@ -104,7 +104,7 @@ private object NoopInstrumentBuilder {
   def observableGauge[F[_]: Applicative: Console, A](
       name: String
   ): ObservableGauge.Builder[F, A] =
-    new ObservableGauge.Builder[F, A] {
+    new ObservableGauge.Builder.Unsealed[F, A] {
       def withUnit(unit: String): ObservableGauge.Builder[F, A] =
         this
 
@@ -125,7 +125,7 @@ private object NoopInstrumentBuilder {
         warn.as(ObservableMeasurement.noop)
 
       private def createNoop: Resource[F, ObservableGauge] =
-        Resource.eval(warn).as(new ObservableGauge {})
+        Resource.eval(warn).as(ObservableGauge.noop)
 
       private def warn: F[Unit] =
         NoopInstrumentBuilder.warn("ObservableGauge", name)
@@ -134,7 +134,7 @@ private object NoopInstrumentBuilder {
   def observableCounter[F[_]: Applicative: Console, A](
       name: String
   ): ObservableCounter.Builder[F, A] =
-    new ObservableCounter.Builder[F, A] {
+    new ObservableCounter.Builder.Unsealed[F, A] {
       def withUnit(unit: String): ObservableCounter.Builder[F, A] =
         this
 
@@ -166,7 +166,7 @@ private object NoopInstrumentBuilder {
   def observableUpDownCounter[F[_]: Applicative: Console, A](
       name: String
   ): ObservableUpDownCounter.Builder[F, A] =
-    new ObservableUpDownCounter.Builder[F, A] {
+    new ObservableUpDownCounter.Builder.Unsealed[F, A] {
       def withUnit(unit: String): ObservableUpDownCounter.Builder[F, A] =
         this
 

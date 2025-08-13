@@ -181,7 +181,7 @@ class OpenTelemetrySdkSuite extends CatsEffectSuite {
     )
 
     def customExporter(exporterName: String): SpanExporter[IO] =
-      new SpanExporter[IO] {
+      new SpanExporter.Unsealed[IO] {
         def name: String = exporterName
         def exportSpans[G[_]: Foldable](spans: G[SpanData]): IO[Unit] = IO.unit
         def flush: IO[Unit] = IO.unit

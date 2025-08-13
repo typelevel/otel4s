@@ -60,7 +60,7 @@ object Context {
   final class Key[A] private (
       val name: String,
       private[context] val unique: Unique.Token
-  ) extends context.Key[A] {
+  ) extends context.Key.Unsealed[A] {
 
     @threadUnsafe3
     override lazy val hashCode: Int = Hash[Key[A]].hash(this)
@@ -100,7 +100,7 @@ object Context {
     implicit def keyShow[A]: Show[Key[A]] = Show(k => s"Key(${k.name})")
 
     implicit def keyProvider[F[_]: Unique]: context.Key.Provider[F, Key] =
-      new context.Key.Provider[F, Key] {
+      new context.Key.Provider.Unsealed[F, Key] {
         def uniqueKey[A](name: String): F[Key[A]] = unique(name)
       }
   }
@@ -115,7 +115,7 @@ object Context {
       .mkString("Context{", ", ", "}")
   }
 
-  implicit object Contextual extends context.Contextual[Context] {
+  implicit object Contextual extends context.Contextual.Unsealed[Context] {
     type Key[A] = Context.Key[A]
 
     def get[A](ctx: Context)(key: Key[A]): Option[A] =

@@ -27,7 +27,7 @@ import org.typelevel.otel4s.sdk.trace.data.SpanData
 // todo: should be in the testkit package
 final class InMemorySpanExporter[F[_]: Monad] private (
     queue: Queue[F, SpanData]
-) extends SpanExporter[F] {
+) extends SpanExporter.Unsealed[F] {
   val name: String = "InMemorySpanExporter"
 
   def exportSpans[G[_]: Foldable](spans: G[SpanData]): F[Unit] =

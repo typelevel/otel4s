@@ -40,7 +40,7 @@ tracerProvider
   .get("com.service.runtime")
   .flatMap { implicit tracer: Tracer[IO] => ??? }
 """)
-trait Tracer[F[_]] extends TracerMacro[F] {
+sealed trait Tracer[F[_]] extends TracerMacro[F] {
 
   /** The instrument's metadata. Indicates whether instrumentation is enabled or not.
     */
@@ -207,6 +207,8 @@ trait Tracer[F[_]] extends TracerMacro[F] {
 }
 
 object Tracer {
+  private[otel4s] trait Unsealed[F[_]] extends Tracer[F]
+
   private[otel4s] def raiseNoCurrentSpan[F[_]](implicit
       F: ApplicativeThrow[F]
   ): F[Span[F]] =

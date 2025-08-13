@@ -33,7 +33,7 @@ import scala.concurrent.duration.FiniteDuration
   * @tparam F
   *   the higher-kinded type of a polymorphic effect
   */
-trait MetricReader[F[_]] {
+sealed trait MetricReader[F[_]] {
 
   /** The preferred aggregation temporality for the given instrument.
     */
@@ -72,6 +72,7 @@ trait MetricReader[F[_]] {
 }
 
 object MetricReader {
+  private[otel4s] trait Unsealed[F[_]] extends MetricReader[F]
 
   /** Creates a period metric reader that collects and exports metrics with the given interval.
     *

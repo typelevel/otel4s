@@ -37,7 +37,7 @@ import scala.collection.immutable
   *   the type of the values to record. The type must have an instance of [[MeasurementValue]]. [[scala.Long]] and
   *   [[scala.Double]] are supported out of the box.
   */
-trait Gauge[F[_], A] extends GaugeMacro[F, A]
+sealed trait Gauge[F[_], A] extends GaugeMacro[F, A]
 
 object Gauge {
 
@@ -50,7 +50,7 @@ object Gauge {
     *   the type of the values to record. The type must have an instance of [[MeasurementValue]]. [[scala.Long]] and
     *   [[scala.Double]] are supported out of the box.
     */
-  trait Builder[F[_], A] {
+  sealed trait Builder[F[_], A] {
 
     /** Sets the unit of measure for this counter.
       *
@@ -77,7 +77,11 @@ object Gauge {
     def create: F[Gauge[F, A]]
   }
 
-  trait Backend[F[_], A] {
+  object Builder {
+    private[otel4s] trait Unsealed[F[_], A] extends Builder[F, A]
+  }
+
+  sealed trait Backend[F[_], A] {
     def meta: InstrumentMeta.Dynamic[F]
 
     /** Records a value with a set of attributes.
@@ -90,6 +94,10 @@ object Gauge {
       */
     def record(value: A, attributes: immutable.Iterable[Attribute[_]]): F[Unit]
 
+  }
+
+  object Backend {
+    private[otel4s] trait Unsealed[F[_], A] extends Backend[F, A]
   }
 
   def noop[F[_], A](implicit F: Applicative[F]): Gauge[F, A] =

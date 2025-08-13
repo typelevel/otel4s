@@ -35,7 +35,7 @@ private[oteljava] case class ObservableGaugeBuilderImpl[F[_], A](
     name: String,
     unit: Option[String] = None,
     description: Option[String] = None
-) extends ObservableGauge.Builder[F, A] {
+) extends ObservableGauge.Builder.Unsealed[F, A] {
 
   def withUnit(unit: String): ObservableGauge.Builder[F, A] =
     copy(unit = Option(unit))
@@ -98,7 +98,7 @@ private[oteljava] object ObservableGaugeBuilderImpl {
     ): Resource[F, ObservableGauge] =
       createInternal(name, unit, description) { om =>
         cb(
-          new ObservableMeasurement[F, A] {
+          new ObservableMeasurement.Unsealed[F, A] {
             def record(value: A, attributes: Attributes): F[Unit] =
               Async[F].delay(
                 doRecord(om, value, attributes)
@@ -148,7 +148,7 @@ private[oteljava] object ObservableGaugeBuilderImpl {
             description.foreach(b.setDescription)
             create(b, dispatcher, cb)
           })
-          .as(new ObservableGauge {})
+          .as(ObservableGauge.noop)
       }
 
   }

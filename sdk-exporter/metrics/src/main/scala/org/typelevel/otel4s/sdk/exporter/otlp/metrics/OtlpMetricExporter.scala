@@ -59,7 +59,7 @@ private final class OtlpMetricExporter[F[_]: Applicative] private[otlp] (
     val aggregationTemporalitySelector: AggregationTemporalitySelector,
     val defaultAggregationSelector: AggregationSelector,
     val defaultCardinalityLimitSelector: CardinalityLimitSelector
-) extends MetricExporter.Push[F] {
+) extends MetricExporter.Push.Unsealed[F] {
   val name: String = s"OtlpMetricExporter{client=$client}"
 
   def exportMetrics[G[_]: Foldable](metrics: G[MetricData]): F[Unit] =

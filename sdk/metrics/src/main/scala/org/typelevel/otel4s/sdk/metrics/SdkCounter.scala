@@ -51,7 +51,7 @@ private object SdkCounter {
       name: String,
       storage: MetricStorage.Synchronous.Writeable[F, Primitive],
       val meta: InstrumentMeta.Dynamic[F]
-  ) extends Counter.Backend[F, A] {
+  ) extends Counter.Backend.Unsealed[F, A] {
 
     def add(value: A, attributes: immutable.Iterable[Attribute[_]]): F[Unit] =
       record(cast(value), attributes)
@@ -83,7 +83,7 @@ private object SdkCounter {
       sharedState: MeterSharedState[F],
       unit: Option[String] = None,
       description: Option[String] = None
-  ) extends Counter.Builder[F, A] {
+  ) extends Counter.Builder.Unsealed[F, A] {
 
     def withUnit(unit: String): Counter.Builder[F, A] =
       copy(unit = Some(unit))

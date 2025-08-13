@@ -34,7 +34,7 @@ import org.typelevel.otel4s.sdk.trace.data.SpanData
   * @tparam F
   *   the higher-kinded type of a polymorphic effect
   */
-trait SpanExporter[F[_]] {
+sealed trait SpanExporter[F[_]] {
 
   /** The name of the exporter.
     *
@@ -73,6 +73,7 @@ trait SpanExporter[F[_]] {
 }
 
 object SpanExporter {
+  private[otel4s] trait Unsealed[F[_]] extends SpanExporter[F]
 
   /** Creates a [[SpanExporter]] which delegates all exports to the exporters.
     */

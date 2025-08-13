@@ -29,7 +29,7 @@ private[oteljava] case class MeterBuilderImpl[F[_]: AskContext](
     version: Option[String] = None,
     schemaUrl: Option[String] = None
 )(implicit F: Async[F])
-    extends MeterBuilder[F] {
+    extends MeterBuilder.Unsealed[F] {
   def withVersion(version: String): MeterBuilder[F] =
     copy(version = Option(version))
 

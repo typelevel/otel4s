@@ -33,7 +33,7 @@ import org.typelevel.otel4s.trace.TraceState
   * @see
   *   [[https://www.w3.org/TR/trace-context/]]
   */
-private final class W3CTraceContextPropagator extends TextMapPropagator[Context] {
+private final class W3CTraceContextPropagator extends TextMapPropagator.Unsealed[Context] {
 
   import W3CTraceContextPropagator.Headers
   import W3CTraceContextPropagator.Const

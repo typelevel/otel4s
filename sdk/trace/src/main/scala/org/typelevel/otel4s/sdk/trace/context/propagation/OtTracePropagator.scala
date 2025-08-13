@@ -29,7 +29,7 @@ import org.typelevel.otel4s.trace.TraceFlags
 import org.typelevel.otel4s.trace.TraceState
 import scodec.bits.ByteVector
 
-private final class OtTracePropagator extends TextMapPropagator[Context] {
+private final class OtTracePropagator extends TextMapPropagator.Unsealed[Context] {
 
   import OtTracePropagator.Headers
   import OtTracePropagator.Const

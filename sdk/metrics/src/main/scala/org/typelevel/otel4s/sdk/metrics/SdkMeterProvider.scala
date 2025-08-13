@@ -54,7 +54,7 @@ private final class SdkMeterProvider[F[_]: Applicative](
     views: Vector[RegisteredView],
     readers: Vector[RegisteredReader[F]],
     producers: Vector[MetricProducer[F]]
-) extends MeterProvider[F] {
+) extends MeterProvider.Unsealed[F] {
   import SdkMeterProvider.DefaultMeterName
 
   def meter(name: String): MeterBuilder[F] =
@@ -261,7 +261,7 @@ object SdkMeterProvider {
   private final class SdkMetricProducer[F[_]: Monad: Clock](
       registry: ComponentRegistry[F, SdkMeter[F]],
       reader: RegisteredReader[F]
-  ) extends MetricProducer[F] {
+  ) extends MetricProducer.Unsealed[F] {
     def produce: F[Vector[MetricData]] =
       for {
         meters <- registry.components

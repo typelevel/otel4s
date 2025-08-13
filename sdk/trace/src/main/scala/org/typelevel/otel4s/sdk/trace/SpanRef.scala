@@ -33,7 +33,7 @@ import scala.concurrent.duration.FiniteDuration
   * @tparam F
   *   the higher-kinded type of a polymorphic effect
   */
-trait SpanRef[F[_]] extends Span.Backend[F] {
+sealed trait SpanRef[F[_]] extends Span.Backend.Unsealed[F] {
 
   /** Returns the kind of the span. */
   def kind: SpanKind
@@ -74,4 +74,8 @@ trait SpanRef[F[_]] extends Span.Backend[F] {
     */
   def getAttribute[A](key: AttributeKey[A]): F[Option[A]]
 
+}
+
+object SpanRef {
+  private[otel4s] trait Unsealed[F[_]] extends SpanRef[F]
 }

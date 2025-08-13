@@ -23,11 +23,11 @@ import org.typelevel.otel4s.context.syntax._
 /** A [[TextMapPropagator]] that extracts a specified collection of fields and stores them in a context, and extracts
   * them from a context later for injection. It does not interact with telemetry.
   */
-final class PassThroughPropagator[Ctx, K[X] <: Key[X]] private (
+private final class PassThroughPropagator[Ctx, K[X] <: Key[X]] private (
     val fields: Iterable[String],
     entriesKey: K[List[(String, String)]]
 )(implicit c: Contextual.Keyed[Ctx, K])
-    extends TextMapPropagator[Ctx] {
+    extends TextMapPropagator.Unsealed[Ctx] {
 
   def extract[A](ctx: Ctx, carrier: A)(implicit
       getter: TextMapGetter[A]

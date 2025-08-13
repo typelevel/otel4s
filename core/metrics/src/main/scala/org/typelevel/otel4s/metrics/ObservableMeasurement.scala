@@ -20,7 +20,7 @@ import cats.Applicative
 import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.Attributes
 
-trait ObservableMeasurement[F[_], A] {
+sealed trait ObservableMeasurement[F[_], A] {
 
   /** Records a value with a set of attributes.
     *
@@ -45,6 +45,7 @@ trait ObservableMeasurement[F[_], A] {
 }
 
 object ObservableMeasurement {
+  private[otel4s] trait Unsealed[F[_], A] extends ObservableMeasurement[F, A]
 
   def noop[F[_]: Applicative, A]: ObservableMeasurement[F, A] =
     new ObservableMeasurement[F, A] {

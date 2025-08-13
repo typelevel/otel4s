@@ -26,7 +26,7 @@ import org.typelevel.otel4s.oteljava.context.AskContext
 
 private[oteljava] class MeterProviderImpl[F[_]: Async: AskContext](
     jMeterProvider: JMeterProvider
-) extends MeterProvider[F] {
+) extends MeterProvider.Unsealed[F] {
 
   def meter(name: String): MeterBuilder[F] =
     MeterBuilderImpl(jMeterProvider, name)

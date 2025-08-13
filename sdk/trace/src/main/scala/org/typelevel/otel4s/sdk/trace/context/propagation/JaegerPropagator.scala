@@ -39,7 +39,7 @@ import scala.util.control.NonFatal
   * @see
   *   [[https://www.jaegertracing.io/docs/client-libraries/#propagation-format]]
   */
-private final class JaegerPropagator extends TextMapPropagator[Context] {
+private final class JaegerPropagator extends TextMapPropagator.Unsealed[Context] {
   import JaegerPropagator.Const
   import JaegerPropagator.Headers
 

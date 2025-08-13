@@ -40,7 +40,7 @@ import org.typelevel.otel4s.sdk.trace.SdkContextKeys
 private final class AwsXRayLambdaPropagator private[propagation] (
     getProp: String => Option[String],
     getEnv: String => Option[String]
-) extends TextMapPropagator[Context] {
+) extends TextMapPropagator.Unsealed[Context] {
   import AwsXRayLambdaPropagator.Const
 
   private val propagator = AwsXRayPropagator()

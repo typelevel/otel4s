@@ -51,7 +51,7 @@ private final case class SdkSpanBuilder[F[_]: Temporal: Console] private (
     tracerSharedState: TracerSharedState[F],
     scope: TraceScope[F, Context],
     stateModifiers: Queue[SpanBuilder.State => SpanBuilder.State]
-) extends SpanBuilder[F] {
+) extends SpanBuilder.Unsealed[F] {
   import SpanBuilder.Parent
 
   def meta: InstrumentMeta.Dynamic[F] = tracerSharedState.meta
@@ -59,7 +59,7 @@ private final case class SdkSpanBuilder[F[_]: Temporal: Console] private (
   def modifyState(f: SpanBuilder.State => SpanBuilder.State): SpanBuilder[F] =
     copy(stateModifiers = this.stateModifiers :+ f)
 
-  def build: SpanOps[F] = new SpanOps[F] {
+  def build: SpanOps[F] = new SpanOps.Unsealed[F] {
     def startUnmanaged: F[Span[F]] =
       start(mkState).map(backend => Span.fromBackend(backend))
 

@@ -34,7 +34,7 @@ meterProvider
   .get("com.service.runtime")
   .flatMap { implicit meter: Meter[IO] => ??? }
 """)
-trait Meter[F[_]] {
+sealed trait Meter[F[_]] {
 
   /** The instrument's metadata. Indicates whether instrumentation is enabled.
     */
@@ -293,6 +293,7 @@ trait Meter[F[_]] {
 }
 
 object Meter {
+  private[otel4s] trait Unsealed[F[_]] extends Meter[F]
 
   def apply[F[_]](implicit ev: Meter[F]): Meter[F] = ev
 
@@ -310,7 +311,7 @@ object Meter {
       def counter[A: MeasurementValue](
           name: String
       ): Counter.Builder[F, A] =
-        new Counter.Builder[F, A] {
+        new Counter.Builder.Unsealed[F, A] {
           def withUnit(unit: String): Counter.Builder[F, A] = this
           def withDescription(description: String): Counter.Builder[F, A] = this
           def create: F[Counter[F, A]] = F.pure(Counter.noop)
@@ -319,7 +320,7 @@ object Meter {
       def histogram[A: MeasurementValue](
           name: String
       ): Histogram.Builder[F, A] =
-        new Histogram.Builder[F, A] {
+        new Histogram.Builder.Unsealed[F, A] {
           def withUnit(unit: String): Histogram.Builder[F, A] = this
           def withDescription(description: String): Histogram.Builder[F, A] =
             this
@@ -332,7 +333,7 @@ object Meter {
       def upDownCounter[A: MeasurementValue](
           name: String
       ): UpDownCounter.Builder[F, A] =
-        new UpDownCounter.Builder[F, A] {
+        new UpDownCounter.Builder.Unsealed[F, A] {
           def withUnit(unit: String): UpDownCounter.Builder[F, A] = this
           def withDescription(
               description: String
@@ -341,7 +342,7 @@ object Meter {
         }
 
       def gauge[A: MeasurementValue](name: String): Gauge.Builder[F, A] =
-        new Gauge.Builder[F, A] {
+        new Gauge.Builder.Unsealed[F, A] {
           def withUnit(unit: String): Gauge.Builder[F, A] = this
           def withDescription(description: String): Gauge.Builder[F, A] = this
           def create: F[Gauge[F, A]] = F.pure(Gauge.noop)
@@ -350,7 +351,7 @@ object Meter {
       def observableGauge[A: MeasurementValue](
           name: String
       ): ObservableGauge.Builder[F, A] =
-        new ObservableGauge.Builder[F, A] {
+        new ObservableGauge.Builder.Unsealed[F, A] {
           def withUnit(unit: String): ObservableGauge.Builder[F, A] = this
           def withDescription(
               description: String
@@ -358,11 +359,11 @@ object Meter {
           def createWithCallback(
               cb: ObservableMeasurement[F, A] => F[Unit]
           ): Resource[F, ObservableGauge] =
-            Resource.pure(new ObservableGauge {})
+            Resource.pure(ObservableGauge.noop)
           def create(
               measurements: F[Iterable[Measurement[A]]]
           ): Resource[F, ObservableGauge] =
-            Resource.pure(new ObservableGauge {})
+            Resource.pure(ObservableGauge.noop)
           def createObserver: F[ObservableMeasurement[F, A]] =
             Applicative[F].pure(ObservableMeasurement.noop)
         }
@@ -370,7 +371,7 @@ object Meter {
       def observableCounter[A: MeasurementValue](
           name: String
       ): ObservableCounter.Builder[F, A] =
-        new ObservableCounter.Builder[F, A] {
+        new ObservableCounter.Builder.Unsealed[F, A] {
           def withUnit(unit: String): ObservableCounter.Builder[F, A] = this
           def withDescription(
               description: String
@@ -378,11 +379,11 @@ object Meter {
           def createWithCallback(
               cb: ObservableMeasurement[F, A] => F[Unit]
           ): Resource[F, ObservableCounter] =
-            Resource.pure(new ObservableCounter {})
+            Resource.pure(ObservableCounter.noop)
           def create(
               measurements: F[Iterable[Measurement[A]]]
           ): Resource[F, ObservableCounter] =
-            Resource.pure(new ObservableCounter {})
+            Resource.pure(ObservableCounter.noop)
           def createObserver: F[ObservableMeasurement[F, A]] =
             Applicative[F].pure(ObservableMeasurement.noop)
         }
@@ -390,7 +391,7 @@ object Meter {
       def observableUpDownCounter[A: MeasurementValue](
           name: String
       ): ObservableUpDownCounter.Builder[F, A] =
-        new ObservableUpDownCounter.Builder[F, A] {
+        new ObservableUpDownCounter.Builder.Unsealed[F, A] {
           def withUnit(unit: String): ObservableUpDownCounter.Builder[F, A] =
             this
           def withDescription(
@@ -399,11 +400,11 @@ object Meter {
           def createWithCallback(
               cb: ObservableMeasurement[F, A] => F[Unit]
           ): Resource[F, ObservableUpDownCounter] =
-            Resource.pure(new ObservableUpDownCounter {})
+            Resource.pure(ObservableUpDownCounter.noop)
           def create(
               measurements: F[Iterable[Measurement[A]]]
           ): Resource[F, ObservableUpDownCounter] =
-            Resource.pure(new ObservableUpDownCounter {})
+            Resource.pure(ObservableUpDownCounter.noop)
           def createObserver: F[ObservableMeasurement[F, A]] =
             Applicative[F].pure(ObservableMeasurement.noop)
         }

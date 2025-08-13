@@ -29,7 +29,7 @@ final class InMemoryMetricExporter[F[_]: Monad] private (
     val aggregationTemporalitySelector: AggregationTemporalitySelector,
     val defaultAggregationSelector: AggregationSelector,
     val defaultCardinalityLimitSelector: CardinalityLimitSelector
-) extends MetricExporter.Push[F] {
+) extends MetricExporter.Push.Unsealed[F] {
 
   def name: String = "InMemoryMetricExporter"
 

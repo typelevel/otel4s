@@ -56,7 +56,7 @@ object TraceContext {
 
   /** Provides a way to extract [[TraceContext]] from a [[Context]].
     */
-  sealed trait Lookup {
+  trait Lookup {
 
     /** Retrieves a [[TraceContext]] from the given context.
       *
@@ -67,7 +67,6 @@ object TraceContext {
   }
 
   object Lookup {
-    private[otel4s] trait Unsealed extends Lookup
 
     /** Returns a no-op [[Lookup]] implementation that always returns `None`.
       */

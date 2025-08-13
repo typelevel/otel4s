@@ -72,7 +72,7 @@ sealed trait MetricReader[F[_]] {
 }
 
 object MetricReader {
-  private[otel4s] trait Unsealed[F[_]] extends MetricReader[F]
+  private[sdk] trait Unsealed[F[_]] extends MetricReader[F]
 
   /** Creates a period metric reader that collects and exports metrics with the given interval.
     *

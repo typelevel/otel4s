@@ -93,7 +93,7 @@ object OpenTelemetrySdkTestkit {
   ): Resource[F, OpenTelemetrySdkTestkit[F]] =
     Resource.eval(LocalProvider[F, Context].local).flatMap { implicit local =>
       val traceContextLookup: TraceContext.Lookup =
-        new TraceContext.Lookup.Unsealed {
+        new TraceContext.Lookup {
           def get(context: Context): Option[TraceContext] =
             context
               .get(SdkContextKeys.SpanContextKey)

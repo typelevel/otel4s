@@ -52,7 +52,7 @@ object AutoConfigure {
   }
 
   object Named {
-    private[otel4s] trait Unsealed[F[_], A] extends Named[F, A]
+    private[sdk] trait Unsealed[F[_], A] extends Named[F, A]
 
     /** Creates a [[Named]] auto configurer that always returns the same value.
       *

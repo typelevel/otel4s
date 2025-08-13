@@ -77,5 +77,5 @@ sealed trait SpanRef[F[_]] extends Span.Backend.Unsealed[F] {
 }
 
 object SpanRef {
-  private[otel4s] trait Unsealed[F[_]] extends SpanRef[F]
+  private[sdk] trait Unsealed[F[_]] extends SpanRef[F]
 }

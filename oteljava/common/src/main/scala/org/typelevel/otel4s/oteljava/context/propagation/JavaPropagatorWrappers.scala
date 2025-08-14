@@ -73,7 +73,7 @@ private[propagation] object JavaPropagatorWrappers {
     override def toString: String = s"TextMapPropagatorWrapper{$underlying}"
   }
 
-  class JTextMapPropagatorWrapper(val underlying: JTextMapPropagator) extends TextMapPropagator.Unsealed[Context] {
+  class JTextMapPropagatorWrapper(val underlying: JTextMapPropagator) extends TextMapPropagator[Context] {
     def fields: Iterable[String] =
       underlying.fields().asScala
     def extract[A](ctx: Context, carrier: A)(implicit

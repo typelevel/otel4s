@@ -81,7 +81,7 @@ object InMemoryMeterSharedState {
   }
 
   private def emptyProducer[F[_]: Applicative]: MetricProducer[F] =
-    new MetricProducer[F] {
+    new MetricProducer.Unsealed[F] {
       def produce: F[Vector[MetricData]] = Applicative[F].pure(Vector.empty)
     }
 }

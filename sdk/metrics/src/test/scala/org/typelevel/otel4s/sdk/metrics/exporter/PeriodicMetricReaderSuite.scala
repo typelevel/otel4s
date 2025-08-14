@@ -116,7 +116,7 @@ class PeriodicMetricReaderSuite extends CatsEffectSuite with ScalaCheckEffectSui
       val e = new RuntimeException("Something went wrong") with NoStackTrace
 
       def producer(throwError: Ref[IO, Boolean]): MetricProducer[IO] =
-        new MetricProducer[IO] {
+        new MetricProducer.Unsealed[IO] {
           def produce: IO[Vector[MetricData]] =
             throwError.get.ifM(
               IO.raiseError(e),
@@ -171,7 +171,7 @@ class PeriodicMetricReaderSuite extends CatsEffectSuite with ScalaCheckEffectSui
 
   test("terminate export task by the timeout") {
     val producer: MetricProducer[IO] =
-      new MetricProducer[IO] {
+      new MetricProducer.Unsealed[IO] {
         def produce: IO[Vector[MetricData]] =
           IO.never.as(Vector.empty)
       }
@@ -212,7 +212,7 @@ class PeriodicMetricReaderSuite extends CatsEffectSuite with ScalaCheckEffectSui
     MetricReader.periodic(exporter, 30.seconds, 5.seconds)
 
   private def constProducer(metrics: List[MetricData]): MetricProducer[IO] =
-    new MetricProducer[IO] {
+    new MetricProducer.Unsealed[IO] {
       def produce: IO[Vector[MetricData]] = IO.pure(metrics.toVector)
     }
 

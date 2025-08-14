@@ -112,7 +112,7 @@ class SimpleSpanProcessorSuite extends CatsEffectSuite with ScalaCheckEffectSuit
   }
 
   private def constSpanRef(data: SpanData): SpanRef[IO] = {
-    new SpanRef[IO] with Span.Backend[IO] {
+    new SpanRef.Unsealed[IO] with Span.Backend.Unsealed[IO] {
       private val noopBackend = Span.Backend.noop[IO]
 
       def kind: SpanKind =

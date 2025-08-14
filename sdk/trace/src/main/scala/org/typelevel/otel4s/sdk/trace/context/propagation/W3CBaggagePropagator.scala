@@ -33,7 +33,7 @@ import java.nio.charset.StandardCharsets
   * @see
   *   [[https://www.w3.org/TR/baggage/]]
   */
-private final class W3CBaggagePropagator extends TextMapPropagator.Unsealed[Context] {
+private final class W3CBaggagePropagator extends TextMapPropagator[Context] {
 
   import W3CBaggagePropagator.Const
   import W3CBaggagePropagator.Headers

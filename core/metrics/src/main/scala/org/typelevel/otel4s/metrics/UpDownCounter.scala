@@ -39,6 +39,7 @@ import scala.collection.immutable
 sealed trait UpDownCounter[F[_], A] extends UpDownCounterMacro[F, A]
 
 object UpDownCounter {
+  private[otel4s] trait Unsealed[F[_], A] extends UpDownCounter[F, A]
 
   /** A builder of [[UpDownCounter]].
     *

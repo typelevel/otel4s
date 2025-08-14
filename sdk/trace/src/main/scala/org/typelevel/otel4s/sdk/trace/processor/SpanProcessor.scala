@@ -74,7 +74,7 @@ sealed trait SpanProcessor[F[_]] {
 }
 
 object SpanProcessor {
-  private[sdk] trait Unsealed[F[_]] extends SpanProcessor[F]
+  private[otel4s] trait Unsealed[F[_]] extends SpanProcessor[F]
 
   /** Evaluated when a span is started.
     *

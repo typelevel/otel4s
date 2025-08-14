@@ -32,7 +32,7 @@ import cats.syntax.foldable._
   * @tparam Ctx
   *   the context to use to extract or inject data
   */
-sealed trait TextMapPropagator[Ctx] {
+trait TextMapPropagator[Ctx] {
 
   /** The collection of propagation fields. */
   def fields: Iterable[String]
@@ -74,7 +74,6 @@ sealed trait TextMapPropagator[Ctx] {
 }
 
 object TextMapPropagator {
-  private[otel4s] trait Unsealed[Ctx] extends TextMapPropagator[Ctx]
 
   /** Creates a [[TextMapPropagator]] which delegates injection and extraction to the provided propagators.
     *

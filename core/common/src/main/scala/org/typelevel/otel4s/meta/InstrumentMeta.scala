@@ -46,7 +46,7 @@ object InstrumentMeta {
     def liftTo[G[_]: Monad](implicit kt: KindTransformer[F, G]): InstrumentMeta.Dynamic[G] =
       mapK(kt.liftK)
 
-    @deprecated("use `liftTo` instead", since = "otel4s 0.13.1")
+    @deprecated("use `liftTo` instead", since = "otel4s 0.14.0")
     def mapK[G[_]: Monad](implicit kt: KindTransformer[F, G]): InstrumentMeta.Dynamic[G] = liftTo[G]
   }
 
@@ -99,7 +99,7 @@ object InstrumentMeta {
     def liftTo[G[_]](implicit kt: KindTransformer[F, G]): InstrumentMeta.Static[G] =
       mapK(kt.liftK)
 
-    @deprecated("use `liftTo` instead", since = "otel4s 0.13.1")
+    @deprecated("use `liftTo` instead", since = "otel4s 0.14.0")
     def mapK[G[_]](implicit kt: KindTransformer[F, G]): InstrumentMeta.Static[G] = liftTo[G]
   }
 

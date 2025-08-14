@@ -58,7 +58,7 @@ trait SpanBuilder[F[_]] extends SpanBuilderMacro[F] {
   ): SpanBuilder[G] =
     new SpanBuilder.Lifted(this)
 
-  @deprecated("use `liftTo` instead", since = "otel4s 0.13.1")
+  @deprecated("use `liftTo` instead", since = "otel4s 0.14.0")
   def mapK[G[_]: MonadCancelThrow](implicit
       F: MonadCancelThrow[F],
       kt: KindTransformer[F, G]

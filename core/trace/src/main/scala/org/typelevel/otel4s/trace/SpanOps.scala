@@ -250,7 +250,7 @@ trait SpanOps[F[_]] {
   ): SpanOps[G] =
     new SpanOps.Lifted(this)
 
-  @deprecated("use `liftTo` instead", since = "otel4s 0.13.1")
+  @deprecated("use `liftTo` instead", since = "otel4s 0.14.0")
   def mapK[G[_]: MonadCancelThrow](implicit
       F: MonadCancelThrow[F],
       kt: KindTransformer[F, G]
@@ -293,7 +293,7 @@ object SpanOps {
     def liftTo[G[_]](implicit kt: KindTransformer[F, G]): Res[G] =
       Res(span.liftTo[G], kt.liftFunctionK(trace))
 
-    @deprecated("use `liftTo` instead", since = "otel4s 0.13.1")
+    @deprecated("use `liftTo` instead", since = "otel4s 0.14.0")
     def mapK[G[_]](implicit kt: KindTransformer[F, G]): Res[G] = liftTo[G]
   }
 

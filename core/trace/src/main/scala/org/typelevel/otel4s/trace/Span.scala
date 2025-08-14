@@ -114,7 +114,7 @@ trait Span[F[_]] extends SpanMacro[F] {
   final def liftTo[G[_]](implicit kt: KindTransformer[F, G]): Span[G] =
     mapK(kt.liftK)
 
-  @deprecated("use `liftTo` instead", since = "otel4s 0.13.1")
+  @deprecated("use `liftTo` instead", since = "otel4s 0.14.0")
   final def mapK[G[_]](implicit kt: KindTransformer[F, G]): Span[G] = liftTo[G]
 }
 
@@ -162,7 +162,7 @@ object Span {
     final def liftTo[G[_]](implicit kt: KindTransformer[F, G]): Backend[G] =
       mapK(kt.liftK)
 
-    @deprecated("use `liftTo` instead", since = "otel4s 0.13.1")
+    @deprecated("use `liftTo` instead", since = "otel4s 0.14.0")
     final def mapK[G[_]](implicit kt: KindTransformer[F, G]): Backend[G] = liftTo[G]
   }
 

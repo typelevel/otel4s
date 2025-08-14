@@ -484,7 +484,7 @@ class SdkSpanBackendSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
   }
 
   private def startEndRecorder(start: Queue[IO, SpanData], end: Queue[IO, SpanData]): SpanProcessor[IO] =
-    new SpanProcessor[IO] {
+    new SpanProcessor.Unsealed[IO] {
       val name: String = "InMemorySpanProcessor"
 
       val onStart: SpanProcessor.OnStart[IO] =

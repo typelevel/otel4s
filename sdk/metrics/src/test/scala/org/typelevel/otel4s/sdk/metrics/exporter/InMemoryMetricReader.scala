@@ -23,7 +23,7 @@ import org.typelevel.otel4s.sdk.metrics.data.MetricData
 final class InMemoryMetricReader[F[_]: Applicative](
     producer: MetricProducer[F],
     val aggregationTemporalitySelector: AggregationTemporalitySelector
-) extends MetricReader[F] {
+) extends MetricReader.Unsealed[F] {
   def defaultAggregationSelector: AggregationSelector =
     AggregationSelector.default
 

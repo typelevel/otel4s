@@ -114,7 +114,7 @@ class TracerProviderAutoConfigureSuite extends CatsEffectSuite {
       )
     )
 
-    val sampler: Sampler[IO] = new Sampler[IO] {
+    val sampler: Sampler[IO] = new Sampler.Unsealed[IO] {
       def shouldSample(
           parentContext: Option[SpanContext],
           traceId: ByteVector,

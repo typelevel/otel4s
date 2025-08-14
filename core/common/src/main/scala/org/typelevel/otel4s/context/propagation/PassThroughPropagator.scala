@@ -27,7 +27,7 @@ private final class PassThroughPropagator[Ctx, K[X] <: Key[X]] private (
     val fields: Iterable[String],
     entriesKey: K[List[(String, String)]]
 )(implicit c: Contextual.Keyed[Ctx, K])
-    extends TextMapPropagator.Unsealed[Ctx] {
+    extends TextMapPropagator[Ctx] {
 
   def extract[A](ctx: Ctx, carrier: A)(implicit
       getter: TextMapGetter[A]

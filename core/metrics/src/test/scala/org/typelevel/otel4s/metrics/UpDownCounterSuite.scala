@@ -117,10 +117,10 @@ object UpDownCounterSuite {
 
   final case class Record[A](value: A, attributes: Attributes)
 
-  class InMemoryUpDownCounter(ref: Ref[IO, List[Record[Long]]]) extends UpDownCounter[IO, Long] {
+  class InMemoryUpDownCounter(ref: Ref[IO, List[Record[Long]]]) extends UpDownCounter.Unsealed[IO, Long] {
 
     val backend: UpDownCounter.Backend[IO, Long] =
-      new UpDownCounter.Backend[IO, Long] {
+      new UpDownCounter.Backend.Unsealed[IO, Long] {
         val meta: InstrumentMeta.Dynamic[IO] = InstrumentMeta.Dynamic.enabled
 
         def add(

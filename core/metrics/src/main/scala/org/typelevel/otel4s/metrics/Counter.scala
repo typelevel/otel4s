@@ -39,6 +39,7 @@ import scala.collection.immutable
 sealed trait Counter[F[_], A] extends CounterMacro[F, A]
 
 object Counter {
+  private[otel4s] trait Unsealed[F[_], A] extends Counter[F, A]
 
   /** A builder of [[Counter]].
     *

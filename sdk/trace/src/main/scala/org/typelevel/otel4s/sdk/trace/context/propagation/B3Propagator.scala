@@ -47,7 +47,7 @@ import scodec.bits.ByteVector
   */
 private final class B3Propagator private (
     injector: B3Propagator.Injector
-) extends TextMapPropagator.Unsealed[Context] {
+) extends TextMapPropagator[Context] {
   import B3Propagator.Extractor
 
   val fields: Iterable[String] = injector.fields

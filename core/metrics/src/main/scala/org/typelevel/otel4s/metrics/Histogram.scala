@@ -39,6 +39,7 @@ import scala.concurrent.duration.TimeUnit
 sealed trait Histogram[F[_], A] extends HistogramMacro[F, A]
 
 object Histogram {
+  private[otel4s] trait Unsealed[F[_], A] extends Histogram[F, A]
 
   /** A builder of [[Histogram]].
     *

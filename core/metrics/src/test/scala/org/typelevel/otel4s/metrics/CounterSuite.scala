@@ -95,10 +95,10 @@ object CounterSuite {
 
   final case class Record[A](value: A, attributes: Attributes)
 
-  class InMemoryCounter(ref: Ref[IO, List[Record[Long]]]) extends Counter[IO, Long] {
+  class InMemoryCounter(ref: Ref[IO, List[Record[Long]]]) extends Counter.Unsealed[IO, Long] {
 
     val backend: Counter.Backend[IO, Long] =
-      new Counter.Backend[IO, Long] {
+      new Counter.Backend.Unsealed[IO, Long] {
         val meta: InstrumentMeta.Dynamic[IO] = InstrumentMeta.Dynamic.enabled
 
         def add(

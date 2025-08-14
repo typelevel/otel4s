@@ -62,7 +62,7 @@ object SpanSuite {
     final case class End(timestamp: Option[FiniteDuration]) extends BackendOp
   }
 
-  private class OpsBackend(state: Ref[IO, Vector[BackendOp]]) extends Span.Backend[IO] {
+  private class OpsBackend(state: Ref[IO, Vector[BackendOp]]) extends Span.Backend.Unsealed[IO] {
     import BackendOp._
 
     val meta: InstrumentMeta.Static[IO] = InstrumentMeta.Static.enabled

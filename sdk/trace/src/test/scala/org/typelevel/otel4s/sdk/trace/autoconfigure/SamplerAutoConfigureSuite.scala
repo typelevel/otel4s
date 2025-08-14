@@ -149,7 +149,7 @@ class SamplerAutoConfigureSuite extends CatsEffectSuite {
     val props = Map("otel.traces.sampler" -> "custom-sampler")
     val config = Config.ofProps(props)
 
-    val customSampler: Sampler[IO] = new Sampler[IO] {
+    val customSampler: Sampler[IO] = new Sampler.Unsealed[IO] {
       def shouldSample(
           parentContext: Option[SpanContext],
           traceId: ByteVector,

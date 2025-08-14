@@ -73,7 +73,7 @@ sealed trait SpanExporter[F[_]] {
 }
 
 object SpanExporter {
-  private[sdk] trait Unsealed[F[_]] extends SpanExporter[F]
+  private[otel4s] trait Unsealed[F[_]] extends SpanExporter[F]
 
   /** Creates a [[SpanExporter]] which delegates all exports to the exporters.
     */

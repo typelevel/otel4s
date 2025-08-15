@@ -141,6 +141,7 @@ lazy val root = tlCrossRootProject
     core,
     `instrumentation-metrics`,
     `sdk-common`,
+    `sdk-logs`,
     `sdk-metrics`,
     `sdk-metrics-testkit`,
     `sdk-trace`,
@@ -303,6 +304,28 @@ lazy val `sdk-common` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
     buildInfoKeys := Seq[BuildInfoKey](
       version
     )
+  )
+  .settings(munitDependencies)
+  .jsSettings(scalaJSLinkerSettings)
+
+lazy val `sdk-logs` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
+  .crossType(CrossType.Pure)
+  .in(file("sdk/logs"))
+  .enablePlugins(NoPublishPlugin)
+  .dependsOn(
+    `sdk-common` % "compile->compile;test->test",
+    `core-logs` % "compile->compile;test->test",
+  )
+  .settings(
+    name := "otel4s-sdk-logs",
+    startYear := Some(2025),
+    libraryDependencies ++= Seq(
+      "org.typelevel" %%% "cats-effect" % CatsEffectVersion,
+      "org.typelevel" %%% "cats-laws" % CatsVersion % Test,
+      "org.typelevel" %%% "cats-effect-testkit" % CatsEffectVersion % Test,
+      "org.typelevel" %%% "discipline-munit" % MUnitDisciplineVersion % Test,
+      "org.typelevel" %%% "scalacheck-effect-munit" % MUnitScalaCheckEffectVersion % Test
+    ),
   )
   .settings(munitDependencies)
   .jsSettings(scalaJSLinkerSettings)
@@ -969,6 +992,7 @@ lazy val unidocs = project
       core.jvm,
       `instrumentation-metrics`.jvm,
       `sdk-common`.jvm,
+      `sdk-logs`.jvm,
       `sdk-metrics`.jvm,
       `sdk-metrics-testkit`.jvm,
       `sdk-trace`.jvm,

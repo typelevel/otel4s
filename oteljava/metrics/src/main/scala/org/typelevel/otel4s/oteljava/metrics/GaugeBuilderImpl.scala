@@ -32,7 +32,7 @@ private[oteljava] case class GaugeBuilderImpl[F[_], A](
     name: String,
     unit: Option[String] = None,
     description: Option[String] = None
-) extends Gauge.Builder[F, A] {
+) extends Gauge.Builder.Unsealed[F, A] {
 
   def withUnit(unit: String): Gauge.Builder[F, A] =
     copy(unit = Option(unit))
@@ -85,7 +85,7 @@ private[oteljava] object GaugeBuilderImpl {
           description.foreach(builder.setDescription)
           val gauge = builder.ofLongs().build()
 
-          val backend = new Gauge.Backend[F, A] {
+          val backend = new Gauge.Backend.Unsealed[F, A] {
             val meta: InstrumentMeta.Dynamic[F] = instrumentMeta
 
             def record(
@@ -118,7 +118,7 @@ private[oteljava] object GaugeBuilderImpl {
           description.foreach(builder.setDescription)
           val gauge = builder.build()
 
-          val backend = new Gauge.Backend[F, A] {
+          val backend = new Gauge.Backend.Unsealed[F, A] {
             val meta: InstrumentMeta.Dynamic[F] = instrumentMeta
 
             def record(

@@ -19,7 +19,7 @@ package exporter
 
 /** Used by the `MetricReader` to decide the default aggregation.
   */
-trait AggregationSelector {
+sealed trait AggregationSelector {
 
   /** Returns preferred [[Aggregation]] for the given [[InstrumentType]].
     */

@@ -35,7 +35,7 @@ private[oteljava] case class ObservableCounterBuilderImpl[F[_], A](
     name: String,
     unit: Option[String] = None,
     description: Option[String] = None
-) extends ObservableCounter.Builder[F, A] {
+) extends ObservableCounter.Builder.Unsealed[F, A] {
 
   def withUnit(unit: String): ObservableCounter.Builder[F, A] =
     copy(unit = Option(unit))
@@ -112,7 +112,7 @@ private[oteljava] object ObservableCounterBuilderImpl {
     ): Resource[F, ObservableCounter] =
       createInternal(name, unit, description) { om =>
         cb(
-          new ObservableMeasurement[F, A] {
+          new ObservableMeasurement.Unsealed[F, A] {
             def record(value: A, attributes: Attributes): F[Unit] =
               Async[F].delay(
                 doRecord(om, value, attributes)
@@ -150,7 +150,7 @@ private[oteljava] object ObservableCounterBuilderImpl {
             description.foreach(b.setDescription)
             create(b, dispatcher, cb)
           })
-          .as(new ObservableCounter {})
+          .as(ObservableCounter.noop)
       }
 
   }

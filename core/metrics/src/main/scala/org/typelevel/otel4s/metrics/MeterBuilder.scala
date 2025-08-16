@@ -18,7 +18,7 @@ package org.typelevel.otel4s.metrics
 
 import cats.Applicative
 
-trait MeterBuilder[F[_]] {
+sealed trait MeterBuilder[F[_]] {
 
   /** Assigns a version to the resulting Meter.
     *
@@ -40,6 +40,7 @@ trait MeterBuilder[F[_]] {
 }
 
 object MeterBuilder {
+  private[otel4s] trait Unsealed[F[_]] extends MeterBuilder[F]
 
   /** Creates a no-op implementation of the [[MeterBuilder]].
     *

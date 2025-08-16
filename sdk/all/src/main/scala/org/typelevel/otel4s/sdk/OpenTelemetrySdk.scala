@@ -60,7 +60,7 @@ final class OpenTelemetrySdk[F[_]] private (
     val tracerProvider: TracerProvider[F],
     val propagators: ContextPropagators[Context]
 )(implicit val localContext: LocalContext[F])
-    extends Otel4s[F] {
+    extends Otel4s.Unsealed[F] {
 
   type Ctx = Context
 

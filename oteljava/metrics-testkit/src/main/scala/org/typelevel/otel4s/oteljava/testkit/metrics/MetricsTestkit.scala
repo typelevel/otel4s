@@ -29,7 +29,7 @@ import org.typelevel.otel4s.oteljava.metrics.MeterProviderImpl
 
 import scala.jdk.CollectionConverters._
 
-trait MetricsTestkit[F[_]] {
+sealed trait MetricsTestkit[F[_]] {
 
   /** The [[org.typelevel.otel4s.metrics.MeterProvider MeterProvider]].
     */
@@ -54,6 +54,7 @@ trait MetricsTestkit[F[_]] {
 }
 
 object MetricsTestkit {
+  private[oteljava] trait Unsealed[F[_]] extends MetricsTestkit[F]
 
   /** Creates [[MetricsTestkit]] that keeps metrics in-memory.
     *

@@ -26,7 +26,7 @@ import org.typelevel.otel4s.oteljava.AttributeConverters._
 
 private[metrics] sealed abstract class ObservableMeasurementImpl[F[_], A](
     val jObservableMeasurement: JObservableMeasurement
-) extends ObservableMeasurement[F, A] {}
+) extends ObservableMeasurement.Unsealed[F, A] {}
 
 private object ObservableMeasurementImpl {
 

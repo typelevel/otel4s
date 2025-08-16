@@ -53,7 +53,7 @@ import scala.concurrent.duration._
   */
 private final class OtlpSpanExporter[F[_]: Applicative] private[otlp] (
     client: OtlpClient[F, SpanData]
-) extends SpanExporter[F] {
+) extends SpanExporter.Unsealed[F] {
   val name: String = s"OtlpSpanExporter{client=$client}"
 
   def exportSpans[G[_]: Foldable](spans: G[SpanData]): F[Unit] =

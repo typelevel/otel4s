@@ -40,7 +40,7 @@ import scala.concurrent.duration.FiniteDuration
 private final class PrometheusMetricExporter[F[_]: MonadCancelThrow: Console] private[prometheus] (
     metricProducers: Ref[F, Vector[MetricProducer[F]]],
     val defaultAggregationSelector: AggregationSelector
-) extends MetricExporter.Pull[F] { self =>
+) extends MetricExporter.Pull.Unsealed[F] { self =>
 
   def name: String = "PrometheusMetricExporter"
 
@@ -51,7 +51,7 @@ private final class PrometheusMetricExporter[F[_]: MonadCancelThrow: Console] pr
     CardinalityLimitSelector.default
 
   val metricReader: MetricReader[F] =
-    new MetricReader[F] {
+    new MetricReader.Unsealed[F] {
       def aggregationTemporalitySelector: AggregationTemporalitySelector =
         self.aggregationTemporalitySelector
 

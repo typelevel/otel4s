@@ -31,7 +31,7 @@ final class InMemoryMetricReader[F[_]: Monad](
     val aggregationTemporalitySelector: AggregationTemporalitySelector,
     val defaultAggregationSelector: AggregationSelector,
     val defaultCardinalityLimitSelector: CardinalityLimitSelector
-) extends MetricReader[F] {
+) extends MetricReader.Unsealed[F] {
 
   def register(producers: NonEmptyVector[MetricProducer[F]]): F[Unit] =
     producersRef.set(producers.toVector)

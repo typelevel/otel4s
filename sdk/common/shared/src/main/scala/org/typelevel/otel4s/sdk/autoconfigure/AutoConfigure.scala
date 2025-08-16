@@ -28,7 +28,7 @@ import cats.syntax.monadError._
   * @tparam A
   *   the type of the component
   */
-trait AutoConfigure[F[_], A] {
+sealed trait AutoConfigure[F[_], A] {
   def configure(config: Config): Resource[F, A]
 }
 
@@ -44,7 +44,7 @@ object AutoConfigure {
     * @tparam A
     *   the type of the component
     */
-  trait Named[F[_], A] extends AutoConfigure[F, A] {
+  sealed trait Named[F[_], A] extends AutoConfigure[F, A] {
 
     /** The name to associate the component with.
       */
@@ -52,6 +52,7 @@ object AutoConfigure {
   }
 
   object Named {
+    private[sdk] trait Unsealed[F[_], A] extends Named[F, A]
 
     /** Creates a [[Named]] auto configurer that always returns the same value.
       *
@@ -89,7 +90,7 @@ object AutoConfigure {
     * @tparam A
     *   the type of the component
     */
-  abstract class WithHint[F[_]: MonadCancelThrow, A](
+  private[otel4s] abstract class WithHint[F[_]: MonadCancelThrow, A](
       hint: String,
       configKeys: Set[Config.Key[_]]
   ) extends AutoConfigure[F, A] {

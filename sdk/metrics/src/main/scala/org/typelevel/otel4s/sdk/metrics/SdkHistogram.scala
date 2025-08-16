@@ -57,7 +57,7 @@ private object SdkHistogram {
       name: String,
       storage: MetricStorage.Synchronous.Writeable[F, Primitive],
       val meta: InstrumentMeta.Dynamic[F]
-  ) extends Histogram.Backend[F, A] {
+  ) extends Histogram.Backend.Unsealed[F, A] {
 
     def record(
         value: A,
@@ -103,7 +103,7 @@ private object SdkHistogram {
       unit: Option[String] = None,
       description: Option[String] = None,
       boundaries: Option[BucketBoundaries] = None
-  ) extends Histogram.Builder[F, A] {
+  ) extends Histogram.Builder.Unsealed[F, A] {
 
     def withUnit(unit: String): Histogram.Builder[F, A] =
       copy(unit = Some(unit))

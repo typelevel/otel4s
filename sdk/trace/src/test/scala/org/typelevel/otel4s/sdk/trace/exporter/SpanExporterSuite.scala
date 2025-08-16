@@ -157,7 +157,7 @@ class SpanExporterSuite extends CatsEffectSuite {
       exporterName: String,
       onExport: Throwable,
       onFlush: Throwable
-  ) extends SpanExporter[IO] {
+  ) extends SpanExporter.Unsealed[IO] {
     def name: String = exporterName
 
     def exportSpans[G[_]: Foldable](spans: G[SpanData]): IO[Unit] =

@@ -22,7 +22,7 @@ import org.typelevel.otel4s.context.propagation.ContextPropagators
 import org.typelevel.otel4s.metrics.MeterProvider
 import org.typelevel.otel4s.trace.TracerProvider
 
-trait Otel4s[F[_]] {
+sealed trait Otel4s[F[_]] {
 
   /** The type of context used by telemetry components. */
   type Ctx
@@ -41,4 +41,8 @@ trait Otel4s[F[_]] {
 
   /** A utility for accessing and modifying [[baggage.Baggage `Baggage`]]. */
   def baggageManager: BaggageManager[F]
+}
+
+object Otel4s {
+  private[otel4s] trait Unsealed[F[_]] extends Otel4s[F]
 }

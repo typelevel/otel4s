@@ -25,6 +25,7 @@ import cats.syntax.flatMap._
 import cats.syntax.foldable._
 import cats.syntax.functor._
 import org.typelevel.ci.CIString
+import org.typelevel.otel4s.Attributes
 import org.typelevel.otel4s.metrics.Measurement
 import org.typelevel.otel4s.metrics.MeasurementValue
 import org.typelevel.otel4s.metrics.ObservableMeasurement
@@ -49,7 +50,7 @@ private object SdkObservableUpDownCounter {
       sharedState: MeterSharedState[F],
       unit: Option[String] = None,
       description: Option[String] = None
-  ) extends ObservableUpDownCounter.Builder[F, A] {
+  ) extends ObservableUpDownCounter.Builder.Unsealed[F, A] {
 
     def withUnit(unit: String): ObservableUpDownCounter.Builder[F, A] =
       copy(unit = Some(unit))
@@ -70,13 +71,14 @@ private object SdkObservableUpDownCounter {
             sharedState
               .registerObservableMeasurement[Long](descriptor)
               .map { observable =>
-                val callback = cb { (value, attributes) =>
-                  observable.record(cast(value), attributes)
+                val measurement = new ObservableMeasurement.Unsealed[F, A] {
+                  def record(value: A, attributes: Attributes): F[Unit] =
+                    observable.record(cast(value), attributes)
                 }
 
                 new CallbackRegistration[F](
                   NonEmptyList.one(observable),
-                  callback
+                  cb(measurement)
                 )
               }
 
@@ -84,13 +86,14 @@ private object SdkObservableUpDownCounter {
             sharedState
               .registerObservableMeasurement[Double](descriptor)
               .map { observable =>
-                val callback = cb { (value, attributes) =>
-                  observable.record(cast(value), attributes)
+                val measurement = new ObservableMeasurement.Unsealed[F, A] {
+                  def record(value: A, attributes: Attributes): F[Unit] =
+                    observable.record(cast(value), attributes)
                 }
 
                 new CallbackRegistration[F](
                   NonEmptyList.one(observable),
-                  callback
+                  cb(measurement)
                 )
               }
         }
@@ -98,7 +101,7 @@ private object SdkObservableUpDownCounter {
       for {
         cr <- Resource.eval(makeCallbackRegistration)
         _ <- sharedState.withCallback(cr)
-      } yield new ObservableUpDownCounter {}
+      } yield ObservableUpDownCounter.noop
     }
 
     def create(

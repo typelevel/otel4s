@@ -36,9 +36,10 @@ import scala.concurrent.duration.TimeUnit
   *   the type of the values to record. The type must have an instance of [[MeasurementValue]]. [[scala.Long]] and
   *   [[scala.Double]] are supported out of the box.
   */
-trait Histogram[F[_], A] extends HistogramMacro[F, A]
+sealed trait Histogram[F[_], A] extends HistogramMacro[F, A]
 
 object Histogram {
+  private[otel4s] trait Unsealed[F[_], A] extends Histogram[F, A]
 
   /** A builder of [[Histogram]].
     *
@@ -49,7 +50,7 @@ object Histogram {
     *   the type of the values to record. The type must have an instance of [[MeasurementValue]]. [[scala.Long]] and
     *   [[scala.Double]] are supported out of the box.
     */
-  trait Builder[F[_], A] {
+  sealed trait Builder[F[_], A] {
 
     /** Sets the unit of measure for this histogram.
       *
@@ -88,7 +89,11 @@ object Histogram {
     def create: F[Histogram[F, A]]
   }
 
-  trait Backend[F[_], A] {
+  object Builder {
+    private[otel4s] trait Unsealed[F[_], A] extends Builder[F, A]
+  }
+
+  sealed trait Backend[F[_], A] {
     def meta: InstrumentMeta.Dynamic[F]
 
     /** Records a value with a set of attributes.
@@ -124,6 +129,10 @@ object Histogram {
         timeUnit: TimeUnit,
         attributes: Resource.ExitCase => immutable.Iterable[Attribute[_]]
     ): Resource[F, Unit]
+  }
+
+  object Backend {
+    private[otel4s] trait Unsealed[F[_], A] extends Backend[F, A]
   }
 
   def noop[F[_], A](implicit F: Applicative[F]): Histogram[F, A] =

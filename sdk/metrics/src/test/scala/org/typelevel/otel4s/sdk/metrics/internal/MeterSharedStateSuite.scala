@@ -232,7 +232,7 @@ class MeterSharedStateSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
   }
 
   private def emptyProducer: MetricProducer[IO] =
-    new MetricProducer[IO] {
+    new MetricProducer.Unsealed[IO] {
       def produce: IO[Vector[MetricData]] = IO.pure(Vector.empty)
     }
 

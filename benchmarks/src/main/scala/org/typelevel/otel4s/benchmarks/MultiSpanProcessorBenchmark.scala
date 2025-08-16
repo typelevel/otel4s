@@ -109,7 +109,7 @@ object MultiSpanProcessorBenchmark {
       import org.typelevel.otel4s.sdk.trace.data.{SpanData, StatusData}
       import org.typelevel.otel4s.sdk.trace.processor.SpanProcessor
 
-      val processor: SpanProcessor[IO] = new SpanProcessor[IO] {
+      val processor: SpanProcessor[IO] = new SpanProcessor.Unsealed[IO] {
         def name: String = "Noop"
         val onStart: SpanProcessor.OnStart[IO] = (_, _) => IO.unit
         val onEnd: SpanProcessor.OnEnd[IO] = _ => IO.unit

@@ -39,7 +39,7 @@ private final class SdkTracer[F[_]: Temporal: Console] private[trace] (
     propagators: ContextPropagators[Context],
     sharedState: TracerSharedState[F],
     traceScope: TraceScope[F, Context]
-) extends Tracer[F] {
+) extends Tracer.Unsealed[F] {
 
   def meta: InstrumentMeta.Dynamic[F] = sharedState.meta
 

@@ -37,7 +37,7 @@ private[oteljava] class TracerImpl[F[_]](
     propagators: ContextPropagators[Context],
     traceScope: TraceScope[F, Context],
 )(implicit F: Sync[F])
-    extends Tracer[F] {
+    extends Tracer.Unsealed[F] {
 
   private val runner: SpanRunner[F] = SpanRunner.fromTraceScope(traceScope)
 

@@ -29,7 +29,7 @@ private[oteljava] final case class TracerBuilderImpl[F[_]: Sync](
     name: String,
     version: Option[String] = None,
     schemaUrl: Option[String] = None
-) extends TracerBuilder[F] {
+) extends TracerBuilder.Unsealed[F] {
 
   def withVersion(version: String): TracerBuilder[F] =
     copy(version = Option(version))

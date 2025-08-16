@@ -32,7 +32,7 @@ import scodec.bits.ByteVector
   * @tparam F
   *   the higher-kinded type of a polymorphic effect
   */
-trait IdGenerator[F[_]] {
+sealed trait IdGenerator[F[_]] {
 
   /** Generates a valid span id.
     */
@@ -49,6 +49,7 @@ trait IdGenerator[F[_]] {
 }
 
 object IdGenerator {
+  private[sdk] trait Unsealed[F[_]] extends IdGenerator[F]
 
   private final val InvalidId = 0
 

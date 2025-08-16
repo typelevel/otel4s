@@ -25,7 +25,7 @@ import org.typelevel.otel4s.oteljava.context.Context
 import org.typelevel.otel4s.oteljava.context.LocalContext
 
 private final class BaggageManagerImpl[F[_]] private (implicit localContext: LocalContext[F])
-    extends BaggageManager[F] {
+    extends BaggageManager.Unsealed[F] {
   import BaggageManagerImpl.jBaggageFromContext
 
   protected def applicative: Applicative[F] =

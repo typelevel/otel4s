@@ -49,7 +49,7 @@ private final class OtlpMetricExporterAutoConfigure[
       "OtlpMetricExporter",
       Set.empty
     )
-    with AutoConfigure.Named[F, MetricExporter[F]] {
+    with AutoConfigure.Named.Unsealed[F, MetricExporter[F]] {
 
   def name: String = "otlp"
 

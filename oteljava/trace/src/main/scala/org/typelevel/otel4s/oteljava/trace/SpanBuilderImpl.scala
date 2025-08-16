@@ -45,14 +45,14 @@ private[oteljava] final case class SpanBuilderImpl[F[_]: Sync] private (
     runner: SpanRunner[F],
     scope: TraceScope[F, Context],
     stateModifiers: Queue[SpanBuilder.State => SpanBuilder.State]
-) extends SpanBuilder[F] {
+) extends SpanBuilder.Unsealed[F] {
   import SpanBuilder.Parent
   import SpanBuilderImpl._
 
   def modifyState(f: SpanBuilder.State => SpanBuilder.State): SpanBuilder[F] =
     copy(stateModifiers = this.stateModifiers :+ f)
 
-  def build: SpanOps[F] = new SpanOps[F] {
+  def build: SpanOps[F] = new SpanOps.Unsealed[F] {
     def startUnmanaged: F[Span[F]] =
       runnerContext.flatMap(ctx => SpanRunner.startUnmanaged(ctx))
 

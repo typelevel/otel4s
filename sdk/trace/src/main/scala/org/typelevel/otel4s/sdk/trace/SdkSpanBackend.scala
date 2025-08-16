@@ -71,8 +71,8 @@ private final class SdkSpanBackend[F[_]: Monad: Clock: Console] private (
     spanStorage: SpanStorage[F],
     immutableState: SdkSpanBackend.ImmutableState,
     mutableState: Ref[F, SdkSpanBackend.MutableState]
-) extends Span.Backend[F]
-    with SpanRef[F] {
+) extends Span.Backend.Unsealed[F]
+    with SpanRef.Unsealed[F] {
 
   val meta: InstrumentMeta.Static[F] =
     InstrumentMeta.Static.enabled

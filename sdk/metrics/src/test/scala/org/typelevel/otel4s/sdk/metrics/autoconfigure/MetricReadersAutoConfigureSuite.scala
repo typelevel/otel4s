@@ -80,7 +80,7 @@ class MetricReadersAutoConfigureSuite extends CatsEffectSuite {
   }
 
   private def pushExporter(exporterName: String): MetricExporter.Push[IO] =
-    new MetricExporter.Push[IO] {
+    new MetricExporter.Push.Unsealed[IO] {
       def name: String = exporterName
 
       def aggregationTemporalitySelector: AggregationTemporalitySelector =

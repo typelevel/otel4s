@@ -34,7 +34,7 @@ import cats.mtl.Local
   * BaggageManager[F].modifiedScope(_.updated("user_id", "uid"))(io)
   *   }}}
   */
-trait BaggageManager[F[_]] {
+sealed trait BaggageManager[F[_]] {
 
   // TODO: remove after finishing migrating away from Local
   protected def applicative: Applicative[F]
@@ -73,6 +73,8 @@ trait BaggageManager[F[_]] {
 }
 
 object BaggageManager {
+  private[otel4s] trait Unsealed[F[_]] extends BaggageManager[F]
+
   def apply[F[_]](implicit ev: BaggageManager[F]): BaggageManager[F] = ev
 
   @deprecated("BaggageManager no longer extends Local", since = "0.13.0")

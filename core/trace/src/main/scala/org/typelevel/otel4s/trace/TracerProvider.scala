@@ -23,7 +23,7 @@ import cats.syntax.functor._
 
 /** The entry point of the tracing API. Provides access to [[Tracer]].
   */
-trait TracerProvider[F[_]] {
+sealed trait TracerProvider[F[_]] {
 
   /** Creates a named [[Tracer]].
     *
@@ -68,6 +68,7 @@ trait TracerProvider[F[_]] {
 }
 
 object TracerProvider {
+  private[otel4s] trait Unsealed[F[_]] extends TracerProvider[F]
 
   def apply[F[_]](implicit ev: TracerProvider[F]): TracerProvider[F] = ev
 

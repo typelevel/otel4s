@@ -17,7 +17,7 @@
 package org.typelevel.otel4s
 package context
 
-trait Contextual[C] { outer =>
+sealed trait Contextual[C] { outer =>
 
   /** The type of [[context.Key `Key`]] used by contexts of type `C`. */
   type Key[A] <: context.Key[A]
@@ -60,6 +60,7 @@ trait Contextual[C] { outer =>
 }
 
 object Contextual {
+  private[otel4s] trait Unsealed[C] extends Contextual[C]
 
   /** A type alias for a [[`Contextual`]] explicitly parameterized by its [[Contextual.Key `Key`]] type.
     */

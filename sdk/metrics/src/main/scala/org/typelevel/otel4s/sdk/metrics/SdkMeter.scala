@@ -44,7 +44,7 @@ import scala.concurrent.duration.FiniteDuration
   */
 private class SdkMeter[F[_]: MonadCancelThrow: Clock: Console: AskContext](
     sharedState: MeterSharedState[F]
-) extends Meter[F] {
+) extends Meter.Unsealed[F] {
 
   def meta: InstrumentMeta.Dynamic[F] = sharedState.meta
 

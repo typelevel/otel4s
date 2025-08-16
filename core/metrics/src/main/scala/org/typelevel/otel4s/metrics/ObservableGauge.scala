@@ -18,7 +18,7 @@ package org.typelevel.otel4s.metrics
 
 import cats.effect.Resource
 
-trait ObservableGauge
+sealed trait ObservableGauge
 
 object ObservableGauge {
 
@@ -31,7 +31,7 @@ object ObservableGauge {
     *   the type of the values to record. The type must have an instance of [[MeasurementValue]]. [[scala.Long]] and
     *   [[scala.Double]] are supported out of the box.
     */
-  trait Builder[F[_], A] {
+  sealed trait Builder[F[_], A] {
 
     /** Sets the unit of measure for this instrument.
       *
@@ -94,4 +94,9 @@ object ObservableGauge {
     def createObserver: F[ObservableMeasurement[F, A]]
   }
 
+  object Builder {
+    private[otel4s] trait Unsealed[F[_], A] extends Builder[F, A]
+  }
+
+  private[otel4s] val noop: ObservableGauge = new ObservableGauge {}
 }

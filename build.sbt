@@ -414,7 +414,11 @@ lazy val sdk = crossProject(JVMPlatform, JSPlatform, NativePlatform)
     `sdk-trace-testkit` % Test
   )
   .settings(
-    name := "otel4s-sdk"
+    name := "otel4s-sdk",
+    Test / javaOptions ++= Seq(
+      "-Dcats.effect.trackFiberContext=true",
+    ),
+    Test / fork := true,
   )
   .settings(munitDependencies)
   .jsSettings(scalaJSLinkerSettings)
@@ -732,11 +736,15 @@ lazy val `oteljava-trace` = project
 
 lazy val `oteljava-trace-testkit` = project
   .in(file("oteljava/trace-testkit"))
-  .dependsOn(`oteljava-trace`, `oteljava-common-testkit`)
+  .dependsOn(`oteljava-trace`, `oteljava-common-testkit`, `oteljava-context-storage`)
   .settings(munitDependencies)
   .settings(
     name := "otel4s-oteljava-trace-testkit",
-    startYear := Some(2024)
+    startYear := Some(2024),
+    Test / javaOptions ++= Seq(
+      "-Dcats.effect.trackFiberContext=true",
+    ),
+    Test / fork := true,
   )
 
 lazy val `oteljava-testkit` = project
@@ -777,7 +785,11 @@ lazy val oteljava = project
       "io.opentelemetry" % "opentelemetry-sdk" % OpenTelemetryVersion,
       "io.opentelemetry" % "opentelemetry-sdk-extension-autoconfigure" % OpenTelemetryVersion,
       "io.opentelemetry" % "opentelemetry-sdk-testing" % OpenTelemetryVersion % Test
-    )
+    ),
+    Test / javaOptions ++= Seq(
+      "-Dcats.effect.trackFiberContext=true",
+    ),
+    Test / fork := true,
   )
   .settings(munitDependencies)
 

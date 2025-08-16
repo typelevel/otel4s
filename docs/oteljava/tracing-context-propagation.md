@@ -82,6 +82,7 @@ otel4s: SpanContext{traceId=58b8ed50a558ca53fcc64a0d80b5e662, spanId=fc25fe2c9fb
 ## Limitations
 
 The `IOLocalContextStorageProvider` doesn't work with [OpenTelemetry Java Agent][opentelemetry-java-agent].
+However, you can use an **experimental** distribution of the [OTeL Agent](agent.md) instead.
 
 [opentelemetry-java]: https://github.com/open-telemetry/opentelemetry-java
 [opentelemetry-java-agent]: https://opentelemetry.io/docs/zero-code/java/agent/

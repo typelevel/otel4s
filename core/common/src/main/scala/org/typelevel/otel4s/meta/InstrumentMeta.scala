@@ -43,8 +43,11 @@ object InstrumentMeta {
 
     /** Modify the context `F` using an implicit [[KindTransformer]] from `F` to `G`.
       */
-    def mapK[G[_]: Monad](implicit kt: KindTransformer[F, G]): InstrumentMeta.Dynamic[G] =
+    def liftTo[G[_]: Monad](implicit kt: KindTransformer[F, G]): InstrumentMeta.Dynamic[G] =
       mapK(kt.liftK)
+
+    @deprecated("use `liftTo` instead", since = "otel4s 0.14.0")
+    def mapK[G[_]: Monad](implicit kt: KindTransformer[F, G]): InstrumentMeta.Dynamic[G] = liftTo[G]
   }
 
   object Dynamic {
@@ -93,8 +96,11 @@ object InstrumentMeta {
 
     /** Modify the context `F` using an implicit [[KindTransformer]] from `F` to `G`.
       */
-    def mapK[G[_]](implicit kt: KindTransformer[F, G]): InstrumentMeta.Static[G] =
+    def liftTo[G[_]](implicit kt: KindTransformer[F, G]): InstrumentMeta.Static[G] =
       mapK(kt.liftK)
+
+    @deprecated("use `liftTo` instead", since = "otel4s 0.14.0")
+    def mapK[G[_]](implicit kt: KindTransformer[F, G]): InstrumentMeta.Static[G] = liftTo[G]
   }
 
   object Static {

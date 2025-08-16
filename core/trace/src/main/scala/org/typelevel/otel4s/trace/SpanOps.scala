@@ -244,11 +244,17 @@ trait SpanOps[F[_]] {
 
   /** Modify the context `F` using an implicit [[KindTransformer]] from `F` to `G`.
     */
-  def mapK[G[_]: MonadCancelThrow](implicit
+  def liftTo[G[_]: MonadCancelThrow](implicit
       F: MonadCancelThrow[F],
       kt: KindTransformer[F, G]
   ): SpanOps[G] =
-    new SpanOps.MappedK(this)
+    new SpanOps.Lifted(this)
+
+  @deprecated("use `liftTo` instead", since = "otel4s 0.14.0")
+  def mapK[G[_]: MonadCancelThrow](implicit
+      F: MonadCancelThrow[F],
+      kt: KindTransformer[F, G]
+  ): SpanOps[G] = liftTo[G]
 }
 
 object SpanOps {
@@ -284,8 +290,11 @@ object SpanOps {
 
     /** Modify the context `F` using an implicit [[KindTransformer]] from `F` to `G`.
       */
-    def mapK[G[_]](implicit kt: KindTransformer[F, G]): Res[G] =
-      Res(span.mapK[G], kt.liftFunctionK(trace))
+    def liftTo[G[_]](implicit kt: KindTransformer[F, G]): Res[G] =
+      Res(span.liftTo[G], kt.liftFunctionK(trace))
+
+    @deprecated("use `liftTo` instead", since = "otel4s 0.14.0")
+    def mapK[G[_]](implicit kt: KindTransformer[F, G]): Res[G] = liftTo[G]
   }
 
   object Res {
@@ -301,20 +310,17 @@ object SpanOps {
       Some((res.span, res.trace))
   }
 
-  /** Implementation for [[SpanOps.mapK]]. */
-  private class MappedK[F[_]: MonadCancelThrow, G[_]: MonadCancelThrow](
+  /** Implementation for [[SpanOps.liftTo]]. */
+  private class Lifted[F[_]: MonadCancelThrow, G[_]: MonadCancelThrow](
       ops: SpanOps[F]
   )(implicit kt: KindTransformer[F, G])
       extends SpanOps[G] {
     def startUnmanaged: G[Span[G]] =
-      kt.liftK(ops.startUnmanaged).map(_.mapK[G])
-
+      kt.liftK(ops.startUnmanaged).map(_.liftTo[G])
     def resource: Resource[G, Res[G]] =
-      ops.resource.mapK(kt.liftK).map(res => res.mapK[G])
-
+      ops.resource.mapK(kt.liftK).map(res => res.liftTo[G])
     def use[A](f: Span[G] => G[A]): G[A] =
       resource.use { res => res.trace(f(res.span)) }
-
     def use_ : G[Unit] = kt.liftK(ops.use_)
   }
 }

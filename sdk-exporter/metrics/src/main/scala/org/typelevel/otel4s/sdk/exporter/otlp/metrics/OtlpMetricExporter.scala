@@ -38,7 +38,7 @@ import org.typelevel.otel4s.sdk.metrics.exporter.MetricExporter
 
 import scala.concurrent.duration._
 
-/** Exports metrics via HTTP.
+/** Exports metrics using an underlying OTLP client.
   *
   * Supported protocols:
   *   - `grpc`

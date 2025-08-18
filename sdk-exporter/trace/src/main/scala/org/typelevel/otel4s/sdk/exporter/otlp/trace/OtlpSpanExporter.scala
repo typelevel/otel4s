@@ -35,7 +35,7 @@ import org.typelevel.otel4s.sdk.trace.exporter.SpanExporter
 
 import scala.concurrent.duration._
 
-/** Exports spans using underlying OTLP client.
+/** Exports spans using an underlying OTLP client.
   *
   * Supported protocols:
   *   - `grpc`

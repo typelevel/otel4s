@@ -72,7 +72,7 @@ private final class BatchSpanProcessor[F[_]: Temporal: Console] private (
   val onStart: SpanProcessor.OnStart[F] =
     SpanProcessor.OnStart.noop
 
-  val onEnd: SpanProcessor.OnEnd[F] = { (span: SpanData) =>
+  val onEnd: SpanProcessor.OnEnd[F] = SpanProcessor.OnEnd { (span: SpanData) =>
     if (span.spanContext.isSampled) {
       // if 'spansNeeded' is defined, it means the worker is waiting for a certain number of spans
       // and it waits for the 'signal'-latch to be released

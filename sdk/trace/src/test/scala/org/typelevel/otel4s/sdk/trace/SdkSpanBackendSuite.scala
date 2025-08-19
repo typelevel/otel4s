@@ -488,10 +488,10 @@ class SdkSpanBackendSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
       val name: String = "InMemorySpanProcessor"
 
       val onStart: SpanProcessor.OnStart[IO] =
-        (_, span) => span.toSpanData.flatMap(d => start.offer(d))
+        SpanProcessor.OnStart((_, span) => span.toSpanData.flatMap(d => start.offer(d)))
 
       val onEnd: SpanProcessor.OnEnd[IO] =
-        end.offer(_)
+        SpanProcessor.OnEnd(end.offer)
 
       def forceFlush: IO[Unit] =
         IO.unit

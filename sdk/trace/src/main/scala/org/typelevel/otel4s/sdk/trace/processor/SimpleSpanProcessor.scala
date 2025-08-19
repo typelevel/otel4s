@@ -46,7 +46,7 @@ private final class SimpleSpanProcessor[F[_]: MonadThrow: Console] private (
   val onStart: SpanProcessor.OnStart[F] =
     SpanProcessor.OnStart.noop
 
-  val onEnd: SpanProcessor.OnEnd[F] = { (span: SpanData) =>
+  val onEnd: SpanProcessor.OnEnd[F] = SpanProcessor.OnEnd { (span: SpanData) =>
     val canExport = !exportOnlySampled || span.spanContext.isSampled
     if (canExport) doExport(span) else MonadThrow[F].unit
   }

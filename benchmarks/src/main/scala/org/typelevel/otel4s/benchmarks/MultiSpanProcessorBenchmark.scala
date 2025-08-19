@@ -111,8 +111,8 @@ object MultiSpanProcessorBenchmark {
 
       val processor: SpanProcessor[IO] = new SpanProcessor.Unsealed[IO] {
         def name: String = "Noop"
-        val onStart: SpanProcessor.OnStart[IO] = (_, _) => IO.unit
-        val onEnd: SpanProcessor.OnEnd[IO] = _ => IO.unit
+        val onStart: SpanProcessor.OnStart[IO] = SpanProcessor.OnStart((_, _) => IO.unit)
+        val onEnd: SpanProcessor.OnEnd[IO] = SpanProcessor.OnEnd(_ => IO.unit)
         def forceFlush: IO[Unit] = IO.unit
       }
 

@@ -43,7 +43,7 @@ object HttpExperimentalMetrics {
 
   /** Number of active HTTP requests.
     */
-  object ClientActiveRequests extends MetricSpec {
+  object ClientActiveRequests extends MetricSpec.Unsealed {
 
     val name: String = "http.client.active_requests"
     val description: String = "Number of active HTTP requests."
@@ -190,7 +190,7 @@ object HttpExperimentalMetrics {
 
   /** The duration of the successfully established outbound HTTP connections.
     */
-  object ClientConnectionDuration extends MetricSpec {
+  object ClientConnectionDuration extends MetricSpec.Unsealed {
 
     val name: String = "http.client.connection.duration"
     val description: String = "The duration of the successfully established outbound HTTP connections."
@@ -304,7 +304,7 @@ object HttpExperimentalMetrics {
 
   /** Number of outbound HTTP connections that are currently active or idle on the client.
     */
-  object ClientOpenConnections extends MetricSpec {
+  object ClientOpenConnections extends MetricSpec.Unsealed {
 
     val name: String = "http.client.open_connections"
     val description: String = "Number of outbound HTTP connections that are currently active or idle on the client."
@@ -453,7 +453,7 @@ object HttpExperimentalMetrics {
     *   href="https://www.rfc-editor.org/rfc/rfc9110.html#field.content-length">Content-Length</a> header. For requests
     *   using transport encoding, this should be the compressed size.
     */
-  object ClientRequestBodySize extends MetricSpec {
+  object ClientRequestBodySize extends MetricSpec.Unsealed {
 
     val name: String = "http.client.request.body.size"
     val description: String = "Size of HTTP client request bodies."
@@ -667,7 +667,7 @@ object HttpExperimentalMetrics {
   /** Duration of HTTP client requests.
     */
   @deprecated("Use stable `org.typelevel.otel4s.semconv.metrics.HttpMetrics.ClientRequestDuration` instead.", "")
-  object ClientRequestDuration extends MetricSpec {
+  object ClientRequestDuration extends MetricSpec.Unsealed {
 
     val name: String = "http.client.request.duration"
     val description: String = "Duration of HTTP client requests."
@@ -886,7 +886,7 @@ object HttpExperimentalMetrics {
     *   href="https://www.rfc-editor.org/rfc/rfc9110.html#field.content-length">Content-Length</a> header. For requests
     *   using transport encoding, this should be the compressed size.
     */
-  object ClientResponseBodySize extends MetricSpec {
+  object ClientResponseBodySize extends MetricSpec.Unsealed {
 
     val name: String = "http.client.response.body.size"
     val description: String = "Size of HTTP client response bodies."
@@ -1099,7 +1099,7 @@ object HttpExperimentalMetrics {
 
   /** Number of active HTTP server requests.
     */
-  object ServerActiveRequests extends MetricSpec {
+  object ServerActiveRequests extends MetricSpec.Unsealed {
 
     val name: String = "http.server.active_requests"
     val description: String = "Number of active HTTP server requests."
@@ -1235,7 +1235,7 @@ object HttpExperimentalMetrics {
     *   href="https://www.rfc-editor.org/rfc/rfc9110.html#field.content-length">Content-Length</a> header. For requests
     *   using transport encoding, this should be the compressed size.
     */
-  object ServerRequestBodySize extends MetricSpec {
+  object ServerRequestBodySize extends MetricSpec.Unsealed {
 
     val name: String = "http.server.request.body.size"
     val description: String = "Size of HTTP server request bodies."
@@ -1475,7 +1475,7 @@ object HttpExperimentalMetrics {
   /** Duration of HTTP server requests.
     */
   @deprecated("Use stable `org.typelevel.otel4s.semconv.metrics.HttpMetrics.ServerRequestDuration` instead.", "")
-  object ServerRequestDuration extends MetricSpec {
+  object ServerRequestDuration extends MetricSpec.Unsealed {
 
     val name: String = "http.server.request.duration"
     val description: String = "Duration of HTTP server requests."
@@ -1720,7 +1720,7 @@ object HttpExperimentalMetrics {
     *   href="https://www.rfc-editor.org/rfc/rfc9110.html#field.content-length">Content-Length</a> header. For requests
     *   using transport encoding, this should be the compressed size.
     */
-  object ServerResponseBodySize extends MetricSpec {
+  object ServerResponseBodySize extends MetricSpec.Unsealed {
 
     val name: String = "http.server.response.body.size"
     val description: String = "Size of HTTP server response bodies."

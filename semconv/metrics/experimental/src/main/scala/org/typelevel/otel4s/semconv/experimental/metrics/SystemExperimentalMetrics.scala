@@ -66,7 +66,7 @@ object SystemExperimentalMetrics {
   /** Deprecated. Use `cpu.frequency` instead.
     */
   @deprecated("Replaced by `cpu.frequency`.", "")
-  object CpuFrequency extends MetricSpec {
+  object CpuFrequency extends MetricSpec.Unsealed {
 
     val name: String = "system.cpu.frequency"
     val description: String = "Deprecated. Use `cpu.frequency` instead."
@@ -105,7 +105,7 @@ object SystemExperimentalMetrics {
     *   <p> Calculated by multiplying the number of sockets by the number of cores per socket, and then by the number of
     *   threads per core
     */
-  object CpuLogicalCount extends MetricSpec {
+  object CpuLogicalCount extends MetricSpec.Unsealed {
 
     val name: String = "system.cpu.logical.count"
     val description: String =
@@ -144,7 +144,7 @@ object SystemExperimentalMetrics {
     * @note
     *   <p> Calculated by multiplying the number of sockets by the number of cores per socket
     */
-  object CpuPhysicalCount extends MetricSpec {
+  object CpuPhysicalCount extends MetricSpec.Unsealed {
 
     val name: String = "system.cpu.physical.count"
     val description: String = "Reports the number of actual physical processor cores on the hardware"
@@ -180,7 +180,7 @@ object SystemExperimentalMetrics {
   /** Deprecated. Use `cpu.time` instead.
     */
   @deprecated("Replaced by `cpu.time`.", "")
-  object CpuTime extends MetricSpec {
+  object CpuTime extends MetricSpec.Unsealed {
 
     val name: String = "system.cpu.time"
     val description: String = "Deprecated. Use `cpu.time` instead."
@@ -216,7 +216,7 @@ object SystemExperimentalMetrics {
   /** Deprecated. Use `cpu.utilization` instead.
     */
   @deprecated("Replaced by `cpu.utilization`.", "")
-  object CpuUtilization extends MetricSpec {
+  object CpuUtilization extends MetricSpec.Unsealed {
 
     val name: String = "system.cpu.utilization"
     val description: String = "Deprecated. Use `cpu.utilization` instead."
@@ -250,7 +250,7 @@ object SystemExperimentalMetrics {
   }
 
   /** */
-  object DiskIo extends MetricSpec {
+  object DiskIo extends MetricSpec.Unsealed {
 
     val name: String = "system.disk.io"
     val description: String = ""
@@ -326,7 +326,7 @@ object SystemExperimentalMetrics {
     *   href="https://learn.microsoft.com/archive/blogs/askcore/windows-performance-monitor-disk-counters-explained#windows-performance-monitor-disk-counters-explained">"Disk%
     *   Idle Time"</a> performance counter: `uptime * (100 - "Disk\% Idle Time") / 100` </ul>
     */
-  object DiskIoTime extends MetricSpec {
+  object DiskIoTime extends MetricSpec.Unsealed {
 
     val name: String = "system.disk.io_time"
     val description: String = "Time disk spent activated"
@@ -381,7 +381,7 @@ object SystemExperimentalMetrics {
 
   /** The total storage capacity of the disk
     */
-  object DiskLimit extends MetricSpec {
+  object DiskLimit extends MetricSpec.Unsealed {
 
     val name: String = "system.disk.limit"
     val description: String = "The total storage capacity of the disk"
@@ -435,7 +435,7 @@ object SystemExperimentalMetrics {
   }
 
   /** */
-  object DiskMerged extends MetricSpec {
+  object DiskMerged extends MetricSpec.Unsealed {
 
     val name: String = "system.disk.merged"
     val description: String = ""
@@ -509,7 +509,7 @@ object SystemExperimentalMetrics {
     *   href="https://www.kernel.org/doc/Documentation/ABI/testing/procfs-diskstats">procfs-diskstats</a> <li>Windows:
     *   "Avg. Disk sec/Read" perf counter multiplied by "Disk Reads/sec" perf counter (similar for Writes) </ul>
     */
-  object DiskOperationTime extends MetricSpec {
+  object DiskOperationTime extends MetricSpec.Unsealed {
 
     val name: String = "system.disk.operation_time"
     val description: String = "Sum of the time each operation took to complete"
@@ -576,7 +576,7 @@ object SystemExperimentalMetrics {
   }
 
   /** */
-  object DiskOperations extends MetricSpec {
+  object DiskOperations extends MetricSpec.Unsealed {
 
     val name: String = "system.disk.operations"
     val description: String = ""
@@ -644,7 +644,7 @@ object SystemExperimentalMetrics {
 
   /** The total storage capacity of the filesystem
     */
-  object FilesystemLimit extends MetricSpec {
+  object FilesystemLimit extends MetricSpec.Unsealed {
 
     val name: String = "system.filesystem.limit"
     val description: String = "The total storage capacity of the filesystem"
@@ -743,7 +743,7 @@ object SystemExperimentalMetrics {
     *   <p> The sum of all `system.filesystem.usage` values over the different `system.filesystem.state` attributes
     *   SHOULD equal the total storage capacity of the filesystem, that is `system.filesystem.limit`.
     */
-  object FilesystemUsage extends MetricSpec {
+  object FilesystemUsage extends MetricSpec.Unsealed {
 
     val name: String = "system.filesystem.usage"
     val description: String = "Reports a filesystem's space usage across different states."
@@ -850,7 +850,7 @@ object SystemExperimentalMetrics {
   }
 
   /** */
-  object FilesystemUtilization extends MetricSpec {
+  object FilesystemUtilization extends MetricSpec.Unsealed {
 
     val name: String = "system.filesystem.utilization"
     val description: String = ""
@@ -965,7 +965,7 @@ object SystemExperimentalMetrics {
     *   href="https://superuser.com/a/980821">here</a>. See also `MemAvailable` in <a
     *   href="https://man7.org/linux/man-pages/man5/proc.5.html">/proc/meminfo</a>.
     */
-  object LinuxMemoryAvailable extends MetricSpec {
+  object LinuxMemoryAvailable extends MetricSpec.Unsealed {
 
     val name: String = "system.linux.memory.available"
     val description: String =
@@ -1008,7 +1008,7 @@ object SystemExperimentalMetrics {
     *   href="https://blogs.oracle.com/linux/post/understanding-linux-kernel-memory-statistics">Slab allocator</a> and
     *   `Slab` in <a href="https://man7.org/linux/man-pages/man5/proc.5.html">/proc/meminfo</a>.
     */
-  object LinuxMemorySlabUsage extends MetricSpec {
+  object LinuxMemorySlabUsage extends MetricSpec.Unsealed {
 
     val name: String = "system.linux.memory.slab.usage"
     val description: String =
@@ -1068,7 +1068,7 @@ object SystemExperimentalMetrics {
     * @note
     *   <p> Its value SHOULD equal the sum of `system.memory.state` over all states.
     */
-  object MemoryLimit extends MetricSpec {
+  object MemoryLimit extends MetricSpec.Unsealed {
 
     val name: String = "system.memory.limit"
     val description: String = "Total memory available in the system."
@@ -1107,7 +1107,7 @@ object SystemExperimentalMetrics {
     *   <p> Equivalent of `shared` from <a href="https://man7.org/linux/man-pages/man1/free.1.html">`free` command</a>
     *   or `Shmem` from <a href="https://man7.org/linux/man-pages/man5/proc.5.html">`/proc/meminfo`</a>"
     */
-  object MemoryShared extends MetricSpec {
+  object MemoryShared extends MetricSpec.Unsealed {
 
     val name: String = "system.memory.shared"
     val description: String = "Shared memory used (mostly by tmpfs)."
@@ -1146,7 +1146,7 @@ object SystemExperimentalMetrics {
     *   <p> The sum over all `system.memory.state` values SHOULD equal the total memory available on the system, that is
     *   `system.memory.limit`.
     */
-  object MemoryUsage extends MetricSpec {
+  object MemoryUsage extends MetricSpec.Unsealed {
 
     val name: String = "system.memory.usage"
     val description: String = "Reports memory in use by state."
@@ -1201,7 +1201,7 @@ object SystemExperimentalMetrics {
   }
 
   /** */
-  object MemoryUtilization extends MetricSpec {
+  object MemoryUtilization extends MetricSpec.Unsealed {
 
     val name: String = "system.memory.utilization"
     val description: String = ""
@@ -1256,7 +1256,7 @@ object SystemExperimentalMetrics {
   }
 
   /** */
-  object NetworkConnections extends MetricSpec {
+  object NetworkConnections extends MetricSpec.Unsealed {
 
     val name: String = "system.network.connections"
     val description: String = ""
@@ -1357,7 +1357,7 @@ object SystemExperimentalMetrics {
     *   from <a href="https://docs.microsoft.com/windows/win32/api/netioapi/nf-netioapi-getifentry2">`GetIfEntry2`</a>
     *   </ul>
     */
-  object NetworkDropped extends MetricSpec {
+  object NetworkDropped extends MetricSpec.Unsealed {
 
     val name: String = "system.network.dropped"
     val description: String = "Count of packets that are dropped or discarded even though there was no error"
@@ -1434,7 +1434,7 @@ object SystemExperimentalMetrics {
     *   from <a href="https://docs.microsoft.com/windows/win32/api/netioapi/nf-netioapi-getifentry2">`GetIfEntry2`</a>.
     *   </ul>
     */
-  object NetworkErrors extends MetricSpec {
+  object NetworkErrors extends MetricSpec.Unsealed {
 
     val name: String = "system.network.errors"
     val description: String = "Count of network errors detected"
@@ -1502,7 +1502,7 @@ object SystemExperimentalMetrics {
   }
 
   /** */
-  object NetworkIo extends MetricSpec {
+  object NetworkIo extends MetricSpec.Unsealed {
 
     val name: String = "system.network.io"
     val description: String = ""
@@ -1570,7 +1570,7 @@ object SystemExperimentalMetrics {
   }
 
   /** */
-  object NetworkPackets extends MetricSpec {
+  object NetworkPackets extends MetricSpec.Unsealed {
 
     val name: String = "system.network.packets"
     val description: String = ""
@@ -1637,7 +1637,7 @@ object SystemExperimentalMetrics {
   }
 
   /** */
-  object PagingFaults extends MetricSpec {
+  object PagingFaults extends MetricSpec.Unsealed {
 
     val name: String = "system.paging.faults"
     val description: String = ""
@@ -1691,7 +1691,7 @@ object SystemExperimentalMetrics {
   }
 
   /** */
-  object PagingOperations extends MetricSpec {
+  object PagingOperations extends MetricSpec.Unsealed {
 
     val name: String = "system.paging.operations"
     val description: String = ""
@@ -1759,7 +1759,7 @@ object SystemExperimentalMetrics {
 
   /** Unix swap or windows pagefile usage
     */
-  object PagingUsage extends MetricSpec {
+  object PagingUsage extends MetricSpec.Unsealed {
 
     val name: String = "system.paging.usage"
     val description: String = "Unix swap or windows pagefile usage"
@@ -1826,7 +1826,7 @@ object SystemExperimentalMetrics {
   }
 
   /** */
-  object PagingUtilization extends MetricSpec {
+  object PagingUtilization extends MetricSpec.Unsealed {
 
     val name: String = "system.paging.utilization"
     val description: String = ""
@@ -1894,7 +1894,7 @@ object SystemExperimentalMetrics {
 
   /** Total number of processes in each state
     */
-  object ProcessCount extends MetricSpec {
+  object ProcessCount extends MetricSpec.Unsealed {
 
     val name: String = "system.process.count"
     val description: String = "Total number of processes in each state"
@@ -1950,7 +1950,7 @@ object SystemExperimentalMetrics {
 
   /** Total number of processes created over uptime of the host
     */
-  object ProcessCreated extends MetricSpec {
+  object ProcessCreated extends MetricSpec.Unsealed {
 
     val name: String = "system.process.created"
     val description: String = "Total number of processes created over uptime of the host"
@@ -1990,7 +1990,7 @@ object SystemExperimentalMetrics {
     *   number with the highest precision available. The actual accuracy would depend on the instrumentation and
     *   operating system.
     */
-  object Uptime extends MetricSpec {
+  object Uptime extends MetricSpec.Unsealed {
 
     val name: String = "system.uptime"
     val description: String = "The time the system has been running"

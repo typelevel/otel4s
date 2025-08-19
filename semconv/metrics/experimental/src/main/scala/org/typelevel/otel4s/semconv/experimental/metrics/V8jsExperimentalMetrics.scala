@@ -41,7 +41,7 @@ object V8jsExperimentalMetrics {
     *   href="https://nodejs.org/api/perf_hooks.html#performanceobserverobserveoptions">`perf_hooks.PerformanceObserver(...).observe({
     *   entryTypes: ['gc'] })`</a>
     */
-  object GcDuration extends MetricSpec {
+  object GcDuration extends MetricSpec.Unsealed {
 
     val name: String = "v8js.gc.duration"
     val description: String = "Garbage collection duration."
@@ -84,7 +84,7 @@ object V8jsExperimentalMetrics {
     *   <p> Value can be retrieved from value `space_available_size` of <a
     *   href="https://nodejs.org/api/v8.html#v8getheapspacestatistics">`v8.getHeapSpaceStatistics()`</a>
     */
-  object HeapSpaceAvailableSize extends MetricSpec {
+  object HeapSpaceAvailableSize extends MetricSpec.Unsealed {
 
     val name: String = "v8js.heap.space.available_size"
     val description: String = "Heap space available size."
@@ -146,7 +146,7 @@ object V8jsExperimentalMetrics {
     *   <p> Value can be retrieved from value `physical_space_size` of <a
     *   href="https://nodejs.org/api/v8.html#v8getheapspacestatistics">`v8.getHeapSpaceStatistics()`</a>
     */
-  object HeapSpacePhysicalSize extends MetricSpec {
+  object HeapSpacePhysicalSize extends MetricSpec.Unsealed {
 
     val name: String = "v8js.heap.space.physical_size"
     val description: String = "Committed size of a heap space."
@@ -208,7 +208,7 @@ object V8jsExperimentalMetrics {
     *   <p> The value can be retrieved from value `space_size` of <a
     *   href="https://nodejs.org/api/v8.html#v8getheapspacestatistics">`v8.getHeapSpaceStatistics()`</a>
     */
-  object MemoryHeapLimit extends MetricSpec {
+  object MemoryHeapLimit extends MetricSpec.Unsealed {
 
     val name: String = "v8js.memory.heap.limit"
     val description: String = "Total heap memory size pre-allocated."
@@ -270,7 +270,7 @@ object V8jsExperimentalMetrics {
     *   <p> The value can be retrieved from value `space_used_size` of <a
     *   href="https://nodejs.org/api/v8.html#v8getheapspacestatistics">`v8.getHeapSpaceStatistics()`</a>
     */
-  object MemoryHeapUsed extends MetricSpec {
+  object MemoryHeapUsed extends MetricSpec.Unsealed {
 
     val name: String = "v8js.memory.heap.used"
     val description: String = "Heap Memory size allocated."

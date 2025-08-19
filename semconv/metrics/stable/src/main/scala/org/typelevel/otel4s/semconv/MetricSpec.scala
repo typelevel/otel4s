@@ -18,7 +18,7 @@ package org.typelevel.otel4s.semconv
 
 /** The metric specification.
   */
-trait MetricSpec {
+sealed trait MetricSpec {
 
   /** The name of the metric.
     */
@@ -40,4 +40,8 @@ trait MetricSpec {
     */
   def attributeSpecs: List[AttributeSpec[_]]
 
+}
+
+object MetricSpec {
+  private[semconv] trait Unsealed extends MetricSpec
 }

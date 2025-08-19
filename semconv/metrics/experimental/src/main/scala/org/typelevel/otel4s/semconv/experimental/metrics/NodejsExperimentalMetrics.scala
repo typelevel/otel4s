@@ -44,7 +44,7 @@ object NodejsExperimentalMetrics {
     *   <p> Value can be retrieved from value `histogram.max` of <a
     *   href="https://nodejs.org/api/perf_hooks.html#perf_hooksmonitoreventloopdelayoptions">`perf_hooks.monitorEventLoopDelay([options])`</a>
     */
-  object EventloopDelayMax extends MetricSpec {
+  object EventloopDelayMax extends MetricSpec.Unsealed {
 
     val name: String = "nodejs.eventloop.delay.max"
     val description: String = "Event loop maximum delay."
@@ -83,7 +83,7 @@ object NodejsExperimentalMetrics {
     *   <p> Value can be retrieved from value `histogram.mean` of <a
     *   href="https://nodejs.org/api/perf_hooks.html#perf_hooksmonitoreventloopdelayoptions">`perf_hooks.monitorEventLoopDelay([options])`</a>
     */
-  object EventloopDelayMean extends MetricSpec {
+  object EventloopDelayMean extends MetricSpec.Unsealed {
 
     val name: String = "nodejs.eventloop.delay.mean"
     val description: String = "Event loop mean delay."
@@ -122,7 +122,7 @@ object NodejsExperimentalMetrics {
     *   <p> Value can be retrieved from value `histogram.min` of <a
     *   href="https://nodejs.org/api/perf_hooks.html#perf_hooksmonitoreventloopdelayoptions">`perf_hooks.monitorEventLoopDelay([options])`</a>
     */
-  object EventloopDelayMin extends MetricSpec {
+  object EventloopDelayMin extends MetricSpec.Unsealed {
 
     val name: String = "nodejs.eventloop.delay.min"
     val description: String = "Event loop minimum delay."
@@ -161,7 +161,7 @@ object NodejsExperimentalMetrics {
     *   <p> Value can be retrieved from value `histogram.percentile(50)` of <a
     *   href="https://nodejs.org/api/perf_hooks.html#perf_hooksmonitoreventloopdelayoptions">`perf_hooks.monitorEventLoopDelay([options])`</a>
     */
-  object EventloopDelayP50 extends MetricSpec {
+  object EventloopDelayP50 extends MetricSpec.Unsealed {
 
     val name: String = "nodejs.eventloop.delay.p50"
     val description: String = "Event loop 50 percentile delay."
@@ -200,7 +200,7 @@ object NodejsExperimentalMetrics {
     *   <p> Value can be retrieved from value `histogram.percentile(90)` of <a
     *   href="https://nodejs.org/api/perf_hooks.html#perf_hooksmonitoreventloopdelayoptions">`perf_hooks.monitorEventLoopDelay([options])`</a>
     */
-  object EventloopDelayP90 extends MetricSpec {
+  object EventloopDelayP90 extends MetricSpec.Unsealed {
 
     val name: String = "nodejs.eventloop.delay.p90"
     val description: String = "Event loop 90 percentile delay."
@@ -239,7 +239,7 @@ object NodejsExperimentalMetrics {
     *   <p> Value can be retrieved from value `histogram.percentile(99)` of <a
     *   href="https://nodejs.org/api/perf_hooks.html#perf_hooksmonitoreventloopdelayoptions">`perf_hooks.monitorEventLoopDelay([options])`</a>
     */
-  object EventloopDelayP99 extends MetricSpec {
+  object EventloopDelayP99 extends MetricSpec.Unsealed {
 
     val name: String = "nodejs.eventloop.delay.p99"
     val description: String = "Event loop 99 percentile delay."
@@ -278,7 +278,7 @@ object NodejsExperimentalMetrics {
     *   <p> Value can be retrieved from value `histogram.stddev` of <a
     *   href="https://nodejs.org/api/perf_hooks.html#perf_hooksmonitoreventloopdelayoptions">`perf_hooks.monitorEventLoopDelay([options])`</a>
     */
-  object EventloopDelayStddev extends MetricSpec {
+  object EventloopDelayStddev extends MetricSpec.Unsealed {
 
     val name: String = "nodejs.eventloop.delay.stddev"
     val description: String = "Event loop standard deviation delay."
@@ -318,7 +318,7 @@ object NodejsExperimentalMetrics {
     *   href="https://nodejs.org/api/perf_hooks.html#performanceeventlooputilizationutilization1-utilization2">`performance.eventLoopUtilization([utilization1[,
     *   utilization2]])`</a>
     */
-  object EventloopTime extends MetricSpec {
+  object EventloopTime extends MetricSpec.Unsealed {
 
     val name: String = "nodejs.eventloop.time"
     val description: String = "Cumulative duration of time the event loop has been in each state."
@@ -377,7 +377,7 @@ object NodejsExperimentalMetrics {
     *   href="https://nodejs.org/api/perf_hooks.html#performanceeventlooputilizationutilization1-utilization2">`performance.eventLoopUtilization([utilization1[,
     *   utilization2]])`</a>
     */
-  object EventloopUtilization extends MetricSpec {
+  object EventloopUtilization extends MetricSpec.Unsealed {
 
     val name: String = "nodejs.eventloop.utilization"
     val description: String = "Event loop utilization."

@@ -43,7 +43,7 @@ object RpcExperimentalMetrics {
     *   <p> While streaming RPCs may record this metric as start-of-batch to end-of-batch, it's hard to interpret in
     *   practice. <p> <strong>Streaming</strong>: N/A.
     */
-  object ClientDuration extends MetricSpec {
+  object ClientDuration extends MetricSpec.Unsealed {
 
     val name: String = "rpc.client.duration"
     val description: String = "Measures the duration of outbound RPC."
@@ -66,7 +66,7 @@ object RpcExperimentalMetrics {
     * @note
     *   <p> <strong>Streaming</strong>: Recorded per message in a streaming batch
     */
-  object ClientRequestSize extends MetricSpec {
+  object ClientRequestSize extends MetricSpec.Unsealed {
 
     val name: String = "rpc.client.request.size"
     val description: String = "Measures the size of RPC request messages (uncompressed)."
@@ -90,7 +90,7 @@ object RpcExperimentalMetrics {
     *   <p> Should be 1 for all non-streaming RPCs. <p> <strong>Streaming</strong>: This metric is required for server
     *   and client streaming RPCs
     */
-  object ClientRequestsPerRpc extends MetricSpec {
+  object ClientRequestsPerRpc extends MetricSpec.Unsealed {
 
     val name: String = "rpc.client.requests_per_rpc"
     val description: String = "Measures the number of messages received per RPC."
@@ -113,7 +113,7 @@ object RpcExperimentalMetrics {
     * @note
     *   <p> <strong>Streaming</strong>: Recorded per response in a streaming batch
     */
-  object ClientResponseSize extends MetricSpec {
+  object ClientResponseSize extends MetricSpec.Unsealed {
 
     val name: String = "rpc.client.response.size"
     val description: String = "Measures the size of RPC response messages (uncompressed)."
@@ -137,7 +137,7 @@ object RpcExperimentalMetrics {
     *   <p> Should be 1 for all non-streaming RPCs. <p> <strong>Streaming</strong>: This metric is required for server
     *   and client streaming RPCs
     */
-  object ClientResponsesPerRpc extends MetricSpec {
+  object ClientResponsesPerRpc extends MetricSpec.Unsealed {
 
     val name: String = "rpc.client.responses_per_rpc"
     val description: String = "Measures the number of messages sent per RPC."
@@ -161,7 +161,7 @@ object RpcExperimentalMetrics {
     *   <p> While streaming RPCs may record this metric as start-of-batch to end-of-batch, it's hard to interpret in
     *   practice. <p> <strong>Streaming</strong>: N/A.
     */
-  object ServerDuration extends MetricSpec {
+  object ServerDuration extends MetricSpec.Unsealed {
 
     val name: String = "rpc.server.duration"
     val description: String = "Measures the duration of inbound RPC."
@@ -184,7 +184,7 @@ object RpcExperimentalMetrics {
     * @note
     *   <p> <strong>Streaming</strong>: Recorded per message in a streaming batch
     */
-  object ServerRequestSize extends MetricSpec {
+  object ServerRequestSize extends MetricSpec.Unsealed {
 
     val name: String = "rpc.server.request.size"
     val description: String = "Measures the size of RPC request messages (uncompressed)."
@@ -208,7 +208,7 @@ object RpcExperimentalMetrics {
     *   <p> Should be 1 for all non-streaming RPCs. <p> <strong>Streaming</strong> : This metric is required for server
     *   and client streaming RPCs
     */
-  object ServerRequestsPerRpc extends MetricSpec {
+  object ServerRequestsPerRpc extends MetricSpec.Unsealed {
 
     val name: String = "rpc.server.requests_per_rpc"
     val description: String = "Measures the number of messages received per RPC."
@@ -231,7 +231,7 @@ object RpcExperimentalMetrics {
     * @note
     *   <p> <strong>Streaming</strong>: Recorded per response in a streaming batch
     */
-  object ServerResponseSize extends MetricSpec {
+  object ServerResponseSize extends MetricSpec.Unsealed {
 
     val name: String = "rpc.server.response.size"
     val description: String = "Measures the size of RPC response messages (uncompressed)."
@@ -255,7 +255,7 @@ object RpcExperimentalMetrics {
     *   <p> Should be 1 for all non-streaming RPCs. <p> <strong>Streaming</strong>: This metric is required for server
     *   and client streaming RPCs
     */
-  object ServerResponsesPerRpc extends MetricSpec {
+  object ServerResponsesPerRpc extends MetricSpec.Unsealed {
 
     val name: String = "rpc.server.responses_per_rpc"
     val description: String = "Measures the number of messages sent per RPC."

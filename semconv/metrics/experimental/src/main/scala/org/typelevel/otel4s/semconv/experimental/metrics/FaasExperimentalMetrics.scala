@@ -40,7 +40,7 @@ object FaasExperimentalMetrics {
 
   /** Number of invocation cold starts
     */
-  object Coldstarts extends MetricSpec {
+  object Coldstarts extends MetricSpec.Unsealed {
 
     val name: String = "faas.coldstarts"
     val description: String = "Number of invocation cold starts"
@@ -94,7 +94,7 @@ object FaasExperimentalMetrics {
 
   /** Distribution of CPU usage per invocation
     */
-  object CpuUsage extends MetricSpec {
+  object CpuUsage extends MetricSpec.Unsealed {
 
     val name: String = "faas.cpu_usage"
     val description: String = "Distribution of CPU usage per invocation"
@@ -133,7 +133,7 @@ object FaasExperimentalMetrics {
 
   /** Number of invocation errors
     */
-  object Errors extends MetricSpec {
+  object Errors extends MetricSpec.Unsealed {
 
     val name: String = "faas.errors"
     val description: String = "Number of invocation errors"
@@ -187,7 +187,7 @@ object FaasExperimentalMetrics {
 
   /** Measures the duration of the function's initialization, such as a cold start
     */
-  object InitDuration extends MetricSpec {
+  object InitDuration extends MetricSpec.Unsealed {
 
     val name: String = "faas.init_duration"
     val description: String = "Measures the duration of the function's initialization, such as a cold start"
@@ -226,7 +226,7 @@ object FaasExperimentalMetrics {
 
   /** Number of successful invocations
     */
-  object Invocations extends MetricSpec {
+  object Invocations extends MetricSpec.Unsealed {
 
     val name: String = "faas.invocations"
     val description: String = "Number of successful invocations"
@@ -280,7 +280,7 @@ object FaasExperimentalMetrics {
 
   /** Measures the duration of the function's logic execution
     */
-  object InvokeDuration extends MetricSpec {
+  object InvokeDuration extends MetricSpec.Unsealed {
 
     val name: String = "faas.invoke_duration"
     val description: String = "Measures the duration of the function's logic execution"
@@ -319,7 +319,7 @@ object FaasExperimentalMetrics {
 
   /** Distribution of max memory usage per invocation
     */
-  object MemUsage extends MetricSpec {
+  object MemUsage extends MetricSpec.Unsealed {
 
     val name: String = "faas.mem_usage"
     val description: String = "Distribution of max memory usage per invocation"
@@ -358,7 +358,7 @@ object FaasExperimentalMetrics {
 
   /** Distribution of net I/O usage per invocation
     */
-  object NetIo extends MetricSpec {
+  object NetIo extends MetricSpec.Unsealed {
 
     val name: String = "faas.net_io"
     val description: String = "Distribution of net I/O usage per invocation"
@@ -397,7 +397,7 @@ object FaasExperimentalMetrics {
 
   /** Number of invocation timeouts
     */
-  object Timeouts extends MetricSpec {
+  object Timeouts extends MetricSpec.Unsealed {
 
     val name: String = "faas.timeouts"
     val description: String = "Number of invocation timeouts"

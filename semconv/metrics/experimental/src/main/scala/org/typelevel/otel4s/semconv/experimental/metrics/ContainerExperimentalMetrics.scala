@@ -40,7 +40,7 @@ object ContainerExperimentalMetrics {
     * @note
     *   <p> Total CPU time consumed by the specific container on all available CPU cores
     */
-  object CpuTime extends MetricSpec {
+  object CpuTime extends MetricSpec.Unsealed {
 
     val name: String = "container.cpu.time"
     val description: String = "Total CPU time consumed"
@@ -105,7 +105,7 @@ object ContainerExperimentalMetrics {
     * @note
     *   <p> CPU usage of the specific container on all available CPU cores, averaged over the sample window
     */
-  object CpuUsage extends MetricSpec {
+  object CpuUsage extends MetricSpec.Unsealed {
 
     val name: String = "container.cpu.usage"
     val description: String = "Container's CPU usage, measured in cpus. Range from 0 to the number of allocatable CPUs"
@@ -170,7 +170,7 @@ object ContainerExperimentalMetrics {
     * @note
     *   <p> The total number of bytes read/written successfully (aggregated from all disks).
     */
-  object DiskIo extends MetricSpec {
+  object DiskIo extends MetricSpec.Unsealed {
 
     val name: String = "container.disk.io"
     val description: String = "Disk bytes for the container."
@@ -241,7 +241,7 @@ object ContainerExperimentalMetrics {
     * @note
     *   <p> Memory usage of the container.
     */
-  object MemoryUsage extends MetricSpec {
+  object MemoryUsage extends MetricSpec.Unsealed {
 
     val name: String = "container.memory.usage"
     val description: String = "Memory usage of the container."
@@ -279,7 +279,7 @@ object ContainerExperimentalMetrics {
     * @note
     *   <p> The number of bytes sent/received on all network interfaces by the container.
     */
-  object NetworkIo extends MetricSpec {
+  object NetworkIo extends MetricSpec.Unsealed {
 
     val name: String = "container.network.io"
     val description: String = "Network bytes for the container."
@@ -353,7 +353,7 @@ object ContainerExperimentalMetrics {
     *   number with the highest precision available. The actual accuracy would depend on the instrumentation and
     *   operating system.
     */
-  object Uptime extends MetricSpec {
+  object Uptime extends MetricSpec.Unsealed {
 
     val name: String = "container.uptime"
     val description: String = "The time the container has been running"

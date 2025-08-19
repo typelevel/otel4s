@@ -61,7 +61,7 @@ object OtelExperimentalMetrics {
     *   log records MUST count as failed and only non-rejected log records count as success. If no rejection reason is
     *   available, `rejected` SHOULD be used as value for `error.type`.
     */
-  object SdkExporterLogExported extends MetricSpec {
+  object SdkExporterLogExported extends MetricSpec.Unsealed {
 
     val name: String = "otel.sdk.exporter.log.exported"
     val description: String = "The number of log records for which the export has finished, either successful or failed"
@@ -219,7 +219,7 @@ object OtelExperimentalMetrics {
     *   <p> For successful exports, `error.type` MUST NOT be set. For failed exports, `error.type` MUST contain the
     *   failure cause.
     */
-  object SdkExporterLogInflight extends MetricSpec {
+  object SdkExporterLogInflight extends MetricSpec.Unsealed {
 
     val name: String = "otel.sdk.exporter.log.inflight"
     val description: String =
@@ -351,7 +351,7 @@ object OtelExperimentalMetrics {
     *   data points MUST count as failed and only non-rejected data points count as success. If no rejection reason is
     *   available, `rejected` SHOULD be used as value for `error.type`.
     */
-  object SdkExporterMetricDataPointExported extends MetricSpec {
+  object SdkExporterMetricDataPointExported extends MetricSpec.Unsealed {
 
     val name: String = "otel.sdk.exporter.metric_data_point.exported"
     val description: String =
@@ -510,7 +510,7 @@ object OtelExperimentalMetrics {
     *   <p> For successful exports, `error.type` MUST NOT be set. For failed exports, `error.type` MUST contain the
     *   failure cause.
     */
-  object SdkExporterMetricDataPointInflight extends MetricSpec {
+  object SdkExporterMetricDataPointInflight extends MetricSpec.Unsealed {
 
     val name: String = "otel.sdk.exporter.metric_data_point.inflight"
     val description: String =
@@ -644,7 +644,7 @@ object OtelExperimentalMetrics {
     *   Anything else is defined as an unsuccessful operation. For successful operations, `error.type` MUST NOT be set.
     *   For unsuccessful export operations, `error.type` MUST contain a relevant failure cause.
     */
-  object SdkExporterOperationDuration extends MetricSpec {
+  object SdkExporterOperationDuration extends MetricSpec.Unsealed {
 
     val name: String = "otel.sdk.exporter.operation.duration"
     val description: String = "The duration of exporting a batch of telemetry records."
@@ -813,7 +813,7 @@ object OtelExperimentalMetrics {
     *   MUST count as failed and only non-rejected spans count as success. If no rejection reason is available,
     *   `rejected` SHOULD be used as value for `error.type`.
     */
-  object SdkExporterSpanExported extends MetricSpec {
+  object SdkExporterSpanExported extends MetricSpec.Unsealed {
 
     val name: String = "otel.sdk.exporter.span.exported"
     val description: String = "The number of spans for which the export has finished, either successful or failed"
@@ -967,7 +967,7 @@ object OtelExperimentalMetrics {
   /** Deprecated, use `otel.sdk.exporter.span.exported` instead.
     */
   @deprecated("Replaced by `otel.sdk.exporter.span.exported`.", "")
-  object SdkExporterSpanExportedCount extends MetricSpec {
+  object SdkExporterSpanExportedCount extends MetricSpec.Unsealed {
 
     val name: String = "otel.sdk.exporter.span.exported.count"
     val description: String = "Deprecated, use `otel.sdk.exporter.span.exported` instead."
@@ -1007,7 +1007,7 @@ object OtelExperimentalMetrics {
     *   <p> For successful exports, `error.type` MUST NOT be set. For failed exports, `error.type` MUST contain the
     *   failure cause.
     */
-  object SdkExporterSpanInflight extends MetricSpec {
+  object SdkExporterSpanInflight extends MetricSpec.Unsealed {
 
     val name: String = "otel.sdk.exporter.span.inflight"
     val description: String =
@@ -1134,7 +1134,7 @@ object OtelExperimentalMetrics {
   /** Deprecated, use `otel.sdk.exporter.span.inflight` instead.
     */
   @deprecated("Replaced by `otel.sdk.exporter.span.inflight`.", "")
-  object SdkExporterSpanInflightCount extends MetricSpec {
+  object SdkExporterSpanInflightCount extends MetricSpec.Unsealed {
 
     val name: String = "otel.sdk.exporter.span.inflight.count"
     val description: String = "Deprecated, use `otel.sdk.exporter.span.inflight` instead."
@@ -1169,7 +1169,7 @@ object OtelExperimentalMetrics {
 
   /** The number of logs submitted to enabled SDK Loggers
     */
-  object SdkLogCreated extends MetricSpec {
+  object SdkLogCreated extends MetricSpec.Unsealed {
 
     val name: String = "otel.sdk.log.created"
     val description: String = "The number of logs submitted to enabled SDK Loggers"
@@ -1209,7 +1209,7 @@ object OtelExperimentalMetrics {
     *   contain the failure cause. It can happen that metrics collection is successful for some MetricProducers, while
     *   others fail. In that case `error.type` SHOULD be set to any of the failure causes.
     */
-  object SdkMetricReaderCollectionDuration extends MetricSpec {
+  object SdkMetricReaderCollectionDuration extends MetricSpec.Unsealed {
 
     val name: String = "otel.sdk.metric_reader.collection.duration"
     val description: String = "The duration of the collect operation of the metric reader."
@@ -1315,7 +1315,7 @@ object OtelExperimentalMetrics {
     *   processed already when it has been submitted to the exporter, not when the corresponding export call has
     *   finished.
     */
-  object SdkProcessorLogProcessed extends MetricSpec {
+  object SdkProcessorLogProcessed extends MetricSpec.Unsealed {
 
     val name: String = "otel.sdk.processor.log.processed"
     val description: String =
@@ -1432,7 +1432,7 @@ object OtelExperimentalMetrics {
     * @note
     *   <p> Only applies to Log Record processors which use a queue, e.g. the SDK Batching Log Record Processor.
     */
-  object SdkProcessorLogQueueCapacity extends MetricSpec {
+  object SdkProcessorLogQueueCapacity extends MetricSpec.Unsealed {
 
     val name: String = "otel.sdk.processor.log.queue.capacity"
     val description: String =
@@ -1523,7 +1523,7 @@ object OtelExperimentalMetrics {
     * @note
     *   <p> Only applies to log record processors which use a queue, e.g. the SDK Batching Log Record Processor.
     */
-  object SdkProcessorLogQueueSize extends MetricSpec {
+  object SdkProcessorLogQueueSize extends MetricSpec.Unsealed {
 
     val name: String = "otel.sdk.processor.log.queue.size"
     val description: String = "The number of log records in the queue of a given instance of an SDK log processor"
@@ -1615,7 +1615,7 @@ object OtelExperimentalMetrics {
     *   the failure cause. For the SDK Simple and Batching Span Processor a span is considered to be processed already
     *   when it has been submitted to the exporter, not when the corresponding export call has finished.
     */
-  object SdkProcessorSpanProcessed extends MetricSpec {
+  object SdkProcessorSpanProcessed extends MetricSpec.Unsealed {
 
     val name: String = "otel.sdk.processor.span.processed"
     val description: String = "The number of spans for which the processing has finished, either successful or failed"
@@ -1729,7 +1729,7 @@ object OtelExperimentalMetrics {
   /** Deprecated, use `otel.sdk.processor.span.processed` instead.
     */
   @deprecated("Replaced by `otel.sdk.processor.span.processed`.", "")
-  object SdkProcessorSpanProcessedCount extends MetricSpec {
+  object SdkProcessorSpanProcessedCount extends MetricSpec.Unsealed {
 
     val name: String = "otel.sdk.processor.span.processed.count"
     val description: String = "Deprecated, use `otel.sdk.processor.span.processed` instead."
@@ -1767,7 +1767,7 @@ object OtelExperimentalMetrics {
     * @note
     *   <p> Only applies to span processors which use a queue, e.g. the SDK Batching Span Processor.
     */
-  object SdkProcessorSpanQueueCapacity extends MetricSpec {
+  object SdkProcessorSpanQueueCapacity extends MetricSpec.Unsealed {
 
     val name: String = "otel.sdk.processor.span.queue.capacity"
     val description: String =
@@ -1858,7 +1858,7 @@ object OtelExperimentalMetrics {
     * @note
     *   <p> Only applies to span processors which use a queue, e.g. the SDK Batching Span Processor.
     */
-  object SdkProcessorSpanQueueSize extends MetricSpec {
+  object SdkProcessorSpanQueueSize extends MetricSpec.Unsealed {
 
     val name: String = "otel.sdk.processor.span.queue.size"
     val description: String = "The number of spans in the queue of a given instance of an SDK span processor"
@@ -1950,7 +1950,7 @@ object OtelExperimentalMetrics {
     *   `otel.sdk.span.ended`. For spans with `recording=false`: If implementations decide to record this metric, they
     *   MUST also record `otel.sdk.span.live`.
     */
-  object SdkSpanEnded extends MetricSpec {
+  object SdkSpanEnded extends MetricSpec.Unsealed {
 
     val name: String = "otel.sdk.span.ended"
     val description: String = "The number of created spans for which the end operation was called"
@@ -2005,7 +2005,7 @@ object OtelExperimentalMetrics {
   /** Deprecated, use `otel.sdk.span.ended` instead.
     */
   @deprecated("Replaced by `otel.sdk.span.ended`.", "")
-  object SdkSpanEndedCount extends MetricSpec {
+  object SdkSpanEndedCount extends MetricSpec.Unsealed {
 
     val name: String = "otel.sdk.span.ended.count"
     val description: String = "Deprecated, use `otel.sdk.span.ended` instead."
@@ -2045,7 +2045,7 @@ object OtelExperimentalMetrics {
     *   `otel.sdk.span.ended`. For spans with `recording=false`: If implementations decide to record this metric, they
     *   MUST also record `otel.sdk.span.ended`.
     */
-  object SdkSpanLive extends MetricSpec {
+  object SdkSpanLive extends MetricSpec.Unsealed {
 
     val name: String = "otel.sdk.span.live"
     val description: String = "The number of created spans for which the end operation has not been called yet"
@@ -2100,7 +2100,7 @@ object OtelExperimentalMetrics {
   /** Deprecated, use `otel.sdk.span.live` instead.
     */
   @deprecated("Replaced by `otel.sdk.span.live`.", "")
-  object SdkSpanLiveCount extends MetricSpec {
+  object SdkSpanLiveCount extends MetricSpec.Unsealed {
 
     val name: String = "otel.sdk.span.live.count"
     val description: String = "Deprecated, use `otel.sdk.span.live` instead."

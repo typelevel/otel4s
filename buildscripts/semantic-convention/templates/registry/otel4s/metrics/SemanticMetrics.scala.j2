@@ -166,7 +166,7 @@ object {{ object_name }} {
   {%- elif params.stable_only == false and metric is stable %}
   @deprecated("Use stable `{{ stableRef(metric) }}` instead.", "")
   {%- endif %}
-  object {{ objectName(metric) }} extends MetricSpec {
+  object {{ objectName(metric) }} extends MetricSpec.Unsealed {
     {%- if params.stable_only == false -%}
     {%- set metric_attributes = metric.attributes %}
     {% else %}

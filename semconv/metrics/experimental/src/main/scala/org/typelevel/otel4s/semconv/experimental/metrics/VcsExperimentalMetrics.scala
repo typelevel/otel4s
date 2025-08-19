@@ -42,7 +42,7 @@ object VcsExperimentalMetrics {
   /** The number of changes (pull requests/merge requests/changelists) in a repository, categorized by their state (e.g.
     * open or merged)
     */
-  object ChangeCount extends MetricSpec {
+  object ChangeCount extends MetricSpec.Unsealed {
 
     val name: String = "vcs.change.count"
     val description: String =
@@ -170,7 +170,7 @@ object VcsExperimentalMetrics {
 
   /** The time duration a change (pull request/merge request/changelist) has been in a given state.
     */
-  object ChangeDuration extends MetricSpec {
+  object ChangeDuration extends MetricSpec.Unsealed {
 
     val name: String = "vcs.change.duration"
     val description: String =
@@ -317,7 +317,7 @@ object VcsExperimentalMetrics {
   /** The amount of time since its creation it took a change (pull request/merge request/changelist) to get the first
     * approval.
     */
-  object ChangeTimeToApproval extends MetricSpec {
+  object ChangeTimeToApproval extends MetricSpec.Unsealed {
 
     val name: String = "vcs.change.time_to_approval"
     val description: String =
@@ -523,7 +523,7 @@ object VcsExperimentalMetrics {
   /** The amount of time since its creation it took a change (pull request/merge request/changelist) to get merged into
     * the target(base) ref.
     */
-  object ChangeTimeToMerge extends MetricSpec {
+  object ChangeTimeToMerge extends MetricSpec.Unsealed {
 
     val name: String = "vcs.change.time_to_merge"
     val description: String =
@@ -728,7 +728,7 @@ object VcsExperimentalMetrics {
 
   /** The number of unique contributors to a repository
     */
-  object ContributorCount extends MetricSpec {
+  object ContributorCount extends MetricSpec.Unsealed {
 
     val name: String = "vcs.contributor.count"
     val description: String = "The number of unique contributors to a repository"
@@ -840,7 +840,7 @@ object VcsExperimentalMetrics {
 
   /** The number of refs of type branch or tag in a repository.
     */
-  object RefCount extends MetricSpec {
+  object RefCount extends MetricSpec.Unsealed {
 
     val name: String = "vcs.ref.count"
     val description: String = "The number of refs of type branch or tag in a repository."
@@ -972,7 +972,7 @@ object VcsExperimentalMetrics {
     *   lines added/removed should be calculated from the start of time, then `vcs.ref.base.name` SHOULD be set to an
     *   empty string.
     */
-  object RefLinesDelta extends MetricSpec {
+  object RefLinesDelta extends MetricSpec.Unsealed {
 
     val name: String = "vcs.ref.lines_delta"
     val description: String =
@@ -1190,7 +1190,7 @@ object VcsExperimentalMetrics {
     *   commits behind and 2 commits ahead of `trunk`, instrumentation SHOULD report two measurements: 3 and 2 (both
     *   positive numbers) and `vcs.ref.base.name` is set to `trunk`.
     */
-  object RefRevisionsDelta extends MetricSpec {
+  object RefRevisionsDelta extends MetricSpec.Unsealed {
 
     val name: String = "vcs.ref.revisions_delta"
     val description: String =
@@ -1404,7 +1404,7 @@ object VcsExperimentalMetrics {
   /** Time a ref (branch) created from the default branch (trunk) has existed. The `ref.type` attribute will always be
     * `branch`
     */
-  object RefTime extends MetricSpec {
+  object RefTime extends MetricSpec.Unsealed {
 
     val name: String = "vcs.ref.time"
     val description: String =
@@ -1552,7 +1552,7 @@ object VcsExperimentalMetrics {
 
   /** The number of repositories in an organization.
     */
-  object RepositoryCount extends MetricSpec {
+  object RepositoryCount extends MetricSpec.Unsealed {
 
     val name: String = "vcs.repository.count"
     val description: String = "The number of repositories in an organization."

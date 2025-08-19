@@ -34,7 +34,7 @@ object CpuExperimentalMetrics {
 
   /** Operating frequency of the logical CPU in Hertz.
     */
-  object Frequency extends MetricSpec {
+  object Frequency extends MetricSpec.Unsealed {
 
     val name: String = "cpu.frequency"
     val description: String = "Operating frequency of the logical CPU in Hertz."
@@ -89,7 +89,7 @@ object CpuExperimentalMetrics {
 
   /** Seconds each logical CPU spent on each mode
     */
-  object Time extends MetricSpec {
+  object Time extends MetricSpec.Unsealed {
 
     val name: String = "cpu.time"
     val description: String = "Seconds each logical CPU spent on each mode"
@@ -162,7 +162,7 @@ object CpuExperimentalMetrics {
   /** For each logical CPU, the utilization is calculated as the change in cumulative CPU time (cpu.time) over a
     * measurement interval, divided by the elapsed time.
     */
-  object Utilization extends MetricSpec {
+  object Utilization extends MetricSpec.Unsealed {
 
     val name: String = "cpu.utilization"
     val description: String =

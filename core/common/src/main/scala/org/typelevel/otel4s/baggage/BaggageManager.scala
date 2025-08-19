@@ -42,7 +42,7 @@ trait BaggageManager[F[_]] {
   /** @return the current scope's `Baggage` */
   def current: F[Baggage]
 
-  @deprecated("BaggageManager no longer extends Local. Use `current` instead", since = "0.13.0")
+  @deprecated("BaggageManager no longer extends Local. Use `current` instead", since = "otel4s 0.13.0")
   final def ask[E2 >: Baggage]: F[E2] = applicative.widen(current)
 
   /** @return
@@ -60,14 +60,14 @@ trait BaggageManager[F[_]] {
   /** Creates a new scope in which a modified version of the current `Baggage` is used. */
   def local[A](modify: Baggage => Baggage)(fa: F[A]): F[A]
 
-  @deprecated("BaggageManager no longer extends Local. Reverse parameter list order", since = "0.13.0")
+  @deprecated("BaggageManager no longer extends Local. Reverse parameter list order", since = "otel4s 0.13.0")
   final def local[A](fa: F[A])(modify: Baggage => Baggage): F[A] =
     local(modify)(fa)
 
   /** Creates a new scope in which the given `Baggage` is used. */
   def scope[A](baggage: Baggage)(fa: F[A]): F[A]
 
-  @deprecated("BaggageManager no longer extends Local. Reverse parameter list order", since = "0.13.0")
+  @deprecated("BaggageManager no longer extends Local. Reverse parameter list order", since = "otel4s 0.13.0")
   final def scope[A](fa: F[A])(baggage: Baggage): F[A] =
     scope(baggage)(fa)
 }
@@ -75,7 +75,7 @@ trait BaggageManager[F[_]] {
 object BaggageManager {
   def apply[F[_]](implicit ev: BaggageManager[F]): BaggageManager[F] = ev
 
-  @deprecated("BaggageManager no longer extends Local", since = "0.13.0")
+  @deprecated("BaggageManager no longer extends Local", since = "otel4s 0.13.0")
   implicit def asExplicitLocal[F[_]](bm: BaggageManager[F]): Local[F, Baggage] =
     new Local[F, Baggage] {
       def applicative: Applicative[F] = bm.applicative

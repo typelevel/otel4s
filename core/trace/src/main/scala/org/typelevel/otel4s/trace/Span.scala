@@ -111,8 +111,11 @@ trait Span[F[_]] extends SpanMacro[F] {
 
   /** Modify the context `F` using an implicit [[KindTransformer]] from `F` to `G`.
     */
-  final def mapK[G[_]](implicit kt: KindTransformer[F, G]): Span[G] =
+  final def liftTo[G[_]](implicit kt: KindTransformer[F, G]): Span[G] =
     mapK(kt.liftK)
+
+  @deprecated("use `liftTo` instead", since = "otel4s 0.14.0")
+  final def mapK[G[_]](implicit kt: KindTransformer[F, G]): Span[G] = liftTo[G]
 }
 
 object Span {
@@ -156,8 +159,11 @@ object Span {
 
     /** Modify the context `F` using an implicit [[KindTransformer]] from `F` to `G`.
       */
-    final def mapK[G[_]](implicit kt: KindTransformer[F, G]): Backend[G] =
+    final def liftTo[G[_]](implicit kt: KindTransformer[F, G]): Backend[G] =
       mapK(kt.liftK)
+
+    @deprecated("use `liftTo` instead", since = "otel4s 0.14.0")
+    final def mapK[G[_]](implicit kt: KindTransformer[F, G]): Backend[G] = liftTo[G]
   }
 
   object Backend {
@@ -204,7 +210,7 @@ object Span {
         def end(timestamp: FiniteDuration): F[Unit] = unit
       }
 
-    /** Implementation for [[Backend.mapK]]. */
+    /** Implementation for [[Backend.liftTo]]. */
     private class MappedK[F[_], G[_]](backend: Backend[F])(f: F ~> G) extends Backend[G] {
       val meta: InstrumentMeta.Static[G] =
         backend.meta.mapK(f)

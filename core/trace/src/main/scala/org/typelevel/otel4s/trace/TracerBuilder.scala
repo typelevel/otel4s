@@ -43,11 +43,17 @@ trait TracerBuilder[F[_]] {
 
   /** Modify the context `F` using an implicit [[KindTransformer]] from `F` to `G`.
     */
-  def mapK[G[_]: MonadCancelThrow](implicit
+  def liftTo[G[_]: MonadCancelThrow](implicit
       F: MonadCancelThrow[F],
       kt: KindTransformer[F, G]
   ): TracerBuilder[G] =
-    new TracerBuilder.MappedK(this)
+    new TracerBuilder.Lifted(this)
+
+  @deprecated("use `liftTo` instead", since = "otel4s 0.14.0")
+  def mapK[G[_]: MonadCancelThrow](implicit
+      F: MonadCancelThrow[F],
+      kt: KindTransformer[F, G]
+  ): TracerBuilder[G] = liftTo[G]
 }
 
 object TracerBuilder {
@@ -66,16 +72,16 @@ object TracerBuilder {
       def get: F[Tracer[F]] = F.pure(Tracer.noop)
     }
 
-  private class MappedK[F[_]: MonadCancelThrow, G[_]: MonadCancelThrow](
+  private class Lifted[F[_]: MonadCancelThrow, G[_]: MonadCancelThrow](
       builder: TracerBuilder[F]
   )(implicit
       kt: KindTransformer[F, G]
   ) extends TracerBuilder[G] {
     def withVersion(version: String): TracerBuilder[G] =
-      new MappedK(builder.withVersion(version))
+      new Lifted(builder.withVersion(version))
     def withSchemaUrl(schemaUrl: String): TracerBuilder[G] =
-      new MappedK(builder.withSchemaUrl(schemaUrl))
+      new Lifted(builder.withSchemaUrl(schemaUrl))
     def get: G[Tracer[G]] =
-      kt.liftK(builder.get.map(_.mapK[G]))
+      kt.liftK(builder.get.map(_.liftTo[G]))
   }
 }

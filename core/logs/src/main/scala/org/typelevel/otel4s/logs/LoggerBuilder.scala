@@ -49,7 +49,7 @@ trait LoggerBuilder[F[_], Ctx] {
 
   /** Modify the context `F` using an implicit [[KindTransformer]] from `F` to `G`.
     */
-  def mapK[G[_]](implicit F: Functor[F], G: Monad[G], kt: KindTransformer[F, G]): LoggerBuilder[G, Ctx] =
+  def liftTo[G[_]](implicit F: Functor[F], G: Monad[G], kt: KindTransformer[F, G]): LoggerBuilder[G, Ctx] =
     new LoggerBuilder.MappedK(this)
 }
 
@@ -78,6 +78,6 @@ object LoggerBuilder {
     def withSchemaUrl(schemaUrl: String): LoggerBuilder[G, Ctx] =
       new MappedK(builder.withSchemaUrl(schemaUrl))
     def get: G[Logger[G, Ctx]] =
-      kt.liftK(builder.get.map(_.mapK[G]))
+      kt.liftK(builder.get.map(_.liftTo[G]))
   }
 }

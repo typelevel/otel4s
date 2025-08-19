@@ -35,7 +35,7 @@ package attributes
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/attributes/SemanticAttributes.scala.j2
 object {{ object_name }} {
 
-  {% for attribute in ctx.attributes | rejectattr("name", "in", params.excluded_attributes) %}{% if params.stable_only == false or attribute is stable %}
+  {% for attribute in ctx.attributes | rejectattr("name", "in", params.excluded_attributes) | rejectattr("type", "eq", "any") %}{% if params.stable_only == false or attribute is stable %}
   {{ [attribute.brief, concat_if("\n\n@note\n\n", attribute.note)] | comment(indent=2) | replace('$', "$$") }}
   {%- if attribute is deprecated %}
   @deprecated("{{ attribute.deprecated.note | replace('"', "'") | trim }}", "")

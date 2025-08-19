@@ -26,8 +26,9 @@ object FeatureFlagExperimentalAttributes {
   val FeatureFlagContextId: AttributeKey[String] =
     AttributeKey("feature_flag.context.id")
 
-  /** A message explaining the nature of an error occurring during flag evaluation.
+  /** Deprecated, use `error.message` instead.
     */
+  @deprecated("Replaced by `error.message`.", "")
   val FeatureFlagEvaluationErrorMessage: AttributeKey[String] =
     AttributeKey("feature_flag.evaluation.error.message")
 
@@ -45,7 +46,7 @@ object FeatureFlagExperimentalAttributes {
   /** Identifies the feature flag provider.
     */
   val FeatureFlagProviderName: AttributeKey[String] =
-    AttributeKey("feature_flag.provider_name")
+    AttributeKey("feature_flag.provider.name")
 
   /** The reason code which shows how a feature flag value was determined.
     */

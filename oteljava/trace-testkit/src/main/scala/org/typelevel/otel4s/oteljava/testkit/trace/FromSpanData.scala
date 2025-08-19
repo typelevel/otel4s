@@ -20,7 +20,7 @@ import io.opentelemetry.sdk.trace.data.SpanData
 
 /** Transforms OpenTelemetry's SpanData into arbitrary type `A`.
   */
-trait FromSpanData[A] {
+sealed trait FromSpanData[A] {
   def from(spanData: SpanData): A
 }
 
@@ -29,6 +29,8 @@ object FromSpanData {
   def apply[A](implicit ev: FromSpanData[A]): FromSpanData[A] = ev
 
   implicit val toOtelJavaSpanData: FromSpanData[SpanData] =
-    a => a
+    new FromSpanData[SpanData] {
+      def from(spanData: SpanData): SpanData = spanData
+    }
 
 }

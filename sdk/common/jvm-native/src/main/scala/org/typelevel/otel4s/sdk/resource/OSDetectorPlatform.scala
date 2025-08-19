@@ -31,7 +31,7 @@ private[resource] trait OSDetectorPlatform { self: OSDetector.type =>
   def apply[F[_]: Monad: SystemProperties]: TelemetryResourceDetector[F] =
     new Detector[F]
 
-  private class Detector[F[_]: Monad: SystemProperties] extends TelemetryResourceDetector[F] {
+  private class Detector[F[_]: Monad: SystemProperties] extends TelemetryResourceDetector.Unsealed[F] {
     def name: String = Const.Name
 
     def detect: F[Option[TelemetryResource]] =

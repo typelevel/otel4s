@@ -26,7 +26,7 @@ import org.typelevel.otel4s.sdk.TelemetryResource
 import org.typelevel.otel4s.sdk.resource.TelemetryResourceDetector
 import org.typelevel.otel4s.semconv.SchemaUrls
 
-private class AwsLambdaDetector[F[_]: Env: Monad] extends TelemetryResourceDetector[F] {
+private class AwsLambdaDetector[F[_]: Env: Monad] extends TelemetryResourceDetector.Unsealed[F] {
 
   import AwsLambdaDetector.Const
   import AwsLambdaDetector.Keys

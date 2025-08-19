@@ -27,7 +27,7 @@ private[resource] trait ProcessRuntimeDetectorPlatform {
   def apply[F[_]: Sync]: TelemetryResourceDetector[F] =
     new Detector[F]
 
-  private class Detector[F[_]: Sync] extends TelemetryResourceDetector[F] {
+  private class Detector[F[_]: Sync] extends TelemetryResourceDetector.Unsealed[F] {
     def name: String = Const.Name
 
     def detect: F[Option[TelemetryResource]] = Sync[F].delay {

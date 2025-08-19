@@ -119,7 +119,7 @@ object Config {
     * @tparam A
     *   the type of a value
     */
-  trait Reader[A] {
+  sealed trait Reader[A] {
     def read(
         key: String,
         properties: Map[String, String]
@@ -129,8 +129,16 @@ object Config {
   object Reader {
     def apply[A](implicit ev: Reader[A]): Reader[A] = ev
 
+    private[otel4s] def apply[A](
+        f: (String, Map[String, String]) => Either[ConfigurationError, Option[A]]
+    ): Reader[A] =
+      new Reader[A] {
+        def read(key: String, properties: Map[String, String]): Either[ConfigurationError, Option[A]] =
+          f(key, properties)
+      }
+
     implicit val stringReader: Reader[String] =
-      (key, props) => Right(props.get(key).map(_.trim).filter(_.nonEmpty))
+      Reader((key, props) => Right(props.get(key).map(_.trim).filter(_.nonEmpty)))
 
     implicit val booleanReader: Reader[Boolean] =
       decodeWithHint("Boolean")(v => Right(v.toBoolean))
@@ -200,7 +208,7 @@ object Config {
     implicit val readerFunctor: Functor[Reader] =
       new Functor[Reader] {
         def map[A, B](fa: Reader[A])(f: A => B): Reader[B] =
-          (key, properties) => fa.read(key, properties).map(_.map(f))
+          Reader((key, properties) => fa.read(key, properties).map(_.map(f)))
       }
 
     private def asStringList(string: String): List[String] =
@@ -209,7 +217,7 @@ object Config {
     private[otel4s] def decodeWithHint[A](
         hint: String
     )(decode: String => Either[ConfigurationError, A]): Reader[A] =
-      (key, properties) =>
+      Reader { (key, properties) =>
         Reader[String].read(key, properties).flatMap {
           case Some(value) =>
             Either
@@ -225,6 +233,7 @@ object Config {
 
           case None => Right(None)
         }
+      }
 
   }
 

@@ -68,7 +68,7 @@ object Service extends IOApp.Simple {
         .addAll(Classes.registerObservers(openTelemetry).asScala)
         .addAll(Cpu.registerObservers(openTelemetry).asScala)
         .addAll(Threads.registerObservers(openTelemetry).asScala)
-        .addAll(GarbageCollector.registerObservers(openTelemetry).asScala)
+        .addAll(GarbageCollector.registerObservers(openTelemetry, true).asScala)
         .result()
     }
   

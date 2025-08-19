@@ -114,6 +114,7 @@
     <li class="level2 active nav-leaf"><a href="#">Metrics | JVM Runtime</a></li>
     <li class="level2 nav-leaf"><a href="tracing-context-propagation.html">Tracing | Context propagation</a></li>
     <li class="level2 nav-leaf"><a href="tracing-java-interop.html">Tracing | Interop with Java-instrumented libraries</a></li>
+    <li class="level2 nav-leaf"><a href="agent.html">Zero-code | Java Agent</a></li>
     <li class="level2 nav-leaf"><a href="testkit.html">Testkit</a></li>
     <li class="level1 nav-header">SDK</li>
     <li class="level2 nav-leaf"><a href="../sdk/overview.html">Overview</a></li>
@@ -164,13 +165,13 @@
             <p>Add settings to the <code>build.sbt</code>:</p>
             <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">libraryDependencies</span><span> ++= </span><span class="type-name">Seq</span><span>(
   </span><span class="string-literal">&quot;org.typelevel&quot;</span><span> %% </span><span class="string-literal">&quot;otel4s-oteljava&quot;</span><span> % </span><span class="string-literal">&quot;0.13.1&quot;</span><span>, </span><span class="comment">// &lt;1&gt;
-</span><span>  </span><span class="string-literal">&quot;io.opentelemetry.instrumentation&quot;</span><span> % </span><span class="string-literal">&quot;opentelemetry-runtime-telemetry-java8&quot;</span><span> % </span><span class="string-literal">&quot;2.10.0-alpha&quot;</span><span> </span><span class="comment">// &lt;2&gt;
+</span><span>  </span><span class="string-literal">&quot;io.opentelemetry.instrumentation&quot;</span><span> % </span><span class="string-literal">&quot;opentelemetry-runtime-telemetry-java8&quot;</span><span> % </span><span class="string-literal">&quot;2.19.0-alpha&quot;</span><span> </span><span class="comment">// &lt;2&gt;
 </span><span>)</span></code></pre>
           </div>
           <div class="tab-content" data-choice-name="scala-cli">
             <p>Add directives to the <code>*.scala</code> file:</p>
             <pre class="keep-together pdf epub"><code class="nohighlight"><span class="comment">//&gt; using dep &quot;org.typelevel::otel4s-oteljava:0.13.1&quot; // &lt;1&gt;
-//&gt; using dep &quot;io.opentelemetry.instrumentation:opentelemetry-runtime-telemetry-java8:2.10.0-alpha&quot; // &lt;2&gt;</span></code></pre>
+//&gt; using dep &quot;io.opentelemetry.instrumentation:opentelemetry-runtime-telemetry-java8:2.19.0-alpha&quot; // &lt;2&gt;</span></code></pre>
           </div>
         </div>
         <ol class="arabic">
@@ -207,7 +208,7 @@
         .</span><span class="identifier">addAll</span><span>(</span><span class="type-name">Classes</span><span>.</span><span class="identifier">registerObservers</span><span>(</span><span class="identifier">openTelemetry</span><span>).</span><span class="identifier">asScala</span><span>)
         .</span><span class="identifier">addAll</span><span>(</span><span class="type-name">Cpu</span><span>.</span><span class="identifier">registerObservers</span><span>(</span><span class="identifier">openTelemetry</span><span>).</span><span class="identifier">asScala</span><span>)
         .</span><span class="identifier">addAll</span><span>(</span><span class="type-name">Threads</span><span>.</span><span class="identifier">registerObservers</span><span>(</span><span class="identifier">openTelemetry</span><span>).</span><span class="identifier">asScala</span><span>)
-        .</span><span class="identifier">addAll</span><span>(</span><span class="type-name">GarbageCollector</span><span>.</span><span class="identifier">registerObservers</span><span>(</span><span class="identifier">openTelemetry</span><span>).</span><span class="identifier">asScala</span><span>)
+        .</span><span class="identifier">addAll</span><span>(</span><span class="type-name">GarbageCollector</span><span>.</span><span class="identifier">registerObservers</span><span>(</span><span class="identifier">openTelemetry</span><span>, </span><span class="boolean-literal">true</span><span>).</span><span class="identifier">asScala</span><span>)
         .</span><span class="identifier">result</span><span>()
     }
   
@@ -229,13 +230,13 @@
             <p>Add settings to the <code>build.sbt</code>:</p>
             <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">libraryDependencies</span><span> ++= </span><span class="type-name">Seq</span><span>(
   </span><span class="string-literal">&quot;org.typelevel&quot;</span><span> %% </span><span class="string-literal">&quot;otel4s-oteljava&quot;</span><span> % </span><span class="string-literal">&quot;0.13.1&quot;</span><span>, </span><span class="comment">// &lt;1&gt;
-</span><span>  </span><span class="string-literal">&quot;io.opentelemetry.instrumentation&quot;</span><span> % </span><span class="string-literal">&quot;opentelemetry-runtime-telemetry-java17&quot;</span><span> % </span><span class="string-literal">&quot;2.10.0-alpha&quot;</span><span> </span><span class="comment">// &lt;2&gt;
+</span><span>  </span><span class="string-literal">&quot;io.opentelemetry.instrumentation&quot;</span><span> % </span><span class="string-literal">&quot;opentelemetry-runtime-telemetry-java17&quot;</span><span> % </span><span class="string-literal">&quot;2.19.0-alpha&quot;</span><span> </span><span class="comment">// &lt;2&gt;
 </span><span>)</span></code></pre>
           </div>
           <div class="tab-content" data-choice-name="scala-cli">
             <p>Add directives to the <code>*.scala</code> file:</p>
             <pre class="keep-together pdf epub"><code class="nohighlight"><span class="comment">//&gt; using dep &quot;org.typelevel::otel4s-oteljava:0.13.1&quot; // &lt;1&gt;
-//&gt; using dep &quot;io.opentelemetry.instrumentation:opentelemetry-runtime-telemetry-java17:2.10.0-alpha&quot; // &lt;2&gt;</span></code></pre>
+//&gt; using dep &quot;io.opentelemetry.instrumentation:opentelemetry-runtime-telemetry-java17:2.19.0-alpha&quot; // &lt;2&gt;</span></code></pre>
           </div>
         </div>
         <ol class="arabic">

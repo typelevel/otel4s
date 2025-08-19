@@ -6,7 +6,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="generator" content="Typelevel Laika + Helium Theme" />
-  <title>Tracing | Context propagation</title>
+  <title>Zero-code | Java Agent</title>
   
   <meta name="author" content="Ross A. Baker"/>
   
@@ -112,9 +112,9 @@
     <li class="level1 nav-header">OtelJava</li>
     <li class="level2 nav-leaf"><a href="overview.html">Overview</a></li>
     <li class="level2 nav-leaf"><a href="metrics-jvm-runtime.html">Metrics | JVM Runtime</a></li>
-    <li class="level2 active nav-leaf"><a href="#">Tracing | Context propagation</a></li>
+    <li class="level2 nav-leaf"><a href="tracing-context-propagation.html">Tracing | Context propagation</a></li>
     <li class="level2 nav-leaf"><a href="tracing-java-interop.html">Tracing | Interop with Java-instrumented libraries</a></li>
-    <li class="level2 nav-leaf"><a href="agent.html">Zero-code | Java Agent</a></li>
+    <li class="level2 active nav-leaf"><a href="#">Zero-code | Java Agent</a></li>
     <li class="level2 nav-leaf"><a href="testkit.html">Testkit</a></li>
     <li class="level1 nav-header">SDK</li>
     <li class="level2 nav-leaf"><a href="../sdk/overview.html">Overview</a></li>
@@ -136,11 +136,14 @@
 
       
 <nav id="page-nav">
-  <p class="header"><a href="#">Tracing | Context propagation</a></p>
+  <p class="header"><a href="#">Zero-code | Java Agent</a></p>
 
   <ul class="nav-list">
+    <li class="level1 nav-leaf"><a href="#do-i-need-an-agent">Do I need an agent?</a></li>
     <li class="level1 nav-leaf"><a href="#getting-started">Getting started</a></li>
     <li class="level1 nav-leaf"><a href="#configuration">Configuration</a></li>
+    <li class="level1 nav-leaf"><a href="#application-setup">Application setup</a></li>
+    <li class="level1 nav-leaf"><a href="#how-the-instrumentation-works">How the instrumentation works</a></li>
     <li class="level1 nav-leaf"><a href="#limitations">Limitations</a></li>
   </ul>
 
@@ -150,77 +153,142 @@
 
       <main class="content">
 
-        <h1 id="tracing-context-propagation" class="title">Tracing | Context propagation</h1>
-        <p><a href="https://github.com/open-telemetry/opentelemetry-java">OpenTelemetry Java SDK</a> and otel4s rely on different context manipulation approaches,
-        which aren&#39;t interoperable out of the box.
-        Java SDK utilizes ThreadLocal variables to share tracing information,
-        otel4s, on the other hand, uses <a href="https://typelevel.org/cats-mtl/mtl-classes/local.html">Local</a>.</p>
-        <p>Cats Effect 3.6.0 introduced a new method of fiber context tracking,
-        which can be integrated almost seamlessly with the OpenTelemetry Java SDK.</p>
+        <h1 id="zero-code-java-agent" class="title">Zero-code | Java Agent</h1>
+        <p>Zero-code instrumentation in Java works by attaching a special Java agent JAR to any Java 8+ application.
+        The agent dynamically modifies application bytecode at runtime to capture telemetry data—without requiring you to change your application code.</p>
+        <p>This makes it possible to automatically collect traces, metrics, and logs from many popular libraries and frameworks. Typical examples include:</p>
+        <ul>
+          <li>Inbound requests (e.g., HTTP servers)</li>
+          <li>Outbound calls (e.g., HTTP clients, gRPC)</li>
+          <li>Database access (e.g., JDBC, R2DBC)</li>
+          <li>Message queues and other integrations</li>
+        </ul>
+        <p>In other words, the agent gives you observability &quot;for free&quot; at the edges of your service, drastically reducing the need for manual instrumentation.</p>
+        <hr>
+        <p>The <a href="https://github.com/iRevive/otel4s-opentelemetry-java">otel4s-opentelemetry-java</a> distribution is a variant of the official <a href="https://github.com/open-telemetry/opentelemetry-java-instrumentation">OpenTelemetry Java agent</a>.
+        It provides all the same automatic instrumentation as the upstream agent, but with two important additions:</p>
+        <ul>
+          <li><a href="https://github.com/typelevel/cats-effect">Cats Effect</a> instrumentation – so fiber-based applications gain proper tracing and context propagation</li>
+          <li>otel4s integration – keeps agent and otel4s context is sync<br></li>
+        </ul>
+        <p>You can see a working demo here: <a href="https://github.com/iRevive/otel4s-showcase">otel4s-showcase</a>.</p>
+        <div class="callout warning">
+          <i class="icofont-laika warning">&#xf026;</i>
+          <p>The <a href="https://github.com/iRevive/otel4s-opentelemetry-java">otel4s-opentelemetry-java</a> agent is <strong>experimental</strong>.
+          The additional otel4s and Cats Effect instrumentation relies on non-standard techniques and may behave unpredictably in non-trivial environments.</p>
+          <ul>
+            <li>Please read the <a href="#limitations">Limitations</a> section before using it.</li>
+            <li>Context propagation is handled through <a href="tracing-context-propagation.html">fiber context tracking</a>.</li>
+          </ul>
+        </div>
+        
+        <h2 id="do-i-need-an-agent" class="section"><a class="anchor-link left" href="#do-i-need-an-agent"><i class="icofont-laika link">&#xef71;</i></a>Do I need an agent?</h2>
+        <p>The agent is best suited for:</p>
+        <ul>
+          <li>Getting started quickly – you can enable observability without writing a single line of code</li>
+          <li>Standard service edges – HTTP, databases, gRPC, messaging, etc. are automatically instrumented</li>
+        </ul>
+        <p>However, manual instrumentation with otel4s may be a better fit when:</p>
+        <ul>
+          <li>You need fine-grained control over spans, attributes, and metrics</li>
+          <li>You want to instrument domain-specific operations (e.g., business logic)</li>
+          <li>You&#39;re running in complex or performance-sensitive environments where bytecode manipulation could cause issues</li>
+        </ul>
+        <p>In practice, many teams combine both approaches:</p>
+        <ul>
+          <li>Use the agent for broad, zero-effort coverage</li>
+          <li>Add otel4s manual instrumentation where business-level observability is needed</li>
+        </ul>
         
         <h2 id="getting-started" class="section"><a class="anchor-link left" href="#getting-started"><i class="icofont-laika link">&#xef71;</i></a>Getting started</h2>
-        <div class="tab-container" data-tab-group="build-tool">
-          <ul class="tab-group">
-            <li class="tab active" data-choice-name="sbt"><a href="#">sbt</a></li>
-            <li class="tab" data-choice-name="scala-cli"><a href="#">Scala CLI</a></li>
-          </ul>
-          <div class="tab-content active" data-choice-name="sbt">
-            <p>Add settings to the <code>build.sbt</code>:</p>
-            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">libraryDependencies</span><span> ++= </span><span class="type-name">Seq</span><span>(
-  </span><span class="string-literal">&quot;org.typelevel&quot;</span><span> %% </span><span class="string-literal">&quot;otel4s-oteljava&quot;</span><span> % </span><span class="string-literal">&quot;0.13.1&quot;</span><span>, </span><span class="comment">// &lt;1&gt;
-</span><span>  </span><span class="string-literal">&quot;org.typelevel&quot;</span><span> %% </span><span class="string-literal">&quot;otel4s-oteljava-context-storage&quot;</span><span> % </span><span class="string-literal">&quot;0.13.1&quot;</span><span>, </span><span class="comment">// &lt;2&gt;
-</span><span>)
-</span><span class="identifier">javaOptions</span><span> += </span><span class="string-literal">&quot;-Dcats.effect.trackFiberContext=true&quot;</span><span> </span><span class="comment">// &lt;3&gt;</span></code></pre>
-          </div>
-          <div class="tab-content" data-choice-name="scala-cli">
-            <p>Add directives to the <code>*.scala</code> file:</p>
-            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="comment">//&gt; using dep &quot;org.typelevel::otel4s-oteljava:0.13.1&quot; // &lt;1&gt;
-//&gt; using dep &quot;org.typelevel::otel4s-oteljava-context-storage:0.13.1&quot; // &lt;2&gt;
-//&gt; using `java-opt` &quot;-Dcats.effect.trackFiberContext=true&quot; // &lt;3&gt;</span></code></pre>
-          </div>
-        </div>
+        <p>The agent can be configured via <a href="https://github.com/sbt/sbt-javaagent">sbt-javaagent</a> plugin:</p>
+        <pre><code class="nohighlight"><span class="keyword">lazy</span><span> </span><span class="keyword">val</span><span> </span><span class="identifier">service</span><span> = </span><span class="identifier">project</span><span>
+  .</span><span class="identifier">enablePlugins</span><span>(</span><span class="type-name">JavaAgent</span><span>)                                                         </span><span class="comment">// &lt;1&gt;
+</span><span>  .</span><span class="identifier">in</span><span>(</span><span class="identifier">file</span><span>(</span><span class="string-literal">&quot;service&quot;</span><span>))
+  .</span><span class="identifier">settings</span><span>(
+    </span><span class="identifier">name</span><span> := </span><span class="string-literal">&quot;service&quot;</span><span>,
+    </span><span class="identifier">javaAgents</span><span> += </span><span class="string-literal">&quot;io.github.irevive&quot;</span><span> % </span><span class="string-literal">&quot;otel4s-opentelemetry-javaagent&quot;</span><span> % </span><span class="string-literal">&quot;0.0.3&quot;</span><span>, </span><span class="comment">// &lt;2&gt;
+</span><span>    </span><span class="identifier">run</span><span> / </span><span class="identifier">fork</span><span> := </span><span class="boolean-literal">true</span><span>,                                                             </span><span class="comment">// &lt;3&gt;
+</span><span>    </span><span class="identifier">javaOptions</span><span> += </span><span class="string-literal">&quot;-Dcats.effect.trackFiberContext=true&quot;</span><span>,                          </span><span class="comment">// &lt;4&gt;
+</span><span>    </span><span class="identifier">libraryDependencies</span><span> ++= </span><span class="type-name">Seq</span><span>(                                                    </span><span class="comment">// &lt;5&gt;
+</span><span>      </span><span class="string-literal">&quot;org.typelevel&quot;</span><span>   %% </span><span class="string-literal">&quot;otel4s-oteljava&quot;</span><span>                           % </span><span class="string-literal">&quot;0.13.1&quot;</span><span>,
+      </span><span class="string-literal">&quot;org.typelevel&quot;</span><span>   %% </span><span class="string-literal">&quot;otel4s-oteljava-context-storage&quot;</span><span>           % </span><span class="string-literal">&quot;0.13.1&quot;</span><span>,
+      </span><span class="string-literal">&quot;io.opentelemetry&quot;</span><span> % </span><span class="string-literal">&quot;opentelemetry-exporter-otlp&quot;</span><span>               % </span><span class="string-literal">&quot;1.53.0&quot;</span><span> % </span><span class="type-name">Runtime</span><span>,
+      </span><span class="string-literal">&quot;io.opentelemetry&quot;</span><span> % </span><span class="string-literal">&quot;opentelemetry-sdk-extension-autoconfigure&quot;</span><span> % </span><span class="string-literal">&quot;1.53.0&quot;</span><span> % </span><span class="type-name">Runtime</span><span>
+    )
+  )</span></code></pre>
         <ol class="arabic">
-          <li>Add the <code>otel4s-oteljava</code> library</li>
-          <li>Add the <code>otel4s-oteljava-context-storage</code> library</li>
+          <li>Enable JavaAgent sbt plugin</li>
+          <li>Register <code>otel4s-opentelemetry-javaagent</code> as a Java agent</li>
+          <li>Make sure the VM will be forked when running</li>
           <li>Enable Cats Effect fiber context tracking</li>
+          <li>Add all necessary dependencies</li>
         </ol>
         
         <h2 id="configuration" class="section"><a class="anchor-link left" href="#configuration"><i class="icofont-laika link">&#xef71;</i></a>Configuration</h2>
-        <p>You need to use <code>IOLocalContextStorage.localProvider[IO]</code> to provide the global context storage, backed by <code>IOLocal</code>:</p>
-        <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.</span><span class="type-name">IO</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.</span><span class="type-name">IOApp</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">io</span><span>.</span><span class="identifier">opentelemetry</span><span>.</span><span class="identifier">api</span><span>.</span><span class="identifier">trace</span><span>.{</span><span class="type-name">Span</span><span> =&gt; </span><span class="type-name">JSpan</span><span>}
+        <p>The agent supports the full set of <a href="https://opentelemetry.io/docs/zero-code/java/agent/configuration/">official configuration options</a>.</p>
+        <p>In addition, you can disable or suppress specific instrumentation if certain libraries or frameworks should not be traced.
+        See <a href="https://opentelemetry.io/docs/zero-code/java/agent/disable/">Disabling Instrumentation</a> for details.</p>
+        <p>This is especially useful when:</p>
+        <ul>
+          <li>A library is already manually instrumented with otel4s</li>
+          <li>Automatic instrumentation causes performance or compatibility issues</li>
+          <li>You want to reduce telemetry volume from noisy dependencies</li>
+        </ul>
+        <p>Configuration is typically provided via environment variables or JVM system properties, 
+        making it easy to manage in containerized and cloud environments.</p>
+        
+        <h2 id="application-setup" class="section"><a class="anchor-link left" href="#application-setup"><i class="icofont-laika link">&#xef71;</i></a>Application setup</h2>
+        <p>The application can be configured in the following way:</p>
+        <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.{</span><span class="type-name">IO</span><span>, </span><span class="type-name">IOApp</span><span>, </span><span class="type-name">Resource</span><span>} 
 </span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">context</span><span>.</span><span class="type-name">LocalProvider</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">metrics</span><span>.</span><span class="type-name">Meter</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="type-name">OtelJava</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="identifier">context</span><span>.</span><span class="type-name">Context</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="identifier">context</span><span>.</span><span class="type-name">IOLocalContextStorage</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">trace</span><span>.</span><span class="type-name">Tracer</span><span>
 
-</span><span class="keyword">object</span><span> </span><span class="type-name">Main</span><span> </span><span class="keyword">extends</span><span> </span><span class="type-name">IOApp</span><span>.</span><span class="type-name">Simple</span><span> {
-  </span><span class="keyword">def</span><span> </span><span class="declaration-name">program</span><span>(</span><span class="identifier">tracer</span><span>: </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">IO</span><span>]): </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] =
-    </span><span class="identifier">tracer</span><span>.</span><span class="identifier">span</span><span>(</span><span class="string-literal">&quot;test&quot;</span><span>).</span><span class="identifier">use</span><span> { </span><span class="identifier">span</span><span> =&gt; </span><span class="comment">// start &#39;test&#39; span using otel4s
-</span><span>      </span><span class="identifier">println</span><span>(</span><span class="string-literal">s&quot;jctx: </span><span class="substitution">${JSpan.current().getSpanContext}</span><span class="string-literal">&quot;</span><span>) </span><span class="comment">// get a span from a ThreadLocal
-</span><span>      </span><span class="type-name">IO</span><span>.</span><span class="identifier">println</span><span>(</span><span class="string-literal">s&quot;otel4s: </span><span class="substitution">${span.context}</span><span class="string-literal">&quot;</span><span>)
-    }
-
+</span><span class="keyword">object</span><span> </span><span class="type-name">Server</span><span> </span><span class="keyword">extends</span><span> </span><span class="type-name">IOApp</span><span>.</span><span class="type-name">Simple</span><span> {
   </span><span class="keyword">def</span><span> </span><span class="declaration-name">run</span><span>: </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] = {
-    </span><span class="keyword">implicit</span><span> </span><span class="keyword">val</span><span> </span><span class="identifier">provider</span><span>: </span><span class="type-name">LocalProvider</span><span>[</span><span class="type-name">IO</span><span>, </span><span class="type-name">Context</span><span>] =
-      </span><span class="type-name">IOLocalContextStorage</span><span>.</span><span class="identifier">localProvider</span><span>[</span><span class="type-name">IO</span><span>]
-
-    </span><span class="type-name">OtelJava</span><span>.</span><span class="identifier">autoConfigured</span><span>[</span><span class="type-name">IO</span><span>]().</span><span class="identifier">use</span><span> { </span><span class="identifier">otelJava</span><span> =&gt;
-      </span><span class="identifier">otelJava</span><span>.</span><span class="identifier">tracerProvider</span><span>.</span><span class="identifier">tracer</span><span>(</span><span class="string-literal">&quot;com.service&quot;</span><span>).</span><span class="identifier">get</span><span>.</span><span class="identifier">flatMap</span><span> { </span><span class="identifier">tracer</span><span> =&gt;
-        </span><span class="identifier">program</span><span>(</span><span class="identifier">tracer</span><span>)
-      }
-    }
-  } 
+    </span><span class="keyword">implicit</span><span> </span><span class="keyword">val</span><span> </span><span class="identifier">localProvider</span><span>: </span><span class="type-name">LocalProvider</span><span>[</span><span class="type-name">IO</span><span>, </span><span class="type-name">Context</span><span>] = 
+      </span><span class="type-name">IOLocalContextStorage</span><span>.</span><span class="identifier">localProvider</span><span>[</span><span class="type-name">IO</span><span>]                      </span><span class="comment">// &lt;1&gt;
+</span><span>
+    </span><span class="keyword">for</span><span> {
+      </span><span class="identifier">otel4s</span><span> &lt;- </span><span class="type-name">Resource</span><span>.</span><span class="identifier">eval</span><span>(</span><span class="type-name">OtelJava</span><span>.</span><span class="identifier">global</span><span>[</span><span class="type-name">IO</span><span>])                 </span><span class="comment">// &lt;2&gt;
+</span><span>      </span><span class="identifier">meter</span><span>  &lt;- </span><span class="type-name">Resource</span><span>.</span><span class="identifier">eval</span><span>(</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">meterProvider</span><span>.</span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;service&quot;</span><span>))
+      </span><span class="identifier">tracer</span><span> &lt;- </span><span class="type-name">Resource</span><span>.</span><span class="identifier">eval</span><span>(</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">tracerProvider</span><span>.</span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;service&quot;</span><span>))
+      </span><span class="identifier">_</span><span>      &lt;- </span><span class="identifier">startApp</span><span>(</span><span class="identifier">meter</span><span>, </span><span class="identifier">tracer</span><span>)
+    } </span><span class="keyword">yield</span><span> ()
+  }.</span><span class="identifier">useForever</span><span>
+  
+  </span><span class="keyword">private</span><span> </span><span class="keyword">def</span><span> </span><span class="declaration-name">startApp</span><span>(</span><span class="identifier">meter</span><span>: </span><span class="type-name">Meter</span><span>[</span><span class="type-name">IO</span><span>], </span><span class="identifier">tracer</span><span>: </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">IO</span><span>]): </span><span class="type-name">Resource</span><span>[</span><span class="type-name">IO</span><span>, </span><span class="type-name">Unit</span><span>] = {
+    </span><span class="keyword">val</span><span> </span><span class="identifier">_</span><span> = (</span><span class="identifier">meter</span><span>, </span><span class="identifier">tracer</span><span>)
+    </span><span class="type-name">Resource</span><span>.</span><span class="identifier">unit</span><span>
+  }
 }</span></code></pre>
-        <p>According to the output, the context is the same:</p>
-        <pre><code>jctx  : SpanContext{traceId=58b8ed50a558ca53fcc64a0d80b5e662, spanId=fc25fe2c9fb41905, ...} 
-otel4s: SpanContext{traceId=58b8ed50a558ca53fcc64a0d80b5e662, spanId=fc25fe2c9fb41905, ...}</code></pre>
+        <ol class="arabic">
+          <li><code>IOLocalContextStorage.localProvider</code> - will automatically pick up agent&#39;s context when available</li>
+          <li><code>OtelJava.global[IO]</code> - you must use the <strong>global</strong> instance because the agent will autoconfigure it</li>
+        </ol>
+        <p>If everything is configured correctly, you will see the following log messages:</p>
+        <pre><code>[otel.javaagent 2025-07-27 09:37:18:069 +0300] [main] INFO io.opentelemetry.javaagent.tooling.VersionLogger - opentelemetry-javaagent - version: otel4s-0.0.2-otel-2.18.1
+IOLocalContextStorage: agent-provided IOLocal is detected</code></pre>
+        
+        <h2 id="how-the-instrumentation-works" class="section"><a class="anchor-link left" href="#how-the-instrumentation-works"><i class="icofont-laika link">&#xef71;</i></a>How the instrumentation works</h2>
+        <p>Cats Effect has its context propagation mechanism known as <a href="https://typelevel.org/cats-effect/docs/core/io-local">IOLocal</a>. 
+        The <a href="https://github.com/typelevel/cats-effect/releases/tag/v3.6.0">3.6.0</a> release provides a way to represent IOLocal as a <code>ThreadLocal</code>,
+        which creates an opportunity to manipulate the context from the outside.</p>
+        <ul>
+          <li>Agent instruments the constructor of <code>IORuntime</code> and stores a <code>ThreadLocal</code> representation of the <code>IOLocal[Context]</code> in the <strong>bootstrap</strong> classloader, so the agent and application both access the same instance</li>
+          <li>Instrumentation installs a custom <code>ContextStorage</code> wrapper (for the agent context storage). This wrapper uses <code>FiberLocalContextHelper</code> to retrieve the fiber&#39;s current context (if available)</li>
+          <li>Agent instruments <code>IOFiber</code>&#39;s constructor and starts the fiber with the currently available context</li>
+        </ul>
         
         <h2 id="limitations" class="section"><a class="anchor-link left" href="#limitations"><i class="icofont-laika link">&#xef71;</i></a>Limitations</h2>
-        <p>The <code>IOLocalContextStorageProvider</code> doesn&#39;t work with <a href="https://opentelemetry.io/docs/zero-code/java/agent/">OpenTelemetry Java Agent</a>.
-        However, you can use an <strong>experimental</strong> distribution of the <a href="agent.html">OTeL Agent</a> instead.</p>
+        <p>For example, if you deploy two WAR files into the same Tomcat instance, 
+        both applications will attempt to configure the agent&#39;s shared bootstrap context, 
+        leading to conflicts and unpredictable behavior.</p>
+        <p>Check the <a href="https://github.com/open-telemetry/opentelemetry-java-instrumentation/pull/13576">https://github.com/open-telemetry/opentelemetry-java-instrumentation/pull/13576</a> for more information.</p>
 
         
 <hr class="footer-rule"/>

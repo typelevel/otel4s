@@ -178,7 +178,7 @@ object LogRecordBuilder {
   )(implicit kt: KindTransformer[F, G])
       extends LogRecordBuilder[G, Ctx] {
 
-    val meta: InstrumentMeta.Dynamic[G] = builder.meta.mapK[G]
+    val meta: InstrumentMeta.Dynamic[G] = builder.meta.liftTo[G]
 
     def withTimestamp(timestamp: FiniteDuration): LogRecordBuilder[G, Ctx] =
       builder.withTimestamp(timestamp).liftTo

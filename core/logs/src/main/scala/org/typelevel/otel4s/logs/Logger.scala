@@ -71,8 +71,8 @@ object Logger {
       logger: Logger[F, Ctx]
   )(implicit kt: KindTransformer[F, G])
       extends Logger[G, Ctx] {
-    val meta: InstrumentMeta.Dynamic[G] = logger.meta.mapK[G]
-    def logRecordBuilder: LogRecordBuilder[G, Ctx] = logger.logRecordBuilder.liftTo
+    val meta: InstrumentMeta.Dynamic[G] = logger.meta.liftTo[G]
+    def logRecordBuilder: LogRecordBuilder[G, Ctx] = logger.logRecordBuilder.liftTo[G]
   }
 
   object Implicits {

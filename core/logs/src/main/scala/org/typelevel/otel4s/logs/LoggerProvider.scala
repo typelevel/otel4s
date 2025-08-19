@@ -27,7 +27,7 @@ import cats.syntax.functor._
   * @see
   *   [[https://opentelemetry.io/docs/specs/otel/logs/api/#loggerprovider]]
   */
-trait LoggerProvider[F[_], Ctx] {
+sealed trait LoggerProvider[F[_], Ctx] {
 
   /** Creates a named [[Logger]].
     *
@@ -69,6 +69,7 @@ trait LoggerProvider[F[_], Ctx] {
 }
 
 object LoggerProvider {
+  private[otel4s] trait Unsealed[F[_], Ctx] extends LoggerProvider[F, Ctx]
 
   def apply[F[_], Ctx](implicit ev: LoggerProvider[F, Ctx]): LoggerProvider[F, Ctx] = ev
 

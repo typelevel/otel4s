@@ -27,7 +27,7 @@ import org.typelevel.otel4s.meta.InstrumentMeta
   *   the `Logger` is intended to be used only for bridging logs from other log frameworks into OpenTelemetry and is
   *   '''NOT a replacement''' for logging API.
   */
-trait Logger[F[_], Ctx] {
+sealed trait Logger[F[_], Ctx] {
 
   /** The instrument's metadata. Indicates whether instrumentation is enabled.
     */
@@ -51,6 +51,8 @@ trait Logger[F[_], Ctx] {
 }
 
 object Logger {
+  private[otel4s] trait Unsealed[F[_], Ctx] extends Logger[F, Ctx]
+
   def apply[F[_], Ctx](implicit ev: Logger[F, Ctx]): Logger[F, Ctx] = ev
 
   /** Creates a no-op implementation of the [[Logger]].

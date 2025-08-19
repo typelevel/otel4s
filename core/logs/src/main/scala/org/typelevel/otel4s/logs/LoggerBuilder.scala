@@ -27,7 +27,7 @@ import cats.syntax.functor._
   * @see
   *   [[https://opentelemetry.io/docs/specs/otel/logs/api/#get-a-logger]]
   */
-trait LoggerBuilder[F[_], Ctx] {
+sealed trait LoggerBuilder[F[_], Ctx] {
 
   /** Assigns a version to the resulting Logger.
     *
@@ -54,6 +54,7 @@ trait LoggerBuilder[F[_], Ctx] {
 }
 
 object LoggerBuilder {
+  private[otel4s] trait Unsealed[F[_], Ctx] extends LoggerBuilder[F, Ctx]
 
   /** Creates a no-op implementation of the [[LoggerBuilder]].
     *

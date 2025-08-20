@@ -57,7 +57,7 @@ private final class BatchSpanProcessor[F[_]: Temporal: Console] private (
     state: Ref[F, BatchSpanProcessor.State],
     exporter: SpanExporter[F],
     config: BatchSpanProcessor.Config
-) extends SpanProcessor[F] {
+) extends SpanProcessor.Unsealed[F] {
   import BatchSpanProcessor.State
 
   private val unit = Temporal[F].unit
@@ -72,7 +72,7 @@ private final class BatchSpanProcessor[F[_]: Temporal: Console] private (
   val onStart: SpanProcessor.OnStart[F] =
     SpanProcessor.OnStart.noop
 
-  val onEnd: SpanProcessor.OnEnd[F] = { (span: SpanData) =>
+  val onEnd: SpanProcessor.OnEnd[F] = SpanProcessor.OnEnd { (span: SpanData) =>
     if (span.spanContext.isSampled) {
       // if 'spansNeeded' is defined, it means the worker is waiting for a certain number of spans
       // and it waits for the 'signal'-latch to be released
@@ -184,7 +184,7 @@ private final class BatchSpanProcessor[F[_]: Temporal: Console] private (
 object BatchSpanProcessor {
 
   /** Builder for [[BatchSpanProcessor]]. */
-  trait Builder[F[_]] {
+  sealed trait Builder[F[_]] {
 
     /** Sets the delay interval between two consecutive exports.
       *

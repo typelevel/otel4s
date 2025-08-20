@@ -90,13 +90,13 @@ object ObservableSuite {
       observations: Ref[IO, List[Record[A]]]
   ) {
     def run: IO[Unit] =
-      callback(new ObservableMeasurement[IO, A] {
+      callback(new ObservableMeasurement.Unsealed[IO, A] {
         def record(value: A, attributes: Attributes): IO[Unit] =
           observations.update(Record(value, attributes.toSeq) :: _)
       })
   }
 
-  class InMemoryObservableInstrumentBuilder[A] extends ObservableGauge.Builder[IO, A] {
+  class InMemoryObservableInstrumentBuilder[A] extends ObservableGauge.Builder.Unsealed[IO, A] {
 
     type Self = ObservableGauge.Builder[IO, A]
 
@@ -129,12 +129,12 @@ object ObservableSuite {
     def createWithCallback(
         cb: ObservableMeasurement[IO, A] => IO[Unit]
     ): Resource[IO, ObservableGauge] =
-      createObservableWithCallback(cb).as(new ObservableGauge {})
+      createObservableWithCallback(cb).as(ObservableGauge.noop)
 
     def create(
         measurements: IO[Iterable[Measurement[A]]]
     ): Resource[IO, ObservableGauge] =
-      createObservable(measurements).as(new ObservableGauge {})
+      createObservable(measurements).as(ObservableGauge.noop)
 
     def createObserver: IO[ObservableMeasurement[IO, A]] =
       IO.pure(ObservableMeasurement.noop)

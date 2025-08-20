@@ -63,7 +63,7 @@ import scala.concurrent.duration.FiniteDuration
   *   }
   * }}}
   */
-trait Span[F[_]] extends SpanMacro[F] {
+sealed trait Span[F[_]] extends SpanMacro[F] {
   def backend: Span.Backend[F]
 
   /** Returns the [[SpanContext]] associated with this span.
@@ -120,7 +120,7 @@ trait Span[F[_]] extends SpanMacro[F] {
 
 object Span {
 
-  trait Backend[F[_]] {
+  sealed trait Backend[F[_]] {
     def meta: InstrumentMeta.Static[F]
     def context: SpanContext
 
@@ -167,6 +167,7 @@ object Span {
   }
 
   object Backend {
+    private[otel4s] trait Unsealed[F[_]] extends Backend[F]
 
     /** Returns a non-recording backend that holds the provided [[SpanContext]] but all operations have no effect. The
       * span will not be exported and all tracing operations are no-op, but it can be used to propagate a valid

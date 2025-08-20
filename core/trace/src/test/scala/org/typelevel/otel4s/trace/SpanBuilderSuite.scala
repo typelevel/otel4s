@@ -289,7 +289,7 @@ class SpanBuilderSuite extends FunSuite {
       meta: InstrumentMeta.Dynamic[IO],
       state: SpanBuilder.State,
       modifications: Int = 0
-  ) extends SpanBuilder[IO] {
+  ) extends SpanBuilder.Unsealed[IO] {
     def modifyState(
         f: SpanBuilder.State => SpanBuilder.State
     ): SpanBuilder[IO] =

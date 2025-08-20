@@ -28,7 +28,7 @@ private[oteljava] class TracerProviderImpl[F[_]: Sync] private (
     jTracerProvider: JTracerProvider,
     propagators: ContextPropagators[Context],
     traceScope: TraceScope[F, Context],
-) extends TracerProvider[F] {
+) extends TracerProvider.Unsealed[F] {
   def tracer(name: String): TracerBuilder[F] =
     TracerBuilderImpl(jTracerProvider, propagators, traceScope, name)
 }

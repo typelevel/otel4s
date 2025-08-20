@@ -21,7 +21,7 @@ import org.typelevel.otel4s.oteljava.testkit.metrics.data.Metric
 
 /** Transforms OpenTelemetry's MetricData into arbitrary type `A`.
   */
-trait FromMetricData[A] {
+sealed trait FromMetricData[A] {
   def from(metricData: MetricData): A
 }
 
@@ -30,9 +30,13 @@ object FromMetricData {
   def apply[A](implicit ev: FromMetricData[A]): FromMetricData[A] = ev
 
   implicit val toOtelJavaMetricData: FromMetricData[MetricData] =
-    a => a
+    new FromMetricData[MetricData] {
+      def from(metricData: MetricData): MetricData = metricData
+    }
 
   implicit val toOtel4sMetric: FromMetricData[Metric] =
-    metricData => Metric(metricData)
+    new FromMetricData[Metric] {
+      def from(metricData: MetricData): Metric = Metric(metricData)
+    }
 
 }

@@ -34,7 +34,7 @@ import org.typelevel.otel4s.sdk.metrics.exporter.AggregationTemporalitySelector
 import org.typelevel.otel4s.sdk.metrics.exporter.CardinalityLimitSelector
 import org.typelevel.otel4s.sdk.metrics.exporter.MetricReader
 
-trait MetricsTestkit[F[_]] {
+sealed trait MetricsTestkit[F[_]] {
 
   /** The [[org.typelevel.otel4s.metrics.MeterProvider MeterProvider]].
     */
@@ -49,6 +49,7 @@ trait MetricsTestkit[F[_]] {
 }
 
 object MetricsTestkit {
+  private[sdk] trait Unsealed[F[_]] extends MetricsTestkit[F]
 
   /** Creates [[MetricsTestkit]] that keeps metrics in-memory.
     *

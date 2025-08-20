@@ -27,7 +27,7 @@ import org.typelevel.otel4s.trace.SpanFinalizer.Strategy
 import scala.collection.immutable
 import scala.concurrent.duration.FiniteDuration
 
-trait SpanBuilder[F[_]] extends SpanBuilderMacro[F] {
+sealed trait SpanBuilder[F[_]] extends SpanBuilderMacro[F] {
   import SpanBuilder.State
 
   /** The instrument's metadata. Indicates whether instrumentation is enabled.
@@ -66,6 +66,7 @@ trait SpanBuilder[F[_]] extends SpanBuilderMacro[F] {
 }
 
 object SpanBuilder {
+  private[otel4s] trait Unsealed[F[_]] extends SpanBuilder[F]
 
   /** The parent selection strategy.
     */
@@ -241,7 +242,7 @@ object SpanBuilder {
       val meta: InstrumentMeta.Dynamic[F] = InstrumentMeta.Dynamic.disabled
       def modifyState(f: State => State): SpanBuilder[F] = this
 
-      def build: SpanOps[F] = new SpanOps[F] {
+      def build: SpanOps[F] = new SpanOps.Unsealed[F] {
         def startUnmanaged: F[Span[F]] =
           Applicative[F].pure(span)
 

@@ -46,7 +46,7 @@ private object SdkGauge {
       cast: A => Primitive,
       storage: MetricStorage.Synchronous.Writeable[F, Primitive],
       val meta: InstrumentMeta.Dynamic[F]
-  ) extends Gauge.Backend[F, A] {
+  ) extends Gauge.Backend.Unsealed[F, A] {
 
     def record(
         value: A,
@@ -67,7 +67,7 @@ private object SdkGauge {
       sharedState: MeterSharedState[F],
       unit: Option[String] = None,
       description: Option[String] = None
-  ) extends Gauge.Builder[F, A] {
+  ) extends Gauge.Builder.Unsealed[F, A] {
 
     def withUnit(unit: String): Gauge.Builder[F, A] =
       copy(unit = Some(unit))

@@ -40,7 +40,7 @@ import scodec.bits.ByteVector
 private final case class TraceIdRatioBasedSampler[F[_]: Applicative] private (
     ratio: Double,
     idUpperBound: Long
-) extends Sampler[F] {
+) extends Sampler.Unsealed[F] {
 
   def shouldSample(
       parentContext: Option[SpanContext],

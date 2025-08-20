@@ -484,14 +484,14 @@ class SdkSpanBackendSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
   }
 
   private def startEndRecorder(start: Queue[IO, SpanData], end: Queue[IO, SpanData]): SpanProcessor[IO] =
-    new SpanProcessor[IO] {
+    new SpanProcessor.Unsealed[IO] {
       val name: String = "InMemorySpanProcessor"
 
       val onStart: SpanProcessor.OnStart[IO] =
-        (_, span) => span.toSpanData.flatMap(d => start.offer(d))
+        SpanProcessor.OnStart((_, span) => span.toSpanData.flatMap(d => start.offer(d)))
 
       val onEnd: SpanProcessor.OnEnd[IO] =
-        end.offer(_)
+        SpanProcessor.OnEnd(end.offer)
 
       def forceFlush: IO[Unit] =
         IO.unit

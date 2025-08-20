@@ -144,7 +144,7 @@ class TracerSuite extends CatsEffectSuite {
   private final class ProxyBuilder[F[_]: Applicative](
       name: String,
       var underlying: SpanBuilder[F]
-  ) extends SpanBuilder[F] {
+  ) extends SpanBuilder.Unsealed[F] {
     private var state: SpanBuilder.State = SpanBuilder.State.init
     private val builderOps = Vector.newBuilder[BuilderOp]
     builderOps.addOne(BuilderOp.Init(name))
@@ -166,7 +166,7 @@ class TracerSuite extends CatsEffectSuite {
     }
   }
 
-  private class ProxyTracer[F[_]: Applicative](underlying: Tracer[F]) extends Tracer[F] {
+  private class ProxyTracer[F[_]: Applicative](underlying: Tracer[F]) extends Tracer.Unsealed[F] {
     private val proxyBuilders = Vector.newBuilder[ProxyBuilder[F]]
 
     def meta: InstrumentMeta.Dynamic[F] = InstrumentMeta.Dynamic.enabled[F]

@@ -22,7 +22,7 @@ import cats.effect.kernel.Resource
 import cats.syntax.functor._
 import cats.~>
 
-trait SpanOps[F[_]] {
+sealed trait SpanOps[F[_]] {
 
   /** Creates a [[Span]]. The span requires to be ended '''explicitly''' by invoking `end`.
     *
@@ -258,6 +258,7 @@ trait SpanOps[F[_]] {
 }
 
 object SpanOps {
+  private[otel4s] trait Unsealed[F[_]] extends SpanOps[F]
 
   /** The span and associated natural transformation [[`trace`]] provided and managed by a call to [[SpanOps.resource]].
     * In order to trace something in the span, it must be applied to [[`trace`]].

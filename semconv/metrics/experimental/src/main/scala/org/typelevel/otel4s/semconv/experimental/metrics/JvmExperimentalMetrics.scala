@@ -53,7 +53,7 @@ object JvmExperimentalMetrics {
 
   /** Number of buffers in the pool.
     */
-  object BufferCount extends MetricSpec {
+  object BufferCount extends MetricSpec.Unsealed {
 
     val name: String = "jvm.buffer.count"
     val description: String = "Number of buffers in the pool."
@@ -113,7 +113,7 @@ object JvmExperimentalMetrics {
 
   /** Measure of total memory capacity of buffers.
     */
-  object BufferMemoryLimit extends MetricSpec {
+  object BufferMemoryLimit extends MetricSpec.Unsealed {
 
     val name: String = "jvm.buffer.memory.limit"
     val description: String = "Measure of total memory capacity of buffers."
@@ -174,7 +174,7 @@ object JvmExperimentalMetrics {
   /** Deprecated, use `jvm.buffer.memory.used` instead.
     */
   @deprecated("Replaced by `jvm.buffer.memory.used`.", "")
-  object BufferMemoryUsage extends MetricSpec {
+  object BufferMemoryUsage extends MetricSpec.Unsealed {
 
     val name: String = "jvm.buffer.memory.usage"
     val description: String = "Deprecated, use `jvm.buffer.memory.used` instead."
@@ -234,7 +234,7 @@ object JvmExperimentalMetrics {
 
   /** Measure of memory used by buffers.
     */
-  object BufferMemoryUsed extends MetricSpec {
+  object BufferMemoryUsed extends MetricSpec.Unsealed {
 
     val name: String = "jvm.buffer.memory.used"
     val description: String = "Measure of memory used by buffers."
@@ -295,7 +295,7 @@ object JvmExperimentalMetrics {
   /** Number of classes currently loaded.
     */
   @deprecated("Use stable `org.typelevel.otel4s.semconv.metrics.JvmMetrics.ClassCount` instead.", "")
-  object ClassCount extends MetricSpec {
+  object ClassCount extends MetricSpec.Unsealed {
 
     val name: String = "jvm.class.count"
     val description: String = "Number of classes currently loaded."
@@ -331,7 +331,7 @@ object JvmExperimentalMetrics {
   /** Number of classes loaded since JVM start.
     */
   @deprecated("Use stable `org.typelevel.otel4s.semconv.metrics.JvmMetrics.ClassLoaded` instead.", "")
-  object ClassLoaded extends MetricSpec {
+  object ClassLoaded extends MetricSpec.Unsealed {
 
     val name: String = "jvm.class.loaded"
     val description: String = "Number of classes loaded since JVM start."
@@ -367,7 +367,7 @@ object JvmExperimentalMetrics {
   /** Number of classes unloaded since JVM start.
     */
   @deprecated("Use stable `org.typelevel.otel4s.semconv.metrics.JvmMetrics.ClassUnloaded` instead.", "")
-  object ClassUnloaded extends MetricSpec {
+  object ClassUnloaded extends MetricSpec.Unsealed {
 
     val name: String = "jvm.class.unloaded"
     val description: String = "Number of classes unloaded since JVM start."
@@ -403,7 +403,7 @@ object JvmExperimentalMetrics {
   /** Number of processors available to the Java virtual machine.
     */
   @deprecated("Use stable `org.typelevel.otel4s.semconv.metrics.JvmMetrics.CpuCount` instead.", "")
-  object CpuCount extends MetricSpec {
+  object CpuCount extends MetricSpec.Unsealed {
 
     val name: String = "jvm.cpu.count"
     val description: String = "Number of processors available to the Java virtual machine."
@@ -444,7 +444,7 @@ object JvmExperimentalMetrics {
     *   href="https://docs.oracle.com/en/java/javase/17/docs/api/jdk.management/com/sun/management/OperatingSystemMXBean.html#getProcessCpuLoad()">Reference</a>.
     */
   @deprecated("Use stable `org.typelevel.otel4s.semconv.metrics.JvmMetrics.CpuRecentUtilization` instead.", "")
-  object CpuRecentUtilization extends MetricSpec {
+  object CpuRecentUtilization extends MetricSpec.Unsealed {
 
     val name: String = "jvm.cpu.recent_utilization"
     val description: String = "Recent CPU utilization for the process as reported by the JVM."
@@ -480,7 +480,7 @@ object JvmExperimentalMetrics {
   /** CPU time used by the process as reported by the JVM.
     */
   @deprecated("Use stable `org.typelevel.otel4s.semconv.metrics.JvmMetrics.CpuTime` instead.", "")
-  object CpuTime extends MetricSpec {
+  object CpuTime extends MetricSpec.Unsealed {
 
     val name: String = "jvm.cpu.time"
     val description: String = "CPU time used by the process as reported by the JVM."
@@ -515,7 +515,7 @@ object JvmExperimentalMetrics {
 
   /** Number of open file descriptors as reported by the JVM.
     */
-  object FileDescriptorCount extends MetricSpec {
+  object FileDescriptorCount extends MetricSpec.Unsealed {
 
     val name: String = "jvm.file_descriptor.count"
     val description: String = "Number of open file descriptors as reported by the JVM."
@@ -551,7 +551,7 @@ object JvmExperimentalMetrics {
   /** Duration of JVM garbage collection actions.
     */
   @deprecated("Use stable `org.typelevel.otel4s.semconv.metrics.JvmMetrics.GcDuration` instead.", "")
-  object GcDuration extends MetricSpec {
+  object GcDuration extends MetricSpec.Unsealed {
 
     val name: String = "jvm.gc.duration"
     val description: String = "Duration of JVM garbage collection actions."
@@ -633,7 +633,7 @@ object JvmExperimentalMetrics {
   /** Measure of memory committed.
     */
   @deprecated("Use stable `org.typelevel.otel4s.semconv.metrics.JvmMetrics.MemoryCommitted` instead.", "")
-  object MemoryCommitted extends MetricSpec {
+  object MemoryCommitted extends MetricSpec.Unsealed {
 
     val name: String = "jvm.memory.committed"
     val description: String = "Measure of memory committed."
@@ -708,7 +708,7 @@ object JvmExperimentalMetrics {
 
   /** Measure of initial memory requested.
     */
-  object MemoryInit extends MetricSpec {
+  object MemoryInit extends MetricSpec.Unsealed {
 
     val name: String = "jvm.memory.init"
     val description: String = "Measure of initial memory requested."
@@ -784,7 +784,7 @@ object JvmExperimentalMetrics {
   /** Measure of max obtainable memory.
     */
   @deprecated("Use stable `org.typelevel.otel4s.semconv.metrics.JvmMetrics.MemoryLimit` instead.", "")
-  object MemoryLimit extends MetricSpec {
+  object MemoryLimit extends MetricSpec.Unsealed {
 
     val name: String = "jvm.memory.limit"
     val description: String = "Measure of max obtainable memory."
@@ -860,7 +860,7 @@ object JvmExperimentalMetrics {
   /** Measure of memory used.
     */
   @deprecated("Use stable `org.typelevel.otel4s.semconv.metrics.JvmMetrics.MemoryUsed` instead.", "")
-  object MemoryUsed extends MetricSpec {
+  object MemoryUsed extends MetricSpec.Unsealed {
 
     val name: String = "jvm.memory.used"
     val description: String = "Measure of memory used."
@@ -936,7 +936,7 @@ object JvmExperimentalMetrics {
   /** Measure of memory used, as measured after the most recent garbage collection event on this pool.
     */
   @deprecated("Use stable `org.typelevel.otel4s.semconv.metrics.JvmMetrics.MemoryUsedAfterLastGc` instead.", "")
-  object MemoryUsedAfterLastGc extends MetricSpec {
+  object MemoryUsedAfterLastGc extends MetricSpec.Unsealed {
 
     val name: String = "jvm.memory.used_after_last_gc"
     val description: String =
@@ -1018,7 +1018,7 @@ object JvmExperimentalMetrics {
     *   `system.cpu.utilization`). <a
     *   href="https://docs.oracle.com/en/java/javase/17/docs/api/java.management/java/lang/management/OperatingSystemMXBean.html#getSystemLoadAverage()">Reference</a>.
     */
-  object SystemCpuLoad1m extends MetricSpec {
+  object SystemCpuLoad1m extends MetricSpec.Unsealed {
 
     val name: String = "jvm.system.cpu.load_1m"
     val description: String = "Average CPU load of the whole system for the last minute as reported by the JVM."
@@ -1058,7 +1058,7 @@ object JvmExperimentalMetrics {
     *   measurement (unlike `system.cpu.utilization`). <a
     *   href="https://docs.oracle.com/en/java/javase/17/docs/api/jdk.management/com/sun/management/OperatingSystemMXBean.html#getCpuLoad()">Reference</a>.
     */
-  object SystemCpuUtilization extends MetricSpec {
+  object SystemCpuUtilization extends MetricSpec.Unsealed {
 
     val name: String = "jvm.system.cpu.utilization"
     val description: String = "Recent CPU utilization for the whole system as reported by the JVM."
@@ -1094,7 +1094,7 @@ object JvmExperimentalMetrics {
   /** Number of executing platform threads.
     */
   @deprecated("Use stable `org.typelevel.otel4s.semconv.metrics.JvmMetrics.ThreadCount` instead.", "")
-  object ThreadCount extends MetricSpec {
+  object ThreadCount extends MetricSpec.Unsealed {
 
     val name: String = "jvm.thread.count"
     val description: String = "Number of executing platform threads."

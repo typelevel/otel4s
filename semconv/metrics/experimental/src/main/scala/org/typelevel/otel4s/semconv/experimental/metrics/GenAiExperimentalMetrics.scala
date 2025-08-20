@@ -36,7 +36,7 @@ object GenAiExperimentalMetrics {
 
   /** GenAI operation duration
     */
-  object ClientOperationDuration extends MetricSpec {
+  object ClientOperationDuration extends MetricSpec.Unsealed {
 
     val name: String = "gen_ai.client.operation.duration"
     val description: String = "GenAI operation duration"
@@ -197,7 +197,7 @@ object GenAiExperimentalMetrics {
 
   /** Measures number of input and output tokens used
     */
-  object ClientTokenUsage extends MetricSpec {
+  object ClientTokenUsage extends MetricSpec.Unsealed {
 
     val name: String = "gen_ai.client.token.usage"
     val description: String = "Measures number of input and output tokens used"
@@ -351,7 +351,7 @@ object GenAiExperimentalMetrics {
 
   /** Generative AI server request duration such as time-to-last byte or last output token
     */
-  object ServerRequestDuration extends MetricSpec {
+  object ServerRequestDuration extends MetricSpec.Unsealed {
 
     val name: String = "gen_ai.server.request.duration"
     val description: String = "Generative AI server request duration such as time-to-last byte or last output token"
@@ -512,7 +512,7 @@ object GenAiExperimentalMetrics {
 
   /** Time per output token generated after the first token for successful responses
     */
-  object ServerTimePerOutputToken extends MetricSpec {
+  object ServerTimePerOutputToken extends MetricSpec.Unsealed {
 
     val name: String = "gen_ai.server.time_per_output_token"
     val description: String = "Time per output token generated after the first token for successful responses"
@@ -652,7 +652,7 @@ object GenAiExperimentalMetrics {
 
   /** Time to generate first token for successful responses
     */
-  object ServerTimeToFirstToken extends MetricSpec {
+  object ServerTimeToFirstToken extends MetricSpec.Unsealed {
 
     val name: String = "gen_ai.server.time_to_first_token"
     val description: String = "Time to generate first token for successful responses"

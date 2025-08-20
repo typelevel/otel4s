@@ -34,7 +34,7 @@ private[resource] trait HostDetectorPlatform { self: HostDetector.type =>
   def apply[F[_]: Sync: SystemProperties]: TelemetryResourceDetector[F] =
     new Detector[F]
 
-  private class Detector[F[_]: Sync: SystemProperties] extends TelemetryResourceDetector[F] {
+  private class Detector[F[_]: Sync: SystemProperties] extends TelemetryResourceDetector.Unsealed[F] {
     def name: String = Const.Name
 
     def detect: F[Option[TelemetryResource]] =

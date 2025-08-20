@@ -21,7 +21,7 @@ import cats.Applicative
 import cats.effect.kernel.MonadCancelThrow
 import cats.syntax.functor._
 
-trait TracerBuilder[F[_]] {
+sealed trait TracerBuilder[F[_]] {
 
   /** Assigns a version to the resulting Tracer.
     *
@@ -57,6 +57,7 @@ trait TracerBuilder[F[_]] {
 }
 
 object TracerBuilder {
+  private[otel4s] trait Unsealed[F[_]] extends TracerBuilder[F]
 
   /** Creates a no-op implementation of the [[TracerBuilder]].
     *

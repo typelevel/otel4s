@@ -50,7 +50,7 @@ private object SdkUpDownCounter {
       cast: A => Primitive,
       storage: MetricStorage.Synchronous.Writeable[F, Primitive],
       val meta: InstrumentMeta.Dynamic[F]
-  ) extends UpDownCounter.Backend[F, A] {
+  ) extends UpDownCounter.Backend.Unsealed[F, A] {
 
     def add(value: A, attributes: immutable.Iterable[Attribute[_]]): F[Unit] =
       record(cast(value), attributes)
@@ -79,7 +79,7 @@ private object SdkUpDownCounter {
       sharedState: MeterSharedState[F],
       unit: Option[String] = None,
       description: Option[String] = None
-  ) extends UpDownCounter.Builder[F, A] {
+  ) extends UpDownCounter.Builder.Unsealed[F, A] {
 
     def withUnit(unit: String): UpDownCounter.Builder[F, A] =
       copy(unit = Some(unit))

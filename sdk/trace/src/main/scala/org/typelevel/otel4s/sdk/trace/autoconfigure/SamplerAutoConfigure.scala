@@ -87,7 +87,7 @@ private final class SamplerAutoConfigure[F[_]: MonadCancelThrow](
   private def traceIdRatioSampler(
       samplerName: String
   )(make: Sampler[F] => Sampler[F]): AutoConfigure.Named[F, Sampler[F]] =
-    new AutoConfigure.Named[F, Sampler[F]] {
+    new AutoConfigure.Named.Unsealed[F, Sampler[F]] {
       def name: String = samplerName
 
       def configure(config: Config): Resource[F, Sampler[F]] = {

@@ -36,7 +36,7 @@ private[samplers] final case class ParentBasedSampler[F[_]] private (
     remoteParentNotSampled: Sampler[F],
     localParentSampled: Sampler[F],
     localParentNotSampled: Sampler[F]
-) extends Sampler[F] {
+) extends Sampler.Unsealed[F] {
 
   def shouldSample(
       parentContext: Option[SpanContext],

@@ -35,7 +35,7 @@ import org.typelevel.otel4s.trace.SpanContext
   * @tparam F
   *   the higher-kinded type of a polymorphic effect
   */
-trait SpanProcessor[F[_]] {
+sealed trait SpanProcessor[F[_]] {
 
   /** The name of the processor.
     *
@@ -74,13 +74,14 @@ trait SpanProcessor[F[_]] {
 }
 
 object SpanProcessor {
+  private[otel4s] trait Unsealed[F[_]] extends SpanProcessor[F]
 
   /** Evaluated when a span is started.
     *
     * @see
     *   [[https://opentelemetry.io/docs/specs/otel/trace/sdk/#onstart]]
     */
-  trait OnStart[F[_]] {
+  sealed trait OnStart[F[_]] {
 
     /** Called when a span is started, if the `span.isRecording` returns true.
       *
@@ -100,6 +101,12 @@ object SpanProcessor {
     def noop[F[_]: Applicative]: OnStart[F] =
       new Noop
 
+    private[otel4s] def apply[F[_]](f: (Option[SpanContext], SpanRef[F]) => F[Unit]): OnStart[F] =
+      new OnStart[F] {
+        def apply(parentContext: Option[SpanContext], span: SpanRef[F]): F[Unit] =
+          f(parentContext, span)
+      }
+
     private[SpanProcessor] final class Noop[F[_]: Applicative] extends OnStart[F] {
       private val unit: F[Unit] = Applicative[F].unit
       def apply(parentContext: Option[SpanContext], span: SpanRef[F]): F[Unit] = unit
@@ -111,7 +118,7 @@ object SpanProcessor {
     * @see
     *   [[https://opentelemetry.io/docs/specs/otel/trace/sdk/#onendspan]]
     */
-  trait OnEnd[F[_]] {
+  sealed trait OnEnd[F[_]] {
 
     /** Called when a span is ended, if the `span.isRecording` returns true.
       *
@@ -127,6 +134,11 @@ object SpanProcessor {
 
     def noop[F[_]: Applicative]: OnEnd[F] =
       new Noop
+
+    private[otel4s] def apply[F[_]](f: SpanData => F[Unit]): OnEnd[F] =
+      new OnEnd[F] {
+        def apply(span: SpanData): F[Unit] = f(span)
+      }
 
     private[SpanProcessor] final class Noop[F[_]: Applicative] extends OnEnd[F] {
       private val unit: F[Unit] = Applicative[F].unit
@@ -222,10 +234,12 @@ object SpanProcessor {
     val onStart: OnStart[F] = {
       val start = processors.filterNot(_.onStart.isInstanceOf[OnStart.Noop[F]])
 
-      if (start.nonEmpty) { (parentContext, span) =>
-        start
-          .traverse(p => p.onStart(parentContext, span).attempt.tupleLeft(p.name))
-          .flatMap(attempts => handleAttempts(attempts))
+      if (start.nonEmpty) {
+        OnStart { (parentContext, span) =>
+          start
+            .traverse(p => p.onStart(parentContext, span).attempt.tupleLeft(p.name))
+            .flatMap(attempts => handleAttempts(attempts))
+        }
       } else {
         OnStart.noop
       }
@@ -234,10 +248,12 @@ object SpanProcessor {
     val onEnd: OnEnd[F] = {
       val end = processors.filterNot(_.onEnd.isInstanceOf[OnEnd.Noop[F]])
 
-      if (end.nonEmpty) { span =>
-        end
-          .parTraverse(p => p.onEnd(span).attempt.tupleLeft(p.name))
-          .flatMap(attempts => handleAttempts(attempts))
+      if (end.nonEmpty) {
+        OnEnd { span =>
+          end
+            .parTraverse(p => p.onEnd(span).attempt.tupleLeft(p.name))
+            .flatMap(attempts => handleAttempts(attempts))
+        }
       } else {
         OnEnd.noop
       }

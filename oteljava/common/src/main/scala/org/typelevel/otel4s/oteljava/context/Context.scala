@@ -61,7 +61,7 @@ object Context {
   }
 
   /** A key for use with a [[`Context`]] */
-  final class Key[A] private (val name: String) extends context.Key[A] with ContextKey[A]
+  final class Key[A] private (val name: String) extends context.Key.Unsealed[A] with ContextKey[A]
 
   object Key {
 
@@ -70,7 +70,7 @@ object Context {
       Sync[F].delay(new Key(name))
 
     implicit def provider[F[_]: Sync]: context.Key.Provider[F, Key] =
-      new context.Key.Provider[F, Key] {
+      new context.Key.Provider.Unsealed[F, Key] {
         def uniqueKey[A](name: String): F[Key[A]] = unique(name)
       }
   }
@@ -82,7 +82,7 @@ object Context {
   /** The root [[`Context`]], from which all other contexts are derived. */
   lazy val root: Context = wrap(JContext.root())
 
-  implicit object Contextual extends context.Contextual[Context] {
+  implicit object Contextual extends context.Contextual.Unsealed[Context] {
     type Key[A] = Context.Key[A]
 
     def get[A](ctx: Context)(key: Key[A]): Option[A] =

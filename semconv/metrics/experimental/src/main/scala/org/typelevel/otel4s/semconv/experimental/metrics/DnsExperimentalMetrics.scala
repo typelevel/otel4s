@@ -32,7 +32,7 @@ object DnsExperimentalMetrics {
 
   /** Measures the time taken to perform a DNS lookup.
     */
-  object LookupDuration extends MetricSpec {
+  object LookupDuration extends MetricSpec.Unsealed {
 
     val name: String = "dns.lookup.duration"
     val description: String = "Measures the time taken to perform a DNS lookup."

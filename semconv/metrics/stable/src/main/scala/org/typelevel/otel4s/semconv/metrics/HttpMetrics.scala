@@ -31,7 +31,7 @@ object HttpMetrics {
 
   /** Duration of HTTP client requests.
     */
-  object ClientRequestDuration extends MetricSpec {
+  object ClientRequestDuration extends MetricSpec.Unsealed {
 
     val name: String = "http.client.request.duration"
     val description: String = "Duration of HTTP client requests."
@@ -224,7 +224,7 @@ object HttpMetrics {
 
   /** Duration of HTTP server requests.
     */
-  object ServerRequestDuration extends MetricSpec {
+  object ServerRequestDuration extends MetricSpec.Unsealed {
 
     val name: String = "http.server.request.duration"
     val description: String = "Duration of HTTP server requests."

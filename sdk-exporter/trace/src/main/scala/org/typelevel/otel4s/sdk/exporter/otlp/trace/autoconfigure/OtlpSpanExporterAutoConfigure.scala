@@ -45,7 +45,7 @@ private final class OtlpSpanExporterAutoConfigure[
       "OtlpSpanExporter",
       Set.empty
     )
-    with AutoConfigure.Named[F, SpanExporter[F]] {
+    with AutoConfigure.Named.Unsealed[F, SpanExporter[F]] {
 
   def name: String = "otlp"
 

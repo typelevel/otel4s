@@ -37,7 +37,7 @@ object CicdExperimentalMetrics {
 
   /** The number of pipeline runs currently active in the system by state.
     */
-  object PipelineRunActive extends MetricSpec {
+  object PipelineRunActive extends MetricSpec.Unsealed {
 
     val name: String = "cicd.pipeline.run.active"
     val description: String = "The number of pipeline runs currently active in the system by state."
@@ -110,7 +110,7 @@ object CicdExperimentalMetrics {
 
   /** Duration of a pipeline run grouped by pipeline, state and result.
     */
-  object PipelineRunDuration extends MetricSpec {
+  object PipelineRunDuration extends MetricSpec.Unsealed {
 
     val name: String = "cicd.pipeline.run.duration"
     val description: String = "Duration of a pipeline run grouped by pipeline, state and result."
@@ -217,7 +217,7 @@ object CicdExperimentalMetrics {
     *   multiple stages could have a fatal error. This means that this error count might not be the same as the count of
     *   metric `cicd.pipeline.run.duration` with run result `failure`.
     */
-  object PipelineRunErrors extends MetricSpec {
+  object PipelineRunErrors extends MetricSpec.Unsealed {
 
     val name: String = "cicd.pipeline.run.errors"
     val description: String = "The number of errors encountered in pipeline runs (eg. compile, test failures)."
@@ -306,7 +306,7 @@ object CicdExperimentalMetrics {
     * @note
     *   <p> Errors in pipeline run execution are explicitly excluded. Ie a test failure is not counted in this metric.
     */
-  object SystemErrors extends MetricSpec {
+  object SystemErrors extends MetricSpec.Unsealed {
 
     val name: String = "cicd.system.errors"
     val description: String =
@@ -392,7 +392,7 @@ object CicdExperimentalMetrics {
 
   /** The number of workers on the CICD system by state.
     */
-  object WorkerCount extends MetricSpec {
+  object WorkerCount extends MetricSpec.Unsealed {
 
     val name: String = "cicd.worker.count"
     val description: String = "The number of workers on the CICD system by state."

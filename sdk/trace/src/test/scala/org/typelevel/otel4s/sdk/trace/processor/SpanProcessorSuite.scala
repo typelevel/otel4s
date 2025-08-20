@@ -133,10 +133,10 @@ class SpanProcessorSuite extends FunSuite {
       end: IO[Unit] = IO.unit,
       flush: IO[Unit] = IO.unit,
   ): SpanProcessor[IO] =
-    new SpanProcessor[IO] {
+    new SpanProcessor.Unsealed[IO] {
       def name: String = processorName
-      def onStart: SpanProcessor.OnStart[IO] = (_, _) => start
-      def onEnd: SpanProcessor.OnEnd[IO] = _ => end
+      def onStart: SpanProcessor.OnStart[IO] = SpanProcessor.OnStart((_, _) => start)
+      def onEnd: SpanProcessor.OnEnd[IO] = SpanProcessor.OnEnd(_ => end)
       def forceFlush: IO[Unit] = flush
     }
 

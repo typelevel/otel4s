@@ -49,7 +49,7 @@ object MessagingExperimentalMetrics {
     *   processing operations are both instrumented for a single message delivery, this counter is incremented when the
     *   message is received and not reported when it is processed.
     */
-  object ClientConsumedMessages extends MetricSpec {
+  object ClientConsumedMessages extends MetricSpec.Unsealed {
 
     val name: String = "messaging.client.consumed.messages"
     val description: String = "Number of messages that were delivered to the application."
@@ -280,7 +280,7 @@ object MessagingExperimentalMetrics {
     *   <p> This metric SHOULD NOT be used to report processing duration - processing duration is reported in
     *   `messaging.process.duration` metric.
     */
-  object ClientOperationDuration extends MetricSpec {
+  object ClientOperationDuration extends MetricSpec.Unsealed {
 
     val name: String = "messaging.client.operation.duration"
     val description: String = "Duration of messaging operation initiated by a producer or consumer client."
@@ -507,7 +507,7 @@ object MessagingExperimentalMetrics {
   /** Deprecated. Use `messaging.client.sent.messages` instead.
     */
   @deprecated("Replaced by `messaging.client.sent.messages`.", "")
-  object ClientPublishedMessages extends MetricSpec {
+  object ClientPublishedMessages extends MetricSpec.Unsealed {
 
     val name: String = "messaging.client.published.messages"
     val description: String = "Deprecated. Use `messaging.client.sent.messages` instead."
@@ -701,7 +701,7 @@ object MessagingExperimentalMetrics {
     * @note
     *   <p> This metric MUST NOT count messages that were created but haven't yet been sent.
     */
-  object ClientSentMessages extends MetricSpec {
+  object ClientSentMessages extends MetricSpec.Unsealed {
 
     val name: String = "messaging.client.sent.messages"
     val description: String = "Number of messages producer attempted to send to the broker."
@@ -895,7 +895,7 @@ object MessagingExperimentalMetrics {
     * @note
     *   <p> This metric MUST be reported for operations with `messaging.operation.type` that matches `process`.
     */
-  object ProcessDuration extends MetricSpec {
+  object ProcessDuration extends MetricSpec.Unsealed {
 
     val name: String = "messaging.process.duration"
     val description: String = "Duration of processing operation."
@@ -1107,7 +1107,7 @@ object MessagingExperimentalMetrics {
   /** Deprecated. Use `messaging.client.consumed.messages` instead.
     */
   @deprecated("Replaced by `messaging.client.consumed.messages`.", "")
-  object ProcessMessages extends MetricSpec {
+  object ProcessMessages extends MetricSpec.Unsealed {
 
     val name: String = "messaging.process.messages"
     val description: String = "Deprecated. Use `messaging.client.consumed.messages` instead."
@@ -1230,7 +1230,7 @@ object MessagingExperimentalMetrics {
   /** Deprecated. Use `messaging.client.operation.duration` instead.
     */
   @deprecated("Replaced by `messaging.client.operation.duration`.", "")
-  object PublishDuration extends MetricSpec {
+  object PublishDuration extends MetricSpec.Unsealed {
 
     val name: String = "messaging.publish.duration"
     val description: String = "Deprecated. Use `messaging.client.operation.duration` instead."
@@ -1338,7 +1338,7 @@ object MessagingExperimentalMetrics {
   /** Deprecated. Use `messaging.client.sent.messages` instead.
     */
   @deprecated("Replaced by `messaging.client.sent.messages`.", "")
-  object PublishMessages extends MetricSpec {
+  object PublishMessages extends MetricSpec.Unsealed {
 
     val name: String = "messaging.publish.messages"
     val description: String = "Deprecated. Use `messaging.client.sent.messages` instead."
@@ -1461,7 +1461,7 @@ object MessagingExperimentalMetrics {
   /** Deprecated. Use `messaging.client.operation.duration` instead.
     */
   @deprecated("Replaced by `messaging.client.operation.duration`.", "")
-  object ReceiveDuration extends MetricSpec {
+  object ReceiveDuration extends MetricSpec.Unsealed {
 
     val name: String = "messaging.receive.duration"
     val description: String = "Deprecated. Use `messaging.client.operation.duration` instead."
@@ -1569,7 +1569,7 @@ object MessagingExperimentalMetrics {
   /** Deprecated. Use `messaging.client.consumed.messages` instead.
     */
   @deprecated("Replaced by `messaging.client.consumed.messages`.", "")
-  object ReceiveMessages extends MetricSpec {
+  object ReceiveMessages extends MetricSpec.Unsealed {
 
     val name: String = "messaging.receive.messages"
     val description: String = "Deprecated. Use `messaging.client.consumed.messages` instead."

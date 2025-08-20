@@ -74,7 +74,7 @@ object K8sExperimentalMetrics {
     *   CronJobStatus</a>. <p> This metric SHOULD, at a minimum, be reported against a <a
     *   href="../resource/k8s.md#cronjob">`k8s.cronjob`</a> resource.
     */
-  object CronjobActiveJobs extends MetricSpec {
+  object CronjobActiveJobs extends MetricSpec.Unsealed {
 
     val name: String = "k8s.cronjob.active_jobs"
     val description: String = "The number of actively running jobs for a cronjob"
@@ -115,7 +115,7 @@ object K8sExperimentalMetrics {
     *   DaemonSetStatus</a>. <p> This metric SHOULD, at a minimum, be reported against a <a
     *   href="../resource/k8s.md#daemonset">`k8s.daemonset`</a> resource.
     */
-  object DaemonsetCurrentScheduledNodes extends MetricSpec {
+  object DaemonsetCurrentScheduledNodes extends MetricSpec.Unsealed {
 
     val name: String = "k8s.daemonset.current_scheduled_nodes"
     val description: String =
@@ -157,7 +157,7 @@ object K8sExperimentalMetrics {
     *   DaemonSetStatus</a>. <p> This metric SHOULD, at a minimum, be reported against a <a
     *   href="../resource/k8s.md#daemonset">`k8s.daemonset`</a> resource.
     */
-  object DaemonsetDesiredScheduledNodes extends MetricSpec {
+  object DaemonsetDesiredScheduledNodes extends MetricSpec.Unsealed {
 
     val name: String = "k8s.daemonset.desired_scheduled_nodes"
     val description: String =
@@ -199,7 +199,7 @@ object K8sExperimentalMetrics {
     *   DaemonSetStatus</a>. <p> This metric SHOULD, at a minimum, be reported against a <a
     *   href="../resource/k8s.md#daemonset">`k8s.daemonset`</a> resource.
     */
-  object DaemonsetMisscheduledNodes extends MetricSpec {
+  object DaemonsetMisscheduledNodes extends MetricSpec.Unsealed {
 
     val name: String = "k8s.daemonset.misscheduled_nodes"
     val description: String =
@@ -241,7 +241,7 @@ object K8sExperimentalMetrics {
     *   DaemonSetStatus</a>. <p> This metric SHOULD, at a minimum, be reported against a <a
     *   href="../resource/k8s.md#daemonset">`k8s.daemonset`</a> resource.
     */
-  object DaemonsetReadyNodes extends MetricSpec {
+  object DaemonsetReadyNodes extends MetricSpec.Unsealed {
 
     val name: String = "k8s.daemonset.ready_nodes"
     val description: String =
@@ -283,7 +283,7 @@ object K8sExperimentalMetrics {
     *   DeploymentStatus</a>. <p> This metric SHOULD, at a minimum, be reported against a <a
     *   href="../resource/k8s.md#deployment">`k8s.deployment`</a> resource.
     */
-  object DeploymentAvailablePods extends MetricSpec {
+  object DeploymentAvailablePods extends MetricSpec.Unsealed {
 
     val name: String = "k8s.deployment.available_pods"
     val description: String =
@@ -325,7 +325,7 @@ object K8sExperimentalMetrics {
     *   DeploymentSpec</a>. <p> This metric SHOULD, at a minimum, be reported against a <a
     *   href="../resource/k8s.md#deployment">`k8s.deployment`</a> resource.
     */
-  object DeploymentDesiredPods extends MetricSpec {
+  object DeploymentDesiredPods extends MetricSpec.Unsealed {
 
     val name: String = "k8s.deployment.desired_pods"
     val description: String = "Number of desired replica pods in this deployment"
@@ -366,7 +366,7 @@ object K8sExperimentalMetrics {
     *   HorizontalPodAutoscalerStatus</a> <p> This metric SHOULD, at a minimum, be reported against a <a
     *   href="../resource/k8s.md#horizontalpodautoscaler">`k8s.hpa`</a> resource.
     */
-  object HpaCurrentPods extends MetricSpec {
+  object HpaCurrentPods extends MetricSpec.Unsealed {
 
     val name: String = "k8s.hpa.current_pods"
     val description: String =
@@ -408,7 +408,7 @@ object K8sExperimentalMetrics {
     *   HorizontalPodAutoscalerStatus</a> <p> This metric SHOULD, at a minimum, be reported against a <a
     *   href="../resource/k8s.md#horizontalpodautoscaler">`k8s.hpa`</a> resource.
     */
-  object HpaDesiredPods extends MetricSpec {
+  object HpaDesiredPods extends MetricSpec.Unsealed {
 
     val name: String = "k8s.hpa.desired_pods"
     val description: String =
@@ -450,7 +450,7 @@ object K8sExperimentalMetrics {
     *   HorizontalPodAutoscalerSpec</a> <p> This metric SHOULD, at a minimum, be reported against a <a
     *   href="../resource/k8s.md#horizontalpodautoscaler">`k8s.hpa`</a> resource.
     */
-  object HpaMaxPods extends MetricSpec {
+  object HpaMaxPods extends MetricSpec.Unsealed {
 
     val name: String = "k8s.hpa.max_pods"
     val description: String = "The upper limit for the number of replica pods to which the autoscaler can scale up"
@@ -491,7 +491,7 @@ object K8sExperimentalMetrics {
     *   HorizontalPodAutoscalerSpec</a> <p> This metric SHOULD, at a minimum, be reported against a <a
     *   href="../resource/k8s.md#horizontalpodautoscaler">`k8s.hpa`</a> resource.
     */
-  object HpaMinPods extends MetricSpec {
+  object HpaMinPods extends MetricSpec.Unsealed {
 
     val name: String = "k8s.hpa.min_pods"
     val description: String = "The lower limit for the number of replica pods to which the autoscaler can scale down"
@@ -532,7 +532,7 @@ object K8sExperimentalMetrics {
     *   JobStatus</a>. <p> This metric SHOULD, at a minimum, be reported against a <a
     *   href="../resource/k8s.md#job">`k8s.job`</a> resource.
     */
-  object JobActivePods extends MetricSpec {
+  object JobActivePods extends MetricSpec.Unsealed {
 
     val name: String = "k8s.job.active_pods"
     val description: String = "The number of pending and actively running pods for a job"
@@ -573,7 +573,7 @@ object K8sExperimentalMetrics {
     *   <p> This metric SHOULD, at a minimum, be reported against a <a href="../resource/k8s.md#job">`k8s.job`</a>
     *   resource.
     */
-  object JobDesiredSuccessfulPods extends MetricSpec {
+  object JobDesiredSuccessfulPods extends MetricSpec.Unsealed {
 
     val name: String = "k8s.job.desired_successful_pods"
     val description: String = "The desired number of successfully finished pods the job should be run with"
@@ -614,7 +614,7 @@ object K8sExperimentalMetrics {
     *   JobStatus</a>. <p> This metric SHOULD, at a minimum, be reported against a <a
     *   href="../resource/k8s.md#job">`k8s.job`</a> resource.
     */
-  object JobFailedPods extends MetricSpec {
+  object JobFailedPods extends MetricSpec.Unsealed {
 
     val name: String = "k8s.job.failed_pods"
     val description: String = "The number of pods which reached phase Failed for a job"
@@ -655,7 +655,7 @@ object K8sExperimentalMetrics {
     *   <p> This metric SHOULD, at a minimum, be reported against a <a href="../resource/k8s.md#job">`k8s.job`</a>
     *   resource.
     */
-  object JobMaxParallelPods extends MetricSpec {
+  object JobMaxParallelPods extends MetricSpec.Unsealed {
 
     val name: String = "k8s.job.max_parallel_pods"
     val description: String = "The max desired number of pods the job should run at any given time"
@@ -696,7 +696,7 @@ object K8sExperimentalMetrics {
     *   JobStatus</a>. <p> This metric SHOULD, at a minimum, be reported against a <a
     *   href="../resource/k8s.md#job">`k8s.job`</a> resource.
     */
-  object JobSuccessfulPods extends MetricSpec {
+  object JobSuccessfulPods extends MetricSpec.Unsealed {
 
     val name: String = "k8s.job.successful_pods"
     val description: String = "The number of pods which reached phase Succeeded for a job"
@@ -735,7 +735,7 @@ object K8sExperimentalMetrics {
     *   <p> This metric SHOULD, at a minimum, be reported against a <a
     *   href="../resource/k8s.md#namespace">`k8s.namespace`</a> resource.
     */
-  object NamespacePhase extends MetricSpec {
+  object NamespacePhase extends MetricSpec.Unsealed {
 
     val name: String = "k8s.namespace.phase"
     val description: String = "Describes number of K8s namespaces that are currently in a given phase."
@@ -799,7 +799,7 @@ object K8sExperimentalMetrics {
     * @note
     *   <p> Total CPU time consumed by the specific Node on all available CPU cores
     */
-  object NodeCpuTime extends MetricSpec {
+  object NodeCpuTime extends MetricSpec.Unsealed {
 
     val name: String = "k8s.node.cpu.time"
     val description: String = "Total CPU time consumed"
@@ -837,7 +837,7 @@ object K8sExperimentalMetrics {
     * @note
     *   <p> CPU usage of the specific Node on all available CPU cores, averaged over the sample window
     */
-  object NodeCpuUsage extends MetricSpec {
+  object NodeCpuUsage extends MetricSpec.Unsealed {
 
     val name: String = "k8s.node.cpu.usage"
     val description: String = "Node's CPU usage, measured in cpus. Range from 0 to the number of allocatable CPUs"
@@ -875,7 +875,7 @@ object K8sExperimentalMetrics {
     * @note
     *   <p> Total memory usage of the Node
     */
-  object NodeMemoryUsage extends MetricSpec {
+  object NodeMemoryUsage extends MetricSpec.Unsealed {
 
     val name: String = "k8s.node.memory.usage"
     val description: String = "Memory usage of the Node"
@@ -910,7 +910,7 @@ object K8sExperimentalMetrics {
 
   /** Node network errors
     */
-  object NodeNetworkErrors extends MetricSpec {
+  object NodeNetworkErrors extends MetricSpec.Unsealed {
 
     val name: String = "k8s.node.network.errors"
     val description: String = "Node network errors"
@@ -979,7 +979,7 @@ object K8sExperimentalMetrics {
 
   /** Network bytes for the Node
     */
-  object NodeNetworkIo extends MetricSpec {
+  object NodeNetworkIo extends MetricSpec.Unsealed {
 
     val name: String = "k8s.node.network.io"
     val description: String = "Network bytes for the Node"
@@ -1053,7 +1053,7 @@ object K8sExperimentalMetrics {
     *   number with the highest precision available. The actual accuracy would depend on the instrumentation and
     *   operating system.
     */
-  object NodeUptime extends MetricSpec {
+  object NodeUptime extends MetricSpec.Unsealed {
 
     val name: String = "k8s.node.uptime"
     val description: String = "The time the Node has been running"
@@ -1091,7 +1091,7 @@ object K8sExperimentalMetrics {
     * @note
     *   <p> Total CPU time consumed by the specific Pod on all available CPU cores
     */
-  object PodCpuTime extends MetricSpec {
+  object PodCpuTime extends MetricSpec.Unsealed {
 
     val name: String = "k8s.pod.cpu.time"
     val description: String = "Total CPU time consumed"
@@ -1129,7 +1129,7 @@ object K8sExperimentalMetrics {
     * @note
     *   <p> CPU usage of the specific Pod on all available CPU cores, averaged over the sample window
     */
-  object PodCpuUsage extends MetricSpec {
+  object PodCpuUsage extends MetricSpec.Unsealed {
 
     val name: String = "k8s.pod.cpu.usage"
     val description: String = "Pod's CPU usage, measured in cpus. Range from 0 to the number of allocatable CPUs"
@@ -1167,7 +1167,7 @@ object K8sExperimentalMetrics {
     * @note
     *   <p> Total memory usage of the Pod
     */
-  object PodMemoryUsage extends MetricSpec {
+  object PodMemoryUsage extends MetricSpec.Unsealed {
 
     val name: String = "k8s.pod.memory.usage"
     val description: String = "Memory usage of the Pod"
@@ -1202,7 +1202,7 @@ object K8sExperimentalMetrics {
 
   /** Pod network errors
     */
-  object PodNetworkErrors extends MetricSpec {
+  object PodNetworkErrors extends MetricSpec.Unsealed {
 
     val name: String = "k8s.pod.network.errors"
     val description: String = "Pod network errors"
@@ -1271,7 +1271,7 @@ object K8sExperimentalMetrics {
 
   /** Network bytes for the Pod
     */
-  object PodNetworkIo extends MetricSpec {
+  object PodNetworkIo extends MetricSpec.Unsealed {
 
     val name: String = "k8s.pod.network.io"
     val description: String = "Network bytes for the Pod"
@@ -1345,7 +1345,7 @@ object K8sExperimentalMetrics {
     *   number with the highest precision available. The actual accuracy would depend on the instrumentation and
     *   operating system.
     */
-  object PodUptime extends MetricSpec {
+  object PodUptime extends MetricSpec.Unsealed {
 
     val name: String = "k8s.pod.uptime"
     val description: String = "The time the Pod has been running"
@@ -1386,7 +1386,7 @@ object K8sExperimentalMetrics {
     *   ReplicaSetStatus</a>. <p> This metric SHOULD, at a minimum, be reported against a <a
     *   href="../resource/k8s.md#replicaset">`k8s.replicaset`</a> resource.
     */
-  object ReplicasetAvailablePods extends MetricSpec {
+  object ReplicasetAvailablePods extends MetricSpec.Unsealed {
 
     val name: String = "k8s.replicaset.available_pods"
     val description: String =
@@ -1428,7 +1428,7 @@ object K8sExperimentalMetrics {
     *   ReplicaSetSpec</a>. <p> This metric SHOULD, at a minimum, be reported against a <a
     *   href="../resource/k8s.md#replicaset">`k8s.replicaset`</a> resource.
     */
-  object ReplicasetDesiredPods extends MetricSpec {
+  object ReplicasetDesiredPods extends MetricSpec.Unsealed {
 
     val name: String = "k8s.replicaset.desired_pods"
     val description: String = "Number of desired replica pods in this replicaset"
@@ -1470,7 +1470,7 @@ object K8sExperimentalMetrics {
     *   ReplicationControllerStatus</a> <p> This metric SHOULD, at a minimum, be reported against a <a
     *   href="../resource/k8s.md#replicationcontroller">`k8s.replicationcontroller`</a> resource.
     */
-  object ReplicationcontrollerAvailablePods extends MetricSpec {
+  object ReplicationcontrollerAvailablePods extends MetricSpec.Unsealed {
 
     val name: String = "k8s.replicationcontroller.available_pods"
     val description: String =
@@ -1512,7 +1512,7 @@ object K8sExperimentalMetrics {
     *   ReplicationControllerSpec</a> <p> This metric SHOULD, at a minimum, be reported against a <a
     *   href="../resource/k8s.md#replicationcontroller">`k8s.replicationcontroller`</a> resource.
     */
-  object ReplicationcontrollerDesiredPods extends MetricSpec {
+  object ReplicationcontrollerDesiredPods extends MetricSpec.Unsealed {
 
     val name: String = "k8s.replicationcontroller.desired_pods"
     val description: String = "Number of desired replica pods in this replication controller"
@@ -1554,7 +1554,7 @@ object K8sExperimentalMetrics {
     *   StatefulSetStatus</a>. <p> This metric SHOULD, at a minimum, be reported against a <a
     *   href="../resource/k8s.md#statefulset">`k8s.statefulset`</a> resource.
     */
-  object StatefulsetCurrentPods extends MetricSpec {
+  object StatefulsetCurrentPods extends MetricSpec.Unsealed {
 
     val name: String = "k8s.statefulset.current_pods"
     val description: String =
@@ -1596,7 +1596,7 @@ object K8sExperimentalMetrics {
     *   StatefulSetSpec</a>. <p> This metric SHOULD, at a minimum, be reported against a <a
     *   href="../resource/k8s.md#statefulset">`k8s.statefulset`</a> resource.
     */
-  object StatefulsetDesiredPods extends MetricSpec {
+  object StatefulsetDesiredPods extends MetricSpec.Unsealed {
 
     val name: String = "k8s.statefulset.desired_pods"
     val description: String = "Number of desired replica pods in this statefulset"
@@ -1637,7 +1637,7 @@ object K8sExperimentalMetrics {
     *   StatefulSetStatus</a>. <p> This metric SHOULD, at a minimum, be reported against a <a
     *   href="../resource/k8s.md#statefulset">`k8s.statefulset`</a> resource.
     */
-  object StatefulsetReadyPods extends MetricSpec {
+  object StatefulsetReadyPods extends MetricSpec.Unsealed {
 
     val name: String = "k8s.statefulset.ready_pods"
     val description: String = "The number of replica pods created for this statefulset with a Ready Condition"
@@ -1679,7 +1679,7 @@ object K8sExperimentalMetrics {
     *   StatefulSetStatus</a>. <p> This metric SHOULD, at a minimum, be reported against a <a
     *   href="../resource/k8s.md#statefulset">`k8s.statefulset`</a> resource.
     */
-  object StatefulsetUpdatedPods extends MetricSpec {
+  object StatefulsetUpdatedPods extends MetricSpec.Unsealed {
 
     val name: String = "k8s.statefulset.updated_pods"
     val description: String =

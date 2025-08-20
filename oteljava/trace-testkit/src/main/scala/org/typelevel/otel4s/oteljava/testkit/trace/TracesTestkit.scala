@@ -40,7 +40,7 @@ import org.typelevel.otel4s.trace.TracerProvider
 
 import scala.jdk.CollectionConverters._
 
-trait TracesTestkit[F[_]] {
+sealed trait TracesTestkit[F[_]] {
 
   /** The [[org.typelevel.otel4s.trace.TracerProvider TracerProvider]].
     */
@@ -75,6 +75,7 @@ trait TracesTestkit[F[_]] {
 }
 
 object TracesTestkit {
+  private[oteljava] trait Unsealed[F[_]] extends TracesTestkit[F]
 
   /** Creates [[TracesTestkit]] that keeps spans in-memory.
     *

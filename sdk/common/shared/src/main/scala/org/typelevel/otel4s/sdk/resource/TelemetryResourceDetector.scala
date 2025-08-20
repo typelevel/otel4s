@@ -33,7 +33,7 @@ import cats.effect.std.SystemProperties
   * @tparam F
   *   the higher-kinded type of a polymorphic effect
   */
-trait TelemetryResourceDetector[F[_]] {
+sealed trait TelemetryResourceDetector[F[_]] {
 
   /** The name of the detector.
     */
@@ -47,6 +47,7 @@ trait TelemetryResourceDetector[F[_]] {
 }
 
 object TelemetryResourceDetector {
+  private[sdk] trait Unsealed[F[_]] extends TelemetryResourceDetector[F]
 
   /** Returns the default set of resource detectors.
     *

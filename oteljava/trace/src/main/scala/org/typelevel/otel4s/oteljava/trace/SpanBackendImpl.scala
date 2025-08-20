@@ -34,7 +34,7 @@ import scala.concurrent.duration.FiniteDuration
 private[oteljava] class SpanBackendImpl[F[_]: Sync](
     val jSpan: JSpan,
     spanContext: SpanContext
-) extends Span.Backend[F] {
+) extends Span.Backend.Unsealed[F] {
   import SpanBackendImpl._
 
   val meta: InstrumentMeta.Static[F] = InstrumentMeta.Static.enabled

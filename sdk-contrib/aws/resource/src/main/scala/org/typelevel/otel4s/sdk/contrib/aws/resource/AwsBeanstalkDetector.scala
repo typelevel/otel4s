@@ -34,7 +34,7 @@ import org.typelevel.otel4s.semconv.attributes.ServiceAttributes
 
 private class AwsBeanstalkDetector[F[_]: Concurrent: Files: Console] private (
     path: Path
-) extends TelemetryResourceDetector[F] {
+) extends TelemetryResourceDetector.Unsealed[F] {
 
   import AwsBeanstalkDetector.Const
   import AwsBeanstalkDetector.Keys

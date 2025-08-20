@@ -42,7 +42,7 @@ object JvmMetrics {
 
   /** Number of classes currently loaded.
     */
-  object ClassCount extends MetricSpec {
+  object ClassCount extends MetricSpec.Unsealed {
 
     val name: String = "jvm.class.count"
     val description: String = "Number of classes currently loaded."
@@ -77,7 +77,7 @@ object JvmMetrics {
 
   /** Number of classes loaded since JVM start.
     */
-  object ClassLoaded extends MetricSpec {
+  object ClassLoaded extends MetricSpec.Unsealed {
 
     val name: String = "jvm.class.loaded"
     val description: String = "Number of classes loaded since JVM start."
@@ -112,7 +112,7 @@ object JvmMetrics {
 
   /** Number of classes unloaded since JVM start.
     */
-  object ClassUnloaded extends MetricSpec {
+  object ClassUnloaded extends MetricSpec.Unsealed {
 
     val name: String = "jvm.class.unloaded"
     val description: String = "Number of classes unloaded since JVM start."
@@ -147,7 +147,7 @@ object JvmMetrics {
 
   /** Number of processors available to the Java virtual machine.
     */
-  object CpuCount extends MetricSpec {
+  object CpuCount extends MetricSpec.Unsealed {
 
     val name: String = "jvm.cpu.count"
     val description: String = "Number of processors available to the Java virtual machine."
@@ -187,7 +187,7 @@ object JvmMetrics {
     *   measurement (unlike `system.cpu.utilization`). <a
     *   href="https://docs.oracle.com/en/java/javase/17/docs/api/jdk.management/com/sun/management/OperatingSystemMXBean.html#getProcessCpuLoad()">Reference</a>.
     */
-  object CpuRecentUtilization extends MetricSpec {
+  object CpuRecentUtilization extends MetricSpec.Unsealed {
 
     val name: String = "jvm.cpu.recent_utilization"
     val description: String = "Recent CPU utilization for the process as reported by the JVM."
@@ -222,7 +222,7 @@ object JvmMetrics {
 
   /** CPU time used by the process as reported by the JVM.
     */
-  object CpuTime extends MetricSpec {
+  object CpuTime extends MetricSpec.Unsealed {
 
     val name: String = "jvm.cpu.time"
     val description: String = "CPU time used by the process as reported by the JVM."
@@ -257,7 +257,7 @@ object JvmMetrics {
 
   /** Duration of JVM garbage collection actions.
     */
-  object GcDuration extends MetricSpec {
+  object GcDuration extends MetricSpec.Unsealed {
 
     val name: String = "jvm.gc.duration"
     val description: String = "Duration of JVM garbage collection actions."
@@ -320,7 +320,7 @@ object JvmMetrics {
 
   /** Measure of memory committed.
     */
-  object MemoryCommitted extends MetricSpec {
+  object MemoryCommitted extends MetricSpec.Unsealed {
 
     val name: String = "jvm.memory.committed"
     val description: String = "Measure of memory committed."
@@ -395,7 +395,7 @@ object JvmMetrics {
 
   /** Measure of max obtainable memory.
     */
-  object MemoryLimit extends MetricSpec {
+  object MemoryLimit extends MetricSpec.Unsealed {
 
     val name: String = "jvm.memory.limit"
     val description: String = "Measure of max obtainable memory."
@@ -470,7 +470,7 @@ object JvmMetrics {
 
   /** Measure of memory used.
     */
-  object MemoryUsed extends MetricSpec {
+  object MemoryUsed extends MetricSpec.Unsealed {
 
     val name: String = "jvm.memory.used"
     val description: String = "Measure of memory used."
@@ -545,7 +545,7 @@ object JvmMetrics {
 
   /** Measure of memory used, as measured after the most recent garbage collection event on this pool.
     */
-  object MemoryUsedAfterLastGc extends MetricSpec {
+  object MemoryUsedAfterLastGc extends MetricSpec.Unsealed {
 
     val name: String = "jvm.memory.used_after_last_gc"
     val description: String =
@@ -621,7 +621,7 @@ object JvmMetrics {
 
   /** Number of executing platform threads.
     */
-  object ThreadCount extends MetricSpec {
+  object ThreadCount extends MetricSpec.Unsealed {
 
     val name: String = "jvm.thread.count"
     val description: String = "Number of executing platform threads."

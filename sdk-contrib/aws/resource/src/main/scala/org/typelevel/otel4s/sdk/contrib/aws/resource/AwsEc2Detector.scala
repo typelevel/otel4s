@@ -46,7 +46,7 @@ import scala.concurrent.duration._
 private class AwsEc2Detector[F[_]: Async: Network: Console] private (
     baseUri: Uri,
     customClient: Option[Client[F]]
-) extends TelemetryResourceDetector[F] {
+) extends TelemetryResourceDetector.Unsealed[F] {
 
   import AwsEc2Detector.Const
   import AwsEc2Detector.Keys

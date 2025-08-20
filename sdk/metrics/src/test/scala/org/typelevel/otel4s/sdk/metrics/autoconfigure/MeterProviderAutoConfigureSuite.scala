@@ -66,7 +66,7 @@ class MeterProviderAutoConfigureSuite extends CatsEffectSuite {
     val config = Config.ofProps(Map("otel.metrics.exporter" -> "console"))
     val name = "CustomMetricProducer"
 
-    val producer = new MetricProducer[IO] {
+    val producer = new MetricProducer.Unsealed[IO] {
       def produce: IO[Vector[MetricData]] = IO.pure(Vector.empty)
       override def toString: String = name
     }
@@ -143,7 +143,7 @@ class MeterProviderAutoConfigureSuite extends CatsEffectSuite {
     }
 
   private def customExporter(exporterName: String): MetricExporter.Push[IO] =
-    new MetricExporter.Push[IO] {
+    new MetricExporter.Push.Unsealed[IO] {
       def name: String =
         exporterName
 

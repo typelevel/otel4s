@@ -18,7 +18,7 @@ package org.typelevel.otel4s.metrics
 
 import cats.effect.Resource
 
-trait ObservableCounter
+sealed trait ObservableCounter
 
 object ObservableCounter {
 
@@ -31,7 +31,7 @@ object ObservableCounter {
     *   the type of the values to record. The type must have an instance of [[MeasurementValue]]. [[scala.Long]] and
     *   [[scala.Double]] are supported out of the box.
     */
-  trait Builder[F[_], A] {
+  sealed trait Builder[F[_], A] {
 
     /** Sets the unit of measure for this instrument.
       *
@@ -94,6 +94,10 @@ object ObservableCounter {
     def createObserver: F[ObservableMeasurement[F, A]]
   }
 
-  val noop: ObservableCounter = new ObservableCounter {}
+  object Builder {
+    private[otel4s] trait Unsealed[F[_], A] extends Builder[F, A]
+  }
+
+  private[otel4s] val noop: ObservableCounter = new ObservableCounter {}
 
 }

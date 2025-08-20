@@ -35,7 +35,7 @@ import scala.concurrent.duration.FiniteDuration
   * @see
   *   [[https://opentelemetry.io/docs/specs/otel/logs/data-model/]]
   */
-trait LogRecordBuilder[F[_], Ctx] {
+sealed trait LogRecordBuilder[F[_], Ctx] {
 
   /** The instrument's metadata. Indicates whether instrumentation is enabled.
     */

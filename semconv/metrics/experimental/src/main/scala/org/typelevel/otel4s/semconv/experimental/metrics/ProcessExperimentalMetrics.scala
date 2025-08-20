@@ -42,7 +42,7 @@ object ProcessExperimentalMetrics {
 
   /** Number of times the process has been context switched.
     */
-  object ContextSwitches extends MetricSpec {
+  object ContextSwitches extends MetricSpec.Unsealed {
 
     val name: String = "process.context_switches"
     val description: String = "Number of times the process has been context switched."
@@ -96,7 +96,7 @@ object ProcessExperimentalMetrics {
 
   /** Total CPU seconds broken down by different states.
     */
-  object CpuTime extends MetricSpec {
+  object CpuTime extends MetricSpec.Unsealed {
 
     val name: String = "process.cpu.time"
     val description: String = "Total CPU seconds broken down by different states."
@@ -157,7 +157,7 @@ object ProcessExperimentalMetrics {
   /** Difference in process.cpu.time since the last measurement, divided by the elapsed time and number of CPUs
     * available to the process.
     */
-  object CpuUtilization extends MetricSpec {
+  object CpuUtilization extends MetricSpec.Unsealed {
 
     val name: String = "process.cpu.utilization"
     val description: String =
@@ -218,7 +218,7 @@ object ProcessExperimentalMetrics {
 
   /** Disk bytes transferred.
     */
-  object DiskIo extends MetricSpec {
+  object DiskIo extends MetricSpec.Unsealed {
 
     val name: String = "process.disk.io"
     val description: String = "Disk bytes transferred."
@@ -273,7 +273,7 @@ object ProcessExperimentalMetrics {
 
   /** The amount of physical memory in use.
     */
-  object MemoryUsage extends MetricSpec {
+  object MemoryUsage extends MetricSpec.Unsealed {
 
     val name: String = "process.memory.usage"
     val description: String = "The amount of physical memory in use."
@@ -308,7 +308,7 @@ object ProcessExperimentalMetrics {
 
   /** The amount of committed virtual memory.
     */
-  object MemoryVirtual extends MetricSpec {
+  object MemoryVirtual extends MetricSpec.Unsealed {
 
     val name: String = "process.memory.virtual"
     val description: String = "The amount of committed virtual memory."
@@ -343,7 +343,7 @@ object ProcessExperimentalMetrics {
 
   /** Network bytes transferred.
     */
-  object NetworkIo extends MetricSpec {
+  object NetworkIo extends MetricSpec.Unsealed {
 
     val name: String = "process.network.io"
     val description: String = "Network bytes transferred."
@@ -398,7 +398,7 @@ object ProcessExperimentalMetrics {
 
   /** Number of file descriptors in use by the process.
     */
-  object OpenFileDescriptorCount extends MetricSpec {
+  object OpenFileDescriptorCount extends MetricSpec.Unsealed {
 
     val name: String = "process.open_file_descriptor.count"
     val description: String = "Number of file descriptors in use by the process."
@@ -433,7 +433,7 @@ object ProcessExperimentalMetrics {
 
   /** Number of page faults the process has made.
     */
-  object PagingFaults extends MetricSpec {
+  object PagingFaults extends MetricSpec.Unsealed {
 
     val name: String = "process.paging.faults"
     val description: String = "Number of page faults the process has made."
@@ -488,7 +488,7 @@ object ProcessExperimentalMetrics {
 
   /** Process threads count.
     */
-  object ThreadCount extends MetricSpec {
+  object ThreadCount extends MetricSpec.Unsealed {
 
     val name: String = "process.thread.count"
     val description: String = "Process threads count."
@@ -528,7 +528,7 @@ object ProcessExperimentalMetrics {
     *   number with the highest precision available. The actual accuracy would depend on the instrumentation and
     *   operating system.
     */
-  object Uptime extends MetricSpec {
+  object Uptime extends MetricSpec.Unsealed {
 
     val name: String = "process.uptime"
     val description: String = "The time the process has been running."

@@ -118,7 +118,7 @@ class TelemetryResourceAutoConfigureSuite extends CatsEffectSuite {
     val customResource =
       TelemetryResource(Attributes(Attribute("custom", true)))
 
-    val detector = new TelemetryResourceDetector[IO] {
+    val detector = new TelemetryResourceDetector.Unsealed[IO] {
       def name: String = "custom"
       def detect: IO[Option[TelemetryResource]] = IO.pure(Some(customResource))
     }

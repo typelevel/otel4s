@@ -33,7 +33,7 @@ object DbMetrics {
     * @note
     *   <p> Batch operations SHOULD be recorded as a single operation.
     */
-  object ClientOperationDuration extends MetricSpec {
+  object ClientOperationDuration extends MetricSpec.Unsealed {
 
     val name: String = "db.client.operation.duration"
     val description: String = "Duration of database client operations."

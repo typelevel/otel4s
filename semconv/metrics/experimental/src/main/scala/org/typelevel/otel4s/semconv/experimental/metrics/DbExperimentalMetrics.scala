@@ -55,7 +55,7 @@ object DbExperimentalMetrics {
 
   /** The number of connections that are currently in state described by the `state` attribute
     */
-  object ClientConnectionCount extends MetricSpec {
+  object ClientConnectionCount extends MetricSpec.Unsealed {
 
     val name: String = "db.client.connection.count"
     val description: String = "The number of connections that are currently in state described by the `state` attribute"
@@ -127,7 +127,7 @@ object DbExperimentalMetrics {
 
   /** The time it took to create a new connection
     */
-  object ClientConnectionCreateTime extends MetricSpec {
+  object ClientConnectionCreateTime extends MetricSpec.Unsealed {
 
     val name: String = "db.client.connection.create_time"
     val description: String = "The time it took to create a new connection"
@@ -171,7 +171,7 @@ object DbExperimentalMetrics {
 
   /** The maximum number of idle open connections allowed
     */
-  object ClientConnectionIdleMax extends MetricSpec {
+  object ClientConnectionIdleMax extends MetricSpec.Unsealed {
 
     val name: String = "db.client.connection.idle.max"
     val description: String = "The maximum number of idle open connections allowed"
@@ -230,7 +230,7 @@ object DbExperimentalMetrics {
 
   /** The minimum number of idle open connections allowed
     */
-  object ClientConnectionIdleMin extends MetricSpec {
+  object ClientConnectionIdleMin extends MetricSpec.Unsealed {
 
     val name: String = "db.client.connection.idle.min"
     val description: String = "The minimum number of idle open connections allowed"
@@ -289,7 +289,7 @@ object DbExperimentalMetrics {
 
   /** The maximum number of open connections allowed
     */
-  object ClientConnectionMax extends MetricSpec {
+  object ClientConnectionMax extends MetricSpec.Unsealed {
 
     val name: String = "db.client.connection.max"
     val description: String = "The maximum number of open connections allowed"
@@ -348,7 +348,7 @@ object DbExperimentalMetrics {
 
   /** The number of current pending requests for an open connection
     */
-  object ClientConnectionPendingRequests extends MetricSpec {
+  object ClientConnectionPendingRequests extends MetricSpec.Unsealed {
 
     val name: String = "db.client.connection.pending_requests"
     val description: String = "The number of current pending requests for an open connection"
@@ -407,7 +407,7 @@ object DbExperimentalMetrics {
 
   /** The number of connection timeouts that have occurred trying to obtain a connection from the pool
     */
-  object ClientConnectionTimeouts extends MetricSpec {
+  object ClientConnectionTimeouts extends MetricSpec.Unsealed {
 
     val name: String = "db.client.connection.timeouts"
     val description: String =
@@ -467,7 +467,7 @@ object DbExperimentalMetrics {
 
   /** The time between borrowing a connection and returning it to the pool
     */
-  object ClientConnectionUseTime extends MetricSpec {
+  object ClientConnectionUseTime extends MetricSpec.Unsealed {
 
     val name: String = "db.client.connection.use_time"
     val description: String = "The time between borrowing a connection and returning it to the pool"
@@ -511,7 +511,7 @@ object DbExperimentalMetrics {
 
   /** The time it took to obtain an open connection from the pool
     */
-  object ClientConnectionWaitTime extends MetricSpec {
+  object ClientConnectionWaitTime extends MetricSpec.Unsealed {
 
     val name: String = "db.client.connection.wait_time"
     val description: String = "The time it took to obtain an open connection from the pool"
@@ -556,7 +556,7 @@ object DbExperimentalMetrics {
   /** Deprecated, use `db.client.connection.create_time` instead. Note: the unit also changed from `ms` to `s`.
     */
   @deprecated("Replaced by `db.client.connection.create_time` with unit `s`.", "")
-  object ClientConnectionsCreateTime extends MetricSpec {
+  object ClientConnectionsCreateTime extends MetricSpec.Unsealed {
 
     val name: String = "db.client.connections.create_time"
     val description: String =
@@ -599,7 +599,7 @@ object DbExperimentalMetrics {
   /** Deprecated, use `db.client.connection.idle.max` instead.
     */
   @deprecated("Replaced by `db.client.connection.idle.max`.", "")
-  object ClientConnectionsIdleMax extends MetricSpec {
+  object ClientConnectionsIdleMax extends MetricSpec.Unsealed {
 
     val name: String = "db.client.connections.idle.max"
     val description: String = "Deprecated, use `db.client.connection.idle.max` instead."
@@ -656,7 +656,7 @@ object DbExperimentalMetrics {
   /** Deprecated, use `db.client.connection.idle.min` instead.
     */
   @deprecated("Replaced by `db.client.connection.idle.min`.", "")
-  object ClientConnectionsIdleMin extends MetricSpec {
+  object ClientConnectionsIdleMin extends MetricSpec.Unsealed {
 
     val name: String = "db.client.connections.idle.min"
     val description: String = "Deprecated, use `db.client.connection.idle.min` instead."
@@ -713,7 +713,7 @@ object DbExperimentalMetrics {
   /** Deprecated, use `db.client.connection.max` instead.
     */
   @deprecated("Replaced by `db.client.connection.max`.", "")
-  object ClientConnectionsMax extends MetricSpec {
+  object ClientConnectionsMax extends MetricSpec.Unsealed {
 
     val name: String = "db.client.connections.max"
     val description: String = "Deprecated, use `db.client.connection.max` instead."
@@ -770,7 +770,7 @@ object DbExperimentalMetrics {
   /** Deprecated, use `db.client.connection.pending_requests` instead.
     */
   @deprecated("Replaced by `db.client.connection.pending_requests`.", "")
-  object ClientConnectionsPendingRequests extends MetricSpec {
+  object ClientConnectionsPendingRequests extends MetricSpec.Unsealed {
 
     val name: String = "db.client.connections.pending_requests"
     val description: String = "Deprecated, use `db.client.connection.pending_requests` instead."
@@ -827,7 +827,7 @@ object DbExperimentalMetrics {
   /** Deprecated, use `db.client.connection.timeouts` instead.
     */
   @deprecated("Replaced by `db.client.connection.timeouts`.", "")
-  object ClientConnectionsTimeouts extends MetricSpec {
+  object ClientConnectionsTimeouts extends MetricSpec.Unsealed {
 
     val name: String = "db.client.connections.timeouts"
     val description: String = "Deprecated, use `db.client.connection.timeouts` instead."
@@ -884,7 +884,7 @@ object DbExperimentalMetrics {
   /** Deprecated, use `db.client.connection.count` instead.
     */
   @deprecated("Replaced by `db.client.connection.count`.", "")
-  object ClientConnectionsUsage extends MetricSpec {
+  object ClientConnectionsUsage extends MetricSpec.Unsealed {
 
     val name: String = "db.client.connections.usage"
     val description: String = "Deprecated, use `db.client.connection.count` instead."
@@ -955,7 +955,7 @@ object DbExperimentalMetrics {
   /** Deprecated, use `db.client.connection.use_time` instead. Note: the unit also changed from `ms` to `s`.
     */
   @deprecated("Replaced by `db.client.connection.use_time` with unit `s`.", "")
-  object ClientConnectionsUseTime extends MetricSpec {
+  object ClientConnectionsUseTime extends MetricSpec.Unsealed {
 
     val name: String = "db.client.connections.use_time"
     val description: String =
@@ -998,7 +998,7 @@ object DbExperimentalMetrics {
   /** Deprecated, use `db.client.connection.wait_time` instead. Note: the unit also changed from `ms` to `s`.
     */
   @deprecated("Replaced by `db.client.connection.wait_time` with unit `s`.", "")
-  object ClientConnectionsWaitTime extends MetricSpec {
+  object ClientConnectionsWaitTime extends MetricSpec.Unsealed {
 
     val name: String = "db.client.connections.wait_time"
     val description: String =
@@ -1041,7 +1041,7 @@ object DbExperimentalMetrics {
   /** Deprecated, use `azure.cosmosdb.client.active_instance.count` instead.
     */
   @deprecated("Replaced by `azure.cosmosdb.client.active_instance.count`.", "")
-  object ClientCosmosdbActiveInstanceCount extends MetricSpec {
+  object ClientCosmosdbActiveInstanceCount extends MetricSpec.Unsealed {
 
     val name: String = "db.client.cosmosdb.active_instance.count"
     val description: String = "Deprecated, use `azure.cosmosdb.client.active_instance.count` instead."
@@ -1124,7 +1124,7 @@ object DbExperimentalMetrics {
   /** Deprecated, use `azure.cosmosdb.client.operation.request_charge` instead.
     */
   @deprecated("Replaced by `azure.cosmosdb.client.operation.request_charge`.", "")
-  object ClientCosmosdbOperationRequestCharge extends MetricSpec {
+  object ClientCosmosdbOperationRequestCharge extends MetricSpec.Unsealed {
 
     val name: String = "db.client.cosmosdb.operation.request_charge"
     val description: String = "Deprecated, use `azure.cosmosdb.client.operation.request_charge` instead."
@@ -1263,7 +1263,7 @@ object DbExperimentalMetrics {
     *   <p> Batch operations SHOULD be recorded as a single operation.
     */
   @deprecated("Use stable `org.typelevel.otel4s.semconv.metrics.DbMetrics.ClientOperationDuration` instead.", "")
-  object ClientOperationDuration extends MetricSpec {
+  object ClientOperationDuration extends MetricSpec.Unsealed {
 
     val name: String = "db.client.operation.duration"
     val description: String = "Duration of database client operations."
@@ -1562,7 +1562,7 @@ object DbExperimentalMetrics {
 
   /** The actual number of records returned by the database operation.
     */
-  object ClientResponseReturnedRows extends MetricSpec {
+  object ClientResponseReturnedRows extends MetricSpec.Unsealed {
 
     val name: String = "db.client.response.returned_rows"
     val description: String = "The actual number of records returned by the database operation."

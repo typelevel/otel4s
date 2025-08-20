@@ -40,7 +40,7 @@ object HwExperimentalMetrics {
 
   /** Energy consumed by the component
     */
-  object Energy extends MetricSpec {
+  object Energy extends MetricSpec.Unsealed {
 
     val name: String = "hw.energy"
     val description: String = "Energy consumed by the component"
@@ -139,7 +139,7 @@ object HwExperimentalMetrics {
 
   /** Number of errors encountered by the component
     */
-  object Errors extends MetricSpec {
+  object Errors extends MetricSpec.Unsealed {
 
     val name: String = "hw.errors"
     val description: String = "Number of errors encountered by the component"
@@ -259,7 +259,7 @@ object HwExperimentalMetrics {
 
   /** Ambient (external) temperature of the physical host
     */
-  object HostAmbientTemperature extends MetricSpec {
+  object HostAmbientTemperature extends MetricSpec.Unsealed {
 
     val name: String = "hw.host.ambient_temperature"
     val description: String = "Ambient (external) temperature of the physical host"
@@ -346,7 +346,7 @@ object HwExperimentalMetrics {
     *   metrics <strong>only</strong>, instead of the generic `hw.energy` and `hw.power` described in the previous
     *   section, to prevent summing up overlapping values.
     */
-  object HostEnergy extends MetricSpec {
+  object HostEnergy extends MetricSpec.Unsealed {
 
     val name: String = "hw.host.energy"
     val description: String = "Total energy consumed by the entire physical host, in joules"
@@ -429,7 +429,7 @@ object HwExperimentalMetrics {
   /** By how many degrees Celsius the temperature of the physical host can be increased, before reaching a warning
     * threshold on one of the internal sensors
     */
-  object HostHeatingMargin extends MetricSpec {
+  object HostHeatingMargin extends MetricSpec.Unsealed {
 
     val name: String = "hw.host.heating_margin"
     val description: String =
@@ -517,7 +517,7 @@ object HwExperimentalMetrics {
     *   metrics <strong>only</strong>, instead of the generic `hw.energy` and `hw.power` described in the previous
     *   section, to prevent summing up overlapping values.
     */
-  object HostPower extends MetricSpec {
+  object HostPower extends MetricSpec.Unsealed {
 
     val name: String = "hw.host.power"
     val description: String =
@@ -603,7 +603,7 @@ object HwExperimentalMetrics {
     * @note
     *   <p> It is recommended to report `hw.energy` instead of `hw.power` when possible.
     */
-  object Power extends MetricSpec {
+  object Power extends MetricSpec.Unsealed {
 
     val name: String = "hw.power"
     val description: String = "Instantaneous power consumed by the component"
@@ -709,7 +709,7 @@ object HwExperimentalMetrics {
     *   OpenTelemetry. This planned change is not expected to have any consequence on the way users query their
     *   timeseries backend to retrieve the values of `hw.status` over time.
     */
-  object Status extends MetricSpec {
+  object Status extends MetricSpec.Unsealed {
 
     val name: String = "hw.status"
     val description: String = "Operational status: `1` (true) or `0` (false) for each of the possible states"

@@ -38,7 +38,7 @@ object CpythonExperimentalMetrics {
     *   <p> This metric reports data from <a
     *   href="https://docs.python.org/3/library/gc.html#gc.get_stats">`gc.stats()`</a>.
     */
-  object GcCollectedObjects extends MetricSpec {
+  object GcCollectedObjects extends MetricSpec.Unsealed {
 
     val name: String = "cpython.gc.collected_objects"
     val description: String = "The total number of objects collected inside a generation since interpreter start."
@@ -99,7 +99,7 @@ object CpythonExperimentalMetrics {
     *   <p> This metric reports data from <a
     *   href="https://docs.python.org/3/library/gc.html#gc.get_stats">`gc.stats()`</a>.
     */
-  object GcCollections extends MetricSpec {
+  object GcCollections extends MetricSpec.Unsealed {
 
     val name: String = "cpython.gc.collections"
     val description: String = "The number of times a generation was collected since interpreter start."
@@ -160,7 +160,7 @@ object CpythonExperimentalMetrics {
     *   <p> This metric reports data from <a
     *   href="https://docs.python.org/3/library/gc.html#gc.get_stats">`gc.stats()`</a>.
     */
-  object GcUncollectableObjects extends MetricSpec {
+  object GcUncollectableObjects extends MetricSpec.Unsealed {
 
     val name: String = "cpython.gc.uncollectable_objects"
     val description: String =

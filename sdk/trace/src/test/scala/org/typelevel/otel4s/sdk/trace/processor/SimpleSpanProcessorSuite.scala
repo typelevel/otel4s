@@ -112,7 +112,7 @@ class SimpleSpanProcessorSuite extends CatsEffectSuite with ScalaCheckEffectSuit
   }
 
   private def constSpanRef(data: SpanData): SpanRef[IO] = {
-    new SpanRef[IO] with Span.Backend[IO] {
+    new SpanRef.Unsealed[IO] with Span.Backend.Unsealed[IO] {
       private val noopBackend = Span.Backend.noop[IO]
 
       def kind: SpanKind =
@@ -202,7 +202,7 @@ class SimpleSpanProcessorSuite extends CatsEffectSuite with ScalaCheckEffectSuit
   private class FailingExporter(
       exporterName: String,
       onExport: Throwable
-  ) extends SpanExporter[IO] {
+  ) extends SpanExporter.Unsealed[IO] {
     def name: String = exporterName
 
     def exportSpans[G[_]: Foldable](spans: G[SpanData]): IO[Unit] =

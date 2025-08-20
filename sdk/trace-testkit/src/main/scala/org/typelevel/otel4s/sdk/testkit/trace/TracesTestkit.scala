@@ -33,7 +33,7 @@ import org.typelevel.otel4s.sdk.trace.processor.SimpleSpanProcessor
 import org.typelevel.otel4s.sdk.trace.processor.SpanProcessor
 import org.typelevel.otel4s.trace.TracerProvider
 
-trait TracesTestkit[F[_]] {
+sealed trait TracesTestkit[F[_]] {
 
   /** The [[org.typelevel.otel4s.trace.TracerProvider TracerProvider]].
     */
@@ -48,6 +48,7 @@ trait TracesTestkit[F[_]] {
 }
 
 object TracesTestkit {
+  private[sdk] trait Unsealed[F[_]] extends TracesTestkit[F]
 
   /** Creates [[TracesTestkit]] that keeps spans in-memory.
     *

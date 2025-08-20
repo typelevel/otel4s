@@ -42,7 +42,7 @@ private class SdkTracerProvider[F[_]: Temporal: Parallel: Console](
     spanProcessors: List[SpanProcessor[F]],
     traceScope: TraceScope[F, Context],
     storage: SpanStorage[F]
-) extends TracerProvider[F] {
+) extends TracerProvider.Unsealed[F] {
 
   private val sharedState: TracerSharedState[F] =
     TracerSharedState(

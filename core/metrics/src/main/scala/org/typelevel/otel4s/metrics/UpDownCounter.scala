@@ -36,9 +36,10 @@ import scala.collection.immutable
   *   the type of the values to record. The type must have an instance of [[MeasurementValue]]. [[scala.Long]] and
   *   [[scala.Double]] are supported out of the box.
   */
-trait UpDownCounter[F[_], A] extends UpDownCounterMacro[F, A]
+sealed trait UpDownCounter[F[_], A] extends UpDownCounterMacro[F, A]
 
 object UpDownCounter {
+  private[otel4s] trait Unsealed[F[_], A] extends UpDownCounter[F, A]
 
   /** A builder of [[UpDownCounter]].
     *
@@ -49,7 +50,7 @@ object UpDownCounter {
     *   the type of the values to record. The type must have an instance of [[MeasurementValue]]. [[scala.Long]] and
     *   [[scala.Double]] are supported out of the box.
     */
-  trait Builder[F[_], A] {
+  sealed trait Builder[F[_], A] {
 
     /** Sets the unit of measure for this counter.
       *
@@ -76,7 +77,11 @@ object UpDownCounter {
     def create: F[UpDownCounter[F, A]]
   }
 
-  trait Backend[F[_], A] {
+  object Builder {
+    private[otel4s] trait Unsealed[F[_], A] extends Builder[F, A]
+  }
+
+  sealed trait Backend[F[_], A] {
     def meta: InstrumentMeta.Dynamic[F]
 
     /** Records a value with a set of attributes.
@@ -102,6 +107,10 @@ object UpDownCounter {
       *   the set of attributes to associate with the value
       */
     def dec(attributes: immutable.Iterable[Attribute[_]]): F[Unit]
+  }
+
+  object Backend {
+    private[otel4s] trait Unsealed[F[_], A] extends Backend[F, A]
   }
 
   def noop[F[_], A](implicit F: Applicative[F]): UpDownCounter[F, A] =

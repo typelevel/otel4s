@@ -30,7 +30,7 @@ import org.typelevel.otel4s.sdk.metrics.internal.SdkObservableMeasurement
 
 private class SdkBatchCallback[F[_]: MonadCancelThrow: Console](
     sharedState: MeterSharedState[F]
-) extends BatchCallback[F] {
+) extends BatchCallback.Unsealed[F] {
 
   def apply(
       callback: F[Unit],

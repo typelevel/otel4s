@@ -51,7 +51,7 @@ object VaultContext {
   final class Key[A] private (
       val name: String,
       private[VaultContext] val underlying: VaultKey[A]
-  ) extends context.Key[A]
+  ) extends context.Key.Unsealed[A]
 
   object Key {
 
@@ -60,7 +60,7 @@ object VaultContext {
       VaultKey.newKey[F, A].map(new Key[A](name, _))
 
     implicit def provider[F[_]: Functor: Unique]: context.Key.Provider[F, Key] =
-      new context.Key.Provider[F, Key] {
+      new context.Key.Provider.Unsealed[F, Key] {
         def uniqueKey[A](name: String): F[Key[A]] = unique(name)
       }
   }
@@ -68,7 +68,7 @@ object VaultContext {
   /** The root [[`VaultContext`]], from which all other contexts are derived. */
   val root: VaultContext = new VaultContext(Vault.empty)
 
-  implicit object Contextual extends context.Contextual[VaultContext] {
+  implicit object Contextual extends context.Contextual.Unsealed[VaultContext] {
     type Key[A] = VaultContext.Key[A]
 
     def get[A](ctx: VaultContext)(key: Key[A]): Option[A] =

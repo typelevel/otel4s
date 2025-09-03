@@ -32,12 +32,12 @@ object AzureExperimentalMetrics {
     CosmosdbClientOperationRequestCharge,
   )
 
-  /** Number of active client instances
+  /** Number of active client instances.
     */
   object CosmosdbClientActiveInstanceCount extends MetricSpec.Unsealed {
 
     val name: String = "azure.cosmosdb.client.active_instance.count"
-    val description: String = "Number of active client instances"
+    val description: String = "Number of active client instances."
     val unit: String = "{instance}"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
@@ -114,13 +114,13 @@ object AzureExperimentalMetrics {
 
   }
 
-  /** <a href="https://learn.microsoft.com/azure/cosmos-db/request-units">Request units</a> consumed by the operation
+  /** <a href="https://learn.microsoft.com/azure/cosmos-db/request-units">Request units</a> consumed by the operation.
     */
   object CosmosdbClientOperationRequestCharge extends MetricSpec.Unsealed {
 
     val name: String = "azure.cosmosdb.client.operation.request_charge"
     val description: String =
-      "[Request units](https://learn.microsoft.com/azure/cosmos-db/request-units) consumed by the operation"
+      "[Request units](https://learn.microsoft.com/azure/cosmos-db/request-units) consumed by the operation."
     val unit: String = "{request_unit}"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs

@@ -68,8 +68,8 @@ object ProcessExperimentalAttributes {
   val ProcessCreationTime: AttributeKey[String] =
     AttributeKey("process.creation.time")
 
-  /** Process environment variables, <key> being the environment variable name, the value being the environment variable
-    * value.
+  /** Process environment variables, `<key>` being the environment variable name, the value being the environment
+    * variable value.
     *
     * @note
     *   <p> Examples: <ul> <li>an environment variable `USER` with value `"ubuntu"` SHOULD be recorded as the

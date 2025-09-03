@@ -131,8 +131,25 @@ object ContainerExperimentalAttributes {
 
   /** The container runtime managing this container.
     */
+  @deprecated("Replaced by `container.runtime.name`.", "")
   val ContainerRuntime: AttributeKey[String] =
     AttributeKey("container.runtime")
+
+  /** A description about the runtime which could include, for example details about the CRI/API version being used or
+    * other customisations.
+    */
+  val ContainerRuntimeDescription: AttributeKey[String] =
+    AttributeKey("container.runtime.description")
+
+  /** The container runtime managing this container.
+    */
+  val ContainerRuntimeName: AttributeKey[String] =
+    AttributeKey("container.runtime.name")
+
+  /** The version of the runtime of this process, as returned by the runtime without modification.
+    */
+  val ContainerRuntimeVersion: AttributeKey[String] =
+    AttributeKey("container.runtime.version")
 
   /** Values for [[ContainerCpuState]].
     */

@@ -93,9 +93,13 @@ object OsExperimentalAttributes {
       */
     case object Solaris extends OsTypeValue("solaris")
 
-    /** IBM z/OS
+    /** Deprecated. Use `zos` instead.
       */
     case object ZOs extends OsTypeValue("z_os")
+
+    /** IBM z/OS
+      */
+    case object Zos extends OsTypeValue("zos")
   }
 
 }

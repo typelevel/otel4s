@@ -418,6 +418,10 @@ object MessagingExperimentalAttributes {
       */
     case object Activemq extends MessagingSystemValue("activemq")
 
+    /** Amazon Simple Notification Service (SNS)
+      */
+    case object AwsSns extends MessagingSystemValue("aws.sns")
+
     /** Amazon Simple Queue Service (SQS)
       */
     case object AwsSqs extends MessagingSystemValue("aws_sqs")

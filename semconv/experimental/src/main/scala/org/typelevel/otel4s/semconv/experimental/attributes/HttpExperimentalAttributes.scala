@@ -195,7 +195,7 @@ object HttpExperimentalAttributes {
 
   /** Deprecated, use `http.response.header.content-length` instead.
     */
-  @deprecated("hp.response.header.content-length", "")
+  @deprecated("Replaced by `http.response.header.content-length`.", "")
   val HttpResponseContentLength: AttributeKey[Long] =
     AttributeKey("http.response_content_length")
 

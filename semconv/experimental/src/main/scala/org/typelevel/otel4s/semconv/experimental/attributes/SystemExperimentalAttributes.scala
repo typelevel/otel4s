@@ -184,7 +184,7 @@ object SystemExperimentalAttributes {
   abstract class SystemMemoryStateValue(val value: String)
   object SystemMemoryStateValue {
 
-    /** used.
+    /** Actual used virtual memory in bytes.
       */
     case object Used extends SystemMemoryStateValue("used")
 

@@ -19,21 +19,17 @@ package semconv
 package experimental.attributes
 
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/attributes/SemanticAttributes.scala.j2
-object DnsExperimentalAttributes {
+object ZosExperimentalAttributes {
 
-  /** The list of IPv4 or IPv6 addresses resolved during DNS lookup.
+  /** The System Management Facility (SMF) Identifier uniquely identified a z/OS system within a SYSPLEX or mainframe
+    * environment and is used for system and performance analysis.
     */
-  val DnsAnswers: AttributeKey[Seq[String]] =
-    AttributeKey("dns.answers")
+  val ZosSmfId: AttributeKey[String] =
+    AttributeKey("zos.smf.id")
 
-  /** The name being queried.
-    *
-    * @note
-    *   <p> If the name field contains non-printable characters (below 32 or above 126), those characters should be
-    *   represented as escaped base 10 integers (\DDD). Back slashes and quotes should be escaped. Tabs, carriage
-    *   returns, and line feeds should be converted to \t, \r, and \n respectively.
+  /** The name of the SYSPLEX to which the z/OS system belongs too.
     */
-  val DnsQuestionName: AttributeKey[String] =
-    AttributeKey("dns.question.name")
+  val ZosSysplexName: AttributeKey[String] =
+    AttributeKey("zos.sysplex.name")
 
 }

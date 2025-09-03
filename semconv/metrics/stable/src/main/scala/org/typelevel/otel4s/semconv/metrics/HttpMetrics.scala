@@ -147,12 +147,14 @@ object HttpMetrics {
           Stability.stable
         )
 
-      /** Host identifier of the <a href="https://www.rfc-editor.org/rfc/rfc9110.html#name-uri-origin">"URI origin"</a>
-        * HTTP request is sent to.
+      /** Server domain name if available without reverse DNS lookup; otherwise, IP address or Unix domain socket name.
         *
         * @note
-        *   <p> If an HTTP client request is explicitly made to an IP address, e.g. `http://x.x.x.x:8080`, then
-        *   `server.address` SHOULD be the IP address `x.x.x.x`. A DNS lookup SHOULD NOT be used.
+        *   <p> In HTTP/1.1, when the <a href="https://www.rfc-editor.org/rfc/rfc9112.html#name-request-target">request
+        *   target</a> is passed in its <a
+        *   href="https://www.rfc-editor.org/rfc/rfc9112.html#section-3.2.2">absolute-form</a>, the `server.address`
+        *   SHOULD match the host component of the request target. <p> In all other cases, `server.address` SHOULD match
+        *   the host component of the `Host` header in HTTP/1.1 or the `:authority` pseudo-header in HTTP/2 and HTTP/3.
         */
       val serverAddress: AttributeSpec[String] =
         AttributeSpec(
@@ -166,12 +168,14 @@ object HttpMetrics {
           Stability.stable
         )
 
-      /** Port identifier of the <a href="https://www.rfc-editor.org/rfc/rfc9110.html#name-uri-origin">"URI origin"</a>
-        * HTTP request is sent to.
+      /** Server port number.
         *
         * @note
-        *   <p> When observed from the client side, and when communicating through an intermediary, `server.port` SHOULD
-        *   represent the server port behind any intermediaries, for example proxies, if it's available.
+        *   <p> In the case of HTTP/1.1, when the <a
+        *   href="https://www.rfc-editor.org/rfc/rfc9112.html#name-request-target">request target</a> is passed in its
+        *   <a href="https://www.rfc-editor.org/rfc/rfc9112.html#section-3.2.2">absolute-form</a>, the `server.port`
+        *   SHOULD match the port component of the request target. <p> In all other cases, `server.port` SHOULD match
+        *   the port component of the `Host` header in HTTP/1.1 or the `:authority` pseudo-header in HTTP/2 and HTTP/3.
         */
       val serverPort: AttributeSpec[Long] =
         AttributeSpec(

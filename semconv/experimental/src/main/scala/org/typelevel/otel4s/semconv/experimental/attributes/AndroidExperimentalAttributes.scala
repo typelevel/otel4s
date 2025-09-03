@@ -32,15 +32,16 @@ object AndroidExperimentalAttributes {
     AttributeKey("android.app.state")
 
   /** Uniquely identifies the framework API revision offered by a version (`os.version`) of the android operating
-    * system. More information can be found <a
-    * href="https://developer.android.com/guide/topics/manifest/uses-sdk-element#ApiLevels">here</a>.
+    * system. More information can be found in the <a
+    * href="https://developer.android.com/guide/topics/manifest/uses-sdk-element#ApiLevels">Android API levels
+    * documentation</a>.
     */
   val AndroidOsApiLevel: AttributeKey[String] =
     AttributeKey("android.os.api_level")
 
-  /** Deprecated. Use `android.app.state` body field instead.
+  /** Deprecated. Use `android.app.state` attribute instead.
     */
-  @deprecated("Use `android.app.state` body field instead.", "")
+  @deprecated("Replaced by `android.app.state`.", "")
   val AndroidState: AttributeKey[String] =
     AttributeKey("android.state")
 
@@ -67,7 +68,7 @@ object AndroidExperimentalAttributes {
 
   /** Values for [[AndroidState]].
     */
-  @deprecated("Use `android.app.state` body field instead.", "")
+  @deprecated("Replaced by `android.app.state`.", "")
   abstract class AndroidStateValue(val value: String)
   @annotation.nowarn("cat=deprecation")
   object AndroidStateValue {

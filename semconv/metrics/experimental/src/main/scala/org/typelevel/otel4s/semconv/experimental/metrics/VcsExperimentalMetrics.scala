@@ -40,13 +40,13 @@ object VcsExperimentalMetrics {
   )
 
   /** The number of changes (pull requests/merge requests/changelists) in a repository, categorized by their state (e.g.
-    * open or merged)
+    * open or merged).
     */
   object ChangeCount extends MetricSpec.Unsealed {
 
     val name: String = "vcs.change.count"
     val description: String =
-      "The number of changes (pull requests/merge requests/changelists) in a repository, categorized by their state (e.g. open or merged)"
+      "The number of changes (pull requests/merge requests/changelists) in a repository, categorized by their state (e.g. open or merged)."
     val unit: String = "{change}"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
@@ -726,12 +726,12 @@ object VcsExperimentalMetrics {
 
   }
 
-  /** The number of unique contributors to a repository
+  /** The number of unique contributors to a repository.
     */
   object ContributorCount extends MetricSpec.Unsealed {
 
     val name: String = "vcs.contributor.count"
-    val description: String = "The number of unique contributors to a repository"
+    val description: String = "The number of unique contributors to a repository."
     val unit: String = "{contributor}"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
@@ -1183,7 +1183,8 @@ object VcsExperimentalMetrics {
 
   }
 
-  /** The number of revisions (commits) a ref (branch) is ahead/behind the branch from the `vcs.ref.base.name` attribute
+  /** The number of revisions (commits) a ref (branch) is ahead/behind the branch from the `vcs.ref.base.name`
+    * attribute.
     *
     * @note
     *   <p> This metric should be reported for each `vcs.revision_delta.direction` value. For example if branch `a` is 3
@@ -1194,7 +1195,7 @@ object VcsExperimentalMetrics {
 
     val name: String = "vcs.ref.revisions_delta"
     val description: String =
-      "The number of revisions (commits) a ref (branch) is ahead/behind the branch from the `vcs.ref.base.name` attribute"
+      "The number of revisions (commits) a ref (branch) is ahead/behind the branch from the `vcs.ref.base.name` attribute."
     val unit: String = "{revision}"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
@@ -1402,13 +1403,13 @@ object VcsExperimentalMetrics {
   }
 
   /** Time a ref (branch) created from the default branch (trunk) has existed. The `ref.type` attribute will always be
-    * `branch`
+    * `branch`.
     */
   object RefTime extends MetricSpec.Unsealed {
 
     val name: String = "vcs.ref.time"
     val description: String =
-      "Time a ref (branch) created from the default branch (trunk) has existed. The `ref.type` attribute will always be `branch`"
+      "Time a ref (branch) created from the default branch (trunk) has existed. The `ref.type` attribute will always be `branch`."
     val unit: String = "s"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs

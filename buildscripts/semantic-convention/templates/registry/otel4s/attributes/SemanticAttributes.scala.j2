@@ -67,7 +67,7 @@ object {{ object_name }} {
   @annotation.nowarn("cat=deprecation")
   {%- endif  %}
   object {{ class_name }} {
-    {%- for member in attribute.type.members %}
+    {%- for member in attribute.type.members | rejectattr("id", "in", params.excluded_enums) %}
     {{ [member.brief or (member.id ~ '.')] | comment(indent=4) }}
     case object {{ member.id | pascal_case }} extends {{class_name}}({{ member.value | print_member_value }})
     {%- endfor  %}

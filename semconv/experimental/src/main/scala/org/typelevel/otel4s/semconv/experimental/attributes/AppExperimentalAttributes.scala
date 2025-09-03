@@ -21,6 +21,11 @@ package experimental.attributes
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/attributes/SemanticAttributes.scala.j2
 object AppExperimentalAttributes {
 
+  /** Unique identifier for a particular build or compilation of the application.
+    */
+  val AppBuildId: AttributeKey[String] =
+    AttributeKey("app.build_id")
+
   /** A unique identifier representing the installation of an application on a specific device
     *
     * @note
@@ -37,11 +42,29 @@ object AppExperimentalAttributes {
     *   globally unique UUID which is persisted across sessions in your application. <li><a
     *   href="https://developer.android.com/identity/app-set-id">App set ID</a>. <li><a
     *   href="https://developer.android.com/reference/android/provider/Settings.Secure#ANDROID_ID">`Settings.getString(Settings.Secure.ANDROID_ID)`</a>.
-    *   </ul> <p> More information about Android identifier best practices can be found <a
-    *   href="https://developer.android.com/training/articles/user-data-ids">here</a>.
+    *   </ul> <p> More information about Android identifier best practices can be found in the <a
+    *   href="https://developer.android.com/training/articles/user-data-ids">Android user data IDs guide</a>.
     */
   val AppInstallationId: AttributeKey[String] =
     AttributeKey("app.installation.id")
+
+  /** A number of frame renders that experienced jank.
+    *
+    * @note
+    *   <p> Depending on platform limitations, the value provided MAY be approximation.
+    */
+  val AppJankFrameCount: AttributeKey[Long] =
+    AttributeKey("app.jank.frame_count")
+
+  /** The time period, in seconds, for which this jank is being reported.
+    */
+  val AppJankPeriod: AttributeKey[Double] =
+    AttributeKey("app.jank.period")
+
+  /** The minimum rendering threshold for this jank, in seconds.
+    */
+  val AppJankThreshold: AttributeKey[Double] =
+    AttributeKey("app.jank.threshold")
 
   /** The x (horizontal) coordinate of a screen coordinate, in screen pixels.
     */

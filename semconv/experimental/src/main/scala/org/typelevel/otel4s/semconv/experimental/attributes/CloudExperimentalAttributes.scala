@@ -79,7 +79,7 @@ object CloudExperimentalAttributes {
     *   resolved function version, as the same runtime instance may be invocable with multiple different aliases.
     *   <li><strong>GCP:</strong> The <a href="https://cloud.google.com/iam/docs/full-resource-names">URI of the
     *   resource</a> <li><strong>Azure:</strong> The <a
-    *   href="https://docs.microsoft.com/rest/api/resources/resources/get-by-id">Fully Qualified Resource ID</a> of the
+    *   href="https://learn.microsoft.com/rest/api/resources/resources/get-by-id">Fully Qualified Resource ID</a> of the
     *   invoked function, <em>not</em> the function app, having the form
     *   `/subscriptions/<SUBSCRIPTION_GUID>/resourceGroups/<RG>/providers/Microsoft.Web/sites/<FUNCAPP>/functions/<FUNC>`.
     *   This means that a span attribute MUST be used, as an Azure function app can host multiple functions that would
@@ -135,31 +135,31 @@ object CloudExperimentalAttributes {
 
     /** Azure Virtual Machines
       */
-    case object AzureVm extends CloudPlatformValue("azure_vm")
+    case object AzureVm extends CloudPlatformValue("azure.vm")
 
     /** Azure Container Apps
       */
-    case object AzureContainerApps extends CloudPlatformValue("azure_container_apps")
+    case object AzureContainerApps extends CloudPlatformValue("azure.container_apps")
 
     /** Azure Container Instances
       */
-    case object AzureContainerInstances extends CloudPlatformValue("azure_container_instances")
+    case object AzureContainerInstances extends CloudPlatformValue("azure.container_instances")
 
     /** Azure Kubernetes Service
       */
-    case object AzureAks extends CloudPlatformValue("azure_aks")
+    case object AzureAks extends CloudPlatformValue("azure.aks")
 
     /** Azure Functions
       */
-    case object AzureFunctions extends CloudPlatformValue("azure_functions")
+    case object AzureFunctions extends CloudPlatformValue("azure.functions")
 
     /** Azure App Service
       */
-    case object AzureAppService extends CloudPlatformValue("azure_app_service")
+    case object AzureAppService extends CloudPlatformValue("azure.app_service")
 
     /** Azure Red Hat OpenShift
       */
-    case object AzureOpenshift extends CloudPlatformValue("azure_openshift")
+    case object AzureOpenshift extends CloudPlatformValue("azure.openshift")
 
     /** Google Bare Metal Solution (BMS)
       */

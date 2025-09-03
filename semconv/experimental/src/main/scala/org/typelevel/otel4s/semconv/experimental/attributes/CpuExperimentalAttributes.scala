@@ -36,35 +36,35 @@ object CpuExperimentalAttributes {
   abstract class CpuModeValue(val value: String)
   object CpuModeValue {
 
-    /** user.
+    /** User
       */
     case object User extends CpuModeValue("user")
 
-    /** system.
+    /** System
       */
     case object System extends CpuModeValue("system")
 
-    /** nice.
+    /** Nice
       */
     case object Nice extends CpuModeValue("nice")
 
-    /** idle.
+    /** Idle
       */
     case object Idle extends CpuModeValue("idle")
 
-    /** iowait.
+    /** IO Wait
       */
     case object Iowait extends CpuModeValue("iowait")
 
-    /** interrupt.
+    /** Interrupt
       */
     case object Interrupt extends CpuModeValue("interrupt")
 
-    /** steal.
+    /** Steal
       */
     case object Steal extends CpuModeValue("steal")
 
-    /** kernel.
+    /** Kernel
       */
     case object Kernel extends CpuModeValue("kernel")
   }

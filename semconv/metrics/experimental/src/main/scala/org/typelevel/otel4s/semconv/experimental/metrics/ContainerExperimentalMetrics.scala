@@ -30,12 +30,15 @@ object ContainerExperimentalMetrics {
     CpuTime,
     CpuUsage,
     DiskIo,
+    FilesystemAvailable,
+    FilesystemCapacity,
+    FilesystemUsage,
     MemoryUsage,
     NetworkIo,
     Uptime,
   )
 
-  /** Total CPU time consumed
+  /** Total CPU time consumed.
     *
     * @note
     *   <p> Total CPU time consumed by the specific container on all available CPU cores
@@ -43,7 +46,7 @@ object ContainerExperimentalMetrics {
   object CpuTime extends MetricSpec.Unsealed {
 
     val name: String = "container.cpu.time"
-    val description: String = "Total CPU time consumed"
+    val description: String = "Total CPU time consumed."
     val unit: String = "s"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
@@ -100,7 +103,7 @@ object ContainerExperimentalMetrics {
 
   }
 
-  /** Container's CPU usage, measured in cpus. Range from 0 to the number of allocatable CPUs
+  /** Container's CPU usage, measured in cpus. Range from 0 to the number of allocatable CPUs.
     *
     * @note
     *   <p> CPU usage of the specific container on all available CPU cores, averaged over the sample window
@@ -108,7 +111,7 @@ object ContainerExperimentalMetrics {
   object CpuUsage extends MetricSpec.Unsealed {
 
     val name: String = "container.cpu.usage"
-    val description: String = "Container's CPU usage, measured in cpus. Range from 0 to the number of allocatable CPUs"
+    val description: String = "Container's CPU usage, measured in cpus. Range from 0 to the number of allocatable CPUs."
     val unit: String = "{cpu}"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
@@ -236,6 +239,132 @@ object ContainerExperimentalMetrics {
 
   }
 
+  /** Container filesystem available bytes.
+    *
+    * @note
+    *   <p> In K8s, this metric is derived from the <a
+    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.33.0/pkg/apis/stats/v1alpha1#FsStats">FsStats.AvailableBytes</a>
+    *   field of the <a
+    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.33.0/pkg/apis/stats/v1alpha1#ContainerStats">ContainerStats.Rootfs</a>
+    *   of the Kubelet's stats API.
+    */
+  object FilesystemAvailable extends MetricSpec.Unsealed {
+
+    val name: String = "container.filesystem.available"
+    val description: String = "Container filesystem available bytes."
+    val unit: String = "By"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
+      Meter[F]
+        .upDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableUpDownCounter] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** Container filesystem capacity.
+    *
+    * @note
+    *   <p> In K8s, this metric is derived from the <a
+    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.33.0/pkg/apis/stats/v1alpha1#FsStats">FsStats.CapacityBytes</a> field
+    *   of the <a
+    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.33.0/pkg/apis/stats/v1alpha1#ContainerStats">ContainerStats.Rootfs</a>
+    *   of the Kubelet's stats API.
+    */
+  object FilesystemCapacity extends MetricSpec.Unsealed {
+
+    val name: String = "container.filesystem.capacity"
+    val description: String = "Container filesystem capacity."
+    val unit: String = "By"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
+      Meter[F]
+        .upDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableUpDownCounter] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** Container filesystem usage.
+    *
+    * @note
+    *   <p> This may not equal capacity - available. <p> In K8s, this metric is derived from the <a
+    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.33.0/pkg/apis/stats/v1alpha1#FsStats">FsStats.UsedBytes</a> field of
+    *   the <a
+    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.33.0/pkg/apis/stats/v1alpha1#ContainerStats">ContainerStats.Rootfs</a>
+    *   of the Kubelet's stats API.
+    */
+  object FilesystemUsage extends MetricSpec.Unsealed {
+
+    val name: String = "container.filesystem.usage"
+    val description: String = "Container filesystem usage."
+    val unit: String = "By"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
+      Meter[F]
+        .upDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableUpDownCounter] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
   /** Memory usage of the container.
     *
     * @note
@@ -346,7 +475,7 @@ object ContainerExperimentalMetrics {
 
   }
 
-  /** The time the container has been running
+  /** The time the container has been running.
     *
     * @note
     *   <p> Instrumentations SHOULD use a gauge with type `double` and measure uptime in seconds as a floating point
@@ -356,7 +485,7 @@ object ContainerExperimentalMetrics {
   object Uptime extends MetricSpec.Unsealed {
 
     val name: String = "container.uptime"
-    val description: String = "The time the container has been running"
+    val description: String = "The time the container has been running."
     val unit: String = "s"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = Nil

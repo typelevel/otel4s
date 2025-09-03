@@ -27,16 +27,16 @@ object DeviceExperimentalAttributes {
     *   <p> Its value SHOULD be identical for all apps on a device and it SHOULD NOT change if an app is uninstalled and
     *   re-installed. However, it might be resettable by the user for all apps on a device. Hardware IDs (e.g.
     *   vendor-specific serial number, IMEI or MAC address) MAY be used as values. <p> More information about Android
-    *   identifier best practices can be found <a
-    *   href="https://developer.android.com/training/articles/user-data-ids">here</a>. <blockquote> [!WARNING] <p> This
-    *   attribute may contain sensitive (PII) information. Caution should be taken when storing personal data or
-    *   anything which can identify a user. GDPR and data protection laws may apply, ensure you do your own due
-    *   diligence. <p> Due to these reasons, this identifier is not recommended for consumer applications and will
-    *   likely result in rejection from both Google Play and App Store. However, it may be appropriate for specific
-    *   enterprise scenarios, such as kiosk devices or enterprise-managed devices, with appropriate compliance
-    *   clearance. Any instrumentation providing this identifier MUST implement it as an opt-in feature. <p> See <a
-    *   href="/docs/registry/attributes/app.md#app-installation-id">`app.installation.id`</a> for a more
-    *   privacy-preserving alternative.</blockquote>
+    *   identifier best practices can be found in the <a
+    *   href="https://developer.android.com/training/articles/user-data-ids">Android user data IDs guide</a>.
+    *   <blockquote> [!WARNING] <p> This attribute may contain sensitive (PII) information. Caution should be taken when
+    *   storing personal data or anything which can identify a user. GDPR and data protection laws may apply, ensure you
+    *   do your own due diligence. <p> Due to these reasons, this identifier is not recommended for consumer
+    *   applications and will likely result in rejection from both Google Play and App Store. However, it may be
+    *   appropriate for specific enterprise scenarios, such as kiosk devices or enterprise-managed devices, with
+    *   appropriate compliance clearance. Any instrumentation providing this identifier MUST implement it as an opt-in
+    *   feature. <p> See <a href="/docs/registry/attributes/app.md#app-installation-id">`app.installation.id`</a> for a
+    *   more privacy-preserving alternative.</blockquote>
     */
   val DeviceId: AttributeKey[String] =
     AttributeKey("device.id")

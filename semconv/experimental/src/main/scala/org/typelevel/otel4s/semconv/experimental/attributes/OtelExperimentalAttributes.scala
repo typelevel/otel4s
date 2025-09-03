@@ -68,6 +68,11 @@ object OtelExperimentalAttributes {
   val OtelScopeName: AttributeKey[String] =
     AttributeKey("otel.scope.name")
 
+  /** The schema URL of the instrumentation scope.
+    */
+  val OtelScopeSchemaUrl: AttributeKey[String] =
+    AttributeKey("otel.scope.schema_url")
+
   /** The version of the instrumentation scope - (`InstrumentationScope.Version` in OTLP).
     */
   @deprecated(
@@ -76,6 +81,12 @@ object OtelExperimentalAttributes {
   )
   val OtelScopeVersion: AttributeKey[String] =
     AttributeKey("otel.scope.version")
+
+  /** Determines whether the span has a parent span, and if so, <a
+    * href="https://opentelemetry.io/docs/specs/otel/trace/api/#isremote">whether it is a remote parent</a>
+    */
+  val OtelSpanParentOrigin: AttributeKey[String] =
+    AttributeKey("otel.span.parent.origin")
 
   /** The result value of the sampler for this span
     */
@@ -133,6 +144,10 @@ object OtelExperimentalAttributes {
       */
     case object OtlpHttpJsonSpanExporter extends OtelComponentTypeValue("otlp_http_json_span_exporter")
 
+    /** Zipkin span exporter over HTTP
+      */
+    case object ZipkinHttpSpanExporter extends OtelComponentTypeValue("zipkin_http_span_exporter")
+
     /** OTLP log record exporter over gRPC with protobuf serialization
       */
     case object OtlpGrpcLogExporter extends OtelComponentTypeValue("otlp_grpc_log_exporter")
@@ -160,6 +175,30 @@ object OtelExperimentalAttributes {
     /** OTLP metric exporter over HTTP with JSON serialization
       */
     case object OtlpHttpJsonMetricExporter extends OtelComponentTypeValue("otlp_http_json_metric_exporter")
+
+    /** Prometheus metric exporter over HTTP with the default text-based format
+      */
+    case object PrometheusHttpTextMetricExporter extends OtelComponentTypeValue("prometheus_http_text_metric_exporter")
+  }
+
+  /** Values for [[OtelSpanParentOrigin]].
+    */
+  abstract class OtelSpanParentOriginValue(val value: String)
+  object OtelSpanParentOriginValue {
+
+    /** The span does not have a parent, it is a root span
+      */
+    case object None extends OtelSpanParentOriginValue("none")
+
+    /** The span has a parent and the parent's span context <a
+      * href="https://opentelemetry.io/docs/specs/otel/trace/api/#isremote">isRemote()</a> is false
+      */
+    case object Local extends OtelSpanParentOriginValue("local")
+
+    /** The span has a parent and the parent's span context <a
+      * href="https://opentelemetry.io/docs/specs/otel/trace/api/#isremote">isRemote()</a> is true
+      */
+    case object Remote extends OtelSpanParentOriginValue("remote")
   }
 
   /** Values for [[OtelSpanSamplingResult]].

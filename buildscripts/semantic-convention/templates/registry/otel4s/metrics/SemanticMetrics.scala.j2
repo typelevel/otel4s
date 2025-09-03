@@ -43,7 +43,7 @@
 {%- macro requirement(attribute) -%}
 {%- if attribute.requirement_level is mapping -%}
 {%- set level = attribute.requirement_level | first -%}
-{%- set apply = "(\"" ~ attribute.requirement_level[level] | trim ~ "\")" -%}
+{%- set apply = "(\"" ~ attribute.requirement_level[level] | replace('\n', "") | trim ~ "\")" -%}
 {%- else -%}
 {%- set level = attribute.requirement_level -%}
 {%- set apply = "" -%}
@@ -168,7 +168,7 @@ object {{ object_name }} {
   {%- endif %}
   object {{ objectName(metric) }} extends MetricSpec.Unsealed {
     {%- if params.stable_only == false -%}
-    {%- set metric_attributes = metric.attributes %}
+    {%- set metric_attributes = metric.attributes | list %}
     {% else %}
     {%- set metric_attributes = metric.attributes | selectattr("stability", "equalto", "stable") | list %}
     {% endif %}

@@ -387,11 +387,11 @@ object AwsExperimentalAttributes {
   abstract class AwsEcsLaunchtypeValue(val value: String)
   object AwsEcsLaunchtypeValue {
 
-    /** ec2.
+    /** Amazon EC2
       */
     case object Ec2 extends AwsEcsLaunchtypeValue("ec2")
 
-    /** fargate.
+    /** Amazon Fargate
       */
     case object Fargate extends AwsEcsLaunchtypeValue("fargate")
   }

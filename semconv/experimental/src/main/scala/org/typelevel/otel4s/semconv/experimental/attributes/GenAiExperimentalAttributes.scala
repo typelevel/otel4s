@@ -73,18 +73,21 @@ object GenAiExperimentalAttributes {
   val GenAiOpenaiRequestSeed: AttributeKey[Long] =
     AttributeKey("gen_ai.openai.request.seed")
 
-  /** The service tier requested. May be a specific tier, default, or auto.
+  /** Deprecated, use `openai.request.service_tier`.
     */
+  @deprecated("Replaced by `openai.request.service_tier`.", "")
   val GenAiOpenaiRequestServiceTier: AttributeKey[String] =
     AttributeKey("gen_ai.openai.request.service_tier")
 
-  /** The service tier used for the response.
+  /** Deprecated, use `openai.response.service_tier`.
     */
+  @deprecated("Replaced by `openai.response.service_tier`.", "")
   val GenAiOpenaiResponseServiceTier: AttributeKey[String] =
     AttributeKey("gen_ai.openai.response.service_tier")
 
-  /** A fingerprint to track any eventual change in the Generative AI environment.
+  /** Deprecated, use `openai.response.system_fingerprint`.
     */
+  @deprecated("Replaced by `openai.response.system_fingerprint`.", "")
   val GenAiOpenaiResponseSystemFingerprint: AttributeKey[String] =
     AttributeKey("gen_ai.openai.response.system_fingerprint")
 
@@ -115,6 +118,22 @@ object GenAiExperimentalAttributes {
   @deprecated("Removed, no replacement at this time.", "")
   val GenAiPrompt: AttributeKey[String] =
     AttributeKey("gen_ai.prompt")
+
+  /** The Generative AI provider as identified by the client or server instrumentation.
+    *
+    * @note
+    *   <p> The attribute SHOULD be set based on the instrumentation's best knowledge and may differ from the actual
+    *   model provider. <p> Multiple providers, including Azure OpenAI, Gemini, and AI hosting platforms are accessible
+    *   using the OpenAI REST API and corresponding client libraries, but may proxy or host models from different
+    *   providers. <p> The `gen_ai.request.model`, `gen_ai.response.model`, and `server.address` attributes may help
+    *   identify the actual system in use. <p> The `gen_ai.provider.name` attribute acts as a discriminator that
+    *   identifies the GenAI telemetry format flavor specific to that provider within GenAI semantic conventions. It
+    *   SHOULD be set consistently with provider-specific attributes and signals. For example, GenAI spans, metrics, and
+    *   events related to AWS Bedrock should have the `gen_ai.provider.name` set to `aws.bedrock` and include applicable
+    *   `aws.bedrock.*` attributes and are not expected to include `openai.*` attributes.
+    */
+  val GenAiProviderName: AttributeKey[String] =
+    AttributeKey("gen_ai.provider.name")
 
   /** The target number of candidate completions to return.
     */
@@ -190,17 +209,9 @@ object GenAiExperimentalAttributes {
   val GenAiResponseModel: AttributeKey[String] =
     AttributeKey("gen_ai.response.model")
 
-  /** The Generative AI product as identified by the client or server instrumentation.
-    *
-    * @note
-    *   <p> The `gen_ai.system` describes a family of GenAI models with specific model identified by
-    *   `gen_ai.request.model` and `gen_ai.response.model` attributes. <p> The actual GenAI product may differ from the
-    *   one identified by the client. Multiple systems, including Azure OpenAI and Gemini, are accessible by OpenAI
-    *   client libraries. In such cases, the `gen_ai.system` is set to `openai` based on the instrumentation's best
-    *   knowledge, instead of the actual system. The `server.address` attribute may help identify the actual system in
-    *   use for `openai`. <p> For custom model, a custom friendly name SHOULD be used. If none of these options apply,
-    *   the `gen_ai.system` SHOULD be set to `_OTHER`.
+  /** Deprecated, use `gen_ai.provider.name` instead.
     */
+  @deprecated("Replaced by `gen_ai.provider.name`.", "")
   val GenAiSystem: AttributeKey[String] =
     AttributeKey("gen_ai.system")
 
@@ -281,7 +292,9 @@ object GenAiExperimentalAttributes {
 
   /** Values for [[GenAiOpenaiRequestServiceTier]].
     */
+  @deprecated("Replaced by `openai.request.service_tier`.", "")
   abstract class GenAiOpenaiRequestServiceTierValue(val value: String)
+  @annotation.nowarn("cat=deprecation")
   object GenAiOpenaiRequestServiceTierValue {
 
     /** The system will utilize scale tier credits until they are exhausted.
@@ -353,9 +366,77 @@ object GenAiExperimentalAttributes {
     case object Speech extends GenAiOutputTypeValue("speech")
   }
 
+  /** Values for [[GenAiProviderName]].
+    */
+  abstract class GenAiProviderNameValue(val value: String)
+  object GenAiProviderNameValue {
+
+    /** <a href="https://openai.com/">OpenAI</a>
+      */
+    case object Openai extends GenAiProviderNameValue("openai")
+
+    /** Any Google generative AI endpoint
+      */
+    case object GcpGenAi extends GenAiProviderNameValue("gcp.gen_ai")
+
+    /** <a href="https://cloud.google.com/vertex-ai">Vertex AI</a>
+      */
+    case object GcpVertexAi extends GenAiProviderNameValue("gcp.vertex_ai")
+
+    /** <a href="https://cloud.google.com/products/gemini">Gemini</a>
+      */
+    case object GcpGemini extends GenAiProviderNameValue("gcp.gemini")
+
+    /** <a href="https://www.anthropic.com/">Anthropic</a>
+      */
+    case object Anthropic extends GenAiProviderNameValue("anthropic")
+
+    /** <a href="https://cohere.com/">Cohere</a>
+      */
+    case object Cohere extends GenAiProviderNameValue("cohere")
+
+    /** Azure AI Inference
+      */
+    case object AzureAiInference extends GenAiProviderNameValue("azure.ai.inference")
+
+    /** <a href="https://azure.microsoft.com/products/ai-services/openai-service/">Azure OpenAI</a>
+      */
+    case object AzureAiOpenai extends GenAiProviderNameValue("azure.ai.openai")
+
+    /** <a href="https://www.ibm.com/products/watsonx-ai">IBM Watsonx AI</a>
+      */
+    case object IbmWatsonxAi extends GenAiProviderNameValue("ibm.watsonx.ai")
+
+    /** <a href="https://aws.amazon.com/bedrock">AWS Bedrock</a>
+      */
+    case object AwsBedrock extends GenAiProviderNameValue("aws.bedrock")
+
+    /** <a href="https://www.perplexity.ai/">Perplexity</a>
+      */
+    case object Perplexity extends GenAiProviderNameValue("perplexity")
+
+    /** <a href="https://x.ai/">xAI</a>
+      */
+    case object XAi extends GenAiProviderNameValue("x_ai")
+
+    /** <a href="https://www.deepseek.com/">DeepSeek</a>
+      */
+    case object Deepseek extends GenAiProviderNameValue("deepseek")
+
+    /** <a href="https://groq.com/">Groq</a>
+      */
+    case object Groq extends GenAiProviderNameValue("groq")
+
+    /** <a href="https://mistral.ai/">Mistral AI</a>
+      */
+    case object MistralAi extends GenAiProviderNameValue("mistral_ai")
+  }
+
   /** Values for [[GenAiSystem]].
     */
+  @deprecated("Replaced by `gen_ai.provider.name`.", "")
   abstract class GenAiSystemValue(val value: String)
+  @annotation.nowarn("cat=deprecation")
   object GenAiSystemValue {
 
     /** OpenAI
@@ -397,6 +478,14 @@ object GenAiExperimentalAttributes {
     /** Azure OpenAI
       */
     case object AzAiOpenai extends GenAiSystemValue("az.ai.openai")
+
+    /** Azure AI Inference
+      */
+    case object AzureAiInference extends GenAiSystemValue("azure.ai.inference")
+
+    /** Azure OpenAI
+      */
+    case object AzureAiOpenai extends GenAiSystemValue("azure.ai.openai")
 
     /** IBM Watsonx AI
       */

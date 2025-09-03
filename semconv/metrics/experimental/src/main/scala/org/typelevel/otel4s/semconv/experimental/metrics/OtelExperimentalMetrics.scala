@@ -51,9 +51,10 @@ object OtelExperimentalMetrics {
     SdkSpanEndedCount,
     SdkSpanLive,
     SdkSpanLiveCount,
+    SdkSpanStarted,
   )
 
-  /** The number of log records for which the export has finished, either successful or failed
+  /** The number of log records for which the export has finished, either successful or failed.
     *
     * @note
     *   <p> For successful exports, `error.type` MUST NOT be set. For failed exports, `error.type` MUST contain the
@@ -64,7 +65,8 @@ object OtelExperimentalMetrics {
   object SdkExporterLogExported extends MetricSpec.Unsealed {
 
     val name: String = "otel.sdk.exporter.log.exported"
-    val description: String = "The number of log records for which the export has finished, either successful or failed"
+    val description: String =
+      "The number of log records for which the export has finished, either successful or failed."
     val unit: String = "{log_record}"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
@@ -213,7 +215,7 @@ object OtelExperimentalMetrics {
   }
 
   /** The number of log records which were passed to the exporter, but that have not been exported yet (neither
-    * successful, nor failed)
+    * successful, nor failed).
     *
     * @note
     *   <p> For successful exports, `error.type` MUST NOT be set. For failed exports, `error.type` MUST contain the
@@ -223,7 +225,7 @@ object OtelExperimentalMetrics {
 
     val name: String = "otel.sdk.exporter.log.inflight"
     val description: String =
-      "The number of log records which were passed to the exporter, but that have not been exported yet (neither successful, nor failed)"
+      "The number of log records which were passed to the exporter, but that have not been exported yet (neither successful, nor failed)."
     val unit: String = "{log_record}"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
@@ -343,7 +345,7 @@ object OtelExperimentalMetrics {
 
   }
 
-  /** The number of metric data points for which the export has finished, either successful or failed
+  /** The number of metric data points for which the export has finished, either successful or failed.
     *
     * @note
     *   <p> For successful exports, `error.type` MUST NOT be set. For failed exports, `error.type` MUST contain the
@@ -355,7 +357,7 @@ object OtelExperimentalMetrics {
 
     val name: String = "otel.sdk.exporter.metric_data_point.exported"
     val description: String =
-      "The number of metric data points for which the export has finished, either successful or failed"
+      "The number of metric data points for which the export has finished, either successful or failed."
     val unit: String = "{data_point}"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
@@ -504,7 +506,7 @@ object OtelExperimentalMetrics {
   }
 
   /** The number of metric data points which were passed to the exporter, but that have not been exported yet (neither
-    * successful, nor failed)
+    * successful, nor failed).
     *
     * @note
     *   <p> For successful exports, `error.type` MUST NOT be set. For failed exports, `error.type` MUST contain the
@@ -514,7 +516,7 @@ object OtelExperimentalMetrics {
 
     val name: String = "otel.sdk.exporter.metric_data_point.inflight"
     val description: String =
-      "The number of metric data points which were passed to the exporter, but that have not been exported yet (neither successful, nor failed)"
+      "The number of metric data points which were passed to the exporter, but that have not been exported yet (neither successful, nor failed)."
     val unit: String = "{data_point}"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
@@ -805,7 +807,7 @@ object OtelExperimentalMetrics {
 
   }
 
-  /** The number of spans for which the export has finished, either successful or failed
+  /** The number of spans for which the export has finished, either successful or failed.
     *
     * @note
     *   <p> For successful exports, `error.type` MUST NOT be set. For failed exports, `error.type` MUST contain the
@@ -816,7 +818,7 @@ object OtelExperimentalMetrics {
   object SdkExporterSpanExported extends MetricSpec.Unsealed {
 
     val name: String = "otel.sdk.exporter.span.exported"
-    val description: String = "The number of spans for which the export has finished, either successful or failed"
+    val description: String = "The number of spans for which the export has finished, either successful or failed."
     val unit: String = "{span}"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
@@ -1001,7 +1003,7 @@ object OtelExperimentalMetrics {
   }
 
   /** The number of spans which were passed to the exporter, but that have not been exported yet (neither successful,
-    * nor failed)
+    * nor failed).
     *
     * @note
     *   <p> For successful exports, `error.type` MUST NOT be set. For failed exports, `error.type` MUST contain the
@@ -1011,7 +1013,7 @@ object OtelExperimentalMetrics {
 
     val name: String = "otel.sdk.exporter.span.inflight"
     val description: String =
-      "The number of spans which were passed to the exporter, but that have not been exported yet (neither successful, nor failed)"
+      "The number of spans which were passed to the exporter, but that have not been exported yet (neither successful, nor failed)."
     val unit: String = "{span}"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
@@ -1167,12 +1169,12 @@ object OtelExperimentalMetrics {
 
   }
 
-  /** The number of logs submitted to enabled SDK Loggers
+  /** The number of logs submitted to enabled SDK Loggers.
     */
   object SdkLogCreated extends MetricSpec.Unsealed {
 
     val name: String = "otel.sdk.log.created"
-    val description: String = "The number of logs submitted to enabled SDK Loggers"
+    val description: String = "The number of logs submitted to enabled SDK Loggers."
     val unit: String = "{log_record}"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = Nil
@@ -1307,7 +1309,7 @@ object OtelExperimentalMetrics {
 
   }
 
-  /** The number of log records for which the processing has finished, either successful or failed
+  /** The number of log records for which the processing has finished, either successful or failed.
     *
     * @note
     *   <p> For successful processing, `error.type` MUST NOT be set. For failed processing, `error.type` MUST contain
@@ -1319,7 +1321,7 @@ object OtelExperimentalMetrics {
 
     val name: String = "otel.sdk.processor.log.processed"
     val description: String =
-      "The number of log records for which the processing has finished, either successful or failed"
+      "The number of log records for which the processing has finished, either successful or failed."
     val unit: String = "{log_record}"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
@@ -1427,7 +1429,7 @@ object OtelExperimentalMetrics {
 
   }
 
-  /** The maximum number of log records the queue of a given instance of an SDK Log Record processor can hold
+  /** The maximum number of log records the queue of a given instance of an SDK Log Record processor can hold.
     *
     * @note
     *   <p> Only applies to Log Record processors which use a queue, e.g. the SDK Batching Log Record Processor.
@@ -1436,7 +1438,7 @@ object OtelExperimentalMetrics {
 
     val name: String = "otel.sdk.processor.log.queue.capacity"
     val description: String =
-      "The maximum number of log records the queue of a given instance of an SDK Log Record processor can hold"
+      "The maximum number of log records the queue of a given instance of an SDK Log Record processor can hold."
     val unit: String = "{log_record}"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
@@ -1518,7 +1520,7 @@ object OtelExperimentalMetrics {
 
   }
 
-  /** The number of log records in the queue of a given instance of an SDK log processor
+  /** The number of log records in the queue of a given instance of an SDK log processor.
     *
     * @note
     *   <p> Only applies to log record processors which use a queue, e.g. the SDK Batching Log Record Processor.
@@ -1526,7 +1528,7 @@ object OtelExperimentalMetrics {
   object SdkProcessorLogQueueSize extends MetricSpec.Unsealed {
 
     val name: String = "otel.sdk.processor.log.queue.size"
-    val description: String = "The number of log records in the queue of a given instance of an SDK log processor"
+    val description: String = "The number of log records in the queue of a given instance of an SDK log processor."
     val unit: String = "{log_record}"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
@@ -1608,7 +1610,7 @@ object OtelExperimentalMetrics {
 
   }
 
-  /** The number of spans for which the processing has finished, either successful or failed
+  /** The number of spans for which the processing has finished, either successful or failed.
     *
     * @note
     *   <p> For successful processing, `error.type` MUST NOT be set. For failed processing, `error.type` MUST contain
@@ -1618,7 +1620,7 @@ object OtelExperimentalMetrics {
   object SdkProcessorSpanProcessed extends MetricSpec.Unsealed {
 
     val name: String = "otel.sdk.processor.span.processed"
-    val description: String = "The number of spans for which the processing has finished, either successful or failed"
+    val description: String = "The number of spans for which the processing has finished, either successful or failed."
     val unit: String = "{span}"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
@@ -1762,7 +1764,7 @@ object OtelExperimentalMetrics {
 
   }
 
-  /** The maximum number of spans the queue of a given instance of an SDK span processor can hold
+  /** The maximum number of spans the queue of a given instance of an SDK span processor can hold.
     *
     * @note
     *   <p> Only applies to span processors which use a queue, e.g. the SDK Batching Span Processor.
@@ -1771,7 +1773,7 @@ object OtelExperimentalMetrics {
 
     val name: String = "otel.sdk.processor.span.queue.capacity"
     val description: String =
-      "The maximum number of spans the queue of a given instance of an SDK span processor can hold"
+      "The maximum number of spans the queue of a given instance of an SDK span processor can hold."
     val unit: String = "{span}"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
@@ -1853,7 +1855,7 @@ object OtelExperimentalMetrics {
 
   }
 
-  /** The number of spans in the queue of a given instance of an SDK span processor
+  /** The number of spans in the queue of a given instance of an SDK span processor.
     *
     * @note
     *   <p> Only applies to span processors which use a queue, e.g. the SDK Batching Span Processor.
@@ -1861,7 +1863,7 @@ object OtelExperimentalMetrics {
   object SdkProcessorSpanQueueSize extends MetricSpec.Unsealed {
 
     val name: String = "otel.sdk.processor.span.queue.size"
-    val description: String = "The number of spans in the queue of a given instance of an SDK span processor"
+    val description: String = "The number of spans in the queue of a given instance of an SDK span processor."
     val unit: String = "{span}"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
@@ -1943,72 +1945,13 @@ object OtelExperimentalMetrics {
 
   }
 
-  /** The number of created spans for which the end operation was called
-    *
-    * @note
-    *   <p> For spans with `recording=true`: Implementations MUST record both `otel.sdk.span.live` and
-    *   `otel.sdk.span.ended`. For spans with `recording=false`: If implementations decide to record this metric, they
-    *   MUST also record `otel.sdk.span.live`.
+  /** Use `otel.sdk.span.started` minus `otel.sdk.span.live` to derive this value.
     */
+  @deprecated("Obsoleted.", "")
   object SdkSpanEnded extends MetricSpec.Unsealed {
 
     val name: String = "otel.sdk.span.ended"
-    val description: String = "The number of created spans for which the end operation was called"
-    val unit: String = "{span}"
-    val stability: Stability = Stability.development
-    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
-
-    object AttributeSpecs {
-
-      /** The result value of the sampler for this span
-        */
-      val otelSpanSamplingResult: AttributeSpec[String] =
-        AttributeSpec(
-          OtelExperimentalAttributes.OtelSpanSamplingResult,
-          List(
-          ),
-          Requirement.recommended,
-          Stability.development
-        )
-
-      val specs: List[AttributeSpec[_]] =
-        List(
-          otelSpanSamplingResult,
-        )
-    }
-
-    def create[F[_]: Meter, A: MeasurementValue]: F[Counter[F, A]] =
-      Meter[F]
-        .counter[A](name)
-        .withDescription(description)
-        .withUnit(unit)
-        .create
-
-    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
-      Meter[F]
-        .observableCounter[A](name)
-        .withDescription(description)
-        .withUnit(unit)
-        .createObserver
-
-    def createWithCallback[F[_]: Meter, A: MeasurementValue](
-        callback: ObservableMeasurement[F, A] => F[Unit]
-    ): Resource[F, ObservableCounter] =
-      Meter[F]
-        .observableCounter[A](name)
-        .withDescription(description)
-        .withUnit(unit)
-        .createWithCallback(callback)
-
-  }
-
-  /** Deprecated, use `otel.sdk.span.ended` instead.
-    */
-  @deprecated("Replaced by `otel.sdk.span.ended`.", "")
-  object SdkSpanEndedCount extends MetricSpec.Unsealed {
-
-    val name: String = "otel.sdk.span.ended.count"
-    val description: String = "Deprecated, use `otel.sdk.span.ended` instead."
+    val description: String = "Use `otel.sdk.span.started` minus `otel.sdk.span.live` to derive this value."
     val unit: String = "{span}"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = Nil
@@ -2038,17 +1981,49 @@ object OtelExperimentalMetrics {
 
   }
 
-  /** The number of created spans for which the end operation has not been called yet
-    *
-    * @note
-    *   <p> For spans with `recording=true`: Implementations MUST record both `otel.sdk.span.live` and
-    *   `otel.sdk.span.ended`. For spans with `recording=false`: If implementations decide to record this metric, they
-    *   MUST also record `otel.sdk.span.ended`.
+  /** Use `otel.sdk.span.started` minus `otel.sdk.span.live` to derive this value.
+    */
+  @deprecated("Obsoleted.", "")
+  object SdkSpanEndedCount extends MetricSpec.Unsealed {
+
+    val name: String = "otel.sdk.span.ended.count"
+    val description: String = "Use `otel.sdk.span.started` minus `otel.sdk.span.live` to derive this value."
+    val unit: String = "{span}"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[Counter[F, A]] =
+      Meter[F]
+        .counter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableCounter] =
+      Meter[F]
+        .observableCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** The number of created spans with `recording=true` for which the end operation has not been called yet.
     */
   object SdkSpanLive extends MetricSpec.Unsealed {
 
     val name: String = "otel.sdk.span.live"
-    val description: String = "The number of created spans for which the end operation has not been called yet"
+    val description: String =
+      "The number of created spans with `recording=true` for which the end operation has not been called yet."
     val unit: String = "{span}"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
@@ -2127,6 +2102,76 @@ object OtelExperimentalMetrics {
     ): Resource[F, ObservableUpDownCounter] =
       Meter[F]
         .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** The number of created spans.
+    *
+    * @note
+    *   <p> Implementations MUST record this metric for all spans, even for non-recording ones.
+    */
+  object SdkSpanStarted extends MetricSpec.Unsealed {
+
+    val name: String = "otel.sdk.span.started"
+    val description: String = "The number of created spans."
+    val unit: String = "{span}"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
+
+    object AttributeSpecs {
+
+      /** Determines whether the span has a parent span, and if so, <a
+        * href="https://opentelemetry.io/docs/specs/otel/trace/api/#isremote">whether it is a remote parent</a>
+        */
+      val otelSpanParentOrigin: AttributeSpec[String] =
+        AttributeSpec(
+          OtelExperimentalAttributes.OtelSpanParentOrigin,
+          List(
+          ),
+          Requirement.recommended,
+          Stability.development
+        )
+
+      /** The result value of the sampler for this span
+        */
+      val otelSpanSamplingResult: AttributeSpec[String] =
+        AttributeSpec(
+          OtelExperimentalAttributes.OtelSpanSamplingResult,
+          List(
+          ),
+          Requirement.recommended,
+          Stability.development
+        )
+
+      val specs: List[AttributeSpec[_]] =
+        List(
+          otelSpanParentOrigin,
+          otelSpanSamplingResult,
+        )
+    }
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[Counter[F, A]] =
+      Meter[F]
+        .counter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableCounter] =
+      Meter[F]
+        .observableCounter[A](name)
         .withDescription(description)
         .withUnit(unit)
         .createWithCallback(callback)

@@ -95,7 +95,7 @@ object OsExperimentalAttributes {
 
     /** IBM z/OS
       */
-    case object ZOs extends OsTypeValue("z_os")
+    case object Zos extends OsTypeValue("zos")
   }
 
 }

@@ -34,12 +34,12 @@ object GenAiExperimentalMetrics {
     ServerTimeToFirstToken,
   )
 
-  /** GenAI operation duration
+  /** GenAI operation duration.
     */
   object ClientOperationDuration extends MetricSpec.Unsealed {
 
     val name: String = "gen_ai.client.operation.duration"
-    val description: String = "GenAI operation duration"
+    val description: String = "GenAI operation duration."
     val unit: String = "s"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
@@ -83,6 +83,29 @@ object GenAiExperimentalMetrics {
           Stability.development
         )
 
+      /** The Generative AI provider as identified by the client or server instrumentation.
+        *
+        * @note
+        *   <p> The attribute SHOULD be set based on the instrumentation's best knowledge and may differ from the actual
+        *   model provider. <p> Multiple providers, including Azure OpenAI, Gemini, and AI hosting platforms are
+        *   accessible using the OpenAI REST API and corresponding client libraries, but may proxy or host models from
+        *   different providers. <p> The `gen_ai.request.model`, `gen_ai.response.model`, and `server.address`
+        *   attributes may help identify the actual system in use. <p> The `gen_ai.provider.name` attribute acts as a
+        *   discriminator that identifies the GenAI telemetry format flavor specific to that provider within GenAI
+        *   semantic conventions. It SHOULD be set consistently with provider-specific attributes and signals. For
+        *   example, GenAI spans, metrics, and events related to AWS Bedrock should have the `gen_ai.provider.name` set
+        *   to `aws.bedrock` and include applicable `aws.bedrock.*` attributes and are not expected to include
+        *   `openai.*` attributes.
+        */
+      val genAiProviderName: AttributeSpec[String] =
+        AttributeSpec(
+          GenAiExperimentalAttributes.GenAiProviderName,
+          List(
+          ),
+          Requirement.required,
+          Stability.development
+        )
+
       /** The name of the GenAI model a request is being made to.
         */
       val genAiRequestModel: AttributeSpec[String] =
@@ -108,32 +131,6 @@ object GenAiExperimentalMetrics {
             "gpt-4-0613",
           ),
           Requirement.recommended,
-          Stability.development
-        )
-
-      /** The Generative AI product as identified by the client or server instrumentation.
-        *
-        * @note
-        *   <p> The `gen_ai.system` describes a family of GenAI models with specific model identified by
-        *   `gen_ai.request.model` and `gen_ai.response.model` attributes. <p> The actual GenAI product may differ from
-        *   the one identified by the client. Multiple systems, including Azure OpenAI and Gemini, are accessible by
-        *   OpenAI client libraries. In such cases, the `gen_ai.system` is set to `openai` based on the
-        *   instrumentation's best knowledge, instead of the actual system. The `server.address` attribute may help
-        *   identify the actual system in use for `openai`. <p> For custom model, a custom friendly name SHOULD be used.
-        *   If none of these options apply, the `gen_ai.system` SHOULD be set to `_OTHER`.
-        */
-      val genAiSystem: AttributeSpec[String] =
-        AttributeSpec(
-          GenAiExperimentalAttributes.GenAiSystem,
-          List(
-            "o",
-            "p",
-            "e",
-            "n",
-            "a",
-            "i",
-          ),
-          Requirement.required,
           Stability.development
         )
 
@@ -177,9 +174,9 @@ object GenAiExperimentalMetrics {
         List(
           errorType,
           genAiOperationName,
+          genAiProviderName,
           genAiRequestModel,
           genAiResponseModel,
-          genAiSystem,
           serverAddress,
           serverPort,
         )
@@ -195,12 +192,12 @@ object GenAiExperimentalMetrics {
 
   }
 
-  /** Measures number of input and output tokens used
+  /** Number of input and output tokens used.
     */
   object ClientTokenUsage extends MetricSpec.Unsealed {
 
     val name: String = "gen_ai.client.token.usage"
-    val description: String = "Measures number of input and output tokens used"
+    val description: String = "Number of input and output tokens used."
     val unit: String = "{token}"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
@@ -218,6 +215,29 @@ object GenAiExperimentalMetrics {
       val genAiOperationName: AttributeSpec[String] =
         AttributeSpec(
           GenAiExperimentalAttributes.GenAiOperationName,
+          List(
+          ),
+          Requirement.required,
+          Stability.development
+        )
+
+      /** The Generative AI provider as identified by the client or server instrumentation.
+        *
+        * @note
+        *   <p> The attribute SHOULD be set based on the instrumentation's best knowledge and may differ from the actual
+        *   model provider. <p> Multiple providers, including Azure OpenAI, Gemini, and AI hosting platforms are
+        *   accessible using the OpenAI REST API and corresponding client libraries, but may proxy or host models from
+        *   different providers. <p> The `gen_ai.request.model`, `gen_ai.response.model`, and `server.address`
+        *   attributes may help identify the actual system in use. <p> The `gen_ai.provider.name` attribute acts as a
+        *   discriminator that identifies the GenAI telemetry format flavor specific to that provider within GenAI
+        *   semantic conventions. It SHOULD be set consistently with provider-specific attributes and signals. For
+        *   example, GenAI spans, metrics, and events related to AWS Bedrock should have the `gen_ai.provider.name` set
+        *   to `aws.bedrock` and include applicable `aws.bedrock.*` attributes and are not expected to include
+        *   `openai.*` attributes.
+        */
+      val genAiProviderName: AttributeSpec[String] =
+        AttributeSpec(
+          GenAiExperimentalAttributes.GenAiProviderName,
           List(
           ),
           Requirement.required,
@@ -249,32 +269,6 @@ object GenAiExperimentalMetrics {
             "gpt-4-0613",
           ),
           Requirement.recommended,
-          Stability.development
-        )
-
-      /** The Generative AI product as identified by the client or server instrumentation.
-        *
-        * @note
-        *   <p> The `gen_ai.system` describes a family of GenAI models with specific model identified by
-        *   `gen_ai.request.model` and `gen_ai.response.model` attributes. <p> The actual GenAI product may differ from
-        *   the one identified by the client. Multiple systems, including Azure OpenAI and Gemini, are accessible by
-        *   OpenAI client libraries. In such cases, the `gen_ai.system` is set to `openai` based on the
-        *   instrumentation's best knowledge, instead of the actual system. The `server.address` attribute may help
-        *   identify the actual system in use for `openai`. <p> For custom model, a custom friendly name SHOULD be used.
-        *   If none of these options apply, the `gen_ai.system` SHOULD be set to `_OTHER`.
-        */
-      val genAiSystem: AttributeSpec[String] =
-        AttributeSpec(
-          GenAiExperimentalAttributes.GenAiSystem,
-          List(
-            "o",
-            "p",
-            "e",
-            "n",
-            "a",
-            "i",
-          ),
-          Requirement.required,
           Stability.development
         )
 
@@ -330,9 +324,9 @@ object GenAiExperimentalMetrics {
       val specs: List[AttributeSpec[_]] =
         List(
           genAiOperationName,
+          genAiProviderName,
           genAiRequestModel,
           genAiResponseModel,
-          genAiSystem,
           genAiTokenType,
           serverAddress,
           serverPort,
@@ -349,12 +343,12 @@ object GenAiExperimentalMetrics {
 
   }
 
-  /** Generative AI server request duration such as time-to-last byte or last output token
+  /** Generative AI server request duration such as time-to-last byte or last output token.
     */
   object ServerRequestDuration extends MetricSpec.Unsealed {
 
     val name: String = "gen_ai.server.request.duration"
-    val description: String = "Generative AI server request duration such as time-to-last byte or last output token"
+    val description: String = "Generative AI server request duration such as time-to-last byte or last output token."
     val unit: String = "s"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
@@ -398,6 +392,29 @@ object GenAiExperimentalMetrics {
           Stability.development
         )
 
+      /** The Generative AI provider as identified by the client or server instrumentation.
+        *
+        * @note
+        *   <p> The attribute SHOULD be set based on the instrumentation's best knowledge and may differ from the actual
+        *   model provider. <p> Multiple providers, including Azure OpenAI, Gemini, and AI hosting platforms are
+        *   accessible using the OpenAI REST API and corresponding client libraries, but may proxy or host models from
+        *   different providers. <p> The `gen_ai.request.model`, `gen_ai.response.model`, and `server.address`
+        *   attributes may help identify the actual system in use. <p> The `gen_ai.provider.name` attribute acts as a
+        *   discriminator that identifies the GenAI telemetry format flavor specific to that provider within GenAI
+        *   semantic conventions. It SHOULD be set consistently with provider-specific attributes and signals. For
+        *   example, GenAI spans, metrics, and events related to AWS Bedrock should have the `gen_ai.provider.name` set
+        *   to `aws.bedrock` and include applicable `aws.bedrock.*` attributes and are not expected to include
+        *   `openai.*` attributes.
+        */
+      val genAiProviderName: AttributeSpec[String] =
+        AttributeSpec(
+          GenAiExperimentalAttributes.GenAiProviderName,
+          List(
+          ),
+          Requirement.required,
+          Stability.development
+        )
+
       /** The name of the GenAI model a request is being made to.
         */
       val genAiRequestModel: AttributeSpec[String] =
@@ -423,32 +440,6 @@ object GenAiExperimentalMetrics {
             "gpt-4-0613",
           ),
           Requirement.recommended,
-          Stability.development
-        )
-
-      /** The Generative AI product as identified by the client or server instrumentation.
-        *
-        * @note
-        *   <p> The `gen_ai.system` describes a family of GenAI models with specific model identified by
-        *   `gen_ai.request.model` and `gen_ai.response.model` attributes. <p> The actual GenAI product may differ from
-        *   the one identified by the client. Multiple systems, including Azure OpenAI and Gemini, are accessible by
-        *   OpenAI client libraries. In such cases, the `gen_ai.system` is set to `openai` based on the
-        *   instrumentation's best knowledge, instead of the actual system. The `server.address` attribute may help
-        *   identify the actual system in use for `openai`. <p> For custom model, a custom friendly name SHOULD be used.
-        *   If none of these options apply, the `gen_ai.system` SHOULD be set to `_OTHER`.
-        */
-      val genAiSystem: AttributeSpec[String] =
-        AttributeSpec(
-          GenAiExperimentalAttributes.GenAiSystem,
-          List(
-            "o",
-            "p",
-            "e",
-            "n",
-            "a",
-            "i",
-          ),
-          Requirement.required,
           Stability.development
         )
 
@@ -492,9 +483,9 @@ object GenAiExperimentalMetrics {
         List(
           errorType,
           genAiOperationName,
+          genAiProviderName,
           genAiRequestModel,
           genAiResponseModel,
-          genAiSystem,
           serverAddress,
           serverPort,
         )
@@ -510,12 +501,12 @@ object GenAiExperimentalMetrics {
 
   }
 
-  /** Time per output token generated after the first token for successful responses
+  /** Time per output token generated after the first token for successful responses.
     */
   object ServerTimePerOutputToken extends MetricSpec.Unsealed {
 
     val name: String = "gen_ai.server.time_per_output_token"
-    val description: String = "Time per output token generated after the first token for successful responses"
+    val description: String = "Time per output token generated after the first token for successful responses."
     val unit: String = "s"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
@@ -533,6 +524,29 @@ object GenAiExperimentalMetrics {
       val genAiOperationName: AttributeSpec[String] =
         AttributeSpec(
           GenAiExperimentalAttributes.GenAiOperationName,
+          List(
+          ),
+          Requirement.required,
+          Stability.development
+        )
+
+      /** The Generative AI provider as identified by the client or server instrumentation.
+        *
+        * @note
+        *   <p> The attribute SHOULD be set based on the instrumentation's best knowledge and may differ from the actual
+        *   model provider. <p> Multiple providers, including Azure OpenAI, Gemini, and AI hosting platforms are
+        *   accessible using the OpenAI REST API and corresponding client libraries, but may proxy or host models from
+        *   different providers. <p> The `gen_ai.request.model`, `gen_ai.response.model`, and `server.address`
+        *   attributes may help identify the actual system in use. <p> The `gen_ai.provider.name` attribute acts as a
+        *   discriminator that identifies the GenAI telemetry format flavor specific to that provider within GenAI
+        *   semantic conventions. It SHOULD be set consistently with provider-specific attributes and signals. For
+        *   example, GenAI spans, metrics, and events related to AWS Bedrock should have the `gen_ai.provider.name` set
+        *   to `aws.bedrock` and include applicable `aws.bedrock.*` attributes and are not expected to include
+        *   `openai.*` attributes.
+        */
+      val genAiProviderName: AttributeSpec[String] =
+        AttributeSpec(
+          GenAiExperimentalAttributes.GenAiProviderName,
           List(
           ),
           Requirement.required,
@@ -564,32 +578,6 @@ object GenAiExperimentalMetrics {
             "gpt-4-0613",
           ),
           Requirement.recommended,
-          Stability.development
-        )
-
-      /** The Generative AI product as identified by the client or server instrumentation.
-        *
-        * @note
-        *   <p> The `gen_ai.system` describes a family of GenAI models with specific model identified by
-        *   `gen_ai.request.model` and `gen_ai.response.model` attributes. <p> The actual GenAI product may differ from
-        *   the one identified by the client. Multiple systems, including Azure OpenAI and Gemini, are accessible by
-        *   OpenAI client libraries. In such cases, the `gen_ai.system` is set to `openai` based on the
-        *   instrumentation's best knowledge, instead of the actual system. The `server.address` attribute may help
-        *   identify the actual system in use for `openai`. <p> For custom model, a custom friendly name SHOULD be used.
-        *   If none of these options apply, the `gen_ai.system` SHOULD be set to `_OTHER`.
-        */
-      val genAiSystem: AttributeSpec[String] =
-        AttributeSpec(
-          GenAiExperimentalAttributes.GenAiSystem,
-          List(
-            "o",
-            "p",
-            "e",
-            "n",
-            "a",
-            "i",
-          ),
-          Requirement.required,
           Stability.development
         )
 
@@ -632,9 +620,9 @@ object GenAiExperimentalMetrics {
       val specs: List[AttributeSpec[_]] =
         List(
           genAiOperationName,
+          genAiProviderName,
           genAiRequestModel,
           genAiResponseModel,
-          genAiSystem,
           serverAddress,
           serverPort,
         )
@@ -650,12 +638,12 @@ object GenAiExperimentalMetrics {
 
   }
 
-  /** Time to generate first token for successful responses
+  /** Time to generate first token for successful responses.
     */
   object ServerTimeToFirstToken extends MetricSpec.Unsealed {
 
     val name: String = "gen_ai.server.time_to_first_token"
-    val description: String = "Time to generate first token for successful responses"
+    val description: String = "Time to generate first token for successful responses."
     val unit: String = "s"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
@@ -673,6 +661,29 @@ object GenAiExperimentalMetrics {
       val genAiOperationName: AttributeSpec[String] =
         AttributeSpec(
           GenAiExperimentalAttributes.GenAiOperationName,
+          List(
+          ),
+          Requirement.required,
+          Stability.development
+        )
+
+      /** The Generative AI provider as identified by the client or server instrumentation.
+        *
+        * @note
+        *   <p> The attribute SHOULD be set based on the instrumentation's best knowledge and may differ from the actual
+        *   model provider. <p> Multiple providers, including Azure OpenAI, Gemini, and AI hosting platforms are
+        *   accessible using the OpenAI REST API and corresponding client libraries, but may proxy or host models from
+        *   different providers. <p> The `gen_ai.request.model`, `gen_ai.response.model`, and `server.address`
+        *   attributes may help identify the actual system in use. <p> The `gen_ai.provider.name` attribute acts as a
+        *   discriminator that identifies the GenAI telemetry format flavor specific to that provider within GenAI
+        *   semantic conventions. It SHOULD be set consistently with provider-specific attributes and signals. For
+        *   example, GenAI spans, metrics, and events related to AWS Bedrock should have the `gen_ai.provider.name` set
+        *   to `aws.bedrock` and include applicable `aws.bedrock.*` attributes and are not expected to include
+        *   `openai.*` attributes.
+        */
+      val genAiProviderName: AttributeSpec[String] =
+        AttributeSpec(
+          GenAiExperimentalAttributes.GenAiProviderName,
           List(
           ),
           Requirement.required,
@@ -704,32 +715,6 @@ object GenAiExperimentalMetrics {
             "gpt-4-0613",
           ),
           Requirement.recommended,
-          Stability.development
-        )
-
-      /** The Generative AI product as identified by the client or server instrumentation.
-        *
-        * @note
-        *   <p> The `gen_ai.system` describes a family of GenAI models with specific model identified by
-        *   `gen_ai.request.model` and `gen_ai.response.model` attributes. <p> The actual GenAI product may differ from
-        *   the one identified by the client. Multiple systems, including Azure OpenAI and Gemini, are accessible by
-        *   OpenAI client libraries. In such cases, the `gen_ai.system` is set to `openai` based on the
-        *   instrumentation's best knowledge, instead of the actual system. The `server.address` attribute may help
-        *   identify the actual system in use for `openai`. <p> For custom model, a custom friendly name SHOULD be used.
-        *   If none of these options apply, the `gen_ai.system` SHOULD be set to `_OTHER`.
-        */
-      val genAiSystem: AttributeSpec[String] =
-        AttributeSpec(
-          GenAiExperimentalAttributes.GenAiSystem,
-          List(
-            "o",
-            "p",
-            "e",
-            "n",
-            "a",
-            "i",
-          ),
-          Requirement.required,
           Stability.development
         )
 
@@ -772,9 +757,9 @@ object GenAiExperimentalMetrics {
       val specs: List[AttributeSpec[_]] =
         List(
           genAiOperationName,
+          genAiProviderName,
           genAiRequestModel,
           genAiResponseModel,
-          genAiSystem,
           serverAddress,
           serverPort,
         )

@@ -49,11 +49,12 @@ object SystemExperimentalMetrics {
     MemoryShared,
     MemoryUsage,
     MemoryUtilization,
+    NetworkConnectionCount,
     NetworkConnections,
-    NetworkDropped,
     NetworkErrors,
     NetworkIo,
-    NetworkPackets,
+    NetworkPacketCount,
+    NetworkPacketDropped,
     PagingFaults,
     PagingOperations,
     PagingUsage,
@@ -63,16 +64,35 @@ object SystemExperimentalMetrics {
     Uptime,
   )
 
-  /** Deprecated. Use `cpu.frequency` instead.
+  /** Operating frequency of the logical CPU in Hertz.
     */
-  @deprecated("Replaced by `cpu.frequency`.", "")
   object CpuFrequency extends MetricSpec.Unsealed {
 
     val name: String = "system.cpu.frequency"
-    val description: String = "Deprecated. Use `cpu.frequency` instead."
-    val unit: String = "{Hz}"
+    val description: String = "Operating frequency of the logical CPU in Hertz."
+    val unit: String = "Hz"
     val stability: Stability = Stability.development
-    val attributeSpecs: List[AttributeSpec[_]] = Nil
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
+
+    object AttributeSpecs {
+
+      /** The logical CPU number [0..n-1]
+        */
+      val cpuLogicalNumber: AttributeSpec[Long] =
+        AttributeSpec(
+          CpuExperimentalAttributes.CpuLogicalNumber,
+          List(
+            1,
+          ),
+          Requirement.recommended,
+          Stability.development
+        )
+
+      val specs: List[AttributeSpec[_]] =
+        List(
+          cpuLogicalNumber,
+        )
+    }
 
     def create[F[_]: Meter, A: MeasurementValue]: F[Gauge[F, A]] =
       Meter[F]
@@ -99,7 +119,7 @@ object SystemExperimentalMetrics {
 
   }
 
-  /** Reports the number of logical (virtual) processor cores created by the operating system to manage multitasking
+  /** Reports the number of logical (virtual) processor cores created by the operating system to manage multitasking.
     *
     * @note
     *   <p> Calculated by multiplying the number of sockets by the number of cores per socket, and then by the number of
@@ -109,7 +129,7 @@ object SystemExperimentalMetrics {
 
     val name: String = "system.cpu.logical.count"
     val description: String =
-      "Reports the number of logical (virtual) processor cores created by the operating system to manage multitasking"
+      "Reports the number of logical (virtual) processor cores created by the operating system to manage multitasking."
     val unit: String = "{cpu}"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = Nil
@@ -139,7 +159,7 @@ object SystemExperimentalMetrics {
 
   }
 
-  /** Reports the number of actual physical processor cores on the hardware
+  /** Reports the number of actual physical processor cores on the hardware.
     *
     * @note
     *   <p> Calculated by multiplying the number of sockets by the number of cores per socket
@@ -147,7 +167,7 @@ object SystemExperimentalMetrics {
   object CpuPhysicalCount extends MetricSpec.Unsealed {
 
     val name: String = "system.cpu.physical.count"
-    val description: String = "Reports the number of actual physical processor cores on the hardware"
+    val description: String = "Reports the number of actual physical processor cores on the hardware."
     val unit: String = "{cpu}"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = Nil
@@ -177,16 +197,52 @@ object SystemExperimentalMetrics {
 
   }
 
-  /** Deprecated. Use `cpu.time` instead.
+  /** Seconds each logical CPU spent on each mode.
     */
-  @deprecated("Replaced by `cpu.time`.", "")
   object CpuTime extends MetricSpec.Unsealed {
 
     val name: String = "system.cpu.time"
-    val description: String = "Deprecated. Use `cpu.time` instead."
+    val description: String = "Seconds each logical CPU spent on each mode."
     val unit: String = "s"
     val stability: Stability = Stability.development
-    val attributeSpecs: List[AttributeSpec[_]] = Nil
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
+
+    object AttributeSpecs {
+
+      /** The logical CPU number [0..n-1]
+        */
+      val cpuLogicalNumber: AttributeSpec[Long] =
+        AttributeSpec(
+          CpuExperimentalAttributes.CpuLogicalNumber,
+          List(
+            1,
+          ),
+          Requirement.recommended,
+          Stability.development
+        )
+
+      /** The mode of the CPU
+        *
+        * @note
+        *   <p> Following states SHOULD be used: `user`, `system`, `nice`, `idle`, `iowait`, `interrupt`, `steal`
+        */
+      val cpuMode: AttributeSpec[String] =
+        AttributeSpec(
+          CpuExperimentalAttributes.CpuMode,
+          List(
+            "user",
+            "system",
+          ),
+          Requirement.recommended,
+          Stability.development
+        )
+
+      val specs: List[AttributeSpec[_]] =
+        List(
+          cpuLogicalNumber,
+          cpuMode,
+        )
+    }
 
     def create[F[_]: Meter, A: MeasurementValue]: F[Counter[F, A]] =
       Meter[F]
@@ -213,16 +269,54 @@ object SystemExperimentalMetrics {
 
   }
 
-  /** Deprecated. Use `cpu.utilization` instead.
+  /** For each logical CPU, the utilization is calculated as the change in cumulative CPU time (cpu.time) over a
+    * measurement interval, divided by the elapsed time.
     */
-  @deprecated("Replaced by `cpu.utilization`.", "")
   object CpuUtilization extends MetricSpec.Unsealed {
 
     val name: String = "system.cpu.utilization"
-    val description: String = "Deprecated. Use `cpu.utilization` instead."
+    val description: String =
+      "For each logical CPU, the utilization is calculated as the change in cumulative CPU time (cpu.time) over a measurement interval, divided by the elapsed time."
     val unit: String = "1"
     val stability: Stability = Stability.development
-    val attributeSpecs: List[AttributeSpec[_]] = Nil
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
+
+    object AttributeSpecs {
+
+      /** The logical CPU number [0..n-1]
+        */
+      val cpuLogicalNumber: AttributeSpec[Long] =
+        AttributeSpec(
+          CpuExperimentalAttributes.CpuLogicalNumber,
+          List(
+            1,
+          ),
+          Requirement.recommended,
+          Stability.development
+        )
+
+      /** The mode of the CPU
+        *
+        * @note
+        *   <p> Following modes SHOULD be used: `user`, `system`, `nice`, `idle`, `iowait`, `interrupt`, `steal`
+        */
+      val cpuMode: AttributeSpec[String] =
+        AttributeSpec(
+          CpuExperimentalAttributes.CpuMode,
+          List(
+            "user",
+            "system",
+          ),
+          Requirement.recommended,
+          Stability.development
+        )
+
+      val specs: List[AttributeSpec[_]] =
+        List(
+          cpuLogicalNumber,
+          cpuMode,
+        )
+    }
 
     def create[F[_]: Meter, A: MeasurementValue]: F[Gauge[F, A]] =
       Meter[F]
@@ -249,11 +343,12 @@ object SystemExperimentalMetrics {
 
   }
 
-  /** */
+  /** TODO.
+    */
   object DiskIo extends MetricSpec.Unsealed {
 
     val name: String = "system.disk.io"
-    val description: String = ""
+    val description: String = "TODO."
     val unit: String = "By"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
@@ -316,7 +411,7 @@ object SystemExperimentalMetrics {
 
   }
 
-  /** Time disk spent activated
+  /** Time disk spent activated.
     *
     * @note
     *   <p> The real elapsed time ("wall clock") used in the I/O path (time from operations running in parallel are not
@@ -329,7 +424,7 @@ object SystemExperimentalMetrics {
   object DiskIoTime extends MetricSpec.Unsealed {
 
     val name: String = "system.disk.io_time"
-    val description: String = "Time disk spent activated"
+    val description: String = "Time disk spent activated."
     val unit: String = "s"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
@@ -379,12 +474,12 @@ object SystemExperimentalMetrics {
 
   }
 
-  /** The total storage capacity of the disk
+  /** The total storage capacity of the disk.
     */
   object DiskLimit extends MetricSpec.Unsealed {
 
     val name: String = "system.disk.limit"
-    val description: String = "The total storage capacity of the disk"
+    val description: String = "The total storage capacity of the disk."
     val unit: String = "By"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
@@ -434,11 +529,12 @@ object SystemExperimentalMetrics {
 
   }
 
-  /** */
+  /** TODO.
+    */
   object DiskMerged extends MetricSpec.Unsealed {
 
     val name: String = "system.disk.merged"
-    val description: String = ""
+    val description: String = "TODO."
     val unit: String = "{operation}"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
@@ -501,7 +597,7 @@ object SystemExperimentalMetrics {
 
   }
 
-  /** Sum of the time each operation took to complete
+  /** Sum of the time each operation took to complete.
     *
     * @note
     *   <p> Because it is the sum of time each request took, parallel-issued requests each contribute to make the count
@@ -512,7 +608,7 @@ object SystemExperimentalMetrics {
   object DiskOperationTime extends MetricSpec.Unsealed {
 
     val name: String = "system.disk.operation_time"
-    val description: String = "Sum of the time each operation took to complete"
+    val description: String = "Sum of the time each operation took to complete."
     val unit: String = "s"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
@@ -575,11 +671,12 @@ object SystemExperimentalMetrics {
 
   }
 
-  /** */
+  /** TODO.
+    */
   object DiskOperations extends MetricSpec.Unsealed {
 
     val name: String = "system.disk.operations"
-    val description: String = ""
+    val description: String = "TODO."
     val unit: String = "{operation}"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
@@ -642,12 +739,12 @@ object SystemExperimentalMetrics {
 
   }
 
-  /** The total storage capacity of the filesystem
+  /** The total storage capacity of the filesystem.
     */
   object FilesystemLimit extends MetricSpec.Unsealed {
 
     val name: String = "system.filesystem.limit"
-    val description: String = "The total storage capacity of the filesystem"
+    val description: String = "The total storage capacity of the filesystem."
     val unit: String = "By"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
@@ -849,11 +946,12 @@ object SystemExperimentalMetrics {
 
   }
 
-  /** */
+  /** TODO.
+    */
   object FilesystemUtilization extends MetricSpec.Unsealed {
 
     val name: String = "system.filesystem.utilization"
-    val description: String = ""
+    val description: String = "TODO."
     val unit: String = "1"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
@@ -956,7 +1054,7 @@ object SystemExperimentalMetrics {
 
   }
 
-  /** An estimate of how much memory is available for starting new applications, without causing swapping
+  /** An estimate of how much memory is available for starting new applications, without causing swapping.
     *
     * @note
     *   <p> This is an alternative to `system.memory.usage` metric with `state=free`. Linux starting from 3.14 exports
@@ -969,7 +1067,7 @@ object SystemExperimentalMetrics {
 
     val name: String = "system.linux.memory.available"
     val description: String =
-      "An estimate of how much memory is available for starting new applications, without causing swapping"
+      "An estimate of how much memory is available for starting new applications, without causing swapping."
     val unit: String = "By"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = Nil
@@ -1063,15 +1161,12 @@ object SystemExperimentalMetrics {
 
   }
 
-  /** Total memory available in the system.
-    *
-    * @note
-    *   <p> Its value SHOULD equal the sum of `system.memory.state` over all states.
+  /** Total virtual memory available in the system.
     */
   object MemoryLimit extends MetricSpec.Unsealed {
 
     val name: String = "system.memory.limit"
-    val description: String = "Total memory available in the system."
+    val description: String = "Total virtual memory available in the system."
     val unit: String = "By"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = Nil
@@ -1141,10 +1236,6 @@ object SystemExperimentalMetrics {
   }
 
   /** Reports memory in use by state.
-    *
-    * @note
-    *   <p> The sum over all `system.memory.state` values SHOULD equal the total memory available on the system, that is
-    *   `system.memory.limit`.
     */
   object MemoryUsage extends MetricSpec.Unsealed {
 
@@ -1200,11 +1291,12 @@ object SystemExperimentalMetrics {
 
   }
 
-  /** */
+  /** TODO.
+    */
   object MemoryUtilization extends MetricSpec.Unsealed {
 
     val name: String = "system.memory.utilization"
-    val description: String = ""
+    val description: String = "TODO."
     val unit: String = "1"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
@@ -1255,11 +1347,12 @@ object SystemExperimentalMetrics {
 
   }
 
-  /** */
-  object NetworkConnections extends MetricSpec.Unsealed {
+  /** TODO.
+    */
+  object NetworkConnectionCount extends MetricSpec.Unsealed {
 
-    val name: String = "system.network.connections"
-    val description: String = ""
+    val name: String = "system.network.connection.count"
+    val description: String = "TODO."
     val unit: String = "{connection}"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
@@ -1347,25 +1440,34 @@ object SystemExperimentalMetrics {
 
   }
 
-  /** Count of packets that are dropped or discarded even though there was no error
-    *
-    * @note
-    *   <p> Measured as: <ul> <li>Linux: the `drop` column in `/proc/dev/net` (<a
-    *   href="https://web.archive.org/web/20180321091318/http://www.onlamp.com/pub/a/linux/2000/11/16/LinuxAdmin.html">source</a>)
-    *   <li>Windows: <a
-    *   href="https://docs.microsoft.com/windows/win32/api/netioapi/ns-netioapi-mib_if_row2">`InDiscards`/`OutDiscards`</a>
-    *   from <a href="https://docs.microsoft.com/windows/win32/api/netioapi/nf-netioapi-getifentry2">`GetIfEntry2`</a>
-    *   </ul>
+  /** Deprecated, use `system.network.connection.count` instead.
     */
-  object NetworkDropped extends MetricSpec.Unsealed {
+  @deprecated("Replaced by `system.network.connection.count`.", "")
+  object NetworkConnections extends MetricSpec.Unsealed {
 
-    val name: String = "system.network.dropped"
-    val description: String = "Count of packets that are dropped or discarded even though there was no error"
-    val unit: String = "{packet}"
+    val name: String = "system.network.connections"
+    val description: String = "Deprecated, use `system.network.connection.count` instead."
+    val unit: String = "{connection}"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
+
+      /** The state of network connection
+        *
+        * @note
+        *   <p> Connection states are defined as part of the <a
+        *   href="https://datatracker.ietf.org/doc/html/rfc9293#section-3.3.2">rfc9293</a>
+        */
+      val networkConnectionState: AttributeSpec[String] =
+        AttributeSpec(
+          NetworkExperimentalAttributes.NetworkConnectionState,
+          List(
+            "close_wait",
+          ),
+          Requirement.recommended,
+          Stability.development
+        )
 
       /** The network interface name.
         */
@@ -1380,54 +1482,62 @@ object SystemExperimentalMetrics {
           Stability.development
         )
 
-      /** The network IO operation direction.
+      /** <a href="https://wikipedia.org/wiki/Transport_layer">OSI transport layer</a> or <a
+        * href="https://wikipedia.org/wiki/Inter-process_communication">inter-process communication method</a>.
+        *
+        * @note
+        *   <p> The value SHOULD be normalized to lowercase. <p> Consider always setting the transport when setting a
+        *   port number, since a port number is ambiguous without knowing the transport. For example different processes
+        *   could be listening on TCP port 12345 and UDP port 12345.
         */
-      val networkIoDirection: AttributeSpec[String] =
+      val networkTransport: AttributeSpec[String] =
         AttributeSpec(
-          NetworkExperimentalAttributes.NetworkIoDirection,
+          NetworkAttributes.NetworkTransport,
           List(
-            "transmit",
+            "tcp",
+            "udp",
           ),
           Requirement.recommended,
-          Stability.development
+          Stability.stable
         )
 
       val specs: List[AttributeSpec[_]] =
         List(
+          networkConnectionState,
           networkInterfaceName,
-          networkIoDirection,
+          networkTransport,
         )
     }
 
-    def create[F[_]: Meter, A: MeasurementValue]: F[Counter[F, A]] =
+    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
       Meter[F]
-        .counter[A](name)
+        .upDownCounter[A](name)
         .withDescription(description)
         .withUnit(unit)
         .create
 
     def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
       Meter[F]
-        .observableCounter[A](name)
+        .observableUpDownCounter[A](name)
         .withDescription(description)
         .withUnit(unit)
         .createObserver
 
     def createWithCallback[F[_]: Meter, A: MeasurementValue](
         callback: ObservableMeasurement[F, A] => F[Unit]
-    ): Resource[F, ObservableCounter] =
+    ): Resource[F, ObservableUpDownCounter] =
       Meter[F]
-        .observableCounter[A](name)
+        .observableUpDownCounter[A](name)
         .withDescription(description)
         .withUnit(unit)
         .createWithCallback(callback)
 
   }
 
-  /** Count of network errors detected
+  /** Count of network errors detected.
     *
     * @note
-    *   <p> Measured as: <ul> <li>Linux: the `errs` column in `/proc/dev/net` (<a
+    *   <p> Measured as: <ul> <li>Linux: the `errs` column in `/proc/net/dev` (<a
     *   href="https://web.archive.org/web/20180321091318/http://www.onlamp.com/pub/a/linux/2000/11/16/LinuxAdmin.html">source</a>).
     *   <li>Windows: <a
     *   href="https://docs.microsoft.com/windows/win32/api/netioapi/ns-netioapi-mib_if_row2">`InErrors`/`OutErrors`</a>
@@ -1437,7 +1547,7 @@ object SystemExperimentalMetrics {
   object NetworkErrors extends MetricSpec.Unsealed {
 
     val name: String = "system.network.errors"
-    val description: String = "Count of network errors detected"
+    val description: String = "Count of network errors detected."
     val unit: String = "{error}"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
@@ -1501,11 +1611,12 @@ object SystemExperimentalMetrics {
 
   }
 
-  /** */
+  /** TODO.
+    */
   object NetworkIo extends MetricSpec.Unsealed {
 
     val name: String = "system.network.io"
-    val description: String = ""
+    val description: String = "TODO."
     val unit: String = "By"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
@@ -1569,11 +1680,12 @@ object SystemExperimentalMetrics {
 
   }
 
-  /** */
-  object NetworkPackets extends MetricSpec.Unsealed {
+  /** TODO.
+    */
+  object NetworkPacketCount extends MetricSpec.Unsealed {
 
-    val name: String = "system.network.packets"
-    val description: String = ""
+    val name: String = "system.network.packet.count"
+    val description: String = "TODO."
     val unit: String = "{packet}"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
@@ -1636,11 +1748,89 @@ object SystemExperimentalMetrics {
 
   }
 
-  /** */
+  /** Count of packets that are dropped or discarded even though there was no error.
+    *
+    * @note
+    *   <p> Measured as: <ul> <li>Linux: the `drop` column in `/proc/net/dev` (<a
+    *   href="https://web.archive.org/web/20180321091318/http://www.onlamp.com/pub/a/linux/2000/11/16/LinuxAdmin.html">source</a>)
+    *   <li>Windows: <a
+    *   href="https://docs.microsoft.com/windows/win32/api/netioapi/ns-netioapi-mib_if_row2">`InDiscards`/`OutDiscards`</a>
+    *   from <a href="https://docs.microsoft.com/windows/win32/api/netioapi/nf-netioapi-getifentry2">`GetIfEntry2`</a>
+    *   </ul>
+    */
+  object NetworkPacketDropped extends MetricSpec.Unsealed {
+
+    val name: String = "system.network.packet.dropped"
+    val description: String = "Count of packets that are dropped or discarded even though there was no error."
+    val unit: String = "{packet}"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
+
+    object AttributeSpecs {
+
+      /** The network interface name.
+        */
+      val networkInterfaceName: AttributeSpec[String] =
+        AttributeSpec(
+          NetworkExperimentalAttributes.NetworkInterfaceName,
+          List(
+            "lo",
+            "eth0",
+          ),
+          Requirement.recommended,
+          Stability.development
+        )
+
+      /** The network IO operation direction.
+        */
+      val networkIoDirection: AttributeSpec[String] =
+        AttributeSpec(
+          NetworkExperimentalAttributes.NetworkIoDirection,
+          List(
+            "transmit",
+          ),
+          Requirement.recommended,
+          Stability.development
+        )
+
+      val specs: List[AttributeSpec[_]] =
+        List(
+          networkInterfaceName,
+          networkIoDirection,
+        )
+    }
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[Counter[F, A]] =
+      Meter[F]
+        .counter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableCounter] =
+      Meter[F]
+        .observableCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** TODO.
+    */
   object PagingFaults extends MetricSpec.Unsealed {
 
     val name: String = "system.paging.faults"
-    val description: String = ""
+    val description: String = "TODO."
     val unit: String = "{fault}"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
@@ -1690,11 +1880,12 @@ object SystemExperimentalMetrics {
 
   }
 
-  /** */
+  /** TODO.
+    */
   object PagingOperations extends MetricSpec.Unsealed {
 
     val name: String = "system.paging.operations"
-    val description: String = ""
+    val description: String = "TODO."
     val unit: String = "{operation}"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
@@ -1757,12 +1948,12 @@ object SystemExperimentalMetrics {
 
   }
 
-  /** Unix swap or windows pagefile usage
+  /** Unix swap or windows pagefile usage.
     */
   object PagingUsage extends MetricSpec.Unsealed {
 
     val name: String = "system.paging.usage"
-    val description: String = "Unix swap or windows pagefile usage"
+    val description: String = "Unix swap or windows pagefile usage."
     val unit: String = "By"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
@@ -1825,11 +2016,12 @@ object SystemExperimentalMetrics {
 
   }
 
-  /** */
+  /** TODO.
+    */
   object PagingUtilization extends MetricSpec.Unsealed {
 
     val name: String = "system.paging.utilization"
-    val description: String = ""
+    val description: String = "TODO."
     val unit: String = "1"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
@@ -1892,12 +2084,12 @@ object SystemExperimentalMetrics {
 
   }
 
-  /** Total number of processes in each state
+  /** Total number of processes in each state.
     */
   object ProcessCount extends MetricSpec.Unsealed {
 
     val name: String = "system.process.count"
-    val description: String = "Total number of processes in each state"
+    val description: String = "Total number of processes in each state."
     val unit: String = "{process}"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
@@ -1948,12 +2140,12 @@ object SystemExperimentalMetrics {
 
   }
 
-  /** Total number of processes created over uptime of the host
+  /** Total number of processes created over uptime of the host.
     */
   object ProcessCreated extends MetricSpec.Unsealed {
 
     val name: String = "system.process.created"
-    val description: String = "Total number of processes created over uptime of the host"
+    val description: String = "Total number of processes created over uptime of the host."
     val unit: String = "{process}"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = Nil
@@ -1983,7 +2175,7 @@ object SystemExperimentalMetrics {
 
   }
 
-  /** The time the system has been running
+  /** The time the system has been running.
     *
     * @note
     *   <p> Instrumentations SHOULD use a gauge with type `double` and measure uptime in seconds as a floating point
@@ -1993,7 +2185,7 @@ object SystemExperimentalMetrics {
   object Uptime extends MetricSpec.Unsealed {
 
     val name: String = "system.uptime"
-    val description: String = "The time the system has been running"
+    val description: String = "The time the system has been running."
     val unit: String = "s"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = Nil

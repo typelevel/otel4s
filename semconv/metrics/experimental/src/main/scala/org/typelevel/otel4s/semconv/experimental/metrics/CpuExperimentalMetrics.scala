@@ -26,41 +26,23 @@ import org.typelevel.otel4s.semconv.experimental.attributes._
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/metrics/SemanticMetrics.scala.j2
 object CpuExperimentalMetrics {
 
+  @annotation.nowarn("cat=deprecation")
   val specs: List[MetricSpec] = List(
     Frequency,
     Time,
     Utilization,
   )
 
-  /** Operating frequency of the logical CPU in Hertz.
+  /** Deprecated. Use `system.cpu.frequency` instead.
     */
+  @deprecated("Replaced by `system.cpu.frequency`.", "")
   object Frequency extends MetricSpec.Unsealed {
 
     val name: String = "cpu.frequency"
-    val description: String = "Operating frequency of the logical CPU in Hertz."
-    val unit: String = "Hz"
+    val description: String = "Deprecated. Use `system.cpu.frequency` instead."
+    val unit: String = "{Hz}"
     val stability: Stability = Stability.development
-    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
-
-    object AttributeSpecs {
-
-      /** The logical CPU number [0..n-1]
-        */
-      val cpuLogicalNumber: AttributeSpec[Long] =
-        AttributeSpec(
-          CpuExperimentalAttributes.CpuLogicalNumber,
-          List(
-            1,
-          ),
-          Requirement.recommended,
-          Stability.development
-        )
-
-      val specs: List[AttributeSpec[_]] =
-        List(
-          cpuLogicalNumber,
-        )
-    }
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter, A: MeasurementValue]: F[Gauge[F, A]] =
       Meter[F]
@@ -87,12 +69,13 @@ object CpuExperimentalMetrics {
 
   }
 
-  /** Seconds each logical CPU spent on each mode
+  /** Deprecated. Use `system.cpu.time` instead.
     */
+  @deprecated("Replaced by `system.cpu.time`.", "")
   object Time extends MetricSpec.Unsealed {
 
     val name: String = "cpu.time"
-    val description: String = "Seconds each logical CPU spent on each mode"
+    val description: String = "Deprecated. Use `system.cpu.time` instead."
     val unit: String = "s"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
@@ -159,14 +142,13 @@ object CpuExperimentalMetrics {
 
   }
 
-  /** For each logical CPU, the utilization is calculated as the change in cumulative CPU time (cpu.time) over a
-    * measurement interval, divided by the elapsed time.
+  /** Deprecated. Use `system.cpu.utilization` instead.
     */
+  @deprecated("Replaced by `system.cpu.utilization`.", "")
   object Utilization extends MetricSpec.Unsealed {
 
     val name: String = "cpu.utilization"
-    val description: String =
-      "For each logical CPU, the utilization is calculated as the change in cumulative CPU time (cpu.time) over a measurement interval, divided by the elapsed time."
+    val description: String = "Deprecated. Use `system.cpu.utilization` instead."
     val unit: String = "1"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
@@ -188,7 +170,7 @@ object CpuExperimentalMetrics {
       /** The mode of the CPU
         *
         * @note
-        *   <p> Following modes SHOULD be used: `user`, `system`, `nice`, `idle`, `iowait`, `interrupt`, `steal`
+        *   <p> Following states SHOULD be used: `user`, `system`, `nice`, `idle`, `iowait`, `interrupt`, `steal`
         */
       val cpuMode: AttributeSpec[String] =
         AttributeSpec(

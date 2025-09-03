@@ -58,47 +58,47 @@ object CassandraExperimentalAttributes {
   abstract class CassandraConsistencyLevelValue(val value: String)
   object CassandraConsistencyLevelValue {
 
-    /** all.
+    /** All
       */
     case object All extends CassandraConsistencyLevelValue("all")
 
-    /** each_quorum.
+    /** Each Quorum
       */
     case object EachQuorum extends CassandraConsistencyLevelValue("each_quorum")
 
-    /** quorum.
+    /** Quorum
       */
     case object Quorum extends CassandraConsistencyLevelValue("quorum")
 
-    /** local_quorum.
+    /** Local Quorum
       */
     case object LocalQuorum extends CassandraConsistencyLevelValue("local_quorum")
 
-    /** one.
+    /** One
       */
     case object One extends CassandraConsistencyLevelValue("one")
 
-    /** two.
+    /** Two
       */
     case object Two extends CassandraConsistencyLevelValue("two")
 
-    /** three.
+    /** Three
       */
     case object Three extends CassandraConsistencyLevelValue("three")
 
-    /** local_one.
+    /** Local One
       */
     case object LocalOne extends CassandraConsistencyLevelValue("local_one")
 
-    /** any.
+    /** Any
       */
     case object Any extends CassandraConsistencyLevelValue("any")
 
-    /** serial.
+    /** Serial
       */
     case object Serial extends CassandraConsistencyLevelValue("serial")
 
-    /** local_serial.
+    /** Local Serial
       */
     case object LocalSerial extends CassandraConsistencyLevelValue("local_serial")
   }

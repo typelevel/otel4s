@@ -53,12 +53,13 @@ object DbExperimentalMetrics {
     ClientResponseReturnedRows,
   )
 
-  /** The number of connections that are currently in state described by the `state` attribute
+  /** The number of connections that are currently in state described by the `state` attribute.
     */
   object ClientConnectionCount extends MetricSpec.Unsealed {
 
     val name: String = "db.client.connection.count"
-    val description: String = "The number of connections that are currently in state described by the `state` attribute"
+    val description: String =
+      "The number of connections that are currently in state described by the `state` attribute."
     val unit: String = "{connection}"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
@@ -125,12 +126,12 @@ object DbExperimentalMetrics {
 
   }
 
-  /** The time it took to create a new connection
+  /** The time it took to create a new connection.
     */
   object ClientConnectionCreateTime extends MetricSpec.Unsealed {
 
     val name: String = "db.client.connection.create_time"
-    val description: String = "The time it took to create a new connection"
+    val description: String = "The time it took to create a new connection."
     val unit: String = "s"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
@@ -169,12 +170,12 @@ object DbExperimentalMetrics {
 
   }
 
-  /** The maximum number of idle open connections allowed
+  /** The maximum number of idle open connections allowed.
     */
   object ClientConnectionIdleMax extends MetricSpec.Unsealed {
 
     val name: String = "db.client.connection.idle.max"
-    val description: String = "The maximum number of idle open connections allowed"
+    val description: String = "The maximum number of idle open connections allowed."
     val unit: String = "{connection}"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
@@ -228,12 +229,12 @@ object DbExperimentalMetrics {
 
   }
 
-  /** The minimum number of idle open connections allowed
+  /** The minimum number of idle open connections allowed.
     */
   object ClientConnectionIdleMin extends MetricSpec.Unsealed {
 
     val name: String = "db.client.connection.idle.min"
-    val description: String = "The minimum number of idle open connections allowed"
+    val description: String = "The minimum number of idle open connections allowed."
     val unit: String = "{connection}"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
@@ -287,12 +288,12 @@ object DbExperimentalMetrics {
 
   }
 
-  /** The maximum number of open connections allowed
+  /** The maximum number of open connections allowed.
     */
   object ClientConnectionMax extends MetricSpec.Unsealed {
 
     val name: String = "db.client.connection.max"
-    val description: String = "The maximum number of open connections allowed"
+    val description: String = "The maximum number of open connections allowed."
     val unit: String = "{connection}"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
@@ -346,12 +347,12 @@ object DbExperimentalMetrics {
 
   }
 
-  /** The number of current pending requests for an open connection
+  /** The number of current pending requests for an open connection.
     */
   object ClientConnectionPendingRequests extends MetricSpec.Unsealed {
 
     val name: String = "db.client.connection.pending_requests"
-    val description: String = "The number of current pending requests for an open connection"
+    val description: String = "The number of current pending requests for an open connection."
     val unit: String = "{request}"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
@@ -405,13 +406,13 @@ object DbExperimentalMetrics {
 
   }
 
-  /** The number of connection timeouts that have occurred trying to obtain a connection from the pool
+  /** The number of connection timeouts that have occurred trying to obtain a connection from the pool.
     */
   object ClientConnectionTimeouts extends MetricSpec.Unsealed {
 
     val name: String = "db.client.connection.timeouts"
     val description: String =
-      "The number of connection timeouts that have occurred trying to obtain a connection from the pool"
+      "The number of connection timeouts that have occurred trying to obtain a connection from the pool."
     val unit: String = "{timeout}"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
@@ -465,12 +466,12 @@ object DbExperimentalMetrics {
 
   }
 
-  /** The time between borrowing a connection and returning it to the pool
+  /** The time between borrowing a connection and returning it to the pool.
     */
   object ClientConnectionUseTime extends MetricSpec.Unsealed {
 
     val name: String = "db.client.connection.use_time"
-    val description: String = "The time between borrowing a connection and returning it to the pool"
+    val description: String = "The time between borrowing a connection and returning it to the pool."
     val unit: String = "s"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
@@ -509,12 +510,12 @@ object DbExperimentalMetrics {
 
   }
 
-  /** The time it took to obtain an open connection from the pool
+  /** The time it took to obtain an open connection from the pool.
     */
   object ClientConnectionWaitTime extends MetricSpec.Unsealed {
 
     val name: String = "db.client.connection.wait_time"
-    val description: String = "The time it took to obtain an open connection from the pool"
+    val description: String = "The time it took to obtain an open connection from the pool."
     val unit: String = "s"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs

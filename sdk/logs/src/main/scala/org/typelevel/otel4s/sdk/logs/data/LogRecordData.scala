@@ -56,7 +56,7 @@ sealed trait LogRecordData {
     */
   def traceContext: Option[TraceContext]
 
-  /** The severity level.
+  /** The severity level (also known as log level).
     */
   def severity: Option[Severity]
 
@@ -116,7 +116,7 @@ object LogRecordData {
     *   trace context associated with the log record
     *
     * @param severity
-    *   severity level of the log record
+    *   severity level of the log record (also known as log level)
     *
     * @param severityText
     *   textual representation of the severity level

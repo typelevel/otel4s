@@ -77,7 +77,7 @@ private[resource] trait OSDetectorPlatform { self: OSDetector.type =>
       case os if os.startsWith("hp-ux")        => Some("hpux")
       case os if os.startsWith("aix")          => Some("aix")
       case os if os.startsWith("solaris")      => Some("solaris")
-      case os if os.startsWith("z/os")         => Some("z_os")
+      case os if os.startsWith("z/os")         => Some("zos")
       case _                                   => None
     }
 

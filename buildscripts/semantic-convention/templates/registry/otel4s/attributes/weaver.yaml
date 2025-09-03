@@ -1,6 +1,7 @@
 params:
   excluded_namespaces: ["ios", "aspnetcore", "signalr", "dotnet"]
   excluded_attributes: ["messaging.client_id", "exception.escaped"]
+  excluded_enums: ["z_os"]
   object_prefix: "" # stable - "", experimental - "Experimental"
   stable_only: true # stable - true, experimental - false
 comment_formats:

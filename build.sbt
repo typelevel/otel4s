@@ -151,6 +151,7 @@ lazy val root = tlCrossRootProject
     sdk,
     `sdk-exporter-common`,
     `sdk-exporter-proto`,
+    `sdk-exporter-logs`,
     `sdk-exporter-metrics`,
     `sdk-exporter-prometheus`,
     `sdk-exporter-trace`,
@@ -518,6 +519,28 @@ lazy val `sdk-exporter-common` =
         "org.typelevel" %%% "discipline-munit" % MUnitDisciplineVersion % Test,
         "io.circe" %%% "circe-generic" % CirceVersion % Test
       )
+    )
+    .jsSettings(scalaJSLinkerSettings)
+    .nativeEnablePlugins(ScalaNativeBrewedConfigPlugin)
+    .nativeSettings(scalaNativeSettings)
+    .settings(munitDependencies)
+
+lazy val `sdk-exporter-logs` =
+  crossProject(JVMPlatform, JSPlatform, NativePlatform)
+    .crossType(CrossType.Pure)
+    .in(file("sdk-exporter/logs"))
+    .enablePlugins(NoPublishPlugin)
+    .dependsOn(
+      `sdk-exporter-common` % "compile->compile;test->test",
+      `sdk-logs` % "compile->compile;test->test"
+    )
+    .settings(
+      name := "otel4s-sdk-exporter-logs",
+      startYear := Some(2025),
+      Test / scalacOptions ++= {
+        // see https://github.com/circe/circe/issues/2162
+        if (tlIsScala3.value) Seq("-Xmax-inlines", "64") else Nil
+      }
     )
     .jsSettings(scalaJSLinkerSettings)
     .nativeEnablePlugins(ScalaNativeBrewedConfigPlugin)
@@ -1011,6 +1034,7 @@ lazy val unidocs = project
       `sdk-testkit`.jvm,
       sdk.jvm,
       `sdk-exporter-common`.jvm,
+      `sdk-exporter-logs`.jvm,
       `sdk-exporter-metrics`.jvm,
       `sdk-exporter-prometheus`.jvm,
       `sdk-exporter-trace`.jvm,

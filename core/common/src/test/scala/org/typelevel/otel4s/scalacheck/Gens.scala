@@ -103,7 +103,7 @@ trait Gens {
 
     def map: Gen[AnyValue] =
       for {
-        values <- Gen.listOf(Gen.zip(Gen.alphaNumStr, primitives))
+        values <- Gen.listOf(Gen.zip(Gens.nonEmptyString, primitives))
       } yield AnyValue.map(values.toMap)
 
     Gen.oneOf(primitives, array, map)

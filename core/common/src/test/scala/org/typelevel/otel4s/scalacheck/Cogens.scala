@@ -71,7 +71,7 @@ trait Cogens {
         case AnyValue.LongValueImpl(value)      => Cogen[Long].perturb(seed, value)
         case AnyValue.DoubleValueImpl(value)    => Cogen[Double].perturb(seed, value)
         case AnyValue.ByteArrayValueImpl(value) => Cogen[Array[Byte]].perturb(seed, value)
-        case AnyValue.ListValueImpl(values)     => values.foldLeft(seed)((s, v) => anyValueCogen.perturb(s, v))
+        case AnyValue.SeqValueImpl(values)      => values.foldLeft(seed)((s, v) => anyValueCogen.perturb(s, v))
         case AnyValue.MapValueImpl(values) =>
           values.foldLeft(seed) { case (s, (k, v)) => anyValueCogen.perturb(Cogen[String].perturb(s, k), v) }
       }

@@ -99,7 +99,7 @@ trait Gens {
     def array: Gen[AnyValue] =
       for {
         values <- Gen.listOf(primitives)
-      } yield AnyValue.list(values)
+      } yield AnyValue.seq(values)
 
     def map: Gen[AnyValue] =
       for {

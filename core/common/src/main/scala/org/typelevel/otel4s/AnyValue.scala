@@ -76,7 +76,7 @@ object AnyValue {
     def value: ByteBuffer
   }
 
-  sealed trait ListValue extends AnyValue {
+  sealed trait SeqValue extends AnyValue {
     def value: Seq[AnyValue]
   }
 
@@ -111,10 +111,10 @@ object AnyValue {
   def bytes(value: Array[Byte]): ByteArrayValue =
     ByteArrayValueImpl(Array.copyOf(value, value.length))
 
-  /** Creates an [[AnyValue]] from the given list of values.
+  /** Creates an [[AnyValue]] from the given seq of values.
     */
-  def list(values: Seq[AnyValue]): ListValue =
-    ListValueImpl(values)
+  def seq(values: Seq[AnyValue]): SeqValue =
+    SeqValueImpl(values)
 
   /** Creates a key-value list (map) of [[AnyValue]] from the given map.
     */
@@ -133,7 +133,7 @@ object AnyValue {
       case LongValueImpl(value)      => Hash[Long].hash(value)
       case DoubleValueImpl(value)    => Hash[Double].hash(value)
       case ByteArrayValueImpl(value) => java.util.Arrays.hashCode(value)
-      case ListValueImpl(values)     => values.map(hash).hashCode()
+      case SeqValueImpl(values)      => values.map(hash).hashCode()
       case MapValueImpl(values)      => values.map { case (k, v) => (k, hash(v)) }.hashCode()
       case _: EmptyValue             => System.identityHashCode(EmptyValueImpl)
     }
@@ -147,7 +147,7 @@ object AnyValue {
       case (ByteArrayValueImpl(a), ByteArrayValueImpl(b)) =>
         java.util.Arrays.equals(a, b)
 
-      case (ListValueImpl(a), ListValueImpl(b)) =>
+      case (SeqValueImpl(a), SeqValueImpl(b)) =>
         a.size == b.size && a.lazyZip(b).forall { case (x, y) => eqv(x, y) }
 
       case (MapValueImpl(a), MapValueImpl(b)) =>
@@ -168,7 +168,7 @@ object AnyValue {
     case LongValueImpl(value)      => s"LongValue($value)"
     case DoubleValueImpl(value)    => s"DoubleValue($value)"
     case ByteArrayValueImpl(value) => s"ByteArrayValue(${Base64.getEncoder.encodeToString(value)})"
-    case ListValueImpl(values)     => s"ListValue(${values.map(anyValueShow.show).mkString("[", ", ", "]")})"
+    case SeqValueImpl(values)      => s"SeqValue(${values.map(anyValueShow.show).mkString("[", ", ", "]")})"
     case MapValueImpl(values) =>
       s"MapValue(${values.map { case (k, v) => s"$k -> ${anyValueShow.show(v)}" }.mkString("{", ", ", "}")})"
   }
@@ -180,7 +180,7 @@ object AnyValue {
   private[otel4s] final case class ByteArrayValueImpl(bytes: Array[Byte]) extends ByteArrayValue {
     def value: ByteBuffer = ByteBuffer.wrap(bytes).asReadOnlyBuffer()
   }
-  private[otel4s] final case class ListValueImpl(value: Seq[AnyValue]) extends ListValue
+  private[otel4s] final case class SeqValueImpl(value: Seq[AnyValue]) extends SeqValue
   private[otel4s] final case class MapValueImpl(value: Map[String, AnyValue]) extends MapValue
   private[otel4s] case object EmptyValueImpl extends EmptyValue
 

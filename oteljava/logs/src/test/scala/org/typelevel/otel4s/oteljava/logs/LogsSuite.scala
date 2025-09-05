@@ -17,22 +17,31 @@
 package org.typelevel.otel4s.oteljava.logs
 
 import cats.effect.IO
+import io.opentelemetry.api.common.{Value => JValue}
+import io.opentelemetry.api.common.KeyValue
+import io.opentelemetry.api.common.ValueType
+import io.opentelemetry.api.trace.Span
+import io.opentelemetry.api.trace.SpanContext
+import io.opentelemetry.api.trace.TraceFlags
+import io.opentelemetry.api.trace.TraceState
 import io.opentelemetry.context.{Context => JContext}
-import io.opentelemetry.api.common.{KeyValue, ValueType, Value => JValue}
-import io.opentelemetry.api.trace.{Span, SpanContext, TraceFlags, TraceState}
 import io.opentelemetry.sdk.OpenTelemetrySdk
 import io.opentelemetry.sdk.logs.SdkLoggerProvider
 import io.opentelemetry.sdk.logs.`export`.SimpleLogRecordProcessor
 import io.opentelemetry.sdk.testing.exporter.InMemoryLogRecordExporter
-import munit.{CatsEffectSuite, Compare, ScalaCheckEffectSuite}
+import munit.CatsEffectSuite
+import munit.Compare
+import munit.ScalaCheckEffectSuite
+import org.scalacheck.Arbitrary
+import org.scalacheck.Gen
 import org.scalacheck.effect.PropF
-import org.scalacheck.{Arbitrary, Gen}
+import org.typelevel.otel4s.AnyValue
+import org.typelevel.otel4s.Attributes
 import org.typelevel.otel4s.logs.Severity
 import org.typelevel.otel4s.logs.scalacheck.Arbitraries._
 import org.typelevel.otel4s.oteljava.AttributeConverters._
 import org.typelevel.otel4s.oteljava.context.Context
 import org.typelevel.otel4s.scalacheck.Arbitraries._
-import org.typelevel.otel4s.{AnyValue, Attributes}
 
 import scala.concurrent.duration._
 import scala.jdk.CollectionConverters._
@@ -134,7 +143,7 @@ class LogsSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
       case AnyValue.ByteArrayValueImpl(bytes) =>
         JValue.of(bytes)
 
-      case list: AnyValue.ListValue =>
+      case list: AnyValue.SeqValue =>
         JValue.of(list.value.map(toJValue).filter(_ != null).toList.asJava)
 
       case map: AnyValue.MapValue =>

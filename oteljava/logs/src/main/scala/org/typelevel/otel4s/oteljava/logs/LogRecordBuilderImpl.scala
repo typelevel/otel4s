@@ -127,24 +127,24 @@ private[oteljava] final case class LogRecordBuilderImpl[F[_]: Sync: AskContext](
 
   private def toJValue(value: AnyValue): Option[JValue[_]] =
     value match {
-      case string: AnyValue.StringValue    => 
+      case string: AnyValue.StringValue =>
         Some(JValue.of(string.value))
-        
-      case boolean: AnyValue.BooleanValue   => 
+
+      case boolean: AnyValue.BooleanValue =>
         Some(JValue.of(boolean.value))
-        
-      case long: AnyValue.LongValue      =>
+
+      case long: AnyValue.LongValue =>
         Some(JValue.of(long.value))
-        
-      case double: AnyValue.DoubleValue    =>
+
+      case double: AnyValue.DoubleValue =>
         Some(JValue.of(double.value))
-        
+
       case AnyValue.ByteArrayValueImpl(bytes) =>
         Some(JValue.of(bytes))
-        
-      case list: AnyValue.ListValue     =>
+
+      case list: AnyValue.SeqValue =>
         Some(JValue.of(list.value.flatMap(toJValue).toList.asJava))
-        
+
       case map: AnyValue.MapValue =>
         Some(
           JValue.of(

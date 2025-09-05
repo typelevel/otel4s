@@ -154,6 +154,7 @@ sealed trait LogRecordBuilder[F[_], Ctx] {
 }
 
 object LogRecordBuilder {
+  private[otel4s] trait Unsealed[F[_], Ctx] extends LogRecordBuilder[F, Ctx]
 
   def noop[F[_]: Applicative, Ctx]: LogRecordBuilder[F, Ctx] =
     new LogRecordBuilder[F, Ctx] {

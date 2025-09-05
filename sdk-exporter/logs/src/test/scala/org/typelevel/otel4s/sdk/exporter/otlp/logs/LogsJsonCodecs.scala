@@ -81,8 +81,8 @@ private object LogsJsonCodecs extends JsonCodecs {
       case long: AnyValue.LongValue           => Json.obj("intValue" := long.value.toString)
       case double: AnyValue.DoubleValue       => Json.obj("doubleValue" := double.value)
       case byteArray: AnyValue.ByteArrayValue => Json.obj("bytesValue" := ByteVector(byteArray.value).toBase64)
-      case list: AnyValue.ListValue =>
-        Json.obj("arrayValue" := Json.obj("values" := list.value.map(encodeValue)).dropEmptyValues)
+      case seq: AnyValue.SeqValue =>
+        Json.obj("arrayValue" := Json.obj("values" := seq.value.map(encodeValue)).dropEmptyValues)
 
       case map: AnyValue.MapValue =>
         Json.obj(

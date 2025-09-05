@@ -728,11 +728,16 @@ lazy val `oteljava-logs` = project
   .in(file("oteljava/logs"))
   .enablePlugins(NoPublishPlugin)
   .dependsOn(
-    `oteljava-common`,
+    `oteljava-common` % "compile->compile;test->test",
     `core-logs`.jvm % "compile->compile;test->test"
   )
+  .settings(munitDependencies)
   .settings(
     name := "otel4s-oteljava-logs",
+    libraryDependencies ++= Seq(
+      "io.opentelemetry" % "opentelemetry-sdk-testing" % OpenTelemetryVersion % Test,
+      "org.typelevel" %%% "scalacheck-effect-munit" % MUnitScalaCheckEffectVersion % Test,
+    ),
     startYear := Some(2025),
   )
 

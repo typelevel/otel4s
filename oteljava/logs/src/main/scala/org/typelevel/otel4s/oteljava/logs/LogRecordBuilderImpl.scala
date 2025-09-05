@@ -65,7 +65,7 @@ private[oteljava] final case class LogRecordBuilderImpl[F[_]: Sync: AskContext](
     copy(jBuilder = jBuilder.setSeverityText(severityText))
 
   def withBody(value: AnyValue): LogRecordBuilder[F, Context] =
-    copy(jBuilder = jBuilder.setBody(toJValue(value)))
+    copy(jBuilder = toJValue(value).fold(jBuilder)(jBuilder.setBody))
 
   def withEventName(eventName: String): LogRecordBuilder[F, Context] =
     copy(jBuilder = jBuilder.setEventName(eventName))
@@ -125,15 +125,34 @@ private[oteljava] final case class LogRecordBuilderImpl[F[_]: Sync: AskContext](
       case Severity.Fatal4 => JSeverity.FATAL4
     }
 
-  private def toJValue(value: AnyValue): JValue[_] =
+  private def toJValue(value: AnyValue): Option[JValue[_]] =
     value match {
-      case AnyValue.StringValueImpl(value)    => JValue.of(value)
-      case AnyValue.BooleanValueImpl(value)   => JValue.of(value)
-      case AnyValue.LongValueImpl(value)      => JValue.of(value)
-      case AnyValue.DoubleValueImpl(value)    => JValue.of(value)
-      case AnyValue.ByteArrayValueImpl(value) => JValue.of(value)
-      case AnyValue.ListValueImpl(values)     => JValue.of(values.map(toJValue).toList.asJava)
-      case AnyValue.MapValueImpl(values)      => JValue.of(values.view.mapValues(toJValue).toMap.asJava)
-      case AnyValue.EmptyValueImpl => null // bold of me to assume it won't strike us in a very unexpected way
+      case string: AnyValue.StringValue    => 
+        Some(JValue.of(string.value))
+        
+      case boolean: AnyValue.BooleanValue   => 
+        Some(JValue.of(boolean.value))
+        
+      case long: AnyValue.LongValue      =>
+        Some(JValue.of(long.value))
+        
+      case double: AnyValue.DoubleValue    =>
+        Some(JValue.of(double.value))
+        
+      case AnyValue.ByteArrayValueImpl(bytes) =>
+        Some(JValue.of(bytes))
+        
+      case list: AnyValue.ListValue     =>
+        Some(JValue.of(list.value.flatMap(toJValue).toList.asJava))
+        
+      case map: AnyValue.MapValue =>
+        Some(
+          JValue.of(
+            map.value.flatMap { case (key, value) => toJValue(value).map(v => (key, v)) }.asJava
+          )
+        )
+
+      case _: AnyValue.EmptyValue =>
+        None
     }
 }

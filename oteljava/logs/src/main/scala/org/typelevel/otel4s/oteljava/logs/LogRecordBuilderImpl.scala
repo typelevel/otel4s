@@ -41,7 +41,7 @@ import scala.jdk.CollectionConverters._
 private[oteljava] final case class LogRecordBuilderImpl[F[_]: Sync: AskContext](
     meta: InstrumentMeta.Dynamic[F],
     jBuilder: JLogRecordBuilder
-) extends LogRecordBuilder[F, Context] {
+) extends LogRecordBuilder.Unsealed[F, Context] {
 
   def withTimestamp(timestamp: FiniteDuration): LogRecordBuilder[F, Context] =
     copy(jBuilder = jBuilder.setTimestamp(timestamp.toNanos, TimeUnit.NANOSECONDS))

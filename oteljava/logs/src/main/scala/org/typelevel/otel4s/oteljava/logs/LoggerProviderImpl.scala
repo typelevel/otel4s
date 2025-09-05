@@ -27,7 +27,7 @@ import org.typelevel.otel4s.oteljava.context.Context
 
 private[oteljava] final class LoggerProviderImpl[F[_]: Sync: AskContext](
     jLoggerProvider: JLoggerProvider
-) extends LoggerProvider[F, Context] {
+) extends LoggerProvider.Unsealed[F, Context] {
 
   def logger(name: String): LoggerBuilder[F, Context] =
     LoggerBuilderImpl(jLoggerProvider, name)

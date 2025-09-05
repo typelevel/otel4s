@@ -30,7 +30,7 @@ private[oteljava] final case class LoggerBuilderImpl[F[_]: Sync: AskContext](
     name: String,
     version: Option[String] = None,
     schemaUrl: Option[String] = None
-) extends LoggerBuilder[F, Context] {
+) extends LoggerBuilder.Unsealed[F, Context] {
 
   def withVersion(version: String): LoggerBuilder[F, Context] =
     copy(version = Option(version))

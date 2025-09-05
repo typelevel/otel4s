@@ -26,7 +26,7 @@ import org.typelevel.otel4s.meta.InstrumentMeta
 import org.typelevel.otel4s.oteljava.context.AskContext
 import org.typelevel.otel4s.oteljava.context.Context
 
-private[oteljava] final class LoggerImpl[F[_]: Sync: AskContext](jLogger: JLogger) extends Logger[F, Context] {
+private[oteljava] final class LoggerImpl[F[_]: Sync: AskContext](jLogger: JLogger) extends Logger.Unsealed[F, Context] {
   val meta: InstrumentMeta.Dynamic[F] = InstrumentMeta.Dynamic.enabled[F]
   def logRecordBuilder: LogRecordBuilder[F, Context] =
     new LogRecordBuilderImpl[F](meta, jLogger.logRecordBuilder())

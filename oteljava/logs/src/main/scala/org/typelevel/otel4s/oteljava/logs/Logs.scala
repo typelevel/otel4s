@@ -54,6 +54,13 @@ object Logs {
     * @param jOtel
     *   A Java OpenTelemetry instance. It is the caller's responsibility to shut this down. Failure to do so may result
     *   in lost logs.
+    *
+    * @note
+    *   this implementation uses a constant root `Context` via `Ask.const(Context.root)`. That means the module is
+    *   isolated: it does not inherit or propagate the surrounding OpenTelemetry span context. This is useful if you
+    *   only need logging (without traces or metrics) and want the module to operate independently. If instead you want
+    *   interoperability — i.e. to capture the current span context so that logs, traces, and metrics can all work
+    *   together — use `OtelJava.fromJOpenTelemetry`.
     */
   def fromJOpenTelemetry[F[_]: Sync](jOtel: JOpenTelemetry): Logs[F] = {
     implicit val askContext: AskContext[F] = Ask.const(Context.root)

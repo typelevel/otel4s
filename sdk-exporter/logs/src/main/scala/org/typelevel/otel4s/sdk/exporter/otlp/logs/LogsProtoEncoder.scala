@@ -94,8 +94,8 @@ private object LogsProtoEncoder {
         case AnyValue.ByteArrayValueImpl(byteArray) =>
           AnyValueProto(AnyValueProto.Value.BytesValue(ByteString.copyFrom(byteArray)))
 
-        case list: AnyValue.ListValue =>
-          AnyValueProto(AnyValueProto.Value.ArrayValue(ArrayValue(list.value.map(toAnyValueProto))))
+        case seq: AnyValue.SeqValue =>
+          AnyValueProto(AnyValueProto.Value.ArrayValue(ArrayValue(seq.value.map(toAnyValueProto))))
 
         case map: AnyValue.MapValue =>
           AnyValueProto(AnyValueProto.Value.KvlistValue(KeyValueList(map.value.map { case (k, v) =>

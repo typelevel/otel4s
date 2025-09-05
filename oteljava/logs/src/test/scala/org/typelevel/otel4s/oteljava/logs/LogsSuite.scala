@@ -144,7 +144,7 @@ class LogsSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
         JValue.of(bytes)
 
       case list: AnyValue.SeqValue =>
-        JValue.of(list.value.map(toJValue).filter(_ != null).toList.asJava)
+        JValue.of(list.value.map(toJValue).filter(_ != null).asJava)
 
       case map: AnyValue.MapValue =>
         JValue.of(

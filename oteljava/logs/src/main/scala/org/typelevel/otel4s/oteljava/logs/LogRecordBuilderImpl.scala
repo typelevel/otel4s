@@ -143,7 +143,7 @@ private[oteljava] final case class LogRecordBuilderImpl[F[_]: Sync: AskContext](
         Some(JValue.of(bytes))
 
       case list: AnyValue.SeqValue =>
-        Some(JValue.of(list.value.flatMap(toJValue).toList.asJava))
+        Some(JValue.of(list.value.flatMap(toJValue).asJava))
 
       case map: AnyValue.MapValue =>
         Some(

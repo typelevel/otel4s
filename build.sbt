@@ -162,6 +162,7 @@ lazy val root = tlCrossRootProject
     `oteljava-common`,
     `oteljava-common-testkit`,
     `oteljava-logs`,
+    `oteljava-logs-testkit`,
     `oteljava-metrics`,
     `oteljava-metrics-testkit`,
     `oteljava-trace`,
@@ -741,6 +742,16 @@ lazy val `oteljava-logs` = project
     startYear := Some(2025),
   )
 
+lazy val `oteljava-logs-testkit` = project
+  .in(file("oteljava/logs-testkit"))
+  .enablePlugins(NoPublishPlugin)
+  .dependsOn(`oteljava-logs`, `oteljava-common-testkit`)
+  .settings(munitDependencies)
+  .settings(
+    name := "otel4s-oteljava-logs-testkit",
+    startYear := Some(2025)
+  )
+
 lazy val `oteljava-metrics` = project
   .in(file("oteljava/metrics"))
   .dependsOn(
@@ -1063,6 +1074,7 @@ lazy val unidocs = project
       `oteljava-common`,
       `oteljava-common-testkit`,
       `oteljava-logs`,
+      `oteljava-logs-testkit`,
       `oteljava-metrics`,
       `oteljava-metrics-testkit`,
       `oteljava-trace`,

@@ -1,0 +1,22 @@
+receivers:
+  otlp:
+    protocols: # enable OpenTelemetry Protocol receiver, both gRPC and HTTP
+      grpc:
+        endpoint: 0.0.0.0:54317
+      http:
+        endpoint: 0.0.0.0:54318
+
+exporters:
+  otlphttp:
+    endpoint: "http://loki:3100/otlp"
+
+processors:
+  batch:
+    timeout: 0 # send data immediately
+
+service:
+  pipelines:
+    logs:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [otlphttp]

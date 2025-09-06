@@ -217,6 +217,7 @@ private[exporter] object OtlpClientAutoConfigure {
     object General extends Keys("otel.exporter.otlp")
     object Metrics extends Keys("otel.exporter.otlp.metrics")
     object Traces extends Keys("otel.exporter.otlp.traces")
+    object Logs extends Keys("otel.exporter.otlp.logs")
 
     abstract class Keys(namespace: String) {
       val Protocol: Config.Key[OtlpProtocol] =
@@ -271,6 +272,25 @@ private[exporter] object OtlpClientAutoConfigure {
       defaults,
       customClient,
       ConfigKeys.General.All ++ ConfigKeys.Traces.All
+    )
+
+  /** Autoconfigures [[OtlpClient]] using `otel.exporter.otlp.logs.{x}` and `otel.exporter.otlp.{x}` properties.
+    *
+    * @param defaults
+    *   the default values to use as a fallback when property is missing in the config
+    */
+  def logs[F[_]: Async: Network: Compression: Console, A](
+      defaults: Defaults,
+      customClient: Option[Client[F]]
+  )(implicit
+      encoder: ProtoEncoder.Message[List[A]],
+      printer: Printer
+  ): AutoConfigure[F, OtlpClient[F, A]] =
+    new OtlpClientAutoConfigure[F, A](
+      ConfigKeys.Logs,
+      defaults,
+      customClient,
+      ConfigKeys.General.All ++ ConfigKeys.Logs.All
     )
 
 }

@@ -520,7 +520,7 @@ object PrometheusWriter {
         case AttributeType.Long       => primitive
         case AttributeType.String     => primitive
         case AttributeType.BooleanSeq => seq[Boolean]
-        case AttributeType.DoubleSeq  => seq[Boolean]
+        case AttributeType.DoubleSeq  => seq[Double]
         case AttributeType.LongSeq    => seq[Long]
         case AttributeType.StringSeq  => seq[String]
       }

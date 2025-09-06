@@ -340,7 +340,7 @@ class OtlpMetricExporterSuite extends CatsEffectSuite with ScalaCheckEffectSuite
       case AttributeType.Long       => primitive
       case AttributeType.String     => primitive
       case AttributeType.BooleanSeq => seq[Boolean](escape = false)
-      case AttributeType.DoubleSeq  => seq[Boolean](escape = false)
+      case AttributeType.DoubleSeq  => seq[Double](escape = false)
       case AttributeType.LongSeq    => seq[Long](escape = false)
       case AttributeType.StringSeq  => seq[String](escape = true)
     }

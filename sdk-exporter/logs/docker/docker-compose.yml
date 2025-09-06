@@ -1,0 +1,23 @@
+version: '3.7'
+services:
+  collector: # receives application metrics and traces via gRPC or HTTP protocol
+    image: otel/opentelemetry-collector-contrib:0.134.1
+    command: [ --config=/etc/otel-collector-config.yaml ]
+    volumes:
+      - "./config/otel-collector-config.yaml:/etc/otel-collector-config.yaml"
+    ports:
+      - "54317:54317" # OTLP gRPC receiver
+      - "54318:54318" # OTLP http receiver
+    depends_on:
+      loki:
+        condition: service_healthy
+
+  loki: # stores logs received from the OpenTelemetry Collector
+    image: grafana/loki:3.5.4
+    ports:
+      - "53100:3100"
+    healthcheck:
+      test: [ "CMD", "wget", "--spider", "-S", "http://localhost:3100/ready" ]
+      interval: 5s
+      timeout: 5s
+      retries: 20

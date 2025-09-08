@@ -144,6 +144,7 @@ lazy val root = tlCrossRootProject
     `instrumentation-metrics`,
     `sdk-common`,
     `sdk-logs`,
+    `sdk-logs-testkit`,
     `sdk-metrics`,
     `sdk-metrics-testkit`,
     `sdk-trace`,
@@ -345,6 +346,16 @@ lazy val `sdk-logs` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .jsSettings(scalaJSLinkerSettings)
   .jsSettings(
     libraryDependencies += "io.github.cquiroz" %%% "scala-java-time" % ScalaJavaTimeVersion,
+  )
+
+lazy val `sdk-logs-testkit` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
+  .crossType(CrossType.Pure)
+  .in(file("sdk/logs-testkit"))
+  .enablePlugins(NoPublishPlugin)
+  .dependsOn(`sdk-logs`)
+  .settings(
+    name := "otel4s-sdk-logs-testkit",
+    startYear := Some(2025)
   )
 
 lazy val `sdk-metrics` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
@@ -1062,6 +1073,7 @@ lazy val unidocs = project
       `instrumentation-metrics`.jvm,
       `sdk-common`.jvm,
       `sdk-logs`.jvm,
+      `sdk-logs-testkit`.jvm,
       `sdk-metrics`.jvm,
       `sdk-metrics-testkit`.jvm,
       `sdk-trace`.jvm,

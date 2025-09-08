@@ -109,6 +109,7 @@ val Http4sVersion = "0.23.30"
 val CirceVersion = "0.14.8"
 val ScalaPBCirceVersion = "0.15.1"
 val CaseInsensitiveVersion = "1.4.2"
+val ScalaJavaTimeVersion = "2.6.0"
 
 lazy val scalaReflectDependency = Def.settings(
   libraryDependencies ++= {
@@ -342,6 +343,9 @@ lazy val `sdk-logs` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   )
   .settings(munitDependencies)
   .jsSettings(scalaJSLinkerSettings)
+  .jsSettings(
+    libraryDependencies += "io.github.cquiroz" %%% "scala-java-time" % ScalaJavaTimeVersion,
+  )
 
 lazy val `sdk-metrics` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .crossType(CrossType.Pure)

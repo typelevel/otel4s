@@ -137,6 +137,9 @@ object LogRecordProcessor {
     def forceFlush: F[Unit] = unit
   }
 
+  /** LogRecordProcessors can be registered directly on SDK LoggerProvider and they are invoked in the same order as
+    * they were registered.
+    */
   private final case class Multi[F[_]: MonadThrow: Parallel](
       processors: NonEmptyList[LogRecordProcessor[F]]
   ) extends LogRecordProcessor[F] {
@@ -145,7 +148,7 @@ object LogRecordProcessor {
 
     def onEmit(context: Context, logRecord: LogRecordRef[F]): F[Unit] =
       processors
-        .parTraverse(p => p.onEmit(context, logRecord).attempt.tupleLeft(p.name))
+        .traverse(p => p.onEmit(context, logRecord).attempt.tupleLeft(p.name))
         .flatMap(attempts => handleAttempts(attempts))
 
     def forceFlush: F[Unit] =

@@ -32,6 +32,8 @@ import org.typelevel.otel4s.sdk.logs.exporter.LogRecordExporter
 import org.typelevel.otel4s.sdk.logs.scalacheck.Arbitraries._
 import org.typelevel.otel4s.sdk.test.NoopConsole
 
+import scala.concurrent.duration._
+
 class BatchLogRecordProcessorSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
 
   private implicit val noopConsole: Console[IO] = new NoopConsole[IO]
@@ -54,8 +56,8 @@ class BatchLogRecordProcessorSuite extends CatsEffectSuite with ScalaCheckEffect
     PropF.forAllF { (logs: List[LogRecordData]) =>
       for {
         exporter <- InMemoryLogRecordExporter.create[IO](None)
-        _ <- BatchLogRecordProcessor.builder(exporter).build.use { p =>
-          logs.traverse_(log => LogRecordRef.create[IO](log).flatMap(p.onEmit(Context.root, _))) *> p.forceFlush
+        _ <- BatchLogRecordProcessor.builder(exporter).withScheduleDelay(10.seconds).build.use { p =>
+          logs.traverse_(log => LogRecordRef.create[IO](log).flatMap(p.onEmit(Context.root, _)))
         }
         exported <- exporter.finishedLogs
         _ = assertEquals(

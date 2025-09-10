@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Typelevel
+ * Copyright 2025 Typelevel
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,20 +14,20 @@
  * limitations under the License.
  */
 
-package org.typelevel.otel4s.sdk.metrics
+package org.typelevel.otel4s.sdk.logs
 
 import cats.Applicative
+import cats.Parallel
 import cats.effect.Async
 import cats.effect.Resource
 import cats.effect.std.Console
 import cats.effect.std.Env
-import cats.effect.std.Random
 import cats.effect.std.SystemProperties
 import cats.mtl.Ask
 import cats.syntax.apply._
 import cats.syntax.flatMap._
 import cats.syntax.functor._
-import org.typelevel.otel4s.metrics.MeterProvider
+import org.typelevel.otel4s.logs.LoggerProvider
 import org.typelevel.otel4s.sdk.TelemetryResource
 import org.typelevel.otel4s.sdk.autoconfigure.AutoConfigure
 import org.typelevel.otel4s.sdk.autoconfigure.CommonConfigKeys
@@ -35,25 +35,29 @@ import org.typelevel.otel4s.sdk.autoconfigure.Config
 import org.typelevel.otel4s.sdk.autoconfigure.TelemetryResourceAutoConfigure
 import org.typelevel.otel4s.sdk.context.Context
 import org.typelevel.otel4s.sdk.context.TraceContext
-import org.typelevel.otel4s.sdk.metrics.autoconfigure.MeterProviderAutoConfigure
-import org.typelevel.otel4s.sdk.metrics.exporter.MetricExporter
+import org.typelevel.otel4s.sdk.logs.autoconfigure.LoggerProviderAutoConfigure
+import org.typelevel.otel4s.sdk.logs.exporter.LogRecordExporter
 import org.typelevel.otel4s.sdk.resource.TelemetryResourceDetector
 
-/** The configured metrics module.
+/** The configured logs module.
   *
   * @tparam F
   *   the higher-kinded type of a polymorphic effect
   */
-sealed trait SdkMetrics[F[_]] {
+sealed trait SdkLogs[F[_]] {
 
-  /** The [[org.typelevel.otel4s.metrics.MeterProvider MeterProvider]].
+  /** The [[org.typelevel.otel4s.logs.LoggerProvider LoggerProvider]] for bridging logs into OpenTelemetry.
+    *
+    * @note
+    *   the logs bridge API exists to enable bridging logs from other log frameworks (e.g. SLF4J, Log4j, JUL, Logback,
+    *   etc) into OpenTelemetry and is '''NOT''' a replacement log API.
     */
-  def meterProvider: MeterProvider[F]
+  def loggerProvider: LoggerProvider[F, Context]
 }
 
-object SdkMetrics {
+object SdkLogs {
 
-  /** Autoconfigures [[SdkMetrics]] using [[AutoConfigured.Builder]].
+  /** Autoconfigures [[SdkLogs]] using [[AutoConfigured.Builder]].
     *
     * @note
     *   the external components (e.g. OTLP exporter) must be registered manually. Add the `otel4s-sdk-exporter`
@@ -63,10 +67,10 @@ object SdkMetrics {
     *   }}}
     *   and register the configurer manually:
     *   {{{
-    * import org.typelevel.otel4s.sdk.metrics.SdkMetrics
-    * import org.typelevel.otel4s.sdk.exporter.otlp.metrics.autoconfigure.OtlpMetricExporterAutoConfigure
+    * import org.typelevel.otel4s.sdk.logs.SdkLogs
+    * import org.typelevel.otel4s.sdk.exporter.otlp.logs.autoconfigure.OtlpLogRecordExporterAutoConfigure
     *
-    * SdkMetrics.autoConfigured[IO](_.addExporterConfigurer(OtlpMetricExporterAutoConfigure[IO]))
+    * SdkLogs.autoConfigured[IO](_.addExporterConfigurer(OtlpLogRecordExporterAutoConfigure[IO]))
     *   }}}
     *
     * @param customize
@@ -79,19 +83,19 @@ object SdkMetrics {
     *   i.e. to capture the current span context so that logs, traces, and metrics can all work together - use
     *   `OpenTelemetrySdk.autoConfigured`.
     */
-  def autoConfigured[F[_]: Async: Env: SystemProperties: Console](
+  def autoConfigured[F[_]: Async: Parallel: Env: SystemProperties: Console](
       customize: AutoConfigured.Builder[F] => AutoConfigured.Builder[F] = (a: AutoConfigured.Builder[F]) => a
-  ): Resource[F, SdkMetrics[F]] =
+  ): Resource[F, SdkLogs[F]] =
     customize(AutoConfigured.builder[F]).build
 
-  def noop[F[_]: Applicative]: SdkMetrics[F] =
-    new Impl(MeterProvider.noop)
+  def noop[F[_]: Applicative]: SdkLogs[F] =
+    new Impl(LoggerProvider.noop)
 
   object AutoConfigured {
 
     type Customizer[A] = (A, Config) => A
 
-    /** A builder of [[SdkMetrics]].
+    /** A builder of [[SdkLogs]].
       */
     sealed trait Builder[F[_]] {
 
@@ -122,13 +126,13 @@ object SdkMetrics {
         */
       def addPropertiesCustomizer(customizer: Config => Map[String, String]): Builder[F]
 
-      /** Adds the meter provider builder customizer. Multiple customizers can be added, and they will be applied in the
-        * order they were added.
+      /** Adds the logger provider builder customizer. Multiple customizers can be added, and they will be applied in
+        * the order they were added.
         *
         * @param customizer
         *   the customizer to add
         */
-      def addMeterProviderCustomizer(customizer: Customizer[SdkMeterProvider.Builder[F]]): Builder[F]
+      def addLoggerProviderCustomizer(customizer: Customizer[SdkLoggerProvider.Builder[F]]): Builder[F]
 
       /** Adds the telemetry resource customizer. Multiple customizers can be added, and they will be applied in the
         * order they were added.
@@ -162,43 +166,43 @@ object SdkMetrics {
         *   }}}
         *   and register the configurer manually:
         *   {{{
-        * import org.typelevel.otel4s.sdk.metrics.SdkMetrics
-        * import org.typelevel.otel4s.sdk.exporter.otlp.metric.autoconfigure.OtlpMetricExporterAutoConfigure
+        * import org.typelevel.otel4s.sdk.logs.SdkLogs
+        * import org.typelevel.otel4s.sdk.exporter.otlp.logs.autoconfigure.OtlpLogRecordExporterAutoConfigure
         *
-        * SdkMetrics.autoConfigured[IO](_.addExporterConfigurer(OtlpMetricExporterAutoConfigure[IO]))
+        * SdkLogs.autoConfigured[IO](_.addExporterConfigurer(OtlpLogRecordExporterAutoConfigure[IO]))
         *   }}}
         *
         * @param configurer
         *   the configurer to add
         */
-      def addExporterConfigurer(configurer: AutoConfigure.Named[F, MetricExporter[F]]): Builder[F]
+      def addExporterConfigurer(configurer: AutoConfigure.Named[F, LogRecordExporter[F]]): Builder[F]
 
-      /** Creates [[SdkMetrics]] using the configuration of this builder.
+      /** Creates [[SdkLogs]] using the configuration of this builder.
         */
-      def build: Resource[F, SdkMetrics[F]]
+      def build: Resource[F, SdkLogs[F]]
     }
 
     /** Creates a [[Builder]].
       */
-    def builder[F[_]: Async: Env: SystemProperties: Console]: Builder[F] =
+    def builder[F[_]: Async: Parallel: Env: SystemProperties: Console]: Builder[F] =
       BuilderImpl(
         customConfig = None,
         propertiesLoader = Async[F].pure(Map.empty),
         propertiesCustomizers = Nil,
         resourceCustomizer = (a, _) => a,
-        meterProviderCustomizer = (a: SdkMeterProvider.Builder[F], _) => a,
+        loggerProviderCustomizer = (a: SdkLoggerProvider.Builder[F], _) => a,
         resourceDetectors = Set.empty,
         exporterConfigurers = Set.empty
       )
 
-    private final case class BuilderImpl[F[_]: Async: Env: SystemProperties: Console](
+    private final case class BuilderImpl[F[_]: Async: Parallel: Env: SystemProperties: Console](
         customConfig: Option[Config],
         propertiesLoader: F[Map[String, String]],
         propertiesCustomizers: List[Config => Map[String, String]],
         resourceCustomizer: Customizer[TelemetryResource],
-        meterProviderCustomizer: Customizer[SdkMeterProvider.Builder[F]],
+        loggerProviderCustomizer: Customizer[SdkLoggerProvider.Builder[F]],
         resourceDetectors: Set[TelemetryResourceDetector[F]],
-        exporterConfigurers: Set[AutoConfigure.Named[F, MetricExporter[F]]]
+        exporterConfigurers: Set[AutoConfigure.Named[F, LogRecordExporter[F]]]
     ) extends Builder[F] {
 
       def withConfig(config: Config): Builder[F] =
@@ -213,50 +217,46 @@ object SdkMetrics {
       def addResourceCustomizer(customizer: Customizer[TelemetryResource]): Builder[F] =
         copy(resourceCustomizer = merge(this.resourceCustomizer, customizer))
 
-      def addMeterProviderCustomizer(customizer: Customizer[SdkMeterProvider.Builder[F]]): Builder[F] =
-        copy(meterProviderCustomizer = merge(this.meterProviderCustomizer, customizer))
+      def addLoggerProviderCustomizer(customizer: Customizer[SdkLoggerProvider.Builder[F]]): Builder[F] =
+        copy(loggerProviderCustomizer = merge(this.loggerProviderCustomizer, customizer))
 
       def addResourceDetector(detector: TelemetryResourceDetector[F]): Builder[F] =
         copy(resourceDetectors = this.resourceDetectors + detector)
 
-      def addExporterConfigurer(configurer: AutoConfigure.Named[F, MetricExporter[F]]): Builder[F] =
+      def addExporterConfigurer(configurer: AutoConfigure.Named[F, LogRecordExporter[F]]): Builder[F] =
         copy(exporterConfigurers = this.exporterConfigurers + configurer)
 
-      def build: Resource[F, SdkMetrics[F]] = {
+      def build: Resource[F, SdkLogs[F]] = {
         def loadConfig: F[Config] =
           for {
             props <- propertiesLoader
             config <- Config.load(props)
           } yield propertiesCustomizers.foldLeft(config)((cfg, c) => cfg.withOverrides(c(cfg)))
 
-        def loadNoop: Resource[F, SdkMetrics[F]] =
+        def loadNoop: Resource[F, SdkLogs[F]] =
           Resource.eval(
             Console[F]
               .println(
-                s"SdkMetrics: the '${CommonConfigKeys.SdkDisabled}' set to 'true'. Using no-op implementation"
+                s"SdkLogs: the '${CommonConfigKeys.SdkDisabled}' set to 'true'. Using no-op implementation"
               )
-              .as(SdkMetrics.noop[F])
+              .as(SdkLogs.noop[F])
           )
 
-        def loadMetrics(
-            config: Config,
-            resource: TelemetryResource
-        ): Resource[F, SdkMetrics[F]] =
-          Resource.eval(Random.scalaUtilRandom).flatMap { implicit random =>
-            implicit val askContext: Ask[F, Context] = Ask.const(Context.root)
+        def loadLogs(config: Config, resource: TelemetryResource): Resource[F, SdkLogs[F]] = {
+          implicit val askContext: Ask[F, Context] = Ask.const(Context.root)
 
-            val meterProviderConfigure =
-              MeterProviderAutoConfigure[F](
-                resource,
-                TraceContext.Lookup.noop,
-                meterProviderCustomizer,
-                exporterConfigurers
-              )
+          val loggerProviderConfigure =
+            LoggerProviderAutoConfigure[F](
+              resource,
+              TraceContext.Lookup.noop,
+              loggerProviderCustomizer,
+              exporterConfigurers
+            )
 
-            for {
-              meterProvider <- meterProviderConfigure.configure(config)
-            } yield new Impl[F](meterProvider)
-          }
+          for {
+            loggerProvider <- loggerProviderConfigure.configure(config)
+          } yield new Impl[F](loggerProvider)
+        }
 
         for {
           config <- Resource.eval(customConfig.fold(loadConfig)(Async[F].pure))
@@ -271,24 +271,19 @@ object SdkMetrics {
             )
           )
 
-          metrics <- if (isDisabled) loadNoop else loadMetrics(config, resource)
-        } yield metrics
+          logs <- if (isDisabled) loadNoop else loadLogs(config, resource)
+        } yield logs
       }
 
-      private def merge[A](
-          first: Customizer[A],
-          second: Customizer[A]
-      ): Customizer[A] =
+      private def merge[A](first: Customizer[A], second: Customizer[A]): Customizer[A] =
         (a, config) => second(first(a, config), config)
-
     }
   }
 
   private final class Impl[F[_]](
-      val meterProvider: MeterProvider[F]
-  ) extends SdkMetrics[F] {
+      val loggerProvider: LoggerProvider[F, Context]
+  ) extends SdkLogs[F] {
     override def toString: String =
-      s"SdkMetrics{meterProvider=$meterProvider}"
+      s"SdkLogs{loggerProvider=$loggerProvider}"
   }
-
 }

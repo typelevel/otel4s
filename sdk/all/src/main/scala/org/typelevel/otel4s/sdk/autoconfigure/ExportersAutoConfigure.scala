@@ -16,6 +16,7 @@
 
 package org.typelevel.otel4s.sdk.autoconfigure
 
+import org.typelevel.otel4s.sdk.logs.exporter.LogRecordExporter
 import org.typelevel.otel4s.sdk.metrics.exporter.MetricExporter
 import org.typelevel.otel4s.sdk.trace.exporter.SpanExporter
 
@@ -30,6 +31,10 @@ sealed trait ExportersAutoConfigure[F[_]] {
   /** Configures [[org.typelevel.otel4s.sdk.trace.exporter.SpanExporter SpanExporter]].
     */
   def spanExporterAutoConfigure: AutoConfigure.Named[F, SpanExporter[F]]
+
+  /** Configures [[org.typelevel.otel4s.sdk.logs.exporter.LogRecordExporter LogRecordExporter]].
+    */
+  def logRecordExporterAutoConfigure: AutoConfigure.Named[F, LogRecordExporter[F]]
 }
 
 object ExportersAutoConfigure {
@@ -38,13 +43,15 @@ object ExportersAutoConfigure {
     */
   def apply[F[_]](
       metricExporterAutoConfigure: AutoConfigure.Named[F, MetricExporter[F]],
-      spanExporterAutoConfigure: AutoConfigure.Named[F, SpanExporter[F]]
+      spanExporterAutoConfigure: AutoConfigure.Named[F, SpanExporter[F]],
+      logRecordExporterAutoConfigure: AutoConfigure.Named[F, LogRecordExporter[F]]
   ): ExportersAutoConfigure[F] =
-    Impl(metricExporterAutoConfigure, spanExporterAutoConfigure)
+    Impl(metricExporterAutoConfigure, spanExporterAutoConfigure, logRecordExporterAutoConfigure)
 
   private final case class Impl[F[_]](
       metricExporterAutoConfigure: AutoConfigure.Named[F, MetricExporter[F]],
-      spanExporterAutoConfigure: AutoConfigure.Named[F, SpanExporter[F]]
+      spanExporterAutoConfigure: AutoConfigure.Named[F, SpanExporter[F]],
+      logRecordExporterAutoConfigure: AutoConfigure.Named[F, LogRecordExporter[F]]
   ) extends ExportersAutoConfigure[F]
 
 }

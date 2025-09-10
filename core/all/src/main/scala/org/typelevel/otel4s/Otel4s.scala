@@ -19,6 +19,7 @@ package org.typelevel.otel4s
 import cats.mtl.Local
 import org.typelevel.otel4s.baggage.BaggageManager
 import org.typelevel.otel4s.context.propagation.ContextPropagators
+import org.typelevel.otel4s.logs.LoggerProvider
 import org.typelevel.otel4s.metrics.MeterProvider
 import org.typelevel.otel4s.trace.TracerProvider
 
@@ -41,6 +42,14 @@ sealed trait Otel4s[F[_]] {
 
   /** A utility for accessing and modifying [[baggage.Baggage `Baggage`]]. */
   def baggageManager: BaggageManager[F]
+
+  /** An entry point of the logging API for bridging logs into OpenTelemetry.
+    *
+    * @note
+    *   the logs bridge API exists to enable bridging logs from other log frameworks (e.g. SLF4J, Log4j, JUL, Logback,
+    *   etc) into OpenTelemetry and is '''NOT''' a replacement log API.
+    */
+  def loggerProvider: LoggerProvider[F, Ctx]
 }
 
 object Otel4s {

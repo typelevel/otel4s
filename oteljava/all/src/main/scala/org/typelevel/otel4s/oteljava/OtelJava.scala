@@ -31,11 +31,13 @@ import org.typelevel.otel4s.Otel4s
 import org.typelevel.otel4s.baggage.BaggageManager
 import org.typelevel.otel4s.context.LocalProvider
 import org.typelevel.otel4s.context.propagation.ContextPropagators
+import org.typelevel.otel4s.logs.LoggerProvider
 import org.typelevel.otel4s.metrics.MeterProvider
 import org.typelevel.otel4s.oteljava.baggage.BaggageManagerImpl
 import org.typelevel.otel4s.oteljava.context.Context
 import org.typelevel.otel4s.oteljava.context.LocalContext
 import org.typelevel.otel4s.oteljava.context.LocalContextProvider
+import org.typelevel.otel4s.oteljava.logs.Logs
 import org.typelevel.otel4s.oteljava.metrics.Metrics
 import org.typelevel.otel4s.oteljava.trace.Traces
 import org.typelevel.otel4s.trace.TracerProvider
@@ -45,6 +47,7 @@ final class OtelJava[F[_]] private (
     val propagators: ContextPropagators[Context],
     val meterProvider: MeterProvider[F],
     val tracerProvider: TracerProvider[F],
+    val loggerProvider: LoggerProvider[F, Context],
 )(implicit val localContext: LocalContext[F])
     extends Otel4s.Unsealed[F] {
   type Ctx = Context
@@ -131,7 +134,8 @@ object OtelJava {
       JOpenTelemetry.noop(),
       ContextPropagators.noop,
       MeterProvider.noop,
-      TracerProvider.noop
+      TracerProvider.noop,
+      LoggerProvider.noop
     )(local)
 
   /** Creates an [[org.typelevel.otel4s.Otel4s]] from a Java OpenTelemetry instance using the given `Local` instance.
@@ -146,11 +150,13 @@ object OtelJava {
   private def create[F[_]: Async: LocalContext](jOtel: JOpenTelemetry): OtelJava[F] = {
     val metrics = Metrics.create(jOtel)
     val traces = Traces.create(jOtel)
+    val logs = Logs.create(jOtel)
     new OtelJava[F](
       jOtel,
       traces.propagators,
       metrics.meterProvider,
       traces.tracerProvider,
+      logs.loggerProvider,
     )
   }
 

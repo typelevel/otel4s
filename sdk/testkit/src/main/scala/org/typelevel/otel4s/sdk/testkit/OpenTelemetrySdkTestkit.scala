@@ -25,17 +25,21 @@ import org.typelevel.otel4s.baggage.BaggageManager
 import org.typelevel.otel4s.context.LocalProvider
 import org.typelevel.otel4s.context.propagation.ContextPropagators
 import org.typelevel.otel4s.context.propagation.TextMapPropagator
+import org.typelevel.otel4s.logs.LoggerProvider
 import org.typelevel.otel4s.metrics.MeterProvider
 import org.typelevel.otel4s.sdk.baggage.SdkBaggageManager
 import org.typelevel.otel4s.sdk.context.Context
 import org.typelevel.otel4s.sdk.context.LocalContext
 import org.typelevel.otel4s.sdk.context.LocalContextProvider
 import org.typelevel.otel4s.sdk.context.TraceContext
+import org.typelevel.otel4s.sdk.logs.SdkLoggerProvider
+import org.typelevel.otel4s.sdk.logs.data.LogRecordData
 import org.typelevel.otel4s.sdk.metrics.SdkMeterProvider
 import org.typelevel.otel4s.sdk.metrics.data.MetricData
 import org.typelevel.otel4s.sdk.metrics.exporter.AggregationSelector
 import org.typelevel.otel4s.sdk.metrics.exporter.AggregationTemporalitySelector
 import org.typelevel.otel4s.sdk.metrics.exporter.CardinalityLimitSelector
+import org.typelevel.otel4s.sdk.testkit.logs.LogsTestkit
 import org.typelevel.otel4s.sdk.testkit.metrics.MetricsTestkit
 import org.typelevel.otel4s.sdk.testkit.trace.TracesTestkit
 import org.typelevel.otel4s.sdk.trace.SdkContextKeys
@@ -47,14 +51,19 @@ sealed abstract class OpenTelemetrySdkTestkit[F[_]] private (implicit
     val localContext: LocalContext[F]
 ) extends Otel4s.Unsealed[F]
     with MetricsTestkit.Unsealed[F]
-    with TracesTestkit.Unsealed[F] {
+    with TracesTestkit.Unsealed[F]
+    with LogsTestkit.Unsealed[F] {
 
   type Ctx = Context
 
   val baggageManager: BaggageManager[F] = SdkBaggageManager.fromLocal
 
   override def toString: String =
-    s"OpenTelemetrySdkTestkit{meterProvider=$meterProvider, tracerProvider=$tracerProvider, propagators=$propagators}"
+    "OpenTelemetrySdkTestkit{" +
+      s"meterProvider=$meterProvider, " +
+      s"tracerProvider=$tracerProvider, " +
+      s"loggerProvider=$loggerProvider, " +
+      s"propagators=$propagators}"
 }
 
 object OpenTelemetrySdkTestkit {
@@ -68,6 +77,9 @@ object OpenTelemetrySdkTestkit {
     *
     * @param customizeTracerProviderBuilder
     *   the customization of the tracer provider builder
+    *
+    * @param customizeLoggerProviderBuilder
+    *   the customization of the logger provider builder
     *
     * @param textMapPropagators
     *   the propagators to use
@@ -86,6 +98,7 @@ object OpenTelemetrySdkTestkit {
   def inMemory[F[_]: Async: Parallel: Console: LocalContextProvider](
       customizeMeterProviderBuilder: Customizer[SdkMeterProvider.Builder[F]] = identity[SdkMeterProvider.Builder[F]],
       customizeTracerProviderBuilder: Customizer[SdkTracerProvider.Builder[F]] = identity[SdkTracerProvider.Builder[F]],
+      customizeLoggerProviderBuilder: Customizer[SdkLoggerProvider.Builder[F]] = identity[SdkLoggerProvider.Builder[F]],
       textMapPropagators: Iterable[TextMapPropagator[Context]] = Nil,
       aggregationTemporalitySelector: AggregationTemporalitySelector = AggregationTemporalitySelector.alwaysCumulative,
       defaultAggregationSelector: AggregationSelector = AggregationSelector.default,
@@ -126,9 +139,15 @@ object OpenTelemetrySdkTestkit {
           Console[F],
           LocalProvider.fromLocal(local)
         )
+        logs <- LogsTestkit.inMemory[F](
+          customizeLoggerProviderBuilder.compose[SdkLoggerProvider.Builder[F]](
+            _.withTraceContextLookup(traceContextLookup)
+          )
+        )
       } yield new Impl[F](
         metrics,
         traces,
+        logs,
         ContextPropagators.of(textMapPropagators.toSeq: _*)
       )
     }
@@ -136,12 +155,15 @@ object OpenTelemetrySdkTestkit {
   private final class Impl[F[_]: LocalContext](
       metrics: MetricsTestkit[F],
       traces: TracesTestkit[F],
+      logs: LogsTestkit[F],
       val propagators: ContextPropagators[Context]
   ) extends OpenTelemetrySdkTestkit[F] {
     def meterProvider: MeterProvider[F] = metrics.meterProvider
     def tracerProvider: TracerProvider[F] = traces.tracerProvider
+    def loggerProvider: LoggerProvider[F, Context] = logs.loggerProvider
     def finishedSpans: F[List[SpanData]] = traces.finishedSpans
     def collectMetrics: F[List[MetricData]] = metrics.collectMetrics
+    def collectLogs: F[List[LogRecordData]] = logs.collectLogs
   }
 
 }

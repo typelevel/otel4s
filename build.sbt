@@ -212,7 +212,6 @@ lazy val `core-common` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
 lazy val `core-logs` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .crossType(CrossType.Pure)
   .in(file("core/logs"))
-  .enablePlugins(NoPublishPlugin)
   .dependsOn(`core-common`)
   .settings(munitDependencies)
   .settings(
@@ -221,8 +220,7 @@ lazy val `core-logs` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
     libraryDependencies ++= Seq(
       "org.typelevel" %%% "cats-laws" % CatsVersion % Test,
       "org.typelevel" %%% "discipline-munit" % MUnitDisciplineVersion % Test
-    ),
-    mimaPreviousArtifacts := Set.empty
+    )
   )
 
 lazy val `core-metrics` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
@@ -270,7 +268,7 @@ lazy val `core-trace` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
 lazy val core = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .crossType(CrossType.Pure)
   .in(file("core/all"))
-  .dependsOn(`core-common`, `core-metrics`, `core-trace`)
+  .dependsOn(`core-common`, `core-logs`, `core-metrics`, `core-trace`)
   .settings(
     name := "otel4s-core"
   )
@@ -326,7 +324,6 @@ lazy val `sdk-common` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
 lazy val `sdk-logs` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .crossType(CrossType.Pure)
   .in(file("sdk/logs"))
-  .enablePlugins(NoPublishPlugin)
   .dependsOn(
     `sdk-common` % "compile->compile;test->test",
     `core-logs` % "compile->compile;test->test",
@@ -351,7 +348,6 @@ lazy val `sdk-logs` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
 lazy val `sdk-logs-testkit` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .crossType(CrossType.Pure)
   .in(file("sdk/logs-testkit"))
-  .enablePlugins(NoPublishPlugin)
   .dependsOn(`sdk-logs`)
   .settings(
     name := "otel4s-sdk-logs-testkit",
@@ -424,7 +420,7 @@ lazy val `sdk-trace-testkit` =
 lazy val `sdk-testkit` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .crossType(CrossType.Pure)
   .in(file("sdk/testkit"))
-  .dependsOn(core, `sdk-metrics-testkit`, `sdk-trace-testkit`)
+  .dependsOn(core, `sdk-logs-testkit`, `sdk-metrics-testkit`, `sdk-trace-testkit`)
   .settings(
     name := "otel4s-sdk-testkit",
     startYear := Some(2024)
@@ -436,6 +432,7 @@ lazy val sdk = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .dependsOn(
     core,
     `sdk-common`,
+    `sdk-logs` % "compile->compile;test->test",
     `sdk-metrics` % "compile->compile;test->test",
     `sdk-metrics-testkit` % Test,
     `sdk-trace` % "compile->compile;test->test",
@@ -546,7 +543,6 @@ lazy val `sdk-exporter-logs` =
   crossProject(JVMPlatform, JSPlatform, NativePlatform)
     .crossType(CrossType.Pure)
     .in(file("sdk-exporter/logs"))
-    .enablePlugins(NoPublishPlugin)
     .enablePlugins(DockerComposeEnvPlugin)
     .dependsOn(
       `sdk-exporter-common` % "compile->compile;test->test",
@@ -646,6 +642,7 @@ lazy val `sdk-exporter` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .dependsOn(
     sdk,
     `sdk-exporter-common`,
+    `sdk-exporter-logs`,
     `sdk-exporter-metrics`,
     `sdk-exporter-trace`
   )
@@ -744,7 +741,6 @@ lazy val `oteljava-common-testkit` = project
 
 lazy val `oteljava-logs` = project
   .in(file("oteljava/logs"))
-  .enablePlugins(NoPublishPlugin)
   .dependsOn(
     `oteljava-common` % "compile->compile;test->test",
     `core-logs`.jvm % "compile->compile;test->test"
@@ -761,7 +757,6 @@ lazy val `oteljava-logs` = project
 
 lazy val `oteljava-logs-testkit` = project
   .in(file("oteljava/logs-testkit"))
-  .enablePlugins(NoPublishPlugin)
   .dependsOn(`oteljava-logs`, `oteljava-common-testkit`)
   .settings(munitDependencies)
   .settings(
@@ -820,7 +815,7 @@ lazy val `oteljava-trace-testkit` = project
 
 lazy val `oteljava-testkit` = project
   .in(file("oteljava/testkit"))
-  .dependsOn(core.jvm, `oteljava-metrics-testkit`, `oteljava-trace-testkit`)
+  .dependsOn(core.jvm, `oteljava-logs-testkit`, `oteljava-metrics-testkit`, `oteljava-trace-testkit`)
   .settings(
     name := "otel4s-oteljava-testkit",
     startYear := Some(2024)
@@ -845,6 +840,7 @@ lazy val oteljava = project
   .in(file("oteljava/all"))
   .dependsOn(
     core.jvm,
+    `oteljava-logs` % "compile->compile;test->test",
     `oteljava-metrics` % "compile->compile;test->test",
     `oteljava-metrics-testkit` % Test,
     `oteljava-trace` % "compile->compile;test->test",

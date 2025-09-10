@@ -29,6 +29,9 @@ import org.typelevel.otel4s.context.propagation.TextMapUpdater
 import org.typelevel.otel4s.sdk.autoconfigure.AutoConfigure
 import org.typelevel.otel4s.sdk.autoconfigure.Config
 import org.typelevel.otel4s.sdk.context.Context
+import org.typelevel.otel4s.sdk.logs.LogRecordLimits
+import org.typelevel.otel4s.sdk.logs.data.LogRecordData
+import org.typelevel.otel4s.sdk.logs.exporter.LogRecordExporter
 import org.typelevel.otel4s.sdk.metrics.data.MetricData
 import org.typelevel.otel4s.sdk.metrics.exporter.AggregationSelector
 import org.typelevel.otel4s.sdk.metrics.exporter.AggregationTemporalitySelector
@@ -62,6 +65,7 @@ class OpenTelemetrySdkSuite extends CatsEffectSuite {
   private val NoopSdk =
     "OpenTelemetrySdk.AutoConfigured{sdk=" +
       "OpenTelemetrySdk{" +
+      "loggerProvider=LoggerProvider.Noop, " +
       "meterProvider=MeterProvider.Noop, " +
       "tracerProvider=TracerProvider.Noop, " +
       s"propagators=ContextPropagators.Noop}, resource=${TelemetryResource.empty}}"
@@ -70,6 +74,7 @@ class OpenTelemetrySdkSuite extends CatsEffectSuite {
     val config = Config.ofProps(
       Map(
         "otel.otel4s.resource.detectors.enabled" -> "none",
+        "otel.logs.exporter" -> "none",
         "otel.traces.exporter" -> "none",
         "otel.metrics.exporter" -> "none"
       )
@@ -126,6 +131,7 @@ class OpenTelemetrySdkSuite extends CatsEffectSuite {
     val config = Config.ofProps(
       Map(
         "otel.otel4s.resource.detectors.enabled" -> "none",
+        "otel.logs.exporter" -> "none",
         "otel.traces.exporter" -> "none",
         "otel.metrics.exporter" -> "none"
       )
@@ -146,6 +152,7 @@ class OpenTelemetrySdkSuite extends CatsEffectSuite {
     val config = Config.ofProps(
       Map(
         "otel.otel4s.resource.detectors.enabled" -> "none",
+        "otel.logs.exporter" -> "none",
         "otel.traces.exporter" -> "none",
         "otel.metrics.exporter" -> "none"
       )
@@ -176,6 +183,7 @@ class OpenTelemetrySdkSuite extends CatsEffectSuite {
       Map(
         "otel.otel4s.resource.detectors.enabled" -> "none",
         "otel.traces.exporter" -> "custom-1,custom-2",
+        "otel.logs.exporter" -> "none",
         "otel.metrics.exporter" -> "none"
       )
     )
@@ -216,6 +224,7 @@ class OpenTelemetrySdkSuite extends CatsEffectSuite {
     val config = Config.ofProps(
       Map(
         "otel.otel4s.resource.detectors.enabled" -> "none",
+        "otel.logs.exporter" -> "none",
         "otel.traces.exporter" -> "none",
         "otel.metrics.exporter" -> "none",
         "otel.traces.sampler" -> "custom-sampler",
@@ -251,6 +260,7 @@ class OpenTelemetrySdkSuite extends CatsEffectSuite {
     val config = Config.ofProps(
       Map(
         "otel.otel4s.resource.detectors.enabled" -> "none",
+        "otel.logs.exporter" -> "none",
         "otel.traces.exporter" -> "none",
         "otel.metrics.exporter" -> "none",
         "otel.propagators" -> "tracecontext,custom-1,custom-2,baggage",
@@ -296,6 +306,7 @@ class OpenTelemetrySdkSuite extends CatsEffectSuite {
     val config = Config.ofProps(
       Map(
         "otel.otel4s.resource.detectors.enabled" -> "none",
+        "otel.logs.exporter" -> "none",
         "otel.traces.exporter" -> "none",
         "otel.metrics.exporter" -> "console"
       )
@@ -328,6 +339,7 @@ class OpenTelemetrySdkSuite extends CatsEffectSuite {
     val config = Config.ofProps(
       Map(
         "otel.otel4s.resource.detectors.enabled" -> "none",
+        "otel.logs.exporter" -> "none",
         "otel.traces.exporter" -> "none",
         "otel.metrics.exporter" -> "custom-1,custom-2"
       )
@@ -386,6 +398,86 @@ class OpenTelemetrySdkSuite extends CatsEffectSuite {
       }
   }
 
+  test("addLoggerProviderCustomizer - customize logger provider") {
+    val config = Config.ofProps(
+      Map(
+        "otel.otel4s.resource.detectors.enabled" -> "none",
+        "otel.traces.exporter" -> "none",
+        "otel.metrics.exporter" -> "none",
+        "otel.logs.exporter" -> "console"
+      )
+    )
+
+    val logLimits = LogRecordLimits.default
+
+    val expectedLoggerProvider =
+      s"SdkLoggerProvider{resource=${TelemetryResource.default}, " +
+        s"logRecordLimits=$logLimits, " +
+        "logRecordProcessor=SimpleLogRecordProcessor{exporter=ConsoleLogRecordExporter}}"
+
+    OpenTelemetrySdk
+      .autoConfigured[IO](
+        _.withConfig(config).addLoggerProviderCustomizer((t, _) => t.withLogRecordLimits(logLimits))
+      )
+      .use { traces =>
+        IO(
+          assertEquals(
+            traces.toString,
+            sdkToString(
+              loggerProvider = expectedLoggerProvider
+            )
+          )
+        )
+      }
+  }
+
+  test("addLogRecordExporterConfigurer - support external configurers") {
+    val config = Config.ofProps(
+      Map(
+        "otel.otel4s.resource.detectors.enabled" -> "none",
+        "otel.traces.exporter" -> "none",
+        "otel.metrics.exporter" -> "none",
+        "otel.logs.exporter" -> "custom-1,custom-2"
+      )
+    )
+
+    def customExporter(exporterName: String): LogRecordExporter[IO] =
+      new LogRecordExporter.Unsealed[IO] {
+        def name: String = exporterName
+        def exportLogRecords[G[_]: Foldable](logs: G[LogRecordData]): IO[Unit] = IO.unit
+        def flush: IO[Unit] = IO.unit
+      }
+
+    val exporter1: LogRecordExporter[IO] = customExporter("CustomExporter1")
+    val exporter2: LogRecordExporter[IO] = customExporter("CustomExporter2")
+
+    val expectedLoggerProvider =
+      s"SdkLoggerProvider{resource=${TelemetryResource.default}, " +
+        s"logRecordLimits=${LogRecordLimits.default}, " +
+        "logRecordProcessor=BatchLogRecordProcessor{exporter=LogRecordExporter.Multi(CustomExporter1, CustomExporter2), scheduleDelay=5 seconds, exporterTimeout=30 seconds, maxQueueSize=2048, maxExportBatchSize=512}}"
+
+    OpenTelemetrySdk
+      .autoConfigured[IO](
+        _.withConfig(config)
+          .addLogRecordExporterConfigurer(
+            AutoConfigure.Named.const("custom-1", exporter1)
+          )
+          .addLogRecordExporterConfigurer(
+            AutoConfigure.Named.const("custom-2", exporter2)
+          )
+      )
+      .use { traces =>
+        IO(
+          assertEquals(
+            traces.toString,
+            sdkToString(
+              loggerProvider = expectedLoggerProvider
+            )
+          )
+        )
+      }
+  }
+
   private def sdkToString(
       resource: TelemetryResource = TelemetryResource.default,
       spanLimits: SpanLimits = SpanLimits.default,
@@ -395,10 +487,11 @@ class OpenTelemetrySdkSuite extends CatsEffectSuite {
         W3CBaggagePropagator.default
       ),
       exporter: String = "SpanExporter.Noop",
-      meterProvider: String = "MeterProvider.Noop"
+      meterProvider: String = "MeterProvider.Noop",
+      loggerProvider: String = "LoggerProvider.Noop"
   ) =
     "OpenTelemetrySdk.AutoConfigured{sdk=" +
-      s"OpenTelemetrySdk{meterProvider=$meterProvider, " +
+      s"OpenTelemetrySdk{loggerProvider=$loggerProvider, meterProvider=$meterProvider, " +
       "tracerProvider=" +
       s"SdkTracerProvider{resource=$resource, spanLimits=$spanLimits, sampler=$sampler, " +
       s"spanProcessor=BatchSpanProcessor{exporter=$exporter, scheduleDelay=5 seconds, exporterTimeout=30 seconds, maxQueueSize=2048, maxExportBatchSize=512}}, " +

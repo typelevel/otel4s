@@ -16,8 +16,8 @@
 
 package org.typelevel.otel4s.context.propagation
 
-import lgbt.princess.platform.Platform
 import munit.ScalaCheckSuite
+import munit.internal.PlatformCompat
 import org.scalacheck.Arbitrary
 import org.scalacheck.Prop.forAll
 
@@ -71,7 +71,7 @@ class TextMapGetterProps extends ScalaCheckSuite {
   mkProps[mutable.TreeMap[String, String]]
   mkProps[mutable.SeqMap[String, String]]
   mkProps[mutable.LinkedHashMap[String, String]]
-  if (Platform.isJVM) mkProps[collection.concurrent.TrieMap[String, String]]
+  if (PlatformCompat.isJVM) mkProps[collection.concurrent.TrieMap[String, String]]
 
   mkProps[collection.Seq[(String, String)]]
   mkProps[collection.LinearSeq[(String, String)]]

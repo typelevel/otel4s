@@ -17,7 +17,6 @@
 package org.typelevel.otel4s.context.propagation
 
 import munit.ScalaCheckSuite
-import munit.internal.PlatformCompat
 import org.scalacheck.Arbitrary
 import org.scalacheck.Prop.forAll
 
@@ -71,7 +70,9 @@ class TextMapGetterProps extends ScalaCheckSuite {
   mkProps[mutable.TreeMap[String, String]]
   mkProps[mutable.SeqMap[String, String]]
   mkProps[mutable.LinkedHashMap[String, String]]
-  if (PlatformCompat.isJVM) mkProps[collection.concurrent.TrieMap[String, String]]
+
+  // PlatformCompat defines `def isJVM`, while it should be `final def isJVM` so the linker can eliminate the branch
+  // if (PlatformCompat.isJVM) mkProps[collection.concurrent.TrieMap[String, String]]
 
   mkProps[collection.Seq[(String, String)]]
   mkProps[collection.LinearSeq[(String, String)]]

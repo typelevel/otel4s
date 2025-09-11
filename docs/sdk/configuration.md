@@ -1,6 +1,8 @@
 # Configuration
 
-The `OpenTelemetrySdk.autoConfigured(...)` and `SdkTraces.autoConfigured(...)` rely on the environment variables and system properties to configure the SDK.
+The `OpenTelemetrySdk.autoConfigured(...)`, `SdkMetrics.autoConfigured(...)`, 
+`SdkTraces.autoConfigured(...)`, `SdkLogs.autoConfigured(...)`, 
+rely on the environment variables and system properties to configure the SDK.
 
 There are several ways to configure the options:
 
@@ -84,7 +86,7 @@ The exporter can be configured by two sets of settings:
 - global: `otel.exporter.otlp.{x}`
 - target-specific: `otel.exporter.otlp.metrics.{x}`
 
-Global properties can be used to configure span and metric exporters simultaneously.
+Global properties can be used to configure span, metric, and log exporters simultaneously.
 Global `otel.exporter.otlp.endpoint` must be a **base** URL. The configurer automatically adds path (i.e. `v1/metrics`) to the URL.
 
 Target-specific properties are prioritized. E.g. `otel.exporter.otlp.metrics.endpoint` is prioritized over `otel.exporter.otlp.endpoint`.
@@ -161,7 +163,7 @@ The exporter can be configured by two sets of settings:
 - global: `otel.exporter.otlp.{x}`
 - target-specific: `otel.exporter.otlp.traces.{x}`
 
-Global properties can be used to configure span and metric exporters simultaneously.
+Global properties can be used to configure span, metric, and log exporters simultaneously.
 Global `otel.exporter.otlp.endpoint` must be a **base** URL. The configurer automatically adds path (i.e. `v1/traces`) to the URL.
 
 Target-specific properties are prioritized. E.g. `otel.exporter.otlp.traces.endpoint` is prioritized over `otel.exporter.otlp.endpoint`.
@@ -174,7 +176,7 @@ Target-specific properties are prioritized. E.g. `otel.exporter.otlp.traces.endp
 | otel.exporter.otlp.compression        | OTEL\\_EXPORTER\\_OTLP\\_COMPRESSION          | The compression type to use on OTLP trace, metric, and log requests. Options include gzip. By default, no compression will be used.                                                   |
 | otel.exporter.otlp.timeout            | OTEL\\_EXPORTER\\_OTLP\\_TIMEOUT              | The maximum waiting time to send each OTLP trace, metric, and log batch. Default is `10 seconds`.                                                                                     |
 | **Target specific:**                  |                                               |                                                                                                                                                                                       |
-| otel.exporter.otlp.metrics.protocol   | OTEL\\_EXPORTER\\_OTLP\\_TRACES\\_PROTOCOL    | The transport protocol to use. Options include `grpc`, `http/protobuf`, and `http/json`. Default is `http/protobuf`.                                                                  |
+| otel.exporter.otlp.traces.protocol    | OTEL\\_EXPORTER\\_OTLP\\_TRACES\\_PROTOCOL    | The transport protocol to use. Options include `grpc`, `http/protobuf`, and `http/json`. Default is `http/protobuf`.                                                                  |
 | otel.exporter.otlp.traces.endpoint    | OTEL\\_EXPORTER\\_OTLP\\_TRACES\\_ENDPOINT    | The OTLP traces endpoint to connect to. Default is `http://localhost:4318/v1/traces`.                                                                                                 |
 | otel.exporter.otlp.traces.headers     | OTEL\\_EXPORTER\\_OTLP\\_TRACES\\_HEADERS     | Key-value pairs separated by commas to pass as request headers on OTLP trace requests.                                                                                                |
 | otel.exporter.otlp.traces.compression | OTEL\\_EXPORTER\\_OTLP\\_TRACES\\_COMPRESSION | The compression type to use on OTLP trace requests. Options include gzip. By default, no compression will be used.                                                                    |
@@ -236,3 +238,61 @@ These properties can be used to control the maximum size of spans by placing lim
 | otel.event.attribute.count.limit         | OTEL\\_EVENT\\_ATTRIBUTE\\_COUNT\\_LIMIT         | The maximum allowed attribute per span event count. Default is `128`. |
 | otel.link.attribute.count.limit          | OTEL\\_LINK\\_ATTRIBUTE\\_COUNT\\_LIMIT          | The maximum allowed attribute per span link count. Default is `128`.  |
 | otel.span.attribute.value.length.limit   | OTEL\\_SPAN\\_ATTRIBUTE\\_VALUE\\_LENGTH\\_LIMIT | The maximum allowed attribute value size. No limit by default.        |
+
+## Logs
+
+### Exporters
+
+| System property    | Environment variable   | Description                                                                                                            |
+|--------------------|------------------------|------------------------------------------------------------------------------------------------------------------------|
+| otel.logs.exporter | OTEL\\_LOGS\\_EXPORTER | List of exporters to be export spans, separated by commas. `none` means no autoconfigured exporter. Default is `otlp`. |
+
+
+Options supported out of the box:
+
+- `otlp` - requires `otel4s-sdk-exporter` dependency.
+- `console` - prints the content of the log record to stdout. It's mainly used for testing and debugging.
+- `none` - means no autoconfigured exporter.
+
+### OTLP exporter
+
+The exporter can be configured by two sets of settings:
+- global: `otel.exporter.otlp.{x}`
+- target-specific: `otel.exporter.otlp.logs.{x}`
+
+Global properties can be used to configure span, metric, and log exporters simultaneously.
+Global `otel.exporter.otlp.endpoint` must be a **base** URL. The configurer automatically adds path (i.e. `v1/logs`) to the URL.
+
+Target-specific properties are prioritized. E.g. `otel.exporter.otlp.logs.endpoint` is prioritized over `otel.exporter.otlp.endpoint`.
+
+| System property                     | Environment variable                        | Description                                                                                                                                                                           |
+|-------------------------------------|---------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| otel.exporter.otlp.protocol         | OTEL\\_EXPORTER\\_OTLP\\_PROTOCOL           | The transport protocol to use. Options include `grpc`, `http/protobuf`, and `http/json`. Default is `http/protobuf`.                                                                  |
+| otel.exporter.otlp.endpoint         | OTEL\\_EXPORTER\\_OTLP\\_ENDPOINT           | The OTLP traces, metrics, and logs endpoint to connect to. Must be a **base** URL with a scheme of either http or https based on the use of TLS. Default is `http://localhost:4318/`. |
+| otel.exporter.otlp.headers          | OTEL\\_EXPORTER\\_OTLP\\_HEADERS            | Key-value pairs separated by commas to pass as request headers on OTLP trace, metric, and log requests.                                                                               |
+| otel.exporter.otlp.compression      | OTEL\\_EXPORTER\\_OTLP\\_COMPRESSION        | The compression type to use on OTLP trace, metric, and log requests. Options include gzip. By default, no compression will be used.                                                   |
+| otel.exporter.otlp.timeout          | OTEL\\_EXPORTER\\_OTLP\\_TIMEOUT            | The maximum waiting time to send each OTLP trace, metric, and log batch. Default is `10 seconds`.                                                                                     |
+| **Target specific:**                |                                             |                                                                                                                                                                                       |
+| otel.exporter.otlp.logs.protocol    | OTEL\\_EXPORTER\\_OTLP\\_LOGS\\_PROTOCOL    | The transport protocol to use. Options include `grpc`, `http/protobuf`, and `http/json`. Default is `http/protobuf`.                                                                  |
+| otel.exporter.otlp.logs.endpoint    | OTEL\\_EXPORTER\\_OTLP\\_LOGS\\_ENDPOINT    | The OTLP logs endpoint to connect to. Default is `http://localhost:4318/v1/logs`.                                                                                                     |
+| otel.exporter.otlp.logs.headers     | OTEL\\_EXPORTER\\_OTLP\\_LOGS\\_HEADERS     | Key-value pairs separated by commas to pass as request headers on OTLP trace requests.                                                                                                |
+| otel.exporter.otlp.logs.compression | OTEL\\_EXPORTER\\_OTLP\\_LOGS\\_COMPRESSION | The compression type to use on OTLP trace requests. Options include gzip. By default, no compression will be used.                                                                    |
+| otel.exporter.otlp.logs.timeout     | OTEL\\_EXPORTER\\_OTLP\\_LOGS\\_TIMEOUT     | The maximum waiting time to send each OTLP trace batch. Default is `10 seconds`.                                                                                                      |
+
+### Batch log record processor
+
+| System property                 | Environment variable                      | Description                                                           |
+|---------------------------------|-------------------------------------------|-----------------------------------------------------------------------|
+| otel.blrp.schedule.delay        | OTEL\\_BLRP\\_SCHEDULE\\_DELAY            | The interval between two consecutive exports. Default is `5 seconds`. |
+| otel.blrp.max.queue.size        | OTEL\\_BLRP\\_MAX\\_QUEUE_SIZE            | The maximum queue size. Default is `2048`.                            |
+| otel.blrp.max.export.batch.size | OTEL\\_BLRP\\_MAX\\_EXPORT\\_BATCH\\_SIZE | The maximum batch size. Default is `512`.                             |
+| otel.blrp.export.timeout        | OTEL\\_BLRP\\_EXPORT\\_TIMEOUT            | The maximum allowed time to export data. Default is `30 seconds`.     |
+
+### Log record limits
+
+These properties can be used to control the maximum size of log records by placing limits on attributes.
+
+| System property                   | Environment variable                      | Description                                                    |
+|-----------------------------------|-------------------------------------------|----------------------------------------------------------------|
+| otel.attribute.count.limit        | OTEL\\_ATTRIBUTE\\_COUNT\\_LIMIT          | The maximum allowed log attribute count. Default is `128`.     |
+| otel.attribute.value.length.limit | OTEL\\_ATTRIBUTE\\_VALUE\\_LENGTH\\_LIMIT | The maximum allowed attribute value size. No limit by default. |

@@ -15,6 +15,7 @@ ThisBuild / startYear := Some(2022)
 ThisBuild / tlSitePublishBranch := Some("main")
 
 ThisBuild / resolvers += Resolver.sonatypeCentralSnapshots
+ThisBuild / tlCiReleaseBranches := Seq("main", "sn-0.5")
 
 // VM runs out of memory when linking multiple targets concurrently, hence limit it
 Global / concurrentRestrictions += Tags.limit(NativeTags.Link, 1)

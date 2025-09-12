@@ -171,6 +171,7 @@ lazy val root = tlCrossRootProject
     `oteljava-trace-testkit`,
     `oteljava-testkit`,
     `oteljava-context-storage`,
+    `oteljava-context-storage-testkit`,
     oteljava,
     `semconv-stable`,
     `semconv-experimental`,
@@ -836,6 +837,18 @@ lazy val `oteljava-context-storage` = project
     Test / fork := true,
   )
 
+lazy val `oteljava-context-storage-testkit` = project
+  .in(file("oteljava/context-storage-testkit"))
+  .dependsOn(`oteljava-context-storage`, `oteljava-common-testkit`)
+  .settings(munitDependencies)
+  .settings(
+    name := "otel4s-oteljava-context-storage-testkit",
+    Test / javaOptions ++= Seq(
+      "-Dcats.effect.trackFiberContext=true",
+    ),
+    Test / fork := true,
+  )
+
 lazy val oteljava = project
   .in(file("oteljava/all"))
   .dependsOn(
@@ -1095,6 +1108,7 @@ lazy val unidocs = project
       `oteljava-trace-testkit`,
       `oteljava-testkit`,
       `oteljava-context-storage`,
+      `oteljava-context-storage-testkit`,
       oteljava,
       `semconv-stable`.jvm,
       `semconv-experimental`.jvm,

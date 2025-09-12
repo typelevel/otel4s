@@ -33,7 +33,7 @@ import org.typelevel.otel4s.context.LocalProvider
   * that reflect the state of the backing `IOLocal`. Usage of `Local` and `ContextStorage` methods will be consistent
   * and stay in sync as long as effects are threaded properly.
   */
-private class IOLocalContextStorage(
+protected[oteljava] class IOLocalContextStorage(
     _ioLocal: () => IOLocal[Context],
     _unsafeThreadLocal: () => ThreadLocal[Context]
 ) extends ContextStorage {
@@ -102,21 +102,21 @@ object IOLocalContextStorage {
                 )
             }
         }
-
-      private def whenPropagationEnabled[A](whenEnabled: => A): F[A] =
-        if (IOLocal.isPropagating) {
-          F.pure(whenEnabled)
-        } else {
-          F.raiseError(
-            new IllegalStateException(
-              "IOLocal propagation must be enabled with: -Dcats.effect.trackFiberContext=true"
-            )
-          )
-        }
     }
 
   /** The method is instrumented by the OTeL Java agent to provide the IOLocal managed by agent.
     */
   private[context] def getAgentLocalContext(): Option[IOLocal[JContext]] = None
+
+  private[oteljava] def whenPropagationEnabled[F[_], A](whenEnabled: => A)(implicit F: MonadCancelThrow[F]): F[A] =
+    if (IOLocal.isPropagating) {
+      F.pure(whenEnabled)
+    } else {
+      F.raiseError(
+        new IllegalStateException(
+          "IOLocal propagation must be enabled with: -Dcats.effect.trackFiberContext=true"
+        )
+      )
+    }
 
 }

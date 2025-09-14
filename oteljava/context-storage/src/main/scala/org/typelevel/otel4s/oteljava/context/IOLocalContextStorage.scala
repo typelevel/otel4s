@@ -57,7 +57,7 @@ protected[oteljava] class IOLocalContextStorage(
     *   a [[cats.mtl.Local `Local`]] of a [[org.typelevel.otel4s.oteljava.context.Context `Context`]] that reflects the
     *   state of the backing `IOLocal`
     */
-  def local[F[_]: MonadCancelThrow: LiftIO]: LocalContext[F] = LocalProvider.localForIOLocal(ioLocal)
+  def local[F[_]: MonadCancelThrow: LiftIO]: LocalContext[F] = ioLocal.asLocal[F]
 }
 
 object IOLocalContextStorage {
@@ -87,7 +87,7 @@ object IOLocalContextStorage {
             getAgentLocalContext() match {
               case Some(ioLocalJContext) =>
                 val ioLocal = ioLocalJContext.lens(ctx => Context.wrap(ctx))(_ => c => c.underlying)
-                val local = LocalProvider.localForIOLocal(ioLocal)
+                val local = ioLocal.asLocal[F]
 
                 for {
                   _ <- Console[F].println("IOLocalContextStorage: agent-provided IOLocal is detected")

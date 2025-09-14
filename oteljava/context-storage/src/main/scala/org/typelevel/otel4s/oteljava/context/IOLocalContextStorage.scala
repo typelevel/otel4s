@@ -16,6 +16,7 @@
 
 package org.typelevel.otel4s.oteljava.context
 
+import cats.ApplicativeThrow
 import cats.effect.IOLocal
 import cats.effect.LiftIO
 import cats.effect.MonadCancelThrow
@@ -33,7 +34,7 @@ import org.typelevel.otel4s.context.LocalProvider
   * that reflect the state of the backing `IOLocal`. Usage of `Local` and `ContextStorage` methods will be consistent
   * and stay in sync as long as effects are threaded properly.
   */
-protected[oteljava] class IOLocalContextStorage(
+private[oteljava] class IOLocalContextStorage(
     _ioLocal: () => IOLocal[Context],
     _unsafeThreadLocal: () => ThreadLocal[Context]
 ) extends ContextStorage {
@@ -108,7 +109,7 @@ object IOLocalContextStorage {
     */
   private[context] def getAgentLocalContext(): Option[IOLocal[JContext]] = None
 
-  private[oteljava] def whenPropagationEnabled[F[_], A](whenEnabled: => A)(implicit F: MonadCancelThrow[F]): F[A] =
+  private[oteljava] def whenPropagationEnabled[F[_], A](whenEnabled: => A)(implicit F: ApplicativeThrow[F]): F[A] =
     if (IOLocal.isPropagating) {
       F.pure(whenEnabled)
     } else {

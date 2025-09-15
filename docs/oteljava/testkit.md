@@ -43,12 +43,29 @@ The current ContextStorage is: io.opentelemetry.sdk.testing.context.SettableCont
 ```
 
 To solve this, use the `IOLocalTestContextStorage` provided by the `otel4s-oteljava-context-storage-testkit` module.
-Add the following dependency to your tests dependencies:
+Add the following dependency to your dependencies:
+
+@:select(build-tool)
+
+@:choice(sbt)
+
+Add settings to the `build.sbt`:
+
 ```scala
 libraryDependencies ++= Seq(
-  "org.typelevel" %% "otel4s-oteljava-context-storage-testkit" % "@VERSION@" % Test, // <1>
+  "org.typelevel" %% "otel4s-oteljava-context-storage-testkit" % "@VERSION@" % Test,
 )
 ```
+
+@:choice(scala-cli)
+
+Add directives to the `*.scala` file:
+
+```scala
+//> using test.dep "org.typelevel::otel4s-oteljava-context-storage-testkit:@VERSION@"
+```
+
+@:@
 
 Parametrize your code to be able to override the `LocalContextProvider`:
 ```scala

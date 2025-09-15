@@ -34,7 +34,7 @@ import org.typelevel.otel4s.context.LocalProvider
   * that reflect the state of the backing `IOLocal`. Usage of `Local` and `ContextStorage` methods will be consistent
   * and stay in sync as long as effects are threaded properly.
   */
-private[oteljava] class IOLocalContextStorage(
+protected[oteljava] class IOLocalContextStorage(
     _ioLocal: () => IOLocal[Context],
     _unsafeThreadLocal: () => ThreadLocal[Context]
 ) extends ContextStorage {

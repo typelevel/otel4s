@@ -88,11 +88,36 @@ object TracesTestkit {
   def inMemory[F[_]: Async: LocalContextProvider](
       customize: SdkTracerProviderBuilder => SdkTracerProviderBuilder = identity,
       textMapPropagators: Iterable[JTextMapPropagator] = Nil
-  ): Resource[F, TracesTestkit[F]] = {
-    def createSpanExporter =
-      Async[F].delay(InMemorySpanExporter.create())
+  ): Resource[F, TracesTestkit[F]] = for {
+    inMemorySpanExporter <- Resource.eval(Async[F].delay(InMemorySpanExporter.create()))
+    tracesTestkit <- create[F](inMemorySpanExporter, customize, textMapPropagators)
+  } yield tracesTestkit
 
-    def createSpanProcessor(exporter: SpanExporter) =
+  /** Creates [[TracesTestkit]] that keeps spans in-memory from an existing exporter. Useful when a Scala
+    * instrumentation requires a Java instrumentation, both sharing the same exporter.
+    *
+    * @param inMemorySpanExporter
+    *   the exporter to use
+    *
+    * @param customize
+    *   the customization of the builder
+    *
+    * @param textMapPropagators
+    *   the propagators to use
+    */
+  def fromInMemory[F[_]: Async: LocalContextProvider](
+      inMemorySpanExporter: InMemorySpanExporter,
+      customize: SdkTracerProviderBuilder => SdkTracerProviderBuilder = identity,
+      textMapPropagators: Iterable[JTextMapPropagator] = Nil
+  ): Resource[F, TracesTestkit[F]] =
+    create[F](inMemorySpanExporter, customize, textMapPropagators)
+
+  private def create[F[_]: Async: LocalContextProvider](
+      inMemorySpanExporter: InMemorySpanExporter,
+      customize: SdkTracerProviderBuilder => SdkTracerProviderBuilder,
+      textMapPropagators: Iterable[JTextMapPropagator]
+  ): Resource[F, TracesTestkit[F]] = {
+    def createSpanProcessor(exporter: SpanExporter): F[SimpleSpanProcessor] =
       Async[F].delay(SimpleSpanProcessor.builder(exporter).build)
 
     def createTracerProvider(processor: SpanProcessor): F[SdkTracerProvider] =
@@ -110,8 +135,7 @@ object TracesTestkit {
 
     for {
       local <- Resource.eval(LocalProvider[F, Context].local)
-      exporter <- Resource.eval(createSpanExporter)
-      processor <- Resource.fromAutoCloseable(createSpanProcessor(exporter))
+      processor <- Resource.fromAutoCloseable(createSpanProcessor(inMemorySpanExporter))
       provider <- Resource.fromAutoCloseable(createTracerProvider(processor))
     } yield new Impl(
       TracerProviderImpl.local[F](
@@ -122,7 +146,7 @@ object TracesTestkit {
       contextPropagators,
       local,
       processor,
-      exporter
+      inMemorySpanExporter
     )
   }
 

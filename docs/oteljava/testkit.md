@@ -33,12 +33,12 @@ Add directives to the `*.scala` file:
 
 ## IOLocalContextStorage
 
-The `otel4s-oteljava-testkit` module depends on `io.opentelemetry:opentelemetry-sdk-testing` which sets the 
-`ContextStorageProvider` to `io.opentelemetry.sdk.testing.context.SettableContextStorageProvider`. If you rely on 
+The `otel4s-oteljava-testkit` module depends on `io.opentelemetry:opentelemetry-sdk-testing` which sets the
+`ContextStorageProvider` to `io.opentelemetry.sdk.testing.context.SettableContextStorageProvider`. If you rely on
 `IOLocalContextStorage` in your tests, you will have the following error
 
 ```scala
-java.lang.IllegalStateException: IOLocalContextStorage is not configured for use as the ContextStorageProvider. 
+java.lang.IllegalStateException: IOLocalContextStorage is not configured for use as the ContextStorageProvider.
 The current ContextStorage is: io.opentelemetry.sdk.testing.context.SettableContextStorageProvider$SettableContextStorage
 ```
 
@@ -84,7 +84,7 @@ import org.typelevel.otel4s.oteljava.testkit.context.IOLocalTestContextStorage
 def test: IO[Unit] = {
   implicit val provider: LocalContextProvider[IO] =
     IOLocalTestContextStorage.localProvider[IO]
-    
+
   program
 }
 ```
@@ -100,11 +100,11 @@ import org.typelevel.otel4s.metrics.MeterProvider
 import org.typelevel.otel4s.oteljava.testkit.OtelJavaTestkit
 import org.typelevel.otel4s.oteljava.testkit.metrics.data.{Metric, MetricData}
 
-// the program that we want to test 
+// the program that we want to test
 def program(meterProvider: MeterProvider[IO]): IO[Unit] =
   for {
     meter <- meterProvider.get("service")
-    
+
     counter <- meter.counter[Long]("service.counter").create
     _ <- counter.inc()
 
@@ -113,14 +113,14 @@ def program(meterProvider: MeterProvider[IO]): IO[Unit] =
   } yield ()
 
 // the test
-def test: IO[Unit] = 
+def test: IO[Unit] =
   OtelJavaTestkit.inMemory[IO]().use { testkit =>
     // the list of expected metrics
     val expected = List(
       TelemetryMetric.SumLong("service.counter", List(1L)),
       TelemetryMetric.GaugeLong("service.gauge", List(42L))
     )
-    
+
     for {
       // invoke the program
       _ <- program(testkit.meterProvider)
@@ -130,13 +130,13 @@ def test: IO[Unit] =
       _ <- assertMetrics(metrics, expected)
     } yield ()
   }
-  
+
 // here you can use an assertion mechanism from your favorite testing framework
 def assertMetrics(metrics: List[Metric], expected: List[TelemetryMetric]): IO[Unit] =
   IO {
     assert(metrics.sortBy(_.name).map(TelemetryMetric.fromMetric) == expected)
   }
-  
+
 // a minimized representation of the MetricData to simplify testing
 sealed trait TelemetryMetric
 object TelemetryMetric {
@@ -189,7 +189,7 @@ import org.typelevel.otel4s.oteljava.testkit.OtelJavaTestkit
 import org.typelevel.otel4s.trace.TracerProvider
 import scala.concurrent.duration._
 
-// the program that we want to test 
+// the program that we want to test
 def program(tracerProvider: TracerProvider[IO]): IO[Unit] =
   for {
     tracer <- tracerProvider.get("service")
@@ -247,9 +247,9 @@ object SpanTree {
     val maxDepth = bottomToTop.headOption.map(_.depth).getOrElse(0)
     buildFromBottom(maxDepth, bottomToTop, byParent, Map.empty)
   }
-  
+
   private case class EntryWithDepth(data: SpanData, depth: Int)
-  
+
   @annotation.tailrec
   private def sortNodesByDepth(
       depth: Int,
@@ -269,7 +269,7 @@ object SpanTree {
         sortNodesByDepth(depth + 1, children, nodesByParent, calculated)
     }
   }
-  
+
   @annotation.tailrec
   private def buildFromBottom(
       depth: Int,
@@ -288,9 +288,9 @@ object SpanTree {
     }.toMap
     if (depth > 0) {
       buildFromBottom(
-        depth - 1, 
-        rest, 
-        nodesByParent, 
+        depth - 1,
+        rest,
+        nodesByParent,
         processedNodesById ++ newProcessedNodes
       )
     } else {
@@ -312,4 +312,85 @@ To simplify the testing process, we can define a minimized projection of `SpanDa
 // we silently run the test to ensure it's actually correct
 import cats.effect.unsafe.implicits.global
 test.unsafeRunSync()
+```
+
+## Mixing Java and Scala instrumentation
+
+In some cases, a program can rely on both [Java instrumentation](https://github.com/open-telemetry/opentelemetry-java-instrumentation) and Scala instrumentation. Teskits expose a `fromInMemory` method to allow using the same underlying Java OpenTelemetry exporter/reader.
+
+```scala mdoc:reset
+import cats.effect.IO
+import cats.effect.std.Dispatcher
+import cats.FlatMap
+import cats.mtl.Local
+import cats.effect.kernel.Resource
+import cats.syntax.flatMap.toFlatMapOps
+import cats.syntax.functor.toFunctorOps
+import io.opentelemetry.api.OpenTelemetry
+import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator
+import io.opentelemetry.context.{Context => JContext}
+import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter
+import org.typelevel.otel4s.context.LocalProvider
+import org.typelevel.otel4s.oteljava.context.Context
+import org.typelevel.otel4s.oteljava.testkit.context.IOLocalTestContextStorage
+import org.typelevel.otel4s.oteljava.testkit.trace.TracesTestkit
+import org.typelevel.otel4s.trace.SpanContext
+import org.typelevel.otel4s.trace.Tracer
+
+// application code
+
+// a callback from a Java library which scopes and forwards
+// the current span context to the Scala caller
+def wrapJavaCallback[F[_]: FlatMap: Tracer](
+    callback: (Any, Option[SpanContext]) => F[Unit]
+)(implicit
+    dispatcher: Dispatcher[F],
+    local: Local[F, Context]
+): Any => Unit = (input: Any) =>
+  dispatcher.unsafeRunSync(Local[F, Context].scope(for {
+    context <- Tracer[F].currentSpanContext
+    _ <- callback(input, context)
+  } yield ())(Context.wrap(JContext.current())))
+
+// program creating both the Java and Scala instrumentation,
+// to replace with your implementation
+type InstrumentedService[F[_]] = F[Int]
+def program[F[_]: FlatMap: Tracer](
+    openTelemetry: OpenTelemetry
+)(implicit local: Local[F, Context]): Resource[F, InstrumentedService[F]] =
+  // initialize the Java resource with the java OpenTelemetry
+  // then wrap it with the Scala instrumentation
+  // using `wrapJavaCallback` defined earlier
+  ???
+
+// test code
+
+for {
+  inMemorySpanExporter <- IO.delay(InMemorySpanExporter.create()).toResource
+  // create your OpenTelemetry with the InMemorySpanExporter created above
+  (openTelemetry: OpenTelemetry) = ???
+
+  localProvider = IOLocalTestContextStorage.localProvider[IO]
+  local <- {
+    implicit val _localProvider = localProvider
+    LocalProvider[IO, Context].local.toResource
+  }
+
+  tracesTestkit <- {
+    implicit val _localProvider = localProvider
+    // inject InMemorySpanExporter here
+    TracesTestkit.fromInMemory[IO](
+      inMemorySpanExporter = inMemorySpanExporter,
+      textMapPropagators = List(W3CTraceContextPropagator.getInstance())
+    )
+  }
+  tracer <- tracesTestkit.tracerProvider.get("my.service").toResource
+
+  program <- {
+    implicit val _local = local
+    implicit val _tracer = tracer
+    // at that point, both OpenTelemetry and Tracer relies on the same InMemorySpanExporter
+    program[IO](openTelemetry)
+  }
+} yield (program, tracesTestkit)
 ```

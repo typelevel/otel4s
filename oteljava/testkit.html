@@ -140,6 +140,7 @@
 
   <ul class="nav-list">
     <li class="level1 nav-leaf"><a href="#getting-started">Getting started</a></li>
+    <li class="level1 nav-leaf"><a href="#iolocalcontextstorage">IOLocalContextStorage</a></li>
     <li class="level1 nav-leaf"><a href="#testing-metrics">Testing metrics</a></li>
     <li class="level1 nav-leaf"><a href="#testing-spans">Testing spans</a></li>
   </ul>
@@ -175,6 +176,47 @@
         <ol class="arabic">
           <li>Add the <code>otel4s-oteljava-testkit</code> library</li>
         </ol>
+        
+        <h2 id="iolocalcontextstorage" class="section"><a class="anchor-link left" href="#iolocalcontextstorage"><i class="icofont-laika link">&#xef71;</i></a>IOLocalContextStorage</h2>
+        <p>The <code>otel4s-oteljava-testkit</code> module depends on <code>io.opentelemetry:opentelemetry-sdk-testing</code> which sets the 
+        <code>ContextStorageProvider</code> to <code>io.opentelemetry.sdk.testing.context.SettableContextStorageProvider</code>. If you rely on 
+        <code>IOLocalContextStorage</code> in your tests, you will have the following error</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">java</span><span>.</span><span class="identifier">lang</span><span>.</span><span class="type-name">IllegalStateException</span><span>: </span><span class="type-name">IOLocalContextStorage</span><span> </span><span class="identifier">is</span><span> </span><span class="identifier">not</span><span> </span><span class="identifier">configured</span><span> </span><span class="keyword">for</span><span> </span><span class="identifier">use</span><span> </span><span class="identifier">as</span><span> </span><span class="identifier">the</span><span> </span><span class="type-name">ContextStorageProvider</span><span>. 
+</span><span class="type-name">The</span><span> </span><span class="identifier">current</span><span> </span><span class="type-name">ContextStorage</span><span> </span><span class="identifier">is</span><span>: </span><span class="identifier">io</span><span>.</span><span class="identifier">opentelemetry</span><span>.</span><span class="identifier">sdk</span><span>.</span><span class="identifier">testing</span><span>.</span><span class="identifier">context</span><span>.</span><span class="type-name">SettableContextStorageProvider$SettableContextStorage</span></code></pre>
+        <p>To solve this, use the <code>IOLocalTestContextStorage</code> provided by the <code>otel4s-oteljava-context-storage-testkit</code> module.
+        Add the following dependency to your dependencies:</p>
+        <div class="tab-container" data-tab-group="build-tool">
+          <ul class="tab-group">
+            <li class="tab active" data-choice-name="sbt"><a href="#">sbt</a></li>
+            <li class="tab" data-choice-name="scala-cli"><a href="#">Scala CLI</a></li>
+          </ul>
+          <div class="tab-content active" data-choice-name="sbt">
+            <p>Add settings to the <code>build.sbt</code>:</p>
+            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">libraryDependencies</span><span> ++= </span><span class="type-name">Seq</span><span>(
+  </span><span class="string-literal">&quot;org.typelevel&quot;</span><span> %% </span><span class="string-literal">&quot;otel4s-oteljava-context-storage-testkit&quot;</span><span> % </span><span class="string-literal">&quot;0.14.0-RC1&quot;</span><span> % </span><span class="type-name">Test</span><span>,
+)</span></code></pre>
+          </div>
+          <div class="tab-content" data-choice-name="scala-cli">
+            <p>Add directives to the <code>*.scala</code> file:</p>
+            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="comment">//&gt; using test.dep &quot;org.typelevel::otel4s-oteljava-context-storage-testkit:0.14.0-RC1&quot;</span></code></pre>
+          </div>
+        </div>
+        <p>Parametrize your code to be able to override the <code>LocalContextProvider</code>:</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.</span><span class="type-name">IO</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="identifier">context</span><span>.</span><span class="type-name">LocalContextProvider</span><span>
+
+</span><span class="keyword">def</span><span> </span><span class="declaration-name">program</span><span>(</span><span class="keyword">implicit</span><span> </span><span class="identifier">provider</span><span>: </span><span class="type-name">LocalContextProvider</span><span>[</span><span class="type-name">IO</span><span>]): </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] = ???</span></code></pre>
+        <p>And override it in your tests:</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.</span><span class="type-name">IO</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="identifier">context</span><span>.</span><span class="type-name">LocalContextProvider</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="identifier">testkit</span><span>.</span><span class="identifier">context</span><span>.</span><span class="type-name">IOLocalTestContextStorage</span><span>
+
+</span><span class="keyword">def</span><span> </span><span class="declaration-name">test</span><span>: </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] = {
+  </span><span class="keyword">implicit</span><span> </span><span class="keyword">val</span><span> </span><span class="identifier">provider</span><span>: </span><span class="type-name">LocalContextProvider</span><span>[</span><span class="type-name">IO</span><span>] =
+    </span><span class="type-name">IOLocalTestContextStorage</span><span>.</span><span class="identifier">localProvider</span><span>[</span><span class="type-name">IO</span><span>]
+    
+  </span><span class="identifier">program</span><span>
+}</span></code></pre>
         
         <h2 id="testing-metrics" class="section"><a class="anchor-link left" href="#testing-metrics"><i class="icofont-laika link">&#xef71;</i></a>Testing metrics</h2>
         <p>Let&#39;s assume we have a program that increments a counter by one and sets the gauge&#39;s value to 42.

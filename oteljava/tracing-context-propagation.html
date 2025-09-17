@@ -221,6 +221,8 @@ otel4s: SpanContext{traceId=58b8ed50a558ca53fcc64a0d80b5e662, spanId=fc25fe2c9fb
         <h2 id="limitations" class="section"><a class="anchor-link left" href="#limitations"><i class="icofont-laika link">&#xef71;</i></a>Limitations</h2>
         <p>The <code>IOLocalContextStorageProvider</code> doesn&#39;t work with <a href="https://opentelemetry.io/docs/zero-code/java/agent/">OpenTelemetry Java Agent</a>.
         However, you can use an <strong>experimental</strong> distribution of the <a href="agent.html">OTeL Agent</a> instead.</p>
+        <p>The <code>IOLocalContextStorage</code> might not work when using a testkit. 
+        Checkout the <a href="testkit.html">testkit</a> documentation if you run into any issue</p>
 
         
 <hr class="footer-rule"/>

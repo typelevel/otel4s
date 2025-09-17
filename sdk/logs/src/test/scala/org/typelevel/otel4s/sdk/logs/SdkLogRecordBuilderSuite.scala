@@ -24,7 +24,6 @@ import org.scalacheck.Test
 import org.scalacheck.effect.PropF
 import org.typelevel.otel4s.Attributes
 import org.typelevel.otel4s.logs.LogRecordBuilder
-import org.typelevel.otel4s.meta.InstrumentMeta
 import org.typelevel.otel4s.sdk.TelemetryResource
 import org.typelevel.otel4s.sdk.common.InstrumentationScope
 import org.typelevel.otel4s.sdk.context.Context
@@ -46,9 +45,7 @@ class SdkLogRecordBuilderSuite extends CatsEffectSuite with ScalaCheckEffectSuit
       for {
         exporter <- InMemoryLogRecordExporter.create[IO](None)
         processor = SimpleLogRecordProcessor(exporter)
-        meta = InstrumentMeta.Dynamic.enabled[IO]
         builder = SdkLogRecordBuilder.empty[IO](
-          meta = meta,
           processor = processor,
           instrumentationScope = scope,
           resource = resource,
@@ -76,7 +73,6 @@ class SdkLogRecordBuilderSuite extends CatsEffectSuite with ScalaCheckEffectSuit
 
   test("create a log record with the configured parameters and limits applied") {
     PropF.forAllF { (logRecordData: LogRecordData) =>
-      val meta = InstrumentMeta.Dynamic.enabled[IO]
       val lookup = new TraceContext.Lookup {
         def get(ctx: Context): Option[TraceContext] = logRecordData.traceContext
       }
@@ -86,7 +82,6 @@ class SdkLogRecordBuilderSuite extends CatsEffectSuite with ScalaCheckEffectSuit
         processor = SimpleLogRecordProcessor(exporter)
 
         builder = SdkLogRecordBuilder.empty[IO](
-          meta = meta,
           processor = processor,
           instrumentationScope = logRecordData.instrumentationScope,
           resource = logRecordData.resource,

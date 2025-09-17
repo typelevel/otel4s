@@ -24,7 +24,6 @@ import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.Attributes
 import org.typelevel.otel4s.logs.LogRecordBuilder
 import org.typelevel.otel4s.logs.Severity
-import org.typelevel.otel4s.meta.InstrumentMeta
 import org.typelevel.otel4s.sdk.TelemetryResource
 import org.typelevel.otel4s.sdk.common.InstrumentationScope
 import org.typelevel.otel4s.sdk.context.AskContext
@@ -39,7 +38,6 @@ import scala.collection.immutable
 import scala.concurrent.duration._
 
 private final case class SdkLogRecordBuilder[F[_]: Temporal: AskContext](
-    meta: InstrumentMeta.Dynamic[F],
     processor: LogRecordProcessor[F],
     instrumentationScope: InstrumentationScope,
     resource: TelemetryResource,
@@ -111,7 +109,6 @@ private object SdkLogRecordBuilder {
   private val DefaultEmptyState = emptyState(LogRecordLimits.default)
 
   def empty[F[_]: Temporal: AskContext](
-      meta: InstrumentMeta.Dynamic[F],
       processor: LogRecordProcessor[F],
       instrumentationScope: InstrumentationScope,
       resource: TelemetryResource,
@@ -119,7 +116,6 @@ private object SdkLogRecordBuilder {
       limits: LogRecordLimits
   ): SdkLogRecordBuilder[F] =
     SdkLogRecordBuilder(
-      meta = meta,
       processor = processor,
       instrumentationScope = instrumentationScope,
       resource = resource,

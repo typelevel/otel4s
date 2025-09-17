@@ -19,19 +19,22 @@ package logs
 
 import cats.Applicative
 import cats.Monad
-import org.typelevel.otel4s.meta.InstrumentMeta
+import cats.~>
 
 /** The entry point into a log pipeline.
   *
   * @note
   *   the `Logger` is intended to be used only for bridging logs from other log frameworks into OpenTelemetry and is
   *   '''NOT a replacement''' for logging API.
+  *
+  * @see
+  *   [[https://opentelemetry.io/docs/specs/otel/logs/api/#logger]]
   */
 sealed trait Logger[F[_], Ctx] {
 
   /** The instrument's metadata. Indicates whether instrumentation is enabled.
     */
-  def meta: InstrumentMeta.Dynamic[F]
+  def meta: Logger.Meta[F, Ctx]
 
   /** Returns a [[LogRecordBuilder]] to emit a log record.
     *
@@ -53,6 +56,58 @@ sealed trait Logger[F[_], Ctx] {
 object Logger {
   private[otel4s] trait Unsealed[F[_], Ctx] extends Logger[F, Ctx]
 
+  sealed trait Meta[F[_], Ctx] {
+
+    /** Indicates whether instrumentation is enabled.
+      *
+      * @param context
+      *   the context to be associated with the log record
+      *
+      * @param severity
+      *   the severity of the log record
+      *
+      * @param eventName
+      *   the event name to be associated with the log record
+      *
+      * @return
+      *   `true` if instrumentation is enabled, `false` otherwise
+      *
+      * @see
+      *   [[https://opentelemetry.io/docs/specs/otel/logs/api/#enabled]]
+      */
+    def isEnabled(context: Ctx, severity: Option[Severity], eventName: Option[String]): F[Boolean]
+
+    /** Modify the context `F` using the transformation `f`. */
+    def mapK[G[_]](f: F ~> G): Meta[G, Ctx] =
+      new Meta.MappedK(this)(f)
+
+    /** Modify the context `F` using an implicit [[KindTransformer]] from `F` to `G`.
+      */
+    def liftTo[G[_]](implicit kt: KindTransformer[F, G]): Meta[G, Ctx] =
+      mapK(kt.liftK)
+  }
+
+  object Meta {
+    private[otel4s] trait Unsealed[F[_], Ctx] extends Meta[F, Ctx]
+
+    private[otel4s] def enabled[F[_]: Applicative, Ctx]: Meta[F, Ctx] =
+      new Const(true)
+
+    private[otel4s] def disabled[F[_]: Applicative, Ctx]: Meta[F, Ctx] =
+      new Const(false)
+
+    private final class Const[F[_]: Applicative, Ctx](value: Boolean) extends Meta[F, Ctx] {
+      private val enabled: F[Boolean] = Applicative[F].pure(value)
+      def isEnabled(context: Ctx, severity: Option[Severity], eventName: Option[String]): F[Boolean] =
+        enabled
+    }
+
+    private final class MappedK[F[_], G[_], Ctx](meta: Meta[F, Ctx])(f: F ~> G) extends Meta[G, Ctx] {
+      def isEnabled(context: Ctx, severity: Option[Severity], eventName: Option[String]): G[Boolean] =
+        f(meta.isEnabled(context, severity, eventName))
+    }
+  }
+
   def apply[F[_], Ctx](implicit ev: Logger[F, Ctx]): Logger[F, Ctx] = ev
 
   /** Creates a no-op implementation of the [[Logger]].
@@ -64,7 +119,7 @@ object Logger {
     */
   def noop[F[_]: Applicative, Ctx]: Logger[F, Ctx] =
     new Logger[F, Ctx] {
-      val meta: InstrumentMeta.Dynamic[F] = InstrumentMeta.Dynamic.disabled
+      val meta: Meta[F, Ctx] = Meta.disabled[F, Ctx]
       val logRecordBuilder: LogRecordBuilder[F, Ctx] = LogRecordBuilder.noop[F, Ctx]
     }
 
@@ -73,7 +128,7 @@ object Logger {
       logger: Logger[F, Ctx]
   )(implicit kt: KindTransformer[F, G])
       extends Logger[G, Ctx] {
-    val meta: InstrumentMeta.Dynamic[G] = logger.meta.liftTo[G]
+    val meta: Meta[G, Ctx] = logger.meta.liftTo[G]
     def logRecordBuilder: LogRecordBuilder[G, Ctx] = logger.logRecordBuilder.liftTo[G]
   }
 

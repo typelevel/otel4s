@@ -33,8 +33,8 @@ sealed trait LoggerProvider[F[_], Ctx] {
     *
     * @example
     *   {{{
-    * val loggerProvider: LoggerProvider[IO] = ???
-    * val logger: IO[Logger[IO]] = loggerProvider.get("com.service.runtime")
+    * val loggerProvider: LoggerProvider[IO, Context] = ???
+    * val logger: IO[Logger[IO, Context]] = loggerProvider.get("com.service.runtime")
     *   }}}
     *
     * @param name
@@ -48,8 +48,8 @@ sealed trait LoggerProvider[F[_], Ctx] {
     *
     * @example
     *   {{{
-    * val loggerProvider: LoggerProvider[IO] = ???
-    * val logger: IO[Logger[IO]] = loggerProvider
+    * val loggerProvider: LoggerProvider[IO, Context] = ???
+    * val logger: IO[Logger[IO, Context]] = loggerProvider
     *   .logger("com.service.runtime")
     *   .withVersion("1.0.0")
     *   .withSchemaUrl("https://opentelemetry.io/schema/v1.1.0")

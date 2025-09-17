@@ -143,6 +143,7 @@
     <li class="level1 nav-leaf"><a href="#iolocalcontextstorage">IOLocalContextStorage</a></li>
     <li class="level1 nav-leaf"><a href="#testing-metrics">Testing metrics</a></li>
     <li class="level1 nav-leaf"><a href="#testing-spans">Testing spans</a></li>
+    <li class="level1 nav-leaf"><a href="#mixing-java-and-scala-instrumentation">Mixing Java and Scala instrumentation</a></li>
   </ul>
 
   <p class="footer"></p>
@@ -178,10 +179,10 @@
         </ol>
         
         <h2 id="iolocalcontextstorage" class="section"><a class="anchor-link left" href="#iolocalcontextstorage"><i class="icofont-laika link">&#xef71;</i></a>IOLocalContextStorage</h2>
-        <p>The <code>otel4s-oteljava-testkit</code> module depends on <code>io.opentelemetry:opentelemetry-sdk-testing</code> which sets the 
-        <code>ContextStorageProvider</code> to <code>io.opentelemetry.sdk.testing.context.SettableContextStorageProvider</code>. If you rely on 
+        <p>The <code>otel4s-oteljava-testkit</code> module depends on <code>io.opentelemetry:opentelemetry-sdk-testing</code> which sets the
+        <code>ContextStorageProvider</code> to <code>io.opentelemetry.sdk.testing.context.SettableContextStorageProvider</code>. If you rely on
         <code>IOLocalContextStorage</code> in your tests, you will have the following error</p>
-        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">java</span><span>.</span><span class="identifier">lang</span><span>.</span><span class="type-name">IllegalStateException</span><span>: </span><span class="type-name">IOLocalContextStorage</span><span> </span><span class="identifier">is</span><span> </span><span class="identifier">not</span><span> </span><span class="identifier">configured</span><span> </span><span class="keyword">for</span><span> </span><span class="identifier">use</span><span> </span><span class="identifier">as</span><span> </span><span class="identifier">the</span><span> </span><span class="type-name">ContextStorageProvider</span><span>. 
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">java</span><span>.</span><span class="identifier">lang</span><span>.</span><span class="type-name">IllegalStateException</span><span>: </span><span class="type-name">IOLocalContextStorage</span><span> </span><span class="identifier">is</span><span> </span><span class="identifier">not</span><span> </span><span class="identifier">configured</span><span> </span><span class="keyword">for</span><span> </span><span class="identifier">use</span><span> </span><span class="identifier">as</span><span> </span><span class="identifier">the</span><span> </span><span class="type-name">ContextStorageProvider</span><span>.
 </span><span class="type-name">The</span><span> </span><span class="identifier">current</span><span> </span><span class="type-name">ContextStorage</span><span> </span><span class="identifier">is</span><span>: </span><span class="identifier">io</span><span>.</span><span class="identifier">opentelemetry</span><span>.</span><span class="identifier">sdk</span><span>.</span><span class="identifier">testing</span><span>.</span><span class="identifier">context</span><span>.</span><span class="type-name">SettableContextStorageProvider$SettableContextStorage</span></code></pre>
         <p>To solve this, use the <code>IOLocalTestContextStorage</code> provided by the <code>otel4s-oteljava-context-storage-testkit</code> module.
         Add the following dependency to your dependencies:</p>
@@ -214,7 +215,7 @@
 </span><span class="keyword">def</span><span> </span><span class="declaration-name">test</span><span>: </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] = {
   </span><span class="keyword">implicit</span><span> </span><span class="keyword">val</span><span> </span><span class="identifier">provider</span><span>: </span><span class="type-name">LocalContextProvider</span><span>[</span><span class="type-name">IO</span><span>] =
     </span><span class="type-name">IOLocalTestContextStorage</span><span>.</span><span class="identifier">localProvider</span><span>[</span><span class="type-name">IO</span><span>]
-    
+
   </span><span class="identifier">program</span><span>
 }</span></code></pre>
         
@@ -226,11 +227,11 @@
 </span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="identifier">testkit</span><span>.</span><span class="type-name">OtelJavaTestkit</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="identifier">testkit</span><span>.</span><span class="identifier">metrics</span><span>.</span><span class="identifier">data</span><span>.{</span><span class="type-name">Metric</span><span>, </span><span class="type-name">MetricData</span><span>}
 
-</span><span class="comment">// the program that we want to test 
+</span><span class="comment">// the program that we want to test
 </span><span class="keyword">def</span><span> </span><span class="declaration-name">program</span><span>(</span><span class="identifier">meterProvider</span><span>: </span><span class="type-name">MeterProvider</span><span>[</span><span class="type-name">IO</span><span>]): </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] =
   </span><span class="keyword">for</span><span> {
     </span><span class="identifier">meter</span><span> &lt;- </span><span class="identifier">meterProvider</span><span>.</span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;service&quot;</span><span>)
-    
+
     </span><span class="identifier">counter</span><span> &lt;- </span><span class="identifier">meter</span><span>.</span><span class="identifier">counter</span><span>[</span><span class="type-name">Long</span><span>](</span><span class="string-literal">&quot;service.counter&quot;</span><span>).</span><span class="identifier">create</span><span>
     </span><span class="identifier">_</span><span> &lt;- </span><span class="identifier">counter</span><span>.</span><span class="identifier">inc</span><span>()
 
@@ -239,14 +240,14 @@
   } </span><span class="keyword">yield</span><span> ()
 
 </span><span class="comment">// the test
-</span><span class="keyword">def</span><span> </span><span class="declaration-name">test</span><span>: </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] = 
+</span><span class="keyword">def</span><span> </span><span class="declaration-name">test</span><span>: </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] =
   </span><span class="type-name">OtelJavaTestkit</span><span>.</span><span class="identifier">inMemory</span><span>[</span><span class="type-name">IO</span><span>]().</span><span class="identifier">use</span><span> { </span><span class="identifier">testkit</span><span> =&gt;
     </span><span class="comment">// the list of expected metrics
 </span><span>    </span><span class="keyword">val</span><span> </span><span class="identifier">expected</span><span> = </span><span class="type-name">List</span><span>(
       </span><span class="type-name">TelemetryMetric</span><span>.</span><span class="type-name">SumLong</span><span>(</span><span class="string-literal">&quot;service.counter&quot;</span><span>, </span><span class="type-name">List</span><span>(</span><span class="number-literal">1L</span><span>)),
       </span><span class="type-name">TelemetryMetric</span><span>.</span><span class="type-name">GaugeLong</span><span>(</span><span class="string-literal">&quot;service.gauge&quot;</span><span>, </span><span class="type-name">List</span><span>(</span><span class="number-literal">42L</span><span>))
     )
-    
+
     </span><span class="keyword">for</span><span> {
       </span><span class="comment">// invoke the program
 </span><span>      </span><span class="identifier">_</span><span> &lt;- </span><span class="identifier">program</span><span>(</span><span class="identifier">testkit</span><span>.</span><span class="identifier">meterProvider</span><span>)
@@ -256,13 +257,13 @@
 </span><span>      </span><span class="identifier">_</span><span> &lt;- </span><span class="identifier">assertMetrics</span><span>(</span><span class="identifier">metrics</span><span>, </span><span class="identifier">expected</span><span>)
     } </span><span class="keyword">yield</span><span> ()
   }
-  
+
 </span><span class="comment">// here you can use an assertion mechanism from your favorite testing framework
 </span><span class="keyword">def</span><span> </span><span class="declaration-name">assertMetrics</span><span>(</span><span class="identifier">metrics</span><span>: </span><span class="type-name">List</span><span>[</span><span class="type-name">Metric</span><span>], </span><span class="identifier">expected</span><span>: </span><span class="type-name">List</span><span>[</span><span class="type-name">TelemetryMetric</span><span>]): </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] =
   </span><span class="type-name">IO</span><span> {
     </span><span class="identifier">assert</span><span>(</span><span class="identifier">metrics</span><span>.</span><span class="identifier">sortBy</span><span>(</span><span class="identifier">_</span><span>.</span><span class="identifier">name</span><span>).</span><span class="identifier">map</span><span>(</span><span class="type-name">TelemetryMetric</span><span>.</span><span class="identifier">fromMetric</span><span>) == </span><span class="identifier">expected</span><span>)
   }
-  
+
 </span><span class="comment">// a minimized representation of the MetricData to simplify testing
 </span><span class="keyword">sealed</span><span> </span><span class="keyword">trait</span><span> </span><span class="type-name">TelemetryMetric</span><span>
 </span><span class="keyword">object</span><span> </span><span class="type-name">TelemetryMetric</span><span> {
@@ -303,7 +304,7 @@
 </span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">trace</span><span>.</span><span class="type-name">TracerProvider</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">scala</span><span>.</span><span class="identifier">concurrent</span><span>.</span><span class="identifier">duration</span><span>.</span><span class="identifier">_</span><span>
 
-</span><span class="comment">// the program that we want to test 
+</span><span class="comment">// the program that we want to test
 </span><span class="keyword">def</span><span> </span><span class="declaration-name">program</span><span>(</span><span class="identifier">tracerProvider</span><span>: </span><span class="type-name">TracerProvider</span><span>[</span><span class="type-name">IO</span><span>]): </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] =
   </span><span class="keyword">for</span><span> {
     </span><span class="identifier">tracer</span><span> &lt;- </span><span class="identifier">tracerProvider</span><span>.</span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;service&quot;</span><span>)
@@ -361,9 +362,9 @@
     </span><span class="keyword">val</span><span> </span><span class="identifier">maxDepth</span><span> = </span><span class="identifier">bottomToTop</span><span>.</span><span class="identifier">headOption</span><span>.</span><span class="identifier">map</span><span>(</span><span class="identifier">_</span><span>.</span><span class="identifier">depth</span><span>).</span><span class="identifier">getOrElse</span><span>(</span><span class="number-literal">0</span><span>)
     </span><span class="identifier">buildFromBottom</span><span>(</span><span class="identifier">maxDepth</span><span>, </span><span class="identifier">bottomToTop</span><span>, </span><span class="identifier">byParent</span><span>, </span><span class="type-name">Map</span><span>.</span><span class="identifier">empty</span><span>)
   }
-  
+
   </span><span class="keyword">private</span><span> </span><span class="keyword">case</span><span> </span><span class="keyword">class</span><span> </span><span class="type-name">EntryWithDepth</span><span>(</span><span class="identifier">data</span><span>: </span><span class="type-name">SpanData</span><span>, </span><span class="identifier">depth</span><span>: </span><span class="type-name">Int</span><span>)
-  
+
   </span><span class="annotation">@annotation</span><span>.</span><span class="identifier">tailrec</span><span>
   </span><span class="keyword">private</span><span> </span><span class="keyword">def</span><span> </span><span class="declaration-name">sortNodesByDepth</span><span>(
       </span><span class="identifier">depth</span><span>: </span><span class="type-name">Int</span><span>,
@@ -383,7 +384,7 @@
         </span><span class="identifier">sortNodesByDepth</span><span>(</span><span class="identifier">depth</span><span> + </span><span class="number-literal">1</span><span>, </span><span class="identifier">children</span><span>, </span><span class="identifier">nodesByParent</span><span>, </span><span class="identifier">calculated</span><span>)
     }
   }
-  
+
   </span><span class="annotation">@annotation</span><span>.</span><span class="identifier">tailrec</span><span>
   </span><span class="keyword">private</span><span> </span><span class="keyword">def</span><span> </span><span class="declaration-name">buildFromBottom</span><span>(
       </span><span class="identifier">depth</span><span>: </span><span class="type-name">Int</span><span>,
@@ -402,9 +403,9 @@
     }.</span><span class="identifier">toMap</span><span>
     </span><span class="keyword">if</span><span> (</span><span class="identifier">depth</span><span> &gt; </span><span class="number-literal">0</span><span>) {
       </span><span class="identifier">buildFromBottom</span><span>(
-        </span><span class="identifier">depth</span><span> - </span><span class="number-literal">1</span><span>, 
-        </span><span class="identifier">rest</span><span>, 
-        </span><span class="identifier">nodesByParent</span><span>, 
+        </span><span class="identifier">depth</span><span> - </span><span class="number-literal">1</span><span>,
+        </span><span class="identifier">rest</span><span>,
+        </span><span class="identifier">nodesByParent</span><span>,
         </span><span class="identifier">processedNodesById</span><span> ++ </span><span class="identifier">newProcessedNodes</span><span>
       )
     } </span><span class="keyword">else</span><span> {
@@ -418,6 +419,92 @@
         <p>It&#39;s difficult to implement an assertion that verifies <strong>all</strong> aspects of the span
         because many things must be considered, such as time windows, attributes, etc.
         To simplify the testing process, we can define a minimized projection of <code>SpanData</code>, such as <code>TelemetrySpan</code>.</p>
+        
+        <h2 id="mixing-java-and-scala-instrumentation" class="section"><a class="anchor-link left" href="#mixing-java-and-scala-instrumentation"><i class="icofont-laika link">&#xef71;</i></a>Mixing Java and Scala instrumentation</h2>
+        <p>In some cases, a program can rely on both <a href="https://github.com/open-telemetry/opentelemetry-java-instrumentation">Java instrumentation</a> and Scala instrumentation. Teskits expose a <code>fromInMemory</code> method to allow using the same underlying Java OpenTelemetry exporter/reader.</p>
+        <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.</span><span class="type-name">IO</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.</span><span class="identifier">std</span><span>.</span><span class="type-name">Dispatcher</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="type-name">FlatMap</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">mtl</span><span>.</span><span class="type-name">Local</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.</span><span class="identifier">kernel</span><span>.</span><span class="type-name">Resource</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">syntax</span><span>.</span><span class="identifier">flatMap</span><span>.</span><span class="identifier">toFlatMapOps</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">syntax</span><span>.</span><span class="identifier">functor</span><span>.</span><span class="identifier">toFunctorOps</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">io</span><span>.</span><span class="identifier">opentelemetry</span><span>.</span><span class="identifier">api</span><span>.</span><span class="type-name">OpenTelemetry</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">io</span><span>.</span><span class="identifier">opentelemetry</span><span>.</span><span class="identifier">api</span><span>.</span><span class="identifier">trace</span><span>.</span><span class="identifier">propagation</span><span>.</span><span class="type-name">W3CTraceContextPropagator</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">io</span><span>.</span><span class="identifier">opentelemetry</span><span>.</span><span class="identifier">context</span><span>.{</span><span class="type-name">Context</span><span> =&gt; </span><span class="type-name">JContext</span><span>}
+</span><span class="keyword">import</span><span> </span><span class="identifier">io</span><span>.</span><span class="identifier">opentelemetry</span><span>.</span><span class="identifier">sdk</span><span>.</span><span class="identifier">testing</span><span>.</span><span class="identifier">exporter</span><span>.</span><span class="type-name">InMemorySpanExporter</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">context</span><span>.</span><span class="type-name">LocalProvider</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="identifier">context</span><span>.</span><span class="type-name">Context</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="identifier">testkit</span><span>.</span><span class="identifier">context</span><span>.</span><span class="type-name">IOLocalTestContextStorage</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="identifier">testkit</span><span>.</span><span class="identifier">trace</span><span>.</span><span class="type-name">TracesTestkit</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">trace</span><span>.</span><span class="type-name">SpanContext</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">trace</span><span>.</span><span class="type-name">Tracer</span><span>
+
+</span><span class="comment">// application code
+</span><span>
+</span><span class="comment">// a callback from a Java library which scopes and forwards
+// the current span context to the Scala caller
+</span><span class="keyword">def</span><span> </span><span class="declaration-name">wrapJavaCallback</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>]: </span><span class="type-name">FlatMap</span><span>: </span><span class="type-name">Tracer</span><span>](
+    </span><span class="identifier">callback</span><span>: (</span><span class="type-name">Any</span><span>, </span><span class="type-name">Option</span><span>[</span><span class="type-name">SpanContext</span><span>]) =&gt; </span><span class="type-name">F</span><span>[</span><span class="type-name">Unit</span><span>]
+)(</span><span class="keyword">implicit</span><span>
+    </span><span class="identifier">dispatcher</span><span>: </span><span class="type-name">Dispatcher</span><span>[</span><span class="type-name">F</span><span>],
+    </span><span class="identifier">local</span><span>: </span><span class="type-name">Local</span><span>[</span><span class="type-name">F</span><span>, </span><span class="type-name">Context</span><span>]
+): </span><span class="type-name">Any</span><span> =&gt; </span><span class="type-name">Unit</span><span> = (</span><span class="identifier">input</span><span>: </span><span class="type-name">Any</span><span>) =&gt;
+  </span><span class="identifier">dispatcher</span><span>.</span><span class="identifier">unsafeRunSync</span><span>(</span><span class="type-name">Local</span><span>[</span><span class="type-name">F</span><span>, </span><span class="type-name">Context</span><span>].</span><span class="identifier">scope</span><span>(</span><span class="keyword">for</span><span> {
+    </span><span class="identifier">context</span><span> &lt;- </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">currentSpanContext</span><span>
+    </span><span class="identifier">_</span><span> &lt;- </span><span class="identifier">callback</span><span>(</span><span class="identifier">input</span><span>, </span><span class="identifier">context</span><span>)
+  } </span><span class="keyword">yield</span><span> ())(</span><span class="type-name">Context</span><span>.</span><span class="identifier">wrap</span><span>(</span><span class="type-name">JContext</span><span>.</span><span class="identifier">current</span><span>())))
+
+</span><span class="comment">// program creating both the Java and Scala instrumentation,
+// to replace with your implementation
+</span><span class="keyword">type</span><span> </span><span class="type-name">InstrumentedService</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>]] = </span><span class="type-name">F</span><span>[</span><span class="type-name">Int</span><span>]
+</span><span class="keyword">def</span><span> </span><span class="declaration-name">program</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>]: </span><span class="type-name">FlatMap</span><span>: </span><span class="type-name">Tracer</span><span>](
+    </span><span class="identifier">openTelemetry</span><span>: </span><span class="type-name">OpenTelemetry</span><span>
+)(</span><span class="keyword">implicit</span><span> </span><span class="identifier">local</span><span>: </span><span class="type-name">Local</span><span>[</span><span class="type-name">F</span><span>, </span><span class="type-name">Context</span><span>]): </span><span class="type-name">Resource</span><span>[</span><span class="type-name">F</span><span>, </span><span class="type-name">InstrumentedService</span><span>[</span><span class="type-name">F</span><span>]] =
+  </span><span class="comment">// initialize the Java resource with the java OpenTelemetry
+</span><span>  </span><span class="comment">// then wrap it with the Scala instrumentation
+</span><span>  </span><span class="comment">// using `wrapJavaCallback` defined earlier
+</span><span>  ???
+
+</span><span class="comment">// test code
+</span><span>
+</span><span class="keyword">for</span><span> {
+  </span><span class="identifier">inMemorySpanExporter</span><span> &lt;- </span><span class="type-name">IO</span><span>.</span><span class="identifier">delay</span><span>(</span><span class="type-name">InMemorySpanExporter</span><span>.</span><span class="identifier">create</span><span>()).</span><span class="identifier">toResource</span><span>
+  </span><span class="comment">// create your OpenTelemetry with the InMemorySpanExporter created above
+</span><span>  (</span><span class="identifier">openTelemetry</span><span>: </span><span class="type-name">OpenTelemetry</span><span>) = </span><span class="literal-value">null</span><span>
+
+  </span><span class="identifier">localProvider</span><span> = </span><span class="type-name">IOLocalTestContextStorage</span><span>.</span><span class="identifier">localProvider</span><span>[</span><span class="type-name">IO</span><span>]
+  </span><span class="identifier">local</span><span> &lt;- {
+    </span><span class="keyword">implicit</span><span> </span><span class="keyword">val</span><span> </span><span class="identifier">_localProvider</span><span> = </span><span class="identifier">localProvider</span><span>
+    </span><span class="type-name">LocalProvider</span><span>[</span><span class="type-name">IO</span><span>, </span><span class="type-name">Context</span><span>].</span><span class="identifier">local</span><span>.</span><span class="identifier">toResource</span><span>
+  }
+
+  </span><span class="identifier">tracesTestkit</span><span> &lt;- {
+    </span><span class="keyword">implicit</span><span> </span><span class="keyword">val</span><span> </span><span class="identifier">_localProvider</span><span> = </span><span class="identifier">localProvider</span><span>
+    </span><span class="comment">// inject InMemorySpanExporter here
+</span><span>    </span><span class="type-name">TracesTestkit</span><span>.</span><span class="identifier">fromInMemory</span><span>[</span><span class="type-name">IO</span><span>](
+      </span><span class="identifier">inMemorySpanExporter</span><span> = </span><span class="identifier">inMemorySpanExporter</span><span>,
+      </span><span class="identifier">textMapPropagators</span><span> = </span><span class="type-name">List</span><span>(</span><span class="type-name">W3CTraceContextPropagator</span><span>.</span><span class="identifier">getInstance</span><span>())
+    )
+  }
+  </span><span class="identifier">tracer</span><span> &lt;- </span><span class="identifier">tracesTestkit</span><span>.</span><span class="identifier">tracerProvider</span><span>.</span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;my.service&quot;</span><span>).</span><span class="identifier">toResource</span><span>
+
+  </span><span class="identifier">program</span><span> &lt;- {
+    </span><span class="keyword">implicit</span><span> </span><span class="keyword">val</span><span> </span><span class="identifier">_local</span><span> = </span><span class="identifier">local</span><span>
+    </span><span class="keyword">implicit</span><span> </span><span class="keyword">val</span><span> </span><span class="identifier">_tracer</span><span> = </span><span class="identifier">tracer</span><span>
+    </span><span class="comment">// at that point, both OpenTelemetry and Tracer relies on the same InMemorySpanExporter
+</span><span>    </span><span class="identifier">program</span><span>[</span><span class="type-name">IO</span><span>](</span><span class="identifier">openTelemetry</span><span>)
+  }
+} </span><span class="keyword">yield</span><span> (</span><span class="identifier">program</span><span>, </span><span class="identifier">tracesTestkit</span><span>)
+</span><span class="comment">// res5: Resource[IO, (InstrumentedService[IO], TracesTestkit[IO])] = Bind(
+//   source = Eval(
+//     fa = Delay(
+//       thunk = &lt;function0&gt;,
+//       event = cats.effect.tracing.TracingEvent$StackTrace
+//     )
+//   ),
+//   fs = &lt;function1&gt;
+// )</span></code></pre>
 
         
 <hr class="footer-rule"/>

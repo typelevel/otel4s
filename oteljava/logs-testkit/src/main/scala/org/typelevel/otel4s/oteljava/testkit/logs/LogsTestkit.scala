@@ -78,16 +78,45 @@ object LogsTestkit {
       customize: SdkLoggerProviderBuilder => SdkLoggerProviderBuilder = identity
   ): Resource[F, LogsTestkit[F]] = {
     implicit val askContext: AskContext[F] = Ask.const(Context.root)
-    create[F](customize)
+    for {
+      inMemoryLogRecordExporter <- Resource.eval(Async[F].delay(InMemoryLogRecordExporter.create()))
+      logsTestkit <- create[F](inMemoryLogRecordExporter, customize)
+    } yield logsTestkit
+  }
+
+  /** Creates [[LogsTestkit]] that keeps logs in-memory from an existing exporter. Useful when a Scala instrumentation
+    * requires a Java instrumentation, both sharing the same exporter.
+    *
+    * @param customize
+    *   the customization of the builder
+    *
+    * @note
+    *   this implementation uses a constant root `Context` via `Ask.const(Context.root)`. That means the module is
+    *   isolated: it does not inherit or propagate the surrounding span context. This is useful if you only need logging
+    *   (without traces or metrics) and want the module to operate independently. If instead you want interoperability -
+    *   i.e. to capture the current span context so that logs, traces, and metrics can all work together - use
+    *   `OtelJavaTestkit.inMemory`.
+    */
+  def fromInMemory[F[_]: Async](
+      inMemoryLogRecordExporter: InMemoryLogRecordExporter,
+      customize: SdkLoggerProviderBuilder => SdkLoggerProviderBuilder = identity
+  ): Resource[F, LogsTestkit[F]] = {
+    implicit val askContext: AskContext[F] = Ask.const(Context.root)
+    create[F](inMemoryLogRecordExporter, customize)
   }
 
   private[oteljava] def create[F[_]: Async: AskContext](
       customize: SdkLoggerProviderBuilder => SdkLoggerProviderBuilder
+  ): Resource[F, LogsTestkit[F]] =
+    for {
+      inMemoryLogRecordExporter <- Resource.eval(Async[F].delay(InMemoryLogRecordExporter.create()))
+      logsTestkit <- create[F](inMemoryLogRecordExporter, customize)
+    } yield logsTestkit
+
+  private def create[F[_]: Async: AskContext](
+      inMemoryLogRecordExporter: InMemoryLogRecordExporter,
+      customize: SdkLoggerProviderBuilder => SdkLoggerProviderBuilder
   ): Resource[F, LogsTestkit[F]] = {
-
-    def createExporter =
-      Async[F].delay(InMemoryLogRecordExporter.create())
-
     def createProcessor(exporter: LogRecordExporter) =
       Async[F].delay(SimpleLogRecordProcessor.create(exporter))
 
@@ -101,10 +130,9 @@ object LogsTestkit {
       }
 
     for {
-      exporter <- Resource.fromAutoCloseable(createExporter)
-      processor <- Resource.fromAutoCloseable(createProcessor(exporter))
+      processor <- Resource.fromAutoCloseable(createProcessor(inMemoryLogRecordExporter))
       provider <- Resource.fromAutoCloseable(createLoggerProvider(processor))
-    } yield new Impl(new LoggerProviderImpl(provider), processor, exporter)
+    } yield new Impl(new LoggerProviderImpl(provider), processor, inMemoryLogRecordExporter)
   }
 
   private final class Impl[F[_]: Async](

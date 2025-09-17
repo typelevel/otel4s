@@ -22,6 +22,9 @@ import cats.effect.Resource
 import io.opentelemetry.context.propagation.{TextMapPropagator => JTextMapPropagator}
 import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder
+import io.opentelemetry.sdk.testing.exporter.InMemoryLogRecordExporter
+import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader
+import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder
 import org.typelevel.otel4s.baggage.BaggageManager
 import org.typelevel.otel4s.context.LocalProvider
@@ -87,6 +90,26 @@ object OtelJavaTestkit {
         )(Async[F], LocalProvider.fromLocal(local))
       } yield new Impl[F](logs, metrics, traces)
     }
+
+  def fromInMemory[F[_]: Async: LocalContextProvider](
+      inMemoryLogRecordExporter: InMemoryLogRecordExporter,
+      inMemoryMetricReader: InMemoryMetricReader,
+      inMemorySpanExporter: InMemorySpanExporter,
+      customizeMeterProviderBuilder: SdkMeterProviderBuilder => SdkMeterProviderBuilder = identity,
+      customizeTracerProviderBuilder: SdkTracerProviderBuilder => SdkTracerProviderBuilder = identity,
+      customizeLoggerProviderBuilder: SdkLoggerProviderBuilder => SdkLoggerProviderBuilder = identity,
+      textMapPropagators: Iterable[JTextMapPropagator] = Nil
+  ): Resource[F, OtelJavaTestkit[F]] = Resource.eval(LocalProvider[F, Context].local).flatMap { implicit local =>
+    for {
+      logs <- LogsTestkit.fromInMemory(inMemoryLogRecordExporter, customizeLoggerProviderBuilder)
+      metrics <- MetricsTestkit.fromInMemory(inMemoryMetricReader, customizeMeterProviderBuilder)
+      traces <- TracesTestkit.fromInMemory(
+        inMemorySpanExporter,
+        customizeTracerProviderBuilder,
+        textMapPropagators
+      )(Async[F], LocalProvider.fromLocal(local))
+    } yield new Impl[F](logs, metrics, traces)
+  }
 
   private final class Impl[F[_]](
       logs: LogsTestkit[F],

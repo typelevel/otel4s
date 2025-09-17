@@ -1004,6 +1004,7 @@ lazy val docs = project
   .dependsOn(
     oteljava,
     `oteljava-context-storage`,
+    `oteljava-context-storage-testkit`,
     `oteljava-testkit`,
     `instrumentation-metrics`.jvm,
     sdk.jvm,

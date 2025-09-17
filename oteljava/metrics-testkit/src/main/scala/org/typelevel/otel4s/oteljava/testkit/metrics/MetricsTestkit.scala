@@ -68,16 +68,45 @@ object MetricsTestkit {
       customize: SdkMeterProviderBuilder => SdkMeterProviderBuilder = identity
   ): Resource[F, MetricsTestkit[F]] = {
     implicit val askContext: AskContext[F] = Ask.const(Context.root)
-    create[F](customize)
+    for {
+      inMemoryMetricReader <- Resource.eval(Async[F].delay(InMemoryMetricReader.create()))
+      metricsTestkit <- create[F](inMemoryMetricReader, customize)
+    } yield metricsTestkit
+  }
+
+  /** Creates [[MetricsTestkit]] that keeps metrics in-memory from an existing reader. Useful when a Scala
+    * instrumentation requires a Java instrumentation, both sharing the same reader.
+    *
+    * @note
+    *   the implementation does not record exemplars. Use `OtelJavaTestkit` if you need to record exemplars.
+    *
+    * @param inMemoryMetricReader
+    *   the reader to use
+    *
+    * @param customize
+    *   the customization of the builder
+    */
+  def fromInMemory[F[_]: Async](
+      inMemoryMetricReader: InMemoryMetricReader,
+      customize: SdkMeterProviderBuilder => SdkMeterProviderBuilder = identity
+  ): Resource[F, MetricsTestkit[F]] = {
+    implicit val askContext: AskContext[F] = Ask.const(Context.root)
+    create[F](inMemoryMetricReader, customize)
   }
 
   private[oteljava] def create[F[_]: Async: AskContext](
       customize: SdkMeterProviderBuilder => SdkMeterProviderBuilder
   ): Resource[F, MetricsTestkit[F]] = {
+    for {
+      inMemoryMetricReader <- Resource.eval(Async[F].delay(InMemoryMetricReader.create()))
+      metricsTestkit <- create[F](inMemoryMetricReader, customize)
+    } yield metricsTestkit
+  }
 
-    def createMetricReader =
-      Async[F].delay(InMemoryMetricReader.create())
-
+  private def create[F[_]: Async: AskContext](
+      inMemoryMetricReader: InMemoryMetricReader,
+      customize: SdkMeterProviderBuilder => SdkMeterProviderBuilder
+  ): Resource[F, MetricsTestkit[F]] = {
     def createMetricProvider(metricReader: InMemoryMetricReader) =
       Async[F].delay {
         val builder = SdkMeterProvider
@@ -88,11 +117,10 @@ object MetricsTestkit {
       }
 
     for {
-      metricReader <- Resource.fromAutoCloseable(createMetricReader)
-      provider <- Resource.fromAutoCloseable(createMetricProvider(metricReader))
+      provider <- Resource.fromAutoCloseable(createMetricProvider(inMemoryMetricReader))
     } yield new Impl(
       new MeterProviderImpl(provider),
-      metricReader
+      inMemoryMetricReader
     )
   }
 

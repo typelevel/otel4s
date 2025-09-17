@@ -31,6 +31,64 @@ Add directives to the `*.scala` file:
 
 1. Add the `otel4s-oteljava-testkit` library
 
+## IOLocalContextStorage
+
+The `otel4s-oteljava-testkit` module depends on `io.opentelemetry:opentelemetry-sdk-testing` which sets the 
+`ContextStorageProvider` to `io.opentelemetry.sdk.testing.context.SettableContextStorageProvider`. If you rely on 
+`IOLocalContextStorage` in your tests, you will have the following error
+
+```scala
+java.lang.IllegalStateException: IOLocalContextStorage is not configured for use as the ContextStorageProvider. 
+The current ContextStorage is: io.opentelemetry.sdk.testing.context.SettableContextStorageProvider$SettableContextStorage
+```
+
+To solve this, use the `IOLocalTestContextStorage` provided by the `otel4s-oteljava-context-storage-testkit` module.
+Add the following dependency to your dependencies:
+
+@:select(build-tool)
+
+@:choice(sbt)
+
+Add settings to the `build.sbt`:
+
+```scala
+libraryDependencies ++= Seq(
+  "org.typelevel" %% "otel4s-oteljava-context-storage-testkit" % "@VERSION@" % Test,
+)
+```
+
+@:choice(scala-cli)
+
+Add directives to the `*.scala` file:
+
+```scala
+//> using test.dep "org.typelevel::otel4s-oteljava-context-storage-testkit:@VERSION@"
+```
+
+@:@
+
+Parametrize your code to be able to override the `LocalContextProvider`:
+```scala
+import cats.effect.IO
+import org.typelevel.otel4s.oteljava.context.LocalContextProvider
+
+def program(implicit provider: LocalContextProvider[IO]): IO[Unit] = ???
+```
+
+And override it in your tests:
+```scala
+import cats.effect.IO
+import org.typelevel.otel4s.oteljava.context.LocalContextProvider
+import org.typelevel.otel4s.oteljava.testkit.context.IOLocalTestContextStorage
+
+def test: IO[Unit] = {
+  implicit val provider: LocalContextProvider[IO] =
+    IOLocalTestContextStorage.localProvider[IO]
+    
+  program
+}
+```
+
 ## Testing metrics
 
 Let's assume we have a program that increments a counter by one and sets the gauge's value to 42.

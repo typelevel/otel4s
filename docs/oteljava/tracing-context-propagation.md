@@ -87,3 +87,6 @@ However, you can use an **experimental** distribution of the [OTeL Agent](agent.
 [opentelemetry-java]: https://github.com/open-telemetry/opentelemetry-java
 [opentelemetry-java-agent]: https://opentelemetry.io/docs/zero-code/java/agent/
 [cats-mtl-local]: https://typelevel.org/cats-mtl/mtl-classes/local.html
+
+The `IOLocalContextStorage` might not work when using a testkit. 
+Checkout the [testkit](testkit.md) documentation if you run into any issue

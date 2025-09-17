@@ -368,7 +368,7 @@ def program[F[_]: FlatMap: Tracer](
 for {
   inMemorySpanExporter <- IO.delay(InMemorySpanExporter.create()).toResource
   // create your OpenTelemetry with the InMemorySpanExporter created above
-  (openTelemetry: OpenTelemetry) = ???
+  (openTelemetry: OpenTelemetry) = null
 
   localProvider = IOLocalTestContextStorage.localProvider[IO]
   local <- {

@@ -99,7 +99,7 @@ val OpenTelemetryInstrumentationAlphaVersion = s"$OpenTelemetryInstrumentationVe
 val OpenTelemetrySemConvVersion = "1.37.0"
 val OpenTelemetrySemConvAlphaVersion = s"$OpenTelemetrySemConvVersion-alpha"
 val OpenTelemetryProtoVersion = "1.8.0-alpha"
-val Otel4sAgentVersion = "0.0.3"
+val Otel4sAgentVersion = "0.0.4"
 val PekkoStreamVersion = "1.2.0"
 val PekkoHttpVersion = "1.2.0"
 val PlatformVersion = "1.0.2"
@@ -1024,6 +1024,9 @@ lazy val docs = project
       "io.opentelemetry.instrumentation" % "opentelemetry-runtime-telemetry-java8" % OpenTelemetryInstrumentationAlphaVersion,
       "io.opentelemetry.instrumentation" % "opentelemetry-runtime-telemetry-java17" % OpenTelemetryInstrumentationAlphaVersion
     ),
+    libraryDependencies ++= Seq(
+      "io.github.irevive" % "otel4s-opentelemetry-javaagent" % Otel4sAgentVersion
+    ).filter(_ => false), // a trick to make Scala-Steward provide updates for this dependency
     mdocVariables ++= Map(
       "OPEN_TELEMETRY_VERSION" -> OpenTelemetryVersion,
       "OPEN_TELEMETRY_INSTRUMENTATION_ALPHA_VERSION" -> OpenTelemetryInstrumentationAlphaVersion,

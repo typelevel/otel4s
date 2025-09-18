@@ -243,7 +243,7 @@ class SpanBuilderSuite extends FunSuite {
 
   test("store changes") {
     val builder =
-      InMemoryBuilder(InstrumentMeta.Dynamic.enabled, SpanBuilder.State.init)
+      InMemoryBuilder(SpanBuilder.Meta.enabled, SpanBuilder.State.init)
 
     val attribute1 = Attribute("key1", "value")
     val attribute2 = Attribute("key2", 1L)
@@ -279,14 +279,14 @@ class SpanBuilderSuite extends FunSuite {
   }
 
   test("addAttributes: eliminate empty varargs calls".ignore) {
-    val builder = InMemoryBuilder(InstrumentMeta.Dynamic.enabled, SpanBuilder.State.init)
+    val builder = InMemoryBuilder(SpanBuilder.Meta.enabled, SpanBuilder.State.init)
     val result = builder.addAttributes().asInstanceOf[InMemoryBuilder]
 
     assertEquals(result.modifications, 0)
   }
 
   case class InMemoryBuilder(
-      meta: InstrumentMeta.Dynamic[IO],
+      meta: SpanBuilder.Meta[IO],
       state: SpanBuilder.State,
       modifications: Int = 0
   ) extends SpanBuilder.Unsealed[IO] {

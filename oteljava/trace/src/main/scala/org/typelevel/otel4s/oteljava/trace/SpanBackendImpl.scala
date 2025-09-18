@@ -37,7 +37,7 @@ private[oteljava] class SpanBackendImpl[F[_]: Sync](
 ) extends Span.Backend.Unsealed[F] {
   import SpanBackendImpl._
 
-  val meta: InstrumentMeta.Static[F] = InstrumentMeta.Static.enabled
+  val meta: Span.Meta[F] = Span.Meta.enabled
 
   def context: SpanContext =
     spanContext

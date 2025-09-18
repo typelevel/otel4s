@@ -74,8 +74,8 @@ private final class SdkSpanBackend[F[_]: Monad: Clock: Console] private (
 ) extends Span.Backend.Unsealed[F]
     with SpanRef.Unsealed[F] {
 
-  val meta: InstrumentMeta.Static[F] =
-    InstrumentMeta.Static.enabled
+  val meta: Span.Meta[F] =
+    Span.Meta.enabled
 
   def context: SpanContext =
     immutableState.context

@@ -18,6 +18,7 @@ package org.typelevel.otel4s
 package trace
 
 import cats.Applicative
+import cats.Monad
 import cats.arrow.FunctionK
 import cats.effect.kernel.MonadCancelThrow
 import cats.effect.kernel.Resource
@@ -32,7 +33,7 @@ sealed trait SpanBuilder[F[_]] extends SpanBuilderMacro[F] {
 
   /** The instrument's metadata. Indicates whether instrumentation is enabled.
     */
-  def meta: InstrumentMeta.Dynamic[F]
+  def meta: SpanBuilder.Meta[F]
 
   /** Modifies the state using `f` and returns the modified builder.
     *
@@ -67,6 +68,40 @@ sealed trait SpanBuilder[F[_]] extends SpanBuilderMacro[F] {
 
 object SpanBuilder {
   private[otel4s] trait Unsealed[F[_]] extends SpanBuilder[F]
+
+  sealed trait Meta[F[_]] extends InstrumentMeta.Dynamic.Unsealed[F] {
+
+    /** Indicates whether an instrument is enabled.
+      */
+    def isEnabled: F[Boolean]
+
+    /** Modify the context `F` using an implicit [[KindTransformer]] from `F` to `G`.
+      */
+    override def liftTo[G[_]: Monad](implicit kt: KindTransformer[F, G]): Meta[G] =
+      new Meta.MappedK(this)
+
+  }
+
+  object Meta {
+    private[otel4s] def enabled[F[_]: Applicative]: Meta[F] =
+      new Const[F](true)
+
+    private[otel4s] def disabled[F[_]: Applicative]: Meta[F] =
+      new Const[F](false)
+
+    private final class Const[F[_]: Applicative](value: Boolean) extends Meta[F] {
+      val isEnabled: F[Boolean] = Applicative[F].pure(value)
+      val unit: F[Unit] = Applicative[F].unit
+      def whenEnabled(f: => F[Unit]): F[Unit] = Applicative[F].whenA(value)(f)
+    }
+
+    private final class MappedK[F[_], G[_]: Monad](meta: Meta[F])(implicit kt: KindTransformer[F, G])
+        extends Meta[G] {
+      def isEnabled: G[Boolean] = kt.liftK(meta.isEnabled)
+      def unit: G[Unit] = kt.liftK(meta.unit)
+      def whenEnabled(f: => G[Unit]): G[Unit] = Monad[G].ifM(isEnabled)(f, unit)
+    }
+  }
 
   /** The parent selection strategy.
     */
@@ -239,7 +274,7 @@ object SpanBuilder {
   def noop[F[_]: Applicative](back: Span.Backend[F]): SpanBuilder[F] =
     new SpanBuilder[F] {
       private val span: Span[F] = Span.fromBackend(back)
-      val meta: InstrumentMeta.Dynamic[F] = InstrumentMeta.Dynamic.disabled
+      val meta: Meta[F] = Meta.disabled
       def modifyState(f: State => State): SpanBuilder[F] = this
 
       def build: SpanOps[F] = new SpanOps.Unsealed[F] {
@@ -260,7 +295,7 @@ object SpanBuilder {
       builder: SpanBuilder[F]
   )(implicit kt: KindTransformer[F, G])
       extends SpanBuilder[G] {
-    val meta: InstrumentMeta.Dynamic[G] =
+    val meta: Meta[G] =
       builder.meta.liftTo[G]
     def modifyState(f: State => State): SpanBuilder[G] =
       builder.modifyState(f).liftTo[G]

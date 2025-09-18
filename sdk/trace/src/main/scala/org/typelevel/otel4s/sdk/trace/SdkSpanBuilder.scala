@@ -54,7 +54,7 @@ private final case class SdkSpanBuilder[F[_]: Temporal: Console] private (
 ) extends SpanBuilder.Unsealed[F] {
   import SpanBuilder.Parent
 
-  def meta: InstrumentMeta.Dynamic[F] = tracerSharedState.meta
+  def meta: SpanBuilder.Meta[F] = tracerSharedState.spanBuilderMeta
 
   def modifyState(f: SpanBuilder.State => SpanBuilder.State): SpanBuilder[F] =
     copy(stateModifiers = this.stateModifiers :+ f)
@@ -167,7 +167,7 @@ private final case class SdkSpanBuilder[F[_]: Temporal: Console] private (
           createSpanContext(traceId, spanId, traceFlags, traceState)
 
         if (!samplingDecision.isRecording) {
-          Temporal[F].pure(Span.Backend.propagating(InstrumentMeta.Static.enabled, spanContext))
+          Temporal[F].pure(Span.Backend.propagating(Span.Meta.enabled, spanContext))
         } else {
           SdkSpanBackend
             .start[F](

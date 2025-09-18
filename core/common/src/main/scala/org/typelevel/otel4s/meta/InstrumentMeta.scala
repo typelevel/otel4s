@@ -23,6 +23,7 @@ import org.typelevel.otel4s.KindTransformer
 
 object InstrumentMeta {
 
+  @deprecated("Use a Meta instance from a corresponding instrument (e.g. Tracer.Meta)", since = "otel4s 0.14.0")
   sealed trait Dynamic[F[_]] {
 
     /** Indicates whether instrumentation is enabled or not.
@@ -35,6 +36,7 @@ object InstrumentMeta {
 
     /** Runs `f` only when the instrument is enabled. A shortcut for `Monad[F].ifM(isEnabled)(f, unit)`.
       */
+    @deprecated("use `metrics.InstrumentMeta#whenEnabled` instead", since = "otel4s 0.14.0")
     def whenEnabled(f: => F[Unit]): F[Unit]
 
     /** Modify the context `F` using the transformation `f`. */
@@ -51,6 +53,7 @@ object InstrumentMeta {
   }
 
   object Dynamic {
+    private[otel4s] trait Unsealed[F[_]] extends Dynamic[F]
 
     private[otel4s] def from[F[_]: Monad](enabled: F[Boolean]): Dynamic[F] =
       new Dynamic[F] {
@@ -80,6 +83,7 @@ object InstrumentMeta {
     }
   }
 
+  @deprecated("use `Span.Meta` instead", since = "otel4s 0.14.0")
   sealed trait Static[F[_]] {
 
     /** Indicates whether instrumentation is enabled or not.
@@ -91,6 +95,7 @@ object InstrumentMeta {
     def unit: F[Unit]
 
     /** Modify the context `F` using the transformation `f`. */
+    @deprecated("use `Span.Meta#mapK` instead", since = "otel4s 0.14.0")
     def mapK[G[_]](f: F ~> G): InstrumentMeta.Static[G] =
       new Static.MappedK(this)(f)
 
@@ -104,6 +109,7 @@ object InstrumentMeta {
   }
 
   object Static {
+    private[otel4s] trait Unsealed[F[_]] extends Static[F]
 
     private[otel4s] def enabled[F[_]: Applicative]: Static[F] =
       new Static[F] {

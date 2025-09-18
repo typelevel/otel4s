@@ -22,7 +22,6 @@ import cats.effect.Sync
 import cats.syntax.flatMap._
 import io.opentelemetry.api.trace.{Span => JSpan}
 import io.opentelemetry.api.trace.{StatusCode => JStatusCode}
-import org.typelevel.otel4s.meta.InstrumentMeta
 import org.typelevel.otel4s.oteljava.AttributeConverters._
 import org.typelevel.otel4s.trace.Span
 import org.typelevel.otel4s.trace.SpanContext
@@ -37,7 +36,7 @@ private[oteljava] class SpanBackendImpl[F[_]: Sync](
 ) extends Span.Backend.Unsealed[F] {
   import SpanBackendImpl._
 
-  val meta: InstrumentMeta.Static[F] = InstrumentMeta.Static.enabled
+  val meta: Span.Meta[F] = Span.Meta.enabled
 
   def context: SpanContext =
     spanContext

@@ -19,7 +19,6 @@ package org.typelevel.otel4s.sdk.metrics
 import cats.effect.Clock
 import cats.effect.MonadCancelThrow
 import cats.effect.std.Console
-import org.typelevel.otel4s.meta.InstrumentMeta
 import org.typelevel.otel4s.metrics.BatchCallback
 import org.typelevel.otel4s.metrics.Counter
 import org.typelevel.otel4s.metrics.Gauge
@@ -30,6 +29,7 @@ import org.typelevel.otel4s.metrics.ObservableCounter
 import org.typelevel.otel4s.metrics.ObservableGauge
 import org.typelevel.otel4s.metrics.ObservableUpDownCounter
 import org.typelevel.otel4s.metrics.UpDownCounter
+import org.typelevel.otel4s.metrics.meta.InstrumentMeta
 import org.typelevel.otel4s.sdk.context.AskContext
 import org.typelevel.otel4s.sdk.metrics.data.MetricData
 import org.typelevel.otel4s.sdk.metrics.internal.MeterSharedState
@@ -46,7 +46,7 @@ private class SdkMeter[F[_]: MonadCancelThrow: Clock: Console: AskContext](
     sharedState: MeterSharedState[F]
 ) extends Meter.Unsealed[F] {
 
-  def meta: InstrumentMeta.Dynamic[F] = sharedState.meta
+  def meta: InstrumentMeta[F] = sharedState.meta
 
   def counter[A: MeasurementValue](
       name: String

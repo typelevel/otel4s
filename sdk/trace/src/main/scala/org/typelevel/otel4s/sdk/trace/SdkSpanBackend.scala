@@ -26,7 +26,6 @@ import cats.effect.std.Console
 import cats.syntax.applicative._
 import cats.syntax.flatMap._
 import cats.syntax.functor._
-import org.typelevel.otel4s.meta.InstrumentMeta
 import org.typelevel.otel4s.sdk.common.InstrumentationScope
 import org.typelevel.otel4s.sdk.data.LimitedData
 import org.typelevel.otel4s.sdk.trace.SdkSpanBackend.MutableState
@@ -74,8 +73,8 @@ private final class SdkSpanBackend[F[_]: Monad: Clock: Console] private (
 ) extends Span.Backend.Unsealed[F]
     with SpanRef.Unsealed[F] {
 
-  val meta: InstrumentMeta.Static[F] =
-    InstrumentMeta.Static.enabled
+  val meta: Span.Meta[F] =
+    Span.Meta.enabled
 
   def context: SpanContext =
     immutableState.context

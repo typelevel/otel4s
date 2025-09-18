@@ -22,7 +22,6 @@ import cats.effect.IO
 import munit.CatsEffectSuite
 import org.typelevel.otel4s.context.propagation.TextMapGetter
 import org.typelevel.otel4s.context.propagation.TextMapUpdater
-import org.typelevel.otel4s.meta.InstrumentMeta
 
 import scala.concurrent.duration._
 
@@ -151,7 +150,7 @@ class TracerSuite extends CatsEffectSuite {
 
     def ops: Vector[BuilderOp] = builderOps.result()
 
-    def meta: InstrumentMeta.Dynamic[F] = InstrumentMeta.Dynamic.enabled[F]
+    def meta: SpanBuilder.Meta[F] = SpanBuilder.Meta.enabled[F]
 
     def modifyState(f: SpanBuilder.State => SpanBuilder.State): SpanBuilder[F] = {
       state = f(state)
@@ -169,7 +168,7 @@ class TracerSuite extends CatsEffectSuite {
   private class ProxyTracer[F[_]: Applicative](underlying: Tracer[F]) extends Tracer.Unsealed[F] {
     private val proxyBuilders = Vector.newBuilder[ProxyBuilder[F]]
 
-    def meta: InstrumentMeta.Dynamic[F] = InstrumentMeta.Dynamic.enabled[F]
+    def meta: Tracer.Meta[F] = Tracer.Meta.enabled[F]
     def currentSpanContext: F[Option[SpanContext]] = underlying.currentSpanContext
     def currentSpanOrNoop: F[Span[F]] = underlying.currentSpanOrNoop
     def currentSpanOrThrow: F[Span[F]] = underlying.currentSpanOrThrow

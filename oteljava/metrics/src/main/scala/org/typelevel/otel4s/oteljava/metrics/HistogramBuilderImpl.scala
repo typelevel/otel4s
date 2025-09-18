@@ -23,8 +23,8 @@ import cats.effect.kernel.Sync
 import cats.syntax.flatMap._
 import cats.syntax.functor._
 import io.opentelemetry.api.metrics.{Meter => JMeter}
-import org.typelevel.otel4s.meta.InstrumentMeta
 import org.typelevel.otel4s.metrics._
+import org.typelevel.otel4s.metrics.meta.InstrumentMeta
 import org.typelevel.otel4s.oteljava.AttributeConverters._
 import org.typelevel.otel4s.oteljava.context.AskContext
 
@@ -61,7 +61,7 @@ object HistogramBuilderImpl {
   def apply[F[_]: Sync: AskContext, A: MeasurementValue](
       jMeter: JMeter,
       name: String,
-      meta: InstrumentMeta.Dynamic[F]
+      meta: InstrumentMeta[F]
   ): Histogram.Builder[F, A] =
     MeasurementValue[A] match {
       case MeasurementValue.LongMeasurementValue(cast) =>
@@ -83,7 +83,7 @@ object HistogramBuilderImpl {
   private def longFactory[F[_]: Sync: AskContext, A](
       jMeter: JMeter,
       cast: A => Long,
-      instrumentMeta: InstrumentMeta.Dynamic[F]
+      instrumentMeta: InstrumentMeta[F]
   ): Factory[F, A] =
     new Factory[F, A] {
       def create(
@@ -104,7 +104,7 @@ object HistogramBuilderImpl {
           val histogram = builder.ofLongs().build
 
           val backend = new Histogram.Backend.Unsealed[F, A] {
-            val meta: InstrumentMeta.Dynamic[F] = instrumentMeta
+            val meta: InstrumentMeta[F] = instrumentMeta
 
             def record(
                 value: A,
@@ -144,7 +144,7 @@ object HistogramBuilderImpl {
   private def doubleFactory[F[_]: Sync: AskContext, A](
       jMeter: JMeter,
       cast: A => Double,
-      instrumentMeta: InstrumentMeta.Dynamic[F]
+      instrumentMeta: InstrumentMeta[F]
   ): Factory[F, A] =
     new Factory[F, A] {
       def create(
@@ -165,7 +165,7 @@ object HistogramBuilderImpl {
           val histogram = builder.build
 
           val backend = new Histogram.Backend.Unsealed[F, A] {
-            val meta: InstrumentMeta.Dynamic[F] = instrumentMeta
+            val meta: InstrumentMeta[F] = instrumentMeta
 
             def record(
                 value: A,

@@ -24,9 +24,9 @@ import cats.syntax.functor._
 import org.typelevel.ci.CIString
 import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.Attributes
-import org.typelevel.otel4s.meta.InstrumentMeta
 import org.typelevel.otel4s.metrics.Gauge
 import org.typelevel.otel4s.metrics.MeasurementValue
+import org.typelevel.otel4s.metrics.meta.InstrumentMeta
 import org.typelevel.otel4s.sdk.context.AskContext
 import org.typelevel.otel4s.sdk.context.Context
 import org.typelevel.otel4s.sdk.metrics.internal.InstrumentDescriptor
@@ -45,7 +45,7 @@ private object SdkGauge {
   private final class Backend[F[_]: Monad: AskContext, A, Primitive](
       cast: A => Primitive,
       storage: MetricStorage.Synchronous.Writeable[F, Primitive],
-      val meta: InstrumentMeta.Dynamic[F]
+      val meta: InstrumentMeta[F]
   ) extends Gauge.Backend.Unsealed[F, A] {
 
     def record(

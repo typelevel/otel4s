@@ -77,14 +77,10 @@ object Logger {
       */
     def isEnabled(context: Ctx, severity: Option[Severity], eventName: Option[String]): F[Boolean]
 
-    /** Modify the context `F` using the transformation `f`. */
-    def mapK[G[_]](f: F ~> G): Meta[G, Ctx] =
-      new Meta.MappedK(this)(f)
-
     /** Modify the context `F` using an implicit [[KindTransformer]] from `F` to `G`.
       */
     def liftTo[G[_]](implicit kt: KindTransformer[F, G]): Meta[G, Ctx] =
-      mapK(kt.liftK)
+      new Meta.MappedK(this)(kt.liftK)
   }
 
   object Meta {

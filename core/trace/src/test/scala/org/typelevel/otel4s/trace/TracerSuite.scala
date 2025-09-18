@@ -22,7 +22,6 @@ import cats.effect.IO
 import munit.CatsEffectSuite
 import org.typelevel.otel4s.context.propagation.TextMapGetter
 import org.typelevel.otel4s.context.propagation.TextMapUpdater
-import org.typelevel.otel4s.meta.InstrumentMeta
 
 import scala.concurrent.duration._
 

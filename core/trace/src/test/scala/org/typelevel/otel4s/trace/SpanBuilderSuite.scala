@@ -19,7 +19,6 @@ package org.typelevel.otel4s.trace
 import cats.effect.IO
 import munit.FunSuite
 import org.typelevel.otel4s.Attribute
-import org.typelevel.otel4s.meta.InstrumentMeta
 
 import scala.concurrent.duration._
 

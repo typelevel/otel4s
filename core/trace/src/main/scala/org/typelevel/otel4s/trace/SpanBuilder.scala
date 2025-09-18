@@ -95,8 +95,7 @@ object SpanBuilder {
       def whenEnabled(f: => F[Unit]): F[Unit] = Applicative[F].whenA(value)(f)
     }
 
-    private final class MappedK[F[_], G[_]: Monad](meta: Meta[F])(implicit kt: KindTransformer[F, G])
-        extends Meta[G] {
+    private final class MappedK[F[_], G[_]: Monad](meta: Meta[F])(implicit kt: KindTransformer[F, G]) extends Meta[G] {
       def isEnabled: G[Boolean] = kt.liftK(meta.isEnabled)
       def unit: G[Unit] = kt.liftK(meta.unit)
       def whenEnabled(f: => G[Unit]): G[Unit] = Monad[G].ifM(isEnabled)(f, unit)

@@ -20,7 +20,7 @@ package metrics
 import cats.effect.IO
 import cats.effect.Ref
 import munit.CatsEffectSuite
-import org.typelevel.otel4s.meta.InstrumentMeta
+import org.typelevel.otel4s.metrics.meta.InstrumentMeta
 
 import scala.collection.immutable
 
@@ -99,7 +99,7 @@ object CounterSuite {
 
     val backend: Counter.Backend[IO, Long] =
       new Counter.Backend.Unsealed[IO, Long] {
-        val meta: InstrumentMeta.Dynamic[IO] = InstrumentMeta.Dynamic.enabled
+        val meta: InstrumentMeta[IO] = InstrumentMeta.enabled
 
         def add(
             value: Long,

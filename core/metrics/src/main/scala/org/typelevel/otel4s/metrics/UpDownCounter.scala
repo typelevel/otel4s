@@ -18,7 +18,7 @@ package org.typelevel.otel4s
 package metrics
 
 import cats.Applicative
-import org.typelevel.otel4s.meta.InstrumentMeta
+import org.typelevel.otel4s.metrics.meta.InstrumentMeta
 
 import scala.collection.immutable
 
@@ -82,7 +82,7 @@ object UpDownCounter {
   }
 
   sealed trait Backend[F[_], A] {
-    def meta: InstrumentMeta.Dynamic[F]
+    def meta: InstrumentMeta[F]
 
     /** Records a value with a set of attributes.
       *
@@ -117,7 +117,7 @@ object UpDownCounter {
     new UpDownCounter[F, A] {
       val backend: UpDownCounter.Backend[F, A] =
         new UpDownCounter.Backend[F, A] {
-          val meta: InstrumentMeta.Dynamic[F] = InstrumentMeta.Dynamic.disabled
+          val meta: InstrumentMeta[F] = InstrumentMeta.disabled
           def add(
               value: A,
               attributes: immutable.Iterable[Attribute[_]]

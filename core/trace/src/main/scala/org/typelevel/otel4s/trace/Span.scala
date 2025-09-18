@@ -123,7 +123,7 @@ object Span {
   sealed trait Meta[F[_]] extends InstrumentMeta.Static.Unsealed[F] {
 
     /** Indicates whether an instrument is enabled.
-     */
+      */
     def isEnabled: Boolean
 
     /** Modify the context `F` using the transformation `f`. */
@@ -131,7 +131,7 @@ object Span {
       new Meta.MappedK(this, f)
 
     /** Modify the context `F` using an implicit [[KindTransformer]] from `F` to `G`.
-     */
+      */
     override def liftTo[G[_]](implicit kt: KindTransformer[F, G]): Meta[G] =
       new Meta.MappedK(this, kt.liftK)
 

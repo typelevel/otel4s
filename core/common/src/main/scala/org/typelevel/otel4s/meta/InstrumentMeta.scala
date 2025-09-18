@@ -21,9 +21,13 @@ import cats.Monad
 import cats.~>
 import org.typelevel.otel4s.KindTransformer
 
+@annotation.nowarn("cat=deprecation")
 object InstrumentMeta {
 
-  @deprecated("Use a Meta instance from a corresponding instrument (e.g. Tracer.Meta)", since = "otel4s 0.14.0")
+  @deprecated(
+    "Use a Meta instance from a corresponding instrument (e.g. `Tracer.Meta` or `metrics.meta.InstrumentMeta`)",
+    since = "otel4s 0.14.0"
+  )
   sealed trait Dynamic[F[_]] {
 
     /** Indicates whether instrumentation is enabled or not.
@@ -36,7 +40,7 @@ object InstrumentMeta {
 
     /** Runs `f` only when the instrument is enabled. A shortcut for `Monad[F].ifM(isEnabled)(f, unit)`.
       */
-    @deprecated("use `metrics.InstrumentMeta#whenEnabled` instead", since = "otel4s 0.14.0")
+    @deprecated("use `metrics.meta.InstrumentMeta#whenEnabled` instead", since = "otel4s 0.14.0")
     def whenEnabled(f: => F[Unit]): F[Unit]
 
     /** Modify the context `F` using the transformation `f`. */

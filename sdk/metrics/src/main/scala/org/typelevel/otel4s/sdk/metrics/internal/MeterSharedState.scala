@@ -25,8 +25,8 @@ import cats.syntax.flatMap._
 import cats.syntax.foldable._
 import cats.syntax.functor._
 import cats.syntax.traverse._
-import org.typelevel.otel4s.meta.InstrumentMeta
 import org.typelevel.otel4s.metrics.MeasurementValue
+import org.typelevel.otel4s.metrics.meta.InstrumentMeta
 import org.typelevel.otel4s.sdk.TelemetryResource
 import org.typelevel.otel4s.sdk.common.InstrumentationScope
 import org.typelevel.otel4s.sdk.context.AskContext
@@ -44,7 +44,7 @@ import scala.concurrent.duration.FiniteDuration
 private[metrics] final class MeterSharedState[
     F[_]: Concurrent: Console: AskContext
 ] private (
-    val meta: InstrumentMeta.Dynamic[F],
+    val meta: InstrumentMeta[F],
     mutex: Mutex[F],
     viewRegistry: ViewRegistry[F],
     reservoirs: Reservoirs[F],
@@ -261,7 +261,7 @@ private[metrics] object MeterSharedState {
         MetricStorageRegistry.create[F].tupleLeft(reader)
       }
     } yield new MeterSharedState(
-      InstrumentMeta.Dynamic.enabled,
+      InstrumentMeta.enabled,
       mutex,
       viewRegistry,
       reservoirs,

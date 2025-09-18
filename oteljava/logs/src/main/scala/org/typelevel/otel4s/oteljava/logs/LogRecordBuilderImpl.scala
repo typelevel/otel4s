@@ -27,7 +27,6 @@ import io.opentelemetry.api.logs.{LogRecordBuilder => JLogRecordBuilder}
 import io.opentelemetry.api.logs.{Severity => JSeverity}
 import org.typelevel.otel4s.logs.LogRecordBuilder
 import org.typelevel.otel4s.logs.Severity
-import org.typelevel.otel4s.meta.InstrumentMeta
 import org.typelevel.otel4s.oteljava.AttributeConverters._
 import org.typelevel.otel4s.oteljava.context.AskContext
 import org.typelevel.otel4s.oteljava.context.Context
@@ -39,7 +38,6 @@ import scala.concurrent.duration.FiniteDuration
 import scala.jdk.CollectionConverters._
 
 private[oteljava] final case class LogRecordBuilderImpl[F[_]: Sync: AskContext](
-    meta: InstrumentMeta.Dynamic[F],
     jBuilder: JLogRecordBuilder
 ) extends LogRecordBuilder.Unsealed[F, Context] {
 

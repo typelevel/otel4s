@@ -19,7 +19,6 @@ package org.typelevel.otel4s.sdk.logs
 import cats.effect.Temporal
 import org.typelevel.otel4s.logs.LogRecordBuilder
 import org.typelevel.otel4s.logs.Logger
-import org.typelevel.otel4s.meta.InstrumentMeta
 import org.typelevel.otel4s.sdk.TelemetryResource
 import org.typelevel.otel4s.sdk.common.InstrumentationScope
 import org.typelevel.otel4s.sdk.context.AskContext
@@ -33,7 +32,7 @@ import org.typelevel.otel4s.sdk.logs.processor.LogRecordProcessor
   *   [[https://opentelemetry.io/docs/specs/otel/logs/sdk/#logger]]
   */
 private final class SdkLogger[F[_]: Temporal: AskContext](
-    val meta: InstrumentMeta.Dynamic[F],
+    val meta: Logger.Meta[F, Context],
     instrumentationScope: InstrumentationScope,
     resource: TelemetryResource,
     traceContextLookup: TraceContext.Lookup,
@@ -42,6 +41,6 @@ private final class SdkLogger[F[_]: Temporal: AskContext](
 ) extends Logger.Unsealed[F, Context] {
 
   def logRecordBuilder: LogRecordBuilder[F, Context] =
-    SdkLogRecordBuilder.empty(meta, processor, instrumentationScope, resource, traceContextLookup, logRecordLimits)
+    SdkLogRecordBuilder.empty(processor, instrumentationScope, resource, traceContextLookup, logRecordLimits)
 
 }

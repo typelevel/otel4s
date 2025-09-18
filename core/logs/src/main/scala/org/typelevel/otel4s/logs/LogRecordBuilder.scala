@@ -21,7 +21,6 @@ import cats.Monad
 import org.typelevel.otel4s.AnyValue
 import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.KindTransformer
-import org.typelevel.otel4s.meta.InstrumentMeta
 
 import java.time.Instant
 import scala.collection.immutable
@@ -36,10 +35,6 @@ import scala.concurrent.duration.FiniteDuration
   *   [[https://opentelemetry.io/docs/specs/otel/logs/data-model/]]
   */
 sealed trait LogRecordBuilder[F[_], Ctx] {
-
-  /** The instrument's metadata. Indicates whether instrumentation is enabled.
-    */
-  def meta: InstrumentMeta.Dynamic[F]
 
   /** Sets the time when the event occurred measured by the origin clock, i.e. the time at the source.
     *
@@ -158,7 +153,6 @@ object LogRecordBuilder {
 
   def noop[F[_]: Applicative, Ctx]: LogRecordBuilder[F, Ctx] =
     new LogRecordBuilder[F, Ctx] {
-      val meta: InstrumentMeta.Dynamic[F] = InstrumentMeta.Dynamic.disabled
       def withTimestamp(timestamp: FiniteDuration): LogRecordBuilder[F, Ctx] = this
       def withTimestamp(timestamp: Instant): LogRecordBuilder[F, Ctx] = this
       def withObservedTimestamp(timestamp: FiniteDuration): LogRecordBuilder[F, Ctx] = this
@@ -178,8 +172,6 @@ object LogRecordBuilder {
       builder: LogRecordBuilder[F, Ctx]
   )(implicit kt: KindTransformer[F, G])
       extends LogRecordBuilder[G, Ctx] {
-
-    val meta: InstrumentMeta.Dynamic[G] = builder.meta.liftTo[G]
 
     def withTimestamp(timestamp: FiniteDuration): LogRecordBuilder[G, Ctx] =
       builder.withTimestamp(timestamp).liftTo

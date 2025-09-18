@@ -55,8 +55,8 @@ private[resource] trait HostDetectorPlatform { self: HostDetector.type =>
       }
 
     private def detectHost: Option[String] =
-      Zone { implicit z =>
-        val size = 256.toUInt
+      Zone.acquire { implicit z =>
+        val size = _SC_HOST_NAME_MAX.toCSize
         val hostnameBuffer = alloc[CChar](size)
         if (gethostname(hostnameBuffer, size) == 0) {
           val hostname = fromCString(hostnameBuffer)

@@ -494,7 +494,7 @@ val config: IORuntimeMetrics.Config = {
       WorkerThreadsConfig(
         WorkerThreadsConfig.ThreadConfig.enabled,
         WorkerThreadsConfig.LocalQueueConfig.enabled,
-        WorkerThreadsConfig.TimerHeapConfig.enabled, // disable timer heap metrics
+        WorkerThreadsConfig.TimerHeapConfig.disabled, // disable timer heap metrics
         WorkerThreadsConfig.PollerConfig.enabled
       )
     )

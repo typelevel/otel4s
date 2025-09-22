@@ -249,7 +249,7 @@ object TelemetryApp extends IOApp.Simple {
         .autoConfigured[IO](
             // disable exporter autoconfiguration
             // can be skipped if you use system properties or env variables
-          _.addPropertiesCustomizer(_ => Map("otlp.metrics.exporter" -> "none"))
+          _.addPropertiesCustomizer(_ => Map("otel.metrics.exporter" -> "none"))
             // register Prometheus exporter 
            .addMeterProviderCustomizer((b, _) => 
               b.registerMetricReader(exporter.metricReader)
@@ -307,7 +307,7 @@ object TelemetryApp extends IOApp.Simple {
         .autoConfigured[IO](
             // disable exporter autoconfiguration
             // can be skipped if you use system properties or env variables
-          _.addPropertiesCustomizer(_ => Map("otlp.metrics.exporter" -> "none"))
+          _.addPropertiesCustomizer(_ => Map("otel.metrics.exporter" -> "none"))
             // register Prometheus exporter 
             .addMeterProviderCustomizer((b, _) => 
               b.registerMetricReader(exporter.metricReader)

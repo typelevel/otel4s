@@ -118,12 +118,13 @@ class PrometheusConverterSuite extends FunSuite {
       ("g/x", "grams_per_x"),
       ("watts_W", "watts_W")
     ).foreach { case (unit, expected) =>
-      assertEquals(convertUnitName(unit), Right(expected))
+      assertEquals(convertUnitName(unit), Some(expected))
     }
   }
 
-  test("fail to convert an empty unit name") {
-    assertEquals(convertUnitName("").leftMap(_.getMessage), "Empty string is not a valid unit name".asLeft[String])
+  test("return None when convert an empty or only annotation unit name") {
+    assertEquals(convertUnitName(""), None)
+    assertEquals(convertUnitName("{thread}"), None)
   }
 
 }

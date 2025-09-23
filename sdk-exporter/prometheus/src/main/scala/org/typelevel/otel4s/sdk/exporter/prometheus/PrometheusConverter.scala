@@ -142,30 +142,33 @@ private object PrometheusConverter {
 
   /** Converts OpenTelemetry unit names to Prometheus units.
     */
-  def convertUnitName(unit: String): Either[Throwable, String] = {
-    errorOnEmpty(unit, "Empty string is not a valid unit name").map { _ =>
-      val unitWithoutBraces = if (unit.contains("{")) {
-        unit.replaceAll("\\{[^}]*}", "").trim()
-      } else {
-        unit
-      }
-
-      UnitMapping
-        .getOrElse(
-          unitWithoutBraces, {
-            unitWithoutBraces.split("/", 2).map(_.trim) match {
-              case Array(unitFirstPart, unitSecondPart) =>
-                val firstPartPlural = UnitMapping.getOrElse(unitFirstPart, unitFirstPart)
-                val secondPartSingular = PerMapping.getOrElse(unitSecondPart, unitSecondPart)
-                if (firstPartPlural.isEmpty) {
-                  refineUnitName(s"per_$secondPartSingular")
-                } else {
-                  refineUnitName(s"${firstPartPlural}_per_$secondPartSingular")
-                }
-              case _ => refineUnitName(unitWithoutBraces)
+  def convertUnitName(unit: String): Option[String] = {
+    val unitWithoutBraces: String = if (unit.contains("{")) {
+      unit.replaceAll("\\{[^}]*}", "").trim()
+    } else {
+      unit
+    }
+    if (unitWithoutBraces.isEmpty) {
+      None
+    } else {
+      Option(
+        UnitMapping
+          .getOrElse(
+            unitWithoutBraces, {
+              unitWithoutBraces.split("/", 2).map(_.trim) match {
+                case Array(unitFirstPart, unitSecondPart) =>
+                  val firstPartPlural = UnitMapping.getOrElse(unitFirstPart, unitFirstPart)
+                  val secondPartSingular = PerMapping.getOrElse(unitSecondPart, unitSecondPart)
+                  if (firstPartPlural.isEmpty) {
+                    refineUnitName(s"per_$secondPartSingular")
+                  } else {
+                    refineUnitName(s"${firstPartPlural}_per_$secondPartSingular")
+                  }
+                case _ => refineUnitName(unitWithoutBraces)
+              }
             }
-          }
-        )
+          )
+      )
     }
   }
 

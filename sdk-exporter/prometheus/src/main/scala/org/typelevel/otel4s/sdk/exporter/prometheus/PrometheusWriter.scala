@@ -295,9 +295,9 @@ object PrometheusWriter {
       F.fromEither {
         metric.unit
           .filter(_ => !config.unitSuffixDisabled)
-          .map(convertUnitName)
+          .flatMap(convertUnitName)
           .fold(convertName(metric.name)) {
-            _.flatMap(convertName(metric.name, _))
+            convertName(metric.name, _)
           }
       }.flatMap { prometheusName =>
         val prometheusType = resolvePrometheusType(metric)

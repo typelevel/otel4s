@@ -24,9 +24,9 @@ import cats.syntax.functor._
 import org.typelevel.ci.CIString
 import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.Attributes
-import org.typelevel.otel4s.meta.InstrumentMeta
 import org.typelevel.otel4s.metrics.MeasurementValue
 import org.typelevel.otel4s.metrics.UpDownCounter
+import org.typelevel.otel4s.metrics.meta.InstrumentMeta
 import org.typelevel.otel4s.sdk.context.AskContext
 import org.typelevel.otel4s.sdk.context.Context
 import org.typelevel.otel4s.sdk.metrics.internal.InstrumentDescriptor
@@ -49,7 +49,7 @@ private object SdkUpDownCounter {
   ](
       cast: A => Primitive,
       storage: MetricStorage.Synchronous.Writeable[F, Primitive],
-      val meta: InstrumentMeta.Dynamic[F]
+      val meta: InstrumentMeta[F]
   ) extends UpDownCounter.Backend.Unsealed[F, A] {
 
     def add(value: A, attributes: immutable.Iterable[Attribute[_]]): F[Unit] =

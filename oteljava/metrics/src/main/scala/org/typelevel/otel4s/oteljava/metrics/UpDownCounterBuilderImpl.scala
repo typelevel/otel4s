@@ -20,8 +20,8 @@ package metrics
 
 import cats.effect.kernel.Sync
 import io.opentelemetry.api.metrics.{Meter => JMeter}
-import org.typelevel.otel4s.meta.InstrumentMeta
 import org.typelevel.otel4s.metrics._
+import org.typelevel.otel4s.metrics.meta.InstrumentMeta
 import org.typelevel.otel4s.oteljava.AttributeConverters._
 import org.typelevel.otel4s.oteljava.context.AskContext
 
@@ -49,7 +49,7 @@ private[oteljava] object UpDownCounterBuilderImpl {
   def apply[F[_]: Sync: AskContext, A: MeasurementValue](
       jMeter: JMeter,
       name: String,
-      meta: InstrumentMeta.Dynamic[F]
+      meta: InstrumentMeta[F]
   ): UpDownCounter.Builder[F, A] =
     MeasurementValue[A] match {
       case MeasurementValue.LongMeasurementValue(cast) =>
@@ -70,7 +70,7 @@ private[oteljava] object UpDownCounterBuilderImpl {
   private def longFactory[F[_]: Sync: AskContext, A](
       jMeter: JMeter,
       cast: A => Long,
-      instrumentMeta: InstrumentMeta.Dynamic[F]
+      instrumentMeta: InstrumentMeta[F]
   ): Factory[F, A] =
     new Factory[F, A] {
       def create(
@@ -85,7 +85,7 @@ private[oteljava] object UpDownCounterBuilderImpl {
           val counter = builder.build()
 
           val backend = new UpDownCounter.Backend.Unsealed[F, A] {
-            val meta: InstrumentMeta.Dynamic[F] = instrumentMeta
+            val meta: InstrumentMeta[F] = instrumentMeta
 
             def add(
                 value: A,
@@ -115,7 +115,7 @@ private[oteljava] object UpDownCounterBuilderImpl {
   private def doubleFactory[F[_]: Sync: AskContext, A](
       jMeter: JMeter,
       cast: A => Double,
-      instrumentMeta: InstrumentMeta.Dynamic[F]
+      instrumentMeta: InstrumentMeta[F]
   ): Factory[F, A] =
     new Factory[F, A] {
       def create(
@@ -130,7 +130,7 @@ private[oteljava] object UpDownCounterBuilderImpl {
           val counter = builder.ofDoubles().build()
 
           val backend = new UpDownCounter.Backend.Unsealed[F, A] {
-            val meta: InstrumentMeta.Dynamic[F] = instrumentMeta
+            val meta: InstrumentMeta[F] = instrumentMeta
 
             def add(
                 value: A,

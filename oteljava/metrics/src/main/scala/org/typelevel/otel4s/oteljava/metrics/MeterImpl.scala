@@ -20,13 +20,13 @@ package metrics
 
 import cats.effect.kernel.Async
 import io.opentelemetry.api.metrics.{Meter => JMeter}
-import org.typelevel.otel4s.meta.InstrumentMeta
 import org.typelevel.otel4s.metrics._
+import org.typelevel.otel4s.metrics.meta.InstrumentMeta
 import org.typelevel.otel4s.oteljava.context.AskContext
 
 private[oteljava] class MeterImpl[F[_]: Async: AskContext](jMeter: JMeter) extends Meter.Unsealed[F] {
 
-  val meta: InstrumentMeta.Dynamic[F] = InstrumentMeta.Dynamic.enabled
+  val meta: InstrumentMeta[F] = InstrumentMeta.enabled
 
   def counter[A: MeasurementValue](name: String): Counter.Builder[F, A] =
     CounterBuilderImpl(jMeter, name, meta)

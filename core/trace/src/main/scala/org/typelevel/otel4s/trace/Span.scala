@@ -120,8 +120,42 @@ sealed trait Span[F[_]] extends SpanMacro[F] {
 
 object Span {
 
+  sealed trait Meta[F[_]] extends InstrumentMeta.Static.Unsealed[F] {
+
+    /** Indicates whether an instrument is enabled.
+      */
+    def isEnabled: Boolean
+
+    /** Modify the context `F` using the transformation `f`. */
+    override def mapK[G[_]](f: F ~> G): Meta[G] =
+      new Meta.MappedK(this, f)
+
+    /** Modify the context `F` using an implicit [[KindTransformer]] from `F` to `G`.
+      */
+    override def liftTo[G[_]](implicit kt: KindTransformer[F, G]): Meta[G] =
+      new Meta.MappedK(this, kt.liftK)
+
+  }
+
+  object Meta {
+    private[otel4s] def enabled[F[_]: Applicative]: Meta[F] =
+      new Const[F](true)
+
+    private[otel4s] def disabled[F[_]: Applicative]: Meta[F] =
+      new Const[F](false)
+
+    private final class Const[F[_]: Applicative](val isEnabled: Boolean) extends Meta[F] {
+      val unit: F[Unit] = Applicative[F].unit
+    }
+
+    private final class MappedK[F[_], G[_]](meta: Meta[F], f: F ~> G) extends Meta[G] {
+      def isEnabled: Boolean = meta.isEnabled
+      def unit: G[Unit] = f(meta.unit)
+    }
+  }
+
   sealed trait Backend[F[_]] {
-    def meta: InstrumentMeta.Static[F]
+    def meta: Span.Meta[F]
     def context: SpanContext
 
     def updateName(name: String): F[Unit]
@@ -177,22 +211,22 @@ object Span {
       *   the context to propagate
       */
     private[otel4s] def propagating[F[_]: Applicative](
-        meta: InstrumentMeta.Static[F],
+        meta: Span.Meta[F],
         context: SpanContext
     ): Backend[F] =
       make(meta, context)
 
     def noop[F[_]: Applicative]: Backend[F] =
-      make(InstrumentMeta.Static.disabled, SpanContext.invalid)
+      make(Span.Meta.disabled, SpanContext.invalid)
 
     private def make[F[_]: Applicative](
-        m: InstrumentMeta.Static[F],
+        m: Span.Meta[F],
         ctx: SpanContext
     ): Backend[F] =
       new Backend[F] {
         private val unit = Applicative[F].unit
 
-        val meta: InstrumentMeta.Static[F] = m
+        val meta: Span.Meta[F] = m
         val context: SpanContext = ctx
 
         def updateName(name: String): F[Unit] = unit
@@ -213,7 +247,7 @@ object Span {
 
     /** Implementation for [[Backend.liftTo]]. */
     private class MappedK[F[_], G[_]](backend: Backend[F])(f: F ~> G) extends Backend[G] {
-      val meta: InstrumentMeta.Static[G] =
+      val meta: Span.Meta[G] =
         backend.meta.mapK(f)
       def context: SpanContext = backend.context
       def updateName(name: String): G[Unit] =

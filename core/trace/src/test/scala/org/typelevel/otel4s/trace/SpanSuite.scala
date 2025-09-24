@@ -20,7 +20,6 @@ import cats.effect.IO
 import cats.effect.Ref
 import munit._
 import org.typelevel.otel4s.Attribute
-import org.typelevel.otel4s.meta.InstrumentMeta
 
 import scala.collection.immutable
 import scala.concurrent.duration.FiniteDuration
@@ -65,7 +64,7 @@ object SpanSuite {
   private class OpsBackend(state: Ref[IO, Vector[BackendOp]]) extends Span.Backend.Unsealed[IO] {
     import BackendOp._
 
-    val meta: InstrumentMeta.Static[IO] = InstrumentMeta.Static.enabled
+    val meta: Span.Meta[IO] = Span.Meta.enabled
 
     def context: SpanContext = ???
 

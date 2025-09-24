@@ -14,30 +14,15 @@
  * limitations under the License.
  */
 
-package org.typelevel.otel4s.meta
+package org.typelevel.otel4s.metrics.meta
 
 import cats.effect.IO
 import munit.CatsEffectSuite
 
-@annotation.nowarn("cat=deprecation")
 class InstrumentMetaSuite extends CatsEffectSuite {
 
-  test("static - enabled") {
-    val enabled = InstrumentMeta.Static.enabled[cats.Id]
-
-    assertEquals(enabled.unit, ())
-    assertEquals(enabled.isEnabled, true)
-  }
-
-  test("static - disabled") {
-    val disabled = InstrumentMeta.Static.disabled[cats.Id]
-
-    assertEquals(disabled.unit, ())
-    assertEquals(disabled.isEnabled, false)
-  }
-
-  test("dynamic - enabled") {
-    val meta = InstrumentMeta.Dynamic.enabled[IO]
+  test("enabled") {
+    val meta = InstrumentMeta.enabled[IO]
 
     for {
       _ <- assertIO_(meta.unit)
@@ -46,8 +31,8 @@ class InstrumentMetaSuite extends CatsEffectSuite {
     } yield ()
   }
 
-  test("dynamic - disabled") {
-    val meta = InstrumentMeta.Dynamic.disabled[IO]
+  test("disabled") {
+    val meta = InstrumentMeta.disabled[IO]
 
     for {
       _ <- assertIO_(meta.unit)
@@ -59,7 +44,7 @@ class InstrumentMetaSuite extends CatsEffectSuite {
   test("dynamic - from") {
     for {
       enabled <- IO.ref(false)
-      meta = InstrumentMeta.Dynamic.from[IO](enabled.get)
+      meta = InstrumentMeta.from[IO](enabled.get)
 
       // disabled
       _ <- assertIO_(meta.unit)

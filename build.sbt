@@ -512,7 +512,10 @@ lazy val `sdk-exporter-prometheus` =
         ),
         ProblemFilters.exclude[ReversedMissingMethodProblem](
           "org.typelevel.otel4s.sdk.exporter.prometheus.PrometheusMetricExporter#HttpServerBuilder.withShutdownTimeout"
-        )
+        ),
+        ProblemFilters.exclude[IncompatibleResultTypeProblem](
+          "org.typelevel.otel4s.sdk.exporter.prometheus.PrometheusConverter.convertUnitName"
+        ),
       )
     )
     .jsSettings(scalaJSLinkerSettings)

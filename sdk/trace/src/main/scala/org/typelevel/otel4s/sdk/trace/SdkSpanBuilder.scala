@@ -40,6 +40,7 @@ import org.typelevel.otel4s.trace.SpanOps
 import org.typelevel.otel4s.trace.TraceFlags
 import org.typelevel.otel4s.trace.TraceScope
 import org.typelevel.otel4s.trace.TraceState
+import org.typelevel.otel4s.trace.meta.InstrumentMeta
 import scodec.bits.ByteVector
 
 import scala.collection.immutable.Queue
@@ -53,7 +54,7 @@ private final case class SdkSpanBuilder[F[_]: Temporal: Console] private (
 ) extends SpanBuilder.Unsealed[F] {
   import SpanBuilder.Parent
 
-  def meta: SpanBuilder.Meta[F] = tracerSharedState.spanBuilderMeta
+  def meta: InstrumentMeta[F] = tracerSharedState.meta
 
   def modifyState(f: SpanBuilder.State => SpanBuilder.State): SpanBuilder[F] =
     copy(stateModifiers = this.stateModifiers :+ f)

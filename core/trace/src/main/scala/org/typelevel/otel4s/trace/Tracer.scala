@@ -19,13 +19,12 @@ package trace
 
 import cats.Applicative
 import cats.ApplicativeThrow
-import cats.Monad
 import cats.effect.kernel.MonadCancelThrow
 import cats.syntax.functor._
 import cats.~>
 import org.typelevel.otel4s.context.propagation.TextMapGetter
 import org.typelevel.otel4s.context.propagation.TextMapUpdater
-import org.typelevel.otel4s.meta.InstrumentMeta
+import org.typelevel.otel4s.trace.meta.InstrumentMeta
 
 @annotation.implicitNotFound("""
 Could not find the `Tracer` for ${F}. `Tracer` can be one of the following:
@@ -45,7 +44,7 @@ sealed trait Tracer[F[_]] extends TracerMacro[F] {
 
   /** The instrument's metadata. Indicates whether instrumentation is enabled or not.
     */
-  def meta: Tracer.Meta[F]
+  def meta: InstrumentMeta[F]
 
   /** Returns the context of the current span when a span that is not no-op exists in the local scope.
     */
@@ -221,39 +220,6 @@ object Tracer {
   ): F[Span[F]] =
     F.raiseError(new IllegalStateException("not inside a span"))
 
-  sealed trait Meta[F[_]] extends InstrumentMeta.Dynamic.Unsealed[F] {
-
-    /** Indicates whether an instrument is enabled.
-      */
-    def isEnabled: F[Boolean]
-
-    /** Modify the context `F` using an implicit [[KindTransformer]] from `F` to `G`.
-      */
-    override def liftTo[G[_]: Monad](implicit kt: KindTransformer[F, G]): Meta[G] =
-      new Meta.MappedK(this)
-
-  }
-
-  object Meta {
-    private[otel4s] def enabled[F[_]: Applicative]: Meta[F] =
-      new Const[F](true)
-
-    private[otel4s] def disabled[F[_]: Applicative]: Meta[F] =
-      new Const[F](false)
-
-    private final class Const[F[_]: Applicative](value: Boolean) extends Meta[F] {
-      val isEnabled: F[Boolean] = Applicative[F].pure(value)
-      val unit: F[Unit] = Applicative[F].unit
-      def whenEnabled(f: => F[Unit]): F[Unit] = Applicative[F].whenA(value)(f)
-    }
-
-    private final class MappedK[F[_], G[_]: Monad](meta: Meta[F])(implicit kt: KindTransformer[F, G]) extends Meta[G] {
-      def isEnabled: G[Boolean] = kt.liftK(meta.isEnabled)
-      def unit: G[Unit] = kt.liftK(meta.unit)
-      def whenEnabled(f: => G[Unit]): G[Unit] = Monad[G].ifM(isEnabled)(f, unit)
-    }
-  }
-
   def apply[F[_]](implicit ev: Tracer[F]): Tracer[F] = ev
 
   /** Creates a no-op implementation of the [[Tracer]].
@@ -267,7 +233,7 @@ object Tracer {
     new Tracer[F] {
       private val noopBackend = Span.Backend.noop
       private val builder = SpanBuilder.noop(noopBackend)
-      val meta: Meta[F] = Meta.disabled
+      val meta: InstrumentMeta[F] = InstrumentMeta.disabled
       val currentSpanContext: F[Option[SpanContext]] = Applicative[F].pure(None)
       val currentSpanOrNoop: F[Span[F]] =
         Applicative[F].pure(Span.fromBackend(noopBackend))
@@ -286,7 +252,7 @@ object Tracer {
       tracer: Tracer[F]
   )(implicit kt: KindTransformer[F, G])
       extends Tracer[G] {
-    val meta: Meta[G] = tracer.meta.liftTo[G]
+    val meta: InstrumentMeta[G] = tracer.meta.liftTo[G]
     def currentSpanContext: G[Option[SpanContext]] =
       kt.liftK(tracer.currentSpanContext)
     def currentSpanOrNoop: G[Span[G]] =

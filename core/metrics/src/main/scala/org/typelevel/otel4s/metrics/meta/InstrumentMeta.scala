@@ -21,6 +21,8 @@ import cats.Monad
 import cats.~>
 import org.typelevel.otel4s.KindTransformer
 
+/** The instrument's metadata. Indicates whether instrumentation is enabled.
+  */
 sealed trait InstrumentMeta[F[_]] extends org.typelevel.otel4s.meta.InstrumentMeta.Dynamic.Unsealed[F] {
 
   /** Indicates whether instrumentation is enabled or not.

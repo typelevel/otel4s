@@ -56,6 +56,8 @@ sealed trait Logger[F[_], Ctx] {
 object Logger {
   private[otel4s] trait Unsealed[F[_], Ctx] extends Logger[F, Ctx]
 
+  /** The instrument's metadata. Indicates whether instrumentation is enabled.
+    */
   sealed trait Meta[F[_], Ctx] {
 
     /** Indicates whether instrumentation is enabled.

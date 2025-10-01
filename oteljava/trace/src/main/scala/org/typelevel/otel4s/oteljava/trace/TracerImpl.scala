@@ -30,6 +30,7 @@ import org.typelevel.otel4s.trace.SpanBuilder
 import org.typelevel.otel4s.trace.SpanContext
 import org.typelevel.otel4s.trace.TraceScope
 import org.typelevel.otel4s.trace.Tracer
+import org.typelevel.otel4s.trace.meta.InstrumentMeta
 
 private[oteljava] class TracerImpl[F[_]](
     jTracer: JTracer,
@@ -40,11 +41,8 @@ private[oteljava] class TracerImpl[F[_]](
 
   private val runner: SpanRunner[F] = SpanRunner.fromTraceScope(traceScope)
 
-  private val spanBuilderMeta: SpanBuilder.Meta[F] =
-    SpanBuilder.Meta.enabled
-
-  val meta: Tracer.Meta[F] =
-    Tracer.Meta.enabled
+  val meta: InstrumentMeta[F] =
+    InstrumentMeta.enabled
 
   def currentSpanContext: F[Option[SpanContext]] =
     traceScope.current.map(_.filter(_.isValid))
@@ -68,7 +66,7 @@ private[oteljava] class TracerImpl[F[_]](
     }.flatten
 
   def spanBuilder(name: String): SpanBuilder[F] =
-    SpanBuilderImpl[F](jTracer, name, spanBuilderMeta, runner, traceScope)
+    SpanBuilderImpl[F](jTracer, name, meta, runner, traceScope)
 
   def childScope[A](parent: SpanContext)(fa: F[A]): F[A] =
     traceScope.childScope(parent).flatMap(trace => trace(fa))

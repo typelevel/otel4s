@@ -19,6 +19,7 @@ package org.typelevel.otel4s.trace
 import cats.effect.IO
 import munit.FunSuite
 import org.typelevel.otel4s.Attribute
+import org.typelevel.otel4s.trace.meta.InstrumentMeta
 
 import scala.concurrent.duration._
 
@@ -278,14 +279,14 @@ class SpanBuilderSuite extends FunSuite {
   }
 
   test("addAttributes: eliminate empty varargs calls".ignore) {
-    val builder = InMemoryBuilder(SpanBuilder.Meta.enabled, SpanBuilder.State.init)
+    val builder = InMemoryBuilder(InstrumentMeta.enabled, SpanBuilder.State.init)
     val result = builder.addAttributes().asInstanceOf[InMemoryBuilder]
 
     assertEquals(result.modifications, 0)
   }
 
   case class InMemoryBuilder(
-      meta: SpanBuilder.Meta[IO],
+      meta: InstrumentMeta[IO],
       state: SpanBuilder.State,
       modifications: Int = 0
   ) extends SpanBuilder.Unsealed[IO] {

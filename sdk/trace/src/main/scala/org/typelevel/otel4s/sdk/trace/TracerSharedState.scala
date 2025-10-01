@@ -19,8 +19,7 @@ package trace
 
 import org.typelevel.otel4s.sdk.trace.processor.SpanProcessor
 import org.typelevel.otel4s.sdk.trace.samplers.Sampler
-import org.typelevel.otel4s.trace.SpanBuilder
-import org.typelevel.otel4s.trace.Tracer
+import org.typelevel.otel4s.trace.meta.InstrumentMeta
 
 private final case class TracerSharedState[F[_]](
     idGenerator: IdGenerator[F],
@@ -29,6 +28,5 @@ private final case class TracerSharedState[F[_]](
     sampler: Sampler[F],
     spanProcessor: SpanProcessor[F],
     spanStorage: SpanStorage[F],
-    tracerMeta: Tracer.Meta[F],
-    spanBuilderMeta: SpanBuilder.Meta[F]
+    meta: InstrumentMeta[F]
 )

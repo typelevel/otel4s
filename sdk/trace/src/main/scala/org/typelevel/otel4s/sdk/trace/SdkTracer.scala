@@ -32,6 +32,7 @@ import org.typelevel.otel4s.trace.SpanBuilder
 import org.typelevel.otel4s.trace.SpanContext
 import org.typelevel.otel4s.trace.TraceScope
 import org.typelevel.otel4s.trace.Tracer
+import org.typelevel.otel4s.trace.meta.InstrumentMeta
 
 private final class SdkTracer[F[_]: Temporal: Console] private[trace] (
     scopeInfo: InstrumentationScope,
@@ -40,7 +41,7 @@ private final class SdkTracer[F[_]: Temporal: Console] private[trace] (
     traceScope: TraceScope[F, Context]
 ) extends Tracer.Unsealed[F] {
 
-  def meta: Tracer.Meta[F] = sharedState.tracerMeta
+  def meta: InstrumentMeta[F] = sharedState.meta
 
   def currentSpanContext: F[Option[SpanContext]] =
     traceScope.current.map(current => current.filter(_.isValid))

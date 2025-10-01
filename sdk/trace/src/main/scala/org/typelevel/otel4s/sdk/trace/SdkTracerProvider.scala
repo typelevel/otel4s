@@ -28,11 +28,10 @@ import org.typelevel.otel4s.sdk.context.Context
 import org.typelevel.otel4s.sdk.context.LocalContext
 import org.typelevel.otel4s.sdk.trace.processor.SpanProcessor
 import org.typelevel.otel4s.sdk.trace.samplers.Sampler
-import org.typelevel.otel4s.trace.SpanBuilder
 import org.typelevel.otel4s.trace.TraceScope
-import org.typelevel.otel4s.trace.Tracer
 import org.typelevel.otel4s.trace.TracerBuilder
 import org.typelevel.otel4s.trace.TracerProvider
+import org.typelevel.otel4s.trace.meta.InstrumentMeta
 
 private class SdkTracerProvider[F[_]: Temporal: Parallel: Console](
     idGenerator: IdGenerator[F],
@@ -53,8 +52,7 @@ private class SdkTracerProvider[F[_]: Temporal: Parallel: Console](
       sampler,
       SpanProcessor.of(spanProcessors: _*),
       storage,
-      Tracer.Meta.enabled,
-      SpanBuilder.Meta.enabled
+      InstrumentMeta.enabled
     )
 
   def tracer(name: String): TracerBuilder[F] =

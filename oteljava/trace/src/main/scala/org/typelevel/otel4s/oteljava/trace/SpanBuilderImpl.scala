@@ -34,13 +34,14 @@ import org.typelevel.otel4s.trace.SpanContext
 import org.typelevel.otel4s.trace.SpanKind
 import org.typelevel.otel4s.trace.SpanOps
 import org.typelevel.otel4s.trace.TraceScope
+import org.typelevel.otel4s.trace.meta.InstrumentMeta
 
 import scala.collection.immutable.Queue
 
 private[oteljava] final case class SpanBuilderImpl[F[_]: Sync] private (
     jTracer: JTracer,
     name: String,
-    meta: SpanBuilder.Meta[F],
+    meta: InstrumentMeta[F],
     runner: SpanRunner[F],
     scope: TraceScope[F, Context],
     stateModifiers: Queue[SpanBuilder.State => SpanBuilder.State]
@@ -131,7 +132,7 @@ private[oteljava] object SpanBuilderImpl {
   def apply[F[_]: Sync](
       jTracer: JTracer,
       name: String,
-      meta: SpanBuilder.Meta[F],
+      meta: InstrumentMeta[F],
       runner: SpanRunner[F],
       scope: TraceScope[F, Context]
   ): SpanBuilder[F] =

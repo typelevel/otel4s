@@ -243,7 +243,7 @@ class SpanBuilderSuite extends FunSuite {
 
   test("store changes") {
     val builder =
-      InMemoryBuilder(SpanBuilder.Meta.enabled, SpanBuilder.State.init)
+      InMemoryBuilder(InstrumentMeta.enabled, SpanBuilder.State.init)
 
     val attribute1 = Attribute("key1", "value")
     val attribute2 = Attribute("key2", 1L)

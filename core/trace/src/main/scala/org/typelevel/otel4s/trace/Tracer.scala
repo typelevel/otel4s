@@ -24,7 +24,7 @@ import cats.syntax.functor._
 import cats.~>
 import org.typelevel.otel4s.context.propagation.TextMapGetter
 import org.typelevel.otel4s.context.propagation.TextMapUpdater
-import org.typelevel.otel4s.meta.InstrumentMeta
+import org.typelevel.otel4s.trace.meta.InstrumentMeta
 
 @annotation.implicitNotFound("""
 Could not find the `Tracer` for ${F}. `Tracer` can be one of the following:
@@ -44,7 +44,7 @@ sealed trait Tracer[F[_]] extends TracerMacro[F] {
 
   /** The instrument's metadata. Indicates whether instrumentation is enabled or not.
     */
-  def meta: InstrumentMeta.Dynamic[F]
+  def meta: InstrumentMeta[F]
 
   /** Returns the context of the current span when a span that is not no-op exists in the local scope.
     */
@@ -233,7 +233,7 @@ object Tracer {
     new Tracer[F] {
       private val noopBackend = Span.Backend.noop
       private val builder = SpanBuilder.noop(noopBackend)
-      val meta: InstrumentMeta.Dynamic[F] = InstrumentMeta.Dynamic.disabled
+      val meta: InstrumentMeta[F] = InstrumentMeta.disabled
       val currentSpanContext: F[Option[SpanContext]] = Applicative[F].pure(None)
       val currentSpanOrNoop: F[Span[F]] =
         Applicative[F].pure(Span.fromBackend(noopBackend))
@@ -252,7 +252,7 @@ object Tracer {
       tracer: Tracer[F]
   )(implicit kt: KindTransformer[F, G])
       extends Tracer[G] {
-    val meta: InstrumentMeta.Dynamic[G] = tracer.meta.liftTo[G]
+    val meta: InstrumentMeta[G] = tracer.meta.liftTo[G]
     def currentSpanContext: G[Option[SpanContext]] =
       kt.liftK(tracer.currentSpanContext)
     def currentSpanOrNoop: G[Span[G]] =

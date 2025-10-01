@@ -28,7 +28,6 @@ import org.scalacheck.Test
 import org.scalacheck.effect.PropF
 import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.AttributeKey
-import org.typelevel.otel4s.meta.InstrumentMeta
 import org.typelevel.otel4s.sdk.common.InstrumentationScope
 import org.typelevel.otel4s.sdk.test.NoopConsole
 import org.typelevel.otel4s.sdk.trace.data.SpanData
@@ -141,7 +140,7 @@ class SimpleSpanProcessorSuite extends CatsEffectSuite with ScalaCheckEffectSuit
 
       // span.backend
 
-      val meta: InstrumentMeta.Static[IO] =
+      val meta: Span.Meta[IO] =
         noopBackend.meta
 
       val context: SpanContext =

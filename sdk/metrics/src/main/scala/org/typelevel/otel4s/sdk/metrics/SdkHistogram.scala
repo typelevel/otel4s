@@ -26,10 +26,10 @@ import cats.syntax.functor._
 import org.typelevel.ci.CIString
 import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.Attributes
-import org.typelevel.otel4s.meta.InstrumentMeta
 import org.typelevel.otel4s.metrics.BucketBoundaries
 import org.typelevel.otel4s.metrics.Histogram
 import org.typelevel.otel4s.metrics.MeasurementValue
+import org.typelevel.otel4s.metrics.meta.InstrumentMeta
 import org.typelevel.otel4s.sdk.context.AskContext
 import org.typelevel.otel4s.sdk.context.Context
 import org.typelevel.otel4s.sdk.metrics.internal.Advice
@@ -56,7 +56,7 @@ private object SdkHistogram {
       castDuration: Double => Primitive,
       name: String,
       storage: MetricStorage.Synchronous.Writeable[F, Primitive],
-      val meta: InstrumentMeta.Dynamic[F]
+      val meta: InstrumentMeta[F]
   ) extends Histogram.Backend.Unsealed[F, A] {
 
     def record(

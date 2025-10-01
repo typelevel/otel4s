@@ -24,7 +24,6 @@ import cats.effect.std.Random
 import cats.syntax.functor._
 import org.typelevel.otel4s.context.propagation.ContextPropagators
 import org.typelevel.otel4s.context.propagation.TextMapPropagator
-import org.typelevel.otel4s.meta.InstrumentMeta
 import org.typelevel.otel4s.sdk.context.Context
 import org.typelevel.otel4s.sdk.context.LocalContext
 import org.typelevel.otel4s.sdk.trace.processor.SpanProcessor
@@ -32,6 +31,7 @@ import org.typelevel.otel4s.sdk.trace.samplers.Sampler
 import org.typelevel.otel4s.trace.TraceScope
 import org.typelevel.otel4s.trace.TracerBuilder
 import org.typelevel.otel4s.trace.TracerProvider
+import org.typelevel.otel4s.trace.meta.InstrumentMeta
 
 private class SdkTracerProvider[F[_]: Temporal: Parallel: Console](
     idGenerator: IdGenerator[F],
@@ -52,7 +52,7 @@ private class SdkTracerProvider[F[_]: Temporal: Parallel: Console](
       sampler,
       SpanProcessor.of(spanProcessors: _*),
       storage,
-      InstrumentMeta.Dynamic.enabled
+      InstrumentMeta.enabled
     )
 
   def tracer(name: String): TracerBuilder[F] =

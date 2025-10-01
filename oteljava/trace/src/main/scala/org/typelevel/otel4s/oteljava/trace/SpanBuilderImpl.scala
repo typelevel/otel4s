@@ -26,7 +26,6 @@ import io.opentelemetry.api.trace.{SpanBuilder => JSpanBuilder}
 import io.opentelemetry.api.trace.{SpanKind => JSpanKind}
 import io.opentelemetry.api.trace.{Tracer => JTracer}
 import io.opentelemetry.context.{Context => JContext}
-import org.typelevel.otel4s.meta.InstrumentMeta
 import org.typelevel.otel4s.oteljava.AttributeConverters._
 import org.typelevel.otel4s.oteljava.context.Context
 import org.typelevel.otel4s.trace.Span
@@ -35,13 +34,14 @@ import org.typelevel.otel4s.trace.SpanContext
 import org.typelevel.otel4s.trace.SpanKind
 import org.typelevel.otel4s.trace.SpanOps
 import org.typelevel.otel4s.trace.TraceScope
+import org.typelevel.otel4s.trace.meta.InstrumentMeta
 
 import scala.collection.immutable.Queue
 
 private[oteljava] final case class SpanBuilderImpl[F[_]: Sync] private (
     jTracer: JTracer,
     name: String,
-    meta: InstrumentMeta.Dynamic[F],
+    meta: InstrumentMeta[F],
     runner: SpanRunner[F],
     scope: TraceScope[F, Context],
     stateModifiers: Queue[SpanBuilder.State => SpanBuilder.State]
@@ -132,7 +132,7 @@ private[oteljava] object SpanBuilderImpl {
   def apply[F[_]: Sync](
       jTracer: JTracer,
       name: String,
-      meta: InstrumentMeta.Dynamic[F],
+      meta: InstrumentMeta[F],
       runner: SpanRunner[F],
       scope: TraceScope[F, Context]
   ): SpanBuilder[F] =

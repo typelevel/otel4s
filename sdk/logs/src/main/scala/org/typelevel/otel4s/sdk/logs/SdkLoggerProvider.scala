@@ -22,9 +22,9 @@ import cats.Parallel
 import cats.effect.Temporal
 import cats.effect.std.Console
 import cats.syntax.functor._
-import org.typelevel.otel4s.logs.Logger
 import org.typelevel.otel4s.logs.LoggerBuilder
 import org.typelevel.otel4s.logs.LoggerProvider
+import org.typelevel.otel4s.logs.meta.InstrumentMeta
 import org.typelevel.otel4s.sdk.TelemetryResource
 import org.typelevel.otel4s.sdk.common.InstrumentationScope
 import org.typelevel.otel4s.sdk.context.AskContext
@@ -164,7 +164,7 @@ object SdkLoggerProvider {
       def createLogger(scope: InstrumentationScope): F[SdkLogger[F]] =
         Monad[F].pure(
           new SdkLogger[F](
-            meta = Logger.Meta.enabled,
+            meta = InstrumentMeta.enabled,
             instrumentationScope = scope,
             resource = resource,
             traceContextLookup = traceContextLookup,

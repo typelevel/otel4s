@@ -25,7 +25,6 @@ import cats.syntax.functor._
 import org.typelevel.otel4s.context.propagation.ContextPropagators
 import org.typelevel.otel4s.context.propagation.TextMapGetter
 import org.typelevel.otel4s.context.propagation.TextMapUpdater
-import org.typelevel.otel4s.meta.InstrumentMeta
 import org.typelevel.otel4s.sdk.common.InstrumentationScope
 import org.typelevel.otel4s.sdk.context.Context
 import org.typelevel.otel4s.trace.Span
@@ -33,6 +32,7 @@ import org.typelevel.otel4s.trace.SpanBuilder
 import org.typelevel.otel4s.trace.SpanContext
 import org.typelevel.otel4s.trace.TraceScope
 import org.typelevel.otel4s.trace.Tracer
+import org.typelevel.otel4s.trace.meta.InstrumentMeta
 
 private final class SdkTracer[F[_]: Temporal: Console] private[trace] (
     scopeInfo: InstrumentationScope,
@@ -41,14 +41,14 @@ private final class SdkTracer[F[_]: Temporal: Console] private[trace] (
     traceScope: TraceScope[F, Context]
 ) extends Tracer.Unsealed[F] {
 
-  def meta: InstrumentMeta.Dynamic[F] = sharedState.meta
+  def meta: InstrumentMeta[F] = sharedState.meta
 
   def currentSpanContext: F[Option[SpanContext]] =
     traceScope.current.map(current => current.filter(_.isValid))
 
   private[this] def currentBackend: OptionT[F, Span.Backend[F]] =
     OptionT(traceScope.current).semiflatMap { ctx =>
-      OptionT(sharedState.spanStorage.get(ctx)).getOrElse(Span.Backend.propagating(InstrumentMeta.Static.enabled, ctx))
+      OptionT(sharedState.spanStorage.get(ctx)).getOrElse(Span.Backend.propagating(Span.Meta.enabled, ctx))
     }
 
   def currentSpanOrNoop: F[Span[F]] =

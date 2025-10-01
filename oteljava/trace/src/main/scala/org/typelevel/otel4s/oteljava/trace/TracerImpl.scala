@@ -24,13 +24,13 @@ import io.opentelemetry.api.trace.{Tracer => JTracer}
 import org.typelevel.otel4s.context.propagation.ContextPropagators
 import org.typelevel.otel4s.context.propagation.TextMapGetter
 import org.typelevel.otel4s.context.propagation.TextMapUpdater
-import org.typelevel.otel4s.meta.InstrumentMeta
 import org.typelevel.otel4s.oteljava.context.Context
 import org.typelevel.otel4s.trace.Span
 import org.typelevel.otel4s.trace.SpanBuilder
 import org.typelevel.otel4s.trace.SpanContext
 import org.typelevel.otel4s.trace.TraceScope
 import org.typelevel.otel4s.trace.Tracer
+import org.typelevel.otel4s.trace.meta.InstrumentMeta
 
 private[oteljava] class TracerImpl[F[_]](
     jTracer: JTracer,
@@ -41,8 +41,8 @@ private[oteljava] class TracerImpl[F[_]](
 
   private val runner: SpanRunner[F] = SpanRunner.fromTraceScope(traceScope)
 
-  val meta: InstrumentMeta.Dynamic[F] =
-    InstrumentMeta.Dynamic.enabled
+  val meta: InstrumentMeta[F] =
+    InstrumentMeta.enabled
 
   def currentSpanContext: F[Option[SpanContext]] =
     traceScope.current.map(_.filter(_.isValid))

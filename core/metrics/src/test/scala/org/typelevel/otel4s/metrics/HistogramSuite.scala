@@ -23,7 +23,7 @@ import cats.effect.Resource
 import cats.effect.testkit.TestControl
 import cats.syntax.functor._
 import munit.CatsEffectSuite
-import org.typelevel.otel4s.meta.InstrumentMeta
+import org.typelevel.otel4s.metrics.meta.InstrumentMeta
 
 import java.util.concurrent.TimeUnit
 import scala.collection.immutable
@@ -117,7 +117,7 @@ object HistogramSuite {
 
     val backend: Histogram.Backend[IO, Double] =
       new Histogram.Backend.Unsealed[IO, Double] {
-        val meta: InstrumentMeta.Dynamic[IO] = InstrumentMeta.Dynamic.enabled
+        val meta: InstrumentMeta[IO] = InstrumentMeta.enabled
 
         def record(
             value: Double,

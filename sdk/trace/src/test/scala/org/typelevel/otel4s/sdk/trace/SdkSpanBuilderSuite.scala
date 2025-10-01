@@ -26,7 +26,6 @@ import org.scalacheck.Gen
 import org.scalacheck.Test
 import org.scalacheck.effect.PropF
 import org.typelevel.otel4s.Attributes
-import org.typelevel.otel4s.meta.InstrumentMeta
 import org.typelevel.otel4s.sdk.TelemetryResource
 import org.typelevel.otel4s.sdk.common.InstrumentationScope
 import org.typelevel.otel4s.sdk.context.Context
@@ -43,6 +42,7 @@ import org.typelevel.otel4s.trace.SpanBuilder
 import org.typelevel.otel4s.trace.SpanContext
 import org.typelevel.otel4s.trace.SpanKind
 import org.typelevel.otel4s.trace.TraceScope
+import org.typelevel.otel4s.trace.meta.InstrumentMeta
 
 import scala.concurrent.duration.FiniteDuration
 
@@ -165,7 +165,7 @@ class SdkSpanBuilderSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
           sampler,
           SimpleSpanProcessor(exporter),
           spanStorage,
-          InstrumentMeta.Dynamic.enabled
+          InstrumentMeta.enabled
         )
       }
     }

@@ -21,8 +21,8 @@ import cats.Applicative
 import cats.arrow.FunctionK
 import cats.effect.kernel.MonadCancelThrow
 import cats.effect.kernel.Resource
-import org.typelevel.otel4s.meta.InstrumentMeta
 import org.typelevel.otel4s.trace.SpanFinalizer.Strategy
+import org.typelevel.otel4s.trace.meta.InstrumentMeta
 
 import scala.collection.immutable
 import scala.concurrent.duration.FiniteDuration
@@ -32,7 +32,7 @@ sealed trait SpanBuilder[F[_]] extends SpanBuilderMacro[F] {
 
   /** The instrument's metadata. Indicates whether instrumentation is enabled.
     */
-  def meta: InstrumentMeta.Dynamic[F]
+  def meta: InstrumentMeta[F]
 
   /** Modifies the state using `f` and returns the modified builder.
     *
@@ -239,7 +239,7 @@ object SpanBuilder {
   def noop[F[_]: Applicative](back: Span.Backend[F]): SpanBuilder[F] =
     new SpanBuilder[F] {
       private val span: Span[F] = Span.fromBackend(back)
-      val meta: InstrumentMeta.Dynamic[F] = InstrumentMeta.Dynamic.disabled
+      val meta: InstrumentMeta[F] = InstrumentMeta.disabled
       def modifyState(f: State => State): SpanBuilder[F] = this
 
       def build: SpanOps[F] = new SpanOps.Unsealed[F] {
@@ -260,7 +260,7 @@ object SpanBuilder {
       builder: SpanBuilder[F]
   )(implicit kt: KindTransformer[F, G])
       extends SpanBuilder[G] {
-    val meta: InstrumentMeta.Dynamic[G] =
+    val meta: InstrumentMeta[G] =
       builder.meta.liftTo[G]
     def modifyState(f: State => State): SpanBuilder[G] =
       builder.modifyState(f).liftTo[G]

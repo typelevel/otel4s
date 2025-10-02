@@ -77,6 +77,15 @@ object BaggageManager {
 
   def apply[F[_]](implicit ev: BaggageManager[F]): BaggageManager[F] = ev
 
+  /** Creates a no-op implementation of the [[BaggageManager]].
+    *
+    * `BaggageManager.current` returns an empty [[Baggage]].
+    *
+    * `BaggageManager.scope` and `BaggageManager.local` are no-ops.
+    */
+  def noop[F[_]: Applicative]: BaggageManager[F] =
+    new Noop
+
   @deprecated("BaggageManager no longer extends Local", since = "otel4s 0.13.0")
   implicit def asExplicitLocal[F[_]](bm: BaggageManager[F]): Local[F, Baggage] =
     new Local[F, Baggage] {
@@ -85,4 +94,13 @@ object BaggageManager {
       def local[A](fa: F[A])(f: Baggage => Baggage): F[A] =
         bm.local(f)(fa)
     }
+
+  private final class Noop[F[_]](implicit val applicative: Applicative[F]) extends BaggageManager[F] {
+    val current: F[Baggage] = applicative.pure(Baggage.empty)
+    def get(key: String): F[Option[Baggage.Entry]] = applicative.pure(None)
+    def getValue(key: String): F[Option[String]] = applicative.pure(None)
+    def local[A](modify: Baggage => Baggage)(fa: F[A]): F[A] = fa
+    def scope[A](baggage: Baggage)(fa: F[A]): F[A] = fa
+  }
+
 }

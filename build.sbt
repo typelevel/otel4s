@@ -31,15 +31,20 @@ lazy val scalaJSLinkerSettings = Def.settings(
     _.withESVersion(org.scalajs.linker.interface.ESVersion.ES2018)
   )),
   Test / scalaJSLinkerConfig ~= (_.withModuleKind(ModuleKind.CommonJSModule)),
-  // the JS artifacts could be quite large and exceed the CI disk space limit
-  githubWorkflowArtifactUpload := false
 )
 
 lazy val scalaNativeSettings = Def.settings(
   Test / nativeBrewFormulas ++= Set("s2n", "utf8proc"),
   Test / envVars ++= Map("S2N_DONT_MLOCK" -> "1"),
-  // the SN artifacts could be quite large and exceed the CI disk space limit
-  githubWorkflowArtifactUpload := false
+)
+
+// the JS and SN artifacts could be quite large and exceed the CI disk space limit
+lazy val artifactUploadSettings = Def.settings(
+  githubWorkflowArtifactUpload := {
+    val platform = crossProjectPlatform.?.value
+    if (platform.contains(NativePlatform) || platform.contains(JSPlatform)) false
+    else githubWorkflowArtifactUpload.value
+  }
 )
 
 val Scala212 = "2.12.20"
@@ -193,6 +198,7 @@ lazy val root = tlCrossRootProject
 lazy val `core-common` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .crossType(CrossType.Pure)
   .in(file("core/common"))
+  .settings(artifactUploadSettings)
   .settings(munitDependencies)
   .settings(
     name := "otel4s-core-common",
@@ -214,6 +220,7 @@ lazy val `core-logs` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .crossType(CrossType.Pure)
   .in(file("core/logs"))
   .dependsOn(`core-common`)
+  .settings(artifactUploadSettings)
   .settings(munitDependencies)
   .settings(
     name := "otel4s-core-logs",
@@ -228,6 +235,7 @@ lazy val `core-metrics` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .crossType(CrossType.Pure)
   .in(file("core/metrics"))
   .dependsOn(`core-common`)
+  .settings(artifactUploadSettings)
   .settings(scalaReflectDependency)
   .settings(munitDependencies)
   .settings(
@@ -244,6 +252,7 @@ lazy val `core-trace` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .crossType(CrossType.Pure)
   .in(file("core/trace"))
   .dependsOn(`core-common` % "compile->compile;test->test")
+  .settings(artifactUploadSettings)
   .settings(scalaReflectDependency)
   .settings(munitDependencies)
   .settings(
@@ -270,6 +279,7 @@ lazy val core = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .crossType(CrossType.Pure)
   .in(file("core/all"))
   .dependsOn(`core-common`, `core-logs`, `core-metrics`, `core-trace`)
+  .settings(artifactUploadSettings)
   .settings(
     name := "otel4s-core"
   )
@@ -282,6 +292,7 @@ lazy val `instrumentation-metrics` = crossProject(JVMPlatform, JSPlatform, Nativ
   .crossType(CrossType.Full)
   .in(file("instrumentation/metrics"))
   .dependsOn(`core-metrics`, `core-common` % "test->test", `sdk-metrics-testkit` % Test)
+  .settings(artifactUploadSettings)
   .settings(munitDependencies)
   .settings(
     name := "otel4s-instrumentation-metrics",
@@ -304,6 +315,7 @@ lazy val `sdk-common` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
     `semconv-stable`,
     `semconv-experimental` % Test
   )
+  .settings(artifactUploadSettings)
   .settings(
     name := "otel4s-sdk-common",
     startYear := Some(2023),
@@ -329,6 +341,7 @@ lazy val `sdk-logs` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
     `sdk-common` % "compile->compile;test->test",
     `core-logs` % "compile->compile;test->test",
   )
+  .settings(artifactUploadSettings)
   .settings(
     name := "otel4s-sdk-logs",
     startYear := Some(2025),
@@ -350,6 +363,7 @@ lazy val `sdk-logs-testkit` = crossProject(JVMPlatform, JSPlatform, NativePlatfo
   .crossType(CrossType.Pure)
   .in(file("sdk/logs-testkit"))
   .dependsOn(`sdk-logs`)
+  .settings(artifactUploadSettings)
   .settings(
     name := "otel4s-sdk-logs-testkit",
     startYear := Some(2025)
@@ -362,6 +376,7 @@ lazy val `sdk-metrics` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
     `sdk-common` % "compile->compile;test->test",
     `core-metrics` % "compile->compile;test->test"
   )
+  .settings(artifactUploadSettings)
   .settings(
     name := "otel4s-sdk-metrics",
     startYear := Some(2024),
@@ -382,6 +397,7 @@ lazy val `sdk-metrics-testkit` =
     .crossType(CrossType.Pure)
     .in(file("sdk/metrics-testkit"))
     .dependsOn(`sdk-metrics`)
+    .settings(artifactUploadSettings)
     .settings(
       name := "otel4s-sdk-metrics-testkit",
       startYear := Some(2024)
@@ -394,6 +410,7 @@ lazy val `sdk-trace` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
     `sdk-common` % "compile->compile;test->test",
     `core-trace` % "compile->compile;test->test"
   )
+  .settings(artifactUploadSettings)
   .settings(
     name := "otel4s-sdk-trace",
     startYear := Some(2023),
@@ -412,6 +429,7 @@ lazy val `sdk-trace-testkit` =
   crossProject(JVMPlatform, JSPlatform, NativePlatform)
     .crossType(CrossType.Pure)
     .in(file("sdk/trace-testkit"))
+    .settings(artifactUploadSettings)
     .dependsOn(`sdk-trace`)
     .settings(
       name := "otel4s-sdk-trace-testkit",
@@ -422,6 +440,7 @@ lazy val `sdk-testkit` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .crossType(CrossType.Pure)
   .in(file("sdk/testkit"))
   .dependsOn(core, `sdk-logs-testkit`, `sdk-metrics-testkit`, `sdk-trace-testkit`)
+  .settings(artifactUploadSettings)
   .settings(
     name := "otel4s-sdk-testkit",
     startYear := Some(2024)
@@ -439,6 +458,7 @@ lazy val sdk = crossProject(JVMPlatform, JSPlatform, NativePlatform)
     `sdk-trace` % "compile->compile;test->test",
     `sdk-trace-testkit` % Test
   )
+  .settings(artifactUploadSettings)
   .settings(
     name := "otel4s-sdk"
   )
@@ -453,6 +473,7 @@ lazy val `sdk-exporter-proto` =
   crossProject(JVMPlatform, JSPlatform, NativePlatform)
     .crossType(CrossType.Pure)
     .in(file("sdk-exporter/proto"))
+    .settings(artifactUploadSettings)
     .settings(
       name := "otel4s-sdk-exporter-proto",
       Compile / PB.protoSources += baseDirectory.value.getParentFile / "src" / "main" / "protobuf",
@@ -521,6 +542,7 @@ lazy val `sdk-exporter-common` =
       `sdk-common` % "compile->compile;test->test",
       `sdk-exporter-proto`
     )
+    .settings(artifactUploadSettings)
     .settings(
       name := "otel4s-sdk-exporter-common",
       startYear := Some(2023),
@@ -549,6 +571,7 @@ lazy val `sdk-exporter-logs` =
       `sdk-exporter-common` % "compile->compile;test->test",
       `sdk-logs` % "compile->compile;test->test"
     )
+    .settings(artifactUploadSettings)
     .settings(
       name := "otel4s-sdk-exporter-logs",
       startYear := Some(2025),
@@ -572,6 +595,7 @@ lazy val `sdk-exporter-metrics` =
       `sdk-exporter-common` % "compile->compile;test->test",
       `sdk-metrics` % "compile->compile;test->test"
     )
+    .settings(artifactUploadSettings)
     .settings(
       name := "otel4s-sdk-exporter-metrics",
       startYear := Some(2024),
@@ -590,6 +614,7 @@ lazy val `sdk-exporter-prometheus` =
       `sdk-exporter-common` % "compile->compile;test->test",
       `sdk-metrics` % "compile->compile;test->test"
     )
+    .settings(artifactUploadSettings)
     .settings(
       name := "otel4s-sdk-exporter-prometheus",
       startYear := Some(2024),
@@ -623,6 +648,7 @@ lazy val `sdk-exporter-trace` =
       `sdk-exporter-common` % "compile->compile;test->test",
       `sdk-trace` % "compile->compile;test->test"
     )
+    .settings(artifactUploadSettings)
     .settings(
       name := "otel4s-sdk-exporter-trace",
       startYear := Some(2023),
@@ -647,6 +673,7 @@ lazy val `sdk-exporter` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
     `sdk-exporter-metrics`,
     `sdk-exporter-trace`
   )
+  .settings(artifactUploadSettings)
   .settings(
     name := "otel4s-sdk-exporter"
   )
@@ -671,6 +698,7 @@ lazy val `sdk-contrib-aws-resource` =
         "org.http4s" %%% "http4s-dsl" % Http4sVersion % Test
       )
     )
+    .settings(artifactUploadSettings)
     .settings(munitDependencies)
     .jsSettings(scalaJSLinkerSettings)
     .nativeEnablePlugins(ScalaNativeBrewedConfigPlugin)
@@ -688,6 +716,7 @@ lazy val `sdk-contrib-aws-xray-propagator` =
       name := "otel4s-sdk-contrib-aws-xray-propagator",
       startYear := Some(2024)
     )
+    .settings(artifactUploadSettings)
     .settings(munitDependencies)
     .jsSettings(scalaJSLinkerSettings)
 
@@ -700,6 +729,7 @@ lazy val `sdk-contrib-aws-xray` =
       name := "otel4s-sdk-contrib-aws-xray",
       startYear := Some(2024),
     )
+    .settings(artifactUploadSettings)
     .settings(munitDependencies)
     .jsSettings(scalaJSLinkerSettings)
 
@@ -879,6 +909,7 @@ lazy val `semconv-stable` =
     .enablePlugins(BuildInfoPlugin)
     .in(file("semconv/stable"))
     .dependsOn(`core-common`)
+    .settings(artifactUploadSettings)
     .settings(
       name := "otel4s-semconv",
       startYear := Some(2023),
@@ -898,6 +929,7 @@ lazy val `semconv-experimental` =
     .crossType(CrossType.Pure)
     .in(file("semconv/experimental"))
     .dependsOn(`core-common`)
+    .settings(artifactUploadSettings)
     .settings(
       name := "otel4s-semconv-experimental",
       description := "Experimental (incubating) semantic conventions. Breaking changes expected. Library instrumentation SHOULD NOT depend on this.",
@@ -913,6 +945,7 @@ lazy val `semconv-metrics-stable` =
     .crossType(CrossType.Pure)
     .in(file("semconv/metrics/stable"))
     .dependsOn(`core-metrics`, `semconv-stable`)
+    .settings(artifactUploadSettings)
     .settings(
       name := "otel4s-semconv-metrics",
       startYear := Some(2024),
@@ -925,6 +958,7 @@ lazy val `semconv-metrics-experimental` =
     .crossType(CrossType.Pure)
     .in(file("semconv/metrics/experimental"))
     .dependsOn(`core-metrics`, `semconv-metrics-stable`, `semconv-experimental`)
+    .settings(artifactUploadSettings)
     .settings(
       name := "otel4s-semconv-metrics-experimental",
       startYear := Some(2024),

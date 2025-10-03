@@ -86,7 +86,7 @@ val OpenTelemetrySemConvAlphaVersion = s"$OpenTelemetrySemConvVersion-alpha"
 val Otel4sAgentVersion = "2.22.0"
 val PekkoStreamVersion = "1.4.0"
 val PekkoHttpVersion = "1.3.0"
-val PlatformVersion = "1.0.2"
+val PlatformVersion = "1.0.3"
 val ScodecVersion = "1.2.4"
 val VaultVersion = "3.7.0-RC1"
 val Http4sVersion = "0.23.33"
@@ -167,7 +167,8 @@ lazy val `core-common` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
       "org.typelevel" %%% "cats-laws" % CatsVersion % Test,
       "org.typelevel" %%% "cats-mtl-laws" % CatsMtlVersion % Test,
       "org.typelevel" %%% "cats-effect-testkit" % CatsEffectVersion % Test,
-      "org.typelevel" %%% "discipline-munit" % MUnitDisciplineVersion % Test
+      "org.typelevel" %%% "discipline-munit" % MUnitDisciplineVersion % Test,
+      "lgbt.princess" %%% "platform" % PlatformVersion % Test
     )
   )
 

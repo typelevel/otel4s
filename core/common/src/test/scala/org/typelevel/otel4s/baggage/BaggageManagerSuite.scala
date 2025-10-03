@@ -60,7 +60,7 @@ class BaggageManagerSuite extends CatsEffectSuite {
 
   test("BaggageManager.noop - .toString") {
     val manager = BaggageManager.noop[IO]
-    assertEquals(manager.toString, "BaggageManager.noop")
+    assertEquals(manager.toString, "BaggageManager.Noop")
   }
 
 }

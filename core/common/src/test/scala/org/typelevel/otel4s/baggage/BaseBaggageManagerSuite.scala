@@ -17,10 +17,7 @@
 package org.typelevel.otel4s.baggage
 
 import cats.effect.IO
-import cats.mtl.Local
 import munit.CatsEffectSuite
-
-import scala.annotation.nowarn
 
 abstract class BaseBaggageManagerSuite extends CatsEffectSuite {
   protected def baggageManager: IO[BaggageManager[IO]]
@@ -86,14 +83,4 @@ abstract class BaseBaggageManagerSuite extends CatsEffectSuite {
       )
   }
 
-  testManager("deprecated as Local") { implicit m =>
-    @nowarn("cat=deprecation")
-    def test(): IO[Unit] = {
-      val _ = m: Local[IO, Baggage]
-
-      m.local(IO.unit)(_.updated("key", "value")) >>
-        m.scope(IO.unit)(Baggage.empty)
-    }
-    test()
-  }
 }

@@ -104,7 +104,7 @@ val OpenTelemetryProtoVersion = "1.8.0-alpha"
 val Otel4sAgentVersion = "0.0.3"
 val PekkoStreamVersion = "1.2.0"
 val PekkoHttpVersion = "1.2.0"
-val PlatformVersion = "1.0.2"
+val PlatformVersion = "1.0.3"
 val ScodecVersion = "1.2.4"
 val VaultVersion = "3.7.0-RC1"
 val Http4sVersion = "0.23.30-161-f5b9629-SNAPSHOT"
@@ -206,7 +206,8 @@ lazy val `core-common` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
       "org.typelevel" %%% "cats-laws" % CatsVersion % Test,
       "org.typelevel" %%% "cats-mtl-laws" % CatsMtlVersion % Test,
       "org.typelevel" %%% "cats-effect-testkit" % CatsEffectVersion % Test,
-      "org.typelevel" %%% "discipline-munit" % MUnitDisciplineVersion % Test
+      "org.typelevel" %%% "discipline-munit" % MUnitDisciplineVersion % Test,
+      "lgbt.princess" %%% "platform" % PlatformVersion % Test
     )
   )
 

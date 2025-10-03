@@ -101,6 +101,7 @@ object BaggageManager {
     def getValue(key: String): F[Option[String]] = applicative.pure(None)
     def local[A](modify: Baggage => Baggage)(fa: F[A]): F[A] = fa
     def scope[A](baggage: Baggage)(fa: F[A]): F[A] = fa
+    override def toString: String = "BaggageManager.Noop"
   }
 
 }

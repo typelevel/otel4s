@@ -17,83 +17,50 @@
 package org.typelevel.otel4s.baggage
 
 import cats.effect.IO
-import cats.mtl.Local
 import munit.CatsEffectSuite
 
-import scala.annotation.nowarn
+class BaggageManagerSuite extends CatsEffectSuite {
 
-abstract class BaggageManagerSuite extends CatsEffectSuite {
-  protected def baggageManager: IO[BaggageManager[IO]]
-
-  protected final def testManager(name: String)(f: BaggageManager[IO] => IO[Unit]): Unit =
-    test(name)(baggageManager.flatMap(f))
-
-  testManager(".current consistent with .scope") { m =>
-    val b1 = Baggage.empty
-      .updated("key", "value")
-      .updated("foo", "bar", "baz")
-    m.scope(b1)(m.current.map(assertEquals(_, b1)))
+  test("BaggageManager.noop - .current - return an empty baggage") {
+    val manager = BaggageManager.noop[IO]
+    manager.current.assertEquals(Baggage.empty)
   }
 
-  testManager(".current consistent with .local") { m =>
-    m.local(_.updated("key", "value").updated("foo", "bar", "baz")) {
-      for (baggage <- m.current)
-        yield {
-          assertEquals(baggage.get("key"), Some(Baggage.Entry("value", None)))
-          assertEquals(
-            baggage.get("foo"),
-            Some(Baggage.Entry("bar", Some(Baggage.Metadata("baz"))))
-          )
-        }
-    }
+  test("BaggageManager.noop - .get - return None") {
+    val manager = BaggageManager.noop[IO]
+    manager.get("some-key").assertEquals(None)
   }
 
-  testManager(".get consistent with .current") { m =>
-    val check = m.scope(_: Baggage) {
+  test("BaggageManager.noop - .getValue - return None") {
+    val manager = BaggageManager.noop[IO]
+    manager.getValue("some-key").assertEquals(None)
+  }
+
+  test("BaggageManager.noop - .local - do not modify the baggage") {
+    val manager = BaggageManager.noop[IO]
+    manager.local(_.updated("key", "value")) {
       for {
-        baggage <- m.current
-        v1 <- m.get("key")
-        v2 <- m.get("foo")
-      } yield {
-        assertEquals(v1, baggage.get("key"))
-        assertEquals(v2, baggage.get("foo"))
-      }
+        _ <- manager.current.assertEquals(Baggage.empty)
+        _ <- manager.get("key").assertEquals(None)
+        _ <- manager.getValue("key").assertEquals(None)
+      } yield ()
     }
-    check(Baggage.empty) >>
-      check(
-        Baggage.empty
-          .updated("key", "value")
-          .updated("foo", "bar", "baz")
-      )
   }
 
-  testManager(".getValue consistent with .current") { m =>
-    val check = m.scope(_: Baggage) {
+  test("BaggageManager.noop - .scope - do not modify the baggage") {
+    val manager = BaggageManager.noop[IO]
+    manager.scope(Baggage.empty.updated("key", "value")) {
       for {
-        baggage <- m.current
-        v1 <- m.getValue("key")
-        v2 <- m.getValue("foo")
-      } yield {
-        assertEquals(v1, baggage.get("key").map(_.value))
-        assertEquals(v2, baggage.get("foo").map(_.value))
-      }
+        _ <- manager.current.assertEquals(Baggage.empty)
+        _ <- manager.get("key").assertEquals(None)
+        _ <- manager.getValue("key").assertEquals(None)
+      } yield ()
     }
-    check(Baggage.empty) >>
-      check(
-        Baggage.empty
-          .updated("key", "value")
-          .updated("foo", "bar", "baz")
-      )
   }
 
-  testManager("deprecated as Local") { implicit m =>
-    @nowarn("cat=deprecation")
-    def test(): IO[Unit] = {
-      val _ = m: Local[IO, Baggage]
-
-      m.local(IO.unit)(_.updated("key", "value")) >>
-        m.scope(IO.unit)(Baggage.empty)
-    }
-    test()
+  test("BaggageManager.noop - .toString") {
+    val manager = BaggageManager.noop[IO]
+    assertEquals(manager.toString, "BaggageManager.noop")
   }
+
 }

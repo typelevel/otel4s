@@ -253,6 +253,61 @@ detected.foreach { resource =>
 println("```")
 ```
 
+### 5. aws-eks
+
+The detector detects if running on AWS EKS and provides EKS-specific resource attributes.
+The detector checks for Kubernetes service account files and AWS-specific configmaps to determine if running on EKS.
+
+The detector:
+- Reads the Kubernetes service account token from `/var/run/secrets/kubernetes.io/serviceaccount/token`
+- Fetches cluster information from the `amazon-cloudwatch` ConfigMap at `https://kubernetes.default.svc/api/v1/namespaces/amazon-cloudwatch/configmaps/cluster-info`
+- Extracts container ID from `/proc/self/cgroup` file
+
+See [AWS EKS documentation](https://docs.aws.amazon.com/eks/latest/userguide/kubernetes-versions.html) for more details.
+
+```scala mdoc:reset:passthrough
+import cats.effect.IO
+import cats.effect.unsafe.implicits.global
+import io.circe.Json
+import org.http4s._
+import org.http4s.circe.jsonEncoder
+import org.http4s.client.Client
+import org.http4s.dsl.io._
+import org.typelevel.otel4s.sdk.contrib.aws.resource._
+
+val clusterName = "my-eks-cluster"
+val containerId = "1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef12"
+
+val configMapResponse = Json.obj(
+  "data" -> Json.obj(
+    "cluster.name" -> Json.fromString(clusterName)
+  )
+)
+
+val client = Client.fromHttpApp[IO](
+  HttpRoutes
+    .of[IO] {
+      case GET -> Root / "api" / "v1" / "namespaces" / "amazon-cloudwatch" / "configmaps" / "cluster-info" =>
+        Ok(configMapResponse)
+    }
+    .orNotFound
+)
+
+println("The Kubernetes ConfigMap response: ")
+println("```json")
+println(configMapResponse)
+println("```")
+
+println("Detected resource: ")
+println("```yaml")
+AwsEksDetector[IO](client).detect.unsafeRunSync().foreach { resource =>
+  resource.attributes.toList.sortBy(_.key.name).foreach { attribute =>
+    println(attribute.key.name + ": " + attribute.value)
+  }
+}
+println("```")
+```
+
 ## Getting Started
 
 @:select(build-tool)
@@ -316,6 +371,8 @@ object TelemetryApp extends IOApp.Simple {
          .addResourceDetector(AwsEc2Detector[IO])
         // register AWS ECS detector
          .addResourceDetector(AwsEcsDetector[IO])
+        // register AWS EKS detector
+         .addResourceDetector(AwsEksDetector[IO])
         // register AWS Beanstalk detector
          .addResourceDetector(AwsBeanstalkDetector[IO])
       )
@@ -356,6 +413,8 @@ object TelemetryApp extends IOApp.Simple {
          .addResourceDetector(AwsEc2Detector[IO])
         // register AWS ECS detector
          .addResourceDetector(AwsEcsDetector[IO])
+        // register AWS EKS detector
+         .addResourceDetector(AwsEksDetector[IO])
         // register AWS Beanstalk detector
          .addResourceDetector(AwsBeanstalkDetector[IO])
       )
@@ -386,8 +445,8 @@ There are several ways to configure the options:
 Add settings to the `build.sbt`:
 
 ```scala
-javaOptions += "-Dotel.otel4s.resource.detectors.enabled=aws-lambda,aws-ec2,aws-ecs,aws-beanstalk"
-envVars ++= Map("OTEL_OTEL4S_RESOURCE_DETECTORS_ENABLE" -> "aws-lambda,aws-ec2,aws-ecs,aws-beanstalk")
+javaOptions += "-Dotel.otel4s.resource.detectors.enabled=aws-lambda,aws-ec2,aws-ecs,aws-eks,aws-beanstalk"
+envVars ++= Map("OTEL_OTEL4S_RESOURCE_DETECTORS_ENABLE" -> "aws-lambda,aws-ec2,aws-ecs,aws-eks,aws-beanstalk")
 ```
 
 @:choice(scala-cli)
@@ -395,12 +454,12 @@ envVars ++= Map("OTEL_OTEL4S_RESOURCE_DETECTORS_ENABLE" -> "aws-lambda,aws-ec2,a
 Add directives to the `*.scala` file:
 
 ```scala
-//> using javaOpt -Dotel.otel4s.resource.detectors.enabled=aws-lambda,aws-ec2,aws-ecs,aws-beanstalk
+//> using javaOpt -Dotel.otel4s.resource.detectors.enabled=aws-lambda,aws-ec2,aws-ecs,aws-eks,aws-beanstalk
 ```
 
 @:choice(shell)
 
 ```shell
-$ export OTEL_OTEL4S_RESOURCE_DETECTORS_ENABLED=aws-lambda,aws-ec2,aws-ecs,aws-beanstalk
+$ export OTEL_OTEL4S_RESOURCE_DETECTORS_ENABLED=aws-lambda,aws-ec2,aws-ecs,aws-eks,aws-beanstalk
 ```
 @:@

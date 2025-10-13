@@ -16,6 +16,7 @@
 
 package org.typelevel.otel4s.sdk.contrib.aws.resource
 
+import cats.MonadThrow
 import cats.effect.Async
 import cats.syntax.applicativeError._
 import cats.syntax.functor._
@@ -27,7 +28,7 @@ import fs2.io.file.Path
   * This follows the same pattern as the Java DockerHelper implementation. It extracts container ID by taking the last
   * 64 characters from any line longer than 64 characters in the cgroup file.
   */
-class DockerHelper[F[_]: Async: Files] private (cgroupPath: String) {
+private[resource] class DockerHelper[F[_]: Async: Files] private (cgroupPath: String) {
 
   private val ContainerIdLength = 64
 
@@ -37,7 +38,7 @@ class DockerHelper[F[_]: Async: Files] private (cgroupPath: String) {
       .compile
       .string
       .map(parseContainerId)
-      .handleErrorWith(_ => Async[F].pure(None))
+      .handleErrorWith(_ => MonadThrow[F].pure(None))
 
   private def parseContainerId(cgroupContent: String): Option[String] = {
     val lines = cgroupContent.split("\n")

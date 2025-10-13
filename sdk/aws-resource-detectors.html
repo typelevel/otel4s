@@ -144,6 +144,7 @@
     <li class="level2 nav-leaf"><a href="#_2-aws-ec2">2. aws-ec2</a></li>
     <li class="level2 nav-leaf"><a href="#_3-aws-ecs">3. aws-ecs</a></li>
     <li class="level2 nav-leaf"><a href="#_4-aws-beanstalk">4. aws-beanstalk</a></li>
+    <li class="level2 nav-leaf"><a href="#_5-aws-eks">5. aws-eks</a></li>
     <li class="level1 nav-leaf"><a href="#getting-started">Getting Started</a></li>
     <li class="level1 nav-leaf"><a href="#configuration">Configuration</a></li>
   </ul>
@@ -286,6 +287,25 @@ AWS_LAMBDA_FUNCTION_VERSION=0.0.1</code></pre>
 </span><span class="attribute-name">service.namespace</span><span>: </span><span class="string-literal">production-eu-west</span><span>
 </span><span class="attribute-name">service.version</span><span>: </span><span class="number-literal">1.1</span></code></pre>
         
+        <h3 id="_5-aws-eks" class="section"><a class="anchor-link left" href="#_5-aws-eks"><i class="icofont-laika link">&#xef71;</i></a>5. aws-eks</h3>
+        <p>The detector detects if running on AWS EKS and provides EKS-specific resource attributes.
+        The detector checks for Kubernetes service account files and AWS-specific configmaps to determine if running on EKS.</p>
+        <p>The detector:</p>
+        <ul>
+          <li>Reads the Kubernetes service account token from <code>/var/run/secrets/kubernetes.io/serviceaccount/token</code></li>
+          <li>Fetches cluster information from the <code>amazon-cloudwatch</code> ConfigMap at <code>https://kubernetes.default.svc/api/v1/namespaces/amazon-cloudwatch/configmaps/cluster-info</code></li>
+          <li>Extracts container ID from <code>/proc/self/cgroup</code> file</li>
+        </ul>
+        <p>See <a href="https://docs.aws.amazon.com/eks/latest/userguide/kubernetes-versions.html">AWS EKS documentation</a> for more details.</p>
+        <p>The Kubernetes ConfigMap response: </p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span>{
+  </span><span class="attribute-name">&quot;data&quot;</span><span> : {
+    </span><span class="attribute-name">&quot;cluster.name&quot;</span><span> : </span><span class="string-literal">&quot;my-eks-cluster&quot;</span><span>
+  }
+}</span></code></pre>
+        <p>Detected resource: </p>
+        <pre><code></code></pre>
+        
         <h2 id="getting-started" class="section"><a class="anchor-link left" href="#getting-started"><i class="icofont-laika link">&#xef71;</i></a>Getting Started</h2>
         <div class="tab-container" data-tab-group="build-tool">
           <ul class="tab-group">
@@ -341,6 +361,8 @@ AWS_LAMBDA_FUNCTION_VERSION=0.0.1</code></pre>
 </span><span>         .</span><span class="identifier">addResourceDetector</span><span>(</span><span class="type-name">AwsEc2Detector</span><span>[</span><span class="type-name">IO</span><span>])
         </span><span class="comment">// register AWS ECS detector
 </span><span>         .</span><span class="identifier">addResourceDetector</span><span>(</span><span class="type-name">AwsEcsDetector</span><span>[</span><span class="type-name">IO</span><span>])
+        </span><span class="comment">// register AWS EKS detector
+</span><span>         .</span><span class="identifier">addResourceDetector</span><span>(</span><span class="type-name">AwsEksDetector</span><span>[</span><span class="type-name">IO</span><span>])
         </span><span class="comment">// register AWS Beanstalk detector
 </span><span>         .</span><span class="identifier">addResourceDetector</span><span>(</span><span class="type-name">AwsBeanstalkDetector</span><span>[</span><span class="type-name">IO</span><span>])
       )
@@ -377,6 +399,8 @@ AWS_LAMBDA_FUNCTION_VERSION=0.0.1</code></pre>
 </span><span>         .</span><span class="identifier">addResourceDetector</span><span>(</span><span class="type-name">AwsEc2Detector</span><span>[</span><span class="type-name">IO</span><span>])
         </span><span class="comment">// register AWS ECS detector
 </span><span>         .</span><span class="identifier">addResourceDetector</span><span>(</span><span class="type-name">AwsEcsDetector</span><span>[</span><span class="type-name">IO</span><span>])
+        </span><span class="comment">// register AWS EKS detector
+</span><span>         .</span><span class="identifier">addResourceDetector</span><span>(</span><span class="type-name">AwsEksDetector</span><span>[</span><span class="type-name">IO</span><span>])
         </span><span class="comment">// register AWS Beanstalk detector
 </span><span>         .</span><span class="identifier">addResourceDetector</span><span>(</span><span class="type-name">AwsBeanstalkDetector</span><span>[</span><span class="type-name">IO</span><span>])
       )
@@ -404,15 +428,15 @@ AWS_LAMBDA_FUNCTION_VERSION=0.0.1</code></pre>
           </ul>
           <div class="tab-content active" data-choice-name="sbt">
             <p>Add settings to the <code>build.sbt</code>:</p>
-            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">javaOptions</span><span> += </span><span class="string-literal">&quot;-Dotel.otel4s.resource.detectors.enabled=aws-lambda,aws-ec2,aws-ecs,aws-beanstalk&quot;</span><span>
-</span><span class="identifier">envVars</span><span> ++= </span><span class="type-name">Map</span><span>(</span><span class="string-literal">&quot;OTEL_OTEL4S_RESOURCE_DETECTORS_ENABLE&quot;</span><span> -&gt; </span><span class="string-literal">&quot;aws-lambda,aws-ec2,aws-ecs,aws-beanstalk&quot;</span><span>)</span></code></pre>
+            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">javaOptions</span><span> += </span><span class="string-literal">&quot;-Dotel.otel4s.resource.detectors.enabled=aws-lambda,aws-ec2,aws-ecs,aws-eks,aws-beanstalk&quot;</span><span>
+</span><span class="identifier">envVars</span><span> ++= </span><span class="type-name">Map</span><span>(</span><span class="string-literal">&quot;OTEL_OTEL4S_RESOURCE_DETECTORS_ENABLE&quot;</span><span> -&gt; </span><span class="string-literal">&quot;aws-lambda,aws-ec2,aws-ecs,aws-eks,aws-beanstalk&quot;</span><span>)</span></code></pre>
           </div>
           <div class="tab-content" data-choice-name="scala-cli">
             <p>Add directives to the <code>*.scala</code> file:</p>
-            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="comment">//&gt; using javaOpt -Dotel.otel4s.resource.detectors.enabled=aws-lambda,aws-ec2,aws-ecs,aws-beanstalk</span></code></pre>
+            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="comment">//&gt; using javaOpt -Dotel.otel4s.resource.detectors.enabled=aws-lambda,aws-ec2,aws-ecs,aws-eks,aws-beanstalk</span></code></pre>
           </div>
           <div class="tab-content" data-choice-name="shell">
-            <pre class="keep-together pdf epub"><code class="nohighlight"><span>$ </span><span class="identifier">export</span><span> OTEL_OTEL4S_RESOURCE_DETECTORS_ENABLED=aws-lambda,aws-ec</span><span class="number-literal">2</span><span>,aws-ecs,aws-beanstalk</span></code></pre>
+            <pre class="keep-together pdf epub"><code class="nohighlight"><span>$ </span><span class="identifier">export</span><span> OTEL_OTEL4S_RESOURCE_DETECTORS_ENABLED=aws-lambda,aws-ec</span><span class="number-literal">2</span><span>,aws-ecs,aws-eks,aws-beanstalk</span></code></pre>
           </div>
         </div>
 

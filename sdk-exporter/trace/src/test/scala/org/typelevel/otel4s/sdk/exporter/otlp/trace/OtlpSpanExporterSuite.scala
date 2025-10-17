@@ -20,12 +20,13 @@ package otlp
 package trace
 
 import cats.effect.IO
-import com.comcast.ip4s.IpAddress
+import com.comcast.ip4s._
 import fs2.io.compression._
 import io.circe.Encoder
 import io.circe.Json
 import munit._
 import org.http4s.Headers
+import org.http4s.Uri
 import org.http4s.ember.client.EmberClientBuilder
 import org.http4s.headers._
 import org.http4s.syntax.literals._
@@ -119,31 +120,67 @@ class OtlpSpanExporterSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
 
   test("export spans") {
     PropF.forAllF { (sd: SpanData, protocol: OtlpProtocol, compression: PayloadCompression) =>
-      IO.realTime.flatMap { now =>
-        // we need to tweak end timestamps and attributes, so we recreate the span data
-        val span = SpanData(
-          name = sd.name,
-          spanContext = sd.spanContext,
-          parentSpanContext = sd.parentSpanContext,
-          kind = sd.kind,
-          startTimestamp = now,
-          endTimestamp = Some(now.plus(5.seconds)),
-          status = sd.status,
-          attributes = sd.attributes.map(adaptAttributes),
-          events = sd.events.map {
-            _.map { event =>
-              EventData(
-                event.name,
-                now.plus(2.seconds),
-                event.attributes.map(adaptAttributes)
-              )
-            }
-          },
-          links = sd.links,
-          instrumentationScope = sd.instrumentationScope,
-          resource = TelemetryResource.default
-        )
+      // we need to tweak end timestamps and attributes, so we recreate the span data
+      def spanData(now: FiniteDuration) = SpanData(
+        name = sd.name,
+        spanContext = sd.spanContext,
+        parentSpanContext = sd.parentSpanContext,
+        kind = sd.kind,
+        startTimestamp = now,
+        endTimestamp = Some(now.plus(5.seconds)),
+        status = sd.status,
+        attributes = sd.attributes.map(adaptAttributes),
+        events = sd.events.map {
+          _.map { event =>
+            EventData(
+              event.name,
+              now.plus(2.seconds),
+              event.attributes.map(adaptAttributes)
+            )
+          }
+        },
+        links = sd.links,
+        instrumentationScope = sd.instrumentationScope,
+        resource = TelemetryResource.default
+      )
 
+      def endpoint(collector: DockerUtils.CollectorPortMappings) = protocol match {
+        case _: OtlpProtocol.Http =>
+          Uri.unsafeFromString(
+            s"http://localhost:${collector.otlpHttp}/v1/traces"
+          )
+
+        case OtlpProtocol.Grpc =>
+          Uri.unsafeFromString(
+            s"http://localhost:${collector.otlpGrpc}/opentelemetry.proto.collector.trace.v1.TraceService/Export"
+          )
+      }
+
+      def exporter(collector: DockerUtils.CollectorPortMappings) =
+        OtlpSpanExporter
+          .builder[IO]
+          .withProtocol(protocol)
+          .withCompression(compression)
+          .withEndpoint(endpoint(collector))
+          .withTimeout(20.seconds)
+          .withRetryPolicy(
+            RetryPolicy.builder
+              .withInitialBackoff(2.second)
+              .withMaxBackoff(20.seconds)
+              .build
+          )
+          .build
+
+      for {
+        collector <- DockerUtils.getCollectorPortMappings[IO]("otel4s-it--sdk-exporter-trace--otel-collector")
+        jaegerPort <- DockerUtils.getPortMapping[IO]("otel4s-it--sdk-exporter-trace--jaeger", port"16686")
+
+        now <- IO.realTime
+        span = spanData(now)
+
+        _ <- exporter(collector).use(exporter => exporter.exportSpans(List(span)))
+        result <- findTrace(span.spanContext.traceIdHex, jaegerPort).delayBy(1.second)
+      } yield {
         val expected = {
           val references = {
             val childOf = span.parentSpanContext.map { parent =>
@@ -220,22 +257,7 @@ class OtlpSpanExporterSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
           JaegerResponse(List(jaegerTrace))
         }
 
-        OtlpSpanExporter
-          .builder[IO]
-          .withProtocol(protocol)
-          .withCompression(compression)
-          .withTimeout(20.seconds)
-          .withRetryPolicy(
-            RetryPolicy.builder
-              .withInitialBackoff(2.second)
-              .withMaxBackoff(20.seconds)
-              .build
-          )
-          .build
-          .use(exporter => exporter.exportSpans(List(span)))
-          .flatMap { _ =>
-            assertIO(findTrace(span.spanContext.traceIdHex), expected)
-          }
+        assertEquals(result, expected)
       }
     }
   }
@@ -280,13 +302,12 @@ class OtlpSpanExporterSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
     }
   }
 
-  private def findTrace(traceIdHex: String): IO[JaegerResponse] =
+  private def findTrace(traceIdHex: String, jaegerPort: Port): IO[JaegerResponse] =
     EmberClientBuilder.default[IO].build.use { client =>
-      import org.http4s.syntax.literals._
       import org.http4s.circe.CirceEntityCodec._
       import io.circe.generic.auto._
 
-      val url = uri"http://localhost:16686" / "api" / "traces" / traceIdHex
+      val url = Uri.unsafeFromString(s"http://localhost:$jaegerPort") / "api" / "traces" / traceIdHex
       client.expect[JaegerResponse](url)
     }
 

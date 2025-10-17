@@ -2,19 +2,25 @@ receivers:
   otlp:
     protocols: # enable OpenTelemetry Protocol receiver, both gRPC and HTTP
       grpc:
-        endpoint: 0.0.0.0:44317
+        endpoint: 0.0.0.0:4317
       http:
-        endpoint: 0.0.0.0:44318
+        endpoint: 0.0.0.0:4318
 
 exporters:
   prometheus:
     endpoint: "0.0.0.0:9464"
+
+extensions:
+  health_check:
+    endpoint: 0.0.0.0:13133
+    path: "/health"
 
 processors:
   batch:
     timeout: 0 # send data immediately
 
 service:
+  extensions: [health_check]
   pipelines:
     metrics:
       receivers: [otlp]

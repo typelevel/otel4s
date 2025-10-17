@@ -1,27 +1,29 @@
 version: '3.7'
 services:
   collector: # receives application metrics and traces via gRPC or HTTP protocol
-    image: otel/opentelemetry-collector-contrib:0.91.0
+    container_name: otel4s-it--sdk-exporter-metrics--otel-collector
+    image: otel/opentelemetry-collector-contrib:0.137.0
     command: [ --config=/etc/otel-collector-config.yaml ]
     volumes:
       - "./config/otel-collector-config.yaml:/etc/otel-collector-config.yaml"
     ports:
-      - "44317:44317" # OTLP gRPC receiver
-      - "44318:44318" # OTLP http receiver
-      - "49464:9464" # OTLP /metrics endpoint for Prometheus
+      - "4317" # OTLP gRPC receiver
+      - "4318" # OTLP http receiver
+      - "13133" # health check
     depends_on:
       prometheus:
         condition: service_healthy
 
   prometheus: # stores metrics received from the OpenTelemetry Collector
+    container_name: otel4s-it--sdk-exporter-metrics--prometheus
     image: prom/prometheus:v2.51.2
     command: --config.file=/etc/prometheus/prometheus.yml --log.level=debug
     volumes:
       - "./config/prometheus.yaml:/etc/prometheus/prometheus.yml"
     ports:
-      - "49090:9090"
+      - "9090"
     healthcheck:
       test: [ "CMD", "wget", "--spider", "-S", "http://localhost:9090/" ]
       interval: 5s
       timeout: 5s
-      retries: 3
+      retries: 20

@@ -20,12 +20,13 @@ package metrics
 import cats.data.NonEmptyVector
 import cats.effect.IO
 import cats.syntax.foldable._
-import com.comcast.ip4s.IpAddress
+import com.comcast.ip4s._
 import fs2.io.compression._
 import io.circe.Decoder
 import munit.CatsEffectSuite
 import munit.ScalaCheckEffectSuite
 import org.http4s.Headers
+import org.http4s.Uri
 import org.http4s.ember.client.EmberClientBuilder
 import org.http4s.headers.`X-Forwarded-For`
 import org.http4s.syntax.literals._
@@ -36,6 +37,7 @@ import org.scalacheck.effect.PropF
 import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.AttributeType
 import org.typelevel.otel4s.Attributes
+import org.typelevel.otel4s.sdk.common.InstrumentationScope
 import org.typelevel.otel4s.sdk.exporter.RetryPolicy
 import org.typelevel.otel4s.sdk.metrics.data.AggregationTemporality
 import org.typelevel.otel4s.sdk.metrics.data.MetricData
@@ -120,9 +122,16 @@ class OtlpMetricExporterSuite extends CatsEffectSuite with ScalaCheckEffectSuite
 
   test("export metrics") {
     PropF.forAllF { (md: MetricData, protocol: OtlpProtocol, compression: PayloadCompression) =>
+      val scope = InstrumentationScope(
+        name = md.instrumentationScope.name,
+        version = md.instrumentationScope.version,
+        schemaUrl = md.instrumentationScope.schemaUrl,
+        attributes = adaptAttributes(md.instrumentationScope.attributes)
+      )
+
       val metric = MetricData(
         md.resource,
-        md.instrumentationScope,
+        scope,
         md.name,
         md.description,
         md.unit,
@@ -154,8 +163,15 @@ class OtlpMetricExporterSuite extends CatsEffectSuite with ScalaCheckEffectSuite
         val const = Map(
           "instance" -> "collector:9464",
           "job" -> "collector",
-          "__name__" -> metricName(metric)
-        )
+          "__name__" -> metricName(metric),
+          "otel_scope_name" -> scope.name,
+        ) ++
+          scope.version.map("otel_scope_version" -> _) ++
+          scope.schemaUrl.map("otel_scope_schema_url" -> _) ++
+          scope.attributes.map { attribute =>
+            val (key, value) = attributeToPair(attribute)
+            s"otel_scope_${key.stripPrefix("key_")}" -> value
+          }
 
         metric.data match {
           case sum: MetricPoints.Sum =>
@@ -169,50 +185,56 @@ class OtlpMetricExporterSuite extends CatsEffectSuite with ScalaCheckEffectSuite
         }
       }
 
-      val endpoint = protocol match {
+      def endpoint(collector: DockerUtils.CollectorPortMappings) = protocol match {
         case _: OtlpProtocol.Http =>
-          uri"http://localhost:44318/v1/metrics"
+          Uri.unsafeFromString(
+            s"http://localhost:${collector.otlpHttp}/v1/metrics"
+          )
 
         case OtlpProtocol.Grpc =>
-          uri"http://localhost:44317/opentelemetry.proto.collector.metrics.v1.MetricsService/Export"
+          Uri.unsafeFromString(
+            s"http://localhost:${collector.otlpGrpc}/opentelemetry.proto.collector.metrics.v1.MetricsService/Export"
+          )
       }
 
-      OtlpMetricExporter
-        .builder[IO]
-        .withProtocol(protocol)
-        .withCompression(compression)
-        .withEndpoint(endpoint)
-        .withTimeout(20.seconds)
-        .withRetryPolicy(
-          RetryPolicy.builder
-            .withInitialBackoff(2.second)
-            .withMaxBackoff(20.seconds)
-            .build
-        )
-        .build
-        .use(exporter => exporter.exportMetrics(List(metric)))
-        .flatMap { _ =>
-          findMetrics(metric)
-            .delayBy(1.second)
-            .flatMap { series =>
-              val result = series.map(s => s.metric -> s.value).toMap
-              val expected = expectedSeries.map(s => s.metric -> s.value).toMap
-//IO.println(result) >> IO.println("\n\n") >> IO.println(expected)>> IO.println("\n\n") >>
-              IO(assertEquals(result, expected))
-            }
-        }
+      def exporter(collector: DockerUtils.CollectorPortMappings) =
+        OtlpMetricExporter
+          .builder[IO]
+          .withProtocol(protocol)
+          .withCompression(compression)
+          .withEndpoint(endpoint(collector))
+          .withTimeout(20.seconds)
+          .withRetryPolicy(
+            RetryPolicy.builder
+              .withInitialBackoff(2.second)
+              .withMaxBackoff(20.seconds)
+              .build
+          )
+          .build
+
+      for {
+        collector <- DockerUtils.getCollectorPortMappings[IO]("otel4s-it--sdk-exporter-metrics--otel-collector")
+        prometheusPort <- DockerUtils.getPortMapping[IO]("otel4s-it--sdk-exporter-metrics--prometheus", port"9090")
+
+        _ <- exporter(collector).use(exporter => exporter.exportMetrics(List(metric)))
+        series <- findMetrics(metric, prometheusPort).delayBy(1.second)
+      } yield {
+        val result = series.map(s => s.metric -> s.value).toMap
+        val expected = expectedSeries.map(s => s.metric -> s.value).toMap
+
+        assertEquals(result, expected)
+      }
     }
   }
 
-  private def findMetrics(metric: MetricData): IO[Vector[PrometheusSeries]] =
+  private def findMetrics(metric: MetricData, prometheusPort: Port): IO[Vector[PrometheusSeries]] =
     EmberClientBuilder.default[IO].build.use { client =>
-      import org.http4s.syntax.literals._
       import org.http4s.circe.CirceEntityCodec._
       import io.circe.generic.auto._
 
       val query = metricName(metric)
 
-      val url = (uri"http://localhost:49090" / "api" / "v1" / "query")
+      val url = (Uri.unsafeFromString(s"http://localhost:$prometheusPort") / "api" / "v1" / "query")
         .withQueryParam("query", query)
 
       def loop(attempts: Int): IO[Vector[PrometheusSeries]] =

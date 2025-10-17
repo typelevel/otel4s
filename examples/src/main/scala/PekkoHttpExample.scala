@@ -57,16 +57,16 @@ import scala.concurrent.duration._
   * .settings(
   *   libraryDependencies ++= Seq(
   *     "org.typelevel"                   %% "otel4s-oteljava"                           % "0.5.0",
-  *     "org.apache.pekko"                %% "pekko-stream"                              % "1.2.0",
+  *     "org.apache.pekko"                %% "pekko-stream"                              % "1.2.1",
   *     "org.apache.pekko"                %% "pekko-http"                                % "1.2.0",
-  *     "io.opentelemetry.instrumentation" % "opentelemetry-instrumentation-annotations" % "2.20.0",
+  *     "io.opentelemetry.instrumentation" % "opentelemetry-instrumentation-annotations" % "2.20.1",
   *     "io.opentelemetry"                 % "opentelemetry-exporter-otlp"               % "1.54.0" % Runtime,
   *     "io.opentelemetry"                 % "opentelemetry-sdk-extension-autoconfigure" % "1.54.0" % Runtime
   *   )
   *   run / fork := true,
   *   javaOptions += "-Dotel.java.global-autoconfigure.enabled=true",
   *   javaOptions += "-Dotel.service.name=pekko-otel4s",
-  *   javaAgents += "io.opentelemetry.javaagent" % "opentelemetry-javaagent" % "2.20.0" % Runtime
+  *   javaAgents += "io.opentelemetry.javaagent" % "opentelemetry-javaagent" % "2.20.1" % Runtime
   * )
   * }}}
   */

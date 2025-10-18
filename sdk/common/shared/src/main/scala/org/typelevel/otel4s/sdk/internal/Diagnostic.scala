@@ -26,7 +26,7 @@ import cats.effect.std.Console
 @annotation.implicitNotFound(
   "Cannot find Diagnostic[${F}]. The instance can be derived automatically from cats.effect.std.Console[${F}]."
 )
-sealed trait Diagnostic[F[_]] {
+trait Diagnostic[F[_]] {
 
   def info(message: => String): F[Unit]
 
@@ -37,7 +37,6 @@ sealed trait Diagnostic[F[_]] {
 }
 
 object Diagnostic {
-  private[sdk] trait Unsealed[F[_]] extends Diagnostic[F]
 
   def apply[F[_]](implicit ev: Diagnostic[F]): Diagnostic[F] = ev
 

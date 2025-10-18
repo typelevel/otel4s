@@ -22,7 +22,7 @@ import cats.effect.std.Queue
 import cats.syntax.all._
 import org.typelevel.otel4s.sdk.internal.Diagnostic
 
-class InMemoryDiagnostic[F[_]: Monad](queue: Queue[F, InMemoryDiagnostic.Entry]) extends Diagnostic.Unsealed[F] {
+class InMemoryDiagnostic[F[_]: Monad](queue: Queue[F, InMemoryDiagnostic.Entry]) extends Diagnostic[F] {
   import InMemoryDiagnostic.Entry
 
   def info(message: => String): F[Unit] =

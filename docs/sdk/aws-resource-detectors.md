@@ -267,6 +267,7 @@ See [AWS EKS documentation](https://docs.aws.amazon.com/eks/latest/userguide/kub
 
 ```scala mdoc:reset:passthrough
 import cats.effect.IO
+import cats.effect.std.Env
 import cats.effect.unsafe.implicits.global
 import io.circe.Json
 import org.http4s._
@@ -274,9 +275,20 @@ import org.http4s.circe.jsonEncoder
 import org.http4s.client.Client
 import org.http4s.dsl.io._
 import org.typelevel.otel4s.sdk.contrib.aws.resource._
+import scala.collection.immutable
 
 val clusterName = "my-eks-cluster"
 val containerId = "1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef12"
+
+val envEntries = Map(
+  "OTEL_K8S_TOKEN_PATH" -> "/dev/null",
+  "OTEL_K8S_CERT_PATH" -> "/dev/null"
+)
+
+implicit val env: Env[IO] = new Env[IO] {
+  def get(name: String): IO[Option[String]] = IO.pure(envEntries.get(name))
+  def entries: IO[immutable.Iterable[(String, String)]] = IO.pure(envEntries)
+}
 
 val configMapResponse = Json.obj(
   "data" -> Json.obj(
@@ -287,6 +299,9 @@ val configMapResponse = Json.obj(
 val client = Client.fromHttpApp[IO](
   HttpRoutes
     .of[IO] {
+      case GET -> Root / "api" / "v1" / "namespaces" / "kube-system" / "configmaps" / "aws-auth" =>
+        Ok("{}")
+        
       case GET -> Root / "api" / "v1" / "namespaces" / "amazon-cloudwatch" / "configmaps" / "cluster-info" =>
         Ok(configMapResponse)
     }

@@ -20,12 +20,13 @@ package otlp
 package logs
 
 import cats.effect.IO
-import com.comcast.ip4s.IpAddress
+import com.comcast.ip4s._
 import fs2.io.compression._
 import munit._
 import org.http4s.Headers
 import org.http4s.Method
 import org.http4s.Request
+import org.http4s.Uri
 import org.http4s.UrlForm
 import org.http4s.ember.client.EmberClientBuilder
 import org.http4s.headers._
@@ -139,34 +140,42 @@ class OtlpLogRecordExporterSuite extends CatsEffectSuite with ScalaCheckEffectSu
         )
       )
 
-      val endpoint = protocol match {
+      def endpoint(collector: DockerUtils.CollectorPortMappings) = protocol match {
         case _: OtlpProtocol.Http =>
-          uri"http://localhost:54318/v1/logs"
+          Uri.unsafeFromString(
+            s"http://localhost:${collector.otlpHttp}/v1/logs"
+          )
 
         case OtlpProtocol.Grpc =>
-          uri"http://localhost:54317/opentelemetry.proto.collector.logs.v1.LogsService/Export"
+          Uri.unsafeFromString(
+            s"http://localhost:${collector.otlpGrpc}/opentelemetry.proto.collector.logs.v1.LogsService/Export"
+          )
       }
 
-      val exporter = OtlpLogRecordExporter
-        .builder[IO]
-        .withProtocol(protocol)
-        .withCompression(compression)
-        .withEndpoint(endpoint)
-        .withTimeout(20.seconds)
-        .withRetryPolicy(
-          RetryPolicy.builder
-            .withInitialBackoff(2.second)
-            .withMaxBackoff(20.seconds)
-            .build
-        )
-        .build
+      def exporter(collector: DockerUtils.CollectorPortMappings) =
+        OtlpLogRecordExporter
+          .builder[IO]
+          .withProtocol(protocol)
+          .withCompression(compression)
+          .withEndpoint(endpoint(collector))
+          .withTimeout(20.seconds)
+          .withRetryPolicy(
+            RetryPolicy.builder
+              .withInitialBackoff(2.second)
+              .withMaxBackoff(20.seconds)
+              .build
+          )
+          .build
 
       for {
+        collector <- DockerUtils.getCollectorPortMappings[IO]("otel4s-it--sdk-exporter-logs--otel-collector")
+        lokiPort <- DockerUtils.getPortMapping[IO]("otel4s-it--sdk-exporter-logs--loki", port"3100")
+
         now <- IO.realTime
         serviceName <- IO.randomUUID.map(_.toString)
         record = logRecord(now, serviceName)
-        _ <- exporter.use(exporter => exporter.exportLogRecords(List(record)))
-        logs <- findLogs(serviceName).delayBy(1.second)
+        _ <- exporter(collector).use(exporter => exporter.exportLogRecords(List(record)))
+        logs <- findLogs(serviceName, lokiPort).delayBy(1.second)
       } yield {
         assertEquals(logs.size, 1)
         val StreamResult(attributes, values) = logs.head
@@ -275,15 +284,14 @@ class OtlpLogRecordExporterSuite extends CatsEffectSuite with ScalaCheckEffectSu
     }
   }
 
-  private def findLogs(serviceName: String): IO[List[StreamResult]] =
+  private def findLogs(serviceName: String, port: Port): IO[List[StreamResult]] =
     EmberClientBuilder.default[IO].build.use { client =>
-      import org.http4s.syntax.literals._
       import org.http4s.circe.CirceEntityCodec._
       import io.circe.generic.auto._
 
       val request = Request[IO](
         method = Method.POST,
-        uri = uri"http://localhost:53100" / "loki" / "api" / "v1" / "query_range",
+        uri = Uri.unsafeFromString(s"http://localhost:$port") / "loki" / "api" / "v1" / "query_range",
       ).withEntity(UrlForm("query" -> s"""{service_name="$serviceName"}"""))
 
       def loop(attempts: Int): IO[List[StreamResult]] =

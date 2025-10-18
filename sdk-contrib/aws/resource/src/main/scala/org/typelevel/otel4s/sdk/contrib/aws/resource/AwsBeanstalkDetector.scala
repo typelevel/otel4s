@@ -17,7 +17,6 @@
 package org.typelevel.otel4s.sdk.contrib.aws.resource
 
 import cats.effect.Concurrent
-import cats.effect.std.Console
 import cats.syntax.flatMap._
 import cats.syntax.functor._
 import cats.syntax.show._
@@ -28,11 +27,12 @@ import io.circe.Decoder
 import org.typelevel.otel4s.AttributeKey
 import org.typelevel.otel4s.Attributes
 import org.typelevel.otel4s.sdk.TelemetryResource
+import org.typelevel.otel4s.sdk.internal.Diagnostic
 import org.typelevel.otel4s.sdk.resource.TelemetryResourceDetector
 import org.typelevel.otel4s.semconv.SchemaUrls
 import org.typelevel.otel4s.semconv.attributes.ServiceAttributes
 
-private class AwsBeanstalkDetector[F[_]: Concurrent: Files: Console] private (
+private class AwsBeanstalkDetector[F[_]: Concurrent: Files: Diagnostic] private (
     path: Path
 ) extends TelemetryResourceDetector.Unsealed[F] {
 
@@ -47,7 +47,7 @@ private class AwsBeanstalkDetector[F[_]: Concurrent: Files: Console] private (
       .exists(path)
       .ifM(
         parseFile,
-        Console[F].errorln(s"AwsBeanstalkDetector: config file doesn't exist at path $path").as(None)
+        Diagnostic[F].error(s"AwsBeanstalkDetector: config file doesn't exist at path $path").as(None)
       )
 
   private def parseFile: F[Option[TelemetryResource]] =
@@ -56,7 +56,7 @@ private class AwsBeanstalkDetector[F[_]: Concurrent: Files: Console] private (
       resource <- io.circe.parser
         .decode[Metadata](content)
         .fold(
-          e => Console[F].errorln(show"AwsBeanstalkDetector: cannot parse metadata from $path. $e").as(None),
+          e => Diagnostic[F].error(show"AwsBeanstalkDetector: cannot parse metadata from $path. $e").as(None),
           m => Concurrent[F].pure(Some(build(m)))
         )
     } yield resource
@@ -130,7 +130,7 @@ object AwsBeanstalkDetector {
     *   }
     *   }}}
     */
-  def apply[F[_]: Concurrent: Files: Console]: TelemetryResourceDetector[F] =
+  def apply[F[_]: Concurrent: Files: Diagnostic]: TelemetryResourceDetector[F] =
     new AwsBeanstalkDetector[F](Path(Const.ConfigFilePath))
 
   /** The detector parses environment details from the file at the given `path`.
@@ -155,7 +155,7 @@ object AwsBeanstalkDetector {
     *   }
     *   }}}
     */
-  def apply[F[_]: Concurrent: Files: Console](path: Path): TelemetryResourceDetector[F] =
+  def apply[F[_]: Concurrent: Files: Diagnostic](path: Path): TelemetryResourceDetector[F] =
     new AwsBeanstalkDetector[F](path)
 
 }

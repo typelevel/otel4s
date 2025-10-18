@@ -20,7 +20,6 @@ import cats.Foldable
 import cats.MonadThrow
 import cats.Show
 import cats.data.NonEmptyVector
-import cats.effect.std.Console
 import cats.syntax.applicative._
 import cats.syntax.apply._
 import cats.syntax.either._
@@ -43,6 +42,7 @@ import org.typelevel.otel4s.sdk.exporter.prometheus.PrometheusConverter.convertL
 import org.typelevel.otel4s.sdk.exporter.prometheus.PrometheusConverter.convertName
 import org.typelevel.otel4s.sdk.exporter.prometheus.PrometheusConverter.convertUnitName
 import org.typelevel.otel4s.sdk.exporter.prometheus.PrometheusTextRecord.PrometheusTextPoint
+import org.typelevel.otel4s.sdk.internal.Diagnostic
 import org.typelevel.otel4s.sdk.metrics.data.AggregationTemporality
 import org.typelevel.otel4s.sdk.metrics.data.MetricData
 import org.typelevel.otel4s.sdk.metrics.data.MetricPoints
@@ -248,7 +248,7 @@ object PrometheusWriter {
     }
   }
 
-  def text[F[_]: MonadThrow: Console](config: Config): PrometheusWriter[F] =
+  def text[F[_]: MonadThrow: Diagnostic](config: Config): PrometheusWriter[F] =
     new TextWriter[F](config)
 
   /** Writes metrics using the Prometheus text format.
@@ -256,7 +256,8 @@ object PrometheusWriter {
     * @see
     *   [[https://github.com/prometheus/docs/blob/main/content/docs/instrumenting/exposition_formats.md]]
     */
-  private final class TextWriter[F[_]: Console](config: Config)(implicit F: MonadThrow[F]) extends PrometheusWriter[F] {
+  private final class TextWriter[F[_]: Diagnostic](config: Config)(implicit F: MonadThrow[F])
+      extends PrometheusWriter[F] {
     val contentType: String = "text/plain; version=0.0.4; charset=utf-8"
 
     def write[G[_]: Foldable](metrics: G[MetricData]): Stream[F, Byte] = {
@@ -323,8 +324,8 @@ object PrometheusWriter {
               .addOrUpdateGroup(prometheusName, newGroup)
               .pure[F]
           case Some(group) =>
-            Console[F]
-              .errorln(
+            Diagnostic[F]
+              .error(
                 s"Conflicting metric name [$prometheusName]. " +
                   s"Existing metric type [${group.prometheusType}], " +
                   s"dropped metric type [$prometheusType]"

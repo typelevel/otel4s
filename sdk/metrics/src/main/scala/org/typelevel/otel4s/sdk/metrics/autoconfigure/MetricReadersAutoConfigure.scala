@@ -18,10 +18,10 @@ package org.typelevel.otel4s.sdk.metrics.autoconfigure
 
 import cats.effect.Resource
 import cats.effect.Temporal
-import cats.effect.std.Console
 import cats.syntax.traverse._
 import org.typelevel.otel4s.sdk.autoconfigure.AutoConfigure
 import org.typelevel.otel4s.sdk.autoconfigure.Config
+import org.typelevel.otel4s.sdk.internal.Diagnostic
 import org.typelevel.otel4s.sdk.metrics.exporter.MetricExporter
 import org.typelevel.otel4s.sdk.metrics.exporter.MetricReader
 
@@ -43,7 +43,7 @@ import scala.concurrent.duration._
   * @param exporters
   *   the exporters to use with metric readers
   */
-private final class MetricReadersAutoConfigure[F[_]: Temporal: Console](
+private final class MetricReadersAutoConfigure[F[_]: Temporal: Diagnostic](
     exporters: Set[MetricExporter[F]]
 ) extends AutoConfigure.WithHint[F, Vector[MetricReader[F]]](
       "MetricReaders",
@@ -135,7 +135,7 @@ private[sdk] object MetricReadersAutoConfigure {
     * @param exporters
     *   the exporters to use with metric readers
     */
-  def apply[F[_]: Temporal: Console](
+  def apply[F[_]: Temporal: Diagnostic](
       exporters: Set[MetricExporter[F]]
   ): AutoConfigure[F, Vector[MetricReader[F]]] =
     new MetricReadersAutoConfigure[F](exporters)

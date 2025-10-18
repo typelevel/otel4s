@@ -18,16 +18,16 @@ package org.typelevel.otel4s.sdk
 package trace
 
 import cats.effect.Temporal
-import cats.effect.std.Console
 import org.typelevel.otel4s.Attributes
 import org.typelevel.otel4s.context.propagation.ContextPropagators
 import org.typelevel.otel4s.sdk.common.InstrumentationScope
 import org.typelevel.otel4s.sdk.context.Context
+import org.typelevel.otel4s.sdk.internal.Diagnostic
 import org.typelevel.otel4s.trace.TraceScope
 import org.typelevel.otel4s.trace.Tracer
 import org.typelevel.otel4s.trace.TracerBuilder
 
-private final case class SdkTracerBuilder[F[_]: Temporal: Console](
+private final case class SdkTracerBuilder[F[_]: Temporal: Diagnostic](
     propagators: ContextPropagators[Context],
     traceScope: TraceScope[F, Context],
     sharedState: TracerSharedState[F],

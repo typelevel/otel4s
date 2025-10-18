@@ -19,16 +19,16 @@ package org.typelevel.otel4s.sdk.metrics
 import cats.data.NonEmptyList
 import cats.effect.MonadCancelThrow
 import cats.effect.Resource
-import cats.effect.std.Console
 import cats.syntax.functor._
 import cats.syntax.traverse._
 import org.typelevel.otel4s.metrics.BatchCallback
 import org.typelevel.otel4s.metrics.ObservableMeasurement
+import org.typelevel.otel4s.sdk.internal.Diagnostic
 import org.typelevel.otel4s.sdk.metrics.internal.CallbackRegistration
 import org.typelevel.otel4s.sdk.metrics.internal.MeterSharedState
 import org.typelevel.otel4s.sdk.metrics.internal.SdkObservableMeasurement
 
-private class SdkBatchCallback[F[_]: MonadCancelThrow: Console](
+private class SdkBatchCallback[F[_]: MonadCancelThrow: Diagnostic](
     sharedState: MeterSharedState[F]
 ) extends BatchCallback.Unsealed[F] {
 
@@ -45,15 +45,15 @@ private class SdkBatchCallback[F[_]: MonadCancelThrow: Console](
           MonadCancelThrow[F].pure(List(o))
 
         case _: SdkObservableMeasurement[F, _] =>
-          Console[F]
-            .errorln(
+          Diagnostic[F]
+            .error(
               "SdkBatchCallback: called with instruments that belong to a different Meter."
             )
             .as(Nil)
 
         case _ =>
-          Console[F]
-            .errorln(
+          Diagnostic[F]
+            .error(
               "SdkBatchCallback: called with instruments that were not created by the SDK."
             )
             .as(Nil)

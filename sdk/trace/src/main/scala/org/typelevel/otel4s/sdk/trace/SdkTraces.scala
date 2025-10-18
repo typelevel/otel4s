@@ -39,6 +39,7 @@ import org.typelevel.otel4s.sdk.autoconfigure.TelemetryResourceAutoConfigure
 import org.typelevel.otel4s.sdk.context.Context
 import org.typelevel.otel4s.sdk.context.LocalContext
 import org.typelevel.otel4s.sdk.context.LocalContextProvider
+import org.typelevel.otel4s.sdk.internal.Diagnostic
 import org.typelevel.otel4s.sdk.resource.TelemetryResourceDetector
 import org.typelevel.otel4s.sdk.trace.autoconfigure.ContextPropagatorsAutoConfigure
 import org.typelevel.otel4s.sdk.trace.autoconfigure.TracerProviderAutoConfigure
@@ -88,7 +89,7 @@ object SdkTraces {
     * @param customize
     *   a function for customizing the auto-configured SDK builder
     */
-  def autoConfigured[F[_]: Async: Parallel: Env: SystemProperties: Console: LocalContextProvider](
+  def autoConfigured[F[_]: Async: Parallel: Env: SystemProperties: Console: Diagnostic: LocalContextProvider](
       customize: AutoConfigured.Builder[F] => AutoConfigured.Builder[F] = (a: AutoConfigured.Builder[F]) => a
   ): Resource[F, SdkTraces[F]] =
     customize(AutoConfigured.builder[F]).build
@@ -207,7 +208,7 @@ object SdkTraces {
 
     /** Creates a [[Builder]].
       */
-    def builder[F[_]: Async: Parallel: Env: SystemProperties: Console: LocalContextProvider]: Builder[F] =
+    def builder[F[_]: Async: Parallel: Env: SystemProperties: Console: Diagnostic: LocalContextProvider]: Builder[F] =
       BuilderImpl(
         customConfig = None,
         propertiesLoader = Async[F].pure(Map.empty),
@@ -220,7 +221,9 @@ object SdkTraces {
         textMapPropagatorConfigurers = Set.empty
       )
 
-    private final case class BuilderImpl[F[_]: Async: Parallel: Env: SystemProperties: Console: LocalContextProvider](
+    private final case class BuilderImpl[
+        F[_]: Async: Parallel: Env: SystemProperties: Console: Diagnostic: LocalContextProvider
+    ](
         customConfig: Option[Config],
         propertiesLoader: F[Map[String, String]],
         propertiesCustomizers: List[Config => Map[String, String]],
@@ -269,7 +272,7 @@ object SdkTraces {
         def loadNoop: Resource[F, SdkTraces[F]] =
           Resource.eval(
             for {
-              _ <- Console[F].println(
+              _ <- Diagnostic[F].info(
                 s"SdkTraces: the '${CommonConfigKeys.SdkDisabled}' set to 'true'. Using no-op implementation"
               )
               local <- LocalProvider[F, Context].local

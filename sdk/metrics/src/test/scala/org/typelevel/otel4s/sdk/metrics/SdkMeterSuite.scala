@@ -17,7 +17,6 @@
 package org.typelevel.otel4s.sdk.metrics
 
 import cats.effect.IO
-import cats.effect.std.Console
 import cats.mtl.Ask
 import munit.CatsEffectSuite
 import munit.ScalaCheckEffectSuite
@@ -27,11 +26,11 @@ import org.typelevel.otel4s.sdk.TelemetryResource
 import org.typelevel.otel4s.sdk.common.InstrumentationScope
 import org.typelevel.otel4s.sdk.context.AskContext
 import org.typelevel.otel4s.sdk.context.Context
+import org.typelevel.otel4s.sdk.internal.Diagnostic
 import org.typelevel.otel4s.sdk.metrics.scalacheck.Gens
 import org.typelevel.otel4s.sdk.metrics.test.InMemoryMeterSharedState
-import org.typelevel.otel4s.sdk.test.InMemoryConsole
-import org.typelevel.otel4s.sdk.test.InMemoryConsole.Entry
-import org.typelevel.otel4s.sdk.test.InMemoryConsole.Op
+import org.typelevel.otel4s.sdk.test.InMemoryDiagnostic
+import org.typelevel.otel4s.sdk.test.InMemoryDiagnostic.Entry
 
 import scala.concurrent.duration._
 
@@ -49,7 +48,7 @@ class SdkMeterSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
       Gens.instrumentationScope,
       invalidNameGen
     ) { (resource, scope, name) =>
-      InMemoryConsole.create[IO].flatMap { implicit C: InMemoryConsole[IO] =>
+      InMemoryDiagnostic.create[IO].flatMap { implicit C: InMemoryDiagnostic[IO] =>
         for {
           meter <- createMeter(resource, scope)
           counter <- meter.counter[Long](name).create
@@ -66,7 +65,7 @@ class SdkMeterSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
       Gens.instrumentationScope,
       invalidNameGen
     ) { (resource, scope, name) =>
-      InMemoryConsole.create[IO].flatMap { implicit C: InMemoryConsole[IO] =>
+      InMemoryDiagnostic.create[IO].flatMap { implicit C: InMemoryDiagnostic[IO] =>
         for {
           meter <- createMeter(resource, scope)
           counter <- meter.upDownCounter[Long](name).create
@@ -83,7 +82,7 @@ class SdkMeterSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
       Gens.instrumentationScope,
       invalidNameGen
     ) { (resource, scope, name) =>
-      InMemoryConsole.create[IO].flatMap { implicit C: InMemoryConsole[IO] =>
+      InMemoryDiagnostic.create[IO].flatMap { implicit C: InMemoryDiagnostic[IO] =>
         for {
           meter <- createMeter(resource, scope)
           histogram <- meter.histogram[Long](name).create
@@ -100,7 +99,7 @@ class SdkMeterSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
       Gens.instrumentationScope,
       invalidNameGen
     ) { (resource, scope, name) =>
-      InMemoryConsole.create[IO].flatMap { implicit C: InMemoryConsole[IO] =>
+      InMemoryDiagnostic.create[IO].flatMap { implicit C: InMemoryDiagnostic[IO] =>
         for {
           meter <- createMeter(resource, scope)
           gauge <- meter.gauge[Long](name).create
@@ -117,7 +116,7 @@ class SdkMeterSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
       Gens.instrumentationScope,
       invalidNameGen
     ) { (resource, scope, name) =>
-      InMemoryConsole.create[IO].flatMap { implicit C: InMemoryConsole[IO] =>
+      InMemoryDiagnostic.create[IO].flatMap { implicit C: InMemoryDiagnostic[IO] =>
         for {
           meter <- createMeter(resource, scope)
           _ <- meter.observableCounter[Long](name).createObserver
@@ -133,7 +132,7 @@ class SdkMeterSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
       Gens.instrumentationScope,
       invalidNameGen
     ) { (resource, scope, name) =>
-      InMemoryConsole.create[IO].flatMap { implicit C: InMemoryConsole[IO] =>
+      InMemoryDiagnostic.create[IO].flatMap { implicit C: InMemoryDiagnostic[IO] =>
         for {
           meter <- createMeter(resource, scope)
           _ <- meter.observableUpDownCounter[Long](name).createObserver
@@ -151,7 +150,7 @@ class SdkMeterSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
       Gens.instrumentationScope,
       invalidNameGen
     ) { (resource, scope, name) =>
-      InMemoryConsole.create[IO].flatMap { implicit C: InMemoryConsole[IO] =>
+      InMemoryDiagnostic.create[IO].flatMap { implicit C: InMemoryDiagnostic[IO] =>
         for {
           meter <- createMeter(resource, scope)
           _ <- meter.observableGauge[Long](name).createObserver
@@ -165,7 +164,7 @@ class SdkMeterSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
       resource: TelemetryResource,
       scope: InstrumentationScope,
       start: FiniteDuration = Duration.Zero
-  )(implicit C: Console[IO]): IO[SdkMeter[IO]] = {
+  )(implicit C: Diagnostic[IO]): IO[SdkMeter[IO]] = {
     implicit val askContext: AskContext[IO] = Ask.const(Context.root)
 
     for {
@@ -175,11 +174,11 @@ class SdkMeterSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
 
   private def consoleEntries(instrument: String, name: String): List[Entry] =
     List(
-      Entry(
-        Op.Errorln,
+      Entry.Error(
         s"SdkMeter: $instrument instrument has invalid name [$name]. " +
           "Using noop instrument. " +
-          "Instrument names must consist of 255 or fewer characters including alphanumeric, _, ., -, and start with a letter."
+          "Instrument names must consist of 255 or fewer characters including alphanumeric, _, ., -, and start with a letter.",
+        None
       )
     )
 

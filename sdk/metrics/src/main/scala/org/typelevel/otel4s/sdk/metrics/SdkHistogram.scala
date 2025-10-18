@@ -19,7 +19,6 @@ package org.typelevel.otel4s.sdk.metrics
 import cats.Monad
 import cats.effect.Clock
 import cats.effect.kernel.Resource
-import cats.effect.std.Console
 import cats.mtl.Ask
 import cats.syntax.flatMap._
 import cats.syntax.functor._
@@ -32,6 +31,7 @@ import org.typelevel.otel4s.metrics.MeasurementValue
 import org.typelevel.otel4s.metrics.meta.InstrumentMeta
 import org.typelevel.otel4s.sdk.context.AskContext
 import org.typelevel.otel4s.sdk.context.Context
+import org.typelevel.otel4s.sdk.internal.Diagnostic
 import org.typelevel.otel4s.sdk.metrics.internal.Advice
 import org.typelevel.otel4s.sdk.metrics.internal.InstrumentDescriptor
 import org.typelevel.otel4s.sdk.metrics.internal.MeterSharedState
@@ -48,7 +48,7 @@ import scala.concurrent.duration.TimeUnit
 private object SdkHistogram {
 
   private final class Backend[
-      F[_]: Monad: Clock: Console: AskContext,
+      F[_]: Monad: Clock: Diagnostic: AskContext,
       A,
       Primitive: Numeric
   ](
@@ -83,7 +83,7 @@ private object SdkHistogram {
 
     private def doRecord(value: Primitive, attributes: Attributes): F[Unit] =
       if (Numeric[Primitive].lt(value, Numeric[Primitive].zero)) {
-        Console[F].errorln(
+        Diagnostic[F].error(
           s"SdkHistogram: histograms can only record non-negative values. Instrument [$name] has tried to record a negative value [$value]."
         )
       } else {
@@ -95,7 +95,7 @@ private object SdkHistogram {
   }
 
   final case class Builder[
-      F[_]: Monad: Clock: Console: AskContext,
+      F[_]: Monad: Clock: Diagnostic: AskContext,
       A: MeasurementValue
   ](
       name: String,

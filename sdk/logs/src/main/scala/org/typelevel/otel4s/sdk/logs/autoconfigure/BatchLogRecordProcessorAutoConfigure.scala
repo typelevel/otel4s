@@ -18,11 +18,11 @@ package org.typelevel.otel4s.sdk.logs.autoconfigure
 
 import cats.effect.Resource
 import cats.effect.Temporal
-import cats.effect.std.Console
 import cats.syntax.flatMap._
 import cats.syntax.foldable._
 import org.typelevel.otel4s.sdk.autoconfigure.AutoConfigure
 import org.typelevel.otel4s.sdk.autoconfigure.Config
+import org.typelevel.otel4s.sdk.internal.Diagnostic
 import org.typelevel.otel4s.sdk.logs.exporter.LogRecordExporter
 import org.typelevel.otel4s.sdk.logs.processor.BatchLogRecordProcessor
 import org.typelevel.otel4s.sdk.logs.processor.LogRecordProcessor
@@ -51,7 +51,7 @@ import scala.util.chaining._
   * @param exporter
   *   the exporter to use with the configured batch log record processor
   */
-private final class BatchLogRecordProcessorAutoConfigure[F[_]: Temporal: Console](
+private final class BatchLogRecordProcessorAutoConfigure[F[_]: Temporal: Diagnostic](
     exporter: LogRecordExporter[F]
 ) extends AutoConfigure.WithHint[F, LogRecordProcessor[F]](
       "BatchLogRecordProcessor",
@@ -121,7 +121,7 @@ private[sdk] object BatchLogRecordProcessorAutoConfigure {
     * @param exporter
     *   the exporter to use with the configured batch log record processor
     */
-  def apply[F[_]: Temporal: Console](exporter: LogRecordExporter[F]): AutoConfigure[F, LogRecordProcessor[F]] =
+  def apply[F[_]: Temporal: Diagnostic](exporter: LogRecordExporter[F]): AutoConfigure[F, LogRecordProcessor[F]] =
     new BatchLogRecordProcessorAutoConfigure[F](exporter)
 
 }

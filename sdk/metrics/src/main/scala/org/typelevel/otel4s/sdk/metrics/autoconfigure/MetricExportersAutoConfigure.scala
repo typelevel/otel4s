@@ -26,6 +26,7 @@ import cats.syntax.functor._
 import org.typelevel.otel4s.sdk.autoconfigure.AutoConfigure
 import org.typelevel.otel4s.sdk.autoconfigure.Config
 import org.typelevel.otel4s.sdk.autoconfigure.ConfigurationError
+import org.typelevel.otel4s.sdk.internal.Diagnostic
 import org.typelevel.otel4s.sdk.metrics.exporter.ConsoleMetricExporter
 import org.typelevel.otel4s.sdk.metrics.exporter.MetricExporter
 
@@ -41,7 +42,7 @@ import org.typelevel.otel4s.sdk.metrics.exporter.MetricExporter
   * @see
   *   [[https://opentelemetry.io/docs/languages/java/configuration/#metric-exporters]]
   */
-private final class MetricExportersAutoConfigure[F[_]: MonadCancelThrow: Console](
+private final class MetricExportersAutoConfigure[F[_]: MonadCancelThrow: Console: Diagnostic](
     extra: Set[AutoConfigure.Named[F, MetricExporter[F]]]
 ) extends AutoConfigure.WithHint[F, Map[String, MetricExporter[F]]](
       "MetricExporters",
@@ -103,7 +104,7 @@ private final class MetricExportersAutoConfigure[F[_]: MonadCancelThrow: Console
     }
 
   private def otlpMissingWarning: F[Unit] = {
-    Console[F].errorln(
+    Diagnostic[F].error(
       s"""The configurer for the [${Const.OtlpExporter}] exporter is not registered.
          |
          |Add the `otel4s-sdk-exporter` dependency to the build file:
@@ -162,7 +163,7 @@ private[sdk] object MetricExportersAutoConfigure {
     * @param configurers
     *   the configurers to use
     */
-  def apply[F[_]: MonadCancelThrow: Console](
+  def apply[F[_]: MonadCancelThrow: Console: Diagnostic](
       configurers: Set[AutoConfigure.Named[F, MetricExporter[F]]]
   ): AutoConfigure[F, Map[String, MetricExporter[F]]] =
     new MetricExportersAutoConfigure[F](configurers)

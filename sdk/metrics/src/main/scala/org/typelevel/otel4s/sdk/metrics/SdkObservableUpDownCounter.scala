@@ -20,7 +20,6 @@ import cats.data.NonEmptyList
 import cats.effect.Clock
 import cats.effect.MonadCancelThrow
 import cats.effect.Resource
-import cats.effect.std.Console
 import cats.syntax.flatMap._
 import cats.syntax.foldable._
 import cats.syntax.functor._
@@ -31,6 +30,7 @@ import org.typelevel.otel4s.metrics.MeasurementValue
 import org.typelevel.otel4s.metrics.ObservableMeasurement
 import org.typelevel.otel4s.metrics.ObservableUpDownCounter
 import org.typelevel.otel4s.sdk.context.AskContext
+import org.typelevel.otel4s.sdk.internal.Diagnostic
 import org.typelevel.otel4s.sdk.metrics.internal.CallbackRegistration
 import org.typelevel.otel4s.sdk.metrics.internal.InstrumentDescriptor
 import org.typelevel.otel4s.sdk.metrics.internal.MeterSharedState
@@ -43,7 +43,7 @@ import org.typelevel.otel4s.sdk.metrics.internal.MeterSharedState
 private object SdkObservableUpDownCounter {
 
   final case class Builder[
-      F[_]: MonadCancelThrow: Clock: Console: AskContext,
+      F[_]: MonadCancelThrow: Clock: Diagnostic: AskContext,
       A: MeasurementValue
   ](
       name: String,

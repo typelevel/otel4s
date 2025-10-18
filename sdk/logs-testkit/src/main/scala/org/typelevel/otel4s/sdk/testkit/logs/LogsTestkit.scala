@@ -19,11 +19,11 @@ package org.typelevel.otel4s.sdk.testkit.logs
 import cats.Parallel
 import cats.effect.Resource
 import cats.effect.Temporal
-import cats.effect.std.Console
 import cats.mtl.Ask
 import org.typelevel.otel4s.logs.LoggerProvider
 import org.typelevel.otel4s.sdk.context.AskContext
 import org.typelevel.otel4s.sdk.context.Context
+import org.typelevel.otel4s.sdk.internal.Diagnostic
 import org.typelevel.otel4s.sdk.logs.SdkLoggerProvider
 import org.typelevel.otel4s.sdk.logs.data.LogRecordData
 import org.typelevel.otel4s.sdk.logs.processor.SimpleLogRecordProcessor
@@ -57,14 +57,14 @@ object LogsTestkit {
     *   i.e. to capture the current span context so that logs, traces, and metrics can all work together - use
     *   `OpenTelemetrySdkTestkit.inMemory`.
     */
-  def inMemory[F[_]: Temporal: Parallel: Console](
+  def inMemory[F[_]: Temporal: Parallel: Diagnostic](
       customize: SdkLoggerProvider.Builder[F] => SdkLoggerProvider.Builder[F] = (b: SdkLoggerProvider.Builder[F]) => b
   ): Resource[F, LogsTestkit[F]] = {
     implicit val askContext: AskContext[F] = Ask.const(Context.root)
     create[F](customize)
   }
 
-  private[sdk] def create[F[_]: Temporal: Parallel: Console: AskContext](
+  private[sdk] def create[F[_]: Temporal: Parallel: Diagnostic: AskContext](
       customize: SdkLoggerProvider.Builder[F] => SdkLoggerProvider.Builder[F]
   ): Resource[F, LogsTestkit[F]] = {
     def createLoggerProvider(

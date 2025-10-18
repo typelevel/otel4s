@@ -21,13 +21,13 @@ package processor
 import cats.effect.Ref
 import cats.effect.Resource
 import cats.effect.Temporal
-import cats.effect.std.Console
 import cats.effect.std.CountDownLatch
 import cats.effect.std.Queue
 import cats.effect.syntax.monadCancel._
 import cats.effect.syntax.spawn._
 import cats.effect.syntax.temporal._
 import cats.syntax.all._
+import org.typelevel.otel4s.sdk.internal.Diagnostic
 import org.typelevel.otel4s.sdk.trace.data.SpanData
 import org.typelevel.otel4s.sdk.trace.exporter.SpanExporter
 
@@ -51,7 +51,7 @@ import scala.concurrent.duration._
   * @tparam F
   *   the higher-kinded type of a polymorphic effect
   */
-private final class BatchSpanProcessor[F[_]: Temporal: Console] private (
+private final class BatchSpanProcessor[F[_]: Temporal: Diagnostic] private (
     queue: Queue[F, SpanData],
     signal: CountDownLatch[F],
     state: Ref[F, BatchSpanProcessor.State],
@@ -169,14 +169,12 @@ private final class BatchSpanProcessor[F[_]: Temporal: Console] private (
       .exportSpans(batch)
       .timeoutTo(
         config.exporterTimeout,
-        Console[F].errorln(
+        Diagnostic[F].error(
           s"BatchSpanProcessor: the export attempt has been canceled after [${config.exporterTimeout}]"
         )
       )
       .handleErrorWith { e =>
-        Console[F].errorln(
-          s"BatchSpanProcessor: the export has failed: ${e.getMessage}\n${e.getStackTrace.mkString("\n")}\n"
-        )
+        Diagnostic[F].error(s"BatchSpanProcessor: the export has failed: ${e.getMessage}", e)
       }
 
 }
@@ -221,7 +219,7 @@ object BatchSpanProcessor {
     * @param exporter
     *   the [[exporter.SpanExporter SpanExporter]] to which the spans are pushed
     */
-  def builder[F[_]: Temporal: Console](exporter: SpanExporter[F]): Builder[F] =
+  def builder[F[_]: Temporal: Diagnostic](exporter: SpanExporter[F]): Builder[F] =
     new BuilderImpl[F](
       exporter = exporter,
       scheduleDelay = Defaults.ScheduleDelay,
@@ -264,7 +262,7 @@ object BatchSpanProcessor {
       spansNeeded: Option[Int]
   )
 
-  private final case class BuilderImpl[F[_]: Temporal: Console](
+  private final case class BuilderImpl[F[_]: Temporal: Diagnostic](
       exporter: SpanExporter[F],
       scheduleDelay: FiniteDuration,
       exporterTimeout: FiniteDuration,

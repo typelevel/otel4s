@@ -19,7 +19,6 @@ package autoconfigure
 
 import cats.effect.Async
 import cats.effect.Resource
-import cats.effect.std.Console
 import fs2.compression.Compression
 import fs2.io.net.Network
 import org.http4s.Headers
@@ -27,6 +26,7 @@ import org.http4s.client.Client
 import org.typelevel.otel4s.sdk.autoconfigure.AutoConfigure
 import org.typelevel.otel4s.sdk.autoconfigure.Config
 import org.typelevel.otel4s.sdk.exporter.otlp.autoconfigure.OtlpClientAutoConfigure
+import org.typelevel.otel4s.sdk.internal.Diagnostic
 import org.typelevel.otel4s.sdk.trace.data.SpanData
 import org.typelevel.otel4s.sdk.trace.exporter.SpanExporter
 
@@ -39,7 +39,7 @@ import org.typelevel.otel4s.sdk.trace.exporter.SpanExporter
   *   [[https://opentelemetry.io/docs/languages/sdk-configuration/otlp-exporter/#otel_exporter_otlp_protocol]]
   */
 private final class OtlpSpanExporterAutoConfigure[
-    F[_]: Async: Network: Compression: Console
+    F[_]: Async: Network: Compression: Diagnostic
 ](customClient: Option[Client[F]])
     extends AutoConfigure.WithHint[F, SpanExporter[F]](
       "OtlpSpanExporter",
@@ -85,7 +85,7 @@ object OtlpSpanExporterAutoConfigure {
     *   `OtlpHttpClientAutoConfigure` for the configuration details of the OTLP HTTP client
     */
   def apply[
-      F[_]: Async: Network: Compression: Console
+      F[_]: Async: Network: Compression: Diagnostic
   ]: AutoConfigure.Named[F, SpanExporter[F]] =
     new OtlpSpanExporterAutoConfigure[F](None)
 
@@ -126,7 +126,7 @@ object OtlpSpanExporterAutoConfigure {
     *   the custom http4s client to use
     */
   def customClient[
-      F[_]: Async: Network: Compression: Console
+      F[_]: Async: Network: Compression: Diagnostic
   ](client: Client[F]): AutoConfigure.Named[F, SpanExporter[F]] =
     new OtlpSpanExporterAutoConfigure[F](Some(client))
 

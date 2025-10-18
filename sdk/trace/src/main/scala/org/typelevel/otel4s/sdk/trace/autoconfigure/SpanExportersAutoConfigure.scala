@@ -26,6 +26,7 @@ import cats.syntax.functor._
 import org.typelevel.otel4s.sdk.autoconfigure.AutoConfigure
 import org.typelevel.otel4s.sdk.autoconfigure.Config
 import org.typelevel.otel4s.sdk.autoconfigure.ConfigurationError
+import org.typelevel.otel4s.sdk.internal.Diagnostic
 import org.typelevel.otel4s.sdk.trace.exporter.ConsoleSpanExporter
 import org.typelevel.otel4s.sdk.trace.exporter.SpanExporter
 
@@ -41,7 +42,7 @@ import org.typelevel.otel4s.sdk.trace.exporter.SpanExporter
   * @see
   *   [[https://opentelemetry.io/docs/languages/java/configuration/#span-exporters]]
   */
-private final class SpanExportersAutoConfigure[F[_]: MonadCancelThrow: Console](
+private final class SpanExportersAutoConfigure[F[_]: MonadCancelThrow: Console: Diagnostic](
     extra: Set[AutoConfigure.Named[F, SpanExporter[F]]]
 ) extends AutoConfigure.WithHint[F, Map[String, SpanExporter[F]]](
       "SpanExporters",
@@ -98,7 +99,7 @@ private final class SpanExportersAutoConfigure[F[_]: MonadCancelThrow: Console](
     }
 
   private def otlpMissingWarning: F[Unit] = {
-    Console[F].errorln(
+    Diagnostic[F].error(
       s"""The configurer for the [${Const.OtlpExporter}] exporter is not registered.
         |
         |Add the `otel4s-sdk-exporter` dependency to the build file:
@@ -157,7 +158,7 @@ private[sdk] object SpanExportersAutoConfigure {
     * @param configurers
     *   the configurers to use
     */
-  def apply[F[_]: MonadCancelThrow: Console](
+  def apply[F[_]: MonadCancelThrow: Console: Diagnostic](
       configurers: Set[AutoConfigure.Named[F, SpanExporter[F]]]
   ): AutoConfigure[F, Map[String, SpanExporter[F]]] =
     new SpanExportersAutoConfigure[F](configurers)

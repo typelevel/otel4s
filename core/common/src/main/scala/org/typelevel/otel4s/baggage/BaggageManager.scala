@@ -17,7 +17,6 @@
 package org.typelevel.otel4s.baggage
 
 import cats.Applicative
-import cats.mtl.Local
 
 /** A utility for accessing and modifying [[`Baggage`]].
   *
@@ -31,19 +30,13 @@ import cats.mtl.Local
   *     _  <- Console[F].println("user_id: " + id)
   *   } yield ()
   *
-  * BaggageManager[F].modifiedScope(_.updated("user_id", "uid"))(io)
+  * BaggageManager[F].local(_.updated("user_id", "uid"))(io)
   *   }}}
   */
 sealed trait BaggageManager[F[_]] {
 
-  // TODO: remove after finishing migrating away from Local
-  protected def applicative: Applicative[F]
-
   /** @return the current scope's `Baggage` */
   def current: F[Baggage]
-
-  @deprecated("BaggageManager no longer extends Local. Use `current` instead", since = "otel4s 0.13.0")
-  final def ask[E2 >: Baggage]: F[E2] = applicative.widen(current)
 
   /** @return
     *   the [[Baggage.Entry entry]] to which the specified key is mapped, or `None` if the current `Baggage` contains no
@@ -60,16 +53,9 @@ sealed trait BaggageManager[F[_]] {
   /** Creates a new scope in which a modified version of the current `Baggage` is used. */
   def local[A](modify: Baggage => Baggage)(fa: F[A]): F[A]
 
-  @deprecated("BaggageManager no longer extends Local. Reverse parameter list order", since = "otel4s 0.13.0")
-  final def local[A](fa: F[A])(modify: Baggage => Baggage): F[A] =
-    local(modify)(fa)
-
   /** Creates a new scope in which the given `Baggage` is used. */
   def scope[A](baggage: Baggage)(fa: F[A]): F[A]
 
-  @deprecated("BaggageManager no longer extends Local. Reverse parameter list order", since = "otel4s 0.13.0")
-  final def scope[A](fa: F[A])(baggage: Baggage): F[A] =
-    scope(baggage)(fa)
 }
 
 object BaggageManager {
@@ -77,12 +63,22 @@ object BaggageManager {
 
   def apply[F[_]](implicit ev: BaggageManager[F]): BaggageManager[F] = ev
 
-  @deprecated("BaggageManager no longer extends Local", since = "otel4s 0.13.0")
-  implicit def asExplicitLocal[F[_]](bm: BaggageManager[F]): Local[F, Baggage] =
-    new Local[F, Baggage] {
-      def applicative: Applicative[F] = bm.applicative
-      def ask[E2 >: Baggage]: F[E2] = applicative.widen(bm.current)
-      def local[A](fa: F[A])(f: Baggage => Baggage): F[A] =
-        bm.local(f)(fa)
-    }
+  /** Creates a no-op implementation of the [[BaggageManager]].
+    *
+    * [[BaggageManager.current]] returns an empty [[Baggage]].
+    *
+    * [[BaggageManager.scope]] and [[BaggageManager.local]] are no-ops.
+    */
+  def noop[F[_]: Applicative]: BaggageManager[F] =
+    new Noop
+
+  private final class Noop[F[_]: Applicative] extends BaggageManager[F] {
+    val current: F[Baggage] = Applicative[F].pure(Baggage.empty)
+    def get(key: String): F[Option[Baggage.Entry]] = Applicative[F].pure(None)
+    def getValue(key: String): F[Option[String]] = Applicative[F].pure(None)
+    def local[A](modify: Baggage => Baggage)(fa: F[A]): F[A] = fa
+    def scope[A](baggage: Baggage)(fa: F[A]): F[A] = fa
+    override def toString: String = "BaggageManager.Noop"
+  }
+
 }

@@ -19,7 +19,6 @@ package org.typelevel.otel4s.sdk.metrics.internal
 import cats.effect.Concurrent
 import cats.effect.Ref
 import cats.effect.Resource
-import cats.effect.std.Console
 import cats.effect.std.Mutex
 import cats.syntax.flatMap._
 import cats.syntax.foldable._
@@ -30,6 +29,7 @@ import org.typelevel.otel4s.metrics.meta.InstrumentMeta
 import org.typelevel.otel4s.sdk.TelemetryResource
 import org.typelevel.otel4s.sdk.common.InstrumentationScope
 import org.typelevel.otel4s.sdk.context.AskContext
+import org.typelevel.otel4s.sdk.internal.Diagnostic
 import org.typelevel.otel4s.sdk.metrics.Aggregation
 import org.typelevel.otel4s.sdk.metrics.data.MetricData
 import org.typelevel.otel4s.sdk.metrics.data.TimeWindow
@@ -42,7 +42,7 @@ import org.typelevel.otel4s.sdk.metrics.view.ViewRegistry
 import scala.concurrent.duration.FiniteDuration
 
 private[metrics] final class MeterSharedState[
-    F[_]: Concurrent: Console: AskContext
+    F[_]: Concurrent: Diagnostic: AskContext
 ] private (
     val meta: InstrumentMeta[F],
     mutex: Mutex[F],
@@ -88,8 +88,8 @@ private[metrics] final class MeterSharedState[
             Concurrent[F].pure(Vector(s))
 
           case other =>
-            Console[F]
-              .errorln(
+            Diagnostic[F]
+              .error(
                 s"MeterSharedState: there is a different storage $other registered for $descriptor. The current instrument will be noop."
               )
               .as(Vector.empty[MetricStorage.Synchronous[F, A]])
@@ -160,8 +160,8 @@ private[metrics] final class MeterSharedState[
             Concurrent[F].pure(Vector(s))
 
           case other =>
-            Console[F]
-              .errorln(
+            Diagnostic[F]
+              .error(
                 s"MeterSharedState: there is a different storage $other registered for $descriptor. The current instrument will be noop."
               )
               .as(Vector.empty[MetricStorage.Asynchronous[F, A]])
@@ -246,7 +246,7 @@ private[metrics] final class MeterSharedState[
 
 private[metrics] object MeterSharedState {
 
-  def create[F[_]: Concurrent: Console: AskContext](
+  def create[F[_]: Concurrent: Diagnostic: AskContext](
       resource: TelemetryResource,
       scope: InstrumentationScope,
       startTimestamp: FiniteDuration,

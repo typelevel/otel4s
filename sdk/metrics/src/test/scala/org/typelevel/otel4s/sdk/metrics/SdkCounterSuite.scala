@@ -32,7 +32,7 @@ import org.typelevel.otel4s.sdk.metrics.data.MetricPoints
 import org.typelevel.otel4s.sdk.metrics.scalacheck.Gens
 import org.typelevel.otel4s.sdk.metrics.test.InMemoryMeterSharedState
 import org.typelevel.otel4s.sdk.metrics.test.PointDataUtils
-import org.typelevel.otel4s.sdk.test.InMemoryConsole
+import org.typelevel.otel4s.sdk.test.InMemoryDiagnostic
 
 class SdkCounterSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
 
@@ -52,17 +52,17 @@ class SdkCounterSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
         val value = Numeric[A].negate(Numeric[A].one)
 
         val consoleEntries = {
-          import org.typelevel.otel4s.sdk.test.InMemoryConsole._
+          import org.typelevel.otel4s.sdk.test.InMemoryDiagnostic._
 
           List(
-            Entry(
-              Op.Errorln,
-              s"SdkCounter: counters can only increase. Instrument [$name] has tried to record a negative value [$value]."
+            Entry.Error(
+              s"SdkCounter: counters can only increase. Instrument [$name] has tried to record a negative value [$value].",
+              None
             )
           )
         }
 
-        InMemoryConsole.create[IO].flatMap { implicit C: InMemoryConsole[IO] =>
+        InMemoryDiagnostic.create[IO].flatMap { implicit C: InMemoryDiagnostic[IO] =>
           for {
             state <- InMemoryMeterSharedState.create[IO](
               resource,

@@ -18,7 +18,6 @@ package org.typelevel.otel4s.sdk.metrics.internal.storage
 
 import cats.data.NonEmptyVector
 import cats.effect.IO
-import cats.effect.std.Console
 import cats.mtl.Ask
 import cats.syntax.traverse._
 import munit.CatsEffectSuite
@@ -28,6 +27,7 @@ import org.scalacheck.effect.PropF
 import org.typelevel.otel4s.Attributes
 import org.typelevel.otel4s.metrics.MeasurementValue
 import org.typelevel.otel4s.sdk.context.Context
+import org.typelevel.otel4s.sdk.internal.Diagnostic
 import org.typelevel.otel4s.sdk.metrics.Aggregation
 import org.typelevel.otel4s.sdk.metrics.InstrumentType
 import org.typelevel.otel4s.sdk.metrics.data.AggregationTemporality
@@ -43,13 +43,12 @@ import org.typelevel.otel4s.sdk.metrics.internal.exporter.RegisteredReader
 import org.typelevel.otel4s.sdk.metrics.scalacheck.Gens
 import org.typelevel.otel4s.sdk.metrics.test.PointDataUtils
 import org.typelevel.otel4s.sdk.metrics.view.View
-import org.typelevel.otel4s.sdk.test.NoopConsole
 
 import scala.concurrent.duration._
 
 class AsynchronousStorageSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
 
-  private implicit val noopConsole: Console[IO] = new NoopConsole[IO]
+  private implicit val noopDiagnostic: Diagnostic[IO] = Diagnostic.noop
   private implicit val askContext: Ask[IO, Context] = Ask.const(Context.root)
 
   test("duplicate attributes - combine") {

@@ -19,14 +19,13 @@ package processor
 
 import cats.Foldable
 import cats.effect.IO
-import cats.effect.std.Console
 import cats.syntax.foldable._
 import cats.syntax.traverse._
 import munit.CatsEffectSuite
 import munit.ScalaCheckEffectSuite
 import org.scalacheck.Test
 import org.scalacheck.effect.PropF
-import org.typelevel.otel4s.sdk.test.NoopConsole
+import org.typelevel.otel4s.sdk.internal.Diagnostic
 import org.typelevel.otel4s.sdk.trace.data.SpanData
 import org.typelevel.otel4s.sdk.trace.exporter.InMemorySpanExporter
 import org.typelevel.otel4s.sdk.trace.exporter.SpanExporter
@@ -34,7 +33,7 @@ import org.typelevel.otel4s.sdk.trace.scalacheck.Arbitraries._
 
 class BatchSpanProcessorSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
 
-  private implicit val noopConsole: Console[IO] = new NoopConsole[IO]
+  private implicit val noopDiagnostic: Diagnostic[IO] = Diagnostic.noop
 
   test("show details in the name") {
     val exporter = new FailingExporter(

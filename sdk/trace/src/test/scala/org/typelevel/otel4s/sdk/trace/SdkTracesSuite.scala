@@ -18,7 +18,6 @@ package org.typelevel.otel4s.sdk.trace
 
 import cats.Foldable
 import cats.effect.IO
-import cats.effect.std.Console
 import munit.CatsEffectSuite
 import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.Attributes
@@ -30,7 +29,7 @@ import org.typelevel.otel4s.sdk.TelemetryResource
 import org.typelevel.otel4s.sdk.autoconfigure.AutoConfigure
 import org.typelevel.otel4s.sdk.autoconfigure.Config
 import org.typelevel.otel4s.sdk.context.Context
-import org.typelevel.otel4s.sdk.test.NoopConsole
+import org.typelevel.otel4s.sdk.internal.Diagnostic
 import org.typelevel.otel4s.sdk.trace.context.propagation.W3CBaggagePropagator
 import org.typelevel.otel4s.sdk.trace.context.propagation.W3CTraceContextPropagator
 import org.typelevel.otel4s.sdk.trace.data.LinkData
@@ -44,7 +43,7 @@ import scodec.bits.ByteVector
 
 class SdkTracesSuite extends CatsEffectSuite {
 
-  private implicit val noopConsole: Console[IO] = new NoopConsole[IO]
+  private implicit val noopDiagnostic: Diagnostic[IO] = Diagnostic.noop
 
   private val DefaultTraces =
     tracesToString(

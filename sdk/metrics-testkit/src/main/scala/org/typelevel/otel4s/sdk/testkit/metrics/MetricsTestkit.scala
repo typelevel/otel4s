@@ -19,7 +19,6 @@ package org.typelevel.otel4s.sdk.testkit.metrics
 import cats.FlatMap
 import cats.effect.Async
 import cats.effect.Resource
-import cats.effect.std.Console
 import cats.effect.std.Random
 import cats.mtl.Ask
 import cats.syntax.flatMap._
@@ -27,6 +26,7 @@ import cats.syntax.functor._
 import org.typelevel.otel4s.metrics.MeterProvider
 import org.typelevel.otel4s.sdk.context.AskContext
 import org.typelevel.otel4s.sdk.context.Context
+import org.typelevel.otel4s.sdk.internal.Diagnostic
 import org.typelevel.otel4s.sdk.metrics.SdkMeterProvider
 import org.typelevel.otel4s.sdk.metrics.data.MetricData
 import org.typelevel.otel4s.sdk.metrics.exporter.AggregationSelector
@@ -70,7 +70,7 @@ object MetricsTestkit {
     *   the preferred cardinality limit for the given instrument type. If no views are configured for a metric
     *   instrument, a limit provided by the selector will be used
     */
-  def inMemory[F[_]: Async: Console](
+  def inMemory[F[_]: Async: Diagnostic](
       customize: SdkMeterProvider.Builder[F] => SdkMeterProvider.Builder[F] = (b: SdkMeterProvider.Builder[F]) => b,
       aggregationTemporalitySelector: AggregationTemporalitySelector = AggregationTemporalitySelector.alwaysCumulative,
       defaultAggregationSelector: AggregationSelector = AggregationSelector.default,
@@ -86,7 +86,7 @@ object MetricsTestkit {
     )
   }
 
-  private[sdk] def create[F[_]: Async: Console: AskContext](
+  private[sdk] def create[F[_]: Async: Diagnostic: AskContext](
       customize: SdkMeterProvider.Builder[F] => SdkMeterProvider.Builder[F],
       aggregationTemporalitySelector: AggregationTemporalitySelector,
       defaultAggregationSelector: AggregationSelector,

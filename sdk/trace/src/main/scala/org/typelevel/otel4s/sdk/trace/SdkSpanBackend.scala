@@ -22,12 +22,12 @@ import cats.Monad
 import cats.effect.Clock
 import cats.effect.Ref
 import cats.effect.Temporal
-import cats.effect.std.Console
 import cats.syntax.applicative._
 import cats.syntax.flatMap._
 import cats.syntax.functor._
 import org.typelevel.otel4s.sdk.common.InstrumentationScope
 import org.typelevel.otel4s.sdk.data.LimitedData
+import org.typelevel.otel4s.sdk.internal.Diagnostic
 import org.typelevel.otel4s.sdk.trace.SdkSpanBackend.MutableState
 import org.typelevel.otel4s.sdk.trace.data.EventData
 import org.typelevel.otel4s.sdk.trace.data.LinkData
@@ -64,7 +64,7 @@ import scala.concurrent.duration.FiniteDuration
   * @tparam F
   *   the higher-kinded type of a polymorphic effect
   */
-private final class SdkSpanBackend[F[_]: Monad: Clock: Console] private (
+private final class SdkSpanBackend[F[_]: Monad: Clock: Diagnostic] private (
     spanLimits: SpanLimits,
     spanProcessor: SpanProcessor[F],
     spanStorage: SpanStorage[F],
@@ -198,7 +198,7 @@ private final class SdkSpanBackend[F[_]: Monad: Clock: Console] private (
         if (modified) {
           Monad[F].unit
         } else {
-          Console[F].println(s"SdkSpanBackend: calling [$method] on the ended span $context")
+          Diagnostic[F].info(s"SdkSpanBackend: calling [$method] on the ended span $context")
         }
       }
 
@@ -287,7 +287,7 @@ private object SdkSpanBackend {
     *   the explicit start timestamp. If `None` is passed the start time will be calculated automatically (via
     *   `Clock[F].realTime`)
     */
-  def start[F[_]: Temporal: Console](
+  def start[F[_]: Temporal: Diagnostic](
       context: SpanContext,
       name: String,
       scopeInfo: InstrumentationScope,

@@ -18,7 +18,6 @@ package org.typelevel.otel4s.sdk.exporter.otlp.metrics.autoconfigure
 
 import cats.effect.Async
 import cats.effect.Resource
-import cats.effect.std.Console
 import fs2.compression.Compression
 import fs2.io.net.Network
 import org.http4s.Headers
@@ -28,6 +27,7 @@ import org.typelevel.otel4s.sdk.autoconfigure.Config
 import org.typelevel.otel4s.sdk.exporter.otlp.autoconfigure.OtlpClientAutoConfigure
 import org.typelevel.otel4s.sdk.exporter.otlp.metrics.MetricsProtoEncoder
 import org.typelevel.otel4s.sdk.exporter.otlp.metrics.OtlpMetricExporter
+import org.typelevel.otel4s.sdk.internal.Diagnostic
 import org.typelevel.otel4s.sdk.metrics.data.MetricData
 import org.typelevel.otel4s.sdk.metrics.exporter.AggregationSelector
 import org.typelevel.otel4s.sdk.metrics.exporter.AggregationTemporalitySelector
@@ -43,7 +43,7 @@ import org.typelevel.otel4s.sdk.metrics.exporter.MetricExporter
   *   [[https://opentelemetry.io/docs/languages/sdk-configuration/otlp-exporter/#otel_exporter_otlp_protocol]]
   */
 private final class OtlpMetricExporterAutoConfigure[
-    F[_]: Async: Network: Compression: Console
+    F[_]: Async: Network: Compression: Diagnostic
 ](customClient: Option[Client[F]])
     extends AutoConfigure.WithHint[F, MetricExporter[F]](
       "OtlpMetricExporter",
@@ -96,7 +96,7 @@ object OtlpMetricExporterAutoConfigure {
     *   `OtlpHttpClientAutoConfigure` for the configuration details of the OTLP HTTP client
     */
   def apply[
-      F[_]: Async: Network: Compression: Console
+      F[_]: Async: Network: Compression: Diagnostic
   ]: AutoConfigure.Named[F, MetricExporter[F]] =
     new OtlpMetricExporterAutoConfigure[F](None)
 
@@ -138,7 +138,7 @@ object OtlpMetricExporterAutoConfigure {
     *   the custom http4s client to use
     */
   def customClient[
-      F[_]: Async: Network: Compression: Console
+      F[_]: Async: Network: Compression: Diagnostic
   ](client: Client[F]): AutoConfigure.Named[F, MetricExporter[F]] =
     new OtlpMetricExporterAutoConfigure[F](Some(client))
 

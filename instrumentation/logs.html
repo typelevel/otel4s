@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+  
+  <head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="generator" content="Typelevel Laika + Helium Theme" />
+  <title>Logs</title>
+  
+  <meta name="author" content="Ross A. Baker"/>
+  
+  
+  <meta name="description" content="docs"/>
+  
+  
+  
+  <link rel="icon" sizes="32x32" type="image/png" href="https://typelevel.org/img/favicon.png"/>
+  
+  
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:400,700">
+  
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Fira+Mono:500">
+  
+  <link rel="stylesheet" type="text/css" href="../helium/site/icofont.min.css" />
+    <link rel="stylesheet" type="text/css" href="../helium/site/laika-helium.css" />
+  <script src="../helium/site/laika-helium.js"></script>
+  
+  
+  <script> /* for avoiding page load transitions */ </script>
+</head>
+
+  <body>
+
+    <header id="top-bar" class="light-default dark-default">
+
+  <div class="row">
+    <a id="nav-icon">
+      <i class="icofont-laika navigationMenu" title="Navigation">&#xefa2;</i>
+    </a>
+    
+    
+  </div>
+
+  <a class="image-link" href="https://typelevel.org"><img src="https://typelevel.org/img/logo.svg"></a>
+
+  <div class="row links">
+    
+    <a class="icon-link svg-link" href="https://www.javadoc.io/doc/org.typelevel/otel4s-docs_2.13/0.14.0/"><span class="api" title="API"><svg class="svg-icon" width="100%" height="100%" viewBox="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg" xml:space="preserve" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+  <g class="svg-shape">
+    <path d="M75,47.5c13.246,0 24,10.754 24,24c0,13.246 -10.754,24 -24,24c-13.246,0 -24,-10.754 -24,-24c0,-13.246 10.754,-24 24,-24Zm-50,-0c13.246,-0 24,10.754 24,24c0,13.246 -10.754,24 -24,24c-13.246,-0 -24,-10.754 -24,-24c0,-13.246 10.754,-24 24,-24Zm2.705,16.735l7.239,0l0.622,-4.904l-21.833,0l-0,4.904l7.589,0l0,22.067l6.383,0l-0,-22.067Zm58.076,7.265c-0,-8.757 -3.698,-14.166 -10.781,-14.166c-7.083,-0 -10.781,5.604 -10.781,14.166c0,8.757 3.698,14.166 10.781,14.166c7.083,0 10.781,-5.604 10.781,-14.166Zm-6.539,0c0,6.538 -1.128,9.496 -4.242,9.496c-2.997,0 -4.242,-2.88 -4.242,-9.496c-0,-6.616 1.206,-9.496 4.242,-9.496c3.036,-0 4.242,2.88 4.242,9.496Zm-29.242,-67c13.246,0 24,10.754 24,24c0,13.246 -10.754,24 -24,24c-13.246,0 -24,-10.754 -24,-24c0,-13.246 10.754,-24 24,-24Zm0.512,9.834c-7.122,-0 -12.609,5.098 -12.609,14.127c-0,9.263 5.215,14.205 12.532,14.205c4.164,0 7.083,-1.634 9.068,-3.658l-2.88,-3.697c-1.518,1.206 -3.153,2.413 -5.838,2.413c-3.697,-0 -6.266,-2.763 -6.266,-9.263c-0,-6.616 2.724,-9.379 6.149,-9.379c2.102,-0 3.892,0.778 5.371,1.984l3.113,-3.775c-2.257,-1.868 -4.748,-2.957 -8.64,-2.957Z"/>
+  </g>
+</svg></span></a>
+    
+    <a class="icon-link svg-link" href="https://github.com/typelevel/otel4s"><span class="github" title="Source Code"><svg class="svg-icon" width="100%" height="100%" viewBox="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg" xml:space="preserve" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+  <g class="svg-shape">
+    <path d="M49.995,1c-27.609,-0 -49.995,22.386 -49.995,50.002c-0,22.09 14.325,40.83 34.194,47.444c2.501,0.458 3.413,-1.086 3.413,-2.412c0,-1.185 -0.043,-4.331 -0.067,-8.503c-13.908,3.021 -16.843,-6.704 -16.843,-6.704c-2.274,-5.773 -5.552,-7.311 -5.552,-7.311c-4.54,-3.103 0.344,-3.042 0.344,-3.042c5.018,0.356 7.658,5.154 7.658,5.154c4.46,7.64 11.704,5.433 14.552,4.156c0.454,-3.232 1.744,-5.436 3.174,-6.685c-11.102,-1.262 -22.775,-5.553 -22.775,-24.713c-0,-5.457 1.949,-9.92 5.147,-13.416c-0.516,-1.265 -2.231,-6.348 0.488,-13.233c0,0 4.199,-1.344 13.751,5.126c3.988,-1.108 8.266,-1.663 12.518,-1.682c4.245,0.019 8.523,0.574 12.517,1.682c9.546,-6.47 13.736,-5.126 13.736,-5.126c2.728,6.885 1.013,11.968 0.497,13.233c3.204,3.496 5.141,7.959 5.141,13.416c0,19.209 -11.691,23.436 -22.83,24.673c1.795,1.544 3.394,4.595 3.394,9.26c0,6.682 -0.061,12.076 -0.061,13.715c0,1.338 0.899,2.894 3.438,2.406c19.853,-6.627 34.166,-25.354 34.166,-47.438c-0,-27.616 -22.389,-50.002 -50.005,-50.002"/>
+  </g>
+</svg></span></a>
+    
+    <a class="icon-link glyph-link" href="https://discord.gg/XF3CXcMzqD"><i class="icofont-laika chat" title="Chat">&#xeed5;</i></a>
+    
+    <a class="icon-link svg-link" href="https://fosstodon.org/@typelevel"><span class="mastodon" title="Mastodon"><svg class="svg-icon" width="100%" height="100%" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg">
+  <g class="svg-shape">
+    <path d="M11.19 12.195c2.016-.24 3.77-1.475 3.99-2.603.348-1.778.32-4.339.32-4.339 0-3.47-2.286-4.488-2.286-4.488C12.062.238 10.083.017 8.027 0h-.05C5.92.017 3.942.238 2.79.765c0 0-2.285 1.017-2.285 4.488l-.002.662c-.004.64-.007 1.35.011 2.091.083 3.394.626 6.74 3.78 7.57 1.454.383 2.703.463 3.709.408 1.823-.1 2.847-.647 2.847-.647l-.06-1.317s-1.303.41-2.767.36c-1.45-.05-2.98-.156-3.215-1.928a3.614 3.614 0 0 1-.033-.496s1.424.346 3.228.428c1.103.05 2.137-.064 3.188-.189zm1.613-2.47H11.13v-4.08c0-.859-.364-1.295-1.091-1.295-.804 0-1.207.517-1.207 1.541v2.233H7.168V5.89c0-1.024-.403-1.541-1.207-1.541-.727 0-1.091.436-1.091 1.296v4.079H3.197V5.522c0-.859.22-1.541.66-2.046.456-.505 1.052-.764 1.793-.764.856 0 1.504.328 1.933.983L8 4.39l.417-.695c.429-.655 1.077-.983 1.934-.983.74 0 1.336.259 1.791.764.442.505.661 1.187.661 2.046v4.203z"/>
+  </g>
+</svg></span></a>
+    
+  </div>  
+
+</header>
+    
+    <nav id="sidebar">
+
+  <div class="row">
+    
+    <a class="icon-link svg-link" href="https://www.javadoc.io/doc/org.typelevel/otel4s-docs_2.13/0.14.0/"><span class="api" title="API"><svg class="svg-icon" width="100%" height="100%" viewBox="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg" xml:space="preserve" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+  <g class="svg-shape">
+    <path d="M75,47.5c13.246,0 24,10.754 24,24c0,13.246 -10.754,24 -24,24c-13.246,0 -24,-10.754 -24,-24c0,-13.246 10.754,-24 24,-24Zm-50,-0c13.246,-0 24,10.754 24,24c0,13.246 -10.754,24 -24,24c-13.246,-0 -24,-10.754 -24,-24c0,-13.246 10.754,-24 24,-24Zm2.705,16.735l7.239,0l0.622,-4.904l-21.833,0l-0,4.904l7.589,0l0,22.067l6.383,0l-0,-22.067Zm58.076,7.265c-0,-8.757 -3.698,-14.166 -10.781,-14.166c-7.083,-0 -10.781,5.604 -10.781,14.166c0,8.757 3.698,14.166 10.781,14.166c7.083,0 10.781,-5.604 10.781,-14.166Zm-6.539,0c0,6.538 -1.128,9.496 -4.242,9.496c-2.997,0 -4.242,-2.88 -4.242,-9.496c-0,-6.616 1.206,-9.496 4.242,-9.496c3.036,-0 4.242,2.88 4.242,9.496Zm-29.242,-67c13.246,0 24,10.754 24,24c0,13.246 -10.754,24 -24,24c-13.246,0 -24,-10.754 -24,-24c0,-13.246 10.754,-24 24,-24Zm0.512,9.834c-7.122,-0 -12.609,5.098 -12.609,14.127c-0,9.263 5.215,14.205 12.532,14.205c4.164,0 7.083,-1.634 9.068,-3.658l-2.88,-3.697c-1.518,1.206 -3.153,2.413 -5.838,2.413c-3.697,-0 -6.266,-2.763 -6.266,-9.263c-0,-6.616 2.724,-9.379 6.149,-9.379c2.102,-0 3.892,0.778 5.371,1.984l3.113,-3.775c-2.257,-1.868 -4.748,-2.957 -8.64,-2.957Z"/>
+  </g>
+</svg></span></a>
+    
+    <a class="icon-link svg-link" href="https://github.com/typelevel/otel4s"><span class="github" title="Source Code"><svg class="svg-icon" width="100%" height="100%" viewBox="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg" xml:space="preserve" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+  <g class="svg-shape">
+    <path d="M49.995,1c-27.609,-0 -49.995,22.386 -49.995,50.002c-0,22.09 14.325,40.83 34.194,47.444c2.501,0.458 3.413,-1.086 3.413,-2.412c0,-1.185 -0.043,-4.331 -0.067,-8.503c-13.908,3.021 -16.843,-6.704 -16.843,-6.704c-2.274,-5.773 -5.552,-7.311 -5.552,-7.311c-4.54,-3.103 0.344,-3.042 0.344,-3.042c5.018,0.356 7.658,5.154 7.658,5.154c4.46,7.64 11.704,5.433 14.552,4.156c0.454,-3.232 1.744,-5.436 3.174,-6.685c-11.102,-1.262 -22.775,-5.553 -22.775,-24.713c-0,-5.457 1.949,-9.92 5.147,-13.416c-0.516,-1.265 -2.231,-6.348 0.488,-13.233c0,0 4.199,-1.344 13.751,5.126c3.988,-1.108 8.266,-1.663 12.518,-1.682c4.245,0.019 8.523,0.574 12.517,1.682c9.546,-6.47 13.736,-5.126 13.736,-5.126c2.728,6.885 1.013,11.968 0.497,13.233c3.204,3.496 5.141,7.959 5.141,13.416c0,19.209 -11.691,23.436 -22.83,24.673c1.795,1.544 3.394,4.595 3.394,9.26c0,6.682 -0.061,12.076 -0.061,13.715c0,1.338 0.899,2.894 3.438,2.406c19.853,-6.627 34.166,-25.354 34.166,-47.438c-0,-27.616 -22.389,-50.002 -50.005,-50.002"/>
+  </g>
+</svg></span></a>
+    
+    <a class="icon-link glyph-link" href="https://discord.gg/XF3CXcMzqD"><i class="icofont-laika chat" title="Chat">&#xeed5;</i></a>
+    
+    <a class="icon-link svg-link" href="https://fosstodon.org/@typelevel"><span class="mastodon" title="Mastodon"><svg class="svg-icon" width="100%" height="100%" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg">
+  <g class="svg-shape">
+    <path d="M11.19 12.195c2.016-.24 3.77-1.475 3.99-2.603.348-1.778.32-4.339.32-4.339 0-3.47-2.286-4.488-2.286-4.488C12.062.238 10.083.017 8.027 0h-.05C5.92.017 3.942.238 2.79.765c0 0-2.285 1.017-2.285 4.488l-.002.662c-.004.64-.007 1.35.011 2.091.083 3.394.626 6.74 3.78 7.57 1.454.383 2.703.463 3.709.408 1.823-.1 2.847-.647 2.847-.647l-.06-1.317s-1.303.41-2.767.36c-1.45-.05-2.98-.156-3.215-1.928a3.614 3.614 0 0 1-.033-.496s1.424.346 3.228.428c1.103.05 2.137-.064 3.188-.189zm1.613-2.47H11.13v-4.08c0-.859-.364-1.295-1.091-1.295-.804 0-1.207.517-1.207 1.541v2.233H7.168V5.89c0-1.024-.403-1.541-1.207-1.541-.727 0-1.091.436-1.091 1.296v4.079H3.197V5.522c0-.859.22-1.541.66-2.046.456-.505 1.052-.764 1.793-.764.856 0 1.504.328 1.933.983L8 4.39l.417-.695c.429-.655 1.077-.983 1.934-.983.74 0 1.336.259 1.791.764.442.505.661 1.187.661 2.046v4.203z"/>
+  </g>
+</svg></span></a>
+    
+  </div>
+
+  <ul class="nav-list">
+    <li class="level1 nav-leaf"><a href="../">otel4s</a></li>
+    <li class="level1 nav-leaf"><a href="../modules-structure.html">Modules structure</a></li>
+    <li class="level1 nav-leaf"><a href="../tracing-context-propagation.html">Tracing context propagation</a></li>
+    <li class="level1 nav-leaf"><a href="../ecosystem.html">Ecosystem</a></li>
+    <li class="level1 nav-header">Instrumentation</li>
+    <li class="level2 nav-leaf"><a href="metrics.html">Metrics</a></li>
+    <li class="level2 nav-leaf"><a href="metrics-cats-effect-io-runtime.html">Metrics | Cats Effect IO runtime</a></li>
+    <li class="level2 nav-leaf"><a href="tracing.html">Tracing</a></li>
+    <li class="level2 nav-leaf"><a href="tracing-cross-service-propagation.html">Tracing | Cross-service propagation</a></li>
+    <li class="level2 active nav-leaf"><a href="#">Logs</a></li>
+    <li class="level2 nav-leaf"><a href="baggage.html">Baggage</a></li>
+    <li class="level1 nav-header">Customization</li>
+    <li class="level2 nav-leaf"><a href="../customization/histogram-custom-buckets/">Histogram custom buckets</a></li>
+    <li class="level1 nav-header">OtelJava</li>
+    <li class="level2 nav-leaf"><a href="../oteljava/overview.html">Overview</a></li>
+    <li class="level2 nav-leaf"><a href="../oteljava/metrics-jvm-runtime.html">Metrics | JVM Runtime</a></li>
+    <li class="level2 nav-leaf"><a href="../oteljava/tracing-context-propagation.html">Tracing | Context propagation</a></li>
+    <li class="level2 nav-leaf"><a href="../oteljava/tracing-java-interop.html">Tracing | Interop with Java-instrumented libraries</a></li>
+    <li class="level2 nav-leaf"><a href="../oteljava/agent.html">Zero-code | Java Agent</a></li>
+    <li class="level2 nav-leaf"><a href="../oteljava/testkit.html">Testkit</a></li>
+    <li class="level1 nav-header">SDK</li>
+    <li class="level2 nav-leaf"><a href="../sdk/overview.html">Overview</a></li>
+    <li class="level2 nav-leaf"><a href="../sdk/configuration.html">Configuration</a></li>
+    <li class="level2 nav-leaf"><a href="../sdk/prometheus-exporter.html">Prometheus Exporter</a></li>
+    <li class="level2 nav-leaf"><a href="../sdk/testkit.html">Testkit</a></li>
+    <li class="level2 nav-leaf"><a href="../sdk/aws-resource-detectors.html">AWS | Resource detectors</a></li>
+    <li class="level2 nav-leaf"><a href="../sdk/aws-xray.html">AWS | X-Ray ID Generator</a></li>
+    <li class="level2 nav-leaf"><a href="../sdk/aws-xray-propagator.html">AWS | X-Ray propagator</a></li>
+    <li class="level1 nav-header">Examples</li>
+    <li class="level2 nav-leaf"><a href="../examples/jaeger-docker/">Jaeger - collecting traces</a></li>
+    <li class="level2 nav-leaf"><a href="../examples/honeycomb/">Honeycomb - metrics and traces</a></li>
+    <li class="level2 nav-leaf"><a href="../examples/grafana/">Grafana - All-in-one</a></li>
+  </ul>
+
+</nav>
+
+    <div id="container">
+
+      
+<nav id="page-nav">
+  <p class="header"><a href="#">Logs</a></p>
+
+  <ul class="nav-list">
+    <li class="level1 nav-leaf"><a href="#_1-when-you-should-use-this-module">1. When you should use this module</a></li>
+    <li class="level1 nav-leaf"><a href="#_2-core-ideas">2. Core ideas</a></li>
+    <li class="level1 nav-node"><a href="#_3-tips-for-library-authors">3. Tips for library authors</a></li>
+    <li class="level2 nav-leaf"><a href="#_3-1-timestamps">3.1. Timestamps</a></li>
+    <li class="level2 nav-leaf"><a href="#_3-2-attributes">3.2. Attributes</a></li>
+    <li class="level2 nav-leaf"><a href="#_3-3-context-propagation">3.3. Context propagation</a></li>
+    <li class="level2 nav-leaf"><a href="#_3-4-backpressure-and-performance">3.4. Backpressure and performance</a></li>
+    <li class="level1 nav-leaf"><a href="#_4-integration-example-with-scribe">4. Integration example with <code>scribe</code></a></li>
+    <li class="level1 nav-node"><a href="#_5-getting-a-loggerprovider">5. Getting a <code>LoggerProvider</code></a></li>
+    <li class="level2 nav-leaf"><a href="#_5-1-using-otel4s-oteljava">5.1. Using <code>otel4s-oteljava</code></a></li>
+    <li class="level2 nav-leaf"><a href="#_5-2-using-otel4s-sdk">5.2. Using <code>otel4s-sdk</code></a></li>
+  </ul>
+
+  <p class="footer"></p>
+</nav>
+
+
+      <main class="content">
+
+        <h1 id="logs" class="title">Logs</h1>
+        <div class="callout warning">
+          <i class="icofont-laika warning">&#xf026;</i>
+          <p>The logging module is meant for <strong>library authors</strong> who want to <strong>bridge logs</strong> from an existing logging API into OpenTelemetry, 
+          not for application developers to replace their logging library.</p>
+          <p>It is <strong>not a replacement</strong> for a full logging API.</p>
+        </div>
+        <p>The API mirrors the <a href="https://opentelemetry.io/docs/specs/otel/logs/api/">OpenTelemetry Logs spec</a> and focuses on structured, 
+        context-aware log records.</p>
+        
+        <h2 id="_1-when-you-should-use-this-module" class="section"><a class="anchor-link left" href="#_1-when-you-should-use-this-module"><i class="icofont-laika link">&#xef71;</i></a>1. When you should use this module</h2>
+        <p>Use it when your library already relies on a logging facade or implementation, and you want those log events to 
+        <strong>flow into the same OpenTelemetry pipeline as traces and metrics</strong>. 
+        The module does not format console output, rotate files, manage log levels of a specific logger, or manage appenders. 
+        It only allows turning log events into OpenTelemetry <code>LogRecord</code>s and exporting them through OTLP.</p>
+        <p>Library authors should provide an integration through a separate module, for example <code>logs4cats-otel4s</code>.
+        End users, such as application developers, should keep their preferred logger and level management, for example <code>logback</code> or <code>slf4j</code>.</p>
+        
+        <h2 id="_2-core-ideas" class="section"><a class="anchor-link left" href="#_2-core-ideas"><i class="icofont-laika link">&#xef71;</i></a>2. Core ideas</h2>
+        <p>You should bridge logs from your logging framework into OpenTelemetry as close to the source as possible. 
+        That means you implement a small adapter that, for each log event, does the following: build a <code>LogRecordBuilder</code>, 
+        copy the message and attributes, attach the current context so trace and span ids propagate, set severity and observed time, then emit.</p>
+        <p>There are three main interfaces:</p>
+        <ul>
+          <li><code>LoggerProvider[F, Ctx]</code> - factory for <code>Logger</code>. Usually created during startup by the backend, either <code>otel4s-oteljava</code> or <code>otel4s-sdk</code>.</li>
+          <li><code>Logger[F, Ctx]</code> - use <code>logRecordBuilder</code> to create a new empty log record.</li>
+          <li><code>LogRecordBuilder[F, Ctx]</code> - set timestamps, severity, attributes, body, and context, then call <code>emit</code>.</li>
+        </ul>
+        <p>The <code>Ctx</code> parameter refers to the backend-specific context type. In most cases, you don&#39;t need to use it directly.</p>
+        
+        <h2 id="_3-tips-for-library-authors" class="section"><a class="anchor-link left" href="#_3-tips-for-library-authors"><i class="icofont-laika link">&#xef71;</i></a>3. Tips for library authors</h2>
+        <p>Use <code>otel4s-core-logs</code> module, you don&#39;t need to use a specific otel4s backend: <code>otel4s-oteljava</code> or <code>otel4s-sdk</code>. 
+        That way, users can choose their preferred otel4s backend.</p>
+        <p>Keep in mind that the logs module <strong>doesn&#39;t</strong> manage log files, appenders, or log levels. 
+        It&#39;s the responsibility of a logging library to decide whether the given logger is enabled.<br></p>
+        <p>However, you can use the <code>logger.meta.isEnabled</code> to check whether the logging pipeline is active.
+        If the pipeline is active, <code>isEnabled</code> will always return true regardless of the specific logger.
+        If the implementation is no-op, <code>isEnabled</code> will always return false.</p>
+        
+        <h3 id="_3-1-timestamps" class="section"><a class="anchor-link left" href="#_3-1-timestamps"><i class="icofont-laika link">&#xef71;</i></a>3.1. Timestamps</h3>
+        <p>Use <code>withObservedTimestamp</code> for the time your adapter observed the event. 
+        If your source event carries the original creation time, set <code>withTimestamp</code> to that origin time too. </p>
+        
+        <h3 id="_3-2-attributes" class="section"><a class="anchor-link left" href="#_3-2-attributes"><i class="icofont-laika link">&#xef71;</i></a>3.2. Attributes</h3>
+        <p>Use semantic conventions when applicable, for example:</p>
+        <ul>
+          <li><code>code.filepath</code>, <code>code.lineno</code>, <code>code.function</code> when provided by your logging framework</li>
+          <li><code>exception.type</code>, <code>exception.message</code>, <code>exception.stacktrace</code> for failures</li>
+        </ul>
+        <p>Prefer stable names and values that are easy to aggregate.</p>
+        
+        <h3 id="_3-3-context-propagation" class="section"><a class="anchor-link left" href="#_3-3-context-propagation"><i class="icofont-laika link">&#xef71;</i></a>3.3. Context propagation</h3>
+        <p>Logs become far more valuable when they carry trace and span ids. 
+        By default, otel4s uses the current context to propagate trace and span ids, 
+        check out the <a href="../tracing-context-propagation.html">context propagation logic</a> for more details.</p>
+        <p>However, you can also use the <code>withContext</code> to inject a specific context into the log record.</p>
+        
+        <h3 id="_3-4-backpressure-and-performance" class="section"><a class="anchor-link left" href="#_3-4-backpressure-and-performance"><i class="icofont-laika link">&#xef71;</i></a>3.4. Backpressure and performance</h3>
+        <p>The <code>emit</code> call sends the record into the processing pipeline. 
+        By default, the backend configures a batch processor, so the effect is usually non-blocking. </p>
+        <p>Avoid heavy string concatenation and unnecessary exception stack traces on the hot path. 
+        Prefer structured attributes over preformatted strings. 
+        If your logging facade supports lazy messages, keep that behavior and only build a log record when severity passes the library-level filter.</p>
+        
+        <h2 id="_4-integration-example-with-scribe" class="section"><a class="anchor-link left" href="#_4-integration-example-with-scribe"><i class="icofont-laika link">&#xef71;</i></a>4. Integration example with <code>scribe</code></h2>
+        <p><a href="https://github.com/outr/scribe">Scribe</a> is a fast, flexible, and asynchronous Scala logging library that provides rich features like log levels, 
+        structured logging, and customizable handlers. It is also available for all platforms: JVM, Scala.js, and Scala Native.</p>
+        <p>Here is an example of how to forward <code>scribe</code> log events into OpenTelemetry using <code>otel4s-core-logs</code>:</p>
+        <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="type-name">Monad</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">mtl</span><span>.</span><span class="type-name">Local</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">syntax</span><span>.</span><span class="identifier">all</span><span>.</span><span class="identifier">_</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.{</span><span class="type-name">AnyValue</span><span>, </span><span class="type-name">Attribute</span><span>, </span><span class="type-name">Attributes</span><span>}
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">logs</span><span>.{</span><span class="type-name">LogRecordBuilder</span><span>, </span><span class="type-name">LoggerProvider</span><span>, </span><span class="type-name">Severity</span><span>}
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">logs</span><span>.{</span><span class="type-name">Logger</span><span> =&gt; </span><span class="type-name">OtelLogger</span><span>}
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">semconv</span><span>.</span><span class="identifier">attributes</span><span>.{</span><span class="type-name">CodeAttributes</span><span>, </span><span class="type-name">ExceptionAttributes</span><span>}
+
+</span><span class="keyword">import</span><span> </span><span class="identifier">scribe</span><span>.</span><span class="identifier">_</span><span>
+
+</span><span class="keyword">import</span><span> </span><span class="identifier">java</span><span>.</span><span class="identifier">io</span><span>.{</span><span class="type-name">PrintWriter</span><span>, </span><span class="type-name">StringWriter</span><span>}
+
+</span><span class="keyword">import</span><span> </span><span class="identifier">scala</span><span>.</span><span class="identifier">concurrent</span><span>.</span><span class="identifier">duration</span><span>.</span><span class="identifier">_</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">scala</span><span>.</span><span class="identifier">util</span><span>.</span><span class="identifier">chaining</span><span>.</span><span class="identifier">_</span><span>
+
+</span><span class="keyword">final</span><span> </span><span class="keyword">class</span><span> </span><span class="type-name">ScriberLoggerSupport</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>]: </span><span class="type-name">Monad</span><span>, </span><span class="type-name">Ctx</span><span>](
+  </span><span class="identifier">provider</span><span>: </span><span class="type-name">LoggerProvider</span><span>[</span><span class="type-name">F</span><span>, </span><span class="type-name">Ctx</span><span>],
+  </span><span class="identifier">local</span><span>: </span><span class="type-name">Local</span><span>[</span><span class="type-name">F</span><span>, </span><span class="type-name">Ctx</span><span>]
+) </span><span class="keyword">extends</span><span> </span><span class="type-name">LoggerSupport</span><span>[</span><span class="type-name">F</span><span>[</span><span class="type-name">Unit</span><span>]] {
+  
+  </span><span class="keyword">def</span><span> </span><span class="declaration-name">log</span><span>(</span><span class="identifier">record</span><span>: =&gt; </span><span class="type-name">LogRecord</span><span>): </span><span class="type-name">F</span><span>[</span><span class="type-name">Unit</span><span>] =
+    </span><span class="keyword">for</span><span> {
+      </span><span class="identifier">r</span><span> &lt;- </span><span class="type-name">Monad</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">pure</span><span>(</span><span class="identifier">record</span><span>)
+      </span><span class="comment">// use the library version here
+</span><span>      </span><span class="identifier">logger</span><span> &lt;- </span><span class="identifier">provider</span><span>.</span><span class="identifier">logger</span><span>(</span><span class="identifier">r</span><span>.</span><span class="identifier">className</span><span>).</span><span class="identifier">withVersion</span><span>(</span><span class="string-literal">&quot;0.0.1&quot;</span><span>).</span><span class="identifier">get</span><span>
+
+      </span><span class="comment">// retrieve the current context
+</span><span>      </span><span class="identifier">ctx</span><span> &lt;- </span><span class="identifier">local</span><span>.</span><span class="identifier">ask</span><span>
+      
+      </span><span class="comment">// Check if logging instrumentation is enabled for the current context.
+</span><span>      </span><span class="comment">// NOTE: this does not check whether an individual logger is enabled.
+</span><span>      </span><span class="comment">// If the OpenTelemetry logging pipeline (backed by OTLP) is active, 
+</span><span>      </span><span class="comment">// `isEnabled` will always return true regardless of the specific logger 
+</span><span>      </span><span class="identifier">isEnabled</span><span> &lt;- </span><span class="identifier">logger</span><span>.</span><span class="identifier">meta</span><span>.</span><span class="identifier">isEnabled</span><span>(</span><span class="identifier">ctx</span><span>, </span><span class="identifier">toSeverity</span><span>(</span><span class="identifier">r</span><span>.</span><span class="identifier">level</span><span>), </span><span class="type-name">None</span><span>)
+      
+      </span><span class="comment">// if enabled, build and emit the log record
+</span><span>      </span><span class="identifier">_</span><span> &lt;- </span><span class="keyword">if</span><span> (</span><span class="identifier">isEnabled</span><span>) </span><span class="identifier">buildLogRecord</span><span>(</span><span class="identifier">logger</span><span>, </span><span class="identifier">r</span><span>).</span><span class="identifier">emit</span><span> </span><span class="keyword">else</span><span> </span><span class="type-name">Monad</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">unit</span><span>
+    } </span><span class="keyword">yield</span><span> ()
+
+  </span><span class="keyword">private</span><span> </span><span class="keyword">def</span><span> </span><span class="declaration-name">buildLogRecord</span><span>(
+      </span><span class="identifier">logger</span><span>: </span><span class="type-name">OtelLogger</span><span>[</span><span class="type-name">F</span><span>, </span><span class="type-name">Ctx</span><span>], 
+      </span><span class="identifier">record</span><span>: </span><span class="type-name">LogRecord</span><span>
+  ): </span><span class="type-name">LogRecordBuilder</span><span>[</span><span class="type-name">F</span><span>, </span><span class="type-name">Ctx</span><span>] =
+    </span><span class="identifier">logger</span><span>.</span><span class="identifier">logRecordBuilder</span><span>
+      </span><span class="comment">// severity
+</span><span>      .</span><span class="identifier">pipe</span><span> { </span><span class="identifier">l</span><span> =&gt;
+        </span><span class="identifier">toSeverity</span><span>(</span><span class="identifier">record</span><span>.</span><span class="identifier">level</span><span>).</span><span class="identifier">fold</span><span>(</span><span class="identifier">l</span><span>)(</span><span class="identifier">l</span><span>.</span><span class="identifier">withSeverity</span><span>)
+      }
+      .</span><span class="identifier">withSeverityText</span><span>(</span><span class="identifier">record</span><span>.</span><span class="identifier">level</span><span>.</span><span class="identifier">name</span><span>)
+      </span><span class="comment">// timestmap
+</span><span>      .</span><span class="identifier">withTimestamp</span><span>(</span><span class="identifier">record</span><span>.</span><span class="identifier">timeStamp</span><span>.</span><span class="identifier">millis</span><span>)
+      </span><span class="comment">// log message
+</span><span>      .</span><span class="identifier">withBody</span><span>(</span><span class="type-name">AnyValue</span><span>.</span><span class="identifier">string</span><span>(</span><span class="identifier">record</span><span>.</span><span class="identifier">logOutput</span><span>.</span><span class="identifier">plainText</span><span>))
+      </span><span class="comment">// thread info
+</span><span>      .</span><span class="identifier">pipe</span><span> { </span><span class="identifier">builder</span><span> =&gt;
+        </span><span class="identifier">builder</span><span>.</span><span class="identifier">addAttributes</span><span>(
+          </span><span class="keyword">if</span><span> (</span><span class="identifier">record</span><span>.</span><span class="identifier">thread</span><span>.</span><span class="identifier">getId</span><span> != -</span><span class="number-literal">1</span><span>) {
+            </span><span class="type-name">Attributes</span><span>(
+              </span><span class="type-name">Attribute</span><span>(</span><span class="string-literal">&quot;thread.id&quot;</span><span>, </span><span class="identifier">record</span><span>.</span><span class="identifier">thread</span><span>.</span><span class="identifier">getId</span><span>),
+              </span><span class="type-name">Attribute</span><span>(</span><span class="string-literal">&quot;thread.name&quot;</span><span>, </span><span class="identifier">record</span><span>.</span><span class="identifier">thread</span><span>.</span><span class="identifier">getName</span><span>),
+            )
+          } </span><span class="keyword">else</span><span> {
+            </span><span class="type-name">Attributes</span><span>(
+              </span><span class="type-name">Attribute</span><span>(</span><span class="string-literal">&quot;thread.name&quot;</span><span>, </span><span class="identifier">record</span><span>.</span><span class="identifier">thread</span><span>.</span><span class="identifier">getName</span><span>),
+            )
+          }
+        )
+      }
+      </span><span class="comment">// code path info
+</span><span>      .</span><span class="identifier">pipe</span><span> { </span><span class="identifier">builder</span><span> =&gt;
+        </span><span class="identifier">builder</span><span>.</span><span class="identifier">addAttributes</span><span>(</span><span class="identifier">codePathAttributes</span><span>(</span><span class="identifier">record</span><span>))
+      }
+      </span><span class="comment">// exception info
+</span><span>      .</span><span class="identifier">pipe</span><span> { </span><span class="identifier">builder</span><span> =&gt;
+        </span><span class="identifier">record</span><span>.</span><span class="identifier">messages</span><span>
+          .</span><span class="identifier">collect</span><span>  {
+            </span><span class="keyword">case</span><span> </span><span class="identifier">scribe</span><span>.</span><span class="identifier">throwable</span><span>.</span><span class="type-name">TraceLoggableMessage</span><span>(</span><span class="identifier">throwable</span><span>) =&gt; </span><span class="identifier">throwable</span><span>
+          }
+          .</span><span class="identifier">foldLeft</span><span>(</span><span class="identifier">builder</span><span>)((</span><span class="identifier">b</span><span>, </span><span class="identifier">t</span><span>) =&gt; </span><span class="identifier">b</span><span>.</span><span class="identifier">addAttributes</span><span>(</span><span class="identifier">exceptionAttributes</span><span>(</span><span class="identifier">t</span><span>)))
+      }
+      </span><span class="comment">// context
+</span><span>      </span><span class="comment">// MDC
+</span><span>      .</span><span class="identifier">pipe</span><span> { </span><span class="identifier">builder</span><span> =&gt;
+        </span><span class="keyword">if</span><span> (</span><span class="identifier">record</span><span>.</span><span class="identifier">data</span><span>.</span><span class="identifier">nonEmpty</span><span>) </span><span class="identifier">builder</span><span>.</span><span class="identifier">addAttributes</span><span>(</span><span class="identifier">dataAttributes</span><span>(</span><span class="identifier">record</span><span>.</span><span class="identifier">data</span><span>)) 
+        </span><span class="keyword">else</span><span> </span><span class="identifier">builder</span><span>
+      }
+
+  </span><span class="keyword">private</span><span> </span><span class="keyword">def</span><span> </span><span class="declaration-name">toSeverity</span><span>(</span><span class="identifier">level</span><span>: </span><span class="type-name">Level</span><span>): </span><span class="type-name">Option</span><span>[</span><span class="type-name">Severity</span><span>] =
+    </span><span class="identifier">level</span><span> </span><span class="keyword">match</span><span> {
+      </span><span class="keyword">case</span><span> </span><span class="type-name">Level</span><span>(</span><span class="string-literal">&quot;TRACE&quot;</span><span>, </span><span class="identifier">_</span><span>) =&gt; </span><span class="type-name">Some</span><span>(</span><span class="type-name">Severity</span><span>.</span><span class="identifier">trace</span><span>)
+      </span><span class="keyword">case</span><span> </span><span class="type-name">Level</span><span>(</span><span class="string-literal">&quot;DEBUG&quot;</span><span>, </span><span class="identifier">_</span><span>) =&gt; </span><span class="type-name">Some</span><span>(</span><span class="type-name">Severity</span><span>.</span><span class="identifier">debug</span><span>)
+      </span><span class="keyword">case</span><span> </span><span class="type-name">Level</span><span>(</span><span class="string-literal">&quot;INFO&quot;</span><span>, </span><span class="identifier">_</span><span>)  =&gt; </span><span class="type-name">Some</span><span>(</span><span class="type-name">Severity</span><span>.</span><span class="identifier">info</span><span>)
+      </span><span class="keyword">case</span><span> </span><span class="type-name">Level</span><span>(</span><span class="string-literal">&quot;WARN&quot;</span><span>, </span><span class="identifier">_</span><span>)  =&gt; </span><span class="type-name">Some</span><span>(</span><span class="type-name">Severity</span><span>.</span><span class="identifier">warn</span><span>)
+      </span><span class="keyword">case</span><span> </span><span class="type-name">Level</span><span>(</span><span class="string-literal">&quot;ERROR&quot;</span><span>, </span><span class="identifier">_</span><span>) =&gt; </span><span class="type-name">Some</span><span>(</span><span class="type-name">Severity</span><span>.</span><span class="identifier">error</span><span>)
+      </span><span class="keyword">case</span><span> </span><span class="type-name">Level</span><span>(</span><span class="string-literal">&quot;FATAL&quot;</span><span>, </span><span class="identifier">_</span><span>) =&gt; </span><span class="type-name">Some</span><span>(</span><span class="type-name">Severity</span><span>.</span><span class="identifier">fatal</span><span>)
+      </span><span class="keyword">case</span><span> </span><span class="identifier">_</span><span>                 =&gt; </span><span class="type-name">None</span><span>
+    }
+
+  </span><span class="keyword">private</span><span> </span><span class="keyword">def</span><span> </span><span class="declaration-name">codePathAttributes</span><span>(</span><span class="identifier">record</span><span>: </span><span class="type-name">LogRecord</span><span>): </span><span class="type-name">Attributes</span><span> = {
+    </span><span class="keyword">val</span><span> </span><span class="identifier">builder</span><span> = </span><span class="type-name">Attributes</span><span>.</span><span class="identifier">newBuilder</span><span>
+
+    </span><span class="identifier">builder</span><span> += </span><span class="type-name">Attribute</span><span>(</span><span class="string-literal">&quot;code.namespace&quot;</span><span>, </span><span class="identifier">record</span><span>.</span><span class="identifier">className</span><span>)
+    </span><span class="identifier">builder</span><span> += </span><span class="type-name">CodeAttributes</span><span>.</span><span class="type-name">CodeFilePath</span><span>(</span><span class="identifier">record</span><span>.</span><span class="identifier">fileName</span><span>)
+    </span><span class="identifier">builder</span><span> ++= </span><span class="identifier">record</span><span>.</span><span class="identifier">line</span><span>.</span><span class="identifier">map</span><span>(</span><span class="identifier">line</span><span> =&gt; </span><span class="type-name">CodeAttributes</span><span>.</span><span class="type-name">CodeLineNumber</span><span>(</span><span class="identifier">line</span><span>.</span><span class="identifier">toLong</span><span>))
+    </span><span class="identifier">builder</span><span> ++= </span><span class="identifier">record</span><span>.</span><span class="identifier">column</span><span>.</span><span class="identifier">map</span><span>(</span><span class="identifier">col</span><span> =&gt; </span><span class="type-name">CodeAttributes</span><span>.</span><span class="type-name">CodeColumnNumber</span><span>(</span><span class="identifier">col</span><span>.</span><span class="identifier">toLong</span><span>))
+    </span><span class="identifier">builder</span><span> ++= </span><span class="identifier">record</span><span>.</span><span class="identifier">methodName</span><span>.</span><span class="identifier">map</span><span>(</span><span class="identifier">name</span><span> =&gt; </span><span class="type-name">CodeAttributes</span><span>.</span><span class="type-name">CodeFunctionName</span><span>(</span><span class="identifier">name</span><span>))
+    
+    </span><span class="identifier">builder</span><span>.</span><span class="identifier">result</span><span>()
+  }
+
+  </span><span class="keyword">private</span><span> </span><span class="keyword">def</span><span> </span><span class="declaration-name">exceptionAttributes</span><span>(</span><span class="identifier">exception</span><span>: </span><span class="type-name">Throwable</span><span>): </span><span class="type-name">Attributes</span><span> = {
+    </span><span class="keyword">val</span><span> </span><span class="identifier">builder</span><span> = </span><span class="type-name">Attributes</span><span>.</span><span class="identifier">newBuilder</span><span>
+
+    </span><span class="identifier">builder</span><span> += </span><span class="type-name">ExceptionAttributes</span><span>.</span><span class="type-name">ExceptionType</span><span>(</span><span class="identifier">exception</span><span>.</span><span class="identifier">getClass</span><span>.</span><span class="identifier">getName</span><span>)
+
+    </span><span class="keyword">val</span><span> </span><span class="identifier">message</span><span> = </span><span class="identifier">exception</span><span>.</span><span class="identifier">getMessage</span><span>
+    </span><span class="keyword">if</span><span> (</span><span class="identifier">message</span><span> != </span><span class="literal-value">null</span><span>) {
+      </span><span class="identifier">builder</span><span> += </span><span class="type-name">ExceptionAttributes</span><span>.</span><span class="type-name">ExceptionMessage</span><span>(</span><span class="identifier">message</span><span>)
+
+    }
+    
+    </span><span class="keyword">if</span><span> (</span><span class="identifier">exception</span><span>.</span><span class="identifier">getStackTrace</span><span>.</span><span class="identifier">nonEmpty</span><span>) {
+      </span><span class="keyword">val</span><span> </span><span class="identifier">stringWriter</span><span> = </span><span class="keyword">new</span><span> </span><span class="type-name">StringWriter</span><span>()
+      </span><span class="keyword">val</span><span> </span><span class="identifier">printWriter</span><span> = </span><span class="keyword">new</span><span> </span><span class="type-name">PrintWriter</span><span>(</span><span class="identifier">stringWriter</span><span>)
+
+      </span><span class="identifier">exception</span><span>.</span><span class="identifier">printStackTrace</span><span>(</span><span class="identifier">printWriter</span><span>)
+      </span><span class="identifier">builder</span><span> += </span><span class="type-name">ExceptionAttributes</span><span>.</span><span class="type-name">ExceptionStacktrace</span><span>(</span><span class="identifier">stringWriter</span><span>.</span><span class="identifier">toString</span><span>)
+    }
+    
+    </span><span class="identifier">builder</span><span>.</span><span class="identifier">result</span><span>()
+  }
+  
+  </span><span class="keyword">private</span><span> </span><span class="keyword">def</span><span> </span><span class="declaration-name">dataAttributes</span><span>(</span><span class="identifier">data</span><span>: </span><span class="type-name">Map</span><span>[</span><span class="type-name">String</span><span>, () =&gt; </span><span class="type-name">Any</span><span>]): </span><span class="type-name">Attributes</span><span> = {
+    </span><span class="keyword">val</span><span> </span><span class="identifier">builder</span><span> = </span><span class="type-name">Attributes</span><span>.</span><span class="identifier">newBuilder</span><span>
+    </span><span class="identifier">data</span><span>.</span><span class="identifier">foreach</span><span> { </span><span class="keyword">case</span><span> (</span><span class="identifier">key</span><span>, </span><span class="identifier">getValue</span><span>) =&gt;
+      </span><span class="identifier">getValue</span><span>() </span><span class="keyword">match</span><span> {
+        </span><span class="keyword">case</span><span> </span><span class="identifier">v</span><span>: </span><span class="type-name">String</span><span>  =&gt; </span><span class="identifier">builder</span><span> += </span><span class="type-name">Attribute</span><span>(</span><span class="identifier">key</span><span>, </span><span class="identifier">v</span><span>)
+        </span><span class="keyword">case</span><span> </span><span class="identifier">v</span><span>: </span><span class="type-name">Boolean</span><span> =&gt; </span><span class="identifier">builder</span><span> += </span><span class="type-name">Attribute</span><span>(</span><span class="identifier">key</span><span>, </span><span class="identifier">v</span><span>)
+        </span><span class="keyword">case</span><span> </span><span class="identifier">v</span><span>: </span><span class="type-name">Byte</span><span>    =&gt; </span><span class="identifier">builder</span><span> += </span><span class="type-name">Attribute</span><span>(</span><span class="identifier">key</span><span>, </span><span class="identifier">v</span><span>.</span><span class="identifier">toLong</span><span>)
+        </span><span class="keyword">case</span><span> </span><span class="identifier">v</span><span>: </span><span class="type-name">Short</span><span>   =&gt; </span><span class="identifier">builder</span><span> += </span><span class="type-name">Attribute</span><span>(</span><span class="identifier">key</span><span>, </span><span class="identifier">v</span><span>.</span><span class="identifier">toLong</span><span>)
+        </span><span class="keyword">case</span><span> </span><span class="identifier">v</span><span>: </span><span class="type-name">Int</span><span>     =&gt; </span><span class="identifier">builder</span><span> += </span><span class="type-name">Attribute</span><span>(</span><span class="identifier">key</span><span>, </span><span class="identifier">v</span><span>.</span><span class="identifier">toLong</span><span>)
+        </span><span class="keyword">case</span><span> </span><span class="identifier">v</span><span>: </span><span class="type-name">Long</span><span>    =&gt; </span><span class="identifier">builder</span><span> += </span><span class="type-name">Attribute</span><span>(</span><span class="identifier">key</span><span>, </span><span class="identifier">v</span><span>)
+        </span><span class="keyword">case</span><span> </span><span class="identifier">v</span><span>: </span><span class="type-name">Double</span><span>  =&gt; </span><span class="identifier">builder</span><span> += </span><span class="type-name">Attribute</span><span>(</span><span class="identifier">key</span><span>, </span><span class="identifier">v</span><span>)
+        </span><span class="keyword">case</span><span> </span><span class="identifier">v</span><span>: </span><span class="type-name">Float</span><span>   =&gt; </span><span class="identifier">builder</span><span> += </span><span class="type-name">Attribute</span><span>(</span><span class="identifier">key</span><span>, </span><span class="identifier">v</span><span>.</span><span class="identifier">toDouble</span><span>)
+        </span><span class="keyword">case</span><span> </span><span class="identifier">_</span><span>          =&gt; 
+          </span><span class="comment">// ignore the rest. 
+</span><span>          </span><span class="comment">// alternatively, you can stringify the value:
+</span><span>          </span><span class="comment">// builder += Attribute(key, v.toString)
+</span><span>      }
+    }
+    </span><span class="identifier">builder</span><span>.</span><span class="identifier">result</span><span>()
+  }
+}</span></code></pre>
+        <hr>
+        <p>Then, you can use it in your application:</p>
+        <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="type-name">Otel4s</span><span>
+
+</span><span class="keyword">def</span><span> </span><span class="declaration-name">program</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>]: </span><span class="type-name">Monad</span><span>](</span><span class="identifier">otel4s</span><span>: </span><span class="type-name">Otel4s</span><span>[</span><span class="type-name">F</span><span>]): </span><span class="type-name">F</span><span>[</span><span class="type-name">Unit</span><span>] = {
+  </span><span class="keyword">val</span><span> </span><span class="identifier">logger</span><span> = </span><span class="keyword">new</span><span> </span><span class="type-name">ScriberLoggerSupport</span><span>(</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">loggerProvider</span><span>, </span><span class="identifier">otel4s</span><span>.</span><span class="identifier">localContext</span><span>)
+
+  </span><span class="identifier">otel4s</span><span>.</span><span class="identifier">tracerProvider</span><span>.</span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;tracer&quot;</span><span>).</span><span class="identifier">flatMap</span><span> { </span><span class="identifier">tracer</span><span> =&gt;
+    </span><span class="identifier">tracer</span><span>.</span><span class="identifier">spanBuilder</span><span>(</span><span class="string-literal">&quot;test-span&quot;</span><span>).</span><span class="identifier">build</span><span>.</span><span class="identifier">surround</span><span> {
+      </span><span class="identifier">logger</span><span>.</span><span class="identifier">error</span><span>(
+        </span><span class="string-literal">&quot;something went wrong&quot;</span><span>, 
+        </span><span class="keyword">new</span><span> </span><span class="type-name">RuntimeException</span><span>(</span><span class="string-literal">&quot;Oops, something went wrong&quot;</span><span>)
+      )
+    }
+  }
+}</span></code></pre>
+        <p>As you can see, the log record is automatically correlated with the current tracing context. </p>
+        <div class="default-image-block">
+          <img src="grafana-logs-example.png" alt="Grafana Logs Example">
+        </div>
+        
+        <h2 id="_5-getting-a-loggerprovider" class="section"><a class="anchor-link left" href="#_5-getting-a-loggerprovider"><i class="icofont-laika link">&#xef71;</i></a>5. Getting a <code>LoggerProvider</code></h2>
+        <p>You can acquire a provider from either backend. 
+        You typically rely on autoconfiguration or a manual SDK builder that includes the OTLP exporter.</p>
+        
+        <h3 id="_5-1-using-otel4s-oteljava" class="section"><a class="anchor-link left" href="#_5-1-using-otel4s-oteljava"><i class="icofont-laika link">&#xef71;</i></a>5.1. Using <code>otel4s-oteljava</code></h3>
+        <p>The <code>otel4s-oteljava</code> uses the <a href="https://github.com/open-telemetry/opentelemetry-java">OpenTelemetry Java SDK</a> under the hood.
+        Check out the <a href="../oteljava/overview.html">overview</a> of the backend for more details. </p>
+        <div class="tab-container" data-tab-group="build-tool">
+          <ul class="tab-group">
+            <li class="tab active" data-choice-name="sbt"><a href="#">sbt</a></li>
+            <li class="tab" data-choice-name="scala-cli"><a href="#">Scala CLI</a></li>
+          </ul>
+          <div class="tab-content active" data-choice-name="sbt">
+            <p>Add settings to the <code>build.sbt</code>:</p>
+            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">libraryDependencies</span><span> ++= </span><span class="type-name">Seq</span><span>(
+  </span><span class="string-literal">&quot;org.typelevel&quot;</span><span> %% </span><span class="string-literal">&quot;otel4s-oteljava&quot;</span><span> % </span><span class="string-literal">&quot;0.14.0&quot;</span><span>, </span><span class="comment">// &lt;1&gt;
+</span><span>  </span><span class="string-literal">&quot;io.opentelemetry&quot;</span><span> % </span><span class="string-literal">&quot;opentelemetry-exporter-otlp&quot;</span><span> % </span><span class="string-literal">&quot;1.55.0&quot;</span><span> % </span><span class="type-name">Runtime</span><span>, </span><span class="comment">// &lt;2&gt;
+</span><span>  </span><span class="string-literal">&quot;io.opentelemetry&quot;</span><span> % </span><span class="string-literal">&quot;opentelemetry-sdk-extension-autoconfigure&quot;</span><span> % </span><span class="string-literal">&quot;1.55.0&quot;</span><span> % </span><span class="type-name">Runtime</span><span> </span><span class="comment">// &lt;3&gt;
+</span><span>)
+</span><span class="identifier">javaOptions</span><span> += </span><span class="string-literal">&quot;-Dotel.java.global-autoconfigure.enabled=true&quot;</span><span> </span><span class="comment">// &lt;4&gt;</span></code></pre>
+          </div>
+          <div class="tab-content" data-choice-name="scala-cli">
+            <p>Add directives to the <code>*.scala</code> file:</p>
+            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="comment">//&gt; using dep &quot;org.typelevel::otel4s-oteljava:0.14.0&quot; // &lt;1&gt;
+//&gt; using dep &quot;io.opentelemetry:opentelemetry-exporter-otlp:1.55.0&quot; // &lt;2&gt;
+//&gt; using dep &quot;io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:1.55.0&quot; // &lt;3&gt;
+//&gt; using javaOpt &quot;-Dotel.java.global-autoconfigure.enabled=true&quot; // &lt;4&gt;</span></code></pre>
+          </div>
+        </div>
+        <ol class="arabic">
+          <li>Add the <code>otel4s-oteljava</code> library</li>
+          <li>Add an OpenTelemetry exporter. Without the exporter, the application will crash</li>
+          <li>Add an OpenTelemetry autoconfigure extension</li>
+          <li>Enable OpenTelemetry SDK <a href="https://opentelemetry.io/docs/languages/java/configuration/">autoconfigure mode</a></li>
+        </ol>
+        <hr>
+        <p>Then use <code>OtelJava.autoConfigured</code> to autoconfigure the SDK:</p>
+        <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.{</span><span class="type-name">IO</span><span>, </span><span class="type-name">IOApp</span><span>}
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="identifier">context</span><span>.</span><span class="type-name">Context</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="type-name">OtelJava</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">metrics</span><span>.</span><span class="type-name">MeterProvider</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">trace</span><span>.</span><span class="type-name">TracerProvider</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">logs</span><span>.</span><span class="type-name">LoggerProvider</span><span>
+
+</span><span class="keyword">object</span><span> </span><span class="type-name">TelemetryApp</span><span> </span><span class="keyword">extends</span><span> </span><span class="type-name">IOApp</span><span>.</span><span class="type-name">Simple</span><span> {
+
+  </span><span class="keyword">def</span><span> </span><span class="declaration-name">run</span><span>: </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] =
+    </span><span class="type-name">OtelJava</span><span>
+      .</span><span class="identifier">autoConfigured</span><span>[</span><span class="type-name">IO</span><span>]()
+      .</span><span class="identifier">use</span><span> { </span><span class="identifier">sdk</span><span> =&gt;
+        </span><span class="identifier">program</span><span>(</span><span class="identifier">sdk</span><span>.</span><span class="identifier">meterProvider</span><span>, </span><span class="identifier">sdk</span><span>.</span><span class="identifier">tracerProvider</span><span>, </span><span class="identifier">sdk</span><span>.</span><span class="identifier">loggerProvider</span><span>)
+      }
+
+  </span><span class="keyword">def</span><span> </span><span class="declaration-name">program</span><span>(
+      </span><span class="identifier">meterProvider</span><span>: </span><span class="type-name">MeterProvider</span><span>[</span><span class="type-name">IO</span><span>], 
+      </span><span class="identifier">tracerProvider</span><span>: </span><span class="type-name">TracerProvider</span><span>[</span><span class="type-name">IO</span><span>],
+      </span><span class="identifier">loggerProvider</span><span>: </span><span class="type-name">LoggerProvider</span><span>[</span><span class="type-name">IO</span><span>, </span><span class="type-name">Context</span><span>],
+  ): </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] =
+    ???
+}</span></code></pre>
+        <p>The <code>.autoConfigured(...)</code> relies on the environment variables and system properties to configure the SDK.
+        For example, use <code>export OTEL_SERVICE_NAME=auth-service</code> to configure the name of the service.
+        See the full set of the <a href="https://opentelemetry.io/docs/languages/java/configuration/">supported configuration options</a>.</p>
+        
+        <h3 id="_5-2-using-otel4s-sdk" class="section"><a class="anchor-link left" href="#_5-2-using-otel4s-sdk"><i class="icofont-laika link">&#xef71;</i></a>5.2. Using <code>otel4s-sdk</code></h3>
+        <p>The <code>otel4s-sdk</code> is an alternative implementation written in Scala and available for all platforms: JVM, Scala Native, and Scala.js.
+        Check out the <a href="../sdk/overview.html">overview</a> of the backend for more details.</p>
+        <div class="tab-container" data-tab-group="build-tool">
+          <ul class="tab-group">
+            <li class="tab active" data-choice-name="sbt"><a href="#">sbt</a></li>
+            <li class="tab" data-choice-name="scala-cli"><a href="#">Scala CLI</a></li>
+          </ul>
+          <div class="tab-content active" data-choice-name="sbt">
+            <p>Add settings to the <code>build.sbt</code>:</p>
+            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">libraryDependencies</span><span> ++= </span><span class="type-name">Seq</span><span>(
+  </span><span class="string-literal">&quot;org.typelevel&quot;</span><span> %%% </span><span class="string-literal">&quot;otel4s-sdk&quot;</span><span> % </span><span class="string-literal">&quot;0.14.0&quot;</span><span>, </span><span class="comment">// &lt;1&gt;
+</span><span>  </span><span class="string-literal">&quot;org.typelevel&quot;</span><span> %%% </span><span class="string-literal">&quot;otel4s-sdk-exporter&quot;</span><span> % </span><span class="string-literal">&quot;0.14.0&quot;</span><span> </span><span class="comment">// &lt;2&gt;
+</span><span>)</span></code></pre>
+          </div>
+          <div class="tab-content" data-choice-name="scala-cli">
+            <p>Add directives to the <code>*.scala</code> file:</p>
+            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="comment">//&gt; using dep &quot;org.typelevel::otel4s-sdk::0.14.0&quot; // &lt;1&gt;
+//&gt; using dep &quot;org.typelevel::otel4s-sdk-exporter::0.14.0&quot; // &lt;2&gt;</span></code></pre>
+          </div>
+        </div>
+        <ol class="arabic">
+          <li>Add the <code>otel4s-sdk</code> library</li>
+          <li>Add the <code>otel4s-sdk-exporter</code> library. Without the exporter, the application will crash</li>
+        </ol>
+        <hr>
+        <p>Then use <code>OpenTelemetrySdk.autoConfigured</code> to autoconfigure the SDK:</p>
+        <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.{</span><span class="type-name">IO</span><span>, </span><span class="type-name">IOApp</span><span>}
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">sdk</span><span>.</span><span class="type-name">OpenTelemetrySdk</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">sdk</span><span>.</span><span class="identifier">context</span><span>.</span><span class="type-name">Context</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">sdk</span><span>.</span><span class="identifier">exporter</span><span>.</span><span class="identifier">otlp</span><span>.</span><span class="identifier">autoconfigure</span><span>.</span><span class="type-name">OtlpExportersAutoConfigure</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">metrics</span><span>.</span><span class="type-name">MeterProvider</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">trace</span><span>.</span><span class="type-name">TracerProvider</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">logs</span><span>.</span><span class="type-name">LoggerProvider</span><span>
+
+</span><span class="keyword">object</span><span> </span><span class="type-name">TelemetryApp</span><span> </span><span class="keyword">extends</span><span> </span><span class="type-name">IOApp</span><span>.</span><span class="type-name">Simple</span><span> {
+
+  </span><span class="keyword">def</span><span> </span><span class="declaration-name">run</span><span>: </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] =
+    </span><span class="type-name">OpenTelemetrySdk</span><span>
+      .</span><span class="identifier">autoConfigured</span><span>[</span><span class="type-name">IO</span><span>]( </span><span class="comment">// register OTLP exporters configurer
+</span><span>        </span><span class="identifier">_</span><span>.</span><span class="identifier">addExportersConfigurer</span><span>(</span><span class="type-name">OtlpExportersAutoConfigure</span><span>[</span><span class="type-name">IO</span><span>]) 
+      )
+      .</span><span class="identifier">use</span><span> { </span><span class="identifier">autoConfigured</span><span> =&gt;
+        </span><span class="keyword">val</span><span> </span><span class="identifier">sdk</span><span> = </span><span class="identifier">autoConfigured</span><span>.</span><span class="identifier">sdk</span><span>
+        </span><span class="identifier">program</span><span>(</span><span class="identifier">sdk</span><span>.</span><span class="identifier">meterProvider</span><span>, </span><span class="identifier">sdk</span><span>.</span><span class="identifier">tracerProvider</span><span>, </span><span class="identifier">sdk</span><span>.</span><span class="identifier">loggerProvider</span><span>)
+      }
+
+  </span><span class="keyword">def</span><span> </span><span class="declaration-name">program</span><span>(
+      </span><span class="identifier">meterProvider</span><span>: </span><span class="type-name">MeterProvider</span><span>[</span><span class="type-name">IO</span><span>], 
+      </span><span class="identifier">tracerProvider</span><span>: </span><span class="type-name">TracerProvider</span><span>[</span><span class="type-name">IO</span><span>],
+      </span><span class="identifier">loggerProvider</span><span>: </span><span class="type-name">LoggerProvider</span><span>[</span><span class="type-name">IO</span><span>, </span><span class="type-name">Context</span><span>],
+  ): </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] =
+    ???
+}</span></code></pre>
+        <p>The <code>.autoConfigured(...)</code> relies on the environment variables and system properties to configure the SDK.
+        For example, use <code>export OTEL_SERVICE_NAME=auth-service</code> to configure the name of the service.
+        See the full set of the <a href="../sdk/configuration.html">supported configuration options</a>.</p>
+
+        
+<hr class="footer-rule"/>
+<footer>
+  otel4s is a <a href="https://typelevel.org/">Typelevel</a> project distributed under the <a href="https://www.apache.org/licenses/LICENSE-2.0.txt">Apache-2.0</a> license.
+</footer>
+
+
+      </main>
+
+    </div>
+
+  </body>
+
+</html>

@@ -115,6 +115,7 @@ val CirceVersion = "0.14.8"
 val ScalaPBCirceVersion = "0.15.1"
 val CaseInsensitiveVersion = "1.4.2"
 val ScalaJavaTimeVersion = "2.6.0"
+val ScribeVersion = "3.17.0"
 
 lazy val scalaReflectDependency = Def.settings(
   libraryDependencies ++= {
@@ -1057,7 +1058,8 @@ lazy val docs = project
       "io.opentelemetry" % "opentelemetry-sdk-extension-autoconfigure" % OpenTelemetryVersion,
       "io.opentelemetry.instrumentation" % "opentelemetry-instrumentation-annotations" % OpenTelemetryInstrumentationVersion,
       "io.opentelemetry.instrumentation" % "opentelemetry-runtime-telemetry-java8" % OpenTelemetryInstrumentationAlphaVersion,
-      "io.opentelemetry.instrumentation" % "opentelemetry-runtime-telemetry-java17" % OpenTelemetryInstrumentationAlphaVersion
+      "io.opentelemetry.instrumentation" % "opentelemetry-runtime-telemetry-java17" % OpenTelemetryInstrumentationAlphaVersion,
+      "com.outr" %% "scribe" % ScribeVersion,
     ),
     libraryDependencies ++= Seq(
       "io.github.irevive" % "otel4s-opentelemetry-javaagent" % Otel4sAgentVersion

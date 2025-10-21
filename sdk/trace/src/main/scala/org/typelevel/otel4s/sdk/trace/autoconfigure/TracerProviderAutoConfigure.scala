@@ -28,6 +28,7 @@ import org.typelevel.otel4s.sdk.autoconfigure.AutoConfigure
 import org.typelevel.otel4s.sdk.autoconfigure.Config
 import org.typelevel.otel4s.sdk.context.Context
 import org.typelevel.otel4s.sdk.context.LocalContext
+import org.typelevel.otel4s.sdk.internal.Diagnostic
 import org.typelevel.otel4s.sdk.trace.SdkTracerProvider
 import org.typelevel.otel4s.sdk.trace.autoconfigure.TracerProviderAutoConfigure.Customizer
 import org.typelevel.otel4s.sdk.trace.exporter.SpanExporter
@@ -37,7 +38,7 @@ import org.typelevel.otel4s.sdk.trace.samplers.Sampler
 import org.typelevel.otel4s.trace.TracerProvider
 
 private final class TracerProviderAutoConfigure[
-    F[_]: Temporal: Parallel: Random: Console: LocalContext
+    F[_]: Temporal: Parallel: Random: Console: Diagnostic: LocalContext
 ](
     resource: TelemetryResource,
     contextPropagators: ContextPropagators[Context],
@@ -132,7 +133,7 @@ private[sdk] object TracerProviderAutoConfigure {
     * @param exporterConfigurers
     *   the extra exporter configurers
     */
-  def apply[F[_]: Temporal: Parallel: Random: Console: LocalContext](
+  def apply[F[_]: Temporal: Parallel: Random: Console: Diagnostic: LocalContext](
       resource: TelemetryResource,
       contextPropagators: ContextPropagators[Context],
       tracerProviderBuilderCustomizer: Customizer[SdkTracerProvider.Builder[F]],

@@ -18,7 +18,6 @@ package org.typelevel.otel4s.sdk.exporter.otlp.logs.autoconfigure
 
 import cats.effect.Async
 import cats.effect.Resource
-import cats.effect.std.Console
 import fs2.compression.Compression
 import fs2.io.net.Network
 import org.http4s.Headers
@@ -28,6 +27,7 @@ import org.typelevel.otel4s.sdk.autoconfigure.Config
 import org.typelevel.otel4s.sdk.exporter.otlp.autoconfigure.OtlpClientAutoConfigure
 import org.typelevel.otel4s.sdk.exporter.otlp.logs.LogsProtoEncoder
 import org.typelevel.otel4s.sdk.exporter.otlp.logs.OtlpLogRecordExporter
+import org.typelevel.otel4s.sdk.internal.Diagnostic
 import org.typelevel.otel4s.sdk.logs.data.LogRecordData
 import org.typelevel.otel4s.sdk.logs.exporter.LogRecordExporter
 
@@ -39,7 +39,7 @@ import org.typelevel.otel4s.sdk.logs.exporter.LogRecordExporter
   * @see
   *   [[https://opentelemetry.io/docs/languages/sdk-configuration/otlp-exporter/#otel_exporter_otlp_protocol]]
   */
-private final class OtlpLogRecordExporterAutoConfigure[F[_]: Async: Network: Compression: Console](
+private final class OtlpLogRecordExporterAutoConfigure[F[_]: Async: Network: Compression: Diagnostic](
     customClient: Option[Client[F]]
 ) extends AutoConfigure.WithHint[F, LogRecordExporter[F]](
       "OtlpLogRecordExporter",
@@ -86,7 +86,7 @@ object OtlpLogRecordExporterAutoConfigure {
     * @see
     *   `OtlpHttpClientAutoConfigure` for the configuration details of the OTLP HTTP client
     */
-  def apply[F[_]: Async: Network: Compression: Console]: AutoConfigure.Named[F, LogRecordExporter[F]] =
+  def apply[F[_]: Async: Network: Compression: Diagnostic]: AutoConfigure.Named[F, LogRecordExporter[F]] =
     new OtlpLogRecordExporterAutoConfigure[F](None)
 
   /** Autoconfigures OTLP [[org.typelevel.otel4s.sdk.logs.exporter.LogRecordExporter LogRecordExporter]] using the given
@@ -126,7 +126,7 @@ object OtlpLogRecordExporterAutoConfigure {
     * @param client
     *   the custom http4s client to use
     */
-  def customClient[F[_]: Async: Network: Compression: Console](
+  def customClient[F[_]: Async: Network: Compression: Diagnostic](
       client: Client[F]
   ): AutoConfigure.Named[F, LogRecordExporter[F]] =
     new OtlpLogRecordExporterAutoConfigure[F](Some(client))

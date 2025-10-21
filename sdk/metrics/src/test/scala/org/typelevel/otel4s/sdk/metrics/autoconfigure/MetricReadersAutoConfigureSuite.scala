@@ -18,19 +18,18 @@ package org.typelevel.otel4s.sdk.metrics.autoconfigure
 
 import cats.Foldable
 import cats.effect.IO
-import cats.effect.std.Console
 import munit.CatsEffectSuite
 import org.typelevel.otel4s.sdk.autoconfigure.Config
+import org.typelevel.otel4s.sdk.internal.Diagnostic
 import org.typelevel.otel4s.sdk.metrics.data.MetricData
 import org.typelevel.otel4s.sdk.metrics.exporter.AggregationSelector
 import org.typelevel.otel4s.sdk.metrics.exporter.AggregationTemporalitySelector
 import org.typelevel.otel4s.sdk.metrics.exporter.CardinalityLimitSelector
 import org.typelevel.otel4s.sdk.metrics.exporter.MetricExporter
-import org.typelevel.otel4s.sdk.test.NoopConsole
 
 class MetricReadersAutoConfigureSuite extends CatsEffectSuite {
 
-  private implicit val noopConsole: Console[IO] = new NoopConsole[IO]
+  private implicit val noopDiagnostic: Diagnostic[IO] = Diagnostic.noop
 
   test("empty exporters - load nothing") {
     val config = Config(Map.empty, Map.empty, Map.empty)

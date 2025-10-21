@@ -18,7 +18,6 @@ package org.typelevel.otel4s.sdk.contrib.aws.resource
 
 import cats.effect.Async
 import cats.effect.Resource
-import cats.effect.std.Console
 import cats.effect.std.Env
 import cats.syntax.applicativeError._
 import cats.syntax.apply._
@@ -41,12 +40,13 @@ import org.typelevel.ci._
 import org.typelevel.otel4s.AttributeKey
 import org.typelevel.otel4s.Attributes
 import org.typelevel.otel4s.sdk.TelemetryResource
+import org.typelevel.otel4s.sdk.internal.Diagnostic
 import org.typelevel.otel4s.sdk.resource.TelemetryResourceDetector
 import org.typelevel.otel4s.semconv.SchemaUrls
 
 import scala.concurrent.duration._
 
-private class AwsEksDetector[F[_]: Async: Files: Console: Network: Env] private (
+private class AwsEksDetector[F[_]: Async: Files: Diagnostic: Network: Env] private (
     customClient: Option[Client[F]]
 ) extends TelemetryResourceDetector.Unsealed[F] {
 
@@ -65,8 +65,8 @@ private class AwsEksDetector[F[_]: Async: Files: Console: Network: Env] private 
           case false => Async[F].pure(Option.empty[TelemetryResource])
         }
         .handleErrorWith { e =>
-          Console[F]
-            .errorln(s"AwsEksDetector: cannot retrieve EKS metadata due to ${e.getMessage}")
+          Diagnostic[F]
+            .error(s"AwsEksDetector: cannot retrieve EKS metadata due to ${e.getMessage}")
             .as(Option.empty[TelemetryResource])
         }
     }
@@ -210,7 +210,7 @@ object AwsEksDetector {
     * @see
     *   [[https://docs.aws.amazon.com/eks/latest/userguide/kubernetes-versions.html]]
     */
-  def apply[F[_]: Async: Files: Console: Network: Env]: TelemetryResourceDetector[F] =
+  def apply[F[_]: Async: Files: Diagnostic: Network: Env]: TelemetryResourceDetector[F] =
     new AwsEksDetector[F](None)
 
   /** The detector detects if running on AWS EKS using the given `client`.
@@ -236,11 +236,11 @@ object AwsEksDetector {
     * @see
     *   [[https://docs.aws.amazon.com/eks/latest/userguide/kubernetes-versions.html]]
     */
-  def apply[F[_]: Async: Files: Console: Network: Env](client: Client[F]): TelemetryResourceDetector[F] =
+  def apply[F[_]: Async: Files: Diagnostic: Network: Env](client: Client[F]): TelemetryResourceDetector[F] =
     new AwsEksDetector[F](Some(client))
 
   // Visible for testing
-  private[resource] def apply[F[_]: Async: Files: Console: Network: Env](
+  private[resource] def apply[F[_]: Async: Files: Diagnostic: Network: Env](
       client: Option[Client[F]]
   ): TelemetryResourceDetector[F] =
     new AwsEksDetector[F](client)

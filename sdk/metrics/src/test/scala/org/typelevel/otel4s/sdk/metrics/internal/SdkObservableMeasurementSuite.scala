@@ -35,7 +35,7 @@ import org.typelevel.otel4s.sdk.metrics.internal.exporter.RegisteredReader
 import org.typelevel.otel4s.sdk.metrics.internal.storage.MetricStorage
 import org.typelevel.otel4s.sdk.metrics.scalacheck.Gens
 import org.typelevel.otel4s.sdk.metrics.test.PointDataUtils
-import org.typelevel.otel4s.sdk.test.InMemoryConsole
+import org.typelevel.otel4s.sdk.test.InMemoryDiagnostic
 
 import scala.concurrent.duration._
 
@@ -46,16 +46,16 @@ class SdkObservableMeasurementSuite extends CatsEffectSuite with ScalaCheckEffec
       Gens.instrumentationScope,
       Gens.asynchronousInstrumentDescriptor
     ) { (scope, descriptor) =>
-      InMemoryConsole.create[IO].flatMap { implicit C: InMemoryConsole[IO] =>
+      InMemoryDiagnostic.create[IO].flatMap { implicit C: InMemoryDiagnostic[IO] =>
         val consoleEntries = {
-          import org.typelevel.otel4s.sdk.test.InMemoryConsole._
+          import org.typelevel.otel4s.sdk.test.InMemoryDiagnostic._
 
           List(
-            Entry(
-              Op.Errorln,
+            Entry.Error(
               "SdkObservableMeasurement: " +
                 s"trying to record a measurement for an instrument [${descriptor.name}] while the active reader is unset. " +
-                "Dropping the measurement."
+                "Dropping the measurement.",
+              None
             )
           )
         }

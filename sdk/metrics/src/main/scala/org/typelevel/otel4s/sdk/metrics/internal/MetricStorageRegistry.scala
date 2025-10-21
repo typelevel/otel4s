@@ -19,14 +19,14 @@ package org.typelevel.otel4s.sdk.metrics.internal
 import cats.effect.Concurrent
 import cats.effect.MonadCancelThrow
 import cats.effect.Ref
-import cats.effect.std.Console
 import cats.syntax.functor._
+import org.typelevel.otel4s.sdk.internal.Diagnostic
 import org.typelevel.otel4s.sdk.metrics.internal.storage.MetricStorage
 
 /** Stores metric storages using metric descriptor as a key.
   */
 private[metrics] final class MetricStorageRegistry[
-    F[_]: MonadCancelThrow: Console
+    F[_]: MonadCancelThrow: Diagnostic
 ](
     registry: Ref[F, Map[MetricDescriptor, MetricStorage[F]]]
 ) {
@@ -61,7 +61,7 @@ private[metrics] final class MetricStorageRegistry[
           map.keySet.filter(_.name == descriptor.name) match {
             case duplicates if duplicates.nonEmpty =>
               def warn: F[Unit] =
-                Console[F].errorln(
+                Diagnostic[F].error(
                   "MetricStorageRegistry: found a duplicate. " +
                     s"The $descriptor has similar descriptors in the storage: ${duplicates.mkString(", ")}."
                 )
@@ -78,7 +78,7 @@ private[metrics] final class MetricStorageRegistry[
 
 private[metrics] object MetricStorageRegistry {
 
-  def create[F[_]: Concurrent: Console]: F[MetricStorageRegistry[F]] =
+  def create[F[_]: Concurrent: Diagnostic]: F[MetricStorageRegistry[F]] =
     for {
       registry <- Ref.of[F, Map[MetricDescriptor, MetricStorage[F]]](Map.empty)
     } yield new MetricStorageRegistry[F](registry)

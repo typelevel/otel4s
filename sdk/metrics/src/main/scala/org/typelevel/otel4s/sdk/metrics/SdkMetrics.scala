@@ -35,6 +35,7 @@ import org.typelevel.otel4s.sdk.autoconfigure.Config
 import org.typelevel.otel4s.sdk.autoconfigure.TelemetryResourceAutoConfigure
 import org.typelevel.otel4s.sdk.context.Context
 import org.typelevel.otel4s.sdk.context.TraceContext
+import org.typelevel.otel4s.sdk.internal.Diagnostic
 import org.typelevel.otel4s.sdk.metrics.autoconfigure.MeterProviderAutoConfigure
 import org.typelevel.otel4s.sdk.metrics.exporter.MetricExporter
 import org.typelevel.otel4s.sdk.resource.TelemetryResourceDetector
@@ -79,7 +80,7 @@ object SdkMetrics {
     *   i.e. to capture the current span context so that logs, traces, and metrics can all work together - use
     *   `OpenTelemetrySdk.autoConfigured`.
     */
-  def autoConfigured[F[_]: Async: Env: SystemProperties: Console](
+  def autoConfigured[F[_]: Async: Env: SystemProperties: Console: Diagnostic](
       customize: AutoConfigured.Builder[F] => AutoConfigured.Builder[F] = (a: AutoConfigured.Builder[F]) => a
   ): Resource[F, SdkMetrics[F]] =
     customize(AutoConfigured.builder[F]).build
@@ -180,7 +181,7 @@ object SdkMetrics {
 
     /** Creates a [[Builder]].
       */
-    def builder[F[_]: Async: Env: SystemProperties: Console]: Builder[F] =
+    def builder[F[_]: Async: Env: SystemProperties: Console: Diagnostic]: Builder[F] =
       BuilderImpl(
         customConfig = None,
         propertiesLoader = Async[F].pure(Map.empty),
@@ -191,7 +192,7 @@ object SdkMetrics {
         exporterConfigurers = Set.empty
       )
 
-    private final case class BuilderImpl[F[_]: Async: Env: SystemProperties: Console](
+    private final case class BuilderImpl[F[_]: Async: Env: SystemProperties: Console: Diagnostic](
         customConfig: Option[Config],
         propertiesLoader: F[Map[String, String]],
         propertiesCustomizers: List[Config => Map[String, String]],

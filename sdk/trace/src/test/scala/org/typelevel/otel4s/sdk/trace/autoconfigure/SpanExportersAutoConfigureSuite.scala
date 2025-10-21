@@ -18,18 +18,17 @@ package org.typelevel.otel4s.sdk.trace.autoconfigure
 
 import cats.Foldable
 import cats.effect.IO
-import cats.effect.std.Console
 import cats.syntax.either._
 import munit.CatsEffectSuite
 import org.typelevel.otel4s.sdk.autoconfigure.AutoConfigure
 import org.typelevel.otel4s.sdk.autoconfigure.Config
-import org.typelevel.otel4s.sdk.test.NoopConsole
+import org.typelevel.otel4s.sdk.internal.Diagnostic
 import org.typelevel.otel4s.sdk.trace.data.SpanData
 import org.typelevel.otel4s.sdk.trace.exporter.SpanExporter
 
 class SpanExportersAutoConfigureSuite extends CatsEffectSuite {
 
-  private implicit val noopConsole: Console[IO] = new NoopConsole[IO]
+  private implicit val noopDiagnostic: Diagnostic[IO] = Diagnostic.noop
 
   // OTLPExporter exists in the separate package, so we use mock here
   private val otlpExporter = customExporter("OTLPExporter")

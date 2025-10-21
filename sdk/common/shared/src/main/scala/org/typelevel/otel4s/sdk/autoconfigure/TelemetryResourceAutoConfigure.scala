@@ -20,12 +20,12 @@ package autoconfigure
 
 import cats.effect.Resource
 import cats.effect.Sync
-import cats.effect.std.Console
 import cats.effect.std.SystemProperties
 import cats.syntax.applicativeError._
 import cats.syntax.either._
 import cats.syntax.functor._
 import cats.syntax.traverse._
+import org.typelevel.otel4s.sdk.internal.Diagnostic
 import org.typelevel.otel4s.sdk.resource._
 import org.typelevel.otel4s.semconv.attributes.ServiceAttributes
 
@@ -51,7 +51,7 @@ import java.nio.charset.StandardCharsets
   * @param extraDetectors
   *   the extra detectors to use
   */
-private final class TelemetryResourceAutoConfigure[F[_]: Sync: SystemProperties: Console](
+private final class TelemetryResourceAutoConfigure[F[_]: Sync: SystemProperties: Diagnostic](
     extraDetectors: Set[TelemetryResourceDetector[F]]
 ) extends AutoConfigure.WithHint[F, TelemetryResource](
       "TelemetryResource",
@@ -145,10 +145,10 @@ private final class TelemetryResourceAutoConfigure[F[_]: Sync: SystemProperties:
           detector.detect
             .map(_.map(removeDisabledAttributes))
             .handleErrorWith { e =>
-              Console[F]
-                .errorln(
-                  s"Detector [${detector.name}] failed to detect the resource. The detector is ignored. " +
-                    s"${e.getMessage}\n${e.getStackTrace.mkString("\n")}\n"
+              Diagnostic[F]
+                .error(
+                  s"Detector [${detector.name}] failed to detect the resource. The detector is ignored. ${e.getMessage}",
+                  e
                 )
                 .as(None)
             }
@@ -249,7 +249,7 @@ private[sdk] object TelemetryResourceAutoConfigure {
     * @param extraDetectors
     *   the extra detectors to use
     */
-  def apply[F[_]: Sync: SystemProperties: Console](
+  def apply[F[_]: Sync: SystemProperties: Diagnostic](
       extraDetectors: Set[TelemetryResourceDetector[F]]
   ): AutoConfigure[F, TelemetryResource] =
     new TelemetryResourceAutoConfigure[F](extraDetectors)

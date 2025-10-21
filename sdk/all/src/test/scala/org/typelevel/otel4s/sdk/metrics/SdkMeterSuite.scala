@@ -19,7 +19,6 @@ package org.typelevel.otel4s.sdk.metrics
 import cats.effect.IO
 import cats.effect.Resource
 import cats.effect.SyncIO
-import cats.effect.std.Console
 import cats.effect.testkit.TestControl
 import cats.mtl.Local
 import org.typelevel.otel4s.context.LocalProvider
@@ -27,6 +26,7 @@ import org.typelevel.otel4s.metrics.BaseMeterSuite
 import org.typelevel.otel4s.metrics.MeterProvider
 import org.typelevel.otel4s.sdk.context.Context
 import org.typelevel.otel4s.sdk.context.TraceContext
+import org.typelevel.otel4s.sdk.internal.Diagnostic
 import org.typelevel.otel4s.sdk.metrics.data.AggregationTemporality
 import org.typelevel.otel4s.sdk.metrics.data.ExemplarData
 import org.typelevel.otel4s.sdk.metrics.data.MetricData
@@ -35,7 +35,6 @@ import org.typelevel.otel4s.sdk.metrics.data.PointData
 import org.typelevel.otel4s.sdk.metrics.exporter.AggregationSelector
 import org.typelevel.otel4s.sdk.metrics.exporter.AggregationTemporalitySelector
 import org.typelevel.otel4s.sdk.metrics.exporter.CardinalityLimitSelector
-import org.typelevel.otel4s.sdk.test.NoopConsole
 import org.typelevel.otel4s.sdk.testkit.metrics.MetricsTestkit
 import scodec.bits.ByteVector
 
@@ -64,7 +63,7 @@ class SdkMeterSuite extends BaseMeterSuite {
     Resource
       .eval(LocalProvider[IO, Context].local)
       .flatMap { implicit localContext =>
-        implicit val noopConsole: Console[IO] = new NoopConsole
+        implicit val noopDiagnostic: Diagnostic[IO] = Diagnostic.noop
 
         MetricsTestkit
           .create[IO](

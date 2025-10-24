@@ -19,11 +19,11 @@ package org.typelevel.otel4s.sdk.baggage
 import cats.effect.IO
 import cats.effect.IOLocal
 import org.typelevel.otel4s.baggage.BaggageManager
-import org.typelevel.otel4s.baggage.BaggageManagerSuite
+import org.typelevel.otel4s.baggage.BaseBaggageManagerSuite
 import org.typelevel.otel4s.sdk.context.Context
 import org.typelevel.otel4s.sdk.context.LocalContext
 
-class SdkBaggageManagerSuite extends BaggageManagerSuite {
+class SdkBaggageManagerSuite extends BaseBaggageManagerSuite {
   override protected def baggageManager: IO[BaggageManager[IO]] =
     IOLocal(Context.root).map { iol =>
       implicit val local: LocalContext[IO] = iol.asLocal

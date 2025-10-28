@@ -20,8 +20,8 @@ package processor
 import cats.MonadThrow
 import cats.syntax.applicativeError._
 import cats.syntax.flatMap._
+import org.typelevel.otel4s.sdk.common.Diagnostic
 import org.typelevel.otel4s.sdk.context.Context
-import org.typelevel.otel4s.sdk.internal.Diagnostic
 import org.typelevel.otel4s.sdk.logs.exporter.LogRecordExporter
 
 /** An implementation of the [[LogRecordProcessor]] that passes [[data.LogRecordData LogRecordData]] directly to the

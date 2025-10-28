@@ -20,9 +20,9 @@ package trace
 import cats.effect.Temporal
 import org.typelevel.otel4s.Attributes
 import org.typelevel.otel4s.context.propagation.ContextPropagators
+import org.typelevel.otel4s.sdk.common.Diagnostic
 import org.typelevel.otel4s.sdk.common.InstrumentationScope
 import org.typelevel.otel4s.sdk.context.Context
-import org.typelevel.otel4s.sdk.internal.Diagnostic
 import org.typelevel.otel4s.trace.TraceScope
 import org.typelevel.otel4s.trace.Tracer
 import org.typelevel.otel4s.trace.TracerBuilder

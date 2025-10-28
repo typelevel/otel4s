@@ -28,7 +28,7 @@ import org.http4s.Response
 import org.http4s.Status
 import org.http4s.headers.Accept
 import org.http4s.server.middleware.GZip
-import org.typelevel.otel4s.sdk.internal.Diagnostic
+import org.typelevel.otel4s.sdk.common.Diagnostic
 import org.typelevel.otel4s.sdk.metrics.exporter.MetricExporter
 
 object PrometheusHttpRoutes {

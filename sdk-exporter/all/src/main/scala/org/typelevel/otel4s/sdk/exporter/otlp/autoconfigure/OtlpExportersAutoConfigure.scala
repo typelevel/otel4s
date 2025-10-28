@@ -21,10 +21,10 @@ import fs2.compression.Compression
 import fs2.io.net.Network
 import org.http4s.client.Client
 import org.typelevel.otel4s.sdk.autoconfigure.ExportersAutoConfigure
+import org.typelevel.otel4s.sdk.common.Diagnostic
 import org.typelevel.otel4s.sdk.exporter.otlp.logs.autoconfigure.OtlpLogRecordExporterAutoConfigure
 import org.typelevel.otel4s.sdk.exporter.otlp.metrics.autoconfigure.OtlpMetricExporterAutoConfigure
 import org.typelevel.otel4s.sdk.exporter.otlp.trace.autoconfigure.OtlpSpanExporterAutoConfigure
-import org.typelevel.otel4s.sdk.internal.Diagnostic
 
 object OtlpExportersAutoConfigure {
 

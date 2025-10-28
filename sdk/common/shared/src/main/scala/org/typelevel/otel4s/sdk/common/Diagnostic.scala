@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.typelevel.otel4s.sdk.internal
+package org.typelevel.otel4s.sdk.common
 
 import cats.Applicative
 import cats.effect.std.Console

@@ -29,7 +29,7 @@ import org.http4s.Headers
 import org.http4s.Uri
 import org.http4s.client.Client
 import org.http4s.syntax.literals._
-import org.typelevel.otel4s.sdk.internal.Diagnostic
+import org.typelevel.otel4s.sdk.common.Diagnostic
 import org.typelevel.otel4s.sdk.metrics.data.MetricData
 import org.typelevel.otel4s.sdk.metrics.exporter.AggregationSelector
 import org.typelevel.otel4s.sdk.metrics.exporter.AggregationTemporalitySelector

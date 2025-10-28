@@ -51,12 +51,12 @@ import org.http4s.h2.H2Keys
 import org.http4s.headers.`User-Agent`
 import org.typelevel.ci._
 import org.typelevel.otel4s.sdk.BuildInfo
+import org.typelevel.otel4s.sdk.common.Diagnostic
 import org.typelevel.otel4s.sdk.exporter.RetryPolicy
 import org.typelevel.otel4s.sdk.exporter.otlp.grpc.GrpcCodecs
 import org.typelevel.otel4s.sdk.exporter.otlp.grpc.GrpcHeaders
 import org.typelevel.otel4s.sdk.exporter.otlp.grpc.GrpcStatusException
 import org.typelevel.otel4s.sdk.exporter.proto.trace_service.ExportTraceServiceResponse
-import org.typelevel.otel4s.sdk.internal.Diagnostic
 import scalapb_circe.Printer
 import scodec.Attempt
 import scodec.DecodeResult

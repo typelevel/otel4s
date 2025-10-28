@@ -22,7 +22,7 @@ import cats.syntax.flatMap._
 import cats.syntax.foldable._
 import org.typelevel.otel4s.sdk.autoconfigure.AutoConfigure
 import org.typelevel.otel4s.sdk.autoconfigure.Config
-import org.typelevel.otel4s.sdk.internal.Diagnostic
+import org.typelevel.otel4s.sdk.common.Diagnostic
 import org.typelevel.otel4s.sdk.logs.exporter.LogRecordExporter
 import org.typelevel.otel4s.sdk.logs.processor.BatchLogRecordProcessor
 import org.typelevel.otel4s.sdk.logs.processor.LogRecordProcessor

@@ -25,7 +25,7 @@ import cats.syntax.applicativeError._
 import cats.syntax.either._
 import cats.syntax.functor._
 import cats.syntax.traverse._
-import org.typelevel.otel4s.sdk.internal.Diagnostic
+import org.typelevel.otel4s.sdk.common.Diagnostic
 import org.typelevel.otel4s.sdk.resource._
 import org.typelevel.otel4s.semconv.attributes.ServiceAttributes
 

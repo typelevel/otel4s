@@ -20,7 +20,7 @@ package exporter
 import cats.data.NonEmptyVector
 import cats.effect.Resource
 import cats.effect.Temporal
-import org.typelevel.otel4s.sdk.internal.Diagnostic
+import org.typelevel.otel4s.sdk.common.Diagnostic
 import org.typelevel.otel4s.sdk.metrics.data.MetricData
 
 import scala.concurrent.duration.FiniteDuration

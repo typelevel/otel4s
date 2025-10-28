@@ -29,7 +29,7 @@ import org.typelevel.otel4s.metrics.ObservableGauge
 import org.typelevel.otel4s.metrics.ObservableMeasurement
 import org.typelevel.otel4s.metrics.ObservableUpDownCounter
 import org.typelevel.otel4s.metrics.UpDownCounter
-import org.typelevel.otel4s.sdk.internal.Diagnostic
+import org.typelevel.otel4s.sdk.common.Diagnostic
 
 private object NoopInstrumentBuilder {
 

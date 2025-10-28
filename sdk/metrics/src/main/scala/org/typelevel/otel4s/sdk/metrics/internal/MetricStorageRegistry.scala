@@ -20,7 +20,7 @@ import cats.effect.Concurrent
 import cats.effect.MonadCancelThrow
 import cats.effect.Ref
 import cats.syntax.functor._
-import org.typelevel.otel4s.sdk.internal.Diagnostic
+import org.typelevel.otel4s.sdk.common.Diagnostic
 import org.typelevel.otel4s.sdk.metrics.internal.storage.MetricStorage
 
 /** Stores metric storages using metric descriptor as a key.

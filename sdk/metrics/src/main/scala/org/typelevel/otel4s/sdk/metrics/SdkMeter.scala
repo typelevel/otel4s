@@ -29,8 +29,8 @@ import org.typelevel.otel4s.metrics.ObservableGauge
 import org.typelevel.otel4s.metrics.ObservableUpDownCounter
 import org.typelevel.otel4s.metrics.UpDownCounter
 import org.typelevel.otel4s.metrics.meta.InstrumentMeta
+import org.typelevel.otel4s.sdk.common.Diagnostic
 import org.typelevel.otel4s.sdk.context.AskContext
-import org.typelevel.otel4s.sdk.internal.Diagnostic
 import org.typelevel.otel4s.sdk.metrics.data.MetricData
 import org.typelevel.otel4s.sdk.metrics.internal.MeterSharedState
 import org.typelevel.otel4s.sdk.metrics.internal.exporter.RegisteredReader

@@ -24,9 +24,9 @@ import cats.mtl.Local
 import org.typelevel.otel4s.context.LocalProvider
 import org.typelevel.otel4s.metrics.BaseMeterSuite
 import org.typelevel.otel4s.metrics.MeterProvider
+import org.typelevel.otel4s.sdk.common.Diagnostic
 import org.typelevel.otel4s.sdk.context.Context
 import org.typelevel.otel4s.sdk.context.TraceContext
-import org.typelevel.otel4s.sdk.internal.Diagnostic
 import org.typelevel.otel4s.sdk.metrics.data.AggregationTemporality
 import org.typelevel.otel4s.sdk.metrics.data.ExemplarData
 import org.typelevel.otel4s.sdk.metrics.data.MetricData

@@ -32,7 +32,7 @@ import org.typelevel.ci.CIString
 import org.typelevel.otel4s.sdk.autoconfigure.AutoConfigure
 import org.typelevel.otel4s.sdk.autoconfigure.Config
 import org.typelevel.otel4s.sdk.autoconfigure.ConfigurationError
-import org.typelevel.otel4s.sdk.internal.Diagnostic
+import org.typelevel.otel4s.sdk.common.Diagnostic
 import scalapb_circe.Printer
 
 import scala.concurrent.duration.FiniteDuration

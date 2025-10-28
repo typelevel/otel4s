@@ -20,8 +20,8 @@ import cats.Monad
 import cats.data.NonEmptyVector
 import cats.syntax.functor._
 import cats.syntax.traverse._
+import org.typelevel.otel4s.sdk.common.Diagnostic
 import org.typelevel.otel4s.sdk.common.InstrumentationScope
-import org.typelevel.otel4s.sdk.internal.Diagnostic
 import org.typelevel.otel4s.sdk.metrics.internal.InstrumentDescriptor
 
 import java.util.regex.Pattern

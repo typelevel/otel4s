@@ -20,7 +20,7 @@ import cats.Monad
 import cats.effect.Concurrent
 import cats.effect.std.Queue
 import cats.syntax.all._
-import org.typelevel.otel4s.sdk.internal.Diagnostic
+import org.typelevel.otel4s.sdk.common.Diagnostic
 
 class InMemoryDiagnostic[F[_]: Monad](queue: Queue[F, InMemoryDiagnostic.Entry]) extends Diagnostic[F] {
   import InMemoryDiagnostic.Entry

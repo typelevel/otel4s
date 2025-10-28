@@ -30,8 +30,8 @@ import org.http4s.Headers
 import org.http4s.Uri
 import org.http4s.client.Client
 import org.http4s.syntax.literals._
+import org.typelevel.otel4s.sdk.common.Diagnostic
 import org.typelevel.otel4s.sdk.exporter.RetryPolicy
-import org.typelevel.otel4s.sdk.internal.Diagnostic
 import org.typelevel.otel4s.sdk.logs.data.LogRecordData
 import org.typelevel.otel4s.sdk.logs.exporter.LogRecordExporter
 

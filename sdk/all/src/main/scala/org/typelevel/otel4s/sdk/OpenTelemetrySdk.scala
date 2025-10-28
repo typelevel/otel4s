@@ -40,6 +40,7 @@ import org.typelevel.otel4s.sdk.autoconfigure.Config
 import org.typelevel.otel4s.sdk.autoconfigure.ExportersAutoConfigure
 import org.typelevel.otel4s.sdk.autoconfigure.TelemetryResourceAutoConfigure
 import org.typelevel.otel4s.sdk.baggage.SdkBaggageManager
+import org.typelevel.otel4s.sdk.common.Diagnostic
 import org.typelevel.otel4s.sdk.context.Context
 import org.typelevel.otel4s.sdk.context.LocalContext
 import org.typelevel.otel4s.sdk.context.LocalContextProvider
@@ -100,7 +101,7 @@ object OpenTelemetrySdk {
     * @param customize
     *   a function for customizing the auto-configured SDK builder
     */
-  def autoConfigured[F[_]: Async: Parallel: Env: SystemProperties: Console: LocalContextProvider](
+  def autoConfigured[F[_]: Async: Parallel: Env: SystemProperties: Console: Diagnostic: LocalContextProvider](
       customize: AutoConfigured.Builder[F] => AutoConfigured.Builder[F] = (a: AutoConfigured.Builder[F]) => a
   ): Resource[F, AutoConfigured[F]] =
     customize(AutoConfigured.builder[F]).build
@@ -322,7 +323,7 @@ object OpenTelemetrySdk {
 
     /** Creates a [[Builder]].
       */
-    def builder[F[_]: Async: Parallel: Env: SystemProperties: Console: LocalContextProvider]: Builder[F] =
+    def builder[F[_]: Async: Parallel: Env: SystemProperties: Console: Diagnostic: LocalContextProvider]: Builder[F] =
       BuilderImpl(
         customConfig = None,
         propertiesLoader = Async[F].pure(Map.empty),
@@ -339,7 +340,9 @@ object OpenTelemetrySdk {
         textMapPropagatorConfigurers = Set.empty
       )
 
-    private final case class BuilderImpl[F[_]: Async: Parallel: Env: SystemProperties: Console: LocalContextProvider](
+    private final case class BuilderImpl[
+        F[_]: Async: Parallel: Env: SystemProperties: Console: Diagnostic: LocalContextProvider
+    ](
         customConfig: Option[Config],
         propertiesLoader: F[Map[String, String]],
         propertiesCustomizers: List[Config => Map[String, String]],
@@ -411,7 +414,7 @@ object OpenTelemetrySdk {
         def loadNoop(config: Config): Resource[F, AutoConfigured[F]] =
           Resource.eval(
             for {
-              _ <- Console[F].println(
+              _ <- Diagnostic[F].info(
                 s"OpenTelemetrySdk: the '${CommonConfigKeys.SdkDisabled}' set to 'true'. Using no-op implementation"
               )
               sdk <- OpenTelemetrySdk.noop[F]

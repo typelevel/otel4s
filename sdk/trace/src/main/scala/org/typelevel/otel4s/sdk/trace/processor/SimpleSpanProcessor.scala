@@ -18,8 +18,8 @@ package org.typelevel.otel4s.sdk.trace
 package processor
 
 import cats.MonadThrow
-import cats.effect.std.Console
 import cats.syntax.applicativeError._
+import org.typelevel.otel4s.sdk.common.Diagnostic
 import org.typelevel.otel4s.sdk.trace.data.SpanData
 import org.typelevel.otel4s.sdk.trace.exporter.SpanExporter
 
@@ -35,7 +35,7 @@ import org.typelevel.otel4s.sdk.trace.exporter.SpanExporter
   * @tparam F
   *   the higher-kinded type of a polymorphic effect
   */
-private final class SimpleSpanProcessor[F[_]: MonadThrow: Console] private (
+private final class SimpleSpanProcessor[F[_]: MonadThrow: Diagnostic] private (
     exporter: SpanExporter[F],
     exportOnlySampled: Boolean
 ) extends SpanProcessor.Unsealed[F] {
@@ -53,9 +53,7 @@ private final class SimpleSpanProcessor[F[_]: MonadThrow: Console] private (
 
   private def doExport(span: SpanData): F[Unit] =
     exporter.exportSpans(List(span)).handleErrorWith { e =>
-      Console[F].errorln(
-        s"SimpleSpanProcessor: the export has failed: ${e.getMessage}\n${e.getStackTrace.mkString("\n")}\n"
-      )
+      Diagnostic[F].error(s"SimpleSpanProcessor: the export has failed: ${e.getMessage}", e)
     }
 
   def forceFlush: F[Unit] =
@@ -69,7 +67,7 @@ object SimpleSpanProcessor {
     * @param exporter
     *   the [[exporter.SpanExporter SpanExporter]] to use
     */
-  def apply[F[_]: MonadThrow: Console](exporter: SpanExporter[F]): SpanProcessor[F] =
+  def apply[F[_]: MonadThrow: Diagnostic](exporter: SpanExporter[F]): SpanProcessor[F] =
     apply(exporter, exportOnlySampled = true)
 
   /** Creates a [[SimpleSpanProcessor]] that passes ended spans to the given `exporter`.
@@ -80,7 +78,7 @@ object SimpleSpanProcessor {
     * @param exportOnlySampled
     *   whether to export only sampled spans
     */
-  def apply[F[_]: MonadThrow: Console](exporter: SpanExporter[F], exportOnlySampled: Boolean): SpanProcessor[F] =
+  def apply[F[_]: MonadThrow: Diagnostic](exporter: SpanExporter[F], exportOnlySampled: Boolean): SpanProcessor[F] =
     new SimpleSpanProcessor[F](exporter, exportOnlySampled)
 
 }

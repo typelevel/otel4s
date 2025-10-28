@@ -18,7 +18,6 @@ package org.typelevel.otel4s.sdk.exporter.prometheus
 
 import cats.data.NonEmptyVector
 import cats.effect._
-import cats.effect.std.Console
 import cats.syntax.flatMap._
 import cats.syntax.functor._
 import cats.syntax.traverse._
@@ -27,6 +26,7 @@ import fs2.compression.Compression
 import fs2.io.net.Network
 import org.http4s.ember.server.EmberServerBuilder
 import org.http4s.server.Router
+import org.typelevel.otel4s.sdk.common.Diagnostic
 import org.typelevel.otel4s.sdk.metrics.data.MetricData
 import org.typelevel.otel4s.sdk.metrics.exporter._
 
@@ -37,7 +37,7 @@ import scala.concurrent.duration.FiniteDuration
   * @see
   *   [[https://opentelemetry.io/docs/specs/otel/metrics/sdk_exporters/prometheus/]]
   */
-private final class PrometheusMetricExporter[F[_]: MonadCancelThrow: Console] private[prometheus] (
+private final class PrometheusMetricExporter[F[_]: MonadCancelThrow: Diagnostic] private[prometheus] (
     metricProducers: Ref[F, Vector[MetricProducer[F]]],
     val defaultAggregationSelector: AggregationSelector
 ) extends MetricExporter.Pull.Unsealed[F] { self =>
@@ -63,7 +63,7 @@ private final class PrometheusMetricExporter[F[_]: MonadCancelThrow: Console] pr
 
       def register(producers: NonEmptyVector[MetricProducer[F]]): F[Unit] = {
         def warn =
-          Console[F].errorln(
+          Diagnostic[F].error(
             "MetricProducers are already registered at this PrometheusMetricReader"
           )
 
@@ -79,8 +79,8 @@ private final class PrometheusMetricExporter[F[_]: MonadCancelThrow: Console] pr
             producers.flatTraverse(_.produce)
 
           case _ =>
-            Console[F]
-              .errorln(
+            Diagnostic[F]
+              .error(
                 "The PrometheusMetricReader is running, but producers aren't configured yet. Nothing to export"
               )
               .as(Vector.empty)
@@ -145,14 +145,14 @@ object PrometheusMetricExporter {
 
   /** Creates a [[Builder]] for [[PrometheusMetricExporter]] with the default configuration.
     */
-  def builder[F[_]: Concurrent: Console]: Builder[F] =
+  def builder[F[_]: Concurrent: Diagnostic]: Builder[F] =
     new BuilderImpl[F](
       defaultAggregationSelector = AggregationSelector.default
     )
 
   /** Creates a [[HttpServerBuilder]] for [[PrometheusMetricExporter]] with the default configuration.
     */
-  def serverBuilder[F[_]: Async: Network: Compression: Console]: HttpServerBuilder[F] =
+  def serverBuilder[F[_]: Async: Network: Compression: Diagnostic]: HttpServerBuilder[F] =
     new HttpServerBuilderImpl[F](
       host = Defaults.Host,
       port = Defaults.Port,
@@ -161,7 +161,7 @@ object PrometheusMetricExporter {
       writerConfig = PrometheusWriter.Config.default
     )
 
-  private final case class BuilderImpl[F[_]: Concurrent: Console](
+  private final case class BuilderImpl[F[_]: Concurrent: Diagnostic](
       defaultAggregationSelector: AggregationSelector
   ) extends Builder[F] {
     def withDefaultAggregationSelector(
@@ -178,7 +178,7 @@ object PrometheusMetricExporter {
 
   }
 
-  private final case class HttpServerBuilderImpl[F[_]: Async: Network: Compression: Console](
+  private final case class HttpServerBuilderImpl[F[_]: Async: Network: Compression: Diagnostic](
       host: Host,
       port: Port,
       shutdownTimeout: FiniteDuration,
@@ -219,9 +219,9 @@ object PrometheusMetricExporter {
           .withHttpApp(Router("metrics" -> routes).orNotFound)
           .build
           .evalTap { _ =>
-            val consoleMsg =
+            val DiagnosticMsg =
               s"PrometheusMetricsExporter: launched Prometheus server at $host:$port/metrics, writer options: $writerConfig"
-            Console[F].println(consoleMsg)
+            Diagnostic[F].info(DiagnosticMsg)
           }
           .as(exporter)
       }

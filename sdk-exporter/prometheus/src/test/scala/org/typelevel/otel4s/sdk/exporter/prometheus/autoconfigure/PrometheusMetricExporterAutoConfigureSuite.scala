@@ -21,7 +21,7 @@ import cats.syntax.either._
 import fs2.io.compression._
 import munit.CatsEffectSuite
 import org.typelevel.otel4s.sdk.autoconfigure.Config
-import org.typelevel.otel4s.sdk.test.InMemoryConsole
+import org.typelevel.otel4s.sdk.test.InMemoryDiagnostic
 
 class PrometheusMetricExporterAutoConfigureSuite extends CatsEffectSuite {
 
@@ -29,11 +29,10 @@ class PrometheusMetricExporterAutoConfigureSuite extends CatsEffectSuite {
     val config = Config.ofProps(Map.empty)
 
     val expectedConsoleEntries = {
-      import org.typelevel.otel4s.sdk.test.InMemoryConsole._
+      import org.typelevel.otel4s.sdk.test.InMemoryDiagnostic._
 
       List(
-        Entry(
-          Op.Println,
+        Entry.Info(
           "PrometheusMetricsExporter: launched Prometheus server at localhost:9464/metrics, " +
             "writer options: PrometheusWriter.Config{" +
             "unitSuffixDisabled=false, " +
@@ -44,7 +43,7 @@ class PrometheusMetricExporterAutoConfigureSuite extends CatsEffectSuite {
       )
     }
 
-    InMemoryConsole.create[IO].flatMap { implicit C: InMemoryConsole[IO] =>
+    InMemoryDiagnostic.create[IO].flatMap { implicit C: InMemoryDiagnostic[IO] =>
       for {
         _ <- PrometheusMetricExporterAutoConfigure[IO]
           .configure(config)
@@ -69,11 +68,10 @@ class PrometheusMetricExporterAutoConfigureSuite extends CatsEffectSuite {
     )
 
     val expectedConsoleEntries = {
-      import org.typelevel.otel4s.sdk.test.InMemoryConsole._
+      import org.typelevel.otel4s.sdk.test.InMemoryDiagnostic._
 
       List(
-        Entry(
-          Op.Println,
+        Entry.Info(
           "PrometheusMetricsExporter: launched Prometheus server at localhost:9464/metrics, " +
             "writer options: PrometheusWriter.Config{" +
             "unitSuffixDisabled=false, " +
@@ -84,7 +82,7 @@ class PrometheusMetricExporterAutoConfigureSuite extends CatsEffectSuite {
       )
     }
 
-    InMemoryConsole.create[IO].flatMap { implicit C: InMemoryConsole[IO] =>
+    InMemoryDiagnostic.create[IO].flatMap { implicit C: InMemoryDiagnostic[IO] =>
       for {
         _ <- PrometheusMetricExporterAutoConfigure[IO]
           .configure(config)
@@ -108,11 +106,10 @@ class PrometheusMetricExporterAutoConfigureSuite extends CatsEffectSuite {
     )
 
     val expectedConsoleEntries = {
-      import org.typelevel.otel4s.sdk.test.InMemoryConsole._
+      import org.typelevel.otel4s.sdk.test.InMemoryDiagnostic._
 
       List(
-        Entry(
-          Op.Println,
+        Entry.Info(
           "PrometheusMetricsExporter: launched Prometheus server at 127.0.0.2:9465/metrics, " +
             "writer options: PrometheusWriter.Config{" +
             "unitSuffixDisabled=true, " +
@@ -123,7 +120,7 @@ class PrometheusMetricExporterAutoConfigureSuite extends CatsEffectSuite {
       )
     }
 
-    InMemoryConsole.create[IO].flatMap { implicit C: InMemoryConsole[IO] =>
+    InMemoryDiagnostic.create[IO].flatMap { implicit C: InMemoryDiagnostic[IO] =>
       for {
         _ <- PrometheusMetricExporterAutoConfigure[IO].configure(config).use_
         _ <- C.entries.assertEquals(expectedConsoleEntries)

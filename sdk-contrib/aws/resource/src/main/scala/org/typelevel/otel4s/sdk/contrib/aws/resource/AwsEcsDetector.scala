@@ -18,7 +18,6 @@ package org.typelevel.otel4s.sdk.contrib.aws.resource
 
 import cats.effect.Async
 import cats.effect.Resource
-import cats.effect.std.Console
 import cats.effect.std.Env
 import cats.syntax.applicativeError._
 import cats.syntax.apply._
@@ -33,12 +32,13 @@ import org.http4s.ember.client.EmberClientBuilder
 import org.typelevel.otel4s.AttributeKey
 import org.typelevel.otel4s.Attributes
 import org.typelevel.otel4s.sdk.TelemetryResource
+import org.typelevel.otel4s.sdk.common.Diagnostic
 import org.typelevel.otel4s.sdk.resource.TelemetryResourceDetector
 import org.typelevel.otel4s.semconv.SchemaUrls
 
 import scala.concurrent.duration._
 
-private class AwsEcsDetector[F[_]: Async: Network: Env: Console] private (
+private class AwsEcsDetector[F[_]: Async: Network: Env: Diagnostic] private (
     customClient: Option[Client[F]]
 ) extends TelemetryResourceDetector.Unsealed[F] {
 
@@ -58,8 +58,8 @@ private class AwsEcsDetector[F[_]: Async: Network: Env: Console] private (
         case Some(uri) =>
           mkClient.use { client =>
             retrieve(client, uri).handleErrorWith { e =>
-              Console[F]
-                .errorln(s"AwsEcsDetector: cannot retrieve metadata from $uri due to ${e.getMessage}")
+              Diagnostic[F]
+                .error(s"AwsEcsDetector: cannot retrieve metadata from $uri due to ${e.getMessage}")
                 .as(None)
             }
           }
@@ -209,7 +209,7 @@ object AwsEcsDetector {
     * @see
     *   [[https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task-metadata-endpoint-v4.html]]
     */
-  def apply[F[_]: Async: Network: Env: Console]: TelemetryResourceDetector[F] =
+  def apply[F[_]: Async: Network: Env: Diagnostic]: TelemetryResourceDetector[F] =
     new AwsEcsDetector[F](None)
 
   /** The detector fetches ECS container and task metadata using the given `client`.
@@ -237,7 +237,7 @@ object AwsEcsDetector {
     * @see
     *   [[https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task-metadata-endpoint-v4.html]]
     */
-  def apply[F[_]: Async: Network: Env: Console](client: Client[F]): TelemetryResourceDetector[F] =
+  def apply[F[_]: Async: Network: Env: Diagnostic](client: Client[F]): TelemetryResourceDetector[F] =
     new AwsEcsDetector[F](Some(client))
 
   private final case class ContainerMetadata(

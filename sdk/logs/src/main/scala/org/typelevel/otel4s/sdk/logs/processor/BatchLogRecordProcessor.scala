@@ -19,11 +19,11 @@ package org.typelevel.otel4s.sdk.logs.processor
 import cats.effect.Ref
 import cats.effect.Resource
 import cats.effect.Temporal
-import cats.effect.std.Console
 import cats.effect.std.CountDownLatch
 import cats.effect.std.Queue
 import cats.effect.syntax.all._
 import cats.syntax.all._
+import org.typelevel.otel4s.sdk.common.Diagnostic
 import org.typelevel.otel4s.sdk.context.Context
 import org.typelevel.otel4s.sdk.logs.LogRecordRef
 import org.typelevel.otel4s.sdk.logs.data.LogRecordData
@@ -46,7 +46,7 @@ import scala.concurrent.duration._
   * @tparam F
   *   the higher-kinded type of polymorphic effect
   */
-private final class BatchLogRecordProcessor[F[_]: Temporal: Console] private (
+private final class BatchLogRecordProcessor[F[_]: Temporal: Diagnostic] private (
     queue: Queue[F, LogRecordData],
     signal: CountDownLatch[F],
     state: Ref[F, BatchLogRecordProcessor.State],
@@ -156,14 +156,12 @@ private final class BatchLogRecordProcessor[F[_]: Temporal: Console] private (
       .exportLogRecords(batch)
       .timeoutTo(
         config.exporterTimeout,
-        Console[F].errorln(
+        Diagnostic[F].error(
           s"BatchLogRecordProcessor: the export attempt has been canceled after [${config.exporterTimeout}]"
         )
       )
       .handleErrorWith { e =>
-        Console[F].errorln(
-          s"BatchLogRecordProcessor: the export has failed: ${e.getMessage}\n${e.getStackTrace.mkString("\n")}\n"
-        )
+        Diagnostic[F].error(s"BatchLogRecordProcessor: the export has failed: ${e.getMessage}", e)
       }
 
 }
@@ -208,7 +206,7 @@ object BatchLogRecordProcessor {
     * @param exporter
     *   the [[org.typelevel.otel4s.sdk.logs.exporter.LogRecordExporter LogRecordExporter]] to which the logs are pushed
     */
-  def builder[F[_]: Temporal: Console](exporter: LogRecordExporter[F]): Builder[F] =
+  def builder[F[_]: Temporal: Diagnostic](exporter: LogRecordExporter[F]): Builder[F] =
     new BuilderImpl[F](
       exporter = exporter,
       scheduleDelay = Defaults.ScheduleDelay,
@@ -251,7 +249,7 @@ object BatchLogRecordProcessor {
       logsNeeded: Option[Int]
   )
 
-  private final case class BuilderImpl[F[_]: Temporal: Console](
+  private final case class BuilderImpl[F[_]: Temporal: Diagnostic](
       exporter: LogRecordExporter[F],
       scheduleDelay: FiniteDuration,
       exporterTimeout: FiniteDuration,

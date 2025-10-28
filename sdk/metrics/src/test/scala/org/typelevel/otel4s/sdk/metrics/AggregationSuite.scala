@@ -46,10 +46,10 @@ class AggregationSuite extends DisciplineSuite {
   test("Show[Aggregation]") {
     Prop.forAll(aggregationArbitrary.arbitrary) { aggregation =>
       val expected = aggregation match {
-        case Aggregation.Drop      => "Aggregation.Drop"
-        case Aggregation.Default   => "Aggregation.Default"
-        case Aggregation.Sum       => "Aggregation.Sum"
-        case Aggregation.LastValue => "Aggregation.LastValue"
+        case Aggregation.Drop                                => "Aggregation.Drop"
+        case Aggregation.Default                             => "Aggregation.Default"
+        case Aggregation.Sum                                 => "Aggregation.Sum"
+        case Aggregation.LastValue                           => "Aggregation.LastValue"
         case Aggregation.ExplicitBucketHistogram(boundaries) =>
           s"Aggregation.ExplicitBucketHistogram{boundaries=$boundaries}"
       }

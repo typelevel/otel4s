@@ -21,7 +21,6 @@ import cats.Monad
 import cats.data.NonEmptyVector
 import cats.effect.Clock
 import cats.effect.Temporal
-import cats.effect.std.Console
 import cats.effect.std.Random
 import cats.syntax.flatMap._
 import cats.syntax.foldable._
@@ -30,6 +29,7 @@ import cats.syntax.traverse._
 import org.typelevel.otel4s.metrics.MeterBuilder
 import org.typelevel.otel4s.metrics.MeterProvider
 import org.typelevel.otel4s.sdk.TelemetryResource
+import org.typelevel.otel4s.sdk.common.Diagnostic
 import org.typelevel.otel4s.sdk.common.InstrumentationScope
 import org.typelevel.otel4s.sdk.context.AskContext
 import org.typelevel.otel4s.sdk.context.TraceContext
@@ -157,7 +157,7 @@ object SdkMeterProvider {
 
   /** Creates a new [[Builder]] with default configuration.
     */
-  def builder[F[_]: Temporal: Random: Console: AskContext]: Builder[F] =
+  def builder[F[_]: Temporal: Random: Diagnostic: AskContext]: Builder[F] =
     BuilderImpl(
       resource = TelemetryResource.default,
       exemplarFilter = None,
@@ -168,7 +168,7 @@ object SdkMeterProvider {
     )
 
   private final case class BuilderImpl[
-      F[_]: Temporal: Random: Console: AskContext
+      F[_]: Temporal: Random: Diagnostic: AskContext
   ](
       resource: TelemetryResource,
       exemplarFilter: Option[ExemplarFilter],

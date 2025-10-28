@@ -17,11 +17,11 @@
 package org.typelevel.otel4s.sdk.exporter.otlp.autoconfigure
 
 import cats.effect.Async
-import cats.effect.std.Console
 import fs2.compression.Compression
 import fs2.io.net.Network
 import org.http4s.client.Client
 import org.typelevel.otel4s.sdk.autoconfigure.ExportersAutoConfigure
+import org.typelevel.otel4s.sdk.common.Diagnostic
 import org.typelevel.otel4s.sdk.exporter.otlp.logs.autoconfigure.OtlpLogRecordExporterAutoConfigure
 import org.typelevel.otel4s.sdk.exporter.otlp.metrics.autoconfigure.OtlpMetricExporterAutoConfigure
 import org.typelevel.otel4s.sdk.exporter.otlp.trace.autoconfigure.OtlpSpanExporterAutoConfigure
@@ -32,7 +32,7 @@ object OtlpExportersAutoConfigure {
     * [[org.typelevel.otel4s.sdk.trace.exporter.SpanExporter SpanExporter]].
     */
   def apply[
-      F[_]: Async: Network: Compression: Console
+      F[_]: Async: Network: Compression: Diagnostic
   ]: ExportersAutoConfigure[F] =
     ExportersAutoConfigure(
       OtlpMetricExporterAutoConfigure[F],
@@ -68,7 +68,7 @@ object OtlpExportersAutoConfigure {
     *   the custom http4s client to use
     */
   def customClient[
-      F[_]: Async: Network: Compression: Console
+      F[_]: Async: Network: Compression: Diagnostic
   ](client: Client[F]): ExportersAutoConfigure[F] =
     ExportersAutoConfigure(
       OtlpMetricExporterAutoConfigure.customClient[F](client),

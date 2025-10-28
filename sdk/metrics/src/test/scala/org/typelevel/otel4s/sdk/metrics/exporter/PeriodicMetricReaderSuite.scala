@@ -20,15 +20,15 @@ import cats.data.NonEmptyVector
 import cats.effect.IO
 import cats.effect.Ref
 import cats.effect.Resource
-import cats.effect.std.Console
 import cats.effect.testkit.TestControl
 import munit.CatsEffectSuite
 import munit.ScalaCheckEffectSuite
 import org.scalacheck.Test
 import org.scalacheck.effect.PropF
+import org.typelevel.otel4s.sdk.common.Diagnostic
 import org.typelevel.otel4s.sdk.metrics.data.MetricData
 import org.typelevel.otel4s.sdk.metrics.scalacheck.Arbitraries._
-import org.typelevel.otel4s.sdk.test.InMemoryConsole
+import org.typelevel.otel4s.sdk.test.InMemoryDiagnostic
 
 import scala.concurrent.duration._
 import scala.util.control.NoStackTrace
@@ -79,14 +79,14 @@ class PeriodicMetricReaderSuite extends CatsEffectSuite with ScalaCheckEffectSui
       val producer = constProducer(metrics)
 
       TestControl.executeEmbed {
-        InMemoryConsole.create[IO].flatMap { implicit C: InMemoryConsole[IO] =>
+        InMemoryDiagnostic.create[IO].flatMap { implicit C: InMemoryDiagnostic[IO] =>
           val consoleEntries = {
-            import org.typelevel.otel4s.sdk.test.InMemoryConsole._
+            import org.typelevel.otel4s.sdk.test.InMemoryDiagnostic._
 
             List(
-              Entry(
-                Op.Errorln,
-                "MetricProducers are already registered at this periodic metric reader"
+              Entry.Error(
+                "MetricProducers are already registered at this periodic metric reader",
+                None
               )
             )
           }
@@ -125,14 +125,14 @@ class PeriodicMetricReaderSuite extends CatsEffectSuite with ScalaCheckEffectSui
         }
 
       TestControl.executeEmbed {
-        InMemoryConsole.create[IO].flatMap { implicit C: InMemoryConsole[IO] =>
+        InMemoryDiagnostic.create[IO].flatMap { implicit C: InMemoryDiagnostic[IO] =>
           val consoleEntries = {
-            import org.typelevel.otel4s.sdk.test.InMemoryConsole._
+            import org.typelevel.otel4s.sdk.test.InMemoryDiagnostic._
 
             List(
-              Entry(
-                Op.Errorln,
-                s"PeriodicMetricReader: the export has failed: ${e.getMessage}\n${e.getStackTrace.mkString("\n")}\n"
+              Entry.Error(
+                s"PeriodicMetricReader: the export has failed: ${e.getMessage}",
+                Some(e)
               )
             )
           }
@@ -177,14 +177,14 @@ class PeriodicMetricReaderSuite extends CatsEffectSuite with ScalaCheckEffectSui
       }
 
     TestControl.executeEmbed {
-      InMemoryConsole.create[IO].flatMap { implicit C: InMemoryConsole[IO] =>
+      InMemoryDiagnostic.create[IO].flatMap { implicit C: InMemoryDiagnostic[IO] =>
         val consoleEntries = {
-          import org.typelevel.otel4s.sdk.test.InMemoryConsole._
+          import org.typelevel.otel4s.sdk.test.InMemoryDiagnostic._
 
           List(
-            Entry(
-              Op.Errorln,
-              "PeriodicMetricReader: the export attempt has been canceled after [5 seconds]"
+            Entry.Error(
+              "PeriodicMetricReader: the export attempt has been canceled after [5 seconds]",
+              None
             )
           )
         }
@@ -208,7 +208,7 @@ class PeriodicMetricReaderSuite extends CatsEffectSuite with ScalaCheckEffectSui
 
   private def makeReader(
       exporter: MetricExporter.Push[IO]
-  )(implicit console: Console[IO]): Resource[IO, MetricReader[IO]] =
+  )(implicit console: Diagnostic[IO]): Resource[IO, MetricReader[IO]] =
     MetricReader.periodic(exporter, 30.seconds, 5.seconds)
 
   private def constProducer(metrics: List[MetricData]): MetricProducer[IO] =

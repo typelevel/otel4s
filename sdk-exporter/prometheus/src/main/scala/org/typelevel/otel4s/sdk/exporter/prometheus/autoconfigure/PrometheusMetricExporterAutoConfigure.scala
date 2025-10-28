@@ -19,7 +19,6 @@ package autoconfigure
 
 import cats.effect.Async
 import cats.effect.Resource
-import cats.effect.std.Console
 import cats.effect.syntax.resource._
 import com.comcast.ip4s._
 import fs2.compression.Compression
@@ -27,6 +26,7 @@ import fs2.io.net.Network
 import org.typelevel.otel4s.sdk.autoconfigure.AutoConfigure
 import org.typelevel.otel4s.sdk.autoconfigure.Config
 import org.typelevel.otel4s.sdk.autoconfigure.ConfigurationError
+import org.typelevel.otel4s.sdk.common.Diagnostic
 import org.typelevel.otel4s.sdk.metrics.exporter.AggregationSelector
 import org.typelevel.otel4s.sdk.metrics.exporter.MetricExporter
 
@@ -53,7 +53,7 @@ import scala.util.chaining._
   *   [[https://opentelemetry.io/docs/specs/otel/metrics/sdk_exporters/prometheus/#configuration]]
   */
 private final class PrometheusMetricExporterAutoConfigure[
-    F[_]: Network: Compression: Console
+    F[_]: Network: Compression: Diagnostic
 ](implicit F: Async[F])
     extends AutoConfigure.WithHint[F, MetricExporter[F]](
       "PrometheusMetricExporter",
@@ -113,7 +113,7 @@ private final class PrometheusMetricExporterAutoConfigure[
   private implicit val defaultAggregationReader: Config.Reader[AggregationSelector] =
     Config.Reader.decodeWithHint("Aggregation") {
       case "default" => Right(AggregationSelector.default)
-      case s =>
+      case s         =>
         Left(
           ConfigurationError(
             s"Unrecognized default aggregation [$s]. Supported options [default]"
@@ -196,7 +196,7 @@ object PrometheusMetricExporterAutoConfigure {
     *   [[https://opentelemetry.io/docs/specs/otel/metrics/sdk_exporters/prometheus/#configuration]]
     */
   def apply[
-      F[_]: Async: Network: Compression: Console
+      F[_]: Async: Network: Compression: Diagnostic
   ]: AutoConfigure.Named[F, MetricExporter[F]] =
     new PrometheusMetricExporterAutoConfigure[F]
 

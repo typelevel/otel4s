@@ -21,7 +21,6 @@ import cats.data.NonEmptyVector
 import cats.effect.Ref
 import cats.effect.Resource
 import cats.effect.Temporal
-import cats.effect.std.Console
 import cats.effect.syntax.spawn._
 import cats.effect.syntax.temporal._
 import cats.syntax.applicative._
@@ -29,6 +28,7 @@ import cats.syntax.applicativeError._
 import cats.syntax.flatMap._
 import cats.syntax.functor._
 import cats.syntax.traverse._
+import org.typelevel.otel4s.sdk.common.Diagnostic
 import org.typelevel.otel4s.sdk.metrics.data.MetricData
 
 import scala.concurrent.duration.FiniteDuration
@@ -50,7 +50,7 @@ import scala.concurrent.duration.FiniteDuration
   * @tparam F
   *   the higher-kinded type of a polymorphic effect
   */
-private class PeriodicMetricReader[F[_]: Temporal: Console] private (
+private class PeriodicMetricReader[F[_]: Temporal: Diagnostic] private (
     metricProducers: Ref[F, Vector[MetricProducer[F]]],
     exporter: MetricExporter.Push[F],
     config: PeriodicMetricReader.Config
@@ -67,7 +67,7 @@ private class PeriodicMetricReader[F[_]: Temporal: Console] private (
 
   def register(producers: NonEmptyVector[MetricProducer[F]]): F[Unit] = {
     def warn =
-      Console[F].errorln(
+      Diagnostic[F].error(
         "MetricProducers are already registered at this periodic metric reader"
       )
 
@@ -83,8 +83,8 @@ private class PeriodicMetricReader[F[_]: Temporal: Console] private (
         producers.flatTraverse(_.produce)
 
       case _ =>
-        Console[F]
-          .errorln(
+        Diagnostic[F]
+          .error(
             "The PeriodicMetricReader is running, but producers aren't configured yet. Nothing to export"
           )
           .as(Vector.empty)
@@ -112,14 +112,12 @@ private class PeriodicMetricReader[F[_]: Temporal: Console] private (
     doExport
       .timeoutTo(
         config.exportTimeout,
-        Console[F].errorln(
+        Diagnostic[F].error(
           s"PeriodicMetricReader: the export attempt has been canceled after [${config.exportTimeout}]"
         )
       )
       .handleErrorWith { e =>
-        Console[F].errorln(
-          s"PeriodicMetricReader: the export has failed: ${e.getMessage}\n${e.getStackTrace.mkString("\n")}\n"
-        )
+        Diagnostic[F].error(s"PeriodicMetricReader: the export has failed: ${e.getMessage}", e)
       }
   }
 
@@ -146,7 +144,7 @@ private object PeriodicMetricReader {
     * @tparam F
     *   the higher-kinded type of a polymorphic effect
     */
-  def create[F[_]: Temporal: Console](
+  def create[F[_]: Temporal: Diagnostic](
       exporter: MetricExporter.Push[F],
       interval: FiniteDuration,
       timeout: FiniteDuration

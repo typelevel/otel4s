@@ -18,13 +18,13 @@ package org.typelevel.otel4s.sdk.metrics
 
 import cats.Foldable
 import cats.effect.IO
-import cats.effect.std.Console
 import munit.CatsEffectSuite
 import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.Attributes
 import org.typelevel.otel4s.sdk.TelemetryResource
 import org.typelevel.otel4s.sdk.autoconfigure.AutoConfigure
 import org.typelevel.otel4s.sdk.autoconfigure.Config
+import org.typelevel.otel4s.sdk.common.Diagnostic
 import org.typelevel.otel4s.sdk.metrics.data.MetricData
 import org.typelevel.otel4s.sdk.metrics.exporter.AggregationSelector
 import org.typelevel.otel4s.sdk.metrics.exporter.AggregationTemporalitySelector
@@ -32,11 +32,10 @@ import org.typelevel.otel4s.sdk.metrics.exporter.CardinalityLimitSelector
 import org.typelevel.otel4s.sdk.metrics.exporter.MetricExporter
 import org.typelevel.otel4s.sdk.metrics.view.InstrumentSelector
 import org.typelevel.otel4s.sdk.metrics.view.View
-import org.typelevel.otel4s.sdk.test.NoopConsole
 
 class SdkMetricsSuite extends CatsEffectSuite {
 
-  private implicit val noopConsole: Console[IO] = new NoopConsole[IO]
+  private implicit val noopDiagnostic: Diagnostic[IO] = Diagnostic.noop
 
   private val DefaultMetrics =
     metricsToString(TelemetryResource.default)

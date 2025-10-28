@@ -18,15 +18,15 @@ package org.typelevel.otel4s.sdk.metrics.view
 
 import cats.Monad
 import cats.data.NonEmptyVector
-import cats.effect.std.Console
 import cats.syntax.functor._
 import cats.syntax.traverse._
+import org.typelevel.otel4s.sdk.common.Diagnostic
 import org.typelevel.otel4s.sdk.common.InstrumentationScope
 import org.typelevel.otel4s.sdk.metrics.internal.InstrumentDescriptor
 
 import java.util.regex.Pattern
 
-private[metrics] final class ViewRegistry[F[_]: Monad: Console](
+private[metrics] final class ViewRegistry[F[_]: Monad: Diagnostic](
     registeredViews: Vector[RegisteredView]
 ) {
 
@@ -60,7 +60,7 @@ private[metrics] final class ViewRegistry[F[_]: Monad: Console](
   }
 
   private def warn(descriptor: InstrumentDescriptor, view: View): F[Unit] =
-    Console[F].println(
+    Diagnostic[F].info(
       s"$view aggregation is incompatible with instrument [${descriptor.name}] of type [${descriptor.instrumentType}]"
     )
 
@@ -68,7 +68,7 @@ private[metrics] final class ViewRegistry[F[_]: Monad: Console](
 
 private[metrics] object ViewRegistry {
 
-  def apply[F[_]: Monad: Console](
+  def apply[F[_]: Monad: Diagnostic](
       registeredViews: Vector[RegisteredView]
   ): ViewRegistry[F] =
     new ViewRegistry(registeredViews)

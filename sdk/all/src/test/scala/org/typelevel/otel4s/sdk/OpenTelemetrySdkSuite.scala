@@ -18,7 +18,6 @@ package org.typelevel.otel4s.sdk
 
 import cats.Foldable
 import cats.effect.IO
-import cats.effect.std.Console
 import munit.CatsEffectSuite
 import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.Attributes
@@ -28,6 +27,7 @@ import org.typelevel.otel4s.context.propagation.TextMapPropagator
 import org.typelevel.otel4s.context.propagation.TextMapUpdater
 import org.typelevel.otel4s.sdk.autoconfigure.AutoConfigure
 import org.typelevel.otel4s.sdk.autoconfigure.Config
+import org.typelevel.otel4s.sdk.common.Diagnostic
 import org.typelevel.otel4s.sdk.context.Context
 import org.typelevel.otel4s.sdk.logs.LogRecordLimits
 import org.typelevel.otel4s.sdk.logs.data.LogRecordData
@@ -39,7 +39,6 @@ import org.typelevel.otel4s.sdk.metrics.exporter.CardinalityLimitSelector
 import org.typelevel.otel4s.sdk.metrics.exporter.MetricExporter
 import org.typelevel.otel4s.sdk.metrics.view.InstrumentSelector
 import org.typelevel.otel4s.sdk.metrics.view.View
-import org.typelevel.otel4s.sdk.test.NoopConsole
 import org.typelevel.otel4s.sdk.trace.SpanLimits
 import org.typelevel.otel4s.sdk.trace.context.propagation.W3CBaggagePropagator
 import org.typelevel.otel4s.sdk.trace.context.propagation.W3CTraceContextPropagator
@@ -54,7 +53,7 @@ import scodec.bits.ByteVector
 
 class OpenTelemetrySdkSuite extends CatsEffectSuite {
 
-  private implicit val noopConsole: Console[IO] = new NoopConsole[IO]
+  private implicit val noopDiagnostic: Diagnostic[IO] = Diagnostic.noop
 
   private val DefaultSdk =
     sdkToString(

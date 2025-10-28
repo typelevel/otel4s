@@ -27,7 +27,7 @@ import org.typelevel.otel4s.sdk.metrics.data.TimeWindow
 import org.typelevel.otel4s.sdk.metrics.internal.storage.MetricStorage
 import org.typelevel.otel4s.sdk.metrics.scalacheck.Gens
 import org.typelevel.otel4s.sdk.metrics.view.View
-import org.typelevel.otel4s.sdk.test.InMemoryConsole
+import org.typelevel.otel4s.sdk.test.InMemoryDiagnostic
 
 class MetricStorageRegistrySuite extends CatsEffectSuite with ScalaCheckEffectSuite {
 
@@ -46,7 +46,7 @@ class MetricStorageRegistrySuite extends CatsEffectSuite with ScalaCheckEffectSu
 
   test("warn about duplicates") {
     PropF.forAllF(Gens.instrumentDescriptor) { descriptor =>
-      InMemoryConsole.create[IO].flatMap { implicit C: InMemoryConsole[IO] =>
+      InMemoryDiagnostic.create[IO].flatMap { implicit C: InMemoryDiagnostic[IO] =>
         val first = MetricDescriptor(None, descriptor)
         val second = MetricDescriptor(
           Some(View.builder.withDescription("desc").build),
@@ -54,12 +54,12 @@ class MetricStorageRegistrySuite extends CatsEffectSuite with ScalaCheckEffectSu
         )
 
         val consoleEntries = {
-          import org.typelevel.otel4s.sdk.test.InMemoryConsole._
+          import org.typelevel.otel4s.sdk.test.InMemoryDiagnostic._
 
           List(
-            Entry(
-              Op.Errorln,
-              s"MetricStorageRegistry: found a duplicate. The $second has similar descriptors in the storage: $first."
+            Entry.Error(
+              s"MetricStorageRegistry: found a duplicate. The $second has similar descriptors in the storage: $first.",
+              None
             )
           )
         }

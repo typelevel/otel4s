@@ -19,7 +19,6 @@ package org.typelevel.otel4s.sdk.exporter.prometheus
 import cats.Show
 import cats.data.NonEmptyVector
 import cats.effect.IO
-import cats.effect.std.Console
 import cats.syntax.option._
 import munit.CatsEffectSuite
 import munit.ScalaCheckEffectSuite
@@ -29,11 +28,12 @@ import org.typelevel.otel4s.Attributes
 import org.typelevel.otel4s.metrics.BucketBoundaries
 import org.typelevel.otel4s.sdk.BuildInfo
 import org.typelevel.otel4s.sdk.TelemetryResource
+import org.typelevel.otel4s.sdk.common.Diagnostic
 import org.typelevel.otel4s.sdk.common.InstrumentationScope
 import org.typelevel.otel4s.sdk.exporter.prometheus.PrometheusWriter.Config
 import org.typelevel.otel4s.sdk.metrics.data._
 import org.typelevel.otel4s.sdk.metrics.scalacheck.Gens
-import org.typelevel.otel4s.sdk.test.InMemoryConsole
+import org.typelevel.otel4s.sdk.test.InMemoryDiagnostic
 
 import java.nio.charset.StandardCharsets
 import scala.util.chaining._
@@ -823,12 +823,12 @@ class PrometheusWriterSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
          |""".stripMargin
 
     val expectedConsoleEntries = {
-      import org.typelevel.otel4s.sdk.test.InMemoryConsole._
+      import org.typelevel.otel4s.sdk.test.InMemoryDiagnostic._
 
       List(
-        Entry(
-          Op.Errorln,
-          "Conflicting metric name [foo]. Existing metric type [counter], dropped metric type [gauge]"
+        Entry.Error(
+          "Conflicting metric name [foo]. Existing metric type [counter], dropped metric type [gauge]",
+          None
         )
       )
     }
@@ -856,7 +856,7 @@ class PrometheusWriterSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
       )
     )
 
-    InMemoryConsole.create[IO].flatMap { implicit C: InMemoryConsole[IO] =>
+    InMemoryDiagnostic.create[IO].flatMap { implicit C: InMemoryDiagnostic[IO] =>
       for {
         _ <- writeAndCompare(metrics, expectedText, Config.default.withoutUnitSuffix)
         _ <- C.entries.assertEquals(expectedConsoleEntries)
@@ -878,12 +878,12 @@ class PrometheusWriterSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
          |""".stripMargin
 
     val expectedConsoleEntries = {
-      import org.typelevel.otel4s.sdk.test.InMemoryConsole._
+      import org.typelevel.otel4s.sdk.test.InMemoryDiagnostic._
 
       List(
-        Entry(
-          Op.Errorln,
-          "Conflicting metric name [foo_bytes]. Existing metric type [gauge], dropped metric type [histogram]"
+        Entry.Error(
+          "Conflicting metric name [foo_bytes]. Existing metric type [gauge], dropped metric type [histogram]",
+          None
         )
       )
     }
@@ -921,7 +921,7 @@ class PrometheusWriterSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
       )
     )
 
-    InMemoryConsole.create[IO].flatMap { implicit C: InMemoryConsole[IO] =>
+    InMemoryDiagnostic.create[IO].flatMap { implicit C: InMemoryDiagnostic[IO] =>
       for {
         _ <- writeAndCompare(metrics, expectedText)
         _ <- C.entries.assertEquals(expectedConsoleEntries)
@@ -1112,7 +1112,7 @@ class PrometheusWriterSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
       metrics: Vector[MetricData],
       expected: String,
       writerConfig: PrometheusWriter.Config = PrometheusWriter.Config.default
-  )(implicit C: Console[IO]) = {
+  )(implicit C: Diagnostic[IO]) = {
     PrometheusWriter
       .text[IO](writerConfig)
       .write(metrics)

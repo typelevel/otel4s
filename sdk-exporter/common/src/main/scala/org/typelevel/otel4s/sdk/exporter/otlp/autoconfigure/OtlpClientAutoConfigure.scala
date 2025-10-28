@@ -20,7 +20,6 @@ package autoconfigure
 
 import cats.effect.Async
 import cats.effect.Resource
-import cats.effect.std.Console
 import cats.syntax.either._
 import cats.syntax.functor._
 import fs2.compression.Compression
@@ -33,6 +32,7 @@ import org.typelevel.ci.CIString
 import org.typelevel.otel4s.sdk.autoconfigure.AutoConfigure
 import org.typelevel.otel4s.sdk.autoconfigure.Config
 import org.typelevel.otel4s.sdk.autoconfigure.ConfigurationError
+import org.typelevel.otel4s.sdk.common.Diagnostic
 import scalapb_circe.Printer
 
 import scala.concurrent.duration.FiniteDuration
@@ -79,7 +79,7 @@ import scala.concurrent.duration.FiniteDuration
   *   [[https://opentelemetry.io/docs/languages/java/configuration/#otlp-exporter-span-metric-and-log-exporters]]
   */
 private final class OtlpClientAutoConfigure[
-    F[_]: Async: Network: Compression: Console,
+    F[_]: Async: Network: Compression: Diagnostic,
     A
 ](
     specific: OtlpClientAutoConfigure.ConfigKeys.Keys,
@@ -241,7 +241,7 @@ private[exporter] object OtlpClientAutoConfigure {
     * @param defaults
     *   the default values to use as a fallback when property is missing in the config
     */
-  def metrics[F[_]: Async: Network: Compression: Console, A](
+  def metrics[F[_]: Async: Network: Compression: Diagnostic, A](
       defaults: Defaults,
       customClient: Option[Client[F]]
   )(implicit
@@ -260,7 +260,7 @@ private[exporter] object OtlpClientAutoConfigure {
     * @param defaults
     *   the default values to use as a fallback when property is missing in the config
     */
-  def traces[F[_]: Async: Network: Compression: Console, A](
+  def traces[F[_]: Async: Network: Compression: Diagnostic, A](
       defaults: Defaults,
       customClient: Option[Client[F]]
   )(implicit
@@ -279,7 +279,7 @@ private[exporter] object OtlpClientAutoConfigure {
     * @param defaults
     *   the default values to use as a fallback when property is missing in the config
     */
-  def logs[F[_]: Async: Network: Compression: Console, A](
+  def logs[F[_]: Async: Network: Compression: Diagnostic, A](
       defaults: Defaults,
       customClient: Option[Client[F]]
   )(implicit

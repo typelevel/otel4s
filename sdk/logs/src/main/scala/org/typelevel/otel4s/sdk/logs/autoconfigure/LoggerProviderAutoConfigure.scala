@@ -25,6 +25,7 @@ import org.typelevel.otel4s.logs.LoggerProvider
 import org.typelevel.otel4s.sdk.TelemetryResource
 import org.typelevel.otel4s.sdk.autoconfigure.AutoConfigure
 import org.typelevel.otel4s.sdk.autoconfigure.Config
+import org.typelevel.otel4s.sdk.common.Diagnostic
 import org.typelevel.otel4s.sdk.context.AskContext
 import org.typelevel.otel4s.sdk.context.Context
 import org.typelevel.otel4s.sdk.context.TraceContext
@@ -48,7 +49,7 @@ import org.typelevel.otel4s.sdk.logs.processor.SimpleLogRecordProcessor
   * @param exporterConfigurers
   *   the extra exporter configurers
   */
-private final class LoggerProviderAutoConfigure[F[_]: Temporal: Parallel: Console: AskContext](
+private final class LoggerProviderAutoConfigure[F[_]: Temporal: Parallel: Console: Diagnostic: AskContext](
     resource: TelemetryResource,
     traceContextLookup: TraceContext.Lookup,
     customizer: Customizer[SdkLoggerProvider.Builder[F]],
@@ -120,7 +121,7 @@ private[sdk] object LoggerProviderAutoConfigure {
     * @param exporterConfigurers
     *   the extra exporter configurers
     */
-  def apply[F[_]: Temporal: Parallel: Console: AskContext](
+  def apply[F[_]: Temporal: Parallel: Console: Diagnostic: AskContext](
       resource: TelemetryResource,
       traceContextLookup: TraceContext.Lookup,
       loggerProviderBuilderCustomizer: Customizer[SdkLoggerProvider.Builder[F]],

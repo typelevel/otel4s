@@ -103,7 +103,7 @@ class AggregatorSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
                 case InstrumentType.Counter       => numberPoints
                 case InstrumentType.UpDownCounter => numberPoints
                 case InstrumentType.Gauge         => numberPoints
-                case InstrumentType.Histogram =>
+                case InstrumentType.Histogram     =>
                   histogramPoints(Aggregation.Defaults.Boundaries)
               }
 
@@ -142,7 +142,7 @@ class AggregatorSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
                 case InstrumentType.Counter       => sum
                 case InstrumentType.UpDownCounter => sum
                 case InstrumentType.Gauge         => lastValue
-                case InstrumentType.Histogram =>
+                case InstrumentType.Histogram     =>
                   histogram(Aggregation.Defaults.Boundaries)
               }
 

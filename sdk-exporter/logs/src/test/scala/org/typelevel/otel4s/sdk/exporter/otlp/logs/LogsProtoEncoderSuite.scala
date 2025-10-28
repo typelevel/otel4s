@@ -95,7 +95,7 @@ class LogsProtoEncoderSuite extends ScalaCheckSuite {
       case AnyValue.LongValueImpl(v)      => Json.obj("intValue" := v.toString)
       case AnyValue.DoubleValueImpl(v)    => Json.obj("doubleValue" := v)
       case AnyValue.ByteArrayValueImpl(v) => Json.obj("bytesValue" := ByteVector(v).toBase64)
-      case AnyValue.SeqValueImpl(values) =>
+      case AnyValue.SeqValueImpl(values)  =>
         val v =
           if (values.isEmpty) Json.obj()
           else Json.obj("values" := values.map(encodeValue))

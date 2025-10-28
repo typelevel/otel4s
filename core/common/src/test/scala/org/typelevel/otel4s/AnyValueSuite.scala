@@ -41,7 +41,7 @@ class AnyValueSuite extends DisciplineSuite {
         case AnyValue.DoubleValueImpl(value)    => s"DoubleValue($value)"
         case AnyValue.ByteArrayValueImpl(bytes) => s"ByteArrayValue(${Base64.getEncoder.encodeToString(bytes)})"
         case AnyValue.SeqValueImpl(values)      => s"SeqValue(${values.map(render).mkString("[", ", ", "]")})"
-        case AnyValue.MapValueImpl(values) =>
+        case AnyValue.MapValueImpl(values)      =>
           s"MapValue(${values.map { case (k, v) => s"$k -> ${render(v)}" }.mkString("{", ", ", "}")})"
       }
 

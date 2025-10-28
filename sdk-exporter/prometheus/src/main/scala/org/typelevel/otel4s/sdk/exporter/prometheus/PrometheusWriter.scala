@@ -530,7 +530,7 @@ object PrometheusWriter {
 
     private def serializePointValue(point: PointData): String = {
       point match {
-        case long: LongNumber => long.value.toString
+        case long: LongNumber     => long.value.toString
         case double: DoubleNumber =>
           if (double.value == Double.PositiveInfinity) {
             PosInf

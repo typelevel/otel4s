@@ -113,10 +113,10 @@ object Aggregation {
 
   implicit val aggregationShow: Show[Aggregation] =
     Show.show {
-      case Drop      => "Aggregation.Drop"
-      case Default   => "Aggregation.Default"
-      case Sum       => "Aggregation.Sum"
-      case LastValue => "Aggregation.LastValue"
+      case Drop                                => "Aggregation.Drop"
+      case Default                             => "Aggregation.Default"
+      case Sum                                 => "Aggregation.Sum"
+      case LastValue                           => "Aggregation.LastValue"
       case ExplicitBucketHistogram(boundaries) =>
         show"Aggregation.ExplicitBucketHistogram{boundaries=$boundaries}"
     }

@@ -113,7 +113,7 @@ private final class PrometheusMetricExporterAutoConfigure[
   private implicit val defaultAggregationReader: Config.Reader[AggregationSelector] =
     Config.Reader.decodeWithHint("Aggregation") {
       case "default" => Right(AggregationSelector.default)
-      case s =>
+      case s         =>
         Left(
           ConfigurationError(
             s"Unrecognized default aggregation [$s]. Supported options [default]"

@@ -169,7 +169,7 @@ object AnyValue {
     case DoubleValueImpl(value)    => s"DoubleValue($value)"
     case ByteArrayValueImpl(value) => s"ByteArrayValue(${Base64.getEncoder.encodeToString(value)})"
     case SeqValueImpl(values)      => s"SeqValue(${values.map(anyValueShow.show).mkString("[", ", ", "]")})"
-    case MapValueImpl(values) =>
+    case MapValueImpl(values)      =>
       s"MapValue(${values.map { case (k, v) => s"$k -> ${anyValueShow.show(v)}" }.mkString("{", ", ", "}")})"
   }
 

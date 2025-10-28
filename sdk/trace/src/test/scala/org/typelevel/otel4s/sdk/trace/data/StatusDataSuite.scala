@@ -36,9 +36,9 @@ class StatusDataSuite extends DisciplineSuite {
   test("Show[StatusData]") {
     Prop.forAll(Gens.statusData) { data =>
       val expected = data match {
-        case StatusData.Ok          => "StatusData{status=Ok}"
-        case StatusData.Unset       => "StatusData{status=Unset}"
-        case StatusData.Error(None) => "StatusData{status=Error}"
+        case StatusData.Ok                       => "StatusData{status=Ok}"
+        case StatusData.Unset                    => "StatusData{status=Unset}"
+        case StatusData.Error(None)              => "StatusData{status=Error}"
         case StatusData.Error(Some(description)) =>
           s"StatusData{status=Error, description=$description}"
       }

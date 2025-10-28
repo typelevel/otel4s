@@ -243,7 +243,7 @@ private[metrics] object Aggregator {
           case InstrumentType.Counter       => sum
           case InstrumentType.UpDownCounter => sum
           case InstrumentType.Gauge         => lastValue
-          case InstrumentType.Histogram =>
+          case InstrumentType.Histogram     =>
             val boundaries = descriptor.advice
               .flatMap(_.explicitBucketBoundaries)
               .getOrElse(Aggregation.Defaults.Boundaries)

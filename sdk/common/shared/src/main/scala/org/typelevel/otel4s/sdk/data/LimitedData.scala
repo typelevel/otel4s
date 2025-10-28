@@ -153,7 +153,7 @@ object LimitedData {
       elements: S,
       splitAt: (S, Int) => (S, S),
       pure: A => S,
-      refine: S => S = identity[S],
+      refine: S => S = identity[S](_),
       dropped: Int = 0
   ) extends LimitedData[A, S] {
     def append(a: A): LimitedData[A, S] = {

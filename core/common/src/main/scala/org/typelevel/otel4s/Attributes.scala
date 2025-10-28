@@ -92,7 +92,7 @@ sealed trait Attributes
     * @return
     *   the `Map` representation of these `Attributes`
     */
-  private[otel4s] def toMap: Map[String, Attribute[_]]
+  private[otel4s] def toMap(): Map[String, Attribute[_]]
 
   /** A factory for creating `Attributes`. */
   def attributesFactory: SpecificIterableFactory[Attribute[_], Attributes]
@@ -197,7 +197,7 @@ object Attributes extends SpecificIterableFactory[Attribute[_], Attributes] {
   }
 
   implicit val hashAttributes: Hash[Attributes] =
-    Hash.by(_.toMap)
+    Hash.by(_.toMap())
 
   implicit val monoidAttributes: Monoid[Attributes] =
     new Monoid[Attributes] {
@@ -306,7 +306,7 @@ object Attributes extends SpecificIterableFactory[Attribute[_], Attributes] {
           new MapAttributes(m ++ other.iterator.map(a => a.key.name -> a))
       }
 
-    private[otel4s] def toMap: Map[String, Attribute[_]] = m
+    private[otel4s] def toMap(): Map[String, Attribute[_]] = m
     def iterator: Iterator[Attribute[_]] = m.valuesIterator
 
     def attributesFactory: Attributes.type = Attributes

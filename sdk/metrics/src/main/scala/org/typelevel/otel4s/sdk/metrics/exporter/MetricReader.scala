@@ -20,7 +20,7 @@ package exporter
 import cats.data.NonEmptyVector
 import cats.effect.Resource
 import cats.effect.Temporal
-import cats.effect.std.Console
+import org.typelevel.otel4s.sdk.common.Diagnostic
 import org.typelevel.otel4s.sdk.metrics.data.MetricData
 
 import scala.concurrent.duration.FiniteDuration
@@ -88,7 +88,7 @@ object MetricReader {
     * @tparam F
     *   the higher-kinded type of a polymorphic effect
     */
-  def periodic[F[_]: Temporal: Console](
+  def periodic[F[_]: Temporal: Diagnostic](
       exporter: MetricExporter.Push[F],
       interval: FiniteDuration,
       timeout: FiniteDuration

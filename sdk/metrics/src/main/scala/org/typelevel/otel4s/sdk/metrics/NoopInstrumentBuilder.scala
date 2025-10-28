@@ -18,7 +18,6 @@ package org.typelevel.otel4s.sdk.metrics
 
 import cats.Applicative
 import cats.effect.Resource
-import cats.effect.std.Console
 import cats.syntax.functor._
 import org.typelevel.otel4s.metrics.BucketBoundaries
 import org.typelevel.otel4s.metrics.Counter
@@ -30,10 +29,11 @@ import org.typelevel.otel4s.metrics.ObservableGauge
 import org.typelevel.otel4s.metrics.ObservableMeasurement
 import org.typelevel.otel4s.metrics.ObservableUpDownCounter
 import org.typelevel.otel4s.metrics.UpDownCounter
+import org.typelevel.otel4s.sdk.common.Diagnostic
 
 private object NoopInstrumentBuilder {
 
-  def counter[F[_]: Applicative: Console, A](
+  def counter[F[_]: Applicative: Diagnostic, A](
       name: String
   ): Counter.Builder[F, A] =
     new Counter.Builder.Unsealed[F, A] {
@@ -49,7 +49,7 @@ private object NoopInstrumentBuilder {
         warn("Counter", name).as(noopCounter)
     }
 
-  def histogram[F[_]: Applicative: Console, A](
+  def histogram[F[_]: Applicative: Diagnostic, A](
       name: String
   ): Histogram.Builder[F, A] =
     new Histogram.Builder.Unsealed[F, A] {
@@ -69,7 +69,7 @@ private object NoopInstrumentBuilder {
         warn("Histogram", name).as(noopHistogram)
     }
 
-  def upDownCounter[F[_]: Applicative: Console, A](
+  def upDownCounter[F[_]: Applicative: Diagnostic, A](
       name: String
   ): UpDownCounter.Builder[F, A] =
     new UpDownCounter.Builder.Unsealed[F, A] {
@@ -85,7 +85,7 @@ private object NoopInstrumentBuilder {
         warn("UpDownCounter", name).as(noopUpDownCounter)
     }
 
-  def gauge[F[_]: Applicative: Console, A](
+  def gauge[F[_]: Applicative: Diagnostic, A](
       name: String
   ): Gauge.Builder[F, A] =
     new Gauge.Builder.Unsealed[F, A] {
@@ -101,7 +101,7 @@ private object NoopInstrumentBuilder {
         warn("Gauge", name).as(noopGauge)
     }
 
-  def observableGauge[F[_]: Applicative: Console, A](
+  def observableGauge[F[_]: Applicative: Diagnostic, A](
       name: String
   ): ObservableGauge.Builder[F, A] =
     new ObservableGauge.Builder.Unsealed[F, A] {
@@ -131,7 +131,7 @@ private object NoopInstrumentBuilder {
         NoopInstrumentBuilder.warn("ObservableGauge", name)
     }
 
-  def observableCounter[F[_]: Applicative: Console, A](
+  def observableCounter[F[_]: Applicative: Diagnostic, A](
       name: String
   ): ObservableCounter.Builder[F, A] =
     new ObservableCounter.Builder.Unsealed[F, A] {
@@ -163,7 +163,7 @@ private object NoopInstrumentBuilder {
         NoopInstrumentBuilder.warn("ObservableCounter", name)
     }
 
-  def observableUpDownCounter[F[_]: Applicative: Console, A](
+  def observableUpDownCounter[F[_]: Applicative: Diagnostic, A](
       name: String
   ): ObservableUpDownCounter.Builder[F, A] =
     new ObservableUpDownCounter.Builder.Unsealed[F, A] {
@@ -195,8 +195,8 @@ private object NoopInstrumentBuilder {
         NoopInstrumentBuilder.warn("ObservableUpDownCounter", name)
     }
 
-  private def warn[F[_]: Console](instrument: String, name: String): F[Unit] =
-    Console[F].errorln(
+  private def warn[F[_]: Diagnostic](instrument: String, name: String): F[Unit] =
+    Diagnostic[F].error(
       s"SdkMeter: $instrument instrument has invalid name [$name]. Using noop instrument. " +
         "Instrument names must consist of 255 or fewer characters including alphanumeric, _, ., -, and start with a letter."
     )

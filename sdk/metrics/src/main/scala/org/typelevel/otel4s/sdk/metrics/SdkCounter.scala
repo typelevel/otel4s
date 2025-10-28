@@ -17,7 +17,6 @@
 package org.typelevel.otel4s.sdk.metrics
 
 import cats.Monad
-import cats.effect.std.Console
 import cats.mtl.Ask
 import cats.syntax.flatMap._
 import cats.syntax.functor._
@@ -27,6 +26,7 @@ import org.typelevel.otel4s.Attributes
 import org.typelevel.otel4s.metrics.Counter
 import org.typelevel.otel4s.metrics.MeasurementValue
 import org.typelevel.otel4s.metrics.meta.InstrumentMeta
+import org.typelevel.otel4s.sdk.common.Diagnostic
 import org.typelevel.otel4s.sdk.context.AskContext
 import org.typelevel.otel4s.sdk.context.Context
 import org.typelevel.otel4s.sdk.metrics.internal.InstrumentDescriptor
@@ -43,7 +43,7 @@ import scala.collection.immutable
 private object SdkCounter {
 
   private final class Backend[
-      F[_]: Monad: Console: AskContext,
+      F[_]: Monad: Diagnostic: AskContext,
       A,
       Primitive: Numeric
   ](
@@ -64,7 +64,7 @@ private object SdkCounter {
         attributes: immutable.Iterable[Attribute[_]]
     ): F[Unit] =
       if (Numeric[Primitive].lt(value, Numeric[Primitive].zero)) {
-        Console[F].errorln(
+        Diagnostic[F].error(
           s"SdkCounter: counters can only increase. Instrument [$name] has tried to record a negative value [$value]."
         )
       } else {
@@ -76,7 +76,7 @@ private object SdkCounter {
   }
 
   final case class Builder[
-      F[_]: Monad: Console: AskContext,
+      F[_]: Monad: Diagnostic: AskContext,
       A: MeasurementValue
   ](
       name: String,

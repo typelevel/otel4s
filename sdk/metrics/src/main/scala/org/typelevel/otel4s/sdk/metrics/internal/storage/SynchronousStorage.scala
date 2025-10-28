@@ -20,13 +20,13 @@ import cats.Monad
 import cats.data.NonEmptyVector
 import cats.effect.Concurrent
 import cats.effect.std.AtomicCell
-import cats.effect.std.Console
 import cats.syntax.flatMap._
 import cats.syntax.functor._
 import cats.syntax.traverse._
 import org.typelevel.otel4s.Attributes
 import org.typelevel.otel4s.metrics.MeasurementValue
 import org.typelevel.otel4s.sdk.TelemetryResource
+import org.typelevel.otel4s.sdk.common.Diagnostic
 import org.typelevel.otel4s.sdk.common.InstrumentationScope
 import org.typelevel.otel4s.sdk.context.Context
 import org.typelevel.otel4s.sdk.metrics.Aggregation
@@ -44,7 +44,7 @@ import org.typelevel.otel4s.sdk.metrics.view.View
 
 /** Stores aggregated metrics for synchronous instruments.
   */
-private final class SynchronousStorage[F[_]: Monad: Console, A: MeasurementValue](
+private final class SynchronousStorage[F[_]: Monad: Diagnostic, A: MeasurementValue](
     reader: RegisteredReader[F],
     val metricDescriptor: MetricDescriptor,
     aggregator: SynchronousStorage.SynchronousAggregator[F, A],
@@ -190,7 +190,7 @@ private object SynchronousStorage {
     * @tparam A
     *   the type of the values to store
     */
-  def create[F[_]: Concurrent: Console, A: MeasurementValue: Numeric](
+  def create[F[_]: Concurrent: Diagnostic, A: MeasurementValue: Numeric](
       reader: RegisteredReader[F],
       reservoirs: Reservoirs[F],
       view: Option[View],

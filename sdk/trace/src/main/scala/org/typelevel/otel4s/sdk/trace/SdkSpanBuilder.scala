@@ -21,11 +21,11 @@ package trace
 import cats.arrow.FunctionK
 import cats.effect.Resource
 import cats.effect.Temporal
-import cats.effect.std.Console
 import cats.syntax.flatMap._
 import cats.syntax.foldable._
 import cats.syntax.functor._
 import cats.~>
+import org.typelevel.otel4s.sdk.common.Diagnostic
 import org.typelevel.otel4s.sdk.common.InstrumentationScope
 import org.typelevel.otel4s.sdk.context.Context
 import org.typelevel.otel4s.sdk.data.LimitedData
@@ -45,7 +45,7 @@ import scodec.bits.ByteVector
 
 import scala.collection.immutable.Queue
 
-private final case class SdkSpanBuilder[F[_]: Temporal: Console] private (
+private final case class SdkSpanBuilder[F[_]: Temporal: Diagnostic] private (
     name: String,
     scopeInfo: InstrumentationScope,
     tracerSharedState: TracerSharedState[F],
@@ -223,7 +223,7 @@ private final case class SdkSpanBuilder[F[_]: Temporal: Console] private (
 
 private object SdkSpanBuilder {
 
-  def apply[F[_]: Temporal: Console](
+  def apply[F[_]: Temporal: Diagnostic](
       name: String,
       scopeInfo: InstrumentationScope,
       tracerSharedState: TracerSharedState[F],

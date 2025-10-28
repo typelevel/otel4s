@@ -20,7 +20,6 @@ import cats.Foldable
 import cats.effect.Async
 import cats.effect.Resource
 import cats.effect.Temporal
-import cats.effect.std.Console
 import cats.effect.syntax.temporal._
 import cats.syntax.applicative._
 import cats.syntax.applicativeError._
@@ -52,6 +51,7 @@ import org.http4s.h2.H2Keys
 import org.http4s.headers.`User-Agent`
 import org.typelevel.ci._
 import org.typelevel.otel4s.sdk.BuildInfo
+import org.typelevel.otel4s.sdk.common.Diagnostic
 import org.typelevel.otel4s.sdk.exporter.RetryPolicy
 import org.typelevel.otel4s.sdk.exporter.otlp.grpc.GrpcCodecs
 import org.typelevel.otel4s.sdk.exporter.otlp.grpc.GrpcHeaders
@@ -69,7 +69,7 @@ import scala.concurrent.TimeoutException
 import scala.concurrent.duration.FiniteDuration
 import scala.util.chaining._
 
-private[otlp] abstract class OtlpClient[F[_]: Temporal: Console, A] private (
+private[otlp] abstract class OtlpClient[F[_]: Temporal: Diagnostic, A] private (
     config: OtlpClient.Config,
     client: Client[F]
 ) {
@@ -96,8 +96,9 @@ private[otlp] abstract class OtlpClient[F[_]: Temporal: Console, A] private (
         )
       )
       .handleErrorWith { e =>
-        Console[F].errorln(
-          s"[OtlpClient(${config.protocol}) ${config.endpoint}]: cannot export: ${e.getMessage}\n${e.getStackTrace.mkString("\n")}\n"
+        Diagnostic[F].error(
+          s"[OtlpClient(${config.protocol}) ${config.endpoint}]: cannot export: ${e.getMessage}",
+          e
         )
       }
 
@@ -129,7 +130,7 @@ private[otlp] object OtlpClient {
     val UserAgentName: String = "OTel-OTLP-Exporter-Scala-Otel4s"
   }
 
-  def create[F[_]: Async: Network: Compression: Console, A](
+  def create[F[_]: Async: Network: Compression: Diagnostic, A](
       protocol: OtlpProtocol,
       endpoint: Uri,
       headers: Headers,
@@ -149,7 +150,7 @@ private[otlp] object OtlpClient {
         case Some(client) =>
           Resource
             .eval(
-              Console[F].println(
+              Diagnostic[F].info(
                 "You are using a custom http4s client with OtlpClient. " +
                   "'timeout' and 'tlsContext' settings are ignored." +
                   "If you are using the gRPC exporter, make sure the client has '.withHttp2' enabled."
@@ -238,7 +239,7 @@ private[otlp] object OtlpClient {
     }
   }
 
-  private final class Http[F[_]: Temporal: Console, A](
+  private final class Http[F[_]: Temporal: Diagnostic, A](
       config: Config,
       encoding: HttpPayloadEncoding,
       client: Client[F]
@@ -275,7 +276,7 @@ private[otlp] object OtlpClient {
     private def logBody(response: Response[F]): F[Unit] =
       for {
         body <- response.bodyText.compile.string
-        _ <- Console[F].errorln(
+        _ <- Diagnostic[F].error(
           s"[OtlpClient(${config.protocol}) ${config.endpoint}] the request failed with [${response.status}]. Body: $body"
         )
       } yield ()
@@ -287,7 +288,7 @@ private[otlp] object OtlpClient {
     *
     * We can consider migration to http4s-grpc once it reaches 1.x.
     */
-  private final class Grpc[F[_]: Temporal: Compression: Console, A](
+  private final class Grpc[F[_]: Temporal: Compression: Diagnostic, A](
       config: Config,
       client: Client[F]
   )(implicit encoder: ProtoEncoder.Message[List[A]])
@@ -350,7 +351,7 @@ private[otlp] object OtlpClient {
       response.partialSuccess
         .filter(r => r.errorMessage.nonEmpty || r.rejectedSpans > 0)
         .traverse_ { ps =>
-          Console[F].errorln(
+          Diagnostic[F].error(
             s"[OtlpClient(${config.protocol}) ${config.endpoint}]: some spans [${ps.rejectedSpans}] were rejected due to [${ps.errorMessage}]"
           )
         }

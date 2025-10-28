@@ -19,7 +19,6 @@ package sdk
 package trace
 
 import cats.effect.IO
-import cats.effect.std.Console
 import cats.effect.std.Queue
 import cats.effect.testkit.TestControl
 import cats.syntax.monoid._
@@ -29,9 +28,9 @@ import munit.ScalaCheckEffectSuite
 import munit.internal.PlatformCompat
 import org.scalacheck.Test
 import org.scalacheck.effect.PropF
+import org.typelevel.otel4s.sdk.common.Diagnostic
 import org.typelevel.otel4s.sdk.common.InstrumentationScope
 import org.typelevel.otel4s.sdk.data.LimitedData
-import org.typelevel.otel4s.sdk.test.NoopConsole
 import org.typelevel.otel4s.sdk.trace.data.EventData
 import org.typelevel.otel4s.sdk.trace.data.LinkData
 import org.typelevel.otel4s.sdk.trace.data.SpanData
@@ -46,7 +45,7 @@ import scala.concurrent.duration._
 
 class SdkSpanBackendSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
 
-  private implicit val noopConsole: Console[IO] = new NoopConsole[IO]
+  private implicit val noopDiagnostic: Diagnostic[IO] = Diagnostic.noop
 
   private val spanLimits = Defaults.spanLimits
 

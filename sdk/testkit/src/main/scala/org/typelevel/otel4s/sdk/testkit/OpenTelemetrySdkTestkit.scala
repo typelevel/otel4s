@@ -19,7 +19,6 @@ package org.typelevel.otel4s.sdk.testkit
 import cats.Parallel
 import cats.effect.Async
 import cats.effect.Resource
-import cats.effect.std.Console
 import org.typelevel.otel4s.Otel4s
 import org.typelevel.otel4s.baggage.BaggageManager
 import org.typelevel.otel4s.context.LocalProvider
@@ -28,6 +27,7 @@ import org.typelevel.otel4s.context.propagation.TextMapPropagator
 import org.typelevel.otel4s.logs.LoggerProvider
 import org.typelevel.otel4s.metrics.MeterProvider
 import org.typelevel.otel4s.sdk.baggage.SdkBaggageManager
+import org.typelevel.otel4s.sdk.common.Diagnostic
 import org.typelevel.otel4s.sdk.context.Context
 import org.typelevel.otel4s.sdk.context.LocalContext
 import org.typelevel.otel4s.sdk.context.LocalContextProvider
@@ -95,7 +95,7 @@ object OpenTelemetrySdkTestkit {
     *   the preferred cardinality limit for the given instrument type. If no views are configured for a metric
     *   instrument, a limit provided by the selector will be used
     */
-  def inMemory[F[_]: Async: Parallel: Console: LocalContextProvider](
+  def inMemory[F[_]: Async: Parallel: Diagnostic: LocalContextProvider](
       customizeMeterProviderBuilder: Customizer[SdkMeterProvider.Builder[F]] = identity[SdkMeterProvider.Builder[F]],
       customizeTracerProviderBuilder: Customizer[SdkTracerProvider.Builder[F]] = identity[SdkTracerProvider.Builder[F]],
       customizeLoggerProviderBuilder: Customizer[SdkLoggerProvider.Builder[F]] = identity[SdkLoggerProvider.Builder[F]],
@@ -136,7 +136,7 @@ object OpenTelemetrySdkTestkit {
         )(
           Async[F],
           Parallel[F],
-          Console[F],
+          Diagnostic[F],
           LocalProvider.fromLocal(local)
         )
         logs <- LogsTestkit.inMemory[F](

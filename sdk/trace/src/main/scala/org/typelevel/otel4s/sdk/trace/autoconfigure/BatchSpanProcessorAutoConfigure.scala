@@ -18,11 +18,11 @@ package org.typelevel.otel4s.sdk.trace.autoconfigure
 
 import cats.effect.Resource
 import cats.effect.Temporal
-import cats.effect.std.Console
 import cats.syntax.flatMap._
 import cats.syntax.foldable._
 import org.typelevel.otel4s.sdk.autoconfigure.AutoConfigure
 import org.typelevel.otel4s.sdk.autoconfigure.Config
+import org.typelevel.otel4s.sdk.common.Diagnostic
 import org.typelevel.otel4s.sdk.trace.exporter.SpanExporter
 import org.typelevel.otel4s.sdk.trace.processor.BatchSpanProcessor
 import org.typelevel.otel4s.sdk.trace.processor.SpanProcessor
@@ -48,7 +48,7 @@ import scala.util.chaining._
   * @param exporter
   *   the exporter to use with the configured batch span processor
   */
-private final class BatchSpanProcessorAutoConfigure[F[_]: Temporal: Console](
+private final class BatchSpanProcessorAutoConfigure[F[_]: Temporal: Diagnostic](
     exporter: SpanExporter[F]
 ) extends AutoConfigure.WithHint[F, SpanProcessor[F]](
       "BatchSpanProcessor",
@@ -118,7 +118,7 @@ private[sdk] object BatchSpanProcessorAutoConfigure {
     * @param exporter
     *   the exporter to use with the configured batch span processor
     */
-  def apply[F[_]: Temporal: Console](exporter: SpanExporter[F]): AutoConfigure[F, SpanProcessor[F]] =
+  def apply[F[_]: Temporal: Diagnostic](exporter: SpanExporter[F]): AutoConfigure[F, SpanProcessor[F]] =
     new BatchSpanProcessorAutoConfigure[F](exporter)
 
 }

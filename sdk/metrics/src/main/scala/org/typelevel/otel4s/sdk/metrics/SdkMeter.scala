@@ -18,7 +18,6 @@ package org.typelevel.otel4s.sdk.metrics
 
 import cats.effect.Clock
 import cats.effect.MonadCancelThrow
-import cats.effect.std.Console
 import org.typelevel.otel4s.metrics.BatchCallback
 import org.typelevel.otel4s.metrics.Counter
 import org.typelevel.otel4s.metrics.Gauge
@@ -30,6 +29,7 @@ import org.typelevel.otel4s.metrics.ObservableGauge
 import org.typelevel.otel4s.metrics.ObservableUpDownCounter
 import org.typelevel.otel4s.metrics.UpDownCounter
 import org.typelevel.otel4s.metrics.meta.InstrumentMeta
+import org.typelevel.otel4s.sdk.common.Diagnostic
 import org.typelevel.otel4s.sdk.context.AskContext
 import org.typelevel.otel4s.sdk.metrics.data.MetricData
 import org.typelevel.otel4s.sdk.metrics.internal.MeterSharedState
@@ -42,7 +42,7 @@ import scala.concurrent.duration.FiniteDuration
   * @see
   *   [[https://opentelemetry.io/docs/specs/otel/metrics/api/#meter]]
   */
-private class SdkMeter[F[_]: MonadCancelThrow: Clock: Console: AskContext](
+private class SdkMeter[F[_]: MonadCancelThrow: Clock: Diagnostic: AskContext](
     sharedState: MeterSharedState[F]
 ) extends Meter.Unsealed[F] {
 

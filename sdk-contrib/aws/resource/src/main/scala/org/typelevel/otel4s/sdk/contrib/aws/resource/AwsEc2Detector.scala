@@ -18,7 +18,6 @@ package org.typelevel.otel4s.sdk.contrib.aws.resource
 
 import cats.effect.Async
 import cats.effect.Resource
-import cats.effect.std.Console
 import cats.syntax.applicativeError._
 import cats.syntax.flatMap._
 import cats.syntax.functor._
@@ -38,12 +37,13 @@ import org.typelevel.ci._
 import org.typelevel.otel4s.AttributeKey
 import org.typelevel.otel4s.Attributes
 import org.typelevel.otel4s.sdk.TelemetryResource
+import org.typelevel.otel4s.sdk.common.Diagnostic
 import org.typelevel.otel4s.sdk.resource.TelemetryResourceDetector
 import org.typelevel.otel4s.semconv.SchemaUrls
 
 import scala.concurrent.duration._
 
-private class AwsEc2Detector[F[_]: Async: Network: Console] private (
+private class AwsEc2Detector[F[_]: Async: Network: Diagnostic] private (
     baseUri: Uri,
     customClient: Option[Client[F]]
 ) extends TelemetryResourceDetector.Unsealed[F] {
@@ -57,8 +57,8 @@ private class AwsEc2Detector[F[_]: Async: Network: Console] private (
   def detect: F[Option[TelemetryResource]] =
     mkClient.use { client =>
       retrieve(client).handleErrorWith { e =>
-        Console[F]
-          .errorln(s"AwsEc2Detector: cannot retrieve metadata from $baseUri due to ${e.getMessage}")
+        Diagnostic[F]
+          .error(s"AwsEc2Detector: cannot retrieve metadata from $baseUri due to ${e.getMessage}")
           .as(None)
       }
     }
@@ -191,7 +191,7 @@ object AwsEc2Detector {
     * @see
     *   [[https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instancedata-data-retrieval.html]]
     */
-  def apply[F[_]: Async: Network: Console]: TelemetryResourceDetector[F] =
+  def apply[F[_]: Async: Network: Diagnostic]: TelemetryResourceDetector[F] =
     new AwsEc2Detector[F](Const.MetadataEndpoint, None)
 
   /** The detector fetches instance metadata from the given `baseUri` using the given `client`.
@@ -214,7 +214,7 @@ object AwsEc2Detector {
     * @see
     *   [[https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instancedata-data-retrieval.html]]
     */
-  def apply[F[_]: Async: Network: Console](baseUri: Uri, client: Client[F]): TelemetryResourceDetector[F] =
+  def apply[F[_]: Async: Network: Diagnostic](baseUri: Uri, client: Client[F]): TelemetryResourceDetector[F] =
     new AwsEc2Detector[F](baseUri, Some(client))
 
 }

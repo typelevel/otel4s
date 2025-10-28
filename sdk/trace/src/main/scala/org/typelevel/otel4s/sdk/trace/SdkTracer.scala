@@ -19,12 +19,12 @@ package trace
 
 import cats.data.OptionT
 import cats.effect.Temporal
-import cats.effect.std.Console
 import cats.syntax.flatMap._
 import cats.syntax.functor._
 import org.typelevel.otel4s.context.propagation.ContextPropagators
 import org.typelevel.otel4s.context.propagation.TextMapGetter
 import org.typelevel.otel4s.context.propagation.TextMapUpdater
+import org.typelevel.otel4s.sdk.common.Diagnostic
 import org.typelevel.otel4s.sdk.common.InstrumentationScope
 import org.typelevel.otel4s.sdk.context.Context
 import org.typelevel.otel4s.trace.Span
@@ -34,7 +34,7 @@ import org.typelevel.otel4s.trace.TraceScope
 import org.typelevel.otel4s.trace.Tracer
 import org.typelevel.otel4s.trace.meta.InstrumentMeta
 
-private final class SdkTracer[F[_]: Temporal: Console] private[trace] (
+private final class SdkTracer[F[_]: Temporal: Diagnostic] private[trace] (
     scopeInfo: InstrumentationScope,
     propagators: ContextPropagators[Context],
     sharedState: TracerSharedState[F],

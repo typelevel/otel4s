@@ -20,10 +20,10 @@ import cats.FlatMap
 import cats.Parallel
 import cats.effect.Async
 import cats.effect.Resource
-import cats.effect.std.Console
 import cats.effect.std.Random
 import cats.syntax.flatMap._
 import org.typelevel.otel4s.context.LocalProvider
+import org.typelevel.otel4s.sdk.common.Diagnostic
 import org.typelevel.otel4s.sdk.context.Context
 import org.typelevel.otel4s.sdk.context.LocalContext
 import org.typelevel.otel4s.sdk.context.LocalContextProvider
@@ -55,7 +55,7 @@ object TracesTestkit {
     * @param customize
     *   the customization of the builder
     */
-  def inMemory[F[_]: Async: Parallel: Console: LocalContextProvider](
+  def inMemory[F[_]: Async: Parallel: Diagnostic: LocalContextProvider](
       customize: SdkTracerProvider.Builder[F] => SdkTracerProvider.Builder[F] = (b: SdkTracerProvider.Builder[F]) => b
   ): Resource[F, TracesTestkit[F]] = {
     def createTracerProvider(

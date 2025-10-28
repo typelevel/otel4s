@@ -17,7 +17,6 @@
 package org.typelevel.otel4s.sdk.exporter.prometheus
 
 import cats.MonadThrow
-import cats.effect.std.Console
 import cats.syntax.functor._
 import fs2.compression.Compression
 import org.http4s.HttpRoutes
@@ -29,13 +28,14 @@ import org.http4s.Response
 import org.http4s.Status
 import org.http4s.headers.Accept
 import org.http4s.server.middleware.GZip
+import org.typelevel.otel4s.sdk.common.Diagnostic
 import org.typelevel.otel4s.sdk.metrics.exporter.MetricExporter
 
 object PrometheusHttpRoutes {
 
   /** Creates HTTP routes that will collect metrics and serialize to Prometheus text format on request.
     */
-  def routes[F[_]: Compression: Console](
+  def routes[F[_]: Compression: Diagnostic](
       exporter: MetricExporter.Pull[F],
       writerConfig: PrometheusWriter.Config
   )(implicit F: MonadThrow[F]): HttpRoutes[F] = {

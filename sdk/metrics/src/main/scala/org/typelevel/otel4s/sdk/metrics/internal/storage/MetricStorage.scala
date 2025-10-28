@@ -18,12 +18,12 @@ package org.typelevel.otel4s.sdk.metrics.internal.storage
 
 import cats.Applicative
 import cats.effect.Concurrent
-import cats.effect.std.Console
 import cats.syntax.foldable._
 import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.Attributes
 import org.typelevel.otel4s.metrics.MeasurementValue
 import org.typelevel.otel4s.sdk.TelemetryResource
+import org.typelevel.otel4s.sdk.common.Diagnostic
 import org.typelevel.otel4s.sdk.common.InstrumentationScope
 import org.typelevel.otel4s.sdk.context.AskContext
 import org.typelevel.otel4s.sdk.context.Context
@@ -75,12 +75,12 @@ private[metrics] object MetricStorage {
   private[storage] val OverflowAttribute: Attribute[Boolean] =
     Attribute("otel.metric.overflow", true)
 
-  private[storage] def cardinalityWarning[F[_]: Console](
+  private[storage] def cardinalityWarning[F[_]: Diagnostic](
       storageName: String,
       instrument: InstrumentDescriptor,
       maxCardinality: Int
   ): F[Unit] =
-    Console[F].errorln(
+    Diagnostic[F].error(
       s"$storageName: instrument [${instrument.name}] has exceeded the maximum allowed cardinality [$maxCardinality]"
     )
 
@@ -170,7 +170,7 @@ private[metrics] object MetricStorage {
     *   the type of the values to store
     */
   def asynchronous[
-      F[_]: Concurrent: Console: AskContext,
+      F[_]: Concurrent: Diagnostic: AskContext,
       A: MeasurementValue: Numeric
   ](
       reader: RegisteredReader[F],
@@ -208,7 +208,7 @@ private[metrics] object MetricStorage {
     * @tparam A
     *   the type of the values to store
     */
-  def synchronous[F[_]: Concurrent: Console, A: MeasurementValue: Numeric](
+  def synchronous[F[_]: Concurrent: Diagnostic, A: MeasurementValue: Numeric](
       reader: RegisteredReader[F],
       reservoirs: Reservoirs[F],
       view: Option[View],

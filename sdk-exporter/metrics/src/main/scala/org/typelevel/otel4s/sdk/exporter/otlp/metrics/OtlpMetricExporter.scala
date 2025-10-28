@@ -22,7 +22,6 @@ import cats.Applicative
 import cats.Foldable
 import cats.effect.Async
 import cats.effect.Resource
-import cats.effect.std.Console
 import fs2.compression.Compression
 import fs2.io.net.Network
 import fs2.io.net.tls.TLSContext
@@ -30,6 +29,7 @@ import org.http4s.Headers
 import org.http4s.Uri
 import org.http4s.client.Client
 import org.http4s.syntax.literals._
+import org.typelevel.otel4s.sdk.common.Diagnostic
 import org.typelevel.otel4s.sdk.metrics.data.MetricData
 import org.typelevel.otel4s.sdk.metrics.exporter.AggregationSelector
 import org.typelevel.otel4s.sdk.metrics.exporter.AggregationTemporalitySelector
@@ -172,7 +172,7 @@ object OtlpMetricExporter {
     *   - timeout: `10 seconds`
     *   - retry policy: 5 exponential attempts, initial backoff is `1 second`, max backoff is `5 seconds`
     */
-  def builder[F[_]: Async: Network: Compression: Console]: Builder[F] =
+  def builder[F[_]: Async: Network: Compression: Diagnostic]: Builder[F] =
     BuilderImpl(
       protocol = Defaults.Protocol,
       endpoint = None,
@@ -188,7 +188,7 @@ object OtlpMetricExporter {
     )
 
   private final case class BuilderImpl[
-      F[_]: Async: Network: Compression: Console
+      F[_]: Async: Network: Compression: Diagnostic
   ](
       protocol: OtlpProtocol,
       endpoint: Option[Uri],

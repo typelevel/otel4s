@@ -20,13 +20,13 @@ import cats.Monad
 import cats.data.NonEmptyVector
 import cats.effect.Concurrent
 import cats.effect.Ref
-import cats.effect.std.Console
 import cats.mtl.Ask
 import cats.syntax.flatMap._
 import cats.syntax.functor._
 import org.typelevel.otel4s.Attributes
 import org.typelevel.otel4s.metrics.MeasurementValue
 import org.typelevel.otel4s.sdk.TelemetryResource
+import org.typelevel.otel4s.sdk.common.Diagnostic
 import org.typelevel.otel4s.sdk.common.InstrumentationScope
 import org.typelevel.otel4s.sdk.context.AskContext
 import org.typelevel.otel4s.sdk.context.Context
@@ -47,7 +47,7 @@ import scala.concurrent.duration.FiniteDuration
 /** Stores aggregated metrics for asynchronous instruments.
   */
 private final class AsynchronousStorage[
-    F[_]: Monad: Console: AskContext,
+    F[_]: Monad: Diagnostic: AskContext,
     A
 ] private (
     val reader: RegisteredReader[F],
@@ -139,7 +139,7 @@ private object AsynchronousStorage {
     *   the type of the values to store
     */
   def create[
-      F[_]: Concurrent: Console: AskContext,
+      F[_]: Concurrent: Diagnostic: AskContext,
       A: MeasurementValue: Numeric
   ](
       reader: RegisteredReader[F],

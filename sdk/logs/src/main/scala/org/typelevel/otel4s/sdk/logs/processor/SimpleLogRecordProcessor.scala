@@ -18,9 +18,9 @@ package org.typelevel.otel4s.sdk.logs
 package processor
 
 import cats.MonadThrow
-import cats.effect.std.Console
 import cats.syntax.applicativeError._
 import cats.syntax.flatMap._
+import org.typelevel.otel4s.sdk.common.Diagnostic
 import org.typelevel.otel4s.sdk.context.Context
 import org.typelevel.otel4s.sdk.logs.exporter.LogRecordExporter
 
@@ -36,7 +36,7 @@ import org.typelevel.otel4s.sdk.logs.exporter.LogRecordExporter
   * @tparam F
   *   the higher-kinded type of polymorphic effect
   */
-private final class SimpleLogRecordProcessor[F[_]: MonadThrow: Console] private (
+private final class SimpleLogRecordProcessor[F[_]: MonadThrow: Diagnostic] private (
     exporter: LogRecordExporter[F]
 ) extends LogRecordProcessor.Unsealed[F] {
 
@@ -47,9 +47,7 @@ private final class SimpleLogRecordProcessor[F[_]: MonadThrow: Console] private 
     logRecordRef.toLogRecordData
       .flatMap(logRecord => exporter.exportLogRecords(List(logRecord)))
       .handleErrorWith { e =>
-        Console[F].errorln(
-          s"SimpleLogRecordProcessor: the export has failed: ${e.getMessage}\n${e.getStackTrace.mkString("\n")}\n"
-        )
+        Diagnostic[F].error(s"SimpleLogRecordProcessor: the export has failed: ${e.getMessage}", e)
       }
 
   def forceFlush: F[Unit] =
@@ -63,7 +61,7 @@ object SimpleLogRecordProcessor {
     * @param exporter
     *   the [[exporter.LogRecordExporter LogRecordExporter]] to use
     */
-  def apply[F[_]: MonadThrow: Console](exporter: LogRecordExporter[F]): LogRecordProcessor[F] =
+  def apply[F[_]: MonadThrow: Diagnostic](exporter: LogRecordExporter[F]): LogRecordProcessor[F] =
     new SimpleLogRecordProcessor[F](exporter)
 
 }

@@ -18,19 +18,18 @@ package org.typelevel.otel4s.sdk.logs
 
 import cats.Foldable
 import cats.effect.IO
-import cats.effect.std.Console
 import munit.CatsEffectSuite
 import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.Attributes
 import org.typelevel.otel4s.sdk.TelemetryResource
 import org.typelevel.otel4s.sdk.autoconfigure.AutoConfigure
 import org.typelevel.otel4s.sdk.autoconfigure.Config
+import org.typelevel.otel4s.sdk.common.Diagnostic
 import org.typelevel.otel4s.sdk.logs.exporter.LogRecordExporter
-import org.typelevel.otel4s.sdk.test.NoopConsole
 
 class SdkLogsSuite extends CatsEffectSuite {
 
-  private implicit val noopConsole: Console[IO] = new NoopConsole[IO]
+  private implicit val noopDiagnostic: Diagnostic[IO] = Diagnostic.noop
 
   private val NoopLogs = "SdkLogs{loggerProvider=LoggerProvider.Noop}"
 

@@ -20,13 +20,13 @@ import cats.Monad
 import cats.effect.Concurrent
 import cats.effect.Ref
 import cats.effect.Resource
-import cats.effect.std.Console
 import cats.syntax.flatMap._
 import cats.syntax.foldable._
 import cats.syntax.functor._
 import org.typelevel.otel4s.Attributes
 import org.typelevel.otel4s.metrics.MeasurementValue
 import org.typelevel.otel4s.metrics.ObservableMeasurement
+import org.typelevel.otel4s.sdk.common.Diagnostic
 import org.typelevel.otel4s.sdk.common.InstrumentationScope
 import org.typelevel.otel4s.sdk.metrics.data.TimeWindow
 import org.typelevel.otel4s.sdk.metrics.internal.exporter.RegisteredReader
@@ -89,7 +89,7 @@ private[metrics] object SdkObservableMeasurement {
     ) extends State[F]
   }
 
-  def create[F[_]: Concurrent: Console, A: MeasurementValue](
+  def create[F[_]: Concurrent: Diagnostic, A: MeasurementValue](
       storages: Vector[MetricStorage.Asynchronous[F, A]],
       scope: InstrumentationScope,
       descriptor: InstrumentDescriptor.Asynchronous
@@ -99,7 +99,7 @@ private[metrics] object SdkObservableMeasurement {
     } yield new Impl[F, A](state, scope, descriptor, storages)
 
   private final class Impl[
-      F[_]: Monad: Console,
+      F[_]: Monad: Diagnostic,
       A: MeasurementValue
   ](
       stateRef: Ref[F, SdkObservableMeasurement.State[F]],
@@ -125,7 +125,7 @@ private[metrics] object SdkObservableMeasurement {
       if (isValid(value)) {
         stateRef.get.flatMap {
           case State.Empty() =>
-            Console[F].errorln(
+            Diagnostic[F].error(
               "SdkObservableMeasurement: " +
                 s"trying to record a measurement for an instrument [${descriptor.name}] while the active reader is unset. " +
                 "Dropping the measurement."

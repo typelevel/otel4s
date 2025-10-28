@@ -18,15 +18,15 @@ package org.typelevel.otel4s.sdk.metrics
 
 import cats.effect.IO
 import munit.CatsEffectSuite
-import org.typelevel.otel4s.sdk.test.InMemoryConsole
-import org.typelevel.otel4s.sdk.test.InMemoryConsole._
+import org.typelevel.otel4s.sdk.test.InMemoryDiagnostic
+import org.typelevel.otel4s.sdk.test.InMemoryDiagnostic._
 
 class NoopInstrumentBuilderSuite extends CatsEffectSuite {
 
   private val incorrectName = "7metric???"
 
   test("create a noop Counter") {
-    InMemoryConsole.create[IO].flatMap { implicit C: InMemoryConsole[IO] =>
+    InMemoryDiagnostic.create[IO].flatMap { implicit C: InMemoryDiagnostic[IO] =>
       for {
         counter <- NoopInstrumentBuilder.counter[IO, Long](incorrectName).create
         _ <- C.entries.assertEquals(consoleEntries("Counter"))
@@ -36,7 +36,7 @@ class NoopInstrumentBuilderSuite extends CatsEffectSuite {
   }
 
   test("create a noop Histogram") {
-    InMemoryConsole.create[IO].flatMap { implicit C: InMemoryConsole[IO] =>
+    InMemoryDiagnostic.create[IO].flatMap { implicit C: InMemoryDiagnostic[IO] =>
       for {
         histogram <- NoopInstrumentBuilder
           .histogram[IO, Long](incorrectName)
@@ -48,7 +48,7 @@ class NoopInstrumentBuilderSuite extends CatsEffectSuite {
   }
 
   test("create a noop UpDownCounter") {
-    InMemoryConsole.create[IO].flatMap { implicit C: InMemoryConsole[IO] =>
+    InMemoryDiagnostic.create[IO].flatMap { implicit C: InMemoryDiagnostic[IO] =>
       for {
         upDownCounter <- NoopInstrumentBuilder
           .upDownCounter[IO, Long](incorrectName)
@@ -60,7 +60,7 @@ class NoopInstrumentBuilderSuite extends CatsEffectSuite {
   }
 
   test("create a noop Gauge") {
-    InMemoryConsole.create[IO].flatMap { implicit C: InMemoryConsole[IO] =>
+    InMemoryDiagnostic.create[IO].flatMap { implicit C: InMemoryDiagnostic[IO] =>
       for {
         gauge <- NoopInstrumentBuilder.gauge[IO, Long](incorrectName).create
         _ <- C.entries.assertEquals(consoleEntries("Gauge"))
@@ -70,7 +70,7 @@ class NoopInstrumentBuilderSuite extends CatsEffectSuite {
   }
 
   test("create a noop ObservableCounter") {
-    InMemoryConsole.create[IO].flatMap { implicit C: InMemoryConsole[IO] =>
+    InMemoryDiagnostic.create[IO].flatMap { implicit C: InMemoryDiagnostic[IO] =>
       for {
         _ <- NoopInstrumentBuilder
           .observableCounter[IO, Long](incorrectName)
@@ -81,7 +81,7 @@ class NoopInstrumentBuilderSuite extends CatsEffectSuite {
   }
 
   test("create a noop ObservableUpDownCounter") {
-    InMemoryConsole.create[IO].flatMap { implicit C: InMemoryConsole[IO] =>
+    InMemoryDiagnostic.create[IO].flatMap { implicit C: InMemoryDiagnostic[IO] =>
       for {
         _ <- NoopInstrumentBuilder
           .observableUpDownCounter[IO, Long](incorrectName)
@@ -92,7 +92,7 @@ class NoopInstrumentBuilderSuite extends CatsEffectSuite {
   }
 
   test("create a noop ObservableGauge") {
-    InMemoryConsole.create[IO].flatMap { implicit C: InMemoryConsole[IO] =>
+    InMemoryDiagnostic.create[IO].flatMap { implicit C: InMemoryDiagnostic[IO] =>
       for {
         _ <- NoopInstrumentBuilder
           .observableGauge[IO, Long](incorrectName)
@@ -103,11 +103,11 @@ class NoopInstrumentBuilderSuite extends CatsEffectSuite {
   }
 
   private def consoleEntries(instrument: String): List[Entry] = List(
-    Entry(
-      Op.Errorln,
+    Entry.Error(
       s"SdkMeter: $instrument instrument has invalid name [$incorrectName]. " +
         "Using noop instrument. " +
-        "Instrument names must consist of 255 or fewer characters including alphanumeric, _, ., -, and start with a letter."
+        "Instrument names must consist of 255 or fewer characters including alphanumeric, _, ., -, and start with a letter.",
+      None
     )
   )
 

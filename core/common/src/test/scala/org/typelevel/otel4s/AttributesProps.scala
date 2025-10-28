@@ -88,7 +88,7 @@ class AttributesProps extends ScalaCheckSuite {
   property("Attributes#toMap (internal) returns a map of all attributes") {
     forAll(listOfAttributes) { attributes =>
       val attrs = attributes.to(Attributes)
-      val map = attrs.toMap
+      val map = attrs.toMap()
 
       map.size == attrs.size && map.values.forall { a =>
         attrs.get(a.key).isDefined && attrs.get(a.key).contains(a)
@@ -124,14 +124,14 @@ class AttributesProps extends ScalaCheckSuite {
 
   property("Attributes#concat (++) combines two sets of attributes") {
     forAll(Gens.attributes, Gens.attributes) { (attributes1, attributes2) =>
-      val unique = attributes1.toMap.keySet ++ attributes2.toMap.keySet
-      val overlap = attributes1.toMap.keySet.intersect(attributes2.toMap.keySet)
+      val unique = attributes1.toMap().keySet ++ attributes2.toMap().keySet
+      val overlap = attributes1.toMap().keySet.intersect(attributes2.toMap().keySet)
 
       val combined = attributes1 ++ attributes2
       val sizeIsEqual = combined.size == unique.size
 
       val secondCollectionOverrodeValues = overlap.forall { key =>
-        combined.toMap.get(key).exists(attributes2.toMap.get(key).contains)
+        combined.toMap().get(key).exists(attributes2.toMap().get(key).contains)
       }
 
       sizeIsEqual && secondCollectionOverrodeValues

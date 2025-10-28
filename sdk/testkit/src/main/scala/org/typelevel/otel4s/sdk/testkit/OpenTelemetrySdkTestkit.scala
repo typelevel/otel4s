@@ -96,9 +96,11 @@ object OpenTelemetrySdkTestkit {
     *   instrument, a limit provided by the selector will be used
     */
   def inMemory[F[_]: Async: Parallel: Diagnostic: LocalContextProvider](
-      customizeMeterProviderBuilder: Customizer[SdkMeterProvider.Builder[F]] = identity[SdkMeterProvider.Builder[F]],
-      customizeTracerProviderBuilder: Customizer[SdkTracerProvider.Builder[F]] = identity[SdkTracerProvider.Builder[F]],
-      customizeLoggerProviderBuilder: Customizer[SdkLoggerProvider.Builder[F]] = identity[SdkLoggerProvider.Builder[F]],
+      customizeMeterProviderBuilder: Customizer[SdkMeterProvider.Builder[F]] = identity[SdkMeterProvider.Builder[F]](_),
+      customizeTracerProviderBuilder: Customizer[SdkTracerProvider.Builder[F]] =
+        identity[SdkTracerProvider.Builder[F]](_),
+      customizeLoggerProviderBuilder: Customizer[SdkLoggerProvider.Builder[F]] =
+        identity[SdkLoggerProvider.Builder[F]](_),
       textMapPropagators: Iterable[TextMapPropagator[Context]] = Nil,
       aggregationTemporalitySelector: AggregationTemporalitySelector = AggregationTemporalitySelector.alwaysCumulative,
       defaultAggregationSelector: AggregationSelector = AggregationSelector.default,

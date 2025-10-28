@@ -31,7 +31,7 @@ class TelemetryResourceProps extends ScalaCheckSuite {
         case Right(merged) =>
           val mergedAttrs = merged.attributes
           val keys =
-            r1.attributes.toMap.keySet ++ r2.attributes.toMap.keySet
+            r1.attributes.toMap().keySet ++ r2.attributes.toMap().keySet
 
           mergedAttrs.size == keys.size && mergedAttrs.forall { a =>
             r2.attributes

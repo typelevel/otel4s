@@ -267,7 +267,7 @@ class SdkSpanBackendSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
     PropF.forAllF { (init: Attributes, extraAttrs: Attributes) =>
       // 'init' and 'extra' may have attributes under the same key. we need only unique keys in extra
       val extra = {
-        val initMap = init.toMap
+        val initMap = init.toMap()
         extraAttrs.filterNot(a => initMap.contains(a.key.name))
       }
 

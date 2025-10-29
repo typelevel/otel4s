@@ -52,6 +52,58 @@ final class InMemoryMetricExporter[F[_]: Monad] private (
 
 object InMemoryMetricExporter {
 
+  /** Builder for [[InMemoryMetricExporter]]. */
+  sealed trait Builder[F[_]] {
+
+    /** Sets the capacity of the internal queue.
+      *
+      * @param capacity
+      *   the optional capacity to use
+      */
+    def withCapacity(capacity: Option[Int]): Builder[F]
+
+    /** Sets the aggregation temporality selector.
+      *
+      * @param selector
+      *   the selector to use
+      */
+    def withAggregationTemporalitySelector(selector: AggregationTemporalitySelector): Builder[F]
+
+    /** Sets the default aggregation selector.
+      *
+      * @param selector
+      *   the selector to use
+      */
+    def withDefaultAggregationSelector(selector: AggregationSelector): Builder[F]
+
+    /** Sets the default cardinality limit selector.
+      *
+      * @param selector
+      *   the selector to use
+      */
+    def withDefaultCardinalityLimitSelector(selector: CardinalityLimitSelector): Builder[F]
+
+    /** Creates [[InMemoryMetricExporter]] using the configuration of this builder. */
+    def build: F[InMemoryMetricExporter[F]]
+
+  }
+
+  /** Creates a [[Builder]] of [[InMemoryMetricExporter]] with the default configuration.
+    */
+  def builder[F[_]: Concurrent]: Builder[F] =
+    BuilderImpl[F]()
+
+  /** Creates an [[InMemoryMetricExporter]] that keeps metrics in memory.
+    *
+    * @see
+    *   [[builder]]
+    *
+    * @param capacity
+    *   the capacity of the internal queue
+    */
+  def create[F[_]: Concurrent](capacity: Option[Int]): F[InMemoryMetricExporter[F]] =
+    builder[F].withCapacity(capacity).build
+
   /** Creates a `MetricExporter` that keeps metrics in-memory.
     *
     * @param capacity
@@ -68,19 +120,51 @@ object InMemoryMetricExporter {
     *   the preferred cardinality limit for the given instrument type. If no views are configured for a metric
     *   instrument, an aggregation provided by the selector will be used.
     */
+  @deprecated(
+    "Use `InMemoryMetricExporter.builder` or an overloaded alternative of the `InMemoryMetricExporter.create`",
+    "0.15.0"
+  )
   def create[F[_]: Concurrent](
       capacity: Option[Int],
       aggregationTemporalitySelector: AggregationTemporalitySelector = AggregationTemporalitySelector.alwaysCumulative,
       defaultAggregationSelector: AggregationSelector = AggregationSelector.default,
       defaultCardinalityLimitSelector: CardinalityLimitSelector = CardinalityLimitSelector.default
   ): F[InMemoryMetricExporter[F]] =
-    for {
-      queue <- capacity.fold(Queue.unbounded[F, MetricData])(Queue.bounded(_))
-    } yield new InMemoryMetricExporter[F](
-      queue,
-      aggregationTemporalitySelector,
-      defaultAggregationSelector,
-      defaultCardinalityLimitSelector
-    )
+    builder[F]
+      .withCapacity(capacity)
+      .withAggregationTemporalitySelector(aggregationTemporalitySelector)
+      .withDefaultAggregationSelector(defaultAggregationSelector)
+      .withDefaultCardinalityLimitSelector(defaultCardinalityLimitSelector)
+      .build
+
+  private final case class BuilderImpl[F[_]: Concurrent](
+      capacity: Option[Int] = None,
+      aggregationTemporalitySelector: AggregationTemporalitySelector = AggregationTemporalitySelector.alwaysCumulative,
+      defaultAggregationSelector: AggregationSelector = AggregationSelector.default,
+      defaultCardinalityLimitSelector: CardinalityLimitSelector = CardinalityLimitSelector.default
+  ) extends Builder[F] {
+
+    def withCapacity(capacity: Option[Int]): Builder[F] =
+      copy(capacity = capacity)
+
+    def withAggregationTemporalitySelector(selector: AggregationTemporalitySelector): Builder[F] =
+      copy(aggregationTemporalitySelector = selector)
+
+    def withDefaultAggregationSelector(selector: AggregationSelector): Builder[F] =
+      copy(defaultAggregationSelector = selector)
+
+    def withDefaultCardinalityLimitSelector(selector: CardinalityLimitSelector): Builder[F] =
+      copy(defaultCardinalityLimitSelector = selector)
+
+    def build: F[InMemoryMetricExporter[F]] =
+      for {
+        queue <- capacity.fold(Queue.unbounded[F, MetricData])(Queue.bounded(_))
+      } yield new InMemoryMetricExporter[F](
+        queue,
+        aggregationTemporalitySelector,
+        defaultAggregationSelector,
+        defaultCardinalityLimitSelector
+      )
+  }
 
 }

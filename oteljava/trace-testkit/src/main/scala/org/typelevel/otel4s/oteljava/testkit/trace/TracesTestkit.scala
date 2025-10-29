@@ -138,7 +138,7 @@ object TracesTestkit {
     *   the propagators to use
     */
   @deprecated(
-    "Use `TracesTestkit.inMemory` overloaded alternative with `Builder[F]` customizer or `TracesTestkit.builder`",
+    "Use an overloaded alternative of the `TracesTestkit.inMemory` or `TracesTestkit.builder`",
     "0.15.0"
   )
   def inMemory[F[_]: Async: LocalContextProvider](
@@ -161,7 +161,7 @@ object TracesTestkit {
     * @param textMapPropagators
     *   the propagators to use
     */
-  @deprecated("Use `TracesTestkit.builder` to provide the exporter or `TracesTestkit.inMemory` for defaults", "0.15.0")
+  @deprecated("Use `TracesTestkit.builder` to provide a custom exporter", "0.15.0")
   def fromInMemory[F[_]: Async: LocalContextProvider](
       inMemorySpanExporter: InMemorySpanExporter,
       customize: SdkTracerProviderBuilder => SdkTracerProviderBuilder = identity,

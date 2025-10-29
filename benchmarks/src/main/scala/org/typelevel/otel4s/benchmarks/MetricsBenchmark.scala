@@ -233,15 +233,19 @@ object MetricsBenchmark {
     ): Resource[IO, Meter[IO]] =
       Resource.eval {
         Random.scalaUtilRandom[IO].flatMap { implicit random =>
-          InMemoryMetricReader.create[IO](aggregationTemporality).flatMap { reader =>
-            implicit val askContext: AskContext[IO] = Ask.const(Context.root)
-            SdkMeterProvider
-              .builder[IO]
-              .registerMetricReader(reader)
-              .pipe(customize)
-              .build
-              .flatMap(_.get(namespace))
-          }
+          InMemoryMetricReader
+            .builder[IO]
+            .withAggregationTemporalitySelector(aggregationTemporality)
+            .build
+            .flatMap { reader =>
+              implicit val askContext: AskContext[IO] = Ask.const(Context.root)
+              SdkMeterProvider
+                .builder[IO]
+                .registerMetricReader(reader)
+                .pipe(customize)
+                .build
+                .flatMap(_.get(namespace))
+            }
         }
       }
 

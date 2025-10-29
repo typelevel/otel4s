@@ -119,13 +119,18 @@ object TracesTestkit {
   def builder[F[_]: Async: LocalContextProvider]: Builder[F] =
     new BuilderImpl[F]()
 
+  /** Creates a [[TracesTestkit]] using [[Builder]] with the default configuration. The instance keeps spans in memory.
+    */
+  def inMemory[F[_]: Async: LocalContextProvider]: Resource[F, TracesTestkit[F]] =
+    builder[F].build
+
   /** Creates a [[TracesTestkit]] using [[Builder]]. The instance keeps spans in memory.
     *
     * @param customize
     *   a function for customizing the builder
     */
   def inMemory[F[_]: Async: LocalContextProvider](
-      customize: Builder[F] => Builder[F] = identity(_)
+      customize: Builder[F] => Builder[F]
   ): Resource[F, TracesTestkit[F]] =
     customize(builder[F]).build
 

@@ -33,7 +33,7 @@ class IORuntimeMetricsSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
   import IORuntimeMetrics.Config.CpuStarvationConfig
 
   test("register metrics using default config") {
-    MetricsTestkit.inMemory[IO]().use { testkit =>
+    MetricsTestkit.inMemory[IO].use { testkit =>
       implicit val meterProvider: MeterProvider[IO] = testkit.meterProvider
 
       val expected = cpuStarvationMetrics
@@ -48,7 +48,7 @@ class IORuntimeMetricsSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
 
   test("register metrics according to the config") {
     PropF.forAllF { (config: IORuntimeMetrics.Config) =>
-      MetricsTestkit.inMemory[IO]().use { testkit =>
+      MetricsTestkit.inMemory[IO].use { testkit =>
         implicit val meterProvider: MeterProvider[IO] = testkit.meterProvider
 
         val expected = List(

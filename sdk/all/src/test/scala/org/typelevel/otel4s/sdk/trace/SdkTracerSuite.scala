@@ -146,12 +146,14 @@ class SdkTracerSuite extends BaseTracerSuite[Context, Context.Key] {
       additionalPropagators: List[TextMapPropagator[Context]]
   ): Resource[IO, BaseTracerSuite.Sdk[SpanData]] =
     TracesTestkit
-      .inMemory[IO](
+      .builder[IO]
+      .addTracerProviderCustomizer(
         configure.andThen(
           _.addTextMapPropagators(W3CTraceContextPropagator.default)
             .addTextMapPropagators(additionalPropagators: _*)
         )
       )
+      .build
       .map { traces =>
         new BaseTracerSuite.Sdk[SpanData] {
           def provider: TracerProvider[IO] =

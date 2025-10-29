@@ -11,7 +11,7 @@ import org.typelevel.otel4s.sdk.testkit.metrics.MetricsTestkit
 import IORuntimeMetrics.Config._
 
 def printMetrics(config: IORuntimeMetrics.Config): Unit = {
-  val metrics = MetricsTestkit.inMemory[IO]().use { testkit =>
+  val metrics = MetricsTestkit.inMemory[IO].use { testkit =>
     implicit val mp: MeterProvider[IO] = testkit.meterProvider
 
     IORuntimeMetrics

@@ -50,11 +50,49 @@ sealed trait TracesTestkit[F[_]] {
 object TracesTestkit {
   private[sdk] trait Unsealed[F[_]] extends TracesTestkit[F]
 
+  /** Builder for [[TracesTestkit]]. */
+  sealed trait Builder[F[_]] {
+
+    /** Adds the tracer provider builder customizer. Multiple customizers can be added, and they will be applied in the
+      * order they were added.
+      *
+      * @param customizer
+      *   the customizer to add
+      */
+    def addTracerProviderCustomizer(customizer: SdkTracerProvider.Builder[F] => SdkTracerProvider.Builder[F]): Builder[F]
+
+    /** Sets the `InMemorySpanExporter` to use. Useful when Scala and Java instrumentations share the same exporter.
+      *
+      * @param exporter
+      *   the exporter to use
+      */
+    def withInMemorySpanExporter(exporter: InMemorySpanExporter[F]): Builder[F]
+
+    /** Creates [[TracesTestkit]] using the configuration of this builder. */
+    def build: Resource[F, TracesTestkit[F]]
+
+  }
+
+  /** Creates a [[Builder]] of [[TracesTestkit]] with the default configuration. */
+  def builder[F[_]: Async: Parallel: Diagnostic: LocalContextProvider]: Builder[F] =
+    new BuilderImpl[F]()
+
+  /**  Creates a [[TracesTestkit]] using [[Builder]]. The instance keeps spans in memory.
+    *
+    * @param customize
+   *   a function for customizing the builder
+    */
+  def inMemory[F[_]: Async: Parallel: Diagnostic: LocalContextProvider](
+      customize: Builder[F] => Builder[F] = identity(_)
+  ): Resource[F, TracesTestkit[F]] =
+    customize(builder[F]).build
+
   /** Creates [[TracesTestkit]] that keeps spans in-memory.
     *
     * @param customize
     *   the customization of the builder
     */
+  @deprecated("Use an overloaded alternative of the `TracesTestkit.inMemory` or `TracesTestkit.builder`", "0.15.0")
   def inMemory[F[_]: Async: Parallel: Diagnostic: LocalContextProvider](
       customize: SdkTracerProvider.Builder[F] => SdkTracerProvider.Builder[F] = (b: SdkTracerProvider.Builder[F]) => b
   ): Resource[F, TracesTestkit[F]] = {
@@ -81,6 +119,40 @@ object TracesTestkit {
   ) extends TracesTestkit[F] {
     def finishedSpans: F[List[SpanData]] =
       processor.forceFlush >> exporter.finishedSpans
+  }
+
+  private final case class BuilderImpl[F[_]: Async: Parallel: Diagnostic: LocalContextProvider](
+      customizer: SdkTracerProvider.Builder[F] => SdkTracerProvider.Builder[F] = (b: SdkTracerProvider.Builder[F]) => b,
+      inMemorySpanExporter: Option[InMemorySpanExporter[F]] = None
+  ) extends Builder[F] {
+
+    def addTracerProviderCustomizer(
+        customizer: SdkTracerProvider.Builder[F] => SdkTracerProvider.Builder[F]
+    ): Builder[F] =
+      copy(customizer = this.customizer.andThen(customizer))
+
+    def withInMemorySpanExporter(exporter: InMemorySpanExporter[F]): Builder[F] =
+      copy(inMemorySpanExporter = Some(exporter))
+
+    def build: Resource[F, TracesTestkit[F]] = {
+      def createTracerProvider(
+          processor: SpanProcessor[F]
+      )(implicit local: LocalContext[F]): F[TracerProvider[F]] =
+        Random.scalaUtilRandom[F].flatMap { implicit random =>
+          val builder = SdkTracerProvider.builder[F].addSpanProcessor(processor)
+          customizer(builder).build
+        }
+
+      val exporterResource = inMemorySpanExporter
+        .fold(Resource.eval(InMemorySpanExporter.create[F](None)))(Resource.pure[F, InMemorySpanExporter[F]])
+
+      for {
+        local <- Resource.eval(LocalProvider[F, Context].local)
+        exporter <- exporterResource
+        processor <- Resource.pure(SimpleSpanProcessor(exporter))
+        tracerProvider <- Resource.eval(createTracerProvider(processor)(local))
+      } yield new Impl(tracerProvider, processor, exporter)
+    }
   }
 
 }

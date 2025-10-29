@@ -70,6 +70,86 @@ object OpenTelemetrySdkTestkit {
 
   type Customizer[A] = A => A
 
+  /** Builder for [[OpenTelemetrySdkTestkit]]. */
+  sealed trait Builder[F[_]] {
+
+    /** Adds the meter provider builder customizer. Multiple customizers can be added, and they will be applied in the
+      * order they were added.
+      *
+      * @param customizer
+      *   the customizer to add
+      */
+    def addMeterProviderCustomizer(customizer: Customizer[SdkMeterProvider.Builder[F]]): Builder[F]
+
+    /** Adds the tracer provider builder customizer. Multiple customizers can be added, and they will be applied in the
+      * order they were added.
+      *
+      * @param customizer
+      *   the customizer to add
+      */
+    def addTracerProviderCustomizer(customizer: Customizer[SdkTracerProvider.Builder[F]]): Builder[F]
+
+    /** Adds the logger provider builder customizer. Multiple customizers can be added, and they will be applied in the
+      * order they were added.
+      *
+      * @param customizer
+      *   the customizer to add
+      */
+    def addLoggerProviderCustomizer(customizer: Customizer[SdkLoggerProvider.Builder[F]]): Builder[F]
+
+    /** Adds propagators to register on the tracer provider.
+      *
+      * @param propagators
+      *   the propagators to add
+      */
+    def addTextMapPropagators(propagators: TextMapPropagator[Context]*): Builder[F]
+
+    /** Sets the propagators used by the tracer provider. Any previously added propagators are discarded.
+      *
+      * @param propagators
+      *   the propagators to use
+      */
+    def withTextMapPropagators(propagators: Iterable[TextMapPropagator[Context]]): Builder[F]
+
+    /** Sets the aggregation temporality selector.
+      *
+      * @param selector
+      *   the selector to use
+      */
+    def withAggregationTemporalitySelector(selector: AggregationTemporalitySelector): Builder[F]
+
+    /** Sets the default aggregation selector. If no views are configured for a metric instrument, an
+     *   aggregation provided by the selector will be used
+      *
+      * @param selector
+      *   the selector to use
+      */
+    def withDefaultAggregationSelector(selector: AggregationSelector): Builder[F]
+
+    /** Sets the preferred aggregation for the given instrument type. If no views are configured for a metric instrument, an
+     *   aggregation provided by this selector will be used.
+      */
+    def withDefaultCardinalityLimitSelector(selector: CardinalityLimitSelector): Builder[F]
+
+    /** Creates [[OpenTelemetrySdkTestkit]] using the configuration of this builder. */
+    def build: Resource[F, OpenTelemetrySdkTestkit[F]]
+
+  }
+
+  /** Creates a [[Builder]] of [[OpenTelemetrySdkTestkit]] with the default configuration. */
+  def builder[F[_]: Async: Parallel: Diagnostic: LocalContextProvider]: Builder[F] =
+    BuilderImpl[F]()
+
+  /** Creates an [[OpenTelemetrySdkTestkit]] using [[Builder]]. The instance keeps metrics, logs, and spans in memory.
+   *
+   * @param customize
+   *   a function for customizing the builder
+   */
+  def inMemory[F[_]: Async: Parallel: Diagnostic: LocalContextProvider](
+                                                   customize: Builder[F] => Builder[F] = identity(_)
+                                                 ): Resource[F, MetricsTestkit[F]] =
+    customize(builder[F]).build
+
   /** Creates [[OpenTelemetrySdkTestkit]] that keeps spans and metrics in-memory.
     *
     * @param customizeMeterProviderBuilder
@@ -95,6 +175,10 @@ object OpenTelemetrySdkTestkit {
     *   the preferred cardinality limit for the given instrument type. If no views are configured for a metric
     *   instrument, a limit provided by the selector will be used
     */
+  @deprecated(
+    "Use an overloaded alternative of the `OpenTelemetrySdkTestkit.inMemory` or `OpenTelemetrySdkTestkit.builder`",
+    "0.15.0"
+  )
   def inMemory[F[_]: Async: Parallel: Diagnostic: LocalContextProvider](
       customizeMeterProviderBuilder: Customizer[SdkMeterProvider.Builder[F]] = identity[SdkMeterProvider.Builder[F]](_),
       customizeTracerProviderBuilder: Customizer[SdkTracerProvider.Builder[F]] =
@@ -106,53 +190,15 @@ object OpenTelemetrySdkTestkit {
       defaultAggregationSelector: AggregationSelector = AggregationSelector.default,
       defaultCardinalityLimitSelector: CardinalityLimitSelector = CardinalityLimitSelector.default
   ): Resource[F, OpenTelemetrySdkTestkit[F]] =
-    Resource.eval(LocalProvider[F, Context].local).flatMap { implicit local =>
-      val traceContextLookup: TraceContext.Lookup =
-        new TraceContext.Lookup {
-          def get(context: Context): Option[TraceContext] =
-            context
-              .get(SdkContextKeys.SpanContextKey)
-              .filter(_.isValid)
-              .map { ctx =>
-                TraceContext(
-                  ctx.traceId,
-                  ctx.spanId,
-                  ctx.isSampled
-                )
-              }
-        }
-
-      for {
-        metrics <- MetricsTestkit.create(
-          customizeMeterProviderBuilder.compose[SdkMeterProvider.Builder[F]](
-            _.withTraceContextLookup(traceContextLookup)
-          ),
-          aggregationTemporalitySelector,
-          defaultAggregationSelector,
-          defaultCardinalityLimitSelector
-        )
-        traces <- TracesTestkit.inMemory(
-          customizeTracerProviderBuilder.compose[SdkTracerProvider.Builder[F]](
-            _.addTextMapPropagators(textMapPropagators.toSeq: _*)
-          )
-        )(
-          Async[F],
-          Parallel[F],
-          Diagnostic[F],
-          LocalProvider.fromLocal(local)
-        )
-        logs <- LogsTestkit.inMemory[F](
-          customizeLoggerProviderBuilder.compose[SdkLoggerProvider.Builder[F]](
-            _.withTraceContextLookup(traceContextLookup)
-          )
-        )
-      } yield new Impl[F](
-        metrics,
-        traces,
-        logs,
-        ContextPropagators.of(textMapPropagators.toSeq: _*)
-      )
-    }
+    builder[F]
+      .addMeterProviderCustomizer(customizeMeterProviderBuilder)
+      .addTracerProviderCustomizer(customizeTracerProviderBuilder)
+      .addLoggerProviderCustomizer(customizeLoggerProviderBuilder)
+      .withTextMapPropagators(textMapPropagators)
+      .withAggregationTemporalitySelector(aggregationTemporalitySelector)
+      .withDefaultAggregationSelector(defaultAggregationSelector)
+      .withDefaultCardinalityLimitSelector(defaultCardinalityLimitSelector)
+      .build
 
   private final class Impl[F[_]: LocalContext](
       metrics: MetricsTestkit[F],
@@ -166,6 +212,99 @@ object OpenTelemetrySdkTestkit {
     def finishedSpans: F[List[SpanData]] = traces.finishedSpans
     def collectMetrics: F[List[MetricData]] = metrics.collectMetrics
     def collectLogs: F[List[LogRecordData]] = logs.collectLogs
+  }
+
+  private final case class BuilderImpl[F[_]: Async: Parallel: Diagnostic: LocalContextProvider](
+      meterCustomizer: Customizer[SdkMeterProvider.Builder[F]] = identity[SdkMeterProvider.Builder[F]],
+      tracerCustomizer: Customizer[SdkTracerProvider.Builder[F]] = identity[SdkTracerProvider.Builder[F]],
+      loggerCustomizer: Customizer[SdkLoggerProvider.Builder[F]] = identity[SdkLoggerProvider.Builder[F]],
+      textMapPropagators: Vector[TextMapPropagator[Context]] = Vector.empty,
+      aggregationTemporalitySelector: AggregationTemporalitySelector = AggregationTemporalitySelector.alwaysCumulative,
+      defaultAggregationSelector: AggregationSelector = AggregationSelector.default,
+      defaultCardinalityLimitSelector: CardinalityLimitSelector = CardinalityLimitSelector.default
+  ) extends Builder[F] {
+
+    def addMeterProviderCustomizer(customizer: Customizer[SdkMeterProvider.Builder[F]]): Builder[F] =
+      copy(meterCustomizer = meterCustomizer.andThen(customizer))
+
+    def addTracerProviderCustomizer(customizer: Customizer[SdkTracerProvider.Builder[F]]): Builder[F] =
+      copy(tracerCustomizer = tracerCustomizer.andThen(customizer))
+
+    def addLoggerProviderCustomizer(customizer: Customizer[SdkLoggerProvider.Builder[F]]): Builder[F] =
+      copy(loggerCustomizer = loggerCustomizer.andThen(customizer))
+
+    def addTextMapPropagators(propagators: TextMapPropagator[Context]*): Builder[F] =
+      copy(textMapPropagators = textMapPropagators ++ propagators)
+
+    def withTextMapPropagators(propagators: Iterable[TextMapPropagator[Context]]): Builder[F] =
+      copy(textMapPropagators = propagators.toVector)
+
+    def withAggregationTemporalitySelector(selector: AggregationTemporalitySelector): Builder[F] =
+      copy(aggregationTemporalitySelector = selector)
+
+    def withDefaultAggregationSelector(selector: AggregationSelector): Builder[F] =
+      copy(defaultAggregationSelector = selector)
+
+    def withDefaultCardinalityLimitSelector(selector: CardinalityLimitSelector): Builder[F] =
+      copy(defaultCardinalityLimitSelector = selector)
+
+    def build: Resource[F, OpenTelemetrySdkTestkit[F]] =
+      Resource.eval(LocalProvider[F, Context].local).flatMap { implicit local =>
+        val constLocal: LocalContextProvider[F] = LocalProvider.fromLocal(local)
+
+        val traceContextLookup: TraceContext.Lookup =
+          new TraceContext.Lookup {
+            def get(context: Context): Option[TraceContext] =
+              context
+                .get(SdkContextKeys.SpanContextKey)
+                .filter(_.isValid)
+                .map { ctx =>
+                  TraceContext(
+                    ctx.traceId,
+                    ctx.spanId,
+                    ctx.isSampled
+                  )
+                }
+          }
+
+        val metricsBuilder = MetricsTestkit
+          .builder[F](implicitly, implicitly, constLocal)
+          .addMeterProviderCustomizer(
+            meterCustomizer.compose[SdkMeterProvider.Builder[F]](
+              _.withTraceContextLookup(traceContextLookup)
+            )
+          )
+          .withAggregationTemporalitySelector(aggregationTemporalitySelector)
+          .withDefaultAggregationSelector(defaultAggregationSelector)
+          .withDefaultCardinalityLimitSelector(defaultCardinalityLimitSelector)
+
+        val tracesBuilder = TracesTestkit
+          .builder[F](Async[F], Parallel[F], Diagnostic[F], constLocal)
+          .addTracerProviderCustomizer(
+            tracerCustomizer.compose[SdkTracerProvider.Builder[F]](
+              _.addTextMapPropagators(textMapPropagators: _*)
+            )
+          )
+
+        val logsBuilder = LogsTestkit
+          .builder[F](Async[F], Parallel[F], Diagnostic[F], constLocal)
+          .addLoggerProviderCustomizer(
+            loggerCustomizer.compose[SdkLoggerProvider.Builder[F]](
+              _.withTraceContextLookup(traceContextLookup)
+            )
+          )
+
+        for {
+          metrics <- metricsBuilder.build
+          traces <- tracesBuilder.build
+          logs <- logsBuilder.build
+        } yield new Impl[F](
+          metrics,
+          traces,
+          logs,
+          ContextPropagators.of(textMapPropagators: _*)
+        )
+      }
   }
 
 }

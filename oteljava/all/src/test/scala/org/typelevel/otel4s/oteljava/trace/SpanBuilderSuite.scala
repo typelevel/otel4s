@@ -26,7 +26,7 @@ class SpanBuilderSuite extends BaseSpanBuilderSuite {
 
   // todo: dynamically enable/disable an instrument when Meta.Dynamic is fully supported
   protected def makeTracerProvider(enabled: Boolean): Resource[IO, TracerProvider[IO]] =
-    if (enabled) TracesTestkit.inMemory[IO]().map(_.tracerProvider)
+    if (enabled) TracesTestkit.inMemory[IO].map(_.tracerProvider)
     else Resource.pure(TracerProvider.noop[IO])
 
 }

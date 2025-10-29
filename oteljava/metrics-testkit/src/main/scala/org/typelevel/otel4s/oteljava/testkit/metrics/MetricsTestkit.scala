@@ -84,13 +84,19 @@ object MetricsTestkit {
   def builder[F[_]: Async: LocalContextProvider]: Builder[F] =
     new BuilderImpl[F]()
 
+  /** Creates a [[MetricsTestkit]] using [[Builder]] with the default configuration. The instance keeps metrics in
+    * memory.
+    */
+  def inMemory[F[_]: Async: LocalContextProvider]: Resource[F, MetricsTestkit[F]] =
+    builder[F].build
+
   /** Creates a [[MetricsTestkit]] using [[Builder]]. The instance keeps metrics in memory.
     *
     * @param customize
     *   a function for customizing the builder
     */
   def inMemory[F[_]: Async: LocalContextProvider](
-      customize: Builder[F] => Builder[F] = identity(_)
+      customize: Builder[F] => Builder[F]
   ): Resource[F, MetricsTestkit[F]] =
     customize(builder[F]).build
 

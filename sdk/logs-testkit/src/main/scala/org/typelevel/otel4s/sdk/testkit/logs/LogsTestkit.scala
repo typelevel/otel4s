@@ -23,7 +23,9 @@ import cats.mtl.Ask
 import org.typelevel.otel4s.context.LocalProvider
 import org.typelevel.otel4s.logs.LoggerProvider
 import org.typelevel.otel4s.sdk.common.Diagnostic
-import org.typelevel.otel4s.sdk.context.{AskContext, Context, LocalContextProvider}
+import org.typelevel.otel4s.sdk.context.AskContext
+import org.typelevel.otel4s.sdk.context.Context
+import org.typelevel.otel4s.sdk.context.LocalContextProvider
 import org.typelevel.otel4s.sdk.logs.SdkLoggerProvider
 import org.typelevel.otel4s.sdk.logs.data.LogRecordData
 import org.typelevel.otel4s.sdk.logs.processor.SimpleLogRecordProcessor
@@ -67,15 +69,22 @@ object LogsTestkit {
   def builder[F[_]: Temporal: Parallel: Diagnostic: LocalContextProvider]: Builder[F] =
     new BuilderImpl[F]()
 
-  /** Creates a [[LogsTestkit]] using [[Builder]]. The instance keeps logs in memory.
-    *
-    * @param customize
-    *   a function for customizing the builder
+  /** Creates a [[LogsTestkit]] using [[Builder]] with the default configuration. The instance keeps logs in memory.
     */
-  def inMemory[F[_]: Temporal: Parallel: Diagnostic: LocalContextProvider](
-      customize: Builder[F] => Builder[F] = identity(_)
-  ): Resource[F, LogsTestkit[F]] =
-    customize(builder[F]).build
+  def inMemory[F[_]: Temporal: Parallel: Diagnostic: LocalContextProvider]: Resource[F, LogsTestkit[F]] =
+    builder[F].build
+
+// todo: can be uncommented once deprecated methods are removed
+//
+//  /** Creates a [[LogsTestkit]] using [[Builder]]. The instance keeps logs in memory.
+//    *
+//    * @param customize
+//    *   a function for customizing the builder
+//    */
+//  def inMemory[F[_]: Temporal: Parallel: Diagnostic: LocalContextProvider](
+//      customize: Builder[F] => Builder[F]
+//  ): Resource[F, LogsTestkit[F]] =
+//    customize(builder[F]).build
 
   /** Creates [[LogsTestkit]] that keeps logs in-memory.
     *

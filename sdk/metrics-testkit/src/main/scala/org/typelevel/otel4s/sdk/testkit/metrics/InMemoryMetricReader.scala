@@ -84,13 +84,18 @@ object InMemoryMetricReader {
   def builder[F[_]: Concurrent]: Builder[F] =
     BuilderImpl[F]()
 
+  /** Creates an [[InMemoryMetricReader]] that keeps metrics in memory using the default configuration.
+    */
+  def create[F[_]: Concurrent]: F[InMemoryMetricReader[F]] =
+    builder[F].build
+
   /** Creates an [[InMemoryMetricReader]] that keeps metrics in memory.
     *
     * @param customize
     *   a function for customizing the builder
     */
   def create[F[_]: Concurrent](
-      customize: Builder[F] => Builder[F] = identity(_)
+      customize: Builder[F] => Builder[F]
   ): F[InMemoryMetricReader[F]] =
     customize(builder[F]).build
 

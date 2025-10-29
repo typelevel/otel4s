@@ -23,7 +23,7 @@ import munit._
 class TracesTestkitSuite extends CatsEffectSuite {
 
   test("collect traces in-memory") {
-    TracesTestkit.inMemory[IO]().use { testkit =>
+    TracesTestkit.inMemory[IO].use { testkit =>
       for {
         tracer <- testkit.tracerProvider.get("tracer")
         _ <- tracer.span("test").use_

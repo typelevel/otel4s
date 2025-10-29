@@ -136,14 +136,20 @@ object OtelJavaTestkit {
   def builder[F[_]: Async: LocalContextProvider]: Builder[F] =
     BuilderImpl[F]()
 
+  /** Creates an [[OtelJavaTestkit]] using [[Builder]] with the default configuration. The instance keeps metrics, logs,
+    * and spans in memory.
+    */
+  def inMemory[F[_]: Async: LocalContextProvider]: Resource[F, OtelJavaTestkit[F]] =
+    builder[F].build
+
   /** Creates an [[OtelJavaTestkit]] using [[Builder]]. The instance keeps metrics, logs, and spans in memory.
     *
     * @param customize
     *   a function for customizing the builder
     */
   def inMemory[F[_]: Async: LocalContextProvider](
-      customize: Builder[F] => Builder[F] = identity(_)
-  ): Resource[F, MetricsTestkit[F]] =
+      customize: Builder[F] => Builder[F]
+  ): Resource[F, OtelJavaTestkit[F]] =
     customize(builder[F]).build
 
   /** Creates [[OtelJavaTestkit]] that keeps spans and metrics in-memory.

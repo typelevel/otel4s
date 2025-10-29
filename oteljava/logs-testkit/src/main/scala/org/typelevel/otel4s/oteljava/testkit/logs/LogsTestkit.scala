@@ -28,7 +28,9 @@ import io.opentelemetry.sdk.logs.`export`.SimpleLogRecordProcessor
 import io.opentelemetry.sdk.testing.exporter.InMemoryLogRecordExporter
 import org.typelevel.otel4s.context.LocalProvider
 import org.typelevel.otel4s.logs.LoggerProvider
-import org.typelevel.otel4s.oteljava.context.{AskContext, Context, LocalContext, LocalContextProvider}
+import org.typelevel.otel4s.oteljava.context.AskContext
+import org.typelevel.otel4s.oteljava.context.Context
+import org.typelevel.otel4s.oteljava.context.LocalContextProvider
 import org.typelevel.otel4s.oteljava.logs.LoggerProviderImpl
 import org.typelevel.otel4s.oteljava.testkit.Conversions
 
@@ -92,13 +94,18 @@ object LogsTestkit {
   def builder[F[_]: Async: LocalContextProvider]: Builder[F] =
     new BuilderImpl[F]()
 
+  /** Creates a [[LogsTestkit]] using [[Builder]] with the default configuration. The instance keeps logs in memory.
+    */
+  def inMemory[F[_]: Async: LocalContextProvider]: Resource[F, LogsTestkit[F]] =
+    builder[F].build
+
   /** Creates a [[LogsTestkit]] using [[Builder]]. The instance keeps logs in memory.
     *
     * @param customize
     *   a function for customizing the builder
     */
   def inMemory[F[_]: Async: LocalContextProvider](
-      customize: Builder[F] => Builder[F] = identity(_)
+      customize: Builder[F] => Builder[F]
   ): Resource[F, LogsTestkit[F]] =
     customize(builder[F]).build
 

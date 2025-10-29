@@ -26,7 +26,9 @@ import cats.syntax.functor._
 import org.typelevel.otel4s.context.LocalProvider
 import org.typelevel.otel4s.metrics.MeterProvider
 import org.typelevel.otel4s.sdk.common.Diagnostic
-import org.typelevel.otel4s.sdk.context.{AskContext, Context, LocalContextProvider}
+import org.typelevel.otel4s.sdk.context.AskContext
+import org.typelevel.otel4s.sdk.context.Context
+import org.typelevel.otel4s.sdk.context.LocalContextProvider
 import org.typelevel.otel4s.sdk.metrics.SdkMeterProvider
 import org.typelevel.otel4s.sdk.metrics.data.MetricData
 import org.typelevel.otel4s.sdk.metrics.exporter.AggregationSelector
@@ -92,15 +94,23 @@ object MetricsTestkit {
   def builder[F[_]: Async: Diagnostic: LocalContextProvider]: Builder[F] =
     new BuilderImpl[F]()
 
-  /** Creates a [[MetricsTestkit]] using [[Builder]]. The instance keeps metrics in memory.
-    *
-    * @param customize
-   *   a function for customizing the builder
+  /** Creates a [[MetricsTestkit]] using [[Builder]] with the default configuration. The instance keeps metrics in
+    * memory.
     */
-  def inMemory[F[_]: Async: Diagnostic: LocalContextProvider](
-      customize: Builder[F] => Builder[F] = identity(_)
-  ): Resource[F, MetricsTestkit[F]] =
-    customize(builder[F]).build
+  def inMemory[F[_]: Async: Diagnostic: LocalContextProvider]: Resource[F, MetricsTestkit[F]] =
+    builder[F].build
+
+// todo: can be uncommented once deprecated methods are removed
+//
+//  /** Creates a [[MetricsTestkit]] using [[Builder]]. The instance keeps metrics in memory.
+//    *
+//    * @param customize
+//    *   a function for customizing the builder
+//    */
+//  def inMemory[F[_]: Async: Diagnostic: LocalContextProvider](
+//      customize: Builder[F] => Builder[F]
+//  ): Resource[F, MetricsTestkit[F]] =
+//    customize(builder[F]).build
 
   /** Creates [[MetricsTestkit]] that keeps metrics in-memory.
     *
@@ -157,11 +167,12 @@ object MetricsTestkit {
 
     for {
       reader <- Resource.eval(
-        InMemoryMetricReader.create[F](
-          aggregationTemporalitySelector,
-          defaultAggregationSelector,
-          defaultCardinalityLimitSelector
-        )
+        InMemoryMetricReader
+          .builder[F]
+          .withAggregationTemporalitySelector(aggregationTemporalitySelector)
+          .withDefaultAggregationSelector(defaultAggregationSelector)
+          .withDefaultCardinalityLimitSelector(defaultCardinalityLimitSelector)
+          .build
       )
       meterProvider <- Resource.eval(createMeterProvider(reader))
     } yield new Impl(meterProvider, reader)

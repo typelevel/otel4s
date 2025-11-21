@@ -26,7 +26,7 @@ import org.typelevel.otel4s.oteljava.testkit.metrics.data.Metric
 class BatchCallbackSuite extends CatsEffectSuite {
 
   test("update multiple observers") {
-    MetricsTestkit.inMemory[IO]().use { metrics =>
+    MetricsTestkit.inMemory[IO].use { metrics =>
       for {
         meter <- metrics.meterProvider
           .meter("java.otel.suite")

@@ -84,48 +84,15 @@ object InMemoryMetricReader {
   def builder[F[_]: Concurrent]: Builder[F] =
     BuilderImpl[F]()
 
-  /** Creates an [[InMemoryMetricReader]] that keeps metrics in memory using the default configuration.
-    */
-  def create[F[_]: Concurrent]: F[InMemoryMetricReader[F]] =
-    builder[F].build
-
   /** Creates an [[InMemoryMetricReader]] that keeps metrics in memory.
     *
     * @param customize
     *   a function for customizing the builder
     */
   def create[F[_]: Concurrent](
-      customize: Builder[F] => Builder[F]
+      customize: Builder[F] => Builder[F] = identity[Builder[F]](_)
   ): F[InMemoryMetricReader[F]] =
     customize(builder[F]).build
-
-  /** Creates a `MetricReader` that keeps metrics in-memory.
-    *
-    * @param aggregationTemporalitySelector
-    *   the preferred aggregation for the given instrument type
-    *
-    * @param defaultAggregationSelector
-    *   the preferred aggregation for the given instrument type. If no views are configured for a metric instrument, an
-    *   aggregation provided by the selector will be used.
-    *
-    * @param defaultCardinalityLimitSelector
-    *   the preferred cardinality limit for the given instrument type. If no views are configured for a metric
-    *   instrument, an aggregation provided by the selector will be used.
-    */
-  @deprecated(
-    "Use `InMemoryMetricReader.builder` or an overloaded alternative of the `InMemoryMetricReader.create`",
-    "0.15.0"
-  )
-  def create[F[_]: Concurrent](
-      aggregationTemporalitySelector: AggregationTemporalitySelector = AggregationTemporalitySelector.alwaysCumulative,
-      defaultAggregationSelector: AggregationSelector = AggregationSelector.default,
-      defaultCardinalityLimitSelector: CardinalityLimitSelector = CardinalityLimitSelector.default
-  ): F[InMemoryMetricReader[F]] =
-    builder[F]
-      .withAggregationTemporalitySelector(aggregationTemporalitySelector)
-      .withDefaultAggregationSelector(defaultAggregationSelector)
-      .withDefaultCardinalityLimitSelector(defaultCardinalityLimitSelector)
-      .build
 
   private final case class BuilderImpl[F[_]: Concurrent](
       aggregationTemporalitySelector: AggregationTemporalitySelector = AggregationTemporalitySelector.alwaysCumulative,

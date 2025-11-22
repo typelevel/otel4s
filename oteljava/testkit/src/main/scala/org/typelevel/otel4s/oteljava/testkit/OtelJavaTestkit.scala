@@ -136,52 +136,15 @@ object OtelJavaTestkit {
   def builder[F[_]: Async: LocalContextProvider]: Builder[F] =
     BuilderImpl[F]()
 
-  /** Creates an [[OtelJavaTestkit]] using [[Builder]] with the default configuration. The instance keeps metrics, logs,
-    * and spans in memory.
-    */
-  def inMemory[F[_]: Async: LocalContextProvider]: Resource[F, OtelJavaTestkit[F]] =
-    builder[F].build
-
   /** Creates an [[OtelJavaTestkit]] using [[Builder]]. The instance keeps metrics, logs, and spans in memory.
     *
     * @param customize
     *   a function for customizing the builder
     */
   def inMemory[F[_]: Async: LocalContextProvider](
-      customize: Builder[F] => Builder[F]
+      customize: Builder[F] => Builder[F] = identity[Builder[F]](_)
   ): Resource[F, OtelJavaTestkit[F]] =
     customize(builder[F]).build
-
-  /** Creates [[OtelJavaTestkit]] that keeps spans and metrics in-memory.
-    *
-    * @param customizeMeterProviderBuilder
-    *   the customization of the meter provider builder
-    *
-    * @param customizeTracerProviderBuilder
-    *   the customization of the tracer provider builder
-    *
-    * @param customizeLoggerProviderBuilder
-    *   the customization of the logger provider builder
-    *
-    * @param textMapPropagators
-    *   the propagators to use
-    */
-  @deprecated(
-    "Use `OtelJavaTestkit.builder` to configure and build the testkit",
-    "0.15.0"
-  )
-  def inMemory[F[_]: Async: LocalContextProvider](
-      customizeMeterProviderBuilder: SdkMeterProviderBuilder => SdkMeterProviderBuilder = identity,
-      customizeTracerProviderBuilder: SdkTracerProviderBuilder => SdkTracerProviderBuilder = identity,
-      customizeLoggerProviderBuilder: SdkLoggerProviderBuilder => SdkLoggerProviderBuilder = identity,
-      textMapPropagators: Iterable[JTextMapPropagator] = Nil
-  ): Resource[F, OtelJavaTestkit[F]] =
-    builder[F]
-      .addMeterProviderCustomizer(customizeMeterProviderBuilder)
-      .addTracerProviderCustomizer(customizeTracerProviderBuilder)
-      .addLoggerProviderCustomizer(customizeLoggerProviderBuilder)
-      .withTextMapPropagators(textMapPropagators)
-      .build
 
   @deprecated(
     "Use `OtelJavaTestkit.builder` to configure exporters and build the testkit",
@@ -258,18 +221,20 @@ object OtelJavaTestkit {
 
     def build: Resource[F, OtelJavaTestkit[F]] =
       Resource.eval(LocalProvider[F, Context].local).flatMap { local =>
+        val constLocal: LocalContextProvider[F] = LocalProvider.fromLocal(local)
+
         val logsBuilder = LogsTestkit
-          .builder[F](Async[F], LocalProvider.fromLocal(local))
+          .builder[F](Async[F], constLocal)
           .addLoggerProviderCustomizer(loggerCustomizer)
           .pipe(b => logExporter.fold(b)(b.withInMemoryLogRecordExporter))
 
         val metricsBuilder = MetricsTestkit
-          .builder[F](Async[F], LocalProvider.fromLocal(local))
+          .builder[F](Async[F], constLocal)
           .addMeterProviderCustomizer(meterCustomizer)
           .pipe(b => metricReader.fold(b)(b.withInMemoryMetricReader))
 
         val tracesBuilder = TracesTestkit
-          .builder[F](Async[F], LocalProvider.fromLocal(local))
+          .builder[F](Async[F], constLocal)
           .addTracerProviderCustomizer(tracerCustomizer)
           .withTextMapPropagators(textMapPropagators)
           .pipe(b => spanExporter.fold(b)(b.withInMemorySpanExporter))

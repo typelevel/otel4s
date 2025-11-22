@@ -94,7 +94,7 @@ class CounterSuite extends CatsEffectSuite {
           .build()
       )
 
-    MetricsTestkit.builder[IO].addMeterProviderCustomizer(customize).build
+    MetricsTestkit.inMemory(_.addMeterProviderCustomizer(customize))
   }
 
   private val HistogramBuckets: List[Double] =

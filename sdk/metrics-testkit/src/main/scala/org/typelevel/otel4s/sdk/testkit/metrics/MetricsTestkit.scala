@@ -20,7 +20,6 @@ import cats.FlatMap
 import cats.effect.Async
 import cats.effect.Resource
 import cats.effect.std.Random
-import cats.mtl.Ask
 import cats.syntax.flatMap._
 import cats.syntax.functor._
 import org.typelevel.otel4s.context.LocalProvider
@@ -94,64 +93,17 @@ object MetricsTestkit {
   def builder[F[_]: Async: Diagnostic: LocalContextProvider]: Builder[F] =
     new BuilderImpl[F]()
 
-  /** Creates a [[MetricsTestkit]] using [[Builder]] with the default configuration. The instance keeps metrics in
-    * memory.
-    */
-  def inMemory[F[_]: Async: Diagnostic: LocalContextProvider]: Resource[F, MetricsTestkit[F]] =
-    builder[F].build
-
-// todo: can be uncommented once deprecated methods are removed
-//
-//  /** Creates a [[MetricsTestkit]] using [[Builder]]. The instance keeps metrics in memory.
-//    *
-//    * @param customize
-//    *   a function for customizing the builder
-//    */
-//  def inMemory[F[_]: Async: Diagnostic: LocalContextProvider](
-//      customize: Builder[F] => Builder[F]
-//  ): Resource[F, MetricsTestkit[F]] =
-//    customize(builder[F]).build
-
-  /** Creates [[MetricsTestkit]] that keeps metrics in-memory.
-    *
-    * @note
-    *   the implementation does not record exemplars. Use `OpenTelemetrySdkTestkit` if you need to record exemplars.
+  /** Creates a [[MetricsTestkit]] using [[Builder]]. The instance keeps metrics in memory.
     *
     * @param customize
-    *   the customization of the builder
-    *
-    * @param aggregationTemporalitySelector
-    *   the preferred aggregation for the given instrument type
-    *
-    * @param defaultAggregationSelector
-    *   the preferred aggregation for the given instrument type. If no views are configured for a metric instrument, an
-    *   aggregation provided by the selector will be used
-    *
-    * @param defaultCardinalityLimitSelector
-    *   the preferred cardinality limit for the given instrument type. If no views are configured for a metric
-    *   instrument, a limit provided by the selector will be used
+    *   a function for customizing the builder
     */
-  @deprecated(
-    "Use an overloaded alternative of the `MetricsTestkit.inMemory` or `MetricsTestkit.builder`",
-    "0.15.0"
-  )
-  def inMemory[F[_]: Async: Diagnostic](
-      customize: SdkMeterProvider.Builder[F] => SdkMeterProvider.Builder[F] = (b: SdkMeterProvider.Builder[F]) => b,
-      aggregationTemporalitySelector: AggregationTemporalitySelector = AggregationTemporalitySelector.alwaysCumulative,
-      defaultAggregationSelector: AggregationSelector = AggregationSelector.default,
-      defaultCardinalityLimitSelector: CardinalityLimitSelector = CardinalityLimitSelector.default
-  ): Resource[F, MetricsTestkit[F]] = {
-    implicit val askContext: AskContext[F] = Ask.const(Context.root)
+  def inMemory[F[_]: Async: Diagnostic: LocalContextProvider](
+      customize: Builder[F] => Builder[F] = identity[Builder[F]](_)
+  ): Resource[F, MetricsTestkit[F]] =
+    customize(builder[F]).build
 
-    create[F](
-      customize,
-      aggregationTemporalitySelector,
-      defaultAggregationSelector,
-      defaultCardinalityLimitSelector
-    )
-  }
-
-  private[sdk] def create[F[_]: Async: Diagnostic: AskContext](
+  private def create[F[_]: Async: Diagnostic: AskContext](
       customize: SdkMeterProvider.Builder[F] => SdkMeterProvider.Builder[F],
       aggregationTemporalitySelector: AggregationTemporalitySelector,
       defaultAggregationSelector: AggregationSelector,

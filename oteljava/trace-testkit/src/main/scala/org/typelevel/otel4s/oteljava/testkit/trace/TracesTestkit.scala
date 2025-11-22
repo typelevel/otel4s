@@ -119,40 +119,15 @@ object TracesTestkit {
   def builder[F[_]: Async: LocalContextProvider]: Builder[F] =
     new BuilderImpl[F]()
 
-  /** Creates a [[TracesTestkit]] using [[Builder]] with the default configuration. The instance keeps spans in memory.
-    */
-  def inMemory[F[_]: Async: LocalContextProvider]: Resource[F, TracesTestkit[F]] =
-    builder[F].build
-
   /** Creates a [[TracesTestkit]] using [[Builder]]. The instance keeps spans in memory.
     *
     * @param customize
     *   a function for customizing the builder
     */
   def inMemory[F[_]: Async: LocalContextProvider](
-      customize: Builder[F] => Builder[F]
+      customize: Builder[F] => Builder[F] = identity[Builder[F]](_)
   ): Resource[F, TracesTestkit[F]] =
     customize(builder[F]).build
-
-  /** Creates [[TracesTestkit]] that keeps spans in-memory.
-    *
-    * @param customize
-    *   the customization of the builder
-    *
-    * @param textMapPropagators
-    *   the propagators to use
-    */
-  @deprecated(
-    "Use an overloaded alternative of the `TracesTestkit.inMemory` or `TracesTestkit.builder`",
-    "0.15.0"
-  )
-  def inMemory[F[_]: Async: LocalContextProvider](
-      customize: SdkTracerProviderBuilder => SdkTracerProviderBuilder = identity,
-      textMapPropagators: Iterable[JTextMapPropagator] = Nil
-  ): Resource[F, TracesTestkit[F]] = for {
-    inMemorySpanExporter <- Resource.eval(Async[F].delay(InMemorySpanExporter.create()))
-    tracesTestkit <- create[F](inMemorySpanExporter, customize, textMapPropagators)
-  } yield tracesTestkit
 
   /** Creates [[TracesTestkit]] that keeps spans in-memory from an existing exporter. Useful when a Scala
     * instrumentation requires a Java instrumentation, both sharing the same exporter.

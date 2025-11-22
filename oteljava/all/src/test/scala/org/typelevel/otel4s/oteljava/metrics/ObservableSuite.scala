@@ -27,7 +27,7 @@ import org.typelevel.otel4s.oteljava.testkit.metrics.data.Metric
 class ObservableSuite extends CatsEffectSuite {
 
   test("gauge test") {
-    MetricsTestkit.inMemory[IO].use { sdk =>
+    MetricsTestkit.inMemory[IO]().use { sdk =>
       for {
         meter <- sdk.meterProvider
           .meter("java.otel.suite")
@@ -80,7 +80,7 @@ class ObservableSuite extends CatsEffectSuite {
   }
 
   test("counter test") {
-    MetricsTestkit.inMemory[IO].use { sdk =>
+    MetricsTestkit.inMemory[IO]().use { sdk =>
       for {
         meter <- sdk.meterProvider
           .meter("java.otel.suite")
@@ -131,7 +131,7 @@ class ObservableSuite extends CatsEffectSuite {
   }
 
   test("up down counter test") {
-    MetricsTestkit.inMemory[IO].use { sdk =>
+    MetricsTestkit.inMemory[IO]().use { sdk =>
       for {
         meter <- sdk.meterProvider
           .meter("java.otel.suite")

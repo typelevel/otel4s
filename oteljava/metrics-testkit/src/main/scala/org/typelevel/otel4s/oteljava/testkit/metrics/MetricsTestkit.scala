@@ -24,7 +24,9 @@ import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader
 import org.typelevel.otel4s.context.LocalProvider
 import org.typelevel.otel4s.metrics.MeterProvider
-import org.typelevel.otel4s.oteljava.context.{AskContext, Context, LocalContextProvider}
+import org.typelevel.otel4s.oteljava.context.AskContext
+import org.typelevel.otel4s.oteljava.context.Context
+import org.typelevel.otel4s.oteljava.context.LocalContextProvider
 import org.typelevel.otel4s.oteljava.metrics.MeterProviderImpl
 
 import scala.jdk.CollectionConverters._
@@ -84,43 +86,15 @@ object MetricsTestkit {
   def builder[F[_]: Async: LocalContextProvider]: Builder[F] =
     new BuilderImpl[F]()
 
-  /** Creates a [[MetricsTestkit]] using [[Builder]] with the default configuration. The instance keeps metrics in
-    * memory.
-    */
-  def inMemory[F[_]: Async: LocalContextProvider]: Resource[F, MetricsTestkit[F]] =
-    builder[F].build
-
   /** Creates a [[MetricsTestkit]] using [[Builder]]. The instance keeps metrics in memory.
     *
     * @param customize
     *   a function for customizing the builder
     */
   def inMemory[F[_]: Async: LocalContextProvider](
-      customize: Builder[F] => Builder[F]
+      customize: Builder[F] => Builder[F] = identity[Builder[F]](_)
   ): Resource[F, MetricsTestkit[F]] =
     customize(builder[F]).build
-
-  /** Creates [[MetricsTestkit]] that keeps metrics in-memory.
-    *
-    * @note
-    *   the implementation does not record exemplars. Use `OtelJavaTestkit` if you need to record exemplars.
-    *
-    * @param customize
-    *   the customization of the builder
-    */
-  @deprecated(
-    "Use `MetricsTestkit.inMemory` overloaded alternative with `Builder[F]` customizer or `MetricsTestkit.builder`",
-    "0.15.0"
-  )
-  def inMemory[F[_]: Async](
-      customize: SdkMeterProviderBuilder => SdkMeterProviderBuilder = identity
-  ): Resource[F, MetricsTestkit[F]] = {
-    implicit val askContext: AskContext[F] = Ask.const(Context.root)
-    for {
-      inMemoryMetricReader <- Resource.eval(Async[F].delay(InMemoryMetricReader.create()))
-      metricsTestkit <- create[F](inMemoryMetricReader, customize)
-    } yield metricsTestkit
-  }
 
   /** Creates [[MetricsTestkit]] that keeps metrics in-memory from an existing reader. Useful when a Scala
     * instrumentation requires a Java instrumentation, both sharing the same reader.

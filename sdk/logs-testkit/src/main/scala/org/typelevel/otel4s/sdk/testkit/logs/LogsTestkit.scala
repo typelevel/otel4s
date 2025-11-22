@@ -19,7 +19,6 @@ package org.typelevel.otel4s.sdk.testkit.logs
 import cats.Parallel
 import cats.effect.Resource
 import cats.effect.Temporal
-import cats.mtl.Ask
 import org.typelevel.otel4s.context.LocalProvider
 import org.typelevel.otel4s.logs.LoggerProvider
 import org.typelevel.otel4s.sdk.common.Diagnostic
@@ -69,47 +68,17 @@ object LogsTestkit {
   def builder[F[_]: Temporal: Parallel: Diagnostic: LocalContextProvider]: Builder[F] =
     new BuilderImpl[F]()
 
-  /** Creates a [[LogsTestkit]] using [[Builder]] with the default configuration. The instance keeps logs in memory.
-    */
-  def inMemory[F[_]: Temporal: Parallel: Diagnostic: LocalContextProvider]: Resource[F, LogsTestkit[F]] =
-    builder[F].build
-
-// todo: can be uncommented once deprecated methods are removed
-//
-//  /** Creates a [[LogsTestkit]] using [[Builder]]. The instance keeps logs in memory.
-//    *
-//    * @param customize
-//    *   a function for customizing the builder
-//    */
-//  def inMemory[F[_]: Temporal: Parallel: Diagnostic: LocalContextProvider](
-//      customize: Builder[F] => Builder[F]
-//  ): Resource[F, LogsTestkit[F]] =
-//    customize(builder[F]).build
-
-  /** Creates [[LogsTestkit]] that keeps logs in-memory.
+  /** Creates a [[LogsTestkit]] using [[Builder]]. The instance keeps logs in memory.
     *
     * @param customize
-    *   the customization of the builder
-    *
-    * @note
-    *   this implementation uses a constant root `Context` via `Ask.const(Context.root)`. That means the module is
-    *   isolated: it does not inherit or propagate the surrounding span context. This is useful if you only need logging
-    *   (without traces or metrics) and want the module to operate independently. If instead you want interoperability -
-    *   i.e. to capture the current span context so that logs, traces, and metrics can all work together - use
-    *   `OpenTelemetrySdkTestkit.inMemory`.
+    *   a function for customizing the builder
     */
-  @deprecated(
-    "Use an overloaded alternative of the `LogsTestkit.inMemory` or `LogsTestkit.builder`",
-    "0.15.0"
-  )
-  def inMemory[F[_]: Temporal: Parallel: Diagnostic](
-      customize: SdkLoggerProvider.Builder[F] => SdkLoggerProvider.Builder[F] = (b: SdkLoggerProvider.Builder[F]) => b
-  ): Resource[F, LogsTestkit[F]] = {
-    implicit val askContext: AskContext[F] = Ask.const(Context.root)
-    create[F](customize)
-  }
+  def inMemory[F[_]: Temporal: Parallel: Diagnostic: LocalContextProvider](
+      customize: Builder[F] => Builder[F] = identity[Builder[F]](_)
+  ): Resource[F, LogsTestkit[F]] =
+    customize(builder[F]).build
 
-  private[sdk] def create[F[_]: Temporal: Parallel: Diagnostic: AskContext](
+  private def create[F[_]: Temporal: Parallel: Diagnostic: AskContext](
       customize: SdkLoggerProvider.Builder[F] => SdkLoggerProvider.Builder[F]
   ): Resource[F, LogsTestkit[F]] = {
     def createLoggerProvider(

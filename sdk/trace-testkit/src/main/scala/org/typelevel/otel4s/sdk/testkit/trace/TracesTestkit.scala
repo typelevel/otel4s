@@ -72,47 +72,15 @@ object TracesTestkit {
   def builder[F[_]: Async: Parallel: Diagnostic: LocalContextProvider]: Builder[F] =
     new BuilderImpl[F]()
 
-  /** Creates a [[TracesTestkit]] using [[Builder]] with the default configuration. The instance keeps spans in memory.
-    */
-  def inMemory[F[_]: Async: Parallel: Diagnostic: LocalContextProvider]: Resource[F, TracesTestkit[F]] =
-    builder[F].build
-
-// todo: can be uncommented once deprecated methods are removed
-//
-//  /** Creates a [[TracesTestkit]] using [[Builder]]. The instance keeps spans in memory.
-//    *
-//    * @param customize
-//   *   a function for customizing the builder
-//    */
-//  def inMemory[F[_]: Async: Parallel: Diagnostic: LocalContextProvider](
-//      customize: Builder[F] => Builder[F]
-//  ): Resource[F, TracesTestkit[F]] =
-//    customize(builder[F]).build
-
-  /** Creates [[TracesTestkit]] that keeps spans in-memory.
+  /** Creates a [[TracesTestkit]] using [[Builder]]. The instance keeps spans in memory.
     *
     * @param customize
-    *   the customization of the builder
+    *   a function for customizing the builder
     */
-  @deprecated("Use an overloaded alternative of the `TracesTestkit.inMemory` or `TracesTestkit.builder`", "0.15.0")
   def inMemory[F[_]: Async: Parallel: Diagnostic: LocalContextProvider](
-      customize: SdkTracerProvider.Builder[F] => SdkTracerProvider.Builder[F] = (b: SdkTracerProvider.Builder[F]) => b
-  ): Resource[F, TracesTestkit[F]] = {
-    def createTracerProvider(
-        processor: SpanProcessor[F]
-    )(implicit local: LocalContext[F]): F[TracerProvider[F]] =
-      Random.scalaUtilRandom[F].flatMap { implicit random =>
-        val builder = SdkTracerProvider.builder[F].addSpanProcessor(processor)
-        customize(builder).build
-      }
-
-    for {
-      local <- Resource.eval(LocalProvider[F, Context].local)
-      exporter <- Resource.eval(InMemorySpanExporter.create[F](None))
-      processor <- Resource.pure(SimpleSpanProcessor(exporter))
-      tracerProvider <- Resource.eval(createTracerProvider(processor)(local))
-    } yield new Impl(tracerProvider, processor, exporter)
-  }
+      customize: Builder[F] => Builder[F] = identity[Builder[F]](_)
+  ): Resource[F, TracesTestkit[F]] =
+    customize(builder[F]).build
 
   private final class Impl[F[_]: FlatMap](
       val tracerProvider: TracerProvider[F],

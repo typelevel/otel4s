@@ -51,31 +51,73 @@ final class InMemoryMetricReader[F[_]: Monad](
 
 object InMemoryMetricReader {
 
-  /** Creates a `MetricReader` that keeps metrics in-memory.
+  /** Builder for [[InMemoryMetricReader]]. */
+  sealed trait Builder[F[_]] {
+
+    /** Sets the aggregation temporality selector.
+      *
+      * @param selector
+      *   the selector to use
+      */
+    def withAggregationTemporalitySelector(selector: AggregationTemporalitySelector): Builder[F]
+
+    /** Sets the default aggregation selector.
+      *
+      * @param selector
+      *   the selector to use
+      */
+    def withDefaultAggregationSelector(selector: AggregationSelector): Builder[F]
+
+    /** Sets the default cardinality limit selector.
+      *
+      * @param selector
+      *   the selector to use
+      */
+    def withDefaultCardinalityLimitSelector(selector: CardinalityLimitSelector): Builder[F]
+
+    /** Creates [[InMemoryMetricReader]] using the configuration of this builder. */
+    def build: F[InMemoryMetricReader[F]]
+
+  }
+
+  /** Creates a [[Builder]] of [[InMemoryMetricReader]] with the default configuration. */
+  def builder[F[_]: Concurrent]: Builder[F] =
+    BuilderImpl[F]()
+
+  /** Creates an [[InMemoryMetricReader]] that keeps metrics in memory.
     *
-    * @param aggregationTemporalitySelector
-    *   the preferred aggregation for the given instrument type
-    *
-    * @param defaultAggregationSelector
-    *   the preferred aggregation for the given instrument type. If no views are configured for a metric instrument, an
-    *   aggregation provided by the selector will be used.
-    *
-    * @param defaultCardinalityLimitSelector
-    *   the preferred cardinality limit for the given instrument type. If no views are configured for a metric
-    *   instrument, an aggregation provided by the selector will be used.
+    * @param customize
+    *   a function for customizing the builder
     */
   def create[F[_]: Concurrent](
+      customize: Builder[F] => Builder[F] = identity[Builder[F]](_)
+  ): F[InMemoryMetricReader[F]] =
+    customize(builder[F]).build
+
+  private final case class BuilderImpl[F[_]: Concurrent](
       aggregationTemporalitySelector: AggregationTemporalitySelector = AggregationTemporalitySelector.alwaysCumulative,
       defaultAggregationSelector: AggregationSelector = AggregationSelector.default,
       defaultCardinalityLimitSelector: CardinalityLimitSelector = CardinalityLimitSelector.default
-  ): F[InMemoryMetricReader[F]] =
-    for {
-      producers <- Ref.empty[F, Vector[MetricProducer[F]]]
-    } yield new InMemoryMetricReader[F](
-      producers,
-      aggregationTemporalitySelector,
-      defaultAggregationSelector,
-      defaultCardinalityLimitSelector
-    )
+  ) extends Builder[F] {
+
+    def withAggregationTemporalitySelector(selector: AggregationTemporalitySelector): Builder[F] =
+      copy(aggregationTemporalitySelector = selector)
+
+    def withDefaultAggregationSelector(selector: AggregationSelector): Builder[F] =
+      copy(defaultAggregationSelector = selector)
+
+    def withDefaultCardinalityLimitSelector(selector: CardinalityLimitSelector): Builder[F] =
+      copy(defaultCardinalityLimitSelector = selector)
+
+    def build: F[InMemoryMetricReader[F]] =
+      for {
+        producers <- Ref.empty[F, Vector[MetricProducer[F]]]
+      } yield new InMemoryMetricReader[F](
+        producers,
+        aggregationTemporalitySelector,
+        defaultAggregationSelector,
+        defaultCardinalityLimitSelector
+      )
+  }
 
 }

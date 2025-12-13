@@ -19,11 +19,12 @@ package org.typelevel.otel4s.sdk.testkit.logs
 import cats.Parallel
 import cats.effect.Resource
 import cats.effect.Temporal
-import cats.mtl.Ask
+import org.typelevel.otel4s.context.LocalProvider
 import org.typelevel.otel4s.logs.LoggerProvider
 import org.typelevel.otel4s.sdk.common.Diagnostic
 import org.typelevel.otel4s.sdk.context.AskContext
 import org.typelevel.otel4s.sdk.context.Context
+import org.typelevel.otel4s.sdk.context.LocalContextProvider
 import org.typelevel.otel4s.sdk.logs.SdkLoggerProvider
 import org.typelevel.otel4s.sdk.logs.data.LogRecordData
 import org.typelevel.otel4s.sdk.logs.processor.SimpleLogRecordProcessor
@@ -45,26 +46,39 @@ sealed trait LogsTestkit[F[_]] {
 object LogsTestkit {
   private[sdk] trait Unsealed[F[_]] extends LogsTestkit[F]
 
-  /** Creates [[LogsTestkit]] that keeps logs in-memory.
-    *
-    * @param customize
-    *   the customization of the builder
-    *
-    * @note
-    *   this implementation uses a constant root `Context` via `Ask.const(Context.root)`. That means the module is
-    *   isolated: it does not inherit or propagate the surrounding span context. This is useful if you only need logging
-    *   (without traces or metrics) and want the module to operate independently. If instead you want interoperability -
-    *   i.e. to capture the current span context so that logs, traces, and metrics can all work together - use
-    *   `OpenTelemetrySdkTestkit.inMemory`.
-    */
-  def inMemory[F[_]: Temporal: Parallel: Diagnostic](
-      customize: SdkLoggerProvider.Builder[F] => SdkLoggerProvider.Builder[F] = (b: SdkLoggerProvider.Builder[F]) => b
-  ): Resource[F, LogsTestkit[F]] = {
-    implicit val askContext: AskContext[F] = Ask.const(Context.root)
-    create[F](customize)
+  /** Builder for [[LogsTestkit]]. */
+  sealed trait Builder[F[_]] {
+
+    /** Adds the logger provider builder customizer. Multiple customizers can be added, and they will be applied in the
+      * order they were added.
+      *
+      * @param customizer
+      *   the customizer to add
+      */
+    def addLoggerProviderCustomizer(
+        customizer: SdkLoggerProvider.Builder[F] => SdkLoggerProvider.Builder[F]
+    ): Builder[F]
+
+    /** Creates [[LogsTestkit]] using the configuration of this builder. */
+    def build: Resource[F, LogsTestkit[F]]
+
   }
 
-  private[sdk] def create[F[_]: Temporal: Parallel: Diagnostic: AskContext](
+  /** Creates a [[Builder]] of [[LogsTestkit]] with the default configuration. */
+  def builder[F[_]: Temporal: Parallel: Diagnostic: LocalContextProvider]: Builder[F] =
+    new BuilderImpl[F]()
+
+  /** Creates a [[LogsTestkit]] using [[Builder]]. The instance keeps logs in memory.
+    *
+    * @param customize
+    *   a function for customizing the builder
+    */
+  def inMemory[F[_]: Temporal: Parallel: Diagnostic: LocalContextProvider](
+      customize: Builder[F] => Builder[F] = identity[Builder[F]](_)
+  ): Resource[F, LogsTestkit[F]] =
+    customize(builder[F]).build
+
+  private def create[F[_]: Temporal: Parallel: Diagnostic: AskContext](
       customize: SdkLoggerProvider.Builder[F] => SdkLoggerProvider.Builder[F]
   ): Resource[F, LogsTestkit[F]] = {
     def createLoggerProvider(
@@ -87,6 +101,21 @@ object LogsTestkit {
   ) extends LogsTestkit[F] {
     def collectLogs: F[List[LogRecordData]] =
       exporter.exportedLogs
+  }
+
+  private final case class BuilderImpl[F[_]: Temporal: Parallel: Diagnostic: LocalContextProvider](
+      customizer: SdkLoggerProvider.Builder[F] => SdkLoggerProvider.Builder[F] = (b: SdkLoggerProvider.Builder[F]) => b
+  ) extends Builder[F] {
+
+    def addLoggerProviderCustomizer(
+        customizer: SdkLoggerProvider.Builder[F] => SdkLoggerProvider.Builder[F]
+    ): Builder[F] =
+      copy(customizer = this.customizer.andThen(customizer))
+
+    def build: Resource[F, LogsTestkit[F]] =
+      Resource.eval(LocalProvider[F, Context].local).flatMap { implicit local =>
+        create[F](customizer)
+      }
   }
 
 }

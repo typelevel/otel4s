@@ -20,13 +20,14 @@ import cats.FlatMap
 import cats.effect.Async
 import cats.effect.Resource
 import cats.effect.std.Random
-import cats.mtl.Ask
 import cats.syntax.flatMap._
 import cats.syntax.functor._
+import org.typelevel.otel4s.context.LocalProvider
 import org.typelevel.otel4s.metrics.MeterProvider
 import org.typelevel.otel4s.sdk.common.Diagnostic
 import org.typelevel.otel4s.sdk.context.AskContext
 import org.typelevel.otel4s.sdk.context.Context
+import org.typelevel.otel4s.sdk.context.LocalContextProvider
 import org.typelevel.otel4s.sdk.metrics.SdkMeterProvider
 import org.typelevel.otel4s.sdk.metrics.data.MetricData
 import org.typelevel.otel4s.sdk.metrics.exporter.AggregationSelector
@@ -51,42 +52,58 @@ sealed trait MetricsTestkit[F[_]] {
 object MetricsTestkit {
   private[sdk] trait Unsealed[F[_]] extends MetricsTestkit[F]
 
-  /** Creates [[MetricsTestkit]] that keeps metrics in-memory.
-    *
-    * @note
-    *   the implementation does not record exemplars. Use `OpenTelemetrySdkTestkit` if you need to record exemplars.
-    *
-    * @param customize
-    *   the customization of the builder
-    *
-    * @param aggregationTemporalitySelector
-    *   the preferred aggregation for the given instrument type
-    *
-    * @param defaultAggregationSelector
-    *   the preferred aggregation for the given instrument type. If no views are configured for a metric instrument, an
-    *   aggregation provided by the selector will be used
-    *
-    * @param defaultCardinalityLimitSelector
-    *   the preferred cardinality limit for the given instrument type. If no views are configured for a metric
-    *   instrument, a limit provided by the selector will be used
-    */
-  def inMemory[F[_]: Async: Diagnostic](
-      customize: SdkMeterProvider.Builder[F] => SdkMeterProvider.Builder[F] = (b: SdkMeterProvider.Builder[F]) => b,
-      aggregationTemporalitySelector: AggregationTemporalitySelector = AggregationTemporalitySelector.alwaysCumulative,
-      defaultAggregationSelector: AggregationSelector = AggregationSelector.default,
-      defaultCardinalityLimitSelector: CardinalityLimitSelector = CardinalityLimitSelector.default
-  ): Resource[F, MetricsTestkit[F]] = {
-    implicit val askContext: AskContext[F] = Ask.const(Context.root)
+  /** Builder for [[MetricsTestkit]]. */
+  sealed trait Builder[F[_]] {
 
-    create[F](
-      customize,
-      aggregationTemporalitySelector,
-      defaultAggregationSelector,
-      defaultCardinalityLimitSelector
-    )
+    /** Adds the meter provider builder customizer. Multiple customizers can be added, and they will be applied in the
+      * order they were added.
+      *
+      * @param customizer
+      *   the customizer to add
+      */
+    def addMeterProviderCustomizer(customizer: SdkMeterProvider.Builder[F] => SdkMeterProvider.Builder[F]): Builder[F]
+
+    /** Sets the aggregation temporality selector.
+      *
+      * @param selector
+      *   the selector to use
+      */
+    def withAggregationTemporalitySelector(selector: AggregationTemporalitySelector): Builder[F]
+
+    /** Sets the default aggregation selector.
+      *
+      * @param selector
+      *   the selector to use
+      */
+    def withDefaultAggregationSelector(selector: AggregationSelector): Builder[F]
+
+    /** Sets the default cardinality limit selector.
+      *
+      * @param selector
+      *   the selector to use
+      */
+    def withDefaultCardinalityLimitSelector(selector: CardinalityLimitSelector): Builder[F]
+
+    /** Creates [[MetricsTestkit]] using the configuration of this builder. */
+    def build: Resource[F, MetricsTestkit[F]]
+
   }
 
-  private[sdk] def create[F[_]: Async: Diagnostic: AskContext](
+  /** Creates a [[Builder]] of [[MetricsTestkit]] with the default configuration. */
+  def builder[F[_]: Async: Diagnostic: LocalContextProvider]: Builder[F] =
+    new BuilderImpl[F]()
+
+  /** Creates a [[MetricsTestkit]] using [[Builder]]. The instance keeps metrics in memory.
+    *
+    * @param customize
+    *   a function for customizing the builder
+    */
+  def inMemory[F[_]: Async: Diagnostic: LocalContextProvider](
+      customize: Builder[F] => Builder[F] = identity[Builder[F]](_)
+  ): Resource[F, MetricsTestkit[F]] =
+    customize(builder[F]).build
+
+  private def create[F[_]: Async: Diagnostic: AskContext](
       customize: SdkMeterProvider.Builder[F] => SdkMeterProvider.Builder[F],
       aggregationTemporalitySelector: AggregationTemporalitySelector,
       defaultAggregationSelector: AggregationSelector,
@@ -102,11 +119,12 @@ object MetricsTestkit {
 
     for {
       reader <- Resource.eval(
-        InMemoryMetricReader.create[F](
-          aggregationTemporalitySelector,
-          defaultAggregationSelector,
-          defaultCardinalityLimitSelector
-        )
+        InMemoryMetricReader
+          .builder[F]
+          .withAggregationTemporalitySelector(aggregationTemporalitySelector)
+          .withDefaultAggregationSelector(defaultAggregationSelector)
+          .withDefaultCardinalityLimitSelector(defaultCardinalityLimitSelector)
+          .build
       )
       meterProvider <- Resource.eval(createMeterProvider(reader))
     } yield new Impl(meterProvider, reader)
@@ -118,6 +136,38 @@ object MetricsTestkit {
   ) extends MetricsTestkit[F] {
     def collectMetrics: F[List[MetricData]] =
       reader.collectAllMetrics.map(_.toList)
+  }
+
+  private final case class BuilderImpl[F[_]: Async: Diagnostic: LocalContextProvider](
+      customizer: SdkMeterProvider.Builder[F] => SdkMeterProvider.Builder[F] = (b: SdkMeterProvider.Builder[F]) => b,
+      aggregationTemporalitySelector: AggregationTemporalitySelector = AggregationTemporalitySelector.alwaysCumulative,
+      defaultAggregationSelector: AggregationSelector = AggregationSelector.default,
+      defaultCardinalityLimitSelector: CardinalityLimitSelector = CardinalityLimitSelector.default
+  ) extends Builder[F] {
+
+    def addMeterProviderCustomizer(
+        customizer: SdkMeterProvider.Builder[F] => SdkMeterProvider.Builder[F]
+    ): Builder[F] =
+      copy(customizer = this.customizer.andThen(customizer))
+
+    def withAggregationTemporalitySelector(selector: AggregationTemporalitySelector): Builder[F] =
+      copy(aggregationTemporalitySelector = selector)
+
+    def withDefaultAggregationSelector(selector: AggregationSelector): Builder[F] =
+      copy(defaultAggregationSelector = selector)
+
+    def withDefaultCardinalityLimitSelector(selector: CardinalityLimitSelector): Builder[F] =
+      copy(defaultCardinalityLimitSelector = selector)
+
+    def build: Resource[F, MetricsTestkit[F]] =
+      Resource.eval(LocalProvider[F, Context].local).flatMap { implicit local =>
+        create[F](
+          customizer,
+          aggregationTemporalitySelector,
+          defaultAggregationSelector,
+          defaultCardinalityLimitSelector
+        )
+      }
   }
 
 }

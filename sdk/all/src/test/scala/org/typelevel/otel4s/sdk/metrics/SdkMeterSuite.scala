@@ -66,12 +66,12 @@ class SdkMeterSuite extends BaseMeterSuite {
         implicit val noopDiagnostic: Diagnostic[IO] = Diagnostic.noop
 
         MetricsTestkit
-          .create[IO](
-            _.withTraceContextLookup(_.get(traceContextKey)),
-            AggregationTemporalitySelector.alwaysCumulative,
-            AggregationSelector.default,
-            CardinalityLimitSelector.default
-          )
+          .builder[IO]
+          .addMeterProviderCustomizer(_.withTraceContextLookup(_.get(traceContextKey)))
+          .withAggregationTemporalitySelector(AggregationTemporalitySelector.alwaysCumulative)
+          .withDefaultAggregationSelector(AggregationSelector.default)
+          .withDefaultCardinalityLimitSelector(CardinalityLimitSelector.default)
+          .build
           .map { metrics =>
             new BaseMeterSuite.Sdk[Ctx] {
               def provider: MeterProvider[IO] =

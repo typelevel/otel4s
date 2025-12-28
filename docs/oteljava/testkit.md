@@ -316,7 +316,7 @@ test.unsafeRunSync()
 
 ## Mixing Java and Scala instrumentation
 
-In some cases, a program can rely on both [Java instrumentation](https://github.com/open-telemetry/opentelemetry-java-instrumentation) and Scala instrumentation. Teskits expose a `fromInMemory` method to allow using the same underlying Java OpenTelemetry exporter/reader.
+In some cases, a program can rely on both [Java instrumentation](https://github.com/open-telemetry/opentelemetry-java-instrumentation) and Scala instrumentation. Testkit builders offers an option to use the same underlying Java OpenTelemetry exporter/reader.
 
 ```scala mdoc:reset
 import cats.effect.IO
@@ -370,19 +370,16 @@ for {
   // create your OpenTelemetry with the InMemorySpanExporter created above
   (openTelemetry: OpenTelemetry) = null
 
-  localProvider = IOLocalTestContextStorage.localProvider[IO]
-  local <- {
-    implicit val _localProvider = localProvider
-    LocalProvider[IO, Context].local.toResource
-  }
+  local <- IOLocalTestContextStorage.localProvider[IO].local.toResource
 
   tracesTestkit <- {
-    implicit val _localProvider = localProvider
+    implicit val _localProvider = LocalProvider.fromLocal(local)
     // inject InMemorySpanExporter here
-    TracesTestkit.fromInMemory[IO](
-      inMemorySpanExporter = inMemorySpanExporter,
-      textMapPropagators = List(W3CTraceContextPropagator.getInstance())
-    )
+    TracesTestkit
+      .builder[IO]
+      .withInMemorySpanExporter(inMemorySpanExporter)
+      .addTextMapPropagators(W3CTraceContextPropagator.getInstance())
+      .build
   }
   tracer <- tracesTestkit.tracerProvider.get("my.service").toResource
 

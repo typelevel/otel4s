@@ -39,6 +39,7 @@ import org.typelevel.otel4s.AnyValue
 import org.typelevel.otel4s.Attributes
 import org.typelevel.otel4s.logs.Severity
 import org.typelevel.otel4s.logs.scalacheck.Arbitraries._
+import org.typelevel.otel4s.oteljava.AnyValueConverters._
 import org.typelevel.otel4s.oteljava.AttributeConverters._
 import org.typelevel.otel4s.oteljava.context.Context
 import org.typelevel.otel4s.scalacheck.Arbitraries._
@@ -119,41 +120,12 @@ class LogsSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
           if (item.getBodyValue != null) {
             assertEquals(
               item.getBodyValue.asInstanceOf[JValue[Any]],
-              body.flatMap(b => Option(toJValue(b).asInstanceOf[JValue[Any]])).orNull
+              body.flatMap(b => Option(b.toJava.asInstanceOf[JValue[Any]])).orNull
             )
           }
         }
     }
   }
-
-  private def toJValue(value: AnyValue): JValue[_] =
-    value match {
-      case string: AnyValue.StringValue =>
-        JValue.of(string.value)
-
-      case boolean: AnyValue.BooleanValue =>
-        JValue.of(boolean.value)
-
-      case long: AnyValue.LongValue =>
-        JValue.of(long.value)
-
-      case double: AnyValue.DoubleValue =>
-        JValue.of(double.value)
-
-      case AnyValue.ByteArrayValueImpl(bytes) =>
-        JValue.of(bytes)
-
-      case list: AnyValue.SeqValue =>
-        JValue.of(list.value.map(toJValue).filter(_ != null).asJava)
-
-      case map: AnyValue.MapValue =>
-        JValue.of(
-          map.value.view.mapValues(value => toJValue(value)).filter(_._2 != null).toMap.asJava
-        )
-
-      case _: AnyValue.EmptyValue =>
-        null
-    }
 
   private implicit val compareJValue: Compare[JValue[Any], JValue[Any]] =
     (left, right) => {
@@ -173,6 +145,9 @@ class LogsSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
           val l = left.getValue.asInstanceOf[java.util.List[KeyValue]].asScala
           val r = right.getValue.asInstanceOf[java.util.List[KeyValue]].asScala
           l.diff(r).isEmpty
+
+        case (ValueType.EMPTY, ValueType.EMPTY) =>
+          true
 
         case (_, _) =>
           false

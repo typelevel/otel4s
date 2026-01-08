@@ -23,7 +23,7 @@ import io.opentelemetry.api.common.{AttributeKey => JAttributeKey}
 import io.opentelemetry.api.trace.StatusCode
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo
-import io.opentelemetry.sdk.internal.AttributesMap
+import io.opentelemetry.sdk.common.internal.AttributesMap
 import io.opentelemetry.sdk.testing.time.TestClock
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder
 import io.opentelemetry.sdk.trace.SpanLimits

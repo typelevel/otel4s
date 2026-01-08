@@ -139,6 +139,9 @@ String, Boolean, Long, Double, Seq[String], Seq[Boolean], Seq[Long], Seq[Double]
     implicit val doubleSeqKey: KeySelect[Seq[Double]] =
       instance(AttributeKey.doubleSeq)
 
+    implicit val anyValueKey: KeySelect[AnyValue] =
+      instance(AttributeKey.anyValue)
+
     private def instance[A](f: String => AttributeKey[A]): KeySelect[A] =
       new KeySelect[A] {
         def make(name: String): AttributeKey[A] = f(name)
@@ -171,6 +174,9 @@ String, Boolean, Long, Double, Seq[String], Seq[Boolean], Seq[Long], Seq[Double]
 
   def doubleSeq(name: String): AttributeKey[Seq[Double]] =
     new Impl(name, AttributeType.DoubleSeq)
+
+  def anyValue(name: String): AttributeKey[AnyValue] =
+    new Impl(name, AttributeType.AnyValue)
 
   implicit def attributeKeyHash[A]: Hash[AttributeKey[A]] =
     Hash.by(key => (key.name, key.`type`))

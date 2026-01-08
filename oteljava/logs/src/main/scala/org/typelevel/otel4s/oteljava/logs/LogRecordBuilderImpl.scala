@@ -22,11 +22,11 @@ import cats.effect.Sync
 import cats.mtl.Ask
 import cats.syntax.flatMap._
 import io.opentelemetry.api.common.{AttributeKey => JAttributeKey}
-import io.opentelemetry.api.common.{Value => JValue}
 import io.opentelemetry.api.logs.{LogRecordBuilder => JLogRecordBuilder}
 import io.opentelemetry.api.logs.{Severity => JSeverity}
 import org.typelevel.otel4s.logs.LogRecordBuilder
 import org.typelevel.otel4s.logs.Severity
+import org.typelevel.otel4s.oteljava.AnyValueConverters._
 import org.typelevel.otel4s.oteljava.AttributeConverters._
 import org.typelevel.otel4s.oteljava.context.AskContext
 import org.typelevel.otel4s.oteljava.context.Context
@@ -35,7 +35,6 @@ import java.time.Instant
 import java.util.concurrent.TimeUnit
 import scala.collection.immutable
 import scala.concurrent.duration.FiniteDuration
-import scala.jdk.CollectionConverters._
 
 private[oteljava] final case class LogRecordBuilderImpl[F[_]: Sync: AskContext](
     jBuilder: JLogRecordBuilder
@@ -63,7 +62,7 @@ private[oteljava] final case class LogRecordBuilderImpl[F[_]: Sync: AskContext](
     copy(jBuilder = jBuilder.setSeverityText(severityText))
 
   def withBody(value: AnyValue): LogRecordBuilder[F, Context] =
-    copy(jBuilder = toJValue(value).fold(jBuilder)(jBuilder.setBody))
+    copy(jBuilder = jBuilder.setBody(value.toJava))
 
   def withEventName(eventName: String): LogRecordBuilder[F, Context] =
     copy(jBuilder = jBuilder.setEventName(eventName))
@@ -123,34 +122,4 @@ private[oteljava] final case class LogRecordBuilderImpl[F[_]: Sync: AskContext](
       case Severity.Fatal4 => JSeverity.FATAL4
     }
 
-  private def toJValue(value: AnyValue): Option[JValue[_]] =
-    value match {
-      case string: AnyValue.StringValue =>
-        Some(JValue.of(string.value))
-
-      case boolean: AnyValue.BooleanValue =>
-        Some(JValue.of(boolean.value))
-
-      case long: AnyValue.LongValue =>
-        Some(JValue.of(long.value))
-
-      case double: AnyValue.DoubleValue =>
-        Some(JValue.of(double.value))
-
-      case AnyValue.ByteArrayValueImpl(bytes) =>
-        Some(JValue.of(bytes))
-
-      case list: AnyValue.SeqValue =>
-        Some(JValue.of(list.value.flatMap(toJValue).asJava))
-
-      case map: AnyValue.MapValue =>
-        Some(
-          JValue.of(
-            map.value.flatMap { case (key, value) => toJValue(value).map(v => (key, v)) }.asJava
-          )
-        )
-
-      case _: AnyValue.EmptyValue =>
-        None
-    }
 }

@@ -45,6 +45,9 @@ trait Cogens {
       def seq[A: Cogen](seed: Seed): Seed =
         Cogen[Seq[A]].perturb(seed, attr.value.asInstanceOf[Seq[A]])
 
+      def anyValue(seed: Seed): Seed =
+        Cogen[AnyValue].perturb(seed, attr.value.asInstanceOf[AnyValue])
+
       val valueCogen: Seed => Seed = attr.key.`type` match {
         case AttributeType.Boolean    => primitive[Boolean]
         case AttributeType.Double     => primitive[Double]
@@ -54,6 +57,7 @@ trait Cogens {
         case AttributeType.DoubleSeq  => seq[Double]
         case AttributeType.StringSeq  => seq[String]
         case AttributeType.LongSeq    => seq[Long]
+        case AttributeType.AnyValue   => anyValue
       }
 
       valueCogen(attributeKeyCogen.perturb(seed, attr.key))

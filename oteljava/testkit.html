@@ -422,7 +422,7 @@
         To simplify the testing process, we can define a minimized projection of <code>SpanData</code>, such as <code>TelemetrySpan</code>.</p>
         
         <h2 id="mixing-java-and-scala-instrumentation" class="section"><a class="anchor-link left" href="#mixing-java-and-scala-instrumentation"><i class="icofont-laika link">&#xef71;</i></a>Mixing Java and Scala instrumentation</h2>
-        <p>In some cases, a program can rely on both <a href="https://github.com/open-telemetry/opentelemetry-java-instrumentation">Java instrumentation</a> and Scala instrumentation. Teskits expose a <code>fromInMemory</code> method to allow using the same underlying Java OpenTelemetry exporter/reader.</p>
+        <p>In some cases, a program can rely on both <a href="https://github.com/open-telemetry/opentelemetry-java-instrumentation">Java instrumentation</a> and Scala instrumentation. Testkit builders offers an option to use the same underlying Java OpenTelemetry exporter/reader.</p>
         <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.</span><span class="type-name">IO</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.</span><span class="identifier">std</span><span>.</span><span class="type-name">Dispatcher</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="type-name">FlatMap</span><span>
@@ -474,19 +474,16 @@
   </span><span class="comment">// create your OpenTelemetry with the InMemorySpanExporter created above
 </span><span>  (</span><span class="identifier">openTelemetry</span><span>: </span><span class="type-name">OpenTelemetry</span><span>) = </span><span class="literal-value">null</span><span>
 
-  </span><span class="identifier">localProvider</span><span> = </span><span class="type-name">IOLocalTestContextStorage</span><span>.</span><span class="identifier">localProvider</span><span>[</span><span class="type-name">IO</span><span>]
-  </span><span class="identifier">local</span><span> &lt;- {
-    </span><span class="keyword">implicit</span><span> </span><span class="keyword">val</span><span> </span><span class="identifier">_localProvider</span><span> = </span><span class="identifier">localProvider</span><span>
-    </span><span class="type-name">LocalProvider</span><span>[</span><span class="type-name">IO</span><span>, </span><span class="type-name">Context</span><span>].</span><span class="identifier">local</span><span>.</span><span class="identifier">toResource</span><span>
-  }
+  </span><span class="identifier">local</span><span> &lt;- </span><span class="type-name">IOLocalTestContextStorage</span><span>.</span><span class="identifier">localProvider</span><span>[</span><span class="type-name">IO</span><span>].</span><span class="identifier">local</span><span>.</span><span class="identifier">toResource</span><span>
 
   </span><span class="identifier">tracesTestkit</span><span> &lt;- {
-    </span><span class="keyword">implicit</span><span> </span><span class="keyword">val</span><span> </span><span class="identifier">_localProvider</span><span> = </span><span class="identifier">localProvider</span><span>
+    </span><span class="keyword">implicit</span><span> </span><span class="keyword">val</span><span> </span><span class="identifier">_localProvider</span><span> = </span><span class="type-name">LocalProvider</span><span>.</span><span class="identifier">fromLocal</span><span>(</span><span class="identifier">local</span><span>)
     </span><span class="comment">// inject InMemorySpanExporter here
-</span><span>    </span><span class="type-name">TracesTestkit</span><span>.</span><span class="identifier">fromInMemory</span><span>[</span><span class="type-name">IO</span><span>](
-      </span><span class="identifier">inMemorySpanExporter</span><span> = </span><span class="identifier">inMemorySpanExporter</span><span>,
-      </span><span class="identifier">textMapPropagators</span><span> = </span><span class="type-name">List</span><span>(</span><span class="type-name">W3CTraceContextPropagator</span><span>.</span><span class="identifier">getInstance</span><span>())
-    )
+</span><span>    </span><span class="type-name">TracesTestkit</span><span>
+      .</span><span class="identifier">builder</span><span>[</span><span class="type-name">IO</span><span>]
+      .</span><span class="identifier">withInMemorySpanExporter</span><span>(</span><span class="identifier">inMemorySpanExporter</span><span>)
+      .</span><span class="identifier">addTextMapPropagators</span><span>(</span><span class="type-name">W3CTraceContextPropagator</span><span>.</span><span class="identifier">getInstance</span><span>())
+      .</span><span class="identifier">build</span><span>
   }
   </span><span class="identifier">tracer</span><span> &lt;- </span><span class="identifier">tracesTestkit</span><span>.</span><span class="identifier">tracerProvider</span><span>.</span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;my.service&quot;</span><span>).</span><span class="identifier">toResource</span><span>
 

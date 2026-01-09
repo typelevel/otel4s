@@ -97,7 +97,7 @@ class IORuntimeMetricsSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
   private case class Metric(name: String, description: Option[String], unit: Option[String])
 
   private def toMetric(metric: MetricData): Metric =
-    Metric(metric.getName, Option(metric.getDescription), Option(metric.getUnit))
+    Metric(metric.getName, Option(metric.getDescription).filter(_.nonEmpty), Option(metric.getUnit).filter(_.nonEmpty))
 
   private val cpuStarvationMetrics = List(
     Metric(

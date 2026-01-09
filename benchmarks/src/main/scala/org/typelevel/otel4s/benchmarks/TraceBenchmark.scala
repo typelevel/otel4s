@@ -69,12 +69,6 @@ class TraceBenchmark {
         tracer = t
         finalizer = release
 
-      case "sdk" =>
-        val (t, release) = sdkTracer.allocated.unsafeRunSync()
-
-        tracer = t
-        finalizer = release
-
       case other =>
         sys.error(s"unknown backend [$other]")
     }
@@ -110,28 +104,6 @@ object TraceBenchmark {
     OtelJava
       .resource[IO](IO(otel))
       .evalMap(_.tracerProvider.tracer("trace-benchmark").get)
-  }
-
-  private def sdkTracer: Resource[IO, Tracer[IO]] = {
-    import cats.effect.std.Random
-    import org.typelevel.otel4s.context.LocalProvider
-    import org.typelevel.otel4s.sdk.context.Context
-    import org.typelevel.otel4s.sdk.testkit.trace.InMemorySpanExporter
-    import org.typelevel.otel4s.sdk.trace.SdkTracerProvider
-    import org.typelevel.otel4s.sdk.trace.processor.BatchSpanProcessor
-
-    Resource.eval(InMemorySpanExporter.create[IO](None)).flatMap { exporter =>
-      BatchSpanProcessor.builder(exporter).build.evalMap { processor =>
-        Random.scalaUtilRandom[IO].flatMap { implicit random =>
-          LocalProvider[IO, Context].local.flatMap { implicit local =>
-            for {
-              tracerProvider <- SdkTracerProvider.builder[IO].addSpanProcessor(processor).build
-              tracer <- tracerProvider.get("trace-benchmark")
-            } yield tracer
-          }
-        }
-      }
-    }
   }
 
   private def noopTracer: Tracer[IO] =

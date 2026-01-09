@@ -41,7 +41,7 @@ Specification][otel spec] atop [Cats Effect][cats-effect].
 
 * **SDK backend**
 
-  [SDK backend](sdk/overview.md) is implemented in Scala from scratch. Available for JVM, Scala.js, and Scala Native.
+  [SDK backend][otel4s-sdk] is implemented in Scala from scratch. Available for JVM, Scala.js, and Scala Native.
   While the implementation is compliant with the OpenTelemetry specification,
   it remains **experimental** and some functionality may be lacking.
 
@@ -50,7 +50,7 @@ Specification][otel spec] atop [Cats Effect][cats-effect].
   A testkit simplifies the validation of telemetry behavior in the applications and libraries:
   1. Framework-agnostic, works with any test framework, for example weaver, munit, scalatest
   2. Ideal for testing of the instrumented applications in end-to-end or unit tests
-  3. Available for [OpenTelemetry Java](oteljava/testkit.md) and [SDK](sdk/testkit.md) backends
+  3. Available for [OpenTelemetry Java](oteljava/testkit.md) and [SDK][otel4s-sdk-testkit] backends
 
 ## Status
 
@@ -229,3 +229,5 @@ val io: IO[Unit] = program[IO]
 [opentelemetry-java-autoconfigure]: https://opentelemetry.io/docs/languages/java/configuration/
 [otel]: https://opentelemetry.io/
 [otel spec]: https://opentelemetry.io/docs/reference/specification/
+[otel4s-sdk]: https://typelevel.org/otel4s-sdk/sdk/overview.html
+[otel4s-sdk-testkit]: https://typelevel.org/otel4s-sdk/sdk/testkit.html

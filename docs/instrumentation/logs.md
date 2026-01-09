@@ -271,8 +271,6 @@ As you can see, the log record is automatically correlated with the current trac
 You can acquire a provider from either backend. 
 You typically rely on autoconfiguration or a manual SDK builder that includes the OTLP exporter.
 
-### 5.1. Using `otel4s-oteljava`
-
 The `otel4s-oteljava` uses the [OpenTelemetry Java SDK][opentelemetry-java] under the hood.
 Check out the [overview](../oteljava/overview.md) of the backend for more details. 
 
@@ -341,75 +339,6 @@ object TelemetryApp extends IOApp.Simple {
 The `.autoConfigured(...)` relies on the environment variables and system properties to configure the SDK.
 For example, use `export OTEL_SERVICE_NAME=auth-service` to configure the name of the service.
 See the full set of the [supported configuration options][opentelemetry-java-autoconfigure].
-
-### 5.2. Using `otel4s-sdk`
-
-The `otel4s-sdk` is an alternative implementation written in Scala and available for all platforms: JVM, Scala Native, and Scala.js.
-Check out the [overview](../sdk/overview.md) of the backend for more details.
-
-@:select(build-tool)
-
-@:choice(sbt)
-
-Add settings to the `build.sbt`:
-
-```scala
-libraryDependencies ++= Seq(
-  "org.typelevel" %%% "otel4s-sdk" % "@VERSION@", // <1>
-  "org.typelevel" %%% "otel4s-sdk-exporter" % "@VERSION@" // <2>
-)
-```
-
-@:choice(scala-cli)
-
-Add directives to the `*.scala` file:
-
-```scala
-//> using dep "org.typelevel::otel4s-sdk::@VERSION@" // <1>
-//> using dep "org.typelevel::otel4s-sdk-exporter::@VERSION@" // <2>
-```
-
-@:@
-
-1. Add the `otel4s-sdk` library
-2. Add the `otel4s-sdk-exporter` library. Without the exporter, the application will crash
-
-_______
-
-Then use `OpenTelemetrySdk.autoConfigured` to autoconfigure the SDK:
-```scala mdoc:silent:reset
-import cats.effect.{IO, IOApp}
-import org.typelevel.otel4s.sdk.OpenTelemetrySdk
-import org.typelevel.otel4s.sdk.context.Context
-import org.typelevel.otel4s.sdk.exporter.otlp.autoconfigure.OtlpExportersAutoConfigure
-import org.typelevel.otel4s.metrics.MeterProvider
-import org.typelevel.otel4s.trace.TracerProvider
-import org.typelevel.otel4s.logs.LoggerProvider
-
-object TelemetryApp extends IOApp.Simple {
-
-  def run: IO[Unit] =
-    OpenTelemetrySdk
-      .autoConfigured[IO]( // register OTLP exporters configurer
-        _.addExportersConfigurer(OtlpExportersAutoConfigure[IO]) 
-      )
-      .use { autoConfigured =>
-        val sdk = autoConfigured.sdk
-        program(sdk.meterProvider, sdk.tracerProvider, sdk.loggerProvider)
-      }
-
-  def program(
-      meterProvider: MeterProvider[IO], 
-      tracerProvider: TracerProvider[IO],
-      loggerProvider: LoggerProvider[IO, Context],
-  ): IO[Unit] =
-    ???
-}
-```
-
-The `.autoConfigured(...)` relies on the environment variables and system properties to configure the SDK.
-For example, use `export OTEL_SERVICE_NAME=auth-service` to configure the name of the service.
-See the full set of the [supported configuration options](../sdk/configuration.md).
 
 [scribe]: https://github.com/outr/scribe
 [opentelemetry-logs-spec]: https://opentelemetry.io/docs/specs/otel/logs/api/

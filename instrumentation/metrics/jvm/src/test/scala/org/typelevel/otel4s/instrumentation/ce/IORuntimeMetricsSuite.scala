@@ -18,6 +18,7 @@ package org.typelevel.otel4s.instrumentation.ce
 
 import cats.Show
 import cats.effect.IO
+import io.opentelemetry.sdk.metrics.data.MetricData
 import munit.CatsEffectSuite
 import munit.ScalaCheckEffectSuite
 import org.scalacheck.Arbitrary
@@ -25,9 +26,8 @@ import org.scalacheck.Prop
 import org.scalacheck.effect.PropF
 import org.typelevel.otel4s.Attributes
 import org.typelevel.otel4s.metrics.MeterProvider
+import org.typelevel.otel4s.oteljava.testkit.metrics.MetricsTestkit
 import org.typelevel.otel4s.scalacheck.Arbitraries._
-import org.typelevel.otel4s.sdk.metrics.data.MetricData
-import org.typelevel.otel4s.sdk.testkit.metrics.MetricsTestkit
 
 class IORuntimeMetricsSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
   import IORuntimeMetrics.Config.{CpuStarvationConfig, WorkStealingThreadPoolConfig}
@@ -44,7 +44,7 @@ class IORuntimeMetricsSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
       for {
         metrics <- IORuntimeMetrics
           .register[IO](munitIORuntime.metrics, IORuntimeMetrics.Config.default)
-          .surround(testkit.collectMetrics)
+          .surround(testkit.collectMetrics[MetricData])
       } yield assertEquals(metrics.map(toMetric).sortBy(_.name), expected.sortBy(_.name))
     }
   }
@@ -66,7 +66,7 @@ class IORuntimeMetricsSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
         for {
           metrics <- IORuntimeMetrics
             .register[IO](munitIORuntime.metrics, config)
-            .surround(testkit.collectMetrics)
+            .surround(testkit.collectMetrics[MetricData])
         } yield assertEquals(metrics.map(toMetric).sortBy(_.name), expected.sortBy(_.name))
       }
     }
@@ -97,7 +97,7 @@ class IORuntimeMetricsSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
   private case class Metric(name: String, description: Option[String], unit: Option[String])
 
   private def toMetric(metric: MetricData): Metric =
-    Metric(metric.name, metric.description, metric.unit)
+    Metric(metric.getName, Option(metric.getDescription), Option(metric.getUnit))
 
   private val cpuStarvationMetrics = List(
     Metric(

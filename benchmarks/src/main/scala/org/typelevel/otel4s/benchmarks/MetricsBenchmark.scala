@@ -19,7 +19,6 @@ package org.typelevel.otel4s.benchmarks
 import cats.effect.IO
 import cats.effect.Resource
 import cats.effect.unsafe.implicits.global
-import cats.mtl.Ask
 import cats.syntax.foldable._
 import org.openjdk.jmh.annotations._
 import org.openjdk.jmh.infra.ThreadParams
@@ -88,7 +87,7 @@ object MetricsBenchmark {
   @State(Scope.Benchmark)
   class BenchThreadState {
 
-    @Param(Array("oteljava", "sdk", "noop"))
+    @Param(Array("oteljava", "noop"))
     var backend: String = _
 
     @Param(Array("noop", "sdk_cumulative", "sdk_delta"))
@@ -107,12 +106,6 @@ object MetricsBenchmark {
       threadUniqueLabelSet = Attributes(Attribute("key", params.getThreadIndex.toString))
 
       backend match {
-        case "sdk" =>
-          val (o, release) = sdkMeter(variation).evalMap(bench(operation, _)).allocated.unsafeRunSync()
-
-          op = o
-          finalizer = release
-
         case "oteljava" =>
           val (o, release) = otelJavaMeter(variation).evalMap(bench(operation, _)).allocated.unsafeRunSync()
 
@@ -210,52 +203,6 @@ object MetricsBenchmark {
 
       case "sdk_delta" =>
         create(InMemoryMetricReader.createDelta())
-
-      case other =>
-        sys.error(s"unknown variation [$other]")
-    }
-  }
-
-  private def sdkMeter(variation: String): Resource[IO, Meter[IO]] = {
-    import cats.effect.std.Random
-    import org.typelevel.otel4s.sdk.context.AskContext
-    import org.typelevel.otel4s.sdk.context.Context
-    import org.typelevel.otel4s.sdk.metrics.SdkMeterProvider
-    import org.typelevel.otel4s.sdk.metrics.data.AggregationTemporality
-    import org.typelevel.otel4s.sdk.metrics.exporter.AggregationTemporalitySelector
-    import org.typelevel.otel4s.sdk.testkit.metrics.InMemoryMetricReader
-
-    val namespace = "otel4s.sdk.metrics"
-
-    def create(
-        customize: SdkMeterProvider.Builder[IO] => SdkMeterProvider.Builder[IO] = identity,
-        aggregationTemporality: AggregationTemporalitySelector = AggregationTemporalitySelector.alwaysCumulative
-    ): Resource[IO, Meter[IO]] =
-      Resource.eval {
-        Random.scalaUtilRandom[IO].flatMap { implicit random =>
-          InMemoryMetricReader
-            .create[IO](_.withAggregationTemporalitySelector(aggregationTemporality))
-            .flatMap { reader =>
-              implicit val askContext: AskContext[IO] = Ask.const(Context.root)
-              SdkMeterProvider
-                .builder[IO]
-                .registerMetricReader(reader)
-                .pipe(customize)
-                .build
-                .flatMap(_.get(namespace))
-            }
-        }
-      }
-
-    variation match {
-      case "noop" =>
-        Resource.eval(MeterProvider.noop[IO].get(namespace))
-
-      case "sdk_cumulative" =>
-        create()
-
-      case "sdk_delta" =>
-        create(aggregationTemporality = _ => AggregationTemporality.Delta)
 
       case other =>
         sys.error(s"unknown variation [$other]")

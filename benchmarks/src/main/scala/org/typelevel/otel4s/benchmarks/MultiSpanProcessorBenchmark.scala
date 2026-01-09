@@ -16,14 +16,11 @@
 
 package org.typelevel.otel4s.benchmarks
 
-import cats.effect.IO
-import cats.syntax.foldable._
 import io.opentelemetry.context.Context
 import io.opentelemetry.sdk.trace.ReadWriteSpan
 import org.openjdk.jmh.annotations._
 
 import java.util.concurrent.TimeUnit
-import scala.concurrent.duration._
 
 // benchmarks/Jmh/run org.typelevel.otel4s.benchmarks.MultiSpanProcessorBenchmark -prof gc
 @State(Scope.Benchmark)
@@ -36,7 +33,7 @@ class MultiSpanProcessorBenchmark {
 
   import MultiSpanProcessorBenchmark._
 
-  @Param(Array("oteljava", "sdk"))
+  @Param(Array("oteljava"))
   var backend: String = _
 
   @Param(Array("1", "5", "10"))
@@ -56,9 +53,6 @@ class MultiSpanProcessorBenchmark {
     backend match {
       case "oteljava" =>
         processor = Processor.otelJava(processorCount)
-
-      case "sdk" =>
-        processor = Processor.sdk(processorCount)
 
       case other =>
         sys.error(s"unknown backend [$other]")
@@ -97,44 +91,6 @@ object MultiSpanProcessorBenchmark {
       new Processor {
         def onEnd(): Unit =
           proc.onEnd(span.asInstanceOf[ReadableSpan])
-      }
-    }
-
-    def sdk(processorCount: Int): Processor = {
-      import cats.effect.unsafe.implicits.global
-      import org.typelevel.otel4s.trace.{SpanContext, SpanKind}
-      import org.typelevel.otel4s.sdk.TelemetryResource
-      import org.typelevel.otel4s.sdk.common.InstrumentationScope
-      import org.typelevel.otel4s.sdk.data.LimitedData
-      import org.typelevel.otel4s.sdk.trace.data.{SpanData, StatusData}
-      import org.typelevel.otel4s.sdk.trace.processor.SpanProcessor
-
-      val processor: SpanProcessor[IO] = new SpanProcessor.Unsealed[IO] {
-        def name: String = "Noop"
-        val onStart: SpanProcessor.OnStart[IO] = SpanProcessor.OnStart((_, _) => IO.unit)
-        val onEnd: SpanProcessor.OnEnd[IO] = SpanProcessor.OnEnd(_ => IO.unit)
-        def forceFlush: IO[Unit] = IO.unit
-      }
-
-      val spanData = SpanData(
-        name = "span",
-        spanContext = SpanContext.invalid,
-        parentSpanContext = None,
-        kind = SpanKind.Internal,
-        startTimestamp = Duration.Zero,
-        endTimestamp = None,
-        status = StatusData.Ok,
-        attributes = LimitedData.attributes(Int.MaxValue, 1024),
-        events = LimitedData.vector(Int.MaxValue),
-        links = LimitedData.vector(Int.MaxValue),
-        instrumentationScope = InstrumentationScope.empty,
-        resource = TelemetryResource.empty
-      )
-
-      val proc = List.fill(processorCount)(processor).combineAll
-
-      new Processor {
-        def onEnd(): Unit = proc.onEnd(spanData).unsafeRunSync()
       }
     }
 

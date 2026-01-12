@@ -16,12 +16,9 @@
 
 package org.typelevel.otel4s.benchmarks
 
-import cats.Foldable
 import cats.effect.IO
 import cats.effect.Resource
-import cats.effect.std.Random
 import cats.effect.unsafe.implicits.global
-import cats.syntax.foldable._
 import org.openjdk.jmh.annotations._
 
 import java.util.concurrent.TimeUnit
@@ -38,7 +35,7 @@ class BatchSpanProcessorBenchmark {
 
   import BatchSpanProcessorBenchmark._
 
-  @Param(Array("oteljava", "sdk"))
+  @Param(Array("oteljava"))
   var backend: String = _
 
   @Param(Array("0", "1", "5"))
@@ -59,12 +56,6 @@ class BatchSpanProcessorBenchmark {
     backend match {
       case "oteljava" =>
         val (proc, release) = Processor.otelJava(delayMs.millis, spanCount).allocated.unsafeRunSync()
-
-        processor = proc
-        finalizer = release
-
-      case "sdk" =>
-        val (proc, release) = Processor.sdk(delayMs.millis, spanCount).allocated.unsafeRunSync()
 
         processor = proc
         finalizer = release
@@ -141,57 +132,6 @@ object BatchSpanProcessorBenchmark {
           val _ = bsp.forceFlush().join(10, TimeUnit.MINUTES)
           ()
         }
-      }
-    }
-
-    def sdk(delay: FiniteDuration, spanCount: Int): Resource[IO, Processor] = {
-      import org.typelevel.otel4s.trace.{TraceFlags, TraceState}
-      import org.typelevel.otel4s.trace.{SpanContext, SpanKind}
-      import org.typelevel.otel4s.sdk.TelemetryResource
-      import org.typelevel.otel4s.sdk.common.InstrumentationScope
-      import org.typelevel.otel4s.sdk.trace.IdGenerator
-      import org.typelevel.otel4s.sdk.data.LimitedData
-      import org.typelevel.otel4s.sdk.trace.data.{SpanData, StatusData}
-      import org.typelevel.otel4s.sdk.trace.exporter.SpanExporter
-      import org.typelevel.otel4s.sdk.trace.processor.BatchSpanProcessor
-
-      val exporter: SpanExporter[IO] = new SpanExporter.Unsealed[IO] {
-        def name: String = s"DelayExporter($delay)"
-        def exportSpans[G[_]: Foldable](spans: G[SpanData]): IO[Unit] = IO.sleep(delay)
-        def flush: IO[Unit] = IO.unit
-      }
-
-      def mkSpanData(idGenerator: IdGenerator[IO], random: Random[IO]): IO[SpanData] =
-        for {
-          name <- random.nextString(20)
-          traceId <- idGenerator.generateTraceId
-          spanId <- idGenerator.generateSpanId
-        } yield SpanData(
-          name = name,
-          spanContext = SpanContext(traceId, spanId, TraceFlags.Sampled, TraceState.empty, remote = false),
-          parentSpanContext = None,
-          kind = SpanKind.Internal,
-          startTimestamp = Duration.Zero,
-          endTimestamp = None,
-          status = StatusData.Ok,
-          attributes = LimitedData.attributes(Int.MaxValue, 1024),
-          events = LimitedData.vector(Int.MaxValue),
-          links = LimitedData.vector(Int.MaxValue),
-          instrumentationScope = InstrumentationScope.empty,
-          resource = TelemetryResource.empty
-        )
-
-      for {
-        bsp <- BatchSpanProcessor.builder[IO](exporter).withMaxQueueSize(spanCount * 2).build
-        spans <- Resource.eval(
-          Random.scalaUtilRandom[IO].flatMap { implicit random =>
-            val generator = IdGenerator.random[IO]
-            mkSpanData(generator, random).replicateA(spanCount)
-          }
-        )
-      } yield new Processor {
-        def doExport(): Unit =
-          (spans.traverse_(span => bsp.onEnd(span)) >> bsp.forceFlush).unsafeRunSync()
       }
     }
 

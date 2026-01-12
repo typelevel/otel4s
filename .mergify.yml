@@ -30,30 +30,6 @@ pull_request_rules:
       add:
       - module:oteljava
       remove: []
-- name: Label module:sdk PRs
-  conditions:
-  - files~=^sdk/
-  actions:
-    label:
-      add:
-      - module:sdk
-      remove: []
-- name: Label module:sdk:contrib:aws PRs
-  conditions:
-  - files~=^sdk-contrib/aws/
-  actions:
-    label:
-      add:
-      - module:sdk:contrib:aws
-      remove: []
-- name: Label module:sdk:exporter PRs
-  conditions:
-  - files~=^sdk-exporter/
-  actions:
-    label:
-      add:
-      - module:sdk:exporter
-      remove: []
 - name: Label module:semconv PRs
   conditions:
   - files~=^semconv/

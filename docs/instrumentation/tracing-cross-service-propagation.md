@@ -32,10 +32,6 @@ Multiple propagators can be enabled too, for example: `OTEL_PROPAGATORS=b3multi,
 
 `Otel4s#propagators` shows the configured propagators: 
 
-@:select(otel-backend)
-
-@:choice(oteljava)
-
 ```scala mdoc:silent
 import cats.effect.IO
 import org.typelevel.otel4s.oteljava.OtelJava
@@ -47,25 +43,6 @@ OtelJava.autoConfigured[IO]().use { otel4s =>
 //   textMapPropagator=[W3CTraceContextPropagator, W3CBaggagePropagator]
 // }
 ```
-
-@:choice(sdk)
-
-```scala mdoc:silent
-import cats.effect.IO
-import org.typelevel.otel4s.sdk.OpenTelemetrySdk
-import org.typelevel.otel4s.sdk.exporter.otlp.autoconfigure.OtlpExportersAutoConfigure
-
-OpenTelemetrySdk
-  .autoConfigured[IO](_.addExportersConfigurer(OtlpExportersAutoConfigure[IO]))
-  .use { auto =>
-    IO.println("Propagators: " + auto.sdk.propagators)  
-  }
-// Propagators: ContextPropagators.Default{
-//   textMapPropagator=[W3CTraceContextPropagator, W3CBaggagePropagator]
-// }
-```
-
-@:@
 
 ## Propagation scenarios
 
@@ -208,10 +185,6 @@ def executeRequest(client: Client[IO])(implicit T: Tracer[IO]): IO[Unit] = {
 Let's say we use `platform-id` in the HTTP headers. 
 We can implement a custom `TextMapPropagator` that will use `platform-id` header to carry the identifier.
 
-@:select(otel-backend)
-
-@:choice(oteljava)
-
 ```scala mdoc:reset:silent
 import cats.effect._
 import org.typelevel.otel4s.context.propagation._
@@ -250,44 +223,3 @@ OtelJava.autoConfigured[IO] { builder =>
   }
 }
 ```
-
-@:choice(sdk)
-
-```scala mdoc:reset:silent
-import cats.effect._
-import org.typelevel.otel4s.context.propagation._
-import org.typelevel.otel4s.sdk.context._
-
-object PlatformIdPropagator extends TextMapPropagator[Context] {
-  // the value will be stored in the Context under this key
-  val PlatformIdKey: Context.Key[String] =
-    Context.Key.unique[SyncIO, String]("platform-id").unsafeRunSync()
-  
-  val fields: Iterable[String] = List("platform-id")
-  
-  def extract[A: TextMapGetter](ctx: Context, carrier: A): Context =
-    TextMapGetter[A].get(carrier, "platform-id") match {
-      case Some(value) => ctx.updated(PlatformIdKey, value)
-      case None        => ctx
-    }
-  
-  def inject[A: TextMapUpdater](ctx: Context, carrier: A): A =
-    ctx.get(PlatformIdKey) match {
-      case Some(value) => TextMapUpdater[A].updated(carrier, "platform-id", value)
-      case None        => carrier
-    }
-}
-```
-
-And wire it up:
-```scala mdoc:silent
-import org.typelevel.otel4s.sdk.OpenTelemetrySdk
-
-OpenTelemetrySdk.autoConfigured[IO] { builder =>
-  builder.addTracerProviderCustomizer((b, _) =>
-    b.addTextMapPropagators(PlatformIdPropagator)
-  )
-}
-```
-
-@:@

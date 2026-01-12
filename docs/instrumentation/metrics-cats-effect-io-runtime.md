@@ -5,9 +5,10 @@
 ```scala mdoc:invisible
 import cats.effect.IO
 import cats.effect.unsafe.implicits.global
+import io.opentelemetry.sdk.metrics.data.MetricData
 import org.typelevel.otel4s.instrumentation.ce.IORuntimeMetrics
 import org.typelevel.otel4s.metrics.MeterProvider
-import org.typelevel.otel4s.sdk.testkit.metrics.MetricsTestkit
+import org.typelevel.otel4s.oteljava.testkit.metrics.MetricsTestkit
 import IORuntimeMetrics.Config._
 
 def printMetrics(config: IORuntimeMetrics.Config): Unit = {
@@ -16,12 +17,12 @@ def printMetrics(config: IORuntimeMetrics.Config): Unit = {
 
     IORuntimeMetrics
       .register[IO](global.metrics, config)
-      .surround(testkit.collectMetrics)
+      .surround(testkit.collectMetrics[MetricData])
   }.unsafeRunSync()
 
   println("| Name | Description | Unit |")
   println("|-|-|-|")
-  println(metrics.sortBy(_.name).map(m => s"${m.name} | ${m.description.getOrElse("")} | ${m.unit.getOrElse("")}").mkString("\n"))
+  println(metrics.sortBy(_.getName).map(m => s"${m.getName} | ${Option(m.getDescription).getOrElse("")} | ${Option(m.getUnit).getOrElse("")}").mkString("\n"))
 }
 ```
 
@@ -216,11 +217,7 @@ Add directives to the `*.scala` file:
 
 ## Registering metrics collectors
 
-`IORuntimeMetrics.register` takes care of the metrics lifecycle management.  
-
-@:select(otel-backend)
-
-@:choice(oteljava)
+`IORuntimeMetrics.register` takes care of the metrics lifecycle management.
 
 ```scala mdoc:reset:silent
 import cats.effect._
@@ -251,41 +248,6 @@ object Main extends IOApp.Simple {
 
 }
 ```
-
-@:choice(sdk)
-
-```scala mdoc:reset:silent
-import cats.effect._
-import org.typelevel.otel4s.instrumentation.ce.IORuntimeMetrics
-import org.typelevel.otel4s.metrics.MeterProvider
-import org.typelevel.otel4s.trace.TracerProvider
-import org.typelevel.otel4s.sdk.OpenTelemetrySdk
-
-object Main extends IOApp.Simple {
-
-  def run: IO[Unit] =
-    OpenTelemetrySdk.autoConfigured[IO]().use { autoConfigured =>
-      val sdk = autoConfigured.sdk
-      implicit val mp: MeterProvider[IO] = sdk.meterProvider
-      IORuntimeMetrics
-        .register[IO](runtime.metrics, IORuntimeMetrics.Config.default)
-        .surround {
-          program(sdk.meterProvider, sdk.tracerProvider)
-        }
-    }
-
-  def program(
-      meterProvider: MeterProvider[IO],
-      tracerProvider: TracerProvider[IO]
-  ): IO[Unit] = {
-    val _ = (meterProvider, tracerProvider)
-    IO.unit
-  }
-
-}
-```
-
-@:@
 
 ## Grafana dashboard
 

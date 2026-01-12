@@ -1,7 +1,7 @@
 # otel4s
 
 ![Typelevel Organization Project](https://img.shields.io/badge/typelevel-organization%20project-FF6169.svg)
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.typelevel/otel4s-core_2.13/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.typelevel/otel4s-core_2.13)
+[![otel4s-core Scala version support](https://index.scala-lang.org/typelevel/otel4s/otel4s-core/latest.svg)](https://index.scala-lang.org/typelevel/otel4s/otel4s-core)
 
 ## Telemetry meets higher-kinded types
 

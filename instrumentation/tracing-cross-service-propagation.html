@@ -135,14 +135,6 @@ mermaid.initialize({
     <li class="level2 nav-leaf"><a href="../oteljava/tracing-java-interop.html">Tracing | Interop with Java-instrumented libraries</a></li>
     <li class="level2 nav-leaf"><a href="../oteljava/agent.html">Zero-code | Java Agent</a></li>
     <li class="level2 nav-leaf"><a href="../oteljava/testkit.html">Testkit</a></li>
-    <li class="level1 nav-header">SDK</li>
-    <li class="level2 nav-leaf"><a href="../sdk/overview.html">Overview</a></li>
-    <li class="level2 nav-leaf"><a href="../sdk/configuration.html">Configuration</a></li>
-    <li class="level2 nav-leaf"><a href="../sdk/prometheus-exporter.html">Prometheus Exporter</a></li>
-    <li class="level2 nav-leaf"><a href="../sdk/testkit.html">Testkit</a></li>
-    <li class="level2 nav-leaf"><a href="../sdk/aws-resource-detectors.html">AWS | Resource detectors</a></li>
-    <li class="level2 nav-leaf"><a href="../sdk/aws-xray.html">AWS | X-Ray ID Generator</a></li>
-    <li class="level2 nav-leaf"><a href="../sdk/aws-xray-propagator.html">AWS | X-Ray propagator</a></li>
     <li class="level1 nav-header">Examples</li>
     <li class="level2 nav-leaf"><a href="../examples/jaeger-docker/">Jaeger - collecting traces</a></li>
     <li class="level2 nav-leaf"><a href="../examples/honeycomb/">Honeycomb - metrics and traces</a></li>
@@ -204,13 +196,7 @@ mermaid.initialize({
         </ul>
         <p>Multiple propagators can be enabled too, for example: <code>OTEL_PROPAGATORS=b3multi,tracecontext</code>.</p>
         <p><code>Otel4s#propagators</code> shows the configured propagators: </p>
-        <div class="tab-container" data-tab-group="otel-backend">
-          <ul class="tab-group">
-            <li class="tab active" data-choice-name="oteljava"><a href="#">OpenTelemetry Java</a></li>
-            <li class="tab" data-choice-name="sdk"><a href="#">SDK</a></li>
-          </ul>
-          <div class="tab-content active" data-choice-name="oteljava">
-            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.</span><span class="type-name">IO</span><span>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.</span><span class="type-name">IO</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="type-name">OtelJava</span><span>
 
 </span><span class="type-name">OtelJava</span><span>.</span><span class="identifier">autoConfigured</span><span>[</span><span class="type-name">IO</span><span>]().</span><span class="identifier">use</span><span> { </span><span class="identifier">otel4s</span><span> =&gt;
@@ -219,22 +205,6 @@ mermaid.initialize({
 </span><span class="comment">// Propagators: ContextPropagators.Default{
 //   textMapPropagator=[W3CTraceContextPropagator, W3CBaggagePropagator]
 // }</span></code></pre>
-          </div>
-          <div class="tab-content" data-choice-name="sdk">
-            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.</span><span class="type-name">IO</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">sdk</span><span>.</span><span class="type-name">OpenTelemetrySdk</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">sdk</span><span>.</span><span class="identifier">exporter</span><span>.</span><span class="identifier">otlp</span><span>.</span><span class="identifier">autoconfigure</span><span>.</span><span class="type-name">OtlpExportersAutoConfigure</span><span>
-
-</span><span class="type-name">OpenTelemetrySdk</span><span>
-  .</span><span class="identifier">autoConfigured</span><span>[</span><span class="type-name">IO</span><span>](</span><span class="identifier">_</span><span>.</span><span class="identifier">addExportersConfigurer</span><span>(</span><span class="type-name">OtlpExportersAutoConfigure</span><span>[</span><span class="type-name">IO</span><span>]))
-  .</span><span class="identifier">use</span><span> { </span><span class="identifier">auto</span><span> =&gt;
-    </span><span class="type-name">IO</span><span>.</span><span class="identifier">println</span><span>(</span><span class="string-literal">&quot;Propagators: &quot;</span><span> + </span><span class="identifier">auto</span><span>.</span><span class="identifier">sdk</span><span>.</span><span class="identifier">propagators</span><span>)  
-  }
-</span><span class="comment">// Propagators: ContextPropagators.Default{
-//   textMapPropagator=[W3CTraceContextPropagator, W3CBaggagePropagator]
-// }</span></code></pre>
-          </div>
-        </div>
         
         <h2 id="propagation-scenarios" class="section"><a class="anchor-link left" href="#propagation-scenarios"><i class="icofont-laika link">&#xef71;</i></a>Propagation scenarios</h2>
         <p>Let&#39;s take a look at a common cross-service propagation models.</p>
@@ -355,13 +325,7 @@ mermaid.initialize({
         <p><code>TextMapPropagator</code> injects and extracts values in the form of text into carriers that travel in-band.</p>
         <p>Let&#39;s say we use <code>platform-id</code> in the HTTP headers. 
         We can implement a custom <code>TextMapPropagator</code> that will use <code>platform-id</code> header to carry the identifier.</p>
-        <div class="tab-container" data-tab-group="otel-backend">
-          <ul class="tab-group">
-            <li class="tab active" data-choice-name="oteljava"><a href="#">OpenTelemetry Java</a></li>
-            <li class="tab" data-choice-name="sdk"><a href="#">SDK</a></li>
-          </ul>
-          <div class="tab-content active" data-choice-name="oteljava">
-            <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.</span><span class="identifier">_</span><span>
+        <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.</span><span class="identifier">_</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">context</span><span>.</span><span class="identifier">propagation</span><span>.</span><span class="identifier">_</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="identifier">context</span><span>.</span><span class="identifier">_</span><span>
 
@@ -384,8 +348,8 @@ mermaid.initialize({
       </span><span class="keyword">case</span><span> </span><span class="type-name">None</span><span>        =&gt; </span><span class="identifier">carrier</span><span>
     }
 }</span></code></pre>
-            <p>And wire it up:</p>
-            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="identifier">context</span><span>.</span><span class="identifier">propagation</span><span>.</span><span class="type-name">PropagatorConverters</span><span>.</span><span class="identifier">_</span><span>
+        <p>And wire it up:</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="identifier">context</span><span>.</span><span class="identifier">propagation</span><span>.</span><span class="type-name">PropagatorConverters</span><span>.</span><span class="identifier">_</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">io</span><span>.</span><span class="identifier">opentelemetry</span><span>.</span><span class="identifier">context</span><span>.</span><span class="identifier">propagation</span><span>.{</span><span class="type-name">TextMapPropagator</span><span> =&gt; </span><span class="type-name">JTextMapPropagator</span><span>}
 </span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="type-name">OtelJava</span><span>
 
@@ -394,41 +358,6 @@ mermaid.initialize({
     </span><span class="type-name">JTextMapPropagator</span><span>.</span><span class="identifier">composite</span><span>(</span><span class="identifier">tmp</span><span>, </span><span class="type-name">PlatformIdPropagator</span><span>.</span><span class="identifier">asJava</span><span>)
   }
 }</span></code></pre>
-          </div>
-          <div class="tab-content" data-choice-name="sdk">
-            <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.</span><span class="identifier">_</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">context</span><span>.</span><span class="identifier">propagation</span><span>.</span><span class="identifier">_</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">sdk</span><span>.</span><span class="identifier">context</span><span>.</span><span class="identifier">_</span><span>
-
-</span><span class="keyword">object</span><span> </span><span class="type-name">PlatformIdPropagator</span><span> </span><span class="keyword">extends</span><span> </span><span class="type-name">TextMapPropagator</span><span>[</span><span class="type-name">Context</span><span>] {
-  </span><span class="comment">// the value will be stored in the Context under this key
-</span><span>  </span><span class="keyword">val</span><span> </span><span class="type-name">PlatformIdKey</span><span>: </span><span class="type-name">Context</span><span>.</span><span class="type-name">Key</span><span>[</span><span class="type-name">String</span><span>] =
-    </span><span class="type-name">Context</span><span>.</span><span class="type-name">Key</span><span>.</span><span class="identifier">unique</span><span>[</span><span class="type-name">SyncIO</span><span>, </span><span class="type-name">String</span><span>](</span><span class="string-literal">&quot;platform-id&quot;</span><span>).</span><span class="identifier">unsafeRunSync</span><span>()
-  
-  </span><span class="keyword">val</span><span> </span><span class="identifier">fields</span><span>: </span><span class="type-name">Iterable</span><span>[</span><span class="type-name">String</span><span>] = </span><span class="type-name">List</span><span>(</span><span class="string-literal">&quot;platform-id&quot;</span><span>)
-  
-  </span><span class="keyword">def</span><span> </span><span class="declaration-name">extract</span><span>[</span><span class="type-name">A</span><span>: </span><span class="type-name">TextMapGetter</span><span>](</span><span class="identifier">ctx</span><span>: </span><span class="type-name">Context</span><span>, </span><span class="identifier">carrier</span><span>: </span><span class="type-name">A</span><span>): </span><span class="type-name">Context</span><span> =
-    </span><span class="type-name">TextMapGetter</span><span>[</span><span class="type-name">A</span><span>].</span><span class="identifier">get</span><span>(</span><span class="identifier">carrier</span><span>, </span><span class="string-literal">&quot;platform-id&quot;</span><span>) </span><span class="keyword">match</span><span> {
-      </span><span class="keyword">case</span><span> </span><span class="type-name">Some</span><span>(</span><span class="identifier">value</span><span>) =&gt; </span><span class="identifier">ctx</span><span>.</span><span class="identifier">updated</span><span>(</span><span class="type-name">PlatformIdKey</span><span>, </span><span class="identifier">value</span><span>)
-      </span><span class="keyword">case</span><span> </span><span class="type-name">None</span><span>        =&gt; </span><span class="identifier">ctx</span><span>
-    }
-  
-  </span><span class="keyword">def</span><span> </span><span class="declaration-name">inject</span><span>[</span><span class="type-name">A</span><span>: </span><span class="type-name">TextMapUpdater</span><span>](</span><span class="identifier">ctx</span><span>: </span><span class="type-name">Context</span><span>, </span><span class="identifier">carrier</span><span>: </span><span class="type-name">A</span><span>): </span><span class="type-name">A</span><span> =
-    </span><span class="identifier">ctx</span><span>.</span><span class="identifier">get</span><span>(</span><span class="type-name">PlatformIdKey</span><span>) </span><span class="keyword">match</span><span> {
-      </span><span class="keyword">case</span><span> </span><span class="type-name">Some</span><span>(</span><span class="identifier">value</span><span>) =&gt; </span><span class="type-name">TextMapUpdater</span><span>[</span><span class="type-name">A</span><span>].</span><span class="identifier">updated</span><span>(</span><span class="identifier">carrier</span><span>, </span><span class="string-literal">&quot;platform-id&quot;</span><span>, </span><span class="identifier">value</span><span>)
-      </span><span class="keyword">case</span><span> </span><span class="type-name">None</span><span>        =&gt; </span><span class="identifier">carrier</span><span>
-    }
-}</span></code></pre>
-            <p>And wire it up:</p>
-            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">sdk</span><span>.</span><span class="type-name">OpenTelemetrySdk</span><span>
-
-</span><span class="type-name">OpenTelemetrySdk</span><span>.</span><span class="identifier">autoConfigured</span><span>[</span><span class="type-name">IO</span><span>] { </span><span class="identifier">builder</span><span> =&gt;
-  </span><span class="identifier">builder</span><span>.</span><span class="identifier">addTracerProviderCustomizer</span><span>((</span><span class="identifier">b</span><span>, </span><span class="identifier">_</span><span>) =&gt;
-    </span><span class="identifier">b</span><span>.</span><span class="identifier">addTextMapPropagators</span><span>(</span><span class="type-name">PlatformIdPropagator</span><span>)
-  )
-}</span></code></pre>
-          </div>
-        </div>
 
         
 <hr class="footer-rule"/>

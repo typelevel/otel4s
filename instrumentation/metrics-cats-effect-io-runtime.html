@@ -117,14 +117,6 @@
     <li class="level2 nav-leaf"><a href="../oteljava/tracing-java-interop.html">Tracing | Interop with Java-instrumented libraries</a></li>
     <li class="level2 nav-leaf"><a href="../oteljava/agent.html">Zero-code | Java Agent</a></li>
     <li class="level2 nav-leaf"><a href="../oteljava/testkit.html">Testkit</a></li>
-    <li class="level1 nav-header">SDK</li>
-    <li class="level2 nav-leaf"><a href="../sdk/overview.html">Overview</a></li>
-    <li class="level2 nav-leaf"><a href="../sdk/configuration.html">Configuration</a></li>
-    <li class="level2 nav-leaf"><a href="../sdk/prometheus-exporter.html">Prometheus Exporter</a></li>
-    <li class="level2 nav-leaf"><a href="../sdk/testkit.html">Testkit</a></li>
-    <li class="level2 nav-leaf"><a href="../sdk/aws-resource-detectors.html">AWS | Resource detectors</a></li>
-    <li class="level2 nav-leaf"><a href="../sdk/aws-xray.html">AWS | X-Ray ID Generator</a></li>
-    <li class="level2 nav-leaf"><a href="../sdk/aws-xray-propagator.html">AWS | X-Ray propagator</a></li>
     <li class="level1 nav-header">Examples</li>
     <li class="level2 nav-leaf"><a href="../examples/jaeger-docker/">Jaeger - collecting traces</a></li>
     <li class="level2 nav-leaf"><a href="../examples/honeycomb/">Honeycomb - metrics and traces</a></li>
@@ -455,14 +447,8 @@
         </ol>
         
         <h2 id="registering-metrics-collectors" class="section"><a class="anchor-link left" href="#registering-metrics-collectors"><i class="icofont-laika link">&#xef71;</i></a>Registering metrics collectors</h2>
-        <p><code>IORuntimeMetrics.register</code> takes care of the metrics lifecycle management.<br></p>
-        <div class="tab-container" data-tab-group="otel-backend">
-          <ul class="tab-group">
-            <li class="tab active" data-choice-name="oteljava"><a href="#">OpenTelemetry Java</a></li>
-            <li class="tab" data-choice-name="sdk"><a href="#">SDK</a></li>
-          </ul>
-          <div class="tab-content active" data-choice-name="oteljava">
-            <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.</span><span class="identifier">_</span><span>
+        <p><code>IORuntimeMetrics.register</code> takes care of the metrics lifecycle management.</p>
+        <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.</span><span class="identifier">_</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">instrumentation</span><span>.</span><span class="identifier">ce</span><span>.</span><span class="type-name">IORuntimeMetrics</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">metrics</span><span>.</span><span class="type-name">MeterProvider</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">trace</span><span>.</span><span class="type-name">TracerProvider</span><span>
@@ -489,38 +475,6 @@
   }
 
 }</span></code></pre>
-          </div>
-          <div class="tab-content" data-choice-name="sdk">
-            <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.</span><span class="identifier">_</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">instrumentation</span><span>.</span><span class="identifier">ce</span><span>.</span><span class="type-name">IORuntimeMetrics</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">metrics</span><span>.</span><span class="type-name">MeterProvider</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">trace</span><span>.</span><span class="type-name">TracerProvider</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">sdk</span><span>.</span><span class="type-name">OpenTelemetrySdk</span><span>
-
-</span><span class="keyword">object</span><span> </span><span class="type-name">Main</span><span> </span><span class="keyword">extends</span><span> </span><span class="type-name">IOApp</span><span>.</span><span class="type-name">Simple</span><span> {
-
-  </span><span class="keyword">def</span><span> </span><span class="declaration-name">run</span><span>: </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] =
-    </span><span class="type-name">OpenTelemetrySdk</span><span>.</span><span class="identifier">autoConfigured</span><span>[</span><span class="type-name">IO</span><span>]().</span><span class="identifier">use</span><span> { </span><span class="identifier">autoConfigured</span><span> =&gt;
-      </span><span class="keyword">val</span><span> </span><span class="identifier">sdk</span><span> = </span><span class="identifier">autoConfigured</span><span>.</span><span class="identifier">sdk</span><span>
-      </span><span class="keyword">implicit</span><span> </span><span class="keyword">val</span><span> </span><span class="identifier">mp</span><span>: </span><span class="type-name">MeterProvider</span><span>[</span><span class="type-name">IO</span><span>] = </span><span class="identifier">sdk</span><span>.</span><span class="identifier">meterProvider</span><span>
-      </span><span class="type-name">IORuntimeMetrics</span><span>
-        .</span><span class="identifier">register</span><span>[</span><span class="type-name">IO</span><span>](</span><span class="identifier">runtime</span><span>.</span><span class="identifier">metrics</span><span>, </span><span class="type-name">IORuntimeMetrics</span><span>.</span><span class="type-name">Config</span><span>.</span><span class="keyword">default</span><span>)
-        .</span><span class="identifier">surround</span><span> {
-          </span><span class="identifier">program</span><span>(</span><span class="identifier">sdk</span><span>.</span><span class="identifier">meterProvider</span><span>, </span><span class="identifier">sdk</span><span>.</span><span class="identifier">tracerProvider</span><span>)
-        }
-    }
-
-  </span><span class="keyword">def</span><span> </span><span class="declaration-name">program</span><span>(
-      </span><span class="identifier">meterProvider</span><span>: </span><span class="type-name">MeterProvider</span><span>[</span><span class="type-name">IO</span><span>],
-      </span><span class="identifier">tracerProvider</span><span>: </span><span class="type-name">TracerProvider</span><span>[</span><span class="type-name">IO</span><span>]
-  ): </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] = {
-    </span><span class="keyword">val</span><span> </span><span class="identifier">_</span><span> = (</span><span class="identifier">meterProvider</span><span>, </span><span class="identifier">tracerProvider</span><span>)
-    </span><span class="type-name">IO</span><span>.</span><span class="identifier">unit</span><span>
-  }
-
-}</span></code></pre>
-          </div>
-        </div>
         
         <h2 id="grafana-dashboard" class="section"><a class="anchor-link left" href="#grafana-dashboard"><i class="icofont-laika link">&#xef71;</i></a>Grafana dashboard</h2>
         <p>You can use a Grafana <a href="https://grafana.com/grafana/dashboards/21487-cats-effect-runtime-metrics/">dashboard</a> to visualize collected metrics.</p>

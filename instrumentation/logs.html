@@ -117,14 +117,6 @@
     <li class="level2 nav-leaf"><a href="../oteljava/tracing-java-interop.html">Tracing | Interop with Java-instrumented libraries</a></li>
     <li class="level2 nav-leaf"><a href="../oteljava/agent.html">Zero-code | Java Agent</a></li>
     <li class="level2 nav-leaf"><a href="../oteljava/testkit.html">Testkit</a></li>
-    <li class="level1 nav-header">SDK</li>
-    <li class="level2 nav-leaf"><a href="../sdk/overview.html">Overview</a></li>
-    <li class="level2 nav-leaf"><a href="../sdk/configuration.html">Configuration</a></li>
-    <li class="level2 nav-leaf"><a href="../sdk/prometheus-exporter.html">Prometheus Exporter</a></li>
-    <li class="level2 nav-leaf"><a href="../sdk/testkit.html">Testkit</a></li>
-    <li class="level2 nav-leaf"><a href="../sdk/aws-resource-detectors.html">AWS | Resource detectors</a></li>
-    <li class="level2 nav-leaf"><a href="../sdk/aws-xray.html">AWS | X-Ray ID Generator</a></li>
-    <li class="level2 nav-leaf"><a href="../sdk/aws-xray-propagator.html">AWS | X-Ray propagator</a></li>
     <li class="level1 nav-header">Examples</li>
     <li class="level2 nav-leaf"><a href="../examples/jaeger-docker/">Jaeger - collecting traces</a></li>
     <li class="level2 nav-leaf"><a href="../examples/honeycomb/">Honeycomb - metrics and traces</a></li>
@@ -148,9 +140,7 @@
     <li class="level2 nav-leaf"><a href="#_3-3-context-propagation">3.3. Context propagation</a></li>
     <li class="level2 nav-leaf"><a href="#_3-4-backpressure-and-performance">3.4. Backpressure and performance</a></li>
     <li class="level1 nav-leaf"><a href="#_4-integration-example-with-scribe">4. Integration example with <code>scribe</code></a></li>
-    <li class="level1 nav-node"><a href="#_5-getting-a-loggerprovider">5. Getting a <code>LoggerProvider</code></a></li>
-    <li class="level2 nav-leaf"><a href="#_5-1-using-otel4s-oteljava">5.1. Using <code>otel4s-oteljava</code></a></li>
-    <li class="level2 nav-leaf"><a href="#_5-2-using-otel4s-sdk">5.2. Using <code>otel4s-sdk</code></a></li>
+    <li class="level1 nav-leaf"><a href="#_5-getting-a-loggerprovider">5. Getting a <code>LoggerProvider</code></a></li>
   </ul>
 
   <p class="footer"></p>
@@ -404,8 +394,6 @@
         <h2 id="_5-getting-a-loggerprovider" class="section"><a class="anchor-link left" href="#_5-getting-a-loggerprovider"><i class="icofont-laika link">&#xef71;</i></a>5. Getting a <code>LoggerProvider</code></h2>
         <p>You can acquire a provider from either backend. 
         You typically rely on autoconfiguration or a manual SDK builder that includes the OTLP exporter.</p>
-        
-        <h3 id="_5-1-using-otel4s-oteljava" class="section"><a class="anchor-link left" href="#_5-1-using-otel4s-oteljava"><i class="icofont-laika link">&#xef71;</i></a>5.1. Using <code>otel4s-oteljava</code></h3>
         <p>The <code>otel4s-oteljava</code> uses the <a href="https://github.com/open-telemetry/opentelemetry-java">OpenTelemetry Java SDK</a> under the hood.
         Check out the <a href="../oteljava/overview.html">overview</a> of the backend for more details. </p>
         <div class="tab-container" data-tab-group="build-tool">
@@ -464,64 +452,6 @@
         <p>The <code>.autoConfigured(...)</code> relies on the environment variables and system properties to configure the SDK.
         For example, use <code>export OTEL_SERVICE_NAME=auth-service</code> to configure the name of the service.
         See the full set of the <a href="https://opentelemetry.io/docs/languages/java/configuration/">supported configuration options</a>.</p>
-        
-        <h3 id="_5-2-using-otel4s-sdk" class="section"><a class="anchor-link left" href="#_5-2-using-otel4s-sdk"><i class="icofont-laika link">&#xef71;</i></a>5.2. Using <code>otel4s-sdk</code></h3>
-        <p>The <code>otel4s-sdk</code> is an alternative implementation written in Scala and available for all platforms: JVM, Scala Native, and Scala.js.
-        Check out the <a href="../sdk/overview.html">overview</a> of the backend for more details.</p>
-        <div class="tab-container" data-tab-group="build-tool">
-          <ul class="tab-group">
-            <li class="tab active" data-choice-name="sbt"><a href="#">sbt</a></li>
-            <li class="tab" data-choice-name="scala-cli"><a href="#">Scala CLI</a></li>
-          </ul>
-          <div class="tab-content active" data-choice-name="sbt">
-            <p>Add settings to the <code>build.sbt</code>:</p>
-            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">libraryDependencies</span><span> ++= </span><span class="type-name">Seq</span><span>(
-  </span><span class="string-literal">&quot;org.typelevel&quot;</span><span> %%% </span><span class="string-literal">&quot;otel4s-sdk&quot;</span><span> % </span><span class="string-literal">&quot;0.14.0&quot;</span><span>, </span><span class="comment">// &lt;1&gt;
-</span><span>  </span><span class="string-literal">&quot;org.typelevel&quot;</span><span> %%% </span><span class="string-literal">&quot;otel4s-sdk-exporter&quot;</span><span> % </span><span class="string-literal">&quot;0.14.0&quot;</span><span> </span><span class="comment">// &lt;2&gt;
-</span><span>)</span></code></pre>
-          </div>
-          <div class="tab-content" data-choice-name="scala-cli">
-            <p>Add directives to the <code>*.scala</code> file:</p>
-            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="comment">//&gt; using dep &quot;org.typelevel::otel4s-sdk::0.14.0&quot; // &lt;1&gt;
-//&gt; using dep &quot;org.typelevel::otel4s-sdk-exporter::0.14.0&quot; // &lt;2&gt;</span></code></pre>
-          </div>
-        </div>
-        <ol class="arabic">
-          <li>Add the <code>otel4s-sdk</code> library</li>
-          <li>Add the <code>otel4s-sdk-exporter</code> library. Without the exporter, the application will crash</li>
-        </ol>
-        <hr>
-        <p>Then use <code>OpenTelemetrySdk.autoConfigured</code> to autoconfigure the SDK:</p>
-        <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.{</span><span class="type-name">IO</span><span>, </span><span class="type-name">IOApp</span><span>}
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">sdk</span><span>.</span><span class="type-name">OpenTelemetrySdk</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">sdk</span><span>.</span><span class="identifier">context</span><span>.</span><span class="type-name">Context</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">sdk</span><span>.</span><span class="identifier">exporter</span><span>.</span><span class="identifier">otlp</span><span>.</span><span class="identifier">autoconfigure</span><span>.</span><span class="type-name">OtlpExportersAutoConfigure</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">metrics</span><span>.</span><span class="type-name">MeterProvider</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">trace</span><span>.</span><span class="type-name">TracerProvider</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">logs</span><span>.</span><span class="type-name">LoggerProvider</span><span>
-
-</span><span class="keyword">object</span><span> </span><span class="type-name">TelemetryApp</span><span> </span><span class="keyword">extends</span><span> </span><span class="type-name">IOApp</span><span>.</span><span class="type-name">Simple</span><span> {
-
-  </span><span class="keyword">def</span><span> </span><span class="declaration-name">run</span><span>: </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] =
-    </span><span class="type-name">OpenTelemetrySdk</span><span>
-      .</span><span class="identifier">autoConfigured</span><span>[</span><span class="type-name">IO</span><span>]( </span><span class="comment">// register OTLP exporters configurer
-</span><span>        </span><span class="identifier">_</span><span>.</span><span class="identifier">addExportersConfigurer</span><span>(</span><span class="type-name">OtlpExportersAutoConfigure</span><span>[</span><span class="type-name">IO</span><span>]) 
-      )
-      .</span><span class="identifier">use</span><span> { </span><span class="identifier">autoConfigured</span><span> =&gt;
-        </span><span class="keyword">val</span><span> </span><span class="identifier">sdk</span><span> = </span><span class="identifier">autoConfigured</span><span>.</span><span class="identifier">sdk</span><span>
-        </span><span class="identifier">program</span><span>(</span><span class="identifier">sdk</span><span>.</span><span class="identifier">meterProvider</span><span>, </span><span class="identifier">sdk</span><span>.</span><span class="identifier">tracerProvider</span><span>, </span><span class="identifier">sdk</span><span>.</span><span class="identifier">loggerProvider</span><span>)
-      }
-
-  </span><span class="keyword">def</span><span> </span><span class="declaration-name">program</span><span>(
-      </span><span class="identifier">meterProvider</span><span>: </span><span class="type-name">MeterProvider</span><span>[</span><span class="type-name">IO</span><span>], 
-      </span><span class="identifier">tracerProvider</span><span>: </span><span class="type-name">TracerProvider</span><span>[</span><span class="type-name">IO</span><span>],
-      </span><span class="identifier">loggerProvider</span><span>: </span><span class="type-name">LoggerProvider</span><span>[</span><span class="type-name">IO</span><span>, </span><span class="type-name">Context</span><span>],
-  ): </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] =
-    ???
-}</span></code></pre>
-        <p>The <code>.autoConfigured(...)</code> relies on the environment variables and system properties to configure the SDK.
-        For example, use <code>export OTEL_SERVICE_NAME=auth-service</code> to configure the name of the service.
-        See the full set of the <a href="../sdk/configuration.html">supported configuration options</a>.</p>
 
         
 <hr class="footer-rule"/>

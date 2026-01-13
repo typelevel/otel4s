@@ -14,8 +14,6 @@ ThisBuild / startYear := Some(2022)
 // publish website from this branch
 ThisBuild / tlSitePublishBranch := Some("main")
 
-ThisBuild / resolvers += Resolver.sonatypeCentralSnapshots
-
 Global / tlCommandAliases ++= Map(
   "generateSemanticConventions" -> List(
     "root/semanticConventionsGenerate",

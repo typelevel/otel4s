@@ -13,6 +13,7 @@ ThisBuild / startYear := Some(2022)
 
 // publish website from this branch
 ThisBuild / tlSitePublishBranch := Some("main")
+ThisBuild / tlCiReleaseBranches := Seq("main", "sn-0.5")
 
 Global / tlCommandAliases ++= Map(
   "generateSemanticConventions" -> List(

@@ -26,16 +26,28 @@ import cats.syntax.foldable._
 import cats.syntax.semigroup._
 
 import scala.collection.immutable
+import scala.concurrent.duration.FiniteDuration
 
+/** A deferred update applied to a span when it is finalized.
+  *
+  * Finalizers are executed only when the span is enabled and are meant to capture changes at finalization time.
+  */
 sealed trait SpanFinalizer
 
 object SpanFinalizer {
 
+  /** Selects a [[SpanFinalizer]] based on a [[Resource.ExitCase]].
+    *
+    * This is useful when deriving a finalizer from a resource outcome.
+    */
   type Strategy = PartialFunction[Resource.ExitCase, SpanFinalizer]
 
   object Strategy {
+
+    /** A strategy that never produces a finalizer. */
     def empty: Strategy = PartialFunction.empty
 
+    /** Records errors on abnormal termination and marks the span as errored. */
     def reportAbnormal: Strategy = {
       case Resource.ExitCase.Errored(e) =>
         recordException(e) |+| setStatus(StatusCode.Error)
@@ -58,30 +70,209 @@ object SpanFinalizer {
       val attributes: Attributes
   ) extends SpanFinalizer
 
+  final class UpdateName private[SpanFinalizer] (
+      val name: String
+  ) extends SpanFinalizer
+
+  final class AddLink private[SpanFinalizer] (
+      val spanContext: SpanContext,
+      val attributes: Attributes
+  ) extends SpanFinalizer
+
+  final class AddEvent private[SpanFinalizer] (
+      val name: String,
+      val timestamp: Option[FiniteDuration],
+      val attributes: Attributes
+  ) extends SpanFinalizer
+
   final class Multiple private[SpanFinalizer] (
       val finalizers: NonEmptyList[SpanFinalizer]
   ) extends SpanFinalizer
 
+  /** Records information about the `Throwable` to the span.
+    *
+    * No additional attributes are recorded.
+    *
+    * @param throwable
+    *   the exception to record
+    */
   def recordException(throwable: Throwable): SpanFinalizer =
     new RecordException(throwable)
 
+  /** Sets the status of the span.
+    *
+    * @param status
+    *   the [[StatusCode]] to set
+    */
   def setStatus(status: StatusCode): SpanFinalizer =
     new SetStatus(status, None)
 
+  /** Sets the status of the span.
+    *
+    * @param status
+    *   the [[StatusCode]] to set
+    *
+    * @param description
+    *   the description of the [[StatusCode]]
+    */
   def setStatus(status: StatusCode, description: String): SpanFinalizer =
     new SetStatus(status, Some(description))
 
+  /** Adds an attribute to the span.
+    *
+    * If the span previously contained a mapping for the key, the old value is replaced by the specified value.
+    *
+    * @param attribute
+    *   the attribute to add to the span
+    */
   def addAttribute[A](attribute: Attribute[A]): SpanFinalizer =
     new AddAttributes(Attributes(attribute))
 
+  /** Adds attributes to the span.
+    *
+    * If the span previously contained a mapping for any of the keys, the old values are replaced by the specified
+    * values.
+    *
+    * @param attributes
+    *   the set of attributes to add to the span
+    */
   def addAttributes(attributes: Attribute[_]*): SpanFinalizer =
     addAttributes(attributes)
 
-  def addAttributes(
-      attributes: immutable.Iterable[Attribute[_]]
-  ): SpanFinalizer =
+  /** Adds attributes to the span.
+    *
+    * If the span previously contained a mapping for any of the keys, the old values are replaced by the specified
+    * values.
+    *
+    * @param attributes
+    *   the set of attributes to add to the span
+    */
+  def addAttributes(attributes: immutable.Iterable[Attribute[_]]): SpanFinalizer =
     new AddAttributes(attributes.to(Attributes))
 
+  /** Updates the name of the [[Span]].
+    *
+    * @note
+    *   this overrides the name provided via the [[SpanBuilder]].
+    *
+    * @note
+    *   sampling behavior based on the span name is implementation-specific.
+    *
+    * @param name
+    *   the new name of the span
+    */
+  def updateName(name: String): SpanFinalizer =
+    new UpdateName(name)
+
+  /** Adds an event to the span with the given attributes.
+    *
+    * The event timestamp is captured when the finalizer is executed.
+    *
+    * @param name
+    *   the name of the event
+    *
+    * @param attributes
+    *   the set of attributes to associate with the event
+    */
+  def addEvent(name: String, attributes: Attribute[_]*): SpanFinalizer =
+    new AddEvent(name, None, attributes.to(Attributes))
+
+  /** Adds an event to the span with the given attributes.
+    *
+    * The event timestamp is captured when the finalizer is executed.
+    *
+    * @param name
+    *   the name of the event
+    *
+    * @param attributes
+    *   the set of attributes to associate with the event
+    */
+  def addEvent(
+      name: String,
+      attributes: immutable.Iterable[Attribute[_]]
+  ): SpanFinalizer =
+    new AddEvent(name, None, attributes.to(Attributes))
+
+  /** Adds an event to the span with the given attributes and an explicit timestamp.
+    *
+    * @note
+    *   the timestamp should be based on `Clock[F].realTime`. Using `Clock[F].monotonic` may lead to incorrect data.
+    *
+    * @param name
+    *   the name of the event
+    *
+    * @param timestamp
+    *   the explicit event timestamp since epoch
+    *
+    * @param attributes
+    *   the set of attributes to associate with the event
+    */
+  def addEvent(
+      name: String,
+      timestamp: FiniteDuration,
+      attributes: Attribute[_]*
+  ): SpanFinalizer =
+    new AddEvent(name, Some(timestamp), attributes.to(Attributes))
+
+  /** Adds an event to the span with the given attributes and an explicit timestamp.
+    *
+    * @note
+    *   the timestamp should be based on `Clock[F].realTime`. Using `Clock[F].monotonic` may lead to incorrect data.
+    *
+    * @param name
+    *   the name of the event
+    *
+    * @param timestamp
+    *   the explicit event timestamp since epoch
+    *
+    * @param attributes
+    *   the set of attributes to associate with the event
+    */
+  def addEvent(
+      name: String,
+      timestamp: FiniteDuration,
+      attributes: immutable.Iterable[Attribute[_]]
+  ): SpanFinalizer =
+    new AddEvent(name, Some(timestamp), attributes.to(Attributes))
+
+  /** Adds a link to the span.
+    *
+    * Links connect spans across traces. A common use case is batching, where a single handler processes requests from
+    * different traces or from the same trace.
+    *
+    * @param spanContext
+    *   the context of the linked span
+    *
+    * @param attributes
+    *   the set of attributes to associate with the link
+    */
+  def addLink(
+      spanContext: SpanContext,
+      attributes: Attribute[_]*
+  ): SpanFinalizer =
+    new AddLink(spanContext, attributes.to(Attributes))
+
+  /** Adds a link to the span.
+    *
+    * Links connect spans across traces. A common use case is batching, where a single handler processes requests from
+    * different traces or from the same trace.
+    *
+    * @param spanContext
+    *   the context of the linked span
+    *
+    * @param attributes
+    *   the set of attributes to associate with the link
+    */
+  def addLink(
+      spanContext: SpanContext,
+      attributes: immutable.Iterable[Attribute[_]]
+  ): SpanFinalizer =
+    new AddLink(spanContext, attributes.to(Attributes))
+
+  /** Combines multiple finalizers into a single finalizer.
+    *
+    * Finalizers are executed in the order they are provided.
+    */
   def multiple(head: SpanFinalizer, tail: SpanFinalizer*): Multiple =
     new Multiple(NonEmptyList.of(head, tail: _*))
 
@@ -117,6 +308,18 @@ object SpanFinalizer {
 
         case s: AddAttributes =>
           backend.addAttributes(s.attributes)
+
+        case link: AddLink =>
+          backend.addLink(link.spanContext, link.attributes)
+
+        case event: AddEvent =>
+          event.timestamp match {
+            case Some(timestamp) => backend.addEvent(event.name, timestamp, event.attributes)
+            case None            => backend.addEvent(event.name, event.attributes)
+          }
+
+        case updateName: UpdateName =>
+          backend.updateName(updateName.name)
 
         case m: Multiple =>
           m.finalizers.traverse_(strategy => loop(strategy))

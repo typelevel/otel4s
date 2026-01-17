@@ -557,6 +557,7 @@ lazy val docs = project
     `oteljava-testkit`,
     `instrumentation-metrics`.jvm,
     `semconv-stable`.jvm,
+    `semconv-metrics-stable`.jvm,
   )
   .settings(
     libraryDependencies ++= Seq(

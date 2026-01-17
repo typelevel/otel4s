@@ -36,9 +36,7 @@ sealed trait SpanFinalizer
 
 object SpanFinalizer {
 
-  /** Selects a [[SpanFinalizer]] based on a [[Resource.ExitCase]].
-    *
-    * This is useful when deriving a finalizer from a resource outcome.
+  /** Selects a [[SpanFinalizer]] based on an outcome.
     */
   type Strategy = PartialFunction[Resource.ExitCase, SpanFinalizer]
 
@@ -57,35 +55,35 @@ object SpanFinalizer {
     }
   }
 
-  final class RecordException private[SpanFinalizer] (
+  private final class RecordException(
       val throwable: Throwable
   ) extends SpanFinalizer
 
-  final class SetStatus private[SpanFinalizer] (
+  private final class SetStatus(
       val status: StatusCode,
       val description: Option[String]
   ) extends SpanFinalizer
 
-  final class AddAttributes private[SpanFinalizer] (
+  private final class AddAttributes(
       val attributes: Attributes
   ) extends SpanFinalizer
 
-  final class UpdateName private[SpanFinalizer] (
+  private final class UpdateName(
       val name: String
   ) extends SpanFinalizer
 
-  final class AddLink private[SpanFinalizer] (
+  private final class AddLink(
       val spanContext: SpanContext,
       val attributes: Attributes
   ) extends SpanFinalizer
 
-  final class AddEvent private[SpanFinalizer] (
+  private final class AddEvent(
       val name: String,
       val timestamp: Option[FiniteDuration],
       val attributes: Attributes
   ) extends SpanFinalizer
 
-  final class Multiple private[SpanFinalizer] (
+  private final class Multiple(
       val finalizers: NonEmptyList[SpanFinalizer]
   ) extends SpanFinalizer
 
@@ -273,7 +271,7 @@ object SpanFinalizer {
     *
     * Finalizers are executed in the order they are provided.
     */
-  def multiple(head: SpanFinalizer, tail: SpanFinalizer*): Multiple =
+  def multiple(head: SpanFinalizer, tail: SpanFinalizer*): SpanFinalizer =
     new Multiple(NonEmptyList.of(head, tail: _*))
 
   implicit val spanFinalizerSemigroup: Semigroup[SpanFinalizer] = {

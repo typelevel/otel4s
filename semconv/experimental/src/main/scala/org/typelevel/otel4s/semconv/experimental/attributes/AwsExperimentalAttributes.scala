@@ -386,6 +386,7 @@ object AwsExperimentalAttributes {
     */
   abstract class AwsEcsLaunchtypeValue(val value: String)
   object AwsEcsLaunchtypeValue {
+    implicit val attributeFromAwsEcsLaunchtypeValue: Attribute.From[AwsEcsLaunchtypeValue, String] = _.value
 
     /** Amazon EC2
       */

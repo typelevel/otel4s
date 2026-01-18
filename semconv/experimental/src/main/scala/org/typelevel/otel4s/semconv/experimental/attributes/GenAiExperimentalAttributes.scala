@@ -276,6 +276,8 @@ object GenAiExperimentalAttributes {
   abstract class GenAiOpenaiRequestResponseFormatValue(val value: String)
   @annotation.nowarn("cat=deprecation")
   object GenAiOpenaiRequestResponseFormatValue {
+    implicit val attributeFromGenAiOpenaiRequestResponseFormatValue
+        : Attribute.From[GenAiOpenaiRequestResponseFormatValue, String] = _.value
 
     /** Text response format
       */
@@ -296,6 +298,8 @@ object GenAiExperimentalAttributes {
   abstract class GenAiOpenaiRequestServiceTierValue(val value: String)
   @annotation.nowarn("cat=deprecation")
   object GenAiOpenaiRequestServiceTierValue {
+    implicit val attributeFromGenAiOpenaiRequestServiceTierValue
+        : Attribute.From[GenAiOpenaiRequestServiceTierValue, String] = _.value
 
     /** The system will utilize scale tier credits until they are exhausted.
       */
@@ -310,6 +314,7 @@ object GenAiExperimentalAttributes {
     */
   abstract class GenAiOperationNameValue(val value: String)
   object GenAiOperationNameValue {
+    implicit val attributeFromGenAiOperationNameValue: Attribute.From[GenAiOperationNameValue, String] = _.value
 
     /** Chat completion operation such as <a href="https://platform.openai.com/docs/api-reference/chat">OpenAI Chat
       * API</a>
@@ -348,6 +353,7 @@ object GenAiExperimentalAttributes {
     */
   abstract class GenAiOutputTypeValue(val value: String)
   object GenAiOutputTypeValue {
+    implicit val attributeFromGenAiOutputTypeValue: Attribute.From[GenAiOutputTypeValue, String] = _.value
 
     /** Plain text
       */
@@ -370,6 +376,7 @@ object GenAiExperimentalAttributes {
     */
   abstract class GenAiProviderNameValue(val value: String)
   object GenAiProviderNameValue {
+    implicit val attributeFromGenAiProviderNameValue: Attribute.From[GenAiProviderNameValue, String] = _.value
 
     /** <a href="https://openai.com/">OpenAI</a>
       */
@@ -438,6 +445,7 @@ object GenAiExperimentalAttributes {
   abstract class GenAiSystemValue(val value: String)
   @annotation.nowarn("cat=deprecation")
   object GenAiSystemValue {
+    implicit val attributeFromGenAiSystemValue: Attribute.From[GenAiSystemValue, String] = _.value
 
     /** OpenAI
       */
@@ -520,6 +528,7 @@ object GenAiExperimentalAttributes {
     */
   abstract class GenAiTokenTypeValue(val value: String)
   object GenAiTokenTypeValue {
+    implicit val attributeFromGenAiTokenTypeValue: Attribute.From[GenAiTokenTypeValue, String] = _.value
 
     /** Input tokens (prompt, input, etc.)
       */

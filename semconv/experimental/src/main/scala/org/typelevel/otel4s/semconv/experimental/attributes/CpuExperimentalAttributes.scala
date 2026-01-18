@@ -35,6 +35,7 @@ object CpuExperimentalAttributes {
     */
   abstract class CpuModeValue(val value: String)
   object CpuModeValue {
+    implicit val attributeFromCpuModeValue: Attribute.From[CpuModeValue, String] = _.value
 
     /** User
       */

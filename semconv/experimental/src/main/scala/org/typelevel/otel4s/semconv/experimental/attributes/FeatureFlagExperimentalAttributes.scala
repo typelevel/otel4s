@@ -87,6 +87,8 @@ object FeatureFlagExperimentalAttributes {
   abstract class FeatureFlagEvaluationReasonValue(val value: String)
   @annotation.nowarn("cat=deprecation")
   object FeatureFlagEvaluationReasonValue {
+    implicit val attributeFromFeatureFlagEvaluationReasonValue
+        : Attribute.From[FeatureFlagEvaluationReasonValue, String] = _.value
 
     /** The resolved value is static (no dynamic evaluation).
       */
@@ -130,6 +132,8 @@ object FeatureFlagExperimentalAttributes {
     */
   abstract class FeatureFlagResultReasonValue(val value: String)
   object FeatureFlagResultReasonValue {
+    implicit val attributeFromFeatureFlagResultReasonValue: Attribute.From[FeatureFlagResultReasonValue, String] =
+      _.value
 
     /** The resolved value is static (no dynamic evaluation).
       */

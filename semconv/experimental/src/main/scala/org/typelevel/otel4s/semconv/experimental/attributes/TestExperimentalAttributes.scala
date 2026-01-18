@@ -45,6 +45,7 @@ object TestExperimentalAttributes {
     */
   abstract class TestCaseResultStatusValue(val value: String)
   object TestCaseResultStatusValue {
+    implicit val attributeFromTestCaseResultStatusValue: Attribute.From[TestCaseResultStatusValue, String] = _.value
 
     /** pass
       */
@@ -59,6 +60,7 @@ object TestExperimentalAttributes {
     */
   abstract class TestSuiteRunStatusValue(val value: String)
   object TestSuiteRunStatusValue {
+    implicit val attributeFromTestSuiteRunStatusValue: Attribute.From[TestSuiteRunStatusValue, String] = _.value
 
     /** success
       */

@@ -33,6 +33,7 @@ object OtherExperimentalAttributes {
   abstract class StateValue(val value: String)
   @annotation.nowarn("cat=deprecation")
   object StateValue {
+    implicit val attributeFromStateValue: Attribute.From[StateValue, String] = _.value
 
     /** idle.
       */

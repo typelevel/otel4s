@@ -242,6 +242,8 @@ object ProcessExperimentalAttributes {
     */
   abstract class ProcessContextSwitchTypeValue(val value: String)
   object ProcessContextSwitchTypeValue {
+    implicit val attributeFromProcessContextSwitchTypeValue: Attribute.From[ProcessContextSwitchTypeValue, String] =
+      _.value
 
     /** voluntary.
       */
@@ -258,6 +260,7 @@ object ProcessExperimentalAttributes {
   abstract class ProcessCpuStateValue(val value: String)
   @annotation.nowarn("cat=deprecation")
   object ProcessCpuStateValue {
+    implicit val attributeFromProcessCpuStateValue: Attribute.From[ProcessCpuStateValue, String] = _.value
 
     /** system.
       */
@@ -276,6 +279,7 @@ object ProcessExperimentalAttributes {
     */
   abstract class ProcessPagingFaultTypeValue(val value: String)
   object ProcessPagingFaultTypeValue {
+    implicit val attributeFromProcessPagingFaultTypeValue: Attribute.From[ProcessPagingFaultTypeValue, String] = _.value
 
     /** major.
       */

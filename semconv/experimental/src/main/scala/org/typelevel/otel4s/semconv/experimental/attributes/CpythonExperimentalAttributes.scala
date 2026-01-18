@@ -30,6 +30,7 @@ object CpythonExperimentalAttributes {
     */
   abstract class CpythonGcGenerationValue(val value: Long)
   object CpythonGcGenerationValue {
+    implicit val attributeFromCpythonGcGenerationValue: Attribute.From[CpythonGcGenerationValue, Long] = _.value
 
     /** Generation 0
       */

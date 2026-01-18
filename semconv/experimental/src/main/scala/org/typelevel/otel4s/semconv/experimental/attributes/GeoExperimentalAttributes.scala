@@ -61,6 +61,7 @@ object GeoExperimentalAttributes {
     */
   abstract class GeoContinentCodeValue(val value: String)
   object GeoContinentCodeValue {
+    implicit val attributeFromGeoContinentCodeValue: Attribute.From[GeoContinentCodeValue, String] = _.value
 
     /** Africa
       */

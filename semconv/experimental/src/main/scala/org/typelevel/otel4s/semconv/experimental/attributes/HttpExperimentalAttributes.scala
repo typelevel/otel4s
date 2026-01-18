@@ -259,6 +259,7 @@ object HttpExperimentalAttributes {
     */
   abstract class HttpConnectionStateValue(val value: String)
   object HttpConnectionStateValue {
+    implicit val attributeFromHttpConnectionStateValue: Attribute.From[HttpConnectionStateValue, String] = _.value
 
     /** active state.
       */
@@ -275,6 +276,7 @@ object HttpExperimentalAttributes {
   abstract class HttpFlavorValue(val value: String)
   @annotation.nowarn("cat=deprecation")
   object HttpFlavorValue {
+    implicit val attributeFromHttpFlavorValue: Attribute.From[HttpFlavorValue, String] = _.value
 
     /** HTTP/1.0
       */
@@ -310,6 +312,7 @@ object HttpExperimentalAttributes {
   abstract class HttpRequestMethodValue(val value: String)
   @annotation.nowarn("cat=deprecation")
   object HttpRequestMethodValue {
+    implicit val attributeFromHttpRequestMethodValue: Attribute.From[HttpRequestMethodValue, String] = _.value
 
     /** CONNECT method.
       */

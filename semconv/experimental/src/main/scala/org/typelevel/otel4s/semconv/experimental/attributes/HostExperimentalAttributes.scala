@@ -118,6 +118,7 @@ object HostExperimentalAttributes {
     */
   abstract class HostArchValue(val value: String)
   object HostArchValue {
+    implicit val attributeFromHostArchValue: Attribute.From[HostArchValue, String] = _.value
 
     /** AMD64
       */

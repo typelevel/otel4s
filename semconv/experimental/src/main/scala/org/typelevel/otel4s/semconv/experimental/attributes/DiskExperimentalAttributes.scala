@@ -30,6 +30,7 @@ object DiskExperimentalAttributes {
     */
   abstract class DiskIoDirectionValue(val value: String)
   object DiskIoDirectionValue {
+    implicit val attributeFromDiskIoDirectionValue: Attribute.From[DiskIoDirectionValue, String] = _.value
 
     /** read.
       */

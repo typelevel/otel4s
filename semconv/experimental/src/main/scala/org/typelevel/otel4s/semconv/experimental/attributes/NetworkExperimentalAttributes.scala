@@ -164,6 +164,7 @@ object NetworkExperimentalAttributes {
     */
   abstract class NetworkConnectionStateValue(val value: String)
   object NetworkConnectionStateValue {
+    implicit val attributeFromNetworkConnectionStateValue: Attribute.From[NetworkConnectionStateValue, String] = _.value
 
     /** closed.
       */
@@ -214,6 +215,8 @@ object NetworkExperimentalAttributes {
     */
   abstract class NetworkConnectionSubtypeValue(val value: String)
   object NetworkConnectionSubtypeValue {
+    implicit val attributeFromNetworkConnectionSubtypeValue: Attribute.From[NetworkConnectionSubtypeValue, String] =
+      _.value
 
     /** GPRS
       */
@@ -304,6 +307,7 @@ object NetworkExperimentalAttributes {
     */
   abstract class NetworkConnectionTypeValue(val value: String)
   object NetworkConnectionTypeValue {
+    implicit val attributeFromNetworkConnectionTypeValue: Attribute.From[NetworkConnectionTypeValue, String] = _.value
 
     /** wifi.
       */
@@ -330,6 +334,7 @@ object NetworkExperimentalAttributes {
     */
   abstract class NetworkIoDirectionValue(val value: String)
   object NetworkIoDirectionValue {
+    implicit val attributeFromNetworkIoDirectionValue: Attribute.From[NetworkIoDirectionValue, String] = _.value
 
     /** transmit.
       */
@@ -349,6 +354,7 @@ object NetworkExperimentalAttributes {
   abstract class NetworkTransportValue(val value: String)
   @annotation.nowarn("cat=deprecation")
   object NetworkTransportValue {
+    implicit val attributeFromNetworkTransportValue: Attribute.From[NetworkTransportValue, String] = _.value
 
     /** TCP
       */
@@ -380,6 +386,7 @@ object NetworkExperimentalAttributes {
   abstract class NetworkTypeValue(val value: String)
   @annotation.nowarn("cat=deprecation")
   object NetworkTypeValue {
+    implicit val attributeFromNetworkTypeValue: Attribute.From[NetworkTypeValue, String] = _.value
 
     /** IPv4
       */

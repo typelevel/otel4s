@@ -51,6 +51,7 @@ object MessageExperimentalAttributes {
   abstract class MessageTypeValue(val value: String)
   @annotation.nowarn("cat=deprecation")
   object MessageTypeValue {
+    implicit val attributeFromMessageTypeValue: Attribute.From[MessageTypeValue, String] = _.value
 
     /** sent.
       */

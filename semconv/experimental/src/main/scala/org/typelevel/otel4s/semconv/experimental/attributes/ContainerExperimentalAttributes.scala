@@ -157,6 +157,7 @@ object ContainerExperimentalAttributes {
   abstract class ContainerCpuStateValue(val value: String)
   @annotation.nowarn("cat=deprecation")
   object ContainerCpuStateValue {
+    implicit val attributeFromContainerCpuStateValue: Attribute.From[ContainerCpuStateValue, String] = _.value
 
     /** When tasks of the cgroup are in user mode (Linux). When all container processes are in user mode (Windows).
       */

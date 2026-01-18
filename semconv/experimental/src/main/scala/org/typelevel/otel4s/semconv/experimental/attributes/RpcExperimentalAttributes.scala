@@ -157,6 +157,7 @@ object RpcExperimentalAttributes {
     */
   abstract class RpcConnectRpcErrorCodeValue(val value: String)
   object RpcConnectRpcErrorCodeValue {
+    implicit val attributeFromRpcConnectRpcErrorCodeValue: Attribute.From[RpcConnectRpcErrorCodeValue, String] = _.value
 
     /** cancelled.
       */
@@ -227,6 +228,7 @@ object RpcExperimentalAttributes {
     */
   abstract class RpcGrpcStatusCodeValue(val value: Long)
   object RpcGrpcStatusCodeValue {
+    implicit val attributeFromRpcGrpcStatusCodeValue: Attribute.From[RpcGrpcStatusCodeValue, Long] = _.value
 
     /** OK
       */
@@ -301,6 +303,7 @@ object RpcExperimentalAttributes {
     */
   abstract class RpcMessageTypeValue(val value: String)
   object RpcMessageTypeValue {
+    implicit val attributeFromRpcMessageTypeValue: Attribute.From[RpcMessageTypeValue, String] = _.value
 
     /** sent.
       */
@@ -315,6 +318,7 @@ object RpcExperimentalAttributes {
     */
   abstract class RpcSystemValue(val value: String)
   object RpcSystemValue {
+    implicit val attributeFromRpcSystemValue: Attribute.From[RpcSystemValue, String] = _.value
 
     /** gRPC
       */

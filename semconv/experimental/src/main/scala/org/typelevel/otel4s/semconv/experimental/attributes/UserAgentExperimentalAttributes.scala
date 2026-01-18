@@ -88,6 +88,7 @@ object UserAgentExperimentalAttributes {
     */
   abstract class UserAgentSyntheticTypeValue(val value: String)
   object UserAgentSyntheticTypeValue {
+    implicit val attributeFromUserAgentSyntheticTypeValue: Attribute.From[UserAgentSyntheticTypeValue, String] = _.value
 
     /** Bot source.
       */

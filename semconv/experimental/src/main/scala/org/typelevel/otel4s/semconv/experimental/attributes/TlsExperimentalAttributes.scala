@@ -193,6 +193,7 @@ object TlsExperimentalAttributes {
     */
   abstract class TlsProtocolNameValue(val value: String)
   object TlsProtocolNameValue {
+    implicit val attributeFromTlsProtocolNameValue: Attribute.From[TlsProtocolNameValue, String] = _.value
 
     /** ssl.
       */

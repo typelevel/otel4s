@@ -419,6 +419,8 @@ object DbExperimentalAttributes {
   abstract class DbCassandraConsistencyLevelValue(val value: String)
   @annotation.nowarn("cat=deprecation")
   object DbCassandraConsistencyLevelValue {
+    implicit val attributeFromDbCassandraConsistencyLevelValue
+        : Attribute.From[DbCassandraConsistencyLevelValue, String] = _.value
 
     /** all.
       */
@@ -469,6 +471,8 @@ object DbExperimentalAttributes {
     */
   abstract class DbClientConnectionStateValue(val value: String)
   object DbClientConnectionStateValue {
+    implicit val attributeFromDbClientConnectionStateValue: Attribute.From[DbClientConnectionStateValue, String] =
+      _.value
 
     /** idle.
       */
@@ -485,6 +489,8 @@ object DbExperimentalAttributes {
   abstract class DbClientConnectionsStateValue(val value: String)
   @annotation.nowarn("cat=deprecation")
   object DbClientConnectionsStateValue {
+    implicit val attributeFromDbClientConnectionsStateValue: Attribute.From[DbClientConnectionsStateValue, String] =
+      _.value
 
     /** idle.
       */
@@ -501,6 +507,8 @@ object DbExperimentalAttributes {
   abstract class DbCosmosdbConnectionModeValue(val value: String)
   @annotation.nowarn("cat=deprecation")
   object DbCosmosdbConnectionModeValue {
+    implicit val attributeFromDbCosmosdbConnectionModeValue: Attribute.From[DbCosmosdbConnectionModeValue, String] =
+      _.value
 
     /** Gateway (HTTP) connection.
       */
@@ -517,6 +525,8 @@ object DbExperimentalAttributes {
   abstract class DbCosmosdbConsistencyLevelValue(val value: String)
   @annotation.nowarn("cat=deprecation")
   object DbCosmosdbConsistencyLevelValue {
+    implicit val attributeFromDbCosmosdbConsistencyLevelValue: Attribute.From[DbCosmosdbConsistencyLevelValue, String] =
+      _.value
 
     /** strong.
       */
@@ -545,6 +555,8 @@ object DbExperimentalAttributes {
   abstract class DbCosmosdbOperationTypeValue(val value: String)
   @annotation.nowarn("cat=deprecation")
   object DbCosmosdbOperationTypeValue {
+    implicit val attributeFromDbCosmosdbOperationTypeValue: Attribute.From[DbCosmosdbOperationTypeValue, String] =
+      _.value
 
     /** batch.
       */
@@ -613,6 +625,7 @@ object DbExperimentalAttributes {
   abstract class DbSystemValue(val value: String)
   @annotation.nowarn("cat=deprecation")
   object DbSystemValue {
+    implicit val attributeFromDbSystemValue: Attribute.From[DbSystemValue, String] = _.value
 
     /** Some other SQL database. Fallback only. See notes.
       */
@@ -840,6 +853,7 @@ object DbExperimentalAttributes {
   abstract class DbSystemNameValue(val value: String)
   @annotation.nowarn("cat=deprecation")
   object DbSystemNameValue {
+    implicit val attributeFromDbSystemNameValue: Attribute.From[DbSystemNameValue, String] = _.value
 
     /** Some other SQL database. Fallback only.
       */

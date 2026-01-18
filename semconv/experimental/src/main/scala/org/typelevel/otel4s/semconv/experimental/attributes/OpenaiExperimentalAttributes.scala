@@ -40,6 +40,8 @@ object OpenaiExperimentalAttributes {
     */
   abstract class OpenaiRequestServiceTierValue(val value: String)
   object OpenaiRequestServiceTierValue {
+    implicit val attributeFromOpenaiRequestServiceTierValue: Attribute.From[OpenaiRequestServiceTierValue, String] =
+      _.value
 
     /** The system will utilize scale tier credits until they are exhausted.
       */

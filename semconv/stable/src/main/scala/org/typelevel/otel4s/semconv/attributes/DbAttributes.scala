@@ -129,6 +129,7 @@ object DbAttributes {
     */
   abstract class DbSystemNameValue(val value: String)
   object DbSystemNameValue {
+    implicit val attributeFromDbSystemNameValue: Attribute.From[DbSystemNameValue, String] = _.value
 
     /** <a href="https://mariadb.org/">MariaDB</a>
       */

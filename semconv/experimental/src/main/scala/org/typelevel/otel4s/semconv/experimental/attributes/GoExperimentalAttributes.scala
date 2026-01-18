@@ -30,6 +30,7 @@ object GoExperimentalAttributes {
     */
   abstract class GoMemoryTypeValue(val value: String)
   object GoMemoryTypeValue {
+    implicit val attributeFromGoMemoryTypeValue: Attribute.From[GoMemoryTypeValue, String] = _.value
 
     /** Memory allocated from the heap that is reserved for stack space, whether or not it is currently in-use.
       */

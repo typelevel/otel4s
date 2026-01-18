@@ -43,6 +43,7 @@ object GraphqlExperimentalAttributes {
     */
   abstract class GraphqlOperationTypeValue(val value: String)
   object GraphqlOperationTypeValue {
+    implicit val attributeFromGraphqlOperationTypeValue: Attribute.From[GraphqlOperationTypeValue, String] = _.value
 
     /** GraphQL query
       */

@@ -117,6 +117,7 @@ object NetExperimentalAttributes {
   abstract class NetSockFamilyValue(val value: String)
   @annotation.nowarn("cat=deprecation")
   object NetSockFamilyValue {
+    implicit val attributeFromNetSockFamilyValue: Attribute.From[NetSockFamilyValue, String] = _.value
 
     /** IPv4 address
       */
@@ -137,6 +138,7 @@ object NetExperimentalAttributes {
   abstract class NetTransportValue(val value: String)
   @annotation.nowarn("cat=deprecation")
   object NetTransportValue {
+    implicit val attributeFromNetTransportValue: Attribute.From[NetTransportValue, String] = _.value
 
     /** ip_tcp.
       */

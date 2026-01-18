@@ -67,6 +67,7 @@ object JvmAttributes {
     */
   abstract class JvmMemoryTypeValue(val value: String)
   object JvmMemoryTypeValue {
+    implicit val attributeFromJvmMemoryTypeValue: Attribute.From[JvmMemoryTypeValue, String] = _.value
 
     /** Heap memory.
       */
@@ -81,6 +82,7 @@ object JvmAttributes {
     */
   abstract class JvmThreadStateValue(val value: String)
   object JvmThreadStateValue {
+    implicit val attributeFromJvmThreadStateValue: Attribute.From[JvmThreadStateValue, String] = _.value
 
     /** A thread that has not yet started is in this state.
       */

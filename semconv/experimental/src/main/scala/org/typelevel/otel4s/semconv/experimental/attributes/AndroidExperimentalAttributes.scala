@@ -49,6 +49,7 @@ object AndroidExperimentalAttributes {
     */
   abstract class AndroidAppStateValue(val value: String)
   object AndroidAppStateValue {
+    implicit val attributeFromAndroidAppStateValue: Attribute.From[AndroidAppStateValue, String] = _.value
 
     /** Any time before Activity.onResume() or, if the app has no Activity, Context.startService() has been called in
       * the app for the first time.
@@ -72,6 +73,7 @@ object AndroidExperimentalAttributes {
   abstract class AndroidStateValue(val value: String)
   @annotation.nowarn("cat=deprecation")
   object AndroidStateValue {
+    implicit val attributeFromAndroidStateValue: Attribute.From[AndroidStateValue, String] = _.value
 
     /** Any time before Activity.onResume() or, if the app has no Activity, Context.startService() has been called in
       * the app for the first time.

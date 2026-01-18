@@ -115,6 +115,7 @@ object OtelExperimentalAttributes {
     */
   abstract class OtelComponentTypeValue(val value: String)
   object OtelComponentTypeValue {
+    implicit val attributeFromOtelComponentTypeValue: Attribute.From[OtelComponentTypeValue, String] = _.value
 
     /** The builtin SDK batching span processor
       */
@@ -185,6 +186,7 @@ object OtelExperimentalAttributes {
     */
   abstract class OtelSpanParentOriginValue(val value: String)
   object OtelSpanParentOriginValue {
+    implicit val attributeFromOtelSpanParentOriginValue: Attribute.From[OtelSpanParentOriginValue, String] = _.value
 
     /** The span does not have a parent, it is a root span
       */
@@ -205,6 +207,7 @@ object OtelExperimentalAttributes {
     */
   abstract class OtelSpanSamplingResultValue(val value: String)
   object OtelSpanSamplingResultValue {
+    implicit val attributeFromOtelSpanSamplingResultValue: Attribute.From[OtelSpanSamplingResultValue, String] = _.value
 
     /** The span is not sampled and not recording
       */
@@ -228,6 +231,7 @@ object OtelExperimentalAttributes {
   abstract class OtelStatusCodeValue(val value: String)
   @annotation.nowarn("cat=deprecation")
   object OtelStatusCodeValue {
+    implicit val attributeFromOtelStatusCodeValue: Attribute.From[OtelStatusCodeValue, String] = _.value
 
     /** The operation has been validated by an Application developer or Operator to have completed successfully.
       */

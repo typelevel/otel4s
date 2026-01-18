@@ -114,6 +114,7 @@ object JvmExperimentalAttributes {
   abstract class JvmMemoryTypeValue(val value: String)
   @annotation.nowarn("cat=deprecation")
   object JvmMemoryTypeValue {
+    implicit val attributeFromJvmMemoryTypeValue: Attribute.From[JvmMemoryTypeValue, String] = _.value
 
     /** Heap memory.
       */
@@ -133,6 +134,7 @@ object JvmExperimentalAttributes {
   abstract class JvmThreadStateValue(val value: String)
   @annotation.nowarn("cat=deprecation")
   object JvmThreadStateValue {
+    implicit val attributeFromJvmThreadStateValue: Attribute.From[JvmThreadStateValue, String] = _.value
 
     /** A thread that has not yet started is in this state.
       */

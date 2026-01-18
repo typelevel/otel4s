@@ -41,6 +41,7 @@ object ErrorAttributes {
     */
   abstract class ErrorTypeValue(val value: String)
   object ErrorTypeValue {
+    implicit val attributeFromErrorTypeValue: Attribute.From[ErrorTypeValue, String] = _.value
 
     /** A fallback error value to be used when the instrumentation doesn't define a custom value.
       */

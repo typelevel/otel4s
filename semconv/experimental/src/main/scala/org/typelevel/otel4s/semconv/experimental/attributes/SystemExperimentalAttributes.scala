@@ -101,6 +101,7 @@ object SystemExperimentalAttributes {
   abstract class SystemCpuStateValue(val value: String)
   @annotation.nowarn("cat=deprecation")
   object SystemCpuStateValue {
+    implicit val attributeFromSystemCpuStateValue: Attribute.From[SystemCpuStateValue, String] = _.value
 
     /** user.
       */
@@ -135,6 +136,7 @@ object SystemExperimentalAttributes {
     */
   abstract class SystemFilesystemStateValue(val value: String)
   object SystemFilesystemStateValue {
+    implicit val attributeFromSystemFilesystemStateValue: Attribute.From[SystemFilesystemStateValue, String] = _.value
 
     /** used.
       */
@@ -153,6 +155,7 @@ object SystemExperimentalAttributes {
     */
   abstract class SystemFilesystemTypeValue(val value: String)
   object SystemFilesystemTypeValue {
+    implicit val attributeFromSystemFilesystemTypeValue: Attribute.From[SystemFilesystemTypeValue, String] = _.value
 
     /** fat32.
       */
@@ -183,6 +186,7 @@ object SystemExperimentalAttributes {
     */
   abstract class SystemMemoryStateValue(val value: String)
   object SystemMemoryStateValue {
+    implicit val attributeFromSystemMemoryStateValue: Attribute.From[SystemMemoryStateValue, String] = _.value
 
     /** Actual used virtual memory in bytes.
       */
@@ -211,6 +215,7 @@ object SystemExperimentalAttributes {
   abstract class SystemNetworkStateValue(val value: String)
   @annotation.nowarn("cat=deprecation")
   object SystemNetworkStateValue {
+    implicit val attributeFromSystemNetworkStateValue: Attribute.From[SystemNetworkStateValue, String] = _.value
 
     /** close.
       */
@@ -265,6 +270,7 @@ object SystemExperimentalAttributes {
     */
   abstract class SystemPagingDirectionValue(val value: String)
   object SystemPagingDirectionValue {
+    implicit val attributeFromSystemPagingDirectionValue: Attribute.From[SystemPagingDirectionValue, String] = _.value
 
     /** in.
       */
@@ -279,6 +285,7 @@ object SystemExperimentalAttributes {
     */
   abstract class SystemPagingStateValue(val value: String)
   object SystemPagingStateValue {
+    implicit val attributeFromSystemPagingStateValue: Attribute.From[SystemPagingStateValue, String] = _.value
 
     /** used.
       */
@@ -293,6 +300,7 @@ object SystemExperimentalAttributes {
     */
   abstract class SystemPagingTypeValue(val value: String)
   object SystemPagingTypeValue {
+    implicit val attributeFromSystemPagingTypeValue: Attribute.From[SystemPagingTypeValue, String] = _.value
 
     /** major.
       */
@@ -307,6 +315,7 @@ object SystemExperimentalAttributes {
     */
   abstract class SystemProcessStatusValue(val value: String)
   object SystemProcessStatusValue {
+    implicit val attributeFromSystemProcessStatusValue: Attribute.From[SystemProcessStatusValue, String] = _.value
 
     /** running.
       */
@@ -331,6 +340,7 @@ object SystemExperimentalAttributes {
   abstract class SystemProcessesStatusValue(val value: String)
   @annotation.nowarn("cat=deprecation")
   object SystemProcessesStatusValue {
+    implicit val attributeFromSystemProcessesStatusValue: Attribute.From[SystemProcessesStatusValue, String] = _.value
 
     /** running.
       */

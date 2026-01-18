@@ -30,6 +30,7 @@ object LinuxExperimentalAttributes {
     */
   abstract class LinuxMemorySlabStateValue(val value: String)
   object LinuxMemorySlabStateValue {
+    implicit val attributeFromLinuxMemorySlabStateValue: Attribute.From[LinuxMemorySlabStateValue, String] = _.value
 
     /** reclaimable.
       */

@@ -110,6 +110,7 @@ object HttpAttributes {
     */
   abstract class HttpRequestMethodValue(val value: String)
   object HttpRequestMethodValue {
+    implicit val attributeFromHttpRequestMethodValue: Attribute.From[HttpRequestMethodValue, String] = _.value
 
     /** CONNECT method.
       */

@@ -61,6 +61,7 @@ object ErrorExperimentalAttributes {
   abstract class ErrorTypeValue(val value: String)
   @annotation.nowarn("cat=deprecation")
   object ErrorTypeValue {
+    implicit val attributeFromErrorTypeValue: Attribute.From[ErrorTypeValue, String] = _.value
 
     /** A fallback error value to be used when the instrumentation doesn't define a custom value.
       */

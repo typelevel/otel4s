@@ -52,6 +52,7 @@ object OsExperimentalAttributes {
     */
   abstract class OsTypeValue(val value: String)
   object OsTypeValue {
+    implicit val attributeFromOsTypeValue: Attribute.From[OsTypeValue, String] = _.value
 
     /** Microsoft Windows
       */

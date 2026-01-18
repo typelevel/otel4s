@@ -33,6 +33,7 @@ object OpentracingExperimentalAttributes {
     */
   abstract class OpentracingRefTypeValue(val value: String)
   object OpentracingRefTypeValue {
+    implicit val attributeFromOpentracingRefTypeValue: Attribute.From[OpentracingRefTypeValue, String] = _.value
 
     /** The parent Span depends on the child Span in some capacity
       */

@@ -71,6 +71,7 @@ object LogExperimentalAttributes {
     */
   abstract class LogIostreamValue(val value: String)
   object LogIostreamValue {
+    implicit val attributeFromLogIostreamValue: Attribute.From[LogIostreamValue, String] = _.value
 
     /** Logs from stdout stream
       */

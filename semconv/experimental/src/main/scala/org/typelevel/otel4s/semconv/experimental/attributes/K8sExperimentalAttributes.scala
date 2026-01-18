@@ -499,6 +499,8 @@ object K8sExperimentalAttributes {
     */
   abstract class K8sContainerStatusReasonValue(val value: String)
   object K8sContainerStatusReasonValue {
+    implicit val attributeFromK8sContainerStatusReasonValue: Attribute.From[K8sContainerStatusReasonValue, String] =
+      _.value
 
     /** The container is being created.
       */
@@ -541,6 +543,8 @@ object K8sExperimentalAttributes {
     */
   abstract class K8sContainerStatusStateValue(val value: String)
   object K8sContainerStatusStateValue {
+    implicit val attributeFromK8sContainerStatusStateValue: Attribute.From[K8sContainerStatusStateValue, String] =
+      _.value
 
     /** The container has terminated.
       */
@@ -559,6 +563,7 @@ object K8sExperimentalAttributes {
     */
   abstract class K8sNamespacePhaseValue(val value: String)
   object K8sNamespacePhaseValue {
+    implicit val attributeFromK8sNamespacePhaseValue: Attribute.From[K8sNamespacePhaseValue, String] = _.value
 
     /** Active namespace phase as described by <a
       * href="https://pkg.go.dev/k8s.io/api@v0.31.3/core/v1#NamespacePhase">K8s API</a>
@@ -575,6 +580,7 @@ object K8sExperimentalAttributes {
     */
   abstract class K8sNodeConditionStatusValue(val value: String)
   object K8sNodeConditionStatusValue {
+    implicit val attributeFromK8sNodeConditionStatusValue: Attribute.From[K8sNodeConditionStatusValue, String] = _.value
 
     /** condition_true.
       */
@@ -593,6 +599,7 @@ object K8sExperimentalAttributes {
     */
   abstract class K8sNodeConditionTypeValue(val value: String)
   object K8sNodeConditionTypeValue {
+    implicit val attributeFromK8sNodeConditionTypeValue: Attribute.From[K8sNodeConditionTypeValue, String] = _.value
 
     /** The node is healthy and ready to accept pods
       */
@@ -619,6 +626,7 @@ object K8sExperimentalAttributes {
     */
   abstract class K8sVolumeTypeValue(val value: String)
   object K8sVolumeTypeValue {
+    implicit val attributeFromK8sVolumeTypeValue: Attribute.From[K8sVolumeTypeValue, String] = _.value
 
     /** A <a
       * href="https://v1-30.docs.kubernetes.io/docs/concepts/storage/volumes/#persistentvolumeclaim">persistentVolumeClaim</a>

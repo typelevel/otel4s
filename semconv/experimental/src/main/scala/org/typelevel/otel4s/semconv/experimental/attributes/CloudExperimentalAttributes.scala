@@ -92,6 +92,7 @@ object CloudExperimentalAttributes {
     */
   abstract class CloudPlatformValue(val value: String)
   object CloudPlatformValue {
+    implicit val attributeFromCloudPlatformValue: Attribute.From[CloudPlatformValue, String] = _.value
 
     /** Alibaba Cloud Elastic Compute Service
       */
@@ -218,6 +219,7 @@ object CloudExperimentalAttributes {
     */
   abstract class CloudProviderValue(val value: String)
   object CloudProviderValue {
+    implicit val attributeFromCloudProviderValue: Attribute.From[CloudProviderValue, String] = _.value
 
     /** Alibaba Cloud
       */

@@ -82,6 +82,7 @@ object NetworkAttributes {
     */
   abstract class NetworkTransportValue(val value: String)
   object NetworkTransportValue {
+    implicit val attributeFromNetworkTransportValue: Attribute.From[NetworkTransportValue, String] = _.value
 
     /** TCP
       */
@@ -108,6 +109,7 @@ object NetworkAttributes {
     */
   abstract class NetworkTypeValue(val value: String)
   object NetworkTypeValue {
+    implicit val attributeFromNetworkTypeValue: Attribute.From[NetworkTypeValue, String] = _.value
 
     /** IPv4
       */

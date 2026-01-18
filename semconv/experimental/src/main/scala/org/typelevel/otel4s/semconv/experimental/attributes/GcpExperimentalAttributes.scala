@@ -123,6 +123,8 @@ object GcpExperimentalAttributes {
     */
   abstract class GcpApphubServiceCriticalityTypeValue(val value: String)
   object GcpApphubServiceCriticalityTypeValue {
+    implicit val attributeFromGcpApphubServiceCriticalityTypeValue
+        : Attribute.From[GcpApphubServiceCriticalityTypeValue, String] = _.value
 
     /** Mission critical service.
       */
@@ -145,6 +147,8 @@ object GcpExperimentalAttributes {
     */
   abstract class GcpApphubServiceEnvironmentTypeValue(val value: String)
   object GcpApphubServiceEnvironmentTypeValue {
+    implicit val attributeFromGcpApphubServiceEnvironmentTypeValue
+        : Attribute.From[GcpApphubServiceEnvironmentTypeValue, String] = _.value
 
     /** Production environment.
       */
@@ -167,6 +171,8 @@ object GcpExperimentalAttributes {
     */
   abstract class GcpApphubWorkloadCriticalityTypeValue(val value: String)
   object GcpApphubWorkloadCriticalityTypeValue {
+    implicit val attributeFromGcpApphubWorkloadCriticalityTypeValue
+        : Attribute.From[GcpApphubWorkloadCriticalityTypeValue, String] = _.value
 
     /** Mission critical service.
       */
@@ -189,6 +195,8 @@ object GcpExperimentalAttributes {
     */
   abstract class GcpApphubWorkloadEnvironmentTypeValue(val value: String)
   object GcpApphubWorkloadEnvironmentTypeValue {
+    implicit val attributeFromGcpApphubWorkloadEnvironmentTypeValue
+        : Attribute.From[GcpApphubWorkloadEnvironmentTypeValue, String] = _.value
 
     /** Production environment.
       */

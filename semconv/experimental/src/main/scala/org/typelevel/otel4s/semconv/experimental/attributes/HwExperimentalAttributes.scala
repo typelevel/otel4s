@@ -167,6 +167,7 @@ object HwExperimentalAttributes {
     */
   abstract class HwBatteryStateValue(val value: String)
   object HwBatteryStateValue {
+    implicit val attributeFromHwBatteryStateValue: Attribute.From[HwBatteryStateValue, String] = _.value
 
     /** Charging
       */
@@ -181,6 +182,7 @@ object HwExperimentalAttributes {
     */
   abstract class HwGpuTaskValue(val value: String)
   object HwGpuTaskValue {
+    implicit val attributeFromHwGpuTaskValue: Attribute.From[HwGpuTaskValue, String] = _.value
 
     /** Decoder
       */
@@ -199,6 +201,7 @@ object HwExperimentalAttributes {
     */
   abstract class HwLimitTypeValue(val value: String)
   object HwLimitTypeValue {
+    implicit val attributeFromHwLimitTypeValue: Attribute.From[HwLimitTypeValue, String] = _.value
 
     /** Critical
       */
@@ -241,6 +244,7 @@ object HwExperimentalAttributes {
     */
   abstract class HwLogicalDiskStateValue(val value: String)
   object HwLogicalDiskStateValue {
+    implicit val attributeFromHwLogicalDiskStateValue: Attribute.From[HwLogicalDiskStateValue, String] = _.value
 
     /** Used
       */
@@ -255,6 +259,7 @@ object HwExperimentalAttributes {
     */
   abstract class HwPhysicalDiskStateValue(val value: String)
   object HwPhysicalDiskStateValue {
+    implicit val attributeFromHwPhysicalDiskStateValue: Attribute.From[HwPhysicalDiskStateValue, String] = _.value
 
     /** Remaining
       */
@@ -265,6 +270,7 @@ object HwExperimentalAttributes {
     */
   abstract class HwStateValue(val value: String)
   object HwStateValue {
+    implicit val attributeFromHwStateValue: Attribute.From[HwStateValue, String] = _.value
 
     /** Degraded
       */
@@ -291,6 +297,8 @@ object HwExperimentalAttributes {
     */
   abstract class HwTapeDriveOperationTypeValue(val value: String)
   object HwTapeDriveOperationTypeValue {
+    implicit val attributeFromHwTapeDriveOperationTypeValue: Attribute.From[HwTapeDriveOperationTypeValue, String] =
+      _.value
 
     /** Mount
       */
@@ -309,6 +317,7 @@ object HwExperimentalAttributes {
     */
   abstract class HwTypeValue(val value: String)
   object HwTypeValue {
+    implicit val attributeFromHwTypeValue: Attribute.From[HwTypeValue, String] = _.value
 
     /** Battery
       */

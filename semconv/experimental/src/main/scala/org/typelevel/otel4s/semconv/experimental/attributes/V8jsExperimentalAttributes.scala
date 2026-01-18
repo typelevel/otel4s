@@ -39,6 +39,7 @@ object V8jsExperimentalAttributes {
     */
   abstract class V8jsGcTypeValue(val value: String)
   object V8jsGcTypeValue {
+    implicit val attributeFromV8jsGcTypeValue: Attribute.From[V8jsGcTypeValue, String] = _.value
 
     /** Major (Mark Sweep Compact).
       */
@@ -61,6 +62,7 @@ object V8jsExperimentalAttributes {
     */
   abstract class V8jsHeapSpaceNameValue(val value: String)
   object V8jsHeapSpaceNameValue {
+    implicit val attributeFromV8jsHeapSpaceNameValue: Attribute.From[V8jsHeapSpaceNameValue, String] = _.value
 
     /** New memory space.
       */

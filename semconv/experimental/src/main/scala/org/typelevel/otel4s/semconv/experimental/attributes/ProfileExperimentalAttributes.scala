@@ -30,6 +30,7 @@ object ProfileExperimentalAttributes {
     */
   abstract class ProfileFrameTypeValue(val value: String)
   object ProfileFrameTypeValue {
+    implicit val attributeFromProfileFrameTypeValue: Attribute.From[ProfileFrameTypeValue, String] = _.value
 
     /** <a href="https://wikipedia.org/wiki/.NET">.NET</a>
       */

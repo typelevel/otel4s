@@ -65,7 +65,7 @@ private[oteljava] class TracerImpl[F[_]](
         .getOrElse(Tracer.raiseNoCurrentSpan)
     }.flatten
 
-  def withCurrentSpan[A](f: Span[F] => F[A]): F[A] =
+  def withCurrentSpanOrNoop[A](f: Span[F] => F[A]): F[A] =
     currentSpanOrNoop.flatMap(f)
 
   def spanBuilder(name: String): SpanBuilder[F] =

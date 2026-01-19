@@ -68,8 +68,11 @@ sealed trait Tracer[F[_]] extends TracerMacro[F] {
   /** Applies `f` to the current span if one exists in the local scope, or a no-op span otherwise.
     *
     * This is a convenience for `currentSpanOrNoop.flatMap(f)`.
+    *
+    * @see
+    *   [[currentSpanOrNoop]]
     */
-  def withCurrentSpan[A](f: Span[F] => F[A]): F[A]
+  def withCurrentSpanOrNoop[A](f: Span[F] => F[A]): F[A]
 
   /** Creates a new [[SpanBuilder]]. The builder can be used to make a fully customized [[Span]].
     *
@@ -245,7 +248,7 @@ object Tracer {
       val currentSpanContext: F[Option[SpanContext]] = Applicative[F].pure(None)
       val currentSpanOrNoop: F[Span[F]] = Applicative[F].pure(noopSpan)
       def currentSpanOrThrow: F[Span[F]] = currentSpanOrNoop
-      def withCurrentSpan[A](f: Span[F] => F[A]): F[A] = f(noopSpan)
+      def withCurrentSpanOrNoop[A](f: Span[F] => F[A]): F[A] = f(noopSpan)
       def rootScope[A](fa: F[A]): F[A] = fa
       def noopScope[A](fa: F[A]): F[A] = fa
       def childScope[A](parent: SpanContext)(fa: F[A]): F[A] = fa
@@ -267,7 +270,7 @@ object Tracer {
       kt.liftK(tracer.currentSpanOrNoop.map(_.liftTo[G]))
     def currentSpanOrThrow: G[Span[G]] =
       kt.liftK(tracer.currentSpanOrThrow.map(_.liftTo[G]))
-    def withCurrentSpan[A](f: Span[G] => G[A]): G[A] =
+    def withCurrentSpanOrNoop[A](f: Span[G] => G[A]): G[A] =
       currentSpanOrNoop.flatMap(f)
     def spanBuilder(name: String): SpanBuilder[G] =
       tracer.spanBuilder(name).liftTo[G]

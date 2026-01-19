@@ -314,7 +314,7 @@ abstract class BaseTracerSuite[Ctx, K[X] <: Key[X]](implicit
   sdkTest("`withCurrentSpan` outside of a span (root scope)") { sdk =>
     for {
       tracer <- sdk.provider.get("tracer")
-      isValid <- tracer.withCurrentSpan(span => IO.pure(span.context.isValid))
+      isValid <- tracer.withCurrentSpanOrNoop(span => IO.pure(span.context.isValid))
       spans <- sdk.finishedSpans
     } yield {
       assert(!isValid)
@@ -326,7 +326,7 @@ abstract class BaseTracerSuite[Ctx, K[X] <: Key[X]](implicit
     for {
       tracer <- sdk.provider.get("tracer")
       isValid <- tracer.noopScope {
-        tracer.withCurrentSpan(span => IO.pure(span.context.isValid))
+        tracer.withCurrentSpanOrNoop(span => IO.pure(span.context.isValid))
       }
       spans <- sdk.finishedSpans
     } yield {
@@ -347,7 +347,7 @@ abstract class BaseTracerSuite[Ctx, K[X] <: Key[X]](implicit
         now <- IO.monotonic.delayBy(1.second) // otherwise returns 0
         tracer <- sdk.provider.get("tracer")
         _ <- tracer.span("span").surround {
-          tracer.withCurrentSpan { span =>
+          tracer.withCurrentSpanOrNoop { span =>
             span.addAttribute(attribute) >> IO(assert(span.context.isValid))
           }
         }

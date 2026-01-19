@@ -30,6 +30,7 @@ object NodejsExperimentalAttributes {
     */
   abstract class NodejsEventloopStateValue(val value: String)
   object NodejsEventloopStateValue {
+    implicit val attributeFromNodejsEventloopStateValue: Attribute.From[NodejsEventloopStateValue, String] = _.value
 
     /** Active time.
       */

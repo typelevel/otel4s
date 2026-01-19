@@ -318,6 +318,7 @@ object MessagingExperimentalAttributes {
     */
   abstract class MessagingOperationTypeValue(val value: String)
   object MessagingOperationTypeValue {
+    implicit val attributeFromMessagingOperationTypeValue: Attribute.From[MessagingOperationTypeValue, String] = _.value
 
     /** A message is created. "Create" spans always refer to a single message and are used to provide a unique creation
       * context for messages in batch sending scenarios.
@@ -355,6 +356,8 @@ object MessagingExperimentalAttributes {
     */
   abstract class MessagingRocketmqConsumptionModelValue(val value: String)
   object MessagingRocketmqConsumptionModelValue {
+    implicit val attributeFromMessagingRocketmqConsumptionModelValue
+        : Attribute.From[MessagingRocketmqConsumptionModelValue, String] = _.value
 
     /** Clustering consumption model
       */
@@ -369,6 +372,8 @@ object MessagingExperimentalAttributes {
     */
   abstract class MessagingRocketmqMessageTypeValue(val value: String)
   object MessagingRocketmqMessageTypeValue {
+    implicit val attributeFromMessagingRocketmqMessageTypeValue
+        : Attribute.From[MessagingRocketmqMessageTypeValue, String] = _.value
 
     /** Normal message
       */
@@ -391,6 +396,8 @@ object MessagingExperimentalAttributes {
     */
   abstract class MessagingServicebusDispositionStatusValue(val value: String)
   object MessagingServicebusDispositionStatusValue {
+    implicit val attributeFromMessagingServicebusDispositionStatusValue
+        : Attribute.From[MessagingServicebusDispositionStatusValue, String] = _.value
 
     /** Message is completed
       */
@@ -413,6 +420,7 @@ object MessagingExperimentalAttributes {
     */
   abstract class MessagingSystemValue(val value: String)
   object MessagingSystemValue {
+    implicit val attributeFromMessagingSystemValue: Attribute.From[MessagingSystemValue, String] = _.value
 
     /** Apache ActiveMQ
       */

@@ -78,6 +78,7 @@ object TelemetryExperimentalAttributes {
   abstract class TelemetrySdkLanguageValue(val value: String)
   @annotation.nowarn("cat=deprecation")
   object TelemetrySdkLanguageValue {
+    implicit val attributeFromTelemetrySdkLanguageValue: Attribute.From[TelemetrySdkLanguageValue, String] = _.value
 
     /** cpp.
       */

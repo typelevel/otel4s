@@ -59,6 +59,7 @@ object DeploymentExperimentalAttributes {
     */
   abstract class DeploymentStatusValue(val value: String)
   object DeploymentStatusValue {
+    implicit val attributeFromDeploymentStatusValue: Attribute.From[DeploymentStatusValue, String] = _.value
 
     /** failed
       */

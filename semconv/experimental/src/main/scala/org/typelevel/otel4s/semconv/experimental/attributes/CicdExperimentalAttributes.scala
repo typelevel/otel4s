@@ -110,6 +110,7 @@ object CicdExperimentalAttributes {
     */
   abstract class CicdPipelineActionNameValue(val value: String)
   object CicdPipelineActionNameValue {
+    implicit val attributeFromCicdPipelineActionNameValue: Attribute.From[CicdPipelineActionNameValue, String] = _.value
 
     /** The pipeline run is executing a build.
       */
@@ -128,6 +129,7 @@ object CicdExperimentalAttributes {
     */
   abstract class CicdPipelineResultValue(val value: String)
   object CicdPipelineResultValue {
+    implicit val attributeFromCicdPipelineResultValue: Attribute.From[CicdPipelineResultValue, String] = _.value
 
     /** The pipeline run finished successfully.
       */
@@ -159,6 +161,7 @@ object CicdExperimentalAttributes {
     */
   abstract class CicdPipelineRunStateValue(val value: String)
   object CicdPipelineRunStateValue {
+    implicit val attributeFromCicdPipelineRunStateValue: Attribute.From[CicdPipelineRunStateValue, String] = _.value
 
     /** The run pending state spans from the event triggering the pipeline run until the execution of the run starts
       * (eg. time spent in a queue, provisioning agents, creating run resources).
@@ -178,6 +181,8 @@ object CicdExperimentalAttributes {
     */
   abstract class CicdPipelineTaskRunResultValue(val value: String)
   object CicdPipelineTaskRunResultValue {
+    implicit val attributeFromCicdPipelineTaskRunResultValue: Attribute.From[CicdPipelineTaskRunResultValue, String] =
+      _.value
 
     /** The task run finished successfully.
       */
@@ -209,6 +214,7 @@ object CicdExperimentalAttributes {
     */
   abstract class CicdPipelineTaskTypeValue(val value: String)
   object CicdPipelineTaskTypeValue {
+    implicit val attributeFromCicdPipelineTaskTypeValue: Attribute.From[CicdPipelineTaskTypeValue, String] = _.value
 
     /** build
       */
@@ -227,6 +233,7 @@ object CicdExperimentalAttributes {
     */
   abstract class CicdWorkerStateValue(val value: String)
   object CicdWorkerStateValue {
+    implicit val attributeFromCicdWorkerStateValue: Attribute.From[CicdWorkerStateValue, String] = _.value
 
     /** The worker is not performing work for the CICD system. It is available to the CICD system to perform work on
       * (online / idle).

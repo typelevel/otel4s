@@ -187,6 +187,7 @@ object VcsExperimentalAttributes {
     */
   abstract class VcsChangeStateValue(val value: String)
   object VcsChangeStateValue {
+    implicit val attributeFromVcsChangeStateValue: Attribute.From[VcsChangeStateValue, String] = _.value
 
     /** Open means the change is currently active and under review. It hasn't been merged into the target branch yet,
       * and it's still possible to make changes or add comments.
@@ -213,6 +214,7 @@ object VcsExperimentalAttributes {
     */
   abstract class VcsLineChangeTypeValue(val value: String)
   object VcsLineChangeTypeValue {
+    implicit val attributeFromVcsLineChangeTypeValue: Attribute.From[VcsLineChangeTypeValue, String] = _.value
 
     /** How many lines were added.
       */
@@ -227,6 +229,7 @@ object VcsExperimentalAttributes {
     */
   abstract class VcsProviderNameValue(val value: String)
   object VcsProviderNameValue {
+    implicit val attributeFromVcsProviderNameValue: Attribute.From[VcsProviderNameValue, String] = _.value
 
     /** <a href="https://github.com">GitHub</a>
       */
@@ -253,6 +256,7 @@ object VcsExperimentalAttributes {
     */
   abstract class VcsRefBaseTypeValue(val value: String)
   object VcsRefBaseTypeValue {
+    implicit val attributeFromVcsRefBaseTypeValue: Attribute.From[VcsRefBaseTypeValue, String] = _.value
 
     /** <a href="https://git-scm.com/docs/gitglossary#Documentation/gitglossary.txt-aiddefbranchabranch">branch</a>
       */
@@ -267,6 +271,7 @@ object VcsExperimentalAttributes {
     */
   abstract class VcsRefHeadTypeValue(val value: String)
   object VcsRefHeadTypeValue {
+    implicit val attributeFromVcsRefHeadTypeValue: Attribute.From[VcsRefHeadTypeValue, String] = _.value
 
     /** <a href="https://git-scm.com/docs/gitglossary#Documentation/gitglossary.txt-aiddefbranchabranch">branch</a>
       */
@@ -281,6 +286,7 @@ object VcsExperimentalAttributes {
     */
   abstract class VcsRefTypeValue(val value: String)
   object VcsRefTypeValue {
+    implicit val attributeFromVcsRefTypeValue: Attribute.From[VcsRefTypeValue, String] = _.value
 
     /** <a href="https://git-scm.com/docs/gitglossary#Documentation/gitglossary.txt-aiddefbranchabranch">branch</a>
       */
@@ -297,6 +303,7 @@ object VcsExperimentalAttributes {
   abstract class VcsRepositoryRefTypeValue(val value: String)
   @annotation.nowarn("cat=deprecation")
   object VcsRepositoryRefTypeValue {
+    implicit val attributeFromVcsRepositoryRefTypeValue: Attribute.From[VcsRepositoryRefTypeValue, String] = _.value
 
     /** <a href="https://git-scm.com/docs/gitglossary#Documentation/gitglossary.txt-aiddefbranchabranch">branch</a>
       */
@@ -311,6 +318,8 @@ object VcsExperimentalAttributes {
     */
   abstract class VcsRevisionDeltaDirectionValue(val value: String)
   object VcsRevisionDeltaDirectionValue {
+    implicit val attributeFromVcsRevisionDeltaDirectionValue: Attribute.From[VcsRevisionDeltaDirectionValue, String] =
+      _.value
 
     /** How many revisions the change is behind the target ref.
       */

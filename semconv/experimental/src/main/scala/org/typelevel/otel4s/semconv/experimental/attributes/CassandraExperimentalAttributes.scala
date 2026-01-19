@@ -57,6 +57,8 @@ object CassandraExperimentalAttributes {
     */
   abstract class CassandraConsistencyLevelValue(val value: String)
   object CassandraConsistencyLevelValue {
+    implicit val attributeFromCassandraConsistencyLevelValue: Attribute.From[CassandraConsistencyLevelValue, String] =
+      _.value
 
     /** All
       */

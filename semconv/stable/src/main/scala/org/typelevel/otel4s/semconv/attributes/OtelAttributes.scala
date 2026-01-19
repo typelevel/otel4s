@@ -45,6 +45,7 @@ object OtelAttributes {
     */
   abstract class OtelStatusCodeValue(val value: String)
   object OtelStatusCodeValue {
+    implicit val attributeFromOtelStatusCodeValue: Attribute.From[OtelStatusCodeValue, String] = _.value
 
     /** The operation has been validated by an Application developer or Operator to have completed successfully.
       */

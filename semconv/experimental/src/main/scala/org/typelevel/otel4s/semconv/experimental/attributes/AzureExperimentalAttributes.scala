@@ -78,6 +78,8 @@ object AzureExperimentalAttributes {
     */
   abstract class AzureCosmosdbConnectionModeValue(val value: String)
   object AzureCosmosdbConnectionModeValue {
+    implicit val attributeFromAzureCosmosdbConnectionModeValue
+        : Attribute.From[AzureCosmosdbConnectionModeValue, String] = _.value
 
     /** Gateway (HTTP) connection.
       */
@@ -92,6 +94,8 @@ object AzureExperimentalAttributes {
     */
   abstract class AzureCosmosdbConsistencyLevelValue(val value: String)
   object AzureCosmosdbConsistencyLevelValue {
+    implicit val attributeFromAzureCosmosdbConsistencyLevelValue
+        : Attribute.From[AzureCosmosdbConsistencyLevelValue, String] = _.value
 
     /** Strong
       */

@@ -47,6 +47,7 @@ object TelemetryAttributes {
     */
   abstract class TelemetrySdkLanguageValue(val value: String)
   object TelemetrySdkLanguageValue {
+    implicit val attributeFromTelemetrySdkLanguageValue: Attribute.From[TelemetrySdkLanguageValue, String] = _.value
 
     /** cpp.
       */

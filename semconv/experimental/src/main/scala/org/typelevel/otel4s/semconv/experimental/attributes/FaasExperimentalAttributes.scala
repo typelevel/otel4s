@@ -150,6 +150,7 @@ object FaasExperimentalAttributes {
     */
   abstract class FaasDocumentOperationValue(val value: String)
   object FaasDocumentOperationValue {
+    implicit val attributeFromFaasDocumentOperationValue: Attribute.From[FaasDocumentOperationValue, String] = _.value
 
     /** When a new object is created.
       */
@@ -168,6 +169,7 @@ object FaasExperimentalAttributes {
     */
   abstract class FaasInvokedProviderValue(val value: String)
   object FaasInvokedProviderValue {
+    implicit val attributeFromFaasInvokedProviderValue: Attribute.From[FaasInvokedProviderValue, String] = _.value
 
     /** Alibaba Cloud
       */
@@ -194,6 +196,7 @@ object FaasExperimentalAttributes {
     */
   abstract class FaasTriggerValue(val value: String)
   object FaasTriggerValue {
+    implicit val attributeFromFaasTriggerValue: Attribute.From[FaasTriggerValue, String] = _.value
 
     /** A response to some data source operation such as a database or filesystem read/write
       */

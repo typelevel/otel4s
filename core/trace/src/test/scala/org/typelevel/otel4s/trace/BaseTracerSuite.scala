@@ -311,6 +311,55 @@ abstract class BaseTracerSuite[Ctx, K[X] <: Key[X]](implicit
     }
   }
 
+  sdkTest("`withCurrentSpan` outside of a span (root scope)") { sdk =>
+    for {
+      tracer <- sdk.provider.get("tracer")
+      isValid <- tracer.withCurrentSpanOrNoop(span => IO.pure(span.context.isValid))
+      spans <- sdk.finishedSpans
+    } yield {
+      assert(!isValid)
+      assertEquals(spans.length, 0)
+    }
+  }
+
+  sdkTest("`withCurrentSpan` in noop scope") { sdk =>
+    for {
+      tracer <- sdk.provider.get("tracer")
+      isValid <- tracer.noopScope {
+        tracer.withCurrentSpanOrNoop(span => IO.pure(span.context.isValid))
+      }
+      spans <- sdk.finishedSpans
+    } yield {
+      assert(!isValid)
+      assertEquals(spans.length, 0)
+    }
+  }
+
+  sdkTest("`withCurrentSpan` inside a span") { sdk =>
+    def expected(now: FiniteDuration) =
+      List(SpanTree(SpanInfo("span", now, now)))
+
+    val attribute =
+      Attribute("string-attribute", "value")
+
+    TestControl.executeEmbed {
+      for {
+        now <- IO.monotonic.delayBy(1.second) // otherwise returns 0
+        tracer <- sdk.provider.get("tracer")
+        _ <- tracer.span("span").surround {
+          tracer.withCurrentSpanOrNoop { span =>
+            span.addAttribute(attribute) >> IO(assert(span.context.isValid))
+          }
+        }
+        spans <- sdk.finishedSpans
+        tree <- IO.pure(treeOf(spans))
+      } yield {
+        assertEquals(tree, expected(now))
+        assertEquals(spans.map(_.attributes), List(Attributes(attribute)))
+      }
+    }
+  }
+
   sdkTest("`currentSpanOrThrow` outside of a span (root scope)") { sdk =>
     {
       for {

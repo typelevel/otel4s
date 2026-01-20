@@ -132,6 +132,11 @@ class TracerSuite extends CatsEffectSuite {
       yield assert(!span.context.isValid)
   }
 
+  test("`withCurrentSpan` uses a no-op span when instrument is noop") {
+    val tracer = Tracer.noop[IO]
+    tracer.withCurrentSpanOrNoop(span => IO(assert(!span.context.isValid)))
+  }
+
   // utility
 
   private sealed trait BuilderOp
@@ -173,6 +178,7 @@ class TracerSuite extends CatsEffectSuite {
     def currentSpanContext: F[Option[SpanContext]] = underlying.currentSpanContext
     def currentSpanOrNoop: F[Span[F]] = underlying.currentSpanOrNoop
     def currentSpanOrThrow: F[Span[F]] = underlying.currentSpanOrThrow
+    def withCurrentSpanOrNoop[A](f: Span[F] => F[A]): F[A] = underlying.withCurrentSpanOrNoop(f)
     def childScope[A](parent: SpanContext)(fa: F[A]): F[A] = underlying.childScope(parent)(fa)
     def joinOrRoot[A, C: TextMapGetter](carrier: C)(fa: F[A]): F[A] = underlying.joinOrRoot(carrier)(fa)
     def rootScope[A](fa: F[A]): F[A] = underlying.rootScope(fa)

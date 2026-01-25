@@ -1,6 +1,6 @@
 import com.typesafe.tools.mima.core._
 
-ThisBuild / tlBaseVersion := "0.15"
+ThisBuild / tlBaseVersion := "0.16"
 
 ThisBuild / organization := "org.typelevel"
 ThisBuild / organizationName := "Typelevel"
@@ -66,15 +66,15 @@ ThisBuild / mergifyPrRules ++= Seq(
   )
 )
 
-val CatsVersion = "2.11.0"
-val CatsEffectVersion = "3.6.3"
-val CatsMtlVersion = "1.4.0"
-val FS2Version = "3.12.2"
-val MUnitVersion = "1.0.0"
-val MUnitScalaCheckVersion = "1.0.0-M11"
-val MUnitCatsEffectVersion = "2.1.0"
-val MUnitDisciplineVersion = "2.0.0-M3"
-val MUnitScalaCheckEffectVersion = "2.0.0-M2"
+val CatsVersion = "2.13.0"
+val CatsEffectVersion = "3.7.0-RC1"
+val CatsMtlVersion = "1.6.0"
+val FS2Version = "3.13.0-M7"
+val MUnitVersion = "1.2.0"
+val MUnitScalaCheckVersion = "1.1.0"
+val MUnitCatsEffectVersion = "2.2.0-RC1"
+val MUnitDisciplineVersion = "2.0.0"
+val MUnitScalaCheckEffectVersion = "2.1.0-RC1"
 val OpenTelemetryVersion = "1.58.0"
 val OpenTelemetryAlphaVersion = s"$OpenTelemetryVersion-alpha"
 val OpenTelemetryInstrumentationVersion = "2.24.0"
@@ -84,9 +84,9 @@ val OpenTelemetrySemConvAlphaVersion = s"$OpenTelemetrySemConvVersion-alpha"
 val Otel4sAgentVersion = "2.22.0"
 val PekkoStreamVersion = "1.4.0"
 val PekkoHttpVersion = "1.3.0"
-val PlatformVersion = "1.0.2"
-val ScodecVersion = "1.1.38"
-val VaultVersion = "3.6.0"
+val PlatformVersion = "1.0.3"
+val ScodecVersion = "1.2.4"
+val VaultVersion = "3.7.0-RC1"
 val Http4sVersion = "0.23.33"
 val ScribeVersion = "3.17.0"
 

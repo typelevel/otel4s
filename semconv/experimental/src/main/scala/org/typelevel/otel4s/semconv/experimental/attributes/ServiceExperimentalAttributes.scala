@@ -74,7 +74,19 @@ object ServiceExperimentalAttributes {
   val ServiceNamespace: AttributeKey[String] =
     AttributeKey("service.namespace")
 
-  /** The version string of the service API or implementation. The format is not defined by these conventions.
+  /** Logical name of the service on the other side of the connection. SHOULD be equal to the actual <a
+    * href="/docs/resource/README.md#service">`service.name`</a> resource attribute of the remote service if any.
+    */
+  val ServicePeerName: AttributeKey[String] =
+    AttributeKey("service.peer.name")
+
+  /** Logical namespace of the service on the other side of the connection. SHOULD be equal to the actual <a
+    * href="/docs/resource/README.md#service">`service.namespace`</a> resource attribute of the remote service if any.
+    */
+  val ServicePeerNamespace: AttributeKey[String] =
+    AttributeKey("service.peer.namespace")
+
+  /** The version string of the service component. The format is not defined by these conventions.
     */
   @deprecated(
     "use `org.typelevel.otel4s.semconv.attributes.ServiceAttributes.ServiceVersion` instead.",

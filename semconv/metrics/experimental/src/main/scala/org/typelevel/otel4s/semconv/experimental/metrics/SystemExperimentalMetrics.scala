@@ -46,15 +46,19 @@ object SystemExperimentalMetrics {
     LinuxMemoryAvailable,
     LinuxMemorySlabUsage,
     MemoryLimit,
+    MemoryLinuxAvailable,
+    MemoryLinuxSlabUsage,
     MemoryShared,
     MemoryUsage,
     MemoryUtilization,
     NetworkConnectionCount,
     NetworkConnections,
+    NetworkDropped,
     NetworkErrors,
     NetworkIo,
     NetworkPacketCount,
     NetworkPacketDropped,
+    NetworkPackets,
     PagingFaults,
     PagingOperations,
     PagingUsage,
@@ -217,7 +221,7 @@ object SystemExperimentalMetrics {
           List(
             1,
           ),
-          Requirement.recommended,
+          Requirement.optIn,
           Stability.development
         )
 
@@ -291,7 +295,7 @@ object SystemExperimentalMetrics {
           List(
             1,
           ),
-          Requirement.recommended,
+          Requirement.optIn,
           Stability.development
         )
 
@@ -343,12 +347,12 @@ object SystemExperimentalMetrics {
 
   }
 
-  /** TODO.
+  /** Disk bytes transferred.
     */
   object DiskIo extends MetricSpec.Unsealed {
 
     val name: String = "system.disk.io"
-    val description: String = "TODO."
+    val description: String = "Disk bytes transferred."
     val unit: String = "By"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
@@ -529,12 +533,12 @@ object SystemExperimentalMetrics {
 
   }
 
-  /** TODO.
+  /** The number of disk reads/writes merged into single physical disk access operations.
     */
   object DiskMerged extends MetricSpec.Unsealed {
 
     val name: String = "system.disk.merged"
-    val description: String = "TODO."
+    val description: String = "The number of disk reads/writes merged into single physical disk access operations."
     val unit: String = "{operation}"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
@@ -671,12 +675,12 @@ object SystemExperimentalMetrics {
 
   }
 
-  /** TODO.
+  /** Disk operations count.
     */
   object DiskOperations extends MetricSpec.Unsealed {
 
     val name: String = "system.disk.operations"
-    val description: String = "TODO."
+    val description: String = "Disk operations count."
     val unit: String = "{operation}"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
@@ -946,12 +950,12 @@ object SystemExperimentalMetrics {
 
   }
 
-  /** TODO.
+  /** Fraction of filesystem bytes used.
     */
   object FilesystemUtilization extends MetricSpec.Unsealed {
 
     val name: String = "system.filesystem.utilization"
-    val description: String = "TODO."
+    val description: String = "Fraction of filesystem bytes used."
     val unit: String = "1"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
@@ -1054,6 +1058,135 @@ object SystemExperimentalMetrics {
 
   }
 
+  /** The number of packets transferred.
+    */
+  @deprecated("Replaced by `system.memory.linux.available`.", "")
+  object LinuxMemoryAvailable extends MetricSpec.Unsealed {
+
+    val name: String = "system.linux.memory.available"
+    val description: String = "The number of packets transferred."
+    val unit: String = "{packet}"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[Counter[F, A]] =
+      Meter[F]
+        .counter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableCounter] =
+      Meter[F]
+        .observableCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** The number of packets transferred.
+    */
+  @deprecated("Replaced by `system.memory.linux.slab.usage`.", "")
+  object LinuxMemorySlabUsage extends MetricSpec.Unsealed {
+
+    val name: String = "system.linux.memory.slab.usage"
+    val description: String = "The number of packets transferred."
+    val unit: String = "{packet}"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
+
+    object AttributeSpecs {
+
+      /** The Linux Slab memory state
+        */
+      @deprecated("Replaced by `system.memory.linux.slab.state`.", "")
+      val linuxMemorySlabState: AttributeSpec[String] =
+        AttributeSpec(
+          LinuxExperimentalAttributes.LinuxMemorySlabState,
+          List(
+            "reclaimable",
+            "unreclaimable",
+          ),
+          Requirement.recommended,
+          Stability.development
+        )
+
+      val specs: List[AttributeSpec[_]] =
+        List(
+          linuxMemorySlabState,
+        )
+    }
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[Counter[F, A]] =
+      Meter[F]
+        .counter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableCounter] =
+      Meter[F]
+        .observableCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** Total virtual memory available in the system.
+    */
+  object MemoryLimit extends MetricSpec.Unsealed {
+
+    val name: String = "system.memory.limit"
+    val description: String = "Total virtual memory available in the system."
+    val unit: String = "By"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
+      Meter[F]
+        .upDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableUpDownCounter] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
   /** An estimate of how much memory is available for starting new applications, without causing swapping.
     *
     * @note
@@ -1063,9 +1196,9 @@ object SystemExperimentalMetrics {
     *   href="https://superuser.com/a/980821">here</a>. See also `MemAvailable` in <a
     *   href="https://man7.org/linux/man-pages/man5/proc.5.html">/proc/meminfo</a>.
     */
-  object LinuxMemoryAvailable extends MetricSpec.Unsealed {
+  object MemoryLinuxAvailable extends MetricSpec.Unsealed {
 
-    val name: String = "system.linux.memory.available"
+    val name: String = "system.memory.linux.available"
     val description: String =
       "An estimate of how much memory is available for starting new applications, without causing swapping."
     val unit: String = "By"
@@ -1100,15 +1233,15 @@ object SystemExperimentalMetrics {
   /** Reports the memory used by the Linux kernel for managing caches of frequently used objects.
     *
     * @note
-    *   <p> The sum over the `reclaimable` and `unreclaimable` state values in `linux.memory.slab.usage` SHOULD be equal
+    *   <p> The sum over the `reclaimable` and `unreclaimable` state values in `memory.linux.slab.usage` SHOULD be equal
     *   to the total slab memory available on the system. Note that the total slab memory is not constant and may vary
     *   over time. See also the <a
     *   href="https://blogs.oracle.com/linux/post/understanding-linux-kernel-memory-statistics">Slab allocator</a> and
     *   `Slab` in <a href="https://man7.org/linux/man-pages/man5/proc.5.html">/proc/meminfo</a>.
     */
-  object LinuxMemorySlabUsage extends MetricSpec.Unsealed {
+  object MemoryLinuxSlabUsage extends MetricSpec.Unsealed {
 
-    val name: String = "system.linux.memory.slab.usage"
+    val name: String = "system.memory.linux.slab.usage"
     val description: String =
       "Reports the memory used by the Linux kernel for managing caches of frequently used objects."
     val unit: String = "By"
@@ -1119,9 +1252,9 @@ object SystemExperimentalMetrics {
 
       /** The Linux Slab memory state
         */
-      val linuxMemorySlabState: AttributeSpec[String] =
+      val systemMemoryLinuxSlabState: AttributeSpec[String] =
         AttributeSpec(
-          LinuxExperimentalAttributes.LinuxMemorySlabState,
+          SystemExperimentalAttributes.SystemMemoryLinuxSlabState,
           List(
             "reclaimable",
             "unreclaimable",
@@ -1132,44 +1265,9 @@ object SystemExperimentalMetrics {
 
       val specs: List[AttributeSpec[_]] =
         List(
-          linuxMemorySlabState,
+          systemMemoryLinuxSlabState,
         )
     }
-
-    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
-      Meter[F]
-        .upDownCounter[A](name)
-        .withDescription(description)
-        .withUnit(unit)
-        .create
-
-    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
-      Meter[F]
-        .observableUpDownCounter[A](name)
-        .withDescription(description)
-        .withUnit(unit)
-        .createObserver
-
-    def createWithCallback[F[_]: Meter, A: MeasurementValue](
-        callback: ObservableMeasurement[F, A] => F[Unit]
-    ): Resource[F, ObservableUpDownCounter] =
-      Meter[F]
-        .observableUpDownCounter[A](name)
-        .withDescription(description)
-        .withUnit(unit)
-        .createWithCallback(callback)
-
-  }
-
-  /** Total virtual memory available in the system.
-    */
-  object MemoryLimit extends MetricSpec.Unsealed {
-
-    val name: String = "system.memory.limit"
-    val description: String = "Total virtual memory available in the system."
-    val unit: String = "By"
-    val stability: Stability = Stability.development
-    val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
       Meter[F]
@@ -1291,12 +1389,12 @@ object SystemExperimentalMetrics {
 
   }
 
-  /** TODO.
+  /** Percentage of memory bytes in use.
     */
   object MemoryUtilization extends MetricSpec.Unsealed {
 
     val name: String = "system.memory.utilization"
-    val description: String = "TODO."
+    val description: String = "Percentage of memory bytes in use."
     val unit: String = "1"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
@@ -1347,12 +1445,12 @@ object SystemExperimentalMetrics {
 
   }
 
-  /** TODO.
+  /** The number of connections.
     */
   object NetworkConnectionCount extends MetricSpec.Unsealed {
 
     val name: String = "system.network.connection.count"
-    val description: String = "TODO."
+    val description: String = "The number of connections."
     val unit: String = "{connection}"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
@@ -1534,6 +1632,84 @@ object SystemExperimentalMetrics {
 
   }
 
+  /** Count of packets that are dropped or discarded even though there was no error.
+    *
+    * @note
+    *   <p> Measured as: <ul> <li>Linux: the `drop` column in `/proc/dev/net` (<a
+    *   href="https://web.archive.org/web/20180321091318/http://www.onlamp.com/pub/a/linux/2000/11/16/LinuxAdmin.html">source</a>)
+    *   <li>Windows: <a
+    *   href="https://docs.microsoft.com/windows/win32/api/netioapi/ns-netioapi-mib_if_row2">`InDiscards`/`OutDiscards`</a>
+    *   from <a href="https://docs.microsoft.com/windows/win32/api/netioapi/nf-netioapi-getifentry2">`GetIfEntry2`</a>
+    *   </ul>
+    */
+  @deprecated("Replaced by `system.network.packet.dropped`.", "")
+  object NetworkDropped extends MetricSpec.Unsealed {
+
+    val name: String = "system.network.dropped"
+    val description: String = "Count of packets that are dropped or discarded even though there was no error."
+    val unit: String = "{packet}"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
+
+    object AttributeSpecs {
+
+      /** The network interface name.
+        */
+      val networkInterfaceName: AttributeSpec[String] =
+        AttributeSpec(
+          NetworkExperimentalAttributes.NetworkInterfaceName,
+          List(
+            "lo",
+            "eth0",
+          ),
+          Requirement.recommended,
+          Stability.development
+        )
+
+      /** The network IO operation direction.
+        */
+      val networkIoDirection: AttributeSpec[String] =
+        AttributeSpec(
+          NetworkExperimentalAttributes.NetworkIoDirection,
+          List(
+            "transmit",
+          ),
+          Requirement.recommended,
+          Stability.development
+        )
+
+      val specs: List[AttributeSpec[_]] =
+        List(
+          networkInterfaceName,
+          networkIoDirection,
+        )
+    }
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[Counter[F, A]] =
+      Meter[F]
+        .counter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableCounter] =
+      Meter[F]
+        .observableCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
   /** Count of network errors detected.
     *
     * @note
@@ -1611,12 +1787,12 @@ object SystemExperimentalMetrics {
 
   }
 
-  /** TODO.
+  /** The number of bytes transmitted and received.
     */
   object NetworkIo extends MetricSpec.Unsealed {
 
     val name: String = "system.network.io"
-    val description: String = "TODO."
+    val description: String = "The number of bytes transmitted and received."
     val unit: String = "By"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
@@ -1680,12 +1856,12 @@ object SystemExperimentalMetrics {
 
   }
 
-  /** TODO.
+  /** The number of packets transferred.
     */
   object NetworkPacketCount extends MetricSpec.Unsealed {
 
     val name: String = "system.network.packet.count"
-    val description: String = "TODO."
+    val description: String = "The number of packets transferred."
     val unit: String = "{packet}"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
@@ -1825,25 +2001,38 @@ object SystemExperimentalMetrics {
 
   }
 
-  /** TODO.
+  /** The number of packets transferred.
     */
-  object PagingFaults extends MetricSpec.Unsealed {
+  @deprecated("Replaced by `system.network.packet.count`.", "")
+  object NetworkPackets extends MetricSpec.Unsealed {
 
-    val name: String = "system.paging.faults"
-    val description: String = "TODO."
-    val unit: String = "{fault}"
+    val name: String = "system.network.packets"
+    val description: String = "The number of packets transferred."
+    val unit: String = "{packet}"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
-      /** The memory paging type
+      /** The network IO operation direction.
         */
-      val systemPagingType: AttributeSpec[String] =
+      val networkIoDirection: AttributeSpec[String] =
         AttributeSpec(
-          SystemExperimentalAttributes.SystemPagingType,
+          NetworkExperimentalAttributes.NetworkIoDirection,
           List(
-            "minor",
+            "transmit",
+          ),
+          Requirement.recommended,
+          Stability.development
+        )
+
+      /** The device identifier
+        */
+      val systemDevice: AttributeSpec[String] =
+        AttributeSpec(
+          SystemExperimentalAttributes.SystemDevice,
+          List(
+            "(identifier)",
           ),
           Requirement.recommended,
           Stability.development
@@ -1851,7 +2040,8 @@ object SystemExperimentalMetrics {
 
       val specs: List[AttributeSpec[_]] =
         List(
-          systemPagingType,
+          networkIoDirection,
+          systemDevice,
         )
     }
 
@@ -1880,12 +2070,67 @@ object SystemExperimentalMetrics {
 
   }
 
-  /** TODO.
+  /** The number of page faults.
+    */
+  object PagingFaults extends MetricSpec.Unsealed {
+
+    val name: String = "system.paging.faults"
+    val description: String = "The number of page faults."
+    val unit: String = "{fault}"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
+
+    object AttributeSpecs {
+
+      /** The paging fault type
+        */
+      val systemPagingFaultType: AttributeSpec[String] =
+        AttributeSpec(
+          SystemExperimentalAttributes.SystemPagingFaultType,
+          List(
+            "minor",
+          ),
+          Requirement.recommended,
+          Stability.development
+        )
+
+      val specs: List[AttributeSpec[_]] =
+        List(
+          systemPagingFaultType,
+        )
+    }
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[Counter[F, A]] =
+      Meter[F]
+        .counter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableCounter] =
+      Meter[F]
+        .observableCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** The number of paging operations.
     */
   object PagingOperations extends MetricSpec.Unsealed {
 
     val name: String = "system.paging.operations"
-    val description: String = "TODO."
+    val description: String = "The number of paging operations."
     val unit: String = "{operation}"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
@@ -1904,11 +2149,11 @@ object SystemExperimentalMetrics {
           Stability.development
         )
 
-      /** The memory paging type
+      /** The paging fault type
         */
-      val systemPagingType: AttributeSpec[String] =
+      val systemPagingFaultType: AttributeSpec[String] =
         AttributeSpec(
-          SystemExperimentalAttributes.SystemPagingType,
+          SystemExperimentalAttributes.SystemPagingFaultType,
           List(
             "minor",
           ),
@@ -1919,7 +2164,7 @@ object SystemExperimentalMetrics {
       val specs: List[AttributeSpec[_]] =
         List(
           systemPagingDirection,
-          systemPagingType,
+          systemPagingFaultType,
         )
     }
 
@@ -2016,12 +2261,12 @@ object SystemExperimentalMetrics {
 
   }
 
-  /** TODO.
+  /** Swap (unix) or pagefile (windows) utilization.
     */
   object PagingUtilization extends MetricSpec.Unsealed {
 
     val name: String = "system.paging.utilization"
-    val description: String = "TODO."
+    val description: String = "Swap (unix) or pagefile (windows) utilization."
     val unit: String = "1"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
@@ -2099,9 +2344,9 @@ object SystemExperimentalMetrics {
       /** The process state, e.g., <a href="https://man7.org/linux/man-pages/man1/ps.1.html#PROCESS_STATE_CODES">Linux
         * Process State Codes</a>
         */
-      val systemProcessStatus: AttributeSpec[String] =
+      val processState: AttributeSpec[String] =
         AttributeSpec(
-          SystemExperimentalAttributes.SystemProcessStatus,
+          ProcessExperimentalAttributes.ProcessState,
           List(
             "running",
           ),
@@ -2111,7 +2356,7 @@ object SystemExperimentalMetrics {
 
       val specs: List[AttributeSpec[_]] =
         List(
-          systemProcessStatus,
+          processState,
         )
     }
 

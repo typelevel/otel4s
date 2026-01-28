@@ -149,8 +149,7 @@ object AzureExperimentalMetrics {
         *
         * @note
         *   <p> Region name matches the format of `displayName` in <a
-        *   href="https://learn.microsoft.com/rest/api/subscription/subscriptions/list-locations?view=rest-subscription-2021-10-01&tabs=HTTP#location">Azure
-        *   Location API</a>
+        *   href="https://learn.microsoft.com/rest/api/resources/subscriptions/list-locations">Azure Location API</a>
         */
       val azureCosmosdbOperationContactedRegions: AttributeSpec[Seq[String]] =
         AttributeSpec(

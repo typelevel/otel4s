@@ -47,6 +47,16 @@ object OtelExperimentalAttributes {
   val OtelComponentType: AttributeKey[String] =
     AttributeKey("otel.component.type")
 
+  /** Identifies the class / type of event.
+    *
+    * @note
+    *   <p> This attribute SHOULD be used by non-OTLP exporters when destination does not support `EventName` or
+    *   equivalent field. This attribute MAY be used by applications using existing logging libraries so that it can be
+    *   used to set the `EventName` field by Collector or SDK components.
+    */
+  val OtelEventName: AttributeKey[String] =
+    AttributeKey("otel.event.name")
+
   /** Deprecated. Use the `otel.scope.name` attribute
     */
   @deprecated("Replaced by `otel.scope.name`.", "")

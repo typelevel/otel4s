@@ -42,7 +42,7 @@ object EnduserExperimentalAttributes {
 
   /** Deprecated, use `user.roles` instead.
     */
-  @deprecated("Replaced by `user.roles`.", "")
+  @deprecated("Use `user.roles` instead.", "")
   val EnduserRole: AttributeKey[String] =
     AttributeKey("enduser.role")
 

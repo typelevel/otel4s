@@ -55,7 +55,7 @@ object ProcessExperimentalAttributes {
   /** Specifies whether the context switches for this data point were voluntary or involuntary.
     */
   val ProcessContextSwitchType: AttributeKey[String] =
-    AttributeKey("process.context_switch_type")
+    AttributeKey("process.context_switch.type")
 
   /** Deprecated, use `cpu.mode` instead.
     */
@@ -148,9 +148,9 @@ object ProcessExperimentalAttributes {
   val ProcessOwner: AttributeKey[String] =
     AttributeKey("process.owner")
 
-  /** The type of page fault for this data point. Type `major` is for major/hard page faults, and `minor` is for
-    * minor/soft page faults.
+  /** Deprecated, use `system.paging.fault.type` instead.
     */
+  @deprecated("Replaced by `system.paging.fault.type`.", "")
   val ProcessPagingFaultType: AttributeKey[String] =
     AttributeKey("process.paging.fault_type")
 
@@ -204,6 +204,12 @@ object ProcessExperimentalAttributes {
     */
   val ProcessSessionLeaderPid: AttributeKey[Long] =
     AttributeKey("process.session_leader.pid")
+
+  /** The process state, e.g., <a href="https://man7.org/linux/man-pages/man1/ps.1.html#PROCESS_STATE_CODES">Linux
+    * Process State Codes</a>
+    */
+  val ProcessState: AttributeKey[String] =
+    AttributeKey("process.state")
 
   /** Process title (proctitle)
     *
@@ -277,7 +283,9 @@ object ProcessExperimentalAttributes {
 
   /** Values for [[ProcessPagingFaultType]].
     */
+  @deprecated("Replaced by `system.paging.fault.type`.", "")
   abstract class ProcessPagingFaultTypeValue(val value: String)
+  @annotation.nowarn("cat=deprecation")
   object ProcessPagingFaultTypeValue {
     implicit val attributeFromProcessPagingFaultTypeValue: Attribute.From[ProcessPagingFaultTypeValue, String] = _.value
 
@@ -288,6 +296,29 @@ object ProcessExperimentalAttributes {
     /** minor.
       */
     case object Minor extends ProcessPagingFaultTypeValue("minor")
+  }
+
+  /** Values for [[ProcessState]].
+    */
+  abstract class ProcessStateValue(val value: String)
+  object ProcessStateValue {
+    implicit val attributeFromProcessStateValue: Attribute.From[ProcessStateValue, String] = _.value
+
+    /** running.
+      */
+    case object Running extends ProcessStateValue("running")
+
+    /** sleeping.
+      */
+    case object Sleeping extends ProcessStateValue("sleeping")
+
+    /** stopped.
+      */
+    case object Stopped extends ProcessStateValue("stopped")
+
+    /** defunct.
+      */
+    case object Defunct extends ProcessStateValue("defunct")
   }
 
 }

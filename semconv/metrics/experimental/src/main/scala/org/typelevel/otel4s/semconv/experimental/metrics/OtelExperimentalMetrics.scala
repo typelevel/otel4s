@@ -83,7 +83,7 @@ object OtelExperimentalMetrics {
         *   multiple instrumentation libraries and applications should be prepared for `error.type` to have high
         *   cardinality at query time when no additional filters are applied. <p> If the operation has completed
         *   successfully, instrumentations SHOULD NOT set `error.type`. <p> If a specific domain defines its own set of
-        *   error identifiers (such as HTTP or gRPC status codes), it's RECOMMENDED to: <ul> <li>Use a domain-specific
+        *   error identifiers (such as HTTP or RPC status codes), it's RECOMMENDED to: <ul> <li>Use a domain-specific
         *   attribute <li>Set `error.type` to capture all errors, regardless of whether they are defined within the
         *   domain-specific set or not. </ul>
         */
@@ -374,7 +374,7 @@ object OtelExperimentalMetrics {
         *   multiple instrumentation libraries and applications should be prepared for `error.type` to have high
         *   cardinality at query time when no additional filters are applied. <p> If the operation has completed
         *   successfully, instrumentations SHOULD NOT set `error.type`. <p> If a specific domain defines its own set of
-        *   error identifiers (such as HTTP or gRPC status codes), it's RECOMMENDED to: <ul> <li>Use a domain-specific
+        *   error identifiers (such as HTTP or RPC status codes), it's RECOMMENDED to: <ul> <li>Use a domain-specific
         *   attribute <li>Set `error.type` to capture all errors, regardless of whether they are defined within the
         *   domain-specific set or not. </ul>
         */
@@ -666,7 +666,7 @@ object OtelExperimentalMetrics {
         *   multiple instrumentation libraries and applications should be prepared for `error.type` to have high
         *   cardinality at query time when no additional filters are applied. <p> If the operation has completed
         *   successfully, instrumentations SHOULD NOT set `error.type`. <p> If a specific domain defines its own set of
-        *   error identifiers (such as HTTP or gRPC status codes), it's RECOMMENDED to: <ul> <li>Use a domain-specific
+        *   error identifiers (such as HTTP or RPC status codes), it's RECOMMENDED to: <ul> <li>Use a domain-specific
         *   attribute <li>Set `error.type` to capture all errors, regardless of whether they are defined within the
         *   domain-specific set or not. </ul>
         */
@@ -738,12 +738,21 @@ object OtelExperimentalMetrics {
           Stability.development
         )
 
-      /** The gRPC status code of the last gRPC requests performed in scope of this export call.
+      /** The gRPC status code of the last gRPC request performed in scope of this export call.
+        *
+        * @note
+        *   <p> Usually it represents an error code, but may also represent partial success, warning, or differentiate
+        *   between various types of successful outcomes. Semantic conventions for individual RPC frameworks SHOULD
+        *   document what `rpc.response.status_code` means in the context of that system and which values are considered
+        *   to represent errors.
         */
-      val rpcGrpcStatusCode: AttributeSpec[Long] =
+      val rpcResponseStatusCode: AttributeSpec[String] =
         AttributeSpec(
-          RpcExperimentalAttributes.RpcGrpcStatusCode,
+          RpcExperimentalAttributes.RpcResponseStatusCode,
           List(
+            "OK",
+            "DEADLINE_EXCEEDED",
+            "-32602",
           ),
           Requirement.recommended("when applicable"),
           Stability.development
@@ -791,7 +800,7 @@ object OtelExperimentalMetrics {
           httpResponseStatusCode,
           otelComponentName,
           otelComponentType,
-          rpcGrpcStatusCode,
+          rpcResponseStatusCode,
           serverAddress,
           serverPort,
         )
@@ -835,7 +844,7 @@ object OtelExperimentalMetrics {
         *   multiple instrumentation libraries and applications should be prepared for `error.type` to have high
         *   cardinality at query time when no additional filters are applied. <p> If the operation has completed
         *   successfully, instrumentations SHOULD NOT set `error.type`. <p> If a specific domain defines its own set of
-        *   error identifiers (such as HTTP or gRPC status codes), it's RECOMMENDED to: <ul> <li>Use a domain-specific
+        *   error identifiers (such as HTTP or RPC status codes), it's RECOMMENDED to: <ul> <li>Use a domain-specific
         *   attribute <li>Set `error.type` to capture all errors, regardless of whether they are defined within the
         *   domain-specific set or not. </ul>
         */
@@ -1231,7 +1240,7 @@ object OtelExperimentalMetrics {
         *   multiple instrumentation libraries and applications should be prepared for `error.type` to have high
         *   cardinality at query time when no additional filters are applied. <p> If the operation has completed
         *   successfully, instrumentations SHOULD NOT set `error.type`. <p> If a specific domain defines its own set of
-        *   error identifiers (such as HTTP or gRPC status codes), it's RECOMMENDED to: <ul> <li>Use a domain-specific
+        *   error identifiers (such as HTTP or RPC status codes), it's RECOMMENDED to: <ul> <li>Use a domain-specific
         *   attribute <li>Set `error.type` to capture all errors, regardless of whether they are defined within the
         *   domain-specific set or not. </ul>
         */
@@ -1339,7 +1348,7 @@ object OtelExperimentalMetrics {
         *   multiple instrumentation libraries and applications should be prepared for `error.type` to have high
         *   cardinality at query time when no additional filters are applied. <p> If the operation has completed
         *   successfully, instrumentations SHOULD NOT set `error.type`. <p> If a specific domain defines its own set of
-        *   error identifiers (such as HTTP or gRPC status codes), it's RECOMMENDED to: <ul> <li>Use a domain-specific
+        *   error identifiers (such as HTTP or RPC status codes), it's RECOMMENDED to: <ul> <li>Use a domain-specific
         *   attribute <li>Set `error.type` to capture all errors, regardless of whether they are defined within the
         *   domain-specific set or not. </ul>
         */
@@ -1638,7 +1647,7 @@ object OtelExperimentalMetrics {
         *   multiple instrumentation libraries and applications should be prepared for `error.type` to have high
         *   cardinality at query time when no additional filters are applied. <p> If the operation has completed
         *   successfully, instrumentations SHOULD NOT set `error.type`. <p> If a specific domain defines its own set of
-        *   error identifiers (such as HTTP or gRPC status codes), it's RECOMMENDED to: <ul> <li>Use a domain-specific
+        *   error identifiers (such as HTTP or RPC status codes), it's RECOMMENDED to: <ul> <li>Use a domain-specific
         *   attribute <li>Set `error.type` to capture all errors, regardless of whether they are defined within the
         *   domain-specific set or not. </ul>
         */

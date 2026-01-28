@@ -94,6 +94,10 @@ object CloudExperimentalAttributes {
   object CloudPlatformValue {
     implicit val attributeFromCloudPlatformValue: Attribute.From[CloudPlatformValue, String] = _.value
 
+    /** Akamai Cloud Compute
+      */
+    case object AkamaiCloudCompute extends CloudPlatformValue("akamai_cloud.compute")
+
     /** Alibaba Cloud Elastic Compute Service
       */
     case object AlibabaCloudEcs extends CloudPlatformValue("alibaba_cloud_ecs")
@@ -162,6 +166,10 @@ object CloudExperimentalAttributes {
       */
     case object AzureOpenshift extends CloudPlatformValue("azure.openshift")
 
+    /** Google Vertex AI Agent Engine
+      */
+    case object GcpAgentEngine extends CloudPlatformValue("gcp.agent_engine")
+
     /** Google Bare Metal Solution (BMS)
       */
     case object GcpBareMetalSolution extends CloudPlatformValue("gcp_bare_metal_solution")
@@ -190,6 +198,10 @@ object CloudExperimentalAttributes {
       */
     case object GcpOpenshift extends CloudPlatformValue("gcp_openshift")
 
+    /** Server on Hetzner Cloud
+      */
+    case object HetznerCloudServer extends CloudPlatformValue("hetzner.cloud_server")
+
     /** Red Hat OpenShift on IBM Cloud
       */
     case object IbmCloudOpenshift extends CloudPlatformValue("ibm_cloud_openshift")
@@ -213,6 +225,10 @@ object CloudExperimentalAttributes {
     /** Tencent Cloud Serverless Cloud Function (SCF)
       */
     case object TencentCloudScf extends CloudPlatformValue("tencent_cloud_scf")
+
+    /** Vultr Cloud Compute
+      */
+    case object VultrCloudCompute extends CloudPlatformValue("vultr.cloud_compute")
   }
 
   /** Values for [[CloudProvider]].
@@ -220,6 +236,10 @@ object CloudExperimentalAttributes {
   abstract class CloudProviderValue(val value: String)
   object CloudProviderValue {
     implicit val attributeFromCloudProviderValue: Attribute.From[CloudProviderValue, String] = _.value
+
+    /** Akamai Cloud
+      */
+    case object AkamaiCloud extends CloudProviderValue("akamai_cloud")
 
     /** Alibaba Cloud
       */
@@ -241,6 +261,10 @@ object CloudExperimentalAttributes {
       */
     case object Heroku extends CloudProviderValue("heroku")
 
+    /** Hetzner
+      */
+    case object Hetzner extends CloudProviderValue("hetzner")
+
     /** IBM Cloud
       */
     case object IbmCloud extends CloudProviderValue("ibm_cloud")
@@ -252,6 +276,10 @@ object CloudExperimentalAttributes {
     /** Tencent Cloud
       */
     case object TencentCloud extends CloudProviderValue("tencent_cloud")
+
+    /** Vultr
+      */
+    case object Vultr extends CloudProviderValue("vultr")
   }
 
 }

@@ -355,6 +355,26 @@ object K8sExperimentalAttributes {
   val K8sPodAnnotation: AttributeKey[String] =
     AttributeKey("k8s.pod.annotation")
 
+  /** Specifies the hostname of the Pod.
+    *
+    * @note
+    *   <p> The K8s Pod spec has an optional hostname field, which can be used to specify a hostname. Refer to <a
+    *   href="https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/#pod-hostname-and-subdomain-field">K8s
+    *   docs</a> for more information about this field. <p> This attribute aligns with the `hostname` field of the <a
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#podspec-v1-core">K8s PodSpec</a>.
+    */
+  val K8sPodHostname: AttributeKey[String] =
+    AttributeKey("k8s.pod.hostname")
+
+  /** IP address allocated to the Pod.
+    *
+    * @note
+    *   <p> This attribute aligns with the `podIP` field of the <a
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#podstatus-v1-core">K8s PodStatus</a>.
+    */
+  val K8sPodIp: AttributeKey[String] =
+    AttributeKey("k8s.pod.ip")
+
   /** The label placed on the Pod, the `<key>` being the label name, the value being the label value.
     *
     * @note
@@ -376,6 +396,29 @@ object K8sExperimentalAttributes {
     */
   val K8sPodName: AttributeKey[String] =
     AttributeKey("k8s.pod.name")
+
+  /** The start timestamp of the Pod.
+    *
+    * @note
+    *   <p> Date and time at which the object was acknowledged by the Kubelet. This is before the Kubelet pulled the
+    *   container image(s) for the pod. <p> This attribute aligns with the `startTime` field of the <a
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#podstatus-v1-core">K8s PodStatus</a>,
+    *   in ISO 8601 (RFC 3339 compatible) format.
+    */
+  val K8sPodStartTime: AttributeKey[String] =
+    AttributeKey("k8s.pod.start_time")
+
+  /** The phase for the pod. Corresponds to the `phase` field of the: <a
+    * href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.33/#podstatus-v1-core">K8s PodStatus</a>
+    */
+  val K8sPodStatusPhase: AttributeKey[String] =
+    AttributeKey("k8s.pod.status.phase")
+
+  /** The reason for the pod state. Corresponds to the `reason` field of the: <a
+    * href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.33/#podstatus-v1-core">K8s PodStatus</a>
+    */
+  val K8sPodStatusReason: AttributeKey[String] =
+    AttributeKey("k8s.pod.status.reason")
 
   /** The UID of the Pod.
     */
@@ -435,8 +478,8 @@ object K8sExperimentalAttributes {
     *   <p> The value for this attribute can be either the full `count/<resource>[.<group>]` string (e.g.,
     *   count/deployments.apps, count/pods), or, for certain core Kubernetes resources, just the resource name (e.g.,
     *   pods, services, configmaps). Both forms are supported by Kubernetes for object count quotas. See <a
-    *   href="https://kubernetes.io/docs/concepts/policy/resource-quotas/#object-count-quota">Kubernetes Resource Quotas
-    *   documentation</a> for more details.
+    *   href="https://kubernetes.io/docs/concepts/policy/resource-quotas/#quota-on-object-count">Kubernetes Resource
+    *   Quotas documentation</a> for more details.
     */
   val K8sResourcequotaResourceName: AttributeKey[String] =
     AttributeKey("k8s.resourcequota.resource_name")
@@ -620,6 +663,66 @@ object K8sExperimentalAttributes {
     /** The network for the node is not correctly configured
       */
     case object NetworkUnavailable extends K8sNodeConditionTypeValue("NetworkUnavailable")
+  }
+
+  /** Values for [[K8sPodStatusPhase]].
+    */
+  abstract class K8sPodStatusPhaseValue(val value: String)
+  object K8sPodStatusPhaseValue {
+    implicit val attributeFromK8sPodStatusPhaseValue: Attribute.From[K8sPodStatusPhaseValue, String] = _.value
+
+    /** The pod has been accepted by the system, but one or more of the containers has not been started. This includes
+      * time before being bound to a node, as well as time spent pulling images onto the host.
+      */
+    case object Pending extends K8sPodStatusPhaseValue("Pending")
+
+    /** The pod has been bound to a node and all of the containers have been started. At least one container is still
+      * running or is in the process of being restarted.
+      */
+    case object Running extends K8sPodStatusPhaseValue("Running")
+
+    /** All containers in the pod have voluntarily terminated with a container exit code of 0, and the system is not
+      * going to restart any of these containers.
+      */
+    case object Succeeded extends K8sPodStatusPhaseValue("Succeeded")
+
+    /** All containers in the pod have terminated, and at least one container has terminated in a failure (exited with a
+      * non-zero exit code or was stopped by the system).
+      */
+    case object Failed extends K8sPodStatusPhaseValue("Failed")
+
+    /** For some reason the state of the pod could not be obtained, typically due to an error in communicating with the
+      * host of the pod.
+      */
+    case object Unknown extends K8sPodStatusPhaseValue("Unknown")
+  }
+
+  /** Values for [[K8sPodStatusReason]].
+    */
+  abstract class K8sPodStatusReasonValue(val value: String)
+  object K8sPodStatusReasonValue {
+    implicit val attributeFromK8sPodStatusReasonValue: Attribute.From[K8sPodStatusReasonValue, String] = _.value
+
+    /** The pod is evicted.
+      */
+    case object Evicted extends K8sPodStatusReasonValue("Evicted")
+
+    /** The pod is in a status because of its node affinity
+      */
+    case object NodeAffinity extends K8sPodStatusReasonValue("NodeAffinity")
+
+    /** The reason on a pod when its state cannot be confirmed as kubelet is unresponsive on the node it is (was)
+      * running.
+      */
+    case object NodeLost extends K8sPodStatusReasonValue("NodeLost")
+
+    /** The node is shutdown
+      */
+    case object Shutdown extends K8sPodStatusReasonValue("Shutdown")
+
+    /** The pod was rejected admission to the node because of an error during admission that could not be categorized.
+      */
+    case object UnexpectedAdmissionError extends K8sPodStatusReasonValue("UnexpectedAdmissionError")
   }
 
   /** Values for [[K8sVolumeType]].

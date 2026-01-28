@@ -74,7 +74,7 @@ object DbAttributes {
     *   analyzing telemetry for database calls involving complex queries. <p> Summary may be available to the
     *   instrumentation through instrumentation hooks or other means. If it is not available, instrumentations that
     *   support query parsing SHOULD generate a summary following <a
-    *   href="/docs/database/database-spans.md#generating-a-summary-of-the-query">Generating query summary</a> section.
+    *   href="/docs/db/database-spans.md#generating-a-summary-of-the-query">Generating query summary</a> section.
     */
   val DbQuerySummary: AttributeKey[String] =
     AttributeKey("db.query.summary")
@@ -82,7 +82,7 @@ object DbAttributes {
   /** The database query being executed.
     *
     * @note
-    *   <p> For sanitization see <a href="/docs/database/database-spans.md#sanitization-of-dbquerytext">Sanitization of
+    *   <p> For sanitization see <a href="/docs/db/database-spans.md#sanitization-of-dbquerytext">Sanitization of
     *   `db.query.text`</a>. For batch operations, if the individual operations are known to have the same query text
     *   then that query text SHOULD be used, otherwise all of the individual query texts SHOULD be concatenated with
     *   separator `; ` or some other database system specific separator if more applicable. Parameterized query text

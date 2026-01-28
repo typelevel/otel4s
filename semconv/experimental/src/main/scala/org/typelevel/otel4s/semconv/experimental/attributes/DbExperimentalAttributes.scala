@@ -160,7 +160,7 @@ object DbExperimentalAttributes {
 
   /** Deprecated, use `db.response.status_code` instead.
     */
-  @deprecated("Replaced by `db.response.status_code`.", "")
+  @deprecated("Use `db.response.status_code` instead.", "")
   val DbCosmosdbStatusCode: AttributeKey[Long] =
     AttributeKey("db.cosmosdb.status_code")
 
@@ -291,11 +291,12 @@ object DbExperimentalAttributes {
     * @note
     *   <p> If a query parameter has no name and instead is referenced only by index, then `<key>` SHOULD be the 0-based
     *   index. <p> `db.query.parameter.<key>` SHOULD match up with the parameterized placeholders present in
-    *   `db.query.text`. <p> `db.query.parameter.<key>` SHOULD NOT be captured on batch operations. <p> Examples: <ul>
-    *   <li>For a query `SELECT * FROM users where username =  %s` with the parameter `"jdoe"`, the attribute
-    *   `db.query.parameter.0` SHOULD be set to `"jdoe"`. <li>For a query
-    *   `"SELECT * FROM users WHERE username = %(username)s;` with parameter `username = "jdoe"`, the attribute
-    *   `db.query.parameter.username` SHOULD be set to `"jdoe"`. </ul>
+    *   `db.query.text`. <p> It is RECOMMENDED to capture the value as provided by the application without attempting to
+    *   do any case normalization. <p> `db.query.parameter.<key>` SHOULD NOT be captured on batch operations. <p>
+    *   Examples: <ul> <li>For a query `SELECT * FROM users where username =  %s` with the parameter `"jdoe"`, the
+    *   attribute `db.query.parameter.0` SHOULD be set to `"jdoe"`. <li>For a query
+    *   `"SELECT * FROM users WHERE username = %(userName)s;` with parameter `userName = "jdoe"`, the attribute
+    *   `db.query.parameter.userName` SHOULD be set to `"jdoe"`. </ul>
     */
   val DbQueryParameter: AttributeKey[String] =
     AttributeKey("db.query.parameter")
@@ -307,7 +308,7 @@ object DbExperimentalAttributes {
     *   analyzing telemetry for database calls involving complex queries. <p> Summary may be available to the
     *   instrumentation through instrumentation hooks or other means. If it is not available, instrumentations that
     *   support query parsing SHOULD generate a summary following <a
-    *   href="/docs/database/database-spans.md#generating-a-summary-of-the-query">Generating query summary</a> section.
+    *   href="/docs/db/database-spans.md#generating-a-summary-of-the-query">Generating query summary</a> section.
     */
   @deprecated(
     "use `org.typelevel.otel4s.semconv.attributes.DbAttributes.DbQuerySummary` instead.",
@@ -319,7 +320,7 @@ object DbExperimentalAttributes {
   /** The database query being executed.
     *
     * @note
-    *   <p> For sanitization see <a href="/docs/database/database-spans.md#sanitization-of-dbquerytext">Sanitization of
+    *   <p> For sanitization see <a href="/docs/db/database-spans.md#sanitization-of-dbquerytext">Sanitization of
     *   `db.query.text`</a>. For batch operations, if the individual operations are known to have the same query text
     *   then that query text SHOULD be used, otherwise all of the individual query texts SHOULD be concatenated with
     *   separator `; ` or some other database system specific separator if more applicable. Parameterized query text
@@ -337,7 +338,7 @@ object DbExperimentalAttributes {
 
   /** Deprecated, use `db.namespace` instead.
     */
-  @deprecated("Replaced by `db.namespace`.", "")
+  @deprecated("Uncategorized.", "")
   val DbRedisDatabaseIndex: AttributeKey[Long] =
     AttributeKey("db.redis.database_index")
 

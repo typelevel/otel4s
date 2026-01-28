@@ -26,9 +26,12 @@ import org.typelevel.otel4s.semconv.experimental.attributes._
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/metrics/SemanticMetrics.scala.j2
 object K8sExperimentalMetrics {
 
+  @annotation.nowarn("cat=deprecation")
   val specs: List[MetricSpec] = List(
     ContainerCpuLimit,
+    ContainerCpuLimitUtilization,
     ContainerCpuRequest,
+    ContainerCpuRequestUtilization,
     ContainerEphemeralStorageLimit,
     ContainerEphemeralStorageRequest,
     ContainerMemoryLimit,
@@ -40,12 +43,19 @@ object K8sExperimentalMetrics {
     ContainerStorageLimit,
     ContainerStorageRequest,
     CronjobActiveJobs,
+    CronjobJobActive,
     DaemonsetCurrentScheduledNodes,
     DaemonsetDesiredScheduledNodes,
     DaemonsetMisscheduledNodes,
+    DaemonsetNodeCurrentScheduled,
+    DaemonsetNodeDesiredScheduled,
+    DaemonsetNodeMisscheduled,
+    DaemonsetNodeReady,
     DaemonsetReadyNodes,
     DeploymentAvailablePods,
     DeploymentDesiredPods,
+    DeploymentPodAvailable,
+    DeploymentPodDesired,
     HpaCurrentPods,
     HpaDesiredPods,
     HpaMaxPods,
@@ -53,10 +63,19 @@ object K8sExperimentalMetrics {
     HpaMetricTargetCpuAverageValue,
     HpaMetricTargetCpuValue,
     HpaMinPods,
+    HpaPodCurrent,
+    HpaPodDesired,
+    HpaPodMax,
+    HpaPodMin,
     JobActivePods,
     JobDesiredSuccessfulPods,
     JobFailedPods,
     JobMaxParallelPods,
+    JobPodActive,
+    JobPodDesiredSuccessful,
+    JobPodFailed,
+    JobPodMaxParallel,
+    JobPodSuccessful,
     JobSuccessfulPods,
     NamespacePhase,
     NodeAllocatableCpu,
@@ -64,23 +83,37 @@ object K8sExperimentalMetrics {
     NodeAllocatableMemory,
     NodeAllocatablePods,
     NodeConditionStatus,
+    NodeCpuAllocatable,
     NodeCpuTime,
     NodeCpuUsage,
+    NodeEphemeralStorageAllocatable,
     NodeFilesystemAvailable,
     NodeFilesystemCapacity,
     NodeFilesystemUsage,
+    NodeMemoryAllocatable,
+    NodeMemoryAvailable,
+    NodeMemoryPagingFaults,
+    NodeMemoryRss,
     NodeMemoryUsage,
+    NodeMemoryWorkingSet,
     NodeNetworkErrors,
     NodeNetworkIo,
+    NodePodAllocatable,
     NodeUptime,
     PodCpuTime,
     PodCpuUsage,
     PodFilesystemAvailable,
     PodFilesystemCapacity,
     PodFilesystemUsage,
+    PodMemoryAvailable,
+    PodMemoryPagingFaults,
+    PodMemoryRss,
     PodMemoryUsage,
+    PodMemoryWorkingSet,
     PodNetworkErrors,
     PodNetworkIo,
+    PodStatusPhase,
+    PodStatusReason,
     PodUptime,
     PodVolumeAvailable,
     PodVolumeCapacity,
@@ -90,8 +123,12 @@ object K8sExperimentalMetrics {
     PodVolumeUsage,
     ReplicasetAvailablePods,
     ReplicasetDesiredPods,
+    ReplicasetPodAvailable,
+    ReplicasetPodDesired,
     ReplicationcontrollerAvailablePods,
     ReplicationcontrollerDesiredPods,
+    ReplicationcontrollerPodAvailable,
+    ReplicationcontrollerPodDesired,
     ResourcequotaCpuLimitHard,
     ResourcequotaCpuLimitUsed,
     ResourcequotaCpuRequestHard,
@@ -114,6 +151,10 @@ object K8sExperimentalMetrics {
     ResourcequotaStorageRequestUsed,
     StatefulsetCurrentPods,
     StatefulsetDesiredPods,
+    StatefulsetPodCurrent,
+    StatefulsetPodDesired,
+    StatefulsetPodReady,
+    StatefulsetPodUpdated,
     StatefulsetReadyPods,
     StatefulsetUpdatedPods,
   )
@@ -157,6 +198,45 @@ object K8sExperimentalMetrics {
 
   }
 
+  /** The ratio of container CPU usage to its CPU limit.
+    *
+    * @note
+    *   <p> The value range is [0.0,1.0]. A value of 1.0 means the container is using 100% of its CPU limit. If the CPU
+    *   limit is not set, this metric SHOULD NOT be emitted for that container.
+    */
+  object ContainerCpuLimitUtilization extends MetricSpec.Unsealed {
+
+    val name: String = "k8s.container.cpu.limit_utilization"
+    val description: String = "The ratio of container CPU usage to its CPU limit."
+    val unit: String = "1"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[Gauge[F, A]] =
+      Meter[F]
+        .gauge[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableGauge[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableGauge] =
+      Meter[F]
+        .observableGauge[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
   /** CPU resource requested for the container.
     *
     * @note
@@ -190,6 +270,41 @@ object K8sExperimentalMetrics {
     ): Resource[F, ObservableUpDownCounter] =
       Meter[F]
         .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** The ratio of container CPU usage to its CPU request.
+    */
+  object ContainerCpuRequestUtilization extends MetricSpec.Unsealed {
+
+    val name: String = "k8s.container.cpu.request_utilization"
+    val description: String = "The ratio of container CPU usage to its CPU request."
+    val unit: String = "1"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[Gauge[F, A]] =
+      Meter[F]
+        .gauge[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableGauge[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableGauge] =
+      Meter[F]
+        .observableGauge[A](name)
         .withDescription(description)
         .withUnit(unit)
         .createWithCallback(callback)
@@ -648,6 +763,47 @@ object K8sExperimentalMetrics {
 
   }
 
+  /** Deprecated, use `k8s.cronjob.job.active` instead.
+    *
+    * @note
+    *   <p> This metric aligns with the `active` field of the <a
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#cronjobstatus-v1-batch">K8s
+    *   CronJobStatus</a>.
+    */
+  @deprecated("Replaced by `k8s.cronjob.job.active`.", "")
+  object CronjobActiveJobs extends MetricSpec.Unsealed {
+
+    val name: String = "k8s.cronjob.active_jobs"
+    val description: String = "Deprecated, use `k8s.cronjob.job.active` instead."
+    val unit: String = "{job}"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
+      Meter[F]
+        .upDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableUpDownCounter] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
   /** The number of actively running jobs for a cronjob.
     *
     * @note
@@ -655,11 +811,134 @@ object K8sExperimentalMetrics {
     *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#cronjobstatus-v1-batch">K8s
     *   CronJobStatus</a>.
     */
-  object CronjobActiveJobs extends MetricSpec.Unsealed {
+  object CronjobJobActive extends MetricSpec.Unsealed {
 
-    val name: String = "k8s.cronjob.active_jobs"
+    val name: String = "k8s.cronjob.job.active"
     val description: String = "The number of actively running jobs for a cronjob."
     val unit: String = "{job}"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
+      Meter[F]
+        .upDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableUpDownCounter] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** Deprecated, use `k8s.daemonset.node.current_scheduled` instead.
+    *
+    * @note
+    *   <p> This metric aligns with the `currentNumberScheduled` field of the <a
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#daemonsetstatus-v1-apps">K8s
+    *   DaemonSetStatus</a>.
+    */
+  @deprecated("Replaced by `k8s.daemonset.node.current_scheduled`.", "")
+  object DaemonsetCurrentScheduledNodes extends MetricSpec.Unsealed {
+
+    val name: String = "k8s.daemonset.current_scheduled_nodes"
+    val description: String = "Deprecated, use `k8s.daemonset.node.current_scheduled` instead."
+    val unit: String = "{node}"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
+      Meter[F]
+        .upDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableUpDownCounter] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** Deprecated, use `k8s.daemonset.node.desired_scheduled` instead.
+    *
+    * @note
+    *   <p> This metric aligns with the `desiredNumberScheduled` field of the <a
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#daemonsetstatus-v1-apps">K8s
+    *   DaemonSetStatus</a>.
+    */
+  @deprecated("Replaced by `k8s.daemonset.node.desired_scheduled`.", "")
+  object DaemonsetDesiredScheduledNodes extends MetricSpec.Unsealed {
+
+    val name: String = "k8s.daemonset.desired_scheduled_nodes"
+    val description: String = "Deprecated, use `k8s.daemonset.node.desired_scheduled` instead."
+    val unit: String = "{node}"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
+      Meter[F]
+        .upDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableUpDownCounter] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** Deprecated, use `k8s.daemonset.node.misscheduled` instead.
+    *
+    * @note
+    *   <p> This metric aligns with the `numberMisscheduled` field of the <a
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#daemonsetstatus-v1-apps">K8s
+    *   DaemonSetStatus</a>.
+    */
+  @deprecated("Replaced by `k8s.daemonset.node.misscheduled`.", "")
+  object DaemonsetMisscheduledNodes extends MetricSpec.Unsealed {
+
+    val name: String = "k8s.daemonset.misscheduled_nodes"
+    val description: String = "Deprecated, use `k8s.daemonset.node.misscheduled` instead."
+    val unit: String = "{node}"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = Nil
 
@@ -695,9 +974,9 @@ object K8sExperimentalMetrics {
     *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#daemonsetstatus-v1-apps">K8s
     *   DaemonSetStatus</a>.
     */
-  object DaemonsetCurrentScheduledNodes extends MetricSpec.Unsealed {
+  object DaemonsetNodeCurrentScheduled extends MetricSpec.Unsealed {
 
-    val name: String = "k8s.daemonset.current_scheduled_nodes"
+    val name: String = "k8s.daemonset.node.current_scheduled"
     val description: String =
       "Number of nodes that are running at least 1 daemon pod and are supposed to run the daemon pod."
     val unit: String = "{node}"
@@ -736,9 +1015,9 @@ object K8sExperimentalMetrics {
     *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#daemonsetstatus-v1-apps">K8s
     *   DaemonSetStatus</a>.
     */
-  object DaemonsetDesiredScheduledNodes extends MetricSpec.Unsealed {
+  object DaemonsetNodeDesiredScheduled extends MetricSpec.Unsealed {
 
-    val name: String = "k8s.daemonset.desired_scheduled_nodes"
+    val name: String = "k8s.daemonset.node.desired_scheduled"
     val description: String =
       "Number of nodes that should be running the daemon pod (including nodes currently running the daemon pod)."
     val unit: String = "{node}"
@@ -777,9 +1056,9 @@ object K8sExperimentalMetrics {
     *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#daemonsetstatus-v1-apps">K8s
     *   DaemonSetStatus</a>.
     */
-  object DaemonsetMisscheduledNodes extends MetricSpec.Unsealed {
+  object DaemonsetNodeMisscheduled extends MetricSpec.Unsealed {
 
-    val name: String = "k8s.daemonset.misscheduled_nodes"
+    val name: String = "k8s.daemonset.node.misscheduled"
     val description: String =
       "Number of nodes that are running the daemon pod, but are not supposed to run the daemon pod."
     val unit: String = "{node}"
@@ -818,12 +1097,135 @@ object K8sExperimentalMetrics {
     *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#daemonsetstatus-v1-apps">K8s
     *   DaemonSetStatus</a>.
     */
-  object DaemonsetReadyNodes extends MetricSpec.Unsealed {
+  object DaemonsetNodeReady extends MetricSpec.Unsealed {
 
-    val name: String = "k8s.daemonset.ready_nodes"
+    val name: String = "k8s.daemonset.node.ready"
     val description: String =
       "Number of nodes that should be running the daemon pod and have one or more of the daemon pod running and ready."
     val unit: String = "{node}"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
+      Meter[F]
+        .upDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableUpDownCounter] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** Deprecated, use `k8s.daemonset.node.ready` instead.
+    *
+    * @note
+    *   <p> This metric aligns with the `numberReady` field of the <a
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#daemonsetstatus-v1-apps">K8s
+    *   DaemonSetStatus</a>.
+    */
+  @deprecated("Replaced by `k8s.daemonset.node.ready`.", "")
+  object DaemonsetReadyNodes extends MetricSpec.Unsealed {
+
+    val name: String = "k8s.daemonset.ready_nodes"
+    val description: String = "Deprecated, use `k8s.daemonset.node.ready` instead."
+    val unit: String = "{node}"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
+      Meter[F]
+        .upDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableUpDownCounter] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** Deprecated, use `k8s.deployment.pod.available` instead.
+    *
+    * @note
+    *   <p> This metric aligns with the `availableReplicas` field of the <a
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#deploymentstatus-v1-apps">K8s
+    *   DeploymentStatus</a>.
+    */
+  @deprecated("Replaced by `k8s.deployment.pod.available`.", "")
+  object DeploymentAvailablePods extends MetricSpec.Unsealed {
+
+    val name: String = "k8s.deployment.available_pods"
+    val description: String = "Deprecated, use `k8s.deployment.pod.available` instead."
+    val unit: String = "{pod}"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
+      Meter[F]
+        .upDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableUpDownCounter] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** Deprecated, use `k8s.deployment.pod.desired` instead.
+    *
+    * @note
+    *   <p> This metric aligns with the `replicas` field of the <a
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#deploymentspec-v1-apps">K8s
+    *   DeploymentSpec</a>.
+    */
+  @deprecated("Replaced by `k8s.deployment.pod.desired`.", "")
+  object DeploymentDesiredPods extends MetricSpec.Unsealed {
+
+    val name: String = "k8s.deployment.desired_pods"
+    val description: String = "Deprecated, use `k8s.deployment.pod.desired` instead."
+    val unit: String = "{pod}"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = Nil
 
@@ -859,9 +1261,9 @@ object K8sExperimentalMetrics {
     *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#deploymentstatus-v1-apps">K8s
     *   DeploymentStatus</a>.
     */
-  object DeploymentAvailablePods extends MetricSpec.Unsealed {
+  object DeploymentPodAvailable extends MetricSpec.Unsealed {
 
-    val name: String = "k8s.deployment.available_pods"
+    val name: String = "k8s.deployment.pod.available"
     val description: String =
       "Total number of available replica pods (ready for at least minReadySeconds) targeted by this deployment."
     val unit: String = "{pod}"
@@ -900,9 +1302,9 @@ object K8sExperimentalMetrics {
     *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#deploymentspec-v1-apps">K8s
     *   DeploymentSpec</a>.
     */
-  object DeploymentDesiredPods extends MetricSpec.Unsealed {
+  object DeploymentPodDesired extends MetricSpec.Unsealed {
 
-    val name: String = "k8s.deployment.desired_pods"
+    val name: String = "k8s.deployment.pod.desired"
     val description: String = "Number of desired replica pods in this deployment."
     val unit: String = "{pod}"
     val stability: Stability = Stability.development
@@ -933,18 +1335,18 @@ object K8sExperimentalMetrics {
 
   }
 
-  /** Current number of replica pods managed by this horizontal pod autoscaler, as last seen by the autoscaler.
+  /** Deprecated, use `k8s.hpa.pod.current` instead.
     *
     * @note
     *   <p> This metric aligns with the `currentReplicas` field of the <a
     *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#horizontalpodautoscalerstatus-v2-autoscaling">K8s
     *   HorizontalPodAutoscalerStatus</a>
     */
+  @deprecated("Replaced by `k8s.hpa.pod.current`.", "")
   object HpaCurrentPods extends MetricSpec.Unsealed {
 
     val name: String = "k8s.hpa.current_pods"
-    val description: String =
-      "Current number of replica pods managed by this horizontal pod autoscaler, as last seen by the autoscaler."
+    val description: String = "Deprecated, use `k8s.hpa.pod.current` instead."
     val unit: String = "{pod}"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = Nil
@@ -974,18 +1376,18 @@ object K8sExperimentalMetrics {
 
   }
 
-  /** Desired number of replica pods managed by this horizontal pod autoscaler, as last calculated by the autoscaler.
+  /** Deprecated, use `k8s.hpa.pod.desired` instead.
     *
     * @note
     *   <p> This metric aligns with the `desiredReplicas` field of the <a
     *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#horizontalpodautoscalerstatus-v2-autoscaling">K8s
     *   HorizontalPodAutoscalerStatus</a>
     */
+  @deprecated("Replaced by `k8s.hpa.pod.desired`.", "")
   object HpaDesiredPods extends MetricSpec.Unsealed {
 
     val name: String = "k8s.hpa.desired_pods"
-    val description: String =
-      "Desired number of replica pods managed by this horizontal pod autoscaler, as last calculated by the autoscaler."
+    val description: String = "Deprecated, use `k8s.hpa.pod.desired` instead."
     val unit: String = "{pod}"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = Nil
@@ -1015,17 +1417,18 @@ object K8sExperimentalMetrics {
 
   }
 
-  /** The upper limit for the number of replica pods to which the autoscaler can scale up.
+  /** Deprecated, use `k8s.hpa.pod.max` instead.
     *
     * @note
     *   <p> This metric aligns with the `maxReplicas` field of the <a
     *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#horizontalpodautoscalerspec-v2-autoscaling">K8s
     *   HorizontalPodAutoscalerSpec</a>
     */
+  @deprecated("Replaced by `k8s.hpa.pod.max`.", "")
   object HpaMaxPods extends MetricSpec.Unsealed {
 
     val name: String = "k8s.hpa.max_pods"
-    val description: String = "The upper limit for the number of replica pods to which the autoscaler can scale up."
+    val description: String = "Deprecated, use `k8s.hpa.pod.max` instead."
     val unit: String = "{pod}"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = Nil
@@ -1085,7 +1488,7 @@ object K8sExperimentalMetrics {
             "redis",
           ),
           Requirement.conditionallyRequired("if and only if k8s.hpa.metric.type is ContainerResource."),
-          Stability.development
+          Stability.alpha
         )
 
       /** The type of metric source for the horizontal pod autoscaler.
@@ -1166,7 +1569,7 @@ object K8sExperimentalMetrics {
             "redis",
           ),
           Requirement.conditionallyRequired("if and only if k8s.hpa.metric.type is ContainerResource"),
-          Stability.development
+          Stability.alpha
         )
 
       /** The type of metric source for the horizontal pod autoscaler.
@@ -1247,7 +1650,7 @@ object K8sExperimentalMetrics {
             "redis",
           ),
           Requirement.conditionallyRequired("if and only if k8s.hpa.metric.type is ContainerResource"),
-          Stability.development
+          Stability.alpha
         )
 
       /** The type of metric source for the horizontal pod autoscaler.
@@ -1298,6 +1701,169 @@ object K8sExperimentalMetrics {
 
   }
 
+  /** Deprecated, use `k8s.hpa.pod.min` instead.
+    *
+    * @note
+    *   <p> This metric aligns with the `minReplicas` field of the <a
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#horizontalpodautoscalerspec-v2-autoscaling">K8s
+    *   HorizontalPodAutoscalerSpec</a>
+    */
+  @deprecated("Replaced by `k8s.hpa.pod.min`.", "")
+  object HpaMinPods extends MetricSpec.Unsealed {
+
+    val name: String = "k8s.hpa.min_pods"
+    val description: String = "Deprecated, use `k8s.hpa.pod.min` instead."
+    val unit: String = "{pod}"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
+      Meter[F]
+        .upDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableUpDownCounter] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** Current number of replica pods managed by this horizontal pod autoscaler, as last seen by the autoscaler.
+    *
+    * @note
+    *   <p> This metric aligns with the `currentReplicas` field of the <a
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#horizontalpodautoscalerstatus-v2-autoscaling">K8s
+    *   HorizontalPodAutoscalerStatus</a>
+    */
+  object HpaPodCurrent extends MetricSpec.Unsealed {
+
+    val name: String = "k8s.hpa.pod.current"
+    val description: String =
+      "Current number of replica pods managed by this horizontal pod autoscaler, as last seen by the autoscaler."
+    val unit: String = "{pod}"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
+      Meter[F]
+        .upDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableUpDownCounter] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** Desired number of replica pods managed by this horizontal pod autoscaler, as last calculated by the autoscaler.
+    *
+    * @note
+    *   <p> This metric aligns with the `desiredReplicas` field of the <a
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#horizontalpodautoscalerstatus-v2-autoscaling">K8s
+    *   HorizontalPodAutoscalerStatus</a>
+    */
+  object HpaPodDesired extends MetricSpec.Unsealed {
+
+    val name: String = "k8s.hpa.pod.desired"
+    val description: String =
+      "Desired number of replica pods managed by this horizontal pod autoscaler, as last calculated by the autoscaler."
+    val unit: String = "{pod}"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
+      Meter[F]
+        .upDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableUpDownCounter] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** The upper limit for the number of replica pods to which the autoscaler can scale up.
+    *
+    * @note
+    *   <p> This metric aligns with the `maxReplicas` field of the <a
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#horizontalpodautoscalerspec-v2-autoscaling">K8s
+    *   HorizontalPodAutoscalerSpec</a>
+    */
+  object HpaPodMax extends MetricSpec.Unsealed {
+
+    val name: String = "k8s.hpa.pod.max"
+    val description: String = "The upper limit for the number of replica pods to which the autoscaler can scale up."
+    val unit: String = "{pod}"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
+      Meter[F]
+        .upDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableUpDownCounter] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
   /** The lower limit for the number of replica pods to which the autoscaler can scale down.
     *
     * @note
@@ -1305,10 +1871,172 @@ object K8sExperimentalMetrics {
     *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#horizontalpodautoscalerspec-v2-autoscaling">K8s
     *   HorizontalPodAutoscalerSpec</a>
     */
-  object HpaMinPods extends MetricSpec.Unsealed {
+  object HpaPodMin extends MetricSpec.Unsealed {
 
-    val name: String = "k8s.hpa.min_pods"
+    val name: String = "k8s.hpa.pod.min"
     val description: String = "The lower limit for the number of replica pods to which the autoscaler can scale down."
+    val unit: String = "{pod}"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
+      Meter[F]
+        .upDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableUpDownCounter] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** Deprecated, use `k8s.job.pod.active` instead.
+    *
+    * @note
+    *   <p> This metric aligns with the `active` field of the <a
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#jobstatus-v1-batch">K8s
+    *   JobStatus</a>.
+    */
+  @deprecated("Replaced by `k8s.job.pod.active`.", "")
+  object JobActivePods extends MetricSpec.Unsealed {
+
+    val name: String = "k8s.job.active_pods"
+    val description: String = "Deprecated, use `k8s.job.pod.active` instead."
+    val unit: String = "{pod}"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
+      Meter[F]
+        .upDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableUpDownCounter] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** Deprecated, use `k8s.job.pod.desired_successful` instead.
+    *
+    * @note
+    *   <p> This metric aligns with the `completions` field of the <a
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#jobspec-v1-batch">K8s JobSpec</a>..
+    */
+  @deprecated("Replaced by `k8s.job.pod.desired_successful`.", "")
+  object JobDesiredSuccessfulPods extends MetricSpec.Unsealed {
+
+    val name: String = "k8s.job.desired_successful_pods"
+    val description: String = "Deprecated, use `k8s.job.pod.desired_successful` instead."
+    val unit: String = "{pod}"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
+      Meter[F]
+        .upDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableUpDownCounter] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** Deprecated, use `k8s.job.pod.failed` instead.
+    *
+    * @note
+    *   <p> This metric aligns with the `failed` field of the <a
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#jobstatus-v1-batch">K8s
+    *   JobStatus</a>.
+    */
+  @deprecated("Replaced by `k8s.job.pod.failed`.", "")
+  object JobFailedPods extends MetricSpec.Unsealed {
+
+    val name: String = "k8s.job.failed_pods"
+    val description: String = "Deprecated, use `k8s.job.pod.failed` instead."
+    val unit: String = "{pod}"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
+      Meter[F]
+        .upDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableUpDownCounter] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** Deprecated, use `k8s.job.pod.max_parallel` instead.
+    *
+    * @note
+    *   <p> This metric aligns with the `parallelism` field of the <a
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#jobspec-v1-batch">K8s JobSpec</a>.
+    */
+  @deprecated("Replaced by `k8s.job.pod.max_parallel`.", "")
+  object JobMaxParallelPods extends MetricSpec.Unsealed {
+
+    val name: String = "k8s.job.max_parallel_pods"
+    val description: String = "Deprecated, use `k8s.job.pod.max_parallel` instead."
     val unit: String = "{pod}"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = Nil
@@ -1345,9 +2073,9 @@ object K8sExperimentalMetrics {
     *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#jobstatus-v1-batch">K8s
     *   JobStatus</a>.
     */
-  object JobActivePods extends MetricSpec.Unsealed {
+  object JobPodActive extends MetricSpec.Unsealed {
 
-    val name: String = "k8s.job.active_pods"
+    val name: String = "k8s.job.pod.active"
     val description: String = "The number of pending and actively running pods for a job."
     val unit: String = "{pod}"
     val stability: Stability = Stability.development
@@ -1384,9 +2112,9 @@ object K8sExperimentalMetrics {
     *   <p> This metric aligns with the `completions` field of the <a
     *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#jobspec-v1-batch">K8s JobSpec</a>..
     */
-  object JobDesiredSuccessfulPods extends MetricSpec.Unsealed {
+  object JobPodDesiredSuccessful extends MetricSpec.Unsealed {
 
-    val name: String = "k8s.job.desired_successful_pods"
+    val name: String = "k8s.job.pod.desired_successful"
     val description: String = "The desired number of successfully finished pods the job should be run with."
     val unit: String = "{pod}"
     val stability: Stability = Stability.development
@@ -1424,9 +2152,9 @@ object K8sExperimentalMetrics {
     *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#jobstatus-v1-batch">K8s
     *   JobStatus</a>.
     */
-  object JobFailedPods extends MetricSpec.Unsealed {
+  object JobPodFailed extends MetricSpec.Unsealed {
 
-    val name: String = "k8s.job.failed_pods"
+    val name: String = "k8s.job.pod.failed"
     val description: String = "The number of pods which reached phase Failed for a job."
     val unit: String = "{pod}"
     val stability: Stability = Stability.development
@@ -1463,9 +2191,9 @@ object K8sExperimentalMetrics {
     *   <p> This metric aligns with the `parallelism` field of the <a
     *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#jobspec-v1-batch">K8s JobSpec</a>.
     */
-  object JobMaxParallelPods extends MetricSpec.Unsealed {
+  object JobPodMaxParallel extends MetricSpec.Unsealed {
 
-    val name: String = "k8s.job.max_parallel_pods"
+    val name: String = "k8s.job.pod.max_parallel"
     val description: String = "The max desired number of pods the job should run at any given time."
     val unit: String = "{pod}"
     val stability: Stability = Stability.development
@@ -1503,10 +2231,51 @@ object K8sExperimentalMetrics {
     *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#jobstatus-v1-batch">K8s
     *   JobStatus</a>.
     */
+  object JobPodSuccessful extends MetricSpec.Unsealed {
+
+    val name: String = "k8s.job.pod.successful"
+    val description: String = "The number of pods which reached phase Succeeded for a job."
+    val unit: String = "{pod}"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
+      Meter[F]
+        .upDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableUpDownCounter] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** Deprecated, use `k8s.job.pod.successful` instead.
+    *
+    * @note
+    *   <p> This metric aligns with the `succeeded` field of the <a
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#jobstatus-v1-batch">K8s
+    *   JobStatus</a>.
+    */
+  @deprecated("Replaced by `k8s.job.pod.successful`.", "")
   object JobSuccessfulPods extends MetricSpec.Unsealed {
 
     val name: String = "k8s.job.successful_pods"
-    val description: String = "The number of pods which reached phase Succeeded for a job."
+    val description: String = "Deprecated, use `k8s.job.pod.successful` instead."
     val unit: String = "{pod}"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = Nil
@@ -1597,12 +2366,13 @@ object K8sExperimentalMetrics {
 
   }
 
-  /** Amount of cpu allocatable on the node.
+  /** Deprecated, use `k8s.node.cpu.allocatable` instead.
     */
+  @deprecated("Replaced by `k8s.node.cpu.allocatable`.", "")
   object NodeAllocatableCpu extends MetricSpec.Unsealed {
 
     val name: String = "k8s.node.allocatable.cpu"
-    val description: String = "Amount of cpu allocatable on the node."
+    val description: String = "Deprecated, use `k8s.node.cpu.allocatable` instead."
     val unit: String = "{cpu}"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = Nil
@@ -1632,12 +2402,13 @@ object K8sExperimentalMetrics {
 
   }
 
-  /** Amount of ephemeral-storage allocatable on the node.
+  /** Deprecated, use `k8s.node.ephemeral_storage.allocatable` instead.
     */
+  @deprecated("Replaced by `k8s.node.ephemeral_storage.allocatable`.", "")
   object NodeAllocatableEphemeralStorage extends MetricSpec.Unsealed {
 
     val name: String = "k8s.node.allocatable.ephemeral_storage"
-    val description: String = "Amount of ephemeral-storage allocatable on the node."
+    val description: String = "Deprecated, use `k8s.node.ephemeral_storage.allocatable` instead."
     val unit: String = "By"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = Nil
@@ -1667,12 +2438,13 @@ object K8sExperimentalMetrics {
 
   }
 
-  /** Amount of memory allocatable on the node.
+  /** Deprecated, use `k8s.node.memory.allocatable` instead.
     */
+  @deprecated("Replaced by `k8s.node.memory.allocatable`.", "")
   object NodeAllocatableMemory extends MetricSpec.Unsealed {
 
     val name: String = "k8s.node.allocatable.memory"
-    val description: String = "Amount of memory allocatable on the node."
+    val description: String = "Deprecated, use `k8s.node.memory.allocatable` instead."
     val unit: String = "By"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = Nil
@@ -1702,12 +2474,13 @@ object K8sExperimentalMetrics {
 
   }
 
-  /** Amount of pods allocatable on the node.
+  /** Deprecated, use `k8s.node.pod.allocatable` instead.
     */
+  @deprecated("Replaced by `k8s.node.pod.allocatable`.", "")
   object NodeAllocatablePods extends MetricSpec.Unsealed {
 
     val name: String = "k8s.node.allocatable.pods"
-    val description: String = "Amount of pods allocatable on the node."
+    val description: String = "Deprecated, use `k8s.node.pod.allocatable` instead."
     val unit: String = "{pod}"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = Nil
@@ -1825,6 +2598,41 @@ object K8sExperimentalMetrics {
 
   }
 
+  /** Amount of cpu allocatable on the node.
+    */
+  object NodeCpuAllocatable extends MetricSpec.Unsealed {
+
+    val name: String = "k8s.node.cpu.allocatable"
+    val description: String = "Amount of cpu allocatable on the node."
+    val unit: String = "{cpu}"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
+      Meter[F]
+        .upDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableUpDownCounter] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
   /** Total CPU time consumed.
     *
     * @note
@@ -1895,6 +2703,41 @@ object K8sExperimentalMetrics {
     ): Resource[F, ObservableGauge] =
       Meter[F]
         .observableGauge[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** Amount of ephemeral-storage allocatable on the node.
+    */
+  object NodeEphemeralStorageAllocatable extends MetricSpec.Unsealed {
+
+    val name: String = "k8s.node.ephemeral_storage.allocatable"
+    val description: String = "Amount of ephemeral-storage allocatable on the node."
+    val unit: String = "By"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
+      Meter[F]
+        .upDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableUpDownCounter] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
         .withDescription(description)
         .withUnit(unit)
         .createWithCallback(callback)
@@ -2025,6 +2868,191 @@ object K8sExperimentalMetrics {
 
   }
 
+  /** Amount of memory allocatable on the node.
+    */
+  object NodeMemoryAllocatable extends MetricSpec.Unsealed {
+
+    val name: String = "k8s.node.memory.allocatable"
+    val description: String = "Amount of memory allocatable on the node."
+    val unit: String = "By"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
+      Meter[F]
+        .upDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableUpDownCounter] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** Node memory available.
+    *
+    * @note
+    *   <p> Available memory for use. This is defined as the memory limit - workingSetBytes. If memory limit is
+    *   undefined, the available bytes is omitted. This metric is derived from the <a
+    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#MemoryStats">MemoryStats.AvailableBytes</a>
+    *   field of the <a
+    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#NodeStats">NodeStats.Memory</a> of the
+    *   Kubelet's stats API.
+    */
+  object NodeMemoryAvailable extends MetricSpec.Unsealed {
+
+    val name: String = "k8s.node.memory.available"
+    val description: String = "Node memory available."
+    val unit: String = "By"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
+      Meter[F]
+        .upDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableUpDownCounter] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** Node memory paging faults.
+    *
+    * @note
+    *   <p> Cumulative number of major/minor page faults. This metric is derived from the <a
+    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#MemoryStats">MemoryStats.PageFaults</a>
+    *   and <a
+    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#MemoryStats">MemoryStats.MajorPageFaults</a>
+    *   fields of the <a
+    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#NodeStats">NodeStats.Memory</a> of the
+    *   Kubelet's stats API.
+    */
+  object NodeMemoryPagingFaults extends MetricSpec.Unsealed {
+
+    val name: String = "k8s.node.memory.paging.faults"
+    val description: String = "Node memory paging faults."
+    val unit: String = "{fault}"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
+
+    object AttributeSpecs {
+
+      /** The paging fault type
+        */
+      val systemPagingFaultType: AttributeSpec[String] =
+        AttributeSpec(
+          SystemExperimentalAttributes.SystemPagingFaultType,
+          List(
+            "minor",
+          ),
+          Requirement.recommended,
+          Stability.development
+        )
+
+      val specs: List[AttributeSpec[_]] =
+        List(
+          systemPagingFaultType,
+        )
+    }
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[Counter[F, A]] =
+      Meter[F]
+        .counter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableCounter] =
+      Meter[F]
+        .observableCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** Node memory RSS.
+    *
+    * @note
+    *   <p> The amount of anonymous and swap cache memory (includes transparent hugepages). This metric is derived from
+    *   the <a
+    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#MemoryStats">MemoryStats.RSSBytes</a>
+    *   field of the <a
+    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#NodeStats">NodeStats.Memory</a> of the
+    *   Kubelet's stats API.
+    */
+  object NodeMemoryRss extends MetricSpec.Unsealed {
+
+    val name: String = "k8s.node.memory.rss"
+    val description: String = "Node memory RSS."
+    val unit: String = "By"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
+      Meter[F]
+        .upDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableUpDownCounter] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
   /** Memory usage of the Node.
     *
     * @note
@@ -2057,6 +3085,49 @@ object K8sExperimentalMetrics {
     ): Resource[F, ObservableGauge] =
       Meter[F]
         .observableGauge[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** Node memory working set.
+    *
+    * @note
+    *   <p> The amount of working set memory. This includes recently accessed memory, dirty memory, and kernel memory.
+    *   WorkingSetBytes is <= UsageBytes. This metric is derived from the <a
+    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#MemoryStats">MemoryStats.WorkingSetBytes</a>
+    *   field of the <a
+    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#NodeStats">NodeStats.Memory</a> of the
+    *   Kubelet's stats API.
+    */
+  object NodeMemoryWorkingSet extends MetricSpec.Unsealed {
+
+    val name: String = "k8s.node.memory.working_set"
+    val description: String = "Node memory working set."
+    val unit: String = "By"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
+      Meter[F]
+        .upDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableUpDownCounter] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
         .withDescription(description)
         .withUnit(unit)
         .createWithCallback(callback)
@@ -2195,6 +3266,41 @@ object K8sExperimentalMetrics {
     ): Resource[F, ObservableCounter] =
       Meter[F]
         .observableCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** Amount of pods allocatable on the node.
+    */
+  object NodePodAllocatable extends MetricSpec.Unsealed {
+
+    val name: String = "k8s.node.pod.allocatable"
+    val description: String = "Amount of pods allocatable on the node."
+    val unit: String = "{pod}"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
+      Meter[F]
+        .upDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableUpDownCounter] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
         .withDescription(description)
         .withUnit(unit)
         .createWithCallback(callback)
@@ -2443,6 +3549,156 @@ object K8sExperimentalMetrics {
 
   }
 
+  /** Pod memory available.
+    *
+    * @note
+    *   <p> Available memory for use. This is defined as the memory limit - workingSetBytes. If memory limit is
+    *   undefined, the available bytes is omitted. This metric is derived from the <a
+    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#MemoryStats">MemoryStats.AvailableBytes</a>
+    *   field of the <a
+    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#PodStats">PodStats.Memory</a> of the
+    *   Kubelet's stats API.
+    */
+  object PodMemoryAvailable extends MetricSpec.Unsealed {
+
+    val name: String = "k8s.pod.memory.available"
+    val description: String = "Pod memory available."
+    val unit: String = "By"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
+      Meter[F]
+        .upDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableUpDownCounter] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** Pod memory paging faults.
+    *
+    * @note
+    *   <p> Cumulative number of major/minor page faults. This metric is derived from the <a
+    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#MemoryStats">MemoryStats.PageFaults</a>
+    *   and <a
+    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#MemoryStats">MemoryStats.MajorPageFaults</a>
+    *   field of the <a
+    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#PodStats">PodStats.Memory</a> of the
+    *   Kubelet's stats API.
+    */
+  object PodMemoryPagingFaults extends MetricSpec.Unsealed {
+
+    val name: String = "k8s.pod.memory.paging.faults"
+    val description: String = "Pod memory paging faults."
+    val unit: String = "{fault}"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
+
+    object AttributeSpecs {
+
+      /** The paging fault type
+        */
+      val systemPagingFaultType: AttributeSpec[String] =
+        AttributeSpec(
+          SystemExperimentalAttributes.SystemPagingFaultType,
+          List(
+            "minor",
+          ),
+          Requirement.recommended,
+          Stability.development
+        )
+
+      val specs: List[AttributeSpec[_]] =
+        List(
+          systemPagingFaultType,
+        )
+    }
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[Counter[F, A]] =
+      Meter[F]
+        .counter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableCounter] =
+      Meter[F]
+        .observableCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** Pod memory RSS.
+    *
+    * @note
+    *   <p> The amount of anonymous and swap cache memory (includes transparent hugepages). This metric is derived from
+    *   the <a
+    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#MemoryStats">MemoryStats.RSSBytes</a>
+    *   field of the <a
+    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#PodStats">PodStats.Memory</a> of the
+    *   Kubelet's stats API.
+    */
+  object PodMemoryRss extends MetricSpec.Unsealed {
+
+    val name: String = "k8s.pod.memory.rss"
+    val description: String = "Pod memory RSS."
+    val unit: String = "By"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
+      Meter[F]
+        .upDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableUpDownCounter] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
   /** Memory usage of the Pod.
     *
     * @note
@@ -2475,6 +3731,49 @@ object K8sExperimentalMetrics {
     ): Resource[F, ObservableGauge] =
       Meter[F]
         .observableGauge[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** Pod memory working set.
+    *
+    * @note
+    *   <p> The amount of working set memory. This includes recently accessed memory, dirty memory, and kernel memory.
+    *   WorkingSetBytes is <= UsageBytes. This metric is derived from the <a
+    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#MemoryStats">MemoryStats.WorkingSetBytes</a>
+    *   field of the <a
+    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#PodStats">PodStats.Memory</a> of the
+    *   Kubelet's stats API.
+    */
+  object PodMemoryWorkingSet extends MetricSpec.Unsealed {
+
+    val name: String = "k8s.pod.memory.working_set"
+    val description: String = "Pod memory working set."
+    val unit: String = "By"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
+      Meter[F]
+        .upDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableUpDownCounter] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
         .withDescription(description)
         .withUnit(unit)
         .createWithCallback(callback)
@@ -2613,6 +3912,130 @@ object K8sExperimentalMetrics {
     ): Resource[F, ObservableCounter] =
       Meter[F]
         .observableCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** Describes number of K8s Pods that are currently in a given phase.
+    *
+    * @note
+    *   <p> All possible pod phases will be reported at each time interval to avoid missing metrics. Only the value
+    *   corresponding to the current phase will be non-zero.
+    */
+  object PodStatusPhase extends MetricSpec.Unsealed {
+
+    val name: String = "k8s.pod.status.phase"
+    val description: String = "Describes number of K8s Pods that are currently in a given phase."
+    val unit: String = "{pod}"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
+
+    object AttributeSpecs {
+
+      /** The phase for the pod. Corresponds to the `phase` field of the: <a
+        * href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.33/#podstatus-v1-core">K8s
+        * PodStatus</a>
+        */
+      val k8sPodStatusPhase: AttributeSpec[String] =
+        AttributeSpec(
+          K8sExperimentalAttributes.K8sPodStatusPhase,
+          List(
+            "Pending",
+            "Running",
+          ),
+          Requirement.required,
+          Stability.development
+        )
+
+      val specs: List[AttributeSpec[_]] =
+        List(
+          k8sPodStatusPhase,
+        )
+    }
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
+      Meter[F]
+        .upDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableUpDownCounter] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** Describes the number of K8s Pods that are currently in a state for a given reason.
+    *
+    * @note
+    *   <p> All possible pod status reasons will be reported at each time interval to avoid missing metrics. Only the
+    *   value corresponding to the current reason will be non-zero.
+    */
+  object PodStatusReason extends MetricSpec.Unsealed {
+
+    val name: String = "k8s.pod.status.reason"
+    val description: String = "Describes the number of K8s Pods that are currently in a state for a given reason."
+    val unit: String = "{pod}"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
+
+    object AttributeSpecs {
+
+      /** The reason for the pod state. Corresponds to the `reason` field of the: <a
+        * href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.33/#podstatus-v1-core">K8s
+        * PodStatus</a>
+        */
+      val k8sPodStatusReason: AttributeSpec[String] =
+        AttributeSpec(
+          K8sExperimentalAttributes.K8sPodStatusReason,
+          List(
+            "Evicted",
+            "NodeAffinity",
+          ),
+          Requirement.required,
+          Stability.development
+        )
+
+      val specs: List[AttributeSpec[_]] =
+        List(
+          k8sPodStatusReason,
+        )
+    }
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
+      Meter[F]
+        .upDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableUpDownCounter] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
         .withDescription(description)
         .withUnit(unit)
         .createWithCallback(callback)
@@ -3110,6 +4533,88 @@ object K8sExperimentalMetrics {
 
   }
 
+  /** Deprecated, use `k8s.replicaset.pod.available` instead.
+    *
+    * @note
+    *   <p> This metric aligns with the `availableReplicas` field of the <a
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#replicasetstatus-v1-apps">K8s
+    *   ReplicaSetStatus</a>.
+    */
+  @deprecated("Replaced by `k8s.replicaset.pod.available`.", "")
+  object ReplicasetAvailablePods extends MetricSpec.Unsealed {
+
+    val name: String = "k8s.replicaset.available_pods"
+    val description: String = "Deprecated, use `k8s.replicaset.pod.available` instead."
+    val unit: String = "{pod}"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
+      Meter[F]
+        .upDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableUpDownCounter] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** Deprecated, use `k8s.replicaset.pod.desired` instead.
+    *
+    * @note
+    *   <p> This metric aligns with the `replicas` field of the <a
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#replicasetspec-v1-apps">K8s
+    *   ReplicaSetSpec</a>.
+    */
+  @deprecated("Replaced by `k8s.replicaset.pod.desired`.", "")
+  object ReplicasetDesiredPods extends MetricSpec.Unsealed {
+
+    val name: String = "k8s.replicaset.desired_pods"
+    val description: String = "Deprecated, use `k8s.replicaset.pod.desired` instead."
+    val unit: String = "{pod}"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
+      Meter[F]
+        .upDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableUpDownCounter] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
   /** Total number of available replica pods (ready for at least minReadySeconds) targeted by this replicaset.
     *
     * @note
@@ -3117,9 +4622,9 @@ object K8sExperimentalMetrics {
     *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#replicasetstatus-v1-apps">K8s
     *   ReplicaSetStatus</a>.
     */
-  object ReplicasetAvailablePods extends MetricSpec.Unsealed {
+  object ReplicasetPodAvailable extends MetricSpec.Unsealed {
 
-    val name: String = "k8s.replicaset.available_pods"
+    val name: String = "k8s.replicaset.pod.available"
     val description: String =
       "Total number of available replica pods (ready for at least minReadySeconds) targeted by this replicaset."
     val unit: String = "{pod}"
@@ -3158,10 +4663,82 @@ object K8sExperimentalMetrics {
     *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#replicasetspec-v1-apps">K8s
     *   ReplicaSetSpec</a>.
     */
-  object ReplicasetDesiredPods extends MetricSpec.Unsealed {
+  object ReplicasetPodDesired extends MetricSpec.Unsealed {
 
-    val name: String = "k8s.replicaset.desired_pods"
+    val name: String = "k8s.replicaset.pod.desired"
     val description: String = "Number of desired replica pods in this replicaset."
+    val unit: String = "{pod}"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
+      Meter[F]
+        .upDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableUpDownCounter] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** Deprecated, use `k8s.replicationcontroller.pod.available` instead.
+    */
+  @deprecated("Replaced by `k8s.replicationcontroller.pod.available`.", "")
+  object ReplicationcontrollerAvailablePods extends MetricSpec.Unsealed {
+
+    val name: String = "k8s.replicationcontroller.available_pods"
+    val description: String = "Deprecated, use `k8s.replicationcontroller.pod.available` instead."
+    val unit: String = "{pod}"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
+      Meter[F]
+        .upDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableUpDownCounter] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** Deprecated, use `k8s.replicationcontroller.pod.desired` instead.
+    */
+  @deprecated("Replaced by `k8s.replicationcontroller.pod.desired`.", "")
+  object ReplicationcontrollerDesiredPods extends MetricSpec.Unsealed {
+
+    val name: String = "k8s.replicationcontroller.desired_pods"
+    val description: String = "Deprecated, use `k8s.replicationcontroller.pod.desired` instead."
     val unit: String = "{pod}"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = Nil
@@ -3199,9 +4776,9 @@ object K8sExperimentalMetrics {
     *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#replicationcontrollerstatus-v1-core">K8s
     *   ReplicationControllerStatus</a>
     */
-  object ReplicationcontrollerAvailablePods extends MetricSpec.Unsealed {
+  object ReplicationcontrollerPodAvailable extends MetricSpec.Unsealed {
 
-    val name: String = "k8s.replicationcontroller.available_pods"
+    val name: String = "k8s.replicationcontroller.pod.available"
     val description: String =
       "Total number of available replica pods (ready for at least minReadySeconds) targeted by this replication controller."
     val unit: String = "{pod}"
@@ -3240,9 +4817,9 @@ object K8sExperimentalMetrics {
     *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#replicationcontrollerspec-v1-core">K8s
     *   ReplicationControllerSpec</a>
     */
-  object ReplicationcontrollerDesiredPods extends MetricSpec.Unsealed {
+  object ReplicationcontrollerPodDesired extends MetricSpec.Unsealed {
 
-    val name: String = "k8s.replicationcontroller.desired_pods"
+    val name: String = "k8s.replicationcontroller.pod.desired"
     val description: String = "Number of desired replica pods in this replication controller."
     val unit: String = "{pod}"
     val stability: Stability = Stability.development
@@ -3926,7 +5503,7 @@ object K8sExperimentalMetrics {
         *   <p> The value for this attribute can be either the full `count/<resource>[.<group>]` string (e.g.,
         *   count/deployments.apps, count/pods), or, for certain core Kubernetes resources, just the resource name
         *   (e.g., pods, services, configmaps). Both forms are supported by Kubernetes for object count quotas. See <a
-        *   href="https://kubernetes.io/docs/concepts/policy/resource-quotas/#object-count-quota">Kubernetes Resource
+        *   href="https://kubernetes.io/docs/concepts/policy/resource-quotas/#quota-on-object-count">Kubernetes Resource
         *   Quotas documentation</a> for more details.
         */
       val k8sResourcequotaResourceName: AttributeSpec[String] =
@@ -3995,7 +5572,7 @@ object K8sExperimentalMetrics {
         *   <p> The value for this attribute can be either the full `count/<resource>[.<group>]` string (e.g.,
         *   count/deployments.apps, count/pods), or, for certain core Kubernetes resources, just the resource name
         *   (e.g., pods, services, configmaps). Both forms are supported by Kubernetes for object count quotas. See <a
-        *   href="https://kubernetes.io/docs/concepts/policy/resource-quotas/#object-count-quota">Kubernetes Resource
+        *   href="https://kubernetes.io/docs/concepts/policy/resource-quotas/#quota-on-object-count">Kubernetes Resource
         *   Quotas documentation</a> for more details.
         */
       val k8sResourcequotaResourceName: AttributeSpec[String] =
@@ -4307,6 +5884,88 @@ object K8sExperimentalMetrics {
 
   }
 
+  /** Deprecated, use `k8s.statefulset.pod.current` instead.
+    *
+    * @note
+    *   <p> This metric aligns with the `currentReplicas` field of the <a
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#statefulsetstatus-v1-apps">K8s
+    *   StatefulSetStatus</a>.
+    */
+  @deprecated("Replaced by `k8s.statefulset.pod.current`.", "")
+  object StatefulsetCurrentPods extends MetricSpec.Unsealed {
+
+    val name: String = "k8s.statefulset.current_pods"
+    val description: String = "Deprecated, use `k8s.statefulset.pod.current` instead."
+    val unit: String = "{pod}"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
+      Meter[F]
+        .upDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableUpDownCounter] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** Deprecated, use `k8s.statefulset.pod.desired` instead.
+    *
+    * @note
+    *   <p> This metric aligns with the `replicas` field of the <a
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#statefulsetspec-v1-apps">K8s
+    *   StatefulSetSpec</a>.
+    */
+  @deprecated("Replaced by `k8s.statefulset.pod.desired`.", "")
+  object StatefulsetDesiredPods extends MetricSpec.Unsealed {
+
+    val name: String = "k8s.statefulset.desired_pods"
+    val description: String = "Deprecated, use `k8s.statefulset.pod.desired` instead."
+    val unit: String = "{pod}"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
+      Meter[F]
+        .upDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableUpDownCounter] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
   /** The number of replica pods created by the statefulset controller from the statefulset version indicated by
     * currentRevision.
     *
@@ -4315,9 +5974,9 @@ object K8sExperimentalMetrics {
     *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#statefulsetstatus-v1-apps">K8s
     *   StatefulSetStatus</a>.
     */
-  object StatefulsetCurrentPods extends MetricSpec.Unsealed {
+  object StatefulsetPodCurrent extends MetricSpec.Unsealed {
 
-    val name: String = "k8s.statefulset.current_pods"
+    val name: String = "k8s.statefulset.pod.current"
     val description: String =
       "The number of replica pods created by the statefulset controller from the statefulset version indicated by currentRevision."
     val unit: String = "{pod}"
@@ -4356,9 +6015,9 @@ object K8sExperimentalMetrics {
     *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#statefulsetspec-v1-apps">K8s
     *   StatefulSetSpec</a>.
     */
-  object StatefulsetDesiredPods extends MetricSpec.Unsealed {
+  object StatefulsetPodDesired extends MetricSpec.Unsealed {
 
-    val name: String = "k8s.statefulset.desired_pods"
+    val name: String = "k8s.statefulset.pod.desired"
     val description: String = "Number of desired replica pods in this statefulset."
     val unit: String = "{pod}"
     val stability: Stability = Stability.development
@@ -4396,9 +6055,9 @@ object K8sExperimentalMetrics {
     *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#statefulsetstatus-v1-apps">K8s
     *   StatefulSetStatus</a>.
     */
-  object StatefulsetReadyPods extends MetricSpec.Unsealed {
+  object StatefulsetPodReady extends MetricSpec.Unsealed {
 
-    val name: String = "k8s.statefulset.ready_pods"
+    val name: String = "k8s.statefulset.pod.ready"
     val description: String = "The number of replica pods created for this statefulset with a Ready Condition."
     val unit: String = "{pod}"
     val stability: Stability = Stability.development
@@ -4437,11 +6096,93 @@ object K8sExperimentalMetrics {
     *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#statefulsetstatus-v1-apps">K8s
     *   StatefulSetStatus</a>.
     */
+  object StatefulsetPodUpdated extends MetricSpec.Unsealed {
+
+    val name: String = "k8s.statefulset.pod.updated"
+    val description: String =
+      "Number of replica pods created by the statefulset controller from the statefulset version indicated by updateRevision."
+    val unit: String = "{pod}"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
+      Meter[F]
+        .upDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableUpDownCounter] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** Deprecated, use `k8s.statefulset.pod.ready` instead.
+    *
+    * @note
+    *   <p> This metric aligns with the `readyReplicas` field of the <a
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#statefulsetstatus-v1-apps">K8s
+    *   StatefulSetStatus</a>.
+    */
+  @deprecated("Replaced by `k8s.statefulset.pod.ready`.", "")
+  object StatefulsetReadyPods extends MetricSpec.Unsealed {
+
+    val name: String = "k8s.statefulset.ready_pods"
+    val description: String = "Deprecated, use `k8s.statefulset.pod.ready` instead."
+    val unit: String = "{pod}"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
+      Meter[F]
+        .upDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableUpDownCounter] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** Deprecated, use `k8s.statefulset.pod.updated` instead.
+    *
+    * @note
+    *   <p> This metric aligns with the `updatedReplicas` field of the <a
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#statefulsetstatus-v1-apps">K8s
+    *   StatefulSetStatus</a>.
+    */
+  @deprecated("Replaced by `k8s.statefulset.pod.updated`.", "")
   object StatefulsetUpdatedPods extends MetricSpec.Unsealed {
 
     val name: String = "k8s.statefulset.updated_pods"
-    val description: String =
-      "Number of replica pods created by the statefulset controller from the statefulset version indicated by updateRevision."
+    val description: String = "Deprecated, use `k8s.statefulset.pod.updated` instead."
     val unit: String = "{pod}"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = Nil

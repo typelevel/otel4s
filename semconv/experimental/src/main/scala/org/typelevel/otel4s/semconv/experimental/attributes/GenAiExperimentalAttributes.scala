@@ -61,6 +61,37 @@ object GenAiExperimentalAttributes {
   val GenAiDataSourceId: AttributeKey[String] =
     AttributeKey("gen_ai.data_source.id")
 
+  /** The number of dimensions the resulting output embeddings should have.
+    */
+  val GenAiEmbeddingsDimensionCount: AttributeKey[Long] =
+    AttributeKey("gen_ai.embeddings.dimension.count")
+
+  /** A free-form explanation for the assigned score provided by the evaluator.
+    */
+  val GenAiEvaluationExplanation: AttributeKey[String] =
+    AttributeKey("gen_ai.evaluation.explanation")
+
+  /** The name of the evaluation metric used for the GenAI response.
+    */
+  val GenAiEvaluationName: AttributeKey[String] =
+    AttributeKey("gen_ai.evaluation.name")
+
+  /** Human readable label for evaluation.
+    *
+    * @note
+    *   <p> This attribute provides a human-readable interpretation of the evaluation score produced by an evaluator.
+    *   For example, a score value of 1 could mean "relevant" in one evaluation system and "not relevant" in another,
+    *   depending on the scoring range and evaluator. The label SHOULD have low cardinality. Possible values depend on
+    *   the evaluation metric and evaluator used; implementations SHOULD document the possible values.
+    */
+  val GenAiEvaluationScoreLabel: AttributeKey[String] =
+    AttributeKey("gen_ai.evaluation.score.label")
+
+  /** The evaluation score returned by the evaluator.
+    */
+  val GenAiEvaluationScoreValue: AttributeKey[Double] =
+    AttributeKey("gen_ai.evaluation.score.value")
+
   /** Deprecated, use `gen_ai.output.type`.
     */
   @deprecated("Replaced by `gen_ai.output.type`.", "")
@@ -118,6 +149,11 @@ object GenAiExperimentalAttributes {
   @deprecated("Removed, no replacement at this time.", "")
   val GenAiPrompt: AttributeKey[String] =
     AttributeKey("gen_ai.prompt")
+
+  /** The name of the prompt that uniquely identifies it.
+    */
+  val GenAiPromptName: AttributeKey[String] =
+    AttributeKey("gen_ai.prompt.name")
 
   /** The Generative AI provider as identified by the client or server instrumentation.
     *

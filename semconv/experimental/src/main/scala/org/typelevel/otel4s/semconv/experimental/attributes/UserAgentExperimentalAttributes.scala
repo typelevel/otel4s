@@ -24,7 +24,7 @@ object UserAgentExperimentalAttributes {
   /** Name of the user-agent extracted from original. Usually refers to the browser's name.
     *
     * @note
-    *   <p> <a href="https://www.whatsmyua.info">Example</a> of extracting browser's name from original string. In the
+    *   <p> <a href="https://uaparser.dev/#demo">Example</a> of extracting browser's name from original string. In the
     *   case of using a user-agent for non-browser products, such as microservices with multiple names/versions inside
     *   the `user_agent.original`, the most significant name SHOULD be selected. In such a scenario it should align with
     *   `user_agent.version`
@@ -76,7 +76,7 @@ object UserAgentExperimentalAttributes {
   /** Version of the user-agent extracted from original. Usually refers to the browser's version
     *
     * @note
-    *   <p> <a href="https://www.whatsmyua.info">Example</a> of extracting browser's version from original string. In
+    *   <p> <a href="https://uaparser.dev/#demo">Example</a> of extracting browser's version from original string. In
     *   the case of using a user-agent for non-browser products, such as microservices with multiple names/versions
     *   inside the `user_agent.original`, the most significant version SHOULD be selected. In such a scenario it should
     *   align with `user_agent.name`

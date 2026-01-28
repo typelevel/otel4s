@@ -33,7 +33,11 @@ object ContainerExperimentalMetrics {
     FilesystemAvailable,
     FilesystemCapacity,
     FilesystemUsage,
+    MemoryAvailable,
+    MemoryPagingFaults,
+    MemoryRss,
     MemoryUsage,
+    MemoryWorkingSet,
     NetworkIo,
     Uptime,
   )
@@ -365,6 +369,164 @@ object ContainerExperimentalMetrics {
 
   }
 
+  /** Container memory available.
+    *
+    * @note
+    *   <p> Available memory for use. This is defined as the memory limit - workingSetBytes. If memory limit is
+    *   undefined, the available bytes is omitted. In general, this metric can be derived from <a
+    *   href="https://github.com/google/cadvisor/blob/v0.53.0/docs/storage/prometheus.md#prometheus-container-metrics">cadvisor</a>
+    *   and by subtracting the `container_memory_working_set_bytes` metric from the `container_spec_memory_limit_bytes`
+    *   metric. In K8s, this metric is derived from the <a
+    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#MemoryStats">MemoryStats.AvailableBytes</a>
+    *   field of the <a
+    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#PodStats">PodStats.Memory</a> of the
+    *   Kubelet's stats API.
+    */
+  object MemoryAvailable extends MetricSpec.Unsealed {
+
+    val name: String = "container.memory.available"
+    val description: String = "Container memory available."
+    val unit: String = "By"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
+      Meter[F]
+        .upDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableUpDownCounter] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** Container memory paging faults.
+    *
+    * @note
+    *   <p> In general, this metric can be derived from <a
+    *   href="https://github.com/google/cadvisor/blob/v0.53.0/docs/storage/prometheus.md#prometheus-container-metrics">cadvisor</a>
+    *   and specifically the `container_memory_failures_total{failure_type=pgfault, scope=container}` and
+    *   `container_memory_failures_total{failure_type=pgmajfault, scope=container}`metric. In K8s, this metric is
+    *   derived from the <a
+    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#MemoryStats">MemoryStats.PageFaults</a>
+    *   and <a
+    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#MemoryStats">MemoryStats.MajorPageFaults</a>
+    *   field of the <a
+    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#PodStats">PodStats.Memory</a> of the
+    *   Kubelet's stats API.
+    */
+  object MemoryPagingFaults extends MetricSpec.Unsealed {
+
+    val name: String = "container.memory.paging.faults"
+    val description: String = "Container memory paging faults."
+    val unit: String = "{fault}"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
+
+    object AttributeSpecs {
+
+      /** The paging fault type
+        */
+      val systemPagingFaultType: AttributeSpec[String] =
+        AttributeSpec(
+          SystemExperimentalAttributes.SystemPagingFaultType,
+          List(
+            "minor",
+          ),
+          Requirement.recommended,
+          Stability.development
+        )
+
+      val specs: List[AttributeSpec[_]] =
+        List(
+          systemPagingFaultType,
+        )
+    }
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[Counter[F, A]] =
+      Meter[F]
+        .counter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableCounter] =
+      Meter[F]
+        .observableCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** Container memory RSS.
+    *
+    * @note
+    *   <p> In general, this metric can be derived from <a
+    *   href="https://github.com/google/cadvisor/blob/v0.53.0/docs/storage/prometheus.md#prometheus-container-metrics">cadvisor</a>
+    *   and specifically the `container_memory_rss` metric. In K8s, this metric is derived from the <a
+    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#MemoryStats">MemoryStats.RSSBytes</a>
+    *   field of the <a
+    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#PodStats">PodStats.Memory</a> of the
+    *   Kubelet's stats API.
+    */
+  object MemoryRss extends MetricSpec.Unsealed {
+
+    val name: String = "container.memory.rss"
+    val description: String = "Container memory RSS."
+    val unit: String = "By"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
+      Meter[F]
+        .upDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableUpDownCounter] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
   /** Memory usage of the container.
     *
     * @note
@@ -397,6 +559,50 @@ object ContainerExperimentalMetrics {
     ): Resource[F, ObservableCounter] =
       Meter[F]
         .observableCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** Container memory working set.
+    *
+    * @note
+    *   <p> In general, this metric can be derived from <a
+    *   href="https://github.com/google/cadvisor/blob/v0.53.0/docs/storage/prometheus.md#prometheus-container-metrics">cadvisor</a>
+    *   and specifically the `container_memory_working_set_bytes` metric. In K8s, this metric is derived from the <a
+    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#MemoryStats">MemoryStats.WorkingSetBytes</a>
+    *   field of the <a
+    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#PodStats">PodStats.Memory</a> of the
+    *   Kubelet's stats API.
+    */
+  object MemoryWorkingSet extends MetricSpec.Unsealed {
+
+    val name: String = "container.memory.working_set"
+    val description: String = "Container memory working set."
+    val unit: String = "By"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
+      Meter[F]
+        .upDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableUpDownCounter] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
         .withDescription(description)
         .withUnit(unit)
         .createWithCallback(callback)

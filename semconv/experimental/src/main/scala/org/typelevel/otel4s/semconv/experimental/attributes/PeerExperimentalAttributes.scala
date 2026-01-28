@@ -23,7 +23,13 @@ object PeerExperimentalAttributes {
 
   /** The <a href="/docs/resource/README.md#service">`service.name`</a> of the remote service. SHOULD be equal to the
     * actual `service.name` resource attribute of the remote service if any.
+    *
+    * @note
+    *   <p> Examples of `peer.service` that users may specify: <ul> <li>A Redis cache of auth tokens as
+    *   `peer.service="AuthTokenCache"`. <li>A gRPC service `rpc.service="io.opentelemetry.AuthService"` may be hosted
+    *   in both a gateway, `peer.service="ExternalApiService"` and a backend, `peer.service="AuthService"`. </ul>
     */
+  @deprecated("Replaced by `service.peer.name`.", "")
   val PeerService: AttributeKey[String] =
     AttributeKey("peer.service")
 

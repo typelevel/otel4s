@@ -140,8 +140,8 @@ object FaasExperimentalAttributes {
     *   represented as a decimal string). <li><strong>Google Cloud Run (Services):</strong> The <a
     *   href="https://cloud.google.com/run/docs/managing/revisions">revision</a> (i.e., the function name plus the
     *   revision suffix). <li><strong>Google Cloud Functions:</strong> The value of the <a
-    *   href="https://cloud.google.com/functions/docs/env-var#runtime_environment_variables_set_automatically">`K_REVISION`
-    *   environment variable</a>. <li><strong>Azure Functions:</strong> Not applicable. Do not set this attribute. </ul>
+    *   href="https://cloud.google.com/run/docs/container-contract#services-env-vars">`K_REVISION` environment
+    *   variable</a>. <li><strong>Azure Functions:</strong> Not applicable. Do not set this attribute. </ul>
     */
   val FaasVersion: AttributeKey[String] =
     AttributeKey("faas.version")

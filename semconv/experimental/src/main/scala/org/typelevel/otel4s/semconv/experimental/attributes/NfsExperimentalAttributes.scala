@@ -16,25 +16,20 @@
 
 package org.typelevel.otel4s
 package semconv
-package attributes
+package experimental.attributes
 
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/attributes/SemanticAttributes.scala.j2
-object ServiceAttributes {
+object NfsExperimentalAttributes {
 
-  /** Logical name of the service.
-    *
-    * @note
-    *   <p> MUST be the same for all instances of horizontally scaled services. If the value was not specified, SDKs
-    *   MUST fallback to `unknown_service:` concatenated with <a href="process.md">`process.executable.name`</a>, e.g.
-    *   `unknown_service:bash`. If `process.executable.name` is not available, the value MUST be set to
-    *   `unknown_service`.
+  /** NFSv4+ operation name.
     */
-  val ServiceName: AttributeKey[String] =
-    AttributeKey("service.name")
+  val NfsOperationName: AttributeKey[String] =
+    AttributeKey("nfs.operation.name")
 
-  /** The version string of the service component. The format is not defined by these conventions.
+  /** Linux: one of "hit" (NFSD_STATS_RC_HITS), "miss" (NFSD_STATS_RC_MISSES), or "nocache" (NFSD_STATS_RC_NOCACHE --
+    * uncacheable)
     */
-  val ServiceVersion: AttributeKey[String] =
-    AttributeKey("service.version")
+  val NfsServerRepcacheStatus: AttributeKey[String] =
+    AttributeKey("nfs.server.repcache.status")
 
 }

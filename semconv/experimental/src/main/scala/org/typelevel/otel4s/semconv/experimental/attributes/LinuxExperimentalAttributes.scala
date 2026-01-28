@@ -23,12 +23,15 @@ object LinuxExperimentalAttributes {
 
   /** The Linux Slab memory state
     */
+  @deprecated("Replaced by `system.memory.linux.slab.state`.", "")
   val LinuxMemorySlabState: AttributeKey[String] =
     AttributeKey("linux.memory.slab.state")
 
   /** Values for [[LinuxMemorySlabState]].
     */
+  @deprecated("Replaced by `system.memory.linux.slab.state`.", "")
   abstract class LinuxMemorySlabStateValue(val value: String)
+  @annotation.nowarn("cat=deprecation")
   object LinuxMemorySlabStateValue {
     implicit val attributeFromLinuxMemorySlabStateValue: Attribute.From[LinuxMemorySlabStateValue, String] = _.value
 

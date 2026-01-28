@@ -142,7 +142,7 @@ object MessagingExperimentalAttributes {
 
   /** Deprecated, use `messaging.destination.partition.id` instead.
     */
-  @deprecated("Replaced by `messaging.destination.partition.id`.", "")
+  @deprecated("Record string representation of the partition id in `messaging.destination.partition.id` attribute.", "")
   val MessagingKafkaDestinationPartition: AttributeKey[Long] =
     AttributeKey("messaging.kafka.destination.partition")
 

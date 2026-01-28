@@ -80,6 +80,55 @@ object GcpExperimentalAttributes {
   val GcpApphubWorkloadId: AttributeKey[String] =
     AttributeKey("gcp.apphub.workload.id")
 
+  /** The container within GCP where the AppHub destination application is defined.
+    */
+  val GcpApphubDestinationApplicationContainer: AttributeKey[String] =
+    AttributeKey("gcp.apphub_destination.application.container")
+
+  /** The name of the destination application as configured in AppHub.
+    */
+  val GcpApphubDestinationApplicationId: AttributeKey[String] =
+    AttributeKey("gcp.apphub_destination.application.id")
+
+  /** The GCP zone or region where the destination application is defined.
+    */
+  val GcpApphubDestinationApplicationLocation: AttributeKey[String] =
+    AttributeKey("gcp.apphub_destination.application.location")
+
+  /** Criticality of a destination workload indicates its importance to the business as specified in <a
+    * href="https://cloud.google.com/app-hub/docs/reference/rest/v1/Attributes#type">AppHub type enum</a>
+    */
+  val GcpApphubDestinationServiceCriticalityType: AttributeKey[String] =
+    AttributeKey("gcp.apphub_destination.service.criticality_type")
+
+  /** Software lifecycle stage of a destination service as defined <a
+    * href="https://cloud.google.com/app-hub/docs/reference/rest/v1/Attributes#type_1">AppHub environment type</a>
+    */
+  val GcpApphubDestinationServiceEnvironmentType: AttributeKey[String] =
+    AttributeKey("gcp.apphub_destination.service.environment_type")
+
+  /** The name of the destination service as configured in AppHub.
+    */
+  val GcpApphubDestinationServiceId: AttributeKey[String] =
+    AttributeKey("gcp.apphub_destination.service.id")
+
+  /** Criticality of a destination workload indicates its importance to the business as specified in <a
+    * href="https://cloud.google.com/app-hub/docs/reference/rest/v1/Attributes#type">AppHub type enum</a>
+    */
+  val GcpApphubDestinationWorkloadCriticalityType: AttributeKey[String] =
+    AttributeKey("gcp.apphub_destination.workload.criticality_type")
+
+  /** Environment of a destination workload is the stage of a software lifecycle as provided in the <a
+    * href="https://cloud.google.com/app-hub/docs/reference/rest/v1/Attributes#type_1">AppHub environment type</a>
+    */
+  val GcpApphubDestinationWorkloadEnvironmentType: AttributeKey[String] =
+    AttributeKey("gcp.apphub_destination.workload.environment_type")
+
+  /** The name of the destination workload as configured in AppHub.
+    */
+  val GcpApphubDestinationWorkloadId: AttributeKey[String] =
+    AttributeKey("gcp.apphub_destination.workload.id")
+
   /** Identifies the Google Cloud service for which the official client library is intended.
     *
     * @note
@@ -213,6 +262,102 @@ object GcpExperimentalAttributes {
     /** Development environment.
       */
     case object Development extends GcpApphubWorkloadEnvironmentTypeValue("DEVELOPMENT")
+  }
+
+  /** Values for [[GcpApphubDestinationServiceCriticalityType]].
+    */
+  abstract class GcpApphubDestinationServiceCriticalityTypeValue(val value: String)
+  object GcpApphubDestinationServiceCriticalityTypeValue {
+    implicit val attributeFromGcpApphubDestinationServiceCriticalityTypeValue
+        : Attribute.From[GcpApphubDestinationServiceCriticalityTypeValue, String] = _.value
+
+    /** Mission critical service.
+      */
+    case object MissionCritical extends GcpApphubDestinationServiceCriticalityTypeValue("MISSION_CRITICAL")
+
+    /** High impact.
+      */
+    case object High extends GcpApphubDestinationServiceCriticalityTypeValue("HIGH")
+
+    /** Medium impact.
+      */
+    case object Medium extends GcpApphubDestinationServiceCriticalityTypeValue("MEDIUM")
+
+    /** Low impact.
+      */
+    case object Low extends GcpApphubDestinationServiceCriticalityTypeValue("LOW")
+  }
+
+  /** Values for [[GcpApphubDestinationServiceEnvironmentType]].
+    */
+  abstract class GcpApphubDestinationServiceEnvironmentTypeValue(val value: String)
+  object GcpApphubDestinationServiceEnvironmentTypeValue {
+    implicit val attributeFromGcpApphubDestinationServiceEnvironmentTypeValue
+        : Attribute.From[GcpApphubDestinationServiceEnvironmentTypeValue, String] = _.value
+
+    /** Production environment.
+      */
+    case object Production extends GcpApphubDestinationServiceEnvironmentTypeValue("PRODUCTION")
+
+    /** Staging environment.
+      */
+    case object Staging extends GcpApphubDestinationServiceEnvironmentTypeValue("STAGING")
+
+    /** Test environment.
+      */
+    case object Test extends GcpApphubDestinationServiceEnvironmentTypeValue("TEST")
+
+    /** Development environment.
+      */
+    case object Development extends GcpApphubDestinationServiceEnvironmentTypeValue("DEVELOPMENT")
+  }
+
+  /** Values for [[GcpApphubDestinationWorkloadCriticalityType]].
+    */
+  abstract class GcpApphubDestinationWorkloadCriticalityTypeValue(val value: String)
+  object GcpApphubDestinationWorkloadCriticalityTypeValue {
+    implicit val attributeFromGcpApphubDestinationWorkloadCriticalityTypeValue
+        : Attribute.From[GcpApphubDestinationWorkloadCriticalityTypeValue, String] = _.value
+
+    /** Mission critical service.
+      */
+    case object MissionCritical extends GcpApphubDestinationWorkloadCriticalityTypeValue("MISSION_CRITICAL")
+
+    /** High impact.
+      */
+    case object High extends GcpApphubDestinationWorkloadCriticalityTypeValue("HIGH")
+
+    /** Medium impact.
+      */
+    case object Medium extends GcpApphubDestinationWorkloadCriticalityTypeValue("MEDIUM")
+
+    /** Low impact.
+      */
+    case object Low extends GcpApphubDestinationWorkloadCriticalityTypeValue("LOW")
+  }
+
+  /** Values for [[GcpApphubDestinationWorkloadEnvironmentType]].
+    */
+  abstract class GcpApphubDestinationWorkloadEnvironmentTypeValue(val value: String)
+  object GcpApphubDestinationWorkloadEnvironmentTypeValue {
+    implicit val attributeFromGcpApphubDestinationWorkloadEnvironmentTypeValue
+        : Attribute.From[GcpApphubDestinationWorkloadEnvironmentTypeValue, String] = _.value
+
+    /** Production environment.
+      */
+    case object Production extends GcpApphubDestinationWorkloadEnvironmentTypeValue("PRODUCTION")
+
+    /** Staging environment.
+      */
+    case object Staging extends GcpApphubDestinationWorkloadEnvironmentTypeValue("STAGING")
+
+    /** Test environment.
+      */
+    case object Test extends GcpApphubDestinationWorkloadEnvironmentTypeValue("TEST")
+
+    /** Development environment.
+      */
+    case object Development extends GcpApphubDestinationWorkloadEnvironmentTypeValue("DEVELOPMENT")
   }
 
 }

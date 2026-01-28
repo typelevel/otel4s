@@ -31,8 +31,8 @@ object ErrorAttributes {
     *   instrumentation libraries and applications should be prepared for `error.type` to have high cardinality at query
     *   time when no additional filters are applied. <p> If the operation has completed successfully, instrumentations
     *   SHOULD NOT set `error.type`. <p> If a specific domain defines its own set of error identifiers (such as HTTP or
-    *   gRPC status codes), it's RECOMMENDED to: <ul> <li>Use a domain-specific attribute <li>Set `error.type` to
-    *   capture all errors, regardless of whether they are defined within the domain-specific set or not. </ul>
+    *   RPC status codes), it's RECOMMENDED to: <ul> <li>Use a domain-specific attribute <li>Set `error.type` to capture
+    *   all errors, regardless of whether they are defined within the domain-specific set or not. </ul>
     */
   val ErrorType: AttributeKey[String] =
     AttributeKey("error.type")

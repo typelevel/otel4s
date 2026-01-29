@@ -26,6 +26,7 @@ import org.typelevel.otel4s.semconv.experimental.attributes._
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/metrics/SemanticMetrics.scala.j2
 object ProcessExperimentalMetrics {
 
+  @annotation.nowarn("cat=deprecation")
   val specs: List[MetricSpec] = List(
     ContextSwitches,
     CpuTime,
@@ -37,7 +38,9 @@ object ProcessExperimentalMetrics {
     OpenFileDescriptorCount,
     PagingFaults,
     ThreadCount,
+    UnixFileDescriptorCount,
     Uptime,
+    WindowsHandleCount,
   )
 
   /** Number of times the process has been context switched.
@@ -396,12 +399,13 @@ object ProcessExperimentalMetrics {
 
   }
 
-  /** Number of file descriptors in use by the process.
+  /** Deprecated, use `process.unix.file_descriptor.count` instead.
     */
+  @deprecated("Replaced by `process.unix.file_descriptor.count`.", "")
   object OpenFileDescriptorCount extends MetricSpec.Unsealed {
 
     val name: String = "process.open_file_descriptor.count"
-    val description: String = "Number of file descriptors in use by the process."
+    val description: String = "Deprecated, use `process.unix.file_descriptor.count` instead."
     val unit: String = "{file_descriptor}"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = Nil
@@ -443,13 +447,13 @@ object ProcessExperimentalMetrics {
 
     object AttributeSpecs {
 
-      /** The type of page fault for this data point. Type `major` is for major/hard page faults, and `minor` is for
-        * minor/soft page faults.
+      /** The paging fault type
         */
-      val processPagingFaultType: AttributeSpec[String] =
+      val systemPagingFaultType: AttributeSpec[String] =
         AttributeSpec(
-          ProcessExperimentalAttributes.ProcessPagingFaultType,
+          SystemExperimentalAttributes.SystemPagingFaultType,
           List(
+            "minor",
           ),
           Requirement.recommended,
           Stability.development
@@ -457,7 +461,7 @@ object ProcessExperimentalMetrics {
 
       val specs: List[AttributeSpec[_]] =
         List(
-          processPagingFaultType,
+          systemPagingFaultType,
         )
     }
 
@@ -521,6 +525,41 @@ object ProcessExperimentalMetrics {
 
   }
 
+  /** Number of unix file descriptors in use by the process.
+    */
+  object UnixFileDescriptorCount extends MetricSpec.Unsealed {
+
+    val name: String = "process.unix.file_descriptor.count"
+    val description: String = "Number of unix file descriptors in use by the process."
+    val unit: String = "{file_descriptor}"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
+      Meter[F]
+        .upDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableUpDownCounter] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
   /** The time the process has been running.
     *
     * @note
@@ -555,6 +594,41 @@ object ProcessExperimentalMetrics {
     ): Resource[F, ObservableGauge] =
       Meter[F]
         .observableGauge[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** Number of handles held by the process.
+    */
+  object WindowsHandleCount extends MetricSpec.Unsealed {
+
+    val name: String = "process.windows.handle.count"
+    val description: String = "Number of handles held by the process."
+    val unit: String = "{handle}"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
+      Meter[F]
+        .upDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableUpDownCounter] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
         .withDescription(description)
         .withUnit(unit)
         .createWithCallback(callback)

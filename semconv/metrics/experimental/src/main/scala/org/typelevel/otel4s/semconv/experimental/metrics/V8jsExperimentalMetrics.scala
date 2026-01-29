@@ -26,11 +26,14 @@ import org.typelevel.otel4s.semconv.experimental.attributes._
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/metrics/SemanticMetrics.scala.j2
 object V8jsExperimentalMetrics {
 
+  @annotation.nowarn("cat=deprecation")
   val specs: List[MetricSpec] = List(
     GcDuration,
     HeapSpaceAvailableSize,
     HeapSpacePhysicalSize,
     MemoryHeapLimit,
+    MemoryHeapSpaceAvailableSize,
+    MemoryHeapSpacePhysicalSize,
     MemoryHeapUsed,
   )
 
@@ -78,16 +81,13 @@ object V8jsExperimentalMetrics {
 
   }
 
-  /** Heap space available size.
-    *
-    * @note
-    *   <p> Value can be retrieved from value `space_available_size` of <a
-    *   href="https://nodejs.org/api/v8.html#v8getheapspacestatistics">`v8.getHeapSpaceStatistics()`</a>
+  /** Deprecated, use `v8js.memory.heap.space.available_size` instead.
     */
+  @deprecated("Replaced by `v8js.memory.heap.space.available_size`.", "")
   object HeapSpaceAvailableSize extends MetricSpec.Unsealed {
 
     val name: String = "v8js.heap.space.available_size"
-    val description: String = "Heap space available size."
+    val description: String = "Deprecated, use `v8js.memory.heap.space.available_size` instead."
     val unit: String = "By"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
@@ -140,16 +140,13 @@ object V8jsExperimentalMetrics {
 
   }
 
-  /** Committed size of a heap space.
-    *
-    * @note
-    *   <p> Value can be retrieved from value `physical_space_size` of <a
-    *   href="https://nodejs.org/api/v8.html#v8getheapspacestatistics">`v8.getHeapSpaceStatistics()`</a>
+  /** Deprecated, use `v8js.memory.heap.space.physical_size` instead.
     */
+  @deprecated("Replaced by `v8js.memory.heap.space.physical_size`.", "")
   object HeapSpacePhysicalSize extends MetricSpec.Unsealed {
 
     val name: String = "v8js.heap.space.physical_size"
-    val description: String = "Committed size of a heap space."
+    val description: String = "Deprecated, use `v8js.memory.heap.space.physical_size` instead."
     val unit: String = "By"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
@@ -212,6 +209,130 @@ object V8jsExperimentalMetrics {
 
     val name: String = "v8js.memory.heap.limit"
     val description: String = "Total heap memory size pre-allocated."
+    val unit: String = "By"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
+
+    object AttributeSpecs {
+
+      /** The name of the space type of heap memory.
+        *
+        * @note
+        *   <p> Value can be retrieved from value `space_name` of <a
+        *   href="https://nodejs.org/api/v8.html#v8getheapspacestatistics">`v8.getHeapSpaceStatistics()`</a>
+        */
+      val v8jsHeapSpaceName: AttributeSpec[String] =
+        AttributeSpec(
+          V8jsExperimentalAttributes.V8jsHeapSpaceName,
+          List(
+          ),
+          Requirement.required,
+          Stability.development
+        )
+
+      val specs: List[AttributeSpec[_]] =
+        List(
+          v8jsHeapSpaceName,
+        )
+    }
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
+      Meter[F]
+        .upDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableUpDownCounter] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** Heap space available size.
+    *
+    * @note
+    *   <p> Value can be retrieved from value `space_available_size` of <a
+    *   href="https://nodejs.org/api/v8.html#v8getheapspacestatistics">`v8.getHeapSpaceStatistics()`</a>
+    */
+  object MemoryHeapSpaceAvailableSize extends MetricSpec.Unsealed {
+
+    val name: String = "v8js.memory.heap.space.available_size"
+    val description: String = "Heap space available size."
+    val unit: String = "By"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
+
+    object AttributeSpecs {
+
+      /** The name of the space type of heap memory.
+        *
+        * @note
+        *   <p> Value can be retrieved from value `space_name` of <a
+        *   href="https://nodejs.org/api/v8.html#v8getheapspacestatistics">`v8.getHeapSpaceStatistics()`</a>
+        */
+      val v8jsHeapSpaceName: AttributeSpec[String] =
+        AttributeSpec(
+          V8jsExperimentalAttributes.V8jsHeapSpaceName,
+          List(
+          ),
+          Requirement.required,
+          Stability.development
+        )
+
+      val specs: List[AttributeSpec[_]] =
+        List(
+          v8jsHeapSpaceName,
+        )
+    }
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
+      Meter[F]
+        .upDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableUpDownCounter] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** Committed size of a heap space.
+    *
+    * @note
+    *   <p> Value can be retrieved from value `physical_space_size` of <a
+    *   href="https://nodejs.org/api/v8.html#v8getheapspacestatistics">`v8.getHeapSpaceStatistics()`</a>
+    */
+  object MemoryHeapSpacePhysicalSize extends MetricSpec.Unsealed {
+
+    val name: String = "v8js.memory.heap.space.physical_size"
+    val description: String = "Committed size of a heap space."
     val unit: String = "By"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs

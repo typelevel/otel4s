@@ -23,6 +23,7 @@ object SystemExperimentalAttributes {
 
   /** Deprecated, use `cpu.logical_number` instead.
     */
+  @deprecated("Replaced by `cpu.logical_number`.", "")
   val SystemCpuLogicalNumber: AttributeKey[Long] =
     AttributeKey("system.cpu.logical_number")
 
@@ -57,6 +58,11 @@ object SystemExperimentalAttributes {
   val SystemFilesystemType: AttributeKey[String] =
     AttributeKey("system.filesystem.type")
 
+  /** The Linux Slab memory state
+    */
+  val SystemMemoryLinuxSlabState: AttributeKey[String] =
+    AttributeKey("system.memory.linux.slab.state")
+
   /** The memory state
     */
   val SystemMemoryState: AttributeKey[String] =
@@ -73,25 +79,31 @@ object SystemExperimentalAttributes {
   val SystemPagingDirection: AttributeKey[String] =
     AttributeKey("system.paging.direction")
 
+  /** The paging fault type
+    */
+  val SystemPagingFaultType: AttributeKey[String] =
+    AttributeKey("system.paging.fault.type")
+
   /** The memory paging state
     */
   val SystemPagingState: AttributeKey[String] =
     AttributeKey("system.paging.state")
 
-  /** The memory paging type
+  /** Deprecated, use `system.paging.fault.type` instead.
     */
+  @deprecated("Replaced by `system.paging.fault.type`.", "")
   val SystemPagingType: AttributeKey[String] =
     AttributeKey("system.paging.type")
 
-  /** The process state, e.g., <a href="https://man7.org/linux/man-pages/man1/ps.1.html#PROCESS_STATE_CODES">Linux
-    * Process State Codes</a>
+  /** Deprecated, use `process.state` instead.
     */
+  @deprecated("Replaced by `process.state`.", "")
   val SystemProcessStatus: AttributeKey[String] =
     AttributeKey("system.process.status")
 
-  /** Deprecated, use `system.process.status` instead.
+  /** Deprecated, use `process.state` instead.
     */
-  @deprecated("Replaced by `system.process.status`.", "")
+  @deprecated("Replaced by `process.state`.", "")
   val SystemProcessesStatus: AttributeKey[String] =
     AttributeKey("system.processes.status")
 
@@ -180,6 +192,22 @@ object SystemExperimentalAttributes {
     /** ext4.
       */
     case object Ext4 extends SystemFilesystemTypeValue("ext4")
+  }
+
+  /** Values for [[SystemMemoryLinuxSlabState]].
+    */
+  abstract class SystemMemoryLinuxSlabStateValue(val value: String)
+  object SystemMemoryLinuxSlabStateValue {
+    implicit val attributeFromSystemMemoryLinuxSlabStateValue: Attribute.From[SystemMemoryLinuxSlabStateValue, String] =
+      _.value
+
+    /** reclaimable.
+      */
+    case object Reclaimable extends SystemMemoryLinuxSlabStateValue("reclaimable")
+
+    /** unreclaimable.
+      */
+    case object Unreclaimable extends SystemMemoryLinuxSlabStateValue("unreclaimable")
   }
 
   /** Values for [[SystemMemoryState]].
@@ -281,6 +309,21 @@ object SystemExperimentalAttributes {
     case object Out extends SystemPagingDirectionValue("out")
   }
 
+  /** Values for [[SystemPagingFaultType]].
+    */
+  abstract class SystemPagingFaultTypeValue(val value: String)
+  object SystemPagingFaultTypeValue {
+    implicit val attributeFromSystemPagingFaultTypeValue: Attribute.From[SystemPagingFaultTypeValue, String] = _.value
+
+    /** major.
+      */
+    case object Major extends SystemPagingFaultTypeValue("major")
+
+    /** minor.
+      */
+    case object Minor extends SystemPagingFaultTypeValue("minor")
+  }
+
   /** Values for [[SystemPagingState]].
     */
   abstract class SystemPagingStateValue(val value: String)
@@ -298,7 +341,9 @@ object SystemExperimentalAttributes {
 
   /** Values for [[SystemPagingType]].
     */
+  @deprecated("Replaced by `system.paging.fault.type`.", "")
   abstract class SystemPagingTypeValue(val value: String)
+  @annotation.nowarn("cat=deprecation")
   object SystemPagingTypeValue {
     implicit val attributeFromSystemPagingTypeValue: Attribute.From[SystemPagingTypeValue, String] = _.value
 
@@ -313,7 +358,9 @@ object SystemExperimentalAttributes {
 
   /** Values for [[SystemProcessStatus]].
     */
+  @deprecated("Replaced by `process.state`.", "")
   abstract class SystemProcessStatusValue(val value: String)
+  @annotation.nowarn("cat=deprecation")
   object SystemProcessStatusValue {
     implicit val attributeFromSystemProcessStatusValue: Attribute.From[SystemProcessStatusValue, String] = _.value
 
@@ -336,7 +383,7 @@ object SystemExperimentalAttributes {
 
   /** Values for [[SystemProcessesStatus]].
     */
-  @deprecated("Replaced by `system.process.status`.", "")
+  @deprecated("Replaced by `process.state`.", "")
   abstract class SystemProcessesStatusValue(val value: String)
   @annotation.nowarn("cat=deprecation")
   object SystemProcessesStatusValue {

@@ -16,25 +16,19 @@
 
 package org.typelevel.otel4s
 package semconv
-package attributes
+package experimental.attributes
 
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/attributes/SemanticAttributes.scala.j2
-object ServiceAttributes {
+object OpenshiftExperimentalAttributes {
 
-  /** Logical name of the service.
-    *
-    * @note
-    *   <p> MUST be the same for all instances of horizontally scaled services. If the value was not specified, SDKs
-    *   MUST fallback to `unknown_service:` concatenated with <a href="process.md">`process.executable.name`</a>, e.g.
-    *   `unknown_service:bash`. If `process.executable.name` is not available, the value MUST be set to
-    *   `unknown_service`.
+  /** The name of the cluster quota.
     */
-  val ServiceName: AttributeKey[String] =
-    AttributeKey("service.name")
+  val OpenshiftClusterquotaName: AttributeKey[String] =
+    AttributeKey("openshift.clusterquota.name")
 
-  /** The version string of the service component. The format is not defined by these conventions.
+  /** The UID of the cluster quota.
     */
-  val ServiceVersion: AttributeKey[String] =
-    AttributeKey("service.version")
+  val OpenshiftClusterquotaUid: AttributeKey[String] =
+    AttributeKey("openshift.clusterquota.uid")
 
 }

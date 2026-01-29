@@ -78,8 +78,8 @@ object ContainerExperimentalAttributes {
     * @note
     *   <p> Docker defines a sha256 of the image id; `container.image.id` corresponds to the `Image` field from the
     *   Docker container inspect <a
-    *   href="https://docs.docker.com/engine/api/v1.43/#tag/Container/operation/ContainerInspect">API</a> endpoint. K8s
-    *   defines a link to the container registry repository with digest
+    *   href="https://docs.docker.com/reference/api/engine/version/v1.52/#tag/Container/operation/ContainerInspect">API</a>
+    *   endpoint. K8s defines a link to the container registry repository with digest
     *   `"imageID": "registry.azurecr.io /namespace/service/dockerfile@sha256:bdeabd40c3a8a492eaf9e8e44d0ebbb84bac7ee25ac0cf8a7159d25f62555625"`.
     *   The ID is assigned by the container runtime and can vary in different environments. Consider using
     *   `oci.manifest.digest` if it is important to identify the same image in different environments/runtimes.
@@ -95,7 +95,9 @@ object ContainerExperimentalAttributes {
   /** Repo digests of the container image as provided by the container runtime.
     *
     * @note
-    *   <p> <a href="https://docs.docker.com/engine/api/v1.43/#tag/Image/operation/ImageInspect">Docker</a> and <a
+    *   <p> <a
+    *   href="https://docs.docker.com/reference/api/engine/version/v1.52/#tag/Image/operation/ImageInspect">Docker</a>
+    *   and <a
     *   href="https://github.com/kubernetes/cri-api/blob/c75ef5b473bbe2d0a4fc92f82235efd665ea8e9f/pkg/apis/runtime/v1/api.proto#L1237-L1238">CRI</a>
     *   report those under the `RepoDigests` field.
     */
@@ -103,8 +105,9 @@ object ContainerExperimentalAttributes {
     AttributeKey("container.image.repo_digests")
 
   /** Container image tags. An example can be found in <a
-    * href="https://docs.docker.com/engine/api/v1.43/#tag/Image/operation/ImageInspect">Docker Image Inspect</a>. Should
-    * be only the `<tag>` section of the full name for example from `registry.example.com/my-org/my-image:<tag>`.
+    * href="https://docs.docker.com/reference/api/engine/version/v1.52/#tag/Image/operation/ImageInspect">Docker Image
+    * Inspect</a>. Should be only the `<tag>` section of the full name for example from
+    * `registry.example.com/my-org/my-image:<tag>`.
     */
   val ContainerImageTags: AttributeKey[Seq[String]] =
     AttributeKey("container.image.tags")

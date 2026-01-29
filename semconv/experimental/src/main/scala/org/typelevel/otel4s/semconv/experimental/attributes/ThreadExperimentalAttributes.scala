@@ -22,11 +22,32 @@ package experimental.attributes
 object ThreadExperimentalAttributes {
 
   /** Current "managed" thread ID (as opposed to OS thread ID).
+    *
+    * @note
+    *   <p> Examples of where the value can be extracted from: <p>
+    *   | Language or platform | Source                                 |
+    *   |:---------------------|:---------------------------------------|
+    *   | JVM                  | `Thread.currentThread().threadId()`    |
+    *   | .NET                 | `Thread.CurrentThread.ManagedThreadId` |
+    *   | Python               | `threading.current_thread().ident`     |
+    *   | Ruby                 | `Thread.current.object_id`             |
+    *   | C++                  | `std::this_thread::get_id()`           |
+    *   | Erlang               | `erlang:self()`                        |
     */
   val ThreadId: AttributeKey[Long] =
     AttributeKey("thread.id")
 
   /** Current thread name.
+    *
+    * @note
+    *   <p> Examples of where the value can be extracted from: <p>
+    *   | Language or platform | Source                                         |
+    *   |:---------------------|:-----------------------------------------------|
+    *   | JVM                  | `Thread.currentThread().getName()`             |
+    *   | .NET                 | `Thread.CurrentThread.Name`                    |
+    *   | Python               | `threading.current_thread().name`              |
+    *   | Ruby                 | `Thread.current.name`                          |
+    *   | Erlang               | `erlang:process_info(self(), registered_name)` |
     */
   val ThreadName: AttributeKey[String] =
     AttributeKey("thread.name")

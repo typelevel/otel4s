@@ -25,10 +25,13 @@ package org.typelevel.otel4s.oteljava
 import io.opentelemetry.api.common.{AttributeKey => JAttributeKey}
 import io.opentelemetry.api.common.{AttributeType => JAttributeType}
 import io.opentelemetry.api.common.{Attributes => JAttributes}
+import io.opentelemetry.api.common.{Value => JValue}
+import org.typelevel.otel4s.AnyValue
 import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.AttributeKey
 import org.typelevel.otel4s.AttributeType
 import org.typelevel.otel4s.Attributes
+import org.typelevel.otel4s.oteljava.AnyValueConverters._
 
 import java.{util => ju}
 import scala.collection.immutable
@@ -98,6 +101,7 @@ object AttributeConverters {
         case AttributeType.BooleanSeq => JAttributeKey.booleanArrayKey(key.name)
         case AttributeType.LongSeq    => JAttributeKey.longArrayKey(key.name)
         case AttributeType.DoubleSeq  => JAttributeKey.doubleArrayKey(key.name)
+        case AttributeType.AnyValue   => JAttributeKey.valueKey(key.name)
       }
 
     final def toJava(attributes: Attributes): JAttributes =
@@ -128,6 +132,8 @@ object AttributeConverters {
             builder.put(key.name, value.asInstanceOf[Seq[Long]]: _*)
           case AttributeType.DoubleSeq =>
             builder.put(key.name, value.asInstanceOf[Seq[Double]]: _*)
+          case AttributeType.AnyValue =>
+            builder.put(key.name, value.asInstanceOf[AnyValue].toJava)
         }
       }
 
@@ -144,6 +150,7 @@ object AttributeConverters {
         case JAttributeType.BOOLEAN_ARRAY => AttributeKey.booleanSeq(key.getKey)
         case JAttributeType.LONG_ARRAY    => AttributeKey.longSeq(key.getKey)
         case JAttributeType.DOUBLE_ARRAY  => AttributeKey.doubleSeq(key.getKey)
+        case JAttributeType.VALUE         => AttributeKey.anyValue(key.getKey)
       }
 
     def toScala(attributes: JAttributes): Attributes = {
@@ -179,6 +186,8 @@ object AttributeConverters {
               key.getKey,
               value.asInstanceOf[ju.List[Double]].asScala.toSeq
             )
+          case JAttributeType.VALUE =>
+            builder.addOne(key.getKey, value.asInstanceOf[JValue[_]].toScala)
         }
       }
 

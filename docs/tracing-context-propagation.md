@@ -4,7 +4,7 @@ The tracing context propagation logic revolves around [cats.mtl.Local][mtl-local
 ```scala
 trait Local[F[_], E] {
   def ask: F[E]
-  def local(fa: F[A])(f: E => E): F[A]
+  def local[A](fa: F[A])(f: E => E): F[A]
 }
 ```
 

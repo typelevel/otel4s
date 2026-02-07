@@ -35,6 +35,8 @@ object AttributeType {
   case object StringSeq extends AttributeType[Seq[String]]
   case object LongSeq extends AttributeType[Seq[Long]]
 
+  case object AnyValue extends AttributeType[AnyValue]
+
   implicit def attributeTypeHash[A]: Hash[AttributeType[A]] =
     Hash.fromUniversalHashCode
 

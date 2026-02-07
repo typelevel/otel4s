@@ -48,6 +48,9 @@ trait Gens {
     implicit def seqArb[A: Arbitrary]: Arbitrary[Seq[A]] =
       Arbitrary(Gen.nonEmptyListOf(Arbitrary.arbitrary[A]))
 
+    implicit val anyValueArb: Arbitrary[AnyValue] =
+      Arbitraries.anyValueArbitrary
+
     def attribute[A: AttributeKey.KeySelect: Arbitrary]: Gen[Attribute[A]] =
       for {
         key <- nonEmptyString
@@ -64,6 +67,8 @@ trait Gens {
     val longSeq: Gen[Attribute[Seq[Long]]] = attribute[Seq[Long]]
     val doubleSeq: Gen[Attribute[Seq[Double]]] = attribute[Seq[Double]]
 
+    val anyValue: Gen[Attribute[AnyValue]] = attribute[AnyValue]
+
     Gen.oneOf(
       boolean,
       string,
@@ -72,7 +77,8 @@ trait Gens {
       stringSeq,
       booleanSeq,
       longSeq,
-      doubleSeq
+      doubleSeq,
+      anyValue
     )
   }
 

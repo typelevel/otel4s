@@ -71,6 +71,14 @@ sealed trait Span[F[_]] extends SpanMacro[F] {
   final def context: SpanContext =
     backend.context
 
+  /** Returns `true` if this [[Span]] is recording.
+    *
+    * A recording span captures data passed through operations like `addAttributes`, `addEvent`, `recordException`, and
+    * `setStatus`.
+    */
+  final def isRecording: F[Boolean] =
+    backend.isRecording
+
   /** Updates the name of the [[Span]].
     *
     * @note
@@ -157,6 +165,7 @@ object Span {
   sealed trait Backend[F[_]] {
     def meta: Span.Meta[F]
     def context: SpanContext
+    def isRecording: F[Boolean]
 
     def updateName(name: String): F[Unit]
 
@@ -228,6 +237,7 @@ object Span {
 
         val meta: Span.Meta[F] = m
         val context: SpanContext = ctx
+        val isRecording: F[Boolean] = Applicative[F].pure(false)
 
         def updateName(name: String): F[Unit] = unit
         def addAttributes(attributes: immutable.Iterable[Attribute[_]]): F[Unit] = unit
@@ -250,6 +260,7 @@ object Span {
       val meta: Span.Meta[G] =
         backend.meta.mapK(f)
       def context: SpanContext = backend.context
+      def isRecording: G[Boolean] = f(backend.isRecording)
       def updateName(name: String): G[Unit] =
         f(backend.updateName(name))
       def addAttributes(attributes: immutable.Iterable[Attribute[_]]): G[Unit] =

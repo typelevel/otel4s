@@ -36,6 +36,19 @@ class SpanSuite extends CatsEffectSuite {
     } yield assertEquals(result, Vector.empty)
   }
 
+  test("isRecording: delegates to backend") {
+    for {
+      ops <- IO.ref(Vector.empty[BackendOp])
+      recordingSpan = Span.fromBackend(new OpsBackend(ops, recording = true))
+      nonRecordingSpan = Span.fromBackend(new OpsBackend(ops, recording = false))
+      isRecording <- recordingSpan.isRecording
+      isNotRecording <- nonRecordingSpan.isRecording
+    } yield {
+      assertEquals(isRecording, true)
+      assertEquals(isNotRecording, false)
+    }
+  }
+
 }
 
 object SpanSuite {
@@ -61,12 +74,16 @@ object SpanSuite {
     final case class End(timestamp: Option[FiniteDuration]) extends BackendOp
   }
 
-  private class OpsBackend(state: Ref[IO, Vector[BackendOp]]) extends Span.Backend.Unsealed[IO] {
+  private class OpsBackend(
+      state: Ref[IO, Vector[BackendOp]],
+      recording: Boolean = true
+  ) extends Span.Backend.Unsealed[IO] {
     import BackendOp._
 
     val meta: Span.Meta[IO] = Span.Meta.enabled
 
     def context: SpanContext = ???
+    def isRecording: IO[Boolean] = IO.pure(recording)
 
     def updateName(name: String): IO[Unit] =
       state.update(_ :+ UpdateName(name))

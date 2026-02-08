@@ -41,6 +41,9 @@ private[oteljava] class SpanBackendImpl[F[_]: Sync](
   def context: SpanContext =
     spanContext
 
+  def isRecording: F[Boolean] =
+    Sync[F].delay(jSpan.isRecording)
+
   def updateName(name: String): F[Unit] =
     Sync[F].delay {
       jSpan.updateName(name)

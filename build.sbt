@@ -577,6 +577,7 @@ lazy val docs = project
       "OPEN_TELEMETRY_INSTRUMENTATION_ALPHA_VERSION" -> OpenTelemetryInstrumentationAlphaVersion,
       "OTEL4S_AGENT_VERSION" -> Otel4sAgentVersion,
     ),
+    tlSiteApiPackage := Some("org.typelevel.otel4s"),
     run / fork := true,
     javaOptions += "-Dcats.effect.trackFiberContext=true",
     laikaConfig := {

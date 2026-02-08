@@ -147,6 +147,7 @@ object SpanFinalizerSuite {
     val meta: Span.Meta[IO] = m
 
     def context: SpanContext = SpanContext.invalid
+    def isRecording: IO[Boolean] = IO.pure(true)
 
     def updateName(name: String): IO[Unit] =
       state.update(_ :+ UpdateName(name))

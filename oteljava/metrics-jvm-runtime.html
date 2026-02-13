@@ -162,13 +162,13 @@
             <p>Add settings to the <code>build.sbt</code>:</p>
             <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">libraryDependencies</span><span> ++= </span><span class="type-name">Seq</span><span>(
   </span><span class="string-literal">&quot;org.typelevel&quot;</span><span> %% </span><span class="string-literal">&quot;otel4s-oteljava&quot;</span><span> % </span><span class="string-literal">&quot;0.15.1&quot;</span><span>, </span><span class="comment">// &lt;1&gt;
-</span><span>  </span><span class="string-literal">&quot;io.opentelemetry.instrumentation&quot;</span><span> % </span><span class="string-literal">&quot;opentelemetry-runtime-telemetry-java8&quot;</span><span> % </span><span class="string-literal">&quot;2.24.0-alpha&quot;</span><span> </span><span class="comment">// &lt;2&gt;
+</span><span>  </span><span class="string-literal">&quot;io.opentelemetry.instrumentation&quot;</span><span> % </span><span class="string-literal">&quot;opentelemetry-runtime-telemetry-java8&quot;</span><span> % </span><span class="string-literal">&quot;2.25.0-alpha&quot;</span><span> </span><span class="comment">// &lt;2&gt;
 </span><span>)</span></code></pre>
           </div>
           <div class="tab-content" data-choice-name="scala-cli">
             <p>Add directives to the <code>*.scala</code> file:</p>
             <pre class="keep-together pdf epub"><code class="nohighlight"><span class="comment">//&gt; using dep &quot;org.typelevel::otel4s-oteljava:0.15.1&quot; // &lt;1&gt;
-//&gt; using dep &quot;io.opentelemetry.instrumentation:opentelemetry-runtime-telemetry-java8:2.24.0-alpha&quot; // &lt;2&gt;</span></code></pre>
+//&gt; using dep &quot;io.opentelemetry.instrumentation:opentelemetry-runtime-telemetry-java8:2.25.0-alpha&quot; // &lt;2&gt;</span></code></pre>
           </div>
         </div>
         <ol class="arabic">
@@ -182,7 +182,6 @@
 </span><span class="keyword">import</span><span> </span><span class="identifier">io</span><span>.</span><span class="identifier">opentelemetry</span><span>.</span><span class="identifier">api</span><span>.{</span><span class="type-name">OpenTelemetry</span><span> =&gt; </span><span class="type-name">JOpenTelemetry</span><span>}
 </span><span class="keyword">import</span><span> </span><span class="identifier">io</span><span>.</span><span class="identifier">opentelemetry</span><span>.</span><span class="identifier">instrumentation</span><span>.</span><span class="identifier">runtimemetrics</span><span>.</span><span class="identifier">java8</span><span>.</span><span class="identifier">_</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="type-name">OtelJava</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">scala</span><span>.</span><span class="identifier">jdk</span><span>.</span><span class="type-name">CollectionConverters</span><span>.</span><span class="identifier">_</span><span>
 
 </span><span class="keyword">object</span><span> </span><span class="type-name">Service</span><span> </span><span class="keyword">extends</span><span> </span><span class="type-name">IOApp</span><span>.</span><span class="type-name">Simple</span><span> {
   
@@ -198,18 +197,9 @@
   </span><span class="keyword">private</span><span> </span><span class="keyword">def</span><span> </span><span class="declaration-name">registerRuntimeMetrics</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>]: </span><span class="type-name">Sync</span><span>](
       </span><span class="identifier">openTelemetry</span><span>: </span><span class="type-name">JOpenTelemetry</span><span>
   ): </span><span class="type-name">Resource</span><span>[</span><span class="type-name">F</span><span>, </span><span class="type-name">Unit</span><span>] = {
-    </span><span class="keyword">val</span><span> </span><span class="identifier">acquire</span><span> = </span><span class="type-name">Sync</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">delay</span><span> {
-      </span><span class="type-name">List</span><span>
-        .</span><span class="identifier">newBuilder</span><span>[</span><span class="type-name">AutoCloseable</span><span>]
-        .</span><span class="identifier">addAll</span><span>(</span><span class="type-name">MemoryPools</span><span>.</span><span class="identifier">registerObservers</span><span>(</span><span class="identifier">openTelemetry</span><span>).</span><span class="identifier">asScala</span><span>)
-        .</span><span class="identifier">addAll</span><span>(</span><span class="type-name">Classes</span><span>.</span><span class="identifier">registerObservers</span><span>(</span><span class="identifier">openTelemetry</span><span>).</span><span class="identifier">asScala</span><span>)
-        .</span><span class="identifier">addAll</span><span>(</span><span class="type-name">Cpu</span><span>.</span><span class="identifier">registerObservers</span><span>(</span><span class="identifier">openTelemetry</span><span>).</span><span class="identifier">asScala</span><span>)
-        .</span><span class="identifier">addAll</span><span>(</span><span class="type-name">Threads</span><span>.</span><span class="identifier">registerObservers</span><span>(</span><span class="identifier">openTelemetry</span><span>).</span><span class="identifier">asScala</span><span>)
-        .</span><span class="identifier">addAll</span><span>(</span><span class="type-name">GarbageCollector</span><span>.</span><span class="identifier">registerObservers</span><span>(</span><span class="identifier">openTelemetry</span><span>, </span><span class="boolean-literal">true</span><span>).</span><span class="identifier">asScala</span><span>)
-        .</span><span class="identifier">result</span><span>()
-    }
+    </span><span class="keyword">val</span><span> </span><span class="identifier">acquire</span><span> = </span><span class="type-name">Sync</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">delay</span><span>(</span><span class="type-name">RuntimeMetrics</span><span>.</span><span class="identifier">create</span><span>(</span><span class="identifier">openTelemetry</span><span>))
   
-    </span><span class="type-name">Resource</span><span>.</span><span class="identifier">make</span><span>(</span><span class="identifier">acquire</span><span>)(</span><span class="identifier">r</span><span> =&gt; </span><span class="type-name">Sync</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">delay</span><span>(</span><span class="identifier">r</span><span>.</span><span class="identifier">foreach</span><span>(</span><span class="identifier">_</span><span>.</span><span class="identifier">close</span><span>()))).</span><span class="identifier">void</span><span>
+    </span><span class="type-name">Resource</span><span>.</span><span class="identifier">fromAutoCloseable</span><span>(</span><span class="identifier">acquire</span><span>).</span><span class="identifier">void</span><span>
   }
 
 }</span></code></pre>
@@ -227,13 +217,13 @@
             <p>Add settings to the <code>build.sbt</code>:</p>
             <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">libraryDependencies</span><span> ++= </span><span class="type-name">Seq</span><span>(
   </span><span class="string-literal">&quot;org.typelevel&quot;</span><span> %% </span><span class="string-literal">&quot;otel4s-oteljava&quot;</span><span> % </span><span class="string-literal">&quot;0.15.1&quot;</span><span>, </span><span class="comment">// &lt;1&gt;
-</span><span>  </span><span class="string-literal">&quot;io.opentelemetry.instrumentation&quot;</span><span> % </span><span class="string-literal">&quot;opentelemetry-runtime-telemetry-java17&quot;</span><span> % </span><span class="string-literal">&quot;2.24.0-alpha&quot;</span><span> </span><span class="comment">// &lt;2&gt;
+</span><span>  </span><span class="string-literal">&quot;io.opentelemetry.instrumentation&quot;</span><span> % </span><span class="string-literal">&quot;opentelemetry-runtime-telemetry-java17&quot;</span><span> % </span><span class="string-literal">&quot;2.25.0-alpha&quot;</span><span> </span><span class="comment">// &lt;2&gt;
 </span><span>)</span></code></pre>
           </div>
           <div class="tab-content" data-choice-name="scala-cli">
             <p>Add directives to the <code>*.scala</code> file:</p>
             <pre class="keep-together pdf epub"><code class="nohighlight"><span class="comment">//&gt; using dep &quot;org.typelevel::otel4s-oteljava:0.15.1&quot; // &lt;1&gt;
-//&gt; using dep &quot;io.opentelemetry.instrumentation:opentelemetry-runtime-telemetry-java17:2.24.0-alpha&quot; // &lt;2&gt;</span></code></pre>
+//&gt; using dep &quot;io.opentelemetry.instrumentation:opentelemetry-runtime-telemetry-java17:2.25.0-alpha&quot; // &lt;2&gt;</span></code></pre>
           </div>
         </div>
         <ol class="arabic">

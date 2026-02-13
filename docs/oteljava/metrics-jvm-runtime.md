@@ -45,7 +45,6 @@ import cats.syntax.functor._
 import io.opentelemetry.api.{OpenTelemetry => JOpenTelemetry}
 import io.opentelemetry.instrumentation.runtimemetrics.java8._
 import org.typelevel.otel4s.oteljava.OtelJava
-import scala.jdk.CollectionConverters._
 
 object Service extends IOApp.Simple {
   
@@ -61,18 +60,9 @@ object Service extends IOApp.Simple {
   private def registerRuntimeMetrics[F[_]: Sync](
       openTelemetry: JOpenTelemetry
   ): Resource[F, Unit] = {
-    val acquire = Sync[F].delay {
-      List
-        .newBuilder[AutoCloseable]
-        .addAll(MemoryPools.registerObservers(openTelemetry).asScala)
-        .addAll(Classes.registerObservers(openTelemetry).asScala)
-        .addAll(Cpu.registerObservers(openTelemetry).asScala)
-        .addAll(Threads.registerObservers(openTelemetry).asScala)
-        .addAll(GarbageCollector.registerObservers(openTelemetry, true).asScala)
-        .result()
-    }
+    val acquire = Sync[F].delay(RuntimeMetrics.create(openTelemetry))
   
-    Resource.make(acquire)(r => Sync[F].delay(r.foreach(_.close()))).void
+    Resource.fromAutoCloseable(acquire).void
   }
 
 }

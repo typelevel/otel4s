@@ -26,9 +26,15 @@ object FeatureFlagExperimentalAttributes {
   val FeatureFlagContextId: AttributeKey[String] =
     AttributeKey("feature_flag.context.id")
 
-  /** Deprecated, use `error.message` instead.
+  /** A message providing more detail about an error that occurred during feature flag evaluation in human-readable
+    * form.
     */
-  @deprecated("Replaced by `error.message`.", "")
+  val FeatureFlagErrorMessage: AttributeKey[String] =
+    AttributeKey("feature_flag.error.message")
+
+  /** Deprecated, use `feature_flag.error.message` instead.
+    */
+  @deprecated("Replaced by `feature_flag.error.message`.", "")
   val FeatureFlagEvaluationErrorMessage: AttributeKey[String] =
     AttributeKey("feature_flag.evaluation.error.message")
 

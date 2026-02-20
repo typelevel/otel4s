@@ -45,8 +45,15 @@ object UrlAttributes {
     * href="https://docs.aws.amazon.com/AmazonS3/latest/userguide/RESTAuthentication.html#RESTAuthenticationQueryStringAuth">`Signature`</a>
     * <li><a href="https://learn.microsoft.com/azure/storage/common/storage-sas-overview#sas-token">`sig`</a> <li><a
     * href="https://cloud.google.com/storage/docs/access-control/signed-urls">`X-Goog-Signature`</a> </ul> <p> This list
-    * is subject to change over time. <p> When a query string value is redacted, the query string key SHOULD still be
-    * preserved, e.g. `https://www.example.com/path?color=blue&sig=REDACTED`.
+    * is subject to change over time. <p> Matching of query parameter keys against the sensitive list SHOULD be
+    * case-sensitive. <p>
+    *
+    * Instrumentation MAY provide a way to override this list via declarative configuration. If so, it SHOULD use the
+    * `sensitive_query_parameters` property (an array of case-sensitive strings with minimum items 0) under
+    * `.instrumentation/development.general.sanitization.url`. This list is a full override of the default sensitive
+    * query parameter keys, it is not a list of keys in addition to the defaults. <p> When a query string value is
+    * redacted, the query string key SHOULD still be preserved, e.g.
+    * `https://www.example.com/path?color=blue&sig=REDACTED`.
     */
   val UrlFull: AttributeKey[String] =
     AttributeKey("url.full")
@@ -71,8 +78,12 @@ object UrlAttributes {
     * href="https://docs.aws.amazon.com/AmazonS3/latest/userguide/RESTAuthentication.html#RESTAuthenticationQueryStringAuth">`Signature`</a>
     * <li><a href="https://learn.microsoft.com/azure/storage/common/storage-sas-overview#sas-token">`sig`</a> <li><a
     * href="https://cloud.google.com/storage/docs/access-control/signed-urls">`X-Goog-Signature`</a> </ul> <p> This list
-    * is subject to change over time. <p> When a query string value is redacted, the query string key SHOULD still be
-    * preserved, e.g. `q=OpenTelemetry&sig=REDACTED`.
+    * is subject to change over time. <p> Matching of query parameter keys against the sensitive list SHOULD be
+    * case-sensitive. <p> Instrumentation MAY provide a way to override this list via declarative configuration. If so,
+    * it SHOULD use the `sensitive_query_parameters` property (an array of case-sensitive strings with minimum items 0)
+    * under `.instrumentation/development.general.sanitization.url`. This list is a full override of the default
+    * sensitive query parameter keys, it is not a list of keys in addition to the defaults. <p> When a query string
+    * value is redacted, the query string key SHOULD still be preserved, e.g. `q=OpenTelemetry&sig=REDACTED`.
     */
   val UrlQuery: AttributeKey[String] =
     AttributeKey("url.query")

@@ -29,6 +29,10 @@ object ErrorExperimentalAttributes {
     *   `exception.message` in `error.message`. <p> `error.message` is NOT RECOMMENDED for metrics or spans due to its
     *   unbounded cardinality and overlap with span status.
     */
+  @deprecated(
+    "Use domain-specific error message attribute. For example, use `feature_flag.error.message` for feature flag errors.",
+    ""
+  )
   val ErrorMessage: AttributeKey[String] =
     AttributeKey("error.message")
 

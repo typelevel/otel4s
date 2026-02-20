@@ -40,6 +40,7 @@ object JvmExperimentalMetrics {
     CpuRecentUtilization,
     CpuTime,
     FileDescriptorCount,
+    FileDescriptorLimit,
     GcDuration,
     MemoryCommitted,
     MemoryInit,
@@ -519,6 +520,41 @@ object JvmExperimentalMetrics {
 
     val name: String = "jvm.file_descriptor.count"
     val description: String = "Number of open file descriptors as reported by the JVM."
+    val unit: String = "{file_descriptor}"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
+      Meter[F]
+        .upDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableUpDownCounter] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** Measure of max open file descriptors as reported by the JVM.
+    */
+  object FileDescriptorLimit extends MetricSpec.Unsealed {
+
+    val name: String = "jvm.file_descriptor.limit"
+    val description: String = "Measure of max open file descriptors as reported by the JVM."
     val unit: String = "{file_descriptor}"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = Nil

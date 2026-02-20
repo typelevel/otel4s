@@ -168,6 +168,23 @@ object GcpExperimentalAttributes {
   val GcpGceInstanceName: AttributeKey[String] =
     AttributeKey("gcp.gce.instance.name")
 
+  /** The name of the Instance Group Manager (IGM) that manages this VM, if any.
+    */
+  val GcpGceInstanceGroupManagerName: AttributeKey[String] =
+    AttributeKey("gcp.gce.instance_group_manager.name")
+
+  /** The region of a <strong>regional</strong> Instance Group Manager (e.g., `us-central1`). Set this
+    * <strong>only</strong> when the IGM is regional.
+    */
+  val GcpGceInstanceGroupManagerRegion: AttributeKey[String] =
+    AttributeKey("gcp.gce.instance_group_manager.region")
+
+  /** The zone of a <strong>zonal</strong> Instance Group Manager (e.g., `us-central1-a`). Set this
+    * <strong>only</strong> when the IGM is zonal.
+    */
+  val GcpGceInstanceGroupManagerZone: AttributeKey[String] =
+    AttributeKey("gcp.gce.instance_group_manager.zone")
+
   /** Values for [[GcpApphubServiceCriticalityType]].
     */
   abstract class GcpApphubServiceCriticalityTypeValue(val value: String)

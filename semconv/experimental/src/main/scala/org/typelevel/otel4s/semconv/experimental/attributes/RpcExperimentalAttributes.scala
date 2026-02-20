@@ -63,9 +63,9 @@ object RpcExperimentalAttributes {
   val RpcJsonrpcErrorCode: AttributeKey[Long] =
     AttributeKey("rpc.jsonrpc.error_code")
 
-  /** Deprecated, use span status description or `error.message` attribute on other signals.
+  /** Deprecated, use the span status description when reporting JSON-RPC spans.
     */
-  @deprecated("Use the span status description or `error.message` attribute on other signals.", "")
+  @deprecated("Use the span status description when reporting JSON-RPC spans.", "")
   val RpcJsonrpcErrorMessage: AttributeKey[String] =
     AttributeKey("rpc.jsonrpc.error_message")
 
@@ -83,6 +83,7 @@ object RpcExperimentalAttributes {
 
   /** Compressed size of the message in bytes.
     */
+  @deprecated("Deprecated, no replacement at this time.", "")
   val RpcMessageCompressedSize: AttributeKey[Long] =
     AttributeKey("rpc.message.compressed_size")
 
@@ -91,16 +92,19 @@ object RpcExperimentalAttributes {
     * @note
     *   <p> This way we guarantee that the values will be consistent between different implementations.
     */
+  @deprecated("Deprecated, no replacement at this time.", "")
   val RpcMessageId: AttributeKey[Long] =
     AttributeKey("rpc.message.id")
 
   /** Whether this is a received or sent message.
     */
+  @deprecated("Deprecated, no replacement at this time.", "")
   val RpcMessageType: AttributeKey[String] =
     AttributeKey("rpc.message.type")
 
   /** Uncompressed size of the message in bytes.
     */
+  @deprecated("Deprecated, no replacement at this time.", "")
   val RpcMessageUncompressedSize: AttributeKey[Long] =
     AttributeKey("rpc.message.uncompressed_size")
 
@@ -336,7 +340,9 @@ object RpcExperimentalAttributes {
 
   /** Values for [[RpcMessageType]].
     */
+  @deprecated("Deprecated, no replacement at this time.", "")
   abstract class RpcMessageTypeValue(val value: String)
+  @annotation.nowarn("cat=deprecation")
   object RpcMessageTypeValue {
     implicit val attributeFromRpcMessageTypeValue: Attribute.From[RpcMessageTypeValue, String] = _.value
 

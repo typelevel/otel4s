@@ -82,11 +82,16 @@ object HttpMetrics {
         *   `_OTHER`, then it MUST provide a way to override the list of known HTTP methods. If this override is done
         *   via environment variable, then the environment variable MUST be named
         *   OTEL_INSTRUMENTATION_HTTP_KNOWN_METHODS and support a comma-separated list of case-sensitive known HTTP
-        *   methods (this list MUST be a full override of the default known method, it is not a list of known methods in
-        *   addition to the defaults). <p> HTTP method names are case-sensitive and `http.request.method` attribute
-        *   value MUST match a known HTTP method name exactly. Instrumentations for specific web frameworks that
-        *   consider HTTP methods to be case insensitive, SHOULD populate a canonical equivalent. Tracing
-        *   instrumentations that do so, MUST also set `http.request.method_original` to the original value.
+        *   methods. <p>
+        *
+        * If this override is done via declarative configuration, then the list MUST be configurable via the
+        * `known_methods` property (an array of case-sensitive strings with minimum items 0) under
+        * `.instrumentation/development.general.http.client` and/or `.instrumentation/development.general.http.server`.
+        * <p> In either case, this list MUST be a full override of the default known methods, it is not a list of known
+        * methods in addition to the defaults. <p> HTTP method names are case-sensitive and `http.request.method`
+        * attribute value MUST match a known HTTP method name exactly. Instrumentations for specific web frameworks that
+        * consider HTTP methods to be case insensitive, SHOULD populate a canonical equivalent. Tracing instrumentations
+        * that do so, MUST also set `http.request.method_original` to the original value.
         */
       val httpRequestMethod: AttributeSpec[String] =
         AttributeSpec(
@@ -280,11 +285,16 @@ object HttpMetrics {
         *   `_OTHER`, then it MUST provide a way to override the list of known HTTP methods. If this override is done
         *   via environment variable, then the environment variable MUST be named
         *   OTEL_INSTRUMENTATION_HTTP_KNOWN_METHODS and support a comma-separated list of case-sensitive known HTTP
-        *   methods (this list MUST be a full override of the default known method, it is not a list of known methods in
-        *   addition to the defaults). <p> HTTP method names are case-sensitive and `http.request.method` attribute
-        *   value MUST match a known HTTP method name exactly. Instrumentations for specific web frameworks that
-        *   consider HTTP methods to be case insensitive, SHOULD populate a canonical equivalent. Tracing
-        *   instrumentations that do so, MUST also set `http.request.method_original` to the original value.
+        *   methods. <p>
+        *
+        * If this override is done via declarative configuration, then the list MUST be configurable via the
+        * `known_methods` property (an array of case-sensitive strings with minimum items 0) under
+        * `.instrumentation/development.general.http.client` and/or `.instrumentation/development.general.http.server`.
+        * <p> In either case, this list MUST be a full override of the default known methods, it is not a list of known
+        * methods in addition to the defaults. <p> HTTP method names are case-sensitive and `http.request.method`
+        * attribute value MUST match a known HTTP method name exactly. Instrumentations for specific web frameworks that
+        * consider HTTP methods to be case insensitive, SHOULD populate a canonical equivalent. Tracing instrumentations
+        * that do so, MUST also set `http.request.method_original` to the original value.
         */
       val httpRequestMethod: AttributeSpec[String] =
         AttributeSpec(

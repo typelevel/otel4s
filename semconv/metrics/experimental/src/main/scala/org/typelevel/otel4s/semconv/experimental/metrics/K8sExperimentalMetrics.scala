@@ -149,6 +149,8 @@ object K8sExperimentalMetrics {
     ResourcequotaPersistentvolumeclaimCountUsed,
     ResourcequotaStorageRequestHard,
     ResourcequotaStorageRequestUsed,
+    ServiceEndpointCount,
+    ServiceLoadBalancerIngressCount,
     StatefulsetCurrentPods,
     StatefulsetDesiredPods,
     StatefulsetPodCurrent,
@@ -1488,7 +1490,7 @@ object K8sExperimentalMetrics {
             "redis",
           ),
           Requirement.conditionallyRequired("if and only if k8s.hpa.metric.type is ContainerResource."),
-          Stability.alpha
+          Stability.beta
         )
 
       /** The type of metric source for the horizontal pod autoscaler.
@@ -1569,7 +1571,7 @@ object K8sExperimentalMetrics {
             "redis",
           ),
           Requirement.conditionallyRequired("if and only if k8s.hpa.metric.type is ContainerResource"),
-          Stability.alpha
+          Stability.beta
         )
 
       /** The type of metric source for the horizontal pod autoscaler.
@@ -1650,7 +1652,7 @@ object K8sExperimentalMetrics {
             "redis",
           ),
           Requirement.conditionallyRequired("if and only if k8s.hpa.metric.type is ContainerResource"),
-          Stability.alpha
+          Stability.beta
         )
 
       /** The type of metric source for the horizontal pod autoscaler.
@@ -5878,6 +5880,177 @@ object K8sExperimentalMetrics {
     ): Resource[F, ObservableUpDownCounter] =
       Meter[F]
         .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** Number of endpoints for a service by condition and address type.
+    *
+    * @note
+    *   <p> This metric is derived from the Kubernetes <a
+    *   href="https://kubernetes.io/docs/reference/kubernetes-api/service-resources/endpoint-slice-v1/">EndpointSlice
+    *   API</a>. It reports the number of network endpoints backing a Service, broken down by their condition and
+    *   address type. <p> In dual-stack or multi-protocol clusters, separate counts are reported for each address family
+    *   (`IPv4`, `IPv6`, `FQDN`). <p> When the optional `zone` attribute is enabled, counts are further broken down by
+    *   availability zone for zone-aware monitoring. <p> An endpoint may be reported under multiple conditions
+    *   simultaneously (e.g., both `serving` and `terminating` during a graceful shutdown). See <a
+    *   href="https://kubernetes.io/docs/reference/kubernetes-api/service-resources/endpoint-slice-v1/">K8s
+    *   EndpointConditions</a> for more details. <p> The conditions represent: <ul> <li>`ready`: Endpoints capable of
+    *   receiving new connections. <li>`serving`: Endpoints currently handling traffic. <li>`terminating`: Endpoints
+    *   that are being phased out but may still be handling existing connections. </ul> <p> For Services with
+    *   `publishNotReadyAddresses` enabled (common for headless StatefulSets), this metric will include endpoints that
+    *   are published despite not being ready. The `k8s.service.publish_not_ready_addresses` resource attribute
+    *   indicates this setting.
+    */
+  object ServiceEndpointCount extends MetricSpec.Unsealed {
+
+    val name: String = "k8s.service.endpoint.count"
+    val description: String = "Number of endpoints for a service by condition and address type."
+    val unit: String = "{endpoint}"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
+
+    object AttributeSpecs {
+
+      /** The address type of the service endpoint.
+        *
+        * @note
+        *   <p> The network address family or type of the endpoint. This attribute aligns with the `addressType` field
+        *   of the <a
+        *   href="https://kubernetes.io/docs/reference/kubernetes-api/service-resources/endpoint-slice-v1/">K8s
+        *   EndpointSlice</a>. It is used to differentiate metrics when a Service is backed by multiple address types
+        *   (e.g., in dual-stack clusters).
+        */
+      val k8sServiceEndpointAddressType: AttributeSpec[String] =
+        AttributeSpec(
+          K8sExperimentalAttributes.K8sServiceEndpointAddressType,
+          List(
+            "IPv4",
+            "IPv6",
+          ),
+          Requirement.required,
+          Stability.development
+        )
+
+      /** The condition of the service endpoint.
+        *
+        * @note
+        *   <p> The current operational condition of the service endpoint. An endpoint can have multiple conditions set
+        *   at once (e.g., both `serving` and `terminating` during rollout). This attribute aligns with the condition
+        *   fields in the <a
+        *   href="https://kubernetes.io/docs/reference/kubernetes-api/service-resources/endpoint-slice-v1/">K8s
+        *   EndpointSlice</a>.
+        */
+      val k8sServiceEndpointCondition: AttributeSpec[String] =
+        AttributeSpec(
+          K8sExperimentalAttributes.K8sServiceEndpointCondition,
+          List(
+            "ready",
+            "serving",
+            "terminating",
+          ),
+          Requirement.required,
+          Stability.development
+        )
+
+      /** The zone of the service endpoint.
+        *
+        * @note
+        *   <p> The zone where the endpoint is located, typically corresponding to a failure domain. This attribute
+        *   aligns with the `zone` field of endpoints in the <a
+        *   href="https://kubernetes.io/docs/reference/kubernetes-api/service-resources/endpoint-slice-v1/">K8s
+        *   EndpointSlice</a>. It enables zone-aware monitoring of service endpoint distribution and supports features
+        *   like <a href="https://kubernetes.io/docs/concepts/services-networking/topology-aware-routing/">Topology
+        *   Aware Routing</a>. <p> If the zone is not populated (e.g., nodes without the `topology.kubernetes.io/zone`
+        *   label), the attribute value will be an empty string.
+        */
+      val k8sServiceEndpointZone: AttributeSpec[String] =
+        AttributeSpec(
+          K8sExperimentalAttributes.K8sServiceEndpointZone,
+          List(
+            "us-east-1a",
+            "us-west-2b",
+            "zone-a",
+            "",
+          ),
+          Requirement.recommended,
+          Stability.development
+        )
+
+      val specs: List[AttributeSpec[_]] =
+        List(
+          k8sServiceEndpointAddressType,
+          k8sServiceEndpointCondition,
+          k8sServiceEndpointZone,
+        )
+    }
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[Gauge[F, A]] =
+      Meter[F]
+        .gauge[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableGauge[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableGauge] =
+      Meter[F]
+        .observableGauge[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** Number of load balancer ingress points (external IPs/hostnames) assigned to the service.
+    *
+    * @note
+    *   <p> This metric reports the number of external ingress points (IP addresses or hostnames) assigned to a
+    *   LoadBalancer Service. <p> It is only emitted for Services of type `LoadBalancer` and reflects the assignments
+    *   made by the underlying infrastructure's load balancer controller in the <a
+    *   href="https://kubernetes.io/docs/reference/kubernetes-api/service-resources/service-v1/#ServiceStatus">.status.loadBalancer.ingress</a>
+    *   field. <p> A value of `0` indicates that no ingress points have been assigned yet (e.g., during provisioning). A
+    *   value greater than `1` may occur when multiple IPs or hostnames are assigned (e.g., dual-stack configurations).
+    *   <p> This metric signals that external endpoints have been assigned by the load balancer controller, but it does
+    *   not guarantee that the load balancer is healthy.
+    */
+  object ServiceLoadBalancerIngressCount extends MetricSpec.Unsealed {
+
+    val name: String = "k8s.service.load_balancer.ingress.count"
+    val description: String = "Number of load balancer ingress points (external IPs/hostnames) assigned to the service."
+    val unit: String = "{ingress}"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[Gauge[F, A]] =
+      Meter[F]
+        .gauge[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableGauge[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableGauge] =
+      Meter[F]
+        .observableGauge[A](name)
         .withDescription(description)
         .withUnit(unit)
         .createWithCallback(callback)

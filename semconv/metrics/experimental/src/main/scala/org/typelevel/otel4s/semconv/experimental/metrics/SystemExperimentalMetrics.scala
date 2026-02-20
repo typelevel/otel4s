@@ -47,6 +47,7 @@ object SystemExperimentalMetrics {
     LinuxMemorySlabUsage,
     MemoryLimit,
     MemoryLinuxAvailable,
+    MemoryLinuxShared,
     MemoryLinuxSlabUsage,
     MemoryShared,
     MemoryUsage,
@@ -1230,6 +1231,45 @@ object SystemExperimentalMetrics {
 
   }
 
+  /** Shared memory used (mostly by tmpfs).
+    *
+    * @note
+    *   <p> Equivalent of `shared` from <a href="https://man7.org/linux/man-pages/man1/free.1.html">`free` command</a>
+    *   or `Shmem` from <a href="https://man7.org/linux/man-pages/man5/proc.5.html">`/proc/meminfo`</a>"
+    */
+  object MemoryLinuxShared extends MetricSpec.Unsealed {
+
+    val name: String = "system.memory.linux.shared"
+    val description: String = "Shared memory used (mostly by tmpfs)."
+    val unit: String = "By"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
+      Meter[F]
+        .upDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableUpDownCounter] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
   /** Reports the memory used by the Linux kernel for managing caches of frequently used objects.
     *
     * @note
@@ -1294,16 +1334,13 @@ object SystemExperimentalMetrics {
 
   }
 
-  /** Shared memory used (mostly by tmpfs).
-    *
-    * @note
-    *   <p> Equivalent of `shared` from <a href="https://man7.org/linux/man-pages/man1/free.1.html">`free` command</a>
-    *   or `Shmem` from <a href="https://man7.org/linux/man-pages/man5/proc.5.html">`/proc/meminfo`</a>"
+  /** Deprecated, use `system.memory.linux.shared` instead.
     */
+  @deprecated("Replaced by `system.memory.linux.shared`.", "")
   object MemoryShared extends MetricSpec.Unsealed {
 
     val name: String = "system.memory.shared"
-    val description: String = "Shared memory used (mostly by tmpfs)."
+    val description: String = "Deprecated, use `system.memory.linux.shared` instead."
     val unit: String = "By"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = Nil

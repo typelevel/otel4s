@@ -22,6 +22,9 @@ package attributes
 object ExceptionAttributes {
 
   /** The exception message.
+    *
+    * @note
+    *   <blockquote> [!WARNING] <p> This attribute may contain sensitive information.</blockquote>
     */
   val ExceptionMessage: AttributeKey[String] =
     AttributeKey("exception.message")

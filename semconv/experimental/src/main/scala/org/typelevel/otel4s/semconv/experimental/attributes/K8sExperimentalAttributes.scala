@@ -489,6 +489,122 @@ object K8sExperimentalAttributes {
   val K8sResourcequotaUid: AttributeKey[String] =
     AttributeKey("k8s.resourcequota.uid")
 
+  /** The annotation placed on the Service, the `<key>` being the annotation name, the value being the annotation value,
+    * even if the value is empty.
+    *
+    * @note
+    *   <p> Examples: <ul> <li>An annotation `prometheus.io/scrape` with value `true` SHOULD be recorded as the
+    *   `k8s.service.annotation.prometheus.io/scrape` attribute with value `"true"`. <li>An annotation `data` with empty
+    *   string value SHOULD be recorded as the `k8s.service.annotation.data` attribute with value `""`. </ul>
+    */
+  val K8sServiceAnnotation: AttributeKey[String] =
+    AttributeKey("k8s.service.annotation")
+
+  /** The address type of the service endpoint.
+    *
+    * @note
+    *   <p> The network address family or type of the endpoint. This attribute aligns with the `addressType` field of
+    *   the <a href="https://kubernetes.io/docs/reference/kubernetes-api/service-resources/endpoint-slice-v1/">K8s
+    *   EndpointSlice</a>. It is used to differentiate metrics when a Service is backed by multiple address types (e.g.,
+    *   in dual-stack clusters).
+    */
+  val K8sServiceEndpointAddressType: AttributeKey[String] =
+    AttributeKey("k8s.service.endpoint.address_type")
+
+  /** The condition of the service endpoint.
+    *
+    * @note
+    *   <p> The current operational condition of the service endpoint. An endpoint can have multiple conditions set at
+    *   once (e.g., both `serving` and `terminating` during rollout). This attribute aligns with the condition fields in
+    *   the <a href="https://kubernetes.io/docs/reference/kubernetes-api/service-resources/endpoint-slice-v1/">K8s
+    *   EndpointSlice</a>.
+    */
+  val K8sServiceEndpointCondition: AttributeKey[String] =
+    AttributeKey("k8s.service.endpoint.condition")
+
+  /** The zone of the service endpoint.
+    *
+    * @note
+    *   <p> The zone where the endpoint is located, typically corresponding to a failure domain. This attribute aligns
+    *   with the `zone` field of endpoints in the <a
+    *   href="https://kubernetes.io/docs/reference/kubernetes-api/service-resources/endpoint-slice-v1/">K8s
+    *   EndpointSlice</a>. It enables zone-aware monitoring of service endpoint distribution and supports features like
+    *   <a href="https://kubernetes.io/docs/concepts/services-networking/topology-aware-routing/">Topology Aware
+    *   Routing</a>. <p> If the zone is not populated (e.g., nodes without the `topology.kubernetes.io/zone` label), the
+    *   attribute value will be an empty string.
+    */
+  val K8sServiceEndpointZone: AttributeKey[String] =
+    AttributeKey("k8s.service.endpoint.zone")
+
+  /** The label placed on the Service, the `<key>` being the label name, the value being the label value, even if the
+    * value is empty.
+    *
+    * @note
+    *   <p> Examples: <ul> <li>A label `app` with value `my-service` SHOULD be recorded as the `k8s.service.label.app`
+    *   attribute with value `"my-service"`. <li>A label `data` with empty string value SHOULD be recorded as the
+    *   `k8s.service.label.data` attribute with value `""`. </ul>
+    */
+  val K8sServiceLabel: AttributeKey[String] =
+    AttributeKey("k8s.service.label")
+
+  /** The name of the Service.
+    */
+  val K8sServiceName: AttributeKey[String] =
+    AttributeKey("k8s.service.name")
+
+  /** Whether the Service publishes not-ready endpoints.
+    *
+    * @note
+    *   <p> Whether the Service is configured to publish endpoints before the pods are ready. This attribute is
+    *   typically used to indicate that a Service (such as a headless Service for a StatefulSet) allows peer discovery
+    *   before pods pass their readiness probes. It aligns with the `publishNotReadyAddresses` field of the <a
+    *   href="https://kubernetes.io/docs/reference/kubernetes-api/service-resources/service-v1/#ServiceSpec">K8s
+    *   ServiceSpec</a>.
+    */
+  val K8sServicePublishNotReadyAddresses: AttributeKey[Boolean] =
+    AttributeKey("k8s.service.publish_not_ready_addresses")
+
+  /** The selector key-value pair placed on the Service, the `<key>` being the selector key, the value being the
+    * selector value.
+    *
+    * @note
+    *   <p> These selectors are used to correlate with pod labels. Each selector key-value pair becomes a separate
+    *   attribute. <p> Examples: <ul> <li>A selector `app=my-app` SHOULD be recorded as the `k8s.service.selector.app`
+    *   attribute with value `"my-app"`. <li>A selector `version=v1` SHOULD be recorded as the
+    *   `k8s.service.selector.version` attribute with value `"v1"`. </ul>
+    */
+  val K8sServiceSelector: AttributeKey[String] =
+    AttributeKey("k8s.service.selector")
+
+  /** The traffic distribution policy for the Service.
+    *
+    * @note
+    *   <p> Specifies how traffic is distributed to endpoints for this Service. This attribute aligns with the
+    *   `trafficDistribution` field of the <a
+    *   href="https://kubernetes.io/docs/reference/networking/virtual-ips/#traffic-distribution">K8s ServiceSpec</a>.
+    *   Known values include `PreferSameZone` (prefer endpoints in the same zone as the client) and `PreferSameNode`
+    *   (prefer endpoints on the same node, fallback to same zone, then cluster-wide). If this field is not set on the
+    *   Service, the attribute SHOULD NOT be emitted. When not set, Kubernetes distributes traffic evenly across all
+    *   endpoints cluster-wide.
+    */
+  val K8sServiceTrafficDistribution: AttributeKey[String] =
+    AttributeKey("k8s.service.traffic_distribution")
+
+  /** The type of the Kubernetes Service.
+    *
+    * @note
+    *   <p> This attribute aligns with the `type` field of the <a
+    *   href="https://kubernetes.io/docs/reference/kubernetes-api/service-resources/service-v1/#ServiceSpec">K8s
+    *   ServiceSpec</a>.
+    */
+  val K8sServiceType: AttributeKey[String] =
+    AttributeKey("k8s.service.type")
+
+  /** The UID of the Service.
+    */
+  val K8sServiceUid: AttributeKey[String] =
+    AttributeKey("k8s.service.uid")
+
   /** The annotation placed on the StatefulSet, the `<key>` being the annotation name, the value being the annotation
     * value, even if the value is empty.
     *
@@ -723,6 +839,69 @@ object K8sExperimentalAttributes {
     /** The pod was rejected admission to the node because of an error during admission that could not be categorized.
       */
     case object UnexpectedAdmissionError extends K8sPodStatusReasonValue("UnexpectedAdmissionError")
+  }
+
+  /** Values for [[K8sServiceEndpointAddressType]].
+    */
+  abstract class K8sServiceEndpointAddressTypeValue(val value: String)
+  object K8sServiceEndpointAddressTypeValue {
+    implicit val attributeFromK8sServiceEndpointAddressTypeValue
+        : Attribute.From[K8sServiceEndpointAddressTypeValue, String] = _.value
+
+    /** IPv4 address type
+      */
+    case object Ipv4 extends K8sServiceEndpointAddressTypeValue("IPv4")
+
+    /** IPv6 address type
+      */
+    case object Ipv6 extends K8sServiceEndpointAddressTypeValue("IPv6")
+
+    /** FQDN address type
+      */
+    case object Fqdn extends K8sServiceEndpointAddressTypeValue("FQDN")
+  }
+
+  /** Values for [[K8sServiceEndpointCondition]].
+    */
+  abstract class K8sServiceEndpointConditionValue(val value: String)
+  object K8sServiceEndpointConditionValue {
+    implicit val attributeFromK8sServiceEndpointConditionValue
+        : Attribute.From[K8sServiceEndpointConditionValue, String] = _.value
+
+    /** The endpoint is ready to receive new connections.
+      */
+    case object Ready extends K8sServiceEndpointConditionValue("ready")
+
+    /** The endpoint is currently handling traffic.
+      */
+    case object Serving extends K8sServiceEndpointConditionValue("serving")
+
+    /** The endpoint is in the process of shutting down.
+      */
+    case object Terminating extends K8sServiceEndpointConditionValue("terminating")
+  }
+
+  /** Values for [[K8sServiceType]].
+    */
+  abstract class K8sServiceTypeValue(val value: String)
+  object K8sServiceTypeValue {
+    implicit val attributeFromK8sServiceTypeValue: Attribute.From[K8sServiceTypeValue, String] = _.value
+
+    /** ClusterIP service type
+      */
+    case object ClusterIp extends K8sServiceTypeValue("ClusterIP")
+
+    /** NodePort service type
+      */
+    case object NodePort extends K8sServiceTypeValue("NodePort")
+
+    /** LoadBalancer service type
+      */
+    case object LoadBalancer extends K8sServiceTypeValue("LoadBalancer")
+
+    /** ExternalName service type
+      */
+    case object ExternalName extends K8sServiceTypeValue("ExternalName")
   }
 
   /** Values for [[K8sVolumeType]].

@@ -36,6 +36,11 @@ object GenAiExperimentalAttributes {
   val GenAiAgentName: AttributeKey[String] =
     AttributeKey("gen_ai.agent.name")
 
+  /** The version of the GenAI agent.
+    */
+  val GenAiAgentVersion: AttributeKey[String] =
+    AttributeKey("gen_ai.agent.version")
+
   /** Deprecated, use Event API to report completions contents.
     */
   @deprecated("Removed, no replacement at this time.", "")
@@ -245,6 +250,14 @@ object GenAiExperimentalAttributes {
   val GenAiResponseModel: AttributeKey[String] =
     AttributeKey("gen_ai.response.model")
 
+  /** The query text used for retrieval.
+    *
+    * @note
+    *   <blockquote> [!Warning] This attribute may contain sensitive information.</blockquote>
+    */
+  val GenAiRetrievalQueryText: AttributeKey[String] =
+    AttributeKey("gen_ai.retrieval.query.text")
+
   /** Deprecated, use `gen_ai.provider.name` instead.
     */
   @deprecated("Replaced by `gen_ai.provider.name`.", "")
@@ -284,6 +297,22 @@ object GenAiExperimentalAttributes {
   val GenAiToolType: AttributeKey[String] =
     AttributeKey("gen_ai.tool.type")
 
+  /** The number of input tokens written to a provider-managed cache.
+    *
+    * @note
+    *   <p> The value SHOULD be included in `gen_ai.usage.input_tokens`.
+    */
+  val GenAiUsageCacheCreationInputTokens: AttributeKey[Long] =
+    AttributeKey("gen_ai.usage.cache_creation.input_tokens")
+
+  /** The number of input tokens served from a provider-managed cache.
+    *
+    * @note
+    *   <p> The value SHOULD be included in `gen_ai.usage.input_tokens`.
+    */
+  val GenAiUsageCacheReadInputTokens: AttributeKey[Long] =
+    AttributeKey("gen_ai.usage.cache_read.input_tokens")
+
   /** Deprecated, use `gen_ai.usage.output_tokens` instead.
     */
   @deprecated("Replaced by `gen_ai.usage.output_tokens`.", "")
@@ -291,6 +320,11 @@ object GenAiExperimentalAttributes {
     AttributeKey("gen_ai.usage.completion_tokens")
 
   /** The number of tokens used in the GenAI input (prompt).
+    *
+    * @note
+    *   <p> This value SHOULD include all types of input tokens, including cached tokens. Instrumentations SHOULD make a
+    *   best effort to populate this value, using a total provided by the provider when available or, depending on the
+    *   provider API, by summing different token types parsed from the provider output.
     */
   val GenAiUsageInputTokens: AttributeKey[Long] =
     AttributeKey("gen_ai.usage.input_tokens")
@@ -371,6 +405,11 @@ object GenAiExperimentalAttributes {
       * Create embeddings API</a>
       */
     case object Embeddings extends GenAiOperationNameValue("embeddings")
+
+    /** Retrieval operation such as <a href="https://platform.openai.com/docs/api-reference/vector-stores/search">OpenAI
+      * Search Vector Store API</a>
+      */
+    case object Retrieval extends GenAiOperationNameValue("retrieval")
 
     /** Create GenAI agent
       */

@@ -229,7 +229,7 @@ object McpExperimentalMetrics {
             "-32602",
           ),
           Requirement.conditionallyRequired("If response contains an error code."),
-          Stability.development
+          Stability.releaseCandidate
         )
 
       /** Server domain name if available without reverse DNS lookup; otherwise, IP address or Unix domain socket name.
@@ -664,7 +664,7 @@ object McpExperimentalMetrics {
             "-32602",
           ),
           Requirement.conditionallyRequired("If response contains an error code."),
-          Stability.development
+          Stability.releaseCandidate
         )
 
       val specs: List[AttributeSpec[_]] =

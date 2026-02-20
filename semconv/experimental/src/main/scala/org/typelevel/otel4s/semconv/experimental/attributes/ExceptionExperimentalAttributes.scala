@@ -22,6 +22,9 @@ package experimental.attributes
 object ExceptionExperimentalAttributes {
 
   /** The exception message.
+    *
+    * @note
+    *   <blockquote> [!WARNING] <p> This attribute may contain sensitive information.</blockquote>
     */
   @deprecated(
     "use `org.typelevel.otel4s.semconv.attributes.ExceptionAttributes.ExceptionMessage` instead.",

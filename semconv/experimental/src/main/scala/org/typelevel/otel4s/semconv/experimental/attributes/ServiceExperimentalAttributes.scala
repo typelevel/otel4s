@@ -21,6 +21,16 @@ package experimental.attributes
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/attributes/SemanticAttributes.scala.j2
 object ServiceExperimentalAttributes {
 
+  /** The operational criticality of the service.
+    *
+    * @note
+    *   <p> Application developers are encouraged to set `service.criticality` to express the operational importance of
+    *   their services. Telemetry consumers MAY use this attribute to optimize telemetry collection or improve user
+    *   experience.
+    */
+  val ServiceCriticality: AttributeKey[String] =
+    AttributeKey("service.criticality")
+
   /** The string ID of the service instance.
     *
     * @note
@@ -44,6 +54,10 @@ object ServiceExperimentalAttributes {
     *   Collectors can set the `service.instance.id` if they can unambiguously determine the service instance for that
     *   telemetry. This is typically the case for scraping receivers, as they know the target address and port.
     */
+  @deprecated(
+    "use `org.typelevel.otel4s.semconv.attributes.ServiceAttributes.ServiceInstanceId` instead.",
+    ""
+  )
   val ServiceInstanceId: AttributeKey[String] =
     AttributeKey("service.instance.id")
 
@@ -71,6 +85,10 @@ object ServiceExperimentalAttributes {
     *   services that have no explicit namespace defined (so the empty/unspecified namespace is simply one more valid
     *   namespace). Zero-length namespace string is assumed equal to unspecified namespace.
     */
+  @deprecated(
+    "use `org.typelevel.otel4s.semconv.attributes.ServiceAttributes.ServiceNamespace` instead.",
+    ""
+  )
   val ServiceNamespace: AttributeKey[String] =
     AttributeKey("service.namespace")
 
@@ -94,5 +112,28 @@ object ServiceExperimentalAttributes {
   )
   val ServiceVersion: AttributeKey[String] =
     AttributeKey("service.version")
+
+  /** Values for [[ServiceCriticality]].
+    */
+  abstract class ServiceCriticalityValue(val value: String)
+  object ServiceCriticalityValue {
+    implicit val attributeFromServiceCriticalityValue: Attribute.From[ServiceCriticalityValue, String] = _.value
+
+    /** Service is business-critical; downtime directly impacts revenue, user experience, or core functionality.
+      */
+    case object Critical extends ServiceCriticalityValue("critical")
+
+    /** Service is important but has degradation tolerance or fallback mechanisms.
+      */
+    case object High extends ServiceCriticalityValue("high")
+
+    /** Service provides supplementary functionality; degradation has limited user impact.
+      */
+    case object Medium extends ServiceCriticalityValue("medium")
+
+    /** Service is non-essential to core operations; used for background tasks or internal tools.
+      */
+    case object Low extends ServiceCriticalityValue("low")
+  }
 
 }

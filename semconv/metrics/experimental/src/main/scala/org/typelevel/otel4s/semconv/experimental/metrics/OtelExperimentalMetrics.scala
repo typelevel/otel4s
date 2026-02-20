@@ -755,7 +755,7 @@ object OtelExperimentalMetrics {
             "-32602",
           ),
           Requirement.recommended("when applicable"),
-          Stability.development
+          Stability.releaseCandidate
         )
 
       /** Server domain name if available without reverse DNS lookup; otherwise, IP address or Unix domain socket name.

@@ -21,33 +21,33 @@ package experimental.attributes
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/attributes/SemanticAttributes.scala.j2
 object MessageExperimentalAttributes {
 
-  /** Deprecated, use `rpc.message.compressed_size` instead.
+  /** Deprecated, no replacement at this time.
     */
-  @deprecated("Replaced by `rpc.message.compressed_size`.", "")
+  @deprecated("Deprecated, no replacement at this time.", "")
   val MessageCompressedSize: AttributeKey[Long] =
     AttributeKey("message.compressed_size")
 
-  /** Deprecated, use `rpc.message.id` instead.
+  /** Deprecated, no replacement at this time.
     */
-  @deprecated("Replaced by `rpc.message.id`.", "")
+  @deprecated("Deprecated, no replacement at this time.", "")
   val MessageId: AttributeKey[Long] =
     AttributeKey("message.id")
 
-  /** Deprecated, use `rpc.message.type` instead.
+  /** Deprecated, no replacement at this time.
     */
-  @deprecated("Replaced by `rpc.message.type`.", "")
+  @deprecated("Deprecated, no replacement at this time.", "")
   val MessageType: AttributeKey[String] =
     AttributeKey("message.type")
 
-  /** Deprecated, use `rpc.message.uncompressed_size` instead.
+  /** Deprecated, no replacement at this time.
     */
-  @deprecated("Replaced by `rpc.message.uncompressed_size`.", "")
+  @deprecated("Deprecated, no replacement at this time.", "")
   val MessageUncompressedSize: AttributeKey[Long] =
     AttributeKey("message.uncompressed_size")
 
   /** Values for [[MessageType]].
     */
-  @deprecated("Replaced by `rpc.message.type`.", "")
+  @deprecated("Deprecated, no replacement at this time.", "")
   abstract class MessageTypeValue(val value: String)
   @annotation.nowarn("cat=deprecation")
   object MessageTypeValue {

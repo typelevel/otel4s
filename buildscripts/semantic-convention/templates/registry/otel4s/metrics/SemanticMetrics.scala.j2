@@ -62,6 +62,7 @@
 {%- elif type == "stable" -%} Stability.stable
 {%- elif type == "release_candidate" -%} Stability.releaseCandidate
 {%- elif type == "alpha" -%} Stability.alpha
+{%- elif type == "beta" -%} Stability.beta
 {%- else -%} _unknown_stability_type_{{ type }}
 {%- endif -%}
 {%- endmacro -%}

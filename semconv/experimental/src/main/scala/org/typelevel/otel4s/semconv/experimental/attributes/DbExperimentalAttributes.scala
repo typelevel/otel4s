@@ -308,7 +308,10 @@ object DbExperimentalAttributes {
     *   analyzing telemetry for database calls involving complex queries. <p> Summary may be available to the
     *   instrumentation through instrumentation hooks or other means. If it is not available, instrumentations that
     *   support query parsing SHOULD generate a summary following <a
-    *   href="/docs/db/database-spans.md#generating-a-summary-of-the-query">Generating query summary</a> section.
+    *   href="/docs/db/database-spans.md#generating-a-summary-of-the-query">Generating query summary</a> section. <p>
+    *   For batch operations, if the individual operations are known to have the same query summary then that query
+    *   summary SHOULD be used prepended by `BATCH `, otherwise `db.query.summary` SHOULD be `BATCH` or some other
+    *   database system specific term if more applicable.
     */
   @deprecated(
     "use `org.typelevel.otel4s.semconv.attributes.DbAttributes.DbQuerySummary` instead.",

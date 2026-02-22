@@ -387,6 +387,104 @@ If created at app startup, its duration matches the application's lifetime.
 
 @:@
 
+### Tracing a stream
+
+To trace `fs.Stream` we can use `fs2.Stream#translate` with the captured tracing scope. 
+`translate` is the boundary where you *re-enter* a captured tracing scope.
+
+The general idea is to create a root span resource for each stream branch:
+```scala mdoc:silent
+import fs2.Stream
+
+def stream[F[_]: Async: Tracer]: Stream[F, Unit] =
+  Stream
+    .resource(Tracer[F].span("root-span").resource)
+    .flatMap { case SpanOps.Res(_, trace) =>
+      Stream("inner")
+        .evalMap { _ =>
+          // creates a child span of the root span  
+          Tracer[F].span("inner-span").use_
+        }
+        .translate(trace)
+    }
+```
+
+If you build a stream from a span resource:
+- `Tracer[F].span("...").resource` gives `SpanOps.Res(span, trace)`
+- `trace` is a natural transformation (`F ~> F`) that runs effects in that span scope
+- `stream.translate(trace)` applies that scope to all effects inside that stream branch
+
+Without `translate`, the current span context is either missing or incorrect in inner stream effects.
+
+#### Inner scopes and `flatMap`
+
+`flatMap` creates new stream structure, often evaluated in different internal contexts.
+Treat each `flatMap` branch as a potential scope boundary.
+
+Practical rules:  
+- When you enter a sub-stream that should keep parent context, apply `.translate(...)` at that boundary  
+- If that sub-stream creates another span resource, use that span's own `.trace` for deeper nested work  
+
+This produces explicit and predictable lineage:
+- root -> stage
+- stage -> nested stage
+- no accidental cross-branch parenting
+
+#### Multiple `evalMap` stages
+
+Calling `Tracer[F].span("...")` inside stream stages creates a new span each time the stage is evaluated.
+
+For example:
+
+```scala mdoc:compile-only
+import org.typelevel.otel4s.trace.SpanOps
+
+def pipeline[F[_]: Async: Tracer]: F[Unit] =
+  Stream("a", "b")
+    .covary[F]
+    .flatMap { element =>
+      Stream
+        .resource(Tracer[F].span(s"root-$element").resource)
+        .flatMap { case SpanOps.Res(_, trace) =>
+          Stream(element)
+            .evalMap(_ => Tracer[F].span("stage-1").use_)
+            .evalMap(_ => Tracer[F].span("stage-2").use_)
+            .translate(trace)
+        }
+    }
+    .compile
+    .drain
+```
+
+For each element, `stage-1` and `stage-2` are children of that element's root span (`root-a`, `root-b`, `root-c`).
+They are siblings, not parent/child, because each `use` closes before the next stage starts.
+
+The structure is:
+
+```mermaid
+gantt
+    dateFormat HH:mm:ss
+    axisFormat %M:%S
+
+    section Spans
+    root-a     :done, a1, 00:00:00, 00:00:10
+    stage-1    :done, a2, 00:00:01, 00:00:04
+    stage-2    :done, a3, 00:00:05, 00:00:09
+
+    root-b     :done, a4, 00:00:11, 00:00:21
+    stage-1    :done, a5, 00:00:12, 00:00:15
+    stage-2    :done, a6, 00:00:16, 00:00:20
+```
+
+#### Parallel work and cancellation
+
+In parallel combinators (`parEvalMap`, `parJoin`), spans can finish in any order.
+Structure is still deterministic if each parallel branch is created in the intended translated scope.
+
+For canceled branches:
+- if cancellation happens while a span is active, that span is ended with canceled/error status
+- sibling branches continue and keep the same parent lineage
+
 [opentelemetry-java]: https://github.com/open-telemetry/opentelemetry-java
 
 [opentelemetry-java-autoconfigure]: https://opentelemetry.io/docs/languages/java/configuration/

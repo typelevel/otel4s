@@ -73,4 +73,22 @@ object PprofExperimentalAttributes {
   val PprofProfileKeepFrames: AttributeKey[String] =
     AttributeKey("pprof.profile.keep_frames")
 
+  /** Records the pprof's default_sample_type in the original profile. Not set if the default sample type was missing.
+    *
+    * @note
+    *   <p> This attribute, if present, MUST be set at the scope level
+    *   (resource_profiles[].scope_profiles[].scope.attributes[]).
+    */
+  val PprofScopeDefaultSampleType: AttributeKey[String] =
+    AttributeKey("pprof.scope.default_sample_type")
+
+  /** Records the indexes of the sample types in the original profile.
+    *
+    * @note
+    *   <p> This attribute, if present, MUST be set at the scope level
+    *   (resource_profiles[].scope_profiles[].scope.attributes[]).
+    */
+  val PprofScopeSampleTypeOrder: AttributeKey[Seq[Long]] =
+    AttributeKey("pprof.scope.sample_type_order")
+
 }

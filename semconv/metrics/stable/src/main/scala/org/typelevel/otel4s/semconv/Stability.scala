@@ -26,9 +26,11 @@ object Stability {
   def development: Stability = Development
   def releaseCandidate: Stability = ReleaseCandidate
   def alpha: Stability = Alpha
+  def beta: Stability = Beta
 
   private case object Stable extends Stability
   private case object Development extends Stability
   private case object ReleaseCandidate extends Stability
   private case object Alpha extends Stability
+  private case object Beta extends Stability
 }

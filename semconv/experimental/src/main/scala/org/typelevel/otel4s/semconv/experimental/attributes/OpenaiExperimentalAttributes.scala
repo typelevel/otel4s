@@ -21,6 +21,11 @@ package experimental.attributes
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/attributes/SemanticAttributes.scala.j2
 object OpenaiExperimentalAttributes {
 
+  /** The type of OpenAI API being used.
+    */
+  val OpenaiApiType: AttributeKey[String] =
+    AttributeKey("openai.api.type")
+
   /** The service tier requested. May be a specific tier, default, or auto.
     */
   val OpenaiRequestServiceTier: AttributeKey[String] =
@@ -35,6 +40,22 @@ object OpenaiExperimentalAttributes {
     */
   val OpenaiResponseSystemFingerprint: AttributeKey[String] =
     AttributeKey("openai.response.system_fingerprint")
+
+  /** Values for [[OpenaiApiType]].
+    */
+  abstract class OpenaiApiTypeValue(val value: String)
+  object OpenaiApiTypeValue {
+    implicit val attributeFromOpenaiApiTypeValue: Attribute.From[OpenaiApiTypeValue, String] = _.value
+
+    /** The OpenAI <a href="https://developers.openai.com/api/reference/chat-completions/overview">Chat Completions
+      * API</a>.
+      */
+    case object ChatCompletions extends OpenaiApiTypeValue("chat_completions")
+
+    /** The OpenAI <a href="https://developers.openai.com/api/reference/responses/overview">Responses API</a>.
+      */
+    case object Responses extends OpenaiApiTypeValue("responses")
+  }
 
   /** Values for [[OpenaiRequestServiceTier]].
     */

@@ -181,6 +181,10 @@ lazy val `core-logs` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
     libraryDependencies ++= Seq(
       "org.typelevel" %%% "cats-laws" % CatsVersion % Test,
       "org.typelevel" %%% "discipline-munit" % MUnitDisciplineVersion % Test
+    ),
+    mimaBinaryIssueFilters ++= Seq(
+      // LogRecordBuilder is sealed
+      ProblemFilters.exclude[ReversedMissingMethodProblem]("org.typelevel.otel4s.logs.LogRecordBuilder.withException")
     )
   )
 

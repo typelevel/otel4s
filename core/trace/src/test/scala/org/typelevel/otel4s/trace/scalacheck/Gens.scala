@@ -40,7 +40,7 @@ trait Gens extends org.typelevel.otel4s.scalacheck.Gens {
     } yield SpanContext.SpanId.fromLong(value)
 
   val traceFlags: Gen[TraceFlags] =
-    Gen.oneOf(TraceFlags.Sampled, TraceFlags.Default)
+    Gen.chooseNum(0, 255).map(byte => TraceFlags.fromByte(byte.toByte))
 
   val traceState: Gen[TraceState] =
     for {

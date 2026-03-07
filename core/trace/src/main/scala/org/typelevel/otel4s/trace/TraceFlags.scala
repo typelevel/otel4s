@@ -39,6 +39,18 @@ sealed trait TraceFlags {
     */
   def isSampled: Boolean
 
+  /** Returns `true` if the random-trace-id bit is on, otherwise `false`.
+    */
+  def isTraceIdRandom: Boolean
+
+  /** Returns a [[TraceFlags]] with the sampling bit set or cleared.
+    */
+  def withSampled(value: Boolean): TraceFlags
+
+  /** Returns a [[TraceFlags]] with the random-trace-id bit set or cleared.
+    */
+  def withRandomTraceId(value: Boolean): TraceFlags
+
   @threadUnsafe3
   override final lazy val hashCode: Int =
     Hash[TraceFlags].hash(this)
@@ -55,12 +67,16 @@ sealed trait TraceFlags {
 
 object TraceFlags {
   private val SampledMask: Byte = 0x01
+  private val RandomTraceIdMask: Byte = 0x02
 
   // The default trace flags (not sampled): with all flag bits off
   val Default: TraceFlags = fromByte(0x00)
 
   // The sampled trace flags: the sampled bit is on
   val Sampled: TraceFlags = fromByte(SampledMask)
+
+  // The random trace id flags: the random-trace-id bit is on
+  val RandomTraceId: TraceFlags = fromByte(RandomTraceIdMask)
 
   /** Creates the [[TraceFlags]] from the given byte representation.
     */
@@ -88,6 +104,21 @@ object TraceFlags {
       */
     def isSampled: Boolean =
       (byte & TraceFlags.SampledMask) == TraceFlags.SampledMask
+
+    /** If set, the second least significant bit denotes the trace id was generated randomly.
+      */
+    def isTraceIdRandom: Boolean =
+      (byte & TraceFlags.RandomTraceIdMask) == TraceFlags.RandomTraceIdMask
+
+    def withSampled(value: Boolean): TraceFlags = {
+      val next = if (value) byte | TraceFlags.SampledMask else byte & ~TraceFlags.SampledMask
+      TraceFlags.fromByte(next.toByte)
+    }
+
+    def withRandomTraceId(value: Boolean): TraceFlags = {
+      val next = if (value) byte | TraceFlags.RandomTraceIdMask else byte & ~TraceFlags.RandomTraceIdMask
+      TraceFlags.fromByte(next.toByte)
+    }
   }
 
 }

@@ -24,6 +24,7 @@ import cats.syntax.functor._
 import cats.syntax.parallel._
 import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdkBuilder
 import io.opentelemetry.sdk.metrics.Aggregation
+import io.opentelemetry.sdk.metrics.ExplicitBucketHistogramOptions
 import io.opentelemetry.sdk.metrics.InstrumentSelector
 import io.opentelemetry.sdk.metrics.InstrumentType
 import io.opentelemetry.sdk.metrics.View
@@ -83,7 +84,10 @@ object HistogramBucketsExample extends IOApp.Simple {
               .setName("service.work.duration")
               .setAggregation(
                 Aggregation.explicitBucketHistogram(
-                  ju.Arrays.asList(.005, .01, .025, .05, .075, .1, .25, .5)
+                  ExplicitBucketHistogramOptions
+                    .builder()
+                    .setBucketBoundaries(ju.Arrays.asList(.005, .01, .025, .05, .075, .1, .25, .5))
+                    .build(),
                 )
               )
               .build()

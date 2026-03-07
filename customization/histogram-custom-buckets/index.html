@@ -172,8 +172,8 @@
             <p>Add settings to the <code>build.sbt</code>:</p>
             <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">libraryDependencies</span><span> ++= </span><span class="type-name">Seq</span><span>(
   </span><span class="string-literal">&quot;org.typelevel&quot;</span><span> %% </span><span class="string-literal">&quot;otel4s-oteljava&quot;</span><span> % </span><span class="string-literal">&quot;0.15.1&quot;</span><span>, </span><span class="comment">// &lt;1&gt;
-</span><span>  </span><span class="string-literal">&quot;io.opentelemetry&quot;</span><span> % </span><span class="string-literal">&quot;opentelemetry-exporter-otlp&quot;</span><span> % </span><span class="string-literal">&quot;1.59.0&quot;</span><span> % </span><span class="type-name">Runtime</span><span>, </span><span class="comment">// &lt;2&gt;
-</span><span>  </span><span class="string-literal">&quot;io.opentelemetry&quot;</span><span> % </span><span class="string-literal">&quot;opentelemetry-sdk-extension-autoconfigure&quot;</span><span> % </span><span class="string-literal">&quot;1.59.0&quot;</span><span> % </span><span class="type-name">Runtime</span><span> </span><span class="comment">// &lt;3&gt;
+</span><span>  </span><span class="string-literal">&quot;io.opentelemetry&quot;</span><span> % </span><span class="string-literal">&quot;opentelemetry-exporter-otlp&quot;</span><span> % </span><span class="string-literal">&quot;1.60.0&quot;</span><span> % </span><span class="type-name">Runtime</span><span>, </span><span class="comment">// &lt;2&gt;
+</span><span>  </span><span class="string-literal">&quot;io.opentelemetry&quot;</span><span> % </span><span class="string-literal">&quot;opentelemetry-sdk-extension-autoconfigure&quot;</span><span> % </span><span class="string-literal">&quot;1.60.0&quot;</span><span> % </span><span class="type-name">Runtime</span><span> </span><span class="comment">// &lt;3&gt;
 </span><span>)
 </span><span class="identifier">run</span><span> / </span><span class="identifier">fork</span><span> := </span><span class="boolean-literal">true</span><span>
 </span><span class="identifier">javaOptions</span><span> += </span><span class="string-literal">&quot;-Dotel.service.name=histogram-buckets-example&quot;</span><span> </span><span class="comment">// &lt;4&gt;</span></code></pre>
@@ -181,8 +181,8 @@
           <div class="tab-content" data-choice-name="scala-cli">
             <p>Add directives to the <code>histogram-buckets.scala</code>:</p>
             <pre class="keep-together pdf epub"><code class="nohighlight"><span class="comment">//&gt; using dep &quot;org.typelevel::otel4s-oteljava:0.15.1&quot; // &lt;1&gt;
-//&gt; using dep &quot;io.opentelemetry:opentelemetry-exporter-otlp:1.59.0&quot; // &lt;2&gt;
-//&gt; using dep &quot;io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:1.59.0&quot; // &lt;3&gt;
+//&gt; using dep &quot;io.opentelemetry:opentelemetry-exporter-otlp:1.60.0&quot; // &lt;2&gt;
+//&gt; using dep &quot;io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:1.60.0&quot; // &lt;3&gt;
 //&gt; using javaOpt &quot;-Dotel.service.name=histogram-buckets-example&quot; // &lt;4&gt;</span></code></pre>
           </div>
         </div>
@@ -220,14 +220,19 @@
         <h4 id="view-definition" class="section"><a class="anchor-link left" href="#view-definition"><i class="icofont-laika link">&#xef71;</i></a>View definition</h4>
         <p>The view determines how the selected instruments should be changed or aggregated.</p>
         <p>In our particular case, we create a histogram view with custom buckets:［.005, .01, .025, .05, .075, .1, .25, .5］.</p>
-        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">io</span><span>.</span><span class="identifier">opentelemetry</span><span>.</span><span class="identifier">sdk</span><span>.</span><span class="identifier">metrics</span><span>.{</span><span class="type-name">Aggregation</span><span>, </span><span class="type-name">View</span><span>}
+        <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">io</span><span>.</span><span class="identifier">opentelemetry</span><span>.</span><span class="identifier">sdk</span><span>.</span><span class="identifier">metrics</span><span>.{</span><span class="type-name">Aggregation</span><span>, </span><span class="type-name">View</span><span>, </span><span class="type-name">ExplicitBucketHistogramOptions</span><span>}
 
 </span><span class="type-name">View</span><span>
   .</span><span class="identifier">builder</span><span>()
   .</span><span class="identifier">setName</span><span>(</span><span class="string-literal">&quot;service.work.duration&quot;</span><span>)
   .</span><span class="identifier">setAggregation</span><span>(
     </span><span class="type-name">Aggregation</span><span>.</span><span class="identifier">explicitBucketHistogram</span><span>(
-      </span><span class="identifier">java</span><span>.</span><span class="identifier">util</span><span>.</span><span class="type-name">Arrays</span><span>.</span><span class="identifier">asList</span><span>(</span><span class="number-literal">.005</span><span>, </span><span class="number-literal">.01</span><span>, </span><span class="number-literal">.025</span><span>, </span><span class="number-literal">.05</span><span>, </span><span class="number-literal">.075</span><span>, </span><span class="number-literal">.1</span><span>, </span><span class="number-literal">.25</span><span>, </span><span class="number-literal">.5</span><span>)
+      </span><span class="type-name">ExplicitBucketHistogramOptions</span><span>
+        .</span><span class="identifier">builder</span><span>()
+        .</span><span class="identifier">setBucketBoundaries</span><span>(
+          </span><span class="identifier">java</span><span>.</span><span class="identifier">util</span><span>.</span><span class="type-name">Arrays</span><span>.</span><span class="identifier">asList</span><span>(</span><span class="number-literal">.005</span><span>, </span><span class="number-literal">.01</span><span>, </span><span class="number-literal">.025</span><span>, </span><span class="number-literal">.05</span><span>, </span><span class="number-literal">.075</span><span>, </span><span class="number-literal">.1</span><span>, </span><span class="number-literal">.25</span><span>, </span><span class="number-literal">.5</span><span>)
+        )
+        .</span><span class="identifier">build</span><span>()
     )
   )
   .</span><span class="identifier">build</span><span>()</span></code></pre>
@@ -243,6 +248,7 @@
 </span><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">syntax</span><span>.</span><span class="identifier">functor</span><span>.</span><span class="identifier">_</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">syntax</span><span>.</span><span class="identifier">parallel</span><span>.</span><span class="identifier">_</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">io</span><span>.</span><span class="identifier">opentelemetry</span><span>.</span><span class="identifier">sdk</span><span>.</span><span class="identifier">metrics</span><span>.</span><span class="type-name">Aggregation</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">io</span><span>.</span><span class="identifier">opentelemetry</span><span>.</span><span class="identifier">sdk</span><span>.</span><span class="identifier">metrics</span><span>.</span><span class="type-name">ExplicitBucketHistogramOptions</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">io</span><span>.</span><span class="identifier">opentelemetry</span><span>.</span><span class="identifier">sdk</span><span>.</span><span class="identifier">metrics</span><span>.</span><span class="type-name">InstrumentSelector</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">io</span><span>.</span><span class="identifier">opentelemetry</span><span>.</span><span class="identifier">sdk</span><span>.</span><span class="identifier">metrics</span><span>.</span><span class="type-name">InstrumentType</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">io</span><span>.</span><span class="identifier">opentelemetry</span><span>.</span><span class="identifier">sdk</span><span>.</span><span class="identifier">metrics</span><span>.</span><span class="type-name">View</span><span>
@@ -299,7 +305,12 @@
                 .</span><span class="identifier">setName</span><span>(</span><span class="string-literal">&quot;service.work.duration&quot;</span><span>)
                 .</span><span class="identifier">setAggregation</span><span>(
                   </span><span class="type-name">Aggregation</span><span>.</span><span class="identifier">explicitBucketHistogram</span><span>(
-                    </span><span class="identifier">java</span><span>.</span><span class="identifier">util</span><span>.</span><span class="type-name">Arrays</span><span>.</span><span class="identifier">asList</span><span>(</span><span class="number-literal">.005</span><span>, </span><span class="number-literal">.01</span><span>, </span><span class="number-literal">.025</span><span>, </span><span class="number-literal">.05</span><span>, </span><span class="number-literal">.075</span><span>, </span><span class="number-literal">.1</span><span>, </span><span class="number-literal">.25</span><span>, </span><span class="number-literal">.5</span><span>)
+                    </span><span class="type-name">ExplicitBucketHistogramOptions</span><span>
+                      .</span><span class="identifier">builder</span><span>()
+                      .</span><span class="identifier">setBucketBoundaries</span><span>(
+                        </span><span class="identifier">java</span><span>.</span><span class="identifier">util</span><span>.</span><span class="type-name">Arrays</span><span>.</span><span class="identifier">asList</span><span>(</span><span class="number-literal">.005</span><span>, </span><span class="number-literal">.01</span><span>, </span><span class="number-literal">.025</span><span>, </span><span class="number-literal">.05</span><span>, </span><span class="number-literal">.075</span><span>, </span><span class="number-literal">.1</span><span>, </span><span class="number-literal">.25</span><span>, </span><span class="number-literal">.5</span><span>)
+                      )
+                      .</span><span class="identifier">build</span><span>()
                   )
                 )
                 .</span><span class="identifier">build</span><span>()

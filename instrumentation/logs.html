@@ -227,11 +227,9 @@
 </span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.{</span><span class="type-name">AnyValue</span><span>, </span><span class="type-name">Attribute</span><span>, </span><span class="type-name">Attributes</span><span>}
 </span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">logs</span><span>.{</span><span class="type-name">LogRecordBuilder</span><span>, </span><span class="type-name">LoggerProvider</span><span>, </span><span class="type-name">Severity</span><span>}
 </span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">logs</span><span>.{</span><span class="type-name">Logger</span><span> =&gt; </span><span class="type-name">OtelLogger</span><span>}
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">semconv</span><span>.</span><span class="identifier">attributes</span><span>.{</span><span class="type-name">CodeAttributes</span><span>, </span><span class="type-name">ExceptionAttributes</span><span>}
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">semconv</span><span>.</span><span class="identifier">attributes</span><span>.</span><span class="type-name">CodeAttributes</span><span>
 
 </span><span class="keyword">import</span><span> </span><span class="identifier">scribe</span><span>.</span><span class="identifier">_</span><span>
-
-</span><span class="keyword">import</span><span> </span><span class="identifier">java</span><span>.</span><span class="identifier">io</span><span>.{</span><span class="type-name">PrintWriter</span><span>, </span><span class="type-name">StringWriter</span><span>}
 
 </span><span class="keyword">import</span><span> </span><span class="identifier">scala</span><span>.</span><span class="identifier">concurrent</span><span>.</span><span class="identifier">duration</span><span>.</span><span class="identifier">_</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">scala</span><span>.</span><span class="identifier">util</span><span>.</span><span class="identifier">chaining</span><span>.</span><span class="identifier">_</span><span>
@@ -299,7 +297,7 @@
           .</span><span class="identifier">collect</span><span>  {
             </span><span class="keyword">case</span><span> </span><span class="identifier">scribe</span><span>.</span><span class="identifier">throwable</span><span>.</span><span class="type-name">TraceLoggableMessage</span><span>(</span><span class="identifier">throwable</span><span>) =&gt; </span><span class="identifier">throwable</span><span>
           }
-          .</span><span class="identifier">foldLeft</span><span>(</span><span class="identifier">builder</span><span>)((</span><span class="identifier">b</span><span>, </span><span class="identifier">t</span><span>) =&gt; </span><span class="identifier">b</span><span>.</span><span class="identifier">addAttributes</span><span>(</span><span class="identifier">exceptionAttributes</span><span>(</span><span class="identifier">t</span><span>)))
+          .</span><span class="identifier">foldLeft</span><span>(</span><span class="identifier">builder</span><span>)((</span><span class="identifier">b</span><span>, </span><span class="identifier">t</span><span>) =&gt; </span><span class="identifier">b</span><span>.</span><span class="identifier">withException</span><span>(</span><span class="identifier">t</span><span>))
       }
       </span><span class="comment">// context
 </span><span>      </span><span class="comment">// MDC
@@ -327,28 +325,6 @@
     </span><span class="identifier">builder</span><span> ++= </span><span class="identifier">record</span><span>.</span><span class="identifier">line</span><span>.</span><span class="identifier">map</span><span>(</span><span class="identifier">line</span><span> =&gt; </span><span class="type-name">CodeAttributes</span><span>.</span><span class="type-name">CodeLineNumber</span><span>(</span><span class="identifier">line</span><span>.</span><span class="identifier">toLong</span><span>))
     </span><span class="identifier">builder</span><span> ++= </span><span class="identifier">record</span><span>.</span><span class="identifier">column</span><span>.</span><span class="identifier">map</span><span>(</span><span class="identifier">col</span><span> =&gt; </span><span class="type-name">CodeAttributes</span><span>.</span><span class="type-name">CodeColumnNumber</span><span>(</span><span class="identifier">col</span><span>.</span><span class="identifier">toLong</span><span>))
     </span><span class="identifier">builder</span><span> ++= </span><span class="identifier">record</span><span>.</span><span class="identifier">methodName</span><span>.</span><span class="identifier">map</span><span>(</span><span class="identifier">name</span><span> =&gt; </span><span class="type-name">CodeAttributes</span><span>.</span><span class="type-name">CodeFunctionName</span><span>(</span><span class="identifier">name</span><span>))
-    
-    </span><span class="identifier">builder</span><span>.</span><span class="identifier">result</span><span>()
-  }
-
-  </span><span class="keyword">private</span><span> </span><span class="keyword">def</span><span> </span><span class="declaration-name">exceptionAttributes</span><span>(</span><span class="identifier">exception</span><span>: </span><span class="type-name">Throwable</span><span>): </span><span class="type-name">Attributes</span><span> = {
-    </span><span class="keyword">val</span><span> </span><span class="identifier">builder</span><span> = </span><span class="type-name">Attributes</span><span>.</span><span class="identifier">newBuilder</span><span>
-
-    </span><span class="identifier">builder</span><span> += </span><span class="type-name">ExceptionAttributes</span><span>.</span><span class="type-name">ExceptionType</span><span>(</span><span class="identifier">exception</span><span>.</span><span class="identifier">getClass</span><span>.</span><span class="identifier">getName</span><span>)
-
-    </span><span class="keyword">val</span><span> </span><span class="identifier">message</span><span> = </span><span class="identifier">exception</span><span>.</span><span class="identifier">getMessage</span><span>
-    </span><span class="keyword">if</span><span> (</span><span class="identifier">message</span><span> != </span><span class="literal-value">null</span><span>) {
-      </span><span class="identifier">builder</span><span> += </span><span class="type-name">ExceptionAttributes</span><span>.</span><span class="type-name">ExceptionMessage</span><span>(</span><span class="identifier">message</span><span>)
-
-    }
-    
-    </span><span class="keyword">if</span><span> (</span><span class="identifier">exception</span><span>.</span><span class="identifier">getStackTrace</span><span>.</span><span class="identifier">nonEmpty</span><span>) {
-      </span><span class="keyword">val</span><span> </span><span class="identifier">stringWriter</span><span> = </span><span class="keyword">new</span><span> </span><span class="type-name">StringWriter</span><span>()
-      </span><span class="keyword">val</span><span> </span><span class="identifier">printWriter</span><span> = </span><span class="keyword">new</span><span> </span><span class="type-name">PrintWriter</span><span>(</span><span class="identifier">stringWriter</span><span>)
-
-      </span><span class="identifier">exception</span><span>.</span><span class="identifier">printStackTrace</span><span>(</span><span class="identifier">printWriter</span><span>)
-      </span><span class="identifier">builder</span><span> += </span><span class="type-name">ExceptionAttributes</span><span>.</span><span class="type-name">ExceptionStacktrace</span><span>(</span><span class="identifier">stringWriter</span><span>.</span><span class="identifier">toString</span><span>)
-    }
     
     </span><span class="identifier">builder</span><span>.</span><span class="identifier">result</span><span>()
   }

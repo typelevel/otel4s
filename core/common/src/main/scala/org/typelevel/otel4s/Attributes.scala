@@ -120,7 +120,7 @@ sealed trait Attributes
     Show[Attributes].show(this)
 }
 
-object Attributes extends SpecificIterableFactory[Attribute[_], Attributes] {
+object Attributes extends SpecificIterableFactory[Attribute[_], Attributes] with AttributesScalaVersionCompanion {
   private val Empty = new MapAttributes(Map.empty)
 
   /** Allows creating [[Attributes]] from an arbitrary type `A`.
@@ -138,9 +138,11 @@ object Attributes extends SpecificIterableFactory[Attribute[_], Attributes] {
     * @tparam A
     *   the type of the value
     */
-  trait Make[A] {
+  trait Make[-A] {
     def make(a: A): Attributes
   }
+
+  object Make extends MakeCompanion
 
   /** Creates [[Attributes]] with the given `attributes`.
     *

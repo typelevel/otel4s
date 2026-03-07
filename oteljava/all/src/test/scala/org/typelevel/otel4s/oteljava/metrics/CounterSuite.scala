@@ -88,7 +88,10 @@ class CounterSuite extends CatsEffectSuite {
           .builder()
           .setAggregation(
             Aggregation.explicitBucketHistogram(
-              HistogramBuckets.map(Double.box).asJava
+              ExplicitBucketHistogramOptions
+                .builder()
+                .setBucketBoundaries(HistogramBuckets.map(Double.box).asJava)
+                .build(),
             )
           )
           .build()

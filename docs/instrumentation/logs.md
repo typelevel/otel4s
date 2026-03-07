@@ -90,11 +90,9 @@ import cats.syntax.all._
 import org.typelevel.otel4s.{AnyValue, Attribute, Attributes}
 import org.typelevel.otel4s.logs.{LogRecordBuilder, LoggerProvider, Severity}
 import org.typelevel.otel4s.logs.{Logger => OtelLogger}
-import org.typelevel.otel4s.semconv.attributes.{CodeAttributes, ExceptionAttributes}
+import org.typelevel.otel4s.semconv.attributes.CodeAttributes
 
 import scribe._
-
-import java.io.{PrintWriter, StringWriter}
 
 import scala.concurrent.duration._
 import scala.util.chaining._
@@ -162,7 +160,7 @@ final class ScriberLoggerSupport[F[_]: Monad, Ctx](
           .collect  {
             case scribe.throwable.TraceLoggableMessage(throwable) => throwable
           }
-          .foldLeft(builder)((b, t) => b.addAttributes(exceptionAttributes(t)))
+          .foldLeft(builder)((b, t) => b.withException(t))
       }
       // context
       // MDC
@@ -190,28 +188,6 @@ final class ScriberLoggerSupport[F[_]: Monad, Ctx](
     builder ++= record.line.map(line => CodeAttributes.CodeLineNumber(line.toLong))
     builder ++= record.column.map(col => CodeAttributes.CodeColumnNumber(col.toLong))
     builder ++= record.methodName.map(name => CodeAttributes.CodeFunctionName(name))
-    
-    builder.result()
-  }
-
-  private def exceptionAttributes(exception: Throwable): Attributes = {
-    val builder = Attributes.newBuilder
-
-    builder += ExceptionAttributes.ExceptionType(exception.getClass.getName)
-
-    val message = exception.getMessage
-    if (message != null) {
-      builder += ExceptionAttributes.ExceptionMessage(message)
-
-    }
-    
-    if (exception.getStackTrace.nonEmpty) {
-      val stringWriter = new StringWriter()
-      val printWriter = new PrintWriter(stringWriter)
-
-      exception.printStackTrace(printWriter)
-      builder += ExceptionAttributes.ExceptionStacktrace(stringWriter.toString)
-    }
     
     builder.result()
   }

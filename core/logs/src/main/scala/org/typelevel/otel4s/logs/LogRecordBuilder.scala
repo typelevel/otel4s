@@ -114,6 +114,13 @@ sealed trait LogRecordBuilder[F[_], Ctx] {
     */
   def withEventName(eventName: String): LogRecordBuilder[F, Ctx]
 
+  /** Sets `exception.*` attributes based on the given `Throwable`:
+    *   - `exception.type` is set to the exception class name
+    *   - `exception.message` is set to the exception message
+    *   - `exception.stacktrace` is set to the exception stack trace as a string
+    */
+  def withException(exception: Throwable): LogRecordBuilder[F, Ctx]
+
   /** Adds the given attribute to the builder.
     *
     * @note
@@ -162,6 +169,7 @@ object LogRecordBuilder {
       def withSeverityText(severityText: String): LogRecordBuilder[F, Ctx] = this
       def withBody(body: AnyValue): LogRecordBuilder[F, Ctx] = this
       def withEventName(eventName: String): LogRecordBuilder[F, Ctx] = this
+      def withException(exception: Throwable): LogRecordBuilder[F, Ctx] = this
       def addAttribute[A](attribute: Attribute[A]): LogRecordBuilder[F, Ctx] = this
       def addAttributes(attributes: Attribute[_]*): LogRecordBuilder[F, Ctx] = this
       def addAttributes(attributes: immutable.Iterable[Attribute[_]]): LogRecordBuilder[F, Ctx] = this
@@ -199,6 +207,9 @@ object LogRecordBuilder {
 
     def withEventName(eventName: String): LogRecordBuilder[G, Ctx] =
       builder.withEventName(eventName).liftTo
+
+    def withException(exception: Throwable): LogRecordBuilder[G, Ctx] =
+      builder.withException(exception).liftTo
 
     def addAttribute[A](attribute: Attribute[A]): LogRecordBuilder[G, Ctx] =
       builder.addAttribute(attribute).liftTo

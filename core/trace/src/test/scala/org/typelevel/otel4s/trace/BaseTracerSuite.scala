@@ -134,7 +134,7 @@ abstract class BaseTracerSuite[Ctx, K[X] <: Key[X]](implicit
           } yield {
             assertEquals(carrier.get("key"), Some("value"))
             val expected =
-              s"00-${span.context.traceIdHex}-${span.context.spanIdHex}-01"
+              s"00-${span.context.traceIdHex}-${span.context.spanIdHex}-03"
             assertEquals(carrier.get("traceparent"), Some(expected))
           }
         }

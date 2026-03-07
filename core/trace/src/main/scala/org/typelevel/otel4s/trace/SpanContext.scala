@@ -24,8 +24,8 @@ import scodec.bits.ByteVector
 
 /** A span context contains the state that must propagate to child spans and across process boundaries.
   *
-  * It contains the identifiers (a `trace_id` and `span_id`) associated with the span and a set of flags (currently only
-  * whether the context is sampled or not), as well as the remote flag.
+  * It contains the identifiers (a `trace_id` and `span_id`) associated with the span and a set of trace flags, as well
+  * as the remote flag.
   *
   * @see
   *   [[https://opentelemetry.io/docs/specs/otel/trace/api/#spancontext]]

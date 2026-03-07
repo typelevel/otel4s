@@ -224,7 +224,11 @@ lazy val `core-trace` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
       ProblemFilters.exclude[MissingClassProblem]("org.typelevel.otel4s.trace.TracerBuilder$MappedK"),
       ProblemFilters.exclude[MissingClassProblem]("org.typelevel.otel4s.trace.TracerProvider$MappedK"),
       // Span.Backend is a sealed trait
-      ProblemFilters.exclude[ReversedMissingMethodProblem]("org.typelevel.otel4s.trace.Span#Backend.isRecording")
+      ProblemFilters.exclude[ReversedMissingMethodProblem]("org.typelevel.otel4s.trace.Span#Backend.isRecording"),
+      // TraceFlags is a sealed trait
+      ProblemFilters.exclude[ReversedMissingMethodProblem]("org.typelevel.otel4s.trace.TraceFlags.isTraceIdRandom"),
+      ProblemFilters.exclude[ReversedMissingMethodProblem]("org.typelevel.otel4s.trace.TraceFlags.withSampled"),
+      ProblemFilters.exclude[ReversedMissingMethodProblem]("org.typelevel.otel4s.trace.TraceFlags.withRandomTraceId"),
     ),
   )
 

@@ -40,13 +40,40 @@ class TraceFlagsSuite extends DisciplineSuite {
   test("default instances") {
     assertEquals(TraceFlags.Default.toHex, "00")
     assertEquals(TraceFlags.Sampled.toHex, "01")
+    assertEquals(TraceFlags.RandomTraceId.toHex, "02")
   }
 
   test("is sampled") {
     assertEquals(TraceFlags.fromByte(0xff.toByte).isSampled, true)
     assertEquals(TraceFlags.fromByte(0x01).isSampled, true)
+    assertEquals(TraceFlags.fromByte(0x02).isSampled, false)
+    assertEquals(TraceFlags.fromByte(0x03).isSampled, true)
     assertEquals(TraceFlags.fromByte(0x05).isSampled, true)
     assertEquals(TraceFlags.fromByte(0x00).isSampled, false)
+  }
+
+  test("is trace id random") {
+    assertEquals(TraceFlags.fromByte(0xff.toByte).isTraceIdRandom, true)
+    assertEquals(TraceFlags.fromByte(0x01).isTraceIdRandom, false)
+    assertEquals(TraceFlags.fromByte(0x02).isTraceIdRandom, true)
+    assertEquals(TraceFlags.fromByte(0x03).isTraceIdRandom, true)
+    assertEquals(TraceFlags.fromByte(0x05).isTraceIdRandom, false)
+    assertEquals(TraceFlags.fromByte(0x00).isTraceIdRandom, false)
+  }
+
+  test("set and clear sampled bit") {
+    assertEquals(TraceFlags.Default.withSampled(value = true).toHex, "01")
+    assertEquals(TraceFlags.fromByte(0x03).withSampled(value = false).toHex, "02")
+  }
+
+  test("set and clear random-trace-id bit") {
+    assertEquals(TraceFlags.Default.withRandomTraceId(value = true).toHex, "02")
+    assertEquals(TraceFlags.fromByte(0x03).withRandomTraceId(value = false).toHex, "01")
+  }
+
+  test("bit mutation idempotency") {
+    assertEquals(TraceFlags.Default.withSampled(value = true).withSampled(value = true).toHex, "01")
+    assertEquals(TraceFlags.Default.withRandomTraceId(value = true).withRandomTraceId(value = true).toHex, "02")
   }
 
   test("create from byte") {

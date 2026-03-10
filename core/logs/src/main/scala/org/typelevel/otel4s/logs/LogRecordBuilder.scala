@@ -18,9 +18,9 @@ package org.typelevel.otel4s.logs
 
 import cats.Applicative
 import cats.Monad
+import cats.mtl.LiftValue
 import org.typelevel.otel4s.AnyValue
 import org.typelevel.otel4s.Attribute
-import org.typelevel.otel4s.KindTransformer
 
 import java.time.Instant
 import scala.collection.immutable
@@ -150,8 +150,8 @@ sealed trait LogRecordBuilder[F[_], Ctx] {
 
   /** Modify the context `F` using an implicit [[KindTransformer]] from `F` to `G`.
     */
-  def liftTo[G[_]](implicit G: Monad[G], kt: KindTransformer[F, G]): LogRecordBuilder[G, Ctx] =
-    new LogRecordBuilder.MappedK(this)
+  def liftTo[G[_]](implicit G: Monad[G], lift: LiftValue[F, G]): LogRecordBuilder[G, Ctx] =
+    new LogRecordBuilder.Lifted(this)
 
 }
 
@@ -176,9 +176,9 @@ object LogRecordBuilder {
       def emit: F[Unit] = Applicative[F].unit
     }
 
-  private final class MappedK[F[_], G[_]: Monad, Ctx](
+  private final class Lifted[F[_], G[_], Ctx](
       builder: LogRecordBuilder[F, Ctx]
-  )(implicit kt: KindTransformer[F, G])
+  )(implicit G: Monad[G], lift: LiftValue[F, G])
       extends LogRecordBuilder[G, Ctx] {
 
     def withTimestamp(timestamp: FiniteDuration): LogRecordBuilder[G, Ctx] =
@@ -221,7 +221,7 @@ object LogRecordBuilder {
       builder.addAttributes(attributes).liftTo
 
     def emit: G[Unit] =
-      kt.liftK(builder.emit)
+      lift(builder.emit)
   }
 
 }

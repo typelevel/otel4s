@@ -220,13 +220,6 @@ lazy val `core-trace` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
       "org.typelevel" %%% "scalacheck-effect-munit" % MUnitScalaCheckEffectVersion % Test,
     ),
     mimaBinaryIssueFilters ++= Seq(
-      // # 1002
-      // all of these classes are private (and not serializable), so this is safe
-      ProblemFilters.exclude[MissingClassProblem]("org.typelevel.otel4s.trace.SpanBuilder$MappedK"),
-      ProblemFilters.exclude[MissingClassProblem]("org.typelevel.otel4s.trace.SpanOps$MappedK"),
-      ProblemFilters.exclude[MissingClassProblem]("org.typelevel.otel4s.trace.Tracer$MappedK"),
-      ProblemFilters.exclude[MissingClassProblem]("org.typelevel.otel4s.trace.TracerBuilder$MappedK"),
-      ProblemFilters.exclude[MissingClassProblem]("org.typelevel.otel4s.trace.TracerProvider$MappedK"),
       // Span.Backend is a sealed trait
       ProblemFilters.exclude[ReversedMissingMethodProblem]("org.typelevel.otel4s.trace.Span#Backend.isRecording"),
       // TraceFlags is a sealed trait

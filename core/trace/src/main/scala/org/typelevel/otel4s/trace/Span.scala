@@ -18,6 +18,7 @@ package org.typelevel.otel4s
 package trace
 
 import cats.Applicative
+import cats.mtl.LiftValue
 import cats.~>
 import org.typelevel.otel4s.meta.InstrumentMeta
 
@@ -115,15 +116,16 @@ sealed trait Span[F[_]] extends SpanMacro[F] {
     backend.end(timestamp)
 
   /** Modify the context `F` using the transformation `f`. */
+  @deprecated("arbitrary transformations not supported in the future; use `liftTo` instead", since = "otel4s 0.16.0")
   def mapK[G[_]](f: F ~> G): Span[G] = Span.fromBackend(backend.mapK(f))
 
   /** Modify the context `F` using an implicit [[KindTransformer]] from `F` to `G`.
     */
-  final def liftTo[G[_]](implicit kt: KindTransformer[F, G]): Span[G] =
-    mapK(kt.liftK)
+  final def liftTo[G[_]](implicit lift: LiftValue[F, G]): Span[G] =
+    Span.fromBackend(backend.liftTo[G])
 
   @deprecated("use `liftTo` instead", since = "otel4s 0.14.0")
-  final def mapK[G[_]](implicit kt: KindTransformer[F, G]): Span[G] = liftTo[G]
+  final def mapK[G[_]](implicit lift: LiftValue[F, G]): Span[G] = liftTo[G]
 }
 
 object Span {
@@ -136,12 +138,12 @@ object Span {
 
     /** Modify the context `F` using the transformation `f`. */
     override def mapK[G[_]](f: F ~> G): Meta[G] =
-      new Meta.MappedK(this, f)
+      new Meta.Lifted(this, f)
 
     /** Modify the context `F` using an implicit [[KindTransformer]] from `F` to `G`.
       */
-    override def liftTo[G[_]](implicit kt: KindTransformer[F, G]): Meta[G] =
-      new Meta.MappedK(this, kt.liftK)
+    override def liftTo[G[_]](implicit lift: LiftValue[F, G]): Meta[G] =
+      new Meta.Lifted(this, lift)
 
   }
 
@@ -156,7 +158,7 @@ object Span {
       val unit: F[Unit] = Applicative[F].unit
     }
 
-    private final class MappedK[F[_], G[_]](meta: Meta[F], f: F ~> G) extends Meta[G] {
+    private final class Lifted[F[_], G[_]](meta: Meta[F], f: F ~> G) extends Meta[G] {
       def isEnabled: Boolean = meta.isEnabled
       def unit: G[Unit] = f(meta.unit)
     }
@@ -198,15 +200,16 @@ object Span {
     def end(timestamp: FiniteDuration): F[Unit]
 
     /** Modify the context `F` using the transformation `f`. */
-    def mapK[G[_]](f: F ~> G): Backend[G] = new Backend.MappedK(this)(f)
+    @deprecated("arbitrary transformations not supported in the future; use `liftTo` instead", since = "otel4s 0.16.0")
+    def mapK[G[_]](f: F ~> G): Backend[G] = new Backend.Lifted(this)(f)
 
     /** Modify the context `F` using an implicit [[KindTransformer]] from `F` to `G`.
       */
-    final def liftTo[G[_]](implicit kt: KindTransformer[F, G]): Backend[G] =
-      mapK(kt.liftK)
+    final def liftTo[G[_]](implicit lift: LiftValue[F, G]): Backend[G] =
+      new Backend.Lifted(this)(lift)
 
     @deprecated("use `liftTo` instead", since = "otel4s 0.14.0")
-    final def mapK[G[_]](implicit kt: KindTransformer[F, G]): Backend[G] = liftTo[G]
+    final def mapK[G[_]](implicit lift: LiftValue[F, G]): Backend[G] = liftTo[G]
   }
 
   object Backend {
@@ -255,8 +258,9 @@ object Span {
         def end(timestamp: FiniteDuration): F[Unit] = unit
       }
 
+    // TODO: replace `f: F ~> G` with `lift: LiftValue[F, G]` after deprecation period
     /** Implementation for [[Backend.liftTo]]. */
-    private class MappedK[F[_], G[_]](backend: Backend[F])(f: F ~> G) extends Backend[G] {
+    private class Lifted[F[_], G[_]](backend: Backend[F])(f: F ~> G) extends Backend[G] {
       val meta: Span.Meta[G] =
         backend.meta.mapK(f)
       def context: SpanContext = backend.context

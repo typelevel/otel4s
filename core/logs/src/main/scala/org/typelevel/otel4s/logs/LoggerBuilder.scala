@@ -18,8 +18,8 @@ package org.typelevel.otel4s
 package logs
 
 import cats.Applicative
-import cats.Functor
 import cats.Monad
+import cats.mtl.LiftValue
 import cats.syntax.functor._
 
 /** A builder of the [[Logger]].
@@ -49,8 +49,8 @@ sealed trait LoggerBuilder[F[_], Ctx] {
 
   /** Modify the context `F` using an implicit [[KindTransformer]] from `F` to `G`.
     */
-  def liftTo[G[_]](implicit F: Functor[F], G: Monad[G], kt: KindTransformer[F, G]): LoggerBuilder[G, Ctx] =
-    new LoggerBuilder.MappedK(this)
+  def liftTo[G[_]](implicit G: Monad[G], lift: LiftValue[F, G]): LoggerBuilder[G, Ctx] =
+    new LoggerBuilder.Lifted(this)
 }
 
 object LoggerBuilder {
@@ -70,15 +70,16 @@ object LoggerBuilder {
       def get: F[Logger[F, Ctx]] = F.pure(Logger.noop)
     }
 
-  private class MappedK[F[_]: Functor, G[_]: Monad, Ctx](
+  private class Lifted[F[_], G[_], Ctx](
       builder: LoggerBuilder[F, Ctx]
-  )(implicit kt: KindTransformer[F, G])
+  )(implicit G: Monad[G], lift: LiftValue[F, G])
       extends LoggerBuilder[G, Ctx] {
+    private[this] implicit def F: Applicative[F] = lift.applicativeF
     def withVersion(version: String): LoggerBuilder[G, Ctx] =
-      new MappedK(builder.withVersion(version))
+      new Lifted(builder.withVersion(version))
     def withSchemaUrl(schemaUrl: String): LoggerBuilder[G, Ctx] =
-      new MappedK(builder.withSchemaUrl(schemaUrl))
+      new Lifted(builder.withSchemaUrl(schemaUrl))
     def get: G[Logger[G, Ctx]] =
-      kt.liftK(builder.get.map(_.liftTo[G]))
+      lift(builder.get.map(_.liftTo[G]))
   }
 }

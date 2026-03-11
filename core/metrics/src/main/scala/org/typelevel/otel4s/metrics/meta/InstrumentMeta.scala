@@ -42,7 +42,7 @@ sealed trait InstrumentMeta[F[_]] extends org.typelevel.otel4s.meta.InstrumentMe
   override def mapK[G[_]: Monad](f: F ~> G): InstrumentMeta[G] =
     new InstrumentMeta.Lifted(this)(f)
 
-  /** Modify the context `F` using an implicit [[KindTransformer]] from `F` to `G`.
+  /** Modify the context `F` using an implicit [[cats.mtl.LiftValue]] from `F` to `G`.
     */
   override def liftTo[G[_]](implicit G: Monad[G], lift: LiftValue[F, G]): InstrumentMeta[G] =
     new InstrumentMeta.Lifted(this)(lift)

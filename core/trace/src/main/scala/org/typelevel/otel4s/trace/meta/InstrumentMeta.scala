@@ -33,7 +33,7 @@ sealed trait InstrumentMeta[F[_]] extends org.typelevel.otel4s.meta.InstrumentMe
     */
   def unit: F[Unit]
 
-  /** Modify the context `F` using an implicit [[KindTransformer]] from `F` to `G`.
+  /** Modify the context `F` using an implicit [[cats.mtl.LiftValue]] from `F` to `G`.
     */
   override def liftTo[G[_]](implicit G: Monad[G], lift: LiftValue[F, G]): InstrumentMeta[G] =
     new InstrumentMeta.Lifted(this)(lift)

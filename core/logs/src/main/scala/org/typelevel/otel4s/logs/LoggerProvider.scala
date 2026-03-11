@@ -21,6 +21,7 @@ import cats.Applicative
 import cats.Monad
 import cats.mtl.LiftValue
 import cats.syntax.functor._
+import org.typelevel.otel4s.context.Contextual
 
 /** The entry point of the logging API. Provides access to [[Logger]].
   *
@@ -80,7 +81,7 @@ object LoggerProvider {
     * @tparam F
     *   the higher-kinded type of a polymorphic effect
     */
-  def noop[F[_]: Applicative, Ctx]: LoggerProvider[F, Ctx] =
+  def noop[F[_]: Applicative, Ctx: Contextual]: LoggerProvider[F, Ctx] =
     new LoggerProvider[F, Ctx] {
       def logger(name: String): LoggerBuilder[F, Ctx] =
         LoggerBuilder.noop

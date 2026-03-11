@@ -21,6 +21,7 @@ import cats.Applicative
 import cats.Monad
 import cats.mtl.LiftValue
 import cats.syntax.functor._
+import org.typelevel.otel4s.context.Contextual
 
 /** A builder of the [[Logger]].
   *
@@ -63,7 +64,7 @@ object LoggerBuilder {
     * @tparam F
     *   the higher-kinded type of polymorphic effect
     */
-  def noop[F[_], Ctx](implicit F: Applicative[F]): LoggerBuilder[F, Ctx] =
+  def noop[F[_], Ctx: Contextual](implicit F: Applicative[F]): LoggerBuilder[F, Ctx] =
     new LoggerBuilder[F, Ctx] {
       def withVersion(version: String): LoggerBuilder[F, Ctx] = this
       def withSchemaUrl(schemaUrl: String): LoggerBuilder[F, Ctx] = this

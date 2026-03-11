@@ -85,7 +85,6 @@ structured logging, and customizable handlers. It is also available for all plat
 Here is an example of how to forward `scribe` log events into OpenTelemetry using `otel4s-core-logs`:
 ```scala mdoc:silent
 import cats.Monad
-import cats.mtl.Local
 import cats.syntax.all._
 import org.typelevel.otel4s.{AnyValue, Attribute, Attributes}
 import org.typelevel.otel4s.logs.{LogRecordBuilder, LoggerProvider, Severity}
@@ -97,9 +96,8 @@ import scribe._
 import scala.concurrent.duration._
 import scala.util.chaining._
 
-final class ScriberLoggerSupport[F[_]: Monad, Ctx](
-  provider: LoggerProvider[F, Ctx],
-  local: Local[F, Ctx]
+final class ScriberLoggerSupport[F[_]: Monad](
+  provider: LoggerProvider[F, _],
 ) extends LoggerSupport[F[Unit]] {
   
   def log(record: => LogRecord): F[Unit] =
@@ -109,7 +107,7 @@ final class ScriberLoggerSupport[F[_]: Monad, Ctx](
       logger <- provider.logger(r.className).withVersion("0.0.1").get
 
       // retrieve the current context
-      ctx <- local.ask
+      ctx <- logger.currentContext
       
       // Check if logging instrumentation is enabled for the current context.
       // NOTE: this does not check whether an individual logger is enabled.
@@ -122,16 +120,16 @@ final class ScriberLoggerSupport[F[_]: Monad, Ctx](
     } yield ()
 
   private def buildLogRecord(
-      logger: OtelLogger[F, Ctx], 
+      logger: OtelLogger[F, _], 
       record: LogRecord
-  ): LogRecordBuilder[F, Ctx] =
+  ): LogRecordBuilder[F, _] =
     logger.logRecordBuilder
       // severity
       .pipe { l =>
         toSeverity(record.level).fold(l)(l.withSeverity)
       }
       .withSeverityText(record.level.name)
-      // timestmap
+      // timestamp
       .withTimestamp(record.timeStamp.millis)
       // log message
       .withBody(AnyValue.string(record.logOutput.plainText))
@@ -223,7 +221,7 @@ Then, you can use it in your application:
 import org.typelevel.otel4s.Otel4s
 
 def program[F[_]: Monad](otel4s: Otel4s[F]): F[Unit] = {
-  val logger = new ScriberLoggerSupport(otel4s.loggerProvider, otel4s.localContext)
+  val logger = new ScriberLoggerSupport(otel4s.loggerProvider)
 
   otel4s.tracerProvider.get("tracer").flatMap { tracer =>
     tracer.spanBuilder("test-span").build.surround {

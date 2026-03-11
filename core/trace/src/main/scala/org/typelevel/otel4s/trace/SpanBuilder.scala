@@ -51,7 +51,7 @@ sealed trait SpanBuilder[F[_]] extends SpanBuilderMacro[F] {
     */
   def build: SpanOps[F]
 
-  /** Modify the context `F` using an implicit [[KindTransformer]] from `F` to `G`.
+  /** Modify the context `F` using an implicit [[cats.mtl.LiftValue]] from `F` to `G`.
     */
   def liftTo[G[_]](implicit
       F: MonadCancelThrow[F],

@@ -48,7 +48,7 @@ sealed trait Logger[F[_], Ctx] {
     */
   def logRecordBuilder: LogRecordBuilder[F, Ctx]
 
-  /** Modify the context `F` using an implicit [[KindTransformer]] from `F` to `G`.
+  /** Modify the context `F` using an implicit [[cats.mtl.LiftValue]] from `F` to `G`.
     */
   def liftTo[G[_]](implicit G: Monad[G], lift: LiftValue[F, G]): Logger[G, Ctx] =
     new Logger.Lifted(this)

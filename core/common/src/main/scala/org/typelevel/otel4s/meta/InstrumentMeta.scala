@@ -48,7 +48,7 @@ object InstrumentMeta {
     def mapK[G[_]: Monad](f: F ~> G): InstrumentMeta.Dynamic[G] =
       new Dynamic.Lifted(this)(f)
 
-    /** Modify the context `F` using an implicit [[KindTransformer]] from `F` to `G`.
+    /** Modify the context `F` using an implicit [[cats.mtl.LiftValue]] from `F` to `G`.
       */
     def liftTo[G[_]: Monad](implicit lift: LiftValue[F, G]): InstrumentMeta.Dynamic[G] =
       new Dynamic.Lifted(this)(lift)
@@ -105,7 +105,7 @@ object InstrumentMeta {
     def mapK[G[_]](f: F ~> G): InstrumentMeta.Static[G] =
       new Static.Lifted(this)(f)
 
-    /** Modify the context `F` using an implicit [[KindTransformer]] from `F` to `G`.
+    /** Modify the context `F` using an implicit [[cats.mtl.LiftValue]] from `F` to `G`.
       */
     def liftTo[G[_]](implicit lift: LiftValue[F, G]): InstrumentMeta.Static[G] =
       new Static.Lifted(this)(lift)

@@ -243,7 +243,7 @@ sealed trait SpanOps[F[_]] {
     */
   final def surround[A](fa: F[A]): F[A] = use(_ => fa)
 
-  /** Modify the context `F` using an implicit [[KindTransformer]] from `F` to `G`.
+  /** Modify the context `F` using an implicit [[cats.mtl.LiftValue]] from `F` to `G`.
     */
   def liftTo[G[_]](implicit
       F: MonadCancelThrow[F],
@@ -292,7 +292,7 @@ object SpanOps {
       */
     def trace: F ~> F
 
-    /** Modify the context `F` using an implicit [[KindTransformer]] from `F` to `G`.
+    /** Modify the context `F` using an implicit [[cats.mtl.LiftValue]] from `F` to `G`.
       */
     def liftTo[G[_]](implicit lift: LiftKind[F, G]): Res[G] =
       Res(span.liftTo[G], lift.liftScope(trace))

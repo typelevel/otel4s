@@ -119,7 +119,7 @@ sealed trait Span[F[_]] extends SpanMacro[F] {
   @deprecated("arbitrary transformations not supported in the future; use `liftTo` instead", since = "otel4s 0.16.0")
   def mapK[G[_]](f: F ~> G): Span[G] = Span.fromBackend(backend.mapK(f))
 
-  /** Modify the context `F` using an implicit [[KindTransformer]] from `F` to `G`.
+  /** Modify the context `F` using an implicit [[cats.mtl.LiftValue]] from `F` to `G`.
     */
   final def liftTo[G[_]](implicit lift: LiftValue[F, G]): Span[G] =
     Span.fromBackend(backend.liftTo[G])
@@ -140,7 +140,7 @@ object Span {
     override def mapK[G[_]](f: F ~> G): Meta[G] =
       new Meta.Lifted(this, f)
 
-    /** Modify the context `F` using an implicit [[KindTransformer]] from `F` to `G`.
+    /** Modify the context `F` using an implicit [[cats.mtl.LiftValue]] from `F` to `G`.
       */
     override def liftTo[G[_]](implicit lift: LiftValue[F, G]): Meta[G] =
       new Meta.Lifted(this, lift)
@@ -203,7 +203,7 @@ object Span {
     @deprecated("arbitrary transformations not supported in the future; use `liftTo` instead", since = "otel4s 0.16.0")
     def mapK[G[_]](f: F ~> G): Backend[G] = new Backend.Lifted(this)(f)
 
-    /** Modify the context `F` using an implicit [[KindTransformer]] from `F` to `G`.
+    /** Modify the context `F` using an implicit [[cats.mtl.LiftValue]] from `F` to `G`.
       */
     final def liftTo[G[_]](implicit lift: LiftValue[F, G]): Backend[G] =
       new Backend.Lifted(this)(lift)

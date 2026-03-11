@@ -44,7 +44,7 @@ sealed trait InstrumentMeta[F[_], Ctx] {
     */
   def isEnabled(context: Ctx, severity: Option[Severity], eventName: Option[String]): F[Boolean]
 
-  /** Modify the context `F` using an implicit [[KindTransformer]] from `F` to `G`.
+  /** Modify the context `F` using an implicit [[cats.mtl.LiftValue]] from `F` to `G`.
     */
   def liftTo[G[_]](implicit lift: LiftValue[F, G]): InstrumentMeta[G, Ctx] =
     new InstrumentMeta.Lifted(this)(lift)

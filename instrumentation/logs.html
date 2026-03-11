@@ -222,7 +222,6 @@
         structured logging, and customizable handlers. It is also available for all platforms: JVM, Scala.js, and Scala Native.</p>
         <p>Here is an example of how to forward <code>scribe</code> log events into OpenTelemetry using <code>otel4s-core-logs</code>:</p>
         <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="type-name">Monad</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">mtl</span><span>.</span><span class="type-name">Local</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">syntax</span><span>.</span><span class="identifier">all</span><span>.</span><span class="identifier">_</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.{</span><span class="type-name">AnyValue</span><span>, </span><span class="type-name">Attribute</span><span>, </span><span class="type-name">Attributes</span><span>}
 </span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">logs</span><span>.{</span><span class="type-name">LogRecordBuilder</span><span>, </span><span class="type-name">LoggerProvider</span><span>, </span><span class="type-name">Severity</span><span>}
@@ -234,9 +233,8 @@
 </span><span class="keyword">import</span><span> </span><span class="identifier">scala</span><span>.</span><span class="identifier">concurrent</span><span>.</span><span class="identifier">duration</span><span>.</span><span class="identifier">_</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">scala</span><span>.</span><span class="identifier">util</span><span>.</span><span class="identifier">chaining</span><span>.</span><span class="identifier">_</span><span>
 
-</span><span class="keyword">final</span><span> </span><span class="keyword">class</span><span> </span><span class="type-name">ScriberLoggerSupport</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>]: </span><span class="type-name">Monad</span><span>, </span><span class="type-name">Ctx</span><span>](
-  </span><span class="identifier">provider</span><span>: </span><span class="type-name">LoggerProvider</span><span>[</span><span class="type-name">F</span><span>, </span><span class="type-name">Ctx</span><span>],
-  </span><span class="identifier">local</span><span>: </span><span class="type-name">Local</span><span>[</span><span class="type-name">F</span><span>, </span><span class="type-name">Ctx</span><span>]
+</span><span class="keyword">final</span><span> </span><span class="keyword">class</span><span> </span><span class="type-name">ScriberLoggerSupport</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>]: </span><span class="type-name">Monad</span><span>](
+  </span><span class="identifier">provider</span><span>: </span><span class="type-name">LoggerProvider</span><span>[</span><span class="type-name">F</span><span>, </span><span class="identifier">_</span><span>],
 ) </span><span class="keyword">extends</span><span> </span><span class="type-name">LoggerSupport</span><span>[</span><span class="type-name">F</span><span>[</span><span class="type-name">Unit</span><span>]] {
   
   </span><span class="keyword">def</span><span> </span><span class="declaration-name">log</span><span>(</span><span class="identifier">record</span><span>: =&gt; </span><span class="type-name">LogRecord</span><span>): </span><span class="type-name">F</span><span>[</span><span class="type-name">Unit</span><span>] =
@@ -246,7 +244,7 @@
 </span><span>      </span><span class="identifier">logger</span><span> &lt;- </span><span class="identifier">provider</span><span>.</span><span class="identifier">logger</span><span>(</span><span class="identifier">r</span><span>.</span><span class="identifier">className</span><span>).</span><span class="identifier">withVersion</span><span>(</span><span class="string-literal">&quot;0.0.1&quot;</span><span>).</span><span class="identifier">get</span><span>
 
       </span><span class="comment">// retrieve the current context
-</span><span>      </span><span class="identifier">ctx</span><span> &lt;- </span><span class="identifier">local</span><span>.</span><span class="identifier">ask</span><span>
+</span><span>      </span><span class="identifier">ctx</span><span> &lt;- </span><span class="identifier">logger</span><span>.</span><span class="identifier">currentContext</span><span>
       
       </span><span class="comment">// Check if logging instrumentation is enabled for the current context.
 </span><span>      </span><span class="comment">// NOTE: this does not check whether an individual logger is enabled.
@@ -259,16 +257,16 @@
     } </span><span class="keyword">yield</span><span> ()
 
   </span><span class="keyword">private</span><span> </span><span class="keyword">def</span><span> </span><span class="declaration-name">buildLogRecord</span><span>(
-      </span><span class="identifier">logger</span><span>: </span><span class="type-name">OtelLogger</span><span>[</span><span class="type-name">F</span><span>, </span><span class="type-name">Ctx</span><span>], 
+      </span><span class="identifier">logger</span><span>: </span><span class="type-name">OtelLogger</span><span>[</span><span class="type-name">F</span><span>, </span><span class="identifier">_</span><span>], 
       </span><span class="identifier">record</span><span>: </span><span class="type-name">LogRecord</span><span>
-  ): </span><span class="type-name">LogRecordBuilder</span><span>[</span><span class="type-name">F</span><span>, </span><span class="type-name">Ctx</span><span>] =
+  ): </span><span class="type-name">LogRecordBuilder</span><span>[</span><span class="type-name">F</span><span>, </span><span class="identifier">_</span><span>] =
     </span><span class="identifier">logger</span><span>.</span><span class="identifier">logRecordBuilder</span><span>
       </span><span class="comment">// severity
 </span><span>      .</span><span class="identifier">pipe</span><span> { </span><span class="identifier">l</span><span> =&gt;
         </span><span class="identifier">toSeverity</span><span>(</span><span class="identifier">record</span><span>.</span><span class="identifier">level</span><span>).</span><span class="identifier">fold</span><span>(</span><span class="identifier">l</span><span>)(</span><span class="identifier">l</span><span>.</span><span class="identifier">withSeverity</span><span>)
       }
       .</span><span class="identifier">withSeverityText</span><span>(</span><span class="identifier">record</span><span>.</span><span class="identifier">level</span><span>.</span><span class="identifier">name</span><span>)
-      </span><span class="comment">// timestmap
+      </span><span class="comment">// timestamp
 </span><span>      .</span><span class="identifier">withTimestamp</span><span>(</span><span class="identifier">record</span><span>.</span><span class="identifier">timeStamp</span><span>.</span><span class="identifier">millis</span><span>)
       </span><span class="comment">// log message
 </span><span>      .</span><span class="identifier">withBody</span><span>(</span><span class="type-name">AnyValue</span><span>.</span><span class="identifier">string</span><span>(</span><span class="identifier">record</span><span>.</span><span class="identifier">logOutput</span><span>.</span><span class="identifier">plainText</span><span>))
@@ -355,7 +353,7 @@
         <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="type-name">Otel4s</span><span>
 
 </span><span class="keyword">def</span><span> </span><span class="declaration-name">program</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>]: </span><span class="type-name">Monad</span><span>](</span><span class="identifier">otel4s</span><span>: </span><span class="type-name">Otel4s</span><span>[</span><span class="type-name">F</span><span>]): </span><span class="type-name">F</span><span>[</span><span class="type-name">Unit</span><span>] = {
-  </span><span class="keyword">val</span><span> </span><span class="identifier">logger</span><span> = </span><span class="keyword">new</span><span> </span><span class="type-name">ScriberLoggerSupport</span><span>(</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">loggerProvider</span><span>, </span><span class="identifier">otel4s</span><span>.</span><span class="identifier">localContext</span><span>)
+  </span><span class="keyword">val</span><span> </span><span class="identifier">logger</span><span> = </span><span class="keyword">new</span><span> </span><span class="type-name">ScriberLoggerSupport</span><span>(</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">loggerProvider</span><span>)
 
   </span><span class="identifier">otel4s</span><span>.</span><span class="identifier">tracerProvider</span><span>.</span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;tracer&quot;</span><span>).</span><span class="identifier">flatMap</span><span> { </span><span class="identifier">tracer</span><span> =&gt;
     </span><span class="identifier">tracer</span><span>.</span><span class="identifier">spanBuilder</span><span>(</span><span class="string-literal">&quot;test-span&quot;</span><span>).</span><span class="identifier">build</span><span>.</span><span class="identifier">surround</span><span> {

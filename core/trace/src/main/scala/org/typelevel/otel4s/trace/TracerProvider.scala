@@ -59,7 +59,7 @@ sealed trait TracerProvider[F[_]] {
     */
   def tracer(name: String): TracerBuilder[F]
 
-  /** Modify the context `F` using an implicit [[cats.mtl.LiftValue]] from `F` to `G`.
+  /** Modify the context `F` using an implicit [[cats.mtl.LiftKind]] from `F` to `G`.
     */
   def liftTo[G[_]](implicit
       F: MonadCancelThrow[F],

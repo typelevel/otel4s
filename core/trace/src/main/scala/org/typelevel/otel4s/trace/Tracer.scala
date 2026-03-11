@@ -208,7 +208,7 @@ sealed trait Tracer[F[_]] extends TracerMacro[F] {
     */
   def propagate[C: TextMapUpdater](carrier: C): F[C]
 
-  /** Modify the context `F` using an implicit [[cats.mtl.LiftValue]] from `F` to `G`.
+  /** Modify the context `F` using an implicit [[cats.mtl.LiftKind]] from `F` to `G`.
     */
   def liftTo[G[_]](implicit
       F: MonadCancelThrow[F],

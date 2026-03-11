@@ -30,6 +30,8 @@ sealed trait InstrumentMeta[F[_], Ctx] {
     * The currently available context will be automatically used, a shortcut for:
     * {{{
     *   Local[IO, Ctx].ask.flatMap(ctx => meta.isEnabled(ctx, severity, eventName))
+    *   // or
+    *   logger.currentContext.flatMap(ctx => meta.isEnabled(ctx, severity, eventName))
     * }}}
     *
     * @param severity

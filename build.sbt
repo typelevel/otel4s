@@ -86,7 +86,7 @@ val PekkoStreamVersion = "1.4.0"
 val PekkoHttpVersion = "1.3.0"
 val PlatformVersion = "1.0.3"
 val ScodecVersion = "1.2.4"
-val VaultVersion = "3.7.0-RC1"
+val VaultVersion = "3.7.0"
 val Http4sVersion = "0.23.33"
 val ScribeVersion = "3.17.0"
 

@@ -27,6 +27,27 @@ sealed trait InstrumentMeta[F[_], Ctx] {
 
   /** Indicates whether instrumentation is enabled.
     *
+    * The currently available context will be automatically used, a shortcut for:
+    * {{{
+    *   Local[IO, Ctx].ask.flatMap(ctx => meta.isEnabled(ctx, severity, eventName))
+    * }}}
+    *
+    * @param severity
+    *   the severity of the log record
+    *
+    * @param eventName
+    *   the event name to be associated with the log record
+    *
+    * @return
+    *   `true` if instrumentation is enabled, `false` otherwise
+    *
+    * @see
+    *   [[https://opentelemetry.io/docs/specs/otel/logs/api/#enabled]]
+    */
+  def isEnabled(severity: Option[Severity], eventName: Option[String]): F[Boolean]
+
+  /** Indicates whether instrumentation is enabled.
+    *
     * @param context
     *   the context to be associated with the log record
     *
@@ -62,10 +83,16 @@ object InstrumentMeta {
     private val enabled: F[Boolean] = Applicative[F].pure(value)
     def isEnabled(context: Ctx, severity: Option[Severity], eventName: Option[String]): F[Boolean] =
       enabled
+
+    def isEnabled(severity: Option[Severity], eventName: Option[String]): F[Boolean] =
+      enabled
   }
 
   private final class Lifted[F[_], G[_], Ctx](meta: InstrumentMeta[F, Ctx])(f: F ~> G) extends InstrumentMeta[G, Ctx] {
     def isEnabled(context: Ctx, severity: Option[Severity], eventName: Option[String]): G[Boolean] =
       f(meta.isEnabled(context, severity, eventName))
+
+    def isEnabled(severity: Option[Severity], eventName: Option[String]): G[Boolean] =
+      f(meta.isEnabled(severity, eventName))
   }
 }

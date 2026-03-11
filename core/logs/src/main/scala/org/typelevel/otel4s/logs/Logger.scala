@@ -19,6 +19,7 @@ package logs
 
 import cats.Applicative
 import cats.Monad
+import cats.mtl.LiftValue
 import org.typelevel.otel4s.logs.meta.InstrumentMeta
 
 /** The entry point into a log pipeline.
@@ -49,8 +50,8 @@ sealed trait Logger[F[_], Ctx] {
 
   /** Modify the context `F` using an implicit [[KindTransformer]] from `F` to `G`.
     */
-  def liftTo[G[_]: Monad](implicit kt: KindTransformer[F, G]): Logger[G, Ctx] =
-    new Logger.MappedK(this)
+  def liftTo[G[_]](implicit G: Monad[G], lift: LiftValue[F, G]): Logger[G, Ctx] =
+    new Logger.Lifted(this)
 }
 
 object Logger {
@@ -72,9 +73,9 @@ object Logger {
     }
 
   /** Implementation for [[Logger.liftTo]]. */
-  private class MappedK[F[_], G[_]: Monad, Ctx](
+  private class Lifted[F[_], G[_]: Monad, Ctx](
       logger: Logger[F, Ctx]
-  )(implicit kt: KindTransformer[F, G])
+  )(implicit lift: LiftValue[F, G])
       extends Logger[G, Ctx] {
     val meta: InstrumentMeta[G, Ctx] = logger.meta.liftTo[G]
     def logRecordBuilder: LogRecordBuilder[G, Ctx] = logger.logRecordBuilder.liftTo[G]

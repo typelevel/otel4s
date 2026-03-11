@@ -18,8 +18,8 @@ package org.typelevel.otel4s.metrics.meta
 
 import cats.Applicative
 import cats.Monad
+import cats.mtl.LiftValue
 import cats.~>
-import org.typelevel.otel4s.KindTransformer
 
 /** The instrument's metadata. Indicates whether instrumentation is enabled.
   */
@@ -38,13 +38,14 @@ sealed trait InstrumentMeta[F[_]] extends org.typelevel.otel4s.meta.InstrumentMe
   def whenEnabled(f: => F[Unit]): F[Unit]
 
   /** Modify the context `F` using the transformation `f`. */
+  @deprecated("arbitrary transformations not supported in the future; use `liftTo` instead", since = "otel4s 0.16.0")
   override def mapK[G[_]: Monad](f: F ~> G): InstrumentMeta[G] =
-    new InstrumentMeta.MappedK(this)(f)
+    new InstrumentMeta.Lifted(this)(f)
 
   /** Modify the context `F` using an implicit [[KindTransformer]] from `F` to `G`.
     */
-  override def liftTo[G[_]: Monad](implicit kt: KindTransformer[F, G]): InstrumentMeta[G] =
-    new InstrumentMeta.MappedK(this)(kt.liftK)
+  override def liftTo[G[_]](implicit G: Monad[G], lift: LiftValue[F, G]): InstrumentMeta[G] =
+    new InstrumentMeta.Lifted(this)(lift)
 
 }
 
@@ -71,7 +72,8 @@ object InstrumentMeta {
       def whenEnabled(f: => F[Unit]): F[Unit] = unit
     }
 
-  private class MappedK[F[_], G[_]: Monad](meta: InstrumentMeta[F])(f: F ~> G) extends InstrumentMeta[G] {
+  // TODO: replace `f: F ~> G` with `lift: LiftValue[F, G]` after deprecation period
+  private class Lifted[F[_], G[_]: Monad](meta: InstrumentMeta[F])(f: F ~> G) extends InstrumentMeta[G] {
     def isEnabled: G[Boolean] = f(meta.isEnabled)
     def unit: G[Unit] = f(meta.unit)
     def whenEnabled(f: => G[Unit]): G[Unit] = Monad[G].ifM(isEnabled)(f, Monad[G].unit)

@@ -18,8 +18,8 @@ package org.typelevel.otel4s.meta
 
 import cats.Applicative
 import cats.Monad
+import cats.mtl.LiftValue
 import cats.~>
-import org.typelevel.otel4s.KindTransformer
 
 @annotation.nowarn("cat=deprecation")
 object InstrumentMeta {
@@ -44,16 +44,17 @@ object InstrumentMeta {
     def whenEnabled(f: => F[Unit]): F[Unit]
 
     /** Modify the context `F` using the transformation `f`. */
+    @deprecated("arbitrary transformations not supported in the future; use `liftTo` instead", since = "otel4s 0.16.0")
     def mapK[G[_]: Monad](f: F ~> G): InstrumentMeta.Dynamic[G] =
-      new Dynamic.MappedK(this)(f)
+      new Dynamic.Lifted(this)(f)
 
     /** Modify the context `F` using an implicit [[KindTransformer]] from `F` to `G`.
       */
-    def liftTo[G[_]: Monad](implicit kt: KindTransformer[F, G]): InstrumentMeta.Dynamic[G] =
-      mapK(kt.liftK)
+    def liftTo[G[_]: Monad](implicit lift: LiftValue[F, G]): InstrumentMeta.Dynamic[G] =
+      new Dynamic.Lifted(this)(lift)
 
     @deprecated("use `liftTo` instead", since = "otel4s 0.14.0")
-    def mapK[G[_]: Monad](implicit kt: KindTransformer[F, G]): InstrumentMeta.Dynamic[G] = liftTo[G]
+    def mapK[G[_]: Monad](implicit lift: LiftValue[F, G]): InstrumentMeta.Dynamic[G] = liftTo[G]
   }
 
   object Dynamic {
@@ -80,7 +81,8 @@ object InstrumentMeta {
         def whenEnabled(f: => F[Unit]): F[Unit] = unit
       }
 
-    private class MappedK[F[_], G[_]: Monad](meta: InstrumentMeta.Dynamic[F])(f: F ~> G) extends Dynamic[G] {
+    // TODO: replace `f: F ~> G` with `lift: LiftValue[F, G]` after deprecation period
+    private class Lifted[F[_], G[_]: Monad](meta: InstrumentMeta.Dynamic[F])(f: F ~> G) extends Dynamic[G] {
       def isEnabled: G[Boolean] = f(meta.isEnabled)
       def unit: G[Unit] = f(meta.unit)
       def whenEnabled(f: => G[Unit]): G[Unit] = Monad[G].ifM(isEnabled)(f, Monad[G].unit)
@@ -99,17 +101,17 @@ object InstrumentMeta {
     def unit: F[Unit]
 
     /** Modify the context `F` using the transformation `f`. */
-    @deprecated("use `Span.Meta#mapK` instead", since = "otel4s 0.14.0")
+    @deprecated("use `Span.Meta#liftTo` instead", since = "otel4s 0.14.0")
     def mapK[G[_]](f: F ~> G): InstrumentMeta.Static[G] =
-      new Static.MappedK(this)(f)
+      new Static.Lifted(this)(f)
 
     /** Modify the context `F` using an implicit [[KindTransformer]] from `F` to `G`.
       */
-    def liftTo[G[_]](implicit kt: KindTransformer[F, G]): InstrumentMeta.Static[G] =
-      mapK(kt.liftK)
+    def liftTo[G[_]](implicit lift: LiftValue[F, G]): InstrumentMeta.Static[G] =
+      new Static.Lifted(this)(lift)
 
     @deprecated("use `liftTo` instead", since = "otel4s 0.14.0")
-    def mapK[G[_]](implicit kt: KindTransformer[F, G]): InstrumentMeta.Static[G] = liftTo[G]
+    def mapK[G[_]](implicit lift: LiftValue[F, G]): InstrumentMeta.Static[G] = liftTo[G]
   }
 
   object Static {
@@ -127,7 +129,7 @@ object InstrumentMeta {
         def unit: F[Unit] = Applicative[F].unit
       }
 
-    private class MappedK[F[_], G[_]](meta: Static[F])(f: F ~> G) extends Static[G] {
+    private class Lifted[F[_], G[_]](meta: Static[F])(f: F ~> G) extends Static[G] {
       def isEnabled: Boolean = meta.isEnabled
       def unit: G[Unit] = f(meta.unit)
     }

@@ -17,8 +17,8 @@
 package org.typelevel.otel4s.logs.meta
 
 import cats.Applicative
+import cats.mtl.LiftValue
 import cats.~>
-import org.typelevel.otel4s.KindTransformer
 import org.typelevel.otel4s.logs.Severity
 
 /** The instrument's metadata. Indicates whether instrumentation is enabled.
@@ -46,8 +46,8 @@ sealed trait InstrumentMeta[F[_], Ctx] {
 
   /** Modify the context `F` using an implicit [[KindTransformer]] from `F` to `G`.
     */
-  def liftTo[G[_]](implicit kt: KindTransformer[F, G]): InstrumentMeta[G, Ctx] =
-    new InstrumentMeta.MappedK(this)(kt.liftK)
+  def liftTo[G[_]](implicit lift: LiftValue[F, G]): InstrumentMeta[G, Ctx] =
+    new InstrumentMeta.Lifted(this)(lift)
 }
 
 object InstrumentMeta {
@@ -64,7 +64,7 @@ object InstrumentMeta {
       enabled
   }
 
-  private final class MappedK[F[_], G[_], Ctx](meta: InstrumentMeta[F, Ctx])(f: F ~> G) extends InstrumentMeta[G, Ctx] {
+  private final class Lifted[F[_], G[_], Ctx](meta: InstrumentMeta[F, Ctx])(f: F ~> G) extends InstrumentMeta[G, Ctx] {
     def isEnabled(context: Ctx, severity: Option[Severity], eventName: Option[String]): G[Boolean] =
       f(meta.isEnabled(context, severity, eventName))
   }

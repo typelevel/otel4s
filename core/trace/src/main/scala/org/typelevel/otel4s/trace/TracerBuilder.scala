@@ -19,6 +19,7 @@ package trace
 
 import cats.Applicative
 import cats.effect.kernel.MonadCancelThrow
+import cats.mtl.LiftKind
 import cats.syntax.functor._
 
 sealed trait TracerBuilder[F[_]] {
@@ -43,16 +44,18 @@ sealed trait TracerBuilder[F[_]] {
 
   /** Modify the context `F` using an implicit [[KindTransformer]] from `F` to `G`.
     */
-  def liftTo[G[_]: MonadCancelThrow](implicit
+  def liftTo[G[_]](implicit
       F: MonadCancelThrow[F],
-      kt: KindTransformer[F, G]
+      G: MonadCancelThrow[G],
+      lift: LiftKind[F, G]
   ): TracerBuilder[G] =
     new TracerBuilder.Lifted(this)
 
   @deprecated("use `liftTo` instead", since = "otel4s 0.14.0")
-  def mapK[G[_]: MonadCancelThrow](implicit
+  def mapK[G[_]](implicit
       F: MonadCancelThrow[F],
-      kt: KindTransformer[F, G]
+      G: MonadCancelThrow[G],
+      lift: LiftKind[F, G]
   ): TracerBuilder[G] = liftTo[G]
 }
 
@@ -73,16 +76,15 @@ object TracerBuilder {
       def get: F[Tracer[F]] = F.pure(Tracer.noop)
     }
 
-  private class Lifted[F[_]: MonadCancelThrow, G[_]: MonadCancelThrow](
+  private class Lifted[F[_], G[_]](
       builder: TracerBuilder[F]
-  )(implicit
-      kt: KindTransformer[F, G]
-  ) extends TracerBuilder[G] {
+  )(implicit F: MonadCancelThrow[F], G: MonadCancelThrow[G], lift: LiftKind[F, G])
+      extends TracerBuilder[G] {
     def withVersion(version: String): TracerBuilder[G] =
       new Lifted(builder.withVersion(version))
     def withSchemaUrl(schemaUrl: String): TracerBuilder[G] =
       new Lifted(builder.withSchemaUrl(schemaUrl))
     def get: G[Tracer[G]] =
-      kt.liftK(builder.get.map(_.liftTo[G]))
+      lift(builder.get.map(_.liftTo[G]))
   }
 }

@@ -19,8 +19,6 @@ package trace
 
 import cats.Applicative
 import cats.mtl.LiftValue
-import cats.~>
-import org.typelevel.otel4s.meta.InstrumentMeta
 
 import scala.collection.immutable
 import scala.concurrent.duration.FiniteDuration
@@ -115,34 +113,28 @@ sealed trait Span[F[_]] extends SpanMacro[F] {
   final def end(timestamp: FiniteDuration): F[Unit] =
     backend.end(timestamp)
 
-  /** Modify the context `F` using the transformation `f`. */
-  @deprecated("arbitrary transformations not supported in the future; use `liftTo` instead", since = "otel4s 0.16.0")
-  def mapK[G[_]](f: F ~> G): Span[G] = Span.fromBackend(backend.mapK(f))
-
   /** Modify the context `F` using an implicit [[cats.mtl.LiftValue]] from `F` to `G`.
     */
   final def liftTo[G[_]](implicit lift: LiftValue[F, G]): Span[G] =
     Span.fromBackend(backend.liftTo[G])
 
-  @deprecated("use `liftTo` instead", since = "otel4s 0.14.0")
-  final def mapK[G[_]](implicit lift: LiftValue[F, G]): Span[G] = liftTo[G]
 }
 
 object Span {
 
-  sealed trait Meta[F[_]] extends InstrumentMeta.Static.Unsealed[F] {
+  sealed trait Meta[F[_]] {
+
+    /** A no-op effect.
+      */
+    def unit: F[Unit]
 
     /** Indicates whether an instrument is enabled.
       */
     def isEnabled: Boolean
 
-    /** Modify the context `F` using the transformation `f`. */
-    override def mapK[G[_]](f: F ~> G): Meta[G] =
-      new Meta.Lifted(this, f)
-
     /** Modify the context `F` using an implicit [[cats.mtl.LiftValue]] from `F` to `G`.
       */
-    override def liftTo[G[_]](implicit lift: LiftValue[F, G]): Meta[G] =
+    def liftTo[G[_]](implicit lift: LiftValue[F, G]): Meta[G] =
       new Meta.Lifted(this, lift)
 
   }
@@ -158,9 +150,9 @@ object Span {
       val unit: F[Unit] = Applicative[F].unit
     }
 
-    private final class Lifted[F[_], G[_]](meta: Meta[F], f: F ~> G) extends Meta[G] {
+    private final class Lifted[F[_], G[_]](meta: Meta[F], lift: LiftValue[F, G]) extends Meta[G] {
       def isEnabled: Boolean = meta.isEnabled
-      def unit: G[Unit] = f(meta.unit)
+      def unit: G[Unit] = lift(meta.unit)
     }
   }
 
@@ -199,17 +191,11 @@ object Span {
     def end: F[Unit]
     def end(timestamp: FiniteDuration): F[Unit]
 
-    /** Modify the context `F` using the transformation `f`. */
-    @deprecated("arbitrary transformations not supported in the future; use `liftTo` instead", since = "otel4s 0.16.0")
-    def mapK[G[_]](f: F ~> G): Backend[G] = new Backend.Lifted(this)(f)
-
     /** Modify the context `F` using an implicit [[cats.mtl.LiftValue]] from `F` to `G`.
       */
     final def liftTo[G[_]](implicit lift: LiftValue[F, G]): Backend[G] =
       new Backend.Lifted(this)(lift)
 
-    @deprecated("use `liftTo` instead", since = "otel4s 0.14.0")
-    final def mapK[G[_]](implicit lift: LiftValue[F, G]): Backend[G] = liftTo[G]
   }
 
   object Backend {
@@ -258,45 +244,44 @@ object Span {
         def end(timestamp: FiniteDuration): F[Unit] = unit
       }
 
-    // TODO: replace `f: F ~> G` with `lift: LiftValue[F, G]` after deprecation period
     /** Implementation for [[Backend.liftTo]]. */
-    private class Lifted[F[_], G[_]](backend: Backend[F])(f: F ~> G) extends Backend[G] {
+    private class Lifted[F[_], G[_]](backend: Backend[F])(implicit lift: LiftValue[F, G]) extends Backend[G] {
       val meta: Span.Meta[G] =
-        backend.meta.mapK(f)
+        backend.meta.liftTo
       def context: SpanContext = backend.context
-      def isRecording: G[Boolean] = f(backend.isRecording)
+      def isRecording: G[Boolean] = lift(backend.isRecording)
       def updateName(name: String): G[Unit] =
-        f(backend.updateName(name))
+        lift(backend.updateName(name))
       def addAttributes(attributes: immutable.Iterable[Attribute[_]]): G[Unit] =
-        f(backend.addAttributes(attributes))
+        lift(backend.addAttributes(attributes))
       def addEvent(
           name: String,
           attributes: immutable.Iterable[Attribute[_]]
       ): G[Unit] =
-        f(backend.addEvent(name, attributes))
+        lift(backend.addEvent(name, attributes))
       def addEvent(
           name: String,
           timestamp: FiniteDuration,
           attributes: immutable.Iterable[Attribute[_]]
       ): G[Unit] =
-        f(backend.addEvent(name, timestamp, attributes))
+        lift(backend.addEvent(name, timestamp, attributes))
       def addLink(
           spanContext: SpanContext,
           attributes: immutable.Iterable[Attribute[_]]
       ): G[Unit] =
-        f(backend.addLink(spanContext, attributes))
+        lift(backend.addLink(spanContext, attributes))
       def recordException(
           exception: Throwable,
           attributes: immutable.Iterable[Attribute[_]]
       ): G[Unit] =
-        f(backend.recordException(exception, attributes))
+        lift(backend.recordException(exception, attributes))
       def setStatus(status: StatusCode): G[Unit] =
-        f(backend.setStatus(status))
+        lift(backend.setStatus(status))
       def setStatus(status: StatusCode, description: String): G[Unit] =
-        f(backend.setStatus(status, description))
-      def end: G[Unit] = f(backend.end)
+        lift(backend.setStatus(status, description))
+      def end: G[Unit] = lift(backend.end)
       def end(timestamp: FiniteDuration): G[Unit] =
-        f(backend.end(timestamp))
+        lift(backend.end(timestamp))
     }
   }
 

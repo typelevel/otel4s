@@ -217,12 +217,6 @@ sealed trait Tracer[F[_]] extends TracerMacro[F] {
   ): Tracer[G] =
     new Tracer.Lifted(this)
 
-  @deprecated("use `liftTo` instead", since = "otel4s 0.14.0")
-  def mapK[G[_]](implicit
-      F: MonadCancelThrow[F],
-      G: MonadCancelThrow[G],
-      lift: LiftKind[F, G]
-  ): Tracer[G] = liftTo[G]
 }
 
 object Tracer {

@@ -252,12 +252,6 @@ sealed trait SpanOps[F[_]] {
   ): SpanOps[G] =
     new SpanOps.Lifted(this)
 
-  @deprecated("use `liftTo` instead", since = "otel4s 0.14.0")
-  def mapK[G[_]](implicit
-      F: MonadCancelThrow[F],
-      G: MonadCancelThrow[G],
-      lift: LiftKind[F, G]
-  ): SpanOps[G] = liftTo[G]
 }
 
 object SpanOps {
@@ -297,8 +291,6 @@ object SpanOps {
     def liftTo[G[_]](implicit lift: LiftKind[F, G]): Res[G] =
       Res(span.liftTo[G], lift.liftScope(trace))
 
-    @deprecated("use `liftTo` instead", since = "otel4s 0.14.0")
-    def mapK[G[_]](implicit lift: LiftKind[F, G]): Res[G] = liftTo[G]
   }
 
   object Res {

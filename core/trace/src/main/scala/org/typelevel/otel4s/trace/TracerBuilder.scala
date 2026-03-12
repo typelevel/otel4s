@@ -51,12 +51,6 @@ sealed trait TracerBuilder[F[_]] {
   ): TracerBuilder[G] =
     new TracerBuilder.Lifted(this)
 
-  @deprecated("use `liftTo` instead", since = "otel4s 0.14.0")
-  def mapK[G[_]](implicit
-      F: MonadCancelThrow[F],
-      G: MonadCancelThrow[G],
-      lift: LiftKind[F, G]
-  ): TracerBuilder[G] = liftTo[G]
 }
 
 object TracerBuilder {

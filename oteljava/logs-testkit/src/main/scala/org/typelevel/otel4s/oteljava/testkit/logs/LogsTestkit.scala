@@ -104,31 +104,6 @@ object LogsTestkit {
   ): Resource[F, LogsTestkit[F]] =
     customize(builder[F]).build
 
-  /** Creates [[LogsTestkit]] that keeps logs in-memory from an existing exporter. Useful when a Scala instrumentation
-    * requires a Java instrumentation, both sharing the same exporter.
-    *
-    * @param customize
-    *   the customization of the builder
-    *
-    * @note
-    *   this implementation uses a constant root `Context` via `Ask.const(Context.root)`. That means the module is
-    *   isolated: it does not inherit or propagate the surrounding span context. This is useful if you only need logging
-    *   (without traces or metrics) and want the module to operate independently. If instead you want interoperability -
-    *   i.e. to capture the current span context so that logs, traces, and metrics can all work together - use
-    *   `OtelJavaTestkit.inMemory`.
-    */
-  @deprecated(
-    "Use `LogsTestkit.inMemory` overloaded alternative with `Builder[F]` customizer or `LogsTestkit.builder`",
-    "0.15.0"
-  )
-  def fromInMemory[F[_]: Async](
-      inMemoryLogRecordExporter: InMemoryLogRecordExporter,
-      customize: SdkLoggerProviderBuilder => SdkLoggerProviderBuilder = identity
-  ): Resource[F, LogsTestkit[F]] = {
-    implicit val askContext: AskContext[F] = Ask.const(Context.root)
-    create[F](inMemoryLogRecordExporter, customize)
-  }
-
   private def create[F[_]: Async: AskContext](
       customize: SdkLoggerProviderBuilder => SdkLoggerProviderBuilder
   ): Resource[F, LogsTestkit[F]] =

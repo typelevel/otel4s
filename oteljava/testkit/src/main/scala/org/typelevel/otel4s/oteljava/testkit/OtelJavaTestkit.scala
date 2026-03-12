@@ -146,29 +146,6 @@ object OtelJavaTestkit {
   ): Resource[F, OtelJavaTestkit[F]] =
     customize(builder[F]).build
 
-  @deprecated(
-    "Use `OtelJavaTestkit.builder` to configure exporters and build the testkit",
-    "0.15.0"
-  )
-  def fromInMemory[F[_]: Async: LocalContextProvider](
-      inMemoryLogRecordExporter: InMemoryLogRecordExporter,
-      inMemoryMetricReader: InMemoryMetricReader,
-      inMemorySpanExporter: InMemorySpanExporter,
-      customizeMeterProviderBuilder: SdkMeterProviderBuilder => SdkMeterProviderBuilder = identity,
-      customizeTracerProviderBuilder: SdkTracerProviderBuilder => SdkTracerProviderBuilder = identity,
-      customizeLoggerProviderBuilder: SdkLoggerProviderBuilder => SdkLoggerProviderBuilder = identity,
-      textMapPropagators: Iterable[JTextMapPropagator] = Nil
-  ): Resource[F, OtelJavaTestkit[F]] =
-    builder[F]
-      .withInMemoryLogRecordExporter(inMemoryLogRecordExporter)
-      .withInMemoryMetricReader(inMemoryMetricReader)
-      .withInMemorySpanExporter(inMemorySpanExporter)
-      .addMeterProviderCustomizer(customizeMeterProviderBuilder)
-      .addTracerProviderCustomizer(customizeTracerProviderBuilder)
-      .addLoggerProviderCustomizer(customizeLoggerProviderBuilder)
-      .withTextMapPropagators(textMapPropagators)
-      .build
-
   private final class Impl[F[_]](
       logs: LogsTestkit[F],
       metrics: MetricsTestkit[F],

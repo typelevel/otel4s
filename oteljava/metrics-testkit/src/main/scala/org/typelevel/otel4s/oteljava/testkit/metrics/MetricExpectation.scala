@@ -56,16 +56,13 @@ sealed trait MetricExpectation {
   def withScopeName(name: String): MetricExpectation
 
   /** Attaches a human-readable clue to this expectation. */
-  def clue(text: String): MetricExpectation
+  def withClue(text: String): MetricExpectation
 
   /** Returns `true` if this expectation matches the given metric. */
   def matches(metric: MetricData): Boolean
 }
 
 object MetricExpectation {
-
-  /** An alias for a `MetricExpectation` whose matched point values have type `A`. */
-  type Typed[A] = MetricExpectation { type Value = A }
 
   /** A typed expectation for numeric metrics.
     *
@@ -110,7 +107,7 @@ object MetricExpectation {
   }
 
   /** Creates an expectation that matches any metric with the given name. */
-  def name(name: String): Typed[Nothing] =
+  def name(name: String): MetricExpectation =
     BaseImpl[Nothing](name = Some(name))
 
   /** Creates a typed expectation for a gauge metric.
@@ -230,7 +227,7 @@ object MetricExpectation {
     def withScopeName(name: String): MetricExpectation =
       copyCommon(scopeName = Some(name))
 
-    def clue(text: String): MetricExpectation =
+    def withClue(text: String): MetricExpectation =
       copyCommon(clue = Some(text))
 
     protected final def matchesCommon(metric: MetricData): Boolean =
@@ -316,7 +313,7 @@ object MetricExpectation {
     override def withScopeName(name: String): Numeric[A] =
       copy(scopeName = Some(name))
 
-    override def clue(text: String): Numeric[A] =
+    override def withClue(text: String): Numeric[A] =
       copy(clue = Some(text))
 
     def matches(metric: MetricData): Boolean =
@@ -347,7 +344,7 @@ object MetricExpectation {
     override def withScopeName(name: String): Points[A] =
       copy(scopeName = Some(name))
 
-    override def clue(text: String): Points[A] =
+    override def withClue(text: String): Points[A] =
       copy(clue = Some(text))
 
     def withPoint(point: PointExpectation[A]): Points[A] =

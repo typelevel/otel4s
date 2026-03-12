@@ -48,7 +48,7 @@ sealed trait PointExpectation[A] {
   def withAttributesSubset(attributes: Attributes): PointExpectation[A]
 
   /** Attaches a human-readable clue to this expectation. */
-  def clue(text: String): PointExpectation[A]
+  def withClue(text: String): PointExpectation[A]
 
   /** Adds a custom point predicate to this expectation. */
   def where(f: JPointData => Boolean, clue: String): PointExpectation[A]
@@ -137,7 +137,7 @@ object PointExpectation {
     def withAttributesSubset(attributes: Attributes): PointExpectation[A] =
       copy(attributeExpectation = AttributeExpectation.Subset(attributes))
 
-    def clue(text: String): PointExpectation[A] =
+    def withClue(text: String): PointExpectation[A] =
       copy(clue = Some(text))
 
     def withValue(value: A): PointExpectation[A] =

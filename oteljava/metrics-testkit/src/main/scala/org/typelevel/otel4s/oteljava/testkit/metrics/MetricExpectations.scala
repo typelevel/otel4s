@@ -107,11 +107,4 @@ object MetricExpectations {
       expectations: List[MetricExpectation]
   ): Boolean =
     missing(metrics, expectations).isEmpty
-
-  private implicit final class MetricExpectationOps(
-      private val expectation: MetricExpectation
-  ) extends AnyVal {
-    def matchesAny(metrics: List[MetricData]): Boolean =
-      metrics.exists(expectation.matches)
-  }
 }

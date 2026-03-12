@@ -16,32 +16,30 @@
 
 package org.typelevel.otel4s.oteljava.testkit.metrics
 
-import io.opentelemetry.sdk.common.InstrumentationScopeInfo
-import io.opentelemetry.sdk.metrics.data.AggregationTemporality
+import cats.effect.IO
 import io.opentelemetry.sdk.metrics.data.MetricData
-import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongPointData
-import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData
-import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData
-import io.opentelemetry.sdk.resources.Resource
-import munit.FunSuite
+import munit.{CatsEffectSuite, Location, TestOptions}
 import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.Attributes
-import org.typelevel.otel4s.oteljava.AttributeConverters._
 
-import scala.jdk.CollectionConverters._
+class MetricExpectationsSuite extends CatsEffectSuite {
 
-class MetricExpectationsSuite extends FunSuite {
-
-  test("match by name only") {
-    val metrics = List(longSum("service.counter", 1L))
-
-    assert(MetricExpectations.exists(metrics, MetricExpectation.name("service.counter")))
+  testkitTest("match by name only") { testkit =>
+    for {
+      meter <- testkit.meterProvider.get("test")
+      counter <- meter.counter[Long]("service.counter").create
+      _ <- counter.inc()
+      metrics <- testkit.collectMetrics[MetricData]
+    } yield assertEquals(MetricExpectations.check(metrics, MetricExpectation.name("service.counter")), None)
   }
 
-  test("match by kind and value") {
-    val metrics = List(longSum("service.counter", 1L))
-
-    assert(
+  testkitTest("match by kind and value") { testkit =>
+    for {
+      meter <- testkit.meterProvider.get("test")
+      counter <- meter.counter[Long]("service.counter").create
+      _ <- counter.add(1L)
+      metrics <- testkit.collectMetrics[MetricData]
+    } yield assert(
       MetricExpectations.exists(
         metrics,
         MetricExpectation.sum[Long]("service.counter").withValue(1L)
@@ -49,16 +47,13 @@ class MetricExpectationsSuite extends FunSuite {
     )
   }
 
-  test("match by exact attributes") {
-    val metrics = List(
-      longSum(
-        "service.counter",
-        1L,
-        Attributes(Attribute("http.method", "GET"))
-      )
-    )
-
-    assert(
+  testkitTest("match by exact attributes") { testkit =>
+    for {
+      meter <- testkit.meterProvider.get("test")
+      counter <- meter.counter[Long]("service.counter").create
+      _ <- counter.add(1L, Attributes(Attribute("http.method", "GET")))
+      metrics <- testkit.collectMetrics[MetricData]
+    } yield assert(
       MetricExpectations.exists(
         metrics,
         MetricExpectation
@@ -72,19 +67,19 @@ class MetricExpectationsSuite extends FunSuite {
     )
   }
 
-  test("match by attribute subset") {
-    val metrics = List(
-      longSum(
-        "service.counter",
+  testkitTest("match by attribute subset") { testkit =>
+    for {
+      meter <- testkit.meterProvider.get("test")
+      counter <- meter.counter[Long]("service.counter").create
+      _ <- counter.add(
         1L,
         Attributes(
           Attribute("http.method", "GET"),
           Attribute("http.route", "/users")
         )
       )
-    )
-
-    assert(
+      metrics <- testkit.collectMetrics[MetricData]
+    } yield assert(
       MetricExpectations.exists(
         metrics,
         MetricExpectation
@@ -98,33 +93,34 @@ class MetricExpectationsSuite extends FunSuite {
     )
   }
 
-  test("missing returns unmatched expectations") {
-    val metrics = List(longSum("service.counter", 1L))
-
-    val missing = MetricExpectations.missing(
-      metrics,
-      List(
-        MetricExpectation.sum[Long]("service.counter").withValue(1L),
-        MetricExpectation.gauge[Long]("service.gauge")
-      )
-    )
-
-    assertEquals(missing.size, 1)
-    assert(missing.head.expectation == MetricExpectation.gauge[Long]("service.gauge"))
-  }
-
-  test("withAllPoints requires every point to match") {
-    val metrics = List(
-      metricWithPoints(
-        "service.counter",
+  testkitTest("missing returns unmatched expectations") { testkit =>
+    for {
+      meter <- testkit.meterProvider.get("test")
+      counter <- meter.counter[Long]("service.counter").create
+      _ <- counter.add(1L)
+      metrics <- testkit.collectMetrics[MetricData]
+    } yield {
+      val missing = MetricExpectations.missing(
+        metrics,
         List(
-          point(1L, Attributes(Attribute("region", "eu"))),
-          point(2L, Attributes(Attribute("region", "us")))
+          MetricExpectation.sum[Long]("service.counter").withValue(1L),
+          MetricExpectation.gauge[Long]("service.gauge")
         )
       )
-    )
 
-    assert(
+      assertEquals(missing.size, 1)
+      assert(missing.head.expectation == MetricExpectation.gauge[Long]("service.gauge"))
+    }
+  }
+
+  testkitTest("withAllPoints requires every point to match") { testkit =>
+    for {
+      meter <- testkit.meterProvider.get("test")
+      counter <- meter.counter[Long]("service.counter").create
+      _ <- counter.add(1L, Attributes(Attribute("region", "eu")))
+      _ <- counter.add(2L, Attributes(Attribute("region", "us")))
+      metrics <- testkit.collectMetrics[MetricData]
+    } yield assert(
       !MetricExpectations.exists(
         metrics,
         MetricExpectation
@@ -138,50 +134,9 @@ class MetricExpectationsSuite extends FunSuite {
     )
   }
 
-  private def longSum(
-      name: String,
-      value: Long,
-      attributes: Attributes = Attributes.empty
-  ): MetricData =
-    ImmutableMetricData.createLongSum(
-      resource,
-      scope,
-      name,
-      "",
-      "",
-      ImmutableSumData.create(
-        true,
-        AggregationTemporality.CUMULATIVE,
-        List(point(value, attributes)).asJava
-      )
-    )
+  private def testkitTest[A](
+      options: TestOptions,
+  )(body: MetricsTestkit[IO] => IO[A])(implicit loc: Location): Unit =
+    test(options)(MetricsTestkit.inMemory[IO]().use(body))
 
-  private def metricWithPoints(
-      name: String,
-      points: List[io.opentelemetry.sdk.metrics.data.LongPointData]
-  ): MetricData =
-    ImmutableMetricData.createLongSum(
-      resource,
-      scope,
-      name,
-      "",
-      "",
-      ImmutableSumData.create(
-        true,
-        AggregationTemporality.CUMULATIVE,
-        points.asJava
-      )
-    )
-
-  private def point(
-      value: Long,
-      attributes: Attributes
-  ): io.opentelemetry.sdk.metrics.data.LongPointData =
-    ImmutableLongPointData.create(0L, 1000000000L, attributes.toJava, value)
-
-  private val scope: InstrumentationScopeInfo =
-    InstrumentationScopeInfo.create("scope")
-
-  private val resource: Resource =
-    Resource.empty()
 }

@@ -42,7 +42,7 @@ class InstrumentMetaSuite extends CatsEffectSuite {
   test("dynamic - from") {
     for {
       enabled <- IO.ref(false)
-      meta = InstrumentMeta.from[IO](enabled.get)
+      meta = InstrumentMeta.dynamic[IO](enabled.get)
 
       // disabled
       _ <- assertIO_(meta.unit)

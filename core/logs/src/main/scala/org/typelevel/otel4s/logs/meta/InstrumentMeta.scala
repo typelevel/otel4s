@@ -17,7 +17,10 @@
 package org.typelevel.otel4s.logs.meta
 
 import cats.Applicative
+import cats.Monad
+import cats.mtl.Ask
 import cats.mtl.LiftValue
+import cats.syntax.flatMap._
 import cats.~>
 import org.typelevel.otel4s.logs.Severity
 
@@ -75,6 +78,11 @@ sealed trait InstrumentMeta[F[_], Ctx] {
 
 object InstrumentMeta {
 
+  private[otel4s] def dynamic[F[_], Ctx](
+      enabled: (Ctx, Option[Severity], Option[String]) => F[Boolean]
+  )(implicit M: Monad[F], A: Ask[F, Ctx]): InstrumentMeta[F, Ctx] =
+    new Dynamic(enabled)
+
   private[otel4s] def enabled[F[_]: Applicative, Ctx]: InstrumentMeta[F, Ctx] =
     new Const(true)
 
@@ -88,6 +96,17 @@ object InstrumentMeta {
 
     def isEnabled(severity: Option[Severity], eventName: Option[String]): F[Boolean] =
       enabled
+  }
+
+  private final class Dynamic[F[_], Ctx](
+      enabled: (Ctx, Option[Severity], Option[String]) => F[Boolean]
+  )(implicit M: Monad[F], A: Ask[F, Ctx])
+      extends InstrumentMeta[F, Ctx] {
+    def isEnabled(severity: Option[Severity], eventName: Option[String]): F[Boolean] =
+      A.ask[Ctx].flatMap(ctx => isEnabled(ctx, severity, eventName))
+
+    def isEnabled(context: Ctx, severity: Option[Severity], eventName: Option[String]): F[Boolean] =
+      enabled(context, severity, eventName)
   }
 
   private final class Lifted[F[_], G[_], Ctx](meta: InstrumentMeta[F, Ctx])(f: F ~> G) extends InstrumentMeta[G, Ctx] {

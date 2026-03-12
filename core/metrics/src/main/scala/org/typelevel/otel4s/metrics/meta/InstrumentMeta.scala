@@ -51,7 +51,7 @@ sealed trait InstrumentMeta[F[_]] extends org.typelevel.otel4s.meta.InstrumentMe
 
 object InstrumentMeta {
 
-  private[otel4s] def from[F[_]: Monad](enabled: F[Boolean]): InstrumentMeta[F] =
+  private[otel4s] def dynamic[F[_]: Monad](enabled: F[Boolean]): InstrumentMeta[F] =
     new InstrumentMeta[F] {
       def isEnabled: F[Boolean] = enabled
       def unit: F[Unit] = Monad[F].unit

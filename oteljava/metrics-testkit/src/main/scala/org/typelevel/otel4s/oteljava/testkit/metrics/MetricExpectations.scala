@@ -18,48 +18,98 @@ package org.typelevel.otel4s.oteljava.testkit.metrics
 
 import io.opentelemetry.sdk.metrics.data.MetricData
 
+/** Result of matching a [[MetricExpectation]] against a list of collected metrics. */
 sealed trait MetricMismatch {
+  /** The expectation that did not match any collected metric. */
   def expectation: MetricExpectation
+
+  /** A human-readable clue copied from [[expectation]], if one was provided.
+    *
+    * Clues are intended to explain the business meaning of the expectation, so mismatch output is easier to interpret.
+    */
+  def clue: Option[String]
+
+  /** A human-readable description of the mismatch. */
+  def message: String
 }
 
 object MetricMismatch {
+  /** Indicates that no collected metric matched the given expectation. */
   final case class NotFound(
       expectation: MetricExpectation,
       metrics: List[MetricData]
-  ) extends MetricMismatch
+  ) extends MetricMismatch {
+    def clue: Option[String] = expectation.clue
+
+    def message: String = {
+      val prefix = clue.fold("")(c => s"[$c] ")
+      val available = metrics.map(_.getName).mkString(", ")
+      s"${prefix}no metric matched the expectation; available metrics: [$available]"
+    }
+  }
 }
 
+/** Helpers for matching collected metrics against [[MetricExpectation]] values.
+  *
+  * Typical usage:
+  *
+  * {{{
+  * val expected = List(
+  *   MetricExpectation.name("service.requests"),
+  *   MetricExpectation.sum[Long]("service.counter").withValue(1L)
+  * )
+  *
+  * val missing = MetricExpectations.missing(metrics, expected)
+  * assertEquals(missing, Nil)
+  * }}}
+  */
 object MetricExpectations {
 
-  def exists(
+  /** Returns `true` if at least one collected metric matches the expectation. */
+  def exists[A](
       metrics: List[MetricData],
-      expectation: MetricExpectation
+      expectation: MetricExpectation.Typed[A]
   ): Boolean =
     find(metrics, expectation).nonEmpty
 
-  def find(
+  /** Returns the first collected metric matching the expectation, if any. */
+  def find[A](
       metrics: List[MetricData],
-      expectation: MetricExpectation
+      expectation: MetricExpectation.Typed[A]
   ): Option[MetricData] =
     metrics.find(expectation.matches)
 
-  def check(
+  /** Returns a mismatch if no collected metric matches the expectation. */
+  def check[A](
       metrics: List[MetricData],
-      expectation: MetricExpectation
+      expectation: MetricExpectation.Typed[A]
   ): Option[MetricMismatch] =
     Option.when(!exists(metrics, expectation)) {
       MetricMismatch.NotFound(expectation, metrics)
     }
 
+  /** Returns mismatches for all expectations that did not match any collected metric. */
   def missing(
       metrics: List[MetricData],
       expectations: List[MetricExpectation]
   ): List[MetricMismatch] =
-    expectations.flatMap(check(metrics, _))
+    expectations.flatMap { expectation =>
+      Option.when(!expectation.matchesAny(metrics)) {
+        MetricMismatch.NotFound(expectation, metrics)
+      }
+    }
 
+  /** Returns `true` if every expectation matched at least one collected metric. */
   def allMatch(
       metrics: List[MetricData],
       expectations: List[MetricExpectation]
   ): Boolean =
     missing(metrics, expectations).isEmpty
+
+  private implicit final class MetricExpectationOps(
+      private val expectation: MetricExpectation
+  ) extends AnyVal {
+    def matchesAny(metrics: List[MetricData]): Boolean =
+      metrics.exists(expectation.matches)
+  }
 }

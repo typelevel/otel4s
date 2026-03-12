@@ -16,184 +16,380 @@
 
 package org.typelevel.otel4s.oteljava.testkit.metrics
 
-import io.opentelemetry.sdk.metrics.data.{MetricData, MetricDataType}
+import io.opentelemetry.sdk.metrics.data.{ExponentialHistogramPointData, MetricData, MetricDataType}
+import io.opentelemetry.sdk.metrics.data.{HistogramPointData => JHistogramPointData}
+import io.opentelemetry.sdk.metrics.data.{PointData => JPointData}
+import io.opentelemetry.sdk.metrics.data.{SummaryPointData => JSummaryPointData}
+import org.typelevel.otel4s.metrics.MeasurementValue
+import org.typelevel.otel4s.metrics.MeasurementValue.{DoubleMeasurementValue, LongMeasurementValue}
 
 import scala.jdk.CollectionConverters._
 
+/** A partial expectation for a single OpenTelemetry Java [[MetricData]].
+  *
+  * `MetricExpectation` is intended for tests where asserting against the full `MetricData` shape would be too verbose.
+  * An expectation matches a metric if all configured predicates succeed. Unspecified properties are ignored.
+  *
+  * Use the builders in [[MetricExpectation]] to create expectations for the metric kind you want to check:
+  *   - [[MetricExpectation.name]] to require only a metric name
+  *   - [[MetricExpectation.gauge]] for `LONG_GAUGE` and `DOUBLE_GAUGE`
+  *   - [[MetricExpectation.sum]] for `LONG_SUM` and `DOUBLE_SUM`
+  *   - [[MetricExpectation.summary]] for summary points
+  *   - [[MetricExpectation.histogram]] for histogram points
+  *
+  * Expectations are matched against collected metrics with [[MetricExpectations.exists]], [[MetricExpectations.find]],
+  * or [[MetricExpectations.missing]].
+  */
 sealed trait MetricExpectation {
+  type Value
 
+  /** An optional human-readable clue shown in mismatch messages. */
+  def clue: Option[String]
+
+  /** Requires the metric description to match exactly. */
   def withDescription(description: String): MetricExpectation
 
+  /** Requires the metric unit to match exactly. */
   def withUnit(unit: String): MetricExpectation
 
+  /** Requires the instrumentation scope name to match exactly. */
   def withScopeName(name: String): MetricExpectation
 
-  def withPoint(point: PointExpectation[_]): MetricExpectation
+  /** Attaches a human-readable clue to this expectation. */
+  def clue(text: String): MetricExpectation
 
-  def withAnyPoint(point: PointExpectation[_]): MetricExpectation
-
-  def withAllPoints(point: PointExpectation[_]): MetricExpectation
-
-  def withValue(value: Long): MetricExpectation
-
-  def withValue(value: Double): MetricExpectation
-
-  def where(f: MetricData => Boolean, clue: String): MetricExpectation
-
+  /** Returns `true` if this expectation matches the given metric. */
   def matches(metric: MetricData): Boolean
-
 }
 
 object MetricExpectation {
 
-  def any: MetricExpectation =
-    Impl()
+  /** An alias for a `MetricExpectation` whose matched point values have type `A`. */
+  type Typed[A] = MetricExpectation { type Value = A }
 
-  def name(name: String): MetricExpectation =
-    any.where(_.getName == name, s"name == $name")
+  /** A typed expectation for numeric metrics.
+    *
+    * The value type is driven by [[MeasurementValue]]. For example:
+    *
+    * {{{
+    * MetricExpectation.gauge[Long]("queue.size").withValue(10L)
+    * MetricExpectation.sum[Double]("request.duration")
+    * }}}
+    */
+  sealed trait Numeric[A] extends MetricExpectation {
+    type Value = A
 
-  def longGauge(name: String): MetricExpectation =
-    byKind(name, MetricKind.LongGauge)
+    /** The `MeasurementValue` used to distinguish long and double metrics at runtime. */
+    def valueType: MeasurementValue[A]
 
-  def doubleGauge(name: String): MetricExpectation =
-    byKind(name, MetricKind.DoubleGauge)
+    /** Requires at least one point with the given value. */
+    def withValue(value: A): Numeric[A]
 
-  def longSum(name: String): MetricExpectation =
-    byKind(name, MetricKind.LongSum)
+    /** Alias for [[withAnyPoint]]. */
+    def withPoint(point: PointExpectation[A]): Numeric[A]
 
-  def doubleSum(name: String): MetricExpectation =
-    byKind(name, MetricKind.DoubleSum)
+    /** Requires at least one point matching the given expectation. */
+    def withAnyPoint(point: PointExpectation[A]): Numeric[A]
 
-  def summary(name: String): MetricExpectation =
-    byKind(name, MetricKind.Summary)
+    /** Requires all points to match the given expectation. */
+    def withAllPoints(point: PointExpectation[A]): Numeric[A]
+  }
 
-  def histogram(name: String): MetricExpectation =
-    byKind(name, MetricKind.Histogram)
+  /** A typed expectation for metrics whose points are not simple numeric values, such as summaries and histograms. */
+  sealed trait Points[A] extends MetricExpectation {
+    type Value = A
 
-  def exponentialHistogram(name: String): MetricExpectation =
-    byKind(name, MetricKind.ExponentialHistogram)
+    /** Alias for [[withAnyPoint]]. */
+    def withPoint(point: PointExpectation[A]): Points[A]
 
-  private def byKind(name: String, kind: MetricKind): MetricExpectation =
-    Impl(
+    /** Requires at least one point matching the given expectation. */
+    def withAnyPoint(point: PointExpectation[A]): Points[A]
+
+    /** Requires all points to match the given expectation. */
+    def withAllPoints(point: PointExpectation[A]): Points[A]
+  }
+
+  /** Creates an expectation that matches any metric with the given name. */
+  def name(name: String): Typed[Nothing] =
+    BaseImpl[Nothing](name = Some(name))
+
+  /** Creates a typed expectation for a gauge metric.
+    *
+    * The metric kind is selected from `A`:
+    *   - `A = Long` matches `LONG_GAUGE`
+    *   - `A = Double` matches `DOUBLE_GAUGE`
+    */
+  def gauge[A: MeasurementValue](name: String): Numeric[A] =
+    NumericImpl(
       name = Some(name),
-      kind = Some(kind)
+      kind = NumericKind.Gauge,
+      valueType = MeasurementValue[A]
     )
 
-  private sealed trait PointMatch {
-    def matches(metric: MetricData): Boolean
+  /** Creates a typed expectation for a sum metric.
+    *
+    * The metric kind is selected from `A`:
+    *   - `A = Long` matches `LONG_SUM`
+    *   - `A = Double` matches `DOUBLE_SUM`
+    */
+  def sum[A: MeasurementValue](name: String): Numeric[A] =
+    NumericImpl(
+      name = Some(name),
+      kind = NumericKind.Sum,
+      valueType = MeasurementValue[A]
+    )
+
+  /** Creates an expectation for a summary metric. */
+  def summary(name: String): Points[JSummaryPointData] =
+    PointMetricImpl(
+      name = Some(name),
+      metricType = MetricDataType.SUMMARY
+    )
+
+  /** Creates an expectation for a histogram metric. */
+  def histogram(name: String): Points[JHistogramPointData] =
+    PointMetricImpl(
+      name = Some(name),
+      metricType = MetricDataType.HISTOGRAM
+    )
+
+  /** Creates an expectation for an exponential histogram metric. */
+  def exponentialHistogram(name: String): Points[ExponentialHistogramPointData] =
+    PointMetricImpl(
+      name = Some(name),
+      metricType = MetricDataType.EXPONENTIAL_HISTOGRAM
+    )
+
+  private sealed trait PointMatch[-A] {
+    def matches(points: List[JPointData]): Boolean
   }
 
   private object PointMatch {
-    case object Ignore extends PointMatch {
-      def matches(metric: MetricData): Boolean = true
+    case object Ignore extends PointMatch[_root_.scala.Any] {
+      def matches(points: List[JPointData]): Boolean = true
     }
 
-    final case class Any(expectation: PointExpectation[_]) extends PointMatch {
-      def matches(metric: MetricData): Boolean =
-        points(metric).exists(expectation.matches)
+    final case class Any[A](expectation: PointExpectation[A]) extends PointMatch[A] {
+      def matches(points: List[JPointData]): Boolean =
+        points.exists(expectation.matches)
     }
 
-    final case class All(expectation: PointExpectation[_]) extends PointMatch {
-      def matches(metric: MetricData): Boolean = {
-        val values = points(metric)
-        values.nonEmpty && values.forall(expectation.matches)
-      }
-    }
-
-    private def points(
-        metric: MetricData
-    ): List[io.opentelemetry.sdk.metrics.data.PointData] =
-      metric.getType match {
-        case MetricDataType.LONG_GAUGE =>
-          metric.getLongGaugeData.getPoints.asScala.toList
-        case MetricDataType.DOUBLE_GAUGE =>
-          metric.getDoubleGaugeData.getPoints.asScala.toList
-        case MetricDataType.LONG_SUM =>
-          metric.getLongSumData.getPoints.asScala.toList
-        case MetricDataType.DOUBLE_SUM =>
-          metric.getDoubleSumData.getPoints.asScala.toList
-        case MetricDataType.SUMMARY =>
-          metric.getSummaryData.getPoints.asScala.toList
-        case MetricDataType.HISTOGRAM =>
-          metric.getHistogramData.getPoints.asScala.toList
-        case MetricDataType.EXPONENTIAL_HISTOGRAM =>
-          metric.getExponentialHistogramData.getPoints.asScala.toList
-      }
-  }
-
-  private sealed trait MetricKind {
-    def matches(data: MetricData): Boolean
-  }
-
-  private object MetricKind {
-    case object LongGauge extends MetricKind {
-      def matches(data: MetricData): Boolean = data.getType == MetricDataType.LONG_GAUGE
-    }
-    case object DoubleGauge extends MetricKind {
-      def matches(data: MetricData): Boolean = data.getType == MetricDataType.DOUBLE_GAUGE
-    }
-    case object LongSum extends MetricKind {
-      def matches(data: MetricData): Boolean = data.getType == MetricDataType.LONG_SUM
-    }
-    case object DoubleSum extends MetricKind {
-      def matches(data: MetricData): Boolean = data.getType == MetricDataType.DOUBLE_SUM
-    }
-    case object Summary extends MetricKind {
-      def matches(data: MetricData): Boolean = data.getType == MetricDataType.SUMMARY
-    }
-    case object Histogram extends MetricKind {
-      def matches(data: MetricData): Boolean = data.getType == MetricDataType.HISTOGRAM
-    }
-    case object ExponentialHistogram extends MetricKind {
-      def matches(data: MetricData): Boolean =
-        data.getType == MetricDataType.EXPONENTIAL_HISTOGRAM
+    final case class All[A](expectation: PointExpectation[A]) extends PointMatch[A] {
+      def matches(points: List[JPointData]): Boolean =
+        points.nonEmpty && points.forall(expectation.matches)
     }
   }
 
-  private final case class Impl(
-      name: Option[String] = None,
-      kind: Option[MetricKind] = None,
-      description: Option[String] = None,
-      unit: Option[String] = None,
-      scopeName: Option[String] = None,
-      pointMatch: PointMatch = PointMatch.Ignore,
-      predicates: List[(MetricData => Boolean, String)] = Nil
-  ) extends MetricExpectation {
+  private sealed trait NumericKind {
+    def metricTypeFor[A](valueType: MeasurementValue[A]): MetricDataType
+  }
+
+  private object NumericKind {
+    case object Gauge extends NumericKind {
+      def metricTypeFor[A](valueType: MeasurementValue[A]): MetricDataType =
+        valueType match {
+          case _: LongMeasurementValue[_]   => MetricDataType.LONG_GAUGE
+          case _: DoubleMeasurementValue[_] => MetricDataType.DOUBLE_GAUGE
+        }
+    }
+
+    case object Sum extends NumericKind {
+      def metricTypeFor[A](valueType: MeasurementValue[A]): MetricDataType =
+        valueType match {
+          case _: LongMeasurementValue[_]   => MetricDataType.LONG_SUM
+          case _: DoubleMeasurementValue[_] => MetricDataType.DOUBLE_SUM
+        }
+    }
+  }
+
+  private sealed trait CommonImpl[A] extends MetricExpectation {
+    type Value = A
+
+    def name: Option[String]
+    def description: Option[String]
+    def unit: Option[String]
+    def scopeName: Option[String]
+    def clue: Option[String]
+    def predicates: List[(MetricData => Boolean, String)]
+
+    protected def copyCommon(
+        name: Option[String] = name,
+        description: Option[String] = description,
+        unit: Option[String] = this.unit,
+        scopeName: Option[String] = this.scopeName,
+        clue: Option[String] = this.clue,
+        predicates: List[(MetricData => Boolean, String)] = this.predicates
+    ): MetricExpectation
 
     def withDescription(description: String): MetricExpectation =
-      copy(description = Some(description))
+      copyCommon(description = Some(description))
 
     def withUnit(unit: String): MetricExpectation =
-      copy(unit = Some(unit))
+      copyCommon(unit = Some(unit))
 
     def withScopeName(name: String): MetricExpectation =
-      copy(scopeName = Some(name))
+      copyCommon(scopeName = Some(name))
 
-    def withPoint(point: PointExpectation[_]): MetricExpectation =
-      withAnyPoint(point)
+    def clue(text: String): MetricExpectation =
+      copyCommon(clue = Some(text))
 
-    def withAnyPoint(point: PointExpectation[_]): MetricExpectation =
-      copy(pointMatch = PointMatch.Any(point))
-
-    def withAllPoints(point: PointExpectation[_]): MetricExpectation =
-      copy(pointMatch = PointMatch.All(point))
-
-    def withValue(value: Long): MetricExpectation =
-      withAnyPoint(PointExpectation.long(value))
-
-    def withValue(value: Double): MetricExpectation =
-      withAnyPoint(PointExpectation.double(value))
-
-    def where(f: MetricData => Boolean, clue: String): MetricExpectation =
-      copy(predicates = predicates :+ (f -> clue))
-
-    def matches(metric: MetricData): Boolean =
+    protected final def matchesCommon(metric: MetricData): Boolean =
       name.forall(_ == metric.getName) &&
-        kind.forall(_.matches(metric)) &&
         description.forall(Option(metric.getDescription).contains) &&
         unit.forall(Option(metric.getUnit).contains) &&
         scopeName.forall(_ == metric.getInstrumentationScopeInfo.getName) &&
-        pointMatch.matches(metric) &&
         predicates.forall { case (predicate, _) => predicate(metric) }
   }
+
+  private final case class BaseImpl[A](
+      name: Option[String] = None,
+      description: Option[String] = None,
+      unit: Option[String] = None,
+      scopeName: Option[String] = None,
+      clue: Option[String] = None,
+      predicates: List[(MetricData => Boolean, String)] = Nil
+  ) extends CommonImpl[A] {
+
+    protected def copyCommon(
+        name: Option[String],
+        description: Option[String],
+        unit: Option[String],
+        scopeName: Option[String],
+        clue: Option[String],
+        predicates: List[(MetricData => Boolean, String)]
+    ): MetricExpectation =
+      copy(name, description, unit, scopeName, clue, predicates)
+
+    def matches(metric: MetricData): Boolean =
+      matchesCommon(metric)
+  }
+
+  private final case class NumericImpl[A](
+      name: Option[String],
+      kind: NumericKind,
+      valueType: MeasurementValue[A],
+      description: Option[String] = None,
+      unit: Option[String] = None,
+      scopeName: Option[String] = None,
+      clue: Option[String] = None,
+      predicates: List[(MetricData => Boolean, String)] = Nil,
+      pointMatch: PointMatch[A] = PointMatch.Ignore
+  ) extends Numeric[A]
+      with CommonImpl[A] {
+    override type Value = A
+
+    protected def copyCommon(
+        name: Option[String],
+        description: Option[String],
+        unit: Option[String],
+        scopeName: Option[String],
+        clue: Option[String],
+        predicates: List[(MetricData => Boolean, String)]
+    ): MetricExpectation =
+      copy(
+        name = name,
+        description = description,
+        unit = unit,
+        scopeName = scopeName,
+        clue = clue,
+        predicates = predicates
+      )
+
+    def withValue(value: A): Numeric[A] =
+      withAnyPoint(PointExpectation.value(value))
+
+    def withPoint(point: PointExpectation[A]): Numeric[A] =
+      withAnyPoint(point)
+
+    def withAnyPoint(point: PointExpectation[A]): Numeric[A] =
+      copy(pointMatch = PointMatch.Any(point))
+
+    def withAllPoints(point: PointExpectation[A]): Numeric[A] =
+      copy(pointMatch = PointMatch.All(point))
+
+    override def withDescription(description: String): Numeric[A] =
+      copy(description = Some(description))
+
+    override def withUnit(unit: String): Numeric[A] =
+      copy(unit = Some(unit))
+
+    override def withScopeName(name: String): Numeric[A] =
+      copy(scopeName = Some(name))
+
+    override def clue(text: String): Numeric[A] =
+      copy(clue = Some(text))
+
+    def matches(metric: MetricData): Boolean =
+      metric.getType == kind.metricTypeFor(valueType) &&
+        matchesCommon(metric) &&
+        pointMatch.matches(points(metric))
+  }
+
+  private final case class PointMetricImpl[A <: JPointData](
+      name: Option[String],
+      metricType: MetricDataType,
+      description: Option[String] = None,
+      unit: Option[String] = None,
+      scopeName: Option[String] = None,
+      clue: Option[String] = None,
+      predicates: List[(MetricData => Boolean, String)] = Nil,
+      pointMatch: PointMatch[A] = PointMatch.Ignore
+  ) extends Points[A]
+      with CommonImpl[A] {
+    override type Value = A
+
+    override def withDescription(description: String): Points[A] =
+      copy(description = Some(description))
+
+    override def withUnit(unit: String): Points[A] =
+      copy(unit = Some(unit))
+
+    override def withScopeName(name: String): Points[A] =
+      copy(scopeName = Some(name))
+
+    override def clue(text: String): Points[A] =
+      copy(clue = Some(text))
+
+    def withPoint(point: PointExpectation[A]): Points[A] =
+      copy(pointMatch = PointMatch.Any(point))
+
+    def withAnyPoint(point: PointExpectation[A]): Points[A] =
+      copy(pointMatch = PointMatch.Any(point))
+
+    def withAllPoints(point: PointExpectation[A]): Points[A] =
+      copy(pointMatch = PointMatch.All(point))
+
+    protected def copyCommon(
+        name: Option[String],
+        description: Option[String],
+        unit: Option[String],
+        scopeName: Option[String],
+        clue: Option[String],
+        predicates: List[(MetricData => Boolean, String)]
+    ): MetricExpectation =
+      copy(name, metricType, description, unit, scopeName, clue, predicates, pointMatch)
+
+    def matches(metric: MetricData): Boolean =
+      metric.getType == metricType &&
+        matchesCommon(metric) &&
+        pointMatch.matches(points(metric))
+  }
+
+  private def points(metric: MetricData): List[JPointData] =
+    metric.getType match {
+      case MetricDataType.LONG_GAUGE =>
+        metric.getLongGaugeData.getPoints.asScala.toList
+      case MetricDataType.DOUBLE_GAUGE =>
+        metric.getDoubleGaugeData.getPoints.asScala.toList
+      case MetricDataType.LONG_SUM =>
+        metric.getLongSumData.getPoints.asScala.toList
+      case MetricDataType.DOUBLE_SUM =>
+        metric.getDoubleSumData.getPoints.asScala.toList
+      case MetricDataType.SUMMARY =>
+        metric.getSummaryData.getPoints.asScala.toList
+      case MetricDataType.HISTOGRAM =>
+        metric.getHistogramData.getPoints.asScala.toList
+      case MetricDataType.EXPONENTIAL_HISTOGRAM =>
+        metric.getExponentialHistogramData.getPoints.asScala.toList
+    }
 }

@@ -44,7 +44,7 @@ class MetricExpectationsSuite extends FunSuite {
     assert(
       MetricExpectations.exists(
         metrics,
-        MetricExpectation.longSum("service.counter").withValue(1L)
+        MetricExpectation.sum[Long]("service.counter").withValue(1L)
       )
     )
   }
@@ -62,10 +62,10 @@ class MetricExpectationsSuite extends FunSuite {
       MetricExpectations.exists(
         metrics,
         MetricExpectation
-          .longSum("service.counter")
+          .sum[Long]("service.counter")
           .withAnyPoint(
             PointExpectation
-              .long(1L)
+              .value(1L)
               .withAttributes(Attributes(Attribute("http.method", "GET")))
           )
       )
@@ -88,10 +88,10 @@ class MetricExpectationsSuite extends FunSuite {
       MetricExpectations.exists(
         metrics,
         MetricExpectation
-          .longSum("service.counter")
+          .sum[Long]("service.counter")
           .withAnyPoint(
             PointExpectation
-              .long(1L)
+              .value(1L)
               .withAttributesSubset(Attributes(Attribute("http.method", "GET")))
           )
       )
@@ -104,13 +104,13 @@ class MetricExpectationsSuite extends FunSuite {
     val missing = MetricExpectations.missing(
       metrics,
       List(
-        MetricExpectation.longSum("service.counter").withValue(1L),
-        MetricExpectation.longGauge("service.gauge")
+        MetricExpectation.sum[Long]("service.counter").withValue(1L),
+        MetricExpectation.gauge[Long]("service.gauge")
       )
     )
 
     assertEquals(missing.size, 1)
-    assert(missing.head.expectation == MetricExpectation.longGauge("service.gauge"))
+    assert(missing.head.expectation == MetricExpectation.gauge[Long]("service.gauge"))
   }
 
   test("withAllPoints requires every point to match") {
@@ -128,10 +128,10 @@ class MetricExpectationsSuite extends FunSuite {
       !MetricExpectations.exists(
         metrics,
         MetricExpectation
-          .longSum("service.counter")
+          .sum[Long]("service.counter")
           .withAllPoints(
             PointExpectation
-              .long(1L)
+              .value(1L)
               .withAttributesSubset(Attributes(Attribute("region", "eu")))
           )
       )

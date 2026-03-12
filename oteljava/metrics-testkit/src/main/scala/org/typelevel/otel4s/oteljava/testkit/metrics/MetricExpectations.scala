@@ -20,6 +20,7 @@ import io.opentelemetry.sdk.metrics.data.MetricData
 
 /** Result of matching a [[MetricExpectation]] against a list of collected metrics. */
 sealed trait MetricMismatch {
+
   /** The expectation that did not match any collected metric. */
   def expectation: MetricExpectation
 
@@ -34,6 +35,7 @@ sealed trait MetricMismatch {
 }
 
 object MetricMismatch {
+
   /** Indicates that no collected metric matched the given expectation. */
   final case class NotFound(
       expectation: MetricExpectation,
@@ -66,25 +68,25 @@ object MetricMismatch {
 object MetricExpectations {
 
   /** Returns `true` if at least one collected metric matches the expectation. */
-  def exists[A](
+  def exists(
       metrics: List[MetricData],
-      expectation: MetricExpectation.Typed[A]
+      expectation: MetricExpectation
   ): Boolean =
     find(metrics, expectation).nonEmpty
 
   /** Returns the first collected metric matching the expectation, if any. */
-  def find[A](
+  def find(
       metrics: List[MetricData],
-      expectation: MetricExpectation.Typed[A]
+      expectation: MetricExpectation
   ): Option[MetricData] =
     metrics.find(expectation.matches)
 
   /** Returns a mismatch if no collected metric matches the expectation. */
-  def check[A](
+  def check(
       metrics: List[MetricData],
-      expectation: MetricExpectation.Typed[A]
+      expectation: MetricExpectation
   ): Option[MetricMismatch] =
-    Option.when(!exists(metrics, expectation)) {
+    Option.unless(exists(metrics, expectation)) {
       MetricMismatch.NotFound(expectation, metrics)
     }
 
@@ -94,7 +96,7 @@ object MetricExpectations {
       expectations: List[MetricExpectation]
   ): List[MetricMismatch] =
     expectations.flatMap { expectation =>
-      Option.when(!expectation.matchesAny(metrics)) {
+      Option.unless(metrics.exists(expectation.matches)) {
         MetricMismatch.NotFound(expectation, metrics)
       }
     }

@@ -73,7 +73,12 @@ class TelemetryResourceExpectationSuite extends FunSuite {
       Left(
         NonEmptyList.one(
           TelemetryResourceExpectation.Mismatch.AttributesMismatch(
-            NonEmptyList.one(AttributesExpectation.Mismatch.AttributeValueMismatch("service.name", "service", "other"))
+            NonEmptyList.one(
+              AttributesExpectation.Mismatch.AttributeValueMismatch(
+                Attribute("service.name", "service"),
+                Attribute("service.name", "other")
+              )
+            )
           )
         )
       )
@@ -94,7 +99,7 @@ class TelemetryResourceExpectationSuite extends FunSuite {
       Left(
         NonEmptyList.one(
           TelemetryResourceExpectation.Mismatch.AttributesMismatch(
-            NonEmptyList.one(AttributesExpectation.Mismatch.MissingAttribute("service.name", "service"))
+            NonEmptyList.one(AttributesExpectation.Mismatch.MissingAttribute(Attribute("service.name", "service")))
           )
         )
       )
@@ -113,7 +118,12 @@ class TelemetryResourceExpectationSuite extends FunSuite {
       Left(
         NonEmptyList.of(
           TelemetryResourceExpectation.Mismatch.AttributesMismatch(
-            NonEmptyList.one(AttributesExpectation.Mismatch.AttributeValueMismatch("service.name", "service", "other"))
+            NonEmptyList.one(
+              AttributesExpectation.Mismatch.AttributeValueMismatch(
+                Attribute("service.name", "service"),
+                Attribute("service.name", "other")
+              )
+            )
           ),
           TelemetryResourceExpectation.Mismatch.SchemaUrlMismatch(
             Some("https://opentelemetry.io/schemas/1.0.0"),

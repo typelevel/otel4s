@@ -17,7 +17,7 @@
 package org.typelevel.otel4s.oteljava.testkit
 
 import cats.data.NonEmptyList
-import org.typelevel.otel4s.Attributes
+import org.typelevel.otel4s.{Attribute, Attributes}
 
 /** A partial expectation for [[Attributes]].
   *
@@ -37,27 +37,24 @@ sealed trait AttributesExpectation {
 object AttributesExpectation {
 
   /** A structured reason explaining why an [[AttributesExpectation]] did not match actual attributes. */
-  sealed trait Mismatch
+  sealed trait Mismatch extends Product with Serializable
 
   object Mismatch {
 
     /** Indicates that an expected attribute was missing. */
     final case class MissingAttribute(
-        key: String,
-        expected: String
+        attribute: Attribute[_]
     ) extends Mismatch
 
     /** Indicates that an attribute was present unexpectedly. */
     final case class UnexpectedAttribute(
-        key: String,
-        actual: String
+        attribute: Attribute[_]
     ) extends Mismatch
 
     /** Indicates that an attribute key was present, but its value differed from the expected one. */
     final case class AttributeValueMismatch(
-        key: String,
-        expected: String,
-        actual: String
+        expected: Attribute[_],
+        actual: Attribute[_]
     ) extends Mismatch
 
     /** Indicates that a custom predicate expectation returned `false`. */
@@ -80,28 +77,39 @@ object AttributesExpectation {
   def predicate(f: Attributes => Boolean): AttributesExpectation =
     Predicate(f)
 
+  /** Formats a mismatch into a human-readable message. */
+  def formatMismatch(mismatch: Mismatch): String = {
+    def formatAttribute(attribute: Attribute[_]): String =
+      s"'${attribute.key.name}'='${attribute.value}'"
+
+    mismatch match {
+      case Mismatch.MissingAttribute(attribute) =>
+        s"missing attribute ${formatAttribute(attribute)}"
+      case Mismatch.UnexpectedAttribute(attribute) =>
+        s"unexpected attribute ${formatAttribute(attribute)}"
+      case Mismatch.AttributeValueMismatch(expected, actual) =>
+        s"attribute mismatch for '${expected.key.name}': expected ${formatAttribute(expected)}, got ${formatAttribute(actual)}"
+      case Mismatch.PredicateFailed =>
+        "attributes predicate returned false"
+    }
+  }
+
   private final case class Exact(expected: Attributes) extends AttributesExpectation {
     def check(attributes: Attributes): Either[NonEmptyList[Mismatch], Unit] = {
-      val missingOrMismatched = expected.iterator.map { attribute =>
+      val missingOrMismatched = expected.map { attribute =>
         attributes.get(attribute.key) match {
           case Some(actual) if actual == attribute =>
             ExpectationChecks.success
           case Some(actual) =>
-            ExpectationChecks.failure(
-              Mismatch.AttributeValueMismatch(attribute.key.name, attribute.value.toString, actual.value.toString)
-            )
+            ExpectationChecks.mismatch(Mismatch.AttributeValueMismatch(attribute, actual))
           case None =>
-            ExpectationChecks.failure(
-              Mismatch.MissingAttribute(attribute.key.name, attribute.value.toString)
-            )
+            ExpectationChecks.mismatch(Mismatch.MissingAttribute(attribute))
         }
       }
 
-      val unexpected = attributes.iterator.collect {
+      val unexpected = attributes.collect {
         case attribute if expected.get(attribute.key).isEmpty =>
-          ExpectationChecks.failure(
-            Mismatch.UnexpectedAttribute(attribute.key.name, attribute.value.toString)
-          )
+          Left(NonEmptyList.one(Mismatch.UnexpectedAttribute(attribute)))
       }
 
       ExpectationChecks.combine((missingOrMismatched ++ unexpected).toList)
@@ -115,35 +123,16 @@ object AttributesExpectation {
           case Some(actual) if actual == attribute =>
             ExpectationChecks.success
           case Some(actual) =>
-            ExpectationChecks.failure(
-              Mismatch.AttributeValueMismatch(attribute.key.name, attribute.value.toString, actual.value.toString)
-            )
+            ExpectationChecks.mismatch(Mismatch.AttributeValueMismatch(attribute, actual))
           case None =>
-            ExpectationChecks.failure(
-              Mismatch.MissingAttribute(attribute.key.name, attribute.value.toString)
-            )
+            ExpectationChecks.mismatch(Mismatch.MissingAttribute(attribute))
         }
       }.toList)
   }
 
   private final case class Predicate(f: Attributes => Boolean) extends AttributesExpectation {
     def check(attributes: Attributes): Either[NonEmptyList[Mismatch], Unit] =
-      if (f(attributes)) ExpectationChecks.success
-      else ExpectationChecks.failure(Mismatch.PredicateFailed)
+      Either.cond(f(attributes), (), NonEmptyList.one(Mismatch.PredicateFailed))
   }
 
-  private object ExpectationChecks {
-    def success: Either[NonEmptyList[Mismatch], Unit] =
-      org.typelevel.otel4s.oteljava.testkit.ExpectationChecks.success
-
-    def failure(
-        failure: Mismatch
-    ): Either[NonEmptyList[Mismatch], Unit] =
-      org.typelevel.otel4s.oteljava.testkit.ExpectationChecks.failure(failure)
-
-    def combine(
-        results: Iterable[Either[NonEmptyList[Mismatch], Unit]]
-    ): Either[NonEmptyList[Mismatch], Unit] =
-      org.typelevel.otel4s.oteljava.testkit.ExpectationChecks.combine(results)
-  }
 }

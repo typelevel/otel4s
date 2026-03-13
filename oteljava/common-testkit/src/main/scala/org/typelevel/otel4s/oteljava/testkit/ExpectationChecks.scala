@@ -16,22 +16,23 @@
 
 package org.typelevel.otel4s.oteljava.testkit
 
+import cats.syntax.either._
 import cats.data.NonEmptyList
 
 private[testkit] object ExpectationChecks {
-  def success[F]: Either[NonEmptyList[F], Unit] =
+  def success[A]: Either[NonEmptyList[A], Unit] =
     Right(())
 
-  def failure[F](failure: F): Either[NonEmptyList[F], Unit] =
+  def mismatch[A](failure: A): Either[NonEmptyList[A], Unit] =
     Left(NonEmptyList.one(failure))
 
-  def combine[F](
-      results: Iterable[Either[NonEmptyList[F], Unit]]
-  ): Either[NonEmptyList[F], Unit] = {
+  def combine[A](
+      results: Iterable[Either[NonEmptyList[A], Unit]]
+  ): Either[NonEmptyList[A], Unit] = {
     val failures = results.iterator.collect { case Left(nel) => nel }.toList
 
     failures match {
-      case Nil          => success
+      case Nil          => Either.unit
       case head :: tail => Left(tail.foldLeft(head)(_.concatNel(_)))
     }
   }
@@ -42,4 +43,19 @@ private[testkit] object ExpectationChecks {
       wrap: NonEmptyList[Inner] => Outer
   ): Either[NonEmptyList[Outer], Unit] =
     result.left.map(failures => NonEmptyList.one(wrap(failures)))
+
+  def compareOption[A](
+      expected: Option[Option[String]],
+      actual: Option[String]
+  )(mismatch: (Option[String], Option[String]) => A): Either[NonEmptyList[A], Unit] =
+    expected match {
+      case None =>
+        Either.unit
+      case Some(Some(value)) if actual.contains(value) =>
+        Either.unit
+      case Some(Some(value)) =>
+        Left(NonEmptyList.one(mismatch(Some(value), actual)))
+      case Some(None) =>
+        Either.cond(actual.isEmpty, (), NonEmptyList.one(mismatch(None, actual)))
+    }
 }

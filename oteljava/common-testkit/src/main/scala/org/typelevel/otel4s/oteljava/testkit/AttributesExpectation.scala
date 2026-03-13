@@ -42,23 +42,47 @@ object AttributesExpectation {
   object Mismatch {
 
     /** Indicates that an expected attribute was missing. */
-    final case class MissingAttribute(
-        attribute: Attribute[_]
-    ) extends Mismatch
+    sealed trait MissingAttribute extends Mismatch {
+      def attribute: Attribute[_]
+    }
+
+    /** Creates a mismatch indicating that an expected attribute was missing. */
+    def missingAttribute(attribute: Attribute[_]): MissingAttribute =
+      MissingAttributeImpl(attribute)
 
     /** Indicates that an attribute was present unexpectedly. */
-    final case class UnexpectedAttribute(
-        attribute: Attribute[_]
-    ) extends Mismatch
+    sealed trait UnexpectedAttribute extends Mismatch {
+      def attribute: Attribute[_]
+    }
+
+    /** Creates a mismatch indicating that an attribute was present unexpectedly. */
+    def unexpectedAttribute(attribute: Attribute[_]): UnexpectedAttribute =
+      UnexpectedAttributeImpl(attribute)
 
     /** Indicates that an attribute key was present, but its value differed from the expected one. */
-    final case class AttributeValueMismatch(
-        expected: Attribute[_],
-        actual: Attribute[_]
-    ) extends Mismatch
+    sealed trait AttributeValueMismatch extends Mismatch {
+      def expected: Attribute[_]
+      def actual: Attribute[_]
+    }
+
+    /** Creates a mismatch indicating that an attribute value differed from the expected one. */
+    def attributeValueMismatch(expected: Attribute[_], actual: Attribute[_]): AttributeValueMismatch =
+      AttributeValueMismatchImpl(expected, actual)
 
     /** Indicates that a custom predicate expectation returned `false`. */
-    final case class PredicateFailed(clue: Option[String]) extends Mismatch
+    sealed trait PredicateFailed extends Mismatch {
+      def clue: Option[String]
+    }
+
+    /** Creates a mismatch indicating that a custom predicate expectation returned `false`. */
+    def predicateFailed(clue: Option[String]): PredicateFailed =
+      PredicateFailedImpl(clue)
+
+    private final case class MissingAttributeImpl(attribute: Attribute[_]) extends MissingAttribute
+    private final case class UnexpectedAttributeImpl(attribute: Attribute[_]) extends UnexpectedAttribute
+    private final case class AttributeValueMismatchImpl(expected: Attribute[_], actual: Attribute[_])
+        extends AttributeValueMismatch
+    private final case class PredicateFailedImpl(clue: Option[String]) extends PredicateFailed
   }
 
   /** Creates an expectation that matches only when all attributes are equal. */
@@ -87,14 +111,14 @@ object AttributesExpectation {
       s"'${attribute.key.name}'='${attribute.value}'"
 
     mismatch match {
-      case Mismatch.MissingAttribute(attribute) =>
-        s"missing attribute ${formatAttribute(attribute)}"
-      case Mismatch.UnexpectedAttribute(attribute) =>
-        s"unexpected attribute ${formatAttribute(attribute)}"
-      case Mismatch.AttributeValueMismatch(expected, actual) =>
-        s"attribute mismatch for '${expected.key.name}': expected ${formatAttribute(expected)}, got ${formatAttribute(actual)}"
-      case Mismatch.PredicateFailed(clue) =>
-        clue.fold("attributes predicate returned false")(value => s"attributes predicate returned false: $value")
+      case mismatch: Mismatch.MissingAttribute =>
+        s"missing attribute ${formatAttribute(mismatch.attribute)}"
+      case mismatch: Mismatch.UnexpectedAttribute =>
+        s"unexpected attribute ${formatAttribute(mismatch.attribute)}"
+      case mismatch: Mismatch.AttributeValueMismatch =>
+        s"attribute mismatch for '${mismatch.expected.key.name}': expected ${formatAttribute(mismatch.expected)}, got ${formatAttribute(mismatch.actual)}"
+      case mismatch: Mismatch.PredicateFailed =>
+        mismatch.clue.fold("attributes predicate returned false")(value => s"attributes predicate returned false: $value")
     }
   }
 
@@ -105,15 +129,15 @@ object AttributesExpectation {
           case Some(actual) if actual == attribute =>
             ExpectationChecks.success
           case Some(actual) =>
-            ExpectationChecks.mismatch(Mismatch.AttributeValueMismatch(attribute, actual))
+            ExpectationChecks.mismatch(Mismatch.attributeValueMismatch(attribute, actual))
           case None =>
-            ExpectationChecks.mismatch(Mismatch.MissingAttribute(attribute))
+            ExpectationChecks.mismatch(Mismatch.missingAttribute(attribute))
         }
       }
 
       val unexpected = attributes.collect {
         case attribute if expected.get(attribute.key).isEmpty =>
-          Left(NonEmptyList.one(Mismatch.UnexpectedAttribute(attribute)))
+          Left(NonEmptyList.one(Mismatch.unexpectedAttribute(attribute)))
       }
 
       ExpectationChecks.combine((missingOrMismatched ++ unexpected).toList)
@@ -127,9 +151,9 @@ object AttributesExpectation {
           case Some(actual) if actual == attribute =>
             ExpectationChecks.success
           case Some(actual) =>
-            ExpectationChecks.mismatch(Mismatch.AttributeValueMismatch(attribute, actual))
+            ExpectationChecks.mismatch(Mismatch.attributeValueMismatch(attribute, actual))
           case None =>
-            ExpectationChecks.mismatch(Mismatch.MissingAttribute(attribute))
+            ExpectationChecks.mismatch(Mismatch.missingAttribute(attribute))
         }
       }.toList)
   }
@@ -139,7 +163,7 @@ object AttributesExpectation {
       clue: Option[String]
   ) extends AttributesExpectation {
     def check(attributes: Attributes): Either[NonEmptyList[Mismatch], Unit] =
-      Either.cond(f(attributes), (), NonEmptyList.one(Mismatch.PredicateFailed(clue)))
+      Either.cond(f(attributes), (), NonEmptyList.one(Mismatch.predicateFailed(clue)))
   }
 
 }

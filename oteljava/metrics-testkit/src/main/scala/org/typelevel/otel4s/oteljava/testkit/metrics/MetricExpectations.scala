@@ -39,10 +39,18 @@ sealed trait MetricMismatch {
 object MetricMismatch {
 
   /** Indicates that no collected metric matched the given expectation. */
-  final case class NotFound(
+  sealed trait NotFound extends MetricMismatch {
+    def availableMetricNames: List[String]
+  }
+
+  /** Creates a mismatch indicating that no collected metric matched the given expectation. */
+  def notFound(expectation: MetricExpectation, availableMetricNames: List[String]): NotFound =
+    NotFoundImpl(expectation, availableMetricNames)
+
+  private final case class NotFoundImpl(
       expectation: MetricExpectation,
       availableMetricNames: List[String]
-  ) extends MetricMismatch {
+  ) extends NotFound {
     def clue: Option[String] = expectation.clue
 
     def message: String = {
@@ -53,11 +61,24 @@ object MetricMismatch {
   }
 
   /** Indicates that a candidate metric was found, but it still did not satisfy the full expectation. */
-  final case class ClosestMismatch(
+  sealed trait ClosestMismatch extends MetricMismatch {
+    def metric: MetricData
+    def mismatches: NonEmptyList[MetricExpectation.Mismatch]
+  }
+
+  /** Creates a mismatch indicating that a candidate metric was found but did not satisfy the full expectation. */
+  def closestMismatch(
       expectation: MetricExpectation,
       metric: MetricData,
       mismatches: NonEmptyList[MetricExpectation.Mismatch]
-  ) extends MetricMismatch {
+  ): ClosestMismatch =
+    ClosestMismatchImpl(expectation, metric, mismatches)
+
+  private final case class ClosestMismatchImpl(
+      expectation: MetricExpectation,
+      metric: MetricData,
+      mismatches: NonEmptyList[MetricExpectation.Mismatch]
+  ) extends ClosestMismatch {
     def clue: Option[String] = expectation.clue
 
     def message: String = {
@@ -69,24 +90,24 @@ object MetricMismatch {
 
   private def renderMetricMismatch(mismatch: MetricExpectation.Mismatch): String =
     mismatch match {
-      case MetricExpectation.Mismatch.NameMismatch(expected, actual) =>
-        s"name mismatch: expected '$expected', got '$actual'"
-      case MetricExpectation.Mismatch.DescriptionMismatch(expected, actual) =>
-        s"description mismatch: expected '$expected', got ${actual.fold("<missing>")(v => s"'$v'")}"
-      case MetricExpectation.Mismatch.UnitMismatch(expected, actual) =>
-        s"unit mismatch: expected '$expected', got '$actual'"
-      case MetricExpectation.Mismatch.TypeMismatch(expected, actual) =>
-        s"type mismatch: expected '$expected', got '$actual'"
-      case MetricExpectation.Mismatch.ScopeMismatch(mismatches) =>
-        s"scope mismatch: ${mismatches.toList.map(InstrumentationScopeExpectation.formatMismatch).mkString(", ")}"
-      case MetricExpectation.Mismatch.ResourceMismatch(mismatches) =>
-        s"resource mismatch: ${mismatches.toList.map(TelemetryResourceExpectation.formatMismatch).mkString(", ")}"
-      case MetricExpectation.Mismatch.PredicateMismatch(clue) =>
-        s"predicate mismatch: $clue"
-      case MetricExpectation.Mismatch.PointsMismatch(mode, mismatches, clue) =>
-        val rendered = mismatches.toList.map(PointExpectation.formatMismatch).mkString(", ")
-        val clueSuffix = clue.fold("")(value => s" [$value]")
-        s"points mismatch ($mode$clueSuffix): $rendered"
+      case mismatch: MetricExpectation.Mismatch.NameMismatch =>
+        s"name mismatch: expected '${mismatch.expected}', got '${mismatch.actual}'"
+      case mismatch: MetricExpectation.Mismatch.DescriptionMismatch =>
+        s"description mismatch: expected '${mismatch.expected}', got ${mismatch.actual.fold("<missing>")(v => s"'$v'")}"
+      case mismatch: MetricExpectation.Mismatch.UnitMismatch =>
+        s"unit mismatch: expected '${mismatch.expected}', got '${mismatch.actual}'"
+      case mismatch: MetricExpectation.Mismatch.TypeMismatch =>
+        s"type mismatch: expected '${mismatch.expected}', got '${mismatch.actual}'"
+      case mismatch: MetricExpectation.Mismatch.ScopeMismatch =>
+        s"scope mismatch: ${mismatch.mismatches.toList.map(InstrumentationScopeExpectation.formatMismatch).mkString(", ")}"
+      case mismatch: MetricExpectation.Mismatch.ResourceMismatch =>
+        s"resource mismatch: ${mismatch.mismatches.toList.map(TelemetryResourceExpectation.formatMismatch).mkString(", ")}"
+      case mismatch: MetricExpectation.Mismatch.PredicateMismatch =>
+        s"predicate mismatch: ${mismatch.clue}"
+      case mismatch: MetricExpectation.Mismatch.PointsMismatch =>
+        val rendered = mismatch.mismatches.toList.map(PointExpectation.formatMismatch).mkString(", ")
+        val clueSuffix = mismatch.clue.fold("")(value => s" [$value]")
+        s"points mismatch (${mismatch.mode}$clueSuffix): $rendered"
     }
 }
 
@@ -196,8 +217,8 @@ object MetricExpectations {
       .sortBy { case (_, mismatches) => mismatches.length }
       .headOption
       .map { case (metric, mismatches) =>
-        MetricMismatch.ClosestMismatch(expectation, metric, mismatches)
+        MetricMismatch.closestMismatch(expectation, metric, mismatches)
       }
-      .getOrElse(MetricMismatch.NotFound(expectation, metrics.map(_.getName)))
+      .getOrElse(MetricMismatch.notFound(expectation, metrics.map(_.getName)))
   }
 }

@@ -78,7 +78,7 @@ class AttributesExpectationSuite extends FunSuite {
   }
 
   test("predicate delegates to custom function and reports failure") {
-    val expectation = AttributesExpectation.predicate { attributes =>
+    val expectation = AttributesExpectation.where { attributes =>
       attributes.map(_.key.name).toSet == Set("http.method")
     }
 
@@ -90,7 +90,7 @@ class AttributesExpectationSuite extends FunSuite {
   }
 
   test("predicate clue is included in mismatches and formatted output") {
-    val expectation = AttributesExpectation.predicate("only http.method is expected") { attributes =>
+    val expectation = AttributesExpectation.where("only http.method is expected") { attributes =>
       attributes.map(_.key.name).toSet == Set("http.method")
     }
 

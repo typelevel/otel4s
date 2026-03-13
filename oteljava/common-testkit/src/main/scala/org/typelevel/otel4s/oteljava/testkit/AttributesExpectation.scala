@@ -118,11 +118,11 @@ object AttributesExpectation {
     exact(Attributes.empty)
 
   /** Creates an expectation from a custom predicate. */
-  def predicate(f: Attributes => Boolean): AttributesExpectation =
+  def where(f: Attributes => Boolean): AttributesExpectation =
     Predicate(f, None)
 
   /** Creates an expectation from a custom predicate with an optional clue used in mismatch messages. */
-  def predicate(clue: String)(f: Attributes => Boolean): AttributesExpectation =
+  def where(clue: String)(f: Attributes => Boolean): AttributesExpectation =
     Predicate(f, Some(clue))
 
   private final case class Exact(expected: Attributes) extends AttributesExpectation {

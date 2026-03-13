@@ -86,6 +86,13 @@ object MetricExpectation {
 
   object Mismatch {
 
+    /** Indicates how a point expectation was applied to metric points. */
+    sealed abstract class PointMatchMode(val value: String) extends Product with Serializable
+    object PointMatchMode {
+      case object Any extends PointMatchMode("any")
+      case object All extends PointMatchMode("all")
+    }
+
     /** Indicates that the metric name differed from the expected one. */
     sealed trait NameMismatch extends Mismatch { def expected: String; def actual: String }
 
@@ -113,7 +120,7 @@ object MetricExpectation {
 
     /** Indicates that the metric points did not satisfy the nested point expectation. */
     sealed trait PointsMismatch extends Mismatch {
-      def mode: String
+      def mode: PointMatchMode
       def mismatches: NonEmptyList[PointExpectation.Mismatch]
       def clue: Option[String]
     }
@@ -144,7 +151,7 @@ object MetricExpectation {
 
     /** Creates a mismatch indicating that the metric points did not satisfy the nested point expectation. */
     def pointsMismatch(
-        mode: String,
+        mode: PointMatchMode,
         mismatches: NonEmptyList[PointExpectation.Mismatch],
         clue: Option[String]
     ): PointsMismatch =
@@ -189,14 +196,14 @@ object MetricExpectation {
     }
 
     private final case class PointsMismatchImpl(
-        mode: String,
+        mode: PointMatchMode,
         mismatches: NonEmptyList[PointExpectation.Mismatch],
         clue: Option[String]
     ) extends PointsMismatch {
       def message: String = {
         val rendered = mismatches.toList.map(_.message).mkString(", ")
         val clueSuffix = clue.fold("")(value => s" [$value]")
-        s"points mismatch ($mode$clueSuffix): $rendered"
+        s"points mismatch (${mode.value}$clueSuffix): $rendered"
       }
     }
   }
@@ -421,7 +428,9 @@ object MetricExpectation {
         else {
           val mismatches = closestPointMismatch(points, expectation)
 
-          ExpectationChecks.mismatch(Mismatch.pointsMismatch("any", mismatches, expectation.clue))
+          ExpectationChecks.mismatch(
+            Mismatch.pointsMismatch(Mismatch.PointMatchMode.Any, mismatches, expectation.clue)
+          )
         }
     }
 
@@ -430,7 +439,7 @@ object MetricExpectation {
         if (points.isEmpty) {
           ExpectationChecks.mismatch(
             Mismatch.pointsMismatch(
-              "all",
+              Mismatch.PointMatchMode.All,
               NonEmptyList.one(
                 PointExpectation.Mismatch.predicateMismatch("no points were collected")
               ),
@@ -443,7 +452,11 @@ object MetricExpectation {
               ExpectationChecks.success
             case Some(_) =>
               ExpectationChecks.mismatch(
-                Mismatch.pointsMismatch("all", closestPointMismatch(points, expectation), expectation.clue)
+                Mismatch.pointsMismatch(
+                  Mismatch.PointMatchMode.All,
+                  closestPointMismatch(points, expectation),
+                  expectation.clue
+                )
               )
           }
         }

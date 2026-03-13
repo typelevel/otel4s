@@ -16,6 +16,7 @@
 
 package org.typelevel.otel4s.oteljava.testkit
 
+import cats.data.NonEmptyList
 import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.api.common.{Attributes => JAttributes}
 import io.opentelemetry.sdk.resources.Resource
@@ -25,29 +26,58 @@ import org.typelevel.otel4s.{Attribute, Attributes}
 class TelemetryResourceExpectationSuite extends FunSuite {
 
   test("empty expectation matches any resource") {
-    assert(TelemetryResourceExpectation.any.matches(resource()))
+    assertEquals(TelemetryResourceExpectation.any.check(resource()), Right(()))
   }
 
   test("withSchemaUrl matches exact schema url") {
     val expectation = TelemetryResourceExpectation.any.withSchemaUrl("https://opentelemetry.io/schemas/1.0.0")
 
-    assert(expectation.matches(resource(schemaUrl = Some("https://opentelemetry.io/schemas/1.0.0"))))
-    assert(!expectation.matches(resource(schemaUrl = Some("https://opentelemetry.io/schemas/1.1.0"))))
+    assertEquals(expectation.check(resource(schemaUrl = Some("https://opentelemetry.io/schemas/1.0.0"))), Right(()))
+    assertEquals(
+      expectation.check(resource(schemaUrl = Some("https://opentelemetry.io/schemas/1.1.0"))),
+      Left(
+        NonEmptyList.one(
+          TelemetryResourceExpectation.Mismatch.SchemaUrlMismatch(
+            Some("https://opentelemetry.io/schemas/1.0.0"),
+            Some("https://opentelemetry.io/schemas/1.1.0")
+          )
+        )
+      )
+    )
   }
 
   test("withSchemaUrl(None) requires missing schema url") {
     val expectation = TelemetryResourceExpectation.any.withSchemaUrl(None)
 
-    assert(expectation.matches(resource(schemaUrl = None)))
-    assert(!expectation.matches(resource(schemaUrl = Some("https://opentelemetry.io/schemas/1.0.0"))))
+    assertEquals(expectation.check(resource(schemaUrl = None)), Right(()))
+    assertEquals(
+      expectation.check(resource(schemaUrl = Some("https://opentelemetry.io/schemas/1.0.0"))),
+      Left(
+        NonEmptyList.one(
+          TelemetryResourceExpectation.Mismatch.SchemaUrlMismatch(
+            None,
+            Some("https://opentelemetry.io/schemas/1.0.0")
+          )
+        )
+      )
+    )
   }
 
-  test("withAttributesExact matches exact attributes") {
+  test("withAttributesExact reports nested attribute failures") {
     val expectation =
       TelemetryResourceExpectation.any.withAttributesExact(Attributes(Attribute("service.name", "service")))
 
-    assert(expectation.matches(resource(attributes = jAttributes("service.name" -> "service"))))
-    assert(!expectation.matches(resource(attributes = jAttributes("service.name" -> "other"))))
+    assertEquals(expectation.check(resource(attributes = jAttributes("service.name" -> "service"))), Right(()))
+    assertEquals(
+      expectation.check(resource(attributes = jAttributes("service.name" -> "other"))),
+      Left(
+        NonEmptyList.one(
+          TelemetryResourceExpectation.Mismatch.AttributesMismatch(
+            NonEmptyList.one(AttributesExpectation.Mismatch.AttributeValueMismatch("service.name", "service", "other"))
+          )
+        )
+      )
+    )
   }
 
   test("withAttributesSubset matches contained attributes") {
@@ -55,10 +85,20 @@ class TelemetryResourceExpectationSuite extends FunSuite {
       TelemetryResourceExpectation.any
         .withAttributesSubset(Attributes(Attribute("service.name", "service")))
 
-    assert(
-      expectation.matches(resource(attributes = jAttributes("service.name" -> "service", "host.name" -> "localhost")))
+    assertEquals(
+      expectation.check(resource(attributes = jAttributes("service.name" -> "service", "host.name" -> "localhost"))),
+      Right(())
     )
-    assert(!expectation.matches(resource(attributes = jAttributes("host.name" -> "localhost"))))
+    assertEquals(
+      expectation.check(resource(attributes = jAttributes("host.name" -> "localhost"))),
+      Left(
+        NonEmptyList.one(
+          TelemetryResourceExpectation.Mismatch.AttributesMismatch(
+            NonEmptyList.one(AttributesExpectation.Mismatch.MissingAttribute("service.name", "service"))
+          )
+        )
+      )
+    )
   }
 
   test("exact matches the full resource") {
@@ -67,9 +107,20 @@ class TelemetryResourceExpectationSuite extends FunSuite {
       schemaUrl = Some("https://opentelemetry.io/schemas/1.0.0")
     )
 
-    assert(TelemetryResourceExpectation.exact(actual).matches(actual))
-    assert(
-      !TelemetryResourceExpectation.exact(actual).matches(resource(attributes = jAttributes("service.name" -> "other")))
+    assertEquals(TelemetryResourceExpectation.exact(actual).check(actual), Right(()))
+    assertEquals(
+      TelemetryResourceExpectation.exact(actual).check(resource(attributes = jAttributes("service.name" -> "other"))),
+      Left(
+        NonEmptyList.of(
+          TelemetryResourceExpectation.Mismatch.AttributesMismatch(
+            NonEmptyList.one(AttributesExpectation.Mismatch.AttributeValueMismatch("service.name", "service", "other"))
+          ),
+          TelemetryResourceExpectation.Mismatch.SchemaUrlMismatch(
+            Some("https://opentelemetry.io/schemas/1.0.0"),
+            None
+          )
+        )
+      )
     )
   }
 

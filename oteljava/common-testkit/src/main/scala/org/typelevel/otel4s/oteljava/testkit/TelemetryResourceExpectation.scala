@@ -16,6 +16,7 @@
 
 package org.typelevel.otel4s.oteljava.testkit
 
+import cats.data.NonEmptyList
 import io.opentelemetry.sdk.resources.{Resource => JResource}
 import org.typelevel.otel4s.Attributes
 import org.typelevel.otel4s.oteljava.AttributeConverters._
@@ -44,11 +45,32 @@ sealed trait TelemetryResourceExpectation {
   /** Requires the resource schema URL to match exactly. */
   def withSchemaUrl(schemaUrl: String): TelemetryResourceExpectation
 
+  /** Checks the given telemetry resource and returns structured failures when the expectation does not match. */
+  def check(resource: JResource): Either[NonEmptyList[TelemetryResourceExpectation.Mismatch], Unit]
+
   /** Returns `true` if this expectation matches the given telemetry resource. */
-  def matches(resource: JResource): Boolean
+  final def matches(resource: JResource): Boolean =
+    check(resource).isRight
 }
 
 object TelemetryResourceExpectation {
+
+  /** A structured reason explaining why a [[TelemetryResourceExpectation]] did not match an actual resource. */
+  sealed trait Mismatch
+
+  object Mismatch {
+
+    /** Indicates that the resource schema URL differed from the expected one. */
+    final case class SchemaUrlMismatch(
+        expected: Option[String],
+        actual: Option[String]
+    ) extends Mismatch
+
+    /** Indicates that the resource attributes did not satisfy the nested attributes expectation. */
+    final case class AttributesMismatch(
+        failures: NonEmptyList[AttributesExpectation.Mismatch]
+    ) extends Mismatch
+  }
 
   /** Creates an expectation that matches the full telemetry resource exactly. */
   def exact(resource: JResource): TelemetryResourceExpectation =
@@ -81,8 +103,52 @@ object TelemetryResourceExpectation {
     def withSchemaUrl(schemaUrl: String): TelemetryResourceExpectation =
       withSchemaUrl(Some(schemaUrl))
 
-    def matches(resource: JResource): Boolean =
-      attributes.forall(_.matches(resource.getAttributes.toScala)) &&
-        schemaUrl.forall(_ == Option(resource.getSchemaUrl))
+    def check(resource: JResource): Either[NonEmptyList[Mismatch], Unit] =
+      ExpectationChecks.combine(
+        List(
+          attributes.fold(ExpectationChecks.success) { expected =>
+            ExpectationChecks.nested(expected.check(resource.getAttributes.toScala))
+          },
+          compareSchemaUrl(schemaUrl, Option(resource.getSchemaUrl))
+        )
+      )
   }
+
+  private object ExpectationChecks {
+    def success: Either[NonEmptyList[Mismatch], Unit] =
+      org.typelevel.otel4s.oteljava.testkit.ExpectationChecks.success
+
+    def failure(
+        failure: Mismatch
+    ): Either[NonEmptyList[Mismatch], Unit] =
+      org.typelevel.otel4s.oteljava.testkit.ExpectationChecks.failure(failure)
+
+    def combine(
+        results: Iterable[Either[NonEmptyList[Mismatch], Unit]]
+    ): Either[NonEmptyList[Mismatch], Unit] =
+      org.typelevel.otel4s.oteljava.testkit.ExpectationChecks.combine(results)
+
+    def nested(
+        result: Either[NonEmptyList[AttributesExpectation.Mismatch], Unit]
+    ): Either[NonEmptyList[Mismatch], Unit] =
+      org.typelevel.otel4s.oteljava.testkit.ExpectationChecks.nested(result)(Mismatch.AttributesMismatch.apply)
+  }
+
+  private def compareSchemaUrl(
+      expected: Option[Option[String]],
+      actual: Option[String]
+  ): Either[NonEmptyList[Mismatch], Unit] =
+    expected match {
+      case None =>
+        ExpectationChecks.success
+      case Some(Some(value)) if actual.contains(value) =>
+        ExpectationChecks.success
+      case Some(Some(value)) =>
+        ExpectationChecks.failure(
+          Mismatch.SchemaUrlMismatch(Some(value), actual)
+        )
+      case Some(None) =>
+        if (actual.isEmpty) ExpectationChecks.success
+        else ExpectationChecks.failure(Mismatch.SchemaUrlMismatch(None, actual))
+    }
 }

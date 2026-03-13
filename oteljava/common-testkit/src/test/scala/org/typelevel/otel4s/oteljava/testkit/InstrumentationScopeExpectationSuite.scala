@@ -16,6 +16,7 @@
 
 package org.typelevel.otel4s.oteljava.testkit
 
+import cats.data.NonEmptyList
 import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.api.common.{Attributes => JAttributes}
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo
@@ -25,36 +26,67 @@ import org.typelevel.otel4s.{Attribute, Attributes}
 class InstrumentationScopeExpectationSuite extends FunSuite {
 
   test("name matches only scope name") {
-    assert(InstrumentationScopeExpectation.name("test").matches(scope(name = "test")))
-    assert(!InstrumentationScopeExpectation.name("test").matches(scope(name = "other")))
+    assertEquals(InstrumentationScopeExpectation.name("test").check(scope(name = "test")), Right(()))
+    assertEquals(
+      InstrumentationScopeExpectation.name("test").check(scope(name = "other")),
+      Left(NonEmptyList.one(InstrumentationScopeExpectation.Mismatch.NameMismatch("test", "other")))
+    )
   }
 
   test("withVersion matches exact version") {
-    assert(InstrumentationScopeExpectation.name("test").withVersion("1.0").matches(scope(version = Some("1.0"))))
-    assert(!InstrumentationScopeExpectation.name("test").withVersion("1.0").matches(scope(version = Some("2.0"))))
+    assertEquals(
+      InstrumentationScopeExpectation.name("test").withVersion("1.0").check(scope(version = Some("1.0"))),
+      Right(())
+    )
+    assertEquals(
+      InstrumentationScopeExpectation.name("test").withVersion("1.0").check(scope(version = Some("2.0"))),
+      Left(NonEmptyList.one(InstrumentationScopeExpectation.Mismatch.VersionMismatch(Some("1.0"), Some("2.0"))))
+    )
   }
 
   test("withVersion(None) requires missing version") {
     val expectation = InstrumentationScopeExpectation.name("test").withVersion(None)
 
-    assert(expectation.matches(scope(version = None)))
-    assert(!expectation.matches(scope(version = Some("1.0"))))
+    assertEquals(expectation.check(scope(version = None)), Right(()))
+    assertEquals(
+      expectation.check(scope(version = Some("1.0"))),
+      Left(NonEmptyList.one(InstrumentationScopeExpectation.Mismatch.VersionMismatch(None, Some("1.0"))))
+    )
   }
 
   test("withSchemaUrl matches exact schema url") {
     val expectation =
       InstrumentationScopeExpectation.name("test").withSchemaUrl("https://opentelemetry.io/schemas/1.0.0")
 
-    assert(expectation.matches(scope(schemaUrl = Some("https://opentelemetry.io/schemas/1.0.0"))))
-    assert(!expectation.matches(scope(schemaUrl = Some("https://opentelemetry.io/schemas/1.1.0"))))
+    assertEquals(expectation.check(scope(schemaUrl = Some("https://opentelemetry.io/schemas/1.0.0"))), Right(()))
+    assertEquals(
+      expectation.check(scope(schemaUrl = Some("https://opentelemetry.io/schemas/1.1.0"))),
+      Left(
+        NonEmptyList.one(
+          InstrumentationScopeExpectation.Mismatch.SchemaUrlMismatch(
+            Some("https://opentelemetry.io/schemas/1.0.0"),
+            Some("https://opentelemetry.io/schemas/1.1.0")
+          )
+        )
+      )
+    )
   }
 
-  test("withAttributesExact matches exact attributes") {
+  test("withAttributesExact reports nested attribute failures") {
     val expectation =
       InstrumentationScopeExpectation.name("test").withAttributesExact(Attributes(Attribute("scope.attr", "value")))
 
-    assert(expectation.matches(scope(attributes = jAttributes("scope.attr" -> "value"))))
-    assert(!expectation.matches(scope(attributes = jAttributes("scope.attr" -> "other"))))
+    assertEquals(expectation.check(scope(attributes = jAttributes("scope.attr" -> "value"))), Right(()))
+    assertEquals(
+      expectation.check(scope(attributes = jAttributes("scope.attr" -> "other"))),
+      Left(
+        NonEmptyList.one(
+          InstrumentationScopeExpectation.Mismatch.AttributesMismatch(
+            NonEmptyList.one(AttributesExpectation.Mismatch.AttributeValueMismatch("scope.attr", "value", "other"))
+          )
+        )
+      )
+    )
   }
 
   test("withAttributesSubset matches contained attributes") {
@@ -63,8 +95,17 @@ class InstrumentationScopeExpectationSuite extends FunSuite {
         .name("test")
         .withAttributesSubset(Attributes(Attribute("scope.attr", "value")))
 
-    assert(expectation.matches(scope(attributes = jAttributes("scope.attr" -> "value", "other" -> "x"))))
-    assert(!expectation.matches(scope(attributes = jAttributes("other" -> "x"))))
+    assertEquals(expectation.check(scope(attributes = jAttributes("scope.attr" -> "value", "other" -> "x"))), Right(()))
+    assertEquals(
+      expectation.check(scope(attributes = jAttributes("other" -> "x"))),
+      Left(
+        NonEmptyList.one(
+          InstrumentationScopeExpectation.Mismatch.AttributesMismatch(
+            NonEmptyList.one(AttributesExpectation.Mismatch.MissingAttribute("scope.attr", "value"))
+          )
+        )
+      )
+    )
   }
 
   test("exact matches the full scope") {
@@ -75,8 +116,23 @@ class InstrumentationScopeExpectationSuite extends FunSuite {
       attributes = jAttributes("scope.attr" -> "value")
     )
 
-    assert(InstrumentationScopeExpectation.exact(actual).matches(actual))
-    assert(!InstrumentationScopeExpectation.exact(actual).matches(scope(name = "other")))
+    assertEquals(InstrumentationScopeExpectation.exact(actual).check(actual), Right(()))
+    assertEquals(
+      InstrumentationScopeExpectation.exact(actual).check(scope(name = "other")),
+      Left(
+        NonEmptyList.of(
+          InstrumentationScopeExpectation.Mismatch.NameMismatch("test", "other"),
+          InstrumentationScopeExpectation.Mismatch.VersionMismatch(Some("1.0"), None),
+          InstrumentationScopeExpectation.Mismatch.SchemaUrlMismatch(
+            Some("https://opentelemetry.io/schemas/1.0.0"),
+            None
+          ),
+          InstrumentationScopeExpectation.Mismatch.AttributesMismatch(
+            NonEmptyList.one(AttributesExpectation.Mismatch.MissingAttribute("scope.attr", "value"))
+          )
+        )
+      )
+    )
   }
 
   private def scope(

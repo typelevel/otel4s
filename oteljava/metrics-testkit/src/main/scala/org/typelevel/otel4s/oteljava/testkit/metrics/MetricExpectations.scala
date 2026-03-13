@@ -42,9 +42,23 @@ object MetricMismatch {
     def availableMetricNames: List[String]
   }
 
+  /** Indicates that a candidate metric was found, but it still did not satisfy the full expectation. */
+  sealed trait ClosestMismatch extends MetricMismatch {
+    def metric: MetricData
+    def mismatches: NonEmptyList[MetricExpectation.Mismatch]
+  }
+
   /** Creates a mismatch indicating that no collected metric matched the given expectation. */
   def notFound(expectation: MetricExpectation, availableMetricNames: List[String]): NotFound =
     NotFoundImpl(expectation, availableMetricNames)
+
+  /** Creates a mismatch indicating that a candidate metric was found but did not satisfy the full expectation. */
+  def closestMismatch(
+      expectation: MetricExpectation,
+      metric: MetricData,
+      mismatches: NonEmptyList[MetricExpectation.Mismatch]
+  ): ClosestMismatch =
+    ClosestMismatchImpl(expectation, metric, mismatches)
 
   private final case class NotFoundImpl(
       expectation: MetricExpectation,
@@ -58,20 +72,6 @@ object MetricMismatch {
       s"${prefix}no metric matched the expectation; available metrics: [$available]"
     }
   }
-
-  /** Indicates that a candidate metric was found, but it still did not satisfy the full expectation. */
-  sealed trait ClosestMismatch extends MetricMismatch {
-    def metric: MetricData
-    def mismatches: NonEmptyList[MetricExpectation.Mismatch]
-  }
-
-  /** Creates a mismatch indicating that a candidate metric was found but did not satisfy the full expectation. */
-  def closestMismatch(
-      expectation: MetricExpectation,
-      metric: MetricData,
-      mismatches: NonEmptyList[MetricExpectation.Mismatch]
-  ): ClosestMismatch =
-    ClosestMismatchImpl(expectation, metric, mismatches)
 
   private final case class ClosestMismatchImpl(
       expectation: MetricExpectation,

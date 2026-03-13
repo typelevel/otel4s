@@ -30,13 +30,16 @@ import scala.jdk.CollectionConverters._
 
 /** A partial expectation for a single OpenTelemetry Java point.
   *
-  * `PointExpectation` is used together with [[MetricExpectation.Numeric]] and [[MetricExpectation.Points]] to express
-  * which metric points should be present. Unspecified properties are ignored.
+  * `PointExpectation` is used together with [[MetricExpectation.Numeric]], [[MetricExpectation.Summary]],
+  * [[MetricExpectation.Histogram]], and [[MetricExpectation.ExponentialHistogram]] to express which metric points
+  * should be present. Unspecified properties are ignored.
   *
   * Attribute matching is done with [[AttributesExpectation]]:
   *   - [[withAttributes]] accepts a custom attribute expectation
   *   - [[withAttributesExact]] requires exact equality
   *   - [[withAttributesSubset]] requires the expected attributes to be contained in the point
+  *
+  * Use [[check]] when you need structured mismatch diagnostics and [[matches]] when you only need a boolean result.
   */
 sealed trait PointExpectation[A] {
 
@@ -72,26 +75,37 @@ object PointExpectation {
   sealed trait Mismatch extends Product with Serializable
 
   object Mismatch {
+
+    /** Indicates that the actual point type differed from the expected one. */
     final case class TypeMismatch(expected: String, actual: String) extends Mismatch
 
+    /** Indicates that the numeric point value differed from the expected one. */
     final case class ValueMismatch(expected: String, actual: String) extends Mismatch
 
+    /** Indicates that the point count differed from the expected one. */
     final case class CountMismatch(expected: Long, actual: Long) extends Mismatch
 
+    /** Indicates that the point sum differed from the expected one. */
     final case class SumMismatch(expected: Double, actual: Double) extends Mismatch
 
+    /** Indicates that histogram boundaries differed from the expected ones. */
     final case class BoundariesMismatch(expected: List[Double], actual: List[Double]) extends Mismatch
 
+    /** Indicates that histogram bucket counts differed from the expected ones. */
     final case class CountsMismatch(expected: List[Long], actual: List[Long]) extends Mismatch
 
+    /** Indicates that the exponential histogram scale differed from the expected one. */
     final case class ScaleMismatch(expected: Int, actual: Int) extends Mismatch
 
+    /** Indicates that the exponential histogram zero count differed from the expected one. */
     final case class ZeroCountMismatch(expected: Long, actual: Long) extends Mismatch
 
+    /** Indicates that the point attributes did not satisfy the nested attributes expectation. */
     final case class AttributesMismatch(
         mismatches: NonEmptyList[AttributesExpectation.Mismatch]
     ) extends Mismatch
 
+    /** Indicates that a custom point predicate returned `false`. */
     final case class PredicateMismatch(clue: String) extends Mismatch
   }
 

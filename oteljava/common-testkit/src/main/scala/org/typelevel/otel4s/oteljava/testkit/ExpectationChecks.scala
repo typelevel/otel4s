@@ -32,7 +32,7 @@ private[testkit] object ExpectationChecks {
   def combine[A](
       results: Iterable[Either[NonEmptyList[A], Unit]]
   ): Either[NonEmptyList[A], Unit] = {
-    val failures = results.iterator.collect { case Left(nel) => nel }.toList
+    val failures = results.collect { case Left(nel) => nel }.toList
 
     failures match {
       case Nil          => Either.unit

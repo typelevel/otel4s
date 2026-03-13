@@ -132,14 +132,16 @@ object MetricExpectations {
     if (exists(metrics, expectation)) None
     else Some(bestMismatch(metrics, expectation))
 
-  /** Returns mismatches for all expectations that did not match any collected metric. */
-  def missing(
+  /** Checks that every expectation matched at least one collected metric.
+    *
+    * Returns `Right(())` when all expectations matched. Otherwise returns a non-empty list of mismatches describing the
+    * unmatched expectations.
+    */
+  def checkAll(
       metrics: List[MetricData],
-      expectations: List[MetricExpectation]
-  ): List[MetricMismatch] =
-    expectations.flatMap { expectation =>
-      check(metrics, expectation)
-    }
+      expectations: MetricExpectation*
+  ): Either[NonEmptyList[MetricMismatch], Unit] =
+    checkAll(metrics, expectations.toList)
 
   /** Checks that every expectation matched at least one collected metric.
     *
@@ -151,6 +153,15 @@ object MetricExpectations {
       expectations: List[MetricExpectation]
   ): Either[NonEmptyList[MetricMismatch], Unit] =
     NonEmptyList.fromList(missing(metrics, expectations)).toLeft(())
+
+  /** Returns mismatches for all expectations that did not match any collected metric. */
+  def missing(
+      metrics: List[MetricData],
+      expectations: List[MetricExpectation]
+  ): List[MetricMismatch] =
+    expectations.flatMap { expectation =>
+      check(metrics, expectation)
+    }
 
   /** Formats mismatches into a multi-line human-readable failure message. */
   def format(

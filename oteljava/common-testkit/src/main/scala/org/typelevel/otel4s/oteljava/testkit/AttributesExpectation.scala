@@ -43,6 +43,10 @@ object AttributesExpectation {
   def empty: AttributesExpectation =
     exact(Attributes.empty)
 
+  /** Creates an expectation from a custom predicate. */
+  def predicate(f: Attributes => Boolean): AttributesExpectation =
+    Predicate(f)
+
   private final case class Exact(expected: Attributes) extends AttributesExpectation {
     def matches(attributes: Attributes): Boolean =
       expected == attributes
@@ -53,5 +57,10 @@ object AttributesExpectation {
       expected.iterator.forall { attribute =>
         attributes.get(attribute.key).contains(attribute)
       }
+  }
+
+  private final case class Predicate(f: Attributes => Boolean) extends AttributesExpectation {
+    def matches(attributes: Attributes): Boolean =
+      f(attributes)
   }
 }

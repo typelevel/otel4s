@@ -22,6 +22,7 @@ import io.opentelemetry.sdk.metrics.data.{LongPointData, PointData => JPointData
 import io.opentelemetry.sdk.metrics.data.{SummaryPointData => JSummaryPointData}
 import org.typelevel.otel4s.Attributes
 import org.typelevel.otel4s.oteljava.AttributeConverters._
+import org.typelevel.otel4s.oteljava.testkit.AttributesExpectation
 
 import scala.jdk.CollectionConverters._
 
@@ -30,8 +31,9 @@ import scala.jdk.CollectionConverters._
   * `PointExpectation` is used together with [[MetricExpectation.Numeric]] and [[MetricExpectation.Points]] to express
   * which metric points should be present. Unspecified properties are ignored.
   *
-  * Attribute matching is done with `otel4s` [[Attributes]]:
-  *   - [[withAttributes]] requires exact equality
+  * Attribute matching is done with [[AttributesExpectation]]:
+  *   - [[withAttributes]] accepts a custom attribute expectation
+  *   - [[withAttributesExact]] requires exact equality
   *   - [[withAttributesSubset]] requires the expected attributes to be contained in the point
   */
 sealed trait PointExpectation[A] {
@@ -39,8 +41,11 @@ sealed trait PointExpectation[A] {
   /** An optional human-readable clue shown in mismatch messages. */
   def clue: Option[String]
 
+  /** Requires the point attributes to satisfy the given expectation. */
+  def withAttributes(expectation: AttributesExpectation): PointExpectation[A]
+
   /** Requires the point attributes to match exactly. */
-  def withAttributes(attributes: Attributes): PointExpectation[A]
+  def withAttributesExact(attributes: Attributes): PointExpectation[A]
 
   /** Requires the point attributes to contain the given attributes. */
   def withAttributesSubset(attributes: Attributes): PointExpectation[A]
@@ -62,7 +67,9 @@ object PointExpectation {
     /** Requires the point value to match exactly. */
     def withValue(value: A): Numeric[A]
 
-    override def withAttributes(attributes: Attributes): Numeric[A]
+    override def withAttributes(expectation: AttributesExpectation): Numeric[A]
+
+    override def withAttributesExact(attributes: Attributes): Numeric[A]
 
     override def withAttributesSubset(attributes: Attributes): Numeric[A]
 
@@ -77,7 +84,9 @@ object PointExpectation {
 
     def withSum(sum: Double): Summary
 
-    override def withAttributes(attributes: Attributes): Summary
+    override def withAttributes(expectation: AttributesExpectation): Summary
+
+    override def withAttributesExact(attributes: Attributes): Summary
 
     override def withAttributesSubset(attributes: Attributes): Summary
 
@@ -96,7 +105,9 @@ object PointExpectation {
 
     def withCounts(counts: List[Long]): Histogram
 
-    override def withAttributes(attributes: Attributes): Histogram
+    override def withAttributes(expectation: AttributesExpectation): Histogram
+
+    override def withAttributesExact(attributes: Attributes): Histogram
 
     override def withAttributesSubset(attributes: Attributes): Histogram
 
@@ -115,7 +126,9 @@ object PointExpectation {
 
     def withZeroCount(zeroCount: Long): ExponentialHistogram
 
-    override def withAttributes(attributes: Attributes): ExponentialHistogram
+    override def withAttributes(expectation: AttributesExpectation): ExponentialHistogram
+
+    override def withAttributesExact(attributes: Attributes): ExponentialHistogram
 
     override def withAttributesSubset(attributes: Attributes): ExponentialHistogram
 
@@ -170,44 +183,25 @@ object PointExpectation {
       expectedZeroCount = zeroCount
     )
 
-  private sealed trait AttributeExpectation {
-    def matches(attributes: Attributes): Boolean
-  }
-
-  private object AttributeExpectation {
-    case object Any extends AttributeExpectation {
-      def matches(attributes: Attributes): Boolean = true
-    }
-
-    final case class Exact(expected: Attributes) extends AttributeExpectation {
-      def matches(attributes: Attributes): Boolean =
-        attributes == expected
-    }
-
-    final case class Subset(expected: Attributes) extends AttributeExpectation {
-      def matches(attributes: Attributes): Boolean =
-        expected.iterator.forall { attribute =>
-          attributes.get(attribute.key).contains(attribute)
-        }
-    }
-  }
-
   private sealed trait CommonImpl[A] extends PointExpectation[A] {
-    def attributeExpectation: AttributeExpectation
+    def attributeExpectation: Option[AttributesExpectation]
     def clue: Option[String]
     def predicates: List[(JPointData => Boolean, String)]
 
     protected def copyCommon(
-        attributeExpectation: AttributeExpectation = this.attributeExpectation,
+        attributeExpectation: Option[AttributesExpectation] = this.attributeExpectation,
         clue: Option[String] = this.clue,
         predicates: List[(JPointData => Boolean, String)] = this.predicates
     ): PointExpectation[A]
 
-    def withAttributes(attributes: Attributes): PointExpectation[A] =
-      copyCommon(attributeExpectation = AttributeExpectation.Exact(attributes))
+    def withAttributes(expectation: AttributesExpectation): PointExpectation[A] =
+      copyCommon(attributeExpectation = Some(expectation))
+
+    def withAttributesExact(attributes: Attributes): PointExpectation[A] =
+      withAttributes(AttributesExpectation.exact(attributes))
 
     def withAttributesSubset(attributes: Attributes): PointExpectation[A] =
-      copyCommon(attributeExpectation = AttributeExpectation.Subset(attributes))
+      withAttributes(AttributesExpectation.subset(attributes))
 
     def withClue(text: String): PointExpectation[A] =
       copyCommon(clue = Some(text))
@@ -216,20 +210,20 @@ object PointExpectation {
       copyCommon(predicates = predicates :+ (f -> clue))
 
     protected final def matchesCommon(point: JPointData): Boolean =
-      attributeExpectation.matches(point.getAttributes.toScala) &&
+      attributeExpectation.forall(_.matches(point.getAttributes.toScala)) &&
         predicates.forall { case (predicate, _) => predicate(point) }
   }
 
   private final case class NumericImpl[A](
       expectedValue: Option[A] = None,
-      attributeExpectation: AttributeExpectation = AttributeExpectation.Any,
+      attributeExpectation: Option[AttributesExpectation] = None,
       clue: Option[String] = None,
       predicates: List[(JPointData => Boolean, String)] = Nil
   ) extends Numeric[A]
       with CommonImpl[A] {
 
     protected def copyCommon(
-        attributeExpectation: AttributeExpectation,
+        attributeExpectation: Option[AttributesExpectation],
         clue: Option[String],
         predicates: List[(JPointData => Boolean, String)]
     ): Numeric[A] =
@@ -238,11 +232,14 @@ object PointExpectation {
     def withValue(value: A): Numeric[A] =
       copy(expectedValue = Some(value))
 
-    override def withAttributes(attributes: Attributes): Numeric[A] =
-      copy(attributeExpectation = AttributeExpectation.Exact(attributes))
+    override def withAttributes(expectation: AttributesExpectation): Numeric[A] =
+      copy(attributeExpectation = Some(expectation))
+
+    override def withAttributesExact(attributes: Attributes): Numeric[A] =
+      copy(attributeExpectation = Some(AttributesExpectation.exact(attributes)))
 
     override def withAttributesSubset(attributes: Attributes): Numeric[A] =
-      copy(attributeExpectation = AttributeExpectation.Subset(attributes))
+      copy(attributeExpectation = Some(AttributesExpectation.subset(attributes)))
 
     override def withClue(text: String): Numeric[A] =
       copy(clue = Some(text))
@@ -268,14 +265,14 @@ object PointExpectation {
   private final case class SummaryImpl(
       expectedSum: Option[Double] = None,
       expectedCount: Option[Long] = None,
-      attributeExpectation: AttributeExpectation = AttributeExpectation.Any,
+      attributeExpectation: Option[AttributesExpectation] = None,
       clue: Option[String] = None,
       predicates: List[(JPointData => Boolean, String)] = Nil
   ) extends Summary
       with CommonImpl[JSummaryPointData] {
 
     protected def copyCommon(
-        attributeExpectation: AttributeExpectation,
+        attributeExpectation: Option[AttributesExpectation],
         clue: Option[String],
         predicates: List[(JPointData => Boolean, String)]
     ): Summary =
@@ -287,11 +284,14 @@ object PointExpectation {
     def withSum(sum: Double): Summary =
       copy(expectedSum = Some(sum))
 
-    override def withAttributes(attributes: Attributes): Summary =
-      copy(attributeExpectation = AttributeExpectation.Exact(attributes))
+    override def withAttributes(expectation: AttributesExpectation): Summary =
+      copy(attributeExpectation = Some(expectation))
+
+    override def withAttributesExact(attributes: Attributes): Summary =
+      copy(attributeExpectation = Some(AttributesExpectation.exact(attributes)))
 
     override def withAttributesSubset(attributes: Attributes): Summary =
-      copy(attributeExpectation = AttributeExpectation.Subset(attributes))
+      copy(attributeExpectation = Some(AttributesExpectation.subset(attributes)))
 
     override def withClue(text: String): Summary =
       copy(clue = Some(text))
@@ -315,14 +315,14 @@ object PointExpectation {
       expectedCount: Option[Long] = None,
       expectedBoundaries: Option[List[Double]] = None,
       expectedCounts: Option[List[Long]] = None,
-      attributeExpectation: AttributeExpectation = AttributeExpectation.Any,
+      attributeExpectation: Option[AttributesExpectation] = None,
       clue: Option[String] = None,
       predicates: List[(JPointData => Boolean, String)] = Nil
   ) extends Histogram
       with CommonImpl[JHistogramPointData] {
 
     protected def copyCommon(
-        attributeExpectation: AttributeExpectation,
+        attributeExpectation: Option[AttributesExpectation],
         clue: Option[String],
         predicates: List[(JPointData => Boolean, String)]
     ): Histogram =
@@ -348,11 +348,14 @@ object PointExpectation {
     def withCounts(counts: List[Long]): Histogram =
       copy(expectedCounts = Some(counts))
 
-    override def withAttributes(attributes: Attributes): Histogram =
-      copy(attributeExpectation = AttributeExpectation.Exact(attributes))
+    override def withAttributes(expectation: AttributesExpectation): Histogram =
+      copy(attributeExpectation = Some(expectation))
+
+    override def withAttributesExact(attributes: Attributes): Histogram =
+      copy(attributeExpectation = Some(AttributesExpectation.exact(attributes)))
 
     override def withAttributesSubset(attributes: Attributes): Histogram =
-      copy(attributeExpectation = AttributeExpectation.Subset(attributes))
+      copy(attributeExpectation = Some(AttributesExpectation.subset(attributes)))
 
     override def withClue(text: String): Histogram =
       copy(clue = Some(text))
@@ -378,14 +381,14 @@ object PointExpectation {
       expectedSum: Option[Double] = None,
       expectedCount: Option[Long] = None,
       expectedZeroCount: Option[Long] = None,
-      attributeExpectation: AttributeExpectation = AttributeExpectation.Any,
+      attributeExpectation: Option[AttributesExpectation] = None,
       clue: Option[String] = None,
       predicates: List[(JPointData => Boolean, String)] = Nil
   ) extends ExponentialHistogram
       with CommonImpl[JExponentialHistogramPointData] {
 
     protected def copyCommon(
-        attributeExpectation: AttributeExpectation,
+        attributeExpectation: Option[AttributesExpectation],
         clue: Option[String],
         predicates: List[(JPointData => Boolean, String)]
     ): ExponentialHistogram =
@@ -411,11 +414,14 @@ object PointExpectation {
     def withZeroCount(zeroCount: Long): ExponentialHistogram =
       copy(expectedZeroCount = Some(zeroCount))
 
-    override def withAttributes(attributes: Attributes): ExponentialHistogram =
-      copy(attributeExpectation = AttributeExpectation.Exact(attributes))
+    override def withAttributes(expectation: AttributesExpectation): ExponentialHistogram =
+      copy(attributeExpectation = Some(expectation))
+
+    override def withAttributesExact(attributes: Attributes): ExponentialHistogram =
+      copy(attributeExpectation = Some(AttributesExpectation.exact(attributes)))
 
     override def withAttributesSubset(attributes: Attributes): ExponentialHistogram =
-      copy(attributeExpectation = AttributeExpectation.Subset(attributes))
+      copy(attributeExpectation = Some(AttributesExpectation.subset(attributes)))
 
     override def withClue(text: String): ExponentialHistogram =
       copy(clue = Some(text))

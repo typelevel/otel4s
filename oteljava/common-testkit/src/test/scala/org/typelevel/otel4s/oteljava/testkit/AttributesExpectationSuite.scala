@@ -55,4 +55,13 @@ class AttributesExpectationSuite extends FunSuite {
     assert(AttributesExpectation.empty.matches(Attributes.empty))
     assert(!AttributesExpectation.empty.matches(Attributes(Attribute("http.method", "GET"))))
   }
+
+  test("predicate delegates to custom function") {
+    val expectation = AttributesExpectation.predicate { attributes =>
+      attributes.iterator.map(_.key.name).toSet == Set("http.method")
+    }
+
+    assert(expectation.matches(Attributes(Attribute("http.method", "GET"))))
+    assert(!expectation.matches(Attributes(Attribute("http.route", "/users"))))
+  }
 }

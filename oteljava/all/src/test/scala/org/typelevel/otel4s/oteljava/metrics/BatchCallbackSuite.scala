@@ -23,9 +23,13 @@ import munit.CatsEffectSuite
 import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.Attributes
 import org.typelevel.otel4s.oteljava.AttributeConverters._
-import org.typelevel.otel4s.oteljava.testkit.metrics.MetricsTestkit
-
-import scala.jdk.CollectionConverters._
+import org.typelevel.otel4s.oteljava.BuildInfo
+import org.typelevel.otel4s.oteljava.testkit.{InstrumentationScopeExpectation, TelemetryResourceExpectation}
+import org.typelevel.otel4s.oteljava.testkit.metrics.{
+  MetricExpectation,
+  MetricExpectations,
+  MetricsTestkit
+}
 
 class BatchCallbackSuite extends CatsEffectSuite {
 
@@ -68,36 +72,71 @@ class BatchCallbackSuite extends CatsEffectSuite {
                 _ <- gauge2.record(3.1, Attribute("key", "value6"))
               } yield ()
           }
-          .surround(metrics.collectMetrics)
+          .surround(metrics.collectMetrics[MetricData])
       } yield {
-        assertEquals(
-          metrics.view
-            .map(r => (r.getName, points(r)))
-            .toMap,
-          Map(
-            "double-counter" -> List(
-              1.1 -> Attributes(Attribute("key", "value2"))
-            ),
-            "double-gauge" -> List(
-              3.1 -> Attributes(Attribute("key", "value6"))
-            ),
-            "double-up-down-counter" -> List(
-              2.1 -> Attributes(Attribute("key", "value4"))
-            ),
-            "long-counter" -> List(
-              1 -> Attributes(Attribute("key", "value1"))
-            ),
-            "long-gauge" -> List(
-              3 -> Attributes(Attribute("key", "value5"))
-            ),
-            "long-up-down-counter" -> List(
-              2 -> Attributes(Attribute("key", "value3"))
-            )
+        assertExpected(
+          metrics,
+          List(
+            MetricExpectation
+              .sum[Double]("double-counter")
+              .withValue(1.1, Attributes(Attribute("key", "value2")))
+              .withScope(expectedScope)
+              .withResource(expectedResource),
+            MetricExpectation
+              .gauge[Double]("double-gauge")
+              .withValue(3.1, Attributes(Attribute("key", "value6")))
+              .withScope(expectedScope)
+              .withResource(expectedResource),
+            MetricExpectation
+              .sum[Double]("double-up-down-counter")
+              .withValue(2.1, Attributes(Attribute("key", "value4")))
+              .withScope(expectedScope)
+              .withResource(expectedResource),
+            MetricExpectation
+              .sum[Long]("long-counter")
+              .withValue(1L, Attributes(Attribute("key", "value1")))
+              .withScope(expectedScope)
+              .withResource(expectedResource),
+            MetricExpectation
+              .gauge[Long]("long-gauge")
+              .withValue(3L, Attributes(Attribute("key", "value5")))
+              .withScope(expectedScope)
+              .withResource(expectedResource),
+            MetricExpectation
+              .sum[Long]("long-up-down-counter")
+              .withValue(2L, Attributes(Attribute("key", "value3")))
+              .withScope(expectedScope)
+              .withResource(expectedResource)
           )
         )
       }
     }
   }
+
+  private def assertExpected(metrics: List[MetricData], expected: List[MetricExpectation]): Unit =
+    MetricExpectations.checkAll(metrics, expected) match {
+      case Right(_) =>
+        ()
+      case Left(mismatches) =>
+        fail(MetricExpectations.format(mismatches))
+    }
+
+  private val expectedScope: InstrumentationScopeExpectation =
+    InstrumentationScopeExpectation
+      .name("java.otel.suite")
+      .withVersion("1.0")
+      .withSchemaUrl("https://localhost:8080")
+      .withAttributesExact()
+
+  private val expectedResource: TelemetryResourceExpectation =
+    TelemetryResourceExpectation.any
+      .withAttributesExact(
+        Attribute("service.name", "unknown_service:java"),
+        Attribute("telemetry.sdk.language", "java"),
+        Attribute("telemetry.sdk.name", "opentelemetry"),
+        Attribute("telemetry.sdk.version", BuildInfo.openTelemetrySdkVersion)
+      )
+      .withSchemaUrl(None)
 
   private def points(metric: MetricData): List[(Any, Attributes)] =
     metric.getType match {

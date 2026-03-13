@@ -25,11 +25,7 @@ import org.typelevel.otel4s.Attributes
 import org.typelevel.otel4s.oteljava.AttributeConverters._
 import org.typelevel.otel4s.oteljava.BuildInfo
 import org.typelevel.otel4s.oteljava.testkit.{InstrumentationScopeExpectation, TelemetryResourceExpectation}
-import org.typelevel.otel4s.oteljava.testkit.metrics.{
-  MetricExpectation,
-  MetricExpectations,
-  MetricsTestkit
-}
+import org.typelevel.otel4s.oteljava.testkit.metrics.{MetricExpectation, MetricExpectations, MetricsTestkit}
 
 class BatchCallbackSuite extends CatsEffectSuite {
 
@@ -126,7 +122,7 @@ class BatchCallbackSuite extends CatsEffectSuite {
       .name("java.otel.suite")
       .withVersion("1.0")
       .withSchemaUrl("https://localhost:8080")
-      .withAttributesExact()
+      .withAttributesEmpty
 
   private val expectedResource: TelemetryResourceExpectation =
     TelemetryResourceExpectation.any

@@ -56,6 +56,9 @@ sealed trait PointExpectation {
   /** Requires the point attributes to match exactly. */
   def withAttributesExact(attributes: Attribute[_]*): PointExpectation
 
+  /** Requires the point attributes to be empty. */
+  def withAttributesEmpty: PointExpectation
+
   /** Requires the point attributes to contain the given attributes. */
   def withAttributesSubset(attributes: Attributes): PointExpectation
 
@@ -253,6 +256,8 @@ object PointExpectation {
 
     def withAttributesExact(attributes: Attribute[_]*): Numeric[A]
 
+    def withAttributesEmpty: Numeric[A]
+
     def withAttributesSubset(attributes: Attributes): Numeric[A]
 
     def withAttributesSubset(attributes: Attribute[_]*): Numeric[A]
@@ -281,6 +286,8 @@ object PointExpectation {
     def withAttributesExact(attributes: Attributes): Summary
 
     def withAttributesExact(attributes: Attribute[_]*): Summary
+
+    def withAttributesEmpty: Summary
 
     def withAttributesSubset(attributes: Attributes): Summary
 
@@ -317,6 +324,8 @@ object PointExpectation {
 
     def withAttributesExact(attributes: Attribute[_]*): Histogram
 
+    def withAttributesEmpty: Histogram
+
     def withAttributesSubset(attributes: Attributes): Histogram
 
     def withAttributesSubset(attributes: Attribute[_]*): Histogram
@@ -351,6 +360,8 @@ object PointExpectation {
     def withAttributesExact(attributes: Attributes): ExponentialHistogram
 
     def withAttributesExact(attributes: Attribute[_]*): ExponentialHistogram
+
+    def withAttributesEmpty: ExponentialHistogram
 
     def withAttributesSubset(attributes: Attributes): ExponentialHistogram
 
@@ -436,6 +447,9 @@ object PointExpectation {
 
     def withAttributesExact(attributes: Attribute[_]*): Numeric[A] =
       withAttributesExact(Attributes(attributes *))
+
+    def withAttributesEmpty: Numeric[A] =
+      withAttributesExact(Attributes.empty)
 
     def withAttributesSubset(attributes: Attributes): Numeric[A] =
       copy(attributeExpectation = Some(AttributesExpectation.subset(attributes)))
@@ -523,6 +537,9 @@ object PointExpectation {
     def withAttributesExact(attributes: Attribute[_]*): Summary =
       withAttributesExact(Attributes(attributes *))
 
+    def withAttributesEmpty: Summary =
+      withAttributesExact(Attributes.empty)
+
     def withAttributesSubset(attributes: Attributes): Summary =
       copy(attributeExpectation = Some(AttributesExpectation.subset(attributes)))
 
@@ -599,6 +616,9 @@ object PointExpectation {
 
     def withAttributesExact(attributes: Attribute[_]*): Histogram =
       withAttributesExact(Attributes(attributes *))
+
+    def withAttributesEmpty: Histogram =
+      withAttributesExact(Attributes.empty)
 
     def withAttributesSubset(attributes: Attributes): Histogram =
       copy(attributeExpectation = Some(AttributesExpectation.subset(attributes)))
@@ -694,6 +714,9 @@ object PointExpectation {
 
     def withAttributesExact(attributes: Attribute[_]*): ExponentialHistogram =
       withAttributesExact(Attributes(attributes *))
+
+    def withAttributesEmpty: ExponentialHistogram =
+      withAttributesExact(Attributes.empty)
 
     def withAttributesSubset(attributes: Attributes): ExponentialHistogram =
       copy(attributeExpectation = Some(AttributesExpectation.subset(attributes)))

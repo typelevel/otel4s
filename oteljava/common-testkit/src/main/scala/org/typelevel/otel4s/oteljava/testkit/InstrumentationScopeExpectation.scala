@@ -58,6 +58,9 @@ sealed trait InstrumentationScopeExpectation {
   /** Requires the instrumentation scope attributes to match exactly. */
   def withAttributesExact(attributes: Attribute[_]*): InstrumentationScopeExpectation
 
+  /** Requires the instrumentation scope attributes to be empty. */
+  def withAttributesEmpty: InstrumentationScopeExpectation
+
   /** Requires the instrumentation scope attributes to contain the given subset. */
   def withAttributesSubset(attributes: Attributes): InstrumentationScopeExpectation
 
@@ -195,6 +198,9 @@ object InstrumentationScopeExpectation {
 
     def withAttributesExact(attributes: Attribute[_]*): InstrumentationScopeExpectation =
       withAttributesExact(Attributes(attributes *))
+
+    def withAttributesEmpty: InstrumentationScopeExpectation =
+      withAttributesExact(Attributes.empty)
 
     def withAttributesSubset(attributes: Attributes): InstrumentationScopeExpectation =
       withAttributes(AttributesExpectation.subset(attributes))

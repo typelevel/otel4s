@@ -25,6 +25,7 @@ import io.opentelemetry.sdk.metrics.data.{SummaryPointData => JSummaryPointData}
 import org.typelevel.otel4s.Attributes
 import org.typelevel.otel4s.oteljava.AttributeConverters._
 import org.typelevel.otel4s.oteljava.testkit.AttributesExpectation
+import org.typelevel.otel4s.metrics.BucketBoundaries
 
 import scala.jdk.CollectionConverters._
 
@@ -86,7 +87,7 @@ object PointExpectation {
     final case class SumMismatch(expected: Double, actual: Double) extends Mismatch
 
     /** Indicates that histogram boundaries differed from the expected ones. */
-    final case class BoundariesMismatch(expected: List[Double], actual: List[Double]) extends Mismatch
+    final case class BoundariesMismatch(expected: BucketBoundaries, actual: BucketBoundaries) extends Mismatch
 
     /** Indicates that histogram bucket counts differed from the expected ones. */
     final case class CountsMismatch(expected: List[Long], actual: List[Long]) extends Mismatch
@@ -163,7 +164,7 @@ object PointExpectation {
     def withSum(sum: Double): Histogram
 
     /** Requires the histogram bucket boundaries to match exactly. */
-    def withBoundaries(boundaries: List[Double]): Histogram
+    def withBoundaries(boundaries: BucketBoundaries): Histogram
 
     /** Requires the histogram bucket counts to match exactly. */
     def withCounts(counts: List[Long]): Histogram
@@ -242,7 +243,7 @@ object PointExpectation {
   def histogram(
       sum: Double,
       count: Long,
-      boundaries: List[Double],
+      boundaries: BucketBoundaries,
       counts: List[Long]
   )(implicit cmp: NumberComparison[Double]): Histogram =
     HistogramImpl(
@@ -440,7 +441,7 @@ object PointExpectation {
       doubleComparison: NumberComparison[Double],
       expectedSum: Option[Double] = None,
       expectedCount: Option[Long] = None,
-      expectedBoundaries: Option[List[Double]] = None,
+      expectedBoundaries: Option[BucketBoundaries] = None,
       expectedCounts: Option[List[Long]] = None,
       attributeExpectation: Option[AttributesExpectation] = None,
       clue: Option[String] = None,
@@ -453,7 +454,7 @@ object PointExpectation {
     def withSum(sum: Double): Histogram =
       copy(expectedSum = Some(sum))
 
-    def withBoundaries(boundaries: List[Double]): Histogram =
+    def withBoundaries(boundaries: BucketBoundaries): Histogram =
       copy(expectedBoundaries = Some(boundaries))
 
     def withCounts(counts: List[Long]): Histogram =
@@ -490,10 +491,11 @@ object PointExpectation {
               else ExpectationChecks.mismatch(Mismatch.CountMismatch(expected, histogram.getCount))
             },
             expectedBoundaries.fold(ExpectationChecks.success[Mismatch]) { expected =>
-              val actual = histogram.getBoundaries.asScala.toList.map(_.doubleValue())
+              val actual =
+                BucketBoundaries(histogram.getBoundaries.asScala.toVector.map(_.doubleValue()))
               if (
-                expected.length == actual.length &&
-                expected.zip(actual).forall { case (expectedValue, actualValue) =>
+                expected.boundaries.length == actual.boundaries.length &&
+                expected.boundaries.zip(actual.boundaries).forall { case (expectedValue, actualValue) =>
                   doubleComparison.equal(expectedValue, actualValue)
                 }
               ) ExpectationChecks.success

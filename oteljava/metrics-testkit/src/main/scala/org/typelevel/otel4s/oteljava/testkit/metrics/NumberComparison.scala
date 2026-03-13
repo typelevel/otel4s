@@ -23,7 +23,7 @@ package metrics
   * exactly. The default `Double` instance uses a small tolerance and can be overridden implicitly in a test suite to
   * apply a different threshold globally.
   */
-trait NumberComparison[A] {
+sealed trait NumberComparison[A] {
 
   /** Returns `true` if the expected and actual values should be treated as equal. */
   def equal(expected: A, actual: A): Boolean

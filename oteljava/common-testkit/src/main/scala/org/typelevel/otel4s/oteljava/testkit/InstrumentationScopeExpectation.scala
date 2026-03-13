@@ -174,14 +174,12 @@ object InstrumentationScopeExpectation {
         }
 
       ExpectationChecks.combine(
-        List(
-          checkName,
-          ExpectationChecks.compareOption(version, Option(scope.getVersion))(Mismatch.VersionMismatch),
-          ExpectationChecks.compareOption(schemaUrl, Option(scope.getSchemaUrl))(Mismatch.SchemaUrlMismatch),
-          attributes.fold(ExpectationChecks.success[Mismatch]) { expected =>
-            ExpectationChecks.nested(expected.check(scope.getAttributes.toScala))(Mismatch.AttributesMismatch.apply)
-          }
-        )
+        checkName,
+        ExpectationChecks.compareOption(version, Option(scope.getVersion))(Mismatch.VersionMismatch),
+        ExpectationChecks.compareOption(schemaUrl, Option(scope.getSchemaUrl))(Mismatch.SchemaUrlMismatch),
+        attributes.fold(ExpectationChecks.success[Mismatch]) { expected =>
+          ExpectationChecks.nested(expected.check(scope.getAttributes.toScala))(Mismatch.AttributesMismatch.apply)
+        }
       )
     }
   }

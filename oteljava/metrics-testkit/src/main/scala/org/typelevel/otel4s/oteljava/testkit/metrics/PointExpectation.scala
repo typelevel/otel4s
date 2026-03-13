@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 
-package org.typelevel.otel4s.oteljava.testkit.metrics
+package org.typelevel.otel4s.oteljava.testkit
+package metrics
 
+import cats.data.NonEmptyList
 import io.opentelemetry.sdk.metrics.data.{ExponentialHistogramPointData => JExponentialHistogramPointData}
 import io.opentelemetry.sdk.metrics.data.{HistogramPointData => JHistogramPointData}
 import io.opentelemetry.sdk.metrics.data.{LongPointData, PointData => JPointData}
@@ -56,10 +58,42 @@ sealed trait PointExpectation[A] {
   /** Adds a custom point predicate to this expectation. */
   def where(f: JPointData => Boolean, clue: String): PointExpectation[A]
 
-  private[metrics] def matches(point: JPointData): Boolean
+  /** Checks the given point and returns structured mismatches when the expectation does not match. */
+  def check(point: JPointData): Either[NonEmptyList[PointExpectation.Mismatch], Unit]
+
+  /** Returns `true` if this expectation matches the given point. */
+  final def matches(point: JPointData): Boolean =
+    check(point).isRight
 }
 
 object PointExpectation {
+
+  /** A structured reason explaining why a [[PointExpectation]] did not match a point. */
+  sealed trait Mismatch extends Product with Serializable
+
+  object Mismatch {
+    final case class TypeMismatch(expected: String, actual: String) extends Mismatch
+
+    final case class ValueMismatch(expected: String, actual: String) extends Mismatch
+
+    final case class CountMismatch(expected: Long, actual: Long) extends Mismatch
+
+    final case class SumMismatch(expected: Double, actual: Double) extends Mismatch
+
+    final case class BoundariesMismatch(expected: List[Double], actual: List[Double]) extends Mismatch
+
+    final case class CountsMismatch(expected: List[Long], actual: List[Long]) extends Mismatch
+
+    final case class ScaleMismatch(expected: Int, actual: Int) extends Mismatch
+
+    final case class ZeroCountMismatch(expected: Long, actual: Long) extends Mismatch
+
+    final case class AttributesMismatch(
+        mismatches: NonEmptyList[AttributesExpectation.Mismatch]
+    ) extends Mismatch
+
+    final case class PredicateMismatch(clue: String) extends Mismatch
+  }
 
   /** A point expectation for numeric points. */
   sealed trait Numeric[A] extends PointExpectation[A] {
@@ -183,6 +217,31 @@ object PointExpectation {
       expectedZeroCount = zeroCount
     )
 
+  /** Formats a mismatch into a human-readable message. */
+  def formatMismatch(mismatch: Mismatch): String =
+    mismatch match {
+      case Mismatch.TypeMismatch(expected, actual) =>
+        s"type mismatch: expected '$expected', got '$actual'"
+      case Mismatch.ValueMismatch(expected, actual) =>
+        s"value mismatch: expected '$expected', got '$actual'"
+      case Mismatch.CountMismatch(expected, actual) =>
+        s"count mismatch: expected $expected, got $actual"
+      case Mismatch.SumMismatch(expected, actual) =>
+        s"sum mismatch: expected $expected, got $actual"
+      case Mismatch.BoundariesMismatch(expected, actual) =>
+        s"boundaries mismatch: expected $expected, got $actual"
+      case Mismatch.CountsMismatch(expected, actual) =>
+        s"counts mismatch: expected $expected, got $actual"
+      case Mismatch.ScaleMismatch(expected, actual) =>
+        s"scale mismatch: expected $expected, got $actual"
+      case Mismatch.ZeroCountMismatch(expected, actual) =>
+        s"zero count mismatch: expected $expected, got $actual"
+      case Mismatch.AttributesMismatch(mismatches) =>
+        s"attributes mismatch: ${mismatches.toList.map(AttributesExpectation.formatMismatch).mkString(", ")}"
+      case Mismatch.PredicateMismatch(clue) =>
+        s"predicate mismatch: $clue"
+    }
+
   private sealed trait CommonImpl[A] extends PointExpectation[A] {
     def attributeExpectation: Option[AttributesExpectation]
     def clue: Option[String]
@@ -209,9 +268,17 @@ object PointExpectation {
     def where(f: JPointData => Boolean, clue: String): PointExpectation[A] =
       copyCommon(predicates = predicates :+ (f -> clue))
 
-    protected final def matchesCommon(point: JPointData): Boolean =
-      attributeExpectation.forall(_.matches(point.getAttributes.toScala)) &&
-        predicates.forall { case (predicate, _) => predicate(point) }
+    protected final def checkCommon(point: JPointData): Either[NonEmptyList[Mismatch], Unit] =
+      ExpectationChecks.combine(
+        List(
+          attributeExpectation.fold(ExpectationChecks.success[Mismatch]) { expected =>
+            ExpectationChecks.nested(expected.check(point.getAttributes.toScala))(Mismatch.AttributesMismatch.apply)
+          }
+        ) ++ predicates.map { case (predicate, clue) =>
+          if (predicate(point)) ExpectationChecks.success
+          else ExpectationChecks.mismatch(Mismatch.PredicateMismatch(clue))
+        }
+      )
   }
 
   private final case class NumericImpl[A](
@@ -247,18 +314,29 @@ object PointExpectation {
     override def where(f: JPointData => Boolean, clue: String): Numeric[A] =
       copy(predicates = predicates :+ (f -> clue))
 
-    def matches(point: JPointData): Boolean =
-      expectedValue.forall(matchesValue(_, point)) &&
-        matchesCommon(point)
+    def check(point: JPointData): Either[NonEmptyList[Mismatch], Unit] =
+      ExpectationChecks.combine(
+        expectedValue.fold(ExpectationChecks.success[Mismatch]) { expected =>
+          checkValue(expected, point)
+        },
+        checkCommon(point)
+      )
 
-    private def matchesValue(expected: A, point: JPointData): Boolean =
+    private def checkValue(expected: A, point: JPointData): Either[NonEmptyList[Mismatch], Unit] =
       (expected, point) match {
         case (value: Long, long: LongPointData) =>
-          value == long.getValue
+          if (value == long.getValue) ExpectationChecks.success
+          else ExpectationChecks.mismatch(Mismatch.ValueMismatch(value.toString, long.getValue.toString))
         case (value: Double, double: io.opentelemetry.sdk.metrics.data.DoublePointData) =>
-          value == double.getValue
+          if (value == double.getValue) ExpectationChecks.success
+          else ExpectationChecks.mismatch(Mismatch.ValueMismatch(value.toString, double.getValue.toString))
         case _ =>
-          false
+          ExpectationChecks.mismatch(
+            Mismatch.TypeMismatch(
+              expected.getClass.getSimpleName,
+              point.getClass.getSimpleName
+            )
+          )
       }
   }
 
@@ -299,14 +377,22 @@ object PointExpectation {
     override def where(f: JPointData => Boolean, clue: String): Summary =
       copy(predicates = predicates :+ (f -> clue))
 
-    def matches(point: JPointData): Boolean =
+    def check(point: JPointData): Either[NonEmptyList[Mismatch], Unit] =
       point match {
         case summary: JSummaryPointData =>
-          expectedSum.forall(_ == summary.getSum) &&
-          expectedCount.forall(_ == summary.getCount) &&
-          matchesCommon(summary)
-        case _ =>
-          false
+          ExpectationChecks.combine(
+            expectedSum.fold(ExpectationChecks.success[Mismatch]) { expected =>
+              if (expected == summary.getSum) ExpectationChecks.success
+              else ExpectationChecks.mismatch(Mismatch.SumMismatch(expected, summary.getSum))
+            },
+            expectedCount.fold(ExpectationChecks.success[Mismatch]) { expected =>
+              if (expected == summary.getCount) ExpectationChecks.success
+              else ExpectationChecks.mismatch(Mismatch.CountMismatch(expected, summary.getCount))
+            },
+            checkCommon(summary)
+          )
+        case other =>
+          ExpectationChecks.mismatch(Mismatch.TypeMismatch("SummaryPointData", other.getClass.getSimpleName))
       }
   }
 
@@ -363,16 +449,32 @@ object PointExpectation {
     override def where(f: JPointData => Boolean, clue: String): Histogram =
       copy(predicates = predicates :+ (f -> clue))
 
-    def matches(point: JPointData): Boolean =
+    def check(point: JPointData): Either[NonEmptyList[Mismatch], Unit] =
       point match {
         case histogram: JHistogramPointData =>
-          expectedSum.forall(_ == histogram.getSum) &&
-          expectedCount.forall(_ == histogram.getCount) &&
-          expectedBoundaries.forall(_ == histogram.getBoundaries.asScala.toList.map(_.doubleValue())) &&
-          expectedCounts.forall(_ == histogram.getCounts.asScala.toList.map(_.longValue())) &&
-          matchesCommon(histogram)
-        case _ =>
-          false
+          ExpectationChecks.combine(
+            expectedSum.fold(ExpectationChecks.success[Mismatch]) { expected =>
+              if (expected == histogram.getSum) ExpectationChecks.success
+              else ExpectationChecks.mismatch(Mismatch.SumMismatch(expected, histogram.getSum))
+            },
+            expectedCount.fold(ExpectationChecks.success[Mismatch]) { expected =>
+              if (expected == histogram.getCount) ExpectationChecks.success
+              else ExpectationChecks.mismatch(Mismatch.CountMismatch(expected, histogram.getCount))
+            },
+            expectedBoundaries.fold(ExpectationChecks.success[Mismatch]) { expected =>
+              val actual = histogram.getBoundaries.asScala.toList.map(_.doubleValue())
+              if (expected == actual) ExpectationChecks.success
+              else ExpectationChecks.mismatch(Mismatch.BoundariesMismatch(expected, actual))
+            },
+            expectedCounts.fold(ExpectationChecks.success[Mismatch]) { expected =>
+              val actual = histogram.getCounts.asScala.toList.map(_.longValue())
+              if (expected == actual) ExpectationChecks.success
+              else ExpectationChecks.mismatch(Mismatch.CountsMismatch(expected, actual))
+            },
+            checkCommon(histogram)
+          )
+        case other =>
+          ExpectationChecks.mismatch(Mismatch.TypeMismatch("HistogramPointData", other.getClass.getSimpleName))
       }
   }
 
@@ -429,16 +531,33 @@ object PointExpectation {
     override def where(f: JPointData => Boolean, clue: String): ExponentialHistogram =
       copy(predicates = predicates :+ (f -> clue))
 
-    def matches(point: JPointData): Boolean =
+    def check(point: JPointData): Either[NonEmptyList[Mismatch], Unit] =
       point match {
         case histogram: JExponentialHistogramPointData =>
-          expectedScale.forall(_ == histogram.getScale) &&
-          expectedSum.forall(_ == histogram.getSum) &&
-          expectedCount.forall(_ == histogram.getCount) &&
-          expectedZeroCount.forall(_ == histogram.getZeroCount) &&
-          matchesCommon(histogram)
-        case _ =>
-          false
+          ExpectationChecks.combine(
+            expectedScale.fold(ExpectationChecks.success[Mismatch]) { expected =>
+              if (expected == histogram.getScale) ExpectationChecks.success
+              else ExpectationChecks.mismatch(Mismatch.ScaleMismatch(expected, histogram.getScale))
+            },
+            expectedSum.fold(ExpectationChecks.success[Mismatch]) { expected =>
+              if (expected == histogram.getSum) ExpectationChecks.success
+              else ExpectationChecks.mismatch(Mismatch.SumMismatch(expected, histogram.getSum))
+            },
+            expectedCount.fold(ExpectationChecks.success[Mismatch]) { expected =>
+              if (expected == histogram.getCount) ExpectationChecks.success
+              else ExpectationChecks.mismatch(Mismatch.CountMismatch(expected, histogram.getCount))
+            },
+            expectedZeroCount.fold(ExpectationChecks.success[Mismatch]) { expected =>
+              if (expected == histogram.getZeroCount) ExpectationChecks.success
+              else ExpectationChecks.mismatch(Mismatch.ZeroCountMismatch(expected, histogram.getZeroCount))
+            },
+            checkCommon(histogram)
+          )
+        case other =>
+          ExpectationChecks.mismatch(
+            Mismatch.TypeMismatch("ExponentialHistogramPointData", other.getClass.getSimpleName)
+          )
       }
   }
+
 }

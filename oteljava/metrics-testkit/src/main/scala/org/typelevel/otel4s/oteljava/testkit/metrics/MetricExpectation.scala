@@ -14,15 +14,16 @@
  * limitations under the License.
  */
 
-package org.typelevel.otel4s.oteljava.testkit.metrics
+package org.typelevel.otel4s.oteljava.testkit
+package metrics
 
+import cats.data.NonEmptyList
 import io.opentelemetry.sdk.metrics.data.{ExponentialHistogramPointData, MetricData, MetricDataType}
 import io.opentelemetry.sdk.metrics.data.{HistogramPointData => JHistogramPointData}
 import io.opentelemetry.sdk.metrics.data.{PointData => JPointData}
 import io.opentelemetry.sdk.metrics.data.{SummaryPointData => JSummaryPointData}
 import org.typelevel.otel4s.metrics.MeasurementValue
 import org.typelevel.otel4s.metrics.MeasurementValue.{DoubleMeasurementValue, LongMeasurementValue}
-import org.typelevel.otel4s.oteljava.testkit.{InstrumentationScopeExpectation, TelemetryResourceExpectation}
 
 import scala.jdk.CollectionConverters._
 
@@ -43,6 +44,8 @@ import scala.jdk.CollectionConverters._
   */
 sealed trait MetricExpectation {
   type Value
+
+  private[metrics] def expectedName: Option[String]
 
   /** An optional human-readable clue shown in mismatch messages. */
   def clue: Option[String]
@@ -65,11 +68,44 @@ sealed trait MetricExpectation {
   /** Attaches a human-readable clue to this expectation. */
   def withClue(text: String): MetricExpectation
 
+  /** Checks the given metric and returns structured mismatches when the expectation does not match. */
+  def check(metric: MetricData): Either[NonEmptyList[MetricExpectation.Mismatch], Unit]
+
   /** Returns `true` if this expectation matches the given metric. */
-  def matches(metric: MetricData): Boolean
+  final def matches(metric: MetricData): Boolean =
+    check(metric).isRight
 }
 
 object MetricExpectation {
+
+  /** A structured reason explaining why a [[MetricExpectation]] did not match a metric. */
+  sealed trait Mismatch extends Product with Serializable
+
+  object Mismatch {
+    final case class NameMismatch(expected: String, actual: String) extends Mismatch
+
+    final case class DescriptionMismatch(expected: String, actual: Option[String]) extends Mismatch
+
+    final case class UnitMismatch(expected: String, actual: String) extends Mismatch
+
+    final case class TypeMismatch(expected: String, actual: String) extends Mismatch
+
+    final case class ScopeMismatch(
+        mismatches: NonEmptyList[InstrumentationScopeExpectation.Mismatch]
+    ) extends Mismatch
+
+    final case class ResourceMismatch(
+        mismatches: NonEmptyList[TelemetryResourceExpectation.Mismatch]
+    ) extends Mismatch
+
+    final case class PredicateMismatch(clue: String) extends Mismatch
+
+    final case class PointsMismatch(
+        mode: String,
+        mismatches: NonEmptyList[PointExpectation.Mismatch],
+        clue: Option[String]
+    ) extends Mismatch
+  }
 
   /** A typed expectation for numeric metrics.
     *
@@ -165,23 +201,62 @@ object MetricExpectation {
     )
 
   private sealed trait PointMatch[-A] {
-    def matches(points: List[JPointData]): Boolean
+    def check(points: List[JPointData]): Either[NonEmptyList[Mismatch], Unit]
   }
 
   private object PointMatch {
     case object Ignore extends PointMatch[_root_.scala.Any] {
-      def matches(points: List[JPointData]): Boolean = true
+      def check(points: List[JPointData]): Either[NonEmptyList[Mismatch], Unit] =
+        ExpectationChecks.success
     }
 
     final case class Any[A](expectation: PointExpectation[A]) extends PointMatch[A] {
-      def matches(points: List[JPointData]): Boolean =
-        points.exists(expectation.matches)
+      def check(points: List[JPointData]): Either[NonEmptyList[Mismatch], Unit] =
+        if (points.exists(expectation.matches)) ExpectationChecks.success
+        else {
+          val mismatches = closestPointMismatch(points, expectation)
+
+          ExpectationChecks.mismatch(Mismatch.PointsMismatch("any", mismatches, expectation.clue))
+        }
     }
 
     final case class All[A](expectation: PointExpectation[A]) extends PointMatch[A] {
-      def matches(points: List[JPointData]): Boolean =
-        points.nonEmpty && points.forall(expectation.matches)
+      def check(points: List[JPointData]): Either[NonEmptyList[Mismatch], Unit] =
+        if (points.isEmpty) {
+          ExpectationChecks.mismatch(
+            Mismatch.PointsMismatch(
+              "all",
+              NonEmptyList.one(
+                PointExpectation.Mismatch.PredicateMismatch("no points were collected")
+              ),
+              expectation.clue
+            )
+          )
+        } else {
+          points.collectFirst(Function.unlift(point => expectation.check(point).left.toOption)) match {
+            case None =>
+              ExpectationChecks.success
+            case Some(_) =>
+              ExpectationChecks.mismatch(
+                Mismatch.PointsMismatch("all", closestPointMismatch(points, expectation), expectation.clue)
+              )
+          }
+        }
     }
+
+    private def closestPointMismatch[A](
+        points: List[JPointData],
+        expectation: PointExpectation[A]
+    ): NonEmptyList[PointExpectation.Mismatch] =
+      points
+        .flatMap(point => expectation.check(point).left.toOption)
+        .sortBy(_.length)
+        .headOption
+        .getOrElse(
+          NonEmptyList.one(
+            PointExpectation.Mismatch.PredicateMismatch("no points were collected")
+          )
+        )
   }
 
   private sealed trait NumericKind {
@@ -217,6 +292,8 @@ object MetricExpectation {
     def clue: Option[String]
     def predicates: List[(MetricData => Boolean, String)]
 
+    final def expectedName: Option[String] = name
+
     protected def copyCommon(
         name: Option[String] = name,
         description: Option[String] = description,
@@ -245,13 +322,33 @@ object MetricExpectation {
     def withClue(text: String): MetricExpectation =
       copyCommon(clue = Some(text))
 
-    protected final def matchesCommon(metric: MetricData): Boolean =
-      name.forall(_ == metric.getName) &&
-        description.forall(Option(metric.getDescription).contains) &&
-        unit.forall(Option(metric.getUnit).contains) &&
-        scope.forall(_.matches(metric.getInstrumentationScopeInfo)) &&
-        resource.forall(_.matches(metric.getResource)) &&
-        predicates.forall { case (predicate, _) => predicate(metric) }
+    protected final def checkCommon(metric: MetricData): Either[NonEmptyList[Mismatch], Unit] =
+      ExpectationChecks.combine(
+        List(
+          name.fold(ExpectationChecks.success[Mismatch]) { expected =>
+            if (expected == metric.getName) ExpectationChecks.success
+            else ExpectationChecks.mismatch(Mismatch.NameMismatch(expected, metric.getName))
+          },
+          description.fold(ExpectationChecks.success[Mismatch]) { expected =>
+            val actual = Option(metric.getDescription)
+            if (actual.contains(expected)) ExpectationChecks.success
+            else ExpectationChecks.mismatch(Mismatch.DescriptionMismatch(expected, actual))
+          },
+          unit.fold(ExpectationChecks.success[Mismatch]) { expected =>
+            if (Option(metric.getUnit).contains(expected)) ExpectationChecks.success
+            else ExpectationChecks.mismatch(Mismatch.UnitMismatch(expected, metric.getUnit))
+          },
+          scope.fold(ExpectationChecks.success[Mismatch]) { expected =>
+            ExpectationChecks.nested(expected.check(metric.getInstrumentationScopeInfo))(Mismatch.ScopeMismatch.apply)
+          },
+          resource.fold(ExpectationChecks.success[Mismatch]) { expected =>
+            ExpectationChecks.nested(expected.check(metric.getResource))(Mismatch.ResourceMismatch.apply)
+          }
+        ) ++ predicates.map { case (predicate, clue) =>
+          if (predicate(metric)) ExpectationChecks.success[Mismatch]
+          else ExpectationChecks.mismatch(Mismatch.PredicateMismatch(clue))
+        }
+      )
   }
 
   private final case class BaseImpl[A](
@@ -275,8 +372,8 @@ object MetricExpectation {
     ): MetricExpectation =
       copy(name, description, unit, scope, resource, clue, predicates)
 
-    def matches(metric: MetricData): Boolean =
-      matchesCommon(metric)
+    def check(metric: MetricData): Either[NonEmptyList[Mismatch], Unit] =
+      checkCommon(metric)
   }
 
   private final case class NumericImpl[A](
@@ -343,10 +440,12 @@ object MetricExpectation {
     override def withClue(text: String): Numeric[A] =
       copy(clue = Some(text))
 
-    def matches(metric: MetricData): Boolean =
-      metric.getType == kind.metricTypeFor(valueType) &&
-        matchesCommon(metric) &&
-        pointMatch.matches(points(metric))
+    def check(metric: MetricData): Either[NonEmptyList[Mismatch], Unit] =
+      ExpectationChecks.combine(
+        checkType(metric, kind.metricTypeFor(valueType)),
+        checkCommon(metric),
+        pointMatch.check(points(metric))
+      )
   }
 
   private final case class PointMetricImpl[A <: JPointData](
@@ -401,11 +500,17 @@ object MetricExpectation {
     ): MetricExpectation =
       copy(name, metricType, description, unit, scope, resource, clue, predicates, pointMatch)
 
-    def matches(metric: MetricData): Boolean =
-      metric.getType == metricType &&
-        matchesCommon(metric) &&
-        pointMatch.matches(points(metric))
+    def check(metric: MetricData): Either[NonEmptyList[Mismatch], Unit] =
+      ExpectationChecks.combine(
+        checkType(metric, metricType),
+        checkCommon(metric),
+        pointMatch.check(points(metric))
+      )
   }
+
+  private def checkType(metric: MetricData, expected: MetricDataType): Either[NonEmptyList[Mismatch], Unit] =
+    if (metric.getType == expected) ExpectationChecks.success
+    else ExpectationChecks.mismatch(Mismatch.TypeMismatch(expected.toString, metric.getType.toString))
 
   private def points(metric: MetricData): List[JPointData] =
     metric.getType match {

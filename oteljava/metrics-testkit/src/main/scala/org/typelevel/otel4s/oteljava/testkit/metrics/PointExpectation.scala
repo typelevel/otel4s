@@ -215,12 +215,8 @@ object PointExpectation {
 
   }
 
-  /** Creates an expectation that matches any numeric point of type `A`. */
-  def any[A]: Numeric[A] =
-    NumericImpl[A]()
-
   /** Creates an expectation for a numeric point with the given value. */
-  def value[A](value: A): Numeric[A] =
+  def numeric[A](value: A): Numeric[A] =
     NumericImpl[A](expectedValue = Some(value))
 
   /** Creates an expectation for a summary point.

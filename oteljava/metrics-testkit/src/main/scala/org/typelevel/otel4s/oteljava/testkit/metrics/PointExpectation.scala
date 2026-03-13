@@ -20,7 +20,7 @@ package metrics
 import cats.data.NonEmptyList
 import io.opentelemetry.sdk.metrics.data.{ExponentialHistogramPointData => JExponentialHistogramPointData}
 import io.opentelemetry.sdk.metrics.data.{HistogramPointData => JHistogramPointData}
-import io.opentelemetry.sdk.metrics.data.{LongPointData, PointData => JPointData}
+import io.opentelemetry.sdk.metrics.data.{DoublePointData, LongPointData, PointData => JPointData}
 import io.opentelemetry.sdk.metrics.data.{SummaryPointData => JSummaryPointData}
 import org.typelevel.otel4s.Attributes
 import org.typelevel.otel4s.oteljava.AttributeConverters._
@@ -216,23 +216,27 @@ object PointExpectation {
   }
 
   /** Creates an expectation for a numeric point with the given value. */
-  def numeric[A](value: A): Numeric[A] =
-    NumericImpl[A](expectedValue = Some(value))
+  def numeric[A: NumberComparison](value: A): Numeric[A] =
+    NumericImpl[A](
+      expectedValue = Some(value),
+      numberComparison = NumberComparison[A]
+    )
 
   /** Creates an expectation for a summary point. */
-  def summary: Summary =
-    SummaryImpl()
+  def summary(implicit cmp: NumberComparison[Double]): Summary =
+    SummaryImpl(doubleComparison = cmp)
 
   /** Creates an expectation for a summary point with exact sum and count expectations. */
-  def summary(sum: Double, count: Long): Summary =
+  def summary(sum: Double, count: Long)(implicit cmp: NumberComparison[Double]): Summary =
     SummaryImpl(
+      doubleComparison = cmp,
       expectedSum = Some(sum),
       expectedCount = Some(count)
     )
 
   /** Creates an expectation for a histogram point. */
-  def histogram: Histogram =
-    HistogramImpl()
+  def histogram(implicit cmp: NumberComparison[Double]): Histogram =
+    HistogramImpl(doubleComparison = cmp)
 
   /** Creates an expectation for a histogram point with exact sum, count, boundaries, and counts expectations. */
   def histogram(
@@ -240,8 +244,9 @@ object PointExpectation {
       count: Long,
       boundaries: List[Double],
       counts: List[Long]
-  ): Histogram =
+  )(implicit cmp: NumberComparison[Double]): Histogram =
     HistogramImpl(
+      doubleComparison = cmp,
       expectedSum = Some(sum),
       expectedCount = Some(count),
       expectedBoundaries = Some(boundaries),
@@ -249,8 +254,8 @@ object PointExpectation {
     )
 
   /** Creates an expectation for an exponential histogram point. */
-  def exponentialHistogram: ExponentialHistogram =
-    ExponentialHistogramImpl()
+  def exponentialHistogram(implicit cmp: NumberComparison[Double]): ExponentialHistogram =
+    ExponentialHistogramImpl(doubleComparison = cmp)
 
   /** Creates an expectation for an exponential histogram point with exact scale, sum, count, and zero count. */
   def exponentialHistogram(
@@ -258,8 +263,9 @@ object PointExpectation {
       sum: Double,
       count: Long,
       zeroCount: Long
-  ): ExponentialHistogram =
+  )(implicit cmp: NumberComparison[Double]): ExponentialHistogram =
     ExponentialHistogramImpl(
+      doubleComparison = cmp,
       expectedScale = Some(scale),
       expectedSum = Some(sum),
       expectedCount = Some(count),
@@ -276,7 +282,7 @@ object PointExpectation {
       case Mismatch.CountMismatch(expected, actual) =>
         s"count mismatch: expected $expected, got $actual"
       case Mismatch.SumMismatch(expected, actual) =>
-        s"sum mismatch: expected $expected, got $actual"
+        s"sum mismatch: expected ${NumberComparison[Double].render(expected)}, got ${NumberComparison[Double].render(actual)}"
       case Mismatch.BoundariesMismatch(expected, actual) =>
         s"boundaries mismatch: expected $expected, got $actual"
       case Mismatch.CountsMismatch(expected, actual) =>
@@ -293,6 +299,7 @@ object PointExpectation {
 
   private final case class NumericImpl[A](
       expectedValue: Option[A] = None,
+      numberComparison: NumberComparison[A],
       attributeExpectation: Option[AttributesExpectation] = None,
       clue: Option[String] = None,
       predicates: List[(JPointData => Boolean, Option[String])] = Nil
@@ -338,12 +345,24 @@ object PointExpectation {
 
     private def checkValue(expected: A, point: JPointData): Either[NonEmptyList[Mismatch], Unit] =
       (expected, point) match {
-        case (value: Long, long: LongPointData) =>
-          if (value == long.getValue) ExpectationChecks.success
-          else ExpectationChecks.mismatch(Mismatch.ValueMismatch(value.toString, long.getValue.toString))
-        case (value: Double, double: io.opentelemetry.sdk.metrics.data.DoublePointData) =>
-          if (value == double.getValue) ExpectationChecks.success
-          else ExpectationChecks.mismatch(Mismatch.ValueMismatch(value.toString, double.getValue.toString))
+        case (_: Long, long: LongPointData) =>
+          if (numberComparison.equal(expected, long.getValue.asInstanceOf[A])) ExpectationChecks.success
+          else
+            ExpectationChecks.mismatch(
+              Mismatch.ValueMismatch(
+                numberComparison.render(expected),
+                numberComparison.render(long.getValue.asInstanceOf[A])
+              )
+            )
+        case (_: Double, double: DoublePointData) =>
+          if (numberComparison.equal(expected, double.getValue.asInstanceOf[A])) ExpectationChecks.success
+          else
+            ExpectationChecks.mismatch(
+              Mismatch.ValueMismatch(
+                numberComparison.render(expected),
+                numberComparison.render(double.getValue.asInstanceOf[A])
+              )
+            )
         case _ =>
           ExpectationChecks.mismatch(
             Mismatch.TypeMismatch(
@@ -355,6 +374,7 @@ object PointExpectation {
   }
 
   private final case class SummaryImpl(
+      doubleComparison: NumberComparison[Double],
       expectedSum: Option[Double] = None,
       expectedCount: Option[Long] = None,
       attributeExpectation: Option[AttributesExpectation] = None,
@@ -391,7 +411,7 @@ object PointExpectation {
         case summary: JSummaryPointData =>
           ExpectationChecks.combine(
             expectedSum.fold(ExpectationChecks.success[Mismatch]) { expected =>
-              if (expected == summary.getSum) ExpectationChecks.success
+              if (doubleComparison.equal(expected, summary.getSum)) ExpectationChecks.success
               else ExpectationChecks.mismatch(Mismatch.SumMismatch(expected, summary.getSum))
             },
             expectedCount.fold(ExpectationChecks.success[Mismatch]) { expected =>
@@ -417,6 +437,7 @@ object PointExpectation {
   }
 
   private final case class HistogramImpl(
+      doubleComparison: NumberComparison[Double],
       expectedSum: Option[Double] = None,
       expectedCount: Option[Long] = None,
       expectedBoundaries: Option[List[Double]] = None,
@@ -461,7 +482,7 @@ object PointExpectation {
         case histogram: JHistogramPointData =>
           ExpectationChecks.combine(
             expectedSum.fold(ExpectationChecks.success[Mismatch]) { expected =>
-              if (expected == histogram.getSum) ExpectationChecks.success
+              if (doubleComparison.equal(expected, histogram.getSum)) ExpectationChecks.success
               else ExpectationChecks.mismatch(Mismatch.SumMismatch(expected, histogram.getSum))
             },
             expectedCount.fold(ExpectationChecks.success[Mismatch]) { expected =>
@@ -470,7 +491,12 @@ object PointExpectation {
             },
             expectedBoundaries.fold(ExpectationChecks.success[Mismatch]) { expected =>
               val actual = histogram.getBoundaries.asScala.toList.map(_.doubleValue())
-              if (expected == actual) ExpectationChecks.success
+              if (
+                expected.length == actual.length &&
+                expected.zip(actual).forall { case (expectedValue, actualValue) =>
+                  doubleComparison.equal(expectedValue, actualValue)
+                }
+              ) ExpectationChecks.success
               else ExpectationChecks.mismatch(Mismatch.BoundariesMismatch(expected, actual))
             },
             expectedCounts.fold(ExpectationChecks.success[Mismatch]) { expected =>
@@ -499,6 +525,7 @@ object PointExpectation {
   }
 
   private final case class ExponentialHistogramImpl(
+      doubleComparison: NumberComparison[Double],
       expectedScale: Option[Int] = None,
       expectedSum: Option[Double] = None,
       expectedCount: Option[Long] = None,
@@ -547,7 +574,7 @@ object PointExpectation {
               else ExpectationChecks.mismatch(Mismatch.ScaleMismatch(expected, histogram.getScale))
             },
             expectedSum.fold(ExpectationChecks.success[Mismatch]) { expected =>
-              if (expected == histogram.getSum) ExpectationChecks.success
+              if (doubleComparison.equal(expected, histogram.getSum)) ExpectationChecks.success
               else ExpectationChecks.mismatch(Mismatch.SumMismatch(expected, histogram.getSum))
             },
             expectedCount.fold(ExpectationChecks.success[Mismatch]) { expected =>

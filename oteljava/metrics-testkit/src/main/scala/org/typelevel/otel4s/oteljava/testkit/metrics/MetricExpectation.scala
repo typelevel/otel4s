@@ -181,11 +181,12 @@ object MetricExpectation {
     *   - `A = Long` matches `LONG_GAUGE`
     *   - `A = Double` matches `DOUBLE_GAUGE`
     */
-  def gauge[A: MeasurementValue](name: String): Numeric[A] =
+  def gauge[A: MeasurementValue: NumberComparison](name: String): Numeric[A] =
     NumericImpl(
       name = Some(name),
       kind = NumericKind.Gauge,
-      valueType = MeasurementValue[A]
+      valueType = MeasurementValue[A],
+      numberComparison = NumberComparison[A]
     )
 
   /** Creates a typed expectation for a sum metric.
@@ -194,11 +195,12 @@ object MetricExpectation {
     *   - `A = Long` matches `LONG_SUM`
     *   - `A = Double` matches `DOUBLE_SUM`
     */
-  def sum[A: MeasurementValue](name: String): Numeric[A] =
+  def sum[A: MeasurementValue: NumberComparison](name: String): Numeric[A] =
     NumericImpl(
       name = Some(name),
       kind = NumericKind.Sum,
-      valueType = MeasurementValue[A]
+      valueType = MeasurementValue[A],
+      numberComparison = NumberComparison[A]
     )
 
   /** Creates an expectation for a summary metric. */
@@ -400,6 +402,7 @@ object MetricExpectation {
       name: Option[String],
       kind: NumericKind,
       valueType: MeasurementValue[A],
+      numberComparison: NumberComparison[A],
       description: Option[String] = None,
       unit: Option[String] = None,
       scope: Option[InstrumentationScopeExpectation] = None,
@@ -429,7 +432,7 @@ object MetricExpectation {
       )
 
     def withValue(value: A): Numeric[A] =
-      withAnyPoint(PointExpectation.numeric(value))
+      withAnyPoint(PointExpectation.numeric(value)(numberComparison))
 
     def withPoint(point: PointExpectation.Numeric[A]): Numeric[A] =
       withAnyPoint(point)

@@ -67,6 +67,12 @@ sealed trait MetricExpectation {
   /** Attaches a human-readable clue to this expectation. */
   def withClue(text: String): MetricExpectation
 
+  /** Adds a custom predicate over the metric data. */
+  def where(f: MetricData => Boolean): MetricExpectation
+
+  /** Adds a custom predicate over the metric data with a clue shown in mismatches. */
+  def where(clue: String)(f: MetricData => Boolean): MetricExpectation
+
   /** Checks the given metric and returns structured mismatches when the expectation does not match. */
   def check(metric: MetricData): Either[NonEmptyList[MetricExpectation.Mismatch], Unit]
 
@@ -116,7 +122,7 @@ object MetricExpectation {
     }
 
     /** Indicates that a custom metric predicate returned `false`. */
-    sealed trait PredicateMismatch extends Mismatch { def clue: String }
+    sealed trait PredicateMismatch extends Mismatch { def clue: Option[String] }
 
     /** Indicates that the metric points did not satisfy the nested point expectation. */
     sealed trait PointsMismatch extends Mismatch {
@@ -147,7 +153,7 @@ object MetricExpectation {
       ResourceMismatchImpl(mismatches)
 
     /** Creates a mismatch indicating that a custom metric predicate returned `false`. */
-    def predicateMismatch(clue: String): PredicateMismatch = PredicateMismatchImpl(clue)
+    def predicateMismatch(clue: Option[String]): PredicateMismatch = PredicateMismatchImpl(clue)
 
     /** Creates a mismatch indicating that the metric points did not satisfy the nested point expectation. */
     def pointsMismatch(
@@ -190,9 +196,9 @@ object MetricExpectation {
         s"resource mismatch: ${mismatches.toList.map(_.message).mkString(", ")}"
     }
 
-    private final case class PredicateMismatchImpl(clue: String) extends PredicateMismatch {
+    private final case class PredicateMismatchImpl(clue: Option[String]) extends PredicateMismatch {
       def message: String =
-        s"predicate mismatch: $clue"
+        s"predicate mismatch${clue.fold("")(value => s": $value")}"
     }
 
     private final case class PointsMismatchImpl(
@@ -264,6 +270,12 @@ object MetricExpectation {
 
     /** Attaches a human-readable clue to this expectation. */
     def withClue(text: String): Numeric[A]
+
+    /** Adds a custom predicate over the metric data. */
+    def where(f: MetricData => Boolean): Numeric[A]
+
+    /** Adds a custom predicate over the metric data with a clue shown in mismatches. */
+    def where(clue: String)(f: MetricData => Boolean): Numeric[A]
   }
 
   /** A typed expectation for summary metrics. */
@@ -295,6 +307,12 @@ object MetricExpectation {
 
     /** Attaches a human-readable clue to this expectation. */
     def withClue(text: String): Summary
+
+    /** Adds a custom predicate over the metric data. */
+    def where(f: MetricData => Boolean): Summary
+
+    /** Adds a custom predicate over the metric data with a clue shown in mismatches. */
+    def where(clue: String)(f: MetricData => Boolean): Summary
   }
 
   /** A typed expectation for histogram metrics. */
@@ -326,6 +344,12 @@ object MetricExpectation {
 
     /** Attaches a human-readable clue to this expectation. */
     def withClue(text: String): Histogram
+
+    /** Adds a custom predicate over the metric data. */
+    def where(f: MetricData => Boolean): Histogram
+
+    /** Adds a custom predicate over the metric data with a clue shown in mismatches. */
+    def where(clue: String)(f: MetricData => Boolean): Histogram
   }
 
   /** A typed expectation for exponential histogram metrics. */
@@ -357,6 +381,12 @@ object MetricExpectation {
 
     /** Attaches a human-readable clue to this expectation. */
     def withClue(text: String): ExponentialHistogram
+
+    /** Adds a custom predicate over the metric data. */
+    def where(f: MetricData => Boolean): ExponentialHistogram
+
+    /** Adds a custom predicate over the metric data with a clue shown in mismatches. */
+    def where(clue: String)(f: MetricData => Boolean): ExponentialHistogram
   }
 
   /** Creates an expectation that matches any metric with the given name. */
@@ -506,7 +536,7 @@ object MetricExpectation {
       scope: Option[InstrumentationScopeExpectation] = None,
       resource: Option[TelemetryResourceExpectation] = None,
       clue: Option[String] = None,
-      predicates: List[(MetricData => Boolean, String)] = Nil
+      predicates: List[(MetricData => Boolean, Option[String])] = Nil
   ) extends MetricExpectation {
     def expectedName: Option[String] = name
 
@@ -528,6 +558,12 @@ object MetricExpectation {
     def withClue(text: String): MetricExpectation =
       copy(clue = Some(text))
 
+    def where(f: MetricData => Boolean): MetricExpectation =
+      copy(predicates = predicates :+ (f -> None))
+
+    def where(clue: String)(f: MetricData => Boolean): MetricExpectation =
+      copy(predicates = predicates :+ (f -> Some(clue)))
+
     def check(metric: MetricData): Either[NonEmptyList[Mismatch], Unit] =
       checkCommon(metric, name, description, unit, scope, resource, predicates)
   }
@@ -542,7 +578,7 @@ object MetricExpectation {
       scope: Option[InstrumentationScopeExpectation] = None,
       resource: Option[TelemetryResourceExpectation] = None,
       clue: Option[String] = None,
-      predicates: List[(MetricData => Boolean, String)] = Nil,
+      predicates: List[(MetricData => Boolean, Option[String])] = Nil,
       pointMatch: PointMatch[A] = PointMatch.Ignore
   ) extends Numeric[A] {
     def expectedName: Option[String] = name
@@ -585,6 +621,12 @@ object MetricExpectation {
     override def withClue(text: String): Numeric[A] =
       copy(clue = Some(text))
 
+    override def where(f: MetricData => Boolean): Numeric[A] =
+      copy(predicates = predicates :+ (f -> None))
+
+    override def where(clue: String)(f: MetricData => Boolean): Numeric[A] =
+      copy(predicates = predicates :+ (f -> Some(clue)))
+
     def check(metric: MetricData): Either[NonEmptyList[Mismatch], Unit] =
       ExpectationChecks.combine(
         checkType(metric, kind.metricTypeFor(valueType)),
@@ -601,7 +643,7 @@ object MetricExpectation {
       scope: Option[InstrumentationScopeExpectation] = None,
       resource: Option[TelemetryResourceExpectation] = None,
       clue: Option[String] = None,
-      predicates: List[(MetricData => Boolean, String)] = Nil,
+      predicates: List[(MetricData => Boolean, Option[String])] = Nil,
       pointMatch: PointMatch[JSummaryPointData] = PointMatch.Ignore
   ) extends Summary {
     def expectedName: Option[String] = name
@@ -623,6 +665,12 @@ object MetricExpectation {
 
     override def withClue(text: String): Summary =
       copy(clue = Some(text))
+
+    override def where(f: MetricData => Boolean): Summary =
+      copy(predicates = predicates :+ (f -> None))
+
+    override def where(clue: String)(f: MetricData => Boolean): Summary =
+      copy(predicates = predicates :+ (f -> Some(clue)))
 
     def withPoint(point: PointExpectation.Summary): Summary =
       copy(pointMatch = PointMatch.Any(point))
@@ -649,7 +697,7 @@ object MetricExpectation {
       scope: Option[InstrumentationScopeExpectation] = None,
       resource: Option[TelemetryResourceExpectation] = None,
       clue: Option[String] = None,
-      predicates: List[(MetricData => Boolean, String)] = Nil,
+      predicates: List[(MetricData => Boolean, Option[String])] = Nil,
       pointMatch: PointMatch[JHistogramPointData] = PointMatch.Ignore
   ) extends Histogram {
     def expectedName: Option[String] = name
@@ -671,6 +719,12 @@ object MetricExpectation {
 
     override def withClue(text: String): Histogram =
       copy(clue = Some(text))
+
+    override def where(f: MetricData => Boolean): Histogram =
+      copy(predicates = predicates :+ (f -> None))
+
+    override def where(clue: String)(f: MetricData => Boolean): Histogram =
+      copy(predicates = predicates :+ (f -> Some(clue)))
 
     def withPoint(point: PointExpectation.Histogram): Histogram =
       copy(pointMatch = PointMatch.Any(point))
@@ -697,7 +751,7 @@ object MetricExpectation {
       scope: Option[InstrumentationScopeExpectation] = None,
       resource: Option[TelemetryResourceExpectation] = None,
       clue: Option[String] = None,
-      predicates: List[(MetricData => Boolean, String)] = Nil,
+      predicates: List[(MetricData => Boolean, Option[String])] = Nil,
       pointMatch: PointMatch[ExponentialHistogramPointData] = PointMatch.Ignore
   ) extends ExponentialHistogram {
     def expectedName: Option[String] = name
@@ -719,6 +773,12 @@ object MetricExpectation {
 
     override def withClue(text: String): ExponentialHistogram =
       copy(clue = Some(text))
+
+    override def where(f: MetricData => Boolean): ExponentialHistogram =
+      copy(predicates = predicates :+ (f -> None))
+
+    override def where(clue: String)(f: MetricData => Boolean): ExponentialHistogram =
+      copy(predicates = predicates :+ (f -> Some(clue)))
 
     def withPoint(point: PointExpectation.ExponentialHistogram): ExponentialHistogram =
       copy(pointMatch = PointMatch.Any(point))
@@ -744,7 +804,7 @@ object MetricExpectation {
       unit: Option[String],
       scope: Option[InstrumentationScopeExpectation],
       resource: Option[TelemetryResourceExpectation],
-      predicates: List[(MetricData => Boolean, String)]
+      predicates: List[(MetricData => Boolean, Option[String])]
   ): Either[NonEmptyList[Mismatch], Unit] =
     ExpectationChecks.combine(
       name.fold(ExpectationChecks.success[Mismatch]) { expected =>

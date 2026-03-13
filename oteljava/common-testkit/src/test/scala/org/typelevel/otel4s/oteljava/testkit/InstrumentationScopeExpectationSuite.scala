@@ -21,7 +21,7 @@ import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.api.common.{Attributes => JAttributes}
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo
 import munit.FunSuite
-import org.typelevel.otel4s.{Attribute, Attributes}
+import org.typelevel.otel4s.Attribute
 
 class InstrumentationScopeExpectationSuite extends FunSuite {
 
@@ -74,7 +74,7 @@ class InstrumentationScopeExpectationSuite extends FunSuite {
 
   test("withAttributesExact reports nested attribute failures") {
     val expectation =
-      InstrumentationScopeExpectation.name("test").withAttributesExact(Attributes(Attribute("scope.attr", "value")))
+      InstrumentationScopeExpectation.name("test").withAttributesExact(Attribute("scope.attr", "value"))
 
     assertEquals(expectation.check(scope(attributes = jAttributes("scope.attr" -> "value"))), Right(()))
     assertEquals(
@@ -98,7 +98,7 @@ class InstrumentationScopeExpectationSuite extends FunSuite {
     val expectation =
       InstrumentationScopeExpectation
         .name("test")
-        .withAttributesSubset(Attributes(Attribute("scope.attr", "value")))
+        .withAttributesSubset(Attribute("scope.attr", "value"))
 
     assertEquals(expectation.check(scope(attributes = jAttributes("scope.attr" -> "value", "other" -> "x"))), Right(()))
     assertEquals(

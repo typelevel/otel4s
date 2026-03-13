@@ -19,9 +19,9 @@ package metrics
 
 /** A numeric comparison strategy used by metric point expectations.
   *
-  * This typeclass controls both equality and rendering for numeric values. The default `Long` instance compares
-  * values exactly. The default `Double` instance uses a small tolerance and can be overridden implicitly in a test
-  * suite to apply a different threshold globally.
+  * This typeclass controls both equality and rendering for numeric values. The default `Long` instance compares values
+  * exactly. The default `Double` instance uses a small tolerance and can be overridden implicitly in a test suite to
+  * apply a different threshold globally.
   */
 trait NumberComparison[A] {
 

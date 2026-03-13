@@ -16,6 +16,7 @@
 
 package org.typelevel.otel4s.oteljava.testkit.metrics
 
+import cats.data.NonEmptyList
 import io.opentelemetry.sdk.metrics.data.MetricData
 
 /** Result of matching a [[MetricExpectation]] against a list of collected metrics. */
@@ -61,8 +62,12 @@ object MetricMismatch {
   *   MetricExpectation.sum[Long]("service.counter").withValue(1L)
   * )
   *
-  * val missing = MetricExpectations.missing(metrics, expected)
-  * assertEquals(missing, Nil)
+  * MetricExpectations.checkAll(metrics, expected) match {
+  *   case Right(_) =>
+  *     ()
+  *   case Left(mismatches) =>
+  *     fail(MetricExpectations.format(mismatches))
+  * }
   * }}}
   */
 object MetricExpectations {
@@ -101,10 +106,29 @@ object MetricExpectations {
       }
     }
 
+  /** Checks that every expectation matched at least one collected metric.
+    *
+    * Returns `Right(())` when all expectations matched. Otherwise returns a non-empty list of mismatches describing the
+    * unmatched expectations.
+    */
+  def checkAll(
+      metrics: List[MetricData],
+      expectations: List[MetricExpectation]
+  ): Either[NonEmptyList[MetricMismatch], Unit] =
+    NonEmptyList.fromList(missing(metrics, expectations)).toLeft(())
+
+  /** Formats mismatches into a multi-line human-readable failure message. */
+  def format(
+      mismatches: NonEmptyList[MetricMismatch]
+  ): String =
+    mismatches.toList.zipWithIndex
+      .map { case (mismatch, index) => s"${index + 1}. ${mismatch.message}" }
+      .mkString("Metric expectations failed:\n", "\n", "")
+
   /** Returns `true` if every expectation matched at least one collected metric. */
   def allMatch(
       metrics: List[MetricData],
       expectations: List[MetricExpectation]
   ): Boolean =
-    missing(metrics, expectations).isEmpty
+    checkAll(metrics, expectations).isRight
 }

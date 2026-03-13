@@ -11,13 +11,27 @@ it.
 
 ## Getting started
 
-The metrics expectation API lives in `otel4s-oteljava-testkit`.
+@:select(build-tool)
+
+@:choice(sbt)
+
+Add settings to the `build.sbt`:
 
 ```scala
 libraryDependencies ++= Seq(
-  "org.typelevel" %% "otel4s-oteljava-testkit" % "@VERSION@" % Test
+  "org.typelevel" %% "otel4s-oteljava-testkit" % "@VERSION@" % Test,
 )
 ```
+
+@:choice(scala-cli)
+
+Add directives to the `*.scala` file:
+
+```scala
+//> using test.dep "org.typelevel::otel4s-oteljava-testkit:@VERSION@" 
+```
+
+@:@
 
 ## Basic flow
 
@@ -28,7 +42,7 @@ The usual flow is:
 3. Build `MetricExpectation` values
 4. Check them with `MetricExpectations.checkAll`
 
-```scala
+```scala mdoc:silent
 import cats.effect.IO
 import io.opentelemetry.sdk.metrics.data.MetricData
 import org.typelevel.otel4s.metrics.MeterProvider
@@ -53,7 +67,7 @@ def assertExpected(metrics: List[MetricData], expected: MetricExpectation*): Uni
     case Right(_) =>
       ()
     case Left(mismatches) =>
-      fail(MetricExpectations.format(mismatches))
+      sys.error(MetricExpectations.format(mismatches))
   }
 
 def test: IO[Unit] =
@@ -80,13 +94,13 @@ This means:
 
 For example:
 
-```scala
+```scala mdoc:silent
 MetricExpectation.name("service.counter")
 ```
 
 matches any collected metric named `service.counter`, regardless of its type, points, scope, or resource.
 
-```scala
+```scala mdoc:silent
 MetricExpectation.sum[Long]("service.counter").withValue(1L)
 ```
 
@@ -96,7 +110,7 @@ matches a long sum metric named `service.counter` that has at least one point wi
 
 Use `MetricExpectation.gauge[A]` and `MetricExpectation.sum[A]` for numeric metrics.
 
-```scala
+```scala mdoc:silent
 MetricExpectation.gauge[Double]("service.temperature")
 MetricExpectation.sum[Long]("service.requests")
 ```
@@ -105,23 +119,23 @@ The measurement type remains generic. `Long` and `Double` use the same API.
 
 For value-only checks, `withValue(...)` is the most compact form:
 
-```scala
+```scala mdoc:silent
 MetricExpectation.sum[Long]("service.requests").withValue(1L)
 ```
 
-If you also care about point attributes, prefer `withAnyPoint(...)`:
+If you also care about point attributes, there is a shorthand for exact point matching:
 
-```scala
+```scala mdoc:silent
 import org.typelevel.otel4s.Attribute
 
 MetricExpectation
   .sum[Long]("service.requests")
-  .withValue(1L, Attributes(Attribute("http.method", "GET")))
+  .withValue(1L, Attribute("http.method", "GET"))
 ```
 
-`withValue(value, attributes...)` uses exact attribute matching. It is equivalent to:
+`withValue(value, attributes)` uses exact attribute matching. It is equivalent to:
 
-```scala
+```scala mdoc:silent
 MetricExpectation
   .sum[Long]("service.requests")
   .withAnyPoint(
@@ -143,7 +157,7 @@ Point attributes can be matched in three ways:
 
 Both `withAttributesExact(...)` and `withAttributesSubset(...)` support `Attributes` and varargs of `Attribute[_]`.
 
-```scala
+```scala mdoc:silent
 import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.Attributes
 import org.typelevel.otel4s.oteljava.testkit.AttributesExpectation
@@ -170,7 +184,7 @@ PointExpectation
 
 Empty attributes can be matched with:
 
-```scala
+```scala mdoc:silent
 PointExpectation.numeric(1L).withAttributesEmpty
 ```
 
@@ -180,7 +194,7 @@ Metric expectations can also assert the instrumentation scope and telemetry reso
 
 This is useful when you want tests to preserve the same level of detail as raw `MetricData`.
 
-```scala
+```scala mdoc:silent
 import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.oteljava.testkit.{
   InstrumentationScopeExpectation,
@@ -209,6 +223,7 @@ MetricExpectation
 ```
 
 As with point attributes, scope and resource attribute helpers support both `Attributes` and varargs.
+They also provide `withAttributesEmpty` when you want to assert that no attributes are present.
 
 ## Summaries and histograms
 
@@ -216,7 +231,7 @@ The testkit also supports non-numeric point kinds directly.
 
 ### Summary
 
-```scala
+```scala mdoc:silent
 MetricExpectation
   .summary("rpc.duration")
   .withAnyPoint(
@@ -228,7 +243,7 @@ MetricExpectation
 
 ### Histogram
 
-```scala
+```scala mdoc:silent
 import org.typelevel.otel4s.metrics.BucketBoundaries
 
 MetricExpectation
@@ -237,14 +252,14 @@ MetricExpectation
     PointExpectation.histogram
       .withCount(3L)
       .withSum(42.0)
-      .withBoundaries(BucketBoundaries(Vector(0.1, 1.0, 10.0)))
-      .withCounts(List(1L, 1L, 1L, 0L))
+      .withBoundaries(BucketBoundaries(0.1, 1.0, 10.0))
+      .withCounts(1L, 1L, 1L, 0L)
   )
 ```
 
 ### Exponential histogram
 
-```scala
+```scala mdoc:silent
 MetricExpectation
   .exponentialHistogram("queue.depth")
   .withAnyPoint(
@@ -260,7 +275,7 @@ MetricExpectation
 
 Use `withAnyPoint(...)` when at least one collected point must match.
 
-```scala
+```scala mdoc:silent
 MetricExpectation
   .sum[Long]("service.requests")
   .withAnyPoint(
@@ -272,7 +287,7 @@ MetricExpectation
 
 Use `withAllPoints(...)` when every collected point must satisfy the same expectation.
 
-```scala
+```scala mdoc:silent
 MetricExpectation
   .sum[Long]("service.requests")
   .withAllPoints(
@@ -287,13 +302,17 @@ MetricExpectation
 The API is framework-agnostic, so it does not provide assertions directly.
 Instead, it returns structured mismatches and a formatter.
 
-```scala
-MetricExpectations.checkAll(metrics, expected: _*) match {
-  case Right(_) =>
-    ()
-  case Left(mismatches) =>
-    fail(MetricExpectations.format(mismatches))
-}
+```scala mdoc:silent:reset
+import io.opentelemetry.sdk.metrics.data.MetricData
+import org.typelevel.otel4s.oteljava.testkit.metrics.{MetricExpectation, MetricExpectations}
+
+def assertExpected(metrics: List[MetricData], expected: MetricExpectation*): Unit =
+  MetricExpectations.checkAll(metrics, expected: _*) match {
+    case Right(_) =>
+      ()
+    case Left(mismatches) =>
+      sys.error(MetricExpectations.format(mismatches))
+  }
 ```
 
 There are two main failure cases:
@@ -308,7 +327,10 @@ attribute is wrong.
 
 Both metric and point expectations support optional clues.
 
-```scala
+```scala mdoc:silent
+import org.typelevel.otel4s.oteljava.testkit.metrics.PointExpectation
+import org.typelevel.otel4s.Attribute
+
 MetricExpectation
   .sum[Long]("service.requests")
   .withClue("the request counter must be emitted")
@@ -338,7 +360,7 @@ This applies to:
 
 If needed, you can override the default `Double` comparison implicitly in a test suite:
 
-```scala
+```scala mdoc:silent
 import org.typelevel.otel4s.oteljava.testkit.metrics.NumberComparison
 
 implicit val cmp: NumberComparison[Double] =
@@ -346,19 +368,3 @@ implicit val cmp: NumberComparison[Double] =
 ```
 
 After that, double-based point expectations built in that scope will use the custom comparison.
-
-## Suggested helper
-
-Most suites benefit from a small local helper:
-
-```scala
-def assertExpected(metrics: List[MetricData], expected: MetricExpectation*): Unit =
-  MetricExpectations.checkAll(metrics, expected: _*) match {
-    case Right(_) =>
-      ()
-    case Left(mismatches) =>
-      fail(MetricExpectations.format(mismatches))
-  }
-```
-
-This keeps tests concise while preserving detailed mismatch output.

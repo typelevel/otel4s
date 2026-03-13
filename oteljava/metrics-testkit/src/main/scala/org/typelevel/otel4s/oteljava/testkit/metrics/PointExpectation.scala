@@ -312,6 +312,9 @@ object PointExpectation {
     /** Requires the histogram bucket counts to match exactly. */
     def withCounts(counts: List[Long]): Histogram
 
+    /** Requires the histogram bucket counts to match exactly. */
+    def withCounts(counts: Long*): Histogram
+
     /** Adds a custom predicate over histogram point data. */
     def where(f: JHistogramPointData => Boolean): Histogram
 
@@ -607,6 +610,9 @@ object PointExpectation {
 
     def withCounts(counts: List[Long]): Histogram =
       copy(expectedCounts = Some(counts))
+
+    def withCounts(counts: Long*): Histogram =
+      withCounts(counts.toList)
 
     def withAttributes(expectation: AttributesExpectation): Histogram =
       copy(attributeExpectation = Some(expectation))

@@ -69,7 +69,7 @@ sealed trait InstrumentationScopeExpectation {
 object InstrumentationScopeExpectation {
 
   /** A structured reason explaining why an [[InstrumentationScopeExpectation]] did not match an actual scope. */
-  sealed trait Mismatch
+  sealed trait Mismatch extends Product with Serializable
 
   object Mismatch {
 
@@ -110,6 +110,23 @@ object InstrumentationScopeExpectation {
       attributes = Some(AttributesExpectation.exact(scope.getAttributes.toScala))
     )
 
+  /** Formats a mismatch into a human-readable message. */
+  def formatMismatch(mismatch: Mismatch): String = {
+    def formatOption(value: Option[String]): String =
+      value.fold("<missing>")(v => s"'$v'")
+
+    mismatch match {
+      case Mismatch.NameMismatch(expected, actual) =>
+        s"name mismatch: expected '$expected', got '$actual'"
+      case Mismatch.VersionMismatch(expected, actual) =>
+        s"version mismatch: expected ${formatOption(expected)}, got ${formatOption(actual)}"
+      case Mismatch.SchemaUrlMismatch(expected, actual) =>
+        s"schema URL mismatch: expected ${formatOption(expected)}, got ${formatOption(actual)}"
+      case Mismatch.AttributesMismatch(mismatches) =>
+        s"attributes mismatch: ${mismatches.toList.map(AttributesExpectation.formatMismatch).mkString(", ")}"
+    }
+  }
+
   private final case class Impl(
       name: Option[String] = None,
       version: Option[Option[String]] = None,
@@ -141,72 +158,32 @@ object InstrumentationScopeExpectation {
     def withAttributesSubset(attributes: Attributes): InstrumentationScopeExpectation =
       withAttributes(AttributesExpectation.subset(attributes))
 
-    def check(scope: JInstrumentationScopeInfo): Either[NonEmptyList[Mismatch], Unit] =
+    def check(scope: JInstrumentationScopeInfo): Either[NonEmptyList[Mismatch], Unit] = {
+
+      def checkName =
+        name match {
+          case Some(expected) =>
+            Either.cond(
+              expected == scope.getName,
+              (),
+              NonEmptyList.one(Mismatch.NameMismatch(expected, scope.getName))
+            )
+
+          case None =>
+            ExpectationChecks.success
+        }
+
       ExpectationChecks.combine(
         List(
-          name.fold(ExpectationChecks.success) { expected =>
-            if (expected == scope.getName) ExpectationChecks.success
-            else {
-              ExpectationChecks.failure(
-                Mismatch.NameMismatch(expected, scope.getName)
-              )
-            }
-          },
-          compareOptional("scope.version", version, Option(scope.getVersion)),
-          compareOptional("scope.schemaUrl", schemaUrl, Option(scope.getSchemaUrl)),
-          attributes.fold(ExpectationChecks.success) { expected =>
-            ExpectationChecks.nested(expected.check(scope.getAttributes.toScala))
+          checkName,
+          ExpectationChecks.compareOption(version, Option(scope.getVersion))(Mismatch.VersionMismatch),
+          ExpectationChecks.compareOption(schemaUrl, Option(scope.getSchemaUrl))(Mismatch.SchemaUrlMismatch),
+          attributes.fold(ExpectationChecks.success[Mismatch]) { expected =>
+            ExpectationChecks.nested(expected.check(scope.getAttributes.toScala))(Mismatch.AttributesMismatch.apply)
           }
         )
       )
+    }
   }
 
-  private object ExpectationChecks {
-    def success: Either[NonEmptyList[Mismatch], Unit] =
-      org.typelevel.otel4s.oteljava.testkit.ExpectationChecks.success
-
-    def failure(
-        failure: Mismatch
-    ): Either[NonEmptyList[Mismatch], Unit] =
-      org.typelevel.otel4s.oteljava.testkit.ExpectationChecks.failure(failure)
-
-    def combine(
-        results: Iterable[Either[NonEmptyList[Mismatch], Unit]]
-    ): Either[NonEmptyList[Mismatch], Unit] =
-      org.typelevel.otel4s.oteljava.testkit.ExpectationChecks.combine(results)
-
-    def nested(
-        result: Either[NonEmptyList[AttributesExpectation.Mismatch], Unit]
-    ): Either[NonEmptyList[Mismatch], Unit] =
-      org.typelevel.otel4s.oteljava.testkit.ExpectationChecks.nested(result)(Mismatch.AttributesMismatch.apply)
-  }
-
-  private def compareOptional(
-      field: String,
-      expected: Option[Option[String]],
-      actual: Option[String]
-  ): Either[NonEmptyList[Mismatch], Unit] =
-    expected match {
-      case None =>
-        ExpectationChecks.success
-      case Some(Some(value)) if actual.contains(value) =>
-        ExpectationChecks.success
-      case Some(Some(value)) =>
-        ExpectationChecks.failure(
-          mismatch(field, Some(value), actual)
-        )
-      case Some(None) =>
-        if (actual.isEmpty) ExpectationChecks.success
-        else ExpectationChecks.failure(mismatch(field, None, actual))
-    }
-
-  private def mismatch(
-      field: String,
-      expected: Option[String],
-      actual: Option[String]
-  ): Mismatch =
-    field match {
-      case "scope.version"   => Mismatch.VersionMismatch(expected, actual)
-      case "scope.schemaUrl" => Mismatch.SchemaUrlMismatch(expected, actual)
-    }
 }

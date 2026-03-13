@@ -38,8 +38,11 @@ class AttributesExpectationSuite extends FunSuite {
       AttributesExpectation.exact(Attributes(Attribute("http.method", "POST"))).check(actual),
       Left(
         NonEmptyList.of(
-          AttributesExpectation.Mismatch.AttributeValueMismatch("http.method", "POST", "GET"),
-          AttributesExpectation.Mismatch.UnexpectedAttribute("http.route", "/users")
+          AttributesExpectation.Mismatch.AttributeValueMismatch(
+            Attribute("http.method", "POST"),
+            Attribute("http.method", "GET")
+          ),
+          AttributesExpectation.Mismatch.UnexpectedAttribute(Attribute("http.route", "/users"))
         )
       )
     )
@@ -62,7 +65,7 @@ class AttributesExpectationSuite extends FunSuite {
 
     assertEquals(
       AttributesExpectation.subset(Attributes(Attribute("http.route", "/users"))).check(actual),
-      Left(NonEmptyList.one(AttributesExpectation.Mismatch.MissingAttribute("http.route", "/users")))
+      Left(NonEmptyList.one(AttributesExpectation.Mismatch.MissingAttribute(Attribute("http.route", "/users"))))
     )
   }
 
@@ -70,7 +73,7 @@ class AttributesExpectationSuite extends FunSuite {
     assertEquals(AttributesExpectation.empty.check(Attributes.empty), Right(()))
     assertEquals(
       AttributesExpectation.empty.check(Attributes(Attribute("http.method", "GET"))),
-      Left(NonEmptyList.one(AttributesExpectation.Mismatch.UnexpectedAttribute("http.method", "GET")))
+      Left(NonEmptyList.one(AttributesExpectation.Mismatch.UnexpectedAttribute(Attribute("http.method", "GET"))))
     )
   }
 

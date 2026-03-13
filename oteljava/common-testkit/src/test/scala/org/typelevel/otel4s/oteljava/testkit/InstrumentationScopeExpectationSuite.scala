@@ -82,7 +82,12 @@ class InstrumentationScopeExpectationSuite extends FunSuite {
       Left(
         NonEmptyList.one(
           InstrumentationScopeExpectation.Mismatch.AttributesMismatch(
-            NonEmptyList.one(AttributesExpectation.Mismatch.AttributeValueMismatch("scope.attr", "value", "other"))
+            NonEmptyList.one(
+              AttributesExpectation.Mismatch.AttributeValueMismatch(
+                Attribute("scope.attr", "value"),
+                Attribute("scope.attr", "other")
+              )
+            )
           )
         )
       )
@@ -101,7 +106,7 @@ class InstrumentationScopeExpectationSuite extends FunSuite {
       Left(
         NonEmptyList.one(
           InstrumentationScopeExpectation.Mismatch.AttributesMismatch(
-            NonEmptyList.one(AttributesExpectation.Mismatch.MissingAttribute("scope.attr", "value"))
+            NonEmptyList.one(AttributesExpectation.Mismatch.MissingAttribute(Attribute("scope.attr", "value")))
           )
         )
       )
@@ -128,7 +133,7 @@ class InstrumentationScopeExpectationSuite extends FunSuite {
             None
           ),
           InstrumentationScopeExpectation.Mismatch.AttributesMismatch(
-            NonEmptyList.one(AttributesExpectation.Mismatch.MissingAttribute("scope.attr", "value"))
+            NonEmptyList.one(AttributesExpectation.Mismatch.MissingAttribute(Attribute("scope.attr", "value")))
           )
         )
       )

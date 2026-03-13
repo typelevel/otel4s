@@ -354,7 +354,7 @@ object MetricExpectation {
 
   /** Creates an expectation that matches any metric with the given name. */
   def name(name: String): MetricExpectation =
-    BaseImpl[Nothing](name = Some(name))
+    NameImpl(name = Some(name))
 
   /** Creates a typed expectation for a gauge metric.
     *
@@ -486,75 +486,7 @@ object MetricExpectation {
     }
   }
 
-  private sealed trait CommonImpl[A] extends MetricExpectation {
-    def name: Option[String]
-    def description: Option[String]
-    def unit: Option[String]
-    def scope: Option[InstrumentationScopeExpectation]
-    def resource: Option[TelemetryResourceExpectation]
-    def clue: Option[String]
-    def predicates: List[(MetricData => Boolean, String)]
-
-    final def expectedName: Option[String] = name
-
-    protected def copyCommon(
-        name: Option[String] = name,
-        description: Option[String] = description,
-        unit: Option[String] = this.unit,
-        scope: Option[InstrumentationScopeExpectation] = this.scope,
-        resource: Option[TelemetryResourceExpectation] = this.resource,
-        clue: Option[String] = this.clue,
-        predicates: List[(MetricData => Boolean, String)] = this.predicates
-    ): MetricExpectation
-
-    def withDescription(description: String): MetricExpectation =
-      copyCommon(description = Some(description))
-
-    def withUnit(unit: String): MetricExpectation =
-      copyCommon(unit = Some(unit))
-
-    def withScopeName(name: String): MetricExpectation =
-      copyCommon(scope = Some(scope.fold(InstrumentationScopeExpectation.name(name))(_.withName(name))))
-
-    def withScope(scope: InstrumentationScopeExpectation): MetricExpectation =
-      copyCommon(scope = Some(scope))
-
-    def withResource(resource: TelemetryResourceExpectation): MetricExpectation =
-      copyCommon(resource = Some(resource))
-
-    def withClue(text: String): MetricExpectation =
-      copyCommon(clue = Some(text))
-
-    protected final def checkCommon(metric: MetricData): Either[NonEmptyList[Mismatch], Unit] =
-      ExpectationChecks.combine(
-        List(
-          name.fold(ExpectationChecks.success[Mismatch]) { expected =>
-            if (expected == metric.getName) ExpectationChecks.success
-            else ExpectationChecks.mismatch(Mismatch.nameMismatch(expected, metric.getName))
-          },
-          description.fold(ExpectationChecks.success[Mismatch]) { expected =>
-            val actual = Option(metric.getDescription)
-            if (actual.contains(expected)) ExpectationChecks.success
-            else ExpectationChecks.mismatch(Mismatch.descriptionMismatch(expected, actual))
-          },
-          unit.fold(ExpectationChecks.success[Mismatch]) { expected =>
-            if (Option(metric.getUnit).contains(expected)) ExpectationChecks.success
-            else ExpectationChecks.mismatch(Mismatch.unitMismatch(expected, metric.getUnit))
-          },
-          scope.fold(ExpectationChecks.success[Mismatch]) { expected =>
-            ExpectationChecks.nested(expected.check(metric.getInstrumentationScopeInfo))(Mismatch.scopeMismatch)
-          },
-          resource.fold(ExpectationChecks.success[Mismatch]) { expected =>
-            ExpectationChecks.nested(expected.check(metric.getResource))(Mismatch.resourceMismatch)
-          }
-        ) ++ predicates.map { case (predicate, clue) =>
-          if (predicate(metric)) ExpectationChecks.success[Mismatch]
-          else ExpectationChecks.mismatch(Mismatch.predicateMismatch(clue))
-        }
-      )
-  }
-
-  private final case class BaseImpl[A](
+  private final case class NameImpl(
       name: Option[String] = None,
       description: Option[String] = None,
       unit: Option[String] = None,
@@ -562,21 +494,29 @@ object MetricExpectation {
       resource: Option[TelemetryResourceExpectation] = None,
       clue: Option[String] = None,
       predicates: List[(MetricData => Boolean, String)] = Nil
-  ) extends CommonImpl[A] {
+  ) extends MetricExpectation {
+    def expectedName: Option[String] = name
 
-    protected def copyCommon(
-        name: Option[String],
-        description: Option[String],
-        unit: Option[String],
-        scope: Option[InstrumentationScopeExpectation],
-        resource: Option[TelemetryResourceExpectation],
-        clue: Option[String],
-        predicates: List[(MetricData => Boolean, String)]
-    ): MetricExpectation =
-      copy(name, description, unit, scope, resource, clue, predicates)
+    def withDescription(description: String): MetricExpectation =
+      copy(description = Some(description))
+
+    def withUnit(unit: String): MetricExpectation =
+      copy(unit = Some(unit))
+
+    def withScopeName(name: String): MetricExpectation =
+      copy(scope = Some(scope.fold(InstrumentationScopeExpectation.name(name))(_.withName(name))))
+
+    def withScope(scope: InstrumentationScopeExpectation): MetricExpectation =
+      copy(scope = Some(scope))
+
+    def withResource(resource: TelemetryResourceExpectation): MetricExpectation =
+      copy(resource = Some(resource))
+
+    def withClue(text: String): MetricExpectation =
+      copy(clue = Some(text))
 
     def check(metric: MetricData): Either[NonEmptyList[Mismatch], Unit] =
-      checkCommon(metric)
+      checkCommon(metric, name, description, unit, scope, resource, predicates)
   }
 
   private final case class NumericImpl[A](
@@ -591,26 +531,8 @@ object MetricExpectation {
       clue: Option[String] = None,
       predicates: List[(MetricData => Boolean, String)] = Nil,
       pointMatch: PointMatch[A] = PointMatch.Ignore
-  ) extends Numeric[A]
-      with CommonImpl[A] {
-    protected def copyCommon(
-        name: Option[String],
-        description: Option[String],
-        unit: Option[String],
-        scope: Option[InstrumentationScopeExpectation],
-        resource: Option[TelemetryResourceExpectation],
-        clue: Option[String],
-        predicates: List[(MetricData => Boolean, String)]
-    ): MetricExpectation =
-      copy(
-        name = name,
-        description = description,
-        unit = unit,
-        scope = scope,
-        resource = resource,
-        clue = clue,
-        predicates = predicates
-      )
+  ) extends Numeric[A] {
+    def expectedName: Option[String] = name
 
     def withValue(value: A, attributes: Attribute[_]*): Numeric[A] =
       if (attributes.isEmpty) withAnyPoint(PointExpectation.numeric(value)(numberComparison))
@@ -653,7 +575,7 @@ object MetricExpectation {
     def check(metric: MetricData): Either[NonEmptyList[Mismatch], Unit] =
       ExpectationChecks.combine(
         checkType(metric, kind.metricTypeFor(valueType)),
-        checkCommon(metric),
+        checkCommon(metric, name, description, unit, scope, resource, predicates),
         pointMatch.check(points(metric))
       )
   }
@@ -668,8 +590,9 @@ object MetricExpectation {
       clue: Option[String] = None,
       predicates: List[(MetricData => Boolean, String)] = Nil,
       pointMatch: PointMatch[JSummaryPointData] = PointMatch.Ignore
-  ) extends Summary
-      with CommonImpl[JSummaryPointData] {
+  ) extends Summary {
+    def expectedName: Option[String] = name
+
     override def withDescription(description: String): Summary =
       copy(description = Some(description))
 
@@ -697,21 +620,10 @@ object MetricExpectation {
     def withAllPoints(point: PointExpectation.Summary): Summary =
       copy(pointMatch = PointMatch.All(point))
 
-    protected def copyCommon(
-        name: Option[String],
-        description: Option[String],
-        unit: Option[String],
-        scope: Option[InstrumentationScopeExpectation],
-        resource: Option[TelemetryResourceExpectation],
-        clue: Option[String],
-        predicates: List[(MetricData => Boolean, String)]
-    ): MetricExpectation =
-      copy(name, metricType, description, unit, scope, resource, clue, predicates, pointMatch)
-
     def check(metric: MetricData): Either[NonEmptyList[Mismatch], Unit] =
       ExpectationChecks.combine(
         checkType(metric, metricType),
-        checkCommon(metric),
+        checkCommon(metric, name, description, unit, scope, resource, predicates),
         pointMatch.check(points(metric))
       )
   }
@@ -726,8 +638,9 @@ object MetricExpectation {
       clue: Option[String] = None,
       predicates: List[(MetricData => Boolean, String)] = Nil,
       pointMatch: PointMatch[JHistogramPointData] = PointMatch.Ignore
-  ) extends Histogram
-      with CommonImpl[JHistogramPointData] {
+  ) extends Histogram {
+    def expectedName: Option[String] = name
+
     override def withDescription(description: String): Histogram =
       copy(description = Some(description))
 
@@ -755,21 +668,10 @@ object MetricExpectation {
     def withAllPoints(point: PointExpectation.Histogram): Histogram =
       copy(pointMatch = PointMatch.All(point))
 
-    protected def copyCommon(
-        name: Option[String],
-        description: Option[String],
-        unit: Option[String],
-        scope: Option[InstrumentationScopeExpectation],
-        resource: Option[TelemetryResourceExpectation],
-        clue: Option[String],
-        predicates: List[(MetricData => Boolean, String)]
-    ): MetricExpectation =
-      copy(name, metricType, description, unit, scope, resource, clue, predicates, pointMatch)
-
     def check(metric: MetricData): Either[NonEmptyList[Mismatch], Unit] =
       ExpectationChecks.combine(
         checkType(metric, metricType),
-        checkCommon(metric),
+        checkCommon(metric, name, description, unit, scope, resource, predicates),
         pointMatch.check(points(metric))
       )
   }
@@ -784,8 +686,9 @@ object MetricExpectation {
       clue: Option[String] = None,
       predicates: List[(MetricData => Boolean, String)] = Nil,
       pointMatch: PointMatch[ExponentialHistogramPointData] = PointMatch.Ignore
-  ) extends ExponentialHistogram
-      with CommonImpl[ExponentialHistogramPointData] {
+  ) extends ExponentialHistogram {
+    def expectedName: Option[String] = name
+
     override def withDescription(description: String): ExponentialHistogram =
       copy(description = Some(description))
 
@@ -813,24 +716,50 @@ object MetricExpectation {
     def withAllPoints(point: PointExpectation.ExponentialHistogram): ExponentialHistogram =
       copy(pointMatch = PointMatch.All(point))
 
-    protected def copyCommon(
-        name: Option[String],
-        description: Option[String],
-        unit: Option[String],
-        scope: Option[InstrumentationScopeExpectation],
-        resource: Option[TelemetryResourceExpectation],
-        clue: Option[String],
-        predicates: List[(MetricData => Boolean, String)]
-    ): MetricExpectation =
-      copy(name, metricType, description, unit, scope, resource, clue, predicates, pointMatch)
-
     def check(metric: MetricData): Either[NonEmptyList[Mismatch], Unit] =
       ExpectationChecks.combine(
         checkType(metric, metricType),
-        checkCommon(metric),
+        checkCommon(metric, name, description, unit, scope, resource, predicates),
         pointMatch.check(points(metric))
       )
   }
+
+  private def checkCommon(
+      metric: MetricData,
+      name: Option[String],
+      description: Option[String],
+      unit: Option[String],
+      scope: Option[InstrumentationScopeExpectation],
+      resource: Option[TelemetryResourceExpectation],
+      predicates: List[(MetricData => Boolean, String)]
+  ): Either[NonEmptyList[Mismatch], Unit] =
+    ExpectationChecks.combine(
+      name.fold(ExpectationChecks.success[Mismatch]) { expected =>
+        if (expected == metric.getName) ExpectationChecks.success
+        else ExpectationChecks.mismatch(Mismatch.nameMismatch(expected, metric.getName))
+      },
+      description.fold(ExpectationChecks.success[Mismatch]) { expected =>
+        val actual = Option(metric.getDescription)
+        if (actual.contains(expected)) ExpectationChecks.success
+        else ExpectationChecks.mismatch(Mismatch.descriptionMismatch(expected, actual))
+      },
+      unit.fold(ExpectationChecks.success[Mismatch]) { expected =>
+        if (Option(metric.getUnit).contains(expected)) ExpectationChecks.success
+        else ExpectationChecks.mismatch(Mismatch.unitMismatch(expected, metric.getUnit))
+      },
+      scope.fold(ExpectationChecks.success[Mismatch]) { expected =>
+        ExpectationChecks.nested(expected.check(metric.getInstrumentationScopeInfo))(Mismatch.scopeMismatch)
+      },
+      resource.fold(ExpectationChecks.success[Mismatch]) { expected =>
+        ExpectationChecks.nested(expected.check(metric.getResource))(Mismatch.resourceMismatch)
+      },
+      ExpectationChecks.combine(
+        predicates.map { case (predicate, clue) =>
+          if (predicate(metric)) ExpectationChecks.success[Mismatch]
+          else ExpectationChecks.mismatch(Mismatch.predicateMismatch(clue))
+        }
+      )
+    )
 
   private def checkType(metric: MetricData, expected: MetricDataType): Either[NonEmptyList[Mismatch], Unit] =
     if (metric.getType == expected) ExpectationChecks.success

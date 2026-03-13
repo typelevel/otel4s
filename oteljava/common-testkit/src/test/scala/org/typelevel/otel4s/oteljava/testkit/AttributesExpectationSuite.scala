@@ -16,6 +16,7 @@
 
 package org.typelevel.otel4s.oteljava.testkit
 
+import cats.data.NonEmptyList
 import munit.FunSuite
 import org.typelevel.otel4s.{Attribute, Attributes}
 
@@ -24,16 +25,24 @@ class AttributesExpectationSuite extends FunSuite {
   test("exact matches equal attributes") {
     val attributes = Attributes(Attribute("http.method", "GET"))
 
-    assert(AttributesExpectation.exact(attributes).matches(attributes))
+    assertEquals(AttributesExpectation.exact(attributes).check(attributes), Right(()))
   }
 
-  test("exact fails when attributes differ") {
+  test("exact reports mismatched and unexpected attributes") {
     val actual = Attributes(
       Attribute("http.method", "GET"),
       Attribute("http.route", "/users")
     )
 
-    assert(!AttributesExpectation.exact(Attributes(Attribute("http.method", "GET"))).matches(actual))
+    assertEquals(
+      AttributesExpectation.exact(Attributes(Attribute("http.method", "POST"))).check(actual),
+      Left(
+        NonEmptyList.of(
+          AttributesExpectation.Mismatch.AttributeValueMismatch("http.method", "POST", "GET"),
+          AttributesExpectation.Mismatch.UnexpectedAttribute("http.route", "/users")
+        )
+      )
+    )
   }
 
   test("subset matches contained attributes") {
@@ -42,26 +51,38 @@ class AttributesExpectationSuite extends FunSuite {
       Attribute("http.route", "/users")
     )
 
-    assert(AttributesExpectation.subset(Attributes(Attribute("http.method", "GET"))).matches(actual))
+    assertEquals(
+      AttributesExpectation.subset(Attributes(Attribute("http.method", "GET"))).check(actual),
+      Right(())
+    )
   }
 
-  test("subset fails when an expected attribute is missing") {
+  test("subset reports missing expected attribute") {
     val actual = Attributes(Attribute("http.method", "GET"))
 
-    assert(!AttributesExpectation.subset(Attributes(Attribute("http.route", "/users"))).matches(actual))
+    assertEquals(
+      AttributesExpectation.subset(Attributes(Attribute("http.route", "/users"))).check(actual),
+      Left(NonEmptyList.one(AttributesExpectation.Mismatch.MissingAttribute("http.route", "/users")))
+    )
   }
 
   test("empty matches only empty attributes") {
-    assert(AttributesExpectation.empty.matches(Attributes.empty))
-    assert(!AttributesExpectation.empty.matches(Attributes(Attribute("http.method", "GET"))))
+    assertEquals(AttributesExpectation.empty.check(Attributes.empty), Right(()))
+    assertEquals(
+      AttributesExpectation.empty.check(Attributes(Attribute("http.method", "GET"))),
+      Left(NonEmptyList.one(AttributesExpectation.Mismatch.UnexpectedAttribute("http.method", "GET")))
+    )
   }
 
-  test("predicate delegates to custom function") {
+  test("predicate delegates to custom function and reports failure") {
     val expectation = AttributesExpectation.predicate { attributes =>
       attributes.iterator.map(_.key.name).toSet == Set("http.method")
     }
 
-    assert(expectation.matches(Attributes(Attribute("http.method", "GET"))))
-    assert(!expectation.matches(Attributes(Attribute("http.route", "/users"))))
+    assertEquals(expectation.check(Attributes(Attribute("http.method", "GET"))), Right(()))
+    assertEquals(
+      expectation.check(Attributes(Attribute("http.route", "/users"))),
+      Left(NonEmptyList.one(AttributesExpectation.Mismatch.PredicateFailed))
+    )
   }
 }

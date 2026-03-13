@@ -16,6 +16,7 @@
 
 package org.typelevel.otel4s.oteljava.testkit
 
+import cats.data.NonEmptyList
 import io.opentelemetry.sdk.common.{InstrumentationScopeInfo => JInstrumentationScopeInfo}
 import org.typelevel.otel4s.Attributes
 import org.typelevel.otel4s.oteljava.AttributeConverters._
@@ -57,11 +58,44 @@ sealed trait InstrumentationScopeExpectation {
   /** Requires the instrumentation scope attributes to contain the given subset. */
   def withAttributesSubset(attributes: Attributes): InstrumentationScopeExpectation
 
+  /** Checks the given instrumentation scope and returns structured failures when the expectation does not match. */
+  def check(scope: JInstrumentationScopeInfo): Either[NonEmptyList[InstrumentationScopeExpectation.Mismatch], Unit]
+
   /** Returns `true` if this expectation matches the given instrumentation scope. */
-  def matches(scope: JInstrumentationScopeInfo): Boolean
+  final def matches(scope: JInstrumentationScopeInfo): Boolean =
+    check(scope).isRight
 }
 
 object InstrumentationScopeExpectation {
+
+  /** A structured reason explaining why an [[InstrumentationScopeExpectation]] did not match an actual scope. */
+  sealed trait Mismatch
+
+  object Mismatch {
+
+    /** Indicates that the scope name differed from the expected one. */
+    final case class NameMismatch(
+        expected: String,
+        actual: String
+    ) extends Mismatch
+
+    /** Indicates that the scope version differed from the expected one. */
+    final case class VersionMismatch(
+        expected: Option[String],
+        actual: Option[String]
+    ) extends Mismatch
+
+    /** Indicates that the scope schema URL differed from the expected one. */
+    final case class SchemaUrlMismatch(
+        expected: Option[String],
+        actual: Option[String]
+    ) extends Mismatch
+
+    /** Indicates that the scope attributes did not satisfy the nested attributes expectation. */
+    final case class AttributesMismatch(
+        failures: NonEmptyList[AttributesExpectation.Mismatch]
+    ) extends Mismatch
+  }
 
   /** Creates an expectation that matches any instrumentation scope with the given name. */
   def name(name: String): InstrumentationScopeExpectation =
@@ -107,10 +141,72 @@ object InstrumentationScopeExpectation {
     def withAttributesSubset(attributes: Attributes): InstrumentationScopeExpectation =
       withAttributes(AttributesExpectation.subset(attributes))
 
-    def matches(scope: JInstrumentationScopeInfo): Boolean =
-      name.forall(_ == scope.getName) &&
-        version.forall(_ == Option(scope.getVersion)) &&
-        schemaUrl.forall(_ == Option(scope.getSchemaUrl)) &&
-        attributes.forall(_.matches(scope.getAttributes.toScala))
+    def check(scope: JInstrumentationScopeInfo): Either[NonEmptyList[Mismatch], Unit] =
+      ExpectationChecks.combine(
+        List(
+          name.fold(ExpectationChecks.success) { expected =>
+            if (expected == scope.getName) ExpectationChecks.success
+            else {
+              ExpectationChecks.failure(
+                Mismatch.NameMismatch(expected, scope.getName)
+              )
+            }
+          },
+          compareOptional("scope.version", version, Option(scope.getVersion)),
+          compareOptional("scope.schemaUrl", schemaUrl, Option(scope.getSchemaUrl)),
+          attributes.fold(ExpectationChecks.success) { expected =>
+            ExpectationChecks.nested(expected.check(scope.getAttributes.toScala))
+          }
+        )
+      )
   }
+
+  private object ExpectationChecks {
+    def success: Either[NonEmptyList[Mismatch], Unit] =
+      org.typelevel.otel4s.oteljava.testkit.ExpectationChecks.success
+
+    def failure(
+        failure: Mismatch
+    ): Either[NonEmptyList[Mismatch], Unit] =
+      org.typelevel.otel4s.oteljava.testkit.ExpectationChecks.failure(failure)
+
+    def combine(
+        results: Iterable[Either[NonEmptyList[Mismatch], Unit]]
+    ): Either[NonEmptyList[Mismatch], Unit] =
+      org.typelevel.otel4s.oteljava.testkit.ExpectationChecks.combine(results)
+
+    def nested(
+        result: Either[NonEmptyList[AttributesExpectation.Mismatch], Unit]
+    ): Either[NonEmptyList[Mismatch], Unit] =
+      org.typelevel.otel4s.oteljava.testkit.ExpectationChecks.nested(result)(Mismatch.AttributesMismatch.apply)
+  }
+
+  private def compareOptional(
+      field: String,
+      expected: Option[Option[String]],
+      actual: Option[String]
+  ): Either[NonEmptyList[Mismatch], Unit] =
+    expected match {
+      case None =>
+        ExpectationChecks.success
+      case Some(Some(value)) if actual.contains(value) =>
+        ExpectationChecks.success
+      case Some(Some(value)) =>
+        ExpectationChecks.failure(
+          mismatch(field, Some(value), actual)
+        )
+      case Some(None) =>
+        if (actual.isEmpty) ExpectationChecks.success
+        else ExpectationChecks.failure(mismatch(field, None, actual))
+    }
+
+  private def mismatch(
+      field: String,
+      expected: Option[String],
+      actual: Option[String]
+  ): Mismatch =
+    field match {
+      case "scope.version"   => Mismatch.VersionMismatch(expected, actual)
+      case "scope.schemaUrl" => Mismatch.SchemaUrlMismatch(expected, actual)
+    }
 }

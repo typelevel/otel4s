@@ -26,6 +26,9 @@ private[testkit] object ExpectationChecks {
   def mismatch[A](failure: A): Either[NonEmptyList[A], Unit] =
     Left(NonEmptyList.one(failure))
 
+  def combine[A](results: Either[NonEmptyList[A], Unit]*): Either[NonEmptyList[A], Unit] =
+    combine(results.toList)
+
   def combine[A](
       results: Iterable[Either[NonEmptyList[A], Unit]]
   ): Either[NonEmptyList[A], Unit] = {

@@ -74,27 +74,51 @@ object InstrumentationScopeExpectation {
   object Mismatch {
 
     /** Indicates that the scope name differed from the expected one. */
-    final case class NameMismatch(
-        expected: String,
-        actual: String
-    ) extends Mismatch
+    sealed trait NameMismatch extends Mismatch {
+      def expected: String
+      def actual: String
+    }
+
+    /** Creates a mismatch indicating that the scope name differed from the expected one. */
+    def nameMismatch(expected: String, actual: String): NameMismatch =
+      NameMismatchImpl(expected, actual)
 
     /** Indicates that the scope version differed from the expected one. */
-    final case class VersionMismatch(
-        expected: Option[String],
-        actual: Option[String]
-    ) extends Mismatch
+    sealed trait VersionMismatch extends Mismatch {
+      def expected: Option[String]
+      def actual: Option[String]
+    }
+
+    /** Creates a mismatch indicating that the scope version differed from the expected one. */
+    def versionMismatch(expected: Option[String], actual: Option[String]): VersionMismatch =
+      VersionMismatchImpl(expected, actual)
 
     /** Indicates that the scope schema URL differed from the expected one. */
-    final case class SchemaUrlMismatch(
-        expected: Option[String],
-        actual: Option[String]
-    ) extends Mismatch
+    sealed trait SchemaUrlMismatch extends Mismatch {
+      def expected: Option[String]
+      def actual: Option[String]
+    }
+
+    /** Creates a mismatch indicating that the scope schema URL differed from the expected one. */
+    def schemaUrlMismatch(expected: Option[String], actual: Option[String]): SchemaUrlMismatch =
+      SchemaUrlMismatchImpl(expected, actual)
 
     /** Indicates that the scope attributes did not satisfy the nested attributes expectation. */
-    final case class AttributesMismatch(
-        failures: NonEmptyList[AttributesExpectation.Mismatch]
-    ) extends Mismatch
+    sealed trait AttributesMismatch extends Mismatch {
+      def mismatches: NonEmptyList[AttributesExpectation.Mismatch]
+    }
+
+    /** Creates a mismatch indicating that the scope attributes did not satisfy the nested attributes expectation. */
+    def attributesMismatch(mismatches: NonEmptyList[AttributesExpectation.Mismatch]): AttributesMismatch =
+      AttributesMismatchImpl(mismatches)
+
+    private final case class NameMismatchImpl(expected: String, actual: String) extends NameMismatch
+    private final case class VersionMismatchImpl(expected: Option[String], actual: Option[String])
+        extends VersionMismatch
+    private final case class SchemaUrlMismatchImpl(expected: Option[String], actual: Option[String])
+        extends SchemaUrlMismatch
+    private final case class AttributesMismatchImpl(mismatches: NonEmptyList[AttributesExpectation.Mismatch])
+        extends AttributesMismatch
   }
 
   /** Creates an expectation that matches any instrumentation scope with the given name. */
@@ -116,14 +140,14 @@ object InstrumentationScopeExpectation {
       value.fold("<missing>")(v => s"'$v'")
 
     mismatch match {
-      case Mismatch.NameMismatch(expected, actual) =>
-        s"name mismatch: expected '$expected', got '$actual'"
-      case Mismatch.VersionMismatch(expected, actual) =>
-        s"version mismatch: expected ${formatOption(expected)}, got ${formatOption(actual)}"
-      case Mismatch.SchemaUrlMismatch(expected, actual) =>
-        s"schema URL mismatch: expected ${formatOption(expected)}, got ${formatOption(actual)}"
-      case Mismatch.AttributesMismatch(mismatches) =>
-        s"attributes mismatch: ${mismatches.toList.map(AttributesExpectation.formatMismatch).mkString(", ")}"
+      case mismatch: Mismatch.NameMismatch =>
+        s"name mismatch: expected '${mismatch.expected}', got '${mismatch.actual}'"
+      case mismatch: Mismatch.VersionMismatch =>
+        s"version mismatch: expected ${formatOption(mismatch.expected)}, got ${formatOption(mismatch.actual)}"
+      case mismatch: Mismatch.SchemaUrlMismatch =>
+        s"schema URL mismatch: expected ${formatOption(mismatch.expected)}, got ${formatOption(mismatch.actual)}"
+      case mismatch: Mismatch.AttributesMismatch =>
+        s"attributes mismatch: ${mismatch.mismatches.toList.map(AttributesExpectation.formatMismatch).mkString(", ")}"
     }
   }
 
@@ -166,7 +190,7 @@ object InstrumentationScopeExpectation {
             Either.cond(
               expected == scope.getName,
               (),
-              NonEmptyList.one(Mismatch.NameMismatch(expected, scope.getName))
+              NonEmptyList.one(Mismatch.nameMismatch(expected, scope.getName))
             )
 
           case None =>
@@ -175,10 +199,10 @@ object InstrumentationScopeExpectation {
 
       ExpectationChecks.combine(
         checkName,
-        ExpectationChecks.compareOption(version, Option(scope.getVersion))(Mismatch.VersionMismatch),
-        ExpectationChecks.compareOption(schemaUrl, Option(scope.getSchemaUrl))(Mismatch.SchemaUrlMismatch),
+        ExpectationChecks.compareOption(version, Option(scope.getVersion))(Mismatch.versionMismatch),
+        ExpectationChecks.compareOption(schemaUrl, Option(scope.getSchemaUrl))(Mismatch.schemaUrlMismatch),
         attributes.fold(ExpectationChecks.success[Mismatch]) { expected =>
-          ExpectationChecks.nested(expected.check(scope.getAttributes.toScala))(Mismatch.AttributesMismatch.apply)
+          ExpectationChecks.nested(expected.check(scope.getAttributes.toScala))(Mismatch.attributesMismatch)
         }
       )
     }

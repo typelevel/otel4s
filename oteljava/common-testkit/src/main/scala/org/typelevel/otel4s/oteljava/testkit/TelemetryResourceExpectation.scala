@@ -61,15 +61,28 @@ object TelemetryResourceExpectation {
   object Mismatch {
 
     /** Indicates that the resource schema URL differed from the expected one. */
-    final case class SchemaUrlMismatch(
-        expected: Option[String],
-        actual: Option[String]
-    ) extends Mismatch
+    sealed trait SchemaUrlMismatch extends Mismatch {
+      def expected: Option[String]
+      def actual: Option[String]
+    }
+
+    /** Creates a mismatch indicating that the resource schema URL differed from the expected one. */
+    def schemaUrlMismatch(expected: Option[String], actual: Option[String]): SchemaUrlMismatch =
+      SchemaUrlMismatchImpl(expected, actual)
 
     /** Indicates that the resource attributes did not satisfy the nested attributes expectation. */
-    final case class AttributesMismatch(
-        failures: NonEmptyList[AttributesExpectation.Mismatch]
-    ) extends Mismatch
+    sealed trait AttributesMismatch extends Mismatch {
+      def mismatches: NonEmptyList[AttributesExpectation.Mismatch]
+    }
+
+    /** Creates a mismatch indicating that the resource attributes did not satisfy the nested attributes expectation. */
+    def attributesMismatch(mismatches: NonEmptyList[AttributesExpectation.Mismatch]): AttributesMismatch =
+      AttributesMismatchImpl(mismatches)
+
+    private final case class SchemaUrlMismatchImpl(expected: Option[String], actual: Option[String])
+        extends SchemaUrlMismatch
+    private final case class AttributesMismatchImpl(mismatches: NonEmptyList[AttributesExpectation.Mismatch])
+        extends AttributesMismatch
   }
 
   /** Creates an expectation that matches the full telemetry resource exactly. */
@@ -89,10 +102,10 @@ object TelemetryResourceExpectation {
       value.fold("<missing>")(v => s"'$v'")
 
     mismatch match {
-      case Mismatch.SchemaUrlMismatch(expected, actual) =>
-        s"schema URL mismatch: expected ${formatOption(expected)}, got ${formatOption(actual)}"
-      case Mismatch.AttributesMismatch(mismatches) =>
-        s"attributes mismatch: ${mismatches.toList.map(AttributesExpectation.formatMismatch).mkString(", ")}"
+      case mismatch: Mismatch.SchemaUrlMismatch =>
+        s"schema URL mismatch: expected ${formatOption(mismatch.expected)}, got ${formatOption(mismatch.actual)}"
+      case mismatch: Mismatch.AttributesMismatch =>
+        s"attributes mismatch: ${mismatch.mismatches.toList.map(AttributesExpectation.formatMismatch).mkString(", ")}"
     }
   }
 
@@ -119,9 +132,9 @@ object TelemetryResourceExpectation {
     def check(resource: JResource): Either[NonEmptyList[Mismatch], Unit] =
       ExpectationChecks.combine(
         attributes.fold(ExpectationChecks.success[Mismatch]) { expected =>
-          ExpectationChecks.nested(expected.check(resource.getAttributes.toScala))(Mismatch.AttributesMismatch)
+          ExpectationChecks.nested(expected.check(resource.getAttributes.toScala))(Mismatch.attributesMismatch)
         },
-        ExpectationChecks.compareOption(schemaUrl, Option(resource.getSchemaUrl))(Mismatch.SchemaUrlMismatch),
+        ExpectationChecks.compareOption(schemaUrl, Option(resource.getSchemaUrl))(Mismatch.schemaUrlMismatch),
       )
   }
 

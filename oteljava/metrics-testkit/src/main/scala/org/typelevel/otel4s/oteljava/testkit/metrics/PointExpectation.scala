@@ -219,51 +219,51 @@ object PointExpectation {
   def numeric[A](value: A): Numeric[A] =
     NumericImpl[A](expectedValue = Some(value))
 
-  /** Creates an expectation for a summary point.
-    *
-    * The optional parameters are shorthand for applying the corresponding fluent methods.
-    */
-  def summary(
-      sum: Option[Double] = None,
-      count: Option[Long] = None
-  ): Summary =
+  /** Creates an expectation for a summary point. */
+  def summary: Summary =
+    SummaryImpl()
+
+  /** Creates an expectation for a summary point with exact sum and count expectations. */
+  def summary(sum: Double, count: Long): Summary =
     SummaryImpl(
-      expectedSum = sum,
-      expectedCount = count
+      expectedSum = Some(sum),
+      expectedCount = Some(count)
     )
 
-  /** Creates an expectation for a histogram point.
-    *
-    * The optional parameters are shorthand for applying the corresponding fluent methods.
-    */
+  /** Creates an expectation for a histogram point. */
+  def histogram: Histogram =
+    HistogramImpl()
+
+  /** Creates an expectation for a histogram point with exact sum, count, boundaries, and counts expectations. */
   def histogram(
-      sum: Option[Double] = None,
-      count: Option[Long] = None,
-      boundaries: Option[List[Double]] = None,
-      counts: Option[List[Long]] = None
+      sum: Double,
+      count: Long,
+      boundaries: List[Double],
+      counts: List[Long]
   ): Histogram =
     HistogramImpl(
-      expectedSum = sum,
-      expectedCount = count,
-      expectedBoundaries = boundaries,
-      expectedCounts = counts
+      expectedSum = Some(sum),
+      expectedCount = Some(count),
+      expectedBoundaries = Some(boundaries),
+      expectedCounts = Some(counts)
     )
 
-  /** Creates an expectation for an exponential histogram point.
-    *
-    * The optional parameters are shorthand for applying the corresponding fluent methods.
-    */
+  /** Creates an expectation for an exponential histogram point. */
+  def exponentialHistogram: ExponentialHistogram =
+    ExponentialHistogramImpl()
+
+  /** Creates an expectation for an exponential histogram point with exact scale, sum, count, and zero count. */
   def exponentialHistogram(
-      scale: Option[Int] = None,
-      sum: Option[Double] = None,
-      count: Option[Long] = None,
-      zeroCount: Option[Long] = None
+      scale: Int,
+      sum: Double,
+      count: Long,
+      zeroCount: Long
   ): ExponentialHistogram =
     ExponentialHistogramImpl(
-      expectedScale = scale,
-      expectedSum = sum,
-      expectedCount = count,
-      expectedZeroCount = zeroCount
+      expectedScale = Some(scale),
+      expectedSum = Some(sum),
+      expectedCount = Some(count),
+      expectedZeroCount = Some(zeroCount)
     )
 
   /** Formats a mismatch into a human-readable message. */

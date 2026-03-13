@@ -101,7 +101,7 @@ class AttributesExpectationSuite extends FunSuite {
       Left(NonEmptyList.one(mismatch))
     )
     assertEquals(
-      AttributesExpectation.formatMismatch(mismatch),
+      mismatch.message,
       "attributes predicate returned false: only http.method is expected"
     )
   }

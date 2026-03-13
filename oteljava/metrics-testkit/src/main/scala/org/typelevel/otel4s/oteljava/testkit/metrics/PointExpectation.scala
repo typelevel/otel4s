@@ -70,7 +70,10 @@ sealed trait PointExpectation {
 object PointExpectation {
 
   /** A structured reason explaining why a [[PointExpectation]] did not match a point. */
-  sealed trait Mismatch extends Product with Serializable
+  sealed trait Mismatch extends Product with Serializable {
+    /** A human-readable description of the mismatch. */
+    def message: String
+  }
 
   object Mismatch {
 
@@ -172,18 +175,57 @@ object PointExpectation {
     def predicateMismatch(clue: String): PredicateMismatch =
       PredicateMismatchImpl(clue)
 
-    private final case class TypeMismatchImpl(expected: String, actual: String) extends TypeMismatch
-    private final case class ValueMismatchImpl(expected: String, actual: String) extends ValueMismatch
-    private final case class CountMismatchImpl(expected: Long, actual: Long) extends CountMismatch
-    private final case class SumMismatchImpl(expected: Double, actual: Double) extends SumMismatch
+    private final case class TypeMismatchImpl(expected: String, actual: String) extends TypeMismatch {
+      def message: String =
+        s"type mismatch: expected '$expected', got '$actual'"
+    }
+
+    private final case class ValueMismatchImpl(expected: String, actual: String) extends ValueMismatch {
+      def message: String =
+        s"value mismatch: expected '$expected', got '$actual'"
+    }
+
+    private final case class CountMismatchImpl(expected: Long, actual: Long) extends CountMismatch {
+      def message: String =
+        s"count mismatch: expected $expected, got $actual"
+    }
+
+    private final case class SumMismatchImpl(expected: Double, actual: Double) extends SumMismatch {
+      def message: String =
+        s"sum mismatch: expected ${NumberComparison[Double].render(expected)}, got ${NumberComparison[Double].render(actual)}"
+    }
+
     private final case class BoundariesMismatchImpl(expected: BucketBoundaries, actual: BucketBoundaries)
-        extends BoundariesMismatch
-    private final case class CountsMismatchImpl(expected: List[Long], actual: List[Long]) extends CountsMismatch
-    private final case class ScaleMismatchImpl(expected: Int, actual: Int) extends ScaleMismatch
-    private final case class ZeroCountMismatchImpl(expected: Long, actual: Long) extends ZeroCountMismatch
+        extends BoundariesMismatch {
+      def message: String =
+        s"boundaries mismatch: expected $expected, got $actual"
+    }
+
+    private final case class CountsMismatchImpl(expected: List[Long], actual: List[Long]) extends CountsMismatch {
+      def message: String =
+        s"counts mismatch: expected $expected, got $actual"
+    }
+
+    private final case class ScaleMismatchImpl(expected: Int, actual: Int) extends ScaleMismatch {
+      def message: String =
+        s"scale mismatch: expected $expected, got $actual"
+    }
+
+    private final case class ZeroCountMismatchImpl(expected: Long, actual: Long) extends ZeroCountMismatch {
+      def message: String =
+        s"zero count mismatch: expected $expected, got $actual"
+    }
+
     private final case class AttributesMismatchImpl(mismatches: NonEmptyList[AttributesExpectation.Mismatch])
-        extends AttributesMismatch
-    private final case class PredicateMismatchImpl(clue: String) extends PredicateMismatch
+        extends AttributesMismatch {
+      def message: String =
+        s"attributes mismatch: ${mismatches.toList.map(_.message).mkString(", ")}"
+    }
+
+    private final case class PredicateMismatchImpl(clue: String) extends PredicateMismatch {
+      def message: String =
+        s"predicate mismatch: $clue"
+    }
   }
 
   /** A point expectation for numeric points. */
@@ -351,31 +393,6 @@ object PointExpectation {
       expectedCount = Some(count),
       expectedZeroCount = Some(zeroCount)
     )
-
-  /** Formats a mismatch into a human-readable message. */
-  def formatMismatch(mismatch: Mismatch): String =
-    mismatch match {
-      case mismatch: Mismatch.TypeMismatch =>
-        s"type mismatch: expected '${mismatch.expected}', got '${mismatch.actual}'"
-      case mismatch: Mismatch.ValueMismatch =>
-        s"value mismatch: expected '${mismatch.expected}', got '${mismatch.actual}'"
-      case mismatch: Mismatch.CountMismatch =>
-        s"count mismatch: expected ${mismatch.expected}, got ${mismatch.actual}"
-      case mismatch: Mismatch.SumMismatch =>
-        s"sum mismatch: expected ${NumberComparison[Double].render(mismatch.expected)}, got ${NumberComparison[Double].render(mismatch.actual)}"
-      case mismatch: Mismatch.BoundariesMismatch =>
-        s"boundaries mismatch: expected ${mismatch.expected}, got ${mismatch.actual}"
-      case mismatch: Mismatch.CountsMismatch =>
-        s"counts mismatch: expected ${mismatch.expected}, got ${mismatch.actual}"
-      case mismatch: Mismatch.ScaleMismatch =>
-        s"scale mismatch: expected ${mismatch.expected}, got ${mismatch.actual}"
-      case mismatch: Mismatch.ZeroCountMismatch =>
-        s"zero count mismatch: expected ${mismatch.expected}, got ${mismatch.actual}"
-      case mismatch: Mismatch.AttributesMismatch =>
-        s"attributes mismatch: ${mismatch.mismatches.toList.map(AttributesExpectation.formatMismatch).mkString(", ")}"
-      case mismatch: Mismatch.PredicateMismatch =>
-        s"predicate mismatch: ${mismatch.clue}"
-    }
 
   private final case class NumericImpl[A](
       expectedValue: Option[A] = None,

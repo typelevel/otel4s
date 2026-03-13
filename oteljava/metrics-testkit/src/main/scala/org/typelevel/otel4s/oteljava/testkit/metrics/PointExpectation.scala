@@ -58,6 +58,7 @@ object PointExpectation {
 
   /** A point expectation for numeric points. */
   sealed trait Numeric[A] extends PointExpectation[A] {
+
     /** Requires the point value to match exactly. */
     def withValue(value: A): Numeric[A]
 

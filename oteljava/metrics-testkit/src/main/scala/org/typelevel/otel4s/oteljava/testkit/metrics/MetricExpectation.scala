@@ -38,7 +38,7 @@ import scala.jdk.CollectionConverters._
   *   - [[MetricExpectation.histogram]] for histogram points
   *
   * Expectations are matched against collected metrics with [[MetricExpectations.exists]], [[MetricExpectations.find]],
-  * or [[MetricExpectations.missing]].
+  * or [[MetricExpectations.checkAll]].
   */
 sealed trait MetricExpectation {
   type Value

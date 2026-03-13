@@ -217,8 +217,8 @@ object MetricExpectation {
 
     /** Requires at least one point with the given value.
       *
-      * If no attributes are provided, this behaves like a value-only check.
-      * If attributes are provided, they are matched exactly.
+      * If no attributes are provided, this behaves like a value-only check. If attributes are provided, they are
+      * matched exactly.
       */
     def withValue(value: A, attributes: Attribute[_]*): Numeric[A]
 
@@ -542,7 +542,7 @@ object MetricExpectation {
 
     def withValue(value: A, attributes: Attribute[_]*): Numeric[A] =
       if (attributes.isEmpty) withAnyPoint(PointExpectation.numeric(value)(numberComparison))
-      else withValue(value, Attributes(attributes*))
+      else withValue(value, Attributes(attributes *))
 
     def withValue(value: A, attributes: Attributes): Numeric[A] =
       withAnyPoint(

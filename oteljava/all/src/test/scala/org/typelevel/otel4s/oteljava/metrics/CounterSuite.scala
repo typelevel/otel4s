@@ -78,7 +78,7 @@ class CounterSuite extends CatsEffectSuite {
       .name("java.otel.suite")
       .withVersion("1.0")
       .withSchemaUrl("https://localhost:8080")
-      .withAttributesExact()
+      .withAttributesEmpty
 
   private val expectedResource: TelemetryResourceExpectation =
     TelemetryResourceExpectation.any

@@ -171,7 +171,7 @@ PointExpectation
 Empty attributes can be matched with:
 
 ```scala
-PointExpectation.numeric(1L).withAttributesExact()
+PointExpectation.numeric(1L).withAttributesEmpty
 ```
 
 ## Scope and resource expectations
@@ -199,7 +199,7 @@ MetricExpectation
       .name("service")
       .withVersion("1.0")
       .withSchemaUrl("https://opentelemetry.io/schemas/1.24.0")
-      .withAttributesExact()
+      .withAttributesEmpty
   )
   .withResource(
     TelemetryResourceExpectation.any

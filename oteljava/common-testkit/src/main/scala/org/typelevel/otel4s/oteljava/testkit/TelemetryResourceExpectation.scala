@@ -36,6 +36,9 @@ sealed trait TelemetryResourceExpectation {
   /** Requires the resource attributes to match exactly. */
   def withAttributesExact(attributes: Attribute[_]*): TelemetryResourceExpectation
 
+  /** Requires the resource attributes to be empty. */
+  def withAttributesEmpty: TelemetryResourceExpectation
+
   /** Requires the resource attributes to contain the given subset. */
   def withAttributesSubset(attributes: Attributes): TelemetryResourceExpectation
 
@@ -129,6 +132,9 @@ object TelemetryResourceExpectation {
 
     def withAttributesExact(attributes: Attribute[_]*): TelemetryResourceExpectation =
       withAttributesExact(Attributes(attributes *))
+
+    def withAttributesEmpty: TelemetryResourceExpectation =
+      withAttributesExact(Attributes.empty)
 
     def withAttributesSubset(attributes: Attributes): TelemetryResourceExpectation =
       withAttributes(AttributesExpectation.subset(attributes))

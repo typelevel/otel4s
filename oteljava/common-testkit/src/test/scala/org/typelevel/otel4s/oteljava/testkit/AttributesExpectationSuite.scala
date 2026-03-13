@@ -79,13 +79,30 @@ class AttributesExpectationSuite extends FunSuite {
 
   test("predicate delegates to custom function and reports failure") {
     val expectation = AttributesExpectation.predicate { attributes =>
-      attributes.iterator.map(_.key.name).toSet == Set("http.method")
+      attributes.map(_.key.name).toSet == Set("http.method")
     }
 
     assertEquals(expectation.check(Attributes(Attribute("http.method", "GET"))), Right(()))
     assertEquals(
       expectation.check(Attributes(Attribute("http.route", "/users"))),
-      Left(NonEmptyList.one(AttributesExpectation.Mismatch.PredicateFailed))
+      Left(NonEmptyList.one(AttributesExpectation.Mismatch.PredicateFailed(None)))
+    )
+  }
+
+  test("predicate clue is included in mismatches and formatted output") {
+    val expectation = AttributesExpectation.predicate("only http.method is expected") { attributes =>
+      attributes.map(_.key.name).toSet == Set("http.method")
+    }
+
+    val mismatch = AttributesExpectation.Mismatch.PredicateFailed(Some("only http.method is expected"))
+
+    assertEquals(
+      expectation.check(Attributes(Attribute("http.route", "/users"))),
+      Left(NonEmptyList.one(mismatch))
+    )
+    assertEquals(
+      AttributesExpectation.formatMismatch(mismatch),
+      "attributes predicate returned false: only http.method is expected"
     )
   }
 }

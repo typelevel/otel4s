@@ -135,18 +135,46 @@ object MetricExpectation {
     def withAllPoints(point: PointExpectation[A]): Numeric[A]
   }
 
-  /** A typed expectation for metrics whose points are not simple numeric values, such as summaries and histograms. */
-  sealed trait Points[A] extends MetricExpectation {
-    type Value = A
+  /** A typed expectation for summary metrics. */
+  sealed trait Summary extends MetricExpectation {
+    type Value = JSummaryPointData
 
     /** Alias for [[withAnyPoint]]. */
-    def withPoint(point: PointExpectation[A]): Points[A]
+    def withPoint(point: PointExpectation.Summary): Summary
 
     /** Requires at least one point matching the given expectation. */
-    def withAnyPoint(point: PointExpectation[A]): Points[A]
+    def withAnyPoint(point: PointExpectation.Summary): Summary
 
     /** Requires all points to match the given expectation. */
-    def withAllPoints(point: PointExpectation[A]): Points[A]
+    def withAllPoints(point: PointExpectation.Summary): Summary
+  }
+
+  /** A typed expectation for histogram metrics. */
+  sealed trait Histogram extends MetricExpectation {
+    type Value = JHistogramPointData
+
+    /** Alias for [[withAnyPoint]]. */
+    def withPoint(point: PointExpectation.Histogram): Histogram
+
+    /** Requires at least one point matching the given expectation. */
+    def withAnyPoint(point: PointExpectation.Histogram): Histogram
+
+    /** Requires all points to match the given expectation. */
+    def withAllPoints(point: PointExpectation.Histogram): Histogram
+  }
+
+  /** A typed expectation for exponential histogram metrics. */
+  sealed trait ExponentialHistogram extends MetricExpectation {
+    type Value = ExponentialHistogramPointData
+
+    /** Alias for [[withAnyPoint]]. */
+    def withPoint(point: PointExpectation.ExponentialHistogram): ExponentialHistogram
+
+    /** Requires at least one point matching the given expectation. */
+    def withAnyPoint(point: PointExpectation.ExponentialHistogram): ExponentialHistogram
+
+    /** Requires all points to match the given expectation. */
+    def withAllPoints(point: PointExpectation.ExponentialHistogram): ExponentialHistogram
   }
 
   /** Creates an expectation that matches any metric with the given name. */
@@ -180,22 +208,22 @@ object MetricExpectation {
     )
 
   /** Creates an expectation for a summary metric. */
-  def summary(name: String): Points[JSummaryPointData] =
-    PointMetricImpl(
+  def summary(name: String): Summary =
+    SummaryImpl(
       name = Some(name),
       metricType = MetricDataType.SUMMARY
     )
 
   /** Creates an expectation for a histogram metric. */
-  def histogram(name: String): Points[JHistogramPointData] =
-    PointMetricImpl(
+  def histogram(name: String): Histogram =
+    HistogramImpl(
       name = Some(name),
       metricType = MetricDataType.HISTOGRAM
     )
 
   /** Creates an expectation for an exponential histogram metric. */
-  def exponentialHistogram(name: String): Points[ExponentialHistogramPointData] =
-    PointMetricImpl(
+  def exponentialHistogram(name: String): ExponentialHistogram =
+    ExponentialHistogramImpl(
       name = Some(name),
       metricType = MetricDataType.EXPONENTIAL_HISTOGRAM
     )
@@ -448,7 +476,7 @@ object MetricExpectation {
       )
   }
 
-  private final case class PointMetricImpl[A <: JPointData](
+  private final case class SummaryImpl(
       name: Option[String],
       metricType: MetricDataType,
       description: Option[String] = None,
@@ -457,36 +485,156 @@ object MetricExpectation {
       resource: Option[TelemetryResourceExpectation] = None,
       clue: Option[String] = None,
       predicates: List[(MetricData => Boolean, String)] = Nil,
-      pointMatch: PointMatch[A] = PointMatch.Ignore
-  ) extends Points[A]
-      with CommonImpl[A] {
-    override type Value = A
+      pointMatch: PointMatch[JSummaryPointData] = PointMatch.Ignore
+  ) extends Summary
+      with CommonImpl[JSummaryPointData] {
+    override type Value = JSummaryPointData
 
-    override def withDescription(description: String): Points[A] =
+    override def withDescription(description: String): Summary =
       copy(description = Some(description))
 
-    override def withUnit(unit: String): Points[A] =
+    override def withUnit(unit: String): Summary =
       copy(unit = Some(unit))
 
-    override def withScopeName(name: String): Points[A] =
+    override def withScopeName(name: String): Summary =
       copy(scope = Some(scope.fold(InstrumentationScopeExpectation.name(name))(_.withName(name))))
 
-    override def withScope(scope: InstrumentationScopeExpectation): Points[A] =
+    override def withScope(scope: InstrumentationScopeExpectation): Summary =
       copy(scope = Some(scope))
 
-    override def withResource(resource: TelemetryResourceExpectation): Points[A] =
+    override def withResource(resource: TelemetryResourceExpectation): Summary =
       copy(resource = Some(resource))
 
-    override def withClue(text: String): Points[A] =
+    override def withClue(text: String): Summary =
       copy(clue = Some(text))
 
-    def withPoint(point: PointExpectation[A]): Points[A] =
+    def withPoint(point: PointExpectation.Summary): Summary =
       copy(pointMatch = PointMatch.Any(point))
 
-    def withAnyPoint(point: PointExpectation[A]): Points[A] =
+    def withAnyPoint(point: PointExpectation.Summary): Summary =
       copy(pointMatch = PointMatch.Any(point))
 
-    def withAllPoints(point: PointExpectation[A]): Points[A] =
+    def withAllPoints(point: PointExpectation.Summary): Summary =
+      copy(pointMatch = PointMatch.All(point))
+
+    protected def copyCommon(
+        name: Option[String],
+        description: Option[String],
+        unit: Option[String],
+        scope: Option[InstrumentationScopeExpectation],
+        resource: Option[TelemetryResourceExpectation],
+        clue: Option[String],
+        predicates: List[(MetricData => Boolean, String)]
+    ): MetricExpectation =
+      copy(name, metricType, description, unit, scope, resource, clue, predicates, pointMatch)
+
+    def check(metric: MetricData): Either[NonEmptyList[Mismatch], Unit] =
+      ExpectationChecks.combine(
+        checkType(metric, metricType),
+        checkCommon(metric),
+        pointMatch.check(points(metric))
+      )
+  }
+
+  private final case class HistogramImpl(
+      name: Option[String],
+      metricType: MetricDataType,
+      description: Option[String] = None,
+      unit: Option[String] = None,
+      scope: Option[InstrumentationScopeExpectation] = None,
+      resource: Option[TelemetryResourceExpectation] = None,
+      clue: Option[String] = None,
+      predicates: List[(MetricData => Boolean, String)] = Nil,
+      pointMatch: PointMatch[JHistogramPointData] = PointMatch.Ignore
+  ) extends Histogram
+      with CommonImpl[JHistogramPointData] {
+    override type Value = JHistogramPointData
+
+    override def withDescription(description: String): Histogram =
+      copy(description = Some(description))
+
+    override def withUnit(unit: String): Histogram =
+      copy(unit = Some(unit))
+
+    override def withScopeName(name: String): Histogram =
+      copy(scope = Some(scope.fold(InstrumentationScopeExpectation.name(name))(_.withName(name))))
+
+    override def withScope(scope: InstrumentationScopeExpectation): Histogram =
+      copy(scope = Some(scope))
+
+    override def withResource(resource: TelemetryResourceExpectation): Histogram =
+      copy(resource = Some(resource))
+
+    override def withClue(text: String): Histogram =
+      copy(clue = Some(text))
+
+    def withPoint(point: PointExpectation.Histogram): Histogram =
+      copy(pointMatch = PointMatch.Any(point))
+
+    def withAnyPoint(point: PointExpectation.Histogram): Histogram =
+      copy(pointMatch = PointMatch.Any(point))
+
+    def withAllPoints(point: PointExpectation.Histogram): Histogram =
+      copy(pointMatch = PointMatch.All(point))
+
+    protected def copyCommon(
+        name: Option[String],
+        description: Option[String],
+        unit: Option[String],
+        scope: Option[InstrumentationScopeExpectation],
+        resource: Option[TelemetryResourceExpectation],
+        clue: Option[String],
+        predicates: List[(MetricData => Boolean, String)]
+    ): MetricExpectation =
+      copy(name, metricType, description, unit, scope, resource, clue, predicates, pointMatch)
+
+    def check(metric: MetricData): Either[NonEmptyList[Mismatch], Unit] =
+      ExpectationChecks.combine(
+        checkType(metric, metricType),
+        checkCommon(metric),
+        pointMatch.check(points(metric))
+      )
+  }
+
+  private final case class ExponentialHistogramImpl(
+      name: Option[String],
+      metricType: MetricDataType,
+      description: Option[String] = None,
+      unit: Option[String] = None,
+      scope: Option[InstrumentationScopeExpectation] = None,
+      resource: Option[TelemetryResourceExpectation] = None,
+      clue: Option[String] = None,
+      predicates: List[(MetricData => Boolean, String)] = Nil,
+      pointMatch: PointMatch[ExponentialHistogramPointData] = PointMatch.Ignore
+  ) extends ExponentialHistogram
+      with CommonImpl[ExponentialHistogramPointData] {
+    override type Value = ExponentialHistogramPointData
+
+    override def withDescription(description: String): ExponentialHistogram =
+      copy(description = Some(description))
+
+    override def withUnit(unit: String): ExponentialHistogram =
+      copy(unit = Some(unit))
+
+    override def withScopeName(name: String): ExponentialHistogram =
+      copy(scope = Some(scope.fold(InstrumentationScopeExpectation.name(name))(_.withName(name))))
+
+    override def withScope(scope: InstrumentationScopeExpectation): ExponentialHistogram =
+      copy(scope = Some(scope))
+
+    override def withResource(resource: TelemetryResourceExpectation): ExponentialHistogram =
+      copy(resource = Some(resource))
+
+    override def withClue(text: String): ExponentialHistogram =
+      copy(clue = Some(text))
+
+    def withPoint(point: PointExpectation.ExponentialHistogram): ExponentialHistogram =
+      copy(pointMatch = PointMatch.Any(point))
+
+    def withAnyPoint(point: PointExpectation.ExponentialHistogram): ExponentialHistogram =
+      copy(pointMatch = PointMatch.Any(point))
+
+    def withAllPoints(point: PointExpectation.ExponentialHistogram): ExponentialHistogram =
       copy(pointMatch = PointMatch.All(point))
 
     protected def copyCommon(

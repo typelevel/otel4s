@@ -58,7 +58,7 @@ object AttributesExpectation {
     ) extends Mismatch
 
     /** Indicates that a custom predicate expectation returned `false`. */
-    case object PredicateFailed extends Mismatch
+    final case class PredicateFailed(clue: Option[String]) extends Mismatch
   }
 
   /** Creates an expectation that matches only when all attributes are equal. */
@@ -75,7 +75,11 @@ object AttributesExpectation {
 
   /** Creates an expectation from a custom predicate. */
   def predicate(f: Attributes => Boolean): AttributesExpectation =
-    Predicate(f)
+    Predicate(f, None)
+
+  /** Creates an expectation from a custom predicate with an optional clue used in mismatch messages. */
+  def predicate(clue: String)(f: Attributes => Boolean): AttributesExpectation =
+    Predicate(f, Some(clue))
 
   /** Formats a mismatch into a human-readable message. */
   def formatMismatch(mismatch: Mismatch): String = {
@@ -89,8 +93,8 @@ object AttributesExpectation {
         s"unexpected attribute ${formatAttribute(attribute)}"
       case Mismatch.AttributeValueMismatch(expected, actual) =>
         s"attribute mismatch for '${expected.key.name}': expected ${formatAttribute(expected)}, got ${formatAttribute(actual)}"
-      case Mismatch.PredicateFailed =>
-        "attributes predicate returned false"
+      case Mismatch.PredicateFailed(clue) =>
+        clue.fold("attributes predicate returned false")(value => s"attributes predicate returned false: $value")
     }
   }
 
@@ -118,7 +122,7 @@ object AttributesExpectation {
 
   private final case class Subset(expected: Attributes) extends AttributesExpectation {
     def check(attributes: Attributes): Either[NonEmptyList[Mismatch], Unit] =
-      ExpectationChecks.combine(expected.iterator.map { attribute =>
+      ExpectationChecks.combine(expected.map { attribute =>
         attributes.get(attribute.key) match {
           case Some(actual) if actual == attribute =>
             ExpectationChecks.success
@@ -130,9 +134,12 @@ object AttributesExpectation {
       }.toList)
   }
 
-  private final case class Predicate(f: Attributes => Boolean) extends AttributesExpectation {
+  private final case class Predicate(
+      f: Attributes => Boolean,
+      clue: Option[String]
+  ) extends AttributesExpectation {
     def check(attributes: Attributes): Either[NonEmptyList[Mismatch], Unit] =
-      Either.cond(f(attributes), (), NonEmptyList.one(Mismatch.PredicateFailed))
+      Either.cond(f(attributes), (), NonEmptyList.one(Mismatch.PredicateFailed(clue)))
   }
 
 }

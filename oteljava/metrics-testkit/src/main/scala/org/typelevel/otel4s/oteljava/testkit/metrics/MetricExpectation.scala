@@ -22,6 +22,7 @@ import io.opentelemetry.sdk.metrics.data.{ExponentialHistogramPointData, MetricD
 import io.opentelemetry.sdk.metrics.data.{HistogramPointData => JHistogramPointData}
 import io.opentelemetry.sdk.metrics.data.{PointData => JPointData}
 import io.opentelemetry.sdk.metrics.data.{SummaryPointData => JSummaryPointData}
+import org.typelevel.otel4s.{Attribute, Attributes}
 import org.typelevel.otel4s.metrics.MeasurementValue
 import org.typelevel.otel4s.metrics.MeasurementValue.{DoubleMeasurementValue, LongMeasurementValue}
 
@@ -214,8 +215,21 @@ object MetricExpectation {
     /** The `MeasurementValue` used to distinguish long and double metrics at runtime. */
     def valueType: MeasurementValue[A]
 
-    /** Requires at least one point with the given value. */
-    def withValue(value: A): Numeric[A]
+    /** Requires at least one point with the given value.
+      *
+      * If no attributes are provided, this behaves like a value-only check.
+      * If attributes are provided, they are matched exactly.
+      */
+    def withValue(value: A, attributes: Attribute[_]*): Numeric[A]
+
+    /** Requires at least one point with the given value and exact attributes.
+      *
+      * This is equivalent to calling:
+      * {{{
+      * withAnyPoint(PointExpectation.numeric(value).withAttributesExact(attributes))
+      * }}}
+      */
+    def withValue(value: A, attributes: Attributes): Numeric[A]
 
     /** Alias for [[withAnyPoint]]. */
     def withPoint(point: PointExpectation.Numeric[A]): Numeric[A]
@@ -526,8 +540,16 @@ object MetricExpectation {
         predicates = predicates
       )
 
-    def withValue(value: A): Numeric[A] =
-      withAnyPoint(PointExpectation.numeric(value)(numberComparison))
+    def withValue(value: A, attributes: Attribute[_]*): Numeric[A] =
+      if (attributes.isEmpty) withAnyPoint(PointExpectation.numeric(value)(numberComparison))
+      else withValue(value, Attributes(attributes*))
+
+    def withValue(value: A, attributes: Attributes): Numeric[A] =
+      withAnyPoint(
+        PointExpectation
+          .numeric(value)(numberComparison)
+          .withAttributesExact(attributes)
+      )
 
     def withPoint(point: PointExpectation.Numeric[A]): Numeric[A] =
       withAnyPoint(point)

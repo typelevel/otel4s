@@ -91,92 +91,11 @@ def test: IO[Unit] = {
 
 ## Testing metrics
 
-Let's assume we have a program that increments a counter by one and sets the gauge's value to 42.
-Here is how we can test this program:
+For metrics, the testkit now provides a dedicated expectation API built on top of OpenTelemetry Java `MetricData`.
+This allows tests to match only the parts that matter: metric name, kind, values, point attributes,
+instrumentation scope, telemetry resource, summaries, histograms, and more.
 
-```scala mdoc:silent:reset
-import cats.effect.IO
-import org.typelevel.otel4s.metrics.MeterProvider
-import org.typelevel.otel4s.oteljava.testkit.OtelJavaTestkit
-import org.typelevel.otel4s.oteljava.testkit.metrics.data.{Metric, MetricData}
-
-// the program that we want to test
-def program(meterProvider: MeterProvider[IO]): IO[Unit] =
-  for {
-    meter <- meterProvider.get("service")
-
-    counter <- meter.counter[Long]("service.counter").create
-    _ <- counter.inc()
-
-    gauge <- meter.gauge[Long]("service.gauge").create
-    _ <- gauge.record(42L)
-  } yield ()
-
-// the test
-def test: IO[Unit] =
-  OtelJavaTestkit.inMemory[IO]().use { testkit =>
-    // the list of expected metrics
-    val expected = List(
-      TelemetryMetric.SumLong("service.counter", List(1L)),
-      TelemetryMetric.GaugeLong("service.gauge", List(42L))
-    )
-
-    for {
-      // invoke the program
-      _ <- program(testkit.meterProvider)
-      // collect the metrics
-      metrics <- testkit.collectMetrics[Metric]
-      // verify the collected metrics
-      _ <- assertMetrics(metrics, expected)
-    } yield ()
-  }
-
-// here you can use an assertion mechanism from your favorite testing framework
-def assertMetrics(metrics: List[Metric], expected: List[TelemetryMetric]): IO[Unit] =
-  IO {
-    assert(metrics.sortBy(_.name).map(TelemetryMetric.fromMetric) == expected)
-  }
-
-// a minimized representation of the MetricData to simplify testing
-sealed trait TelemetryMetric
-object TelemetryMetric {
-  case class SumLong(name: String, values: List[Long]) extends TelemetryMetric
-  case class SumDouble(name: String, values: List[Double]) extends TelemetryMetric
-
-  case class GaugeLong(name: String, values: List[Long]) extends TelemetryMetric
-  case class GaugeDouble(name: String, values: List[Double]) extends TelemetryMetric
-
-  case class Summary(name: String, values: List[Double]) extends TelemetryMetric
-  case class Histogram(name: String, values: List[Double]) extends TelemetryMetric
-  case class ExponentialHistogram(name: String, values: List[Double]) extends TelemetryMetric
-
-  def fromMetric(metric: Metric): TelemetryMetric =
-    metric.data match {
-      case MetricData.LongGauge(points)   => GaugeLong(metric.name, points.map(_.value))
-      case MetricData.DoubleGauge(points) => GaugeDouble(metric.name, points.map(_.value))
-      case MetricData.LongSum(points)     => SumLong(metric.name, points.map(_.value))
-      case MetricData.DoubleSum(points)   => SumDouble(metric.name, points.map(_.value))
-      case MetricData.Summary(points)     => Summary(metric.name, points.map(_.value.sum))
-      case MetricData.Histogram(points)   => Histogram(metric.name, points.map(_.value.sum))
-      case MetricData.ExponentialHistogram(points) =>
-        ExponentialHistogram(metric.name, points.map(_.value.sum))
-    }
-}
-```
-
-`MetricData` provides **all** information about the metric:
-name, instrumentation scope, telemetry resource, data points,
-associated attributes, collection time window, and so on.
-
-It's hard to implement an assertion that verifies **all** aspects of the metric
-because many things must be considered, such as time window, attributes, exemplars, etc.
-To simplify the testing process, we can define a minimized projection of `MetricData` such as `TelemetryMetric`.
-
-```scala mdoc:invisible
-// we silently run the test to ensure it's actually correct
-import cats.effect.unsafe.implicits.global
-test.unsafeRunSync()
-```
+See [Testkit | Metrics](testkit-metrics.md) for the full guide.
 
 ## Testing spans
 

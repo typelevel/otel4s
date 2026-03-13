@@ -43,8 +43,6 @@ import scala.jdk.CollectionConverters._
   * or [[MetricExpectations.checkAll]].
   */
 sealed trait MetricExpectation {
-  type Value
-
   private[metrics] def expectedName: Option[String]
 
   /** An optional human-readable clue shown in mismatch messages. */
@@ -117,7 +115,6 @@ object MetricExpectation {
     * }}}
     */
   sealed trait Numeric[A] extends MetricExpectation {
-    type Value = A
 
     /** The `MeasurementValue` used to distinguish long and double metrics at runtime. */
     def valueType: MeasurementValue[A]
@@ -126,18 +123,17 @@ object MetricExpectation {
     def withValue(value: A): Numeric[A]
 
     /** Alias for [[withAnyPoint]]. */
-    def withPoint(point: PointExpectation[A]): Numeric[A]
+    def withPoint(point: PointExpectation.Numeric[A]): Numeric[A]
 
     /** Requires at least one point matching the given expectation. */
-    def withAnyPoint(point: PointExpectation[A]): Numeric[A]
+    def withAnyPoint(point: PointExpectation.Numeric[A]): Numeric[A]
 
     /** Requires all points to match the given expectation. */
-    def withAllPoints(point: PointExpectation[A]): Numeric[A]
+    def withAllPoints(point: PointExpectation.Numeric[A]): Numeric[A]
   }
 
   /** A typed expectation for summary metrics. */
   sealed trait Summary extends MetricExpectation {
-    type Value = JSummaryPointData
 
     /** Alias for [[withAnyPoint]]. */
     def withPoint(point: PointExpectation.Summary): Summary
@@ -151,7 +147,6 @@ object MetricExpectation {
 
   /** A typed expectation for histogram metrics. */
   sealed trait Histogram extends MetricExpectation {
-    type Value = JHistogramPointData
 
     /** Alias for [[withAnyPoint]]. */
     def withPoint(point: PointExpectation.Histogram): Histogram
@@ -165,7 +160,6 @@ object MetricExpectation {
 
   /** A typed expectation for exponential histogram metrics. */
   sealed trait ExponentialHistogram extends MetricExpectation {
-    type Value = ExponentialHistogramPointData
 
     /** Alias for [[withAnyPoint]]. */
     def withPoint(point: PointExpectation.ExponentialHistogram): ExponentialHistogram
@@ -238,7 +232,7 @@ object MetricExpectation {
         ExpectationChecks.success
     }
 
-    final case class Any[A](expectation: PointExpectation[A]) extends PointMatch[A] {
+    final case class Any[A](expectation: PointExpectation) extends PointMatch[A] {
       def check(points: List[JPointData]): Either[NonEmptyList[Mismatch], Unit] =
         if (points.exists(expectation.matches)) ExpectationChecks.success
         else {
@@ -248,7 +242,7 @@ object MetricExpectation {
         }
     }
 
-    final case class All[A](expectation: PointExpectation[A]) extends PointMatch[A] {
+    final case class All[A](expectation: PointExpectation) extends PointMatch[A] {
       def check(points: List[JPointData]): Either[NonEmptyList[Mismatch], Unit] =
         if (points.isEmpty) {
           ExpectationChecks.mismatch(
@@ -274,7 +268,7 @@ object MetricExpectation {
 
     private def closestPointMismatch[A](
         points: List[JPointData],
-        expectation: PointExpectation[A]
+        expectation: PointExpectation
     ): NonEmptyList[PointExpectation.Mismatch] =
       points
         .flatMap(point => expectation.check(point).left.toOption)
@@ -310,8 +304,6 @@ object MetricExpectation {
   }
 
   private sealed trait CommonImpl[A] extends MetricExpectation {
-    type Value = A
-
     def name: Option[String]
     def description: Option[String]
     def unit: Option[String]
@@ -417,8 +409,6 @@ object MetricExpectation {
       pointMatch: PointMatch[A] = PointMatch.Ignore
   ) extends Numeric[A]
       with CommonImpl[A] {
-    override type Value = A
-
     protected def copyCommon(
         name: Option[String],
         description: Option[String],
@@ -439,15 +429,15 @@ object MetricExpectation {
       )
 
     def withValue(value: A): Numeric[A] =
-      withAnyPoint(PointExpectation.value(value))
+      withAnyPoint(PointExpectation.numeric(value))
 
-    def withPoint(point: PointExpectation[A]): Numeric[A] =
+    def withPoint(point: PointExpectation.Numeric[A]): Numeric[A] =
       withAnyPoint(point)
 
-    def withAnyPoint(point: PointExpectation[A]): Numeric[A] =
+    def withAnyPoint(point: PointExpectation.Numeric[A]): Numeric[A] =
       copy(pointMatch = PointMatch.Any(point))
 
-    def withAllPoints(point: PointExpectation[A]): Numeric[A] =
+    def withAllPoints(point: PointExpectation.Numeric[A]): Numeric[A] =
       copy(pointMatch = PointMatch.All(point))
 
     override def withDescription(description: String): Numeric[A] =
@@ -488,8 +478,6 @@ object MetricExpectation {
       pointMatch: PointMatch[JSummaryPointData] = PointMatch.Ignore
   ) extends Summary
       with CommonImpl[JSummaryPointData] {
-    override type Value = JSummaryPointData
-
     override def withDescription(description: String): Summary =
       copy(description = Some(description))
 
@@ -548,8 +536,6 @@ object MetricExpectation {
       pointMatch: PointMatch[JHistogramPointData] = PointMatch.Ignore
   ) extends Histogram
       with CommonImpl[JHistogramPointData] {
-    override type Value = JHistogramPointData
-
     override def withDescription(description: String): Histogram =
       copy(description = Some(description))
 
@@ -608,8 +594,6 @@ object MetricExpectation {
       pointMatch: PointMatch[ExponentialHistogramPointData] = PointMatch.Ignore
   ) extends ExponentialHistogram
       with CommonImpl[ExponentialHistogramPointData] {
-    override type Value = ExponentialHistogramPointData
-
     override def withDescription(description: String): ExponentialHistogram =
       copy(description = Some(description))
 

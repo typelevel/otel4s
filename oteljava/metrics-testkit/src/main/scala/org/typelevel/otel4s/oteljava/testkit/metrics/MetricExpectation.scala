@@ -22,6 +22,7 @@ import io.opentelemetry.sdk.metrics.data.{PointData => JPointData}
 import io.opentelemetry.sdk.metrics.data.{SummaryPointData => JSummaryPointData}
 import org.typelevel.otel4s.metrics.MeasurementValue
 import org.typelevel.otel4s.metrics.MeasurementValue.{DoubleMeasurementValue, LongMeasurementValue}
+import org.typelevel.otel4s.oteljava.testkit.{InstrumentationScopeExpectation, TelemetryResourceExpectation}
 
 import scala.jdk.CollectionConverters._
 
@@ -54,6 +55,12 @@ sealed trait MetricExpectation {
 
   /** Requires the instrumentation scope name to match exactly. */
   def withScopeName(name: String): MetricExpectation
+
+  /** Requires the instrumentation scope to match the given expectation. */
+  def withScope(scope: InstrumentationScopeExpectation): MetricExpectation
+
+  /** Requires the telemetry resource to match the given expectation. */
+  def withResource(resource: TelemetryResourceExpectation): MetricExpectation
 
   /** Attaches a human-readable clue to this expectation. */
   def withClue(text: String): MetricExpectation
@@ -205,7 +212,8 @@ object MetricExpectation {
     def name: Option[String]
     def description: Option[String]
     def unit: Option[String]
-    def scopeName: Option[String]
+    def scope: Option[InstrumentationScopeExpectation]
+    def resource: Option[TelemetryResourceExpectation]
     def clue: Option[String]
     def predicates: List[(MetricData => Boolean, String)]
 
@@ -213,7 +221,8 @@ object MetricExpectation {
         name: Option[String] = name,
         description: Option[String] = description,
         unit: Option[String] = this.unit,
-        scopeName: Option[String] = this.scopeName,
+        scope: Option[InstrumentationScopeExpectation] = this.scope,
+        resource: Option[TelemetryResourceExpectation] = this.resource,
         clue: Option[String] = this.clue,
         predicates: List[(MetricData => Boolean, String)] = this.predicates
     ): MetricExpectation
@@ -225,7 +234,13 @@ object MetricExpectation {
       copyCommon(unit = Some(unit))
 
     def withScopeName(name: String): MetricExpectation =
-      copyCommon(scopeName = Some(name))
+      copyCommon(scope = Some(scope.fold(InstrumentationScopeExpectation.name(name))(_.withName(name))))
+
+    def withScope(scope: InstrumentationScopeExpectation): MetricExpectation =
+      copyCommon(scope = Some(scope))
+
+    def withResource(resource: TelemetryResourceExpectation): MetricExpectation =
+      copyCommon(resource = Some(resource))
 
     def withClue(text: String): MetricExpectation =
       copyCommon(clue = Some(text))
@@ -234,7 +249,8 @@ object MetricExpectation {
       name.forall(_ == metric.getName) &&
         description.forall(Option(metric.getDescription).contains) &&
         unit.forall(Option(metric.getUnit).contains) &&
-        scopeName.forall(_ == metric.getInstrumentationScopeInfo.getName) &&
+        scope.forall(_.matches(metric.getInstrumentationScopeInfo)) &&
+        resource.forall(_.matches(metric.getResource)) &&
         predicates.forall { case (predicate, _) => predicate(metric) }
   }
 
@@ -242,7 +258,8 @@ object MetricExpectation {
       name: Option[String] = None,
       description: Option[String] = None,
       unit: Option[String] = None,
-      scopeName: Option[String] = None,
+      scope: Option[InstrumentationScopeExpectation] = None,
+      resource: Option[TelemetryResourceExpectation] = None,
       clue: Option[String] = None,
       predicates: List[(MetricData => Boolean, String)] = Nil
   ) extends CommonImpl[A] {
@@ -251,11 +268,12 @@ object MetricExpectation {
         name: Option[String],
         description: Option[String],
         unit: Option[String],
-        scopeName: Option[String],
+        scope: Option[InstrumentationScopeExpectation],
+        resource: Option[TelemetryResourceExpectation],
         clue: Option[String],
         predicates: List[(MetricData => Boolean, String)]
     ): MetricExpectation =
-      copy(name, description, unit, scopeName, clue, predicates)
+      copy(name, description, unit, scope, resource, clue, predicates)
 
     def matches(metric: MetricData): Boolean =
       matchesCommon(metric)
@@ -267,7 +285,8 @@ object MetricExpectation {
       valueType: MeasurementValue[A],
       description: Option[String] = None,
       unit: Option[String] = None,
-      scopeName: Option[String] = None,
+      scope: Option[InstrumentationScopeExpectation] = None,
+      resource: Option[TelemetryResourceExpectation] = None,
       clue: Option[String] = None,
       predicates: List[(MetricData => Boolean, String)] = Nil,
       pointMatch: PointMatch[A] = PointMatch.Ignore
@@ -279,7 +298,8 @@ object MetricExpectation {
         name: Option[String],
         description: Option[String],
         unit: Option[String],
-        scopeName: Option[String],
+        scope: Option[InstrumentationScopeExpectation],
+        resource: Option[TelemetryResourceExpectation],
         clue: Option[String],
         predicates: List[(MetricData => Boolean, String)]
     ): MetricExpectation =
@@ -287,7 +307,8 @@ object MetricExpectation {
         name = name,
         description = description,
         unit = unit,
-        scopeName = scopeName,
+        scope = scope,
+        resource = resource,
         clue = clue,
         predicates = predicates
       )
@@ -311,7 +332,13 @@ object MetricExpectation {
       copy(unit = Some(unit))
 
     override def withScopeName(name: String): Numeric[A] =
-      copy(scopeName = Some(name))
+      copy(scope = Some(scope.fold(InstrumentationScopeExpectation.name(name))(_.withName(name))))
+
+    override def withScope(scope: InstrumentationScopeExpectation): Numeric[A] =
+      copy(scope = Some(scope))
+
+    override def withResource(resource: TelemetryResourceExpectation): Numeric[A] =
+      copy(resource = Some(resource))
 
     override def withClue(text: String): Numeric[A] =
       copy(clue = Some(text))
@@ -327,7 +354,8 @@ object MetricExpectation {
       metricType: MetricDataType,
       description: Option[String] = None,
       unit: Option[String] = None,
-      scopeName: Option[String] = None,
+      scope: Option[InstrumentationScopeExpectation] = None,
+      resource: Option[TelemetryResourceExpectation] = None,
       clue: Option[String] = None,
       predicates: List[(MetricData => Boolean, String)] = Nil,
       pointMatch: PointMatch[A] = PointMatch.Ignore
@@ -342,7 +370,13 @@ object MetricExpectation {
       copy(unit = Some(unit))
 
     override def withScopeName(name: String): Points[A] =
-      copy(scopeName = Some(name))
+      copy(scope = Some(scope.fold(InstrumentationScopeExpectation.name(name))(_.withName(name))))
+
+    override def withScope(scope: InstrumentationScopeExpectation): Points[A] =
+      copy(scope = Some(scope))
+
+    override def withResource(resource: TelemetryResourceExpectation): Points[A] =
+      copy(resource = Some(resource))
 
     override def withClue(text: String): Points[A] =
       copy(clue = Some(text))
@@ -360,11 +394,12 @@ object MetricExpectation {
         name: Option[String],
         description: Option[String],
         unit: Option[String],
-        scopeName: Option[String],
+        scope: Option[InstrumentationScopeExpectation],
+        resource: Option[TelemetryResourceExpectation],
         clue: Option[String],
         predicates: List[(MetricData => Boolean, String)]
     ): MetricExpectation =
-      copy(name, metricType, description, unit, scopeName, clue, predicates, pointMatch)
+      copy(name, metricType, description, unit, scope, resource, clue, predicates, pointMatch)
 
     def matches(metric: MetricData): Boolean =
       metric.getType == metricType &&

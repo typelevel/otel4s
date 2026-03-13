@@ -16,6 +16,7 @@
 
 package org.typelevel.otel4s.oteljava.testkit
 
+import cats.syntax.show._
 import cats.data.NonEmptyList
 import org.typelevel.otel4s.{Attribute, Attributes}
 
@@ -84,23 +85,23 @@ object AttributesExpectation {
 
     private final case class MissingAttributeImpl(attribute: Attribute[_]) extends MissingAttribute {
       def message: String =
-        s"missing attribute '${attribute.key.name}'='${attribute.value}'"
+        show"missing attribute $attribute"
     }
 
     private final case class UnexpectedAttributeImpl(attribute: Attribute[_]) extends UnexpectedAttribute {
       def message: String =
-        s"unexpected attribute '${attribute.key.name}'='${attribute.value}'"
+        show"unexpected attribute $attribute"
     }
 
     private final case class AttributeValueMismatchImpl(expected: Attribute[_], actual: Attribute[_])
         extends AttributeValueMismatch {
       def message: String =
-        s"attribute mismatch for '${expected.key.name}': expected '${expected.key.name}'='${expected.value}', got '${actual.key.name}'='${actual.value}'"
+        show"attribute mismatch for '${expected.key.name}': expected $expected, got $actual"
     }
 
     private final case class PredicateFailedImpl(clue: Option[String]) extends PredicateFailed {
       def message: String =
-        clue.fold("attributes predicate returned false")(value => s"attributes predicate returned false: $value")
+        s"attributes predicate returned false${clue.fold("")(value => s": $value")}"
     }
   }
 

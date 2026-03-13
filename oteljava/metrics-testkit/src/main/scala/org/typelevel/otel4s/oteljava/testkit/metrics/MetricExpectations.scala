@@ -18,6 +18,7 @@ package org.typelevel.otel4s.oteljava.testkit.metrics
 
 import cats.data.NonEmptyList
 import io.opentelemetry.sdk.metrics.data.MetricData
+
 /** Result of matching a [[MetricExpectation]] against a list of collected metrics. */
 sealed trait MetricMismatch {
 

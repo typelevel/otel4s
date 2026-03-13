@@ -78,11 +78,13 @@ object MetricExpectation {
 
   /** A structured reason explaining why a [[MetricExpectation]] did not match a metric. */
   sealed trait Mismatch extends Product with Serializable {
+
     /** A human-readable description of the mismatch. */
     def message: String
   }
 
   object Mismatch {
+
     /** Indicates that the metric name differed from the expected one. */
     sealed trait NameMismatch extends Mismatch { def expected: String; def actual: String }
 

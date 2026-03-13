@@ -18,7 +18,7 @@ package org.typelevel.otel4s.oteljava.testkit
 
 import cats.data.NonEmptyList
 import io.opentelemetry.sdk.resources.{Resource => JResource}
-import org.typelevel.otel4s.Attributes
+import org.typelevel.otel4s.{Attribute, Attributes}
 import org.typelevel.otel4s.oteljava.AttributeConverters._
 
 /** A partial expectation for OpenTelemetry Java [[JResource]].
@@ -33,8 +33,14 @@ sealed trait TelemetryResourceExpectation {
   /** Requires the resource attributes to match exactly. */
   def withAttributesExact(attributes: Attributes): TelemetryResourceExpectation
 
+  /** Requires the resource attributes to match exactly. */
+  def withAttributesExact(attributes: Attribute[_]*): TelemetryResourceExpectation
+
   /** Requires the resource attributes to contain the given subset. */
   def withAttributesSubset(attributes: Attributes): TelemetryResourceExpectation
+
+  /** Requires the resource attributes to contain the given subset. */
+  def withAttributesSubset(attributes: Attribute[_]*): TelemetryResourceExpectation
 
   /** Requires the resource schema URL to match exactly.
     *
@@ -57,6 +63,7 @@ object TelemetryResourceExpectation {
 
   /** A structured reason explaining why a [[TelemetryResourceExpectation]] did not match an actual resource. */
   sealed trait Mismatch extends Product with Serializable {
+
     /** A human-readable description of the mismatch. */
     def message: String
   }
@@ -84,8 +91,11 @@ object TelemetryResourceExpectation {
 
     private final case class SchemaUrlMismatchImpl(expected: Option[String], actual: Option[String])
         extends SchemaUrlMismatch {
-      def message: String =
-        s"schema URL mismatch: expected ${expected.fold("<missing>")(v => s"'$v'")}, got ${actual.fold("<missing>")(v => s"'$v'")}"
+      def message: String = {
+        val exp = expected.fold("<missing>")(v => s"'$v'")
+        val act = actual.fold("<missing>")(v => s"'$v'")
+        s"schema URL mismatch: expected $exp, got $act"
+      }
     }
 
     private final case class AttributesMismatchImpl(mismatches: NonEmptyList[AttributesExpectation.Mismatch])
@@ -117,8 +127,14 @@ object TelemetryResourceExpectation {
     def withAttributesExact(attributes: Attributes): TelemetryResourceExpectation =
       withAttributes(AttributesExpectation.exact(attributes))
 
+    def withAttributesExact(attributes: Attribute[_]*): TelemetryResourceExpectation =
+      withAttributesExact(Attributes(attributes *))
+
     def withAttributesSubset(attributes: Attributes): TelemetryResourceExpectation =
       withAttributes(AttributesExpectation.subset(attributes))
+
+    def withAttributesSubset(attributes: Attribute[_]*): TelemetryResourceExpectation =
+      withAttributesSubset(Attributes(attributes *))
 
     def withSchemaUrl(schemaUrl: Option[String]): TelemetryResourceExpectation =
       copy(schemaUrl = Some(schemaUrl))

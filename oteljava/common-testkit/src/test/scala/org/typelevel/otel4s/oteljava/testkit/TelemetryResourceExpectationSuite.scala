@@ -21,7 +21,7 @@ import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.api.common.{Attributes => JAttributes}
 import io.opentelemetry.sdk.resources.Resource
 import munit.FunSuite
-import org.typelevel.otel4s.{Attribute, Attributes}
+import org.typelevel.otel4s.Attribute
 
 class TelemetryResourceExpectationSuite extends FunSuite {
 
@@ -65,7 +65,7 @@ class TelemetryResourceExpectationSuite extends FunSuite {
 
   test("withAttributesExact reports nested attribute failures") {
     val expectation =
-      TelemetryResourceExpectation.any.withAttributesExact(Attributes(Attribute("service.name", "service")))
+      TelemetryResourceExpectation.any.withAttributesExact(Attribute("service.name", "service"))
 
     assertEquals(expectation.check(resource(attributes = jAttributes("service.name" -> "service"))), Right(()))
     assertEquals(
@@ -88,7 +88,7 @@ class TelemetryResourceExpectationSuite extends FunSuite {
   test("withAttributesSubset matches contained attributes") {
     val expectation =
       TelemetryResourceExpectation.any
-        .withAttributesSubset(Attributes(Attribute("service.name", "service")))
+        .withAttributesSubset(Attribute("service.name", "service"))
 
     assertEquals(
       expectation.check(resource(attributes = jAttributes("service.name" -> "service", "host.name" -> "localhost"))),

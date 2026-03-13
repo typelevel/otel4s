@@ -18,7 +18,7 @@ package org.typelevel.otel4s.oteljava.testkit
 
 import cats.data.NonEmptyList
 import io.opentelemetry.sdk.common.{InstrumentationScopeInfo => JInstrumentationScopeInfo}
-import org.typelevel.otel4s.Attributes
+import org.typelevel.otel4s.{Attribute, Attributes}
 import org.typelevel.otel4s.oteljava.AttributeConverters._
 
 /** A partial expectation for OpenTelemetry Java [[JInstrumentationScopeInfo]].
@@ -55,8 +55,14 @@ sealed trait InstrumentationScopeExpectation {
   /** Requires the instrumentation scope attributes to match exactly. */
   def withAttributesExact(attributes: Attributes): InstrumentationScopeExpectation
 
+  /** Requires the instrumentation scope attributes to match exactly. */
+  def withAttributesExact(attributes: Attribute[_]*): InstrumentationScopeExpectation
+
   /** Requires the instrumentation scope attributes to contain the given subset. */
   def withAttributesSubset(attributes: Attributes): InstrumentationScopeExpectation
+
+  /** Requires the instrumentation scope attributes to contain the given subset. */
+  def withAttributesSubset(attributes: Attribute[_]*): InstrumentationScopeExpectation
 
   /** Checks the given instrumentation scope and returns structured failures when the expectation does not match. */
   def check(scope: JInstrumentationScopeInfo): Either[NonEmptyList[InstrumentationScopeExpectation.Mismatch], Unit]
@@ -70,6 +76,7 @@ object InstrumentationScopeExpectation {
 
   /** A structured reason explaining why an [[InstrumentationScopeExpectation]] did not match an actual scope. */
   sealed trait Mismatch extends Product with Serializable {
+
     /** A human-readable description of the mismatch. */
     def message: String
   }
@@ -122,14 +129,20 @@ object InstrumentationScopeExpectation {
 
     private final case class VersionMismatchImpl(expected: Option[String], actual: Option[String])
         extends VersionMismatch {
-      def message: String =
-        s"version mismatch: expected ${expected.fold("<missing>")(v => s"'$v'")}, got ${actual.fold("<missing>")(v => s"'$v'")}"
+      def message: String = {
+        val exp = expected.fold("<missing>")(v => s"'$v'")
+        val act = actual.fold("<missing>")(v => s"'$v'")
+        s"version mismatch: expected $exp, got $act"
+      }
     }
 
     private final case class SchemaUrlMismatchImpl(expected: Option[String], actual: Option[String])
         extends SchemaUrlMismatch {
-      def message: String =
-        s"schema URL mismatch: expected ${expected.fold("<missing>")(v => s"'$v'")}, got ${actual.fold("<missing>")(v => s"'$v'")}"
+      def message: String = {
+        val exp = expected.fold("<missing>")(v => s"'$v'")
+        val act = actual.fold("<missing>")(v => s"'$v'")
+        s"schema URL mismatch: expected $exp, got $act"
+      }
     }
 
     private final case class AttributesMismatchImpl(mismatches: NonEmptyList[AttributesExpectation.Mismatch])
@@ -180,8 +193,14 @@ object InstrumentationScopeExpectation {
     def withAttributesExact(attributes: Attributes): InstrumentationScopeExpectation =
       withAttributes(AttributesExpectation.exact(attributes))
 
+    def withAttributesExact(attributes: Attribute[_]*): InstrumentationScopeExpectation =
+      withAttributesExact(Attributes(attributes *))
+
     def withAttributesSubset(attributes: Attributes): InstrumentationScopeExpectation =
       withAttributes(AttributesExpectation.subset(attributes))
+
+    def withAttributesSubset(attributes: Attribute[_]*): InstrumentationScopeExpectation =
+      withAttributesSubset(Attributes(attributes *))
 
     def check(scope: JInstrumentationScopeInfo): Either[NonEmptyList[Mismatch], Unit] = {
 

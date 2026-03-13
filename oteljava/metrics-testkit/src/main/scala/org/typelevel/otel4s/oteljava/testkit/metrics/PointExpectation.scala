@@ -22,7 +22,7 @@ import io.opentelemetry.sdk.metrics.data.{ExponentialHistogramPointData => JExpo
 import io.opentelemetry.sdk.metrics.data.{HistogramPointData => JHistogramPointData}
 import io.opentelemetry.sdk.metrics.data.{DoublePointData, LongPointData, PointData => JPointData}
 import io.opentelemetry.sdk.metrics.data.{SummaryPointData => JSummaryPointData}
-import org.typelevel.otel4s.Attributes
+import org.typelevel.otel4s.{Attribute, Attributes}
 import org.typelevel.otel4s.oteljava.AttributeConverters._
 import org.typelevel.otel4s.oteljava.testkit.AttributesExpectation
 import org.typelevel.otel4s.metrics.BucketBoundaries
@@ -53,8 +53,14 @@ sealed trait PointExpectation {
   /** Requires the point attributes to match exactly. */
   def withAttributesExact(attributes: Attributes): PointExpectation
 
+  /** Requires the point attributes to match exactly. */
+  def withAttributesExact(attributes: Attribute[_]*): PointExpectation
+
   /** Requires the point attributes to contain the given attributes. */
   def withAttributesSubset(attributes: Attributes): PointExpectation
+
+  /** Requires the point attributes to contain the given attributes. */
+  def withAttributesSubset(attributes: Attribute[_]*): PointExpectation
 
   /** Attaches a human-readable clue to this expectation. */
   def withClue(text: String): PointExpectation
@@ -71,6 +77,7 @@ object PointExpectation {
 
   /** A structured reason explaining why a [[PointExpectation]] did not match a point. */
   sealed trait Mismatch extends Product with Serializable {
+
     /** A human-readable description of the mismatch. */
     def message: String
   }
@@ -244,7 +251,11 @@ object PointExpectation {
 
     def withAttributesExact(attributes: Attributes): Numeric[A]
 
+    def withAttributesExact(attributes: Attribute[_]*): Numeric[A]
+
     def withAttributesSubset(attributes: Attributes): Numeric[A]
+
+    def withAttributesSubset(attributes: Attribute[_]*): Numeric[A]
 
     def withClue(text: String): Numeric[A]
 
@@ -269,7 +280,11 @@ object PointExpectation {
 
     def withAttributesExact(attributes: Attributes): Summary
 
+    def withAttributesExact(attributes: Attribute[_]*): Summary
+
     def withAttributesSubset(attributes: Attributes): Summary
+
+    def withAttributesSubset(attributes: Attribute[_]*): Summary
 
     def withClue(text: String): Summary
 
@@ -300,7 +315,11 @@ object PointExpectation {
 
     def withAttributesExact(attributes: Attributes): Histogram
 
+    def withAttributesExact(attributes: Attribute[_]*): Histogram
+
     def withAttributesSubset(attributes: Attributes): Histogram
+
+    def withAttributesSubset(attributes: Attribute[_]*): Histogram
 
     def withClue(text: String): Histogram
 
@@ -331,7 +350,11 @@ object PointExpectation {
 
     def withAttributesExact(attributes: Attributes): ExponentialHistogram
 
+    def withAttributesExact(attributes: Attribute[_]*): ExponentialHistogram
+
     def withAttributesSubset(attributes: Attributes): ExponentialHistogram
+
+    def withAttributesSubset(attributes: Attribute[_]*): ExponentialHistogram
 
     def withClue(text: String): ExponentialHistogram
 
@@ -411,8 +434,14 @@ object PointExpectation {
     def withAttributesExact(attributes: Attributes): Numeric[A] =
       copy(attributeExpectation = Some(AttributesExpectation.exact(attributes)))
 
+    def withAttributesExact(attributes: Attribute[_]*): Numeric[A] =
+      withAttributesExact(Attributes(attributes *))
+
     def withAttributesSubset(attributes: Attributes): Numeric[A] =
       copy(attributeExpectation = Some(AttributesExpectation.subset(attributes)))
+
+    def withAttributesSubset(attributes: Attribute[_]*): Numeric[A] =
+      withAttributesSubset(Attributes(attributes *))
 
     def withClue(text: String): Numeric[A] =
       copy(clue = Some(text))
@@ -491,8 +520,14 @@ object PointExpectation {
     def withAttributesExact(attributes: Attributes): Summary =
       copy(attributeExpectation = Some(AttributesExpectation.exact(attributes)))
 
+    def withAttributesExact(attributes: Attribute[_]*): Summary =
+      withAttributesExact(Attributes(attributes *))
+
     def withAttributesSubset(attributes: Attributes): Summary =
       copy(attributeExpectation = Some(AttributesExpectation.subset(attributes)))
+
+    def withAttributesSubset(attributes: Attribute[_]*): Summary =
+      withAttributesSubset(Attributes(attributes *))
 
     def withClue(text: String): Summary =
       copy(clue = Some(text))
@@ -562,8 +597,14 @@ object PointExpectation {
     def withAttributesExact(attributes: Attributes): Histogram =
       copy(attributeExpectation = Some(AttributesExpectation.exact(attributes)))
 
+    def withAttributesExact(attributes: Attribute[_]*): Histogram =
+      withAttributesExact(Attributes(attributes *))
+
     def withAttributesSubset(attributes: Attributes): Histogram =
       copy(attributeExpectation = Some(AttributesExpectation.subset(attributes)))
+
+    def withAttributesSubset(attributes: Attribute[_]*): Histogram =
+      withAttributesSubset(Attributes(attributes *))
 
     def withClue(text: String): Histogram =
       copy(clue = Some(text))
@@ -651,8 +692,14 @@ object PointExpectation {
     def withAttributesExact(attributes: Attributes): ExponentialHistogram =
       copy(attributeExpectation = Some(AttributesExpectation.exact(attributes)))
 
+    def withAttributesExact(attributes: Attribute[_]*): ExponentialHistogram =
+      withAttributesExact(Attributes(attributes *))
+
     def withAttributesSubset(attributes: Attributes): ExponentialHistogram =
       copy(attributeExpectation = Some(AttributesExpectation.subset(attributes)))
+
+    def withAttributesSubset(attributes: Attribute[_]*): ExponentialHistogram =
+      withAttributesSubset(Attributes(attributes *))
 
     def withClue(text: String): ExponentialHistogram =
       copy(clue = Some(text))

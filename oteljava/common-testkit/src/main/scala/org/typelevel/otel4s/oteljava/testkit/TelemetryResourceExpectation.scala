@@ -56,7 +56,10 @@ sealed trait TelemetryResourceExpectation {
 object TelemetryResourceExpectation {
 
   /** A structured reason explaining why a [[TelemetryResourceExpectation]] did not match an actual resource. */
-  sealed trait Mismatch extends Product with Serializable
+  sealed trait Mismatch extends Product with Serializable {
+    /** A human-readable description of the mismatch. */
+    def message: String
+  }
 
   object Mismatch {
 
@@ -66,23 +69,30 @@ object TelemetryResourceExpectation {
       def actual: Option[String]
     }
 
-    /** Creates a mismatch indicating that the resource schema URL differed from the expected one. */
-    def schemaUrlMismatch(expected: Option[String], actual: Option[String]): SchemaUrlMismatch =
-      SchemaUrlMismatchImpl(expected, actual)
-
     /** Indicates that the resource attributes did not satisfy the nested attributes expectation. */
     sealed trait AttributesMismatch extends Mismatch {
       def mismatches: NonEmptyList[AttributesExpectation.Mismatch]
     }
+
+    /** Creates a mismatch indicating that the resource schema URL differed from the expected one. */
+    def schemaUrlMismatch(expected: Option[String], actual: Option[String]): SchemaUrlMismatch =
+      SchemaUrlMismatchImpl(expected, actual)
 
     /** Creates a mismatch indicating that the resource attributes did not satisfy the nested attributes expectation. */
     def attributesMismatch(mismatches: NonEmptyList[AttributesExpectation.Mismatch]): AttributesMismatch =
       AttributesMismatchImpl(mismatches)
 
     private final case class SchemaUrlMismatchImpl(expected: Option[String], actual: Option[String])
-        extends SchemaUrlMismatch
+        extends SchemaUrlMismatch {
+      def message: String =
+        s"schema URL mismatch: expected ${expected.fold("<missing>")(v => s"'$v'")}, got ${actual.fold("<missing>")(v => s"'$v'")}"
+    }
+
     private final case class AttributesMismatchImpl(mismatches: NonEmptyList[AttributesExpectation.Mismatch])
-        extends AttributesMismatch
+        extends AttributesMismatch {
+      def message: String =
+        s"attributes mismatch: ${mismatches.toList.map(_.message).mkString(", ")}"
+    }
   }
 
   /** Creates an expectation that matches the full telemetry resource exactly. */
@@ -95,19 +105,6 @@ object TelemetryResourceExpectation {
   /** Creates an expectation that matches any telemetry resource. */
   def any: TelemetryResourceExpectation =
     Impl()
-
-  /** Formats a mismatch into a human-readable message. */
-  def formatMismatch(mismatch: Mismatch): String = {
-    def formatOption(value: Option[String]): String =
-      value.fold("<missing>")(v => s"'$v'")
-
-    mismatch match {
-      case mismatch: Mismatch.SchemaUrlMismatch =>
-        s"schema URL mismatch: expected ${formatOption(mismatch.expected)}, got ${formatOption(mismatch.actual)}"
-      case mismatch: Mismatch.AttributesMismatch =>
-        s"attributes mismatch: ${mismatch.mismatches.toList.map(AttributesExpectation.formatMismatch).mkString(", ")}"
-    }
-  }
 
   private final case class Impl(
       attributes: Option[AttributesExpectation] = None,

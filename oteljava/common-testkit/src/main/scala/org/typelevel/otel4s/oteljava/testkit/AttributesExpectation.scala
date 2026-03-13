@@ -37,7 +37,11 @@ sealed trait AttributesExpectation {
 object AttributesExpectation {
 
   /** A structured reason explaining why an [[AttributesExpectation]] did not match actual attributes. */
-  sealed trait Mismatch extends Product with Serializable
+  sealed trait Mismatch extends Product with Serializable {
+
+    /** A human-readable description of the mismatch. */
+    def message: String
+  }
 
   object Mismatch {
 
@@ -46,18 +50,10 @@ object AttributesExpectation {
       def attribute: Attribute[_]
     }
 
-    /** Creates a mismatch indicating that an expected attribute was missing. */
-    def missingAttribute(attribute: Attribute[_]): MissingAttribute =
-      MissingAttributeImpl(attribute)
-
     /** Indicates that an attribute was present unexpectedly. */
     sealed trait UnexpectedAttribute extends Mismatch {
       def attribute: Attribute[_]
     }
-
-    /** Creates a mismatch indicating that an attribute was present unexpectedly. */
-    def unexpectedAttribute(attribute: Attribute[_]): UnexpectedAttribute =
-      UnexpectedAttributeImpl(attribute)
 
     /** Indicates that an attribute key was present, but its value differed from the expected one. */
     sealed trait AttributeValueMismatch extends Mismatch {
@@ -65,24 +61,47 @@ object AttributesExpectation {
       def actual: Attribute[_]
     }
 
-    /** Creates a mismatch indicating that an attribute value differed from the expected one. */
-    def attributeValueMismatch(expected: Attribute[_], actual: Attribute[_]): AttributeValueMismatch =
-      AttributeValueMismatchImpl(expected, actual)
-
     /** Indicates that a custom predicate expectation returned `false`. */
     sealed trait PredicateFailed extends Mismatch {
       def clue: Option[String]
     }
 
+    /** Creates a mismatch indicating that an expected attribute was missing. */
+    def missingAttribute(attribute: Attribute[_]): MissingAttribute =
+      MissingAttributeImpl(attribute)
+
+    /** Creates a mismatch indicating that an attribute was present unexpectedly. */
+    def unexpectedAttribute(attribute: Attribute[_]): UnexpectedAttribute =
+      UnexpectedAttributeImpl(attribute)
+
+    /** Creates a mismatch indicating that an attribute value differed from the expected one. */
+    def attributeValueMismatch(expected: Attribute[_], actual: Attribute[_]): AttributeValueMismatch =
+      AttributeValueMismatchImpl(expected, actual)
+
     /** Creates a mismatch indicating that a custom predicate expectation returned `false`. */
     def predicateFailed(clue: Option[String]): PredicateFailed =
       PredicateFailedImpl(clue)
 
-    private final case class MissingAttributeImpl(attribute: Attribute[_]) extends MissingAttribute
-    private final case class UnexpectedAttributeImpl(attribute: Attribute[_]) extends UnexpectedAttribute
+    private final case class MissingAttributeImpl(attribute: Attribute[_]) extends MissingAttribute {
+      def message: String =
+        s"missing attribute '${attribute.key.name}'='${attribute.value}'"
+    }
+
+    private final case class UnexpectedAttributeImpl(attribute: Attribute[_]) extends UnexpectedAttribute {
+      def message: String =
+        s"unexpected attribute '${attribute.key.name}'='${attribute.value}'"
+    }
+
     private final case class AttributeValueMismatchImpl(expected: Attribute[_], actual: Attribute[_])
-        extends AttributeValueMismatch
-    private final case class PredicateFailedImpl(clue: Option[String]) extends PredicateFailed
+        extends AttributeValueMismatch {
+      def message: String =
+        s"attribute mismatch for '${expected.key.name}': expected '${expected.key.name}'='${expected.value}', got '${actual.key.name}'='${actual.value}'"
+    }
+
+    private final case class PredicateFailedImpl(clue: Option[String]) extends PredicateFailed {
+      def message: String =
+        clue.fold("attributes predicate returned false")(value => s"attributes predicate returned false: $value")
+    }
   }
 
   /** Creates an expectation that matches only when all attributes are equal. */
@@ -104,23 +123,6 @@ object AttributesExpectation {
   /** Creates an expectation from a custom predicate with an optional clue used in mismatch messages. */
   def predicate(clue: String)(f: Attributes => Boolean): AttributesExpectation =
     Predicate(f, Some(clue))
-
-  /** Formats a mismatch into a human-readable message. */
-  def formatMismatch(mismatch: Mismatch): String = {
-    def formatAttribute(attribute: Attribute[_]): String =
-      s"'${attribute.key.name}'='${attribute.value}'"
-
-    mismatch match {
-      case mismatch: Mismatch.MissingAttribute =>
-        s"missing attribute ${formatAttribute(mismatch.attribute)}"
-      case mismatch: Mismatch.UnexpectedAttribute =>
-        s"unexpected attribute ${formatAttribute(mismatch.attribute)}"
-      case mismatch: Mismatch.AttributeValueMismatch =>
-        s"attribute mismatch for '${mismatch.expected.key.name}': expected ${formatAttribute(mismatch.expected)}, got ${formatAttribute(mismatch.actual)}"
-      case mismatch: Mismatch.PredicateFailed =>
-        mismatch.clue.fold("attributes predicate returned false")(value => s"attributes predicate returned false: $value")
-    }
-  }
 
   private final case class Exact(expected: Attributes) extends AttributesExpectation {
     def check(attributes: Attributes): Either[NonEmptyList[Mismatch], Unit] = {

@@ -18,8 +18,6 @@ package org.typelevel.otel4s.oteljava.testkit.metrics
 
 import cats.data.NonEmptyList
 import io.opentelemetry.sdk.metrics.data.MetricData
-import org.typelevel.otel4s.oteljava.testkit.{InstrumentationScopeExpectation, TelemetryResourceExpectation}
-
 /** Result of matching a [[MetricExpectation]] against a list of collected metrics. */
 sealed trait MetricMismatch {
 
@@ -83,32 +81,10 @@ object MetricMismatch {
 
     def message: String = {
       val prefix = clue.fold("")(c => s"[$c] ")
-      val rendered = mismatches.toList.map(renderMetricMismatch).mkString("\n  - ", "\n  - ", "")
+      val rendered = mismatches.toList.map(_.message).mkString("\n  - ", "\n  - ", "")
       s"${prefix}closest metric '${metric.getName}' mismatched:$rendered"
     }
   }
-
-  private def renderMetricMismatch(mismatch: MetricExpectation.Mismatch): String =
-    mismatch match {
-      case mismatch: MetricExpectation.Mismatch.NameMismatch =>
-        s"name mismatch: expected '${mismatch.expected}', got '${mismatch.actual}'"
-      case mismatch: MetricExpectation.Mismatch.DescriptionMismatch =>
-        s"description mismatch: expected '${mismatch.expected}', got ${mismatch.actual.fold("<missing>")(v => s"'$v'")}"
-      case mismatch: MetricExpectation.Mismatch.UnitMismatch =>
-        s"unit mismatch: expected '${mismatch.expected}', got '${mismatch.actual}'"
-      case mismatch: MetricExpectation.Mismatch.TypeMismatch =>
-        s"type mismatch: expected '${mismatch.expected}', got '${mismatch.actual}'"
-      case mismatch: MetricExpectation.Mismatch.ScopeMismatch =>
-        s"scope mismatch: ${mismatch.mismatches.toList.map(InstrumentationScopeExpectation.formatMismatch).mkString(", ")}"
-      case mismatch: MetricExpectation.Mismatch.ResourceMismatch =>
-        s"resource mismatch: ${mismatch.mismatches.toList.map(TelemetryResourceExpectation.formatMismatch).mkString(", ")}"
-      case mismatch: MetricExpectation.Mismatch.PredicateMismatch =>
-        s"predicate mismatch: ${mismatch.clue}"
-      case mismatch: MetricExpectation.Mismatch.PointsMismatch =>
-        val rendered = mismatch.mismatches.toList.map(PointExpectation.formatMismatch).mkString(", ")
-        val clueSuffix = mismatch.clue.fold("")(value => s" [$value]")
-        s"points mismatch (${mismatch.mode}$clueSuffix): $rendered"
-    }
 }
 
 /** Helpers for matching collected metrics against [[MetricExpectation]] values.

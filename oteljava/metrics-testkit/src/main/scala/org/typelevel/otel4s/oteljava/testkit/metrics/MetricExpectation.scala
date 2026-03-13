@@ -239,6 +239,24 @@ object MetricExpectation {
 
     /** Requires all points to match the given expectation. */
     def withAllPoints(point: PointExpectation.Numeric[A]): Numeric[A]
+
+    /** Requires the metric description to match exactly. */
+    def withDescription(description: String): Numeric[A]
+
+    /** Requires the metric unit to match exactly. */
+    def withUnit(unit: String): Numeric[A]
+
+    /** Requires the instrumentation scope name to match exactly. */
+    def withScopeName(name: String): Numeric[A]
+
+    /** Requires the instrumentation scope to match the given expectation. */
+    def withScope(scope: InstrumentationScopeExpectation): Numeric[A]
+
+    /** Requires the telemetry resource to match the given expectation. */
+    def withResource(resource: TelemetryResourceExpectation): Numeric[A]
+
+    /** Attaches a human-readable clue to this expectation. */
+    def withClue(text: String): Numeric[A]
   }
 
   /** A typed expectation for summary metrics. */
@@ -252,6 +270,24 @@ object MetricExpectation {
 
     /** Requires all points to match the given expectation. */
     def withAllPoints(point: PointExpectation.Summary): Summary
+
+    /** Requires the metric description to match exactly. */
+    def withDescription(description: String): Summary
+
+    /** Requires the metric unit to match exactly. */
+    def withUnit(unit: String): Summary
+
+    /** Requires the instrumentation scope name to match exactly. */
+    def withScopeName(name: String): Summary
+
+    /** Requires the instrumentation scope to match the given expectation. */
+    def withScope(scope: InstrumentationScopeExpectation): Summary
+
+    /** Requires the telemetry resource to match the given expectation. */
+    def withResource(resource: TelemetryResourceExpectation): Summary
+
+    /** Attaches a human-readable clue to this expectation. */
+    def withClue(text: String): Summary
   }
 
   /** A typed expectation for histogram metrics. */
@@ -265,6 +301,24 @@ object MetricExpectation {
 
     /** Requires all points to match the given expectation. */
     def withAllPoints(point: PointExpectation.Histogram): Histogram
+
+    /** Requires the metric description to match exactly. */
+    def withDescription(description: String): Histogram
+
+    /** Requires the metric unit to match exactly. */
+    def withUnit(unit: String): Histogram
+
+    /** Requires the instrumentation scope name to match exactly. */
+    def withScopeName(name: String): Histogram
+
+    /** Requires the instrumentation scope to match the given expectation. */
+    def withScope(scope: InstrumentationScopeExpectation): Histogram
+
+    /** Requires the telemetry resource to match the given expectation. */
+    def withResource(resource: TelemetryResourceExpectation): Histogram
+
+    /** Attaches a human-readable clue to this expectation. */
+    def withClue(text: String): Histogram
   }
 
   /** A typed expectation for exponential histogram metrics. */
@@ -278,6 +332,24 @@ object MetricExpectation {
 
     /** Requires all points to match the given expectation. */
     def withAllPoints(point: PointExpectation.ExponentialHistogram): ExponentialHistogram
+
+    /** Requires the metric description to match exactly. */
+    def withDescription(description: String): ExponentialHistogram
+
+    /** Requires the metric unit to match exactly. */
+    def withUnit(unit: String): ExponentialHistogram
+
+    /** Requires the instrumentation scope name to match exactly. */
+    def withScopeName(name: String): ExponentialHistogram
+
+    /** Requires the instrumentation scope to match the given expectation. */
+    def withScope(scope: InstrumentationScopeExpectation): ExponentialHistogram
+
+    /** Requires the telemetry resource to match the given expectation. */
+    def withResource(resource: TelemetryResourceExpectation): ExponentialHistogram
+
+    /** Attaches a human-readable clue to this expectation. */
+    def withClue(text: String): ExponentialHistogram
   }
 
   /** Creates an expectation that matches any metric with the given name. */

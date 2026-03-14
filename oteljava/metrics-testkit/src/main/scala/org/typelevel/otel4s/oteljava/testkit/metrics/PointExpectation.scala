@@ -93,19 +93,11 @@ object PointExpectation {
       def actual: String
     }
 
-    /** Creates a mismatch indicating that the actual point type differed from the expected one. */
-    def typeMismatch(expected: String, actual: String): TypeMismatch =
-      TypeMismatchImpl(expected, actual)
-
     /** Indicates that the numeric point value differed from the expected one. */
     sealed trait ValueMismatch extends Mismatch {
       def expected: String
       def actual: String
     }
-
-    /** Creates a mismatch indicating that the numeric point value differed from the expected one. */
-    def valueMismatch(expected: String, actual: String): ValueMismatch =
-      ValueMismatchImpl(expected, actual)
 
     /** Indicates that the point count differed from the expected one. */
     sealed trait CountMismatch extends Mismatch {
@@ -113,19 +105,11 @@ object PointExpectation {
       def actual: Long
     }
 
-    /** Creates a mismatch indicating that the point count differed from the expected one. */
-    def countMismatch(expected: Long, actual: Long): CountMismatch =
-      CountMismatchImpl(expected, actual)
-
     /** Indicates that the point sum differed from the expected one. */
     sealed trait SumMismatch extends Mismatch {
       def expected: Double
       def actual: Double
     }
-
-    /** Creates a mismatch indicating that the point sum differed from the expected one. */
-    def sumMismatch(expected: Double, actual: Double): SumMismatch =
-      SumMismatchImpl(expected, actual)
 
     /** Indicates that histogram boundaries differed from the expected ones. */
     sealed trait BoundariesMismatch extends Mismatch {
@@ -133,19 +117,11 @@ object PointExpectation {
       def actual: BucketBoundaries
     }
 
-    /** Creates a mismatch indicating that histogram boundaries differed from the expected ones. */
-    def boundariesMismatch(expected: BucketBoundaries, actual: BucketBoundaries): BoundariesMismatch =
-      BoundariesMismatchImpl(expected, actual)
-
     /** Indicates that histogram bucket counts differed from the expected ones. */
     sealed trait CountsMismatch extends Mismatch {
       def expected: List[Long]
       def actual: List[Long]
     }
-
-    /** Creates a mismatch indicating that histogram bucket counts differed from the expected ones. */
-    def countsMismatch(expected: List[Long], actual: List[Long]): CountsMismatch =
-      CountsMismatchImpl(expected, actual)
 
     /** Indicates that the exponential histogram scale differed from the expected one. */
     sealed trait ScaleMismatch extends Mismatch {
@@ -153,33 +129,57 @@ object PointExpectation {
       def actual: Int
     }
 
-    /** Creates a mismatch indicating that the exponential histogram scale differed from the expected one. */
-    def scaleMismatch(expected: Int, actual: Int): ScaleMismatch =
-      ScaleMismatchImpl(expected, actual)
-
     /** Indicates that the exponential histogram zero count differed from the expected one. */
     sealed trait ZeroCountMismatch extends Mismatch {
       def expected: Long
       def actual: Long
     }
 
-    /** Creates a mismatch indicating that the exponential histogram zero count differed from the expected one. */
-    def zeroCountMismatch(expected: Long, actual: Long): ZeroCountMismatch =
-      ZeroCountMismatchImpl(expected, actual)
-
     /** Indicates that the point attributes did not satisfy the nested attributes expectation. */
     sealed trait AttributesMismatch extends Mismatch {
       def mismatches: NonEmptyList[AttributesExpectation.Mismatch]
     }
 
-    /** Creates a mismatch indicating that the point attributes did not satisfy the nested attributes expectation. */
-    def attributesMismatch(mismatches: NonEmptyList[AttributesExpectation.Mismatch]): AttributesMismatch =
-      AttributesMismatchImpl(mismatches)
-
     /** Indicates that a custom point predicate returned `false`. */
     sealed trait PredicateMismatch extends Mismatch {
       def clue: String
     }
+
+    /** Creates a mismatch indicating that the actual point type differed from the expected one. */
+    def typeMismatch(expected: String, actual: String): TypeMismatch =
+      TypeMismatchImpl(expected, actual)
+
+    /** Creates a mismatch indicating that the numeric point value differed from the expected one. */
+    def valueMismatch(expected: String, actual: String): ValueMismatch =
+      ValueMismatchImpl(expected, actual)
+
+    /** Creates a mismatch indicating that the point count differed from the expected one. */
+    def countMismatch(expected: Long, actual: Long): CountMismatch =
+      CountMismatchImpl(expected, actual)
+
+    /** Creates a mismatch indicating that the point sum differed from the expected one. */
+    def sumMismatch(expected: Double, actual: Double): SumMismatch =
+      SumMismatchImpl(expected, actual)
+
+    /** Creates a mismatch indicating that histogram boundaries differed from the expected ones. */
+    def boundariesMismatch(expected: BucketBoundaries, actual: BucketBoundaries): BoundariesMismatch =
+      BoundariesMismatchImpl(expected, actual)
+
+    /** Creates a mismatch indicating that histogram bucket counts differed from the expected ones. */
+    def countsMismatch(expected: List[Long], actual: List[Long]): CountsMismatch =
+      CountsMismatchImpl(expected, actual)
+
+    /** Creates a mismatch indicating that the exponential histogram scale differed from the expected one. */
+    def scaleMismatch(expected: Int, actual: Int): ScaleMismatch =
+      ScaleMismatchImpl(expected, actual)
+
+    /** Creates a mismatch indicating that the exponential histogram zero count differed from the expected one. */
+    def zeroCountMismatch(expected: Long, actual: Long): ZeroCountMismatch =
+      ZeroCountMismatchImpl(expected, actual)
+
+    /** Creates a mismatch indicating that the point attributes did not satisfy the nested attributes expectation. */
+    def attributesMismatch(mismatches: NonEmptyList[AttributesExpectation.Mismatch]): AttributesMismatch =
+      AttributesMismatchImpl(mismatches)
 
     /** Creates a mismatch indicating that a custom point predicate returned `false`. */
     def predicateMismatch(clue: String): PredicateMismatch =

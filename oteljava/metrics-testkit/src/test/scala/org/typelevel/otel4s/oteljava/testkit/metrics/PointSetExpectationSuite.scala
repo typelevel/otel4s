@@ -371,7 +371,7 @@ class PointSetExpectationSuite extends CatsEffectSuite {
       testkit: MetricsTestkit[IO],
       name: String
   ): IO[List[PointExpectation.NumericPointData[Long]]] =
-    testkit.collectMetrics[MetricData].map { metrics =>
+    testkit.collectAllMetrics.map { metrics =>
       metricByName(metrics, name).getLongSumData.getPoints.asScala.toList.map(PointExpectation.LongNumericPointData.apply)
     }
 
@@ -379,7 +379,7 @@ class PointSetExpectationSuite extends CatsEffectSuite {
       testkit: MetricsTestkit[IO],
       name: String
   ): IO[List[JHistogramPointData]] =
-    testkit.collectMetrics[MetricData].map { metrics =>
+    testkit.collectAllMetrics.map { metrics =>
       metricByName(metrics, name).getHistogramData.getPoints.asScala.toList
     }
 

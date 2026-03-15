@@ -28,7 +28,8 @@ import org.typelevel.otel4s.oteljava.testkit.metrics.{
   MetricExpectation,
   MetricExpectations,
   MetricsTestkit,
-  PointExpectation
+  PointExpectation,
+  PointSetExpectation
 }
 
 class ObservableSuite extends CatsEffectSuite {
@@ -49,7 +50,7 @@ class ObservableSuite extends CatsEffectSuite {
           .createWithCallback(_.record(42.0, Attribute("foo", "bar")))
           .use(_ =>
             sdk
-              .collectMetrics[MetricData]
+              .collectAllMetrics
               .map(
                 assertExpected(
                   _,
@@ -80,18 +81,18 @@ class ObservableSuite extends CatsEffectSuite {
           )
           .use(_ =>
             sdk
-              .collectMetrics[MetricData]
+              .collectAllMetrics
               .map(
                 assertExpected(
                   _,
                   List(
                     MetricExpectation
                       .gauge[Double]("gauge")
-                      .withAnyPoint(
-                        PointExpectation.numeric(1336.0).withAttributesExact(Attribute("1", "2"))
-                      )
-                      .withAnyPoint(
-                        PointExpectation.numeric(1337.0).withAttributesExact(Attribute("a", "b"))
+                      .withPoints(
+                        PointSetExpectation.contains(
+                          PointExpectation.numeric(1336.0).withAttributesExact(Attribute("1", "2")),
+                          PointExpectation.numeric(1337.0).withAttributesExact(Attribute("a", "b"))
+                        )
                       )
                       .withDescription("description")
                       .withUnit("unit")
@@ -122,7 +123,7 @@ class ObservableSuite extends CatsEffectSuite {
           .createWithCallback(_.record(1234, Attribute("number", 42L)))
           .use(_ =>
             sdk
-              .collectMetrics[MetricData]
+              .collectAllMetrics
               .map(
                 assertExpected(
                   _,
@@ -153,18 +154,18 @@ class ObservableSuite extends CatsEffectSuite {
           )
           .use(_ =>
             sdk
-              .collectMetrics[MetricData]
+              .collectAllMetrics
               .map(
                 assertExpected(
                   _,
                   List(
                     MetricExpectation
                       .sum[Long]("counter")
-                      .withAnyPoint(
-                        PointExpectation.numeric(1336L).withAttributesExact(Attribute("1", "2"))
-                      )
-                      .withAnyPoint(
-                        PointExpectation.numeric(1337L).withAttributesExact(Attribute("a", "b"))
+                      .withPoints(
+                        PointSetExpectation.contains(
+                          PointExpectation.numeric(1336L).withAttributesExact(Attribute("1", "2")),
+                          PointExpectation.numeric(1337L).withAttributesExact(Attribute("a", "b"))
+                        )
                       )
                       .withDescription("description")
                       .withUnit("unit")
@@ -197,7 +198,7 @@ class ObservableSuite extends CatsEffectSuite {
           )
           .use(_ =>
             sdk
-              .collectMetrics[MetricData]
+              .collectAllMetrics
               .map(
                 assertExpected(
                   _,
@@ -228,18 +229,18 @@ class ObservableSuite extends CatsEffectSuite {
           )
           .use(_ =>
             sdk
-              .collectMetrics[MetricData]
+              .collectAllMetrics
               .map(
                 assertExpected(
                   _,
                   List(
                     MetricExpectation
                       .sum[Long]("updowncounter")
-                      .withAnyPoint(
-                        PointExpectation.numeric(1336L).withAttributesExact(Attribute("1", "2"))
-                      )
-                      .withAnyPoint(
-                        PointExpectation.numeric(1336L).withAttributesExact(Attribute("a", "b"))
+                      .withPoints(
+                        PointSetExpectation.contains(
+                          PointExpectation.numeric(1336L).withAttributesExact(Attribute("1", "2")),
+                          PointExpectation.numeric(1336L).withAttributesExact(Attribute("a", "b"))
+                        )
                       )
                       .withDescription("description")
                       .withUnit("unit")

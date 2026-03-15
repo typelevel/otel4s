@@ -18,6 +18,8 @@ package org.typelevel.otel4s.oteljava.testkit.metrics
 
 import cats.effect.Async
 import cats.effect.Resource
+import cats.mtl.Ask
+import cats.syntax.functor._
 import io.opentelemetry.sdk.metrics.SdkMeterProvider
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder
 import io.opentelemetry.sdk.metrics.data.MetricData
@@ -42,6 +44,10 @@ sealed trait MetricsTestkit[F[_]] {
     * @note
     *   metrics are recollected on each invocation.
     */
+  @deprecated(
+    "Use `collectAllMetrics` for raw metrics or the new expectation API to validate metrics directly",
+    "0.16.0"
+  )
   def collectMetrics: F[List[MetricData]]
 
 }
@@ -114,8 +120,11 @@ object MetricsTestkit {
       metricReader: InMemoryMetricReader
   ) extends MetricsTestkit[F] {
 
-    def collectMetrics: F[List[MetricData]] =
-      Async[F].delay(metricReader.collectAllMetrics().asScala.toList)
+    def collectMetrics[A: FromMetricData]: F[List[A]] =
+      Async[F].delay {
+        val metrics = metricReader.collectAllMetrics().asScala.toList
+        metrics.map(FromMetricData[A].from)
+      }
   }
 
   private final case class BuilderImpl[F[_]: Async: LocalContextProvider](

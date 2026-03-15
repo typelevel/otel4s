@@ -68,7 +68,7 @@ class BatchCallbackSuite extends CatsEffectSuite {
                 _ <- gauge2.record(3.1, Attribute("key", "value6"))
               } yield ()
           }
-          .surround(metrics.collectMetrics[MetricData])
+          .surround(metrics.collectAllMetrics)
       } yield {
         assertExpected(
           metrics,

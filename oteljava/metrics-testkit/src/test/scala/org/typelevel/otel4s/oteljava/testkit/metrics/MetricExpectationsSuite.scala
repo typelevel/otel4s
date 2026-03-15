@@ -17,7 +17,6 @@
 package org.typelevel.otel4s.oteljava.testkit.metrics
 
 import cats.effect.IO
-import io.opentelemetry.sdk.metrics.data.MetricData
 import munit.{CatsEffectSuite, Location, TestOptions}
 import org.typelevel.otel4s.{Attribute, Attributes}
 import org.typelevel.otel4s.oteljava.testkit.InstrumentationScopeExpectation
@@ -29,7 +28,7 @@ class MetricExpectationsSuite extends CatsEffectSuite {
       meter <- testkit.meterProvider.get("test")
       counter <- meter.counter[Long]("service.counter").create
       _ <- counter.inc()
-      metrics <- testkit.collectMetrics[MetricData]
+      metrics <- testkit.collectAllMetrics
     } yield assertEquals(MetricExpectations.check(metrics, MetricExpectation.name("service.counter")), None)
   }
 
@@ -38,7 +37,7 @@ class MetricExpectationsSuite extends CatsEffectSuite {
       meter <- testkit.meterProvider.get("test")
       counter <- meter.counter[Long]("service.counter").create
       _ <- counter.add(1L)
-      metrics <- testkit.collectMetrics[MetricData]
+      metrics <- testkit.collectAllMetrics
     } yield assertSuccess(MetricExpectations.checkAll(metrics, MetricExpectation.sum[Long]("service.counter").withValue(1L)))
   }
 
@@ -47,7 +46,7 @@ class MetricExpectationsSuite extends CatsEffectSuite {
       meter <- testkit.meterProvider.get("test")
       counter <- meter.counter[Long]("service.counter").create
       _ <- counter.add(1L)
-      metrics <- testkit.collectMetrics[MetricData]
+      metrics <- testkit.collectAllMetrics
     } yield assertSuccess(
       MetricExpectations.checkAll(
         metrics,
@@ -63,7 +62,7 @@ class MetricExpectationsSuite extends CatsEffectSuite {
       meter <- testkit.meterProvider.get("test")
       counter <- meter.counter[Long]("service.counter").create
       _ <- counter.add(1L, Attributes(Attribute("http.method", "GET")))
-      metrics <- testkit.collectMetrics[MetricData]
+      metrics <- testkit.collectAllMetrics
     } yield assertSuccess(
       MetricExpectations.checkAll(
         metrics,
@@ -88,7 +87,7 @@ class MetricExpectationsSuite extends CatsEffectSuite {
       counter <- meter.counter[Long]("service.counter").create
       _ <- counter.add(1L, Attributes(Attribute("region", "eu")))
       _ <- counter.add(1L, Attributes(Attribute("region", "us")))
-      metrics <- testkit.collectMetrics[MetricData]
+      metrics <- testkit.collectAllMetrics
     } yield assertSuccess(
       MetricExpectations.checkAll(
         metrics,
@@ -106,7 +105,7 @@ class MetricExpectationsSuite extends CatsEffectSuite {
       counter <- meter.counter[Long]("service.counter").create
       _ <- counter.add(1L, Attributes(Attribute("region", "eu")))
       _ <- counter.add(1L, Attributes(Attribute("region", "us")))
-      metrics <- testkit.collectMetrics[MetricData]
+      metrics <- testkit.collectAllMetrics
     } yield assertSuccess(
       MetricExpectations.checkAll(
         metrics,
@@ -125,7 +124,7 @@ class MetricExpectationsSuite extends CatsEffectSuite {
       meter <- testkit.meterProvider.get("test")
       counter <- meter.counter[Long]("service.counter").create
       _ <- counter.add(1L, Attributes(Attribute("region", "eu")))
-      metrics <- testkit.collectMetrics[MetricData]
+      metrics <- testkit.collectAllMetrics
     } yield {
       val result = MetricExpectations.check(
         metrics,
@@ -158,7 +157,7 @@ class MetricExpectationsSuite extends CatsEffectSuite {
       counter <- meter.counter[Long]("service.counter").create
       _ <- counter.add(1L, Attributes(Attribute("region", "eu")))
       _ <- counter.add(1L, Attributes(Attribute("region", "us")))
-      metrics <- testkit.collectMetrics[MetricData]
+      metrics <- testkit.collectAllMetrics
     } yield assertSuccess(
       MetricExpectations.checkAll(
         metrics,
@@ -179,7 +178,7 @@ class MetricExpectationsSuite extends CatsEffectSuite {
       _ <- counter.add(1L, Attributes(Attribute("region", "eu")))
       _ <- counter.add(1L, Attributes(Attribute("region", "us")))
       _ <- counter.add(1L, Attributes(Attribute("region", "apac")))
-      metrics <- testkit.collectMetrics[MetricData]
+      metrics <- testkit.collectAllMetrics
     } yield {
       val result = MetricExpectations.check(
         metrics,
@@ -213,7 +212,7 @@ class MetricExpectationsSuite extends CatsEffectSuite {
       meter <- testkit.meterProvider.get("test")
       counter <- meter.counter[Long]("service.counter").create
       _ <- counter.add(1L, Attributes(Attribute("region", "eu")))
-      metrics <- testkit.collectMetrics[MetricData]
+      metrics <- testkit.collectAllMetrics
     } yield {
       val result = MetricExpectations.check(
         metrics,
@@ -245,7 +244,7 @@ class MetricExpectationsSuite extends CatsEffectSuite {
       counter <- meter.counter[Long]("service.counter").create
       _ <- counter.add(1L, Attributes(Attribute("region", "eu")))
       _ <- counter.add(2L, Attributes(Attribute("region", "us")))
-      metrics <- testkit.collectMetrics[MetricData]
+      metrics <- testkit.collectAllMetrics
     } yield {
       val result = MetricExpectations.check(
         metrics,
@@ -279,7 +278,7 @@ class MetricExpectationsSuite extends CatsEffectSuite {
       _ <- counter.add(1L, Attributes(Attribute("region", "eu"), Attribute("host", "a")))
       _ <- counter.add(1L, Attributes(Attribute("region", "eu"), Attribute("host", "b")))
       _ <- counter.add(1L, Attributes(Attribute("region", "us")))
-      metrics <- testkit.collectMetrics[MetricData]
+      metrics <- testkit.collectAllMetrics
     } yield assertSuccess(
       MetricExpectations.checkAll(
         metrics,
@@ -301,7 +300,7 @@ class MetricExpectationsSuite extends CatsEffectSuite {
       counter <- meter.counter[Long]("service.counter").create
       _ <- counter.add(1L, Attributes(Attribute("region", "eu")))
       _ <- counter.add(1L, Attributes(Attribute("region", "us")))
-      metrics <- testkit.collectMetrics[MetricData]
+      metrics <- testkit.collectAllMetrics
     } yield assertSuccess(
       MetricExpectations.checkAll(
         metrics,
@@ -324,7 +323,7 @@ class MetricExpectationsSuite extends CatsEffectSuite {
       meter <- testkit.meterProvider.get("test")
       counter <- meter.counter[Long]("service.counter").create
       _ <- counter.add(1L, Attributes(Attribute("region", "eu")))
-      metrics <- testkit.collectMetrics[MetricData]
+      metrics <- testkit.collectAllMetrics
     } yield assertSuccess(
       MetricExpectations.checkAll(
         metrics,
@@ -351,7 +350,7 @@ class MetricExpectationsSuite extends CatsEffectSuite {
       counter <- meter.counter[Long]("service.counter").create
       _ <- counter.add(1L, Attributes(Attribute("region", "eu")))
       _ <- counter.add(1L, Attributes(Attribute("region", "us")))
-      metrics <- testkit.collectMetrics[MetricData]
+      metrics <- testkit.collectAllMetrics
     } yield assertSuccess(
       MetricExpectations.checkAll(
         metrics,
@@ -374,7 +373,7 @@ class MetricExpectationsSuite extends CatsEffectSuite {
       histogram <- meter.histogram[Long]("service.histogram").create
       _ <- histogram.record(10L, Attributes(Attribute("region", "eu")))
       _ <- histogram.record(20L, Attributes(Attribute("region", "us")))
-      metrics <- testkit.collectMetrics[MetricData]
+      metrics <- testkit.collectAllMetrics
     } yield assertSuccess(
       MetricExpectations.checkAll(
         metrics,
@@ -395,7 +394,7 @@ class MetricExpectationsSuite extends CatsEffectSuite {
       gauge <- meter.gauge[Double]("service.gauge").create
       _ <- gauge.record(10.5, Attributes(Attribute("region", "eu")))
       _ <- gauge.record(20.5, Attributes(Attribute("region", "us")))
-      metrics <- testkit.collectMetrics[MetricData]
+      metrics <- testkit.collectAllMetrics
     } yield assertSuccess(
       MetricExpectations.checkAll(
         metrics,
@@ -420,7 +419,7 @@ class MetricExpectationsSuite extends CatsEffectSuite {
       meter <- testkit.meterProvider.get("test")
       counter <- meter.counter[Long]("service.counter").create
       _ <- counter.add(1L, Attributes(Attribute("region", "eu")))
-      metrics <- testkit.collectMetrics[MetricData]
+      metrics <- testkit.collectAllMetrics
     } yield {
       val result = MetricExpectations.checkAll(
         metrics,
@@ -453,7 +452,7 @@ class MetricExpectationsSuite extends CatsEffectSuite {
       meter <- testkit.meterProvider.get("test")
       counter <- meter.counter[Long]("service.counter").create
       _ <- counter.add(1L)
-      metrics <- testkit.collectMetrics[MetricData]
+      metrics <- testkit.collectAllMetrics
     } yield {
       val result = MetricExpectations.check(
         metrics,
@@ -482,7 +481,7 @@ class MetricExpectationsSuite extends CatsEffectSuite {
       counter <- meter.counter[Long]("service.counter").create
       _ <- counter.add(1L, Attributes(Attribute("region", "eu")))
       _ <- counter.add(1L, Attributes(Attribute("region", "us")))
-      metrics <- testkit.collectMetrics[MetricData]
+      metrics <- testkit.collectAllMetrics
     } yield assertSuccess(
       MetricExpectations.checkAll(
         metrics,
@@ -496,7 +495,7 @@ class MetricExpectationsSuite extends CatsEffectSuite {
       meter <- testkit.meterProvider.get("test")
       counter <- meter.counter[Long]("service.counter").create
       _ <- counter.add(1L)
-      metrics <- testkit.collectMetrics[MetricData]
+      metrics <- testkit.collectAllMetrics
     } yield {
       val result = MetricExpectations.checkAll(
         metrics,

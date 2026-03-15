@@ -18,7 +18,6 @@ package org.typelevel.otel4s.instrumentation.ce
 
 import cats.Show
 import cats.effect.IO
-import io.opentelemetry.sdk.metrics.data.MetricData
 import munit.CatsEffectSuite
 import munit.ScalaCheckEffectSuite
 import org.scalacheck.Arbitrary
@@ -44,7 +43,7 @@ class IORuntimeMetricsSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
       for {
         metrics <- IORuntimeMetrics
           .register[IO](munitIORuntime.metrics, IORuntimeMetrics.Config.default)
-          .surround(testkit.collectMetrics)
+          .surround(testkit.collectAllMetrics)
       } yield assertEquals(MetricExpectations.checkAll(metrics, expected), Right(()))
     }
   }
@@ -66,7 +65,7 @@ class IORuntimeMetricsSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
         for {
           metrics <- IORuntimeMetrics
             .register[IO](munitIORuntime.metrics, config)
-            .surround(testkit.collectMetrics)
+            .surround(testkit.collectAllMetrics)
         } yield assertEquals(MetricExpectations.checkAll(metrics, expected), Right(()))
       }
     }

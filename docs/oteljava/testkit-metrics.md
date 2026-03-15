@@ -70,7 +70,7 @@ def test: IO[Unit] =
   MetricsTestkit.inMemory[IO]().use { testkit =>
     for {
       _ <- program(testkit.meterProvider)
-      metrics <- testkit.collectMetrics[MetricData]
+      metrics <- testkit.collectAllMetrics
     } yield assertExpected(
       metrics,
       MetricExpectation.sum[Long]("service.counter").withValue(1L),

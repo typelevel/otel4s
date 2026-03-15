@@ -532,11 +532,10 @@ object PointSetExpectation {
     val candidates = expected.toList.map { expectation =>
       indexedPoints.indices.filter(index => checker.check(expectation, indexedPoints(index)).isRight).toList
     }
+    val matching = maximumMatching(candidates.toVector)
 
-    findFullMatching(candidates.toVector) match {
-      case Some(matchedIndices) =>
-        Right(matchedIndices)
-      case None =>
+    if (matching.isComplete) Right(matching.matchedIndices)
+    else {
         val missing = expected.toList.zip(candidates).collect { case (expectation, Nil) =>
           Mismatch.missingExpectedPoint(
             checker.clue(expectation),
@@ -549,40 +548,56 @@ object PointSetExpectation {
             .fromList(missing)
             .getOrElse(
               NonEmptyList.one(
-                Mismatch.matchedPointCountMismatch(expected.length, bestMatchingCount(candidates))
+                Mismatch.matchedPointCountMismatch(expected.length, matching.size)
               )
             )
         )
     }
   }
 
-  private def findFullMatching(candidates: Vector[List[Int]]): Option[Set[Int]] = {
-    def loop(remaining: List[(Int, List[Int])], used: Set[Int]): Option[Set[Int]] =
-      remaining.sortBy(_._2.length) match {
-        case Nil =>
-          Some(used)
-        case (_, choices) :: tail =>
-          choices.iterator
-            .filterNot(used.contains)
-            .map(choice => loop(tail, used + choice))
-            .collectFirst(Function.unlift(identity))
+  private final case class MatchingResult(
+      isComplete: Boolean,
+      matchedIndices: Set[Int],
+      size: Int
+  )
+
+  private def maximumMatching(
+      candidates: Vector[List[Int]],
+  ): MatchingResult = {
+    type Matching = Map[Int, Int] // pointIndex -> expectationIndex
+
+    val orderedCandidates = candidates.zipWithIndex.sortBy(_._1.length)
+
+    def augment(
+        expectationIndex: Int,
+        seen: Set[Int],
+        matching: Matching
+    ): Option[Matching] =
+      orderedCandidates(expectationIndex)._1.foldLeft(Option.empty[Matching]) {
+        case (result @ Some(_), _) =>
+          result
+        case (None, pointIndex) if seen(pointIndex) =>
+          None
+        case (None, pointIndex) =>
+          matching.get(pointIndex) match {
+            case None =>
+              Some(matching.updated(pointIndex, expectationIndex))
+            case Some(otherExpectationIndex) =>
+              augment(otherExpectationIndex, seen + pointIndex, matching)
+                .map(_.updated(pointIndex, expectationIndex))
+          }
       }
 
-    loop(candidates.zipWithIndex.map(_.swap).toList, Set.empty)
-  }
-
-  private def bestMatchingCount(candidates: List[List[Int]]): Int = {
-    def loop(remaining: List[List[Int]], used: Set[Int]): Int =
-      remaining.sortBy(_.length) match {
-        case Nil =>
-          used.size
-        case choices :: tail =>
-          val available = choices.filterNot(used.contains)
-          if (available.isEmpty) loop(tail, used)
-          else available.map(choice => loop(tail, used + choice)).max
+    val finalMatching =
+      orderedCandidates.indices.foldLeft(Map.empty[Int, Int]) { case (matching, expectationIndex) =>
+        augment(expectationIndex, Set.empty, matching).getOrElse(matching)
       }
 
-    loop(candidates, Set.empty)
+    MatchingResult(
+      isComplete = finalMatching.size == candidates.length,
+      matchedIndices = finalMatching.keySet,
+      size = finalMatching.size
+    )
   }
 
 }

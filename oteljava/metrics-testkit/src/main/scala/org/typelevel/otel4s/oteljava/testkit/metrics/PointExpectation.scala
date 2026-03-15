@@ -18,29 +18,28 @@ package org.typelevel.otel4s.oteljava.testkit
 package metrics
 
 import cats.data.NonEmptyList
+import io.opentelemetry.sdk.metrics.data.{DoublePointData, LongPointData, PointData => JPointData}
 import io.opentelemetry.sdk.metrics.data.{ExponentialHistogramPointData => JExponentialHistogramPointData}
 import io.opentelemetry.sdk.metrics.data.{HistogramPointData => JHistogramPointData}
-import io.opentelemetry.sdk.metrics.data.{DoublePointData, LongPointData, PointData => JPointData}
 import io.opentelemetry.sdk.metrics.data.{SummaryPointData => JSummaryPointData}
 import org.typelevel.otel4s.{Attribute, Attributes}
+import org.typelevel.otel4s.metrics.BucketBoundaries
+import org.typelevel.otel4s.metrics.MeasurementValue
+import org.typelevel.otel4s.metrics.MeasurementValue.{DoubleMeasurementValue, LongMeasurementValue}
 import org.typelevel.otel4s.oteljava.AttributeConverters._
 import org.typelevel.otel4s.oteljava.testkit.AttributesExpectation
-import org.typelevel.otel4s.metrics.BucketBoundaries
 
 import scala.jdk.CollectionConverters._
 
 /** A partial expectation for a single OpenTelemetry Java point.
   *
-  * `PointExpectation` is used together with [[MetricExpectation.Numeric]], [[MetricExpectation.Summary]],
-  * [[MetricExpectation.Histogram]], and [[MetricExpectation.ExponentialHistogram]] to express which metric points
-  * should be present. Unspecified properties are ignored.
+  * `PointExpectation` is used together with metric expectations to express which individual points should be present.
+  * Unspecified properties are ignored.
   *
   * Attribute matching is done with [[AttributesExpectation]]:
   *   - [[withAttributes]] accepts a custom attribute expectation
   *   - [[withAttributesExact]] requires exact equality
   *   - [[withAttributesSubset]] requires the expected attributes to be contained in the point
-  *
-  * Use [[check]] when you need structured mismatch diagnostics and [[matches]] when you only need a boolean result.
   */
 sealed trait PointExpectation {
 
@@ -77,6 +76,17 @@ sealed trait PointExpectation {
 }
 
 object PointExpectation {
+
+  /** A typed view over OpenTelemetry numeric point data.
+    *
+    * This avoids exposing raw `JPointData` in the public numeric predicate API while still giving access to the
+    * underlying OpenTelemetry point when needed.
+    */
+  sealed trait NumericPointData[A] {
+    def value: A
+    def attributes: Attributes
+    def underlying: JPointData
+  }
 
   /** A structured reason explaining why a [[PointExpectation]] did not match a point. */
   sealed trait Mismatch extends Product with Serializable {
@@ -245,25 +255,17 @@ object PointExpectation {
     def withValue(value: A): Numeric[A]
 
     /** Adds a custom predicate over the numeric point data. */
-    def where(f: JPointData => Boolean): Numeric[A]
+    def where(f: NumericPointData[A] => Boolean): Numeric[A]
 
     /** Adds a custom predicate over the numeric point data with a clue shown in mismatches. */
-    def where(clue: String)(f: JPointData => Boolean): Numeric[A]
-
+    def where(clue: String)(f: NumericPointData[A] => Boolean): Numeric[A]
     def withAttributes(expectation: AttributesExpectation): Numeric[A]
-
     def withAttributesExact(attributes: Attributes): Numeric[A]
-
     def withAttributesExact(attributes: Attribute[_]*): Numeric[A]
-
     def withAttributesEmpty: Numeric[A]
-
     def withAttributesSubset(attributes: Attributes): Numeric[A]
-
     def withAttributesSubset(attributes: Attribute[_]*): Numeric[A]
-
     def withClue(text: String): Numeric[A]
-
   }
 
   /** A point expectation for summary points. */
@@ -280,21 +282,13 @@ object PointExpectation {
 
     /** Adds a custom predicate over summary point data with a clue shown in mismatches. */
     def where(clue: String)(f: JSummaryPointData => Boolean): Summary
-
     def withAttributes(expectation: AttributesExpectation): Summary
-
     def withAttributesExact(attributes: Attributes): Summary
-
     def withAttributesExact(attributes: Attribute[_]*): Summary
-
     def withAttributesEmpty: Summary
-
     def withAttributesSubset(attributes: Attributes): Summary
-
     def withAttributesSubset(attributes: Attribute[_]*): Summary
-
     def withClue(text: String): Summary
-
   }
 
   /** A point expectation for histogram points. */
@@ -320,21 +314,13 @@ object PointExpectation {
 
     /** Adds a custom predicate over histogram point data with a clue shown in mismatches. */
     def where(clue: String)(f: JHistogramPointData => Boolean): Histogram
-
     def withAttributes(expectation: AttributesExpectation): Histogram
-
     def withAttributesExact(attributes: Attributes): Histogram
-
     def withAttributesExact(attributes: Attribute[_]*): Histogram
-
     def withAttributesEmpty: Histogram
-
     def withAttributesSubset(attributes: Attributes): Histogram
-
     def withAttributesSubset(attributes: Attribute[_]*): Histogram
-
     def withClue(text: String): Histogram
-
   }
 
   /** A point expectation for exponential histogram points. */
@@ -357,27 +343,20 @@ object PointExpectation {
 
     /** Adds a custom predicate over exponential histogram point data with a clue shown in mismatches. */
     def where(clue: String)(f: JExponentialHistogramPointData => Boolean): ExponentialHistogram
-
     def withAttributes(expectation: AttributesExpectation): ExponentialHistogram
-
     def withAttributesExact(attributes: Attributes): ExponentialHistogram
-
     def withAttributesExact(attributes: Attribute[_]*): ExponentialHistogram
-
     def withAttributesEmpty: ExponentialHistogram
-
     def withAttributesSubset(attributes: Attributes): ExponentialHistogram
-
     def withAttributesSubset(attributes: Attribute[_]*): ExponentialHistogram
-
     def withClue(text: String): ExponentialHistogram
-
   }
 
   /** Creates an expectation for a numeric point with the given value. */
-  def numeric[A: NumberComparison](value: A): Numeric[A] =
-    NumericImpl[A](
+  def numeric[A: MeasurementValue: NumberComparison](value: A): Numeric[A] =
+    NumericImpl(
       expectedValue = Some(value),
+      valueType = MeasurementValue[A],
       numberComparison = NumberComparison[A]
     )
 
@@ -387,11 +366,7 @@ object PointExpectation {
 
   /** Creates an expectation for a summary point with exact sum and count expectations. */
   def summary(sum: Double, count: Long)(implicit cmp: NumberComparison[Double]): Summary =
-    SummaryImpl(
-      doubleComparison = cmp,
-      expectedSum = Some(sum),
-      expectedCount = Some(count)
-    )
+    SummaryImpl(doubleComparison = cmp, expectedSum = Some(sum), expectedCount = Some(count))
 
   /** Creates an expectation for a histogram point. */
   def histogram(implicit cmp: NumberComparison[Double]): Histogram =
@@ -433,12 +408,12 @@ object PointExpectation {
 
   private final case class NumericImpl[A](
       expectedValue: Option[A] = None,
+      valueType: MeasurementValue[A],
       numberComparison: NumberComparison[A],
       attributeExpectation: Option[AttributesExpectation] = None,
       clue: Option[String] = None,
-      predicates: List[(JPointData => Boolean, Option[String])] = Nil
+      predicates: List[(NumericPointData[A] => Boolean, Option[String])] = Nil
   ) extends Numeric[A] {
-
     def withValue(value: A): Numeric[A] =
       copy(expectedValue = Some(value))
 
@@ -463,56 +438,39 @@ object PointExpectation {
     def withClue(text: String): Numeric[A] =
       copy(clue = Some(text))
 
-    def where(f: JPointData => Boolean): Numeric[A] =
+    def where(f: NumericPointData[A] => Boolean): Numeric[A] =
       copy(predicates = predicates :+ (f -> None))
 
-    def where(clue: String)(f: JPointData => Boolean): Numeric[A] =
+    def where(clue: String)(f: NumericPointData[A] => Boolean): Numeric[A] =
       copy(predicates = predicates :+ (f -> Some(clue)))
 
     def check(point: JPointData): Either[NonEmptyList[Mismatch], Unit] =
-      ExpectationChecks.combine(
-        expectedValue.fold(ExpectationChecks.success[Mismatch]) { expected =>
-          checkValue(expected, point)
-        },
-        attributeExpectation.fold(ExpectationChecks.success[Mismatch]) { expected =>
-          ExpectationChecks.nested(expected.check(point.getAttributes.toScala))(Mismatch.attributesMismatch)
-        },
-        ExpectationChecks.combine(
-          predicates.map { case (predicate, clue) =>
-            if (predicate(point)) ExpectationChecks.success
-            else
-              ExpectationChecks.mismatch(Mismatch.predicateMismatch(clue.getOrElse("point predicate returned false")))
-          }
-        )
-      )
-
-    private def checkValue(expected: A, point: JPointData): Either[NonEmptyList[Mismatch], Unit] =
-      (expected, point) match {
-        case (_: Long, long: LongPointData) =>
-          if (numberComparison.equal(expected, long.getValue.asInstanceOf[A])) ExpectationChecks.success
-          else
-            ExpectationChecks.mismatch(
-              Mismatch.valueMismatch(
-                numberComparison.render(expected),
-                numberComparison.render(long.getValue.asInstanceOf[A])
-              )
-            )
-        case (_: Double, double: DoublePointData) =>
-          if (numberComparison.equal(expected, double.getValue.asInstanceOf[A])) ExpectationChecks.success
-          else
-            ExpectationChecks.mismatch(
-              Mismatch.valueMismatch(
-                numberComparison.render(expected),
-                numberComparison.render(double.getValue.asInstanceOf[A])
-              )
-            )
-        case _ =>
-          ExpectationChecks.mismatch(
-            Mismatch.typeMismatch(
-              expected.getClass.getSimpleName,
-              point.getClass.getSimpleName
+      toNumericPointData(valueType, point) match {
+        case Right(numericPoint) =>
+          ExpectationChecks.combine(
+            expectedValue.fold(ExpectationChecks.success[Mismatch]) { expected =>
+              if (numberComparison.equal(expected, numericPoint.value)) ExpectationChecks.success
+              else {
+                val expectedValue = numberComparison.render(expected)
+                val actualValue = numberComparison.render(numericPoint.value)
+                ExpectationChecks.mismatch(Mismatch.valueMismatch(expectedValue, actualValue))
+              }
+            },
+            attributeExpectation.fold(ExpectationChecks.success[Mismatch]) { expected =>
+              ExpectationChecks.nested(expected.check(numericPoint.attributes))(Mismatch.attributesMismatch)
+            },
+            ExpectationChecks.combine(
+              predicates.map { case (predicate, clue) =>
+                if (predicate(numericPoint)) ExpectationChecks.success
+                else
+                  ExpectationChecks.mismatch(
+                    Mismatch.predicateMismatch(clue.getOrElse("point predicate returned false"))
+                  )
+              }
             )
           )
+        case Left(mismatch) =>
+          ExpectationChecks.mismatch(mismatch)
       }
   }
 
@@ -524,37 +482,18 @@ object PointExpectation {
       clue: Option[String] = None,
       predicates: List[(JSummaryPointData => Boolean, Option[String])] = Nil
   ) extends Summary {
-
-    def withCount(count: Long): Summary =
-      copy(expectedCount = Some(count))
-
-    def withSum(sum: Double): Summary =
-      copy(expectedSum = Some(sum))
-
-    def withAttributes(expectation: AttributesExpectation): Summary =
-      copy(attributeExpectation = Some(expectation))
-
+    def withCount(count: Long): Summary = copy(expectedCount = Some(count))
+    def withSum(sum: Double): Summary = copy(expectedSum = Some(sum))
+    def withAttributes(expectation: AttributesExpectation): Summary = copy(attributeExpectation = Some(expectation))
     def withAttributesExact(attributes: Attributes): Summary =
       copy(attributeExpectation = Some(AttributesExpectation.exact(attributes)))
-
-    def withAttributesExact(attributes: Attribute[_]*): Summary =
-      withAttributesExact(Attributes(attributes *))
-
-    def withAttributesEmpty: Summary =
-      withAttributesExact(Attributes.empty)
-
+    def withAttributesExact(attributes: Attribute[_]*): Summary = withAttributesExact(Attributes(attributes *))
+    def withAttributesEmpty: Summary = withAttributesExact(Attributes.empty)
     def withAttributesSubset(attributes: Attributes): Summary =
       copy(attributeExpectation = Some(AttributesExpectation.subset(attributes)))
-
-    def withAttributesSubset(attributes: Attribute[_]*): Summary =
-      withAttributesSubset(Attributes(attributes *))
-
-    def withClue(text: String): Summary =
-      copy(clue = Some(text))
-
-    def where(f: JSummaryPointData => Boolean): Summary =
-      copy(predicates = predicates :+ (f -> None))
-
+    def withAttributesSubset(attributes: Attribute[_]*): Summary = withAttributesSubset(Attributes(attributes *))
+    def withClue(text: String): Summary = copy(clue = Some(text))
+    def where(f: JSummaryPointData => Boolean): Summary = copy(predicates = predicates :+ (f -> None))
     def where(clue: String)(f: JSummaryPointData => Boolean): Summary =
       copy(predicates = predicates :+ (f -> Some(clue)))
 
@@ -598,46 +537,21 @@ object PointExpectation {
       clue: Option[String] = None,
       predicates: List[(JHistogramPointData => Boolean, Option[String])] = Nil
   ) extends Histogram {
-
-    def withCount(count: Long): Histogram =
-      copy(expectedCount = Some(count))
-
-    def withSum(sum: Double): Histogram =
-      copy(expectedSum = Some(sum))
-
-    def withBoundaries(boundaries: BucketBoundaries): Histogram =
-      copy(expectedBoundaries = Some(boundaries))
-
-    def withCounts(counts: List[Long]): Histogram =
-      copy(expectedCounts = Some(counts))
-
-    def withCounts(counts: Long*): Histogram =
-      withCounts(counts.toList)
-
-    def withAttributes(expectation: AttributesExpectation): Histogram =
-      copy(attributeExpectation = Some(expectation))
-
+    def withCount(count: Long): Histogram = copy(expectedCount = Some(count))
+    def withSum(sum: Double): Histogram = copy(expectedSum = Some(sum))
+    def withBoundaries(boundaries: BucketBoundaries): Histogram = copy(expectedBoundaries = Some(boundaries))
+    def withCounts(counts: List[Long]): Histogram = copy(expectedCounts = Some(counts))
+    def withCounts(counts: Long*): Histogram = withCounts(counts.toList)
+    def withAttributes(expectation: AttributesExpectation): Histogram = copy(attributeExpectation = Some(expectation))
     def withAttributesExact(attributes: Attributes): Histogram =
       copy(attributeExpectation = Some(AttributesExpectation.exact(attributes)))
-
-    def withAttributesExact(attributes: Attribute[_]*): Histogram =
-      withAttributesExact(Attributes(attributes *))
-
-    def withAttributesEmpty: Histogram =
-      withAttributesExact(Attributes.empty)
-
+    def withAttributesExact(attributes: Attribute[_]*): Histogram = withAttributesExact(Attributes(attributes *))
+    def withAttributesEmpty: Histogram = withAttributesExact(Attributes.empty)
     def withAttributesSubset(attributes: Attributes): Histogram =
       copy(attributeExpectation = Some(AttributesExpectation.subset(attributes)))
-
-    def withAttributesSubset(attributes: Attribute[_]*): Histogram =
-      withAttributesSubset(Attributes(attributes *))
-
-    def withClue(text: String): Histogram =
-      copy(clue = Some(text))
-
-    def where(f: JHistogramPointData => Boolean): Histogram =
-      copy(predicates = predicates :+ (f -> None))
-
+    def withAttributesSubset(attributes: Attribute[_]*): Histogram = withAttributesSubset(Attributes(attributes *))
+    def withClue(text: String): Histogram = copy(clue = Some(text))
+    def where(f: JHistogramPointData => Boolean): Histogram = copy(predicates = predicates :+ (f -> None))
     def where(clue: String)(f: JHistogramPointData => Boolean): Histogram =
       copy(predicates = predicates :+ (f -> Some(clue)))
 
@@ -654,8 +568,7 @@ object PointExpectation {
               else ExpectationChecks.mismatch(Mismatch.countMismatch(expected, histogram.getCount))
             },
             expectedBoundaries.fold(ExpectationChecks.success[Mismatch]) { expected =>
-              val actual =
-                BucketBoundaries(histogram.getBoundaries.asScala.toVector.map(_.doubleValue()))
+              val actual = BucketBoundaries(histogram.getBoundaries.asScala.toVector.map(_.doubleValue()))
               if (
                 expected.boundaries.length == actual.boundaries.length &&
                 expected.boundaries.zip(actual.boundaries).forall { case (expectedValue, actualValue) =>
@@ -670,9 +583,7 @@ object PointExpectation {
               else ExpectationChecks.mismatch(Mismatch.countsMismatch(expected, actual))
             },
             attributeExpectation.fold(ExpectationChecks.success[Mismatch]) { expected =>
-              ExpectationChecks.nested(
-                expected.check(histogram.getAttributes.toScala)
-              )(Mismatch.attributesMismatch)
+              ExpectationChecks.nested(expected.check(histogram.getAttributes.toScala))(Mismatch.attributesMismatch)
             },
             ExpectationChecks.combine(
               predicates.map { case (predicate, clue) =>
@@ -699,43 +610,24 @@ object PointExpectation {
       clue: Option[String] = None,
       predicates: List[(JExponentialHistogramPointData => Boolean, Option[String])] = Nil
   ) extends ExponentialHistogram {
-
-    def withScale(scale: Int): ExponentialHistogram =
-      copy(expectedScale = Some(scale))
-
-    def withCount(count: Long): ExponentialHistogram =
-      copy(expectedCount = Some(count))
-
-    def withSum(sum: Double): ExponentialHistogram =
-      copy(expectedSum = Some(sum))
-
-    def withZeroCount(zeroCount: Long): ExponentialHistogram =
-      copy(expectedZeroCount = Some(zeroCount))
-
+    def withScale(scale: Int): ExponentialHistogram = copy(expectedScale = Some(scale))
+    def withCount(count: Long): ExponentialHistogram = copy(expectedCount = Some(count))
+    def withSum(sum: Double): ExponentialHistogram = copy(expectedSum = Some(sum))
+    def withZeroCount(zeroCount: Long): ExponentialHistogram = copy(expectedZeroCount = Some(zeroCount))
     def withAttributes(expectation: AttributesExpectation): ExponentialHistogram =
       copy(attributeExpectation = Some(expectation))
-
     def withAttributesExact(attributes: Attributes): ExponentialHistogram =
       copy(attributeExpectation = Some(AttributesExpectation.exact(attributes)))
-
     def withAttributesExact(attributes: Attribute[_]*): ExponentialHistogram =
       withAttributesExact(Attributes(attributes *))
-
-    def withAttributesEmpty: ExponentialHistogram =
-      withAttributesExact(Attributes.empty)
-
+    def withAttributesEmpty: ExponentialHistogram = withAttributesExact(Attributes.empty)
     def withAttributesSubset(attributes: Attributes): ExponentialHistogram =
       copy(attributeExpectation = Some(AttributesExpectation.subset(attributes)))
-
     def withAttributesSubset(attributes: Attribute[_]*): ExponentialHistogram =
       withAttributesSubset(Attributes(attributes *))
-
-    def withClue(text: String): ExponentialHistogram =
-      copy(clue = Some(text))
-
+    def withClue(text: String): ExponentialHistogram = copy(clue = Some(text))
     def where(f: JExponentialHistogramPointData => Boolean): ExponentialHistogram =
       copy(predicates = predicates :+ (f -> None))
-
     def where(clue: String)(f: JExponentialHistogramPointData => Boolean): ExponentialHistogram =
       copy(predicates = predicates :+ (f -> Some(clue)))
 
@@ -760,9 +652,7 @@ object PointExpectation {
               else ExpectationChecks.mismatch(Mismatch.zeroCountMismatch(expected, histogram.getZeroCount))
             },
             attributeExpectation.fold(ExpectationChecks.success[Mismatch]) { expected =>
-              ExpectationChecks.nested(
-                expected.check(histogram.getAttributes.toScala)
-              )(Mismatch.attributesMismatch)
+              ExpectationChecks.nested(expected.check(histogram.getAttributes.toScala))(Mismatch.attributesMismatch)
             },
             ExpectationChecks.combine(
               predicates.map { case (predicate, clue) =>
@@ -781,4 +671,36 @@ object PointExpectation {
       }
   }
 
+  private[metrics] def toNumericPointData[A](
+      valueType: MeasurementValue[A],
+      point: JPointData
+  ): Either[Mismatch, NumericPointData[A]] =
+    valueType match {
+      case _: LongMeasurementValue[_] =>
+        point match {
+          case long: LongPointData =>
+            Right(LongNumericPointData(long).asInstanceOf[NumericPointData[A]])
+          case other =>
+            Left(Mismatch.typeMismatch("LongPointData", other.getClass.getSimpleName))
+        }
+      case _: DoubleMeasurementValue[_] =>
+        point match {
+          case double: DoublePointData =>
+            Right(DoubleNumericPointData(double).asInstanceOf[NumericPointData[A]])
+          case other =>
+            Left(Mismatch.typeMismatch("DoublePointData", other.getClass.getSimpleName))
+        }
+    }
+
+  private[metrics] final case class LongNumericPointData(underlying: LongPointData) extends NumericPointData[Long] {
+    def value: Long = underlying.getValue
+    def attributes: Attributes = underlying.getAttributes.toScala
+  }
+
+  private[metrics] final case class DoubleNumericPointData(
+      underlying: DoublePointData
+  ) extends NumericPointData[Double] {
+    def value: Double = underlying.getValue
+    def attributes: Attributes = underlying.getAttributes.toScala
+  }
 }

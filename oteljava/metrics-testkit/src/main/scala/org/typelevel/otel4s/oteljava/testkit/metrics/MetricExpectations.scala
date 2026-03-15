@@ -273,7 +273,15 @@ object MetricExpectations {
       .flatMap { metric =>
         expectation.check(metric).left.toOption.map(metric -> _)
       }
-      .sortBy { case (_, mismatches) => mismatches.length }
+      .sortBy { case (_, mismatches) =>
+        (
+          mismatches.exists {
+            case _: MetricExpectation.Mismatch.TypeMismatch => true
+            case _                                          => false
+          },
+          mismatches.length
+        )
+      }
       .headOption
       .map { case (metric, mismatches) =>
         MetricMismatch.closestMismatch(expectation, metric, mismatches)

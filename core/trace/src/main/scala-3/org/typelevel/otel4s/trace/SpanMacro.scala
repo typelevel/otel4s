@@ -39,7 +39,7 @@ private[otel4s] trait SpanMacro[F[_]] {
     * @param attributes
     *   the set of attributes to add to the span
     */
-  inline def addAttributes(inline attributes: Attribute[_]*): F[Unit] =
+  inline def addAttributes(inline attributes: AttributeOrIterableOnce*): F[Unit] =
     ${ SpanMacro.addAttributes('self, 'attributes) }
 
   /** Adds attributes to the span. If the span previously contained a mapping for any of the keys, the old values are
@@ -63,7 +63,7 @@ private[otel4s] trait SpanMacro[F[_]] {
     */
   inline def addEvent(
       inline name: String,
-      inline attributes: Attribute[_]*
+      inline attributes: AttributeOrIterableOnce*
   ): F[Unit] =
     ${ SpanMacro.addEvent('self, 'name, 'attributes) }
 
@@ -98,7 +98,7 @@ private[otel4s] trait SpanMacro[F[_]] {
   inline def addEvent(
       inline name: String,
       inline timestamp: FiniteDuration,
-      inline attributes: Attribute[_]*
+      inline attributes: AttributeOrIterableOnce*
   ): F[Unit] =
     ${ SpanMacro.addEvent('self, 'name, 'timestamp, 'attributes) }
 
@@ -136,7 +136,7 @@ private[otel4s] trait SpanMacro[F[_]] {
     */
   inline def addLink(
       spanContext: SpanContext,
-      attributes: Attribute[_]*
+      attributes: AttributeOrIterableOnce*
   ): F[Unit] =
     ${ SpanMacro.addLink('self, 'spanContext, 'attributes) }
 
@@ -167,7 +167,7 @@ private[otel4s] trait SpanMacro[F[_]] {
     */
   inline def recordException(
       inline exception: Throwable,
-      inline attributes: Attribute[_]*
+      inline attributes: AttributeOrIterableOnce*
   ): F[Unit] =
     ${ SpanMacro.recordException('self, 'exception, 'attributes) }
 
@@ -227,22 +227,28 @@ object SpanMacro {
 
   def addAttributes[F[_]](
       span: Expr[Span[F]],
-      attributes: Expr[immutable.Iterable[Attribute[_]]]
+      attributes: Expr[immutable.Iterable[AttributeOrIterableOnce]]
   )(using Quotes, Type[F]) =
     '{
-      if ($span.backend.meta.isEnabled && $attributes.nonEmpty)
-        $span.backend.addAttributes($attributes)
-      else $span.backend.meta.unit
+      if ($span.backend.meta.isEnabled) {
+        val attrs = Attributes.from($attributes)
+        if (attrs.nonEmpty)
+          $span.backend.addAttributes(attrs)
+        else
+          $span.backend.meta.unit
+      } else {
+        $span.backend.meta.unit
+      }
     }
 
   def addEvent[F[_]](
       span: Expr[Span[F]],
       name: Expr[String],
-      attributes: Expr[immutable.Iterable[Attribute[_]]]
+      attributes: Expr[immutable.Iterable[AttributeOrIterableOnce]]
   )(using Quotes, Type[F]) =
     '{
       if ($span.backend.meta.isEnabled)
-        $span.backend.addEvent($name, $attributes)
+        $span.backend.addEvent($name, Attributes.from($attributes))
       else $span.backend.meta.unit
     }
 
@@ -250,33 +256,33 @@ object SpanMacro {
       span: Expr[Span[F]],
       name: Expr[String],
       timestamp: Expr[FiniteDuration],
-      attributes: Expr[immutable.Iterable[Attribute[_]]]
+      attributes: Expr[immutable.Iterable[AttributeOrIterableOnce]]
   )(using Quotes, Type[F]) =
     '{
       if ($span.backend.meta.isEnabled)
-        $span.backend.addEvent($name, $timestamp, $attributes)
+        $span.backend.addEvent($name, $timestamp, Attributes.from($attributes))
       else $span.backend.meta.unit
     }
 
   def addLink[F[_]](
       span: Expr[Span[F]],
       spanContext: Expr[SpanContext],
-      attributes: Expr[immutable.Iterable[Attribute[_]]]
+      attributes: Expr[immutable.Iterable[AttributeOrIterableOnce]]
   )(using Quotes, Type[F]) =
     '{
       if ($span.backend.meta.isEnabled)
-        $span.backend.addLink($spanContext, $attributes)
+        $span.backend.addLink($spanContext, Attributes.from($attributes))
       else $span.backend.meta.unit
     }
 
   def recordException[F[_]](
       span: Expr[Span[F]],
       exception: Expr[Throwable],
-      attributes: Expr[immutable.Iterable[Attribute[_]]]
+      attributes: Expr[immutable.Iterable[AttributeOrIterableOnce]]
   )(using Quotes, Type[F]) =
     '{
       if ($span.backend.meta.isEnabled)
-        $span.backend.recordException($exception, $attributes)
+        $span.backend.recordException($exception, Attributes.from($attributes))
       else $span.backend.meta.unit
     }
 

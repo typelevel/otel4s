@@ -29,7 +29,7 @@ private[otel4s] trait SpanBuilderMacro[F[_]] { self: SpanBuilder[F] =>
     * @param attribute
     *   the attribute to associate with the span
     */
-  inline def addAttribute[A](inline attribute: Attribute[A]): SpanBuilder[F] =
+  inline def addAttribute[A](inline attribute: AttributeOrOption[A]): SpanBuilder[F] =
     ${ SpanBuilderMacro.addAttribute('self, 'attribute) }
 
   /** Adds attributes to the [[SpanBuilder]]. If the SpanBuilder previously contained a mapping for any of the keys, the
@@ -38,7 +38,7 @@ private[otel4s] trait SpanBuilderMacro[F[_]] { self: SpanBuilder[F] =>
     * @param attributes
     *   the set of attributes to associate with the span
     */
-  inline def addAttributes(inline attributes: Attribute[_]*): SpanBuilder[F] =
+  inline def addAttributes(inline attributes: AttributeOrIterableOnce*): SpanBuilder[F] =
     ${ SpanBuilderMacro.addAttributes('self, 'attributes) }
 
   /** Adds attributes to the [[SpanBuilder]]. If the SpanBuilder previously contained a mapping for any of the keys, the
@@ -65,7 +65,7 @@ private[otel4s] trait SpanBuilderMacro[F[_]] { self: SpanBuilder[F] =>
     */
   inline def addLink(
       inline spanContext: SpanContext,
-      inline attributes: Attribute[_]*
+      inline attributes: AttributeOrIterableOnce*
   ): SpanBuilder[F] =
     ${ SpanBuilderMacro.addLink('self, 'spanContext, 'attributes) }
 
@@ -146,30 +146,30 @@ object SpanBuilderMacro {
 
   def addAttribute[F[_], A](
       builder: Expr[SpanBuilder[F]],
-      attribute: Expr[Attribute[A]]
+      attribute: Expr[AttributeOrOption[A]]
   )(using Quotes, Type[F], Type[A]) =
     '{
-      $builder.modifyState(_.addAttributes(List($attribute)))
+      $builder.modifyState(_.addAttributes(Attributes.from($attribute)))
     }
 
   def addAttributes[F[_]](
       builder: Expr[SpanBuilder[F]],
-      attributes: Expr[immutable.Iterable[Attribute[_]]]
+      attributes: Expr[immutable.Iterable[AttributeOrIterableOnce]]
   )(using Quotes, Type[F]) =
     (attributes: @unchecked) match {
       case Varargs(args) if args.isEmpty =>
         builder
       case other =>
-        '{ $builder.modifyState(_.addAttributes($attributes)) }
+        '{ $builder.modifyState(_.addAttributes(Attributes.from($attributes))) }
     }
 
   def addLink[F[_]](
       builder: Expr[SpanBuilder[F]],
       spanContext: Expr[SpanContext],
-      attributes: Expr[immutable.Iterable[Attribute[_]]]
+      attributes: Expr[immutable.Iterable[AttributeOrIterableOnce]]
   )(using Quotes, Type[F]) =
     '{
-      $builder.modifyState(_.addLink($spanContext, $attributes))
+      $builder.modifyState(_.addLink($spanContext, Attributes.from($attributes)))
     }
 
   def withFinalizationStrategy[F[_]](

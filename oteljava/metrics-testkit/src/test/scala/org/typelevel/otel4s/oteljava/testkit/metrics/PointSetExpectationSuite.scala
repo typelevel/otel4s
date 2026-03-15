@@ -50,7 +50,7 @@ class PointSetExpectationSuite extends CatsEffectSuite {
       points <- collectLongPoints(testkit, "service.counter")
     } yield assertSuccess(
       PointSetExpectation
-        .exists(PointExpectation.numeric(1L).withAttributesSubset(Attribute("region", "us")))
+        .exists(PointExpectation.numeric(1L).attributesSubset(Attribute("region", "us")))
         .check(points)
     )
   }
@@ -63,7 +63,7 @@ class PointSetExpectationSuite extends CatsEffectSuite {
       points <- collectLongPoints(testkit, "service.counter")
     } yield {
       val result = PointSetExpectation
-        .exists(PointExpectation.numeric(1L).withAttributesSubset(Attribute("region", "us")).withClue("US point"))
+        .exists(PointExpectation.numeric(1L).attributesSubset(Attribute("region", "us")).clue("US point"))
         .check(points)
 
       val mismatch = assertMismatchType[PointSetExpectation.Mismatch.MissingExpectedPoint](result)
@@ -81,7 +81,7 @@ class PointSetExpectationSuite extends CatsEffectSuite {
       points <- collectLongPoints(testkit, "service.counter")
     } yield assertSuccess(
       PointSetExpectation
-        .forall(PointExpectation.numeric(1L).withAttributesSubset(Attribute("kind", "ok")))
+        .forall(PointExpectation.numeric(1L).attributesSubset(Attribute("kind", "ok")))
         .check(points)
     )
   }
@@ -106,7 +106,7 @@ class PointSetExpectationSuite extends CatsEffectSuite {
       val ordered = points.sortBy(_.value)(Ordering.Long.reverse)
       val mismatch = assertMismatchType[PointSetExpectation.Mismatch.FailingPoint](
         PointSetExpectation
-          .forall(PointExpectation.numeric(1L).withAttributesSubset(Attribute("kind", "ok")))
+          .forall(PointExpectation.numeric(1L).attributesSubset(Attribute("kind", "ok")))
           .check(ordered)
       )
 
@@ -125,8 +125,8 @@ class PointSetExpectationSuite extends CatsEffectSuite {
     } yield assertSuccess(
       PointSetExpectation
         .contains(
-          PointExpectation.numeric(1L).withAttributesSubset(Attribute("region", "eu")),
-          PointExpectation.numeric(1L).withAttributesSubset(Attribute("region", "us"))
+          PointExpectation.numeric(1L).attributesSubset(Attribute("region", "eu")),
+          PointExpectation.numeric(1L).attributesSubset(Attribute("region", "us"))
         )
         .check(points)
     )
@@ -142,8 +142,8 @@ class PointSetExpectationSuite extends CatsEffectSuite {
       val mismatch = assertMismatchType[PointSetExpectation.Mismatch.MatchedPointCountMismatch](
         PointSetExpectation
           .contains(
-            PointExpectation.numeric(1L).withAttributesSubset(Attribute("region", "eu")),
-            PointExpectation.numeric(1L).withAttributesSubset(Attribute("region", "eu"))
+            PointExpectation.numeric(1L).attributesSubset(Attribute("region", "eu")),
+            PointExpectation.numeric(1L).attributesSubset(Attribute("region", "eu"))
           )
           .check(points)
       )
@@ -163,8 +163,8 @@ class PointSetExpectationSuite extends CatsEffectSuite {
       val mismatch = assertMismatchType[PointSetExpectation.Mismatch.MissingExpectedPoint](
         PointSetExpectation
           .contains(
-            PointExpectation.numeric(1L).withAttributesSubset(Attribute("region", "eu")),
-            PointExpectation.numeric(1L).withAttributesSubset(Attribute("region", "us")).withClue("US point")
+            PointExpectation.numeric(1L).attributesSubset(Attribute("region", "eu")),
+            PointExpectation.numeric(1L).attributesSubset(Attribute("region", "us")).clue("US point")
           )
           .check(points)
       )
@@ -185,8 +185,8 @@ class PointSetExpectationSuite extends CatsEffectSuite {
       val mismatch = assertMismatchType[PointSetExpectation.Mismatch.UnexpectedPoint](
         PointSetExpectation
           .exactly(
-            PointExpectation.numeric(1L).withAttributesSubset(Attribute("region", "eu")),
-            PointExpectation.numeric(1L).withAttributesSubset(Attribute("region", "us"))
+            PointExpectation.numeric(1L).attributesSubset(Attribute("region", "eu")),
+            PointExpectation.numeric(1L).attributesSubset(Attribute("region", "us"))
           )
           .check(points)
       )
@@ -245,13 +245,13 @@ class PointSetExpectationSuite extends CatsEffectSuite {
     } yield {
       assertSuccess(
         PointSetExpectation
-          .countWhere(PointExpectation.numeric(1L).withAttributesSubset(Attribute("region", "eu")), 2)
+          .countWhere(PointExpectation.numeric(1L).attributesSubset(Attribute("region", "eu")), 2)
           .check(points)
       )
 
       val mismatch = assertMismatchType[PointSetExpectation.Mismatch.MatchedPointCountMismatch](
         PointSetExpectation
-          .countWhere(PointExpectation.numeric(1L).withAttributesSubset(Attribute("region", "eu")), 1)
+          .countWhere(PointExpectation.numeric(1L).attributesSubset(Attribute("region", "eu")), 1)
           .check(points)
       )
 
@@ -269,7 +269,7 @@ class PointSetExpectationSuite extends CatsEffectSuite {
     } yield {
       val mismatch = assertMismatchType[PointSetExpectation.Mismatch.UnexpectedPoint](
         PointSetExpectation
-          .none(PointExpectation.numeric(1L).withAttributesSubset(Attribute("region", "eu")))
+          .none(PointExpectation.numeric(1L).attributesSubset(Attribute("region", "eu")))
           .check(points)
       )
 
@@ -317,7 +317,7 @@ class PointSetExpectationSuite extends CatsEffectSuite {
           .count[PointExpectation.NumericPointData[Long]](2)
           .and(
             PointSetExpectation.contains(
-              PointExpectation.numeric(1L).withAttributesSubset(Attribute("region", "us")).withClue("US point")
+              PointExpectation.numeric(1L).attributesSubset(Attribute("region", "us")).clue("US point")
             )
           )
           .check(points)
@@ -337,14 +337,14 @@ class PointSetExpectationSuite extends CatsEffectSuite {
     } yield {
       assertSuccess(
         PointSetExpectation
-          .contains(PointExpectation.numeric(1L).withAttributesSubset(Attribute("region", "eu")))
+          .contains(PointExpectation.numeric(1L).attributesSubset(Attribute("region", "eu")))
           .or(PointSetExpectation.count[PointExpectation.NumericPointData[Long]](3))
           .check(points)
       )
 
       val mismatch = assertMismatchType[PointSetExpectation.Mismatch.CompositeMismatch](
         PointSetExpectation
-          .contains(PointExpectation.numeric(1L).withAttributesSubset(Attribute("region", "us")))
+          .contains(PointExpectation.numeric(1L).attributesSubset(Attribute("region", "us")))
           .or(PointSetExpectation.count[PointExpectation.NumericPointData[Long]](2))
           .check(points)
       )
@@ -364,8 +364,8 @@ class PointSetExpectationSuite extends CatsEffectSuite {
     } yield assertSuccess(
       PointSetExpectation
         .contains(
-          PointExpectation.histogram.withCount(1L).withSum(10.0).withAttributesSubset(Attribute("region", "eu")),
-          PointExpectation.histogram.withCount(1L).withSum(20.0).withAttributesSubset(Attribute("region", "us"))
+          PointExpectation.histogram.count(1L).sum(10.0).attributesSubset(Attribute("region", "eu")),
+          PointExpectation.histogram.count(1L).sum(20.0).attributesSubset(Attribute("region", "us"))
         )
         .check(points)
     )

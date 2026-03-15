@@ -33,19 +33,19 @@ class InstrumentationScopeExpectationSuite extends FunSuite {
     )
   }
 
-  test("withVersion matches exact version") {
+  test("version matches exact version") {
     assertEquals(
-      InstrumentationScopeExpectation.name("test").withVersion("1.0").check(scope(version = Some("1.0"))),
+      InstrumentationScopeExpectation.name("test").version("1.0").check(scope(version = Some("1.0"))),
       Right(())
     )
     assertEquals(
-      InstrumentationScopeExpectation.name("test").withVersion("1.0").check(scope(version = Some("2.0"))),
+      InstrumentationScopeExpectation.name("test").version("1.0").check(scope(version = Some("2.0"))),
       Left(NonEmptyList.one(InstrumentationScopeExpectation.Mismatch.versionMismatch(Some("1.0"), Some("2.0"))))
     )
   }
 
-  test("withVersion(None) requires missing version") {
-    val expectation = InstrumentationScopeExpectation.name("test").withVersion(None)
+  test("version(None) requires missing version") {
+    val expectation = InstrumentationScopeExpectation.name("test").version(None)
 
     assertEquals(expectation.check(scope(version = None)), Right(()))
     assertEquals(
@@ -54,9 +54,9 @@ class InstrumentationScopeExpectationSuite extends FunSuite {
     )
   }
 
-  test("withSchemaUrl matches exact schema url") {
+  test("schemaUrl matches exact schema url") {
     val expectation =
-      InstrumentationScopeExpectation.name("test").withSchemaUrl("https://opentelemetry.io/schemas/1.0.0")
+      InstrumentationScopeExpectation.name("test").schemaUrl("https://opentelemetry.io/schemas/1.0.0")
 
     assertEquals(expectation.check(scope(schemaUrl = Some("https://opentelemetry.io/schemas/1.0.0"))), Right(()))
     assertEquals(
@@ -72,9 +72,9 @@ class InstrumentationScopeExpectationSuite extends FunSuite {
     )
   }
 
-  test("withAttributesExact reports nested attribute failures") {
+  test("attributesExact reports nested attribute failures") {
     val expectation =
-      InstrumentationScopeExpectation.name("test").withAttributesExact(Attribute("scope.attr", "value"))
+      InstrumentationScopeExpectation.name("test").attributesExact(Attribute("scope.attr", "value"))
 
     assertEquals(expectation.check(scope(attributes = jAttributes("scope.attr" -> "value"))), Right(()))
     assertEquals(
@@ -94,11 +94,11 @@ class InstrumentationScopeExpectationSuite extends FunSuite {
     )
   }
 
-  test("withAttributesSubset matches contained attributes") {
+  test("attributesSubset matches contained attributes") {
     val expectation =
       InstrumentationScopeExpectation
         .name("test")
-        .withAttributesSubset(Attribute("scope.attr", "value"))
+        .attributesSubset(Attribute("scope.attr", "value"))
 
     assertEquals(expectation.check(scope(attributes = jAttributes("scope.attr" -> "value", "other" -> "x"))), Right(()))
     assertEquals(

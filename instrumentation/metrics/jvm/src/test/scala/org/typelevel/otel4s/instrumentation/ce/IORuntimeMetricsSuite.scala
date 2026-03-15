@@ -214,8 +214,8 @@ class IORuntimeMetricsSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
   private def metric(name: String, description: String, unit: String = ""): MetricExpectation =
     MetricExpectation
       .name(name)
-      .withDescription(description)
-      .withUnit(unit)
+      .description(description)
+      .unit(unit)
 
   private implicit val cpuStarvationConfigArbitrary: Arbitrary[CpuStarvationConfig] =
     Arbitrary(

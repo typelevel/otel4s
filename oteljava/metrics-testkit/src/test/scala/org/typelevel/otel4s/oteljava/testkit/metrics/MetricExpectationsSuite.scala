@@ -44,7 +44,7 @@ class MetricExpectationsSuite extends CatsEffectSuite {
       _ <- counter.add(1L)
       metrics <- testkit.collectAllMetrics
     } yield assertSuccess(
-      MetricExpectations.checkAll(metrics, MetricExpectation.sum[Long]("service.counter").withValue(1L))
+      MetricExpectations.checkAll(metrics, MetricExpectation.sum[Long]("service.counter").value(1L))
     )
   }
 
@@ -109,11 +109,11 @@ class MetricExpectationsSuite extends CatsEffectSuite {
         metrics,
         MetricExpectation
           .sum[Long]("service.metric")
-          .withValue(1L)
-          .withScope(
+          .value(1L)
+          .scope(
             InstrumentationScopeExpectation
               .name("test")
-              .withAttributesSubset(Attribute("scope.attr", "value"))
+              .attributesSubset(Attribute("scope.attr", "value"))
           )
       )
 
@@ -164,7 +164,7 @@ class MetricExpectationsSuite extends CatsEffectSuite {
         metrics,
         MetricExpectation
           .sum[Long]("service.counter")
-          .withPoints(
+          .points(
             PointSetExpectation.exists(
               PointExpectation
                 .numeric(1L)
@@ -189,11 +189,11 @@ class MetricExpectationsSuite extends CatsEffectSuite {
         metrics,
         MetricExpectation
           .sum[Long]("service.counter")
-          .withPoints(
-            PointSetExpectation.exists(PointExpectation.numeric(1L).withAttributesSubset(Attribute("region", "eu")))
+          .points(
+            PointSetExpectation.exists(PointExpectation.numeric(1L).attributesSubset(Attribute("region", "eu")))
           )
-          .withPoints(
-            PointSetExpectation.exists(PointExpectation.numeric(1L).withAttributesSubset(Attribute("region", "us")))
+          .points(
+            PointSetExpectation.exists(PointExpectation.numeric(1L).attributesSubset(Attribute("region", "us")))
           )
       )
     )
@@ -210,11 +210,11 @@ class MetricExpectationsSuite extends CatsEffectSuite {
         metrics,
         MetricExpectation
           .sum[Long]("service.counter")
-          .withPoints(
-            PointSetExpectation.exists(PointExpectation.numeric(1L).withAttributesSubset(Attribute("region", "eu")))
+          .points(
+            PointSetExpectation.exists(PointExpectation.numeric(1L).attributesSubset(Attribute("region", "eu")))
           )
-          .withPoints(
-            PointSetExpectation.exists(PointExpectation.numeric(1L).withAttributesSubset(Attribute("region", "eu")))
+          .points(
+            PointSetExpectation.exists(PointExpectation.numeric(1L).attributesSubset(Attribute("region", "eu")))
           )
       )
     )
@@ -233,8 +233,8 @@ class MetricExpectationsSuite extends CatsEffectSuite {
         MetricExpectation
           .sum[Long]("service.counter")
           .containsPoints(
-            PointExpectation.numeric(1L).withAttributesSubset(Attribute("region", "eu")),
-            PointExpectation.numeric(1L).withAttributesSubset(Attribute("region", "us"))
+            PointExpectation.numeric(1L).attributesSubset(Attribute("region", "eu")),
+            PointExpectation.numeric(1L).attributesSubset(Attribute("region", "us"))
           )
       )
     )
@@ -252,8 +252,8 @@ class MetricExpectationsSuite extends CatsEffectSuite {
         MetricExpectation
           .sum[Long]("service.counter")
           .containsPoints(
-            PointExpectation.numeric(1L).withAttributesSubset(Attribute("region", "eu")),
-            PointExpectation.numeric(1L).withAttributesSubset(Attribute("region", "eu"))
+            PointExpectation.numeric(1L).attributesSubset(Attribute("region", "eu")),
+            PointExpectation.numeric(1L).attributesSubset(Attribute("region", "eu"))
           )
       )
 
@@ -274,7 +274,7 @@ class MetricExpectationsSuite extends CatsEffectSuite {
     }
   }
 
-  testkitTest("withExactlyPoints succeeds when the set matches exactly") { testkit =>
+  testkitTest("exactlyPoints succeeds when the set matches exactly") { testkit =>
     for {
       meter <- testkit.meterProvider.get("test")
       counter <- meter.counter[Long]("service.counter").create
@@ -286,15 +286,15 @@ class MetricExpectationsSuite extends CatsEffectSuite {
         metrics,
         MetricExpectation
           .sum[Long]("service.counter")
-          .withExactlyPoints(
-            PointExpectation.numeric(1L).withAttributesSubset(Attribute("region", "eu")),
-            PointExpectation.numeric(1L).withAttributesSubset(Attribute("region", "us"))
+          .exactlyPoints(
+            PointExpectation.numeric(1L).attributesSubset(Attribute("region", "eu")),
+            PointExpectation.numeric(1L).attributesSubset(Attribute("region", "us"))
           )
       )
     )
   }
 
-  testkitTest("withExactlyPoints rejects extra points") { testkit =>
+  testkitTest("exactlyPoints rejects extra points") { testkit =>
     for {
       meter <- testkit.meterProvider.get("test")
       counter <- meter.counter[Long]("service.counter").create
@@ -307,9 +307,9 @@ class MetricExpectationsSuite extends CatsEffectSuite {
         metrics,
         MetricExpectation
           .sum[Long]("service.counter")
-          .withExactlyPoints(
-            PointExpectation.numeric(1L).withAttributesSubset(Attribute("region", "eu")),
-            PointExpectation.numeric(1L).withAttributesSubset(Attribute("region", "us"))
+          .exactlyPoints(
+            PointExpectation.numeric(1L).attributesSubset(Attribute("region", "eu")),
+            PointExpectation.numeric(1L).attributesSubset(Attribute("region", "us"))
           )
       )
 
@@ -330,7 +330,7 @@ class MetricExpectationsSuite extends CatsEffectSuite {
     }
   }
 
-  testkitTest("withNoPointsMatching rejects forbidden points") { testkit =>
+  testkitTest("withoutPointsMatching rejects forbidden points") { testkit =>
     for {
       meter <- testkit.meterProvider.get("test")
       counter <- meter.counter[Long]("service.counter").create
@@ -341,8 +341,8 @@ class MetricExpectationsSuite extends CatsEffectSuite {
         metrics,
         MetricExpectation
           .sum[Long]("service.counter")
-          .withNoPointsMatching(
-            PointExpectation.numeric(1L).withAttributesSubset(Attribute("region", "eu"))
+          .withoutPointsMatching(
+            PointExpectation.numeric(1L).attributesSubset(Attribute("region", "eu"))
           )
       )
 
@@ -373,9 +373,9 @@ class MetricExpectationsSuite extends CatsEffectSuite {
         metrics,
         MetricExpectation
           .sum[Long]("service.counter")
-          .withPoints(
+          .points(
             PointSetExpectation.forall(
-              PointExpectation.numeric(1L).withAttributesSubset(Attribute("region", "eu"))
+              PointExpectation.numeric(1L).attributesSubset(Attribute("region", "eu"))
             )
           )
       )
@@ -407,9 +407,9 @@ class MetricExpectationsSuite extends CatsEffectSuite {
         metrics,
         MetricExpectation
           .sum[Long]("service.counter")
-          .withPoints(
+          .points(
             PointSetExpectation.countWhere(
-              PointExpectation.numeric(1L).withAttributesSubset(Attribute("region", "eu")),
+              PointExpectation.numeric(1L).attributesSubset(Attribute("region", "eu")),
               2
             )
           )
@@ -429,11 +429,11 @@ class MetricExpectationsSuite extends CatsEffectSuite {
         metrics,
         MetricExpectation
           .sum[Long]("service.counter")
-          .withPoints(
+          .points(
             PointSetExpectation
               .contains(
-                PointExpectation.numeric(1L).withAttributesSubset(Attribute("region", "eu")),
-                PointExpectation.numeric(1L).withAttributesSubset(Attribute("region", "us"))
+                PointExpectation.numeric(1L).attributesSubset(Attribute("region", "eu")),
+                PointExpectation.numeric(1L).attributesSubset(Attribute("region", "us"))
               )
               .and(PointSetExpectation.count(2))
           )
@@ -452,14 +452,14 @@ class MetricExpectationsSuite extends CatsEffectSuite {
         metrics,
         MetricExpectation
           .sum[Long]("service.counter")
-          .withPoints(
+          .points(
             PointSetExpectation
               .contains(
-                PointExpectation.numeric(1L).withAttributesSubset(Attribute("region", "eu"))
+                PointExpectation.numeric(1L).attributesSubset(Attribute("region", "eu"))
               )
               .or(
                 PointSetExpectation.contains(
-                  PointExpectation.numeric(1L).withAttributesSubset(Attribute("region", "us"))
+                  PointExpectation.numeric(1L).attributesSubset(Attribute("region", "us"))
                 )
               )
           )
@@ -467,7 +467,7 @@ class MetricExpectationsSuite extends CatsEffectSuite {
     )
   }
 
-  testkitTest("wherePoints supports collection-wide point assertions") { testkit =>
+  testkitTest("pointsWhere supports collection-wide point assertions") { testkit =>
     for {
       meter <- testkit.meterProvider.get("test")
       counter <- meter.counter[Long]("service.counter").create
@@ -479,7 +479,7 @@ class MetricExpectationsSuite extends CatsEffectSuite {
         metrics,
         MetricExpectation
           .sum[Long]("service.counter")
-          .wherePoints("expected exactly EU and US points") { points =>
+          .pointsWhere("expected exactly EU and US points") { points =>
             val actual = points.map(_.attributes).toSet
             actual == Set(
               Attributes(Attribute("region", "eu")),
@@ -503,10 +503,10 @@ class MetricExpectationsSuite extends CatsEffectSuite {
         MetricExpectation
           .histogram("service.histogram")
           .containsPoints(
-            PointExpectation.histogram.withCount(1L).withSum(10.0).withAttributesSubset(Attribute("region", "eu")),
-            PointExpectation.histogram.withCount(1L).withSum(20.0).withAttributesSubset(Attribute("region", "us"))
+            PointExpectation.histogram.count(1L).sum(10.0).attributesSubset(Attribute("region", "eu")),
+            PointExpectation.histogram.count(1L).sum(20.0).attributesSubset(Attribute("region", "us"))
           )
-          .withPointCount(2)
+          .pointCount(2)
       )
     )
   }
@@ -523,13 +523,13 @@ class MetricExpectationsSuite extends CatsEffectSuite {
         metrics,
         MetricExpectation
           .gauge[Double]("service.gauge")
-          .withPoints(
+          .points(
             PointSetExpectation
               .count(2)
               .and(
                 PointSetExpectation.contains(
-                  PointExpectation.numeric(10.5).withAttributesSubset(Attribute("region", "eu")),
-                  PointExpectation.numeric(20.5).withAttributesSubset(Attribute("region", "us"))
+                  PointExpectation.numeric(10.5).attributesSubset(Attribute("region", "eu")),
+                  PointExpectation.numeric(20.5).attributesSubset(Attribute("region", "us"))
                 )
               )
           )
@@ -548,12 +548,12 @@ class MetricExpectationsSuite extends CatsEffectSuite {
         metrics,
         MetricExpectation
           .sum[Long]("service.counter")
-          .withPoints(
+          .points(
             PointSetExpectation
               .count(2)
               .and(
                 PointSetExpectation.contains(
-                  PointExpectation.numeric(1L).withAttributesSubset(Attribute("region", "us")).withClue("US point")
+                  PointExpectation.numeric(1L).attributesSubset(Attribute("region", "us")).clue("US point")
                 )
               )
           )
@@ -581,10 +581,10 @@ class MetricExpectationsSuite extends CatsEffectSuite {
         metrics,
         MetricExpectation
           .sum[Long]("service.counter")
-          .withScope(
+          .scope(
             InstrumentationScopeExpectation
               .name("test")
-              .withAttributesSubset(Attribute("scope.attr", "value"))
+              .attributesSubset(Attribute("scope.attr", "value"))
           )
       )
 
@@ -598,7 +598,7 @@ class MetricExpectationsSuite extends CatsEffectSuite {
     }
   }
 
-  testkitTest("withPointCount uses exact point cardinality") { testkit =>
+  testkitTest("pointCount uses exact point cardinality") { testkit =>
     for {
       meter <- testkit.meterProvider.get("test")
       counter <- meter.counter[Long]("service.counter").create
@@ -608,7 +608,7 @@ class MetricExpectationsSuite extends CatsEffectSuite {
     } yield assertSuccess(
       MetricExpectations.checkAll(
         metrics,
-        MetricExpectation.sum[Long]("service.counter").withPointCount(2)
+        MetricExpectation.sum[Long]("service.counter").pointCount(2)
       )
     )
   }
@@ -622,7 +622,7 @@ class MetricExpectationsSuite extends CatsEffectSuite {
     } yield {
       val result = MetricExpectations.checkAll(
         metrics,
-        MetricExpectation.sum[Long]("service.counter").withValue(1L),
+        MetricExpectation.sum[Long]("service.counter").value(1L),
         MetricExpectation.gauge[Long]("service.gauge")
       )
 
@@ -645,8 +645,8 @@ class MetricExpectationsSuite extends CatsEffectSuite {
     } yield assertSuccess(
       MetricExpectations.checkAll(
         metrics,
-        MetricExpectation.sum[Long]("service.counter").withValue(1L),
-        MetricExpectation.sum[Long]("service.counter").withValue(1L)
+        MetricExpectation.sum[Long]("service.counter").value(1L),
+        MetricExpectation.sum[Long]("service.counter").value(1L)
       )
     )
   }
@@ -663,8 +663,8 @@ class MetricExpectationsSuite extends CatsEffectSuite {
     } yield assertSuccess(
       MetricExpectations.checkAllDistinct(
         metrics,
-        MetricExpectation.sum[Long]("service.counter").withValue(1L),
-        MetricExpectation.sum[Long]("service.counter").withValue(1L)
+        MetricExpectation.sum[Long]("service.counter").value(1L),
+        MetricExpectation.sum[Long]("service.counter").value(1L)
       )
     )
   }
@@ -685,8 +685,8 @@ class MetricExpectationsSuite extends CatsEffectSuite {
       MetricExpectations.checkAllDistinct(
         metrics,
         MetricExpectation.name("service.metric"),
-        MetricExpectation.sum[Long]("service.metric").withScopeName("sum-scope-1"),
-        MetricExpectation.gauge[Long]("service.metric").withScopeName("gauge-scope")
+        MetricExpectation.sum[Long]("service.metric").scopeName("sum-scope-1"),
+        MetricExpectation.gauge[Long]("service.metric").scopeName("gauge-scope")
       )
     )
   }
@@ -700,8 +700,8 @@ class MetricExpectationsSuite extends CatsEffectSuite {
     } yield {
       val result = MetricExpectations.checkAllDistinct(
         metrics,
-        MetricExpectation.sum[Long]("service.counter").withValue(1L),
-        MetricExpectation.sum[Long]("service.counter").withValue(1L)
+        MetricExpectation.sum[Long]("service.counter").value(1L),
+        MetricExpectation.sum[Long]("service.counter").value(1L)
       )
 
       result match {

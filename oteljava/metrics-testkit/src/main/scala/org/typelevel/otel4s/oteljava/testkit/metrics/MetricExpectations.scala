@@ -120,7 +120,7 @@ object MetricMismatch {
   * {{{
   * val expected = List(
   *   MetricExpectation.name("service.requests"),
-  *   MetricExpectation.sum[Long]("service.counter").withValue(1L)
+  *   MetricExpectation.sum[Long]("service.counter").value(1L)
   * )
   *
   * MetricExpectations.checkAll(metrics, expected) match {

@@ -35,7 +35,7 @@ class MetricExpectationsFormattingSuite extends CatsEffectSuite {
     } yield {
       val rendered = formatFailures(
         metrics,
-        MetricExpectation.gauge[Long]("service.gauge").withClue("missing gauge")
+        MetricExpectation.gauge[Long]("service.gauge").clue("missing gauge")
       )
 
       assertEquals(
@@ -78,8 +78,8 @@ class MetricExpectationsFormattingSuite extends CatsEffectSuite {
         metrics,
         MetricExpectation
           .sum[Long]("service.counter")
-          .withDescription("requests processed")
-          .withUnit("ms")
+          .description("requests processed")
+          .unit("ms")
       )
 
       assertEquals(
@@ -103,16 +103,16 @@ class MetricExpectationsFormattingSuite extends CatsEffectSuite {
         metrics,
         MetricExpectation
           .sum[Long]("service.counter")
-          .withClue("counter requirement")
-          .withPoints(
+          .clue("counter requirement")
+          .points(
             PointSetExpectation
               .exists(
                 PointExpectation
                   .numeric(1L)
-                  .withAttributesSubset(Attribute("region", "us"))
-                  .withClue("US point")
+                  .attributesSubset(Attribute("region", "us"))
+                  .clue("US point")
               )
-              .withClue("regional points")
+              .clue("regional points")
           )
       )
 
@@ -140,18 +140,18 @@ class MetricExpectationsFormattingSuite extends CatsEffectSuite {
         metrics,
         MetricExpectation
           .sum[Long]("service.counter")
-          .withPoints(
+          .points(
             PointSetExpectation
               .count[PointExpectation.NumericPointData[Long]](2)
-              .withClue("point count rule")
+              .clue("point count rule")
               .and(
                 PointSetExpectation
                   .contains(
-                    PointExpectation.numeric(1L).withAttributesSubset(Attribute("region", "us")).withClue("US point")
+                    PointExpectation.numeric(1L).attributesSubset(Attribute("region", "us")).clue("US point")
                   )
-                  .withClue("region shape rule")
+                  .clue("region shape rule")
               )
-              .withClue("combined point rules")
+              .clue("combined point rules")
           )
       )
 
@@ -199,8 +199,8 @@ class MetricExpectationsFormattingSuite extends CatsEffectSuite {
     } yield {
       val rendered = MetricExpectations.checkAllDistinct(
         metrics,
-        MetricExpectation.sum[Long]("service.counter").withValue(1L),
-        MetricExpectation.sum[Long]("service.counter").withValue(1L)
+        MetricExpectation.sum[Long]("service.counter").value(1L),
+        MetricExpectation.sum[Long]("service.counter").value(1L)
       ) match {
         case Left(mismatches) => MetricExpectations.format(mismatches)
         case Right(_)         => fail("expected mismatches, got success")

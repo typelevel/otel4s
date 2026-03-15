@@ -54,22 +54,22 @@ sealed trait MetricExpectation {
   def clue: Option[String]
 
   /** Requires the metric description to match exactly. */
-  def withDescription(description: String): MetricExpectation
+  def description(description: String): MetricExpectation
 
   /** Requires the metric unit to match exactly. */
-  def withUnit(unit: String): MetricExpectation
+  def unit(unit: String): MetricExpectation
 
   /** Requires the instrumentation scope name to match exactly. */
-  def withScopeName(name: String): MetricExpectation
+  def scopeName(name: String): MetricExpectation
 
   /** Requires the instrumentation scope to match the given expectation. */
-  def withScope(scope: InstrumentationScopeExpectation): MetricExpectation
+  def scope(scope: InstrumentationScopeExpectation): MetricExpectation
 
   /** Requires the telemetry resource to match the given expectation. */
-  def withResource(resource: TelemetryResourceExpectation): MetricExpectation
+  def resource(resource: TelemetryResourceExpectation): MetricExpectation
 
   /** Attaches a human-readable clue to this expectation. */
-  def withClue(text: String): MetricExpectation
+  def clue(text: String): MetricExpectation
 
   /** Adds a custom predicate over the metric data. */
   def where(f: MetricData => Boolean): MetricExpectation
@@ -225,53 +225,53 @@ object MetricExpectation {
       * If no attributes are provided, this behaves like a value-only check. If attributes are provided, they are
       * matched exactly.
       */
-    def withValue(value: A, attributes: Attribute[_]*): Numeric[A]
+    def value(value: A, attributes: Attribute[_]*): Numeric[A]
 
     /** Requires at least one point with the given value and exact attributes. */
-    def withValue(value: A, attributes: Attributes): Numeric[A]
+    def value(value: A, attributes: Attributes): Numeric[A]
 
     /** Adds a collection-level expectation over the metric points. */
-    def withPoints(expectation: PointSetExpectation[PointExpectation.NumericPointData[A]]): Numeric[A]
+    def points(expectation: PointSetExpectation[PointExpectation.NumericPointData[A]]): Numeric[A]
 
     /** Requires the metric to contain all given point expectations. */
     def containsPoints(first: PointExpectation.Numeric[A], rest: PointExpectation.Numeric[A]*): Numeric[A]
 
     /** Requires the metric points to match the given point expectations exactly. */
-    def withExactlyPoints(first: PointExpectation.Numeric[A], rest: PointExpectation.Numeric[A]*): Numeric[A]
+    def exactlyPoints(first: PointExpectation.Numeric[A], rest: PointExpectation.Numeric[A]*): Numeric[A]
 
     /** Requires the metric to have exactly the given number of points. */
-    def withPointCount(count: Int): Numeric[A]
+    def pointCount(count: Int): Numeric[A]
 
     /** Requires no point to match the given point expectation. */
-    def withNoPointsMatching(point: PointExpectation.Numeric[A]): Numeric[A]
+    def withoutPointsMatching(point: PointExpectation.Numeric[A]): Numeric[A]
 
     /** Adds a custom predicate over the full numeric point collection. */
-    def wherePoints(
+    def pointsWhere(
         f: List[PointExpectation.NumericPointData[A]] => Boolean
     ): Numeric[A]
 
     /** Adds a custom predicate over the full numeric point collection with a clue shown in mismatches. */
-    def wherePoints(
+    def pointsWhere(
         clue: String
     )(f: List[PointExpectation.NumericPointData[A]] => Boolean): Numeric[A]
 
     /** Requires the metric description to match exactly. */
-    def withDescription(description: String): Numeric[A]
+    def description(description: String): Numeric[A]
 
     /** Requires the metric unit to match exactly. */
-    def withUnit(unit: String): Numeric[A]
+    def unit(unit: String): Numeric[A]
 
     /** Requires the instrumentation scope name to match exactly. */
-    def withScopeName(name: String): Numeric[A]
+    def scopeName(name: String): Numeric[A]
 
     /** Requires the instrumentation scope to match the given expectation. */
-    def withScope(scope: InstrumentationScopeExpectation): Numeric[A]
+    def scope(scope: InstrumentationScopeExpectation): Numeric[A]
 
     /** Requires the telemetry resource to match the given expectation. */
-    def withResource(resource: TelemetryResourceExpectation): Numeric[A]
+    def resource(resource: TelemetryResourceExpectation): Numeric[A]
 
     /** Attaches a human-readable clue to this expectation. */
-    def withClue(text: String): Numeric[A]
+    def clue(text: String): Numeric[A]
 
     /** Adds a custom predicate over the metric data. */
     def where(f: MetricData => Boolean): Numeric[A]
@@ -284,43 +284,43 @@ object MetricExpectation {
   sealed trait Summary extends MetricExpectation {
 
     /** Adds a collection-level expectation over the metric points. */
-    def withPoints(expectation: PointSetExpectation[JSummaryPointData]): Summary
+    def points(expectation: PointSetExpectation[JSummaryPointData]): Summary
 
     /** Requires the metric to contain all given point expectations. */
     def containsPoints(first: PointExpectation.Summary, rest: PointExpectation.Summary*): Summary
 
     /** Requires the metric points to match the given point expectations exactly. */
-    def withExactlyPoints(first: PointExpectation.Summary, rest: PointExpectation.Summary*): Summary
+    def exactlyPoints(first: PointExpectation.Summary, rest: PointExpectation.Summary*): Summary
 
     /** Requires the metric to have exactly the given number of points. */
-    def withPointCount(count: Int): Summary
+    def pointCount(count: Int): Summary
 
     /** Requires no point to match the given point expectation. */
-    def withNoPointsMatching(point: PointExpectation.Summary): Summary
+    def withoutPointsMatching(point: PointExpectation.Summary): Summary
 
     /** Adds a custom predicate over the full summary point collection. */
-    def wherePoints(f: List[JSummaryPointData] => Boolean): Summary
+    def pointsWhere(f: List[JSummaryPointData] => Boolean): Summary
 
     /** Adds a custom predicate over the full summary point collection with a clue shown in mismatches. */
-    def wherePoints(clue: String)(f: List[JSummaryPointData] => Boolean): Summary
+    def pointsWhere(clue: String)(f: List[JSummaryPointData] => Boolean): Summary
 
     /** Requires the metric description to match exactly. */
-    def withDescription(description: String): Summary
+    def description(description: String): Summary
 
     /** Requires the metric unit to match exactly. */
-    def withUnit(unit: String): Summary
+    def unit(unit: String): Summary
 
     /** Requires the instrumentation scope name to match exactly. */
-    def withScopeName(name: String): Summary
+    def scopeName(name: String): Summary
 
     /** Requires the instrumentation scope to match the given expectation. */
-    def withScope(scope: InstrumentationScopeExpectation): Summary
+    def scope(scope: InstrumentationScopeExpectation): Summary
 
     /** Requires the telemetry resource to match the given expectation. */
-    def withResource(resource: TelemetryResourceExpectation): Summary
+    def resource(resource: TelemetryResourceExpectation): Summary
 
     /** Attaches a human-readable clue to this expectation. */
-    def withClue(text: String): Summary
+    def clue(text: String): Summary
 
     /** Adds a custom predicate over the metric data. */
     def where(f: MetricData => Boolean): Summary
@@ -333,43 +333,43 @@ object MetricExpectation {
   sealed trait Histogram extends MetricExpectation {
 
     /** Adds a collection-level expectation over the metric points. */
-    def withPoints(expectation: PointSetExpectation[JHistogramPointData]): Histogram
+    def points(expectation: PointSetExpectation[JHistogramPointData]): Histogram
 
     /** Requires the metric to contain all given point expectations. */
     def containsPoints(first: PointExpectation.Histogram, rest: PointExpectation.Histogram*): Histogram
 
     /** Requires the metric points to match the given point expectations exactly. */
-    def withExactlyPoints(first: PointExpectation.Histogram, rest: PointExpectation.Histogram*): Histogram
+    def exactlyPoints(first: PointExpectation.Histogram, rest: PointExpectation.Histogram*): Histogram
 
     /** Requires the metric to have exactly the given number of points. */
-    def withPointCount(count: Int): Histogram
+    def pointCount(count: Int): Histogram
 
     /** Requires no point to match the given point expectation. */
-    def withNoPointsMatching(point: PointExpectation.Histogram): Histogram
+    def withoutPointsMatching(point: PointExpectation.Histogram): Histogram
 
     /** Adds a custom predicate over the full histogram point collection. */
-    def wherePoints(f: List[JHistogramPointData] => Boolean): Histogram
+    def pointsWhere(f: List[JHistogramPointData] => Boolean): Histogram
 
     /** Adds a custom predicate over the full histogram point collection with a clue shown in mismatches. */
-    def wherePoints(clue: String)(f: List[JHistogramPointData] => Boolean): Histogram
+    def pointsWhere(clue: String)(f: List[JHistogramPointData] => Boolean): Histogram
 
     /** Requires the metric description to match exactly. */
-    def withDescription(description: String): Histogram
+    def description(description: String): Histogram
 
     /** Requires the metric unit to match exactly. */
-    def withUnit(unit: String): Histogram
+    def unit(unit: String): Histogram
 
     /** Requires the instrumentation scope name to match exactly. */
-    def withScopeName(name: String): Histogram
+    def scopeName(name: String): Histogram
 
     /** Requires the instrumentation scope to match the given expectation. */
-    def withScope(scope: InstrumentationScopeExpectation): Histogram
+    def scope(scope: InstrumentationScopeExpectation): Histogram
 
     /** Requires the telemetry resource to match the given expectation. */
-    def withResource(resource: TelemetryResourceExpectation): Histogram
+    def resource(resource: TelemetryResourceExpectation): Histogram
 
     /** Attaches a human-readable clue to this expectation. */
-    def withClue(text: String): Histogram
+    def clue(text: String): Histogram
 
     /** Adds a custom predicate over the metric data. */
     def where(f: MetricData => Boolean): Histogram
@@ -382,7 +382,7 @@ object MetricExpectation {
   sealed trait ExponentialHistogram extends MetricExpectation {
 
     /** Adds a collection-level expectation over the metric points. */
-    def withPoints(expectation: PointSetExpectation[ExponentialHistogramPointData]): ExponentialHistogram
+    def points(expectation: PointSetExpectation[ExponentialHistogramPointData]): ExponentialHistogram
 
     /** Requires the metric to contain all given point expectations. */
     def containsPoints(
@@ -391,40 +391,40 @@ object MetricExpectation {
     ): ExponentialHistogram
 
     /** Requires the metric points to match the given point expectations exactly. */
-    def withExactlyPoints(
+    def exactlyPoints(
         first: PointExpectation.ExponentialHistogram,
         rest: PointExpectation.ExponentialHistogram*
     ): ExponentialHistogram
 
     /** Requires the metric to have exactly the given number of points. */
-    def withPointCount(count: Int): ExponentialHistogram
+    def pointCount(count: Int): ExponentialHistogram
 
     /** Requires no point to match the given point expectation. */
-    def withNoPointsMatching(point: PointExpectation.ExponentialHistogram): ExponentialHistogram
+    def withoutPointsMatching(point: PointExpectation.ExponentialHistogram): ExponentialHistogram
 
     /** Adds a custom predicate over the full exponential histogram point collection. */
-    def wherePoints(f: List[ExponentialHistogramPointData] => Boolean): ExponentialHistogram
+    def pointsWhere(f: List[ExponentialHistogramPointData] => Boolean): ExponentialHistogram
 
     /** Adds a custom predicate over the full exponential histogram point collection with a clue shown in mismatches. */
-    def wherePoints(clue: String)(f: List[ExponentialHistogramPointData] => Boolean): ExponentialHistogram
+    def pointsWhere(clue: String)(f: List[ExponentialHistogramPointData] => Boolean): ExponentialHistogram
 
     /** Requires the metric description to match exactly. */
-    def withDescription(description: String): ExponentialHistogram
+    def description(description: String): ExponentialHistogram
 
     /** Requires the metric unit to match exactly. */
-    def withUnit(unit: String): ExponentialHistogram
+    def unit(unit: String): ExponentialHistogram
 
     /** Requires the instrumentation scope name to match exactly. */
-    def withScopeName(name: String): ExponentialHistogram
+    def scopeName(name: String): ExponentialHistogram
 
     /** Requires the instrumentation scope to match the given expectation. */
-    def withScope(scope: InstrumentationScopeExpectation): ExponentialHistogram
+    def scope(scope: InstrumentationScopeExpectation): ExponentialHistogram
 
     /** Requires the telemetry resource to match the given expectation. */
-    def withResource(resource: TelemetryResourceExpectation): ExponentialHistogram
+    def resource(resource: TelemetryResourceExpectation): ExponentialHistogram
 
     /** Attaches a human-readable clue to this expectation. */
-    def withClue(text: String): ExponentialHistogram
+    def clue(text: String): ExponentialHistogram
 
     /** Adds a custom predicate over the metric data. */
     def where(f: MetricData => Boolean): ExponentialHistogram
@@ -509,13 +509,13 @@ object MetricExpectation {
       predicates: List[(MetricData => Boolean, Option[String])] = Nil
   ) extends MetricExpectation {
     def expectedName: Option[String] = name
-    def withDescription(description: String): MetricExpectation = copy(description = Some(description))
-    def withUnit(unit: String): MetricExpectation = copy(unit = Some(unit))
-    def withScopeName(name: String): MetricExpectation =
-      copy(scope = Some(scope.fold(InstrumentationScopeExpectation.name(name))(_.withName(name))))
-    def withScope(scope: InstrumentationScopeExpectation): MetricExpectation = copy(scope = Some(scope))
-    def withResource(resource: TelemetryResourceExpectation): MetricExpectation = copy(resource = Some(resource))
-    def withClue(text: String): MetricExpectation = copy(clue = Some(text))
+    def description(description: String): MetricExpectation = copy(description = Some(description))
+    def unit(unit: String): MetricExpectation = copy(unit = Some(unit))
+    def scopeName(name: String): MetricExpectation =
+      copy(scope = Some(scope.fold(InstrumentationScopeExpectation.name(name))(_.name(name))))
+    def scope(scope: InstrumentationScopeExpectation): MetricExpectation = copy(scope = Some(scope))
+    def resource(resource: TelemetryResourceExpectation): MetricExpectation = copy(resource = Some(resource))
+    def clue(text: String): MetricExpectation = copy(clue = Some(text))
     def where(f: MetricData => Boolean): MetricExpectation =
       copy(predicates = predicates :+ (f -> None))
     def where(clue: String)(f: MetricData => Boolean): MetricExpectation =
@@ -542,50 +542,50 @@ object MetricExpectation {
   ) extends Numeric[A] {
     def expectedName: Option[String] = name
 
-    def withValue(value: A, attributes: Attribute[_]*): Numeric[A] =
+    def value(expected: A, attributes: Attribute[_]*): Numeric[A] =
       if (attributes.isEmpty)
-        withPoints(PointSetExpectation.exists(PointExpectation.numeric(value)(valueType, numberComparison)))
-      else withValue(value, Attributes(attributes *))
+        points(PointSetExpectation.exists(PointExpectation.numeric(expected)(valueType, numberComparison)))
+      else value(expected, Attributes(attributes *))
 
-    def withValue(value: A, attributes: Attributes): Numeric[A] =
-      withPoints(
+    def value(expected: A, attributes: Attributes): Numeric[A] =
+      points(
         PointSetExpectation.exists(
-          PointExpectation.numeric(value)(valueType, numberComparison).withAttributesExact(attributes)
+          PointExpectation.numeric(expected)(valueType, numberComparison).attributesExact(attributes)
         )
       )
 
-    def withPoints(expectation: PointSetExpectation[PointExpectation.NumericPointData[A]]): Numeric[A] =
+    def points(expectation: PointSetExpectation[PointExpectation.NumericPointData[A]]): Numeric[A] =
       copy(pointConstraints = pointConstraints :+ expectation)
 
     def containsPoints(first: PointExpectation.Numeric[A], rest: PointExpectation.Numeric[A]*): Numeric[A] =
-      withPoints(PointSetExpectation.contains(first, rest *))
+      points(PointSetExpectation.contains(first, rest *))
 
-    def withExactlyPoints(first: PointExpectation.Numeric[A], rest: PointExpectation.Numeric[A]*): Numeric[A] =
-      withPoints(PointSetExpectation.exactly(first, rest *))
+    def exactlyPoints(first: PointExpectation.Numeric[A], rest: PointExpectation.Numeric[A]*): Numeric[A] =
+      points(PointSetExpectation.exactly(first, rest *))
 
-    def withPointCount(count: Int): Numeric[A] =
-      withPoints(PointSetExpectation.count(count))
+    def pointCount(count: Int): Numeric[A] =
+      points(PointSetExpectation.count(count))
 
-    def withNoPointsMatching(point: PointExpectation.Numeric[A]): Numeric[A] =
-      withPoints(PointSetExpectation.none(point))
+    def withoutPointsMatching(point: PointExpectation.Numeric[A]): Numeric[A] =
+      points(PointSetExpectation.none(point))
 
-    def wherePoints(
+    def pointsWhere(
         f: List[PointExpectation.NumericPointData[A]] => Boolean
     ): Numeric[A] =
-      withPoints(PointSetExpectation.predicate(f))
+      points(PointSetExpectation.predicate(f))
 
-    def wherePoints(
+    def pointsWhere(
         clue: String
     )(f: List[PointExpectation.NumericPointData[A]] => Boolean): Numeric[A] =
-      withPoints(PointSetExpectation.predicate(clue)(f))
+      points(PointSetExpectation.predicate(clue)(f))
 
-    def withDescription(description: String): Numeric[A] = copy(description = Some(description))
-    def withUnit(unit: String): Numeric[A] = copy(unit = Some(unit))
-    def withScopeName(name: String): Numeric[A] =
-      copy(scope = Some(scope.fold(InstrumentationScopeExpectation.name(name))(_.withName(name))))
-    def withScope(scope: InstrumentationScopeExpectation): Numeric[A] = copy(scope = Some(scope))
-    def withResource(resource: TelemetryResourceExpectation): Numeric[A] = copy(resource = Some(resource))
-    def withClue(text: String): Numeric[A] = copy(clue = Some(text))
+    def description(description: String): Numeric[A] = copy(description = Some(description))
+    def unit(unit: String): Numeric[A] = copy(unit = Some(unit))
+    def scopeName(name: String): Numeric[A] =
+      copy(scope = Some(scope.fold(InstrumentationScopeExpectation.name(name))(_.name(name))))
+    def scope(scope: InstrumentationScopeExpectation): Numeric[A] = copy(scope = Some(scope))
+    def resource(resource: TelemetryResourceExpectation): Numeric[A] = copy(resource = Some(resource))
+    def clue(text: String): Numeric[A] = copy(clue = Some(text))
     def where(f: MetricData => Boolean): Numeric[A] =
       copy(predicates = predicates :+ (f -> None))
     def where(clue: String)(f: MetricData => Boolean): Numeric[A] =
@@ -621,24 +621,24 @@ object MetricExpectation {
       pointConstraints: List[PointSetExpectation[JSummaryPointData]] = Nil
   ) extends Summary {
     def expectedName: Option[String] = name
-    def withPoints(expectation: PointSetExpectation[JSummaryPointData]): Summary =
+    def points(expectation: PointSetExpectation[JSummaryPointData]): Summary =
       copy(pointConstraints = pointConstraints :+ expectation)
     def containsPoints(first: PointExpectation.Summary, rest: PointExpectation.Summary*): Summary =
-      withPoints(PointSetExpectation.contains(first, rest *))
-    def withExactlyPoints(first: PointExpectation.Summary, rest: PointExpectation.Summary*): Summary =
-      withPoints(PointSetExpectation.exactly(first, rest *))
-    def withPointCount(count: Int): Summary = withPoints(PointSetExpectation.count(count))
-    def withNoPointsMatching(point: PointExpectation.Summary): Summary = withPoints(PointSetExpectation.none(point))
-    def wherePoints(f: List[JSummaryPointData] => Boolean): Summary = withPoints(PointSetExpectation.predicate(f))
-    def wherePoints(clue: String)(f: List[JSummaryPointData] => Boolean): Summary =
-      withPoints(PointSetExpectation.predicate(clue)(f))
-    def withDescription(description: String): Summary = copy(description = Some(description))
-    def withUnit(unit: String): Summary = copy(unit = Some(unit))
-    def withScopeName(name: String): Summary =
-      copy(scope = Some(scope.fold(InstrumentationScopeExpectation.name(name))(_.withName(name))))
-    def withScope(scope: InstrumentationScopeExpectation): Summary = copy(scope = Some(scope))
-    def withResource(resource: TelemetryResourceExpectation): Summary = copy(resource = Some(resource))
-    def withClue(text: String): Summary = copy(clue = Some(text))
+      points(PointSetExpectation.contains(first, rest *))
+    def exactlyPoints(first: PointExpectation.Summary, rest: PointExpectation.Summary*): Summary =
+      points(PointSetExpectation.exactly(first, rest *))
+    def pointCount(count: Int): Summary = points(PointSetExpectation.count(count))
+    def withoutPointsMatching(point: PointExpectation.Summary): Summary = points(PointSetExpectation.none(point))
+    def pointsWhere(f: List[JSummaryPointData] => Boolean): Summary = points(PointSetExpectation.predicate(f))
+    def pointsWhere(clue: String)(f: List[JSummaryPointData] => Boolean): Summary =
+      points(PointSetExpectation.predicate(clue)(f))
+    def description(description: String): Summary = copy(description = Some(description))
+    def unit(unit: String): Summary = copy(unit = Some(unit))
+    def scopeName(name: String): Summary =
+      copy(scope = Some(scope.fold(InstrumentationScopeExpectation.name(name))(_.name(name))))
+    def scope(scope: InstrumentationScopeExpectation): Summary = copy(scope = Some(scope))
+    def resource(resource: TelemetryResourceExpectation): Summary = copy(resource = Some(resource))
+    def clue(text: String): Summary = copy(clue = Some(text))
     def where(f: MetricData => Boolean): Summary =
       copy(predicates = predicates :+ (f -> None))
     def where(clue: String)(f: MetricData => Boolean): Summary =
@@ -672,25 +672,25 @@ object MetricExpectation {
       pointConstraints: List[PointSetExpectation[JHistogramPointData]] = Nil
   ) extends Histogram {
     def expectedName: Option[String] = name
-    def withPoints(expectation: PointSetExpectation[JHistogramPointData]): Histogram =
+    def points(expectation: PointSetExpectation[JHistogramPointData]): Histogram =
       copy(pointConstraints = pointConstraints :+ expectation)
     def containsPoints(first: PointExpectation.Histogram, rest: PointExpectation.Histogram*): Histogram =
-      withPoints(PointSetExpectation.contains(first, rest *))
-    def withExactlyPoints(first: PointExpectation.Histogram, rest: PointExpectation.Histogram*): Histogram =
-      withPoints(PointSetExpectation.exactly(first, rest *))
-    def withPointCount(count: Int): Histogram = withPoints(PointSetExpectation.count(count))
-    def withNoPointsMatching(point: PointExpectation.Histogram): Histogram =
-      withPoints(PointSetExpectation.none(point))
-    def wherePoints(f: List[JHistogramPointData] => Boolean): Histogram = withPoints(PointSetExpectation.predicate(f))
-    def wherePoints(clue: String)(f: List[JHistogramPointData] => Boolean): Histogram =
-      withPoints(PointSetExpectation.predicate(clue)(f))
-    def withDescription(description: String): Histogram = copy(description = Some(description))
-    def withUnit(unit: String): Histogram = copy(unit = Some(unit))
-    def withScopeName(name: String): Histogram =
-      copy(scope = Some(scope.fold(InstrumentationScopeExpectation.name(name))(_.withName(name))))
-    def withScope(scope: InstrumentationScopeExpectation): Histogram = copy(scope = Some(scope))
-    def withResource(resource: TelemetryResourceExpectation): Histogram = copy(resource = Some(resource))
-    def withClue(text: String): Histogram = copy(clue = Some(text))
+      points(PointSetExpectation.contains(first, rest *))
+    def exactlyPoints(first: PointExpectation.Histogram, rest: PointExpectation.Histogram*): Histogram =
+      points(PointSetExpectation.exactly(first, rest *))
+    def pointCount(count: Int): Histogram = points(PointSetExpectation.count(count))
+    def withoutPointsMatching(point: PointExpectation.Histogram): Histogram =
+      points(PointSetExpectation.none(point))
+    def pointsWhere(f: List[JHistogramPointData] => Boolean): Histogram = points(PointSetExpectation.predicate(f))
+    def pointsWhere(clue: String)(f: List[JHistogramPointData] => Boolean): Histogram =
+      points(PointSetExpectation.predicate(clue)(f))
+    def description(description: String): Histogram = copy(description = Some(description))
+    def unit(unit: String): Histogram = copy(unit = Some(unit))
+    def scopeName(name: String): Histogram =
+      copy(scope = Some(scope.fold(InstrumentationScopeExpectation.name(name))(_.name(name))))
+    def scope(scope: InstrumentationScopeExpectation): Histogram = copy(scope = Some(scope))
+    def resource(resource: TelemetryResourceExpectation): Histogram = copy(resource = Some(resource))
+    def clue(text: String): Histogram = copy(clue = Some(text))
     def where(f: MetricData => Boolean): Histogram =
       copy(predicates = predicates :+ (f -> None))
     def where(clue: String)(f: MetricData => Boolean): Histogram =
@@ -725,32 +725,32 @@ object MetricExpectation {
       pointConstraints: List[PointSetExpectation[ExponentialHistogramPointData]] = Nil
   ) extends ExponentialHistogram {
     def expectedName: Option[String] = name
-    def withPoints(expectation: PointSetExpectation[ExponentialHistogramPointData]): ExponentialHistogram =
+    def points(expectation: PointSetExpectation[ExponentialHistogramPointData]): ExponentialHistogram =
       copy(pointConstraints = pointConstraints :+ expectation)
     def containsPoints(
         first: PointExpectation.ExponentialHistogram,
         rest: PointExpectation.ExponentialHistogram*
     ): ExponentialHistogram =
-      withPoints(PointSetExpectation.contains(first, rest *))
-    def withExactlyPoints(
+      points(PointSetExpectation.contains(first, rest *))
+    def exactlyPoints(
         first: PointExpectation.ExponentialHistogram,
         rest: PointExpectation.ExponentialHistogram*
     ): ExponentialHistogram =
-      withPoints(PointSetExpectation.exactly(first, rest *))
-    def withPointCount(count: Int): ExponentialHistogram = withPoints(PointSetExpectation.count(count))
-    def withNoPointsMatching(point: PointExpectation.ExponentialHistogram): ExponentialHistogram =
-      withPoints(PointSetExpectation.none(point))
-    def wherePoints(f: List[ExponentialHistogramPointData] => Boolean): ExponentialHistogram =
-      withPoints(PointSetExpectation.predicate(f))
-    def wherePoints(clue: String)(f: List[ExponentialHistogramPointData] => Boolean): ExponentialHistogram =
-      withPoints(PointSetExpectation.predicate(clue)(f))
-    def withDescription(description: String): ExponentialHistogram = copy(description = Some(description))
-    def withUnit(unit: String): ExponentialHistogram = copy(unit = Some(unit))
-    def withScopeName(name: String): ExponentialHistogram =
-      copy(scope = Some(scope.fold(InstrumentationScopeExpectation.name(name))(_.withName(name))))
-    def withScope(scope: InstrumentationScopeExpectation): ExponentialHistogram = copy(scope = Some(scope))
-    def withResource(resource: TelemetryResourceExpectation): ExponentialHistogram = copy(resource = Some(resource))
-    def withClue(text: String): ExponentialHistogram = copy(clue = Some(text))
+      points(PointSetExpectation.exactly(first, rest *))
+    def pointCount(count: Int): ExponentialHistogram = points(PointSetExpectation.count(count))
+    def withoutPointsMatching(point: PointExpectation.ExponentialHistogram): ExponentialHistogram =
+      points(PointSetExpectation.none(point))
+    def pointsWhere(f: List[ExponentialHistogramPointData] => Boolean): ExponentialHistogram =
+      points(PointSetExpectation.predicate(f))
+    def pointsWhere(clue: String)(f: List[ExponentialHistogramPointData] => Boolean): ExponentialHistogram =
+      points(PointSetExpectation.predicate(clue)(f))
+    def description(description: String): ExponentialHistogram = copy(description = Some(description))
+    def unit(unit: String): ExponentialHistogram = copy(unit = Some(unit))
+    def scopeName(name: String): ExponentialHistogram =
+      copy(scope = Some(scope.fold(InstrumentationScopeExpectation.name(name))(_.name(name))))
+    def scope(scope: InstrumentationScopeExpectation): ExponentialHistogram = copy(scope = Some(scope))
+    def resource(resource: TelemetryResourceExpectation): ExponentialHistogram = copy(resource = Some(resource))
+    def clue(text: String): ExponentialHistogram = copy(clue = Some(text))
     def where(f: MetricData => Boolean): ExponentialHistogram =
       copy(predicates = predicates :+ (f -> None))
     def where(clue: String)(f: MetricData => Boolean): ExponentialHistogram =

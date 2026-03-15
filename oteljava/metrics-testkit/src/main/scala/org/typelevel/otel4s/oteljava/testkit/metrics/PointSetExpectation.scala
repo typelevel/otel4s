@@ -42,7 +42,7 @@ sealed trait PointSetExpectation[P] {
     PointSetExpectation.or(this, other)
 
   /** Attaches a human-readable clue to this expectation. */
-  def withClue(text: String): PointSetExpectation[P]
+  def clue(text: String): PointSetExpectation[P]
 
   private[metrics] def check(points: List[P]): Either[NonEmptyList[PointSetExpectation.Mismatch], Unit]
 }
@@ -379,7 +379,7 @@ object PointSetExpectation {
     OrImpl(left, right, None)
 
   private final case class AnyImpl[P](clue: Option[String]) extends PointSetExpectation[P] {
-    def withClue(text: String): PointSetExpectation[P] = copy(clue = Some(text))
+    def clue(text: String): PointSetExpectation[P] = copy(clue = Some(text))
     def check(points: List[P]): Either[NonEmptyList[Mismatch], Unit] = ExpectationChecks.success
   }
 
@@ -388,7 +388,7 @@ object PointSetExpectation {
       checker: SinglePointChecker.Aux[E, P],
       clue: Option[String]
   ) extends PointSetExpectation[P] {
-    def withClue(text: String): PointSetExpectation[P] = copy(clue = Some(text))
+    def clue(text: String): PointSetExpectation[P] = copy(clue = Some(text))
     def check(points: List[P]): Either[NonEmptyList[Mismatch], Unit] =
       withClueContext(
         clue,
@@ -408,7 +408,7 @@ object PointSetExpectation {
       checker: SinglePointChecker.Aux[E, P],
       clue: Option[String]
   ) extends PointSetExpectation[P] {
-    def withClue(text: String): PointSetExpectation[P] = copy(clue = Some(text))
+    def clue(text: String): PointSetExpectation[P] = copy(clue = Some(text))
     def check(points: List[P]): Either[NonEmptyList[Mismatch], Unit] =
       withClueContext(
         clue,
@@ -429,7 +429,7 @@ object PointSetExpectation {
       checker: SinglePointChecker.Aux[E, P],
       clue: Option[String]
   ) extends PointSetExpectation[P] {
-    def withClue(text: String): PointSetExpectation[P] = copy(clue = Some(text))
+    def clue(text: String): PointSetExpectation[P] = copy(clue = Some(text))
     def check(points: List[P]): Either[NonEmptyList[Mismatch], Unit] =
       withClueContext(clue, containsCheck(expected, checker, points).void)
   }
@@ -439,7 +439,7 @@ object PointSetExpectation {
       checker: SinglePointChecker.Aux[E, P],
       clue: Option[String]
   ) extends PointSetExpectation[P] {
-    def withClue(text: String): PointSetExpectation[P] = copy(clue = Some(text))
+    def clue(text: String): PointSetExpectation[P] = copy(clue = Some(text))
     def check(points: List[P]): Either[NonEmptyList[Mismatch], Unit] =
       withClueContext(
         clue,
@@ -451,7 +451,7 @@ object PointSetExpectation {
   }
 
   private final case class CountImpl[P](expected: Int, clue: Option[String]) extends PointSetExpectation[P] {
-    def withClue(text: String): PointSetExpectation[P] = copy(clue = Some(text))
+    def clue(text: String): PointSetExpectation[P] = copy(clue = Some(text))
     def check(points: List[P]): Either[NonEmptyList[Mismatch], Unit] =
       withClueContext(
         clue,
@@ -461,7 +461,7 @@ object PointSetExpectation {
   }
 
   private final case class MinCountImpl[P](expectedAtLeast: Int, clue: Option[String]) extends PointSetExpectation[P] {
-    def withClue(text: String): PointSetExpectation[P] = copy(clue = Some(text))
+    def clue(text: String): PointSetExpectation[P] = copy(clue = Some(text))
     def check(points: List[P]): Either[NonEmptyList[Mismatch], Unit] =
       withClueContext(
         clue,
@@ -471,7 +471,7 @@ object PointSetExpectation {
   }
 
   private final case class MaxCountImpl[P](expectedAtMost: Int, clue: Option[String]) extends PointSetExpectation[P] {
-    def withClue(text: String): PointSetExpectation[P] = copy(clue = Some(text))
+    def clue(text: String): PointSetExpectation[P] = copy(clue = Some(text))
     def check(points: List[P]): Either[NonEmptyList[Mismatch], Unit] =
       withClueContext(
         clue,
@@ -486,7 +486,7 @@ object PointSetExpectation {
       checker: SinglePointChecker.Aux[E, P],
       clue: Option[String]
   ) extends PointSetExpectation[P] {
-    def withClue(text: String): PointSetExpectation[P] = copy(clue = Some(text))
+    def clue(text: String): PointSetExpectation[P] = copy(clue = Some(text))
     def check(points: List[P]): Either[NonEmptyList[Mismatch], Unit] =
       withClueContext(
         clue, {
@@ -502,7 +502,7 @@ object PointSetExpectation {
       checker: SinglePointChecker.Aux[E, P],
       clue: Option[String]
   ) extends PointSetExpectation[P] {
-    def withClue(text: String): PointSetExpectation[P] = copy(clue = Some(text))
+    def clue(text: String): PointSetExpectation[P] = copy(clue = Some(text))
     def check(points: List[P]): Either[NonEmptyList[Mismatch], Unit] =
       withClueContext(
         clue,
@@ -519,7 +519,7 @@ object PointSetExpectation {
       f: List[P] => Boolean,
       clue: Option[String]
   ) extends PointSetExpectation[P] {
-    def withClue(text: String): PointSetExpectation[P] = copy(clue = Some(text))
+    def clue(text: String): PointSetExpectation[P] = copy(clue = Some(text))
     def check(points: List[P]): Either[NonEmptyList[Mismatch], Unit] =
       withClueContext(clue, Either.cond(f(points), (), NonEmptyList.one(Mismatch.predicateFailed(clue))))
   }
@@ -529,7 +529,7 @@ object PointSetExpectation {
       right: PointSetExpectation[P],
       clue: Option[String]
   ) extends PointSetExpectation[P] {
-    def withClue(text: String): PointSetExpectation[P] = copy(clue = Some(text))
+    def clue(text: String): PointSetExpectation[P] = copy(clue = Some(text))
     def check(points: List[P]): Either[NonEmptyList[Mismatch], Unit] =
       withClueContext(
         clue,
@@ -548,7 +548,7 @@ object PointSetExpectation {
       right: PointSetExpectation[P],
       clue: Option[String]
   ) extends PointSetExpectation[P] {
-    def withClue(text: String): PointSetExpectation[P] = copy(clue = Some(text))
+    def clue(text: String): PointSetExpectation[P] = copy(clue = Some(text))
     def check(points: List[P]): Either[NonEmptyList[Mismatch], Unit] =
       withClueContext(
         clue,

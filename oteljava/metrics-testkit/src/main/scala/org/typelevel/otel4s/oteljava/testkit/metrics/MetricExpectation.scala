@@ -20,7 +20,6 @@ package metrics
 import cats.data.NonEmptyList
 import io.opentelemetry.sdk.metrics.data.{ExponentialHistogramPointData, MetricData, MetricDataType}
 import io.opentelemetry.sdk.metrics.data.{HistogramPointData => JHistogramPointData}
-import io.opentelemetry.sdk.metrics.data.{PointData => JPointData}
 import io.opentelemetry.sdk.metrics.data.{SummaryPointData => JSummaryPointData}
 import org.typelevel.otel4s.{Attribute, Attributes}
 import org.typelevel.otel4s.metrics.MeasurementValue
@@ -31,7 +30,8 @@ import scala.jdk.CollectionConverters._
 /** A partial expectation for a single OpenTelemetry Java [[MetricData]].
   *
   * `MetricExpectation` is intended for tests where asserting against the full `MetricData` shape would be too verbose.
-  * An expectation matches a metric if all configured predicates succeed. Unspecified properties are ignored.
+  * Unspecified properties are ignored. Point matching is expressed through collection-level [[PointSetExpectation]]
+  * values, which allows multiple point constraints to accumulate on the same metric expectation.
   *
   * Use the builders in [[MetricExpectation]] to create expectations for the metric kind you want to check:
   *   - [[MetricExpectation.name]] to require only a metric name
@@ -92,24 +92,29 @@ object MetricExpectation {
 
   object Mismatch {
 
-    /** Indicates how a point expectation was applied to metric points. */
-    sealed abstract class PointMatchMode(val value: String) extends Product with Serializable
-    object PointMatchMode {
-      case object Any extends PointMatchMode("any")
-      case object All extends PointMatchMode("all")
+    /** Indicates that the metric name differed from the expected one. */
+    sealed trait NameMismatch extends Mismatch {
+      def expected: String;
+      def actual: String
     }
 
-    /** Indicates that the metric name differed from the expected one. */
-    sealed trait NameMismatch extends Mismatch { def expected: String; def actual: String }
-
     /** Indicates that the metric description differed from the expected one. */
-    sealed trait DescriptionMismatch extends Mismatch { def expected: String; def actual: Option[String] }
+    sealed trait DescriptionMismatch extends Mismatch {
+      def expected: String;
+      def actual: Option[String]
+    }
 
     /** Indicates that the metric unit differed from the expected one. */
-    sealed trait UnitMismatch extends Mismatch { def expected: String; def actual: String }
+    sealed trait UnitMismatch extends Mismatch {
+      def expected: String;
+      def actual: String
+    }
 
     /** Indicates that the metric type differed from the expected one. */
-    sealed trait TypeMismatch extends Mismatch { def expected: String; def actual: String }
+    sealed trait TypeMismatch extends Mismatch {
+      def expected: String;
+      def actual: String
+    }
 
     /** Indicates that the instrumentation scope did not satisfy the nested expectation. */
     sealed trait ScopeMismatch extends Mismatch {
@@ -126,8 +131,7 @@ object MetricExpectation {
 
     /** Indicates that the metric points did not satisfy the nested point expectation. */
     sealed trait PointsMismatch extends Mismatch {
-      def mode: PointMatchMode
-      def mismatches: NonEmptyList[PointExpectation.Mismatch]
+      def mismatches: NonEmptyList[PointSetExpectation.Mismatch]
       def clue: Option[String]
     }
 
@@ -156,16 +160,11 @@ object MetricExpectation {
     def predicateMismatch(clue: Option[String]): PredicateMismatch = PredicateMismatchImpl(clue)
 
     /** Creates a mismatch indicating that the metric points did not satisfy the nested point expectation. */
-    def pointsMismatch(
-        mode: PointMatchMode,
-        mismatches: NonEmptyList[PointExpectation.Mismatch],
-        clue: Option[String]
-    ): PointsMismatch =
-      PointsMismatchImpl(mode, mismatches, clue)
+    def pointsMismatch(mismatches: NonEmptyList[PointSetExpectation.Mismatch], clue: Option[String]): PointsMismatch =
+      PointsMismatchImpl(mismatches, clue)
 
     private final case class NameMismatchImpl(expected: String, actual: String) extends NameMismatch {
-      def message: String =
-        s"name mismatch: expected '$expected', got '$actual'"
+      def message: String = s"name mismatch: expected '$expected', got '$actual'"
     }
 
     private final case class DescriptionMismatchImpl(expected: String, actual: Option[String])
@@ -175,13 +174,11 @@ object MetricExpectation {
     }
 
     private final case class UnitMismatchImpl(expected: String, actual: String) extends UnitMismatch {
-      def message: String =
-        s"unit mismatch: expected '$expected', got '$actual'"
+      def message: String = s"unit mismatch: expected '$expected', got '$actual'"
     }
 
     private final case class TypeMismatchImpl(expected: String, actual: String) extends TypeMismatch {
-      def message: String =
-        s"type mismatch: expected '$expected', got '$actual'"
+      def message: String = s"type mismatch: expected '$expected', got '$actual'"
     }
 
     private final case class ScopeMismatchImpl(mismatches: NonEmptyList[InstrumentationScopeExpectation.Mismatch])
@@ -202,27 +199,18 @@ object MetricExpectation {
     }
 
     private final case class PointsMismatchImpl(
-        mode: PointMatchMode,
-        mismatches: NonEmptyList[PointExpectation.Mismatch],
+        mismatches: NonEmptyList[PointSetExpectation.Mismatch],
         clue: Option[String]
     ) extends PointsMismatch {
       def message: String = {
         val rendered = mismatches.toList.map(_.message).mkString(", ")
         val clueSuffix = clue.fold("")(value => s" [$value]")
-        s"points mismatch (${mode.value}$clueSuffix): $rendered"
+        s"points mismatch$clueSuffix: $rendered"
       }
     }
   }
 
-  /** A typed expectation for numeric metrics.
-    *
-    * The value type is driven by [[MeasurementValue]]. For example:
-    *
-    * {{{
-    * MetricExpectation.gauge[Long]("queue.size").withValue(10L)
-    * MetricExpectation.sum[Double]("request.duration")
-    * }}}
-    */
+  /** A typed expectation for numeric metrics. */
   sealed trait Numeric[A] extends MetricExpectation {
 
     /** The `MeasurementValue` used to distinguish long and double metrics at runtime. */
@@ -235,23 +223,33 @@ object MetricExpectation {
       */
     def withValue(value: A, attributes: Attribute[_]*): Numeric[A]
 
-    /** Requires at least one point with the given value and exact attributes.
-      *
-      * This is equivalent to calling:
-      * {{{
-      * withAnyPoint(PointExpectation.numeric(value).withAttributesExact(attributes))
-      * }}}
-      */
+    /** Requires at least one point with the given value and exact attributes. */
     def withValue(value: A, attributes: Attributes): Numeric[A]
 
-    /** Alias for [[withAnyPoint]]. */
-    def withPoint(point: PointExpectation.Numeric[A]): Numeric[A]
+    /** Adds a collection-level expectation over the metric points. */
+    def withPoints(expectation: PointSetExpectation[PointExpectation.NumericPointData[A]]): Numeric[A]
 
-    /** Requires at least one point matching the given expectation. */
-    def withAnyPoint(point: PointExpectation.Numeric[A]): Numeric[A]
+    /** Requires the metric to contain all given point expectations. */
+    def containsPoints(first: PointExpectation.Numeric[A], rest: PointExpectation.Numeric[A]*): Numeric[A]
 
-    /** Requires all points to match the given expectation. */
-    def withAllPoints(point: PointExpectation.Numeric[A]): Numeric[A]
+    /** Requires the metric points to match the given point expectations exactly. */
+    def withExactlyPoints(first: PointExpectation.Numeric[A], rest: PointExpectation.Numeric[A]*): Numeric[A]
+
+    /** Requires the metric to have exactly the given number of points. */
+    def withPointCount(count: Int): Numeric[A]
+
+    /** Requires no point to match the given point expectation. */
+    def withNoPointsMatching(point: PointExpectation.Numeric[A]): Numeric[A]
+
+    /** Adds a custom predicate over the full numeric point collection. */
+    def wherePoints(
+        f: List[PointExpectation.NumericPointData[A]] => Boolean
+    ): Numeric[A]
+
+    /** Adds a custom predicate over the full numeric point collection with a clue shown in mismatches. */
+    def wherePoints(
+        clue: String
+    )(f: List[PointExpectation.NumericPointData[A]] => Boolean): Numeric[A]
 
     /** Requires the metric description to match exactly. */
     def withDescription(description: String): Numeric[A]
@@ -281,14 +279,26 @@ object MetricExpectation {
   /** A typed expectation for summary metrics. */
   sealed trait Summary extends MetricExpectation {
 
-    /** Alias for [[withAnyPoint]]. */
-    def withPoint(point: PointExpectation.Summary): Summary
+    /** Adds a collection-level expectation over the metric points. */
+    def withPoints(expectation: PointSetExpectation[JSummaryPointData]): Summary
 
-    /** Requires at least one point matching the given expectation. */
-    def withAnyPoint(point: PointExpectation.Summary): Summary
+    /** Requires the metric to contain all given point expectations. */
+    def containsPoints(first: PointExpectation.Summary, rest: PointExpectation.Summary*): Summary
 
-    /** Requires all points to match the given expectation. */
-    def withAllPoints(point: PointExpectation.Summary): Summary
+    /** Requires the metric points to match the given point expectations exactly. */
+    def withExactlyPoints(first: PointExpectation.Summary, rest: PointExpectation.Summary*): Summary
+
+    /** Requires the metric to have exactly the given number of points. */
+    def withPointCount(count: Int): Summary
+
+    /** Requires no point to match the given point expectation. */
+    def withNoPointsMatching(point: PointExpectation.Summary): Summary
+
+    /** Adds a custom predicate over the full summary point collection. */
+    def wherePoints(f: List[JSummaryPointData] => Boolean): Summary
+
+    /** Adds a custom predicate over the full summary point collection with a clue shown in mismatches. */
+    def wherePoints(clue: String)(f: List[JSummaryPointData] => Boolean): Summary
 
     /** Requires the metric description to match exactly. */
     def withDescription(description: String): Summary
@@ -318,14 +328,26 @@ object MetricExpectation {
   /** A typed expectation for histogram metrics. */
   sealed trait Histogram extends MetricExpectation {
 
-    /** Alias for [[withAnyPoint]]. */
-    def withPoint(point: PointExpectation.Histogram): Histogram
+    /** Adds a collection-level expectation over the metric points. */
+    def withPoints(expectation: PointSetExpectation[JHistogramPointData]): Histogram
 
-    /** Requires at least one point matching the given expectation. */
-    def withAnyPoint(point: PointExpectation.Histogram): Histogram
+    /** Requires the metric to contain all given point expectations. */
+    def containsPoints(first: PointExpectation.Histogram, rest: PointExpectation.Histogram*): Histogram
 
-    /** Requires all points to match the given expectation. */
-    def withAllPoints(point: PointExpectation.Histogram): Histogram
+    /** Requires the metric points to match the given point expectations exactly. */
+    def withExactlyPoints(first: PointExpectation.Histogram, rest: PointExpectation.Histogram*): Histogram
+
+    /** Requires the metric to have exactly the given number of points. */
+    def withPointCount(count: Int): Histogram
+
+    /** Requires no point to match the given point expectation. */
+    def withNoPointsMatching(point: PointExpectation.Histogram): Histogram
+
+    /** Adds a custom predicate over the full histogram point collection. */
+    def wherePoints(f: List[JHistogramPointData] => Boolean): Histogram
+
+    /** Adds a custom predicate over the full histogram point collection with a clue shown in mismatches. */
+    def wherePoints(clue: String)(f: List[JHistogramPointData] => Boolean): Histogram
 
     /** Requires the metric description to match exactly. */
     def withDescription(description: String): Histogram
@@ -355,14 +377,32 @@ object MetricExpectation {
   /** A typed expectation for exponential histogram metrics. */
   sealed trait ExponentialHistogram extends MetricExpectation {
 
-    /** Alias for [[withAnyPoint]]. */
-    def withPoint(point: PointExpectation.ExponentialHistogram): ExponentialHistogram
+    /** Adds a collection-level expectation over the metric points. */
+    def withPoints(expectation: PointSetExpectation[ExponentialHistogramPointData]): ExponentialHistogram
 
-    /** Requires at least one point matching the given expectation. */
-    def withAnyPoint(point: PointExpectation.ExponentialHistogram): ExponentialHistogram
+    /** Requires the metric to contain all given point expectations. */
+    def containsPoints(
+        first: PointExpectation.ExponentialHistogram,
+        rest: PointExpectation.ExponentialHistogram*
+    ): ExponentialHistogram
 
-    /** Requires all points to match the given expectation. */
-    def withAllPoints(point: PointExpectation.ExponentialHistogram): ExponentialHistogram
+    /** Requires the metric points to match the given point expectations exactly. */
+    def withExactlyPoints(
+        first: PointExpectation.ExponentialHistogram,
+        rest: PointExpectation.ExponentialHistogram*
+    ): ExponentialHistogram
+
+    /** Requires the metric to have exactly the given number of points. */
+    def withPointCount(count: Int): ExponentialHistogram
+
+    /** Requires no point to match the given point expectation. */
+    def withNoPointsMatching(point: PointExpectation.ExponentialHistogram): ExponentialHistogram
+
+    /** Adds a custom predicate over the full exponential histogram point collection. */
+    def wherePoints(f: List[ExponentialHistogramPointData] => Boolean): ExponentialHistogram
+
+    /** Adds a custom predicate over the full exponential histogram point collection with a clue shown in mismatches. */
+    def wherePoints(clue: String)(f: List[ExponentialHistogramPointData] => Boolean): ExponentialHistogram
 
     /** Requires the metric description to match exactly. */
     def withDescription(description: String): ExponentialHistogram
@@ -423,89 +463,15 @@ object MetricExpectation {
 
   /** Creates an expectation for a summary metric. */
   def summary(name: String): Summary =
-    SummaryImpl(
-      name = Some(name),
-      metricType = MetricDataType.SUMMARY
-    )
+    SummaryImpl(name = Some(name), metricType = MetricDataType.SUMMARY)
 
   /** Creates an expectation for a histogram metric. */
   def histogram(name: String): Histogram =
-    HistogramImpl(
-      name = Some(name),
-      metricType = MetricDataType.HISTOGRAM
-    )
+    HistogramImpl(name = Some(name), metricType = MetricDataType.HISTOGRAM)
 
   /** Creates an expectation for an exponential histogram metric. */
   def exponentialHistogram(name: String): ExponentialHistogram =
-    ExponentialHistogramImpl(
-      name = Some(name),
-      metricType = MetricDataType.EXPONENTIAL_HISTOGRAM
-    )
-
-  private sealed trait PointMatch[-A] {
-    def check(points: List[JPointData]): Either[NonEmptyList[Mismatch], Unit]
-  }
-
-  private object PointMatch {
-    case object Ignore extends PointMatch[_root_.scala.Any] {
-      def check(points: List[JPointData]): Either[NonEmptyList[Mismatch], Unit] =
-        ExpectationChecks.success
-    }
-
-    final case class Any[A](expectation: PointExpectation) extends PointMatch[A] {
-      def check(points: List[JPointData]): Either[NonEmptyList[Mismatch], Unit] =
-        if (points.exists(expectation.matches)) ExpectationChecks.success
-        else {
-          val mismatches = closestPointMismatch(points, expectation)
-
-          ExpectationChecks.mismatch(
-            Mismatch.pointsMismatch(Mismatch.PointMatchMode.Any, mismatches, expectation.clue)
-          )
-        }
-    }
-
-    final case class All[A](expectation: PointExpectation) extends PointMatch[A] {
-      def check(points: List[JPointData]): Either[NonEmptyList[Mismatch], Unit] =
-        if (points.isEmpty) {
-          ExpectationChecks.mismatch(
-            Mismatch.pointsMismatch(
-              Mismatch.PointMatchMode.All,
-              NonEmptyList.one(
-                PointExpectation.Mismatch.predicateMismatch("no points were collected")
-              ),
-              expectation.clue
-            )
-          )
-        } else {
-          points.collectFirst(Function.unlift(point => expectation.check(point).left.toOption)) match {
-            case None =>
-              ExpectationChecks.success
-            case Some(_) =>
-              ExpectationChecks.mismatch(
-                Mismatch.pointsMismatch(
-                  Mismatch.PointMatchMode.All,
-                  closestPointMismatch(points, expectation),
-                  expectation.clue
-                )
-              )
-          }
-        }
-    }
-
-    private def closestPointMismatch[A](
-        points: List[JPointData],
-        expectation: PointExpectation
-    ): NonEmptyList[PointExpectation.Mismatch] =
-      points
-        .flatMap(point => expectation.check(point).left.toOption)
-        .sortBy(_.length)
-        .headOption
-        .getOrElse(
-          NonEmptyList.one(
-            PointExpectation.Mismatch.predicateMismatch("no points were collected")
-          )
-        )
-  }
+    ExponentialHistogramImpl(name = Some(name), metricType = MetricDataType.EXPONENTIAL_HISTOGRAM)
 
   private sealed trait NumericKind {
     def metricTypeFor[A](valueType: MeasurementValue[A]): MetricDataType
@@ -539,31 +505,17 @@ object MetricExpectation {
       predicates: List[(MetricData => Boolean, Option[String])] = Nil
   ) extends MetricExpectation {
     def expectedName: Option[String] = name
-
-    def withDescription(description: String): MetricExpectation =
-      copy(description = Some(description))
-
-    def withUnit(unit: String): MetricExpectation =
-      copy(unit = Some(unit))
-
+    def withDescription(description: String): MetricExpectation = copy(description = Some(description))
+    def withUnit(unit: String): MetricExpectation = copy(unit = Some(unit))
     def withScopeName(name: String): MetricExpectation =
       copy(scope = Some(scope.fold(InstrumentationScopeExpectation.name(name))(_.withName(name))))
-
-    def withScope(scope: InstrumentationScopeExpectation): MetricExpectation =
-      copy(scope = Some(scope))
-
-    def withResource(resource: TelemetryResourceExpectation): MetricExpectation =
-      copy(resource = Some(resource))
-
-    def withClue(text: String): MetricExpectation =
-      copy(clue = Some(text))
-
+    def withScope(scope: InstrumentationScopeExpectation): MetricExpectation = copy(scope = Some(scope))
+    def withResource(resource: TelemetryResourceExpectation): MetricExpectation = copy(resource = Some(resource))
+    def withClue(text: String): MetricExpectation = copy(clue = Some(text))
     def where(f: MetricData => Boolean): MetricExpectation =
       copy(predicates = predicates :+ (f -> None))
-
     def where(clue: String)(f: MetricData => Boolean): MetricExpectation =
       copy(predicates = predicates :+ (f -> Some(clue)))
-
     def check(metric: MetricData): Either[NonEmptyList[Mismatch], Unit] =
       checkCommon(metric, name, description, unit, scope, resource, predicates)
   }
@@ -579,60 +531,71 @@ object MetricExpectation {
       resource: Option[TelemetryResourceExpectation] = None,
       clue: Option[String] = None,
       predicates: List[(MetricData => Boolean, Option[String])] = Nil,
-      pointMatch: PointMatch[A] = PointMatch.Ignore
+      pointConstraints: List[PointSetExpectation[PointExpectation.NumericPointData[A]]] = Nil
   ) extends Numeric[A] {
     def expectedName: Option[String] = name
 
     def withValue(value: A, attributes: Attribute[_]*): Numeric[A] =
-      if (attributes.isEmpty) withAnyPoint(PointExpectation.numeric(value)(numberComparison))
+      if (attributes.isEmpty)
+        withPoints(PointSetExpectation.exists(PointExpectation.numeric(value)(valueType, numberComparison)))
       else withValue(value, Attributes(attributes *))
 
     def withValue(value: A, attributes: Attributes): Numeric[A] =
-      withAnyPoint(
-        PointExpectation
-          .numeric(value)(numberComparison)
-          .withAttributesExact(attributes)
+      withPoints(
+        PointSetExpectation.exists(
+          PointExpectation.numeric(value)(valueType, numberComparison).withAttributesExact(attributes)
+        )
       )
 
-    def withPoint(point: PointExpectation.Numeric[A]): Numeric[A] =
-      withAnyPoint(point)
+    def withPoints(expectation: PointSetExpectation[PointExpectation.NumericPointData[A]]): Numeric[A] =
+      copy(pointConstraints = pointConstraints :+ expectation)
 
-    def withAnyPoint(point: PointExpectation.Numeric[A]): Numeric[A] =
-      copy(pointMatch = PointMatch.Any(point))
+    def containsPoints(first: PointExpectation.Numeric[A], rest: PointExpectation.Numeric[A]*): Numeric[A] =
+      withPoints(PointSetExpectation.contains(first, rest *))
 
-    def withAllPoints(point: PointExpectation.Numeric[A]): Numeric[A] =
-      copy(pointMatch = PointMatch.All(point))
+    def withExactlyPoints(first: PointExpectation.Numeric[A], rest: PointExpectation.Numeric[A]*): Numeric[A] =
+      withPoints(PointSetExpectation.exactly(first, rest *))
 
-    override def withDescription(description: String): Numeric[A] =
-      copy(description = Some(description))
+    def withPointCount(count: Int): Numeric[A] =
+      withPoints(PointSetExpectation.count(count))
 
-    override def withUnit(unit: String): Numeric[A] =
-      copy(unit = Some(unit))
+    def withNoPointsMatching(point: PointExpectation.Numeric[A]): Numeric[A] =
+      withPoints(PointSetExpectation.none(point))
 
-    override def withScopeName(name: String): Numeric[A] =
+    def wherePoints(
+        f: List[PointExpectation.NumericPointData[A]] => Boolean
+    ): Numeric[A] =
+      withPoints(PointSetExpectation.predicate(f))
+
+    def wherePoints(
+        clue: String
+    )(f: List[PointExpectation.NumericPointData[A]] => Boolean): Numeric[A] =
+      withPoints(PointSetExpectation.predicate(clue)(f))
+
+    def withDescription(description: String): Numeric[A] = copy(description = Some(description))
+    def withUnit(unit: String): Numeric[A] = copy(unit = Some(unit))
+    def withScopeName(name: String): Numeric[A] =
       copy(scope = Some(scope.fold(InstrumentationScopeExpectation.name(name))(_.withName(name))))
-
-    override def withScope(scope: InstrumentationScopeExpectation): Numeric[A] =
-      copy(scope = Some(scope))
-
-    override def withResource(resource: TelemetryResourceExpectation): Numeric[A] =
-      copy(resource = Some(resource))
-
-    override def withClue(text: String): Numeric[A] =
-      copy(clue = Some(text))
-
-    override def where(f: MetricData => Boolean): Numeric[A] =
+    def withScope(scope: InstrumentationScopeExpectation): Numeric[A] = copy(scope = Some(scope))
+    def withResource(resource: TelemetryResourceExpectation): Numeric[A] = copy(resource = Some(resource))
+    def withClue(text: String): Numeric[A] = copy(clue = Some(text))
+    def where(f: MetricData => Boolean): Numeric[A] =
       copy(predicates = predicates :+ (f -> None))
-
-    override def where(clue: String)(f: MetricData => Boolean): Numeric[A] =
+    def where(clue: String)(f: MetricData => Boolean): Numeric[A] =
       copy(predicates = predicates :+ (f -> Some(clue)))
 
-    def check(metric: MetricData): Either[NonEmptyList[Mismatch], Unit] =
+    def check(metric: MetricData): Either[NonEmptyList[Mismatch], Unit] = {
+      val typeResult = checkType(metric, kind.metricTypeFor(valueType))
+      val pointsResult =
+        if (typeResult.isRight) checkPointConstraints(pointConstraints, numericPoints(metric, valueType))
+        else ExpectationChecks.success
+
       ExpectationChecks.combine(
-        checkType(metric, kind.metricTypeFor(valueType)),
+        typeResult,
         checkCommon(metric, name, description, unit, scope, resource, predicates),
-        pointMatch.check(points(metric))
+        pointsResult
       )
+    }
   }
 
   private final case class SummaryImpl(
@@ -644,49 +607,42 @@ object MetricExpectation {
       resource: Option[TelemetryResourceExpectation] = None,
       clue: Option[String] = None,
       predicates: List[(MetricData => Boolean, Option[String])] = Nil,
-      pointMatch: PointMatch[JSummaryPointData] = PointMatch.Ignore
+      pointConstraints: List[PointSetExpectation[JSummaryPointData]] = Nil
   ) extends Summary {
     def expectedName: Option[String] = name
-
-    override def withDescription(description: String): Summary =
-      copy(description = Some(description))
-
-    override def withUnit(unit: String): Summary =
-      copy(unit = Some(unit))
-
-    override def withScopeName(name: String): Summary =
+    def withPoints(expectation: PointSetExpectation[JSummaryPointData]): Summary =
+      copy(pointConstraints = pointConstraints :+ expectation)
+    def containsPoints(first: PointExpectation.Summary, rest: PointExpectation.Summary*): Summary =
+      withPoints(PointSetExpectation.contains(first, rest *))
+    def withExactlyPoints(first: PointExpectation.Summary, rest: PointExpectation.Summary*): Summary =
+      withPoints(PointSetExpectation.exactly(first, rest *))
+    def withPointCount(count: Int): Summary = withPoints(PointSetExpectation.count(count))
+    def withNoPointsMatching(point: PointExpectation.Summary): Summary = withPoints(PointSetExpectation.none(point))
+    def wherePoints(f: List[JSummaryPointData] => Boolean): Summary = withPoints(PointSetExpectation.predicate(f))
+    def wherePoints(clue: String)(f: List[JSummaryPointData] => Boolean): Summary =
+      withPoints(PointSetExpectation.predicate(clue)(f))
+    def withDescription(description: String): Summary = copy(description = Some(description))
+    def withUnit(unit: String): Summary = copy(unit = Some(unit))
+    def withScopeName(name: String): Summary =
       copy(scope = Some(scope.fold(InstrumentationScopeExpectation.name(name))(_.withName(name))))
-
-    override def withScope(scope: InstrumentationScopeExpectation): Summary =
-      copy(scope = Some(scope))
-
-    override def withResource(resource: TelemetryResourceExpectation): Summary =
-      copy(resource = Some(resource))
-
-    override def withClue(text: String): Summary =
-      copy(clue = Some(text))
-
-    override def where(f: MetricData => Boolean): Summary =
+    def withScope(scope: InstrumentationScopeExpectation): Summary = copy(scope = Some(scope))
+    def withResource(resource: TelemetryResourceExpectation): Summary = copy(resource = Some(resource))
+    def withClue(text: String): Summary = copy(clue = Some(text))
+    def where(f: MetricData => Boolean): Summary =
       copy(predicates = predicates :+ (f -> None))
-
-    override def where(clue: String)(f: MetricData => Boolean): Summary =
+    def where(clue: String)(f: MetricData => Boolean): Summary =
       copy(predicates = predicates :+ (f -> Some(clue)))
-
-    def withPoint(point: PointExpectation.Summary): Summary =
-      copy(pointMatch = PointMatch.Any(point))
-
-    def withAnyPoint(point: PointExpectation.Summary): Summary =
-      copy(pointMatch = PointMatch.Any(point))
-
-    def withAllPoints(point: PointExpectation.Summary): Summary =
-      copy(pointMatch = PointMatch.All(point))
-
-    def check(metric: MetricData): Either[NonEmptyList[Mismatch], Unit] =
+    def check(metric: MetricData): Either[NonEmptyList[Mismatch], Unit] = {
+      val typeResult = checkType(metric, metricType)
+      val pointsResult =
+        if (typeResult.isRight) checkPointConstraints(pointConstraints, metric.getSummaryData.getPoints.asScala.toList)
+        else ExpectationChecks.success
       ExpectationChecks.combine(
-        checkType(metric, metricType),
+        typeResult,
         checkCommon(metric, name, description, unit, scope, resource, predicates),
-        pointMatch.check(points(metric))
+        pointsResult
       )
+    }
   }
 
   private final case class HistogramImpl(
@@ -698,49 +654,44 @@ object MetricExpectation {
       resource: Option[TelemetryResourceExpectation] = None,
       clue: Option[String] = None,
       predicates: List[(MetricData => Boolean, Option[String])] = Nil,
-      pointMatch: PointMatch[JHistogramPointData] = PointMatch.Ignore
+      pointConstraints: List[PointSetExpectation[JHistogramPointData]] = Nil
   ) extends Histogram {
     def expectedName: Option[String] = name
-
-    override def withDescription(description: String): Histogram =
-      copy(description = Some(description))
-
-    override def withUnit(unit: String): Histogram =
-      copy(unit = Some(unit))
-
-    override def withScopeName(name: String): Histogram =
+    def withPoints(expectation: PointSetExpectation[JHistogramPointData]): Histogram =
+      copy(pointConstraints = pointConstraints :+ expectation)
+    def containsPoints(first: PointExpectation.Histogram, rest: PointExpectation.Histogram*): Histogram =
+      withPoints(PointSetExpectation.contains(first, rest *))
+    def withExactlyPoints(first: PointExpectation.Histogram, rest: PointExpectation.Histogram*): Histogram =
+      withPoints(PointSetExpectation.exactly(first, rest *))
+    def withPointCount(count: Int): Histogram = withPoints(PointSetExpectation.count(count))
+    def withNoPointsMatching(point: PointExpectation.Histogram): Histogram =
+      withPoints(PointSetExpectation.none(point))
+    def wherePoints(f: List[JHistogramPointData] => Boolean): Histogram = withPoints(PointSetExpectation.predicate(f))
+    def wherePoints(clue: String)(f: List[JHistogramPointData] => Boolean): Histogram =
+      withPoints(PointSetExpectation.predicate(clue)(f))
+    def withDescription(description: String): Histogram = copy(description = Some(description))
+    def withUnit(unit: String): Histogram = copy(unit = Some(unit))
+    def withScopeName(name: String): Histogram =
       copy(scope = Some(scope.fold(InstrumentationScopeExpectation.name(name))(_.withName(name))))
-
-    override def withScope(scope: InstrumentationScopeExpectation): Histogram =
-      copy(scope = Some(scope))
-
-    override def withResource(resource: TelemetryResourceExpectation): Histogram =
-      copy(resource = Some(resource))
-
-    override def withClue(text: String): Histogram =
-      copy(clue = Some(text))
-
-    override def where(f: MetricData => Boolean): Histogram =
+    def withScope(scope: InstrumentationScopeExpectation): Histogram = copy(scope = Some(scope))
+    def withResource(resource: TelemetryResourceExpectation): Histogram = copy(resource = Some(resource))
+    def withClue(text: String): Histogram = copy(clue = Some(text))
+    def where(f: MetricData => Boolean): Histogram =
       copy(predicates = predicates :+ (f -> None))
-
-    override def where(clue: String)(f: MetricData => Boolean): Histogram =
+    def where(clue: String)(f: MetricData => Boolean): Histogram =
       copy(predicates = predicates :+ (f -> Some(clue)))
-
-    def withPoint(point: PointExpectation.Histogram): Histogram =
-      copy(pointMatch = PointMatch.Any(point))
-
-    def withAnyPoint(point: PointExpectation.Histogram): Histogram =
-      copy(pointMatch = PointMatch.Any(point))
-
-    def withAllPoints(point: PointExpectation.Histogram): Histogram =
-      copy(pointMatch = PointMatch.All(point))
-
-    def check(metric: MetricData): Either[NonEmptyList[Mismatch], Unit] =
+    def check(metric: MetricData): Either[NonEmptyList[Mismatch], Unit] = {
+      val typeResult = checkType(metric, metricType)
+      val pointsResult =
+        if (typeResult.isRight)
+          checkPointConstraints(pointConstraints, metric.getHistogramData.getPoints.asScala.toList)
+        else ExpectationChecks.success
       ExpectationChecks.combine(
-        checkType(metric, metricType),
+        typeResult,
         checkCommon(metric, name, description, unit, scope, resource, predicates),
-        pointMatch.check(points(metric))
+        pointsResult
       )
+    }
   }
 
   private final case class ExponentialHistogramImpl(
@@ -752,49 +703,51 @@ object MetricExpectation {
       resource: Option[TelemetryResourceExpectation] = None,
       clue: Option[String] = None,
       predicates: List[(MetricData => Boolean, Option[String])] = Nil,
-      pointMatch: PointMatch[ExponentialHistogramPointData] = PointMatch.Ignore
+      pointConstraints: List[PointSetExpectation[ExponentialHistogramPointData]] = Nil
   ) extends ExponentialHistogram {
     def expectedName: Option[String] = name
-
-    override def withDescription(description: String): ExponentialHistogram =
-      copy(description = Some(description))
-
-    override def withUnit(unit: String): ExponentialHistogram =
-      copy(unit = Some(unit))
-
-    override def withScopeName(name: String): ExponentialHistogram =
+    def withPoints(expectation: PointSetExpectation[ExponentialHistogramPointData]): ExponentialHistogram =
+      copy(pointConstraints = pointConstraints :+ expectation)
+    def containsPoints(
+        first: PointExpectation.ExponentialHistogram,
+        rest: PointExpectation.ExponentialHistogram*
+    ): ExponentialHistogram =
+      withPoints(PointSetExpectation.contains(first, rest *))
+    def withExactlyPoints(
+        first: PointExpectation.ExponentialHistogram,
+        rest: PointExpectation.ExponentialHistogram*
+    ): ExponentialHistogram =
+      withPoints(PointSetExpectation.exactly(first, rest *))
+    def withPointCount(count: Int): ExponentialHistogram = withPoints(PointSetExpectation.count(count))
+    def withNoPointsMatching(point: PointExpectation.ExponentialHistogram): ExponentialHistogram =
+      withPoints(PointSetExpectation.none(point))
+    def wherePoints(f: List[ExponentialHistogramPointData] => Boolean): ExponentialHistogram =
+      withPoints(PointSetExpectation.predicate(f))
+    def wherePoints(clue: String)(f: List[ExponentialHistogramPointData] => Boolean): ExponentialHistogram =
+      withPoints(PointSetExpectation.predicate(clue)(f))
+    def withDescription(description: String): ExponentialHistogram = copy(description = Some(description))
+    def withUnit(unit: String): ExponentialHistogram = copy(unit = Some(unit))
+    def withScopeName(name: String): ExponentialHistogram =
       copy(scope = Some(scope.fold(InstrumentationScopeExpectation.name(name))(_.withName(name))))
-
-    override def withScope(scope: InstrumentationScopeExpectation): ExponentialHistogram =
-      copy(scope = Some(scope))
-
-    override def withResource(resource: TelemetryResourceExpectation): ExponentialHistogram =
-      copy(resource = Some(resource))
-
-    override def withClue(text: String): ExponentialHistogram =
-      copy(clue = Some(text))
-
-    override def where(f: MetricData => Boolean): ExponentialHistogram =
+    def withScope(scope: InstrumentationScopeExpectation): ExponentialHistogram = copy(scope = Some(scope))
+    def withResource(resource: TelemetryResourceExpectation): ExponentialHistogram = copy(resource = Some(resource))
+    def withClue(text: String): ExponentialHistogram = copy(clue = Some(text))
+    def where(f: MetricData => Boolean): ExponentialHistogram =
       copy(predicates = predicates :+ (f -> None))
-
-    override def where(clue: String)(f: MetricData => Boolean): ExponentialHistogram =
+    def where(clue: String)(f: MetricData => Boolean): ExponentialHistogram =
       copy(predicates = predicates :+ (f -> Some(clue)))
-
-    def withPoint(point: PointExpectation.ExponentialHistogram): ExponentialHistogram =
-      copy(pointMatch = PointMatch.Any(point))
-
-    def withAnyPoint(point: PointExpectation.ExponentialHistogram): ExponentialHistogram =
-      copy(pointMatch = PointMatch.Any(point))
-
-    def withAllPoints(point: PointExpectation.ExponentialHistogram): ExponentialHistogram =
-      copy(pointMatch = PointMatch.All(point))
-
-    def check(metric: MetricData): Either[NonEmptyList[Mismatch], Unit] =
+    def check(metric: MetricData): Either[NonEmptyList[Mismatch], Unit] = {
+      val typeResult = checkType(metric, metricType)
+      val pointsResult =
+        if (typeResult.isRight)
+          checkPointConstraints(pointConstraints, metric.getExponentialHistogramData.getPoints.asScala.toList)
+        else ExpectationChecks.success
       ExpectationChecks.combine(
-        checkType(metric, metricType),
+        typeResult,
         checkCommon(metric, name, description, unit, scope, resource, predicates),
-        pointMatch.check(points(metric))
+        pointsResult
       )
+    }
   }
 
   private def checkCommon(
@@ -838,21 +791,41 @@ object MetricExpectation {
     if (metric.getType == expected) ExpectationChecks.success
     else ExpectationChecks.mismatch(Mismatch.typeMismatch(expected.toString, metric.getType.toString))
 
-  private def points(metric: MetricData): List[JPointData] =
+  private def checkPointConstraints[P](
+      expectations: List[PointSetExpectation[P]],
+      points: List[P]
+  ): Either[NonEmptyList[Mismatch], Unit] =
+    ExpectationChecks.combine(
+      expectations.map { expectation =>
+        ExpectationChecks.nested(expectation.check(points))(mismatches =>
+          Mismatch.pointsMismatch(mismatches, expectation.clue)
+        )
+      }
+    )
+
+  private def numericPoints[A](
+      metric: MetricData,
+      valueType: MeasurementValue[A]
+  ): List[PointExpectation.NumericPointData[A]] =
     metric.getType match {
       case MetricDataType.LONG_GAUGE =>
-        metric.getLongGaugeData.getPoints.asScala.toList
+        metric.getLongGaugeData.getPoints.asScala.toList.map(point => numericPoint(valueType, point))
       case MetricDataType.DOUBLE_GAUGE =>
-        metric.getDoubleGaugeData.getPoints.asScala.toList
+        metric.getDoubleGaugeData.getPoints.asScala.toList.map(point => numericPoint(valueType, point))
       case MetricDataType.LONG_SUM =>
-        metric.getLongSumData.getPoints.asScala.toList
+        metric.getLongSumData.getPoints.asScala.toList.map(point => numericPoint(valueType, point))
       case MetricDataType.DOUBLE_SUM =>
-        metric.getDoubleSumData.getPoints.asScala.toList
-      case MetricDataType.SUMMARY =>
-        metric.getSummaryData.getPoints.asScala.toList
-      case MetricDataType.HISTOGRAM =>
-        metric.getHistogramData.getPoints.asScala.toList
-      case MetricDataType.EXPONENTIAL_HISTOGRAM =>
-        metric.getExponentialHistogramData.getPoints.asScala.toList
+        metric.getDoubleSumData.getPoints.asScala.toList.map(point => numericPoint(valueType, point))
+      case other =>
+        throw new IllegalStateException(s"unexpected metric type for numeric points: $other")
+    }
+
+  private def numericPoint[A](
+      valueType: MeasurementValue[A],
+      point: io.opentelemetry.sdk.metrics.data.PointData
+  ): PointExpectation.NumericPointData[A] =
+    PointExpectation.toNumericPointData(valueType, point) match {
+      case Right(value)     => value
+      case Left(mismatches) => throw new IllegalStateException(mismatches.message)
     }
 }

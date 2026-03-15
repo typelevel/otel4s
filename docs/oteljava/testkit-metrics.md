@@ -7,7 +7,8 @@ instrumentation scope, telemetry resource, point attributes, collection timestam
 and so on.
 
 The expectation API lets you assert only the relevant parts of a metric while still preserving detail when you need
-it.
+it. Metric point matching is expressed at the collection level, so a single metric expectation can accumulate
+multiple point constraints.
 
 ## Getting started
 
@@ -46,12 +47,7 @@ The usual flow is:
 import cats.effect.IO
 import io.opentelemetry.sdk.metrics.data.MetricData
 import org.typelevel.otel4s.metrics.MeterProvider
-import org.typelevel.otel4s.oteljava.testkit.metrics.{
-  MetricExpectation,
-  MetricExpectations,
-  MetricsTestkit,
-  PointExpectation
-}
+import org.typelevel.otel4s.oteljava.testkit.metrics._
 
 def program(meterProvider: MeterProvider[IO]): IO[Unit] =
   for {
@@ -138,14 +134,16 @@ MetricExpectation
 ```scala mdoc:silent
 MetricExpectation
   .sum[Long]("service.requests")
-  .withAnyPoint(
-    PointExpectation
-      .numeric(1L)
-      .withAttributesExact(Attribute("http.method", "GET"))
+  .withPoints(
+    PointSetExpectation.exists(
+      PointExpectation
+        .numeric(1L)
+        .withAttributesExact(Attribute("http.method", "GET"))
+    )
   )
 ```
 
-Use `withAnyPoint(...)` directly when you need subset matching or a more detailed point expectation.
+Use `withPoints(PointSetExpectation.exists(...))` directly when you need subset matching or a more detailed point expectation.
 
 ## Point attributes
 
@@ -176,7 +174,7 @@ PointExpectation
 PointExpectation
   .numeric(1L)
   .withAttributes(
-    AttributesExpectation.predicate("expected only one attribute") { attributes =>
+    AttributesExpectation.where("expected only one attribute") { attributes =>
       attributes == Attributes(Attribute("http.method", "GET"))
     }
   )
@@ -203,10 +201,12 @@ import org.typelevel.otel4s.oteljava.testkit.{
 
 MetricExpectation
   .sum[Long]("service.requests")
-  .withAnyPoint(
-    PointExpectation
-      .numeric(1L)
-      .withAttributesExact(Attribute("http.method", "GET"))
+  .withPoints(
+    PointSetExpectation.exists(
+      PointExpectation
+        .numeric(1L)
+        .withAttributesExact(Attribute("http.method", "GET"))
+    )
   )
   .withScope(
     InstrumentationScopeExpectation
@@ -234,10 +234,12 @@ The testkit also supports non-numeric point kinds directly.
 ```scala mdoc:silent
 MetricExpectation
   .summary("rpc.duration")
-  .withAnyPoint(
-    PointExpectation.summary
-      .withCount(1L)
-      .withSum(42.0)
+  .withPoints(
+    PointSetExpectation.exists(
+      PointExpectation.summary
+        .withCount(1L)
+        .withSum(42.0)
+    )
   )
 ```
 
@@ -248,12 +250,14 @@ import org.typelevel.otel4s.metrics.BucketBoundaries
 
 MetricExpectation
   .histogram("http.server.duration")
-  .withAnyPoint(
-    PointExpectation.histogram
-      .withCount(3L)
-      .withSum(42.0)
-      .withBoundaries(BucketBoundaries(0.1, 1.0, 10.0))
-      .withCounts(1L, 1L, 1L, 0L)
+  .withPoints(
+    PointSetExpectation.exists(
+      PointExpectation.histogram
+        .withCount(3L)
+        .withSum(42.0)
+        .withBoundaries(BucketBoundaries(0.1, 1.0, 10.0))
+        .withCounts(1L, 1L, 1L, 0L)
+    )
   )
 ```
 
@@ -262,38 +266,138 @@ MetricExpectation
 ```scala mdoc:silent
 MetricExpectation
   .exponentialHistogram("queue.depth")
-  .withAnyPoint(
-    PointExpectation.exponentialHistogram
-      .withScale(2)
-      .withCount(10L)
-      .withSum(100.0)
-      .withZeroCount(0L)
+  .withPoints(
+    PointSetExpectation.exists(
+      PointExpectation.exponentialHistogram
+        .withScale(2)
+        .withCount(10L)
+        .withSum(100.0)
+        .withZeroCount(0L)
+    )
   )
 ```
 
 ## Matching multiple points
 
-Use `withAnyPoint(...)` when at least one collected point must match.
+Point matching is collection-based. This means you can combine multiple constraints on the same metric expectation.
+
+Use `withPoints(PointSetExpectation.exists(...))` when at least one collected point must match.
 
 ```scala mdoc:silent
 MetricExpectation
   .sum[Long]("service.requests")
-  .withAnyPoint(
-    PointExpectation
-      .numeric(1L)
-      .withAttributesExact(Attribute("http.method", "GET"))
+  .withPoints(
+    PointSetExpectation.exists(
+      PointExpectation
+        .numeric(1L)
+        .withAttributesExact(Attribute("http.method", "GET"))
+    )
   )
 ```
 
-Use `withAllPoints(...)` when every collected point must satisfy the same expectation.
+Use `withPoints(PointSetExpectation.forall(...))` when every collected point must satisfy the same expectation.
 
 ```scala mdoc:silent
 MetricExpectation
   .sum[Long]("service.requests")
-  .withAllPoints(
+  .withPoints(
+    PointSetExpectation.forall(
+      PointExpectation
+        .numeric(1L)
+        .withAttributesSubset(Attribute("region", "eu"))
+    )
+  )
+```
+
+Because point constraints accumulate, you can also require multiple distinct points on the same metric:
+
+```scala mdoc:silent
+MetricExpectation
+  .sum[Long]("service.requests")
+  .withPoints(
+    PointSetExpectation.exists(
+      PointExpectation
+        .numeric(1L)
+        .withAttributesSubset(Attribute("region", "eu"))
+    )
+  )
+  .withPoints(
+    PointSetExpectation.exists(
+      PointExpectation
+        .numeric(1L)
+        .withAttributesSubset(Attribute("region", "us"))
+    )
+  )
+```
+
+For the common case where you want to require several points together, `containsPoints(...)` is more direct:
+
+```scala mdoc:silent
+MetricExpectation
+  .sum[Long]("service.requests")
+  .containsPoints(
     PointExpectation
       .numeric(1L)
-      .withAttributesSubset(Attribute("region", "eu"))
+      .withAttributesSubset(Attribute("region", "eu")),
+    PointExpectation
+      .numeric(1L)
+      .withAttributesSubset(Attribute("region", "us"))
+  )
+```
+
+Use `withExactlyPoints(...)` when the metric must contain exactly the given points and no extras:
+
+```scala mdoc:silent
+MetricExpectation
+  .sum[Long]("service.requests")
+  .withExactlyPoints(
+    PointExpectation
+      .numeric(1L)
+      .withAttributesSubset(Attribute("region", "eu")),
+    PointExpectation
+      .numeric(1L)
+      .withAttributesSubset(Attribute("region", "us"))
+  )
+```
+
+If you only care about cardinality, use `withPointCount(...)`:
+
+```scala mdoc:silent
+MetricExpectation
+  .sum[Long]("service.requests")
+  .withPointCount(2)
+```
+
+For more advanced collection-wide assertions, use `wherePoints(...)`:
+
+```scala mdoc:silent
+MetricExpectation
+  .sum[Long]("service.requests")
+  .wherePoints("expected exactly EU and US points") { points =>
+    points.map(_.attributes).toSet == Set(
+      Attributes(Attribute("region", "eu")),
+      Attributes(Attribute("region", "us"))
+    )
+  }
+```
+
+If you need full control over point-set matching, use `withPoints(...)` together with `PointSetExpectation`:
+
+```scala mdoc:silent
+import org.typelevel.otel4s.oteljava.testkit.metrics.PointSetExpectation
+
+MetricExpectation
+  .sum[Long]("service.requests")
+  .withPoints(
+    PointSetExpectation.contains(
+      PointExpectation
+        .numeric(1L)
+        .withAttributesSubset(Attribute("region", "eu")),
+      PointExpectation
+        .numeric(1L)
+        .withAttributesSubset(Attribute("region", "us"))
+    )
+      .and(PointSetExpectation.count(2))
   )
 ```
 
@@ -325,20 +429,24 @@ attribute is wrong.
 
 ## Clues
 
-Both metric and point expectations support optional clues.
+Metric, point, and point-set expectations support optional clues.
 
 ```scala mdoc:silent
-import org.typelevel.otel4s.oteljava.testkit.metrics.PointExpectation
+import org.typelevel.otel4s.oteljava.testkit.metrics.{PointExpectation, PointSetExpectation}
 import org.typelevel.otel4s.Attribute
 
 MetricExpectation
   .sum[Long]("service.requests")
   .withClue("the request counter must be emitted")
-  .withAnyPoint(
-    PointExpectation
-      .numeric(1L)
-      .withClue("GET requests should increment the counter")
-      .withAttributesExact(Attribute("http.method", "GET"))
+  .withPoints(
+    PointSetExpectation
+      .exists(
+        PointExpectation
+          .numeric(1L)
+          .withClue("GET requests should increment the counter")
+          .withAttributesExact(Attribute("http.method", "GET"))
+      )
+      .withClue("the GET point must be present")
   )
 ```
 

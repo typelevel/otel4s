@@ -161,6 +161,13 @@ object MetricExpectations {
       check(metrics, expectation)
     }
 
+  /** Returns `true` if every expectation matched at least one collected metric. */
+  def allMatch(
+      metrics: List[MetricData],
+      expectations: List[MetricExpectation]
+  ): Boolean =
+    checkAll(metrics, expectations).isRight
+
   /** Formats mismatches into a multi-line human-readable failure message. */
   def format(
       mismatches: NonEmptyList[MetricMismatch]
@@ -168,13 +175,6 @@ object MetricExpectations {
     mismatches.toList.zipWithIndex
       .map { case (mismatch, index) => s"${index + 1}. ${mismatch.message}" }
       .mkString("Metric expectations failed:\n", "\n", "")
-
-  /** Returns `true` if every expectation matched at least one collected metric. */
-  def allMatch(
-      metrics: List[MetricData],
-      expectations: List[MetricExpectation]
-  ): Boolean =
-    checkAll(metrics, expectations).isRight
 
   private def bestMismatch(
       metrics: List[MetricData],

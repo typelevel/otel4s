@@ -179,8 +179,8 @@ object MetricExpectations {
 
   /** Checks that every expectation matched a different collected metric.
     *
-    * Returns `Right(())` when all expectations matched distinct collected metrics. Otherwise returns a non-empty list of
-    * mismatches describing the unmatched expectations.
+    * Returns `Right(())` when all expectations matched distinct collected metrics. Otherwise returns a non-empty list
+    * of mismatches describing the unmatched expectations.
     */
   def checkAllDistinct(
       metrics: List[MetricData],
@@ -190,8 +190,8 @@ object MetricExpectations {
 
   /** Checks that every expectation matched a different collected metric.
     *
-    * Returns `Right(())` when all expectations matched distinct collected metrics. Otherwise returns a non-empty list of
-    * mismatches describing the unmatched expectations.
+    * Returns `Right(())` when all expectations matched distinct collected metrics. Otherwise returns a non-empty list
+    * of mismatches describing the unmatched expectations.
     */
   def checkAllDistinct(
       metrics: List[MetricData],

@@ -294,13 +294,14 @@ class PointSetExpectationSuite extends CatsEffectSuite {
           .check(points)
       )
 
-      val mismatch = assertMismatchType[PointSetExpectation.Mismatch.PredicateFailed](
+      val mismatch = assertMismatchType[PointSetExpectation.Mismatch.CluedMismatch](
         PointSetExpectation
           .predicate[PointExpectation.NumericPointData[Long]]("expected a single point")(_.size == 1)
           .check(points)
       )
 
-      assertEquals(mismatch.clue, Some("expected a single point"))
+      assertEquals(mismatch.clue, "expected a single point")
+      assert(mismatch.mismatches.head.isInstanceOf[PointSetExpectation.Mismatch.PredicateFailed])
     }
   }
 

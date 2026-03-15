@@ -143,16 +143,20 @@ class MetricExpectationsFormattingSuite extends CatsEffectSuite {
           .withPoints(
             PointSetExpectation
               .count[PointExpectation.NumericPointData[Long]](2)
+              .withClue("point count rule")
               .and(
                 PointSetExpectation.contains(
                   PointExpectation.numeric(1L).withAttributesSubset(Attribute("region", "us")).withClue("US point")
-                )
+                ).withClue("region shape rule")
               )
+              .withClue("combined point rules")
           )
       )
 
       assert(rendered.contains("closest metric 'service.counter' mismatched:"))
-      assert(rendered.contains("points mismatch: and mismatch: point count mismatch: expected 2, got 1"))
+      assert(rendered.contains("points mismatch [combined point rules]: point-set mismatch [combined point rules]: and mismatch:"))
+      assert(rendered.contains("point-set mismatch [point count rule]: point count mismatch: expected 2, got 1"))
+      assert(rendered.contains("point-set mismatch [region shape rule]: missing expected point [US point]"))
       assert(rendered.contains("missing expected point [US point]"))
     }
   }

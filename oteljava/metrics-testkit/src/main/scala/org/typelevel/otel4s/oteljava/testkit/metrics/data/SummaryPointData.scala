@@ -25,6 +25,10 @@ import scala.jdk.CollectionConverters._
 
 /** A representation of the `io.opentelemetry.sdk.metrics.data.SummaryPointData`.
   */
+@deprecated(
+  "Use `collectAllMetrics` for raw metrics or the new expectation API instead of `metrics.data.SummaryPointData` projections",
+  "0.16.0"
+)
 sealed trait SummaryPointData {
 
   def sum: Double
@@ -49,6 +53,10 @@ sealed trait SummaryPointData {
 
 }
 
+@deprecated(
+  "Use `collectAllMetrics` for raw metrics or the new expectation API instead of `metrics.data.SummaryPointData` projections",
+  "0.16.0"
+)
 object SummaryPointData {
 
   def apply(

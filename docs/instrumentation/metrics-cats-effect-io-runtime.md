@@ -17,7 +17,7 @@ def printMetrics(config: IORuntimeMetrics.Config): Unit = {
 
     IORuntimeMetrics
       .register[IO](global.metrics, config)
-      .surround(testkit.collectMetrics[MetricData])
+      .surround(testkit.collectAllMetrics)
   }.unsafeRunSync()
 
   println("| Name | Description | Unit |")

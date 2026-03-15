@@ -23,6 +23,10 @@ import io.opentelemetry.sdk.metrics.data.ValueAtQuantile
 
 /** A representation of the `io.opentelemetry.sdk.metrics.data.ValueAtQuantile`.
   */
+@deprecated(
+  "Use `collectAllMetrics` for raw metrics or the new expectation API instead of `metrics.data.QuantileData` projections",
+  "0.16.0"
+)
 sealed trait QuantileData {
 
   def quantile: Double
@@ -45,6 +49,10 @@ sealed trait QuantileData {
 
 }
 
+@deprecated(
+  "Use `collectAllMetrics` for raw metrics or the new expectation API instead of `metrics.data.QuantileData` projections",
+  "0.16.0"
+)
 object QuantileData {
 
   def apply(quantile: Double, value: Double): QuantileData =

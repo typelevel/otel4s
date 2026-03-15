@@ -21,6 +21,10 @@ import org.typelevel.otel4s.oteljava.testkit.metrics.data.Metric
 
 /** Transforms OpenTelemetry's MetricData into arbitrary type `A`.
   */
+@deprecated(
+  "Use `collectAllMetrics` for raw metrics or the new expectation API instead of `metrics.data.Metric` projections",
+  "0.16.0"
+)
 sealed trait FromMetricData[A] {
   def from(metricData: MetricData): A
 }
@@ -34,6 +38,10 @@ object FromMetricData {
       def from(metricData: MetricData): MetricData = metricData
     }
 
+  @deprecated(
+    "Use `collectAllMetrics` for raw metrics or the new expectation API instead of `metrics.data.Metric` projections",
+    "0.16.0"
+  )
   implicit val toOtel4sMetric: FromMetricData[Metric] =
     new FromMetricData[Metric] {
       def from(metricData: MetricData): Metric = Metric(metricData)

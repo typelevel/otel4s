@@ -28,7 +28,7 @@ class MetricExpectationsFormattingSuite extends CatsEffectSuite {
       meter <- testkit.meterProvider.get("test")
       counter <- meter.counter[Long]("service.counter").create
       _ <- counter.add(1L)
-      metrics <- testkit.collectMetrics[MetricData]
+      metrics <- testkit.collectAllMetrics
     } yield {
       val rendered = formatFailures(
         metrics,
@@ -48,7 +48,7 @@ class MetricExpectationsFormattingSuite extends CatsEffectSuite {
       meter <- testkit.meterProvider.get("test")
       counter <- meter.counter[Long]("service.counter").create
       _ <- counter.add(1L)
-      metrics <- testkit.collectMetrics[MetricData]
+      metrics <- testkit.collectAllMetrics
     } yield {
       val rendered = formatFailures(
         metrics,
@@ -69,7 +69,7 @@ class MetricExpectationsFormattingSuite extends CatsEffectSuite {
       meter <- testkit.meterProvider.get("test")
       counter <- meter.counter[Long]("service.counter").create
       _ <- counter.add(1L)
-      metrics <- testkit.collectMetrics[MetricData]
+      metrics <- testkit.collectAllMetrics
     } yield {
       val rendered = formatFailures(
         metrics,
@@ -94,7 +94,7 @@ class MetricExpectationsFormattingSuite extends CatsEffectSuite {
       meter <- testkit.meterProvider.get("test")
       counter <- meter.counter[Long]("service.counter").create
       _ <- counter.add(1L, Attributes(Attribute("region", "eu")))
-      metrics <- testkit.collectMetrics[MetricData]
+      metrics <- testkit.collectAllMetrics
     } yield {
       val rendered = formatFailures(
         metrics,
@@ -127,7 +127,7 @@ class MetricExpectationsFormattingSuite extends CatsEffectSuite {
       meter <- testkit.meterProvider.get("test")
       counter <- meter.counter[Long]("service.counter").create
       _ <- counter.add(1L, Attributes(Attribute("region", "eu")))
-      metrics <- testkit.collectMetrics[MetricData]
+      metrics <- testkit.collectAllMetrics
     } yield {
       val rendered = formatFailures(
         metrics,
@@ -155,7 +155,7 @@ class MetricExpectationsFormattingSuite extends CatsEffectSuite {
       meter <- testkit.meterProvider.get("test")
       counter <- meter.counter[Long]("service.counter").create
       _ <- counter.add(1L)
-      metrics <- testkit.collectMetrics[MetricData]
+      metrics <- testkit.collectAllMetrics
     } yield {
       val rendered = formatFailures(
         metrics,

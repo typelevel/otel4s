@@ -28,6 +28,10 @@ import scala.concurrent.duration._
 
 /** A representation of the `io.opentelemetry.sdk.metrics.data.PointData`.
   */
+@deprecated(
+  "Use `collectAllMetrics` for raw metrics or the new expectation API instead of `metrics.data.PointData` projections",
+  "0.16.0"
+)
 sealed trait PointData[A] {
   def startTimestamp: FiniteDuration
   def recordTimestamp: FiniteDuration
@@ -35,6 +39,10 @@ sealed trait PointData[A] {
   def value: A
 }
 
+@deprecated(
+  "Use `collectAllMetrics` for raw metrics or the new expectation API instead of `metrics.data.PointData` projections",
+  "0.16.0"
+)
 object PointData {
 
   def apply[A](

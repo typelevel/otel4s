@@ -33,6 +33,10 @@ import scala.jdk.CollectionConverters._
 
 /** A representation of the `io.opentelemetry.sdk.metrics.data.MetricData`.
   */
+@deprecated(
+  "Use `collectAllMetrics` for raw metrics or the new expectation API instead of `metrics.data.Metric` projections",
+  "0.16.0"
+)
 sealed trait Metric {
 
   def name: String
@@ -63,6 +67,10 @@ sealed trait Metric {
 
 }
 
+@deprecated(
+  "Use `collectAllMetrics` for raw metrics or the new expectation API instead of `metrics.data.Metric` projections",
+  "0.16.0"
+)
 object Metric {
 
   def apply(

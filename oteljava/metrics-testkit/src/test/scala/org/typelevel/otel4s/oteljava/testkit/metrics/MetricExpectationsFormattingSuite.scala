@@ -180,6 +180,30 @@ class MetricExpectationsFormattingSuite extends CatsEffectSuite {
     }
   }
 
+  testkitTest("format renders distinct matching failures") { testkit =>
+    for {
+      meter <- testkit.meterProvider.get("test")
+      counter <- meter.counter[Long]("service.counter").create
+      _ <- counter.add(1L)
+      metrics <- testkit.collectAllMetrics
+    } yield {
+      val rendered = MetricExpectations.checkAllDistinct(
+        metrics,
+        MetricExpectation.sum[Long]("service.counter").withValue(1L),
+        MetricExpectation.sum[Long]("service.counter").withValue(1L)
+      ) match {
+        case Left(mismatches) => MetricExpectations.format(mismatches)
+        case Right(_)         => fail("expected mismatches, got success")
+      }
+
+      assertEquals(
+        rendered,
+        """Metric expectations failed:
+          |1. no distinct metric remained for the expectation; matched metrics: [service.counter]""".stripMargin
+      )
+    }
+  }
+
   private def testkitTest[A](options: TestOptions)(body: MetricsTestkit[IO] => IO[A])(implicit loc: Location): Unit =
     test(options)(MetricsTestkit.inMemory[IO]().use(body))
 

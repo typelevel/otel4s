@@ -31,7 +31,7 @@ import org.typelevel.otel4s.metrics.MeasurementValue.LongMeasurementValue
 
 import scala.jdk.CollectionConverters._
 
-/** A partial expectation for a single OpenTelemetry Java [[MetricData]].
+/** A partial expectation for a single OpenTelemetry Java `MetricData`.
   *
   * `MetricExpectation` is intended for tests where asserting against the full `MetricData` shape would be too verbose.
   * Unspecified properties are ignored. Point matching is expressed through collection-level [[PointSetExpectation]]

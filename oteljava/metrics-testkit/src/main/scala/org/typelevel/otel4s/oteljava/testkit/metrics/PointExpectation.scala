@@ -39,11 +39,6 @@ import scala.jdk.CollectionConverters._
   *
   * `PointExpectation` is used together with metric expectations to express which individual points should be present.
   * Unspecified properties are ignored.
-  *
-  * Attribute matching is done with [[AttributesExpectation]]:
-  *   - [[withAttributes]] accepts a custom attribute expectation
-  *   - [[withAttributesExact]] requires exact equality
-  *   - [[withAttributesSubset]] requires the expected attributes to be contained in the point
   */
 sealed trait PointExpectation {
 

@@ -22,7 +22,7 @@ import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.Attributes
 import org.typelevel.otel4s.oteljava.AttributeConverters._
 
-/** A partial expectation for OpenTelemetry Java [[JInstrumentationScopeInfo]].
+/** A partial expectation for OpenTelemetry Java `InstrumentationScopeInfo`.
   *
   * Unspecified properties are ignored. Use the fluent methods on this trait to constrain only the parts of the
   * instrumentation scope that matter for a given test.

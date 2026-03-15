@@ -27,6 +27,7 @@ import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.Attributes
 
 import scala.jdk.CollectionConverters._
+import scala.reflect.{ClassTag, classTag}
 
 class PointSetExpectationSuite extends CatsEffectSuite {
 
@@ -397,16 +398,15 @@ class PointSetExpectationSuite extends CatsEffectSuite {
       case Left(mismatches) => fail(mismatches.toList.map(_.message).mkString(", "))
     }
 
-  private def assertMismatchType[A <: PointSetExpectation.Mismatch](
+  private def assertMismatchType[A <: PointSetExpectation.Mismatch: ClassTag](
       result: Either[NonEmptyList[PointSetExpectation.Mismatch], Unit]
   ): A =
     result match {
       case Right(_) =>
         fail("expected mismatch, got success")
       case Left(mismatches) =>
-        mismatches.head match {
-          case mismatch: A @unchecked => mismatch
-          case other                  => fail(s"unexpected mismatch: $other")
-        }
+        val mismatch = mismatches.head
+        if (classTag[A].runtimeClass.isInstance(mismatch)) mismatch.asInstanceOf[A]
+        else fail(s"unexpected mismatch: $mismatch")
     }
 }

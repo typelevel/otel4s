@@ -18,6 +18,7 @@ package org.typelevel.otel4s.oteljava.testkit
 package metrics
 
 import cats.data.NonEmptyList
+import cats.syntax.functor._
 import io.opentelemetry.sdk.metrics.data.{ExponentialHistogramPointData => JExponentialHistogramPointData}
 import io.opentelemetry.sdk.metrics.data.{HistogramPointData => JHistogramPointData}
 import io.opentelemetry.sdk.metrics.data.{SummaryPointData => JSummaryPointData}
@@ -47,6 +48,7 @@ sealed trait PointSetExpectation[P] {
 }
 
 object PointSetExpectation {
+
   /** A structured reason explaining why a [[PointSetExpectation]] did not match a collection of points. */
   sealed trait Mismatch extends Product with Serializable {
 
@@ -405,7 +407,7 @@ object PointSetExpectation {
   ) extends PointSetExpectation[P] {
     def withClue(text: String): PointSetExpectation[P] = copy(clue = Some(text))
     def check(points: List[P]): Either[NonEmptyList[Mismatch], Unit] =
-      containsCheck(expected, checker, points).map(_ => ())
+      containsCheck(expected, checker, points).void
   }
 
   private final case class ExactlyImpl[E, P](

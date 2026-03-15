@@ -18,14 +18,18 @@ package org.typelevel.otel4s.oteljava.testkit
 package metrics
 
 import cats.data.NonEmptyList
-import io.opentelemetry.sdk.metrics.data.{DoublePointData, LongPointData, PointData => JPointData}
 import io.opentelemetry.sdk.metrics.data.{ExponentialHistogramPointData => JExponentialHistogramPointData}
 import io.opentelemetry.sdk.metrics.data.{HistogramPointData => JHistogramPointData}
+import io.opentelemetry.sdk.metrics.data.{PointData => JPointData}
 import io.opentelemetry.sdk.metrics.data.{SummaryPointData => JSummaryPointData}
-import org.typelevel.otel4s.{Attribute, Attributes}
+import io.opentelemetry.sdk.metrics.data.DoublePointData
+import io.opentelemetry.sdk.metrics.data.LongPointData
+import org.typelevel.otel4s.Attribute
+import org.typelevel.otel4s.Attributes
 import org.typelevel.otel4s.metrics.BucketBoundaries
 import org.typelevel.otel4s.metrics.MeasurementValue
-import org.typelevel.otel4s.metrics.MeasurementValue.{DoubleMeasurementValue, LongMeasurementValue}
+import org.typelevel.otel4s.metrics.MeasurementValue.DoubleMeasurementValue
+import org.typelevel.otel4s.metrics.MeasurementValue.LongMeasurementValue
 import org.typelevel.otel4s.oteljava.AttributeConverters._
 import org.typelevel.otel4s.oteljava.testkit.AttributesExpectation
 

@@ -20,11 +20,14 @@ package metrics
 
 import cats.effect.IO
 import cats.effect.Resource
-import io.opentelemetry.sdk.metrics.data.MetricData
 import io.opentelemetry.sdk.metrics._
+import io.opentelemetry.sdk.metrics.data.MetricData
 import munit.CatsEffectSuite
-import org.typelevel.otel4s.oteljava.testkit.{InstrumentationScopeExpectation, TelemetryResourceExpectation}
-import org.typelevel.otel4s.oteljava.testkit.metrics.{MetricExpectation, MetricExpectations, MetricsTestkit}
+import org.typelevel.otel4s.oteljava.testkit.InstrumentationScopeExpectation
+import org.typelevel.otel4s.oteljava.testkit.TelemetryResourceExpectation
+import org.typelevel.otel4s.oteljava.testkit.metrics.MetricExpectation
+import org.typelevel.otel4s.oteljava.testkit.metrics.MetricExpectations
+import org.typelevel.otel4s.oteljava.testkit.metrics.MetricsTestkit
 
 import scala.jdk.CollectionConverters._
 

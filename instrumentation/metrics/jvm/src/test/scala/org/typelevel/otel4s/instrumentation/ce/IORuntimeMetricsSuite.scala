@@ -25,7 +25,9 @@ import org.scalacheck.Prop
 import org.scalacheck.effect.PropF
 import org.typelevel.otel4s.Attributes
 import org.typelevel.otel4s.metrics.MeterProvider
-import org.typelevel.otel4s.oteljava.testkit.metrics.{MetricExpectation, MetricExpectations, MetricsTestkit}
+import org.typelevel.otel4s.oteljava.testkit.metrics.MetricExpectation
+import org.typelevel.otel4s.oteljava.testkit.metrics.MetricExpectations
+import org.typelevel.otel4s.oteljava.testkit.metrics.MetricsTestkit
 import org.typelevel.otel4s.scalacheck.Arbitraries._
 
 class IORuntimeMetricsSuite extends CatsEffectSuite with ScalaCheckEffectSuite {

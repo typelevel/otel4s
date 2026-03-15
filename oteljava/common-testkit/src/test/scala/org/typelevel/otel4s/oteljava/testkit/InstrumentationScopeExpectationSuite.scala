@@ -17,8 +17,8 @@
 package org.typelevel.otel4s.oteljava.testkit
 
 import cats.data.NonEmptyList
-import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.api.common.{Attributes => JAttributes}
+import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo
 import munit.FunSuite
 import org.typelevel.otel4s.Attribute

@@ -16,8 +16,8 @@
 
 package org.typelevel.otel4s.oteljava.testkit
 
-import cats.syntax.either._
 import cats.data.NonEmptyList
+import cats.syntax.either._
 
 private[testkit] object ExpectationChecks {
   def success[A]: Either[NonEmptyList[A], Unit] =

@@ -23,14 +23,13 @@ import io.opentelemetry.sdk.metrics.data.MetricData
 import munit.CatsEffectSuite
 import org.typelevel.otel4s.metrics.Measurement
 import org.typelevel.otel4s.oteljava.BuildInfo
-import org.typelevel.otel4s.oteljava.testkit.{InstrumentationScopeExpectation, TelemetryResourceExpectation}
-import org.typelevel.otel4s.oteljava.testkit.metrics.{
-  MetricExpectation,
-  MetricExpectations,
-  MetricsTestkit,
-  PointExpectation,
-  PointSetExpectation
-}
+import org.typelevel.otel4s.oteljava.testkit.InstrumentationScopeExpectation
+import org.typelevel.otel4s.oteljava.testkit.TelemetryResourceExpectation
+import org.typelevel.otel4s.oteljava.testkit.metrics.MetricExpectation
+import org.typelevel.otel4s.oteljava.testkit.metrics.MetricExpectations
+import org.typelevel.otel4s.oteljava.testkit.metrics.MetricsTestkit
+import org.typelevel.otel4s.oteljava.testkit.metrics.PointExpectation
+import org.typelevel.otel4s.oteljava.testkit.metrics.PointSetExpectation
 
 class ObservableSuite extends CatsEffectSuite {
 
@@ -49,8 +48,7 @@ class ObservableSuite extends CatsEffectSuite {
           .withDescription("description")
           .createWithCallback(_.record(42.0, Attribute("foo", "bar")))
           .use(_ =>
-            sdk
-              .collectAllMetrics
+            sdk.collectAllMetrics
               .map(
                 assertExpected(
                   _,
@@ -80,8 +78,7 @@ class ObservableSuite extends CatsEffectSuite {
             )
           )
           .use(_ =>
-            sdk
-              .collectAllMetrics
+            sdk.collectAllMetrics
               .map(
                 assertExpected(
                   _,
@@ -122,8 +119,7 @@ class ObservableSuite extends CatsEffectSuite {
           .withDescription("description")
           .createWithCallback(_.record(1234, Attribute("number", 42L)))
           .use(_ =>
-            sdk
-              .collectAllMetrics
+            sdk.collectAllMetrics
               .map(
                 assertExpected(
                   _,
@@ -153,8 +149,7 @@ class ObservableSuite extends CatsEffectSuite {
             )
           )
           .use(_ =>
-            sdk
-              .collectAllMetrics
+            sdk.collectAllMetrics
               .map(
                 assertExpected(
                   _,
@@ -197,8 +192,7 @@ class ObservableSuite extends CatsEffectSuite {
             _.record(1234, Attribute[Boolean]("is_false", true))
           )
           .use(_ =>
-            sdk
-              .collectAllMetrics
+            sdk.collectAllMetrics
               .map(
                 assertExpected(
                   _,
@@ -228,8 +222,7 @@ class ObservableSuite extends CatsEffectSuite {
             )
           )
           .use(_ =>
-            sdk
-              .collectAllMetrics
+            sdk.collectAllMetrics
               .map(
                 assertExpected(
                   _,

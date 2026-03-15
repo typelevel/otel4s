@@ -79,6 +79,18 @@ def test: IO[Unit] =
   }
 ```
 
+`checkAll(...)` is non-consuming: each expectation is checked independently against the full collected metric list.
+If you need to ensure that repeated expectations match different collected metrics, use
+`MetricExpectations.checkAllDistinct(...)` instead.
+
+```scala mdoc:silent
+MetricExpectations.checkAllDistinct(
+  metrics,
+  MetricExpectation.sum[Long]("service.counter").withValue(1L),
+  MetricExpectation.sum[Long]("service.counter").withValue(1L)
+)
+```
+
 ## Partial matching
 
 All expectations are partial.
@@ -87,6 +99,9 @@ This means:
 - unspecified properties are ignored
 - you can assert only the parts that matter for a test
 - you can still add detail when needed
+
+At the metric level, partial matching is also non-consuming by default: repeating the same `MetricExpectation` in
+`checkAll(...)` does not require two distinct collected metrics.
 
 For example:
 
@@ -529,6 +544,8 @@ There are two main failure cases:
 
 - `NotFound`: no collected metric looked like a match
 - `ClosestMismatch`: a likely candidate existed, but some part of it did not match
+- `DistinctMatchUnavailable`: the expectation matched collected metrics, but none remained available as a distinct
+  match in `checkAllDistinct(...)`
 
 This is especially helpful when a metric name is correct but, for example, one scope attribute or one point
 attribute is wrong.

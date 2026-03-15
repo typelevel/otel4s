@@ -545,6 +545,67 @@ class MetricExpectationsSuite extends CatsEffectSuite {
     }
   }
 
+  testkitTest("checkAll uses non-consuming metric matching") { testkit =>
+    for {
+      meter <- testkit.meterProvider.get("test")
+      counter <- meter.counter[Long]("service.counter").create
+      _ <- counter.add(1L)
+      metrics <- testkit.collectAllMetrics
+    } yield assertSuccess(
+      MetricExpectations.checkAll(
+        metrics,
+        MetricExpectation.sum[Long]("service.counter").withValue(1L),
+        MetricExpectation.sum[Long]("service.counter").withValue(1L)
+      )
+    )
+  }
+
+  testkitTest("checkAllDistinct matches identical expectations to different metrics") { testkit =>
+    for {
+      meter1 <- testkit.meterProvider.get("scope-1")
+      meter2 <- testkit.meterProvider.get("scope-2")
+      counter1 <- meter1.counter[Long]("service.counter").create
+      counter2 <- meter2.counter[Long]("service.counter").create
+      _ <- counter1.add(1L)
+      _ <- counter2.add(1L)
+      metrics <- testkit.collectAllMetrics
+    } yield assertSuccess(
+      MetricExpectations.checkAllDistinct(
+        metrics,
+        MetricExpectation.sum[Long]("service.counter").withValue(1L),
+        MetricExpectation.sum[Long]("service.counter").withValue(1L)
+      )
+    )
+  }
+
+  testkitTest("checkAllDistinct rejects reused metric matches") { testkit =>
+    for {
+      meter <- testkit.meterProvider.get("test")
+      counter <- meter.counter[Long]("service.counter").create
+      _ <- counter.add(1L)
+      metrics <- testkit.collectAllMetrics
+    } yield {
+      val result = MetricExpectations.checkAllDistinct(
+        metrics,
+        MetricExpectation.sum[Long]("service.counter").withValue(1L),
+        MetricExpectation.sum[Long]("service.counter").withValue(1L)
+      )
+
+      result match {
+        case Left(mismatches) =>
+          assertEquals(mismatches.length, 1)
+          mismatches.head match {
+            case mismatch: MetricMismatch.DistinctMatchUnavailable =>
+              assertEquals(mismatch.candidateMetricNames, List("service.counter"))
+            case other =>
+              fail(s"expected distinct-match-unavailable mismatch, got $other")
+          }
+        case Right(_) =>
+          fail("expected mismatches, got success")
+      }
+    }
+  }
+
   private def testkitTest[A](
       options: TestOptions
   )(body: MetricsTestkit[IO] => IO[A])(implicit loc: Location): Unit =

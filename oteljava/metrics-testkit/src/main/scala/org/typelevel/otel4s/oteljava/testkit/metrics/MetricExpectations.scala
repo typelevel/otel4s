@@ -48,6 +48,11 @@ object MetricMismatch {
     def mismatches: NonEmptyList[MetricExpectation.Mismatch]
   }
 
+  /** Indicates that an expectation matched collected metrics, but none were available as a distinct match. */
+  sealed trait DistinctMatchUnavailable extends MetricMismatch {
+    def candidateMetricNames: List[String]
+  }
+
   /** Creates a mismatch indicating that no collected metric matched the given expectation. */
   def notFound(expectation: MetricExpectation, availableMetricNames: List[String]): NotFound =
     NotFoundImpl(expectation, availableMetricNames)
@@ -59,6 +64,13 @@ object MetricMismatch {
       mismatches: NonEmptyList[MetricExpectation.Mismatch]
   ): ClosestMismatch =
     ClosestMismatchImpl(expectation, metric, mismatches)
+
+  /** Creates a mismatch indicating that only already-consumed metric candidates remained for a distinct match. */
+  def distinctMatchUnavailable(
+      expectation: MetricExpectation,
+      candidateMetricNames: List[String]
+  ): DistinctMatchUnavailable =
+    DistinctMatchUnavailableImpl(expectation, candidateMetricNames)
 
   private final case class NotFoundImpl(
       expectation: MetricExpectation,
@@ -84,6 +96,19 @@ object MetricMismatch {
       val prefix = clue.fold("")(c => s"[$c] ")
       val rendered = mismatches.toList.map(_.message).mkString("\n  - ", "\n  - ", "")
       s"${prefix}closest metric '${metric.getName}' mismatched:$rendered"
+    }
+  }
+
+  private final case class DistinctMatchUnavailableImpl(
+      expectation: MetricExpectation,
+      candidateMetricNames: List[String]
+  ) extends DistinctMatchUnavailable {
+    def clue: Option[String] = expectation.clue
+
+    def message: String = {
+      val prefix = clue.fold("")(c => s"[$c] ")
+      val candidates = candidateMetricNames.mkString(", ")
+      s"${prefix}no distinct metric remained for the expectation; matched metrics: [$candidates]"
     }
   }
 }
@@ -152,6 +177,28 @@ object MetricExpectations {
   ): Either[NonEmptyList[MetricMismatch], Unit] =
     NonEmptyList.fromList(missing(metrics, expectations)).toLeft(())
 
+  /** Checks that every expectation matched a different collected metric.
+    *
+    * Returns `Right(())` when all expectations matched distinct collected metrics. Otherwise returns a non-empty list of
+    * mismatches describing the unmatched expectations.
+    */
+  def checkAllDistinct(
+      metrics: List[MetricData],
+      expectations: MetricExpectation*
+  ): Either[NonEmptyList[MetricMismatch], Unit] =
+    checkAllDistinct(metrics, expectations.toList)
+
+  /** Checks that every expectation matched a different collected metric.
+    *
+    * Returns `Right(())` when all expectations matched distinct collected metrics. Otherwise returns a non-empty list of
+    * mismatches describing the unmatched expectations.
+    */
+  def checkAllDistinct(
+      metrics: List[MetricData],
+      expectations: List[MetricExpectation]
+  ): Either[NonEmptyList[MetricMismatch], Unit] =
+    NonEmptyList.fromList(missingDistinct(metrics, expectations)).toLeft(())
+
   /** Returns mismatches for all expectations that did not match any collected metric. */
   def missing(
       metrics: List[MetricData],
@@ -161,12 +208,47 @@ object MetricExpectations {
       check(metrics, expectation)
     }
 
+  /** Returns mismatches for all expectations that could not be matched to distinct collected metrics. */
+  def missingDistinct(
+      metrics: List[MetricData],
+      expectations: List[MetricExpectation]
+  ): List[MetricMismatch] = {
+    val indexedMetrics = metrics.toVector
+    val indexedExpectations = expectations.toVector
+    val candidates = indexedExpectations.map { expectation =>
+      indexedMetrics.indices.filter(index => expectation.matches(indexedMetrics(index))).toList
+    }
+
+    findFullMatching(candidates).fold {
+      val bestAssignment = bestMatching(candidates)
+      indexedExpectations.indices.collect {
+        case index if !bestAssignment.contains(index) =>
+          candidates(index) match {
+            case Nil =>
+              bestMismatch(metrics, indexedExpectations(index))
+            case matches =>
+              MetricMismatch.distinctMatchUnavailable(
+                indexedExpectations(index),
+                matches.map(indexedMetrics(_).getName).distinct
+              )
+          }
+      }.toList
+    }(_ => Nil)
+  }
+
   /** Returns `true` if every expectation matched at least one collected metric. */
   def allMatch(
       metrics: List[MetricData],
       expectations: List[MetricExpectation]
   ): Boolean =
     checkAll(metrics, expectations).isRight
+
+  /** Returns `true` if every expectation matched a different collected metric. */
+  def allMatchDistinct(
+      metrics: List[MetricData],
+      expectations: List[MetricExpectation]
+  ): Boolean =
+    checkAllDistinct(metrics, expectations).isRight
 
   /** Formats mismatches into a multi-line human-readable failure message. */
   def format(
@@ -197,5 +279,41 @@ object MetricExpectations {
         MetricMismatch.closestMismatch(expectation, metric, mismatches)
       }
       .getOrElse(MetricMismatch.notFound(expectation, metrics.map(_.getName)))
+  }
+
+  private def findFullMatching(
+      candidates: Vector[List[Int]]
+  ): Option[Map[Int, Int]] = {
+    def loop(remaining: List[(Int, List[Int])], used: Set[Int], acc: Map[Int, Int]): Option[Map[Int, Int]] =
+      remaining.sortBy(_._2.length) match {
+        case Nil =>
+          Some(acc)
+        case (expectationIndex, choices) :: tail =>
+          choices.iterator
+            .filterNot(used.contains)
+            .map(choice => loop(tail, used + choice, acc.updated(expectationIndex, choice)))
+            .collectFirst(Function.unlift(identity))
+      }
+
+    loop(candidates.zipWithIndex.map(_.swap).toList, Set.empty, Map.empty)
+  }
+
+  private def bestMatching(
+      candidates: Vector[List[Int]]
+  ): Map[Int, Int] = {
+    def loop(remaining: List[(Int, List[Int])], used: Set[Int], acc: Map[Int, Int]): Map[Int, Int] =
+      remaining.sortBy(_._2.length) match {
+        case Nil =>
+          acc
+        case (expectationIndex, choices) :: tail =>
+          val available = choices.filterNot(used.contains)
+          if (available.isEmpty) loop(tail, used, acc)
+          else
+            available
+              .map(choice => loop(tail, used + choice, acc.updated(expectationIndex, choice)))
+              .maxBy(_.size)
+      }
+
+    loop(candidates.zipWithIndex.map(_.swap).toList, Set.empty, Map.empty)
   }
 }

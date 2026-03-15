@@ -21,7 +21,6 @@ package logs
 import cats.effect.Sync
 import cats.mtl.Ask
 import cats.syntax.flatMap._
-import io.opentelemetry.api.common.{AttributeKey => JAttributeKey}
 import io.opentelemetry.api.logs.{LogRecordBuilder => JLogRecordBuilder}
 import io.opentelemetry.api.logs.{Severity => JSeverity}
 import org.typelevel.otel4s.logs.LogRecordBuilder
@@ -71,7 +70,7 @@ private[oteljava] final case class LogRecordBuilderImpl[F[_]: Sync: AskContext](
     copy(jBuilder = jBuilder.setException(exception))
 
   def addAttribute[A](attribute: Attribute[A]): LogRecordBuilder[F, Context] =
-    copy(jBuilder = jBuilder.setAttribute(attribute.key.toJava.asInstanceOf[JAttributeKey[Any]], attribute.value))
+    addAttributes(attribute)
 
   def addAttributes(attributes: Attribute[_]*): LogRecordBuilder[F, Context] =
     copy(jBuilder = jBuilder.setAllAttributes(attributes.toJavaAttributes))

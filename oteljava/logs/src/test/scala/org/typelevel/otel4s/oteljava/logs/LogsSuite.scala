@@ -178,6 +178,34 @@ class LogsSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
     }
   }
 
+  test("addAttribute converts AnyValue attributes like addAttributes") {
+    val exporter = InMemoryLogRecordExporter.create()
+    val logs = createLogsModule(exporter)
+    val attribute =
+      Attribute("payload", AnyValue.map(Map("nested" -> AnyValue.seq(Seq(AnyValue.string("x"))))): AnyValue)
+
+    for {
+      logger <- logs.loggerProvider.logger("test-logger").get
+      _ <- logger.logRecordBuilder.addAttribute(attribute).emit
+      single <- IO.delay(exporter.getFinishedLogRecordItems.asScala.toList)
+      _ <- IO.delay(exporter.reset())
+      _ <- logger.logRecordBuilder.addAttributes(attribute).emit
+      bulk <- IO.delay(exporter.getFinishedLogRecordItems.asScala.toList)
+    } yield {
+      assertEquals(single.size, 1)
+      assertEquals(bulk.size, 1)
+
+      val key = JAttributeKey.valueKey(attribute.key.name)
+      val expected = attribute.value.toJava.asInstanceOf[JValue[Any]]
+
+      assertEquals(single.head.getAttributes.get(key).asInstanceOf[JValue[Any]], expected)
+      assertEquals(
+        single.head.getAttributes.get(key).asInstanceOf[JValue[Any]],
+        bulk.head.getAttributes.get(key).asInstanceOf[JValue[Any]]
+      )
+    }
+  }
+
   private def createLogsModule(exporter: InMemoryLogRecordExporter): Logs[IO] = {
     val sdk = OpenTelemetrySdk
       .builder()

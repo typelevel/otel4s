@@ -94,6 +94,40 @@ class MetricExpectationsSuite extends CatsEffectSuite {
     }
   }
 
+  testkitTest("closest mismatch prefers same-type candidates over wrong-type ones") { testkit =>
+    for {
+      gaugeMeter <- testkit.meterProvider.get("gauge-scope")
+      sumMeter <- testkit.meterProvider.get("sum-scope")
+      gauge <- gaugeMeter.gauge[Long]("service.metric").create
+      counter <- sumMeter.counter[Long]("service.metric").create
+      _ <- gauge.record(1L)
+      _ <- counter.add(2L, Attributes(Attribute("region", "eu")))
+      metrics <- testkit.collectAllMetrics
+    } yield {
+      val result = MetricExpectations.check(
+        metrics,
+        MetricExpectation
+          .sum[Long]("service.metric")
+          .withValue(1L)
+          .withScope(
+            InstrumentationScopeExpectation
+              .name("test")
+              .withAttributesSubset(Attribute("scope.attr", "value"))
+          )
+      )
+
+      result match {
+        case Some(mismatch: MetricMismatch.ClosestMismatch) =>
+          assertEquals(mismatch.metric.getType, io.opentelemetry.sdk.metrics.data.MetricDataType.LONG_SUM)
+          assert(!mismatch.mismatches.exists(_.isInstanceOf[MetricExpectation.Mismatch.TypeMismatch]))
+          assert(mismatch.mismatches.exists(_.isInstanceOf[MetricExpectation.Mismatch.PointsMismatch]))
+          assert(mismatch.mismatches.exists(_.isInstanceOf[MetricExpectation.Mismatch.ScopeMismatch]))
+        case other =>
+          fail(s"expected closest mismatch, got $other")
+      }
+    }
+  }
+
   testkitTest("untyped metric-level predicate still runs regardless of metric type") { testkit =>
     val predicateRuns = new AtomicInteger(0)
 

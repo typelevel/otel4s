@@ -27,7 +27,8 @@ import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.Attributes
 
 import scala.jdk.CollectionConverters._
-import scala.reflect.{ClassTag, classTag}
+import scala.reflect.ClassTag
+import scala.reflect.classTag
 
 class PointSetExpectationSuite extends CatsEffectSuite {
 

@@ -63,6 +63,7 @@ def assertExpected(metrics: List[MetricData], expected: MetricExpectation*): Uni
     case Right(_) =>
       ()
     case Left(mismatches) =>
+      // or use an assert function from the testing framework here
       sys.error(MetricExpectations.format(mismatches))
   }
 

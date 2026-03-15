@@ -147,8 +147,8 @@ def specExpectation(spec: MetricSpec): MetricExpectation = {
 
   MetricExpectation
     .name(spec.name)
-    .withDescription(spec.description)
-    .withUnit(spec.unit)
+    .description(spec.description)
+    .unit(spec.unit)
     .where(s"[${spec.name}] is missing required semantic attributes") { metric =>
       import scala.jdk.CollectionConverters._
       import org.typelevel.otel4s.oteljava.AttributeConverters._

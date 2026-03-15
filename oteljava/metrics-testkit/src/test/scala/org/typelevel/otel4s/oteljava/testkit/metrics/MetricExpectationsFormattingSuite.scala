@@ -18,8 +18,11 @@ package org.typelevel.otel4s.oteljava.testkit.metrics
 
 import cats.effect.IO
 import io.opentelemetry.sdk.metrics.data.MetricData
-import munit.{CatsEffectSuite, Location, TestOptions}
-import org.typelevel.otel4s.{Attribute, Attributes}
+import munit.CatsEffectSuite
+import munit.Location
+import munit.TestOptions
+import org.typelevel.otel4s.Attribute
+import org.typelevel.otel4s.Attributes
 
 class MetricExpectationsFormattingSuite extends CatsEffectSuite {
 
@@ -113,7 +116,11 @@ class MetricExpectationsFormattingSuite extends CatsEffectSuite {
           )
       )
 
-      assert(rendered.contains("Metric expectations failed:\n1. [counter requirement] closest metric 'service.counter' mismatched:"))
+      assert(
+        rendered.contains(
+          "Metric expectations failed:\n1. [counter requirement] closest metric 'service.counter' mismatched:"
+        )
+      )
       assert(rendered.contains("points mismatch [regional points]"))
       assert(rendered.contains("missing expected point [US point]"))
       assert(rendered.contains("attribute mismatch for 'region'"))

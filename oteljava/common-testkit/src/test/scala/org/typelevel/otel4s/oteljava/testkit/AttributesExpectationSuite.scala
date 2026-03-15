@@ -18,7 +18,8 @@ package org.typelevel.otel4s.oteljava.testkit
 
 import cats.data.NonEmptyList
 import munit.FunSuite
-import org.typelevel.otel4s.{Attribute, Attributes}
+import org.typelevel.otel4s.Attribute
+import org.typelevel.otel4s.Attributes
 
 class AttributesExpectationSuite extends FunSuite {
 

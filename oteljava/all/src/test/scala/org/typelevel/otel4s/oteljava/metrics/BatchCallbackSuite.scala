@@ -22,8 +22,11 @@ import munit.CatsEffectSuite
 import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.Attributes
 import org.typelevel.otel4s.oteljava.BuildInfo
-import org.typelevel.otel4s.oteljava.testkit.{InstrumentationScopeExpectation, TelemetryResourceExpectation}
-import org.typelevel.otel4s.oteljava.testkit.metrics.{MetricExpectation, MetricExpectations, MetricsTestkit}
+import org.typelevel.otel4s.oteljava.testkit.InstrumentationScopeExpectation
+import org.typelevel.otel4s.oteljava.testkit.TelemetryResourceExpectation
+import org.typelevel.otel4s.oteljava.testkit.metrics.MetricExpectation
+import org.typelevel.otel4s.oteljava.testkit.metrics.MetricExpectations
+import org.typelevel.otel4s.oteljava.testkit.metrics.MetricsTestkit
 
 class BatchCallbackSuite extends CatsEffectSuite {
 

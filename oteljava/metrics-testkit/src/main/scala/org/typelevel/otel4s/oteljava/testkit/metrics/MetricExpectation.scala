@@ -18,12 +18,16 @@ package org.typelevel.otel4s.oteljava.testkit
 package metrics
 
 import cats.data.NonEmptyList
-import io.opentelemetry.sdk.metrics.data.{ExponentialHistogramPointData, MetricData, MetricDataType}
 import io.opentelemetry.sdk.metrics.data.{HistogramPointData => JHistogramPointData}
 import io.opentelemetry.sdk.metrics.data.{SummaryPointData => JSummaryPointData}
-import org.typelevel.otel4s.{Attribute, Attributes}
+import io.opentelemetry.sdk.metrics.data.ExponentialHistogramPointData
+import io.opentelemetry.sdk.metrics.data.MetricData
+import io.opentelemetry.sdk.metrics.data.MetricDataType
+import org.typelevel.otel4s.Attribute
+import org.typelevel.otel4s.Attributes
 import org.typelevel.otel4s.metrics.MeasurementValue
-import org.typelevel.otel4s.metrics.MeasurementValue.{DoubleMeasurementValue, LongMeasurementValue}
+import org.typelevel.otel4s.metrics.MeasurementValue.DoubleMeasurementValue
+import org.typelevel.otel4s.metrics.MeasurementValue.LongMeasurementValue
 
 import scala.jdk.CollectionConverters._
 

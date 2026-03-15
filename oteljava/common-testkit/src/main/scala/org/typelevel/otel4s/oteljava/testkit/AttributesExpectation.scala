@@ -16,9 +16,10 @@
 
 package org.typelevel.otel4s.oteljava.testkit
 
-import cats.syntax.show._
 import cats.data.NonEmptyList
-import org.typelevel.otel4s.{Attribute, Attributes}
+import cats.syntax.show._
+import org.typelevel.otel4s.Attribute
+import org.typelevel.otel4s.Attributes
 
 /** A partial expectation for [[Attributes]].
   *

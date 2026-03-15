@@ -18,10 +18,13 @@ package org.typelevel.otel4s.oteljava.testkit.metrics
 
 import cats.data.NonEmptyList
 import cats.effect.IO
-import io.opentelemetry.sdk.metrics.data.MetricData
 import io.opentelemetry.sdk.metrics.data.{HistogramPointData => JHistogramPointData}
-import munit.{CatsEffectSuite, Location, TestOptions}
-import org.typelevel.otel4s.{Attribute, Attributes}
+import io.opentelemetry.sdk.metrics.data.MetricData
+import munit.CatsEffectSuite
+import munit.Location
+import munit.TestOptions
+import org.typelevel.otel4s.Attribute
+import org.typelevel.otel4s.Attributes
 
 import scala.jdk.CollectionConverters._
 
@@ -282,8 +285,9 @@ class PointSetExpectationSuite extends CatsEffectSuite {
     } yield {
       assertSuccess(
         PointSetExpectation
-          .predicate[PointExpectation.NumericPointData[Long]] { (points: List[PointExpectation.NumericPointData[Long]]) =>
-            points.map(_.attributes).size == 2
+          .predicate[PointExpectation.NumericPointData[Long]] {
+            (points: List[PointExpectation.NumericPointData[Long]]) =>
+              points.map(_.attributes).size == 2
           }
           .check(points)
       )
@@ -372,7 +376,8 @@ class PointSetExpectationSuite extends CatsEffectSuite {
       name: String
   ): IO[List[PointExpectation.NumericPointData[Long]]] =
     testkit.collectAllMetrics.map { metrics =>
-      metricByName(metrics, name).getLongSumData.getPoints.asScala.toList.map(PointExpectation.LongNumericPointData.apply)
+      metricByName(metrics, name).getLongSumData.getPoints.asScala.toList
+        .map(PointExpectation.LongNumericPointData.apply)
     }
 
   private def collectHistogramPoints(

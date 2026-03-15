@@ -17,8 +17,11 @@
 package org.typelevel.otel4s.oteljava.testkit.metrics
 
 import cats.effect.IO
-import munit.{CatsEffectSuite, Location, TestOptions}
-import org.typelevel.otel4s.{Attribute, Attributes}
+import munit.CatsEffectSuite
+import munit.Location
+import munit.TestOptions
+import org.typelevel.otel4s.Attribute
+import org.typelevel.otel4s.Attributes
 import org.typelevel.otel4s.oteljava.testkit.InstrumentationScopeExpectation
 
 class MetricExpectationsSuite extends CatsEffectSuite {
@@ -38,7 +41,9 @@ class MetricExpectationsSuite extends CatsEffectSuite {
       counter <- meter.counter[Long]("service.counter").create
       _ <- counter.add(1L)
       metrics <- testkit.collectAllMetrics
-    } yield assertSuccess(MetricExpectations.checkAll(metrics, MetricExpectation.sum[Long]("service.counter").withValue(1L)))
+    } yield assertSuccess(
+      MetricExpectations.checkAll(metrics, MetricExpectation.sum[Long]("service.counter").withValue(1L))
+    )
   }
 
   testkitTest("metric-level predicate is supported") { testkit =>
@@ -70,11 +75,11 @@ class MetricExpectationsSuite extends CatsEffectSuite {
           .sum[Long]("service.counter")
           .withPoints(
             PointSetExpectation.exists(
-            PointExpectation
-              .numeric(1L)
-              .where("GET point expected") { point =>
-                point.value == 1L && point.attributes == Attributes(Attribute("http.method", "GET"))
-              }
+              PointExpectation
+                .numeric(1L)
+                .where("GET point expected") { point =>
+                  point.value == 1L && point.attributes == Attributes(Attribute("http.method", "GET"))
+                }
             )
           )
       )
@@ -93,8 +98,12 @@ class MetricExpectationsSuite extends CatsEffectSuite {
         metrics,
         MetricExpectation
           .sum[Long]("service.counter")
-          .withPoints(PointSetExpectation.exists(PointExpectation.numeric(1L).withAttributesSubset(Attribute("region", "eu"))))
-          .withPoints(PointSetExpectation.exists(PointExpectation.numeric(1L).withAttributesSubset(Attribute("region", "us"))))
+          .withPoints(
+            PointSetExpectation.exists(PointExpectation.numeric(1L).withAttributesSubset(Attribute("region", "eu")))
+          )
+          .withPoints(
+            PointSetExpectation.exists(PointExpectation.numeric(1L).withAttributesSubset(Attribute("region", "us")))
+          )
       )
     )
   }
@@ -141,7 +150,9 @@ class MetricExpectationsSuite extends CatsEffectSuite {
           mismatch.mismatches.head match {
             case pointsMismatch: MetricExpectation.Mismatch.PointsMismatch =>
               assertEquals(pointsMismatch.mismatches.length, 1)
-              assert(pointsMismatch.mismatches.head.isInstanceOf[PointSetExpectation.Mismatch.MatchedPointCountMismatch])
+              assert(
+                pointsMismatch.mismatches.head.isInstanceOf[PointSetExpectation.Mismatch.MatchedPointCountMismatch]
+              )
             case other =>
               fail(s"expected points mismatch, got $other")
           }

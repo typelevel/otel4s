@@ -668,6 +668,28 @@ class MetricExpectationsSuite extends CatsEffectSuite {
     )
   }
 
+  testkitTest("checkAllDistinct handles overlapping broad and narrow candidates") { testkit =>
+    for {
+      sumMeter1 <- testkit.meterProvider.get("sum-scope-1")
+      sumMeter2 <- testkit.meterProvider.get("sum-scope-2")
+      gaugeMeter <- testkit.meterProvider.get("gauge-scope")
+      counter1 <- sumMeter1.counter[Long]("service.metric").create
+      counter2 <- sumMeter2.counter[Long]("service.metric").create
+      gauge <- gaugeMeter.gauge[Long]("service.metric").create
+      _ <- counter1.add(1L)
+      _ <- counter2.add(1L)
+      _ <- gauge.record(1L)
+      metrics <- testkit.collectAllMetrics
+    } yield assertSuccess(
+      MetricExpectations.checkAllDistinct(
+        metrics,
+        MetricExpectation.name("service.metric"),
+        MetricExpectation.sum[Long]("service.metric").withScopeName("sum-scope-1"),
+        MetricExpectation.gauge[Long]("service.metric").withScopeName("gauge-scope")
+      )
+    )
+  }
+
   testkitTest("checkAllDistinct rejects reused metric matches") { testkit =>
     for {
       meter <- testkit.meterProvider.get("test")

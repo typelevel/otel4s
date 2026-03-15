@@ -29,31 +29,31 @@ import org.typelevel.otel4s.oteljava.AttributeConverters._
 sealed trait TelemetryResourceExpectation {
 
   /** Requires the resource attributes to satisfy the given expectation. */
-  def withAttributes(expectation: AttributesExpectation): TelemetryResourceExpectation
+  def attributes(expectation: AttributesExpectation): TelemetryResourceExpectation
 
   /** Requires the resource attributes to match exactly. */
-  def withAttributesExact(attributes: Attributes): TelemetryResourceExpectation
+  def attributesExact(attributes: Attributes): TelemetryResourceExpectation
 
   /** Requires the resource attributes to match exactly. */
-  def withAttributesExact(attributes: Attribute[_]*): TelemetryResourceExpectation
+  def attributesExact(attributes: Attribute[_]*): TelemetryResourceExpectation
 
   /** Requires the resource attributes to be empty. */
-  def withAttributesEmpty: TelemetryResourceExpectation
+  def attributesEmpty: TelemetryResourceExpectation
 
   /** Requires the resource attributes to contain the given subset. */
-  def withAttributesSubset(attributes: Attributes): TelemetryResourceExpectation
+  def attributesSubset(attributes: Attributes): TelemetryResourceExpectation
 
   /** Requires the resource attributes to contain the given subset. */
-  def withAttributesSubset(attributes: Attribute[_]*): TelemetryResourceExpectation
+  def attributesSubset(attributes: Attribute[_]*): TelemetryResourceExpectation
 
   /** Requires the resource schema URL to match exactly.
     *
     * Use `Some(schemaUrl)` to require a value or `None` to require that the schema URL is absent.
     */
-  def withSchemaUrl(schemaUrl: Option[String]): TelemetryResourceExpectation
+  def schemaUrl(schemaUrl: Option[String]): TelemetryResourceExpectation
 
   /** Requires the resource schema URL to match exactly. */
-  def withSchemaUrl(schemaUrl: String): TelemetryResourceExpectation
+  def schemaUrl(schemaUrl: String): TelemetryResourceExpectation
 
   /** Checks the given telemetry resource and returns structured failures when the expectation does not match. */
   def check(resource: JResource): Either[NonEmptyList[TelemetryResourceExpectation.Mismatch], Unit]
@@ -125,29 +125,29 @@ object TelemetryResourceExpectation {
       schemaUrl: Option[Option[String]] = None
   ) extends TelemetryResourceExpectation {
 
-    def withAttributes(expectation: AttributesExpectation): TelemetryResourceExpectation =
+    def attributes(expectation: AttributesExpectation): TelemetryResourceExpectation =
       copy(attributes = Some(expectation))
 
-    def withAttributesExact(attributes: Attributes): TelemetryResourceExpectation =
-      withAttributes(AttributesExpectation.exact(attributes))
+    def attributesExact(attributes: Attributes): TelemetryResourceExpectation =
+      this.attributes(AttributesExpectation.exact(attributes))
 
-    def withAttributesExact(attributes: Attribute[_]*): TelemetryResourceExpectation =
-      withAttributesExact(Attributes(attributes *))
+    def attributesExact(attributes: Attribute[_]*): TelemetryResourceExpectation =
+      attributesExact(Attributes(attributes *))
 
-    def withAttributesEmpty: TelemetryResourceExpectation =
-      withAttributesExact(Attributes.empty)
+    def attributesEmpty: TelemetryResourceExpectation =
+      attributesExact(Attributes.empty)
 
-    def withAttributesSubset(attributes: Attributes): TelemetryResourceExpectation =
-      withAttributes(AttributesExpectation.subset(attributes))
+    def attributesSubset(attributes: Attributes): TelemetryResourceExpectation =
+      this.attributes(AttributesExpectation.subset(attributes))
 
-    def withAttributesSubset(attributes: Attribute[_]*): TelemetryResourceExpectation =
-      withAttributesSubset(Attributes(attributes *))
+    def attributesSubset(attributes: Attribute[_]*): TelemetryResourceExpectation =
+      attributesSubset(Attributes(attributes *))
 
-    def withSchemaUrl(schemaUrl: Option[String]): TelemetryResourceExpectation =
+    def schemaUrl(schemaUrl: Option[String]): TelemetryResourceExpectation =
       copy(schemaUrl = Some(schemaUrl))
 
-    def withSchemaUrl(schemaUrl: String): TelemetryResourceExpectation =
-      withSchemaUrl(Some(schemaUrl))
+    def schemaUrl(value: String): TelemetryResourceExpectation =
+      this.schemaUrl(Some(value))
 
     def check(resource: JResource): Either[NonEmptyList[Mismatch], Unit] =
       ExpectationChecks.combine(

@@ -78,34 +78,34 @@ class BatchCallbackSuite extends CatsEffectSuite {
           List(
             MetricExpectation
               .sum[Double]("double-counter")
-              .withValue(1.1, Attributes(Attribute("key", "value2")))
-              .withScope(expectedScope)
-              .withResource(expectedResource),
+              .value(1.1, Attributes(Attribute("key", "value2")))
+              .scope(expectedScope)
+              .resource(expectedResource),
             MetricExpectation
               .gauge[Double]("double-gauge")
-              .withValue(3.1, Attributes(Attribute("key", "value6")))
-              .withScope(expectedScope)
-              .withResource(expectedResource),
+              .value(3.1, Attributes(Attribute("key", "value6")))
+              .scope(expectedScope)
+              .resource(expectedResource),
             MetricExpectation
               .sum[Double]("double-up-down-counter")
-              .withValue(2.1, Attributes(Attribute("key", "value4")))
-              .withScope(expectedScope)
-              .withResource(expectedResource),
+              .value(2.1, Attributes(Attribute("key", "value4")))
+              .scope(expectedScope)
+              .resource(expectedResource),
             MetricExpectation
               .sum[Long]("long-counter")
-              .withValue(1L, Attributes(Attribute("key", "value1")))
-              .withScope(expectedScope)
-              .withResource(expectedResource),
+              .value(1L, Attributes(Attribute("key", "value1")))
+              .scope(expectedScope)
+              .resource(expectedResource),
             MetricExpectation
               .gauge[Long]("long-gauge")
-              .withValue(3L, Attributes(Attribute("key", "value5")))
-              .withScope(expectedScope)
-              .withResource(expectedResource),
+              .value(3L, Attributes(Attribute("key", "value5")))
+              .scope(expectedScope)
+              .resource(expectedResource),
             MetricExpectation
               .sum[Long]("long-up-down-counter")
-              .withValue(2L, Attributes(Attribute("key", "value3")))
-              .withScope(expectedScope)
-              .withResource(expectedResource)
+              .value(2L, Attributes(Attribute("key", "value3")))
+              .scope(expectedScope)
+              .resource(expectedResource)
           )
         )
       }
@@ -123,19 +123,19 @@ class BatchCallbackSuite extends CatsEffectSuite {
   private val expectedScope: InstrumentationScopeExpectation =
     InstrumentationScopeExpectation
       .name("java.otel.suite")
-      .withVersion("1.0")
-      .withSchemaUrl("https://localhost:8080")
-      .withAttributesEmpty
+      .version("1.0")
+      .schemaUrl("https://localhost:8080")
+      .attributesEmpty
 
   private val expectedResource: TelemetryResourceExpectation =
     TelemetryResourceExpectation.any
-      .withAttributesExact(
+      .attributesExact(
         Attribute("service.name", "unknown_service:java"),
         Attribute("telemetry.sdk.language", "java"),
         Attribute("telemetry.sdk.name", "opentelemetry"),
         Attribute("telemetry.sdk.version", BuildInfo.openTelemetrySdkVersion)
       )
-      .withSchemaUrl(None)
+      .schemaUrl(None)
 
   private def points(metric: MetricData): List[(Any, Attributes)] =
     metric.getType match {

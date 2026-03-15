@@ -55,11 +55,11 @@ class ObservableSuite extends CatsEffectSuite {
                   List(
                     MetricExpectation
                       .gauge[Double]("gauge")
-                      .withValue(42.0, Attributes(Attribute("foo", "bar")))
-                      .withDescription("description")
-                      .withUnit("unit")
-                      .withScope(expectedScope)
-                      .withResource(expectedResource)
+                      .value(42.0, Attributes(Attribute("foo", "bar")))
+                      .description("description")
+                      .unit("unit")
+                      .scope(expectedScope)
+                      .resource(expectedResource)
                   )
                 )
               )
@@ -85,16 +85,16 @@ class ObservableSuite extends CatsEffectSuite {
                   List(
                     MetricExpectation
                       .gauge[Double]("gauge")
-                      .withPoints(
+                      .points(
                         PointSetExpectation.contains(
-                          PointExpectation.numeric(1336.0).withAttributesExact(Attribute("1", "2")),
-                          PointExpectation.numeric(1337.0).withAttributesExact(Attribute("a", "b"))
+                          PointExpectation.numeric(1336.0).attributesExact(Attribute("1", "2")),
+                          PointExpectation.numeric(1337.0).attributesExact(Attribute("a", "b"))
                         )
                       )
-                      .withDescription("description")
-                      .withUnit("unit")
-                      .withScope(expectedScope)
-                      .withResource(expectedResource)
+                      .description("description")
+                      .unit("unit")
+                      .scope(expectedScope)
+                      .resource(expectedResource)
                   )
                 )
               )
@@ -126,11 +126,11 @@ class ObservableSuite extends CatsEffectSuite {
                   List(
                     MetricExpectation
                       .sum[Long]("counter")
-                      .withValue(1234L, Attributes(Attribute("number", 42L)))
-                      .withDescription("description")
-                      .withUnit("unit")
-                      .withScope(expectedScope)
-                      .withResource(expectedResource)
+                      .value(1234L, Attributes(Attribute("number", 42L)))
+                      .description("description")
+                      .unit("unit")
+                      .scope(expectedScope)
+                      .resource(expectedResource)
                   )
                 )
               )
@@ -156,16 +156,16 @@ class ObservableSuite extends CatsEffectSuite {
                   List(
                     MetricExpectation
                       .sum[Long]("counter")
-                      .withPoints(
+                      .points(
                         PointSetExpectation.contains(
-                          PointExpectation.numeric(1336L).withAttributesExact(Attribute("1", "2")),
-                          PointExpectation.numeric(1337L).withAttributesExact(Attribute("a", "b"))
+                          PointExpectation.numeric(1336L).attributesExact(Attribute("1", "2")),
+                          PointExpectation.numeric(1337L).attributesExact(Attribute("a", "b"))
                         )
                       )
-                      .withDescription("description")
-                      .withUnit("unit")
-                      .withScope(expectedScope)
-                      .withResource(expectedResource)
+                      .description("description")
+                      .unit("unit")
+                      .scope(expectedScope)
+                      .resource(expectedResource)
                   )
                 )
               )
@@ -199,11 +199,11 @@ class ObservableSuite extends CatsEffectSuite {
                   List(
                     MetricExpectation
                       .sum[Long]("updowncounter")
-                      .withValue(1234L, Attributes(Attribute("is_false", true)))
-                      .withDescription("description")
-                      .withUnit("unit")
-                      .withScope(expectedScope)
-                      .withResource(expectedResource)
+                      .value(1234L, Attributes(Attribute("is_false", true)))
+                      .description("description")
+                      .unit("unit")
+                      .scope(expectedScope)
+                      .resource(expectedResource)
                   )
                 )
               )
@@ -229,16 +229,16 @@ class ObservableSuite extends CatsEffectSuite {
                   List(
                     MetricExpectation
                       .sum[Long]("updowncounter")
-                      .withPoints(
+                      .points(
                         PointSetExpectation.contains(
-                          PointExpectation.numeric(1336L).withAttributesExact(Attribute("1", "2")),
-                          PointExpectation.numeric(1336L).withAttributesExact(Attribute("a", "b"))
+                          PointExpectation.numeric(1336L).attributesExact(Attribute("1", "2")),
+                          PointExpectation.numeric(1336L).attributesExact(Attribute("a", "b"))
                         )
                       )
-                      .withDescription("description")
-                      .withUnit("unit")
-                      .withScope(expectedScope)
-                      .withResource(expectedResource)
+                      .description("description")
+                      .unit("unit")
+                      .scope(expectedScope)
+                      .resource(expectedResource)
                   )
                 )
               )
@@ -259,18 +259,18 @@ class ObservableSuite extends CatsEffectSuite {
   private val expectedScope: InstrumentationScopeExpectation =
     InstrumentationScopeExpectation
       .name("java.otel.suite")
-      .withVersion("1.0")
-      .withSchemaUrl("https://localhost:8080")
-      .withAttributesEmpty
+      .version("1.0")
+      .schemaUrl("https://localhost:8080")
+      .attributesEmpty
 
   private val expectedResource: TelemetryResourceExpectation =
     TelemetryResourceExpectation.any
-      .withAttributesExact(
+      .attributesExact(
         Attribute("service.name", "unknown_service:java"),
         Attribute("telemetry.sdk.language", "java"),
         Attribute("telemetry.sdk.name", "opentelemetry"),
         Attribute("telemetry.sdk.version", BuildInfo.openTelemetrySdkVersion)
       )
-      .withSchemaUrl(None)
+      .schemaUrl(None)
 
 }

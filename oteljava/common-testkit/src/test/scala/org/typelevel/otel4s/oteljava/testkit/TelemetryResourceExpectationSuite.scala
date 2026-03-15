@@ -29,8 +29,8 @@ class TelemetryResourceExpectationSuite extends FunSuite {
     assertEquals(TelemetryResourceExpectation.any.check(resource()), Right(()))
   }
 
-  test("withSchemaUrl matches exact schema url") {
-    val expectation = TelemetryResourceExpectation.any.withSchemaUrl("https://opentelemetry.io/schemas/1.0.0")
+  test("schemaUrl matches exact schema url") {
+    val expectation = TelemetryResourceExpectation.any.schemaUrl("https://opentelemetry.io/schemas/1.0.0")
 
     assertEquals(expectation.check(resource(schemaUrl = Some("https://opentelemetry.io/schemas/1.0.0"))), Right(()))
     assertEquals(
@@ -46,8 +46,8 @@ class TelemetryResourceExpectationSuite extends FunSuite {
     )
   }
 
-  test("withSchemaUrl(None) requires missing schema url") {
-    val expectation = TelemetryResourceExpectation.any.withSchemaUrl(None)
+  test("schemaUrl(None) requires missing schema url") {
+    val expectation = TelemetryResourceExpectation.any.schemaUrl(None)
 
     assertEquals(expectation.check(resource(schemaUrl = None)), Right(()))
     assertEquals(
@@ -63,9 +63,9 @@ class TelemetryResourceExpectationSuite extends FunSuite {
     )
   }
 
-  test("withAttributesExact reports nested attribute failures") {
+  test("attributesExact reports nested attribute failures") {
     val expectation =
-      TelemetryResourceExpectation.any.withAttributesExact(Attribute("service.name", "service"))
+      TelemetryResourceExpectation.any.attributesExact(Attribute("service.name", "service"))
 
     assertEquals(expectation.check(resource(attributes = jAttributes("service.name" -> "service"))), Right(()))
     assertEquals(
@@ -85,10 +85,10 @@ class TelemetryResourceExpectationSuite extends FunSuite {
     )
   }
 
-  test("withAttributesSubset matches contained attributes") {
+  test("attributesSubset matches contained attributes") {
     val expectation =
       TelemetryResourceExpectation.any
-        .withAttributesSubset(Attribute("service.name", "service"))
+        .attributesSubset(Attribute("service.name", "service"))
 
     assertEquals(
       expectation.check(resource(attributes = jAttributes("service.name" -> "service", "host.name" -> "localhost"))),

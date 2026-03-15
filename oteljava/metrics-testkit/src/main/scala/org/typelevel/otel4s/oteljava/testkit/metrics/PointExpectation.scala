@@ -46,25 +46,25 @@ sealed trait PointExpectation {
   def clue: Option[String]
 
   /** Requires the point attributes to satisfy the given expectation. */
-  def withAttributes(expectation: AttributesExpectation): PointExpectation
+  def attributes(expectation: AttributesExpectation): PointExpectation
 
   /** Requires the point attributes to match exactly. */
-  def withAttributesExact(attributes: Attributes): PointExpectation
+  def attributesExact(attributes: Attributes): PointExpectation
 
   /** Requires the point attributes to match exactly. */
-  def withAttributesExact(attributes: Attribute[_]*): PointExpectation
+  def attributesExact(attributes: Attribute[_]*): PointExpectation
 
   /** Requires the point attributes to be empty. */
-  def withAttributesEmpty: PointExpectation
+  def attributesEmpty: PointExpectation
 
   /** Requires the point attributes to contain the given attributes. */
-  def withAttributesSubset(attributes: Attributes): PointExpectation
+  def attributesSubset(attributes: Attributes): PointExpectation
 
   /** Requires the point attributes to contain the given attributes. */
-  def withAttributesSubset(attributes: Attribute[_]*): PointExpectation
+  def attributesSubset(attributes: Attribute[_]*): PointExpectation
 
   /** Attaches a human-readable clue to this expectation. */
-  def withClue(text: String): PointExpectation
+  def clue(text: String): PointExpectation
 
   /** Checks the given point and returns structured mismatches when the expectation does not match. */
   def check(point: JPointData): Either[NonEmptyList[PointExpectation.Mismatch], Unit]
@@ -251,104 +251,104 @@ object PointExpectation {
   sealed trait Numeric[A] extends PointExpectation {
 
     /** Requires the point value to match exactly. */
-    def withValue(value: A): Numeric[A]
+    def value(value: A): Numeric[A]
 
     /** Adds a custom predicate over the numeric point data. */
     def where(f: NumericPointData[A] => Boolean): Numeric[A]
 
     /** Adds a custom predicate over the numeric point data with a clue shown in mismatches. */
     def where(clue: String)(f: NumericPointData[A] => Boolean): Numeric[A]
-    def withAttributes(expectation: AttributesExpectation): Numeric[A]
-    def withAttributesExact(attributes: Attributes): Numeric[A]
-    def withAttributesExact(attributes: Attribute[_]*): Numeric[A]
-    def withAttributesEmpty: Numeric[A]
-    def withAttributesSubset(attributes: Attributes): Numeric[A]
-    def withAttributesSubset(attributes: Attribute[_]*): Numeric[A]
-    def withClue(text: String): Numeric[A]
+    def attributes(expectation: AttributesExpectation): Numeric[A]
+    def attributesExact(attributes: Attributes): Numeric[A]
+    def attributesExact(attributes: Attribute[_]*): Numeric[A]
+    def attributesEmpty: Numeric[A]
+    def attributesSubset(attributes: Attributes): Numeric[A]
+    def attributesSubset(attributes: Attribute[_]*): Numeric[A]
+    def clue(text: String): Numeric[A]
   }
 
   /** A point expectation for summary points. */
   sealed trait Summary extends PointExpectation {
 
     /** Requires the summary point count to match exactly. */
-    def withCount(count: Long): Summary
+    def count(count: Long): Summary
 
     /** Requires the summary point sum to match exactly. */
-    def withSum(sum: Double): Summary
+    def sum(sum: Double): Summary
 
     /** Adds a custom predicate over summary point data. */
     def where(f: JSummaryPointData => Boolean): Summary
 
     /** Adds a custom predicate over summary point data with a clue shown in mismatches. */
     def where(clue: String)(f: JSummaryPointData => Boolean): Summary
-    def withAttributes(expectation: AttributesExpectation): Summary
-    def withAttributesExact(attributes: Attributes): Summary
-    def withAttributesExact(attributes: Attribute[_]*): Summary
-    def withAttributesEmpty: Summary
-    def withAttributesSubset(attributes: Attributes): Summary
-    def withAttributesSubset(attributes: Attribute[_]*): Summary
-    def withClue(text: String): Summary
+    def attributes(expectation: AttributesExpectation): Summary
+    def attributesExact(attributes: Attributes): Summary
+    def attributesExact(attributes: Attribute[_]*): Summary
+    def attributesEmpty: Summary
+    def attributesSubset(attributes: Attributes): Summary
+    def attributesSubset(attributes: Attribute[_]*): Summary
+    def clue(text: String): Summary
   }
 
   /** A point expectation for histogram points. */
   sealed trait Histogram extends PointExpectation {
 
     /** Requires the histogram point count to match exactly. */
-    def withCount(count: Long): Histogram
+    def count(count: Long): Histogram
 
     /** Requires the histogram point sum to match exactly. */
-    def withSum(sum: Double): Histogram
+    def sum(sum: Double): Histogram
 
     /** Requires the histogram bucket boundaries to match exactly. */
-    def withBoundaries(boundaries: BucketBoundaries): Histogram
+    def boundaries(boundaries: BucketBoundaries): Histogram
 
     /** Requires the histogram bucket counts to match exactly. */
-    def withCounts(counts: List[Long]): Histogram
+    def counts(counts: List[Long]): Histogram
 
     /** Requires the histogram bucket counts to match exactly. */
-    def withCounts(counts: Long*): Histogram
+    def counts(counts: Long*): Histogram
 
     /** Adds a custom predicate over histogram point data. */
     def where(f: JHistogramPointData => Boolean): Histogram
 
     /** Adds a custom predicate over histogram point data with a clue shown in mismatches. */
     def where(clue: String)(f: JHistogramPointData => Boolean): Histogram
-    def withAttributes(expectation: AttributesExpectation): Histogram
-    def withAttributesExact(attributes: Attributes): Histogram
-    def withAttributesExact(attributes: Attribute[_]*): Histogram
-    def withAttributesEmpty: Histogram
-    def withAttributesSubset(attributes: Attributes): Histogram
-    def withAttributesSubset(attributes: Attribute[_]*): Histogram
-    def withClue(text: String): Histogram
+    def attributes(expectation: AttributesExpectation): Histogram
+    def attributesExact(attributes: Attributes): Histogram
+    def attributesExact(attributes: Attribute[_]*): Histogram
+    def attributesEmpty: Histogram
+    def attributesSubset(attributes: Attributes): Histogram
+    def attributesSubset(attributes: Attribute[_]*): Histogram
+    def clue(text: String): Histogram
   }
 
   /** A point expectation for exponential histogram points. */
   sealed trait ExponentialHistogram extends PointExpectation {
 
     /** Requires the exponential histogram scale to match exactly. */
-    def withScale(scale: Int): ExponentialHistogram
+    def scale(scale: Int): ExponentialHistogram
 
     /** Requires the exponential histogram count to match exactly. */
-    def withCount(count: Long): ExponentialHistogram
+    def count(count: Long): ExponentialHistogram
 
     /** Requires the exponential histogram sum to match exactly. */
-    def withSum(sum: Double): ExponentialHistogram
+    def sum(sum: Double): ExponentialHistogram
 
     /** Requires the exponential histogram zero count to match exactly. */
-    def withZeroCount(zeroCount: Long): ExponentialHistogram
+    def zeroCount(zeroCount: Long): ExponentialHistogram
 
     /** Adds a custom predicate over exponential histogram point data. */
     def where(f: JExponentialHistogramPointData => Boolean): ExponentialHistogram
 
     /** Adds a custom predicate over exponential histogram point data with a clue shown in mismatches. */
     def where(clue: String)(f: JExponentialHistogramPointData => Boolean): ExponentialHistogram
-    def withAttributes(expectation: AttributesExpectation): ExponentialHistogram
-    def withAttributesExact(attributes: Attributes): ExponentialHistogram
-    def withAttributesExact(attributes: Attribute[_]*): ExponentialHistogram
-    def withAttributesEmpty: ExponentialHistogram
-    def withAttributesSubset(attributes: Attributes): ExponentialHistogram
-    def withAttributesSubset(attributes: Attribute[_]*): ExponentialHistogram
-    def withClue(text: String): ExponentialHistogram
+    def attributes(expectation: AttributesExpectation): ExponentialHistogram
+    def attributesExact(attributes: Attributes): ExponentialHistogram
+    def attributesExact(attributes: Attribute[_]*): ExponentialHistogram
+    def attributesEmpty: ExponentialHistogram
+    def attributesSubset(attributes: Attributes): ExponentialHistogram
+    def attributesSubset(attributes: Attribute[_]*): ExponentialHistogram
+    def clue(text: String): ExponentialHistogram
   }
 
   /** Creates an expectation for a numeric point with the given value. */
@@ -413,28 +413,28 @@ object PointExpectation {
       clue: Option[String] = None,
       predicates: List[(NumericPointData[A] => Boolean, Option[String])] = Nil
   ) extends Numeric[A] {
-    def withValue(value: A): Numeric[A] =
+    def value(value: A): Numeric[A] =
       copy(expectedValue = Some(value))
 
-    def withAttributes(expectation: AttributesExpectation): Numeric[A] =
+    def attributes(expectation: AttributesExpectation): Numeric[A] =
       copy(attributeExpectation = Some(expectation))
 
-    def withAttributesExact(attributes: Attributes): Numeric[A] =
+    def attributesExact(attributes: Attributes): Numeric[A] =
       copy(attributeExpectation = Some(AttributesExpectation.exact(attributes)))
 
-    def withAttributesExact(attributes: Attribute[_]*): Numeric[A] =
-      withAttributesExact(Attributes(attributes *))
+    def attributesExact(attributes: Attribute[_]*): Numeric[A] =
+      attributesExact(Attributes(attributes *))
 
-    def withAttributesEmpty: Numeric[A] =
-      withAttributesExact(Attributes.empty)
+    def attributesEmpty: Numeric[A] =
+      attributesExact(Attributes.empty)
 
-    def withAttributesSubset(attributes: Attributes): Numeric[A] =
+    def attributesSubset(attributes: Attributes): Numeric[A] =
       copy(attributeExpectation = Some(AttributesExpectation.subset(attributes)))
 
-    def withAttributesSubset(attributes: Attribute[_]*): Numeric[A] =
-      withAttributesSubset(Attributes(attributes *))
+    def attributesSubset(attributes: Attribute[_]*): Numeric[A] =
+      attributesSubset(Attributes(attributes *))
 
-    def withClue(text: String): Numeric[A] =
+    def clue(text: String): Numeric[A] =
       copy(clue = Some(text))
 
     def where(f: NumericPointData[A] => Boolean): Numeric[A] =
@@ -481,17 +481,17 @@ object PointExpectation {
       clue: Option[String] = None,
       predicates: List[(JSummaryPointData => Boolean, Option[String])] = Nil
   ) extends Summary {
-    def withCount(count: Long): Summary = copy(expectedCount = Some(count))
-    def withSum(sum: Double): Summary = copy(expectedSum = Some(sum))
-    def withAttributes(expectation: AttributesExpectation): Summary = copy(attributeExpectation = Some(expectation))
-    def withAttributesExact(attributes: Attributes): Summary =
+    def count(count: Long): Summary = copy(expectedCount = Some(count))
+    def sum(sum: Double): Summary = copy(expectedSum = Some(sum))
+    def attributes(expectation: AttributesExpectation): Summary = copy(attributeExpectation = Some(expectation))
+    def attributesExact(attributes: Attributes): Summary =
       copy(attributeExpectation = Some(AttributesExpectation.exact(attributes)))
-    def withAttributesExact(attributes: Attribute[_]*): Summary = withAttributesExact(Attributes(attributes *))
-    def withAttributesEmpty: Summary = withAttributesExact(Attributes.empty)
-    def withAttributesSubset(attributes: Attributes): Summary =
+    def attributesExact(attributes: Attribute[_]*): Summary = attributesExact(Attributes(attributes *))
+    def attributesEmpty: Summary = attributesExact(Attributes.empty)
+    def attributesSubset(attributes: Attributes): Summary =
       copy(attributeExpectation = Some(AttributesExpectation.subset(attributes)))
-    def withAttributesSubset(attributes: Attribute[_]*): Summary = withAttributesSubset(Attributes(attributes *))
-    def withClue(text: String): Summary = copy(clue = Some(text))
+    def attributesSubset(attributes: Attribute[_]*): Summary = attributesSubset(Attributes(attributes *))
+    def clue(text: String): Summary = copy(clue = Some(text))
     def where(f: JSummaryPointData => Boolean): Summary = copy(predicates = predicates :+ (f -> None))
     def where(clue: String)(f: JSummaryPointData => Boolean): Summary =
       copy(predicates = predicates :+ (f -> Some(clue)))
@@ -536,20 +536,20 @@ object PointExpectation {
       clue: Option[String] = None,
       predicates: List[(JHistogramPointData => Boolean, Option[String])] = Nil
   ) extends Histogram {
-    def withCount(count: Long): Histogram = copy(expectedCount = Some(count))
-    def withSum(sum: Double): Histogram = copy(expectedSum = Some(sum))
-    def withBoundaries(boundaries: BucketBoundaries): Histogram = copy(expectedBoundaries = Some(boundaries))
-    def withCounts(counts: List[Long]): Histogram = copy(expectedCounts = Some(counts))
-    def withCounts(counts: Long*): Histogram = withCounts(counts.toList)
-    def withAttributes(expectation: AttributesExpectation): Histogram = copy(attributeExpectation = Some(expectation))
-    def withAttributesExact(attributes: Attributes): Histogram =
+    def count(count: Long): Histogram = copy(expectedCount = Some(count))
+    def sum(sum: Double): Histogram = copy(expectedSum = Some(sum))
+    def boundaries(boundaries: BucketBoundaries): Histogram = copy(expectedBoundaries = Some(boundaries))
+    def counts(expected: List[Long]): Histogram = copy(expectedCounts = Some(expected))
+    def counts(expected: Long*): Histogram = counts(expected.toList)
+    def attributes(expectation: AttributesExpectation): Histogram = copy(attributeExpectation = Some(expectation))
+    def attributesExact(attributes: Attributes): Histogram =
       copy(attributeExpectation = Some(AttributesExpectation.exact(attributes)))
-    def withAttributesExact(attributes: Attribute[_]*): Histogram = withAttributesExact(Attributes(attributes *))
-    def withAttributesEmpty: Histogram = withAttributesExact(Attributes.empty)
-    def withAttributesSubset(attributes: Attributes): Histogram =
+    def attributesExact(attributes: Attribute[_]*): Histogram = attributesExact(Attributes(attributes *))
+    def attributesEmpty: Histogram = attributesExact(Attributes.empty)
+    def attributesSubset(attributes: Attributes): Histogram =
       copy(attributeExpectation = Some(AttributesExpectation.subset(attributes)))
-    def withAttributesSubset(attributes: Attribute[_]*): Histogram = withAttributesSubset(Attributes(attributes *))
-    def withClue(text: String): Histogram = copy(clue = Some(text))
+    def attributesSubset(attributes: Attribute[_]*): Histogram = attributesSubset(Attributes(attributes *))
+    def clue(text: String): Histogram = copy(clue = Some(text))
     def where(f: JHistogramPointData => Boolean): Histogram = copy(predicates = predicates :+ (f -> None))
     def where(clue: String)(f: JHistogramPointData => Boolean): Histogram =
       copy(predicates = predicates :+ (f -> Some(clue)))
@@ -609,22 +609,22 @@ object PointExpectation {
       clue: Option[String] = None,
       predicates: List[(JExponentialHistogramPointData => Boolean, Option[String])] = Nil
   ) extends ExponentialHistogram {
-    def withScale(scale: Int): ExponentialHistogram = copy(expectedScale = Some(scale))
-    def withCount(count: Long): ExponentialHistogram = copy(expectedCount = Some(count))
-    def withSum(sum: Double): ExponentialHistogram = copy(expectedSum = Some(sum))
-    def withZeroCount(zeroCount: Long): ExponentialHistogram = copy(expectedZeroCount = Some(zeroCount))
-    def withAttributes(expectation: AttributesExpectation): ExponentialHistogram =
+    def scale(scale: Int): ExponentialHistogram = copy(expectedScale = Some(scale))
+    def count(count: Long): ExponentialHistogram = copy(expectedCount = Some(count))
+    def sum(sum: Double): ExponentialHistogram = copy(expectedSum = Some(sum))
+    def zeroCount(zeroCount: Long): ExponentialHistogram = copy(expectedZeroCount = Some(zeroCount))
+    def attributes(expectation: AttributesExpectation): ExponentialHistogram =
       copy(attributeExpectation = Some(expectation))
-    def withAttributesExact(attributes: Attributes): ExponentialHistogram =
+    def attributesExact(attributes: Attributes): ExponentialHistogram =
       copy(attributeExpectation = Some(AttributesExpectation.exact(attributes)))
-    def withAttributesExact(attributes: Attribute[_]*): ExponentialHistogram =
-      withAttributesExact(Attributes(attributes *))
-    def withAttributesEmpty: ExponentialHistogram = withAttributesExact(Attributes.empty)
-    def withAttributesSubset(attributes: Attributes): ExponentialHistogram =
+    def attributesExact(attributes: Attribute[_]*): ExponentialHistogram =
+      attributesExact(Attributes(attributes *))
+    def attributesEmpty: ExponentialHistogram = attributesExact(Attributes.empty)
+    def attributesSubset(attributes: Attributes): ExponentialHistogram =
       copy(attributeExpectation = Some(AttributesExpectation.subset(attributes)))
-    def withAttributesSubset(attributes: Attribute[_]*): ExponentialHistogram =
-      withAttributesSubset(Attributes(attributes *))
-    def withClue(text: String): ExponentialHistogram = copy(clue = Some(text))
+    def attributesSubset(attributes: Attribute[_]*): ExponentialHistogram =
+      attributesSubset(Attributes(attributes *))
+    def clue(text: String): ExponentialHistogram = copy(clue = Some(text))
     def where(f: JExponentialHistogramPointData => Boolean): ExponentialHistogram =
       copy(predicates = predicates :+ (f -> None))
     def where(clue: String)(f: JExponentialHistogramPointData => Boolean): ExponentialHistogram =

@@ -30,43 +30,43 @@ import org.typelevel.otel4s.oteljava.AttributeConverters._
 sealed trait InstrumentationScopeExpectation {
 
   /** Requires the instrumentation scope name to match exactly. */
-  def withName(name: String): InstrumentationScopeExpectation
+  def name(name: String): InstrumentationScopeExpectation
 
   /** Requires the instrumentation scope version to match exactly.
     *
     * Use `Some(version)` to require a value or `None` to require that the version is absent.
     */
-  def withVersion(version: Option[String]): InstrumentationScopeExpectation
+  def version(version: Option[String]): InstrumentationScopeExpectation
 
   /** Requires the instrumentation scope version to match exactly. */
-  def withVersion(version: String): InstrumentationScopeExpectation
+  def version(version: String): InstrumentationScopeExpectation
 
   /** Requires the instrumentation scope schema URL to match exactly.
     *
     * Use `Some(schemaUrl)` to require a value or `None` to require that the schema URL is absent.
     */
-  def withSchemaUrl(schemaUrl: Option[String]): InstrumentationScopeExpectation
+  def schemaUrl(schemaUrl: Option[String]): InstrumentationScopeExpectation
 
   /** Requires the instrumentation scope schema URL to match exactly. */
-  def withSchemaUrl(schemaUrl: String): InstrumentationScopeExpectation
+  def schemaUrl(schemaUrl: String): InstrumentationScopeExpectation
 
   /** Requires the instrumentation scope attributes to satisfy the given expectation. */
-  def withAttributes(expectation: AttributesExpectation): InstrumentationScopeExpectation
+  def attributes(expectation: AttributesExpectation): InstrumentationScopeExpectation
 
   /** Requires the instrumentation scope attributes to match exactly. */
-  def withAttributesExact(attributes: Attributes): InstrumentationScopeExpectation
+  def attributesExact(attributes: Attributes): InstrumentationScopeExpectation
 
   /** Requires the instrumentation scope attributes to match exactly. */
-  def withAttributesExact(attributes: Attribute[_]*): InstrumentationScopeExpectation
+  def attributesExact(attributes: Attribute[_]*): InstrumentationScopeExpectation
 
   /** Requires the instrumentation scope attributes to be empty. */
-  def withAttributesEmpty: InstrumentationScopeExpectation
+  def attributesEmpty: InstrumentationScopeExpectation
 
   /** Requires the instrumentation scope attributes to contain the given subset. */
-  def withAttributesSubset(attributes: Attributes): InstrumentationScopeExpectation
+  def attributesSubset(attributes: Attributes): InstrumentationScopeExpectation
 
   /** Requires the instrumentation scope attributes to contain the given subset. */
-  def withAttributesSubset(attributes: Attribute[_]*): InstrumentationScopeExpectation
+  def attributesSubset(attributes: Attribute[_]*): InstrumentationScopeExpectation
 
   /** Checks the given instrumentation scope and returns structured failures when the expectation does not match. */
   def check(scope: JInstrumentationScopeInfo): Either[NonEmptyList[InstrumentationScopeExpectation.Mismatch], Unit]
@@ -176,38 +176,38 @@ object InstrumentationScopeExpectation {
       attributes: Option[AttributesExpectation] = None
   ) extends InstrumentationScopeExpectation {
 
-    def withName(name: String): InstrumentationScopeExpectation =
+    def name(name: String): InstrumentationScopeExpectation =
       copy(name = Some(name))
 
-    def withVersion(version: Option[String]): InstrumentationScopeExpectation =
+    def version(version: Option[String]): InstrumentationScopeExpectation =
       copy(version = Some(version))
 
-    def withVersion(version: String): InstrumentationScopeExpectation =
-      withVersion(Some(version))
+    def version(value: String): InstrumentationScopeExpectation =
+      this.version(Some(value))
 
-    def withSchemaUrl(schemaUrl: Option[String]): InstrumentationScopeExpectation =
+    def schemaUrl(schemaUrl: Option[String]): InstrumentationScopeExpectation =
       copy(schemaUrl = Some(schemaUrl))
 
-    def withSchemaUrl(schemaUrl: String): InstrumentationScopeExpectation =
-      withSchemaUrl(Some(schemaUrl))
+    def schemaUrl(value: String): InstrumentationScopeExpectation =
+      this.schemaUrl(Some(value))
 
-    def withAttributes(expectation: AttributesExpectation): InstrumentationScopeExpectation =
+    def attributes(expectation: AttributesExpectation): InstrumentationScopeExpectation =
       copy(attributes = Some(expectation))
 
-    def withAttributesExact(attributes: Attributes): InstrumentationScopeExpectation =
-      withAttributes(AttributesExpectation.exact(attributes))
+    def attributesExact(attributes: Attributes): InstrumentationScopeExpectation =
+      this.attributes(AttributesExpectation.exact(attributes))
 
-    def withAttributesExact(attributes: Attribute[_]*): InstrumentationScopeExpectation =
-      withAttributesExact(Attributes(attributes *))
+    def attributesExact(attributes: Attribute[_]*): InstrumentationScopeExpectation =
+      attributesExact(Attributes(attributes *))
 
-    def withAttributesEmpty: InstrumentationScopeExpectation =
-      withAttributesExact(Attributes.empty)
+    def attributesEmpty: InstrumentationScopeExpectation =
+      attributesExact(Attributes.empty)
 
-    def withAttributesSubset(attributes: Attributes): InstrumentationScopeExpectation =
-      withAttributes(AttributesExpectation.subset(attributes))
+    def attributesSubset(attributes: Attributes): InstrumentationScopeExpectation =
+      this.attributes(AttributesExpectation.subset(attributes))
 
-    def withAttributesSubset(attributes: Attribute[_]*): InstrumentationScopeExpectation =
-      withAttributesSubset(Attributes(attributes *))
+    def attributesSubset(attributes: Attribute[_]*): InstrumentationScopeExpectation =
+      attributesSubset(Attributes(attributes *))
 
     def check(scope: JInstrumentationScopeInfo): Either[NonEmptyList[Mismatch], Unit] = {
 

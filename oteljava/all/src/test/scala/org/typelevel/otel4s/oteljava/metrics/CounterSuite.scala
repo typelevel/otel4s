@@ -57,11 +57,11 @@ class CounterSuite extends CatsEffectSuite {
           List(
             MetricExpectation
               .sum[Long]("counter")
-              .withValue(1L, Attributes(Attribute("string-attribute", "value")))
-              .withDescription("description")
-              .withUnit("unit")
-              .withScope(expectedScope)
-              .withResource(expectedResource)
+              .value(1L, Attributes(Attribute("string-attribute", "value")))
+              .description("description")
+              .unit("unit")
+              .scope(expectedScope)
+              .resource(expectedResource)
           )
         )
       }
@@ -79,19 +79,19 @@ class CounterSuite extends CatsEffectSuite {
   private val expectedScope: InstrumentationScopeExpectation =
     InstrumentationScopeExpectation
       .name("java.otel.suite")
-      .withVersion("1.0")
-      .withSchemaUrl("https://localhost:8080")
-      .withAttributesEmpty
+      .version("1.0")
+      .schemaUrl("https://localhost:8080")
+      .attributesEmpty
 
   private val expectedResource: TelemetryResourceExpectation =
     TelemetryResourceExpectation.any
-      .withAttributesExact(
+      .attributesExact(
         Attribute("service.name", "unknown_service:java"),
         Attribute("telemetry.sdk.language", "java"),
         Attribute("telemetry.sdk.name", "opentelemetry"),
         Attribute("telemetry.sdk.version", BuildInfo.openTelemetrySdkVersion)
       )
-      .withSchemaUrl(None)
+      .schemaUrl(None)
 
   private def makeSdk: Resource[IO, MetricsTestkit[IO]] = {
     def customize(builder: SdkMeterProviderBuilder): SdkMeterProviderBuilder =

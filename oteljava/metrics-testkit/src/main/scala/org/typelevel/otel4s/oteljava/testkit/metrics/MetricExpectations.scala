@@ -218,11 +218,12 @@ object MetricExpectations {
     val candidates = indexedExpectations.map { expectation =>
       indexedMetrics.indices.filter(index => expectation.matches(indexedMetrics(index))).toList
     }
+    val matching = maximumMatching(candidates)
 
-    findFullMatching(candidates).fold {
-      val bestAssignment = bestMatching(candidates)
+    if (matching.isComplete) Nil
+    else
       indexedExpectations.indices.collect {
-        case index if !bestAssignment.contains(index) =>
+        case index if !matching.matchedExpectationIndices(index) =>
           candidates(index) match {
             case Nil =>
               bestMismatch(metrics, indexedExpectations(index))
@@ -233,7 +234,6 @@ object MetricExpectations {
               )
           }
       }.toList
-    }(_ => Nil)
   }
 
   /** Returns `true` if every expectation matched at least one collected metric. */
@@ -289,39 +289,48 @@ object MetricExpectations {
       .getOrElse(MetricMismatch.notFound(expectation, metrics.map(_.getName)))
   }
 
-  private def findFullMatching(
+  private final case class MatchingResult(
+      isComplete: Boolean,
+      matchedExpectationIndices: Set[Int],
+      size: Int
+  )
+
+  private def maximumMatching(
       candidates: Vector[List[Int]]
-  ): Option[Map[Int, Int]] = {
-    def loop(remaining: List[(Int, List[Int])], used: Set[Int], acc: Map[Int, Int]): Option[Map[Int, Int]] =
-      remaining.sortBy(_._2.length) match {
-        case Nil =>
-          Some(acc)
-        case (expectationIndex, choices) :: tail =>
-          choices.iterator
-            .filterNot(used.contains)
-            .map(choice => loop(tail, used + choice, acc.updated(expectationIndex, choice)))
-            .collectFirst(Function.unlift(identity))
+  ): MatchingResult = {
+    type Matching = Map[Int, Int] // metricIndex -> expectationIndex
+
+    val orderedCandidates = candidates.zipWithIndex.sortBy(_._1.length)
+
+    def augment(
+        expectationIndex: Int,
+        seen: Set[Int],
+        matching: Matching
+    ): Option[Matching] =
+      orderedCandidates(expectationIndex)._1.foldLeft(Option.empty[Matching]) {
+        case (result @ Some(_), _) =>
+          result
+        case (None, metricIndex) if seen(metricIndex) =>
+          None
+        case (None, metricIndex) =>
+          matching.get(metricIndex) match {
+            case None =>
+              Some(matching.updated(metricIndex, expectationIndex))
+            case Some(otherExpectationIndex) =>
+              augment(otherExpectationIndex, seen + metricIndex, matching)
+                .map(_.updated(metricIndex, expectationIndex))
+          }
       }
 
-    loop(candidates.zipWithIndex.map(_.swap).toList, Set.empty, Map.empty)
-  }
-
-  private def bestMatching(
-      candidates: Vector[List[Int]]
-  ): Map[Int, Int] = {
-    def loop(remaining: List[(Int, List[Int])], used: Set[Int], acc: Map[Int, Int]): Map[Int, Int] =
-      remaining.sortBy(_._2.length) match {
-        case Nil =>
-          acc
-        case (expectationIndex, choices) :: tail =>
-          val available = choices.filterNot(used.contains)
-          if (available.isEmpty) loop(tail, used, acc)
-          else
-            available
-              .map(choice => loop(tail, used + choice, acc.updated(expectationIndex, choice)))
-              .maxBy(_.size)
+    val finalMatching =
+      orderedCandidates.indices.foldLeft(Map.empty[Int, Int]) { case (matching, expectationIndex) =>
+        augment(expectationIndex, Set.empty, matching).getOrElse(matching)
       }
 
-    loop(candidates.zipWithIndex.map(_.swap).toList, Set.empty, Map.empty)
+    MatchingResult(
+      isComplete = finalMatching.size == candidates.length,
+      matchedExpectationIndices = finalMatching.values.toSet,
+      size = finalMatching.size
+    )
   }
 }

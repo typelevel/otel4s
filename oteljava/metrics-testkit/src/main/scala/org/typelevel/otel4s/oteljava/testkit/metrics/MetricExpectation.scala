@@ -521,7 +521,10 @@ object MetricExpectation {
     def where(clue: String)(f: MetricData => Boolean): MetricExpectation =
       copy(predicates = predicates :+ (f -> Some(clue)))
     def check(metric: MetricData): Either[NonEmptyList[Mismatch], Unit] =
-      checkCommon(metric, name, description, unit, scope, resource, predicates)
+      ExpectationChecks.combine(
+        checkCommon(metric, name, description, unit, scope, resource),
+        checkPredicates(metric, predicates)
+      )
   }
 
   private final case class NumericImpl[A](
@@ -590,13 +593,17 @@ object MetricExpectation {
 
     def check(metric: MetricData): Either[NonEmptyList[Mismatch], Unit] = {
       val typeResult = checkType(metric, kind.metricTypeFor(valueType))
+      val predicatesResult =
+        if (typeResult.isRight) checkPredicates(metric, predicates)
+        else ExpectationChecks.success
       val pointsResult =
         if (typeResult.isRight) checkPointConstraints(pointConstraints, numericPoints(metric, valueType))
         else ExpectationChecks.success
 
       ExpectationChecks.combine(
         typeResult,
-        checkCommon(metric, name, description, unit, scope, resource, predicates),
+        checkCommon(metric, name, description, unit, scope, resource),
+        predicatesResult,
         pointsResult
       )
     }
@@ -638,12 +645,16 @@ object MetricExpectation {
       copy(predicates = predicates :+ (f -> Some(clue)))
     def check(metric: MetricData): Either[NonEmptyList[Mismatch], Unit] = {
       val typeResult = checkType(metric, metricType)
+      val predicatesResult =
+        if (typeResult.isRight) checkPredicates(metric, predicates)
+        else ExpectationChecks.success
       val pointsResult =
         if (typeResult.isRight) checkPointConstraints(pointConstraints, metric.getSummaryData.getPoints.asScala.toList)
         else ExpectationChecks.success
       ExpectationChecks.combine(
         typeResult,
-        checkCommon(metric, name, description, unit, scope, resource, predicates),
+        checkCommon(metric, name, description, unit, scope, resource),
+        predicatesResult,
         pointsResult
       )
     }
@@ -686,13 +697,17 @@ object MetricExpectation {
       copy(predicates = predicates :+ (f -> Some(clue)))
     def check(metric: MetricData): Either[NonEmptyList[Mismatch], Unit] = {
       val typeResult = checkType(metric, metricType)
+      val predicatesResult =
+        if (typeResult.isRight) checkPredicates(metric, predicates)
+        else ExpectationChecks.success
       val pointsResult =
         if (typeResult.isRight)
           checkPointConstraints(pointConstraints, metric.getHistogramData.getPoints.asScala.toList)
         else ExpectationChecks.success
       ExpectationChecks.combine(
         typeResult,
-        checkCommon(metric, name, description, unit, scope, resource, predicates),
+        checkCommon(metric, name, description, unit, scope, resource),
+        predicatesResult,
         pointsResult
       )
     }
@@ -742,13 +757,17 @@ object MetricExpectation {
       copy(predicates = predicates :+ (f -> Some(clue)))
     def check(metric: MetricData): Either[NonEmptyList[Mismatch], Unit] = {
       val typeResult = checkType(metric, metricType)
+      val predicatesResult =
+        if (typeResult.isRight) checkPredicates(metric, predicates)
+        else ExpectationChecks.success
       val pointsResult =
         if (typeResult.isRight)
           checkPointConstraints(pointConstraints, metric.getExponentialHistogramData.getPoints.asScala.toList)
         else ExpectationChecks.success
       ExpectationChecks.combine(
         typeResult,
-        checkCommon(metric, name, description, unit, scope, resource, predicates),
+        checkCommon(metric, name, description, unit, scope, resource),
+        predicatesResult,
         pointsResult
       )
     }
@@ -760,8 +779,7 @@ object MetricExpectation {
       description: Option[String],
       unit: Option[String],
       scope: Option[InstrumentationScopeExpectation],
-      resource: Option[TelemetryResourceExpectation],
-      predicates: List[(MetricData => Boolean, Option[String])]
+      resource: Option[TelemetryResourceExpectation]
   ): Either[NonEmptyList[Mismatch], Unit] =
     ExpectationChecks.combine(
       name.fold(ExpectationChecks.success[Mismatch]) { expected =>
@@ -782,13 +800,18 @@ object MetricExpectation {
       },
       resource.fold(ExpectationChecks.success[Mismatch]) { expected =>
         ExpectationChecks.nested(expected.check(metric.getResource))(Mismatch.resourceMismatch)
-      },
-      ExpectationChecks.combine(
-        predicates.map { case (predicate, clue) =>
-          if (predicate(metric)) ExpectationChecks.success[Mismatch]
-          else ExpectationChecks.mismatch(Mismatch.predicateMismatch(clue))
-        }
-      )
+      }
+    )
+
+  private def checkPredicates(
+      metric: MetricData,
+      predicates: List[(MetricData => Boolean, Option[String])]
+  ): Either[NonEmptyList[Mismatch], Unit] =
+    ExpectationChecks.combine(
+      predicates.map { case (predicate, clue) =>
+        if (predicate(metric)) ExpectationChecks.success[Mismatch]
+        else ExpectationChecks.mismatch(Mismatch.predicateMismatch(clue))
+      }
     )
 
   private def checkType(metric: MetricData, expected: MetricDataType): Either[NonEmptyList[Mismatch], Unit] =

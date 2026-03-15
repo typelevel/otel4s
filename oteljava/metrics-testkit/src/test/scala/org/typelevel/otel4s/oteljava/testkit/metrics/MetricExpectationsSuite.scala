@@ -19,9 +19,8 @@ package org.typelevel.otel4s.oteljava.testkit.metrics
 import cats.effect.IO
 import io.opentelemetry.sdk.metrics.data.MetricData
 import munit.{CatsEffectSuite, Location, TestOptions}
-import org.typelevel.otel4s.Attribute
-import org.typelevel.otel4s.Attributes
-import org.typelevel.otel4s.oteljava.testkit.{AttributesExpectation, InstrumentationScopeExpectation}
+import org.typelevel.otel4s.{Attribute, Attributes}
+import org.typelevel.otel4s.oteljava.testkit.InstrumentationScopeExpectation
 
 class MetricExpectationsSuite extends CatsEffectSuite {
 
@@ -40,29 +39,26 @@ class MetricExpectationsSuite extends CatsEffectSuite {
       counter <- meter.counter[Long]("service.counter").create
       _ <- counter.add(1L)
       metrics <- testkit.collectMetrics[MetricData]
-    } yield assertSuccess(
-      MetricExpectations.checkAll(
-        metrics,
-        List(MetricExpectation.sum[Long]("service.counter").withValue(1L))
-      )
-    )
+    } yield assertSuccess(MetricExpectations.checkAll(metrics, MetricExpectation.sum[Long]("service.counter").withValue(1L)))
   }
 
-  testkitTest("match double values using the default number comparison") { testkit =>
+  testkitTest("metric-level predicate is supported") { testkit =>
     for {
       meter <- testkit.meterProvider.get("test")
-      gauge <- meter.gauge[Double]("service.gauge").create
-      _ <- gauge.record(0.1d + 0.2d)
+      counter <- meter.counter[Long]("service.counter").create
+      _ <- counter.add(1L)
       metrics <- testkit.collectMetrics[MetricData]
     } yield assertSuccess(
       MetricExpectations.checkAll(
         metrics,
-        List(MetricExpectation.gauge[Double]("service.gauge").withValue(0.3d))
+        MetricExpectation
+          .sum[Long]("service.counter")
+          .where("single point expected")(_.getLongSumData.getPoints.size() == 1)
       )
     )
   }
 
-  testkitTest("match by exact attributes") { testkit =>
+  testkitTest("typed numeric point predicates are supported") { testkit =>
     for {
       meter <- testkit.meterProvider.get("test")
       counter <- meter.counter[Long]("service.counter").create
@@ -71,76 +67,388 @@ class MetricExpectationsSuite extends CatsEffectSuite {
     } yield assertSuccess(
       MetricExpectations.checkAll(
         metrics,
-        List(
-          MetricExpectation
-            .sum[Long]("service.counter")
-            .withAnyPoint(
-              PointExpectation
-                .numeric(1L)
-                .withAttributesExact(Attribute("http.method", "GET"))
+        MetricExpectation
+          .sum[Long]("service.counter")
+          .withPoints(
+            PointSetExpectation.exists(
+            PointExpectation
+              .numeric(1L)
+              .where("GET point expected") { point =>
+                point.value == 1L && point.attributes == Attributes(Attribute("http.method", "GET"))
+              }
             )
-        )
+          )
       )
     )
   }
 
-  testkitTest("match by attribute subset") { testkit =>
+  testkitTest("multiple point constraints accumulate") { testkit =>
     for {
       meter <- testkit.meterProvider.get("test")
       counter <- meter.counter[Long]("service.counter").create
-      _ <- counter.add(
-        1L,
-        Attributes(
-          Attribute("http.method", "GET"),
-          Attribute("http.route", "/users")
-        )
-      )
+      _ <- counter.add(1L, Attributes(Attribute("region", "eu")))
+      _ <- counter.add(1L, Attributes(Attribute("region", "us")))
       metrics <- testkit.collectMetrics[MetricData]
     } yield assertSuccess(
       MetricExpectations.checkAll(
         metrics,
-        List(
-          MetricExpectation
-            .sum[Long]("service.counter")
-            .withAnyPoint(
-              PointExpectation
-                .numeric(1L)
-                .withAttributesSubset(Attribute("http.method", "GET"))
-            )
-        )
+        MetricExpectation
+          .sum[Long]("service.counter")
+          .withPoints(PointSetExpectation.exists(PointExpectation.numeric(1L).withAttributesSubset(Attribute("region", "eu"))))
+          .withPoints(PointSetExpectation.exists(PointExpectation.numeric(1L).withAttributesSubset(Attribute("region", "us"))))
       )
     )
   }
 
-  testkitTest("checkAll returns unmatched expectations") { testkit =>
+  testkitTest("containsPoints matches multiple distinct points") { testkit =>
     for {
       meter <- testkit.meterProvider.get("test")
       counter <- meter.counter[Long]("service.counter").create
-      _ <- counter.add(1L)
+      _ <- counter.add(1L, Attributes(Attribute("region", "eu")))
+      _ <- counter.add(1L, Attributes(Attribute("region", "us")))
+      metrics <- testkit.collectMetrics[MetricData]
+    } yield assertSuccess(
+      MetricExpectations.checkAll(
+        metrics,
+        MetricExpectation
+          .sum[Long]("service.counter")
+          .containsPoints(
+            PointExpectation.numeric(1L).withAttributesSubset(Attribute("region", "eu")),
+            PointExpectation.numeric(1L).withAttributesSubset(Attribute("region", "us"))
+          )
+      )
+    )
+  }
+
+  testkitTest("containsPoints uses distinct matching for duplicate expectations") { testkit =>
+    for {
+      meter <- testkit.meterProvider.get("test")
+      counter <- meter.counter[Long]("service.counter").create
+      _ <- counter.add(1L, Attributes(Attribute("region", "eu")))
+      metrics <- testkit.collectMetrics[MetricData]
+    } yield {
+      val result = MetricExpectations.check(
+        metrics,
+        MetricExpectation
+          .sum[Long]("service.counter")
+          .containsPoints(
+            PointExpectation.numeric(1L).withAttributesSubset(Attribute("region", "eu")),
+            PointExpectation.numeric(1L).withAttributesSubset(Attribute("region", "eu"))
+          )
+      )
+
+      result match {
+        case Some(mismatch: MetricMismatch.ClosestMismatch) =>
+          mismatch.mismatches.head match {
+            case pointsMismatch: MetricExpectation.Mismatch.PointsMismatch =>
+              assertEquals(pointsMismatch.mismatches.length, 1)
+              assert(pointsMismatch.mismatches.head.isInstanceOf[PointSetExpectation.Mismatch.MatchedPointCountMismatch])
+            case other =>
+              fail(s"expected points mismatch, got $other")
+          }
+        case other =>
+          fail(s"expected closest mismatch, got $other")
+      }
+    }
+  }
+
+  testkitTest("withExactlyPoints succeeds when the set matches exactly") { testkit =>
+    for {
+      meter <- testkit.meterProvider.get("test")
+      counter <- meter.counter[Long]("service.counter").create
+      _ <- counter.add(1L, Attributes(Attribute("region", "eu")))
+      _ <- counter.add(1L, Attributes(Attribute("region", "us")))
+      metrics <- testkit.collectMetrics[MetricData]
+    } yield assertSuccess(
+      MetricExpectations.checkAll(
+        metrics,
+        MetricExpectation
+          .sum[Long]("service.counter")
+          .withExactlyPoints(
+            PointExpectation.numeric(1L).withAttributesSubset(Attribute("region", "eu")),
+            PointExpectation.numeric(1L).withAttributesSubset(Attribute("region", "us"))
+          )
+      )
+    )
+  }
+
+  testkitTest("withExactlyPoints rejects extra points") { testkit =>
+    for {
+      meter <- testkit.meterProvider.get("test")
+      counter <- meter.counter[Long]("service.counter").create
+      _ <- counter.add(1L, Attributes(Attribute("region", "eu")))
+      _ <- counter.add(1L, Attributes(Attribute("region", "us")))
+      _ <- counter.add(1L, Attributes(Attribute("region", "apac")))
+      metrics <- testkit.collectMetrics[MetricData]
+    } yield {
+      val result = MetricExpectations.check(
+        metrics,
+        MetricExpectation
+          .sum[Long]("service.counter")
+          .withExactlyPoints(
+            PointExpectation.numeric(1L).withAttributesSubset(Attribute("region", "eu")),
+            PointExpectation.numeric(1L).withAttributesSubset(Attribute("region", "us"))
+          )
+      )
+
+      result match {
+        case Some(mismatch: MetricMismatch.ClosestMismatch) =>
+          assertEquals(mismatch.metric.getName, "service.counter")
+          assertEquals(mismatch.mismatches.length, 1)
+          mismatch.mismatches.head match {
+            case pointsMismatch: MetricExpectation.Mismatch.PointsMismatch =>
+              assertEquals(pointsMismatch.mismatches.length, 1)
+              assert(pointsMismatch.mismatches.head.isInstanceOf[PointSetExpectation.Mismatch.UnexpectedPoint])
+            case other =>
+              fail(s"expected points mismatch, got $other")
+          }
+        case other =>
+          fail(s"expected closest mismatch, got $other")
+      }
+    }
+  }
+
+  testkitTest("withNoPointsMatching rejects forbidden points") { testkit =>
+    for {
+      meter <- testkit.meterProvider.get("test")
+      counter <- meter.counter[Long]("service.counter").create
+      _ <- counter.add(1L, Attributes(Attribute("region", "eu")))
+      metrics <- testkit.collectMetrics[MetricData]
+    } yield {
+      val result = MetricExpectations.check(
+        metrics,
+        MetricExpectation
+          .sum[Long]("service.counter")
+          .withNoPointsMatching(
+            PointExpectation.numeric(1L).withAttributesSubset(Attribute("region", "eu"))
+          )
+      )
+
+      result match {
+        case Some(mismatch: MetricMismatch.ClosestMismatch) =>
+          mismatch.mismatches.head match {
+            case pointsMismatch: MetricExpectation.Mismatch.PointsMismatch =>
+              assertEquals(pointsMismatch.mismatches.length, 1)
+              assert(pointsMismatch.mismatches.head.isInstanceOf[PointSetExpectation.Mismatch.UnexpectedPoint])
+            case other =>
+              fail(s"expected points mismatch, got $other")
+          }
+        case other =>
+          fail(s"expected closest mismatch, got $other")
+      }
+    }
+  }
+
+  testkitTest("withAllPoints reports the first failing point") { testkit =>
+    for {
+      meter <- testkit.meterProvider.get("test")
+      counter <- meter.counter[Long]("service.counter").create
+      _ <- counter.add(1L, Attributes(Attribute("region", "eu")))
+      _ <- counter.add(2L, Attributes(Attribute("region", "us")))
+      metrics <- testkit.collectMetrics[MetricData]
+    } yield {
+      val result = MetricExpectations.check(
+        metrics,
+        MetricExpectation
+          .sum[Long]("service.counter")
+          .withPoints(
+            PointSetExpectation.forall(
+              PointExpectation.numeric(1L).withAttributesSubset(Attribute("region", "eu"))
+            )
+          )
+      )
+
+      result match {
+        case Some(mismatch: MetricMismatch.ClosestMismatch) =>
+          mismatch.mismatches.head match {
+            case pointsMismatch: MetricExpectation.Mismatch.PointsMismatch =>
+              assert(pointsMismatch.mismatches.head.isInstanceOf[PointSetExpectation.Mismatch.FailingPoint])
+            case other =>
+              fail(s"expected points mismatch, got $other")
+          }
+        case other =>
+          fail(s"expected closest mismatch, got $other")
+      }
+    }
+  }
+
+  testkitTest("countWhere counts only matching points") { testkit =>
+    for {
+      meter <- testkit.meterProvider.get("test")
+      counter <- meter.counter[Long]("service.counter").create
+      _ <- counter.add(1L, Attributes(Attribute("region", "eu"), Attribute("host", "a")))
+      _ <- counter.add(1L, Attributes(Attribute("region", "eu"), Attribute("host", "b")))
+      _ <- counter.add(1L, Attributes(Attribute("region", "us")))
+      metrics <- testkit.collectMetrics[MetricData]
+    } yield assertSuccess(
+      MetricExpectations.checkAll(
+        metrics,
+        MetricExpectation
+          .sum[Long]("service.counter")
+          .withPoints(
+            PointSetExpectation.countWhere(
+              PointExpectation.numeric(1L).withAttributesSubset(Attribute("region", "eu")),
+              2
+            )
+          )
+      )
+    )
+  }
+
+  testkitTest("point-set and combines expectations") { testkit =>
+    for {
+      meter <- testkit.meterProvider.get("test")
+      counter <- meter.counter[Long]("service.counter").create
+      _ <- counter.add(1L, Attributes(Attribute("region", "eu")))
+      _ <- counter.add(1L, Attributes(Attribute("region", "us")))
+      metrics <- testkit.collectMetrics[MetricData]
+    } yield assertSuccess(
+      MetricExpectations.checkAll(
+        metrics,
+        MetricExpectation
+          .sum[Long]("service.counter")
+          .withPoints(
+            PointSetExpectation
+              .contains(
+                PointExpectation.numeric(1L).withAttributesSubset(Attribute("region", "eu")),
+                PointExpectation.numeric(1L).withAttributesSubset(Attribute("region", "us"))
+              )
+              .and(PointSetExpectation.count(2))
+          )
+      )
+    )
+  }
+
+  testkitTest("point-set or allows alternative shapes") { testkit =>
+    for {
+      meter <- testkit.meterProvider.get("test")
+      counter <- meter.counter[Long]("service.counter").create
+      _ <- counter.add(1L, Attributes(Attribute("region", "eu")))
+      metrics <- testkit.collectMetrics[MetricData]
+    } yield assertSuccess(
+      MetricExpectations.checkAll(
+        metrics,
+        MetricExpectation
+          .sum[Long]("service.counter")
+          .withPoints(
+            PointSetExpectation
+              .contains(
+                PointExpectation.numeric(1L).withAttributesSubset(Attribute("region", "eu"))
+              )
+              .or(
+                PointSetExpectation.contains(
+                  PointExpectation.numeric(1L).withAttributesSubset(Attribute("region", "us"))
+                )
+              )
+          )
+      )
+    )
+  }
+
+  testkitTest("wherePoints supports collection-wide point assertions") { testkit =>
+    for {
+      meter <- testkit.meterProvider.get("test")
+      counter <- meter.counter[Long]("service.counter").create
+      _ <- counter.add(1L, Attributes(Attribute("region", "eu")))
+      _ <- counter.add(1L, Attributes(Attribute("region", "us")))
+      metrics <- testkit.collectMetrics[MetricData]
+    } yield assertSuccess(
+      MetricExpectations.checkAll(
+        metrics,
+        MetricExpectation
+          .sum[Long]("service.counter")
+          .wherePoints("expected exactly EU and US points") { points =>
+            val actual = points.map(_.attributes).toSet
+            actual == Set(
+              Attributes(Attribute("region", "eu")),
+              Attributes(Attribute("region", "us"))
+            )
+          }
+      )
+    )
+  }
+
+  testkitTest("histogram metrics support point-set constraints") { testkit =>
+    for {
+      meter <- testkit.meterProvider.get("test")
+      histogram <- meter.histogram[Long]("service.histogram").create
+      _ <- histogram.record(10L, Attributes(Attribute("region", "eu")))
+      _ <- histogram.record(20L, Attributes(Attribute("region", "us")))
+      metrics <- testkit.collectMetrics[MetricData]
+    } yield assertSuccess(
+      MetricExpectations.checkAll(
+        metrics,
+        MetricExpectation
+          .histogram("service.histogram")
+          .containsPoints(
+            PointExpectation.histogram.withCount(1L).withSum(10.0).withAttributesSubset(Attribute("region", "eu")),
+            PointExpectation.histogram.withCount(1L).withSum(20.0).withAttributesSubset(Attribute("region", "us"))
+          )
+          .withPointCount(2)
+      )
+    )
+  }
+
+  testkitTest("double gauges support point-set constraints") { testkit =>
+    for {
+      meter <- testkit.meterProvider.get("test")
+      gauge <- meter.gauge[Double]("service.gauge").create
+      _ <- gauge.record(10.5, Attributes(Attribute("region", "eu")))
+      _ <- gauge.record(20.5, Attributes(Attribute("region", "us")))
+      metrics <- testkit.collectMetrics[MetricData]
+    } yield assertSuccess(
+      MetricExpectations.checkAll(
+        metrics,
+        MetricExpectation
+          .gauge[Double]("service.gauge")
+          .withPoints(
+            PointSetExpectation
+              .count(2)
+              .and(
+                PointSetExpectation.contains(
+                  PointExpectation.numeric(10.5).withAttributesSubset(Attribute("region", "eu")),
+                  PointExpectation.numeric(20.5).withAttributesSubset(Attribute("region", "us"))
+                )
+              )
+          )
+      )
+    )
+  }
+
+  testkitTest("metric mismatch formatting includes nested point-set mismatches") { testkit =>
+    for {
+      meter <- testkit.meterProvider.get("test")
+      counter <- meter.counter[Long]("service.counter").create
+      _ <- counter.add(1L, Attributes(Attribute("region", "eu")))
       metrics <- testkit.collectMetrics[MetricData]
     } yield {
       val result = MetricExpectations.checkAll(
         metrics,
-        List(
-          MetricExpectation.sum[Long]("service.counter").withValue(1L),
-          MetricExpectation.gauge[Long]("service.gauge")
-        )
+        MetricExpectation
+          .sum[Long]("service.counter")
+          .withPoints(
+            PointSetExpectation
+              .count(2)
+              .and(
+                PointSetExpectation.contains(
+                  PointExpectation.numeric(1L).withAttributesSubset(Attribute("region", "us")).withClue("US point")
+                )
+              )
+          )
       )
 
-      assert(result.isLeft)
-      val mismatches = result.swap.toOption.get
-      assertEquals(mismatches.length, 1)
-      assertEquals(
-        mismatches.head,
-        MetricMismatch.notFound(
-          MetricExpectation.gauge[Long]("service.gauge"),
-          List("service.counter")
-        )
-      )
+      result match {
+        case Left(mismatches) =>
+          val rendered = MetricExpectations.format(mismatches)
+          assert(rendered.contains("point count mismatch"))
+          assert(rendered.contains("missing expected point"))
+        case Right(_) =>
+          fail("expected mismatches, got success")
+      }
     }
   }
 
-  testkitTest("check returns closest mismatch when metric name matches") { testkit =>
+  testkitTest("scope mismatch still reports closest metric") { testkit =>
     for {
       meter <- testkit.meterProvider.get("test")
       counter <- meter.counter[Long]("service.counter").create
@@ -154,189 +462,66 @@ class MetricExpectationsSuite extends CatsEffectSuite {
           .withScope(
             InstrumentationScopeExpectation
               .name("test")
-              .withAttributes(AttributesExpectation.subset(Attributes(Attribute("scope.attr", "value"))))
-              .withAttributes(AttributesExpectation.subset(Attributes(Attribute("scope.attr", "value"))))
+              .withAttributesSubset(Attribute("scope.attr", "value"))
           )
       )
 
       result match {
         case Some(mismatch: MetricMismatch.ClosestMismatch) =>
-          val metric = mismatch.metric
-          val mismatches = mismatch.mismatches
-          assertEquals(metric.getName, "service.counter")
-          assertEquals(
-            mismatches.toList,
-            List(
-              MetricExpectation.Mismatch.scopeMismatch(
-                cats.data.NonEmptyList.one(
-                  InstrumentationScopeExpectation.Mismatch.attributesMismatch(
-                    cats.data.NonEmptyList.one(
-                      AttributesExpectation.Mismatch.missingAttribute(Attribute("scope.attr", "value"))
-                    )
-                  )
-                )
-              )
-            )
-          )
-          assertEquals(
-            MetricExpectations.format(
-              cats.data.NonEmptyList.one(
-                MetricMismatch.closestMismatch(
-                  MetricExpectation
-                    .sum[Long]("service.counter")
-                    .withScope(
-                      InstrumentationScopeExpectation
-                        .name("test")
-                        .withAttributes(AttributesExpectation.subset(Attributes(Attribute("scope.attr", "value"))))
-                    ),
-                  metric,
-                  mismatches
-                )
-              )
-            ),
-            "Metric expectations failed:\n1. closest metric 'service.counter' mismatched:\n  - scope mismatch: attributes mismatch: missing attribute String(scope.attr)=value"
-          )
+          assertEquals(mismatch.metric.getName, "service.counter")
+          assert(mismatch.mismatches.head.isInstanceOf[MetricExpectation.Mismatch.ScopeMismatch])
         case other =>
           fail(s"expected closest mismatch, got $other")
       }
     }
   }
 
-  testkitTest("withAllPoints requires every point to match") { testkit =>
+  testkitTest("withPointCount uses exact point cardinality") { testkit =>
     for {
       meter <- testkit.meterProvider.get("test")
       counter <- meter.counter[Long]("service.counter").create
       _ <- counter.add(1L, Attributes(Attribute("region", "eu")))
-      _ <- counter.add(2L, Attributes(Attribute("region", "us")))
+      _ <- counter.add(1L, Attributes(Attribute("region", "us")))
       metrics <- testkit.collectMetrics[MetricData]
-    } yield assert(
-      !MetricExpectations.exists(
+    } yield assertSuccess(
+      MetricExpectations.checkAll(
         metrics,
-        MetricExpectation
-          .sum[Long]("service.counter")
-          .withAllPoints(
-            PointExpectation
-              .numeric(1L)
-              .withAttributesSubset(Attribute("region", "eu"))
-          )
+        MetricExpectation.sum[Long]("service.counter").withPointCount(2)
       )
     )
   }
 
-  testkitTest("check returns structured point mismatches") { testkit =>
+  testkitTest("checkAll returns unmatched expectations") { testkit =>
     for {
       meter <- testkit.meterProvider.get("test")
       counter <- meter.counter[Long]("service.counter").create
-      _ <- counter.add(2L, Attributes(Attribute("region", "us")))
+      _ <- counter.add(1L)
       metrics <- testkit.collectMetrics[MetricData]
     } yield {
-      val result = MetricExpectations.check(
+      val result = MetricExpectations.checkAll(
         metrics,
-        MetricExpectation
-          .sum[Long]("service.counter")
-          .withAnyPoint(
-            PointExpectation
-              .numeric(1L)
-              .withAttributesSubset(Attribute("region", "eu"))
-              .withClue("expected EU point")
-          )
+        MetricExpectation.sum[Long]("service.counter").withValue(1L),
+        MetricExpectation.gauge[Long]("service.gauge")
       )
 
-      result match {
-        case Some(mismatch: MetricMismatch.ClosestMismatch) =>
-          val metric = mismatch.metric
-          val mismatches = mismatch.mismatches
-          assertEquals(metric.getName, "service.counter")
-          assertEquals(
-            mismatches.toList,
-            List(
-              MetricExpectation.Mismatch.pointsMismatch(
-                "any",
-                cats.data.NonEmptyList.of(
-                  PointExpectation.Mismatch.valueMismatch("1", "2"),
-                  PointExpectation.Mismatch.attributesMismatch(
-                    cats.data.NonEmptyList.one(
-                      AttributesExpectation.Mismatch.attributeValueMismatch(
-                        Attribute("region", "eu"),
-                        Attribute("region", "us")
-                      )
-                    )
-                  )
-                ),
-                Some("expected EU point")
-              )
-            )
-          )
-          assertEquals(
-            MetricExpectations.format(cats.data.NonEmptyList.one(result.get)),
-            "Metric expectations failed:\n1. closest metric 'service.counter' mismatched:\n  - points mismatch (any [expected EU point]): value mismatch: expected '1', got '2', attributes mismatch: attribute mismatch for 'region': expected String(region)=eu, got String(region)=us"
-          )
-        case other =>
-          fail(s"expected closest mismatch, got $other")
-      }
-    }
-  }
-
-  testkitTest("point mismatches keep only the closest failing point") { testkit =>
-    for {
-      meter <- testkit.meterProvider.get("test")
-      counter <- meter.counter[Long]("service.counter").create
-      _ <- counter.add(2L, Attributes(Attribute("region", "eu")))
-      _ <- counter.add(1L, Attributes(Attribute("region", "us")))
-      metrics <- testkit.collectMetrics[MetricData]
-    } yield {
-      val result = MetricExpectations.check(
-        metrics,
-        MetricExpectation
-          .sum[Long]("service.counter")
-          .withAnyPoint(
-            PointExpectation
-              .numeric(1L)
-              .withAttributesSubset(Attribute("region", "eu"))
-          )
+      assert(result.isLeft)
+      val mismatches = result.swap.toOption.get
+      assertEquals(mismatches.length, 1)
+      assertEquals(
+        mismatches.head,
+        MetricMismatch.notFound(MetricExpectation.gauge[Long]("service.gauge"), List("service.counter"))
       )
-
-      result match {
-        case Some(mismatch: MetricMismatch.ClosestMismatch) =>
-          val mismatches = mismatch.mismatches
-          assertEquals(mismatches.length, 1)
-          mismatches.head match {
-            case pointMismatch: MetricExpectation.Mismatch.PointsMismatch =>
-              assertEquals(pointMismatch.mode, "any")
-              assertEquals(pointMismatch.clue, None)
-              val pointMismatches = pointMismatch.mismatches
-              assertEquals(pointMismatches.length, 1)
-              assert(
-                pointMismatches.head == PointExpectation.Mismatch.valueMismatch("1", "2") ||
-                  pointMismatches.head == PointExpectation.Mismatch.attributesMismatch(
-                    cats.data.NonEmptyList.one(
-                      AttributesExpectation.Mismatch.attributeValueMismatch(
-                        Attribute("region", "eu"),
-                        Attribute("region", "us")
-                      )
-                    )
-                  )
-              )
-            case other =>
-              fail(s"expected point mismatch, got $other")
-          }
-        case other =>
-          fail(s"expected closest mismatch, got $other")
-      }
     }
   }
 
   private def testkitTest[A](
-      options: TestOptions,
+      options: TestOptions
   )(body: MetricsTestkit[IO] => IO[A])(implicit loc: Location): Unit =
     test(options)(MetricsTestkit.inMemory[IO]().use(body))
 
   private def assertSuccess(result: Either[cats.data.NonEmptyList[MetricMismatch], Unit]): Unit =
     result match {
-      case Right(_) =>
-        ()
-      case Left(mismatches) =>
-        fail(MetricExpectations.format(mismatches))
+      case Right(_)         => ()
+      case Left(mismatches) => fail(MetricExpectations.format(mismatches))
     }
-
 }

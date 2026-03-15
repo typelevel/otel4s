@@ -24,6 +24,7 @@ import munit.Compare
 import munit.FunSuite
 import org.typelevel.otel4s.oteljava.AnyValueConverters._
 
+import java.nio.ByteBuffer
 import scala.jdk.CollectionConverters._
 
 class AnyValueConvertersSuite extends FunSuite {
@@ -80,6 +81,20 @@ class AnyValueConvertersSuite extends FunSuite {
       )
       assertEquals(javaValue.toScala, scalaValue)
     }
+  }
+
+  test("bytes conversion does not consume source ByteBuffer") {
+    val source = ByteBuffer.wrap(Array[Byte](0, 1, 2, 3))
+    source.position(1)
+
+    val javaValue = JValue.of(source)
+
+    val first = javaValue.toScala
+    val second = javaValue.toScala
+
+    assertEquals(first, AnyValue.bytes(Array[Byte](1, 2, 3)))
+    assertEquals(second, first)
+    assertEquals(source.position(), 1)
   }
 
   private implicit val compareJValue: Compare[JValue[Any], JValue[Any]] =

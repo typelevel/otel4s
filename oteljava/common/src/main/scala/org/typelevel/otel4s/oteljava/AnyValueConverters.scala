@@ -93,7 +93,7 @@ object AnyValueConverters {
           )
 
         case JValueType.BYTES =>
-          val byteBuffer = value.getValue.asInstanceOf[ByteBuffer]
+          val byteBuffer = value.getValue.asInstanceOf[ByteBuffer].duplicate()
           val byteArray = new Array[Byte](byteBuffer.remaining)
           byteBuffer.get(byteArray)
           AnyValue.bytes(byteArray)

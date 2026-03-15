@@ -484,7 +484,26 @@ MetricExpectation
       PointExpectation
         .numeric(1L)
         .withAttributesSubset(Attribute("region", "us"))
-    )
+      )
+  )
+```
+
+Each `withPoints(...)` clause is checked independently against the full collected point set. Chaining
+`withPoints(PointSetExpectation.exists(...))` does not reserve matched points for later clauses, so it should not be
+used to require multiple distinct points.
+
+If you need distinct matching, use `containsPoints(...)` or `withExactlyPoints(...)` instead:
+
+```scala mdoc:silent
+MetricExpectation
+  .sum[Long]("service.requests")
+  .containsPoints(
+    PointExpectation
+      .numeric(1L)
+      .withAttributesSubset(Attribute("region", "eu")),
+    PointExpectation
+      .numeric(1L)
+      .withAttributesSubset(Attribute("region", "us"))
   )
 ```
 

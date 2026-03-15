@@ -108,6 +108,27 @@ class MetricExpectationsSuite extends CatsEffectSuite {
     )
   }
 
+  testkitTest("repeated exists constraints are non-consuming") { testkit =>
+    for {
+      meter <- testkit.meterProvider.get("test")
+      counter <- meter.counter[Long]("service.counter").create
+      _ <- counter.add(1L, Attributes(Attribute("region", "eu")))
+      metrics <- testkit.collectAllMetrics
+    } yield assertSuccess(
+      MetricExpectations.checkAll(
+        metrics,
+        MetricExpectation
+          .sum[Long]("service.counter")
+          .withPoints(
+            PointSetExpectation.exists(PointExpectation.numeric(1L).withAttributesSubset(Attribute("region", "eu")))
+          )
+          .withPoints(
+            PointSetExpectation.exists(PointExpectation.numeric(1L).withAttributesSubset(Attribute("region", "eu")))
+          )
+      )
+    )
+  }
+
   testkitTest("containsPoints matches multiple distinct points") { testkit =>
     for {
       meter <- testkit.meterProvider.get("test")

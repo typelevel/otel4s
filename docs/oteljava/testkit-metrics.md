@@ -277,11 +277,24 @@ MetricExpectation
   )
 ```
 
-## Matching multiple points
+## Point-set expectations
 
-Point matching is collection-based. This means you can combine multiple constraints on the same metric expectation.
+Point matching is collection-based. A `MetricExpectation` does not check points one by one in isolation. Instead,
+it evaluates a `PointSetExpectation` against the full point collection, which lets you express presence, absence,
+cardinality, and collection-wide invariants.
 
-Use `withPoints(PointSetExpectation.exists(...))` when at least one collected point must match.
+All typed metric expectations expose:
+
+- `withPoints(...)` for raw `PointSetExpectation` composition
+- `containsPoints(...)` as shorthand for `PointSetExpectation.contains(...)`
+- `withExactlyPoints(...)` as shorthand for `PointSetExpectation.exactly(...)`
+- `withPointCount(...)` as shorthand for `PointSetExpectation.count(...)`
+- `withNoPointsMatching(...)` as shorthand for `PointSetExpectation.none(...)`
+- `wherePoints(...)` as shorthand for `PointSetExpectation.predicate(...)`
+
+### `exists`
+
+Use `exists` when at least one collected point must match:
 
 ```scala mdoc:silent
 MetricExpectation
@@ -295,7 +308,12 @@ MetricExpectation
   )
 ```
 
-Use `withPoints(PointSetExpectation.forall(...))` when every collected point must satisfy the same expectation.
+This is the default mental model for helpers like `withValue(...)`: they require at least one matching point, not
+that every point looks the same.
+
+### `forall`
+
+Use `forall` when every collected point must satisfy the same rule:
 
 ```scala mdoc:silent
 MetricExpectation
@@ -304,33 +322,17 @@ MetricExpectation
     PointSetExpectation.forall(
       PointExpectation
         .numeric(1L)
-        .withAttributesSubset(Attribute("region", "eu"))
+        .withAttributesSubset(Attribute("kind", "ok"))
     )
   )
 ```
 
-Because point constraints accumulate, you can also require multiple distinct points on the same metric:
+`forall` is useful for invariants such as "every point has the same value shape" or "every point includes this
+attribute subset". Unlike plain universal quantification over a Scala collection, it fails on an empty point set.
 
-```scala mdoc:silent
-MetricExpectation
-  .sum[Long]("service.requests")
-  .withPoints(
-    PointSetExpectation.exists(
-      PointExpectation
-        .numeric(1L)
-        .withAttributesSubset(Attribute("region", "eu"))
-    )
-  )
-  .withPoints(
-    PointSetExpectation.exists(
-      PointExpectation
-        .numeric(1L)
-        .withAttributesSubset(Attribute("region", "us"))
-    )
-  )
-```
+### `contains` and `exactly`
 
-For the common case where you want to require several points together, `containsPoints(...)` is more direct:
+Use `contains` when the metric must contain several distinct matching points, but extra points are still allowed:
 
 ```scala mdoc:silent
 MetricExpectation
@@ -345,7 +347,10 @@ MetricExpectation
   )
 ```
 
-Use `withExactlyPoints(...)` when the metric must contain exactly the given points and no extras:
+`contains` enforces distinct matching. If you ask for the same expected point twice, the collected data must contain
+two matching points.
+
+Use `exactly` when the metric must contain exactly the expected points and no extras:
 
 ```scala mdoc:silent
 MetricExpectation
@@ -360,7 +365,9 @@ MetricExpectation
   )
 ```
 
-If you only care about cardinality, use `withPointCount(...)`:
+### Cardinality combinators
+
+Use `withPointCount(...)` when only the total point count matters:
 
 ```scala mdoc:silent
 MetricExpectation
@@ -368,7 +375,50 @@ MetricExpectation
   .withPointCount(2)
 ```
 
-For more advanced collection-wide assertions, use `wherePoints(...)`:
+For lower-level count constraints, use `PointSetExpectation` directly:
+
+```scala mdoc:silent
+MetricExpectation
+  .sum[Long]("service.requests")
+  .withPoints(PointSetExpectation.minCount[PointExpectation.NumericPointData[Long]](1))
+  .withPoints(PointSetExpectation.maxCount[PointExpectation.NumericPointData[Long]](2))
+```
+
+Use `countWhere` when the total number of matching points matters more than the exact full set:
+
+```scala mdoc:silent
+MetricExpectation
+  .sum[Long]("service.requests")
+  .withPoints(
+    PointSetExpectation.countWhere(
+      PointExpectation
+        .numeric(1L)
+        .withAttributesSubset(Attribute("region", "eu")),
+      expected = 2
+    )
+  )
+```
+
+This is useful when each point still carries extra dimensions that you do not want to enumerate explicitly.
+
+### `none`
+
+Use `none` or `withNoPointsMatching(...)` when a point shape must not appear:
+
+```scala mdoc:silent
+MetricExpectation
+  .sum[Long]("service.requests")
+  .withNoPointsMatching(
+    PointExpectation
+      .numeric(1L)
+      .withAttributesSubset(Attribute("region", "test"))
+  )
+```
+
+### `predicate`
+
+Use `predicate` or `wherePoints(...)` for collection-wide assertions that are awkward to express with the built-in
+combinators:
 
 ```scala mdoc:silent
 MetricExpectation
@@ -381,23 +431,60 @@ MetricExpectation
   }
 ```
 
-If you need full control over point-set matching, use `withPoints(...)` together with `PointSetExpectation`:
+For numeric metrics, the `points` passed to `wherePoints` are typed `NumericPointData[A]`, so you can inspect
+`.value`, `.attributes`, and `.underlying`.
+
+### `and` and `or`
+
+Point-set expectations can be combined explicitly:
 
 ```scala mdoc:silent
-import org.typelevel.otel4s.oteljava.testkit.metrics.PointSetExpectation
-
 MetricExpectation
   .sum[Long]("service.requests")
   .withPoints(
-    PointSetExpectation.contains(
+    PointSetExpectation
+      .contains(
+        PointExpectation
+          .numeric(1L)
+          .withAttributesSubset(Attribute("region", "eu")),
+        PointExpectation
+          .numeric(1L)
+          .withAttributesSubset(Attribute("region", "us"))
+      )
+      .and(PointSetExpectation.count[PointExpectation.NumericPointData[Long]](2))
+  )
+```
+
+Use `or` when a metric may legitimately satisfy one of several point layouts:
+
+```scala mdoc:silent
+MetricExpectation
+  .sum[Long]("service.requests")
+  .withPoints(
+    PointSetExpectation
+      .count[PointExpectation.NumericPointData[Long]](1)
+      .or(PointSetExpectation.count[PointExpectation.NumericPointData[Long]](2))
+  )
+```
+
+Because point expectations accumulate, you can also layer multiple `withPoints(...)` calls on the same metric:
+
+```scala mdoc:silent
+MetricExpectation
+  .sum[Long]("service.requests")
+  .withPoints(
+    PointSetExpectation.exists(
       PointExpectation
         .numeric(1L)
-        .withAttributesSubset(Attribute("region", "eu")),
+        .withAttributesSubset(Attribute("region", "eu"))
+    )
+  )
+  .withPoints(
+    PointSetExpectation.exists(
       PointExpectation
         .numeric(1L)
         .withAttributesSubset(Attribute("region", "us"))
     )
-      .and(PointSetExpectation.count(2))
   )
 ```
 

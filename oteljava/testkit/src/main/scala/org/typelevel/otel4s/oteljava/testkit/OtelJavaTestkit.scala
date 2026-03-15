@@ -22,6 +22,7 @@ import cats.effect.Resource
 import io.opentelemetry.context.propagation.{TextMapPropagator => JTextMapPropagator}
 import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder
+import io.opentelemetry.sdk.metrics.data.{MetricData => JMetricData}
 import io.opentelemetry.sdk.testing.exporter.InMemoryLogRecordExporter
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader
 import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter
@@ -180,6 +181,11 @@ object OtelJavaTestkit {
     def propagators: ContextPropagators[Context] = traces.propagators
     def finishedSpans[A: FromSpanData]: F[List[A]] = traces.finishedSpans
     def resetSpans: F[Unit] = traces.resetSpans
+    def collectAllMetrics: F[List[JMetricData]] = metrics.collectAllMetrics
+    @deprecated(
+      "Use `collectAllMetrics` for raw metrics or the new expectation API to validate metrics directly",
+      "0.16.0"
+    )
     def collectMetrics[A: FromMetricData]: F[List[A]] = metrics.collectMetrics
     def collectLogs[A: FromLogRecordData]: F[List[A]] = logs.collectLogs
     def resetLogs: F[Unit] = logs.resetLogs

@@ -5,7 +5,6 @@
 ```scala mdoc:invisible
 import cats.effect.IO
 import cats.effect.unsafe.implicits.global
-import io.opentelemetry.sdk.metrics.data.MetricData
 import org.typelevel.otel4s.instrumentation.ce.IORuntimeMetrics
 import org.typelevel.otel4s.metrics.MeterProvider
 import org.typelevel.otel4s.oteljava.testkit.metrics.MetricsTestkit
@@ -17,7 +16,7 @@ def printMetrics(config: IORuntimeMetrics.Config): Unit = {
 
     IORuntimeMetrics
       .register[IO](global.metrics, config)
-      .surround(testkit.collectMetrics[MetricData])
+      .surround(testkit.collectAllMetrics)
   }.unsafeRunSync()
 
   println("| Name | Description | Unit |")

@@ -25,6 +25,10 @@ import scala.jdk.CollectionConverters._
 
 /** A representation of the `io.opentelemetry.sdk.metrics.data.HistogramPointData`.
   */
+@deprecated(
+  "Use `collectAllMetrics` for raw metrics or the new expectation API instead of `metrics.data.HistogramPointData` projections",
+  "0.16.0"
+)
 sealed trait HistogramPointData {
 
   def sum: Double
@@ -51,6 +55,10 @@ sealed trait HistogramPointData {
 
 }
 
+@deprecated(
+  "Use `collectAllMetrics` for raw metrics or the new expectation API instead of `metrics.data.HistogramPointData` projections",
+  "0.16.0"
+)
 object HistogramPointData {
 
   def apply(

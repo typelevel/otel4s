@@ -19,8 +19,10 @@ package org.typelevel.otel4s.oteljava.testkit.metrics
 import cats.effect.Async
 import cats.effect.Resource
 import cats.mtl.Ask
+import cats.syntax.functor._
 import io.opentelemetry.sdk.metrics.SdkMeterProvider
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder
+import io.opentelemetry.sdk.metrics.data.{MetricData => JMetricData}
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader
 import org.typelevel.otel4s.context.LocalProvider
 import org.typelevel.otel4s.metrics.MeterProvider
@@ -39,18 +41,20 @@ sealed trait MetricsTestkit[F[_]] {
 
   /** Collects and returns metrics.
     *
-    * @example
-    *   {{{
-    * import io.opentelemetry.sdk.metrics.data.MetricData
-    * import org.typelevel.otel4s.oteljava.testkit.metrics.data.Metric
-    *
-    * MetricTestkit[F].collectMetrics[MetricData] // OpenTelemetry Java models
-    * MetricTestkit[F].collectMetrics[Metric] // Otel4s testkit models
-    *   }}}
+    * @note
+    *   metrics are recollected on each invocation.
+    */
+  def collectAllMetrics: F[List[JMetricData]]
+
+  /** Collects and transforms metrics into arbitrary type `A`.
     *
     * @note
     *   metrics are recollected on each invocation.
     */
+  @deprecated(
+    "Use `collectAllMetrics` for raw metrics or the new expectation API to validate metrics directly",
+    "0.16.0"
+  )
   def collectMetrics[A: FromMetricData]: F[List[A]]
 
 }
@@ -152,11 +156,17 @@ object MetricsTestkit {
       metricReader: InMemoryMetricReader
   ) extends MetricsTestkit[F] {
 
-    def collectMetrics[A: FromMetricData]: F[List[A]] =
+    def collectAllMetrics: F[List[JMetricData]] =
       Async[F].delay {
-        val metrics = metricReader.collectAllMetrics().asScala.toList
-        metrics.map(FromMetricData[A].from)
+        metricReader.collectAllMetrics().asScala.toList
       }
+
+    @deprecated(
+      "Use `collectAllMetrics` for raw metrics or the new expectation API to validate metrics directly",
+      "0.16.0"
+    )
+    def collectMetrics[A: FromMetricData]: F[List[A]] =
+      collectAllMetrics.map(_.map(FromMetricData[A].from))
   }
 
   private final case class BuilderImpl[F[_]: Async: LocalContextProvider](

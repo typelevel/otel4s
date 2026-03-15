@@ -18,7 +18,6 @@ package org.typelevel.otel4s.instrumentation.ce
 
 import cats.Show
 import cats.effect.IO
-import io.opentelemetry.sdk.metrics.data.MetricData
 import munit.CatsEffectSuite
 import munit.ScalaCheckEffectSuite
 import org.scalacheck.Arbitrary
@@ -26,6 +25,8 @@ import org.scalacheck.Prop
 import org.scalacheck.effect.PropF
 import org.typelevel.otel4s.Attributes
 import org.typelevel.otel4s.metrics.MeterProvider
+import org.typelevel.otel4s.oteljava.testkit.metrics.MetricExpectation
+import org.typelevel.otel4s.oteljava.testkit.metrics.MetricExpectations
 import org.typelevel.otel4s.oteljava.testkit.metrics.MetricsTestkit
 import org.typelevel.otel4s.scalacheck.Arbitraries._
 
@@ -44,8 +45,8 @@ class IORuntimeMetricsSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
       for {
         metrics <- IORuntimeMetrics
           .register[IO](munitIORuntime.metrics, IORuntimeMetrics.Config.default)
-          .surround(testkit.collectMetrics[MetricData])
-      } yield assertEquals(metrics.map(toMetric).sortBy(_.name), expected.sortBy(_.name))
+          .surround(testkit.collectAllMetrics)
+      } yield assertEquals(MetricExpectations.checkAll(metrics, expected), Right(()))
     }
   }
 
@@ -66,8 +67,8 @@ class IORuntimeMetricsSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
         for {
           metrics <- IORuntimeMetrics
             .register[IO](munitIORuntime.metrics, config)
-            .surround(testkit.collectMetrics[MetricData])
-        } yield assertEquals(metrics.map(toMetric).sortBy(_.name), expected.sortBy(_.name))
+            .surround(testkit.collectAllMetrics)
+        } yield assertEquals(MetricExpectations.checkAll(metrics, expected), Right(()))
       }
     }
   }
@@ -94,138 +95,127 @@ class IORuntimeMetricsSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
     }
   }
 
-  private case class Metric(name: String, description: Option[String], unit: Option[String])
-
-  private def toMetric(metric: MetricData): Metric =
-    Metric(metric.getName, Option(metric.getDescription).filter(_.nonEmpty), Option(metric.getUnit).filter(_.nonEmpty))
-
   private val cpuStarvationMetrics = List(
-    Metric(
-      "cats.effect.runtime.cpu.starvation.count",
-      Some("The number of CPU starvation events."),
-      None
-    ),
-    Metric(
-      "cats.effect.runtime.cpu.starvation.clock.drift.current",
-      Some("The current CPU drift in milliseconds."),
-      Some("ms")
-    ),
-    Metric(
-      "cats.effect.runtime.cpu.starvation.clock.drift.max",
-      Some("The max CPU drift in milliseconds."),
-      Some("ms")
-    )
+    metric("cats.effect.runtime.cpu.starvation.count", "The number of CPU starvation events."),
+    metric("cats.effect.runtime.cpu.starvation.clock.drift.current", "The current CPU drift in milliseconds.", "ms"),
+    metric("cats.effect.runtime.cpu.starvation.clock.drift.max", "The max CPU drift in milliseconds.", "ms")
   )
 
   private val computeMetrics = List(
-    Metric(
+    metric(
       "cats.effect.runtime.wstp.compute.thread.count",
-      Some("The number of worker thread instances backing the work-stealing thread pool (WSTP)."),
-      Some("{thread}")
+      "The number of worker thread instances backing the work-stealing thread pool (WSTP).",
+      "{thread}"
     ),
-    Metric(
+    metric(
       "cats.effect.runtime.wstp.compute.thread.active.count",
-      Some("The number of active worker thread instances currently executing fibers on the compute thread pool."),
-      Some("{thread}")
+      "The number of active worker thread instances currently executing fibers on the compute thread pool.",
+      "{thread}"
     ),
-    Metric(
+    metric(
       "cats.effect.runtime.wstp.compute.thread.searching.count",
-      Some("The number of worker thread instances currently searching for fibers to steal from other worker threads."),
-      Some("{thread}")
+      "The number of worker thread instances currently searching for fibers to steal from other worker threads.",
+      "{thread}"
     ),
-    Metric(
+    metric(
       "cats.effect.runtime.wstp.compute.thread.blocked.count",
-      Some("The number of worker thread instances that can run blocking actions on the compute thread pool."),
-      Some("{thread}")
+      "The number of worker thread instances that can run blocking actions on the compute thread pool.",
+      "{thread}"
     ),
-    Metric(
+    metric(
       "cats.effect.runtime.wstp.compute.fiber.enqueued.count",
-      Some("The total number of fibers enqueued on all local queues."),
-      Some("{fiber}")
+      "The total number of fibers enqueued on all local queues.",
+      "{fiber}"
     ),
-    Metric(
+    metric(
       "cats.effect.runtime.wstp.compute.fiber.suspended.count",
-      Some("The number of fibers which are currently asynchronously suspended."),
-      Some("{fiber}")
+      "The number of fibers which are currently asynchronously suspended.",
+      "{fiber}"
     )
   )
 
   private val threadMetrics = List(
-    Metric(
+    metric(
       "cats.effect.runtime.wstp.worker.thread.idle.duration",
-      Some("The total amount of time in nanoseconds that this WorkerThread has been idle."),
-      Some("ns")
+      "The total amount of time in nanoseconds that this WorkerThread has been idle.",
+      "ns"
     ),
-    Metric(
+    metric(
       "cats.effect.runtime.wstp.worker.thread.event.count",
-      Some("The total number of events that happened to this WorkerThread."),
-      Some("{event}")
-    ),
+      "The total number of events that happened to this WorkerThread.",
+      "{event}"
+    )
   )
 
   private val localQueueMetrics = List(
-    Metric(
+    metric(
       "cats.effect.runtime.wstp.worker.localqueue.fiber.count",
-      Some("The total number of fibers enqueued during the lifetime of the local queue."),
-      Some("{fiber}")
+      "The total number of fibers enqueued during the lifetime of the local queue.",
+      "{fiber}"
     ),
-    Metric(
+    metric(
       "cats.effect.runtime.wstp.worker.localqueue.fiber.enqueued.count",
-      Some("The current number of enqueued fibers."),
-      Some("{fiber}")
+      "The current number of enqueued fibers.",
+      "{fiber}"
     ),
-    Metric(
+    metric(
       "cats.effect.runtime.wstp.worker.localqueue.fiber.spillover.count",
-      Some("The total number of fibers spilt over to the external queue."),
-      Some("{fiber}")
+      "The total number of fibers spilt over to the external queue.",
+      "{fiber}"
     ),
-    Metric(
+    metric(
       "cats.effect.runtime.wstp.worker.localqueue.fiber.steal_attempt.count",
-      Some("The total number of successful steal attempts by other worker threads."),
-      Some("{fiber}")
+      "The total number of successful steal attempts by other worker threads.",
+      "{fiber}"
     ),
-    Metric(
+    metric(
       "cats.effect.runtime.wstp.worker.localqueue.fiber.stolen.count",
-      Some("The total number of stolen fibers by other worker threads."),
-      Some("{fiber}")
-    ),
+      "The total number of stolen fibers by other worker threads.",
+      "{fiber}"
+    )
   )
 
   private val timerHeapMetrics = List(
-    Metric(
+    metric(
       "cats.effect.runtime.wstp.worker.timerheap.outstanding.count",
-      Some("The current number of the outstanding timers, that remain to be executed."),
-      Some("{timer}")
+      "The current number of the outstanding timers, that remain to be executed.",
+      "{timer}"
     ),
-    Metric(
+    metric(
       "cats.effect.runtime.wstp.worker.timerheap.timer.count",
-      Some("The total number of the timers per state."),
-      Some("{timer}")
+      "The total number of the timers per state.",
+      "{timer}"
     ),
-    Metric(
+    metric(
       "cats.effect.runtime.wstp.worker.timerheap.packed.count",
-      Some("The total number of times the heap packed itself to remove canceled timers."),
-      Some("{event}")
+      "The total number of times the heap packed itself to remove canceled timers.",
+      "{event}"
     ),
-    Metric(
+    metric(
       "cats.effect.runtime.wstp.worker.timerheap.next.due",
-      Some("Returns the time in nanoseconds till the next due to fire."),
-      Some("ns")
-    ),
+      "Returns the time in nanoseconds till the next due to fire.",
+      "ns"
+    )
   )
 
   private val pollerMetrics = List(
-    Metric(
+    metric(
       "cats.effect.runtime.wstp.worker.poller.operation.outstanding.count",
-      Some("The current number of outstanding operations per category."),
-      Some("{operation}")
+      "The current number of outstanding operations per category.",
+      "{operation}"
     ),
-    Metric(
+    metric(
       "cats.effect.runtime.wstp.worker.poller.operation.count",
-      Some("The total number of the operations per category and outcome."),
-      Some("{operation}")
+      "The total number of the operations per category and outcome.",
+      "{operation}"
     )
   )
+
+  private def metric(name: String, description: String, unit: String = ""): MetricExpectation =
+    MetricExpectation
+      .name(name)
+      .description(description)
+      .unit(unit)
 
   private implicit val cpuStarvationConfigArbitrary: Arbitrary[CpuStarvationConfig] =
     Arbitrary(

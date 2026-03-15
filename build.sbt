@@ -284,6 +284,7 @@ lazy val `oteljava-common` = project
 lazy val `oteljava-common-testkit` = project
   .in(file("oteljava/common-testkit"))
   .dependsOn(`oteljava-common`)
+  .settings(munitDependencies)
   .settings(
     name := "otel4s-oteljava-common-testkit",
     libraryDependencies ++= Seq(

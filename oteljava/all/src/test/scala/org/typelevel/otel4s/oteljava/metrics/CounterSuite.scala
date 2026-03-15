@@ -21,11 +21,13 @@ package metrics
 import cats.effect.IO
 import cats.effect.Resource
 import io.opentelemetry.sdk.metrics._
+import io.opentelemetry.sdk.metrics.data.MetricData
 import munit.CatsEffectSuite
-import org.typelevel.otel4s.oteljava.testkit.InstrumentationScope
-import org.typelevel.otel4s.oteljava.testkit.TelemetryResource
+import org.typelevel.otel4s.oteljava.testkit.InstrumentationScopeExpectation
+import org.typelevel.otel4s.oteljava.testkit.TelemetryResourceExpectation
+import org.typelevel.otel4s.oteljava.testkit.metrics.MetricExpectation
+import org.typelevel.otel4s.oteljava.testkit.metrics.MetricExpectations
 import org.typelevel.otel4s.oteljava.testkit.metrics.MetricsTestkit
-import org.typelevel.otel4s.oteljava.testkit.metrics.data.Metric
 
 import scala.jdk.CollectionConverters._
 
@@ -48,37 +50,48 @@ class CounterSuite extends CatsEffectSuite {
 
         _ <- counter.add(1L, Attribute("string-attribute", "value"))
 
-        metrics <- sdk.collectMetrics[Metric]
+        metrics <- sdk.collectAllMetrics
       } yield {
-        val resourceAttributes = Attributes(
-          Attribute("service.name", "unknown_service:java"),
-          Attribute("telemetry.sdk.language", "java"),
-          Attribute("telemetry.sdk.name", "opentelemetry"),
-          Attribute("telemetry.sdk.version", BuildInfo.openTelemetrySdkVersion)
-        )
-
-        val scope = InstrumentationScope(
-          name = "java.otel.suite",
-          version = Some("1.0"),
-          schemaUrl = Some("https://localhost:8080"),
-          attributes = Attributes.empty
-        )
-
-        assertEquals(metrics.map(_.name), List("counter"))
-        assertEquals(metrics.map(_.description), List(Some("description")))
-        assertEquals(metrics.map(_.unit), List(Some("unit")))
-        assertEquals(
-          metrics.map(_.resource),
-          List(TelemetryResource(resourceAttributes, None))
-        )
-        assertEquals(metrics.map(_.scope), List(scope))
-        assertEquals[List[Any], List[Any]](
-          metrics.map(_.data.points.map(_.value)),
-          List(List(1L))
+        assertExpected(
+          metrics,
+          List(
+            MetricExpectation
+              .sum[Long]("counter")
+              .value(1L, Attributes(Attribute("string-attribute", "value")))
+              .description("description")
+              .unit("unit")
+              .scope(expectedScope)
+              .resource(expectedResource)
+          )
         )
       }
     }
   }
+
+  private def assertExpected(metrics: List[MetricData], expected: List[MetricExpectation]): Unit =
+    MetricExpectations.checkAll(metrics, expected) match {
+      case Right(_) =>
+        ()
+      case Left(mismatches) =>
+        fail(MetricExpectations.format(mismatches))
+    }
+
+  private val expectedScope: InstrumentationScopeExpectation =
+    InstrumentationScopeExpectation
+      .name("java.otel.suite")
+      .version("1.0")
+      .schemaUrl("https://localhost:8080")
+      .attributesEmpty
+
+  private val expectedResource: TelemetryResourceExpectation =
+    TelemetryResourceExpectation.any
+      .attributesExact(
+        Attribute("service.name", "unknown_service:java"),
+        Attribute("telemetry.sdk.language", "java"),
+        Attribute("telemetry.sdk.name", "opentelemetry"),
+        Attribute("telemetry.sdk.version", BuildInfo.openTelemetrySdkVersion)
+      )
+      .schemaUrl(None)
 
   private def makeSdk: Resource[IO, MetricsTestkit[IO]] = {
     def customize(builder: SdkMeterProviderBuilder): SdkMeterProviderBuilder =

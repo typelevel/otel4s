@@ -20,6 +20,10 @@ import cats.Hash
 import cats.Show
 import cats.syntax.show._
 
+@deprecated(
+  "Use `collectAllMetrics` for raw metrics or the new expectation API instead of `metrics.data.MetricData` projections",
+  "0.16.0"
+)
 sealed trait MetricData {
   def points: List[PointData[_]]
 
@@ -39,6 +43,10 @@ sealed trait MetricData {
 
 }
 
+@deprecated(
+  "Use `collectAllMetrics` for raw metrics or the new expectation API instead of `metrics.data.MetricData` projections",
+  "0.16.0"
+)
 object MetricData {
 
   final case class LongGauge(points: List[PointData[Long]]) extends MetricData

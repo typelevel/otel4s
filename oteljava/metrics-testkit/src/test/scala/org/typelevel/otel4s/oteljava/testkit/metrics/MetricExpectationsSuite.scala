@@ -20,10 +20,11 @@ import cats.effect.IO
 import munit.CatsEffectSuite
 import munit.Location
 import munit.TestOptions
-import java.util.concurrent.atomic.AtomicInteger
 import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.Attributes
 import org.typelevel.otel4s.oteljava.testkit.InstrumentationScopeExpectation
+
+import java.util.concurrent.atomic.AtomicInteger
 
 class MetricExpectationsSuite extends CatsEffectSuite {
 

@@ -84,11 +84,12 @@ If you need to ensure that repeated expectations match different collected metri
 `MetricExpectations.checkAllDistinct(...)` instead.
 
 ```scala mdoc:silent
-MetricExpectations.checkAllDistinct(
-  metrics,
-  MetricExpectation.sum[Long]("service.counter").withValue(1L),
-  MetricExpectation.sum[Long]("service.counter").withValue(1L)
-)
+def checkAllDistinct(metrics: List[MetricData]) =
+  MetricExpectations.checkAllDistinct(
+    metrics,
+    MetricExpectation.sum[Long]("service.counter").withValue(1L),
+    MetricExpectation.sum[Long]("service.counter").withValue(1L)
+  )
 ```
 
 ## Partial matching

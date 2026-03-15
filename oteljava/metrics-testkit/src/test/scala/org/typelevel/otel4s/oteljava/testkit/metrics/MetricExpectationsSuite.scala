@@ -20,6 +20,7 @@ import cats.effect.IO
 import munit.CatsEffectSuite
 import munit.Location
 import munit.TestOptions
+import java.util.concurrent.atomic.AtomicInteger
 import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.Attributes
 import org.typelevel.otel4s.oteljava.testkit.InstrumentationScopeExpectation
@@ -60,6 +61,61 @@ class MetricExpectationsSuite extends CatsEffectSuite {
           .where("single point expected")(_.getLongSumData.getPoints.size() == 1)
       )
     )
+  }
+
+  testkitTest("typed metric-level predicate is skipped for wrong-type candidates") { testkit =>
+    val predicateRuns = new AtomicInteger(0)
+
+    for {
+      meter <- testkit.meterProvider.get("test")
+      gauge <- meter.gauge[Long]("service.counter").create
+      _ <- gauge.record(1L)
+      metrics <- testkit.collectAllMetrics
+    } yield {
+      val result = MetricExpectations.check(
+        metrics,
+        MetricExpectation
+          .sum[Long]("service.counter")
+          .where { _ =>
+            predicateRuns.incrementAndGet()
+            true
+          }
+      )
+
+      assertEquals(predicateRuns.get(), 0)
+      result match {
+        case Some(mismatch: MetricMismatch.ClosestMismatch) =>
+          assertEquals(mismatch.metric.getName, "service.counter")
+          assertEquals(mismatch.mismatches.length, 1)
+          assert(mismatch.mismatches.head.isInstanceOf[MetricExpectation.Mismatch.TypeMismatch])
+        case other =>
+          fail(s"expected closest mismatch, got $other")
+      }
+    }
+  }
+
+  testkitTest("untyped metric-level predicate still runs regardless of metric type") { testkit =>
+    val predicateRuns = new AtomicInteger(0)
+
+    for {
+      meter <- testkit.meterProvider.get("test")
+      gauge <- meter.gauge[Long]("service.gauge").create
+      _ <- gauge.record(1L)
+      metrics <- testkit.collectAllMetrics
+    } yield {
+      val result = MetricExpectations.checkAll(
+        metrics,
+        MetricExpectation
+          .name("service.gauge")
+          .where { _ =>
+            predicateRuns.incrementAndGet()
+            true
+          }
+      )
+
+      assertEquals(predicateRuns.get(), 1)
+      assertSuccess(result)
+    }
   }
 
   testkitTest("typed numeric point predicates are supported") { testkit =>

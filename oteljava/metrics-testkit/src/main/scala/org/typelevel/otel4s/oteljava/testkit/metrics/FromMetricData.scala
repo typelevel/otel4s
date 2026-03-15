@@ -29,6 +29,7 @@ sealed trait FromMetricData[A] {
   def from(metricData: MetricData): A
 }
 
+@annotation.nowarn("cat=deprecation")
 object FromMetricData {
 
   def apply[A](implicit ev: FromMetricData[A]): FromMetricData[A] = ev

@@ -104,12 +104,12 @@ exist and that each exported metric matches the semantic name, unit, description
 
 ```scala mdoc:compile-only
 import cats.effect.IO
+import io.opentelemetry.sdk.metrics.data.{MetricData, PointData}
 import org.typelevel.otel4s.metrics.Meter
 import org.typelevel.otel4s.semconv.MetricSpec
-import org.typelevel.otel4s.semconv.metrics.HttpMetrics
 import org.typelevel.otel4s.semconv.Requirement
-import org.typelevel.otel4s.oteljava.testkit.metrics.MetricsTestkit
-import org.typelevel.otel4s.oteljava.testkit.metrics.data.Metric
+import org.typelevel.otel4s.semconv.metrics.HttpMetrics
+import org.typelevel.otel4s.oteljava.testkit.metrics._
 
 def semanticTest(scenario: Meter[IO] => IO[Unit]): IO[Unit] = {
   // the set of metrics to check
@@ -123,39 +123,43 @@ def semanticTest(scenario: Meter[IO] => IO[Unit]): IO[Unit] = {
         // run a scenario to generate metrics 
         _       <- scenario(meter)
         // collect metrics
-        metrics <- testkit.collectMetrics[Metric]
+        metrics <- testkit.collectAllMetrics
         // ensure the expected metrics exist and match the spec
-      } yield specs.foreach(spec => specTest(metrics, spec))
+      } yield assertExpected(metrics, specs.map(specExpectation))
     }
   }
 }
 
-def specTest(metrics: List[Metric], spec: MetricSpec): Unit = {
-  val metric = metrics.find(_.name == spec.name)
-  assert(
-    metric.isDefined,
-    s"${spec.name} metric is missing. Available [${metrics.map(_.name).mkString(", ")}]",
-  )
-
-  val clue = s"[${spec.name}] has a mismatched property"
-
-  metric.foreach { md =>
-    assert(md.name == spec.name, clue)
-    assert(md.description == Some(spec.description), clue)
-    assert(md.unit == Some(spec.unit), clue)
-
-    val required = spec.attributeSpecs
-      .filter(_.requirement.level == Requirement.Level.Required)
-      .map(_.key)
-      .toSet
-
-    val current = md.data.points.toVector
-      .flatMap(_.attributes.map(_.key))
-      .filter(key => required.contains(key))
-      .toSet
-
-    assert(current == required, clue)
+def assertExpected(metrics: List[MetricData], expected: List[MetricExpectation]): Unit =
+  MetricExpectations.checkAll(metrics, expected) match {
+    case Right(_) =>
+      ()
+    case Left(mismatches) =>
+      // or use an assert function from the testing framework here
+      sys.error(MetricExpectations.format(mismatches))
   }
+
+def specExpectation(spec: MetricSpec): MetricExpectation = {
+  val required = spec.attributeSpecs
+    .filter(_.requirement.level == Requirement.Level.Required)
+    .map(_.key)
+    .toSet
+
+  MetricExpectation
+    .name(spec.name)
+    .withDescription(spec.description)
+    .withUnit(spec.unit)
+    .where(s"[${spec.name}] is missing required semantic attributes") { metric =>
+      import scala.jdk.CollectionConverters._
+      import org.typelevel.otel4s.oteljava.AttributeConverters._
+
+      val current = metric.getData.getPoints.asScala
+        .flatMap(_.asInstanceOf[PointData].getAttributes.asMap().keySet().asScala)
+        .map(_.toScala)
+        .toSet
+
+      current == required
+    }
 }
 ```
 

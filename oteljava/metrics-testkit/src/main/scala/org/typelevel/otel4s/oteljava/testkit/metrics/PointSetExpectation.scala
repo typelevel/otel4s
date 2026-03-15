@@ -595,22 +595,22 @@ object PointSetExpectation {
 
     if (matching.isComplete) Right(matching.matchedIndices)
     else {
-        val missing = expected.toList.zip(candidates).collect { case (expectation, Nil) =>
-          Mismatch.missingExpectedPoint(
-            checker.clue(expectation),
-            closestMismatch(points, expectation, checker)
-          )
-        }
-
-        Left(
-          NonEmptyList
-            .fromList(missing)
-            .getOrElse(
-              NonEmptyList.one(
-                Mismatch.matchedPointCountMismatch(expected.length, matching.size)
-              )
-            )
+      val missing = expected.toList.zip(candidates).collect { case (expectation, Nil) =>
+        Mismatch.missingExpectedPoint(
+          checker.clue(expectation),
+          closestMismatch(points, expectation, checker)
         )
+      }
+
+      Left(
+        NonEmptyList
+          .fromList(missing)
+          .getOrElse(
+            NonEmptyList.one(
+              Mismatch.matchedPointCountMismatch(expected.length, matching.size)
+            )
+          )
+      )
     }
   }
 

@@ -137,7 +137,6 @@
 
   <ul class="nav-list">
     <li class="level1 nav-leaf"><a href="#java-8-and-newer">Java 8 and newer</a></li>
-    <li class="level1 nav-leaf"><a href="#java-17-and-newer">Java 17 and newer</a></li>
   </ul>
 
   <p class="footer"></p>
@@ -150,8 +149,8 @@
         <p>See the <a href="https://opentelemetry.io/docs/specs/semconv/runtime/jvm-metrics">semantic conventions</a> for JVM metrics. </p>
         
         <h2 id="java-8-and-newer" class="section"><a class="anchor-link left" href="#java-8-and-newer"><i class="icofont-laika link">&#xef71;</i></a>Java 8 and newer</h2>
-        <p>The OpenTelemetry <a href="https://github.com/open-telemetry/opentelemetry-java-instrumentation/tree/main/instrumentation/runtime-telemetry/runtime-telemetry-java8/library">runtime-telemetry-java8</a> module provides the JVM runtime metrics for Java 8 and newer.
-        The module uses JMX to produce metrics.</p>
+        <p>The OpenTelemetry <a href="https://github.com/open-telemetry/opentelemetry-java-instrumentation/tree/main/instrumentation/runtime-telemetry/library">runtime-telemetry</a> module provides the JVM runtime metrics for Java 8 and newer.
+        The module uses JMX and JFR (on Java 17+) to produce metrics.</p>
         <p>Add the following configuration to the favorite build tool:</p>
         <div class="tab-container" data-tab-group="build-tool">
           <ul class="tab-group">
@@ -162,25 +161,25 @@
             <p>Add settings to the <code>build.sbt</code>:</p>
             <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">libraryDependencies</span><span> ++= </span><span class="type-name">Seq</span><span>(
   </span><span class="string-literal">&quot;org.typelevel&quot;</span><span> %% </span><span class="string-literal">&quot;otel4s-oteljava&quot;</span><span> % </span><span class="string-literal">&quot;0.16.0-M1&quot;</span><span>, </span><span class="comment">// &lt;1&gt;
-</span><span>  </span><span class="string-literal">&quot;io.opentelemetry.instrumentation&quot;</span><span> % </span><span class="string-literal">&quot;opentelemetry-runtime-telemetry-java8&quot;</span><span> % </span><span class="string-literal">&quot;2.25.0-alpha&quot;</span><span> </span><span class="comment">// &lt;2&gt;
+</span><span>  </span><span class="string-literal">&quot;io.opentelemetry.instrumentation&quot;</span><span> % </span><span class="string-literal">&quot;opentelemetry-runtime-telemetry&quot;</span><span> % </span><span class="string-literal">&quot;2.26.0-alpha&quot;</span><span> </span><span class="comment">// &lt;2&gt;
 </span><span>)</span></code></pre>
           </div>
           <div class="tab-content" data-choice-name="scala-cli">
             <p>Add directives to the <code>*.scala</code> file:</p>
             <pre class="keep-together pdf epub"><code class="nohighlight"><span class="comment">//&gt; using dep &quot;org.typelevel::otel4s-oteljava:0.16.0-M1&quot; // &lt;1&gt;
-//&gt; using dep &quot;io.opentelemetry.instrumentation:opentelemetry-runtime-telemetry-java8:2.25.0-alpha&quot; // &lt;2&gt;</span></code></pre>
+//&gt; using dep &quot;io.opentelemetry.instrumentation:opentelemetry-runtime-telemetry:2.26.0-alpha&quot; // &lt;2&gt;</span></code></pre>
           </div>
         </div>
         <ol class="arabic">
           <li>Add the <code>otel4s-oteljava</code> library</li>
-          <li>Add the OpenTelemetry <a href="https://github.com/open-telemetry/opentelemetry-java-instrumentation/tree/main/instrumentation/runtime-telemetry/runtime-telemetry-java8/library">runtime metrics</a> library</li>
+          <li>Add the OpenTelemetry <a href="https://github.com/open-telemetry/opentelemetry-java-instrumentation/tree/main/instrumentation/runtime-telemetry/library">runtime metrics</a> library</li>
         </ol>
         <p>The producers can be registered manually:</p>
         <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.{</span><span class="type-name">IO</span><span>, </span><span class="type-name">IOApp</span><span>, </span><span class="type-name">Resource</span><span>, </span><span class="type-name">Sync</span><span>}
 </span><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">syntax</span><span>.</span><span class="identifier">flatMap</span><span>.</span><span class="identifier">_</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">syntax</span><span>.</span><span class="identifier">functor</span><span>.</span><span class="identifier">_</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">io</span><span>.</span><span class="identifier">opentelemetry</span><span>.</span><span class="identifier">api</span><span>.{</span><span class="type-name">OpenTelemetry</span><span> =&gt; </span><span class="type-name">JOpenTelemetry</span><span>}
-</span><span class="keyword">import</span><span> </span><span class="identifier">io</span><span>.</span><span class="identifier">opentelemetry</span><span>.</span><span class="identifier">instrumentation</span><span>.</span><span class="identifier">runtimemetrics</span><span>.</span><span class="identifier">java8</span><span>.</span><span class="identifier">_</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">io</span><span>.</span><span class="identifier">opentelemetry</span><span>.</span><span class="identifier">instrumentation</span><span>.</span><span class="identifier">runtimetelemetry</span><span>.</span><span class="identifier">_</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="type-name">OtelJava</span><span>
 
 </span><span class="keyword">object</span><span> </span><span class="type-name">Service</span><span> </span><span class="keyword">extends</span><span> </span><span class="type-name">IOApp</span><span>.</span><span class="type-name">Simple</span><span> {
@@ -188,72 +187,17 @@
   </span><span class="keyword">def</span><span> </span><span class="declaration-name">run</span><span>: </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] =
     </span><span class="type-name">OtelJava</span><span>
       .</span><span class="identifier">autoConfigured</span><span>[</span><span class="type-name">IO</span><span>]()
-      .</span><span class="identifier">flatTap</span><span>(</span><span class="identifier">otel4s</span><span> =&gt; </span><span class="identifier">registerRuntimeMetrics</span><span>(</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">underlying</span><span>))
+      .</span><span class="identifier">flatTap</span><span>(</span><span class="identifier">otel4s</span><span> =&gt; </span><span class="identifier">registerRuntimeTelemetry</span><span>(</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">underlying</span><span>))
       .</span><span class="identifier">use</span><span> { </span><span class="identifier">otel4s</span><span> =&gt;
         </span><span class="keyword">val</span><span> </span><span class="identifier">_</span><span> = </span><span class="identifier">otel4s</span><span>
         ???
       }
   
-  </span><span class="keyword">private</span><span> </span><span class="keyword">def</span><span> </span><span class="declaration-name">registerRuntimeMetrics</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>]: </span><span class="type-name">Sync</span><span>](
+  </span><span class="keyword">private</span><span> </span><span class="keyword">def</span><span> </span><span class="declaration-name">registerRuntimeTelemetry</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>]: </span><span class="type-name">Sync</span><span>](
       </span><span class="identifier">openTelemetry</span><span>: </span><span class="type-name">JOpenTelemetry</span><span>
   ): </span><span class="type-name">Resource</span><span>[</span><span class="type-name">F</span><span>, </span><span class="type-name">Unit</span><span>] = {
-    </span><span class="keyword">val</span><span> </span><span class="identifier">acquire</span><span> = </span><span class="type-name">Sync</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">delay</span><span>(</span><span class="type-name">RuntimeMetrics</span><span>.</span><span class="identifier">create</span><span>(</span><span class="identifier">openTelemetry</span><span>))
+    </span><span class="keyword">val</span><span> </span><span class="identifier">acquire</span><span> = </span><span class="type-name">Sync</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">delay</span><span>(</span><span class="type-name">RuntimeTelemetry</span><span>.</span><span class="identifier">create</span><span>(</span><span class="identifier">openTelemetry</span><span>))
   
-    </span><span class="type-name">Resource</span><span>.</span><span class="identifier">fromAutoCloseable</span><span>(</span><span class="identifier">acquire</span><span>).</span><span class="identifier">void</span><span>
-  }
-
-}</span></code></pre>
-        
-        <h2 id="java-17-and-newer" class="section"><a class="anchor-link left" href="#java-17-and-newer"><i class="icofont-laika link">&#xef71;</i></a>Java 17 and newer</h2>
-        <p>The OpenTelemetry <a href="https://github.com/open-telemetry/opentelemetry-java-instrumentation/tree/main/instrumentation/runtime-telemetry/runtime-telemetry-java17/library">runtime-telemetry-java17</a> module provides JVM runtime metrics for Java 17 and newer.
-        The module uses JMX and JFR to produce metrics. </p>
-        <p>Add the following configuration to the favorite build tool:</p>
-        <div class="tab-container" data-tab-group="build-tool">
-          <ul class="tab-group">
-            <li class="tab active" data-choice-name="sbt"><a href="#">sbt</a></li>
-            <li class="tab" data-choice-name="scala-cli"><a href="#">Scala CLI</a></li>
-          </ul>
-          <div class="tab-content active" data-choice-name="sbt">
-            <p>Add settings to the <code>build.sbt</code>:</p>
-            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">libraryDependencies</span><span> ++= </span><span class="type-name">Seq</span><span>(
-  </span><span class="string-literal">&quot;org.typelevel&quot;</span><span> %% </span><span class="string-literal">&quot;otel4s-oteljava&quot;</span><span> % </span><span class="string-literal">&quot;0.16.0-M1&quot;</span><span>, </span><span class="comment">// &lt;1&gt;
-</span><span>  </span><span class="string-literal">&quot;io.opentelemetry.instrumentation&quot;</span><span> % </span><span class="string-literal">&quot;opentelemetry-runtime-telemetry-java17&quot;</span><span> % </span><span class="string-literal">&quot;2.25.0-alpha&quot;</span><span> </span><span class="comment">// &lt;2&gt;
-</span><span>)</span></code></pre>
-          </div>
-          <div class="tab-content" data-choice-name="scala-cli">
-            <p>Add directives to the <code>*.scala</code> file:</p>
-            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="comment">//&gt; using dep &quot;org.typelevel::otel4s-oteljava:0.16.0-M1&quot; // &lt;1&gt;
-//&gt; using dep &quot;io.opentelemetry.instrumentation:opentelemetry-runtime-telemetry-java17:2.25.0-alpha&quot; // &lt;2&gt;</span></code></pre>
-          </div>
-        </div>
-        <ol class="arabic">
-          <li>Add the <code>otel4s-oteljava</code> library</li>
-          <li>Add the OpenTelemetry <a href="https://github.com/open-telemetry/opentelemetry-java-instrumentation/tree/main/instrumentation/runtime-telemetry/runtime-telemetry-java17/library">runtime metrics</a> library</li>
-        </ol>
-        <p>The producers can be registered manually:</p>
-        <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.{</span><span class="type-name">IO</span><span>, </span><span class="type-name">IOApp</span><span>, </span><span class="type-name">Resource</span><span>, </span><span class="type-name">Sync</span><span>}
-</span><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">syntax</span><span>.</span><span class="identifier">flatMap</span><span>.</span><span class="identifier">_</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">syntax</span><span>.</span><span class="identifier">functor</span><span>.</span><span class="identifier">_</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">io</span><span>.</span><span class="identifier">opentelemetry</span><span>.</span><span class="identifier">api</span><span>.{</span><span class="type-name">OpenTelemetry</span><span> =&gt; </span><span class="type-name">JOpenTelemetry</span><span>}
-</span><span class="keyword">import</span><span> </span><span class="identifier">io</span><span>.</span><span class="identifier">opentelemetry</span><span>.</span><span class="identifier">instrumentation</span><span>.</span><span class="identifier">runtimemetrics</span><span>.</span><span class="identifier">java17</span><span>.</span><span class="identifier">_</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="type-name">OtelJava</span><span>
-
-</span><span class="keyword">object</span><span> </span><span class="type-name">Service</span><span> </span><span class="keyword">extends</span><span> </span><span class="type-name">IOApp</span><span>.</span><span class="type-name">Simple</span><span> {
-  
-  </span><span class="keyword">def</span><span> </span><span class="declaration-name">run</span><span>: </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] = 
-    </span><span class="type-name">OtelJava</span><span>
-      .</span><span class="identifier">autoConfigured</span><span>[</span><span class="type-name">IO</span><span>]()
-      .</span><span class="identifier">flatTap</span><span>(</span><span class="identifier">otel4s</span><span> =&gt; </span><span class="identifier">registerRuntimeMetrics</span><span>(</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">underlying</span><span>))
-      .</span><span class="identifier">use</span><span> { </span><span class="identifier">otel4s</span><span> =&gt;
-        </span><span class="keyword">val</span><span> </span><span class="identifier">_</span><span> = </span><span class="identifier">otel4s</span><span>
-        ???
-      }
-
-  </span><span class="keyword">private</span><span> </span><span class="keyword">def</span><span> </span><span class="declaration-name">registerRuntimeMetrics</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>]: </span><span class="type-name">Sync</span><span>](
-      </span><span class="identifier">openTelemetry</span><span>: </span><span class="type-name">JOpenTelemetry</span><span>
-  ): </span><span class="type-name">Resource</span><span>[</span><span class="type-name">F</span><span>, </span><span class="type-name">Unit</span><span>] = {
-    </span><span class="keyword">val</span><span> </span><span class="identifier">acquire</span><span> = </span><span class="type-name">Sync</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">delay</span><span>(</span><span class="type-name">RuntimeMetrics</span><span>.</span><span class="identifier">create</span><span>(</span><span class="identifier">openTelemetry</span><span>))
-
     </span><span class="type-name">Resource</span><span>.</span><span class="identifier">fromAutoCloseable</span><span>(</span><span class="identifier">acquire</span><span>).</span><span class="identifier">void</span><span>
   }
 

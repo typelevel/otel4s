@@ -31,7 +31,7 @@ private[otel4s] trait CounterMacro[F[_], A] {
     * @param attributes
     *   the set of attributes to associate with the value
     */
-  inline def add(inline value: A, inline attributes: Attribute[_]*): F[Unit] =
+  inline def add(inline value: A, inline attributes: AttributeOrIterableOnce*): F[Unit] =
     ${ CounterMacro.add('backend, 'value, 'attributes) }
 
   /** Records a value with a set of attributes.
@@ -53,7 +53,7 @@ private[otel4s] trait CounterMacro[F[_], A] {
     * @param attributes
     *   the set of attributes to associate with the value
     */
-  inline def inc(inline attributes: Attribute[_]*): F[Unit] =
+  inline def inc(inline attributes: AttributeOrIterableOnce*): F[Unit] =
     ${ CounterMacro.inc('backend, 'attributes) }
 
   /** Increments a counter by one.
@@ -71,14 +71,14 @@ object CounterMacro {
   def add[F[_], A](
       backend: Expr[Counter.Backend[F, A]],
       value: Expr[A],
-      attributes: Expr[immutable.Iterable[Attribute[_]]]
+      attributes: Expr[immutable.Iterable[AttributeOrIterableOnce]]
   )(using Quotes, Type[F], Type[A]) =
-    '{ $backend.meta.whenEnabled($backend.add($value, $attributes)) }
+    '{ $backend.meta.whenEnabled($backend.add($value, Attributes.from($attributes))) }
 
   def inc[F[_], A](
       backend: Expr[Counter.Backend[F, A]],
-      attributes: Expr[immutable.Iterable[Attribute[_]]]
+      attributes: Expr[immutable.Iterable[AttributeOrIterableOnce]]
   )(using Quotes, Type[F], Type[A]) =
-    '{ $backend.meta.whenEnabled($backend.inc($attributes)) }
+    '{ $backend.meta.whenEnabled($backend.inc(Attributes.from($attributes))) }
 
 }

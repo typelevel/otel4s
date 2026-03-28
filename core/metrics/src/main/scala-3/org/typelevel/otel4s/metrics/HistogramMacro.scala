@@ -36,7 +36,7 @@ private[otel4s] trait HistogramMacro[F[_], A] {
     */
   inline def record(
       inline value: A,
-      inline attributes: Attribute[_]*
+      inline attributes: AttributeOrIterableOnce*
   ): F[Unit] =
     ${ HistogramMacro.record('backend, 'value, 'attributes) }
 
@@ -75,9 +75,9 @@ private[otel4s] trait HistogramMacro[F[_], A] {
     */
   inline def recordDuration(
       inline timeUnit: TimeUnit,
-      inline attributes: Attribute[_]*
+      inline attributes: AttributeOrIterableOnce*
   ): Resource[F, Unit] =
-    recordDuration(timeUnit, _ => attributes)
+    recordDuration(timeUnit, _ => Attributes.from(attributes))
 
   /** Records duration of the given effect.
     *
@@ -145,18 +145,18 @@ object HistogramMacro {
   def record[F[_], A](
       backend: Expr[Histogram.Backend[F, A]],
       value: Expr[A],
-      attributes: Expr[immutable.Iterable[Attribute[_]]]
+      attributes: Expr[immutable.Iterable[AttributeOrIterableOnce]]
   )(using Quotes, Type[F], Type[A]) =
-    '{ $backend.meta.whenEnabled($backend.record($value, $attributes)) }
+    '{ $backend.meta.whenEnabled($backend.record($value, Attributes.from($attributes))) }
 
   def recordDuration[F[_], A](
       backend: Expr[Histogram.Backend[F, A]],
       timeUnit: Expr[TimeUnit],
-      attributes: Expr[Resource.ExitCase => immutable.Iterable[Attribute[_]]]
+      attributes: Expr[Resource.ExitCase => immutable.Iterable[AttributeOrIterableOnce]]
   )(using Quotes, Type[F], Type[A]) =
     '{
       _root_.cats.effect.kernel.Resource.eval($backend.meta.isEnabled).flatMap { isEnabled =>
-        if (isEnabled) $backend.recordDuration($timeUnit, $attributes)
+        if (isEnabled) $backend.recordDuration($timeUnit, ec => Attributes.from($attributes(ec)))
         else _root_.cats.effect.kernel.Resource.unit
       }
     }

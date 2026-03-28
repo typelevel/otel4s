@@ -33,7 +33,7 @@ private[otel4s] trait GaugeMacro[F[_], A] {
     */
   inline def record(
       inline value: A,
-      inline attributes: Attribute[_]*
+      inline attributes: AttributeOrIterableOnce*
   ): F[Unit] =
     ${ GaugeMacro.record('backend, 'value, 'attributes) }
 
@@ -58,8 +58,8 @@ object GaugeMacro {
   def record[F[_], A](
       backend: Expr[Gauge.Backend[F, A]],
       value: Expr[A],
-      attributes: Expr[immutable.Iterable[Attribute[_]]]
+      attributes: Expr[immutable.Iterable[AttributeOrIterableOnce]]
   )(using Quotes, Type[F], Type[A]) =
-    '{ $backend.meta.whenEnabled($backend.record($value, $attributes)) }
+    '{ $backend.meta.whenEnabled($backend.record($value, Attributes.from($attributes))) }
 
 }

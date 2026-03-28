@@ -39,11 +39,11 @@ class AttributesExpectationSuite extends FunSuite {
       AttributesExpectation.exact(Attributes(Attribute("http.method", "POST"))).check(actual),
       Left(
         NonEmptyList.of(
-          AttributesExpectation.Mismatch.attributeValueMismatch(
+          AttributesExpectation.Mismatch.AttributeValueMismatch(
             Attribute("http.method", "POST"),
             Attribute("http.method", "GET")
           ),
-          AttributesExpectation.Mismatch.unexpectedAttribute(Attribute("http.route", "/users"))
+          AttributesExpectation.Mismatch.UnexpectedAttribute(Attribute("http.route", "/users"))
         )
       )
     )
@@ -66,7 +66,7 @@ class AttributesExpectationSuite extends FunSuite {
 
     assertEquals(
       AttributesExpectation.subset(Attributes(Attribute("http.route", "/users"))).check(actual),
-      Left(NonEmptyList.one(AttributesExpectation.Mismatch.missingAttribute(Attribute("http.route", "/users"))))
+      Left(NonEmptyList.one(AttributesExpectation.Mismatch.MissingAttribute(Attribute("http.route", "/users"))))
     )
   }
 
@@ -74,7 +74,7 @@ class AttributesExpectationSuite extends FunSuite {
     assertEquals(AttributesExpectation.empty.check(Attributes.empty), Right(()))
     assertEquals(
       AttributesExpectation.empty.check(Attributes(Attribute("http.method", "GET"))),
-      Left(NonEmptyList.one(AttributesExpectation.Mismatch.unexpectedAttribute(Attribute("http.method", "GET"))))
+      Left(NonEmptyList.one(AttributesExpectation.Mismatch.UnexpectedAttribute(Attribute("http.method", "GET"))))
     )
   }
 
@@ -86,7 +86,7 @@ class AttributesExpectationSuite extends FunSuite {
     assertEquals(expectation.check(Attributes(Attribute("http.method", "GET"))), Right(()))
     assertEquals(
       expectation.check(Attributes(Attribute("http.route", "/users"))),
-      Left(NonEmptyList.one(AttributesExpectation.Mismatch.predicateFailed(None)))
+      Left(NonEmptyList.one(AttributesExpectation.Mismatch.PredicateFailed(None)))
     )
   }
 
@@ -95,7 +95,7 @@ class AttributesExpectationSuite extends FunSuite {
       attributes.map(_.key.name).toSet == Set("http.method")
     }
 
-    val mismatch = AttributesExpectation.Mismatch.predicateFailed(Some("only http.method is expected"))
+    val mismatch = AttributesExpectation.Mismatch.PredicateFailed(Some("only http.method is expected"))
 
     assertEquals(
       expectation.check(Attributes(Attribute("http.route", "/users"))),

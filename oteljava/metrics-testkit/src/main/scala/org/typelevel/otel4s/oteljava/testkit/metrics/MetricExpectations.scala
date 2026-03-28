@@ -276,8 +276,8 @@ object MetricExpectations {
       .sortBy { case (_, mismatches) =>
         (
           mismatches.exists {
-            case _: MetricExpectation.Mismatch.TypeMismatch => true
-            case _                                          => false
+            case MetricExpectation.Mismatch.TypeMismatch(_, _) => true
+            case _                                             => false
           },
           mismatches.length
         )

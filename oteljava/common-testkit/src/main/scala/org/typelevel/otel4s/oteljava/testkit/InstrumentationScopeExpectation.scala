@@ -86,53 +86,13 @@ object InstrumentationScopeExpectation {
   }
 
   object Mismatch {
-
-    /** Indicates that the scope name differed from the expected one. */
-    sealed trait NameMismatch extends Mismatch {
-      def expected: String
-      def actual: String
-    }
-
-    /** Indicates that the scope version differed from the expected one. */
-    sealed trait VersionMismatch extends Mismatch {
-      def expected: Option[String]
-      def actual: Option[String]
-    }
-
-    /** Indicates that the scope schema URL differed from the expected one. */
-    sealed trait SchemaUrlMismatch extends Mismatch {
-      def expected: Option[String]
-      def actual: Option[String]
-    }
-
-    /** Indicates that the scope attributes did not satisfy the nested attributes expectation. */
-    sealed trait AttributesMismatch extends Mismatch {
-      def mismatches: NonEmptyList[AttributesExpectation.Mismatch]
-    }
-
-    /** Creates a mismatch indicating that the scope name differed from the expected one. */
-    def nameMismatch(expected: String, actual: String): NameMismatch =
-      NameMismatchImpl(expected, actual)
-
-    /** Creates a mismatch indicating that the scope version differed from the expected one. */
-    def versionMismatch(expected: Option[String], actual: Option[String]): VersionMismatch =
-      VersionMismatchImpl(expected, actual)
-
-    /** Creates a mismatch indicating that the scope schema URL differed from the expected one. */
-    def schemaUrlMismatch(expected: Option[String], actual: Option[String]): SchemaUrlMismatch =
-      SchemaUrlMismatchImpl(expected, actual)
-
-    /** Creates a mismatch indicating that the scope attributes did not satisfy the nested attributes expectation. */
-    def attributesMismatch(mismatches: NonEmptyList[AttributesExpectation.Mismatch]): AttributesMismatch =
-      AttributesMismatchImpl(mismatches)
-
-    private final case class NameMismatchImpl(expected: String, actual: String) extends NameMismatch {
+    private[testkit] final case class NameMismatch(expected: String, actual: String) extends Mismatch {
       def message: String =
         s"name mismatch: expected '$expected', got '$actual'"
     }
 
-    private final case class VersionMismatchImpl(expected: Option[String], actual: Option[String])
-        extends VersionMismatch {
+    private[testkit] final case class VersionMismatch(expected: Option[String], actual: Option[String])
+        extends Mismatch {
       def message: String = {
         val exp = expected.fold("<missing>")(v => s"'$v'")
         val act = actual.fold("<missing>")(v => s"'$v'")
@@ -140,8 +100,8 @@ object InstrumentationScopeExpectation {
       }
     }
 
-    private final case class SchemaUrlMismatchImpl(expected: Option[String], actual: Option[String])
-        extends SchemaUrlMismatch {
+    private[testkit] final case class SchemaUrlMismatch(expected: Option[String], actual: Option[String])
+        extends Mismatch {
       def message: String = {
         val exp = expected.fold("<missing>")(v => s"'$v'")
         val act = actual.fold("<missing>")(v => s"'$v'")
@@ -149,8 +109,8 @@ object InstrumentationScopeExpectation {
       }
     }
 
-    private final case class AttributesMismatchImpl(mismatches: NonEmptyList[AttributesExpectation.Mismatch])
-        extends AttributesMismatch {
+    private[testkit] final case class AttributesMismatch(mismatches: NonEmptyList[AttributesExpectation.Mismatch])
+        extends Mismatch {
       def message: String =
         s"attributes mismatch: ${mismatches.toList.map(_.message).mkString(", ")}"
     }
@@ -217,7 +177,7 @@ object InstrumentationScopeExpectation {
             Either.cond(
               expected == scope.getName,
               (),
-              NonEmptyList.one(Mismatch.nameMismatch(expected, scope.getName))
+              NonEmptyList.one(Mismatch.NameMismatch(expected, scope.getName))
             )
 
           case None =>
@@ -226,10 +186,10 @@ object InstrumentationScopeExpectation {
 
       ExpectationChecks.combine(
         checkName,
-        ExpectationChecks.compareOption(version, Option(scope.getVersion))(Mismatch.versionMismatch),
-        ExpectationChecks.compareOption(schemaUrl, Option(scope.getSchemaUrl))(Mismatch.schemaUrlMismatch),
+        ExpectationChecks.compareOption(version, Option(scope.getVersion))(Mismatch.VersionMismatch),
+        ExpectationChecks.compareOption(schemaUrl, Option(scope.getSchemaUrl))(Mismatch.SchemaUrlMismatch),
         attributes.fold(ExpectationChecks.success[Mismatch]) { expected =>
-          ExpectationChecks.nested(expected.check(scope.getAttributes.toScala))(Mismatch.attributesMismatch)
+          ExpectationChecks.nested(expected.check(scope.getAttributes.toScala))(Mismatch.AttributesMismatch)
         }
       )
     }

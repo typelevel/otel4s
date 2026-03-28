@@ -46,61 +46,23 @@ object AttributesExpectation {
   }
 
   object Mismatch {
-
-    /** Indicates that an expected attribute was missing. */
-    sealed trait MissingAttribute extends Mismatch {
-      def attribute: Attribute[_]
-    }
-
-    /** Indicates that an attribute was present unexpectedly. */
-    sealed trait UnexpectedAttribute extends Mismatch {
-      def attribute: Attribute[_]
-    }
-
-    /** Indicates that an attribute key was present, but its value differed from the expected one. */
-    sealed trait AttributeValueMismatch extends Mismatch {
-      def expected: Attribute[_]
-      def actual: Attribute[_]
-    }
-
-    /** Indicates that a custom predicate expectation returned `false`. */
-    sealed trait PredicateFailed extends Mismatch {
-      def clue: Option[String]
-    }
-
-    /** Creates a mismatch indicating that an expected attribute was missing. */
-    def missingAttribute(attribute: Attribute[_]): MissingAttribute =
-      MissingAttributeImpl(attribute)
-
-    /** Creates a mismatch indicating that an attribute was present unexpectedly. */
-    def unexpectedAttribute(attribute: Attribute[_]): UnexpectedAttribute =
-      UnexpectedAttributeImpl(attribute)
-
-    /** Creates a mismatch indicating that an attribute value differed from the expected one. */
-    def attributeValueMismatch(expected: Attribute[_], actual: Attribute[_]): AttributeValueMismatch =
-      AttributeValueMismatchImpl(expected, actual)
-
-    /** Creates a mismatch indicating that a custom predicate expectation returned `false`. */
-    def predicateFailed(clue: Option[String]): PredicateFailed =
-      PredicateFailedImpl(clue)
-
-    private final case class MissingAttributeImpl(attribute: Attribute[_]) extends MissingAttribute {
+    private[testkit] final case class MissingAttribute(attribute: Attribute[_]) extends Mismatch {
       def message: String =
         show"missing attribute $attribute"
     }
 
-    private final case class UnexpectedAttributeImpl(attribute: Attribute[_]) extends UnexpectedAttribute {
+    private[testkit] final case class UnexpectedAttribute(attribute: Attribute[_]) extends Mismatch {
       def message: String =
         show"unexpected attribute $attribute"
     }
 
-    private final case class AttributeValueMismatchImpl(expected: Attribute[_], actual: Attribute[_])
-        extends AttributeValueMismatch {
+    private[testkit] final case class AttributeValueMismatch(expected: Attribute[_], actual: Attribute[_])
+        extends Mismatch {
       def message: String =
         show"attribute mismatch for '${expected.key.name}': expected $expected, got $actual"
     }
 
-    private final case class PredicateFailedImpl(clue: Option[String]) extends PredicateFailed {
+    private[testkit] final case class PredicateFailed(clue: Option[String]) extends Mismatch {
       def message: String =
         s"attributes predicate returned false${clue.fold("")(value => s": $value")}"
     }
@@ -133,15 +95,15 @@ object AttributesExpectation {
           case Some(actual) if actual == attribute =>
             ExpectationChecks.success
           case Some(actual) =>
-            ExpectationChecks.mismatch(Mismatch.attributeValueMismatch(attribute, actual))
+            ExpectationChecks.mismatch(Mismatch.AttributeValueMismatch(attribute, actual))
           case None =>
-            ExpectationChecks.mismatch(Mismatch.missingAttribute(attribute))
+            ExpectationChecks.mismatch(Mismatch.MissingAttribute(attribute))
         }
       }
 
       val unexpected = attributes.collect {
         case attribute if expected.get(attribute.key).isEmpty =>
-          Left(NonEmptyList.one(Mismatch.unexpectedAttribute(attribute)))
+          Left(NonEmptyList.one(Mismatch.UnexpectedAttribute(attribute)))
       }
 
       ExpectationChecks.combine((missingOrMismatched ++ unexpected).toList)
@@ -155,9 +117,9 @@ object AttributesExpectation {
           case Some(actual) if actual == attribute =>
             ExpectationChecks.success
           case Some(actual) =>
-            ExpectationChecks.mismatch(Mismatch.attributeValueMismatch(attribute, actual))
+            ExpectationChecks.mismatch(Mismatch.AttributeValueMismatch(attribute, actual))
           case None =>
-            ExpectationChecks.mismatch(Mismatch.missingAttribute(attribute))
+            ExpectationChecks.mismatch(Mismatch.MissingAttribute(attribute))
         }
       }.toList)
   }
@@ -167,7 +129,7 @@ object AttributesExpectation {
       clue: Option[String]
   ) extends AttributesExpectation {
     def check(attributes: Attributes): Either[NonEmptyList[Mismatch], Unit] =
-      Either.cond(f(attributes), (), NonEmptyList.one(Mismatch.predicateFailed(clue)))
+      Either.cond(f(attributes), (), NonEmptyList.one(Mismatch.PredicateFailed(clue)))
   }
 
 }

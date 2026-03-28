@@ -88,7 +88,13 @@ class MetricExpectationsSuite extends CatsEffectSuite {
         case Some(mismatch: MetricMismatch.ClosestMismatch) =>
           assertEquals(mismatch.metric.getName, "service.counter")
           assertEquals(mismatch.mismatches.length, 1)
-          assert(mismatch.mismatches.head.isInstanceOf[MetricExpectation.Mismatch.TypeMismatch])
+          mismatch.mismatches.head match {
+            case MetricExpectation.Mismatch.TypeMismatch(expected, actual) =>
+              assertEquals(expected, "LONG_SUM")
+              assertEquals(actual, "LONG_GAUGE")
+            case other =>
+              fail(s"expected type mismatch, got $other")
+          }
         case other =>
           fail(s"expected closest mismatch, got $other")
       }
@@ -120,9 +126,18 @@ class MetricExpectationsSuite extends CatsEffectSuite {
       result match {
         case Some(mismatch: MetricMismatch.ClosestMismatch) =>
           assertEquals(mismatch.metric.getType, io.opentelemetry.sdk.metrics.data.MetricDataType.LONG_SUM)
-          assert(!mismatch.mismatches.exists(_.isInstanceOf[MetricExpectation.Mismatch.TypeMismatch]))
-          assert(mismatch.mismatches.exists(_.isInstanceOf[MetricExpectation.Mismatch.PointsMismatch]))
-          assert(mismatch.mismatches.exists(_.isInstanceOf[MetricExpectation.Mismatch.ScopeMismatch]))
+          assert(!mismatch.mismatches.exists {
+            case MetricExpectation.Mismatch.TypeMismatch(_, _) => true
+            case _                                             => false
+          })
+          assert(mismatch.mismatches.exists {
+            case MetricExpectation.Mismatch.PointsMismatch(_, _) => true
+            case _                                               => false
+          })
+          assert(mismatch.mismatches.exists {
+            case MetricExpectation.Mismatch.ScopeMismatch(_) => true
+            case _                                           => false
+          })
         case other =>
           fail(s"expected closest mismatch, got $other")
       }
@@ -260,11 +275,15 @@ class MetricExpectationsSuite extends CatsEffectSuite {
       result match {
         case Some(mismatch: MetricMismatch.ClosestMismatch) =>
           mismatch.mismatches.head match {
-            case pointsMismatch: MetricExpectation.Mismatch.PointsMismatch =>
-              assertEquals(pointsMismatch.mismatches.length, 1)
-              assert(
-                pointsMismatch.mismatches.head.isInstanceOf[PointSetExpectation.Mismatch.MatchedPointCountMismatch]
-              )
+            case MetricExpectation.Mismatch.PointsMismatch(pointMismatches, _) =>
+              assertEquals(pointMismatches.length, 1)
+              pointMismatches.head match {
+                case PointSetExpectation.Mismatch.MatchedPointCountMismatch(expected, actual) =>
+                  assertEquals(expected, 2)
+                  assertEquals(actual, 1)
+                case other =>
+                  fail(s"expected matched point count mismatch, got $other")
+              }
             case other =>
               fail(s"expected points mismatch, got $other")
           }
@@ -318,9 +337,9 @@ class MetricExpectationsSuite extends CatsEffectSuite {
           assertEquals(mismatch.metric.getName, "service.counter")
           assertEquals(mismatch.mismatches.length, 1)
           mismatch.mismatches.head match {
-            case pointsMismatch: MetricExpectation.Mismatch.PointsMismatch =>
-              assertEquals(pointsMismatch.mismatches.length, 1)
-              assert(pointsMismatch.mismatches.head.isInstanceOf[PointSetExpectation.Mismatch.UnexpectedPoint])
+            case MetricExpectation.Mismatch.PointsMismatch(pointMismatches, _) =>
+              assertEquals(pointMismatches.length, 1)
+              assert(pointMismatches.head.isInstanceOf[PointSetExpectation.Mismatch.UnexpectedPoint])
             case other =>
               fail(s"expected points mismatch, got $other")
           }
@@ -349,9 +368,9 @@ class MetricExpectationsSuite extends CatsEffectSuite {
       result match {
         case Some(mismatch: MetricMismatch.ClosestMismatch) =>
           mismatch.mismatches.head match {
-            case pointsMismatch: MetricExpectation.Mismatch.PointsMismatch =>
-              assertEquals(pointsMismatch.mismatches.length, 1)
-              assert(pointsMismatch.mismatches.head.isInstanceOf[PointSetExpectation.Mismatch.UnexpectedPoint])
+            case MetricExpectation.Mismatch.PointsMismatch(pointMismatches, _) =>
+              assertEquals(pointMismatches.length, 1)
+              assert(pointMismatches.head.isInstanceOf[PointSetExpectation.Mismatch.UnexpectedPoint])
             case other =>
               fail(s"expected points mismatch, got $other")
           }
@@ -383,8 +402,8 @@ class MetricExpectationsSuite extends CatsEffectSuite {
       result match {
         case Some(mismatch: MetricMismatch.ClosestMismatch) =>
           mismatch.mismatches.head match {
-            case pointsMismatch: MetricExpectation.Mismatch.PointsMismatch =>
-              assert(pointsMismatch.mismatches.head.isInstanceOf[PointSetExpectation.Mismatch.FailingPoint])
+            case MetricExpectation.Mismatch.PointsMismatch(pointMismatches, _) =>
+              assert(pointMismatches.head.isInstanceOf[PointSetExpectation.Mismatch.FailingPoint])
             case other =>
               fail(s"expected points mismatch, got $other")
           }
@@ -591,7 +610,12 @@ class MetricExpectationsSuite extends CatsEffectSuite {
       result match {
         case Some(mismatch: MetricMismatch.ClosestMismatch) =>
           assertEquals(mismatch.metric.getName, "service.counter")
-          assert(mismatch.mismatches.head.isInstanceOf[MetricExpectation.Mismatch.ScopeMismatch])
+          mismatch.mismatches.head match {
+            case MetricExpectation.Mismatch.ScopeMismatch(scopeMismatches) =>
+              assertEquals(scopeMismatches.length, 1)
+            case other =>
+              fail(s"expected scope mismatch, got $other")
+          }
         case other =>
           fail(s"expected closest mismatch, got $other")
       }

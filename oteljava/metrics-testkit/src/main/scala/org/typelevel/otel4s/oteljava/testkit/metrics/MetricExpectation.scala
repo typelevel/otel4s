@@ -95,117 +95,44 @@ object MetricExpectation {
   }
 
   object Mismatch {
-
-    /** Indicates that the metric name differed from the expected one. */
-    sealed trait NameMismatch extends Mismatch {
-      def expected: String;
-      def actual: String
-    }
-
-    /** Indicates that the metric description differed from the expected one. */
-    sealed trait DescriptionMismatch extends Mismatch {
-      def expected: String;
-      def actual: Option[String]
-    }
-
-    /** Indicates that the metric unit differed from the expected one. */
-    sealed trait UnitMismatch extends Mismatch {
-      def expected: String;
-      def actual: String
-    }
-
-    /** Indicates that the metric type differed from the expected one. */
-    sealed trait TypeMismatch extends Mismatch {
-      def expected: String;
-      def actual: String
-    }
-
-    /** Indicates that the instrumentation scope did not satisfy the nested expectation. */
-    sealed trait ScopeMismatch extends Mismatch {
-      def mismatches: NonEmptyList[InstrumentationScopeExpectation.Mismatch]
-    }
-
-    /** Indicates that the telemetry resource did not satisfy the nested expectation. */
-    sealed trait ResourceMismatch extends Mismatch {
-      def mismatches: NonEmptyList[TelemetryResourceExpectation.Mismatch]
-    }
-
-    /** Indicates that a custom metric predicate returned `false`. */
-    sealed trait PredicateMismatch extends Mismatch { def clue: Option[String] }
-
-    /** Indicates that the metric points did not satisfy the nested point expectation. */
-    sealed trait PointsMismatch extends Mismatch {
-      def mismatches: NonEmptyList[PointSetExpectation.Mismatch]
-      def clue: Option[String]
-    }
-
-    /** Creates a mismatch indicating that the metric name differed from the expected one. */
-    def nameMismatch(expected: String, actual: String): NameMismatch = NameMismatchImpl(expected, actual)
-
-    /** Creates a mismatch indicating that the metric description differed from the expected one. */
-    def descriptionMismatch(expected: String, actual: Option[String]): DescriptionMismatch =
-      DescriptionMismatchImpl(expected, actual)
-
-    /** Creates a mismatch indicating that the metric unit differed from the expected one. */
-    def unitMismatch(expected: String, actual: String): UnitMismatch = UnitMismatchImpl(expected, actual)
-
-    /** Creates a mismatch indicating that the metric type differed from the expected one. */
-    def typeMismatch(expected: String, actual: String): TypeMismatch = TypeMismatchImpl(expected, actual)
-
-    /** Creates a mismatch indicating that the instrumentation scope did not satisfy the nested expectation. */
-    def scopeMismatch(mismatches: NonEmptyList[InstrumentationScopeExpectation.Mismatch]): ScopeMismatch =
-      ScopeMismatchImpl(mismatches)
-
-    /** Creates a mismatch indicating that the telemetry resource did not satisfy the nested expectation. */
-    def resourceMismatch(mismatches: NonEmptyList[TelemetryResourceExpectation.Mismatch]): ResourceMismatch =
-      ResourceMismatchImpl(mismatches)
-
-    /** Creates a mismatch indicating that a custom metric predicate returned `false`. */
-    def predicateMismatch(clue: Option[String]): PredicateMismatch = PredicateMismatchImpl(clue)
-
-    /** Creates a mismatch indicating that the metric points did not satisfy the nested point expectation. */
-    def pointsMismatch(mismatches: NonEmptyList[PointSetExpectation.Mismatch], clue: Option[String]): PointsMismatch =
-      PointsMismatchImpl(mismatches, clue)
-
-    private final case class NameMismatchImpl(expected: String, actual: String) extends NameMismatch {
+    private[metrics] final case class NameMismatch(expected: String, actual: String) extends Mismatch {
       def message: String = s"name mismatch: expected '$expected', got '$actual'"
     }
 
-    private final case class DescriptionMismatchImpl(expected: String, actual: Option[String])
-        extends DescriptionMismatch {
+    private[metrics] final case class DescriptionMismatch(expected: String, actual: Option[String]) extends Mismatch {
       def message: String =
         s"description mismatch: expected '$expected', got ${actual.fold("<missing>")(v => s"'$v'")}"
     }
 
-    private final case class UnitMismatchImpl(expected: String, actual: String) extends UnitMismatch {
+    private[metrics] final case class UnitMismatch(expected: String, actual: String) extends Mismatch {
       def message: String = s"unit mismatch: expected '$expected', got '$actual'"
     }
 
-    private final case class TypeMismatchImpl(expected: String, actual: String) extends TypeMismatch {
+    private[metrics] final case class TypeMismatch(expected: String, actual: String) extends Mismatch {
       def message: String = s"type mismatch: expected '$expected', got '$actual'"
     }
 
-    private final case class ScopeMismatchImpl(mismatches: NonEmptyList[InstrumentationScopeExpectation.Mismatch])
-        extends ScopeMismatch {
+    private[metrics] final case class ScopeMismatch(mismatches: NonEmptyList[InstrumentationScopeExpectation.Mismatch])
+        extends Mismatch {
       def message: String =
         s"scope mismatch: ${mismatches.toList.map(_.message).mkString(", ")}"
     }
 
-    private final case class ResourceMismatchImpl(mismatches: NonEmptyList[TelemetryResourceExpectation.Mismatch])
-        extends ResourceMismatch {
+    private[metrics] final case class ResourceMismatch(mismatches: NonEmptyList[TelemetryResourceExpectation.Mismatch])
+        extends Mismatch {
       def message: String =
         s"resource mismatch: ${mismatches.toList.map(_.message).mkString(", ")}"
     }
 
-    private final case class PredicateMismatchImpl(clue: Option[String]) extends PredicateMismatch {
+    private[metrics] final case class PredicateMismatch(clue: Option[String]) extends Mismatch {
       def message: String =
         s"predicate mismatch${clue.fold("")(value => s": $value")}"
     }
 
-    private final case class PointsMismatchImpl(
+    private[metrics] final case class PointsMismatch(
         mismatches: NonEmptyList[PointSetExpectation.Mismatch],
         clue: Option[String]
-    ) extends PointsMismatch {
+    ) extends Mismatch {
       def message: String = {
         val rendered = mismatches.toList.map(_.message).mkString(", ")
         val clueSuffix = clue.fold("")(value => s" [$value]")
@@ -784,22 +711,22 @@ object MetricExpectation {
     ExpectationChecks.combine(
       name.fold(ExpectationChecks.success[Mismatch]) { expected =>
         if (expected == metric.getName) ExpectationChecks.success
-        else ExpectationChecks.mismatch(Mismatch.nameMismatch(expected, metric.getName))
+        else ExpectationChecks.mismatch(Mismatch.NameMismatch(expected, metric.getName))
       },
       description.fold(ExpectationChecks.success[Mismatch]) { expected =>
         val actual = Option(metric.getDescription)
         if (actual.contains(expected)) ExpectationChecks.success
-        else ExpectationChecks.mismatch(Mismatch.descriptionMismatch(expected, actual))
+        else ExpectationChecks.mismatch(Mismatch.DescriptionMismatch(expected, actual))
       },
       unit.fold(ExpectationChecks.success[Mismatch]) { expected =>
         if (Option(metric.getUnit).contains(expected)) ExpectationChecks.success
-        else ExpectationChecks.mismatch(Mismatch.unitMismatch(expected, metric.getUnit))
+        else ExpectationChecks.mismatch(Mismatch.UnitMismatch(expected, metric.getUnit))
       },
       scope.fold(ExpectationChecks.success[Mismatch]) { expected =>
-        ExpectationChecks.nested(expected.check(metric.getInstrumentationScopeInfo))(Mismatch.scopeMismatch)
+        ExpectationChecks.nested(expected.check(metric.getInstrumentationScopeInfo))(Mismatch.ScopeMismatch)
       },
       resource.fold(ExpectationChecks.success[Mismatch]) { expected =>
-        ExpectationChecks.nested(expected.check(metric.getResource))(Mismatch.resourceMismatch)
+        ExpectationChecks.nested(expected.check(metric.getResource))(Mismatch.ResourceMismatch)
       }
     )
 
@@ -810,13 +737,13 @@ object MetricExpectation {
     ExpectationChecks.combine(
       predicates.map { case (predicate, clue) =>
         if (predicate(metric)) ExpectationChecks.success[Mismatch]
-        else ExpectationChecks.mismatch(Mismatch.predicateMismatch(clue))
+        else ExpectationChecks.mismatch(Mismatch.PredicateMismatch(clue))
       }
     )
 
   private def checkType(metric: MetricData, expected: MetricDataType): Either[NonEmptyList[Mismatch], Unit] =
     if (metric.getType == expected) ExpectationChecks.success
-    else ExpectationChecks.mismatch(Mismatch.typeMismatch(expected.toString, metric.getType.toString))
+    else ExpectationChecks.mismatch(Mismatch.TypeMismatch(expected.toString, metric.getType.toString))
 
   private def checkPointConstraints[P](
       expectations: List[PointSetExpectation[P]],
@@ -825,7 +752,7 @@ object MetricExpectation {
     ExpectationChecks.combine(
       expectations.map { expectation =>
         ExpectationChecks.nested(expectation.check(points))(mismatches =>
-          Mismatch.pointsMismatch(mismatches, expectation.clue)
+          Mismatch.PointsMismatch(mismatches, expectation.clue)
         )
       }
     )

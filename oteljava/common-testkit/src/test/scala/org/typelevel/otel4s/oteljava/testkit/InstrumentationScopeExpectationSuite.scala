@@ -29,7 +29,7 @@ class InstrumentationScopeExpectationSuite extends FunSuite {
     assertEquals(InstrumentationScopeExpectation.name("test").check(scope(name = "test")), Right(()))
     assertEquals(
       InstrumentationScopeExpectation.name("test").check(scope(name = "other")),
-      Left(NonEmptyList.one(InstrumentationScopeExpectation.Mismatch.nameMismatch("test", "other")))
+      Left(NonEmptyList.one(InstrumentationScopeExpectation.Mismatch.NameMismatch("test", "other")))
     )
   }
 
@@ -40,7 +40,7 @@ class InstrumentationScopeExpectationSuite extends FunSuite {
     )
     assertEquals(
       InstrumentationScopeExpectation.name("test").version("1.0").check(scope(version = Some("2.0"))),
-      Left(NonEmptyList.one(InstrumentationScopeExpectation.Mismatch.versionMismatch(Some("1.0"), Some("2.0"))))
+      Left(NonEmptyList.one(InstrumentationScopeExpectation.Mismatch.VersionMismatch(Some("1.0"), Some("2.0"))))
     )
   }
 
@@ -50,7 +50,7 @@ class InstrumentationScopeExpectationSuite extends FunSuite {
     assertEquals(expectation.check(scope(version = None)), Right(()))
     assertEquals(
       expectation.check(scope(version = Some("1.0"))),
-      Left(NonEmptyList.one(InstrumentationScopeExpectation.Mismatch.versionMismatch(None, Some("1.0"))))
+      Left(NonEmptyList.one(InstrumentationScopeExpectation.Mismatch.VersionMismatch(None, Some("1.0"))))
     )
   }
 
@@ -63,7 +63,7 @@ class InstrumentationScopeExpectationSuite extends FunSuite {
       expectation.check(scope(schemaUrl = Some("https://opentelemetry.io/schemas/1.1.0"))),
       Left(
         NonEmptyList.one(
-          InstrumentationScopeExpectation.Mismatch.schemaUrlMismatch(
+          InstrumentationScopeExpectation.Mismatch.SchemaUrlMismatch(
             Some("https://opentelemetry.io/schemas/1.0.0"),
             Some("https://opentelemetry.io/schemas/1.1.0")
           )
@@ -81,9 +81,9 @@ class InstrumentationScopeExpectationSuite extends FunSuite {
       expectation.check(scope(attributes = jAttributes("scope.attr" -> "other"))),
       Left(
         NonEmptyList.one(
-          InstrumentationScopeExpectation.Mismatch.attributesMismatch(
+          InstrumentationScopeExpectation.Mismatch.AttributesMismatch(
             NonEmptyList.one(
-              AttributesExpectation.Mismatch.attributeValueMismatch(
+              AttributesExpectation.Mismatch.AttributeValueMismatch(
                 Attribute("scope.attr", "value"),
                 Attribute("scope.attr", "other")
               )
@@ -105,8 +105,8 @@ class InstrumentationScopeExpectationSuite extends FunSuite {
       expectation.check(scope(attributes = jAttributes("other" -> "x"))),
       Left(
         NonEmptyList.one(
-          InstrumentationScopeExpectation.Mismatch.attributesMismatch(
-            NonEmptyList.one(AttributesExpectation.Mismatch.missingAttribute(Attribute("scope.attr", "value")))
+          InstrumentationScopeExpectation.Mismatch.AttributesMismatch(
+            NonEmptyList.one(AttributesExpectation.Mismatch.MissingAttribute(Attribute("scope.attr", "value")))
           )
         )
       )
@@ -126,14 +126,14 @@ class InstrumentationScopeExpectationSuite extends FunSuite {
       InstrumentationScopeExpectation.exact(actual).check(scope(name = "other")),
       Left(
         NonEmptyList.of(
-          InstrumentationScopeExpectation.Mismatch.nameMismatch("test", "other"),
-          InstrumentationScopeExpectation.Mismatch.versionMismatch(Some("1.0"), None),
-          InstrumentationScopeExpectation.Mismatch.schemaUrlMismatch(
+          InstrumentationScopeExpectation.Mismatch.NameMismatch("test", "other"),
+          InstrumentationScopeExpectation.Mismatch.VersionMismatch(Some("1.0"), None),
+          InstrumentationScopeExpectation.Mismatch.SchemaUrlMismatch(
             Some("https://opentelemetry.io/schemas/1.0.0"),
             None
           ),
-          InstrumentationScopeExpectation.Mismatch.attributesMismatch(
-            NonEmptyList.one(AttributesExpectation.Mismatch.missingAttribute(Attribute("scope.attr", "value")))
+          InstrumentationScopeExpectation.Mismatch.AttributesMismatch(
+            NonEmptyList.one(AttributesExpectation.Mismatch.MissingAttribute(Attribute("scope.attr", "value")))
           )
         )
       )

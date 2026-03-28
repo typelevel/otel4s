@@ -27,8 +27,6 @@ import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.Attributes
 
 import scala.jdk.CollectionConverters._
-import scala.reflect.ClassTag
-import scala.reflect.classTag
 
 class PointSetExpectationSuite extends CatsEffectSuite {
 
@@ -66,9 +64,9 @@ class PointSetExpectationSuite extends CatsEffectSuite {
         .exists(PointExpectation.numeric(1L).attributesSubset(Attribute("region", "us")).clue("US point"))
         .check(points)
 
-      val mismatch = assertMismatchType[PointSetExpectation.Mismatch.MissingExpectedPoint](result)
-      assertEquals(mismatch.clue, Some("US point"))
+      val mismatch = assertFirstMismatch(result)
       assert(mismatch.message.contains("missing expected point"))
+      assert(mismatch.message.contains("[US point]"))
     }
   }
 
@@ -91,7 +89,7 @@ class PointSetExpectationSuite extends CatsEffectSuite {
       .forall(PointExpectation.numeric(1L))
       .check(Nil)
 
-    assertMismatchType[PointSetExpectation.Mismatch.NoPointsCollected](result)
+    assertEquals(assertFirstMismatch(result).message, "no points were collected")
   }
 
   testkitTest("forall reports the first failing point") { testkit =>
@@ -104,13 +102,12 @@ class PointSetExpectationSuite extends CatsEffectSuite {
       points <- collectLongPoints(testkit, "service.counter")
     } yield {
       val ordered = points.sortBy(_.value)(Ordering.Long.reverse)
-      val mismatch = assertMismatchType[PointSetExpectation.Mismatch.FailingPoint](
+      val mismatch = assertFirstMismatch(
         PointSetExpectation
           .forall(PointExpectation.numeric(1L).attributesSubset(Attribute("kind", "ok")))
           .check(ordered)
       )
 
-      assertEquals(mismatch.index, 0)
       assert(mismatch.message.contains("failing point at index 0"))
     }
   }
@@ -139,7 +136,7 @@ class PointSetExpectationSuite extends CatsEffectSuite {
       _ <- counter.add(1L, Attributes(Attribute("region", "eu")))
       points <- collectLongPoints(testkit, "service.counter")
     } yield {
-      val mismatch = assertMismatchType[PointSetExpectation.Mismatch.MatchedPointCountMismatch](
+      val mismatch = assertFirstMismatch(
         PointSetExpectation
           .contains(
             PointExpectation.numeric(1L).attributesSubset(Attribute("region", "eu")),
@@ -148,8 +145,7 @@ class PointSetExpectationSuite extends CatsEffectSuite {
           .check(points)
       )
 
-      assertEquals(mismatch.expected, 2)
-      assertEquals(mismatch.actual, 1)
+      assertEquals(mismatch.message, "matched point count mismatch: expected 2, got 1")
     }
   }
 
@@ -160,7 +156,7 @@ class PointSetExpectationSuite extends CatsEffectSuite {
       _ <- counter.add(1L, Attributes(Attribute("region", "eu")))
       points <- collectLongPoints(testkit, "service.counter")
     } yield {
-      val mismatch = assertMismatchType[PointSetExpectation.Mismatch.MissingExpectedPoint](
+      val mismatch = assertFirstMismatch(
         PointSetExpectation
           .contains(
             PointExpectation.numeric(1L).attributesSubset(Attribute("region", "eu")),
@@ -169,7 +165,7 @@ class PointSetExpectationSuite extends CatsEffectSuite {
           .check(points)
       )
 
-      assertEquals(mismatch.clue, Some("US point"))
+      assert(mismatch.message.contains("[US point]"))
     }
   }
 
@@ -182,7 +178,7 @@ class PointSetExpectationSuite extends CatsEffectSuite {
       _ <- counter.add(1L, Attributes(Attribute("region", "apac")))
       points <- collectLongPoints(testkit, "service.counter")
     } yield {
-      val mismatch = assertMismatchType[PointSetExpectation.Mismatch.UnexpectedPoint](
+      val mismatch = assertFirstMismatch(
         PointSetExpectation
           .exactly(
             PointExpectation.numeric(1L).attributesSubset(Attribute("region", "eu")),
@@ -191,7 +187,7 @@ class PointSetExpectationSuite extends CatsEffectSuite {
           .check(points)
       )
 
-      assert(mismatch.index >= 0 && mismatch.index < points.length)
+      assert(mismatch.message.startsWith("unexpected point at index "))
     }
   }
 
@@ -203,12 +199,11 @@ class PointSetExpectationSuite extends CatsEffectSuite {
       _ <- counter.add(1L, Attributes(Attribute("region", "us")))
       points <- collectLongPoints(testkit, "service.counter")
     } yield {
-      val mismatch = assertMismatchType[PointSetExpectation.Mismatch.PointCountMismatch](
+      val mismatch = assertFirstMismatch(
         PointSetExpectation.count[PointExpectation.NumericPointData[Long]](1).check(points)
       )
 
-      assertEquals(mismatch.expected, 1)
-      assertEquals(mismatch.actual, 2)
+      assertEquals(mismatch.message, "point count mismatch: expected 1, got 2")
     }
   }
 
@@ -220,17 +215,15 @@ class PointSetExpectationSuite extends CatsEffectSuite {
       _ <- counter.add(1L, Attributes(Attribute("region", "us")))
       points <- collectLongPoints(testkit, "service.counter")
     } yield {
-      val minMismatch = assertMismatchType[PointSetExpectation.Mismatch.MinimumPointCountMismatch](
+      val minMismatch = assertFirstMismatch(
         PointSetExpectation.minCount[PointExpectation.NumericPointData[Long]](3).check(points)
       )
-      val maxMismatch = assertMismatchType[PointSetExpectation.Mismatch.MaximumPointCountMismatch](
+      val maxMismatch = assertFirstMismatch(
         PointSetExpectation.maxCount[PointExpectation.NumericPointData[Long]](1).check(points)
       )
 
-      assertEquals(minMismatch.expectedAtLeast, 3)
-      assertEquals(minMismatch.actual, 2)
-      assertEquals(maxMismatch.expectedAtMost, 1)
-      assertEquals(maxMismatch.actual, 2)
+      assertEquals(minMismatch.message, "point count mismatch: expected at least 3, got 2")
+      assertEquals(maxMismatch.message, "point count mismatch: expected at most 1, got 2")
     }
   }
 
@@ -249,14 +242,13 @@ class PointSetExpectationSuite extends CatsEffectSuite {
           .check(points)
       )
 
-      val mismatch = assertMismatchType[PointSetExpectation.Mismatch.MatchedPointCountMismatch](
+      val mismatch = assertFirstMismatch(
         PointSetExpectation
           .countWhere(PointExpectation.numeric(1L).attributesSubset(Attribute("region", "eu")), 1)
           .check(points)
       )
 
-      assertEquals(mismatch.expected, 1)
-      assertEquals(mismatch.actual, 2)
+      assertEquals(mismatch.message, "matched point count mismatch: expected 1, got 2")
     }
   }
 
@@ -267,13 +259,13 @@ class PointSetExpectationSuite extends CatsEffectSuite {
       _ <- counter.add(1L, Attributes(Attribute("region", "eu")))
       points <- collectLongPoints(testkit, "service.counter")
     } yield {
-      val mismatch = assertMismatchType[PointSetExpectation.Mismatch.UnexpectedPoint](
+      val mismatch = assertFirstMismatch(
         PointSetExpectation
           .none(PointExpectation.numeric(1L).attributesSubset(Attribute("region", "eu")))
           .check(points)
       )
 
-      assertEquals(mismatch.index, 0)
+      assertEquals(mismatch.message, "unexpected point at index 0")
     }
   }
 
@@ -294,14 +286,14 @@ class PointSetExpectationSuite extends CatsEffectSuite {
           .check(points)
       )
 
-      val mismatch = assertMismatchType[PointSetExpectation.Mismatch.CluedMismatch](
+      val mismatch = assertFirstMismatch(
         PointSetExpectation
           .predicate[PointExpectation.NumericPointData[Long]]("expected a single point")(_.size == 1)
           .check(points)
       )
 
-      assertEquals(mismatch.clue, "expected a single point")
-      assert(mismatch.mismatches.head.isInstanceOf[PointSetExpectation.Mismatch.PredicateFailed])
+      assert(mismatch.message.contains("point-set mismatch [expected a single point]"))
+      assert(mismatch.message.contains("point set predicate returned false"))
     }
   }
 
@@ -312,7 +304,7 @@ class PointSetExpectationSuite extends CatsEffectSuite {
       _ <- counter.add(1L, Attributes(Attribute("region", "eu")))
       points <- collectLongPoints(testkit, "service.counter")
     } yield {
-      val mismatch = assertMismatchType[PointSetExpectation.Mismatch.CompositeMismatch](
+      val mismatch = assertFirstMismatch(
         PointSetExpectation
           .count[PointExpectation.NumericPointData[Long]](2)
           .and(
@@ -323,8 +315,9 @@ class PointSetExpectationSuite extends CatsEffectSuite {
           .check(points)
       )
 
-      assertEquals(mismatch.operator, PointSetExpectation.LogicalOperator.And)
-      assertEquals(mismatch.mismatches.length, 2)
+      assert(mismatch.message.startsWith("and mismatch: "))
+      assert(mismatch.message.contains("point count mismatch"))
+      assert(mismatch.message.contains("missing expected point"))
     }
   }
 
@@ -342,15 +335,16 @@ class PointSetExpectationSuite extends CatsEffectSuite {
           .check(points)
       )
 
-      val mismatch = assertMismatchType[PointSetExpectation.Mismatch.CompositeMismatch](
+      val mismatch = assertFirstMismatch(
         PointSetExpectation
           .contains(PointExpectation.numeric(1L).attributesSubset(Attribute("region", "us")))
           .or(PointSetExpectation.count[PointExpectation.NumericPointData[Long]](2))
           .check(points)
       )
 
-      assertEquals(mismatch.operator, PointSetExpectation.LogicalOperator.Or)
-      assertEquals(mismatch.mismatches.length, 2)
+      assert(mismatch.message.startsWith("or mismatch: "))
+      assert(mismatch.message.contains("missing expected point"))
+      assert(mismatch.message.contains("point count mismatch"))
     }
   }
 
@@ -400,15 +394,13 @@ class PointSetExpectationSuite extends CatsEffectSuite {
       case Left(mismatches) => fail(mismatches.toList.map(_.message).mkString(", "))
     }
 
-  private def assertMismatchType[A <: PointSetExpectation.Mismatch: ClassTag](
+  private def assertFirstMismatch(
       result: Either[NonEmptyList[PointSetExpectation.Mismatch], Unit]
-  ): A =
+  ): PointSetExpectation.Mismatch =
     result match {
       case Right(_) =>
         fail("expected mismatch, got success")
       case Left(mismatches) =>
-        val mismatch = mismatches.head
-        if (classTag[A].runtimeClass.isInstance(mismatch)) mismatch.asInstanceOf[A]
-        else fail(s"unexpected mismatch: $mismatch")
+        mismatches.head
     }
 }

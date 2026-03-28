@@ -37,7 +37,7 @@ class TelemetryResourceExpectationSuite extends FunSuite {
       expectation.check(resource(schemaUrl = Some("https://opentelemetry.io/schemas/1.1.0"))),
       Left(
         NonEmptyList.one(
-          TelemetryResourceExpectation.Mismatch.schemaUrlMismatch(
+          TelemetryResourceExpectation.Mismatch.SchemaUrlMismatch(
             Some("https://opentelemetry.io/schemas/1.0.0"),
             Some("https://opentelemetry.io/schemas/1.1.0")
           )
@@ -54,7 +54,7 @@ class TelemetryResourceExpectationSuite extends FunSuite {
       expectation.check(resource(schemaUrl = Some("https://opentelemetry.io/schemas/1.0.0"))),
       Left(
         NonEmptyList.one(
-          TelemetryResourceExpectation.Mismatch.schemaUrlMismatch(
+          TelemetryResourceExpectation.Mismatch.SchemaUrlMismatch(
             None,
             Some("https://opentelemetry.io/schemas/1.0.0")
           )
@@ -72,9 +72,9 @@ class TelemetryResourceExpectationSuite extends FunSuite {
       expectation.check(resource(attributes = jAttributes("service.name" -> "other"))),
       Left(
         NonEmptyList.one(
-          TelemetryResourceExpectation.Mismatch.attributesMismatch(
+          TelemetryResourceExpectation.Mismatch.AttributesMismatch(
             NonEmptyList.one(
-              AttributesExpectation.Mismatch.attributeValueMismatch(
+              AttributesExpectation.Mismatch.AttributeValueMismatch(
                 Attribute("service.name", "service"),
                 Attribute("service.name", "other")
               )
@@ -98,8 +98,8 @@ class TelemetryResourceExpectationSuite extends FunSuite {
       expectation.check(resource(attributes = jAttributes("host.name" -> "localhost"))),
       Left(
         NonEmptyList.one(
-          TelemetryResourceExpectation.Mismatch.attributesMismatch(
-            NonEmptyList.one(AttributesExpectation.Mismatch.missingAttribute(Attribute("service.name", "service")))
+          TelemetryResourceExpectation.Mismatch.AttributesMismatch(
+            NonEmptyList.one(AttributesExpectation.Mismatch.MissingAttribute(Attribute("service.name", "service")))
           )
         )
       )
@@ -117,15 +117,15 @@ class TelemetryResourceExpectationSuite extends FunSuite {
       TelemetryResourceExpectation.exact(actual).check(resource(attributes = jAttributes("service.name" -> "other"))),
       Left(
         NonEmptyList.of(
-          TelemetryResourceExpectation.Mismatch.attributesMismatch(
+          TelemetryResourceExpectation.Mismatch.AttributesMismatch(
             NonEmptyList.one(
-              AttributesExpectation.Mismatch.attributeValueMismatch(
+              AttributesExpectation.Mismatch.AttributeValueMismatch(
                 Attribute("service.name", "service"),
                 Attribute("service.name", "other")
               )
             )
           ),
-          TelemetryResourceExpectation.Mismatch.schemaUrlMismatch(
+          TelemetryResourceExpectation.Mismatch.SchemaUrlMismatch(
             Some("https://opentelemetry.io/schemas/1.0.0"),
             None
           )

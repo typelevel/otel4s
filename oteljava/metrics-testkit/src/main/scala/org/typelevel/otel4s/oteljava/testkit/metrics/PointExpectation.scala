@@ -95,153 +95,54 @@ object PointExpectation {
   }
 
   object Mismatch {
-
-    /** Indicates that the actual point type differed from the expected one. */
-    sealed trait TypeMismatch extends Mismatch {
-      def expected: String
-      def actual: String
-    }
-
-    /** Indicates that the numeric point value differed from the expected one. */
-    sealed trait ValueMismatch extends Mismatch {
-      def expected: String
-      def actual: String
-    }
-
-    /** Indicates that the point count differed from the expected one. */
-    sealed trait CountMismatch extends Mismatch {
-      def expected: Long
-      def actual: Long
-    }
-
-    /** Indicates that the point sum differed from the expected one. */
-    sealed trait SumMismatch extends Mismatch {
-      def expected: Double
-      def actual: Double
-    }
-
-    /** Indicates that histogram boundaries differed from the expected ones. */
-    sealed trait BoundariesMismatch extends Mismatch {
-      def expected: BucketBoundaries
-      def actual: BucketBoundaries
-    }
-
-    /** Indicates that histogram bucket counts differed from the expected ones. */
-    sealed trait CountsMismatch extends Mismatch {
-      def expected: List[Long]
-      def actual: List[Long]
-    }
-
-    /** Indicates that the exponential histogram scale differed from the expected one. */
-    sealed trait ScaleMismatch extends Mismatch {
-      def expected: Int
-      def actual: Int
-    }
-
-    /** Indicates that the exponential histogram zero count differed from the expected one. */
-    sealed trait ZeroCountMismatch extends Mismatch {
-      def expected: Long
-      def actual: Long
-    }
-
-    /** Indicates that the point attributes did not satisfy the nested attributes expectation. */
-    sealed trait AttributesMismatch extends Mismatch {
-      def mismatches: NonEmptyList[AttributesExpectation.Mismatch]
-    }
-
-    /** Indicates that a custom point predicate returned `false`. */
-    sealed trait PredicateMismatch extends Mismatch {
-      def clue: String
-    }
-
-    /** Creates a mismatch indicating that the actual point type differed from the expected one. */
-    def typeMismatch(expected: String, actual: String): TypeMismatch =
-      TypeMismatchImpl(expected, actual)
-
-    /** Creates a mismatch indicating that the numeric point value differed from the expected one. */
-    def valueMismatch(expected: String, actual: String): ValueMismatch =
-      ValueMismatchImpl(expected, actual)
-
-    /** Creates a mismatch indicating that the point count differed from the expected one. */
-    def countMismatch(expected: Long, actual: Long): CountMismatch =
-      CountMismatchImpl(expected, actual)
-
-    /** Creates a mismatch indicating that the point sum differed from the expected one. */
-    def sumMismatch(expected: Double, actual: Double): SumMismatch =
-      SumMismatchImpl(expected, actual)
-
-    /** Creates a mismatch indicating that histogram boundaries differed from the expected ones. */
-    def boundariesMismatch(expected: BucketBoundaries, actual: BucketBoundaries): BoundariesMismatch =
-      BoundariesMismatchImpl(expected, actual)
-
-    /** Creates a mismatch indicating that histogram bucket counts differed from the expected ones. */
-    def countsMismatch(expected: List[Long], actual: List[Long]): CountsMismatch =
-      CountsMismatchImpl(expected, actual)
-
-    /** Creates a mismatch indicating that the exponential histogram scale differed from the expected one. */
-    def scaleMismatch(expected: Int, actual: Int): ScaleMismatch =
-      ScaleMismatchImpl(expected, actual)
-
-    /** Creates a mismatch indicating that the exponential histogram zero count differed from the expected one. */
-    def zeroCountMismatch(expected: Long, actual: Long): ZeroCountMismatch =
-      ZeroCountMismatchImpl(expected, actual)
-
-    /** Creates a mismatch indicating that the point attributes did not satisfy the nested attributes expectation. */
-    def attributesMismatch(mismatches: NonEmptyList[AttributesExpectation.Mismatch]): AttributesMismatch =
-      AttributesMismatchImpl(mismatches)
-
-    /** Creates a mismatch indicating that a custom point predicate returned `false`. */
-    def predicateMismatch(clue: String): PredicateMismatch =
-      PredicateMismatchImpl(clue)
-
-    private final case class TypeMismatchImpl(expected: String, actual: String) extends TypeMismatch {
+    private[metrics] final case class TypeMismatch(expected: String, actual: String) extends Mismatch {
       def message: String =
         s"type mismatch: expected '$expected', got '$actual'"
     }
 
-    private final case class ValueMismatchImpl(expected: String, actual: String) extends ValueMismatch {
+    private[metrics] final case class ValueMismatch(expected: String, actual: String) extends Mismatch {
       def message: String =
         s"value mismatch: expected '$expected', got '$actual'"
     }
 
-    private final case class CountMismatchImpl(expected: Long, actual: Long) extends CountMismatch {
+    private[metrics] final case class CountMismatch(expected: Long, actual: Long) extends Mismatch {
       def message: String =
         s"count mismatch: expected $expected, got $actual"
     }
 
-    private final case class SumMismatchImpl(expected: Double, actual: Double) extends SumMismatch {
+    private[metrics] final case class SumMismatch(expected: Double, actual: Double) extends Mismatch {
       def message: String =
         s"sum mismatch: expected ${NumberComparison[Double].render(expected)}, got ${NumberComparison[Double].render(actual)}"
     }
 
-    private final case class BoundariesMismatchImpl(expected: BucketBoundaries, actual: BucketBoundaries)
-        extends BoundariesMismatch {
+    private[metrics] final case class BoundariesMismatch(expected: BucketBoundaries, actual: BucketBoundaries)
+        extends Mismatch {
       def message: String =
         s"boundaries mismatch: expected $expected, got $actual"
     }
 
-    private final case class CountsMismatchImpl(expected: List[Long], actual: List[Long]) extends CountsMismatch {
+    private[metrics] final case class CountsMismatch(expected: List[Long], actual: List[Long]) extends Mismatch {
       def message: String =
         s"counts mismatch: expected $expected, got $actual"
     }
 
-    private final case class ScaleMismatchImpl(expected: Int, actual: Int) extends ScaleMismatch {
+    private[metrics] final case class ScaleMismatch(expected: Int, actual: Int) extends Mismatch {
       def message: String =
         s"scale mismatch: expected $expected, got $actual"
     }
 
-    private final case class ZeroCountMismatchImpl(expected: Long, actual: Long) extends ZeroCountMismatch {
+    private[metrics] final case class ZeroCountMismatch(expected: Long, actual: Long) extends Mismatch {
       def message: String =
         s"zero count mismatch: expected $expected, got $actual"
     }
 
-    private final case class AttributesMismatchImpl(mismatches: NonEmptyList[AttributesExpectation.Mismatch])
-        extends AttributesMismatch {
+    private[metrics] final case class AttributesMismatch(mismatches: NonEmptyList[AttributesExpectation.Mismatch])
+        extends Mismatch {
       def message: String =
         s"attributes mismatch: ${mismatches.toList.map(_.message).mkString(", ")}"
     }
 
-    private final case class PredicateMismatchImpl(clue: String) extends PredicateMismatch {
+    private[metrics] final case class PredicateMismatch(clue: String) extends Mismatch {
       def message: String =
         s"predicate mismatch: $clue"
     }
@@ -452,18 +353,18 @@ object PointExpectation {
               else {
                 val expectedValue = numberComparison.render(expected)
                 val actualValue = numberComparison.render(numericPoint.value)
-                ExpectationChecks.mismatch(Mismatch.valueMismatch(expectedValue, actualValue))
+                ExpectationChecks.mismatch(Mismatch.ValueMismatch(expectedValue, actualValue))
               }
             },
             attributeExpectation.fold(ExpectationChecks.success[Mismatch]) { expected =>
-              ExpectationChecks.nested(expected.check(numericPoint.attributes))(Mismatch.attributesMismatch)
+              ExpectationChecks.nested(expected.check(numericPoint.attributes))(Mismatch.AttributesMismatch)
             },
             ExpectationChecks.combine(
               predicates.map { case (predicate, clue) =>
                 if (predicate(numericPoint)) ExpectationChecks.success
                 else
                   ExpectationChecks.mismatch(
-                    Mismatch.predicateMismatch(clue.getOrElse("point predicate returned false"))
+                    Mismatch.PredicateMismatch(clue.getOrElse("point predicate returned false"))
                   )
               }
             )
@@ -502,27 +403,27 @@ object PointExpectation {
           ExpectationChecks.combine(
             expectedSum.fold(ExpectationChecks.success[Mismatch]) { expected =>
               if (doubleComparison.equal(expected, summary.getSum)) ExpectationChecks.success
-              else ExpectationChecks.mismatch(Mismatch.sumMismatch(expected, summary.getSum))
+              else ExpectationChecks.mismatch(Mismatch.SumMismatch(expected, summary.getSum))
             },
             expectedCount.fold(ExpectationChecks.success[Mismatch]) { expected =>
               if (expected == summary.getCount) ExpectationChecks.success
-              else ExpectationChecks.mismatch(Mismatch.countMismatch(expected, summary.getCount))
+              else ExpectationChecks.mismatch(Mismatch.CountMismatch(expected, summary.getCount))
             },
             attributeExpectation.fold(ExpectationChecks.success[Mismatch]) { expected =>
-              ExpectationChecks.nested(expected.check(summary.getAttributes.toScala))(Mismatch.attributesMismatch)
+              ExpectationChecks.nested(expected.check(summary.getAttributes.toScala))(Mismatch.AttributesMismatch)
             },
             ExpectationChecks.combine(
               predicates.map { case (predicate, clue) =>
                 if (predicate(summary)) ExpectationChecks.success
                 else
                   ExpectationChecks.mismatch(
-                    Mismatch.predicateMismatch(clue.getOrElse("point predicate returned false"))
+                    Mismatch.PredicateMismatch(clue.getOrElse("point predicate returned false"))
                   )
               }
             )
           )
         case other =>
-          ExpectationChecks.mismatch(Mismatch.typeMismatch("SummaryPointData", other.getClass.getSimpleName))
+          ExpectationChecks.mismatch(Mismatch.TypeMismatch("SummaryPointData", other.getClass.getSimpleName))
       }
   }
 
@@ -560,11 +461,11 @@ object PointExpectation {
           ExpectationChecks.combine(
             expectedSum.fold(ExpectationChecks.success[Mismatch]) { expected =>
               if (doubleComparison.equal(expected, histogram.getSum)) ExpectationChecks.success
-              else ExpectationChecks.mismatch(Mismatch.sumMismatch(expected, histogram.getSum))
+              else ExpectationChecks.mismatch(Mismatch.SumMismatch(expected, histogram.getSum))
             },
             expectedCount.fold(ExpectationChecks.success[Mismatch]) { expected =>
               if (expected == histogram.getCount) ExpectationChecks.success
-              else ExpectationChecks.mismatch(Mismatch.countMismatch(expected, histogram.getCount))
+              else ExpectationChecks.mismatch(Mismatch.CountMismatch(expected, histogram.getCount))
             },
             expectedBoundaries.fold(ExpectationChecks.success[Mismatch]) { expected =>
               val actual = BucketBoundaries(histogram.getBoundaries.asScala.toVector.map(_.doubleValue()))
@@ -574,28 +475,28 @@ object PointExpectation {
                   doubleComparison.equal(expectedValue, actualValue)
                 }
               ) ExpectationChecks.success
-              else ExpectationChecks.mismatch(Mismatch.boundariesMismatch(expected, actual))
+              else ExpectationChecks.mismatch(Mismatch.BoundariesMismatch(expected, actual))
             },
             expectedCounts.fold(ExpectationChecks.success[Mismatch]) { expected =>
               val actual = histogram.getCounts.asScala.toList.map(_.longValue())
               if (expected == actual) ExpectationChecks.success
-              else ExpectationChecks.mismatch(Mismatch.countsMismatch(expected, actual))
+              else ExpectationChecks.mismatch(Mismatch.CountsMismatch(expected, actual))
             },
             attributeExpectation.fold(ExpectationChecks.success[Mismatch]) { expected =>
-              ExpectationChecks.nested(expected.check(histogram.getAttributes.toScala))(Mismatch.attributesMismatch)
+              ExpectationChecks.nested(expected.check(histogram.getAttributes.toScala))(Mismatch.AttributesMismatch)
             },
             ExpectationChecks.combine(
               predicates.map { case (predicate, clue) =>
                 if (predicate(histogram)) ExpectationChecks.success
                 else
                   ExpectationChecks.mismatch(
-                    Mismatch.predicateMismatch(clue.getOrElse("point predicate returned false"))
+                    Mismatch.PredicateMismatch(clue.getOrElse("point predicate returned false"))
                   )
               }
             )
           )
         case other =>
-          ExpectationChecks.mismatch(Mismatch.typeMismatch("HistogramPointData", other.getClass.getSimpleName))
+          ExpectationChecks.mismatch(Mismatch.TypeMismatch("HistogramPointData", other.getClass.getSimpleName))
       }
   }
 
@@ -636,36 +537,36 @@ object PointExpectation {
           ExpectationChecks.combine(
             expectedScale.fold(ExpectationChecks.success[Mismatch]) { expected =>
               if (expected == histogram.getScale) ExpectationChecks.success
-              else ExpectationChecks.mismatch(Mismatch.scaleMismatch(expected, histogram.getScale))
+              else ExpectationChecks.mismatch(Mismatch.ScaleMismatch(expected, histogram.getScale))
             },
             expectedSum.fold(ExpectationChecks.success[Mismatch]) { expected =>
               if (doubleComparison.equal(expected, histogram.getSum)) ExpectationChecks.success
-              else ExpectationChecks.mismatch(Mismatch.sumMismatch(expected, histogram.getSum))
+              else ExpectationChecks.mismatch(Mismatch.SumMismatch(expected, histogram.getSum))
             },
             expectedCount.fold(ExpectationChecks.success[Mismatch]) { expected =>
               if (expected == histogram.getCount) ExpectationChecks.success
-              else ExpectationChecks.mismatch(Mismatch.countMismatch(expected, histogram.getCount))
+              else ExpectationChecks.mismatch(Mismatch.CountMismatch(expected, histogram.getCount))
             },
             expectedZeroCount.fold(ExpectationChecks.success[Mismatch]) { expected =>
               if (expected == histogram.getZeroCount) ExpectationChecks.success
-              else ExpectationChecks.mismatch(Mismatch.zeroCountMismatch(expected, histogram.getZeroCount))
+              else ExpectationChecks.mismatch(Mismatch.ZeroCountMismatch(expected, histogram.getZeroCount))
             },
             attributeExpectation.fold(ExpectationChecks.success[Mismatch]) { expected =>
-              ExpectationChecks.nested(expected.check(histogram.getAttributes.toScala))(Mismatch.attributesMismatch)
+              ExpectationChecks.nested(expected.check(histogram.getAttributes.toScala))(Mismatch.AttributesMismatch)
             },
             ExpectationChecks.combine(
               predicates.map { case (predicate, clue) =>
                 if (predicate(histogram)) ExpectationChecks.success
                 else
                   ExpectationChecks.mismatch(
-                    Mismatch.predicateMismatch(clue.getOrElse("point predicate returned false"))
+                    Mismatch.PredicateMismatch(clue.getOrElse("point predicate returned false"))
                   )
               }
             )
           )
         case other =>
           ExpectationChecks.mismatch(
-            Mismatch.typeMismatch("ExponentialHistogramPointData", other.getClass.getSimpleName)
+            Mismatch.TypeMismatch("ExponentialHistogramPointData", other.getClass.getSimpleName)
           )
       }
   }
@@ -680,14 +581,14 @@ object PointExpectation {
           case long: LongPointData =>
             Right(LongNumericPointData(long).asInstanceOf[NumericPointData[A]])
           case other =>
-            Left(Mismatch.typeMismatch("LongPointData", other.getClass.getSimpleName))
+            Left(Mismatch.TypeMismatch("LongPointData", other.getClass.getSimpleName))
         }
       case _: DoubleMeasurementValue[_] =>
         point match {
           case double: DoublePointData =>
             Right(DoubleNumericPointData(double).asInstanceOf[NumericPointData[A]])
           case other =>
-            Left(Mismatch.typeMismatch("DoublePointData", other.getClass.getSimpleName))
+            Left(Mismatch.TypeMismatch("DoublePointData", other.getClass.getSimpleName))
         }
     }
 

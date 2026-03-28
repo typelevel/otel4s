@@ -329,7 +329,7 @@ object PointSetExpectation {
       withClueContext(
         clue,
         containsCheck(expected, checker, points).flatMap { matchedIndices =>
-          val unexpected = points.indices.filterNot(matchedIndices.contains).map(Mismatch.UnexpectedPoint).toList
+          val unexpected = points.indices.filterNot(matchedIndices.contains).map(Mismatch.UnexpectedPoint(_)).toList
           NonEmptyList.fromList(unexpected).toLeft(())
         }
       )

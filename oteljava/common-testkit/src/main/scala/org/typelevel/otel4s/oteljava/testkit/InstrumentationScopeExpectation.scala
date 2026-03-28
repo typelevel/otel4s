@@ -186,10 +186,10 @@ object InstrumentationScopeExpectation {
 
       ExpectationChecks.combine(
         checkName,
-        ExpectationChecks.compareOption(version, Option(scope.getVersion))(Mismatch.VersionMismatch),
-        ExpectationChecks.compareOption(schemaUrl, Option(scope.getSchemaUrl))(Mismatch.SchemaUrlMismatch),
+        ExpectationChecks.compareOption(version, Option(scope.getVersion))(Mismatch.VersionMismatch(_, _)),
+        ExpectationChecks.compareOption(schemaUrl, Option(scope.getSchemaUrl))(Mismatch.SchemaUrlMismatch(_, _)),
         attributes.fold(ExpectationChecks.success[Mismatch]) { expected =>
-          ExpectationChecks.nested(expected.check(scope.getAttributes.toScala))(Mismatch.AttributesMismatch)
+          ExpectationChecks.nested(expected.check(scope.getAttributes.toScala))(Mismatch.AttributesMismatch(_))
         }
       )
     }

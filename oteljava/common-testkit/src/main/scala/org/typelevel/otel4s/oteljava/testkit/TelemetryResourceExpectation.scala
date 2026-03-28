@@ -132,9 +132,9 @@ object TelemetryResourceExpectation {
     def check(resource: JResource): Either[NonEmptyList[Mismatch], Unit] =
       ExpectationChecks.combine(
         attributes.fold(ExpectationChecks.success[Mismatch]) { expected =>
-          ExpectationChecks.nested(expected.check(resource.getAttributes.toScala))(Mismatch.AttributesMismatch)
+          ExpectationChecks.nested(expected.check(resource.getAttributes.toScala))(Mismatch.AttributesMismatch(_))
         },
-        ExpectationChecks.compareOption(schemaUrl, Option(resource.getSchemaUrl))(Mismatch.SchemaUrlMismatch),
+        ExpectationChecks.compareOption(schemaUrl, Option(resource.getSchemaUrl))(Mismatch.SchemaUrlMismatch(_, _)),
       )
   }
 

@@ -357,7 +357,7 @@ object PointExpectation {
               }
             },
             attributeExpectation.fold(ExpectationChecks.success[Mismatch]) { expected =>
-              ExpectationChecks.nested(expected.check(numericPoint.attributes))(Mismatch.AttributesMismatch)
+              ExpectationChecks.nested(expected.check(numericPoint.attributes))(Mismatch.AttributesMismatch(_))
             },
             ExpectationChecks.combine(
               predicates.map { case (predicate, clue) =>
@@ -410,7 +410,7 @@ object PointExpectation {
               else ExpectationChecks.mismatch(Mismatch.CountMismatch(expected, summary.getCount))
             },
             attributeExpectation.fold(ExpectationChecks.success[Mismatch]) { expected =>
-              ExpectationChecks.nested(expected.check(summary.getAttributes.toScala))(Mismatch.AttributesMismatch)
+              ExpectationChecks.nested(expected.check(summary.getAttributes.toScala))(Mismatch.AttributesMismatch(_))
             },
             ExpectationChecks.combine(
               predicates.map { case (predicate, clue) =>
@@ -483,7 +483,7 @@ object PointExpectation {
               else ExpectationChecks.mismatch(Mismatch.CountsMismatch(expected, actual))
             },
             attributeExpectation.fold(ExpectationChecks.success[Mismatch]) { expected =>
-              ExpectationChecks.nested(expected.check(histogram.getAttributes.toScala))(Mismatch.AttributesMismatch)
+              ExpectationChecks.nested(expected.check(histogram.getAttributes.toScala))(Mismatch.AttributesMismatch(_))
             },
             ExpectationChecks.combine(
               predicates.map { case (predicate, clue) =>
@@ -552,7 +552,7 @@ object PointExpectation {
               else ExpectationChecks.mismatch(Mismatch.ZeroCountMismatch(expected, histogram.getZeroCount))
             },
             attributeExpectation.fold(ExpectationChecks.success[Mismatch]) { expected =>
-              ExpectationChecks.nested(expected.check(histogram.getAttributes.toScala))(Mismatch.AttributesMismatch)
+              ExpectationChecks.nested(expected.check(histogram.getAttributes.toScala))(Mismatch.AttributesMismatch(_))
             },
             ExpectationChecks.combine(
               predicates.map { case (predicate, clue) =>

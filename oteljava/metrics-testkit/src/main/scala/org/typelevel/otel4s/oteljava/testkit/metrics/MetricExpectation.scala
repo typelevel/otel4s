@@ -723,10 +723,10 @@ object MetricExpectation {
         else ExpectationChecks.mismatch(Mismatch.UnitMismatch(expected, metric.getUnit))
       },
       scope.fold(ExpectationChecks.success[Mismatch]) { expected =>
-        ExpectationChecks.nested(expected.check(metric.getInstrumentationScopeInfo))(Mismatch.ScopeMismatch)
+        ExpectationChecks.nested(expected.check(metric.getInstrumentationScopeInfo))(Mismatch.ScopeMismatch(_))
       },
       resource.fold(ExpectationChecks.success[Mismatch]) { expected =>
-        ExpectationChecks.nested(expected.check(metric.getResource))(Mismatch.ResourceMismatch)
+        ExpectationChecks.nested(expected.check(metric.getResource))(Mismatch.ResourceMismatch(_))
       }
     )
 

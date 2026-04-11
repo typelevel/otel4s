@@ -42,7 +42,7 @@ private[oteljava] class TracerImpl[F[_]](
   private val runner: SpanRunner[F] = SpanRunner.fromTraceScope(traceScope)
 
   val meta: InstrumentMeta[F] =
-    InstrumentMeta.enabled
+    InstrumentMeta.dynamic(Sync[F].delay(jTracer.isEnabled))
 
   def currentSpanContext: F[Option[SpanContext]] =
     traceScope.current.map(_.filter(_.isValid))

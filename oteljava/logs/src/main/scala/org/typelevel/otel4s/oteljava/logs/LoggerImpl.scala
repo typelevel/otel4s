@@ -21,6 +21,7 @@ package logs
 import cats.effect.Sync
 import cats.mtl.Ask
 import io.opentelemetry.api.logs.{Logger => JLogger}
+import io.opentelemetry.api.logs.{Severity => JSeverity}
 import org.typelevel.otel4s.logs.LogRecordBuilder
 import org.typelevel.otel4s.logs.Logger
 import org.typelevel.otel4s.logs.meta.InstrumentMeta
@@ -28,7 +29,15 @@ import org.typelevel.otel4s.oteljava.context.AskContext
 import org.typelevel.otel4s.oteljava.context.Context
 
 private[oteljava] final class LoggerImpl[F[_]: Sync: AskContext](jLogger: JLogger) extends Logger.Unsealed[F, Context] {
-  val meta: InstrumentMeta[F, Context] = InstrumentMeta.enabled
+  val meta: InstrumentMeta[F, Context] =
+    InstrumentMeta.dynamic { (ctx, severity, _) =>
+      Sync[F].delay(
+        jLogger.isEnabled(
+          severity.fold(JSeverity.UNDEFINED_SEVERITY_NUMBER)(SeverityConversions.toJSeverity),
+          ctx.underlying
+        )
+      )
+    }
 
   def currentContext: F[Context] = Ask[F, Context].ask
 

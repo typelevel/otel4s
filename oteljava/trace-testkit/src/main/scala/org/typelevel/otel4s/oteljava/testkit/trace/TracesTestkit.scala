@@ -102,14 +102,6 @@ object TracesTestkit {
       */
     def withTextMapPropagators(propagators: Iterable[JTextMapPropagator]): Builder[F]
 
-    /** Sets the `InMemorySpanExporter` to use. Useful when Scala and Java instrumentation need to share the same
-      * exporter.
-      *
-      * @param exporter
-      *   the exporter to use
-      */
-    def withInMemorySpanExporter(exporter: InMemorySpanExporter): Builder[F]
-
     /** Creates [[TracesTestkit]] using the configuration of this builder. */
     def build: Resource[F, TracesTestkit[F]]
 
@@ -189,7 +181,6 @@ object TracesTestkit {
 
   private final case class BuilderImpl[F[_]: Async: LocalContextProvider](
       customizer: SdkTracerProviderBuilder => SdkTracerProviderBuilder = identity(_),
-      inMemorySpanExporter: Option[InMemorySpanExporter] = None,
       textMapPropagators: Vector[JTextMapPropagator] = Vector.empty
   ) extends Builder[F] {
 
@@ -199,17 +190,11 @@ object TracesTestkit {
     def addTextMapPropagators(propagators: JTextMapPropagator*): Builder[F] =
       copy(textMapPropagators = textMapPropagators ++ propagators)
 
-    def withInMemorySpanExporter(exporter: InMemorySpanExporter): Builder[F] =
-      copy(inMemorySpanExporter = Some(exporter))
-
     def withTextMapPropagators(propagators: Iterable[JTextMapPropagator]): Builder[F] =
       copy(textMapPropagators = propagators.toVector)
 
     def build: Resource[F, TracesTestkit[F]] = {
-      val exporterResource = inMemorySpanExporter
-        .fold(Resource.eval(Async[F].delay(InMemorySpanExporter.create())))(Resource.pure[F, InMemorySpanExporter])
-
-      exporterResource.flatMap { exporter =>
+      Resource.eval(Async[F].delay(InMemorySpanExporter.create())).flatMap { exporter =>
         create[F](exporter, customizer, textMapPropagators)
       }
     }

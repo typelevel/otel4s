@@ -74,14 +74,6 @@ object LogsTestkit {
       */
     def addLoggerProviderCustomizer(customizer: SdkLoggerProviderBuilder => SdkLoggerProviderBuilder): Builder[F]
 
-    /** Sets the `InMemoryLogRecordExporter` to use. Useful when a Scala and Java instrumentation need to share the same
-      * exporter.
-      *
-      * @param exporter
-      *   the exporter to use
-      */
-    def withInMemoryLogRecordExporter(exporter: InMemoryLogRecordExporter): Builder[F]
-
     /** Creates [[LogsTestkit]] using the configuration of this builder.
       */
     def build: Resource[F, LogsTestkit[F]]
@@ -154,18 +146,14 @@ object LogsTestkit {
 
   private final case class BuilderImpl[F[_]: Async: LocalContextProvider](
       customizer: SdkLoggerProviderBuilder => SdkLoggerProviderBuilder = identity(_),
-      inMemoryLogRecordExporter: Option[InMemoryLogRecordExporter] = None,
   ) extends Builder[F] {
 
     def addLoggerProviderCustomizer(f: SdkLoggerProviderBuilder => SdkLoggerProviderBuilder): Builder[F] =
       copy(customizer = this.customizer.andThen(f))
 
-    def withInMemoryLogRecordExporter(exporter: InMemoryLogRecordExporter): Builder[F] =
-      copy(inMemoryLogRecordExporter = Some(exporter))
-
     def build: Resource[F, LogsTestkit[F]] =
       Resource.eval(LocalProvider[F, Context].local).flatMap { implicit local =>
-        inMemoryLogRecordExporter.fold(create[F](customizer))(create[F](_, customizer))
+        create[F](customizer)
       }
   }
 }

@@ -68,14 +68,6 @@ object MetricsTestkit {
       */
     def addMeterProviderCustomizer(customizer: SdkMeterProviderBuilder => SdkMeterProviderBuilder): Builder[F]
 
-    /** Sets the `InMemoryMetricReader` to use. Useful when Scala and Java instrumentation need to share the same
-      * reader.
-      *
-      * @param reader
-      *   the reader to use
-      */
-    def withInMemoryMetricReader(reader: InMemoryMetricReader): Builder[F]
-
     /** Creates [[MetricsTestkit]] using the configuration of this builder. */
     def build: Resource[F, MetricsTestkit[F]]
 
@@ -139,18 +131,14 @@ object MetricsTestkit {
 
   private final case class BuilderImpl[F[_]: Async: LocalContextProvider](
       customizer: SdkMeterProviderBuilder => SdkMeterProviderBuilder = identity(_),
-      inMemoryMetricReader: Option[InMemoryMetricReader] = None
   ) extends Builder[F] {
 
     def addMeterProviderCustomizer(customizer: SdkMeterProviderBuilder => SdkMeterProviderBuilder): Builder[F] =
       copy(customizer = this.customizer.andThen(customizer))
 
-    def withInMemoryMetricReader(reader: InMemoryMetricReader): Builder[F] =
-      copy(inMemoryMetricReader = Some(reader))
-
     def build: Resource[F, MetricsTestkit[F]] =
       Resource.eval(LocalProvider[F, Context].local).flatMap { implicit local =>
-        inMemoryMetricReader.fold(create[F](customizer))(create[F](_, customizer))
+        create[F](customizer)
       }
   }
 

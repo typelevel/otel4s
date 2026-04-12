@@ -18,7 +18,6 @@ package org.typelevel.otel4s.oteljava.testkit.logs
 
 import cats.effect.Async
 import cats.effect.Resource
-import cats.mtl.Ask
 import cats.syntax.all._
 import io.opentelemetry.sdk.logs.LogRecordProcessor
 import io.opentelemetry.sdk.logs.SdkLoggerProvider

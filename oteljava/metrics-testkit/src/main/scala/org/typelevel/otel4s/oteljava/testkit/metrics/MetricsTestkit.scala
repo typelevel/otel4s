@@ -18,7 +18,6 @@ package org.typelevel.otel4s.oteljava.testkit.metrics
 
 import cats.effect.Async
 import cats.effect.Resource
-import cats.mtl.Ask
 import io.opentelemetry.sdk.metrics.SdkMeterProvider
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader

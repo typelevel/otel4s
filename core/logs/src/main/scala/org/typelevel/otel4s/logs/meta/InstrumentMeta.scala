@@ -21,7 +21,6 @@ import cats.Monad
 import cats.mtl.Ask
 import cats.mtl.LiftValue
 import cats.syntax.flatMap._
-import cats.~>
 import org.typelevel.otel4s.logs.Severity
 
 /** The instrument's metadata. Indicates whether instrumentation is enabled.
@@ -109,11 +108,12 @@ object InstrumentMeta {
       enabled(context, severity, eventName)
   }
 
-  private final class Lifted[F[_], G[_], Ctx](meta: InstrumentMeta[F, Ctx])(f: F ~> G) extends InstrumentMeta[G, Ctx] {
+  private final class Lifted[F[_], G[_], Ctx](meta: InstrumentMeta[F, Ctx])(lift: LiftValue[F, G])
+      extends InstrumentMeta[G, Ctx] {
     def isEnabled(context: Ctx, severity: Option[Severity], eventName: Option[String]): G[Boolean] =
-      f(meta.isEnabled(context, severity, eventName))
+      lift(meta.isEnabled(context, severity, eventName))
 
     def isEnabled(severity: Option[Severity], eventName: Option[String]): G[Boolean] =
-      f(meta.isEnabled(severity, eventName))
+      lift(meta.isEnabled(severity, eventName))
   }
 }

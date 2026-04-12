@@ -60,12 +60,6 @@ sealed trait SpanBuilder[F[_]] extends SpanBuilderMacro[F] {
   ): SpanBuilder[G] =
     new SpanBuilder.Lifted(this)
 
-  @deprecated("use `liftTo` instead", since = "otel4s 0.14.0")
-  def mapK[G[_]](implicit
-      F: MonadCancelThrow[F],
-      G: MonadCancelThrow[G],
-      lift: LiftKind[F, G]
-  ): SpanBuilder[G] = liftTo[G]
 }
 
 object SpanBuilder {

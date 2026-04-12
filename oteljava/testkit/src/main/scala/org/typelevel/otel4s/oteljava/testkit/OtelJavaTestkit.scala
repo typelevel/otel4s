@@ -57,7 +57,7 @@ sealed abstract class OtelJavaTestkit[F[_]] private (implicit
   val baggageManager: BaggageManager[F] = BaggageManagerImpl.fromLocal
 
   override def toString: String =
-    s"OtelJavaTestkit{meterProvider=$meterProvider, tracerProvider=$tracerProvider, propagators=$propagators}"
+    s"OtelJavaTestkit{meterProvider=$meterProvider, tracerProvider=$tracerProvider, loggerProvider=$loggerProvider, propagators=$propagators}"
 }
 
 object OtelJavaTestkit {

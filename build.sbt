@@ -141,9 +141,6 @@ lazy val root = tlCrossRootProject
     examples,
     unidocs
   )
-  .configureRoot(
-    _.aggregate(scalafix.componentProjectReferences *)
-  )
   .settings(name := "otel4s")
 
 //
@@ -488,30 +485,6 @@ lazy val `semconv-metrics-experimental` =
 //
 //
 //
-
-lazy val scalafix = tlScalafixProject
-  .rulesSettings(
-    name := "otel4s-scalafix",
-    crossScalaVersions := Seq(Scala212),
-    startYear := Some(2024)
-  )
-  .inputSettings(
-    crossScalaVersions := Seq(Scala213),
-    // scala-steward:off
-    libraryDependencies += "org.typelevel" %% "otel4s-java" % "0.4.0",
-    // scala-steward:on
-    headerSources / excludeFilter := AllPassFilter
-  )
-  .inputConfigure(_.disablePlugins(ScalafixPlugin))
-  .outputSettings(
-    crossScalaVersions := Seq(Scala213),
-    headerSources / excludeFilter := AllPassFilter
-  )
-  .outputConfigure(_.dependsOn(oteljava).disablePlugins(ScalafixPlugin))
-  .testsSettings(
-    scalaVersion := _root_.scalafix.sbt.BuildInfo.scala212,
-    startYear := Some(2024)
-  )
 
 lazy val benchmarks = project
   .enablePlugins(NoPublishPlugin)

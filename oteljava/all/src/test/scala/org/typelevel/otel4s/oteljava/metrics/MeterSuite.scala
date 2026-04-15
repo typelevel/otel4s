@@ -80,7 +80,7 @@ class MeterSuite extends BaseMeterSuite {
                 metrics.meterProvider
 
               def collectMetrics: IO[List[BaseMeterSuite.MetricData]] =
-                metrics.collectMetrics[MetricData].map(_.map(toMetricData))
+                metrics.collectMetrics.map(_.map(toMetricData))
 
               def local: Local[IO, Context] =
                 localContext

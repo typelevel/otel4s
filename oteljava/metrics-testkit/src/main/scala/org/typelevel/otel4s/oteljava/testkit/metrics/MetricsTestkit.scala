@@ -20,6 +20,7 @@ import cats.effect.Async
 import cats.effect.Resource
 import io.opentelemetry.sdk.metrics.SdkMeterProvider
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder
+import io.opentelemetry.sdk.metrics.data.MetricData
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader
 import org.typelevel.otel4s.context.LocalProvider
 import org.typelevel.otel4s.metrics.MeterProvider
@@ -38,19 +39,10 @@ sealed trait MetricsTestkit[F[_]] {
 
   /** Collects and returns metrics.
     *
-    * @example
-    *   {{{
-    * import io.opentelemetry.sdk.metrics.data.MetricData
-    * import org.typelevel.otel4s.oteljava.testkit.metrics.data.Metric
-    *
-    * MetricTestkit[F].collectMetrics[MetricData] // OpenTelemetry Java models
-    * MetricTestkit[F].collectMetrics[Metric] // Otel4s testkit models
-    *   }}}
-    *
     * @note
     *   metrics are recollected on each invocation.
     */
-  def collectMetrics[A: FromMetricData]: F[List[A]]
+  def collectMetrics: F[List[MetricData]]
 
 }
 
@@ -122,11 +114,8 @@ object MetricsTestkit {
       metricReader: InMemoryMetricReader
   ) extends MetricsTestkit[F] {
 
-    def collectMetrics[A: FromMetricData]: F[List[A]] =
-      Async[F].delay {
-        val metrics = metricReader.collectAllMetrics().asScala.toList
-        metrics.map(FromMetricData[A].from)
-      }
+    def collectMetrics: F[List[MetricData]] =
+      Async[F].delay(metricReader.collectAllMetrics().asScala.toList)
   }
 
   private final case class BuilderImpl[F[_]: Async: LocalContextProvider](

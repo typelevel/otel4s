@@ -21,8 +21,11 @@ import cats.effect.Async
 import cats.effect.Resource
 import io.opentelemetry.context.propagation.{TextMapPropagator => JTextMapPropagator}
 import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder
+import io.opentelemetry.sdk.logs.data.LogRecordData
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder
+import io.opentelemetry.sdk.metrics.data.MetricData
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder
+import io.opentelemetry.sdk.trace.data.SpanData
 import org.typelevel.otel4s.baggage.BaggageManager
 import org.typelevel.otel4s.context.LocalProvider
 import org.typelevel.otel4s.context.propagation.ContextPropagators
@@ -32,11 +35,8 @@ import org.typelevel.otel4s.oteljava.baggage.BaggageManagerImpl
 import org.typelevel.otel4s.oteljava.context.Context
 import org.typelevel.otel4s.oteljava.context.LocalContext
 import org.typelevel.otel4s.oteljava.context.LocalContextProvider
-import org.typelevel.otel4s.oteljava.testkit.logs.FromLogRecordData
 import org.typelevel.otel4s.oteljava.testkit.logs.LogsTestkit
-import org.typelevel.otel4s.oteljava.testkit.metrics.FromMetricData
 import org.typelevel.otel4s.oteljava.testkit.metrics.MetricsTestkit
-import org.typelevel.otel4s.oteljava.testkit.trace.FromSpanData
 import org.typelevel.otel4s.oteljava.testkit.trace.TracesTestkit
 import org.typelevel.otel4s.trace.TracerProvider
 
@@ -126,10 +126,10 @@ object OtelJavaTestkit {
     def meterProvider: MeterProvider[F] = metrics.meterProvider
     def tracerProvider: TracerProvider[F] = traces.tracerProvider
     def propagators: ContextPropagators[Context] = traces.propagators
-    def finishedSpans[A: FromSpanData]: F[List[A]] = traces.finishedSpans
+    def finishedSpans: F[List[SpanData]] = traces.finishedSpans
     def resetSpans: F[Unit] = traces.resetSpans
-    def collectMetrics[A: FromMetricData]: F[List[A]] = metrics.collectMetrics
-    def collectLogs[A: FromLogRecordData]: F[List[A]] = logs.collectLogs
+    def collectMetrics: F[List[MetricData]] = metrics.collectMetrics
+    def finishedLogs: F[List[LogRecordData]] = logs.finishedLogs
     def resetLogs: F[Unit] = logs.resetLogs
   }
 

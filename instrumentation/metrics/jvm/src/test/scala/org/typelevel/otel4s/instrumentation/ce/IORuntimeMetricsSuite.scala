@@ -44,7 +44,7 @@ class IORuntimeMetricsSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
       for {
         metrics <- IORuntimeMetrics
           .register[IO](munitIORuntime.metrics, IORuntimeMetrics.Config.default)
-          .surround(testkit.collectMetrics[MetricData])
+          .surround(testkit.collectMetrics)
       } yield assertEquals(metrics.map(toMetric).sortBy(_.name), expected.sortBy(_.name))
     }
   }
@@ -66,7 +66,7 @@ class IORuntimeMetricsSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
         for {
           metrics <- IORuntimeMetrics
             .register[IO](munitIORuntime.metrics, config)
-            .surround(testkit.collectMetrics[MetricData])
+            .surround(testkit.collectMetrics)
         } yield assertEquals(metrics.map(toMetric).sortBy(_.name), expected.sortBy(_.name))
       }
     }

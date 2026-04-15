@@ -17,11 +17,15 @@
 package org.typelevel.otel4s.oteljava.metrics
 
 import cats.effect.IO
+import io.opentelemetry.sdk.metrics.data.MetricData
+import io.opentelemetry.sdk.metrics.data.MetricDataType
 import munit.CatsEffectSuite
 import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.Attributes
+import org.typelevel.otel4s.oteljava.AttributeConverters._
 import org.typelevel.otel4s.oteljava.testkit.metrics.MetricsTestkit
-import org.typelevel.otel4s.oteljava.testkit.metrics.data.Metric
+
+import scala.jdk.CollectionConverters._
 
 class BatchCallbackSuite extends CatsEffectSuite {
 
@@ -64,11 +68,11 @@ class BatchCallbackSuite extends CatsEffectSuite {
                 _ <- gauge2.record(3.1, Attribute("key", "value6"))
               } yield ()
           }
-          .surround(metrics.collectMetrics[Metric])
+          .surround(metrics.collectMetrics)
       } yield {
         assertEquals(
           metrics.view
-            .map(r => (r.name, r.data.points.map(v => (v.value, v.attributes))))
+            .map(r => (r.getName, points(r)))
             .toMap,
           Map(
             "double-counter" -> List(
@@ -94,5 +98,19 @@ class BatchCallbackSuite extends CatsEffectSuite {
       }
     }
   }
+
+  private def points(metric: MetricData): List[(Any, Attributes)] =
+    metric.getType match {
+      case MetricDataType.LONG_GAUGE =>
+        metric.getLongGaugeData.getPoints.asScala.toList.map(p => (p.getValue, p.getAttributes.toScala))
+      case MetricDataType.DOUBLE_GAUGE =>
+        metric.getDoubleGaugeData.getPoints.asScala.toList.map(p => (p.getValue, p.getAttributes.toScala))
+      case MetricDataType.LONG_SUM =>
+        metric.getLongSumData.getPoints.asScala.toList.map(p => (p.getValue, p.getAttributes.toScala))
+      case MetricDataType.DOUBLE_SUM =>
+        metric.getDoubleSumData.getPoints.asScala.toList.map(p => (p.getValue, p.getAttributes.toScala))
+      case other =>
+        fail(s"Unexpected metric type: $other")
+    }
 
 }

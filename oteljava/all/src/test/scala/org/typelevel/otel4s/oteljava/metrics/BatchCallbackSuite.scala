@@ -18,11 +18,9 @@ package org.typelevel.otel4s.oteljava.metrics
 
 import cats.effect.IO
 import io.opentelemetry.sdk.metrics.data.MetricData
-import io.opentelemetry.sdk.metrics.data.MetricDataType
 import munit.CatsEffectSuite
 import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.Attributes
-import org.typelevel.otel4s.oteljava.AttributeConverters._
 import org.typelevel.otel4s.oteljava.BuildInfo
 import org.typelevel.otel4s.oteljava.testkit.InstrumentationScopeExpectation
 import org.typelevel.otel4s.oteljava.testkit.TelemetryResourceExpectation
@@ -71,7 +69,7 @@ class BatchCallbackSuite extends CatsEffectSuite {
                 _ <- gauge2.record(3.1, Attribute("key", "value6"))
               } yield ()
           }
-          .surround(metrics.collectAllMetrics)
+          .surround(metrics.collectMetrics)
       } yield {
         assertExpected(
           metrics,
@@ -136,19 +134,5 @@ class BatchCallbackSuite extends CatsEffectSuite {
         Attribute("telemetry.sdk.version", BuildInfo.openTelemetrySdkVersion)
       )
       .schemaUrl(None)
-
-  private def points(metric: MetricData): List[(Any, Attributes)] =
-    metric.getType match {
-      case MetricDataType.LONG_GAUGE =>
-        metric.getLongGaugeData.getPoints.asScala.toList.map(p => (p.getValue, p.getAttributes.toScala))
-      case MetricDataType.DOUBLE_GAUGE =>
-        metric.getDoubleGaugeData.getPoints.asScala.toList.map(p => (p.getValue, p.getAttributes.toScala))
-      case MetricDataType.LONG_SUM =>
-        metric.getLongSumData.getPoints.asScala.toList.map(p => (p.getValue, p.getAttributes.toScala))
-      case MetricDataType.DOUBLE_SUM =>
-        metric.getDoubleSumData.getPoints.asScala.toList.map(p => (p.getValue, p.getAttributes.toScala))
-      case other =>
-        fail(s"Unexpected metric type: $other")
-    }
 
 }

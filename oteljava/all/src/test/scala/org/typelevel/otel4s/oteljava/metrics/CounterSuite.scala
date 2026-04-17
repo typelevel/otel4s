@@ -50,7 +50,7 @@ class CounterSuite extends CatsEffectSuite {
 
         _ <- counter.add(1L, Attribute("string-attribute", "value"))
 
-        metrics <- sdk.collectAllMetrics
+        metrics <- sdk.collectMetrics
       } yield {
         assertExpected(
           metrics,

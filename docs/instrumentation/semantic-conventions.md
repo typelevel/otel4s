@@ -106,7 +106,6 @@ exist and that each exported metric matches the semantic name, unit, description
 import cats.effect.IO
 import io.opentelemetry.sdk.metrics.data.{MetricData, PointData}
 import org.typelevel.otel4s.metrics.Meter
-import org.typelevel.otel4s.oteljava.AttributeConverters._
 import org.typelevel.otel4s.semconv.MetricSpec
 import org.typelevel.otel4s.semconv.Requirement
 import org.typelevel.otel4s.semconv.metrics.HttpMetrics
@@ -124,7 +123,7 @@ def semanticTest(scenario: Meter[IO] => IO[Unit]): IO[Unit] = {
         // run a scenario to generate metrics 
         _       <- scenario(meter)
         // collect metrics
-        metrics <- testkit.collectAllMetrics
+        metrics <- testkit.collectMetrics
         // ensure the expected metrics exist and match the spec
       } yield assertExpected(metrics, specs.map(specExpectation))
     }
@@ -162,24 +161,6 @@ def specExpectation(spec: MetricSpec): MetricExpectation = {
       current == required
     }
 }
-
-def metricAttributes(metric: MetricData) =
-  metric.getType match {
-    case MetricDataType.LONG_GAUGE =>
-      metric.getLongGaugeData.getPoints.asScala.toVector.flatMap(_.getAttributes.toScala)
-    case MetricDataType.DOUBLE_GAUGE =>
-      metric.getDoubleGaugeData.getPoints.asScala.toVector.flatMap(_.getAttributes.toScala)
-    case MetricDataType.LONG_SUM =>
-      metric.getLongSumData.getPoints.asScala.toVector.flatMap(_.getAttributes.toScala)
-    case MetricDataType.DOUBLE_SUM =>
-      metric.getDoubleSumData.getPoints.asScala.toVector.flatMap(_.getAttributes.toScala)
-    case MetricDataType.HISTOGRAM =>
-      metric.getHistogramData.getPoints.asScala.toVector.flatMap(_.getAttributes.toScala)
-    case MetricDataType.SUMMARY =>
-      metric.getSummaryData.getPoints.asScala.toVector.flatMap(_.getAttributes.toScala)
-    case MetricDataType.EXPONENTIAL_HISTOGRAM =>
-      metric.getExponentialHistogramData.getPoints.asScala.toVector.flatMap(_.getAttributes.toScala)
-  }
 ```
 
 [opentelemetry-semconv]: https://opentelemetry.io/docs/specs/semconv/

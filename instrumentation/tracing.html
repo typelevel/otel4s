@@ -162,6 +162,10 @@ mermaid.initialize({
     <li class="level1 nav-node"><a href="#tracing-a-resource">Tracing a resource</a></li>
     <li class="level2 nav-leaf"><a href="#structured-spans">Structured spans</a></li>
     <li class="level2 nav-leaf"><a href="#acquire-and-release-spans">Acquire and release spans</a></li>
+    <li class="level1 nav-node"><a href="#tracing-a-stream">Tracing a stream</a></li>
+    <li class="level2 nav-leaf"><a href="#inner-scopes-and-flatmap">Inner scopes and <code>flatMap</code></a></li>
+    <li class="level2 nav-leaf"><a href="#multiple-evalmap-stages">Multiple <code>evalMap</code> stages</a></li>
+    <li class="level2 nav-leaf"><a href="#parallel-work-and-cancellation">Parallel work and cancellation</a></li>
   </ul>
 
   <p class="footer"></p>
@@ -477,6 +481,91 @@ mermaid.initialize({
           <p>The <code>app_lifecycle</code> span remains active until the resource is released. 
           If created at app startup, its duration matches the application&#39;s lifetime. </p>
         </div>
+        
+        <h3 id="tracing-a-stream" class="section"><a class="anchor-link left" href="#tracing-a-stream"><i class="icofont-laika link">&#xef71;</i></a>Tracing a stream</h3>
+        <p>To trace <code>fs.Stream</code> we can use <code>fs2.Stream#translate</code> with the captured tracing scope. 
+        <code>translate</code> is the boundary where you <em>re-enter</em> a captured tracing scope.</p>
+        <p>The general idea is to create a root span resource for each stream branch:</p>
+        <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">fs2</span><span>.</span><span class="type-name">Stream</span><span>
+
+</span><span class="keyword">def</span><span> </span><span class="declaration-name">stream</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>]: </span><span class="type-name">Async</span><span>: </span><span class="type-name">Tracer</span><span>]: </span><span class="type-name">Stream</span><span>[</span><span class="type-name">F</span><span>, </span><span class="type-name">Unit</span><span>] =
+  </span><span class="type-name">Stream</span><span>
+    .</span><span class="identifier">resource</span><span>(</span><span class="type-name">Tracer</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">span</span><span>(</span><span class="string-literal">&quot;root-span&quot;</span><span>).</span><span class="identifier">resource</span><span>)
+    .</span><span class="identifier">flatMap</span><span> { </span><span class="keyword">case</span><span> </span><span class="type-name">SpanOps</span><span>.</span><span class="type-name">Res</span><span>(</span><span class="identifier">_</span><span>, </span><span class="identifier">trace</span><span>) =&gt;
+      </span><span class="type-name">Stream</span><span>(</span><span class="string-literal">&quot;inner&quot;</span><span>)
+        .</span><span class="identifier">evalMap</span><span> { </span><span class="identifier">_</span><span> =&gt;
+          </span><span class="comment">// creates a child span of the root span  
+</span><span>          </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">span</span><span>(</span><span class="string-literal">&quot;inner-span&quot;</span><span>).</span><span class="identifier">use_</span><span>
+        }
+        .</span><span class="identifier">translate</span><span>(</span><span class="identifier">trace</span><span>)
+    }</span></code></pre>
+        <p>If you build a stream from a span resource:</p>
+        <ul>
+          <li><code>Tracer[F].span(&quot;...&quot;).resource</code> gives <code>SpanOps.Res(span, trace)</code></li>
+          <li><code>trace</code> is a natural transformation (<code>F ~&gt; F</code>) that runs effects in that span scope</li>
+          <li><code>stream.translate(trace)</code> applies that scope to all effects inside that stream branch</li>
+        </ul>
+        <p>Without <code>translate</code>, the current span context is either missing or incorrect in inner stream effects.</p>
+        
+        <h4 id="inner-scopes-and-flatmap" class="section"><a class="anchor-link left" href="#inner-scopes-and-flatmap"><i class="icofont-laika link">&#xef71;</i></a>Inner scopes and <code>flatMap</code></h4>
+        <p><code>flatMap</code> creates new stream structure, often evaluated in different internal contexts.
+        Treat each <code>flatMap</code> branch as a potential scope boundary.</p>
+        <p>Practical rules:<br></p>
+        <ul>
+          <li>When you enter a sub-stream that should keep parent context, apply <code>.translate(...)</code> at that boundary<br></li>
+          <li>If that sub-stream creates another span resource, use that span&#39;s own <code>.trace</code> for deeper nested work<br></li>
+        </ul>
+        <p>This produces explicit and predictable lineage:</p>
+        <ul>
+          <li>root -&gt; stage</li>
+          <li>stage -&gt; nested stage</li>
+          <li>no accidental cross-branch parenting</li>
+        </ul>
+        
+        <h4 id="multiple-evalmap-stages" class="section"><a class="anchor-link left" href="#multiple-evalmap-stages"><i class="icofont-laika link">&#xef71;</i></a>Multiple <code>evalMap</code> stages</h4>
+        <p>Calling <code>Tracer[F].span(&quot;...&quot;)</code> inside stream stages creates a new span each time the stage is evaluated.</p>
+        <p>For example:</p>
+        <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">trace</span><span>.</span><span class="type-name">SpanOps</span><span>
+
+</span><span class="keyword">def</span><span> </span><span class="declaration-name">pipeline</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>]: </span><span class="type-name">Async</span><span>: </span><span class="type-name">Tracer</span><span>]: </span><span class="type-name">F</span><span>[</span><span class="type-name">Unit</span><span>] =
+  </span><span class="type-name">Stream</span><span>(</span><span class="string-literal">&quot;a&quot;</span><span>, </span><span class="string-literal">&quot;b&quot;</span><span>)
+    .</span><span class="identifier">covary</span><span>[</span><span class="type-name">F</span><span>]
+    .</span><span class="identifier">flatMap</span><span> { </span><span class="identifier">element</span><span> =&gt;
+      </span><span class="type-name">Stream</span><span>
+        .</span><span class="identifier">resource</span><span>(</span><span class="type-name">Tracer</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">span</span><span>(</span><span class="string-literal">s&quot;root-</span><span class="substitution">$element</span><span class="string-literal">&quot;</span><span>).</span><span class="identifier">resource</span><span>)
+        .</span><span class="identifier">flatMap</span><span> { </span><span class="keyword">case</span><span> </span><span class="type-name">SpanOps</span><span>.</span><span class="type-name">Res</span><span>(</span><span class="identifier">_</span><span>, </span><span class="identifier">trace</span><span>) =&gt;
+          </span><span class="type-name">Stream</span><span>(</span><span class="identifier">element</span><span>)
+            .</span><span class="identifier">evalMap</span><span>(</span><span class="identifier">_</span><span> =&gt; </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">span</span><span>(</span><span class="string-literal">&quot;stage-1&quot;</span><span>).</span><span class="identifier">use_</span><span>)
+            .</span><span class="identifier">evalMap</span><span>(</span><span class="identifier">_</span><span> =&gt; </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">span</span><span>(</span><span class="string-literal">&quot;stage-2&quot;</span><span>).</span><span class="identifier">use_</span><span>)
+            .</span><span class="identifier">translate</span><span>(</span><span class="identifier">trace</span><span>)
+        }
+    }
+    .</span><span class="identifier">compile</span><span>
+    .</span><span class="identifier">drain</span></code></pre>
+        <p>For each element, <code>stage-1</code> and <code>stage-2</code> are children of that element&#39;s root span (<code>root-a</code>, <code>root-b</code>, <code>root-c</code>).
+        They are siblings, not parent/child, because each <code>use</code> closes before the next stage starts.</p>
+        <p>The structure is:</p>
+        <pre class="mermaid">gantt
+    dateFormat HH:mm:ss
+    axisFormat %M:%S
+
+    section Spans
+    root-a     :done, a1, 00:00:00, 00:00:10
+    stage-1    :done, a2, 00:00:01, 00:00:04
+    stage-2    :done, a3, 00:00:05, 00:00:09
+
+    root-b     :done, a4, 00:00:11, 00:00:21
+    stage-1    :done, a5, 00:00:12, 00:00:15
+    stage-2    :done, a6, 00:00:16, 00:00:20</pre>
+        
+        <h4 id="parallel-work-and-cancellation" class="section"><a class="anchor-link left" href="#parallel-work-and-cancellation"><i class="icofont-laika link">&#xef71;</i></a>Parallel work and cancellation</h4>
+        <p>In parallel combinators (<code>parEvalMap</code>, <code>parJoin</code>), spans can finish in any order.
+        Structure is still deterministic if each parallel branch is created in the intended translated scope.</p>
+        <p>For canceled branches:</p>
+        <ul>
+          <li>if cancellation happens while a span is active, that span is ended with canceled/error status</li>
+          <li>sibling branches continue and keep the same parent lineage</li>
+        </ul>
 
         
 <hr class="footer-rule"/>

@@ -104,12 +104,16 @@ exist and that each exported metric matches the semantic name, unit, description
 
 ```scala mdoc:compile-only
 import cats.effect.IO
+import io.opentelemetry.sdk.metrics.data.MetricData
+import io.opentelemetry.sdk.metrics.data.MetricDataType
 import org.typelevel.otel4s.metrics.Meter
+import org.typelevel.otel4s.oteljava.AttributeConverters._
 import org.typelevel.otel4s.semconv.MetricSpec
 import org.typelevel.otel4s.semconv.metrics.HttpMetrics
 import org.typelevel.otel4s.semconv.Requirement
 import org.typelevel.otel4s.oteljava.testkit.metrics.MetricsTestkit
-import org.typelevel.otel4s.oteljava.testkit.metrics.data.Metric
+
+import scala.jdk.CollectionConverters._
 
 def semanticTest(scenario: Meter[IO] => IO[Unit]): IO[Unit] = {
   // the set of metrics to check
@@ -123,40 +127,58 @@ def semanticTest(scenario: Meter[IO] => IO[Unit]): IO[Unit] = {
         // run a scenario to generate metrics 
         _       <- scenario(meter)
         // collect metrics
-        metrics <- testkit.collectMetrics[Metric]
+        metrics <- testkit.collectMetrics
         // ensure the expected metrics exist and match the spec
       } yield specs.foreach(spec => specTest(metrics, spec))
     }
   }
 }
 
-def specTest(metrics: List[Metric], spec: MetricSpec): Unit = {
-  val metric = metrics.find(_.name == spec.name)
+def specTest(metrics: List[MetricData], spec: MetricSpec): Unit = {
+  val metric = metrics.find(_.getName == spec.name)
   assert(
     metric.isDefined,
-    s"${spec.name} metric is missing. Available [${metrics.map(_.name).mkString(", ")}]",
+    s"${spec.name} metric is missing. Available [${metrics.map(_.getName).mkString(", ")}]",
   )
 
   val clue = s"[${spec.name}] has a mismatched property"
 
   metric.foreach { md =>
-    assert(md.name == spec.name, clue)
-    assert(md.description == Some(spec.description), clue)
-    assert(md.unit == Some(spec.unit), clue)
+    assert(md.getName == spec.name, clue)
+    assert(Option(md.getDescription).filter(_.nonEmpty) == Some(spec.description), clue)
+    assert(Option(md.getUnit).filter(_.nonEmpty) == Some(spec.unit), clue)
 
     val required = spec.attributeSpecs
       .filter(_.requirement.level == Requirement.Level.Required)
       .map(_.key)
       .toSet
 
-    val current = md.data.points.toVector
-      .flatMap(_.attributes.map(_.key))
+    val current = metricAttributes(md)
+      .map(_.key)
       .filter(key => required.contains(key))
       .toSet
 
     assert(current == required, clue)
   }
 }
+
+def metricAttributes(metric: MetricData) =
+  metric.getType match {
+    case MetricDataType.LONG_GAUGE =>
+      metric.getLongGaugeData.getPoints.asScala.toVector.flatMap(_.getAttributes.toScala)
+    case MetricDataType.DOUBLE_GAUGE =>
+      metric.getDoubleGaugeData.getPoints.asScala.toVector.flatMap(_.getAttributes.toScala)
+    case MetricDataType.LONG_SUM =>
+      metric.getLongSumData.getPoints.asScala.toVector.flatMap(_.getAttributes.toScala)
+    case MetricDataType.DOUBLE_SUM =>
+      metric.getDoubleSumData.getPoints.asScala.toVector.flatMap(_.getAttributes.toScala)
+    case MetricDataType.HISTOGRAM =>
+      metric.getHistogramData.getPoints.asScala.toVector.flatMap(_.getAttributes.toScala)
+    case MetricDataType.SUMMARY =>
+      metric.getSummaryData.getPoints.asScala.toVector.flatMap(_.getAttributes.toScala)
+    case MetricDataType.EXPONENTIAL_HISTOGRAM =>
+      metric.getExponentialHistogramData.getPoints.asScala.toVector.flatMap(_.getAttributes.toScala)
+  }
 ```
 
 [opentelemetry-semconv]: https://opentelemetry.io/docs/specs/semconv/

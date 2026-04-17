@@ -22,6 +22,7 @@ import cats.syntax.all._
 import io.opentelemetry.sdk.logs.LogRecordProcessor
 import io.opentelemetry.sdk.logs.SdkLoggerProvider
 import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder
+import io.opentelemetry.sdk.logs.data.LogRecordData
 import io.opentelemetry.sdk.logs.`export`.LogRecordExporter
 import io.opentelemetry.sdk.logs.`export`.SimpleLogRecordProcessor
 import io.opentelemetry.sdk.testing.exporter.InMemoryLogRecordExporter
@@ -41,19 +42,12 @@ sealed trait LogsTestkit[F[_]] {
     */
   def loggerProvider: LoggerProvider[F, Context]
 
-  /** Collects and returns logs.
-    *
-    * @example
-    *   {{{
-    * import io.opentelemetry.sdk.logs.data.LogRecordData
-    *
-    * LogsTestkit[F].collectLogs[LogRecordData] // OpenTelemetry Java models
-    *   }}}
+  /** Collects and returns finished logs.
     *
     * @see
     *   [[resetLogs]] to reset the internal buffer
     */
-  def collectLogs[A: FromLogRecordData]: F[List[A]]
+  def finishedLogs: F[List[LogRecordData]]
 
   /** Resets the internal buffer.
     */
@@ -131,13 +125,13 @@ object LogsTestkit {
       exporter: InMemoryLogRecordExporter
   ) extends LogsTestkit[F] {
 
-    def collectLogs[A: FromLogRecordData]: F[List[A]] =
+    def finishedLogs: F[List[LogRecordData]] =
       for {
         _ <- Conversions.asyncFromCompletableResultCode(
           Async[F].delay(processor.forceFlush())
         )
         result <- Async[F].delay(exporter.getFinishedLogRecordItems)
-      } yield result.asScala.toList.map(FromLogRecordData[A].from)
+      } yield result.asScala.toList
 
     def resetLogs: F[Unit] =
       Async[F].delay(exporter.reset())

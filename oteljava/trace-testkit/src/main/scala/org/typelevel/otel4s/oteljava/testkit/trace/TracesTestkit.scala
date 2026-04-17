@@ -26,6 +26,7 @@ import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter
 import io.opentelemetry.sdk.trace.SdkTracerProvider
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder
 import io.opentelemetry.sdk.trace.SpanProcessor
+import io.opentelemetry.sdk.trace.data.SpanData
 import io.opentelemetry.sdk.trace.`export`.SimpleSpanProcessor
 import io.opentelemetry.sdk.trace.`export`.SpanExporter
 import org.typelevel.otel4s.context.LocalProvider
@@ -48,17 +49,10 @@ sealed trait TracesTestkit[F[_]] {
 
   /** The list of finished spans (OpenTelemetry Java models).
     *
-    * @example
-    *   {{{
-    * import io.opentelemetry.sdk.trace.data.SpanData
-    *
-    * TracesTestkit[F].finishedSpans[SpanData] // OpenTelemetry Java models
-    *   }}}
-    *
     * @see
     *   [[resetSpans]] to reset the internal buffer
     */
-  def finishedSpans[A: FromSpanData]: F[List[A]]
+  def finishedSpans: F[List[SpanData]]
 
   /** Resets the internal buffer.
     */
@@ -167,13 +161,13 @@ object TracesTestkit {
       exporter: InMemorySpanExporter
   ) extends TracesTestkit[F] {
 
-    def finishedSpans[A: FromSpanData]: F[List[A]] =
+    def finishedSpans: F[List[SpanData]] =
       for {
         _ <- Conversions.asyncFromCompletableResultCode(
           Async[F].delay(processor.forceFlush())
         )
         result <- Async[F].delay(exporter.getFinishedSpanItems)
-      } yield result.asScala.toList.map(FromSpanData[A].from)
+      } yield result.asScala.toList
 
     def resetSpans: F[Unit] =
       Async[F].delay(exporter.reset())

@@ -21,11 +21,11 @@ import cats.effect.Async
 import cats.effect.Resource
 import io.opentelemetry.context.propagation.{TextMapPropagator => JTextMapPropagator}
 import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder
+import io.opentelemetry.sdk.logs.data.LogRecordData
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder
-import io.opentelemetry.sdk.testing.exporter.InMemoryLogRecordExporter
-import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader
-import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter
+import io.opentelemetry.sdk.metrics.data.MetricData
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder
+import io.opentelemetry.sdk.trace.data.SpanData
 import org.typelevel.otel4s.baggage.BaggageManager
 import org.typelevel.otel4s.context.LocalProvider
 import org.typelevel.otel4s.context.propagation.ContextPropagators
@@ -35,15 +35,10 @@ import org.typelevel.otel4s.oteljava.baggage.BaggageManagerImpl
 import org.typelevel.otel4s.oteljava.context.Context
 import org.typelevel.otel4s.oteljava.context.LocalContext
 import org.typelevel.otel4s.oteljava.context.LocalContextProvider
-import org.typelevel.otel4s.oteljava.testkit.logs.FromLogRecordData
 import org.typelevel.otel4s.oteljava.testkit.logs.LogsTestkit
-import org.typelevel.otel4s.oteljava.testkit.metrics.FromMetricData
 import org.typelevel.otel4s.oteljava.testkit.metrics.MetricsTestkit
-import org.typelevel.otel4s.oteljava.testkit.trace.FromSpanData
 import org.typelevel.otel4s.oteljava.testkit.trace.TracesTestkit
 import org.typelevel.otel4s.trace.TracerProvider
-
-import scala.util.chaining._
 
 sealed abstract class OtelJavaTestkit[F[_]] private (implicit
     val localContext: LocalContext[F]
@@ -57,7 +52,7 @@ sealed abstract class OtelJavaTestkit[F[_]] private (implicit
   val baggageManager: BaggageManager[F] = BaggageManagerImpl.fromLocal
 
   override def toString: String =
-    s"OtelJavaTestkit{meterProvider=$meterProvider, tracerProvider=$tracerProvider, propagators=$propagators}"
+    s"OtelJavaTestkit{meterProvider=$meterProvider, tracerProvider=$tracerProvider, loggerProvider=$loggerProvider, propagators=$propagators}"
 }
 
 object OtelJavaTestkit {
@@ -103,30 +98,6 @@ object OtelJavaTestkit {
       */
     def withTextMapPropagators(propagators: Iterable[JTextMapPropagator]): Builder[F]
 
-    /** Sets the `InMemoryLogRecordExporter` to use. Useful when Scala and Java instrumentation need to share the same
-      * exporter.
-      *
-      * @param exporter
-      *   the exporter to use
-      */
-    def withInMemoryLogRecordExporter(exporter: InMemoryLogRecordExporter): Builder[F]
-
-    /** Sets the `InMemoryMetricReader` to use. Useful when Scala and Java instrumentation need to share the same
-      * reader.
-      *
-      * @param reader
-      *   the reader to use
-      */
-    def withInMemoryMetricReader(reader: InMemoryMetricReader): Builder[F]
-
-    /** Sets the `InMemorySpanExporter` to use. Useful when Scala and Java instrumentation need to share the same
-      * exporter.
-      *
-      * @param exporter
-      *   the exporter to use
-      */
-    def withInMemorySpanExporter(exporter: InMemorySpanExporter): Builder[F]
-
     /** Creates [[OtelJavaTestkit]] using the configuration of this builder. */
     def build: Resource[F, OtelJavaTestkit[F]]
 
@@ -146,29 +117,6 @@ object OtelJavaTestkit {
   ): Resource[F, OtelJavaTestkit[F]] =
     customize(builder[F]).build
 
-  @deprecated(
-    "Use `OtelJavaTestkit.builder` to configure exporters and build the testkit",
-    "0.15.0"
-  )
-  def fromInMemory[F[_]: Async: LocalContextProvider](
-      inMemoryLogRecordExporter: InMemoryLogRecordExporter,
-      inMemoryMetricReader: InMemoryMetricReader,
-      inMemorySpanExporter: InMemorySpanExporter,
-      customizeMeterProviderBuilder: SdkMeterProviderBuilder => SdkMeterProviderBuilder = identity,
-      customizeTracerProviderBuilder: SdkTracerProviderBuilder => SdkTracerProviderBuilder = identity,
-      customizeLoggerProviderBuilder: SdkLoggerProviderBuilder => SdkLoggerProviderBuilder = identity,
-      textMapPropagators: Iterable[JTextMapPropagator] = Nil
-  ): Resource[F, OtelJavaTestkit[F]] =
-    builder[F]
-      .withInMemoryLogRecordExporter(inMemoryLogRecordExporter)
-      .withInMemoryMetricReader(inMemoryMetricReader)
-      .withInMemorySpanExporter(inMemorySpanExporter)
-      .addMeterProviderCustomizer(customizeMeterProviderBuilder)
-      .addTracerProviderCustomizer(customizeTracerProviderBuilder)
-      .addLoggerProviderCustomizer(customizeLoggerProviderBuilder)
-      .withTextMapPropagators(textMapPropagators)
-      .build
-
   private final class Impl[F[_]](
       logs: LogsTestkit[F],
       metrics: MetricsTestkit[F],
@@ -178,10 +126,10 @@ object OtelJavaTestkit {
     def meterProvider: MeterProvider[F] = metrics.meterProvider
     def tracerProvider: TracerProvider[F] = traces.tracerProvider
     def propagators: ContextPropagators[Context] = traces.propagators
-    def finishedSpans[A: FromSpanData]: F[List[A]] = traces.finishedSpans
+    def finishedSpans: F[List[SpanData]] = traces.finishedSpans
     def resetSpans: F[Unit] = traces.resetSpans
-    def collectMetrics[A: FromMetricData]: F[List[A]] = metrics.collectMetrics
-    def collectLogs[A: FromLogRecordData]: F[List[A]] = logs.collectLogs
+    def collectMetrics: F[List[MetricData]] = metrics.collectMetrics
+    def finishedLogs: F[List[LogRecordData]] = logs.finishedLogs
     def resetLogs: F[Unit] = logs.resetLogs
   }
 
@@ -190,9 +138,6 @@ object OtelJavaTestkit {
       tracerCustomizer: SdkTracerProviderBuilder => SdkTracerProviderBuilder = identity(_),
       loggerCustomizer: SdkLoggerProviderBuilder => SdkLoggerProviderBuilder = identity(_),
       textMapPropagators: Vector[JTextMapPropagator] = Vector.empty,
-      logExporter: Option[InMemoryLogRecordExporter] = None,
-      metricReader: Option[InMemoryMetricReader] = None,
-      spanExporter: Option[InMemorySpanExporter] = None
   ) extends Builder[F] {
 
     def addMeterProviderCustomizer(customizer: SdkMeterProviderBuilder => SdkMeterProviderBuilder): Builder[F] =
@@ -210,15 +155,6 @@ object OtelJavaTestkit {
     def withTextMapPropagators(propagators: Iterable[JTextMapPropagator]): Builder[F] =
       copy(textMapPropagators = propagators.toVector)
 
-    def withInMemoryLogRecordExporter(exporter: InMemoryLogRecordExporter): Builder[F] =
-      copy(logExporter = Some(exporter))
-
-    def withInMemoryMetricReader(reader: InMemoryMetricReader): Builder[F] =
-      copy(metricReader = Some(reader))
-
-    def withInMemorySpanExporter(exporter: InMemorySpanExporter): Builder[F] =
-      copy(spanExporter = Some(exporter))
-
     def build: Resource[F, OtelJavaTestkit[F]] =
       Resource.eval(LocalProvider[F, Context].local).flatMap { local =>
         val constLocal: LocalContextProvider[F] = LocalProvider.fromLocal(local)
@@ -226,18 +162,15 @@ object OtelJavaTestkit {
         val logsBuilder = LogsTestkit
           .builder[F](Async[F], constLocal)
           .addLoggerProviderCustomizer(loggerCustomizer)
-          .pipe(b => logExporter.fold(b)(b.withInMemoryLogRecordExporter))
 
         val metricsBuilder = MetricsTestkit
           .builder[F](Async[F], constLocal)
           .addMeterProviderCustomizer(meterCustomizer)
-          .pipe(b => metricReader.fold(b)(b.withInMemoryMetricReader))
 
         val tracesBuilder = TracesTestkit
           .builder[F](Async[F], constLocal)
           .addTracerProviderCustomizer(tracerCustomizer)
           .withTextMapPropagators(textMapPropagators)
-          .pipe(b => spanExporter.fold(b)(b.withInMemorySpanExporter))
 
         for {
           logs <- logsBuilder.build

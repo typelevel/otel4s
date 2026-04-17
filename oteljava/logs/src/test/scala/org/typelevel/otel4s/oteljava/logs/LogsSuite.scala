@@ -17,6 +17,7 @@
 package org.typelevel.otel4s.oteljava.logs
 
 import cats.effect.IO
+import io.opentelemetry.api.common.{AttributeKey => JAttributeKey}
 import io.opentelemetry.api.common.{Value => JValue}
 import io.opentelemetry.api.common.KeyValue
 import io.opentelemetry.api.common.ValueType
@@ -36,6 +37,7 @@ import org.scalacheck.Arbitrary
 import org.scalacheck.Gen
 import org.scalacheck.effect.PropF
 import org.typelevel.otel4s.AnyValue
+import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.Attributes
 import org.typelevel.otel4s.logs.Severity
 import org.typelevel.otel4s.logs.scalacheck.Arbitraries._
@@ -65,14 +67,7 @@ class LogsSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
           attributes: Attributes,
       ) =>
         val exporter = InMemoryLogRecordExporter.create()
-        val sdk = OpenTelemetrySdk
-          .builder()
-          .setLoggerProvider(
-            SdkLoggerProvider.builder().addLogRecordProcessor(SimpleLogRecordProcessor.create(exporter)).build()
-          )
-          .build()
-
-        val logs = Logs.fromJOpenTelemetry[IO](sdk)
+        val logs = createLogsModule(exporter)
 
         val loggerName = "test-logger"
         val loggerVersion = "1.0.0"
@@ -125,6 +120,101 @@ class LogsSuite extends CatsEffectSuite with ScalaCheckEffectSuite {
           }
         }
     }
+  }
+
+  test("withException emits exception attributes") {
+    val exporter = InMemoryLogRecordExporter.create()
+    val logs = createLogsModule(exporter)
+    val exception = new RuntimeException("error")
+
+    for {
+      logger <- logs.loggerProvider.logger("test-logger").get
+      _ <- logger.logRecordBuilder.withException(exception).emit
+      items <- IO.delay(exporter.getFinishedLogRecordItems.asScala.toList)
+    } yield {
+      assertEquals(items.size, 1)
+      val attributes = items.head.getAttributes
+
+      assertEquals(
+        attributes.get(JAttributeKey.stringKey("exception.type")),
+        classOf[RuntimeException].getCanonicalName
+      )
+      assertEquals(
+        attributes.get(JAttributeKey.stringKey("exception.message")),
+        "error"
+      )
+      assert(
+        attributes.get(JAttributeKey.stringKey("exception.stacktrace")) != null
+      )
+    }
+  }
+
+  test("withException keeps user-supplied exception attributes") {
+    val exporter = InMemoryLogRecordExporter.create()
+    val logs = createLogsModule(exporter)
+
+    for {
+      logger <- logs.loggerProvider.logger("test-logger").get
+      _ <- logger.logRecordBuilder
+        .addAttribute(Attribute("exception.message", "custom message"))
+        .withException(new RuntimeException("error"))
+        .emit
+      items <- IO.delay(exporter.getFinishedLogRecordItems.asScala.toList)
+    } yield {
+      assertEquals(items.size, 1)
+      val attributes = items.head.getAttributes
+
+      assertEquals(
+        attributes.get(JAttributeKey.stringKey("exception.type")),
+        classOf[RuntimeException].getCanonicalName
+      )
+      assertEquals(
+        attributes.get(JAttributeKey.stringKey("exception.message")),
+        "custom message"
+      )
+      assert(
+        attributes.get(JAttributeKey.stringKey("exception.stacktrace")) != null
+      )
+    }
+  }
+
+  test("addAttribute converts AnyValue attributes like addAttributes") {
+    val exporter = InMemoryLogRecordExporter.create()
+    val logs = createLogsModule(exporter)
+    val attribute =
+      Attribute("payload", AnyValue.map(Map("nested" -> AnyValue.seq(Seq(AnyValue.string("x"))))): AnyValue)
+
+    for {
+      logger <- logs.loggerProvider.logger("test-logger").get
+      _ <- logger.logRecordBuilder.addAttribute(attribute).emit
+      single <- IO.delay(exporter.getFinishedLogRecordItems.asScala.toList)
+      _ <- IO.delay(exporter.reset())
+      _ <- logger.logRecordBuilder.addAttributes(attribute).emit
+      bulk <- IO.delay(exporter.getFinishedLogRecordItems.asScala.toList)
+    } yield {
+      assertEquals(single.size, 1)
+      assertEquals(bulk.size, 1)
+
+      val key = JAttributeKey.valueKey(attribute.key.name)
+      val expected = attribute.value.toJava.asInstanceOf[JValue[Any]]
+
+      assertEquals(single.head.getAttributes.get(key).asInstanceOf[JValue[Any]], expected)
+      assertEquals(
+        single.head.getAttributes.get(key).asInstanceOf[JValue[Any]],
+        bulk.head.getAttributes.get(key).asInstanceOf[JValue[Any]]
+      )
+    }
+  }
+
+  private def createLogsModule(exporter: InMemoryLogRecordExporter): Logs[IO] = {
+    val sdk = OpenTelemetrySdk
+      .builder()
+      .setLoggerProvider(
+        SdkLoggerProvider.builder().addLogRecordProcessor(SimpleLogRecordProcessor.create(exporter)).build()
+      )
+      .build()
+
+    Logs.fromJOpenTelemetry[IO](sdk)
   }
 
   private implicit val compareJValue: Compare[JValue[Any], JValue[Any]] =

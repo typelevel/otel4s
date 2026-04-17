@@ -49,7 +49,7 @@ class SpanContextSuite extends ScalaCheckSuite {
     for {
       traceId <- traceIdGen
       spanId <- spanIdGen
-      traceFlags <- Gen.oneOf(TraceFlags.Sampled, TraceFlags.Default)
+      traceFlags <- Gen.chooseNum(0, 255).map(byte => TraceFlags.fromByte(byte.toByte))
       remote <- Arbitrary.arbitrary[Boolean]
     } yield SpanContext(traceId, spanId, traceFlags, TraceState.empty, remote)
 

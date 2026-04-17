@@ -19,6 +19,7 @@ package trace
 
 import cats.effect.kernel.MonadCancelThrow
 import cats.effect.kernel.Resource
+import cats.mtl.LiftKind
 import cats.syntax.functor._
 import cats.~>
 
@@ -242,19 +243,15 @@ sealed trait SpanOps[F[_]] {
     */
   final def surround[A](fa: F[A]): F[A] = use(_ => fa)
 
-  /** Modify the context `F` using an implicit [[KindTransformer]] from `F` to `G`.
+  /** Modify the context `F` using an implicit [[cats.mtl.LiftKind]] from `F` to `G`.
     */
-  def liftTo[G[_]: MonadCancelThrow](implicit
+  def liftTo[G[_]](implicit
       F: MonadCancelThrow[F],
-      kt: KindTransformer[F, G]
+      G: MonadCancelThrow[G],
+      lift: LiftKind[F, G]
   ): SpanOps[G] =
     new SpanOps.Lifted(this)
 
-  @deprecated("use `liftTo` instead", since = "otel4s 0.14.0")
-  def mapK[G[_]: MonadCancelThrow](implicit
-      F: MonadCancelThrow[F],
-      kt: KindTransformer[F, G]
-  ): SpanOps[G] = liftTo[G]
 }
 
 object SpanOps {
@@ -289,13 +286,11 @@ object SpanOps {
       */
     def trace: F ~> F
 
-    /** Modify the context `F` using an implicit [[KindTransformer]] from `F` to `G`.
+    /** Modify the context `F` using an implicit [[cats.mtl.LiftKind]] from `F` to `G`.
       */
-    def liftTo[G[_]](implicit kt: KindTransformer[F, G]): Res[G] =
-      Res(span.liftTo[G], kt.liftFunctionK(trace))
+    def liftTo[G[_]](implicit lift: LiftKind[F, G]): Res[G] =
+      Res(span.liftTo[G], lift.liftScope(trace))
 
-    @deprecated("use `liftTo` instead", since = "otel4s 0.14.0")
-    def mapK[G[_]](implicit kt: KindTransformer[F, G]): Res[G] = liftTo[G]
   }
 
   object Res {
@@ -312,16 +307,16 @@ object SpanOps {
   }
 
   /** Implementation for [[SpanOps.liftTo]]. */
-  private class Lifted[F[_]: MonadCancelThrow, G[_]: MonadCancelThrow](
+  private class Lifted[F[_], G[_]](
       ops: SpanOps[F]
-  )(implicit kt: KindTransformer[F, G])
+  )(implicit F: MonadCancelThrow[F], G: MonadCancelThrow[G], lift: LiftKind[F, G])
       extends SpanOps[G] {
     def startUnmanaged: G[Span[G]] =
-      kt.liftK(ops.startUnmanaged).map(_.liftTo[G])
+      lift(ops.startUnmanaged).map(_.liftTo[G])
     def resource: Resource[G, Res[G]] =
-      ops.resource.mapK(kt.liftK).map(res => res.liftTo[G])
+      ops.resource.mapK(lift).map(res => res.liftTo[G])
     def use[A](f: Span[G] => G[A]): G[A] =
       resource.use { res => res.trace(f(res.span)) }
-    def use_ : G[Unit] = kt.liftK(ops.use_)
+    def use_ : G[Unit] = lift(ops.use_)
   }
 }

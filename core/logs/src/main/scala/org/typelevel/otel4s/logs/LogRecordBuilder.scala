@@ -18,9 +18,9 @@ package org.typelevel.otel4s.logs
 
 import cats.Applicative
 import cats.Monad
+import cats.mtl.LiftValue
 import org.typelevel.otel4s.AnyValue
 import org.typelevel.otel4s.Attribute
-import org.typelevel.otel4s.KindTransformer
 
 import java.time.Instant
 import scala.collection.immutable
@@ -114,6 +114,13 @@ sealed trait LogRecordBuilder[F[_], Ctx] {
     */
   def withEventName(eventName: String): LogRecordBuilder[F, Ctx]
 
+  /** Sets `exception.*` attributes based on the given `Throwable`:
+    *   - `exception.type` is set to the exception class name
+    *   - `exception.message` is set to the exception message
+    *   - `exception.stacktrace` is set to the exception stack trace as a string
+    */
+  def withException(exception: Throwable): LogRecordBuilder[F, Ctx]
+
   /** Adds the given attribute to the builder.
     *
     * @note
@@ -141,10 +148,10 @@ sealed trait LogRecordBuilder[F[_], Ctx] {
     */
   def emit: F[Unit]
 
-  /** Modify the context `F` using an implicit [[KindTransformer]] from `F` to `G`.
+  /** Modify the context `F` using an implicit [[cats.mtl.LiftValue]] from `F` to `G`.
     */
-  def liftTo[G[_]](implicit G: Monad[G], kt: KindTransformer[F, G]): LogRecordBuilder[G, Ctx] =
-    new LogRecordBuilder.MappedK(this)
+  def liftTo[G[_]](implicit G: Monad[G], lift: LiftValue[F, G]): LogRecordBuilder[G, Ctx] =
+    new LogRecordBuilder.Lifted(this)
 
 }
 
@@ -162,15 +169,16 @@ object LogRecordBuilder {
       def withSeverityText(severityText: String): LogRecordBuilder[F, Ctx] = this
       def withBody(body: AnyValue): LogRecordBuilder[F, Ctx] = this
       def withEventName(eventName: String): LogRecordBuilder[F, Ctx] = this
+      def withException(exception: Throwable): LogRecordBuilder[F, Ctx] = this
       def addAttribute[A](attribute: Attribute[A]): LogRecordBuilder[F, Ctx] = this
       def addAttributes(attributes: Attribute[_]*): LogRecordBuilder[F, Ctx] = this
       def addAttributes(attributes: immutable.Iterable[Attribute[_]]): LogRecordBuilder[F, Ctx] = this
       def emit: F[Unit] = Applicative[F].unit
     }
 
-  private final class MappedK[F[_], G[_]: Monad, Ctx](
+  private final class Lifted[F[_], G[_], Ctx](
       builder: LogRecordBuilder[F, Ctx]
-  )(implicit kt: KindTransformer[F, G])
+  )(implicit G: Monad[G], lift: LiftValue[F, G])
       extends LogRecordBuilder[G, Ctx] {
 
     def withTimestamp(timestamp: FiniteDuration): LogRecordBuilder[G, Ctx] =
@@ -200,6 +208,9 @@ object LogRecordBuilder {
     def withEventName(eventName: String): LogRecordBuilder[G, Ctx] =
       builder.withEventName(eventName).liftTo
 
+    def withException(exception: Throwable): LogRecordBuilder[G, Ctx] =
+      builder.withException(exception).liftTo
+
     def addAttribute[A](attribute: Attribute[A]): LogRecordBuilder[G, Ctx] =
       builder.addAttribute(attribute).liftTo
 
@@ -210,7 +221,7 @@ object LogRecordBuilder {
       builder.addAttributes(attributes).liftTo
 
     def emit: G[Unit] =
-      kt.liftK(builder.emit)
+      lift(builder.emit)
   }
 
 }

@@ -29,16 +29,16 @@ private[oteljava] class MeterImpl[F[_]: Async: AskContext](jMeter: JMeter) exten
   val meta: InstrumentMeta[F] = InstrumentMeta.enabled
 
   def counter[A: MeasurementValue](name: String): Counter.Builder[F, A] =
-    CounterBuilderImpl(jMeter, name, meta)
+    CounterBuilderImpl(jMeter, name)
 
   def histogram[A: MeasurementValue](name: String): Histogram.Builder[F, A] =
-    HistogramBuilderImpl(jMeter, name, meta)
+    HistogramBuilderImpl(jMeter, name)
 
   def upDownCounter[A: MeasurementValue](name: String): UpDownCounter.Builder[F, A] =
-    UpDownCounterBuilderImpl(jMeter, name, meta)
+    UpDownCounterBuilderImpl(jMeter, name)
 
   def gauge[A: MeasurementValue](name: String): Gauge.Builder[F, A] =
-    GaugeBuilderImpl(jMeter, name, meta)
+    GaugeBuilderImpl(jMeter, name)
 
   def observableGauge[A: MeasurementValue](
       name: String

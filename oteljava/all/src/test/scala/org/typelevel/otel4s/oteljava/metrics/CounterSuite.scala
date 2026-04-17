@@ -20,12 +20,12 @@ package metrics
 
 import cats.effect.IO
 import cats.effect.Resource
+import io.opentelemetry.api.common.AttributeKey
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo
 import io.opentelemetry.sdk.metrics._
+import io.opentelemetry.sdk.metrics.data.MetricDataType
 import munit.CatsEffectSuite
-import org.typelevel.otel4s.oteljava.testkit.InstrumentationScope
-import org.typelevel.otel4s.oteljava.testkit.TelemetryResource
 import org.typelevel.otel4s.oteljava.testkit.metrics.MetricsTestkit
-import org.typelevel.otel4s.oteljava.testkit.metrics.data.Metric
 
 import scala.jdk.CollectionConverters._
 
@@ -48,32 +48,37 @@ class CounterSuite extends CatsEffectSuite {
 
         _ <- counter.add(1L, Attribute("string-attribute", "value"))
 
-        metrics <- sdk.collectMetrics[Metric]
+        metrics <- sdk.collectMetrics
       } yield {
-        val resourceAttributes = Attributes(
-          Attribute("service.name", "unknown_service:java"),
-          Attribute("telemetry.sdk.language", "java"),
-          Attribute("telemetry.sdk.name", "opentelemetry"),
-          Attribute("telemetry.sdk.version", BuildInfo.openTelemetrySdkVersion)
-        )
+        val scope = InstrumentationScopeInfo
+          .builder("java.otel.suite")
+          .setVersion("1.0")
+          .setSchemaUrl("https://localhost:8080")
+          .build()
 
-        val scope = InstrumentationScope(
-          name = "java.otel.suite",
-          version = Some("1.0"),
-          schemaUrl = Some("https://localhost:8080"),
-          attributes = Attributes.empty
-        )
-
-        assertEquals(metrics.map(_.name), List("counter"))
-        assertEquals(metrics.map(_.description), List(Some("description")))
-        assertEquals(metrics.map(_.unit), List(Some("unit")))
+        assertEquals(metrics.map(_.getName), List("counter"))
+        assertEquals(metrics.map(m => Option(m.getDescription).filter(_.nonEmpty)), List(Some("description")))
+        assertEquals(metrics.map(m => Option(m.getUnit).filter(_.nonEmpty)), List(Some("unit")))
         assertEquals(
-          metrics.map(_.resource),
-          List(TelemetryResource(resourceAttributes, None))
+          metrics.map(_.getResource.getAttributes.get(AttributeKey.stringKey("service.name"))),
+          List("unknown_service:java")
         )
-        assertEquals(metrics.map(_.scope), List(scope))
+        assertEquals(
+          metrics.map(_.getResource.getAttributes.get(AttributeKey.stringKey("telemetry.sdk.language"))),
+          List("java")
+        )
+        assertEquals(
+          metrics.map(_.getResource.getAttributes.get(AttributeKey.stringKey("telemetry.sdk.name"))),
+          List("opentelemetry")
+        )
+        assertEquals(
+          metrics.map(_.getResource.getAttributes.get(AttributeKey.stringKey("telemetry.sdk.version"))),
+          List(BuildInfo.openTelemetrySdkVersion)
+        )
+        assertEquals(metrics.map(_.getInstrumentationScopeInfo), List(scope))
+        assertEquals(metrics.map(_.getType), List(MetricDataType.LONG_SUM))
         assertEquals[List[Any], List[Any]](
-          metrics.map(_.data.points.map(_.value)),
+          metrics.map(_.getLongSumData.getPoints.asScala.toList.map(_.getValue)),
           List(List(1L))
         )
       }
@@ -88,7 +93,10 @@ class CounterSuite extends CatsEffectSuite {
           .builder()
           .setAggregation(
             Aggregation.explicitBucketHistogram(
-              HistogramBuckets.map(Double.box).asJava
+              ExplicitBucketHistogramOptions
+                .builder()
+                .setBucketBoundaries(HistogramBuckets.map(Double.box).asJava)
+                .build(),
             )
           )
           .build()

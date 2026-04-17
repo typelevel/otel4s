@@ -18,12 +18,12 @@ package org.typelevel.otel4s.trace.meta
 
 import cats.Applicative
 import cats.Monad
+import cats.mtl.LiftValue
 import cats.~>
-import org.typelevel.otel4s.KindTransformer
 
 /** The instrument's metadata. Indicates whether instrumentation is enabled.
   */
-sealed trait InstrumentMeta[F[_]] extends org.typelevel.otel4s.meta.InstrumentMeta.Dynamic.Unsealed[F] {
+sealed trait InstrumentMeta[F[_]] {
 
   /** Indicates whether instrumentation is enabled or not.
     */
@@ -33,20 +33,19 @@ sealed trait InstrumentMeta[F[_]] extends org.typelevel.otel4s.meta.InstrumentMe
     */
   def unit: F[Unit]
 
-  /** Modify the context `F` using an implicit [[KindTransformer]] from `F` to `G`.
+  /** Modify the context `F` using an implicit [[cats.mtl.LiftValue]] from `F` to `G`.
     */
-  override def liftTo[G[_]: Monad](implicit kt: KindTransformer[F, G]): InstrumentMeta[G] =
-    new InstrumentMeta.MappedK(this)(kt.liftK)
+  def liftTo[G[_]](implicit lift: LiftValue[F, G]): InstrumentMeta[G] =
+    new InstrumentMeta.Lifted(this)(lift)
 
 }
 
 object InstrumentMeta {
 
-  private[otel4s] def from[F[_]: Monad](enabled: F[Boolean]): InstrumentMeta[F] =
+  private[otel4s] def dynamic[F[_]: Monad](enabled: F[Boolean]): InstrumentMeta[F] =
     new InstrumentMeta[F] {
       def isEnabled: F[Boolean] = enabled
-      def unit: F[Unit] = Monad[F].unit
-      def whenEnabled(f: => F[Unit]): F[Unit] = Monad[F].ifM(isEnabled)(f, unit)
+      def unit: F[Unit] = Applicative[F].unit
     }
 
   private[otel4s] def enabled[F[_]: Applicative]: InstrumentMeta[F] =
@@ -58,12 +57,10 @@ object InstrumentMeta {
   private final class Const[F[_]: Applicative](value: Boolean) extends InstrumentMeta[F] {
     val isEnabled: F[Boolean] = Applicative[F].pure(value)
     val unit: F[Unit] = Applicative[F].unit
-    def whenEnabled(f: => F[Unit]): F[Unit] = Applicative[F].whenA(value)(f)
   }
 
-  private final class MappedK[F[_], G[_]: Monad](meta: InstrumentMeta[F])(f: F ~> G) extends InstrumentMeta[G] {
+  private final class Lifted[F[_], G[_]](meta: InstrumentMeta[F])(f: F ~> G) extends InstrumentMeta[G] {
     def isEnabled: G[Boolean] = f(meta.isEnabled)
     def unit: G[Unit] = f(meta.unit)
-    def whenEnabled(f: => G[Unit]): G[Unit] = Monad[G].ifM(isEnabled)(f, Monad[G].unit)
   }
 }

@@ -19,6 +19,8 @@ package logs
 
 import cats.Applicative
 import cats.Monad
+import cats.mtl.LiftValue
+import org.typelevel.otel4s.context.Contextual
 import org.typelevel.otel4s.logs.meta.InstrumentMeta
 
 /** The entry point into a log pipeline.
@@ -36,6 +38,16 @@ sealed trait Logger[F[_], Ctx] {
     */
   def meta: InstrumentMeta[F, Ctx]
 
+  /** Returns the current context.
+    *
+    * Useful when a log record needs to capture the context now and attach it later via
+    * [[org.typelevel.otel4s.logs.LogRecordBuilder.withContext LogRecordBuilder.withContext]].
+    *
+    * This is typically the same context that would be used by [[LogRecordBuilder.emit]] if no explicit context is
+    * attached to the record.
+    */
+  def currentContext: F[Ctx]
+
   /** Returns a [[LogRecordBuilder]] to emit a log record.
     *
     * Construct the log record using [[LogRecordBuilder]], then emit the record via [[LogRecordBuilder.emit]].
@@ -47,10 +59,10 @@ sealed trait Logger[F[_], Ctx] {
     */
   def logRecordBuilder: LogRecordBuilder[F, Ctx]
 
-  /** Modify the context `F` using an implicit [[KindTransformer]] from `F` to `G`.
+  /** Modify the context `F` using an implicit [[cats.mtl.LiftValue]] from `F` to `G`.
     */
-  def liftTo[G[_]: Monad](implicit kt: KindTransformer[F, G]): Logger[G, Ctx] =
-    new Logger.MappedK(this)
+  def liftTo[G[_]](implicit G: Monad[G], lift: LiftValue[F, G]): Logger[G, Ctx] =
+    new Logger.Lifted(this)
 }
 
 object Logger {
@@ -65,22 +77,24 @@ object Logger {
     * @tparam F
     *   the higher-kinded type of polymorphic effect
     */
-  def noop[F[_]: Applicative, Ctx]: Logger[F, Ctx] =
+  def noop[F[_]: Applicative, Ctx: Contextual]: Logger[F, Ctx] =
     new Logger[F, Ctx] {
       val meta: InstrumentMeta[F, Ctx] = InstrumentMeta.disabled[F, Ctx]
+      val currentContext: F[Ctx] = Applicative[F].pure(Contextual[Ctx].root)
       val logRecordBuilder: LogRecordBuilder[F, Ctx] = LogRecordBuilder.noop[F, Ctx]
     }
 
   /** Implementation for [[Logger.liftTo]]. */
-  private class MappedK[F[_], G[_]: Monad, Ctx](
+  private class Lifted[F[_], G[_]: Monad, Ctx](
       logger: Logger[F, Ctx]
-  )(implicit kt: KindTransformer[F, G])
+  )(implicit lift: LiftValue[F, G])
       extends Logger[G, Ctx] {
     val meta: InstrumentMeta[G, Ctx] = logger.meta.liftTo[G]
+    def currentContext: G[Ctx] = lift(logger.currentContext)
     def logRecordBuilder: LogRecordBuilder[G, Ctx] = logger.logRecordBuilder.liftTo[G]
   }
 
   object Implicits {
-    implicit def noop[F[_]: Applicative, Ctx]: Logger[F, Ctx] = Logger.noop
+    implicit def noop[F[_]: Applicative, Ctx: Contextual]: Logger[F, Ctx] = Logger.noop
   }
 }

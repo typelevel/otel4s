@@ -17,13 +17,38 @@
 package org.typelevel.otel4s.logs.meta
 
 import cats.Applicative
-import cats.~>
-import org.typelevel.otel4s.KindTransformer
+import cats.Monad
+import cats.mtl.Ask
+import cats.mtl.LiftValue
+import cats.syntax.flatMap._
 import org.typelevel.otel4s.logs.Severity
 
 /** The instrument's metadata. Indicates whether instrumentation is enabled.
   */
 sealed trait InstrumentMeta[F[_], Ctx] {
+
+  /** Indicates whether instrumentation is enabled.
+    *
+    * The currently available context will be automatically used, a shortcut for:
+    * {{{
+    *   Local[IO, Ctx].ask.flatMap(ctx => meta.isEnabled(ctx, severity, eventName))
+    *   // or
+    *   logger.currentContext.flatMap(ctx => meta.isEnabled(ctx, severity, eventName))
+    * }}}
+    *
+    * @param severity
+    *   the severity of the log record
+    *
+    * @param eventName
+    *   the event name to be associated with the log record
+    *
+    * @return
+    *   `true` if instrumentation is enabled, `false` otherwise
+    *
+    * @see
+    *   [[https://opentelemetry.io/docs/specs/otel/logs/api/#enabled]]
+    */
+  def isEnabled(severity: Option[Severity], eventName: Option[String]): F[Boolean]
 
   /** Indicates whether instrumentation is enabled.
     *
@@ -44,13 +69,18 @@ sealed trait InstrumentMeta[F[_], Ctx] {
     */
   def isEnabled(context: Ctx, severity: Option[Severity], eventName: Option[String]): F[Boolean]
 
-  /** Modify the context `F` using an implicit [[KindTransformer]] from `F` to `G`.
+  /** Modify the context `F` using an implicit [[cats.mtl.LiftValue]] from `F` to `G`.
     */
-  def liftTo[G[_]](implicit kt: KindTransformer[F, G]): InstrumentMeta[G, Ctx] =
-    new InstrumentMeta.MappedK(this)(kt.liftK)
+  def liftTo[G[_]](implicit lift: LiftValue[F, G]): InstrumentMeta[G, Ctx] =
+    new InstrumentMeta.Lifted(this)(lift)
 }
 
 object InstrumentMeta {
+
+  private[otel4s] def dynamic[F[_], Ctx](
+      enabled: (Ctx, Option[Severity], Option[String]) => F[Boolean]
+  )(implicit M: Monad[F], A: Ask[F, Ctx]): InstrumentMeta[F, Ctx] =
+    new Dynamic(enabled)
 
   private[otel4s] def enabled[F[_]: Applicative, Ctx]: InstrumentMeta[F, Ctx] =
     new Const(true)
@@ -62,10 +92,28 @@ object InstrumentMeta {
     private val enabled: F[Boolean] = Applicative[F].pure(value)
     def isEnabled(context: Ctx, severity: Option[Severity], eventName: Option[String]): F[Boolean] =
       enabled
+
+    def isEnabled(severity: Option[Severity], eventName: Option[String]): F[Boolean] =
+      enabled
   }
 
-  private final class MappedK[F[_], G[_], Ctx](meta: InstrumentMeta[F, Ctx])(f: F ~> G) extends InstrumentMeta[G, Ctx] {
+  private final class Dynamic[F[_], Ctx](
+      enabled: (Ctx, Option[Severity], Option[String]) => F[Boolean]
+  )(implicit M: Monad[F], A: Ask[F, Ctx])
+      extends InstrumentMeta[F, Ctx] {
+    def isEnabled(severity: Option[Severity], eventName: Option[String]): F[Boolean] =
+      A.ask[Ctx].flatMap(ctx => isEnabled(ctx, severity, eventName))
+
+    def isEnabled(context: Ctx, severity: Option[Severity], eventName: Option[String]): F[Boolean] =
+      enabled(context, severity, eventName)
+  }
+
+  private final class Lifted[F[_], G[_], Ctx](meta: InstrumentMeta[F, Ctx])(lift: LiftValue[F, G])
+      extends InstrumentMeta[G, Ctx] {
     def isEnabled(context: Ctx, severity: Option[Severity], eventName: Option[String]): G[Boolean] =
-      f(meta.isEnabled(context, severity, eventName))
+      lift(meta.isEnabled(context, severity, eventName))
+
+    def isEnabled(severity: Option[Severity], eventName: Option[String]): G[Boolean] =
+      lift(meta.isEnabled(severity, eventName))
   }
 }

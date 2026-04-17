@@ -19,6 +19,7 @@ package trace
 
 import cats.Applicative
 import cats.effect.kernel.MonadCancelThrow
+import cats.mtl.LiftKind
 import cats.syntax.functor._
 
 /** The entry point of the tracing API. Provides access to [[Tracer]].
@@ -58,19 +59,15 @@ sealed trait TracerProvider[F[_]] {
     */
   def tracer(name: String): TracerBuilder[F]
 
-  /** Modify the context `F` using an implicit [[KindTransformer]] from `F` to `G`.
+  /** Modify the context `F` using an implicit [[cats.mtl.LiftKind]] from `F` to `G`.
     */
-  def liftTo[G[_]: MonadCancelThrow](implicit
+  def liftTo[G[_]](implicit
       F: MonadCancelThrow[F],
-      kt: KindTransformer[F, G]
+      G: MonadCancelThrow[G],
+      lift: LiftKind[F, G]
   ): TracerProvider[G] =
     new TracerProvider.Lifted(this)
 
-  @deprecated("use `liftTo` instead", since = "otel4s 0.14.0")
-  def mapK[G[_]: MonadCancelThrow](implicit
-      F: MonadCancelThrow[F],
-      kt: KindTransformer[F, G]
-  ): TracerProvider[G] = liftTo[G]
 }
 
 object TracerProvider {
@@ -93,12 +90,12 @@ object TracerProvider {
         "TracerProvider.Noop"
     }
 
-  private class Lifted[F[_]: MonadCancelThrow, G[_]: MonadCancelThrow](
+  private class Lifted[F[_], G[_]](
       provider: TracerProvider[F]
-  )(implicit kt: KindTransformer[F, G])
+  )(implicit F: MonadCancelThrow[F], G: MonadCancelThrow[G], lift: LiftKind[F, G])
       extends TracerProvider[G] {
     override def get(name: String): G[Tracer[G]] =
-      kt.liftK(provider.get(name).map(_.liftTo[G]))
+      lift(provider.get(name).map(_.liftTo[G]))
     def tracer(name: String): TracerBuilder[G] =
       provider.tracer(name).liftTo[G]
   }

@@ -611,7 +611,7 @@ class TracerSuite extends BaseTracerSuite[Context, Context.Key] {
             traces.tracerProvider
 
           def finishedSpans: IO[List[SpanDataWrapper[SpanData]]] =
-            traces.finishedSpans[SpanData].map(_.map(toWrapper))
+            traces.finishedSpans.map(_.map(toWrapper))
         }
       }
 

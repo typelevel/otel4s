@@ -18,11 +18,11 @@ package org.typelevel.otel4s.oteljava.testkit.logs
 
 import cats.effect.Async
 import cats.effect.Resource
-import cats.mtl.Ask
 import cats.syntax.all._
 import io.opentelemetry.sdk.logs.LogRecordProcessor
 import io.opentelemetry.sdk.logs.SdkLoggerProvider
 import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder
+import io.opentelemetry.sdk.logs.data.LogRecordData
 import io.opentelemetry.sdk.logs.`export`.LogRecordExporter
 import io.opentelemetry.sdk.logs.`export`.SimpleLogRecordProcessor
 import io.opentelemetry.sdk.testing.exporter.InMemoryLogRecordExporter
@@ -42,19 +42,12 @@ sealed trait LogsTestkit[F[_]] {
     */
   def loggerProvider: LoggerProvider[F, Context]
 
-  /** Collects and returns logs.
-    *
-    * @example
-    *   {{{
-    * import io.opentelemetry.sdk.logs.data.LogRecordData
-    *
-    * LogsTestkit[F].collectLogs[LogRecordData] // OpenTelemetry Java models
-    *   }}}
+  /** Collects and returns finished logs.
     *
     * @see
     *   [[resetLogs]] to reset the internal buffer
     */
-  def collectLogs[A: FromLogRecordData]: F[List[A]]
+  def finishedLogs: F[List[LogRecordData]]
 
   /** Resets the internal buffer.
     */
@@ -74,14 +67,6 @@ object LogsTestkit {
       *   the customizer to add
       */
     def addLoggerProviderCustomizer(customizer: SdkLoggerProviderBuilder => SdkLoggerProviderBuilder): Builder[F]
-
-    /** Sets the `InMemoryLogRecordExporter` to use. Useful when a Scala and Java instrumentation need to share the same
-      * exporter.
-      *
-      * @param exporter
-      *   the exporter to use
-      */
-    def withInMemoryLogRecordExporter(exporter: InMemoryLogRecordExporter): Builder[F]
 
     /** Creates [[LogsTestkit]] using the configuration of this builder.
       */
@@ -103,31 +88,6 @@ object LogsTestkit {
       customize: Builder[F] => Builder[F] = identity[Builder[F]](_)
   ): Resource[F, LogsTestkit[F]] =
     customize(builder[F]).build
-
-  /** Creates [[LogsTestkit]] that keeps logs in-memory from an existing exporter. Useful when a Scala instrumentation
-    * requires a Java instrumentation, both sharing the same exporter.
-    *
-    * @param customize
-    *   the customization of the builder
-    *
-    * @note
-    *   this implementation uses a constant root `Context` via `Ask.const(Context.root)`. That means the module is
-    *   isolated: it does not inherit or propagate the surrounding span context. This is useful if you only need logging
-    *   (without traces or metrics) and want the module to operate independently. If instead you want interoperability -
-    *   i.e. to capture the current span context so that logs, traces, and metrics can all work together - use
-    *   `OtelJavaTestkit.inMemory`.
-    */
-  @deprecated(
-    "Use `LogsTestkit.inMemory` overloaded alternative with `Builder[F]` customizer or `LogsTestkit.builder`",
-    "0.15.0"
-  )
-  def fromInMemory[F[_]: Async](
-      inMemoryLogRecordExporter: InMemoryLogRecordExporter,
-      customize: SdkLoggerProviderBuilder => SdkLoggerProviderBuilder = identity
-  ): Resource[F, LogsTestkit[F]] = {
-    implicit val askContext: AskContext[F] = Ask.const(Context.root)
-    create[F](inMemoryLogRecordExporter, customize)
-  }
 
   private def create[F[_]: Async: AskContext](
       customize: SdkLoggerProviderBuilder => SdkLoggerProviderBuilder
@@ -165,13 +125,13 @@ object LogsTestkit {
       exporter: InMemoryLogRecordExporter
   ) extends LogsTestkit[F] {
 
-    def collectLogs[A: FromLogRecordData]: F[List[A]] =
+    def finishedLogs: F[List[LogRecordData]] =
       for {
         _ <- Conversions.asyncFromCompletableResultCode(
           Async[F].delay(processor.forceFlush())
         )
         result <- Async[F].delay(exporter.getFinishedLogRecordItems)
-      } yield result.asScala.toList.map(FromLogRecordData[A].from)
+      } yield result.asScala.toList
 
     def resetLogs: F[Unit] =
       Async[F].delay(exporter.reset())
@@ -180,18 +140,14 @@ object LogsTestkit {
 
   private final case class BuilderImpl[F[_]: Async: LocalContextProvider](
       customizer: SdkLoggerProviderBuilder => SdkLoggerProviderBuilder = identity(_),
-      inMemoryLogRecordExporter: Option[InMemoryLogRecordExporter] = None,
   ) extends Builder[F] {
 
     def addLoggerProviderCustomizer(f: SdkLoggerProviderBuilder => SdkLoggerProviderBuilder): Builder[F] =
       copy(customizer = this.customizer.andThen(f))
 
-    def withInMemoryLogRecordExporter(exporter: InMemoryLogRecordExporter): Builder[F] =
-      copy(inMemoryLogRecordExporter = Some(exporter))
-
     def build: Resource[F, LogsTestkit[F]] =
       Resource.eval(LocalProvider[F, Context].local).flatMap { implicit local =>
-        inMemoryLogRecordExporter.fold(create[F](customizer))(create[F](_, customizer))
+        create[F](customizer)
       }
   }
 }

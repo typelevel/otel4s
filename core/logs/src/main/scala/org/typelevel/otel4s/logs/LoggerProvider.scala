@@ -18,9 +18,10 @@ package org.typelevel.otel4s
 package logs
 
 import cats.Applicative
-import cats.Functor
 import cats.Monad
+import cats.mtl.LiftValue
 import cats.syntax.functor._
+import org.typelevel.otel4s.context.Contextual
 
 /** The entry point of the logging API. Provides access to [[Logger]].
   *
@@ -62,10 +63,10 @@ sealed trait LoggerProvider[F[_], Ctx] {
     */
   def logger(name: String): LoggerBuilder[F, Ctx]
 
-  /** Modify the context `F` using an implicit [[KindTransformer]] from `F` to `G`.
+  /** Modify the context `F` using an implicit [[cats.mtl.LiftValue]] from `F` to `G`.
     */
-  def liftTo[G[_]](implicit F: Functor[F], G: Monad[G], kt: KindTransformer[F, G]): LoggerProvider[G, Ctx] =
-    new LoggerProvider.MappedK(this)
+  def liftTo[G[_]](implicit G: Monad[G], lift: LiftValue[F, G]): LoggerProvider[G, Ctx] =
+    new LoggerProvider.Lifted(this)
 }
 
 object LoggerProvider {
@@ -80,7 +81,7 @@ object LoggerProvider {
     * @tparam F
     *   the higher-kinded type of a polymorphic effect
     */
-  def noop[F[_]: Applicative, Ctx]: LoggerProvider[F, Ctx] =
+  def noop[F[_]: Applicative, Ctx: Contextual]: LoggerProvider[F, Ctx] =
     new LoggerProvider[F, Ctx] {
       def logger(name: String): LoggerBuilder[F, Ctx] =
         LoggerBuilder.noop
@@ -88,12 +89,13 @@ object LoggerProvider {
         "LoggerProvider.Noop"
     }
 
-  private class MappedK[F[_]: Functor, G[_]: Monad, Ctx](
+  private class Lifted[F[_], G[_], Ctx](
       provider: LoggerProvider[F, Ctx]
-  )(implicit kt: KindTransformer[F, G])
+  )(implicit G: Monad[G], lift: LiftValue[F, G])
       extends LoggerProvider[G, Ctx] {
+    private[this] implicit def F: Applicative[F] = lift.applicativeF
     override def get(name: String): G[Logger[G, Ctx]] =
-      kt.liftK(provider.get(name).map(_.liftTo[G]))
+      lift(provider.get(name).map(_.liftTo[G]))
     def logger(name: String): LoggerBuilder[G, Ctx] =
       provider.logger(name).liftTo[G]
   }

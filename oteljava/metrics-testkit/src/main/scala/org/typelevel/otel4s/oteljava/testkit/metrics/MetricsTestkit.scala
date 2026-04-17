@@ -18,9 +18,9 @@ package org.typelevel.otel4s.oteljava.testkit.metrics
 
 import cats.effect.Async
 import cats.effect.Resource
-import cats.mtl.Ask
 import io.opentelemetry.sdk.metrics.SdkMeterProvider
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder
+import io.opentelemetry.sdk.metrics.data.MetricData
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader
 import org.typelevel.otel4s.context.LocalProvider
 import org.typelevel.otel4s.metrics.MeterProvider
@@ -39,19 +39,10 @@ sealed trait MetricsTestkit[F[_]] {
 
   /** Collects and returns metrics.
     *
-    * @example
-    *   {{{
-    * import io.opentelemetry.sdk.metrics.data.MetricData
-    * import org.typelevel.otel4s.oteljava.testkit.metrics.data.Metric
-    *
-    * MetricTestkit[F].collectMetrics[MetricData] // OpenTelemetry Java models
-    * MetricTestkit[F].collectMetrics[Metric] // Otel4s testkit models
-    *   }}}
-    *
     * @note
     *   metrics are recollected on each invocation.
     */
-  def collectMetrics[A: FromMetricData]: F[List[A]]
+  def collectMetrics: F[List[MetricData]]
 
 }
 
@@ -68,14 +59,6 @@ object MetricsTestkit {
       *   the customizer to add
       */
     def addMeterProviderCustomizer(customizer: SdkMeterProviderBuilder => SdkMeterProviderBuilder): Builder[F]
-
-    /** Sets the `InMemoryMetricReader` to use. Useful when Scala and Java instrumentation need to share the same
-      * reader.
-      *
-      * @param reader
-      *   the reader to use
-      */
-    def withInMemoryMetricReader(reader: InMemoryMetricReader): Builder[F]
 
     /** Creates [[MetricsTestkit]] using the configuration of this builder. */
     def build: Resource[F, MetricsTestkit[F]]
@@ -95,27 +78,6 @@ object MetricsTestkit {
       customize: Builder[F] => Builder[F] = identity[Builder[F]](_)
   ): Resource[F, MetricsTestkit[F]] =
     customize(builder[F]).build
-
-  /** Creates [[MetricsTestkit]] that keeps metrics in-memory from an existing reader. Useful when a Scala
-    * instrumentation requires a Java instrumentation, both sharing the same reader.
-    *
-    * @note
-    *   the implementation does not record exemplars. Use `OtelJavaTestkit` if you need to record exemplars.
-    *
-    * @param inMemoryMetricReader
-    *   the reader to use
-    *
-    * @param customize
-    *   the customization of the builder
-    */
-  @deprecated("Use `MetricsTestkit.builder` to provide the reader or `MetricsTestkit.inMemory` for defaults", "0.15.0")
-  def fromInMemory[F[_]: Async](
-      inMemoryMetricReader: InMemoryMetricReader,
-      customize: SdkMeterProviderBuilder => SdkMeterProviderBuilder = identity
-  ): Resource[F, MetricsTestkit[F]] = {
-    implicit val askContext: AskContext[F] = Ask.const(Context.root)
-    create[F](inMemoryMetricReader, customize)
-  }
 
   private[oteljava] def create[F[_]: Async: AskContext](
       customize: SdkMeterProviderBuilder => SdkMeterProviderBuilder
@@ -152,27 +114,20 @@ object MetricsTestkit {
       metricReader: InMemoryMetricReader
   ) extends MetricsTestkit[F] {
 
-    def collectMetrics[A: FromMetricData]: F[List[A]] =
-      Async[F].delay {
-        val metrics = metricReader.collectAllMetrics().asScala.toList
-        metrics.map(FromMetricData[A].from)
-      }
+    def collectMetrics: F[List[MetricData]] =
+      Async[F].delay(metricReader.collectAllMetrics().asScala.toList)
   }
 
   private final case class BuilderImpl[F[_]: Async: LocalContextProvider](
       customizer: SdkMeterProviderBuilder => SdkMeterProviderBuilder = identity(_),
-      inMemoryMetricReader: Option[InMemoryMetricReader] = None
   ) extends Builder[F] {
 
     def addMeterProviderCustomizer(customizer: SdkMeterProviderBuilder => SdkMeterProviderBuilder): Builder[F] =
       copy(customizer = this.customizer.andThen(customizer))
 
-    def withInMemoryMetricReader(reader: InMemoryMetricReader): Builder[F] =
-      copy(inMemoryMetricReader = Some(reader))
-
     def build: Resource[F, MetricsTestkit[F]] =
       Resource.eval(LocalProvider[F, Context].local).flatMap { implicit local =>
-        inMemoryMetricReader.fold(create[F](customizer))(create[F](_, customizer))
+        create[F](customizer)
       }
   }
 

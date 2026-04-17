@@ -21,6 +21,7 @@ import cats.Applicative
 import cats.arrow.FunctionK
 import cats.effect.kernel.MonadCancelThrow
 import cats.effect.kernel.Resource
+import cats.mtl.LiftKind
 import org.typelevel.otel4s.trace.SpanFinalizer.Strategy
 import org.typelevel.otel4s.trace.meta.InstrumentMeta
 
@@ -50,19 +51,15 @@ sealed trait SpanBuilder[F[_]] extends SpanBuilderMacro[F] {
     */
   def build: SpanOps[F]
 
-  /** Modify the context `F` using an implicit [[KindTransformer]] from `F` to `G`.
+  /** Modify the context `F` using an implicit [[cats.mtl.LiftKind]] from `F` to `G`.
     */
-  def liftTo[G[_]: MonadCancelThrow](implicit
+  def liftTo[G[_]](implicit
       F: MonadCancelThrow[F],
-      kt: KindTransformer[F, G]
+      G: MonadCancelThrow[G],
+      lift: LiftKind[F, G]
   ): SpanBuilder[G] =
     new SpanBuilder.Lifted(this)
 
-  @deprecated("use `liftTo` instead", since = "otel4s 0.14.0")
-  def mapK[G[_]: MonadCancelThrow](implicit
-      F: MonadCancelThrow[F],
-      kt: KindTransformer[F, G]
-  ): SpanBuilder[G] = liftTo[G]
 }
 
 object SpanBuilder {
@@ -256,9 +253,9 @@ object SpanBuilder {
     }
 
   /** Implementation for [[SpanBuilder.liftTo]]. */
-  private class Lifted[F[_]: MonadCancelThrow, G[_]: MonadCancelThrow](
+  private class Lifted[F[_], G[_]](
       builder: SpanBuilder[F]
-  )(implicit kt: KindTransformer[F, G])
+  )(implicit F: MonadCancelThrow[F], G: MonadCancelThrow[G], lift: LiftKind[F, G])
       extends SpanBuilder[G] {
     val meta: InstrumentMeta[G] =
       builder.meta.liftTo[G]

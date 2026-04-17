@@ -54,9 +54,9 @@ private[otel4s] trait TracerMacro[F[_]] {
     */
   inline def span(
       inline name: String,
-      inline attributes: Attribute[_]*
+      inline attributes: AttributeOrIterableOnce*
   ): SpanOps[F] =
-    spanBuilder(name).addAttributes(attributes).build
+    spanBuilder(name).addAttributes(attributes*).build
 
   /** Creates a new child span. The span is automatically attached to a parent span (based on the scope).
     *
@@ -110,9 +110,9 @@ private[otel4s] trait TracerMacro[F[_]] {
     */
   inline def rootSpan(
       inline name: String,
-      inline attributes: Attribute[_]*
+      inline attributes: AttributeOrIterableOnce*
   ): SpanOps[F] =
-    spanBuilder(name).addAttributes(attributes).root.build
+    spanBuilder(name).addAttributes(attributes*).root.build
 
   /** Creates a new root span. Even if a parent span is available in the scope, the span is created without a parent.
     *

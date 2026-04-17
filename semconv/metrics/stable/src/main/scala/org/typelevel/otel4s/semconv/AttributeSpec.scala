@@ -52,7 +52,7 @@ object AttributeSpec {
   ): AttributeSpec[A] =
     Impl(key, examples, requirement, stability)
 
-  final case class Impl[A](
+  private final case class Impl[A](
       key: AttributeKey[A],
       examples: List[A],
       requirement: Requirement,

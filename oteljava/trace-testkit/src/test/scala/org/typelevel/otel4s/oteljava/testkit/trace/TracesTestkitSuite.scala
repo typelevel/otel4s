@@ -17,7 +17,6 @@
 package org.typelevel.otel4s.oteljava.testkit.trace
 
 import cats.effect.IO
-import io.opentelemetry.sdk.trace.data.SpanData
 import munit._
 
 class TracesTestkitSuite extends CatsEffectSuite {
@@ -27,7 +26,7 @@ class TracesTestkitSuite extends CatsEffectSuite {
       for {
         tracer <- testkit.tracerProvider.get("tracer")
         _ <- tracer.span("test").use_
-        spans <- testkit.finishedSpans[SpanData]
+        spans <- testkit.finishedSpans
       } yield assertEquals(spans.map(_.getName), List("test"))
     }
   }

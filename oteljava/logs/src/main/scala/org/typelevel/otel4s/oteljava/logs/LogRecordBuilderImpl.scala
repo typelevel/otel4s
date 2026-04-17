@@ -21,9 +21,7 @@ package logs
 import cats.effect.Sync
 import cats.mtl.Ask
 import cats.syntax.flatMap._
-import io.opentelemetry.api.common.{AttributeKey => JAttributeKey}
 import io.opentelemetry.api.logs.{LogRecordBuilder => JLogRecordBuilder}
-import io.opentelemetry.api.logs.{Severity => JSeverity}
 import org.typelevel.otel4s.logs.LogRecordBuilder
 import org.typelevel.otel4s.logs.Severity
 import org.typelevel.otel4s.oteljava.AnyValueConverters._
@@ -56,7 +54,7 @@ private[oteljava] final case class LogRecordBuilderImpl[F[_]: Sync: AskContext](
     copy(jBuilder = jBuilder.setContext(context.underlying))
 
   def withSeverity(severity: Severity): LogRecordBuilder[F, Context] =
-    copy(jBuilder = jBuilder.setSeverity(toJSeverity(severity)))
+    copy(jBuilder = jBuilder.setSeverity(SeverityConversions.toJSeverity(severity)))
 
   def withSeverityText(severityText: String): LogRecordBuilder[F, Context] =
     copy(jBuilder = jBuilder.setSeverityText(severityText))
@@ -67,8 +65,11 @@ private[oteljava] final case class LogRecordBuilderImpl[F[_]: Sync: AskContext](
   def withEventName(eventName: String): LogRecordBuilder[F, Context] =
     copy(jBuilder = jBuilder.setEventName(eventName))
 
+  def withException(exception: Throwable): LogRecordBuilder[F, Context] =
+    copy(jBuilder = jBuilder.setException(exception))
+
   def addAttribute[A](attribute: Attribute[A]): LogRecordBuilder[F, Context] =
-    copy(jBuilder = jBuilder.setAttribute(attribute.key.toJava.asInstanceOf[JAttributeKey[Any]], attribute.value))
+    addAttributes(attribute)
 
   def addAttributes(attributes: Attribute[_]*): LogRecordBuilder[F, Context] =
     copy(jBuilder = jBuilder.setAllAttributes(attributes.toJavaAttributes))
@@ -87,39 +88,6 @@ private[oteljava] final case class LogRecordBuilderImpl[F[_]: Sync: AskContext](
           scope.close() // release the context
         }
       }
-    }
-
-  private def toJSeverity(severity: Severity): JSeverity =
-    severity match {
-      case Severity.Trace1 => JSeverity.TRACE
-      case Severity.Trace2 => JSeverity.TRACE2
-      case Severity.Trace3 => JSeverity.TRACE3
-      case Severity.Trace4 => JSeverity.TRACE4
-
-      case Severity.Debug1 => JSeverity.DEBUG
-      case Severity.Debug2 => JSeverity.DEBUG2
-      case Severity.Debug3 => JSeverity.DEBUG3
-      case Severity.Debug4 => JSeverity.DEBUG4
-
-      case Severity.Info1 => JSeverity.INFO
-      case Severity.Info2 => JSeverity.INFO2
-      case Severity.Info3 => JSeverity.INFO3
-      case Severity.Info4 => JSeverity.INFO4
-
-      case Severity.Warn1 => JSeverity.WARN
-      case Severity.Warn2 => JSeverity.WARN2
-      case Severity.Warn3 => JSeverity.WARN3
-      case Severity.Warn4 => JSeverity.WARN4
-
-      case Severity.Error1 => JSeverity.ERROR
-      case Severity.Error2 => JSeverity.ERROR2
-      case Severity.Error3 => JSeverity.ERROR3
-      case Severity.Error4 => JSeverity.ERROR4
-
-      case Severity.Fatal1 => JSeverity.FATAL
-      case Severity.Fatal2 => JSeverity.FATAL2
-      case Severity.Fatal3 => JSeverity.FATAL3
-      case Severity.Fatal4 => JSeverity.FATAL4
     }
 
 }

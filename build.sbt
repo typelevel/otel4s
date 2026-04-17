@@ -1,6 +1,6 @@
 import com.typesafe.tools.mima.core._
 
-ThisBuild / tlBaseVersion := "0.15"
+ThisBuild / tlBaseVersion := "1.0"
 
 ThisBuild / organization := "org.typelevel"
 ThisBuild / organizationName := "Typelevel"
@@ -66,27 +66,27 @@ ThisBuild / mergifyPrRules ++= Seq(
   )
 )
 
-val CatsVersion = "2.11.0"
-val CatsEffectVersion = "3.6.3"
-val CatsMtlVersion = "1.4.0"
-val FS2Version = "3.12.2"
-val MUnitVersion = "1.0.0"
-val MUnitScalaCheckVersion = "1.0.0-M11"
-val MUnitCatsEffectVersion = "2.1.0"
-val MUnitDisciplineVersion = "2.0.0-M3"
-val MUnitScalaCheckEffectVersion = "2.0.0-M2"
-val OpenTelemetryVersion = "1.59.0"
+val CatsVersion = "2.13.0"
+val CatsEffectVersion = "3.7.0"
+val CatsMtlVersion = "1.6.0"
+val FS2Version = "3.13.0"
+val MUnitVersion = "1.3.0"
+val MUnitScalaCheckVersion = "1.3.0"
+val MUnitCatsEffectVersion = "2.2.0"
+val MUnitDisciplineVersion = "2.0.0"
+val MUnitScalaCheckEffectVersion = "2.1.0"
+val OpenTelemetryVersion = "1.61.0"
 val OpenTelemetryAlphaVersion = s"$OpenTelemetryVersion-alpha"
-val OpenTelemetryInstrumentationVersion = "2.25.0"
+val OpenTelemetryInstrumentationVersion = "2.26.1"
 val OpenTelemetryInstrumentationAlphaVersion = s"$OpenTelemetryInstrumentationVersion-alpha"
 val OpenTelemetrySemConvVersion = "1.40.0"
 val OpenTelemetrySemConvAlphaVersion = s"$OpenTelemetrySemConvVersion-alpha"
 val Otel4sAgentVersion = "2.22.0"
-val PekkoStreamVersion = "1.4.0"
+val PekkoStreamVersion = "1.5.0"
 val PekkoHttpVersion = "1.3.0"
-val PlatformVersion = "1.0.2"
-val ScodecVersion = "1.1.38"
-val VaultVersion = "3.6.0"
+val PlatformVersion = "1.0.3"
+val ScodecVersion = "1.2.4"
+val VaultVersion = "3.7.0"
 val Http4sVersion = "0.23.33"
 val ScribeVersion = "3.17.0"
 
@@ -141,9 +141,6 @@ lazy val root = tlCrossRootProject
     examples,
     unidocs
   )
-  .configureRoot(
-    _.aggregate(scalafix.componentProjectReferences *)
-  )
   .settings(name := "otel4s")
 
 //
@@ -181,6 +178,10 @@ lazy val `core-logs` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
     libraryDependencies ++= Seq(
       "org.typelevel" %%% "cats-laws" % CatsVersion % Test,
       "org.typelevel" %%% "discipline-munit" % MUnitDisciplineVersion % Test
+    ),
+    mimaBinaryIssueFilters ++= Seq(
+      // LogRecordBuilder is sealed
+      ProblemFilters.exclude[ReversedMissingMethodProblem]("org.typelevel.otel4s.logs.LogRecordBuilder.withException")
     )
   )
 
@@ -216,15 +217,12 @@ lazy val `core-trace` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
       "org.typelevel" %%% "scalacheck-effect-munit" % MUnitScalaCheckEffectVersion % Test,
     ),
     mimaBinaryIssueFilters ++= Seq(
-      // # 1002
-      // all of these classes are private (and not serializable), so this is safe
-      ProblemFilters.exclude[MissingClassProblem]("org.typelevel.otel4s.trace.SpanBuilder$MappedK"),
-      ProblemFilters.exclude[MissingClassProblem]("org.typelevel.otel4s.trace.SpanOps$MappedK"),
-      ProblemFilters.exclude[MissingClassProblem]("org.typelevel.otel4s.trace.Tracer$MappedK"),
-      ProblemFilters.exclude[MissingClassProblem]("org.typelevel.otel4s.trace.TracerBuilder$MappedK"),
-      ProblemFilters.exclude[MissingClassProblem]("org.typelevel.otel4s.trace.TracerProvider$MappedK"),
       // Span.Backend is a sealed trait
-      ProblemFilters.exclude[ReversedMissingMethodProblem]("org.typelevel.otel4s.trace.Span#Backend.isRecording")
+      ProblemFilters.exclude[ReversedMissingMethodProblem]("org.typelevel.otel4s.trace.Span#Backend.isRecording"),
+      // TraceFlags is a sealed trait
+      ProblemFilters.exclude[ReversedMissingMethodProblem]("org.typelevel.otel4s.trace.TraceFlags.isTraceIdRandom"),
+      ProblemFilters.exclude[ReversedMissingMethodProblem]("org.typelevel.otel4s.trace.TraceFlags.withSampled"),
+      ProblemFilters.exclude[ReversedMissingMethodProblem]("org.typelevel.otel4s.trace.TraceFlags.withRandomTraceId"),
     ),
   )
 
@@ -487,30 +485,6 @@ lazy val `semconv-metrics-experimental` =
 //
 //
 //
-
-lazy val scalafix = tlScalafixProject
-  .rulesSettings(
-    name := "otel4s-scalafix",
-    crossScalaVersions := Seq(Scala212),
-    startYear := Some(2024)
-  )
-  .inputSettings(
-    crossScalaVersions := Seq(Scala213),
-    // scala-steward:off
-    libraryDependencies += "org.typelevel" %% "otel4s-java" % "0.4.0",
-    // scala-steward:on
-    headerSources / excludeFilter := AllPassFilter
-  )
-  .inputConfigure(_.disablePlugins(ScalafixPlugin))
-  .outputSettings(
-    crossScalaVersions := Seq(Scala213),
-    headerSources / excludeFilter := AllPassFilter
-  )
-  .outputConfigure(_.dependsOn(oteljava).disablePlugins(ScalafixPlugin))
-  .testsSettings(
-    scalaVersion := _root_.scalafix.sbt.BuildInfo.scala212,
-    startYear := Some(2024)
-  )
 
 lazy val benchmarks = project
   .enablePlugins(NoPublishPlugin)

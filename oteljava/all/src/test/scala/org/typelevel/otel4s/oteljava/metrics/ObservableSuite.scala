@@ -19,10 +19,14 @@ package oteljava
 package metrics
 
 import cats.effect.IO
+import io.opentelemetry.sdk.metrics.data.MetricData
+import io.opentelemetry.sdk.metrics.data.MetricDataType
 import munit.CatsEffectSuite
 import org.typelevel.otel4s.metrics.Measurement
+import org.typelevel.otel4s.oteljava.AttributeConverters._
 import org.typelevel.otel4s.oteljava.testkit.metrics.MetricsTestkit
-import org.typelevel.otel4s.oteljava.testkit.metrics.data.Metric
+
+import scala.jdk.CollectionConverters._
 
 class ObservableSuite extends CatsEffectSuite {
 
@@ -41,9 +45,8 @@ class ObservableSuite extends CatsEffectSuite {
           .withDescription("description")
           .createWithCallback(_.record(42.0, Attribute("foo", "bar")))
           .use(_ =>
-            sdk
-              .collectMetrics[Metric]
-              .map(_.flatMap(_.data.points.map(x => (x.value, x.attributes))))
+            sdk.collectMetrics
+              .map(_.flatMap(points))
               .assertEquals(List((42.0, Attributes(Attribute("foo", "bar")))))
           )
 
@@ -60,13 +63,8 @@ class ObservableSuite extends CatsEffectSuite {
             )
           )
           .use(_ =>
-            sdk
-              .collectMetrics[Metric]
-              .map(
-                _.flatMap(
-                  _.data.points.map(x => (x.value, x.attributes))
-                ).toSet
-              )
+            sdk.collectMetrics
+              .map(_.flatMap(points).toSet)
               .assertEquals(
                 Set[(Any, Attributes)](
                   (1336.0, Attributes(Attribute("1", "2"))),
@@ -94,9 +92,8 @@ class ObservableSuite extends CatsEffectSuite {
           .withDescription("description")
           .createWithCallback(_.record(1234, Attribute("number", 42L)))
           .use(_ =>
-            sdk
-              .collectMetrics[Metric]
-              .map(_.flatMap(_.data.points.map(x => (x.value, x.attributes))))
+            sdk.collectMetrics
+              .map(_.flatMap(points))
               .assertEquals(List((1234, Attributes(Attribute("number", 42L)))))
           )
 
@@ -113,11 +110,8 @@ class ObservableSuite extends CatsEffectSuite {
             )
           )
           .use(_ =>
-            sdk
-              .collectMetrics[Metric]
-              .map(
-                _.flatMap(_.data.points.map(x => (x.value, x.attributes))).toSet
-              )
+            sdk.collectMetrics
+              .map(_.flatMap(points).toSet)
               .assertEquals(
                 Set[(Any, Attributes)](
                   (1336, Attributes(Attribute("1", "2"))),
@@ -147,9 +141,8 @@ class ObservableSuite extends CatsEffectSuite {
             _.record(1234, Attribute[Boolean]("is_false", true))
           )
           .use(_ =>
-            sdk
-              .collectMetrics[Metric]
-              .map(_.flatMap(_.data.points.map(x => (x.value, x.attributes))))
+            sdk.collectMetrics
+              .map(_.flatMap(points))
               .assertEquals(
                 List((1234, Attributes(Attribute("is_false", true))))
               )
@@ -168,11 +161,8 @@ class ObservableSuite extends CatsEffectSuite {
             )
           )
           .use(_ =>
-            sdk
-              .collectMetrics[Metric]
-              .map(
-                _.flatMap(_.data.points.map(x => (x.value, x.attributes))).toSet
-              )
+            sdk.collectMetrics
+              .map(_.flatMap(points).toSet)
               .assertEquals(
                 Set[(Any, Attributes)](
                   (1336, Attributes(Attribute("1", "2"))),
@@ -184,5 +174,19 @@ class ObservableSuite extends CatsEffectSuite {
       } yield ()
     }
   }
+
+  private def points(metric: MetricData): List[(Any, Attributes)] =
+    metric.getType match {
+      case MetricDataType.LONG_GAUGE =>
+        metric.getLongGaugeData.getPoints.asScala.toList.map(p => (p.getValue, p.getAttributes.toScala))
+      case MetricDataType.DOUBLE_GAUGE =>
+        metric.getDoubleGaugeData.getPoints.asScala.toList.map(p => (p.getValue, p.getAttributes.toScala))
+      case MetricDataType.LONG_SUM =>
+        metric.getLongSumData.getPoints.asScala.toList.map(p => (p.getValue, p.getAttributes.toScala))
+      case MetricDataType.DOUBLE_SUM =>
+        metric.getDoubleSumData.getPoints.asScala.toList.map(p => (p.getValue, p.getAttributes.toScala))
+      case other =>
+        fail(s"Unexpected metric type: $other")
+    }
 
 }

@@ -61,14 +61,13 @@ object HistogramBuilderImpl {
   def apply[F[_]: Sync: AskContext, A: MeasurementValue](
       jMeter: JMeter,
       name: String,
-      meta: InstrumentMeta[F]
   ): Histogram.Builder[F, A] =
     MeasurementValue[A] match {
       case MeasurementValue.LongMeasurementValue(cast) =>
-        HistogramBuilderImpl(longFactory(jMeter, cast, meta), name)
+        HistogramBuilderImpl(longFactory(jMeter, cast), name)
 
       case MeasurementValue.DoubleMeasurementValue(cast) =>
-        HistogramBuilderImpl(doubleFactory(jMeter, cast, meta), name)
+        HistogramBuilderImpl(doubleFactory(jMeter, cast), name)
     }
 
   private[oteljava] trait Factory[F[_], A] {
@@ -83,7 +82,6 @@ object HistogramBuilderImpl {
   private def longFactory[F[_]: Sync: AskContext, A](
       jMeter: JMeter,
       cast: A => Long,
-      instrumentMeta: InstrumentMeta[F]
   ): Factory[F, A] =
     new Factory[F, A] {
       def create(
@@ -104,7 +102,7 @@ object HistogramBuilderImpl {
           val histogram = builder.ofLongs().build
 
           val backend = new Histogram.Backend.Unsealed[F, A] {
-            val meta: InstrumentMeta[F] = instrumentMeta
+            val meta: InstrumentMeta[F] = InstrumentMeta.dynamic(Sync[F].delay(histogram.isEnabled))
 
             def record(
                 value: A,
@@ -144,7 +142,6 @@ object HistogramBuilderImpl {
   private def doubleFactory[F[_]: Sync: AskContext, A](
       jMeter: JMeter,
       cast: A => Double,
-      instrumentMeta: InstrumentMeta[F]
   ): Factory[F, A] =
     new Factory[F, A] {
       def create(
@@ -165,7 +162,7 @@ object HistogramBuilderImpl {
           val histogram = builder.build
 
           val backend = new Histogram.Backend.Unsealed[F, A] {
-            val meta: InstrumentMeta[F] = instrumentMeta
+            val meta: InstrumentMeta[F] = InstrumentMeta.dynamic(Sync[F].delay(histogram.isEnabled))
 
             def record(
                 value: A,

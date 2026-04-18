@@ -91,104 +91,11 @@ def test: IO[Unit] = {
 
 ## Testing metrics
 
-Let's assume we have a program that increments a counter by one and sets the gauge's value to 42.
-Here is how we can test this program:
+For metrics, the testkit now provides a dedicated expectation API built on top of OpenTelemetry Java `MetricData`.
+This allows tests to match only the parts that matter: metric name, kind, values, point attributes,
+instrumentation scope, telemetry resource, summaries, histograms, and more.
 
-```scala mdoc:silent:reset
-import cats.effect.IO
-import io.opentelemetry.sdk.metrics.data.MetricData
-import io.opentelemetry.sdk.metrics.data.MetricDataType
-import org.typelevel.otel4s.metrics.MeterProvider
-import org.typelevel.otel4s.oteljava.testkit.OtelJavaTestkit
-
-import scala.jdk.CollectionConverters._
-
-// the program that we want to test
-def program(meterProvider: MeterProvider[IO]): IO[Unit] =
-  for {
-    meter <- meterProvider.get("service")
-
-    counter <- meter.counter[Long]("service.counter").create
-    _ <- counter.inc()
-
-    gauge <- meter.gauge[Long]("service.gauge").create
-    _ <- gauge.record(42L)
-  } yield ()
-
-// the test
-def test: IO[Unit] =
-  OtelJavaTestkit.inMemory[IO]().use { testkit =>
-    // the list of expected metrics
-    val expected = List(
-      TelemetryMetric.SumLong("service.counter", List(1L)),
-      TelemetryMetric.GaugeLong("service.gauge", List(42L))
-    )
-
-    for {
-      // invoke the program
-      _ <- program(testkit.meterProvider)
-      // collect the metrics
-      metrics <- testkit.collectMetrics
-      // verify the collected metrics
-      _ <- assertMetrics(metrics, expected)
-    } yield ()
-  }
-
-// here you can use an assertion mechanism from your favorite testing framework
-def assertMetrics(metrics: List[MetricData], expected: List[TelemetryMetric]): IO[Unit] =
-  IO {
-    assert(metrics.sortBy(_.getName).map(TelemetryMetric.fromMetric) == expected)
-  }
-
-// a minimized representation of the MetricData to simplify testing
-sealed trait TelemetryMetric
-object TelemetryMetric {
-  case class SumLong(name: String, values: List[Long]) extends TelemetryMetric
-  case class SumDouble(name: String, values: List[Double]) extends TelemetryMetric
-
-  case class GaugeLong(name: String, values: List[Long]) extends TelemetryMetric
-  case class GaugeDouble(name: String, values: List[Double]) extends TelemetryMetric
-
-  case class Summary(name: String, values: List[Double]) extends TelemetryMetric
-  case class Histogram(name: String, values: List[Double]) extends TelemetryMetric
-  case class ExponentialHistogram(name: String, values: List[Double]) extends TelemetryMetric
-
-  def fromMetric(metric: MetricData): TelemetryMetric =
-    metric.getType match {
-      case MetricDataType.LONG_GAUGE =>
-        GaugeLong(metric.getName, metric.getLongGaugeData.getPoints.asScala.toList.map(_.getValue))
-      case MetricDataType.DOUBLE_GAUGE =>
-        GaugeDouble(metric.getName, metric.getDoubleGaugeData.getPoints.asScala.toList.map(_.getValue))
-      case MetricDataType.LONG_SUM =>
-        SumLong(metric.getName, metric.getLongSumData.getPoints.asScala.toList.map(_.getValue))
-      case MetricDataType.DOUBLE_SUM =>
-        SumDouble(metric.getName, metric.getDoubleSumData.getPoints.asScala.toList.map(_.getValue))
-      case MetricDataType.SUMMARY =>
-        Summary(metric.getName, metric.getSummaryData.getPoints.asScala.toList.map(_.getSum))
-      case MetricDataType.HISTOGRAM =>
-        Histogram(metric.getName, metric.getHistogramData.getPoints.asScala.toList.map(_.getSum))
-      case MetricDataType.EXPONENTIAL_HISTOGRAM =>
-        ExponentialHistogram(
-          metric.getName,
-          metric.getExponentialHistogramData.getPoints.asScala.toList.map(_.getSum)
-        )
-    }
-}
-```
-
-`MetricData` provides **all** information about the metric:
-name, instrumentation scope, telemetry resource, data points,
-associated attributes, collection time window, and so on.
-
-It's hard to implement an assertion that verifies **all** aspects of the metric
-because many things must be considered, such as time window, attributes, exemplars, etc.
-For focused tests, define a local minimized view of `MetricData` such as `TelemetryMetric`.
-
-```scala mdoc:invisible
-// we silently run the test to ensure it's actually correct
-import cats.effect.unsafe.implicits.global
-test.unsafeRunSync()
-```
+See [Testkit | Metrics](testkit-metrics.md) for the full guide.
 
 ## Testing spans
 

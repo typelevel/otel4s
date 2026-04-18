@@ -18,14 +18,15 @@ package org.typelevel.otel4s.oteljava.metrics
 
 import cats.effect.IO
 import io.opentelemetry.sdk.metrics.data.MetricData
-import io.opentelemetry.sdk.metrics.data.MetricDataType
 import munit.CatsEffectSuite
 import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.Attributes
-import org.typelevel.otel4s.oteljava.AttributeConverters._
+import org.typelevel.otel4s.oteljava.BuildInfo
+import org.typelevel.otel4s.oteljava.testkit.InstrumentationScopeExpectation
+import org.typelevel.otel4s.oteljava.testkit.TelemetryResourceExpectation
+import org.typelevel.otel4s.oteljava.testkit.metrics.MetricExpectation
+import org.typelevel.otel4s.oteljava.testkit.metrics.MetricExpectations
 import org.typelevel.otel4s.oteljava.testkit.metrics.MetricsTestkit
-
-import scala.jdk.CollectionConverters._
 
 class BatchCallbackSuite extends CatsEffectSuite {
 
@@ -70,47 +71,68 @@ class BatchCallbackSuite extends CatsEffectSuite {
           }
           .surround(metrics.collectMetrics)
       } yield {
-        assertEquals(
-          metrics.view
-            .map(r => (r.getName, points(r)))
-            .toMap,
-          Map(
-            "double-counter" -> List(
-              1.1 -> Attributes(Attribute("key", "value2"))
-            ),
-            "double-gauge" -> List(
-              3.1 -> Attributes(Attribute("key", "value6"))
-            ),
-            "double-up-down-counter" -> List(
-              2.1 -> Attributes(Attribute("key", "value4"))
-            ),
-            "long-counter" -> List(
-              1 -> Attributes(Attribute("key", "value1"))
-            ),
-            "long-gauge" -> List(
-              3 -> Attributes(Attribute("key", "value5"))
-            ),
-            "long-up-down-counter" -> List(
-              2 -> Attributes(Attribute("key", "value3"))
-            )
+        assertExpected(
+          metrics,
+          List(
+            MetricExpectation
+              .sum[Double]("double-counter")
+              .value(1.1, Attributes(Attribute("key", "value2")))
+              .scope(expectedScope)
+              .resource(expectedResource),
+            MetricExpectation
+              .gauge[Double]("double-gauge")
+              .value(3.1, Attributes(Attribute("key", "value6")))
+              .scope(expectedScope)
+              .resource(expectedResource),
+            MetricExpectation
+              .sum[Double]("double-up-down-counter")
+              .value(2.1, Attributes(Attribute("key", "value4")))
+              .scope(expectedScope)
+              .resource(expectedResource),
+            MetricExpectation
+              .sum[Long]("long-counter")
+              .value(1L, Attributes(Attribute("key", "value1")))
+              .scope(expectedScope)
+              .resource(expectedResource),
+            MetricExpectation
+              .gauge[Long]("long-gauge")
+              .value(3L, Attributes(Attribute("key", "value5")))
+              .scope(expectedScope)
+              .resource(expectedResource),
+            MetricExpectation
+              .sum[Long]("long-up-down-counter")
+              .value(2L, Attributes(Attribute("key", "value3")))
+              .scope(expectedScope)
+              .resource(expectedResource)
           )
         )
       }
     }
   }
 
-  private def points(metric: MetricData): List[(Any, Attributes)] =
-    metric.getType match {
-      case MetricDataType.LONG_GAUGE =>
-        metric.getLongGaugeData.getPoints.asScala.toList.map(p => (p.getValue, p.getAttributes.toScala))
-      case MetricDataType.DOUBLE_GAUGE =>
-        metric.getDoubleGaugeData.getPoints.asScala.toList.map(p => (p.getValue, p.getAttributes.toScala))
-      case MetricDataType.LONG_SUM =>
-        metric.getLongSumData.getPoints.asScala.toList.map(p => (p.getValue, p.getAttributes.toScala))
-      case MetricDataType.DOUBLE_SUM =>
-        metric.getDoubleSumData.getPoints.asScala.toList.map(p => (p.getValue, p.getAttributes.toScala))
-      case other =>
-        fail(s"Unexpected metric type: $other")
+  private def assertExpected(metrics: List[MetricData], expected: List[MetricExpectation]): Unit =
+    MetricExpectations.checkAll(metrics, expected) match {
+      case Right(_) =>
+        ()
+      case Left(mismatches) =>
+        fail(MetricExpectations.format(mismatches))
     }
+
+  private val expectedScope: InstrumentationScopeExpectation =
+    InstrumentationScopeExpectation
+      .name("java.otel.suite")
+      .version("1.0")
+      .schemaUrl("https://localhost:8080")
+      .attributesEmpty
+
+  private val expectedResource: TelemetryResourceExpectation =
+    TelemetryResourceExpectation.any
+      .attributesExact(
+        Attribute("service.name", "unknown_service:java"),
+        Attribute("telemetry.sdk.language", "java"),
+        Attribute("telemetry.sdk.name", "opentelemetry"),
+        Attribute("telemetry.sdk.version", BuildInfo.openTelemetrySdkVersion)
+      )
+      .schemaUrl(None)
 
 }

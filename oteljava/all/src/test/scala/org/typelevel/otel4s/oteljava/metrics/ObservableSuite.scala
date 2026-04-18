@@ -20,13 +20,16 @@ package metrics
 
 import cats.effect.IO
 import io.opentelemetry.sdk.metrics.data.MetricData
-import io.opentelemetry.sdk.metrics.data.MetricDataType
 import munit.CatsEffectSuite
 import org.typelevel.otel4s.metrics.Measurement
-import org.typelevel.otel4s.oteljava.AttributeConverters._
+import org.typelevel.otel4s.oteljava.BuildInfo
+import org.typelevel.otel4s.oteljava.testkit.InstrumentationScopeExpectation
+import org.typelevel.otel4s.oteljava.testkit.TelemetryResourceExpectation
+import org.typelevel.otel4s.oteljava.testkit.metrics.MetricExpectation
+import org.typelevel.otel4s.oteljava.testkit.metrics.MetricExpectations
 import org.typelevel.otel4s.oteljava.testkit.metrics.MetricsTestkit
-
-import scala.jdk.CollectionConverters._
+import org.typelevel.otel4s.oteljava.testkit.metrics.PointExpectation
+import org.typelevel.otel4s.oteljava.testkit.metrics.PointSetExpectation
 
 class ObservableSuite extends CatsEffectSuite {
 
@@ -46,8 +49,20 @@ class ObservableSuite extends CatsEffectSuite {
           .createWithCallback(_.record(42.0, Attribute("foo", "bar")))
           .use(_ =>
             sdk.collectMetrics
-              .map(_.flatMap(points))
-              .assertEquals(List((42.0, Attributes(Attribute("foo", "bar")))))
+              .map(
+                assertExpected(
+                  _,
+                  List(
+                    MetricExpectation
+                      .gauge[Double]("gauge")
+                      .value(42.0, Attributes(Attribute("foo", "bar")))
+                      .description("description")
+                      .unit("unit")
+                      .scope(expectedScope)
+                      .resource(expectedResource)
+                  )
+                )
+              )
           )
 
         _ <- meter
@@ -64,11 +79,23 @@ class ObservableSuite extends CatsEffectSuite {
           )
           .use(_ =>
             sdk.collectMetrics
-              .map(_.flatMap(points).toSet)
-              .assertEquals(
-                Set[(Any, Attributes)](
-                  (1336.0, Attributes(Attribute("1", "2"))),
-                  (1337.0, Attributes(Attribute("a", "b")))
+              .map(
+                assertExpected(
+                  _,
+                  List(
+                    MetricExpectation
+                      .gauge[Double]("gauge")
+                      .points(
+                        PointSetExpectation.contains(
+                          PointExpectation.numeric(1336.0).attributesExact(Attribute("1", "2")),
+                          PointExpectation.numeric(1337.0).attributesExact(Attribute("a", "b"))
+                        )
+                      )
+                      .description("description")
+                      .unit("unit")
+                      .scope(expectedScope)
+                      .resource(expectedResource)
+                  )
                 )
               )
           )
@@ -93,8 +120,20 @@ class ObservableSuite extends CatsEffectSuite {
           .createWithCallback(_.record(1234, Attribute("number", 42L)))
           .use(_ =>
             sdk.collectMetrics
-              .map(_.flatMap(points))
-              .assertEquals(List((1234, Attributes(Attribute("number", 42L)))))
+              .map(
+                assertExpected(
+                  _,
+                  List(
+                    MetricExpectation
+                      .sum[Long]("counter")
+                      .value(1234L, Attributes(Attribute("number", 42L)))
+                      .description("description")
+                      .unit("unit")
+                      .scope(expectedScope)
+                      .resource(expectedResource)
+                  )
+                )
+              )
           )
 
         _ <- meter
@@ -111,11 +150,23 @@ class ObservableSuite extends CatsEffectSuite {
           )
           .use(_ =>
             sdk.collectMetrics
-              .map(_.flatMap(points).toSet)
-              .assertEquals(
-                Set[(Any, Attributes)](
-                  (1336, Attributes(Attribute("1", "2"))),
-                  (1337, Attributes(Attribute("a", "b")))
+              .map(
+                assertExpected(
+                  _,
+                  List(
+                    MetricExpectation
+                      .sum[Long]("counter")
+                      .points(
+                        PointSetExpectation.contains(
+                          PointExpectation.numeric(1336L).attributesExact(Attribute("1", "2")),
+                          PointExpectation.numeric(1337L).attributesExact(Attribute("a", "b"))
+                        )
+                      )
+                      .description("description")
+                      .unit("unit")
+                      .scope(expectedScope)
+                      .resource(expectedResource)
+                  )
                 )
               )
           )
@@ -142,9 +193,19 @@ class ObservableSuite extends CatsEffectSuite {
           )
           .use(_ =>
             sdk.collectMetrics
-              .map(_.flatMap(points))
-              .assertEquals(
-                List((1234, Attributes(Attribute("is_false", true))))
+              .map(
+                assertExpected(
+                  _,
+                  List(
+                    MetricExpectation
+                      .sum[Long]("updowncounter")
+                      .value(1234L, Attributes(Attribute("is_false", true)))
+                      .description("description")
+                      .unit("unit")
+                      .scope(expectedScope)
+                      .resource(expectedResource)
+                  )
+                )
               )
           )
 
@@ -162,11 +223,23 @@ class ObservableSuite extends CatsEffectSuite {
           )
           .use(_ =>
             sdk.collectMetrics
-              .map(_.flatMap(points).toSet)
-              .assertEquals(
-                Set[(Any, Attributes)](
-                  (1336, Attributes(Attribute("1", "2"))),
-                  (1336, Attributes(Attribute("a", "b")))
+              .map(
+                assertExpected(
+                  _,
+                  List(
+                    MetricExpectation
+                      .sum[Long]("updowncounter")
+                      .points(
+                        PointSetExpectation.contains(
+                          PointExpectation.numeric(1336L).attributesExact(Attribute("1", "2")),
+                          PointExpectation.numeric(1336L).attributesExact(Attribute("a", "b"))
+                        )
+                      )
+                      .description("description")
+                      .unit("unit")
+                      .scope(expectedScope)
+                      .resource(expectedResource)
+                  )
                 )
               )
           )
@@ -175,18 +248,29 @@ class ObservableSuite extends CatsEffectSuite {
     }
   }
 
-  private def points(metric: MetricData): List[(Any, Attributes)] =
-    metric.getType match {
-      case MetricDataType.LONG_GAUGE =>
-        metric.getLongGaugeData.getPoints.asScala.toList.map(p => (p.getValue, p.getAttributes.toScala))
-      case MetricDataType.DOUBLE_GAUGE =>
-        metric.getDoubleGaugeData.getPoints.asScala.toList.map(p => (p.getValue, p.getAttributes.toScala))
-      case MetricDataType.LONG_SUM =>
-        metric.getLongSumData.getPoints.asScala.toList.map(p => (p.getValue, p.getAttributes.toScala))
-      case MetricDataType.DOUBLE_SUM =>
-        metric.getDoubleSumData.getPoints.asScala.toList.map(p => (p.getValue, p.getAttributes.toScala))
-      case other =>
-        fail(s"Unexpected metric type: $other")
+  private def assertExpected(metrics: List[MetricData], expected: List[MetricExpectation]): Unit =
+    MetricExpectations.checkAll(metrics, expected) match {
+      case Right(_) =>
+        ()
+      case Left(mismatches) =>
+        fail(MetricExpectations.format(mismatches))
     }
+
+  private val expectedScope: InstrumentationScopeExpectation =
+    InstrumentationScopeExpectation
+      .name("java.otel.suite")
+      .version("1.0")
+      .schemaUrl("https://localhost:8080")
+      .attributesEmpty
+
+  private val expectedResource: TelemetryResourceExpectation =
+    TelemetryResourceExpectation.any
+      .attributesExact(
+        Attribute("service.name", "unknown_service:java"),
+        Attribute("telemetry.sdk.language", "java"),
+        Attribute("telemetry.sdk.name", "opentelemetry"),
+        Attribute("telemetry.sdk.version", BuildInfo.openTelemetrySdkVersion)
+      )
+      .schemaUrl(None)
 
 }

@@ -118,6 +118,7 @@
     <li class="level2 nav-leaf"><a href="../oteljava/tracing-java-interop.html">Tracing | Interop with Java-instrumented libraries</a></li>
     <li class="level2 nav-leaf"><a href="../oteljava/agent.html">Zero-code | Java Agent</a></li>
     <li class="level2 nav-leaf"><a href="../oteljava/testkit.html">Testkit</a></li>
+    <li class="level2 nav-leaf"><a href="../oteljava/testkit-metrics.html">Testkit | Metrics</a></li>
     <li class="level1 nav-header">SDK</li>
     <li class="level2 nav-leaf"><a href="../sdk/overview.html">Overview</a></li>
     <li class="level1 nav-header">Examples</li>
@@ -254,16 +255,12 @@
         <p>Metric specs are also useful for validating exported metrics. The example below checks that expected server metrics
         exist and that each exported metric matches the semantic name, unit, description, and required attributes.</p>
         <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.</span><span class="type-name">IO</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">io</span><span>.</span><span class="identifier">opentelemetry</span><span>.</span><span class="identifier">sdk</span><span>.</span><span class="identifier">metrics</span><span>.</span><span class="identifier">data</span><span>.</span><span class="type-name">MetricData</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">io</span><span>.</span><span class="identifier">opentelemetry</span><span>.</span><span class="identifier">sdk</span><span>.</span><span class="identifier">metrics</span><span>.</span><span class="identifier">data</span><span>.</span><span class="type-name">MetricDataType</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">io</span><span>.</span><span class="identifier">opentelemetry</span><span>.</span><span class="identifier">sdk</span><span>.</span><span class="identifier">metrics</span><span>.</span><span class="identifier">data</span><span>.{</span><span class="type-name">MetricData</span><span>, </span><span class="type-name">PointData</span><span>}
 </span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">metrics</span><span>.</span><span class="type-name">Meter</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="type-name">AttributeConverters</span><span>.</span><span class="identifier">_</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">semconv</span><span>.</span><span class="type-name">MetricSpec</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">semconv</span><span>.</span><span class="identifier">metrics</span><span>.</span><span class="type-name">HttpMetrics</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">semconv</span><span>.</span><span class="type-name">Requirement</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="identifier">testkit</span><span>.</span><span class="identifier">metrics</span><span>.</span><span class="type-name">MetricsTestkit</span><span>
-
-</span><span class="keyword">import</span><span> </span><span class="identifier">scala</span><span>.</span><span class="identifier">jdk</span><span>.</span><span class="type-name">CollectionConverters</span><span>.</span><span class="identifier">_</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">semconv</span><span>.</span><span class="identifier">metrics</span><span>.</span><span class="type-name">HttpMetrics</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="identifier">testkit</span><span>.</span><span class="identifier">metrics</span><span>.</span><span class="identifier">_</span><span>
 
 </span><span class="keyword">def</span><span> </span><span class="declaration-name">semanticTest</span><span>(</span><span class="identifier">scenario</span><span>: </span><span class="type-name">Meter</span><span>[</span><span class="type-name">IO</span><span>] =&gt; </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>]): </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] = {
   </span><span class="comment">// the set of metrics to check
@@ -279,56 +276,42 @@
         </span><span class="comment">// collect metrics
 </span><span>        </span><span class="identifier">metrics</span><span> &lt;- </span><span class="identifier">testkit</span><span>.</span><span class="identifier">collectMetrics</span><span>
         </span><span class="comment">// ensure the expected metrics exist and match the spec
-</span><span>      } </span><span class="keyword">yield</span><span> </span><span class="identifier">specs</span><span>.</span><span class="identifier">foreach</span><span>(</span><span class="identifier">spec</span><span> =&gt; </span><span class="identifier">specTest</span><span>(</span><span class="identifier">metrics</span><span>, </span><span class="identifier">spec</span><span>))
+</span><span>      } </span><span class="keyword">yield</span><span> </span><span class="identifier">assertExpected</span><span>(</span><span class="identifier">metrics</span><span>, </span><span class="identifier">specs</span><span>.</span><span class="identifier">map</span><span>(</span><span class="identifier">specExpectation</span><span>))
     }
   }
 }
 
-</span><span class="keyword">def</span><span> </span><span class="declaration-name">specTest</span><span>(</span><span class="identifier">metrics</span><span>: </span><span class="type-name">List</span><span>[</span><span class="type-name">MetricData</span><span>], </span><span class="identifier">spec</span><span>: </span><span class="type-name">MetricSpec</span><span>): </span><span class="type-name">Unit</span><span> = {
-  </span><span class="keyword">val</span><span> </span><span class="identifier">metric</span><span> = </span><span class="identifier">metrics</span><span>.</span><span class="identifier">find</span><span>(</span><span class="identifier">_</span><span>.</span><span class="identifier">getName</span><span> == </span><span class="identifier">spec</span><span>.</span><span class="identifier">name</span><span>)
-  </span><span class="identifier">assert</span><span>(
-    </span><span class="identifier">metric</span><span>.</span><span class="identifier">isDefined</span><span>,
-    </span><span class="string-literal">s&quot;</span><span class="substitution">${spec.name}</span><span class="string-literal"> metric is missing. Available [</span><span class="substitution">${metrics.map(_.getName).mkString(&quot;, &quot;)}</span><span class="string-literal">]&quot;</span><span>,
-  )
-
-  </span><span class="keyword">val</span><span> </span><span class="identifier">clue</span><span> = </span><span class="string-literal">s&quot;[</span><span class="substitution">${spec.name}</span><span class="string-literal">] has a mismatched property&quot;</span><span>
-
-  </span><span class="identifier">metric</span><span>.</span><span class="identifier">foreach</span><span> { </span><span class="identifier">md</span><span> =&gt;
-    </span><span class="identifier">assert</span><span>(</span><span class="identifier">md</span><span>.</span><span class="identifier">getName</span><span> == </span><span class="identifier">spec</span><span>.</span><span class="identifier">name</span><span>, </span><span class="identifier">clue</span><span>)
-    </span><span class="identifier">assert</span><span>(</span><span class="type-name">Option</span><span>(</span><span class="identifier">md</span><span>.</span><span class="identifier">getDescription</span><span>).</span><span class="identifier">filter</span><span>(</span><span class="identifier">_</span><span>.</span><span class="identifier">nonEmpty</span><span>) == </span><span class="type-name">Some</span><span>(</span><span class="identifier">spec</span><span>.</span><span class="identifier">description</span><span>), </span><span class="identifier">clue</span><span>)
-    </span><span class="identifier">assert</span><span>(</span><span class="type-name">Option</span><span>(</span><span class="identifier">md</span><span>.</span><span class="identifier">getUnit</span><span>).</span><span class="identifier">filter</span><span>(</span><span class="identifier">_</span><span>.</span><span class="identifier">nonEmpty</span><span>) == </span><span class="type-name">Some</span><span>(</span><span class="identifier">spec</span><span>.</span><span class="identifier">unit</span><span>), </span><span class="identifier">clue</span><span>)
-
-    </span><span class="keyword">val</span><span> </span><span class="identifier">required</span><span> = </span><span class="identifier">spec</span><span>.</span><span class="identifier">attributeSpecs</span><span>
-      .</span><span class="identifier">filter</span><span>(</span><span class="identifier">_</span><span>.</span><span class="identifier">requirement</span><span>.</span><span class="identifier">level</span><span> == </span><span class="type-name">Requirement</span><span>.</span><span class="type-name">Level</span><span>.</span><span class="type-name">Required</span><span>)
-      .</span><span class="identifier">map</span><span>(</span><span class="identifier">_</span><span>.</span><span class="identifier">key</span><span>)
-      .</span><span class="identifier">toSet</span><span>
-
-    </span><span class="keyword">val</span><span> </span><span class="identifier">current</span><span> = </span><span class="identifier">metricAttributes</span><span>(</span><span class="identifier">md</span><span>)
-      .</span><span class="identifier">map</span><span>(</span><span class="identifier">_</span><span>.</span><span class="identifier">key</span><span>)
-      .</span><span class="identifier">filter</span><span>(</span><span class="identifier">key</span><span> =&gt; </span><span class="identifier">required</span><span>.</span><span class="identifier">contains</span><span>(</span><span class="identifier">key</span><span>))
-      .</span><span class="identifier">toSet</span><span>
-
-    </span><span class="identifier">assert</span><span>(</span><span class="identifier">current</span><span> == </span><span class="identifier">required</span><span>, </span><span class="identifier">clue</span><span>)
+</span><span class="keyword">def</span><span> </span><span class="declaration-name">assertExpected</span><span>(</span><span class="identifier">metrics</span><span>: </span><span class="type-name">List</span><span>[</span><span class="type-name">MetricData</span><span>], </span><span class="identifier">expected</span><span>: </span><span class="type-name">List</span><span>[</span><span class="type-name">MetricExpectation</span><span>]): </span><span class="type-name">Unit</span><span> =
+  </span><span class="type-name">MetricExpectations</span><span>.</span><span class="identifier">checkAll</span><span>(</span><span class="identifier">metrics</span><span>, </span><span class="identifier">expected</span><span>) </span><span class="keyword">match</span><span> {
+    </span><span class="keyword">case</span><span> </span><span class="type-name">Right</span><span>(</span><span class="identifier">_</span><span>) =&gt;
+      ()
+    </span><span class="keyword">case</span><span> </span><span class="type-name">Left</span><span>(</span><span class="identifier">mismatches</span><span>) =&gt;
+      </span><span class="comment">// or use an assert function from the testing framework here
+</span><span>      </span><span class="identifier">sys</span><span>.</span><span class="identifier">error</span><span>(</span><span class="type-name">MetricExpectations</span><span>.</span><span class="identifier">format</span><span>(</span><span class="identifier">mismatches</span><span>))
   }
-}
 
-</span><span class="keyword">def</span><span> </span><span class="declaration-name">metricAttributes</span><span>(</span><span class="identifier">metric</span><span>: </span><span class="type-name">MetricData</span><span>) =
-  </span><span class="identifier">metric</span><span>.</span><span class="identifier">getType</span><span> </span><span class="keyword">match</span><span> {
-    </span><span class="keyword">case</span><span> </span><span class="type-name">MetricDataType</span><span>.</span><span class="type-name">LONG_GAUGE</span><span> =&gt;
-      </span><span class="identifier">metric</span><span>.</span><span class="identifier">getLongGaugeData</span><span>.</span><span class="identifier">getPoints</span><span>.</span><span class="identifier">asScala</span><span>.</span><span class="identifier">toVector</span><span>.</span><span class="identifier">flatMap</span><span>(</span><span class="identifier">_</span><span>.</span><span class="identifier">getAttributes</span><span>.</span><span class="identifier">toScala</span><span>)
-    </span><span class="keyword">case</span><span> </span><span class="type-name">MetricDataType</span><span>.</span><span class="type-name">DOUBLE_GAUGE</span><span> =&gt;
-      </span><span class="identifier">metric</span><span>.</span><span class="identifier">getDoubleGaugeData</span><span>.</span><span class="identifier">getPoints</span><span>.</span><span class="identifier">asScala</span><span>.</span><span class="identifier">toVector</span><span>.</span><span class="identifier">flatMap</span><span>(</span><span class="identifier">_</span><span>.</span><span class="identifier">getAttributes</span><span>.</span><span class="identifier">toScala</span><span>)
-    </span><span class="keyword">case</span><span> </span><span class="type-name">MetricDataType</span><span>.</span><span class="type-name">LONG_SUM</span><span> =&gt;
-      </span><span class="identifier">metric</span><span>.</span><span class="identifier">getLongSumData</span><span>.</span><span class="identifier">getPoints</span><span>.</span><span class="identifier">asScala</span><span>.</span><span class="identifier">toVector</span><span>.</span><span class="identifier">flatMap</span><span>(</span><span class="identifier">_</span><span>.</span><span class="identifier">getAttributes</span><span>.</span><span class="identifier">toScala</span><span>)
-    </span><span class="keyword">case</span><span> </span><span class="type-name">MetricDataType</span><span>.</span><span class="type-name">DOUBLE_SUM</span><span> =&gt;
-      </span><span class="identifier">metric</span><span>.</span><span class="identifier">getDoubleSumData</span><span>.</span><span class="identifier">getPoints</span><span>.</span><span class="identifier">asScala</span><span>.</span><span class="identifier">toVector</span><span>.</span><span class="identifier">flatMap</span><span>(</span><span class="identifier">_</span><span>.</span><span class="identifier">getAttributes</span><span>.</span><span class="identifier">toScala</span><span>)
-    </span><span class="keyword">case</span><span> </span><span class="type-name">MetricDataType</span><span>.</span><span class="type-name">HISTOGRAM</span><span> =&gt;
-      </span><span class="identifier">metric</span><span>.</span><span class="identifier">getHistogramData</span><span>.</span><span class="identifier">getPoints</span><span>.</span><span class="identifier">asScala</span><span>.</span><span class="identifier">toVector</span><span>.</span><span class="identifier">flatMap</span><span>(</span><span class="identifier">_</span><span>.</span><span class="identifier">getAttributes</span><span>.</span><span class="identifier">toScala</span><span>)
-    </span><span class="keyword">case</span><span> </span><span class="type-name">MetricDataType</span><span>.</span><span class="type-name">SUMMARY</span><span> =&gt;
-      </span><span class="identifier">metric</span><span>.</span><span class="identifier">getSummaryData</span><span>.</span><span class="identifier">getPoints</span><span>.</span><span class="identifier">asScala</span><span>.</span><span class="identifier">toVector</span><span>.</span><span class="identifier">flatMap</span><span>(</span><span class="identifier">_</span><span>.</span><span class="identifier">getAttributes</span><span>.</span><span class="identifier">toScala</span><span>)
-    </span><span class="keyword">case</span><span> </span><span class="type-name">MetricDataType</span><span>.</span><span class="type-name">EXPONENTIAL_HISTOGRAM</span><span> =&gt;
-      </span><span class="identifier">metric</span><span>.</span><span class="identifier">getExponentialHistogramData</span><span>.</span><span class="identifier">getPoints</span><span>.</span><span class="identifier">asScala</span><span>.</span><span class="identifier">toVector</span><span>.</span><span class="identifier">flatMap</span><span>(</span><span class="identifier">_</span><span>.</span><span class="identifier">getAttributes</span><span>.</span><span class="identifier">toScala</span><span>)
-  }</span></code></pre>
+</span><span class="keyword">def</span><span> </span><span class="declaration-name">specExpectation</span><span>(</span><span class="identifier">spec</span><span>: </span><span class="type-name">MetricSpec</span><span>): </span><span class="type-name">MetricExpectation</span><span> = {
+  </span><span class="keyword">val</span><span> </span><span class="identifier">required</span><span> = </span><span class="identifier">spec</span><span>.</span><span class="identifier">attributeSpecs</span><span>
+    .</span><span class="identifier">filter</span><span>(</span><span class="identifier">_</span><span>.</span><span class="identifier">requirement</span><span>.</span><span class="identifier">level</span><span> == </span><span class="type-name">Requirement</span><span>.</span><span class="type-name">Level</span><span>.</span><span class="type-name">Required</span><span>)
+    .</span><span class="identifier">map</span><span>(</span><span class="identifier">_</span><span>.</span><span class="identifier">key</span><span>)
+    .</span><span class="identifier">toSet</span><span>
+
+  </span><span class="type-name">MetricExpectation</span><span>
+    .</span><span class="identifier">name</span><span>(</span><span class="identifier">spec</span><span>.</span><span class="identifier">name</span><span>)
+    .</span><span class="identifier">description</span><span>(</span><span class="identifier">spec</span><span>.</span><span class="identifier">description</span><span>)
+    .</span><span class="identifier">unit</span><span>(</span><span class="identifier">spec</span><span>.</span><span class="identifier">unit</span><span>)
+    .</span><span class="identifier">where</span><span>(</span><span class="string-literal">s&quot;[</span><span class="substitution">${spec.name}</span><span class="string-literal">] is missing required semantic attributes&quot;</span><span>) { </span><span class="identifier">metric</span><span> =&gt;
+      </span><span class="keyword">import</span><span> </span><span class="identifier">scala</span><span>.</span><span class="identifier">jdk</span><span>.</span><span class="type-name">CollectionConverters</span><span>.</span><span class="identifier">_</span><span>
+      </span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="type-name">AttributeConverters</span><span>.</span><span class="identifier">_</span><span>
+
+      </span><span class="keyword">val</span><span> </span><span class="identifier">current</span><span> = </span><span class="identifier">metric</span><span>.</span><span class="identifier">getData</span><span>.</span><span class="identifier">getPoints</span><span>.</span><span class="identifier">asScala</span><span>
+        .</span><span class="identifier">flatMap</span><span>(</span><span class="identifier">_</span><span>.</span><span class="identifier">asInstanceOf</span><span>[</span><span class="type-name">PointData</span><span>].</span><span class="identifier">getAttributes</span><span>.</span><span class="identifier">asMap</span><span>().</span><span class="identifier">keySet</span><span>().</span><span class="identifier">asScala</span><span>)
+        .</span><span class="identifier">map</span><span>(</span><span class="identifier">_</span><span>.</span><span class="identifier">toScala</span><span>)
+        .</span><span class="identifier">toSet</span><span>
+
+      </span><span class="identifier">current</span><span> == </span><span class="identifier">required</span><span>
+    }
+}</span></code></pre>
 
         
 <hr class="footer-rule"/>

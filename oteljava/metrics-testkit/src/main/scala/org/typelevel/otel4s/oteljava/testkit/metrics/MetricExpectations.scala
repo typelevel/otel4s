@@ -18,6 +18,7 @@ package org.typelevel.otel4s.oteljava.testkit.metrics
 
 import cats.data.NonEmptyList
 import io.opentelemetry.sdk.metrics.data.MetricData
+import org.typelevel.otel4s.oteljava.testkit.FlatExpectationMatching
 
 /** Result of matching a [[MetricExpectation]] against a list of collected metrics. */
 sealed trait MetricMismatch {
@@ -138,22 +139,21 @@ object MetricExpectations {
       metrics: List[MetricData],
       expectation: MetricExpectation
   ): Boolean =
-    find(metrics, expectation).nonEmpty
+    FlatExpectationMatching.exists(metrics, expectation)(_.matches(_))
 
   /** Returns the first collected metric matching the expectation, if any. */
   def find(
       metrics: List[MetricData],
       expectation: MetricExpectation
   ): Option[MetricData] =
-    metrics.find(expectation.matches)
+    FlatExpectationMatching.find(metrics, expectation)(_.matches(_))
 
   /** Returns a mismatch if no collected metric matches the expectation. */
   def check(
       metrics: List[MetricData],
       expectation: MetricExpectation
   ): Option[MetricMismatch] =
-    if (exists(metrics, expectation)) None
-    else Some(bestMismatch(metrics, expectation))
+    FlatExpectationMatching.check(metrics, expectation)(_.matches(_), bestMismatch _)
 
   /** Checks that every expectation matched at least one collected metric.
     *
@@ -175,7 +175,7 @@ object MetricExpectations {
       metrics: List[MetricData],
       expectations: List[MetricExpectation]
   ): Either[NonEmptyList[MetricMismatch], Unit] =
-    NonEmptyList.fromList(missing(metrics, expectations)).toLeft(())
+    FlatExpectationMatching.checkAll(metrics, expectations)(_.matches(_), bestMismatch _)
 
   /** Checks that every expectation matched a different collected metric.
     *
@@ -197,66 +197,56 @@ object MetricExpectations {
       metrics: List[MetricData],
       expectations: List[MetricExpectation]
   ): Either[NonEmptyList[MetricMismatch], Unit] =
-    NonEmptyList.fromList(missingDistinct(metrics, expectations)).toLeft(())
+    FlatExpectationMatching.checkAllDistinct(metrics, expectations)(
+      _.matches(_),
+      bestMismatch _,
+      MetricMismatch.distinctMatchUnavailable _,
+      _.getName
+    )
 
   /** Returns mismatches for all expectations that did not match any collected metric. */
   def missing(
       metrics: List[MetricData],
       expectations: List[MetricExpectation]
   ): List[MetricMismatch] =
-    expectations.flatMap { expectation =>
-      check(metrics, expectation)
-    }
+    FlatExpectationMatching.missing(metrics, expectations)(_.matches(_), bestMismatch _)
 
   /** Returns mismatches for all expectations that could not be matched to distinct collected metrics. */
   def missingDistinct(
       metrics: List[MetricData],
       expectations: List[MetricExpectation]
-  ): List[MetricMismatch] = {
-    val indexedMetrics = metrics.toVector
-    val indexedExpectations = expectations.toVector
-    val candidates = indexedExpectations.map { expectation =>
-      indexedMetrics.indices.filter(index => expectation.matches(indexedMetrics(index))).toList
-    }
-    val matching = maximumMatching(candidates)
-
-    if (matching.isComplete) Nil
-    else
-      indexedExpectations.indices.collect {
-        case index if !matching.matchedExpectationIndices(index) =>
-          candidates(index) match {
-            case Nil =>
-              bestMismatch(metrics, indexedExpectations(index))
-            case matches =>
-              MetricMismatch.distinctMatchUnavailable(
-                indexedExpectations(index),
-                matches.map(indexedMetrics(_).getName).distinct
-              )
-          }
-      }.toList
-  }
+  ): List[MetricMismatch] =
+    FlatExpectationMatching.missingDistinct(metrics, expectations)(
+      _.matches(_),
+      bestMismatch _,
+      MetricMismatch.distinctMatchUnavailable _,
+      _.getName
+    )
 
   /** Returns `true` if every expectation matched at least one collected metric. */
   def allMatch(
       metrics: List[MetricData],
       expectations: List[MetricExpectation]
   ): Boolean =
-    checkAll(metrics, expectations).isRight
+    FlatExpectationMatching.allMatch(metrics, expectations)(_.matches(_), bestMismatch _)
 
   /** Returns `true` if every expectation matched a different collected metric. */
   def allMatchDistinct(
       metrics: List[MetricData],
       expectations: List[MetricExpectation]
   ): Boolean =
-    checkAllDistinct(metrics, expectations).isRight
+    FlatExpectationMatching.allMatchDistinct(metrics, expectations)(
+      _.matches(_),
+      bestMismatch _,
+      MetricMismatch.distinctMatchUnavailable _,
+      _.getName
+    )
 
   /** Formats mismatches into a multi-line human-readable failure message. */
   def format(
       mismatches: NonEmptyList[MetricMismatch]
   ): String =
-    mismatches.toList.zipWithIndex
-      .map { case (mismatch, index) => s"${index + 1}. ${mismatch.message}" }
-      .mkString("Metric expectations failed:\n", "\n", "")
+    FlatExpectationMatching.format("Metric expectations", mismatches)(_.message)
 
   private def bestMismatch(
       metrics: List[MetricData],
@@ -287,50 +277,5 @@ object MetricExpectations {
         MetricMismatch.closestMismatch(expectation, metric, mismatches)
       }
       .getOrElse(MetricMismatch.notFound(expectation, metrics.map(_.getName)))
-  }
-
-  private final case class MatchingResult(
-      isComplete: Boolean,
-      matchedExpectationIndices: Set[Int],
-      size: Int
-  )
-
-  private def maximumMatching(
-      candidates: Vector[List[Int]]
-  ): MatchingResult = {
-    type Matching = Map[Int, Int] // metricIndex -> expectationIndex
-
-    val orderedCandidates = candidates.zipWithIndex.sortBy(_._1.length)
-
-    def augment(
-        expectationIndex: Int,
-        seen: Set[Int],
-        matching: Matching
-    ): Option[Matching] =
-      orderedCandidates(expectationIndex)._1.foldLeft(Option.empty[Matching]) {
-        case (result @ Some(_), _) =>
-          result
-        case (None, metricIndex) if seen(metricIndex) =>
-          None
-        case (None, metricIndex) =>
-          matching.get(metricIndex) match {
-            case None =>
-              Some(matching.updated(metricIndex, expectationIndex))
-            case Some(otherExpectationIndex) =>
-              augment(otherExpectationIndex, seen + metricIndex, matching)
-                .map(_.updated(metricIndex, expectationIndex))
-          }
-      }
-
-    val finalMatching =
-      orderedCandidates.indices.foldLeft(Map.empty[Int, Int]) { case (matching, expectationIndex) =>
-        augment(expectationIndex, Set.empty, matching).getOrElse(matching)
-      }
-
-    MatchingResult(
-      isComplete = finalMatching.size == candidates.length,
-      matchedExpectationIndices = finalMatching.values.toSet,
-      size = finalMatching.size
-    )
   }
 }

@@ -22,6 +22,10 @@ import cats.syntax.functor._
 import io.opentelemetry.sdk.metrics.data.{ExponentialHistogramPointData => JExponentialHistogramPointData}
 import io.opentelemetry.sdk.metrics.data.{HistogramPointData => JHistogramPointData}
 import io.opentelemetry.sdk.metrics.data.{SummaryPointData => JSummaryPointData}
+import org.typelevel.otel4s.oteljava.testkit.CollectionExpectationChecks
+import org.typelevel.otel4s.oteljava.testkit.ExpectationChecks
+import org.typelevel.otel4s.oteljava.testkit.LogicalOperator
+import org.typelevel.otel4s.oteljava.testkit.MaximumMatching
 
 /** A partial expectation over a collection of metric points.
   *
@@ -122,24 +126,6 @@ object PointSetExpectation {
     ) extends Mismatch {
       def message: String =
         s"point-set mismatch [$clue]: ${mismatches.toList.map(_.message).mkString(", ")}"
-    }
-  }
-
-  /** Logical operator used when combining point-set expectations. */
-  sealed trait LogicalOperator extends Product with Serializable {
-    def render: String
-  }
-
-  object LogicalOperator {
-
-    /** Logical conjunction. */
-    case object And extends LogicalOperator {
-      val render: String = "and"
-    }
-
-    /** Logical disjunction. */
-    case object Or extends LogicalOperator {
-      val render: String = "or"
     }
   }
 
@@ -257,11 +243,11 @@ object PointSetExpectation {
 
   /** Combines two point-set expectations using logical conjunction. */
   def and[P](left: PointSetExpectation[P], right: PointSetExpectation[P]): PointSetExpectation[P] =
-    AndImpl(left, right, None)
+    CompositeImpl(left, right, LogicalOperator.And, None)
 
   /** Combines two point-set expectations using logical disjunction. */
   def or[P](left: PointSetExpectation[P], right: PointSetExpectation[P]): PointSetExpectation[P] =
-    OrImpl(left, right, None)
+    CompositeImpl(left, right, LogicalOperator.Or, None)
 
   private final case class AnyImpl[P](clue: Option[String]) extends PointSetExpectation[P] {
     def clue(text: String): PointSetExpectation[P] = copy(clue = Some(text))
@@ -275,8 +261,7 @@ object PointSetExpectation {
   ) extends PointSetExpectation[P] {
     def clue(text: String): PointSetExpectation[P] = copy(clue = Some(text))
     def check(points: List[P]): Either[NonEmptyList[Mismatch], Unit] =
-      withClueContext(
-        clue,
+      withClueContext(clue) {
         if (points.exists(point => checker.check(this.point, point).isRight)) ExpectationChecks.success
         else {
           val mismatch = Mismatch.MissingExpectedPoint(
@@ -285,7 +270,7 @@ object PointSetExpectation {
           )
           ExpectationChecks.mismatch(mismatch)
         }
-      )
+      }
   }
 
   private final case class ForAllImpl[E, P](
@@ -295,18 +280,21 @@ object PointSetExpectation {
   ) extends PointSetExpectation[P] {
     def clue(text: String): PointSetExpectation[P] = copy(clue = Some(text))
     def check(points: List[P]): Either[NonEmptyList[Mismatch], Unit] =
-      withClueContext(
-        clue,
-        if (points.isEmpty) ExpectationChecks.mismatch(Mismatch.NoPointsCollected)
-        else {
-          points.zipWithIndex.collectFirst(Function.unlift { case (point, index) =>
-            checker.check(this.point, point).left.toOption.map(Mismatch.FailingPoint(index, _))
-          }) match {
+      withClueContext(clue) {
+        if (points.isEmpty) {
+          ExpectationChecks.mismatch(Mismatch.NoPointsCollected)
+        } else {
+          val firstMismatch = CollectionExpectationChecks.firstFailingIndex(points, point)(
+            (expectation, actual) => checker.check(expectation, actual),
+            (index, mismatches) => Mismatch.FailingPoint(index, mismatches)
+          )
+
+          firstMismatch match {
             case Some(mismatch) => ExpectationChecks.mismatch(mismatch)
             case None           => ExpectationChecks.success
           }
         }
-      )
+      }
   }
 
   private final case class ContainsImpl[E, P](
@@ -316,7 +304,7 @@ object PointSetExpectation {
   ) extends PointSetExpectation[P] {
     def clue(text: String): PointSetExpectation[P] = copy(clue = Some(text))
     def check(points: List[P]): Either[NonEmptyList[Mismatch], Unit] =
-      withClueContext(clue, containsCheck(expected, checker, points).void)
+      withClueContext(clue)(containsCheck(expected, checker, points).void)
   }
 
   private final case class ExactlyImpl[E, P](
@@ -326,43 +314,39 @@ object PointSetExpectation {
   ) extends PointSetExpectation[P] {
     def clue(text: String): PointSetExpectation[P] = copy(clue = Some(text))
     def check(points: List[P]): Either[NonEmptyList[Mismatch], Unit] =
-      withClueContext(
-        clue,
+      withClueContext(clue) {
         containsCheck(expected, checker, points).flatMap { matchedIndices =>
           val unexpected = points.indices.filterNot(matchedIndices.contains).map(Mismatch.UnexpectedPoint(_)).toList
           NonEmptyList.fromList(unexpected).toLeft(())
         }
-      )
+      }
   }
 
   private final case class CountImpl[P](expected: Int, clue: Option[String]) extends PointSetExpectation[P] {
     def clue(text: String): PointSetExpectation[P] = copy(clue = Some(text))
     def check(points: List[P]): Either[NonEmptyList[Mismatch], Unit] =
-      withClueContext(
-        clue,
+      withClueContext(clue) {
         if (points.length == expected) ExpectationChecks.success
         else ExpectationChecks.mismatch(Mismatch.PointCountMismatch(expected, points.length))
-      )
+      }
   }
 
   private final case class MinCountImpl[P](expectedAtLeast: Int, clue: Option[String]) extends PointSetExpectation[P] {
     def clue(text: String): PointSetExpectation[P] = copy(clue = Some(text))
     def check(points: List[P]): Either[NonEmptyList[Mismatch], Unit] =
-      withClueContext(
-        clue,
+      withClueContext(clue) {
         if (points.length >= expectedAtLeast) ExpectationChecks.success
         else ExpectationChecks.mismatch(Mismatch.MinimumPointCountMismatch(expectedAtLeast, points.length))
-      )
+      }
   }
 
   private final case class MaxCountImpl[P](expectedAtMost: Int, clue: Option[String]) extends PointSetExpectation[P] {
     def clue(text: String): PointSetExpectation[P] = copy(clue = Some(text))
     def check(points: List[P]): Either[NonEmptyList[Mismatch], Unit] =
-      withClueContext(
-        clue,
+      withClueContext(clue) {
         if (points.length <= expectedAtMost) ExpectationChecks.success
         else ExpectationChecks.mismatch(Mismatch.MaximumPointCountMismatch(expectedAtMost, points.length))
-      )
+      }
   }
 
   private final case class CountWhereImpl[E, P](
@@ -373,13 +357,11 @@ object PointSetExpectation {
   ) extends PointSetExpectation[P] {
     def clue(text: String): PointSetExpectation[P] = copy(clue = Some(text))
     def check(points: List[P]): Either[NonEmptyList[Mismatch], Unit] =
-      withClueContext(
-        clue, {
-          val actual = points.count(point => checker.check(this.point, point).isRight)
-          if (actual == expected) ExpectationChecks.success
-          else ExpectationChecks.mismatch(Mismatch.MatchedPointCountMismatch(expected, actual))
-        }
-      )
+      withClueContext(clue) {
+        val actual = points.count(point => checker.check(this.point, point).isRight)
+        if (actual == expected) ExpectationChecks.success
+        else ExpectationChecks.mismatch(Mismatch.MatchedPointCountMismatch(expected, actual))
+      }
   }
 
   private final case class NoneOfImpl[E, P](
@@ -389,15 +371,16 @@ object PointSetExpectation {
   ) extends PointSetExpectation[P] {
     def clue(text: String): PointSetExpectation[P] = copy(clue = Some(text))
     def check(points: List[P]): Either[NonEmptyList[Mismatch], Unit] =
-      withClueContext(
-        clue,
-        points.zipWithIndex.collectFirst(Function.unlift { case (point, index) =>
-          checker.check(this.point, point).toOption.map(_ => Mismatch.UnexpectedPoint(index))
-        }) match {
-          case Some(mismatch) => ExpectationChecks.mismatch(mismatch)
-          case None           => ExpectationChecks.success
+      withClueContext(clue) {
+        val firstMatch = CollectionExpectationChecks.firstMatchingIndex(points, point)((expectation, actual) =>
+          checker.check(expectation, actual).isRight
+        )
+
+        firstMatch match {
+          case None        => ExpectationChecks.success
+          case Some(index) => ExpectationChecks.mismatch(Mismatch.UnexpectedPoint(index))
         }
-      )
+      }
   }
 
   private final case class PredicateImpl[P](
@@ -406,54 +389,29 @@ object PointSetExpectation {
   ) extends PointSetExpectation[P] {
     def clue(text: String): PointSetExpectation[P] = copy(clue = Some(text))
     def check(points: List[P]): Either[NonEmptyList[Mismatch], Unit] =
-      withClueContext(clue, Either.cond(f(points), (), NonEmptyList.one(Mismatch.PredicateFailed(clue))))
+      withClueContext(clue)(Either.cond(f(points), (), NonEmptyList.one(Mismatch.PredicateFailed(clue))))
   }
 
-  private final case class AndImpl[P](
+  private final case class CompositeImpl[P](
       left: PointSetExpectation[P],
       right: PointSetExpectation[P],
+      operator: LogicalOperator,
       clue: Option[String]
   ) extends PointSetExpectation[P] {
     def clue(text: String): PointSetExpectation[P] = copy(clue = Some(text))
     def check(points: List[P]): Either[NonEmptyList[Mismatch], Unit] =
-      withClueContext(
-        clue,
-        (left.check(points), right.check(points)) match {
-          case (Right(_), Right(_)) => Right(())
-          case (Left(l), Right(_))  => Left(l)
-          case (Right(_), Left(r))  => Left(r)
-          case (Left(l), Left(r))   =>
-            Left(NonEmptyList.one(Mismatch.CompositeMismatch(LogicalOperator.And, l.concatNel(r))))
+      withClueContext(clue) {
+        CollectionExpectationChecks.compositeCheck(operator, left.check(points), right.check(points)) { mismatches =>
+          Mismatch.CompositeMismatch(operator, mismatches)
         }
-      )
+      }
   }
 
-  private final case class OrImpl[P](
-      left: PointSetExpectation[P],
-      right: PointSetExpectation[P],
-      clue: Option[String]
-  ) extends PointSetExpectation[P] {
-    def clue(text: String): PointSetExpectation[P] = copy(clue = Some(text))
-    def check(points: List[P]): Either[NonEmptyList[Mismatch], Unit] =
-      withClueContext(
-        clue,
-        (left.check(points), right.check(points)) match {
-          case (Right(_), _) | (_, Right(_)) => Right(())
-          case (Left(l), Left(r))            =>
-            Left(NonEmptyList.one(Mismatch.CompositeMismatch(LogicalOperator.Or, l.concatNel(r))))
-        }
-      )
-  }
-
-  private def withClueContext[P](
-      clue: Option[String],
+  private def withClueContext(clue: Option[String])(
       result: Either[NonEmptyList[Mismatch], Unit]
   ): Either[NonEmptyList[Mismatch], Unit] =
-    clue match {
-      case Some(value) =>
-        result.left.map(mismatches => NonEmptyList.one(Mismatch.CluedMismatch(value, mismatches)))
-      case None =>
-        result
+    CollectionExpectationChecks.withClueContext(clue, result) { (clue, mismatches) =>
+      Mismatch.CluedMismatch(clue, mismatches)
     }
 
   private def closestMismatch[E, P](
@@ -461,11 +419,10 @@ object PointSetExpectation {
       expectation: E,
       checker: SinglePointChecker.Aux[E, P]
   ): NonEmptyList[PointExpectation.Mismatch] =
-    points
-      .flatMap(point => checker.check(expectation, point).left.toOption)
-      .sortBy(_.length)
-      .headOption
-      .getOrElse(NonEmptyList.one(PointExpectation.Mismatch.PredicateMismatch("no points were collected")))
+    CollectionExpectationChecks.closestMismatch(points, expectation)(
+      (expected, actual) => checker.check(expected, actual),
+      PointExpectation.Mismatch.PredicateMismatch("no points were collected")
+    )
 
   private def containsCheck[E, P](
       expected: NonEmptyList[E],
@@ -476,72 +433,22 @@ object PointSetExpectation {
     val candidates = expected.toList.map { expectation =>
       indexedPoints.indices.filter(index => checker.check(expectation, indexedPoints(index)).isRight).toList
     }
-    val matching = maximumMatching(candidates.toVector)
+    val matching = MaximumMatching.find(candidates.toVector)
 
-    if (matching.isComplete) Right(matching.matchedIndices)
+    if (matching.isComplete) Right(matching.matchedCandidateIndices)
     else {
       val missing = expected.toList.zip(candidates).collect { case (expectation, Nil) =>
-        Mismatch.MissingExpectedPoint(
-          checker.clue(expectation),
-          closestMismatch(points, expectation, checker)
-        )
+        Mismatch.MissingExpectedPoint(checker.clue(expectation), closestMismatch(points, expectation, checker))
       }
 
       Left(
         NonEmptyList
           .fromList(missing)
           .getOrElse(
-            NonEmptyList.one(
-              Mismatch.MatchedPointCountMismatch(expected.length, matching.size)
-            )
+            NonEmptyList.one(Mismatch.MatchedPointCountMismatch(expected.length, matching.size))
           )
       )
     }
-  }
-
-  private final case class MatchingResult(
-      isComplete: Boolean,
-      matchedIndices: Set[Int],
-      size: Int
-  )
-
-  private def maximumMatching(
-      candidates: Vector[List[Int]],
-  ): MatchingResult = {
-    type Matching = Map[Int, Int] // pointIndex -> expectationIndex
-
-    val orderedCandidates = candidates.zipWithIndex.sortBy(_._1.length)
-
-    def augment(
-        expectationIndex: Int,
-        seen: Set[Int],
-        matching: Matching
-    ): Option[Matching] =
-      orderedCandidates(expectationIndex)._1.foldLeft(Option.empty[Matching]) {
-        case (result @ Some(_), _) =>
-          result
-        case (None, pointIndex) if seen(pointIndex) =>
-          None
-        case (None, pointIndex) =>
-          matching.get(pointIndex) match {
-            case None =>
-              Some(matching.updated(pointIndex, expectationIndex))
-            case Some(otherExpectationIndex) =>
-              augment(otherExpectationIndex, seen + pointIndex, matching)
-                .map(_.updated(pointIndex, expectationIndex))
-          }
-      }
-
-    val finalMatching =
-      orderedCandidates.indices.foldLeft(Map.empty[Int, Int]) { case (matching, expectationIndex) =>
-        augment(expectationIndex, Set.empty, matching).getOrElse(matching)
-      }
-
-    MatchingResult(
-      isComplete = finalMatching.size == candidates.length,
-      matchedIndices = finalMatching.keySet,
-      size = finalMatching.size
-    )
   }
 
 }

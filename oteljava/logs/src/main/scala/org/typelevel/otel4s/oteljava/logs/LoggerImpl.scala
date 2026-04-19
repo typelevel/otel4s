@@ -33,7 +33,7 @@ private[oteljava] final class LoggerImpl[F[_]: Sync: AskContext](jLogger: JLogge
     InstrumentMeta.dynamic { (ctx, severity, _) =>
       Sync[F].delay(
         jLogger.isEnabled(
-          severity.fold(JSeverity.UNDEFINED_SEVERITY_NUMBER)(SeverityConversions.toJSeverity),
+          severity.fold(JSeverity.UNDEFINED_SEVERITY_NUMBER)(SeverityConversions.toJava),
           ctx.underlying
         )
       )

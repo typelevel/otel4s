@@ -35,8 +35,11 @@ import org.typelevel.otel4s.oteljava.baggage.BaggageManagerImpl
 import org.typelevel.otel4s.oteljava.context.Context
 import org.typelevel.otel4s.oteljava.context.LocalContext
 import org.typelevel.otel4s.oteljava.context.LocalContextProvider
+import org.typelevel.otel4s.oteljava.testkit.logs.FromLogRecordData
 import org.typelevel.otel4s.oteljava.testkit.logs.LogsTestkit
+import org.typelevel.otel4s.oteljava.testkit.metrics.FromMetricData
 import org.typelevel.otel4s.oteljava.testkit.metrics.MetricsTestkit
+import org.typelevel.otel4s.oteljava.testkit.trace.FromSpanData
 import org.typelevel.otel4s.oteljava.testkit.trace.TracesTestkit
 import org.typelevel.otel4s.trace.TracerProvider
 
@@ -127,9 +130,24 @@ object OtelJavaTestkit {
     def tracerProvider: TracerProvider[F] = traces.tracerProvider
     def propagators: ContextPropagators[Context] = traces.propagators
     def finishedSpans: F[List[SpanData]] = traces.finishedSpans
+    @deprecated(
+      "Use `finishedSpans` without a type parameter to work with OpenTelemetry Java `SpanData`, or use the expectation API for assertions.",
+      "1.0.0-RC1"
+    )
+    def finishedSpans[A: FromSpanData]: F[List[A]] = traces.finishedSpans[A]
     def resetSpans: F[Unit] = traces.resetSpans
     def collectMetrics: F[List[MetricData]] = metrics.collectMetrics
+    @deprecated(
+      "Use `collectMetrics` without a type parameter to work with OpenTelemetry Java `MetricData`, or use the expectation API for assertions.",
+      "1.0.0-RC1"
+    )
+    def collectMetrics[A: FromMetricData]: F[List[A]] = metrics.collectMetrics[A]
     def finishedLogs: F[List[LogRecordData]] = logs.finishedLogs
+    @deprecated(
+      "Use `finishedLogs` to work with OpenTelemetry Java `LogRecordData`, or use the expectation API for assertions.",
+      "1.0.0-RC1"
+    )
+    def collectLogs[A: FromLogRecordData]: F[List[A]] = logs.collectLogs[A]
     def resetLogs: F[Unit] = logs.resetLogs
   }
 

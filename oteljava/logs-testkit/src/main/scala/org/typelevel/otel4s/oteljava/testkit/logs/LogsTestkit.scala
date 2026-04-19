@@ -34,6 +34,7 @@ import org.typelevel.otel4s.oteljava.context.LocalContextProvider
 import org.typelevel.otel4s.oteljava.logs.LoggerProviderImpl
 import org.typelevel.otel4s.oteljava.testkit.Conversions
 
+import scala.annotation.nowarn
 import scala.jdk.CollectionConverters._
 
 sealed trait LogsTestkit[F[_]] {
@@ -48,6 +49,24 @@ sealed trait LogsTestkit[F[_]] {
     *   [[resetLogs]] to reset the internal buffer
     */
   def finishedLogs: F[List[LogRecordData]]
+
+  /** Collects and returns logs.
+    *
+    * @example
+    *   {{{
+    * import io.opentelemetry.sdk.logs.data.LogRecordData
+    *
+    * LogsTestkit[F].collectLogs[LogRecordData] // OpenTelemetry Java models
+    *   }}}
+    *
+    * @see
+    *   [[resetLogs]] to reset the internal buffer
+    */
+  @deprecated(
+    "Use `finishedLogs` to work with OpenTelemetry Java `LogRecordData`, or use the expectation API for assertions.",
+    "1.0.0-RC1"
+  )
+  def collectLogs[A: FromLogRecordData]: F[List[A]]
 
   /** Resets the internal buffer.
     */
@@ -132,6 +151,10 @@ object LogsTestkit {
         )
         result <- Async[F].delay(exporter.getFinishedLogRecordItems)
       } yield result.asScala.toList
+
+    @nowarn("cat=deprecation")
+    def collectLogs[A: FromLogRecordData]: F[List[A]] =
+      Async[F].map(finishedLogs)(_.map(FromLogRecordData[A].from))
 
     def resetLogs: F[Unit] =
       Async[F].delay(exporter.reset())

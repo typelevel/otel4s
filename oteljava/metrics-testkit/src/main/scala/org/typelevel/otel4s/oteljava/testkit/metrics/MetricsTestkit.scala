@@ -29,6 +29,7 @@ import org.typelevel.otel4s.oteljava.context.Context
 import org.typelevel.otel4s.oteljava.context.LocalContextProvider
 import org.typelevel.otel4s.oteljava.metrics.MeterProviderImpl
 
+import scala.annotation.nowarn
 import scala.jdk.CollectionConverters._
 
 sealed trait MetricsTestkit[F[_]] {
@@ -43,6 +44,26 @@ sealed trait MetricsTestkit[F[_]] {
     *   metrics are recollected on each invocation.
     */
   def collectMetrics: F[List[MetricData]]
+
+  /** Collects and returns metrics.
+    *
+    * @example
+    *   {{{
+    * import io.opentelemetry.sdk.metrics.data.MetricData
+    * import org.typelevel.otel4s.oteljava.testkit.metrics.data.Metric
+    *
+    * MetricTestkit[F].collectMetrics[MetricData] // OpenTelemetry Java models
+    * MetricTestkit[F].collectMetrics[Metric] // Otel4s testkit models
+    *   }}}
+    *
+    * @note
+    *   metrics are recollected on each invocation.
+    */
+  @deprecated(
+    "Use `collectMetrics` without a type parameter to work with OpenTelemetry Java `MetricData`, or use the expectation API for assertions.",
+    "1.0.0-RC1"
+  )
+  def collectMetrics[A: FromMetricData]: F[List[A]]
 
 }
 
@@ -114,8 +135,13 @@ object MetricsTestkit {
       metricReader: InMemoryMetricReader
   ) extends MetricsTestkit[F] {
 
+    @nowarn("msg=Calls to parameterless method collectMetrics")
     def collectMetrics: F[List[MetricData]] =
       Async[F].delay(metricReader.collectAllMetrics().asScala.toList)
+
+    @nowarn("cat=deprecation")
+    def collectMetrics[A: FromMetricData]: F[List[A]] =
+      Async[F].map(collectMetrics)(_.map(FromMetricData[A].from))
   }
 
   private final case class BuilderImpl[F[_]: Async: LocalContextProvider](

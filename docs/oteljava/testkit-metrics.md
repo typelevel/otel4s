@@ -10,6 +10,9 @@ The expectation API lets you assert only the relevant parts of a metric while st
 it. Metric point matching is expressed at the collection level, so a single metric expectation can accumulate
 multiple point constraints.
 
+This guide documents the expectation-first testing style for metrics.
+For the overview of all signal testkits, see [Testkit](testkit.md).
+
 ## Getting started
 
 @:select(build-tool)
@@ -41,7 +44,7 @@ The usual flow is:
 1. Run your program against `MetricsTestkit` or `OtelJavaTestkit`
 2. Collect metrics as `MetricData`
 3. Build `MetricExpectation` values
-4. Check them with `MetricExpectations.checkAll`
+4. Check them with `MetricExpectations.checkAll` or `MetricExpectations.checkAllDistinct`
 
 ```scala mdoc:silent
 import cats.effect.IO
@@ -59,7 +62,7 @@ def program(meterProvider: MeterProvider[IO]): IO[Unit] =
   } yield ()
 
 def assertExpected(metrics: List[MetricData], expected: MetricExpectation*): Unit =
-  MetricExpectations.checkAll(metrics, expected: _*) match {
+  MetricExpectations.checkAllDistinct(metrics, expected: _*) match {
     case Right(_) =>
       ()
     case Left(mismatches) =>

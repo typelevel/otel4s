@@ -54,7 +54,7 @@ private[oteljava] final case class LogRecordBuilderImpl[F[_]: Sync: AskContext](
     copy(jBuilder = jBuilder.setContext(context.underlying))
 
   def withSeverity(severity: Severity): LogRecordBuilder[F, Context] =
-    copy(jBuilder = jBuilder.setSeverity(SeverityConversions.toJSeverity(severity)))
+    copy(jBuilder = jBuilder.setSeverity(SeverityConversions.toJava(severity)))
 
   def withSeverityText(severityText: String): LogRecordBuilder[F, Context] =
     copy(jBuilder = jBuilder.setSeverityText(severityText))

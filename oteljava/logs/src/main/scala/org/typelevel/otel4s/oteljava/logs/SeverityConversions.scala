@@ -19,9 +19,9 @@ package org.typelevel.otel4s.oteljava.logs
 import io.opentelemetry.api.logs.{Severity => JSeverity}
 import org.typelevel.otel4s.logs.Severity
 
-private[logs] object SeverityConversions {
+private[oteljava] object SeverityConversions {
 
-  def toJSeverity(severity: Severity): JSeverity =
+  def toJava(severity: Severity): JSeverity =
     severity match {
       case Severity.Trace1 => JSeverity.TRACE
       case Severity.Trace2 => JSeverity.TRACE2
@@ -52,6 +52,43 @@ private[logs] object SeverityConversions {
       case Severity.Fatal2 => JSeverity.FATAL2
       case Severity.Fatal3 => JSeverity.FATAL3
       case Severity.Fatal4 => JSeverity.FATAL4
+    }
+
+  def toScala(severity: JSeverity): Option[Severity] =
+    severity.getSeverityNumber match {
+      case 0 => None
+
+      case 1 => Some(Severity.trace)
+      case 2 => Some(Severity.trace2)
+      case 3 => Some(Severity.trace3)
+      case 4 => Some(Severity.trace4)
+
+      case 5 => Some(Severity.debug)
+      case 6 => Some(Severity.debug2)
+      case 7 => Some(Severity.debug3)
+      case 8 => Some(Severity.debug4)
+
+      case 9  => Some(Severity.info)
+      case 10 => Some(Severity.info2)
+      case 11 => Some(Severity.info3)
+      case 12 => Some(Severity.info4)
+
+      case 13 => Some(Severity.warn)
+      case 14 => Some(Severity.warn2)
+      case 15 => Some(Severity.warn3)
+      case 16 => Some(Severity.warn4)
+
+      case 17 => Some(Severity.error)
+      case 18 => Some(Severity.error2)
+      case 19 => Some(Severity.error3)
+      case 20 => Some(Severity.error4)
+
+      case 21 => Some(Severity.fatal)
+      case 22 => Some(Severity.fatal2)
+      case 23 => Some(Severity.fatal3)
+      case 24 => Some(Severity.fatal4)
+
+      case _ => None
     }
 
 }

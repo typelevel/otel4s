@@ -119,6 +119,8 @@
     <li class="level2 nav-leaf"><a href="agent.html">Zero-code | Java Agent</a></li>
     <li class="level2 active nav-leaf"><a href="#">Testkit</a></li>
     <li class="level2 nav-leaf"><a href="testkit-metrics.html">Testkit | Metrics</a></li>
+    <li class="level2 nav-leaf"><a href="testkit-traces.html">Testkit | Traces</a></li>
+    <li class="level2 nav-leaf"><a href="testkit-logs.html">Testkit | Logs</a></li>
     <li class="level1 nav-header">SDK</li>
     <li class="level2 nav-leaf"><a href="../sdk/overview.html">Overview</a></li>
     <li class="level1 nav-header">Examples</li>
@@ -138,9 +140,14 @@
 
   <ul class="nav-list">
     <li class="level1 nav-leaf"><a href="#getting-started">Getting started</a></li>
+    <li class="level1 nav-leaf"><a href="#choosing-a-testkit">Choosing a testkit</a></li>
+    <li class="level1 nav-node"><a href="#expectation-apis">Expectation APIs</a></li>
+    <li class="level2 nav-leaf"><a href="#metrics">Metrics</a></li>
+    <li class="level2 nav-leaf"><a href="#traces">Traces</a></li>
+    <li class="level2 nav-leaf"><a href="#logs">Logs</a></li>
+    <li class="level1 nav-leaf"><a href="#mismatch-rendering">Mismatch rendering</a></li>
+    <li class="level1 nav-leaf"><a href="#when-to-use-raw-sdk-models">When to use raw SDK models</a></li>
     <li class="level1 nav-leaf"><a href="#iolocalcontextstorage">IOLocalContextStorage</a></li>
-    <li class="level1 nav-leaf"><a href="#testing-metrics">Testing metrics</a></li>
-    <li class="level1 nav-leaf"><a href="#testing-spans">Testing spans</a></li>
   </ul>
 
   <p class="footer"></p>
@@ -150,9 +157,15 @@
       <main class="content">
 
         <h1 id="testkit" class="title">Testkit</h1>
-        <p>The <code>otel4s-oteljava-testkit</code> provides in-memory implementations of metric and trace exporters.
-        In-memory data can be used to test the structure of the spans, the names of instruments, and many more.</p>
-        <p>The testkit is framework-agnostic, so it can be used with any test framework, such as weaver, munit, scalatest.</p>
+        <p>The <code>otel4s-oteljava-testkit</code> module provides in-memory metric, trace, and log exporters for the OpenTelemetry Java
+        backend.</p>
+        <p>Use it when you want to:</p>
+        <ul>
+          <li>run instrumentation against a real <code>otel4s-oteljava</code> implementation</li>
+          <li>collect exported telemetry as OpenTelemetry Java SDK models</li>
+          <li>assert telemetry with the expectation APIs instead of building local test ADTs</li>
+        </ul>
+        <p>The testkit is framework-agnostic, so it can be used with munit, weaver, ScalaTest, or any other test framework.</p>
         
         <h2 id="getting-started" class="section"><a class="anchor-link left" href="#getting-started"><i class="icofont-laika link">&#xef71;</i></a>Getting started</h2>
         <div class="tab-container" data-tab-group="build-tool">
@@ -161,7 +174,7 @@
             <li class="tab" data-choice-name="scala-cli"><a href="#">Scala CLI</a></li>
           </ul>
           <div class="tab-content active" data-choice-name="sbt">
-            <p>Add settings to the <code>build.sbt</code>:</p>
+            <p>Add settings to <code>build.sbt</code>:</p>
             <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">libraryDependencies</span><span> ++= </span><span class="type-name">Seq</span><span>(
   </span><span class="string-literal">&quot;org.typelevel&quot;</span><span> %% </span><span class="string-literal">&quot;otel4s-oteljava-testkit&quot;</span><span> % </span><span class="string-literal">&quot;0.16.0&quot;</span><span> % </span><span class="type-name">Test</span><span>, </span><span class="comment">// &lt;1&gt;
 </span><span>)</span></code></pre>
@@ -172,24 +185,166 @@
           </div>
         </div>
         <ol class="arabic">
-          <li>Add the <code>otel4s-oteljava-testkit</code> library</li>
+          <li>Add the <code>otel4s-oteljava-testkit</code> module to the test scope</li>
         </ol>
         
+        <h2 id="choosing-a-testkit" class="section"><a class="anchor-link left" href="#choosing-a-testkit"><i class="icofont-laika link">&#xef71;</i></a>Choosing a testkit</h2>
+        <p>You can use either the domain-specific testkits or the combined testkit:</p>
+        <ul>
+          <li><code>MetricsTestkit</code> for metrics only</li>
+          <li><code>TracesTestkit</code> for traces only</li>
+          <li><code>LogsTestkit</code> for logs only</li>
+          <li><code>OtelJavaTestkit</code> when one test needs multiple signal types</li>
+        </ul>
+        <p>The combined testkit exposes:</p>
+        <ul>
+          <li><code>meterProvider</code></li>
+          <li><code>tracerProvider</code></li>
+          <li><code>loggerProvider</code></li>
+          <li><code>collectMetrics</code></li>
+          <li><code>finishedSpans</code></li>
+          <li><code>finishedLogs</code></li>
+        </ul>
+        <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.</span><span class="type-name">IO</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="identifier">testkit</span><span>.</span><span class="type-name">OtelJavaTestkit</span><span>
+
+</span><span class="keyword">def</span><span> </span><span class="declaration-name">test</span><span>: </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] =
+  </span><span class="type-name">OtelJavaTestkit</span><span>.</span><span class="identifier">inMemory</span><span>[</span><span class="type-name">IO</span><span>]().</span><span class="identifier">use</span><span> { </span><span class="identifier">testkit</span><span> =&gt;
+    </span><span class="keyword">for</span><span> {
+      </span><span class="identifier">metrics</span><span> &lt;- </span><span class="identifier">testkit</span><span>.</span><span class="identifier">collectMetrics</span><span>
+      </span><span class="identifier">spans</span><span> &lt;- </span><span class="identifier">testkit</span><span>.</span><span class="identifier">finishedSpans</span><span>
+      </span><span class="identifier">logs</span><span> &lt;- </span><span class="identifier">testkit</span><span>.</span><span class="identifier">finishedLogs</span><span>
+    } </span><span class="keyword">yield</span><span> {
+      </span><span class="keyword">val</span><span> </span><span class="identifier">_</span><span> = (</span><span class="identifier">metrics</span><span>, </span><span class="identifier">spans</span><span>, </span><span class="identifier">logs</span><span>)
+    }
+  }</span></code></pre>
+        <p>If a test exercises only one signal, the signal-specific testkit usually reads a bit more clearly.</p>
+        
+        <h2 id="expectation-apis" class="section"><a class="anchor-link left" href="#expectation-apis"><i class="icofont-laika link">&#xef71;</i></a>Expectation APIs</h2>
+        <p>The recommended testing style is:</p>
+        <ol class="arabic">
+          <li>run the program against the in-memory testkit</li>
+          <li>collect raw OpenTelemetry Java SDK models</li>
+          <li>assert them with the expectation API</li>
+        </ol>
+        <p>The expectation APIs are partial by default. This means:</p>
+        <ul>
+          <li>unspecified fields are ignored</li>
+          <li>you can match only the properties that matter for the current test</li>
+          <li>you can still add detail for timestamps, attributes, scope, resource, and structure when needed</li>
+        </ul>
+        <p>Dedicated guides:</p>
+        <ul>
+          <li><a href="testkit-metrics.html">Testkit | Metrics</a></li>
+          <li><a href="testkit-traces.html">Testkit | Traces</a></li>
+          <li><a href="testkit-logs.html">Testkit | Logs</a></li>
+        </ul>
+        
+        <h3 id="metrics" class="section"><a class="anchor-link left" href="#metrics"><i class="icofont-laika link">&#xef71;</i></a>Metrics</h3>
+        <p>Metrics are matched against OpenTelemetry Java <code>MetricData</code> using:</p>
+        <ul>
+          <li><code>MetricExpectation</code></li>
+          <li><code>PointExpectation</code></li>
+          <li><code>PointSetExpectation</code></li>
+          <li><code>MetricExpectations</code></li>
+        </ul>
+        <p>Use this when you want to assert metric name, metric type, values, point attributes, scope, resource, summaries,
+        histograms, exemplars, and collection-wide point constraints.</p>
+        
+        <h3 id="traces" class="section"><a class="anchor-link left" href="#traces"><i class="icofont-laika link">&#xef71;</i></a>Traces</h3>
+        <p>Traces are matched against OpenTelemetry Java <code>SpanData</code> using:</p>
+        <ul>
+          <li><code>SpanExpectation</code></li>
+          <li><code>EventExpectation</code></li>
+          <li><code>LinkExpectation</code></li>
+          <li><code>TraceExpectation</code></li>
+          <li><code>TraceForestExpectation</code></li>
+          <li><code>SpanExpectations</code></li>
+          <li><code>TraceExpectations</code></li>
+        </ul>
+        <p>Use <code>SpanExpectations</code> for flat exported-span checks and <code>TraceExpectations</code> when exact parent/child topology matters.</p>
+        
+        <h3 id="logs" class="section"><a class="anchor-link left" href="#logs"><i class="icofont-laika link">&#xef71;</i></a>Logs</h3>
+        <p>Logs are matched against OpenTelemetry Java <code>LogRecordData</code> using:</p>
+        <ul>
+          <li><code>LogRecordExpectation</code></li>
+          <li><code>LogRecordExpectations</code></li>
+        </ul>
+        <p>Use this when you want to assert body/message, severity, trace/span correlation, attributes, scope, resource, and
+        timestamps directly on exported log records.</p>
+        
+        <h2 id="mismatch-rendering" class="section"><a class="anchor-link left" href="#mismatch-rendering"><i class="icofont-laika link">&#xef71;</i></a>Mismatch rendering</h2>
+        <p>Each top-level expectation API has a formatting helper that turns structured mismatches into a readable failure message:</p>
+        <ul>
+          <li><code>MetricExpectations.format(...)</code></li>
+          <li><code>SpanExpectations.format(...)</code></li>
+          <li><code>TraceExpectations.format(...)</code></li>
+          <li><code>LogRecordExpectations.format(...)</code></li>
+        </ul>
+        <p>This is the easiest way to integrate expectations with a testing framework:</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">data</span><span>.</span><span class="type-name">NonEmptyList</span><span>
+
+</span><span class="keyword">def</span><span> </span><span class="declaration-name">failWith</span><span>[</span><span class="type-name">A</span><span>](</span><span class="identifier">mismatches</span><span>: </span><span class="type-name">NonEmptyList</span><span>[</span><span class="type-name">A</span><span>], </span><span class="identifier">render</span><span>: </span><span class="type-name">NonEmptyList</span><span>[</span><span class="type-name">A</span><span>] =&gt; </span><span class="type-name">String</span><span>): </span><span class="type-name">Nothing</span><span> =
+  </span><span class="identifier">sys</span><span>.</span><span class="identifier">error</span><span>(</span><span class="identifier">render</span><span>(</span><span class="identifier">mismatches</span><span>))</span></code></pre>
+        <p>In practice:</p>
+        <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.</span><span class="type-name">IO</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">metrics</span><span>.</span><span class="type-name">MeterProvider</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="identifier">testkit</span><span>.</span><span class="identifier">metrics</span><span>.</span><span class="identifier">_</span><span>
+
+</span><span class="keyword">def</span><span> </span><span class="declaration-name">program</span><span>(</span><span class="identifier">meterProvider</span><span>: </span><span class="type-name">MeterProvider</span><span>[</span><span class="type-name">IO</span><span>]): </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] = {
+  </span><span class="keyword">val</span><span> </span><span class="identifier">_</span><span> = </span><span class="identifier">meterProvider</span><span>
+  </span><span class="type-name">IO</span><span>.</span><span class="identifier">unit</span><span>
+}
+
+</span><span class="keyword">def</span><span> </span><span class="declaration-name">assertMetrics</span><span>(</span><span class="identifier">testkit</span><span>: </span><span class="type-name">MetricsTestkit</span><span>[</span><span class="type-name">IO</span><span>]): </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] =
+  </span><span class="keyword">for</span><span> {
+    </span><span class="identifier">_</span><span> &lt;- </span><span class="identifier">program</span><span>(</span><span class="identifier">testkit</span><span>.</span><span class="identifier">meterProvider</span><span>)
+    </span><span class="identifier">metrics</span><span> &lt;- </span><span class="identifier">testkit</span><span>.</span><span class="identifier">collectMetrics</span><span>
+  } </span><span class="keyword">yield</span><span> {
+    </span><span class="type-name">MetricExpectations</span><span>.</span><span class="identifier">checkAllDistinct</span><span>(
+      </span><span class="identifier">metrics</span><span>,
+      </span><span class="type-name">MetricExpectation</span><span>.</span><span class="identifier">sum</span><span>[</span><span class="type-name">Long</span><span>](</span><span class="string-literal">&quot;service.requests&quot;</span><span>)
+    ) </span><span class="keyword">match</span><span> {
+      </span><span class="keyword">case</span><span> </span><span class="type-name">Right</span><span>(</span><span class="identifier">_</span><span>) =&gt;
+        ()
+      </span><span class="keyword">case</span><span> </span><span class="type-name">Left</span><span>(</span><span class="identifier">mismatches</span><span>) =&gt;
+        </span><span class="identifier">sys</span><span>.</span><span class="identifier">error</span><span>(</span><span class="type-name">MetricExpectations</span><span>.</span><span class="identifier">format</span><span>(</span><span class="identifier">mismatches</span><span>))
+    }
+  }</span></code></pre>
+        
+        <h2 id="when-to-use-raw-sdk-models" class="section"><a class="anchor-link left" href="#when-to-use-raw-sdk-models"><i class="icofont-laika link">&#xef71;</i></a>When to use raw SDK models</h2>
+        <p>The expectation APIs should be the default path, but raw model assertions still make sense when:</p>
+        <ul>
+          <li>you are investigating a failing test and want to inspect the full exported payload</li>
+          <li>you need to compare a field that is not exposed by the current expectation DSL</li>
+          <li>you want to prototype a new matcher before turning it into a reusable expectation</li>
+        </ul>
+        <p>The in-memory testkits always expose the underlying OpenTelemetry Java SDK models:</p>
+        <ul>
+          <li><code>MetricData</code></li>
+          <li><code>SpanData</code></li>
+          <li><code>LogRecordData</code></li>
+        </ul>
+        <p>That means you can mix both styles in the same test:</p>
+        <ul>
+          <li>use expectation APIs for the stable high-value assertions</li>
+          <li>drop down to raw SDK models for one-off or low-level checks</li>
+        </ul>
+        
         <h2 id="iolocalcontextstorage" class="section"><a class="anchor-link left" href="#iolocalcontextstorage"><i class="icofont-laika link">&#xef71;</i></a>IOLocalContextStorage</h2>
-        <p>The <code>otel4s-oteljava-testkit</code> module depends on <code>io.opentelemetry:opentelemetry-sdk-testing</code> which sets the
-        <code>ContextStorageProvider</code> to <code>io.opentelemetry.sdk.testing.context.SettableContextStorageProvider</code>. If you rely on
-        <code>IOLocalContextStorage</code> in your tests, you will have the following error</p>
+        <p>The <code>otel4s-oteljava-testkit</code> module depends on <code>io.opentelemetry:opentelemetry-sdk-testing</code>, which sets the
+        <code>ContextStorageProvider</code> to <code>io.opentelemetry.sdk.testing.context.SettableContextStorageProvider</code>.</p>
+        <p>If you rely on <code>IOLocalContextStorage</code> in tests, you will see an error like:</p>
         <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">java</span><span>.</span><span class="identifier">lang</span><span>.</span><span class="type-name">IllegalStateException</span><span>: </span><span class="type-name">IOLocalContextStorage</span><span> </span><span class="identifier">is</span><span> </span><span class="identifier">not</span><span> </span><span class="identifier">configured</span><span> </span><span class="keyword">for</span><span> </span><span class="identifier">use</span><span> </span><span class="identifier">as</span><span> </span><span class="identifier">the</span><span> </span><span class="type-name">ContextStorageProvider</span><span>.
 </span><span class="type-name">The</span><span> </span><span class="identifier">current</span><span> </span><span class="type-name">ContextStorage</span><span> </span><span class="identifier">is</span><span>: </span><span class="identifier">io</span><span>.</span><span class="identifier">opentelemetry</span><span>.</span><span class="identifier">sdk</span><span>.</span><span class="identifier">testing</span><span>.</span><span class="identifier">context</span><span>.</span><span class="type-name">SettableContextStorageProvider$SettableContextStorage</span></code></pre>
-        <p>To solve this, use the <code>IOLocalTestContextStorage</code> provided by the <code>otel4s-oteljava-context-storage-testkit</code> module.
-        Add the following dependency to your dependencies:</p>
+        <p>To solve this, use <code>IOLocalTestContextStorage</code> from the <code>otel4s-oteljava-context-storage-testkit</code> module.</p>
         <div class="tab-container" data-tab-group="build-tool">
           <ul class="tab-group">
             <li class="tab active" data-choice-name="sbt"><a href="#">sbt</a></li>
             <li class="tab" data-choice-name="scala-cli"><a href="#">Scala CLI</a></li>
           </ul>
           <div class="tab-content active" data-choice-name="sbt">
-            <p>Add settings to the <code>build.sbt</code>:</p>
+            <p>Add settings to <code>build.sbt</code>:</p>
             <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">libraryDependencies</span><span> ++= </span><span class="type-name">Seq</span><span>(
   </span><span class="string-literal">&quot;org.typelevel&quot;</span><span> %% </span><span class="string-literal">&quot;otel4s-oteljava-context-storage-testkit&quot;</span><span> % </span><span class="string-literal">&quot;0.16.0&quot;</span><span> % </span><span class="type-name">Test</span><span>,
 )</span></code></pre>
@@ -199,12 +354,12 @@
             <pre class="keep-together pdf epub"><code class="nohighlight"><span class="comment">//&gt; using test.dep &quot;org.typelevel::otel4s-oteljava-context-storage-testkit:0.16.0&quot;</span></code></pre>
           </div>
         </div>
-        <p>Parametrize your code to be able to override the <code>LocalContextProvider</code>:</p>
+        <p>Parametrize your code to make <code>LocalContextProvider</code> overrideable:</p>
         <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.</span><span class="type-name">IO</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="identifier">context</span><span>.</span><span class="type-name">LocalContextProvider</span><span>
 
 </span><span class="keyword">def</span><span> </span><span class="declaration-name">program</span><span>(</span><span class="keyword">implicit</span><span> </span><span class="identifier">provider</span><span>: </span><span class="type-name">LocalContextProvider</span><span>[</span><span class="type-name">IO</span><span>]): </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] = ???</span></code></pre>
-        <p>And override it in your tests:</p>
+        <p>And override it in tests:</p>
         <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.</span><span class="type-name">IO</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="identifier">context</span><span>.</span><span class="type-name">LocalContextProvider</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="identifier">testkit</span><span>.</span><span class="identifier">context</span><span>.</span><span class="type-name">IOLocalTestContextStorage</span><span>
@@ -215,136 +370,6 @@
 
   </span><span class="identifier">program</span><span>
 }</span></code></pre>
-        
-        <h2 id="testing-metrics" class="section"><a class="anchor-link left" href="#testing-metrics"><i class="icofont-laika link">&#xef71;</i></a>Testing metrics</h2>
-        <p>For metrics, the testkit now provides a dedicated expectation API built on top of OpenTelemetry Java <code>MetricData</code>.
-        This allows tests to match only the parts that matter: metric name, kind, values, point attributes,
-        instrumentation scope, telemetry resource, summaries, histograms, and more.</p>
-        <p>See <a href="testkit-metrics.html">Testkit | Metrics</a> for the full guide.</p>
-        
-        <h2 id="testing-spans" class="section"><a class="anchor-link left" href="#testing-spans"><i class="icofont-laika link">&#xef71;</i></a>Testing spans</h2>
-        <p>Let&#39;s assume we want to test the structure of created spans:</p>
-        <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.</span><span class="type-name">IO</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">io</span><span>.</span><span class="identifier">opentelemetry</span><span>.</span><span class="identifier">sdk</span><span>.</span><span class="identifier">trace</span><span>.</span><span class="identifier">data</span><span>.</span><span class="type-name">SpanData</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="identifier">testkit</span><span>.</span><span class="type-name">OtelJavaTestkit</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">trace</span><span>.</span><span class="type-name">TracerProvider</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">scala</span><span>.</span><span class="identifier">concurrent</span><span>.</span><span class="identifier">duration</span><span>.</span><span class="identifier">_</span><span>
-
-</span><span class="comment">// the program that we want to test
-</span><span class="keyword">def</span><span> </span><span class="declaration-name">program</span><span>(</span><span class="identifier">tracerProvider</span><span>: </span><span class="type-name">TracerProvider</span><span>[</span><span class="type-name">IO</span><span>]): </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] =
-  </span><span class="keyword">for</span><span> {
-    </span><span class="identifier">tracer</span><span> &lt;- </span><span class="identifier">tracerProvider</span><span>.</span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;service&quot;</span><span>)
-    </span><span class="identifier">_</span><span> &lt;- </span><span class="identifier">tracer</span><span>.</span><span class="identifier">span</span><span>(</span><span class="string-literal">&quot;app.span&quot;</span><span>).</span><span class="identifier">surround</span><span> {
-      </span><span class="identifier">tracer</span><span>.</span><span class="identifier">span</span><span>(</span><span class="string-literal">&quot;app.nested.1&quot;</span><span>).</span><span class="identifier">surround</span><span>(</span><span class="type-name">IO</span><span>.</span><span class="identifier">sleep</span><span>(</span><span class="number-literal">200</span><span>.</span><span class="identifier">millis</span><span>)) &gt;&gt;
-      </span><span class="identifier">tracer</span><span>.</span><span class="identifier">span</span><span>(</span><span class="string-literal">&quot;app.nested.2&quot;</span><span>).</span><span class="identifier">surround</span><span>(</span><span class="type-name">IO</span><span>.</span><span class="identifier">sleep</span><span>(</span><span class="number-literal">300</span><span>.</span><span class="identifier">millis</span><span>))
-    }
-  } </span><span class="keyword">yield</span><span> ()
-
-</span><span class="comment">// the test
-</span><span class="keyword">def</span><span> </span><span class="declaration-name">test</span><span>: </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] =
-  </span><span class="type-name">OtelJavaTestkit</span><span>.</span><span class="identifier">inMemory</span><span>[</span><span class="type-name">IO</span><span>]().</span><span class="identifier">use</span><span> { </span><span class="identifier">testkit</span><span> =&gt;
-    </span><span class="comment">// the list of expected spans
-</span><span>    </span><span class="keyword">val</span><span> </span><span class="identifier">expected</span><span> = </span><span class="type-name">List</span><span>(
-      </span><span class="type-name">SpanTree</span><span>(
-        </span><span class="type-name">TelemetrySpan</span><span>(</span><span class="string-literal">&quot;app.span&quot;</span><span>),
-        </span><span class="type-name">List</span><span>(
-          </span><span class="type-name">SpanTree</span><span>(</span><span class="type-name">TelemetrySpan</span><span>(</span><span class="string-literal">&quot;app.nested.1&quot;</span><span>), </span><span class="type-name">Nil</span><span>),
-          </span><span class="type-name">SpanTree</span><span>(</span><span class="type-name">TelemetrySpan</span><span>(</span><span class="string-literal">&quot;app.nested.2&quot;</span><span>), </span><span class="type-name">Nil</span><span>)
-        )
-      )
-    )
-
-    </span><span class="keyword">for</span><span> {
-      </span><span class="comment">// invoke the program
-</span><span>      </span><span class="identifier">_</span><span> &lt;- </span><span class="identifier">program</span><span>(</span><span class="identifier">testkit</span><span>.</span><span class="identifier">tracerProvider</span><span>)
-      </span><span class="comment">// collect the finished spans
-</span><span>      </span><span class="identifier">spans</span><span> &lt;- </span><span class="identifier">testkit</span><span>.</span><span class="identifier">finishedSpans</span><span>
-      </span><span class="comment">// verify the collected spans
-</span><span>      </span><span class="identifier">_</span><span> &lt;- </span><span class="identifier">assertSpans</span><span>(</span><span class="identifier">spans</span><span>, </span><span class="identifier">expected</span><span>)
-    } </span><span class="keyword">yield</span><span> ()
-  }
-
-</span><span class="comment">// here you can use an assertion mechanism from your favorite testing framework
-</span><span class="keyword">def</span><span> </span><span class="declaration-name">assertSpans</span><span>(</span><span class="identifier">spans</span><span>: </span><span class="type-name">List</span><span>[</span><span class="type-name">SpanData</span><span>], </span><span class="identifier">expected</span><span>: </span><span class="type-name">List</span><span>[</span><span class="type-name">SpanTree</span><span>[</span><span class="type-name">TelemetrySpan</span><span>]]): </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] =
-  </span><span class="type-name">IO</span><span> {
-    </span><span class="keyword">val</span><span> </span><span class="identifier">trees</span><span> = </span><span class="type-name">SpanTree</span><span>.</span><span class="identifier">fromSpans</span><span>(</span><span class="identifier">spans</span><span>)
-    </span><span class="identifier">assert</span><span>(</span><span class="identifier">trees</span><span>.</span><span class="identifier">map</span><span>(</span><span class="identifier">_</span><span>.</span><span class="identifier">map</span><span>(</span><span class="identifier">data</span><span> =&gt; </span><span class="type-name">TelemetrySpan</span><span>(</span><span class="identifier">data</span><span>.</span><span class="identifier">getName</span><span>))) == </span><span class="identifier">expected</span><span>)
-  }
-
-</span><span class="comment">// a minimized representation of the SpanData to simplify testing
-</span><span class="keyword">case</span><span> </span><span class="keyword">class</span><span> </span><span class="type-name">TelemetrySpan</span><span>(</span><span class="identifier">name</span><span>: </span><span class="type-name">String</span><span>)
-
-</span><span class="comment">// a tree-like representation of the spans
-</span><span class="keyword">case</span><span> </span><span class="keyword">class</span><span> </span><span class="type-name">SpanTree</span><span>[</span><span class="type-name">A</span><span>](</span><span class="identifier">current</span><span>: </span><span class="type-name">A</span><span>, </span><span class="identifier">children</span><span>: </span><span class="type-name">List</span><span>[</span><span class="type-name">SpanTree</span><span>[</span><span class="type-name">A</span><span>]]) {
-  </span><span class="keyword">def</span><span> </span><span class="declaration-name">map</span><span>[</span><span class="type-name">B</span><span>](</span><span class="identifier">f</span><span>: </span><span class="type-name">A</span><span> =&gt; </span><span class="type-name">B</span><span>): </span><span class="type-name">SpanTree</span><span>[</span><span class="type-name">B</span><span>] = </span><span class="type-name">SpanTree</span><span>(</span><span class="identifier">f</span><span>(</span><span class="identifier">current</span><span>), </span><span class="identifier">children</span><span>.</span><span class="identifier">map</span><span>(</span><span class="identifier">_</span><span>.</span><span class="identifier">map</span><span>(</span><span class="identifier">f</span><span>)))
-}
-</span><span class="keyword">object</span><span> </span><span class="type-name">SpanTree</span><span> {
-  </span><span class="keyword">def</span><span> </span><span class="declaration-name">fromSpans</span><span>(</span><span class="identifier">spans</span><span>: </span><span class="type-name">List</span><span>[</span><span class="type-name">SpanData</span><span>]): </span><span class="type-name">List</span><span>[</span><span class="type-name">SpanTree</span><span>[</span><span class="type-name">SpanData</span><span>]] = {
-    </span><span class="keyword">val</span><span> </span><span class="identifier">byParent</span><span> = </span><span class="identifier">spans</span><span>.</span><span class="identifier">groupBy</span><span> { </span><span class="identifier">s</span><span> =&gt;
-      </span><span class="type-name">Option</span><span>.</span><span class="identifier">when</span><span>(</span><span class="identifier">s</span><span>.</span><span class="identifier">getParentSpanContext</span><span>.</span><span class="identifier">isValid</span><span>)(</span><span class="identifier">s</span><span>.</span><span class="identifier">getParentSpanId</span><span>)
-    }
-    </span><span class="keyword">val</span><span> </span><span class="identifier">topNodes</span><span> = </span><span class="identifier">byParent</span><span>.</span><span class="identifier">getOrElse</span><span>(</span><span class="type-name">None</span><span>, </span><span class="type-name">Nil</span><span>)
-    </span><span class="keyword">val</span><span> </span><span class="identifier">bottomToTop</span><span> = </span><span class="identifier">sortNodesByDepth</span><span>(</span><span class="number-literal">0</span><span>, </span><span class="identifier">topNodes</span><span>, </span><span class="identifier">byParent</span><span>, </span><span class="type-name">Nil</span><span>)
-    </span><span class="keyword">val</span><span> </span><span class="identifier">maxDepth</span><span> = </span><span class="identifier">bottomToTop</span><span>.</span><span class="identifier">headOption</span><span>.</span><span class="identifier">map</span><span>(</span><span class="identifier">_</span><span>.</span><span class="identifier">depth</span><span>).</span><span class="identifier">getOrElse</span><span>(</span><span class="number-literal">0</span><span>)
-    </span><span class="identifier">buildFromBottom</span><span>(</span><span class="identifier">maxDepth</span><span>, </span><span class="identifier">bottomToTop</span><span>, </span><span class="identifier">byParent</span><span>, </span><span class="type-name">Map</span><span>.</span><span class="identifier">empty</span><span>)
-  }
-
-  </span><span class="keyword">private</span><span> </span><span class="keyword">case</span><span> </span><span class="keyword">class</span><span> </span><span class="type-name">EntryWithDepth</span><span>(</span><span class="identifier">data</span><span>: </span><span class="type-name">SpanData</span><span>, </span><span class="identifier">depth</span><span>: </span><span class="type-name">Int</span><span>)
-
-  </span><span class="annotation">@annotation</span><span>.</span><span class="identifier">tailrec</span><span>
-  </span><span class="keyword">private</span><span> </span><span class="keyword">def</span><span> </span><span class="declaration-name">sortNodesByDepth</span><span>(
-      </span><span class="identifier">depth</span><span>: </span><span class="type-name">Int</span><span>,
-      </span><span class="identifier">nodesInDepth</span><span>: </span><span class="type-name">List</span><span>[</span><span class="type-name">SpanData</span><span>],
-      </span><span class="identifier">nodesByParent</span><span>: </span><span class="type-name">Map</span><span>[</span><span class="type-name">Option</span><span>[</span><span class="type-name">String</span><span>], </span><span class="type-name">List</span><span>[</span><span class="type-name">SpanData</span><span>]],
-      </span><span class="identifier">acc</span><span>: </span><span class="type-name">List</span><span>[</span><span class="type-name">EntryWithDepth</span><span>]
-  ): </span><span class="type-name">List</span><span>[</span><span class="type-name">EntryWithDepth</span><span>] = {
-    </span><span class="keyword">val</span><span> </span><span class="identifier">withDepth</span><span> = </span><span class="identifier">nodesInDepth</span><span>.</span><span class="identifier">map</span><span>(</span><span class="identifier">n</span><span> =&gt; </span><span class="type-name">EntryWithDepth</span><span>(</span><span class="identifier">n</span><span>, </span><span class="identifier">depth</span><span>))
-    </span><span class="keyword">val</span><span> </span><span class="identifier">calculated</span><span> = </span><span class="identifier">withDepth</span><span> ++ </span><span class="identifier">acc</span><span>
-    </span><span class="keyword">val</span><span> </span><span class="identifier">children</span><span> = </span><span class="identifier">nodesInDepth</span><span>.</span><span class="identifier">flatMap</span><span> { </span><span class="identifier">n</span><span> =&gt;
-      </span><span class="identifier">nodesByParent</span><span>.</span><span class="identifier">getOrElse</span><span>(</span><span class="type-name">Some</span><span>(</span><span class="identifier">n</span><span>.</span><span class="identifier">getSpanId</span><span>), </span><span class="type-name">Nil</span><span>)
-    }
-    </span><span class="identifier">children</span><span> </span><span class="keyword">match</span><span> {
-      </span><span class="keyword">case</span><span> </span><span class="type-name">Nil</span><span> =&gt;
-        </span><span class="identifier">calculated</span><span>
-      </span><span class="keyword">case</span><span> </span><span class="identifier">_</span><span> =&gt;
-        </span><span class="identifier">sortNodesByDepth</span><span>(</span><span class="identifier">depth</span><span> + </span><span class="number-literal">1</span><span>, </span><span class="identifier">children</span><span>, </span><span class="identifier">nodesByParent</span><span>, </span><span class="identifier">calculated</span><span>)
-    }
-  }
-
-  </span><span class="annotation">@annotation</span><span>.</span><span class="identifier">tailrec</span><span>
-  </span><span class="keyword">private</span><span> </span><span class="keyword">def</span><span> </span><span class="declaration-name">buildFromBottom</span><span>(
-      </span><span class="identifier">depth</span><span>: </span><span class="type-name">Int</span><span>,
-      </span><span class="identifier">remaining</span><span>: </span><span class="type-name">List</span><span>[</span><span class="type-name">EntryWithDepth</span><span>],
-      </span><span class="identifier">nodesByParent</span><span>: </span><span class="type-name">Map</span><span>[</span><span class="type-name">Option</span><span>[</span><span class="type-name">String</span><span>], </span><span class="type-name">List</span><span>[</span><span class="type-name">SpanData</span><span>]],
-      </span><span class="identifier">processedNodesById</span><span>: </span><span class="type-name">Map</span><span>[</span><span class="type-name">String</span><span>, </span><span class="type-name">SpanTree</span><span>[</span><span class="type-name">SpanData</span><span>]]
-  ): </span><span class="type-name">List</span><span>[</span><span class="type-name">SpanTree</span><span>[</span><span class="type-name">SpanData</span><span>]] = {
-    </span><span class="keyword">val</span><span> (</span><span class="identifier">nodesOnCurrentDepth</span><span>, </span><span class="identifier">rest</span><span>) = </span><span class="identifier">remaining</span><span>.</span><span class="identifier">span</span><span>(</span><span class="identifier">_</span><span>.</span><span class="identifier">depth</span><span> == </span><span class="identifier">depth</span><span>)
-    </span><span class="keyword">val</span><span> </span><span class="identifier">newProcessedNodes</span><span> = </span><span class="identifier">nodesOnCurrentDepth</span><span>.</span><span class="identifier">map</span><span> { </span><span class="identifier">n</span><span> =&gt;
-      </span><span class="keyword">val</span><span> </span><span class="identifier">nodeId</span><span> = </span><span class="identifier">n</span><span>.</span><span class="identifier">data</span><span>.</span><span class="identifier">getSpanId</span><span>
-      </span><span class="keyword">val</span><span> </span><span class="identifier">children</span><span> = </span><span class="identifier">nodesByParent</span><span>
-        .</span><span class="identifier">getOrElse</span><span>(</span><span class="type-name">Some</span><span>(</span><span class="identifier">nodeId</span><span>), </span><span class="type-name">Nil</span><span>)
-        .</span><span class="identifier">flatMap</span><span>(</span><span class="identifier">c</span><span> =&gt; </span><span class="identifier">processedNodesById</span><span>.</span><span class="identifier">get</span><span>(</span><span class="identifier">c</span><span>.</span><span class="identifier">getSpanId</span><span>))
-      </span><span class="keyword">val</span><span> </span><span class="identifier">leaf</span><span> = </span><span class="type-name">SpanTree</span><span>(</span><span class="identifier">n</span><span>.</span><span class="identifier">data</span><span>, </span><span class="identifier">children</span><span>)
-      </span><span class="identifier">nodeId</span><span> -&gt; </span><span class="identifier">leaf</span><span>
-    }.</span><span class="identifier">toMap</span><span>
-    </span><span class="keyword">if</span><span> (</span><span class="identifier">depth</span><span> &gt; </span><span class="number-literal">0</span><span>) {
-      </span><span class="identifier">buildFromBottom</span><span>(
-        </span><span class="identifier">depth</span><span> - </span><span class="number-literal">1</span><span>,
-        </span><span class="identifier">rest</span><span>,
-        </span><span class="identifier">nodesByParent</span><span>,
-        </span><span class="identifier">processedNodesById</span><span> ++ </span><span class="identifier">newProcessedNodes</span><span>
-      )
-    } </span><span class="keyword">else</span><span> {
-      </span><span class="comment">// top nodes
-</span><span>      </span><span class="identifier">newProcessedNodes</span><span>.</span><span class="identifier">values</span><span>.</span><span class="identifier">toList</span><span>
-    }
-  }
-}</span></code></pre>
-        <p><code>SpanData</code> provides <strong>all</strong> information about the span:
-        name, instrumentation scope, telemetry resource, associated attributes, time window, and so on.</p>
-        <p>It&#39;s difficult to implement an assertion that verifies <strong>all</strong> aspects of the span
-        because many things must be considered, such as time windows, attributes, etc.
-        To simplify the testing process, we can define a minimized projection of <code>SpanData</code>, such as <code>TelemetrySpan</code>.</p>
 
         
 <hr class="footer-rule"/>

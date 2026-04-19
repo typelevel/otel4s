@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+  
+  <head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="generator" content="Typelevel Laika + Helium Theme" />
+  <title>Testkit | Logs</title>
+  
+  <meta name="author" content="Ross A. Baker"/>
+  
+  
+  <meta name="description" content="docs"/>
+  
+  
+  
+  <link rel="icon" sizes="32x32" type="image/png" href="https://typelevel.org/img/favicon.png"/>
+  
+  
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:400,700">
+  
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Fira+Mono:500">
+  
+  <link rel="stylesheet" type="text/css" href="../helium/site/icofont.min.css" />
+    <link rel="stylesheet" type="text/css" href="../helium/site/laika-helium.css" />
+  <script src="../helium/site/laika-helium.js"></script>
+  
+  
+  <script> /* for avoiding page load transitions */ </script>
+</head>
+
+  <body>
+
+    <header id="top-bar" class="light-default dark-default">
+
+  <div class="row">
+    <a id="nav-icon">
+      <i class="icofont-laika navigationMenu" title="Navigation">&#xefa2;</i>
+    </a>
+    
+    
+  </div>
+
+  <a class="image-link" href="https://typelevel.org"><img src="https://typelevel.org/img/logo.svg"></a>
+
+  <div class="row links">
+    
+    <a class="icon-link svg-link" href="https://www.javadoc.io/doc/org.typelevel/otel4s-docs_2.13/0.16.0/org/typelevel/otel4s/index.html"><span class="api" title="API"><svg class="svg-icon" width="100%" height="100%" viewBox="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg" xml:space="preserve" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+  <g class="svg-shape">
+    <path d="M75,47.5c13.246,0 24,10.754 24,24c0,13.246 -10.754,24 -24,24c-13.246,0 -24,-10.754 -24,-24c0,-13.246 10.754,-24 24,-24Zm-50,-0c13.246,-0 24,10.754 24,24c0,13.246 -10.754,24 -24,24c-13.246,-0 -24,-10.754 -24,-24c0,-13.246 10.754,-24 24,-24Zm2.705,16.735l7.239,0l0.622,-4.904l-21.833,0l-0,4.904l7.589,0l0,22.067l6.383,0l-0,-22.067Zm58.076,7.265c-0,-8.757 -3.698,-14.166 -10.781,-14.166c-7.083,-0 -10.781,5.604 -10.781,14.166c0,8.757 3.698,14.166 10.781,14.166c7.083,0 10.781,-5.604 10.781,-14.166Zm-6.539,0c0,6.538 -1.128,9.496 -4.242,9.496c-2.997,0 -4.242,-2.88 -4.242,-9.496c-0,-6.616 1.206,-9.496 4.242,-9.496c3.036,-0 4.242,2.88 4.242,9.496Zm-29.242,-67c13.246,0 24,10.754 24,24c0,13.246 -10.754,24 -24,24c-13.246,0 -24,-10.754 -24,-24c0,-13.246 10.754,-24 24,-24Zm0.512,9.834c-7.122,-0 -12.609,5.098 -12.609,14.127c-0,9.263 5.215,14.205 12.532,14.205c4.164,0 7.083,-1.634 9.068,-3.658l-2.88,-3.697c-1.518,1.206 -3.153,2.413 -5.838,2.413c-3.697,-0 -6.266,-2.763 -6.266,-9.263c-0,-6.616 2.724,-9.379 6.149,-9.379c2.102,-0 3.892,0.778 5.371,1.984l3.113,-3.775c-2.257,-1.868 -4.748,-2.957 -8.64,-2.957Z"/>
+  </g>
+</svg></span></a>
+    
+    <a class="icon-link svg-link" href="https://github.com/typelevel/otel4s"><span class="github" title="Source Code"><svg class="svg-icon" width="100%" height="100%" viewBox="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg" xml:space="preserve" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+  <g class="svg-shape">
+    <path d="M49.995,1c-27.609,-0 -49.995,22.386 -49.995,50.002c-0,22.09 14.325,40.83 34.194,47.444c2.501,0.458 3.413,-1.086 3.413,-2.412c0,-1.185 -0.043,-4.331 -0.067,-8.503c-13.908,3.021 -16.843,-6.704 -16.843,-6.704c-2.274,-5.773 -5.552,-7.311 -5.552,-7.311c-4.54,-3.103 0.344,-3.042 0.344,-3.042c5.018,0.356 7.658,5.154 7.658,5.154c4.46,7.64 11.704,5.433 14.552,4.156c0.454,-3.232 1.744,-5.436 3.174,-6.685c-11.102,-1.262 -22.775,-5.553 -22.775,-24.713c-0,-5.457 1.949,-9.92 5.147,-13.416c-0.516,-1.265 -2.231,-6.348 0.488,-13.233c0,0 4.199,-1.344 13.751,5.126c3.988,-1.108 8.266,-1.663 12.518,-1.682c4.245,0.019 8.523,0.574 12.517,1.682c9.546,-6.47 13.736,-5.126 13.736,-5.126c2.728,6.885 1.013,11.968 0.497,13.233c3.204,3.496 5.141,7.959 5.141,13.416c0,19.209 -11.691,23.436 -22.83,24.673c1.795,1.544 3.394,4.595 3.394,9.26c0,6.682 -0.061,12.076 -0.061,13.715c0,1.338 0.899,2.894 3.438,2.406c19.853,-6.627 34.166,-25.354 34.166,-47.438c-0,-27.616 -22.389,-50.002 -50.005,-50.002"/>
+  </g>
+</svg></span></a>
+    
+    <a class="icon-link glyph-link" href="https://discord.gg/XF3CXcMzqD"><i class="icofont-laika chat" title="Chat">&#xeed5;</i></a>
+    
+    <a class="icon-link svg-link" href="https://fosstodon.org/@typelevel"><span class="mastodon" title="Mastodon"><svg class="svg-icon" width="100%" height="100%" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg">
+  <g class="svg-shape">
+    <path d="M11.19 12.195c2.016-.24 3.77-1.475 3.99-2.603.348-1.778.32-4.339.32-4.339 0-3.47-2.286-4.488-2.286-4.488C12.062.238 10.083.017 8.027 0h-.05C5.92.017 3.942.238 2.79.765c0 0-2.285 1.017-2.285 4.488l-.002.662c-.004.64-.007 1.35.011 2.091.083 3.394.626 6.74 3.78 7.57 1.454.383 2.703.463 3.709.408 1.823-.1 2.847-.647 2.847-.647l-.06-1.317s-1.303.41-2.767.36c-1.45-.05-2.98-.156-3.215-1.928a3.614 3.614 0 0 1-.033-.496s1.424.346 3.228.428c1.103.05 2.137-.064 3.188-.189zm1.613-2.47H11.13v-4.08c0-.859-.364-1.295-1.091-1.295-.804 0-1.207.517-1.207 1.541v2.233H7.168V5.89c0-1.024-.403-1.541-1.207-1.541-.727 0-1.091.436-1.091 1.296v4.079H3.197V5.522c0-.859.22-1.541.66-2.046.456-.505 1.052-.764 1.793-.764.856 0 1.504.328 1.933.983L8 4.39l.417-.695c.429-.655 1.077-.983 1.934-.983.74 0 1.336.259 1.791.764.442.505.661 1.187.661 2.046v4.203z"/>
+  </g>
+</svg></span></a>
+    
+  </div>  
+
+</header>
+    
+    <nav id="sidebar">
+
+  <div class="row">
+    
+    <a class="icon-link svg-link" href="https://www.javadoc.io/doc/org.typelevel/otel4s-docs_2.13/0.16.0/org/typelevel/otel4s/index.html"><span class="api" title="API"><svg class="svg-icon" width="100%" height="100%" viewBox="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg" xml:space="preserve" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+  <g class="svg-shape">
+    <path d="M75,47.5c13.246,0 24,10.754 24,24c0,13.246 -10.754,24 -24,24c-13.246,0 -24,-10.754 -24,-24c0,-13.246 10.754,-24 24,-24Zm-50,-0c13.246,-0 24,10.754 24,24c0,13.246 -10.754,24 -24,24c-13.246,-0 -24,-10.754 -24,-24c0,-13.246 10.754,-24 24,-24Zm2.705,16.735l7.239,0l0.622,-4.904l-21.833,0l-0,4.904l7.589,0l0,22.067l6.383,0l-0,-22.067Zm58.076,7.265c-0,-8.757 -3.698,-14.166 -10.781,-14.166c-7.083,-0 -10.781,5.604 -10.781,14.166c0,8.757 3.698,14.166 10.781,14.166c7.083,0 10.781,-5.604 10.781,-14.166Zm-6.539,0c0,6.538 -1.128,9.496 -4.242,9.496c-2.997,0 -4.242,-2.88 -4.242,-9.496c-0,-6.616 1.206,-9.496 4.242,-9.496c3.036,-0 4.242,2.88 4.242,9.496Zm-29.242,-67c13.246,0 24,10.754 24,24c0,13.246 -10.754,24 -24,24c-13.246,0 -24,-10.754 -24,-24c0,-13.246 10.754,-24 24,-24Zm0.512,9.834c-7.122,-0 -12.609,5.098 -12.609,14.127c-0,9.263 5.215,14.205 12.532,14.205c4.164,0 7.083,-1.634 9.068,-3.658l-2.88,-3.697c-1.518,1.206 -3.153,2.413 -5.838,2.413c-3.697,-0 -6.266,-2.763 -6.266,-9.263c-0,-6.616 2.724,-9.379 6.149,-9.379c2.102,-0 3.892,0.778 5.371,1.984l3.113,-3.775c-2.257,-1.868 -4.748,-2.957 -8.64,-2.957Z"/>
+  </g>
+</svg></span></a>
+    
+    <a class="icon-link svg-link" href="https://github.com/typelevel/otel4s"><span class="github" title="Source Code"><svg class="svg-icon" width="100%" height="100%" viewBox="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg" xml:space="preserve" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+  <g class="svg-shape">
+    <path d="M49.995,1c-27.609,-0 -49.995,22.386 -49.995,50.002c-0,22.09 14.325,40.83 34.194,47.444c2.501,0.458 3.413,-1.086 3.413,-2.412c0,-1.185 -0.043,-4.331 -0.067,-8.503c-13.908,3.021 -16.843,-6.704 -16.843,-6.704c-2.274,-5.773 -5.552,-7.311 -5.552,-7.311c-4.54,-3.103 0.344,-3.042 0.344,-3.042c5.018,0.356 7.658,5.154 7.658,5.154c4.46,7.64 11.704,5.433 14.552,4.156c0.454,-3.232 1.744,-5.436 3.174,-6.685c-11.102,-1.262 -22.775,-5.553 -22.775,-24.713c-0,-5.457 1.949,-9.92 5.147,-13.416c-0.516,-1.265 -2.231,-6.348 0.488,-13.233c0,0 4.199,-1.344 13.751,5.126c3.988,-1.108 8.266,-1.663 12.518,-1.682c4.245,0.019 8.523,0.574 12.517,1.682c9.546,-6.47 13.736,-5.126 13.736,-5.126c2.728,6.885 1.013,11.968 0.497,13.233c3.204,3.496 5.141,7.959 5.141,13.416c0,19.209 -11.691,23.436 -22.83,24.673c1.795,1.544 3.394,4.595 3.394,9.26c0,6.682 -0.061,12.076 -0.061,13.715c0,1.338 0.899,2.894 3.438,2.406c19.853,-6.627 34.166,-25.354 34.166,-47.438c-0,-27.616 -22.389,-50.002 -50.005,-50.002"/>
+  </g>
+</svg></span></a>
+    
+    <a class="icon-link glyph-link" href="https://discord.gg/XF3CXcMzqD"><i class="icofont-laika chat" title="Chat">&#xeed5;</i></a>
+    
+    <a class="icon-link svg-link" href="https://fosstodon.org/@typelevel"><span class="mastodon" title="Mastodon"><svg class="svg-icon" width="100%" height="100%" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg">
+  <g class="svg-shape">
+    <path d="M11.19 12.195c2.016-.24 3.77-1.475 3.99-2.603.348-1.778.32-4.339.32-4.339 0-3.47-2.286-4.488-2.286-4.488C12.062.238 10.083.017 8.027 0h-.05C5.92.017 3.942.238 2.79.765c0 0-2.285 1.017-2.285 4.488l-.002.662c-.004.64-.007 1.35.011 2.091.083 3.394.626 6.74 3.78 7.57 1.454.383 2.703.463 3.709.408 1.823-.1 2.847-.647 2.847-.647l-.06-1.317s-1.303.41-2.767.36c-1.45-.05-2.98-.156-3.215-1.928a3.614 3.614 0 0 1-.033-.496s1.424.346 3.228.428c1.103.05 2.137-.064 3.188-.189zm1.613-2.47H11.13v-4.08c0-.859-.364-1.295-1.091-1.295-.804 0-1.207.517-1.207 1.541v2.233H7.168V5.89c0-1.024-.403-1.541-1.207-1.541-.727 0-1.091.436-1.091 1.296v4.079H3.197V5.522c0-.859.22-1.541.66-2.046.456-.505 1.052-.764 1.793-.764.856 0 1.504.328 1.933.983L8 4.39l.417-.695c.429-.655 1.077-.983 1.934-.983.74 0 1.336.259 1.791.764.442.505.661 1.187.661 2.046v4.203z"/>
+  </g>
+</svg></span></a>
+    
+  </div>
+
+  <ul class="nav-list">
+    <li class="level1 nav-leaf"><a href="../">otel4s</a></li>
+    <li class="level1 nav-leaf"><a href="../modules-structure.html">Modules structure</a></li>
+    <li class="level1 nav-leaf"><a href="../tracing-context-propagation.html">Tracing context propagation</a></li>
+    <li class="level1 nav-leaf"><a href="../ecosystem.html">Ecosystem</a></li>
+    <li class="level1 nav-header">Instrumentation</li>
+    <li class="level2 nav-leaf"><a href="../instrumentation/metrics.html">Metrics</a></li>
+    <li class="level2 nav-leaf"><a href="../instrumentation/metrics-cats-effect-io-runtime.html">Metrics | Cats Effect IO runtime</a></li>
+    <li class="level2 nav-leaf"><a href="../instrumentation/tracing.html">Tracing</a></li>
+    <li class="level2 nav-leaf"><a href="../instrumentation/tracing-cross-service-propagation.html">Tracing | Cross-service propagation</a></li>
+    <li class="level2 nav-leaf"><a href="../instrumentation/logs.html">Logs</a></li>
+    <li class="level2 nav-leaf"><a href="../instrumentation/baggage.html">Baggage</a></li>
+    <li class="level2 nav-leaf"><a href="../instrumentation/semantic-conventions.html">Semantic conventions</a></li>
+    <li class="level1 nav-header">Customization</li>
+    <li class="level2 nav-leaf"><a href="../customization/histogram-custom-buckets/">Histogram custom buckets</a></li>
+    <li class="level1 nav-header">OtelJava</li>
+    <li class="level2 nav-leaf"><a href="overview.html">Overview</a></li>
+    <li class="level2 nav-leaf"><a href="metrics-jvm-runtime.html">Metrics | JVM Runtime</a></li>
+    <li class="level2 nav-leaf"><a href="tracing-context-propagation.html">Tracing | Context propagation</a></li>
+    <li class="level2 nav-leaf"><a href="tracing-java-interop.html">Tracing | Interop with Java-instrumented libraries</a></li>
+    <li class="level2 nav-leaf"><a href="agent.html">Zero-code | Java Agent</a></li>
+    <li class="level2 nav-leaf"><a href="testkit.html">Testkit</a></li>
+    <li class="level2 nav-leaf"><a href="testkit-metrics.html">Testkit | Metrics</a></li>
+    <li class="level2 nav-leaf"><a href="testkit-traces.html">Testkit | Traces</a></li>
+    <li class="level2 active nav-leaf"><a href="#">Testkit | Logs</a></li>
+    <li class="level1 nav-header">SDK</li>
+    <li class="level2 nav-leaf"><a href="../sdk/overview.html">Overview</a></li>
+    <li class="level1 nav-header">Examples</li>
+    <li class="level2 nav-leaf"><a href="../examples/jaeger-docker/">Jaeger - collecting traces</a></li>
+    <li class="level2 nav-leaf"><a href="../examples/honeycomb/">Honeycomb - metrics and traces</a></li>
+    <li class="level2 nav-leaf"><a href="../examples/dash0/">Dash0 - metrics and traces</a></li>
+    <li class="level2 nav-leaf"><a href="../examples/grafana/">Grafana - All-in-one</a></li>
+  </ul>
+
+</nav>
+
+    <div id="container">
+
+      
+<nav id="page-nav">
+  <p class="header"><a href="#">Testkit | Logs</a></p>
+
+  <ul class="nav-list">
+    <li class="level1 nav-leaf"><a href="#getting-started">Getting started</a></li>
+    <li class="level1 nav-leaf"><a href="#basic-flow">Basic flow</a></li>
+    <li class="level1 nav-leaf"><a href="#partial-matching">Partial matching</a></li>
+    <li class="level1 nav-leaf"><a href="#message-and-body">Message and body</a></li>
+    <li class="level1 nav-leaf"><a href="#severity">Severity</a></li>
+    <li class="level1 nav-leaf"><a href="#trace-and-span-correlation">Trace and span correlation</a></li>
+    <li class="level1 nav-leaf"><a href="#attributes">Attributes</a></li>
+    <li class="level1 nav-leaf"><a href="#scope-and-resource">Scope and resource</a></li>
+    <li class="level1 nav-leaf"><a href="#timestamps">Timestamps</a></li>
+    <li class="level1 nav-node"><a href="#top-level-matching">Top-level matching</a></li>
+    <li class="level2 nav-leaf"><a href="#check"><code>check</code></a></li>
+    <li class="level2 nav-leaf"><a href="#checkall"><code>checkAll</code></a></li>
+    <li class="level2 nav-leaf"><a href="#checkalldistinct"><code>checkAllDistinct</code></a></li>
+    <li class="level1 nav-leaf"><a href="#clues-and-custom-predicates">Clues and custom predicates</a></li>
+    <li class="level1 nav-leaf"><a href="#formatting-mismatches">Formatting mismatches</a></li>
+  </ul>
+
+  <p class="footer"></p>
+</nav>
+
+
+      <main class="content">
+
+        <h1 id="testkit-logs" class="title">Testkit | Logs</h1>
+        <p>The logs testkit provides a partial-matching expectation API for OpenTelemetry Java <code>LogRecordData</code>.</p>
+        <p>This is useful in tests because exported log records contain more than just a message:</p>
+        <ul>
+          <li>structured body values</li>
+          <li>severity and severity text</li>
+          <li>trace and span correlation</li>
+          <li>attributes</li>
+          <li>instrumentation scope</li>
+          <li>telemetry resource</li>
+          <li>source and observed timestamps</li>
+        </ul>
+        <p>The expectation API lets you match only the parts of a log record that matter for the test while still preserving
+        access to the raw SDK model when needed.</p>
+        
+        <h2 id="getting-started" class="section"><a class="anchor-link left" href="#getting-started"><i class="icofont-laika link">&#xef71;</i></a>Getting started</h2>
+        <div class="tab-container" data-tab-group="build-tool">
+          <ul class="tab-group">
+            <li class="tab active" data-choice-name="sbt"><a href="#">sbt</a></li>
+            <li class="tab" data-choice-name="scala-cli"><a href="#">Scala CLI</a></li>
+          </ul>
+          <div class="tab-content active" data-choice-name="sbt">
+            <p>Add settings to <code>build.sbt</code>:</p>
+            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">libraryDependencies</span><span> ++= </span><span class="type-name">Seq</span><span>(
+  </span><span class="string-literal">&quot;org.typelevel&quot;</span><span> %% </span><span class="string-literal">&quot;otel4s-oteljava-testkit&quot;</span><span> % </span><span class="string-literal">&quot;0.16.0&quot;</span><span> % </span><span class="type-name">Test</span><span>,
+)</span></code></pre>
+          </div>
+          <div class="tab-content" data-choice-name="scala-cli">
+            <p>Add directives to the <code>*.scala</code> file:</p>
+            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="comment">//&gt; using test.dep &quot;org.typelevel::otel4s-oteljava-testkit:0.16.0&quot;</span></code></pre>
+          </div>
+        </div>
+        
+        <h2 id="basic-flow" class="section"><a class="anchor-link left" href="#basic-flow"><i class="icofont-laika link">&#xef71;</i></a>Basic flow</h2>
+        <p>The usual flow is:</p>
+        <ol class="arabic">
+          <li>run your program against <code>LogsTestkit</code> or <code>OtelJavaTestkit</code></li>
+          <li>collect finished logs as OpenTelemetry Java <code>LogRecordData</code></li>
+          <li>build <code>LogRecordExpectation</code> values</li>
+          <li>check them with <code>LogRecordExpectations</code></li>
+        </ol>
+        <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.</span><span class="type-name">IO</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">io</span><span>.</span><span class="identifier">opentelemetry</span><span>.</span><span class="identifier">sdk</span><span>.</span><span class="identifier">logs</span><span>.</span><span class="identifier">data</span><span>.</span><span class="type-name">LogRecordData</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="type-name">AnyValue</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="type-name">Attribute</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">logs</span><span>.{</span><span class="type-name">LoggerProvider</span><span>, </span><span class="type-name">Severity</span><span>}
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="identifier">context</span><span>.</span><span class="type-name">Context</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="identifier">testkit</span><span>.</span><span class="identifier">logs</span><span>.</span><span class="identifier">_</span><span>
+
+</span><span class="keyword">def</span><span> </span><span class="declaration-name">program</span><span>(</span><span class="identifier">loggerProvider</span><span>: </span><span class="type-name">LoggerProvider</span><span>[</span><span class="type-name">IO</span><span>, </span><span class="type-name">Context</span><span>]): </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] =
+  </span><span class="keyword">for</span><span> {
+    </span><span class="identifier">logger</span><span> &lt;- </span><span class="identifier">loggerProvider</span><span>.</span><span class="identifier">logger</span><span>(</span><span class="string-literal">&quot;service&quot;</span><span>).</span><span class="identifier">withVersion</span><span>(</span><span class="string-literal">&quot;1.0.0&quot;</span><span>).</span><span class="identifier">get</span><span>
+    </span><span class="identifier">_</span><span> &lt;- </span><span class="identifier">logger</span><span>.</span><span class="identifier">logRecordBuilder</span><span>
+      .</span><span class="identifier">withSeverity</span><span>(</span><span class="type-name">Severity</span><span>.</span><span class="identifier">error</span><span>)
+      .</span><span class="identifier">withSeverityText</span><span>(</span><span class="string-literal">&quot;ERROR&quot;</span><span>)
+      .</span><span class="identifier">withBody</span><span>(</span><span class="type-name">AnyValue</span><span>.</span><span class="identifier">string</span><span>(</span><span class="string-literal">&quot;request failed&quot;</span><span>))
+      .</span><span class="identifier">addAttributes</span><span>(
+        </span><span class="type-name">Attribute</span><span>(</span><span class="string-literal">&quot;http.route&quot;</span><span>, </span><span class="string-literal">&quot;/users&quot;</span><span>),
+        </span><span class="type-name">Attribute</span><span>(</span><span class="string-literal">&quot;error.type&quot;</span><span>, </span><span class="string-literal">&quot;timeout&quot;</span><span>)
+      )
+      .</span><span class="identifier">emit</span><span>
+  } </span><span class="keyword">yield</span><span> ()
+
+</span><span class="keyword">def</span><span> </span><span class="declaration-name">assertExpected</span><span>(
+    </span><span class="identifier">records</span><span>: </span><span class="type-name">List</span><span>[</span><span class="type-name">LogRecordData</span><span>],
+    </span><span class="identifier">expected</span><span>: </span><span class="type-name">LogRecordExpectation</span><span>*
+): </span><span class="type-name">Unit</span><span> =
+  </span><span class="type-name">LogRecordExpectations</span><span>.</span><span class="identifier">checkAllDistinct</span><span>(</span><span class="identifier">records</span><span>, </span><span class="identifier">expected</span><span>: </span><span class="identifier">_</span><span>*) </span><span class="keyword">match</span><span> {
+    </span><span class="keyword">case</span><span> </span><span class="type-name">Right</span><span>(</span><span class="identifier">_</span><span>) =&gt;
+      ()
+    </span><span class="keyword">case</span><span> </span><span class="type-name">Left</span><span>(</span><span class="identifier">mismatches</span><span>) =&gt;
+      </span><span class="identifier">sys</span><span>.</span><span class="identifier">error</span><span>(</span><span class="type-name">LogRecordExpectations</span><span>.</span><span class="identifier">format</span><span>(</span><span class="identifier">mismatches</span><span>))
+  }
+
+</span><span class="keyword">def</span><span> </span><span class="declaration-name">test</span><span>: </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] =
+  </span><span class="type-name">LogsTestkit</span><span>.</span><span class="identifier">inMemory</span><span>[</span><span class="type-name">IO</span><span>]().</span><span class="identifier">use</span><span> { </span><span class="identifier">testkit</span><span> =&gt;
+    </span><span class="keyword">for</span><span> {
+      </span><span class="identifier">_</span><span> &lt;- </span><span class="identifier">program</span><span>(</span><span class="identifier">testkit</span><span>.</span><span class="identifier">loggerProvider</span><span>)
+      </span><span class="identifier">records</span><span> &lt;- </span><span class="identifier">testkit</span><span>.</span><span class="identifier">finishedLogs</span><span>
+    } </span><span class="keyword">yield</span><span> </span><span class="identifier">assertExpected</span><span>(
+      </span><span class="identifier">records</span><span>,
+      </span><span class="type-name">LogRecordExpectation</span><span>
+        .</span><span class="identifier">message</span><span>(</span><span class="string-literal">&quot;request failed&quot;</span><span>)
+        .</span><span class="identifier">severity</span><span>(</span><span class="type-name">Severity</span><span>.</span><span class="identifier">error</span><span>)
+        .</span><span class="identifier">severityText</span><span>(</span><span class="string-literal">&quot;ERROR&quot;</span><span>)
+        .</span><span class="identifier">attributesSubset</span><span>(
+          </span><span class="type-name">Attribute</span><span>(</span><span class="string-literal">&quot;http.route&quot;</span><span>, </span><span class="string-literal">&quot;/users&quot;</span><span>),
+          </span><span class="type-name">Attribute</span><span>(</span><span class="string-literal">&quot;error.type&quot;</span><span>, </span><span class="string-literal">&quot;timeout&quot;</span><span>)
+        )
+    )
+  }</span></code></pre>
+        
+        <h2 id="partial-matching" class="section"><a class="anchor-link left" href="#partial-matching"><i class="icofont-laika link">&#xef71;</i></a>Partial matching</h2>
+        <p><code>LogRecordExpectation</code> values are partial.</p>
+        <p>This means:</p>
+        <ul>
+          <li>unspecified fields are ignored</li>
+          <li>you can assert only the parts that matter for a test</li>
+          <li>you can add more detail when needed for correlation, scope, resource, and timestamps</li>
+        </ul>
+        <p>For example:</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">logs</span><span>.</span><span class="type-name">Severity</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="identifier">testkit</span><span>.</span><span class="identifier">logs</span><span>.</span><span class="type-name">LogRecordExpectation</span><span>
+
+</span><span class="type-name">LogRecordExpectation</span><span>.</span><span class="identifier">message</span><span>(</span><span class="string-literal">&quot;request failed&quot;</span><span>)
+
+</span><span class="type-name">LogRecordExpectation</span><span>
+  .</span><span class="identifier">message</span><span>(</span><span class="string-literal">&quot;request failed&quot;</span><span>)
+  .</span><span class="identifier">severity</span><span>(</span><span class="type-name">Severity</span><span>.</span><span class="identifier">error</span><span>)</span></code></pre>
+        <p>The first expectation ignores attributes, timestamps, trace correlation, and scope.
+        The second adds severity while still ignoring everything else.</p>
+        
+        <h2 id="message-and-body" class="section"><a class="anchor-link left" href="#message-and-body"><i class="icofont-laika link">&#xef71;</i></a>Message and body</h2>
+        <p>OpenTelemetry log body is not always a string. The testkit therefore exposes two entry points:</p>
+        <ul>
+          <li><code>message(String)</code> for the common string-log case</li>
+          <li><code>body(AnyValue)</code> for exact raw body matching</li>
+        </ul>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="type-name">AnyValue</span><span>
+
+</span><span class="type-name">LogRecordExpectation</span><span>.</span><span class="identifier">message</span><span>(</span><span class="string-literal">&quot;request failed&quot;</span><span>)
+
+</span><span class="type-name">LogRecordExpectation</span><span>.</span><span class="identifier">body</span><span>(
+  </span><span class="type-name">AnyValue</span><span>.</span><span class="identifier">map</span><span>(
+    </span><span class="type-name">Map</span><span>(
+      </span><span class="string-literal">&quot;status&quot;</span><span> -&gt; </span><span class="type-name">AnyValue</span><span>.</span><span class="identifier">string</span><span>(</span><span class="string-literal">&quot;failed&quot;</span><span>),
+      </span><span class="string-literal">&quot;count&quot;</span><span> -&gt; </span><span class="type-name">AnyValue</span><span>.</span><span class="identifier">long</span><span>(</span><span class="number-literal">2L</span><span>)
+    )
+  )
+)</span></code></pre>
+        <p>Use <code>message(...)</code> when your instrumentation emits ordinary text logs.
+        Use <code>body(...)</code> when your log body is structured.</p>
+        
+        <h2 id="severity" class="section"><a class="anchor-link left" href="#severity"><i class="icofont-laika link">&#xef71;</i></a>Severity</h2>
+        <p>Severity matching is intentionally shallow:</p>
+        <ul>
+          <li><code>severity(...)</code></li>
+          <li><code>severityText(...)</code></li>
+        </ul>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">logs</span><span>.</span><span class="type-name">Severity</span><span>
+
+</span><span class="type-name">LogRecordExpectation</span><span>
+  .</span><span class="identifier">message</span><span>(</span><span class="string-literal">&quot;request failed&quot;</span><span>)
+  .</span><span class="identifier">severity</span><span>(</span><span class="type-name">Severity</span><span>.</span><span class="identifier">error</span><span>)
+  .</span><span class="identifier">severityText</span><span>(</span><span class="string-literal">&quot;ERROR&quot;</span><span>)</span></code></pre>
+        <p>This covers the main cases without introducing a nested severity matcher type.</p>
+        
+        <h2 id="trace-and-span-correlation" class="section"><a class="anchor-link left" href="#trace-and-span-correlation"><i class="icofont-laika link">&#xef71;</i></a>Trace and span correlation</h2>
+        <p>One of the highest-value log assertions is correlation with the current span.</p>
+        <p>Use:</p>
+        <ul>
+          <li><code>traceId(...)</code></li>
+          <li><code>spanId(...)</code></li>
+          <li><code>untraced</code></li>
+        </ul>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="type-name">LogRecordExpectation</span><span>
+  .</span><span class="identifier">message</span><span>(</span><span class="string-literal">&quot;request failed&quot;</span><span>)
+  .</span><span class="identifier">traceId</span><span>(</span><span class="string-literal">&quot;0af7651916cd43dd8448eb211c80319c&quot;</span><span>)
+  .</span><span class="identifier">spanId</span><span>(</span><span class="string-literal">&quot;b7ad6b7169203331&quot;</span><span>)
+
+</span><span class="type-name">LogRecordExpectation</span><span>
+  .</span><span class="identifier">message</span><span>(</span><span class="string-literal">&quot;startup complete&quot;</span><span>)
+  .</span><span class="identifier">untraced</span></code></pre>
+        <p>This makes it easy to assert that:</p>
+        <ul>
+          <li>a log emitted inside a traced operation carries the expected trace/span ids</li>
+          <li>a log emitted outside a span remains uncorrelated</li>
+        </ul>
+        
+        <h2 id="attributes" class="section"><a class="anchor-link left" href="#attributes"><i class="icofont-laika link">&#xef71;</i></a>Attributes</h2>
+        <p>Log attributes use the same helpers as the metrics and traces expectation APIs:</p>
+        <ul>
+          <li><code>attributesExact(...)</code></li>
+          <li><code>attributesSubset(...)</code></li>
+          <li><code>attributes(AttributesExpectation...)</code></li>
+          <li><code>attributesEmpty</code></li>
+        </ul>
+        <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="type-name">Attribute</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="identifier">testkit</span><span>.</span><span class="type-name">AttributesExpectation</span><span>
+
+</span><span class="type-name">LogRecordExpectation</span><span>
+  .</span><span class="identifier">message</span><span>(</span><span class="string-literal">&quot;request failed&quot;</span><span>)
+  .</span><span class="identifier">attributesExact</span><span>(
+    </span><span class="type-name">Attribute</span><span>(</span><span class="string-literal">&quot;http.route&quot;</span><span>, </span><span class="string-literal">&quot;/users&quot;</span><span>),
+    </span><span class="type-name">Attribute</span><span>(</span><span class="string-literal">&quot;error.type&quot;</span><span>, </span><span class="string-literal">&quot;timeout&quot;</span><span>)
+  )
+
+</span><span class="type-name">LogRecordExpectation</span><span>
+  .</span><span class="identifier">message</span><span>(</span><span class="string-literal">&quot;request failed&quot;</span><span>)
+  .</span><span class="identifier">attributesSubset</span><span>(</span><span class="type-name">Attribute</span><span>(</span><span class="string-literal">&quot;http.route&quot;</span><span>, </span><span class="string-literal">&quot;/users&quot;</span><span>))
+
+</span><span class="type-name">LogRecordExpectation</span><span>
+  .</span><span class="identifier">message</span><span>(</span><span class="string-literal">&quot;request failed&quot;</span><span>)
+  .</span><span class="identifier">attributes</span><span>(
+    </span><span class="type-name">AttributesExpectation</span><span>.</span><span class="identifier">where</span><span>(</span><span class="string-literal">&quot;must contain at least one attribute&quot;</span><span>)(</span><span class="identifier">_</span><span>.</span><span class="identifier">nonEmpty</span><span>)
+  )</span></code></pre>
+        
+        <h2 id="scope-and-resource" class="section"><a class="anchor-link left" href="#scope-and-resource"><i class="icofont-laika link">&#xef71;</i></a>Scope and resource</h2>
+        <p>Instrumentation scope and telemetry resource can be asserted directly:</p>
+        <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="type-name">Attribute</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="identifier">testkit</span><span>.{</span><span class="type-name">InstrumentationScopeExpectation</span><span>, </span><span class="type-name">TelemetryResourceExpectation</span><span>}
+
+</span><span class="type-name">LogRecordExpectation</span><span>
+  .</span><span class="identifier">message</span><span>(</span><span class="string-literal">&quot;request failed&quot;</span><span>)
+  .</span><span class="identifier">scope</span><span>(
+    </span><span class="type-name">InstrumentationScopeExpectation</span><span>
+      .</span><span class="identifier">name</span><span>(</span><span class="string-literal">&quot;service&quot;</span><span>)
+      .</span><span class="identifier">version</span><span>(</span><span class="string-literal">&quot;1.0.0&quot;</span><span>)
+      .</span><span class="identifier">attributesEmpty</span><span>
+  )
+  .</span><span class="identifier">resource</span><span>(
+    </span><span class="type-name">TelemetryResourceExpectation</span><span>.</span><span class="identifier">any</span><span>
+      .</span><span class="identifier">attributesSubset</span><span>(</span><span class="type-name">Attribute</span><span>(</span><span class="string-literal">&quot;service.name&quot;</span><span>, </span><span class="string-literal">&quot;auth-service&quot;</span><span>))
+  )</span></code></pre>
+        <p>This is useful when you want logs to be asserted with the same level of detail as metrics and traces.</p>
+        
+        <h2 id="timestamps" class="section"><a class="anchor-link left" href="#timestamps"><i class="icofont-laika link">&#xef71;</i></a>Timestamps</h2>
+        <p>The log expectation API intentionally keeps timestamp matching simple.</p>
+        <p>Use:</p>
+        <ul>
+          <li><code>timestampWhere(...)</code></li>
+          <li><code>observedTimestampWhere(...)</code></li>
+        </ul>
+        <p>Both methods accept either:</p>
+        <ul>
+          <li>a raw predicate</li>
+          <li>or a predicate with a clue</li>
+        </ul>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="type-name">LogRecordExpectation</span><span>
+  .</span><span class="identifier">message</span><span>(</span><span class="string-literal">&quot;request failed&quot;</span><span>)
+  .</span><span class="identifier">timestampWhere</span><span>(</span><span class="string-literal">&quot;source timestamp must be set&quot;</span><span>)(</span><span class="identifier">_</span><span> &gt; </span><span class="number-literal">0L</span><span>)
+  .</span><span class="identifier">observedTimestampWhere</span><span>(</span><span class="string-literal">&quot;observed timestamp must be set&quot;</span><span>)(</span><span class="identifier">_</span><span> &gt; </span><span class="number-literal">0L</span><span>)</span></code></pre>
+        <p>These hooks are enough for most tests without committing the public API to a large timestamp DSL.</p>
+        
+        <h2 id="top-level-matching" class="section"><a class="anchor-link left" href="#top-level-matching"><i class="icofont-laika link">&#xef71;</i></a>Top-level matching</h2>
+        <p>Use <code>LogRecordExpectations</code> to match expectations against a collected list of exported log records.</p>
+        <p>Available helpers:</p>
+        <ul>
+          <li><code>exists</code></li>
+          <li><code>find</code></li>
+          <li><code>check</code></li>
+          <li><code>checkAll</code></li>
+          <li><code>checkAllDistinct</code></li>
+          <li><code>missing</code></li>
+          <li><code>missingDistinct</code></li>
+          <li><code>allMatch</code></li>
+          <li><code>allMatchDistinct</code></li>
+          <li><code>format</code></li>
+        </ul>
+        
+        <h3 id="check" class="section"><a class="anchor-link left" href="#check"><i class="icofont-laika link">&#xef71;</i></a><code>check</code></h3>
+        <p>Use <code>check(...)</code> when a single expected record should exist somewhere in the export:</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="type-name">LogRecordExpectations</span><span>.</span><span class="identifier">check</span><span>(
+  </span><span class="type-name">Nil</span><span>,
+  </span><span class="type-name">LogRecordExpectation</span><span>.</span><span class="identifier">message</span><span>(</span><span class="string-literal">&quot;request failed&quot;</span><span>)
+)</span></code></pre>
+        
+        <h3 id="checkall" class="section"><a class="anchor-link left" href="#checkall"><i class="icofont-laika link">&#xef71;</i></a><code>checkAll</code></h3>
+        <p><code>checkAll(...)</code> is non-consuming: each expectation is checked independently against the full exported list.</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="type-name">LogRecordExpectations</span><span>.</span><span class="identifier">checkAll</span><span>(
+  </span><span class="type-name">Nil</span><span>,
+  </span><span class="type-name">LogRecordExpectation</span><span>.</span><span class="identifier">message</span><span>(</span><span class="string-literal">&quot;request failed&quot;</span><span>),
+  </span><span class="type-name">LogRecordExpectation</span><span>.</span><span class="identifier">message</span><span>(</span><span class="string-literal">&quot;request failed&quot;</span><span>)
+)</span></code></pre>
+        <p>This does not require two distinct exported records.</p>
+        
+        <h3 id="checkalldistinct" class="section"><a class="anchor-link left" href="#checkalldistinct"><i class="icofont-laika link">&#xef71;</i></a><code>checkAllDistinct</code></h3>
+        <p><code>checkAllDistinct(...)</code> enforces distinct assignment.</p>
+        <p>This is the safer default when repeated expectations should match different exported records:</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="type-name">LogRecordExpectations</span><span>.</span><span class="identifier">checkAllDistinct</span><span>(
+  </span><span class="type-name">Nil</span><span>,
+  </span><span class="type-name">LogRecordExpectation</span><span>.</span><span class="identifier">message</span><span>(</span><span class="string-literal">&quot;request failed&quot;</span><span>),
+  </span><span class="type-name">LogRecordExpectation</span><span>.</span><span class="identifier">message</span><span>(</span><span class="string-literal">&quot;request failed&quot;</span><span>)
+)</span></code></pre>
+        <p>The implementation uses distinct matching rather than greedy first-match assignment, so repeated expectations behave
+        deterministically.</p>
+        
+        <h2 id="clues-and-custom-predicates" class="section"><a class="anchor-link left" href="#clues-and-custom-predicates"><i class="icofont-laika link">&#xef71;</i></a>Clues and custom predicates</h2>
+        <p>You can always drop to custom predicates:</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="type-name">LogRecordExpectation</span><span>
+  .</span><span class="identifier">message</span><span>(</span><span class="string-literal">&quot;request failed&quot;</span><span>)
+  .</span><span class="identifier">where</span><span>(</span><span class="string-literal">&quot;must have event name unset&quot;</span><span>)(</span><span class="identifier">_</span><span>.</span><span class="identifier">getEventName</span><span> == </span><span class="literal-value">null</span><span>)
+  .</span><span class="identifier">clue</span><span>(</span><span class="string-literal">&quot;request failure log&quot;</span><span>)</span></code></pre>
+        <p>Use clues whenever a test contains several similar expectations. The clue is preserved in mismatch messages and makes
+        failures much easier to interpret.</p>
+        
+        <h2 id="formatting-mismatches" class="section"><a class="anchor-link left" href="#formatting-mismatches"><i class="icofont-laika link">&#xef71;</i></a>Formatting mismatches</h2>
+        <p>Use <code>LogRecordExpectations.format(...)</code> when integrating with a test framework:</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">def</span><span> </span><span class="declaration-name">assertLogs</span><span>(
+    </span><span class="identifier">records</span><span>: </span><span class="type-name">List</span><span>[</span><span class="type-name">LogRecordData</span><span>],
+    </span><span class="identifier">expected</span><span>: </span><span class="type-name">LogRecordExpectation</span><span>*
+): </span><span class="type-name">Unit</span><span> =
+  </span><span class="type-name">LogRecordExpectations</span><span>.</span><span class="identifier">checkAllDistinct</span><span>(</span><span class="identifier">records</span><span>, </span><span class="identifier">expected</span><span>: </span><span class="identifier">_</span><span>*) </span><span class="keyword">match</span><span> {
+    </span><span class="keyword">case</span><span> </span><span class="type-name">Right</span><span>(</span><span class="identifier">_</span><span>) =&gt;
+      ()
+    </span><span class="keyword">case</span><span> </span><span class="type-name">Left</span><span>(</span><span class="identifier">mismatches</span><span>) =&gt;
+      </span><span class="identifier">sys</span><span>.</span><span class="identifier">error</span><span>(</span><span class="type-name">LogRecordExpectations</span><span>.</span><span class="identifier">format</span><span>(</span><span class="identifier">mismatches</span><span>))
+  }</span></code></pre>
+        <p>Mismatch selection prioritizes trace/span correlation before generic mismatch count.
+        This makes failures more useful when several logs have similar bodies or severities but only one is correlated to the
+        expected span.</p>
+
+        
+<hr class="footer-rule"/>
+<footer>
+  otel4s is a <a href="https://typelevel.org/">Typelevel</a> project distributed under the <a href="https://www.apache.org/licenses/LICENSE-2.0.txt">Apache-2.0</a> license.
+</footer>
+
+
+      </main>
+
+    </div>
+
+  </body>
+
+</html>

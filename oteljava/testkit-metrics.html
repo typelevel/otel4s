@@ -119,6 +119,8 @@
     <li class="level2 nav-leaf"><a href="agent.html">Zero-code | Java Agent</a></li>
     <li class="level2 nav-leaf"><a href="testkit.html">Testkit</a></li>
     <li class="level2 active nav-leaf"><a href="#">Testkit | Metrics</a></li>
+    <li class="level2 nav-leaf"><a href="testkit-traces.html">Testkit | Traces</a></li>
+    <li class="level2 nav-leaf"><a href="testkit-logs.html">Testkit | Logs</a></li>
     <li class="level1 nav-header">SDK</li>
     <li class="level2 nav-leaf"><a href="../sdk/overview.html">Overview</a></li>
     <li class="level1 nav-header">Examples</li>
@@ -174,6 +176,8 @@
         <p>The expectation API lets you assert only the relevant parts of a metric while still preserving detail when you need
         it. Metric point matching is expressed at the collection level, so a single metric expectation can accumulate
         multiple point constraints.</p>
+        <p>This guide documents the expectation-first testing style for metrics.
+        For the overview of all signal testkits, see <a href="testkit.html">Testkit</a>.</p>
         
         <h2 id="getting-started" class="section"><a class="anchor-link left" href="#getting-started"><i class="icofont-laika link">&#xef71;</i></a>Getting started</h2>
         <div class="tab-container" data-tab-group="build-tool">
@@ -199,7 +203,7 @@
           <li>Run your program against <code>MetricsTestkit</code> or <code>OtelJavaTestkit</code></li>
           <li>Collect metrics as <code>MetricData</code></li>
           <li>Build <code>MetricExpectation</code> values</li>
-          <li>Check them with <code>MetricExpectations.checkAll</code></li>
+          <li>Check them with <code>MetricExpectations.checkAll</code> or <code>MetricExpectations.checkAllDistinct</code></li>
         </ol>
         <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.</span><span class="type-name">IO</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">io</span><span>.</span><span class="identifier">opentelemetry</span><span>.</span><span class="identifier">sdk</span><span>.</span><span class="identifier">metrics</span><span>.</span><span class="identifier">data</span><span>.</span><span class="type-name">MetricData</span><span>
@@ -216,7 +220,7 @@
   } </span><span class="keyword">yield</span><span> ()
 
 </span><span class="keyword">def</span><span> </span><span class="declaration-name">assertExpected</span><span>(</span><span class="identifier">metrics</span><span>: </span><span class="type-name">List</span><span>[</span><span class="type-name">MetricData</span><span>], </span><span class="identifier">expected</span><span>: </span><span class="type-name">MetricExpectation</span><span>*): </span><span class="type-name">Unit</span><span> =
-  </span><span class="type-name">MetricExpectations</span><span>.</span><span class="identifier">checkAll</span><span>(</span><span class="identifier">metrics</span><span>, </span><span class="identifier">expected</span><span>: </span><span class="identifier">_</span><span>*) </span><span class="keyword">match</span><span> {
+  </span><span class="type-name">MetricExpectations</span><span>.</span><span class="identifier">checkAllDistinct</span><span>(</span><span class="identifier">metrics</span><span>, </span><span class="identifier">expected</span><span>: </span><span class="identifier">_</span><span>*) </span><span class="keyword">match</span><span> {
     </span><span class="keyword">case</span><span> </span><span class="type-name">Right</span><span>(</span><span class="identifier">_</span><span>) =&gt;
       ()
     </span><span class="keyword">case</span><span> </span><span class="type-name">Left</span><span>(</span><span class="identifier">mismatches</span><span>) =&gt;

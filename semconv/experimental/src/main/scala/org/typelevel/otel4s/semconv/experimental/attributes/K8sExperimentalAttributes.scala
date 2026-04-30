@@ -338,10 +338,112 @@ object K8sExperimentalAttributes {
   val K8sNodeName: AttributeKey[String] =
     AttributeKey("k8s.node.name")
 
+  /** The name of the system container running on the K8s Node.
+    */
+  val K8sNodeSystemContainerName: AttributeKey[String] =
+    AttributeKey("k8s.node.system_container.name")
+
   /** The UID of the Node.
     */
   val K8sNodeUid: AttributeKey[String] =
     AttributeKey("k8s.node.uid")
+
+  /** The annotation placed on the PersistentVolume, the `<key>` being the annotation name, the value being the
+    * annotation value, even if the value is empty.
+    *
+    * @note
+    *   <p> Examples: <ul> <li>An annotation `pv.kubernetes.io/provisioned-by` with value `kubernetes.io/aws-ebs` SHOULD
+    *   be recorded as the `k8s.persistentvolume.annotation.pv.kubernetes.io/provisioned-by` attribute with value
+    *   `"kubernetes.io/aws-ebs"`. <li>An annotation `data` with empty string value SHOULD be recorded as the
+    *   `k8s.persistentvolume.annotation.data` attribute with value `""`. </ul>
+    */
+  val K8sPersistentvolumeAnnotation: AttributeKey[String] =
+    AttributeKey("k8s.persistentvolume.annotation")
+
+  /** The label placed on the PersistentVolume, the `<key>` being the label name, the value being the label value, even
+    * if the value is empty.
+    *
+    * @note
+    *   <p> Examples: <ul> <li>A label `type` with value `ssd` SHOULD be recorded as the
+    *   `k8s.persistentvolume.label.type` attribute with value `"ssd"`. <li>A label `data` with empty string value
+    *   SHOULD be recorded as the `k8s.persistentvolume.label.data` attribute with value `""`. </ul>
+    */
+  val K8sPersistentvolumeLabel: AttributeKey[String] =
+    AttributeKey("k8s.persistentvolume.label")
+
+  /** The name of the PersistentVolume.
+    */
+  val K8sPersistentvolumeName: AttributeKey[String] =
+    AttributeKey("k8s.persistentvolume.name")
+
+  /** The reclaim policy of the PersistentVolume.
+    *
+    * @note
+    *   <p> This attribute aligns with the `persistentVolumeReclaimPolicy` field of the <a
+    *   href="https://kubernetes.io/docs/reference/kubernetes-api/config-and-storage-resources/persistent-volume-v1/#PersistentVolumeSpec">K8s
+    *   PersistentVolumeSpec</a>.
+    */
+  val K8sPersistentvolumeReclaimPolicy: AttributeKey[String] =
+    AttributeKey("k8s.persistentvolume.reclaim_policy")
+
+  /** The phase of the PersistentVolume.
+    *
+    * @note
+    *   <p> This attribute aligns with the `phase` field of the <a
+    *   href="https://kubernetes.io/docs/reference/kubernetes-api/config-and-storage-resources/persistent-volume-v1/#PersistentVolumeStatus">K8s
+    *   PersistentVolumeStatus</a>.
+    */
+  val K8sPersistentvolumeStatusPhase: AttributeKey[String] =
+    AttributeKey("k8s.persistentvolume.status.phase")
+
+  /** The UID of the PersistentVolume.
+    */
+  val K8sPersistentvolumeUid: AttributeKey[String] =
+    AttributeKey("k8s.persistentvolume.uid")
+
+  /** The annotation placed on the PersistentVolumeClaim, the `<key>` being the annotation name, the value being the
+    * annotation value, even if the value is empty.
+    *
+    * @note
+    *   <p> Examples: <ul> <li>An annotation `volume.beta.kubernetes.io/storage-provisioner` with value
+    *   `kubernetes.io/aws-ebs` SHOULD be recorded as the
+    *   `k8s.persistentvolumeclaim.annotation.volume.beta.kubernetes.io/storage-provisioner` attribute with value
+    *   `"kubernetes.io/aws-ebs"`. <li>An annotation `data` with empty string value SHOULD be recorded as the
+    *   `k8s.persistentvolumeclaim.annotation.data` attribute with value `""`. </ul>
+    */
+  val K8sPersistentvolumeclaimAnnotation: AttributeKey[String] =
+    AttributeKey("k8s.persistentvolumeclaim.annotation")
+
+  /** The label placed on the PersistentVolumeClaim, the `<key>` being the label name, the value being the label value,
+    * even if the value is empty.
+    *
+    * @note
+    *   <p> Examples: <ul> <li>A label `app` with value `my-app` SHOULD be recorded as the
+    *   `k8s.persistentvolumeclaim.label.app` attribute with value `"my-app"`. <li>A label `data` with empty string
+    *   value SHOULD be recorded as the `k8s.persistentvolumeclaim.label.data` attribute with value `""`. </ul>
+    */
+  val K8sPersistentvolumeclaimLabel: AttributeKey[String] =
+    AttributeKey("k8s.persistentvolumeclaim.label")
+
+  /** The name of the PersistentVolumeClaim.
+    */
+  val K8sPersistentvolumeclaimName: AttributeKey[String] =
+    AttributeKey("k8s.persistentvolumeclaim.name")
+
+  /** The phase of the PersistentVolumeClaim.
+    *
+    * @note
+    *   <p> This attribute aligns with the `phase` field of the <a
+    *   href="https://kubernetes.io/docs/reference/kubernetes-api/config-and-storage-resources/persistent-volume-claim-v1/#PersistentVolumeClaimStatus">K8s
+    *   PersistentVolumeClaimStatus</a>.
+    */
+  val K8sPersistentvolumeclaimStatusPhase: AttributeKey[String] =
+    AttributeKey("k8s.persistentvolumeclaim.status.phase")
+
+  /** The UID of the PersistentVolumeClaim.
+    */
+  val K8sPersistentvolumeclaimUid: AttributeKey[String] =
+    AttributeKey("k8s.persistentvolumeclaim.uid")
 
   /** The annotation placed on the Pod, the `<key>` being the annotation name, the value being the annotation value.
     *
@@ -779,6 +881,74 @@ object K8sExperimentalAttributes {
     /** The network for the node is not correctly configured
       */
     case object NetworkUnavailable extends K8sNodeConditionTypeValue("NetworkUnavailable")
+  }
+
+  /** Values for [[K8sPersistentvolumeReclaimPolicy]].
+    */
+  abstract class K8sPersistentvolumeReclaimPolicyValue(val value: String)
+  object K8sPersistentvolumeReclaimPolicyValue {
+    implicit val attributeFromK8sPersistentvolumeReclaimPolicyValue
+        : Attribute.From[K8sPersistentvolumeReclaimPolicyValue, String] = _.value
+
+    /** The volume will be deleted when released from its claim.
+      */
+    case object Delete extends K8sPersistentvolumeReclaimPolicyValue("Delete")
+
+    /** The volume will be recycled (basic scrub) when released from its claim.
+      */
+    case object Recycle extends K8sPersistentvolumeReclaimPolicyValue("Recycle")
+
+    /** The volume will be retained when released from its claim.
+      */
+    case object Retain extends K8sPersistentvolumeReclaimPolicyValue("Retain")
+  }
+
+  /** Values for [[K8sPersistentvolumeStatusPhase]].
+    */
+  abstract class K8sPersistentvolumeStatusPhaseValue(val value: String)
+  object K8sPersistentvolumeStatusPhaseValue {
+    implicit val attributeFromK8sPersistentvolumeStatusPhaseValue
+        : Attribute.From[K8sPersistentvolumeStatusPhaseValue, String] = _.value
+
+    /** The volume is available and not yet bound to a claim.
+      */
+    case object Available extends K8sPersistentvolumeStatusPhaseValue("Available")
+
+    /** The volume is bound to a claim.
+      */
+    case object Bound extends K8sPersistentvolumeStatusPhaseValue("Bound")
+
+    /** The volume has failed its automatic reclamation.
+      */
+    case object Failed extends K8sPersistentvolumeStatusPhaseValue("Failed")
+
+    /** The volume is being provisioned.
+      */
+    case object Pending extends K8sPersistentvolumeStatusPhaseValue("Pending")
+
+    /** The claim has been deleted but the volume is not yet available.
+      */
+    case object Released extends K8sPersistentvolumeStatusPhaseValue("Released")
+  }
+
+  /** Values for [[K8sPersistentvolumeclaimStatusPhase]].
+    */
+  abstract class K8sPersistentvolumeclaimStatusPhaseValue(val value: String)
+  object K8sPersistentvolumeclaimStatusPhaseValue {
+    implicit val attributeFromK8sPersistentvolumeclaimStatusPhaseValue
+        : Attribute.From[K8sPersistentvolumeclaimStatusPhaseValue, String] = _.value
+
+    /** The claim is bound to a volume.
+      */
+    case object Bound extends K8sPersistentvolumeclaimStatusPhaseValue("Bound")
+
+    /** The claim has lost its underlying volume (the volume does not exist anymore).
+      */
+    case object Lost extends K8sPersistentvolumeclaimStatusPhaseValue("Lost")
+
+    /** The claim has not yet been bound to a volume.
+      */
+    case object Pending extends K8sPersistentvolumeclaimStatusPhaseValue("Pending")
   }
 
   /** Values for [[K8sPodStatusPhase]].

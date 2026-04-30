@@ -54,6 +54,10 @@ object OtelExperimentalAttributes {
     *   equivalent field. This attribute MAY be used by applications using existing logging libraries so that it can be
     *   used to set the `EventName` field by Collector or SDK components.
     */
+  @deprecated(
+    "use `org.typelevel.otel4s.semconv.attributes.OtelAttributes.OtelEventName` instead.",
+    ""
+  )
   val OtelEventName: AttributeKey[String] =
     AttributeKey("otel.event.name")
 

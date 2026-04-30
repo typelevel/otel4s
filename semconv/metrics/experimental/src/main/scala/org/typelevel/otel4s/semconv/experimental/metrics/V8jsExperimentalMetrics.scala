@@ -35,6 +35,7 @@ object V8jsExperimentalMetrics {
     MemoryHeapSpaceAvailableSize,
     MemoryHeapSpacePhysicalSize,
     MemoryHeapUsed,
+    ResourceActive,
   )
 
   /** Garbage collection duration.
@@ -441,6 +442,64 @@ object V8jsExperimentalMetrics {
     ): Resource[F, ObservableUpDownCounter] =
       Meter[F]
         .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** Gauge of the active resources that are currently keeping the event loop alive.
+    *
+    * @note
+    *   <p> The values can be retrieved from <a
+    *   href="https://nodejs.org/api/process.html#processgetactiveresourcesinfo">`process.getActiveResourcesInfo()`</a>
+    */
+  object ResourceActive extends MetricSpec.Unsealed {
+
+    val name: String = "v8js.resource.active"
+    val description: String = "Gauge of the active resources that are currently keeping the event loop alive."
+    val unit: String = "{resource}"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
+
+    object AttributeSpecs {
+
+      /** The type of resource keeping the event loop active.
+        */
+      val v8jsResourceType: AttributeSpec[String] =
+        AttributeSpec(
+          V8jsExperimentalAttributes.V8jsResourceType,
+          List(
+          ),
+          Requirement.required,
+          Stability.development
+        )
+
+      val specs: List[AttributeSpec[_]] =
+        List(
+          v8jsResourceType,
+        )
+    }
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[Gauge[F, A]] =
+      Meter[F]
+        .gauge[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableGauge[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableGauge] =
+      Meter[F]
+        .observableGauge[A](name)
         .withDescription(description)
         .withUnit(unit)
         .createWithCallback(callback)

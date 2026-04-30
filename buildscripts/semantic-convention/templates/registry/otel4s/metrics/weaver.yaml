@@ -1,6 +1,11 @@
 params:
   excluded_namespaces: ["ios", "aspnetcore", "signalr", "kestrel", "veightjs", "go", "dotnet"]
-  excluded_metrics: ["k8s.replication_controller.desired_pods", "k8s.replication_controller.available_pods"]
+  excluded_metrics: [
+    "k8s.replication_controller.desired_pods",
+    "k8s.replication_controller.available_pods",
+    "k8s.container.cpu.limit_utilization",
+    "k8s.container.cpu.request_utilization"
+  ]
   object_prefix: "" # stable - "", experimental - "Experimental"
   stable_only: true # stable - true, experimental - false
 comment_formats:
@@ -12,7 +17,7 @@ comment_formats:
     old_style_paragraph: true
     omit_closing_li: true
     inline_code_snippet: "`{{code}}`"
-    block_code_snippet: "{{{\n{{code}}}\n}}}"
+    block_code_snippet: "{{{\n{{code}}\n}}}"
     trim: true
     remove_trailing_dots: false
 default_comment_format: scaladoc

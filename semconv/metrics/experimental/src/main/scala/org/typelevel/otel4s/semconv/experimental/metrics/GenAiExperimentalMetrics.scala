@@ -28,6 +28,8 @@ object GenAiExperimentalMetrics {
 
   val specs: List[MetricSpec] = List(
     ClientOperationDuration,
+    ClientOperationTimePerOutputChunk,
+    ClientOperationTimeToFirstChunk,
     ClientTokenUsage,
     ServerRequestDuration,
     ServerTimePerOutputToken,
@@ -173,6 +175,290 @@ object GenAiExperimentalMetrics {
       val specs: List[AttributeSpec[_]] =
         List(
           errorType,
+          genAiOperationName,
+          genAiProviderName,
+          genAiRequestModel,
+          genAiResponseModel,
+          serverAddress,
+          serverPort,
+        )
+    }
+
+    def create[F[_]: Meter, A: MeasurementValue](boundaries: BucketBoundaries): F[Histogram[F, A]] =
+      Meter[F]
+        .histogram[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .withExplicitBucketBoundaries(boundaries)
+        .create
+
+  }
+
+  /** Time per output chunk, recorded for each chunk received after the first one, measured as the time elapsed from the
+    * end of the previous chunk to the end of the current chunk.
+    *
+    * @note
+    *   <p> This metrics SHOULD be reported for streaming calls and SHOULD NOT be reported otherwise.
+    */
+  object ClientOperationTimePerOutputChunk extends MetricSpec.Unsealed {
+
+    val name: String = "gen_ai.client.operation.time_per_output_chunk"
+    val description: String =
+      "Time per output chunk, recorded for each chunk received after the first one, measured as the time elapsed from the end of the previous chunk to the end of the current chunk."
+    val unit: String = "s"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
+
+    object AttributeSpecs {
+
+      /** The name of the operation being performed.
+        *
+        * @note
+        *   <p> If one of the predefined values applies, but specific system uses a different name it's RECOMMENDED to
+        *   document it in the semantic conventions for specific GenAI system and use system-specific name in the
+        *   instrumentation. If a different name is not documented, instrumentation libraries SHOULD use applicable
+        *   predefined value.
+        */
+      val genAiOperationName: AttributeSpec[String] =
+        AttributeSpec(
+          GenAiExperimentalAttributes.GenAiOperationName,
+          List(
+          ),
+          Requirement.required,
+          Stability.development
+        )
+
+      /** The Generative AI provider as identified by the client or server instrumentation.
+        *
+        * @note
+        *   <p> The attribute SHOULD be set based on the instrumentation's best knowledge and may differ from the actual
+        *   model provider. <p> Multiple providers, including Azure OpenAI, Gemini, and AI hosting platforms are
+        *   accessible using the OpenAI REST API and corresponding client libraries, but may proxy or host models from
+        *   different providers. <p> The `gen_ai.request.model`, `gen_ai.response.model`, and `server.address`
+        *   attributes may help identify the actual system in use. <p> The `gen_ai.provider.name` attribute acts as a
+        *   discriminator that identifies the GenAI telemetry format flavor specific to that provider within GenAI
+        *   semantic conventions. It SHOULD be set consistently with provider-specific attributes and signals. For
+        *   example, GenAI spans, metrics, and events related to AWS Bedrock should have the `gen_ai.provider.name` set
+        *   to `aws.bedrock` and include applicable `aws.bedrock.*` attributes and are not expected to include
+        *   `openai.*` attributes.
+        */
+      val genAiProviderName: AttributeSpec[String] =
+        AttributeSpec(
+          GenAiExperimentalAttributes.GenAiProviderName,
+          List(
+          ),
+          Requirement.required,
+          Stability.development
+        )
+
+      /** The name of the GenAI model a request is being made to.
+        */
+      val genAiRequestModel: AttributeSpec[String] =
+        AttributeSpec(
+          GenAiExperimentalAttributes.GenAiRequestModel,
+          List(
+            "g",
+            "p",
+            "t",
+            "-",
+            "4",
+          ),
+          Requirement.conditionallyRequired("If available."),
+          Stability.development
+        )
+
+      /** The name of the model that generated the response.
+        */
+      val genAiResponseModel: AttributeSpec[String] =
+        AttributeSpec(
+          GenAiExperimentalAttributes.GenAiResponseModel,
+          List(
+            "gpt-4-0613",
+          ),
+          Requirement.recommended,
+          Stability.development
+        )
+
+      /** GenAI server address.
+        *
+        * @note
+        *   <p> When observed from the client side, and when communicating through an intermediary, `server.address`
+        *   SHOULD represent the server address behind any intermediaries, for example proxies, if it's available.
+        */
+      val serverAddress: AttributeSpec[String] =
+        AttributeSpec(
+          ServerAttributes.ServerAddress,
+          List(
+            "example.com",
+            "10.1.2.80",
+            "/tmp/my.sock",
+          ),
+          Requirement.recommended,
+          Stability.stable
+        )
+
+      /** GenAI server port.
+        *
+        * @note
+        *   <p> When observed from the client side, and when communicating through an intermediary, `server.port` SHOULD
+        *   represent the server port behind any intermediaries, for example proxies, if it's available.
+        */
+      val serverPort: AttributeSpec[Long] =
+        AttributeSpec(
+          ServerAttributes.ServerPort,
+          List(
+            80,
+            8080,
+            443,
+          ),
+          Requirement.conditionallyRequired("If `server.address` is set."),
+          Stability.stable
+        )
+
+      val specs: List[AttributeSpec[_]] =
+        List(
+          genAiOperationName,
+          genAiProviderName,
+          genAiRequestModel,
+          genAiResponseModel,
+          serverAddress,
+          serverPort,
+        )
+    }
+
+    def create[F[_]: Meter, A: MeasurementValue](boundaries: BucketBoundaries): F[Histogram[F, A]] =
+      Meter[F]
+        .histogram[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .withExplicitBucketBoundaries(boundaries)
+        .create
+
+  }
+
+  /** Time to receive the first chunk, measured from when the client issues the generation request to when the first
+    * chunk is received in the response stream.
+    *
+    * @note
+    *   <p> This metrics SHOULD be reported for streaming calls and SHOULD NOT be reported otherwise.
+    */
+  object ClientOperationTimeToFirstChunk extends MetricSpec.Unsealed {
+
+    val name: String = "gen_ai.client.operation.time_to_first_chunk"
+    val description: String =
+      "Time to receive the first chunk, measured from when the client issues the generation request to when the first chunk is received in the response stream."
+    val unit: String = "s"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
+
+    object AttributeSpecs {
+
+      /** The name of the operation being performed.
+        *
+        * @note
+        *   <p> If one of the predefined values applies, but specific system uses a different name it's RECOMMENDED to
+        *   document it in the semantic conventions for specific GenAI system and use system-specific name in the
+        *   instrumentation. If a different name is not documented, instrumentation libraries SHOULD use applicable
+        *   predefined value.
+        */
+      val genAiOperationName: AttributeSpec[String] =
+        AttributeSpec(
+          GenAiExperimentalAttributes.GenAiOperationName,
+          List(
+          ),
+          Requirement.required,
+          Stability.development
+        )
+
+      /** The Generative AI provider as identified by the client or server instrumentation.
+        *
+        * @note
+        *   <p> The attribute SHOULD be set based on the instrumentation's best knowledge and may differ from the actual
+        *   model provider. <p> Multiple providers, including Azure OpenAI, Gemini, and AI hosting platforms are
+        *   accessible using the OpenAI REST API and corresponding client libraries, but may proxy or host models from
+        *   different providers. <p> The `gen_ai.request.model`, `gen_ai.response.model`, and `server.address`
+        *   attributes may help identify the actual system in use. <p> The `gen_ai.provider.name` attribute acts as a
+        *   discriminator that identifies the GenAI telemetry format flavor specific to that provider within GenAI
+        *   semantic conventions. It SHOULD be set consistently with provider-specific attributes and signals. For
+        *   example, GenAI spans, metrics, and events related to AWS Bedrock should have the `gen_ai.provider.name` set
+        *   to `aws.bedrock` and include applicable `aws.bedrock.*` attributes and are not expected to include
+        *   `openai.*` attributes.
+        */
+      val genAiProviderName: AttributeSpec[String] =
+        AttributeSpec(
+          GenAiExperimentalAttributes.GenAiProviderName,
+          List(
+          ),
+          Requirement.required,
+          Stability.development
+        )
+
+      /** The name of the GenAI model a request is being made to.
+        */
+      val genAiRequestModel: AttributeSpec[String] =
+        AttributeSpec(
+          GenAiExperimentalAttributes.GenAiRequestModel,
+          List(
+            "g",
+            "p",
+            "t",
+            "-",
+            "4",
+          ),
+          Requirement.conditionallyRequired("If available."),
+          Stability.development
+        )
+
+      /** The name of the model that generated the response.
+        */
+      val genAiResponseModel: AttributeSpec[String] =
+        AttributeSpec(
+          GenAiExperimentalAttributes.GenAiResponseModel,
+          List(
+            "gpt-4-0613",
+          ),
+          Requirement.recommended,
+          Stability.development
+        )
+
+      /** GenAI server address.
+        *
+        * @note
+        *   <p> When observed from the client side, and when communicating through an intermediary, `server.address`
+        *   SHOULD represent the server address behind any intermediaries, for example proxies, if it's available.
+        */
+      val serverAddress: AttributeSpec[String] =
+        AttributeSpec(
+          ServerAttributes.ServerAddress,
+          List(
+            "example.com",
+            "10.1.2.80",
+            "/tmp/my.sock",
+          ),
+          Requirement.recommended,
+          Stability.stable
+        )
+
+      /** GenAI server port.
+        *
+        * @note
+        *   <p> When observed from the client side, and when communicating through an intermediary, `server.port` SHOULD
+        *   represent the server port behind any intermediaries, for example proxies, if it's available.
+        */
+      val serverPort: AttributeSpec[Long] =
+        AttributeSpec(
+          ServerAttributes.ServerPort,
+          List(
+            80,
+            8080,
+            443,
+          ),
+          Requirement.conditionallyRequired("If `server.address` is set."),
+          Stability.stable
+        )
+
+      val specs: List[AttributeSpec[_]] =
+        List(
           genAiOperationName,
           genAiProviderName,
           genAiRequestModel,

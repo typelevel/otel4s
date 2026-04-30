@@ -27,11 +27,19 @@ object TelemetryExperimentalAttributes {
     *   <p> Official auto instrumentation agents and distributions SHOULD set the `telemetry.distro.name` attribute to a
     *   string starting with `opentelemetry-`, e.g. `opentelemetry-java-instrumentation`.
     */
+  @deprecated(
+    "use `org.typelevel.otel4s.semconv.attributes.TelemetryAttributes.TelemetryDistroName` instead.",
+    ""
+  )
   val TelemetryDistroName: AttributeKey[String] =
     AttributeKey("telemetry.distro.name")
 
   /** The version string of the auto instrumentation agent or distribution, if used.
     */
+  @deprecated(
+    "use `org.typelevel.otel4s.semconv.attributes.TelemetryAttributes.TelemetryDistroVersion` instead.",
+    ""
+  )
   val TelemetryDistroVersion: AttributeKey[String] =
     AttributeKey("telemetry.distro.version")
 

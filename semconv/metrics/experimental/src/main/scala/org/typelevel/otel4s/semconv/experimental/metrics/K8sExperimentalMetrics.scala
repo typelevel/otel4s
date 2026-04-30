@@ -29,13 +29,21 @@ object K8sExperimentalMetrics {
   @annotation.nowarn("cat=deprecation")
   val specs: List[MetricSpec] = List(
     ContainerCpuLimit,
+    ContainerCpuLimitCurrent,
+    ContainerCpuLimitDesired,
     ContainerCpuLimitUtilization,
     ContainerCpuRequest,
+    ContainerCpuRequestCurrent,
+    ContainerCpuRequestDesired,
     ContainerCpuRequestUtilization,
     ContainerEphemeralStorageLimit,
     ContainerEphemeralStorageRequest,
     ContainerMemoryLimit,
+    ContainerMemoryLimitCurrent,
+    ContainerMemoryLimitDesired,
     ContainerMemoryRequest,
+    ContainerMemoryRequestCurrent,
+    ContainerMemoryRequestDesired,
     ContainerReady,
     ContainerRestartCount,
     ContainerStatusReason,
@@ -99,7 +107,16 @@ object K8sExperimentalMetrics {
     NodeNetworkErrors,
     NodeNetworkIo,
     NodePodAllocatable,
+    NodeSystemContainerCpuTime,
+    NodeSystemContainerCpuUsage,
+    NodeSystemContainerMemoryUsage,
+    NodeSystemContainerMemoryWorkingSet,
     NodeUptime,
+    PersistentvolumeStatusPhase,
+    PersistentvolumeStorageCapacity,
+    PersistentvolumeclaimStatusPhase,
+    PersistentvolumeclaimStorageCapacity,
+    PersistentvolumeclaimStorageRequest,
     PodCpuTime,
     PodCpuUsage,
     PodFilesystemAvailable,
@@ -161,16 +178,14 @@ object K8sExperimentalMetrics {
     StatefulsetUpdatedPods,
   )
 
-  /** Maximum CPU resource limit set for the container.
-    *
-    * @note
-    *   <p> See https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#resourcerequirements-v1-core for
-    *   details.
+  /** Deprecated, use `k8s.container.cpu.limit.desired` and `k8s.container.cpu.limit.current` instead.
     */
+  @deprecated("Replaced by `k8s.container.cpu.limit.desired`.", "")
   object ContainerCpuLimit extends MetricSpec.Unsealed {
 
     val name: String = "k8s.container.cpu.limit"
-    val description: String = "Maximum CPU resource limit set for the container."
+    val description: String =
+      "Deprecated, use `k8s.container.cpu.limit.desired` and `k8s.container.cpu.limit.current` instead."
     val unit: String = "{cpu}"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = Nil
@@ -200,16 +215,105 @@ object K8sExperimentalMetrics {
 
   }
 
-  /** The ratio of container CPU usage to its CPU limit.
+  /** Maximum CPU resource limit currently configured for a running container.
     *
     * @note
-    *   <p> The value range is [0.0,1.0]. A value of 1.0 means the container is using 100% of its CPU limit. If the CPU
-    *   limit is not set, this metric SHOULD NOT be emitted for that container.
+    *   <p> This metric aligns with the limit in the <a
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#resourcerequirements-v1-core">`resources`</a>
+    *   field of <a
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#containerstatus-v1-core">K8s
+    *   ContainerStatus</a> (status.containerStatuses[*].resources). Also see `Actual Resources` in <a
+    *   href="https://kubernetes.io/docs/tasks/configure-pod-container/resize-container-resources/">https://kubernetes.io/docs/tasks/configure-pod-container/resize-container-resources/</a>
+    *   for more details.
+    */
+  object ContainerCpuLimitCurrent extends MetricSpec.Unsealed {
+
+    val name: String = "k8s.container.cpu.limit.current"
+    val description: String = "Maximum CPU resource limit currently configured for a running container."
+    val unit: String = "{cpu}"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
+      Meter[F]
+        .upDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableUpDownCounter] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** Maximum CPU resource limit as defined by the container spec.
+    *
+    * @note
+    *   <p> This metric aligns with the limit in the <a
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#resourcerequirements-v1-core">`resources`</a>
+    *   field of <a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#container-v1-core">K8s
+    *   Container</a> (spec.containers[*].resources). Also see `Desired Resources` in <a
+    *   href="https://kubernetes.io/docs/tasks/configure-pod-container/resize-container-resources/">https://kubernetes.io/docs/tasks/configure-pod-container/resize-container-resources/</a>
+    *   for more details.
+    */
+  object ContainerCpuLimitDesired extends MetricSpec.Unsealed {
+
+    val name: String = "k8s.container.cpu.limit.desired"
+    val description: String = "Maximum CPU resource limit as defined by the container spec."
+    val unit: String = "{cpu}"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
+      Meter[F]
+        .upDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableUpDownCounter] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** The ratio of container CPU usage to its current CPU limit.
+    *
+    * @note
+    *   <p> The current CPU limit reflects the actual resources applied to the container, as reported by <a
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#containerstatus-v1-core">ContainerStatus</a>.
+    *   The value range is [0.0,1.0]. A value of 1.0 means the container is using 100% of its actual CPU limit. If the
+    *   CPU limit is not set, this metric SHOULD NOT be emitted for that container.
     */
   object ContainerCpuLimitUtilization extends MetricSpec.Unsealed {
 
-    val name: String = "k8s.container.cpu.limit_utilization"
-    val description: String = "The ratio of container CPU usage to its CPU limit."
+    val name: String = "k8s.container.cpu.limit.utilization"
+    val description: String = "The ratio of container CPU usage to its current CPU limit."
     val unit: String = "1"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = Nil
@@ -239,16 +343,14 @@ object K8sExperimentalMetrics {
 
   }
 
-  /** CPU resource requested for the container.
-    *
-    * @note
-    *   <p> See https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#resourcerequirements-v1-core for
-    *   details.
+  /** Deprecated, use `k8s.container.cpu.request.desired` and `k8s.container.cpu.request.current` instead.
     */
+  @deprecated("Replaced by `k8s.container.cpu.request.desired`.", "")
   object ContainerCpuRequest extends MetricSpec.Unsealed {
 
     val name: String = "k8s.container.cpu.request"
-    val description: String = "CPU resource requested for the container."
+    val description: String =
+      "Deprecated, use `k8s.container.cpu.request.desired` and `k8s.container.cpu.request.current` instead."
     val unit: String = "{cpu}"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = Nil
@@ -278,12 +380,105 @@ object K8sExperimentalMetrics {
 
   }
 
-  /** The ratio of container CPU usage to its CPU request.
+  /** CPU resource requested currently configured for a running container.
+    *
+    * @note
+    *   <p> This metric aligns with the request in the <a
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#resourcerequirements-v1-core">`resources`</a>
+    *   field of <a
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#containerstatus-v1-core">K8s
+    *   ContainerStatus</a> (status.containerStatuses[*].resources). Also see `Actual Resources` in <a
+    *   href="https://kubernetes.io/docs/tasks/configure-pod-container/resize-container-resources/">https://kubernetes.io/docs/tasks/configure-pod-container/resize-container-resources/</a>
+    *   for more details.
+    */
+  object ContainerCpuRequestCurrent extends MetricSpec.Unsealed {
+
+    val name: String = "k8s.container.cpu.request.current"
+    val description: String = "CPU resource requested currently configured for a running container."
+    val unit: String = "{cpu}"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
+      Meter[F]
+        .upDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableUpDownCounter] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** CPU resource requested as defined by the container spec.
+    *
+    * @note
+    *   <p> This metric aligns with the request in the <a
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#resourcerequirements-v1-core">`resources`</a>
+    *   field of <a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#container-v1-core">K8s
+    *   Container</a> (spec.containers[*].resources). Also see `Desired Resources` in <a
+    *   href="https://kubernetes.io/docs/tasks/configure-pod-container/resize-container-resources/">https://kubernetes.io/docs/tasks/configure-pod-container/resize-container-resources/</a>
+    *   for more details.
+    */
+  object ContainerCpuRequestDesired extends MetricSpec.Unsealed {
+
+    val name: String = "k8s.container.cpu.request.desired"
+    val description: String = "CPU resource requested as defined by the container spec."
+    val unit: String = "{cpu}"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
+      Meter[F]
+        .upDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableUpDownCounter] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** The ratio of container CPU usage to its current CPU request.
+    *
+    * @note
+    *   <p> The current CPU request reflects the request applied to the running container, as reported by <a
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#containerstatus-v1-core">ContainerStatus</a>.
+    *   The value range is [0.0,1.0]. A value of 1.0 means the container is using 100% of its actual CPU request. If the
+    *   CPU request is not set, this metric SHOULD NOT be emitted for that container.
     */
   object ContainerCpuRequestUtilization extends MetricSpec.Unsealed {
 
-    val name: String = "k8s.container.cpu.request_utilization"
-    val description: String = "The ratio of container CPU usage to its CPU request."
+    val name: String = "k8s.container.cpu.request.utilization"
+    val description: String = "The ratio of container CPU usage to its current CPU request."
     val unit: String = "1"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = Nil
@@ -391,16 +586,14 @@ object K8sExperimentalMetrics {
 
   }
 
-  /** Maximum memory resource limit set for the container.
-    *
-    * @note
-    *   <p> See https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#resourcerequirements-v1-core for
-    *   details.
+  /** Deprecated, use `k8s.container.memory.limit.desired` and `k8s.container.memory.limit.current` instead.
     */
+  @deprecated("Replaced by `k8s.container.memory.limit.desired`.", "")
   object ContainerMemoryLimit extends MetricSpec.Unsealed {
 
     val name: String = "k8s.container.memory.limit"
-    val description: String = "Maximum memory resource limit set for the container."
+    val description: String =
+      "Deprecated, use `k8s.container.memory.limit.desired` and `k8s.container.memory.limit.current` instead."
     val unit: String = "By"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = Nil
@@ -430,16 +623,188 @@ object K8sExperimentalMetrics {
 
   }
 
-  /** Memory resource requested for the container.
+  /** Maximum memory resource limit currently configured for a running container.
     *
     * @note
-    *   <p> See https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#resourcerequirements-v1-core for
-    *   details.
+    *   <p> This metric aligns with the limit in the <a
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#resourcerequirements-v1-core">`resources`</a>
+    *   field of <a
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#containerstatus-v1-core">K8s
+    *   ContainerStatus</a> (status.containerStatuses[*].resources). Also see `Actual Resources` in <a
+    *   href="https://kubernetes.io/docs/tasks/configure-pod-container/resize-container-resources/">https://kubernetes.io/docs/tasks/configure-pod-container/resize-container-resources/</a>
+    *   for more details.
     */
+  object ContainerMemoryLimitCurrent extends MetricSpec.Unsealed {
+
+    val name: String = "k8s.container.memory.limit.current"
+    val description: String = "Maximum memory resource limit currently configured for a running container."
+    val unit: String = "By"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
+      Meter[F]
+        .upDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableUpDownCounter] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** Maximum memory resource limit as defined by the container spec.
+    *
+    * @note
+    *   <p> This metric aligns with the limit in the <a
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#resourcerequirements-v1-core">`resources`</a>
+    *   field of <a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#container-v1-core">K8s
+    *   Container</a> (spec.containers[*].resources). Also see `Desired Resources` in <a
+    *   href="https://kubernetes.io/docs/tasks/configure-pod-container/resize-container-resources/">https://kubernetes.io/docs/tasks/configure-pod-container/resize-container-resources/</a>
+    *   for more details.
+    */
+  object ContainerMemoryLimitDesired extends MetricSpec.Unsealed {
+
+    val name: String = "k8s.container.memory.limit.desired"
+    val description: String = "Maximum memory resource limit as defined by the container spec."
+    val unit: String = "By"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
+      Meter[F]
+        .upDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableUpDownCounter] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** Deprecated, use `k8s.container.memory.request.desired` and `k8s.container.memory.request.current` instead.
+    */
+  @deprecated("Replaced by `k8s.container.memory.request.desired`.", "")
   object ContainerMemoryRequest extends MetricSpec.Unsealed {
 
     val name: String = "k8s.container.memory.request"
-    val description: String = "Memory resource requested for the container."
+    val description: String =
+      "Deprecated, use `k8s.container.memory.request.desired` and `k8s.container.memory.request.current` instead."
+    val unit: String = "By"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
+      Meter[F]
+        .upDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableUpDownCounter] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** Memory resource request currently configured for a running container.
+    *
+    * @note
+    *   <p> This metric aligns with the request in the <a
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#resourcerequirements-v1-core">`resources`</a>
+    *   field of <a
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#containerstatus-v1-core">K8s
+    *   ContainerStatus</a> (status.containerStatuses[*].resources). Also see `Actual Resources` in <a
+    *   href="https://kubernetes.io/docs/tasks/configure-pod-container/resize-container-resources/">https://kubernetes.io/docs/tasks/configure-pod-container/resize-container-resources/</a>
+    *   for more details.
+    */
+  object ContainerMemoryRequestCurrent extends MetricSpec.Unsealed {
+
+    val name: String = "k8s.container.memory.request.current"
+    val description: String = "Memory resource request currently configured for a running container."
+    val unit: String = "By"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
+      Meter[F]
+        .upDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableUpDownCounter] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** Memory resource requested as defined by the container spec.
+    *
+    * @note
+    *   <p> This metric aligns with the request in the <a
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#resourcerequirements-v1-core">`resources`</a>
+    *   field of <a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#container-v1-core">K8s
+    *   Container</a> (spec.containers[*].resources). Also see `Desired Resources` in <a
+    *   href="https://kubernetes.io/docs/tasks/configure-pod-container/resize-container-resources/">https://kubernetes.io/docs/tasks/configure-pod-container/resize-container-resources/</a>
+    *   for more details.
+    */
+  object ContainerMemoryRequestDesired extends MetricSpec.Unsealed {
+
+    val name: String = "k8s.container.memory.request.desired"
+    val description: String = "Memory resource requested as defined by the container spec."
     val unit: String = "By"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = Nil
@@ -1490,7 +1855,7 @@ object K8sExperimentalMetrics {
             "redis",
           ),
           Requirement.conditionallyRequired("if and only if k8s.hpa.metric.type is ContainerResource."),
-          Stability.beta
+          Stability.releaseCandidate
         )
 
       /** The type of metric source for the horizontal pod autoscaler.
@@ -1571,7 +1936,7 @@ object K8sExperimentalMetrics {
             "redis",
           ),
           Requirement.conditionallyRequired("if and only if k8s.hpa.metric.type is ContainerResource"),
-          Stability.beta
+          Stability.releaseCandidate
         )
 
       /** The type of metric source for the horizontal pod autoscaler.
@@ -1652,7 +2017,7 @@ object K8sExperimentalMetrics {
             "redis",
           ),
           Requirement.conditionallyRequired("if and only if k8s.hpa.metric.type is ContainerResource"),
-          Stability.beta
+          Stability.releaseCandidate
         )
 
       /** The type of metric source for the horizontal pod autoscaler.
@@ -3309,6 +3674,182 @@ object K8sExperimentalMetrics {
 
   }
 
+  /** Node's system container CPU time.
+    *
+    * @note
+    *   <p> This metric is derived from the <a
+    *   href="https://github.com/kubernetes/kubelet/blob/v0.35.2/pkg/apis/stats/v1alpha1/types.go#L236">CPUStats.UsageCoreNanoSeconds</a>
+    *   field of the <a
+    *   href="https://github.com/kubernetes/kubelet/blob/v0.35.2/pkg/apis/stats/v1alpha1/types.go#L157C6-L157C20">ContainerStats</a>
+    *   of <a
+    *   href="https://github.com/kubernetes/kubelet/blob/v0.35.2/pkg/apis/stats/v1alpha1/types.go#L40">Node.SystemContainers</a>
+    *   of the Kubelet's stats API.
+    */
+  object NodeSystemContainerCpuTime extends MetricSpec.Unsealed {
+
+    val name: String = "k8s.node.system_container.cpu.time"
+    val description: String = "Node's system container CPU time."
+    val unit: String = "s"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[Counter[F, A]] =
+      Meter[F]
+        .counter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableCounter] =
+      Meter[F]
+        .observableCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** Node's system container CPU usage, measured in cpus.
+    *
+    * @note
+    *   <p> This metric is derived from the <a
+    *   href="https://github.com/kubernetes/kubelet/blob/v0.35.2/pkg/apis/stats/v1alpha1/types.go#L233">CPUStats.UsageNanoCores</a>
+    *   field of the <a
+    *   href="https://github.com/kubernetes/kubelet/blob/v0.35.2/pkg/apis/stats/v1alpha1/types.go#L157C6-L157C20">ContainerStats</a>
+    *   of <a
+    *   href="https://github.com/kubernetes/kubelet/blob/v0.35.2/pkg/apis/stats/v1alpha1/types.go#L40">Node.SystemContainers</a>
+    *   of the Kubelet's stats API.
+    */
+  object NodeSystemContainerCpuUsage extends MetricSpec.Unsealed {
+
+    val name: String = "k8s.node.system_container.cpu.usage"
+    val description: String = "Node's system container CPU usage, measured in cpus."
+    val unit: String = "{cpu}"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[Gauge[F, A]] =
+      Meter[F]
+        .gauge[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableGauge[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableGauge] =
+      Meter[F]
+        .observableGauge[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** Node's system container memory usage.
+    *
+    * @note
+    *   <p> This metric is derived from the <a
+    *   href="https://github.com/kubernetes/kubelet/blob/v0.35.2/pkg/apis/stats/v1alpha1/types.go#L252">MemoryStats.UsageBytes</a>
+    *   field of the <a
+    *   href="https://github.com/kubernetes/kubelet/blob/v0.35.2/pkg/apis/stats/v1alpha1/types.go#L157C6-L157C20">ContainerStats</a>
+    *   of <a
+    *   href="https://github.com/kubernetes/kubelet/blob/v0.35.2/pkg/apis/stats/v1alpha1/types.go#L40">Node.SystemContainers</a>
+    *   of the Kubelet's stats API.
+    */
+  object NodeSystemContainerMemoryUsage extends MetricSpec.Unsealed {
+
+    val name: String = "k8s.node.system_container.memory.usage"
+    val description: String = "Node's system container memory usage."
+    val unit: String = "By"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
+      Meter[F]
+        .upDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableUpDownCounter] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** The amount of working set memory.
+    *
+    * @note
+    *   <p> This metric is derived from the <a
+    *   href="https://github.com/kubernetes/kubelet/blob/v0.35.2/pkg/apis/stats/v1alpha1/types.go#L256">MemoryStats.WorkingSetBytes</a>
+    *   field of the <a
+    *   href="https://github.com/kubernetes/kubelet/blob/v0.35.2/pkg/apis/stats/v1alpha1/types.go#L157C6-L157C20">ContainerStats</a>
+    *   of <a
+    *   href="https://github.com/kubernetes/kubelet/blob/v0.35.2/pkg/apis/stats/v1alpha1/types.go#L40">Node.SystemContainers</a>
+    *   of the Kubelet's stats API.
+    */
+  object NodeSystemContainerMemoryWorkingSet extends MetricSpec.Unsealed {
+
+    val name: String = "k8s.node.system_container.memory.working_set"
+    val description: String = "The amount of working set memory."
+    val unit: String = "By"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
+      Meter[F]
+        .upDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableUpDownCounter] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
   /** The time the Node has been running.
     *
     * @note
@@ -3343,6 +3884,265 @@ object K8sExperimentalMetrics {
     ): Resource[F, ObservableGauge] =
       Meter[F]
         .observableGauge[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** Number of PersistentVolumes in a given phase.
+    *
+    * @note
+    *   <p> All possible phases should be reported at each interval to avoid gaps in the time series. This metric is
+    *   derived from the `.status.phase` field of the <a
+    *   href="https://kubernetes.io/docs/reference/kubernetes-api/config-and-storage-resources/persistent-volume-v1/#PersistentVolumeStatus">K8s
+    *   PersistentVolumeStatus</a>.
+    */
+  object PersistentvolumeStatusPhase extends MetricSpec.Unsealed {
+
+    val name: String = "k8s.persistentvolume.status.phase"
+    val description: String = "Number of PersistentVolumes in a given phase."
+    val unit: String = "{persistentvolume}"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
+
+    object AttributeSpecs {
+
+      /** The phase of the PersistentVolume.
+        *
+        * @note
+        *   <p> This attribute aligns with the `phase` field of the <a
+        *   href="https://kubernetes.io/docs/reference/kubernetes-api/config-and-storage-resources/persistent-volume-v1/#PersistentVolumeStatus">K8s
+        *   PersistentVolumeStatus</a>.
+        */
+      val k8sPersistentvolumeStatusPhase: AttributeSpec[String] =
+        AttributeSpec(
+          K8sExperimentalAttributes.K8sPersistentvolumeStatusPhase,
+          List(
+            "Pending",
+            "Available",
+            "Bound",
+            "Released",
+            "Failed",
+          ),
+          Requirement.required,
+          Stability.development
+        )
+
+      val specs: List[AttributeSpec[_]] =
+        List(
+          k8sPersistentvolumeStatusPhase,
+        )
+    }
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
+      Meter[F]
+        .upDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableUpDownCounter] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** The storage capacity of the PersistentVolume.
+    *
+    * @note
+    *   <p> This metric is derived from the `.spec.capacity.storage` field of the <a
+    *   href="https://kubernetes.io/docs/reference/kubernetes-api/config-and-storage-resources/persistent-volume-v1/#PersistentVolumeSpec">K8s
+    *   PersistentVolumeSpec</a>.
+    */
+  object PersistentvolumeStorageCapacity extends MetricSpec.Unsealed {
+
+    val name: String = "k8s.persistentvolume.storage.capacity"
+    val description: String = "The storage capacity of the PersistentVolume."
+    val unit: String = "By"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
+      Meter[F]
+        .upDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableUpDownCounter] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** Number of PersistentVolumeClaims in a given phase.
+    *
+    * @note
+    *   <p> All possible phases should be reported at each interval to avoid gaps in the time series. This metric is
+    *   derived from the `.status.phase` field of the <a
+    *   href="https://kubernetes.io/docs/reference/kubernetes-api/config-and-storage-resources/persistent-volume-claim-v1/#PersistentVolumeClaimStatus">K8s
+    *   PersistentVolumeClaimStatus</a>.
+    */
+  object PersistentvolumeclaimStatusPhase extends MetricSpec.Unsealed {
+
+    val name: String = "k8s.persistentvolumeclaim.status.phase"
+    val description: String = "Number of PersistentVolumeClaims in a given phase."
+    val unit: String = "{persistentvolumeclaim}"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
+
+    object AttributeSpecs {
+
+      /** The phase of the PersistentVolumeClaim.
+        *
+        * @note
+        *   <p> This attribute aligns with the `phase` field of the <a
+        *   href="https://kubernetes.io/docs/reference/kubernetes-api/config-and-storage-resources/persistent-volume-claim-v1/#PersistentVolumeClaimStatus">K8s
+        *   PersistentVolumeClaimStatus</a>.
+        */
+      val k8sPersistentvolumeclaimStatusPhase: AttributeSpec[String] =
+        AttributeSpec(
+          K8sExperimentalAttributes.K8sPersistentvolumeclaimStatusPhase,
+          List(
+            "Pending",
+            "Bound",
+            "Lost",
+          ),
+          Requirement.required,
+          Stability.development
+        )
+
+      val specs: List[AttributeSpec[_]] =
+        List(
+          k8sPersistentvolumeclaimStatusPhase,
+        )
+    }
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
+      Meter[F]
+        .upDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableUpDownCounter] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** The actual storage capacity provisioned for the PersistentVolumeClaim.
+    *
+    * @note
+    *   <p> Only available when the PVC is bound. May differ from the requested capacity due to provisioner rounding.
+    *   This metric is derived from the `.status.capacity.storage` field of the <a
+    *   href="https://kubernetes.io/docs/reference/kubernetes-api/config-and-storage-resources/persistent-volume-claim-v1/#PersistentVolumeClaimStatus">K8s
+    *   PersistentVolumeClaimStatus</a>.
+    */
+  object PersistentvolumeclaimStorageCapacity extends MetricSpec.Unsealed {
+
+    val name: String = "k8s.persistentvolumeclaim.storage.capacity"
+    val description: String = "The actual storage capacity provisioned for the PersistentVolumeClaim."
+    val unit: String = "By"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
+      Meter[F]
+        .upDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableUpDownCounter] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** The storage requested by the PersistentVolumeClaim.
+    *
+    * @note
+    *   <p> This metric is derived from the `.spec.resources.requests.storage` field of the <a
+    *   href="https://kubernetes.io/docs/reference/kubernetes-api/config-and-storage-resources/persistent-volume-claim-v1/#PersistentVolumeClaimSpec">K8s
+    *   PersistentVolumeClaimSpec</a>.
+    */
+  object PersistentvolumeclaimStorageRequest extends MetricSpec.Unsealed {
+
+    val name: String = "k8s.persistentvolumeclaim.storage.request"
+    val description: String = "The storage requested by the PersistentVolumeClaim."
+    val unit: String = "By"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
+      Meter[F]
+        .upDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableUpDownCounter] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
         .withDescription(description)
         .withUnit(unit)
         .createWithCallback(callback)

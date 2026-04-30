@@ -84,7 +84,7 @@ object HwExperimentalMetrics {
 
     object AttributeSpecs {
 
-      /** Design capacity in Watts-hours or Amper-hours
+      /** Design capacity in Watts-hours or Ampere-hours
         */
       val hwBatteryCapacity: AttributeSpec[String] =
         AttributeSpec(
@@ -228,7 +228,7 @@ object HwExperimentalMetrics {
 
     object AttributeSpecs {
 
-      /** Design capacity in Watts-hours or Amper-hours
+      /** Design capacity in Watts-hours or Ampere-hours
         */
       val hwBatteryCapacity: AttributeSpec[String] =
         AttributeSpec(
@@ -390,7 +390,7 @@ object HwExperimentalMetrics {
 
     object AttributeSpecs {
 
-      /** Design capacity in Watts-hours or Amper-hours
+      /** Design capacity in Watts-hours or Ampere-hours
         */
       val hwBatteryCapacity: AttributeSpec[String] =
         AttributeSpec(

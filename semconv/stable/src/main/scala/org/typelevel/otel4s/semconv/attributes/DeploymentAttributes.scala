@@ -16,16 +16,10 @@
 
 package org.typelevel.otel4s
 package semconv
-package experimental.attributes
+package attributes
 
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/attributes/SemanticAttributes.scala.j2
-object DeploymentExperimentalAttributes {
-
-  /** Deprecated, use `deployment.environment.name` instead.
-    */
-  @deprecated("Replaced by `deployment.environment.name`.", "")
-  val DeploymentEnvironment: AttributeKey[String] =
-    AttributeKey("deployment.environment")
+object DeploymentAttributes {
 
   /** Name of the <a href="https://wikipedia.org/wiki/Deployment_environment">deployment environment</a> (aka deployment
     * tier).
@@ -37,36 +31,12 @@ object DeploymentExperimentalAttributes {
     *   <li>`service.name=frontend`, `deployment.environment.name=production` <li>`service.name=frontend`,
     *   `deployment.environment.name=staging`. </ul>
     */
-  @deprecated(
-    "use `org.typelevel.otel4s.semconv.attributes.DeploymentAttributes.DeploymentEnvironmentName` instead.",
-    ""
-  )
   val DeploymentEnvironmentName: AttributeKey[String] =
     AttributeKey("deployment.environment.name")
 
-  /** The id of the deployment.
-    */
-  val DeploymentId: AttributeKey[String] =
-    AttributeKey("deployment.id")
-
-  /** The name of the deployment.
-    */
-  val DeploymentName: AttributeKey[String] =
-    AttributeKey("deployment.name")
-
-  /** The status of the deployment.
-    */
-  val DeploymentStatus: AttributeKey[String] =
-    AttributeKey("deployment.status")
-
   /** Values for [[DeploymentEnvironmentName]].
     */
-  @deprecated(
-    "use `org.typelevel.otel4s.semconv.attributes.DeploymentAttributes.DeploymentEnvironmentName` instead.",
-    ""
-  )
   abstract class DeploymentEnvironmentNameValue(val value: String)
-  @annotation.nowarn("cat=deprecation")
   object DeploymentEnvironmentNameValue {
     implicit val attributeFromDeploymentEnvironmentNameValue: Attribute.From[DeploymentEnvironmentNameValue, String] =
       _.value
@@ -86,21 +56,6 @@ object DeploymentExperimentalAttributes {
     /** Development environment
       */
     case object Development extends DeploymentEnvironmentNameValue("development")
-  }
-
-  /** Values for [[DeploymentStatus]].
-    */
-  abstract class DeploymentStatusValue(val value: String)
-  object DeploymentStatusValue {
-    implicit val attributeFromDeploymentStatusValue: Attribute.From[DeploymentStatusValue, String] = _.value
-
-    /** failed
-      */
-    case object Failed extends DeploymentStatusValue("failed")
-
-    /** succeeded
-      */
-    case object Succeeded extends DeploymentStatusValue("succeeded")
   }
 
 }

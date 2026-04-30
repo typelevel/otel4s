@@ -220,6 +220,11 @@ object GenAiExperimentalAttributes {
   val GenAiRequestStopSequences: AttributeKey[Seq[String]] =
     AttributeKey("gen_ai.request.stop_sequences")
 
+  /** Indicates whether the GenAI request was made in streaming mode.
+    */
+  val GenAiRequestStream: AttributeKey[Boolean] =
+    AttributeKey("gen_ai.request.stream")
+
   /** The temperature setting for the GenAI request.
     */
   val GenAiRequestTemperature: AttributeKey[Double] =
@@ -249,6 +254,12 @@ object GenAiExperimentalAttributes {
     */
   val GenAiResponseModel: AttributeKey[String] =
     AttributeKey("gen_ai.response.model")
+
+  /** Time to first chunk in a streaming response, measured from request issuance, in seconds. The value is measured
+    * from when the client issues the generation request to when the first chunk is received in the response stream.
+    */
+  val GenAiResponseTimeToFirstChunk: AttributeKey[Double] =
+    AttributeKey("gen_ai.response.time_to_first_chunk")
 
   /** The query text used for retrieval.
     *
@@ -340,6 +351,23 @@ object GenAiExperimentalAttributes {
   val GenAiUsagePromptTokens: AttributeKey[Long] =
     AttributeKey("gen_ai.usage.prompt_tokens")
 
+  /** The number of output tokens used for reasoning (e.g. chain-of-thought, extended thinking).
+    *
+    * @note
+    *   <p> The value SHOULD be included in `gen_ai.usage.output_tokens`.
+    */
+  val GenAiUsageReasoningOutputTokens: AttributeKey[Long] =
+    AttributeKey("gen_ai.usage.reasoning.output_tokens")
+
+  /** Human-readable name of the GenAI workflow provided by the application.
+    *
+    * @note
+    *   <p> This attribute can be populated in different frameworks eg: name of the first chain in LangChain OR name of
+    *   the crew in CrewAI.
+    */
+  val GenAiWorkflowName: AttributeKey[String] =
+    AttributeKey("gen_ai.workflow.name")
+
   /** Values for [[GenAiOpenaiRequestResponseFormat]].
     */
   @deprecated("Replaced by `gen_ai.output.type`.", "")
@@ -422,6 +450,10 @@ object GenAiExperimentalAttributes {
     /** Execute a tool
       */
     case object ExecuteTool extends GenAiOperationNameValue("execute_tool")
+
+    /** Invoke GenAI workflow
+      */
+    case object InvokeWorkflow extends GenAiOperationNameValue("invoke_workflow")
   }
 
   /** Values for [[GenAiOutputType]].
@@ -481,7 +513,7 @@ object GenAiExperimentalAttributes {
       */
     case object AzureAiInference extends GenAiProviderNameValue("azure.ai.inference")
 
-    /** <a href="https://azure.microsoft.com/products/ai-services/openai-service/">Azure OpenAI</a>
+    /** <a href="https://learn.microsoft.com/en-us/azure/ai-services/openai/overview">Azure OpenAI</a>
       */
     case object AzureAiOpenai extends GenAiProviderNameValue("azure.ai.openai")
 

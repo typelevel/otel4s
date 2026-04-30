@@ -35,6 +35,11 @@ object V8jsExperimentalAttributes {
   val V8jsHeapSpaceName: AttributeKey[String] =
     AttributeKey("v8js.heap.space.name")
 
+  /** The type of resource keeping the event loop active.
+    */
+  val V8jsResourceType: AttributeKey[String] =
+    AttributeKey("v8js.resource.type")
+
   /** Values for [[V8jsGcType]].
     */
   abstract class V8jsGcTypeValue(val value: String)
@@ -83,6 +88,33 @@ object V8jsExperimentalAttributes {
     /** Large object memory space.
       */
     case object LargeObjectSpace extends V8jsHeapSpaceNameValue("large_object_space")
+  }
+
+  /** Values for [[V8jsResourceType]].
+    */
+  abstract class V8jsResourceTypeValue(val value: String)
+  object V8jsResourceTypeValue {
+    implicit val attributeFromV8jsResourceTypeValue: Attribute.From[V8jsResourceTypeValue, String] = _.value
+
+    /** Active `setImmediate` callbacks.
+      */
+    case object Immediate extends V8jsResourceTypeValue("Immediate")
+
+    /** Active TCP Servers.
+      */
+    case object Tcpserverwrap extends V8jsResourceTypeValue("TCPServerWrap")
+
+    /** Active TCP connections.
+      */
+    case object Tcpwrap extends V8jsResourceTypeValue("TCPWrap")
+
+    /** Active `setTimeout` or `setInterval` timers.
+      */
+    case object Timeout extends V8jsResourceTypeValue("Timeout")
+
+    /** Active Terminal I/O (stdin/stdout).
+      */
+    case object Ttywrap extends V8jsResourceTypeValue("TTYWrap")
   }
 
 }

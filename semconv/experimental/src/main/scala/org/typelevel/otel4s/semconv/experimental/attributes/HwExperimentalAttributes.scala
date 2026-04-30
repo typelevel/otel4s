@@ -21,7 +21,7 @@ package experimental.attributes
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/attributes/SemanticAttributes.scala.j2
 object HwExperimentalAttributes {
 
-  /** Design capacity in Watts-hours or Amper-hours
+  /** Design capacity in Watts-hours or Ampere-hours
     */
   val HwBatteryCapacity: AttributeKey[String] =
     AttributeKey("hw.battery.capacity")

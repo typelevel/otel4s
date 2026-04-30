@@ -47,6 +47,12 @@ object SystemExperimentalMetrics {
     LinuxMemorySlabUsage,
     MemoryLimit,
     MemoryLinuxAvailable,
+    MemoryLinuxHugepagesLimit,
+    MemoryLinuxHugepagesPageSize,
+    MemoryLinuxHugepagesReserved,
+    MemoryLinuxHugepagesSurplus,
+    MemoryLinuxHugepagesUsage,
+    MemoryLinuxHugepagesUtilization,
     MemoryLinuxShared,
     MemoryLinuxSlabUsage,
     MemoryShared,
@@ -1225,6 +1231,268 @@ object SystemExperimentalMetrics {
     ): Resource[F, ObservableUpDownCounter] =
       Meter[F]
         .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** Total number of hugepages available.
+    */
+  object MemoryLinuxHugepagesLimit extends MetricSpec.Unsealed {
+
+    val name: String = "system.memory.linux.hugepages.limit"
+    val description: String = "Total number of hugepages available."
+    val unit: String = "{page}"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
+      Meter[F]
+        .upDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableUpDownCounter] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** System hugepage size in bytes.
+    */
+  object MemoryLinuxHugepagesPageSize extends MetricSpec.Unsealed {
+
+    val name: String = "system.memory.linux.hugepages.page_size"
+    val description: String = "System hugepage size in bytes."
+    val unit: String = "By"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
+      Meter[F]
+        .upDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableUpDownCounter] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** Number of reserved hugepages.
+    *
+    * @note
+    *   <p> Hugepages for which a commitment to allocate has been made, but no allocation has yet been made. This is
+    *   reported as a separate metric rather than a `usage` state because reserved pages are already counted in `free`
+    *   pages. They represent a subset of free pages that cannot be used for non-reserved allocations.
+    */
+  object MemoryLinuxHugepagesReserved extends MetricSpec.Unsealed {
+
+    val name: String = "system.memory.linux.hugepages.reserved"
+    val description: String = "Number of reserved hugepages."
+    val unit: String = "{page}"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
+      Meter[F]
+        .upDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableUpDownCounter] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** Number of surplus hugepages.
+    *
+    * @note
+    *   <p> Overcommitted hugepages beyond the persistent pool. This is reported as a separate metric rather than a
+    *   `usage` state because surplus pages can be in either `used` or `free` state. Including them in `usage` would
+    *   break the convention that `usage` states sum to the `limit`.
+    */
+  object MemoryLinuxHugepagesSurplus extends MetricSpec.Unsealed {
+
+    val name: String = "system.memory.linux.hugepages.surplus"
+    val description: String = "Number of surplus hugepages."
+    val unit: String = "{page}"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
+      Meter[F]
+        .upDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableUpDownCounter] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** Number of hugepages in use by state.
+    */
+  object MemoryLinuxHugepagesUsage extends MetricSpec.Unsealed {
+
+    val name: String = "system.memory.linux.hugepages.usage"
+    val description: String = "Number of hugepages in use by state."
+    val unit: String = "{page}"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
+
+    object AttributeSpecs {
+
+      /** The Linux HugePages memory state
+        */
+      val systemMemoryLinuxHugepagesState: AttributeSpec[String] =
+        AttributeSpec(
+          SystemExperimentalAttributes.SystemMemoryLinuxHugepagesState,
+          List(
+            "free",
+            "used",
+          ),
+          Requirement.recommended,
+          Stability.development
+        )
+
+      val specs: List[AttributeSpec[_]] =
+        List(
+          systemMemoryLinuxHugepagesState,
+        )
+    }
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
+      Meter[F]
+        .upDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableUpDownCounter] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** Percentage of hugepages in use by state.
+    */
+  object MemoryLinuxHugepagesUtilization extends MetricSpec.Unsealed {
+
+    val name: String = "system.memory.linux.hugepages.utilization"
+    val description: String = "Percentage of hugepages in use by state."
+    val unit: String = "1"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
+
+    object AttributeSpecs {
+
+      /** The Linux HugePages memory state
+        */
+      val systemMemoryLinuxHugepagesState: AttributeSpec[String] =
+        AttributeSpec(
+          SystemExperimentalAttributes.SystemMemoryLinuxHugepagesState,
+          List(
+            "free",
+            "used",
+          ),
+          Requirement.recommended,
+          Stability.development
+        )
+
+      val specs: List[AttributeSpec[_]] =
+        List(
+          systemMemoryLinuxHugepagesState,
+        )
+    }
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[Gauge[F, A]] =
+      Meter[F]
+        .gauge[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableGauge[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableGauge] =
+      Meter[F]
+        .observableGauge[A](name)
         .withDescription(description)
         .withUnit(unit)
         .createWithCallback(callback)

@@ -24,7 +24,7 @@ object GraphqlExperimentalAttributes {
   /** The GraphQL document being executed.
     *
     * @note
-    *   <p> The value may be sanitized to exclude sensitive information.
+    *   <p> If instrumentation can reliably identify and redact sensitive information it SHOULD do it.
     */
   val GraphqlDocument: AttributeKey[String] =
     AttributeKey("graphql.document")

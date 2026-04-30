@@ -42,7 +42,7 @@ object NodejsExperimentalMetrics {
     *
     * @note
     *   <p> Value can be retrieved from value `histogram.max` of <a
-    *   href="https://nodejs.org/api/perf_hooks.html#perf_hooksmonitoreventloopdelayoptions">`perf_hooks.monitorEventLoopDelay([options])`</a>
+    *   href="https://nodejs.org/api/perf_hooks.html#perf-hooksmonitoreventloopdelayoptions">`perf_hooks.monitorEventLoopDelay([options])`</a>
     */
   object EventloopDelayMax extends MetricSpec.Unsealed {
 
@@ -81,7 +81,7 @@ object NodejsExperimentalMetrics {
     *
     * @note
     *   <p> Value can be retrieved from value `histogram.mean` of <a
-    *   href="https://nodejs.org/api/perf_hooks.html#perf_hooksmonitoreventloopdelayoptions">`perf_hooks.monitorEventLoopDelay([options])`</a>
+    *   href="https://nodejs.org/api/perf_hooks.html#perf-hooksmonitoreventloopdelayoptions">`perf_hooks.monitorEventLoopDelay([options])`</a>
     */
   object EventloopDelayMean extends MetricSpec.Unsealed {
 
@@ -120,7 +120,7 @@ object NodejsExperimentalMetrics {
     *
     * @note
     *   <p> Value can be retrieved from value `histogram.min` of <a
-    *   href="https://nodejs.org/api/perf_hooks.html#perf_hooksmonitoreventloopdelayoptions">`perf_hooks.monitorEventLoopDelay([options])`</a>
+    *   href="https://nodejs.org/api/perf_hooks.html#perf-hooksmonitoreventloopdelayoptions">`perf_hooks.monitorEventLoopDelay([options])`</a>
     */
   object EventloopDelayMin extends MetricSpec.Unsealed {
 
@@ -159,7 +159,7 @@ object NodejsExperimentalMetrics {
     *
     * @note
     *   <p> Value can be retrieved from value `histogram.percentile(50)` of <a
-    *   href="https://nodejs.org/api/perf_hooks.html#perf_hooksmonitoreventloopdelayoptions">`perf_hooks.monitorEventLoopDelay([options])`</a>
+    *   href="https://nodejs.org/api/perf_hooks.html#perf-hooksmonitoreventloopdelayoptions">`perf_hooks.monitorEventLoopDelay([options])`</a>
     */
   object EventloopDelayP50 extends MetricSpec.Unsealed {
 
@@ -198,7 +198,7 @@ object NodejsExperimentalMetrics {
     *
     * @note
     *   <p> Value can be retrieved from value `histogram.percentile(90)` of <a
-    *   href="https://nodejs.org/api/perf_hooks.html#perf_hooksmonitoreventloopdelayoptions">`perf_hooks.monitorEventLoopDelay([options])`</a>
+    *   href="https://nodejs.org/api/perf_hooks.html#perf-hooksmonitoreventloopdelayoptions">`perf_hooks.monitorEventLoopDelay([options])`</a>
     */
   object EventloopDelayP90 extends MetricSpec.Unsealed {
 
@@ -237,7 +237,7 @@ object NodejsExperimentalMetrics {
     *
     * @note
     *   <p> Value can be retrieved from value `histogram.percentile(99)` of <a
-    *   href="https://nodejs.org/api/perf_hooks.html#perf_hooksmonitoreventloopdelayoptions">`perf_hooks.monitorEventLoopDelay([options])`</a>
+    *   href="https://nodejs.org/api/perf_hooks.html#perf-hooksmonitoreventloopdelayoptions">`perf_hooks.monitorEventLoopDelay([options])`</a>
     */
   object EventloopDelayP99 extends MetricSpec.Unsealed {
 
@@ -276,7 +276,7 @@ object NodejsExperimentalMetrics {
     *
     * @note
     *   <p> Value can be retrieved from value `histogram.stddev` of <a
-    *   href="https://nodejs.org/api/perf_hooks.html#perf_hooksmonitoreventloopdelayoptions">`perf_hooks.monitorEventLoopDelay([options])`</a>
+    *   href="https://nodejs.org/api/perf_hooks.html#perf-hooksmonitoreventloopdelayoptions">`perf_hooks.monitorEventLoopDelay([options])`</a>
     */
   object EventloopDelayStddev extends MetricSpec.Unsealed {
 

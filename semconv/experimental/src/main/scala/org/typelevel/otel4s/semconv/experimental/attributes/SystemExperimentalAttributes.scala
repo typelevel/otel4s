@@ -58,6 +58,11 @@ object SystemExperimentalAttributes {
   val SystemFilesystemType: AttributeKey[String] =
     AttributeKey("system.filesystem.type")
 
+  /** The Linux HugePages memory state
+    */
+  val SystemMemoryLinuxHugepagesState: AttributeKey[String] =
+    AttributeKey("system.memory.linux.hugepages.state")
+
   /** The Linux Slab memory state
     */
   val SystemMemoryLinuxSlabState: AttributeKey[String] =
@@ -192,6 +197,22 @@ object SystemExperimentalAttributes {
     /** ext4.
       */
     case object Ext4 extends SystemFilesystemTypeValue("ext4")
+  }
+
+  /** Values for [[SystemMemoryLinuxHugepagesState]].
+    */
+  abstract class SystemMemoryLinuxHugepagesStateValue(val value: String)
+  object SystemMemoryLinuxHugepagesStateValue {
+    implicit val attributeFromSystemMemoryLinuxHugepagesStateValue
+        : Attribute.From[SystemMemoryLinuxHugepagesStateValue, String] = _.value
+
+    /** free.
+      */
+    case object Free extends SystemMemoryLinuxHugepagesStateValue("free")
+
+    /** used.
+      */
+    case object Used extends SystemMemoryLinuxHugepagesStateValue("used")
   }
 
   /** Values for [[SystemMemoryLinuxSlabState]].

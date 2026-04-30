@@ -62,7 +62,7 @@ object ProcessExperimentalMetrics {
           ProcessExperimentalAttributes.ProcessContextSwitchType,
           List(
           ),
-          Requirement.recommended,
+          Requirement.required,
           Stability.development
         )
 
@@ -97,23 +97,23 @@ object ProcessExperimentalMetrics {
 
   }
 
-  /** Total CPU seconds broken down by different states.
+  /** Total CPU seconds broken down by different CPU modes.
     */
   object CpuTime extends MetricSpec.Unsealed {
 
     val name: String = "process.cpu.time"
-    val description: String = "Total CPU seconds broken down by different states."
+    val description: String = "Total CPU seconds broken down by different CPU modes."
     val unit: String = "s"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
-      /** A process SHOULD be characterized <em>either</em> by data points with no `mode` labels, <em>or only</em> data
-        * points with `mode` labels.
+      /** The CPU mode for this data point.
         *
         * @note
-        *   <p> Following states SHOULD be used: `user`, `system`, `wait`
+        *   <p> The following values for `cpu.mode` SHOULD be used: `user`, `system`, `wait` Other modes SHOULD NOT be
+        *   used unless a particular platform mandates a unique set of modes.
         */
       val cpuMode: AttributeSpec[String] =
         AttributeSpec(
@@ -122,7 +122,7 @@ object ProcessExperimentalMetrics {
             "user",
             "system",
           ),
-          Requirement.recommended,
+          Requirement.required,
           Stability.development
         )
 
@@ -171,11 +171,11 @@ object ProcessExperimentalMetrics {
 
     object AttributeSpecs {
 
-      /** A process SHOULD be characterized <em>either</em> by data points with no `mode` labels, <em>or only</em> data
-        * points with `mode` labels.
+      /** The CPU mode for this data point.
         *
         * @note
-        *   <p> Following states SHOULD be used: `user`, `system`, `wait`
+        *   <p> The following values for `cpu.mode` SHOULD be used: `user`, `system`, `wait` Other modes SHOULD NOT be
+        *   used unless a particular platform mandates a unique set of modes.
         */
       val cpuMode: AttributeSpec[String] =
         AttributeSpec(
@@ -184,7 +184,7 @@ object ProcessExperimentalMetrics {
             "user",
             "system",
           ),
-          Requirement.recommended,
+          Requirement.required,
           Stability.development
         )
 
@@ -239,7 +239,7 @@ object ProcessExperimentalMetrics {
           List(
             "read",
           ),
-          Requirement.recommended,
+          Requirement.required,
           Stability.development
         )
 
@@ -364,7 +364,7 @@ object ProcessExperimentalMetrics {
           List(
             "transmit",
           ),
-          Requirement.recommended,
+          Requirement.required,
           Stability.development
         )
 
@@ -447,7 +447,8 @@ object ProcessExperimentalMetrics {
 
     object AttributeSpecs {
 
-      /** The paging fault type
+      /** The type of paging fault. Value MUST be either `major` or `minor`. If the metric is reported without this
+        * attribute, it should be the sum of major and minor page faults.
         */
       val systemPagingFaultType: AttributeSpec[String] =
         AttributeSpec(

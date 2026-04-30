@@ -139,7 +139,7 @@ object ContainerExperimentalAttributes {
     AttributeKey("container.runtime")
 
   /** A description about the runtime which could include, for example details about the CRI/API version being used or
-    * other customisations.
+    * other customizations.
     */
   val ContainerRuntimeDescription: AttributeKey[String] =
     AttributeKey("container.runtime.description")

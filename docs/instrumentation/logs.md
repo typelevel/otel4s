@@ -29,7 +29,7 @@ That means you implement a small adapter that, for each log event, does the foll
 copy the message and attributes, attach the current context so trace and span ids propagate, set severity and observed time, then emit.
 
 There are three main interfaces:
-- `LoggerProvider[F, Ctx]` - factory for `Logger`. Usually created during startup by the backend, either `otel4s-oteljava` or `otel4s-sdk`.
+- `LoggerProvider[F, Ctx]` - factory for `Logger`. Usually created during startup by the backend, for example `otel4s-oteljava` in this repo or the separate `otel4s-sdk` project.
 - `Logger[F, Ctx]` - use `logRecordBuilder` to create a new empty log record.
 - `LogRecordBuilder[F, Ctx]` - set timestamps, severity, attributes, body, and context, then call `emit`.
 
@@ -37,7 +37,7 @@ The `Ctx` parameter refers to the backend-specific context type. In most cases, 
 
 ## 3. Tips for library authors
 
-Use `otel4s-core-logs` module, you don't need to use a specific otel4s backend: `otel4s-oteljava` or `otel4s-sdk`. 
+Use `otel4s-core-logs` module, you don't need to use a specific otel4s backend: `otel4s-oteljava` or the separate `otel4s-sdk` project.
 That way, users can choose their preferred otel4s backend.
 
 Keep in mind that the logs module **doesn't** manage log files, appenders, or log levels. 

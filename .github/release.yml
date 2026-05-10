@@ -3,15 +3,6 @@ changelog:
     - title: Core
       labels:
         - 'module:core'
-    - title: SDK
-      labels:
-        - 'module:sdk'
-    - title: SDK exporter
-      labels:
-        - 'module:sdk:exporter'
-    - title: SDK Contrib AWS
-      labels:
-        - 'module:sdk:contrib:aws'
     - title: Semantic Conventions
       labels:
         - 'module:semconv'

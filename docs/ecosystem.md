@@ -9,6 +9,7 @@
 | [sttp][sttp]                                           | sttp 4.x provides [metered][sttp-metrics] and [traced][sttp-tracing] backends.                                         |
 | [tapir][tapir]                                         | Tapir supports [server traces][tapir-tracing] via otel4s.                                                              |
 | [fs2-queues-otel4s][fs2-queues-otel4s]                 | [fs2-queues][fs2-queues] integration with otel4s providing traces and metrics for messaging systems.                   |
+| [fs2-grpc][fs2-grpc]                                   | `fs2-grpc-otel4s-trace` module provides server and client tracing capability.                                          |
 
 [otel4s-experimental]: https://github.com/typelevel/otel4s-experimental
 [otel4s-opentelemetry-java]: https://github.com/iRevive/otel4s-opentelemetry-java 
@@ -23,3 +24,4 @@
 [tapir-tracing]: https://tapir.softwaremill.com/en/latest/server/observability.html#otel4s-opentelemetry-tracing
 [fs2-queues-otel4s]: https://commercetools.github.io/fs2-queues/integrations/otel4s/
 [fs2-queues]: https://commercetools.github.io/fs2-queues/
+[fs2-grpc]: https://github.com/typelevel/fs2-grpc

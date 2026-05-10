@@ -39,7 +39,6 @@ import org.typelevel.otel4s.oteljava.trace.TraceScopeImpl
 import org.typelevel.otel4s.oteljava.trace.TracerProviderImpl
 import org.typelevel.otel4s.trace.TracerProvider
 
-import scala.annotation.nowarn
 import scala.jdk.CollectionConverters._
 
 sealed trait TracesTestkit[F[_]] {
@@ -54,24 +53,6 @@ sealed trait TracesTestkit[F[_]] {
     *   [[resetSpans]] to reset the internal buffer
     */
   def finishedSpans: F[List[SpanData]]
-
-  /** The list of finished spans (OpenTelemetry Java models).
-    *
-    * @example
-    *   {{{
-    * import io.opentelemetry.sdk.trace.data.SpanData
-    *
-    * TracesTestkit[F].finishedSpans[SpanData] // OpenTelemetry Java models
-    *   }}}
-    *
-    * @see
-    *   [[resetSpans]] to reset the internal buffer
-    */
-  @deprecated(
-    "Use `finishedSpans` without a type parameter to work with OpenTelemetry Java `SpanData`, or use the expectation API for assertions.",
-    "1.0.0-RC1"
-  )
-  def finishedSpans[A: FromSpanData]: F[List[A]]
 
   /** Resets the internal buffer.
     */
@@ -180,7 +161,6 @@ object TracesTestkit {
       exporter: InMemorySpanExporter
   ) extends TracesTestkit[F] {
 
-    @nowarn("msg=Calls to parameterless method finishedSpans")
     def finishedSpans: F[List[SpanData]] =
       for {
         _ <- Conversions.asyncFromCompletableResultCode(
@@ -188,10 +168,6 @@ object TracesTestkit {
         )
         result <- Async[F].delay(exporter.getFinishedSpanItems)
       } yield result.asScala.toList
-
-    @nowarn("cat=deprecation")
-    def finishedSpans[A: FromSpanData]: F[List[A]] =
-      Async[F].map(finishedSpans)(_.map(FromSpanData[A].from))
 
     def resetSpans: F[Unit] =
       Async[F].delay(exporter.reset())

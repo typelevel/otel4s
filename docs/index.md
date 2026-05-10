@@ -39,33 +39,36 @@ Specification][otel spec] atop [Cats Effect][cats-effect].
   2. Extensive [instrumentation ecosystem][opentelemetry-java-instrumentation]
   3. Well-tested implementation
 
-* **SDK backend**
+* **Pure Scala SDK**
 
-  [SDK backend][otel4s-sdk] is implemented in Scala from scratch. Available for JVM, Scala.js, and Scala Native.
-  While the implementation is compliant with the OpenTelemetry specification,
-  it remains **experimental** and some functionality may be lacking.
+  A pure Scala SDK backend is available in the separate
+  [otel4s-sdk][otel4s-sdk] project for JVM, Scala.js, and Scala Native.
 
 * **Testkit**
 
   A testkit simplifies the validation of telemetry behavior in the applications and libraries:
   1. Framework-agnostic, works with any test framework, for example weaver, munit, scalatest
   2. Ideal for testing of the instrumented applications in end-to-end or unit tests
-  3. Available for [OpenTelemetry Java](oteljava/testkit.md) and [SDK][otel4s-sdk-testkit] backends
+  3. Included for the [OpenTelemetry Java backend](oteljava/testkit.md) in this repo
 
 ## Status
 
-The API is still highly experimental, but we are actively
-instrumenting various libraries and applications to check for fit.
-Don't put it in a binary-stable library yet, but we invite you to try
-it out and let us know what you think.
+`otel4s` 1.0 establishes the compatibility baseline for the modules published
+from this repository, primarily `otel4s-core*`, `otel4s-oteljava*`, and the
+semantic-convention and instrumentation modules.
 
-## Modules availability
+Artifacts that remain unstable are explicitly marked, such as
+`*-experimental` semantic-convention modules. The pure Scala SDK backend lives
+in the separate [otel4s-sdk][otel4s-sdk] project.
 
-| Module / Platform | JVM | Scala Native | Scala.js |  
-|:-----------------:|:---:|:------------:|:--------:|
-|   `otel4s-core`   |  ✅  |      ✅       |    ✅     |
-|   `otel4s-sdk`    |  ✅  |      ✅       |    ✅     |
-| `otel4s-oteljava` |  ✅  |      ❌       |    ❌     |
+## Published modules in this repo
+
+| Module family                | JVM | Scala Native | Scala.js |
+|:----------------------------:|:---:|:------------:|:--------:|
+|        `otel4s-core*`        |  ✅  |      ✅       |    ✅     |
+|      `otel4s-semconv*`       |  ✅  |      ✅       |    ✅     |
+| `otel4s-instrumentation-*`   |  ✅  |      ✅       |    ✅     |
+|      `otel4s-oteljava*`      |  ✅  |      ❌       |    ❌     |
 
 ## How to choose a backend
 
@@ -73,9 +76,8 @@ For most cases, `otel4s-oteljava` is the recommended backend,
 that utilizes [OpenTelemetry Java][opentelemetry-java] library under the hood.
 You can benefit from various integrations and low memory overhead.
 
-`otel4s-sdk` is an **experimental** implementation of the Open Telemetry specification in pure Scala
-and available for all platforms: JVM, Scala.js, and Scala Native.
-However, some features are missing, and the memory overhead may be noticeable.
+If you need a pure Scala backend across JVM, Scala.js, and Scala Native, use
+the separate [otel4s-sdk][otel4s-sdk] project.
 
 ## Getting started
 

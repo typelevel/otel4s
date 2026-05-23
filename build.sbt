@@ -77,7 +77,7 @@ val MUnitDisciplineVersion = "2.0.0"
 val MUnitScalaCheckEffectVersion = "2.1.0"
 val OpenTelemetryVersion = "1.62.0"
 val OpenTelemetryAlphaVersion = s"$OpenTelemetryVersion-alpha"
-val OpenTelemetryInstrumentationVersion = "2.27.0"
+val OpenTelemetryInstrumentationVersion = "2.28.1"
 val OpenTelemetryInstrumentationAlphaVersion = s"$OpenTelemetryInstrumentationVersion-alpha"
 val OpenTelemetrySemConvVersion = "1.41.0"
 val OpenTelemetrySemConvAlphaVersion = s"$OpenTelemetrySemConvVersion-alpha"
@@ -543,8 +543,7 @@ lazy val docs = project
       "org.http4s" %% "http4s-dsl" % Http4sVersion,
       "io.opentelemetry" % "opentelemetry-sdk-extension-autoconfigure" % OpenTelemetryVersion,
       "io.opentelemetry.instrumentation" % "opentelemetry-instrumentation-annotations" % OpenTelemetryInstrumentationVersion,
-      "io.opentelemetry.instrumentation" % "opentelemetry-runtime-telemetry-java8" % OpenTelemetryInstrumentationAlphaVersion,
-      "io.opentelemetry.instrumentation" % "opentelemetry-runtime-telemetry-java17" % OpenTelemetryInstrumentationAlphaVersion,
+      "io.opentelemetry.instrumentation" % "opentelemetry-runtime-telemetry" % OpenTelemetryInstrumentationAlphaVersion,
       "com.outr" %% "scribe" % ScribeVersion,
       // a trick to make Scala-Steward provide updates for this dependency
       "io.github.irevive" % "otel4s-opentelemetry-javaagent" % Otel4sAgentVersion % Test

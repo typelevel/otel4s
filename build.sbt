@@ -543,8 +543,7 @@ lazy val docs = project
       "org.http4s" %% "http4s-dsl" % Http4sVersion,
       "io.opentelemetry" % "opentelemetry-sdk-extension-autoconfigure" % OpenTelemetryVersion,
       "io.opentelemetry.instrumentation" % "opentelemetry-instrumentation-annotations" % OpenTelemetryInstrumentationVersion,
-      "io.opentelemetry.instrumentation" % "opentelemetry-runtime-telemetry-java8" % OpenTelemetryInstrumentationAlphaVersion,
-      "io.opentelemetry.instrumentation" % "opentelemetry-runtime-telemetry-java17" % OpenTelemetryInstrumentationAlphaVersion,
+      "io.opentelemetry.instrumentation" % "opentelemetry-runtime-telemetry" % OpenTelemetryInstrumentationAlphaVersion,
       "com.outr" %% "scribe" % ScribeVersion,
       // a trick to make Scala-Steward provide updates for this dependency
       "io.github.irevive" % "otel4s-opentelemetry-javaagent" % Otel4sAgentVersion % Test

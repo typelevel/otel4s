@@ -6,7 +6,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="generator" content="Typelevel Laika + Helium Theme" />
-  <title>Modules structure</title>
+  <title>JVM setup</title>
   
   <meta name="author" content="Ross A. Baker"/>
   
@@ -22,27 +22,9 @@
   
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Fira+Mono:500">
   
-  <link rel="stylesheet" type="text/css" href="helium/site/icofont.min.css" />
-    <link rel="stylesheet" type="text/css" href="helium/site/laika-helium.css" />
-  <script src="helium/site/laika-helium.js"></script>
-    <script type="module">
-
-import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
-const dark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-mermaid.initialize({ 
-  startOnLoad: true,
-  theme: "base",
-  themeVariables: {
-    'darkMode': dark,
-    'primaryColor': dark ? '#f4f8fa' : '#f4f8fa', 
-    'primaryTextColor': dark ? '#385a70' : '#385a70',
-    'primaryBorderColor': dark ? '#8ebac7' : '#8ebac7',
-    'lineColor': dark ? '#385a70' : '#385a70',
-    'background': dark ? '#ffffff' : '#ffffff',
-  }
-});
-
-</script>
+  <link rel="stylesheet" type="text/css" href="../helium/site/icofont.min.css" />
+    <link rel="stylesheet" type="text/css" href="../helium/site/laika-helium.css" />
+  <script src="../helium/site/laika-helium.js"></script>
   
   
   <script> /* for avoiding page load transitions */ </script>
@@ -115,41 +97,41 @@ mermaid.initialize({
   </div>
 
   <ul class="nav-list">
-    <li class="level1 nav-leaf"><a href="index.html">otel4s</a></li>
-    <li class="level1 active nav-leaf"><a href="#">Modules structure</a></li>
-    <li class="level1 nav-leaf"><a href="tracing-context-propagation.html">Tracing context propagation</a></li>
-    <li class="level1 nav-leaf"><a href="ecosystem.html">Ecosystem</a></li>
+    <li class="level1 nav-leaf"><a href="../">otel4s</a></li>
+    <li class="level1 nav-leaf"><a href="../modules-structure.html">Modules structure</a></li>
+    <li class="level1 nav-leaf"><a href="../tracing-context-propagation.html">Tracing context propagation</a></li>
+    <li class="level1 nav-leaf"><a href="../ecosystem.html">Ecosystem</a></li>
     <li class="level1 nav-header">How-to | JVM setup</li>
-    <li class="level2 nav-leaf"><a href="how-to-jvm-setup/">JVM setup</a></li>
-    <li class="level2 nav-leaf"><a href="how-to-jvm-setup/set-up-otel4s-in-a-jvm-application.html">Set up otel4s in a JVM application</a></li>
-    <li class="level2 nav-leaf"><a href="how-to-jvm-setup/use-the-global-opentelemetry-instance.html">Use the global OpenTelemetry instance</a></li>
+    <li class="level2 active nav-leaf"><a href="#">JVM setup</a></li>
+    <li class="level2 nav-leaf"><a href="set-up-otel4s-in-a-jvm-application.html">Set up otel4s in a JVM application</a></li>
+    <li class="level2 nav-leaf"><a href="use-the-global-opentelemetry-instance.html">Use the global OpenTelemetry instance</a></li>
     <li class="level1 nav-header">Instrumentation</li>
-    <li class="level2 nav-leaf"><a href="instrumentation/metrics.html">Metrics</a></li>
-    <li class="level2 nav-leaf"><a href="instrumentation/metrics-cats-effect-io-runtime.html">Metrics | Cats Effect IO runtime</a></li>
-    <li class="level2 nav-leaf"><a href="instrumentation/tracing.html">Tracing</a></li>
-    <li class="level2 nav-leaf"><a href="instrumentation/tracing-cross-service-propagation.html">Tracing | Cross-service propagation</a></li>
-    <li class="level2 nav-leaf"><a href="instrumentation/logs.html">Logs</a></li>
-    <li class="level2 nav-leaf"><a href="instrumentation/baggage.html">Baggage</a></li>
-    <li class="level2 nav-leaf"><a href="instrumentation/semantic-conventions.html">Semantic conventions</a></li>
+    <li class="level2 nav-leaf"><a href="../instrumentation/metrics.html">Metrics</a></li>
+    <li class="level2 nav-leaf"><a href="../instrumentation/metrics-cats-effect-io-runtime.html">Metrics | Cats Effect IO runtime</a></li>
+    <li class="level2 nav-leaf"><a href="../instrumentation/tracing.html">Tracing</a></li>
+    <li class="level2 nav-leaf"><a href="../instrumentation/tracing-cross-service-propagation.html">Tracing | Cross-service propagation</a></li>
+    <li class="level2 nav-leaf"><a href="../instrumentation/logs.html">Logs</a></li>
+    <li class="level2 nav-leaf"><a href="../instrumentation/baggage.html">Baggage</a></li>
+    <li class="level2 nav-leaf"><a href="../instrumentation/semantic-conventions.html">Semantic conventions</a></li>
     <li class="level1 nav-header">Customization</li>
-    <li class="level2 nav-leaf"><a href="customization/histogram-custom-buckets/">Histogram custom buckets</a></li>
+    <li class="level2 nav-leaf"><a href="../customization/histogram-custom-buckets/">Histogram custom buckets</a></li>
     <li class="level1 nav-header">OtelJava</li>
-    <li class="level2 nav-leaf"><a href="oteljava/overview.html">Overview</a></li>
-    <li class="level2 nav-leaf"><a href="oteljava/metrics-jvm-runtime.html">Metrics | JVM Runtime</a></li>
-    <li class="level2 nav-leaf"><a href="oteljava/tracing-context-propagation.html">Tracing | Context propagation</a></li>
-    <li class="level2 nav-leaf"><a href="oteljava/tracing-java-interop.html">Tracing | Interop with Java-instrumented libraries</a></li>
-    <li class="level2 nav-leaf"><a href="oteljava/agent.html">Zero-code | Java Agent</a></li>
-    <li class="level2 nav-leaf"><a href="oteljava/testkit.html">Testkit</a></li>
-    <li class="level2 nav-leaf"><a href="oteljava/testkit-metrics.html">Testkit | Metrics</a></li>
-    <li class="level2 nav-leaf"><a href="oteljava/testkit-traces.html">Testkit | Traces</a></li>
-    <li class="level2 nav-leaf"><a href="oteljava/testkit-logs.html">Testkit | Logs</a></li>
+    <li class="level2 nav-leaf"><a href="../oteljava/overview.html">Overview</a></li>
+    <li class="level2 nav-leaf"><a href="../oteljava/metrics-jvm-runtime.html">Metrics | JVM Runtime</a></li>
+    <li class="level2 nav-leaf"><a href="../oteljava/tracing-context-propagation.html">Tracing | Context propagation</a></li>
+    <li class="level2 nav-leaf"><a href="../oteljava/tracing-java-interop.html">Tracing | Interop with Java-instrumented libraries</a></li>
+    <li class="level2 nav-leaf"><a href="../oteljava/agent.html">Zero-code | Java Agent</a></li>
+    <li class="level2 nav-leaf"><a href="../oteljava/testkit.html">Testkit</a></li>
+    <li class="level2 nav-leaf"><a href="../oteljava/testkit-metrics.html">Testkit | Metrics</a></li>
+    <li class="level2 nav-leaf"><a href="../oteljava/testkit-traces.html">Testkit | Traces</a></li>
+    <li class="level2 nav-leaf"><a href="../oteljava/testkit-logs.html">Testkit | Logs</a></li>
     <li class="level1 nav-header">SDK</li>
-    <li class="level2 nav-leaf"><a href="sdk/overview.html">Overview</a></li>
+    <li class="level2 nav-leaf"><a href="../sdk/overview.html">Overview</a></li>
     <li class="level1 nav-header">Examples</li>
-    <li class="level2 nav-leaf"><a href="examples/jaeger-docker/">Jaeger - collecting traces</a></li>
-    <li class="level2 nav-leaf"><a href="examples/honeycomb/">Honeycomb - metrics and traces</a></li>
-    <li class="level2 nav-leaf"><a href="examples/dash0/">Dash0 - metrics and traces</a></li>
-    <li class="level2 nav-leaf"><a href="examples/grafana/">Grafana - All-in-one</a></li>
+    <li class="level2 nav-leaf"><a href="../examples/jaeger-docker/">Jaeger - collecting traces</a></li>
+    <li class="level2 nav-leaf"><a href="../examples/honeycomb/">Honeycomb - metrics and traces</a></li>
+    <li class="level2 nav-leaf"><a href="../examples/dash0/">Dash0 - metrics and traces</a></li>
+    <li class="level2 nav-leaf"><a href="../examples/grafana/">Grafana - All-in-one</a></li>
   </ul>
 
 </nav>
@@ -158,15 +140,11 @@ mermaid.initialize({
 
       
 <nav id="page-nav">
-  <p class="header"><a href="#">Modules structure</a></p>
+  <p class="header"><a href="#">JVM setup</a></p>
 
   <ul class="nav-list">
-    <li class="level1 nav-node"><a href="#high-level-modules">High-level modules</a></li>
-    <li class="level2 nav-leaf"><a href="#_1-otel4s-core">1) <code>otel4s-core</code></a></li>
-    <li class="level2 nav-leaf"><a href="#_2-otel4s-oteljava">2) <code>otel4s-oteljava</code></a></li>
-    <li class="level1 nav-leaf"><a href="#related-project">Related project</a></li>
-    <li class="level1 nav-leaf"><a href="#high-level-module-structure">High-level module structure</a></li>
-    <li class="level1 nav-leaf"><a href="#which-module-do-i-need">Which module do I need?</a></li>
+    <li class="level1 nav-leaf"><a href="#start-here">Start here</a></li>
+    <li class="level1 nav-leaf"><a href="#related-material">Related material</a></li>
   </ul>
 
   <p class="footer"></p>
@@ -175,57 +153,27 @@ mermaid.initialize({
 
       <main class="content">
 
-        <h1 id="modules-structure" class="title">Modules structure</h1>
-        <p>The <code>otel4s</code> repository is designed with modularity in mind. Its published
-        artifacts are organized into distinct module families that serve different
-        roles, with <code>otel4s-core</code> and <code>otel4s-oteljava</code> as the primary entry points in
-        this repo.</p>
-        <p>The primary motivation behind this modular architecture is to keep the classpath small. </p>
+        <h1 id="jvm-setup" class="title">JVM setup</h1>
+        <p>Use this section when you want to get otel4s running on the JVM with the OpenTelemetry Java backend.</p>
         
-        <h2 id="high-level-modules" class="section"><a class="anchor-link left" href="#high-level-modules"><i class="icofont-laika link">&#xef71;</i></a>High-level modules</h2>
-        <pre class="mermaid">graph BT
-  otel4s-oteljava --&gt; otel4s-core</pre>
+        <h2 id="start-here" class="section"><a class="anchor-link left" href="#start-here"><i class="icofont-laika link">&#xef71;</i></a>Start here</h2>
+        <ul>
+          <li>Set up a JVM application and export telemetry with OTLP:
+          <a href="set-up-otel4s-in-a-jvm-application.html">Set up otel4s in a JVM application</a></li>
+          <li>Use an OpenTelemetry instance that is already configured elsewhere:
+          <a href="use-the-global-opentelemetry-instance.html">Use the global OpenTelemetry instance</a></li>
+          <li>Choose the right published module for your application or library:
+          <a href="../modules-structure.html#which-module-do-i-need">Modules structure</a></li>
+        </ul>
         
-        <h3 id="_1-otel4s-core" class="section"><a class="anchor-link left" href="#_1-otel4s-core"><i class="icofont-laika link">&#xef71;</i></a>1) <code>otel4s-core</code></h3>
-        <p>Defines the interfaces: <a href="https://github.com/typelevel/otel4s/blob/main/core/trace/src/main/scala/org/typelevel/otel4s/trace/Tracer.scala">Tracer</a>,
-        <a href="https://github.com/typelevel/otel4s/blob/main/core/metrics/src/main/scala/org/typelevel/otel4s/metrics/Meter.scala">Meter</a>, and others. 
-        It also offers no-op implementations.</p>
-        
-        <h3 id="_2-otel4s-oteljava" class="section"><a class="anchor-link left" href="#_2-otel4s-oteljava"><i class="icofont-laika link">&#xef71;</i></a>2) <code>otel4s-oteljava</code></h3>
-        <p>The implementation of <code>otel4s-core</code> interfaces. Uses <a href="https://github.com/open-telemetry/opentelemetry-java">OpenTelemetry Java</a> under the hood.</p>
-        
-        <h2 id="related-project" class="section"><a class="anchor-link left" href="#related-project"><i class="icofont-laika link">&#xef71;</i></a>Related project</h2>
-        <p>If you need a pure Scala backend, use the separate
-        <a href="https://typelevel.org/otel4s-sdk/sdk/overview.html"><code>otel4s-sdk</code></a> project.
-        It depends on <code>otel4s-core</code> but is released from a different repository.</p>
-        
-        <h2 id="high-level-module-structure" class="section"><a class="anchor-link left" href="#high-level-module-structure"><i class="icofont-laika link">&#xef71;</i></a>High-level module structure</h2>
-        <p>Each module family has several submodules:<br>
-        1. <code>{x}-common</code> - the shared code, used by <code>{x}-trace</code> and <code>{x}-metrics</code><br>
-        2. <code>{x}-trace</code> - the tracing-specific code<br>
-        3. <code>{x}-metrics</code> - the metrics-specific code<br>
-        4. <code>{x}</code> - the high-level module itself - aggregates all of the above<br></p>
-        <p>The current structure of the modules:</p>
-        <pre class="mermaid">graph BT
-  otel4s-core --&gt; otel4s-core-metrics
-  otel4s-core --&gt; otel4s-core-trace
-  otel4s-core-metrics --&gt; otel4s-core-common
-  otel4s-core-trace --&gt; otel4s-core-common
-
-  otel4s-oteljava --&gt; otel4s-oteljava-metrics
-  otel4s-oteljava --&gt; otel4s-oteljava-trace
-  otel4s-oteljava-metrics --&gt; otel4s-oteljava-common
-  otel4s-oteljava-trace --&gt; otel4s-oteljava-common</pre>
-        <p>The repo also publishes supporting modules such as semantic conventions,
-        instrumentation helpers, and testkit artifacts.</p>
-        
-        <h2 id="which-module-do-i-need" class="section"><a class="anchor-link left" href="#which-module-do-i-need"><i class="icofont-laika link">&#xef71;</i></a>Which module do I need?</h2>
-        <p>Let&#39;s take a look into common scenarios:</p>
-        <ol class="arabic">
-          <li>You develop a library, and you will use only trace-specific interfaces - use <code>otel4s-core-trace</code><br></li>
-          <li>You develop a library, and you will use both tracing and metrics interfaces - use <code>otel4s-core</code><br></li>
-          <li>You develop an app and want to export your telemetry - use <code>otel4s-oteljava</code> module<br></li>
-        </ol>
+        <h2 id="related-material" class="section"><a class="anchor-link left" href="#related-material"><i class="icofont-laika link">&#xef71;</i></a>Related material</h2>
+        <ul>
+          <li>Backend overview and existing JVM-specific pages remain available during the transition:
+          <a href="../oteljava/overview.html">OtelJava</a></li>
+          <li>Local verification examples:
+          <a href="../examples/jaeger-docker/">Jaeger and Docker</a>,
+          <a href="../examples/grafana/">Grafana</a></li>
+        </ul>
 
         
 <hr class="footer-rule"/>

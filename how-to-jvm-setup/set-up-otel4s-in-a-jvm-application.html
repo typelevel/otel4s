@@ -6,7 +6,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="generator" content="Typelevel Laika + Helium Theme" />
-  <title>Overview</title>
+  <title>Set up otel4s in a JVM application</title>
   
   <meta name="author" content="Ross A. Baker"/>
   
@@ -102,9 +102,9 @@
     <li class="level1 nav-leaf"><a href="../tracing-context-propagation.html">Tracing context propagation</a></li>
     <li class="level1 nav-leaf"><a href="../ecosystem.html">Ecosystem</a></li>
     <li class="level1 nav-header">How-to | JVM setup</li>
-    <li class="level2 nav-leaf"><a href="../how-to-jvm-setup/">JVM setup</a></li>
-    <li class="level2 nav-leaf"><a href="../how-to-jvm-setup/set-up-otel4s-in-a-jvm-application.html">Set up otel4s in a JVM application</a></li>
-    <li class="level2 nav-leaf"><a href="../how-to-jvm-setup/use-the-global-opentelemetry-instance.html">Use the global OpenTelemetry instance</a></li>
+    <li class="level2 nav-leaf"><a href="index.html">JVM setup</a></li>
+    <li class="level2 active nav-leaf"><a href="#">Set up otel4s in a JVM application</a></li>
+    <li class="level2 nav-leaf"><a href="use-the-global-opentelemetry-instance.html">Use the global OpenTelemetry instance</a></li>
     <li class="level1 nav-header">Instrumentation</li>
     <li class="level2 nav-leaf"><a href="../instrumentation/metrics.html">Metrics</a></li>
     <li class="level2 nav-leaf"><a href="../instrumentation/metrics-cats-effect-io-runtime.html">Metrics | Cats Effect IO runtime</a></li>
@@ -116,15 +116,15 @@
     <li class="level1 nav-header">Customization</li>
     <li class="level2 nav-leaf"><a href="../customization/histogram-custom-buckets/">Histogram custom buckets</a></li>
     <li class="level1 nav-header">OtelJava</li>
-    <li class="level2 active nav-leaf"><a href="#">Overview</a></li>
-    <li class="level2 nav-leaf"><a href="metrics-jvm-runtime.html">Metrics | JVM Runtime</a></li>
-    <li class="level2 nav-leaf"><a href="tracing-context-propagation.html">Tracing | Context propagation</a></li>
-    <li class="level2 nav-leaf"><a href="tracing-java-interop.html">Tracing | Interop with Java-instrumented libraries</a></li>
-    <li class="level2 nav-leaf"><a href="agent.html">Zero-code | Java Agent</a></li>
-    <li class="level2 nav-leaf"><a href="testkit.html">Testkit</a></li>
-    <li class="level2 nav-leaf"><a href="testkit-metrics.html">Testkit | Metrics</a></li>
-    <li class="level2 nav-leaf"><a href="testkit-traces.html">Testkit | Traces</a></li>
-    <li class="level2 nav-leaf"><a href="testkit-logs.html">Testkit | Logs</a></li>
+    <li class="level2 nav-leaf"><a href="../oteljava/overview.html">Overview</a></li>
+    <li class="level2 nav-leaf"><a href="../oteljava/metrics-jvm-runtime.html">Metrics | JVM Runtime</a></li>
+    <li class="level2 nav-leaf"><a href="../oteljava/tracing-context-propagation.html">Tracing | Context propagation</a></li>
+    <li class="level2 nav-leaf"><a href="../oteljava/tracing-java-interop.html">Tracing | Interop with Java-instrumented libraries</a></li>
+    <li class="level2 nav-leaf"><a href="../oteljava/agent.html">Zero-code | Java Agent</a></li>
+    <li class="level2 nav-leaf"><a href="../oteljava/testkit.html">Testkit</a></li>
+    <li class="level2 nav-leaf"><a href="../oteljava/testkit-metrics.html">Testkit | Metrics</a></li>
+    <li class="level2 nav-leaf"><a href="../oteljava/testkit-traces.html">Testkit | Traces</a></li>
+    <li class="level2 nav-leaf"><a href="../oteljava/testkit-logs.html">Testkit | Logs</a></li>
     <li class="level1 nav-header">SDK</li>
     <li class="level2 nav-leaf"><a href="../sdk/overview.html">Overview</a></li>
     <li class="level1 nav-header">Examples</li>
@@ -140,12 +140,15 @@
 
       
 <nav id="page-nav">
-  <p class="header"><a href="#">Overview</a></p>
+  <p class="header"><a href="#">Set up otel4s in a JVM application</a></p>
 
   <ul class="nav-list">
-    <li class="level1 nav-leaf"><a href="#getting-started">Getting Started</a></li>
-    <li class="level1 nav-leaf"><a href="#creating-an-autoconfigured-instance">Creating an autoconfigured instance</a></li>
-    <li class="level1 nav-leaf"><a href="#accessing-the-global-instance">Accessing the global instance</a></li>
+    <li class="level1 nav-leaf"><a href="#_1-add-the-dependencies">1. Add the dependencies</a></li>
+    <li class="level1 nav-leaf"><a href="#_2-configure-the-sdk">2. Configure the SDK</a></li>
+    <li class="level1 nav-leaf"><a href="#_3-create-oteljava-and-get-the-providers">3. Create <code>OtelJava</code> and get the providers</a></li>
+    <li class="level1 nav-leaf"><a href="#_4-run-the-application">4. Run the application</a></li>
+    <li class="level1 nav-leaf"><a href="#_5-verify-the-setup">5. Verify the setup</a></li>
+    <li class="level1 nav-leaf"><a href="#what-s-next">What&#39;s next</a></li>
   </ul>
 
   <p class="footer"></p>
@@ -154,26 +157,17 @@
 
       <main class="content">
 
-        <h1 id="overview" class="title">Overview</h1>
-        <p><code>otel4s-oteljava</code> modules provide implementation of the API interfaces. 
-        The implementation uses <a href="https://opentelemetry.io/docs/languages/java/intro/">opentelemetry-java</a> under the hood.</p>
-        <p>There are several advantages of using the <code>otel4s-oteljava</code>:</p>
-        <ul>
-          <li>Low memory overhead</li>
-          <li>Extensive <a href="https://opentelemetry.io/docs/languages/java/instrumentation/">instrumentation ecosystem</a></li>
-          <li>Easy integration with Java libraries</li>
-          <li>Well-tested implementation</li>
-        </ul>
-        <p>It&#39;s a recommended backend to use on JVM.</p>
+        <h1 id="set-up-otel4s-in-a-jvm-application" class="title">Set up otel4s in a JVM application</h1>
+        <p>Use this page when you want to start a JVM application with <code>otel4s-oteljava</code> and export telemetry with OTLP.</p>
         
-        <h2 id="getting-started" class="section"><a class="anchor-link left" href="#getting-started"><i class="icofont-laika link">&#xef71;</i></a>Getting Started</h2>
+        <h2 id="_1-add-the-dependencies" class="section"><a class="anchor-link left" href="#_1-add-the-dependencies"><i class="icofont-laika link">&#xef71;</i></a>1. Add the dependencies</h2>
         <div class="tab-container" data-tab-group="build-tool">
           <ul class="tab-group">
             <li class="tab active" data-choice-name="sbt"><a href="#">sbt</a></li>
             <li class="tab" data-choice-name="scala-cli"><a href="#">Scala CLI</a></li>
           </ul>
           <div class="tab-content active" data-choice-name="sbt">
-            <p>Add settings to the <code>build.sbt</code>:</p>
+            <p>Add settings to <code>build.sbt</code>:</p>
             <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">libraryDependencies</span><span> ++= </span><span class="type-name">Seq</span><span>(
   </span><span class="string-literal">&quot;org.typelevel&quot;</span><span> %% </span><span class="string-literal">&quot;otel4s-oteljava&quot;</span><span> % </span><span class="string-literal">&quot;1.0.0&quot;</span><span>, </span><span class="comment">// &lt;1&gt;
 </span><span>  </span><span class="string-literal">&quot;io.opentelemetry&quot;</span><span> % </span><span class="string-literal">&quot;opentelemetry-exporter-otlp&quot;</span><span> % </span><span class="string-literal">&quot;1.62.0&quot;</span><span> % </span><span class="type-name">Runtime</span><span>, </span><span class="comment">// &lt;2&gt;
@@ -183,74 +177,83 @@
           </div>
           <div class="tab-content" data-choice-name="scala-cli">
             <p>Add directives to the <code>*.scala</code> file:</p>
-            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="comment">//&gt; using lib &quot;org.typelevel::otel4s-oteljava:1.0.0&quot; // &lt;1&gt;
-//&gt; using lib &quot;io.opentelemetry:opentelemetry-exporter-otlp:1.62.0&quot; // &lt;2&gt;
-//&gt; using lib &quot;io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:1.62.0&quot; // &lt;3&gt;
-//&gt; using `java-opt` &quot;-Dotel.java.global-autoconfigure.enabled=true&quot; // &lt;4&gt;</span></code></pre>
+            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="comment">//&gt; using dep &quot;org.typelevel::otel4s-oteljava:1.0.0&quot; // &lt;1&gt;
+//&gt; using dep &quot;io.opentelemetry:opentelemetry-exporter-otlp:1.62.0&quot; // &lt;2&gt;
+//&gt; using dep &quot;io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:1.62.0&quot; // &lt;3&gt;
+//&gt; using javaOpt &quot;-Dotel.java.global-autoconfigure.enabled=true&quot; // &lt;4&gt;</span></code></pre>
           </div>
         </div>
         <ol class="arabic">
-          <li>Add the <code>otel4s-oteljava</code> library</li>
-          <li>Add an OpenTelemetry exporter. Without the exporter, the application will crash</li>
-          <li>Add an OpenTelemetry autoconfigure extension</li>
-          <li>Enable OpenTelemetry SDK <a href="https://opentelemetry.io/docs/languages/java/configuration/#zero-code-sdk-autoconfigure">autoconfigure mode</a></li>
+          <li>Add <code>otel4s-oteljava</code></li>
+          <li>Add an OTLP exporter</li>
+          <li>Add the OpenTelemetry Java autoconfigure extension</li>
+          <li>Enable SDK autoconfiguration</li>
         </ol>
         
-        <h2 id="creating-an-autoconfigured-instance" class="section"><a class="anchor-link left" href="#creating-an-autoconfigured-instance"><i class="icofont-laika link">&#xef71;</i></a>Creating an autoconfigured instance</h2>
-        <p>You can use <code>OtelJava.autoConfigured</code> to autoconfigure the SDK:</p>
+        <h2 id="_2-configure-the-sdk" class="section"><a class="anchor-link left" href="#_2-configure-the-sdk"><i class="icofont-laika link">&#xef71;</i></a>2. Configure the SDK</h2>
+        <p>Set the service name and the OTLP endpoint with environment variables or JVM properties.</p>
+        <p>Example environment variables:</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">export</span><span> OTEL_SERVICE_NAME=auth-service
+</span><span class="identifier">export</span><span> OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:</span><span class="number-literal">4317</span></code></pre>
+        <p>Example JVM properties:</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span>-Dotel.service.name=auth-service
+-Dotel.exporter.otlp.endpoint=http://localhost:</span><span class="number-literal">4317</span></code></pre>
+        <p>See the full list of supported options in the
+        <a href="https://opentelemetry.io/docs/languages/java/configuration/">OpenTelemetry Java configuration guide</a>.</p>
+        
+        <h2 id="_3-create-oteljava-and-get-the-providers" class="section"><a class="anchor-link left" href="#_3-create-oteljava-and-get-the-providers"><i class="icofont-laika link">&#xef71;</i></a>3. Create <code>OtelJava</code> and get the providers</h2>
+        <p>Use <code>OtelJava.autoConfigured</code> when your application is responsible for creating its own OpenTelemetry SDK instance.</p>
         <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.{</span><span class="type-name">IO</span><span>, </span><span class="type-name">IOApp</span><span>}
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="type-name">OtelJava</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">metrics</span><span>.</span><span class="type-name">MeterProvider</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="type-name">OtelJava</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">trace</span><span>.</span><span class="type-name">TracerProvider</span><span>
 
-</span><span class="keyword">object</span><span> </span><span class="type-name">TelemetryApp</span><span> </span><span class="keyword">extends</span><span> </span><span class="type-name">IOApp</span><span>.</span><span class="type-name">Simple</span><span> {
-
+</span><span class="keyword">object</span><span> </span><span class="type-name">Main</span><span> </span><span class="keyword">extends</span><span> </span><span class="type-name">IOApp</span><span>.</span><span class="type-name">Simple</span><span> {
   </span><span class="keyword">def</span><span> </span><span class="declaration-name">run</span><span>: </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] =
     </span><span class="type-name">OtelJava</span><span>.</span><span class="identifier">autoConfigured</span><span>[</span><span class="type-name">IO</span><span>]().</span><span class="identifier">use</span><span> { </span><span class="identifier">otel4s</span><span> =&gt;
       </span><span class="identifier">program</span><span>(</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">meterProvider</span><span>, </span><span class="identifier">otel4s</span><span>.</span><span class="identifier">tracerProvider</span><span>)
     }
 
   </span><span class="keyword">def</span><span> </span><span class="declaration-name">program</span><span>(
-      </span><span class="identifier">meterProvider</span><span>: </span><span class="type-name">MeterProvider</span><span>[</span><span class="type-name">IO</span><span>], 
+      </span><span class="identifier">meterProvider</span><span>: </span><span class="type-name">MeterProvider</span><span>[</span><span class="type-name">IO</span><span>],
       </span><span class="identifier">tracerProvider</span><span>: </span><span class="type-name">TracerProvider</span><span>[</span><span class="type-name">IO</span><span>]
   ): </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] =
-    ???
+    </span><span class="keyword">for</span><span> {
+      </span><span class="identifier">meter</span><span> &lt;- </span><span class="identifier">meterProvider</span><span>.</span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;auth-service&quot;</span><span>)
+      </span><span class="identifier">tracer</span><span> &lt;- </span><span class="identifier">tracerProvider</span><span>.</span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;auth-service&quot;</span><span>)
+
+      </span><span class="identifier">counter</span><span> &lt;- </span><span class="identifier">meter</span><span>.</span><span class="identifier">counter</span><span>[</span><span class="type-name">Long</span><span>](</span><span class="string-literal">&quot;service.requests&quot;</span><span>).</span><span class="identifier">create</span><span>
+      </span><span class="identifier">_</span><span> &lt;- </span><span class="identifier">counter</span><span>.</span><span class="identifier">inc</span><span>()
+
+      </span><span class="identifier">_</span><span> &lt;- </span><span class="identifier">tracer</span><span>.</span><span class="identifier">span</span><span>(</span><span class="string-literal">&quot;startup&quot;</span><span>).</span><span class="identifier">surround</span><span>(</span><span class="type-name">IO</span><span>.</span><span class="identifier">unit</span><span>)
+    } </span><span class="keyword">yield</span><span> ()
 }</span></code></pre>
-        <p>The <code>OtelJava.autoConfigured(...)</code> relies on the environment variables and system properties to configure the SDK.
-        For example, use <code>export OTEL_SERVICE_NAME=auth-service</code> to configure the name of the service.</p>
-        <p>See the full set of the <a href="https://opentelemetry.io/docs/languages/java/configuration/#environment-variables-and-system-properties">supported options</a>.</p>
         <div class="callout warning">
           <i class="icofont-laika warning">&#xf026;</i>
-          <p><code>OtelJava.autoConfigured</code> creates an <strong>isolated</strong> <strong>non-global</strong> instance. 
-          If you create multiple instances, those instances won&#39;t interoperate (i.e. be able to see each others spans).</p>
+          <p><code>OtelJava.autoConfigured</code> creates an isolated, non-global SDK instance.
+          If you need to reuse the process-wide OpenTelemetry instance, use
+          <a href="use-the-global-opentelemetry-instance.html">Use the global OpenTelemetry instance</a>.</p>
         </div>
         
-        <h2 id="accessing-the-global-instance" class="section"><a class="anchor-link left" href="#accessing-the-global-instance"><i class="icofont-laika link">&#xef71;</i></a>Accessing the global instance</h2>
-        <p>There are several reasons to use the global instance:</p>
+        <h2 id="_4-run-the-application" class="section"><a class="anchor-link left" href="#_4-run-the-application"><i class="icofont-laika link">&#xef71;</i></a>4. Run the application</h2>
+        <p>Start your application with the same environment variables or JVM properties you used for configuration.</p>
+        <p>At that point, the application can create meters and tracers and export telemetry through OTLP.</p>
+        
+        <h2 id="_5-verify-the-setup" class="section"><a class="anchor-link left" href="#_5-verify-the-setup"><i class="icofont-laika link">&#xef71;</i></a>5. Verify the setup</h2>
+        <p>If you want a local target for traces, use
+        <a href="../examples/jaeger-docker/">Jaeger and Docker</a>.
+        If you want a local stack for traces and metrics, use
+        <a href="../examples/grafana/">Grafana</a>.</p>
+        
+        <h2 id="what-s-next" class="section"><a class="anchor-link left" href="#what-s-next"><i class="icofont-laika link">&#xef71;</i></a>What&#39;s next</h2>
         <ul>
-          <li>You are using the <a href="https://opentelemetry.io/docs/zero-code/java/agent/">Java Agent</a></li>
-          <li>You must reuse the global instance to interoperate with Java libraries</li>
-          <li>You have no control over the entry point </li>
+          <li>Create spans in your application code:
+          <a href="../instrumentation/tracing.html">Tracing</a></li>
+          <li>Record application metrics:
+          <a href="../instrumentation/metrics.html">Metrics</a></li>
+          <li>Reuse an OpenTelemetry instance that is configured elsewhere:
+          <a href="use-the-global-opentelemetry-instance.html">Use the global OpenTelemetry instance</a></li>
         </ul>
-        <p>In such a case, you can use the <code>OtelJava.global</code> to use the global OpenTelemetry instance:</p>
-        <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.{</span><span class="type-name">IO</span><span>, </span><span class="type-name">IOApp</span><span>}
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="type-name">OtelJava</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">metrics</span><span>.</span><span class="type-name">MeterProvider</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">trace</span><span>.</span><span class="type-name">TracerProvider</span><span>
-
-</span><span class="keyword">object</span><span> </span><span class="type-name">TelemetryApp</span><span> </span><span class="keyword">extends</span><span> </span><span class="type-name">IOApp</span><span>.</span><span class="type-name">Simple</span><span> {
-
-  </span><span class="keyword">def</span><span> </span><span class="declaration-name">run</span><span>: </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] =
-    </span><span class="type-name">OtelJava</span><span>.</span><span class="identifier">global</span><span>[</span><span class="type-name">IO</span><span>].</span><span class="identifier">flatMap</span><span> { </span><span class="identifier">otel4s</span><span> =&gt;
-      </span><span class="identifier">program</span><span>(</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">meterProvider</span><span>, </span><span class="identifier">otel4s</span><span>.</span><span class="identifier">tracerProvider</span><span>)
-    }
-
-  </span><span class="keyword">def</span><span> </span><span class="declaration-name">program</span><span>(
-      </span><span class="identifier">meterProvider</span><span>: </span><span class="type-name">MeterProvider</span><span>[</span><span class="type-name">IO</span><span>], 
-      </span><span class="identifier">tracerProvider</span><span>: </span><span class="type-name">TracerProvider</span><span>[</span><span class="type-name">IO</span><span>]
-  ): </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] =
-    ???
-}</span></code></pre>
 
         
 <hr class="footer-rule"/>

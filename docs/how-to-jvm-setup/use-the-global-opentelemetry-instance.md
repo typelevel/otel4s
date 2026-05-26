@@ -73,7 +73,9 @@ Use:
 - Use otel4s with the Java agent:
   [Zero-code | Java Agent](../oteljava/agent.md)
 - Create spans in your application code:
-  [Tracing](../instrumentation/tracing.md)
+  [Create spans around effectful code](../how-to-tracing/create-spans-around-effectful-code.md)
+- Use otel4s with Java-instrumented libraries:
+  [Use otel4s with Java-instrumented libraries](../how-to-tracing/use-otel4s-with-java-instrumented-libraries.md)
 - Record application metrics:
   [Record application metrics](../how-to-metrics/record-application-metrics.md)
 - Register Cats Effect runtime metrics:

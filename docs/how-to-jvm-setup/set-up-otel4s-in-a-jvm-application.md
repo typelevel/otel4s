@@ -114,7 +114,9 @@ If you want a local stack for traces and metrics, use
 ## What's next
 
 - Create spans in your application code:
-  [Tracing](../instrumentation/tracing.md)
+  [Create spans around effectful code](../how-to-tracing/create-spans-around-effectful-code.md)
+- Continue incoming traces and propagate them downstream:
+  [Propagate trace context across service boundaries](../how-to-tracing/propagate-trace-context-across-service-boundaries.md)
 - Record application metrics:
   [Record application metrics](../how-to-metrics/record-application-metrics.md)
 - Register Cats Effect runtime metrics:

@@ -98,4 +98,4 @@ For the full metric list and the full configuration surface, see
 - Record application-specific metrics in your own code:
   [Record application metrics](record-application-metrics.md)
 - Export JVM runtime metrics with OpenTelemetry Java:
-  [Metrics | JVM Runtime](../oteljava/metrics-jvm-runtime.md)
+  [Register JVM runtime metrics](register-jvm-runtime-metrics.md)

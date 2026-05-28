@@ -6,7 +6,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="generator" content="Typelevel Laika + Helium Theme" />
-  <title>Set up otel4s in a JVM application</title>
+  <title>Histogram bucket customization with views</title>
   
   <meta name="author" content="Ross A. Baker"/>
   
@@ -102,10 +102,10 @@
     <li class="level1 nav-leaf"><a href="../tracing-context-propagation.html">Tracing context propagation</a></li>
     <li class="level1 nav-leaf"><a href="../ecosystem.html">Ecosystem</a></li>
     <li class="level1 nav-header">How-to | JVM setup</li>
-    <li class="level2 nav-leaf"><a href="index.html">JVM setup</a></li>
-    <li class="level2 active nav-leaf"><a href="#">Set up otel4s in a JVM application</a></li>
-    <li class="level2 nav-leaf"><a href="use-the-global-opentelemetry-instance.html">Use the global OpenTelemetry instance</a></li>
-    <li class="level2 nav-leaf"><a href="keep-otel4s-context-in-sync-with-opentelemetry-java.html">Keep otel4s context in sync with OpenTelemetry Java</a></li>
+    <li class="level2 nav-leaf"><a href="../how-to-jvm-setup/">JVM setup</a></li>
+    <li class="level2 nav-leaf"><a href="../how-to-jvm-setup/set-up-otel4s-in-a-jvm-application.html">Set up otel4s in a JVM application</a></li>
+    <li class="level2 nav-leaf"><a href="../how-to-jvm-setup/use-the-global-opentelemetry-instance.html">Use the global OpenTelemetry instance</a></li>
+    <li class="level2 nav-leaf"><a href="../how-to-jvm-setup/keep-otel4s-context-in-sync-with-opentelemetry-java.html">Keep otel4s context in sync with OpenTelemetry Java</a></li>
     <li class="level1 nav-header">How-to | Tracing</li>
     <li class="level2 nav-leaf"><a href="../how-to-tracing/">Tracing</a></li>
     <li class="level2 nav-leaf"><a href="../how-to-tracing/create-spans-around-effectful-code.html">Create spans around effectful code</a></li>
@@ -118,7 +118,7 @@
     <li class="level2 nav-leaf"><a href="../how-to-metrics/register-cats-effect-runtime-metrics.html">Register Cats Effect runtime metrics</a></li>
     <li class="level2 nav-leaf"><a href="../how-to-metrics/register-jvm-runtime-metrics.html">Register JVM runtime metrics</a></li>
     <li class="level1 nav-header">Explanations</li>
-    <li class="level2 nav-leaf"><a href="../explanations/histogram-bucket-customization-with-views.html">Histogram bucket customization with views</a></li>
+    <li class="level2 active nav-leaf"><a href="#">Histogram bucket customization with views</a></li>
     <li class="level1 nav-header">Instrumentation</li>
     <li class="level2 nav-leaf"><a href="../instrumentation/metrics.html">Metrics</a></li>
     <li class="level2 nav-leaf"><a href="../instrumentation/metrics-cats-effect-io-runtime.html">Metrics | Cats Effect IO runtime</a></li>
@@ -150,15 +150,14 @@
 
       
 <nav id="page-nav">
-  <p class="header"><a href="#">Set up otel4s in a JVM application</a></p>
+  <p class="header"><a href="#">Histogram bucket customization with views</a></p>
 
   <ul class="nav-list">
-    <li class="level1 nav-leaf"><a href="#_1-add-the-dependencies">1. Add the dependencies</a></li>
-    <li class="level1 nav-leaf"><a href="#_2-configure-the-sdk">2. Configure the SDK</a></li>
-    <li class="level1 nav-leaf"><a href="#_3-create-oteljava-and-get-the-providers">3. Create <code>OtelJava</code> and get the providers</a></li>
-    <li class="level1 nav-leaf"><a href="#_4-run-the-application">4. Run the application</a></li>
-    <li class="level1 nav-leaf"><a href="#_5-verify-the-setup">5. Verify the setup</a></li>
-    <li class="level1 nav-leaf"><a href="#what-s-next">What&#39;s next</a></li>
+    <li class="level1 nav-leaf"><a href="#when-views-are-needed">When views are needed</a></li>
+    <li class="level1 nav-leaf"><a href="#what-the-selector-matches">What the selector matches</a></li>
+    <li class="level1 nav-leaf"><a href="#what-the-view-changes">What the view changes</a></li>
+    <li class="level1 nav-leaf"><a href="#how-the-selector-and-view-fit-together">How the selector and view fit together</a></li>
+    <li class="level1 nav-leaf"><a href="#example-registering-a-view-with-oteljava-autoconfigured">Example: registering a view with <code>OtelJava.autoConfigured</code></a></li>
   </ul>
 
   <p class="footer"></p>
@@ -167,107 +166,120 @@
 
       <main class="content">
 
-        <h1 id="set-up-otel4s-in-a-jvm-application" class="title">Set up otel4s in a JVM application</h1>
-        <p>Use this page when you want to start a JVM application with <code>otel4s-oteljava</code> and export telemetry with OTLP.</p>
+        <h1 id="histogram-bucket-customization-with-views" class="title">Histogram bucket customization with views</h1>
+        <p>Use <a href="../how-to-metrics/customize-histogram-buckets.html">Customize histogram buckets</a> for the task itself.</p>
+        <p>This page explains the view-based path: why you need it, what <code>InstrumentSelector</code> and <code>View</code> do, and when it is the
+        right tool.</p>
         
-        <h2 id="_1-add-the-dependencies" class="section"><a class="anchor-link left" href="#_1-add-the-dependencies"><i class="icofont-laika link">&#xef71;</i></a>1. Add the dependencies</h2>
-        <div class="tab-container" data-tab-group="build-tool">
-          <ul class="tab-group">
-            <li class="tab active" data-choice-name="sbt"><a href="#">sbt</a></li>
-            <li class="tab" data-choice-name="scala-cli"><a href="#">Scala CLI</a></li>
-          </ul>
-          <div class="tab-content active" data-choice-name="sbt">
-            <p>Add settings to <code>build.sbt</code>:</p>
-            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">libraryDependencies</span><span> ++= </span><span class="type-name">Seq</span><span>(
-  </span><span class="string-literal">&quot;org.typelevel&quot;</span><span> %% </span><span class="string-literal">&quot;otel4s-oteljava&quot;</span><span> % </span><span class="string-literal">&quot;1.0.0&quot;</span><span>, </span><span class="comment">// &lt;1&gt;
-</span><span>  </span><span class="string-literal">&quot;io.opentelemetry&quot;</span><span> % </span><span class="string-literal">&quot;opentelemetry-exporter-otlp&quot;</span><span> % </span><span class="string-literal">&quot;1.62.0&quot;</span><span> % </span><span class="type-name">Runtime</span><span>, </span><span class="comment">// &lt;2&gt;
-</span><span>  </span><span class="string-literal">&quot;io.opentelemetry&quot;</span><span> % </span><span class="string-literal">&quot;opentelemetry-sdk-extension-autoconfigure&quot;</span><span> % </span><span class="string-literal">&quot;1.62.0&quot;</span><span> % </span><span class="type-name">Runtime</span><span> </span><span class="comment">// &lt;3&gt;
-</span><span>)
-</span><span class="identifier">javaOptions</span><span> += </span><span class="string-literal">&quot;-Dotel.java.global-autoconfigure.enabled=true&quot;</span><span> </span><span class="comment">// &lt;4&gt;</span></code></pre>
-          </div>
-          <div class="tab-content" data-choice-name="scala-cli">
-            <p>Add directives to the <code>*.scala</code> file:</p>
-            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="comment">//&gt; using dep &quot;org.typelevel::otel4s-oteljava:1.0.0&quot; // &lt;1&gt;
-//&gt; using dep &quot;io.opentelemetry:opentelemetry-exporter-otlp:1.62.0&quot; // &lt;2&gt;
-//&gt; using dep &quot;io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:1.62.0&quot; // &lt;3&gt;
-//&gt; using javaOpt &quot;-Dotel.java.global-autoconfigure.enabled=true&quot; // &lt;4&gt;</span></code></pre>
-          </div>
-        </div>
-        <ol class="arabic">
-          <li>Add <code>otel4s-oteljava</code></li>
-          <li>Add an OTLP exporter</li>
-          <li>Add the OpenTelemetry Java autoconfigure extension</li>
-          <li>Enable SDK autoconfiguration</li>
-        </ol>
+        <h2 id="when-views-are-needed" class="section"><a class="anchor-link left" href="#when-views-are-needed"><i class="icofont-laika link">&#xef71;</i></a>When views are needed</h2>
+        <p>If your code creates the histogram, you can usually set bucket boundaries directly with
+        <code>withExplicitBucketBoundaries(...)</code>.</p>
+        <p>Views are needed when the histogram is created outside your control, for example by:</p>
+        <ul>
+          <li>middleware</li>
+          <li>framework instrumentation</li>
+          <li>a library you depend on</li>
+        </ul>
+        <p>In those cases, you cannot change the histogram builder directly, so the SDK must override the aggregation by matching
+        the instrument after it is created.</p>
         
-        <h2 id="_2-configure-the-sdk" class="section"><a class="anchor-link left" href="#_2-configure-the-sdk"><i class="icofont-laika link">&#xef71;</i></a>2. Configure the SDK</h2>
-        <p>Set the service name and the OTLP endpoint with environment variables or JVM properties.</p>
-        <p>Example environment variables:</p>
-        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">export</span><span> OTEL_SERVICE_NAME=auth-service
-</span><span class="identifier">export</span><span> OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:</span><span class="number-literal">4317</span></code></pre>
-        <p>Example JVM properties:</p>
-        <pre class="keep-together pdf epub"><code class="nohighlight"><span>-Dotel.service.name=auth-service
--Dotel.exporter.otlp.endpoint=http://localhost:</span><span class="number-literal">4317</span></code></pre>
-        <p>See the full list of supported options in the
-        <a href="https://opentelemetry.io/docs/languages/java/configuration/">OpenTelemetry Java configuration guide</a>.</p>
+        <h2 id="what-the-selector-matches" class="section"><a class="anchor-link left" href="#what-the-selector-matches"><i class="icofont-laika link">&#xef71;</i></a>What the selector matches</h2>
+        <p>An <code>InstrumentSelector</code> chooses which instruments a view applies to.</p>
+        <p>For histogram bucket customization, the selector usually matches:</p>
+        <ul>
+          <li>the instrument name</li>
+          <li>the instrument type</li>
+        </ul>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">io</span><span>.</span><span class="identifier">opentelemetry</span><span>.</span><span class="identifier">sdk</span><span>.</span><span class="identifier">metrics</span><span>.{</span><span class="type-name">InstrumentSelector</span><span>, </span><span class="type-name">InstrumentType</span><span>}
+
+</span><span class="type-name">InstrumentSelector</span><span>
+  .</span><span class="identifier">builder</span><span>()
+  .</span><span class="identifier">setName</span><span>(</span><span class="string-literal">&quot;http.server.duration&quot;</span><span>)
+  .</span><span class="identifier">setType</span><span>(</span><span class="type-name">InstrumentType</span><span>.</span><span class="type-name">HISTOGRAM</span><span>)
+  .</span><span class="identifier">build</span><span>()</span></code></pre>
+        <p>If you need to match multiple histograms, you can use a wildcard pattern such as <code>http.server.*</code>.</p>
         
-        <h2 id="_3-create-oteljava-and-get-the-providers" class="section"><a class="anchor-link left" href="#_3-create-oteljava-and-get-the-providers"><i class="icofont-laika link">&#xef71;</i></a>3. Create <code>OtelJava</code> and get the providers</h2>
-        <p>Use <code>OtelJava.autoConfigured</code> when your application is responsible for creating its own OpenTelemetry SDK instance.</p>
-        <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.{</span><span class="type-name">IO</span><span>, </span><span class="type-name">IOApp</span><span>}
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">metrics</span><span>.</span><span class="type-name">MeterProvider</span><span>
+        <h2 id="what-the-view-changes" class="section"><a class="anchor-link left" href="#what-the-view-changes"><i class="icofont-laika link">&#xef71;</i></a>What the view changes</h2>
+        <p>A <code>View</code> changes how the selected instrument is aggregated.</p>
+        <p>For histogram bucket customization, the relevant part is <code>Aggregation.explicitBucketHistogram(...)</code>.</p>
+        <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">java</span><span>.{</span><span class="identifier">util</span><span> =&gt; </span><span class="identifier">ju</span><span>}
+
+</span><span class="keyword">import</span><span> </span><span class="identifier">io</span><span>.</span><span class="identifier">opentelemetry</span><span>.</span><span class="identifier">sdk</span><span>.</span><span class="identifier">metrics</span><span>.{</span><span class="type-name">Aggregation</span><span>, </span><span class="type-name">ExplicitBucketHistogramOptions</span><span>, </span><span class="type-name">View</span><span>}
+
+</span><span class="type-name">View</span><span>
+  .</span><span class="identifier">builder</span><span>()
+  .</span><span class="identifier">setAggregation</span><span>(
+    </span><span class="type-name">Aggregation</span><span>.</span><span class="identifier">explicitBucketHistogram</span><span>(
+      </span><span class="type-name">ExplicitBucketHistogramOptions</span><span>
+        .</span><span class="identifier">builder</span><span>()
+        .</span><span class="identifier">setBucketBoundaries</span><span>(</span><span class="identifier">ju</span><span>.</span><span class="type-name">Arrays</span><span>.</span><span class="identifier">asList</span><span>(</span><span class="number-literal">0.05</span><span>, </span><span class="number-literal">0.1</span><span>, </span><span class="number-literal">0.25</span><span>, </span><span class="number-literal">0.5</span><span>, </span><span class="number-literal">1.0</span><span>))
+        .</span><span class="identifier">build</span><span>()
+    )
+  )
+  .</span><span class="identifier">build</span><span>()</span></code></pre>
+        <p>The bucket boundaries use the same unit as the histogram values. If the histogram records seconds, boundaries such as
+        <code>0.05</code> and <code>0.1</code> also mean seconds.</p>
+        
+        <h2 id="how-the-selector-and-view-fit-together" class="section"><a class="anchor-link left" href="#how-the-selector-and-view-fit-together"><i class="icofont-laika link">&#xef71;</i></a>How the selector and view fit together</h2>
+        <p>The selector identifies the histogram. The view replaces the default aggregation for that histogram.</p>
+        <p>That is why view-based customization is useful for third-party instruments:</p>
+        <ul>
+          <li>you do not change the code that creates the histogram</li>
+          <li>you change how the SDK aggregates the values it receives</li>
+        </ul>
+        
+        <h2 id="example-registering-a-view-with-oteljava-autoconfigured" class="section"><a class="anchor-link left" href="#example-registering-a-view-with-oteljava-autoconfigured"><i class="icofont-laika link">&#xef71;</i></a>Example: registering a view with <code>OtelJava.autoConfigured</code></h2>
+        <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">java</span><span>.{</span><span class="identifier">util</span><span> =&gt; </span><span class="identifier">ju</span><span>}
+
+</span><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.{</span><span class="type-name">IO</span><span>, </span><span class="type-name">IOApp</span><span>}
+</span><span class="keyword">import</span><span> </span><span class="identifier">io</span><span>.</span><span class="identifier">opentelemetry</span><span>.</span><span class="identifier">sdk</span><span>.</span><span class="identifier">autoconfigure</span><span>.</span><span class="type-name">AutoConfiguredOpenTelemetrySdkBuilder</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">io</span><span>.</span><span class="identifier">opentelemetry</span><span>.</span><span class="identifier">sdk</span><span>.</span><span class="identifier">metrics</span><span>.</span><span class="type-name">Aggregation</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">io</span><span>.</span><span class="identifier">opentelemetry</span><span>.</span><span class="identifier">sdk</span><span>.</span><span class="identifier">metrics</span><span>.</span><span class="type-name">ExplicitBucketHistogramOptions</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">io</span><span>.</span><span class="identifier">opentelemetry</span><span>.</span><span class="identifier">sdk</span><span>.</span><span class="identifier">metrics</span><span>.</span><span class="type-name">InstrumentSelector</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">io</span><span>.</span><span class="identifier">opentelemetry</span><span>.</span><span class="identifier">sdk</span><span>.</span><span class="identifier">metrics</span><span>.</span><span class="type-name">InstrumentType</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">io</span><span>.</span><span class="identifier">opentelemetry</span><span>.</span><span class="identifier">sdk</span><span>.</span><span class="identifier">metrics</span><span>.</span><span class="type-name">View</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">metrics</span><span>.</span><span class="type-name">Meter</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="type-name">OtelJava</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">trace</span><span>.</span><span class="type-name">TracerProvider</span><span>
 
 </span><span class="keyword">object</span><span> </span><span class="type-name">Main</span><span> </span><span class="keyword">extends</span><span> </span><span class="type-name">IOApp</span><span>.</span><span class="type-name">Simple</span><span> {
   </span><span class="keyword">def</span><span> </span><span class="declaration-name">run</span><span>: </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] =
-    </span><span class="type-name">OtelJava</span><span>.</span><span class="identifier">autoConfigured</span><span>[</span><span class="type-name">IO</span><span>]().</span><span class="identifier">use</span><span> { </span><span class="identifier">otel4s</span><span> =&gt;
-      </span><span class="identifier">program</span><span>(</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">meterProvider</span><span>, </span><span class="identifier">otel4s</span><span>.</span><span class="identifier">tracerProvider</span><span>)
+    </span><span class="type-name">OtelJava</span><span>.</span><span class="identifier">autoConfigured</span><span>[</span><span class="type-name">IO</span><span>](</span><span class="identifier">configureBuilder</span><span>).</span><span class="identifier">use</span><span> { </span><span class="identifier">otel4s</span><span> =&gt;
+      </span><span class="identifier">otel4s</span><span>.</span><span class="identifier">meterProvider</span><span>.</span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;auth-service&quot;</span><span>).</span><span class="identifier">flatMap</span><span> { </span><span class="keyword">implicit</span><span> </span><span class="identifier">meter</span><span> =&gt;
+        </span><span class="identifier">program</span><span>
+      }
     }
 
-  </span><span class="keyword">def</span><span> </span><span class="declaration-name">program</span><span>(
-      </span><span class="identifier">meterProvider</span><span>: </span><span class="type-name">MeterProvider</span><span>[</span><span class="type-name">IO</span><span>],
-      </span><span class="identifier">tracerProvider</span><span>: </span><span class="type-name">TracerProvider</span><span>[</span><span class="type-name">IO</span><span>]
-  ): </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] =
-    </span><span class="keyword">for</span><span> {
-      </span><span class="identifier">meter</span><span> &lt;- </span><span class="identifier">meterProvider</span><span>.</span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;auth-service&quot;</span><span>)
-      </span><span class="identifier">tracer</span><span> &lt;- </span><span class="identifier">tracerProvider</span><span>.</span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;auth-service&quot;</span><span>)
+  </span><span class="keyword">def</span><span> </span><span class="declaration-name">program</span><span>(</span><span class="keyword">implicit</span><span> </span><span class="identifier">meter</span><span>: </span><span class="type-name">Meter</span><span>[</span><span class="type-name">IO</span><span>]): </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] =
+    </span><span class="identifier">meter</span><span>
+      .</span><span class="identifier">histogram</span><span>[</span><span class="type-name">Double</span><span>](</span><span class="string-literal">&quot;http.server.duration&quot;</span><span>)
+      .</span><span class="identifier">withUnit</span><span>(</span><span class="string-literal">&quot;s&quot;</span><span>)
+      .</span><span class="identifier">create</span><span>
+      .</span><span class="identifier">flatMap</span><span>(</span><span class="identifier">_</span><span>.</span><span class="identifier">record</span><span>(</span><span class="number-literal">0.12</span><span>))
 
-      </span><span class="identifier">counter</span><span> &lt;- </span><span class="identifier">meter</span><span>.</span><span class="identifier">counter</span><span>[</span><span class="type-name">Long</span><span>](</span><span class="string-literal">&quot;service.requests&quot;</span><span>).</span><span class="identifier">create</span><span>
-      </span><span class="identifier">_</span><span> &lt;- </span><span class="identifier">counter</span><span>.</span><span class="identifier">inc</span><span>()
-
-      </span><span class="identifier">_</span><span> &lt;- </span><span class="identifier">tracer</span><span>.</span><span class="identifier">span</span><span>(</span><span class="string-literal">&quot;startup&quot;</span><span>).</span><span class="identifier">surround</span><span>(</span><span class="type-name">IO</span><span>.</span><span class="identifier">unit</span><span>)
-    } </span><span class="keyword">yield</span><span> ()
+  </span><span class="keyword">def</span><span> </span><span class="declaration-name">configureBuilder</span><span>(
+      </span><span class="identifier">builder</span><span>: </span><span class="type-name">AutoConfiguredOpenTelemetrySdkBuilder</span><span>
+  ): </span><span class="type-name">AutoConfiguredOpenTelemetrySdkBuilder</span><span> =
+    </span><span class="identifier">builder</span><span>.</span><span class="identifier">addMeterProviderCustomizer</span><span> { (</span><span class="identifier">meterProviderBuilder</span><span>, </span><span class="identifier">_</span><span>) =&gt;
+      </span><span class="identifier">meterProviderBuilder</span><span>.</span><span class="identifier">registerView</span><span>(
+        </span><span class="type-name">InstrumentSelector</span><span>
+          .</span><span class="identifier">builder</span><span>()
+          .</span><span class="identifier">setName</span><span>(</span><span class="string-literal">&quot;http.server.duration&quot;</span><span>)
+          .</span><span class="identifier">setType</span><span>(</span><span class="type-name">InstrumentType</span><span>.</span><span class="type-name">HISTOGRAM</span><span>)
+          .</span><span class="identifier">build</span><span>(),
+        </span><span class="type-name">View</span><span>
+          .</span><span class="identifier">builder</span><span>()
+          .</span><span class="identifier">setAggregation</span><span>(
+            </span><span class="type-name">Aggregation</span><span>.</span><span class="identifier">explicitBucketHistogram</span><span>(
+              </span><span class="type-name">ExplicitBucketHistogramOptions</span><span>
+                .</span><span class="identifier">builder</span><span>()
+                .</span><span class="identifier">setBucketBoundaries</span><span>(</span><span class="identifier">ju</span><span>.</span><span class="type-name">Arrays</span><span>.</span><span class="identifier">asList</span><span>(</span><span class="number-literal">0.05</span><span>, </span><span class="number-literal">0.1</span><span>, </span><span class="number-literal">0.25</span><span>, </span><span class="number-literal">0.5</span><span>, </span><span class="number-literal">1.0</span><span>))
+                .</span><span class="identifier">build</span><span>()
+            )
+          )
+          .</span><span class="identifier">build</span><span>()
+      )
+    }
 }</span></code></pre>
-        <div class="callout warning">
-          <i class="icofont-laika warning">&#xf026;</i>
-          <p><code>OtelJava.autoConfigured</code> creates an isolated, non-global SDK instance.
-          If you need to reuse the process-wide OpenTelemetry instance, use
-          <a href="use-the-global-opentelemetry-instance.html">Use the global OpenTelemetry instance</a>.</p>
-        </div>
-        
-        <h2 id="_4-run-the-application" class="section"><a class="anchor-link left" href="#_4-run-the-application"><i class="icofont-laika link">&#xef71;</i></a>4. Run the application</h2>
-        <p>Start your application with the same environment variables or JVM properties you used for configuration.</p>
-        <p>At that point, the application can create meters and tracers and export telemetry through OTLP.</p>
-        
-        <h2 id="_5-verify-the-setup" class="section"><a class="anchor-link left" href="#_5-verify-the-setup"><i class="icofont-laika link">&#xef71;</i></a>5. Verify the setup</h2>
-        <p>If you want a local target for traces, use
-        <a href="../examples/jaeger-docker/">Jaeger and Docker</a>.
-        If you want a local stack for traces and metrics, use
-        <a href="../examples/grafana/">Grafana</a>.</p>
-        
-        <h2 id="what-s-next" class="section"><a class="anchor-link left" href="#what-s-next"><i class="icofont-laika link">&#xef71;</i></a>What&#39;s next</h2>
-        <ul>
-          <li>Create spans in your application code:
-          <a href="../how-to-tracing/create-spans-around-effectful-code.html">Create spans around effectful code</a></li>
-          <li>Continue incoming traces and propagate them downstream:
-          <a href="../how-to-tracing/propagate-trace-context-across-service-boundaries.html">Propagate trace context across service boundaries</a></li>
-          <li>Record application metrics:
-          <a href="../how-to-metrics/record-application-metrics.html">Record application metrics</a></li>
-          <li>Register Cats Effect runtime metrics:
-          <a href="../how-to-metrics/register-cats-effect-runtime-metrics.html">Register Cats Effect runtime metrics</a></li>
-          <li>Reuse an OpenTelemetry instance that is configured elsewhere:
-          <a href="use-the-global-opentelemetry-instance.html">Use the global OpenTelemetry instance</a></li>
-        </ul>
 
         
 <hr class="footer-rule"/>

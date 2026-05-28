@@ -6,7 +6,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="generator" content="Typelevel Laika + Helium Theme" />
-  <title>Record application metrics</title>
+  <title>Customize histogram buckets</title>
   
   <meta name="author" content="Ross A. Baker"/>
   
@@ -113,8 +113,8 @@
     <li class="level2 nav-leaf"><a href="../how-to-tracing/use-otel4s-with-java-instrumented-libraries.html">Use otel4s with Java-instrumented libraries</a></li>
     <li class="level1 nav-header">How-to | Metrics</li>
     <li class="level2 nav-leaf"><a href="index.html">Metrics</a></li>
-    <li class="level2 active nav-leaf"><a href="#">Record application metrics</a></li>
-    <li class="level2 nav-leaf"><a href="customize-histogram-buckets.html">Customize histogram buckets</a></li>
+    <li class="level2 nav-leaf"><a href="record-application-metrics.html">Record application metrics</a></li>
+    <li class="level2 active nav-leaf"><a href="#">Customize histogram buckets</a></li>
     <li class="level2 nav-leaf"><a href="register-cats-effect-runtime-metrics.html">Register Cats Effect runtime metrics</a></li>
     <li class="level2 nav-leaf"><a href="register-jvm-runtime-metrics.html">Register JVM runtime metrics</a></li>
     <li class="level1 nav-header">Explanations</li>
@@ -150,14 +150,15 @@
 
       
 <nav id="page-nav">
-  <p class="header"><a href="#">Record application metrics</a></p>
+  <p class="header"><a href="#">Customize histogram buckets</a></p>
 
   <ul class="nav-list">
     <li class="level1 nav-leaf"><a href="#prerequisites">Prerequisites</a></li>
-    <li class="level1 nav-leaf"><a href="#_1-get-a-meter">1. Get a <code>Meter</code></a></li>
-    <li class="level1 nav-leaf"><a href="#_2-create-the-instruments-you-need">2. Create the instruments you need</a></li>
-    <li class="level1 nav-leaf"><a href="#_3-record-measurements-in-application-code">3. Record measurements in application code</a></li>
-    <li class="level1 nav-leaf"><a href="#_4-register-an-observable-instrument-for-on-demand-values">4. Register an observable instrument for on-demand values</a></li>
+    <li class="level1 nav-leaf"><a href="#_1-choose-the-path-that-matches-who-owns-the-histogram">1. Choose the path that matches who owns the histogram</a></li>
+    <li class="level1 nav-leaf"><a href="#_2-if-you-create-the-histogram-yourself-use-withexplicitbucketboundaries">2. If you create the histogram yourself, use <code>withExplicitBucketBoundaries</code></a></li>
+    <li class="level1 nav-leaf"><a href="#_3-if-the-histogram-is-created-elsewhere-register-a-view">3. If the histogram is created elsewhere, register a view</a></li>
+    <li class="level1 nav-leaf"><a href="#_4-choose-bucket-boundaries-in-the-same-unit-you-record">4. Choose bucket boundaries in the same unit you record</a></li>
+    <li class="level1 nav-leaf"><a href="#_5-keep-the-histogram-name-stable-when-you-use-a-view">5. Keep the histogram name stable when you use a view</a></li>
     <li class="level1 nav-leaf"><a href="#what-s-next">What&#39;s next</a></li>
   </ul>
 
@@ -167,19 +168,28 @@
 
       <main class="content">
 
-        <h1 id="record-application-metrics" class="title">Record application metrics</h1>
-        <p>Use this page when you want to record counters, gauges, up-down counters, histograms, or observable measurements in
-        application code.</p>
+        <h1 id="customize-histogram-buckets" class="title">Customize histogram buckets</h1>
+        <p>Use this page when the default histogram buckets do not match the values you record.</p>
+        <p>For example, if a latency histogram is recorded in seconds and most values are between <code>0.1</code> and <code>1.0</code>, narrower
+        buckets may be more useful.</p>
         
         <h2 id="prerequisites" class="section"><a class="anchor-link left" href="#prerequisites"><i class="icofont-laika link">&#xef71;</i></a>Prerequisites</h2>
         <ul>
           <li><a href="../how-to-jvm-setup/set-up-otel4s-in-a-jvm-application.html">Set up otel4s in a JVM application</a></li>
+          <li><a href="record-application-metrics.html">Record application metrics</a></li>
         </ul>
         
-        <h2 id="_1-get-a-meter" class="section"><a class="anchor-link left" href="#_1-get-a-meter"><i class="icofont-laika link">&#xef71;</i></a>1. Get a <code>Meter</code></h2>
-        <p>Get a <code>Meter</code> from the <code>MeterProvider</code> you created during setup.</p>
+        <h2 id="_1-choose-the-path-that-matches-who-owns-the-histogram" class="section"><a class="anchor-link left" href="#_1-choose-the-path-that-matches-who-owns-the-histogram"><i class="icofont-laika link">&#xef71;</i></a>1. Choose the path that matches who owns the histogram</h2>
+        <ul>
+          <li>If your code creates the histogram, set the bucket boundaries on the histogram builder.</li>
+          <li>If the histogram is created elsewhere, such as in middleware or a library, register a view that matches it by name and
+          type.</li>
+        </ul>
+        
+        <h2 id="_2-if-you-create-the-histogram-yourself-use-withexplicitbucketboundaries" class="section"><a class="anchor-link left" href="#_2-if-you-create-the-histogram-yourself-use-withexplicitbucketboundaries"><i class="icofont-laika link">&#xef71;</i></a>2. If you create the histogram yourself, use <code>withExplicitBucketBoundaries</code></h2>
+        <p>This is the simpler path when the histogram is under your control.</p>
         <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.{</span><span class="type-name">IO</span><span>, </span><span class="type-name">IOApp</span><span>}
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">metrics</span><span>.</span><span class="type-name">Meter</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">metrics</span><span>.{</span><span class="type-name">BucketBoundaries</span><span>, </span><span class="type-name">Histogram</span><span>, </span><span class="type-name">Meter</span><span>}
 </span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="type-name">OtelJava</span><span>
 
 </span><span class="keyword">object</span><span> </span><span class="type-name">Main</span><span> </span><span class="keyword">extends</span><span> </span><span class="type-name">IOApp</span><span>.</span><span class="type-name">Simple</span><span> {
@@ -191,92 +201,100 @@
     }
 
   </span><span class="keyword">def</span><span> </span><span class="declaration-name">program</span><span>(</span><span class="keyword">implicit</span><span> </span><span class="identifier">meter</span><span>: </span><span class="type-name">Meter</span><span>[</span><span class="type-name">IO</span><span>]): </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] =
-    </span><span class="type-name">IO</span><span>(</span><span class="identifier">meter</span><span>).</span><span class="identifier">void</span><span>
+    </span><span class="identifier">createLatencyHistogram</span><span>.</span><span class="identifier">flatMap</span><span>(</span><span class="identifier">_</span><span>.</span><span class="identifier">record</span><span>(</span><span class="number-literal">0.12</span><span>))
+
+  </span><span class="keyword">def</span><span> </span><span class="declaration-name">createLatencyHistogram</span><span>(</span><span class="keyword">implicit</span><span> </span><span class="identifier">meter</span><span>: </span><span class="type-name">Meter</span><span>[</span><span class="type-name">IO</span><span>]): </span><span class="type-name">IO</span><span>[</span><span class="type-name">Histogram</span><span>[</span><span class="type-name">IO</span><span>, </span><span class="type-name">Double</span><span>]] =
+    </span><span class="identifier">meter</span><span>
+      .</span><span class="identifier">histogram</span><span>[</span><span class="type-name">Double</span><span>](</span><span class="string-literal">&quot;http.server.duration&quot;</span><span>)
+      .</span><span class="identifier">withUnit</span><span>(</span><span class="string-literal">&quot;s&quot;</span><span>)
+      .</span><span class="identifier">withExplicitBucketBoundaries</span><span>(
+        </span><span class="type-name">BucketBoundaries</span><span>(</span><span class="number-literal">0.05</span><span>, </span><span class="number-literal">0.1</span><span>, </span><span class="number-literal">0.25</span><span>, </span><span class="number-literal">0.5</span><span>, </span><span class="number-literal">1.0</span><span>)
+      )
+      .</span><span class="identifier">create</span><span>
 }</span></code></pre>
-        <p><code>get(&quot;auth-service&quot;)</code> names the instrumentation scope for the meter. Use a stable name that identifies the code emitting
-        telemetry, such as your application or module name.</p>
         
-        <h2 id="_2-create-the-instruments-you-need" class="section"><a class="anchor-link left" href="#_2-create-the-instruments-you-need"><i class="icofont-laika link">&#xef71;</i></a>2. Create the instruments you need</h2>
-        <p>Create instruments once and reuse them while the application runs.</p>
+        <h2 id="_3-if-the-histogram-is-created-elsewhere-register-a-view" class="section"><a class="anchor-link left" href="#_3-if-the-histogram-is-created-elsewhere-register-a-view"><i class="icofont-laika link">&#xef71;</i></a>3. If the histogram is created elsewhere, register a view</h2>
+        <p>Use a view when you cannot change the histogram builder directly.</p>
+        <p>This is the right path when the histogram is created by:</p>
         <ul>
-          <li>Use <code>Counter</code> for values that only go up.</li>
-          <li>Use <code>Gauge</code> for non-additive values such as queue depth or cache size.</li>
-          <li>Use <code>UpDownCounter</code> for values that can go up and down.</li>
-          <li>Use <code>Histogram</code> for distributions such as durations or payload sizes.</li>
+          <li>middleware</li>
+          <li>framework instrumentation</li>
+          <li>a library you depend on</li>
         </ul>
-        <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.</span><span class="type-name">IO</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">metrics</span><span>.{</span><span class="type-name">Counter</span><span>, </span><span class="type-name">Gauge</span><span>, </span><span class="type-name">Histogram</span><span>, </span><span class="type-name">UpDownCounter</span><span>, </span><span class="type-name">Meter</span><span>}
+        <p>In this example, the histogram is still named <code>http.server.duration</code> and records values in seconds.</p>
+        <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">java</span><span>.{</span><span class="identifier">util</span><span> =&gt; </span><span class="identifier">ju</span><span>}
 
-</span><span class="keyword">case</span><span> </span><span class="keyword">class</span><span> </span><span class="type-name">UserMetrics</span><span>(
-    </span><span class="identifier">missingUsers</span><span>: </span><span class="type-name">Counter</span><span>[</span><span class="type-name">IO</span><span>, </span><span class="type-name">Long</span><span>],
-    </span><span class="identifier">cachedUsers</span><span>: </span><span class="type-name">Gauge</span><span>[</span><span class="type-name">IO</span><span>, </span><span class="type-name">Long</span><span>],
-    </span><span class="identifier">activeRequests</span><span>: </span><span class="type-name">UpDownCounter</span><span>[</span><span class="type-name">IO</span><span>, </span><span class="type-name">Long</span><span>],
-    </span><span class="identifier">lookupDuration</span><span>: </span><span class="type-name">Histogram</span><span>[</span><span class="type-name">IO</span><span>, </span><span class="type-name">Double</span><span>]
-)
+</span><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.{</span><span class="type-name">IO</span><span>, </span><span class="type-name">IOApp</span><span>}
+</span><span class="keyword">import</span><span> </span><span class="identifier">io</span><span>.</span><span class="identifier">opentelemetry</span><span>.</span><span class="identifier">sdk</span><span>.</span><span class="identifier">autoconfigure</span><span>.</span><span class="type-name">AutoConfiguredOpenTelemetrySdkBuilder</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">io</span><span>.</span><span class="identifier">opentelemetry</span><span>.</span><span class="identifier">sdk</span><span>.</span><span class="identifier">metrics</span><span>.</span><span class="type-name">Aggregation</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">io</span><span>.</span><span class="identifier">opentelemetry</span><span>.</span><span class="identifier">sdk</span><span>.</span><span class="identifier">metrics</span><span>.</span><span class="type-name">ExplicitBucketHistogramOptions</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">io</span><span>.</span><span class="identifier">opentelemetry</span><span>.</span><span class="identifier">sdk</span><span>.</span><span class="identifier">metrics</span><span>.</span><span class="type-name">InstrumentSelector</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">io</span><span>.</span><span class="identifier">opentelemetry</span><span>.</span><span class="identifier">sdk</span><span>.</span><span class="identifier">metrics</span><span>.</span><span class="type-name">InstrumentType</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">io</span><span>.</span><span class="identifier">opentelemetry</span><span>.</span><span class="identifier">sdk</span><span>.</span><span class="identifier">metrics</span><span>.</span><span class="type-name">View</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">metrics</span><span>.</span><span class="type-name">Meter</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="type-name">OtelJava</span><span>
 
-</span><span class="keyword">object</span><span> </span><span class="type-name">UserMetrics</span><span> {
-  </span><span class="keyword">def</span><span> </span><span class="declaration-name">create</span><span>(</span><span class="keyword">implicit</span><span> </span><span class="identifier">meter</span><span>: </span><span class="type-name">Meter</span><span>[</span><span class="type-name">IO</span><span>]): </span><span class="type-name">IO</span><span>[</span><span class="type-name">UserMetrics</span><span>] =
-    </span><span class="keyword">for</span><span> {
-      </span><span class="identifier">missingUsers</span><span> &lt;- </span><span class="identifier">meter</span><span>.</span><span class="identifier">counter</span><span>[</span><span class="type-name">Long</span><span>](</span><span class="string-literal">&quot;user.lookup.missing&quot;</span><span>).</span><span class="identifier">create</span><span>
-      </span><span class="identifier">cachedUsers</span><span> &lt;- </span><span class="identifier">meter</span><span>.</span><span class="identifier">gauge</span><span>[</span><span class="type-name">Long</span><span>](</span><span class="string-literal">&quot;user.storage.size&quot;</span><span>).</span><span class="identifier">create</span><span>
-      </span><span class="identifier">activeRequests</span><span> &lt;- </span><span class="identifier">meter</span><span>.</span><span class="identifier">upDownCounter</span><span>[</span><span class="type-name">Long</span><span>](</span><span class="string-literal">&quot;http.server.active_requests&quot;</span><span>).</span><span class="identifier">create</span><span>
-      </span><span class="identifier">lookupDuration</span><span> &lt;- </span><span class="identifier">meter</span><span>.</span><span class="identifier">histogram</span><span>[</span><span class="type-name">Double</span><span>](</span><span class="string-literal">&quot;user.lookup.duration&quot;</span><span>).</span><span class="identifier">withUnit</span><span>(</span><span class="string-literal">&quot;ms&quot;</span><span>).</span><span class="identifier">create</span><span>
-    } </span><span class="keyword">yield</span><span> </span><span class="type-name">UserMetrics</span><span>(</span><span class="identifier">missingUsers</span><span>, </span><span class="identifier">cachedUsers</span><span>, </span><span class="identifier">activeRequests</span><span>, </span><span class="identifier">lookupDuration</span><span>)
-}</span></code></pre>
-        
-        <h2 id="_3-record-measurements-in-application-code" class="section"><a class="anchor-link left" href="#_3-record-measurements-in-application-code"><i class="icofont-laika link">&#xef71;</i></a>3. Record measurements in application code</h2>
-        <p>Use the instruments inline with the work they measure.</p>
-        <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">java</span><span>.</span><span class="identifier">util</span><span>.</span><span class="identifier">concurrent</span><span>.</span><span class="type-name">TimeUnit</span><span>
-
-</span><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.{</span><span class="type-name">IO</span><span>, </span><span class="type-name">Ref</span><span>}
-</span><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">syntax</span><span>.</span><span class="identifier">all</span><span>.</span><span class="identifier">_</span><span>
-
-</span><span class="keyword">case</span><span> </span><span class="keyword">class</span><span> </span><span class="type-name">User</span><span>(</span><span class="identifier">id</span><span>: </span><span class="type-name">Long</span><span>, </span><span class="identifier">email</span><span>: </span><span class="type-name">String</span><span>)
-
-</span><span class="keyword">class</span><span> </span><span class="type-name">UserService</span><span>(
-    </span><span class="identifier">storage</span><span>: </span><span class="type-name">Ref</span><span>[</span><span class="type-name">IO</span><span>, </span><span class="type-name">Map</span><span>[</span><span class="type-name">Long</span><span>, </span><span class="type-name">User</span><span>]],
-    </span><span class="identifier">metrics</span><span>: </span><span class="type-name">UserMetrics</span><span>
-) {
-
-  </span><span class="keyword">def</span><span> </span><span class="declaration-name">handleRequest</span><span>(</span><span class="identifier">userId</span><span>: </span><span class="type-name">Long</span><span>): </span><span class="type-name">IO</span><span>[</span><span class="type-name">Option</span><span>[</span><span class="type-name">User</span><span>]] =
-    </span><span class="identifier">metrics</span><span>.</span><span class="identifier">activeRequests</span><span>.</span><span class="identifier">inc</span><span>() *&gt;
-      </span><span class="identifier">metrics</span><span>.</span><span class="identifier">lookupDuration</span><span>
-        .</span><span class="identifier">recordDuration</span><span>(</span><span class="type-name">TimeUnit</span><span>.</span><span class="type-name">MILLISECONDS</span><span>)
-        .</span><span class="identifier">surround</span><span>(
-          </span><span class="identifier">storage</span><span>.</span><span class="identifier">get</span><span>.</span><span class="identifier">flatMap</span><span> { </span><span class="identifier">current</span><span> =&gt;
-            </span><span class="identifier">metrics</span><span>.</span><span class="identifier">cachedUsers</span><span>.</span><span class="identifier">record</span><span>(</span><span class="identifier">current</span><span>.</span><span class="identifier">size</span><span>.</span><span class="identifier">toLong</span><span>) *&gt;
-              </span><span class="type-name">IO</span><span>.</span><span class="identifier">pure</span><span>(</span><span class="identifier">current</span><span>.</span><span class="identifier">get</span><span>(</span><span class="identifier">userId</span><span>)).</span><span class="identifier">flatTap</span><span> {
-                </span><span class="keyword">case</span><span> </span><span class="type-name">Some</span><span>(</span><span class="identifier">_</span><span>) =&gt; </span><span class="type-name">IO</span><span>.</span><span class="identifier">unit</span><span>
-                </span><span class="keyword">case</span><span> </span><span class="type-name">None</span><span>    =&gt; </span><span class="identifier">metrics</span><span>.</span><span class="identifier">missingUsers</span><span>.</span><span class="identifier">inc</span><span>()
-              }
-          }
-        )
-        .</span><span class="identifier">guarantee</span><span>(</span><span class="identifier">metrics</span><span>.</span><span class="identifier">activeRequests</span><span>.</span><span class="identifier">dec</span><span>())
-}</span></code></pre>
-        
-        <h2 id="_4-register-an-observable-instrument-for-on-demand-values" class="section"><a class="anchor-link left" href="#_4-register-an-observable-instrument-for-on-demand-values"><i class="icofont-laika link">&#xef71;</i></a>4. Register an observable instrument for on-demand values</h2>
-        <p>Use an observable instrument when the value should be read at collection time instead of being recorded inline.</p>
-        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.</span><span class="type-name">Resource</span><span>
-
-</span><span class="keyword">def</span><span> </span><span class="declaration-name">registerStorageSize</span><span>(
-    </span><span class="identifier">storage</span><span>: </span><span class="type-name">Ref</span><span>[</span><span class="type-name">IO</span><span>, </span><span class="type-name">Map</span><span>[</span><span class="type-name">Long</span><span>, </span><span class="type-name">User</span><span>]]
-)(</span><span class="keyword">implicit</span><span> </span><span class="identifier">meter</span><span>: </span><span class="type-name">Meter</span><span>[</span><span class="type-name">IO</span><span>]): </span><span class="type-name">Resource</span><span>[</span><span class="type-name">IO</span><span>, </span><span class="type-name">Unit</span><span>] =
-  </span><span class="identifier">meter</span><span>
-    .</span><span class="identifier">observableGauge</span><span>[</span><span class="type-name">Long</span><span>](</span><span class="string-literal">&quot;user.storage.size&quot;</span><span>)
-    .</span><span class="identifier">withDescription</span><span>(</span><span class="string-literal">&quot;Current number of cached users&quot;</span><span>)
-    .</span><span class="identifier">createWithCallback</span><span> { </span><span class="identifier">cb</span><span> =&gt;
-      </span><span class="identifier">storage</span><span>.</span><span class="identifier">get</span><span>.</span><span class="identifier">flatMap</span><span>(</span><span class="identifier">users</span><span> =&gt; </span><span class="identifier">cb</span><span>.</span><span class="identifier">record</span><span>(</span><span class="identifier">users</span><span>.</span><span class="identifier">size</span><span>.</span><span class="identifier">toLong</span><span>))
+</span><span class="keyword">object</span><span> </span><span class="type-name">MainWithView</span><span> </span><span class="keyword">extends</span><span> </span><span class="type-name">IOApp</span><span>.</span><span class="type-name">Simple</span><span> {
+  </span><span class="keyword">def</span><span> </span><span class="declaration-name">run</span><span>: </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] =
+    </span><span class="type-name">OtelJava</span><span>.</span><span class="identifier">autoConfigured</span><span>[</span><span class="type-name">IO</span><span>](</span><span class="identifier">configureBuilder</span><span>).</span><span class="identifier">use</span><span> { </span><span class="identifier">otel4s</span><span> =&gt;
+      </span><span class="identifier">otel4s</span><span>.</span><span class="identifier">meterProvider</span><span>.</span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;auth-service&quot;</span><span>).</span><span class="identifier">flatMap</span><span> { </span><span class="keyword">implicit</span><span> </span><span class="identifier">meter</span><span> =&gt;
+        </span><span class="identifier">program</span><span>
+      }
     }
-    .</span><span class="identifier">void</span></code></pre>
+
+  </span><span class="keyword">def</span><span> </span><span class="declaration-name">program</span><span>(</span><span class="keyword">implicit</span><span> </span><span class="identifier">meter</span><span>: </span><span class="type-name">Meter</span><span>[</span><span class="type-name">IO</span><span>]): </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] =
+    </span><span class="identifier">meter</span><span>
+      .</span><span class="identifier">histogram</span><span>[</span><span class="type-name">Double</span><span>](</span><span class="string-literal">&quot;http.server.duration&quot;</span><span>)
+      .</span><span class="identifier">withUnit</span><span>(</span><span class="string-literal">&quot;s&quot;</span><span>)
+      .</span><span class="identifier">create</span><span>
+      .</span><span class="identifier">flatMap</span><span>(</span><span class="identifier">_</span><span>.</span><span class="identifier">record</span><span>(</span><span class="number-literal">0.12</span><span>))
+
+  </span><span class="keyword">def</span><span> </span><span class="declaration-name">configureBuilder</span><span>(
+      </span><span class="identifier">builder</span><span>: </span><span class="type-name">AutoConfiguredOpenTelemetrySdkBuilder</span><span>
+  ): </span><span class="type-name">AutoConfiguredOpenTelemetrySdkBuilder</span><span> =
+    </span><span class="identifier">builder</span><span>.</span><span class="identifier">addMeterProviderCustomizer</span><span> { (</span><span class="identifier">meterProviderBuilder</span><span>, </span><span class="identifier">_</span><span>) =&gt;
+      </span><span class="identifier">meterProviderBuilder</span><span>.</span><span class="identifier">registerView</span><span>(
+        </span><span class="type-name">InstrumentSelector</span><span>
+          .</span><span class="identifier">builder</span><span>()
+          .</span><span class="identifier">setName</span><span>(</span><span class="string-literal">&quot;http.server.duration&quot;</span><span>)
+          .</span><span class="identifier">setType</span><span>(</span><span class="type-name">InstrumentType</span><span>.</span><span class="type-name">HISTOGRAM</span><span>)
+          .</span><span class="identifier">build</span><span>(),
+        </span><span class="type-name">View</span><span>
+          .</span><span class="identifier">builder</span><span>()
+          .</span><span class="identifier">setAggregation</span><span>(
+            </span><span class="type-name">Aggregation</span><span>.</span><span class="identifier">explicitBucketHistogram</span><span>(
+              </span><span class="type-name">ExplicitBucketHistogramOptions</span><span>
+                .</span><span class="identifier">builder</span><span>()
+                .</span><span class="identifier">setBucketBoundaries</span><span>(</span><span class="identifier">ju</span><span>.</span><span class="type-name">Arrays</span><span>.</span><span class="identifier">asList</span><span>(</span><span class="number-literal">0.05</span><span>, </span><span class="number-literal">0.1</span><span>, </span><span class="number-literal">0.25</span><span>, </span><span class="number-literal">0.5</span><span>, </span><span class="number-literal">1.0</span><span>))
+                .</span><span class="identifier">build</span><span>()
+            )
+          )
+          .</span><span class="identifier">build</span><span>()
+      )
+    }
+}</span></code></pre>
+        
+        <h2 id="_4-choose-bucket-boundaries-in-the-same-unit-you-record" class="section"><a class="anchor-link left" href="#_4-choose-bucket-boundaries-in-the-same-unit-you-record"><i class="icofont-laika link">&#xef71;</i></a>4. Choose bucket boundaries in the same unit you record</h2>
+        <p>The custom bucket boundaries must use the same unit as the histogram values.</p>
+        <p>In the examples above:</p>
+        <ul>
+          <li>the histogram unit is seconds</li>
+          <li><code>0.12</code> means <code>120ms</code></li>
+          <li>bucket boundaries such as <code>0.05</code>, <code>0.1</code>, and <code>0.25</code> are also in seconds</li>
+        </ul>
+        
+        <h2 id="_5-keep-the-histogram-name-stable-when-you-use-a-view" class="section"><a class="anchor-link left" href="#_5-keep-the-histogram-name-stable-when-you-use-a-view"><i class="icofont-laika link">&#xef71;</i></a>5. Keep the histogram name stable when you use a view</h2>
+        <p>The view only applies to histograms that match the selector.</p>
+        <p>If you rename the histogram in application code, update the selector to match the new name.</p>
         
         <h2 id="what-s-next" class="section"><a class="anchor-link left" href="#what-s-next"><i class="icofont-laika link">&#xef71;</i></a>What&#39;s next</h2>
         <ul>
-          <li>Export runtime metrics from Cats Effect:
+          <li>Record the histogram from application code:
+          <a href="record-application-metrics.html">Record application metrics</a></li>
+          <li>Export runtime metrics from the same application:
           <a href="register-cats-effect-runtime-metrics.html">Register Cats Effect runtime metrics</a></li>
-          <li>Customize histogram buckets for a specific metric:
-          <a href="customize-histogram-buckets.html">Customize histogram buckets</a></li>
-          <li>See the existing metrics page for the broader API surface:
-          <a href="../instrumentation/metrics.html">Metrics</a></li>
+          <li>See how view-based bucket customization works:
+          <a href="../explanations/histogram-bucket-customization-with-views.html">Histogram bucket customization with views</a></li>
         </ul>
 
         

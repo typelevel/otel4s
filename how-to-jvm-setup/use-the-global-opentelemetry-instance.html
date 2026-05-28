@@ -105,6 +105,7 @@
     <li class="level2 nav-leaf"><a href="index.html">JVM setup</a></li>
     <li class="level2 nav-leaf"><a href="set-up-otel4s-in-a-jvm-application.html">Set up otel4s in a JVM application</a></li>
     <li class="level2 active nav-leaf"><a href="#">Use the global OpenTelemetry instance</a></li>
+    <li class="level2 nav-leaf"><a href="keep-otel4s-context-in-sync-with-opentelemetry-java.html">Keep otel4s context in sync with OpenTelemetry Java</a></li>
     <li class="level1 nav-header">How-to | Tracing</li>
     <li class="level2 nav-leaf"><a href="../how-to-tracing/">Tracing</a></li>
     <li class="level2 nav-leaf"><a href="../how-to-tracing/create-spans-around-effectful-code.html">Create spans around effectful code</a></li>
@@ -113,8 +114,11 @@
     <li class="level1 nav-header">How-to | Metrics</li>
     <li class="level2 nav-leaf"><a href="../how-to-metrics/">Metrics</a></li>
     <li class="level2 nav-leaf"><a href="../how-to-metrics/record-application-metrics.html">Record application metrics</a></li>
+    <li class="level2 nav-leaf"><a href="../how-to-metrics/customize-histogram-buckets.html">Customize histogram buckets</a></li>
     <li class="level2 nav-leaf"><a href="../how-to-metrics/register-cats-effect-runtime-metrics.html">Register Cats Effect runtime metrics</a></li>
     <li class="level2 nav-leaf"><a href="../how-to-metrics/register-jvm-runtime-metrics.html">Register JVM runtime metrics</a></li>
+    <li class="level1 nav-header">Explanations</li>
+    <li class="level2 nav-leaf"><a href="../explanations/histogram-bucket-customization-with-views.html">Histogram bucket customization with views</a></li>
     <li class="level1 nav-header">Instrumentation</li>
     <li class="level2 nav-leaf"><a href="../instrumentation/metrics.html">Metrics</a></li>
     <li class="level2 nav-leaf"><a href="../instrumentation/metrics-cats-effect-io-runtime.html">Metrics | Cats Effect IO runtime</a></li>
@@ -123,11 +127,8 @@
     <li class="level2 nav-leaf"><a href="../instrumentation/logs.html">Logs</a></li>
     <li class="level2 nav-leaf"><a href="../instrumentation/baggage.html">Baggage</a></li>
     <li class="level2 nav-leaf"><a href="../instrumentation/semantic-conventions.html">Semantic conventions</a></li>
-    <li class="level1 nav-header">Customization</li>
-    <li class="level2 nav-leaf"><a href="../customization/histogram-custom-buckets/">Histogram custom buckets</a></li>
     <li class="level1 nav-header">OtelJava</li>
     <li class="level2 nav-leaf"><a href="../oteljava/overview.html">Overview</a></li>
-    <li class="level2 nav-leaf"><a href="../oteljava/tracing-context-propagation.html">Tracing | Context propagation</a></li>
     <li class="level2 nav-leaf"><a href="../oteljava/tracing-java-interop.html">Tracing | Interop with Java-instrumented libraries</a></li>
     <li class="level2 nav-leaf"><a href="../oteljava/agent.html">Zero-code | Java Agent</a></li>
     <li class="level2 nav-leaf"><a href="../oteljava/testkit.html">Testkit</a></li>
@@ -180,7 +181,7 @@
           <li>A global OpenTelemetry SDK is configured elsewhere.</li>
           <li>If you need Cats Effect and Java SDK context to stay aligned, add
           <code>otel4s-oteljava-context-storage</code> and follow
-          <a href="../oteljava/tracing-context-propagation.html">Tracing | Context propagation</a>.</li>
+          <a href="keep-otel4s-context-in-sync-with-opentelemetry-java.html">Keep otel4s context in sync with OpenTelemetry Java</a>.</li>
         </ul>
         
         <h2 id="_1-make-sure-the-global-sdk-is-configured-elsewhere" class="section"><a class="anchor-link left" href="#_1-make-sure-the-global-sdk-is-configured-elsewhere"><i class="icofont-laika link">&#xef71;</i></a>1. Make sure the global SDK is configured elsewhere</h2>
@@ -231,7 +232,7 @@
         <h2 id="what-s-next" class="section"><a class="anchor-link left" href="#what-s-next"><i class="icofont-laika link">&#xef71;</i></a>What&#39;s next</h2>
         <ul>
           <li>Align Cats Effect and Java SDK context:
-          <a href="../oteljava/tracing-context-propagation.html">Tracing | Context propagation</a></li>
+          <a href="keep-otel4s-context-in-sync-with-opentelemetry-java.html">Keep otel4s context in sync with OpenTelemetry Java</a></li>
           <li>Use otel4s with the Java agent:
           <a href="../oteljava/agent.html">Zero-code | Java Agent</a></li>
           <li>Create spans in your application code:

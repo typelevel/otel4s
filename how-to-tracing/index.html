@@ -6,7 +6,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="generator" content="Typelevel Laika + Helium Theme" />
-  <title>Overview</title>
+  <title>Tracing</title>
   
   <meta name="author" content="Ross A. Baker"/>
   
@@ -106,10 +106,10 @@
     <li class="level2 nav-leaf"><a href="../how-to-jvm-setup/set-up-otel4s-in-a-jvm-application.html">Set up otel4s in a JVM application</a></li>
     <li class="level2 nav-leaf"><a href="../how-to-jvm-setup/use-the-global-opentelemetry-instance.html">Use the global OpenTelemetry instance</a></li>
     <li class="level1 nav-header">How-to | Tracing</li>
-    <li class="level2 nav-leaf"><a href="../how-to-tracing/">Tracing</a></li>
-    <li class="level2 nav-leaf"><a href="../how-to-tracing/create-spans-around-effectful-code.html">Create spans around effectful code</a></li>
-    <li class="level2 nav-leaf"><a href="../how-to-tracing/propagate-trace-context-across-service-boundaries.html">Propagate trace context across service boundaries</a></li>
-    <li class="level2 nav-leaf"><a href="../how-to-tracing/use-otel4s-with-java-instrumented-libraries.html">Use otel4s with Java-instrumented libraries</a></li>
+    <li class="level2 active nav-leaf"><a href="#">Tracing</a></li>
+    <li class="level2 nav-leaf"><a href="create-spans-around-effectful-code.html">Create spans around effectful code</a></li>
+    <li class="level2 nav-leaf"><a href="propagate-trace-context-across-service-boundaries.html">Propagate trace context across service boundaries</a></li>
+    <li class="level2 nav-leaf"><a href="use-otel4s-with-java-instrumented-libraries.html">Use otel4s with Java-instrumented libraries</a></li>
     <li class="level1 nav-header">How-to | Metrics</li>
     <li class="level2 nav-leaf"><a href="../how-to-metrics/">Metrics</a></li>
     <li class="level2 nav-leaf"><a href="../how-to-metrics/record-application-metrics.html">Record application metrics</a></li>
@@ -135,7 +135,7 @@
     <li class="level2 nav-leaf"><a href="../oteljava/testkit-traces.html">Testkit | Traces</a></li>
     <li class="level2 nav-leaf"><a href="../oteljava/testkit-logs.html">Testkit | Logs</a></li>
     <li class="level1 nav-header">SDK</li>
-    <li class="level2 active nav-leaf"><a href="#">Overview</a></li>
+    <li class="level2 nav-leaf"><a href="../sdk/overview.html">Overview</a></li>
     <li class="level1 nav-header">Examples</li>
     <li class="level2 nav-leaf"><a href="../examples/jaeger-docker/">Jaeger - collecting traces</a></li>
     <li class="level2 nav-leaf"><a href="../examples/honeycomb/">Honeycomb - metrics and traces</a></li>
@@ -149,9 +149,11 @@
 
       
 <nav id="page-nav">
-  <p class="header"><a href="#">Overview</a></p>
+  <p class="header"><a href="#">Tracing</a></p>
 
   <ul class="nav-list">
+    <li class="level1 nav-leaf"><a href="#start-here">Start here</a></li>
+    <li class="level1 nav-leaf"><a href="#related-material">Related material</a></li>
   </ul>
 
   <p class="footer"></p>
@@ -160,12 +162,25 @@
 
       <main class="content">
 
-        <h1 id="overview" class="title">Overview</h1>
-        <p>SDK modules are an alternative to the <a href="https://typelevel.org/otel4s/oteljava/overview.html">otel4s-oteljava</a> implementation.
-        All modules are implemented in Scala and available for all platforms: JVM, Scala Native, and Scala.js.
-        The implementation remains <strong>experimental</strong> and some functionality may be lacking.</p>
-        <hr>
-        <p>The SDK modules were moved to a separate repo: <a href="https://typelevel.org/otel4s-sdk/sdk/overview.html">https://typelevel.org/otel4s-sdk/sdk/overview.html</a>.</p>
+        <h1 id="tracing" class="title">Tracing</h1>
+        <p>Use this section when you want to create spans, propagate trace context, or work with Java libraries
+        that depend on OpenTelemetry context.</p>
+        
+        <h2 id="start-here" class="section"><a class="anchor-link left" href="#start-here"><i class="icofont-laika link">&#xef71;</i></a>Start here</h2>
+        <ul>
+          <li><a href="create-spans-around-effectful-code.html">Create spans around effectful code</a></li>
+          <li><a href="propagate-trace-context-across-service-boundaries.html">Propagate trace context across service boundaries</a></li>
+          <li><a href="use-otel4s-with-java-instrumented-libraries.html">Use otel4s with Java-instrumented libraries</a></li>
+        </ul>
+        
+        <h2 id="related-material" class="section"><a class="anchor-link left" href="#related-material"><i class="icofont-laika link">&#xef71;</i></a>Related material</h2>
+        <ul>
+          <li>To keep otel4s context in sync with OpenTelemetry Java context, follow
+          <a href="../oteljava/tracing-context-propagation.html">Tracing | Context propagation</a>.</li>
+          <li>For <code>Resource</code>, <code>fs2.Stream</code>, and other advanced tracing patterns, see the existing
+          <a href="../instrumentation/tracing.html">Tracing</a> page.</li>
+          <li>For baggage, see the existing <a href="../instrumentation/baggage.html">Baggage</a> page.</li>
+        </ul>
 
         
 <hr class="footer-rule"/>

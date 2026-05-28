@@ -6,7 +6,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="generator" content="Typelevel Laika + Helium Theme" />
-  <title>Record application metrics</title>
+  <title>Use otel4s with Java-instrumented libraries</title>
   
   <meta name="author" content="Ross A. Baker"/>
   
@@ -106,14 +106,14 @@
     <li class="level2 nav-leaf"><a href="../how-to-jvm-setup/set-up-otel4s-in-a-jvm-application.html">Set up otel4s in a JVM application</a></li>
     <li class="level2 nav-leaf"><a href="../how-to-jvm-setup/use-the-global-opentelemetry-instance.html">Use the global OpenTelemetry instance</a></li>
     <li class="level1 nav-header">How-to | Tracing</li>
-    <li class="level2 nav-leaf"><a href="../how-to-tracing/">Tracing</a></li>
-    <li class="level2 nav-leaf"><a href="../how-to-tracing/create-spans-around-effectful-code.html">Create spans around effectful code</a></li>
-    <li class="level2 nav-leaf"><a href="../how-to-tracing/propagate-trace-context-across-service-boundaries.html">Propagate trace context across service boundaries</a></li>
-    <li class="level2 nav-leaf"><a href="../how-to-tracing/use-otel4s-with-java-instrumented-libraries.html">Use otel4s with Java-instrumented libraries</a></li>
+    <li class="level2 nav-leaf"><a href="index.html">Tracing</a></li>
+    <li class="level2 nav-leaf"><a href="create-spans-around-effectful-code.html">Create spans around effectful code</a></li>
+    <li class="level2 nav-leaf"><a href="propagate-trace-context-across-service-boundaries.html">Propagate trace context across service boundaries</a></li>
+    <li class="level2 active nav-leaf"><a href="#">Use otel4s with Java-instrumented libraries</a></li>
     <li class="level1 nav-header">How-to | Metrics</li>
-    <li class="level2 nav-leaf"><a href="index.html">Metrics</a></li>
-    <li class="level2 active nav-leaf"><a href="#">Record application metrics</a></li>
-    <li class="level2 nav-leaf"><a href="register-cats-effect-runtime-metrics.html">Register Cats Effect runtime metrics</a></li>
+    <li class="level2 nav-leaf"><a href="../how-to-metrics/">Metrics</a></li>
+    <li class="level2 nav-leaf"><a href="../how-to-metrics/record-application-metrics.html">Record application metrics</a></li>
+    <li class="level2 nav-leaf"><a href="../how-to-metrics/register-cats-effect-runtime-metrics.html">Register Cats Effect runtime metrics</a></li>
     <li class="level1 nav-header">Instrumentation</li>
     <li class="level2 nav-leaf"><a href="../instrumentation/metrics.html">Metrics</a></li>
     <li class="level2 nav-leaf"><a href="../instrumentation/metrics-cats-effect-io-runtime.html">Metrics | Cats Effect IO runtime</a></li>
@@ -149,14 +149,13 @@
 
       
 <nav id="page-nav">
-  <p class="header"><a href="#">Record application metrics</a></p>
+  <p class="header"><a href="#">Use otel4s with Java-instrumented libraries</a></p>
 
   <ul class="nav-list">
     <li class="level1 nav-leaf"><a href="#prerequisites">Prerequisites</a></li>
-    <li class="level1 nav-leaf"><a href="#_1-get-a-meter">1. Get a <code>Meter</code></a></li>
-    <li class="level1 nav-leaf"><a href="#_2-create-the-instruments-you-need">2. Create the instruments you need</a></li>
-    <li class="level1 nav-leaf"><a href="#_3-record-measurements-in-application-code">3. Record measurements in application code</a></li>
-    <li class="level1 nav-leaf"><a href="#_4-register-an-observable-instrument-for-on-demand-values">4. Register an observable instrument for on-demand values</a></li>
+    <li class="level1 nav-leaf"><a href="#_1-create-oteljava-and-bring-local-f-context-into-scope">1. Create <code>OtelJava</code> and bring <code>Local[F, Context]</code> into scope</a></li>
+    <li class="level1 nav-leaf"><a href="#_2-run-otel4s-code-under-an-existing-java-context">2. Run otel4s code under an existing Java context</a></li>
+    <li class="level1 nav-leaf"><a href="#_3-run-java-library-calls-under-the-current-otel4s-context">3. Run Java library calls under the current otel4s context</a></li>
     <li class="level1 nav-leaf"><a href="#what-s-next">What&#39;s next</a></li>
   </ul>
 
@@ -166,116 +165,100 @@
 
       <main class="content">
 
-        <h1 id="record-application-metrics" class="title">Record application metrics</h1>
-        <p>Use this page when you want to record counters, gauges, up-down counters, histograms, or observable measurements in
-        application code.</p>
+        <h1 id="use-otel4s-with-java-instrumented-libraries" class="title">Use otel4s with Java-instrumented libraries</h1>
+        <p>Use this page when your application crosses a boundary between otel4s code and Java code that reads or
+        writes OpenTelemetry context.</p>
+        <p>Without explicit bridging at those boundaries, Java code and otel4s can observe different current spans.
+        That usually shows up when a Java framework starts the trace, or when a Java library expects the current
+        OpenTelemetry Java context.</p>
         
         <h2 id="prerequisites" class="section"><a class="anchor-link left" href="#prerequisites"><i class="icofont-laika link">&#xef71;</i></a>Prerequisites</h2>
         <ul>
           <li><a href="../how-to-jvm-setup/set-up-otel4s-in-a-jvm-application.html">Set up otel4s in a JVM application</a></li>
+          <li>Keep otel4s context in sync with OpenTelemetry Java context by following
+          <a href="../oteljava/tracing-context-propagation.html">Tracing | Context propagation</a>.</li>
         </ul>
         
-        <h2 id="_1-get-a-meter" class="section"><a class="anchor-link left" href="#_1-get-a-meter"><i class="icofont-laika link">&#xef71;</i></a>1. Get a <code>Meter</code></h2>
-        <p>Get a <code>Meter</code> from the <code>MeterProvider</code> you created during setup.</p>
+        <h2 id="_1-create-oteljava-and-bring-local-f-context-into-scope" class="section"><a class="anchor-link left" href="#_1-create-oteljava-and-bring-local-f-context-into-scope"><i class="icofont-laika link">&#xef71;</i></a>1. Create <code>OtelJava</code> and bring <code>Local[F, Context]</code> into scope</h2>
+        <p><code>Local[F, Context]</code> lets you move between Cats Effect code and the OpenTelemetry Java context.</p>
         <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.{</span><span class="type-name">IO</span><span>, </span><span class="type-name">IOApp</span><span>}
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">metrics</span><span>.</span><span class="type-name">Meter</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">mtl</span><span>.</span><span class="type-name">Local</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="type-name">OtelJava</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="identifier">context</span><span>.</span><span class="type-name">Context</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">trace</span><span>.</span><span class="type-name">Tracer</span><span>
 
 </span><span class="keyword">object</span><span> </span><span class="type-name">Main</span><span> </span><span class="keyword">extends</span><span> </span><span class="type-name">IOApp</span><span>.</span><span class="type-name">Simple</span><span> {
   </span><span class="keyword">def</span><span> </span><span class="declaration-name">run</span><span>: </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] =
     </span><span class="type-name">OtelJava</span><span>.</span><span class="identifier">autoConfigured</span><span>[</span><span class="type-name">IO</span><span>]().</span><span class="identifier">use</span><span> { </span><span class="identifier">otel4s</span><span> =&gt;
-      </span><span class="identifier">otel4s</span><span>.</span><span class="identifier">meterProvider</span><span>.</span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;auth-service&quot;</span><span>).</span><span class="identifier">flatMap</span><span> { </span><span class="keyword">implicit</span><span> </span><span class="identifier">meter</span><span> =&gt;
+      </span><span class="keyword">import</span><span> </span><span class="identifier">otel4s</span><span>.</span><span class="identifier">localContext</span><span>
+      </span><span class="identifier">otel4s</span><span>.</span><span class="identifier">tracerProvider</span><span>.</span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;auth-service&quot;</span><span>).</span><span class="identifier">flatMap</span><span> { </span><span class="keyword">implicit</span><span> </span><span class="identifier">tracer</span><span> =&gt;
         </span><span class="identifier">program</span><span>
       }
     }
 
-  </span><span class="keyword">def</span><span> </span><span class="declaration-name">program</span><span>(</span><span class="keyword">implicit</span><span> </span><span class="identifier">meter</span><span>: </span><span class="type-name">Meter</span><span>[</span><span class="type-name">IO</span><span>]): </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] =
-    </span><span class="type-name">IO</span><span>(</span><span class="identifier">meter</span><span>).</span><span class="identifier">void</span><span>
+  </span><span class="keyword">def</span><span> </span><span class="declaration-name">program</span><span>(</span><span class="keyword">implicit</span><span> </span><span class="identifier">tracer</span><span>: </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">IO</span><span>], </span><span class="identifier">local</span><span>: </span><span class="type-name">Local</span><span>[</span><span class="type-name">IO</span><span>, </span><span class="type-name">Context</span><span>]): </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] =
+    </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">IO</span><span>].</span><span class="identifier">currentSpanContext</span><span>.</span><span class="identifier">flatMap</span><span>(</span><span class="identifier">_</span><span> =&gt; </span><span class="type-name">Local</span><span>[</span><span class="type-name">IO</span><span>, </span><span class="type-name">Context</span><span>].</span><span class="identifier">ask</span><span>.</span><span class="identifier">void</span><span>)
 }</span></code></pre>
-        <p><code>get(&quot;auth-service&quot;)</code> names the instrumentation scope for the meter. Use a stable name that identifies the code emitting
-        telemetry, such as your application or module name.</p>
+        <p>When you create <code>OtelJava</code>, you usually get <code>Local[F, Context]</code> from <code>otel4s.localContext</code>.</p>
         
-        <h2 id="_2-create-the-instruments-you-need" class="section"><a class="anchor-link left" href="#_2-create-the-instruments-you-need"><i class="icofont-laika link">&#xef71;</i></a>2. Create the instruments you need</h2>
-        <p>Create instruments once and reuse them while the application runs.</p>
-        <ul>
-          <li>Use <code>Counter</code> for values that only go up.</li>
-          <li>Use <code>Gauge</code> for non-additive values such as queue depth or cache size.</li>
-          <li>Use <code>UpDownCounter</code> for values that can go up and down.</li>
-          <li>Use <code>Histogram</code> for distributions such as durations or payload sizes.</li>
-        </ul>
+        <h2 id="_2-run-otel4s-code-under-an-existing-java-context" class="section"><a class="anchor-link left" href="#_2-run-otel4s-code-under-an-existing-java-context"><i class="icofont-laika link">&#xef71;</i></a>2. Run otel4s code under an existing Java context</h2>
+        <p>Use this pattern at a handler boundary, when a Java framework or library gives you an
+        <code>io.opentelemetry.context.Context</code>.</p>
         <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.</span><span class="type-name">IO</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">metrics</span><span>.{</span><span class="type-name">Counter</span><span>, </span><span class="type-name">Gauge</span><span>, </span><span class="type-name">Histogram</span><span>, </span><span class="type-name">UpDownCounter</span><span>, </span><span class="type-name">Meter</span><span>}
+</span><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">mtl</span><span>.</span><span class="type-name">Local</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">io</span><span>.</span><span class="identifier">opentelemetry</span><span>.</span><span class="identifier">context</span><span>.{</span><span class="type-name">Context</span><span> =&gt; </span><span class="type-name">JContext</span><span>}
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="identifier">context</span><span>.</span><span class="type-name">Context</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">trace</span><span>.</span><span class="type-name">Tracer</span><span>
 
-</span><span class="keyword">case</span><span> </span><span class="keyword">class</span><span> </span><span class="type-name">UserMetrics</span><span>(
-    </span><span class="identifier">missingUsers</span><span>: </span><span class="type-name">Counter</span><span>[</span><span class="type-name">IO</span><span>, </span><span class="type-name">Long</span><span>],
-    </span><span class="identifier">cachedUsers</span><span>: </span><span class="type-name">Gauge</span><span>[</span><span class="type-name">IO</span><span>, </span><span class="type-name">Long</span><span>],
-    </span><span class="identifier">activeRequests</span><span>: </span><span class="type-name">UpDownCounter</span><span>[</span><span class="type-name">IO</span><span>, </span><span class="type-name">Long</span><span>],
-    </span><span class="identifier">lookupDuration</span><span>: </span><span class="type-name">Histogram</span><span>[</span><span class="type-name">IO</span><span>, </span><span class="type-name">Double</span><span>]
-)
+</span><span class="keyword">def</span><span> </span><span class="declaration-name">withJContext</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>], </span><span class="type-name">A</span><span>](</span><span class="identifier">ctx</span><span>: </span><span class="type-name">JContext</span><span>)(</span><span class="identifier">fa</span><span>: </span><span class="type-name">F</span><span>[</span><span class="type-name">A</span><span>])(</span><span class="keyword">implicit</span><span>
+    </span><span class="type-name">L</span><span>: </span><span class="type-name">Local</span><span>[</span><span class="type-name">F</span><span>, </span><span class="type-name">Context</span><span>]
+): </span><span class="type-name">F</span><span>[</span><span class="type-name">A</span><span>] =
+  </span><span class="type-name">Local</span><span>[</span><span class="type-name">F</span><span>, </span><span class="type-name">Context</span><span>].</span><span class="identifier">scope</span><span>(</span><span class="identifier">fa</span><span>)(</span><span class="type-name">Context</span><span>.</span><span class="identifier">wrap</span><span>(</span><span class="identifier">ctx</span><span>))
 
-</span><span class="keyword">object</span><span> </span><span class="type-name">UserMetrics</span><span> {
-  </span><span class="keyword">def</span><span> </span><span class="declaration-name">create</span><span>(</span><span class="keyword">implicit</span><span> </span><span class="identifier">meter</span><span>: </span><span class="type-name">Meter</span><span>[</span><span class="type-name">IO</span><span>]): </span><span class="type-name">IO</span><span>[</span><span class="type-name">UserMetrics</span><span>] =
-    </span><span class="keyword">for</span><span> {
-      </span><span class="identifier">missingUsers</span><span> &lt;- </span><span class="identifier">meter</span><span>.</span><span class="identifier">counter</span><span>[</span><span class="type-name">Long</span><span>](</span><span class="string-literal">&quot;user.lookup.missing&quot;</span><span>).</span><span class="identifier">create</span><span>
-      </span><span class="identifier">cachedUsers</span><span> &lt;- </span><span class="identifier">meter</span><span>.</span><span class="identifier">gauge</span><span>[</span><span class="type-name">Long</span><span>](</span><span class="string-literal">&quot;user.storage.size&quot;</span><span>).</span><span class="identifier">create</span><span>
-      </span><span class="identifier">activeRequests</span><span> &lt;- </span><span class="identifier">meter</span><span>.</span><span class="identifier">upDownCounter</span><span>[</span><span class="type-name">Long</span><span>](</span><span class="string-literal">&quot;http.server.active_requests&quot;</span><span>).</span><span class="identifier">create</span><span>
-      </span><span class="identifier">lookupDuration</span><span> &lt;- </span><span class="identifier">meter</span><span>.</span><span class="identifier">histogram</span><span>[</span><span class="type-name">Double</span><span>](</span><span class="string-literal">&quot;user.lookup.duration&quot;</span><span>).</span><span class="identifier">withUnit</span><span>(</span><span class="string-literal">&quot;ms&quot;</span><span>).</span><span class="identifier">create</span><span>
-    } </span><span class="keyword">yield</span><span> </span><span class="type-name">UserMetrics</span><span>(</span><span class="identifier">missingUsers</span><span>, </span><span class="identifier">cachedUsers</span><span>, </span><span class="identifier">activeRequests</span><span>, </span><span class="identifier">lookupDuration</span><span>)
-}</span></code></pre>
+</span><span class="keyword">def</span><span> </span><span class="declaration-name">handleRequest</span><span>(</span><span class="keyword">implicit</span><span> </span><span class="identifier">tracer</span><span>: </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">IO</span><span>], </span><span class="identifier">local</span><span>: </span><span class="type-name">Local</span><span>[</span><span class="type-name">IO</span><span>, </span><span class="type-name">Context</span><span>]): </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] =
+  </span><span class="identifier">withJContext</span><span>(</span><span class="type-name">JContext</span><span>.</span><span class="identifier">current</span><span>()) {
+    </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">IO</span><span>].</span><span class="identifier">span</span><span>(</span><span class="string-literal">&quot;request.handle&quot;</span><span>).</span><span class="identifier">surround</span><span>(</span><span class="type-name">IO</span><span>.</span><span class="identifier">unit</span><span>)
+  }</span></code></pre>
         
-        <h2 id="_3-record-measurements-in-application-code" class="section"><a class="anchor-link left" href="#_3-record-measurements-in-application-code"><i class="icofont-laika link">&#xef71;</i></a>3. Record measurements in application code</h2>
-        <p>Use the instruments inline with the work they measure.</p>
-        <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">java</span><span>.</span><span class="identifier">util</span><span>.</span><span class="identifier">concurrent</span><span>.</span><span class="type-name">TimeUnit</span><span>
+        <h2 id="_3-run-java-library-calls-under-the-current-otel4s-context" class="section"><a class="anchor-link left" href="#_3-run-java-library-calls-under-the-current-otel4s-context"><i class="icofont-laika link">&#xef71;</i></a>3. Run Java library calls under the current otel4s context</h2>
+        <p>Use this pattern at a client or library boundary, when otel4s created the current span and Java code expects
+        the current Java context.</p>
+        <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.{</span><span class="type-name">IO</span><span>, </span><span class="type-name">Sync</span><span>}
+</span><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">mtl</span><span>.</span><span class="type-name">Local</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">syntax</span><span>.</span><span class="identifier">flatMap</span><span>.</span><span class="identifier">_</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">io</span><span>.</span><span class="identifier">opentelemetry</span><span>.</span><span class="identifier">api</span><span>.</span><span class="identifier">trace</span><span>.{</span><span class="type-name">Span</span><span> =&gt; </span><span class="type-name">JSpan</span><span>}
+</span><span class="keyword">import</span><span> </span><span class="identifier">io</span><span>.</span><span class="identifier">opentelemetry</span><span>.</span><span class="identifier">context</span><span>.{</span><span class="type-name">Context</span><span> =&gt; </span><span class="type-name">JContext</span><span>}
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="identifier">context</span><span>.</span><span class="type-name">Context</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">trace</span><span>.</span><span class="type-name">Tracer</span><span>
 
-</span><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.{</span><span class="type-name">IO</span><span>, </span><span class="type-name">Ref</span><span>}
-</span><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">syntax</span><span>.</span><span class="identifier">all</span><span>.</span><span class="identifier">_</span><span>
-
-</span><span class="keyword">case</span><span> </span><span class="keyword">class</span><span> </span><span class="type-name">User</span><span>(</span><span class="identifier">id</span><span>: </span><span class="type-name">Long</span><span>, </span><span class="identifier">email</span><span>: </span><span class="type-name">String</span><span>)
-
-</span><span class="keyword">class</span><span> </span><span class="type-name">UserService</span><span>(
-    </span><span class="identifier">storage</span><span>: </span><span class="type-name">Ref</span><span>[</span><span class="type-name">IO</span><span>, </span><span class="type-name">Map</span><span>[</span><span class="type-name">Long</span><span>, </span><span class="type-name">User</span><span>]],
-    </span><span class="identifier">metrics</span><span>: </span><span class="type-name">UserMetrics</span><span>
-) {
-
-  </span><span class="keyword">def</span><span> </span><span class="declaration-name">handleRequest</span><span>(</span><span class="identifier">userId</span><span>: </span><span class="type-name">Long</span><span>): </span><span class="type-name">IO</span><span>[</span><span class="type-name">Option</span><span>[</span><span class="type-name">User</span><span>]] =
-    </span><span class="identifier">metrics</span><span>.</span><span class="identifier">activeRequests</span><span>.</span><span class="identifier">inc</span><span>() *&gt;
-      </span><span class="identifier">metrics</span><span>.</span><span class="identifier">lookupDuration</span><span>
-        .</span><span class="identifier">recordDuration</span><span>(</span><span class="type-name">TimeUnit</span><span>.</span><span class="type-name">MILLISECONDS</span><span>)
-        .</span><span class="identifier">surround</span><span>(
-          </span><span class="identifier">storage</span><span>.</span><span class="identifier">get</span><span>.</span><span class="identifier">flatMap</span><span> { </span><span class="identifier">current</span><span> =&gt;
-            </span><span class="identifier">metrics</span><span>.</span><span class="identifier">cachedUsers</span><span>.</span><span class="identifier">record</span><span>(</span><span class="identifier">current</span><span>.</span><span class="identifier">size</span><span>.</span><span class="identifier">toLong</span><span>) *&gt;
-              </span><span class="type-name">IO</span><span>.</span><span class="identifier">pure</span><span>(</span><span class="identifier">current</span><span>.</span><span class="identifier">get</span><span>(</span><span class="identifier">userId</span><span>)).</span><span class="identifier">flatTap</span><span> {
-                </span><span class="keyword">case</span><span> </span><span class="type-name">Some</span><span>(</span><span class="identifier">_</span><span>) =&gt; </span><span class="type-name">IO</span><span>.</span><span class="identifier">unit</span><span>
-                </span><span class="keyword">case</span><span> </span><span class="type-name">None</span><span>    =&gt; </span><span class="identifier">metrics</span><span>.</span><span class="identifier">missingUsers</span><span>.</span><span class="identifier">inc</span><span>()
-              }
-          }
-        )
-        .</span><span class="identifier">guarantee</span><span>(</span><span class="identifier">metrics</span><span>.</span><span class="identifier">activeRequests</span><span>.</span><span class="identifier">dec</span><span>())
-}</span></code></pre>
-        
-        <h2 id="_4-register-an-observable-instrument-for-on-demand-values" class="section"><a class="anchor-link left" href="#_4-register-an-observable-instrument-for-on-demand-values"><i class="icofont-laika link">&#xef71;</i></a>4. Register an observable instrument for on-demand values</h2>
-        <p>Use an observable instrument when the value should be read at collection time instead of being recorded inline.</p>
-        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.</span><span class="type-name">Resource</span><span>
-
-</span><span class="keyword">def</span><span> </span><span class="declaration-name">registerStorageSize</span><span>(
-    </span><span class="identifier">storage</span><span>: </span><span class="type-name">Ref</span><span>[</span><span class="type-name">IO</span><span>, </span><span class="type-name">Map</span><span>[</span><span class="type-name">Long</span><span>, </span><span class="type-name">User</span><span>]]
-)(</span><span class="keyword">implicit</span><span> </span><span class="identifier">meter</span><span>: </span><span class="type-name">Meter</span><span>[</span><span class="type-name">IO</span><span>]): </span><span class="type-name">Resource</span><span>[</span><span class="type-name">IO</span><span>, </span><span class="type-name">Unit</span><span>] =
-  </span><span class="identifier">meter</span><span>
-    .</span><span class="identifier">observableGauge</span><span>[</span><span class="type-name">Long</span><span>](</span><span class="string-literal">&quot;user.storage.size&quot;</span><span>)
-    .</span><span class="identifier">withDescription</span><span>(</span><span class="string-literal">&quot;Current number of cached users&quot;</span><span>)
-    .</span><span class="identifier">createWithCallback</span><span> { </span><span class="identifier">cb</span><span> =&gt;
-      </span><span class="identifier">storage</span><span>.</span><span class="identifier">get</span><span>.</span><span class="identifier">flatMap</span><span>(</span><span class="identifier">users</span><span> =&gt; </span><span class="identifier">cb</span><span>.</span><span class="identifier">record</span><span>(</span><span class="identifier">users</span><span>.</span><span class="identifier">size</span><span>.</span><span class="identifier">toLong</span><span>))
+</span><span class="keyword">def</span><span> </span><span class="declaration-name">useJContext</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>]: </span><span class="type-name">Sync</span><span>, </span><span class="type-name">A</span><span>](</span><span class="identifier">use</span><span>: </span><span class="type-name">JContext</span><span> =&gt; </span><span class="type-name">A</span><span>)(</span><span class="keyword">implicit</span><span>
+    </span><span class="type-name">L</span><span>: </span><span class="type-name">Local</span><span>[</span><span class="type-name">F</span><span>, </span><span class="type-name">Context</span><span>]
+): </span><span class="type-name">F</span><span>[</span><span class="type-name">A</span><span>] =
+  </span><span class="type-name">Local</span><span>[</span><span class="type-name">F</span><span>, </span><span class="type-name">Context</span><span>].</span><span class="identifier">ask</span><span>.</span><span class="identifier">flatMap</span><span> { </span><span class="identifier">ctx</span><span> =&gt;
+    </span><span class="type-name">Sync</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">delay</span><span> {
+      </span><span class="keyword">val</span><span> </span><span class="identifier">jContext</span><span> = </span><span class="identifier">ctx</span><span>.</span><span class="identifier">underlying</span><span>
+      </span><span class="keyword">val</span><span> </span><span class="identifier">scope</span><span> = </span><span class="identifier">jContext</span><span>.</span><span class="identifier">makeCurrent</span><span>()
+      </span><span class="keyword">try</span><span> </span><span class="identifier">use</span><span>(</span><span class="identifier">jContext</span><span>)
+      </span><span class="keyword">finally</span><span> </span><span class="identifier">scope</span><span>.</span><span class="identifier">close</span><span>()
     }
-    .</span><span class="identifier">void</span></code></pre>
+  }
+
+</span><span class="keyword">def</span><span> </span><span class="declaration-name">callJavaLibrary</span><span>(</span><span class="keyword">implicit</span><span> </span><span class="identifier">tracer</span><span>: </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">IO</span><span>], </span><span class="identifier">local</span><span>: </span><span class="type-name">Local</span><span>[</span><span class="type-name">IO</span><span>, </span><span class="type-name">Context</span><span>]): </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] =
+  </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">IO</span><span>].</span><span class="identifier">span</span><span>(</span><span class="string-literal">&quot;client.call&quot;</span><span>).</span><span class="identifier">surround</span><span> {
+    </span><span class="identifier">useJContext</span><span>[</span><span class="type-name">IO</span><span>, </span><span class="type-name">Unit</span><span>] { </span><span class="identifier">_</span><span> =&gt;
+      </span><span class="keyword">val</span><span> </span><span class="identifier">_</span><span> = </span><span class="type-name">JSpan</span><span>.</span><span class="identifier">current</span><span>().</span><span class="identifier">getSpanContext</span><span>
+      ()
+    }
+  }</span></code></pre>
         
         <h2 id="what-s-next" class="section"><a class="anchor-link left" href="#what-s-next"><i class="icofont-laika link">&#xef71;</i></a>What&#39;s next</h2>
         <ul>
-          <li>Export runtime metrics from Cats Effect:
-          <a href="register-cats-effect-runtime-metrics.html">Register Cats Effect runtime metrics</a></li>
-          <li>Customize histogram buckets for a specific metric:
-          <a href="../customization/histogram-custom-buckets/">Histogram custom buckets</a></li>
-          <li>See the existing metrics page for the broader API surface:
-          <a href="../instrumentation/metrics.html">Metrics</a></li>
+          <li>Reuse a global SDK when something else owns OpenTelemetry setup:
+          <a href="../how-to-jvm-setup/use-the-global-opentelemetry-instance.html">Use the global OpenTelemetry instance</a></li>
+          <li>Continue incoming traces and propagate them downstream:
+          <a href="propagate-trace-context-across-service-boundaries.html">Propagate trace context across service boundaries</a></li>
+          <li>For more background and framework-specific examples, use the existing
+          <a href="../oteljava/tracing-java-interop.html">Tracing | Interop with Java</a> page.</li>
         </ul>
 
         

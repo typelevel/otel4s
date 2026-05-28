@@ -6,7 +6,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="generator" content="Typelevel Laika + Helium Theme" />
-  <title>Register Cats Effect runtime metrics</title>
+  <title>Register JVM runtime metrics</title>
   
   <meta name="author" content="Ross A. Baker"/>
   
@@ -113,8 +113,8 @@
     <li class="level1 nav-header">How-to | Metrics</li>
     <li class="level2 nav-leaf"><a href="index.html">Metrics</a></li>
     <li class="level2 nav-leaf"><a href="record-application-metrics.html">Record application metrics</a></li>
-    <li class="level2 active nav-leaf"><a href="#">Register Cats Effect runtime metrics</a></li>
-    <li class="level2 nav-leaf"><a href="register-jvm-runtime-metrics.html">Register JVM runtime metrics</a></li>
+    <li class="level2 nav-leaf"><a href="register-cats-effect-runtime-metrics.html">Register Cats Effect runtime metrics</a></li>
+    <li class="level2 active nav-leaf"><a href="#">Register JVM runtime metrics</a></li>
     <li class="level1 nav-header">Instrumentation</li>
     <li class="level2 nav-leaf"><a href="../instrumentation/metrics.html">Metrics</a></li>
     <li class="level2 nav-leaf"><a href="../instrumentation/metrics-cats-effect-io-runtime.html">Metrics | Cats Effect IO runtime</a></li>
@@ -149,14 +149,14 @@
 
       
 <nav id="page-nav">
-  <p class="header"><a href="#">Register Cats Effect runtime metrics</a></p>
+  <p class="header"><a href="#">Register JVM runtime metrics</a></p>
 
   <ul class="nav-list">
     <li class="level1 nav-leaf"><a href="#prerequisites">Prerequisites</a></li>
-    <li class="level1 nav-leaf"><a href="#_1-add-the-dependency">1. Add the dependency</a></li>
-    <li class="level1 nav-leaf"><a href="#_2-register-the-collectors-at-application-startup">2. Register the collectors at application startup</a></li>
+    <li class="level1 nav-leaf"><a href="#_1-add-the-runtime-telemetry-dependency">1. Add the runtime telemetry dependency</a></li>
+    <li class="level1 nav-leaf"><a href="#_2-register-the-runtime-telemetry-producers-at-startup">2. Register the runtime telemetry producers at startup</a></li>
     <li class="level1 nav-leaf"><a href="#_3-keep-the-registration-scope-open-while-metrics-should-be-collected">3. Keep the registration scope open while metrics should be collected</a></li>
-    <li class="level1 nav-leaf"><a href="#_4-customize-the-config-only-when-you-need-to">4. Customize the config only when you need to</a></li>
+    <li class="level1 nav-leaf"><a href="#_4-use-this-together-with-application-or-cats-effect-runtime-metrics-when-needed">4. Use this together with application or Cats Effect runtime metrics when needed</a></li>
     <li class="level1 nav-leaf"><a href="#what-s-next">What&#39;s next</a></li>
   </ul>
 
@@ -166,16 +166,16 @@
 
       <main class="content">
 
-        <h1 id="register-cats-effect-runtime-metrics" class="title">Register Cats Effect runtime metrics</h1>
-        <p>Use this page when you want to export runtime metrics such as CPU starvation and work-stealing thread pool activity from
-        a Cats Effect application.</p>
+        <h1 id="register-jvm-runtime-metrics" class="title">Register JVM runtime metrics</h1>
+        <p>Use this page when you want to export JVM runtime metrics such as memory, threads, garbage collection, and CPU activity.</p>
         
         <h2 id="prerequisites" class="section"><a class="anchor-link left" href="#prerequisites"><i class="icofont-laika link">&#xef71;</i></a>Prerequisites</h2>
         <ul>
           <li><a href="../how-to-jvm-setup/set-up-otel4s-in-a-jvm-application.html">Set up otel4s in a JVM application</a></li>
         </ul>
         
-        <h2 id="_1-add-the-dependency" class="section"><a class="anchor-link left" href="#_1-add-the-dependency"><i class="icofont-laika link">&#xef71;</i></a>1. Add the dependency</h2>
+        <h2 id="_1-add-the-runtime-telemetry-dependency" class="section"><a class="anchor-link left" href="#_1-add-the-runtime-telemetry-dependency"><i class="icofont-laika link">&#xef71;</i></a>1. Add the runtime telemetry dependency</h2>
+        <p>This page assumes you already depend on <code>otel4s-oteljava</code> from the JVM setup guide.</p>
         <div class="tab-container" data-tab-group="build-tool">
           <ul class="tab-group">
             <li class="tab active" data-choice-name="sbt"><a href="#">sbt</a></li>
@@ -184,73 +184,68 @@
           <div class="tab-content active" data-choice-name="sbt">
             <p>Add settings to <code>build.sbt</code>:</p>
             <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">libraryDependencies</span><span> ++= </span><span class="type-name">Seq</span><span>(
-  </span><span class="string-literal">&quot;org.typelevel&quot;</span><span> %%% </span><span class="string-literal">&quot;otel4s-instrumentation-metrics&quot;</span><span> % </span><span class="string-literal">&quot;1.0.0&quot;</span><span> </span><span class="comment">// &lt;1&gt;
+  </span><span class="string-literal">&quot;io.opentelemetry.instrumentation&quot;</span><span> % </span><span class="string-literal">&quot;opentelemetry-runtime-telemetry&quot;</span><span> % </span><span class="string-literal">&quot;2.28.1-alpha&quot;</span><span> </span><span class="comment">// &lt;1&gt;
 </span><span>)</span></code></pre>
           </div>
           <div class="tab-content" data-choice-name="scala-cli">
             <p>Add directives to the <code>*.scala</code> file:</p>
-            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="comment">//&gt; using dep &quot;org.typelevel::otel4s-instrumentation-metrics::1.0.0&quot; // &lt;1&gt;</span></code></pre>
+            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="comment">//&gt; using dep &quot;io.opentelemetry.instrumentation:opentelemetry-runtime-telemetry:2.28.1-alpha&quot; // &lt;1&gt;</span></code></pre>
           </div>
         </div>
         <ol class="arabic">
-          <li>Add <code>otel4s-instrumentation-metrics</code></li>
+          <li>Add the OpenTelemetry Java runtime telemetry module</li>
         </ol>
         
-        <h2 id="_2-register-the-collectors-at-application-startup" class="section"><a class="anchor-link left" href="#_2-register-the-collectors-at-application-startup"><i class="icofont-laika link">&#xef71;</i></a>2. Register the collectors at application startup</h2>
-        <p>Register the collectors after you create <code>OtelJava</code> and keep them active while your application runs.</p>
-        <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.{</span><span class="type-name">IO</span><span>, </span><span class="type-name">IOApp</span><span>}
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">instrumentation</span><span>.</span><span class="identifier">ce</span><span>.</span><span class="type-name">IORuntimeMetrics</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">metrics</span><span>.</span><span class="type-name">MeterProvider</span><span>
+        <h2 id="_2-register-the-runtime-telemetry-producers-at-startup" class="section"><a class="anchor-link left" href="#_2-register-the-runtime-telemetry-producers-at-startup"><i class="icofont-laika link">&#xef71;</i></a>2. Register the runtime telemetry producers at startup</h2>
+        <p>Register the producers after you create <code>OtelJava</code> and keep them active while your application runs.</p>
+        <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.{</span><span class="type-name">IO</span><span>, </span><span class="type-name">IOApp</span><span>, </span><span class="type-name">Resource</span><span>, </span><span class="type-name">Sync</span><span>}
+</span><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">syntax</span><span>.</span><span class="identifier">all</span><span>.</span><span class="identifier">_</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">io</span><span>.</span><span class="identifier">opentelemetry</span><span>.</span><span class="identifier">api</span><span>.{</span><span class="type-name">OpenTelemetry</span><span> =&gt; </span><span class="type-name">JOpenTelemetry</span><span>}
+</span><span class="keyword">import</span><span> </span><span class="identifier">io</span><span>.</span><span class="identifier">opentelemetry</span><span>.</span><span class="identifier">instrumentation</span><span>.</span><span class="identifier">runtimetelemetry</span><span>.</span><span class="type-name">RuntimeTelemetry</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="type-name">OtelJava</span><span>
 
 </span><span class="keyword">object</span><span> </span><span class="type-name">Main</span><span> </span><span class="keyword">extends</span><span> </span><span class="type-name">IOApp</span><span>.</span><span class="type-name">Simple</span><span> {
   </span><span class="keyword">def</span><span> </span><span class="declaration-name">run</span><span>: </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] =
-    </span><span class="type-name">OtelJava</span><span>.</span><span class="identifier">autoConfigured</span><span>[</span><span class="type-name">IO</span><span>]().</span><span class="identifier">use</span><span> { </span><span class="identifier">otel4s</span><span> =&gt;
-      </span><span class="keyword">implicit</span><span> </span><span class="keyword">val</span><span> </span><span class="identifier">meterProvider</span><span>: </span><span class="type-name">MeterProvider</span><span>[</span><span class="type-name">IO</span><span>] = </span><span class="identifier">otel4s</span><span>.</span><span class="identifier">meterProvider</span><span>
+    </span><span class="type-name">OtelJava</span><span>
+      .</span><span class="identifier">autoConfigured</span><span>[</span><span class="type-name">IO</span><span>]()
+      .</span><span class="identifier">flatTap</span><span>(</span><span class="identifier">otel4s</span><span> =&gt; </span><span class="identifier">registerRuntimeTelemetry</span><span>(</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">underlying</span><span>))
+      .</span><span class="identifier">use</span><span> { </span><span class="identifier">otel4s</span><span> =&gt;
+        </span><span class="identifier">program</span><span>(</span><span class="identifier">otel4s</span><span>)
+      }
 
-      </span><span class="type-name">IORuntimeMetrics</span><span>
-        .</span><span class="identifier">register</span><span>[</span><span class="type-name">IO</span><span>](</span><span class="identifier">runtime</span><span>.</span><span class="identifier">metrics</span><span>, </span><span class="type-name">IORuntimeMetrics</span><span>.</span><span class="type-name">Config</span><span>.</span><span class="keyword">default</span><span>)
-        .</span><span class="identifier">surround</span><span>(</span><span class="identifier">program</span><span>)
-    }
-
-  </span><span class="keyword">def</span><span> </span><span class="declaration-name">program</span><span>: </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] =
+  </span><span class="keyword">def</span><span> </span><span class="declaration-name">program</span><span>(</span><span class="identifier">otel4s</span><span>: </span><span class="type-name">OtelJava</span><span>[</span><span class="type-name">IO</span><span>]): </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] = {
+    </span><span class="keyword">val</span><span> </span><span class="identifier">_</span><span> = </span><span class="identifier">otel4s</span><span>
     </span><span class="type-name">IO</span><span>.</span><span class="identifier">never</span><span>
+  }
+
+  </span><span class="keyword">def</span><span> </span><span class="declaration-name">registerRuntimeTelemetry</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>]: </span><span class="type-name">Sync</span><span>](
+      </span><span class="identifier">openTelemetry</span><span>: </span><span class="type-name">JOpenTelemetry</span><span>
+  ): </span><span class="type-name">Resource</span><span>[</span><span class="type-name">F</span><span>, </span><span class="type-name">Unit</span><span>] =
+    </span><span class="type-name">Resource</span><span>
+      .</span><span class="identifier">fromAutoCloseable</span><span>(</span><span class="type-name">Sync</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">delay</span><span>(</span><span class="type-name">RuntimeTelemetry</span><span>.</span><span class="identifier">create</span><span>(</span><span class="identifier">openTelemetry</span><span>)))
+      .</span><span class="identifier">void</span><span>
 }</span></code></pre>
         
         <h2 id="_3-keep-the-registration-scope-open-while-metrics-should-be-collected" class="section"><a class="anchor-link left" href="#_3-keep-the-registration-scope-open-while-metrics-should-be-collected"><i class="icofont-laika link">&#xef71;</i></a>3. Keep the registration scope open while metrics should be collected</h2>
-        <p><code>IORuntimeMetrics.register</code> returns a <code>Resource</code>.</p>
-        <p>That resource owns the runtime collectors. In practice, this means:</p>
-        <ul>
-          <li>use <code>.surround(...)</code> when the collectors should stay active for the whole program</li>
-          <li>or keep the <code>Resource</code> open around the part of the application that should emit runtime metrics</li>
-        </ul>
+        <p>The runtime telemetry module returns an <code>AutoCloseable</code>.</p>
+        <p>Wrap it in a <code>Resource</code> and keep that resource open for as long as you want the JVM runtime metrics to be exported.</p>
         
-        <h2 id="_4-customize-the-config-only-when-you-need-to" class="section"><a class="anchor-link left" href="#_4-customize-the-config-only-when-you-need-to"><i class="icofont-laika link">&#xef71;</i></a>4. Customize the config only when you need to</h2>
-        <p>Start with <code>IORuntimeMetrics.Config.default</code>. Change it when you need to disable parts of the metric set or add
-        attributes.</p>
-        <p>For example, to disable CPU starvation metrics:</p>
-        <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">instrumentation</span><span>.</span><span class="identifier">ce</span><span>.</span><span class="type-name">IORuntimeMetrics</span><span>.</span><span class="type-name">Config</span><span>.</span><span class="identifier">_</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">metrics</span><span>.</span><span class="type-name">MeterProvider</span><span>
-
-</span><span class="keyword">val</span><span> </span><span class="identifier">runtime</span><span> = </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.</span><span class="identifier">unsafe</span><span>.</span><span class="identifier">implicits</span><span>.</span><span class="identifier">global</span><span>
-
-</span><span class="keyword">val</span><span> </span><span class="identifier">config</span><span>: </span><span class="type-name">IORuntimeMetrics</span><span>.</span><span class="type-name">Config</span><span> =
-  </span><span class="type-name">IORuntimeMetrics</span><span>.</span><span class="type-name">Config</span><span>(
-    </span><span class="type-name">CpuStarvationConfig</span><span>.</span><span class="identifier">disabled</span><span>,
-    </span><span class="type-name">WorkStealingThreadPoolConfig</span><span>.</span><span class="identifier">enabled</span><span>
-  )
-
-</span><span class="keyword">def</span><span> </span><span class="declaration-name">register</span><span>(</span><span class="keyword">implicit</span><span> </span><span class="identifier">meterProvider</span><span>: </span><span class="type-name">MeterProvider</span><span>[</span><span class="type-name">IO</span><span>]) =
-  </span><span class="type-name">IORuntimeMetrics</span><span>.</span><span class="identifier">register</span><span>[</span><span class="type-name">IO</span><span>](</span><span class="identifier">runtime</span><span>.</span><span class="identifier">metrics</span><span>, </span><span class="identifier">config</span><span>)</span></code></pre>
-        <p>For the full metric list and the full configuration surface, see
-        <a href="../instrumentation/metrics-cats-effect-io-runtime.html">Metrics | Cats Effect IO runtime</a>.</p>
+        <h2 id="_4-use-this-together-with-application-or-cats-effect-runtime-metrics-when-needed" class="section"><a class="anchor-link left" href="#_4-use-this-together-with-application-or-cats-effect-runtime-metrics-when-needed"><i class="icofont-laika link">&#xef71;</i></a>4. Use this together with application or Cats Effect runtime metrics when needed</h2>
+        <p>JVM runtime metrics are separate from:</p>
+        <ul>
+          <li>application metrics you record with <code>Meter</code></li>
+          <li>Cats Effect runtime metrics you register with <code>IORuntimeMetrics.register</code></li>
+        </ul>
+        <p>It is fine to export both when you need both views of the process.</p>
+        <p>See the JVM metric names and conventions in the
+        <a href="https://opentelemetry.io/docs/specs/semconv/runtime/jvm-metrics">OpenTelemetry JVM runtime semantic conventions</a>.</p>
         
         <h2 id="what-s-next" class="section"><a class="anchor-link left" href="#what-s-next"><i class="icofont-laika link">&#xef71;</i></a>What&#39;s next</h2>
         <ul>
           <li>Record application-specific metrics in your own code:
           <a href="record-application-metrics.html">Record application metrics</a></li>
-          <li>Export JVM runtime metrics with OpenTelemetry Java:
-          <a href="register-jvm-runtime-metrics.html">Register JVM runtime metrics</a></li>
+          <li>Export Cats Effect runtime metrics from the same application:
+          <a href="register-cats-effect-runtime-metrics.html">Register Cats Effect runtime metrics</a></li>
         </ul>
 
         

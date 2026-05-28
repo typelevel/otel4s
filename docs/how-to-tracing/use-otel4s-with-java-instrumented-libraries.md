@@ -11,7 +11,7 @@ OpenTelemetry Java context.
 
 - [Set up otel4s in a JVM application](../how-to-jvm-setup/set-up-otel4s-in-a-jvm-application.md)
 - Keep otel4s context in sync with OpenTelemetry Java context by following
-  [Tracing | Context propagation](../oteljava/tracing-context-propagation.md).
+  [Keep otel4s context in sync with OpenTelemetry Java](../how-to-jvm-setup/keep-otel4s-context-in-sync-with-opentelemetry-java.md).
 
 ## 1. Create `OtelJava` and bring `Local[F, Context]` into scope
 

@@ -14,7 +14,7 @@ Common cases:
 - A global OpenTelemetry SDK is configured elsewhere.
 - If you need Cats Effect and Java SDK context to stay aligned, add
   `otel4s-oteljava-context-storage` and follow
-  [Tracing | Context propagation](../oteljava/tracing-context-propagation.md).
+  [Keep otel4s context in sync with OpenTelemetry Java](keep-otel4s-context-in-sync-with-opentelemetry-java.md).
 
 ## 1. Make sure the global SDK is configured elsewhere
 
@@ -69,7 +69,7 @@ Use:
 ## What's next
 
 - Align Cats Effect and Java SDK context:
-  [Tracing | Context propagation](../oteljava/tracing-context-propagation.md)
+  [Keep otel4s context in sync with OpenTelemetry Java](keep-otel4s-context-in-sync-with-opentelemetry-java.md)
 - Use otel4s with the Java agent:
   [Zero-code | Java Agent](../oteljava/agent.md)
 - Create spans in your application code:

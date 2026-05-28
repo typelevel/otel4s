@@ -12,7 +12,7 @@ that depend on OpenTelemetry context.
 ## Related material
 
 - To keep otel4s context in sync with OpenTelemetry Java context, follow
-  [Tracing | Context propagation](../oteljava/tracing-context-propagation.md).
+  [Keep otel4s context in sync with OpenTelemetry Java](../how-to-jvm-setup/keep-otel4s-context-in-sync-with-opentelemetry-java.md).
 - For `Resource`, `fs2.Stream`, and other advanced tracing patterns, see the existing
   [Tracing](../instrumentation/tracing.md) page.
 - For baggage, see the existing [Baggage](../instrumentation/baggage.md) page.

@@ -26,7 +26,8 @@ The [otel4s-opentelemetry-java][otel4s-java-agent] agent is **experimental**.
 The additional otel4s and Cats Effect instrumentation relies on non-standard techniques and may behave unpredictably in non-trivial environments.
 
 - Please read the [Limitations](#limitations) section before using it.
-- Context propagation is handled through [fiber context tracking](tracing-context-propagation.md).
+- Context propagation is handled through
+  [Keep otel4s context in sync with OpenTelemetry Java](../how-to-jvm-setup/keep-otel4s-context-in-sync-with-opentelemetry-java.md).
 
 @:@
 

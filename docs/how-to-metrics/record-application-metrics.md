@@ -122,6 +122,6 @@ def registerStorageSize(
 - Export runtime metrics from Cats Effect:
   [Register Cats Effect runtime metrics](register-cats-effect-runtime-metrics.md)
 - Customize histogram buckets for a specific metric:
-  [Histogram custom buckets](../customization/histogram-custom-buckets/README.md)
+  [Customize histogram buckets](customize-histogram-buckets.md)
 - See the existing metrics page for the broader API surface:
   [Metrics](../instrumentation/metrics.md)

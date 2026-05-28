@@ -4,12 +4,35 @@ Use this page when you want to continue an incoming trace or pass the current tr
 
 ## Prerequisites
 
-- Finish [Set up otel4s in a JVM application](../how-to-jvm-setup/set-up-otel4s-in-a-jvm-application.md).
-- Have a `Tracer[F]` available in your application code.
+- [Set up otel4s in a JVM application](../how-to-jvm-setup/set-up-otel4s-in-a-jvm-application.md)
 - If you use non-default propagators, configure them in the OpenTelemetry SDK. See the
   [OpenTelemetry Java configuration guide][opentelemetry-java-configuration].
 
-## 1. Continue an incoming trace
+## 1. Get a `Tracer`
+
+Create `OtelJava`, then get a `Tracer` from its `TracerProvider`.
+
+```scala mdoc:reset:silent
+import cats.effect.{IO, IOApp}
+import org.typelevel.otel4s.oteljava.OtelJava
+import org.typelevel.otel4s.trace.Tracer
+
+object Main extends IOApp.Simple {
+  def run: IO[Unit] =
+    OtelJava.autoConfigured[IO]().use { otel4s =>
+      otel4s.tracerProvider.get("auth-service").flatMap { implicit tracer =>
+        handleIncoming(Map("traceparent" -> "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01"))
+      }
+    }
+
+  def handleIncoming(headers: Map[String, String])(implicit tracer: Tracer[IO]): IO[Unit] =
+    Tracer[IO].joinOrRoot(headers) {
+      Tracer[IO].span("request.handle").surround(IO.unit)
+    }
+}
+```
+
+## 2. Continue an incoming trace
 
 Use `joinOrRoot` to extract trace context from an incoming carrier. If extraction fails, otel4s starts a
 new root context instead.
@@ -26,7 +49,7 @@ def handleIncoming(headers: Map[String, String])(implicit tracer: Tracer[IO]): I
 
 `Map[String, String]` and `Seq[(String, String)]` work out of the box.
 
-## 2. Inject the current trace into an outgoing carrier
+## 3. Inject the current trace into an outgoing carrier
 
 Use `propagate` when you need to send the current trace context to another service.
 `propagate` does not send anything by itself.
@@ -59,7 +82,7 @@ def sendRequest(body: String)(implicit tracer: Tracer[IO]): IO[Unit] =
   }
 ```
 
-## 3. Add support for your carrier type
+## 4. Add support for your carrier type
 
 If your carrier type is not supported out of the box, provide `TextMapGetter` and `TextMapUpdater`.
 

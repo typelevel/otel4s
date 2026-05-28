@@ -4,25 +4,32 @@ Use this page when you want to trace application code with `Tracer`.
 
 ## Prerequisites
 
-- Finish [Set up otel4s in a JVM application](../how-to-jvm-setup/set-up-otel4s-in-a-jvm-application.md).
-- Have a `TracerProvider[F]` or `Tracer[F]` available in your application code.
+- [Set up otel4s in a JVM application](../how-to-jvm-setup/set-up-otel4s-in-a-jvm-application.md)
 
 ## 1. Get a `Tracer`
 
-Get a `Tracer` from `TracerProvider` once, then pass it where you need it.
+Create `OtelJava`, then get a `Tracer` from its `TracerProvider`.
 
 ```scala mdoc:reset:silent
-import cats.effect.IO
-import org.typelevel.otel4s.trace.{Tracer, TracerProvider}
+import cats.effect.{IO, IOApp}
+import org.typelevel.otel4s.oteljava.OtelJava
+import org.typelevel.otel4s.trace.Tracer
 
-def program(tracerProvider: TracerProvider[IO]): IO[Unit] =
-  tracerProvider.get("auth-service").flatMap { implicit tracer =>
-    handleRequest(userId = 42L)
-  }
+object Main extends IOApp.Simple {
+  def run: IO[Unit] =
+    OtelJava.autoConfigured[IO]().use { otel4s =>
+      otel4s.tracerProvider.get("auth-service").flatMap { implicit tracer =>
+        handleRequest(userId = 42L)
+      }
+    }
 
-def handleRequest(userId: Long)(implicit tracer: Tracer[IO]): IO[Unit] =
-  Tracer[IO].currentSpanContext.flatMap(_ => IO.println(s"handling user $userId"))
+  def handleRequest(userId: Long)(implicit tracer: Tracer[IO]): IO[Unit] =
+    Tracer[IO].currentSpanContext.flatMap(_ => IO.println(s"handling user $userId"))
+}
 ```
+
+`get("auth-service")` names the instrumentation scope for the tracer. Use a stable name that identifies the code
+emitting telemetry, such as your application or module name.
 
 ## 2. Wrap work in a span
 
@@ -34,12 +41,7 @@ You only need explicit propagation when crossing process or context boundaries.
 ```scala mdoc:reset:silent
 import cats.effect.IO
 import org.typelevel.otel4s.Attribute
-import org.typelevel.otel4s.trace.{Tracer, TracerProvider}
-
-def program(tracerProvider: TracerProvider[IO]): IO[Unit] =
-  tracerProvider.get("auth-service").flatMap { implicit tracer =>
-    handleRequest(userId = 42L)
-  }
+import org.typelevel.otel4s.trace.Tracer
 
 def handleRequest(userId: Long)(implicit tracer: Tracer[IO]): IO[Unit] =
   Tracer[IO].span("http.request", Attribute("user.id", userId)).surround {
@@ -52,12 +54,7 @@ If you need to add events or attributes while the span is open, use `use`.
 ```scala mdoc:reset:silent
 import cats.effect.IO
 import org.typelevel.otel4s.Attribute
-import org.typelevel.otel4s.trace.{Tracer, TracerProvider}
-
-def program(tracerProvider: TracerProvider[IO]): IO[Unit] =
-  tracerProvider.get("auth-service").flatMap { implicit tracer =>
-    handleRequest(userId = 42L)
-  }
+import org.typelevel.otel4s.trace.Tracer
 
 def handleRequest(userId: Long)(implicit tracer: Tracer[IO]): IO[Unit] =
   Tracer[IO].span("http.request", Attribute("user.id", userId)).use { span =>
@@ -74,12 +71,7 @@ When you create spans inside another span, otel4s attaches them as children of t
 ```scala mdoc:reset:silent
 import cats.effect.IO
 import org.typelevel.otel4s.Attribute
-import org.typelevel.otel4s.trace.{Tracer, TracerProvider}
-
-def program(tracerProvider: TracerProvider[IO]): IO[Unit] =
-  tracerProvider.get("auth-service").flatMap { implicit tracer =>
-    handleRequest(userId = 42L)
-  }
+import org.typelevel.otel4s.trace.Tracer
 
 def handleRequest(userId: Long)(implicit tracer: Tracer[IO]): IO[Unit] =
   Tracer[IO].span("http.request", Attribute("user.id", userId)).surround {

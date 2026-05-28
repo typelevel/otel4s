@@ -9,27 +9,36 @@ OpenTelemetry Java context.
 
 ## Prerequisites
 
-- Finish [Set up otel4s in a JVM application](../how-to-jvm-setup/set-up-otel4s-in-a-jvm-application.md).
+- [Set up otel4s in a JVM application](../how-to-jvm-setup/set-up-otel4s-in-a-jvm-application.md)
 - Keep otel4s context in sync with OpenTelemetry Java context by following
   [Tracing | Context propagation](../oteljava/tracing-context-propagation.md).
-- Have `Local[F, Context]` available. When you create `OtelJava`, you usually get it from
-  `otel4s.localContext`.
 
-## 1. Bring `Local[F, Context]` into scope
+## 1. Create `OtelJava` and bring `Local[F, Context]` into scope
 
 `Local[F, Context]` lets you move between Cats Effect code and the OpenTelemetry Java context.
 
 ```scala mdoc:silent
-import cats.effect.IO
+import cats.effect.{IO, IOApp}
 import cats.mtl.Local
 import org.typelevel.otel4s.oteljava.OtelJava
 import org.typelevel.otel4s.oteljava.context.Context
+import org.typelevel.otel4s.trace.Tracer
 
-def program(otel4s: OtelJava[IO]): IO[Unit] = {
-  import otel4s.localContext
-  Local[IO, Context].ask.void
+object Main extends IOApp.Simple {
+  def run: IO[Unit] =
+    OtelJava.autoConfigured[IO]().use { otel4s =>
+      import otel4s.localContext
+      otel4s.tracerProvider.get("auth-service").flatMap { implicit tracer =>
+        program
+      }
+    }
+
+  def program(implicit tracer: Tracer[IO], local: Local[IO, Context]): IO[Unit] =
+    Tracer[IO].currentSpanContext.flatMap(_ => Local[IO, Context].ask.void)
 }
 ```
+
+When you create `OtelJava`, you usually get `Local[F, Context]` from `otel4s.localContext`.
 
 ## 2. Run otel4s code under an existing Java context
 

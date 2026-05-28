@@ -75,4 +75,6 @@ Use:
 - Create spans in your application code:
   [Tracing](../instrumentation/tracing.md)
 - Record application metrics:
-  [Metrics](../instrumentation/metrics.md)
+  [Record application metrics](../how-to-metrics/record-application-metrics.md)
+- Register Cats Effect runtime metrics:
+  [Register Cats Effect runtime metrics](../how-to-metrics/register-cats-effect-runtime-metrics.md)

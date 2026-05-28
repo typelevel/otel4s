@@ -13,7 +13,7 @@ Use this section when you want to get otel4s running on the JVM with the OpenTel
 
 ## Related material
 
-- Backend overview and existing JVM-specific pages remain available during the transition:
+- Backend overview and existing JVM-specific pages:
   [OtelJava](../oteljava/overview.md)
 - Local verification examples:
   [Jaeger and Docker](../examples/jaeger-docker/README.md),

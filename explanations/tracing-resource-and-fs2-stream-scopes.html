@@ -173,13 +173,14 @@ mermaid.initialize({
   <p class="header"><a href="#">Tracing Resource and fs2.Stream scopes</a></p>
 
   <ul class="nav-list">
-    <li class="level1 nav-leaf"><a href="#resource-scopes-do-not-stay-aligned-automatically">Resource scopes do not stay aligned automatically</a></li>
-    <li class="level1 nav-leaf"><a href="#mapk-trace-keeps-acquire-use-and-release-under-the-same-parent-span"><code>mapK(trace)</code> keeps acquire, use, and release under the same parent span</a></li>
-    <li class="level1 nav-leaf"><a href="#another-resource-pattern-startup-and-shutdown-spans-under-one-lifecycle-span">Another resource pattern: startup and shutdown spans under one lifecycle span</a></li>
-    <li class="level1 nav-leaf"><a href="#translate-trace-re-enters-the-scope-for-a-stream-branch"><code>translate(trace)</code> re-enters the scope for a stream branch</a></li>
-    <li class="level1 nav-leaf"><a href="#flatmap-boundaries-are-the-important-stream-boundaries"><code>flatMap</code> boundaries are the important stream boundaries</a></li>
-    <li class="level1 nav-leaf"><a href="#sequential-stages-stay-siblings-unless-you-nest-spans">Sequential stages stay siblings unless you nest spans</a></li>
+    <li class="level1 nav-leaf"><a href="#resource-scopes-are-not-re-entered-automatically">Resource scopes are not re-entered automatically</a></li>
+    <li class="level1 nav-leaf"><a href="#mapk-trace-and-res-trace-cover-different-parts-of-a-resource"><code>mapK(trace)</code> and <code>res.trace(...)</code> cover different parts of a resource</a></li>
+    <li class="level1 nav-leaf"><a href="#another-resource-pattern-one-lifecycle-span-for-startup-run-and-shutdown">Another resource pattern: one lifecycle span for startup, run, and shutdown</a></li>
+    <li class="level1 nav-leaf"><a href="#translate-trace-re-enters-a-captured-span-for-a-sub-stream"><code>translate(trace)</code> re-enters a captured span for a sub-stream</a></li>
+    <li class="level1 nav-leaf"><a href="#flatmap-is-often-where-you-create-the-sub-stream"><code>flatMap</code> is often where you create the sub-stream</a></li>
+    <li class="level1 nav-leaf"><a href="#sequential-stages-are-siblings-unless-you-nest-spans">Sequential stages are siblings unless you nest spans</a></li>
     <li class="level1 nav-leaf"><a href="#parallel-branches-can-finish-in-any-order">Parallel branches can finish in any order</a></li>
+    <li class="level1 nav-leaf"><a href="#cancellation-changes-duration-not-parentage">Cancellation changes duration, not parentage</a></li>
   </ul>
 
   <p class="footer"></p>
@@ -189,114 +190,124 @@ mermaid.initialize({
       <main class="content">
 
         <h1 id="tracing-resource-and-fs2-stream-scopes" class="title">Tracing Resource and fs2.Stream scopes</h1>
-        <p>Use <a href="../how-to-tracing/trace-resource-and-fs2-stream-code.html">Trace Resource and fs2.Stream code</a> for the task itself.</p>
-        <p>This page explains why <code>trace</code>, <code>mapK</code>, and <code>translate</code> are needed when spans cross <code>Resource</code> and <code>fs2.Stream</code>
+        <p>Use <a href="../how-to-tracing/trace-resource-and-fs2-stream-code.html">Trace Resource and fs2.Stream code</a> for the step-by-step examples.</p>
+        <p>This page explains why <code>trace</code>, <code>mapK</code>, and <code>translate</code> matter when spans cross <code>Resource</code> and <code>fs2.Stream</code>
         boundaries.</p>
         
-        <h2 id="resource-scopes-do-not-stay-aligned-automatically" class="section"><a class="anchor-link left" href="#resource-scopes-do-not-stay-aligned-automatically"><i class="icofont-laika link">&#xef71;</i></a>Resource scopes do not stay aligned automatically</h2>
-        <p><code>Tracer[F].span(&quot;...&quot;).resource</code> gives you a managed span plus a <code>trace</code> function that re-enters that span scope.</p>
-        <p>That extra step is needed because a <code>Resource</code> closure does not automatically inherit the current tracing scope in the
-        same way as a plain effect. The <code>Resource</code> abstraction is leaky here with respect to fiber context propagation.</p>
-        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.</span><span class="identifier">_</span><span>
+        <h2 id="resource-scopes-are-not-re-entered-automatically" class="section"><a class="anchor-link left" href="#resource-scopes-are-not-re-entered-automatically"><i class="icofont-laika link">&#xef71;</i></a>Resource scopes are not re-entered automatically</h2>
+        <p><code>Tracer[F].span(&quot;...&quot;).resource</code> gives you a managed span and a <code>trace</code> function that re-enters that span scope.</p>
+        <p>A <code>Resource#use</code> body does not automatically run with that span as current.
+        See <a href="https://github.com/typelevel/otel4s/issues/194">issue #194</a> for background.</p>
+        <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.</span><span class="identifier">_</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">syntax</span><span>.</span><span class="identifier">functor</span><span>.</span><span class="identifier">_</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">trace</span><span>.{</span><span class="type-name">SpanOps</span><span>, </span><span class="type-name">Tracer</span><span>}
 
 </span><span class="keyword">def</span><span> </span><span class="declaration-name">withResourceWithoutTrace</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>]: </span><span class="type-name">Async</span><span>: </span><span class="type-name">Tracer</span><span>]: </span><span class="type-name">F</span><span>[</span><span class="type-name">Unit</span><span>] =
-  </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">span</span><span>(</span><span class="string-literal">&quot;my-resource-span&quot;</span><span>).</span><span class="identifier">resource</span><span>.</span><span class="identifier">use</span><span> { </span><span class="keyword">case</span><span> </span><span class="type-name">SpanOps</span><span>.</span><span class="type-name">Res</span><span>(</span><span class="identifier">_</span><span>, </span><span class="identifier">_</span><span>) =&gt;
-    </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">currentSpanContext</span><span>.</span><span class="identifier">void</span><span>
-  }</span></code></pre>
+  </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">F</span><span>]
+    .</span><span class="identifier">span</span><span>(</span><span class="string-literal">&quot;my-resource-span&quot;</span><span>)
+    .</span><span class="identifier">resource</span><span>
+    .</span><span class="identifier">use</span><span> { </span><span class="keyword">case</span><span> </span><span class="type-name">SpanOps</span><span>.</span><span class="type-name">Res</span><span>(</span><span class="identifier">_</span><span>, </span><span class="identifier">_</span><span>) =&gt;
+      </span><span class="comment">// outside the resource span scope
+</span><span>      </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">currentSpanContext</span><span> </span><span class="comment">// returns `None`
+</span><span>    }
+    .</span><span class="identifier">void</span></code></pre>
         <p>To run the inner effect under that span, re-enter the scope explicitly:</p>
         <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">def</span><span> </span><span class="declaration-name">withResourceWithTrace</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>]: </span><span class="type-name">Async</span><span>: </span><span class="type-name">Tracer</span><span>]: </span><span class="type-name">F</span><span>[</span><span class="type-name">Unit</span><span>] =
-  </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">span</span><span>(</span><span class="string-literal">&quot;my-resource-span&quot;</span><span>).</span><span class="identifier">resource</span><span>.</span><span class="identifier">use</span><span> { </span><span class="keyword">case</span><span> </span><span class="type-name">SpanOps</span><span>.</span><span class="type-name">Res</span><span>(</span><span class="identifier">_</span><span>, </span><span class="identifier">trace</span><span>) =&gt;
-    </span><span class="identifier">trace</span><span>(</span><span class="type-name">Tracer</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">currentSpanContext</span><span>).</span><span class="identifier">void</span><span>
-  }</span></code></pre>
+  </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">F</span><span>]
+    .</span><span class="identifier">span</span><span>(</span><span class="string-literal">&quot;my-resource-span&quot;</span><span>)
+    .</span><span class="identifier">resource</span><span>
+    .</span><span class="identifier">use</span><span> { </span><span class="keyword">case</span><span> </span><span class="type-name">SpanOps</span><span>.</span><span class="type-name">Res</span><span>(</span><span class="identifier">_</span><span>, </span><span class="identifier">trace</span><span>) =&gt;
+      </span><span class="comment">// inside the resource span scope
+</span><span>      </span><span class="identifier">trace</span><span>(</span><span class="type-name">Tracer</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">currentSpanContext</span><span>) </span><span class="comment">// returns `Some(SpanContext{traceId=&quot;...&quot;, ...})`
+</span><span>    }
+    .</span><span class="identifier">void</span></code></pre>
         
-        <h2 id="mapk-trace-keeps-acquire-use-and-release-under-the-same-parent-span" class="section"><a class="anchor-link left" href="#mapk-trace-keeps-acquire-use-and-release-under-the-same-parent-span"><i class="icofont-laika link">&#xef71;</i></a><code>mapK(trace)</code> keeps acquire, use, and release under the same parent span</h2>
-        <p>If a resource has traced acquire and release steps, <code>mapK(trace)</code> lets you run both of them under the captured parent
-        span.</p>
+        <h2 id="mapk-trace-and-res-trace-cover-different-parts-of-a-resource" class="section"><a class="anchor-link left" href="#mapk-trace-and-res-trace-cover-different-parts-of-a-resource"><i class="icofont-laika link">&#xef71;</i></a><code>mapK(trace)</code> and <code>res.trace(...)</code> cover different parts of a resource</h2>
+        <p>If a resource has traced acquire and release steps, <code>mapK(trace)</code> runs those steps under the captured parent span.
+        To keep the effect passed to <code>.use</code> under that same parent span, wrap that effect in <code>res.trace(...)</code> too.</p>
         <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.</span><span class="identifier">_</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">trace</span><span>.</span><span class="type-name">Tracer</span><span>
 
 </span><span class="keyword">class</span><span> </span><span class="type-name">Connection</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>]: </span><span class="type-name">Tracer</span><span>] {
-  </span><span class="keyword">def</span><span> </span><span class="declaration-name">use</span><span>[</span><span class="type-name">A</span><span>](</span><span class="identifier">f</span><span>: </span><span class="type-name">Connection</span><span>[</span><span class="type-name">F</span><span>] =&gt; </span><span class="type-name">F</span><span>[</span><span class="type-name">A</span><span>]): </span><span class="type-name">F</span><span>[</span><span class="type-name">A</span><span>] =
-    </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">span</span><span>(</span><span class="string-literal">&quot;use_conn&quot;</span><span>).</span><span class="identifier">surround</span><span>(</span><span class="identifier">f</span><span>(</span><span class="keyword">this</span><span>))
+  </span><span class="keyword">def</span><span> </span><span class="declaration-name">run</span><span>[</span><span class="type-name">A</span><span>](</span><span class="identifier">f</span><span>: </span><span class="type-name">Connection</span><span>[</span><span class="type-name">F</span><span>] =&gt; </span><span class="type-name">F</span><span>[</span><span class="type-name">A</span><span>]): </span><span class="type-name">F</span><span>[</span><span class="type-name">A</span><span>] =
+    </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">span</span><span>(</span><span class="string-literal">&quot;connection.operation&quot;</span><span>).</span><span class="identifier">surround</span><span>(</span><span class="identifier">f</span><span>(</span><span class="keyword">this</span><span>))
 }
 
 </span><span class="keyword">object</span><span> </span><span class="type-name">Connection</span><span> {
   </span><span class="keyword">def</span><span> </span><span class="declaration-name">create</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>]: </span><span class="type-name">Async</span><span>: </span><span class="type-name">Tracer</span><span>]: </span><span class="type-name">Resource</span><span>[</span><span class="type-name">F</span><span>, </span><span class="type-name">Connection</span><span>[</span><span class="type-name">F</span><span>]] =
     </span><span class="type-name">Resource</span><span>.</span><span class="identifier">make</span><span>(
-      </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">span</span><span>(</span><span class="string-literal">&quot;acquire&quot;</span><span>).</span><span class="identifier">surround</span><span>(</span><span class="type-name">Async</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">pure</span><span>(</span><span class="keyword">new</span><span> </span><span class="type-name">Connection</span><span>[</span><span class="type-name">F</span><span>]))
-    )(</span><span class="identifier">_</span><span> =&gt; </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">span</span><span>(</span><span class="string-literal">&quot;release&quot;</span><span>).</span><span class="identifier">surround</span><span>(</span><span class="type-name">Async</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">unit</span><span>))
+      </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">span</span><span>(</span><span class="string-literal">&quot;connection.acquire&quot;</span><span>).</span><span class="identifier">surround</span><span>(</span><span class="type-name">Async</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">pure</span><span>(</span><span class="keyword">new</span><span> </span><span class="type-name">Connection</span><span>[</span><span class="type-name">F</span><span>]))
+    )(</span><span class="identifier">_</span><span> =&gt; </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">span</span><span>(</span><span class="string-literal">&quot;connection.release&quot;</span><span>).</span><span class="identifier">surround</span><span>(</span><span class="type-name">Async</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">unit</span><span>))
 }
 
 </span><span class="keyword">class</span><span> </span><span class="type-name">App</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>]: </span><span class="type-name">Async</span><span>: </span><span class="type-name">Tracer</span><span>] {
   </span><span class="keyword">def</span><span> </span><span class="declaration-name">withConnection</span><span>[</span><span class="type-name">A</span><span>](</span><span class="identifier">f</span><span>: </span><span class="type-name">Connection</span><span>[</span><span class="type-name">F</span><span>] =&gt; </span><span class="type-name">F</span><span>[</span><span class="type-name">A</span><span>]): </span><span class="type-name">F</span><span>[</span><span class="type-name">A</span><span>] =
     (</span><span class="keyword">for</span><span> {
-      </span><span class="identifier">r</span><span> &lt;- </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">span</span><span>(</span><span class="string-literal">&quot;resource&quot;</span><span>).</span><span class="identifier">resource</span><span>
+      </span><span class="identifier">r</span><span> &lt;- </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">span</span><span>(</span><span class="string-literal">&quot;connection.lifecycle&quot;</span><span>).</span><span class="identifier">resource</span><span>
       </span><span class="identifier">c</span><span> &lt;- </span><span class="type-name">Connection</span><span>.</span><span class="identifier">create</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">mapK</span><span>(</span><span class="identifier">r</span><span>.</span><span class="identifier">trace</span><span>)
     } </span><span class="keyword">yield</span><span> (</span><span class="identifier">r</span><span>, </span><span class="identifier">c</span><span>)).</span><span class="identifier">use</span><span> { </span><span class="keyword">case</span><span> (</span><span class="identifier">res</span><span>, </span><span class="identifier">connection</span><span>) =&gt;
-      </span><span class="identifier">res</span><span>.</span><span class="identifier">trace</span><span>(</span><span class="type-name">Tracer</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">span</span><span>(</span><span class="string-literal">&quot;use&quot;</span><span>).</span><span class="identifier">surround</span><span>(</span><span class="identifier">connection</span><span>.</span><span class="identifier">use</span><span>(</span><span class="identifier">f</span><span>)))
+      </span><span class="identifier">res</span><span>.</span><span class="identifier">trace</span><span>(</span><span class="type-name">Tracer</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">span</span><span>(</span><span class="string-literal">&quot;connection.use&quot;</span><span>).</span><span class="identifier">surround</span><span>(</span><span class="identifier">connection</span><span>.</span><span class="identifier">run</span><span>(</span><span class="identifier">f</span><span>)))
     }
 }</span></code></pre>
-        <p>Expected span structure:</p>
+        <p>Resulting spans:</p>
         <pre class="mermaid">gantt
     dateFormat HH:mm:ss
     axisFormat %H:%M:%S
 
     section Spans
-    resource :done, a1, 00:00:00, 00:00:10
-    acquire  :done, a2, 00:00:00, 00:00:03
-    use      :done, a3, 00:00:03, 00:00:08
-    use_conn :done, a4, 00:00:04, 00:00:08
-    release  :done, a5, 00:00:08, 00:00:10</pre>
+    connection.lifecycle :done, a1, 00:00:00, 00:00:10
+    connection.acquire   :done, a2, 00:00:00, 00:00:03
+    connection.use       :done, a3, 00:00:03, 00:00:08
+    connection.operation :done, a4, 00:00:04, 00:00:08
+    connection.release   :done, a5, 00:00:08, 00:00:10</pre>
         
-        <h2 id="another-resource-pattern-startup-and-shutdown-spans-under-one-lifecycle-span" class="section"><a class="anchor-link left" href="#another-resource-pattern-startup-and-shutdown-spans-under-one-lifecycle-span"><i class="icofont-laika link">&#xef71;</i></a>Another resource pattern: startup and shutdown spans under one lifecycle span</h2>
-        <p>If you need one long-lived lifecycle span plus traced startup and shutdown of multiple resources, the same <code>mapK(trace)</code>
-        pattern applies.</p>
-        <pre><code class="nohighlight"><span class="keyword">class</span><span> </span><span class="type-name">Transactor</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>]]
+        <h2 id="another-resource-pattern-one-lifecycle-span-for-startup-run-and-shutdown" class="section"><a class="anchor-link left" href="#another-resource-pattern-one-lifecycle-span-for-startup-run-and-shutdown"><i class="icofont-laika link">&#xef71;</i></a>Another resource pattern: one lifecycle span for startup, run, and shutdown</h2>
+        <p>For long-lived components, keep the lifecycle handle and use it in both <code>mapK(lifecycle.trace)</code> and
+        <code>lifecycle.trace(...)</code>.</p>
+        <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">trace</span><span>.</span><span class="type-name">SpanOps</span><span>
+
+</span><span class="keyword">class</span><span> </span><span class="type-name">Transactor</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>]]
 </span><span class="keyword">class</span><span> </span><span class="type-name">Redis</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>]]
 
 </span><span class="keyword">def</span><span> </span><span class="declaration-name">createTransactor</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>]: </span><span class="type-name">Async</span><span>: </span><span class="type-name">Tracer</span><span>]: </span><span class="type-name">Resource</span><span>[</span><span class="type-name">F</span><span>, </span><span class="type-name">Transactor</span><span>[</span><span class="type-name">F</span><span>]] =
   </span><span class="type-name">Resource</span><span>.</span><span class="identifier">make</span><span>(
-    </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">span</span><span>(</span><span class="string-literal">&quot;transactor#acquire&quot;</span><span>).</span><span class="identifier">surround</span><span>(</span><span class="type-name">Async</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">pure</span><span>(</span><span class="keyword">new</span><span> </span><span class="type-name">Transactor</span><span>[</span><span class="type-name">F</span><span>]))
-  )(</span><span class="identifier">_</span><span> =&gt; </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">span</span><span>(</span><span class="string-literal">&quot;transactor#release&quot;</span><span>).</span><span class="identifier">surround</span><span>(</span><span class="type-name">Async</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">unit</span><span>))
+    </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">span</span><span>(</span><span class="string-literal">&quot;transactor.acquire&quot;</span><span>).</span><span class="identifier">surround</span><span>(</span><span class="type-name">Async</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">pure</span><span>(</span><span class="keyword">new</span><span> </span><span class="type-name">Transactor</span><span>[</span><span class="type-name">F</span><span>]))
+  )(</span><span class="identifier">_</span><span> =&gt; </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">span</span><span>(</span><span class="string-literal">&quot;transactor.release&quot;</span><span>).</span><span class="identifier">surround</span><span>(</span><span class="type-name">Async</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">unit</span><span>))
 
 </span><span class="keyword">def</span><span> </span><span class="declaration-name">createRedis</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>]: </span><span class="type-name">Async</span><span>: </span><span class="type-name">Tracer</span><span>]: </span><span class="type-name">Resource</span><span>[</span><span class="type-name">F</span><span>, </span><span class="type-name">Redis</span><span>[</span><span class="type-name">F</span><span>]] =
   </span><span class="type-name">Resource</span><span>.</span><span class="identifier">make</span><span>(
-    </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">span</span><span>(</span><span class="string-literal">&quot;redis#acquire&quot;</span><span>).</span><span class="identifier">surround</span><span>(</span><span class="type-name">Async</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">pure</span><span>(</span><span class="keyword">new</span><span> </span><span class="type-name">Redis</span><span>[</span><span class="type-name">F</span><span>]))
-  )(</span><span class="identifier">_</span><span> =&gt; </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">span</span><span>(</span><span class="string-literal">&quot;redis#release&quot;</span><span>).</span><span class="identifier">surround</span><span>(</span><span class="type-name">Async</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">unit</span><span>))
+    </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">span</span><span>(</span><span class="string-literal">&quot;redis.acquire&quot;</span><span>).</span><span class="identifier">surround</span><span>(</span><span class="type-name">Async</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">pure</span><span>(</span><span class="keyword">new</span><span> </span><span class="type-name">Redis</span><span>[</span><span class="type-name">F</span><span>]))
+  )(</span><span class="identifier">_</span><span> =&gt; </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">span</span><span>(</span><span class="string-literal">&quot;redis.release&quot;</span><span>).</span><span class="identifier">surround</span><span>(</span><span class="type-name">Async</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">unit</span><span>))
 
-</span><span class="keyword">def</span><span> </span><span class="declaration-name">components</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>]: </span><span class="type-name">Async</span><span>: </span><span class="type-name">Tracer</span><span>]: </span><span class="type-name">Resource</span><span>[</span><span class="type-name">F</span><span>, (</span><span class="type-name">Transactor</span><span>[</span><span class="type-name">F</span><span>], </span><span class="type-name">Redis</span><span>[</span><span class="type-name">F</span><span>])] =
+</span><span class="keyword">def</span><span> </span><span class="declaration-name">components</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>]: </span><span class="type-name">Async</span><span>: </span><span class="type-name">Tracer</span><span>]: </span><span class="type-name">Resource</span><span>[</span><span class="type-name">F</span><span>, (</span><span class="type-name">SpanOps</span><span>.</span><span class="type-name">Res</span><span>[</span><span class="type-name">F</span><span>], </span><span class="type-name">Transactor</span><span>[</span><span class="type-name">F</span><span>], </span><span class="type-name">Redis</span><span>[</span><span class="type-name">F</span><span>])] =
   </span><span class="keyword">for</span><span> {
-    </span><span class="identifier">r</span><span> &lt;- </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">span</span><span>(</span><span class="string-literal">&quot;app_lifecycle&quot;</span><span>).</span><span class="identifier">resource</span><span>
-    </span><span class="identifier">tx</span><span> &lt;- </span><span class="identifier">createTransactor</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">mapK</span><span>(</span><span class="identifier">r</span><span>.</span><span class="identifier">trace</span><span>)
-    </span><span class="identifier">redis</span><span> &lt;- </span><span class="identifier">createRedis</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">mapK</span><span>(</span><span class="identifier">r</span><span>.</span><span class="identifier">trace</span><span>)
-  } </span><span class="keyword">yield</span><span> (</span><span class="identifier">tx</span><span>, </span><span class="identifier">redis</span><span>)
+    </span><span class="identifier">lifecycle</span><span> &lt;- </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">span</span><span>(</span><span class="string-literal">&quot;app.lifecycle&quot;</span><span>).</span><span class="identifier">resource</span><span>
+    </span><span class="identifier">tx</span><span> &lt;- </span><span class="identifier">createTransactor</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">mapK</span><span>(</span><span class="identifier">lifecycle</span><span>.</span><span class="identifier">trace</span><span>)
+    </span><span class="identifier">redis</span><span> &lt;- </span><span class="identifier">createRedis</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">mapK</span><span>(</span><span class="identifier">lifecycle</span><span>.</span><span class="identifier">trace</span><span>)
+  } </span><span class="keyword">yield</span><span> (</span><span class="identifier">lifecycle</span><span>, </span><span class="identifier">tx</span><span>, </span><span class="identifier">redis</span><span>)
 
 </span><span class="keyword">def</span><span> </span><span class="declaration-name">run</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>]: </span><span class="type-name">Async</span><span>: </span><span class="type-name">Tracer</span><span>]: </span><span class="type-name">F</span><span>[</span><span class="type-name">Unit</span><span>] =
-  </span><span class="identifier">components</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">use</span><span> { </span><span class="keyword">case</span><span> (</span><span class="identifier">_</span><span> </span><span class="comment">/* transactor */</span><span>, </span><span class="identifier">_</span><span> </span><span class="comment">/* redis */</span><span>) =&gt;
-    </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">span</span><span>(</span><span class="string-literal">&quot;app_run&quot;</span><span>).</span><span class="identifier">surround</span><span>(</span><span class="type-name">Async</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">unit</span><span>)
+  </span><span class="identifier">components</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">use</span><span> { </span><span class="keyword">case</span><span> (</span><span class="identifier">lifecycle</span><span>, </span><span class="identifier">_</span><span> </span><span class="comment">/* transactor */</span><span>, </span><span class="identifier">_</span><span> </span><span class="comment">/* redis */</span><span>) =&gt;
+    </span><span class="identifier">lifecycle</span><span>.</span><span class="identifier">trace</span><span>(</span><span class="type-name">Tracer</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">span</span><span>(</span><span class="string-literal">&quot;app.run&quot;</span><span>).</span><span class="identifier">surround</span><span>(</span><span class="type-name">Async</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">unit</span><span>))
   }</span></code></pre>
-        <p>Expected span structure:</p>
+        <p>Resulting spans:</p>
         <pre class="mermaid">gantt
     dateFormat HH:mm:ss
     axisFormat %H:%M:%S
 
-    section app_lifecycle
-    app_lifecycle      :done, a1, 00:00:00, 00:00:26
-    transactor#acquire :done, a2, 00:00:00, 00:00:06
-    redis#acquire      :done, a3, 00:00:06, 00:00:10
-    redis#release      :done, a4, 00:00:15, 00:00:19
-    transactor#release :done, a5, 00:00:19, 00:00:26
-
-    section app_run
-    app_run            :done, a6, 00:00:10, 00:00:15</pre>
-        <p><code>app_run</code> and <code>app_lifecycle</code> are separate spans. The lifecycle span remains active until the resource is released.</p>
+    section app.lifecycle
+    app.lifecycle      :done, a1, 00:00:00, 00:00:26
+    transactor.acquire :done, a2, 00:00:00, 00:00:06
+    redis.acquire      :done, a3, 00:00:06, 00:00:10
+    app.run            :done, a4, 00:00:10, 00:00:15
+    redis.release      :done, a5, 00:00:15, 00:00:19
+    transactor.release :done, a6, 00:00:19, 00:00:26</pre>
+        <p>If you leave <code>app.run</code> outside <code>lifecycle.trace(...)</code>, it becomes a separate root span.</p>
         
-        <h2 id="translate-trace-re-enters-the-scope-for-a-stream-branch" class="section"><a class="anchor-link left" href="#translate-trace-re-enters-the-scope-for-a-stream-branch"><i class="icofont-laika link">&#xef71;</i></a><code>translate(trace)</code> re-enters the scope for a stream branch</h2>
-        <p>In <code>fs2.Stream</code>, a new branch can evaluate effects outside the span you started earlier unless you re-enter the scope at
-        that branch.</p>
-        <p><code>translate(trace)</code> is that re-entry point.</p>
+        <h2 id="translate-trace-re-enters-a-captured-span-for-a-sub-stream" class="section"><a class="anchor-link left" href="#translate-trace-re-enters-a-captured-span-for-a-sub-stream"><i class="icofont-laika link">&#xef71;</i></a><code>translate(trace)</code> re-enters a captured span for a sub-stream</h2>
+        <p>A stream built from <code>Stream.resource(Tracer[F].span(&quot;...&quot;).resource)</code> has the same issue as <code>Resource#use</code>: the
+        sub-stream does not automatically run with that span as current.</p>
+        <p><code>translate(trace)</code> applies the captured scope to the branch that should run under it.</p>
         <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.</span><span class="type-name">Async</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">fs2</span><span>.</span><span class="type-name">Stream</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">trace</span><span>.{</span><span class="type-name">SpanOps</span><span>, </span><span class="type-name">Tracer</span><span>}
@@ -311,7 +322,7 @@ mermaid.initialize({
         }
         .</span><span class="identifier">translate</span><span>(</span><span class="identifier">trace</span><span>)
     }</span></code></pre>
-        <p>Expected span structure:</p>
+        <p>Resulting spans:</p>
         <pre class="mermaid">gantt
     dateFormat HH:mm:ss
     axisFormat %H:%M:%S
@@ -320,18 +331,19 @@ mermaid.initialize({
     root-span  :done, a1, 00:00:00, 00:00:10
     inner-span :done, a2, 00:00:02, 00:00:08</pre>
         
-        <h2 id="flatmap-boundaries-are-the-important-stream-boundaries" class="section"><a class="anchor-link left" href="#flatmap-boundaries-are-the-important-stream-boundaries"><i class="icofont-laika link">&#xef71;</i></a><code>flatMap</code> boundaries are the important stream boundaries</h2>
-        <p><code>flatMap</code> often introduces the point where a new stream branch starts.</p>
+        <h2 id="flatmap-is-often-where-you-create-the-sub-stream" class="section"><a class="anchor-link left" href="#flatmap-is-often-where-you-create-the-sub-stream"><i class="icofont-laika link">&#xef71;</i></a><code>flatMap</code> is often where you create the sub-stream</h2>
+        <p>In <code>fs2.Stream</code>, <code>flatMap</code> is often where you build a new branch, so it is a common place to call <code>translate(trace)</code>.
+        The important part is the new branch itself, not <code>flatMap</code> as a special case.</p>
         <p>Practical rule:</p>
         <ul>
-          <li>when a sub-stream should keep the captured parent span, apply <code>.translate(trace)</code> at that branch</li>
-          <li>if that sub-stream creates another span resource, use that span&#39;s own <code>trace</code> function for deeper nested work</li>
+          <li>When a sub-stream should keep the captured parent span, apply <code>.translate(trace)</code> where you create that sub-stream.</li>
+          <li>If that sub-stream creates another span resource, use that span&#39;s own <code>trace</code> function for deeper nested work.</li>
         </ul>
-        <p>That keeps parent-child relationships explicit instead of relying on accidental scope carry-over.</p>
+        <p>That keeps parent-child relationships explicit.</p>
         
-        <h2 id="sequential-stages-stay-siblings-unless-you-nest-spans" class="section"><a class="anchor-link left" href="#sequential-stages-stay-siblings-unless-you-nest-spans"><i class="icofont-laika link">&#xef71;</i></a>Sequential stages stay siblings unless you nest spans</h2>
-        <p>If two <code>evalMap</code> stages each create their own span, they are usually siblings under the same parent span.
-        They are not parent and child unless one stage creates the next span while its own span is still current.</p>
+        <h2 id="sequential-stages-are-siblings-unless-you-nest-spans" class="section"><a class="anchor-link left" href="#sequential-stages-are-siblings-unless-you-nest-spans"><i class="icofont-laika link">&#xef71;</i></a>Sequential stages are siblings unless you nest spans</h2>
+        <p>In this pipeline, <code>stage-1</code> and <code>stage-2</code> are siblings under the same root span.
+        They only become parent and child if <code>stage-2</code> is created while <code>stage-1</code> is still current.</p>
         <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.</span><span class="type-name">Async</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">fs2</span><span>.</span><span class="type-name">Stream</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">trace</span><span>.{</span><span class="type-name">SpanOps</span><span>, </span><span class="type-name">Tracer</span><span>}
@@ -351,7 +363,7 @@ mermaid.initialize({
     }
     .</span><span class="identifier">compile</span><span>
     .</span><span class="identifier">drain</span></code></pre>
-        <p>Expected span structure:</p>
+        <p>Resulting spans:</p>
         <pre class="mermaid">gantt
     dateFormat HH:mm:ss
     axisFormat %H:%M:%S
@@ -385,7 +397,7 @@ mermaid.initialize({
     .</span><span class="identifier">parJoin</span><span>(</span><span class="number-literal">2</span><span>)
     .</span><span class="identifier">compile</span><span>
     .</span><span class="identifier">drain</span></code></pre>
-        <p>One possible span structure is:</p>
+        <p>One possible timing layout is:</p>
         <pre class="mermaid">gantt
     dateFormat HH:mm:ss
     axisFormat %H:%M:%S
@@ -399,6 +411,16 @@ mermaid.initialize({
     root-b  :done, a4, 00:00:00, 00:00:11
     stage-1 :done, a5, 00:00:02, 00:00:05
     stage-2 :done, a6, 00:00:06, 00:00:10</pre>
+        
+        <h2 id="cancellation-changes-duration-not-parentage" class="section"><a class="anchor-link left" href="#cancellation-changes-duration-not-parentage"><i class="icofont-laika link">&#xef71;</i></a>Cancellation changes duration, not parentage</h2>
+        <p>If a branch is canceled while one of its spans is still active:</p>
+        <ul>
+          <li>That span ends early.</li>
+          <li>The canceled branch keeps the same parent lineage it had before cancellation.</li>
+          <li>Sibling branches continue independently under their own translated scope.</li>
+        </ul>
+        <p>So the main rule stays the same: create each parallel branch inside the scope you want it to keep. After that,
+        completion order and cancellation may change timing, but they do not re-parent spans across branches.</p>
 
         
 <hr class="footer-rule"/>

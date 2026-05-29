@@ -107,6 +107,8 @@ def runIndependentTask(implicit tracer: Tracer[IO]): IO[Unit] =
 
 ## What's next
 
+- Keep a span open until later code finishes the work:
+  [Use unmanaged spans when a span must end outside its scope](use-unmanaged-spans-when-a-span-must-end-outside-its-scope.md)
 - Trace `Resource` and `fs2.Stream` code:
   [Trace Resource and fs2.Stream code](trace-resource-and-fs2-stream-code.md)
 - Continue incoming traces and propagate them downstream:

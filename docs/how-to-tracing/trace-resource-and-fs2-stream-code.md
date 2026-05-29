@@ -149,11 +149,11 @@ gantt
 
 ## What's next
 
+- Keep a span open until later code finishes the work:
+  [Use unmanaged spans when a span must end outside its scope](use-unmanaged-spans-when-a-span-must-end-outside-its-scope.md)
 - Continue incoming traces and propagate them downstream:
   [Propagate trace context across service boundaries](propagate-trace-context-across-service-boundaries.md)
 - Work with Java libraries that depend on OpenTelemetry context:
   [Use otel4s with Java-instrumented libraries](use-otel4s-with-java-instrumented-libraries.md)
 - For more background on `trace`, `mapK`, and `translate`, see
   [Tracing Resource and fs2.Stream scopes](../explanations/tracing-resource-and-fs2-stream-scopes.md).
-- For unmanaged spans and other lower-level tracing APIs, see the existing
-  [Tracing](../instrumentation/tracing.md) page.

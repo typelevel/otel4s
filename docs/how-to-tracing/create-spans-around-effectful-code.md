@@ -107,9 +107,9 @@ def runIndependentTask(implicit tracer: Tracer[IO]): IO[Unit] =
 
 ## What's next
 
+- Trace `Resource` and `fs2.Stream` code:
+  [Trace Resource and fs2.Stream code](trace-resource-and-fs2-stream-code.md)
 - Continue incoming traces and propagate them downstream:
   [Propagate trace context across service boundaries](propagate-trace-context-across-service-boundaries.md)
 - Work with Java libraries that depend on OpenTelemetry context:
   [Use otel4s with Java-instrumented libraries](use-otel4s-with-java-instrumented-libraries.md)
-- For `Resource`, `fs2.Stream`, and other advanced tracing patterns, see the existing
-  [Tracing](../instrumentation/tracing.md) page.

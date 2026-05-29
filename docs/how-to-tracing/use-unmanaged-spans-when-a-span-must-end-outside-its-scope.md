@@ -152,11 +152,11 @@ gantt
 ```
 
 For more background on how otel4s picks a parent span and what `childScope` changes, see
-[Root spans and tracing scopes](../explanations/root-spans-and-tracing-scopes.md).
+[Choosing parent spans and tracing scopes](../explanations/choosing-parent-spans-and-tracing-scopes.md).
 
 ## What's next
 
 - Work with `Resource` and `fs2.Stream` scope boundaries:
   [Trace Resource and fs2.Stream code](trace-resource-and-fs2-stream-code.md)
 - Learn how otel4s chooses a parent span:
-  [Root spans and tracing scopes](../explanations/root-spans-and-tracing-scopes.md)
+  [Choosing parent spans and tracing scopes](../explanations/choosing-parent-spans-and-tracing-scopes.md)

@@ -1,9 +1,12 @@
-# Root spans and tracing scopes
+# Choosing parent spans and tracing scopes
 
-Use [Create spans around effectful code](../how-to-tracing/create-spans-around-effectful-code.md) for the step-by-step examples.
+Use [Create spans around effectful code](../how-to-tracing/create-spans-around-effectful-code.md) for the step-by-step
+examples.
+Use [Propagate trace context across service boundaries](../how-to-tracing/propagate-trace-context-across-service-boundaries.md)
+for carrier setup and end-to-end propagation tasks.
 
-This page explains how otel4s chooses the parent of a new span, and what changes when you use `childScope`,
-`rootScope`, `rootSpan`, or `noopScope`.
+This page explains how otel4s chooses the parent of a new span, and what changes when you use `span`, `childScope`,
+`withParent`, `joinOrRoot`, `rootScope`, `rootSpan`, or `noopScope`.
 
 ## `span` follows the current tracing context
 
@@ -38,6 +41,66 @@ class UserRepository[F[_]: Monad: Tracer](storage: Ref[F, Map[Long, User]]) {
 
 `findUser` creates `find-user` as a child span when another span is current.
 If no parent is current, `find-user` becomes a root span.
+
+## `childScope` and `withParent` both set an explicit parent
+
+Use `childScope` when you want several spans in a block to inherit the same explicit parent.
+
+```scala mdoc:silent
+def continueMany(parent: SpanContext)(implicit tracer: Tracer[IO]): IO[Unit] =
+  Tracer[IO].childScope(parent) {
+    for {
+      _ <- Tracer[IO].span("step-1").use_
+      _ <- Tracer[IO].span("step-2").use_
+    } yield ()
+  }
+```
+
+Use `withParent` when one new span should use an explicit parent without changing the scope for other spans.
+
+```scala mdoc:silent
+def attachOneToOuter(implicit tracer: Tracer[IO]): IO[Unit] =
+  Tracer[IO].span("span").use { outer =>
+    Tracer[IO].span("span-2").use_ >>
+      Tracer[IO].spanBuilder("span-3").withParent(outer.context).build.use_
+  }
+```
+
+In that example, `span-3` is attached to `span` even though it is created after `span-2`.
+
+Span structure:
+
+```mermaid
+gantt
+    dateFormat HH:mm:ss
+    axisFormat %H:%M:%S
+
+    section Spans
+    span   :done, a1, 00:00:00, 00:00:10
+    span-2 :done, a2, 00:00:01, 00:00:04
+    span-3 :done, a3, 00:00:05, 00:00:08
+```
+
+`childScope` changes parent selection for spans created inside the block.
+`withParent` changes parent selection for one span builder only.
+
+## `joinOrRoot` chooses between an extracted parent and no parent
+
+`joinOrRoot` is for external boundaries such as HTTP requests, messages, or jobs started by another process.
+
+It tries to extract a parent span context from a carrier:
+- if extraction succeeds, new spans become children of that external parent
+- if extraction fails, spans in the block start as root spans
+
+```scala mdoc:silent
+def handleIncoming(headers: Map[String, String])(implicit tracer: Tracer[IO]): IO[Unit] =
+  Tracer[IO].joinOrRoot(headers) {
+    Tracer[IO].span("request.handle").surround(IO.unit)
+  }
+```
+
+Unlike `childScope` and `withParent`, `joinOrRoot` does not take a `SpanContext` directly.
+It derives the parent from propagation data in the carrier.
 
 ## `rootScope` and `rootSpan` solve different problems
 
@@ -117,16 +180,14 @@ class InternalUserService[F[_]: Tracer](repo: UserRepository[F]) {
 
 Use it when code should run without emitting spans even if tracing is enabled in the surrounding application.
 
-## `childScope` sets a specific parent
+## Summary
 
-`childScope` is the lower-level scope API.
-Use it when you already have a `SpanContext` and want spans in a block to use that context as their parent.
-
-```scala mdoc:silent
-def continueFrom(parent: SpanContext)(implicit tracer: Tracer[IO]): IO[Unit] =
-  Tracer[IO].childScope(parent) {
-    Tracer[IO].span("continued-work").use_
-  }
-```
-
-This is useful when the parent span is known explicitly rather than taken from the current tracing context.
+| API | How otel4s picks the parent | Typical use |
+| --- | --- | --- |
+| `span` | Current tracing context if present, otherwise root | Normal nested tracing |
+| `childScope(parent)` | The explicit `parent` for spans in the block | Continue several spans from one known parent |
+| `spanBuilder(...).withParent(parent)` | The explicit `parent` for one new span | Attach one span to a chosen parent |
+| `joinOrRoot(carrier)` | Extracted parent from the carrier, otherwise no parent | Continue incoming traces across process boundaries |
+| `rootScope` | No parent, and no wrapper span | Stop inheriting the current parent |
+| `rootSpan` | No parent for the wrapper span, then that wrapper becomes current | Start a fresh trace with one explicit root |
+| `noopScope` | No tracing at all | Suppress spans in a block |

@@ -9,7 +9,7 @@ boundaries.
 
 `Tracer[F].span("...").resource` gives you a managed span and a `trace` function that re-enters that span scope.
 
-A `Resource.use` body does not automatically run with that span as current.
+A `Resource#use` body does not automatically run with that span as current.
 See [issue #194](https://github.com/typelevel/otel4s/issues/194) for background.
 
 ```scala mdoc:silent
@@ -143,7 +143,7 @@ If you leave `app.run` outside `lifecycle.trace(...)`, it becomes a separate roo
 
 ## `translate(trace)` re-enters a captured span for a sub-stream
 
-A stream built from `Stream.resource(Tracer[F].span("...").resource)` has the same issue as `Resource.use`: the
+A stream built from `Stream.resource(Tracer[F].span("...").resource)` has the same issue as `Resource#use`: the
 sub-stream does not automatically run with that span as current.
 
 `translate(trace)` applies the captured scope to the branch that should run under it.
@@ -179,7 +179,7 @@ gantt
 
 ## `flatMap` is often where you create the sub-stream
 
-In `fs2`, `flatMap` is often where you build a new branch, so it is a common place to call `translate(trace)`.
+In `fs2.Stream`, `flatMap` is often where you build a new branch, so it is a common place to call `translate(trace)`.
 The important part is the new branch itself, not `flatMap` as a special case.
 
 Practical rule:

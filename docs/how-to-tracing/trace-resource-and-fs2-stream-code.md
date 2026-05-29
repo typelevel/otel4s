@@ -3,7 +3,7 @@
 Use this page when tracing code that crosses `Resource` or `fs2.Stream` boundaries.
 
 A span created with `Tracer[F].span("...").resource` stays managed by the `Resource`, but the effect inside
-`Resource.use` does not automatically run with that span as current.
+`Resource#use` does not automatically run with that span as current.
 
 Use `trace` to re-enter that span scope. The same idea applies when you build an `fs2.Stream` branch from a captured
 span resource.
@@ -13,7 +13,7 @@ span resource.
 - [Set up otel4s in a JVM application](../how-to-jvm-setup/set-up-otel4s-in-a-jvm-application.md)
 - [Create spans around effectful code](create-spans-around-effectful-code.md)
 
-## 1. Re-enter the span inside `Resource.use`
+## 1. Re-enter the span inside `Resource#use`
 
 `Tracer[F].span("...").resource` gives you a managed span and a `trace` function that re-enters that span scope.
 

@@ -1,16 +1,16 @@
 # Tracing Resource and fs2.Stream scopes
 
-Use [Trace Resource and fs2.Stream code](../how-to-tracing/trace-resource-and-fs2-stream-code.md) for the task itself.
+Use [Trace Resource and fs2.Stream code](../how-to-tracing/trace-resource-and-fs2-stream-code.md) for the step-by-step examples.
 
-This page explains why `trace`, `mapK`, and `translate` are needed when spans cross `Resource` and `fs2.Stream`
+This page explains why `trace`, `mapK`, and `translate` matter when spans cross `Resource` and `fs2.Stream`
 boundaries.
 
-## Resource scopes do not stay aligned automatically
+## Resource scopes are not re-entered automatically
 
-`Tracer[F].span("...").resource` gives you a managed span plus a `trace` function that re-enters that span scope.
+`Tracer[F].span("...").resource` gives you a managed span and a `trace` function that re-enters that span scope.
 
-That extra step is needed because a `Resource` closure does not automatically inherit the current tracing scope in the
-same way as a plain effect. The `Resource` abstraction is leaky here with respect to fiber context propagation.
+A `Resource#use` body does not automatically run with that span as current.
+See [issue #194](https://github.com/typelevel/otel4s/issues/194) for background.
 
 ```scala mdoc:silent
 import cats.effect._
@@ -18,53 +18,63 @@ import cats.syntax.functor._
 import org.typelevel.otel4s.trace.{SpanOps, Tracer}
 
 def withResourceWithoutTrace[F[_]: Async: Tracer]: F[Unit] =
-  Tracer[F].span("my-resource-span").resource.use { case SpanOps.Res(_, _) =>
-    Tracer[F].currentSpanContext.void
-  }
+  Tracer[F]
+    .span("my-resource-span")
+    .resource
+    .use { case SpanOps.Res(_, _) =>
+      // outside the resource span scope
+      Tracer[F].currentSpanContext // returns `None`
+    }
+    .void
 ```
 
 To run the inner effect under that span, re-enter the scope explicitly:
 
 ```scala mdoc:silent
 def withResourceWithTrace[F[_]: Async: Tracer]: F[Unit] =
-  Tracer[F].span("my-resource-span").resource.use { case SpanOps.Res(_, trace) =>
-    trace(Tracer[F].currentSpanContext).void
-  }
+  Tracer[F]
+    .span("my-resource-span")
+    .resource
+    .use { case SpanOps.Res(_, trace) =>
+      // inside the resource span scope
+      trace(Tracer[F].currentSpanContext) // returns `Some(SpanContext{traceId="...", ...})`
+    }
+    .void
 ```
 
-## `mapK(trace)` keeps acquire, use, and release under the same parent span
+## `mapK(trace)` and `res.trace(...)` cover different parts of a resource
 
-If a resource has traced acquire and release steps, `mapK(trace)` lets you run both of them under the captured parent
-span.
+If a resource has traced acquire and release steps, `mapK(trace)` runs those steps under the captured parent span.
+To keep the effect passed to `.use` under that same parent span, wrap that effect in `res.trace(...)` too.
 
 ```scala mdoc:silent:reset
 import cats.effect._
 import org.typelevel.otel4s.trace.Tracer
 
 class Connection[F[_]: Tracer] {
-  def use[A](f: Connection[F] => F[A]): F[A] =
-    Tracer[F].span("use_conn").surround(f(this))
+  def run[A](f: Connection[F] => F[A]): F[A] =
+    Tracer[F].span("connection.operation").surround(f(this))
 }
 
 object Connection {
   def create[F[_]: Async: Tracer]: Resource[F, Connection[F]] =
     Resource.make(
-      Tracer[F].span("acquire").surround(Async[F].pure(new Connection[F]))
-    )(_ => Tracer[F].span("release").surround(Async[F].unit))
+      Tracer[F].span("connection.acquire").surround(Async[F].pure(new Connection[F]))
+    )(_ => Tracer[F].span("connection.release").surround(Async[F].unit))
 }
 
 class App[F[_]: Async: Tracer] {
   def withConnection[A](f: Connection[F] => F[A]): F[A] =
     (for {
-      r <- Tracer[F].span("resource").resource
+      r <- Tracer[F].span("connection.lifecycle").resource
       c <- Connection.create[F].mapK(r.trace)
     } yield (r, c)).use { case (res, connection) =>
-      res.trace(Tracer[F].span("use").surround(connection.use(f)))
+      res.trace(Tracer[F].span("connection.use").surround(connection.run(f)))
     }
 }
 ```
 
-Expected span structure:
+Resulting spans:
 
 ```mermaid
 gantt
@@ -72,71 +82,71 @@ gantt
     axisFormat %H:%M:%S
 
     section Spans
-    resource :done, a1, 00:00:00, 00:00:10
-    acquire  :done, a2, 00:00:00, 00:00:03
-    use      :done, a3, 00:00:03, 00:00:08
-    use_conn :done, a4, 00:00:04, 00:00:08
-    release  :done, a5, 00:00:08, 00:00:10
+    connection.lifecycle :done, a1, 00:00:00, 00:00:10
+    connection.acquire   :done, a2, 00:00:00, 00:00:03
+    connection.use       :done, a3, 00:00:03, 00:00:08
+    connection.operation :done, a4, 00:00:04, 00:00:08
+    connection.release   :done, a5, 00:00:08, 00:00:10
 ```
 
-## Another resource pattern: startup and shutdown spans under one lifecycle span
+## Another resource pattern: one lifecycle span for startup, run, and shutdown
 
-If you need one long-lived lifecycle span plus traced startup and shutdown of multiple resources, the same `mapK(trace)`
-pattern applies.
+For long-lived components, keep the lifecycle handle and use it in both `mapK(lifecycle.trace)` and
+`lifecycle.trace(...)`.
 
 ```scala mdoc:silent
+import org.typelevel.otel4s.trace.SpanOps
+
 class Transactor[F[_]]
 class Redis[F[_]]
 
 def createTransactor[F[_]: Async: Tracer]: Resource[F, Transactor[F]] =
   Resource.make(
-    Tracer[F].span("transactor#acquire").surround(Async[F].pure(new Transactor[F]))
-  )(_ => Tracer[F].span("transactor#release").surround(Async[F].unit))
+    Tracer[F].span("transactor.acquire").surround(Async[F].pure(new Transactor[F]))
+  )(_ => Tracer[F].span("transactor.release").surround(Async[F].unit))
 
 def createRedis[F[_]: Async: Tracer]: Resource[F, Redis[F]] =
   Resource.make(
-    Tracer[F].span("redis#acquire").surround(Async[F].pure(new Redis[F]))
-  )(_ => Tracer[F].span("redis#release").surround(Async[F].unit))
+    Tracer[F].span("redis.acquire").surround(Async[F].pure(new Redis[F]))
+  )(_ => Tracer[F].span("redis.release").surround(Async[F].unit))
 
-def components[F[_]: Async: Tracer]: Resource[F, (Transactor[F], Redis[F])] =
+def components[F[_]: Async: Tracer]: Resource[F, (SpanOps.Res[F], Transactor[F], Redis[F])] =
   for {
-    r <- Tracer[F].span("app_lifecycle").resource
-    tx <- createTransactor[F].mapK(r.trace)
-    redis <- createRedis[F].mapK(r.trace)
-  } yield (tx, redis)
+    lifecycle <- Tracer[F].span("app.lifecycle").resource
+    tx <- createTransactor[F].mapK(lifecycle.trace)
+    redis <- createRedis[F].mapK(lifecycle.trace)
+  } yield (lifecycle, tx, redis)
 
 def run[F[_]: Async: Tracer]: F[Unit] =
-  components[F].use { case (_ /* transactor */, _ /* redis */) =>
-    Tracer[F].span("app_run").surround(Async[F].unit)
+  components[F].use { case (lifecycle, _ /* transactor */, _ /* redis */) =>
+    lifecycle.trace(Tracer[F].span("app.run").surround(Async[F].unit))
   }
 ```
 
-Expected span structure:
+Resulting spans:
 
 ```mermaid
 gantt
     dateFormat HH:mm:ss
     axisFormat %H:%M:%S
 
-    section app_lifecycle
-    app_lifecycle      :done, a1, 00:00:00, 00:00:26
-    transactor#acquire :done, a2, 00:00:00, 00:00:06
-    redis#acquire      :done, a3, 00:00:06, 00:00:10
-    redis#release      :done, a4, 00:00:15, 00:00:19
-    transactor#release :done, a5, 00:00:19, 00:00:26
-
-    section app_run
-    app_run            :done, a6, 00:00:10, 00:00:15
+    section app.lifecycle
+    app.lifecycle      :done, a1, 00:00:00, 00:00:26
+    transactor.acquire :done, a2, 00:00:00, 00:00:06
+    redis.acquire      :done, a3, 00:00:06, 00:00:10
+    app.run            :done, a4, 00:00:10, 00:00:15
+    redis.release      :done, a5, 00:00:15, 00:00:19
+    transactor.release :done, a6, 00:00:19, 00:00:26
 ```
 
-`app_run` and `app_lifecycle` are separate spans. The lifecycle span remains active until the resource is released.
+If you leave `app.run` outside `lifecycle.trace(...)`, it becomes a separate root span.
 
-## `translate(trace)` re-enters the scope for a stream branch
+## `translate(trace)` re-enters a captured span for a sub-stream
 
-In `fs2.Stream`, a new branch can evaluate effects outside the span you started earlier unless you re-enter the scope at
-that branch.
+A stream built from `Stream.resource(Tracer[F].span("...").resource)` has the same issue as `Resource#use`: the
+sub-stream does not automatically run with that span as current.
 
-`translate(trace)` is that re-entry point.
+`translate(trace)` applies the captured scope to the branch that should run under it.
 
 ```scala mdoc:silent:reset
 import cats.effect.Async
@@ -155,7 +165,7 @@ def stream[F[_]: Async: Tracer]: Stream[F, Unit] =
     }
 ```
 
-Expected span structure:
+Resulting spans:
 
 ```mermaid
 gantt
@@ -167,21 +177,22 @@ gantt
     inner-span :done, a2, 00:00:02, 00:00:08
 ```
 
-## `flatMap` boundaries are the important stream boundaries
+## `flatMap` is often where you create the sub-stream
 
-`flatMap` often introduces the point where a new stream branch starts.
+In `fs2.Stream`, `flatMap` is often where you build a new branch, so it is a common place to call `translate(trace)`.
+The important part is the new branch itself, not `flatMap` as a special case.
 
 Practical rule:
 
-- when a sub-stream should keep the captured parent span, apply `.translate(trace)` at that branch
-- if that sub-stream creates another span resource, use that span's own `trace` function for deeper nested work
+- When a sub-stream should keep the captured parent span, apply `.translate(trace)` where you create that sub-stream.
+- If that sub-stream creates another span resource, use that span's own `trace` function for deeper nested work.
 
-That keeps parent-child relationships explicit instead of relying on accidental scope carry-over.
+That keeps parent-child relationships explicit.
 
-## Sequential stages stay siblings unless you nest spans
+## Sequential stages are siblings unless you nest spans
 
-If two `evalMap` stages each create their own span, they are usually siblings under the same parent span.
-They are not parent and child unless one stage creates the next span while its own span is still current.
+In this pipeline, `stage-1` and `stage-2` are siblings under the same root span.
+They only become parent and child if `stage-2` is created while `stage-1` is still current.
 
 ```scala mdoc:silent:reset
 import cats.effect.Async
@@ -205,7 +216,7 @@ def pipeline[F[_]: Async: Tracer]: F[Unit] =
     .drain
 ```
 
-Expected span structure:
+Resulting spans:
 
 ```mermaid
 gantt
@@ -247,7 +258,7 @@ def parallelPipeline[F[_]: Async: Tracer]: F[Unit] =
     .drain
 ```
 
-One possible span structure is:
+One possible timing layout is:
 
 ```mermaid
 gantt
@@ -264,3 +275,14 @@ gantt
     stage-1 :done, a5, 00:00:02, 00:00:05
     stage-2 :done, a6, 00:00:06, 00:00:10
 ```
+
+## Cancellation changes duration, not parentage
+
+If a branch is canceled while one of its spans is still active:
+
+- That span ends early.
+- The canceled branch keeps the same parent lineage it had before cancellation.
+- Sibling branches continue independently under their own translated scope.
+
+So the main rule stays the same: create each parallel branch inside the scope you want it to keep. After that,
+completion order and cancellation may change timing, but they do not re-parent spans across branches.

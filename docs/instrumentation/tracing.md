@@ -98,81 +98,8 @@ class UserRepository[F[_]: Monad: Tracer](storage: Ref[F, Map[Long, User]]) {
 }
 ```
 
-### Starting a root span
-
-A root span is a span that is not a child of any other span.
-You can use `Tracer[F].rootScope` to wrap an existing effect or `Tracer[F].rootSpan` to explicitly start a new root
-span:
-
-```scala mdoc:silent
-import cats.Monad
-import cats.syntax.flatMap._
-import cats.syntax.functor._
-
-class UserRequestHandler[F[_]: Tracer: Monad](repo: UserRepository[F]) {
-  private val SystemUserId = -1L
-
-  def handleUser(userId: Long): F[Unit] =
-    Tracer[F].rootScope(activateUser(userId))
-
-  def handleUserInternal(userId: Long): F[Unit] =
-    Tracer[F].rootSpan("handle-user").surround(activateUser(userId))
-
-  private def activateUser(userId: Long): F[Unit] =
-    for {
-      systemUser <- repo.findUser(SystemUserId)
-      user <- repo.findUser(userId)
-      _ <- activate(systemUser, user)
-    } yield ()
-
-  private def activate(systemUser: Option[User], target: Option[User]): F[Unit] = {
-    val _ = (systemUser, target) // some processing logic
-    Monad[F].unit
-  }
-}
-```
-
-While the behavior seems similar, the outcome is notably different:
-
-1. `Tracer[F].rootScope(activateUser(userId))` will create two **independent root** spans:
-
-```mermaid
-gantt
-    dateFormat HH:mm:ss
-    axisFormat %H:%M:%S
-
-    section Span 1
-    find-user { user_id = -1 }     :done, a1, 00:00:00, 00:00:10
-    section Span 2
-    find-user { user_id = 123 }    :done, a2, 00:00:00, 00:00:10
-```
-
-2. `Tracer[F].rootSpan("handle-user").surround(activateUser(userId))` will create two **child** spans:
-
-```mermaid
-gantt
-    dateFormat HH:mm:ss
-    axisFormat %H:%M:%S
-
-    section Spans
-    handle-user                    :done, a1, 00:00:00, 00:00:10
-    find-user { user_id = -1 }     :done, a3, 00:00:01, 00:00:10
-    find-user { user_id = 123 }    :done, a2, 00:00:01, 00:00:10
-```
-
-### Running effect without tracing
-
-If you want to disable tracing for a specific section of the effect, you can use the `Tracer[F].noopScope`.
-This creates a no-op scope where tracing operations have no effect:
-
-```scala mdoc:silent
-class InternalUserService[F[_]: Tracer](repo: UserRepository[F]) {
-
-  def findUserInternal(userId: Long): F[Option[User]] =
-    Tracer[F].noopScope(repo.findUser(userId))
-
-}
-```
+For how the current tracing context affects `span`, `childScope`, `rootScope`, `rootSpan`, and `noopScope`, see
+[Root spans and tracing scopes](../explanations/root-spans-and-tracing-scopes.md).
 
 ### Starting an unmanaged span
 

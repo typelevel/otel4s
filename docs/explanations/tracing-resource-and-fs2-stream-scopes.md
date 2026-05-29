@@ -264,3 +264,16 @@ gantt
     stage-1 :done, a5, 00:00:02, 00:00:05
     stage-2 :done, a6, 00:00:06, 00:00:10
 ```
+
+## Cancellation affects the branch that was canceled
+
+Cancellation changes span lifetime, not parentage.
+
+If a branch is canceled while one of its spans is still active:
+
+- that span is ended early
+- the canceled branch keeps the same parent lineage it had before cancellation
+- sibling branches continue independently under their own translated scope
+
+So the main rule stays the same: create each parallel branch inside the scope you want it to keep. After that,
+completion order and cancellation may change timing, but they do not re-parent spans across branches.

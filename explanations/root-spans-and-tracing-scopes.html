@@ -6,7 +6,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="generator" content="Typelevel Laika + Helium Theme" />
-  <title>Tracing</title>
+  <title>Root spans and tracing scopes</title>
   
   <meta name="author" content="Ross A. Baker"/>
   
@@ -137,17 +137,17 @@ mermaid.initialize({
     <li class="level2 nav-leaf"><a href="../how-to-metrics/register-cats-effect-runtime-metrics.html">Register Cats Effect runtime metrics</a></li>
     <li class="level2 nav-leaf"><a href="../how-to-metrics/register-jvm-runtime-metrics.html">Register JVM runtime metrics</a></li>
     <li class="level1 nav-header">Explanations</li>
-    <li class="level2 nav-leaf"><a href="../explanations/root-spans-and-tracing-scopes.html">Root spans and tracing scopes</a></li>
-    <li class="level2 nav-leaf"><a href="../explanations/tracing-resource-and-fs2-stream-scopes.html">Tracing Resource and fs2.Stream scopes</a></li>
-    <li class="level2 nav-leaf"><a href="../explanations/histogram-bucket-customization-with-views.html">Histogram bucket customization with views</a></li>
+    <li class="level2 active nav-leaf"><a href="#">Root spans and tracing scopes</a></li>
+    <li class="level2 nav-leaf"><a href="tracing-resource-and-fs2-stream-scopes.html">Tracing Resource and fs2.Stream scopes</a></li>
+    <li class="level2 nav-leaf"><a href="histogram-bucket-customization-with-views.html">Histogram bucket customization with views</a></li>
     <li class="level1 nav-header">Instrumentation</li>
-    <li class="level2 nav-leaf"><a href="metrics.html">Metrics</a></li>
-    <li class="level2 nav-leaf"><a href="metrics-cats-effect-io-runtime.html">Metrics | Cats Effect IO runtime</a></li>
-    <li class="level2 active nav-leaf"><a href="#">Tracing</a></li>
-    <li class="level2 nav-leaf"><a href="tracing-cross-service-propagation.html">Tracing | Cross-service propagation</a></li>
-    <li class="level2 nav-leaf"><a href="logs.html">Logs</a></li>
-    <li class="level2 nav-leaf"><a href="baggage.html">Baggage</a></li>
-    <li class="level2 nav-leaf"><a href="semantic-conventions.html">Semantic conventions</a></li>
+    <li class="level2 nav-leaf"><a href="../instrumentation/metrics.html">Metrics</a></li>
+    <li class="level2 nav-leaf"><a href="../instrumentation/metrics-cats-effect-io-runtime.html">Metrics | Cats Effect IO runtime</a></li>
+    <li class="level2 nav-leaf"><a href="../instrumentation/tracing.html">Tracing</a></li>
+    <li class="level2 nav-leaf"><a href="../instrumentation/tracing-cross-service-propagation.html">Tracing | Cross-service propagation</a></li>
+    <li class="level2 nav-leaf"><a href="../instrumentation/logs.html">Logs</a></li>
+    <li class="level2 nav-leaf"><a href="../instrumentation/baggage.html">Baggage</a></li>
+    <li class="level2 nav-leaf"><a href="../instrumentation/semantic-conventions.html">Semantic conventions</a></li>
     <li class="level1 nav-header">OtelJava</li>
     <li class="level2 nav-leaf"><a href="../oteljava/overview.html">Overview</a></li>
     <li class="level2 nav-leaf"><a href="../oteljava/tracing-java-interop.html">Tracing | Interop with Java-instrumented libraries</a></li>
@@ -171,14 +171,13 @@ mermaid.initialize({
 
       
 <nav id="page-nav">
-  <p class="header"><a href="#">Tracing</a></p>
+  <p class="header"><a href="#">Root spans and tracing scopes</a></p>
 
   <ul class="nav-list">
-    <li class="level1 nav-leaf"><a href="#how-to-get-the-tracer">How to get the <code>Tracer</code></a></li>
-    <li class="level1 nav-leaf"><a href="#creating-a-span">Creating a span</a></li>
-    <li class="level1 nav-leaf"><a href="#starting-an-unmanaged-span">Starting an unmanaged span</a></li>
-    <li class="level1 nav-leaf"><a href="#tracing-a-resource">Tracing a resource</a></li>
-    <li class="level1 nav-leaf"><a href="#tracing-a-stream">Tracing a stream</a></li>
+    <li class="level1 nav-leaf"><a href="#span-follows-the-current-tracing-context"><code>span</code> follows the current tracing context</a></li>
+    <li class="level1 nav-leaf"><a href="#rootscope-and-rootspan-solve-different-problems"><code>rootScope</code> and <code>rootSpan</code> solve different problems</a></li>
+    <li class="level1 nav-leaf"><a href="#noopscope-disables-tracing-inside-a-block"><code>noopScope</code> disables tracing inside a block</a></li>
+    <li class="level1 nav-leaf"><a href="#childscope-sets-a-specific-parent"><code>childScope</code> sets a specific parent</a></li>
   </ul>
 
   <p class="footer"></p>
@@ -187,71 +186,22 @@ mermaid.initialize({
 
       <main class="content">
 
-        <h1 id="tracing" class="title">Tracing</h1>
-        <p><code>Tracer</code> is an entry point to the tracing capabilities and instrumentation.
-        It provides various functionalities for creating and managing spans,
-        extracting context from carriers, propagating context downstream, and more.</p>
+        <h1 id="root-spans-and-tracing-scopes" class="title">Root spans and tracing scopes</h1>
+        <p>Use <a href="../how-to-tracing/create-spans-around-effectful-code.html">Create spans around effectful code</a> for the step-by-step examples.</p>
+        <p>This page explains how otel4s chooses the parent of a new span, and what changes when you use <code>childScope</code>,
+        <code>rootScope</code>, <code>rootSpan</code>, or <code>noopScope</code>.</p>
         
-        <h3 id="how-to-get-the-tracer" class="section"><a class="anchor-link left" href="#how-to-get-the-tracer"><i class="icofont-laika link">&#xef71;</i></a>How to get the <code>Tracer</code></h3>
-        <p>Currently, <code>otel4s</code> has a backend built on top of <a href="https://github.com/open-telemetry/opentelemetry-java">OpenTelemetry Java</a>.
-        Add the following configuration to the favorite build tool:</p>
-        <div class="tab-container" data-tab-group="build-tool">
-          <ul class="tab-group">
-            <li class="tab active" data-choice-name="sbt"><a href="#">sbt</a></li>
-            <li class="tab" data-choice-name="scala-cli"><a href="#">Scala CLI</a></li>
-          </ul>
-          <div class="tab-content active" data-choice-name="sbt">
-            <p>Add settings to the <code>build.sbt</code>:</p>
-            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">libraryDependencies</span><span> ++= </span><span class="type-name">Seq</span><span>(
-  </span><span class="string-literal">&quot;org.typelevel&quot;</span><span> %% </span><span class="string-literal">&quot;otel4s-oteljava&quot;</span><span> % </span><span class="string-literal">&quot;1.0.0&quot;</span><span>, </span><span class="comment">// &lt;1&gt;
-</span><span>  </span><span class="string-literal">&quot;io.opentelemetry&quot;</span><span> % </span><span class="string-literal">&quot;opentelemetry-exporter-otlp&quot;</span><span> % </span><span class="string-literal">&quot;1.62.0&quot;</span><span> % </span><span class="type-name">Runtime</span><span>, </span><span class="comment">// &lt;2&gt;
-</span><span>  </span><span class="string-literal">&quot;io.opentelemetry&quot;</span><span> % </span><span class="string-literal">&quot;opentelemetry-sdk-extension-autoconfigure&quot;</span><span> % </span><span class="string-literal">&quot;1.62.0&quot;</span><span> % </span><span class="type-name">Runtime</span><span> </span><span class="comment">// &lt;3&gt;
-</span><span>)
-</span><span class="identifier">javaOptions</span><span> += </span><span class="string-literal">&quot;-Dotel.java.global-autoconfigure.enabled=true&quot;</span><span> </span><span class="comment">// &lt;4&gt;</span></code></pre>
-          </div>
-          <div class="tab-content" data-choice-name="scala-cli">
-            <p>Add directives to the <code>*.scala</code> file:</p>
-            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="comment">//&gt; using dep &quot;org.typelevel::otel4s-oteljava:1.0.0&quot; // &lt;1&gt;
-//&gt; using dep &quot;io.opentelemetry:opentelemetry-exporter-otlp:1.62.0&quot; // &lt;2&gt;
-//&gt; using dep &quot;io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:1.62.0&quot; // &lt;3&gt;
-//&gt; using javaOpt &quot;-Dotel.java.global-autoconfigure.enabled=true&quot; // &lt;4&gt;</span></code></pre>
-          </div>
-        </div>
-        <ol class="arabic">
-          <li>Add the <code>otel4s-oteljava</code> library</li>
-          <li>Add an OpenTelemetry exporter. Without the exporter, the application will crash</li>
-          <li>Add an OpenTelemetry autoconfigure extension</li>
-          <li>Enable OpenTelemetry SDK <a href="https://opentelemetry.io/docs/languages/java/configuration/">autoconfigure mode</a></li>
-        </ol>
-        <p>Once the build configuration is up-to-date, the <code>Tracer</code> can be created:</p>
-        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.</span><span class="type-name">IO</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">trace</span><span>.</span><span class="type-name">Tracer</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="type-name">OtelJava</span><span>
-
-</span><span class="type-name">OtelJava</span><span>.</span><span class="identifier">autoConfigured</span><span>[</span><span class="type-name">IO</span><span>]().</span><span class="identifier">evalMap</span><span> { </span><span class="identifier">otel4s</span><span> =&gt;
-  </span><span class="identifier">otel4s</span><span>.</span><span class="identifier">tracerProvider</span><span>.</span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;com.service&quot;</span><span>).</span><span class="identifier">flatMap</span><span> { </span><span class="keyword">implicit</span><span> </span><span class="identifier">tracer</span><span>: </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">IO</span><span>] =&gt;
-    </span><span class="keyword">val</span><span> </span><span class="identifier">_</span><span> = </span><span class="identifier">tracer</span><span> </span><span class="comment">// use tracer here
-</span><span>    ???
-  }
-}</span></code></pre>
-        <div class="callout warning">
-          <i class="icofont-laika warning">&#xf026;</i>
-          <p><code>OtelJava.autoConfigured</code> creates an <strong>isolated</strong> <strong>non-global</strong> instance.
-          If you create multiple instances, those instances won&#39;t interoperate (i.e. be able to see each others spans).</p>
-        </div>
-        
-        <h3 id="creating-a-span" class="section"><a class="anchor-link left" href="#creating-a-span"><i class="icofont-laika link">&#xef71;</i></a>Creating a span</h3>
-        <p>You can use the <code>span</code> or <code>spanBuilder</code> API to create a new span.</p>
-        <p>The tracer automatically determines whether to create a child span or a root span based on the presence of a valid
-        parent in the tracing context.
-        If a valid parent is available, the new span becomes a child of it. Otherwise, it becomes a root span.</p>
-        <p>Here&#39;s how you can do it:</p>
+        <h2 id="span-follows-the-current-tracing-context" class="section"><a class="anchor-link left" href="#span-follows-the-current-tracing-context"><i class="icofont-laika link">&#xef71;</i></a><code>span</code> follows the current tracing context</h2>
+        <p><code>Tracer[F].span(&quot;...&quot;)</code> checks the current tracing context.
+        If it finds a valid parent span, the new span becomes its child.
+        Otherwise, it starts a root span.</p>
         <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="type-name">Monad</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.</span><span class="type-name">IO</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.</span><span class="type-name">Ref</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">syntax</span><span>.</span><span class="identifier">flatMap</span><span>.</span><span class="identifier">_</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">syntax</span><span>.</span><span class="identifier">functor</span><span>.</span><span class="identifier">_</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="type-name">Attribute</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">trace</span><span>.</span><span class="type-name">Tracer</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">trace</span><span>.{</span><span class="type-name">SpanContext</span><span>, </span><span class="type-name">Tracer</span><span>}
 
 </span><span class="keyword">case</span><span> </span><span class="keyword">class</span><span> </span><span class="type-name">User</span><span>(</span><span class="identifier">email</span><span>: </span><span class="type-name">String</span><span>)
 
@@ -267,87 +217,76 @@ mermaid.initialize({
     }
 
 }</span></code></pre>
-        <p>For how the current tracing context affects <code>span</code>, <code>childScope</code>, <code>rootScope</code>, <code>rootSpan</code>, and <code>noopScope</code>, see
-        <a href="../explanations/root-spans-and-tracing-scopes.html">Root spans and tracing scopes</a>.</p>
+        <p><code>findUser</code> creates <code>find-user</code> as a child span when another span is current.
+        If no parent is current, <code>find-user</code> becomes a root span.</p>
         
-        <h3 id="starting-an-unmanaged-span" class="section"><a class="anchor-link left" href="#starting-an-unmanaged-span"><i class="icofont-laika link">&#xef71;</i></a>Starting an unmanaged span</h3>
-        <p>The <code>Tracer[F].span(...)</code> automatically manages the lifecycle of the span. <code>Tracer[F].span(&quot;...&quot;).startUnmanaged</code> 
-        creates a span that must be ended <strong>manually</strong> by invoking <code>end</code>. This strategy can be used when it&#39;s necessary 
-        to end a span outside the scope (e.g. async callback). </p>
-        <p>A few limitations:</p>
-        <p><strong>1. An unfinished span remains active indefinitely</strong></p>
-        <p>In the following example, the unmanaged span has never been terminated:</p>
-        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">trace</span><span>.</span><span class="type-name">StatusCode</span><span>
+        <h2 id="rootscope-and-rootspan-solve-different-problems" class="section"><a class="anchor-link left" href="#rootscope-and-rootspan-solve-different-problems"><i class="icofont-laika link">&#xef71;</i></a><code>rootScope</code> and <code>rootSpan</code> solve different problems</h2>
+        <p><code>rootScope</code> does not create a span.
+        It only runs an effect in a scope where the current parent is cleared.</p>
+        <p><code>rootSpan(&quot;...&quot;).surround(fa)</code> creates a new root span and makes it current while <code>fa</code> runs.</p>
+        <pre><code class="nohighlight"><span class="keyword">class</span><span> </span><span class="type-name">UserRequestHandler</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>]: </span><span class="type-name">Tracer</span><span>: </span><span class="type-name">Monad</span><span>](</span><span class="identifier">repo</span><span>: </span><span class="type-name">UserRepository</span><span>[</span><span class="type-name">F</span><span>]) {
+  </span><span class="keyword">private</span><span> </span><span class="keyword">val</span><span> </span><span class="type-name">SystemUserId</span><span> = -</span><span class="number-literal">1L</span><span>
 
-</span><span class="keyword">def</span><span> </span><span class="declaration-name">leaked</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>]: </span><span class="type-name">Monad</span><span>: </span><span class="type-name">Tracer</span><span>]: </span><span class="type-name">F</span><span>[</span><span class="type-name">Unit</span><span>] =
-  </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">spanBuilder</span><span>(</span><span class="string-literal">&quot;manual-span&quot;</span><span>).</span><span class="identifier">build</span><span>.</span><span class="identifier">startUnmanaged</span><span>.</span><span class="identifier">flatMap</span><span> { </span><span class="identifier">span</span><span> =&gt;
-    </span><span class="identifier">span</span><span>.</span><span class="identifier">setStatus</span><span>(</span><span class="type-name">StatusCode</span><span>.</span><span class="type-name">Ok</span><span>, </span><span class="string-literal">&quot;all good&quot;</span><span>)
-  }</span></code></pre>
-        <p>Properly ended span:</p>
-        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">def</span><span> </span><span class="declaration-name">ok</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>]: </span><span class="type-name">Monad</span><span>: </span><span class="type-name">Tracer</span><span>]: </span><span class="type-name">F</span><span>[</span><span class="type-name">Unit</span><span>] =
-  </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">spanBuilder</span><span>(</span><span class="string-literal">&quot;manual-span&quot;</span><span>).</span><span class="identifier">build</span><span>.</span><span class="identifier">startUnmanaged</span><span>.</span><span class="identifier">flatMap</span><span> { </span><span class="identifier">span</span><span> =&gt;
-    </span><span class="identifier">span</span><span>.</span><span class="identifier">setStatus</span><span>(</span><span class="type-name">StatusCode</span><span>.</span><span class="type-name">Ok</span><span>, </span><span class="string-literal">&quot;all good&quot;</span><span>) &gt;&gt; </span><span class="identifier">span</span><span>.</span><span class="identifier">end</span><span>
-  }</span></code></pre>
-        <hr>
-        <p><strong>2. The span isn&#39;t propagated automatically</strong></p>
-        <p>Consider the following example:</p>
-        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">def</span><span> </span><span class="declaration-name">nonPropagated</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>]: </span><span class="type-name">Monad</span><span>: </span><span class="type-name">Tracer</span><span>]: </span><span class="type-name">F</span><span>[</span><span class="type-name">Unit</span><span>] = 
-  </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">span</span><span>(</span><span class="string-literal">&quot;auto&quot;</span><span>).</span><span class="identifier">surround</span><span> {
-    </span><span class="comment">// &#39;unmanaged&#39; is the child of the &#39;auto&#39; span
-</span><span>    </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">span</span><span>(</span><span class="string-literal">&quot;unmanaged&quot;</span><span>).</span><span class="identifier">startUnmanaged</span><span>.</span><span class="identifier">flatMap</span><span> { </span><span class="identifier">unmanaged</span><span> =&gt;
-      </span><span class="comment">// &#39;child-1&#39; is the child of the &#39;auto&#39;, not &#39;unmanaged&#39;  
-</span><span>      </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">span</span><span>(</span><span class="string-literal">&quot;child-1&quot;</span><span>).</span><span class="identifier">use_</span><span> &gt;&gt; </span><span class="identifier">unmanaged</span><span>.</span><span class="identifier">end</span><span>
-    }
-  }</span></code></pre>
-        <p>The structure is:</p>
+  </span><span class="keyword">def</span><span> </span><span class="declaration-name">handleUser</span><span>(</span><span class="identifier">userId</span><span>: </span><span class="type-name">Long</span><span>): </span><span class="type-name">F</span><span>[</span><span class="type-name">Unit</span><span>] =
+    </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">rootScope</span><span>(</span><span class="identifier">activateUser</span><span>(</span><span class="identifier">userId</span><span>))
+
+  </span><span class="keyword">def</span><span> </span><span class="declaration-name">handleUserInternal</span><span>(</span><span class="identifier">userId</span><span>: </span><span class="type-name">Long</span><span>): </span><span class="type-name">F</span><span>[</span><span class="type-name">Unit</span><span>] =
+    </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">rootSpan</span><span>(</span><span class="string-literal">&quot;handle-user&quot;</span><span>).</span><span class="identifier">surround</span><span>(</span><span class="identifier">activateUser</span><span>(</span><span class="identifier">userId</span><span>))
+
+  </span><span class="keyword">private</span><span> </span><span class="keyword">def</span><span> </span><span class="declaration-name">activateUser</span><span>(</span><span class="identifier">userId</span><span>: </span><span class="type-name">Long</span><span>): </span><span class="type-name">F</span><span>[</span><span class="type-name">Unit</span><span>] =
+    </span><span class="keyword">for</span><span> {
+      </span><span class="identifier">systemUser</span><span> &lt;- </span><span class="identifier">repo</span><span>.</span><span class="identifier">findUser</span><span>(</span><span class="type-name">SystemUserId</span><span>)
+      </span><span class="identifier">user</span><span> &lt;- </span><span class="identifier">repo</span><span>.</span><span class="identifier">findUser</span><span>(</span><span class="identifier">userId</span><span>)
+      </span><span class="identifier">_</span><span> &lt;- </span><span class="identifier">activate</span><span>(</span><span class="identifier">systemUser</span><span>, </span><span class="identifier">user</span><span>)
+    } </span><span class="keyword">yield</span><span> ()
+
+  </span><span class="keyword">private</span><span> </span><span class="keyword">def</span><span> </span><span class="declaration-name">activate</span><span>(</span><span class="identifier">systemUser</span><span>: </span><span class="type-name">Option</span><span>[</span><span class="type-name">User</span><span>], </span><span class="identifier">target</span><span>: </span><span class="type-name">Option</span><span>[</span><span class="type-name">User</span><span>]): </span><span class="type-name">F</span><span>[</span><span class="type-name">Unit</span><span>] = {
+    </span><span class="keyword">val</span><span> </span><span class="identifier">_</span><span> = (</span><span class="identifier">systemUser</span><span>, </span><span class="identifier">target</span><span>)
+    </span><span class="type-name">Monad</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">unit</span><span>
+  }
+}</span></code></pre>
+        <p>With <code>rootScope</code>, the current parent is removed, but no replacement span is created.
+        That means each <code>find-user</code> span inside <code>activateUser</code> becomes its own root span:</p>
+        <pre class="mermaid">gantt
+    dateFormat HH:mm:ss
+    axisFormat %H:%M:%S
+
+    section Span 1
+    find-user { user_id = -1 }     :done, a1, 00:00:00, 00:00:10
+    section Span 2
+    find-user { user_id = 123 }    :done, a2, 00:00:00, 00:00:10</pre>
+        <p>With <code>rootSpan</code>, <code>handle-user</code> becomes the new current span, so the inner <code>find-user</code> spans become its children:</p>
         <pre class="mermaid">gantt
     dateFormat HH:mm:ss
     axisFormat %H:%M:%S
 
     section Spans
-    auto (root)                    :done, a1, 00:00:00, 00:00:10
-    unmanaged (child of &#39;auto&#39;)    :done, a2, 00:00:02, 00:00:09
-    child-1 (child of &#39;auto&#39;)      :done, a3, 00:00:02, 00:00:08</pre>
-        <p>Use <code>Tracer[F].childScope</code> to create a child of the unmanaged span: </p>
-        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">def</span><span> </span><span class="declaration-name">propagated</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>]: </span><span class="type-name">Monad</span><span>: </span><span class="type-name">Tracer</span><span>]: </span><span class="type-name">F</span><span>[</span><span class="type-name">Unit</span><span>] = 
-  </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">span</span><span>(</span><span class="string-literal">&quot;auto&quot;</span><span>).</span><span class="identifier">surround</span><span> {
-    </span><span class="comment">// &#39;unmanaged&#39; is the child of the &#39;auto&#39; span
-</span><span>    </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">span</span><span>(</span><span class="string-literal">&quot;unmanaged&quot;</span><span>).</span><span class="identifier">startUnmanaged</span><span>.</span><span class="identifier">flatMap</span><span> { </span><span class="identifier">unmanaged</span><span> =&gt; 
-      </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">childScope</span><span>(</span><span class="identifier">unmanaged</span><span>.</span><span class="identifier">context</span><span>) {
-        </span><span class="comment">// &#39;child-1&#39; is the child of the &#39;unmanaged&#39; span
-</span><span>        </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">span</span><span>(</span><span class="string-literal">&quot;child-1&quot;</span><span>).</span><span class="identifier">use_</span><span> &gt;&gt; </span><span class="identifier">unmanaged</span><span>.</span><span class="identifier">end</span><span>
-      }
-    }
-  }</span></code></pre>
-        <p>The structure is:</p>
-        <pre class="mermaid">gantt
-    dateFormat HH:mm:ss
-    axisFormat %H:%M:%S
+    handle-user                    :done, a1, 00:00:00, 00:00:10
+    find-user { user_id = -1 }     :done, a2, 00:00:01, 00:00:10
+    find-user { user_id = 123 }    :done, a3, 00:00:01, 00:00:10</pre>
+        <p>Use <code>rootScope</code> when work should stop inheriting the current parent, but you do not want a wrapper span.
+        Use <code>rootSpan</code> when that work should start a new trace with one explicit root span.</p>
+        
+        <h2 id="noopscope-disables-tracing-inside-a-block" class="section"><a class="anchor-link left" href="#noopscope-disables-tracing-inside-a-block"><i class="icofont-laika link">&#xef71;</i></a><code>noopScope</code> disables tracing inside a block</h2>
+        <p><code>noopScope</code> is different from <code>rootScope</code>.
+        It does not create new root spans.
+        Tracing operations inside the block become no-ops.</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">class</span><span> </span><span class="type-name">InternalUserService</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>]: </span><span class="type-name">Tracer</span><span>](</span><span class="identifier">repo</span><span>: </span><span class="type-name">UserRepository</span><span>[</span><span class="type-name">F</span><span>]) {
 
-    section Spans
-    auto (root)                         :done, a1, 00:00:00, 00:00:10
-    unmanaged (child of &#39;auto&#39;)         :done, a2, 00:00:02, 00:00:09
-    child-1 (child of &#39;unmanaged&#39;)      :done, a3, 00:00:03, 00:00:08</pre>
+  </span><span class="keyword">def</span><span> </span><span class="declaration-name">findUserInternal</span><span>(</span><span class="identifier">userId</span><span>: </span><span class="type-name">Long</span><span>): </span><span class="type-name">F</span><span>[</span><span class="type-name">Option</span><span>[</span><span class="type-name">User</span><span>]] =
+    </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">noopScope</span><span>(</span><span class="identifier">repo</span><span>.</span><span class="identifier">findUser</span><span>(</span><span class="identifier">userId</span><span>))
+
+}</span></code></pre>
+        <p>Use it when code should run without emitting spans even if tracing is enabled in the surrounding application.</p>
         
-        <h3 id="tracing-a-resource" class="section"><a class="anchor-link left" href="#tracing-a-resource"><i class="icofont-laika link">&#xef71;</i></a>Tracing a resource</h3>
-        <p>You can use <code>Tracer[F].span(&quot;...&quot;).resource</code> to create a managed span, but the effect inside <code>Resource.use</code> does not
-        automatically run with that span as current.</p>
-        <p>Use the <code>trace</code> function from <code>SpanOps.Res</code> to re-enter the span scope. If you need traced acquire and release steps,
-        combine <code>mapK(res.trace)</code> with <code>res.trace(...)</code> around the <code>use</code> body.</p>
-        <p>For the current guidance and examples, see:</p>
-        <ul>
-          <li><a href="../how-to-tracing/trace-resource-and-fs2-stream-code.html">Trace Resource and fs2.Stream code</a></li>
-          <li><a href="../explanations/tracing-resource-and-fs2-stream-scopes.html">Tracing Resource and fs2.Stream scopes</a></li>
-        </ul>
-        
-        <h3 id="tracing-a-stream" class="section"><a class="anchor-link left" href="#tracing-a-stream"><i class="icofont-laika link">&#xef71;</i></a>Tracing a stream</h3>
-        <p>When you build a stream branch from <code>Tracer[F].span(&quot;...&quot;).resource</code>, use <code>fs2.Stream#translate</code> with the captured
-        <code>trace</code> function to run that branch in the expected span scope.</p>
-        <p>For the current guidance and examples, see:</p>
-        <ul>
-          <li><a href="../how-to-tracing/trace-resource-and-fs2-stream-code.html">Trace Resource and fs2.Stream code</a></li>
-          <li><a href="../explanations/tracing-resource-and-fs2-stream-scopes.html">Tracing Resource and fs2.Stream scopes</a></li>
-        </ul>
+        <h2 id="childscope-sets-a-specific-parent" class="section"><a class="anchor-link left" href="#childscope-sets-a-specific-parent"><i class="icofont-laika link">&#xef71;</i></a><code>childScope</code> sets a specific parent</h2>
+        <p><code>childScope</code> is the lower-level scope API.
+        Use it when you already have a <code>SpanContext</code> and want spans in a block to use that context as their parent.</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">def</span><span> </span><span class="declaration-name">continueFrom</span><span>(</span><span class="identifier">parent</span><span>: </span><span class="type-name">SpanContext</span><span>)(</span><span class="keyword">implicit</span><span> </span><span class="identifier">tracer</span><span>: </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">IO</span><span>]): </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] =
+  </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">IO</span><span>].</span><span class="identifier">childScope</span><span>(</span><span class="identifier">parent</span><span>) {
+    </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">IO</span><span>].</span><span class="identifier">span</span><span>(</span><span class="string-literal">&quot;continued-work&quot;</span><span>).</span><span class="identifier">use_</span><span>
+  }</span></code></pre>
+        <p>This is useful when the parent span is known explicitly rather than taken from the current tracing context.</p>
 
         
 <hr class="footer-rule"/>

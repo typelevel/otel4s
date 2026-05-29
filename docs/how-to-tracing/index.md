@@ -12,6 +12,8 @@ that depend on OpenTelemetry context.
 
 ## Related material
 
+- For how `span`, `childScope`, `rootScope`, `rootSpan`, and `noopScope` affect parent-child relationships, see
+  [Root spans and tracing scopes](../explanations/root-spans-and-tracing-scopes.md).
 - To keep otel4s context in sync with OpenTelemetry Java context, follow
   [Keep otel4s context in sync with OpenTelemetry Java](../how-to-jvm-setup/keep-otel4s-context-in-sync-with-opentelemetry-java.md).
 - For more background on `Resource` and `fs2.Stream` tracing scopes, see

@@ -103,85 +103,14 @@ For how the current tracing context affects `span`, `childScope`, `rootScope`, `
 
 ### Starting an unmanaged span
 
-The `Tracer[F].span(...)` automatically manages the lifecycle of the span. `Tracer[F].span("...").startUnmanaged` 
-creates a span that must be ended **manually** by invoking `end`. This strategy can be used when it's necessary 
-to end a span outside the scope (e.g. async callback). 
+`Tracer[F].span("...").startUnmanaged` creates a span that must be ended manually with `end`.
 
-A few limitations:
+Use it when a span must stay open until later code finishes the work, such as an async callback.
 
-**1. An unfinished span remains active indefinitely**
+For the current guidance and examples, see:
 
-In the following example, the unmanaged span has never been terminated:
-```scala mdoc:silent
-import org.typelevel.otel4s.trace.StatusCode
-
-def leaked[F[_]: Monad: Tracer]: F[Unit] =
-  Tracer[F].spanBuilder("manual-span").build.startUnmanaged.flatMap { span =>
-    span.setStatus(StatusCode.Ok, "all good")
-  }
-```
-
-Properly ended span:
-```scala mdoc:silent
-def ok[F[_]: Monad: Tracer]: F[Unit] =
-  Tracer[F].spanBuilder("manual-span").build.startUnmanaged.flatMap { span =>
-    span.setStatus(StatusCode.Ok, "all good") >> span.end
-  }
-```
-
-_______
-
-**2. The span isn't propagated automatically**
-
-Consider the following example:
-```scala mdoc:silent
-def nonPropagated[F[_]: Monad: Tracer]: F[Unit] = 
-  Tracer[F].span("auto").surround {
-    // 'unmanaged' is the child of the 'auto' span
-    Tracer[F].span("unmanaged").startUnmanaged.flatMap { unmanaged =>
-      // 'child-1' is the child of the 'auto', not 'unmanaged'  
-      Tracer[F].span("child-1").use_ >> unmanaged.end
-    }
-  }
-```
-
-The structure is:
-```mermaid
-gantt
-    dateFormat HH:mm:ss
-    axisFormat %H:%M:%S
-
-    section Spans
-    auto (root)                    :done, a1, 00:00:00, 00:00:10
-    unmanaged (child of 'auto')    :done, a2, 00:00:02, 00:00:09
-    child-1 (child of 'auto')      :done, a3, 00:00:02, 00:00:08
-```
-
-Use `Tracer[F].childScope` to create a child of the unmanaged span: 
-```scala mdoc:silent
-def propagated[F[_]: Monad: Tracer]: F[Unit] = 
-  Tracer[F].span("auto").surround {
-    // 'unmanaged' is the child of the 'auto' span
-    Tracer[F].span("unmanaged").startUnmanaged.flatMap { unmanaged => 
-      Tracer[F].childScope(unmanaged.context) {
-        // 'child-1' is the child of the 'unmanaged' span
-        Tracer[F].span("child-1").use_ >> unmanaged.end
-      }
-    }
-  }
-```
-
-The structure is:
-```mermaid
-gantt
-    dateFormat HH:mm:ss
-    axisFormat %H:%M:%S
-
-    section Spans
-    auto (root)                         :done, a1, 00:00:00, 00:00:10
-    unmanaged (child of 'auto')         :done, a2, 00:00:02, 00:00:09
-    child-1 (child of 'unmanaged')      :done, a3, 00:00:03, 00:00:08
-```
+- [Use unmanaged spans when a span must end outside its scope](../how-to-tracing/use-unmanaged-spans-when-a-span-must-end-outside-its-scope.md)
+- [Root spans and tracing scopes](../explanations/root-spans-and-tracing-scopes.md)
 
 
 ### Tracing a resource

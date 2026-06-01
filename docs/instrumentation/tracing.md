@@ -98,8 +98,9 @@ class UserRepository[F[_]: Monad: Tracer](storage: Ref[F, Map[Long, User]]) {
 }
 ```
 
-For how the current tracing context affects `span`, `childScope`, `rootScope`, `rootSpan`, and `noopScope`, see
-[Root spans and tracing scopes](../explanations/root-spans-and-tracing-scopes.md).
+For how the current tracing context affects `span`, `childScope`, `withParent`, `joinOrRoot`, `rootScope`,
+`rootSpan`, and `noopScope`, see
+[Choosing parent spans and tracing scopes](../explanations/choosing-parent-spans-and-tracing-scopes.md).
 
 ### Starting an unmanaged span
 
@@ -110,7 +111,7 @@ Use it when a span must stay open until later code finishes the work, such as an
 For the current guidance and examples, see:
 
 - [Use unmanaged spans when a span must end outside its scope](../how-to-tracing/use-unmanaged-spans-when-a-span-must-end-outside-its-scope.md)
-- [Root spans and tracing scopes](../explanations/root-spans-and-tracing-scopes.md)
+- [Choosing parent spans and tracing scopes](../explanations/choosing-parent-spans-and-tracing-scopes.md)
 
 
 ### Tracing a resource

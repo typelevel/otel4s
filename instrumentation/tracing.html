@@ -120,7 +120,7 @@
     <li class="level2 nav-leaf"><a href="../how-to-metrics/register-cats-effect-runtime-metrics.html">Register Cats Effect runtime metrics</a></li>
     <li class="level2 nav-leaf"><a href="../how-to-metrics/register-jvm-runtime-metrics.html">Register JVM runtime metrics</a></li>
     <li class="level1 nav-header">Explanations</li>
-    <li class="level2 nav-leaf"><a href="../explanations/root-spans-and-tracing-scopes.html">Root spans and tracing scopes</a></li>
+    <li class="level2 nav-leaf"><a href="../explanations/choosing-parent-spans-and-tracing-scopes.html">Choosing parent spans and tracing scopes</a></li>
     <li class="level2 nav-leaf"><a href="../explanations/tracing-resource-and-fs2-stream-scopes.html">Tracing Resource and fs2.Stream scopes</a></li>
     <li class="level2 nav-leaf"><a href="../explanations/histogram-bucket-customization-with-views.html">Histogram bucket customization with views</a></li>
     <li class="level1 nav-header">Instrumentation</li>
@@ -250,8 +250,9 @@
     }
 
 }</span></code></pre>
-        <p>For how the current tracing context affects <code>span</code>, <code>childScope</code>, <code>rootScope</code>, <code>rootSpan</code>, and <code>noopScope</code>, see
-        <a href="../explanations/root-spans-and-tracing-scopes.html">Root spans and tracing scopes</a>.</p>
+        <p>For how the current tracing context affects <code>span</code>, <code>childScope</code>, <code>withParent</code>, <code>joinOrRoot</code>, <code>rootScope</code>,
+        <code>rootSpan</code>, and <code>noopScope</code>, see
+        <a href="../explanations/choosing-parent-spans-and-tracing-scopes.html">Choosing parent spans and tracing scopes</a>.</p>
         
         <h3 id="starting-an-unmanaged-span" class="section"><a class="anchor-link left" href="#starting-an-unmanaged-span"><i class="icofont-laika link">&#xef71;</i></a>Starting an unmanaged span</h3>
         <p><code>Tracer[F].span(&quot;...&quot;).startUnmanaged</code> creates a span that must be ended manually with <code>end</code>.</p>
@@ -259,7 +260,7 @@
         <p>For the current guidance and examples, see:</p>
         <ul>
           <li><a href="../how-to-tracing/use-unmanaged-spans-when-a-span-must-end-outside-its-scope.html">Use unmanaged spans when a span must end outside its scope</a></li>
-          <li><a href="../explanations/root-spans-and-tracing-scopes.html">Root spans and tracing scopes</a></li>
+          <li><a href="../explanations/choosing-parent-spans-and-tracing-scopes.html">Choosing parent spans and tracing scopes</a></li>
         </ul>
         
         <h3 id="tracing-a-resource" class="section"><a class="anchor-link left" href="#tracing-a-resource"><i class="icofont-laika link">&#xef71;</i></a>Tracing a resource</h3>

@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+  
+  <head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="generator" content="Typelevel Laika + Helium Theme" />
+  <title>Choosing parent spans and tracing scopes</title>
+  
+  <meta name="author" content="Ross A. Baker"/>
+  
+  
+  <meta name="description" content="docs"/>
+  
+  
+  
+  <link rel="icon" sizes="32x32" type="image/png" href="https://typelevel.org/img/favicon.png"/>
+  
+  
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:400,700">
+  
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Fira+Mono:500">
+  
+  <link rel="stylesheet" type="text/css" href="../helium/site/icofont.min.css" />
+    <link rel="stylesheet" type="text/css" href="../helium/site/laika-helium.css" />
+  <script src="../helium/site/laika-helium.js"></script>
+    <script type="module">
+
+import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+const dark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+mermaid.initialize({ 
+  startOnLoad: true,
+  theme: "base",
+  themeVariables: {
+    'darkMode': dark,
+    'primaryColor': dark ? '#f4f8fa' : '#f4f8fa', 
+    'primaryTextColor': dark ? '#385a70' : '#385a70',
+    'primaryBorderColor': dark ? '#8ebac7' : '#8ebac7',
+    'lineColor': dark ? '#385a70' : '#385a70',
+    'background': dark ? '#ffffff' : '#ffffff',
+  }
+});
+
+</script>
+  
+  
+  <script> /* for avoiding page load transitions */ </script>
+</head>
+
+  <body>
+
+    <header id="top-bar" class="light-default dark-default">
+
+  <div class="row">
+    <a id="nav-icon">
+      <i class="icofont-laika navigationMenu" title="Navigation">&#xefa2;</i>
+    </a>
+    
+    
+  </div>
+
+  <a class="image-link" href="https://typelevel.org"><img src="https://typelevel.org/img/logo.svg"></a>
+
+  <div class="row links">
+    
+    <a class="icon-link svg-link" href="https://www.javadoc.io/doc/org.typelevel/otel4s-docs_2.13/1.0.0/org/typelevel/otel4s/index.html"><span class="api" title="API"><svg class="svg-icon" width="100%" height="100%" viewBox="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg" xml:space="preserve" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+  <g class="svg-shape">
+    <path d="M75,47.5c13.246,0 24,10.754 24,24c0,13.246 -10.754,24 -24,24c-13.246,0 -24,-10.754 -24,-24c0,-13.246 10.754,-24 24,-24Zm-50,-0c13.246,-0 24,10.754 24,24c0,13.246 -10.754,24 -24,24c-13.246,-0 -24,-10.754 -24,-24c0,-13.246 10.754,-24 24,-24Zm2.705,16.735l7.239,0l0.622,-4.904l-21.833,0l-0,4.904l7.589,0l0,22.067l6.383,0l-0,-22.067Zm58.076,7.265c-0,-8.757 -3.698,-14.166 -10.781,-14.166c-7.083,-0 -10.781,5.604 -10.781,14.166c0,8.757 3.698,14.166 10.781,14.166c7.083,0 10.781,-5.604 10.781,-14.166Zm-6.539,0c0,6.538 -1.128,9.496 -4.242,9.496c-2.997,0 -4.242,-2.88 -4.242,-9.496c-0,-6.616 1.206,-9.496 4.242,-9.496c3.036,-0 4.242,2.88 4.242,9.496Zm-29.242,-67c13.246,0 24,10.754 24,24c0,13.246 -10.754,24 -24,24c-13.246,0 -24,-10.754 -24,-24c0,-13.246 10.754,-24 24,-24Zm0.512,9.834c-7.122,-0 -12.609,5.098 -12.609,14.127c-0,9.263 5.215,14.205 12.532,14.205c4.164,0 7.083,-1.634 9.068,-3.658l-2.88,-3.697c-1.518,1.206 -3.153,2.413 -5.838,2.413c-3.697,-0 -6.266,-2.763 -6.266,-9.263c-0,-6.616 2.724,-9.379 6.149,-9.379c2.102,-0 3.892,0.778 5.371,1.984l3.113,-3.775c-2.257,-1.868 -4.748,-2.957 -8.64,-2.957Z"/>
+  </g>
+</svg></span></a>
+    
+    <a class="icon-link svg-link" href="https://github.com/typelevel/otel4s"><span class="github" title="Source Code"><svg class="svg-icon" width="100%" height="100%" viewBox="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg" xml:space="preserve" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+  <g class="svg-shape">
+    <path d="M49.995,1c-27.609,-0 -49.995,22.386 -49.995,50.002c-0,22.09 14.325,40.83 34.194,47.444c2.501,0.458 3.413,-1.086 3.413,-2.412c0,-1.185 -0.043,-4.331 -0.067,-8.503c-13.908,3.021 -16.843,-6.704 -16.843,-6.704c-2.274,-5.773 -5.552,-7.311 -5.552,-7.311c-4.54,-3.103 0.344,-3.042 0.344,-3.042c5.018,0.356 7.658,5.154 7.658,5.154c4.46,7.64 11.704,5.433 14.552,4.156c0.454,-3.232 1.744,-5.436 3.174,-6.685c-11.102,-1.262 -22.775,-5.553 -22.775,-24.713c-0,-5.457 1.949,-9.92 5.147,-13.416c-0.516,-1.265 -2.231,-6.348 0.488,-13.233c0,0 4.199,-1.344 13.751,5.126c3.988,-1.108 8.266,-1.663 12.518,-1.682c4.245,0.019 8.523,0.574 12.517,1.682c9.546,-6.47 13.736,-5.126 13.736,-5.126c2.728,6.885 1.013,11.968 0.497,13.233c3.204,3.496 5.141,7.959 5.141,13.416c0,19.209 -11.691,23.436 -22.83,24.673c1.795,1.544 3.394,4.595 3.394,9.26c0,6.682 -0.061,12.076 -0.061,13.715c0,1.338 0.899,2.894 3.438,2.406c19.853,-6.627 34.166,-25.354 34.166,-47.438c-0,-27.616 -22.389,-50.002 -50.005,-50.002"/>
+  </g>
+</svg></span></a>
+    
+    <a class="icon-link glyph-link" href="https://discord.gg/XF3CXcMzqD"><i class="icofont-laika chat" title="Chat">&#xeed5;</i></a>
+    
+    <a class="icon-link svg-link" href="https://fosstodon.org/@typelevel"><span class="mastodon" title="Mastodon"><svg class="svg-icon" width="100%" height="100%" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg">
+  <g class="svg-shape">
+    <path d="M11.19 12.195c2.016-.24 3.77-1.475 3.99-2.603.348-1.778.32-4.339.32-4.339 0-3.47-2.286-4.488-2.286-4.488C12.062.238 10.083.017 8.027 0h-.05C5.92.017 3.942.238 2.79.765c0 0-2.285 1.017-2.285 4.488l-.002.662c-.004.64-.007 1.35.011 2.091.083 3.394.626 6.74 3.78 7.57 1.454.383 2.703.463 3.709.408 1.823-.1 2.847-.647 2.847-.647l-.06-1.317s-1.303.41-2.767.36c-1.45-.05-2.98-.156-3.215-1.928a3.614 3.614 0 0 1-.033-.496s1.424.346 3.228.428c1.103.05 2.137-.064 3.188-.189zm1.613-2.47H11.13v-4.08c0-.859-.364-1.295-1.091-1.295-.804 0-1.207.517-1.207 1.541v2.233H7.168V5.89c0-1.024-.403-1.541-1.207-1.541-.727 0-1.091.436-1.091 1.296v4.079H3.197V5.522c0-.859.22-1.541.66-2.046.456-.505 1.052-.764 1.793-.764.856 0 1.504.328 1.933.983L8 4.39l.417-.695c.429-.655 1.077-.983 1.934-.983.74 0 1.336.259 1.791.764.442.505.661 1.187.661 2.046v4.203z"/>
+  </g>
+</svg></span></a>
+    
+  </div>  
+
+</header>
+    
+    <nav id="sidebar">
+
+  <div class="row">
+    
+    <a class="icon-link svg-link" href="https://www.javadoc.io/doc/org.typelevel/otel4s-docs_2.13/1.0.0/org/typelevel/otel4s/index.html"><span class="api" title="API"><svg class="svg-icon" width="100%" height="100%" viewBox="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg" xml:space="preserve" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+  <g class="svg-shape">
+    <path d="M75,47.5c13.246,0 24,10.754 24,24c0,13.246 -10.754,24 -24,24c-13.246,0 -24,-10.754 -24,-24c0,-13.246 10.754,-24 24,-24Zm-50,-0c13.246,-0 24,10.754 24,24c0,13.246 -10.754,24 -24,24c-13.246,-0 -24,-10.754 -24,-24c0,-13.246 10.754,-24 24,-24Zm2.705,16.735l7.239,0l0.622,-4.904l-21.833,0l-0,4.904l7.589,0l0,22.067l6.383,0l-0,-22.067Zm58.076,7.265c-0,-8.757 -3.698,-14.166 -10.781,-14.166c-7.083,-0 -10.781,5.604 -10.781,14.166c0,8.757 3.698,14.166 10.781,14.166c7.083,0 10.781,-5.604 10.781,-14.166Zm-6.539,0c0,6.538 -1.128,9.496 -4.242,9.496c-2.997,0 -4.242,-2.88 -4.242,-9.496c-0,-6.616 1.206,-9.496 4.242,-9.496c3.036,-0 4.242,2.88 4.242,9.496Zm-29.242,-67c13.246,0 24,10.754 24,24c0,13.246 -10.754,24 -24,24c-13.246,0 -24,-10.754 -24,-24c0,-13.246 10.754,-24 24,-24Zm0.512,9.834c-7.122,-0 -12.609,5.098 -12.609,14.127c-0,9.263 5.215,14.205 12.532,14.205c4.164,0 7.083,-1.634 9.068,-3.658l-2.88,-3.697c-1.518,1.206 -3.153,2.413 -5.838,2.413c-3.697,-0 -6.266,-2.763 -6.266,-9.263c-0,-6.616 2.724,-9.379 6.149,-9.379c2.102,-0 3.892,0.778 5.371,1.984l3.113,-3.775c-2.257,-1.868 -4.748,-2.957 -8.64,-2.957Z"/>
+  </g>
+</svg></span></a>
+    
+    <a class="icon-link svg-link" href="https://github.com/typelevel/otel4s"><span class="github" title="Source Code"><svg class="svg-icon" width="100%" height="100%" viewBox="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg" xml:space="preserve" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+  <g class="svg-shape">
+    <path d="M49.995,1c-27.609,-0 -49.995,22.386 -49.995,50.002c-0,22.09 14.325,40.83 34.194,47.444c2.501,0.458 3.413,-1.086 3.413,-2.412c0,-1.185 -0.043,-4.331 -0.067,-8.503c-13.908,3.021 -16.843,-6.704 -16.843,-6.704c-2.274,-5.773 -5.552,-7.311 -5.552,-7.311c-4.54,-3.103 0.344,-3.042 0.344,-3.042c5.018,0.356 7.658,5.154 7.658,5.154c4.46,7.64 11.704,5.433 14.552,4.156c0.454,-3.232 1.744,-5.436 3.174,-6.685c-11.102,-1.262 -22.775,-5.553 -22.775,-24.713c-0,-5.457 1.949,-9.92 5.147,-13.416c-0.516,-1.265 -2.231,-6.348 0.488,-13.233c0,0 4.199,-1.344 13.751,5.126c3.988,-1.108 8.266,-1.663 12.518,-1.682c4.245,0.019 8.523,0.574 12.517,1.682c9.546,-6.47 13.736,-5.126 13.736,-5.126c2.728,6.885 1.013,11.968 0.497,13.233c3.204,3.496 5.141,7.959 5.141,13.416c0,19.209 -11.691,23.436 -22.83,24.673c1.795,1.544 3.394,4.595 3.394,9.26c0,6.682 -0.061,12.076 -0.061,13.715c0,1.338 0.899,2.894 3.438,2.406c19.853,-6.627 34.166,-25.354 34.166,-47.438c-0,-27.616 -22.389,-50.002 -50.005,-50.002"/>
+  </g>
+</svg></span></a>
+    
+    <a class="icon-link glyph-link" href="https://discord.gg/XF3CXcMzqD"><i class="icofont-laika chat" title="Chat">&#xeed5;</i></a>
+    
+    <a class="icon-link svg-link" href="https://fosstodon.org/@typelevel"><span class="mastodon" title="Mastodon"><svg class="svg-icon" width="100%" height="100%" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg">
+  <g class="svg-shape">
+    <path d="M11.19 12.195c2.016-.24 3.77-1.475 3.99-2.603.348-1.778.32-4.339.32-4.339 0-3.47-2.286-4.488-2.286-4.488C12.062.238 10.083.017 8.027 0h-.05C5.92.017 3.942.238 2.79.765c0 0-2.285 1.017-2.285 4.488l-.002.662c-.004.64-.007 1.35.011 2.091.083 3.394.626 6.74 3.78 7.57 1.454.383 2.703.463 3.709.408 1.823-.1 2.847-.647 2.847-.647l-.06-1.317s-1.303.41-2.767.36c-1.45-.05-2.98-.156-3.215-1.928a3.614 3.614 0 0 1-.033-.496s1.424.346 3.228.428c1.103.05 2.137-.064 3.188-.189zm1.613-2.47H11.13v-4.08c0-.859-.364-1.295-1.091-1.295-.804 0-1.207.517-1.207 1.541v2.233H7.168V5.89c0-1.024-.403-1.541-1.207-1.541-.727 0-1.091.436-1.091 1.296v4.079H3.197V5.522c0-.859.22-1.541.66-2.046.456-.505 1.052-.764 1.793-.764.856 0 1.504.328 1.933.983L8 4.39l.417-.695c.429-.655 1.077-.983 1.934-.983.74 0 1.336.259 1.791.764.442.505.661 1.187.661 2.046v4.203z"/>
+  </g>
+</svg></span></a>
+    
+  </div>
+
+  <ul class="nav-list">
+    <li class="level1 nav-leaf"><a href="../">otel4s</a></li>
+    <li class="level1 nav-leaf"><a href="../modules-structure.html">Modules structure</a></li>
+    <li class="level1 nav-leaf"><a href="../tracing-context-propagation.html">Tracing context propagation</a></li>
+    <li class="level1 nav-leaf"><a href="../ecosystem.html">Ecosystem</a></li>
+    <li class="level1 nav-header">How-to | JVM setup</li>
+    <li class="level2 nav-leaf"><a href="../how-to-jvm-setup/">JVM setup</a></li>
+    <li class="level2 nav-leaf"><a href="../how-to-jvm-setup/set-up-otel4s-in-a-jvm-application.html">Set up otel4s in a JVM application</a></li>
+    <li class="level2 nav-leaf"><a href="../how-to-jvm-setup/use-the-global-opentelemetry-instance.html">Use the global OpenTelemetry instance</a></li>
+    <li class="level2 nav-leaf"><a href="../how-to-jvm-setup/keep-otel4s-context-in-sync-with-opentelemetry-java.html">Keep otel4s context in sync with OpenTelemetry Java</a></li>
+    <li class="level1 nav-header">How-to | Tracing</li>
+    <li class="level2 nav-leaf"><a href="../how-to-tracing/">Tracing</a></li>
+    <li class="level2 nav-leaf"><a href="../how-to-tracing/create-spans-around-effectful-code.html">Create spans around effectful code</a></li>
+    <li class="level2 nav-leaf"><a href="../how-to-tracing/trace-resource-and-fs2-stream-code.html">Trace Resource and fs2.Stream code</a></li>
+    <li class="level2 nav-leaf"><a href="../how-to-tracing/propagate-trace-context-across-service-boundaries.html">Propagate trace context across service boundaries</a></li>
+    <li class="level2 nav-leaf"><a href="../how-to-tracing/use-otel4s-with-java-instrumented-libraries.html">Use otel4s with Java-instrumented libraries</a></li>
+    <li class="level2 nav-leaf"><a href="../how-to-tracing/use-unmanaged-spans-when-a-span-must-end-outside-its-scope.html">Use unmanaged spans when a span must end outside its scope</a></li>
+    <li class="level1 nav-header">How-to | Metrics</li>
+    <li class="level2 nav-leaf"><a href="../how-to-metrics/">Metrics</a></li>
+    <li class="level2 nav-leaf"><a href="../how-to-metrics/record-application-metrics.html">Record application metrics</a></li>
+    <li class="level2 nav-leaf"><a href="../how-to-metrics/customize-histogram-buckets.html">Customize histogram buckets</a></li>
+    <li class="level2 nav-leaf"><a href="../how-to-metrics/register-cats-effect-runtime-metrics.html">Register Cats Effect runtime metrics</a></li>
+    <li class="level2 nav-leaf"><a href="../how-to-metrics/register-jvm-runtime-metrics.html">Register JVM runtime metrics</a></li>
+    <li class="level1 nav-header">Explanations</li>
+    <li class="level2 active nav-leaf"><a href="#">Choosing parent spans and tracing scopes</a></li>
+    <li class="level2 nav-leaf"><a href="tracing-resource-and-fs2-stream-scopes.html">Tracing Resource and fs2.Stream scopes</a></li>
+    <li class="level2 nav-leaf"><a href="histogram-bucket-customization-with-views.html">Histogram bucket customization with views</a></li>
+    <li class="level1 nav-header">Instrumentation</li>
+    <li class="level2 nav-leaf"><a href="../instrumentation/metrics.html">Metrics</a></li>
+    <li class="level2 nav-leaf"><a href="../instrumentation/metrics-cats-effect-io-runtime.html">Metrics | Cats Effect IO runtime</a></li>
+    <li class="level2 nav-leaf"><a href="../instrumentation/tracing.html">Tracing</a></li>
+    <li class="level2 nav-leaf"><a href="../instrumentation/tracing-cross-service-propagation.html">Tracing | Cross-service propagation</a></li>
+    <li class="level2 nav-leaf"><a href="../instrumentation/logs.html">Logs</a></li>
+    <li class="level2 nav-leaf"><a href="../instrumentation/baggage.html">Baggage</a></li>
+    <li class="level2 nav-leaf"><a href="../instrumentation/semantic-conventions.html">Semantic conventions</a></li>
+    <li class="level1 nav-header">OtelJava</li>
+    <li class="level2 nav-leaf"><a href="../oteljava/overview.html">Overview</a></li>
+    <li class="level2 nav-leaf"><a href="../oteljava/tracing-java-interop.html">Tracing | Interop with Java-instrumented libraries</a></li>
+    <li class="level2 nav-leaf"><a href="../oteljava/agent.html">Zero-code | Java Agent</a></li>
+    <li class="level2 nav-leaf"><a href="../oteljava/testkit.html">Testkit</a></li>
+    <li class="level2 nav-leaf"><a href="../oteljava/testkit-metrics.html">Testkit | Metrics</a></li>
+    <li class="level2 nav-leaf"><a href="../oteljava/testkit-traces.html">Testkit | Traces</a></li>
+    <li class="level2 nav-leaf"><a href="../oteljava/testkit-logs.html">Testkit | Logs</a></li>
+    <li class="level1 nav-header">SDK</li>
+    <li class="level2 nav-leaf"><a href="../sdk/overview.html">Overview</a></li>
+    <li class="level1 nav-header">Examples</li>
+    <li class="level2 nav-leaf"><a href="../examples/jaeger-docker/">Jaeger - collecting traces</a></li>
+    <li class="level2 nav-leaf"><a href="../examples/honeycomb/">Honeycomb - metrics and traces</a></li>
+    <li class="level2 nav-leaf"><a href="../examples/dash0/">Dash0 - metrics and traces</a></li>
+    <li class="level2 nav-leaf"><a href="../examples/grafana/">Grafana - All-in-one</a></li>
+  </ul>
+
+</nav>
+
+    <div id="container">
+
+      
+<nav id="page-nav">
+  <p class="header"><a href="#">Choosing parent spans and tracing scopes</a></p>
+
+  <ul class="nav-list">
+    <li class="level1 nav-leaf"><a href="#span-follows-the-current-tracing-context"><code>span</code> follows the current tracing context</a></li>
+    <li class="level1 nav-leaf"><a href="#childscope-and-withparent-both-set-an-explicit-parent"><code>childScope</code> and <code>withParent</code> both set an explicit parent</a></li>
+    <li class="level1 nav-leaf"><a href="#joinorroot-chooses-between-an-extracted-parent-and-no-parent"><code>joinOrRoot</code> chooses between an extracted parent and no parent</a></li>
+    <li class="level1 nav-leaf"><a href="#rootscope-and-rootspan-solve-different-problems"><code>rootScope</code> and <code>rootSpan</code> solve different problems</a></li>
+    <li class="level1 nav-leaf"><a href="#noopscope-disables-tracing-inside-a-block"><code>noopScope</code> disables tracing inside a block</a></li>
+    <li class="level1 nav-leaf"><a href="#summary">Summary</a></li>
+  </ul>
+
+  <p class="footer"></p>
+</nav>
+
+
+      <main class="content">
+
+        <h1 id="choosing-parent-spans-and-tracing-scopes" class="title">Choosing parent spans and tracing scopes</h1>
+        <p>Use <a href="../how-to-tracing/create-spans-around-effectful-code.html">Create spans around effectful code</a> for the step-by-step
+        examples.
+        Use <a href="../how-to-tracing/propagate-trace-context-across-service-boundaries.html">Propagate trace context across service boundaries</a>
+        for carrier setup and end-to-end propagation tasks.</p>
+        <p>This page explains how otel4s chooses the parent of a new span, and what changes when you use <code>span</code>, <code>childScope</code>,
+        <code>withParent</code>, <code>joinOrRoot</code>, <code>rootScope</code>, <code>rootSpan</code>, or <code>noopScope</code>.</p>
+        
+        <h2 id="span-follows-the-current-tracing-context" class="section"><a class="anchor-link left" href="#span-follows-the-current-tracing-context"><i class="icofont-laika link">&#xef71;</i></a><code>span</code> follows the current tracing context</h2>
+        <p><code>Tracer[F].span(&quot;...&quot;)</code> checks the current tracing context.
+        If it finds a valid parent span, the new span becomes its child.
+        Otherwise, it starts a root span.</p>
+        <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="type-name">Monad</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.</span><span class="type-name">IO</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.</span><span class="type-name">Ref</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">syntax</span><span>.</span><span class="identifier">flatMap</span><span>.</span><span class="identifier">_</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">syntax</span><span>.</span><span class="identifier">functor</span><span>.</span><span class="identifier">_</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="type-name">Attribute</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">trace</span><span>.{</span><span class="type-name">SpanContext</span><span>, </span><span class="type-name">Tracer</span><span>}
+
+</span><span class="keyword">case</span><span> </span><span class="keyword">class</span><span> </span><span class="type-name">User</span><span>(</span><span class="identifier">email</span><span>: </span><span class="type-name">String</span><span>)
+
+</span><span class="keyword">class</span><span> </span><span class="type-name">UserRepository</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>]: </span><span class="type-name">Monad</span><span>: </span><span class="type-name">Tracer</span><span>](</span><span class="identifier">storage</span><span>: </span><span class="type-name">Ref</span><span>[</span><span class="type-name">F</span><span>, </span><span class="type-name">Map</span><span>[</span><span class="type-name">Long</span><span>, </span><span class="type-name">User</span><span>]]) {
+
+  </span><span class="keyword">def</span><span> </span><span class="declaration-name">findUser</span><span>(</span><span class="identifier">userId</span><span>: </span><span class="type-name">Long</span><span>): </span><span class="type-name">F</span><span>[</span><span class="type-name">Option</span><span>[</span><span class="type-name">User</span><span>]] =
+    </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">span</span><span>(</span><span class="string-literal">&quot;find-user&quot;</span><span>, </span><span class="type-name">Attribute</span><span>(</span><span class="string-literal">&quot;user_id&quot;</span><span>, </span><span class="identifier">userId</span><span>)).</span><span class="identifier">use</span><span> { </span><span class="identifier">span</span><span> =&gt;
+      </span><span class="keyword">for</span><span> {
+        </span><span class="identifier">current</span><span> &lt;- </span><span class="identifier">storage</span><span>.</span><span class="identifier">get</span><span>
+        </span><span class="identifier">user</span><span> &lt;- </span><span class="type-name">Monad</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">pure</span><span>(</span><span class="identifier">current</span><span>.</span><span class="identifier">get</span><span>(</span><span class="identifier">userId</span><span>))
+        </span><span class="identifier">_</span><span> &lt;- </span><span class="identifier">span</span><span>.</span><span class="identifier">addAttribute</span><span>(</span><span class="type-name">Attribute</span><span>(</span><span class="string-literal">&quot;user_exists&quot;</span><span>, </span><span class="identifier">user</span><span>.</span><span class="identifier">isDefined</span><span>))
+      } </span><span class="keyword">yield</span><span> </span><span class="identifier">user</span><span>
+    }
+
+}</span></code></pre>
+        <p><code>findUser</code> creates <code>find-user</code> as a child span when another span is current.
+        If no parent is current, <code>find-user</code> becomes a root span.</p>
+        
+        <h2 id="childscope-and-withparent-both-set-an-explicit-parent" class="section"><a class="anchor-link left" href="#childscope-and-withparent-both-set-an-explicit-parent"><i class="icofont-laika link">&#xef71;</i></a><code>childScope</code> and <code>withParent</code> both set an explicit parent</h2>
+        <p>Use <code>childScope</code> when you want several spans in a block to inherit the same explicit parent.</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">def</span><span> </span><span class="declaration-name">continueMany</span><span>(</span><span class="identifier">parent</span><span>: </span><span class="type-name">SpanContext</span><span>)(</span><span class="keyword">implicit</span><span> </span><span class="identifier">tracer</span><span>: </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">IO</span><span>]): </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] =
+  </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">IO</span><span>].</span><span class="identifier">childScope</span><span>(</span><span class="identifier">parent</span><span>) {
+    </span><span class="keyword">for</span><span> {
+      </span><span class="identifier">_</span><span> &lt;- </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">IO</span><span>].</span><span class="identifier">span</span><span>(</span><span class="string-literal">&quot;step-1&quot;</span><span>).</span><span class="identifier">use_</span><span>
+      </span><span class="identifier">_</span><span> &lt;- </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">IO</span><span>].</span><span class="identifier">span</span><span>(</span><span class="string-literal">&quot;step-2&quot;</span><span>).</span><span class="identifier">use_</span><span>
+    } </span><span class="keyword">yield</span><span> ()
+  }</span></code></pre>
+        <p>Use <code>withParent</code> when one new span should use an explicit parent without changing the scope for other spans.</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">def</span><span> </span><span class="declaration-name">attachOneToOuter</span><span>(</span><span class="keyword">implicit</span><span> </span><span class="identifier">tracer</span><span>: </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">IO</span><span>]): </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] =
+  </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">IO</span><span>].</span><span class="identifier">span</span><span>(</span><span class="string-literal">&quot;span&quot;</span><span>).</span><span class="identifier">use</span><span> { </span><span class="identifier">outer</span><span> =&gt;
+    </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">IO</span><span>].</span><span class="identifier">span</span><span>(</span><span class="string-literal">&quot;span-2&quot;</span><span>).</span><span class="identifier">use_</span><span> &gt;&gt;
+      </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">IO</span><span>].</span><span class="identifier">spanBuilder</span><span>(</span><span class="string-literal">&quot;span-3&quot;</span><span>).</span><span class="identifier">withParent</span><span>(</span><span class="identifier">outer</span><span>.</span><span class="identifier">context</span><span>).</span><span class="identifier">build</span><span>.</span><span class="identifier">use_</span><span>
+  }</span></code></pre>
+        <p>In that example, <code>span-3</code> is attached to <code>span</code> even though it is created after <code>span-2</code>.</p>
+        <p>Span structure:</p>
+        <pre class="mermaid">gantt
+    dateFormat HH:mm:ss
+    axisFormat %H:%M:%S
+
+    section Spans
+    span   :done, a1, 00:00:00, 00:00:10
+    span-2 :done, a2, 00:00:01, 00:00:04
+    span-3 :done, a3, 00:00:05, 00:00:08</pre>
+        <p><code>childScope</code> changes parent selection for spans created inside the block.
+        <code>withParent</code> changes parent selection for one span builder only.</p>
+        
+        <h2 id="joinorroot-chooses-between-an-extracted-parent-and-no-parent" class="section"><a class="anchor-link left" href="#joinorroot-chooses-between-an-extracted-parent-and-no-parent"><i class="icofont-laika link">&#xef71;</i></a><code>joinOrRoot</code> chooses between an extracted parent and no parent</h2>
+        <p><code>joinOrRoot</code> is for external boundaries such as HTTP requests, messages, or jobs started by another process.</p>
+        <p>It tries to extract a parent span context from a carrier:</p>
+        <ul>
+          <li>if extraction succeeds, new spans become children of that external parent</li>
+          <li>if extraction fails, spans in the block start as root spans</li>
+        </ul>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">def</span><span> </span><span class="declaration-name">handleIncoming</span><span>(</span><span class="identifier">headers</span><span>: </span><span class="type-name">Map</span><span>[</span><span class="type-name">String</span><span>, </span><span class="type-name">String</span><span>])(</span><span class="keyword">implicit</span><span> </span><span class="identifier">tracer</span><span>: </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">IO</span><span>]): </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] =
+  </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">IO</span><span>].</span><span class="identifier">joinOrRoot</span><span>(</span><span class="identifier">headers</span><span>) {
+    </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">IO</span><span>].</span><span class="identifier">span</span><span>(</span><span class="string-literal">&quot;request.handle&quot;</span><span>).</span><span class="identifier">surround</span><span>(</span><span class="type-name">IO</span><span>.</span><span class="identifier">unit</span><span>)
+  }</span></code></pre>
+        <p>Unlike <code>childScope</code> and <code>withParent</code>, <code>joinOrRoot</code> does not take a <code>SpanContext</code> directly.
+        It derives the parent from propagation data in the carrier.</p>
+        
+        <h2 id="rootscope-and-rootspan-solve-different-problems" class="section"><a class="anchor-link left" href="#rootscope-and-rootspan-solve-different-problems"><i class="icofont-laika link">&#xef71;</i></a><code>rootScope</code> and <code>rootSpan</code> solve different problems</h2>
+        <p><code>rootScope</code> does not create a span.
+        It only runs an effect in a scope where the current parent is cleared.</p>
+        <p><code>rootSpan(&quot;...&quot;).surround(fa)</code> creates a new root span and makes it current while <code>fa</code> runs.</p>
+        <pre><code class="nohighlight"><span class="keyword">class</span><span> </span><span class="type-name">UserRequestHandler</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>]: </span><span class="type-name">Tracer</span><span>: </span><span class="type-name">Monad</span><span>](</span><span class="identifier">repo</span><span>: </span><span class="type-name">UserRepository</span><span>[</span><span class="type-name">F</span><span>]) {
+  </span><span class="keyword">private</span><span> </span><span class="keyword">val</span><span> </span><span class="type-name">SystemUserId</span><span> = -</span><span class="number-literal">1L</span><span>
+
+  </span><span class="keyword">def</span><span> </span><span class="declaration-name">handleUser</span><span>(</span><span class="identifier">userId</span><span>: </span><span class="type-name">Long</span><span>): </span><span class="type-name">F</span><span>[</span><span class="type-name">Unit</span><span>] =
+    </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">rootScope</span><span>(</span><span class="identifier">activateUser</span><span>(</span><span class="identifier">userId</span><span>))
+
+  </span><span class="keyword">def</span><span> </span><span class="declaration-name">handleUserInternal</span><span>(</span><span class="identifier">userId</span><span>: </span><span class="type-name">Long</span><span>): </span><span class="type-name">F</span><span>[</span><span class="type-name">Unit</span><span>] =
+    </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">rootSpan</span><span>(</span><span class="string-literal">&quot;handle-user&quot;</span><span>).</span><span class="identifier">surround</span><span>(</span><span class="identifier">activateUser</span><span>(</span><span class="identifier">userId</span><span>))
+
+  </span><span class="keyword">private</span><span> </span><span class="keyword">def</span><span> </span><span class="declaration-name">activateUser</span><span>(</span><span class="identifier">userId</span><span>: </span><span class="type-name">Long</span><span>): </span><span class="type-name">F</span><span>[</span><span class="type-name">Unit</span><span>] =
+    </span><span class="keyword">for</span><span> {
+      </span><span class="identifier">systemUser</span><span> &lt;- </span><span class="identifier">repo</span><span>.</span><span class="identifier">findUser</span><span>(</span><span class="type-name">SystemUserId</span><span>)
+      </span><span class="identifier">user</span><span> &lt;- </span><span class="identifier">repo</span><span>.</span><span class="identifier">findUser</span><span>(</span><span class="identifier">userId</span><span>)
+      </span><span class="identifier">_</span><span> &lt;- </span><span class="identifier">activate</span><span>(</span><span class="identifier">systemUser</span><span>, </span><span class="identifier">user</span><span>)
+    } </span><span class="keyword">yield</span><span> ()
+
+  </span><span class="keyword">private</span><span> </span><span class="keyword">def</span><span> </span><span class="declaration-name">activate</span><span>(</span><span class="identifier">systemUser</span><span>: </span><span class="type-name">Option</span><span>[</span><span class="type-name">User</span><span>], </span><span class="identifier">target</span><span>: </span><span class="type-name">Option</span><span>[</span><span class="type-name">User</span><span>]): </span><span class="type-name">F</span><span>[</span><span class="type-name">Unit</span><span>] = {
+    </span><span class="keyword">val</span><span> </span><span class="identifier">_</span><span> = (</span><span class="identifier">systemUser</span><span>, </span><span class="identifier">target</span><span>)
+    </span><span class="type-name">Monad</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">unit</span><span>
+  }
+}</span></code></pre>
+        <p>With <code>rootScope</code>, the current parent is removed, but no replacement span is created.
+        That means each <code>find-user</code> span inside <code>activateUser</code> becomes its own root span:</p>
+        <pre class="mermaid">gantt
+    dateFormat HH:mm:ss
+    axisFormat %H:%M:%S
+
+    section Span 1
+    find-user { user_id = -1 }     :done, a1, 00:00:00, 00:00:10
+    section Span 2
+    find-user { user_id = 123 }    :done, a2, 00:00:00, 00:00:10</pre>
+        <p>With <code>rootSpan</code>, <code>handle-user</code> becomes the new current span, so the inner <code>find-user</code> spans become its children:</p>
+        <pre class="mermaid">gantt
+    dateFormat HH:mm:ss
+    axisFormat %H:%M:%S
+
+    section Spans
+    handle-user                    :done, a1, 00:00:00, 00:00:10
+    find-user { user_id = -1 }     :done, a2, 00:00:01, 00:00:10
+    find-user { user_id = 123 }    :done, a3, 00:00:01, 00:00:10</pre>
+        <p>Use <code>rootScope</code> when work should stop inheriting the current parent, but you do not want a wrapper span.
+        Use <code>rootSpan</code> when that work should start a new trace with one explicit root span.</p>
+        
+        <h2 id="noopscope-disables-tracing-inside-a-block" class="section"><a class="anchor-link left" href="#noopscope-disables-tracing-inside-a-block"><i class="icofont-laika link">&#xef71;</i></a><code>noopScope</code> disables tracing inside a block</h2>
+        <p><code>noopScope</code> is different from <code>rootScope</code>.
+        It does not create new root spans.
+        Tracing operations inside the block become no-ops.</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">class</span><span> </span><span class="type-name">InternalUserService</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>]: </span><span class="type-name">Tracer</span><span>](</span><span class="identifier">repo</span><span>: </span><span class="type-name">UserRepository</span><span>[</span><span class="type-name">F</span><span>]) {
+
+  </span><span class="keyword">def</span><span> </span><span class="declaration-name">findUserInternal</span><span>(</span><span class="identifier">userId</span><span>: </span><span class="type-name">Long</span><span>): </span><span class="type-name">F</span><span>[</span><span class="type-name">Option</span><span>[</span><span class="type-name">User</span><span>]] =
+    </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">noopScope</span><span>(</span><span class="identifier">repo</span><span>.</span><span class="identifier">findUser</span><span>(</span><span class="identifier">userId</span><span>))
+
+}</span></code></pre>
+        <p>Use it when code should run without emitting spans even if tracing is enabled in the surrounding application.</p>
+        
+        <h2 id="summary" class="section"><a class="anchor-link left" href="#summary"><i class="icofont-laika link">&#xef71;</i></a>Summary</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>API</th>
+              <th>How otel4s picks the parent</th>
+              <th>Typical use</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>span</code></td>
+              <td>Current tracing context if present, otherwise root</td>
+              <td>Normal nested tracing</td>
+            </tr>
+            <tr>
+              <td><code>childScope(parent)</code></td>
+              <td>The explicit <code>parent</code> for spans in the block</td>
+              <td>Continue several spans from one known parent</td>
+            </tr>
+            <tr>
+              <td><code>spanBuilder(...).withParent(parent)</code></td>
+              <td>The explicit <code>parent</code> for one new span</td>
+              <td>Attach one span to a chosen parent</td>
+            </tr>
+            <tr>
+              <td><code>joinOrRoot(carrier)</code></td>
+              <td>Extracted parent from the carrier, otherwise no parent</td>
+              <td>Continue incoming traces across process boundaries</td>
+            </tr>
+            <tr>
+              <td><code>rootScope</code></td>
+              <td>No parent, and no wrapper span</td>
+              <td>Stop inheriting the current parent</td>
+            </tr>
+            <tr>
+              <td><code>rootSpan</code></td>
+              <td>No parent for the wrapper span, then that wrapper becomes current</td>
+              <td>Start a fresh trace with one explicit root</td>
+            </tr>
+            <tr>
+              <td><code>noopScope</code></td>
+              <td>No tracing at all</td>
+              <td>Suppress spans in a block</td>
+            </tr>
+          </tbody>
+        </table>
+
+        
+<hr class="footer-rule"/>
+<footer>
+  otel4s is a <a href="https://typelevel.org/">Typelevel</a> project distributed under the <a href="https://www.apache.org/licenses/LICENSE-2.0.txt">Apache-2.0</a> license.
+</footer>
+
+
+      </main>
+
+    </div>
+
+  </body>
+
+</html>

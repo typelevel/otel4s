@@ -123,7 +123,8 @@ def injectIntoHttpHeaders(implicit tracer: Tracer[IO]): IO[Headers] =
   [Use otel4s with Java-instrumented libraries](use-otel4s-with-java-instrumented-libraries.md)
 - Keep otel4s context in sync with OpenTelemetry Java context:
   [Keep otel4s context in sync with OpenTelemetry Java](../how-to-jvm-setup/keep-otel4s-context-in-sync-with-opentelemetry-java.md)
-- For baggage, see the existing [Baggage](../instrumentation/baggage.md) page.
+- Add request-scoped metadata with baggage:
+  [Work with baggage](work-with-baggage.md)
 - For custom propagators and more background, see the existing
   [Cross-service trace propagation](../instrumentation/tracing-cross-service-propagation.md) page.
 

@@ -32,6 +32,9 @@ import cats.Applicative
   *
   * BaggageManager[F].local(_.updated("user_id", "uid"))(io)
   *   }}}
+  *
+  * @see
+  *   How-to guide [[https://typelevel.org/otel4s/how-to-tracing/work-with-baggage.html]]
   */
 sealed trait BaggageManager[F[_]] {
 

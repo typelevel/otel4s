@@ -77,5 +77,3 @@ def handleRequest(implicit baggageManager: BaggageManager[IO]): IO[Unit] =
   [Propagate trace context across service boundaries](propagate-trace-context-across-service-boundaries.md)
 - Work across otel4s and Java context boundaries:
   [Use otel4s with Java-instrumented libraries](use-otel4s-with-java-instrumented-libraries.md)
-
-[opentelemetry-baggage]: https://opentelemetry.io/docs/concepts/signals/baggage

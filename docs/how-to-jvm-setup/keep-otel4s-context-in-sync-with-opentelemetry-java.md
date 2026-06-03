@@ -99,7 +99,10 @@ For handler, client, and library boundary patterns, see the tracing how-to pages
 ## 4. Know the limitations
 
 - `IOLocalContextStorage` does not work with the standard OpenTelemetry Java agent
-- if you use the Java agent, see the existing [Zero-code | Java Agent](../oteljava/agent.md) page
+- if you use `otel4s-opentelemetry-javaagent`, follow
+  [Use the otel4s Java agent](use-the-otel4s-java-agent.md)
+- for background on why that agent needs its own setup path, see
+  [How otel4s context works with the otel4s Java agent](../explanations/how-otel4s-context-works-with-the-otel4s-java-agent.md)
 - if you use the testkit and rely on `IOLocalContextStorage`, see the existing
   [Testkit](../oteljava/testkit.md#iolocalcontextstorage) page
 

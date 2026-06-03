@@ -71,7 +71,7 @@ Use:
 - Align Cats Effect and Java SDK context:
   [Keep otel4s context in sync with OpenTelemetry Java](keep-otel4s-context-in-sync-with-opentelemetry-java.md)
 - Use otel4s with the Java agent:
-  [Zero-code | Java Agent](../oteljava/agent.md)
+  [Use the otel4s Java agent](use-the-otel4s-java-agent.md)
 - Create spans in your application code:
   [Create spans around effectful code](../how-to-tracing/create-spans-around-effectful-code.md)
 - Use otel4s with Java-instrumented libraries:

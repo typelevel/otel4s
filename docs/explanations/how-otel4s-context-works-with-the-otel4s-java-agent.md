@@ -39,6 +39,20 @@ At a high level, it combines:
 
 That is why the how-to for this agent uses `OtelJava.global[IO]` rather than `OtelJava.autoConfigured[IO]()`: the agent already owns SDK creation.
 
+## When this path fits
+
+Use `otel4s-opentelemetry-javaagent` when:
+
+- you want automatic instrumentation at common service boundaries such as HTTP, databases, gRPC, or messaging
+- you still want to add manual otel4s spans or metrics in application code
+- the application runs in a deployment model close to one app per JVM
+
+Prefer the regular JVM setup pages when:
+
+- your application owns SDK bootstrap directly
+- you want full control over SDK setup in application code
+- you do not need the agent-specific context-sharing path
+
 ## Where `IOLocal` and `ThreadLocal` meet
 
 Cats Effect propagates request-scoped state across fibers.
@@ -48,6 +62,17 @@ The agent-specific integration works by making those two views line up closely e
 In practice, that means otel4s can keep using Cats Effect-local context while Java libraries and agent instrumentation can still read the current context through the usual OpenTelemetry Java APIs.
 The important result is not that the two mechanisms become identical.
 It is that otel4s code and Java code can agree on the current tracing context in the supported setup.
+
+## Mechanism at a glance
+
+The agent-specific integration uses a few pieces together:
+
+- it instruments `IORuntime` construction and keeps a `ThreadLocal` view of `IOLocal[Context]` in bootstrap-loaded state
+- it installs a custom `ContextStorage` wrapper so agent instrumentation can read the current fiber context when one is available
+- it instruments `IOFiber` construction so a new fiber starts with the current tracing context
+
+These are implementation details of an experimental integration.
+They explain why the setup can make mixed Java and otel4s code observe the same current context in the supported deployment shape.
 
 ## Why the agent how-to requires `OtelJava.global`
 
@@ -75,20 +100,6 @@ It becomes much harder to reason about when multiple applications share the same
 
 In those environments, applications can interfere with one another's assumptions about context setup.
 That is why the agent how-to keeps the limitation explicit instead of treating it as an edge case.
-
-## When to use this path
-
-Use `otel4s-opentelemetry-javaagent` when:
-
-- you want automatic instrumentation at common service boundaries
-- you still want to write manual otel4s spans or metrics in application code
-- the application runs in a deployment model close to one app per JVM
-
-Prefer the regular JVM setup pages when:
-
-- your application owns SDK bootstrap directly
-- you do not need this agent-specific context-sharing path
-- you want the simpler `OtelJava.autoConfigured[IO]().use { otel4s => ... }` setup
 
 ## Related material
 

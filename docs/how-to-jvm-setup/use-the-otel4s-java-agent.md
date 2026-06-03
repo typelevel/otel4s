@@ -1,20 +1,11 @@
 # Use the otel4s Java agent
 
-Use this page when you want automatic OpenTelemetry instrumentation at common service boundaries and also want to use otel4s in the same JVM application.
+Use this page when you want automatic OpenTelemetry instrumentation and also want otel4s to use the same global SDK in the same JVM application.
 
-This page covers `otel4s-opentelemetry-javaagent`, a custom distribution of the upstream OpenTelemetry Java agent. It keeps the same automatic instrumentation behavior and also adds Cats Effect and otel4s integrations. The shared-context setup below applies to this distribution, not to the standard OpenTelemetry Java agent.
+This page covers `otel4s-opentelemetry-javaagent`, a custom distribution of the upstream OpenTelemetry Java agent. The shared-context setup below applies to this distribution, not to the standard OpenTelemetry Java agent.
 
-Use this page when:
-
-- you want automatic instrumentation for common service boundaries such as HTTP, databases, gRPC, or messaging
-- you want otel4s code to use the same SDK and context path as the agent
-- you are running one application per JVM, or a similarly simple deployment model
-
-Prefer manual otel4s setup when:
-
-- you want full control over spans, attributes, and metrics
-- your application owns SDK bootstrap directly
-- you do not need the agent-specific context-sharing path
+For background on why this setup differs from the standard agent path, see
+[How otel4s context works with the otel4s Java agent](../explanations/how-otel4s-context-works-with-the-otel4s-java-agent.md).
 
 @:callout(warning)
 
@@ -103,31 +94,36 @@ The agent autoconfigures the global OpenTelemetry SDK.
 Use `OtelJava.global[IO]`, not `OtelJava.autoConfigured[IO]()`.
 
 ```scala mdoc:silent
-import cats.effect.{IO, IOApp, Resource}
+import cats.effect.{IO, IOApp}
 import org.typelevel.otel4s.context.LocalProvider
-import org.typelevel.otel4s.metrics.Meter
+import org.typelevel.otel4s.metrics.MeterProvider
 import org.typelevel.otel4s.oteljava.OtelJava
 import org.typelevel.otel4s.oteljava.context.Context
 import org.typelevel.otel4s.oteljava.context.IOLocalContextStorage
-import org.typelevel.otel4s.trace.Tracer
+import org.typelevel.otel4s.trace.TracerProvider
 
 object Main extends IOApp.Simple {
   implicit val localProvider: LocalProvider[IO, Context] =
     IOLocalContextStorage.localProvider[IO]
 
-  def run: IO[Unit] = {
-    for {
-      otel4s <- Resource.eval(OtelJava.global[IO])
-      meter  <- Resource.eval(otel4s.meterProvider.get("service"))
-      tracer <- Resource.eval(otel4s.tracerProvider.get("service"))
-      _      <- startApp(meter, tracer)
-    } yield ()
-  }.useForever
+  def run: IO[Unit] =
+    OtelJava.global[IO].flatMap { otel4s =>
+      program(otel4s.meterProvider, otel4s.tracerProvider)
+    }
 
-  def startApp(meter: Meter[IO], tracer: Tracer[IO]): Resource[IO, Unit] = {
-    val _ = (meter, tracer)
-    Resource.unit
-  }
+  def program(
+      meterProvider: MeterProvider[IO],
+      tracerProvider: TracerProvider[IO]
+  ): IO[Unit] =
+    for {
+      meter  <- meterProvider.get("auth-service")
+      tracer <- tracerProvider.get("auth-service")
+
+      counter <- meter.counter[Long]("service.requests").create
+      _       <- counter.inc()
+
+      _ <- tracer.span("startup").surround(IO.unit)
+    } yield ()
 }
 ```
 
@@ -154,13 +150,16 @@ IOLocalContextStorage: agent-provided IOLocal is detected
 
 If you add your own spans with otel4s, they should appear in the same telemetry pipeline as the agent-provided instrumentation.
 
-## 5. Know the limitations
+## 5. Check whether this setup fits your deployment
 
 - This agent distribution is experimental.
-- It relies on non-standard Cats Effect and context-storage integration.
-- Shared bootstrap state can conflict when multiple applications run in the same JVM container, such as two WAR files in one Tomcat instance.
+- It relies on shared JVM bootstrap state, so it is best suited to one application per JVM.
+- Multi-application containers, such as two WAR files in one Tomcat instance, can conflict with that setup.
 
-For background on that limitation, see the related upstream discussion in [open-telemetry/opentelemetry-java-instrumentation#13576][otel-java-agent-pr].
+For background on that tradeoff, see
+[How otel4s context works with the otel4s Java agent](../explanations/how-otel4s-context-works-with-the-otel4s-java-agent.md)
+and the related upstream discussion in
+[open-telemetry/opentelemetry-java-instrumentation#13576][otel-java-agent-pr].
 
 ## What's next
 

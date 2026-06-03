@@ -573,6 +573,11 @@ lazy val docs = project
             ChoiceConfig("shell", "Shell")
           ).withSeparateEbooks,
           SelectionConfig(
+            "config-source",
+            ChoiceConfig("env-vars", "Environment variables"),
+            ChoiceConfig("jvm-properties", "JVM properties")
+          ).withSeparateEbooks,
+          SelectionConfig(
             "scala-version",
             ChoiceConfig("scala-2", "Scala 2"),
             ChoiceConfig("scala-3", "Scala 3")

@@ -11,6 +11,12 @@ There are several advantages of using the `otel4s-oteljava`:
 
 It's a recommended backend to use on JVM.
 
+For step-by-step setup guides, see:
+
+- [Set up otel4s in a JVM application](../how-to-jvm-setup/set-up-otel4s-in-a-jvm-application.md)
+- [Use the global OpenTelemetry instance](../how-to-jvm-setup/use-the-global-opentelemetry-instance.md)
+- [Use the otel4s Java agent](../how-to-jvm-setup/use-the-otel4s-java-agent.md)
+
 ## Getting Started
 
 @:select(build-tool)
@@ -85,9 +91,12 @@ If you create multiple instances, those instances won't interoperate (i.e. be ab
 ## Accessing the global instance
 
 There are several reasons to use the global instance:
-- You are using the [Java Agent][opentelemetry-java-agent]
+- You are using the standard [OpenTelemetry Java agent][opentelemetry-java-agent]
 - You must reuse the global instance to interoperate with Java libraries
 - You have no control over the entry point 
+
+If you are using `otel4s-opentelemetry-javaagent`, follow
+[Use the otel4s Java agent](../how-to-jvm-setup/use-the-otel4s-java-agent.md).
   
 In such a case, you can use the `OtelJava.global` to use the global OpenTelemetry instance:
 ```scala mdoc:silent:reset

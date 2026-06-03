@@ -106,6 +106,7 @@
     <li class="level2 nav-leaf"><a href="../how-to-jvm-setup/set-up-otel4s-in-a-jvm-application.html">Set up otel4s in a JVM application</a></li>
     <li class="level2 nav-leaf"><a href="../how-to-jvm-setup/use-the-global-opentelemetry-instance.html">Use the global OpenTelemetry instance</a></li>
     <li class="level2 nav-leaf"><a href="../how-to-jvm-setup/keep-otel4s-context-in-sync-with-opentelemetry-java.html">Keep otel4s context in sync with OpenTelemetry Java</a></li>
+    <li class="level2 nav-leaf"><a href="../how-to-jvm-setup/use-the-otel4s-java-agent.html">Use the otel4s Java agent</a></li>
     <li class="level1 nav-header">How-to | Tracing</li>
     <li class="level2 nav-leaf"><a href="../how-to-tracing/">Tracing</a></li>
     <li class="level2 nav-leaf"><a href="../how-to-tracing/create-spans-around-effectful-code.html">Create spans around effectful code</a></li>
@@ -124,6 +125,7 @@
     <li class="level2 nav-leaf"><a href="../explanations/choosing-parent-spans-and-tracing-scopes.html">Choosing parent spans and tracing scopes</a></li>
     <li class="level2 nav-leaf"><a href="../explanations/tracing-resource-and-fs2-stream-scopes.html">Tracing Resource and fs2.Stream scopes</a></li>
     <li class="level2 nav-leaf"><a href="../explanations/histogram-bucket-customization-with-views.html">Histogram bucket customization with views</a></li>
+    <li class="level2 nav-leaf"><a href="../explanations/how-otel4s-context-works-with-the-otel4s-java-agent.html">How otel4s context works with the otel4s Java agent</a></li>
     <li class="level1 nav-header">Instrumentation</li>
     <li class="level2 nav-leaf"><a href="../instrumentation/metrics.html">Metrics</a></li>
     <li class="level2 nav-leaf"><a href="../instrumentation/metrics-cats-effect-io-runtime.html">Metrics | Cats Effect IO runtime</a></li>
@@ -134,7 +136,6 @@
     <li class="level1 nav-header">OtelJava</li>
     <li class="level2 active nav-leaf"><a href="#">Overview</a></li>
     <li class="level2 nav-leaf"><a href="tracing-java-interop.html">Tracing | Interop with Java-instrumented libraries</a></li>
-    <li class="level2 nav-leaf"><a href="agent.html">Zero-code | Java Agent</a></li>
     <li class="level2 nav-leaf"><a href="testkit.html">Testkit</a></li>
     <li class="level2 nav-leaf"><a href="testkit-metrics.html">Testkit | Metrics</a></li>
     <li class="level2 nav-leaf"><a href="testkit-traces.html">Testkit | Traces</a></li>
@@ -179,6 +180,12 @@
           <li>Well-tested implementation</li>
         </ul>
         <p>It&#39;s a recommended backend to use on JVM.</p>
+        <p>For step-by-step setup guides, see:</p>
+        <ul>
+          <li><a href="../how-to-jvm-setup/set-up-otel4s-in-a-jvm-application.html">Set up otel4s in a JVM application</a></li>
+          <li><a href="../how-to-jvm-setup/use-the-global-opentelemetry-instance.html">Use the global OpenTelemetry instance</a></li>
+          <li><a href="../how-to-jvm-setup/use-the-otel4s-java-agent.html">Use the otel4s Java agent</a></li>
+        </ul>
         
         <h2 id="getting-started" class="section"><a class="anchor-link left" href="#getting-started"><i class="icofont-laika link">&#xef71;</i></a>Getting Started</h2>
         <div class="tab-container" data-tab-group="build-tool">
@@ -242,10 +249,12 @@
         <h2 id="accessing-the-global-instance" class="section"><a class="anchor-link left" href="#accessing-the-global-instance"><i class="icofont-laika link">&#xef71;</i></a>Accessing the global instance</h2>
         <p>There are several reasons to use the global instance:</p>
         <ul>
-          <li>You are using the <a href="https://opentelemetry.io/docs/zero-code/java/agent/">Java Agent</a></li>
+          <li>You are using the standard <a href="https://opentelemetry.io/docs/zero-code/java/agent/">OpenTelemetry Java agent</a></li>
           <li>You must reuse the global instance to interoperate with Java libraries</li>
           <li>You have no control over the entry point </li>
         </ul>
+        <p>If you are using <code>otel4s-opentelemetry-javaagent</code>, follow
+        <a href="../how-to-jvm-setup/use-the-otel4s-java-agent.html">Use the otel4s Java agent</a>.</p>
         <p>In such a case, you can use the <code>OtelJava.global</code> to use the global OpenTelemetry instance:</p>
         <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.{</span><span class="type-name">IO</span><span>, </span><span class="type-name">IOApp</span><span>}
 </span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="type-name">OtelJava</span><span>

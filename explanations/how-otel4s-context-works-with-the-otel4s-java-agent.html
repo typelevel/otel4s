@@ -6,7 +6,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="generator" content="Typelevel Laika + Helium Theme" />
-  <title>Metrics</title>
+  <title>How otel4s context works with the otel4s Java agent</title>
   
   <meta name="author" content="Ross A. Baker"/>
   
@@ -116,16 +116,16 @@
     <li class="level2 nav-leaf"><a href="../how-to-tracing/use-otel4s-with-java-instrumented-libraries.html">Use otel4s with Java-instrumented libraries</a></li>
     <li class="level2 nav-leaf"><a href="../how-to-tracing/use-unmanaged-spans-when-a-span-must-end-outside-its-scope.html">Use unmanaged spans when a span must end outside its scope</a></li>
     <li class="level1 nav-header">How-to | Metrics</li>
-    <li class="level2 active nav-leaf"><a href="#">Metrics</a></li>
-    <li class="level2 nav-leaf"><a href="record-application-metrics.html">Record application metrics</a></li>
-    <li class="level2 nav-leaf"><a href="customize-histogram-buckets.html">Customize histogram buckets</a></li>
-    <li class="level2 nav-leaf"><a href="register-cats-effect-runtime-metrics.html">Register Cats Effect runtime metrics</a></li>
-    <li class="level2 nav-leaf"><a href="register-jvm-runtime-metrics.html">Register JVM runtime metrics</a></li>
+    <li class="level2 nav-leaf"><a href="../how-to-metrics/">Metrics</a></li>
+    <li class="level2 nav-leaf"><a href="../how-to-metrics/record-application-metrics.html">Record application metrics</a></li>
+    <li class="level2 nav-leaf"><a href="../how-to-metrics/customize-histogram-buckets.html">Customize histogram buckets</a></li>
+    <li class="level2 nav-leaf"><a href="../how-to-metrics/register-cats-effect-runtime-metrics.html">Register Cats Effect runtime metrics</a></li>
+    <li class="level2 nav-leaf"><a href="../how-to-metrics/register-jvm-runtime-metrics.html">Register JVM runtime metrics</a></li>
     <li class="level1 nav-header">Explanations</li>
-    <li class="level2 nav-leaf"><a href="../explanations/choosing-parent-spans-and-tracing-scopes.html">Choosing parent spans and tracing scopes</a></li>
-    <li class="level2 nav-leaf"><a href="../explanations/tracing-resource-and-fs2-stream-scopes.html">Tracing Resource and fs2.Stream scopes</a></li>
-    <li class="level2 nav-leaf"><a href="../explanations/histogram-bucket-customization-with-views.html">Histogram bucket customization with views</a></li>
-    <li class="level2 nav-leaf"><a href="../explanations/how-otel4s-context-works-with-the-otel4s-java-agent.html">How otel4s context works with the otel4s Java agent</a></li>
+    <li class="level2 nav-leaf"><a href="choosing-parent-spans-and-tracing-scopes.html">Choosing parent spans and tracing scopes</a></li>
+    <li class="level2 nav-leaf"><a href="tracing-resource-and-fs2-stream-scopes.html">Tracing Resource and fs2.Stream scopes</a></li>
+    <li class="level2 nav-leaf"><a href="histogram-bucket-customization-with-views.html">Histogram bucket customization with views</a></li>
+    <li class="level2 active nav-leaf"><a href="#">How otel4s context works with the otel4s Java agent</a></li>
     <li class="level1 nav-header">Instrumentation</li>
     <li class="level2 nav-leaf"><a href="../instrumentation/metrics.html">Metrics</a></li>
     <li class="level2 nav-leaf"><a href="../instrumentation/metrics-cats-effect-io-runtime.html">Metrics | Cats Effect IO runtime</a></li>
@@ -155,10 +155,17 @@
 
       
 <nav id="page-nav">
-  <p class="header"><a href="#">Metrics</a></p>
+  <p class="header"><a href="#">How otel4s context works with the otel4s Java agent</a></p>
 
   <ul class="nav-list">
-    <li class="level1 nav-leaf"><a href="#start-here">Start here</a></li>
+    <li class="level1 nav-leaf"><a href="#the-standard-java-agent-and-otel4s-solve-different-context-problems">The standard Java agent and otel4s solve different context problems</a></li>
+    <li class="level1 nav-leaf"><a href="#why-otel4s-opentelemetry-javaagent-exists">Why <code>otel4s-opentelemetry-javaagent</code> exists</a></li>
+    <li class="level1 nav-leaf"><a href="#when-this-path-fits">When this path fits</a></li>
+    <li class="level1 nav-leaf"><a href="#where-iolocal-and-threadlocal-meet">Where <code>IOLocal</code> and <code>ThreadLocal</code> meet</a></li>
+    <li class="level1 nav-leaf"><a href="#mechanism-at-a-glance">Mechanism at a glance</a></li>
+    <li class="level1 nav-leaf"><a href="#why-the-agent-how-to-requires-oteljava-global">Why the agent how-to requires <code>OtelJava.global</code></a></li>
+    <li class="level1 nav-leaf"><a href="#why-multi-application-containers-are-risky">Why multi-application containers are risky</a></li>
+    <li class="level1 nav-leaf"><a href="#related-material">Related material</a></li>
   </ul>
 
   <p class="footer"></p>
@@ -167,19 +174,102 @@
 
       <main class="content">
 
-        <h1 id="metrics" class="title">Metrics</h1>
-        <p>Use this section when you want to record application metrics or expose runtime metrics with otel4s.</p>
+        <h1 id="how-otel4s-context-works-with-the-otel4s-java-agent" class="title">How otel4s context works with the otel4s Java agent</h1>
+        <p>Use <a href="../how-to-jvm-setup/use-the-otel4s-java-agent.html">Use the otel4s Java agent</a> for the setup steps.
+        Use <a href="../how-to-jvm-setup/keep-otel4s-context-in-sync-with-opentelemetry-java.html">Keep otel4s context in sync with OpenTelemetry Java</a> for the non-agent setup path.</p>
+        <p>This page explains how <code>otel4s-opentelemetry-javaagent</code> works with otel4s context propagation and why some deployment shapes are risky.
+        <code>otel4s-opentelemetry-javaagent</code> is a custom distribution of the upstream OpenTelemetry Java agent: it keeps the same automatic instrumentation behavior and also adds Cats Effect and otel4s integrations.</p>
         
-        <h2 id="start-here" class="section"><a class="anchor-link left" href="#start-here"><i class="icofont-laika link">&#xef71;</i></a>Start here</h2>
+        <h2 id="the-standard-java-agent-and-otel4s-solve-different-context-problems" class="section"><a class="anchor-link left" href="#the-standard-java-agent-and-otel4s-solve-different-context-problems"><i class="icofont-laika link">&#xef71;</i></a>The standard Java agent and otel4s solve different context problems</h2>
+        <p>OpenTelemetry Java and otel4s both track the current trace context, but they do not use the same mechanism by default.</p>
         <ul>
-          <li>Record counters, histograms, and observable measurements in application code:
-          <a href="record-application-metrics.html">Record application metrics</a></li>
-          <li>Customize histogram buckets for a specific metric:
-          <a href="customize-histogram-buckets.html">Customize histogram buckets</a></li>
-          <li>Export Cats Effect runtime metrics from your application:
-          <a href="register-cats-effect-runtime-metrics.html">Register Cats Effect runtime metrics</a></li>
-          <li>Export JVM runtime metrics such as memory, threads, and GC activity:
-          <a href="register-jvm-runtime-metrics.html">Register JVM runtime metrics</a></li>
+          <li>OpenTelemetry Java expects context to be available through <code>ThreadLocal</code>-based storage</li>
+          <li>otel4s uses effect-local state, exposed through <code>Local</code> and backed by Cats Effect context propagation on JVM</li>
+        </ul>
+        <p>That difference matters whenever Java code and otel4s code both need to observe the same current span.</p>
+        <p>Examples:</p>
+        <ul>
+          <li>a Java framework starts the current trace and otel4s code should continue it</li>
+          <li>otel4s creates a span and a Java library expects <code>Context.current()</code></li>
+          <li>automatic agent instrumentation and manual otel4s instrumentation should appear in one trace</li>
+        </ul>
+        <p>Without extra integration, those paths do not automatically share context.</p>
+        
+        <h2 id="why-otel4s-opentelemetry-javaagent-exists" class="section"><a class="anchor-link left" href="#why-otel4s-opentelemetry-javaagent-exists"><i class="icofont-laika link">&#xef71;</i></a>Why <code>otel4s-opentelemetry-javaagent</code> exists</h2>
+        <p>The standard OpenTelemetry Java agent already configures the global SDK and instruments many service boundaries.
+        That solves SDK bootstrap and automatic tracing, but it does not by itself make Cats Effect fiber-local context and Java <code>ThreadLocal</code> context behave as one system.</p>
+        <p>This custom distribution exists to bridge that gap for JVM applications that use Cats Effect and otel4s.</p>
+        <p>At a high level, it combines:</p>
+        <ul>
+          <li>the usual Java agent startup and automatic instrumentation</li>
+          <li>global SDK access through <code>OtelJava.global</code></li>
+          <li>Cats Effect context tracking enabled with <code>-Dcats.effect.trackFiberContext=true</code></li>
+          <li><code>otel4s-oteljava-context-storage</code> so otel4s can participate in the same context story</li>
+        </ul>
+        <p>That is why the how-to for this agent uses <code>OtelJava.global[IO]</code> rather than <code>OtelJava.autoConfigured[IO]()</code>: the agent already owns SDK creation.</p>
+        
+        <h2 id="when-this-path-fits" class="section"><a class="anchor-link left" href="#when-this-path-fits"><i class="icofont-laika link">&#xef71;</i></a>When this path fits</h2>
+        <p>Use <code>otel4s-opentelemetry-javaagent</code> when:</p>
+        <ul>
+          <li>you want automatic instrumentation at common service boundaries such as HTTP, databases, gRPC, or messaging</li>
+          <li>you still want to add manual otel4s spans or metrics in application code</li>
+          <li>the application runs in a deployment model close to one app per JVM</li>
+        </ul>
+        <p>Prefer the regular JVM setup pages when:</p>
+        <ul>
+          <li>your application owns SDK bootstrap directly</li>
+          <li>you want full control over SDK setup in application code</li>
+          <li>you do not need the agent-specific context-sharing path</li>
+        </ul>
+        
+        <h2 id="where-iolocal-and-threadlocal-meet" class="section"><a class="anchor-link left" href="#where-iolocal-and-threadlocal-meet"><i class="icofont-laika link">&#xef71;</i></a>Where <code>IOLocal</code> and <code>ThreadLocal</code> meet</h2>
+        <p>Cats Effect propagates request-scoped state across fibers.
+        OpenTelemetry Java expects request-scoped state to be readable from the current thread.</p>
+        <p>The agent-specific integration works by making those two views line up closely enough for mixed Java and otel4s code to see the same current context during normal application execution.
+        In practice, that means otel4s can keep using Cats Effect-local context while Java libraries and agent instrumentation can still read the current context through the usual OpenTelemetry Java APIs.
+        The important result is not that the two mechanisms become identical.
+        It is that otel4s code and Java code can agree on the current tracing context in the supported setup.</p>
+        
+        <h2 id="mechanism-at-a-glance" class="section"><a class="anchor-link left" href="#mechanism-at-a-glance"><i class="icofont-laika link">&#xef71;</i></a>Mechanism at a glance</h2>
+        <p>The agent-specific integration uses a few pieces together:</p>
+        <ul>
+          <li>it instruments <code>IORuntime</code> construction and keeps a <code>ThreadLocal</code> view of <code>IOLocal[Context]</code> in bootstrap-loaded state</li>
+          <li>it installs a custom <code>ContextStorage</code> wrapper so agent instrumentation can read the current fiber context when one is available</li>
+          <li>it instruments <code>IOFiber</code> construction so a new fiber starts with the current tracing context</li>
+        </ul>
+        <p>These are implementation details of an experimental integration.
+        They explain why the setup can make mixed Java and otel4s code observe the same current context in the supported deployment shape.</p>
+        
+        <h2 id="why-the-agent-how-to-requires-oteljava-global" class="section"><a class="anchor-link left" href="#why-the-agent-how-to-requires-oteljava-global"><i class="icofont-laika link">&#xef71;</i></a>Why the agent how-to requires <code>OtelJava.global</code></h2>
+        <p>With the agent path, there is already one process-wide SDK instance.</p>
+        <p>If application code also calls <code>OtelJava.autoConfigured[IO]()</code>, it creates a second SDK instance that is isolated from the one managed by the agent.
+        That leads to split telemetry pipelines and broken assumptions about shared state.</p>
+        <p>So the agent path uses:</p>
+        <ul>
+          <li><code>OtelJava.global[IO]</code> to read the SDK the agent already configured</li>
+          <li><code>IOLocalContextStorage.localProvider[IO]</code> to align otel4s context with the agent-specific integration path</li>
+        </ul>
+        <p>This is why the Java agent how-to and the plain JVM setup how-to are separate tasks.</p>
+        
+        <h2 id="why-multi-application-containers-are-risky" class="section"><a class="anchor-link left" href="#why-multi-application-containers-are-risky"><i class="icofont-laika link">&#xef71;</i></a>Why multi-application containers are risky</h2>
+        <p>The agent integration relies on shared JVM-level state to connect Java context handling and Cats Effect context tracking.</p>
+        <p>That is workable for the common case of one application in one JVM.
+        It becomes much harder to reason about when multiple applications share the same JVM process, such as:</p>
+        <ul>
+          <li>two WAR files in one Tomcat instance</li>
+          <li>other container setups where unrelated applications share bootstrap-level state</li>
+        </ul>
+        <p>In those environments, applications can interfere with one another&#39;s assumptions about context setup.
+        That is why the agent how-to keeps the limitation explicit instead of treating it as an edge case.</p>
+        
+        <h2 id="related-material" class="section"><a class="anchor-link left" href="#related-material"><i class="icofont-laika link">&#xef71;</i></a>Related material</h2>
+        <ul>
+          <li>Setup steps for the agent path:
+          <a href="../how-to-jvm-setup/use-the-otel4s-java-agent.html">Use the otel4s Java agent</a></li>
+          <li>Context sync without the agent-specific setup:
+          <a href="../how-to-jvm-setup/keep-otel4s-context-in-sync-with-opentelemetry-java.html">Keep otel4s context in sync with OpenTelemetry Java</a></li>
+          <li>Mixed Java and otel4s tracing boundaries:
+          <a href="../how-to-tracing/use-otel4s-with-java-instrumented-libraries.html">Use otel4s with Java-instrumented libraries</a></li>
         </ul>
 
         

@@ -99,7 +99,6 @@
   <ul class="nav-list">
     <li class="level1 nav-leaf"><a href="../">otel4s</a></li>
     <li class="level1 nav-leaf"><a href="../modules-structure.html">Modules structure</a></li>
-    <li class="level1 nav-leaf"><a href="../tracing-context-propagation.html">Tracing context propagation</a></li>
     <li class="level1 nav-leaf"><a href="../ecosystem.html">Ecosystem</a></li>
     <li class="level1 nav-header">How-to | JVM setup</li>
     <li class="level2 nav-leaf"><a href="../how-to-jvm-setup/">JVM setup</a></li>
@@ -122,6 +121,7 @@
     <li class="level2 nav-leaf"><a href="../how-to-metrics/register-cats-effect-runtime-metrics.html">Register Cats Effect runtime metrics</a></li>
     <li class="level2 nav-leaf"><a href="../how-to-metrics/register-jvm-runtime-metrics.html">Register JVM runtime metrics</a></li>
     <li class="level1 nav-header">Explanations</li>
+    <li class="level2 nav-leaf"><a href="../explanations/how-otel4s-context-propagation-works.html">How otel4s context propagation works</a></li>
     <li class="level2 nav-leaf"><a href="../explanations/choosing-parent-spans-and-tracing-scopes.html">Choosing parent spans and tracing scopes</a></li>
     <li class="level2 nav-leaf"><a href="../explanations/tracing-resource-and-fs2-stream-scopes.html">Tracing Resource and fs2.Stream scopes</a></li>
     <li class="level2 nav-leaf"><a href="../explanations/histogram-bucket-customization-with-views.html">Histogram bucket customization with views</a></li>
@@ -228,8 +228,9 @@
         
         <h3 id="_3-3-context-propagation" class="section"><a class="anchor-link left" href="#_3-3-context-propagation"><i class="icofont-laika link">&#xef71;</i></a>3.3. Context propagation</h3>
         <p>Logs become far more valuable when they carry trace and span ids. 
-        By default, otel4s uses the current context to propagate trace and span ids, 
-        check out the <a href="../tracing-context-propagation.html">context propagation logic</a> for more details.</p>
+        By default, otel4s uses the current context to propagate trace and span ids.
+        For background on how that works, see
+        <a href="../explanations/how-otel4s-context-propagation-works.html">How otel4s context propagation works</a>.</p>
         <p>However, you can also use the <code>withContext</code> to inject a specific context into the log record.</p>
         
         <h3 id="_3-4-backpressure-and-performance" class="section"><a class="anchor-link left" href="#_3-4-backpressure-and-performance"><i class="icofont-laika link">&#xef71;</i></a>3.4. Backpressure and performance</h3>

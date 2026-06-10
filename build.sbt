@@ -70,14 +70,14 @@ val CatsVersion = "2.13.0"
 val CatsEffectVersion = "3.7.0"
 val CatsMtlVersion = "1.6.0"
 val FS2Version = "3.13.0"
-val MUnitVersion = "1.3.0"
+val MUnitVersion = "1.3.3"
 val MUnitScalaCheckVersion = "1.3.0"
 val MUnitCatsEffectVersion = "2.2.0"
 val MUnitDisciplineVersion = "2.0.0"
 val MUnitScalaCheckEffectVersion = "2.1.0"
-val OpenTelemetryVersion = "1.62.0"
+val OpenTelemetryVersion = "1.63.0"
 val OpenTelemetryAlphaVersion = s"$OpenTelemetryVersion-alpha"
-val OpenTelemetryInstrumentationVersion = "2.27.0"
+val OpenTelemetryInstrumentationVersion = "2.28.1"
 val OpenTelemetryInstrumentationAlphaVersion = s"$OpenTelemetryInstrumentationVersion-alpha"
 val OpenTelemetrySemConvVersion = "1.41.1"
 val OpenTelemetrySemConvAlphaVersion = s"$OpenTelemetrySemConvVersion-alpha"
@@ -543,8 +543,7 @@ lazy val docs = project
       "org.http4s" %% "http4s-dsl" % Http4sVersion,
       "io.opentelemetry" % "opentelemetry-sdk-extension-autoconfigure" % OpenTelemetryVersion,
       "io.opentelemetry.instrumentation" % "opentelemetry-instrumentation-annotations" % OpenTelemetryInstrumentationVersion,
-      "io.opentelemetry.instrumentation" % "opentelemetry-runtime-telemetry-java8" % OpenTelemetryInstrumentationAlphaVersion,
-      "io.opentelemetry.instrumentation" % "opentelemetry-runtime-telemetry-java17" % OpenTelemetryInstrumentationAlphaVersion,
+      "io.opentelemetry.instrumentation" % "opentelemetry-runtime-telemetry" % OpenTelemetryInstrumentationAlphaVersion,
       "com.outr" %% "scribe" % ScribeVersion,
       // a trick to make Scala-Steward provide updates for this dependency
       "io.github.irevive" % "otel4s-opentelemetry-javaagent" % Otel4sAgentVersion % Test
@@ -572,6 +571,11 @@ lazy val docs = project
             ChoiceConfig("sbt", "sbt"),
             ChoiceConfig("scala-cli", "Scala CLI"),
             ChoiceConfig("shell", "Shell")
+          ).withSeparateEbooks,
+          SelectionConfig(
+            "config-source",
+            ChoiceConfig("env-vars", "Environment variables"),
+            ChoiceConfig("jvm-properties", "JVM properties")
           ).withSeparateEbooks,
           SelectionConfig(
             "scala-version",

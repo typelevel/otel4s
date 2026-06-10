@@ -82,7 +82,7 @@ the separate [otel4s-sdk][otel4s-sdk] project.
 ## Getting started
 
 If you develop an application and want to export the telemetry, use `otel4s-oteljava` module. 
-If you develop a library, check out this [recommendation](modules-structure.md#which-module-do-i-need).
+If you develop a library, check out this [recommendation](explanations/modules-and-module-families.md#which-module-do-i-need).
 
 @:select(build-tool)
 

@@ -17,8 +17,8 @@ Use this section when you want to get otel4s running on the JVM with the OpenTel
 
 - Choose the right published module for your application or library:
   [Modules and module families](../explanations/modules-and-module-families.md#which-module-do-i-need)
-- Backend overview and existing JVM-specific pages:
-  [OtelJava](../oteljava/overview.md)
+- Backend overview:
+  [The JVM backend](../explanations/oteljava-jvm-backend.md)
 - Local verification examples:
   [Jaeger and Docker](../examples/jaeger-docker/README.md),
   [Grafana](../examples/grafana/README.md)

@@ -33,7 +33,7 @@ Specification][otel spec] atop [Cats Effect][cats-effect].
 
 * **OpenTelemetry Java SDK backend**
 
-  The [backend](oteljava/overview.md) utilizes [OpenTelemetry Java SDK][opentelemetry-java] under the hood, 
+  The [backend](explanations/oteljava-jvm-backend.md) utilizes [OpenTelemetry Java SDK][opentelemetry-java] under the hood, 
   offering production-ready telemetry:
   1. Low memory overhead
   2. Extensive [instrumentation ecosystem][opentelemetry-java-instrumentation]

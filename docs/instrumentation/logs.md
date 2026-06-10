@@ -247,7 +247,7 @@ You can acquire a provider from either backend.
 You typically rely on autoconfiguration or a manual SDK builder that includes the OTLP exporter.
 
 The `otel4s-oteljava` uses the [OpenTelemetry Java SDK][opentelemetry-java] under the hood.
-Check out the [overview](../oteljava/overview.md) of the backend for more details. 
+Check out [The JVM backend](../explanations/oteljava-jvm-backend.md) for more details.
 
 @:select(build-tool)
 

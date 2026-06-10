@@ -6,7 +6,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="generator" content="Typelevel Laika + Helium Theme" />
-  <title>Work with baggage</title>
+  <title>The JVM backend</title>
   
   <meta name="author" content="Ross A. Baker"/>
   
@@ -106,13 +106,13 @@
     <li class="level2 nav-leaf"><a href="../how-to-jvm-setup/keep-otel4s-context-in-sync-with-opentelemetry-java.html">Keep otel4s context in sync with OpenTelemetry Java</a></li>
     <li class="level2 nav-leaf"><a href="../how-to-jvm-setup/use-the-otel4s-java-agent.html">Use the otel4s Java agent</a></li>
     <li class="level1 nav-header">How-to | Tracing</li>
-    <li class="level2 nav-leaf"><a href="index.html">Tracing</a></li>
-    <li class="level2 nav-leaf"><a href="create-spans-around-effectful-code.html">Create spans around effectful code</a></li>
-    <li class="level2 nav-leaf"><a href="trace-resource-and-fs2-stream-code.html">Trace Resource and fs2.Stream code</a></li>
-    <li class="level2 active nav-leaf"><a href="#">Work with baggage</a></li>
-    <li class="level2 nav-leaf"><a href="propagate-trace-context-across-service-boundaries.html">Propagate trace context across service boundaries</a></li>
-    <li class="level2 nav-leaf"><a href="use-otel4s-with-java-instrumented-libraries.html">Use otel4s with Java-instrumented libraries</a></li>
-    <li class="level2 nav-leaf"><a href="use-unmanaged-spans-when-a-span-must-end-outside-its-scope.html">Use unmanaged spans when a span must end outside its scope</a></li>
+    <li class="level2 nav-leaf"><a href="../how-to-tracing/">Tracing</a></li>
+    <li class="level2 nav-leaf"><a href="../how-to-tracing/create-spans-around-effectful-code.html">Create spans around effectful code</a></li>
+    <li class="level2 nav-leaf"><a href="../how-to-tracing/trace-resource-and-fs2-stream-code.html">Trace Resource and fs2.Stream code</a></li>
+    <li class="level2 nav-leaf"><a href="../how-to-tracing/work-with-baggage.html">Work with baggage</a></li>
+    <li class="level2 nav-leaf"><a href="../how-to-tracing/propagate-trace-context-across-service-boundaries.html">Propagate trace context across service boundaries</a></li>
+    <li class="level2 nav-leaf"><a href="../how-to-tracing/use-otel4s-with-java-instrumented-libraries.html">Use otel4s with Java-instrumented libraries</a></li>
+    <li class="level2 nav-leaf"><a href="../how-to-tracing/use-unmanaged-spans-when-a-span-must-end-outside-its-scope.html">Use unmanaged spans when a span must end outside its scope</a></li>
     <li class="level1 nav-header">How-to | Metrics</li>
     <li class="level2 nav-leaf"><a href="../how-to-metrics/">Metrics</a></li>
     <li class="level2 nav-leaf"><a href="../how-to-metrics/record-application-metrics.html">Record application metrics</a></li>
@@ -120,13 +120,13 @@
     <li class="level2 nav-leaf"><a href="../how-to-metrics/register-cats-effect-runtime-metrics.html">Register Cats Effect runtime metrics</a></li>
     <li class="level2 nav-leaf"><a href="../how-to-metrics/register-jvm-runtime-metrics.html">Register JVM runtime metrics</a></li>
     <li class="level1 nav-header">Explanations</li>
-    <li class="level2 nav-leaf"><a href="../explanations/modules-and-module-families.html">Modules and module families</a></li>
-    <li class="level2 nav-leaf"><a href="../explanations/oteljava-jvm-backend.html">The JVM backend</a></li>
-    <li class="level2 nav-leaf"><a href="../explanations/how-otel4s-context-propagation-works.html">How otel4s context propagation works</a></li>
-    <li class="level2 nav-leaf"><a href="../explanations/choosing-parent-spans-and-tracing-scopes.html">Choosing parent spans and tracing scopes</a></li>
-    <li class="level2 nav-leaf"><a href="../explanations/tracing-resource-and-fs2-stream-scopes.html">Tracing Resource and fs2.Stream scopes</a></li>
-    <li class="level2 nav-leaf"><a href="../explanations/histogram-bucket-customization-with-views.html">Histogram bucket customization with views</a></li>
-    <li class="level2 nav-leaf"><a href="../explanations/how-otel4s-context-works-with-the-otel4s-java-agent.html">How otel4s context works with the otel4s Java agent</a></li>
+    <li class="level2 nav-leaf"><a href="modules-and-module-families.html">Modules and module families</a></li>
+    <li class="level2 active nav-leaf"><a href="#">The JVM backend</a></li>
+    <li class="level2 nav-leaf"><a href="how-otel4s-context-propagation-works.html">How otel4s context propagation works</a></li>
+    <li class="level2 nav-leaf"><a href="choosing-parent-spans-and-tracing-scopes.html">Choosing parent spans and tracing scopes</a></li>
+    <li class="level2 nav-leaf"><a href="tracing-resource-and-fs2-stream-scopes.html">Tracing Resource and fs2.Stream scopes</a></li>
+    <li class="level2 nav-leaf"><a href="histogram-bucket-customization-with-views.html">Histogram bucket customization with views</a></li>
+    <li class="level2 nav-leaf"><a href="how-otel4s-context-works-with-the-otel4s-java-agent.html">How otel4s context works with the otel4s Java agent</a></li>
     <li class="level1 nav-header">Instrumentation</li>
     <li class="level2 nav-leaf"><a href="../instrumentation/metrics.html">Metrics</a></li>
     <li class="level2 nav-leaf"><a href="../instrumentation/metrics-cats-effect-io-runtime.html">Metrics | Cats Effect IO runtime</a></li>
@@ -155,14 +155,15 @@
 
       
 <nav id="page-nav">
-  <p class="header"><a href="#">Work with baggage</a></p>
+  <p class="header"><a href="#">The JVM backend</a></p>
 
   <ul class="nav-list">
-    <li class="level1 nav-leaf"><a href="#prerequisites">Prerequisites</a></li>
-    <li class="level1 nav-leaf"><a href="#_1-get-baggagemanager-from-oteljava">1. Get <code>BaggageManager</code> from <code>OtelJava</code></a></li>
-    <li class="level1 nav-leaf"><a href="#_2-add-baggage-around-the-effect-that-needs-it">2. Add baggage around the effect that needs it</a></li>
-    <li class="level1 nav-leaf"><a href="#_3-read-baggage-values-downstream">3. Read baggage values downstream</a></li>
-    <li class="level1 nav-leaf"><a href="#what-s-next">What&#39;s next</a></li>
+    <li class="level1 nav-leaf"><a href="#when-to-use-otel4s-oteljava">When to use <code>otel4s-oteljava</code></a></li>
+    <li class="level1 nav-node"><a href="#two-ways-to-access-the-sdk">Two ways to access the SDK</a></li>
+    <li class="level2 nav-leaf"><a href="#oteljava-autoconfigured"><code>OtelJava.autoConfigured</code></a></li>
+    <li class="level2 nav-leaf"><a href="#oteljava-global"><code>OtelJava.global</code></a></li>
+    <li class="level1 nav-leaf"><a href="#related-jvm-modules">Related JVM modules</a></li>
+    <li class="level1 nav-leaf"><a href="#next-steps">Next steps</a></li>
   </ul>
 
   <p class="footer"></p>
@@ -171,70 +172,98 @@
 
       <main class="content">
 
-        <h1 id="work-with-baggage" class="title">Work with baggage</h1>
-        <p>Use this page when you want to attach request-scoped key-value pairs to the current OpenTelemetry context and read them later in the same flow.</p>
-        <p>In OpenTelemetry, baggage is a set of key-value pairs that travels with the current context. Use it for request-scoped metadata that should be available across service boundaries, such as request IDs, tenant IDs, or debug flags.</p>
+        <h1 id="the-jvm-backend" class="title">The JVM backend</h1>
+        <p><code>otel4s-oteljava</code> is the JVM backend for otel4s.
+        It implements the otel4s APIs on top of <a href="https://opentelemetry.io/docs/languages/java/intro/">OpenTelemetry Java</a>.</p>
+        <p>Use it when you want otel4s instrumentation to run against the OpenTelemetry Java SDK and ecosystem.</p>
         
-        <h2 id="prerequisites" class="section"><a class="anchor-link left" href="#prerequisites"><i class="icofont-laika link">&#xef71;</i></a>Prerequisites</h2>
+        <h2 id="when-to-use-otel4s-oteljava" class="section"><a class="anchor-link left" href="#when-to-use-otel4s-oteljava"><i class="icofont-laika link">&#xef71;</i></a>When to use <code>otel4s-oteljava</code></h2>
+        <p>This backend is usually the right fit when you are building a JVM application and you want:</p>
         <ul>
-          <li><a href="../how-to-jvm-setup/set-up-otel4s-in-a-jvm-application.html">Set up otel4s in a JVM application</a></li>
+          <li>OpenTelemetry Java exporters and SDK extensions</li>
+          <li>interoperability with Java libraries that expect OpenTelemetry Java types or the global SDK</li>
+          <li>integration with the OpenTelemetry Java agent or the otel4s Java agent distribution</li>
+          <li>the <code>otel4s-oteljava-testkit</code> module for asserting exported telemetry in tests</li>
+        </ul>
+        <p><code>otel4s-oteljava</code> is JVM-only.
+        If you need a backend for Scala.js or Scala Native, use the separate
+        <a href="https://typelevel.org/otel4s-sdk/sdk/overview.html"><code>otel4s-sdk</code></a> project instead.</p>
+        
+        <h2 id="two-ways-to-access-the-sdk" class="section"><a class="anchor-link left" href="#two-ways-to-access-the-sdk"><i class="icofont-laika link">&#xef71;</i></a>Two ways to access the SDK</h2>
+        <p>Most JVM applications use one of these entry points:</p>
+        <table>
+          <thead>
+            <tr>
+              <th>API</th>
+              <th>Use it when</th>
+              <th>What it does</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>OtelJava.autoConfigured</code></td>
+              <td>your application is responsible for creating the SDK</td>
+              <td>creates an isolated, non-global SDK instance from OpenTelemetry Java autoconfiguration</td>
+            </tr>
+            <tr>
+              <td><code>OtelJava.global</code></td>
+              <td>the SDK is already configured elsewhere</td>
+              <td>reads the current process-wide OpenTelemetry instance</td>
+            </tr>
+          </tbody>
+        </table>
+        <p>The difference matters because these paths have different ownership and interoperability rules.</p>
+        
+        <h3 id="oteljava-autoconfigured" class="section"><a class="anchor-link left" href="#oteljava-autoconfigured"><i class="icofont-laika link">&#xef71;</i></a><code>OtelJava.autoConfigured</code></h3>
+        <p>Use <code>OtelJava.autoConfigured</code> when your application owns SDK creation.</p>
+        <p>This is the common path when:</p>
+        <ul>
+          <li>your application starts the SDK itself</li>
+          <li>you configure exporters and SDK settings with environment variables or JVM properties</li>
+          <li>you do not need to reuse an SDK that another library, framework, or agent already created</li>
+        </ul>
+        <p><code>OtelJava.autoConfigured</code> creates an isolated instance.
+        If the same process already has a global SDK that other code relies on, creating a separate isolated instance can make
+        telemetry behavior harder to reason about.</p>
+        <p>For the setup steps, use
+        <a href="../how-to-jvm-setup/set-up-otel4s-in-a-jvm-application.html">Set up otel4s in a JVM application</a>.</p>
+        
+        <h3 id="oteljava-global" class="section"><a class="anchor-link left" href="#oteljava-global"><i class="icofont-laika link">&#xef71;</i></a><code>OtelJava.global</code></h3>
+        <p>Use <code>OtelJava.global</code> when SDK creation happens elsewhere and otel4s needs to join that existing setup.</p>
+        <p>This is the common path when:</p>
+        <ul>
+          <li>an agent configures the global OpenTelemetry SDK</li>
+          <li>a framework or bootstrap layer initializes OpenTelemetry before your otel4s code runs</li>
+          <li>you need otel4s and Java libraries to observe the same process-wide SDK state</li>
+        </ul>
+        <p><code>OtelJava.global</code> does not configure an SDK.
+        It only reads the global instance that already exists.</p>
+        <p>For the setup steps, use
+        <a href="../how-to-jvm-setup/use-the-global-opentelemetry-instance.html">Use the global OpenTelemetry instance</a>.</p>
+        
+        <h2 id="related-jvm-modules" class="section"><a class="anchor-link left" href="#related-jvm-modules"><i class="icofont-laika link">&#xef71;</i></a>Related JVM modules</h2>
+        <p>Some JVM-specific modules are useful only in particular situations:</p>
+        <ul>
+          <li><code>otel4s-oteljava-context-storage</code> helps keep Cats Effect context and OpenTelemetry Java context aligned when both
+          need to share the same tracing state</li>
+          <li><code>otel4s-oteljava-testkit</code> provides in-memory exporters and expectation APIs for tests</li>
+        </ul>
+        <p>If you are using the otel4s Java agent distribution, also see:</p>
+        <ul>
+          <li><a href="../how-to-jvm-setup/use-the-otel4s-java-agent.html">Use the otel4s Java agent</a></li>
+          <li><a href="how-otel4s-context-works-with-the-otel4s-java-agent.html">How otel4s context works with the otel4s Java agent</a></li>
         </ul>
         
-        <h2 id="_1-get-baggagemanager-from-oteljava" class="section"><a class="anchor-link left" href="#_1-get-baggagemanager-from-oteljava"><i class="icofont-laika link">&#xef71;</i></a>1. Get <code>BaggageManager</code> from <code>OtelJava</code></h2>
-        <p><code>BaggageManager[F]</code> gives you access to the current baggage and scoped baggage updates. The main operations are:</p>
+        <h2 id="next-steps" class="section"><a class="anchor-link left" href="#next-steps"><i class="icofont-laika link">&#xef71;</i></a>Next steps</h2>
         <ul>
-          <li><code>current</code> to read the current baggage</li>
-          <li><code>scope</code> and <code>local</code> to change baggage for a scoped effect</li>
-          <li><code>get</code> and <code>getValue</code> to read a specific entry</li>
-        </ul>
-        <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.{</span><span class="type-name">IO</span><span>, </span><span class="type-name">IOApp</span><span>}
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">baggage</span><span>.</span><span class="type-name">BaggageManager</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="type-name">OtelJava</span><span>
-
-</span><span class="keyword">object</span><span> </span><span class="type-name">Main</span><span> </span><span class="keyword">extends</span><span> </span><span class="type-name">IOApp</span><span>.</span><span class="type-name">Simple</span><span> {
-  </span><span class="keyword">def</span><span> </span><span class="declaration-name">run</span><span>: </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] =
-    </span><span class="type-name">OtelJava</span><span>.</span><span class="identifier">autoConfigured</span><span>[</span><span class="type-name">IO</span><span>]().</span><span class="identifier">use</span><span> { </span><span class="identifier">otel4s</span><span> =&gt;
-      </span><span class="keyword">implicit</span><span> </span><span class="keyword">val</span><span> </span><span class="identifier">baggageManager</span><span>: </span><span class="type-name">BaggageManager</span><span>[</span><span class="type-name">IO</span><span>] = </span><span class="identifier">otel4s</span><span>.</span><span class="identifier">baggageManager</span><span>
-      </span><span class="identifier">program</span><span>
-    }
-
-  </span><span class="keyword">def</span><span> </span><span class="declaration-name">program</span><span>(</span><span class="keyword">implicit</span><span> </span><span class="identifier">baggageManager</span><span>: </span><span class="type-name">BaggageManager</span><span>[</span><span class="type-name">IO</span><span>]): </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] = {
-    </span><span class="keyword">val</span><span> </span><span class="identifier">_</span><span> = </span><span class="identifier">baggageManager</span><span>
-    </span><span class="type-name">IO</span><span>.</span><span class="identifier">unit</span><span>
-  }
-}</span></code></pre>
-        
-        <h2 id="_2-add-baggage-around-the-effect-that-needs-it" class="section"><a class="anchor-link left" href="#_2-add-baggage-around-the-effect-that-needs-it"><i class="icofont-laika link">&#xef71;</i></a>2. Add baggage around the effect that needs it</h2>
-        <p><code>Baggage</code> is immutable. To change it, wrap the effect in <code>scope(...)</code> or <code>local(...)</code>.</p>
-        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">baggage</span><span>.</span><span class="type-name">Baggage</span><span>
-
-</span><span class="keyword">def</span><span> </span><span class="declaration-name">withRequestMetadata</span><span>[</span><span class="type-name">A</span><span>](</span><span class="identifier">fa</span><span>: </span><span class="type-name">IO</span><span>[</span><span class="type-name">A</span><span>])(</span><span class="keyword">implicit</span><span> </span><span class="identifier">baggageManager</span><span>: </span><span class="type-name">BaggageManager</span><span>[</span><span class="type-name">IO</span><span>]): </span><span class="type-name">IO</span><span>[</span><span class="type-name">A</span><span>] =
-  </span><span class="identifier">baggageManager</span><span>.</span><span class="identifier">scope</span><span>(
-    </span><span class="type-name">Baggage</span><span>.</span><span class="identifier">empty</span><span>
-      .</span><span class="identifier">updated</span><span>(</span><span class="string-literal">&quot;request.id&quot;</span><span>, </span><span class="string-literal">&quot;req-123&quot;</span><span>)
-      .</span><span class="identifier">updated</span><span>(</span><span class="string-literal">&quot;user.id&quot;</span><span>, </span><span class="string-literal">&quot;user-42&quot;</span><span>)
-  )(</span><span class="identifier">fa</span><span>)</span></code></pre>
-        <p>If you want to update the current baggage instead of replacing it, use <code>local(...)</code>:</p>
-        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">def</span><span> </span><span class="declaration-name">withDebugFlag</span><span>[</span><span class="type-name">A</span><span>](</span><span class="identifier">fa</span><span>: </span><span class="type-name">IO</span><span>[</span><span class="type-name">A</span><span>])(</span><span class="keyword">implicit</span><span> </span><span class="identifier">baggageManager</span><span>: </span><span class="type-name">BaggageManager</span><span>[</span><span class="type-name">IO</span><span>]): </span><span class="type-name">IO</span><span>[</span><span class="type-name">A</span><span>] =
-  </span><span class="identifier">baggageManager</span><span>.</span><span class="identifier">local</span><span>(</span><span class="identifier">_</span><span>.</span><span class="identifier">updated</span><span>(</span><span class="string-literal">&quot;debug&quot;</span><span>, </span><span class="string-literal">&quot;true&quot;</span><span>))(</span><span class="identifier">fa</span><span>)</span></code></pre>
-        
-        <h2 id="_3-read-baggage-values-downstream" class="section"><a class="anchor-link left" href="#_3-read-baggage-values-downstream"><i class="icofont-laika link">&#xef71;</i></a>3. Read baggage values downstream</h2>
-        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">def</span><span> </span><span class="declaration-name">handleRequest</span><span>(</span><span class="keyword">implicit</span><span> </span><span class="identifier">baggageManager</span><span>: </span><span class="type-name">BaggageManager</span><span>[</span><span class="type-name">IO</span><span>]): </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] =
-  </span><span class="identifier">withRequestMetadata</span><span> {
-    </span><span class="keyword">for</span><span> {
-      </span><span class="identifier">current</span><span> &lt;- </span><span class="identifier">baggageManager</span><span>.</span><span class="identifier">current</span><span>
-      </span><span class="identifier">userId</span><span> &lt;- </span><span class="identifier">baggageManager</span><span>.</span><span class="identifier">getValue</span><span>(</span><span class="string-literal">&quot;user.id&quot;</span><span>)
-      </span><span class="identifier">_</span><span> &lt;- </span><span class="type-name">IO</span><span>.</span><span class="identifier">println</span><span>(</span><span class="string-literal">s&quot;baggage: </span><span class="substitution">$current</span><span class="string-literal">&quot;</span><span>)
-      </span><span class="identifier">_</span><span> &lt;- </span><span class="type-name">IO</span><span>.</span><span class="identifier">println</span><span>(</span><span class="string-literal">s&quot;user.id: </span><span class="substitution">${userId.getOrElse(&quot;missing&quot;)}</span><span class="string-literal">&quot;</span><span>)
-    } </span><span class="keyword">yield</span><span> ()
-  }</span></code></pre>
-        
-        <h2 id="what-s-next" class="section"><a class="anchor-link left" href="#what-s-next"><i class="icofont-laika link">&#xef71;</i></a>What&#39;s next</h2>
-        <ul>
-          <li>Continue incoming traces and propagate trace context across services:
-          <a href="propagate-trace-context-across-service-boundaries.html">Propagate trace context across service boundaries</a></li>
-          <li>Work across otel4s and Java context boundaries:
-          <a href="use-otel4s-with-java-instrumented-libraries.html">Use otel4s with Java-instrumented libraries</a></li>
+          <li>Start a new JVM application setup:
+          <a href="../how-to-jvm-setup/set-up-otel4s-in-a-jvm-application.html">Set up otel4s in a JVM application</a></li>
+          <li>Reuse a process-wide SDK:
+          <a href="../how-to-jvm-setup/use-the-global-opentelemetry-instance.html">Use the global OpenTelemetry instance</a></li>
+          <li>Keep Cats Effect and OpenTelemetry Java context aligned:
+          <a href="../how-to-jvm-setup/keep-otel4s-context-in-sync-with-opentelemetry-java.html">Keep otel4s context in sync with OpenTelemetry Java</a></li>
+          <li>Test telemetry output:
+          <a href="../oteljava/testkit.html">Testkit</a></li>
         </ul>
 
         

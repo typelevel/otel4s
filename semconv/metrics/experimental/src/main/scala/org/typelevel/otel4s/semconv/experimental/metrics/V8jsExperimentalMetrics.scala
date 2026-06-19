@@ -34,6 +34,7 @@ object V8jsExperimentalMetrics {
     MemoryHeapLimit,
     MemoryHeapSpaceAvailableSize,
     MemoryHeapSpacePhysicalSize,
+    MemoryHeapSpaceSize,
     MemoryHeapUsed,
     ResourceActive,
   )
@@ -200,42 +201,16 @@ object V8jsExperimentalMetrics {
 
   }
 
-  /** Total heap memory size pre-allocated.
-    *
-    * @note
-    *   <p> The value can be retrieved from value `space_size` of <a
-    *   href="https://nodejs.org/api/v8.html#v8getheapspacestatistics">`v8.getHeapSpaceStatistics()`</a>
+  /** Deprecated, use `v8js.memory.heap.space.size` instead.
     */
+  @deprecated("Replaced by `v8js.memory.heap.space.size`.", "")
   object MemoryHeapLimit extends MetricSpec.Unsealed {
 
     val name: String = "v8js.memory.heap.limit"
-    val description: String = "Total heap memory size pre-allocated."
+    val description: String = "Deprecated, use `v8js.memory.heap.space.size` instead."
     val unit: String = "By"
     val stability: Stability = Stability.development
-    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
-
-    object AttributeSpecs {
-
-      /** The name of the space type of heap memory.
-        *
-        * @note
-        *   <p> Value can be retrieved from value `space_name` of <a
-        *   href="https://nodejs.org/api/v8.html#v8getheapspacestatistics">`v8.getHeapSpaceStatistics()`</a>
-        */
-      val v8jsHeapSpaceName: AttributeSpec[String] =
-        AttributeSpec(
-          V8jsExperimentalAttributes.V8jsHeapSpaceName,
-          List(
-          ),
-          Requirement.required,
-          Stability.development
-        )
-
-      val specs: List[AttributeSpec[_]] =
-        List(
-          v8jsHeapSpaceName,
-        )
-    }
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
       Meter[F]
@@ -334,6 +309,68 @@ object V8jsExperimentalMetrics {
 
     val name: String = "v8js.memory.heap.space.physical_size"
     val description: String = "Committed size of a heap space."
+    val unit: String = "By"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
+
+    object AttributeSpecs {
+
+      /** The name of the space type of heap memory.
+        *
+        * @note
+        *   <p> Value can be retrieved from value `space_name` of <a
+        *   href="https://nodejs.org/api/v8.html#v8getheapspacestatistics">`v8.getHeapSpaceStatistics()`</a>
+        */
+      val v8jsHeapSpaceName: AttributeSpec[String] =
+        AttributeSpec(
+          V8jsExperimentalAttributes.V8jsHeapSpaceName,
+          List(
+          ),
+          Requirement.required,
+          Stability.development
+        )
+
+      val specs: List[AttributeSpec[_]] =
+        List(
+          v8jsHeapSpaceName,
+        )
+    }
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
+      Meter[F]
+        .upDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableUpDownCounter] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** Total heap memory size pre-allocated for a heap space.
+    *
+    * @note
+    *   <p> The value can be retrieved from value `space_size` of <a
+    *   href="https://nodejs.org/api/v8.html#v8getheapspacestatistics">`v8.getHeapSpaceStatistics()`</a>
+    */
+  object MemoryHeapSpaceSize extends MetricSpec.Unsealed {
+
+    val name: String = "v8js.memory.heap.space.size"
+    val description: String = "Total heap memory size pre-allocated for a heap space."
     val unit: String = "By"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs

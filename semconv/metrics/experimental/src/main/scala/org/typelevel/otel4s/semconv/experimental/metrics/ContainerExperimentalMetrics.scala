@@ -42,17 +42,17 @@ object ContainerExperimentalMetrics {
     Uptime,
   )
 
-  /** Total CPU time consumed.
+  /** CPU time consumed.
     *
     * @note
-    *   <p> Total CPU time consumed by the specific container on all available CPU cores
+    *   <p> CPU time consumed by the specific container on all available CPU cores
     */
   object CpuTime extends MetricSpec.Unsealed {
 
     val name: String = "container.cpu.time"
-    val description: String = "Total CPU time consumed."
+    val description: String = "CPU time consumed."
     val unit: String = "s"
-    val stability: Stability = Stability.development
+    val stability: Stability = Stability.releaseCandidate
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -61,7 +61,20 @@ object ContainerExperimentalMetrics {
         * points with no `mode` labels, <em>or only</em> data points with `mode` labels.
         *
         * @note
-        *   <p> Following states SHOULD be used: `user`, `system`, `kernel`
+        *   <p> Following modes SHOULD be used for containers if available: `user`, `system`. In implementations like <a
+        *   href="https://pkg.go.dev/github.com/opencontainers/cgroups@v0.0.6#CpuUsage">`opencontainers/cgroup`</a>, <a
+        *   href="https://pkg.go.dev/github.com/Moby/Moby@v28.5.2+incompatible/api/types/container#CPUUsage">Moby/Docker</a>
+        *   or <a href="https://pkg.go.dev/github.com/google/cadvisor@v0.56.2/info/v1#CpuUsage">cAdvisor</a>, the
+        *   respective states are retrieved from the cgroup stats directly. In cgroup v1 the user/system modes come from
+        *   the <a
+        *   href="https://www.kernel.org/doc/html/latest/admin-guide/cgroup-v1/cpuacct.html#cpu-accounting-controller">cpuacct.stat</a>
+        *   file and the `user`/`system` stats respectively. In cgroup v2 the user/system modes come from the <a
+        *   href="https://docs.kernel.org/admin-guide/cgroup-v2.html#cpu-interface-files">cpu.stat</a> file and the
+        *   `user_usec`/`system_usec` stats respectively. Kubernetes only exposes the total CPU time (<a
+        *   href="https://docs.kernel.org/admin-guide/cgroup-v2.html#cpu-interface-files">cpu.stat.usage_usec</a>)
+        *   through Kubelet's stats API, hence the metric should be reported without the mode attribute implying it is
+        *   the total of all modes. In pure container environments the CPU's mode is usually available and cpu.mode
+        *   should be reported. In that case summarising the CPU time over the different modes gives the total CPU time.
         */
       val cpuMode: AttributeSpec[String] =
         AttributeSpec(
@@ -71,9 +84,9 @@ object ContainerExperimentalMetrics {
             "system",
           ),
           Requirement.conditionallyRequired(
-            "Required if mode is available, i.e. metrics coming from the Docker Stats API."
+            "Required if mode is available, i.e. metrics coming from the Docker Stats API, containerd stats or cAdvisor."
           ),
-          Stability.development
+          Stability.releaseCandidate
         )
 
       val specs: List[AttributeSpec[_]] =
@@ -126,7 +139,7 @@ object ContainerExperimentalMetrics {
         * points with no `mode` labels, <em>or only</em> data points with `mode` labels.
         *
         * @note
-        *   <p> Following states SHOULD be used: `user`, `system`, `kernel`
+        *   <p> Following modes SHOULD be used for containers if available: `user`, `system`.
         */
       val cpuMode: AttributeSpec[String] =
         AttributeSpec(
@@ -136,9 +149,9 @@ object ContainerExperimentalMetrics {
             "system",
           ),
           Requirement.conditionallyRequired(
-            "Required if mode is available, i.e. metrics coming from the Docker Stats API."
+            "Required if mode is available, i.e. metrics coming from the Docker Stats API, containerd stats or cAdvisor."
           ),
-          Stability.development
+          Stability.releaseCandidate
         )
 
       val specs: List[AttributeSpec[_]] =

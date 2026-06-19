@@ -99,6 +99,24 @@ object FileExperimentalAttributes {
   val FileInode: AttributeKey[String] =
     AttributeKey("file.inode")
 
+  /** The lock mechanism such as noted by <a
+    * href="https://pubs.opengroup.org/onlinepubs/9699919799/functions/fcntl.html">POSIX</a>
+    */
+  val FileLockMechanism: AttributeKey[String] =
+    AttributeKey("file.lock.mechanism")
+
+  /** Mode of lock or operation such as documented by <a
+    * href="https://pubs.opengroup.org/onlinepubs/9699919799/functions/fcntl.html">POSIX</a>
+    */
+  val FileLockMode: AttributeKey[String] =
+    AttributeKey("file.lock.mode")
+
+  /** The lock type as represented by i.e. <a
+    * href="https://pubs.opengroup.org/onlinepubs/9699919799/functions/fcntl.html">POSIX</a>'s l_type.
+    */
+  val FileLockType: AttributeKey[String] =
+    AttributeKey("file.lock.type")
+
   /** Mode of the file in octal representation.
     */
   val FileMode: AttributeKey[String] =
@@ -141,5 +159,20 @@ object FileExperimentalAttributes {
     */
   val FileSymbolicLinkTargetPath: AttributeKey[String] =
     AttributeKey("file.symbolic_link.target_path")
+
+  /** Values for [[FileLockType]].
+    */
+  abstract class FileLockTypeValue(val value: String)
+  object FileLockTypeValue {
+    implicit val attributeFromFileLockTypeValue: Attribute.From[FileLockTypeValue, String] = _.value
+
+    /** read.
+      */
+    case object Read extends FileLockTypeValue("read")
+
+    /** write.
+      */
+    case object Write extends FileLockTypeValue("write")
+  }
 
 }

@@ -220,7 +220,7 @@ object HttpExperimentalMetrics {
             "10.1.2.80",
             "/tmp/my.sock",
           ),
-          Requirement.recommended,
+          Requirement.optIn,
           Stability.stable
         )
 
@@ -346,7 +346,7 @@ object HttpExperimentalMetrics {
             "10.1.2.80",
             "/tmp/my.sock",
           ),
-          Requirement.recommended,
+          Requirement.optIn,
           Stability.stable
         )
 

@@ -23,12 +23,20 @@ object McpExperimentalAttributes {
 
   /** The name of the request or notification method.
     */
+  @deprecated(
+    "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+    ""
+  )
   val McpMethodName: AttributeKey[String] =
     AttributeKey("mcp.method.name")
 
   /** The <a href="https://modelcontextprotocol.io/specification/versioning">version</a> of the Model Context Protocol
     * used.
     */
+  @deprecated(
+    "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+    ""
+  )
   val McpProtocolVersion: AttributeKey[String] =
     AttributeKey("mcp.protocol.version")
 
@@ -38,6 +46,10 @@ object McpExperimentalAttributes {
     *   <p> This is a URI of the resource provided in the following requests or notifications: `resources/read`,
     *   `resources/subscribe`, `resources/unsubscribe`, or `notifications/resources/updated`.
     */
+  @deprecated(
+    "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+    ""
+  )
   val McpResourceUri: AttributeKey[String] =
     AttributeKey("mcp.resource.uri")
 
@@ -45,12 +57,21 @@ object McpExperimentalAttributes {
     * href="https://modelcontextprotocol.io/specification/2025-06-18/basic/transports#session-management">MCP
     * session</a>.
     */
+  @deprecated(
+    "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+    ""
+  )
   val McpSessionId: AttributeKey[String] =
     AttributeKey("mcp.session.id")
 
   /** Values for [[McpMethodName]].
     */
+  @deprecated(
+    "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+    ""
+  )
   abstract class McpMethodNameValue(val value: String)
+  @annotation.nowarn("cat=deprecation")
   object McpMethodNameValue {
     implicit val attributeFromMcpMethodNameValue: Attribute.From[McpMethodNameValue, String] = _.value
 

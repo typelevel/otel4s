@@ -23,27 +23,48 @@ object OpenaiExperimentalAttributes {
 
   /** The type of OpenAI API being used.
     */
+  @deprecated(
+    "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+    ""
+  )
   val OpenaiApiType: AttributeKey[String] =
     AttributeKey("openai.api.type")
 
   /** The service tier requested. May be a specific tier, default, or auto.
     */
+  @deprecated(
+    "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+    ""
+  )
   val OpenaiRequestServiceTier: AttributeKey[String] =
     AttributeKey("openai.request.service_tier")
 
   /** The service tier used for the response.
     */
+  @deprecated(
+    "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+    ""
+  )
   val OpenaiResponseServiceTier: AttributeKey[String] =
     AttributeKey("openai.response.service_tier")
 
   /** A fingerprint to track any eventual change in the Generative AI environment.
     */
+  @deprecated(
+    "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+    ""
+  )
   val OpenaiResponseSystemFingerprint: AttributeKey[String] =
     AttributeKey("openai.response.system_fingerprint")
 
   /** Values for [[OpenaiApiType]].
     */
+  @deprecated(
+    "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+    ""
+  )
   abstract class OpenaiApiTypeValue(val value: String)
+  @annotation.nowarn("cat=deprecation")
   object OpenaiApiTypeValue {
     implicit val attributeFromOpenaiApiTypeValue: Attribute.From[OpenaiApiTypeValue, String] = _.value
 
@@ -59,7 +80,12 @@ object OpenaiExperimentalAttributes {
 
   /** Values for [[OpenaiRequestServiceTier]].
     */
+  @deprecated(
+    "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+    ""
+  )
   abstract class OpenaiRequestServiceTierValue(val value: String)
+  @annotation.nowarn("cat=deprecation")
   object OpenaiRequestServiceTierValue {
     implicit val attributeFromOpenaiRequestServiceTierValue: Attribute.From[OpenaiRequestServiceTierValue, String] =
       _.value

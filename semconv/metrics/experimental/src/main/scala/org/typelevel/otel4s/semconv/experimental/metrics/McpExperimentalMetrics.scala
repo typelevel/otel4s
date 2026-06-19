@@ -26,6 +26,7 @@ import org.typelevel.otel4s.semconv.experimental.attributes._
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/metrics/SemanticMetrics.scala.j2
 object McpExperimentalMetrics {
 
+  @annotation.nowarn("cat=deprecation")
   val specs: List[MetricSpec] = List(
     ClientOperationDuration,
     ClientSessionDuration,
@@ -36,6 +37,10 @@ object McpExperimentalMetrics {
   /** The duration of the MCP request or notification as observed on the sender from the time it was sent until the
     * response or ack is received.
     */
+  @deprecated(
+    "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+    ""
+  )
   object ClientOperationDuration extends MetricSpec.Unsealed {
 
     val name: String = "mcp.client.operation.duration"
@@ -75,6 +80,10 @@ object McpExperimentalMetrics {
         *   <p> Populating this attribute for tool calling along with `mcp.method.name` allows consumers to treat MCP
         *   tool calls spans similarly with other tool call types.
         */
+      @deprecated(
+        "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+        ""
+      )
       val genAiOperationName: AttributeSpec[String] =
         AttributeSpec(
           GenAiExperimentalAttributes.GenAiOperationName,
@@ -89,6 +98,10 @@ object McpExperimentalMetrics {
 
       /** The name of the prompt or prompt template provided in the request or response.
         */
+      @deprecated(
+        "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+        ""
+      )
       val genAiPromptName: AttributeSpec[String] =
         AttributeSpec(
           GenAiExperimentalAttributes.GenAiPromptName,
@@ -101,6 +114,10 @@ object McpExperimentalMetrics {
 
       /** Name of the tool utilized by the agent.
         */
+      @deprecated(
+        "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+        ""
+      )
       val genAiToolName: AttributeSpec[String] =
         AttributeSpec(
           GenAiExperimentalAttributes.GenAiToolName,
@@ -126,6 +143,10 @@ object McpExperimentalMetrics {
 
       /** The name of the request or notification method.
         */
+      @deprecated(
+        "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+        ""
+      )
       val mcpMethodName: AttributeSpec[String] =
         AttributeSpec(
           McpExperimentalAttributes.McpMethodName,
@@ -138,6 +159,10 @@ object McpExperimentalMetrics {
       /** The <a href="https://modelcontextprotocol.io/specification/versioning">version</a> of the Model Context
         * Protocol used.
         */
+      @deprecated(
+        "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+        ""
+      )
       val mcpProtocolVersion: AttributeSpec[String] =
         AttributeSpec(
           McpExperimentalAttributes.McpProtocolVersion,
@@ -154,6 +179,10 @@ object McpExperimentalMetrics {
         *   <p> This is a URI of the resource provided in the following requests or notifications: `resources/read`,
         *   `resources/subscribe`, `resources/unsubscribe`, or `notifications/resources/updated`.
         */
+      @deprecated(
+        "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+        ""
+      )
       val mcpResourceUri: AttributeSpec[String] =
         AttributeSpec(
           McpExperimentalAttributes.McpResourceUri,
@@ -299,6 +328,10 @@ object McpExperimentalMetrics {
 
   /** The duration of the MCP session as observed on the MCP client.
     */
+  @deprecated(
+    "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+    ""
+  )
   object ClientSessionDuration extends MetricSpec.Unsealed {
 
     val name: String = "mcp.client.session.duration"
@@ -355,6 +388,10 @@ object McpExperimentalMetrics {
       /** The <a href="https://modelcontextprotocol.io/specification/versioning">version</a> of the Model Context
         * Protocol used.
         */
+      @deprecated(
+        "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+        ""
+      )
       val mcpProtocolVersion: AttributeSpec[String] =
         AttributeSpec(
           McpExperimentalAttributes.McpProtocolVersion,
@@ -474,6 +511,10 @@ object McpExperimentalMetrics {
   /** MCP request or notification duration as observed on the receiver from the time it was received until the result or
     * ack is sent.
     */
+  @deprecated(
+    "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+    ""
+  )
   object ServerOperationDuration extends MetricSpec.Unsealed {
 
     val name: String = "mcp.server.operation.duration"
@@ -513,6 +554,10 @@ object McpExperimentalMetrics {
         *   <p> Populating this attribute for tool calling along with `mcp.method.name` allows consumers to treat MCP
         *   tool calls spans similarly with other tool call types.
         */
+      @deprecated(
+        "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+        ""
+      )
       val genAiOperationName: AttributeSpec[String] =
         AttributeSpec(
           GenAiExperimentalAttributes.GenAiOperationName,
@@ -527,6 +572,10 @@ object McpExperimentalMetrics {
 
       /** The name of the prompt or prompt template provided in the request or response.
         */
+      @deprecated(
+        "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+        ""
+      )
       val genAiPromptName: AttributeSpec[String] =
         AttributeSpec(
           GenAiExperimentalAttributes.GenAiPromptName,
@@ -539,6 +588,10 @@ object McpExperimentalMetrics {
 
       /** Name of the tool utilized by the agent.
         */
+      @deprecated(
+        "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+        ""
+      )
       val genAiToolName: AttributeSpec[String] =
         AttributeSpec(
           GenAiExperimentalAttributes.GenAiToolName,
@@ -564,6 +617,10 @@ object McpExperimentalMetrics {
 
       /** The name of the request or notification method.
         */
+      @deprecated(
+        "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+        ""
+      )
       val mcpMethodName: AttributeSpec[String] =
         AttributeSpec(
           McpExperimentalAttributes.McpMethodName,
@@ -576,6 +633,10 @@ object McpExperimentalMetrics {
       /** The <a href="https://modelcontextprotocol.io/specification/versioning">version</a> of the Model Context
         * Protocol used.
         */
+      @deprecated(
+        "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+        ""
+      )
       val mcpProtocolVersion: AttributeSpec[String] =
         AttributeSpec(
           McpExperimentalAttributes.McpProtocolVersion,
@@ -592,6 +653,10 @@ object McpExperimentalMetrics {
         *   <p> This is a URI of the resource provided in the following requests or notifications: `resources/read`,
         *   `resources/subscribe`, `resources/unsubscribe`, or `notifications/resources/updated`.
         */
+      @deprecated(
+        "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+        ""
+      )
       val mcpResourceUri: AttributeSpec[String] =
         AttributeSpec(
           McpExperimentalAttributes.McpResourceUri,
@@ -699,6 +764,10 @@ object McpExperimentalMetrics {
 
   /** The duration of the MCP session as observed on the MCP server.
     */
+  @deprecated(
+    "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+    ""
+  )
   object ServerSessionDuration extends MetricSpec.Unsealed {
 
     val name: String = "mcp.server.session.duration"
@@ -755,6 +824,10 @@ object McpExperimentalMetrics {
       /** The <a href="https://modelcontextprotocol.io/specification/versioning">version</a> of the Model Context
         * Protocol used.
         */
+      @deprecated(
+        "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+        ""
+      )
       val mcpProtocolVersion: AttributeSpec[String] =
         AttributeSpec(
           McpExperimentalAttributes.McpProtocolVersion,

@@ -307,7 +307,7 @@ object CicdExperimentalMetrics {
 
   }
 
-  /** The number of errors in a component of the CICD system (eg. controller, scheduler, agent).
+  /** The number of errors in a component of the CI/CD system (eg. controller, scheduler, agent).
     *
     * @note
     *   <p> Errors in pipeline run execution are explicitly excluded. Ie a test failure is not counted in this metric.
@@ -316,14 +316,14 @@ object CicdExperimentalMetrics {
 
     val name: String = "cicd.system.errors"
     val description: String =
-      "The number of errors in a component of the CICD system (eg. controller, scheduler, agent)."
+      "The number of errors in a component of the CI/CD system (eg. controller, scheduler, agent)."
     val unit: String = "{error}"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
-      /** The name of a component of the CICD system.
+      /** The name of a component of the CI/CD system.
         */
       val cicdSystemComponent: AttributeSpec[String] =
         AttributeSpec(
@@ -399,19 +399,19 @@ object CicdExperimentalMetrics {
 
   }
 
-  /** The number of workers on the CICD system by state.
+  /** The number of workers on the CI/CD system by state.
     */
   object WorkerCount extends MetricSpec.Unsealed {
 
     val name: String = "cicd.worker.count"
-    val description: String = "The number of workers on the CICD system by state."
+    val description: String = "The number of workers on the CI/CD system by state."
     val unit: String = "{count}"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
-      /** The state of a CICD worker / agent.
+      /** The state of a CI/CD worker / agent.
         */
       val cicdWorkerState: AttributeSpec[String] =
         AttributeSpec(

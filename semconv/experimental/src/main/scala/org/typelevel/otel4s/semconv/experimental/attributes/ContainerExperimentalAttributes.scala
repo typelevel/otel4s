@@ -70,6 +70,10 @@ object ContainerExperimentalAttributes {
     * href="https://docs.docker.com/engine/containers/run/#container-identification">identify Docker containers</a>. The
     * UUID might be abbreviated.
     */
+  @deprecated(
+    "use `org.typelevel.otel4s.semconv.attributes.ContainerAttributes.ContainerId` instead.",
+    ""
+  )
   val ContainerId: AttributeKey[String] =
     AttributeKey("container.id")
 
@@ -89,6 +93,10 @@ object ContainerExperimentalAttributes {
 
   /** Name of the image the container was built on.
     */
+  @deprecated(
+    "use `org.typelevel.otel4s.semconv.attributes.ContainerAttributes.ContainerImageName` instead.",
+    ""
+  )
   val ContainerImageName: AttributeKey[String] =
     AttributeKey("container.image.name")
 
@@ -101,6 +109,10 @@ object ContainerExperimentalAttributes {
     *   href="https://github.com/kubernetes/cri-api/blob/c75ef5b473bbe2d0a4fc92f82235efd665ea8e9f/pkg/apis/runtime/v1/api.proto#L1237-L1238">CRI</a>
     *   report those under the `RepoDigests` field.
     */
+  @deprecated(
+    "use `org.typelevel.otel4s.semconv.attributes.ContainerAttributes.ContainerImageRepoDigests` instead.",
+    ""
+  )
   val ContainerImageRepoDigests: AttributeKey[Seq[String]] =
     AttributeKey("container.image.repo_digests")
 
@@ -109,6 +121,10 @@ object ContainerExperimentalAttributes {
     * Inspect</a>. Should be only the `<tag>` section of the full name for example from
     * `registry.example.com/my-org/my-image:<tag>`.
     */
+  @deprecated(
+    "use `org.typelevel.otel4s.semconv.attributes.ContainerAttributes.ContainerImageTags` instead.",
+    ""
+  )
   val ContainerImageTags: AttributeKey[Seq[String]] =
     AttributeKey("container.image.tags")
 

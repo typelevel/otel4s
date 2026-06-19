@@ -41,6 +41,7 @@ object SystemExperimentalMetrics {
     DiskOperationTime,
     DiskOperations,
     FilesystemLimit,
+    FilesystemLockCount,
     FilesystemUsage,
     FilesystemUtilization,
     LinuxMemoryAvailable,
@@ -245,7 +246,7 @@ object SystemExperimentalMetrics {
             "system",
           ),
           Requirement.recommended,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       val specs: List[AttributeSpec[_]] =
@@ -319,7 +320,7 @@ object SystemExperimentalMetrics {
             "system",
           ),
           Requirement.recommended,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       val specs: List[AttributeSpec[_]] =
@@ -817,6 +818,110 @@ object SystemExperimentalMetrics {
           systemFilesystemMode,
           systemFilesystemMountpoint,
           systemFilesystemType,
+        )
+    }
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
+      Meter[F]
+        .upDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableUpDownCounter] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** Filesystem lock counts.
+    */
+  object FilesystemLockCount extends MetricSpec.Unsealed {
+
+    val name: String = "system.filesystem.lock.count"
+    val description: String = "Filesystem lock counts."
+    val unit: String = "{lock}"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
+
+    object AttributeSpecs {
+
+      /** The lock mechanism such as noted by <a
+        * href="https://pubs.opengroup.org/onlinepubs/9699919799/functions/fcntl.html">POSIX</a>
+        */
+      val fileLockMechanism: AttributeSpec[String] =
+        AttributeSpec(
+          FileExperimentalAttributes.FileLockMechanism,
+          List(
+            "POSIX",
+            "FLOCK",
+            "DELEG",
+            "LEASE",
+          ),
+          Requirement.recommended,
+          Stability.development
+        )
+
+      /** Mode of lock or operation such as documented by <a
+        * href="https://pubs.opengroup.org/onlinepubs/9699919799/functions/fcntl.html">POSIX</a>
+        */
+      val fileLockMode: AttributeSpec[String] =
+        AttributeSpec(
+          FileExperimentalAttributes.FileLockMode,
+          List(
+            "ADVISORY",
+            "MANDATORY",
+            "BREAKING",
+            "ACTIVE",
+            "BREAKER",
+          ),
+          Requirement.recommended,
+          Stability.development
+        )
+
+      /** The lock type as represented by i.e. <a
+        * href="https://pubs.opengroup.org/onlinepubs/9699919799/functions/fcntl.html">POSIX</a>'s l_type.
+        */
+      val fileLockType: AttributeSpec[String] =
+        AttributeSpec(
+          FileExperimentalAttributes.FileLockType,
+          List(
+            "read",
+          ),
+          Requirement.recommended,
+          Stability.development
+        )
+
+      /** OS-specific identifier for the device where the file resides.
+        */
+      val systemDevice: AttributeSpec[String] =
+        AttributeSpec(
+          SystemExperimentalAttributes.SystemDevice,
+          List(
+            "08:01",
+          ),
+          Requirement.recommended,
+          Stability.development
+        )
+
+      val specs: List[AttributeSpec[_]] =
+        List(
+          fileLockMechanism,
+          fileLockMode,
+          fileLockType,
+          systemDevice,
         )
     }
 
@@ -2656,7 +2761,7 @@ object SystemExperimentalMetrics {
             "running",
           ),
           Requirement.recommended,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       val specs: List[AttributeSpec[_]] =

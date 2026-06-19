@@ -23,21 +23,37 @@ object GenAiExperimentalAttributes {
 
   /** Free-form description of the GenAI agent provided by the application.
     */
+  @deprecated(
+    "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+    ""
+  )
   val GenAiAgentDescription: AttributeKey[String] =
     AttributeKey("gen_ai.agent.description")
 
   /** The unique identifier of the GenAI agent.
     */
+  @deprecated(
+    "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+    ""
+  )
   val GenAiAgentId: AttributeKey[String] =
     AttributeKey("gen_ai.agent.id")
 
   /** Human-readable name of the GenAI agent provided by the application.
     */
+  @deprecated(
+    "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+    ""
+  )
   val GenAiAgentName: AttributeKey[String] =
     AttributeKey("gen_ai.agent.name")
 
   /** The version of the GenAI agent.
     */
+  @deprecated(
+    "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+    ""
+  )
   val GenAiAgentVersion: AttributeKey[String] =
     AttributeKey("gen_ai.agent.version")
 
@@ -50,6 +66,10 @@ object GenAiExperimentalAttributes {
   /** The unique identifier for a conversation (session, thread), used to store and correlate messages within this
     * conversation.
     */
+  @deprecated(
+    "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+    ""
+  )
   val GenAiConversationId: AttributeKey[String] =
     AttributeKey("gen_ai.conversation.id")
 
@@ -63,21 +83,37 @@ object GenAiExperimentalAttributes {
     *   referencing `gen_ai.data_source.id` MAY also leverage additional attributes, such as `db.*`, to further identify
     *   and describe the data source.
     */
+  @deprecated(
+    "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+    ""
+  )
   val GenAiDataSourceId: AttributeKey[String] =
     AttributeKey("gen_ai.data_source.id")
 
   /** The number of dimensions the resulting output embeddings should have.
     */
+  @deprecated(
+    "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+    ""
+  )
   val GenAiEmbeddingsDimensionCount: AttributeKey[Long] =
     AttributeKey("gen_ai.embeddings.dimension.count")
 
   /** A free-form explanation for the assigned score provided by the evaluator.
     */
+  @deprecated(
+    "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+    ""
+  )
   val GenAiEvaluationExplanation: AttributeKey[String] =
     AttributeKey("gen_ai.evaluation.explanation")
 
   /** The name of the evaluation metric used for the GenAI response.
     */
+  @deprecated(
+    "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+    ""
+  )
   val GenAiEvaluationName: AttributeKey[String] =
     AttributeKey("gen_ai.evaluation.name")
 
@@ -89,41 +125,64 @@ object GenAiExperimentalAttributes {
     *   depending on the scoring range and evaluator. The label SHOULD have low cardinality. Possible values depend on
     *   the evaluation metric and evaluator used; implementations SHOULD document the possible values.
     */
+  @deprecated(
+    "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+    ""
+  )
   val GenAiEvaluationScoreLabel: AttributeKey[String] =
     AttributeKey("gen_ai.evaluation.score.label")
 
   /** The evaluation score returned by the evaluator.
     */
+  @deprecated(
+    "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+    ""
+  )
   val GenAiEvaluationScoreValue: AttributeKey[Double] =
     AttributeKey("gen_ai.evaluation.score.value")
 
   /** Deprecated, use `gen_ai.output.type`.
     */
-  @deprecated("Replaced by `gen_ai.output.type`.", "")
+  @deprecated(
+    "Replaced by `gen_ai.output.type`, which has moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+    ""
+  )
   val GenAiOpenaiRequestResponseFormat: AttributeKey[String] =
     AttributeKey("gen_ai.openai.request.response_format")
 
   /** Deprecated, use `gen_ai.request.seed`.
     */
-  @deprecated("Replaced by `gen_ai.request.seed`.", "")
+  @deprecated(
+    "Replaced by `gen_ai.request.seed`, which has moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+    ""
+  )
   val GenAiOpenaiRequestSeed: AttributeKey[Long] =
     AttributeKey("gen_ai.openai.request.seed")
 
   /** Deprecated, use `openai.request.service_tier`.
     */
-  @deprecated("Replaced by `openai.request.service_tier`.", "")
+  @deprecated(
+    "Replaced by `openai.request.service_tier`, which has moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+    ""
+  )
   val GenAiOpenaiRequestServiceTier: AttributeKey[String] =
     AttributeKey("gen_ai.openai.request.service_tier")
 
   /** Deprecated, use `openai.response.service_tier`.
     */
-  @deprecated("Replaced by `openai.response.service_tier`.", "")
+  @deprecated(
+    "Replaced by `openai.response.service_tier`, which has moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+    ""
+  )
   val GenAiOpenaiResponseServiceTier: AttributeKey[String] =
     AttributeKey("gen_ai.openai.response.service_tier")
 
   /** Deprecated, use `openai.response.system_fingerprint`.
     */
-  @deprecated("Replaced by `openai.response.system_fingerprint`.", "")
+  @deprecated(
+    "Replaced by `openai.response.system_fingerprint`, which has moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+    ""
+  )
   val GenAiOpenaiResponseSystemFingerprint: AttributeKey[String] =
     AttributeKey("gen_ai.openai.response.system_fingerprint")
 
@@ -135,6 +194,10 @@ object GenAiExperimentalAttributes {
     *   instrumentation. If a different name is not documented, instrumentation libraries SHOULD use applicable
     *   predefined value.
     */
+  @deprecated(
+    "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+    ""
+  )
   val GenAiOperationName: AttributeKey[String] =
     AttributeKey("gen_ai.operation.name")
 
@@ -146,6 +209,10 @@ object GenAiExperimentalAttributes {
     *   example, if an image is requested, the actual output could be a URL pointing to an image file. Additional output
     *   format details may be recorded in the future in the `gen_ai.output.{type}.*` attributes.
     */
+  @deprecated(
+    "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+    ""
+  )
   val GenAiOutputType: AttributeKey[String] =
     AttributeKey("gen_ai.output.type")
 
@@ -157,6 +224,10 @@ object GenAiExperimentalAttributes {
 
   /** The name of the prompt that uniquely identifies it.
     */
+  @deprecated(
+    "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+    ""
+  )
   val GenAiPromptName: AttributeKey[String] =
     AttributeKey("gen_ai.prompt.name")
 
@@ -173,11 +244,19 @@ object GenAiExperimentalAttributes {
     *   events related to AWS Bedrock should have the `gen_ai.provider.name` set to `aws.bedrock` and include applicable
     *   `aws.bedrock.*` attributes and are not expected to include `openai.*` attributes.
     */
+  @deprecated(
+    "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+    ""
+  )
   val GenAiProviderName: AttributeKey[String] =
     AttributeKey("gen_ai.provider.name")
 
   /** The target number of candidate completions to return.
     */
+  @deprecated(
+    "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+    ""
+  )
   val GenAiRequestChoiceCount: AttributeKey[Long] =
     AttributeKey("gen_ai.request.choice.count")
 
@@ -187,77 +266,137 @@ object GenAiExperimentalAttributes {
     *   <p> In some GenAI systems the encoding formats are called embedding types. Also, some GenAI systems only accept
     *   a single format per request.
     */
+  @deprecated(
+    "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+    ""
+  )
   val GenAiRequestEncodingFormats: AttributeKey[Seq[String]] =
     AttributeKey("gen_ai.request.encoding_formats")
 
   /** The frequency penalty setting for the GenAI request.
     */
+  @deprecated(
+    "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+    ""
+  )
   val GenAiRequestFrequencyPenalty: AttributeKey[Double] =
     AttributeKey("gen_ai.request.frequency_penalty")
 
   /** The maximum number of tokens the model generates for a request.
     */
+  @deprecated(
+    "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+    ""
+  )
   val GenAiRequestMaxTokens: AttributeKey[Long] =
     AttributeKey("gen_ai.request.max_tokens")
 
   /** The name of the GenAI model a request is being made to.
     */
+  @deprecated(
+    "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+    ""
+  )
   val GenAiRequestModel: AttributeKey[String] =
     AttributeKey("gen_ai.request.model")
 
   /** The presence penalty setting for the GenAI request.
     */
+  @deprecated(
+    "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+    ""
+  )
   val GenAiRequestPresencePenalty: AttributeKey[Double] =
     AttributeKey("gen_ai.request.presence_penalty")
 
   /** Requests with same seed value more likely to return same result.
     */
+  @deprecated(
+    "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+    ""
+  )
   val GenAiRequestSeed: AttributeKey[Long] =
     AttributeKey("gen_ai.request.seed")
 
   /** List of sequences that the model will use to stop generating further tokens.
     */
+  @deprecated(
+    "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+    ""
+  )
   val GenAiRequestStopSequences: AttributeKey[Seq[String]] =
     AttributeKey("gen_ai.request.stop_sequences")
 
   /** Indicates whether the GenAI request was made in streaming mode.
     */
+  @deprecated(
+    "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+    ""
+  )
   val GenAiRequestStream: AttributeKey[Boolean] =
     AttributeKey("gen_ai.request.stream")
 
   /** The temperature setting for the GenAI request.
     */
+  @deprecated(
+    "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+    ""
+  )
   val GenAiRequestTemperature: AttributeKey[Double] =
     AttributeKey("gen_ai.request.temperature")
 
   /** The top_k sampling setting for the GenAI request.
     */
+  @deprecated(
+    "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+    ""
+  )
   val GenAiRequestTopK: AttributeKey[Double] =
     AttributeKey("gen_ai.request.top_k")
 
   /** The top_p sampling setting for the GenAI request.
     */
+  @deprecated(
+    "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+    ""
+  )
   val GenAiRequestTopP: AttributeKey[Double] =
     AttributeKey("gen_ai.request.top_p")
 
   /** Array of reasons the model stopped generating tokens, corresponding to each generation received.
     */
+  @deprecated(
+    "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+    ""
+  )
   val GenAiResponseFinishReasons: AttributeKey[Seq[String]] =
     AttributeKey("gen_ai.response.finish_reasons")
 
   /** The unique identifier for the completion.
     */
+  @deprecated(
+    "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+    ""
+  )
   val GenAiResponseId: AttributeKey[String] =
     AttributeKey("gen_ai.response.id")
 
   /** The name of the model that generated the response.
     */
+  @deprecated(
+    "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+    ""
+  )
   val GenAiResponseModel: AttributeKey[String] =
     AttributeKey("gen_ai.response.model")
 
   /** Time to first chunk in a streaming response, measured from request issuance, in seconds. The value is measured
     * from when the client issues the generation request to when the first chunk is received in the response stream.
     */
+  @deprecated(
+    "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+    ""
+  )
   val GenAiResponseTimeToFirstChunk: AttributeKey[Double] =
     AttributeKey("gen_ai.response.time_to_first_chunk")
 
@@ -266,32 +405,55 @@ object GenAiExperimentalAttributes {
     * @note
     *   <blockquote> [!Warning] This attribute may contain sensitive information.</blockquote>
     */
+  @deprecated(
+    "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+    ""
+  )
   val GenAiRetrievalQueryText: AttributeKey[String] =
     AttributeKey("gen_ai.retrieval.query.text")
 
   /** Deprecated, use `gen_ai.provider.name` instead.
     */
-  @deprecated("Replaced by `gen_ai.provider.name`.", "")
+  @deprecated(
+    "Replaced by `gen_ai.provider.name`, which has moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+    ""
+  )
   val GenAiSystem: AttributeKey[String] =
     AttributeKey("gen_ai.system")
 
   /** The type of token being counted.
     */
+  @deprecated(
+    "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+    ""
+  )
   val GenAiTokenType: AttributeKey[String] =
     AttributeKey("gen_ai.token.type")
 
   /** The tool call identifier.
     */
+  @deprecated(
+    "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+    ""
+  )
   val GenAiToolCallId: AttributeKey[String] =
     AttributeKey("gen_ai.tool.call.id")
 
   /** The tool description.
     */
+  @deprecated(
+    "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+    ""
+  )
   val GenAiToolDescription: AttributeKey[String] =
     AttributeKey("gen_ai.tool.description")
 
   /** Name of the tool utilized by the agent.
     */
+  @deprecated(
+    "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+    ""
+  )
   val GenAiToolName: AttributeKey[String] =
     AttributeKey("gen_ai.tool.name")
 
@@ -305,6 +467,10 @@ object GenAiExperimentalAttributes {
     *   are actions taken on the user's end or within the client application. Datastore: A tool used by the agent to
     *   access and query structured or unstructured external data for retrieval-augmented tasks or knowledge updates.
     */
+  @deprecated(
+    "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+    ""
+  )
   val GenAiToolType: AttributeKey[String] =
     AttributeKey("gen_ai.tool.type")
 
@@ -313,6 +479,10 @@ object GenAiExperimentalAttributes {
     * @note
     *   <p> The value SHOULD be included in `gen_ai.usage.input_tokens`.
     */
+  @deprecated(
+    "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+    ""
+  )
   val GenAiUsageCacheCreationInputTokens: AttributeKey[Long] =
     AttributeKey("gen_ai.usage.cache_creation.input_tokens")
 
@@ -321,12 +491,19 @@ object GenAiExperimentalAttributes {
     * @note
     *   <p> The value SHOULD be included in `gen_ai.usage.input_tokens`.
     */
+  @deprecated(
+    "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+    ""
+  )
   val GenAiUsageCacheReadInputTokens: AttributeKey[Long] =
     AttributeKey("gen_ai.usage.cache_read.input_tokens")
 
   /** Deprecated, use `gen_ai.usage.output_tokens` instead.
     */
-  @deprecated("Replaced by `gen_ai.usage.output_tokens`.", "")
+  @deprecated(
+    "Replaced by `gen_ai.usage.output_tokens`, which has moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+    ""
+  )
   val GenAiUsageCompletionTokens: AttributeKey[Long] =
     AttributeKey("gen_ai.usage.completion_tokens")
 
@@ -337,17 +514,28 @@ object GenAiExperimentalAttributes {
     *   best effort to populate this value, using a total provided by the provider when available or, depending on the
     *   provider API, by summing different token types parsed from the provider output.
     */
+  @deprecated(
+    "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+    ""
+  )
   val GenAiUsageInputTokens: AttributeKey[Long] =
     AttributeKey("gen_ai.usage.input_tokens")
 
   /** The number of tokens used in the GenAI response (completion).
     */
+  @deprecated(
+    "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+    ""
+  )
   val GenAiUsageOutputTokens: AttributeKey[Long] =
     AttributeKey("gen_ai.usage.output_tokens")
 
   /** Deprecated, use `gen_ai.usage.input_tokens` instead.
     */
-  @deprecated("Replaced by `gen_ai.usage.input_tokens`.", "")
+  @deprecated(
+    "Replaced by `gen_ai.usage.input_tokens`, which has moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+    ""
+  )
   val GenAiUsagePromptTokens: AttributeKey[Long] =
     AttributeKey("gen_ai.usage.prompt_tokens")
 
@@ -356,6 +544,10 @@ object GenAiExperimentalAttributes {
     * @note
     *   <p> The value SHOULD be included in `gen_ai.usage.output_tokens`.
     */
+  @deprecated(
+    "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+    ""
+  )
   val GenAiUsageReasoningOutputTokens: AttributeKey[Long] =
     AttributeKey("gen_ai.usage.reasoning.output_tokens")
 
@@ -365,12 +557,19 @@ object GenAiExperimentalAttributes {
     *   <p> This attribute can be populated in different frameworks eg: name of the first chain in LangChain OR name of
     *   the crew in CrewAI.
     */
+  @deprecated(
+    "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+    ""
+  )
   val GenAiWorkflowName: AttributeKey[String] =
     AttributeKey("gen_ai.workflow.name")
 
   /** Values for [[GenAiOpenaiRequestResponseFormat]].
     */
-  @deprecated("Replaced by `gen_ai.output.type`.", "")
+  @deprecated(
+    "Replaced by `gen_ai.output.type`, which has moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+    ""
+  )
   abstract class GenAiOpenaiRequestResponseFormatValue(val value: String)
   @annotation.nowarn("cat=deprecation")
   object GenAiOpenaiRequestResponseFormatValue {
@@ -392,7 +591,10 @@ object GenAiExperimentalAttributes {
 
   /** Values for [[GenAiOpenaiRequestServiceTier]].
     */
-  @deprecated("Replaced by `openai.request.service_tier`.", "")
+  @deprecated(
+    "Replaced by `openai.request.service_tier`, which has moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+    ""
+  )
   abstract class GenAiOpenaiRequestServiceTierValue(val value: String)
   @annotation.nowarn("cat=deprecation")
   object GenAiOpenaiRequestServiceTierValue {
@@ -410,7 +612,12 @@ object GenAiExperimentalAttributes {
 
   /** Values for [[GenAiOperationName]].
     */
+  @deprecated(
+    "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+    ""
+  )
   abstract class GenAiOperationNameValue(val value: String)
+  @annotation.nowarn("cat=deprecation")
   object GenAiOperationNameValue {
     implicit val attributeFromGenAiOperationNameValue: Attribute.From[GenAiOperationNameValue, String] = _.value
 
@@ -458,7 +665,12 @@ object GenAiExperimentalAttributes {
 
   /** Values for [[GenAiOutputType]].
     */
+  @deprecated(
+    "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+    ""
+  )
   abstract class GenAiOutputTypeValue(val value: String)
+  @annotation.nowarn("cat=deprecation")
   object GenAiOutputTypeValue {
     implicit val attributeFromGenAiOutputTypeValue: Attribute.From[GenAiOutputTypeValue, String] = _.value
 
@@ -481,7 +693,12 @@ object GenAiExperimentalAttributes {
 
   /** Values for [[GenAiProviderName]].
     */
+  @deprecated(
+    "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+    ""
+  )
   abstract class GenAiProviderNameValue(val value: String)
+  @annotation.nowarn("cat=deprecation")
   object GenAiProviderNameValue {
     implicit val attributeFromGenAiProviderNameValue: Attribute.From[GenAiProviderNameValue, String] = _.value
 
@@ -548,7 +765,10 @@ object GenAiExperimentalAttributes {
 
   /** Values for [[GenAiSystem]].
     */
-  @deprecated("Replaced by `gen_ai.provider.name`.", "")
+  @deprecated(
+    "Replaced by `gen_ai.provider.name`, which has moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+    ""
+  )
   abstract class GenAiSystemValue(val value: String)
   @annotation.nowarn("cat=deprecation")
   object GenAiSystemValue {
@@ -633,7 +853,12 @@ object GenAiExperimentalAttributes {
 
   /** Values for [[GenAiTokenType]].
     */
+  @deprecated(
+    "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+    ""
+  )
   abstract class GenAiTokenTypeValue(val value: String)
+  @annotation.nowarn("cat=deprecation")
   object GenAiTokenTypeValue {
     implicit val attributeFromGenAiTokenTypeValue: Attribute.From[GenAiTokenTypeValue, String] = _.value
 

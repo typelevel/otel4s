@@ -23,6 +23,10 @@ object K8sExperimentalAttributes {
 
   /** The name of the cluster.
     */
+  @deprecated(
+    "use `org.typelevel.otel4s.semconv.attributes.K8sAttributes.K8sClusterName` instead.",
+    ""
+  )
   val K8sClusterName: AttributeKey[String] =
     AttributeKey("k8s.cluster.name")
 
@@ -41,18 +45,38 @@ object K8sExperimentalAttributes {
     *   A.D., or is extremely likely to be different (depending on the mechanism chosen).</blockquote> <p> Therefore,
     *   UIDs between clusters should be extremely unlikely to conflict.
     */
+  @deprecated(
+    "use `org.typelevel.otel4s.semconv.attributes.K8sAttributes.K8sClusterUid` instead.",
+    ""
+  )
   val K8sClusterUid: AttributeKey[String] =
     AttributeKey("k8s.cluster.uid")
+
+  /** The type of file system component for ephemeral storage.
+    *
+    * @note
+    *   <p> Eviction decisions based on ephemeral-storage resource limits are made based on the total container usage.
+    */
+  val K8sContainerEphemeralStorageFsType: AttributeKey[String] =
+    AttributeKey("k8s.container.ephemeral_storage.fs_type")
 
   /** The name of the Container from Pod specification, must be unique within a Pod. Container runtime usually uses
     * different globally unique name (`container.name`).
     */
+  @deprecated(
+    "use `org.typelevel.otel4s.semconv.attributes.K8sAttributes.K8sContainerName` instead.",
+    ""
+  )
   val K8sContainerName: AttributeKey[String] =
     AttributeKey("k8s.container.name")
 
   /** Number of times the container was restarted. This attribute can be used to identify a particular container
     * (running or stopped) within a container spec.
     */
+  @deprecated(
+    "use `org.typelevel.otel4s.semconv.attributes.K8sAttributes.K8sContainerRestartCount` instead.",
+    ""
+  )
   val K8sContainerRestartCount: AttributeKey[Long] =
     AttributeKey("k8s.container.restart_count")
 
@@ -62,16 +86,16 @@ object K8sExperimentalAttributes {
     AttributeKey("k8s.container.status.last_terminated_reason")
 
   /** The reason for the container state. Corresponds to the `reason` field of the: <a
-    * href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#containerstatewaiting-v1-core">K8s
+    * href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#containerstatewaiting-v1-core">K8s
     * ContainerStateWaiting</a> or <a
-    * href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#containerstateterminated-v1-core">K8s
+    * href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#containerstateterminated-v1-core">K8s
     * ContainerStateTerminated</a>
     */
   val K8sContainerStatusReason: AttributeKey[String] =
     AttributeKey("k8s.container.status.reason")
 
   /** The state of the container. <a
-    * href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#containerstate-v1-core">K8s
+    * href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#containerstate-v1-core">K8s
     * ContainerState</a>
     */
   val K8sContainerStatusState: AttributeKey[String] =
@@ -85,6 +109,10 @@ object K8sExperimentalAttributes {
     *   `k8s.cronjob.annotation.retries` attribute with value `"4"`. <li>An annotation `data` with empty string value
     *   SHOULD be recorded as the `k8s.cronjob.annotation.data` attribute with value `""`. </ul>
     */
+  @deprecated(
+    "use `org.typelevel.otel4s.semconv.attributes.K8sAttributes.K8sCronjobAnnotation` instead.",
+    ""
+  )
   val K8sCronjobAnnotation: AttributeKey[String] =
     AttributeKey("k8s.cronjob.annotation")
 
@@ -95,16 +123,28 @@ object K8sExperimentalAttributes {
     *   attribute with value `"weekly"`. <li>A label `automated` with empty string value SHOULD be recorded as the
     *   `k8s.cronjob.label.automated` attribute with value `""`. </ul>
     */
+  @deprecated(
+    "use `org.typelevel.otel4s.semconv.attributes.K8sAttributes.K8sCronjobLabel` instead.",
+    ""
+  )
   val K8sCronjobLabel: AttributeKey[String] =
     AttributeKey("k8s.cronjob.label")
 
   /** The name of the CronJob.
     */
+  @deprecated(
+    "use `org.typelevel.otel4s.semconv.attributes.K8sAttributes.K8sCronjobName` instead.",
+    ""
+  )
   val K8sCronjobName: AttributeKey[String] =
     AttributeKey("k8s.cronjob.name")
 
   /** The UID of the CronJob.
     */
+  @deprecated(
+    "use `org.typelevel.otel4s.semconv.attributes.K8sAttributes.K8sCronjobUid` instead.",
+    ""
+  )
   val K8sCronjobUid: AttributeKey[String] =
     AttributeKey("k8s.cronjob.uid")
 
@@ -116,6 +156,10 @@ object K8sExperimentalAttributes {
     *   `k8s.daemonset.annotation.replicas` attribute with value `"1"`. <li>A label `data` with empty string value
     *   SHOULD be recorded as the `k8s.daemonset.annotation.data` attribute with value `""`. </ul>
     */
+  @deprecated(
+    "use `org.typelevel.otel4s.semconv.attributes.K8sAttributes.K8sDaemonsetAnnotation` instead.",
+    ""
+  )
   val K8sDaemonsetAnnotation: AttributeKey[String] =
     AttributeKey("k8s.daemonset.annotation")
 
@@ -127,16 +171,28 @@ object K8sExperimentalAttributes {
     *   attribute with value `"guestbook"`. <li>A label `data` with empty string value SHOULD be recorded as the
     *   `k8s.daemonset.label.injected` attribute with value `""`. </ul>
     */
+  @deprecated(
+    "use `org.typelevel.otel4s.semconv.attributes.K8sAttributes.K8sDaemonsetLabel` instead.",
+    ""
+  )
   val K8sDaemonsetLabel: AttributeKey[String] =
     AttributeKey("k8s.daemonset.label")
 
   /** The name of the DaemonSet.
     */
+  @deprecated(
+    "use `org.typelevel.otel4s.semconv.attributes.K8sAttributes.K8sDaemonsetName` instead.",
+    ""
+  )
   val K8sDaemonsetName: AttributeKey[String] =
     AttributeKey("k8s.daemonset.name")
 
   /** The UID of the DaemonSet.
     */
+  @deprecated(
+    "use `org.typelevel.otel4s.semconv.attributes.K8sAttributes.K8sDaemonsetUid` instead.",
+    ""
+  )
   val K8sDaemonsetUid: AttributeKey[String] =
     AttributeKey("k8s.daemonset.uid")
 
@@ -148,6 +204,10 @@ object K8sExperimentalAttributes {
     *   `k8s.deployment.annotation.replicas` attribute with value `"1"`. <li>A label `data` with empty string value
     *   SHOULD be recorded as the `k8s.deployment.annotation.data` attribute with value `""`. </ul>
     */
+  @deprecated(
+    "use `org.typelevel.otel4s.semconv.attributes.K8sAttributes.K8sDeploymentAnnotation` instead.",
+    ""
+  )
   val K8sDeploymentAnnotation: AttributeKey[String] =
     AttributeKey("k8s.deployment.annotation")
 
@@ -159,16 +219,28 @@ object K8sExperimentalAttributes {
     *   attribute with value `"guestbook"`. <li>A label `injected` with empty string value SHOULD be recorded as the
     *   `k8s.deployment.label.injected` attribute with value `""`. </ul>
     */
+  @deprecated(
+    "use `org.typelevel.otel4s.semconv.attributes.K8sAttributes.K8sDeploymentLabel` instead.",
+    ""
+  )
   val K8sDeploymentLabel: AttributeKey[String] =
     AttributeKey("k8s.deployment.label")
 
   /** The name of the Deployment.
     */
+  @deprecated(
+    "use `org.typelevel.otel4s.semconv.attributes.K8sAttributes.K8sDeploymentName` instead.",
+    ""
+  )
   val K8sDeploymentName: AttributeKey[String] =
     AttributeKey("k8s.deployment.name")
 
   /** The UID of the Deployment.
     */
+  @deprecated(
+    "use `org.typelevel.otel4s.semconv.attributes.K8sAttributes.K8sDeploymentUid` instead.",
+    ""
+  )
   val K8sDeploymentUid: AttributeKey[String] =
     AttributeKey("k8s.deployment.uid")
 
@@ -227,6 +299,10 @@ object K8sExperimentalAttributes {
     *   attribute with value `"1"`. <li>A label `data` with empty string value SHOULD be recorded as the
     *   `k8s.job.annotation.data` attribute with value `""`. </ul>
     */
+  @deprecated(
+    "use `org.typelevel.otel4s.semconv.attributes.K8sAttributes.K8sJobAnnotation` instead.",
+    ""
+  )
   val K8sJobAnnotation: AttributeKey[String] =
     AttributeKey("k8s.job.annotation")
 
@@ -238,16 +314,28 @@ object K8sExperimentalAttributes {
     *   attribute with value `"ci"`. <li>A label `data` with empty string value SHOULD be recorded as the
     *   `k8s.job.label.automated` attribute with value `""`. </ul>
     */
+  @deprecated(
+    "use `org.typelevel.otel4s.semconv.attributes.K8sAttributes.K8sJobLabel` instead.",
+    ""
+  )
   val K8sJobLabel: AttributeKey[String] =
     AttributeKey("k8s.job.label")
 
   /** The name of the Job.
     */
+  @deprecated(
+    "use `org.typelevel.otel4s.semconv.attributes.K8sAttributes.K8sJobName` instead.",
+    ""
+  )
   val K8sJobName: AttributeKey[String] =
     AttributeKey("k8s.job.name")
 
   /** The UID of the Job.
     */
+  @deprecated(
+    "use `org.typelevel.otel4s.semconv.attributes.K8sAttributes.K8sJobUid` instead.",
+    ""
+  )
   val K8sJobUid: AttributeKey[String] =
     AttributeKey("k8s.job.uid")
 
@@ -259,6 +347,10 @@ object K8sExperimentalAttributes {
     *   attribute with value `"0"`. <li>A label `data` with empty string value SHOULD be recorded as the
     *   `k8s.namespace.annotation.data` attribute with value `""`. </ul>
     */
+  @deprecated(
+    "use `org.typelevel.otel4s.semconv.attributes.K8sAttributes.K8sNamespaceAnnotation` instead.",
+    ""
+  )
   val K8sNamespaceAnnotation: AttributeKey[String] =
     AttributeKey("k8s.namespace.annotation")
 
@@ -270,11 +362,19 @@ object K8sExperimentalAttributes {
     *   `k8s.namespace.label.kubernetes.io/metadata.name` attribute with value `"default"`. <li>A label `data` with
     *   empty string value SHOULD be recorded as the `k8s.namespace.label.data` attribute with value `""`. </ul>
     */
+  @deprecated(
+    "use `org.typelevel.otel4s.semconv.attributes.K8sAttributes.K8sNamespaceLabel` instead.",
+    ""
+  )
   val K8sNamespaceLabel: AttributeKey[String] =
     AttributeKey("k8s.namespace.label")
 
   /** The name of the namespace that the pod is running in.
     */
+  @deprecated(
+    "use `org.typelevel.otel4s.semconv.attributes.K8sAttributes.K8sNamespaceName` instead.",
+    ""
+  )
   val K8sNamespaceName: AttributeKey[String] =
     AttributeKey("k8s.namespace.name")
 
@@ -282,7 +382,7 @@ object K8sExperimentalAttributes {
     *
     * @note
     *   <p> This attribute aligns with the `phase` field of the <a
-    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#namespacestatus-v1-core">K8s
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#namespacestatus-v1-core">K8s
     *   NamespaceStatus</a>
     */
   val K8sNamespacePhase: AttributeKey[String] =
@@ -296,6 +396,10 @@ object K8sExperimentalAttributes {
     *   `k8s.node.annotation.node.alpha.kubernetes.io/ttl` attribute with value `"0"`. <li>An annotation `data` with
     *   empty string value SHOULD be recorded as the `k8s.node.annotation.data` attribute with value `""`. </ul>
     */
+  @deprecated(
+    "use `org.typelevel.otel4s.semconv.attributes.K8sAttributes.K8sNodeAnnotation` instead.",
+    ""
+  )
   val K8sNodeAnnotation: AttributeKey[String] =
     AttributeKey("k8s.node.annotation")
 
@@ -303,7 +407,7 @@ object K8sExperimentalAttributes {
     *
     * @note
     *   <p> This attribute aligns with the `status` field of the <a
-    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#nodecondition-v1-core">NodeCondition</a>
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#nodecondition-v1-core">NodeCondition</a>
     */
   val K8sNodeConditionStatus: AttributeKey[String] =
     AttributeKey("k8s.node.condition.status")
@@ -312,9 +416,9 @@ object K8sExperimentalAttributes {
     *
     * @note
     *   <p> K8s Node conditions as described by <a
-    *   href="https://v1-32.docs.kubernetes.io/docs/reference/node/node-status/#condition">K8s documentation</a>. <p>
-    *   This attribute aligns with the `type` field of the <a
-    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#nodecondition-v1-core">NodeCondition</a>
+    *   href="https://kubernetes.io/docs/reference/node/node-status/#condition">K8s documentation</a>. <p> This
+    *   attribute aligns with the `type` field of the <a
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#nodecondition-v1-core">NodeCondition</a>
     *   <p> The set of possible values is not limited to those listed here. Managed Kubernetes environments, or custom
     *   controllers MAY introduce additional node condition types. When this occurs, the exact value as reported by the
     *   Kubernetes API SHOULD be used.
@@ -330,11 +434,19 @@ object K8sExperimentalAttributes {
     *   `k8s.node.label.kubernetes.io/arch` attribute with value `"arm64"`. <li>A label `data` with empty string value
     *   SHOULD be recorded as the `k8s.node.label.data` attribute with value `""`. </ul>
     */
+  @deprecated(
+    "use `org.typelevel.otel4s.semconv.attributes.K8sAttributes.K8sNodeLabel` instead.",
+    ""
+  )
   val K8sNodeLabel: AttributeKey[String] =
     AttributeKey("k8s.node.label")
 
   /** The name of the Node.
     */
+  @deprecated(
+    "use `org.typelevel.otel4s.semconv.attributes.K8sAttributes.K8sNodeName` instead.",
+    ""
+  )
   val K8sNodeName: AttributeKey[String] =
     AttributeKey("k8s.node.name")
 
@@ -345,6 +457,10 @@ object K8sExperimentalAttributes {
 
   /** The UID of the Node.
     */
+  @deprecated(
+    "use `org.typelevel.otel4s.semconv.attributes.K8sAttributes.K8sNodeUid` instead.",
+    ""
+  )
   val K8sNodeUid: AttributeKey[String] =
     AttributeKey("k8s.node.uid")
 
@@ -454,6 +570,10 @@ object K8sExperimentalAttributes {
     *   `k8s.pod.annotation.mycompany.io/arch` attribute with value `"x64"`. <li>An annotation `data` with empty string
     *   value SHOULD be recorded as the `k8s.pod.annotation.data` attribute with value `""`. </ul>
     */
+  @deprecated(
+    "use `org.typelevel.otel4s.semconv.attributes.K8sAttributes.K8sPodAnnotation` instead.",
+    ""
+  )
   val K8sPodAnnotation: AttributeKey[String] =
     AttributeKey("k8s.pod.annotation")
 
@@ -465,6 +585,10 @@ object K8sExperimentalAttributes {
     *   docs</a> for more information about this field. <p> This attribute aligns with the `hostname` field of the <a
     *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#podspec-v1-core">K8s PodSpec</a>.
     */
+  @deprecated(
+    "use `org.typelevel.otel4s.semconv.attributes.K8sAttributes.K8sPodHostname` instead.",
+    ""
+  )
   val K8sPodHostname: AttributeKey[String] =
     AttributeKey("k8s.pod.hostname")
 
@@ -474,6 +598,10 @@ object K8sExperimentalAttributes {
     *   <p> This attribute aligns with the `podIP` field of the <a
     *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#podstatus-v1-core">K8s PodStatus</a>.
     */
+  @deprecated(
+    "use `org.typelevel.otel4s.semconv.attributes.K8sAttributes.K8sPodIp` instead.",
+    ""
+  )
   val K8sPodIp: AttributeKey[String] =
     AttributeKey("k8s.pod.ip")
 
@@ -485,6 +613,10 @@ object K8sExperimentalAttributes {
     *   `k8s.pod.label.mycompany.io/arch` attribute with value `"x64"`. <li>A label `data` with empty string value
     *   SHOULD be recorded as the `k8s.pod.label.data` attribute with value `""`. </ul>
     */
+  @deprecated(
+    "use `org.typelevel.otel4s.semconv.attributes.K8sAttributes.K8sPodLabel` instead.",
+    ""
+  )
   val K8sPodLabel: AttributeKey[String] =
     AttributeKey("k8s.pod.label")
 
@@ -496,6 +628,10 @@ object K8sExperimentalAttributes {
 
   /** The name of the Pod.
     */
+  @deprecated(
+    "use `org.typelevel.otel4s.semconv.attributes.K8sAttributes.K8sPodName` instead.",
+    ""
+  )
   val K8sPodName: AttributeKey[String] =
     AttributeKey("k8s.pod.name")
 
@@ -507,6 +643,10 @@ object K8sExperimentalAttributes {
     *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#podstatus-v1-core">K8s PodStatus</a>,
     *   in ISO 8601 (RFC 3339 compatible) format.
     */
+  @deprecated(
+    "use `org.typelevel.otel4s.semconv.attributes.K8sAttributes.K8sPodStartTime` instead.",
+    ""
+  )
   val K8sPodStartTime: AttributeKey[String] =
     AttributeKey("k8s.pod.start_time")
 
@@ -524,6 +664,10 @@ object K8sExperimentalAttributes {
 
   /** The UID of the Pod.
     */
+  @deprecated(
+    "use `org.typelevel.otel4s.semconv.attributes.K8sAttributes.K8sPodUid` instead.",
+    ""
+  )
   val K8sPodUid: AttributeKey[String] =
     AttributeKey("k8s.pod.uid")
 
@@ -535,6 +679,10 @@ object K8sExperimentalAttributes {
     *   `k8s.replicaset.annotation.replicas` attribute with value `"0"`. <li>A label `data` with empty string value
     *   SHOULD be recorded as the `k8s.replicaset.annotation.data` attribute with value `""`. </ul>
     */
+  @deprecated(
+    "use `org.typelevel.otel4s.semconv.attributes.K8sAttributes.K8sReplicasetAnnotation` instead.",
+    ""
+  )
   val K8sReplicasetAnnotation: AttributeKey[String] =
     AttributeKey("k8s.replicaset.annotation")
 
@@ -546,16 +694,28 @@ object K8sExperimentalAttributes {
     *   attribute with value `"guestbook"`. <li>A label `injected` with empty string value SHOULD be recorded as the
     *   `k8s.replicaset.label.injected` attribute with value `""`. </ul>
     */
+  @deprecated(
+    "use `org.typelevel.otel4s.semconv.attributes.K8sAttributes.K8sReplicasetLabel` instead.",
+    ""
+  )
   val K8sReplicasetLabel: AttributeKey[String] =
     AttributeKey("k8s.replicaset.label")
 
   /** The name of the ReplicaSet.
     */
+  @deprecated(
+    "use `org.typelevel.otel4s.semconv.attributes.K8sAttributes.K8sReplicasetName` instead.",
+    ""
+  )
   val K8sReplicasetName: AttributeKey[String] =
     AttributeKey("k8s.replicaset.name")
 
   /** The UID of the ReplicaSet.
     */
+  @deprecated(
+    "use `org.typelevel.otel4s.semconv.attributes.K8sAttributes.K8sReplicasetUid` instead.",
+    ""
+  )
   val K8sReplicasetUid: AttributeKey[String] =
     AttributeKey("k8s.replicaset.uid")
 
@@ -715,6 +875,10 @@ object K8sExperimentalAttributes {
     *   `k8s.statefulset.annotation.replicas` attribute with value `"1"`. <li>A label `data` with empty string value
     *   SHOULD be recorded as the `k8s.statefulset.annotation.data` attribute with value `""`. </ul>
     */
+  @deprecated(
+    "use `org.typelevel.otel4s.semconv.attributes.K8sAttributes.K8sStatefulsetAnnotation` instead.",
+    ""
+  )
   val K8sStatefulsetAnnotation: AttributeKey[String] =
     AttributeKey("k8s.statefulset.annotation")
 
@@ -726,21 +890,33 @@ object K8sExperimentalAttributes {
     *   attribute with value `"guestbook"`. <li>A label `injected` with empty string value SHOULD be recorded as the
     *   `k8s.statefulset.label.injected` attribute with value `""`. </ul>
     */
+  @deprecated(
+    "use `org.typelevel.otel4s.semconv.attributes.K8sAttributes.K8sStatefulsetLabel` instead.",
+    ""
+  )
   val K8sStatefulsetLabel: AttributeKey[String] =
     AttributeKey("k8s.statefulset.label")
 
   /** The name of the StatefulSet.
     */
+  @deprecated(
+    "use `org.typelevel.otel4s.semconv.attributes.K8sAttributes.K8sStatefulsetName` instead.",
+    ""
+  )
   val K8sStatefulsetName: AttributeKey[String] =
     AttributeKey("k8s.statefulset.name")
 
   /** The UID of the StatefulSet.
     */
+  @deprecated(
+    "use `org.typelevel.otel4s.semconv.attributes.K8sAttributes.K8sStatefulsetUid` instead.",
+    ""
+  )
   val K8sStatefulsetUid: AttributeKey[String] =
     AttributeKey("k8s.statefulset.uid")
 
   /** The name of K8s <a
-    * href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#storageclass-v1-storage-k8s-io">StorageClass</a>
+    * href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#storageclass-v1-storage-k8s-io">StorageClass</a>
     * object.
     */
   val K8sStorageclassName: AttributeKey[String] =
@@ -755,6 +931,22 @@ object K8sExperimentalAttributes {
     */
   val K8sVolumeType: AttributeKey[String] =
     AttributeKey("k8s.volume.type")
+
+  /** Values for [[K8sContainerEphemeralStorageFsType]].
+    */
+  abstract class K8sContainerEphemeralStorageFsTypeValue(val value: String)
+  object K8sContainerEphemeralStorageFsTypeValue {
+    implicit val attributeFromK8sContainerEphemeralStorageFsTypeValue
+        : Attribute.From[K8sContainerEphemeralStorageFsTypeValue, String] = _.value
+
+    /** For the container's writable layer usage.
+      */
+    case object Rootfs extends K8sContainerEphemeralStorageFsTypeValue("rootfs")
+
+    /** For the container's log files usage (stdout/stderr).
+      */
+    case object Logs extends K8sContainerEphemeralStorageFsTypeValue("logs")
+  }
 
   /** Values for [[K8sContainerStatusReason]].
     */
@@ -1080,29 +1272,28 @@ object K8sExperimentalAttributes {
   object K8sVolumeTypeValue {
     implicit val attributeFromK8sVolumeTypeValue: Attribute.From[K8sVolumeTypeValue, String] = _.value
 
-    /** A <a
-      * href="https://v1-30.docs.kubernetes.io/docs/concepts/storage/volumes/#persistentvolumeclaim">persistentVolumeClaim</a>
+    /** A <a href="https://kubernetes.io/docs/concepts/storage/volumes/#persistentvolumeclaim">persistentVolumeClaim</a>
       * volume
       */
     case object PersistentVolumeClaim extends K8sVolumeTypeValue("persistentVolumeClaim")
 
-    /** A <a href="https://v1-30.docs.kubernetes.io/docs/concepts/storage/volumes/#configmap">configMap</a> volume
+    /** A <a href="https://kubernetes.io/docs/concepts/storage/volumes/#configmap">configMap</a> volume
       */
     case object ConfigMap extends K8sVolumeTypeValue("configMap")
 
-    /** A <a href="https://v1-30.docs.kubernetes.io/docs/concepts/storage/volumes/#downwardapi">downwardAPI</a> volume
+    /** A <a href="https://kubernetes.io/docs/concepts/storage/volumes/#downwardapi">downwardAPI</a> volume
       */
     case object DownwardApi extends K8sVolumeTypeValue("downwardAPI")
 
-    /** An <a href="https://v1-30.docs.kubernetes.io/docs/concepts/storage/volumes/#emptydir">emptyDir</a> volume
+    /** An <a href="https://kubernetes.io/docs/concepts/storage/volumes/#emptydir">emptyDir</a> volume
       */
     case object EmptyDir extends K8sVolumeTypeValue("emptyDir")
 
-    /** A <a href="https://v1-30.docs.kubernetes.io/docs/concepts/storage/volumes/#secret">secret</a> volume
+    /** A <a href="https://kubernetes.io/docs/concepts/storage/volumes/#secret">secret</a> volume
       */
     case object Secret extends K8sVolumeTypeValue("secret")
 
-    /** A <a href="https://v1-30.docs.kubernetes.io/docs/concepts/storage/volumes/#local">local</a> volume
+    /** A <a href="https://kubernetes.io/docs/concepts/storage/volumes/#local">local</a> volume
       */
     case object Local extends K8sVolumeTypeValue("local")
   }

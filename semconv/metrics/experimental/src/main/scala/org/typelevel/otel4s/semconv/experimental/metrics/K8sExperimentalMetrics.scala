@@ -21,6 +21,7 @@ package metrics
 
 import cats.effect.Resource
 import org.typelevel.otel4s.metrics._
+import org.typelevel.otel4s.semconv.attributes._
 import org.typelevel.otel4s.semconv.experimental.attributes._
 
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/metrics/SemanticMetrics.scala.j2
@@ -38,6 +39,7 @@ object K8sExperimentalMetrics {
     ContainerCpuRequestUtilization,
     ContainerEphemeralStorageLimit,
     ContainerEphemeralStorageRequest,
+    ContainerEphemeralStorageUsage,
     ContainerMemoryLimit,
     ContainerMemoryLimitCurrent,
     ContainerMemoryLimitDesired,
@@ -511,7 +513,7 @@ object K8sExperimentalMetrics {
   /** Maximum ephemeral storage resource limit set for the container.
     *
     * @note
-    *   <p> See https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#resourcerequirements-v1-core for
+    *   <p> See https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#resourcerequirements-v1-core for
     *   details.
     */
   object ContainerEphemeralStorageLimit extends MetricSpec.Unsealed {
@@ -550,7 +552,7 @@ object K8sExperimentalMetrics {
   /** Ephemeral storage resource requested for the container.
     *
     * @note
-    *   <p> See https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#resourcerequirements-v1-core for
+    *   <p> See https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#resourcerequirements-v1-core for
     *   details.
     */
   object ContainerEphemeralStorageRequest extends MetricSpec.Unsealed {
@@ -560,6 +562,70 @@ object K8sExperimentalMetrics {
     val unit: String = "By"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = Nil
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
+      Meter[F]
+        .upDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableUpDownCounter] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** The ephemeral storage used by a container.
+    *
+    * @note
+    *   <p> The value for this metric can be compared against `metric.k8s.container.ephemeral_storage.request` and
+    *   `metric.k8s.container.ephemeral_storage.limit`.
+    */
+  object ContainerEphemeralStorageUsage extends MetricSpec.Unsealed {
+
+    val name: String = "k8s.container.ephemeral_storage.usage"
+    val description: String = "The ephemeral storage used by a container."
+    val unit: String = "By"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
+
+    object AttributeSpecs {
+
+      /** The type of file system component for ephemeral storage.
+        *
+        * @note
+        *   <p> Eviction decisions based on ephemeral-storage resource limits are made based on the total container
+        *   usage.
+        */
+      val k8sContainerEphemeralStorageFsType: AttributeSpec[String] =
+        AttributeSpec(
+          K8sExperimentalAttributes.K8sContainerEphemeralStorageFsType,
+          List(
+            "rootfs",
+            "logs",
+          ),
+          Requirement.required,
+          Stability.development
+        )
+
+      val specs: List[AttributeSpec[_]] =
+        List(
+          k8sContainerEphemeralStorageFsType,
+        )
+    }
 
     def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
       Meter[F]
@@ -839,7 +905,7 @@ object K8sExperimentalMetrics {
     *
     * @note
     *   <p> This metric SHOULD reflect the value of the `ready` field in the <a
-    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#containerstatus-v1-core">K8s
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#containerstatus-v1-core">K8s
     *   ContainerStatus</a>.
     */
   object ContainerReady extends MetricSpec.Unsealed {
@@ -935,9 +1001,9 @@ object K8sExperimentalMetrics {
     object AttributeSpecs {
 
       /** The reason for the container state. Corresponds to the `reason` field of the: <a
-        * href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#containerstatewaiting-v1-core">K8s
+        * href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#containerstatewaiting-v1-core">K8s
         * ContainerStateWaiting</a> or <a
-        * href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#containerstateterminated-v1-core">K8s
+        * href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#containerstateterminated-v1-core">K8s
         * ContainerStateTerminated</a>
         */
       val k8sContainerStatusReason: AttributeSpec[String] =
@@ -1006,7 +1072,7 @@ object K8sExperimentalMetrics {
     object AttributeSpecs {
 
       /** The state of the container. <a
-        * href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#containerstate-v1-core">K8s
+        * href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#containerstate-v1-core">K8s
         * ContainerState</a>
         */
       val k8sContainerStatusState: AttributeSpec[String] =
@@ -1055,7 +1121,7 @@ object K8sExperimentalMetrics {
   /** Maximum storage resource limit set for the container.
     *
     * @note
-    *   <p> See https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#resourcerequirements-v1-core for
+    *   <p> See https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#resourcerequirements-v1-core for
     *   details.
     */
   object ContainerStorageLimit extends MetricSpec.Unsealed {
@@ -1094,7 +1160,7 @@ object K8sExperimentalMetrics {
   /** Storage resource requested for the container.
     *
     * @note
-    *   <p> See https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#resourcerequirements-v1-core for
+    *   <p> See https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#resourcerequirements-v1-core for
     *   details.
     */
   object ContainerStorageRequest extends MetricSpec.Unsealed {
@@ -1134,7 +1200,7 @@ object K8sExperimentalMetrics {
     *
     * @note
     *   <p> This metric aligns with the `active` field of the <a
-    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#cronjobstatus-v1-batch">K8s
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#cronjobstatus-v1-batch">K8s
     *   CronJobStatus</a>.
     */
   @deprecated("Replaced by `k8s.cronjob.job.active`.", "")
@@ -1175,7 +1241,7 @@ object K8sExperimentalMetrics {
     *
     * @note
     *   <p> This metric aligns with the `active` field of the <a
-    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#cronjobstatus-v1-batch">K8s
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#cronjobstatus-v1-batch">K8s
     *   CronJobStatus</a>.
     */
   object CronjobJobActive extends MetricSpec.Unsealed {
@@ -1215,7 +1281,7 @@ object K8sExperimentalMetrics {
     *
     * @note
     *   <p> This metric aligns with the `currentNumberScheduled` field of the <a
-    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#daemonsetstatus-v1-apps">K8s
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#daemonsetstatus-v1-apps">K8s
     *   DaemonSetStatus</a>.
     */
   @deprecated("Replaced by `k8s.daemonset.node.current_scheduled`.", "")
@@ -1256,7 +1322,7 @@ object K8sExperimentalMetrics {
     *
     * @note
     *   <p> This metric aligns with the `desiredNumberScheduled` field of the <a
-    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#daemonsetstatus-v1-apps">K8s
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#daemonsetstatus-v1-apps">K8s
     *   DaemonSetStatus</a>.
     */
   @deprecated("Replaced by `k8s.daemonset.node.desired_scheduled`.", "")
@@ -1297,7 +1363,7 @@ object K8sExperimentalMetrics {
     *
     * @note
     *   <p> This metric aligns with the `numberMisscheduled` field of the <a
-    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#daemonsetstatus-v1-apps">K8s
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#daemonsetstatus-v1-apps">K8s
     *   DaemonSetStatus</a>.
     */
   @deprecated("Replaced by `k8s.daemonset.node.misscheduled`.", "")
@@ -1338,7 +1404,7 @@ object K8sExperimentalMetrics {
     *
     * @note
     *   <p> This metric aligns with the `currentNumberScheduled` field of the <a
-    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#daemonsetstatus-v1-apps">K8s
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#daemonsetstatus-v1-apps">K8s
     *   DaemonSetStatus</a>.
     */
   object DaemonsetNodeCurrentScheduled extends MetricSpec.Unsealed {
@@ -1379,7 +1445,7 @@ object K8sExperimentalMetrics {
     *
     * @note
     *   <p> This metric aligns with the `desiredNumberScheduled` field of the <a
-    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#daemonsetstatus-v1-apps">K8s
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#daemonsetstatus-v1-apps">K8s
     *   DaemonSetStatus</a>.
     */
   object DaemonsetNodeDesiredScheduled extends MetricSpec.Unsealed {
@@ -1420,7 +1486,7 @@ object K8sExperimentalMetrics {
     *
     * @note
     *   <p> This metric aligns with the `numberMisscheduled` field of the <a
-    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#daemonsetstatus-v1-apps">K8s
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#daemonsetstatus-v1-apps">K8s
     *   DaemonSetStatus</a>.
     */
   object DaemonsetNodeMisscheduled extends MetricSpec.Unsealed {
@@ -1461,7 +1527,7 @@ object K8sExperimentalMetrics {
     *
     * @note
     *   <p> This metric aligns with the `numberReady` field of the <a
-    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#daemonsetstatus-v1-apps">K8s
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#daemonsetstatus-v1-apps">K8s
     *   DaemonSetStatus</a>.
     */
   object DaemonsetNodeReady extends MetricSpec.Unsealed {
@@ -1502,7 +1568,7 @@ object K8sExperimentalMetrics {
     *
     * @note
     *   <p> This metric aligns with the `numberReady` field of the <a
-    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#daemonsetstatus-v1-apps">K8s
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#daemonsetstatus-v1-apps">K8s
     *   DaemonSetStatus</a>.
     */
   @deprecated("Replaced by `k8s.daemonset.node.ready`.", "")
@@ -1543,7 +1609,7 @@ object K8sExperimentalMetrics {
     *
     * @note
     *   <p> This metric aligns with the `availableReplicas` field of the <a
-    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#deploymentstatus-v1-apps">K8s
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#deploymentstatus-v1-apps">K8s
     *   DeploymentStatus</a>.
     */
   @deprecated("Replaced by `k8s.deployment.pod.available`.", "")
@@ -1584,7 +1650,7 @@ object K8sExperimentalMetrics {
     *
     * @note
     *   <p> This metric aligns with the `replicas` field of the <a
-    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#deploymentspec-v1-apps">K8s
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#deploymentspec-v1-apps">K8s
     *   DeploymentSpec</a>.
     */
   @deprecated("Replaced by `k8s.deployment.pod.desired`.", "")
@@ -1625,7 +1691,7 @@ object K8sExperimentalMetrics {
     *
     * @note
     *   <p> This metric aligns with the `availableReplicas` field of the <a
-    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#deploymentstatus-v1-apps">K8s
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#deploymentstatus-v1-apps">K8s
     *   DeploymentStatus</a>.
     */
   object DeploymentPodAvailable extends MetricSpec.Unsealed {
@@ -1666,7 +1732,7 @@ object K8sExperimentalMetrics {
     *
     * @note
     *   <p> This metric aligns with the `replicas` field of the <a
-    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#deploymentspec-v1-apps">K8s
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#deploymentspec-v1-apps">K8s
     *   DeploymentSpec</a>.
     */
   object DeploymentPodDesired extends MetricSpec.Unsealed {
@@ -1706,7 +1772,7 @@ object K8sExperimentalMetrics {
     *
     * @note
     *   <p> This metric aligns with the `currentReplicas` field of the <a
-    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#horizontalpodautoscalerstatus-v2-autoscaling">K8s
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#horizontalpodautoscalerstatus-v2-autoscaling">K8s
     *   HorizontalPodAutoscalerStatus</a>
     */
   @deprecated("Replaced by `k8s.hpa.pod.current`.", "")
@@ -1747,7 +1813,7 @@ object K8sExperimentalMetrics {
     *
     * @note
     *   <p> This metric aligns with the `desiredReplicas` field of the <a
-    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#horizontalpodautoscalerstatus-v2-autoscaling">K8s
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#horizontalpodautoscalerstatus-v2-autoscaling">K8s
     *   HorizontalPodAutoscalerStatus</a>
     */
   @deprecated("Replaced by `k8s.hpa.pod.desired`.", "")
@@ -1788,7 +1854,7 @@ object K8sExperimentalMetrics {
     *
     * @note
     *   <p> This metric aligns with the `maxReplicas` field of the <a
-    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#horizontalpodautoscalerspec-v2-autoscaling">K8s
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#horizontalpodautoscalerspec-v2-autoscaling">K8s
     *   HorizontalPodAutoscalerSpec</a>
     */
   @deprecated("Replaced by `k8s.hpa.pod.max`.", "")
@@ -1829,7 +1895,7 @@ object K8sExperimentalMetrics {
     *
     * @note
     *   <p> This metric aligns with the `averageUtilization` field of the <a
-    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#metrictarget-v2-autoscaling">K8s HPA
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#metrictarget-v2-autoscaling">K8s HPA
     *   MetricTarget</a>. If the type of the metric is <a
     *   href="https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/#support-for-metrics-apis">`ContainerResource`</a>,
     *   the `k8s.container.name` attribute MUST be set to identify the specific container within the pod to which the
@@ -1850,12 +1916,12 @@ object K8sExperimentalMetrics {
         */
       val k8sContainerName: AttributeSpec[String] =
         AttributeSpec(
-          K8sExperimentalAttributes.K8sContainerName,
+          K8sAttributes.K8sContainerName,
           List(
             "redis",
           ),
           Requirement.conditionallyRequired("if and only if k8s.hpa.metric.type is ContainerResource."),
-          Stability.releaseCandidate
+          Stability.stable
         )
 
       /** The type of metric source for the horizontal pod autoscaler.
@@ -1910,7 +1976,7 @@ object K8sExperimentalMetrics {
     *
     * @note
     *   <p> This metric aligns with the `averageValue` field of the <a
-    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#metrictarget-v2-autoscaling">K8s HPA
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#metrictarget-v2-autoscaling">K8s HPA
     *   MetricTarget</a>. If the type of the metric is <a
     *   href="https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/#support-for-metrics-apis">`ContainerResource`</a>,
     *   the `k8s.container.name` attribute MUST be set to identify the specific container within the pod to which the
@@ -1931,12 +1997,12 @@ object K8sExperimentalMetrics {
         */
       val k8sContainerName: AttributeSpec[String] =
         AttributeSpec(
-          K8sExperimentalAttributes.K8sContainerName,
+          K8sAttributes.K8sContainerName,
           List(
             "redis",
           ),
           Requirement.conditionallyRequired("if and only if k8s.hpa.metric.type is ContainerResource"),
-          Stability.releaseCandidate
+          Stability.stable
         )
 
       /** The type of metric source for the horizontal pod autoscaler.
@@ -1991,7 +2057,7 @@ object K8sExperimentalMetrics {
     *
     * @note
     *   <p> This metric aligns with the `value` field of the <a
-    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#metrictarget-v2-autoscaling">K8s HPA
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#metrictarget-v2-autoscaling">K8s HPA
     *   MetricTarget</a>. If the type of the metric is <a
     *   href="https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/#support-for-metrics-apis">`ContainerResource`</a>,
     *   the `k8s.container.name` attribute MUST be set to identify the specific container within the pod to which the
@@ -2012,12 +2078,12 @@ object K8sExperimentalMetrics {
         */
       val k8sContainerName: AttributeSpec[String] =
         AttributeSpec(
-          K8sExperimentalAttributes.K8sContainerName,
+          K8sAttributes.K8sContainerName,
           List(
             "redis",
           ),
           Requirement.conditionallyRequired("if and only if k8s.hpa.metric.type is ContainerResource"),
-          Stability.releaseCandidate
+          Stability.stable
         )
 
       /** The type of metric source for the horizontal pod autoscaler.
@@ -2072,7 +2138,7 @@ object K8sExperimentalMetrics {
     *
     * @note
     *   <p> This metric aligns with the `minReplicas` field of the <a
-    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#horizontalpodautoscalerspec-v2-autoscaling">K8s
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#horizontalpodautoscalerspec-v2-autoscaling">K8s
     *   HorizontalPodAutoscalerSpec</a>
     */
   @deprecated("Replaced by `k8s.hpa.pod.min`.", "")
@@ -2113,7 +2179,7 @@ object K8sExperimentalMetrics {
     *
     * @note
     *   <p> This metric aligns with the `currentReplicas` field of the <a
-    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#horizontalpodautoscalerstatus-v2-autoscaling">K8s
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#horizontalpodautoscalerstatus-v2-autoscaling">K8s
     *   HorizontalPodAutoscalerStatus</a>
     */
   object HpaPodCurrent extends MetricSpec.Unsealed {
@@ -2154,7 +2220,7 @@ object K8sExperimentalMetrics {
     *
     * @note
     *   <p> This metric aligns with the `desiredReplicas` field of the <a
-    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#horizontalpodautoscalerstatus-v2-autoscaling">K8s
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#horizontalpodautoscalerstatus-v2-autoscaling">K8s
     *   HorizontalPodAutoscalerStatus</a>
     */
   object HpaPodDesired extends MetricSpec.Unsealed {
@@ -2195,7 +2261,7 @@ object K8sExperimentalMetrics {
     *
     * @note
     *   <p> This metric aligns with the `maxReplicas` field of the <a
-    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#horizontalpodautoscalerspec-v2-autoscaling">K8s
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#horizontalpodautoscalerspec-v2-autoscaling">K8s
     *   HorizontalPodAutoscalerSpec</a>
     */
   object HpaPodMax extends MetricSpec.Unsealed {
@@ -2235,7 +2301,7 @@ object K8sExperimentalMetrics {
     *
     * @note
     *   <p> This metric aligns with the `minReplicas` field of the <a
-    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#horizontalpodautoscalerspec-v2-autoscaling">K8s
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#horizontalpodautoscalerspec-v2-autoscaling">K8s
     *   HorizontalPodAutoscalerSpec</a>
     */
   object HpaPodMin extends MetricSpec.Unsealed {
@@ -2275,7 +2341,7 @@ object K8sExperimentalMetrics {
     *
     * @note
     *   <p> This metric aligns with the `active` field of the <a
-    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#jobstatus-v1-batch">K8s
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#jobstatus-v1-batch">K8s
     *   JobStatus</a>.
     */
   @deprecated("Replaced by `k8s.job.pod.active`.", "")
@@ -2316,7 +2382,7 @@ object K8sExperimentalMetrics {
     *
     * @note
     *   <p> This metric aligns with the `completions` field of the <a
-    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#jobspec-v1-batch">K8s JobSpec</a>..
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#jobspec-v1-batch">K8s JobSpec</a>..
     */
   @deprecated("Replaced by `k8s.job.pod.desired_successful`.", "")
   object JobDesiredSuccessfulPods extends MetricSpec.Unsealed {
@@ -2356,7 +2422,7 @@ object K8sExperimentalMetrics {
     *
     * @note
     *   <p> This metric aligns with the `failed` field of the <a
-    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#jobstatus-v1-batch">K8s
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#jobstatus-v1-batch">K8s
     *   JobStatus</a>.
     */
   @deprecated("Replaced by `k8s.job.pod.failed`.", "")
@@ -2397,7 +2463,7 @@ object K8sExperimentalMetrics {
     *
     * @note
     *   <p> This metric aligns with the `parallelism` field of the <a
-    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#jobspec-v1-batch">K8s JobSpec</a>.
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#jobspec-v1-batch">K8s JobSpec</a>.
     */
   @deprecated("Replaced by `k8s.job.pod.max_parallel`.", "")
   object JobMaxParallelPods extends MetricSpec.Unsealed {
@@ -2437,7 +2503,7 @@ object K8sExperimentalMetrics {
     *
     * @note
     *   <p> This metric aligns with the `active` field of the <a
-    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#jobstatus-v1-batch">K8s
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#jobstatus-v1-batch">K8s
     *   JobStatus</a>.
     */
   object JobPodActive extends MetricSpec.Unsealed {
@@ -2477,7 +2543,7 @@ object K8sExperimentalMetrics {
     *
     * @note
     *   <p> This metric aligns with the `completions` field of the <a
-    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#jobspec-v1-batch">K8s JobSpec</a>..
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#jobspec-v1-batch">K8s JobSpec</a>..
     */
   object JobPodDesiredSuccessful extends MetricSpec.Unsealed {
 
@@ -2516,7 +2582,7 @@ object K8sExperimentalMetrics {
     *
     * @note
     *   <p> This metric aligns with the `failed` field of the <a
-    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#jobstatus-v1-batch">K8s
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#jobstatus-v1-batch">K8s
     *   JobStatus</a>.
     */
   object JobPodFailed extends MetricSpec.Unsealed {
@@ -2556,7 +2622,7 @@ object K8sExperimentalMetrics {
     *
     * @note
     *   <p> This metric aligns with the `parallelism` field of the <a
-    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#jobspec-v1-batch">K8s JobSpec</a>.
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#jobspec-v1-batch">K8s JobSpec</a>.
     */
   object JobPodMaxParallel extends MetricSpec.Unsealed {
 
@@ -2595,7 +2661,7 @@ object K8sExperimentalMetrics {
     *
     * @note
     *   <p> This metric aligns with the `succeeded` field of the <a
-    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#jobstatus-v1-batch">K8s
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#jobstatus-v1-batch">K8s
     *   JobStatus</a>.
     */
   object JobPodSuccessful extends MetricSpec.Unsealed {
@@ -2635,7 +2701,7 @@ object K8sExperimentalMetrics {
     *
     * @note
     *   <p> This metric aligns with the `succeeded` field of the <a
-    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#jobstatus-v1-batch">K8s
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#jobstatus-v1-batch">K8s
     *   JobStatus</a>.
     */
   @deprecated("Replaced by `k8s.job.pod.successful`.", "")
@@ -2688,7 +2754,7 @@ object K8sExperimentalMetrics {
         *
         * @note
         *   <p> This attribute aligns with the `phase` field of the <a
-        *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#namespacestatus-v1-core">K8s
+        *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#namespacestatus-v1-core">K8s
         *   NamespaceStatus</a>
         */
       val k8sNamespacePhase: AttributeSpec[String] =
@@ -2897,7 +2963,7 @@ object K8sExperimentalMetrics {
         *
         * @note
         *   <p> This attribute aligns with the `status` field of the <a
-        *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#nodecondition-v1-core">NodeCondition</a>
+        *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#nodecondition-v1-core">NodeCondition</a>
         */
       val k8sNodeConditionStatus: AttributeSpec[String] =
         AttributeSpec(
@@ -2915,9 +2981,9 @@ object K8sExperimentalMetrics {
         *
         * @note
         *   <p> K8s Node conditions as described by <a
-        *   href="https://v1-32.docs.kubernetes.io/docs/reference/node/node-status/#condition">K8s documentation</a>.
-        *   <p> This attribute aligns with the `type` field of the <a
-        *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#nodecondition-v1-core">NodeCondition</a>
+        *   href="https://kubernetes.io/docs/reference/node/node-status/#condition">K8s documentation</a>. <p> This
+        *   attribute aligns with the `type` field of the <a
+        *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#nodecondition-v1-core">NodeCondition</a>
         *   <p> The set of possible values is not limited to those listed here. Managed Kubernetes environments, or
         *   custom controllers MAY introduce additional node condition types. When this occurs, the exact value as
         *   reported by the Kubernetes API SHOULD be used.
@@ -3010,7 +3076,7 @@ object K8sExperimentalMetrics {
     val name: String = "k8s.node.cpu.time"
     val description: String = "Total CPU time consumed."
     val unit: String = "s"
-    val stability: Stability = Stability.development
+    val stability: Stability = Stability.releaseCandidate
     val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter, A: MeasurementValue]: F[Counter[F, A]] =
@@ -4159,7 +4225,7 @@ object K8sExperimentalMetrics {
     val name: String = "k8s.pod.cpu.time"
     val description: String = "Total CPU time consumed."
     val unit: String = "s"
-    val stability: Stability = Stability.development
+    val stability: Stability = Stability.releaseCandidate
     val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter, A: MeasurementValue]: F[Counter[F, A]] =
@@ -5339,7 +5405,7 @@ object K8sExperimentalMetrics {
     *
     * @note
     *   <p> This metric aligns with the `availableReplicas` field of the <a
-    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#replicasetstatus-v1-apps">K8s
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#replicasetstatus-v1-apps">K8s
     *   ReplicaSetStatus</a>.
     */
   @deprecated("Replaced by `k8s.replicaset.pod.available`.", "")
@@ -5380,7 +5446,7 @@ object K8sExperimentalMetrics {
     *
     * @note
     *   <p> This metric aligns with the `replicas` field of the <a
-    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#replicasetspec-v1-apps">K8s
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#replicasetspec-v1-apps">K8s
     *   ReplicaSetSpec</a>.
     */
   @deprecated("Replaced by `k8s.replicaset.pod.desired`.", "")
@@ -5421,7 +5487,7 @@ object K8sExperimentalMetrics {
     *
     * @note
     *   <p> This metric aligns with the `availableReplicas` field of the <a
-    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#replicasetstatus-v1-apps">K8s
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#replicasetstatus-v1-apps">K8s
     *   ReplicaSetStatus</a>.
     */
   object ReplicasetPodAvailable extends MetricSpec.Unsealed {
@@ -5462,7 +5528,7 @@ object K8sExperimentalMetrics {
     *
     * @note
     *   <p> This metric aligns with the `replicas` field of the <a
-    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#replicasetspec-v1-apps">K8s
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#replicasetspec-v1-apps">K8s
     *   ReplicaSetSpec</a>.
     */
   object ReplicasetPodDesired extends MetricSpec.Unsealed {
@@ -5575,7 +5641,7 @@ object K8sExperimentalMetrics {
     *
     * @note
     *   <p> This metric aligns with the `availableReplicas` field of the <a
-    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#replicationcontrollerstatus-v1-core">K8s
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#replicationcontrollerstatus-v1-core">K8s
     *   ReplicationControllerStatus</a>
     */
   object ReplicationcontrollerPodAvailable extends MetricSpec.Unsealed {
@@ -5616,7 +5682,7 @@ object K8sExperimentalMetrics {
     *
     * @note
     *   <p> This metric aligns with the `replicas` field of the <a
-    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#replicationcontrollerspec-v1-core">K8s
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#replicationcontrollerspec-v1-core">K8s
     *   ReplicationControllerSpec</a>
     */
   object ReplicationcontrollerPodDesired extends MetricSpec.Unsealed {
@@ -5657,7 +5723,7 @@ object K8sExperimentalMetrics {
     *
     * @note
     *   <p> This metric is retrieved from the `hard` field of the <a
-    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#resourcequotastatus-v1-core">K8s
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#resourcequotastatus-v1-core">K8s
     *   ResourceQuotaStatus</a>.
     */
   object ResourcequotaCpuLimitHard extends MetricSpec.Unsealed {
@@ -5699,7 +5765,7 @@ object K8sExperimentalMetrics {
     *
     * @note
     *   <p> This metric is retrieved from the `used` field of the <a
-    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#resourcequotastatus-v1-core">K8s
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#resourcequotastatus-v1-core">K8s
     *   ResourceQuotaStatus</a>.
     */
   object ResourcequotaCpuLimitUsed extends MetricSpec.Unsealed {
@@ -5741,7 +5807,7 @@ object K8sExperimentalMetrics {
     *
     * @note
     *   <p> This metric is retrieved from the `hard` field of the <a
-    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#resourcequotastatus-v1-core">K8s
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#resourcequotastatus-v1-core">K8s
     *   ResourceQuotaStatus</a>.
     */
   object ResourcequotaCpuRequestHard extends MetricSpec.Unsealed {
@@ -5783,7 +5849,7 @@ object K8sExperimentalMetrics {
     *
     * @note
     *   <p> This metric is retrieved from the `used` field of the <a
-    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#resourcequotastatus-v1-core">K8s
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#resourcequotastatus-v1-core">K8s
     *   ResourceQuotaStatus</a>.
     */
   object ResourcequotaCpuRequestUsed extends MetricSpec.Unsealed {
@@ -5825,7 +5891,7 @@ object K8sExperimentalMetrics {
     *
     * @note
     *   <p> This metric is retrieved from the `hard` field of the <a
-    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#resourcequotastatus-v1-core">K8s
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#resourcequotastatus-v1-core">K8s
     *   ResourceQuotaStatus</a>.
     */
   object ResourcequotaEphemeralStorageLimitHard extends MetricSpec.Unsealed {
@@ -5867,7 +5933,7 @@ object K8sExperimentalMetrics {
     *
     * @note
     *   <p> This metric is retrieved from the `used` field of the <a
-    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#resourcequotastatus-v1-core">K8s
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#resourcequotastatus-v1-core">K8s
     *   ResourceQuotaStatus</a>.
     */
   object ResourcequotaEphemeralStorageLimitUsed extends MetricSpec.Unsealed {
@@ -5909,7 +5975,7 @@ object K8sExperimentalMetrics {
     *
     * @note
     *   <p> This metric is retrieved from the `hard` field of the <a
-    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#resourcequotastatus-v1-core">K8s
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#resourcequotastatus-v1-core">K8s
     *   ResourceQuotaStatus</a>.
     */
   object ResourcequotaEphemeralStorageRequestHard extends MetricSpec.Unsealed {
@@ -5951,7 +6017,7 @@ object K8sExperimentalMetrics {
     *
     * @note
     *   <p> This metric is retrieved from the `used` field of the <a
-    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#resourcequotastatus-v1-core">K8s
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#resourcequotastatus-v1-core">K8s
     *   ResourceQuotaStatus</a>.
     */
   object ResourcequotaEphemeralStorageRequestUsed extends MetricSpec.Unsealed {
@@ -5993,7 +6059,7 @@ object K8sExperimentalMetrics {
     *
     * @note
     *   <p> This metric is retrieved from the `hard` field of the <a
-    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#resourcequotastatus-v1-core">K8s
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#resourcequotastatus-v1-core">K8s
     *   ResourceQuotaStatus</a>.
     */
   object ResourcequotaHugepageCountRequestHard extends MetricSpec.Unsealed {
@@ -6055,7 +6121,7 @@ object K8sExperimentalMetrics {
     *
     * @note
     *   <p> This metric is retrieved from the `used` field of the <a
-    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#resourcequotastatus-v1-core">K8s
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#resourcequotastatus-v1-core">K8s
     *   ResourceQuotaStatus</a>.
     */
   object ResourcequotaHugepageCountRequestUsed extends MetricSpec.Unsealed {
@@ -6117,7 +6183,7 @@ object K8sExperimentalMetrics {
     *
     * @note
     *   <p> This metric is retrieved from the `hard` field of the <a
-    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#resourcequotastatus-v1-core">K8s
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#resourcequotastatus-v1-core">K8s
     *   ResourceQuotaStatus</a>.
     */
   object ResourcequotaMemoryLimitHard extends MetricSpec.Unsealed {
@@ -6159,7 +6225,7 @@ object K8sExperimentalMetrics {
     *
     * @note
     *   <p> This metric is retrieved from the `used` field of the <a
-    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#resourcequotastatus-v1-core">K8s
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#resourcequotastatus-v1-core">K8s
     *   ResourceQuotaStatus</a>.
     */
   object ResourcequotaMemoryLimitUsed extends MetricSpec.Unsealed {
@@ -6201,7 +6267,7 @@ object K8sExperimentalMetrics {
     *
     * @note
     *   <p> This metric is retrieved from the `hard` field of the <a
-    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#resourcequotastatus-v1-core">K8s
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#resourcequotastatus-v1-core">K8s
     *   ResourceQuotaStatus</a>.
     */
   object ResourcequotaMemoryRequestHard extends MetricSpec.Unsealed {
@@ -6243,7 +6309,7 @@ object K8sExperimentalMetrics {
     *
     * @note
     *   <p> This metric is retrieved from the `used` field of the <a
-    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#resourcequotastatus-v1-core">K8s
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#resourcequotastatus-v1-core">K8s
     *   ResourceQuotaStatus</a>.
     */
   object ResourcequotaMemoryRequestUsed extends MetricSpec.Unsealed {
@@ -6285,7 +6351,7 @@ object K8sExperimentalMetrics {
     *
     * @note
     *   <p> This metric is retrieved from the `hard` field of the <a
-    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#resourcequotastatus-v1-core">K8s
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#resourcequotastatus-v1-core">K8s
     *   ResourceQuotaStatus</a>.
     */
   object ResourcequotaObjectCountHard extends MetricSpec.Unsealed {
@@ -6354,7 +6420,7 @@ object K8sExperimentalMetrics {
     *
     * @note
     *   <p> This metric is retrieved from the `used` field of the <a
-    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#resourcequotastatus-v1-core">K8s
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#resourcequotastatus-v1-core">K8s
     *   ResourceQuotaStatus</a>.
     */
   object ResourcequotaObjectCountUsed extends MetricSpec.Unsealed {
@@ -6423,7 +6489,7 @@ object K8sExperimentalMetrics {
     *
     * @note
     *   <p> This metric is retrieved from the `hard` field of the <a
-    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#resourcequotastatus-v1-core">K8s
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#resourcequotastatus-v1-core">K8s
     *   ResourceQuotaStatus</a>. <p> The `k8s.storageclass.name` should be required when a resource quota is defined for
     *   a specific storage class.
     */
@@ -6439,7 +6505,7 @@ object K8sExperimentalMetrics {
     object AttributeSpecs {
 
       /** The name of K8s <a
-        * href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#storageclass-v1-storage-k8s-io">StorageClass</a>
+        * href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#storageclass-v1-storage-k8s-io">StorageClass</a>
         * object.
         */
       val k8sStorageclassName: AttributeSpec[String] =
@@ -6490,7 +6556,7 @@ object K8sExperimentalMetrics {
     *
     * @note
     *   <p> This metric is retrieved from the `used` field of the <a
-    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#resourcequotastatus-v1-core">K8s
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#resourcequotastatus-v1-core">K8s
     *   ResourceQuotaStatus</a>. <p> The `k8s.storageclass.name` should be required when a resource quota is defined for
     *   a specific storage class.
     */
@@ -6506,7 +6572,7 @@ object K8sExperimentalMetrics {
     object AttributeSpecs {
 
       /** The name of K8s <a
-        * href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#storageclass-v1-storage-k8s-io">StorageClass</a>
+        * href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#storageclass-v1-storage-k8s-io">StorageClass</a>
         * object.
         */
       val k8sStorageclassName: AttributeSpec[String] =
@@ -6557,7 +6623,7 @@ object K8sExperimentalMetrics {
     *
     * @note
     *   <p> This metric is retrieved from the `hard` field of the <a
-    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#resourcequotastatus-v1-core">K8s
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#resourcequotastatus-v1-core">K8s
     *   ResourceQuotaStatus</a>. <p> The `k8s.storageclass.name` should be required when a resource quota is defined for
     *   a specific storage class.
     */
@@ -6573,7 +6639,7 @@ object K8sExperimentalMetrics {
     object AttributeSpecs {
 
       /** The name of K8s <a
-        * href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#storageclass-v1-storage-k8s-io">StorageClass</a>
+        * href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#storageclass-v1-storage-k8s-io">StorageClass</a>
         * object.
         */
       val k8sStorageclassName: AttributeSpec[String] =
@@ -6624,7 +6690,7 @@ object K8sExperimentalMetrics {
     *
     * @note
     *   <p> This metric is retrieved from the `used` field of the <a
-    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#resourcequotastatus-v1-core">K8s
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#resourcequotastatus-v1-core">K8s
     *   ResourceQuotaStatus</a>. <p> The `k8s.storageclass.name` should be required when a resource quota is defined for
     *   a specific storage class.
     */
@@ -6640,7 +6706,7 @@ object K8sExperimentalMetrics {
     object AttributeSpecs {
 
       /** The name of K8s <a
-        * href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#storageclass-v1-storage-k8s-io">StorageClass</a>
+        * href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#storageclass-v1-storage-k8s-io">StorageClass</a>
         * object.
         */
       val k8sStorageclassName: AttributeSpec[String] =
@@ -6861,7 +6927,7 @@ object K8sExperimentalMetrics {
     *
     * @note
     *   <p> This metric aligns with the `currentReplicas` field of the <a
-    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#statefulsetstatus-v1-apps">K8s
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#statefulsetstatus-v1-apps">K8s
     *   StatefulSetStatus</a>.
     */
   @deprecated("Replaced by `k8s.statefulset.pod.current`.", "")
@@ -6902,7 +6968,7 @@ object K8sExperimentalMetrics {
     *
     * @note
     *   <p> This metric aligns with the `replicas` field of the <a
-    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#statefulsetspec-v1-apps">K8s
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#statefulsetspec-v1-apps">K8s
     *   StatefulSetSpec</a>.
     */
   @deprecated("Replaced by `k8s.statefulset.pod.desired`.", "")
@@ -6944,7 +7010,7 @@ object K8sExperimentalMetrics {
     *
     * @note
     *   <p> This metric aligns with the `currentReplicas` field of the <a
-    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#statefulsetstatus-v1-apps">K8s
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#statefulsetstatus-v1-apps">K8s
     *   StatefulSetStatus</a>.
     */
   object StatefulsetPodCurrent extends MetricSpec.Unsealed {
@@ -6985,7 +7051,7 @@ object K8sExperimentalMetrics {
     *
     * @note
     *   <p> This metric aligns with the `replicas` field of the <a
-    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#statefulsetspec-v1-apps">K8s
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#statefulsetspec-v1-apps">K8s
     *   StatefulSetSpec</a>.
     */
   object StatefulsetPodDesired extends MetricSpec.Unsealed {
@@ -7025,7 +7091,7 @@ object K8sExperimentalMetrics {
     *
     * @note
     *   <p> This metric aligns with the `readyReplicas` field of the <a
-    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#statefulsetstatus-v1-apps">K8s
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#statefulsetstatus-v1-apps">K8s
     *   StatefulSetStatus</a>.
     */
   object StatefulsetPodReady extends MetricSpec.Unsealed {
@@ -7066,7 +7132,7 @@ object K8sExperimentalMetrics {
     *
     * @note
     *   <p> This metric aligns with the `updatedReplicas` field of the <a
-    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#statefulsetstatus-v1-apps">K8s
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#statefulsetstatus-v1-apps">K8s
     *   StatefulSetStatus</a>.
     */
   object StatefulsetPodUpdated extends MetricSpec.Unsealed {
@@ -7107,7 +7173,7 @@ object K8sExperimentalMetrics {
     *
     * @note
     *   <p> This metric aligns with the `readyReplicas` field of the <a
-    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#statefulsetstatus-v1-apps">K8s
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#statefulsetstatus-v1-apps">K8s
     *   StatefulSetStatus</a>.
     */
   @deprecated("Replaced by `k8s.statefulset.pod.ready`.", "")
@@ -7148,7 +7214,7 @@ object K8sExperimentalMetrics {
     *
     * @note
     *   <p> This metric aligns with the `updatedReplicas` field of the <a
-    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#statefulsetstatus-v1-apps">K8s
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#statefulsetstatus-v1-apps">K8s
     *   StatefulSetStatus</a>.
     */
   @deprecated("Replaced by `k8s.statefulset.pod.updated`.", "")

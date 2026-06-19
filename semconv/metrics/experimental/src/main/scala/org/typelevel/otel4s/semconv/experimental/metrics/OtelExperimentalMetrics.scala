@@ -60,7 +60,10 @@ object OtelExperimentalMetrics {
     *   <p> For successful exports, `error.type` MUST NOT be set. For failed exports, `error.type` MUST contain the
     *   failure cause. For exporters with partial success semantics (e.g. OTLP with `rejected_log_records`), rejected
     *   log records MUST count as failed and only non-rejected log records count as success. If no rejection reason is
-    *   available, `rejected` SHOULD be used as value for `error.type`.
+    *   available, `rejected` SHOULD be used as value for `error.type`. If the exporter retries failed export attempts,
+    *   the export operation is considered finished only after the final attempt has concluded. Each log record MUST be
+    *   counted exactly once per export operation: intermediate failed attempts that are followed by a retry MUST NOT
+    *   increment the counter, and `error.type` reflects the cause of the final attempt.
     */
   object SdkExporterLogExported extends MetricSpec.Unsealed {
 
@@ -221,8 +224,9 @@ object OtelExperimentalMetrics {
     * successful, nor failed).
     *
     * @note
-    *   <p> For successful exports, `error.type` MUST NOT be set. For failed exports, `error.type` MUST contain the
-    *   failure cause.
+    *   <p> Log records are counted as inflight from when they are passed to the exporter until the export operation has
+    *   concluded. If the exporter retries failed export attempts, log records remain inflight across all retry attempts
+    *   and any backoff between them.
     */
   object SdkExporterLogInflight extends MetricSpec.Unsealed {
 
@@ -354,7 +358,10 @@ object OtelExperimentalMetrics {
     *   <p> For successful exports, `error.type` MUST NOT be set. For failed exports, `error.type` MUST contain the
     *   failure cause. For exporters with partial success semantics (e.g. OTLP with `rejected_data_points`), rejected
     *   data points MUST count as failed and only non-rejected data points count as success. If no rejection reason is
-    *   available, `rejected` SHOULD be used as value for `error.type`.
+    *   available, `rejected` SHOULD be used as value for `error.type`. If the exporter retries failed export attempts,
+    *   the export operation is considered finished only after the final attempt has concluded. Each metric data point
+    *   MUST be counted exactly once per export operation: intermediate failed attempts that are followed by a retry
+    *   MUST NOT increment the counter, and `error.type` reflects the cause of the final attempt.
     */
   object SdkExporterMetricDataPointExported extends MetricSpec.Unsealed {
 
@@ -515,8 +522,9 @@ object OtelExperimentalMetrics {
     * successful, nor failed).
     *
     * @note
-    *   <p> For successful exports, `error.type` MUST NOT be set. For failed exports, `error.type` MUST contain the
-    *   failure cause.
+    *   <p> Metric data points are counted as inflight from when they are passed to the exporter until the export
+    *   operation has concluded. If the exporter retries failed export attempts, metric data points remain inflight
+    *   across all retry attempts and any backoff between them.
     */
   object SdkExporterMetricDataPointInflight extends MetricSpec.Unsealed {
 
@@ -650,7 +658,10 @@ object OtelExperimentalMetrics {
     *   and <a
     *   href="https://github.com/open-telemetry/opentelemetry-proto/blob/v1.5.0/docs/specification.md#full-success">grpc</a>.
     *   Anything else is defined as an unsuccessful operation. For successful operations, `error.type` MUST NOT be set.
-    *   For unsuccessful export operations, `error.type` MUST contain a relevant failure cause.
+    *   For unsuccessful export operations, `error.type` MUST contain a relevant failure cause. If the exporter retries
+    *   failed export attempts, exactly one observation MUST be recorded per export operation, covering the wall-clock
+    *   duration from the start of the first attempt through the conclusion of the final attempt (including any backoff
+    *   between attempts). `error.type` reflects the cause of the final attempt.
     */
   object SdkExporterOperationDuration extends MetricSpec.Unsealed {
 
@@ -831,7 +842,10 @@ object OtelExperimentalMetrics {
     *   <p> For successful exports, `error.type` MUST NOT be set. For failed exports, `error.type` MUST contain the
     *   failure cause. For exporters with partial success semantics (e.g. OTLP with `rejected_spans`), rejected spans
     *   MUST count as failed and only non-rejected spans count as success. If no rejection reason is available,
-    *   `rejected` SHOULD be used as value for `error.type`.
+    *   `rejected` SHOULD be used as value for `error.type`. If the exporter retries failed export attempts, the export
+    *   operation is considered finished only after the final attempt has concluded. Each span MUST be counted exactly
+    *   once per export operation: intermediate failed attempts that are followed by a retry MUST NOT increment the
+    *   counter, and `error.type` reflects the cause of the final attempt.
     */
   object SdkExporterSpanExported extends MetricSpec.Unsealed {
 
@@ -1027,8 +1041,9 @@ object OtelExperimentalMetrics {
     * nor failed).
     *
     * @note
-    *   <p> For successful exports, `error.type` MUST NOT be set. For failed exports, `error.type` MUST contain the
-    *   failure cause.
+    *   <p> Spans are counted as inflight from when they are passed to the exporter until the export operation has
+    *   concluded. If the exporter retries failed export attempts, spans remain inflight across all retry attempts and
+    *   any backoff between them.
     */
   object SdkExporterSpanInflight extends MetricSpec.Unsealed {
 
@@ -1337,9 +1352,11 @@ object OtelExperimentalMetrics {
     *
     * @note
     *   <p> For successful processing, `error.type` MUST NOT be set. For failed processing, `error.type` MUST contain
-    *   the failure cause. For the SDK Simple and Batching Log Record Processor a log record is considered to be
-    *   processed already when it has been submitted to the exporter, not when the corresponding export call has
-    *   finished.
+    *   the failure cause. SDK Batching Log Record Processors MUST use `queue_full` as the value of `error.type` for log
+    *   records dropped due to a full queue. SDK Log Record Processors MUST use `already_shutdown` as the value of
+    *   `error.type` for log records dropped because the processor has already been shut down. For the SDK Simple and
+    *   Batching Log Record Processor a log record is considered to be processed already when it has been submitted to
+    *   the exporter, not when the corresponding export call has finished.
     */
   object SdkProcessorLogProcessed extends MetricSpec.Unsealed {
 
@@ -1352,8 +1369,7 @@ object OtelExperimentalMetrics {
 
     object AttributeSpecs {
 
-      /** A low-cardinality description of the failure reason. SDK Batching Log Record Processors MUST use `queue_full`
-        * for log records dropped due to a full queue.
+      /** A low-cardinality description of the failure reason.
         *
         * @note
         *   <p> The `error.type` SHOULD be predictable, and SHOULD have low cardinality. <p> When `error.type` is set to
@@ -1375,6 +1391,7 @@ object OtelExperimentalMetrics {
           ErrorAttributes.ErrorType,
           List(
             "queue_full",
+            "already_shutdown",
           ),
           Requirement.recommended,
           Stability.stable
@@ -1641,8 +1658,11 @@ object OtelExperimentalMetrics {
     *
     * @note
     *   <p> For successful processing, `error.type` MUST NOT be set. For failed processing, `error.type` MUST contain
-    *   the failure cause. For the SDK Simple and Batching Span Processor a span is considered to be processed already
-    *   when it has been submitted to the exporter, not when the corresponding export call has finished.
+    *   the failure cause. SDK Batching Span Processors MUST use `queue_full` as the value of `error.type` for spans
+    *   dropped due to a full queue. SDK Span Processors MUST use `already_shutdown` as the value of `error.type` for
+    *   spans dropped because the processor has already been shut down. For the SDK Simple and Batching Span Processor a
+    *   span is considered to be processed already when it has been submitted to the exporter, not when the
+    *   corresponding export call has finished.
     */
   object SdkProcessorSpanProcessed extends MetricSpec.Unsealed {
 
@@ -1654,8 +1674,7 @@ object OtelExperimentalMetrics {
 
     object AttributeSpecs {
 
-      /** A low-cardinality description of the failure reason. SDK Batching Span Processors MUST use `queue_full` for
-        * spans dropped due to a full queue.
+      /** A low-cardinality description of the failure reason.
         *
         * @note
         *   <p> The `error.type` SHOULD be predictable, and SHOULD have low cardinality. <p> When `error.type` is set to
@@ -1677,6 +1696,7 @@ object OtelExperimentalMetrics {
           ErrorAttributes.ErrorType,
           List(
             "queue_full",
+            "already_shutdown",
           ),
           Requirement.recommended,
           Stability.stable

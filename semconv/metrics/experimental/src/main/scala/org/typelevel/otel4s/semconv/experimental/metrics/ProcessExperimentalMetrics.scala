@@ -63,7 +63,7 @@ object ProcessExperimentalMetrics {
           List(
           ),
           Requirement.required,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       val specs: List[AttributeSpec[_]] =
@@ -123,7 +123,7 @@ object ProcessExperimentalMetrics {
             "system",
           ),
           Requirement.required,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       val specs: List[AttributeSpec[_]] =
@@ -185,7 +185,7 @@ object ProcessExperimentalMetrics {
             "system",
           ),
           Requirement.required,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       val specs: List[AttributeSpec[_]] =

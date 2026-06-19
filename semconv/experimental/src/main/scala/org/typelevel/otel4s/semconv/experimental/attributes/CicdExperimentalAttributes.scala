@@ -85,22 +85,22 @@ object CicdExperimentalAttributes {
   val CicdPipelineTaskType: AttributeKey[String] =
     AttributeKey("cicd.pipeline.task.type")
 
-  /** The name of a component of the CICD system.
+  /** The name of a component of the CI/CD system.
     */
   val CicdSystemComponent: AttributeKey[String] =
     AttributeKey("cicd.system.component")
 
-  /** The unique identifier of a worker within a CICD system.
+  /** The unique identifier of a worker within a CI/CD system.
     */
   val CicdWorkerId: AttributeKey[String] =
     AttributeKey("cicd.worker.id")
 
-  /** The name of a worker within a CICD system.
+  /** The name of a worker within a CI/CD system.
     */
   val CicdWorkerName: AttributeKey[String] =
     AttributeKey("cicd.worker.name")
 
-  /** The state of a CICD worker / agent.
+  /** The state of a CI/CD worker / agent.
     */
   val CicdWorkerState: AttributeKey[String] =
     AttributeKey("cicd.worker.state")
@@ -145,7 +145,7 @@ object CicdExperimentalAttributes {
       */
     case object Failure extends CicdPipelineResultValue("failure")
 
-    /** The pipeline run failed due to an error in the CICD system, eg. due to the worker being killed.
+    /** The pipeline run failed due to an error in the CI/CD system, eg. due to the worker being killed.
       */
     case object Error extends CicdPipelineResultValue("error")
 
@@ -198,7 +198,7 @@ object CicdExperimentalAttributes {
       */
     case object Failure extends CicdPipelineTaskRunResultValue("failure")
 
-    /** The task run failed due to an error in the CICD system, eg. due to the worker being killed.
+    /** The task run failed due to an error in the CI/CD system, eg. due to the worker being killed.
       */
     case object Error extends CicdPipelineTaskRunResultValue("error")
 
@@ -240,16 +240,16 @@ object CicdExperimentalAttributes {
   object CicdWorkerStateValue {
     implicit val attributeFromCicdWorkerStateValue: Attribute.From[CicdWorkerStateValue, String] = _.value
 
-    /** The worker is not performing work for the CICD system. It is available to the CICD system to perform work on
+    /** The worker is not performing work for the CI/CD system. It is available to the CI/CD system to perform work on
       * (online / idle).
       */
     case object Available extends CicdWorkerStateValue("available")
 
-    /** The worker is performing work for the CICD system.
+    /** The worker is performing work for the CI/CD system.
       */
     case object Busy extends CicdWorkerStateValue("busy")
 
-    /** The worker is not available to the CICD system (disconnected / down).
+    /** The worker is not available to the CI/CD system (disconnected / down).
       */
     case object Offline extends CicdWorkerStateValue("offline")
   }

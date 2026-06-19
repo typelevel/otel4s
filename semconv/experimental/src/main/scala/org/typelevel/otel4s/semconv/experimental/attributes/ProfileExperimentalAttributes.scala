@@ -83,6 +83,10 @@ object ProfileExperimentalAttributes {
     /** <a href="https://wikipedia.org/wiki/Rust_(programming_language)">Rust</a>
       */
     case object Rust extends ProfileFrameTypeValue("rust")
+
+    /** <a href="https://en.wikipedia.org/wiki/LuaJIT">LuaJIT</a>
+      */
+    case object Luajit extends ProfileFrameTypeValue("luajit")
   }
 
 }

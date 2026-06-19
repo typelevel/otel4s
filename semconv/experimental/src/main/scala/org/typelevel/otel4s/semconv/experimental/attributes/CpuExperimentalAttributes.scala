@@ -65,7 +65,7 @@ object CpuExperimentalAttributes {
       */
     case object Steal extends CpuModeValue("steal")
 
-    /** Kernel
+    /** Deprecated. Use `system` instead.
       */
     case object Kernel extends CpuModeValue("kernel")
   }

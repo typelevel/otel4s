@@ -26,6 +26,7 @@ import org.typelevel.otel4s.semconv.experimental.attributes._
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/metrics/SemanticMetrics.scala.j2
 object GenAiExperimentalMetrics {
 
+  @annotation.nowarn("cat=deprecation")
   val specs: List[MetricSpec] = List(
     ClientOperationDuration,
     ClientOperationTimePerOutputChunk,
@@ -38,6 +39,10 @@ object GenAiExperimentalMetrics {
 
   /** GenAI operation duration.
     */
+  @deprecated(
+    "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+    ""
+  )
   object ClientOperationDuration extends MetricSpec.Unsealed {
 
     val name: String = "gen_ai.client.operation.duration"
@@ -76,6 +81,10 @@ object GenAiExperimentalMetrics {
         *   instrumentation. If a different name is not documented, instrumentation libraries SHOULD use applicable
         *   predefined value.
         */
+      @deprecated(
+        "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+        ""
+      )
       val genAiOperationName: AttributeSpec[String] =
         AttributeSpec(
           GenAiExperimentalAttributes.GenAiOperationName,
@@ -99,6 +108,10 @@ object GenAiExperimentalMetrics {
         *   to `aws.bedrock` and include applicable `aws.bedrock.*` attributes and are not expected to include
         *   `openai.*` attributes.
         */
+      @deprecated(
+        "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+        ""
+      )
       val genAiProviderName: AttributeSpec[String] =
         AttributeSpec(
           GenAiExperimentalAttributes.GenAiProviderName,
@@ -110,6 +123,10 @@ object GenAiExperimentalMetrics {
 
       /** The name of the GenAI model a request is being made to.
         */
+      @deprecated(
+        "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+        ""
+      )
       val genAiRequestModel: AttributeSpec[String] =
         AttributeSpec(
           GenAiExperimentalAttributes.GenAiRequestModel,
@@ -126,6 +143,10 @@ object GenAiExperimentalMetrics {
 
       /** The name of the model that generated the response.
         */
+      @deprecated(
+        "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+        ""
+      )
       val genAiResponseModel: AttributeSpec[String] =
         AttributeSpec(
           GenAiExperimentalAttributes.GenAiResponseModel,
@@ -200,6 +221,10 @@ object GenAiExperimentalMetrics {
     * @note
     *   <p> This metrics SHOULD be reported for streaming calls and SHOULD NOT be reported otherwise.
     */
+  @deprecated(
+    "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+    ""
+  )
   object ClientOperationTimePerOutputChunk extends MetricSpec.Unsealed {
 
     val name: String = "gen_ai.client.operation.time_per_output_chunk"
@@ -219,6 +244,10 @@ object GenAiExperimentalMetrics {
         *   instrumentation. If a different name is not documented, instrumentation libraries SHOULD use applicable
         *   predefined value.
         */
+      @deprecated(
+        "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+        ""
+      )
       val genAiOperationName: AttributeSpec[String] =
         AttributeSpec(
           GenAiExperimentalAttributes.GenAiOperationName,
@@ -242,6 +271,10 @@ object GenAiExperimentalMetrics {
         *   to `aws.bedrock` and include applicable `aws.bedrock.*` attributes and are not expected to include
         *   `openai.*` attributes.
         */
+      @deprecated(
+        "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+        ""
+      )
       val genAiProviderName: AttributeSpec[String] =
         AttributeSpec(
           GenAiExperimentalAttributes.GenAiProviderName,
@@ -253,6 +286,10 @@ object GenAiExperimentalMetrics {
 
       /** The name of the GenAI model a request is being made to.
         */
+      @deprecated(
+        "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+        ""
+      )
       val genAiRequestModel: AttributeSpec[String] =
         AttributeSpec(
           GenAiExperimentalAttributes.GenAiRequestModel,
@@ -269,6 +306,10 @@ object GenAiExperimentalMetrics {
 
       /** The name of the model that generated the response.
         */
+      @deprecated(
+        "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+        ""
+      )
       val genAiResponseModel: AttributeSpec[String] =
         AttributeSpec(
           GenAiExperimentalAttributes.GenAiResponseModel,
@@ -342,6 +383,10 @@ object GenAiExperimentalMetrics {
     * @note
     *   <p> This metrics SHOULD be reported for streaming calls and SHOULD NOT be reported otherwise.
     */
+  @deprecated(
+    "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+    ""
+  )
   object ClientOperationTimeToFirstChunk extends MetricSpec.Unsealed {
 
     val name: String = "gen_ai.client.operation.time_to_first_chunk"
@@ -361,6 +406,10 @@ object GenAiExperimentalMetrics {
         *   instrumentation. If a different name is not documented, instrumentation libraries SHOULD use applicable
         *   predefined value.
         */
+      @deprecated(
+        "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+        ""
+      )
       val genAiOperationName: AttributeSpec[String] =
         AttributeSpec(
           GenAiExperimentalAttributes.GenAiOperationName,
@@ -384,6 +433,10 @@ object GenAiExperimentalMetrics {
         *   to `aws.bedrock` and include applicable `aws.bedrock.*` attributes and are not expected to include
         *   `openai.*` attributes.
         */
+      @deprecated(
+        "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+        ""
+      )
       val genAiProviderName: AttributeSpec[String] =
         AttributeSpec(
           GenAiExperimentalAttributes.GenAiProviderName,
@@ -395,6 +448,10 @@ object GenAiExperimentalMetrics {
 
       /** The name of the GenAI model a request is being made to.
         */
+      @deprecated(
+        "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+        ""
+      )
       val genAiRequestModel: AttributeSpec[String] =
         AttributeSpec(
           GenAiExperimentalAttributes.GenAiRequestModel,
@@ -411,6 +468,10 @@ object GenAiExperimentalMetrics {
 
       /** The name of the model that generated the response.
         */
+      @deprecated(
+        "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+        ""
+      )
       val genAiResponseModel: AttributeSpec[String] =
         AttributeSpec(
           GenAiExperimentalAttributes.GenAiResponseModel,
@@ -480,6 +541,10 @@ object GenAiExperimentalMetrics {
 
   /** Number of input and output tokens used.
     */
+  @deprecated(
+    "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+    ""
+  )
   object ClientTokenUsage extends MetricSpec.Unsealed {
 
     val name: String = "gen_ai.client.token.usage"
@@ -498,6 +563,10 @@ object GenAiExperimentalMetrics {
         *   instrumentation. If a different name is not documented, instrumentation libraries SHOULD use applicable
         *   predefined value.
         */
+      @deprecated(
+        "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+        ""
+      )
       val genAiOperationName: AttributeSpec[String] =
         AttributeSpec(
           GenAiExperimentalAttributes.GenAiOperationName,
@@ -521,6 +590,10 @@ object GenAiExperimentalMetrics {
         *   to `aws.bedrock` and include applicable `aws.bedrock.*` attributes and are not expected to include
         *   `openai.*` attributes.
         */
+      @deprecated(
+        "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+        ""
+      )
       val genAiProviderName: AttributeSpec[String] =
         AttributeSpec(
           GenAiExperimentalAttributes.GenAiProviderName,
@@ -532,6 +605,10 @@ object GenAiExperimentalMetrics {
 
       /** The name of the GenAI model a request is being made to.
         */
+      @deprecated(
+        "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+        ""
+      )
       val genAiRequestModel: AttributeSpec[String] =
         AttributeSpec(
           GenAiExperimentalAttributes.GenAiRequestModel,
@@ -548,6 +625,10 @@ object GenAiExperimentalMetrics {
 
       /** The name of the model that generated the response.
         */
+      @deprecated(
+        "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+        ""
+      )
       val genAiResponseModel: AttributeSpec[String] =
         AttributeSpec(
           GenAiExperimentalAttributes.GenAiResponseModel,
@@ -560,6 +641,10 @@ object GenAiExperimentalMetrics {
 
       /** The type of token being counted.
         */
+      @deprecated(
+        "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+        ""
+      )
       val genAiTokenType: AttributeSpec[String] =
         AttributeSpec(
           GenAiExperimentalAttributes.GenAiTokenType,
@@ -631,6 +716,10 @@ object GenAiExperimentalMetrics {
 
   /** Generative AI server request duration such as time-to-last byte or last output token.
     */
+  @deprecated(
+    "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+    ""
+  )
   object ServerRequestDuration extends MetricSpec.Unsealed {
 
     val name: String = "gen_ai.server.request.duration"
@@ -669,6 +758,10 @@ object GenAiExperimentalMetrics {
         *   instrumentation. If a different name is not documented, instrumentation libraries SHOULD use applicable
         *   predefined value.
         */
+      @deprecated(
+        "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+        ""
+      )
       val genAiOperationName: AttributeSpec[String] =
         AttributeSpec(
           GenAiExperimentalAttributes.GenAiOperationName,
@@ -692,6 +785,10 @@ object GenAiExperimentalMetrics {
         *   to `aws.bedrock` and include applicable `aws.bedrock.*` attributes and are not expected to include
         *   `openai.*` attributes.
         */
+      @deprecated(
+        "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+        ""
+      )
       val genAiProviderName: AttributeSpec[String] =
         AttributeSpec(
           GenAiExperimentalAttributes.GenAiProviderName,
@@ -703,6 +800,10 @@ object GenAiExperimentalMetrics {
 
       /** The name of the GenAI model a request is being made to.
         */
+      @deprecated(
+        "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+        ""
+      )
       val genAiRequestModel: AttributeSpec[String] =
         AttributeSpec(
           GenAiExperimentalAttributes.GenAiRequestModel,
@@ -719,6 +820,10 @@ object GenAiExperimentalMetrics {
 
       /** The name of the model that generated the response.
         */
+      @deprecated(
+        "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+        ""
+      )
       val genAiResponseModel: AttributeSpec[String] =
         AttributeSpec(
           GenAiExperimentalAttributes.GenAiResponseModel,
@@ -789,6 +894,10 @@ object GenAiExperimentalMetrics {
 
   /** Time per output token generated after the first token for successful responses.
     */
+  @deprecated(
+    "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+    ""
+  )
   object ServerTimePerOutputToken extends MetricSpec.Unsealed {
 
     val name: String = "gen_ai.server.time_per_output_token"
@@ -807,6 +916,10 @@ object GenAiExperimentalMetrics {
         *   instrumentation. If a different name is not documented, instrumentation libraries SHOULD use applicable
         *   predefined value.
         */
+      @deprecated(
+        "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+        ""
+      )
       val genAiOperationName: AttributeSpec[String] =
         AttributeSpec(
           GenAiExperimentalAttributes.GenAiOperationName,
@@ -830,6 +943,10 @@ object GenAiExperimentalMetrics {
         *   to `aws.bedrock` and include applicable `aws.bedrock.*` attributes and are not expected to include
         *   `openai.*` attributes.
         */
+      @deprecated(
+        "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+        ""
+      )
       val genAiProviderName: AttributeSpec[String] =
         AttributeSpec(
           GenAiExperimentalAttributes.GenAiProviderName,
@@ -841,6 +958,10 @@ object GenAiExperimentalMetrics {
 
       /** The name of the GenAI model a request is being made to.
         */
+      @deprecated(
+        "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+        ""
+      )
       val genAiRequestModel: AttributeSpec[String] =
         AttributeSpec(
           GenAiExperimentalAttributes.GenAiRequestModel,
@@ -857,6 +978,10 @@ object GenAiExperimentalMetrics {
 
       /** The name of the model that generated the response.
         */
+      @deprecated(
+        "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+        ""
+      )
       val genAiResponseModel: AttributeSpec[String] =
         AttributeSpec(
           GenAiExperimentalAttributes.GenAiResponseModel,
@@ -926,6 +1051,10 @@ object GenAiExperimentalMetrics {
 
   /** Time to generate first token for successful responses.
     */
+  @deprecated(
+    "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+    ""
+  )
   object ServerTimeToFirstToken extends MetricSpec.Unsealed {
 
     val name: String = "gen_ai.server.time_to_first_token"
@@ -944,6 +1073,10 @@ object GenAiExperimentalMetrics {
         *   instrumentation. If a different name is not documented, instrumentation libraries SHOULD use applicable
         *   predefined value.
         */
+      @deprecated(
+        "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+        ""
+      )
       val genAiOperationName: AttributeSpec[String] =
         AttributeSpec(
           GenAiExperimentalAttributes.GenAiOperationName,
@@ -967,6 +1100,10 @@ object GenAiExperimentalMetrics {
         *   to `aws.bedrock` and include applicable `aws.bedrock.*` attributes and are not expected to include
         *   `openai.*` attributes.
         */
+      @deprecated(
+        "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+        ""
+      )
       val genAiProviderName: AttributeSpec[String] =
         AttributeSpec(
           GenAiExperimentalAttributes.GenAiProviderName,
@@ -978,6 +1115,10 @@ object GenAiExperimentalMetrics {
 
       /** The name of the GenAI model a request is being made to.
         */
+      @deprecated(
+        "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+        ""
+      )
       val genAiRequestModel: AttributeSpec[String] =
         AttributeSpec(
           GenAiExperimentalAttributes.GenAiRequestModel,
@@ -994,6 +1135,10 @@ object GenAiExperimentalMetrics {
 
       /** The name of the model that generated the response.
         */
+      @deprecated(
+        "Moved to the [OpenTelemetry GenAI semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-genai).",
+        ""
+      )
       val genAiResponseModel: AttributeSpec[String] =
         AttributeSpec(
           GenAiExperimentalAttributes.GenAiResponseModel,

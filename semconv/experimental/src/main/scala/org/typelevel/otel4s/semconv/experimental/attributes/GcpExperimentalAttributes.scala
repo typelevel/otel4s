@@ -160,6 +160,16 @@ object GcpExperimentalAttributes {
   val GcpGceInstanceHostname: AttributeKey[String] =
     AttributeKey("gcp.gce.instance.hostname")
 
+  /** GCE instance labels, `<key>` being the label name and the value being the label value.
+    *
+    * @note
+    *   <p> For example, a GCE instance label `team` with value `observability` SHOULD be recorded as the
+    *   `gcp.gce.instance.labels.team` attribute with value `"observability"`. The `<key>` MUST be the exact GCE
+    *   instance label key.
+    */
+  val GcpGceInstanceLabels: AttributeKey[String] =
+    AttributeKey("gcp.gce.instance.labels")
+
   /** The instance name of a GCE instance. This is the value provided by `host.name`, the visible name of the instance
     * in the Cloud Console UI, and the prefix for the default hostname of the instance as defined by the <a
     * href="https://cloud.google.com/compute/docs/internal-dns#instance-fully-qualified-domain-names">default internal

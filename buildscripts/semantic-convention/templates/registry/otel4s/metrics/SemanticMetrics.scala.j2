@@ -164,7 +164,7 @@ object {{ object_name }} {
   {% for metric in ctx.metrics | rejectattr("metric_name", "in", params.excluded_metrics) | sort(attribute='metric_name') %}
   {{ [metric.brief, concat_if("\n\n@note\n\n", metric.note)] | comment(indent=2) | replace('$', "$$") }}
   {%- if metric is deprecated %}
-  @deprecated("{{ metric.deprecated.note }}", "")
+  @deprecated("{{ metric.deprecated.note | trim }}", "")
   {%- elif params.stable_only == false and metric is stable %}
   @deprecated("Use stable `{{ stableRef(metric) }}` instead.", "")
   {%- endif %}
@@ -185,7 +185,7 @@ object {{ object_name }} {
       {% for attribute in metric_attributes | sort(attribute='name') %}
       {{ [attribute.brief, concat_if("\n\n@note\n\n", attribute.note)] | comment(indent=6) | replace('$', "$$")}}
       {%- if attribute is deprecated %}
-      @deprecated("{{ attribute.deprecated.note }}", "")
+      @deprecated("{{ attribute.deprecated.note | trim }}", "")
       {%- endif %}
       val {{ attribute.name | camel_case }}: AttributeSpec[{{to_scala_key_type(attribute)}}] =
         AttributeSpec(

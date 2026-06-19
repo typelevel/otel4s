@@ -13,7 +13,7 @@ comment_formats:
     old_style_paragraph: true
     omit_closing_li: true
     inline_code_snippet: "`{{code}}`"
-    block_code_snippet: "{{{\n{{code}}\n}}}"
+    block_code_snippet: "\n```\n{{code}}\n```\n"
     trim: true
     remove_trailing_dots: false
 default_comment_format: scaladoc

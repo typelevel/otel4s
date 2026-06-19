@@ -53,7 +53,7 @@ object OpenshiftExperimentalMetrics {
     *
     * @note
     *   <p> This metric is retrieved from the `Status.Total.Hard` field of the <a
-    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#resourcequotastatus-v1-core">K8s
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#resourcequotastatus-v1-core">K8s
     *   ResourceQuotaStatus</a> of the <a
     *   href="https://docs.redhat.com/en/documentation/openshift_container_platform/4.19/html/schedule_and_quota_apis/clusterresourcequota-quota-openshift-io-v1#status-total">ClusterResourceQuota</a>.
     */
@@ -94,7 +94,7 @@ object OpenshiftExperimentalMetrics {
     *
     * @note
     *   <p> This metric is retrieved from the `Status.Total.Used` field of the <a
-    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#resourcequotastatus-v1-core">K8s
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#resourcequotastatus-v1-core">K8s
     *   ResourceQuotaStatus</a> of the <a
     *   href="https://docs.redhat.com/en/documentation/openshift_container_platform/4.19/html/schedule_and_quota_apis/clusterresourcequota-quota-openshift-io-v1#status-total">ClusterResourceQuota</a>.
     */
@@ -135,7 +135,7 @@ object OpenshiftExperimentalMetrics {
     *
     * @note
     *   <p> This metric is retrieved from the `Status.Total.Hard` field of the <a
-    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#resourcequotastatus-v1-core">K8s
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#resourcequotastatus-v1-core">K8s
     *   ResourceQuotaStatus</a> of the <a
     *   href="https://docs.redhat.com/en/documentation/openshift_container_platform/4.19/html/schedule_and_quota_apis/clusterresourcequota-quota-openshift-io-v1#status-total">ClusterResourceQuota</a>.
     */
@@ -176,7 +176,7 @@ object OpenshiftExperimentalMetrics {
     *
     * @note
     *   <p> This metric is retrieved from the `Status.Total.Used` field of the <a
-    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#resourcequotastatus-v1-core">K8s
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#resourcequotastatus-v1-core">K8s
     *   ResourceQuotaStatus</a> of the <a
     *   href="https://docs.redhat.com/en/documentation/openshift_container_platform/4.19/html/schedule_and_quota_apis/clusterresourcequota-quota-openshift-io-v1#status-total">ClusterResourceQuota</a>.
     */
@@ -217,7 +217,7 @@ object OpenshiftExperimentalMetrics {
     *
     * @note
     *   <p> This metric is retrieved from the `Status.Total.Hard` field of the <a
-    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#resourcequotastatus-v1-core">K8s
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#resourcequotastatus-v1-core">K8s
     *   ResourceQuotaStatus</a> of the <a
     *   href="https://docs.redhat.com/en/documentation/openshift_container_platform/4.19/html/schedule_and_quota_apis/clusterresourcequota-quota-openshift-io-v1#status-total">ClusterResourceQuota</a>.
     */
@@ -258,7 +258,7 @@ object OpenshiftExperimentalMetrics {
     *
     * @note
     *   <p> This metric is retrieved from the `Status.Total.Used` field of the <a
-    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#resourcequotastatus-v1-core">K8s
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#resourcequotastatus-v1-core">K8s
     *   ResourceQuotaStatus</a> of the <a
     *   href="https://docs.redhat.com/en/documentation/openshift_container_platform/4.19/html/schedule_and_quota_apis/clusterresourcequota-quota-openshift-io-v1#status-total">ClusterResourceQuota</a>.
     */
@@ -299,7 +299,7 @@ object OpenshiftExperimentalMetrics {
     *
     * @note
     *   <p> This metric is retrieved from the `Status.Total.Hard` field of the <a
-    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#resourcequotastatus-v1-core">K8s
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#resourcequotastatus-v1-core">K8s
     *   ResourceQuotaStatus</a> of the <a
     *   href="https://docs.redhat.com/en/documentation/openshift_container_platform/4.19/html/schedule_and_quota_apis/clusterresourcequota-quota-openshift-io-v1#status-total">ClusterResourceQuota</a>.
     */
@@ -340,7 +340,7 @@ object OpenshiftExperimentalMetrics {
     *
     * @note
     *   <p> This metric is retrieved from the `Status.Total.Used` field of the <a
-    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#resourcequotastatus-v1-core">K8s
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#resourcequotastatus-v1-core">K8s
     *   ResourceQuotaStatus</a> of the <a
     *   href="https://docs.redhat.com/en/documentation/openshift_container_platform/4.19/html/schedule_and_quota_apis/clusterresourcequota-quota-openshift-io-v1#status-total">ClusterResourceQuota</a>.
     */
@@ -381,7 +381,7 @@ object OpenshiftExperimentalMetrics {
     *
     * @note
     *   <p> This metric is retrieved from the `Status.Total.Hard` field of the <a
-    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#resourcequotastatus-v1-core">K8s
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#resourcequotastatus-v1-core">K8s
     *   ResourceQuotaStatus</a> of the <a
     *   href="https://docs.redhat.com/en/documentation/openshift_container_platform/4.19/html/schedule_and_quota_apis/clusterresourcequota-quota-openshift-io-v1#status-total">ClusterResourceQuota</a>.
     */
@@ -442,7 +442,7 @@ object OpenshiftExperimentalMetrics {
     *
     * @note
     *   <p> This metric is retrieved from the `Status.Total.Used` field of the <a
-    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#resourcequotastatus-v1-core">K8s
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#resourcequotastatus-v1-core">K8s
     *   ResourceQuotaStatus</a> of the <a
     *   href="https://docs.redhat.com/en/documentation/openshift_container_platform/4.19/html/schedule_and_quota_apis/clusterresourcequota-quota-openshift-io-v1#status-total">ClusterResourceQuota</a>.
     */
@@ -503,7 +503,7 @@ object OpenshiftExperimentalMetrics {
     *
     * @note
     *   <p> This metric is retrieved from the `Status.Total.Hard` field of the <a
-    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#resourcequotastatus-v1-core">K8s
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#resourcequotastatus-v1-core">K8s
     *   ResourceQuotaStatus</a> of the <a
     *   href="https://docs.redhat.com/en/documentation/openshift_container_platform/4.19/html/schedule_and_quota_apis/clusterresourcequota-quota-openshift-io-v1#status-total">ClusterResourceQuota</a>.
     */
@@ -544,7 +544,7 @@ object OpenshiftExperimentalMetrics {
     *
     * @note
     *   <p> This metric is retrieved from the `Status.Total.Used` field of the <a
-    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#resourcequotastatus-v1-core">K8s
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#resourcequotastatus-v1-core">K8s
     *   ResourceQuotaStatus</a> of the <a
     *   href="https://docs.redhat.com/en/documentation/openshift_container_platform/4.19/html/schedule_and_quota_apis/clusterresourcequota-quota-openshift-io-v1#status-total">ClusterResourceQuota</a>.
     */
@@ -585,7 +585,7 @@ object OpenshiftExperimentalMetrics {
     *
     * @note
     *   <p> This metric is retrieved from the `Status.Total.Hard` field of the <a
-    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#resourcequotastatus-v1-core">K8s
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#resourcequotastatus-v1-core">K8s
     *   ResourceQuotaStatus</a> of the <a
     *   href="https://docs.redhat.com/en/documentation/openshift_container_platform/4.19/html/schedule_and_quota_apis/clusterresourcequota-quota-openshift-io-v1#status-total">ClusterResourceQuota</a>.
     */
@@ -626,7 +626,7 @@ object OpenshiftExperimentalMetrics {
     *
     * @note
     *   <p> This metric is retrieved from the `Status.Total.Used` field of the <a
-    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#resourcequotastatus-v1-core">K8s
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#resourcequotastatus-v1-core">K8s
     *   ResourceQuotaStatus</a> of the <a
     *   href="https://docs.redhat.com/en/documentation/openshift_container_platform/4.19/html/schedule_and_quota_apis/clusterresourcequota-quota-openshift-io-v1#status-total">ClusterResourceQuota</a>.
     */
@@ -667,7 +667,7 @@ object OpenshiftExperimentalMetrics {
     *
     * @note
     *   <p> This metric is retrieved from the `Status.Total.Hard` field of the <a
-    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#resourcequotastatus-v1-core">K8s
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#resourcequotastatus-v1-core">K8s
     *   ResourceQuotaStatus</a> of the <a
     *   href="https://docs.redhat.com/en/documentation/openshift_container_platform/4.19/html/schedule_and_quota_apis/clusterresourcequota-quota-openshift-io-v1#status-total">ClusterResourceQuota</a>.
     */
@@ -735,7 +735,7 @@ object OpenshiftExperimentalMetrics {
     *
     * @note
     *   <p> This metric is retrieved from the `Status.Total.Used` field of the <a
-    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#resourcequotastatus-v1-core">K8s
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#resourcequotastatus-v1-core">K8s
     *   ResourceQuotaStatus</a> of the <a
     *   href="https://docs.redhat.com/en/documentation/openshift_container_platform/4.19/html/schedule_and_quota_apis/clusterresourcequota-quota-openshift-io-v1#status-total">ClusterResourceQuota</a>.
     */
@@ -803,7 +803,7 @@ object OpenshiftExperimentalMetrics {
     *
     * @note
     *   <p> This metric is retrieved from the `Status.Total.Hard` field of the <a
-    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#resourcequotastatus-v1-core">K8s
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#resourcequotastatus-v1-core">K8s
     *   ResourceQuotaStatus</a> of the <a
     *   href="https://docs.redhat.com/en/documentation/openshift_container_platform/4.19/html/schedule_and_quota_apis/clusterresourcequota-quota-openshift-io-v1#status-total">ClusterResourceQuota</a>.
     *   <p> The `k8s.storageclass.name` should be required when a resource quota is defined for a specific storage
@@ -820,7 +820,7 @@ object OpenshiftExperimentalMetrics {
     object AttributeSpecs {
 
       /** The name of K8s <a
-        * href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#storageclass-v1-storage-k8s-io">StorageClass</a>
+        * href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#storageclass-v1-storage-k8s-io">StorageClass</a>
         * object.
         */
       val k8sStorageclassName: AttributeSpec[String] =
@@ -870,7 +870,7 @@ object OpenshiftExperimentalMetrics {
     *
     * @note
     *   <p> This metric is retrieved from the `Status.Total.Used` field of the <a
-    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#resourcequotastatus-v1-core">K8s
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#resourcequotastatus-v1-core">K8s
     *   ResourceQuotaStatus</a> of the <a
     *   href="https://docs.redhat.com/en/documentation/openshift_container_platform/4.19/html/schedule_and_quota_apis/clusterresourcequota-quota-openshift-io-v1#status-total">ClusterResourceQuota</a>.
     *   <p> The `k8s.storageclass.name` should be required when a resource quota is defined for a specific storage
@@ -887,7 +887,7 @@ object OpenshiftExperimentalMetrics {
     object AttributeSpecs {
 
       /** The name of K8s <a
-        * href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#storageclass-v1-storage-k8s-io">StorageClass</a>
+        * href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#storageclass-v1-storage-k8s-io">StorageClass</a>
         * object.
         */
       val k8sStorageclassName: AttributeSpec[String] =
@@ -937,7 +937,7 @@ object OpenshiftExperimentalMetrics {
     *
     * @note
     *   <p> This metric is retrieved from the `Status.Total.Hard` field of the <a
-    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#resourcequotastatus-v1-core">K8s
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#resourcequotastatus-v1-core">K8s
     *   ResourceQuotaStatus</a> of the <a
     *   href="https://docs.redhat.com/en/documentation/openshift_container_platform/4.19/html/schedule_and_quota_apis/clusterresourcequota-quota-openshift-io-v1#status-total">ClusterResourceQuota</a>.
     *   <p> The `k8s.storageclass.name` should be required when a resource quota is defined for a specific storage
@@ -954,7 +954,7 @@ object OpenshiftExperimentalMetrics {
     object AttributeSpecs {
 
       /** The name of K8s <a
-        * href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#storageclass-v1-storage-k8s-io">StorageClass</a>
+        * href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#storageclass-v1-storage-k8s-io">StorageClass</a>
         * object.
         */
       val k8sStorageclassName: AttributeSpec[String] =
@@ -1004,7 +1004,7 @@ object OpenshiftExperimentalMetrics {
     *
     * @note
     *   <p> This metric is retrieved from the `Status.Total.Used` field of the <a
-    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#resourcequotastatus-v1-core">K8s
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#resourcequotastatus-v1-core">K8s
     *   ResourceQuotaStatus</a> of the <a
     *   href="https://docs.redhat.com/en/documentation/openshift_container_platform/4.19/html/schedule_and_quota_apis/clusterresourcequota-quota-openshift-io-v1#status-total">ClusterResourceQuota</a>.
     *   <p> The `k8s.storageclass.name` should be required when a resource quota is defined for a specific storage
@@ -1021,7 +1021,7 @@ object OpenshiftExperimentalMetrics {
     object AttributeSpecs {
 
       /** The name of K8s <a
-        * href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#storageclass-v1-storage-k8s-io">StorageClass</a>
+        * href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#storageclass-v1-storage-k8s-io">StorageClass</a>
         * object.
         */
       val k8sStorageclassName: AttributeSpec[String] =

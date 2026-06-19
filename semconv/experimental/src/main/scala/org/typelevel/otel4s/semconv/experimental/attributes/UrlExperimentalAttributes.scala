@@ -64,9 +64,11 @@ object UrlExperimentalAttributes {
     *
     * Query string values for the following keys SHOULD be redacted by default and replaced by the value `REDACTED`:
     * <ul> <li><a
-    * href="https://docs.aws.amazon.com/AmazonS3/latest/userguide/RESTAuthentication.html#RESTAuthenticationQueryStringAuth">`AWSAccessKeyId`</a>
+    * href="https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_sigv-authentication-methods.html">`X-Amz-Signature`</a>
     * <li><a
-    * href="https://docs.aws.amazon.com/AmazonS3/latest/userguide/RESTAuthentication.html#RESTAuthenticationQueryStringAuth">`Signature`</a>
+    * href="https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_sigv-authentication-methods.html">`X-Amz-Credential`</a>
+    * <li><a
+    * href="https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_sigv-authentication-methods.html">`X-Amz-Security-Token`</a>
     * <li><a href="https://learn.microsoft.com/azure/storage/common/storage-sas-overview#sas-token">`sig`</a> <li><a
     * href="https://cloud.google.com/storage/docs/access-control/signed-urls">`X-Goog-Signature`</a> </ul> <p> This list
     * is subject to change over time. <p> Matching of query parameter keys against the sensitive list SHOULD be
@@ -121,9 +123,11 @@ object UrlExperimentalAttributes {
     *
     * Query string values for the following keys SHOULD be redacted by default and replaced by the value `REDACTED`:
     * <ul> <li><a
-    * href="https://docs.aws.amazon.com/AmazonS3/latest/userguide/RESTAuthentication.html#RESTAuthenticationQueryStringAuth">`AWSAccessKeyId`</a>
+    * href="https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_sigv-authentication-methods.html">`X-Amz-Signature`</a>
     * <li><a
-    * href="https://docs.aws.amazon.com/AmazonS3/latest/userguide/RESTAuthentication.html#RESTAuthenticationQueryStringAuth">`Signature`</a>
+    * href="https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_sigv-authentication-methods.html">`X-Amz-Credential`</a>
+    * <li><a
+    * href="https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_sigv-authentication-methods.html">`X-Amz-Security-Token`</a>
     * <li><a href="https://learn.microsoft.com/azure/storage/common/storage-sas-overview#sas-token">`sig`</a> <li><a
     * href="https://cloud.google.com/storage/docs/access-control/signed-urls">`X-Goog-Signature`</a> </ul> <p> This list
     * is subject to change over time. <p> Matching of query parameter keys against the sensitive list SHOULD be

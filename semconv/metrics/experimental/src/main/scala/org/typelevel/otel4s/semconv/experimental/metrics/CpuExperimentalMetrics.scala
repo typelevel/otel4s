@@ -107,7 +107,7 @@ object CpuExperimentalMetrics {
             "system",
           ),
           Requirement.recommended,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       val specs: List[AttributeSpec[_]] =
@@ -180,7 +180,7 @@ object CpuExperimentalMetrics {
             "system",
           ),
           Requirement.recommended,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       val specs: List[AttributeSpec[_]] =

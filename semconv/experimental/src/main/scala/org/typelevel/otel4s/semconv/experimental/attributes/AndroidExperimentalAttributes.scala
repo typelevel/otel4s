@@ -25,8 +25,8 @@ object AndroidExperimentalAttributes {
     *
     * @note
     *   <p> The Android lifecycle states are defined in <a
-    *   href="https://developer.android.com/guide/components/activities/activity-lifecycle#lc">Activity lifecycle
-    *   callbacks</a>, and from which the `OS identifiers` are derived.
+    *   href="https://developer.android.com/guide/components/activities/activity-lifecycle#lifecycle-callbacks">Activity
+    *   lifecycle callbacks</a>, and from which the `OS identifiers` are derived.
     */
   val AndroidAppState: AttributeKey[String] =
     AttributeKey("android.app.state")

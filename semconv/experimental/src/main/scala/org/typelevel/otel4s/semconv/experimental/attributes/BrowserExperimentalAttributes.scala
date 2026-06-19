@@ -30,6 +30,12 @@ object BrowserExperimentalAttributes {
   val BrowserBrands: AttributeKey[Seq[String]] =
     AttributeKey("browser.brands")
 
+  /** Absolute URL of the current browser document according to <a
+    * href="https://www.rfc-editor.org/rfc/rfc3986">RFC3986</a>.
+    */
+  val BrowserDocumentUrlFull: AttributeKey[String] =
+    AttributeKey("browser.document.url.full")
+
   /** Preferred language of the user using the browser
     *
     * @note

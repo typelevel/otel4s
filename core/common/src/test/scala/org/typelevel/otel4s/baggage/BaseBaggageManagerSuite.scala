@@ -16,6 +16,7 @@
 
 package org.typelevel.otel4s.baggage
 
+import cats.data.OptionT
 import cats.effect.IO
 import munit.CatsEffectSuite
 
@@ -81,6 +82,37 @@ abstract class BaseBaggageManagerSuite extends CatsEffectSuite {
           .updated("key", "value")
           .updated("foo", "bar", "baz")
       )
+  }
+
+  testManager(".liftTo preserves .scope") { m =>
+    val lifted = m.liftTo[OptionT[IO, *]]
+    val baggage = Baggage.empty.updated("key", "value")
+
+    lifted
+      .scope(baggage) {
+        for {
+          current <- lifted.current
+          entry <- lifted.get("key")
+          value <- lifted.getValue("key")
+        } yield {
+          assertEquals(current, baggage)
+          assertEquals(entry, baggage.get("key"))
+          assertEquals(value, Some("value"))
+        }
+      }
+      .value
+      .assertEquals(Some(()))
+  }
+
+  testManager(".liftTo preserves .local") { m =>
+    val lifted = m.liftTo[OptionT[IO, *]]
+
+    lifted
+      .local(_.updated("key", "value")) {
+        lifted.getValue("key").map(assertEquals(_, Some("value")))
+      }
+      .value
+      .assertEquals(Some(()))
   }
 
 }

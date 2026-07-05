@@ -6,7 +6,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="generator" content="Typelevel Laika + Helium Theme" />
-  <title>The JVM backend</title>
+  <title>Test metrics emitted by your code</title>
   
   <meta name="author" content="Ross A. Baker"/>
   
@@ -120,16 +120,16 @@
     <li class="level2 nav-leaf"><a href="../how-to-metrics/register-cats-effect-runtime-metrics.html">Register Cats Effect runtime metrics</a></li>
     <li class="level2 nav-leaf"><a href="../how-to-metrics/register-jvm-runtime-metrics.html">Register JVM runtime metrics</a></li>
     <li class="level1 nav-header">Testkit</li>
-    <li class="level2 nav-leaf"><a href="../how-to-testkit/">Testkit</a></li>
-    <li class="level2 nav-leaf"><a href="../how-to-testkit/test-metrics-emitted-by-your-code.html">Test metrics emitted by your code</a></li>
+    <li class="level2 nav-leaf"><a href="index.html">Testkit</a></li>
+    <li class="level2 active nav-leaf"><a href="#">Test metrics emitted by your code</a></li>
     <li class="level1 nav-header">Explanations</li>
-    <li class="level2 nav-leaf"><a href="modules-and-module-families.html">Modules and module families</a></li>
-    <li class="level2 active nav-leaf"><a href="#">The JVM backend</a></li>
-    <li class="level2 nav-leaf"><a href="how-otel4s-context-propagation-works.html">How otel4s context propagation works</a></li>
-    <li class="level2 nav-leaf"><a href="choosing-parent-spans-and-tracing-scopes.html">Choosing parent spans and tracing scopes</a></li>
-    <li class="level2 nav-leaf"><a href="tracing-resource-and-fs2-stream-scopes.html">Tracing Resource and fs2.Stream scopes</a></li>
-    <li class="level2 nav-leaf"><a href="histogram-bucket-customization-with-views.html">Histogram bucket customization with views</a></li>
-    <li class="level2 nav-leaf"><a href="how-otel4s-context-works-with-the-otel4s-java-agent.html">How otel4s context works with the otel4s Java agent</a></li>
+    <li class="level2 nav-leaf"><a href="../explanations/modules-and-module-families.html">Modules and module families</a></li>
+    <li class="level2 nav-leaf"><a href="../explanations/oteljava-jvm-backend.html">The JVM backend</a></li>
+    <li class="level2 nav-leaf"><a href="../explanations/how-otel4s-context-propagation-works.html">How otel4s context propagation works</a></li>
+    <li class="level2 nav-leaf"><a href="../explanations/choosing-parent-spans-and-tracing-scopes.html">Choosing parent spans and tracing scopes</a></li>
+    <li class="level2 nav-leaf"><a href="../explanations/tracing-resource-and-fs2-stream-scopes.html">Tracing Resource and fs2.Stream scopes</a></li>
+    <li class="level2 nav-leaf"><a href="../explanations/histogram-bucket-customization-with-views.html">Histogram bucket customization with views</a></li>
+    <li class="level2 nav-leaf"><a href="../explanations/how-otel4s-context-works-with-the-otel4s-java-agent.html">How otel4s context works with the otel4s Java agent</a></li>
     <li class="level1 nav-header">Instrumentation</li>
     <li class="level2 nav-leaf"><a href="../instrumentation/metrics.html">Metrics</a></li>
     <li class="level2 nav-leaf"><a href="../instrumentation/metrics-cats-effect-io-runtime.html">Metrics | Cats Effect IO runtime</a></li>
@@ -158,15 +158,14 @@
 
       
 <nav id="page-nav">
-  <p class="header"><a href="#">The JVM backend</a></p>
+  <p class="header"><a href="#">Test metrics emitted by your code</a></p>
 
   <ul class="nav-list">
-    <li class="level1 nav-leaf"><a href="#when-to-use-otel4s-oteljava">When to use <code>otel4s-oteljava</code></a></li>
-    <li class="level1 nav-node"><a href="#two-ways-to-access-the-sdk">Two ways to access the SDK</a></li>
-    <li class="level2 nav-leaf"><a href="#oteljava-autoconfigured"><code>OtelJava.autoConfigured</code></a></li>
-    <li class="level2 nav-leaf"><a href="#oteljava-global"><code>OtelJava.global</code></a></li>
-    <li class="level1 nav-leaf"><a href="#related-jvm-modules">Related JVM modules</a></li>
-    <li class="level1 nav-leaf"><a href="#next-steps">Next steps</a></li>
+    <li class="level1 nav-leaf"><a href="#_1-add-the-testkit-dependency">1. Add the testkit dependency</a></li>
+    <li class="level1 nav-leaf"><a href="#_2-allocate-the-instruments-once">2. Allocate the instruments once</a></li>
+    <li class="level1 nav-leaf"><a href="#_3-define-an-assertion-helper">3. Define an assertion helper</a></li>
+    <li class="level1 nav-leaf"><a href="#_4-run-the-code-with-metricstestkit">4. Run the code with <code>MetricsTestkit</code></a></li>
+    <li class="level1 nav-leaf"><a href="#what-s-next">What&#39;s next</a></li>
   </ul>
 
   <p class="footer"></p>
@@ -175,99 +174,88 @@
 
       <main class="content">
 
-        <h1 id="the-jvm-backend" class="title">The JVM backend</h1>
-        <p><code>otel4s-oteljava</code> is the JVM backend for otel4s.
-        It implements the otel4s APIs on top of <a href="https://opentelemetry.io/docs/languages/java/intro/">OpenTelemetry Java</a>.</p>
-        <p>Use it when you want otel4s instrumentation to run against the OpenTelemetry Java SDK and ecosystem.</p>
+        <h1 id="test-metrics-emitted-by-your-code" class="title">Test metrics emitted by your code</h1>
+        <p>Use <code>MetricsTestkit</code> to run code against an in-memory metrics backend and assert the exported metrics.</p>
         
-        <h2 id="when-to-use-otel4s-oteljava" class="section"><a class="anchor-link left" href="#when-to-use-otel4s-oteljava"><i class="icofont-laika link">&#xef71;</i></a>When to use <code>otel4s-oteljava</code></h2>
-        <p>This backend is usually the right fit when you are building a JVM application and you want:</p>
-        <ul>
-          <li>OpenTelemetry Java exporters and SDK extensions</li>
-          <li>interoperability with Java libraries that expect OpenTelemetry Java types or the global SDK</li>
-          <li>integration with the OpenTelemetry Java agent or the otel4s Java agent distribution</li>
-          <li>the <code>otel4s-oteljava-testkit</code> module for asserting exported telemetry in tests</li>
-        </ul>
-        <p><code>otel4s-oteljava</code> is JVM-only.
-        If you need a backend for Scala.js or Scala Native, use the separate
-        <a href="https://typelevel.org/otel4s-sdk/sdk/overview.html"><code>otel4s-sdk</code></a> project instead.</p>
+        <h2 id="_1-add-the-testkit-dependency" class="section"><a class="anchor-link left" href="#_1-add-the-testkit-dependency"><i class="icofont-laika link">&#xef71;</i></a>1. Add the testkit dependency</h2>
+        <div class="tab-container" data-tab-group="build-tool">
+          <ul class="tab-group">
+            <li class="tab active" data-choice-name="sbt"><a href="#">sbt</a></li>
+            <li class="tab" data-choice-name="scala-cli"><a href="#">Scala CLI</a></li>
+          </ul>
+          <div class="tab-content active" data-choice-name="sbt">
+            <p>Add the testkit to the test scope in <code>build.sbt</code>:</p>
+            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">libraryDependencies</span><span> +=
+  </span><span class="string-literal">&quot;org.typelevel&quot;</span><span> %% </span><span class="string-literal">&quot;otel4s-oteljava-testkit&quot;</span><span> % </span><span class="string-literal">&quot;1.0.1&quot;</span><span> % </span><span class="type-name">Test</span></code></pre>
+          </div>
+          <div class="tab-content" data-choice-name="scala-cli">
+            <p>Add the test dependency to the test source file:</p>
+            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="comment">//&gt; using test.dep &quot;org.typelevel::otel4s-oteljava-testkit:1.0.1&quot;</span></code></pre>
+          </div>
+        </div>
         
-        <h2 id="two-ways-to-access-the-sdk" class="section"><a class="anchor-link left" href="#two-ways-to-access-the-sdk"><i class="icofont-laika link">&#xef71;</i></a>Two ways to access the SDK</h2>
-        <p>Most JVM applications use one of these entry points:</p>
-        <table>
-          <thead>
-            <tr>
-              <th>API</th>
-              <th>Use it when</th>
-              <th>What it does</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><code>OtelJava.autoConfigured</code></td>
-              <td>your application is responsible for creating the SDK</td>
-              <td>creates an isolated, non-global SDK instance from OpenTelemetry Java autoconfiguration</td>
-            </tr>
-            <tr>
-              <td><code>OtelJava.global</code></td>
-              <td>the SDK is already configured elsewhere</td>
-              <td>reads the current process-wide OpenTelemetry instance</td>
-            </tr>
-          </tbody>
-        </table>
-        <p>The difference matters because these paths have different ownership and interoperability rules.</p>
+        <h2 id="_2-allocate-the-instruments-once" class="section"><a class="anchor-link left" href="#_2-allocate-the-instruments-once"><i class="icofont-laika link">&#xef71;</i></a>2. Allocate the instruments once</h2>
+        <p>Group instruments in a value that can be created at application startup and passed to the code that records metrics.
+        Accepting a <code>MeterProvider</code> lets the test allocate the same instruments with the in-memory provider.</p>
+        <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.</span><span class="type-name">IO</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">metrics</span><span>.{</span><span class="type-name">Counter</span><span>, </span><span class="type-name">MeterProvider</span><span>}
+
+</span><span class="keyword">case</span><span> </span><span class="keyword">class</span><span> </span><span class="type-name">ServiceMetrics</span><span>(
+    </span><span class="identifier">requests</span><span>: </span><span class="type-name">Counter</span><span>[</span><span class="type-name">IO</span><span>, </span><span class="type-name">Long</span><span>]
+)
+
+</span><span class="keyword">object</span><span> </span><span class="type-name">ServiceMetrics</span><span> {
+  </span><span class="keyword">def</span><span> </span><span class="declaration-name">create</span><span>(</span><span class="identifier">meterProvider</span><span>: </span><span class="type-name">MeterProvider</span><span>[</span><span class="type-name">IO</span><span>]): </span><span class="type-name">IO</span><span>[</span><span class="type-name">ServiceMetrics</span><span>] =
+    </span><span class="keyword">for</span><span> {
+      </span><span class="identifier">meter</span><span> &lt;- </span><span class="identifier">meterProvider</span><span>.</span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;service&quot;</span><span>)
+      </span><span class="identifier">requests</span><span> &lt;- </span><span class="identifier">meter</span><span>.</span><span class="identifier">counter</span><span>[</span><span class="type-name">Long</span><span>](</span><span class="string-literal">&quot;service.requests&quot;</span><span>).</span><span class="identifier">create</span><span>
+    } </span><span class="keyword">yield</span><span> </span><span class="type-name">ServiceMetrics</span><span>(</span><span class="identifier">requests</span><span>)
+}
+
+</span><span class="keyword">final</span><span> </span><span class="keyword">class</span><span> </span><span class="type-name">Service</span><span>(</span><span class="identifier">metrics</span><span>: </span><span class="type-name">ServiceMetrics</span><span>) {
+  </span><span class="keyword">def</span><span> </span><span class="declaration-name">handleRequest</span><span>: </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] =
+    </span><span class="identifier">metrics</span><span>.</span><span class="identifier">requests</span><span>.</span><span class="identifier">inc</span><span>()
+}</span></code></pre>
         
-        <h3 id="oteljava-autoconfigured" class="section"><a class="anchor-link left" href="#oteljava-autoconfigured"><i class="icofont-laika link">&#xef71;</i></a><code>OtelJava.autoConfigured</code></h3>
-        <p>Use <code>OtelJava.autoConfigured</code> when your application owns SDK creation.</p>
-        <p>This is the common path when:</p>
-        <ul>
-          <li>your application starts the SDK itself</li>
-          <li>you configure exporters and SDK settings with environment variables or JVM properties</li>
-          <li>you do not need to reuse an SDK that another library, framework, or agent already created</li>
-        </ul>
-        <p><code>OtelJava.autoConfigured</code> creates an isolated instance.
-        If the same process already has a global SDK that other code relies on, creating a separate isolated instance can make
-        telemetry behavior harder to reason about.</p>
-        <p>For the setup steps, use
-        <a href="../how-to-jvm-setup/set-up-otel4s-in-a-jvm-application.html">Set up otel4s in a JVM application</a>.</p>
+        <h2 id="_3-define-an-assertion-helper" class="section"><a class="anchor-link left" href="#_3-define-an-assertion-helper"><i class="icofont-laika link">&#xef71;</i></a>3. Define an assertion helper</h2>
+        <p>The expectation API returns structured mismatches. Convert them into the failure type used by your test framework.</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">io</span><span>.</span><span class="identifier">opentelemetry</span><span>.</span><span class="identifier">sdk</span><span>.</span><span class="identifier">metrics</span><span>.</span><span class="identifier">data</span><span>.</span><span class="type-name">MetricData</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="identifier">testkit</span><span>.</span><span class="identifier">metrics</span><span>.{</span><span class="type-name">MetricExpectation</span><span>, </span><span class="type-name">MetricExpectations</span><span>}
+
+</span><span class="keyword">def</span><span> </span><span class="declaration-name">assertMetrics</span><span>(</span><span class="identifier">metrics</span><span>: </span><span class="type-name">List</span><span>[</span><span class="type-name">MetricData</span><span>], </span><span class="identifier">expected</span><span>: </span><span class="type-name">MetricExpectation</span><span>*): </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] =
+  </span><span class="type-name">MetricExpectations</span><span>.</span><span class="identifier">checkAll</span><span>(</span><span class="identifier">metrics</span><span>, </span><span class="identifier">expected</span><span>: </span><span class="identifier">_</span><span>*) </span><span class="keyword">match</span><span> {
+    </span><span class="keyword">case</span><span> </span><span class="type-name">Right</span><span>(</span><span class="identifier">_</span><span>) =&gt;
+      </span><span class="type-name">IO</span><span>.</span><span class="identifier">unit</span><span>
+    </span><span class="keyword">case</span><span> </span><span class="type-name">Left</span><span>(</span><span class="identifier">mismatches</span><span>) =&gt;
+      </span><span class="type-name">IO</span><span>.</span><span class="identifier">raiseError</span><span>(</span><span class="keyword">new</span><span> </span><span class="type-name">AssertionError</span><span>(</span><span class="type-name">MetricExpectations</span><span>.</span><span class="identifier">format</span><span>(</span><span class="identifier">mismatches</span><span>)))
+  }</span></code></pre>
+        <p>This helper uses <code>IO.raiseError</code> so it remains independent of a specific test framework. Replace it with the framework&#39;s
+        failure mechanism when appropriate.</p>
         
-        <h3 id="oteljava-global" class="section"><a class="anchor-link left" href="#oteljava-global"><i class="icofont-laika link">&#xef71;</i></a><code>OtelJava.global</code></h3>
-        <p>Use <code>OtelJava.global</code> when SDK creation happens elsewhere and otel4s needs to join that existing setup.</p>
-        <p>This is the common path when:</p>
-        <ul>
-          <li>an agent configures the global OpenTelemetry SDK</li>
-          <li>a framework or bootstrap layer initializes OpenTelemetry before your otel4s code runs</li>
-          <li>you need otel4s and Java libraries to observe the same process-wide SDK state</li>
-        </ul>
-        <p><code>OtelJava.global</code> does not configure an SDK.
-        It only reads the global instance that already exists.</p>
-        <p>For the setup steps, use
-        <a href="../how-to-jvm-setup/use-the-global-opentelemetry-instance.html">Use the global OpenTelemetry instance</a>.</p>
+        <h2 id="_4-run-the-code-with-metricstestkit" class="section"><a class="anchor-link left" href="#_4-run-the-code-with-metricstestkit"><i class="icofont-laika link">&#xef71;</i></a>4. Run the code with <code>MetricsTestkit</code></h2>
+        <p>Create the testkit as a <code>Resource</code>, allocate <code>ServiceMetrics</code> once with its <code>meterProvider</code>, and use those instruments
+        throughout the test. Collect and assert the exported metrics before the resource closes.</p>
+        <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="identifier">testkit</span><span>.</span><span class="identifier">metrics</span><span>.</span><span class="type-name">MetricsTestkit</span><span>
+
+</span><span class="keyword">def</span><span> </span><span class="declaration-name">test</span><span>: </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] =
+  </span><span class="type-name">MetricsTestkit</span><span>.</span><span class="identifier">inMemory</span><span>[</span><span class="type-name">IO</span><span>]().</span><span class="identifier">use</span><span> { </span><span class="identifier">testkit</span><span> =&gt;
+    </span><span class="keyword">for</span><span> {
+      </span><span class="identifier">serviceMetrics</span><span> &lt;- </span><span class="type-name">ServiceMetrics</span><span>.</span><span class="identifier">create</span><span>(</span><span class="identifier">testkit</span><span>.</span><span class="identifier">meterProvider</span><span>)
+      </span><span class="identifier">service</span><span> = </span><span class="keyword">new</span><span> </span><span class="type-name">Service</span><span>(</span><span class="identifier">serviceMetrics</span><span>)
+      </span><span class="identifier">_</span><span> &lt;- </span><span class="identifier">service</span><span>.</span><span class="identifier">handleRequest</span><span>
+      </span><span class="identifier">_</span><span> &lt;- </span><span class="identifier">service</span><span>.</span><span class="identifier">handleRequest</span><span>
+      </span><span class="identifier">metrics</span><span> &lt;- </span><span class="identifier">testkit</span><span>.</span><span class="identifier">collectMetrics</span><span>
+      </span><span class="identifier">_</span><span> &lt;- </span><span class="identifier">assertMetrics</span><span>(
+        </span><span class="identifier">metrics</span><span>,
+        </span><span class="type-name">MetricExpectation</span><span>.</span><span class="identifier">sum</span><span>[</span><span class="type-name">Long</span><span>](</span><span class="string-literal">&quot;service.requests&quot;</span><span>).</span><span class="identifier">value</span><span>(</span><span class="number-literal">2L</span><span>)
+      )
+    } </span><span class="keyword">yield</span><span> ()
+  }</span></code></pre>
+        <p><code>MetricExpectation</code> ignores unspecified fields, such as timestamps and resource attributes.</p>
         
-        <h2 id="related-jvm-modules" class="section"><a class="anchor-link left" href="#related-jvm-modules"><i class="icofont-laika link">&#xef71;</i></a>Related JVM modules</h2>
-        <p>Some JVM-specific modules are useful only in particular situations:</p>
-        <ul>
-          <li><code>otel4s-oteljava-context-storage</code> helps keep Cats Effect context and OpenTelemetry Java context aligned when both
-          need to share the same tracing state</li>
-          <li><code>otel4s-oteljava-testkit</code> provides in-memory exporters and expectation APIs for tests</li>
-        </ul>
-        <p>If you are using the otel4s Java agent distribution, also see:</p>
-        <ul>
-          <li><a href="../how-to-jvm-setup/use-the-otel4s-java-agent.html">Use the otel4s Java agent</a></li>
-          <li><a href="how-otel4s-context-works-with-the-otel4s-java-agent.html">How otel4s context works with the otel4s Java agent</a></li>
-        </ul>
-        
-        <h2 id="next-steps" class="section"><a class="anchor-link left" href="#next-steps"><i class="icofont-laika link">&#xef71;</i></a>Next steps</h2>
-        <ul>
-          <li>Start a new JVM application setup:
-          <a href="../how-to-jvm-setup/set-up-otel4s-in-a-jvm-application.html">Set up otel4s in a JVM application</a></li>
-          <li>Reuse a process-wide SDK:
-          <a href="../how-to-jvm-setup/use-the-global-opentelemetry-instance.html">Use the global OpenTelemetry instance</a></li>
-          <li>Keep Cats Effect and OpenTelemetry Java context aligned:
-          <a href="../how-to-jvm-setup/keep-otel4s-context-in-sync-with-opentelemetry-java.html">Keep otel4s context in sync with OpenTelemetry Java</a></li>
-          <li>Test telemetry output:
-          <a href="../oteljava/testkit.html">Testkit</a></li>
-        </ul>
+        <h2 id="what-s-next" class="section"><a class="anchor-link left" href="#what-s-next"><i class="icofont-laika link">&#xef71;</i></a>What&#39;s next</h2>
+        <p>For point attributes, histograms, collection-wide constraints, and custom numeric comparison, see
+        <a href="../oteljava/testkit-metrics.html">Testkit | Metrics</a>.</p>
 
         
 <hr class="footer-rule"/>

@@ -6,7 +6,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="generator" content="Typelevel Laika + Helium Theme" />
-  <title>The JVM backend</title>
+  <title>Testkit</title>
   
   <meta name="author" content="Ross A. Baker"/>
   
@@ -120,16 +120,16 @@
     <li class="level2 nav-leaf"><a href="../how-to-metrics/register-cats-effect-runtime-metrics.html">Register Cats Effect runtime metrics</a></li>
     <li class="level2 nav-leaf"><a href="../how-to-metrics/register-jvm-runtime-metrics.html">Register JVM runtime metrics</a></li>
     <li class="level1 nav-header">Testkit</li>
-    <li class="level2 nav-leaf"><a href="../how-to-testkit/">Testkit</a></li>
-    <li class="level2 nav-leaf"><a href="../how-to-testkit/test-metrics-emitted-by-your-code.html">Test metrics emitted by your code</a></li>
+    <li class="level2 active nav-leaf"><a href="#">Testkit</a></li>
+    <li class="level2 nav-leaf"><a href="test-metrics-emitted-by-your-code.html">Test metrics emitted by your code</a></li>
     <li class="level1 nav-header">Explanations</li>
-    <li class="level2 nav-leaf"><a href="modules-and-module-families.html">Modules and module families</a></li>
-    <li class="level2 active nav-leaf"><a href="#">The JVM backend</a></li>
-    <li class="level2 nav-leaf"><a href="how-otel4s-context-propagation-works.html">How otel4s context propagation works</a></li>
-    <li class="level2 nav-leaf"><a href="choosing-parent-spans-and-tracing-scopes.html">Choosing parent spans and tracing scopes</a></li>
-    <li class="level2 nav-leaf"><a href="tracing-resource-and-fs2-stream-scopes.html">Tracing Resource and fs2.Stream scopes</a></li>
-    <li class="level2 nav-leaf"><a href="histogram-bucket-customization-with-views.html">Histogram bucket customization with views</a></li>
-    <li class="level2 nav-leaf"><a href="how-otel4s-context-works-with-the-otel4s-java-agent.html">How otel4s context works with the otel4s Java agent</a></li>
+    <li class="level2 nav-leaf"><a href="../explanations/modules-and-module-families.html">Modules and module families</a></li>
+    <li class="level2 nav-leaf"><a href="../explanations/oteljava-jvm-backend.html">The JVM backend</a></li>
+    <li class="level2 nav-leaf"><a href="../explanations/how-otel4s-context-propagation-works.html">How otel4s context propagation works</a></li>
+    <li class="level2 nav-leaf"><a href="../explanations/choosing-parent-spans-and-tracing-scopes.html">Choosing parent spans and tracing scopes</a></li>
+    <li class="level2 nav-leaf"><a href="../explanations/tracing-resource-and-fs2-stream-scopes.html">Tracing Resource and fs2.Stream scopes</a></li>
+    <li class="level2 nav-leaf"><a href="../explanations/histogram-bucket-customization-with-views.html">Histogram bucket customization with views</a></li>
+    <li class="level2 nav-leaf"><a href="../explanations/how-otel4s-context-works-with-the-otel4s-java-agent.html">How otel4s context works with the otel4s Java agent</a></li>
     <li class="level1 nav-header">Instrumentation</li>
     <li class="level2 nav-leaf"><a href="../instrumentation/metrics.html">Metrics</a></li>
     <li class="level2 nav-leaf"><a href="../instrumentation/metrics-cats-effect-io-runtime.html">Metrics | Cats Effect IO runtime</a></li>
@@ -158,15 +158,11 @@
 
       
 <nav id="page-nav">
-  <p class="header"><a href="#">The JVM backend</a></p>
+  <p class="header"><a href="#">Testkit</a></p>
 
   <ul class="nav-list">
-    <li class="level1 nav-leaf"><a href="#when-to-use-otel4s-oteljava">When to use <code>otel4s-oteljava</code></a></li>
-    <li class="level1 nav-node"><a href="#two-ways-to-access-the-sdk">Two ways to access the SDK</a></li>
-    <li class="level2 nav-leaf"><a href="#oteljava-autoconfigured"><code>OtelJava.autoConfigured</code></a></li>
-    <li class="level2 nav-leaf"><a href="#oteljava-global"><code>OtelJava.global</code></a></li>
-    <li class="level1 nav-leaf"><a href="#related-jvm-modules">Related JVM modules</a></li>
-    <li class="level1 nav-leaf"><a href="#next-steps">Next steps</a></li>
+    <li class="level1 nav-leaf"><a href="#start-here">Start here</a></li>
+    <li class="level1 nav-leaf"><a href="#related-material">Related material</a></li>
   </ul>
 
   <p class="footer"></p>
@@ -175,98 +171,21 @@
 
       <main class="content">
 
-        <h1 id="the-jvm-backend" class="title">The JVM backend</h1>
-        <p><code>otel4s-oteljava</code> is the JVM backend for otel4s.
-        It implements the otel4s APIs on top of <a href="https://opentelemetry.io/docs/languages/java/intro/">OpenTelemetry Java</a>.</p>
-        <p>Use it when you want otel4s instrumentation to run against the OpenTelemetry Java SDK and ecosystem.</p>
+        <h1 id="testkit" class="title">Testkit</h1>
+        <p>Use this section when you want to run instrumented code against an in-memory OpenTelemetry Java backend and assert the
+        telemetry it emits.</p>
         
-        <h2 id="when-to-use-otel4s-oteljava" class="section"><a class="anchor-link left" href="#when-to-use-otel4s-oteljava"><i class="icofont-laika link">&#xef71;</i></a>When to use <code>otel4s-oteljava</code></h2>
-        <p>This backend is usually the right fit when you are building a JVM application and you want:</p>
+        <h2 id="start-here" class="section"><a class="anchor-link left" href="#start-here"><i class="icofont-laika link">&#xef71;</i></a>Start here</h2>
         <ul>
-          <li>OpenTelemetry Java exporters and SDK extensions</li>
-          <li>interoperability with Java libraries that expect OpenTelemetry Java types or the global SDK</li>
-          <li>integration with the OpenTelemetry Java agent or the otel4s Java agent distribution</li>
-          <li>the <code>otel4s-oteljava-testkit</code> module for asserting exported telemetry in tests</li>
-        </ul>
-        <p><code>otel4s-oteljava</code> is JVM-only.
-        If you need a backend for Scala.js or Scala Native, use the separate
-        <a href="https://typelevel.org/otel4s-sdk/sdk/overview.html"><code>otel4s-sdk</code></a> project instead.</p>
-        
-        <h2 id="two-ways-to-access-the-sdk" class="section"><a class="anchor-link left" href="#two-ways-to-access-the-sdk"><i class="icofont-laika link">&#xef71;</i></a>Two ways to access the SDK</h2>
-        <p>Most JVM applications use one of these entry points:</p>
-        <table>
-          <thead>
-            <tr>
-              <th>API</th>
-              <th>Use it when</th>
-              <th>What it does</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><code>OtelJava.autoConfigured</code></td>
-              <td>your application is responsible for creating the SDK</td>
-              <td>creates an isolated, non-global SDK instance from OpenTelemetry Java autoconfiguration</td>
-            </tr>
-            <tr>
-              <td><code>OtelJava.global</code></td>
-              <td>the SDK is already configured elsewhere</td>
-              <td>reads the current process-wide OpenTelemetry instance</td>
-            </tr>
-          </tbody>
-        </table>
-        <p>The difference matters because these paths have different ownership and interoperability rules.</p>
-        
-        <h3 id="oteljava-autoconfigured" class="section"><a class="anchor-link left" href="#oteljava-autoconfigured"><i class="icofont-laika link">&#xef71;</i></a><code>OtelJava.autoConfigured</code></h3>
-        <p>Use <code>OtelJava.autoConfigured</code> when your application owns SDK creation.</p>
-        <p>This is the common path when:</p>
-        <ul>
-          <li>your application starts the SDK itself</li>
-          <li>you configure exporters and SDK settings with environment variables or JVM properties</li>
-          <li>you do not need to reuse an SDK that another library, framework, or agent already created</li>
-        </ul>
-        <p><code>OtelJava.autoConfigured</code> creates an isolated instance.
-        If the same process already has a global SDK that other code relies on, creating a separate isolated instance can make
-        telemetry behavior harder to reason about.</p>
-        <p>For the setup steps, use
-        <a href="../how-to-jvm-setup/set-up-otel4s-in-a-jvm-application.html">Set up otel4s in a JVM application</a>.</p>
-        
-        <h3 id="oteljava-global" class="section"><a class="anchor-link left" href="#oteljava-global"><i class="icofont-laika link">&#xef71;</i></a><code>OtelJava.global</code></h3>
-        <p>Use <code>OtelJava.global</code> when SDK creation happens elsewhere and otel4s needs to join that existing setup.</p>
-        <p>This is the common path when:</p>
-        <ul>
-          <li>an agent configures the global OpenTelemetry SDK</li>
-          <li>a framework or bootstrap layer initializes OpenTelemetry before your otel4s code runs</li>
-          <li>you need otel4s and Java libraries to observe the same process-wide SDK state</li>
-        </ul>
-        <p><code>OtelJava.global</code> does not configure an SDK.
-        It only reads the global instance that already exists.</p>
-        <p>For the setup steps, use
-        <a href="../how-to-jvm-setup/use-the-global-opentelemetry-instance.html">Use the global OpenTelemetry instance</a>.</p>
-        
-        <h2 id="related-jvm-modules" class="section"><a class="anchor-link left" href="#related-jvm-modules"><i class="icofont-laika link">&#xef71;</i></a>Related JVM modules</h2>
-        <p>Some JVM-specific modules are useful only in particular situations:</p>
-        <ul>
-          <li><code>otel4s-oteljava-context-storage</code> helps keep Cats Effect context and OpenTelemetry Java context aligned when both
-          need to share the same tracing state</li>
-          <li><code>otel4s-oteljava-testkit</code> provides in-memory exporters and expectation APIs for tests</li>
-        </ul>
-        <p>If you are using the otel4s Java agent distribution, also see:</p>
-        <ul>
-          <li><a href="../how-to-jvm-setup/use-the-otel4s-java-agent.html">Use the otel4s Java agent</a></li>
-          <li><a href="how-otel4s-context-works-with-the-otel4s-java-agent.html">How otel4s context works with the otel4s Java agent</a></li>
+          <li><a href="test-metrics-emitted-by-your-code.html">Test metrics emitted by your code</a></li>
         </ul>
         
-        <h2 id="next-steps" class="section"><a class="anchor-link left" href="#next-steps"><i class="icofont-laika link">&#xef71;</i></a>Next steps</h2>
+        <h2 id="related-material" class="section"><a class="anchor-link left" href="#related-material"><i class="icofont-laika link">&#xef71;</i></a>Related material</h2>
         <ul>
-          <li>Start a new JVM application setup:
-          <a href="../how-to-jvm-setup/set-up-otel4s-in-a-jvm-application.html">Set up otel4s in a JVM application</a></li>
-          <li>Reuse a process-wide SDK:
-          <a href="../how-to-jvm-setup/use-the-global-opentelemetry-instance.html">Use the global OpenTelemetry instance</a></li>
-          <li>Keep Cats Effect and OpenTelemetry Java context aligned:
-          <a href="../how-to-jvm-setup/keep-otel4s-context-in-sync-with-opentelemetry-java.html">Keep otel4s context in sync with OpenTelemetry Java</a></li>
-          <li>Test telemetry output:
-          <a href="../oteljava/testkit.html">Testkit</a></li>
+          <li>For an overview of the available signal-specific and combined testkits, see
+          <a href="../oteljava/testkit.html">Testkit</a>.</li>
+          <li>For the complete metrics expectation API, see
+          <a href="../oteljava/testkit-metrics.html">Testkit | Metrics</a>.</li>
         </ul>
 
         

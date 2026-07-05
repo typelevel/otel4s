@@ -40,6 +40,12 @@ import org.typelevel.otel4s.oteljava.testkit.metrics.MetricsTestkit
 import org.typelevel.otel4s.oteljava.testkit.trace.TracesTestkit
 import org.typelevel.otel4s.trace.TracerProvider
 
+/** An in-memory metrics, traces, and logs backend for tests.
+  *
+  * @see
+  *   Metrics how-to guide
+  *   [[https://typelevel.org/otel4s/how-to-testkit/test-metrics-emitted-by-your-code.html Test metrics emitted by your code]]
+  */
 sealed abstract class OtelJavaTestkit[F[_]] private (implicit
     val localContext: LocalContext[F]
 ) extends Otel4s.Unsealed[F]

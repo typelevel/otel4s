@@ -45,6 +45,10 @@ import org.typelevel.otel4s.trace.TracerProvider
   * @see
   *   Metrics how-to guide
   *   [[https://typelevel.org/otel4s/how-to-testkit/test-metrics-emitted-by-your-code.html Test metrics emitted by your code]]
+  *
+  * @see
+  *   Logs how-to guide
+  *   [[https://typelevel.org/otel4s/how-to-testkit/test-logs-emitted-by-your-code.html Test logs emitted by your code]]
   */
 sealed abstract class OtelJavaTestkit[F[_]] private (implicit
     val localContext: LocalContext[F]

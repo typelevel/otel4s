@@ -41,6 +41,12 @@ import org.typelevel.otel4s.trace.TracerProvider
 
 import scala.jdk.CollectionConverters._
 
+/** An in-memory tracing backend for tests.
+  *
+  * @see
+  *   How-to guide
+  *   [[https://typelevel.org/otel4s/how-to-testkit/test-traces-emitted-by-your-code.html Test traces emitted by your code]]
+  */
 sealed trait TracesTestkit[F[_]] {
 
   /** The [[org.typelevel.otel4s.trace.TracerProvider TracerProvider]].

@@ -47,6 +47,10 @@ import org.typelevel.otel4s.trace.TracerProvider
   *   [[https://typelevel.org/otel4s/how-to-testkit/test-metrics-emitted-by-your-code.html Test metrics emitted by your code]]
   *
   * @see
+  *   Traces how-to guide
+  *   [[https://typelevel.org/otel4s/how-to-testkit/test-traces-emitted-by-your-code.html Test traces emitted by your code]]
+  *
+  * @see
   *   Logs how-to guide
   *   [[https://typelevel.org/otel4s/how-to-testkit/test-logs-emitted-by-your-code.html Test logs emitted by your code]]
   */

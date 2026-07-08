@@ -6,7 +6,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="generator" content="Typelevel Laika + Helium Theme" />
-  <title>JVM setup</title>
+  <title>Test logs emitted by your code</title>
   
   <meta name="author" content="Ross A. Baker"/>
   
@@ -100,11 +100,11 @@
     <li class="level1 nav-leaf"><a href="../">otel4s</a></li>
     <li class="level1 nav-leaf"><a href="../ecosystem.html">Ecosystem</a></li>
     <li class="level1 nav-header">How-to | JVM setup</li>
-    <li class="level2 active nav-leaf"><a href="#">JVM setup</a></li>
-    <li class="level2 nav-leaf"><a href="set-up-otel4s-in-a-jvm-application.html">Set up otel4s in a JVM application</a></li>
-    <li class="level2 nav-leaf"><a href="use-the-global-opentelemetry-instance.html">Use the global OpenTelemetry instance</a></li>
-    <li class="level2 nav-leaf"><a href="keep-otel4s-context-in-sync-with-opentelemetry-java.html">Keep otel4s context in sync with OpenTelemetry Java</a></li>
-    <li class="level2 nav-leaf"><a href="use-the-otel4s-java-agent.html">Use the otel4s Java agent</a></li>
+    <li class="level2 nav-leaf"><a href="../how-to-jvm-setup/">JVM setup</a></li>
+    <li class="level2 nav-leaf"><a href="../how-to-jvm-setup/set-up-otel4s-in-a-jvm-application.html">Set up otel4s in a JVM application</a></li>
+    <li class="level2 nav-leaf"><a href="../how-to-jvm-setup/use-the-global-opentelemetry-instance.html">Use the global OpenTelemetry instance</a></li>
+    <li class="level2 nav-leaf"><a href="../how-to-jvm-setup/keep-otel4s-context-in-sync-with-opentelemetry-java.html">Keep otel4s context in sync with OpenTelemetry Java</a></li>
+    <li class="level2 nav-leaf"><a href="../how-to-jvm-setup/use-the-otel4s-java-agent.html">Use the otel4s Java agent</a></li>
     <li class="level1 nav-header">How-to | Tracing</li>
     <li class="level2 nav-leaf"><a href="../how-to-tracing/">Tracing</a></li>
     <li class="level2 nav-leaf"><a href="../how-to-tracing/create-spans-around-effectful-code.html">Create spans around effectful code</a></li>
@@ -120,10 +120,10 @@
     <li class="level2 nav-leaf"><a href="../how-to-metrics/register-cats-effect-runtime-metrics.html">Register Cats Effect runtime metrics</a></li>
     <li class="level2 nav-leaf"><a href="../how-to-metrics/register-jvm-runtime-metrics.html">Register JVM runtime metrics</a></li>
     <li class="level1 nav-header">How-to | Testkit</li>
-    <li class="level2 nav-leaf"><a href="../how-to-testkit/">Testkit</a></li>
-    <li class="level2 nav-leaf"><a href="../how-to-testkit/test-metrics-emitted-by-your-code.html">Test metrics emitted by your code</a></li>
-    <li class="level2 nav-leaf"><a href="../how-to-testkit/test-traces-emitted-by-your-code.html">Test traces emitted by your code</a></li>
-    <li class="level2 nav-leaf"><a href="../how-to-testkit/test-logs-emitted-by-your-code.html">Test logs emitted by your code</a></li>
+    <li class="level2 nav-leaf"><a href="index.html">Testkit</a></li>
+    <li class="level2 nav-leaf"><a href="test-metrics-emitted-by-your-code.html">Test metrics emitted by your code</a></li>
+    <li class="level2 nav-leaf"><a href="test-traces-emitted-by-your-code.html">Test traces emitted by your code</a></li>
+    <li class="level2 active nav-leaf"><a href="#">Test logs emitted by your code</a></li>
     <li class="level1 nav-header">Explanations</li>
     <li class="level2 nav-leaf"><a href="../explanations/modules-and-module-families.html">Modules and module families</a></li>
     <li class="level2 nav-leaf"><a href="../explanations/oteljava-jvm-backend.html">The JVM backend</a></li>
@@ -160,11 +160,14 @@
 
       
 <nav id="page-nav">
-  <p class="header"><a href="#">JVM setup</a></p>
+  <p class="header"><a href="#">Test logs emitted by your code</a></p>
 
   <ul class="nav-list">
-    <li class="level1 nav-leaf"><a href="#start-here">Start here</a></li>
-    <li class="level1 nav-leaf"><a href="#related-material">Related material</a></li>
+    <li class="level1 nav-leaf"><a href="#_1-add-the-testkit-dependency">1. Add the testkit dependency</a></li>
+    <li class="level1 nav-leaf"><a href="#_2-allocate-the-logger-once">2. Allocate the logger once</a></li>
+    <li class="level1 nav-leaf"><a href="#_3-define-an-assertion-helper">3. Define an assertion helper</a></li>
+    <li class="level1 nav-leaf"><a href="#_4-run-the-bridge-with-logstestkit">4. Run the bridge with <code>LogsTestkit</code></a></li>
+    <li class="level1 nav-leaf"><a href="#what-s-next">What&#39;s next</a></li>
   </ul>
 
   <p class="footer"></p>
@@ -173,31 +176,93 @@
 
       <main class="content">
 
-        <h1 id="jvm-setup" class="title">JVM setup</h1>
-        <p>Use this section when you want to get otel4s running on the JVM with the OpenTelemetry Java backend.</p>
+        <h1 id="test-logs-emitted-by-your-code" class="title">Test logs emitted by your code</h1>
+        <p>Use <code>LogsTestkit</code> to run a logging bridge against an in-memory logs backend and assert the exported log records.</p>
         
-        <h2 id="start-here" class="section"><a class="anchor-link left" href="#start-here"><i class="icofont-laika link">&#xef71;</i></a>Start here</h2>
-        <ul>
-          <li>Set up a JVM application and export telemetry with OTLP:
-          <a href="set-up-otel4s-in-a-jvm-application.html">Set up otel4s in a JVM application</a></li>
-          <li>Keep otel4s context in sync with OpenTelemetry Java context:
-          <a href="keep-otel4s-context-in-sync-with-opentelemetry-java.html">Keep otel4s context in sync with OpenTelemetry Java</a></li>
-          <li>Use an OpenTelemetry instance that is already configured elsewhere:
-          <a href="use-the-global-opentelemetry-instance.html">Use the global OpenTelemetry instance</a></li>
-          <li>Use the otel4s Java agent and still access the same SDK from otel4s:
-          <a href="use-the-otel4s-java-agent.html">Use the otel4s Java agent</a></li>
-        </ul>
+        <h2 id="_1-add-the-testkit-dependency" class="section"><a class="anchor-link left" href="#_1-add-the-testkit-dependency"><i class="icofont-laika link">&#xef71;</i></a>1. Add the testkit dependency</h2>
+        <div class="tab-container" data-tab-group="build-tool">
+          <ul class="tab-group">
+            <li class="tab active" data-choice-name="sbt"><a href="#">sbt</a></li>
+            <li class="tab" data-choice-name="scala-cli"><a href="#">Scala CLI</a></li>
+          </ul>
+          <div class="tab-content active" data-choice-name="sbt">
+            <p>Add the testkit to the test scope in <code>build.sbt</code>:</p>
+            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">libraryDependencies</span><span> +=
+  </span><span class="string-literal">&quot;org.typelevel&quot;</span><span> %% </span><span class="string-literal">&quot;otel4s-oteljava-testkit&quot;</span><span> % </span><span class="string-literal">&quot;1.0.1&quot;</span><span> % </span><span class="type-name">Test</span></code></pre>
+          </div>
+          <div class="tab-content" data-choice-name="scala-cli">
+            <p>Add the test dependency to the test source file:</p>
+            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="comment">//&gt; using test.dep &quot;org.typelevel::otel4s-oteljava-testkit:1.0.1&quot;</span></code></pre>
+          </div>
+        </div>
         
-        <h2 id="related-material" class="section"><a class="anchor-link left" href="#related-material"><i class="icofont-laika link">&#xef71;</i></a>Related material</h2>
-        <ul>
-          <li>Choose the right published module for your application or library:
-          <a href="../explanations/modules-and-module-families.html#which-module-do-i-need">Modules and module families</a></li>
-          <li>Backend overview:
-          <a href="../explanations/oteljava-jvm-backend.html">The JVM backend</a></li>
-          <li>Local verification examples:
-          <a href="../examples/jaeger-docker/">Jaeger and Docker</a>,
-          <a href="../examples/grafana/">Grafana</a></li>
-        </ul>
+        <h2 id="_2-allocate-the-logger-once" class="section"><a class="anchor-link left" href="#_2-allocate-the-logger-once"><i class="icofont-laika link">&#xef71;</i></a>2. Allocate the logger once</h2>
+        <p>Create one logger for the bridge&#39;s instrumentation scope and pass it directly to the bridge that emits OpenTelemetry
+        log records.</p>
+        <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.</span><span class="type-name">IO</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.{</span><span class="type-name">AnyValue</span><span>, </span><span class="type-name">Attribute</span><span>}
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">logs</span><span>.{</span><span class="type-name">Logger</span><span>, </span><span class="type-name">Severity</span><span>}
+
+</span><span class="keyword">final</span><span> </span><span class="keyword">class</span><span> </span><span class="type-name">ServiceLogBridge</span><span>(</span><span class="identifier">logger</span><span>: </span><span class="type-name">Logger</span><span>[</span><span class="type-name">IO</span><span>, </span><span class="identifier">_</span><span>]) {
+  </span><span class="keyword">def</span><span> </span><span class="declaration-name">requestFailed</span><span>: </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] =
+    </span><span class="identifier">logger</span><span>.</span><span class="identifier">logRecordBuilder</span><span>
+      .</span><span class="identifier">withSeverity</span><span>(</span><span class="type-name">Severity</span><span>.</span><span class="identifier">error</span><span>)
+      .</span><span class="identifier">withSeverityText</span><span>(</span><span class="string-literal">&quot;ERROR&quot;</span><span>)
+      .</span><span class="identifier">withBody</span><span>(</span><span class="type-name">AnyValue</span><span>.</span><span class="identifier">string</span><span>(</span><span class="string-literal">&quot;request failed&quot;</span><span>))
+      .</span><span class="identifier">addAttributes</span><span>(
+        </span><span class="type-name">Attribute</span><span>(</span><span class="string-literal">&quot;http.route&quot;</span><span>, </span><span class="string-literal">&quot;/users&quot;</span><span>),
+        </span><span class="type-name">Attribute</span><span>(</span><span class="string-literal">&quot;error.type&quot;</span><span>, </span><span class="string-literal">&quot;timeout&quot;</span><span>)
+      )
+      .</span><span class="identifier">emit</span><span>
+}</span></code></pre>
+        <p><code>Logger</code> is intended for adapters that bridge an existing logging framework into OpenTelemetry. It does not replace
+        the logging API used by application code.</p>
+        
+        <h2 id="_3-define-an-assertion-helper" class="section"><a class="anchor-link left" href="#_3-define-an-assertion-helper"><i class="icofont-laika link">&#xef71;</i></a>3. Define an assertion helper</h2>
+        <p>The expectation API returns structured mismatches. Convert them into the failure type used by your test framework.</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">io</span><span>.</span><span class="identifier">opentelemetry</span><span>.</span><span class="identifier">sdk</span><span>.</span><span class="identifier">logs</span><span>.</span><span class="identifier">data</span><span>.</span><span class="type-name">LogRecordData</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="identifier">testkit</span><span>.</span><span class="identifier">logs</span><span>.{</span><span class="type-name">LogRecordExpectation</span><span>, </span><span class="type-name">LogRecordExpectations</span><span>}
+
+</span><span class="keyword">def</span><span> </span><span class="declaration-name">assertLogs</span><span>(</span><span class="identifier">records</span><span>: </span><span class="type-name">List</span><span>[</span><span class="type-name">LogRecordData</span><span>], </span><span class="identifier">expected</span><span>: </span><span class="type-name">LogRecordExpectation</span><span>*): </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] =
+  </span><span class="type-name">LogRecordExpectations</span><span>.</span><span class="identifier">checkAll</span><span>(</span><span class="identifier">records</span><span>, </span><span class="identifier">expected</span><span>: </span><span class="identifier">_</span><span>*) </span><span class="keyword">match</span><span> {
+    </span><span class="keyword">case</span><span> </span><span class="type-name">Right</span><span>(</span><span class="identifier">_</span><span>) =&gt;
+      </span><span class="type-name">IO</span><span>.</span><span class="identifier">unit</span><span>
+    </span><span class="keyword">case</span><span> </span><span class="type-name">Left</span><span>(</span><span class="identifier">mismatches</span><span>) =&gt;
+      </span><span class="type-name">IO</span><span>.</span><span class="identifier">raiseError</span><span>(</span><span class="keyword">new</span><span> </span><span class="type-name">AssertionError</span><span>(</span><span class="type-name">LogRecordExpectations</span><span>.</span><span class="identifier">format</span><span>(</span><span class="identifier">mismatches</span><span>)))
+  }</span></code></pre>
+        <p>This helper uses <code>IO.raiseError</code> so it remains independent of a specific test framework. Replace it with the framework&#39;s
+        failure mechanism when appropriate.</p>
+        
+        <h2 id="_4-run-the-bridge-with-logstestkit" class="section"><a class="anchor-link left" href="#_4-run-the-bridge-with-logstestkit"><i class="icofont-laika link">&#xef71;</i></a>4. Run the bridge with <code>LogsTestkit</code></h2>
+        <p>Create the testkit as a <code>Resource</code>, get a logger from its <code>loggerProvider</code>, and pass the logger directly to the bridge.
+        Collect the finished log records before the resource closes.</p>
+        <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="identifier">testkit</span><span>.</span><span class="identifier">logs</span><span>.</span><span class="type-name">LogsTestkit</span><span>
+
+</span><span class="keyword">def</span><span> </span><span class="declaration-name">test</span><span>: </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] =
+  </span><span class="type-name">LogsTestkit</span><span>.</span><span class="identifier">inMemory</span><span>[</span><span class="type-name">IO</span><span>]().</span><span class="identifier">use</span><span> { </span><span class="identifier">testkit</span><span> =&gt;
+    </span><span class="keyword">for</span><span> {
+      </span><span class="identifier">logger</span><span> &lt;- </span><span class="identifier">testkit</span><span>.</span><span class="identifier">loggerProvider</span><span>.</span><span class="identifier">logger</span><span>(</span><span class="string-literal">&quot;service&quot;</span><span>).</span><span class="identifier">withVersion</span><span>(</span><span class="string-literal">&quot;1.0.0&quot;</span><span>).</span><span class="identifier">get</span><span>
+      </span><span class="identifier">bridge</span><span> = </span><span class="keyword">new</span><span> </span><span class="type-name">ServiceLogBridge</span><span>(</span><span class="identifier">logger</span><span>)
+      </span><span class="identifier">_</span><span> &lt;- </span><span class="identifier">bridge</span><span>.</span><span class="identifier">requestFailed</span><span>
+      </span><span class="identifier">records</span><span> &lt;- </span><span class="identifier">testkit</span><span>.</span><span class="identifier">finishedLogs</span><span>
+      </span><span class="identifier">_</span><span> &lt;- </span><span class="identifier">assertLogs</span><span>(
+        </span><span class="identifier">records</span><span>,
+        </span><span class="type-name">LogRecordExpectation</span><span>
+          .</span><span class="identifier">message</span><span>(</span><span class="string-literal">&quot;request failed&quot;</span><span>)
+          .</span><span class="identifier">severity</span><span>(</span><span class="type-name">Severity</span><span>.</span><span class="identifier">error</span><span>)
+          .</span><span class="identifier">severityText</span><span>(</span><span class="string-literal">&quot;ERROR&quot;</span><span>)
+          .</span><span class="identifier">attributesSubset</span><span>(
+            </span><span class="type-name">Attribute</span><span>(</span><span class="string-literal">&quot;http.route&quot;</span><span>, </span><span class="string-literal">&quot;/users&quot;</span><span>),
+            </span><span class="type-name">Attribute</span><span>(</span><span class="string-literal">&quot;error.type&quot;</span><span>, </span><span class="string-literal">&quot;timeout&quot;</span><span>)
+          )
+      )
+    } </span><span class="keyword">yield</span><span> ()
+  }</span></code></pre>
+        <p><code>LogRecordExpectation</code> ignores unspecified fields, such as timestamps, trace correlation, and resource attributes.</p>
+        
+        <h2 id="what-s-next" class="section"><a class="anchor-link left" href="#what-s-next"><i class="icofont-laika link">&#xef71;</i></a>What&#39;s next</h2>
+        <p>For structured bodies, trace correlation, scope and resource matching, timestamps, and custom predicates, see
+        <a href="../oteljava/testkit-logs.html">Testkit | Logs</a>.</p>
 
         
 <hr class="footer-rule"/>

@@ -36,6 +36,12 @@ import org.typelevel.otel4s.oteljava.testkit.Conversions
 
 import scala.jdk.CollectionConverters._
 
+/** An in-memory logs backend for tests.
+  *
+  * @see
+  *   How-to guide
+  *   [[https://typelevel.org/otel4s/how-to-testkit/test-logs-emitted-by-your-code.html Test logs emitted by your code]]
+  */
 sealed trait LogsTestkit[F[_]] {
 
   /** The [[org.typelevel.otel4s.logs.LoggerProvider LoggerProvider]].

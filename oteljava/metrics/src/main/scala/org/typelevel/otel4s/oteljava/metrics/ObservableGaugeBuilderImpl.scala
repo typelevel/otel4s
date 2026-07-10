@@ -142,12 +142,14 @@ private[oteljava] object ObservableGaugeBuilderImpl {
     )(cb: JMeasurement => F[Unit]): Resource[F, ObservableGauge] =
       Dispatcher.sequential.flatMap { dispatcher =>
         Resource
-          .fromAutoCloseable(Async[F].delay {
-            val b = jMeter.gaugeBuilder(name)
-            unit.foreach(b.setUnit)
-            description.foreach(b.setDescription)
-            create(b, dispatcher, cb)
-          })
+          .fromAutoCloseable(
+            Async[F].delay {
+              val b = jMeter.gaugeBuilder(name)
+              unit.foreach(b.setUnit)
+              description.foreach(b.setDescription)
+              create(b, dispatcher, cb)
+            }
+          )
           .as(ObservableGauge.noop)
       }
 

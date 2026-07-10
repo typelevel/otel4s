@@ -142,12 +142,14 @@ private[oteljava] object ObservableUpDownCounterBuilderImpl {
     )(cb: JMeasurement => F[Unit]): Resource[F, ObservableUpDownCounter] =
       Dispatcher.sequential.flatMap { dispatcher =>
         Resource
-          .fromAutoCloseable(Async[F].delay {
-            val b = jMeter.upDownCounterBuilder(name)
-            unit.foreach(b.setUnit)
-            description.foreach(b.setDescription)
-            create(b, dispatcher, cb)
-          })
+          .fromAutoCloseable(
+            Async[F].delay {
+              val b = jMeter.upDownCounterBuilder(name)
+              unit.foreach(b.setUnit)
+              description.foreach(b.setDescription)
+              create(b, dispatcher, cb)
+            }
+          )
           .as(ObservableUpDownCounter.noop)
       }
 

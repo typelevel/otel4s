@@ -8,6 +8,7 @@ telemetry it emits.
 - [Test metrics emitted by your code](test-metrics-emitted-by-your-code.md)
 - [Test traces emitted by your code](test-traces-emitted-by-your-code.md)
 - [Test logs emitted by your code](test-logs-emitted-by-your-code.md)
+- [Use IOLocalContextStorage with the testkit](use-iolocal-context-storage-with-the-testkit.md)
 
 ## Related material
 

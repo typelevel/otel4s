@@ -25,6 +25,12 @@ import org.typelevel.otel4s.context.LocalProvider
 import org.typelevel.otel4s.oteljava.context.Context
 import org.typelevel.otel4s.oteljava.context.IOLocalContextStorage
 
+/** A test-compatible local context provider for code that uses `IOLocalContextStorage`.
+  *
+  * @see
+  *   How-to guide
+  *   [[https://typelevel.org/otel4s/how-to-testkit/use-iolocal-context-storage-with-the-testkit.html Use IOLocalContextStorage with the testkit]]
+  */
 object IOLocalTestContextStorage {
 
   def localProvider[F[_]: MonadCancelThrow: Console: LiftIO]: LocalProvider[F, Context] =

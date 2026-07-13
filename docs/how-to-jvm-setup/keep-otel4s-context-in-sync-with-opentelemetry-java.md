@@ -103,8 +103,8 @@ For handler, client, and library boundary patterns, see the tracing how-to pages
   [Use the otel4s Java agent](use-the-otel4s-java-agent.md)
 - for background on why that agent needs its own setup path, see
   [How otel4s context works with the otel4s Java agent](../explanations/how-otel4s-context-works-with-the-otel4s-java-agent.md)
-- if you use the testkit and rely on `IOLocalContextStorage`, see the existing
-  [Testkit](../oteljava/testkit.md#iolocalcontextstorage) page
+- if you use the testkit and rely on `IOLocalContextStorage`, see
+  [Use IOLocalContextStorage with the testkit](../how-to-testkit/use-iolocal-context-storage-with-the-testkit.md)
 
 ## What's next
 

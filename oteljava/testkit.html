@@ -124,6 +124,7 @@
     <li class="level2 nav-leaf"><a href="../how-to-testkit/test-metrics-emitted-by-your-code.html">Test metrics emitted by your code</a></li>
     <li class="level2 nav-leaf"><a href="../how-to-testkit/test-traces-emitted-by-your-code.html">Test traces emitted by your code</a></li>
     <li class="level2 nav-leaf"><a href="../how-to-testkit/test-logs-emitted-by-your-code.html">Test logs emitted by your code</a></li>
+    <li class="level2 nav-leaf"><a href="../how-to-testkit/use-iolocal-context-storage-with-the-testkit.html">Use IOLocalContextStorage with the testkit</a></li>
     <li class="level1 nav-header">Explanations</li>
     <li class="level2 nav-leaf"><a href="../explanations/modules-and-module-families.html">Modules and module families</a></li>
     <li class="level2 nav-leaf"><a href="../explanations/oteljava-jvm-backend.html">The JVM backend</a></li>
@@ -163,15 +164,11 @@
   <p class="header"><a href="#">Testkit</a></p>
 
   <ul class="nav-list">
-    <li class="level1 nav-leaf"><a href="#getting-started">Getting started</a></li>
-    <li class="level1 nav-leaf"><a href="#choosing-a-testkit">Choosing a testkit</a></li>
-    <li class="level1 nav-node"><a href="#expectation-apis">Expectation APIs</a></li>
-    <li class="level2 nav-leaf"><a href="#metrics">Metrics</a></li>
-    <li class="level2 nav-leaf"><a href="#traces">Traces</a></li>
-    <li class="level2 nav-leaf"><a href="#logs">Logs</a></li>
-    <li class="level1 nav-leaf"><a href="#mismatch-rendering">Mismatch rendering</a></li>
-    <li class="level1 nav-leaf"><a href="#when-to-use-raw-sdk-models">When to use raw SDK models</a></li>
-    <li class="level1 nav-leaf"><a href="#iolocalcontextstorage">IOLocalContextStorage</a></li>
+    <li class="level1 nav-leaf"><a href="#choose-a-testkit">Choose a testkit</a></li>
+    <li class="level1 nav-leaf"><a href="#how-to-guides">How-to guides</a></li>
+    <li class="level1 nav-leaf"><a href="#expectation-apis">Expectation APIs</a></li>
+    <li class="level1 nav-leaf"><a href="#use-raw-sdk-models-when-needed">Use raw SDK models when needed</a></li>
+    <li class="level1 nav-leaf"><a href="#context-storage-in-tests">Context storage in tests</a></li>
   </ul>
 
   <p class="footer"></p>
@@ -182,218 +179,107 @@
 
         <h1 id="testkit" class="title">Testkit</h1>
         <p>The <code>otel4s-oteljava-testkit</code> module provides in-memory metric, trace, and log exporters for the OpenTelemetry Java
-        backend.</p>
-        <p>Use it when you want to:</p>
-        <ul>
-          <li>run instrumentation against a real <code>otel4s-oteljava</code> implementation</li>
-          <li>collect exported telemetry as OpenTelemetry Java SDK models</li>
-          <li>assert telemetry with the expectation APIs instead of building local test ADTs</li>
-        </ul>
-        <p>The testkit is framework-agnostic, so it can be used with munit, weaver, ScalaTest, or any other test framework.</p>
+        backend. It runs instrumentation against the real backend and exposes exported telemetry as OpenTelemetry Java SDK
+        models.</p>
+        <p>The testkit is framework-independent, so it can be used with munit, weaver, ScalaTest, or another test framework.</p>
         
-        <h2 id="getting-started" class="section"><a class="anchor-link left" href="#getting-started"><i class="icofont-laika link">&#xef71;</i></a>Getting started</h2>
-        <div class="tab-container" data-tab-group="build-tool">
-          <ul class="tab-group">
-            <li class="tab active" data-choice-name="sbt"><a href="#">sbt</a></li>
-            <li class="tab" data-choice-name="scala-cli"><a href="#">Scala CLI</a></li>
-          </ul>
-          <div class="tab-content active" data-choice-name="sbt">
-            <p>Add settings to <code>build.sbt</code>:</p>
-            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">libraryDependencies</span><span> ++= </span><span class="type-name">Seq</span><span>(
-  </span><span class="string-literal">&quot;org.typelevel&quot;</span><span> %% </span><span class="string-literal">&quot;otel4s-oteljava-testkit&quot;</span><span> % </span><span class="string-literal">&quot;1.0.1&quot;</span><span> % </span><span class="type-name">Test</span><span>, </span><span class="comment">// &lt;1&gt;
-</span><span>)</span></code></pre>
-          </div>
-          <div class="tab-content" data-choice-name="scala-cli">
-            <p>Add directives to the <code>*.scala</code> file:</p>
-            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="comment">//&gt; using test.dep &quot;org.typelevel::otel4s-oteljava-testkit:1.0.1&quot; // &lt;1&gt;</span></code></pre>
-          </div>
-        </div>
-        <ol class="arabic">
-          <li>Add the <code>otel4s-oteljava-testkit</code> module to the test scope</li>
-        </ol>
+        <h2 id="choose-a-testkit" class="section"><a class="anchor-link left" href="#choose-a-testkit"><i class="icofont-laika link">&#xef71;</i></a>Choose a testkit</h2>
+        <p>Use a signal-specific testkit when a test covers one signal. Use <code>OtelJavaTestkit</code> when a test needs two or more signals.</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Testkit</th>
+              <th>Providers</th>
+              <th>Exported telemetry</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>MetricsTestkit</code></td>
+              <td><code>meterProvider</code></td>
+              <td><code>collectMetrics</code>: <code>List[MetricData]</code></td>
+            </tr>
+            <tr>
+              <td><code>TracesTestkit</code></td>
+              <td><code>tracerProvider</code></td>
+              <td><code>finishedSpans</code>: <code>List[SpanData]</code></td>
+            </tr>
+            <tr>
+              <td><code>LogsTestkit</code></td>
+              <td><code>loggerProvider</code></td>
+              <td><code>finishedLogs</code>: <code>List[LogRecordData]</code></td>
+            </tr>
+            <tr>
+              <td><code>OtelJavaTestkit</code></td>
+              <td><code>meterProvider</code>, <code>tracerProvider</code>, <code>loggerProvider</code></td>
+              <td>Metrics, spans, and logs from the methods above</td>
+            </tr>
+          </tbody>
+        </table>
         
-        <h2 id="choosing-a-testkit" class="section"><a class="anchor-link left" href="#choosing-a-testkit"><i class="icofont-laika link">&#xef71;</i></a>Choosing a testkit</h2>
-        <p>You can use either the domain-specific testkits or the combined testkit:</p>
+        <h2 id="how-to-guides" class="section"><a class="anchor-link left" href="#how-to-guides"><i class="icofont-laika link">&#xef71;</i></a>How-to guides</h2>
         <ul>
-          <li><code>MetricsTestkit</code> for metrics only</li>
-          <li><code>TracesTestkit</code> for traces only</li>
-          <li><code>LogsTestkit</code> for logs only</li>
-          <li><code>OtelJavaTestkit</code> when one test needs multiple signal types</li>
+          <li><a href="../how-to-testkit/test-metrics-emitted-by-your-code.html">Test metrics emitted by your code</a></li>
+          <li><a href="../how-to-testkit/test-traces-emitted-by-your-code.html">Test traces emitted by your code</a></li>
+          <li><a href="../how-to-testkit/test-logs-emitted-by-your-code.html">Test logs emitted by your code</a></li>
+          <li><a href="../how-to-testkit/use-iolocal-context-storage-with-the-testkit.html">Use IOLocalContextStorage with the testkit</a></li>
         </ul>
-        <p>The combined testkit exposes:</p>
-        <ul>
-          <li><code>meterProvider</code></li>
-          <li><code>tracerProvider</code></li>
-          <li><code>loggerProvider</code></li>
-          <li><code>collectMetrics</code></li>
-          <li><code>finishedSpans</code></li>
-          <li><code>finishedLogs</code></li>
-        </ul>
-        <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.</span><span class="type-name">IO</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="identifier">testkit</span><span>.</span><span class="type-name">OtelJavaTestkit</span><span>
-
-</span><span class="keyword">def</span><span> </span><span class="declaration-name">test</span><span>: </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] =
-  </span><span class="type-name">OtelJavaTestkit</span><span>.</span><span class="identifier">inMemory</span><span>[</span><span class="type-name">IO</span><span>]().</span><span class="identifier">use</span><span> { </span><span class="identifier">testkit</span><span> =&gt;
-    </span><span class="keyword">for</span><span> {
-      </span><span class="identifier">metrics</span><span> &lt;- </span><span class="identifier">testkit</span><span>.</span><span class="identifier">collectMetrics</span><span>
-      </span><span class="identifier">spans</span><span> &lt;- </span><span class="identifier">testkit</span><span>.</span><span class="identifier">finishedSpans</span><span>
-      </span><span class="identifier">logs</span><span> &lt;- </span><span class="identifier">testkit</span><span>.</span><span class="identifier">finishedLogs</span><span>
-    } </span><span class="keyword">yield</span><span> {
-      </span><span class="keyword">val</span><span> </span><span class="identifier">_</span><span> = (</span><span class="identifier">metrics</span><span>, </span><span class="identifier">spans</span><span>, </span><span class="identifier">logs</span><span>)
-    }
-  }</span></code></pre>
-        <p>If a test exercises only one signal, the signal-specific testkit usually reads a bit more clearly.</p>
         
         <h2 id="expectation-apis" class="section"><a class="anchor-link left" href="#expectation-apis"><i class="icofont-laika link">&#xef71;</i></a>Expectation APIs</h2>
-        <p>The recommended testing style is:</p>
-        <ol class="arabic">
-          <li>run the program against the in-memory testkit</li>
-          <li>collect raw OpenTelemetry Java SDK models</li>
-          <li>assert them with the expectation API</li>
-        </ol>
-        <p>The expectation APIs are partial by default. This means:</p>
-        <ul>
-          <li>unspecified fields are ignored</li>
-          <li>you can match only the properties that matter for the current test</li>
-          <li>you can still add detail for timestamps, attributes, scope, resource, and structure when needed</li>
-        </ul>
-        <p>Dedicated guides:</p>
-        <ul>
-          <li><a href="testkit-metrics.html">Testkit | Metrics</a></li>
-          <li><a href="testkit-traces.html">Testkit | Traces</a></li>
-          <li><a href="testkit-logs.html">Testkit | Logs</a></li>
-        </ul>
-        
-        <h3 id="metrics" class="section"><a class="anchor-link left" href="#metrics"><i class="icofont-laika link">&#xef71;</i></a>Metrics</h3>
-        <p>Metrics are matched against OpenTelemetry Java <code>MetricData</code> using:</p>
-        <ul>
-          <li><code>MetricExpectation</code></li>
-          <li><code>PointExpectation</code></li>
-          <li><code>PointSetExpectation</code></li>
-          <li><code>MetricExpectations</code></li>
-        </ul>
-        <p>Use this when you want to assert metric name, metric type, values, point attributes, scope, resource, summaries,
-        histograms, exemplars, and collection-wide point constraints.</p>
-        
-        <h3 id="traces" class="section"><a class="anchor-link left" href="#traces"><i class="icofont-laika link">&#xef71;</i></a>Traces</h3>
-        <p>Traces are matched against OpenTelemetry Java <code>SpanData</code> using:</p>
-        <ul>
-          <li><code>SpanExpectation</code></li>
-          <li><code>EventExpectation</code></li>
-          <li><code>LinkExpectation</code></li>
-          <li><code>TraceExpectation</code></li>
-          <li><code>TraceForestExpectation</code></li>
-          <li><code>SpanExpectations</code></li>
-          <li><code>TraceExpectations</code></li>
-        </ul>
-        <p>Use <code>SpanExpectations</code> for flat exported-span checks and <code>TraceExpectations</code> when exact parent/child topology matters.</p>
-        
-        <h3 id="logs" class="section"><a class="anchor-link left" href="#logs"><i class="icofont-laika link">&#xef71;</i></a>Logs</h3>
-        <p>Logs are matched against OpenTelemetry Java <code>LogRecordData</code> using:</p>
-        <ul>
-          <li><code>LogRecordExpectation</code></li>
-          <li><code>LogRecordExpectations</code></li>
-        </ul>
-        <p>Use this when you want to assert body/message, severity, trace/span correlation, attributes, scope, resource, and
-        timestamps directly on exported log records.</p>
-        
-        <h2 id="mismatch-rendering" class="section"><a class="anchor-link left" href="#mismatch-rendering"><i class="icofont-laika link">&#xef71;</i></a>Mismatch rendering</h2>
-        <p>Each top-level expectation API has a formatting helper that turns structured mismatches into a readable failure message:</p>
+        <p>The expectation APIs match OpenTelemetry Java SDK models. Expectations are partial by default: fields that are not
+        specified are ignored.</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Signal</th>
+              <th>SDK model</th>
+              <th>Main expectation APIs</th>
+              <th>API reference</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Metrics</td>
+              <td><code>MetricData</code></td>
+              <td><code>MetricExpectation</code>, <code>PointExpectation</code>, <code>PointSetExpectation</code>, <code>MetricExpectations</code></td>
+              <td><a href="testkit-metrics.html">Testkit | Metrics</a></td>
+            </tr>
+            <tr>
+              <td>Traces</td>
+              <td><code>SpanData</code></td>
+              <td><code>SpanExpectation</code>, <code>TraceExpectation</code>, <code>TraceForestExpectation</code>, <code>SpanExpectations</code>, <code>TraceExpectations</code></td>
+              <td><a href="testkit-traces.html">Testkit | Traces</a></td>
+            </tr>
+            <tr>
+              <td>Logs</td>
+              <td><code>LogRecordData</code></td>
+              <td><code>LogRecordExpectation</code>, <code>LogRecordExpectations</code></td>
+              <td><a href="testkit-logs.html">Testkit | Logs</a></td>
+            </tr>
+          </tbody>
+        </table>
+        <p>Each top-level expectation API has a <code>format</code> method for rendering structured mismatches:</p>
         <ul>
           <li><code>MetricExpectations.format(...)</code></li>
           <li><code>SpanExpectations.format(...)</code></li>
           <li><code>TraceExpectations.format(...)</code></li>
           <li><code>LogRecordExpectations.format(...)</code></li>
         </ul>
-        <p>This is the easiest way to integrate expectations with a testing framework:</p>
-        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">data</span><span>.</span><span class="type-name">NonEmptyList</span><span>
-
-</span><span class="keyword">def</span><span> </span><span class="declaration-name">failWith</span><span>[</span><span class="type-name">A</span><span>](</span><span class="identifier">mismatches</span><span>: </span><span class="type-name">NonEmptyList</span><span>[</span><span class="type-name">A</span><span>], </span><span class="identifier">render</span><span>: </span><span class="type-name">NonEmptyList</span><span>[</span><span class="type-name">A</span><span>] =&gt; </span><span class="type-name">String</span><span>): </span><span class="type-name">Nothing</span><span> =
-  </span><span class="identifier">sys</span><span>.</span><span class="identifier">error</span><span>(</span><span class="identifier">render</span><span>(</span><span class="identifier">mismatches</span><span>))</span></code></pre>
-        <p>In practice:</p>
-        <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.</span><span class="type-name">IO</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">metrics</span><span>.</span><span class="type-name">MeterProvider</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="identifier">testkit</span><span>.</span><span class="identifier">metrics</span><span>.</span><span class="identifier">_</span><span>
-
-</span><span class="keyword">def</span><span> </span><span class="declaration-name">program</span><span>(</span><span class="identifier">meterProvider</span><span>: </span><span class="type-name">MeterProvider</span><span>[</span><span class="type-name">IO</span><span>]): </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] = {
-  </span><span class="keyword">val</span><span> </span><span class="identifier">_</span><span> = </span><span class="identifier">meterProvider</span><span>
-  </span><span class="type-name">IO</span><span>.</span><span class="identifier">unit</span><span>
-}
-
-</span><span class="keyword">def</span><span> </span><span class="declaration-name">assertMetrics</span><span>(</span><span class="identifier">testkit</span><span>: </span><span class="type-name">MetricsTestkit</span><span>[</span><span class="type-name">IO</span><span>]): </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] =
-  </span><span class="keyword">for</span><span> {
-    </span><span class="identifier">_</span><span> &lt;- </span><span class="identifier">program</span><span>(</span><span class="identifier">testkit</span><span>.</span><span class="identifier">meterProvider</span><span>)
-    </span><span class="identifier">metrics</span><span> &lt;- </span><span class="identifier">testkit</span><span>.</span><span class="identifier">collectMetrics</span><span>
-  } </span><span class="keyword">yield</span><span> {
-    </span><span class="type-name">MetricExpectations</span><span>.</span><span class="identifier">checkAllDistinct</span><span>(
-      </span><span class="identifier">metrics</span><span>,
-      </span><span class="type-name">MetricExpectation</span><span>.</span><span class="identifier">sum</span><span>[</span><span class="type-name">Long</span><span>](</span><span class="string-literal">&quot;service.requests&quot;</span><span>)
-    ) </span><span class="keyword">match</span><span> {
-      </span><span class="keyword">case</span><span> </span><span class="type-name">Right</span><span>(</span><span class="identifier">_</span><span>) =&gt;
-        ()
-      </span><span class="keyword">case</span><span> </span><span class="type-name">Left</span><span>(</span><span class="identifier">mismatches</span><span>) =&gt;
-        </span><span class="identifier">sys</span><span>.</span><span class="identifier">error</span><span>(</span><span class="type-name">MetricExpectations</span><span>.</span><span class="identifier">format</span><span>(</span><span class="identifier">mismatches</span><span>))
-    }
-  }</span></code></pre>
         
-        <h2 id="when-to-use-raw-sdk-models" class="section"><a class="anchor-link left" href="#when-to-use-raw-sdk-models"><i class="icofont-laika link">&#xef71;</i></a>When to use raw SDK models</h2>
-        <p>The expectation APIs should be the default path, but raw model assertions still make sense when:</p>
+        <h2 id="use-raw-sdk-models-when-needed" class="section"><a class="anchor-link left" href="#use-raw-sdk-models-when-needed"><i class="icofont-laika link">&#xef71;</i></a>Use raw SDK models when needed</h2>
+        <p>The in-memory testkits always expose the underlying <code>MetricData</code>, <code>SpanData</code>, and <code>LogRecordData</code> values. Direct model
+        assertions are useful when:</p>
         <ul>
-          <li>you are investigating a failing test and want to inspect the full exported payload</li>
-          <li>you need to compare a field that is not exposed by the current expectation DSL</li>
-          <li>you want to prototype a new matcher before turning it into a reusable expectation</li>
+          <li>diagnosing a failing test by inspecting the complete exported payload</li>
+          <li>checking a field that the expectation API does not expose</li>
+          <li>prototyping a matcher before adding a reusable expectation</li>
         </ul>
-        <p>The in-memory testkits always expose the underlying OpenTelemetry Java SDK models:</p>
-        <ul>
-          <li><code>MetricData</code></li>
-          <li><code>SpanData</code></li>
-          <li><code>LogRecordData</code></li>
-        </ul>
-        <p>That means you can mix both styles in the same test:</p>
-        <ul>
-          <li>use expectation APIs for the stable high-value assertions</li>
-          <li>drop down to raw SDK models for one-off or low-level checks</li>
-        </ul>
+        <p>Expectation-based and direct model assertions can be used in the same test.</p>
         
-        <h2 id="iolocalcontextstorage" class="section"><a class="anchor-link left" href="#iolocalcontextstorage"><i class="icofont-laika link">&#xef71;</i></a>IOLocalContextStorage</h2>
-        <p>The <code>otel4s-oteljava-testkit</code> module depends on <code>io.opentelemetry:opentelemetry-sdk-testing</code>, which sets the
-        <code>ContextStorageProvider</code> to <code>io.opentelemetry.sdk.testing.context.SettableContextStorageProvider</code>.</p>
-        <p>If you rely on <code>IOLocalContextStorage</code> in tests, you will see an error like:</p>
-        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">java</span><span>.</span><span class="identifier">lang</span><span>.</span><span class="type-name">IllegalStateException</span><span>: </span><span class="type-name">IOLocalContextStorage</span><span> </span><span class="identifier">is</span><span> </span><span class="identifier">not</span><span> </span><span class="identifier">configured</span><span> </span><span class="keyword">for</span><span> </span><span class="identifier">use</span><span> </span><span class="identifier">as</span><span> </span><span class="identifier">the</span><span> </span><span class="type-name">ContextStorageProvider</span><span>.
-</span><span class="type-name">The</span><span> </span><span class="identifier">current</span><span> </span><span class="type-name">ContextStorage</span><span> </span><span class="identifier">is</span><span>: </span><span class="identifier">io</span><span>.</span><span class="identifier">opentelemetry</span><span>.</span><span class="identifier">sdk</span><span>.</span><span class="identifier">testing</span><span>.</span><span class="identifier">context</span><span>.</span><span class="type-name">SettableContextStorageProvider$SettableContextStorage</span></code></pre>
-        <p>To solve this, use <code>IOLocalTestContextStorage</code> from the <code>otel4s-oteljava-context-storage-testkit</code> module.</p>
-        <div class="tab-container" data-tab-group="build-tool">
-          <ul class="tab-group">
-            <li class="tab active" data-choice-name="sbt"><a href="#">sbt</a></li>
-            <li class="tab" data-choice-name="scala-cli"><a href="#">Scala CLI</a></li>
-          </ul>
-          <div class="tab-content active" data-choice-name="sbt">
-            <p>Add settings to <code>build.sbt</code>:</p>
-            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">libraryDependencies</span><span> ++= </span><span class="type-name">Seq</span><span>(
-  </span><span class="string-literal">&quot;org.typelevel&quot;</span><span> %% </span><span class="string-literal">&quot;otel4s-oteljava-context-storage-testkit&quot;</span><span> % </span><span class="string-literal">&quot;1.0.1&quot;</span><span> % </span><span class="type-name">Test</span><span>,
-)</span></code></pre>
-          </div>
-          <div class="tab-content" data-choice-name="scala-cli">
-            <p>Add directives to the <code>*.scala</code> file:</p>
-            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="comment">//&gt; using test.dep &quot;org.typelevel::otel4s-oteljava-context-storage-testkit:1.0.1&quot;</span></code></pre>
-          </div>
-        </div>
-        <p>Parametrize your code to make <code>LocalContextProvider</code> overrideable:</p>
-        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.</span><span class="type-name">IO</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="identifier">context</span><span>.</span><span class="type-name">LocalContextProvider</span><span>
-
-</span><span class="keyword">def</span><span> </span><span class="declaration-name">program</span><span>(</span><span class="keyword">implicit</span><span> </span><span class="identifier">provider</span><span>: </span><span class="type-name">LocalContextProvider</span><span>[</span><span class="type-name">IO</span><span>]): </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] = ???</span></code></pre>
-        <p>And override it in tests:</p>
-        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.</span><span class="type-name">IO</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="identifier">context</span><span>.</span><span class="type-name">LocalContextProvider</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="identifier">testkit</span><span>.</span><span class="identifier">context</span><span>.</span><span class="type-name">IOLocalTestContextStorage</span><span>
-
-</span><span class="keyword">def</span><span> </span><span class="declaration-name">test</span><span>: </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] = {
-  </span><span class="keyword">implicit</span><span> </span><span class="keyword">val</span><span> </span><span class="identifier">provider</span><span>: </span><span class="type-name">LocalContextProvider</span><span>[</span><span class="type-name">IO</span><span>] =
-    </span><span class="type-name">IOLocalTestContextStorage</span><span>.</span><span class="identifier">localProvider</span><span>[</span><span class="type-name">IO</span><span>]
-
-  </span><span class="identifier">program</span><span>
-}</span></code></pre>
+        <h2 id="context-storage-in-tests" class="section"><a class="anchor-link left" href="#context-storage-in-tests"><i class="icofont-laika link">&#xef71;</i></a>Context storage in tests</h2>
+        <p>The OpenTelemetry Java SDK testing dependency installs a test-specific <code>ContextStorageProvider</code>. When production code
+        uses <code>IOLocalContextStorage</code>, provide <code>IOLocalTestContextStorage.localProvider</code> in tests instead. See
+        <a href="../how-to-testkit/use-iolocal-context-storage-with-the-testkit.html">Use IOLocalContextStorage with the testkit</a>.</p>
 
         
 <hr class="footer-rule"/>

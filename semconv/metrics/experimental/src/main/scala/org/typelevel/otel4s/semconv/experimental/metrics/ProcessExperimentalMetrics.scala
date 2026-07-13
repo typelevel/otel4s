@@ -50,7 +50,7 @@ object ProcessExperimentalMetrics {
     val name: String = "process.context_switches"
     val description: String = "Number of times the process has been context switched."
     val unit: String = "{context_switch}"
-    val stability: Stability = Stability.development
+    val stability: Stability = Stability.releaseCandidate
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -104,7 +104,7 @@ object ProcessExperimentalMetrics {
     val name: String = "process.cpu.time"
     val description: String = "Total CPU seconds broken down by different CPU modes."
     val unit: String = "s"
-    val stability: Stability = Stability.development
+    val stability: Stability = Stability.releaseCandidate
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -166,7 +166,7 @@ object ProcessExperimentalMetrics {
     val description: String =
       "Difference in process.cpu.time since the last measurement, divided by the elapsed time and number of CPUs available to the process."
     val unit: String = "1"
-    val stability: Stability = Stability.development
+    val stability: Stability = Stability.releaseCandidate
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -226,7 +226,7 @@ object ProcessExperimentalMetrics {
     val name: String = "process.disk.io"
     val description: String = "Disk bytes transferred."
     val unit: String = "By"
-    val stability: Stability = Stability.development
+    val stability: Stability = Stability.releaseCandidate
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -240,7 +240,7 @@ object ProcessExperimentalMetrics {
             "read",
           ),
           Requirement.required,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       val specs: List[AttributeSpec[_]] =
@@ -281,7 +281,7 @@ object ProcessExperimentalMetrics {
     val name: String = "process.memory.usage"
     val description: String = "The amount of physical memory in use."
     val unit: String = "By"
-    val stability: Stability = Stability.development
+    val stability: Stability = Stability.releaseCandidate
     val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
@@ -316,7 +316,7 @@ object ProcessExperimentalMetrics {
     val name: String = "process.memory.virtual"
     val description: String = "The amount of committed virtual memory."
     val unit: String = "By"
-    val stability: Stability = Stability.development
+    val stability: Stability = Stability.releaseCandidate
     val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
@@ -351,12 +351,13 @@ object ProcessExperimentalMetrics {
     val name: String = "process.network.io"
     val description: String = "Network bytes transferred."
     val unit: String = "By"
-    val stability: Stability = Stability.development
+    val stability: Stability = Stability.releaseCandidate
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
 
-      /** The network IO operation direction.
+      /** The direction of traffic from the perspective of the observing host's physical or virtual network interface.
+        * It should not be used to represent the logical direction of a stateful connection or network flow.
         */
       val networkIoDirection: AttributeSpec[String] =
         AttributeSpec(
@@ -365,7 +366,7 @@ object ProcessExperimentalMetrics {
             "transmit",
           ),
           Requirement.required,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       val specs: List[AttributeSpec[_]] =
@@ -442,7 +443,7 @@ object ProcessExperimentalMetrics {
     val name: String = "process.paging.faults"
     val description: String = "Number of page faults the process has made."
     val unit: String = "{fault}"
-    val stability: Stability = Stability.development
+    val stability: Stability = Stability.releaseCandidate
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -457,7 +458,7 @@ object ProcessExperimentalMetrics {
             "minor",
           ),
           Requirement.recommended,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       val specs: List[AttributeSpec[_]] =
@@ -498,7 +499,7 @@ object ProcessExperimentalMetrics {
     val name: String = "process.thread.count"
     val description: String = "Process threads count."
     val unit: String = "{thread}"
-    val stability: Stability = Stability.development
+    val stability: Stability = Stability.releaseCandidate
     val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
@@ -533,7 +534,7 @@ object ProcessExperimentalMetrics {
     val name: String = "process.unix.file_descriptor.count"
     val description: String = "Number of unix file descriptors in use by the process."
     val unit: String = "{file_descriptor}"
-    val stability: Stability = Stability.development
+    val stability: Stability = Stability.releaseCandidate
     val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
@@ -573,7 +574,7 @@ object ProcessExperimentalMetrics {
     val name: String = "process.uptime"
     val description: String = "The time the process has been running."
     val unit: String = "s"
-    val stability: Stability = Stability.development
+    val stability: Stability = Stability.releaseCandidate
     val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter, A: MeasurementValue]: F[Gauge[F, A]] =
@@ -608,7 +609,7 @@ object ProcessExperimentalMetrics {
     val name: String = "process.windows.handle.count"
     val description: String = "Number of handles held by the process."
     val unit: String = "{handle}"
-    val stability: Stability = Stability.development
+    val stability: Stability = Stability.releaseCandidate
     val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =

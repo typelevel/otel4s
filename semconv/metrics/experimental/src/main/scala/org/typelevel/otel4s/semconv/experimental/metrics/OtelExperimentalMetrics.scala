@@ -2068,6 +2068,10 @@ object OtelExperimentalMetrics {
   }
 
   /** The number of created spans with `recording=true` for which the end operation has not been called yet.
+    *
+    * @note
+    *   <p> Non-recording spans are not counted, hence `otel.span.sampling_result` can only take values `RECORD_ONLY`
+    *   and `RECORD_AND_SAMPLE`, not `DROP`.
     */
   object SdkSpanLive extends MetricSpec.Unsealed {
 

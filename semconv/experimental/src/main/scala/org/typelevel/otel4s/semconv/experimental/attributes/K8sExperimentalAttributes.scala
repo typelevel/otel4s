@@ -152,8 +152,8 @@ object K8sExperimentalAttributes {
     * value, even if the value is empty.
     *
     * @note
-    *   <p> Examples: <ul> <li>A label `replicas` with value `1` SHOULD be recorded as the
-    *   `k8s.daemonset.annotation.replicas` attribute with value `"1"`. <li>A label `data` with empty string value
+    *   <p> Examples: <ul> <li>An annotation `replicas` with value `1` SHOULD be recorded as the
+    *   `k8s.daemonset.annotation.replicas` attribute with value `"1"`. <li>An annotation `data` with empty string value
     *   SHOULD be recorded as the `k8s.daemonset.annotation.data` attribute with value `""`. </ul>
     */
   @deprecated(
@@ -168,7 +168,7 @@ object K8sExperimentalAttributes {
     *
     * @note
     *   <p> Examples: <ul> <li>A label `app` with value `guestbook` SHOULD be recorded as the `k8s.daemonset.label.app`
-    *   attribute with value `"guestbook"`. <li>A label `data` with empty string value SHOULD be recorded as the
+    *   attribute with value `"guestbook"`. <li>A label `injected` with empty string value SHOULD be recorded as the
     *   `k8s.daemonset.label.injected` attribute with value `""`. </ul>
     */
   @deprecated(
@@ -200,9 +200,9 @@ object K8sExperimentalAttributes {
     * value, even if the value is empty.
     *
     * @note
-    *   <p> Examples: <ul> <li>A label `replicas` with value `1` SHOULD be recorded as the
-    *   `k8s.deployment.annotation.replicas` attribute with value `"1"`. <li>A label `data` with empty string value
-    *   SHOULD be recorded as the `k8s.deployment.annotation.data` attribute with value `""`. </ul>
+    *   <p> Examples: <ul> <li>An annotation `replicas` with value `1` SHOULD be recorded as the
+    *   `k8s.deployment.annotation.replicas` attribute with value `"1"`. <li>An annotation `data` with empty string
+    *   value SHOULD be recorded as the `k8s.deployment.annotation.data` attribute with value `""`. </ul>
     */
   @deprecated(
     "use `org.typelevel.otel4s.semconv.attributes.K8sAttributes.K8sDeploymentAnnotation` instead.",
@@ -215,7 +215,7 @@ object K8sExperimentalAttributes {
     * value is empty.
     *
     * @note
-    *   <p> Examples: <ul> <li>A label `replicas` with value `0` SHOULD be recorded as the `k8s.deployment.label.app`
+    *   <p> Examples: <ul> <li>A label `app` with value `guestbook` SHOULD be recorded as the `k8s.deployment.label.app`
     *   attribute with value `"guestbook"`. <li>A label `injected` with empty string value SHOULD be recorded as the
     *   `k8s.deployment.label.injected` attribute with value `""`. </ul>
     */
@@ -295,9 +295,9 @@ object K8sExperimentalAttributes {
     * even if the value is empty.
     *
     * @note
-    *   <p> Examples: <ul> <li>A label `number` with value `1` SHOULD be recorded as the `k8s.job.annotation.number`
-    *   attribute with value `"1"`. <li>A label `data` with empty string value SHOULD be recorded as the
-    *   `k8s.job.annotation.data` attribute with value `""`. </ul>
+    *   <p> Examples: <ul> <li>An annotation `number` with value `1` SHOULD be recorded as the
+    *   `k8s.job.annotation.number` attribute with value `"1"`. <li>An annotation `data` with empty string value SHOULD
+    *   be recorded as the `k8s.job.annotation.data` attribute with value `""`. </ul>
     */
   @deprecated(
     "use `org.typelevel.otel4s.semconv.attributes.K8sAttributes.K8sJobAnnotation` instead.",
@@ -311,7 +311,7 @@ object K8sExperimentalAttributes {
     *
     * @note
     *   <p> Examples: <ul> <li>A label `jobtype` with value `ci` SHOULD be recorded as the `k8s.job.label.jobtype`
-    *   attribute with value `"ci"`. <li>A label `data` with empty string value SHOULD be recorded as the
+    *   attribute with value `"ci"`. <li>A label `automated` with empty string value SHOULD be recorded as the
     *   `k8s.job.label.automated` attribute with value `""`. </ul>
     */
   @deprecated(
@@ -343,9 +343,9 @@ object K8sExperimentalAttributes {
     * value, even if the value is empty.
     *
     * @note
-    *   <p> Examples: <ul> <li>A label `ttl` with value `0` SHOULD be recorded as the `k8s.namespace.annotation.ttl`
-    *   attribute with value `"0"`. <li>A label `data` with empty string value SHOULD be recorded as the
-    *   `k8s.namespace.annotation.data` attribute with value `""`. </ul>
+    *   <p> Examples: <ul> <li>An annotation `ttl` with value `0` SHOULD be recorded as the
+    *   `k8s.namespace.annotation.ttl` attribute with value `"0"`. <li>An annotation `data` with empty string value
+    *   SHOULD be recorded as the `k8s.namespace.annotation.data` attribute with value `""`. </ul>
     */
   @deprecated(
     "use `org.typelevel.otel4s.semconv.attributes.K8sAttributes.K8sNamespaceAnnotation` instead.",
@@ -675,9 +675,9 @@ object K8sExperimentalAttributes {
     * value, even if the value is empty.
     *
     * @note
-    *   <p> Examples: <ul> <li>A label `replicas` with value `0` SHOULD be recorded as the
-    *   `k8s.replicaset.annotation.replicas` attribute with value `"0"`. <li>A label `data` with empty string value
-    *   SHOULD be recorded as the `k8s.replicaset.annotation.data` attribute with value `""`. </ul>
+    *   <p> Examples: <ul> <li>An annotation `replicas` with value `0` SHOULD be recorded as the
+    *   `k8s.replicaset.annotation.replicas` attribute with value `"0"`. <li>An annotation `data` with empty string
+    *   value SHOULD be recorded as the `k8s.replicaset.annotation.data` attribute with value `""`. </ul>
     */
   @deprecated(
     "use `org.typelevel.otel4s.semconv.attributes.K8sAttributes.K8sReplicasetAnnotation` instead.",
@@ -871,9 +871,9 @@ object K8sExperimentalAttributes {
     * value, even if the value is empty.
     *
     * @note
-    *   <p> Examples: <ul> <li>A label `replicas` with value `1` SHOULD be recorded as the
-    *   `k8s.statefulset.annotation.replicas` attribute with value `"1"`. <li>A label `data` with empty string value
-    *   SHOULD be recorded as the `k8s.statefulset.annotation.data` attribute with value `""`. </ul>
+    *   <p> Examples: <ul> <li>An annotation `replicas` with value `1` SHOULD be recorded as the
+    *   `k8s.statefulset.annotation.replicas` attribute with value `"1"`. <li>An annotation `data` with empty string
+    *   value SHOULD be recorded as the `k8s.statefulset.annotation.data` attribute with value `""`. </ul>
     */
   @deprecated(
     "use `org.typelevel.otel4s.semconv.attributes.K8sAttributes.K8sStatefulsetAnnotation` instead.",
@@ -886,9 +886,9 @@ object K8sExperimentalAttributes {
     * the value is empty.
     *
     * @note
-    *   <p> Examples: <ul> <li>A label `replicas` with value `0` SHOULD be recorded as the `k8s.statefulset.label.app`
-    *   attribute with value `"guestbook"`. <li>A label `injected` with empty string value SHOULD be recorded as the
-    *   `k8s.statefulset.label.injected` attribute with value `""`. </ul>
+    *   <p> Examples: <ul> <li>A label `app` with value `guestbook` SHOULD be recorded as the
+    *   `k8s.statefulset.label.app` attribute with value `"guestbook"`. <li>A label `injected` with empty string value
+    *   SHOULD be recorded as the `k8s.statefulset.label.injected` attribute with value `""`. </ul>
     */
   @deprecated(
     "use `org.typelevel.otel4s.semconv.attributes.K8sAttributes.K8sStatefulsetLabel` instead.",

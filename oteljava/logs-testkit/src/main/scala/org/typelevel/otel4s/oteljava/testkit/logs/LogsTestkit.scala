@@ -23,8 +23,8 @@ import io.opentelemetry.sdk.logs.LogRecordProcessor
 import io.opentelemetry.sdk.logs.SdkLoggerProvider
 import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder
 import io.opentelemetry.sdk.logs.data.LogRecordData
-import io.opentelemetry.sdk.logs.`export`.LogRecordExporter
-import io.opentelemetry.sdk.logs.`export`.SimpleLogRecordProcessor
+import io.opentelemetry.sdk.logs.export.LogRecordExporter
+import io.opentelemetry.sdk.logs.export.SimpleLogRecordProcessor
 import io.opentelemetry.sdk.testing.exporter.InMemoryLogRecordExporter
 import org.typelevel.otel4s.context.LocalProvider
 import org.typelevel.otel4s.logs.LoggerProvider

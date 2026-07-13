@@ -107,4 +107,4 @@ def test: IO[Unit] =
 ## What's next
 
 For structured bodies, trace correlation, scope and resource matching, timestamps, and custom predicates, see
-[Testkit | Logs](../oteljava/testkit-logs.md).
+[Logs testkit reference](../oteljava/testkit-logs.md).

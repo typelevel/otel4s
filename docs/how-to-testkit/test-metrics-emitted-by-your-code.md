@@ -101,4 +101,4 @@ def test: IO[Unit] =
 ## What's next
 
 For point attributes, histograms, collection-wide constraints, and custom numeric comparison, see
-[Testkit | Metrics](../oteljava/testkit-metrics.md).
+[Metrics testkit reference](../oteljava/testkit-metrics.md).

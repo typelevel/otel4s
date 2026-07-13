@@ -1,104 +1,45 @@
-# Testkit | Metrics
+# Metrics testkit reference
 
-The metrics testkit provides a partial-matching expectation API for OpenTelemetry Java `MetricData`.
+The metrics testkit provides in-memory metric collection and partial-matching expectation APIs for OpenTelemetry Java
+`MetricData`.
 
-This is useful in tests because metric data contains much more than the values you usually care about:
-instrumentation scope, telemetry resource, point attributes, collection timestamps, exemplars, histogram buckets,
-and so on.
+Use this page as an API reference for `MetricsTestkit`, `MetricExpectation`, `PointExpectation`,
+`PointSetExpectation`, `MetricExpectations`, and `NumberComparison`.
 
-The expectation API lets you assert only the relevant parts of a metric while still preserving detail when you need
-it. Metric point matching is expressed at the collection level, so a single metric expectation can accumulate
-multiple point constraints.
-
-This guide documents the expectation-first testing style for metrics.
+For an end-to-end test setup, see
+[Test metrics emitted by your code](../how-to-testkit/test-metrics-emitted-by-your-code.md).
 For the overview of all signal testkits, see [Testkit](testkit.md).
 
-## Getting started
-
-@:select(build-tool)
-
-@:choice(sbt)
-
-Add settings to the `build.sbt`:
-
-```scala
-libraryDependencies ++= Seq(
-  "org.typelevel" %% "otel4s-oteljava-testkit" % "@VERSION@" % Test,
-)
-```
-
-@:choice(scala-cli)
-
-Add directives to the `*.scala` file:
-
-```scala
-//> using test.dep "org.typelevel::otel4s-oteljava-testkit:@VERSION@" 
-```
-
-@:@
-
-## Basic flow
-
-The usual flow is:
-
-1. Run your program against `MetricsTestkit` or `OtelJavaTestkit`
-2. Collect metrics as `MetricData`
-3. Build `MetricExpectation` values
-4. Check them with `MetricExpectations.checkAll` or `MetricExpectations.checkAllDistinct`
+The examples below assume these imports:
 
 ```scala mdoc:silent
-import cats.effect.IO
 import io.opentelemetry.sdk.metrics.data.MetricData
-import org.typelevel.otel4s.metrics.MeterProvider
+import org.typelevel.otel4s.{Attribute, Attributes}
+import org.typelevel.otel4s.oteljava.testkit.AttributesExpectation
+import org.typelevel.otel4s.oteljava.testkit.{
+  InstrumentationScopeExpectation,
+  TelemetryResourceExpectation
+}
 import org.typelevel.otel4s.oteljava.testkit.metrics._
-
-def program(meterProvider: MeterProvider[IO]): IO[Unit] =
-  for {
-    meter <- meterProvider.get("service")
-    counter <- meter.counter[Long]("service.counter").create
-    _ <- counter.inc()
-    gauge <- meter.gauge[Long]("service.gauge").create
-    _ <- gauge.record(42L)
-  } yield ()
-
-def assertExpected(metrics: List[MetricData], expected: MetricExpectation*): Unit =
-  MetricExpectations.checkAllDistinct(metrics, expected: _*) match {
-    case Right(_) =>
-      ()
-    case Left(mismatches) =>
-      // or use an assert function from the testing framework here
-      sys.error(MetricExpectations.format(mismatches))
-  }
-
-def test: IO[Unit] =
-  MetricsTestkit.inMemory[IO]().use { testkit =>
-    for {
-      _ <- program(testkit.meterProvider)
-      metrics <- testkit.collectMetrics
-    } yield assertExpected(
-      metrics,
-      MetricExpectation.sum[Long]("service.counter").value(1L),
-      MetricExpectation.gauge[Long]("service.gauge").value(42L)
-    )
-  }
 ```
 
-`checkAll(...)` is non-consuming: each expectation is checked independently against the full collected metric list.
-If you need to ensure that repeated expectations match different collected metrics, use
-`MetricExpectations.checkAllDistinct(...)` instead.
+## `MetricsTestkit`
 
-```scala mdoc:silent
-def checkAllDistinct(metrics: List[MetricData]) =
-  MetricExpectations.checkAllDistinct(
-    metrics,
-    MetricExpectation.sum[Long]("service.counter").value(1L),
-    MetricExpectation.sum[Long]("service.counter").value(1L)
-  )
-```
+`MetricsTestkit` is the signal-specific in-memory backend for metrics.
+
+| Member | Purpose |
+| ------ | ------- |
+| `MetricsTestkit.inMemory[F]()` | Creates a `Resource[F, MetricsTestkit[F]]` backed by an in-memory metric reader. |
+| `MetricsTestkit.builder[F]` | Creates a builder for customizing the underlying `SdkMeterProviderBuilder`. |
+| `meterProvider` | The otel4s `MeterProvider[F]` used by code under test. |
+| `collectMetrics` | Collects and returns `List[MetricData]`. Metrics are recollected on each invocation. |
+
+`OtelJavaTestkit` also exposes `meterProvider` and `collectMetrics` when a test needs metrics together with traces or
+logs.
 
 ## Partial matching
 
-All expectations are partial.
+Metric expectations are partial.
 
 This means:
 - unspecified properties are ignored
@@ -142,8 +83,6 @@ MetricExpectation.sum[Long]("service.requests").value(1L)
 If you also care about point attributes, there is a shorthand for exact point matching:
 
 ```scala mdoc:silent
-import org.typelevel.otel4s.Attribute
-
 MetricExpectation
   .sum[Long]("service.requests")
   .value(1L, Attribute("http.method", "GET"))
@@ -176,10 +115,6 @@ Point attributes can be matched in three ways:
 Both `attributesExact(...)` and `attributesSubset(...)` support `Attributes` and varargs of `Attribute[_]`.
 
 ```scala mdoc:silent
-import org.typelevel.otel4s.Attribute
-import org.typelevel.otel4s.Attributes
-import org.typelevel.otel4s.oteljava.testkit.AttributesExpectation
-
 PointExpectation
   .numeric(1L)
   .attributesExact(Attribute("http.method", "GET"))
@@ -206,6 +141,32 @@ Empty attributes can be matched with:
 PointExpectation.numeric(1L).attributesEmpty
 ```
 
+## Metric metadata and predicates
+
+Metric expectations can assert metadata on the `MetricData` itself:
+
+- `description(...)`
+- `unit(...)`
+- `scopeName(...)`
+- `where(...)`
+
+```scala mdoc:silent
+MetricExpectation
+  .sum[Long]("service.requests")
+  .description("Total requests")
+  .unit("1")
+  .scopeName("service")
+
+MetricExpectation
+  .name("service.requests")
+  .where("metric should have at least one point") { metric =>
+    !metric.getData.getPoints.isEmpty
+  }
+```
+
+Use `where(...)` when the expectation API does not expose the field you need, or when a test needs a custom invariant
+over the raw `MetricData`.
+
 ## Scope and resource expectations
 
 Metric expectations can also assert the instrumentation scope and telemetry resource.
@@ -213,12 +174,6 @@ Metric expectations can also assert the instrumentation scope and telemetry reso
 This is useful when you want tests to preserve the same level of detail as raw `MetricData`.
 
 ```scala mdoc:silent
-import org.typelevel.otel4s.Attribute
-import org.typelevel.otel4s.oteljava.testkit.{
-  InstrumentationScopeExpectation,
-  TelemetryResourceExpectation
-}
-
 MetricExpectation
   .sum[Long]("service.requests")
   .points(
@@ -532,10 +487,7 @@ MetricExpectation
 The API is framework-agnostic, so it does not provide assertions directly.
 Instead, it returns structured mismatches and a formatter.
 
-```scala mdoc:silent:reset
-import io.opentelemetry.sdk.metrics.data.MetricData
-import org.typelevel.otel4s.oteljava.testkit.metrics.{MetricExpectation, MetricExpectations}
-
+```scala mdoc:silent
 def assertExpected(metrics: List[MetricData], expected: MetricExpectation*): Unit =
   MetricExpectations.checkAll(metrics, expected: _*) match {
     case Right(_) =>
@@ -555,14 +507,33 @@ There are two main failure cases:
 This is especially helpful when a metric name is correct but, for example, one scope attribute or one point
 attribute is wrong.
 
+## Top-level matching
+
+Use `MetricExpectations` to match expectations against a collected list of exported metrics.
+
+Available helpers:
+
+- `exists`
+- `find`
+- `check`
+- `checkAll`
+- `checkAllDistinct`
+- `missing`
+- `missingDistinct`
+- `allMatch`
+- `allMatchDistinct`
+- `format`
+
+`checkAll(...)` is non-consuming: the same exported metric may satisfy multiple expectations.
+
+`checkAllDistinct(...)` enforces distinct assignment and is the safer default when repeated expectations should match
+different collected metrics.
+
 ## Clues
 
 Metric, point, and point-set expectations support optional clues.
 
 ```scala mdoc:silent
-import org.typelevel.otel4s.oteljava.testkit.metrics.{PointExpectation, PointSetExpectation}
-import org.typelevel.otel4s.Attribute
-
 MetricExpectation
   .sum[Long]("service.requests")
   .clue("the request counter must be emitted")
@@ -596,7 +567,7 @@ This applies to:
 
 If needed, you can override the default `Double` comparison implicitly in a test suite:
 
-```scala mdoc:silent
+```scala mdoc:silent:reset
 import org.typelevel.otel4s.oteljava.testkit.metrics.NumberComparison
 
 implicit val cmp: NumberComparison[Double] =

@@ -1,96 +1,44 @@
-# Testkit | Traces
+# Traces testkit reference
 
-The traces testkit provides structural and span-level expectation APIs for OpenTelemetry Java `SpanData`.
+The traces testkit provides in-memory span collection and structural expectation APIs for OpenTelemetry Java
+`SpanData`.
 
-This is useful in tests because span data contains much more than just names and parent-child relationships:
+Use this page as an API reference for `TracesTestkit`, `SpanExpectation`, `TraceExpectation`,
+`TraceForestExpectation`, `SpanExpectations`, `TraceExpectations`, and the event, link, status, and span-context
+expectation types.
 
-- timestamps
-- span kind and status
-- parent context and span context
-- attributes
-- events
-- links
-- instrumentation scope
-- telemetry resource
+For an end-to-end test setup, see
+[Test traces emitted by your code](../how-to-testkit/test-traces-emitted-by-your-code.md).
+For the overview of all signal testkits, see [Testkit](testkit.md).
 
-The expectation API lets you assert only the span properties and tree structure that matter for the test.
+The examples below assume these imports:
 
-## Getting started
-
-@:select(build-tool)
-
-@:choice(sbt)
-
-Add settings to `build.sbt`:
-
-```scala
-libraryDependencies ++= Seq(
-  "org.typelevel" %% "otel4s-oteljava-testkit" % "@VERSION@" % Test,
-)
-```
-
-@:choice(scala-cli)
-
-Add directives to the `*.scala` file:
-
-```scala
-//> using test.dep "org.typelevel::otel4s-oteljava-testkit:@VERSION@"
-```
-
-@:@
-
-## Basic flow
-
-The usual flow is:
-
-1. run your program against `TracesTestkit` or `OtelJavaTestkit`
-2. collect finished spans as OpenTelemetry Java `SpanData`
-3. build `TraceExpectation` or `SpanExpectation` values
-4. check them with `TraceExpectations` or `SpanExpectations`
-
-```scala mdoc:silent:reset
-import cats.effect.IO
+```scala mdoc:silent
 import io.opentelemetry.sdk.trace.data.SpanData
+import org.typelevel.otel4s.Attribute
+import org.typelevel.otel4s.oteljava.testkit.AttributesExpectation
+import org.typelevel.otel4s.oteljava.testkit.{
+  InstrumentationScopeExpectation,
+  TelemetryResourceExpectation
+}
 import org.typelevel.otel4s.oteljava.testkit.trace._
-import org.typelevel.otel4s.trace.TracerProvider
-
-def program(tracerProvider: TracerProvider[IO]): IO[Unit] =
-  for {
-    tracer <- tracerProvider.get("service")
-    _ <- tracer.span("app.span").surround {
-      tracer.span("app.nested.1").surround(IO.unit) >>
-        tracer.span("app.nested.2").surround(IO.unit)
-    }
-  } yield ()
-
-def assertExpected(
-    spans: List[SpanData],
-    expected: TraceForestExpectation
-): Unit =
-  TraceExpectations.check(spans, expected) match {
-    case Right(_) =>
-      ()
-    case Left(mismatches) =>
-      sys.error(TraceExpectations.format(mismatches))
-  }
-
-def test: IO[Unit] =
-  TracesTestkit.inMemory[IO]().use { testkit =>
-    val expected =
-      TraceForestExpectation.unordered(
-        TraceExpectation.unordered(
-          SpanExpectation.name("app.span").noParentSpanContext,
-          TraceExpectation.leaf(SpanExpectation.name("app.nested.1")),
-          TraceExpectation.leaf(SpanExpectation.name("app.nested.2"))
-        )
-      )
-
-    for {
-      _ <- program(testkit.tracerProvider)
-      spans <- testkit.finishedSpans
-    } yield assertExpected(spans, expected)
-  }
 ```
+
+## `TracesTestkit`
+
+`TracesTestkit` is the signal-specific in-memory backend for traces.
+
+| Member | Purpose |
+| ------ | ------- |
+| `TracesTestkit.inMemory[F]()` | Creates a `Resource[F, TracesTestkit[F]]` backed by an in-memory span exporter. |
+| `TracesTestkit.builder[F]` | Creates a builder for customizing the underlying `SdkTracerProviderBuilder` and propagators. |
+| `tracerProvider` | The otel4s `TracerProvider[F]` used by code under test. |
+| `finishedSpans` | Returns `List[SpanData]` from the in-memory span exporter. |
+| `resetSpans` | Clears the in-memory span exporter. |
+| `propagators` | The context propagators used by the tracer provider. |
+| `localContext` | The `LocalContext[F]` used by the tracer provider. |
+
+`OtelJavaTestkit` also exposes the same trace members when a test needs traces together with metrics or logs.
 
 ## Flat vs structural matching
 
@@ -251,9 +199,6 @@ Span attributes follow the same conventions as the metrics testkit:
 - `attributesEmpty`
 
 ```scala mdoc:silent
-import org.typelevel.otel4s.Attribute
-import org.typelevel.otel4s.oteljava.testkit.AttributesExpectation
-
 SpanExpectation
   .name("request")
   .attributesExact(
@@ -331,12 +276,9 @@ SpanExpectation.name("request").spanContextExact(spanContext)
 
 ### Scope and resource
 
-Instrumentation scope and telemetry resource are matched the same way as in the metrics guide:
+Instrumentation scope and telemetry resource are matched the same way as in the metrics testkit reference:
 
 ```scala mdoc:silent
-import org.typelevel.otel4s.Attribute
-import org.typelevel.otel4s.oteljava.testkit.{InstrumentationScopeExpectation, TelemetryResourceExpectation}
-
 SpanExpectation
   .name("request")
   .scope(

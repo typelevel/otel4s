@@ -31,9 +31,9 @@ specified are ignored.
 
 | Signal  | SDK model       | Main expectation APIs                                                                   | API reference                         |
 |---------|-----------------|-----------------------------------------------------------------------------------------|---------------------------------------|
-| Metrics | `MetricData`    | `MetricExpectation`, `PointExpectation`, `PointSetExpectation`, `MetricExpectations`    | [Testkit \| Metrics](testkit-metrics.md) |
-| Traces  | `SpanData`      | `SpanExpectation`, `TraceExpectation`, `TraceForestExpectation`, `SpanExpectations`, `TraceExpectations` | [Testkit \| Traces](testkit-traces.md) |
-| Logs    | `LogRecordData` | `LogRecordExpectation`, `LogRecordExpectations`                                         | [Testkit \| Logs](testkit-logs.md)       |
+| Metrics | `MetricData`    | `MetricExpectation`, `PointExpectation`, `PointSetExpectation`, `MetricExpectations`    | [Metrics testkit reference](testkit-metrics.md) |
+| Traces  | `SpanData`      | `SpanExpectation`, `TraceExpectation`, `TraceForestExpectation`, `SpanExpectations`, `TraceExpectations` | [Traces testkit reference](testkit-traces.md) |
+| Logs    | `LogRecordData` | `LogRecordExpectation`, `LogRecordExpectations`                                         | [Logs testkit reference](testkit-logs.md)       |
 
 Each top-level expectation API has a `format` method for rendering structured mismatches:
 

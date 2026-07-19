@@ -6,7 +6,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="generator" content="Typelevel Laika + Helium Theme" />
-  <title>Testkit | Metrics</title>
+  <title>Metrics testkit reference</title>
   
   <meta name="author" content="Ross A. Baker"/>
   
@@ -143,9 +143,9 @@
     <li class="level1 nav-header">OtelJava</li>
     <li class="level2 nav-leaf"><a href="tracing-java-interop.html">Tracing | Interop with Java-instrumented libraries</a></li>
     <li class="level2 nav-leaf"><a href="testkit.html">Testkit</a></li>
-    <li class="level2 active nav-leaf"><a href="#">Testkit | Metrics</a></li>
-    <li class="level2 nav-leaf"><a href="testkit-traces.html">Testkit | Traces</a></li>
-    <li class="level2 nav-leaf"><a href="testkit-logs.html">Testkit | Logs</a></li>
+    <li class="level2 active nav-leaf"><a href="#">Metrics testkit reference</a></li>
+    <li class="level2 nav-leaf"><a href="testkit-traces.html">Traces testkit reference</a></li>
+    <li class="level2 nav-leaf"><a href="testkit-logs.html">Logs testkit reference</a></li>
     <li class="level1 nav-header">SDK</li>
     <li class="level2 nav-leaf"><a href="../sdk/overview.html">Overview</a></li>
     <li class="level1 nav-header">Examples</li>
@@ -161,14 +161,14 @@
 
       
 <nav id="page-nav">
-  <p class="header"><a href="#">Testkit | Metrics</a></p>
+  <p class="header"><a href="#">Metrics testkit reference</a></p>
 
   <ul class="nav-list">
-    <li class="level1 nav-leaf"><a href="#getting-started">Getting started</a></li>
-    <li class="level1 nav-leaf"><a href="#basic-flow">Basic flow</a></li>
+    <li class="level1 nav-leaf"><a href="#metricstestkit"><code>MetricsTestkit</code></a></li>
     <li class="level1 nav-leaf"><a href="#partial-matching">Partial matching</a></li>
     <li class="level1 nav-leaf"><a href="#numeric-metrics">Numeric metrics</a></li>
     <li class="level1 nav-leaf"><a href="#point-attributes">Point attributes</a></li>
+    <li class="level1 nav-leaf"><a href="#metric-metadata-and-predicates">Metric metadata and predicates</a></li>
     <li class="level1 nav-leaf"><a href="#scope-and-resource-expectations">Scope and resource expectations</a></li>
     <li class="level1 nav-node"><a href="#summaries-and-histograms">Summaries and histograms</a></li>
     <li class="level2 nav-leaf"><a href="#summary">Summary</a></li>
@@ -183,6 +183,7 @@
     <li class="level2 nav-leaf"><a href="#predicate"><code>predicate</code></a></li>
     <li class="level2 nav-leaf"><a href="#and-and-or"><code>and</code> and <code>or</code></a></li>
     <li class="level1 nav-leaf"><a href="#failure-reporting">Failure reporting</a></li>
+    <li class="level1 nav-leaf"><a href="#top-level-matching">Top-level matching</a></li>
     <li class="level1 nav-leaf"><a href="#clues">Clues</a></li>
     <li class="level1 nav-leaf"><a href="#numeric-comparison">Numeric comparison</a></li>
   </ul>
@@ -193,89 +194,57 @@
 
       <main class="content">
 
-        <h1 id="testkit-metrics" class="title">Testkit | Metrics</h1>
-        <p>The metrics testkit provides a partial-matching expectation API for OpenTelemetry Java <code>MetricData</code>.</p>
-        <p>This is useful in tests because metric data contains much more than the values you usually care about:
-        instrumentation scope, telemetry resource, point attributes, collection timestamps, exemplars, histogram buckets,
-        and so on.</p>
-        <p>The expectation API lets you assert only the relevant parts of a metric while still preserving detail when you need
-        it. Metric point matching is expressed at the collection level, so a single metric expectation can accumulate
-        multiple point constraints.</p>
-        <p>This guide documents the expectation-first testing style for metrics.
+        <h1 id="metrics-testkit-reference" class="title">Metrics testkit reference</h1>
+        <p>The metrics testkit provides in-memory metric collection and partial-matching expectation APIs for OpenTelemetry Java
+        <code>MetricData</code>.</p>
+        <p>Use this page as an API reference for <code>MetricsTestkit</code>, <code>MetricExpectation</code>, <code>PointExpectation</code>,
+        <code>PointSetExpectation</code>, <code>MetricExpectations</code>, and <code>NumberComparison</code>.</p>
+        <p>For an end-to-end test setup, see
+        <a href="../how-to-testkit/test-metrics-emitted-by-your-code.html">Test metrics emitted by your code</a>.
         For the overview of all signal testkits, see <a href="testkit.html">Testkit</a>.</p>
+        <p>The examples below assume these imports:</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">io</span><span>.</span><span class="identifier">opentelemetry</span><span>.</span><span class="identifier">sdk</span><span>.</span><span class="identifier">metrics</span><span>.</span><span class="identifier">data</span><span>.</span><span class="type-name">MetricData</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.{</span><span class="type-name">Attribute</span><span>, </span><span class="type-name">Attributes</span><span>}
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="identifier">testkit</span><span>.</span><span class="type-name">AttributesExpectation</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="identifier">testkit</span><span>.{
+  </span><span class="type-name">InstrumentationScopeExpectation</span><span>,
+  </span><span class="type-name">TelemetryResourceExpectation</span><span>
+}
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="identifier">testkit</span><span>.</span><span class="identifier">metrics</span><span>.</span><span class="identifier">_</span></code></pre>
         
-        <h2 id="getting-started" class="section"><a class="anchor-link left" href="#getting-started"><i class="icofont-laika link">&#xef71;</i></a>Getting started</h2>
-        <div class="tab-container" data-tab-group="build-tool">
-          <ul class="tab-group">
-            <li class="tab active" data-choice-name="sbt"><a href="#">sbt</a></li>
-            <li class="tab" data-choice-name="scala-cli"><a href="#">Scala CLI</a></li>
-          </ul>
-          <div class="tab-content active" data-choice-name="sbt">
-            <p>Add settings to the <code>build.sbt</code>:</p>
-            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">libraryDependencies</span><span> ++= </span><span class="type-name">Seq</span><span>(
-  </span><span class="string-literal">&quot;org.typelevel&quot;</span><span> %% </span><span class="string-literal">&quot;otel4s-oteljava-testkit&quot;</span><span> % </span><span class="string-literal">&quot;1.0.1&quot;</span><span> % </span><span class="type-name">Test</span><span>,
-)</span></code></pre>
-          </div>
-          <div class="tab-content" data-choice-name="scala-cli">
-            <p>Add directives to the <code>*.scala</code> file:</p>
-            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="comment">//&gt; using test.dep &quot;org.typelevel::otel4s-oteljava-testkit:1.0.1&quot; </span></code></pre>
-          </div>
-        </div>
-        
-        <h2 id="basic-flow" class="section"><a class="anchor-link left" href="#basic-flow"><i class="icofont-laika link">&#xef71;</i></a>Basic flow</h2>
-        <p>The usual flow is:</p>
-        <ol class="arabic">
-          <li>Run your program against <code>MetricsTestkit</code> or <code>OtelJavaTestkit</code></li>
-          <li>Collect metrics as <code>MetricData</code></li>
-          <li>Build <code>MetricExpectation</code> values</li>
-          <li>Check them with <code>MetricExpectations.checkAll</code> or <code>MetricExpectations.checkAllDistinct</code></li>
-        </ol>
-        <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.</span><span class="type-name">IO</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">io</span><span>.</span><span class="identifier">opentelemetry</span><span>.</span><span class="identifier">sdk</span><span>.</span><span class="identifier">metrics</span><span>.</span><span class="identifier">data</span><span>.</span><span class="type-name">MetricData</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">metrics</span><span>.</span><span class="type-name">MeterProvider</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="identifier">testkit</span><span>.</span><span class="identifier">metrics</span><span>.</span><span class="identifier">_</span><span>
-
-</span><span class="keyword">def</span><span> </span><span class="declaration-name">program</span><span>(</span><span class="identifier">meterProvider</span><span>: </span><span class="type-name">MeterProvider</span><span>[</span><span class="type-name">IO</span><span>]): </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] =
-  </span><span class="keyword">for</span><span> {
-    </span><span class="identifier">meter</span><span> &lt;- </span><span class="identifier">meterProvider</span><span>.</span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;service&quot;</span><span>)
-    </span><span class="identifier">counter</span><span> &lt;- </span><span class="identifier">meter</span><span>.</span><span class="identifier">counter</span><span>[</span><span class="type-name">Long</span><span>](</span><span class="string-literal">&quot;service.counter&quot;</span><span>).</span><span class="identifier">create</span><span>
-    </span><span class="identifier">_</span><span> &lt;- </span><span class="identifier">counter</span><span>.</span><span class="identifier">inc</span><span>()
-    </span><span class="identifier">gauge</span><span> &lt;- </span><span class="identifier">meter</span><span>.</span><span class="identifier">gauge</span><span>[</span><span class="type-name">Long</span><span>](</span><span class="string-literal">&quot;service.gauge&quot;</span><span>).</span><span class="identifier">create</span><span>
-    </span><span class="identifier">_</span><span> &lt;- </span><span class="identifier">gauge</span><span>.</span><span class="identifier">record</span><span>(</span><span class="number-literal">42L</span><span>)
-  } </span><span class="keyword">yield</span><span> ()
-
-</span><span class="keyword">def</span><span> </span><span class="declaration-name">assertExpected</span><span>(</span><span class="identifier">metrics</span><span>: </span><span class="type-name">List</span><span>[</span><span class="type-name">MetricData</span><span>], </span><span class="identifier">expected</span><span>: </span><span class="type-name">MetricExpectation</span><span>*): </span><span class="type-name">Unit</span><span> =
-  </span><span class="type-name">MetricExpectations</span><span>.</span><span class="identifier">checkAllDistinct</span><span>(</span><span class="identifier">metrics</span><span>, </span><span class="identifier">expected</span><span>: </span><span class="identifier">_</span><span>*) </span><span class="keyword">match</span><span> {
-    </span><span class="keyword">case</span><span> </span><span class="type-name">Right</span><span>(</span><span class="identifier">_</span><span>) =&gt;
-      ()
-    </span><span class="keyword">case</span><span> </span><span class="type-name">Left</span><span>(</span><span class="identifier">mismatches</span><span>) =&gt;
-      </span><span class="comment">// or use an assert function from the testing framework here
-</span><span>      </span><span class="identifier">sys</span><span>.</span><span class="identifier">error</span><span>(</span><span class="type-name">MetricExpectations</span><span>.</span><span class="identifier">format</span><span>(</span><span class="identifier">mismatches</span><span>))
-  }
-
-</span><span class="keyword">def</span><span> </span><span class="declaration-name">test</span><span>: </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] =
-  </span><span class="type-name">MetricsTestkit</span><span>.</span><span class="identifier">inMemory</span><span>[</span><span class="type-name">IO</span><span>]().</span><span class="identifier">use</span><span> { </span><span class="identifier">testkit</span><span> =&gt;
-    </span><span class="keyword">for</span><span> {
-      </span><span class="identifier">_</span><span> &lt;- </span><span class="identifier">program</span><span>(</span><span class="identifier">testkit</span><span>.</span><span class="identifier">meterProvider</span><span>)
-      </span><span class="identifier">metrics</span><span> &lt;- </span><span class="identifier">testkit</span><span>.</span><span class="identifier">collectMetrics</span><span>
-    } </span><span class="keyword">yield</span><span> </span><span class="identifier">assertExpected</span><span>(
-      </span><span class="identifier">metrics</span><span>,
-      </span><span class="type-name">MetricExpectation</span><span>.</span><span class="identifier">sum</span><span>[</span><span class="type-name">Long</span><span>](</span><span class="string-literal">&quot;service.counter&quot;</span><span>).</span><span class="identifier">value</span><span>(</span><span class="number-literal">1L</span><span>),
-      </span><span class="type-name">MetricExpectation</span><span>.</span><span class="identifier">gauge</span><span>[</span><span class="type-name">Long</span><span>](</span><span class="string-literal">&quot;service.gauge&quot;</span><span>).</span><span class="identifier">value</span><span>(</span><span class="number-literal">42L</span><span>)
-    )
-  }</span></code></pre>
-        <p><code>checkAll(...)</code> is non-consuming: each expectation is checked independently against the full collected metric list.
-        If you need to ensure that repeated expectations match different collected metrics, use
-        <code>MetricExpectations.checkAllDistinct(...)</code> instead.</p>
-        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">def</span><span> </span><span class="declaration-name">checkAllDistinct</span><span>(</span><span class="identifier">metrics</span><span>: </span><span class="type-name">List</span><span>[</span><span class="type-name">MetricData</span><span>]) =
-  </span><span class="type-name">MetricExpectations</span><span>.</span><span class="identifier">checkAllDistinct</span><span>(
-    </span><span class="identifier">metrics</span><span>,
-    </span><span class="type-name">MetricExpectation</span><span>.</span><span class="identifier">sum</span><span>[</span><span class="type-name">Long</span><span>](</span><span class="string-literal">&quot;service.counter&quot;</span><span>).</span><span class="identifier">value</span><span>(</span><span class="number-literal">1L</span><span>),
-    </span><span class="type-name">MetricExpectation</span><span>.</span><span class="identifier">sum</span><span>[</span><span class="type-name">Long</span><span>](</span><span class="string-literal">&quot;service.counter&quot;</span><span>).</span><span class="identifier">value</span><span>(</span><span class="number-literal">1L</span><span>)
-  )</span></code></pre>
+        <h2 id="metricstestkit" class="section"><a class="anchor-link left" href="#metricstestkit"><i class="icofont-laika link">&#xef71;</i></a><code>MetricsTestkit</code></h2>
+        <p><code>MetricsTestkit</code> is the signal-specific in-memory backend for metrics.</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Member</th>
+              <th>Purpose</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>MetricsTestkit.inMemory[F]()</code></td>
+              <td>Creates a <code>Resource[F, MetricsTestkit[F]]</code> backed by an in-memory metric reader.</td>
+            </tr>
+            <tr>
+              <td><code>MetricsTestkit.builder[F]</code></td>
+              <td>Creates a builder for customizing the underlying <code>SdkMeterProviderBuilder</code>.</td>
+            </tr>
+            <tr>
+              <td><code>meterProvider</code></td>
+              <td>The otel4s <code>MeterProvider[F]</code> used by code under test.</td>
+            </tr>
+            <tr>
+              <td><code>collectMetrics</code></td>
+              <td>Collects and returns <code>List[MetricData]</code>. Metrics are recollected on each invocation.</td>
+            </tr>
+          </tbody>
+        </table>
+        <p><code>OtelJavaTestkit</code> also exposes <code>meterProvider</code> and <code>collectMetrics</code> when a test needs metrics together with traces or
+        logs.</p>
         
         <h2 id="partial-matching" class="section"><a class="anchor-link left" href="#partial-matching"><i class="icofont-laika link">&#xef71;</i></a>Partial matching</h2>
-        <p>All expectations are partial.</p>
+        <p>Metric expectations are partial.</p>
         <p>This means:</p>
         <ul>
           <li>unspecified properties are ignored</li>
@@ -298,9 +267,7 @@
         <p>For value-only checks, <code>value(...)</code> is the most compact form:</p>
         <pre class="keep-together pdf epub"><code class="nohighlight"><span class="type-name">MetricExpectation</span><span>.</span><span class="identifier">sum</span><span>[</span><span class="type-name">Long</span><span>](</span><span class="string-literal">&quot;service.requests&quot;</span><span>).</span><span class="identifier">value</span><span>(</span><span class="number-literal">1L</span><span>)</span></code></pre>
         <p>If you also care about point attributes, there is a shorthand for exact point matching:</p>
-        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="type-name">Attribute</span><span>
-
-</span><span class="type-name">MetricExpectation</span><span>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="type-name">MetricExpectation</span><span>
   .</span><span class="identifier">sum</span><span>[</span><span class="type-name">Long</span><span>](</span><span class="string-literal">&quot;service.requests&quot;</span><span>)
   .</span><span class="identifier">value</span><span>(</span><span class="number-literal">1L</span><span>, </span><span class="type-name">Attribute</span><span>(</span><span class="string-literal">&quot;http.method&quot;</span><span>, </span><span class="string-literal">&quot;GET&quot;</span><span>))</span></code></pre>
         <p><code>value(value, attributes)</code> uses exact attribute matching. It is equivalent to:</p>
@@ -323,11 +290,7 @@
           <li><code>attributes(AttributesExpectation...)</code> for full control</li>
         </ul>
         <p>Both <code>attributesExact(...)</code> and <code>attributesSubset(...)</code> support <code>Attributes</code> and varargs of <code>Attribute[_]</code>.</p>
-        <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="type-name">Attribute</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="type-name">Attributes</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="identifier">testkit</span><span>.</span><span class="type-name">AttributesExpectation</span><span>
-
-</span><span class="type-name">PointExpectation</span><span>
+        <pre><code class="nohighlight"><span class="type-name">PointExpectation</span><span>
   .</span><span class="identifier">numeric</span><span>(</span><span class="number-literal">1L</span><span>)
   .</span><span class="identifier">attributesExact</span><span>(</span><span class="type-name">Attribute</span><span>(</span><span class="string-literal">&quot;http.method&quot;</span><span>, </span><span class="string-literal">&quot;GET&quot;</span><span>))
 
@@ -348,16 +311,32 @@
         <p>Empty attributes can be matched with:</p>
         <pre class="keep-together pdf epub"><code class="nohighlight"><span class="type-name">PointExpectation</span><span>.</span><span class="identifier">numeric</span><span>(</span><span class="number-literal">1L</span><span>).</span><span class="identifier">attributesEmpty</span></code></pre>
         
+        <h2 id="metric-metadata-and-predicates" class="section"><a class="anchor-link left" href="#metric-metadata-and-predicates"><i class="icofont-laika link">&#xef71;</i></a>Metric metadata and predicates</h2>
+        <p>Metric expectations can assert metadata on the <code>MetricData</code> itself:</p>
+        <ul>
+          <li><code>description(...)</code></li>
+          <li><code>unit(...)</code></li>
+          <li><code>scopeName(...)</code></li>
+          <li><code>where(...)</code></li>
+        </ul>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="type-name">MetricExpectation</span><span>
+  .</span><span class="identifier">sum</span><span>[</span><span class="type-name">Long</span><span>](</span><span class="string-literal">&quot;service.requests&quot;</span><span>)
+  .</span><span class="identifier">description</span><span>(</span><span class="string-literal">&quot;Total requests&quot;</span><span>)
+  .</span><span class="identifier">unit</span><span>(</span><span class="string-literal">&quot;1&quot;</span><span>)
+  .</span><span class="identifier">scopeName</span><span>(</span><span class="string-literal">&quot;service&quot;</span><span>)
+
+</span><span class="type-name">MetricExpectation</span><span>
+  .</span><span class="identifier">name</span><span>(</span><span class="string-literal">&quot;service.requests&quot;</span><span>)
+  .</span><span class="identifier">where</span><span>(</span><span class="string-literal">&quot;metric should have at least one point&quot;</span><span>) { </span><span class="identifier">metric</span><span> =&gt;
+    !</span><span class="identifier">metric</span><span>.</span><span class="identifier">getData</span><span>.</span><span class="identifier">getPoints</span><span>.</span><span class="identifier">isEmpty</span><span>
+  }</span></code></pre>
+        <p>Use <code>where(...)</code> when the expectation API does not expose the field you need, or when a test needs a custom invariant
+        over the raw <code>MetricData</code>.</p>
+        
         <h2 id="scope-and-resource-expectations" class="section"><a class="anchor-link left" href="#scope-and-resource-expectations"><i class="icofont-laika link">&#xef71;</i></a>Scope and resource expectations</h2>
         <p>Metric expectations can also assert the instrumentation scope and telemetry resource.</p>
         <p>This is useful when you want tests to preserve the same level of detail as raw <code>MetricData</code>.</p>
-        <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="type-name">Attribute</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="identifier">testkit</span><span>.{
-  </span><span class="type-name">InstrumentationScopeExpectation</span><span>,
-  </span><span class="type-name">TelemetryResourceExpectation</span><span>
-}
-
-</span><span class="type-name">MetricExpectation</span><span>
+        <pre><code class="nohighlight"><span class="type-name">MetricExpectation</span><span>
   .</span><span class="identifier">sum</span><span>[</span><span class="type-name">Long</span><span>](</span><span class="string-literal">&quot;service.requests&quot;</span><span>)
   .</span><span class="identifier">points</span><span>(
     </span><span class="type-name">PointSetExpectation</span><span>.</span><span class="identifier">exists</span><span>(
@@ -597,10 +576,7 @@
         <h2 id="failure-reporting" class="section"><a class="anchor-link left" href="#failure-reporting"><i class="icofont-laika link">&#xef71;</i></a>Failure reporting</h2>
         <p>The API is framework-agnostic, so it does not provide assertions directly.
         Instead, it returns structured mismatches and a formatter.</p>
-        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">io</span><span>.</span><span class="identifier">opentelemetry</span><span>.</span><span class="identifier">sdk</span><span>.</span><span class="identifier">metrics</span><span>.</span><span class="identifier">data</span><span>.</span><span class="type-name">MetricData</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="identifier">testkit</span><span>.</span><span class="identifier">metrics</span><span>.{</span><span class="type-name">MetricExpectation</span><span>, </span><span class="type-name">MetricExpectations</span><span>}
-
-</span><span class="keyword">def</span><span> </span><span class="declaration-name">assertExpected</span><span>(</span><span class="identifier">metrics</span><span>: </span><span class="type-name">List</span><span>[</span><span class="type-name">MetricData</span><span>], </span><span class="identifier">expected</span><span>: </span><span class="type-name">MetricExpectation</span><span>*): </span><span class="type-name">Unit</span><span> =
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">def</span><span> </span><span class="declaration-name">assertExpected</span><span>(</span><span class="identifier">metrics</span><span>: </span><span class="type-name">List</span><span>[</span><span class="type-name">MetricData</span><span>], </span><span class="identifier">expected</span><span>: </span><span class="type-name">MetricExpectation</span><span>*): </span><span class="type-name">Unit</span><span> =
   </span><span class="type-name">MetricExpectations</span><span>.</span><span class="identifier">checkAll</span><span>(</span><span class="identifier">metrics</span><span>, </span><span class="identifier">expected</span><span>: </span><span class="identifier">_</span><span>*) </span><span class="keyword">match</span><span> {
     </span><span class="keyword">case</span><span> </span><span class="type-name">Right</span><span>(</span><span class="identifier">_</span><span>) =&gt;
       ()
@@ -617,12 +593,28 @@
         <p>This is especially helpful when a metric name is correct but, for example, one scope attribute or one point
         attribute is wrong.</p>
         
+        <h2 id="top-level-matching" class="section"><a class="anchor-link left" href="#top-level-matching"><i class="icofont-laika link">&#xef71;</i></a>Top-level matching</h2>
+        <p>Use <code>MetricExpectations</code> to match expectations against a collected list of exported metrics.</p>
+        <p>Available helpers:</p>
+        <ul>
+          <li><code>exists</code></li>
+          <li><code>find</code></li>
+          <li><code>check</code></li>
+          <li><code>checkAll</code></li>
+          <li><code>checkAllDistinct</code></li>
+          <li><code>missing</code></li>
+          <li><code>missingDistinct</code></li>
+          <li><code>allMatch</code></li>
+          <li><code>allMatchDistinct</code></li>
+          <li><code>format</code></li>
+        </ul>
+        <p><code>checkAll(...)</code> is non-consuming: the same exported metric may satisfy multiple expectations.</p>
+        <p><code>checkAllDistinct(...)</code> enforces distinct assignment and is the safer default when repeated expectations should match
+        different collected metrics.</p>
+        
         <h2 id="clues" class="section"><a class="anchor-link left" href="#clues"><i class="icofont-laika link">&#xef71;</i></a>Clues</h2>
         <p>Metric, point, and point-set expectations support optional clues.</p>
-        <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="identifier">testkit</span><span>.</span><span class="identifier">metrics</span><span>.{</span><span class="type-name">PointExpectation</span><span>, </span><span class="type-name">PointSetExpectation</span><span>}
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="type-name">Attribute</span><span>
-
-</span><span class="type-name">MetricExpectation</span><span>
+        <pre><code class="nohighlight"><span class="type-name">MetricExpectation</span><span>
   .</span><span class="identifier">sum</span><span>[</span><span class="type-name">Long</span><span>](</span><span class="string-literal">&quot;service.requests&quot;</span><span>)
   .</span><span class="identifier">clue</span><span>(</span><span class="string-literal">&quot;the request counter must be emitted&quot;</span><span>)
   .</span><span class="identifier">points</span><span>(

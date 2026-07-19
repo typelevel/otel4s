@@ -100,4 +100,4 @@ timestamps and attributes, are ignored.
 ## What's next
 
 For flat span matching, attributes, events, links, status, and custom predicates, see
-[Testkit | Traces](../oteljava/testkit-traces.md).
+[Traces testkit reference](../oteljava/testkit-traces.md).

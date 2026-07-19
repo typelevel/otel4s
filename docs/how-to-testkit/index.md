@@ -14,9 +14,9 @@ telemetry it emits.
 
 - For an overview of the available signal-specific and combined testkits, see
   [Testkit](../oteljava/testkit.md).
-- For the complete metrics expectation API, see
-  [Testkit | Metrics](../oteljava/testkit-metrics.md).
-- For the complete traces expectation API, see
-  [Testkit | Traces](../oteljava/testkit-traces.md).
-- For the complete logs expectation API, see
-  [Testkit | Logs](../oteljava/testkit-logs.md).
+- For metrics expectation details, see
+  [Metrics testkit reference](../oteljava/testkit-metrics.md).
+- For traces expectation details, see
+  [Traces testkit reference](../oteljava/testkit-traces.md).
+- For logs expectation details, see
+  [Logs testkit reference](../oteljava/testkit-logs.md).

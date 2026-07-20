@@ -18,6 +18,9 @@ package org.typelevel.otel4s
 package metrics
 
 import cats.Applicative
+import cats.Monad
+import cats.mtl.LiftValue
+import cats.syntax.functor._
 import org.typelevel.otel4s.metrics.meta.InstrumentMeta
 
 import scala.collection.immutable
@@ -36,7 +39,14 @@ import scala.collection.immutable
   *   the type of the values to record. The type must have an instance of [[MeasurementValue]]. [[scala.Long]] and
   *   [[scala.Double]] are supported out of the box.
   */
-sealed trait UpDownCounter[F[_], A] extends UpDownCounterMacro[F, A]
+sealed trait UpDownCounter[F[_], A] extends UpDownCounterMacro[F, A] {
+
+  /** Modify the context `F` using an implicit [[cats.mtl.LiftValue]] from `F` to `G`.
+    */
+  def liftTo[G[_]](implicit G: Monad[G], lift: LiftValue[F, G]): UpDownCounter[G, A] =
+    UpDownCounter.fromBackend(backend.liftTo[G])
+
+}
 
 object UpDownCounter {
   private[otel4s] trait Unsealed[F[_], A] extends UpDownCounter[F, A]
@@ -75,10 +85,31 @@ object UpDownCounter {
     /** Creates an [[UpDownCounter]] with the given `unit` and `description` (if any).
       */
     def create: F[UpDownCounter[F, A]]
+
+    /** Modify the context `F` using an implicit [[cats.mtl.LiftValue]] from `F` to `G`.
+      */
+    def liftTo[G[_]](implicit G: Monad[G], lift: LiftValue[F, G]): Builder[G, A] =
+      new Builder.Lifted[F, G, A](this)
   }
 
   object Builder {
     private[otel4s] trait Unsealed[F[_], A] extends Builder[F, A]
+
+    private[otel4s] final class Lifted[F[_], G[_], A](
+        builder: Builder[F, A]
+    )(implicit G: Monad[G], lift: LiftValue[F, G])
+        extends Builder[G, A] {
+
+      def withUnit(unit: String): Builder[G, A] =
+        builder.withUnit(unit).liftTo[G]
+
+      def withDescription(description: String): Builder[G, A] =
+        builder.withDescription(description).liftTo[G]
+
+      def create: G[UpDownCounter[G, A]] =
+        lift(builder.create).map(_.liftTo[G])
+    }
+
   }
 
   sealed trait Backend[F[_], A] {
@@ -107,10 +138,35 @@ object UpDownCounter {
       *   the set of attributes to associate with the value
       */
     def dec(attributes: immutable.Iterable[Attribute[_]]): F[Unit]
+
+    /** Modify the context `F` using an implicit [[cats.mtl.LiftValue]] from `F` to `G`.
+      */
+    def liftTo[G[_]](implicit G: Monad[G], lift: LiftValue[F, G]): Backend[G, A] =
+      new Backend.Lifted[F, G, A](this)
+
   }
 
   object Backend {
     private[otel4s] trait Unsealed[F[_], A] extends Backend[F, A]
+
+    private[otel4s] final class Lifted[F[_], G[_], A](
+        backend: Backend[F, A]
+    )(implicit G: Monad[G], lift: LiftValue[F, G])
+        extends Backend[G, A] {
+
+      def meta: InstrumentMeta[G] =
+        backend.meta.liftTo[G]
+
+      def add(value: A, attributes: immutable.Iterable[Attribute[_]]): G[Unit] =
+        lift(backend.add(value, attributes))
+
+      def inc(attributes: immutable.Iterable[Attribute[_]]): G[Unit] =
+        lift(backend.inc(attributes))
+
+      def dec(attributes: immutable.Iterable[Attribute[_]]): G[Unit] =
+        lift(backend.dec(attributes))
+    }
+
   }
 
   def noop[F[_], A](implicit F: Applicative[F]): UpDownCounter[F, A] =

@@ -17,8 +17,10 @@
 package org.typelevel.otel4s
 package metrics
 
+import cats.data.Kleisli
 import cats.effect.IO
 import cats.effect.Ref
+import cats.syntax.flatMap._
 import munit.CatsEffectSuite
 import org.typelevel.otel4s.metrics.meta.InstrumentMeta
 
@@ -104,6 +106,31 @@ class UpDownCounterSuite extends CatsEffectSuite {
       _ <- counter.dec(Attributes(attribute))
       _ <- counter.dec()
       _ <- counter.dec(attribute, attribute)
+      records <- counter.records
+    } yield assertEquals(records, expected)
+  }
+
+  test("liftTo - record values") {
+    type G[A] = Kleisli[IO, Unit, A]
+
+    val attribute = Attribute("key", "value")
+
+    val expected =
+      List(
+        Record(1L, Attributes(attribute)),
+        Record(1L, Attributes.empty),
+        Record(-1L, Attributes.empty),
+        Record(-2L, Attributes(attribute, attribute))
+      )
+
+    for {
+      counter <- inMemoryUpDownCounter
+      _ <- (
+        counter.liftTo[G].inc(Attributes(attribute)) >>
+          counter.liftTo[G].inc() >>
+          counter.liftTo[G].dec() >>
+          counter.liftTo[G].add(-2L, attribute, attribute)
+      ).run(())
       records <- counter.records
     } yield assertEquals(records, expected)
   }

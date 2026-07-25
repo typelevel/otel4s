@@ -108,6 +108,10 @@ object TelemetryExperimentalAttributes {
       */
     case object Java extends TelemetrySdkLanguageValue("java")
 
+    /** kotlin.
+      */
+    case object Kotlin extends TelemetrySdkLanguageValue("kotlin")
+
     /** nodejs.
       */
     case object Nodejs extends TelemetrySdkLanguageValue("nodejs")

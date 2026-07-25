@@ -22,6 +22,9 @@ package experimental.attributes
 object CloudExperimentalAttributes {
 
   /** The cloud account ID the resource is assigned to.
+    *
+    * @note
+    *   <p> For Azure, this is the subscription ID.
     */
   val CloudAccountId: AttributeKey[String] =
     AttributeKey("cloud.account.id")

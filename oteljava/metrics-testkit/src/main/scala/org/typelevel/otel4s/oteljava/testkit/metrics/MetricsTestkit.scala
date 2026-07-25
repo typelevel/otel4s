@@ -31,6 +31,12 @@ import org.typelevel.otel4s.oteljava.metrics.MeterProviderImpl
 
 import scala.jdk.CollectionConverters._
 
+/** An in-memory metrics backend for tests.
+  *
+  * @see
+  *   How-to guide
+  *   [[https://typelevel.org/otel4s/how-to-testkit/test-metrics-emitted-by-your-code.html Test metrics emitted by your code]]
+  */
 sealed trait MetricsTestkit[F[_]] {
 
   /** The [[org.typelevel.otel4s.metrics.MeterProvider MeterProvider]].

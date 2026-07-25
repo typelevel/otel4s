@@ -91,8 +91,8 @@ object K8sAttributes {
     * value, even if the value is empty.
     *
     * @note
-    *   <p> Examples: <ul> <li>A label `replicas` with value `1` SHOULD be recorded as the
-    *   `k8s.daemonset.annotation.replicas` attribute with value `"1"`. <li>A label `data` with empty string value
+    *   <p> Examples: <ul> <li>An annotation `replicas` with value `1` SHOULD be recorded as the
+    *   `k8s.daemonset.annotation.replicas` attribute with value `"1"`. <li>An annotation `data` with empty string value
     *   SHOULD be recorded as the `k8s.daemonset.annotation.data` attribute with value `""`. </ul>
     */
   val K8sDaemonsetAnnotation: AttributeKey[String] =
@@ -103,7 +103,7 @@ object K8sAttributes {
     *
     * @note
     *   <p> Examples: <ul> <li>A label `app` with value `guestbook` SHOULD be recorded as the `k8s.daemonset.label.app`
-    *   attribute with value `"guestbook"`. <li>A label `data` with empty string value SHOULD be recorded as the
+    *   attribute with value `"guestbook"`. <li>A label `injected` with empty string value SHOULD be recorded as the
     *   `k8s.daemonset.label.injected` attribute with value `""`. </ul>
     */
   val K8sDaemonsetLabel: AttributeKey[String] =
@@ -123,9 +123,9 @@ object K8sAttributes {
     * value, even if the value is empty.
     *
     * @note
-    *   <p> Examples: <ul> <li>A label `replicas` with value `1` SHOULD be recorded as the
-    *   `k8s.deployment.annotation.replicas` attribute with value `"1"`. <li>A label `data` with empty string value
-    *   SHOULD be recorded as the `k8s.deployment.annotation.data` attribute with value `""`. </ul>
+    *   <p> Examples: <ul> <li>An annotation `replicas` with value `1` SHOULD be recorded as the
+    *   `k8s.deployment.annotation.replicas` attribute with value `"1"`. <li>An annotation `data` with empty string
+    *   value SHOULD be recorded as the `k8s.deployment.annotation.data` attribute with value `""`. </ul>
     */
   val K8sDeploymentAnnotation: AttributeKey[String] =
     AttributeKey("k8s.deployment.annotation")
@@ -134,7 +134,7 @@ object K8sAttributes {
     * value is empty.
     *
     * @note
-    *   <p> Examples: <ul> <li>A label `replicas` with value `0` SHOULD be recorded as the `k8s.deployment.label.app`
+    *   <p> Examples: <ul> <li>A label `app` with value `guestbook` SHOULD be recorded as the `k8s.deployment.label.app`
     *   attribute with value `"guestbook"`. <li>A label `injected` with empty string value SHOULD be recorded as the
     *   `k8s.deployment.label.injected` attribute with value `""`. </ul>
     */
@@ -155,9 +155,9 @@ object K8sAttributes {
     * even if the value is empty.
     *
     * @note
-    *   <p> Examples: <ul> <li>A label `number` with value `1` SHOULD be recorded as the `k8s.job.annotation.number`
-    *   attribute with value `"1"`. <li>A label `data` with empty string value SHOULD be recorded as the
-    *   `k8s.job.annotation.data` attribute with value `""`. </ul>
+    *   <p> Examples: <ul> <li>An annotation `number` with value `1` SHOULD be recorded as the
+    *   `k8s.job.annotation.number` attribute with value `"1"`. <li>An annotation `data` with empty string value SHOULD
+    *   be recorded as the `k8s.job.annotation.data` attribute with value `""`. </ul>
     */
   val K8sJobAnnotation: AttributeKey[String] =
     AttributeKey("k8s.job.annotation")
@@ -167,7 +167,7 @@ object K8sAttributes {
     *
     * @note
     *   <p> Examples: <ul> <li>A label `jobtype` with value `ci` SHOULD be recorded as the `k8s.job.label.jobtype`
-    *   attribute with value `"ci"`. <li>A label `data` with empty string value SHOULD be recorded as the
+    *   attribute with value `"ci"`. <li>A label `automated` with empty string value SHOULD be recorded as the
     *   `k8s.job.label.automated` attribute with value `""`. </ul>
     */
   val K8sJobLabel: AttributeKey[String] =
@@ -187,9 +187,9 @@ object K8sAttributes {
     * value, even if the value is empty.
     *
     * @note
-    *   <p> Examples: <ul> <li>A label `ttl` with value `0` SHOULD be recorded as the `k8s.namespace.annotation.ttl`
-    *   attribute with value `"0"`. <li>A label `data` with empty string value SHOULD be recorded as the
-    *   `k8s.namespace.annotation.data` attribute with value `""`. </ul>
+    *   <p> Examples: <ul> <li>An annotation `ttl` with value `0` SHOULD be recorded as the
+    *   `k8s.namespace.annotation.ttl` attribute with value `"0"`. <li>An annotation `data` with empty string value
+    *   SHOULD be recorded as the `k8s.namespace.annotation.data` attribute with value `""`. </ul>
     */
   val K8sNamespaceAnnotation: AttributeKey[String] =
     AttributeKey("k8s.namespace.annotation")
@@ -310,9 +310,9 @@ object K8sAttributes {
     * value, even if the value is empty.
     *
     * @note
-    *   <p> Examples: <ul> <li>A label `replicas` with value `0` SHOULD be recorded as the
-    *   `k8s.replicaset.annotation.replicas` attribute with value `"0"`. <li>A label `data` with empty string value
-    *   SHOULD be recorded as the `k8s.replicaset.annotation.data` attribute with value `""`. </ul>
+    *   <p> Examples: <ul> <li>An annotation `replicas` with value `0` SHOULD be recorded as the
+    *   `k8s.replicaset.annotation.replicas` attribute with value `"0"`. <li>An annotation `data` with empty string
+    *   value SHOULD be recorded as the `k8s.replicaset.annotation.data` attribute with value `""`. </ul>
     */
   val K8sReplicasetAnnotation: AttributeKey[String] =
     AttributeKey("k8s.replicaset.annotation")
@@ -342,9 +342,9 @@ object K8sAttributes {
     * value, even if the value is empty.
     *
     * @note
-    *   <p> Examples: <ul> <li>A label `replicas` with value `1` SHOULD be recorded as the
-    *   `k8s.statefulset.annotation.replicas` attribute with value `"1"`. <li>A label `data` with empty string value
-    *   SHOULD be recorded as the `k8s.statefulset.annotation.data` attribute with value `""`. </ul>
+    *   <p> Examples: <ul> <li>An annotation `replicas` with value `1` SHOULD be recorded as the
+    *   `k8s.statefulset.annotation.replicas` attribute with value `"1"`. <li>An annotation `data` with empty string
+    *   value SHOULD be recorded as the `k8s.statefulset.annotation.data` attribute with value `""`. </ul>
     */
   val K8sStatefulsetAnnotation: AttributeKey[String] =
     AttributeKey("k8s.statefulset.annotation")
@@ -353,9 +353,9 @@ object K8sAttributes {
     * the value is empty.
     *
     * @note
-    *   <p> Examples: <ul> <li>A label `replicas` with value `0` SHOULD be recorded as the `k8s.statefulset.label.app`
-    *   attribute with value `"guestbook"`. <li>A label `injected` with empty string value SHOULD be recorded as the
-    *   `k8s.statefulset.label.injected` attribute with value `""`. </ul>
+    *   <p> Examples: <ul> <li>A label `app` with value `guestbook` SHOULD be recorded as the
+    *   `k8s.statefulset.label.app` attribute with value `"guestbook"`. <li>A label `injected` with empty string value
+    *   SHOULD be recorded as the `k8s.statefulset.label.injected` attribute with value `""`. </ul>
     */
   val K8sStatefulsetLabel: AttributeKey[String] =
     AttributeKey("k8s.statefulset.label")

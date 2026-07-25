@@ -42,7 +42,7 @@ object CicdExperimentalMetrics {
     val name: String = "cicd.pipeline.run.active"
     val description: String = "The number of pipeline runs currently active in the system by state."
     val unit: String = "{run}"
-    val stability: Stability = Stability.development
+    val stability: Stability = Stability.releaseCandidate
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -59,7 +59,7 @@ object CicdExperimentalMetrics {
             "deploy_to_environment",
           ),
           Requirement.required,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       /** The pipeline run goes through these states during its lifecycle.
@@ -73,7 +73,7 @@ object CicdExperimentalMetrics {
             "finalizing",
           ),
           Requirement.required,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       val specs: List[AttributeSpec[_]] =
@@ -115,7 +115,7 @@ object CicdExperimentalMetrics {
     val name: String = "cicd.pipeline.run.duration"
     val description: String = "Duration of a pipeline run grouped by pipeline, state and result."
     val unit: String = "s"
-    val stability: Stability = Stability.development
+    val stability: Stability = Stability.releaseCandidate
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -132,7 +132,7 @@ object CicdExperimentalMetrics {
             "deploy_to_environment",
           ),
           Requirement.required,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       /** The result of a pipeline run.
@@ -144,10 +144,10 @@ object CicdExperimentalMetrics {
             "success",
             "failure",
             "timeout",
-            "skipped",
+            "skip",
           ),
           Requirement.conditionallyRequired("If and only if the pipeline run result has been set during that state."),
-          Stability.development
+          Stability.releaseCandidate
         )
 
       /** The pipeline run goes through these states during its lifecycle.
@@ -161,7 +161,7 @@ object CicdExperimentalMetrics {
             "finalizing",
           ),
           Requirement.required,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       /** Describes a class of error the operation ended with.
@@ -225,7 +225,7 @@ object CicdExperimentalMetrics {
     val name: String = "cicd.pipeline.run.errors"
     val description: String = "The number of errors encountered in pipeline runs (eg. compile, test failures)."
     val unit: String = "{error}"
-    val stability: Stability = Stability.development
+    val stability: Stability = Stability.releaseCandidate
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -242,7 +242,7 @@ object CicdExperimentalMetrics {
             "deploy_to_environment",
           ),
           Requirement.required,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       /** Describes a class of error the operation ended with.
@@ -318,7 +318,7 @@ object CicdExperimentalMetrics {
     val description: String =
       "The number of errors in a component of the CI/CD system (eg. controller, scheduler, agent)."
     val unit: String = "{error}"
-    val stability: Stability = Stability.development
+    val stability: Stability = Stability.releaseCandidate
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -334,7 +334,7 @@ object CicdExperimentalMetrics {
             "agent",
           ),
           Requirement.required,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       /** Describes a class of error the operation ended with.
@@ -405,8 +405,8 @@ object CicdExperimentalMetrics {
 
     val name: String = "cicd.worker.count"
     val description: String = "The number of workers on the CI/CD system by state."
-    val unit: String = "{count}"
-    val stability: Stability = Stability.development
+    val unit: String = "{worker}"
+    val stability: Stability = Stability.releaseCandidate
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -417,12 +417,12 @@ object CicdExperimentalMetrics {
         AttributeSpec(
           CicdExperimentalAttributes.CicdWorkerState,
           List(
-            "idle",
+            "available",
             "busy",
-            "down",
+            "offline",
           ),
           Requirement.required,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       val specs: List[AttributeSpec[_]] =

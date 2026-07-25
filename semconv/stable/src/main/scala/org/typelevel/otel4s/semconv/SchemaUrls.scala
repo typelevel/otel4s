@@ -18,6 +18,7 @@ package org.typelevel.otel4s.semconv
 
 object SchemaUrls {
 
+  val V1_43_0: String = "https://opentelemetry.io/schemas/1.43.0"
   val V1_42_0: String = "https://opentelemetry.io/schemas/1.42.0"
   val V1_41_0: String = "https://opentelemetry.io/schemas/1.41.0"
   val V1_40_0: String = "https://opentelemetry.io/schemas/1.40.0"
@@ -36,6 +37,6 @@ object SchemaUrls {
   val V1_27_0: String = "https://opentelemetry.io/schemas/1.27.0"
   val V1_26_0: String = "https://opentelemetry.io/schemas/1.26.0"
 
-  private[otel4s] val Current: String = V1_42_0
+  private[otel4s] val Current: String = V1_43_0
 
 }

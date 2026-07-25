@@ -1,105 +1,42 @@
-# Testkit | Logs
+# Logs testkit reference
 
-The logs testkit provides a partial-matching expectation API for OpenTelemetry Java `LogRecordData`.
+The logs testkit provides in-memory log collection and partial-matching expectation APIs for OpenTelemetry Java
+`LogRecordData`.
 
-This is useful in tests because exported log records contain more than just a message:
+Use this page as an API reference for `LogsTestkit`, `LogRecordExpectation`, and `LogRecordExpectations`.
 
-- structured body values
-- severity and severity text
-- trace and span correlation
-- attributes
-- instrumentation scope
-- telemetry resource
-- source and observed timestamps
+For an end-to-end test setup, see
+[Test logs emitted by your code](../how-to-testkit/test-logs-emitted-by-your-code.md).
+For the overview of all signal testkits, see [Testkit](testkit.md).
 
-The expectation API lets you match only the parts of a log record that matter for the test while still preserving
-access to the raw SDK model when needed.
+The examples below assume these imports:
 
-## Getting started
-
-@:select(build-tool)
-
-@:choice(sbt)
-
-Add settings to `build.sbt`:
-
-```scala
-libraryDependencies ++= Seq(
-  "org.typelevel" %% "otel4s-oteljava-testkit" % "@VERSION@" % Test,
-)
-```
-
-@:choice(scala-cli)
-
-Add directives to the `*.scala` file:
-
-```scala
-//> using test.dep "org.typelevel::otel4s-oteljava-testkit:@VERSION@"
-```
-
-@:@
-
-## Basic flow
-
-The usual flow is:
-
-1. run your program against `LogsTestkit` or `OtelJavaTestkit`
-2. collect finished logs as OpenTelemetry Java `LogRecordData`
-3. build `LogRecordExpectation` values
-4. check them with `LogRecordExpectations`
-
-```scala mdoc:silent:reset
-import cats.effect.IO
+```scala mdoc:silent
 import io.opentelemetry.sdk.logs.data.LogRecordData
-import org.typelevel.otel4s.AnyValue
-import org.typelevel.otel4s.Attribute
-import org.typelevel.otel4s.logs.{LoggerProvider, Severity}
-import org.typelevel.otel4s.oteljava.context.Context
+import org.typelevel.otel4s.{AnyValue, Attribute}
+import org.typelevel.otel4s.logs.Severity
+import org.typelevel.otel4s.oteljava.testkit.AttributesExpectation
+import org.typelevel.otel4s.oteljava.testkit.{
+  InstrumentationScopeExpectation,
+  TelemetryResourceExpectation
+}
 import org.typelevel.otel4s.oteljava.testkit.logs._
-
-def program(loggerProvider: LoggerProvider[IO, Context]): IO[Unit] =
-  for {
-    logger <- loggerProvider.logger("service").withVersion("1.0.0").get
-    _ <- logger.logRecordBuilder
-      .withSeverity(Severity.error)
-      .withSeverityText("ERROR")
-      .withBody(AnyValue.string("request failed"))
-      .addAttributes(
-        Attribute("http.route", "/users"),
-        Attribute("error.type", "timeout")
-      )
-      .emit
-  } yield ()
-
-def assertExpected(
-    records: List[LogRecordData],
-    expected: LogRecordExpectation*
-): Unit =
-  LogRecordExpectations.checkAllDistinct(records, expected: _*) match {
-    case Right(_) =>
-      ()
-    case Left(mismatches) =>
-      sys.error(LogRecordExpectations.format(mismatches))
-  }
-
-def test: IO[Unit] =
-  LogsTestkit.inMemory[IO]().use { testkit =>
-    for {
-      _ <- program(testkit.loggerProvider)
-      records <- testkit.finishedLogs
-    } yield assertExpected(
-      records,
-      LogRecordExpectation
-        .message("request failed")
-        .severity(Severity.error)
-        .severityText("ERROR")
-        .attributesSubset(
-          Attribute("http.route", "/users"),
-          Attribute("error.type", "timeout")
-        )
-    )
-  }
 ```
+
+## `LogsTestkit`
+
+`LogsTestkit` is the signal-specific in-memory backend for logs.
+
+| Member | Purpose |
+| ------ | ------- |
+| `LogsTestkit.inMemory[F]()` | Creates a `Resource[F, LogsTestkit[F]]` backed by an in-memory log exporter. |
+| `LogsTestkit.builder[F]` | Creates a builder for customizing the underlying `SdkLoggerProviderBuilder`. |
+| `loggerProvider` | The otel4s `LoggerProvider[F, Context]` used by code under test. |
+| `finishedLogs` | Returns `List[LogRecordData]` from the in-memory log exporter. |
+| `resetLogs` | Clears the in-memory log exporter. |
+
+`OtelJavaTestkit` also exposes `loggerProvider`, `finishedLogs`, and `resetLogs` when a test needs logs together with
+metrics or traces.
 
 ## Partial matching
 
@@ -114,9 +51,6 @@ This means:
 For example:
 
 ```scala mdoc:silent
-import org.typelevel.otel4s.logs.Severity
-import org.typelevel.otel4s.oteljava.testkit.logs.LogRecordExpectation
-
 LogRecordExpectation.message("request failed")
 
 LogRecordExpectation
@@ -135,8 +69,6 @@ OpenTelemetry log body is not always a string. The testkit therefore exposes two
 - `body(AnyValue)` for exact raw body matching
 
 ```scala mdoc:silent
-import org.typelevel.otel4s.AnyValue
-
 LogRecordExpectation.message("request failed")
 
 LogRecordExpectation.body(
@@ -160,8 +92,6 @@ Severity matching is intentionally shallow:
 - `severityText(...)`
 
 ```scala mdoc:silent
-import org.typelevel.otel4s.logs.Severity
-
 LogRecordExpectation
   .message("request failed")
   .severity(Severity.error)
@@ -206,9 +136,6 @@ Log attributes use the same helpers as the metrics and traces expectation APIs:
 - `attributesEmpty`
 
 ```scala mdoc:silent
-import org.typelevel.otel4s.Attribute
-import org.typelevel.otel4s.oteljava.testkit.AttributesExpectation
-
 LogRecordExpectation
   .message("request failed")
   .attributesExact(
@@ -232,9 +159,6 @@ LogRecordExpectation
 Instrumentation scope and telemetry resource can be asserted directly:
 
 ```scala mdoc:silent
-import org.typelevel.otel4s.Attribute
-import org.typelevel.otel4s.oteljava.testkit.{InstrumentationScopeExpectation, TelemetryResourceExpectation}
-
 LogRecordExpectation
   .message("request failed")
   .scope(

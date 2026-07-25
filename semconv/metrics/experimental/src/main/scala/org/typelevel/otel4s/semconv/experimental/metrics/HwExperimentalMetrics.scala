@@ -993,7 +993,7 @@ object HwExperimentalMetrics {
             "transmit",
           ),
           Requirement.recommended,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       val specs: List[AttributeSpec[_]] =
@@ -1472,7 +1472,8 @@ object HwExperimentalMetrics {
           Stability.development
         )
 
-      /** The network IO operation direction.
+      /** The direction of traffic from the perspective of the observing host's physical or virtual network interface.
+        * It should not be used to represent the logical direction of a stateful connection or network flow.
         */
       val networkIoDirection: AttributeSpec[String] =
         AttributeSpec(
@@ -1482,7 +1483,7 @@ object HwExperimentalMetrics {
             "transmit",
           ),
           Requirement.required,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       val specs: List[AttributeSpec[_]] =
@@ -3382,7 +3383,8 @@ object HwExperimentalMetrics {
           Stability.development
         )
 
-      /** The network IO operation direction.
+      /** The direction of traffic from the perspective of the observing host's physical or virtual network interface.
+        * It should not be used to represent the logical direction of a stateful connection or network flow.
         */
       val networkIoDirection: AttributeSpec[String] =
         AttributeSpec(
@@ -3392,7 +3394,7 @@ object HwExperimentalMetrics {
             "transmit",
           ),
           Requirement.required,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       val specs: List[AttributeSpec[_]] =
@@ -3550,7 +3552,8 @@ object HwExperimentalMetrics {
           Stability.development
         )
 
-      /** The network IO operation direction.
+      /** The direction of traffic from the perspective of the observing host's physical or virtual network interface.
+        * It should not be used to represent the logical direction of a stateful connection or network flow.
         */
       val networkIoDirection: AttributeSpec[String] =
         AttributeSpec(
@@ -3560,7 +3563,7 @@ object HwExperimentalMetrics {
             "transmit",
           ),
           Requirement.required,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       val specs: List[AttributeSpec[_]] =

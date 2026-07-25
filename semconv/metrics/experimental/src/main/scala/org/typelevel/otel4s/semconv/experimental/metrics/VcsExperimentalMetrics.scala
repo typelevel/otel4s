@@ -48,7 +48,7 @@ object VcsExperimentalMetrics {
     val description: String =
       "The number of changes (pull requests/merge requests/changelists) in a repository, categorized by their state (e.g. open or merged)."
     val unit: String = "{change}"
-    val stability: Stability = Stability.development
+    val stability: Stability = Stability.releaseCandidate
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -64,7 +64,7 @@ object VcsExperimentalMetrics {
             "merged",
           ),
           Requirement.required,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       /** The group owner within the version control system.
@@ -78,7 +78,7 @@ object VcsExperimentalMetrics {
             "business-unit",
           ),
           Requirement.recommended,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       /** The name of the version control system provider.
@@ -93,7 +93,7 @@ object VcsExperimentalMetrics {
             "bitbucket",
           ),
           Requirement.optIn,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       /** The human readable name of the repository. It SHOULD NOT include any additional identifier like Group/SubGroup
@@ -111,7 +111,7 @@ object VcsExperimentalMetrics {
             "my-cool-repo",
           ),
           Requirement.recommended,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       /** The <a href="https://support.google.com/webmasters/answer/10347851">canonical URL</a> of the repository
@@ -128,7 +128,7 @@ object VcsExperimentalMetrics {
             "https://gitlab.com/my-org/my-project/my-projects-project/repo",
           ),
           Requirement.required,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       val specs: List[AttributeSpec[_]] =
@@ -174,7 +174,7 @@ object VcsExperimentalMetrics {
     val description: String =
       "The time duration a change (pull request/merge request/changelist) has been in a given state."
     val unit: String = "s"
-    val stability: Stability = Stability.development
+    val stability: Stability = Stability.releaseCandidate
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -190,7 +190,7 @@ object VcsExperimentalMetrics {
             "merged",
           ),
           Requirement.required,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       /** The group owner within the version control system.
@@ -204,7 +204,7 @@ object VcsExperimentalMetrics {
             "business-unit",
           ),
           Requirement.recommended,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       /** The name of the version control system provider.
@@ -219,7 +219,7 @@ object VcsExperimentalMetrics {
             "bitbucket",
           ),
           Requirement.optIn,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       /** The name of the <a href="https://git-scm.com/docs/gitglossary#def_ref">reference</a> such as
@@ -236,7 +236,7 @@ object VcsExperimentalMetrics {
             "tag-1-test",
           ),
           Requirement.required,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       /** The human readable name of the repository. It SHOULD NOT include any additional identifier like Group/SubGroup
@@ -254,7 +254,7 @@ object VcsExperimentalMetrics {
             "my-cool-repo",
           ),
           Requirement.recommended,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       /** The <a href="https://support.google.com/webmasters/answer/10347851">canonical URL</a> of the repository
@@ -271,7 +271,7 @@ object VcsExperimentalMetrics {
             "https://gitlab.com/my-org/my-project/my-projects-project/repo",
           ),
           Requirement.required,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       val specs: List[AttributeSpec[_]] =
@@ -335,7 +335,7 @@ object VcsExperimentalMetrics {
             "business-unit",
           ),
           Requirement.recommended,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       /** The name of the version control system provider.
@@ -350,7 +350,7 @@ object VcsExperimentalMetrics {
             "bitbucket",
           ),
           Requirement.optIn,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       /** The name of the <a href="https://git-scm.com/docs/gitglossary#def_ref">reference</a> such as
@@ -368,7 +368,7 @@ object VcsExperimentalMetrics {
             "tag-1-test",
           ),
           Requirement.recommended,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       /** The revision, literally <a href="https://www.merriam-webster.com/dictionary/revision">revised version</a>, The
@@ -395,7 +395,7 @@ object VcsExperimentalMetrics {
             "HEAD",
           ),
           Requirement.optIn,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       /** The name of the <a href="https://git-scm.com/docs/gitglossary#def_ref">reference</a> such as
@@ -412,7 +412,7 @@ object VcsExperimentalMetrics {
             "tag-1-test",
           ),
           Requirement.required,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       /** The revision, literally <a href="https://www.merriam-webster.com/dictionary/revision">revised version</a>, The
@@ -438,7 +438,7 @@ object VcsExperimentalMetrics {
             "HEAD",
           ),
           Requirement.optIn,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       /** The human readable name of the repository. It SHOULD NOT include any additional identifier like Group/SubGroup
@@ -456,7 +456,7 @@ object VcsExperimentalMetrics {
             "my-cool-repo",
           ),
           Requirement.recommended,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       /** The <a href="https://support.google.com/webmasters/answer/10347851">canonical URL</a> of the repository
@@ -473,7 +473,7 @@ object VcsExperimentalMetrics {
             "https://gitlab.com/my-org/my-project/my-projects-project/repo",
           ),
           Requirement.required,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       val specs: List[AttributeSpec[_]] =
@@ -539,7 +539,7 @@ object VcsExperimentalMetrics {
             "business-unit",
           ),
           Requirement.recommended,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       /** The name of the version control system provider.
@@ -554,7 +554,7 @@ object VcsExperimentalMetrics {
             "bitbucket",
           ),
           Requirement.optIn,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       /** The name of the <a href="https://git-scm.com/docs/gitglossary#def_ref">reference</a> such as
@@ -572,7 +572,7 @@ object VcsExperimentalMetrics {
             "tag-1-test",
           ),
           Requirement.recommended,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       /** The revision, literally <a href="https://www.merriam-webster.com/dictionary/revision">revised version</a>, The
@@ -599,7 +599,7 @@ object VcsExperimentalMetrics {
             "HEAD",
           ),
           Requirement.optIn,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       /** The name of the <a href="https://git-scm.com/docs/gitglossary#def_ref">reference</a> such as
@@ -616,7 +616,7 @@ object VcsExperimentalMetrics {
             "tag-1-test",
           ),
           Requirement.required,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       /** The revision, literally <a href="https://www.merriam-webster.com/dictionary/revision">revised version</a>, The
@@ -642,7 +642,7 @@ object VcsExperimentalMetrics {
             "HEAD",
           ),
           Requirement.optIn,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       /** The human readable name of the repository. It SHOULD NOT include any additional identifier like Group/SubGroup
@@ -660,7 +660,7 @@ object VcsExperimentalMetrics {
             "my-cool-repo",
           ),
           Requirement.recommended,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       /** The <a href="https://support.google.com/webmasters/answer/10347851">canonical URL</a> of the repository
@@ -677,7 +677,7 @@ object VcsExperimentalMetrics {
             "https://gitlab.com/my-org/my-project/my-projects-project/repo",
           ),
           Requirement.required,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       val specs: List[AttributeSpec[_]] =
@@ -725,7 +725,7 @@ object VcsExperimentalMetrics {
     val name: String = "vcs.contributor.count"
     val description: String = "The number of unique contributors to a repository."
     val unit: String = "{contributor}"
-    val stability: Stability = Stability.development
+    val stability: Stability = Stability.releaseCandidate
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -741,7 +741,7 @@ object VcsExperimentalMetrics {
             "business-unit",
           ),
           Requirement.recommended,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       /** The name of the version control system provider.
@@ -756,7 +756,7 @@ object VcsExperimentalMetrics {
             "bitbucket",
           ),
           Requirement.optIn,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       /** The human readable name of the repository. It SHOULD NOT include any additional identifier like Group/SubGroup
@@ -774,7 +774,7 @@ object VcsExperimentalMetrics {
             "my-cool-repo",
           ),
           Requirement.recommended,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       /** The <a href="https://support.google.com/webmasters/answer/10347851">canonical URL</a> of the repository
@@ -791,7 +791,7 @@ object VcsExperimentalMetrics {
             "https://gitlab.com/my-org/my-project/my-projects-project/repo",
           ),
           Requirement.required,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       val specs: List[AttributeSpec[_]] =
@@ -835,7 +835,7 @@ object VcsExperimentalMetrics {
     val name: String = "vcs.ref.count"
     val description: String = "The number of refs of type branch or tag in a repository."
     val unit: String = "{ref}"
-    val stability: Stability = Stability.development
+    val stability: Stability = Stability.releaseCandidate
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -851,7 +851,7 @@ object VcsExperimentalMetrics {
             "business-unit",
           ),
           Requirement.recommended,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       /** The name of the version control system provider.
@@ -866,7 +866,7 @@ object VcsExperimentalMetrics {
             "bitbucket",
           ),
           Requirement.optIn,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       /** The type of the <a href="https://git-scm.com/docs/gitglossary#def_ref">reference</a> in the repository.
@@ -879,7 +879,7 @@ object VcsExperimentalMetrics {
             "tag",
           ),
           Requirement.required,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       /** The human readable name of the repository. It SHOULD NOT include any additional identifier like Group/SubGroup
@@ -897,7 +897,7 @@ object VcsExperimentalMetrics {
             "my-cool-repo",
           ),
           Requirement.recommended,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       /** The <a href="https://support.google.com/webmasters/answer/10347851">canonical URL</a> of the repository
@@ -914,7 +914,7 @@ object VcsExperimentalMetrics {
             "https://gitlab.com/my-org/my-project/my-projects-project/repo",
           ),
           Requirement.required,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       val specs: List[AttributeSpec[_]] =
@@ -966,7 +966,7 @@ object VcsExperimentalMetrics {
     val description: String =
       "The number of lines added/removed in a ref (branch) relative to the ref from the `vcs.ref.base.name` attribute."
     val unit: String = "{line}"
-    val stability: Stability = Stability.development
+    val stability: Stability = Stability.releaseCandidate
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -980,8 +980,8 @@ object VcsExperimentalMetrics {
           List(
             "123",
           ),
-          Requirement.conditionallyRequired("if a change is associate with the ref."),
-          Stability.development
+          Requirement.conditionallyRequired("if a change is associated with the ref."),
+          Stability.releaseCandidate
         )
 
       /** The type of line change being measured on a branch or change.
@@ -994,7 +994,7 @@ object VcsExperimentalMetrics {
             "removed",
           ),
           Requirement.required,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       /** The group owner within the version control system.
@@ -1008,7 +1008,7 @@ object VcsExperimentalMetrics {
             "business-unit",
           ),
           Requirement.recommended,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       /** The name of the version control system provider.
@@ -1023,7 +1023,7 @@ object VcsExperimentalMetrics {
             "bitbucket",
           ),
           Requirement.optIn,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       /** The name of the <a href="https://git-scm.com/docs/gitglossary#def_ref">reference</a> such as
@@ -1041,7 +1041,7 @@ object VcsExperimentalMetrics {
             "tag-1-test",
           ),
           Requirement.required,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       /** The type of the <a href="https://git-scm.com/docs/gitglossary#def_ref">reference</a> in the repository.
@@ -1058,7 +1058,7 @@ object VcsExperimentalMetrics {
             "tag",
           ),
           Requirement.required,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       /** The name of the <a href="https://git-scm.com/docs/gitglossary#def_ref">reference</a> such as
@@ -1075,7 +1075,7 @@ object VcsExperimentalMetrics {
             "tag-1-test",
           ),
           Requirement.required,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       /** The type of the <a href="https://git-scm.com/docs/gitglossary#def_ref">reference</a> in the repository.
@@ -1091,7 +1091,7 @@ object VcsExperimentalMetrics {
             "tag",
           ),
           Requirement.required,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       /** The human readable name of the repository. It SHOULD NOT include any additional identifier like Group/SubGroup
@@ -1109,7 +1109,7 @@ object VcsExperimentalMetrics {
             "my-cool-repo",
           ),
           Requirement.recommended,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       /** The <a href="https://support.google.com/webmasters/answer/10347851">canonical URL</a> of the repository
@@ -1126,7 +1126,7 @@ object VcsExperimentalMetrics {
             "https://gitlab.com/my-org/my-project/my-projects-project/repo",
           ),
           Requirement.required,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       val specs: List[AttributeSpec[_]] =
@@ -1183,7 +1183,7 @@ object VcsExperimentalMetrics {
     val description: String =
       "The number of revisions (commits) a ref (branch) is ahead/behind the branch from the `vcs.ref.base.name` attribute."
     val unit: String = "{revision}"
-    val stability: Stability = Stability.development
+    val stability: Stability = Stability.releaseCandidate
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -1197,8 +1197,8 @@ object VcsExperimentalMetrics {
           List(
             "123",
           ),
-          Requirement.conditionallyRequired("if a change is associate with the ref."),
-          Stability.development
+          Requirement.conditionallyRequired("if a change is associated with the ref."),
+          Stability.releaseCandidate
         )
 
       /** The group owner within the version control system.
@@ -1212,7 +1212,7 @@ object VcsExperimentalMetrics {
             "business-unit",
           ),
           Requirement.recommended,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       /** The name of the version control system provider.
@@ -1227,7 +1227,7 @@ object VcsExperimentalMetrics {
             "bitbucket",
           ),
           Requirement.optIn,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       /** The name of the <a href="https://git-scm.com/docs/gitglossary#def_ref">reference</a> such as
@@ -1245,7 +1245,7 @@ object VcsExperimentalMetrics {
             "tag-1-test",
           ),
           Requirement.required,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       /** The type of the <a href="https://git-scm.com/docs/gitglossary#def_ref">reference</a> in the repository.
@@ -1262,7 +1262,7 @@ object VcsExperimentalMetrics {
             "tag",
           ),
           Requirement.required,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       /** The name of the <a href="https://git-scm.com/docs/gitglossary#def_ref">reference</a> such as
@@ -1279,7 +1279,7 @@ object VcsExperimentalMetrics {
             "tag-1-test",
           ),
           Requirement.required,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       /** The type of the <a href="https://git-scm.com/docs/gitglossary#def_ref">reference</a> in the repository.
@@ -1295,7 +1295,7 @@ object VcsExperimentalMetrics {
             "tag",
           ),
           Requirement.required,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       /** The human readable name of the repository. It SHOULD NOT include any additional identifier like Group/SubGroup
@@ -1313,7 +1313,7 @@ object VcsExperimentalMetrics {
             "my-cool-repo",
           ),
           Requirement.recommended,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       /** The <a href="https://support.google.com/webmasters/answer/10347851">canonical URL</a> of the repository
@@ -1330,7 +1330,7 @@ object VcsExperimentalMetrics {
             "https://gitlab.com/my-org/my-project/my-projects-project/repo",
           ),
           Requirement.required,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       /** The type of revision comparison.
@@ -1343,7 +1343,7 @@ object VcsExperimentalMetrics {
             "behind",
           ),
           Requirement.required,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       val specs: List[AttributeSpec[_]] =
@@ -1395,7 +1395,7 @@ object VcsExperimentalMetrics {
     val description: String =
       "Time a ref (branch) created from the default branch (trunk) has existed. The `ref.type` attribute will always be `branch`."
     val unit: String = "s"
-    val stability: Stability = Stability.development
+    val stability: Stability = Stability.releaseCandidate
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -1411,7 +1411,7 @@ object VcsExperimentalMetrics {
             "business-unit",
           ),
           Requirement.recommended,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       /** The name of the version control system provider.
@@ -1426,7 +1426,7 @@ object VcsExperimentalMetrics {
             "bitbucket",
           ),
           Requirement.optIn,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       /** The name of the <a href="https://git-scm.com/docs/gitglossary#def_ref">reference</a> such as
@@ -1443,7 +1443,7 @@ object VcsExperimentalMetrics {
             "tag-1-test",
           ),
           Requirement.required,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       /** The type of the <a href="https://git-scm.com/docs/gitglossary#def_ref">reference</a> in the repository.
@@ -1459,7 +1459,7 @@ object VcsExperimentalMetrics {
             "tag",
           ),
           Requirement.required,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       /** The human readable name of the repository. It SHOULD NOT include any additional identifier like Group/SubGroup
@@ -1477,7 +1477,7 @@ object VcsExperimentalMetrics {
             "my-cool-repo",
           ),
           Requirement.recommended,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       /** The <a href="https://support.google.com/webmasters/answer/10347851">canonical URL</a> of the repository
@@ -1494,7 +1494,7 @@ object VcsExperimentalMetrics {
             "https://gitlab.com/my-org/my-project/my-projects-project/repo",
           ),
           Requirement.required,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       val specs: List[AttributeSpec[_]] =
@@ -1540,7 +1540,7 @@ object VcsExperimentalMetrics {
     val name: String = "vcs.repository.count"
     val description: String = "The number of repositories in an organization."
     val unit: String = "{repository}"
-    val stability: Stability = Stability.development
+    val stability: Stability = Stability.releaseCandidate
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -1556,7 +1556,7 @@ object VcsExperimentalMetrics {
             "business-unit",
           ),
           Requirement.recommended,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       /** The name of the version control system provider.
@@ -1571,7 +1571,7 @@ object VcsExperimentalMetrics {
             "bitbucket",
           ),
           Requirement.optIn,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       val specs: List[AttributeSpec[_]] =

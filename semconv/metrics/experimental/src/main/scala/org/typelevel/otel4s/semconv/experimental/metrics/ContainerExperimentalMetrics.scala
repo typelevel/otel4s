@@ -209,7 +209,7 @@ object ContainerExperimentalMetrics {
             "read",
           ),
           Requirement.recommended,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       /** The device identifier
@@ -462,7 +462,7 @@ object ContainerExperimentalMetrics {
             "minor",
           ),
           Requirement.recommended,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       val specs: List[AttributeSpec[_]] =
@@ -650,7 +650,8 @@ object ContainerExperimentalMetrics {
           Stability.development
         )
 
-      /** The network IO operation direction.
+      /** The direction of traffic from the perspective of the observing host's physical or virtual network interface.
+        * It should not be used to represent the logical direction of a stateful connection or network flow.
         */
       val networkIoDirection: AttributeSpec[String] =
         AttributeSpec(
@@ -659,7 +660,7 @@ object ContainerExperimentalMetrics {
             "transmit",
           ),
           Requirement.recommended,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       val specs: List[AttributeSpec[_]] =

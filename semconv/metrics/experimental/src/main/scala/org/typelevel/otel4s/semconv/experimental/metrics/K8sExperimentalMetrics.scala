@@ -3409,7 +3409,7 @@ object K8sExperimentalMetrics {
             "minor",
           ),
           Requirement.recommended,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       val specs: List[AttributeSpec[_]] =
@@ -3592,7 +3592,8 @@ object K8sExperimentalMetrics {
           Stability.development
         )
 
-      /** The network IO operation direction.
+      /** The direction of traffic from the perspective of the observing host's physical or virtual network interface.
+        * It should not be used to represent the logical direction of a stateful connection or network flow.
         */
       val networkIoDirection: AttributeSpec[String] =
         AttributeSpec(
@@ -3601,7 +3602,7 @@ object K8sExperimentalMetrics {
             "transmit",
           ),
           Requirement.recommended,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       val specs: List[AttributeSpec[_]] =
@@ -3661,7 +3662,8 @@ object K8sExperimentalMetrics {
           Stability.development
         )
 
-      /** The network IO operation direction.
+      /** The direction of traffic from the perspective of the observing host's physical or virtual network interface.
+        * It should not be used to represent the logical direction of a stateful connection or network flow.
         */
       val networkIoDirection: AttributeSpec[String] =
         AttributeSpec(
@@ -3670,7 +3672,7 @@ object K8sExperimentalMetrics {
             "transmit",
           ),
           Requirement.recommended,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       val specs: List[AttributeSpec[_]] =
@@ -4490,7 +4492,7 @@ object K8sExperimentalMetrics {
             "minor",
           ),
           Requirement.recommended,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       val specs: List[AttributeSpec[_]] =
@@ -4673,7 +4675,8 @@ object K8sExperimentalMetrics {
           Stability.development
         )
 
-      /** The network IO operation direction.
+      /** The direction of traffic from the perspective of the observing host's physical or virtual network interface.
+        * It should not be used to represent the logical direction of a stateful connection or network flow.
         */
       val networkIoDirection: AttributeSpec[String] =
         AttributeSpec(
@@ -4682,7 +4685,7 @@ object K8sExperimentalMetrics {
             "transmit",
           ),
           Requirement.recommended,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       val specs: List[AttributeSpec[_]] =
@@ -4742,7 +4745,8 @@ object K8sExperimentalMetrics {
           Stability.development
         )
 
-      /** The network IO operation direction.
+      /** The direction of traffic from the perspective of the observing host's physical or virtual network interface.
+        * It should not be used to represent the logical direction of a stateful connection or network flow.
         */
       val networkIoDirection: AttributeSpec[String] =
         AttributeSpec(
@@ -4751,7 +4755,7 @@ object K8sExperimentalMetrics {
             "transmit",
           ),
           Requirement.recommended,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       val specs: List[AttributeSpec[_]] =

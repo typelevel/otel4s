@@ -26,11 +26,11 @@ import org.typelevel.otel4s.metrics.meta.InstrumentMeta
 
 import scala.collection.immutable
 
-class CounterSuite extends CatsEffectSuite {
-  import CounterSuite._
+class GaugeSuite extends CatsEffectSuite {
+  import GaugeSuite._
 
   test("do not allocate attributes when instrument is noop") {
-    val counter = Counter.noop[IO, Long]
+    val gauge = Gauge.noop[IO, Long]
 
     var allocated = false
 
@@ -41,10 +41,8 @@ class CounterSuite extends CatsEffectSuite {
 
     // test varargs and Iterable overloads
     for {
-      _ <- counter.add(1L, allocateAttribute: _*)
-      _ <- counter.add(1L, allocateAttribute)
-      _ <- counter.inc(allocateAttribute: _*)
-      _ <- counter.inc(allocateAttribute)
+      _ <- gauge.record(1L, allocateAttribute: _*)
+      _ <- gauge.record(1L, allocateAttribute)
     } yield assert(!allocated)
   }
 
@@ -55,36 +53,16 @@ class CounterSuite extends CatsEffectSuite {
       List(
         Record(1L, Attributes(attribute)),
         Record(2L, Attributes.empty),
-        Record(3L, Attributes(attribute, attribute))
+        Record(-3L, Attributes(attribute, attribute))
       )
 
     // test varargs and Iterable overloads
     for {
-      counter <- inMemoryCounter
-      _ <- counter.add(1L, Attributes(attribute))
-      _ <- counter.add(2L)
-      _ <- counter.add(3L, attribute, attribute)
-      records <- counter.records
-    } yield assertEquals(records, expected)
-  }
-
-  test("inc by one") {
-    val attribute = Attribute("key", "value")
-
-    val expected =
-      List(
-        Record(1L, Attributes(attribute)),
-        Record(1L, Attributes.empty),
-        Record(1L, Attributes(attribute, attribute))
-      )
-
-    // test varargs and Iterable overloads
-    for {
-      counter <- inMemoryCounter
-      _ <- counter.inc(Attributes(attribute))
-      _ <- counter.inc()
-      _ <- counter.inc(attribute, attribute)
-      records <- counter.records
+      gauge <- inMemoryGauge
+      _ <- gauge.record(1L, Attributes(attribute))
+      _ <- gauge.record(2L)
+      _ <- gauge.record(-3L, attribute, attribute)
+      records <- gauge.records
     } yield assertEquals(records, expected)
   }
 
@@ -96,44 +74,38 @@ class CounterSuite extends CatsEffectSuite {
     val expected =
       List(
         Record(1L, Attributes(attribute)),
-        Record(1L, Attributes.empty),
-        Record(2L, Attributes(attribute, attribute))
+        Record(2L, Attributes.empty),
+        Record(-3L, Attributes(attribute, attribute))
       )
 
     for {
-      counter <- inMemoryCounter
+      gauge <- inMemoryGauge
       _ <- (
-        counter.liftTo[G].inc(Attributes(attribute)) >>
-          counter.liftTo[G].inc() >>
-          counter.liftTo[G].add(2L, attribute, attribute)
+        gauge.liftTo[G].record(1L, Attributes(attribute)) >>
+          gauge.liftTo[G].record(2L) >>
+          gauge.liftTo[G].record(-3L, attribute, attribute)
       ).run(())
-      records <- counter.records
+      records <- gauge.records
     } yield assertEquals(records, expected)
   }
 
-  private def inMemoryCounter: IO[InMemoryCounter] =
-    IO.ref[List[Record[Long]]](Nil).map(ref => new InMemoryCounter(ref))
+  private def inMemoryGauge: IO[InMemoryGauge] =
+    IO.ref[List[Record[Long]]](Nil).map(ref => new InMemoryGauge(ref))
 
 }
 
-object CounterSuite {
+object GaugeSuite {
 
   final case class Record[A](value: A, attributes: Attributes)
 
-  class InMemoryCounter(ref: Ref[IO, List[Record[Long]]]) extends Counter.Unsealed[IO, Long] {
+  class InMemoryGauge(ref: Ref[IO, List[Record[Long]]]) extends Gauge.Unsealed[IO, Long] {
 
-    val backend: Counter.Backend[IO, Long] =
-      new Counter.Backend.Unsealed[IO, Long] {
+    val backend: Gauge.Backend[IO, Long] =
+      new Gauge.Backend.Unsealed[IO, Long] {
         val meta: InstrumentMeta[IO] = InstrumentMeta.enabled
 
-        def add(
-            value: Long,
-            attributes: immutable.Iterable[Attribute[_]]
-        ): IO[Unit] =
+        def record(value: Long, attributes: immutable.Iterable[Attribute[_]]): IO[Unit] =
           ref.update(_.appended(Record(value, attributes.to(Attributes))))
-
-        def inc(attributes: immutable.Iterable[Attribute[_]]): IO[Unit] =
-          add(1L, attributes)
       }
 
     def records: IO[List[Record[Long]]] =

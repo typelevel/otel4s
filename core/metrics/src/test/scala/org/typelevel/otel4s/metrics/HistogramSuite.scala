@@ -17,10 +17,12 @@
 package org.typelevel.otel4s
 package metrics
 
+import cats.data.Kleisli
 import cats.effect.IO
 import cats.effect.Ref
 import cats.effect.Resource
 import cats.effect.testkit.TestControl
+import cats.syntax.flatMap._
 import cats.syntax.functor._
 import munit.CatsEffectSuite
 import org.typelevel.otel4s.metrics.meta.InstrumentMeta
@@ -99,6 +101,38 @@ class HistogramSuite extends CatsEffectSuite {
         _ <- histogram
           .recordDuration(unit, Attributes(attribute))
           .use(_ => IO.sleep(sleepDuration))
+        records <- histogram.records
+      } yield assertEquals(records, expected)
+    }
+  }
+
+  test("liftTo - record values") {
+    type G[A] = Kleisli[IO, Unit, A]
+
+    val attribute = Attribute("key", "value")
+    val sleepDuration = 500.millis
+    val unit = TimeUnit.MILLISECONDS
+
+    val expected =
+      List(
+        Record(sleepDuration.toUnit(unit), Attributes(attribute)),
+        Record(sleepDuration.toUnit(unit), Attributes(attribute))
+      )
+
+    TestControl.executeEmbed {
+      // test varargs and Iterable overloads
+      for {
+        histogram <- inMemoryHistogram
+        _ <- (
+          histogram
+            .liftTo[G]
+            .recordDuration(unit, attribute)
+            .use(_ => Kleisli.liftF(IO.sleep(sleepDuration))) >>
+            histogram
+              .liftTo[G]
+              .recordDuration(unit, Attributes(attribute))
+              .use(_ => Kleisli.liftF(IO.sleep(sleepDuration)))
+        ).run(())
         records <- histogram.records
       } yield assertEquals(records, expected)
     }

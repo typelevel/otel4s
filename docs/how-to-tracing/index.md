@@ -23,5 +23,5 @@ that depend on OpenTelemetry context.
   [How otel4s context propagation works](../explanations/how-otel4s-context-propagation-works.md).
 - For more background on `Resource` and `fs2.Stream` tracing scopes, see
   [Tracing Resource and fs2.Stream scopes](../explanations/tracing-resource-and-fs2-stream-scopes.md).
-- For other lower-level tracing APIs, see the existing
-  [Tracing](../instrumentation/tracing.md) page.
+- For the core tracing interfaces, see the
+  [Tracing API reference](../instrumentation/tracing.md).
